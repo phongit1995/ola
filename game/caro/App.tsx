@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ARCADE_BRIDGE_EVENT } from '@ola/shared/constants';
 import type { ArcadeKenUpdatedData } from '@ola/shared/types';
 import { bridge } from '../src/sdk';
-import { BOARD_ASSETS, preloadAssets, preloadModalAssets } from './assets';
+import { BOARD_ASSETS, preloadAssets, preloadPriorityAssets } from './assets';
 import { ConfirmModal } from './components/ConfirmModal';
 import { BoardScreen } from './screens/board/BoardScreen';
 import { LeaderboardScreen } from './screens/leaderboard/LeaderboardScreen';
@@ -49,14 +49,15 @@ export function App() {
       if (typeof ken === 'number') useCaro.getState().syncKenFromHost(ken);
     });
     bridge.ready();
+    init();
     let cancelled = false;
     void preloadAssets((loaded, total) => {
       const pct = total === 0 ? 100 : Math.round((loaded / total) * 100);
       setProgress(`Đang tải... ${pct}%`);
     }).then(() => {
       if (!cancelled) {
-        void preloadModalAssets();
         setReady(true);
+        preloadPriorityAssets();
       }
     });
     return () => {
@@ -64,16 +65,12 @@ export function App() {
       stopKenSync();
       dispose();
     };
-  }, [dispose]);
-
-  useEffect(() => {
-    init(ready);
-  }, [ready, init]);
+  }, [dispose, init]);
 
   return (
     <>
       {boardMode !== 'idle' && <BoardScreen />}
-      {lobbyVisible && <LobbyScreen key={lobbyAnimKey} progress={progress} />}
+      {lobbyVisible && <LobbyScreen key={lobbyAnimKey} progress={progress} assetsReady={ready} />}
       {leaderboardVisible && <LeaderboardScreen />}
       {historyVisible && <HistoryScreen />}
       {rankedVisible && <RankedScreen />}

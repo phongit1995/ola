@@ -177,7 +177,7 @@ export const REACTION_ASSETS = {
   reactionAngry,
 } as const;
 
-export const RANKED_ASSETS = {
+const RANKED_SCREEN_ASSETS = {
   rankedBg,
   rankedTitleFrame,
   rankedCup,
@@ -187,6 +187,10 @@ export const RANKED_ASSETS = {
   rankedLock,
   rankedPageBtn,
   rankedMenuBtn,
+} as const;
+
+export const RANKED_ASSETS = {
+  ...RANKED_SCREEN_ASSETS,
   ...CREATE_MODAL_ASSETS,
 } as const;
 
@@ -239,14 +243,6 @@ export const HISTORY_ASSETS = {
   historyTable,
   historyPageBtn,
   historyKen,
-} as const;
-
-const MODAL_ASSETS = {
-  ...LOBBY_MODAL_ASSETS,
-  ...CREATE_MODAL_ASSETS,
-  ...RESULT_ASSETS,
-  ...LEADERBOARD_ASSETS,
-  ...HISTORY_ASSETS,
 } as const;
 
 const ALL_ASSETS = {
@@ -326,19 +322,78 @@ function preloadUrls(
   });
 }
 
-let modalPreload: Promise<void> | null = null;
+function waitForIdle(timeout = 1200): Promise<void> {
+  return new Promise((resolve) => {
+    const idleWindow = window as typeof window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+    };
+    if (idleWindow.requestIdleCallback) {
+      idleWindow.requestIdleCallback(resolve, { timeout });
+      return;
+    }
+    window.setTimeout(resolve, 120);
+  });
+}
 
-export function preloadModalAssets(): Promise<void> {
-  modalPreload ??= preloadUrls(Object.values(MODAL_ASSETS), undefined, 60000);
-  return modalPreload;
+async function preloadUrlsInIdleBatches(urls: readonly string[], batchSize = 3): Promise<void> {
+  const uniqueUrls = [...new Set(urls)];
+  for (let index = 0; index < uniqueUrls.length; index += batchSize) {
+    await waitForIdle();
+    await Promise.all(uniqueUrls.slice(index, index + batchSize).map(preloadUrl));
+  }
+}
+
+const preloadTasks = new Map<string, Promise<void>>();
+
+function preloadGroup(key: string, urls: readonly string[], timeoutMs = 30000): Promise<void> {
+  const existing = preloadTasks.get(key);
+  if (existing) return existing;
+  const pending = preloadUrls(urls, undefined, timeoutMs);
+  preloadTasks.set(key, pending);
+  return pending;
+}
+
+export function preloadLobbyModalAssets(): void {
+  void preloadGroup('lobby-modal', Object.values(LOBBY_MODAL_ASSETS));
+}
+
+export function preloadRankedAssets(): void {
+  void preloadGroup('ranked', Object.values(RANKED_SCREEN_ASSETS));
+}
+
+export function preloadBoardAssets(): void {
+  void preloadGroup('board', Object.values(BOARD_ASSETS));
+}
+
+export function preloadCreateModalAssets(): void {
+  void preloadGroup('create-modal', Object.values(CREATE_MODAL_ASSETS));
 }
 
 export function preloadResultAssets(): void {
-  void preloadUrls(Object.values(RESULT_ASSETS), undefined, 30000);
+  void preloadGroup('result', Object.values(RESULT_ASSETS));
+}
+
+export function preloadLeaderboardAssets(): void {
+  void preloadGroup('leaderboard', Object.values(LEADERBOARD_ASSETS));
+}
+
+export function preloadHistoryAssets(): void {
+  void preloadGroup('history', Object.values(HISTORY_ASSETS));
 }
 
 export function preloadReactionAssets(): void {
-  void preloadUrls(Object.values(REACTION_ASSETS), undefined, 30000);
+  void preloadGroup('reactions', Object.values(REACTION_ASSETS));
+}
+
+let priorityPreload: Promise<void> | null = null;
+
+/** Warm likely next screens without flooding the decoder/network queue. */
+export function preloadPriorityAssets(): void {
+  priorityPreload ??= (async () => {
+    await preloadUrlsInIdleBatches(Object.values(RANKED_SCREEN_ASSETS));
+    await preloadUrlsInIdleBatches(Object.values(BOARD_ASSETS));
+    await preloadUrlsInIdleBatches(Object.values(LOBBY_MODAL_ASSETS));
+  })();
 }
 
 export const VIP_DEFAULT_ICON = '/ola_smiley_online.png';

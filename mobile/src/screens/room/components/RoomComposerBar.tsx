@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Image, Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { NativeUploadFile, RoomAudioSendResult } from '@ola/shared/types';
+import type { PendingComposerImage } from '@components/chat/composerTypes';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulToken } from '@lib/kul';
@@ -48,12 +49,6 @@ export interface RoomComposerHandle {
   closePanel: () => void;
 }
 
-interface PendingImage {
-  id: string;
-  uri: string;
-  file: NativeUploadFile;
-}
-
 interface RoomComposerBarProps {
   disabled: boolean;
   onBeforeSend: () => void;
@@ -77,7 +72,8 @@ export const RoomComposerBar = forwardRef<
   const pushToast = useToastStore(s => s.push);
   const [draft, setDraft] = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
-  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [pendingImages, setPendingImages] =
+    useState<PendingComposerImage[]>([]);
   const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
   const [voiceRecording, setVoiceRecording] = useState(false);
   const composerRef = useRef<ChatComposerHandle>(null);

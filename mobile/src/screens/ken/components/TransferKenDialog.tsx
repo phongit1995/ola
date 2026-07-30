@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { colorForName, formatKen, toApiError } from '@ola/shared/lib';
+import { formatKen, toApiError } from '@ola/shared/lib';
 import { KenService, UserService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { TransferReceiverRow } from '@components/transfer/TransferReceiverRow';
+import type { TransferReceiver } from '@components/transfer/types';
+import { TransferPasswordField } from '@components/transfer/TransferPasswordField';
+import { TransferWarning } from '@components/transfer/TransferWarning';
+import { userIdentityFromSearchResult } from '@components/user/userIdentity';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 
@@ -14,19 +18,11 @@ const kenIcon = require('@assets/icons/apps/ken.png');
 
 const KEN_TRANSFER_MIN = 1000;
 const KEN_TRANSFER_MAX = 10_000_000;
-export interface TransferKenReceiver {
-  id: string;
-  name: string;
-  username?: string;
-  avatar?: string;
-  color: string;
-  online?: boolean;
-}
 
 interface TransferKenDialogProps {
   visible: boolean;
   onClose: () => void;
-  receiver?: TransferKenReceiver;
+  receiver?: TransferReceiver;
 }
 
 type Step = 'recipient' | 'input' | 'confirm';
@@ -35,54 +31,11 @@ function onlyDigits(value: string): string {
   return value.replace(/\D/g, '').slice(0, 12);
 }
 
-function toReceiver(user: UserSearchResult): TransferKenReceiver {
+function toReceiver(user: UserSearchResult): TransferReceiver {
   return {
     id: user.id,
-    name: user.fullName || user.username,
-    username: user.username,
-    avatar: user.avatar,
-    color: colorForName(user.username),
-    online: user.isOnline,
+    ...userIdentityFromSearchResult(user),
   };
-}
-
-function ReceiverRow({ receiver, onPress }: { receiver: TransferKenReceiver; onPress?: () => void }) {
-  return (
-    <Pressable
-      className="flex-row items-center gap-3 py-2"
-      onPress={onPress}
-      disabled={onPress == null}
-    >
-      <View className="relative">
-        <Avatar name={receiver.name} uri={receiver.avatar ?? undefined} size={40} />
-        {receiver.online === true && (
-          <View
-            className="bg-ola-primary"
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              borderWidth: 2,
-              borderColor: '#ffffff',
-            }}
-          />
-        )}
-      </View>
-      <View className="min-w-0 flex-1">
-        <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY }}>
-          {receiver.name}
-        </Text>
-        {receiver.username != null && (
-          <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_SECONDARY }}>
-            @{receiver.username}
-          </Text>
-        )}
-      </View>
-    </Pressable>
-  );
 }
 
 export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDialogProps) {
@@ -93,7 +46,8 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
   const push = useToastStore((s) => s.push);
 
   const [step, setStep] = useState<Step>(receiver != null ? 'input' : 'recipient');
-  const [pickedReceiver, setPickedReceiver] = useState<TransferKenReceiver | null>(null);
+  const [pickedReceiver, setPickedReceiver] =
+    useState<TransferReceiver | null>(null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -239,7 +193,10 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
                       key={item.id}
                       style={index > 0 ? { borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.08)' } : null}
                     >
-                      <ReceiverRow receiver={toReceiver(item)} onPress={() => pickReceiver(item)} />
+                      <TransferReceiverRow
+                        receiver={toReceiver(item)}
+                        onPress={() => pickReceiver(item)}
+                      />
                     </View>
                   ))}
                 </ScrollView>
@@ -270,7 +227,7 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
           </View>
           {activeReceiver != null && (
             <View className="mt-1 rounded px-3" style={{ borderWidth: 1, borderColor: DIVIDER }}>
-              <ReceiverRow receiver={activeReceiver} />
+              <TransferReceiverRow receiver={activeReceiver} />
             </View>
           )}
           <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
@@ -290,37 +247,21 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
       ) : (
         <View className="px-1 py-1">
           <Text className="text-base" style={{ color: TEXT_SECONDARY }}>{t('chat.transferKenReceiver')}</Text>
-          {activeReceiver != null && <ReceiverRow receiver={activeReceiver} />}
+          {activeReceiver != null && (
+            <TransferReceiverRow receiver={activeReceiver} />
+          )}
           <Text className="mt-4 text-base" style={{ color: TEXT_SECONDARY }}>
             {t('chat.transferKenConfirmAmountLabel')}
           </Text>
           <Text className="mt-2 text-lg font-bold" style={{ color: TEXT_PRIMARY }}>
             {formatKen(amount)} {t('chat.transferKenUnit')}
           </Text>
-          <View
-            className="mt-3 rounded-lg px-3 py-2.5"
-            style={{
-              borderWidth: 1,
-              borderColor: 'rgba(227,69,69,0.3)',
-              backgroundColor: 'rgba(227,69,69,0.05)',
-            }}
-          >
-            <Text className="text-center text-sm font-semibold" style={{ color: 'rgba(227,69,69,0.8)' }}>
-              {t('chat.transferKenWarning')}
-            </Text>
-          </View>
-          <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
-            {t('chat.transferKenPassword')}
-          </Text>
-          <TextInput
-            autoFocus
-            secureTextEntry
+          <TransferWarning>{t('chat.transferKenWarning')}</TransferWarning>
+          <TransferPasswordField
+            label={t('chat.transferKenPassword')}
+            placeholder={t('chat.transferKenPasswordPlaceholder')}
             value={password}
             onChangeText={setPassword}
-            placeholder={t('chat.transferKenPasswordPlaceholder')}
-            placeholderTextColor="rgba(0,0,0,0.38)"
-            className="mt-1 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: DIVIDER, color: TEXT_PRIMARY }}
           />
         </View>
       )}

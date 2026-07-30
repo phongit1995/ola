@@ -36,15 +36,9 @@ export function AndroidGuide({
       }
     >
       <ActionLink
-        href={APP_DOWNLOAD.apkUrl}
+        href={APP_DOWNLOAD.apkFolderUrl}
         label={t('download.android.action')}
         icon={<DownloadIcon />}
-        isFileDownload
-      />
-      <ActionLink
-        href={APP_DOWNLOAD.apkFolderUrl}
-        label={t('download.android.folderAction')}
-        tone="outline"
       />
     </DownloadGuideBody>
   );

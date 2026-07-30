@@ -4,8 +4,9 @@ import { Pressable, Text, View } from 'react-native';
 import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
 import { UserListDialog } from '@components/ui/UserListDialog';
+import { UserIdentityRow } from '@components/user/UserIdentityRow';
+import { userIdentityFromSearchResult } from '@components/user/userIdentity';
 
 interface AddContactDialogProps {
   onClose: () => void;
@@ -140,31 +141,12 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
       listMaxHeight={320}
     >
       {results.map((item) => (
-        <View key={item.id} className="flex-row items-center gap-3 py-2">
-          <Pressable
-            className="min-w-0 flex-1 flex-row items-center gap-3"
-            onPress={() => onOpenProfile?.(item.username)}
-          >
-            <View className="relative">
-              <Avatar name={item.fullName || item.username} uri={item.avatar ?? undefined} size={40} />
-              {item.isOnline && (
-                <View
-                  className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-ola-primary"
-                  style={{ borderWidth: 2, borderColor: '#fff' }}
-                />
-              )}
-            </View>
-            <View className="min-w-0 flex-1">
-              <Text numberOfLines={1} className="text-base text-ola-ink">
-                {item.fullName || item.username}
-              </Text>
-              <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
-                @{item.username}
-              </Text>
-            </View>
-          </Pressable>
-          {renderRelationButton(item)}
-        </View>
+        <UserIdentityRow
+          key={item.id}
+          user={userIdentityFromSearchResult(item)}
+          onPress={() => onOpenProfile?.(item.username)}
+          trailing={renderRelationButton(item)}
+        />
       ))}
     </UserListDialog>
   );

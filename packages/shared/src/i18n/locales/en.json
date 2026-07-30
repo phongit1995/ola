@@ -381,7 +381,7 @@
     "attachRecordCancelTip": "To cancel, drag your finger out of Record",
     "voiceReleaseCancel": "Release to cancel",
     "voiceMicDenied": "Microphone access is needed to record.",
-    "voiceMicUnsupported": "This browser does not support audio recording.",
+    "voiceMicUnsupported": "This browser does not support MP4/AAC audio recording.",
     "voiceMicInsecure": "Audio recording requires a secure HTTPS connection.",
     "voiceMicNotFound": "No microphone was found on this device.",
     "voiceMicUnavailable": "The microphone is busy or unavailable.",
@@ -1127,17 +1127,16 @@
     "android": {
       "name": "Android",
       "channel": "Install from an APK file",
-      "action": "Download APK file",
+      "action": "Open the APK folder",
       "size": "Size {{size}}",
       "steps": [
-        "Tap “Download APK file” (about 56 MB, Wi-Fi recommended). The file is hosted on Ola Google Drive, so it may take a few seconds to start.",
+        "Tap “Open the APK folder” to open the Ola folder on Google Drive, pick the newest APK file (about 56 MB, Wi-Fi recommended), then tap the download icon.",
         "Chrome warns “This type of file can harm your device” — choose “Download anyway”.",
         "Open the downloaded file. If your phone says installing unknown apps is not allowed, tap “Settings” and allow installs from Chrome or your file manager.",
         "Play Protect may show “Unknown app” — choose “Install anyway”.",
         "Wait for the install to finish, then open Ola and sign in."
       ],
       "note": "These warnings are normal for APK files installed outside Google Play. The build on this page is published by us.",
-      "folderAction": "Open the Google Drive folder",
       "linkLabel": "APK download link",
       "linkHint": "Paste this link into Chrome if the button above does not work.",
       "folderLinkLabel": "Google Drive folder link"

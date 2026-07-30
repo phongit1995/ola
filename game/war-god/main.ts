@@ -237,4 +237,26 @@ async function main(): Promise<void> {
   });
 }
 
-void main();
+function showStartupError(error: unknown): void {
+  console.error('Failed to start War God', error);
+  try {
+    app?.destroy({ removeView: true }, { children: true, context: true });
+  } catch {
+    // The renderer may only be partially initialized.
+  }
+  const host = document.getElementById('app');
+  if (!host) return;
+  host.replaceChildren();
+  const panel = document.createElement('div');
+  panel.className = 'startup-error';
+  const message = document.createElement('p');
+  message.textContent = 'Không thể tải trò chơi. Vui lòng thử lại.';
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.textContent = 'THỬ LẠI';
+  retry.addEventListener('click', () => location.reload());
+  panel.append(message, retry);
+  host.appendChild(panel);
+}
+
+void main().catch(showStartupError);

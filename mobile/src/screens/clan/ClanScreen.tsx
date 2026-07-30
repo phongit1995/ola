@@ -9,7 +9,6 @@ import {
   createTimeFormatter,
 } from '@ola/shared/lib';
 import type { Post, PostReaction, PostVisibility } from '@ola/shared/types';
-import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
@@ -25,6 +24,7 @@ import { MeCommentSheet } from '@screens/me/components/MeCommentSheet';
 import { MeQuickCommentBar } from '@screens/me/components/MeQuickCommentBar';
 import { MeLikersDialog } from '@screens/me/components/MeLikersDialog';
 import { useQuickComment } from '@screens/me/useQuickComment';
+import { isPostEditExpired } from '@lib/post';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
@@ -133,8 +133,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
   }
 
   function requestEdit(post: Post) {
-    const createdAtMs = post.createdAt != null ? new Date(post.createdAt).getTime() : 0;
-    if (Date.now() - createdAtMs > EDIT_WINDOW_MS) {
+    if (isPostEditExpired(post.createdAt)) {
       pushToast('info', t('me.editExpired'));
       return;
     }

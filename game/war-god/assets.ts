@@ -150,6 +150,12 @@ function collectUrls(node: unknown): string[] {
 }
 
 export const tex: Record<string, Texture> = {};
+let ultTexturePromise: Promise<Texture> | null = null;
+
+function withoutDeferredAssets(): Omit<typeof A, 'fx'> {
+  const { fx: _deferred, ...startupAssets } = A;
+  return startupAssets;
+}
 
 export async function loadAssets(): Promise<void> {
   const serifFont = new FontFace('DejaVuSerif', `url(${serifFontUrl})`);
@@ -157,12 +163,27 @@ export async function loadAssets(): Promise<void> {
     weight: '100 900',
   });
   const [loaded] = await Promise.all([
-    Assets.load(collectUrls(A)) as Promise<Record<string, Texture>>,
+    Assets.load(collectUrls(withoutDeferredAssets())) as Promise<Record<string, Texture>>,
     serifFont.load().then((f) => document.fonts.add(f)),
     robotoFont.load().then((f) => document.fonts.add(f)),
   ]);
   Object.assign(tex, loaded);
-  for (const t of Object.values(tex)) {
-    t.source.autoGenerateMipmaps = true;
+}
+
+export function loadUltTexture(): Promise<Texture> {
+  const cached = tex[A.fx.ult];
+  if (cached) return Promise.resolve(cached);
+  if (!ultTexturePromise) {
+    ultTexturePromise = Assets.load<Texture>(A.fx.ult)
+      .then((texture) => {
+        texture.source.autoGenerateMipmaps = false;
+        tex[A.fx.ult] = texture;
+        return texture;
+      })
+      .catch((error: unknown) => {
+        ultTexturePromise = null;
+        throw error;
+      });
   }
+  return ultTexturePromise;
 }

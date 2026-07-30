@@ -26,3 +26,27 @@ body {
   display: block;
   touch-action: none;
 }
+
+.startup-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 32px;
+  color: #ffe9a8;
+  font: 700 18px system-ui, sans-serif;
+  text-align: center;
+}
+
+.startup-error button {
+  min-width: 160px;
+  padding: 12px 20px;
+  border: 1px solid #f6c445;
+  border-radius: 12px;
+  background: #223650;
+  color: #fff;
+  font: 700 15px system-ui, sans-serif;
+}

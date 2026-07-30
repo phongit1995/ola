@@ -10,10 +10,10 @@ import type {
   Post,
   PostVisibility,
 } from '@ola/shared/types';
-import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import type { ChatComposerHandle } from '@components/ChatComposer';
 import { findActionIcon } from '@lib/checkInActions';
 import { compressImagesForUpload } from '@lib/compressImage';
+import { isPostEditExpired } from '@lib/post';
 import type { ComposedCheckIn } from './components/MeComposerCheckInPanel';
 import { COMPOSER_MAX_IMAGES, COMPOSER_PRIVACY_OPTIONS } from './constants';
 import type { PickedPhoto } from './interface';
@@ -162,10 +162,7 @@ export function useMeComposer({
 
   async function submit() {
     if (!canPost) return;
-    if (
-      isEdit &&
-      Date.now() - new Date(editPost.createdAt).getTime() > EDIT_WINDOW_MS
-    ) {
+    if (isEdit && isPostEditExpired(editPost.createdAt)) {
       pushToast('info', t('me.editExpired'));
       return;
     }

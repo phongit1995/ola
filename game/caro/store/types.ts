@@ -118,7 +118,7 @@ export interface CaroState {
 }
 
 export interface CaroActions {
-  init(ready: boolean): void;
+  init(): void;
   dispose(): void;
   syncKenFromHost(ken: number): void;
   playBot(level: BotLevel): void;

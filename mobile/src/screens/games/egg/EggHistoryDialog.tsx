@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { createTimeFormatter } from '@ola/shared/lib';
 import { EggService } from '@ola/shared/services';
 import type { EggDrawHistoryFilter, EggDrawHistoryItem } from '@ola/shared/types';
@@ -8,6 +16,7 @@ import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
 import { DRAWS_PAGE_SIZE } from './constants';
+import { eggHistoryScrollHeight } from './dialogLayout';
 const FILTERS: EggDrawHistoryFilter[] = ['all', 'win', 'miss'];
 
 interface EggHistoryDialogProps {
@@ -61,6 +70,7 @@ function useOutcomeLabel() {
 
 export function EggHistoryDialog({ onClose }: EggHistoryDialogProps) {
   const { t, i18n } = useTranslation();
+  const { height: windowHeight } = useWindowDimensions();
   const [items, setItems] = useState<EggDrawHistoryItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -91,11 +101,13 @@ export function EggHistoryDialog({ onClose }: EggHistoryDialogProps) {
   }, [filter, loadPage]);
 
   const hasMore = items.length < total;
+  const scrollMaxHeight = eggHistoryScrollHeight(windowHeight);
 
   return (
     <Dialog
       visible
       onClose={onClose}
+      avoidKeyboard={false}
       title={t('eggGame.history.title')}
       footer={<DialogButton onPress={onClose}>{t('eggGame.history.close')}</DialogButton>}
     >
@@ -119,7 +131,13 @@ export function EggHistoryDialog({ onClose }: EggHistoryDialogProps) {
           );
         })}
       </View>
-      <ScrollView style={{ maxHeight: 380, minHeight: 120 }}>
+      <ScrollView
+        nestedScrollEnabled
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator
+        style={{ maxHeight: scrollMaxHeight, minHeight: Math.min(120, scrollMaxHeight) }}
+        contentContainerStyle={{ paddingBottom: 4 }}
+      >
         {error ? (
           <Text className="py-6 text-center" style={{ color: '#9a2b20' }}>
             {t('eggGame.error')}

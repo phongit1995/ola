@@ -11,6 +11,8 @@ import {
 
 const MAX_DURATION_MS = 60_000;
 const MIN_DURATION_SEC = 1;
+const MP4_AAC_MIME_TYPE = 'audio/mp4;codecs="mp4a.40.2"';
+const MP4_AUDIO_MIME_TYPE = 'audio/mp4';
 
 export type VoiceRecorderError =
   | 'unsupported'
@@ -37,16 +39,20 @@ export interface VoiceRecorder {
 
 type AudioContextConstructor = typeof AudioContext;
 
-function pickMimeType(): string {
-  const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
-  for (const type of candidates) {
-    if (
-      typeof MediaRecorder !== 'undefined' &&
-      MediaRecorder.isTypeSupported(type)
-    )
-      return type;
+function supportedVoiceMimeType(): string | null {
+  if (
+    typeof MediaRecorder === 'undefined' ||
+    typeof MediaRecorder.isTypeSupported !== 'function'
+  ) {
+    return null;
   }
-  return '';
+  try {
+    return MediaRecorder.isTypeSupported(MP4_AAC_MIME_TYPE)
+      ? MP4_AAC_MIME_TYPE
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 function audioContextConstructor(): AudioContextConstructor | undefined {
@@ -209,6 +215,11 @@ export function useVoiceRecorder(
       onError?.('unsupported');
       return false;
     }
+    const mimeType = supportedVoiceMimeType();
+    if (mimeType == null) {
+      onError?.('unsupported');
+      return false;
+    }
 
     startingRef.current = true;
     const requestId = ++startRequestRef.current;
@@ -236,10 +247,7 @@ export function useVoiceRecorder(
     }
 
     try {
-      const mimeType = pickMimeType();
-      const recorder = mimeType
-        ? new MediaRecorder(stream, { mimeType })
-        : new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, { mimeType });
       chunksRef.current = [];
       cancelledRef.current = false;
       pendingResolveRef.current = null;
@@ -249,7 +257,7 @@ export function useVoiceRecorder(
       };
       recorder.onstop = () => {
         const cleanType =
-          (recorder.mimeType || 'audio/webm').split(';')[0] ?? 'audio/webm';
+          recorder.mimeType.split(';', 1)[0]?.trim() || MP4_AUDIO_MIME_TYPE;
         const blob = new Blob(chunksRef.current, { type: cleanType });
         const fallbackStoppedAt = Math.min(
           Date.now(),
@@ -331,11 +339,15 @@ export function useVoiceRecorder(
       }, MAX_DURATION_MS);
       startingRef.current = false;
       return true;
-    } catch {
+    } catch (error) {
       stream.getTracks().forEach((track) => track.stop());
       startingRef.current = false;
       if (mountedRef.current && requestId === startRequestRef.current) {
-        onError?.('failed');
+        onError?.(
+          error instanceof DOMException && error.name === 'NotSupportedError'
+            ? 'unsupported'
+            : 'failed'
+        );
       }
       return false;
     }

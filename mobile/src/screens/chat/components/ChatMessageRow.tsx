@@ -8,10 +8,11 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { kulImageForText } from '@lib/kul';
-import { reactionChips } from '@lib/reactions';
+import { ReactionChips } from '@components/chat/ReactionChips';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
+import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
   const rowWidth = windowWidth - 24 - (fromMe ? 0 : 36);
@@ -244,7 +245,6 @@ export function ChatMessageRow({
   onQuoteClick,
   onOpenProfile,
 }: ChatMessageRowProps) {
-  const chips = reactionChips(message.reactions);
   const bubbleRef = useRef<View>(null);
   const chipsRef = useRef<View>(null);
   const showAvatar = !fromMe && firstInGroup;
@@ -312,38 +312,14 @@ export function ChatMessageRow({
             )}
           </View>
 
-          {chips.length > 0 && (
-            <Pressable
-              ref={chipsRef}
-              onPress={() => openActions(chipsRef)}
-              onLongPress={() => onShowReactions?.(message.id)}
-              className="-mt-2 flex-row flex-wrap gap-1"
-              style={{ alignSelf: fromMe ? 'flex-end' : 'flex-start' }}
-            >
-              {chips.map((chip) => (
-                <View
-                  key={chip.type}
-                  className="flex-row items-center gap-1 rounded-full bg-white py-0.5 pl-1 pr-1.5"
-                  style={{
-                    borderWidth: 1,
-                    borderColor: 'rgba(0,0,0,0.05)',
-                    shadowColor: '#000',
-                    shadowOpacity: 0.12,
-                    shadowRadius: 3,
-                    shadowOffset: { width: 0, height: 1 },
-                    elevation: 1,
-                  }}
-                >
-                  {chip.image != null && (
-                    <Image source={chip.image} style={{ width: 16, height: 16 }} resizeMode="contain" />
-                  )}
-                  <Text className="text-[11px] font-medium" style={{ color: 'rgba(0,0,0,0.55)' }}>
-                    {chip.count}
-                  </Text>
-                </View>
-              ))}
-            </Pressable>
-          )}
+          <ReactionChips
+            reactions={message.reactions}
+            isOwn={fromMe}
+            anchorRef={chipsRef}
+            onPress={() => openActions(chipsRef)}
+            onLongPress={() => onShowReactions?.(message.id)}
+            textMaxFontSizeMultiplier={CHAT_MAX_FONT_SIZE_MULTIPLIER}
+          />
 
           {fromMe && isLastOwn && !pending && !failed && (
             seen ? (

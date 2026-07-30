@@ -1,22 +1,19 @@
 import type { TFunction } from 'i18next';
 import type { Message } from '@ola/shared/types';
-import { kulImageForText } from '@lib/kul';
-
-export function isCopyableText(message: Message): boolean {
-  return (
-    message.type === 'text' &&
-    message.content.trim() !== '' &&
-    kulImageForText(message.content) == null
-  );
-}
+import {
+  isCopyableMessageText,
+  messageReplyExcerpt,
+} from '@lib/messageView';
 
 export function replyExcerpt(t: TFunction, message: Message): string {
-  if (message.type === 'image') return t('chat.replyImage');
-  if (message.type === 'audio') return t('chat.replyAudio');
-  return kulImageForText(message.content) != null ? t('chat.replySticker') : message.content;
+  return messageReplyExcerpt(message, {
+    image: t('chat.replyImage'),
+    audio: t('chat.replyAudio'),
+    sticker: t('chat.replySticker'),
+  });
 }
 
-export interface ChatMessageAbilities {
+interface ChatMessageAbilities {
   canReply: boolean;
   canCopy: boolean;
   canEdit: boolean;
@@ -31,7 +28,7 @@ export function chatMessageAbilities(
   const isOwn = message.senderId === myId;
   return {
     canReply: !isOwn && !blocked,
-    canCopy: isCopyableText(message),
+    canCopy: isCopyableMessageText(message),
     canEdit: isOwn && message.type === 'text',
     canDelete: isOwn,
   };

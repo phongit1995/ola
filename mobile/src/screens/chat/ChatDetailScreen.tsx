@@ -21,7 +21,6 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import {
-  colorForName,
   isSameDay,
   parseMessageMetadata,
 } from '@ola/shared/lib';
@@ -65,6 +64,7 @@ import { TypingIndicator } from './components/TypingIndicator';
 import { ReplyPreviewBar } from './components/ReplyPreviewBar';
 import { EditingNotice } from './components/EditingNotice';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
+import type { PendingComposerImage } from '@components/chat/composerTypes';
 
 const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
 const editActionIcon = require('@assets/icons/chat/ic_action_edit.png');
@@ -72,12 +72,6 @@ const copyActionIcon = require('@assets/icons/chat/ic_menu_copy.png');
 const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
-
-interface PendingImage {
-  id: string;
-  uri: string;
-  file: NativeUploadFile;
-}
 
 export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
@@ -133,7 +127,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const pendingAudioRef = useRef<VoiceRecording | null>(null);
   const pendingAudioCleanupQueueRef = useRef<VoiceRecording[]>([]);
   const [voiceRecording, setVoiceRecording] = useState(false);
-  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [pendingImages, setPendingImages] = useState<PendingComposerImage[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -820,10 +814,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <TransferKenDialog
           visible
           onClose={() => setTransferKenOpen(false)}
-          receiver={{
-            ...transferReceiver,
-            color: colorForName(conversation?.otherUser?.username ?? title),
-          }}
+          receiver={transferReceiver}
         />
       )}
 

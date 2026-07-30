@@ -1,5 +1,6 @@
 import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
 import type { GameSession, UserInfoData } from '../../../src/sdk';
+import { playSound, setSoundEnabled } from '../../audio';
 import { A, tex } from '../../assets';
 import { addTick, iconSprite, makeText, popIn, pressable, removeTick, tween } from '../../kit';
 import type { BotLevel } from '../../logic/battle';
@@ -229,6 +230,7 @@ export function lobbyUpdateKen(ken: number): void {
 export function buildLobby(lobbyDeps: LobbyDeps): Container {
   deps = lobbyDeps;
   soundOn = localStorage.getItem(SOUND_KEY) !== '0';
+  setSoundEnabled(soundOn);
   box = new Container();
 
   const bgBox = new Container();
@@ -334,9 +336,11 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
 
   const sound = makePill('ÂM THANH', soundOn ? A.lobby.icSoundOn : A.lobby.icSoundOff, () => {
     soundOn = !soundOn;
+    setSoundEnabled(soundOn);
     localStorage.setItem(SOUND_KEY, soundOn ? '1' : '0');
     soundIcon.texture = tex[soundOn ? A.lobby.icSoundOn : A.lobby.icSoundOff];
     soundIcon.scale.set(26 / soundIcon.texture.height);
+    if (soundOn) playSound('click');
   });
   sound.x = 0.5 * pillStep;
   soundIcon = sound.children[2] as Sprite;

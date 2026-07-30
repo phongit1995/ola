@@ -1,25 +1,19 @@
 import type { TFunction } from 'i18next';
 import type { RoomMessage } from '@ola/shared/types';
-import { kulImageForText } from '@lib/kul';
-
-export function isCopyableText(message: RoomMessage): boolean {
-  return (
-    message.type !== 'image' &&
-    message.type !== 'audio' &&
-    kulImageForText(message.content) == null &&
-    message.content.trim() !== ''
-  );
-}
+import {
+  isCopyableMessageText,
+  messageReplyExcerpt,
+} from '@lib/messageView';
 
 export function replyExcerpt(t: TFunction, message: RoomMessage): string {
-  if (message.type === 'image') return t('room.replyImage');
-  if (message.type === 'audio') return t('chat.replyAudio');
-  return kulImageForText(message.content) != null
-    ? t('room.replySticker')
-    : message.content;
+  return messageReplyExcerpt(message, {
+    image: t('room.replyImage'),
+    audio: t('chat.replyAudio'),
+    sticker: t('room.replySticker'),
+  });
 }
 
-export interface RoomMessageAbilities {
+interface RoomMessageAbilities {
   isOwn: boolean;
   canCopy: boolean;
 }
@@ -30,6 +24,6 @@ export function roomMessageAbilities(
 ): RoomMessageAbilities {
   return {
     isOwn: message.senderId === currentUserId,
-    canCopy: isCopyableText(message),
+    canCopy: isCopyableMessageText(message),
   };
 }

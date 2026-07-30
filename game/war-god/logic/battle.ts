@@ -27,6 +27,7 @@ export interface EffectSummary {
   heal: number;
   mana: number;
   armor: number;
+  armorDamage?: number;
 }
 
 const DMG_SWORD = 5;
@@ -41,12 +42,13 @@ export function applyTileEffects(
   defender: Fighter,
   counts: Record<TileType, number>,
 ): EffectSummary {
-  const summary: EffectSummary = { damage: 0, heal: 0, mana: 0, armor: 0 };
+  const summary: EffectSummary = { damage: 0, heal: 0, mana: 0, armor: 0, armorDamage: 0 };
 
   const physical = counts.sword * DMG_SWORD + counts.stone * DMG_STONE;
   if (physical > 0) {
     const absorbed = Math.min(defender.armor, physical);
     defender.armor -= absorbed;
+    summary.armorDamage = absorbed;
     const dealt = physical - absorbed;
     defender.hp = Math.max(0, defender.hp - dealt);
     summary.damage += dealt;
@@ -83,6 +85,19 @@ export function castUltimate(attacker: Fighter, defender: Fighter): number {
   attacker.mp -= ULT_COST;
   defender.hp = Math.max(0, defender.hp - ULT_DMG);
   return ULT_DMG;
+}
+
+export function applyAuthoritativeEffects(
+  attacker: Fighter,
+  defender: Fighter,
+  effects: EffectSummary,
+): EffectSummary {
+  defender.hp = Math.max(0, defender.hp - effects.damage);
+  defender.armor = Math.max(0, defender.armor - (effects.armorDamage ?? 0));
+  attacker.hp = Math.min(MAX_HP, attacker.hp + effects.heal);
+  attacker.mp = Math.min(MAX_MP, attacker.mp + effects.mana);
+  attacker.armor = Math.min(MAX_ARMOR, attacker.armor + effects.armor);
+  return effects;
 }
 
 export type BotLevel = 'easy' | 'normal' | 'hard';

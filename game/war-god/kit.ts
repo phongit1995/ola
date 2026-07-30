@@ -1,4 +1,5 @@
 import { Application, Container, Sprite, Text, type Ticker } from 'pixi.js';
+import { playSound } from './audio';
 import { tex } from './assets';
 
 export const HEADING = 'RobotoCondensed, system-ui, sans-serif';
@@ -56,7 +57,10 @@ export function removeTick(step: (ticker: Ticker) => void): void {
 export function pressable(target: Container, onTap: () => void): void {
   target.eventMode = 'static';
   target.cursor = 'pointer';
-  target.on('pointertap', onTap);
+  target.on('pointertap', () => {
+    playSound('click');
+    onTap();
+  });
   target.on('pointerdown', () => target.scale.set(0.95));
   target.on('pointerup', () => target.scale.set(1));
   target.on('pointerupoutside', () => target.scale.set(1));

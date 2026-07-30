@@ -16,6 +16,7 @@ import type { EggCategoryKind, EggGiftReward, EggGiftSection } from '@ola/shared
 import { Dialog } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
+import { eggGiftScrollHeight } from './dialogLayout';
 
 interface EggGiftDialogProps {
   packId: string | null;
@@ -86,7 +87,7 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
   const [sections, setSections] = useState<EggGiftSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const scrollMaxHeight = Math.min(500, Math.max(120, windowHeight - 114));
+  const scrollMaxHeight = eggGiftScrollHeight(windowHeight);
 
   useEffect(() => {
     let alive = true;
@@ -140,6 +141,7 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
         >
           <ScrollView
             nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator
             style={{
               maxHeight: scrollMaxHeight,

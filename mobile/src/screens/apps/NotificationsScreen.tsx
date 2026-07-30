@@ -13,6 +13,7 @@ import { createTimeFormatter } from '@ola/shared/lib';
 import type { AppNotification } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const icFriend = require('@assets/icons/notify/ic_notification_add_friend.png');
@@ -41,10 +42,6 @@ function RowButton({ variant, disabled, onPress, children }: RowButtonProps) {
       <Text className={`text-xs ${isGreen ? 'text-white' : 'text-[#636363]'}`}>{children}</Text>
     </Pressable>
   );
-}
-
-function NotificationSeparator() {
-  return <View style={{ height: 1, marginHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.12)' }} />;
 }
 
 type ProposalAction = { item: AppNotification; kind: 'accept' | 'deny' } | null;
@@ -156,7 +153,7 @@ export function NotificationsScreen() {
           keyExtractor={(item) => item.id}
           onEndReached={() => void loadMore()}
           onEndReachedThreshold={0.4}
-          ItemSeparatorComponent={NotificationSeparator}
+          ItemSeparatorComponent={InsetListSeparator}
           ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color="#7cb342" /> : null}
           renderItem={({ item }) => {
             const config = KIND_CONFIG[item.type];

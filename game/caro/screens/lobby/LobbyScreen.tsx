@@ -1,7 +1,15 @@
 import { useLayoutEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { assetBg, assetSrc } from '../../assets';
+import {
+  assetBg,
+  assetSrc,
+  preloadBoardAssets,
+  preloadHistoryAssets,
+  preloadLeaderboardAssets,
+  preloadLobbyModalAssets,
+  preloadRankedAssets,
+} from '../../assets';
 import { formatKen } from '../../helpers/format';
 import { avatarIconSrc } from '../../helpers/player';
 import { useCaro } from '../../store/useCaro';
@@ -9,7 +17,12 @@ import type { BotLevel } from '../../types';
 import { BotLevelPicker } from './components/BotLevelPicker';
 import { useLobby } from './useLobby';
 
-export function LobbyScreen({ progress }: { progress: string }) {
+interface LobbyScreenProps {
+  progress: string;
+  assetsReady: boolean;
+}
+
+export function LobbyScreen({ progress, assetsReady }: LobbyScreenProps) {
   const { pickOpen, exitOpen, setPickOpen, setExitOpen, reset } = useLobby(
     useShallow((state) => ({
       pickOpen: state.pickOpen,
@@ -50,10 +63,10 @@ export function LobbyScreen({ progress }: { progress: string }) {
 
   const cls = [
     !lobbyVisible && 'hidden',
-    phase === 'loading' && 'loading',
-    (phase === 'connecting' || phase === 'error') && 'connecting',
-    phase === 'ready' && 'show',
-    phase === 'ready' && lobbyAnimKey > 1 && 'enter',
+    !assetsReady && 'loading',
+    assetsReady && (phase === 'loading' || phase === 'connecting' || phase === 'error') && 'connecting',
+    assetsReady && phase === 'ready' && 'show',
+    assetsReady && phase === 'ready' && lobbyAnimKey > 1 && 'enter',
   ]
     .filter(Boolean)
     .join(' ');
@@ -63,6 +76,17 @@ export function LobbyScreen({ progress }: { progress: string }) {
   const choose = (level: BotLevel): void => {
     setPickOpen(false);
     playBot(level);
+  };
+
+  const openBotPicker = (): void => {
+    preloadLobbyModalAssets();
+    preloadBoardAssets();
+    setPickOpen(true);
+  };
+
+  const openExitConfirm = (): void => {
+    preloadLobbyModalAssets();
+    setExitOpen(true);
   };
 
   return (
@@ -83,11 +107,33 @@ export function LobbyScreen({ progress }: { progress: string }) {
               <img src={assetSrc('icPlus')} alt="" />
             </button>
           </div>
-          <button type="button" className="lobby-mode" id="lobby-bot" style={assetBg('modeFrame')} onClick={() => setPickOpen(true)}>
+          <button
+            type="button"
+            className="lobby-mode"
+            id="lobby-bot"
+            style={assetBg('modeFrame')}
+            onPointerEnter={() => {
+              preloadLobbyModalAssets();
+              preloadBoardAssets();
+            }}
+            onFocus={() => {
+              preloadLobbyModalAssets();
+              preloadBoardAssets();
+            }}
+            onClick={openBotPicker}
+          >
             <img src={assetSrc('icBot')} alt="" />
             <span>Chơi với máy</span>
           </button>
-          <button type="button" className="lobby-mode" id="lobby-ranked" style={assetBg('modeFrame')} onClick={playRanked}>
+          <button
+            type="button"
+            className="lobby-mode"
+            id="lobby-ranked"
+            style={assetBg('modeFrame')}
+            onPointerEnter={preloadRankedAssets}
+            onFocus={preloadRankedAssets}
+            onClick={playRanked}
+          >
             <img src={assetSrc('icRanked')} alt="" />
             <span>Chơi xếp hạng</span>
           </button>
@@ -101,15 +147,33 @@ export function LobbyScreen({ progress }: { progress: string }) {
           </button>
         </div>
         <div className="lobby-bottom" style={assetBg('bottomFrame')}>
-          <button type="button" id="lobby-history" onClick={showHistory}>
+          <button
+            type="button"
+            id="lobby-history"
+            onPointerEnter={preloadHistoryAssets}
+            onFocus={preloadHistoryAssets}
+            onClick={showHistory}
+          >
             <img src={assetSrc('icHistory')} alt="" />
             <span>Lịch sử</span>
           </button>
-          <button type="button" id="lobby-leaderboard" onClick={showLeaderboard}>
+          <button
+            type="button"
+            id="lobby-leaderboard"
+            onPointerEnter={preloadLeaderboardAssets}
+            onFocus={preloadLeaderboardAssets}
+            onClick={showLeaderboard}
+          >
             <img src={assetSrc('icLeaderboard')} alt="" />
             <span>Bảng xếp hạng</span>
           </button>
-          <button type="button" id="lobby-exit" onClick={() => setExitOpen(true)}>
+          <button
+            type="button"
+            id="lobby-exit"
+            onPointerEnter={preloadLobbyModalAssets}
+            onFocus={preloadLobbyModalAssets}
+            onClick={openExitConfirm}
+          >
             <img src={assetSrc('icExit')} alt="" />
             <span>Thoát</span>
           </button>

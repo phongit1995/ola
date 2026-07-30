@@ -1,47 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { formatKen, toApiError } from '@ola/shared/lib';
 import { VipService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipPackageItem } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { TransferReceiverRow } from '@components/transfer/TransferReceiverRow';
+import type { TransferReceiver } from '@components/transfer/types';
+import { TransferPasswordField } from '@components/transfer/TransferPasswordField';
+import { TransferWarning } from '@components/transfer/TransferWarning';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 
 const vipIcon = require('@assets/icons/apps/vip.png');
 
-export interface TransferVipDaysReceiver {
-  id: string;
-  name: string;
-  username?: string;
-  avatar?: string;
-}
-
 interface TransferVipDaysDialogProps {
   visible: boolean;
   onClose: () => void;
-  receiver: TransferVipDaysReceiver;
-}
-
-function ReceiverRow({ receiver }: { receiver: TransferVipDaysReceiver }) {
-  return (
-    <View className="flex-row items-center gap-3 py-2">
-      <Avatar name={receiver.name} uri={receiver.avatar ?? undefined} size={40} />
-      <View className="min-w-0 flex-1">
-        <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY }}>
-          {receiver.name}
-        </Text>
-        {receiver.username != null && (
-          <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_SECONDARY }}>
-            @{receiver.username}
-          </Text>
-        )}
-      </View>
-    </View>
-  );
+  receiver: TransferReceiver;
 }
 
 export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVipDaysDialogProps) {
@@ -159,7 +137,7 @@ export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVi
             {t('chat.transferVipDaysReceiverLabel')}
           </Text>
           <View className="mt-1 rounded px-3" style={{ borderWidth: 1, borderColor: DIVIDER }}>
-            <ReceiverRow receiver={receiver} />
+            <TransferReceiverRow receiver={receiver} />
           </View>
           <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
             {t('chat.transferVipDaysSelectLabel')}
@@ -214,7 +192,7 @@ export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVi
           <Text className="text-base" style={{ color: TEXT_SECONDARY }}>
             {t('chat.transferVipDaysReceiverLabel')}
           </Text>
-          <ReceiverRow receiver={receiver} />
+          <TransferReceiverRow receiver={receiver} />
           <Text className="mt-3 text-base" style={{ color: TEXT_PRIMARY }}>
             {t('chat.transferVipDaysSummary', {
               name: selected?.name ?? '',
@@ -223,30 +201,12 @@ export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVi
               ken: formatKen(selected?.kenPrice ?? 0),
             })}
           </Text>
-          <View
-            className="mt-3 rounded-lg px-3 py-2.5"
-            style={{
-              borderWidth: 1,
-              borderColor: 'rgba(227,69,69,0.3)',
-              backgroundColor: 'rgba(227,69,69,0.05)',
-            }}
-          >
-            <Text className="text-center text-sm font-semibold" style={{ color: 'rgba(227,69,69,0.8)' }}>
-              {t('chat.transferVipDaysWarning')}
-            </Text>
-          </View>
-          <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
-            {t('chat.transferVipDaysPasswordLabel')}
-          </Text>
-          <TextInput
-            autoFocus
-            secureTextEntry
+          <TransferWarning>{t('chat.transferVipDaysWarning')}</TransferWarning>
+          <TransferPasswordField
+            label={t('chat.transferVipDaysPasswordLabel')}
+            placeholder={t('chat.transferVipDaysPasswordPlaceholder')}
             value={password}
             onChangeText={setPassword}
-            placeholder={t('chat.transferVipDaysPasswordPlaceholder')}
-            placeholderTextColor="rgba(0,0,0,0.38)"
-            className="mt-1 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: DIVIDER, color: TEXT_PRIMARY }}
           />
         </View>
       )}
