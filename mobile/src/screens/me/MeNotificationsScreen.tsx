@@ -13,6 +13,7 @@ import { MeService } from '@ola/shared/services';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
+import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import type { RootStackParamList } from '@navigation/types';
@@ -29,10 +30,6 @@ const TYPE_ICON: Record<MeNotificationType, number> = {
   mention: mentionIcon,
   comment_like: likeIcon,
 };
-
-function NotificationSeparator() {
-  return <View style={{ height: 1, marginHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.12)' }} />;
-}
 
 export function MeNotificationsScreen() {
   const { t, i18n } = useTranslation();
@@ -118,7 +115,7 @@ export function MeNotificationsScreen() {
             keyExtractor={(item) => item.id}
             onEndReached={() => void loadMore()}
             onEndReachedThreshold={0.4}
-            ItemSeparatorComponent={NotificationSeparator}
+            ItemSeparatorComponent={InsetListSeparator}
             ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color="#7cb342" /> : null}
             renderItem={({ item }) => {
               const name = item.actor?.fullName || item.actor?.username || '';

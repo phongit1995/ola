@@ -1,18 +1,12 @@
 import { Image, Text, View } from 'react-native';
 import { WHEEL_LABEL_RADIUS, segmentTheme, wheelPolar } from '@ola/shared/lib';
-import type { WheelPlayerSegment } from '@ola/shared/types';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { assetRatio } from '@screens/games/pen/penUi';
 import { rewardVisual } from './spinWheelReward';
 import { segmentLabelTextStyle } from './spinWheelStyles';
+import type { WheelLayerProps } from './types';
 
-interface WheelLabelsProps {
-  segments: WheelPlayerSegment[];
-  angle: number;
-  size: number;
-}
-
-export function WheelLabels({ segments, angle, size }: WheelLabelsProps) {
+export function WheelLabels({ segments, angle, size }: WheelLayerProps) {
   const labelSize = size * 0.26;
   return (
     <>

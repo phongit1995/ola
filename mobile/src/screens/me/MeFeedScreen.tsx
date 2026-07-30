@@ -11,10 +11,10 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { createTimeFormatter, filterVisiblePosts, postTimeLabel } from '@ola/shared/lib';
 import type { Post, PostReaction } from '@ola/shared/types';
-import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { useHorizontalSwipe } from '@hooks/useHorizontalSwipe';
+import { isPostEditExpired } from '@lib/post';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { MePostCard } from './components/MePostCard';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
@@ -132,8 +132,7 @@ export function MeFeedScreen() {
   }
 
   function requestEdit(post: Post) {
-    const createdAtMs = post.createdAt != null ? new Date(post.createdAt).getTime() : 0;
-    if (Date.now() - createdAtMs > EDIT_WINDOW_MS) {
+    if (isPostEditExpired(post.createdAt)) {
       pushToast('info', t('me.editExpired'));
       return;
     }

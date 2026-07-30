@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
 import { UserListDialog } from '@components/ui/UserListDialog';
+import { UserIdentityRow } from '@components/user/UserIdentityRow';
+import { userIdentityFromSearchResult } from '@components/user/userIdentity';
 
 interface ComposeDialogProps {
   onClose: () => void;
@@ -59,29 +60,11 @@ export function ComposeDialog({ onClose, onStart }: ComposeDialogProps) {
       }}
     >
       {results.map((item) => (
-        <Pressable
+        <UserIdentityRow
           key={item.id}
           onPress={() => onStart(item.id)}
-          className="flex-row items-center gap-3 py-2 active:bg-black/5"
-        >
-          <View className="relative">
-            <Avatar name={item.fullName || item.username} uri={item.avatar ?? undefined} size={40} />
-            {item.isOnline && (
-              <View
-                className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-ola-primary"
-                style={{ borderWidth: 2, borderColor: '#fff' }}
-              />
-            )}
-          </View>
-          <View className="min-w-0 flex-1">
-            <Text numberOfLines={1} className="text-base text-ola-ink">
-              {item.fullName || item.username}
-            </Text>
-            <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
-              @{item.username}
-            </Text>
-          </View>
-        </Pressable>
+          user={userIdentityFromSearchResult(item)}
+        />
       ))}
     </UserListDialog>
   );

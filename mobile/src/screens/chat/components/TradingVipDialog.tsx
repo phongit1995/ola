@@ -1,45 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { toApiError, vipName } from '@ola/shared/lib';
 import { VipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconInstance } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { TransferReceiverRow } from '@components/transfer/TransferReceiverRow';
+import type { TransferReceiver } from '@components/transfer/types';
+import { TransferPasswordField } from '@components/transfer/TransferPasswordField';
 import { VipBadge } from '@components/ui/VipBadge';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { TRADING_VIP_PAGE_SIZE } from '../constants';
 
-export interface TradingVipReceiver {
-  id: string;
-  name: string;
-  username?: string;
-  avatar?: string;
-}
-
 interface TradingVipDialogProps {
   visible: boolean;
   onClose: () => void;
-  receiver: TradingVipReceiver;
-}
-
-function ReceiverRow({ receiver }: { receiver: TradingVipReceiver }) {
-  return (
-    <View className="flex-row items-center gap-3 py-2">
-      <Avatar name={receiver.name} uri={receiver.avatar ?? undefined} size={40} />
-      <View className="min-w-0 flex-1">
-        <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY }}>
-          {receiver.name}
-        </Text>
-        {receiver.username != null && (
-          <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_SECONDARY }}>
-            @{receiver.username}
-          </Text>
-        )}
-      </View>
-    </View>
-  );
+  receiver: TransferReceiver;
 }
 
 export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialogProps) {
@@ -131,7 +108,7 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
             {t('chat.tradingVipReceiverLabel')}
           </Text>
           <View className="mt-1 rounded px-3" style={{ borderWidth: 1, borderColor: DIVIDER }}>
-            <ReceiverRow receiver={receiver} />
+            <TransferReceiverRow receiver={receiver} />
           </View>
 
           <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
@@ -179,7 +156,7 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
           <Text className="text-base" style={{ color: TEXT_SECONDARY }}>
             {t('chat.tradingVipReceiverLabel')}
           </Text>
-          <ReceiverRow receiver={receiver} />
+          <TransferReceiverRow receiver={receiver} />
 
           <Text className="mt-4 text-base" style={{ color: TEXT_SECONDARY }}>
             {t('chat.tradingVipSelectLabel')}
@@ -193,18 +170,11 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
             </View>
           )}
 
-          <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
-            {t('chat.tradingVipPasswordLabel')}
-          </Text>
-          <TextInput
-            autoFocus
-            secureTextEntry
+          <TransferPasswordField
+            label={t('chat.tradingVipPasswordLabel')}
+            placeholder={t('chat.tradingVipPasswordPlaceholder')}
             value={password}
             onChangeText={setPassword}
-            placeholder={t('chat.tradingVipPasswordPlaceholder')}
-            placeholderTextColor="rgba(0,0,0,0.38)"
-            className="mt-1 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: DIVIDER, color: TEXT_PRIMARY }}
           />
         </View>
       )}

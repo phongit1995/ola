@@ -15,15 +15,9 @@ import {
   wheelDividerLine,
   wheelSlicePath,
 } from '@ola/shared/lib';
-import type { WheelPlayerSegment } from '@ola/shared/types';
+import type { WheelLayerProps } from './types';
 
-interface WheelFaceProps {
-  segments: WheelPlayerSegment[];
-  angle: number;
-  size: number;
-}
-
-export function WheelFace({ segments, angle, size }: WheelFaceProps) {
+export function WheelFace({ segments, angle, size }: WheelLayerProps) {
   return (
     <Svg
       width={size}
