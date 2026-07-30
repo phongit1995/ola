@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import Sound, {
-  AVEncoderAudioQualityIOSType,
   AudioEncoderAndroidType,
   OutputFormatAndroidType,
   type AudioSet,
@@ -47,11 +46,7 @@ export interface VoiceRecorder {
   cancel: () => Promise<void>;
 }
 
-const AUDIO_SET: AudioSet = {
-  AVFormatIDKeyIOS: 'aac',
-  AVNumberOfChannelsKeyIOS: 1,
-  AVSampleRateKeyIOS: 44100,
-  AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.medium,
+const ANDROID_AUDIO_SET: AudioSet = {
   AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
   OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
   AudioChannels: 1,
@@ -257,7 +252,11 @@ export function useVoiceRecorder(
         }
       });
 
-      await Sound.startRecorder(undefined, AUDIO_SET, true);
+      // Custom numeric AudioSet values can fail to bridge correctly in iOS
+      // release builds. Let AVAudioRecorder use Nitro Sound's iOS defaults.
+      const audioSet =
+        Platform.OS === 'ios' ? undefined : ANDROID_AUDIO_SET;
+      await Sound.startRecorder(undefined, audioSet, true);
 
       if (
         !mountedRef.current ||
