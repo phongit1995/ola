@@ -28,8 +28,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
   const opponentLabel = tab === 'shoot' ? t('penGame.hist.colCatcher') : t('penGame.hist.colShooter');
 
   return (
-    <Pressable
-      onPress={onClose}
+    <View
       style={{
         position: 'absolute',
         top: 0,
@@ -39,11 +38,22 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
         zIndex: 40,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.55)',
         paddingHorizontal: 8,
       }}
     >
-      <Pressable onPress={() => {}} style={{ width: '100%', maxHeight: '92%' }}>
+      <Pressable
+        accessibilityLabel={t('penGame.close')}
+        onPress={onClose}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.55)',
+        }}
+      />
+      <View style={{ width: '100%', maxHeight: '92%' }}>
         <PenPanel style={{ maxHeight: '100%' }}>
           <View
             style={{
@@ -148,7 +158,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
             )}
           </ScrollView>
         </PenPanel>
-      </Pressable>
-    </Pressable>
+      </View>
+    </View>
   );
 }

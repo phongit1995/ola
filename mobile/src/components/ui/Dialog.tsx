@@ -57,14 +57,15 @@ export function Dialog({
           className="flex-1 items-center justify-center p-4"
           pointerEvents="box-none"
         >
-          <Pressable
+          <View
             className={bare ? 'w-full' : 'w-full overflow-hidden bg-white'}
             style={
               bare
-                ? { maxWidth }
+                ? { maxWidth, maxHeight: '100%' }
                 : {
                     minWidth: 280,
                     maxWidth,
+                    maxHeight: '100%',
                     borderRadius: 5,
                     shadowColor: '#000',
                     shadowOpacity: 0.35,
@@ -73,7 +74,6 @@ export function Dialog({
                     elevation: 8,
                   }
             }
-            onPress={() => undefined}
           >
             {bare && children}
             {!bare && title != null && (
@@ -113,14 +113,14 @@ export function Dialog({
               </View>
             )}
             {!bare && (
-              <View className="m-2" style={{ minHeight: 50 }}>
+              <View className="m-2" style={{ minHeight: 50, flexShrink: 1 }}>
                 {children}
               </View>
             )}
             {!bare && footer != null && (
               <View className="flex-row gap-2 px-1 pb-2">{footer}</View>
             )}
-          </Pressable>
+          </View>
         </View>
       </Body>
     </Modal>
