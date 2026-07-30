@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { RoomInfo } from '../../../src/sdk';
-import { assetBg, assetSrc } from '../../assets';
+import { assetBg, assetSrc, preloadCreateModalAssets } from '../../assets';
 import { useCaro } from '../../store/useCaro';
 import { CreateRoomModal } from './components/CreateRoomModal';
 import { JoinRoomModal } from './components/JoinRoomModal';
@@ -61,6 +61,7 @@ export function RankedScreen() {
 
   const attemptJoin = (room: RoomInfo): void => {
     if (room.locked) {
+      preloadCreateModalAssets();
       openPass(room);
       return;
     }
@@ -75,6 +76,11 @@ export function RankedScreen() {
   const onCreateOk = (amount: number, password?: string): void => {
     closeCreate();
     createRoom(amount, password);
+  };
+
+  const openCreateModal = (): void => {
+    preloadCreateModalAssets();
+    openCreate();
   };
 
   return (
@@ -121,7 +127,14 @@ export function RankedScreen() {
           </button>
         </div>
         <div className="ranked-menu">
-          <button type="button" id="ranked-create" style={assetBg('rankedMenuBtn')} onClick={openCreate}>
+          <button
+            type="button"
+            id="ranked-create"
+            style={assetBg('rankedMenuBtn')}
+            onPointerEnter={preloadCreateModalAssets}
+            onFocus={preloadCreateModalAssets}
+            onClick={openCreateModal}
+          >
             Tạo bàn
           </button>
           <button type="button" id="ranked-refresh" style={assetBg('rankedMenuBtn')} onClick={() => refreshRooms()}>

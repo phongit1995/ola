@@ -13,7 +13,16 @@ import {
   type UserInfoData,
 } from '../../src/sdk';
 import { vipIconUrl } from '@ola/shared/lib/vip';
-import { BOARD_ASSETS, VIP_DEFAULT_ICON, preloadReactionAssets, preloadResultAssets } from '../assets';
+import {
+  BOARD_ASSETS,
+  VIP_DEFAULT_ICON,
+  preloadBoardAssets,
+  preloadHistoryAssets,
+  preloadLeaderboardAssets,
+  preloadRankedAssets,
+  preloadReactionAssets,
+  preloadResultAssets,
+} from '../assets';
 import { createBotSession } from '../bot';
 import { findFinalWinLine } from '../helpers/board';
 import { chatErrorText, matchErrorText, reactionErrorText, roomErrorText } from '../helpers/errorText';
@@ -541,6 +550,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       }
       if (resumesOnlineSession) refs.session = target;
       refs.match = data;
+      preloadBoardAssets();
       preloadResultAssets();
       preloadReactionAssets();
       if (!data.resumed) {
@@ -868,8 +878,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
   return {
     ...createInitialCaroState(),
 
-    init(ready) {
-      if (!ready) return;
+    init() {
       set((s) => ({ lobbyPhase: s.lobbyPhase === 'loading' ? 'connecting' : s.lobbyPhase }));
       void connectToServer();
     },
@@ -904,6 +913,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
     },
 
     playBot(level) {
+      preloadBoardAssets();
       if (!refs.bot || refs.botLevel !== level) {
         refs.bot?.disconnect();
         refs.bot = createBotSession(level);
@@ -917,6 +927,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
     },
 
     playRanked() {
+      preloadRankedAssets();
       const activeRoom = get().roomWaiting;
       if (activeRoom) {
         applyRoomState(activeRoom);
@@ -947,6 +958,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
 
     createRoom(bet, password) {
       if (!refs.online) return;
+      preloadBoardAssets();
       const normalizedPassword = password?.trim() ?? '';
       const validationError = roomCreationError(
         bet,
@@ -966,6 +978,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
 
     joinRoom(roomId, password) {
       if (!refs.online) return;
+      preloadBoardAssets();
       refs.session = refs.online;
       refs.matchBet = get().rooms.find((room) => room.id === roomId)?.bet ?? 0;
       enterPendingRoom('joining', 'Đang vào bàn...');
@@ -1010,6 +1023,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
     },
 
     showLeaderboard() {
+      preloadLeaderboardAssets();
       set({ lobbyVisible: true, rankedVisible: false, historyVisible: false, leaderboardVisible: true });
     },
 
@@ -1018,6 +1032,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
     },
 
     showHistory() {
+      preloadHistoryAssets();
       set({ lobbyVisible: true, rankedVisible: false, leaderboardVisible: false, historyVisible: true });
       get().loadHistory();
     },

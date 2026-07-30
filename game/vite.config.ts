@@ -22,6 +22,11 @@ export default defineConfig({
     },
   },
   build: {
+    assetsInlineLimit(filePath) {
+      // Caro controls image priority at runtime; data-URI inlining would force
+      // even modal-only icons into the initial JavaScript chunk.
+      return normalizePath(filePath).includes('/game/caro/assets/') ? false : undefined;
+    },
     rollupOptions: {
       input: {
         hub: resolve(__dirname, 'index.html'),
