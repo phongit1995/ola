@@ -100,6 +100,8 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppFontProvider>
+        {/* ChatKeyboardArea đo tọa độ từ mép màn hình; giữ statusBarTranslucent
+            để content.height của RNKC dùng cùng gốc y = 0 trên Android. */}
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <SafeAreaProvider>
             <StatusBar translucent barStyle="light-content" />

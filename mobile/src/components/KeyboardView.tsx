@@ -8,9 +8,8 @@ function KeyboardViewBase(props: KeyboardAvoidingViewProps) {
   return <KeyboardAvoidingView behavior="padding" {...props} />;
 }
 
-// Chỉ đăng ký interop cho wrapper cục bộ. Đăng ký trực tiếp
-// KeyboardAvoidingView của RNKC sẽ bọc cả những chỗ không dùng className,
-// khiến automaticOffset không còn giữ ref thẳng tới native view.
+// Giới hạn NativeWind interop ở KeyboardView thay vì đăng ký toàn cục cho
+// KeyboardAvoidingView của RNKC; các chỗ dùng RNKC trực tiếp không cần className.
 export const KeyboardView = cssInterop(KeyboardViewBase, {
   className: 'style',
 });
