@@ -500,6 +500,35 @@ button:focus-visible,
   text-shadow: 0 2px 2px rgba(9, 24, 43, 0.45);
 }
 
+.touch-move-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  z-index: 8;
+  transform: translateX(-50%);
+  max-width: 88%;
+  padding: 6px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  background: rgba(9, 24, 43, 0.86);
+  color: var(--lobby-cream);
+  font-size: clamp(11px, 3.3vw, 14px);
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 3px 10px rgba(9, 24, 43, 0.28);
+  animation: touch-hint-in 160ms ease-out;
+}
+
+@keyframes touch-hint-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 5px);
+  }
+}
+
 #board-frame.urgent {
   animation: board-warn 800ms ease-in-out infinite;
 }
@@ -580,6 +609,7 @@ button:focus-visible,
 }
 
 .cell {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -613,6 +643,37 @@ button:focus-visible,
 
 .cell.p2 {
   background-image: var(--asset-board-o);
+}
+
+.cell.touch-selected {
+  background-color: rgba(29, 79, 139, 0.2);
+  box-shadow: inset 0 0 0 2px rgba(29, 79, 139, 0.78);
+}
+
+.cell.touch-selected::after {
+  content: '';
+  width: 68%;
+  height: 68%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.55;
+  animation: touch-cell-preview 900ms ease-in-out infinite alternate;
+}
+
+.cell.touch-selected.preview-x::after {
+  background-image: var(--asset-board-x);
+}
+
+.cell.touch-selected.preview-o::after {
+  background-image: var(--asset-board-o);
+}
+
+@keyframes touch-cell-preview {
+  to {
+    opacity: 0.82;
+    transform: scale(1.08);
+  }
 }
 
 .cell.last {

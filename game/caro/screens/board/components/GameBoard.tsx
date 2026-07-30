@@ -1,6 +1,8 @@
 import {
+  useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
@@ -31,6 +33,7 @@ interface BoardDrag {
 export function GameBoard() {
   const clipRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+  const [touchSelectedIdx, setTouchSelectedIdx] = useState<number | null>(null);
   const dragRef = useRef<BoardDrag | null>(null);
   const panRef = useRef({ x: 0, y: 0 });
   const pendingPanRef = useRef({ x: 0, y: 0 });
@@ -57,6 +60,7 @@ export function GameBoard() {
     roomActionPending,
     bet,
     result,
+    myMark,
     placeMove,
     again,
     cancelSearch,
@@ -80,6 +84,7 @@ export function GameBoard() {
       roomActionPending: state.roomActionPending,
       bet: state.bet,
       result: state.result,
+      myMark: state.me.mark,
       placeMove: state.placeMove,
       again: state.again,
       cancelSearch: state.cancelSearch,
@@ -96,6 +101,18 @@ export function GameBoard() {
   const roomBusy = roomActionPending != null;
   const betText = formatKen(bet);
   const keyboardStartIdx = Math.max(0, board.findIndex((mark) => mark === 0));
+  const canPlaceMove = boardMode === 'playing' && !result && myTurn && !movePending;
+
+  useEffect(() => {
+    setTouchSelectedIdx(null);
+  }, [matchSeq]);
+
+  useEffect(() => {
+    setTouchSelectedIdx((selectedIndex) => {
+      if (selectedIndex == null) return null;
+      return canPlaceMove && board[selectedIndex] === 0 ? selectedIndex : null;
+    });
+  }, [board, canPlaceMove]);
 
   useLayoutEffect(() => {
     panRef.current = pan;
@@ -230,6 +247,20 @@ export function GameBoard() {
     const x = Math.floor((event.clientX - rect.left) / (rect.width / SIZE));
     const y = Math.floor((event.clientY - rect.top) / (rect.height / SIZE));
     if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return;
+    const index = y * SIZE + x;
+    if (!canPlaceMove || board[index] !== 0) {
+      setTouchSelectedIdx(null);
+      return;
+    }
+    if (event.pointerType === 'touch') {
+      if (touchSelectedIdx !== index) {
+        setTouchSelectedIdx(index);
+        return;
+      }
+      setTouchSelectedIdx(null);
+    } else {
+      setTouchSelectedIdx(null);
+    }
     placeMove(x, y);
   };
 
@@ -242,7 +273,10 @@ export function GameBoard() {
   const onCellKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number): void => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      if (board[index] === 0) placeMove(index % SIZE, Math.floor(index / SIZE));
+      if (canPlaceMove && board[index] === 0) {
+        setTouchSelectedIdx(null);
+        placeMove(index % SIZE, Math.floor(index / SIZE));
+      }
       return;
     }
     const direction =
@@ -281,6 +315,11 @@ export function GameBoard() {
             <img src={assetSrc('icKen')} alt="" />
           </div>
         )}
+        {touchSelectedIdx != null && (
+          <div className="touch-move-hint" role="status">
+            Chạm lại ô đã chọn để đánh
+          </div>
+        )}
         <div
           id="board-clip"
           ref={clipRef}
@@ -292,7 +331,7 @@ export function GameBoard() {
           <div
             id="board"
             ref={boardRef}
-            className={myTurn && !movePending ? 'playable' : ''}
+            className={canPlaceMove ? 'playable' : ''}
             style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0)` }}
             role="grid"
             aria-label="Bàn cờ Caro 20 nhân 20"
@@ -300,10 +339,16 @@ export function GameBoard() {
           >
             {CELLS.map((index) => {
               const mark = board[index];
-              const className = 'cell' + (mark ? ` p${mark}` : '') + (index === lastIdx ? ' last' : '');
+              const touchSelected = index === touchSelectedIdx && mark === 0;
+              const className =
+                'cell' +
+                (mark ? ` p${mark}` : '') +
+                (index === lastIdx ? ' last' : '') +
+                (touchSelected ? ` touch-selected preview-${myMark}` : '');
               const x = index % SIZE;
               const y = Math.floor(index / SIZE);
               const label = mark === 1 ? 'quân X' : mark === 2 ? 'quân O' : 'ô trống';
+              const touchHint = touchSelected ? ', đã chọn, chạm lại để đánh' : '';
               return (
                 <button
                   key={index}
@@ -312,11 +357,15 @@ export function GameBoard() {
                   data-index={index}
                   role="gridcell"
                   tabIndex={index === keyboardStartIdx ? 0 : -1}
-                  aria-label={`Hàng ${y + 1}, cột ${x + 1}, ${label}`}
-                  aria-disabled={!myTurn || movePending || mark !== 0}
+                  aria-label={`Hàng ${y + 1}, cột ${x + 1}, ${label}${touchHint}`}
+                  aria-disabled={!canPlaceMove || mark !== 0}
+                  aria-selected={touchSelected}
                   onKeyDown={(event) => onCellKeyDown(event, index)}
                   onClick={(event) => {
-                    if (event.detail === 0 && mark === 0) placeMove(x, y);
+                    if (event.detail === 0 && canPlaceMove && mark === 0) {
+                      setTouchSelectedIdx(null);
+                      placeMove(x, y);
+                    }
                   }}
                 />
               );
