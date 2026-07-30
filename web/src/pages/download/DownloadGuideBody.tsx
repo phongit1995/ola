@@ -6,7 +6,6 @@ interface ActionLinkProps {
   label: string;
   icon?: ReactNode;
   tone?: 'primary' | 'outline';
-  isFileDownload?: boolean;
 }
 
 export function ActionLink({
@@ -14,7 +13,6 @@ export function ActionLink({
   label,
   icon,
   tone = 'primary',
-  isFileDownload = false,
 }: ActionLinkProps) {
   const toneClass =
     tone === 'primary'
@@ -24,7 +22,7 @@ export function ActionLink({
   return (
     <a
       href={href}
-      target={isFileDownload ? undefined : '_blank'}
+      target="_blank"
       rel="noopener noreferrer"
       className={`flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors ${toneClass}`}
     >

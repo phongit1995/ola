@@ -1127,17 +1127,16 @@
     "android": {
       "name": "Android",
       "channel": "Cài bằng file APK",
-      "action": "Tải file APK",
+      "action": "Mở thư mục tải APK",
       "size": "Dung lượng {{size}}",
       "steps": [
-        "Nhấn “Tải file APK” (khoảng 56 MB, nên dùng Wi-Fi). File nằm trên Google Drive của Ola nên có thể mất vài giây mới bắt đầu tải.",
+        "Nhấn “Mở thư mục tải APK” để vào thư mục Google Drive của Ola, chọn file APK mới nhất (khoảng 56 MB, nên dùng Wi-Fi) rồi bấm biểu tượng tải xuống.",
         "Chrome hiện cảnh báo “Loại tệp này có thể gây hại cho thiết bị” — chọn “Vẫn tải xuống”.",
         "Mở file vừa tải. Nếu máy báo không được phép cài ứng dụng không rõ nguồn gốc, chọn “Cài đặt” rồi bật quyền cho Chrome hoặc trình quản lý tệp.",
         "Play Protect có thể hiện “Không rõ ứng dụng” — chọn “Vẫn cài đặt”.",
         "Chờ cài xong, mở Ola và đăng nhập bằng tài khoản của bạn."
       ],
       "note": "Các cảnh báo trên là bình thường với file APK cài ngoài Google Play. Bản Ola ở trang này do chính chúng tôi phát hành.",
-      "folderAction": "Mở thư mục Google Drive",
       "linkLabel": "Link tải file APK",
       "linkHint": "Dán link này vào Chrome nếu nút tải phía trên không chạy.",
       "folderLinkLabel": "Link thư mục Google Drive"
