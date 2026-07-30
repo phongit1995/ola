@@ -256,4 +256,5 @@ export interface RoomKickedData {
 
 export interface OpponentDisconnectedData {
   graceDeadline: number;
+  turnRemainingMs?: number;
 }

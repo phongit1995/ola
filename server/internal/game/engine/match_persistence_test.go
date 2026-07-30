@@ -708,8 +708,13 @@ func TestRestoreActiveMatchAndResumeAfterBothPlayersReconnect(t *testing.T) {
 	for _, player := range firstPlayerEnvelope.Data.(protocol.MatchFoundData).Players {
 		requireVipType(t, player.VipType, lifecycleVipValue(player.ID))
 	}
-	if _, ok := emitter.last(restored.players[0].ID, protocol.S2COpponentDisconnected); !ok {
+	opponentAwayEnvelope, ok := emitter.last(restored.players[0].ID, protocol.S2COpponentDisconnected)
+	if !ok {
 		t.Fatal("first returning player was not told that the opponent is disconnected")
+	}
+	opponentAway := opponentAwayEnvelope.Data.(protocol.OpponentDisconnectedData)
+	if opponentAway.TurnRemainingMs <= 0 {
+		t.Fatalf("paused turn duration was not sent to the returning player: %+v", opponentAway)
 	}
 	if len(restored.disconnected) != 1 || restored.timer != nil {
 		t.Fatal("turn timer resumed before both players reconnected")

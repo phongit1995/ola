@@ -303,5 +303,6 @@ type RoomKickedData struct {
 }
 
 type OpponentDisconnectedData struct {
-	GraceDeadline int64 `json:"graceDeadline"`
+	GraceDeadline   int64 `json:"graceDeadline"`
+	TurnRemainingMs int64 `json:"turnRemainingMs,omitempty"`
 }

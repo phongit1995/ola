@@ -23,7 +23,6 @@ import {
   applyGravity,
   areAdjacent,
   createBoard,
-  emptyCounts,
   findMatches,
   findValidMoves,
   swapCells,
@@ -34,6 +33,7 @@ import {
   LEVEL_LABELS,
   ULT_COST,
   ULT_DMG,
+  applyAuthoritativeEffects,
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
@@ -52,7 +52,8 @@ import {
 } from '../../logic/server-types';
 import { errorText } from '../../logic/error-text';
 import { pvp } from '../../pvp';
-import { A, tex } from '../../assets';
+import { playSound } from '../../audio';
+import { A, loadUltTexture, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick, sleep, tween } from '../../kit';
 import { buildHud, hud, showConfirm, showOverlay, updateFighter } from './hud';
 import {
@@ -126,6 +127,7 @@ let pvpIdx = 0;
 let myUserId = '';
 let oppAwayUntil = 0;
 let pausedTurnRemain = 0;
+let selfDisconnected = false;
 let flowEpoch = 0;
 let pvpChain: Promise<unknown> = Promise.resolve();
 const handledMatchOvers = new Set<string>();
@@ -201,6 +203,7 @@ function rebuildBoardVisuals(): void {
 
 function endBusy(): void {
   busy = false;
+  updateHud();
   if (pendingRefit) deps.onRequestLayout();
 }
 
@@ -458,6 +461,10 @@ function renderTurnClock(): void {
   const mm = String(Math.floor(total / 60)).padStart(2, '0');
   const ss = String(total % 60).padStart(2, '0');
   hud.timer.text = `${mm}:${ss}`;
+  if (mode === 'pvp' && !over && selfDisconnected) {
+    setStatus('Mất kết nối, đang kết nối lại...');
+    return;
+  }
   if (mode === 'pvp' && !over && oppAwayUntil > 0) {
     const secs = Math.max(0, Math.ceil((oppAwayUntil - performance.now()) / 1000));
     setStatus(`Đối thủ mất kết nối, chờ ${secs}s...`);
@@ -488,8 +495,9 @@ function updateHud(): void {
   hud.me.ultBtn.alpha = canUlt || !meActive ? 1 : 0.85;
 
   hud.turnCount.text = String(turnNumber);
-  hud.restart.setEnabled(mode === 'bot');
-  hud.forfeit.setEnabled(!over && (mode === 'pvp' || (myTurn && !busy)));
+  hud.restart.setEnabled(mode === 'bot' && !busy);
+  hud.forfeit.setEnabled(!over && !busy && (mode === 'pvp' || myTurn));
+  hud.exit.setEnabled(!busy);
 }
 
 function buildFxFrames(sheet: Texture): Texture[] {
@@ -509,11 +517,25 @@ function buildFxFrames(sheet: Texture): Texture[] {
   return frames;
 }
 
+function preloadUltFx(): void {
+  if (fxFrames.length > 0) return;
+  void loadUltTexture()
+    .then((sheet) => {
+      if (fxFrames.length === 0) fxFrames = buildFxFrames(sheet);
+    })
+    .catch(() => {});
+}
+
 async function playUltFx(side: 'me' | 'foe'): Promise<void> {
   if (fxFrames.length === 0) {
-    await sleep(600);
-    return;
+    try {
+      fxFrames = buildFxFrames(await loadUltTexture());
+    } catch {
+      await sleep(350);
+      return;
+    }
   }
+  playSound('ultimate');
   const fx = new AnimatedSprite(fxFrames);
   fx.loop = false;
   fx.animationSpeed = 0.5;
@@ -657,6 +679,7 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
     if (match.maxRun >= 4) extraTurn = true;
 
     const result = applyTileEffects(attacker, defender, match.counts);
+    playSound('match');
     const parts: string[] = [];
     if (result.damage > 0) parts.push(`-${result.damage} HP`);
     if (result.heal > 0) parts.push(`+${result.heal} HP`);
@@ -694,6 +717,7 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   if (mode === 'bot') recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
   showOverlay(won ? 'CHIẾN THẮNG!' : 'THẤT BẠI', won ? 0xffd75e : 0xff7a6e, sub, 'Chơi lại');
   setChatInputVisible(false);
+  playSound(won ? 'win' : 'lose');
   bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason, won });
 }
 
@@ -729,6 +753,7 @@ async function onTileTap(i: number): Promise<void> {
   setSelected(null);
   busy = true;
   clearHint();
+  updateHud();
 
   swapCells(board, a, b);
   const valid = findMatches(board) != null;
@@ -768,6 +793,7 @@ async function castMyUltimate(): Promise<void> {
   busy = true;
   setSelected(null);
   clearHint();
+  updateHud();
   if (mode === 'pvp') {
     setStatus('Đang gửi tuyệt chiêu...');
     pvp.sendUlt();
@@ -842,12 +868,14 @@ async function startBotTurn(): Promise<void> {
 
 export function startBattle(level: BotLevel = botLevel): void {
   deps.onGameStart();
+  preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
   mode = 'bot';
   pvpMatchId = '';
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
+  selfDisconnected = false;
   botLevel = level;
   inGame = true;
   me = createFighter();
@@ -888,6 +916,7 @@ function syncFighters(state: ServerState): void {
 
 export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void> | void {
   deps.onGameStart();
+  preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
   mode = 'pvp';
@@ -898,6 +927,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   pvpIdx = data.you;
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
+  selfDisconnected = false;
   clearHint();
   const state = data.state;
   syncFighters(state);
@@ -957,7 +987,8 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     const attacker = side === 'me' ? me : foe;
     const defender = side === 'me' ? foe : me;
     const cells = new Set(step.cells);
-    const result = applyTileEffects(attacker, defender, { ...emptyCounts(), ...step.counts });
+    const result = applyAuthoritativeEffects(attacker, defender, step.effects);
+    playSound('match');
     const parts: string[] = [];
     if (result.damage > 0) parts.push(`-${result.damage} HP`);
     if (result.heal > 0) parts.push(`+${result.heal} HP`);
@@ -1012,6 +1043,8 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
 async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise<void> {
   if (mode !== 'pvp' || !inGame || over || data.matchId !== pvpMatchId) return;
   busy = true;
+  selfDisconnected = false;
+  updateHud();
   const ep = flowEpoch;
   clearHint();
   setSelected(null);
@@ -1071,11 +1104,13 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   if (handledMatchOvers.has(data.matchId)) return;
   handledMatchOvers.add(data.matchId);
   over = true;
+  busy = true;
   const ep = flowEpoch;
-  endBusy();
+  updateHud();
   clearHint();
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
+  selfDisconnected = false;
   const draw = data.winnerId == null || data.winnerId === '';
   const won = !draw && data.winnerId === myUserId;
   if (data.reason === 'win' && !draw && inGame && data.state.steps?.length) {
@@ -1118,6 +1153,8 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   );
   setStatus(draw ? 'Ván đấu hòa!' : won ? 'Bạn thắng!' : 'Bạn thua!');
   setChatInputVisible(false);
+  playSound(draw ? 'click' : won ? 'win' : 'lose');
+  endBusy();
   bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
 }
 
@@ -1141,7 +1178,12 @@ function bindPvpHandlers(): void {
     onOpponentDisconnected: (data) => {
       if (mode !== 'pvp' || !inGame || over) return;
       oppAwayUntil = performance.now() + (data.graceDeadline - Date.now());
-      if (!myTurn) pausedTurnRemain = Math.max(0, turnDeadline - performance.now());
+      if (data.turnRemainingMs != null && data.turnRemainingMs > 0) {
+        pausedTurnRemain = data.turnRemainingMs;
+      } else if (!myTurn) {
+        // Compatibility with servers that predate turnRemainingMs.
+        pausedTurnRemain = Math.max(0, turnDeadline - performance.now());
+      }
       bridge.attention({
         reason: ARCADE_ATTENTION_REASON.OpponentDisconnected,
         matchId: pvpMatchId,
@@ -1166,7 +1208,12 @@ function bindPvpHandlers(): void {
       deps.onPvpError(text);
     },
     onConnectionChange: (connected) => {
-      if (mode !== 'pvp' || !inGame || over || connected) return;
+      if (mode !== 'pvp' || !inGame || over) return;
+      selfDisconnected = !connected;
+      if (connected) return;
+      if (myTurn && pausedTurnRemain === 0) {
+        pausedTurnRemain = Math.max(1000, turnDeadline - performance.now());
+      }
       setStatus('Mất kết nối, đang kết nối lại...');
     },
   });
@@ -1179,6 +1226,7 @@ function exitToLobby(): void {
   busy = false;
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
+  selfDisconnected = false;
   clearHint();
   setSelected(null);
   botSelectorA.visible = false;
@@ -1218,7 +1266,6 @@ export function battleDebug(): Record<string, unknown> {
 
 export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void {
   deps = battleDeps;
-  fxFrames = buildFxFrames(tex[A.fx.ult]);
   tileSize = computeTileSize();
 
   boardBox = new Container();
@@ -1269,28 +1316,35 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
     },
     onRestart: () => {
       if (mode === 'pvp') return;
+      if (busy) return;
       if (over) {
         startBattle();
         return;
       }
-      showConfirm('Chơi lại từ đầu?', () => startBattle());
+      showConfirm('Chơi lại từ đầu?', () => {
+        if (!busy) startBattle();
+      });
     },
     onForfeit: () => {
       if (over) return;
       if (mode === 'pvp') {
-        showConfirm('Bỏ cuộc trận này?', () => pvp.forfeit());
+        showConfirm('Bỏ cuộc trận này?', () => {
+          if (!busy && !over) pvp.forfeit();
+        });
         return;
       }
       if (!myTurn || busy) return;
       showConfirm('Bỏ cuộc trận này?', () => finish(false, 'forfeit', 'Bạn đã bỏ cuộc'));
     },
     onExit: () => {
+      if (busy) return;
       if (over || !inGame) {
         exitToLobby();
         return;
       }
       if (mode === 'pvp') {
         showConfirm('Thoát trận về sảnh?', () => {
+          if (busy) return;
           pvp.leaveMatch();
           pvpMatchId = '';
           exitToLobby();

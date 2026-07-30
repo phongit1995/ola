@@ -19,7 +19,13 @@ export interface StepMatch {
   cells: number[];
   counts: Partial<Record<TileType, number>>;
   maxRun: number;
-  effects: { damage: number; heal: number; mana: number; armor: number };
+  effects: {
+    damage: number;
+    heal: number;
+    mana: number;
+    armor: number;
+    armorDamage?: number;
+  };
 }
 
 export interface StepGravity {

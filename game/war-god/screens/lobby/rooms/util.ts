@@ -2,13 +2,15 @@ const DESIGN_W = 520;
 
 export function makeOverlayInput(opts: {
   numeric?: boolean;
+  secure?: boolean;
   maxLength: number;
   placeholder: string;
 }): HTMLInputElement {
   const input = document.createElement('input');
-  input.type = 'text';
+  input.type = opts.secure ? 'password' : 'text';
   input.maxLength = opts.maxLength;
   input.placeholder = opts.placeholder;
+  input.autocomplete = 'off';
   if (opts.numeric) {
     input.inputMode = 'numeric';
     input.addEventListener('input', () => {

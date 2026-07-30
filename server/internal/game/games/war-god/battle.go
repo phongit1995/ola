@@ -21,10 +21,11 @@ type Fighter struct {
 }
 
 type Effects struct {
-	Damage int `json:"damage"`
-	Heal   int `json:"heal"`
-	Mana   int `json:"mana"`
-	Armor  int `json:"armor"`
+	Damage      int `json:"damage"`
+	Heal        int `json:"heal"`
+	Mana        int `json:"mana"`
+	Armor       int `json:"armor"`
+	ArmorDamage int `json:"armorDamage"`
 }
 
 func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
@@ -37,6 +38,7 @@ func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 			absorbed = defender.Armor
 		}
 		defender.Armor -= absorbed
+		effects.ArmorDamage += absorbed
 		dealt := physical - absorbed
 		defender.HP -= dealt
 		if defender.HP < 0 {

@@ -168,7 +168,7 @@ func TestApplyTileEffects(t *testing.T) {
 			counts:       map[int]int{tileSword: 3},
 			wantAttacker: Fighter{HP: 100},
 			wantDefender: Fighter{HP: 95},
-			wantEffects:  Effects{Damage: 5},
+			wantEffects:  Effects{Damage: 5, ArmorDamage: 10},
 		},
 		{
 			name:         "armor absorbs all physical",
@@ -177,7 +177,7 @@ func TestApplyTileEffects(t *testing.T) {
 			counts:       map[int]int{tileStone: 3},
 			wantAttacker: Fighter{HP: 100},
 			wantDefender: Fighter{HP: 100, Armor: 11},
-			wantEffects:  Effects{},
+			wantEffects:  Effects{ArmorDamage: 9},
 		},
 		{
 			name:         "fire pierces armor",
@@ -270,7 +270,7 @@ func TestApplySwapSingleWave(t *testing.T) {
 	if !reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58}) ||
 		!reflect.DeepEqual(matchStep.Counts, map[string]int{"sword": 3}) ||
 		matchStep.MaxRun != 3 ||
-		*matchStep.Effects != (Effects{Damage: 10}) {
+		*matchStep.Effects != (Effects{Damage: 10, ArmorDamage: 5}) {
 		t.Fatalf("unexpected match step: %+v", matchStep)
 	}
 	gravityStep := next.Steps[2]

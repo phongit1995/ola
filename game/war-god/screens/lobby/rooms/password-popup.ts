@@ -101,7 +101,7 @@ export function buildPasswordPopup(callbacks: PasswordCallbacks): Container {
   ok.y = CARD_H / 2 - 52;
   card.addChild(ok);
 
-  input = makeOverlayInput({ maxLength: 64, placeholder: 'Mật khẩu bàn' });
+  input = makeOverlayInput({ secure: true, maxLength: 64, placeholder: 'Mật khẩu bàn' });
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submit();
   });

@@ -41,6 +41,12 @@ let chatH = 150;
 let contentH = 0;
 let scrollBack = 0;
 let pvpChat = false;
+const botReplyTimers = new Set<number>();
+
+function clearBotReplyTimers(): void {
+  for (const timer of botReplyTimers) window.clearTimeout(timer);
+  botReplyTimers.clear();
+}
 
 function viewH(): number {
   return chatH - 62;
@@ -90,14 +96,16 @@ function sendChat(): void {
     return;
   }
   pushChat('@bạn', true, value.slice(0, 120));
-  setTimeout(
+  const timer = window.setTimeout(
     () => {
+      botReplyTimers.delete(timer);
       if (!deps.isOver() && Math.random() < 0.75) {
         pushChat('@máy', false, BOT_LINES[Math.floor(Math.random() * BOT_LINES.length)]);
       }
     },
     900 + Math.random() * 1200,
   );
+  botReplyTimers.add(timer);
 }
 
 export function buildChat(chatDeps: ChatDeps): Container {
@@ -221,6 +229,7 @@ export function layoutChat(x: number, y: number, h: number, rootX: number, scale
 }
 
 export function resetChat(greeting?: string): void {
+  clearBotReplyTimers();
   chatLog.length = 0;
   input.value = '';
   if (greeting) {
@@ -232,6 +241,7 @@ export function resetChat(greeting?: string): void {
 
 export function setChatPvp(on: boolean): void {
   pvpChat = on;
+  if (on) clearBotReplyTimers();
 }
 
 export function pushPvpChat(name: string, mine: boolean, text: string): void {
@@ -239,5 +249,6 @@ export function pushPvpChat(name: string, mine: boolean, text: string): void {
 }
 
 export function setChatInputVisible(visible: boolean): void {
+  if (!visible) input.blur();
   input.style.display = visible ? 'block' : 'none';
 }

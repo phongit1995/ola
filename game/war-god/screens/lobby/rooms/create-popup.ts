@@ -155,7 +155,11 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
   card.addChild(ok);
 
   betInput = makeOverlayInput({ numeric: true, maxLength: 9, placeholder: '0' });
-  passInput = makeOverlayInput({ maxLength: 64, placeholder: 'Để trống nếu không khóa' });
+  passInput = makeOverlayInput({
+    secure: true,
+    maxLength: 64,
+    placeholder: 'Để trống nếu không khóa',
+  });
   const onEnter = (e: KeyboardEvent): void => {
     if (e.key === 'Enter') submit();
   };

@@ -375,7 +375,7 @@ func (e *Engine) reconnectActiveMatch(gameID, userID string) bool {
 			if m.disconnected[oppIdx] {
 				e.toUser(m.GameID, userID, protocol.OutEnvelope{
 					Type: protocol.S2COpponentDisconnected,
-					Data: protocol.OpponentDisconnectedData{GraceDeadline: m.graceDeadline.UnixMilli()},
+					Data: opponentDisconnectedData(m),
 				})
 			}
 			m.mu.Unlock()
@@ -1124,13 +1124,24 @@ func (e *Engine) disconnectActiveMatch(gameID, userID string) bool {
 	if !m.disconnected[oppIdx] {
 		e.toUser(m.GameID, m.players[oppIdx].ID, protocol.OutEnvelope{
 			Type: protocol.S2COpponentDisconnected,
-			Data: protocol.OpponentDisconnectedData{GraceDeadline: m.graceDeadline.UnixMilli()},
+			Data: opponentDisconnectedData(m),
 		})
 	}
 	if err := e.persistMatch(m); err != nil {
 		e.logger.Errorw("Failed to persist disconnected match", "match_id", m.ID, "error", err)
 	}
 	return true
+}
+
+func opponentDisconnectedData(m *Match) protocol.OpponentDisconnectedData {
+	turnRemainingMs := int64(0)
+	if m.pausedRemain > 0 {
+		turnRemainingMs = m.pausedRemain.Milliseconds()
+	}
+	return protocol.OpponentDisconnectedData{
+		GraceDeadline:   m.graceDeadline.UnixMilli(),
+		TurnRemainingMs: turnRemainingMs,
+	}
 }
 
 func (e *Engine) cancelGrace(m *Match) {
