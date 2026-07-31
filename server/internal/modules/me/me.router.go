@@ -18,6 +18,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	me := api.Group("/me", r.authMiddleware.RequireAuth())
 	{
 		me.POST("/images", r.controller.UploadImages)
+		me.POST("/images/cleanup", r.controller.CleanupImages)
 		me.POST("", r.controller.Create)
 		me.GET("", r.controller.Feed)
 		me.GET("/mine", r.controller.ListMine)

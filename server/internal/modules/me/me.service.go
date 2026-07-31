@@ -85,7 +85,7 @@ func NewService(p ServiceParams) *Service {
 
 var (
 	errMaxImages            = errors.New("max 5 images")
-	errEmptyPost            = errors.New("post must have content or images")
+	errEmptyPost            = errors.New("post must have content or attachments")
 	errPostNotFound         = errors.New("post not found")
 	errNotYourPost          = errors.New("not your post")
 	errEditExpired          = errors.New("post is too old to edit")
@@ -93,9 +93,18 @@ var (
 	errMeCommentFriendsOnly = errors.New("only friends can comment on this post")
 	errClanUnavailable      = errors.New("clan posting is unavailable")
 	errCannotPinClanPost    = errors.New("cannot pin a clan post")
+	errInvalidImageCleanup  = errors.New("invalid post image cleanup request")
+	errInvalidPostUpload    = errors.New("invalid or expired post image upload")
 )
 
 const editWindow = time.Hour
+
+func hasPostBody(content string, imageCount int, sticker string, hasCheckIn bool) bool {
+	return strings.TrimSpace(content) != "" ||
+		imageCount > 0 ||
+		strings.TrimSpace(sticker) != "" ||
+		hasCheckIn
+}
 
 func (s *Service) Create(userID uuid.UUID, req *CreateMeRequest) (*MeResponse, error) {
 	return s.createPost(userID, nil, req)
@@ -118,8 +127,13 @@ func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeR
 		return nil, errMaxImages
 	}
 	content := strings.TrimSpace(req.Content)
-	if content == "" && len(req.Images) == 0 {
+	checkIn := toModelCheckIn(req.CheckIn)
+	if !hasPostBody(content, len(req.Images), req.Sticker, checkIn != nil) {
 		return nil, errEmptyPost
+	}
+	pendingUploads, err := s.pendingPostUploads(userID, req.Images, nil)
+	if err != nil {
+		return nil, err
 	}
 
 	visibility := parseVisibility(req.Visibility)
@@ -130,12 +144,18 @@ func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeR
 		Content:    content,
 		Images:     toModelImages(req.Images),
 		Mentions:   s.resolveMentions(content),
-		CheckIn:    toModelCheckIn(req.CheckIn),
+		CheckIn:    checkIn,
 		Sticker:    strings.TrimSpace(req.Sticker),
 		Visibility: visibility,
 		Enabled:    true,
 	}
+	claimedUploads, err := s.claimPostUploads(pendingUploads)
+	if err != nil {
+		s.deletePostUploadRecordsAsync(claimedUploads)
+		return nil, err
+	}
 	if err := s.repo.Create(post); err != nil {
+		s.deletePostUploadRecordsAsync(claimedUploads)
 		return nil, err
 	}
 
@@ -159,7 +179,7 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 	}
 
 	oldMentions := post.Mentions
-
+	existingImages := post.Images
 	if req.Content != nil {
 		post.Content = strings.TrimSpace(*req.Content)
 		post.Mentions = s.resolveMentions(post.Content)
@@ -193,11 +213,24 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 		}
 		post.Visibility = newVisibility
 	}
-	if strings.TrimSpace(post.Content) == "" && len(post.Images) == 0 {
+	if !hasPostBody(post.Content, len(post.Images), post.Sticker, post.CheckIn != nil) {
 		return nil, errEmptyPost
 	}
+	var pendingUploads []postUploadRecord
+	if req.Images != nil {
+		pendingUploads, err = s.pendingPostUploads(userID, *req.Images, existingImages)
+		if err != nil {
+			return nil, err
+		}
+	}
 
+	claimedUploads, err := s.claimPostUploads(pendingUploads)
+	if err != nil {
+		s.deletePostUploadRecordsAsync(claimedUploads)
+		return nil, err
+	}
 	if err := s.repo.UpdateEditable(post); err != nil {
+		s.deletePostUploadRecordsAsync(claimedUploads)
 		return nil, err
 	}
 
@@ -846,14 +879,19 @@ func (s *Service) UploadImages(ctx context.Context, userID uuid.UUID, files []*m
 		return nil, errors.New("max 5 images")
 	}
 
-	folder := fmt.Sprintf("%s/%s", constants.UploadFolderPosts, time.Now().Format(constants.UploadDateLayout))
+	folder := postUploadPrefix(userID) + time.Now().Format(constants.UploadDateLayout)
 	images := make([]UploadedImage, 0, len(files))
 	for _, fileHeader := range files {
 		img, err := s.uploadImage(ctx, folder, fileHeader)
 		if err != nil {
+			s.deletePostObjectsAsync(uploadedObjectNames(images))
 			return nil, err
 		}
 		images = append(images, *img)
+	}
+	if err := s.rememberPostUploads(userID, images); err != nil {
+		s.deletePostObjectsAsync(uploadedObjectNames(images))
+		return nil, err
 	}
 	return &UploadImagesResponse{Images: images}, nil
 }
@@ -897,7 +935,13 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 		return nil, errors.New("failed to upload image")
 	}
 
-	return &UploadedImage{URL: upload.URL, Width: cfg.Width, Height: cfg.Height, MimeType: mimeType}, nil
+	return &UploadedImage{
+		URL:        upload.URL,
+		ObjectName: upload.PublicID,
+		Width:      cfg.Width,
+		Height:     cfg.Height,
+		MimeType:   mimeType,
+	}, nil
 }
 
 func (s *Service) buildList(viewerID uuid.UUID, posts []*models.Me, total int64, limit, offset int) (*MeListResponse, error) {

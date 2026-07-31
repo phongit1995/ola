@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
 import { CLAN_FEED_PAGE_SIZE } from '../constants/feed';
+import { clanErrorText } from '../lib/clanHelpers';
 import { toast } from '../lib/toast';
 import { ClanService } from '../services/clan.service';
 import { MeService } from '../services/me.service';
-import type { Post } from '../types/api/me.type';
+import type { Post, UploadedImage } from '../types/api/me.type';
 import type { ClanFeedState } from '../types/client/clan.type';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
 import { registerOnLogout } from './authStore';
@@ -137,8 +138,9 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
     }
   },
   createPost: async (clanId, payload, files, imageUrls) => {
+    let uploaded: UploadedImage[] = [];
     try {
-      const uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
       const urlImages = imageUrls.map((url) => ({ url }));
       const images = [...uploaded, ...urlImages];
       const created = await ClanService.createPost(clanId, { ...payload, images });
@@ -147,7 +149,9 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
       return created;
     } catch (error) {
       console.error('create clan post failed', error);
-      throw error;
+      await MeService.cleanupRejectedImages(error, uploaded);
+      toast.error(clanErrorText(error));
+      return null;
     }
   },
   removePost: (id) => {

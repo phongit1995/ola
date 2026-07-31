@@ -7761,6 +7761,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/me/images/cleanup": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Clean up newly uploaded post images",
+                "parameters": [
+                    {
+                        "description": "Uploaded object names",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_me.CleanupImagesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_string"
+                        }
+                    }
+                }
+            }
+        },
         "/me/liked": {
             "get": {
                 "security": [
@@ -17132,6 +17170,22 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_me.CleanupImagesRequest": {
+            "type": "object",
+            "required": [
+                "objectNames"
+            ],
+            "properties": {
+                "objectNames": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "internal_modules_me.CommentListResponse": {
             "type": "object",
             "properties": {
@@ -17301,6 +17355,10 @@ const docTemplate = `{
                 },
                 "mimeType": {
                     "type": "string"
+                },
+                "objectName": {
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "url": {
                     "type": "string",
@@ -17574,6 +17632,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "mimeType": {
+                    "type": "string"
+                },
+                "objectName": {
                     "type": "string"
                 },
                 "url": {
@@ -20753,6 +20814,12 @@ const docTemplate = `{
                 "format": "int64"
             }
         },
+        "map_string_string": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
         "ola-chat-server_internal_models.AppSetting": {
             "type": "object",
             "properties": {
@@ -21781,6 +21848,10 @@ const docTemplate = `{
                 },
                 "mimeType": {
                     "type": "string"
+                },
+                "objectName": {
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "url": {
                     "type": "string",
@@ -24616,6 +24687,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/map_string_int64"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-map_string_string": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/map_string_string"
                 },
                 "error": {
                     "type": "string"

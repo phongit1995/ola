@@ -17,6 +17,7 @@ export interface PostCheckIn {
 
 export interface PostImage {
   url: string;
+  objectName?: string;
   width?: number;
   height?: number;
   mimeType?: string;
@@ -116,6 +117,7 @@ export interface PostLikerListResult {
 
 export interface UploadedImage {
   url: string;
+  objectName: string;
   width: number;
   height: number;
   mimeType: string;

@@ -3485,6 +3485,17 @@ definitions:
       name:
         type: string
     type: object
+  internal_modules_me.CleanupImagesRequest:
+    properties:
+      objectNames:
+        items:
+          type: string
+        maxItems: 5
+        minItems: 1
+        type: array
+    required:
+    - objectNames
+    type: object
   internal_modules_me.CommentListResponse:
     properties:
       items:
@@ -3597,6 +3608,9 @@ definitions:
         minimum: 0
         type: integer
       mimeType:
+        type: string
+      objectName:
+        maxLength: 500
         type: string
       url:
         example: http://localhost:9000/chat-uploads/posts/abc.jpg
@@ -3781,6 +3795,8 @@ definitions:
       height:
         type: integer
       mimeType:
+        type: string
+      objectName:
         type: string
       url:
         type: string
@@ -5972,6 +5988,10 @@ definitions:
       format: int64
       type: integer
     type: object
+  map_string_string:
+    additionalProperties:
+      type: string
+    type: object
   ola-chat-server_internal_models.AppSetting:
     properties:
       key:
@@ -6658,6 +6678,9 @@ definitions:
         minimum: 0
         type: integer
       mimeType:
+        type: string
+      objectName:
+        maxLength: 500
         type: string
       url:
         example: http://localhost:9000/chat-uploads/posts/abc.jpg
@@ -8559,6 +8582,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/map_string_int64'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-map_string_string:
+    properties:
+      data:
+        $ref: '#/definitions/map_string_string'
       error:
         type: string
       path:
@@ -13835,6 +13875,29 @@ paths:
       security:
       - BearerAuth: []
       summary: Upload post images (max 5)
+      tags:
+      - me
+  /me/images/cleanup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Uploaded object names
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_me.CleanupImagesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_string'
+      security:
+      - BearerAuth: []
+      summary: Clean up newly uploaded post images
       tags:
       - me
   /me/liked:

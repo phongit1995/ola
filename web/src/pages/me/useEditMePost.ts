@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@lib';
 import { MeService } from '@services';
-import type { Post } from '@app-types';
+import type { Post, UploadedImage } from '@app-types';
 import { composedToImages, composedToUpdatePayload } from './composer';
 import { useMeFeedStore } from './meFeedStore';
 import type { ComposedPost } from './components/MeComposerDialog';
@@ -16,12 +16,18 @@ export function useEditMePost(
   const { t } = useTranslation();
   return useCallback(
     async (id, draft) => {
+      let uploaded: UploadedImage[] = [];
       try {
         const existing = posts.find((item) => item.id === id)?.images ?? [];
-        const images = await composedToImages(draft, 'existingFirst', existing);
+        const prepared = await composedToImages(
+          draft,
+          'existingFirst',
+          existing
+        );
+        uploaded = prepared.uploaded;
         const updated = await MeService.update(id, {
           ...composedToUpdatePayload(draft),
-          images,
+          images: prepared.images,
         });
         setPosts((current) =>
           current.map((item) => (item.id === id ? updated : item))
@@ -29,7 +35,8 @@ export function useEditMePost(
         useMeFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;
-      } catch {
+      } catch (error) {
+        await MeService.cleanupRejectedImages(error, uploaded);
         toast.error(t('me.editError'));
         return false;
       }
