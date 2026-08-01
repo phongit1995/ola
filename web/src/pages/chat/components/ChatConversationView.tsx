@@ -52,6 +52,7 @@ import {
   VoiceRecorderControl,
   type VoiceRecorderControlHandle,
 } from '@components/chat/voice/VoiceRecorderControl';
+import { ChatCallButtons } from '@/pages/call/ChatCallButtons';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -547,6 +548,7 @@ export function ChatConversationView({
         left={<Avatar name={name} color={color} src={avatar} size={32} />}
         onTitlePress={canViewProfile ? openPeerProfile : undefined}
       >
+        <ChatCallButtons disabled={blocked} />
         <button
           type="button"
           aria-label={t('common.menu')}

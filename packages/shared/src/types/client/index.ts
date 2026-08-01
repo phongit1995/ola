@@ -1,5 +1,6 @@
 export type * from './arcade.type';
 export type * from './auth.type';
+export type * from './call.type';
 export type * from './chat.type';
 export type * from './checkIn.type';
 export type * from './clan.type';

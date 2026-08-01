@@ -2,6 +2,7 @@ export type * from './common.type';
 export type * from './auth.type';
 export type * from './room.type';
 export type * from './chat.type';
+export type * from './call.type';
 export type * from './me.type';
 export type * from './clan.type';
 export type * from './user.type';
