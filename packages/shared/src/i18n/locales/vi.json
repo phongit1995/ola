@@ -735,6 +735,8 @@
     "notFound": "Không tìm thấy người dùng",
     "requestSent": "Đã gửi lời mời",
     "acceptFriend": "Đồng ý",
+    "unfriend": "Huỷ kết bạn",
+    "unfriendConfirm": "Bạn có chắc muốn huỷ kết bạn với {{name}}?",
     "actionError": "Thao tác thất bại, thử lại sau",
     "joinedOla": "Tham gia Ola",
     "viewNote": "Xem bài viết",

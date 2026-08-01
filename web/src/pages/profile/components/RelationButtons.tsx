@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ListOptionDialog, ReportDialog, type ListOption } from '@components';
+import {
+  ConfirmDialog,
+  ListOptionDialog,
+  ReportDialog,
+  type ListOption,
+} from '@components';
 import { profileFriendLabel, toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import type { ProfileActions } from '../types';
@@ -63,6 +68,7 @@ export function RelationButtons({
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [unfriendOpen, setUnfriendOpen] = useState(false);
 
   const { status } = relationship;
   const isFriend = status === 'friend';
@@ -75,6 +81,19 @@ export function RelationButtons({
   const friendActive = isFriend || status === 'pending_outgoing';
   const friendIcon = isFriend ? friendsActiveIcon : addFriendIcon;
   const followIconSrc = following ? followingActiveIcon : followIcon;
+
+  function handleFriendAction() {
+    if (isFriend) {
+      setUnfriendOpen(true);
+      return;
+    }
+    actions.friendAction();
+  }
+
+  function confirmUnfriend() {
+    setUnfriendOpen(false);
+    if (isFriend) actions.friendAction();
+  }
 
   const otherMenu: ListOption[] = [
     {
@@ -134,7 +153,7 @@ export function RelationButtons({
               icon={friendIcon}
               label={friendLabel}
               active={friendActive}
-              onClick={actions.friendAction}
+              onClick={handleFriendAction}
             />
             <RelationButton
               icon={followIconSrc}
@@ -169,6 +188,17 @@ export function RelationButtons({
           onClose={() => setReportOpen(false)}
         />
       )}
+
+      <ConfirmDialog
+        open={unfriendOpen}
+        danger
+        title={t('profile.unfriend')}
+        message={t('profile.unfriendConfirm', { name: nick })}
+        confirmLabel={t('profile.unfriend')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={confirmUnfriend}
+        onCancel={() => setUnfriendOpen(false)}
+      />
     </>
   );
 }

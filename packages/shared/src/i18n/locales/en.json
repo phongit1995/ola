@@ -735,6 +735,8 @@
     "notFound": "User not found",
     "requestSent": "Request sent",
     "acceptFriend": "Accept",
+    "unfriend": "Unfriend",
+    "unfriendConfirm": "Are you sure you want to unfriend {{name}}?",
     "actionError": "Action failed, please try again",
     "joinedOla": "Joined Ola",
     "viewNote": "View posts",

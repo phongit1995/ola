@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { profileFriendLabel } from '@ola/shared/lib';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { PublicProfile } from '@ola/shared/types';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 
 const addFriendIcon = require('@assets/icons/profile/ic_add_friend_black_disable.png');
 const friendsActiveIcon = require('@assets/icons/profile/ic_state_friends.png');
@@ -65,9 +67,23 @@ export function RelationButtons({
   onMore,
 }: RelationButtonsProps) {
   const { t } = useTranslation();
+  const [unfriendOpen, setUnfriendOpen] = useState(false);
   const friendStatus = profile.relationship?.status;
   const isFriend = friendStatus === RELATIONSHIP_STATUS.friend;
   const blockedByMe = friendStatus === RELATIONSHIP_STATUS.blockedByMe;
+
+  function handleFriendAction() {
+    if (isFriend) {
+      setUnfriendOpen(true);
+      return;
+    }
+    onFriendAction();
+  }
+
+  function confirmUnfriend() {
+    setUnfriendOpen(false);
+    if (isFriend) onFriendAction();
+  }
 
   if (blockedByMe && !isSelf) {
     return (
@@ -86,39 +102,54 @@ export function RelationButtons({
   }
 
   return (
-    <View className="flex-row px-2 py-2">
-      {isSelf ? (
+    <>
+      <View className="flex-row px-2 py-2">
+        {isSelf ? (
+          <RelationButton
+            icon={editIcon}
+            label={t('profile.updateInfo')}
+            onPress={onUpdateInfo}
+          />
+        ) : (
+          <>
+            <RelationButton
+              icon={isFriend ? friendsActiveIcon : addFriendIcon}
+              label={profileFriendLabel(t, friendStatus)}
+              active={isFriend || friendStatus === RELATIONSHIP_STATUS.pendingOutgoing}
+              onPress={handleFriendAction}
+            />
+            <RelationButton
+              icon={following ? followingActiveIcon : followIcon}
+              label={following ? t('profile.following') : t('profile.follow')}
+              active={following}
+              onPress={onToggleFollow}
+            />
+          </>
+        )}
         <RelationButton
-          icon={editIcon}
-          label={t('profile.updateInfo')}
-          onPress={onUpdateInfo}
+          icon={postMeIcon}
+          label={t('profile.postMe')}
+          onPress={onPostMe}
         />
-      ) : (
-        <>
-          <RelationButton
-            icon={isFriend ? friendsActiveIcon : addFriendIcon}
-            label={profileFriendLabel(t, friendStatus)}
-            active={isFriend || friendStatus === RELATIONSHIP_STATUS.pendingOutgoing}
-            onPress={onFriendAction}
-          />
-          <RelationButton
-            icon={following ? followingActiveIcon : followIcon}
-            label={following ? t('profile.following') : t('profile.follow')}
-            active={following}
-            onPress={onToggleFollow}
-          />
-        </>
-      )}
-      <RelationButton
-        icon={postMeIcon}
-        label={t('profile.postMe')}
-        onPress={onPostMe}
+        <RelationButton
+          icon={moreIcon}
+          label={t('profile.more')}
+          onPress={onMore}
+        />
+      </View>
+
+      <ConfirmDialog
+        visible={unfriendOpen}
+        danger
+        title={t('profile.unfriend')}
+        message={t('profile.unfriendConfirm', {
+          name: profile.fullName || profile.username,
+        })}
+        confirmLabel={t('profile.unfriend')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={confirmUnfriend}
+        onCancel={() => setUnfriendOpen(false)}
       />
-      <RelationButton
-        icon={moreIcon}
-        label={t('profile.more')}
-        onPress={onMore}
-      />
-    </View>
+    </>
   );
 }

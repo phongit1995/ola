@@ -65,7 +65,7 @@ export function useChatDetail(conversationId: string | null | undefined) {
   const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
   const dateFormatter = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
 
-  const peerId = peerProfile?.id ?? '';
+  const peerId = peerProfile?.id ?? conversation?.otherUser?.id ?? draftRecipient?.id ?? '';
   const livePresence = useFocusPresence(peerId !== '' ? peerId : null);
   const peerOnline =
     (livePresence?.isOnline ?? peerProfile?.isOnline ?? conversation?.otherUser?.isOnline) === true;

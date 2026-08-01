@@ -238,10 +238,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }
 
   const openPeerProfile = () => {
-    const peer = conversation?.otherUser;
-    const identifier = peer?.id ?? peer?.username;
-    if (identifier != null && identifier !== '') {
-      navigation.navigate(ROOT_ROUTES.ProfileView, { userId: identifier });
+    if (peerId !== '') {
+      navigation.navigate(ROOT_ROUTES.ProfileView, { userId: peerId });
     }
   };
 
