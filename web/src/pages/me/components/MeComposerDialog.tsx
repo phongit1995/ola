@@ -7,6 +7,7 @@ import {
   type SmileyInputHandle,
 } from '@components';
 import { useOutsideClick } from '@hooks';
+import { hasMePostBody, toast } from '@lib';
 import {
   ATTACH_BUTTONS,
   MAX_IMAGES,
@@ -76,6 +77,8 @@ export function MeComposerDialog({
   const attachAreaRef = useRef<HTMLDivElement>(null);
 
   useOutsideClick(attachAreaRef, panel != null, () => setPanel(null));
+  const canSubmit =
+    !submitting && hasMePostBody(content, photos.length, sticker, checkIn);
 
   function reset() {
     setContent('');
@@ -147,23 +150,28 @@ export function MeComposerDialog({
   }
 
   async function submit() {
-    if (submitting) return;
+    if (!canSubmit) return;
     const text = content.trim();
-    if (text === '' && photos.length === 0) return;
     setSubmitting(true);
-    const ok = await onPost({
-      content: text,
-      files: photos
-        .filter((photo) => photo.file != null)
-        .map((photo) => photo.file as File),
-      imageUrls: photos
-        .filter((photo) => photo.file == null)
-        .map((photo) => photo.url),
-      checkIn,
-      sticker,
-      visibility: privacy,
-    });
-    setSubmitting(false);
+    let ok = false;
+    try {
+      ok = await onPost({
+        content: text,
+        files: photos
+          .filter((photo) => photo.file != null)
+          .map((photo) => photo.file as File),
+        imageUrls: photos
+          .filter((photo) => photo.file == null)
+          .map((photo) => photo.url),
+        checkIn,
+        sticker,
+        visibility: privacy,
+      });
+    } catch {
+      toast.error(t('me.postError'));
+    } finally {
+      setSubmitting(false);
+    }
     if (ok) {
       revokePhotos(photos);
       reset();
@@ -178,7 +186,7 @@ export function MeComposerDialog({
       title={title ?? t('me.composerTitle')}
       footer={
         <>
-          <DialogButton variant="green" onClick={submit} disabled={submitting}>
+          <DialogButton variant="green" onClick={submit} disabled={!canSubmit}>
             {submitLabel ?? t('me.post')}
           </DialogButton>
           <DialogButton variant="default" onClick={handleClose}>

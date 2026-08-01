@@ -17,6 +17,7 @@ import {
 import type { NativeUploadFile } from '@ola/shared/types';
 import { recordAppError } from '@lib/telemetry';
 import { deleteTemporaryVoiceFile } from '@lib/temporaryVoiceFile';
+import { releaseVoicePlayback } from '@lib/voicePlaybackSession';
 
 const MAX_DURATION_MS = 60_000;
 const MIN_DURATION_MS = 1_000;
@@ -251,6 +252,10 @@ export function useVoiceRecorder(
           finishAutomatically(true);
         }
       });
+
+      // Ghi âm không được để voice playback tiếp tục sống. Release trước khi mở
+      // mic cũng là lớp bảo vệ phía app nếu audio route của iOS thay đổi.
+      releaseVoicePlayback();
 
       // Custom numeric AudioSet values can fail to bridge correctly in iOS
       // release builds. Let AVAudioRecorder use Nitro Sound's iOS defaults.

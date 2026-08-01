@@ -1,0 +1,248 @@
+diff --git a/node_modules/react-native-sound/ios/RNSound.mm b/node_modules/react-native-sound/ios/RNSound.mm
+--- a/node_modules/react-native-sound/ios/RNSound.mm
++++ b/node_modules/react-native-sound/ios/RNSound.mm
+@@ -10,6 +10,12 @@ @implementation RNSound {
+     NSMutableDictionary *_playerPool;
+     NSMutableDictionary *_callbackPool;
+     double _key;  // Add this line to declare _key
++    // `AVAudioPlayer.isPlaying` is already NO by the time an interruption is
++    // delivered, so playback state has to be tracked here to know what may be
++    // resumed afterwards.
++    NSMutableSet<NSNumber *> *_playingKeys;
++    NSMutableSet<NSNumber *> *_keysPausedByInterruption;
++    BOOL _observingAudioSession;
+ }
+ 
+ RCT_EXPORT_MODULE()
+@@ -23,26 +29,99 @@ @implementation RNSound {
+ 
+ #pragma mark - Audio Session Management
+ 
++- (void)pauseAllPlayingKeysForResume:(BOOL)resumable {
++    @synchronized(self) {
++        for (NSNumber *key in [[self playingKeys] copy]) {
++            AVAudioPlayer *player = [self playerForKey:key.doubleValue];
++            if (player) {
++                [player pause];
++            }
++            [self setOnPlay:NO forPlayerKey:key.doubleValue];
++            if (resumable) {
++                [[self keysPausedByInterruption] addObject:key];
++            }
++        }
++        if (!resumable) {
++            // A route loss must also cancel anything queued by a preceding
++            // interruption notification; otherwise its Ended event could
++            // restart playback after the output device has disappeared.
++            [[self keysPausedByInterruption] removeAllObjects];
++        }
++        [[self playingKeys] removeAllObjects];
++    }
++}
++
++- (void)resumeKeysPausedByInterruption {
++    @synchronized(self) {
++        // Draining the set first keeps this idempotent: the observer is
++        // registered once per `play`, so a single notification can invoke this
++        // handler several times.
++        NSSet<NSNumber *> *keys = [[self keysPausedByInterruption] copy];
++        [[self keysPausedByInterruption] removeAllObjects];
++
++        for (NSNumber *key in keys) {
++            AVAudioPlayer *player = [self playerForKey:key.doubleValue];
++            if (!player) {
++                continue;
++            }
++            [player play];
++            [[self playingKeys] addObject:key];
++            [self setOnPlay:YES forPlayerKey:key.doubleValue];
++        }
++    }
++}
++
+ - (void)audioSessionChangeObserver:(NSNotification *)notification {
++    // This observer is registered for both the interruption and the route change
++    // notification, so it has to branch on the notification name first. Reading
++    // `AVAudioSessionInterruptionTypeKey` out of a route change notification
++    // yields nil -> 0, and 0 is `AVAudioSessionInterruptionTypeEnded`, which used
++    // to restart playback on every route change (for example when another module
++    // activates the microphone and the session switches to `playAndRecord`).
+     NSDictionary *userInfo = notification.userInfo;
+-  
+-    
+-    AVAudioSessionRouteChangeReason routeChangeReason =
+-        (AVAudioSessionRouteChangeReason)[userInfo[@"AVAudioSessionRouteChangeReasonKey"] longValue];
+-    AVAudioSessionInterruptionType interruptionType =
+-        (AVAudioSessionInterruptionType)[userInfo[@"AVAudioSessionInterruptionTypeKey"] longValue];
+-    
+-    AVAudioPlayer *player = [self playerForKey:self._key];
+-    
+-    if (interruptionType == AVAudioSessionInterruptionTypeEnded && player) {
+-        [player play];
+-        [self setOnPlay:YES forPlayerKey:self._key];
+-    } else if (routeChangeReason == AVAudioSessionRouteChangeReasonOldDeviceUnavailable && player) {
+-        [player pause];
+-        [self setOnPlay:NO forPlayerKey:self._key];
+-    } else if (interruptionType == AVAudioSessionInterruptionTypeBegan && player) {
+-        [player pause];
+-        [self setOnPlay:NO forPlayerKey:self._key];
++
++    if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
++        AVAudioSessionInterruptionType interruptionType =
++            (AVAudioSessionInterruptionType)[userInfo[AVAudioSessionInterruptionTypeKey] unsignedIntegerValue];
++
++        if (interruptionType == AVAudioSessionInterruptionTypeBegan) {
++            [self pauseAllPlayingKeysForResume:YES];
++            return;
++        }
++
++        // Resume only what this module actually paused, and only when the system
++        // says the interruption is over and that resuming is allowed.
++        AVAudioSessionInterruptionOptions options =
++            (AVAudioSessionInterruptionOptions)[userInfo[AVAudioSessionInterruptionOptionKey] unsignedIntegerValue];
++
++        if (interruptionType == AVAudioSessionInterruptionTypeEnded &&
++            (options & AVAudioSessionInterruptionOptionShouldResume) != 0) {
++            [self resumeKeysPausedByInterruption];
++        } else {
++            @synchronized(self) {
++                [[self keysPausedByInterruption] removeAllObjects];
++            }
++        }
++
++        return;
++    }
++
++    if ([notification.name isEqualToString:AVAudioSessionRouteChangeNotification]) {
++        AVAudioSessionRouteChangeReason routeChangeReason =
++            (AVAudioSessionRouteChangeReason)[userInfo[AVAudioSessionRouteChangeReasonKey] unsignedIntegerValue];
++
++        // Losing the output device pauses for good; nothing is queued to resume.
++        if (routeChangeReason == AVAudioSessionRouteChangeReasonOldDeviceUnavailable) {
++            [self pauseAllPlayingKeysForResume:NO];
++        }
++    }
++}
++
++- (void)forgetPlaybackStateForKey:(double)key {
++    @synchronized(self) {
++        NSNumber *keyNumber = @(key);
++        [[self playingKeys] removeObject:keyNumber];
++        [[self keysPausedByInterruption] removeObject:keyNumber];
+     }
+ }
+ 
+@@ -62,6 +135,24 @@ - (NSMutableDictionary *)callbackPool {
+     return _callbackPool;
+ }
+ 
++- (NSMutableSet<NSNumber *> *)playingKeys {
++    if (!_playingKeys) {
++        _playingKeys = [NSMutableSet new];
++    }
++    return _playingKeys;
++}
++
++- (NSMutableSet<NSNumber *> *)keysPausedByInterruption {
++    if (!_keysPausedByInterruption) {
++        _keysPausedByInterruption = [NSMutableSet new];
++    }
++    return _keysPausedByInterruption;
++}
++
++- (void)dealloc {
++    [[NSNotificationCenter defaultCenter] removeObserver:self];
++}
++
+ - (AVAudioPlayer *)playerForKey:(double)key {
+     NSNumber *keyNumber = @(key);
+     return [[self playerPool] objectForKey:keyNumber];
+@@ -81,6 +172,9 @@ - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player
+         NSNumber *key = [self keyForPlayer:player];
+         if (key == nil)
+             return;
++        // Finished playing, so nothing here is eligible for an interruption resume.
++        [[self playingKeys] removeObject:key];
++        [[self keysPausedByInterruption] removeObject:key];
+-        [self setOnPlay:NO forPlayerKey:self._key];
++        [self setOnPlay:NO forPlayerKey:key.doubleValue];
+         RCTResponseSenderBlock callback = [self callbackForKey:key];
+         if (callback) {
+@@ -217,26 +311,36 @@ - (NSString *)categoryForName:(NSString *)categoryName {
+ 
+ RCT_EXPORT_METHOD(play:(double)key callback:(RCTResponseSenderBlock)callback) {
+     [[AVAudioSession sharedInstance] setActive:YES error:nil];
+-    
+-    [[NSNotificationCenter defaultCenter]
+-     addObserver:self
+-        selector:@selector(audioSessionChangeObserver:)
+-            name:AVAudioSessionRouteChangeNotification
+-          object:[AVAudioSession sharedInstance]];
+-    
+-    [[NSNotificationCenter defaultCenter]
+-     addObserver:self
+-        selector:@selector(audioSessionChangeObserver:)
+-            name:AVAudioSessionInterruptionNotification
+-          object:[AVAudioSession sharedInstance]];
+-    
++
++    // Registered once for the lifetime of the module. Re-adding on every `play`
++    // made a single notification invoke the handler once per previous `play`.
++    if (!_observingAudioSession) {
++        _observingAudioSession = YES;
++
++        [[NSNotificationCenter defaultCenter]
++         addObserver:self
++            selector:@selector(audioSessionChangeObserver:)
++                name:AVAudioSessionRouteChangeNotification
++              object:[AVAudioSession sharedInstance]];
++
++        [[NSNotificationCenter defaultCenter]
++         addObserver:self
++            selector:@selector(audioSessionChangeObserver:)
++                name:AVAudioSessionInterruptionNotification
++              object:[AVAudioSession sharedInstance]];
++    }
++
+     self._key = key;
+     AVAudioPlayer *player = [self playerForKey:key];
+-    
++
+     if (player) {
+         NSNumber *myNumber = @(key);
+         [[self callbackPool] setObject:[callback copy] forKey:myNumber];
+         [player play];
++        @synchronized(self) {
++            [[self playingKeys] addObject:myNumber];
++            [[self keysPausedByInterruption] removeObject:myNumber];
++        }
+         [self setOnPlay:YES forPlayerKey:key];
+     }
+ }
+@@ -245,6 +349,8 @@ - (NSString *)categoryForName:(NSString *)categoryName {
+     AVAudioPlayer *player = [self playerForKey:key];
+     if (player) {
+         [player pause];
++        // An explicit pause must not be undone by a later interruption resume.
++        [self forgetPlaybackStateForKey:key];
+         callback(@[]);
+     }
+ }
+@@ -254,6 +360,7 @@ - (NSString *)categoryForName:(NSString *)categoryName {
+     if (player) {
+         [player stop];
+         player.currentTime = 0;
++        [self forgetPlaybackStateForKey:key];
+         callback(@[]);
+     }
+ }
+@@ -266,7 +373,8 @@ - (NSString *)categoryForName:(NSString *)categoryName {
+             [player stop];
+             [[self callbackPool] removeObjectForKey:myNumber];
+             [[self playerPool] removeObjectForKey:myNumber];
+-            [[NSNotificationCenter defaultCenter] removeObserver:self];
++            [[self playingKeys] removeObject:myNumber];
++            [[self keysPausedByInterruption] removeObject:myNumber];
+         }
+     }
+ }

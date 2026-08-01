@@ -344,6 +344,9 @@ const (
 	CacheKeyMeNotifPushGuard   = "ME_NOTIF:PUSH_GUARD:%s:%s:%s"
 	MeNotifPushGuardTTLSeconds = 600
 
+	CacheKeyMePostUpload   = "ME:UPLOAD:V2:%s:%s"
+	MePostUploadTTLSeconds = 3600
+
 	ReactionActionAdded   = "added"
 	ReactionActionRemoved = "removed"
 )

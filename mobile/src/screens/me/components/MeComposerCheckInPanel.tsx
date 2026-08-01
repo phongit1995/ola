@@ -44,7 +44,14 @@ export function MeComposerCheckInPanel({ onSelect }: MeComposerCheckInPanelProps
               GeoService.reverse(latitude, longitude).catch(() => null),
             ]);
             setNearby(venues);
-            setCurrent(here ?? { name: '', address: '', lat: latitude, lng: longitude });
+            setCurrent(
+              here ?? {
+                name: t('me.checkInCurrent'),
+                address: '',
+                lat: latitude,
+                lng: longitude,
+              }
+            );
           } catch {
             setLocateError(true);
             pushToast('error', t('me.checkInError'));

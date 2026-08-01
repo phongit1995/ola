@@ -2,3 +2,7 @@
 
 *.sh text eol=lf
 deploy.sh text eol=lf
+
+# patch-package output: context lines are copied verbatim from upstream, so the
+# whitespace they carry must be preserved or the patch stops applying.
+*.patch -text -whitespace

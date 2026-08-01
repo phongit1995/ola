@@ -1,10 +1,11 @@
 package me
 
 type MeImageInput struct {
-	URL      string `json:"url" binding:"required,url" example:"http://localhost:9000/chat-uploads/posts/abc.jpg"`
-	Width    int    `json:"width" binding:"omitempty,min=0"`
-	Height   int    `json:"height" binding:"omitempty,min=0"`
-	MimeType string `json:"mimeType" binding:"omitempty"`
+	URL        string `json:"url" binding:"required,url" example:"http://localhost:9000/chat-uploads/posts/abc.jpg"`
+	ObjectName string `json:"objectName" binding:"omitempty,max=500"`
+	Width      int    `json:"width" binding:"omitempty,min=0"`
+	Height     int    `json:"height" binding:"omitempty,min=0"`
+	MimeType   string `json:"mimeType" binding:"omitempty"`
 }
 
 type CheckInInput struct {
@@ -167,12 +168,17 @@ type CommentListResponse struct {
 }
 
 type UploadedImage struct {
-	URL      string `json:"url"`
-	Width    int    `json:"width"`
-	Height   int    `json:"height"`
-	MimeType string `json:"mimeType"`
+	URL        string `json:"url"`
+	ObjectName string `json:"objectName"`
+	Width      int    `json:"width"`
+	Height     int    `json:"height"`
+	MimeType   string `json:"mimeType"`
 }
 
 type UploadImagesResponse struct {
 	Images []UploadedImage `json:"images"`
+}
+
+type CleanupImagesRequest struct {
+	ObjectNames []string `json:"objectNames" binding:"required,min=1,max=5,dive,required"`
 }

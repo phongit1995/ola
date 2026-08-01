@@ -1,0 +1,71 @@
+diff --git a/node_modules/react-native-keyboard-controller/src/components/KeyboardAvoidingView/index.tsx b/node_modules/react-native-keyboard-controller/src/components/KeyboardAvoidingView/index.tsx
+--- a/node_modules/react-native-keyboard-controller/src/components/KeyboardAvoidingView/index.tsx
++++ b/node_modules/react-native-keyboard-controller/src/components/KeyboardAvoidingView/index.tsx
+@@ -93,6 +93,7 @@ const KeyboardAvoidingView = forwardRef<
+   ) => {
+     const initialFrame = useSharedValue<LayoutRectangle | null>(null);
+     const internalRef = React.useRef<View | null>(null);
++    const layoutGeneration = React.useRef(0);
+     const frame = useDerivedValue(() => initialFrame.value || defaultLayout);
+ 
+     const { translate, padding } = useTranslateAnimation();
+@@ -120,10 +121,18 @@ const KeyboardAvoidingView = forwardRef<
+       (layout: LayoutRectangle) => {
+         "worklet";
+ 
++        // `height` resizes the measured view and `translate-with-padding`
++        // transforms it, so a layout that lands while the keyboard is open would
++        // record a frame that already contains the keyboard compensation
++        // (`getLocationOnScreen` includes the live transform). Refresh those two
++        // only while the keyboard is closed, or when there is no frame yet.
++        const needsStableFrame =
++          behavior === "height" || behavior === "translate-with-padding";
++
+         if (
+           keyboard.isClosed.value ||
+           initialFrame.value === null ||
+-          behavior !== "height"
++          !needsStableFrame
+         ) {
+           // eslint-disable-next-line react-compiler/react-compiler
+           initialFrame.value = layout;
+@@ -145,8 +154,27 @@ const KeyboardAvoidingView = forwardRef<
+             // This fixes current RN bugs:
+             // - https://github.com/facebook/react-native/pull/56062
+             // - https://github.com/facebook/react-native/pull/56056
+-            return KeyboardControllerNative.viewPositionInWindow(tag)
++            //
++            // On Fabric `onLayout` is dispatched from the shadow tree commit,
++            // which can run before the mount transaction positions the platform
++            // view. Measuring right here makes `getLocationOnScreen` report
++            // y = 0, and that wrong offset is then cached until the next layout
++            // pass. Wait two frames so the view is positioned before measuring.
++            //
++            // The wait makes this callback outlive its layout, so results from a
++            // superseded layout are dropped instead of overwriting a newer frame.
++            const generation = ++layoutGeneration.current;
++            const isCurrent = () => generation === layoutGeneration.current;
++
++            return new Promise<void>((resolve) => {
++              requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
++            })
++              .then(() => KeyboardControllerNative.viewPositionInWindow(tag))
+               .then((position) => {
++                if (!isCurrent()) {
++                  return;
++                }
++
+                 runOnUI(onLayoutWorklet)({
+                   ...layout,
+                   x: position.x,
+@@ -154,7 +182,9 @@ const KeyboardAvoidingView = forwardRef<
+                 });
+               })
+               .catch(() => {
+-                runOnUI(onLayoutWorklet)(layout);
++                if (isCurrent()) {
++                  runOnUI(onLayoutWorklet)(layout);
++                }
+               });
+           }
+         }

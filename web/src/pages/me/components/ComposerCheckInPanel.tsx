@@ -50,7 +50,12 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
           ]);
           setNearby(venues);
           setCurrent(
-            here ?? { name: '', address: '', lat: latitude, lng: longitude }
+            here ?? {
+              name: t('me.checkInCurrent'),
+              address: '',
+              lat: latitude,
+              lng: longitude,
+            }
           );
         } catch {
           setLocateError(true);

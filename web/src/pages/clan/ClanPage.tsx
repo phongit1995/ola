@@ -24,7 +24,12 @@ import {
   toast,
 } from '@lib';
 import { ClanService, MeService } from '@services';
-import type { Clan, PostReaction, PostVisibility } from '@app-types';
+import type {
+  Clan,
+  PostReaction,
+  PostVisibility,
+  UploadedImage,
+} from '@app-types';
 import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useAuthStore } from '@/store/authStore';
@@ -220,23 +225,26 @@ export function ClanPage({
 
   const editPost = useCallback(
     async (postId: string, draft: ComposedPost): Promise<boolean> => {
+      let uploaded: UploadedImage[] = [];
       try {
         const store = useClanFeedStore.getState();
         const raw =
           store.posts.find((item) => item.id === postId) ?? store.pinned;
-        const images = await composedToImages(
+        const prepared = await composedToImages(
           draft,
           'existingFirst',
           raw?.images ?? []
         );
+        uploaded = prepared.uploaded;
         const updated = await MeService.update(postId, {
           ...composedToUpdatePayload(draft),
-          images,
+          images: prepared.images,
         });
         useClanFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;
       } catch (error) {
+        await MeService.cleanupRejectedImages(error, uploaded);
         toast.error(clanErrorText(error));
         return false;
       }
@@ -260,21 +268,16 @@ export function ClanPage({
   const addPost = useCallback(
     async (draft: ComposedPost): Promise<boolean> => {
       if (clan == null) return false;
-      try {
-        const prepared = await compressImagesForUpload(draft.files);
-        const created = await useClanFeedStore
-          .getState()
-          .createPost(
-            clan.id,
-            composedToPayload(draft),
-            prepared,
-            draft.imageUrls
-          );
-        return created != null;
-      } catch (error) {
-        toast.error(clanErrorText(error));
-        return false;
-      }
+      const prepared = await compressImagesForUpload(draft.files);
+      const created = await useClanFeedStore
+        .getState()
+        .createPost(
+          clan.id,
+          composedToPayload(draft),
+          prepared,
+          draft.imageUrls
+        );
+      return created != null;
     },
     [clan]
   );

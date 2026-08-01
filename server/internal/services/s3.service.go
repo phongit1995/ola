@@ -175,6 +175,27 @@ func (s *S3Service) IsManagedURL(rawURL string) bool {
 		len(target.Path) > len(basePath)
 }
 
+// Returns "" when the URL was not produced by this service, so callers can
+// never turn a foreign URL into a delete.
+func (s *S3Service) ObjectNameFromURL(rawURL string) string {
+	if !s.IsManagedURL(rawURL) {
+		return ""
+	}
+	target, err := url.Parse(rawURL)
+	if err != nil {
+		return ""
+	}
+	base, err := url.Parse(strings.TrimRight(s.publicURL, "/") + "/" + s.bucket + "/")
+	if err != nil {
+		return ""
+	}
+	objectName := strings.TrimPrefix(target.Path, strings.TrimRight(base.Path, "/")+"/")
+	if objectName == "" || path.IsAbs(objectName) || path.Clean(objectName) != objectName {
+		return ""
+	}
+	return objectName
+}
+
 func getFileSize(file multipart.File) (int64, error) {
 	type sizer interface {
 		Seek(offset int64, whence int) (int64, error)

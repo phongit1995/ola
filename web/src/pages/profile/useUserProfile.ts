@@ -10,7 +10,7 @@ import {
 } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
-import type { PostReaction, RelationshipInfo } from '@app-types';
+import type { PostReaction, RelationshipInfo, UploadedImage } from '@app-types';
 import {
   applyMeReaction,
   meSelfLiker,
@@ -193,18 +193,21 @@ export function useUserProfile(
 
   const editPost = useCallback(
     async (id: string, draft: ComposedPost): Promise<boolean> => {
+      let uploaded: UploadedImage[] = [];
       try {
-        const images = await composedToImages(draft, 'existingFirst');
+        const prepared = await composedToImages(draft, 'existingFirst');
+        uploaded = prepared.uploaded;
         const updated = await MeService.update(id, {
           ...composedToUpdatePayload(draft),
-          images,
+          images: prepared.images,
         });
         const mapped = toMePost(updated, formatTime);
         setPost(id, (p) => ({ ...mapped, color: p.color }));
         useMeFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;
-      } catch {
+      } catch (error) {
+        await MeService.cleanupRejectedImages(error, uploaded);
         toast.error(t('me.editError'));
         return false;
       }

@@ -55,6 +55,7 @@ export function VoicePreviewBar({
   const loadingRef = useRef(false);
   const leasedUriRef = useRef<string | null>(null);
   const currentTimeRef = useRef(0);
+  const loadTokenRef = useRef(0);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -68,13 +69,17 @@ export function VoicePreviewBar({
   const release = useCallback(
     (resetPosition: boolean) => {
       clearTimer();
+      // Huỷ lượt load đang bay để callback của nó không thể phát sau khi
+      // recorder (hoặc một voice khác) đã giành playback session.
+      loadTokenRef.current += 1;
       const sound = soundRef.current;
       const leasedUri = leasedUriRef.current;
       soundRef.current = null;
       leasedUriRef.current = null;
       loadingRef.current = false;
       if (sound != null) {
-        sound.stop(() => sound.release());
+        // Native release() dừng và gỡ player khỏi pool trong cùng một lệnh.
+        sound.release();
       }
       if (leasedUri != null) releaseTemporaryVoiceFile(leasedUri);
       deactivateVoicePlayback(playbackOwnerRef.current);
@@ -161,10 +166,14 @@ export function VoicePreviewBar({
 
     errorShownRef.current = false;
     loadingRef.current = true;
+    // Đăng ký ngay từ lúc load để releaseVoicePlayback() có thể huỷ lượt này
+    // nếu recorder bắt đầu trước khi callback của Sound chạy.
+    activateVoicePlayback(playbackOwnerRef.current, releaseForReplacement);
+    const loadToken = ++loadTokenRef.current;
     retainTemporaryVoiceFile(uri);
     const sound = new Sound(uri, undefined, error => {
       loadingRef.current = false;
-      if (!mountedRef.current) {
+      if (!mountedRef.current || loadToken !== loadTokenRef.current) {
         sound.release();
         releaseTemporaryVoiceFile(uri);
         return;
@@ -173,6 +182,7 @@ export function VoicePreviewBar({
         soundRef.current = null;
         sound.release();
         releaseTemporaryVoiceFile(uri);
+        deactivateVoicePlayback(playbackOwnerRef.current);
         reportPlaybackError();
         return;
       }

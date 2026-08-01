@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { ME_FEED_PAGE_SIZE } from '../constants/feed';
 import { toast } from '../lib/toast';
 import { MeService } from '../services/me.service';
-import type { Post } from '../types/api/me.type';
+import type { Post, UploadedImage } from '../types/api/me.type';
 import type { MeFeedState } from '../types/client/feed.type';
 import i18n from 'i18next';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
@@ -124,8 +124,9 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
     }
   },
   createPost: async (payload, files, imageUrls) => {
+    let uploaded: UploadedImage[] = [];
     try {
-      const uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
       const urlImages = imageUrls.map((url) => ({ url }));
       const images = [...uploaded, ...urlImages];
       const created = await MeService.create({ ...payload, images });
@@ -133,6 +134,7 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       return created;
     } catch (error) {
       console.error('create post failed', error);
+      await MeService.cleanupRejectedImages(error, uploaded);
       toast.error(i18n.t('me.postError'));
       return null;
     }
@@ -141,8 +143,9 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
     set((state) => ({ posts: [post, ...state.posts] }));
   },
   updatePost: async (id, payload, files, imageUrls, existing) => {
+    let uploaded: UploadedImage[] = [];
     try {
-      const uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
       const existingImages = existing ?? get().posts.find((post) => post.id === id)?.images ?? [];
       const urlImages = imageUrls.map(
         (url) => existingImages.find((image) => image.url === url) ?? { url }
@@ -159,6 +162,7 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       return updated;
     } catch (error) {
       console.error('update post failed', error);
+      await MeService.cleanupRejectedImages(error, uploaded);
       toast.error(i18n.t('me.editError'));
       return null;
     }

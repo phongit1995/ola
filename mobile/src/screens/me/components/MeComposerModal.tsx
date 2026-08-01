@@ -107,58 +107,60 @@ function MeComposerBody({
         onChange={vm.setPrivacy}
       />
 
-      <View
-        className="flex-1"
-        onStartShouldSetResponderCapture={() => {
-          if (vm.panel != null) vm.setPanel(null);
-          return false;
-        }}
-      >
+      <View className="flex-1">
         <View
-          className="mx-4 mt-3 flex-1"
-          style={{
-            minHeight: 96,
-            borderWidth: 1,
-            borderColor: inputFocused ? PRIMARY : DIVIDER,
-            borderRadius: 6,
+          className="flex-1"
+          onStartShouldSetResponderCapture={() => {
+            if (vm.panel != null) vm.setPanel(null);
+            return false;
           }}
         >
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ flexGrow: 1 }}
+          <View
+            className="mx-4 mt-3 flex-1"
+            style={{
+              minHeight: 96,
+              borderWidth: 1,
+              borderColor: inputFocused ? PRIMARY : DIVIDER,
+              borderRadius: 6,
+            }}
           >
-            <ChatComposer
-              ref={composerRef}
-              value={vm.content}
-              onChange={vm.setContent}
-              placeholder={t('me.composerHint')}
-              alignTop
-              minHeight={94}
-              maxHeight={100000}
-              paddingH={12}
-              paddingV={8}
-              onFocus={() => {
-                setInputFocused(true);
-                vm.setPanel(null);
-              }}
-              onBlur={() => setInputFocused(false)}
-            />
-            <Pressable
-              className="flex-1"
-              onPress={() => composerRef.current?.focus()}
-            />
-          </ScrollView>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              <ChatComposer
+                ref={composerRef}
+                value={vm.content}
+                onChange={vm.setContent}
+                placeholder={t('me.composerHint')}
+                alignTop
+                minHeight={94}
+                maxHeight={100000}
+                paddingH={12}
+                paddingV={8}
+                onFocus={() => {
+                  setInputFocused(true);
+                  vm.setPanel(null);
+                }}
+                onBlur={() => setInputFocused(false)}
+              />
+              <Pressable
+                className="flex-1"
+                onPress={() => composerRef.current?.focus()}
+              />
+            </ScrollView>
+          </View>
+
+          {vm.sticker != null && (
+            <StickerPreview sticker={vm.sticker} onRemove={() => vm.setSticker(null)} />
+          )}
+
+          {vm.checkIn != null && (
+            <CheckInPreview checkIn={vm.checkIn} onRemove={() => vm.setCheckIn(null)} />
+          )}
+
+          <PhotoStrip photos={vm.photos} onRemove={vm.removePhoto} />
         </View>
-
-        {vm.sticker != null && (
-          <StickerPreview sticker={vm.sticker} onRemove={() => vm.setSticker(null)} />
-        )}
-
-        {vm.checkIn != null && (
-          <CheckInPreview checkIn={vm.checkIn} onRemove={() => vm.setCheckIn(null)} />
-        )}
-
-        <PhotoStrip photos={vm.photos} onRemove={vm.removePhoto} />
 
         {vm.panel === 'sticker' && (
           <StickerPanel

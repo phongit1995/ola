@@ -49,6 +49,33 @@ func (ctrl *Controller) UploadImages(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// CleanupImages godoc
+// @Summary      Clean up newly uploaded post images
+// @Tags         me
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body CleanupImagesRequest true "Uploaded object names"
+// @Success      200  {object}  utils.BaseResponse[map[string]string]
+// @Router       /me/images/cleanup [post]
+func (ctrl *Controller) CleanupImages(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[CleanupImagesRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.CleanupImages(c.Request.Context(), userID, req.ObjectNames); err != nil {
+		if errors.Is(err, errInvalidImageCleanup) {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to clean up post images")
+	}
+	return map[string]string{"message": "images cleaned up"}, nil
+}
+
 // Create godoc
 // @Summary      Create a post
 // @Tags         me

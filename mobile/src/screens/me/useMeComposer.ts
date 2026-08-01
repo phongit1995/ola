@@ -4,6 +4,7 @@ import { Keyboard } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
+import { hasMePostBody } from '@ola/shared/lib';
 import type {
   CreatePostRequest,
   NativeUploadFile,
@@ -158,7 +159,8 @@ export function useMeComposer({
     setPanel(current => (current === key ? null : key));
   }
 
-  const canPost = !posting && (content.trim() !== '' || photos.length > 0);
+  const canPost =
+    !posting && hasMePostBody(content, photos.length, sticker, checkIn);
 
   async function submit() {
     if (!canPost) return;
@@ -198,12 +200,18 @@ export function useMeComposer({
           : undefined,
       visibility: privacy,
     };
-    const result = isEdit
-      ? await updatePost(editPost.id, payload, files, imageUrls, editPost.images)
-      : submitPost != null
-        ? await submitPost(payload, files, imageUrls)
-        : await createPost(payload, files, imageUrls);
-    setPosting(false);
+    let result: Post | null = null;
+    try {
+      result = isEdit
+        ? await updatePost(editPost.id, payload, files, imageUrls, editPost.images)
+        : submitPost != null
+          ? await submitPost(payload, files, imageUrls)
+          : await createPost(payload, files, imageUrls);
+    } catch {
+      pushToast('error', isEdit ? t('me.editError') : t('me.postError'));
+    } finally {
+      setPosting(false);
+    }
     if (result != null) {
       if (!isEdit && submitPost == null) prependPost(result);
       onSaved?.(result);

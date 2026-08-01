@@ -41,6 +41,33 @@ func (r *Repository) GetByID(id uuid.UUID) (*models.Me, error) {
 	return &post, nil
 }
 
+// ReferencedImageURLs returns normalized managed URLs that are still stored by
+// any post. Query strings and fragments do not create a distinct S3 object.
+func (r *Repository) ReferencedImageURLs(urls []string) (map[string]struct{}, error) {
+	referenced := make(map[string]struct{}, len(urls))
+	if len(urls) == 0 {
+		return referenced, nil
+	}
+
+	type imageURLRow struct {
+		URL string `gorm:"column:url"`
+	}
+	var rows []imageURLRow
+	const normalizedURL = "split_part(split_part(elem.value->>'url', '#', 1), chr(63), 1)"
+	err := r.db.Table("me AS m").
+		Joins("CROSS JOIN LATERAL jsonb_array_elements(COALESCE(m.images, '[]'::jsonb)) AS elem(value)").
+		Where(normalizedURL+" IN ?", urls).
+		Distinct(normalizedURL + " AS url").
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		referenced[row.URL] = struct{}{}
+	}
+	return referenced, nil
+}
+
 func (r *Repository) Disable(id uuid.UUID) error {
 	return r.db.Model(&models.Me{}).Where("id = ?", id).Update("enabled", false).Error
 }

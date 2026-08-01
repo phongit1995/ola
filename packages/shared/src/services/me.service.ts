@@ -1,4 +1,6 @@
 import { http } from '../api/http';
+import { toApiError } from '../lib/apiError';
+import { shouldCleanupRejectedPostUpload } from '../lib/mePost';
 import { appendUploadFile } from '../lib/upload';
 import type { UploadFile } from '../types/client/upload.type';
 import { API_PATH } from '../config/api';
@@ -19,6 +21,7 @@ import type {
   FeedCursorParams,
   PostReaction,
   UploadImagesResult,
+  UploadedImage,
   MeNotificationListResult,
   MeNotificationUnreadResult,
 } from '../types/api/me.type';
@@ -64,6 +67,35 @@ export class MeService {
     const form = new FormData();
     files.forEach((file) => appendUploadFile(form, 'images', file));
     return http.postForm<UploadImagesResult>(API_PATH.me.images, form);
+  }
+
+  static async cleanupImages(images: readonly UploadedImage[]): Promise<void> {
+    const objectNames = [
+      ...new Set(
+        images
+          .map((image) => image.objectName)
+          .filter((objectName): objectName is string => objectName != null && objectName !== '')
+      ),
+    ];
+    if (objectNames.length === 0) return;
+    await http.post<MessageResult>(API_PATH.me.cleanupImages, { objectNames });
+  }
+
+  static async cleanupRejectedImages(
+    error: unknown,
+    images: readonly UploadedImage[]
+  ): Promise<void> {
+    if (!shouldCleanupRejectedPostUpload(toApiError(error).status)) return;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        await this.cleanupImages(images);
+        return;
+      } catch (cleanupError) {
+        lastError = cleanupError;
+      }
+    }
+    console.error('cleanup rejected post images failed', lastError);
   }
 
   static pin(id: string): Promise<Post> {
