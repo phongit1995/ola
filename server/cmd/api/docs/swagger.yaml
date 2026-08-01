@@ -75,6 +75,7 @@ definitions:
         type: string
       newPassword:
         example: newpass@456
+        maxLength: 72
         minLength: 6
         type: string
     required:
@@ -97,23 +98,11 @@ definitions:
     properties:
       admin:
         $ref: '#/definitions/internal_modules_admin_auth.AdminDTO'
-      refreshToken:
-        type: string
       token:
         type: string
     type: object
-  internal_modules_admin_auth.RefreshTokenRequest:
-    properties:
-      refreshToken:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
-    required:
-    - refreshToken
-    type: object
   internal_modules_admin_auth.RefreshTokenResponse:
     properties:
-      refreshToken:
-        type: string
       token:
         type: string
     type: object
@@ -8730,7 +8719,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticate an admin account and return access + refresh tokens
+      description: Authenticate an admin account, return an access token, and set
+        the refresh token in an HttpOnly cookie
       parameters:
       - description: Admin Login Request
         in: body
@@ -8760,6 +8750,27 @@ paths:
       summary: Admin login
       tags:
       - admin-auth
+  /admin/auth/logout:
+    post:
+      description: Revoke the authenticated admin session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Admin logout
+      tags:
+      - admin-auth
   /admin/auth/me:
     get:
       description: Return the authenticated admin's profile
@@ -8785,16 +8796,8 @@ paths:
       - admin-auth
   /admin/auth/refresh:
     post:
-      consumes:
-      - application/json
-      description: Exchange a valid admin refresh token for a new token pair
-      parameters:
-      - description: Refresh Token Request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_modules_admin_auth.RefreshTokenRequest'
+      description: Rotate the admin refresh token from its HttpOnly cookie and return
+        a new access token
       produces:
       - application/json
       responses:
@@ -8802,10 +8805,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_RefreshTokenResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:

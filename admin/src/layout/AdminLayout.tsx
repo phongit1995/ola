@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Avatar, Dropdown, Layout, Menu, Typography } from 'antd'
+import { App, Avatar, Dropdown, Layout, Menu, Typography } from 'antd'
 import {
   AimOutlined,
   AppstoreOutlined,
@@ -28,6 +28,7 @@ import {
 import { AdminAuthService } from '@/services/adminAuth.service'
 import { ChangePasswordModal } from '@/pages/ChangePasswordModal'
 import { useAuthStore } from '@/store/authStore'
+import { ApiError } from '@/lib/apiError'
 
 const { Sider, Header, Content } = Layout
 
@@ -113,6 +114,7 @@ const PAGE_TITLES: Record<string, string> = {
 }
 
 export function AdminLayout() {
+  const { message } = App.useApp()
   const navigate = useNavigate()
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
@@ -132,10 +134,19 @@ export function AdminLayout() {
     ...(selectedKey.startsWith('/settings') ? ['settings'] : []),
   ]
 
-  function logout() {
-    AdminAuthService.logout()
-    clear()
-    navigate('/login', { replace: true })
+  async function logout() {
+    try {
+      await AdminAuthService.logout()
+    } catch (err) {
+      if (!(err instanceof ApiError && err.status === 401)) {
+        message.warning(
+          'Đã đăng xuất trên thiết bị này nhưng chưa thể xác nhận thu hồi phiên trên máy chủ',
+        )
+      }
+    } finally {
+      clear()
+      navigate('/login', { replace: true })
+    }
   }
 
   return (

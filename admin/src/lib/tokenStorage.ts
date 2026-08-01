@@ -1,19 +1,19 @@
-const ACCESS_TOKEN_KEY = 'ola.admin.accessToken'
-const REFRESH_TOKEN_KEY = 'ola.admin.refreshToken'
+export const ADMIN_ACCESS_TOKEN_KEY = 'ola.admin.accessToken'
+const LEGACY_ADMIN_REFRESH_TOKEN_KEY = 'ola.admin.refreshToken'
 
 export const adminTokens = {
   getAccessToken(): string | null {
-    return localStorage.getItem(ACCESS_TOKEN_KEY)
+    return localStorage.getItem(ADMIN_ACCESS_TOKEN_KEY)
   },
-  getRefreshToken(): string | null {
-    return localStorage.getItem(REFRESH_TOKEN_KEY)
+  setAccessToken(accessToken: string): void {
+    localStorage.setItem(ADMIN_ACCESS_TOKEN_KEY, accessToken)
+    localStorage.removeItem(LEGACY_ADMIN_REFRESH_TOKEN_KEY)
   },
-  setTokens(accessToken: string, refreshToken: string): void {
-    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+  clearLegacyRefreshToken(): void {
+    localStorage.removeItem(LEGACY_ADMIN_REFRESH_TOKEN_KEY)
   },
   clear(): void {
-    localStorage.removeItem(ACCESS_TOKEN_KEY)
-    localStorage.removeItem(REFRESH_TOKEN_KEY)
+    localStorage.removeItem(ADMIN_ACCESS_TOKEN_KEY)
+    localStorage.removeItem(LEGACY_ADMIN_REFRESH_TOKEN_KEY)
   },
 }

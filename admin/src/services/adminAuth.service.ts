@@ -15,7 +15,7 @@ export const AdminAuthService = {
       { skipAuth: true },
     )
     const result = data.data
-    adminTokens.setTokens(result.token, result.refreshToken)
+    adminTokens.setAccessToken(result.token)
     return result
   },
 
@@ -31,7 +31,13 @@ export const AdminAuthService = {
     await http.post<ApiResponse<{ message: string }>>('/admin/auth/change-password', payload)
   },
 
-  logout(): void {
-    adminTokens.clear()
+  async logout(): Promise<void> {
+    try {
+      await http.post<ApiResponse<{ message: string }>>('/admin/auth/logout')
+    } finally {
+      // A failed server-side revoke is surfaced to the caller, but this browser
+      // must still stop using its access token immediately.
+      adminTokens.clear()
+    }
   },
 }

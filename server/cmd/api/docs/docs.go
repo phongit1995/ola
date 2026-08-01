@@ -79,7 +79,7 @@ const docTemplate = `{
         },
         "/admin/auth/login": {
             "post": {
-                "description": "Authenticate an admin account and return access + refresh tokens",
+                "description": "Authenticate an admin account, return an access token, and set the refresh token in an HttpOnly cookie",
                 "consumes": [
                     "application/json"
                 ],
@@ -129,6 +129,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Revoke the authenticated admin session",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-auth"
+                ],
+                "summary": "Admin logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/auth/me": {
             "get": {
                 "security": [
@@ -168,10 +202,7 @@ const docTemplate = `{
         },
         "/admin/auth/refresh": {
             "post": {
-                "description": "Exchange a valid admin refresh token for a new token pair",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Rotate the admin refresh token from its HttpOnly cookie and return a new access token",
                 "produces": [
                     "application/json"
                 ],
@@ -179,28 +210,11 @@ const docTemplate = `{
                     "admin-auth"
                 ],
                 "summary": "Refresh admin token",
-                "parameters": [
-                    {
-                        "description": "Refresh Token Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_modules_admin_auth.RefreshTokenRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_RefreshTokenResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
@@ -12137,6 +12151,7 @@ const docTemplate = `{
                 },
                 "newPassword": {
                     "type": "string",
+                    "maxLength": 72,
                     "minLength": 6,
                     "example": "newpass@456"
                 }
@@ -12165,32 +12180,14 @@ const docTemplate = `{
                 "admin": {
                     "$ref": "#/definitions/internal_modules_admin_auth.AdminDTO"
                 },
-                "refreshToken": {
-                    "type": "string"
-                },
                 "token": {
                     "type": "string"
-                }
-            }
-        },
-        "internal_modules_admin_auth.RefreshTokenRequest": {
-            "type": "object",
-            "required": [
-                "refreshToken"
-            ],
-            "properties": {
-                "refreshToken": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }
             }
         },
         "internal_modules_admin_auth.RefreshTokenResponse": {
             "type": "object",
             "properties": {
-                "refreshToken": {
-                    "type": "string"
-                },
                 "token": {
                     "type": "string"
                 }

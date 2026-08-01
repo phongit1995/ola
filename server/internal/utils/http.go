@@ -145,12 +145,20 @@ func extractMiddlewareAndHandler(args []any) ([]gin.HandlerFunc, AppHandler) {
 }
 
 var (
+	errorsBadRequest = map[string]bool{
+		"current password is incorrect":                        true,
+		"new password must be different from current password": true,
+		"new password must not exceed 72 bytes":                true,
+	}
+
 	errorsUnauthorized = map[string]bool{
 		"invalid username or password":        true,
 		"invalid email or password":           true,
 		"invalid or expired token":            true,
 		"invalid or expired refresh token":    true,
 		"refresh token has been revoked":      true,
+		"refresh token reuse detected":        true,
+		"admin session has been revoked":      true,
 		"authorization header required":       true,
 		"invalid authorization header format": true,
 		"invalid transfer password":           true,
@@ -197,6 +205,7 @@ var (
 		"you have reached the maximum number of clans you can own":       true,
 		"you are already a member of this clan":                          true,
 		"clan role is already assigned":                                  true,
+		"admin password has changed":                                     true,
 	}
 
 	errorsForbidden = map[string]bool{
@@ -255,7 +264,12 @@ func matchKnownError(msg string, table map[string]bool) bool {
 	return false
 }
 
-func knownStatusFromMessage(msg string) (int, bool) {
+// KnownHTTPStatusFromMessage maps registered service messages to HTTP statuses.
+func KnownHTTPStatusFromMessage(msg string) (int, bool) {
+	if matchKnownError(msg, errorsBadRequest) {
+		return http.StatusBadRequest, true
+	}
+
 	if matchKnownError(msg, errorsUnauthorized) {
 		return http.StatusUnauthorized, true
 	}
@@ -283,7 +297,7 @@ func HTTPStatusFromError(err error) int {
 	if err == nil {
 		return http.StatusOK
 	}
-	if status, known := knownStatusFromMessage(err.Error()); known {
+	if status, known := KnownHTTPStatusFromMessage(err.Error()); known {
 		return status
 	}
 	return http.StatusBadRequest

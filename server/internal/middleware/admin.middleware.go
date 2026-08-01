@@ -57,8 +57,13 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 
 		isAdmin, _ := dataMap["isAdmin"].(bool)
 		tokenType, _ := dataMap["type"].(string)
-		if !isAdmin && tokenType != "admin" {
+		if !isAdmin || tokenType != constants.TokenTypeAdmin {
 			utils.RespondError(c, http.StatusForbidden, "admin access required")
+			c.Abort()
+			return
+		}
+		if tokenUse, _ := dataMap["token_use"].(string); tokenUse != constants.TokenUseAccess {
+			utils.RespondError(c, http.StatusUnauthorized, "invalid token type")
 			c.Abort()
 			return
 		}
@@ -76,11 +81,47 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 			return
 		}
 
+		sessionIDStr, ok := dataMap["sid"].(string)
+		if !ok || sessionIDStr == "" {
+			utils.RespondError(c, http.StatusUnauthorized, "session id missing from token")
+			c.Abort()
+			return
+		}
+		sessionID, err := uuid.Parse(sessionIDStr)
+		if err != nil {
+			utils.RespondError(c, http.StatusUnauthorized, "invalid session id in token")
+			c.Abort()
+			return
+		}
+
+		active, err := m.isAdminSessionActive(adminID, sessionID)
+		if err != nil {
+			m.logger.Errorw("Failed to validate admin session", "admin_id", adminID, "session_id", sessionID, "error", err.Error())
+			utils.RespondError(c, http.StatusServiceUnavailable, "authentication service unavailable")
+			c.Abort()
+			return
+		}
+		if !active {
+			utils.RespondError(c, http.StatusUnauthorized, "admin session has been revoked")
+			c.Abort()
+			return
+		}
+
 		role, _ := dataMap["role"].(string)
 		c.Set("admin_id", adminID)
 		c.Set("admin_role", role)
+		c.Set("admin_session_id", sessionID)
 		c.Next()
 	}
+}
+
+func GetAdminSessionID(c *gin.Context) (uuid.UUID, bool) {
+	sessionID, exists := c.Get("admin_session_id")
+	if !exists {
+		return uuid.Nil, false
+	}
+	id, ok := sessionID.(uuid.UUID)
+	return id, ok
 }
 
 func GetAdminID(c *gin.Context) (uuid.UUID, bool) {

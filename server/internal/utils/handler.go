@@ -44,7 +44,7 @@ func ServiceError(err error) error {
 	if errors.As(err, &httpErr) {
 		return httpErr
 	}
-	if status, known := knownStatusFromMessage(err.Error()); known {
+	if status, known := KnownHTTPStatusFromMessage(err.Error()); known {
 		return NewHTTPError(status, err.Error())
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {

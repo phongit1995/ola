@@ -97,6 +97,13 @@ const (
 )
 
 const (
+	TokenTypeAdmin = "admin"
+
+	TokenUseAccess  = "access"
+	TokenUseRefresh = "refresh"
+)
+
+const (
 	EmailVerifyCooldownSeconds = 60
 	EmailVerifyMaxAttempts     = 5
 	EmailVerifyCodeLength      = 6
