@@ -7,6 +7,10 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required" example:"admin@123"`
 }
 
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken" binding:"required" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+}
+
 type ChangePasswordRequest struct {
 	CurrentPassword string `json:"currentPassword" binding:"required" example:"admin@123"`
 	NewPassword     string `json:"newPassword" binding:"required,min=6,max=72" example:"newpass@456"`
@@ -23,13 +27,13 @@ type AdminDTO struct {
 
 type LoginResponse struct {
 	Token                 string    `json:"token"`
-	RefreshToken          string    `json:"-"`
+	RefreshToken          string    `json:"refreshToken"`
 	RefreshTokenExpiresAt time.Time `json:"-"`
 	Admin                 AdminDTO  `json:"admin"`
 }
 
 type RefreshTokenResponse struct {
 	Token                 string    `json:"token"`
-	RefreshToken          string    `json:"-"`
+	RefreshToken          string    `json:"refreshToken"`
 	RefreshTokenExpiresAt time.Time `json:"-"`
 }

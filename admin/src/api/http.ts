@@ -22,7 +22,6 @@ export function setOnUnauthorized(handler: (() => void) | null): void {
 const http: AxiosInstance = axios.create({
   baseURL: env.apiUrl,
   timeout: env.apiTimeout,
-  withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -69,12 +68,17 @@ async function requestNewAccessToken(failedAccessToken: string | null): Promise<
       return currentAccessToken
     }
 
+    const refreshToken = adminTokens.getRefreshToken()
+    if (!refreshToken) {
+      throw new Error('Missing refresh token')
+    }
+
     const { data } = await http.post<ApiResponse<AdminRefreshResult>>(
       '/admin/auth/refresh',
-      undefined,
+      { refreshToken },
       { skipAuth: true, skipAuthRefresh: true },
     )
-    adminTokens.setAccessToken(data.data.token)
+    adminTokens.setTokens(data.data.token, data.data.refreshToken)
     return data.data.token
   })
 }
@@ -90,7 +94,8 @@ http.interceptors.response.use(
       config != null &&
       !config.retried &&
       !config.skipAuth &&
-      !config.skipAuthRefresh
+      !config.skipAuthRefresh &&
+      adminTokens.getRefreshToken() != null
 
     if (!canRefresh || config == null) {
       if (

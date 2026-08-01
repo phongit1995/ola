@@ -1,9 +1,6 @@
 package main
 
 import (
-	"net/url"
-	"strings"
-
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/modules/admin"
@@ -80,13 +77,11 @@ func CreateServer(
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOriginWithContextFunc: func(c *gin.Context, origin string) bool {
-			return corsOriginAllowed(cfg, c.Request.URL.Path, origin)
-		},
+		AllowOrigins:     cfg.CORSAllowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Accept", "Content-Type", "Authorization", "X-Timestamp", "X-Nonce", "X-Signature", "X-Trace-Id"},
-		ExposeHeaders:    []string{"X-Trace-Id", "Retry-After"},
-		AllowCredentials: true,
+		AllowHeaders:     []string{"*", "Authorization"},
+		ExposeHeaders:    []string{"*"},
+		AllowCredentials: false,
 		MaxAge:           12 * 3600,
 	}))
 
@@ -139,30 +134,4 @@ func CreateServer(
 	})
 
 	return &Server{Router: r}
-}
-
-func corsOriginAllowed(cfg *config.Config, path, origin string) bool {
-	isAdminPath := path == "/api/v1/admin" || strings.HasPrefix(path, "/api/v1/admin/")
-	for _, allowedOrigin := range cfg.CORSAllowedOrigins {
-		if allowedOrigin == origin && (!isAdminPath || isAdminOrigin(origin)) {
-			return true
-		}
-	}
-	return false
-}
-
-func isAdminOrigin(origin string) bool {
-	parsed, err := url.Parse(origin)
-	if err != nil || parsed.Hostname() == "" {
-		return false
-	}
-
-	hostname := strings.ToLower(parsed.Hostname())
-	firstLabel, _, _ := strings.Cut(hostname, ".")
-	if firstLabel == "admin" || strings.HasPrefix(firstLabel, "admin-") {
-		return true
-	}
-
-	isLoopback := hostname == "localhost" || hostname == "127.0.0.1" || hostname == "::1"
-	return isLoopback && parsed.Port() == "3006"
 }

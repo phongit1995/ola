@@ -79,7 +79,7 @@ const docTemplate = `{
         },
         "/admin/auth/login": {
             "post": {
-                "description": "Authenticate an admin account, return an access token, and set the refresh token in an HttpOnly cookie",
+                "description": "Authenticate an admin account and return access + refresh tokens",
                 "consumes": [
                     "application/json"
                 ],
@@ -202,7 +202,10 @@ const docTemplate = `{
         },
         "/admin/auth/refresh": {
             "post": {
-                "description": "Rotate the admin refresh token from its HttpOnly cookie and return a new access token",
+                "description": "Exchange a valid admin refresh token for a new token pair",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -210,11 +213,28 @@ const docTemplate = `{
                     "admin-auth"
                 ],
                 "summary": "Refresh admin token",
+                "parameters": [
+                    {
+                        "description": "Refresh Token Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_auth.RefreshTokenRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_RefreshTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
@@ -12180,14 +12200,32 @@ const docTemplate = `{
                 "admin": {
                     "$ref": "#/definitions/internal_modules_admin_auth.AdminDTO"
                 },
+                "refreshToken": {
+                    "type": "string"
+                },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_auth.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }
             }
         },
         "internal_modules_admin_auth.RefreshTokenResponse": {
             "type": "object",
             "properties": {
+                "refreshToken": {
+                    "type": "string"
+                },
                 "token": {
                     "type": "string"
                 }

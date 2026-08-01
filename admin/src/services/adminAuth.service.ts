@@ -15,7 +15,7 @@ export const AdminAuthService = {
       { skipAuth: true },
     )
     const result = data.data
-    adminTokens.setAccessToken(result.token)
+    adminTokens.setTokens(result.token, result.refreshToken)
     return result
   },
 

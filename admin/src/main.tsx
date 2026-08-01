@@ -9,9 +9,7 @@ import { theme } from '@/theme'
 import { router } from '@/routes/router'
 import { setOnUnauthorized } from '@/api/http'
 import { useAuthStore } from '@/store/authStore'
-import { ADMIN_ACCESS_TOKEN_KEY, adminTokens } from '@/lib/tokenStorage'
-
-adminTokens.clearLegacyRefreshToken()
+import { ADMIN_ACCESS_TOKEN_KEY } from '@/lib/tokenStorage'
 
 const queryClient = new QueryClient({
   defaultOptions: {

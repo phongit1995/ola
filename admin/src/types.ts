@@ -33,11 +33,13 @@ export interface AdminLoginRequest {
 
 export interface AdminLoginResult {
   token: string
+  refreshToken: string
   admin: AdminAccount
 }
 
 export interface AdminRefreshResult {
   token: string
+  refreshToken: string
 }
 
 export interface MessageResult {
