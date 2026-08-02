@@ -24,7 +24,9 @@ import {
   isSameDay,
   parseMessageMetadata,
 } from '@ola/shared/lib';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { Message, NativeUploadFile, ReactionType } from '@ola/shared/types';
+import { ChatCallButtons } from '@screens/call/ChatCallButtons';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
@@ -508,6 +510,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         title={title}
         subtitle={subtitle}
         avatar={peerAvatar}
+        right={
+          blockStatus === RELATIONSHIP_STATUS.friend ? <ChatCallButtons /> : null
+        }
         onBack={() => navigation.goBack()}
         onOpenProfile={openPeerProfile}
         onMore={() => setMenuOpen(true)}

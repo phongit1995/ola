@@ -558,6 +558,8 @@
     "needSecureContext": "Cần HTTPS để dùng micro và camera",
     "micDenied": "Bạn đã chặn quyền micro",
     "cameraDenied": "Bạn đã chặn quyền camera",
+    "micToggleFailed": "Không thay đổi được trạng thái micro",
+    "cameraToggleFailed": "Không thay đổi được trạng thái camera",
     "declined": "Đã từ chối cuộc gọi",
     "peerDeclined": "{{name}} đã từ chối",
     "ended": "Đã kết thúc cuộc gọi",
@@ -565,7 +567,8 @@
     "endedWithDuration": "Đã kết thúc · {{duration}}",
     "missedCall": "Cuộc gọi nhỡ",
     "noAnswer": "Không có phản hồi",
-    "unknownUser": "Người dùng"
+    "unknownUser": "Người dùng",
+    "switchCamera": "Đổi camera"
   },
   "room": {
     "refresh": "Làm mới",

@@ -34,17 +34,21 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Ola cần truy cập máy ảnh để bạn chụp và gửi ảnh trong phòng chat.</string>
+	<string>Ola cần truy cập máy ảnh để bạn chụp ảnh gửi trong chat và thực hiện cuộc gọi video.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Ola cần vị trí của bạn để gợi ý địa điểm check-in gần đây khi đăng bài.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Ola cần truy cập micro để bạn ghi và gửi tin nhắn thoại.</string>
+	<string>Ola cần truy cập micro để bạn ghi tin nhắn thoại và thực hiện cuộc gọi.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Ola cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Ola cần quyền lưu ảnh để bạn tải ảnh về thư viện ảnh.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

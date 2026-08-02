@@ -26,6 +26,7 @@ import { useAppNotificationRealtime } from './hooks/useAppNotificationRealtime';
 import { useKenRealtime } from './hooks/useKenRealtime';
 import { KenTreasureOverlay } from './screens/games/ken-treasure/KenTreasureOverlay';
 import { ArcadeOverlay } from './screens/apps/ArcadeOverlay';
+import { CallOverlay } from './screens/call/CallOverlay';
 import { checkForOtaUpdate } from './services/otaUpdate';
 import { initTelemetry, setTelemetryUser, trackScreen } from './lib/telemetry';
 
@@ -126,6 +127,7 @@ export default function App() {
             <ReconnectingBanner />
             <KenTreasureOverlay />
             <ArcadeOverlay />
+            <CallOverlay />
             <ToastHost />
             <MediaViewer />
           </SafeAreaProvider>

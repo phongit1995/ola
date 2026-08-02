@@ -558,6 +558,8 @@
     "needSecureContext": "HTTPS is required for microphone and camera",
     "micDenied": "Microphone permission is blocked",
     "cameraDenied": "Camera permission is blocked",
+    "micToggleFailed": "Could not update the microphone",
+    "cameraToggleFailed": "Could not update the camera",
     "declined": "Call declined",
     "peerDeclined": "{{name}} declined",
     "ended": "Call ended",
@@ -565,7 +567,8 @@
     "endedWithDuration": "Call ended · {{duration}}",
     "missedCall": "Missed call",
     "noAnswer": "No answer",
-    "unknownUser": "User"
+    "unknownUser": "User",
+    "switchCamera": "Switch camera"
   },
   "room": {
     "refresh": "Refresh",
