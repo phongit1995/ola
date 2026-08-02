@@ -1188,8 +1188,6 @@
         "Chờ cài xong, mở Ola và đăng nhập bằng tài khoản của bạn."
       ],
       "note": "Các cảnh báo trên là bình thường với file APK cài ngoài Google Play. Bản Ola ở trang này do chính chúng tôi phát hành.",
-      "linkLabel": "Link tải file APK",
-      "linkHint": "Dán link này vào Chrome nếu nút tải phía trên không chạy.",
       "folderLinkLabel": "Link thư mục Google Drive"
     },
     "ios": {

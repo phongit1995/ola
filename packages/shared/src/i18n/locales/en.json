@@ -1188,8 +1188,6 @@
         "Wait for the install to finish, then open Ola and sign in."
       ],
       "note": "These warnings are normal for APK files installed outside Google Play. The build on this page is published by us.",
-      "linkLabel": "APK download link",
-      "linkHint": "Paste this link into Chrome if the button above does not work.",
       "folderLinkLabel": "Google Drive folder link"
     },
     "ios": {

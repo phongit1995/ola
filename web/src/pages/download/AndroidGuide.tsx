@@ -22,17 +22,10 @@ export function AndroidGuide({
       steps={steps}
       note={t('download.android.note')}
       footer={
-        <>
-          <CopyableValue
-            label={t('download.android.linkLabel')}
-            value={APP_DOWNLOAD.apkUrl}
-            hint={t('download.android.linkHint')}
-          />
-          <CopyableValue
-            label={t('download.android.folderLinkLabel')}
-            value={APP_DOWNLOAD.apkFolderUrl}
-          />
-        </>
+        <CopyableValue
+          label={t('download.android.folderLinkLabel')}
+          value={APP_DOWNLOAD.apkFolderUrl}
+        />
       }
     >
       <ActionLink
