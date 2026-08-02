@@ -25,6 +25,7 @@ export const API_PATH = {
     detail: (id: string) => `/admin/rooms/${id}`,
   },
   calls: {
+    active: '/calls/active',
     start: '/calls/start',
     answer: (id: string) => `/calls/${id}/answer`,
     decline: (id: string) => `/calls/${id}/decline`,

@@ -22,4 +22,5 @@ export const initialCallState: CallStateData = {
   micMuted: false,
   camOff: false,
   locallyEndedCallId: null,
+  pendingAction: null,
 };

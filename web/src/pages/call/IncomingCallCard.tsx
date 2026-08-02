@@ -18,6 +18,7 @@ export function IncomingCallCard() {
   const setIncomingPos = useCallStore((s) => s.setIncomingPos);
   const answerIncoming = useCallStore((s) => s.answerIncoming);
   const declineIncoming = useCallStore((s) => s.declineIncoming);
+  const pendingAction = useCallStore((s) => s.pendingAction);
 
   const initialPosition = useCallback<CallDraggableInitial>(
     (bounds, element) => ({ x: (bounds.width - element.width) / 2, y: 24 }),
@@ -40,7 +41,10 @@ export function IncomingCallCard() {
       ? t('call.incomingVideoCall')
       : t('call.incomingVoiceCall');
 
+  const busy = pendingAction != null;
+
   const handleAccept = async () => {
+    if (busy) return;
     const allowed = await ensureCallPermissions(incoming.callType, t);
     if (!allowed) return;
     await answerIncoming();
@@ -51,7 +55,7 @@ export function IncomingCallCard() {
   return (
     <div
       {...drag}
-      className="absolute left-0 top-0 z-[126] w-[300px] max-w-[92%] touch-none rounded-2xl bg-slate-900/95 p-4 text-white shadow-2xl backdrop-blur"
+      className="absolute left-0 top-0 z-[126] w-[300px] max-w-[92%] touch-none rounded-2xl bg-ola-primary-darker/95 p-4 text-white shadow-2xl backdrop-blur"
     >
       <div className="flex items-center gap-3">
         <Avatar
@@ -70,18 +74,20 @@ export function IncomingCallCard() {
         <button
           type="button"
           aria-label={t('call.decline')}
+          disabled={busy}
           onPointerDown={stop}
           onClick={declineIncoming}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-ola-error text-white hover:brightness-110"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-ola-error text-white hover:brightness-110 disabled:opacity-50"
         >
           <EndCallIcon className="h-6 w-6" />
         </button>
         <button
           type="button"
           aria-label={t('call.accept')}
+          disabled={busy}
           onPointerDown={stop}
           onClick={() => void handleAccept()}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white hover:brightness-110"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-ola-button text-ola-primary-darker hover:brightness-110 disabled:opacity-50"
         >
           <PhoneIcon className="h-6 w-6" />
         </button>

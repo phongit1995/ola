@@ -5,11 +5,7 @@ import { useChatStore } from '@/store/chat/chatStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { PhoneIcon, VideoIcon } from './icons';
 
-interface ChatCallButtonsProps {
-  disabled?: boolean;
-}
-
-export function ChatCallButtons({ disabled = false }: ChatCallButtonsProps) {
+export function ChatCallButtons() {
   const { t } = useTranslation();
   const conversation = useChatStore(
     (s) =>
@@ -17,12 +13,13 @@ export function ChatCallButtons({ disabled = false }: ChatCallButtonsProps) {
       null
   );
   const mode = useCallStore((s) => s.mode);
+  const pendingAction = useCallStore((s) => s.pendingAction);
   const startCall = useCallStore((s) => s.startCall);
 
   const peer = conversation?.type === 'direct' ? conversation.otherUser : null;
   if (conversation == null || peer == null) return null;
 
-  const busy = disabled || mode !== 'idle';
+  const busy = mode !== 'idle' || pendingAction != null;
 
   const handleCall = async (callType: CallType) => {
     if (busy) return;

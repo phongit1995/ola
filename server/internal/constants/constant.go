@@ -1,5 +1,7 @@
 package constants
 
+import "time"
+
 const (
 	KafkaTopicMessageCreated             = "CHAT.MESSAGE.CREATED"
 	KafkaTopicMessageDeleted             = "CHAT.MESSAGE.DELETED"
@@ -166,6 +168,11 @@ const (
 )
 
 var CallRingTimeoutSeconds = 30
+
+const (
+	CallMaxDuration    = 12 * time.Hour
+	CallRingStaleGrace = 15 * time.Second
+)
 
 const (
 	KenChestAutoTZ                 = "Asia/Ho_Chi_Minh"

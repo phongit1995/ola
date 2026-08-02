@@ -1,7 +1,9 @@
 package call
 
 import (
+	"errors"
 	"ola-chat-server/internal/models"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -78,6 +80,79 @@ func (r *Repository) MarkEnded(id uuid.UUID, finalStatus models.CallStatus) (*mo
 		return nil, err
 	}
 	return call, nil
+}
+
+func (r *Repository) FindOngoingByUser(userID uuid.UUID, ringingSince time.Time) (*models.Call, error) {
+	return r.findOngoing(r.db, userID, ringingSince)
+}
+
+// findOngoing bounds only `ringing` by time: a ringing row past its timeout is
+// abandoned state the ring timer never got to finalize, whereas an `active` row
+// stays authoritative until something ends it. `participants` is uuid[], so the
+// parameter needs an explicit ::uuid cast.
+func (r *Repository) findOngoing(db *gorm.DB, userID uuid.UUID, ringingSince time.Time) (*models.Call, error) {
+	var call models.Call
+	err := db.
+		Where(
+			"(status = ? OR (status = ? AND started_at >= ?))",
+			string(models.CallStatusActive),
+			string(models.CallStatusRinging),
+			ringingSince,
+		).
+		Where("?::uuid = ANY(participants)", userID.String()).
+		Order("started_at DESC").
+		First(&call).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &call, nil
+}
+
+// CreateIfNoOngoing serialises concurrent start-call attempts that involve the
+// same people. Transaction-scoped advisory locks are taken over every
+// participant in a stable order (so A→B and B→A cannot deadlock), which makes
+// the "is anyone already busy" read and the insert one atomic step. Returns
+// false when the check found an ongoing call and nothing was inserted.
+func (r *Repository) CreateIfNoOngoing(
+	call *models.Call,
+	lockIDs []uuid.UUID,
+	userID uuid.UUID,
+	ringingSince time.Time,
+) (bool, error) {
+	ordered := make([]uuid.UUID, len(lockIDs))
+	copy(ordered, lockIDs)
+	sort.Slice(ordered, func(i, j int) bool {
+		return ordered[i].String() < ordered[j].String()
+	})
+
+	created := false
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		for _, id := range ordered {
+			if err := tx.Exec(
+				"SELECT pg_advisory_xact_lock(hashtextextended(?::text, 0))",
+				id.String(),
+			).Error; err != nil {
+				return err
+			}
+		}
+
+		ongoing, err := r.findOngoing(tx, userID, ringingSince)
+		if err != nil {
+			return err
+		}
+		if ongoing != nil {
+			return nil
+		}
+		if err := tx.Create(call).Error; err != nil {
+			return err
+		}
+		created = true
+		return nil
+	})
+	return created, err
 }
 
 func (r *Repository) ListByConversation(conversationID uuid.UUID, limit int) ([]models.Call, error) {

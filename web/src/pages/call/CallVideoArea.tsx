@@ -81,7 +81,7 @@ export function CallVideoArea({
       )}
 
       {remoteSpeaking && (
-        <span className="pointer-events-none absolute inset-0 rounded-none ring-4 ring-inset ring-emerald-400/70" />
+        <span className="pointer-events-none absolute inset-0 rounded-none ring-4 ring-inset ring-white/80" />
       )}
 
       {showLocalVideo && (
@@ -89,7 +89,7 @@ export function CallVideoArea({
           {...drag}
           style={{ width, height: width / PIP_ASPECT }}
           className={`absolute left-0 top-0 touch-none overflow-hidden rounded-2xl border shadow-lg ${
-            localSpeaking ? 'border-emerald-400' : 'border-white/20'
+            localSpeaking ? 'border-white' : 'border-white/20'
           }`}
         >
           <VideoTrack

@@ -3,6 +3,13 @@ import { API_PATH } from '../config/api';
 import type { CallTokenResponse, CallType } from '../types/api/call.type';
 
 export class CallService {
+  static async ongoing(): Promise<CallTokenResponse | null> {
+    const data = await http.get<CallTokenResponse | null>(
+      API_PATH.calls.active
+    );
+    return data ?? null;
+  }
+
   static start(
     conversationId: string,
     callType: CallType

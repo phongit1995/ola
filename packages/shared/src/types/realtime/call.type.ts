@@ -7,6 +7,7 @@ export interface IncomingCallEvent {
   callType: CallType;
   roomName: string;
   startedAt: string;
+  ringTimeoutSeconds?: number;
 }
 
 export interface CallAcceptedEvent {

@@ -1,7 +1,7 @@
 import i18n from 'i18next';
+import { ringFallbackMs } from '../../constants/call';
 import { CALL_SOCKET_EVENTS } from '../../constants/socket';
-import { peerDisplayName } from '../../lib/callFormat';
-import { formatCallDuration } from '../../lib/callFormat';
+import { formatCallDuration, peerDisplayName } from '../../lib/callFormat';
 import { toast } from '../../lib/toast';
 import { CallService } from '../../services/call.service';
 import { SocketService } from '../../services/socket.service';
@@ -15,6 +15,7 @@ import type {
 import type { CallerBrief, CallGet, CallSet } from '../../types/client/call.type';
 import { useChatStore } from '../chat/chatStore';
 import { claimRealtimeRegistration } from '../realtimeRegistration.state';
+import { armRingTimeout, clearRingTimeout } from './callRuntime.state';
 import { initialCallState } from './callState';
 
 function callerFromConversations(event: IncomingCallEvent): CallerBrief | null {
@@ -45,8 +46,13 @@ async function fetchCaller(callerId: string): Promise<CallerBrief | null> {
   }
 }
 
+function currentCallId(get: CallGet): string | null {
+  const { active, incoming } = get();
+  return active?.callId ?? incoming?.callId ?? null;
+}
+
 function handleIncoming(set: CallSet, get: CallGet, event: IncomingCallEvent) {
-  if (get().mode !== 'idle') {
+  if (get().mode !== 'idle' || get().pendingAction != null) {
     void CallService.decline(event.callId).catch(() => {});
     return;
   }
@@ -57,6 +63,13 @@ function handleIncoming(set: CallSet, get: CallGet, event: IncomingCallEvent) {
     mode: 'incoming',
     incoming: { ...event, caller: cached ?? { id: event.callerId } },
   });
+
+  armRingTimeout(() => {
+    const { mode, incoming } = get();
+    if (mode !== 'incoming' || incoming?.callId !== event.callId) return;
+    set({ ...initialCallState });
+    toast.info(i18n.t('call.missedCall'));
+  }, ringFallbackMs(event.ringTimeoutSeconds));
 
   if (cached != null) return;
 
@@ -71,12 +84,14 @@ function handleIncoming(set: CallSet, get: CallGet, event: IncomingCallEvent) {
 function handleAccepted(set: CallSet, get: CallGet, event: CallAcceptedEvent) {
   const { active, mode } = get();
   if (mode !== 'outgoing' || active?.callId !== event.callId) return;
+  clearRingTimeout();
   set({ mode: 'active' });
 }
 
 function handleDeclined(set: CallSet, get: CallGet, event: CallDeclinedEvent) {
   const active = get().active;
   if (active?.callId !== event.callId) return;
+  clearRingTimeout();
   set({ ...initialCallState });
   toast.info(
     i18n.t('call.peerDeclined', {
@@ -96,6 +111,7 @@ function handleEnded(set: CallSet, get: CallGet, event: CallEndedEvent) {
   }
   if (!wasIncoming && !wasActive) return;
 
+  clearRingTimeout();
   set({ ...initialCallState });
 
   if (event.status === 'missed') {
@@ -113,6 +129,30 @@ function handleEnded(set: CallSet, get: CallGet, event: CallEndedEvent) {
   toast.info(i18n.t('call.ended'));
 }
 
+function reconcileOngoingCall(set: CallSet, get: CallGet) {
+  if (get().mode === 'idle' || get().pendingAction != null) return;
+  const trackedId = currentCallId(get);
+  if (trackedId == null) return;
+
+  void CallService.ongoing()
+    .then((data) => {
+      if (currentCallId(get) !== trackedId) return;
+      if (get().pendingAction != null) return;
+
+      if (data == null || data.callId !== trackedId) {
+        clearRingTimeout();
+        set({ ...initialCallState });
+        toast.info(i18n.t('call.ended'));
+        return;
+      }
+      if (data.status === 'active' && get().mode === 'outgoing') {
+        clearRingTimeout();
+        set({ mode: 'active' });
+      }
+    })
+    .catch(() => {});
+}
+
 export function registerCallRealtime(set: CallSet, get: CallGet) {
   if (!claimRealtimeRegistration('call')) return;
 
@@ -128,4 +168,6 @@ export function registerCallRealtime(set: CallSet, get: CallGet) {
   SocketService.on<CallEndedEvent>(CALL_SOCKET_EVENTS.ended, (event) =>
     handleEnded(set, get, event)
   );
+
+  SocketService.onReconnect(() => reconcileOngoingCall(set, get));
 }

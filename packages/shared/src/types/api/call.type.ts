@@ -12,4 +12,5 @@ export interface CallTokenResponse {
   callType: CallType;
   status: CallStatus;
   startedAt: string;
+  ringTimeoutSeconds?: number;
 }

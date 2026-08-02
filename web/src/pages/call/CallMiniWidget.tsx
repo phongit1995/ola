@@ -58,7 +58,7 @@ export function CallMiniWidget({
     <div
       {...drag}
       style={{ width: MINI_WIDGET_WIDTH, height: MINI_WIDGET_HEIGHT }}
-      className="absolute left-0 top-0 z-[124] touch-none overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950 text-white shadow-2xl"
+      className="absolute left-0 top-0 z-[124] touch-none overflow-hidden rounded-2xl bg-gradient-to-br from-ola-primary-dark to-ola-primary-darker text-white shadow-2xl"
     >
       {showVideo && (
         <VideoTrack

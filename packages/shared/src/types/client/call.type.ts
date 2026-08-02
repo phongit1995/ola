@@ -4,6 +4,8 @@ import type { IncomingCallEvent } from '../realtime/call.type';
 
 export type CallMode = 'idle' | 'incoming' | 'outgoing' | 'active';
 
+export type CallPendingAction = 'starting' | 'answering' | null;
+
 export interface CallerBrief {
   id: string;
   username?: string;
@@ -45,6 +47,7 @@ export interface CallState {
   micMuted: boolean;
   camOff: boolean;
   locallyEndedCallId: string | null;
+  pendingAction: CallPendingAction;
 
   startCall: (
     conversationId: string,
@@ -87,4 +90,5 @@ export type CallStateData = Pick<
   | 'micMuted'
   | 'camOff'
   | 'locallyEndedCallId'
+  | 'pendingAction'
 >;

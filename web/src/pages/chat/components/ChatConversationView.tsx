@@ -91,6 +91,7 @@ export function ChatConversationView({
   const blockedByMe = blockStatus === RELATIONSHIP_STATUS.blockedByMe;
   const blockedByThem = blockStatus === RELATIONSHIP_STATUS.blockedByThem;
   const blocked = blockedByMe || blockedByThem;
+  const canCall = blockStatus === RELATIONSHIP_STATUS.friend;
 
   const myId = useAuthStore((s) => s.user?.id ?? '');
   const messages = useChatStore((s) => s.messages);
@@ -548,7 +549,7 @@ export function ChatConversationView({
         left={<Avatar name={name} color={color} src={avatar} size={32} />}
         onTitlePress={canViewProfile ? openPeerProfile : undefined}
       >
-        <ChatCallButtons disabled={blocked} />
+        {canCall && <ChatCallButtons />}
         <button
           type="button"
           aria-label={t('common.menu')}

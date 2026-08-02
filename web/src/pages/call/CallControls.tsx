@@ -36,7 +36,7 @@ function ControlButton({
     tone === 'danger'
       ? 'bg-ola-error text-white hover:brightness-110'
       : active
-      ? 'bg-white/90 text-slate-900'
+      ? 'bg-white/90 text-ola-primary-darker'
       : 'bg-white/15 text-white hover:bg-white/25';
 
   return (

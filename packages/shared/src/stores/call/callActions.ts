@@ -1,4 +1,5 @@
 import i18n from 'i18next';
+import { ringFallbackMs } from '../../constants/call';
 import { ApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
 import { CallService } from '../../services/call.service';
@@ -10,6 +11,7 @@ import type {
   CallSet,
   CallState,
 } from '../../types/client/call.type';
+import { armRingTimeout, clearRingTimeout } from './callRuntime.state';
 import { initialCallState } from './callState';
 
 type CallActions = Pick<
@@ -53,29 +55,61 @@ function messageOf(error: unknown, fallback: string): string {
 }
 
 export function createCallActions(set: CallSet, get: CallGet): CallActions {
-  const goIdle = (locallyEndedCallId: string | null = null) =>
+  const goIdle = (locallyEndedCallId: string | null = null) => {
+    clearRingTimeout();
     set({ ...initialCallState, locallyEndedCallId });
+  };
+
+  const armOutgoingTimeout = (callId: string, ringTimeoutSeconds?: number) => {
+    armRingTimeout(() => {
+      const { mode, active } = get();
+      if (mode !== 'outgoing' || active?.callId !== callId) return;
+      set({ ...initialCallState, locallyEndedCallId: callId });
+      void CallService.end(callId).catch(() => {});
+      toast.info(i18n.t('call.noAnswer'));
+    }, ringFallbackMs(ringTimeoutSeconds));
+  };
 
   return {
     startCall: async (conversationId, callType, peer) => {
+      if (get().mode !== 'idle' || get().pendingAction != null) return;
+      set({ pendingAction: 'starting' });
+
       try {
         const data = await CallService.start(conversationId, callType);
+        if (get().pendingAction !== 'starting') {
+          void CallService.end(data.callId).catch(() => {});
+          return;
+        }
         set({
           ...initialCallState,
           mode: 'outgoing',
           active: toActiveCall(data, peer),
           expanded: true,
         });
+        armOutgoingTimeout(data.callId, data.ringTimeoutSeconds);
       } catch (error) {
+        if (get().pendingAction === 'starting') set({ pendingAction: null });
         toast.error(messageOf(error, i18n.t('call.startFailed')));
       }
     },
 
     answerIncoming: async () => {
       const incoming = get().incoming;
-      if (incoming == null) return;
+      if (incoming == null || get().pendingAction != null) return;
+      const callId = incoming.callId;
+      set({ pendingAction: 'answering' });
+
       try {
-        const data = await CallService.answer(incoming.callId);
+        const data = await CallService.answer(callId);
+        const current = get();
+        if (
+          current.pendingAction !== 'answering' ||
+          current.incoming?.callId !== callId
+        ) {
+          return;
+        }
+        clearRingTimeout();
         set({
           ...initialCallState,
           mode: 'active',
@@ -84,7 +118,13 @@ export function createCallActions(set: CallSet, get: CallGet): CallActions {
         });
       } catch (error) {
         toast.error(messageOf(error, i18n.t('call.answerFailed')));
-        goIdle();
+        const current = get();
+        if (
+          current.pendingAction === 'answering' &&
+          current.incoming?.callId === callId
+        ) {
+          goIdle();
+        }
       }
     },
 
@@ -106,6 +146,7 @@ export function createCallActions(set: CallSet, get: CallGet): CallActions {
 
     markRemoteJoined: () => {
       if (get().mode !== 'outgoing') return;
+      clearRingTimeout();
       set({ mode: 'active' });
     },
 
@@ -120,6 +161,9 @@ export function createCallActions(set: CallSet, get: CallGet): CallActions {
     setMicMuted: (micMuted) => set({ micMuted }),
     setCamOff: (camOff) => set({ camOff }),
 
-    reset: () => set({ ...initialCallState }),
+    reset: () => {
+      clearRingTimeout();
+      set({ ...initialCallState });
+    },
   };
 }

@@ -1,5 +1,7 @@
 'use strict'
-const { ok, section, req, data, sleep, summary, createUserSet, is2xx } = require('../helpers')
+const {
+  ok, section, req, data, sleep, summary, createUserSet, is2xx, becomeFriends,
+} = require('../helpers')
 const { Kafka, CompressionTypes, CompressionCodecs } = require('kafkajs')
 const lz4js = require('lz4js')
 CompressionCodecs[CompressionTypes.LZ4] = () => ({
@@ -76,6 +78,9 @@ async function main() {
 
   const [alice, bob, charlie] = await createUserSet(3, 'kc')
 
+  // Calls are friends-only.
+  ok('alice & bob become friends', !!(await becomeFriends(alice, bob)))
+
   let r = await req('POST', '/conversations/direct', { recipientId: bob.id }, alice.token)
   ok('create direct conv → 2xx', is2xx(r.status))
   const convAB = data(r)?.id
@@ -99,6 +104,7 @@ async function main() {
   ok('INVITED recipients includes bob', invited?.payload?.recipients?.includes(bob.id))
   ok('INVITED has startedAt (ISO)', !!invited?.payload?.startedAt && !isNaN(Date.parse(invited.payload.startedAt)))
   ok('INVITED has header ts', !!invited?.headers?.ts)
+  ok('INVITED has ringTimeoutSeconds', invited?.payload?.ringTimeoutSeconds > 0)
 
   // ── 2. ACCEPTED ──────────────────────────────────────────────────────────
   r = await req('POST', `/calls/${callA.callId}/answer`, undefined, bob.token)
@@ -152,10 +158,17 @@ async function main() {
   ok(`Kafka ENDED (missed) within ${RING_TIMEOUT + 5}s`, !!missed)
   ok('missed has status=missed', missed?.payload?.status === 'missed')
 
-  // ── 6. Charlie (non-member) starts no-op — no Kafka event ──────────────
+  // ── 6. Rejected starts emit no Kafka event ─────────────────────────────
   const beforeCount = inbox.INVITED.length
   r = await req('POST', '/calls/start', { conversationId: convAB, callType: 'audio' }, charlie.token)
   ok('non-member start rejected → 403', r.status === 403)
+
+  r = await req('POST', '/conversations/direct', { recipientId: charlie.id }, alice.token)
+  const convAC = data(r)?.id
+  ok('create direct conv alice↔charlie → 2xx', is2xx(r.status))
+  r = await req('POST', '/calls/start', { conversationId: convAC, callType: 'audio' }, alice.token)
+  ok('non-friend start rejected → 403', r.status === 403)
+
   await sleep(500)
   ok('no extra INVITED event emitted', inbox.INVITED.length === beforeCount)
 

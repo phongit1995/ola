@@ -68,7 +68,7 @@ export function MicLevelIcon({
       <span
         ref={barRef}
         style={{ transform: 'scaleY(0.15)' }}
-        className="pointer-events-none absolute -bottom-1.5 h-1 w-6 origin-bottom rounded-full bg-emerald-400"
+        className="pointer-events-none absolute -bottom-1.5 h-1 w-6 origin-bottom rounded-full bg-ola-button"
       />
     </span>
   );
