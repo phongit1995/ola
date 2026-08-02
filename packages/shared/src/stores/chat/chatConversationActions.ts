@@ -66,6 +66,28 @@ export function createChatConversationActions(
       }
     },
 
+    ensureDirectConversation: async () => {
+      const conversationId = get().currentConversationId;
+      if (conversationId != null) return conversationId;
+      const draft = get().draftRecipient;
+      if (draft == null) return null;
+
+      const conversation = await ConversationService.createDirect(draft.id);
+      set((state) => ({
+        conversations: upsertConversation(state.conversations, conversation),
+        currentConversationId: conversation.id,
+        draftRecipient: null,
+        messages: [],
+        typingUsers: [],
+        replyTarget: null,
+        hasMore: false,
+        messagesCursor: null,
+        loadingMessages: false,
+        loadingMore: false,
+      }));
+      return conversation.id;
+    },
+
     openConversation: async (conversationId) => {
       SocketService.connect();
       const conversation =

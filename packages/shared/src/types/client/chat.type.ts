@@ -52,6 +52,7 @@ export interface ChatState {
   syncCurrentConversation: () => Promise<void>;
   openConversation: (conversationId: string) => Promise<void>;
   startDirect: (recipientId: string) => Promise<Conversation | null>;
+  ensureDirectConversation: () => Promise<string | null>;
   closeConversation: () => void;
   hideConversation: (
     conversationId: string,
@@ -103,6 +104,7 @@ export type ChatConversationActions = Pick<
   | 'syncCurrentConversation'
   | 'openConversation'
   | 'startDirect'
+  | 'ensureDirectConversation'
   | 'closeConversation'
   | 'hideConversation'
   | 'loadMoreMessages'
