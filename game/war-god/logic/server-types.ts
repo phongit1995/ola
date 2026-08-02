@@ -44,7 +44,16 @@ export interface StepUlt {
   damage: number;
 }
 
-export type Step = StepSwap | StepMatch | StepGravity | StepShuffle | StepUlt;
+export type SpecialType = 'fireSword' | 'greaterHeart';
+
+export interface StepSpecial {
+  kind: 'special';
+  special: SpecialType;
+  damage?: number;
+  heal?: number;
+}
+
+export type Step = StepSwap | StepMatch | StepGravity | StepShuffle | StepUlt | StepSpecial;
 
 export interface ServerState {
   board: number[];

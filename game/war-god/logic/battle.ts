@@ -11,6 +11,9 @@ export const MAX_MP = 100;
 export const MAX_ARMOR = 30;
 export const ULT_COST = 50;
 export const ULT_DMG = 25;
+export const FIRE_SWORD_DMG = 8;
+export const GREATER_HEART_HEAL = 8;
+export const GREATER_HEART_MIN_TILES = 4;
 
 export interface Fighter {
   hp: number;
@@ -28,6 +31,22 @@ export interface EffectSummary {
   mana: number;
   armor: number;
   armorDamage?: number;
+}
+
+export type SpecialType = 'fireSword' | 'greaterHeart';
+
+export interface SpecialEffect {
+  type: SpecialType;
+  damage: number;
+  heal: number;
+}
+
+export interface SpecialProgress {
+  sawSword: boolean;
+  sawFire: boolean;
+  heartTiles: number;
+  fireSwordUsed: boolean;
+  greaterHeartUsed: boolean;
 }
 
 const DMG_SWORD = 5;
@@ -79,6 +98,51 @@ export function applyTileEffects(
   }
 
   return summary;
+}
+
+export function createSpecialProgress(): SpecialProgress {
+  return {
+    sawSword: false,
+    sawFire: false,
+    heartTiles: 0,
+    fireSwordUsed: false,
+    greaterHeartUsed: false,
+  };
+}
+
+export function observeSpecialProgress(
+  progress: SpecialProgress,
+  counts: Partial<Record<TileType, number>>,
+): void {
+  progress.sawSword ||= (counts.sword ?? 0) > 0;
+  progress.sawFire ||= (counts.fire ?? 0) > 0;
+  progress.heartTiles += counts.heart ?? 0;
+}
+
+export function applyAvailableSpecials(
+  progress: SpecialProgress,
+  attacker: Fighter,
+  defender: Fighter,
+): SpecialEffect[] {
+  const effects: SpecialEffect[] = [];
+  if (defender.hp <= 0) return effects;
+  if (!progress.fireSwordUsed && progress.sawSword && progress.sawFire) {
+    progress.fireSwordUsed = true;
+    defender.hp = Math.max(0, defender.hp - FIRE_SWORD_DMG);
+    effects.push({ type: 'fireSword', damage: FIRE_SWORD_DMG, heal: 0 });
+  }
+  if (defender.hp <= 0) return effects;
+  if (
+    !progress.greaterHeartUsed &&
+    progress.heartTiles >= GREATER_HEART_MIN_TILES &&
+    attacker.hp < MAX_HP
+  ) {
+    progress.greaterHeartUsed = true;
+    const healed = Math.min(GREATER_HEART_HEAL, MAX_HP - attacker.hp);
+    attacker.hp += healed;
+    effects.push({ type: 'greaterHeart', damage: 0, heal: healed });
+  }
+  return effects;
 }
 
 export function castUltimate(attacker: Fighter, defender: Fighter): number {
@@ -144,6 +208,10 @@ export function botChooseMove(
       c.water * waterWeight +
       c.shield * (player.hp > 60 ? 3.5 : 2);
     if (match.maxRun >= 4) score += comboBonus;
+    if (c.sword > 0 && c.fire > 0) score += FIRE_SWORD_DMG;
+    if (c.heart >= GREATER_HEART_MIN_TILES && bot.hp < MAX_HP) {
+      score += Math.min(GREATER_HEART_HEAL, MAX_HP - bot.hp);
+    }
     score += Math.random() * jitter;
 
     if (score > bestScore) {

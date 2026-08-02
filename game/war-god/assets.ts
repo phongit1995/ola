@@ -10,6 +10,8 @@ import itemHeart from './assets/items/heart.png';
 import itemWater from './assets/items/water.png';
 import itemShield from './assets/items/shield.png';
 import itemStone from './assets/items/stone.png';
+import specialFireSword from './assets/items/fire-sword-v1.png';
+import specialGreaterHeart from './assets/items/greater-heart-v1.png';
 import cardBorderActive from './assets/hud/card-border-active.png';
 import cardBorderIdle from './assets/hud/card-border-idle.png';
 import ringActive from './assets/hud/ring-active.png';
@@ -76,6 +78,10 @@ export const A = {
     water: itemWater,
     shield: itemShield,
     stone: itemStone,
+  },
+  specials: {
+    fireSword: specialFireSword,
+    greaterHeart: specialGreaterHeart,
   },
   hud: {
     cardBorderActive,
