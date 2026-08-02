@@ -5,6 +5,7 @@ import type { CallType } from '@ola/shared/types';
 export type PrimeCallResult = 'ok' | 'denied' | 'insecure' | 'failed';
 
 const ANDROID_BLUETOOTH_SDK = 31;
+const ANDROID_NOTIFICATION_SDK = 33;
 
 // BLUETOOTH_CONNECT là quyền runtime từ Android 12: không xin thì tai nghe
 // bluetooth không xuất hiện trong danh sách audio output. Thiếu nó vẫn gọi được
@@ -16,6 +17,11 @@ async function requestAndroidPermissions(callType: CallType): Promise<boolean> {
   const wanted = [...required];
   if (Number(Platform.Version) >= ANDROID_BLUETOOTH_SDK) {
     wanted.push(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+  }
+  // Notification không phải điều kiện để FGS chạy, nhưng Android 13+ sẽ ẩn
+  // thông báo cuộc gọi khỏi notification drawer nếu người dùng chưa cấp quyền.
+  if (Number(Platform.Version) >= ANDROID_NOTIFICATION_SDK) {
+    wanted.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
   }
 
   const result = await PermissionsAndroid.requestMultiple(wanted);

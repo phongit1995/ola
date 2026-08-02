@@ -1,8 +1,8 @@
 import { NativeModules, Platform } from 'react-native';
 
 interface CallServiceModule {
-  start: (withVideo: boolean) => void;
-  stop: () => void;
+  start: (withVideo: boolean) => Promise<void>;
+  stop: () => Promise<void>;
 }
 
 const nativeCallService =
@@ -10,12 +10,15 @@ const nativeCallService =
 
 // Android 14+ cắt mic/camera khi app xuống nền nếu không có foreground service
 // đúng type. iOS lo phần này bằng UIBackgroundModes audio nên không cần gì thêm.
-export function startCallForegroundService(withVideo: boolean): void {
+export async function startCallForegroundService(withVideo: boolean): Promise<void> {
   if (Platform.OS !== 'android') return;
-  nativeCallService?.start(withVideo);
+  if (nativeCallService == null) {
+    throw new Error('OlaCallService native module is unavailable');
+  }
+  await nativeCallService.start(withVideo);
 }
 
-export function stopCallForegroundService(): void {
+export async function stopCallForegroundService(): Promise<void> {
   if (Platform.OS !== 'android') return;
-  nativeCallService?.stop();
+  await nativeCallService?.stop();
 }

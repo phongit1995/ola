@@ -129,21 +129,28 @@ function useCallSession(withVideo: boolean, onFailed: () => void) {
 
   useEffect(() => {
     let cancelled = false;
-    enterCallAudioSession(withVideo).then(
-      () => {
+
+    const start = async () => {
+      try {
+        await enterCallAudioSession(withVideo);
         if (cancelled) return;
-        startCallForegroundService(withVideo);
+        await startCallForegroundService(withVideo);
+        if (cancelled) {
+          await stopCallForegroundService().catch(() => {});
+          return;
+        }
         setReady(true);
-      },
-      () => {
+      } catch {
         if (cancelled) return;
         useToastStore.getState().push('error', i18n.t('call.startFailed'));
         onFailed();
-      },
-    );
+      }
+    };
+
+    void start();
     return () => {
       cancelled = true;
-      stopCallForegroundService();
+      void stopCallForegroundService().catch(() => {});
       void leaveCallAudioSession();
     };
   }, [withVideo, onFailed]);
