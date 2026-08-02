@@ -22,6 +22,7 @@ var (
 	PolicyLogin       = RateLimitPolicy{Name: "login", Limit: perWindow(10, time.Minute)}
 	PolicyAdminLogin  = RateLimitPolicy{Name: "admin_login", Limit: perWindow(5, time.Minute)}
 	PolicyWheelSpin   = RateLimitPolicy{Name: "wheel_spin", Limit: perWindow(1, 3*time.Second)}
+	PolicyCallStart   = RateLimitPolicy{Name: "call_start", Limit: perWindow(1, 3*time.Second)}
 
 	PolicyEmailVerifySend = RateLimitPolicy{Name: "email_verify_send", Limit: perWindow(5, time.Hour)}
 )

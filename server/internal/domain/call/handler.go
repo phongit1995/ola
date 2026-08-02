@@ -31,12 +31,13 @@ func (h *EventHandler) OnInvited(ctx context.Context, message []byte) error {
 	h.logger.Infow("📞 INCOMING_CALL", "callId", event.CallID, "recipients", len(event.Recipients))
 	h.wsServer.EmitToUsers(event.Recipients, constants.WebSocketMessageEvent,
 		utils.WrapWebSocketMessage(constants.WebSocketEventIncomingCall, map[string]interface{}{
-			"callId":         event.CallID,
-			"conversationId": event.ConversationID,
-			"callerId":       event.CallerID,
-			"callType":       event.CallType,
-			"roomName":       event.RoomName,
-			"startedAt":      event.StartedAt,
+			"callId":             event.CallID,
+			"conversationId":     event.ConversationID,
+			"callerId":           event.CallerID,
+			"callType":           event.CallType,
+			"roomName":           event.RoomName,
+			"startedAt":          event.StartedAt,
+			"ringTimeoutSeconds": event.RingTimeoutSeconds,
 		}),
 	)
 	return nil

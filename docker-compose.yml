@@ -65,6 +65,10 @@ services:
       - S3_USE_SSL=${S3_USE_SSL:-false}
       - S3_PUBLIC_URL=${S3_PUBLIC_URL:-http://localhost:9000}
       - SWAGGER_HOST=${SWAGGER_HOST:-api:8080}
+      - LIVEKIT_URL=${LIVEKIT_URL:-}
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY:-}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET:-}
+      - CALL_RING_TIMEOUT_SECONDS=${CALL_RING_TIMEOUT_SECONDS:-30}
       - SERVICE_NAME=api
     depends_on:
       - postgres

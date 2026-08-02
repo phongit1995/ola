@@ -24,6 +24,13 @@ export const API_PATH = {
     base: '/admin/rooms',
     detail: (id: string) => `/admin/rooms/${id}`,
   },
+  calls: {
+    active: '/calls/active',
+    start: '/calls/start',
+    answer: (id: string) => `/calls/${id}/answer`,
+    decline: (id: string) => `/calls/${id}/decline`,
+    end: (id: string) => `/calls/${id}/end`,
+  },
   userSettings: '/user-settings',
   appSettings: {
     topup: '/settings/topup',

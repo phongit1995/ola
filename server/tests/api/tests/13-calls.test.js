@@ -1,5 +1,8 @@
 'use strict'
-const { ok, section, req, data, sleep, summary, createUserSet, is2xx, WS_BASE } = require('../helpers')
+const {
+  ok, section, req, data, sleep, summary, createUserSet, is2xx, WS_BASE,
+  becomeFriends, sendFriendRequest,
+} = require('../helpers')
 const { io } = require('socket.io-client')
 const crypto = require('crypto')
 
@@ -79,7 +82,11 @@ async function main() {
   // missed because the consumer is still rebalancing.
   await sleep(500)
 
-  const [alice, bob, charlie] = await createUserSet(3, 'cl')
+  const [alice, bob, charlie, dave] = await createUserSet(4, 'cl')
+
+  // Calls are friends-only: alice ↔ bob must be accepted friends first.
+  let relAB = await becomeFriends(alice, bob)
+  ok('alice & bob become friends', !!relAB)
 
   // Direct conversation alice ↔ bob
   let r = await req('POST', '/conversations/direct', { recipientId: bob.id }, alice.token)
@@ -115,6 +122,8 @@ async function main() {
   ok('INCOMING_CALL has callerId=alice', incoming?.callerId === alice.id)
   ok('INCOMING_CALL has callType=audio', incoming?.callType === 'audio')
   ok('INCOMING_CALL has roomName', incoming?.roomName === callA.roomName)
+  ok('INCOMING_CALL carries ringTimeoutSeconds', incoming?.ringTimeoutSeconds === RING_TIMEOUT)
+  ok('start response carries ringTimeoutSeconds', callA?.ringTimeoutSeconds === RING_TIMEOUT)
 
   const callId = callA.callId
   const roomName = callA.roomName
@@ -130,6 +139,45 @@ async function main() {
   ok('non-member start → 403', r.status === 403)
   r = await req('POST', '/calls/start', { conversationId: convAB, callType: 'audio' }, null)
   ok('no token → 401', r.status === 401)
+
+  // ── 2b. Friends-only + direct-only rules ─────────────────────────────────
+  r = await req('POST', '/conversations/direct', { recipientId: charlie.id }, alice.token)
+  const convAC = data(r)?.id
+  ok('create direct conv alice↔charlie → 2xx', is2xx(r.status))
+  r = await req('POST', '/calls/start', { conversationId: convAC, callType: 'audio' }, alice.token)
+  ok('call non-friend → 403', r.status === 403)
+
+  ok('alice sends request to dave', await sendFriendRequest(alice, dave))
+  r = await req('POST', '/conversations/direct', { recipientId: dave.id }, alice.token)
+  const convAD = data(r)?.id
+  ok('create direct conv alice↔dave → 2xx', is2xx(r.status))
+  r = await req('POST', '/calls/start', { conversationId: convAD, callType: 'audio' }, alice.token)
+  ok('call while request pending → 403', r.status === 403)
+
+  r = await req('POST', '/conversations/group', {
+    name: 'Call Group',
+    participantIds: [bob.id, charlie.id],
+  }, alice.token)
+  const convGroup = data(r)?.id
+  ok('create group conv → 2xx', is2xx(r.status))
+  r = await req('POST', '/calls/start', { conversationId: convGroup, callType: 'audio' }, alice.token)
+  ok('call in group conv → 403', r.status === 403)
+
+  // ── 2c. GET /calls/active — a token only for whoever may be in the room ──
+  r = await req('GET', '/calls/active', undefined, alice.token)
+  ok('caller reads active call → 2xx', is2xx(r.status))
+  ok('active call is the ringing one', data(r)?.callId === callId)
+  ok('caller gets a room token', typeof data(r)?.token === 'string' && data(r).token.length > 0)
+  ok('active exposes ringTimeoutSeconds', data(r)?.ringTimeoutSeconds === RING_TIMEOUT)
+
+  r = await req('GET', '/calls/active', undefined, bob.token)
+  ok('ringing callee reads active call → 2xx', is2xx(r.status))
+  ok('callee sees the ringing call', data(r)?.callId === callId)
+  ok('ringing callee gets NO room token', data(r)?.token === '')
+
+  r = await req('GET', '/calls/active', undefined, charlie.token)
+  ok('uninvolved user reads active → 2xx', is2xx(r.status))
+  ok('uninvolved user has no ongoing call', data(r) == null)
 
   // ── 3. Answer — verify CALL_ACCEPTED pushed to alice ────────────────────
   r = await req('POST', `/calls/${callId}/answer`, undefined, alice.token)
@@ -154,6 +202,9 @@ async function main() {
 
   r = await req('POST', `/calls/${callId}/answer`, undefined, bob.token)
   ok('answer again → 409', r.status === 409)
+
+  r = await req('GET', '/calls/active', undefined, bob.token)
+  ok('answered callee now gets a room token', typeof data(r)?.token === 'string' && data(r).token.length > 0)
 
   // ── 4. End — verify CALL_ENDED pushed to both ───────────────────────────
   r = await req('POST', `/calls/${callId}/end`, undefined, charlie.token)
@@ -255,6 +306,34 @@ async function main() {
   ok('answer non-existent → 404', r.status === 404)
   r = await req('POST', `/calls/${fakeId}/end`, undefined, bob.token)
   ok('end non-existent → 404', r.status === 404)
+
+  // ── 9. Relationship changes revoke call permission ───────────────────────
+  r = await req('DELETE', `/relationships/${relAB}/unfriend`, undefined, alice.token)
+  ok('alice unfriends bob → 2xx', is2xx(r.status))
+  r = await req('POST', '/calls/start', { conversationId: convAB, callType: 'audio' }, alice.token)
+  ok('call after unfriend → 403', r.status === 403)
+
+  relAB = await becomeFriends(alice, bob)
+  ok('alice & bob become friends again', !!relAB)
+  r = await req('POST', '/calls/start', { conversationId: convAB, callType: 'audio' }, alice.token)
+  ok('call after re-friend → 2xx', is2xx(r.status))
+  const call5 = data(r)
+
+  // Unfriending mid-ring must revoke the answer too, not just the start.
+  r = await req('DELETE', `/relationships/${relAB}/unfriend`, undefined, bob.token)
+  ok('bob unfriends alice mid-ring → 2xx', is2xx(r.status))
+  r = await req('POST', `/calls/${call5?.callId}/answer`, undefined, bob.token)
+  ok('answer after unfriend → 403', r.status === 403)
+  r = await req('POST', `/calls/${call5?.callId}/decline`, undefined, bob.token)
+  ok('decline still allowed after unfriend → 2xx', is2xx(r.status))
+
+  relAB = await becomeFriends(alice, bob)
+  ok('alice & bob become friends a third time', !!relAB)
+
+  r = await req('POST', '/relationships/block', { userId: bob.id }, alice.token)
+  ok('alice blocks bob → 2xx', is2xx(r.status))
+  r = await req('POST', '/calls/start', { conversationId: convAB, callType: 'audio' }, alice.token)
+  ok('call after block → 403', r.status === 403)
 
   bobSocket.close()
   aliceSocket.close()

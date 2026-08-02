@@ -3,13 +3,14 @@ package call
 import "time"
 
 type InvitedEvent struct {
-	CallID         string    `json:"callId"`
-	ConversationID string    `json:"conversationId"`
-	CallerID       string    `json:"callerId"`
-	CallType       string    `json:"callType"`
-	RoomName       string    `json:"roomName"`
-	Recipients     []string  `json:"recipients"`
-	StartedAt      time.Time `json:"startedAt"`
+	CallID             string    `json:"callId"`
+	ConversationID     string    `json:"conversationId"`
+	CallerID           string    `json:"callerId"`
+	CallType           string    `json:"callType"`
+	RoomName           string    `json:"roomName"`
+	Recipients         []string  `json:"recipients"`
+	StartedAt          time.Time `json:"startedAt"`
+	RingTimeoutSeconds int       `json:"ringTimeoutSeconds"`
 }
 
 type AcceptedEvent struct {

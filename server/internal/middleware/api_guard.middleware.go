@@ -91,7 +91,9 @@ func (m *ApiGuardMiddleware) Verify() gin.HandlerFunc {
 			return
 		}
 		path := c.Request.URL.Path
-		if strings.HasPrefix(path, "/api/v1/auth") || strings.HasPrefix(path, "/api/v1/health") {
+		if strings.HasPrefix(path, "/api/v1/auth") ||
+			strings.HasPrefix(path, "/api/v1/health") ||
+			path == "/api/v1/calls/webhook" {
 			c.Next()
 			return
 		}

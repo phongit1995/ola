@@ -175,11 +175,32 @@ function reset() { _passed = 0; _failed = 0 }
 
 const is2xx = (status) => status >= 200 && status < 300
 
+
+async function becomeFriends(userA, userB) {
+  await req('POST', '/relationships/request', { userId: userB.id }, userA.token)
+  const pending = await req('GET', '/relationships/pending', undefined, userB.token)
+  const list = data(pending)?.relationships ?? []
+  const found = list.find(
+    (rq) => rq.requesterId === userA.id || rq.requester?.id === userA.id
+  )
+  if (!found) return null
+  const res = await req(
+    'PUT', `/relationships/${found.id}/respond`, { action: 'accept' }, userB.token
+  )
+  return is2xx(res.status) ? found.id : null
+}
+
+async function sendFriendRequest(userA, userB) {
+  const res = await req('POST', '/relationships/request', { userId: userB.id }, userA.token)
+  return is2xx(res.status)
+}
+
 module.exports = {
   BASE, WS_BASE,
   ok, section, req, reqForm, data, sleep, is2xx,
   silentWav, audioForm,
   uniqueUsername, uniqueEmail, randomPassword, registerUser, createUserSet,
+  becomeFriends, sendFriendRequest,
   envInt,
   summary, counts, reset,
 }

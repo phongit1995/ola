@@ -14,7 +14,6 @@ import { MessageService } from '../../services/message.service';
 import type { Message } from '../../types/api/chat.type';
 import type { ChatMessageActions } from '../../types/client/chat.type';
 import type { UploadFile } from '../../types/client/upload.type';
-import { upsertConversation } from './chatHelpers';
 import {
   buildOptimisticMessage,
   markByClientMsgId,
@@ -133,26 +132,12 @@ export function createChatMessageActions(
         const draft = get().draftRecipient;
         if (draft == null) return false;
         try {
-          const conversation = await ConversationService.createDirect(draft.id);
-          conversationId = conversation.id;
-          set((state) => ({
-            conversations: upsertConversation(state.conversations, conversation),
-            currentConversationId: conversation.id,
-            draftRecipient: null,
-            messages: [],
-            typingUsers: [],
-            replyTarget: null,
-            hasMore: false,
-            messagesCursor: null,
-            loadingMessages: false,
-            loadingMore: false,
-          }));
+          conversationId = await get().ensureDirectConversation(draft.id);
         } catch (error) {
-          if (!showDirectMessagingError(error)) {
-            toast.error(i18n.t('chat.voiceSendError'));
-          }
+          toast.error(i18n.t('chat.voiceSendError'));
           throw error;
         }
+        if (conversationId == null) return false;
       }
 
       const reply = get().replyTarget;

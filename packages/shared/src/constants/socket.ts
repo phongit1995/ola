@@ -35,6 +35,16 @@ export const ROOM_SOCKET_EVENTS = {
   memberLeft: 'ROOM_MEMBER_LEFT',
 } as const;
 
+export const CALL_SOCKET_EVENTS = {
+  incoming: 'INCOMING_CALL',
+  accepted: 'CALL_ACCEPTED',
+  declined: 'CALL_DECLINED',
+  ended: 'CALL_ENDED',
+} as const;
+
+export const CALL_CONNECT_TIMEOUT_MS = 15_000;
+export const CALL_PEER_LEFT_GRACE_MS = 4_000;
+
 export const APP_NOTIFICATION_SOCKET_EVENT = 'APP_NOTIFICATION';
 
 export const KEN_SOCKET_EVENTS = {

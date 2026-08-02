@@ -160,6 +160,10 @@ func (s *Service) IsBlockedEither(userID1, userID2 uuid.UUID) (bool, error) {
 	return blocked, nil
 }
 
+func (s *Service) AreFriends(userID1, userID2 uuid.UUID) (bool, error) {
+	return s.repo.AreFriends(userID1, userID2)
+}
+
 func (s *Service) setBlockedEitherCache(userID1, userID2 uuid.UUID, blocked bool) {
 	if s.cache == nil {
 		return

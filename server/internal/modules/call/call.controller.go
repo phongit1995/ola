@@ -130,6 +130,26 @@ func (ctrl *Controller) EndCall(c *gin.Context) (interface{}, error) {
 	return SimpleSuccessResponse{Success: true, Message: "call ended"}, nil
 }
 
+// GetOngoingCall godoc
+// @Summary      Get the caller's ongoing call
+// @Description  Returns the ringing or active call the user belongs to, with a fresh LiveKit token
+// @Tags         calls
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  CallTokenSuccessResponse
+// @Router       /calls/active [get]
+func (ctrl *Controller) GetOngoingCall(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.GetOngoingCall(c.Request.Context(), userID)
+	if err != nil {
+		return nil, ctrl.mapErr(err, "failed to load ongoing call")
+	}
+	return resp, nil
+}
+
 // LiveKitWebhook receives LiveKit server callbacks (room_finished, participant_left, ...).
 // LiveKit signs the payload with API secret in `Authorization` header.
 // We verify the signature, then finalize the call when its room finishes.
@@ -177,6 +197,14 @@ func (ctrl *Controller) mapErr(err error, fallback string) error {
 		return utils.NewHTTPError(http.StatusForbidden, "not authorized for this call")
 	case ErrLiveKitNotConfigured:
 		return utils.NewHTTPError(http.StatusServiceUnavailable, "livekit is not configured")
+	case ErrCallNotDirect:
+		return utils.NewHTTPError(http.StatusForbidden, "calls are only available in direct conversations")
+	case ErrCallBlocked:
+		return utils.NewHTTPError(http.StatusForbidden, "cannot call this user")
+	case ErrCallNotFriend:
+		return utils.NewHTTPError(http.StatusForbidden, "you can only call friends")
+	case ErrCallAlreadyOngoing:
+		return utils.NewHTTPError(http.StatusConflict, "another call is already ongoing")
 	}
 	ctrl.logger.Errorw(fallback, "error", err)
 	return utils.NewHTTPError(http.StatusInternalServerError, fallback)
