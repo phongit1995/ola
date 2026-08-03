@@ -41,6 +41,7 @@ export const API_PATH = {
     upload: '/user/upload',
     presence: '/user/presence',
     detail: (id: string) => `/user/${id}`,
+    profileView: (id: string) => `/user/${id}/view`,
     kiss: (id: string) => `/user/${id}/kiss`,
     follow: (id: string) => `/user/${id}/follow`,
     followers: (id: string) => `/user/${id}/followers`,

@@ -53,6 +53,11 @@ export function useUserProfile(
     useState<RelationshipInfo>(NO_RELATIONSHIP);
   const [secondary, setSecondary] = useState<ProfileSecondary>(EMPTY_SECONDARY);
   const canViewInterestedRef = useRef(true);
+  const recordedViewIdRef = useRef('');
+
+  useEffect(() => {
+    recordedViewIdRef.current = '';
+  }, [username]);
 
   const formatTime = useMemo(
     () => createTimeFormatter(i18n.language),
@@ -82,6 +87,14 @@ export function useUserProfile(
     setProfile(mapPublicProfile(data, mapDeps));
     setNotFound(false);
     if (data.id !== useAuthStore.getState().user?.id) {
+      if (recordedViewIdRef.current !== data.id) {
+        recordedViewIdRef.current = data.id;
+        void UserService.recordProfileView(data.id).catch(() => {
+          if (recordedViewIdRef.current === data.id) {
+            recordedViewIdRef.current = '';
+          }
+        });
+      }
       useMeLocalStore.getState().recordViewedProfile({
         id: data.id,
         username: data.username,

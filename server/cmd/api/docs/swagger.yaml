@@ -2382,6 +2382,8 @@ definitions:
         type: string
       conversationId:
         type: string
+      ringTimeoutSeconds:
+        type: integer
       roomName:
         type: string
       startedAt:
@@ -4602,6 +4604,18 @@ definitions:
     type: object
   internal_modules_room.RoomMessageResponse:
     properties:
+      audioDuration:
+        type: number
+      audioMimeType:
+        type: string
+      audioSize:
+        type: integer
+      audioUrl:
+        type: string
+      audioWaveform:
+        items:
+          type: number
+        type: array
       clientMsgId:
         type: string
       content:
@@ -5093,6 +5107,29 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_user.PresenceBatchResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.ProfileViewResponse:
+    properties:
+      recorded:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_user.ProfileViewSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.ProfileViewResponse'
       error:
         type: string
       path:
@@ -5883,6 +5920,17 @@ definitions:
           $ref: '#/definitions/internal_modules_wheel.PlayerSegmentView'
         type: array
     type: object
+  internal_modules_wheel.PlayerOptionView:
+    properties:
+      kenAmount:
+        type: integer
+      label:
+        type: string
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+    type: object
   internal_modules_wheel.PlayerSegmentView:
     properties:
       id:
@@ -5897,6 +5945,10 @@ definitions:
         $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
       label:
         type: string
+      options:
+        items:
+          $ref: '#/definitions/internal_modules_wheel.PlayerOptionView'
+        type: array
       sortOrder:
         type: integer
       vipDays:
@@ -7073,6 +7125,18 @@ definitions:
     type: object
   ola-chat-server_internal_modules_room.RoomMessageResponse:
     properties:
+      audioDuration:
+        type: number
+      audioMimeType:
+        type: string
+      audioSize:
+        type: integer
+      audioUrl:
+        type: string
+      audioWaveform:
+        items:
+          type: number
+        type: array
       clientMsgId:
         type: string
       content:
@@ -12045,6 +12109,22 @@ paths:
       summary: End a call
       tags:
       - calls
+  /calls/active:
+    get:
+      description: Returns the ringing or active call the user belongs to, with a
+        fresh LiveKit token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_call.CallTokenSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Get the caller's ongoing call
+      tags:
+      - calls
   /calls/start:
     post:
       consumes:
@@ -15266,6 +15346,72 @@ paths:
         replaces old)
       tags:
       - room
+  /rooms/{id}/messages/audio:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a voice recording and create a message of type=audio in
+        one call (≤60s)
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Audio file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Duration in seconds
+        in: formData
+        name: duration
+        required: true
+        type: number
+      - description: JSON array of normalized levels
+        in: formData
+        name: waveform
+        type: string
+      - description: Message ID being replied to
+        in: formData
+        name: replyToId
+        type: string
+      - description: Idempotency key
+        in: formData
+        name: clientMsgId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send a voice message to a room (must have joined via socket)
+      tags:
+      - room
   /rooms/{id}/messages/images:
     post:
       consumes:
@@ -15651,6 +15797,39 @@ paths:
       security:
       - BearerAuth: []
       summary: Send a kiss to a user
+      tags:
+      - user
+  /user/{id}/view:
+    post:
+      description: Record that the authenticated user opened another user's profile
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_user.ProfileViewSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Record a profile view
       tags:
       - user
   /user/me:

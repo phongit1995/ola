@@ -54,6 +54,37 @@ func (ctrl *Controller) GetUserInfo(c *gin.Context) (interface{}, error) {
 	return profile, nil
 }
 
+// RecordProfileView godoc
+// @Summary      Record a profile view
+// @Description  Record that the authenticated user opened another user's profile
+// @Tags         user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "User ID (UUID)"
+// @Success      201  {object}  ProfileViewSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /user/{id}/view [post]
+func (ctrl *Controller) RecordProfileView(c *gin.Context) (interface{}, error) {
+	viewerID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	ownerID, err := utils.ParseUUIDParam(c, "id", "invalid user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := ctrl.service.RecordProfileView(viewerID, ownerID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return result, nil
+}
+
 // Kiss godoc
 // @Summary      Send a kiss to a user
 // @Description  Increment the target user's kiss count by one and return the new total
