@@ -5,6 +5,7 @@ import kenBarUrl from '@/assets/games/spin-wheel/ken-bar.webp';
 import plusFrameUrl from '@/assets/games/spin-wheel/plus-frame.webp';
 import plusIconUrl from '@/assets/games/spin-wheel/plus-icon.webp';
 import wheelCenterUrl from '@/assets/games/spin-wheel/wheel-center.webp';
+import wheelIconUrl from '@/assets/games/spin-wheel/wheel.webp';
 import wheelLogoUrl from '@/assets/games/spin-wheel/logo.webp';
 import wheelOuterRingUrl from '@/assets/games/spin-wheel/wheel-outer-ring.webp';
 import pointerUrl from '@/assets/games/spin-wheel/pointer.webp';
@@ -31,6 +32,9 @@ import historyTabInactiveUrl from '@/assets/games/spin-wheel/history/tab-inactiv
 import historyPageButtonUrl from '@/assets/games/spin-wheel/history/page-button.png';
 import historyPagePrevUrl from '@/assets/games/spin-wheel/history/page-prev.png';
 import historyPageNextUrl from '@/assets/games/spin-wheel/history/page-next.png';
+import giftBoxUrl from '@/assets/games/spin-wheel/gift-list/gift-box.webp';
+import giftCloseButtonUrl from '@/assets/games/spin-wheel/gift-list/close-button.webp';
+import giftCloseMarkUrl from '@/assets/games/spin-wheel/gift-list/close-mark.webp';
 import coinUrl from '@/assets/icons/apps/ken.png';
 
 export {
@@ -41,6 +45,7 @@ export {
   plusFrameUrl,
   plusIconUrl,
   wheelCenterUrl,
+  wheelIconUrl,
   wheelLogoUrl,
   wheelOuterRingUrl,
   pointerUrl,
@@ -67,5 +72,8 @@ export {
   historyPageButtonUrl,
   historyPagePrevUrl,
   historyPageNextUrl,
+  giftBoxUrl,
+  giftCloseButtonUrl,
+  giftCloseMarkUrl,
   coinUrl,
 };

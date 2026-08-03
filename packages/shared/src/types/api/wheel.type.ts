@@ -6,6 +6,13 @@ export type WheelSegmentKind =
   | 'vip_item'
   | 'vip_random';
 
+export interface WheelPlayerOption {
+  label: string;
+  vipTypeId?: number;
+  vipDays?: number;
+  kenAmount?: number;
+}
+
 export interface WheelPlayerSegment {
   id: string;
   kind: WheelSegmentKind;
@@ -16,6 +23,7 @@ export interface WheelPlayerSegment {
   vipDays?: number;
   vipTypeId?: number;
   sortOrder: number;
+  options?: WheelPlayerOption[];
 }
 
 export interface WheelConfig {

@@ -9,6 +9,7 @@ import { useSpinWheelStore } from './spinWheelStore';
 import { SpinWheel } from './SpinWheel';
 import { SpinResultDialog } from './SpinResultDialog';
 import { SpinHistoryDialog } from './SpinHistoryDialog';
+import { GiftListDialog } from './GiftListDialog';
 import { WheelActionButton } from './WheelActionButton';
 import { playSpinSound, stopSpinSound } from './spinWheelSound';
 import { SPIN_START_KEN } from './spinWheel.constants';
@@ -22,6 +23,7 @@ import {
   backgroundUrl,
   closeButtonUrl,
   coinUrl,
+  giftBoxUrl,
   historyIconUrl,
   kenBarUrl,
   plusFrameUrl,
@@ -50,6 +52,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
   const configStatus = useSpinWheelStore((s) => s.configStatus);
   const loadConfig = useSpinWheelStore((s) => s.loadConfig);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [giftListOpen, setGiftListOpen] = useState(false);
 
   useEffect(() => {
     void loadConfig();
@@ -211,7 +214,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
             </span>
           </div>
 
-          <div className="flex w-full max-w-75 gap-3">
+          <div className="flex w-full max-w-90 gap-3">
             <WheelActionButton
               icon={muted ? soundOffUrl : soundOnUrl}
               label={t('wheelGame.sound')}
@@ -224,6 +227,11 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               icon={historyIconUrl}
               label={t('wheelGame.history')}
               onClick={() => setHistoryOpen(true)}
+            />
+            <WheelActionButton
+              icon={giftBoxUrl}
+              label={t('wheelGame.gifts')}
+              onClick={() => setGiftListOpen(true)}
             />
           </div>
         </div>
@@ -239,6 +247,12 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
         <SpinHistoryDialog
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
+        />
+      )}
+      {giftListOpen && ready && (
+        <GiftListDialog
+          segments={config.segments}
+          onClose={() => setGiftListOpen(false)}
         />
       )}
     </FullScreenOverlay>

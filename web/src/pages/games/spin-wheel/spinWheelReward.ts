@@ -1,5 +1,10 @@
-import { formatKen } from '@lib';
-import type { WheelPlayerSegment, WheelSegmentKind } from '@app-types';
+import type { TFunction } from 'i18next';
+import { formatKen, vipName } from '@lib';
+import type {
+  WheelPlayerOption,
+  WheelPlayerSegment,
+  WheelSegmentKind,
+} from '@app-types';
 import {
   rewardKenRandomUrl,
   rewardMissUrl,
@@ -12,6 +17,12 @@ export interface RewardVisual {
   icon: string | null;
   vipTypeId: number | null;
   iconClass: string;
+}
+
+export interface GiftOptionVisual {
+  text: string;
+  vipTypeId: number | null;
+  iconUrl: string | null;
 }
 
 export function formatRewardKen(amount: number): string {
@@ -55,6 +66,34 @@ function rewardIconClass(kind: WheelSegmentKind): string {
   if (kind === 'vip_random') return 'w-[60%]';
   if (kind === 'miss') return 'w-[52%]';
   return 'w-[58%]';
+}
+
+export function giftOptionVisual(
+  t: TFunction,
+  option: WheelPlayerOption
+): GiftOptionVisual {
+  if (typeof option.vipTypeId === 'number') {
+    return {
+      text: option.label !== '' ? option.label : vipName(option.vipTypeId),
+      vipTypeId: option.vipTypeId,
+      iconUrl: null,
+    };
+  }
+  if (typeof option.vipDays === 'number') {
+    return {
+      text: t('wheelGame.vipDays', { n: option.vipDays }),
+      vipTypeId: null,
+      iconUrl: rewardVipDaysUrl,
+    };
+  }
+  if (typeof option.kenAmount === 'number') {
+    return {
+      text: `${formatRewardKen(option.kenAmount)} KEN`,
+      vipTypeId: null,
+      iconUrl: spinCoinUrl,
+    };
+  }
+  return { text: option.label, vipTypeId: null, iconUrl: rewardVipRandomUrl };
 }
 
 export function rewardVisual(segment: WheelPlayerSegment): RewardVisual {

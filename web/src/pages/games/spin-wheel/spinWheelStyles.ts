@@ -54,6 +54,28 @@ export const HISTORY_TAB_INACTIVE_STYLE: CSSProperties = {
   letterSpacing: '0.02em',
 };
 
+export const GIFT_TITLE_STYLE: CSSProperties = {
+  color: '#ffffff',
+  WebkitTextStroke: '3px #1f3ba0',
+  paintOrder: 'stroke fill',
+  textShadow: '0 3px 0 #1a2f80, 0 4px 6px rgba(0,0,0,0.35)',
+  letterSpacing: '0.04em',
+};
+
+export const GIFT_SUBTITLE_STYLE: CSSProperties = {
+  color: '#ffd75e',
+  textShadow: '0 2px 3px rgba(0,0,0,0.4)',
+  letterSpacing: '0.12em',
+};
+
+export const GIFT_AMOUNT_STYLE: CSSProperties = {
+  color: '#ffd75e',
+  WebkitTextStroke: '2px #1f3ba0',
+  paintOrder: 'stroke fill',
+  textShadow: '0 2px 0 #1a2f80, 0 3px 4px rgba(0,0,0,0.3)',
+  letterSpacing: '0.02em',
+};
+
 export function segmentLabelStyle(theme: SegmentTheme): CSSProperties {
   return {
     color: '#fff7e8',
