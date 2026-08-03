@@ -75,7 +75,7 @@ function SectionHeader({ label }: { label: string }) {
 }
 
 export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const me = useAuthStore((s) => s.user);
   const startDirect = useChatStore((s) => s.startDirect);
@@ -107,7 +107,10 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
     store.loadRequests();
   }, [push, t]);
 
-  const contacts = useMemo(() => mapFriendsToContacts(friends, t, now), [friends, t, now]);
+  const contacts = useMemo(
+    () => mapFriendsToContacts(friends, i18n.language, now),
+    [friends, i18n.language, now],
+  );
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();

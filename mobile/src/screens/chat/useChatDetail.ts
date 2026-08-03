@@ -5,8 +5,8 @@ import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import {
   chatFriendActionLabel,
-  createDateFormatter,
-  createTimeFormatter,
+  createDateSeparatorFormatter,
+  formatClockHM,
   formatLastActive,
 } from '@ola/shared/lib';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
@@ -62,8 +62,11 @@ export function useChatDetail(conversationId: string | null | undefined) {
   const peerAvatar =
     conversation?.otherUser?.avatar ?? draftRecipient?.avatar ?? peerProfile?.avatar;
   const myId = currentUserId();
-  const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-  const dateFormatter = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
+  const timeFormatter = formatClockHM;
+  const dateFormatter = useMemo(
+    () => createDateSeparatorFormatter(i18n.language),
+    [i18n.language],
+  );
 
   const peerId = peerProfile?.id ?? conversation?.otherUser?.id ?? draftRecipient?.id ?? '';
   const livePresence = useFocusPresence(peerId !== '' ? peerId : null);
@@ -78,12 +81,16 @@ export function useChatDetail(conversationId: string | null | undefined) {
     return () => clearInterval(interval);
   }, []);
 
+  const lastActiveTime = formatLastActive(i18n.language, peerLastActiveAt, now);
+
   const subtitle =
     typingUsers.length > 0
       ? t('chat.typing', { name: typingUsers[0]?.username ?? '' })
       : peerOnline
         ? t('chat.statusActive')
-        : formatLastActive(t, peerLastActiveAt, now) ?? '';
+        : lastActiveTime == null
+          ? ''
+          : t('chat.statusLastActive', { time: lastActiveTime });
 
   const conversationSeen =
     conversation == null ? false : !conversation.isLastMessageFromMe ? true : conversation.seen;

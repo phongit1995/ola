@@ -285,10 +285,6 @@
   },
   "chat": {
     "comingSoon": "Tính năng sắp ra mắt.",
-    "lastActiveJustNow": "vừa xong",
-    "lastActiveMinutes": "{{count}} phút trước",
-    "lastActiveHours": "{{count}} giờ trước",
-    "lastActiveDays": "{{count}} ngày trước",
     "youPrefix": "Bạn",
     "stickerPreview": "Nhãn dán",
     "blockedByMe": "Bạn đã chặn người này. Bỏ chặn để nhắn tin.",
@@ -468,6 +464,7 @@
     "logoutError": "Đăng xuất thất bại",
     "loadFriendsError": "Không tải được danh sách bạn bè",
     "statusActive": "Đang hoạt động",
+    "statusLastActive": "Truy cập {{time}}",
     "typing": "{{name}} đang trả lời…",
     "today": "Hôm nay",
     "sendFailed": "Không thể gởi tin nhắn",

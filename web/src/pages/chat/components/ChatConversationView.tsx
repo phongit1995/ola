@@ -87,7 +87,7 @@ export function ChatConversationView({
   blockStatus,
   onClose,
 }: ChatConversationViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const blockedByMe = blockStatus === RELATIONSHIP_STATUS.blockedByMe;
   const blockedByThem = blockStatus === RELATIONSHIP_STATUS.blockedByThem;
   const blocked = blockedByMe || blockedByThem;
@@ -192,10 +192,14 @@ export function ChatConversationView({
     []
   );
 
-  const lastActiveText =
+  const lastActiveTime =
     now != null && !online && !peerTyping
-      ? formatLastActive(t, lastActiveAt, now)
+      ? formatLastActive(i18n.language, lastActiveAt, now)
       : undefined;
+  const lastActiveText =
+    lastActiveTime == null
+      ? undefined
+      : t('chat.statusLastActive', { time: lastActiveTime });
 
   const peerId = peerProfile?.id ?? '';
 

@@ -285,10 +285,6 @@
   },
   "chat": {
     "comingSoon": "Coming soon.",
-    "lastActiveJustNow": "just now",
-    "lastActiveMinutes": "{{count}} min ago",
-    "lastActiveHours": "{{count}}h ago",
-    "lastActiveDays": "{{count}}d ago",
     "youPrefix": "You",
     "stickerPreview": "Sticker",
     "blockedByMe": "You blocked this person. Unblock to send messages.",
@@ -468,6 +464,7 @@
     "logoutError": "Logout failed",
     "loadFriendsError": "Failed to load friends",
     "statusActive": "Active now",
+    "statusLastActive": "Active {{time}}",
     "typing": "{{name}} is typing…",
     "today": "Today",
     "sendFailed": "Send message failed",

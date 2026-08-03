@@ -1,7 +1,12 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
-import { activeVipTypeId, colorForName, createDateFormatter } from '@ola/shared/lib';
+import {
+  activeVipTypeId,
+  colorForName,
+  createDateFormatter,
+  formatDateSlashDMY,
+} from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
@@ -106,7 +111,7 @@ export function ProfileCard({
   const joinDate = `${t('profile.joinedOla')} ${formatDate(profile.createdAt)}`;
   const birthday =
     profile.dateOfBirth != null && profile.dateOfBirth !== ''
-      ? formatDate(profile.dateOfBirth)
+      ? formatDateSlashDMY(profile.dateOfBirth)
       : '';
 
   const openSpouse = () =>

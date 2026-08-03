@@ -1,15 +1,9 @@
-import { activeVipTypeId, colorForName } from '@lib';
+import { activeVipTypeId, colorForName, formatDateSlashDMY } from '@lib';
 import type { FollowUser, Post, PublicProfile } from '@app-types';
 import { toMePost } from '../me/mappers';
 import type { MePost } from '../me/types';
 import type { ProfileFriend, UserProfile } from './types';
 import { DEFAULT_COVER_COLOR } from './constants';
-
-function formatBirthday(iso: string): string {
-  const [year, month, day] = iso.split('-');
-  if (!day || !month) return iso;
-  return year ? `${day}/${month}/${year}` : `${day}/${month}`;
-}
 
 export interface ProfileMapDeps {
   seedColor: string;
@@ -45,7 +39,7 @@ export function mapPublicProfile(
     spouse: data.spouse
       ? { nick: data.spouse.username, avatar: data.spouse.avatar }
       : null,
-    birthday: data.dateOfBirth ? formatBirthday(data.dateOfBirth) : '',
+    birthday: data.dateOfBirth ? formatDateSlashDMY(data.dateOfBirth) : '',
     joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
     isSelf: data.relationship?.status === 'self',
     canViewVipStore: data.canViewVipStore !== false,

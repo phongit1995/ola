@@ -1,4 +1,3 @@
-import type { TFunction } from 'i18next';
 import { activeVipTypeId, colorForName, formatLastActive, isBirthdayToday, isVipActive } from '@ola/shared/lib';
 import type { Friend } from '@ola/shared/types';
 import { normalizeDevice, type DeviceType } from '@lib/deviceIcons';
@@ -21,7 +20,7 @@ export interface Contact {
   group: ContactGroup;
 }
 
-export function mapFriendsToContacts(friends: Friend[], t: TFunction, now: number): Contact[] {
+export function mapFriendsToContacts(friends: Friend[], locale: string, now: number): Contact[] {
   const today = new Date(now);
   return friends.map((friend) => ({
     id: friend.id,
@@ -34,7 +33,7 @@ export function mapFriendsToContacts(friends: Friend[], t: TFunction, now: numbe
     vipTypeId: activeVipTypeId(friend.vipUsed, friend.vipEndTime),
     online: friend.isOnline,
     deviceType: normalizeDevice(friend.deviceType),
-    lastActive: friend.isOnline ? undefined : formatLastActive(t, friend.lastActiveAt, now),
+    lastActive: friend.isOnline ? undefined : formatLastActive(locale, friend.lastActiveAt, now),
     statusImage: friend.bioImage ?? undefined,
     group: isBirthdayToday(friend.dateOfBirth, today) ? 'birthday' : 'friend',
   }));

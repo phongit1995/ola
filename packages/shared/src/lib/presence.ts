@@ -1,4 +1,4 @@
-import type { TFunction } from 'i18next';
+import { formatOlaTime } from './datetime';
 
 export function isBirthdayToday(dateOfBirth: string | undefined, now: Date): boolean {
   if (dateOfBirth == null || dateOfBirth === '') return false;
@@ -12,17 +12,11 @@ export function isBirthdayToday(dateOfBirth: string | undefined, now: Date): boo
 }
 
 export function formatLastActive(
-  t: TFunction,
+  locale: string,
   lastActiveAt?: string,
   now: number = Date.now()
 ): string | undefined {
   if (lastActiveAt == null || lastActiveAt === '') return undefined;
-  const then = new Date(lastActiveAt);
-  if (Number.isNaN(then.getTime())) return undefined;
-  const minutes = Math.floor((now - then.getTime()) / 60000);
-  if (minutes < 1) return t('chat.lastActiveJustNow');
-  if (minutes < 60) return t('chat.lastActiveMinutes', { count: minutes });
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t('chat.lastActiveHours', { count: hours });
-  return t('chat.lastActiveDays', { count: Math.floor(hours / 24) });
+  const value = formatOlaTime(lastActiveAt, locale, now);
+  return value === '' ? undefined : value;
 }

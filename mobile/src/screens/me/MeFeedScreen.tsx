@@ -9,7 +9,7 @@ import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { AuthService, SocketService } from '@ola/shared/services';
-import { createTimeFormatter, filterVisiblePosts, postTimeLabel } from '@ola/shared/lib';
+import { createTimeFormatter, filterVisiblePosts } from '@ola/shared/lib';
 import type { Post, PostReaction } from '@ola/shared/types';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
@@ -233,7 +233,7 @@ export function MeFeedScreen() {
             renderItem={({ item }) => (
               <MePostCard
                 post={item}
-                timeLabel={postTimeLabel(item.createdAt, timeFormatter)}
+                timeLabel={timeFormatter(item.createdAt)}
                 onToggleLike={(id) => handleReaction(id, 'like')}
                 onToggleDislike={(id) => handleReaction(id, 'dislike')}
                 onOpenProfile={openProfile}

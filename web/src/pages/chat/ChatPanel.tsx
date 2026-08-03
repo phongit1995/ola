@@ -42,7 +42,7 @@ interface ProfileTarget {
 type ChatSub = 'messages' | 'contacts';
 
 export function ChatPanel() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const clearUser = useAuthStore((s) => s.clearUser);
   const user = useAuthStore((s) => s.user);
@@ -75,8 +75,8 @@ export function ChatPanel() {
   const friendsRaw = useFriendsWithPresence();
   const [now, setNow] = useState(() => Date.now());
   const friends = useMemo(
-    () => mapFriendsToContacts(friendsRaw, t, now),
-    [friendsRaw, t, now]
+    () => mapFriendsToContacts(friendsRaw, i18n.language, now),
+    [friendsRaw, i18n.language, now]
   );
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(
     null
