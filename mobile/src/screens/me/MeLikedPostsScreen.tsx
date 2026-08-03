@@ -119,11 +119,6 @@ export function MeLikedPostsScreen() {
         },
       },
       {
-        key: 'save',
-        label: t('me.menuSave'),
-        onSelect: () => push('success', t('me.saveSuccess')),
-      },
-      {
         key: 'share',
         label: t('me.menuShare'),
         onSelect: () => push('success', t('me.shareSuccess')),
