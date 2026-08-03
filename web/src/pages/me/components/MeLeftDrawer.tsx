@@ -60,8 +60,18 @@ export function MeLeftDrawer({
 
   const items: DrawerItem[] = [
     { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal') },
-    { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage') },
-    { key: 'likes', icon: likeIcon, label: t('me.drawerLikes') },
+    {
+      key: 'marriage',
+      icon: boxIcon,
+      label: t('me.drawerMarriage'),
+      iconClassName: 'opacity-50',
+    },
+    {
+      key: 'likes',
+      icon: likeIcon,
+      label: t('me.drawerLikes'),
+      iconClassName: 'opacity-50',
+    },
     {
       key: 'visitors',
       icon: visitorIcon,
