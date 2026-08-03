@@ -12,7 +12,10 @@ import (
 	"go.uber.org/zap"
 )
 
-const warGodGameID = "war-god"
+const (
+	warGodGameID    = "war-god"
+	warGodTileCount = 8
+)
 
 func decodeWarGodState(t *testing.T, state any) *wargod.State {
 	t.Helper()
@@ -33,7 +36,7 @@ func requireWarGodBoard(t *testing.T, board []int) {
 		t.Fatalf("board has %d cells, want 64", len(board))
 	}
 	for i, tile := range board {
-		if tile < 0 || tile > 5 {
+		if tile < 0 || tile >= warGodTileCount {
 			t.Fatalf("board cell %d has invalid tile %d", i, tile)
 		}
 	}

@@ -22,6 +22,7 @@ import {
   GRID,
   applyGravity,
   areAdjacent,
+  baseTileType,
   createBoard,
   findMatches,
   findValidMoves,
@@ -30,22 +31,17 @@ import {
   type TileType,
 } from '../../logic/core';
 import {
-  MAX_HP,
   LEVEL_LABELS,
   ULT_COST,
   ULT_DMG,
-  applyAvailableSpecials,
   applyAuthoritativeEffects,
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
   castUltimate,
   createFighter,
-  createSpecialProgress,
-  observeSpecialProgress,
   type BotLevel,
   type Fighter,
-  type SpecialEffect,
 } from '../../logic/battle';
 import { recordBotMatch } from '../../logic/bot-history';
 import {
@@ -371,13 +367,14 @@ function cellRootPos(i: number): { x: number; y: number } {
 
 function flyMatched(cells: Set<number>, side: 'me' | 'foe'): Promise<void> {
   const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-  const swords: number[] = [];
+  const swords: Array<{ index: number; type: 'sword' | 'fireSword' }> = [];
   cells.forEach((i) => {
-    if (board[i] === 'sword') swords.push(i);
+    const type = board[i];
+    if (type === 'sword' || type === 'fireSword') swords.push({ index: i, type });
   });
   if (swords.length === 0) return Promise.resolve();
-  const jobs = swords.map((i, idx) =>
-    sleep(idx * 110).then(() => flySword(cellRootPos(i), defCard)),
+  const jobs = swords.map((sword, idx) =>
+    sleep(idx * 110).then(() => flySword(cellRootPos(sword.index), defCard, sword.type)),
   );
   return Promise.all(jobs).then(() => undefined);
 }
@@ -392,9 +389,13 @@ function spawnTrailDot(x: number, y: number): void {
   void tween(g, { alpha: 0, scale: 0.2 }, 380).then(() => g.destroy());
 }
 
-function flySword(from: { x: number; y: number }, card: Container): Promise<void> {
+function flySword(
+  from: { x: number; y: number },
+  card: Container,
+  type: 'sword' | 'fireSword',
+): Promise<void> {
   return new Promise((resolve) => {
-    const icon = new Sprite(tex[A.items.sword]);
+    const icon = new Sprite(tex[A.items[type]]);
     icon.anchor.set(0.5);
     const scale0 = (tileSize * 0.68) / Math.max(icon.texture.width, icon.texture.height);
     icon.scale.set(scale0);
@@ -456,58 +457,6 @@ function floatNumber(card: Container, text: string, color: number, line: number)
     await tween(t, { y: t.y - 56, alpha: 0 }, 420);
     t.destroy();
   })();
-}
-
-async function playSpecialFx(effect: SpecialEffect, side: 'me' | 'foe'): Promise<void> {
-  const isFireSword = effect.type === 'fireSword';
-  const asset = isFireSword ? A.specials.fireSword : A.specials.greaterHeart;
-  const icon = new Sprite(tex[asset]);
-  icon.anchor.set(0.5);
-
-  const boardW = tileSize * GRID;
-  const fullScale =
-    Math.min(tileSize * 3.1, 190) / Math.max(icon.texture.width, icon.texture.height);
-  icon.position.set(boardBox.x + boardW / 2, boardBox.y + boardW / 2);
-  icon.alpha = 0;
-  icon.scale.set(fullScale * 0.42);
-  flyLayer.addChild(icon);
-
-  const attackerCard = side === 'me' ? hud.me.card : hud.foe.card;
-  const defenderCard = side === 'me' ? hud.foe.card : hud.me.card;
-  const targetCard = isFireSword ? defenderCard : attackerCard;
-  const actor = side === 'me' ? 'Bạn' : mode === 'pvp' ? 'Đối thủ' : 'Máy';
-
-  if (isFireSword) {
-    announce('HỎA KIẾM!', 0xffa43a);
-    setStatus(`${actor} kích hoạt HỎA KIẾM — -${effect.damage} HP xuyên giáp!`);
-    playSound('ultimate');
-  } else {
-    announce('ĐẠI TRÁI TIM!', 0xff6f91);
-    setStatus(`${actor} kích hoạt ĐẠI TRÁI TIM — +${effect.heal} HP!`);
-    playSound('match');
-  }
-
-  await tween(icon, { alpha: 1, scale: fullScale * 1.1 }, 180);
-  await tween(icon, { scale: fullScale }, 110);
-  updateHud();
-  floatNumber(
-    targetCard,
-    isFireSword ? `-${effect.damage} HP` : `+${effect.heal} HP`,
-    isFireSword ? 0xff753e : 0xff7ca3,
-    0,
-  );
-  await sleep(260);
-  await tween(
-    icon,
-    {
-      x: targetCard.x + 95,
-      y: targetCard.y + 70,
-      alpha: 0,
-      scale: fullScale * 0.3,
-    },
-    320,
-  );
-  icon.destroy();
 }
 
 function renderTurnClock(): void {
@@ -673,12 +622,12 @@ async function animateRemove(cells: Set<number>): Promise<void> {
   const jobs: Promise<void>[] = [];
   const swords: number[] = [];
   cells.forEach((i) => {
-    if (board[i] === 'sword') swords.push(i);
+    if (baseTileType(board[i]) === 'sword') swords.push(i);
   });
   cells.forEach((i) => {
     const sprite = sprites[i];
     if (!sprite) return;
-    if (board[i] === 'sword') {
+    if (baseTileType(board[i]) === 'sword') {
       jobs.push(animateSwordEat(sprite, swords.indexOf(i), swords.length));
       return;
     }
@@ -728,7 +677,6 @@ async function ensurePlayable(): Promise<void> {
 async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
-  const specials = createSpecialProgress();
   let extraTurn = false;
 
   for (;;) {
@@ -736,11 +684,11 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
     if (!match) break;
     if (match.maxRun >= 4) extraTurn = true;
 
-    observeSpecialProgress(specials, match.counts);
     const result = applyTileEffects(attacker, defender, match.counts);
     playSound('match');
     const parts: string[] = [];
     if (result.damage > 0) parts.push(`-${result.damage} HP`);
+    if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
     if (result.heal > 0) parts.push(`+${result.heal} HP`);
     if (result.mana > 0) parts.push(`+${result.mana} MP`);
     if (result.armor > 0) parts.push(`+${result.armor} giáp`);
@@ -753,17 +701,17 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
     const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
     const defCard = side === 'me' ? hud.foe.card : hud.me.card;
     let atkLine = 0;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, 0);
+    let defLine = 0;
+    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, defLine++);
+    if ((result.armorDamage ?? 0) > 0) {
+      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff, defLine++);
+    }
     if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a, atkLine++);
     if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff, atkLine++);
     if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff, atkLine++);
 
     const gravity = applyGravity(board, match.cells);
     await animateGravity(gravity.falls, gravity.spawns);
-
-    for (const effect of applyAvailableSpecials(specials, attacker, defender)) {
-      await playSpecialFx(effect, side);
-    }
 
     if (defender.hp <= 0) return extraTurn;
   }
@@ -1054,6 +1002,7 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     playSound('match');
     const parts: string[] = [];
     if (result.damage > 0) parts.push(`-${result.damage} HP`);
+    if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
     if (result.heal > 0) parts.push(`+${result.heal} HP`);
     if (result.mana > 0) parts.push(`+${result.mana} MP`);
     if (result.armor > 0) parts.push(`+${result.armor} giáp`);
@@ -1065,7 +1014,11 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
     const defCard = side === 'me' ? hud.foe.card : hud.me.card;
     let atkLine = 0;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, 0);
+    let defLine = 0;
+    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, defLine++);
+    if ((result.armorDamage ?? 0) > 0) {
+      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff, defLine++);
+    }
     if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a, atkLine++);
     if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff, atkLine++);
     if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff, atkLine++);
@@ -1088,22 +1041,6 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     await sleep(400);
     board = decodeBoard(step.board);
     rebuildSprites();
-    return;
-  }
-  if (step.kind === 'special') {
-    const attacker = side === 'me' ? me : foe;
-    const defender = side === 'me' ? foe : me;
-    const effect: SpecialEffect = {
-      type: step.special,
-      damage: step.damage ?? 0,
-      heal: step.heal ?? 0,
-    };
-    if (effect.type === 'fireSword') {
-      defender.hp = Math.max(0, defender.hp - effect.damage);
-    } else {
-      attacker.hp = Math.min(MAX_HP, attacker.hp + effect.heal);
-    }
-    await playSpecialFx(effect, side);
     return;
   }
   const attacker = side === 'me' ? me : foe;
