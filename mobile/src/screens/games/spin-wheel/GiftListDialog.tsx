@@ -111,7 +111,7 @@ function GiftOptionCell({ option }: { option: WheelPlayerOption }) {
         }}
       >
         {visual.vipTypeId != null ? (
-          <VipIconImage typeId={visual.vipTypeId} size={44} rounded />
+          <VipIconImage typeId={visual.vipTypeId} size={40} rounded />
         ) : visual.icon != null ? (
           <Image source={visual.icon} style={{ width: 34, height: 34 }} resizeMode="contain" />
         ) : null}

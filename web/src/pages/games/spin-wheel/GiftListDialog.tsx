@@ -59,7 +59,7 @@ function GiftOptionCell({ option }: { option: WheelPlayerOption }) {
     >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#ffd24a] bg-[#26409e]">
         {visual.vipTypeId != null ? (
-          <VipIcon typeId={visual.vipTypeId} className="h-full w-full" />
+          <VipIcon typeId={visual.vipTypeId} className="h-10 w-10" />
         ) : visual.iconUrl != null ? (
           <img src={visual.iconUrl} alt="" className="h-9 w-9 object-contain" />
         ) : null}
