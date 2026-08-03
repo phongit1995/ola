@@ -1,12 +1,23 @@
+import type { TFunction } from 'i18next';
 import type { ImageSourcePropType } from 'react-native';
-import { formatKen } from '@ola/shared/lib';
-import type { WheelPlayerSegment, WheelSegmentKind } from '@ola/shared/types';
+import { formatKen, vipName } from '@ola/shared/lib';
+import type {
+  WheelPlayerOption,
+  WheelPlayerSegment,
+  WheelSegmentKind,
+} from '@ola/shared/types';
 import { wheelAssets } from './spinWheelAssets';
 
 export interface RewardVisual {
   icon: ImageSourcePropType | null;
   vipTypeId: number | null;
   widthFraction: number;
+}
+
+export interface GiftOptionVisual {
+  text: string;
+  vipTypeId: number | null;
+  icon: ImageSourcePropType | null;
 }
 
 export function formatRewardKen(amount: number): string {
@@ -50,6 +61,31 @@ function rewardIconWidthFraction(kind: WheelSegmentKind): number {
   if (kind === 'vip_random') return 0.6;
   if (kind === 'miss') return 0.52;
   return 0.58;
+}
+
+export function giftOptionVisual(t: TFunction, option: WheelPlayerOption): GiftOptionVisual {
+  if (typeof option.vipTypeId === 'number') {
+    return {
+      text: option.label !== '' ? option.label : vipName(option.vipTypeId),
+      vipTypeId: option.vipTypeId,
+      icon: null,
+    };
+  }
+  if (typeof option.vipDays === 'number') {
+    return {
+      text: t('wheelGame.vipDays', { n: option.vipDays }),
+      vipTypeId: null,
+      icon: wheelAssets.rewardVipDays,
+    };
+  }
+  if (typeof option.kenAmount === 'number') {
+    return {
+      text: `${formatRewardKen(option.kenAmount)} KEN`,
+      vipTypeId: null,
+      icon: wheelAssets.spinCoin,
+    };
+  }
+  return { text: option.label, vipTypeId: null, icon: wheelAssets.rewardVipRandom };
 }
 
 export function rewardVisual(segment: WheelPlayerSegment): RewardVisual {
