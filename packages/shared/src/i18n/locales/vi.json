@@ -133,7 +133,8 @@
       "mall": "Ola Mall",
       "nearby": "Lân cận",
       "social": "Mạng Xã Hội",
-      "settings": "Cài đặt"
+      "settings": "Cài đặt",
+      "removeAccount": "Xóa tài khoản"
     },
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
     "appMallSubtitle": "Kho Video vô cùng phong phú và đa dạng"
@@ -282,6 +283,9 @@
     "logoutButton": "Đăng xuất",
     "logoutTitle": "Đăng xuất",
     "logoutMessage": "Bạn có muốn đăng xuất khỏi Ola?",
+    "removeAccountButton": "Xóa tài khoản",
+    "removeAccountTitle": "Xóa tài khoản",
+    "removeAccountMessage": "Bạn có chắc muốn xóa tài khoản {{username}} không? Bạn sẽ được đăng xuất khỏi Ola.",
     "deleteConvTitle": "Xóa hội thoại",
     "deleteConvMessage": "Bạn có muốn xóa hội thoại với {{name}}?",
     "deleteArchived": "Xóa cả tin nhắn phía bạn",

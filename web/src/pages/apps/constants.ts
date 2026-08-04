@@ -11,6 +11,7 @@ import iconMedia from '@/assets/icons/apps/media.png';
 // import iconMall from '@/assets/icons/apps/mall.png';
 // import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
+import iconRemoveAccount from '@/assets/icons/apps/delete-account.png';
 import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconSocial from '@/assets/icons/social/social-menu-light.png';
@@ -23,7 +24,7 @@ export interface AppItem {
   titleKey: ParseKeys;
   app?: AppOverlayKind;
   overlay?: 'pen' | 'egg' | 'wheel';
-  action?: 'logout' | 'social';
+  action?: 'logout' | 'social' | 'remove-account';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -50,6 +51,11 @@ export const APP_ITEMS: AppItem[] = [
   // { icon: iconNearby, titleKey: 'home.apps.nearby', app: 'nearby' },
   { icon: iconSocial, titleKey: 'home.apps.social', action: 'social' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },
+  {
+    icon: iconRemoveAccount,
+    titleKey: 'home.apps.removeAccount',
+    action: 'remove-account',
+  },
   { icon: iconLogout, titleKey: 'home.logout', action: 'logout' },
 ];
 

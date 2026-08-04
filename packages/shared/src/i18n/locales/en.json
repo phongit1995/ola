@@ -133,7 +133,8 @@
       "mall": "Ola Mall",
       "nearby": "Nearby",
       "social": "Social connections",
-      "settings": "Settings"
+      "settings": "Settings",
+      "removeAccount": "Delete account"
     },
     "appGameSubtitle": "The BEST games for you",
     "appMallSubtitle": "Diverse video clips collected by editors"
@@ -282,6 +283,9 @@
     "logoutButton": "Log Out",
     "logoutTitle": "Log Out",
     "logoutMessage": "Do you want to sign out Ola?",
+    "removeAccountButton": "Delete account",
+    "removeAccountTitle": "Delete account",
+    "removeAccountMessage": "Are you sure you want to delete account {{username}}? You will be logged out of Ola.",
     "deleteConvTitle": "Delete conversation",
     "deleteConvMessage": "Do you want to delete the conversation with {{name}}?",
     "deleteArchived": "Also delete messages on your side",

@@ -8,6 +8,7 @@ import { formatKen } from '@ola/shared/lib';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -88,6 +89,7 @@ export function AppsScreen() {
   const notifUnread = useAppNotificationStore(s => s.unreadCount);
   const user = useAuthStore(s => s.user);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
 
   useEffect(() => {
@@ -97,6 +99,10 @@ export function AppsScreen() {
   function handleOpen(item: AppItem) {
     if (item.action === 'logout') {
       setLogoutOpen(true);
+      return;
+    }
+    if (item.action === 'remove-account') {
+      setRemoveAccountOpen(true);
       return;
     }
     if (item.action === 'notifications') {
@@ -144,6 +150,33 @@ export function AppsScreen() {
 
   async function confirmLogout() {
     setLogoutOpen(false);
+    try {
+      await AuthService.logout();
+    } catch {
+      push('error', t('chat.logoutError'));
+    } finally {
+      SocketService.disconnect();
+      useAuthStore.getState().clearUser();
+    }
+  }
+
+  async function confirmRemoveAccount() {
+    setRemoveAccountOpen(false);
+
+    const currentUsername = useAuthStore.getState().user?.username;
+    if (currentUsername != null) {
+      const normalizedUsername = currentUsername.trim().toLowerCase();
+      const savedAccount = useSavedAccountsStore
+        .getState()
+        .accounts.find(
+          account =>
+            account.username.trim().toLowerCase() === normalizedUsername,
+        );
+      if (savedAccount != null) {
+        useSavedAccountsStore.getState().removeAccount(savedAccount.username);
+      }
+    }
+
     try {
       await AuthService.logout();
     } catch {
@@ -236,6 +269,18 @@ export function AppsScreen() {
         cancelLabel={t('dialog.no')}
         onConfirm={() => void confirmLogout()}
         onCancel={() => setLogoutOpen(false)}
+      />
+      <ConfirmDialog
+        visible={removeAccountOpen}
+        danger
+        title={t('dialog.removeAccountTitle')}
+        message={t('dialog.removeAccountMessage', {
+          username: user?.username != null ? `@${user.username}` : '',
+        })}
+        confirmLabel={t('dialog.removeAccountButton')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => void confirmRemoveAccount()}
+        onCancel={() => setRemoveAccountOpen(false)}
       />
       <SocialConnectionsDialog
         visible={socialOpen}
