@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
-import { KeyboardView } from '@components/KeyboardView';
+import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { OlaModal } from '@components/ui/OlaModal';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomBarInset } from '@hooks/useBottomBarInset';
 import { MeCommentComposer } from './MeCommentComposer';
 
 interface MeQuickCommentBarProps {
@@ -17,6 +17,8 @@ export function MeQuickCommentBar(props: MeQuickCommentBarProps) {
     <OlaModal
       visible
       transparent
+      statusBarTranslucent
+      navigationBarTranslucent
       animationType="fade"
       onRequestClose={props.onClose}
     >
@@ -32,34 +34,36 @@ function MeQuickCommentBody({
   onClose,
 }: MeQuickCommentBarProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
+  const bottomBarInset = useBottomBarInset();
 
   return (
-    <KeyboardView className="flex-1 justify-end">
-      <Pressable className="flex-1 bg-black/20" onPress={onClose} />
-      <View style={{ paddingBottom: insets.bottom }}>
-        {contextLabel != null && (
-          <View
-            className="flex-row items-center gap-2 bg-white/95 px-3 py-1.5"
-            style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
-          >
-            <Text className="text-xs text-ola-ink-soft">
-              {t('me.commentingOn')}
-            </Text>
-            <Text
-              numberOfLines={1}
-              className="min-w-0 flex-1 text-xs text-ola-ink"
+    <ChatKeyboardArea>
+      <View className="flex-1 justify-end">
+        <Pressable className="flex-1 bg-black/20" onPress={onClose} />
+        <View style={{ paddingBottom: bottomBarInset }}>
+          {contextLabel != null && (
+            <View
+              className="flex-row items-center gap-2 bg-white/95 px-3 py-1.5"
+              style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
             >
-              {contextLabel}
-            </Text>
-          </View>
-        )}
-        <MeCommentComposer
-          submitting={submitting}
-          onSubmit={onSubmit}
-          autoFocus
-        />
+              <Text className="text-xs text-ola-ink-soft">
+                {t('me.commentingOn')}
+              </Text>
+              <Text
+                numberOfLines={1}
+                className="min-w-0 flex-1 text-xs text-ola-ink"
+              >
+                {contextLabel}
+              </Text>
+            </View>
+          )}
+          <MeCommentComposer
+            submitting={submitting}
+            onSubmit={onSubmit}
+            autoFocus
+          />
+        </View>
       </View>
-    </KeyboardView>
+    </ChatKeyboardArea>
   );
 }
