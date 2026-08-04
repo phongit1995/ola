@@ -3,9 +3,11 @@ package wargod
 import "sort"
 
 const (
-	grid      = 8
-	boardSize = grid * grid
-	tileCount = 6
+	grid             = 8
+	boardSize        = grid * grid
+	baseTileCount    = 6
+	tileCount        = 8
+	specialTileOneIn = 10
 )
 
 const (
@@ -15,9 +17,20 @@ const (
 	tileWater
 	tileShield
 	tileStone
+	tileFireSword
+	tileGreaterHeart
 )
 
-var tileNames = [tileCount]string{"sword", "fire", "heart", "water", "shield", "stone"}
+var tileNames = [tileCount]string{
+	"sword",
+	"fire",
+	"heart",
+	"water",
+	"shield",
+	"stone",
+	"fireSword",
+	"greaterHeart",
+}
 
 type rng struct {
 	z uint64
@@ -35,7 +48,19 @@ func (r *rng) next() uint64 {
 }
 
 func (r *rng) tile() int {
-	return int(r.next() % tileCount)
+	roll := r.next()
+	tile := int(roll % baseTileCount)
+	if (roll/baseTileCount)%specialTileOneIn != 0 {
+		return tile
+	}
+	switch tile {
+	case tileSword:
+		return tileFireSword
+	case tileHeart:
+		return tileGreaterHeart
+	default:
+		return tile
+	}
 }
 
 func createBoard(r *rng) []int {
@@ -57,13 +82,25 @@ func createBoard(r *rng) []int {
 func createsMatchAt(board []int, i, tile int) bool {
 	x := i % grid
 	y := i / grid
-	if x >= 2 && board[i-1] == tile && board[i-2] == tile {
+	matchType := baseTile(tile)
+	if x >= 2 && baseTile(board[i-1]) == matchType && baseTile(board[i-2]) == matchType {
 		return true
 	}
-	if y >= 2 && board[i-grid] == tile && board[i-grid*2] == tile {
+	if y >= 2 && baseTile(board[i-grid]) == matchType && baseTile(board[i-grid*2]) == matchType {
 		return true
 	}
 	return false
+}
+
+func baseTile(tile int) int {
+	switch tile {
+	case tileFireSword:
+		return tileSword
+	case tileGreaterHeart:
+		return tileHeart
+	default:
+		return tile
+	}
 }
 
 func findMatches(board []int) ([]int, map[int]int, int) {
@@ -72,7 +109,7 @@ func findMatches(board []int) ([]int, map[int]int, int) {
 	scanLine := func(start, step, length int) {
 		runStart := 0
 		for k := 1; k <= length; k++ {
-			same := k < length && board[start+k*step] == board[start+runStart*step]
+			same := k < length && baseTile(board[start+k*step]) == baseTile(board[start+runStart*step])
 			if same {
 				continue
 			}

@@ -1,6 +1,15 @@
 import type { Board, TileType } from './core';
 
-export const TILE_ORDER: TileType[] = ['sword', 'fire', 'heart', 'water', 'shield', 'stone'];
+export const TILE_ORDER: TileType[] = [
+  'sword',
+  'fire',
+  'heart',
+  'water',
+  'shield',
+  'stone',
+  'fireSword',
+  'greaterHeart',
+];
 
 export interface ServerFighter {
   hp: number;
@@ -44,16 +53,7 @@ export interface StepUlt {
   damage: number;
 }
 
-export type SpecialType = 'fireSword' | 'greaterHeart';
-
-export interface StepSpecial {
-  kind: 'special';
-  special: SpecialType;
-  damage?: number;
-  heal?: number;
-}
-
-export type Step = StepSwap | StepMatch | StepGravity | StepShuffle | StepUlt | StepSpecial;
+export type Step = StepSwap | StepMatch | StepGravity | StepShuffle | StepUlt;
 
 export interface ServerState {
   board: number[];

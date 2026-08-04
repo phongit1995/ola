@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import { KeyboardView } from '@components/KeyboardView';
+import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { OlaModal } from '@components/ui/OlaModal';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomBarInset } from '@hooks/useBottomBarInset';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
@@ -34,6 +34,8 @@ export function MeCommentSheet(props: MeCommentSheetProps) {
     <OlaModal
       visible
       transparent
+      statusBarTranslucent
+      navigationBarTranslucent
       animationType="slide"
       onRequestClose={props.onClose}
     >
@@ -53,10 +55,13 @@ function MeCommentSheetBody({
   onCommentDelta,
 }: MeCommentSheetProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
+  const bottomBarInset = useBottomBarInset();
   const meId = useAuthStore(s => s.user?.id) ?? '';
   const composerRef = useRef<MeCommentComposerHandle>(null);
-  const [viewer, setViewer] = useState<{ images: string[]; index: number } | null>(null);
+  const [viewer, setViewer] = useState<{
+    images: string[];
+    index: number;
+  } | null>(null);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
 
   const {
@@ -80,83 +85,85 @@ function MeCommentSheetBody({
 
   return (
     <>
-      <KeyboardView className="flex-1 bg-[#eceff1]">
-        <ScreenHeader
-          title={`${t('me.commentsTitle')}${total > 0 ? ` (${total})` : ''}`}
-          onBack={onClose}
-        />
-
-        <ScrollView
-          className="flex-1"
-          keyboardShouldPersistTaps="handled"
-          onStartShouldSetResponderCapture={() => {
-            composerRef.current?.closePanel();
-            return false;
-          }}
-        >
-          <MePostCard
-            post={post}
-            timeLabel={formatTime(post.createdAt)}
-            onToggleLike={onToggleLike}
-            onToggleDislike={onToggleDislike}
-            onOpenProfile={onOpenProfile}
-            onOpenLikers={setLikersPostId}
-            onOpenPhotos={(images, index) => setViewer({ images, index })}
+      <ChatKeyboardArea>
+        <View className="flex-1 bg-[#eceff1]">
+          <ScreenHeader
+            title={`${t('me.commentsTitle')}${total > 0 ? ` (${total})` : ''}`}
+            onBack={onClose}
           />
 
-          <View className="py-2">
-            {loading && <ActivityIndicator className="py-8" color="#7cb342" />}
-            {!loading && error && (
-              <Text
-                className="py-8 text-center text-sm"
-                style={{ color: '#e34545' }}
-              >
-                {t('me.commentLoadError')}
-              </Text>
-            )}
-            {!loading && !error && comments.length === 0 && (
-              <Text
-                className="py-8 text-center text-sm text-ola-ink-soft"
-              >
-                {t('me.commentEmpty')}
-              </Text>
-            )}
-            {!loading &&
-              !error &&
-              comments.map(comment => {
-                const isOwn = comment.author?.id === meId;
-                return (
-                  <MeCommentItem
-                    key={comment.id}
-                    comment={comment}
-                    time={formatTime(comment.createdAt)}
-                    canDelete={isOwn}
-                    canReport={!isOwn}
-                    onDelete={remove}
-                    onReply={isOwn ? undefined : setReplyTarget}
-                    onToggleLike={like}
-                    onOpenProfile={onOpenProfile}
-                  />
-                );
-              })}
+          <ScrollView
+            className="flex-1"
+            keyboardShouldPersistTaps="handled"
+            onStartShouldSetResponderCapture={() => {
+              composerRef.current?.closePanel();
+              return false;
+            }}
+          >
+            <MePostCard
+              post={post}
+              timeLabel={formatTime(post.createdAt)}
+              onToggleLike={onToggleLike}
+              onToggleDislike={onToggleDislike}
+              onOpenProfile={onOpenProfile}
+              onOpenLikers={setLikersPostId}
+              onOpenPhotos={(images, index) => setViewer({ images, index })}
+            />
+
+            <View className="py-2">
+              {loading && (
+                <ActivityIndicator className="py-8" color="#7cb342" />
+              )}
+              {!loading && error && (
+                <Text
+                  className="py-8 text-center text-sm"
+                  style={{ color: '#e34545' }}
+                >
+                  {t('me.commentLoadError')}
+                </Text>
+              )}
+              {!loading && !error && comments.length === 0 && (
+                <Text className="py-8 text-center text-sm text-ola-ink-soft">
+                  {t('me.commentEmpty')}
+                </Text>
+              )}
+              {!loading &&
+                !error &&
+                comments.map(comment => {
+                  const isOwn = comment.author?.id === meId;
+                  return (
+                    <MeCommentItem
+                      key={comment.id}
+                      comment={comment}
+                      time={formatTime(comment.createdAt)}
+                      canDelete={isOwn}
+                      canReport={!isOwn}
+                      onDelete={remove}
+                      onReply={isOwn ? undefined : setReplyTarget}
+                      onToggleLike={like}
+                      onOpenProfile={onOpenProfile}
+                    />
+                  );
+                })}
+            </View>
+          </ScrollView>
+
+          <View style={{ paddingBottom: bottomBarInset }}>
+            <MeCommentComposer
+              ref={composerRef}
+              key={replyTarget?.id ?? 'root'}
+              autoFocus={autoFocusInput}
+              submitting={submitting}
+              onSubmit={add}
+              initialDraft={
+                replyingToUsername != null ? `@${replyingToUsername} ` : ''
+              }
+              replyingTo={replyingToUsername}
+              onCancelReply={() => setReplyTarget(null)}
+            />
           </View>
-        </ScrollView>
-
-        <View style={{ paddingBottom: insets.bottom }}>
-          <MeCommentComposer
-            ref={composerRef}
-            key={replyTarget?.id ?? 'root'}
-            autoFocus={autoFocusInput}
-            submitting={submitting}
-            onSubmit={add}
-            initialDraft={
-              replyingToUsername != null ? `@${replyingToUsername} ` : ''
-            }
-            replyingTo={replyingToUsername}
-            onCancelReply={() => setReplyTarget(null)}
-          />
         </View>
-      </KeyboardView>
+      </ChatKeyboardArea>
 
       <MediaViewerModal
         images={viewer?.images ?? []}

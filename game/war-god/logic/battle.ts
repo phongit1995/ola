@@ -13,7 +13,6 @@ export const ULT_COST = 50;
 export const ULT_DMG = 25;
 export const FIRE_SWORD_DMG = 8;
 export const GREATER_HEART_HEAL = 8;
-export const GREATER_HEART_MIN_TILES = 4;
 
 export interface Fighter {
   hp: number;
@@ -31,22 +30,6 @@ export interface EffectSummary {
   mana: number;
   armor: number;
   armorDamage?: number;
-}
-
-export type SpecialType = 'fireSword' | 'greaterHeart';
-
-export interface SpecialEffect {
-  type: SpecialType;
-  damage: number;
-  heal: number;
-}
-
-export interface SpecialProgress {
-  sawSword: boolean;
-  sawFire: boolean;
-  heartTiles: number;
-  fireSwordUsed: boolean;
-  greaterHeartUsed: boolean;
 }
 
 const DMG_SWORD = 5;
@@ -73,14 +56,15 @@ export function applyTileEffects(
     summary.damage += dealt;
   }
 
-  const magic = counts.fire * DMG_FIRE;
+  const magic = counts.fire * DMG_FIRE + counts.fireSword * FIRE_SWORD_DMG;
   if (magic > 0) {
     defender.hp = Math.max(0, defender.hp - magic);
     summary.damage += magic;
   }
 
-  if (counts.heart > 0) {
-    const healed = Math.min(MAX_HP - attacker.hp, counts.heart * HEAL_HEART);
+  const healing = counts.heart * HEAL_HEART + counts.greaterHeart * GREATER_HEART_HEAL;
+  if (healing > 0) {
+    const healed = Math.min(MAX_HP - attacker.hp, healing);
     attacker.hp += healed;
     summary.heal = healed;
   }
@@ -98,51 +82,6 @@ export function applyTileEffects(
   }
 
   return summary;
-}
-
-export function createSpecialProgress(): SpecialProgress {
-  return {
-    sawSword: false,
-    sawFire: false,
-    heartTiles: 0,
-    fireSwordUsed: false,
-    greaterHeartUsed: false,
-  };
-}
-
-export function observeSpecialProgress(
-  progress: SpecialProgress,
-  counts: Partial<Record<TileType, number>>,
-): void {
-  progress.sawSword ||= (counts.sword ?? 0) > 0;
-  progress.sawFire ||= (counts.fire ?? 0) > 0;
-  progress.heartTiles += counts.heart ?? 0;
-}
-
-export function applyAvailableSpecials(
-  progress: SpecialProgress,
-  attacker: Fighter,
-  defender: Fighter,
-): SpecialEffect[] {
-  const effects: SpecialEffect[] = [];
-  if (defender.hp <= 0) return effects;
-  if (!progress.fireSwordUsed && progress.sawSword && progress.sawFire) {
-    progress.fireSwordUsed = true;
-    defender.hp = Math.max(0, defender.hp - FIRE_SWORD_DMG);
-    effects.push({ type: 'fireSword', damage: FIRE_SWORD_DMG, heal: 0 });
-  }
-  if (defender.hp <= 0) return effects;
-  if (
-    !progress.greaterHeartUsed &&
-    progress.heartTiles >= GREATER_HEART_MIN_TILES &&
-    attacker.hp < MAX_HP
-  ) {
-    progress.greaterHeartUsed = true;
-    const healed = Math.min(GREATER_HEART_HEAL, MAX_HP - attacker.hp);
-    attacker.hp += healed;
-    effects.push({ type: 'greaterHeart', damage: 0, heal: healed });
-  }
-  return effects;
 }
 
 export function castUltimate(attacker: Fighter, defender: Fighter): number {
@@ -185,8 +124,11 @@ export function botChooseMove(
     return moves[Math.floor(Math.random() * moves.length)];
   }
 
-  const heartWeight = bot.hp <= 50 ? 6.5 : 1.5;
+  const heartWeight = bot.hp >= MAX_HP ? 0.2 : bot.hp <= 50 ? 6.5 : 1.5;
+  const greaterHeartWeight = bot.hp >= MAX_HP ? 0.3 : bot.hp <= 50 ? 9 : 3;
+  const shieldWeight = bot.armor >= MAX_ARMOR ? 0.2 : bot.hp <= 60 ? 4.5 : 2.5;
   const waterWeight = bot.mp >= ULT_COST ? 1 : 5;
+  const attackWeight = player.hp <= 25 ? 1.25 : 1;
   const comboBonus = level === 'hard' ? 14 : 8;
   const jitter = level === 'hard' ? 0 : 2;
 
@@ -201,17 +143,16 @@ export function botChooseMove(
 
     const c = match.counts;
     let score =
-      c.sword * 5 +
-      c.fire * 4.5 +
-      c.stone * 2 +
+      (c.sword * 5 +
+        c.fire * 4.5 +
+        c.fireSword * FIRE_SWORD_DMG +
+        c.stone * 2) *
+        attackWeight +
       c.heart * heartWeight +
+      c.greaterHeart * greaterHeartWeight +
       c.water * waterWeight +
-      c.shield * (player.hp > 60 ? 3.5 : 2);
+      c.shield * shieldWeight;
     if (match.maxRun >= 4) score += comboBonus;
-    if (c.sword > 0 && c.fire > 0) score += FIRE_SWORD_DMG;
-    if (c.heart >= GREATER_HEART_MIN_TILES && bot.hp < MAX_HP) {
-      score += Math.min(GREATER_HEART_HEAL, MAX_HP - bot.hp);
-    }
     score += Math.random() * jitter;
 
     if (score > bestScore) {

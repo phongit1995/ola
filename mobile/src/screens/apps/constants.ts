@@ -11,6 +11,7 @@ export type AppItemAction =
   | 'media'
   | 'social'
   | 'settings'
+  | 'remove-account'
   | 'logout';
 
 export interface AppItem {
@@ -70,6 +71,11 @@ export const APP_ITEMS: AppItem[] = [
     icon: require('@assets/icons/apps/setting.png'),
     titleKey: 'home.apps.settings',
     action: 'settings',
+  },
+  {
+    icon: require('@assets/icons/apps/delete-account.png'),
+    titleKey: 'home.apps.removeAccount',
+    action: 'remove-account',
   },
   {
     icon: require('@assets/icons/apps/logout.png'),

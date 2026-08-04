@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
-import { MAX_HP, MAX_MP, type Fighter } from '../../logic/battle';
+import { MAX_ARMOR, MAX_HP, MAX_MP, ULT_COST, type Fighter } from '../../logic/battle';
 import { A, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick } from '../../kit';
 
@@ -20,6 +20,7 @@ export interface FighterUI {
   hp: BarUI;
   mp: BarUI;
   armor: Container;
+  armorBg: Graphics;
   armorText: Text;
   ultFrame: Sprite;
   ultFlame: Sprite;
@@ -27,6 +28,8 @@ export interface FighterUI {
   ultOn: Texture;
   ultOff: Texture;
   ultBtn: Container;
+  ultFlameScale: number;
+  ultPulse: ((ticker: Ticker) => void) | null;
 }
 
 export interface ButtonUI {
@@ -70,6 +73,7 @@ function makeBar(
   color: number,
   width: number,
   mirror: boolean,
+  marker?: number,
 ): { view: Container; bar: BarUI } {
   const c = new Container();
   const ic = new Sprite(icon);
@@ -89,7 +93,15 @@ function makeBar(
   fill.x = barX;
   label.x = barX + width / 2;
 
-  c.addChild(track, fill, ic, label);
+  c.addChild(track, fill);
+  if (marker != null) {
+    const mark = new Graphics()
+      .roundRect(-1, 1, 2, 12, 1)
+      .fill({ color: 0xffd75e, alpha: 0.9 });
+    mark.x = barX + width * marker;
+    c.addChild(mark);
+  }
+  c.addChild(ic, label);
   return { view: c, bar: { fill, label, width, color } };
 }
 
@@ -134,7 +146,7 @@ function updateBar(bar: BarUI, cur: number, max: number): void {
 function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   const mirror = side === 'foe';
   const w = 190;
-  const h = 140;
+  const h = 144;
   const card = new Container();
 
   const bg = new Graphics().roundRect(0, 0, w, h, 14).fill({ color: 0x101c2c, alpha: 0.88 });
@@ -180,22 +192,24 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   hpRow.view.y = 48;
   card.addChild(hpRow.view);
 
-  const mpRow = makeBar(tex[A.hud.icMp], 0x2f7fe0, 140, mirror);
+  const mpRow = makeBar(tex[A.hud.icMp], 0x2f7fe0, 140, mirror, ULT_COST / MAX_MP);
   mpRow.view.x = 12;
-  mpRow.view.y = 70;
+  mpRow.view.y = 68;
   card.addChild(mpRow.view);
 
   const armor = new Container();
+  const armorBg = new Graphics();
   const armorIc = new Sprite(tex[A.items.shield]);
   armorIc.anchor.set(0.5);
-  armorIc.scale.set(13 / Math.max(armorIc.texture.width, armorIc.texture.height));
-  const armorText = makeText('0', 10, 0x9fd0ff, '800');
-  armorText.anchor.set(0, 0.5);
-  armorText.x = 8;
-  armor.addChild(armorIc, armorText);
-  armor.x = mirror ? 14 : w - 34;
-  armor.y = 40;
-  armor.visible = false;
+  armorIc.scale.set(14 / Math.max(armorIc.texture.width, armorIc.texture.height));
+  armorIc.x = 10;
+  armorIc.y = 8;
+  const armorText = makeText(`0/${MAX_ARMOR}`, 9, 0x9fd0ff, '800');
+  armorText.x = 31;
+  armorText.y = 8;
+  armor.addChild(armorBg, armorIc, armorText);
+  armor.x = mirror ? 14 : w - 14 - 50;
+  armor.y = 47;
   card.addChild(armor);
 
   const ultOn = tex[mirror ? A.hud.ultRightOn : A.hud.ultLeftOn];
@@ -203,23 +217,25 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   const ultBtn = new Container();
   const ultFrame = new Sprite(ultOff);
   ultFrame.width = 166;
-  ultFrame.height = 36;
+  ultFrame.scale.y = ultFrame.scale.x;
   ultBtn.addChild(ultFrame);
 
   const ultFlame = new Sprite(tex[A.hud.flameOff]);
   ultFlame.anchor.set(0.5);
-  ultFlame.scale.set(24 / Math.max(ultFlame.texture.width, ultFlame.texture.height));
-  ultFlame.x = mirror ? 166 - 17 : 17;
-  ultFlame.y = 18;
+  const ultFlameScale = 26 / Math.max(ultFlame.texture.width, ultFlame.texture.height);
+  ultFlame.scale.set(ultFlameScale);
+  const ultOrbX = ultFrame.height / 2;
+  ultFlame.x = mirror ? 166 - ultOrbX : ultOrbX;
+  ultFlame.y = ultFrame.height / 2;
   ultBtn.addChild(ultFlame);
 
   const ultLabel = makeText('TUYỆT CHIÊU', 11, 0xcfc9b8, '700', HEADING);
-  ultLabel.x = mirror ? (166 - 34) / 2 : 34 + (166 - 34) / 2;
-  ultLabel.y = 18;
+  ultLabel.x = mirror ? (166 - ultFrame.height) / 2 : ultFrame.height + (166 - ultFrame.height) / 2;
+  ultLabel.y = ultFrame.height / 2;
   ultBtn.addChild(ultLabel);
 
   ultBtn.x = 12;
-  ultBtn.y = 94;
+  ultBtn.y = 84;
   card.addChild(ultBtn);
 
   if (onUlt) {
@@ -236,6 +252,7 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
     hp: hpRow.bar,
     mp: mpRow.bar,
     armor,
+    armorBg,
     armorText,
     ultFrame,
     ultFlame,
@@ -243,6 +260,8 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
     ultOn,
     ultOff,
     ultBtn,
+    ultFlameScale,
+    ultPulse: null,
   };
 }
 
@@ -446,14 +465,39 @@ export function buildHud(root: Container, actions: HudActions): void {
 export function updateFighter(f: FighterUI, fighter: Fighter, active: boolean, ready: boolean): void {
   updateBar(f.hp, fighter.hp, MAX_HP);
   updateBar(f.mp, fighter.mp, MAX_MP);
-  f.armor.visible = fighter.armor > 0;
-  f.armorText.text = String(fighter.armor);
+  const hasArmor = fighter.armor > 0;
+  f.armorBg
+    .clear()
+    .roundRect(0, 0, 50, 16, 8)
+    .fill({ color: hasArmor ? 0x164d82 : 0x0b1827, alpha: hasArmor ? 0.96 : 0.82 })
+    .stroke({ width: 1, color: hasArmor ? 0x8fdcff : 0x526270, alpha: 0.95 });
+  f.armor.alpha = hasArmor ? 1 : 0.68;
+  f.armorText.text = `${fighter.armor}/${MAX_ARMOR}`;
+  f.armorText.style.fill = hasArmor ? 0xc4efff : 0x8795a2;
   f.border.texture = active ? tex[A.hud.cardBorderActive] : tex[A.hud.cardBorderIdle];
   f.ring.texture = active ? tex[A.hud.ringActive] : tex[A.hud.ringIdle];
   f.card.alpha = active ? 1 : 0.92;
   f.ultFrame.texture = ready ? f.ultOn : f.ultOff;
   f.ultFlame.texture = ready ? tex[A.hud.flameOn] : tex[A.hud.flameOff];
+  f.ultLabel.text = ready ? 'SẴN SÀNG!' : 'TUYỆT CHIÊU';
   f.ultLabel.style.fill = ready ? 0xffe9a8 : 0xcfc9b8;
+  if (ready && !f.ultPulse) {
+    let elapsed = 0;
+    f.ultPulse = (ticker: Ticker): void => {
+      elapsed += ticker.deltaMS;
+      const wave = (Math.sin(elapsed / 170) + 1) / 2;
+      f.ultFlame.scale.set(f.ultFlameScale * (1 + wave * 0.14));
+      f.ultFrame.alpha = 0.88 + wave * 0.12;
+      f.ultLabel.alpha = 0.82 + wave * 0.18;
+    };
+    addTick(f.ultPulse);
+  } else if (!ready && f.ultPulse) {
+    removeTick(f.ultPulse);
+    f.ultPulse = null;
+    f.ultFlame.scale.set(f.ultFlameScale);
+    f.ultFrame.alpha = 1;
+    f.ultLabel.alpha = 1;
+  }
 }
 
 export function showOverlay(

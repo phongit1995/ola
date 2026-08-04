@@ -1,9 +1,11 @@
 export const GRID = 8;
 export const CELLS = GRID * GRID;
 
-export type TileType = 'sword' | 'fire' | 'heart' | 'water' | 'shield' | 'stone';
+export type BaseTileType = 'sword' | 'fire' | 'heart' | 'water' | 'shield' | 'stone';
+export type TileType = BaseTileType | 'fireSword' | 'greaterHeart';
 
-export const TILE_TYPES: TileType[] = ['sword', 'fire', 'heart', 'water', 'shield', 'stone'];
+export const TILE_TYPES: BaseTileType[] = ['sword', 'fire', 'heart', 'water', 'shield', 'stone'];
+export const SPECIAL_TILE_CHANCE = 0.1;
 
 export type Board = TileType[];
 
@@ -30,11 +32,23 @@ export interface GravityResult {
 }
 
 function randTile(): TileType {
-  return TILE_TYPES[Math.floor(Math.random() * TILE_TYPES.length)];
+  const base = TILE_TYPES[Math.floor(Math.random() * TILE_TYPES.length)];
+  if (base === 'sword' && Math.random() < SPECIAL_TILE_CHANCE) return 'fireSword';
+  if (base === 'heart' && Math.random() < SPECIAL_TILE_CHANCE) return 'greaterHeart';
+  return base;
 }
 
 export function emptyCounts(): Record<TileType, number> {
-  return { sword: 0, fire: 0, heart: 0, water: 0, shield: 0, stone: 0 };
+  return {
+    sword: 0,
+    fire: 0,
+    heart: 0,
+    water: 0,
+    shield: 0,
+    stone: 0,
+    fireSword: 0,
+    greaterHeart: 0,
+  };
 }
 
 export function createBoard(): Board {
@@ -53,9 +67,28 @@ export function createBoard(): Board {
 function createsMatchAt(board: Board, i: number, type: TileType): boolean {
   const x = i % GRID;
   const y = Math.floor(i / GRID);
-  if (x >= 2 && board[i - 1] === type && board[i - 2] === type) return true;
-  if (y >= 2 && board[i - GRID] === type && board[i - GRID * 2] === type) return true;
+  const matchType = baseTileType(type);
+  if (
+    x >= 2 &&
+    baseTileType(board[i - 1]) === matchType &&
+    baseTileType(board[i - 2]) === matchType
+  ) {
+    return true;
+  }
+  if (
+    y >= 2 &&
+    baseTileType(board[i - GRID]) === matchType &&
+    baseTileType(board[i - GRID * 2]) === matchType
+  ) {
+    return true;
+  }
   return false;
+}
+
+export function baseTileType(type: TileType): BaseTileType {
+  if (type === 'fireSword') return 'sword';
+  if (type === 'greaterHeart') return 'heart';
+  return type;
 }
 
 export function findMatches(board: Board): MatchResult | null {
@@ -66,7 +99,8 @@ export function findMatches(board: Board): MatchResult | null {
     let runStart = 0;
     for (let k = 1; k <= length; k++) {
       const same =
-        k < length && board[start + k * step] === board[start + runStart * step];
+        k < length &&
+        baseTileType(board[start + k * step]) === baseTileType(board[start + runStart * step]);
       if (!same) {
         const runLen = k - runStart;
         if (runLen >= 3) {

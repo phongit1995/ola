@@ -7,6 +7,7 @@ import { ROUTES } from '@constants';
 import { formatKen, toast } from '@lib';
 import { AuthService, SocketService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useArcadeStore } from '@/store/arcadeStore';
@@ -69,6 +70,7 @@ export function AppsPanel() {
   const notifUnread = useAppNotificationStore((s) => s.unreadCount);
   const user = useAuthStore((s) => s.user);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
 
   useEffect(() => {
@@ -77,6 +79,9 @@ export function AppsPanel() {
 
   function handleOpen(item: AppItem): (() => void) | undefined {
     if (item.action === 'logout') return () => setLogoutOpen(true);
+    if (item.action === 'remove-account') {
+      return () => setRemoveAccountOpen(true);
+    }
     if (item.action === 'social') return () => setSocialOpen(true);
     if (item.overlay) return () => openGame(item.overlay!);
     if (item.app) return () => openApp(item.app!);
@@ -85,6 +90,34 @@ export function AppsPanel() {
 
   async function confirmLogout() {
     setLogoutOpen(false);
+    try {
+      await AuthService.logout();
+    } catch {
+      toast.error(t('chat.logoutError'));
+    } finally {
+      SocketService.disconnect();
+      useAuthStore.getState().clearUser();
+      navigate(ROUTES.login);
+    }
+  }
+
+  async function confirmRemoveAccount() {
+    setRemoveAccountOpen(false);
+
+    const currentUsername = useAuthStore.getState().user?.username;
+    if (currentUsername != null) {
+      const normalizedUsername = currentUsername.trim().toLowerCase();
+      const savedAccount = useSavedAccountsStore
+        .getState()
+        .accounts.find(
+          (account) =>
+            account.username.trim().toLowerCase() === normalizedUsername
+        );
+      if (savedAccount != null) {
+        useSavedAccountsStore.getState().removeAccount(savedAccount.username);
+      }
+    }
+
     try {
       await AuthService.logout();
     } catch {
@@ -162,6 +195,18 @@ export function AppsPanel() {
         cancelLabel={t('dialog.no')}
         onConfirm={() => void confirmLogout()}
         onCancel={() => setLogoutOpen(false)}
+      />
+      <ConfirmDialog
+        open={removeAccountOpen}
+        danger
+        title={t('dialog.removeAccountTitle')}
+        message={t('dialog.removeAccountMessage', {
+          username: user?.username ? `@${user.username}` : '',
+        })}
+        confirmLabel={t('dialog.removeAccountButton')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => void confirmRemoveAccount()}
+        onCancel={() => setRemoveAccountOpen(false)}
       />
       <SocialConnectionsDialog
         open={socialOpen}

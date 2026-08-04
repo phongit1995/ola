@@ -78,8 +78,6 @@ export const A = {
     water: itemWater,
     shield: itemShield,
     stone: itemStone,
-  },
-  specials: {
     fireSword: specialFireSword,
     greaterHeart: specialGreaterHeart,
   },

@@ -6,7 +6,7 @@ interface ChatKeyboardAreaProps {
   children: ReactNode;
 }
 
-// Vùng nội dung của 2 màn chat: clip (overflow hidden) + translate-with-padding để
+// Vùng nội dung có composer: clip (overflow hidden) + translate-with-padding để
 // suốt animation chỉ transform trên UI thread, list không relayout từng frame.
 // Dùng automaticOffset để RNKC lấy tọa độ tuyệt đối bằng getLocationOnScreen trên Android.
 // Không dùng View.measureInWindow: khi cờ edge-to-edge của RN đang tắt
