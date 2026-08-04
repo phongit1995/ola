@@ -20,6 +20,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		auth.POST("/login", r.rateLimit.LimitPolicy(middleware.PolicyAdminLogin), r.controller.Login)
 		auth.POST("/refresh", r.controller.Refresh)
+		auth.POST("/logout", r.authMiddleware.RequireAdmin(), r.controller.Logout)
 		auth.GET("/me", r.authMiddleware.RequireAdmin(), r.controller.Me)
 		auth.POST("/change-password", r.authMiddleware.RequireAdmin(), r.controller.ChangePassword)
 	}

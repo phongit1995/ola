@@ -60,8 +60,8 @@ export function MeLeftDrawer({
 
   const items = [
     { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal'), tint: undefined },
-    { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage'), tint: undefined },
-    { key: 'likes', icon: likeIcon, label: t('me.drawerLikes'), tint: undefined },
+    { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage'), tint: 'rgba(0,0,0,0.5)' },
+    { key: 'likes', icon: likeIcon, label: t('me.drawerLikes'), tint: 'rgba(0,0,0,0.5)' },
     { key: 'visitors', icon: visitorIcon, label: t('me.tabVisitors'), tint: 'rgba(0,0,0,0.6)' },
     { key: 'clan', icon: clanIcon, label: t('me.drawerClan'), tint: undefined },
     // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong

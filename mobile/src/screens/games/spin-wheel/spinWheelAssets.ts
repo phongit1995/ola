@@ -6,6 +6,7 @@ export const wheelAssets = {
   plusFrame: require('@assets/games/spin-wheel/plus-frame.webp'),
   plusIcon: require('@assets/games/spin-wheel/plus-icon.webp'),
   wheelCenter: require('@assets/games/spin-wheel/wheel-center.webp'),
+  wheelIcon: require('@assets/games/spin-wheel/wheel.webp'),
   wheelLogo: require('@assets/games/spin-wheel/logo.webp'),
   wheelOuterRing: require('@assets/games/spin-wheel/wheel-outer-ring.webp'),
   pointer: require('@assets/games/spin-wheel/pointer.webp'),
@@ -24,6 +25,12 @@ export const wheelAssets = {
   resultCloseFrame: require('@assets/games/spin-wheel/result-close-frame.webp'),
   resultCloseMark: require('@assets/games/spin-wheel/result-close-mark.webp'),
   coin: require('@assets/icons/apps/ken.png'),
+} as const;
+
+export const wheelGiftListAssets = {
+  giftBox: require('@assets/games/spin-wheel/gift-list/gift-box.webp'),
+  closeButton: require('@assets/games/spin-wheel/gift-list/close-button.webp'),
+  closeMark: require('@assets/games/spin-wheel/gift-list/close-mark.webp'),
 } as const;
 
 export const wheelHistoryAssets = {

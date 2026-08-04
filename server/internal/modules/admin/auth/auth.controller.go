@@ -1,9 +1,10 @@
 package adminauth
 
 import (
+	"net/http"
+
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -39,11 +40,10 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	resp, err := ctrl.service.Login(&req, c.ClientIP())
+	resp, err := ctrl.service.Login(&req, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, ctrl.httpError(err)
 	}
-
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
 
@@ -64,12 +64,38 @@ func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	resp, err := ctrl.service.RefreshToken(req.RefreshToken, c.ClientIP())
+	resp, err := ctrl.service.RefreshToken(req.RefreshToken, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, ctrl.httpError(err)
 	}
 
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
+}
+
+// Logout godoc
+// @Summary      Admin logout
+// @Description  Revoke the authenticated admin session
+// @Tags         admin-auth
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200 {object} map[string]string
+// @Failure      401 {object} utils.APIError
+// @Router       /admin/auth/logout [post]
+func (ctrl *Controller) Logout(c *gin.Context) (interface{}, error) {
+	adminID, ok := middleware.GetAdminID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	sessionID, ok := middleware.GetAdminSessionID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+
+	if err := ctrl.service.Logout(adminID, sessionID); err != nil {
+		return nil, ctrl.httpError(err)
+	}
+
+	return map[string]string{"message": "logged out successfully"}, nil
 }
 
 // ChangePassword godoc
@@ -96,7 +122,7 @@ func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
 	}
 
 	if err := ctrl.service.ChangePassword(adminID, &req); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, ctrl.httpError(err)
 	}
 
 	return map[string]string{"message": "password changed successfully"}, nil
@@ -120,8 +146,16 @@ func (ctrl *Controller) Me(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.GetByID(adminID)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, ctrl.httpError(err)
 	}
 
 	return resp, nil
+}
+
+func (ctrl *Controller) httpError(err error) *utils.HTTPError {
+	if status, known := utils.KnownHTTPStatusFromMessage(err.Error()); known {
+		return utils.NewHTTPError(status, err.Error())
+	}
+	ctrl.logger.Errorw("Admin auth operation failed", "error", err.Error())
+	return utils.NewHTTPError(http.StatusInternalServerError, "internal server error")
 }

@@ -129,6 +129,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Revoke the authenticated admin session",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-auth"
+                ],
+                "summary": "Admin logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/auth/me": {
             "get": {
                 "security": [
@@ -3416,7 +3450,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Sort field (createdAt, lastLoginAt, followerCount, username)",
+                        "description": "Sort field (createdAt, lastLoginAt, followerCount, username, ken)",
                         "name": "sortBy",
                         "in": "query"
                     },
@@ -5218,6 +5252,31 @@ const docTemplate = `{
                         "description": "Too Many Requests",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/calls/active": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the ringing or active call the user belongs to, with a fresh LiveKit token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calls"
+                ],
+                "summary": "Get the caller's ongoing call",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_call.CallTokenSuccessResponse"
                         }
                     }
                 }
@@ -10355,6 +10414,105 @@ const docTemplate = `{
                 }
             }
         },
+        "/rooms/{id}/messages/audio": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload a voice recording and create a message of type=audio in one call (≤60s)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Send a voice message to a room (must have joined via socket)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Audio file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Duration in seconds",
+                        "name": "duration",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JSON array of normalized levels",
+                        "name": "waveform",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message ID being replied to",
+                        "name": "replyToId",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Idempotency key",
+                        "name": "clientMsgId",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/rooms/{id}/messages/images": {
             "post": {
                 "security": [
@@ -11353,6 +11511,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/{id}/view": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Record that the authenticated user opened another user's profile",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Record a profile view",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.ProfileViewSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/vip/buy": {
             "post": {
                 "security": [
@@ -12137,6 +12347,7 @@ const docTemplate = `{
                 },
                 "newPassword": {
                     "type": "string",
+                    "maxLength": 72,
                     "minLength": 6,
                     "example": "newpass@456"
                 }
@@ -15540,6 +15751,9 @@ const docTemplate = `{
                 "conversationId": {
                     "type": "string"
                 },
+                "ringTimeoutSeconds": {
+                    "type": "integer"
+                },
                 "roomName": {
                     "type": "string"
                 },
@@ -18801,6 +19015,24 @@ const docTemplate = `{
         "internal_modules_room.RoomMessageResponse": {
             "type": "object",
             "properties": {
+                "audioDuration": {
+                    "type": "number"
+                },
+                "audioMimeType": {
+                    "type": "string"
+                },
+                "audioSize": {
+                    "type": "integer"
+                },
+                "audioUrl": {
+                    "type": "string"
+                },
+                "audioWaveform": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
                 "clientMsgId": {
                     "type": "string"
                 },
@@ -19516,6 +19748,41 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_user.PresenceBatchResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_user.ProfileViewResponse": {
+            "type": "object",
+            "properties": {
+                "recorded": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_modules_user.ProfileViewSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_user.ProfileViewResponse"
                 },
                 "error": {
                     "type": "string"
@@ -20653,6 +20920,23 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_wheel.PlayerOptionView": {
+            "type": "object",
+            "properties": {
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                }
+            }
+        },
         "internal_modules_wheel.PlayerSegmentView": {
             "type": "object",
             "properties": {
@@ -20673,6 +20957,12 @@ const docTemplate = `{
                 },
                 "label": {
                     "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_wheel.PlayerOptionView"
+                    }
                 },
                 "sortOrder": {
                     "type": "integer"
@@ -22424,6 +22714,24 @@ const docTemplate = `{
         "ola-chat-server_internal_modules_room.RoomMessageResponse": {
             "type": "object",
             "properties": {
+                "audioDuration": {
+                    "type": "number"
+                },
+                "audioMimeType": {
+                    "type": "string"
+                },
+                "audioSize": {
+                    "type": "integer"
+                },
+                "audioUrl": {
+                    "type": "string"
+                },
+                "audioWaveform": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
                 "clientMsgId": {
                     "type": "string"
                 },

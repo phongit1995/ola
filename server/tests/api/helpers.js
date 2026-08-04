@@ -1,7 +1,35 @@
 'use strict'
 
+const crypto = require('crypto')
+const fs = require('fs')
+const path = require('path')
+
 const BASE    = process.env.API_BASE || 'http://localhost:8080/api/v1'
 const WS_BASE = process.env.WS_BASE  || 'http://localhost:8080'
+
+function localEnvValue(name) {
+  try {
+    const envFile = fs.readFileSync(path.resolve(__dirname, '../..', '.env'), 'utf8')
+    const line = envFile.split(/\r?\n/).find((item) => item.startsWith(`${name}=`))
+    return line?.slice(name.length + 1).trim().replace(/^(['"])(.*)\1$/, '$2') ?? ''
+  } catch {
+    return ''
+  }
+}
+
+const API_GUARD_SECRET = process.env.API_GUARD_SECRET || localEnvValue('API_GUARD_SECRET')
+
+function apiGuardHeaders(method, requestPath) {
+  if (!API_GUARD_SECRET) return {}
+  const timestamp = Date.now().toString()
+  const nonce = crypto.randomUUID()
+  const basePath = new URL(BASE).pathname.replace(/\/$/, '')
+  const pathWithoutQuery = requestPath.split(/[?#]/, 1)[0]
+  const fullPath = `${basePath}${pathWithoutQuery.startsWith('/') ? pathWithoutQuery : `/${pathWithoutQuery}`}`
+  const canonical = [timestamp, nonce, method.toUpperCase(), fullPath].join('\n')
+  const signature = crypto.createHmac('sha512', API_GUARD_SECRET).update(canonical).digest('hex')
+  return { 'X-Timestamp': timestamp, 'X-Nonce': nonce, 'X-Signature': signature }
+}
 
 let _passed = 0
 let _failed = 0
@@ -22,8 +50,12 @@ function section(title) {
   console.log(`══════════════════════════════════════════`)
 }
 
-async function req(method, path, body, token) {
-  const headers = { 'Content-Type': 'application/json' }
+async function req(method, path, body, token, extraHeaders = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...apiGuardHeaders(method, path),
+    ...extraHeaders,
+  }
   if (token) headers['Authorization'] = `Bearer ${token}`
   const res = await fetch(`${BASE}${path}`, {
     method,
@@ -107,6 +139,7 @@ function randomPassword() {
 }
 
 async function registerUser(username, email, password, fullName) {
+  const registrationIP = `198.18.${Math.floor(Math.random() * 254) + 1}.${Math.floor(Math.random() * 254) + 1}`
   let r
   for (let attempt = 0; attempt < 20; attempt++) {
     r = await req('POST', '/auth/register', {
@@ -114,7 +147,7 @@ async function registerUser(username, email, password, fullName) {
       email,
       password,
       full_name: fullName || username,
-    })
+    }, undefined, { 'X-Forwarded-For': registrationIP })
     if (r.status !== 429) break
     await new Promise((resolve) => setTimeout(resolve, 700))
   }
@@ -175,11 +208,32 @@ function reset() { _passed = 0; _failed = 0 }
 
 const is2xx = (status) => status >= 200 && status < 300
 
+
+async function becomeFriends(userA, userB) {
+  await req('POST', '/relationships/request', { userId: userB.id }, userA.token)
+  const pending = await req('GET', '/relationships/pending', undefined, userB.token)
+  const list = data(pending)?.relationships ?? []
+  const found = list.find(
+    (rq) => rq.requesterId === userA.id || rq.requester?.id === userA.id
+  )
+  if (!found) return null
+  const res = await req(
+    'PUT', `/relationships/${found.id}/respond`, { action: 'accept' }, userB.token
+  )
+  return is2xx(res.status) ? found.id : null
+}
+
+async function sendFriendRequest(userA, userB) {
+  const res = await req('POST', '/relationships/request', { userId: userB.id }, userA.token)
+  return is2xx(res.status)
+}
+
 module.exports = {
   BASE, WS_BASE,
   ok, section, req, reqForm, data, sleep, is2xx,
   silentWav, audioForm,
   uniqueUsername, uniqueEmail, randomPassword, registerUser, createUserSet,
+  becomeFriends, sendFriendRequest,
   envInt,
   summary, counts, reset,
 }

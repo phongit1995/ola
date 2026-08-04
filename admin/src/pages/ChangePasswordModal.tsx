@@ -69,9 +69,10 @@ export function ChangePasswordModal({ open, onClose, onChanged }: ChangePassword
           rules={[
             { required: true, message: 'Vui lòng nhập mật khẩu mới' },
             { min: 6, message: 'Mật khẩu mới tối thiểu 6 ký tự' },
+            { max: 72, message: 'Mật khẩu mới tối đa 72 ký tự' },
           ]}
         >
-          <Input.Password autoComplete="new-password" />
+          <Input.Password autoComplete="new-password" maxLength={72} />
         </Form.Item>
         <Form.Item
           name="confirmPassword"

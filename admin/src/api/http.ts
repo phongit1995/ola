@@ -39,18 +39,48 @@ registerApiGuardInterceptor(http)
 
 let refreshPromise: Promise<string> | null = null
 
-async function requestNewAccessToken(): Promise<string> {
-  const refreshToken = adminTokens.getRefreshToken()
-  if (!refreshToken) {
-    throw new Error('Missing refresh token')
+async function withRefreshLock<T>(callback: () => Promise<T>): Promise<T> {
+  if (!('locks' in navigator)) {
+    // The API's idempotent retry window returns the same token pair if two
+    // tabs race in browsers/contexts where Web Locks is unavailable.
+    return callback()
   }
-  const { data } = await http.post<ApiResponse<AdminRefreshResult>>(
-    '/admin/auth/refresh',
-    { refreshToken },
-    { skipAuth: true, skipAuthRefresh: true },
-  )
-  adminTokens.setTokens(data.data.token, data.data.refreshToken)
-  return data.data.token
+  return navigator.locks.request('ola.admin.refresh-token', callback)
+}
+
+function bearerToken(authorization: unknown): string | null {
+  if (typeof authorization !== 'string') return null
+  const [scheme, token] = authorization.split(' ')
+  return scheme === 'Bearer' && token ? token : null
+}
+
+async function requestNewAccessToken(failedAccessToken: string | null): Promise<string> {
+  return withRefreshLock(async () => {
+    const currentAccessToken = adminTokens.getAccessToken()
+
+    // Another tab may have refreshed while this request was waiting for the
+    // browser-wide lock. Reuse its new access token instead of rotating again.
+    if (
+      failedAccessToken &&
+      currentAccessToken &&
+      currentAccessToken !== failedAccessToken
+    ) {
+      return currentAccessToken
+    }
+
+    const refreshToken = adminTokens.getRefreshToken()
+    if (!refreshToken) {
+      throw new Error('Missing refresh token')
+    }
+
+    const { data } = await http.post<ApiResponse<AdminRefreshResult>>(
+      '/admin/auth/refresh',
+      { refreshToken },
+      { skipAuth: true, skipAuthRefresh: true },
+    )
+    adminTokens.setTokens(data.data.token, data.data.refreshToken)
+    return data.data.token
+  })
 }
 
 http.interceptors.response.use(
@@ -63,10 +93,20 @@ http.interceptors.response.use(
       status === 401 &&
       config != null &&
       !config.retried &&
+      !config.skipAuth &&
       !config.skipAuthRefresh &&
       adminTokens.getRefreshToken() != null
 
     if (!canRefresh || config == null) {
+      if (
+        status === 401 &&
+        config != null &&
+        !config.skipAuth &&
+        !config.skipAuthRefresh
+      ) {
+        adminTokens.clear()
+        onUnauthorized?.()
+      }
       return Promise.reject(toApiError(error))
     }
 
@@ -74,7 +114,8 @@ http.interceptors.response.use(
 
     try {
       if (!refreshPromise) {
-        refreshPromise = requestNewAccessToken().finally(() => {
+        const failedAccessToken = bearerToken(config.headers.get('Authorization'))
+        refreshPromise = requestNewAccessToken(failedAccessToken).finally(() => {
           refreshPromise = null
         })
       }
@@ -82,9 +123,12 @@ http.interceptors.response.use(
       config.headers.Authorization = `Bearer ${newAccessToken}`
       return http(config)
     } catch (refreshError) {
-      adminTokens.clear()
-      onUnauthorized?.()
-      return Promise.reject(toApiError(refreshError))
+      const apiError = toApiError(refreshError)
+      if ([401, 403, 404].includes(apiError.status)) {
+        adminTokens.clear()
+        onUnauthorized?.()
+      }
+      return Promise.reject(apiError)
     }
   },
 )

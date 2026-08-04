@@ -29,6 +29,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		user.POST("/presence", r.controller.GetPresenceBatch)
 		user.GET("/search", r.controller.SearchUsers)
 		user.GET("/:id", r.controller.GetUserInfo)
+		user.POST("/:id/view", r.controller.RecordProfileView)
 		user.POST("/:id/kiss", r.rateLimit.LimitPolicy(middleware.PolicyKiss), r.controller.Kiss)
 		user.POST("/:id/follow", r.controller.Follow)
 		user.DELETE("/:id/follow", r.controller.Unfollow)

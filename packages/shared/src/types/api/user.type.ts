@@ -123,6 +123,10 @@ export interface VisitorListResult {
   nextCursor: string | null;
 }
 
+export interface ProfileViewResult {
+  recorded: boolean;
+}
+
 export interface UserPresence {
   userId: string;
   isOnline: boolean;

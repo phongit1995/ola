@@ -524,9 +524,6 @@ button:focus-visible,
   grid-template-columns: repeat(20, 1fr);
   grid-template-rows: repeat(20, 1fr);
   background-color: #f9f2d9;
-  background-image: linear-gradient(to right, #b3cbc6 1px, transparent 1px),
-    linear-gradient(to bottom, #b3cbc6 1px, transparent 1px);
-  background-size: calc(100% / 20) calc(100% / 20);
   border-radius: 6px;
   touch-action: none;
   will-change: transform;
@@ -588,6 +585,8 @@ button:focus-visible,
   min-height: 0;
   padding: 0;
   border: 0;
+  border-top: 1px solid #b3cbc6;
+  border-left: 1px solid #b3cbc6;
   border-radius: 0;
   appearance: none;
   background-color: transparent;
@@ -602,6 +601,16 @@ button:focus-visible,
 
 #board.playable .cell:not(.p1):not(.p2) {
   cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #board.playable.cursor-x .cell:not(.p1):not(.p2) {
+    cursor: url('./assets/board/cursor-x.svg') 14 14, crosshair;
+  }
+
+  #board.playable.cursor-o .cell:not(.p1):not(.p2) {
+    cursor: url('./assets/board/cursor-o.svg') 14 14, crosshair;
+  }
 }
 
 #board.playable .cell:not(.p1):not(.p2):hover {

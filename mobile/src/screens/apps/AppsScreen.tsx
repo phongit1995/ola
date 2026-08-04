@@ -16,6 +16,7 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { trackEvent } from '@lib/telemetry';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { useArcadeStore } from '@store/arcadeStore';
+import { SocialConnectionsDialog } from './SocialConnectionsDialog';
 import { APP_ITEMS, type AppItem } from './constants';
 
 const iconGameDefault = require('@assets/icons/apps/game.png');
@@ -30,7 +31,14 @@ interface PanelRowProps {
   onPress: () => void;
 }
 
-function PanelRow({ icon, iconUrl, title, subtitle, badge, onPress }: PanelRowProps) {
+function PanelRow({
+  icon,
+  iconUrl,
+  title,
+  subtitle,
+  badge,
+  onPress,
+}: PanelRowProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -59,7 +67,9 @@ function PanelRow({ icon, iconUrl, title, subtitle, badge, onPress }: PanelRowPr
       </View>
       {badge != null && badge > 0 && (
         <View className="h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1.5">
-          <Text className="text-xs font-bold text-white">{badge > 99 ? '99+' : badge}</Text>
+          <Text className="text-xs font-bold text-white">
+            {badge > 99 ? '99+' : badge}
+          </Text>
         </View>
       )}
     </Pressable>
@@ -69,14 +79,16 @@ function PanelRow({ icon, iconUrl, title, subtitle, badge, onPress }: PanelRowPr
 export function AppsScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const push = useToastStore((s) => s.push);
-  const miniGames = useArcadeStore((s) => s.games);
-  const fetchGames = useArcadeStore((s) => s.fetchGames);
-  const openArcade = useArcadeOverlayStore((s) => s.open);
-  const notifUnread = useAppNotificationStore((s) => s.unreadCount);
-  const user = useAuthStore((s) => s.user);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const push = useToastStore(s => s.push);
+  const miniGames = useArcadeStore(s => s.games);
+  const fetchGames = useArcadeStore(s => s.fetchGames);
+  const openArcade = useArcadeOverlayStore(s => s.open);
+  const notifUnread = useAppNotificationStore(s => s.unreadCount);
+  const user = useAuthStore(s => s.user);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [socialOpen, setSocialOpen] = useState(false);
 
   useEffect(() => {
     void fetchGames();
@@ -105,6 +117,10 @@ export function AppsScreen() {
     }
     if (item.action === 'media') {
       navigation.navigate(ROOT_ROUTES.MediaStore);
+      return;
+    }
+    if (item.action === 'social') {
+      setSocialOpen(true);
       return;
     }
     if (item.action === 'settings') {
@@ -169,25 +185,36 @@ export function AppsScreen() {
     <View className="flex-1" style={{ backgroundColor: '#d5d5d5' }}>
       <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
         <View className="h-12 flex-row items-center gap-2 px-3">
-          <Text numberOfLines={1} className="min-w-0 flex-1 text-sm font-medium text-white">
+          <Text
+            numberOfLines={1}
+            className="min-w-0 flex-1 text-sm font-medium text-white"
+          >
             {user?.username != null ? `@${user.username}` : ''}
           </Text>
-          <Text className="text-lg font-medium text-white">{t('home.tabApps')}</Text>
+          <Text className="text-lg font-medium text-white">
+            {t('home.tabApps')}
+          </Text>
           <View className="min-w-0 flex-1 flex-row justify-end">
             <Pressable
               onPress={() => navigation.navigate(ROOT_ROUTES.KenStore)}
               className="flex-row items-center gap-1 rounded-full px-3 py-1 active:opacity-80"
               style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
             >
-              <Image source={kenIcon} className="h-4 w-4" resizeMode="contain" />
-              <Text className="text-sm font-bold text-white">{formatKen(user?.ken ?? 0)}</Text>
+              <Image
+                source={kenIcon}
+                className="h-4 w-4"
+                resizeMode="contain"
+              />
+              <Text className="text-sm font-bold text-white">
+                {formatKen(user?.ken ?? 0)}
+              </Text>
             </Pressable>
           </View>
         </View>
       </View>
       <ScrollView className="flex-1">
         {APP_ITEMS.slice(0, 1).map(renderAppItem)}
-        {miniGames.map((game) => (
+        {miniGames.map(game => (
           <PanelRow
             key={game.id}
             icon={iconGameDefault}
@@ -209,6 +236,10 @@ export function AppsScreen() {
         cancelLabel={t('dialog.no')}
         onConfirm={() => void confirmLogout()}
         onCancel={() => setLogoutOpen(false)}
+      />
+      <SocialConnectionsDialog
+        visible={socialOpen}
+        onClose={() => setSocialOpen(false)}
       />
     </View>
   );

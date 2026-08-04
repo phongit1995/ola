@@ -314,7 +314,6 @@ func (s *Service) GetPublicProfile(callerID, targetUserID uuid.UUID) (*UserPubli
 	if err := s.ensureNotBlockedByTarget(callerID, user.ID); err != nil {
 		return nil, err
 	}
-	s.recordProfileView(callerID, user.ID)
 	return s.buildPublicProfile(callerID, user), nil
 }
 
@@ -329,20 +328,27 @@ func (s *Service) GetPublicProfileByUsername(callerID uuid.UUID, username string
 	if err := s.ensureNotBlockedByTarget(callerID, user.ID); err != nil {
 		return nil, err
 	}
-	s.recordProfileView(callerID, user.ID)
 	return s.buildPublicProfile(callerID, user), nil
 }
 
-func (s *Service) recordProfileView(viewerID, ownerID uuid.UUID) {
-	if viewerID == uuid.Nil || viewerID == ownerID {
-		return
-	}
-	go func() {
-		if err := s.repo.RecordProfileView(viewerID, ownerID); err != nil {
-			s.logger.Warnw("Failed to record profile view",
-				"viewer_id", viewerID, "owner_id", ownerID, "error", err.Error())
+func (s *Service) RecordProfileView(viewerID, ownerID uuid.UUID) (*ProfileViewResponse, error) {
+	owner, err := s.repo.FindByID(ownerID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
 		}
-	}()
+		return nil, err
+	}
+	if err := s.ensureNotBlockedByTarget(viewerID, owner.ID); err != nil {
+		return nil, err
+	}
+	if viewerID == uuid.Nil || viewerID == ownerID {
+		return &ProfileViewResponse{Recorded: false}, nil
+	}
+	if err := s.repo.RecordProfileView(viewerID, ownerID); err != nil {
+		return nil, err
+	}
+	return &ProfileViewResponse{Recorded: true}, nil
 }
 
 func (s *Service) GetMyVisitors(meID uuid.UUID, cursor string, limit int) (*VisitorListResponse, error) {

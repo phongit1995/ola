@@ -1,5 +1,7 @@
 package adminauth
 
+import "time"
+
 type LoginRequest struct {
 	Username string `json:"username" binding:"required" example:"admin"`
 	Password string `json:"password" binding:"required" example:"admin@123"`
@@ -11,7 +13,7 @@ type RefreshTokenRequest struct {
 
 type ChangePasswordRequest struct {
 	CurrentPassword string `json:"currentPassword" binding:"required" example:"admin@123"`
-	NewPassword     string `json:"newPassword" binding:"required,min=6" example:"newpass@456"`
+	NewPassword     string `json:"newPassword" binding:"required,min=6,max=72" example:"newpass@456"`
 }
 
 type AdminDTO struct {
@@ -24,12 +26,14 @@ type AdminDTO struct {
 }
 
 type LoginResponse struct {
-	Token        string   `json:"token"`
-	RefreshToken string   `json:"refreshToken"`
-	Admin        AdminDTO `json:"admin"`
+	Token                 string    `json:"token"`
+	RefreshToken          string    `json:"refreshToken"`
+	RefreshTokenExpiresAt time.Time `json:"-"`
+	Admin                 AdminDTO  `json:"admin"`
 }
 
 type RefreshTokenResponse struct {
-	Token        string `json:"token"`
-	RefreshToken string `json:"refreshToken"`
+	Token                 string    `json:"token"`
+	RefreshToken          string    `json:"refreshToken"`
+	RefreshTokenExpiresAt time.Time `json:"-"`
 }

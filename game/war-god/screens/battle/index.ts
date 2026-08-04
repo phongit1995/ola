@@ -30,17 +30,22 @@ import {
   type TileType,
 } from '../../logic/core';
 import {
+  MAX_HP,
   LEVEL_LABELS,
   ULT_COST,
   ULT_DMG,
+  applyAvailableSpecials,
   applyAuthoritativeEffects,
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
   castUltimate,
   createFighter,
+  createSpecialProgress,
+  observeSpecialProgress,
   type BotLevel,
   type Fighter,
+  type SpecialEffect,
 } from '../../logic/battle';
 import { recordBotMatch } from '../../logic/bot-history';
 import {
@@ -453,6 +458,58 @@ function floatNumber(card: Container, text: string, color: number, line: number)
   })();
 }
 
+async function playSpecialFx(effect: SpecialEffect, side: 'me' | 'foe'): Promise<void> {
+  const isFireSword = effect.type === 'fireSword';
+  const asset = isFireSword ? A.specials.fireSword : A.specials.greaterHeart;
+  const icon = new Sprite(tex[asset]);
+  icon.anchor.set(0.5);
+
+  const boardW = tileSize * GRID;
+  const fullScale =
+    Math.min(tileSize * 3.1, 190) / Math.max(icon.texture.width, icon.texture.height);
+  icon.position.set(boardBox.x + boardW / 2, boardBox.y + boardW / 2);
+  icon.alpha = 0;
+  icon.scale.set(fullScale * 0.42);
+  flyLayer.addChild(icon);
+
+  const attackerCard = side === 'me' ? hud.me.card : hud.foe.card;
+  const defenderCard = side === 'me' ? hud.foe.card : hud.me.card;
+  const targetCard = isFireSword ? defenderCard : attackerCard;
+  const actor = side === 'me' ? 'Bạn' : mode === 'pvp' ? 'Đối thủ' : 'Máy';
+
+  if (isFireSword) {
+    announce('HỎA KIẾM!', 0xffa43a);
+    setStatus(`${actor} kích hoạt HỎA KIẾM — -${effect.damage} HP xuyên giáp!`);
+    playSound('ultimate');
+  } else {
+    announce('ĐẠI TRÁI TIM!', 0xff6f91);
+    setStatus(`${actor} kích hoạt ĐẠI TRÁI TIM — +${effect.heal} HP!`);
+    playSound('match');
+  }
+
+  await tween(icon, { alpha: 1, scale: fullScale * 1.1 }, 180);
+  await tween(icon, { scale: fullScale }, 110);
+  updateHud();
+  floatNumber(
+    targetCard,
+    isFireSword ? `-${effect.damage} HP` : `+${effect.heal} HP`,
+    isFireSword ? 0xff753e : 0xff7ca3,
+    0,
+  );
+  await sleep(260);
+  await tween(
+    icon,
+    {
+      x: targetCard.x + 95,
+      y: targetCard.y + 70,
+      alpha: 0,
+      scale: fullScale * 0.3,
+    },
+    320,
+  );
+  icon.destroy();
+}
+
 function renderTurnClock(): void {
   if (!inGame) return;
   const left =
@@ -671,6 +728,7 @@ async function ensurePlayable(): Promise<void> {
 async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
+  const specials = createSpecialProgress();
   let extraTurn = false;
 
   for (;;) {
@@ -678,6 +736,7 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
     if (!match) break;
     if (match.maxRun >= 4) extraTurn = true;
 
+    observeSpecialProgress(specials, match.counts);
     const result = applyTileEffects(attacker, defender, match.counts);
     playSound('match');
     const parts: string[] = [];
@@ -701,6 +760,10 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
 
     const gravity = applyGravity(board, match.cells);
     await animateGravity(gravity.falls, gravity.spawns);
+
+    for (const effect of applyAvailableSpecials(specials, attacker, defender)) {
+      await playSpecialFx(effect, side);
+    }
 
     if (defender.hp <= 0) return extraTurn;
   }
@@ -1025,6 +1088,22 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     await sleep(400);
     board = decodeBoard(step.board);
     rebuildSprites();
+    return;
+  }
+  if (step.kind === 'special') {
+    const attacker = side === 'me' ? me : foe;
+    const defender = side === 'me' ? foe : me;
+    const effect: SpecialEffect = {
+      type: step.special,
+      damage: step.damage ?? 0,
+      heal: step.heal ?? 0,
+    };
+    if (effect.type === 'fireSword') {
+      defender.hp = Math.max(0, defender.hp - effect.damage);
+    } else {
+      attacker.hp = Math.min(MAX_HP, attacker.hp + effect.heal);
+    }
+    await playSpecialFx(effect, side);
     return;
   }
   const attacker = side === 'me' ? me : foe;

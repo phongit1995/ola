@@ -8,6 +8,7 @@ import {
 } from '@hooks';
 import { AppRouter } from '@/routes';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
+import { useCallStore } from '@/store/callStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
@@ -32,6 +33,22 @@ const ArcadeOverlay = lazy(() =>
     default: m.ArcadeOverlay,
   }))
 );
+
+const CallOverlay = lazy(() =>
+  import('@/pages/call/CallOverlay').then((m) => ({
+    default: m.CallOverlay,
+  }))
+);
+
+function GlobalCall() {
+  const idle = useCallStore((s) => s.mode === 'idle');
+  if (idle) return null;
+  return (
+    <Suspense fallback={null}>
+      <CallOverlay />
+    </Suspense>
+  );
+}
 
 function GlobalArcade() {
   const hasActive = useArcadeOverlayStore((s) => s.active != null);
@@ -90,6 +107,7 @@ function App() {
         <div id="ola-portal" />
         <GlobalKenTreasure />
         <GlobalArcade />
+        <GlobalCall />
       </div>
       <GlobalMediaViewer />
     </div>

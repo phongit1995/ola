@@ -12,6 +12,15 @@ const (
 	healHeart   = 4
 	manaWater   = 7
 	armorShield = 4
+
+	fireSwordDamage      = 8
+	greaterHeartHeal     = 8
+	greaterHeartMinTiles = 4
+)
+
+const (
+	specialFireSword    = "fireSword"
+	specialGreaterHeart = "greaterHeart"
 )
 
 type Fighter struct {
@@ -26,6 +35,20 @@ type Effects struct {
 	Mana        int `json:"mana"`
 	Armor       int `json:"armor"`
 	ArmorDamage int `json:"armorDamage"`
+}
+
+type specialProgress struct {
+	sawSword         bool
+	sawFire          bool
+	heartTiles       int
+	fireSwordUsed    bool
+	greaterHeartUsed bool
+}
+
+type SpecialEffect struct {
+	Type   string
+	Damage int
+	Heal   int
 }
 
 func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
@@ -83,5 +106,39 @@ func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 		effects.Armor = added
 	}
 
+	return effects
+}
+
+func (p *specialProgress) observe(counts map[int]int) {
+	p.sawSword = p.sawSword || counts[tileSword] > 0
+	p.sawFire = p.sawFire || counts[tileFire] > 0
+	p.heartTiles += counts[tileHeart]
+}
+
+func (p *specialProgress) applyAvailable(attacker, defender *Fighter) []SpecialEffect {
+	effects := []SpecialEffect{}
+	if defender.HP <= 0 {
+		return effects
+	}
+	if !p.fireSwordUsed && p.sawSword && p.sawFire {
+		p.fireSwordUsed = true
+		defender.HP -= fireSwordDamage
+		if defender.HP < 0 {
+			defender.HP = 0
+		}
+		effects = append(effects, SpecialEffect{Type: specialFireSword, Damage: fireSwordDamage})
+	}
+	if defender.HP <= 0 {
+		return effects
+	}
+	if !p.greaterHeartUsed && p.heartTiles >= greaterHeartMinTiles && attacker.HP < maxHP {
+		p.greaterHeartUsed = true
+		healed := greaterHeartHeal
+		if room := maxHP - attacker.HP; room < healed {
+			healed = room
+		}
+		attacker.HP += healed
+		effects = append(effects, SpecialEffect{Type: specialGreaterHeart, Heal: healed})
+	}
 	return effects
 }

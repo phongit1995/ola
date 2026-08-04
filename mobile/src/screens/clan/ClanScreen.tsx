@@ -5,7 +5,6 @@ import { FlashList } from '@shopify/flash-list';
 import {
   filterVisiblePosts,
   isPostVisible,
-  postTimeLabel,
   createTimeFormatter,
 } from '@ola/shared/lib';
 import type { Post, PostReaction, PostVisibility } from '@ola/shared/types';
@@ -165,11 +164,6 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
           },
         },
         {
-          key: 'save',
-          label: t('me.menuSave'),
-          onSelect: () => pushToast('success', t('me.saveSuccess')),
-        },
-        {
           key: 'share',
           label: t('me.menuShare'),
           onSelect: () => pushToast('success', t('me.shareSuccess')),
@@ -300,7 +294,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
             )}
             <MePostCard
               post={item}
-              timeLabel={postTimeLabel(item.createdAt, timeFormatter)}
+              timeLabel={timeFormatter(item.createdAt)}
               onToggleLike={(postId) => handleReaction(postId, 'like')}
               onToggleDislike={(postId) => handleReaction(postId, 'dislike')}
               onOpenProfile={openProfile}

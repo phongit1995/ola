@@ -26,11 +26,19 @@ export function WheelActionButton({ icon, label, onPress }: WheelActionButtonPro
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 6,
+          gap: 4,
+          paddingHorizontal: 4,
         }}
       >
-        <Image source={icon} style={{ width: 20, height: 20 }} resizeMode="contain" />
-        <Text style={[{ fontSize: 14, fontWeight: '700' }, CHIP_TEXT_STYLE]}>{label}</Text>
+        <Image source={icon} style={{ width: 18, height: 18 }} resizeMode="contain" />
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}
+          style={[{ fontSize: 12, fontWeight: '700' }, CHIP_TEXT_STYLE]}
+        >
+          {label}
+        </Text>
       </View>
     </Pressable>
   );

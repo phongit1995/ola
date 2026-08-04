@@ -4,7 +4,7 @@ import { ActivityIndicator, Text } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { usePostListActions } from '@ola/shared/stores/usePostListActions';
-import { createTimeFormatter, postTimeLabel } from '@ola/shared/lib';
+import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { isPostEditExpired } from '@lib/post';
@@ -115,11 +115,6 @@ export function ProfilePostList({
         },
       },
       {
-        key: 'save',
-        label: t('me.menuSave'),
-        onSelect: () => push('success', t('me.saveSuccess')),
-      },
-      {
         key: 'share',
         label: t('me.menuShare'),
         onSelect: () => push('success', t('me.shareSuccess')),
@@ -164,7 +159,7 @@ export function ProfilePostList({
           <MePostCard
             key={post.id}
             post={post}
-            timeLabel={postTimeLabel(post.createdAt, formatTime)}
+            timeLabel={formatTime(post.createdAt)}
             onToggleLike={id => void toggleReaction(id, 'like')}
             onToggleDislike={id => void toggleReaction(id, 'dislike')}
             onOpenProfile={openProfile}

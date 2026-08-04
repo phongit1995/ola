@@ -9,6 +9,7 @@ import { theme } from '@/theme'
 import { router } from '@/routes/router'
 import { setOnUnauthorized } from '@/api/http'
 import { useAuthStore } from '@/store/authStore'
+import { ADMIN_ACCESS_TOKEN_KEY } from '@/lib/tokenStorage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,13 @@ const queryClient = new QueryClient({
 setOnUnauthorized(() => {
   useAuthStore.getState().clear()
   void router.navigate('/login')
+})
+
+window.addEventListener('storage', (event) => {
+  if (event.key === ADMIN_ACCESS_TOKEN_KEY && event.newValue == null) {
+    useAuthStore.getState().clear()
+    void router.navigate('/login')
+  }
 })
 
 createRoot(document.getElementById('root')!).render(

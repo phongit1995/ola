@@ -326,7 +326,7 @@ export function GameBoard() {
           <div
             id="board"
             ref={boardRef}
-            className={canPlaceMove ? 'playable' : ''}
+            className={canPlaceMove ? `playable cursor-${myMark}` : ''}
             style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0)` }}
             role="grid"
             aria-label="Bàn cờ Caro 20 nhân 20"

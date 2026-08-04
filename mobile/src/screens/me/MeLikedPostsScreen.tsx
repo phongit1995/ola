@@ -8,7 +8,7 @@ import { MeService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { usePostListActions } from '@ola/shared/stores/usePostListActions';
-import { createTimeFormatter, postTimeLabel } from '@ola/shared/lib';
+import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
@@ -119,11 +119,6 @@ export function MeLikedPostsScreen() {
         },
       },
       {
-        key: 'save',
-        label: t('me.menuSave'),
-        onSelect: () => push('success', t('me.saveSuccess')),
-      },
-      {
         key: 'share',
         label: t('me.menuShare'),
         onSelect: () => push('success', t('me.shareSuccess')),
@@ -170,7 +165,7 @@ export function MeLikedPostsScreen() {
           renderItem={({ item }) => (
             <MePostCard
               post={item}
-              timeLabel={postTimeLabel(item.createdAt, formatTime)}
+              timeLabel={formatTime(item.createdAt)}
               onToggleLike={(id) => void toggleReaction(id, 'like')}
               onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
               onOpenProfile={openProfile}

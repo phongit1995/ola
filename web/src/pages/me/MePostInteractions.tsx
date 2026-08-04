@@ -156,11 +156,6 @@ export function MePostInteractions({
             onSelect: () => hideAndNotify(menuPostId),
           },
           {
-            key: 'save',
-            label: t('me.menuSave'),
-            onSelect: () => toast.success(t('me.saveSuccess')),
-          },
-          {
             key: 'share',
             label: t('me.menuShare'),
             onSelect: () => toast.success(t('me.shareSuccess')),

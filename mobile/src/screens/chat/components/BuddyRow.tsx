@@ -72,15 +72,18 @@ export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProf
         )}
       </Pressable>
       <View className="ml-4 min-w-0 flex-1">
-        <View className="flex-row items-center gap-1">
+        <Pressable
+          className="max-w-full flex-row items-center gap-1"
+          onPress={onOpenProfile ?? onSelect}
+        >
           {showVip && <VipAvatar typeId={contact.vipTypeId} size={20} />}
-          <Text className="text-base text-ola-ink" numberOfLines={1}>
+          <Text className="shrink text-base text-ola-ink" numberOfLines={1}>
             {contact.name}
             {contact.fullName != null && contact.fullName !== '' && (
               <Text style={{ color: 'rgba(0,0,0,0.45)' }}> · {contact.fullName}</Text>
             )}
           </Text>
-        </View>
+        </Pressable>
         {contact.status != null && contact.status !== '' && (
           <Text className="text-xs text-ola-ink-soft" numberOfLines={1}>
             {contact.status}

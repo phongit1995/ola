@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { formatClockHM } from '@ola/shared/lib';
+import { formatOlaTime } from '@ola/shared/lib';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
@@ -67,6 +67,7 @@ function headerTitle(conversation: Conversation): string {
 interface RowProps {
   conversation: Conversation;
   smileyFontSize: number;
+  now: number;
   onPress: () => void;
   onRequestDelete: (conversation: Conversation) => void;
   onSwipeableWillOpen: (swipeable: SwipeableMethods) => void;
@@ -76,12 +77,13 @@ interface RowProps {
 function ConversationRow({
   conversation,
   smileyFontSize,
+  now,
   onPress,
   onRequestDelete,
   onSwipeableWillOpen,
   onSwipeableClose,
 }: RowProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const swipeableRef = useRef<SwipeableMethods>(null);
   const openRef = useRef(false);
 
@@ -182,7 +184,7 @@ function ConversationRow({
               className={`text-xs ${unread ? 'font-bold' : ''}`}
               style={{ color: unread ? 'rgba(0,0,0,0.87)' : 'rgba(0,0,0,0.54)' }}
             >
-              {formatClockHM(conversation.lastMessageAt)}
+              {formatOlaTime(conversation.lastMessageAt ?? '', i18n.language, now)}
             </Text>
           </View>
           <View className="mt-0.5 flex-row items-center gap-1">
@@ -289,11 +291,17 @@ export function ChatListScreen() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [coverOpen, setCoverOpen] = useState(false);
   const [logoutAll, setLogoutAll] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const openSwipeableRef = useRef<SwipeableMethods | null>(null);
 
   useEffect(() => {
     void loadConversations();
   }, [loadConversations]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   usePresenceListPolling();
 
@@ -394,6 +402,10 @@ export function ChatListScreen() {
 
   const totalUnread = totalUnreadOf(conversations);
   const smileyFontSize = 14 * fontMultiplier * systemFontScale;
+  const listExtraData = useMemo(
+    () => ({ now, smileyFontSize }),
+    [now, smileyFontSize],
+  );
 
   return (
     <View className="flex-1 bg-white">
@@ -438,7 +450,7 @@ export function ChatListScreen() {
         <View className="flex-1">
         <FlashList
           data={conversations}
-          extraData={smileyFontSize}
+          extraData={listExtraData}
           keyExtractor={(item) => item.id}
           onScrollBeginDrag={closeOpenSwipeable}
           refreshControl={
@@ -457,6 +469,7 @@ export function ChatListScreen() {
             <ConversationRow
               conversation={item}
               smileyFontSize={smileyFontSize}
+              now={now}
               onPress={() => openConversation(item.id)}
               onRequestDelete={requestDelete}
               onSwipeableWillOpen={handleSwipeableWillOpen}

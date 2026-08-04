@@ -15,6 +15,7 @@ import { useAuthStore } from '@/store/authStore';
 import iconGameDefault from '@/assets/icons/apps/game.png';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { APP_ITEMS, type AppItem } from './constants';
+import { SocialConnectionsDialog } from './SocialConnectionsDialog';
 
 interface PanelRowProps {
   icon: string;
@@ -68,6 +69,7 @@ export function AppsPanel() {
   const notifUnread = useAppNotificationStore((s) => s.unreadCount);
   const user = useAuthStore((s) => s.user);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [socialOpen, setSocialOpen] = useState(false);
 
   useEffect(() => {
     void fetchGames();
@@ -75,6 +77,7 @@ export function AppsPanel() {
 
   function handleOpen(item: AppItem): (() => void) | undefined {
     if (item.action === 'logout') return () => setLogoutOpen(true);
+    if (item.action === 'social') return () => setSocialOpen(true);
     if (item.overlay) return () => openGame(item.overlay!);
     if (item.app) return () => openApp(item.app!);
     return undefined;
@@ -159,6 +162,10 @@ export function AppsPanel() {
         cancelLabel={t('dialog.no')}
         onConfirm={() => void confirmLogout()}
         onCancel={() => setLogoutOpen(false)}
+      />
+      <SocialConnectionsDialog
+        open={socialOpen}
+        onClose={() => setSocialOpen(false)}
       />
     </>
   );

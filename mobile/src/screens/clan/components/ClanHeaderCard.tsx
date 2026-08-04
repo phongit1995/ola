@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
-import { formatDateDMY } from '@ola/shared/lib';
+import { formatDateSlashDMY } from '@ola/shared/lib';
 import type { Clan } from '@ola/shared/types';
 import { DIVIDER } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
@@ -229,7 +229,7 @@ export function ClanHeaderCard({
       </Pressable>
 
       <Text className="ml-4 text-xs text-ola-ink-soft">
-        {t('clan.createdAt', { date: formatDateDMY(clan.createdAt) })}
+        {t('clan.createdAt', { date: formatDateSlashDMY(clan.createdAt) })}
       </Text>
       {clan.owner != null && (
         <InfoRow

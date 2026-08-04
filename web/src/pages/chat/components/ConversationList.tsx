@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import type { Conversation } from '@app-types';
 import { Avatar, PresenceBadge } from '@components';
-import { SmileyText } from '@lib';
+import { createTimeFormatter, SmileyText } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import { EmptyMessages } from './EmptyMessages';
@@ -22,7 +22,11 @@ export function ConversationList({
   onSelect,
   onDelete,
 }: ConversationListProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
   const [pendingDelete, setPendingDelete] = useState<ConversationView | null>(
     null
   );
@@ -48,7 +52,7 @@ export function ConversationList({
           {conversations.map((conversation) => (
             <ConversationRow
               key={conversation.id}
-              view={toConversationView(conversation)}
+              view={toConversationView(conversation, formatTime)}
               onSelect={onSelect}
               onRequestDelete={requestDelete}
             />

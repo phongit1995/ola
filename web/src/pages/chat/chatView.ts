@@ -32,7 +32,8 @@ export function conversationHeaderTitle(conversation: Conversation): string {
 }
 
 export function toConversationView(
-  conversation: Conversation
+  conversation: Conversation,
+  formatTime: (iso: string) => string = formatClockHM,
 ): ConversationView {
   const name = conversationDisplayName(conversation);
   const lastText = conversation.lastMessageText ?? '';
@@ -50,7 +51,7 @@ export function toConversationView(
     seen: conversation.seen,
     senderName: conversation.lastMessageSenderName,
     isGroup: conversation.type === 'group',
-    time: formatClockHM(conversation.lastMessageAt),
+    time: formatTime(conversation.lastMessageAt ?? ''),
     unread: conversation.unreadCount,
     online:
       conversation.type === 'direct'

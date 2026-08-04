@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MeService, RelationshipService, UserService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
@@ -33,9 +33,11 @@ export function useProfileActions(username: string) {
   const [busy, setBusy] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const recordedViewIdRef = useRef('');
 
   useEffect(() => {
     let active = true;
+    recordedViewIdRef.current = '';
     setLoading(true);
     (async () => {
       try {
@@ -48,6 +50,14 @@ export function useProfileActions(username: string) {
         setNotFound(false);
         setLoading(false);
         if (data.id !== useAuthStore.getState().user?.id) {
+          if (recordedViewIdRef.current !== data.id) {
+            recordedViewIdRef.current = data.id;
+            void UserService.recordProfileView(data.id).catch(() => {
+              if (recordedViewIdRef.current === data.id) {
+                recordedViewIdRef.current = '';
+              }
+            });
+          }
           useMeLocalStore.getState().recordViewedProfile({
             id: data.id,
             username: data.username,

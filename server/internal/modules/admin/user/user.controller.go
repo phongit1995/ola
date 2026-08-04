@@ -29,7 +29,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Param        gender   query string false "Filter by gender (male, female, other)"
 // @Param        vip      query bool   false "Filter VIP (true=vip, false=non-vip)"
 // @Param        includeDeleted query bool false "Include soft-deleted users (default true; pass false to hide)"
-// @Param        sortBy   query string false "Sort field (createdAt, lastLoginAt, followerCount, username)"
+// @Param        sortBy   query string false "Sort field (createdAt, lastLoginAt, followerCount, username, ken)"
 // @Param        sortDir  query string false "Sort direction (asc, desc)"
 // @Param        limit    query int    false "Page size (default 20, max 100)"
 // @Param        offset   query int    false "Offset (default 0)"

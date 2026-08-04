@@ -1,0 +1,30 @@
+import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
+import { useCallStore } from '@/store/callStore';
+import { CallContent } from './CallContent';
+import { IncomingCallCard } from './IncomingCallCard';
+import { useEndCallOnUnload } from './hooks/useEndCallOnUnload';
+
+export function CallOverlay() {
+  const mode = useCallStore((s) => s.mode);
+  const active = useCallStore((s) => s.active);
+
+  useEndCallOnUnload();
+
+  if (mode === 'incoming') return <IncomingCallCard />;
+  if (active == null || mode === 'idle') return null;
+
+  return (
+    <LiveKitRoom
+      serverUrl={active.wsUrl}
+      token={active.token}
+      connect
+      audio={false}
+      video={false}
+      options={{ adaptiveStream: true, dynacast: true }}
+      className="contents"
+    >
+      <RoomAudioRenderer />
+      <CallContent />
+    </LiveKitRoom>
+  );
+}

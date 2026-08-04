@@ -52,6 +52,7 @@ import {
   VoiceRecorderControl,
   type VoiceRecorderControlHandle,
 } from '@components/chat/voice/VoiceRecorderControl';
+import { ChatCallButtons } from '@/pages/call/ChatCallButtons';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -86,10 +87,11 @@ export function ChatConversationView({
   blockStatus,
   onClose,
 }: ChatConversationViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const blockedByMe = blockStatus === RELATIONSHIP_STATUS.blockedByMe;
   const blockedByThem = blockStatus === RELATIONSHIP_STATUS.blockedByThem;
   const blocked = blockedByMe || blockedByThem;
+  const canCall = blockStatus === RELATIONSHIP_STATUS.friend;
 
   const myId = useAuthStore((s) => s.user?.id ?? '');
   const messages = useChatStore((s) => s.messages);
@@ -190,10 +192,14 @@ export function ChatConversationView({
     []
   );
 
-  const lastActiveText =
+  const lastActiveTime =
     now != null && !online && !peerTyping
-      ? formatLastActive(t, lastActiveAt, now)
+      ? formatLastActive(i18n.language, lastActiveAt, now)
       : undefined;
+  const lastActiveText =
+    lastActiveTime == null
+      ? undefined
+      : t('chat.statusLastActive', { time: lastActiveTime });
 
   const peerId = peerProfile?.id ?? '';
 
@@ -547,6 +553,7 @@ export function ChatConversationView({
         left={<Avatar name={name} color={color} src={avatar} size={32} />}
         onTitlePress={canViewProfile ? openPeerProfile : undefined}
       >
+        {canCall && <ChatCallButtons />}
         <button
           type="button"
           aria-label={t('common.menu')}

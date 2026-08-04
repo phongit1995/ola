@@ -153,7 +153,12 @@ type VisitorListResponse struct {
 	NextCursor string        `json:"nextCursor,omitempty" example:"eyJ0IjoiMjAyNC0wMS0xNVQxMDozMDowMFoifQ"`
 }
 
+type ProfileViewResponse struct {
+	Recorded bool `json:"recorded" example:"true"`
+}
+
 type VisitorListSuccessResponse = utils.BaseResponse[VisitorListResponse]
+type ProfileViewSuccessResponse = utils.BaseResponse[ProfileViewResponse]
 
 // RelationshipInfo describes the viewer's relationship state with the target user.
 // Status values:

@@ -50,7 +50,7 @@ export function ActiveConversationOverlay() {
     return (
       <ChatConversationView
         name={draftRecipient.name}
-        username={peerProfile?.username}
+        username={peerProfile?.username ?? draftRecipient.id}
         color={colorForName(draftRecipient.name)}
         avatar={draftRecipient.avatar}
         online={live?.isOnline ?? peerProfile?.isOnline ?? false}

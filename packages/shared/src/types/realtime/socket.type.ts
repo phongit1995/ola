@@ -16,6 +16,7 @@ export type ForceLogoutHandler = (data: ForceLogoutData) => void;
 
 export type RealtimeRegistration =
   | 'app-notification'
+  | 'call'
   | 'chat'
   | 'ken'
   | 'room';

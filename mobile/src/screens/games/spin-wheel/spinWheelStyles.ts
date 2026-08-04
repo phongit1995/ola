@@ -55,6 +55,30 @@ export const HISTORY_TAB_INACTIVE_STYLE: TextStyle = {
   letterSpacing: 0.3,
 };
 
+export const GIFT_TITLE_STYLE: TextStyle = {
+  color: '#ffffff',
+  textShadowColor: '#1a2f80',
+  textShadowOffset: { width: 0, height: 3 },
+  textShadowRadius: 4,
+  letterSpacing: 0.8,
+};
+
+export const GIFT_SUBTITLE_STYLE: TextStyle = {
+  color: '#ffd75e',
+  textShadowColor: 'rgba(0,0,0,0.4)',
+  textShadowOffset: { width: 0, height: 2 },
+  textShadowRadius: 3,
+  letterSpacing: 1.2,
+};
+
+export const GIFT_AMOUNT_STYLE: TextStyle = {
+  color: '#ffd75e',
+  textShadowColor: '#1a2f80',
+  textShadowOffset: { width: 0, height: 2 },
+  textShadowRadius: 3,
+  letterSpacing: 0.4,
+};
+
 export function segmentLabelTextStyle(theme: SegmentTheme): TextStyle {
   return {
     color: '#fff7e8',

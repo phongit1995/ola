@@ -114,11 +114,12 @@ func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) 
 	if err != nil {
 		return nil, ErrWheelNotFound
 	}
-	segs, _, err := s.loadWheelTree(wheel.ID)
+	segs, options, err := s.loadWheelTree(wheel.ID)
 	if err != nil {
 		return nil, err
 	}
 	active := activeSortedSegments(segs)
+	playableOptions := playableOptionsBySegment(options)
 	views := make([]PlayerSegmentView, len(active))
 	for i, seg := range active {
 		views[i] = PlayerSegmentView{
@@ -131,6 +132,7 @@ func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) 
 			VipDays:   seg.VipDays,
 			VipTypeID: seg.VipTypeID,
 			SortOrder: seg.SortOrder,
+			Options:   playableOptions[seg.ID],
 		}
 	}
 	freeAvailable := false
@@ -580,6 +582,22 @@ func toSpinView(sp models.WheelSpin) SpinView {
 		IsSuperLucky: sp.IsSuperLucky,
 		CreatedAt:    sp.CreatedAt,
 	}
+}
+
+func playableOptionsBySegment(options []models.WheelSegmentOption) map[uuid.UUID][]PlayerOptionView {
+	grouped := map[uuid.UUID][]PlayerOptionView{}
+	for _, opt := range options {
+		if !opt.IsActive || opt.Weight <= 0 {
+			continue
+		}
+		grouped[opt.SegmentID] = append(grouped[opt.SegmentID], PlayerOptionView{
+			Label:     opt.Label,
+			VipTypeID: opt.VipTypeID,
+			VipDays:   opt.VipDays,
+			KenAmount: opt.KenAmount,
+		})
+	}
+	return grouped
 }
 
 func activeSortedSegments(segs []models.WheelSegment) []models.WheelSegment {

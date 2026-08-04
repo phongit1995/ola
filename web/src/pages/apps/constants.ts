@@ -13,6 +13,7 @@ import iconMedia from '@/assets/icons/apps/media.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
+import iconSocial from '@/assets/icons/social/social-menu-light.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
 import type { Venue } from './NearbyPlacesPage';
@@ -22,7 +23,7 @@ export interface AppItem {
   titleKey: ParseKeys;
   app?: AppOverlayKind;
   overlay?: 'pen' | 'egg' | 'wheel';
-  action?: 'logout';
+  action?: 'logout' | 'social';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -47,6 +48,7 @@ export const APP_ITEMS: AppItem[] = [
   // { icon: iconMall, titleKey: 'home.apps.mall', subtitleKey: 'home.appMallSubtitle' },
   // TODO: mở lại mục Lân cận khi NearbyPlacesPage hết dữ liệu mock (MOCK_VENUES)
   // { icon: iconNearby, titleKey: 'home.apps.nearby', app: 'nearby' },
+  { icon: iconSocial, titleKey: 'home.apps.social', action: 'social' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },
   { icon: iconLogout, titleKey: 'home.logout', action: 'logout' },
 ];

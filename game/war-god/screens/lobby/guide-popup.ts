@@ -11,6 +11,9 @@ const GUIDE_LINES = [
   '❤️ Tim hồi 4 máu · 💧 Nước +7 nội lực',
   '🛡️ Khiên +4 giáp (tối đa 30)',
   '',
+  'Trong 1 nước phá cả ⚔️ + 🔥: HỎA KIẾM +8 sát thương xuyên giáp.',
+  'Phá tổng 4 ❤️ trong 1 nước: ĐẠI TRÁI TIM hồi thêm 8 máu.',
+  '',
   'Ghép 4 ô trở lên được đánh thêm lượt.',
   'Đủ 50 nội lực tung tuyệt chiêu gây 25 sát thương.',
   'Mỗi lượt có 45 giây — hạ gục đối thủ để thắng!',
@@ -40,7 +43,7 @@ export function buildGuidePopup(): Container {
 
   card = new Container();
   const cardW = 440;
-  const cardH = 400;
+  const cardH = 470;
   const bg = new Graphics()
     .roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 18)
     .fill({ color: 0x101c2c, alpha: 0.96 })
@@ -52,11 +55,11 @@ export function buildGuidePopup(): Container {
   title.y = -cardH / 2 + 44;
   card.addChild(title);
 
-  const body = makeText(GUIDE_LINES, 15, 0xffffff, '700');
+  const body = makeText(GUIDE_LINES, 14, 0xffffff, '700');
   body.style.wordWrap = true;
   body.style.wordWrapWidth = cardW - 56;
   body.style.align = 'left';
-  body.style.lineHeight = 24;
+  body.style.lineHeight = 22;
   body.y = 4;
   card.addChild(body);
 

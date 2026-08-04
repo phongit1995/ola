@@ -14,7 +14,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
 import type { NativeUploadFile } from '@ola/shared/types';
-import { createDateFormatter } from '@ola/shared/lib';
+import { createDateSeparatorFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { ChatText as Text } from '@components/ui/ChatText';
@@ -135,7 +135,7 @@ export function RoomMessagesTab({
 
   const canSend = status === 'joined';
   const dateFormatter = useMemo(
-    () => createDateFormatter(language),
+    () => createDateSeparatorFormatter(language),
     [language],
   );
   const feed = useMemo(() => {

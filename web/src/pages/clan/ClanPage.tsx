@@ -19,7 +19,7 @@ import {
   compressImagesForUpload,
   createTimeFormatter,
   filterVisiblePosts,
-  formatDateDMY,
+  formatDateSlashDMY,
   isPostVisible,
   toast,
 } from '@lib';
@@ -604,7 +604,7 @@ export function ClanPage({
               </button>
 
               <div className="ml-4 text-xs text-black/54">
-                {t('clan.createdAt', { date: formatDateDMY(clan.createdAt) })}
+                {t('clan.createdAt', { date: formatDateSlashDMY(clan.createdAt) })}
               </div>
               {clan.owner != null && (
                 <InfoRow

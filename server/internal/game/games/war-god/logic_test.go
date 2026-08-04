@@ -245,6 +245,122 @@ func TestApplyTileEffects(t *testing.T) {
 	}
 }
 
+func TestSpecialProgressUnlocksEachSpecialOnce(t *testing.T) {
+	progress := &specialProgress{}
+	attacker := Fighter{HP: 60}
+	defender := Fighter{HP: 100, Armor: 30}
+
+	progress.observe(map[int]int{tileSword: 3})
+	if effects := progress.applyAvailable(&attacker, &defender); len(effects) != 0 {
+		t.Fatalf("sword alone unexpectedly unlocked specials: %+v", effects)
+	}
+
+	progress.observe(map[int]int{tileFire: 3})
+	effects := progress.applyAvailable(&attacker, &defender)
+	if !reflect.DeepEqual(effects, []SpecialEffect{{Type: specialFireSword, Damage: fireSwordDamage}}) {
+		t.Fatalf("unexpected fire sword effects: %+v", effects)
+	}
+	if defender.HP != 92 || defender.Armor != 30 {
+		t.Fatalf("fire sword must deal direct damage: %+v", defender)
+	}
+
+	progress.observe(map[int]int{tileHeart: greaterHeartMinTiles})
+	effects = progress.applyAvailable(&attacker, &defender)
+	if !reflect.DeepEqual(effects, []SpecialEffect{{Type: specialGreaterHeart, Heal: greaterHeartHeal}}) {
+		t.Fatalf("unexpected greater heart effects: %+v", effects)
+	}
+	if attacker.HP != 68 {
+		t.Fatalf("greater heart did not heal attacker: %+v", attacker)
+	}
+	if effects = progress.applyAvailable(&attacker, &defender); len(effects) != 0 {
+		t.Fatalf("specials activated more than once: %+v", effects)
+	}
+}
+
+func TestSpecialProgressDoesNotHealAfterDefenderDies(t *testing.T) {
+	t.Run("defender already dead", func(t *testing.T) {
+		progress := &specialProgress{heartTiles: greaterHeartMinTiles}
+		attacker := Fighter{HP: 50}
+		defender := Fighter{HP: 0}
+
+		if effects := progress.applyAvailable(&attacker, &defender); len(effects) != 0 {
+			t.Fatalf("dead defender unexpectedly produced specials: %+v", effects)
+		}
+		if attacker.HP != 50 {
+			t.Fatalf("attacker healed after defender was already dead: %+v", attacker)
+		}
+	})
+
+	t.Run("fire sword is lethal", func(t *testing.T) {
+		progress := &specialProgress{
+			sawSword:   true,
+			sawFire:    true,
+			heartTiles: greaterHeartMinTiles,
+		}
+		attacker := Fighter{HP: 50}
+		defender := Fighter{HP: fireSwordDamage}
+
+		effects := progress.applyAvailable(&attacker, &defender)
+		want := []SpecialEffect{{Type: specialFireSword, Damage: fireSwordDamage}}
+		if !reflect.DeepEqual(effects, want) {
+			t.Fatalf("unexpected lethal fire sword effects: %+v", effects)
+		}
+		if attacker.HP != 50 || defender.HP != 0 {
+			t.Fatalf("lethal special applied a post-mortem heal: attacker=%+v defender=%+v", attacker, defender)
+		}
+	})
+}
+
+func TestApplySwapEmitsFireSwordSpecial(t *testing.T) {
+	board := stripedBoard()
+	board[43], board[51] = tileFire, tileFire
+	board[56], board[57], board[58], board[59] = tileSword, tileSword, tileFire, tileSword
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 1)
+
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":58,"b":59}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	found := 0
+	for _, step := range next.Steps {
+		if step.Kind == stepSpecial && step.Special == specialFireSword {
+			found++
+			if step.Damage != fireSwordDamage || step.Heal != 0 {
+				t.Fatalf("unexpected fire sword step: %+v", step)
+			}
+		}
+	}
+	if found != 1 {
+		t.Fatalf("fire sword special count = %d, steps=%+v", found, next.Steps)
+	}
+}
+
+func TestApplySwapEmitsGreaterHeartSpecial(t *testing.T) {
+	board := stripedBoard()
+	board[56], board[57], board[58], board[59] = tileHeart, tileHeart, tileWater, tileHeart
+	board[50] = tileHeart
+	state := stateWith(board, [2]Fighter{{HP: 50}, {HP: 100}}, 1)
+
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":58,"b":50}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	found := 0
+	for _, step := range next.Steps {
+		if step.Kind == stepSpecial && step.Special == specialGreaterHeart {
+			found++
+			if step.Heal != greaterHeartHeal || step.Damage != 0 {
+				t.Fatalf("unexpected greater heart step: %+v", step)
+			}
+		}
+	}
+	if found != 1 {
+		t.Fatalf("greater heart special count = %d, steps=%+v", found, next.Steps)
+	}
+}
+
 func TestApplySwapSingleWave(t *testing.T) {
 	board := stripedBoard()
 	board[56], board[57], board[58], board[59] = 0, 0, 3, 0

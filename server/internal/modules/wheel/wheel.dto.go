@@ -99,6 +99,13 @@ type WheelListResponse struct {
 	Items []WheelView `json:"items"`
 }
 
+type PlayerOptionView struct {
+	Label     string `json:"label"`
+	VipTypeID *int16 `json:"vipTypeId,omitempty"`
+	VipDays   *int   `json:"vipDays,omitempty"`
+	KenAmount *int   `json:"kenAmount,omitempty"`
+}
+
 type PlayerSegmentView struct {
 	ID        uuid.UUID               `json:"id"`
 	Kind      models.WheelSegmentKind `json:"kind"`
@@ -109,6 +116,7 @@ type PlayerSegmentView struct {
 	VipDays   *int                    `json:"vipDays,omitempty"`
 	VipTypeID *int16                  `json:"vipTypeId,omitempty"`
 	SortOrder int                     `json:"sortOrder"`
+	Options   []PlayerOptionView      `json:"options,omitempty"`
 }
 
 type PlayerConfigResponse struct {

@@ -37,14 +37,14 @@ mobile/src                      ← UI React Native; import thẳng @ola/shared/
 
 ## 2. Quy tắc chọn nơi đặt khi tách
 
-1. **PURE + không phụ thuộc per-platform** (chỉ cần `t`, formatter, type shared) → `packages/shared/src/lib/<tên>.ts` + append barrel. Vd: `relationshipLabels.ts`, `vipPurchase.ts`, `presence.ts`, `postTimeLabel` (datetime.ts).
+1. **PURE + không phụ thuộc per-platform** (chỉ cần `t`, formatter, type shared) → `packages/shared/src/lib/<tên>.ts` + append barrel. Vd: `relationshipLabels.ts`, `vipPurchase.ts`, `presence.ts`.
 2. **PURE nhưng phụ thuộc per-platform** (vd `kulImageForText` — web trả string, mobile trả ImageSourcePropType) → helper **cạnh page/screen, cùng tên 2 bên** để dễ đối chiếu: `web/src/pages/room/roomMessageView.ts` ↔ `mobile/src/screens/room/roomMessageView.ts`. ĐỪNG cố tham số hoá dependency để ép lên shared nếu làm call-site rườm hơn.
 3. **STATE/STORE dùng ở ≥2 màn** → hook trong shared nếu chỉ đụng service/store/toast shared (vd `usePostListActions`); hook per-platform nếu đụng composer/picker/navigation (vd web `useEditMePost.ts` vì `ComposedPost` + upload File).
 4. **STATE phức tạp cả một feed** → cân nhắc đưa hẳn vào zustand store shared theo mẫu `meFeedStore`/`clanFeedStore` (optimistic + rollback + guard) thay vì hook.
 
 ## 3. Inventory shared ĐÃ CÓ — tái dùng, đừng viết lại
 
-`lib/`: `formatKen` (number), `formatDateDMY`/`formatClockHM`/`isSameDay`/`postTimeLabel`/`createDateFormatter`/`createTimeFormatter` (datetime), `formatLastActive`/`isBirthdayToday` (presence), `chatFriendActionLabel`/`profileFriendLabel` (relationshipLabels), `vipPackageLabel`/`vipBuyErrorText`/`vipConfirmMessage`/`BuyVipMode` (vipPurchase), `ApiError`/`toApiError`, `toast`, `colorForName`, `isVipActive`/`activeVipTypeId`, `parseMessageMetadata`, `formatDuration`, `randomUuid`, upload helpers.
+`lib/`: `formatKen` (number), `formatDateDMY`/`formatDateSlashDMY`/`formatClockHM`/`isSameDay`/`createDateFormatter`/`createTimeFormatter` (datetime), `formatLastActive`/`isBirthdayToday` (presence), `chatFriendActionLabel`/`profileFriendLabel` (relationshipLabels), `vipPackageLabel`/`vipBuyErrorText`/`vipConfirmMessage`/`BuyVipMode` (vipPurchase), `ApiError`/`toApiError`, `toast`, `colorForName`, `isVipActive`/`activeVipTypeId`, `parseMessageMetadata`, `formatDuration`, `randomUuid`, upload helpers.
 
 `stores/`: `applyPostReaction`/`reconcileTopLikers` (postHelpers), `selfLiker`, hook `usePostListActions({posts, setPosts, keepOnlyLiked?, reloadAfterPin?})` → `{toggleReaction, adjustCommentCount, deletePost, togglePin}`, `presenceHooks`, `chatStore`/`roomChatStore` + realtime, `meFeedStore`/`clanFeedStore` (mẫu optimistic chuẩn: `reacting` guard + rollback + toast).
 

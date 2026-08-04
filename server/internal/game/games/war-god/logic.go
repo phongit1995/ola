@@ -17,6 +17,7 @@ const (
 	stepGravity = "gravity"
 	stepShuffle = "shuffle"
 	stepUlt     = "ult"
+	stepSpecial = "special"
 )
 
 type State struct {
@@ -40,6 +41,8 @@ type Step struct {
 	Spawns  []Spawn        `json:"spawns,omitzero"`
 	Board   []int          `json:"board,omitempty"`
 	Damage  int            `json:"damage,omitempty"`
+	Heal    int            `json:"heal,omitempty"`
+	Special string         `json:"special,omitempty"`
 }
 
 type Move struct {
@@ -178,6 +181,7 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 		a, b := *m.A, *m.B
 		s.Board[a], s.Board[b] = s.Board[b], s.Board[a]
 		s.Steps = append(s.Steps, Step{Kind: stepSwap, A: intPtr(a), B: intPtr(b)})
+		specials := &specialProgress{}
 		for {
 			matchedCells, counts, maxRun := findMatches(s.Board)
 			if matchedCells == nil {
@@ -186,6 +190,7 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			if maxRun >= 4 {
 				s.ExtraTurn = true
 			}
+			specials.observe(counts)
 			waveEffects := applyTileEffects(attacker, defender, counts)
 			s.Steps = append(s.Steps, Step{
 				Kind:    stepMatch,
@@ -200,6 +205,14 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			}
 			falls, spawns := applyGravity(s.Board, removed, r)
 			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
+			for _, effect := range specials.applyAvailable(attacker, defender) {
+				s.Steps = append(s.Steps, Step{
+					Kind:    stepSpecial,
+					Special: effect.Type,
+					Damage:  effect.Damage,
+					Heal:    effect.Heal,
+				})
+			}
 			if defender.HP <= 0 {
 				break
 			}

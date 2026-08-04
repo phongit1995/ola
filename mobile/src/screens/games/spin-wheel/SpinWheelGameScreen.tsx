@@ -20,10 +20,11 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { AnimatedKen } from '@components/ui/AnimatedKen';
 import { assetRatio, sizeByHeight } from '@screens/games/pen/penUi';
-import { wheelAssets } from './spinWheelAssets';
+import { wheelAssets, wheelGiftListAssets } from './spinWheelAssets';
 import { SpinWheel } from './SpinWheel';
 import { SpinResultDialog } from './SpinResultDialog';
 import { SpinHistoryDialog } from './SpinHistoryDialog';
+import { GiftListDialog } from './GiftListDialog';
 import { WheelActionButton } from './WheelActionButton';
 import { CHIP_TEXT_STYLE, SPIN_TEXT_STYLE, TEXT_SHADOW, TITLE_STYLE } from './spinWheelStyles';
 import { playSpinSound, stopSpinSound } from './spinWheelSound';
@@ -45,6 +46,7 @@ export function SpinWheelGameScreen({ navigation }: Props) {
   const configStatus = useSpinWheelStore((s) => s.configStatus);
   const loadConfig = useSpinWheelStore((s) => s.loadConfig);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [giftListOpen, setGiftListOpen] = useState(false);
 
   useEffect(() => {
     void loadConfig();
@@ -287,7 +289,7 @@ export function SpinWheelGameScreen({ navigation }: Props) {
             </Text>
           </View>
 
-          <View style={{ width: '100%', maxWidth: 300, flexDirection: 'row', gap: 12 }}>
+          <View style={{ width: '100%', maxWidth: 360, flexDirection: 'row', gap: 12 }}>
             <WheelActionButton
               icon={muted ? wheelAssets.soundOff : wheelAssets.soundOn}
               label={t('wheelGame.sound')}
@@ -301,6 +303,11 @@ export function SpinWheelGameScreen({ navigation }: Props) {
               label={t('wheelGame.history')}
               onPress={() => setHistoryOpen(true)}
             />
+            <WheelActionButton
+              icon={wheelGiftListAssets.giftBox}
+              label={t('wheelGame.gifts')}
+              onPress={() => setGiftListOpen(true)}
+            />
           </View>
         </View>
       </View>
@@ -312,6 +319,9 @@ export function SpinWheelGameScreen({ navigation }: Props) {
         />
       )}
       {historyOpen && <SpinHistoryDialog onClose={() => setHistoryOpen(false)} />}
+      {giftListOpen && ready && (
+        <GiftListDialog segments={config.segments} onClose={() => setGiftListOpen(false)} />
+      )}
     </View>
   );
 }

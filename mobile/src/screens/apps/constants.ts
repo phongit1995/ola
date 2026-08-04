@@ -9,6 +9,7 @@ export type AppItemAction =
   | 'vip'
   | 'ken'
   | 'media'
+  | 'social'
   | 'settings'
   | 'logout';
 
@@ -25,8 +26,16 @@ export const APP_ITEMS: AppItem[] = [
     titleKey: 'home.apps.notifications',
     action: 'notifications',
   },
-  { icon: require('@assets/icons/apps/egg.png'), titleKey: 'home.apps.egg', action: 'egg' },
-  { icon: require('@assets/icons/apps/pen.webp'), titleKey: 'home.apps.pen', action: 'pen' },
+  {
+    icon: require('@assets/icons/apps/egg.png'),
+    titleKey: 'home.apps.egg',
+    action: 'egg',
+  },
+  {
+    icon: require('@assets/icons/apps/pen.webp'),
+    titleKey: 'home.apps.pen',
+    action: 'pen',
+  },
   {
     icon: require('@assets/icons/apps/wheel.webp'),
     titleKey: 'home.apps.wheel',
@@ -37,12 +46,25 @@ export const APP_ITEMS: AppItem[] = [
     titleKey: 'home.apps.profile',
     action: 'profile',
   },
-  { icon: require('@assets/icons/apps/vip-crown.webp'), titleKey: 'home.apps.vip', action: 'vip' },
-  { icon: require('@assets/icons/apps/ken.png'), titleKey: 'home.apps.ken', action: 'ken' },
+  {
+    icon: require('@assets/icons/apps/vip-crown.webp'),
+    titleKey: 'home.apps.vip',
+    action: 'vip',
+  },
+  {
+    icon: require('@assets/icons/apps/ken.png'),
+    titleKey: 'home.apps.ken',
+    action: 'ken',
+  },
   {
     icon: require('@assets/icons/apps/media.png'),
     titleKey: 'home.apps.photos',
     action: 'media',
+  },
+  {
+    icon: require('@assets/icons/social/social-menu-light.png'),
+    titleKey: 'home.apps.social',
+    action: 'social',
   },
   {
     icon: require('@assets/icons/apps/setting.png'),

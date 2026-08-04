@@ -7,7 +7,7 @@ import { MediaViewerModal } from '@components/ui/MediaViewer';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';
+import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';
 import { MeCommentItem } from './MeCommentItem';
@@ -77,9 +77,6 @@ function MeCommentSheetBody({
     replyTarget != null ? replyTarget.author?.username ?? null : null;
 
   const formatTime = useMemo(() => createTimeFormatter(language), [language]);
-  const postTime = isSameDay(post.createdAt, new Date().toISOString())
-    ? formatTime(post.createdAt)
-    : formatDateDMY(post.createdAt);
 
   return (
     <>
@@ -99,7 +96,7 @@ function MeCommentSheetBody({
         >
           <MePostCard
             post={post}
-            timeLabel={postTime}
+            timeLabel={formatTime(post.createdAt)}
             onToggleLike={onToggleLike}
             onToggleDislike={onToggleDislike}
             onOpenProfile={onOpenProfile}

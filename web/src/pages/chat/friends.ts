@@ -1,4 +1,3 @@
-import type { TFunction } from 'i18next';
 import {
   activeVipTypeId,
   colorForName,
@@ -17,7 +16,7 @@ function groupOf(friend: Friend, now: Date): ContactGroup {
 
 export function mapFriendsToContacts(
   friends: Friend[],
-  t: TFunction,
+  locale: string,
   now: number
 ): Contact[] {
   const today = new Date(now);
@@ -35,7 +34,7 @@ export function mapFriendsToContacts(
       deviceType: normalizeDevice(friend.deviceType),
       lastActive: friend.isOnline
         ? undefined
-        : formatLastActive(t, friend.lastActiveAt, now),
+        : formatLastActive(locale, friend.lastActiveAt, now),
       statusImage: friend.bioImage ?? undefined,
       group: groupOf(friend, today),
     };

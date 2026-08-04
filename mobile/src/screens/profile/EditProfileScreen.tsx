@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { UserService } from '@ola/shared/services';
-import { ApiError } from '@ola/shared/lib';
+import { ApiError, createDateFormatter } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/types';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
@@ -77,7 +77,7 @@ function EmailStatusIcon({ verified }: { verified: boolean }) {
 type Props = NativeStackScreenProps<RootStackParamList, 'EditProfile'>;
 
 export function EditProfileScreen({ navigation }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const refreshUser = useAuthStore((s) => s.refreshUser);
@@ -101,6 +101,7 @@ export function EditProfileScreen({ navigation }: Props) {
   const [coverPreview, setCoverPreview] = useState<NativeUploadFile | null>(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
+  const formatDate = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
   const [birthdayPickerDate, setBirthdayPickerDate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -314,7 +315,7 @@ export function EditProfileScreen({ navigation }: Props) {
                     color: dateOfBirth !== '' ? 'rgba(0,0,0,0.87)' : PLACEHOLDER_COLOR,
                   }}
                 >
-                  {dateOfBirth !== '' ? dateOfBirth.slice(0, 10) : t('profileEdit.birthdayHint')}
+                  {dateOfBirth !== '' ? formatDate(dateOfBirth) : t('profileEdit.birthdayHint')}
                 </Text>
               </Pressable>
             </Field>

@@ -11,15 +11,16 @@ type StartCallRequest struct {
 }
 
 type CallTokenResponse struct {
-	CallID         string    `json:"callId"`
-	RoomName       string    `json:"roomName"`
-	Token          string    `json:"token"`
-	WsURL          string    `json:"wsUrl"`
-	ConversationID string    `json:"conversationId"`
-	CallerID       string    `json:"callerId"`
-	CallType       string    `json:"callType"`
-	Status         string    `json:"status"`
-	StartedAt      time.Time `json:"startedAt"`
+	CallID             string    `json:"callId"`
+	RoomName           string    `json:"roomName"`
+	Token              string    `json:"token"`
+	WsURL              string    `json:"wsUrl"`
+	ConversationID     string    `json:"conversationId"`
+	CallerID           string    `json:"callerId"`
+	CallType           string    `json:"callType"`
+	Status             string    `json:"status"`
+	StartedAt          time.Time `json:"startedAt"`
+	RingTimeoutSeconds int       `json:"ringTimeoutSeconds"`
 }
 
 type SimpleSuccessResponse struct {

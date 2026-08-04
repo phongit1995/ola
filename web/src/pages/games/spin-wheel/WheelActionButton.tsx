@@ -24,10 +24,10 @@ export function WheelActionButton({
         className="absolute inset-0 h-full w-full"
       />
       <span
-        className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-bold"
+        className="absolute inset-0 flex items-center justify-center gap-1 text-xs font-bold"
         style={CHIP_TEXT_STYLE}
       >
-        <img src={icon} alt="" className="h-5 w-5" />
+        <img src={icon} alt="" className="h-4.5 w-4.5" />
         {label}
       </span>
     </button>

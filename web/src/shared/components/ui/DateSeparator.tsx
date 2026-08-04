@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createDateFormatter } from '@lib';
+import { createDateSeparatorFormatter } from '@lib';
 
 interface DateSeparatorProps {
   iso: string;
@@ -9,7 +9,7 @@ interface DateSeparatorProps {
 export function DateSeparator({ iso }: DateSeparatorProps) {
   const { i18n } = useTranslation();
   const formatDate = useMemo(
-    () => createDateFormatter(i18n.language),
+    () => createDateSeparatorFormatter(i18n.language),
     [i18n.language]
   );
   return (

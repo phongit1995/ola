@@ -16,6 +16,7 @@ import type {
   SearchUsersResult,
   VisitorListParams,
   VisitorListResult,
+  ProfileViewResult,
 } from '../types/api/user.type';
 
 export class UserService {
@@ -39,6 +40,10 @@ export class UserService {
 
   static publicProfile(id: string): Promise<PublicProfile> {
     return http.get<PublicProfile>(API_PATH.user.detail(id));
+  }
+
+  static recordProfileView(id: string): Promise<ProfileViewResult> {
+    return http.post<ProfileViewResult>(API_PATH.user.profileView(id));
   }
 
   static kiss(id: string): Promise<KissResult> {

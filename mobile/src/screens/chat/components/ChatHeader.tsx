@@ -9,6 +9,7 @@ interface ChatHeaderProps {
   title: string;
   subtitle: string;
   avatar?: string;
+  right?: React.ReactNode;
   onBack: () => void;
   onOpenProfile: () => void;
   onMore: () => void;
@@ -18,6 +19,7 @@ export function ChatHeader({
   title,
   subtitle,
   avatar,
+  right,
   onBack,
   onOpenProfile,
   onMore,
@@ -46,6 +48,7 @@ export function ChatHeader({
             )}
           </View>
         </Pressable>
+        {right}
         <Pressable
           className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
           onPress={onMore}
