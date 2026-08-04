@@ -132,10 +132,17 @@
       "photos": "Hình Ảnh",
       "mall": "Ola Mall",
       "nearby": "Lân cận",
+      "social": "Kết nối MXH",
       "settings": "Cài đặt"
     },
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
     "appMallSubtitle": "Kho Video vô cùng phong phú và đa dạng"
+  },
+  "social": {
+    "title": "Kết nối MXH",
+    "fanpageTitle": "Fanpage Ola",
+    "groupTitle": "Nhóm cộng đồng Ola",
+    "tiktokTitle": "TikTok Ola"
   },
   "settings": {
     "title": "Cài đặt",

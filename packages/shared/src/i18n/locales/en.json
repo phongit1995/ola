@@ -132,10 +132,17 @@
       "photos": "Photos",
       "mall": "Ola Mall",
       "nearby": "Nearby",
+      "social": "Social connections",
       "settings": "Settings"
     },
     "appGameSubtitle": "The BEST games for you",
     "appMallSubtitle": "Diverse video clips collected by editors"
+  },
+  "social": {
+    "title": "Social connections",
+    "fanpageTitle": "Ola Fanpage",
+    "groupTitle": "Ola community group",
+    "tiktokTitle": "Ola TikTok"
   },
   "settings": {
     "title": "Settings",
