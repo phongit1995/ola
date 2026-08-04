@@ -64,6 +64,7 @@ var sortColumns = map[string]string{
 	"lastLoginAt":   "last_login_at",
 	"followerCount": "follower_count",
 	"username":      "username",
+	"ken":           "ken",
 }
 
 func orderClause(sortBy, sortDir string) string {

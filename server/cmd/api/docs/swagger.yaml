@@ -10897,7 +10897,8 @@ paths:
         in: query
         name: includeDeleted
         type: boolean
-      - description: Sort field (createdAt, lastLoginAt, followerCount, username)
+      - description: Sort field (createdAt, lastLoginAt, followerCount, username,
+          ken)
         in: query
         name: sortBy
         type: string

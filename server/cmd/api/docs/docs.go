@@ -3450,7 +3450,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Sort field (createdAt, lastLoginAt, followerCount, username)",
+                        "description": "Sort field (createdAt, lastLoginAt, followerCount, username, ken)",
                         "name": "sortBy",
                         "in": "query"
                     },
