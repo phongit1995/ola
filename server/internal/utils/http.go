@@ -117,6 +117,11 @@ func (g *AppGroup) PATCH(path string, middlewareAndHandler ...any) {
 	g.group.PATCH(path, handlers...)
 }
 
+// RawPOST bỏ qua wrapper JSON để handler tự ghi response (SSE / stream).
+func (g *AppGroup) RawPOST(path string, handlers ...gin.HandlerFunc) {
+	g.group.POST(path, handlers...)
+}
+
 func extractMiddlewareAndHandler(args []any) ([]gin.HandlerFunc, AppHandler) {
 	if len(args) == 0 {
 		panic("handler is required")
@@ -321,6 +326,19 @@ func RespondError(c *gin.Context, status int, message string) {
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Path:      c.Request.URL.Path,
 		Error:     message,
+	})
+}
+
+// RespondSuccess dùng cho handler RawPOST tự ghi response nhưng vẫn cần đúng envelope.
+func RespondSuccess(c *gin.Context, status int, data any) {
+	traceID := getOrCreateTraceID(c)
+	c.JSON(status, ApiResponse{
+		Success:   true,
+		Status:    status,
+		TraceID:   traceID,
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Path:      c.Request.URL.Path,
+		Data:      data,
 	})
 }
 

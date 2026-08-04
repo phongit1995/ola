@@ -5441,6 +5441,70 @@
                 }
             }
         },
+        "/chat-bot": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Model luôn là gemini-3.6-flash, không cho chọn model. Body chỉ gồm `messages` và `stream`.\n`stream=false` (mặc định) trả JSON đầy đủ theo schema dưới đây.\n`stream=true` trả `text/event-stream`, mỗi frame là một dòng `data: \u003cjson\u003e` rồi một dòng trống:\n- chunk nội dung: `{\"id\":\"chatbot-...\",\"model\":\"gemini-3.6-flash\",\"created\":1764844800,\"delta\":\"Chào \"}`\n- chunk cuối: `{\"id\":\"...\",\"model\":\"...\",\"created\":...,\"finishReason\":\"stop\",\"usage\":{\"promptTokens\":12,\"completionTokens\":34,\"totalTokens\":46}}`\n- nếu lỗi giữa stream: `{\"id\":\"...\",\"error\":\"...\"}`\n- kết thúc: `data: [DONE]`\nGhép toàn bộ `delta` theo thứ tự sẽ được câu trả lời đầy đủ.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "chat-bot"
+                ],
+                "summary": "Chat với bot",
+                "parameters": [
+                    {
+                        "description": "Hội thoại",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_chat-bot.CompletionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_chat-bot_CompletionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/clans": {
             "post": {
                 "security": [
@@ -15826,6 +15890,92 @@
                 }
             }
         },
+        "internal_modules_chat-bot.CompletionRequest": {
+            "type": "object",
+            "required": [
+                "messages"
+            ],
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_chat-bot.Message"
+                    }
+                },
+                "stream": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_modules_chat-bot.CompletionResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Chào bạn, mình có thể giúp gì?"
+                },
+                "created": {
+                    "type": "integer",
+                    "example": 1764844800
+                },
+                "finishReason": {
+                    "type": "string",
+                    "example": "stop"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "chatbot-6f1c2a9d4e8b"
+                },
+                "model": {
+                    "type": "string",
+                    "example": "gemini-3.6-flash"
+                },
+                "usage": {
+                    "$ref": "#/definitions/internal_modules_chat-bot.Usage"
+                }
+            }
+        },
+        "internal_modules_chat-bot.Message": {
+            "type": "object",
+            "required": [
+                "content",
+                "role"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Chào bạn"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "user",
+                        "assistant",
+                        "system"
+                    ],
+                    "example": "user"
+                }
+            }
+        },
+        "internal_modules_chat-bot.Usage": {
+            "type": "object",
+            "properties": {
+                "completionTokens": {
+                    "type": "integer",
+                    "example": 340
+                },
+                "promptTokens": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "totalTokens": {
+                    "type": "integer",
+                    "example": 460
+                }
+            }
+        },
         "internal_modules_clan.AssignRoleRequest": {
             "type": "object",
             "required": [
@@ -24368,6 +24518,32 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_auth.RefreshTokenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_chat-bot_CompletionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_chat-bot.CompletionResponse"
                 },
                 "error": {
                     "type": "string"

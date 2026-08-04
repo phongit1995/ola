@@ -364,3 +364,30 @@ const (
 	ReactionActionAdded   = "added"
 	ReactionActionRemoved = "removed"
 )
+
+const (
+	ChatBotModelName  = "gemini-3.6-flash"
+	ChatBotModelMode  = 1
+	ChatBotModelThink = 4
+
+	ChatBotGeminiOrigin     = "https://gemini.google.com"
+	ChatBotGeminiStreamPath = "/_/BardChatUi/data/assistant.lamda.BardFrontendService/StreamGenerate"
+	ChatBotGeminiAppPath    = "/app"
+	ChatBotGeminiBL         = "boq_assistant-bard-web-server_20260716.08_p0"
+	ChatBotUserAgent        = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+	ChatBotTimeout          = 180 * time.Second
+	ChatBotRetryAttempts    = 3
+	ChatBotRetryDelay       = 2 * time.Second
+	ChatBotMaxRequestBytes  = 256 << 10
+	ChatBotMaxResponseBytes = 8 << 20
+	ChatBotMaxMessages      = 40
+	ChatBotMaxPromptChars   = 32000
+
+	ChatBotRoleUser      = "user"
+	ChatBotRoleAssistant = "assistant"
+	ChatBotRoleSystem    = "system"
+
+	ChatBotFinishReasonStop = "stop"
+	ChatBotSSEDoneMarker    = "[DONE]"
+)

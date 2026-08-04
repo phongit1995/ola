@@ -2434,6 +2434,67 @@ definitions:
     - callType
     - conversationId
     type: object
+  internal_modules_chat-bot.CompletionRequest:
+    properties:
+      messages:
+        items:
+          $ref: '#/definitions/internal_modules_chat-bot.Message'
+        minItems: 1
+        type: array
+      stream:
+        example: false
+        type: boolean
+    required:
+    - messages
+    type: object
+  internal_modules_chat-bot.CompletionResponse:
+    properties:
+      content:
+        example: Chào bạn, mình có thể giúp gì?
+        type: string
+      created:
+        example: 1764844800
+        type: integer
+      finishReason:
+        example: stop
+        type: string
+      id:
+        example: chatbot-6f1c2a9d4e8b
+        type: string
+      model:
+        example: gemini-3.6-flash
+        type: string
+      usage:
+        $ref: '#/definitions/internal_modules_chat-bot.Usage'
+    type: object
+  internal_modules_chat-bot.Message:
+    properties:
+      content:
+        example: Chào bạn
+        type: string
+      role:
+        enum:
+        - user
+        - assistant
+        - system
+        example: user
+        type: string
+    required:
+    - content
+    - role
+    type: object
+  internal_modules_chat-bot.Usage:
+    properties:
+      completionTokens:
+        example: 340
+        type: integer
+      promptTokens:
+        example: 120
+        type: integer
+      totalTokens:
+        example: 460
+        type: integer
+    type: object
   internal_modules_clan.AssignRoleRequest:
     properties:
       role:
@@ -8252,6 +8313,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_chat-bot_CompletionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_chat-bot.CompletionResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_BanListResponse:
     properties:
       data:
@@ -12166,6 +12244,55 @@ paths:
       summary: Start a call
       tags:
       - calls
+  /chat-bot:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Model luôn là gemini-3.6-flash, không cho chọn model. Body chỉ gồm `messages` và `stream`.
+        `stream=false` (mặc định) trả JSON đầy đủ theo schema dưới đây.
+        `stream=true` trả `text/event-stream`, mỗi frame là một dòng `data: <json>` rồi một dòng trống:
+        - chunk nội dung: `{"id":"chatbot-...","model":"gemini-3.6-flash","created":1764844800,"delta":"Chào "}`
+        - chunk cuối: `{"id":"...","model":"...","created":...,"finishReason":"stop","usage":{"promptTokens":12,"completionTokens":34,"totalTokens":46}}`
+        - nếu lỗi giữa stream: `{"id":"...","error":"..."}`
+        - kết thúc: `data: [DONE]`
+        Ghép toàn bộ `delta` theo thứ tự sẽ được câu trả lời đầy đủ.
+      parameters:
+      - description: Hội thoại
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_chat-bot.CompletionRequest'
+      produces:
+      - application/json
+      - text/event-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_chat-bot_CompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Chat với bot
+      tags:
+      - chat-bot
   /clans:
     post:
       consumes:
