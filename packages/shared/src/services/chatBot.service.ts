@@ -9,7 +9,8 @@ import type {
 } from '../types/client/chatBot.type';
 
 export const CHAT_BOT_PATH = '/chat-bot';
-export const CHAT_BOT_HISTORY_LIMIT = 30;
+export const CHAT_BOT_HISTORY_TURNS = 40;
+export const CHAT_BOT_HISTORY_LIMIT = CHAT_BOT_HISTORY_TURNS * 2;
 export const CHAT_BOT_SSE_DONE = '[DONE]';
 
 const SSE_DATA_PREFIX = 'data: ';
