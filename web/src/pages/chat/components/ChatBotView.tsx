@@ -1,19 +1,17 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
   ConfirmDialog,
   DateSeparator,
   FullScreenOverlay,
-  ListOptionDialog,
   ScreenHeader,
   SmileyInput,
-  type ListOption,
   type SmileyInputHandle,
 } from '@components';
 import { useStickyScroll } from '@hooks';
 import { colorForName, formatClockHM, isSameDay } from '@lib';
-import moreIcon from '@/assets/icons/chat/ic_more_white.png';
+import deleteIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import sendIcon from '@/assets/icons/chat/ic_action_send_white.png';
 import chatBotAvatar from '@/assets/icons/chat/ic_chat_bot_ola.png';
 import { chatBotHistory } from '@services';
@@ -27,7 +25,35 @@ const SUGGESTION_KEYS = [
   'chat.chatBotSuggestion1',
   'chat.chatBotSuggestion2',
   'chat.chatBotSuggestion3',
+  'chat.chatBotSuggestion4',
+  'chat.chatBotSuggestion5',
+  'chat.chatBotSuggestion6',
+  'chat.chatBotSuggestion7',
+  'chat.chatBotSuggestion8',
+  'chat.chatBotSuggestion9',
+  'chat.chatBotSuggestion10',
+  'chat.chatBotSuggestion11',
+  'chat.chatBotSuggestion12',
+  'chat.chatBotSuggestion13',
+  'chat.chatBotSuggestion14',
+  'chat.chatBotSuggestion15',
+  'chat.chatBotSuggestion16',
+  'chat.chatBotSuggestion17',
+  'chat.chatBotSuggestion18',
+  'chat.chatBotSuggestion19',
+  'chat.chatBotSuggestion20',
 ] as const;
+
+const VISIBLE_SUGGESTIONS = 3;
+
+function pickSuggestions(): (typeof SUGGESTION_KEYS)[number][] {
+  const pool = [...SUGGESTION_KEYS];
+  for (let index = pool.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    [pool[index], pool[swap]] = [pool[swap]!, pool[index]!];
+  }
+  return pool.slice(0, VISIBLE_SUGGESTIONS);
+}
 
 const ERROR_KEYS = {
   auth: 'chat.chatBotErrorAuth',
@@ -46,7 +72,7 @@ function BotAvatar({ name }: { name: string }) {
     <img
       src={chatBotAvatar}
       alt={name}
-      className="h-8 w-8 shrink-0 self-start rounded-full object-cover"
+      className="h-8 w-8 shrink-0 rounded-full object-cover"
     />
   );
 }
@@ -54,7 +80,9 @@ function BotAvatar({ name }: { name: string }) {
 function TypingRow({ name }: { name: string }) {
   return (
     <div className="mt-1 flex items-end gap-1">
-      <BotAvatar name={name} />
+      <span className="shrink-0 self-start">
+        <BotAvatar name={name} />
+      </span>
       <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3 shadow-sm">
         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40" />
         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40 [animation-delay:150ms]" />
@@ -118,7 +146,9 @@ function BotMessageRow({
             <span className="w-8 shrink-0" />
           )
         ) : firstInGroup ? (
-          <BotAvatar name={botName} />
+          <span className="shrink-0 self-start">
+            <BotAvatar name={botName} />
+          </span>
         ) : (
           <span className="w-8 shrink-0" />
         )}
@@ -168,12 +198,12 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
   const streaming = activeTurnId != null;
 
   const [draft, setDraft] = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
   const composerRef = useRef<SmileyInputHandle>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const botName = t('chat.chatBot');
+  const suggestions = useMemo(() => pickSuggestions(), []);
   const last = messages.at(-1) ?? null;
   const visible = messages.filter((message) => message.content !== '');
   const waiting = streaming && (last?.content ?? '') === '';
@@ -241,34 +271,26 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
     void run(prompt);
   }
 
-  const menuOptions: ListOption[] = [
-    {
-      key: 'clear',
-      label: t('chat.chatBotClear'),
-      danger: true,
-      onSelect: () => setClearOpen(true),
-    },
-  ];
-
   return (
     <FullScreenOverlay position="absolute">
       <ScreenHeader
         title={botName}
-        subtitle={
-          waiting || streaming
-            ? t('chat.chatBotThinking')
-            : t('chat.statusActive')
-        }
+        subtitle={streaming ? t('chat.chatBotThinking') : undefined}
         onBack={onClose}
         left={<BotAvatar name={botName} />}
       >
         <button
           type="button"
-          aria-label={t('common.menu')}
-          onClick={() => setMenuOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+          aria-label={t('chat.chatBotClear')}
+          onClick={() => setClearOpen(true)}
+          disabled={messages.length === 0}
+          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15 disabled:opacity-40"
         >
-          <img src={moreIcon} alt="" className="h-5 w-5 object-contain" />
+          <img
+            src={deleteIcon}
+            alt=""
+            className="h-5 w-5 object-contain brightness-0 invert"
+          />
         </button>
       </ScreenHeader>
 
@@ -287,18 +309,6 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
             <p className="mt-3 text-sm text-black/54">
               {t('chat.chatBotEmptyTitle')}
             </p>
-            <div className="mt-4 flex w-full flex-col gap-2">
-              {SUGGESTION_KEYS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => void run(t(key))}
-                  className="rounded-full border border-black/12 bg-white/80 px-4 py-2 text-sm text-black/70 shadow-sm active:scale-[0.98]"
-                >
-                  {t(key)}
-                </button>
-              ))}
-            </div>
           </div>
         ) : (
           <>
@@ -342,15 +352,18 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
         )}
       </div>
 
-      {streaming && (
-        <div className="flex shrink-0 justify-center border-t border-black/12 bg-white py-1.5">
-          <button
-            type="button"
-            onClick={stop}
-            className="rounded-full border border-black/20 px-4 py-1 text-xs text-black/70 active:scale-95"
-          >
-            {t('chat.chatBotStop')}
-          </button>
+      {visible.length === 0 && !waiting && (
+        <div className="flex shrink-0 gap-2 overflow-x-auto scrollbar-none border-t border-black/12 bg-white px-2 py-2">
+          {suggestions.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => void run(t(key))}
+              className="shrink-0 rounded-full border border-black/12 bg-[#f3f3f3] px-3 py-1.5 text-xs whitespace-nowrap text-black/70 active:scale-95"
+            >
+              {t(key)}
+            </button>
+          ))}
         </div>
       )}
 
@@ -368,25 +381,23 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
         </div>
         <button
           type="button"
-          onClick={send}
-          disabled={streaming || draft.trim() === ''}
-          aria-label={t('chat.send')}
+          onClick={streaming ? stop : send}
+          disabled={!streaming && draft.trim() === ''}
+          aria-label={streaming ? t('chat.chatBotStop') : t('chat.send')}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ola-primary transition-opacity disabled:opacity-40"
         >
-          <img
-            src={sendIcon}
-            alt=""
-            className="h-5 w-5 object-contain brightness-0 invert"
-          />
+          {streaming ? (
+            <span className="h-3.5 w-3.5 rounded-[2px] bg-white" />
+          ) : (
+            <img
+              src={sendIcon}
+              alt=""
+              className="h-5 w-5 object-contain brightness-0 invert"
+            />
+          )}
         </button>
       </div>
 
-      <ListOptionDialog
-        open={menuOpen}
-        title={botName}
-        options={menuOptions}
-        onClose={() => setMenuOpen(false)}
-      />
       <ConfirmDialog
         open={clearOpen}
         danger
