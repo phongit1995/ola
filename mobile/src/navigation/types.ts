@@ -1,5 +1,11 @@
 import type { BuyVipMode } from '@ola/shared/types';
-import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
+import {
+  AUTH_ROUTES,
+  CHAT_ROUTES,
+  ROOM_ROUTES,
+  ROOT_ROUTES,
+  TAB_ROUTES,
+} from './routes';
 
 export type AuthStackParamList = {
   [AUTH_ROUTES.Login]: undefined;
@@ -19,7 +25,6 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   [ROOT_ROUTES.MainTabs]: undefined;
   [ROOT_ROUTES.ChatDetail]: { conversationId?: string };
-  [ROOT_ROUTES.ChatBot]: undefined;
   [ROOT_ROUTES.ProfileView]: { userId: string; color?: string };
   [ROOT_ROUTES.EditProfile]: undefined;
   [ROOT_ROUTES.VipStore]: undefined;
@@ -43,6 +48,11 @@ export type RootStackParamList = {
   [ROOT_ROUTES.ClanBans]: { clanId: string };
   [ROOT_ROUTES.FriendRequests]: undefined;
   [ROOT_ROUTES.SuggestedFriends]: undefined;
+};
+
+export type ChatStackParamList = {
+  [CHAT_ROUTES.ChatList]: undefined;
+  [CHAT_ROUTES.ChatBot]: undefined;
 };
 
 export type RoomStackParamList = {

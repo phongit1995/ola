@@ -29,6 +29,25 @@ export type ChatBotErrorCode =
   | 'network'
   | 'emptyPrompt';
 
+export type ChatBotSurfaceKind = 'out' | 'in' | 'failed';
+
+export interface ChatBotViewer {
+  name: string;
+  color: string;
+  avatar?: string;
+}
+
+export interface ChatBotGrouping {
+  isOut: boolean;
+  firstInGroup: boolean;
+  lastInGroup: boolean;
+  spaced: boolean;
+  showTime: boolean;
+  time: string;
+  corners: string;
+  surfaceKind: ChatBotSurfaceKind;
+}
+
 export interface ChatBotState {
   messages: ChatBotMessage[];
   activeTurnId: string | null;

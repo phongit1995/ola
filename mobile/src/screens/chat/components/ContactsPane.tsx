@@ -10,13 +10,14 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
-import type { RootStackParamList } from '@navigation/types';
-import { ROOT_ROUTES } from '@navigation/routes';
+import type { ChatStackParamList, RootStackParamList } from '@navigation/types';
+import { CHAT_ROUTES, ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
@@ -76,7 +77,13 @@ function SectionHeader({ label }: { label: string }) {
 
 export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) {
   const { t, i18n } = useTranslation();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<
+      CompositeNavigationProp<
+        NativeStackNavigationProp<ChatStackParamList>,
+        NativeStackNavigationProp<RootStackParamList>
+      >
+    >();
   const me = useAuthStore((s) => s.user);
   const startDirect = useChatStore((s) => s.startDirect);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -299,7 +306,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           title={t('chat.chatBot')}
           subtitle={t('chat.chatBotSub')}
           showChevron
-          onPress={() => navigation.navigate(ROOT_ROUTES.ChatBot)}
+          onPress={() => navigation.navigate(CHAT_ROUTES.ChatBot)}
         />
 
         {friendsLoading && !friendsLoaded ? (

@@ -23,6 +23,7 @@ export * from './relationshipLabels';
 export * from './vipPurchase';
 export * from './presence';
 export * from './messageGroups';
+export * from './chatBotView';
 export * from './penHistory';
 export * from './checkInActions';
 export * from './clanHelpers';

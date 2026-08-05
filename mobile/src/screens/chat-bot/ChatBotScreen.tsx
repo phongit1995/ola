@@ -7,8 +7,8 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import type { RootStackParamList } from '@navigation/types';
-import { ROOT_ROUTES } from '@navigation/routes';
+import type { ChatStackParamList } from '@navigation/types';
+import { CHAT_ROUTES } from '@navigation/routes';
 import { CHAT_BG } from '@screens/chat/constants';
 import { useChatBotConversation } from './useChatBotConversation';
 import { BotAvatar } from './components/BotAvatar';
@@ -18,7 +18,7 @@ import { ChatBotSuggestions } from './components/ChatBotSuggestions';
 
 const deleteIcon = require('@assets/icons/chat/ic_menu_delete.png');
 
-type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.ChatBot>;
+type Props = NativeStackScreenProps<ChatStackParamList, typeof CHAT_ROUTES.ChatBot>;
 
 export function ChatBotScreen({ navigation }: Props) {
   const { t } = useTranslation();

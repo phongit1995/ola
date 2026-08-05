@@ -1,16 +1,5 @@
-export interface ChatBotViewer {
-  name: string;
-  color: string;
-  avatar?: string;
-}
+import type { ChatBotGrouping } from '@ola/shared/types';
 
-export interface MessageGrouping {
-  isOut: boolean;
-  firstInGroup: boolean;
-  lastInGroup: boolean;
-  spaced: boolean;
-  showTime: boolean;
-  time: string;
-  surface: string;
-  corners: string;
-}
+export type { ChatBotViewer } from '@ola/shared/types';
+
+export type MessageGrouping = ChatBotGrouping & { surface: string };

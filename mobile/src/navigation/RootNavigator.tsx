@@ -10,11 +10,18 @@ import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type {
   AuthStackParamList,
+  ChatStackParamList,
   MainTabParamList,
   RoomStackParamList,
   RootStackParamList,
 } from './types';
-import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
+import {
+  AUTH_ROUTES,
+  CHAT_ROUTES,
+  ROOM_ROUTES,
+  ROOT_ROUTES,
+  TAB_ROUTES,
+} from './routes';
 import { LoginScreen } from '@screens/auth/LoginScreen';
 import { RegisterScreen } from '@screens/auth/RegisterScreen';
 import { ForgotPasswordScreen } from '@screens/auth/ForgotPasswordScreen';
@@ -60,6 +67,16 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const RoomStack = createNativeStackNavigator<RoomStackParamList>();
+const ChatStack = createNativeStackNavigator<ChatStackParamList>();
+
+function ChatNavigator() {
+  return (
+    <ChatStack.Navigator screenOptions={{ headerShown: false }}>
+      <ChatStack.Screen name={CHAT_ROUTES.ChatList} component={ChatListScreen} />
+      <ChatStack.Screen name={CHAT_ROUTES.ChatBot} component={ChatBotScreen} />
+    </ChatStack.Navigator>
+  );
+}
 
 function RoomNavigator() {
   return (
@@ -139,7 +156,7 @@ function MainTabs() {
       >
         <Tabs.Screen
           name={TAB_ROUTES.Chat}
-          component={ChatListScreen}
+          component={ChatNavigator}
           options={{
             title: t('home.tabChat'),
             tabBarIcon: tabIcon('chat'),
@@ -224,7 +241,6 @@ export function RootNavigator() {
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       <RootStack.Screen name={ROOT_ROUTES.MainTabs} component={MainTabs} />
       <RootStack.Screen name={ROOT_ROUTES.ChatDetail} component={ChatDetailScreen} />
-      <RootStack.Screen name={ROOT_ROUTES.ChatBot} component={ChatBotScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ProfileView} component={ProfileViewScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EditProfile} component={EditProfileScreen} />
       <RootStack.Screen name={ROOT_ROUTES.VipStore} component={VipStoreScreen} />

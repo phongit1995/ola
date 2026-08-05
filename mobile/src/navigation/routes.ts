@@ -13,10 +13,14 @@ export const TAB_ROUTES = {
   Apps: 'AppsTab',
 } as const;
 
+export const CHAT_ROUTES = {
+  ChatList: 'ChatList',
+  ChatBot: 'ChatBot',
+} as const;
+
 export const ROOT_ROUTES = {
   MainTabs: 'MainTabs',
   ChatDetail: 'ChatDetail',
-  ChatBot: 'ChatBot',
   ProfileView: 'ProfileView',
   EditProfile: 'EditProfile',
   VipStore: 'VipStore',
