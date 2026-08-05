@@ -16,6 +16,7 @@ export const TAB_ROUTES = {
 export const ROOT_ROUTES = {
   MainTabs: 'MainTabs',
   ChatDetail: 'ChatDetail',
+  ChatBot: 'ChatBot',
   ProfileView: 'ProfileView',
   EditProfile: 'EditProfile',
   VipStore: 'VipStore',

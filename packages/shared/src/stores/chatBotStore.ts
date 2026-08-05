@@ -24,6 +24,13 @@ function newMessage(
   return { id: randomUuid(), role, content, createdAt: Date.now(), status };
 }
 
+function lastIndexOfUser(messages: ChatBotMessage[]): number {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index]!.role === 'user') return index;
+  }
+  return -1;
+}
+
 function replaceMessage(
   messages: ChatBotMessage[],
   id: string,
@@ -89,9 +96,7 @@ export const useChatBotStore = create<ChatBotState>()(
 
       dropLastTurn: () => {
         const { messages } = get();
-        const lastUserIndex = messages.findLastIndex(
-          (message) => message.role === 'user'
-        );
+        const lastUserIndex = lastIndexOfUser(messages);
         if (lastUserIndex < 0) return null;
         const prompt = messages[lastUserIndex]!.content;
         set({

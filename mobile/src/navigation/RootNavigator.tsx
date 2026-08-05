@@ -21,6 +21,7 @@ import { ForgotPasswordScreen } from '@screens/auth/ForgotPasswordScreen';
 import { TermsScreen } from '@screens/auth/TermsScreen';
 import { ChatListScreen } from '@screens/chat/ChatListScreen';
 import { ChatDetailScreen } from '@screens/chat/ChatDetailScreen';
+import { ChatBotScreen } from '@screens/chat-bot/ChatBotScreen';
 import { RoomListScreen } from '@screens/room/RoomListScreen';
 import { RoomChatScreen } from '@screens/room/RoomChatScreen';
 import { MeFeedScreen } from '@screens/me/MeFeedScreen';
@@ -223,6 +224,7 @@ export function RootNavigator() {
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       <RootStack.Screen name={ROOT_ROUTES.MainTabs} component={MainTabs} />
       <RootStack.Screen name={ROOT_ROUTES.ChatDetail} component={ChatDetailScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ChatBot} component={ChatBotScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ProfileView} component={ProfileViewScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EditProfile} component={EditProfileScreen} />
       <RootStack.Screen name={ROOT_ROUTES.VipStore} component={VipStoreScreen} />

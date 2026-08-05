@@ -29,6 +29,7 @@ import { SUGGESTED_FRIENDS } from '@screens/friends/constants';
 import { useFriendsStore } from '@ola/shared/stores/friendsStore';
 import { useFriendsWithPresence } from '@hooks/usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
+import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
@@ -313,6 +314,15 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           subtitle={t('chat.chatGroupSub')}
           showChevron
           onPress={() => push('info', t('chat.comingSoon'))}
+        />
+
+        <SectionHeader label={t('chat.sectionApps')} />
+        <ActionRow
+          badge={<BotAvatar size={48} radius={8} />}
+          title={t('chat.chatBot')}
+          subtitle={t('chat.chatBotSub')}
+          showChevron
+          onPress={() => navigation.navigate(ROOT_ROUTES.ChatBot)}
         />
 
         {friendsLoading && !friendsLoaded ? (
