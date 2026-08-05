@@ -24,16 +24,15 @@ export function ChatBotComposer({
 
   return (
     <div className="relative flex min-h-12 shrink-0 items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5">
-      <div className="min-w-0 flex-1">
-        <SmileyInput
-          ref={inputRef}
-          value={value}
-          onChange={onChange}
-          onEnter={onSend}
-          placeholder={t('chat.chatBotPlaceholder')}
-          multiline
-        />
-      </div>
+      <SmileyInput
+        ref={inputRef}
+        value={value}
+        onChange={onChange}
+        onEnter={onSend}
+        placeholder={t('chat.chatBotPlaceholder')}
+        multiline
+        className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
+      />
       <button
         type="button"
         onClick={streaming ? onStop : onSend}
