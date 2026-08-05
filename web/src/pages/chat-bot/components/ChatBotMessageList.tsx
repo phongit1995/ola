@@ -1,10 +1,10 @@
 import { Fragment } from 'react';
 import type { RefObject, UIEvent } from 'react';
 import { DateSeparator } from '@components';
-import { isSameDay } from '@lib';
+import { BUBBLE_WALLPAPER, isSameDay } from '@lib';
 import type { ChatBotErrorCode, ChatBotMessage } from '@app-types';
-import { BOT_WALLPAPER } from '../constants';
-import { isoOf, type ChatBotViewer } from '../chatBotView';
+import { isoOf } from '../chatBotView';
+import type { ChatBotViewer } from '../interface';
 import { BotMessageRow } from './BotMessageRow';
 import { BotTypingRow } from './BotTypingRow';
 import { ChatBotEmptyState } from './ChatBotEmptyState';
@@ -37,7 +37,7 @@ export function ChatBotMessageList({
     <div
       ref={scrollRef}
       onScroll={onScroll}
-      className={`flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-2 py-3 ${BOT_WALLPAPER}`}
+      className={`flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-2 py-3 ${BUBBLE_WALLPAPER}`}
     >
       {empty ? (
         <ChatBotEmptyState botName={botName} />

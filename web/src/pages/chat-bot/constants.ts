@@ -32,8 +32,3 @@ export const ERROR_KEYS = {
   network: 'chat.chatBotErrorNetwork',
   emptyPrompt: 'chat.chatBotErrorUpstream',
 } as const satisfies Record<ChatBotErrorCode, string>;
-
-export const BOT_SURFACE_FAILED = 'bg-[#f8d7d7]';
-export const BOT_SURFACE_OUT = 'bg-[#dcedc8]';
-export const BOT_SURFACE_IN = 'bg-white shadow-sm';
-export const BOT_WALLPAPER = 'bg-[#ECE5DD]';

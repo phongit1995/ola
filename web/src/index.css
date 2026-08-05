@@ -10,6 +10,9 @@
   --color-ola-accent-dark: #f50057;
   --color-ola-error: #e34545;
   --color-ola-warning: #ff9800;
+  --color-ola-bubble-out: #dcedc8;
+  --color-ola-bubble-failed: #f8d7d7;
+  --color-ola-wallpaper: #ece5dd;
   --animate-blink: blink 1s steps(1, end) infinite;
   --animate-ola-pop: ola-pop 0.4s ease;
   --animate-ola-pop-out: ola-pop-out 0.4s ease;

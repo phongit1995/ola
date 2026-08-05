@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { SuggestionKey } from '../chatBotView';
+import type { SuggestionKey } from '../types';
 
 interface ChatBotSuggestionsProps {
   keys: SuggestionKey[];

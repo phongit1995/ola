@@ -30,14 +30,11 @@ export function useChatBotConversation() {
   const last = messages.at(-1) ?? null;
   const visible = useMemo(() => renderableMessages(messages), [messages]);
   const waiting = streaming && (last?.content ?? '') === '';
-  const suggestions = useMemo(() => pickSuggestions(), []);
+  const [suggestions] = useState(pickSuggestions);
 
   const { scrollRef, handleScroll, scrollToBottomIfPinned } = useStickyScroll({
     count: messages.length,
     lastId: last?.id ?? null,
-    hasMore: false,
-    loadingMore: false,
-    onLoadMore: () => undefined,
   });
 
   useEffect(() => {

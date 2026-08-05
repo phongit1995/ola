@@ -14,7 +14,7 @@ import type { Contact } from '../interface';
 import { BuddyRow } from './BuddyRow';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
-import chatBotAvatar from '@/assets/icons/chat/ic_chat_bot_ola.png';
+import { BotAvatar } from '@/pages/chat-bot/components/BotAvatar';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -357,11 +357,7 @@ export function ContactList({
       <SectionHeader label={t('chat.sectionApps')} />
       <ActionRow
         badge={
-          <img
-            src={chatBotAvatar}
-            alt=""
-            className="h-12 w-12 shrink-0 rounded-lg object-cover"
-          />
+          <BotAvatar name={t('chat.chatBot')} className="h-12 w-12 rounded-lg" />
         }
         title={t('chat.chatBot')}
         subtitle={t('chat.chatBotSub')}

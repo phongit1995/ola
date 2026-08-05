@@ -6,7 +6,13 @@ import snapIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import kenIcon from '@/assets/icons/chat/ic_ken_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
-import { kulImageForText, renderRichText, SmileyText } from '@lib';
+import {
+  bubbleCorners,
+  bubbleSurface,
+  kulImageForText,
+  renderRichText,
+  SmileyText,
+} from '@lib';
 import type { ChatReplySnapshot } from '@app-types';
 import type { ChatMessage } from '../interface';
 import { chatQuoteExcerpt } from '../chatView';
@@ -73,19 +79,9 @@ export function ChatMessageBubble({
   useUploadPreviewLease(message.kind === 'image' ? message.image : undefined);
   const isOut = message.direction === 'out';
   const failed = isOut && message.status === 'failed';
-  const surface = isOut ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
-  const groupCorners = isOut
-    ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${
-        lastInGroup ? '' : 'rounded-br-sm'
-      }`
-    : `${firstInGroup ? '' : 'rounded-tl-sm'} ${
-        lastInGroup ? '' : 'rounded-bl-sm'
-      }`;
-  const bubbleBg = failed
-    ? 'bg-[#f8d7d7]'
-    : isOut
-    ? 'bg-[#dcedc8]'
-    : 'bg-white shadow-sm';
+  const surface = bubbleSurface(isOut, false);
+  const groupCorners = bubbleCorners(isOut, firstInGroup, lastInGroup);
+  const bubbleBg = bubbleSurface(isOut, failed);
 
   const quotedWrap = (content: ReactNode) =>
     message.replyTo != null ? (
