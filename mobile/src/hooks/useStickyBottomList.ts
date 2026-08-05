@@ -135,6 +135,10 @@ export function useStickyBottomList<T>() {
     );
   }, [pin]);
 
+  const scrollToBottomIfStuck = useCallback(() => {
+    if (shouldPin()) pin();
+  }, [pin, shouldPin]);
+
   const unstick = useCallback(() => {
     stickRef.current = false;
   }, []);
@@ -151,6 +155,7 @@ export function useStickyBottomList<T>() {
     onMomentumScrollEnd,
     pinOnNextContent,
     requestScrollToBottom,
+    scrollToBottomIfStuck,
     unstick,
     isUserInteracting,
     isStuckToBottom,

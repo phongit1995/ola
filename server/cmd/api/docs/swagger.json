@@ -5448,7 +5448,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Body chỉ gồm `messages` và `stream`. Tính cách của bot do server tự gắn, client không cần gửi message `system`.\n`stream=false` (mặc định) trả JSON đầy đủ theo schema dưới đây.\n`stream=true` trả `text/event-stream`, mỗi frame là một dòng `data: \u003cjson\u003e` rồi một dòng trống:\n- chunk nội dung: `{\"id\":\"chatbot-...\",\"delta\":\"Chào \"}`\n- chunk cuối: `{\"id\":\"...\",\"finishReason\":\"stop\"}`\n- nếu lỗi giữa stream: `{\"id\":\"...\",\"error\":\"...\"}`\n- kết thúc: `data: [DONE]`\nGhép toàn bộ `delta` theo thứ tự sẽ được câu trả lời đầy đủ.",
+                "description": "Body chỉ gồm `messages` và `stream`. Tính cách của bot do server tự gắn, client không cần gửi message `system`.\n`stream=false` (mặc định) trả JSON đầy đủ theo schema dưới đây.\n`stream=true` trả `text/event-stream`, mỗi frame là một dòng `data: \u003cjson\u003e` rồi một dòng trống:\n- chunk nội dung: `{\"id\":\"chatbot-...\",\"delta\":\"Chào \"}`\n- chunk cuối: `{\"id\":\"...\",\"finishReason\":\"stop\"}`\n- nếu lỗi giữa stream: `{\"id\":\"...\",\"error\":\"...\"}`\n- kết thúc: `data: [DONE]`\nGhép toàn bộ `delta` theo thứ tự sẽ được câu trả lời đầy đủ.\nCó dòng `: ping` xen giữa các frame để giữ kết nối, client bỏ qua dòng không bắt đầu bằng `data: `.\nGiới hạn: tối đa 80 message, 4000 ký tự cho `user`/`system`, 32000 ký tự cho `assistant`, toàn bộ body 2MB (vượt trả 413).",
                 "consumes": [
                     "application/json"
                 ],
@@ -15892,6 +15892,7 @@
             "properties": {
                 "messages": {
                     "type": "array",
+                    "maxItems": 80,
                     "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/internal_modules_chat-bot.Message"

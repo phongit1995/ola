@@ -2439,6 +2439,7 @@ definitions:
       messages:
         items:
           $ref: '#/definitions/internal_modules_chat-bot.Message'
+        maxItems: 80
         minItems: 1
         type: array
       stream:
@@ -12237,6 +12238,8 @@ paths:
         - nếu lỗi giữa stream: `{"id":"...","error":"..."}`
         - kết thúc: `data: [DONE]`
         Ghép toàn bộ `delta` theo thứ tự sẽ được câu trả lời đầy đủ.
+        Có dòng `: ping` xen giữa các frame để giữ kết nối, client bỏ qua dòng không bắt đầu bằng `data: `.
+        Giới hạn: tối đa 80 message, 4000 ký tự cho `user`/`system`, 32000 ký tự cho `assistant`, toàn bộ body 2MB (vượt trả 413).
       parameters:
       - description: Hội thoại
         in: body

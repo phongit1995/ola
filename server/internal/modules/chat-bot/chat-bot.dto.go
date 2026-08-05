@@ -6,7 +6,7 @@ type Message struct {
 }
 
 type CompletionRequest struct {
-	Messages []Message `json:"messages" binding:"required,min=1,dive"`
+	Messages []Message `json:"messages" binding:"required,min=1,max=80,dive"`
 	Stream   bool      `json:"stream" example:"false"`
 }
 

@@ -386,6 +386,18 @@ const (
 
 	ChatBotFinishReasonStop = "stop"
 	ChatBotSSEDoneMarker    = "[DONE]"
+
+	ChatBotMaxRequestBytes = 2 * 1024 * 1024
+
+	// Lịch sử gửi lên chứa cả câu trả lời của bot, mà bot sinh dài hơn người dùng gõ
+	// nhiều lần; cùng một trần sẽ khiến lượt sau bị 400 vì chính câu trả lời lượt trước.
+	ChatBotMaxUserContentRunes      = 4000
+	ChatBotMaxAssistantContentRunes = 32000
+
+	// Proxy đóng kết nối khi im lặng quá proxy_read_timeout; comment SSE giữ nhịp
+	// trong lúc chờ delta đầu tiên của upstream.
+	ChatBotSSEHeartbeat      = ": ping\n\n"
+	ChatBotSSEHeartbeatEvery = 15 * time.Second
 )
 
 const ChatBotSystemPrompt = `Bạn là Olala, chat bot của Ola — ứng dụng chat của người Việt.

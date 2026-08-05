@@ -34,7 +34,7 @@ export function useChatBotConversation() {
   const waiting = streaming && (last?.content ?? '') === '';
 
   const list = useStickyBottomList<ChatBotMessage>();
-  const { requestScrollToBottom } = list;
+  const { requestScrollToBottom, scrollToBottomIfStuck } = list;
 
   useEffect(() => {
     if (userId == null) return;
@@ -43,7 +43,11 @@ export function useChatBotConversation() {
 
   useEffect(() => {
     requestScrollToBottom();
-  }, [last?.content.length, waiting, requestScrollToBottom]);
+  }, [messages.length, requestScrollToBottom]);
+
+  useEffect(() => {
+    scrollToBottomIfStuck();
+  }, [last?.content.length, waiting, scrollToBottomIfStuck]);
 
   useEffect(
     () => () => {
