@@ -5451,7 +5451,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Model luôn là gemini-3.6-flash, không cho chọn model. Body chỉ gồm ` + "`" + `messages` + "`" + ` và ` + "`" + `stream` + "`" + `.\n` + "`" + `stream=false` + "`" + ` (mặc định) trả JSON đầy đủ theo schema dưới đây.\n` + "`" + `stream=true` + "`" + ` trả ` + "`" + `text/event-stream` + "`" + `, mỗi frame là một dòng ` + "`" + `data: \u003cjson\u003e` + "`" + ` rồi một dòng trống:\n- chunk nội dung: ` + "`" + `{\"id\":\"chatbot-...\",\"model\":\"gemini-3.6-flash\",\"created\":1764844800,\"delta\":\"Chào \"}` + "`" + `\n- chunk cuối: ` + "`" + `{\"id\":\"...\",\"model\":\"...\",\"created\":...,\"finishReason\":\"stop\",\"usage\":{\"promptTokens\":12,\"completionTokens\":34,\"totalTokens\":46}}` + "`" + `\n- nếu lỗi giữa stream: ` + "`" + `{\"id\":\"...\",\"error\":\"...\"}` + "`" + `\n- kết thúc: ` + "`" + `data: [DONE]` + "`" + `\nGhép toàn bộ ` + "`" + `delta` + "`" + ` theo thứ tự sẽ được câu trả lời đầy đủ.",
+                "description": "Body chỉ gồm ` + "`" + `messages` + "`" + ` và ` + "`" + `stream` + "`" + `. Tính cách của bot do server tự gắn, client không cần gửi message ` + "`" + `system` + "`" + `.\n` + "`" + `stream=false` + "`" + ` (mặc định) trả JSON đầy đủ theo schema dưới đây.\n` + "`" + `stream=true` + "`" + ` trả ` + "`" + `text/event-stream` + "`" + `, mỗi frame là một dòng ` + "`" + `data: \u003cjson\u003e` + "`" + ` rồi một dòng trống:\n- chunk nội dung: ` + "`" + `{\"id\":\"chatbot-...\",\"delta\":\"Chào \"}` + "`" + `\n- chunk cuối: ` + "`" + `{\"id\":\"...\",\"finishReason\":\"stop\"}` + "`" + `\n- nếu lỗi giữa stream: ` + "`" + `{\"id\":\"...\",\"error\":\"...\"}` + "`" + `\n- kết thúc: ` + "`" + `data: [DONE]` + "`" + `\nGhép toàn bộ ` + "`" + `delta` + "`" + ` theo thứ tự sẽ được câu trả lời đầy đủ.",
                 "consumes": [
                     "application/json"
                 ],
@@ -15913,10 +15913,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Chào bạn, mình có thể giúp gì?"
                 },
-                "created": {
-                    "type": "integer",
-                    "example": 1764844800
-                },
                 "finishReason": {
                     "type": "string",
                     "example": "stop"
@@ -15924,13 +15920,6 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "chatbot-6f1c2a9d4e8b"
-                },
-                "model": {
-                    "type": "string",
-                    "example": "gemini-3.6-flash"
-                },
-                "usage": {
-                    "$ref": "#/definitions/internal_modules_chat-bot.Usage"
                 }
             }
         },
@@ -15953,23 +15942,6 @@ const docTemplate = `{
                         "system"
                     ],
                     "example": "user"
-                }
-            }
-        },
-        "internal_modules_chat-bot.Usage": {
-            "type": "object",
-            "properties": {
-                "completionTokens": {
-                    "type": "integer",
-                    "example": 340
-                },
-                "promptTokens": {
-                    "type": "integer",
-                    "example": 120
-                },
-                "totalTokens": {
-                    "type": "integer",
-                    "example": 460
                 }
             }
         },

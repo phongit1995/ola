@@ -10,6 +10,7 @@ import (
 const (
 	promptSystemLabel    = "[System instruction]: %s"
 	promptAssistantLabel = "[Assistant]: %s"
+	promptUserLabel      = "[User]: %s"
 )
 
 func buildPrompt(req *CompletionRequest) (string, error) {
@@ -26,7 +27,8 @@ func buildPrompt(req *CompletionRequest) (string, error) {
 		case constants.ChatBotRoleAssistant:
 			sections = append(sections, fmt.Sprintf(promptAssistantLabel, text))
 		default:
-			sections = append(sections, text)
+			// Có nhãn người nói thì model mới phân biệt được "tớ" của người dùng với "tớ" của bot.
+			sections = append(sections, fmt.Sprintf(promptUserLabel, text))
 		}
 	}
 
@@ -35,5 +37,12 @@ func buildPrompt(req *CompletionRequest) (string, error) {
 	}
 
 	persona := fmt.Sprintf(promptSystemLabel, constants.ChatBotSystemPrompt)
-	return strings.Join(append([]string{persona}, sections...), "\n\n"), nil
+	// Model bám chỉ dẫn ở cuối prompt mạnh hơn ở đầu, nhắc lại để nó không rơi về giọng mặc định.
+	reminder := fmt.Sprintf(promptSystemLabel, constants.ChatBotIdentityReminder)
+
+	ordered := make([]string, 0, len(sections)+2)
+	ordered = append(ordered, persona)
+	ordered = append(ordered, sections...)
+	ordered = append(ordered, reminder)
+	return strings.Join(ordered, "\n\n"), nil
 }

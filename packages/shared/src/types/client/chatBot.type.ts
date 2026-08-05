@@ -15,19 +15,10 @@ export interface ChatBotPromptMessage {
   content: string;
 }
 
-export interface ChatBotUsage {
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
-}
-
 export interface ChatBotFrame {
   id?: string;
-  model?: string;
-  created?: number;
   delta?: string;
   finishReason?: string;
-  usage?: ChatBotUsage;
   error?: string;
 }
 

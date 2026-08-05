@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
@@ -43,11 +42,11 @@ func httpStatusForError(err error) (int, string) {
 
 // Chat godoc
 // @Summary      Chat với bot
-// @Description  Model luôn là gemini-3.6-flash, không cho chọn model. Body chỉ gồm `messages` và `stream`.
+// @Description  Body chỉ gồm `messages` và `stream`. Tính cách của bot do server tự gắn, client không cần gửi message `system`.
 // @Description  `stream=false` (mặc định) trả JSON đầy đủ theo schema dưới đây.
 // @Description  `stream=true` trả `text/event-stream`, mỗi frame là một dòng `data: <json>` rồi một dòng trống:
-// @Description  - chunk nội dung: `{"id":"chatbot-...","model":"gemini-3.6-flash","created":1764844800,"delta":"Chào "}`
-// @Description  - chunk cuối: `{"id":"...","model":"...","created":...,"finishReason":"stop","usage":{"promptTokens":12,"completionTokens":34,"totalTokens":46}}`
+// @Description  - chunk nội dung: `{"id":"chatbot-...","delta":"Chào "}`
+// @Description  - chunk cuối: `{"id":"...","finishReason":"stop"}`
 // @Description  - nếu lỗi giữa stream: `{"id":"...","error":"..."}`
 // @Description  - kết thúc: `data: [DONE]`
 // @Description  Ghép toàn bộ `delta` theo thứ tự sẽ được câu trả lời đầy đủ.
@@ -83,7 +82,6 @@ func (ctrl *Controller) Chat(c *gin.Context) {
 	}
 
 	result.ID = newCompletionID()
-	result.Created = time.Now().Unix()
 	utils.RespondSuccess(c, http.StatusOK, result)
 }
 
@@ -95,7 +93,6 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 	}
 
 	completionID := newCompletionID()
-	createdAt := time.Now().Unix()
 	headerSent := false
 
 	writeChunk := func(chunk StreamChunk) error {
@@ -119,12 +116,7 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 			c.Writer.WriteHeader(http.StatusOK)
 			headerSent = true
 		}
-		return writeChunk(StreamChunk{
-			ID:      completionID,
-			Model:   constants.ChatBotModelName,
-			Created: createdAt,
-			Delta:   delta,
-		})
+		return writeChunk(StreamChunk{ID: completionID, Delta: delta})
 	})
 
 	if err != nil {
@@ -138,7 +130,7 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 			return
 		}
 		_, message := httpStatusForError(err)
-		if writeChunk(StreamChunk{ID: completionID, Model: constants.ChatBotModelName, Created: createdAt, Error: message}) != nil {
+		if writeChunk(StreamChunk{ID: completionID, Error: message}) != nil {
 			return
 		}
 		_, _ = fmt.Fprintf(c.Writer, "data: %s\n\n", constants.ChatBotSSEDoneMarker)
@@ -151,13 +143,9 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 		return
 	}
 
-	usage := buildUsage(prompt, full)
 	_ = writeChunk(StreamChunk{
 		ID:           completionID,
-		Model:        constants.ChatBotModelName,
-		Created:      createdAt,
 		FinishReason: constants.ChatBotFinishReasonStop,
-		Usage:        &usage,
 	})
 	_, _ = fmt.Fprintf(c.Writer, "data: %s\n\n", constants.ChatBotSSEDoneMarker)
 	flusher.Flush()

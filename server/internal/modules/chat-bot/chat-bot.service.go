@@ -21,18 +21,6 @@ func NewService(gemini *GeminiClient, logger *zap.SugaredLogger) *Service {
 	return &Service{gemini: gemini, logger: logger.Named("[chat_bot_service]")}
 }
 
-func estimateTokens(text string) int {
-	return len([]rune(text)) / 4
-}
-
-func buildUsage(prompt, completion string) Usage {
-	return Usage{
-		PromptTokens:     estimateTokens(prompt),
-		CompletionTokens: estimateTokens(completion),
-		TotalTokens:      (len([]rune(prompt)) + len([]rune(completion))) / 4,
-	}
-}
-
 func (s *Service) Complete(ctx context.Context, req *CompletionRequest) (*CompletionResponse, string, error) {
 	prompt, err := buildPrompt(req)
 	if err != nil {
@@ -48,10 +36,8 @@ func (s *Service) Complete(ctx context.Context, req *CompletionRequest) (*Comple
 	}
 
 	return &CompletionResponse{
-		Model:        constants.ChatBotModelName,
 		Content:      text,
 		FinishReason: constants.ChatBotFinishReasonStop,
-		Usage:        buildUsage(prompt, text),
 	}, prompt, nil
 }
 
