@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, FullScreenOverlay, ScreenHeader } from '@components';
 import { colorForName } from '@lib';
@@ -22,8 +22,14 @@ export function ChatBotScreen({ onClose }: ChatBotScreenProps) {
 
   const botName = t('chat.chatBot');
   const meName = me?.username ?? '';
+  const meAvatar = me?.avatar;
   const showSuggestions =
     conversation.visible.length === 0 && !conversation.waiting;
+
+  const viewer = useMemo(
+    () => ({ name: meName, color: colorForName(meName), avatar: meAvatar }),
+    [meName, meAvatar]
+  );
 
   return (
     <FullScreenOverlay position="absolute">
@@ -55,11 +61,7 @@ export function ChatBotScreen({ onClose }: ChatBotScreenProps) {
         onScroll={conversation.handleScroll}
         messages={conversation.visible}
         botName={botName}
-        viewer={{
-          name: meName,
-          color: colorForName(meName),
-          avatar: me?.avatar,
-        }}
+        viewer={viewer}
         waiting={conversation.waiting}
         error={conversation.error}
         onRetry={conversation.retry}

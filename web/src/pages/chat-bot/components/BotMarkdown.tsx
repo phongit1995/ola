@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 import { isUrlToken, renderUrlToken, toast } from '@lib';
@@ -127,7 +128,7 @@ function renderParagraphs(text: string, keyPrefix: string): ReactNode[] {
   return blocks;
 }
 
-export function BotMarkdown({ content }: { content: string }) {
+function buildBlocks(content: string): ReactNode[] {
   const parts: ReactNode[] = [];
   let cursor = 0;
   CODE_FENCE_PATTERN.lastIndex = 0;
@@ -146,5 +147,13 @@ export function BotMarkdown({ content }: { content: string }) {
   const tail = content.slice(cursor);
   if (tail.trim() !== '') parts.push(...renderParagraphs(tail, `t${cursor}`));
 
-  return <div className="space-y-0.5 break-words">{parts}</div>;
+  return parts;
 }
+
+function BotMarkdownComponent({ content }: { content: string }) {
+  const blocks = useMemo(() => buildBlocks(content), [content]);
+
+  return <div className="space-y-0.5 break-words">{blocks}</div>;
+}
+
+export const BotMarkdown = memo(BotMarkdownComponent);

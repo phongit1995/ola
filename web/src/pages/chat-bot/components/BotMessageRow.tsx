@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Avatar } from '@components';
 import type { ChatBotMessage } from '@app-types';
 import { groupingOf, type ChatBotViewer } from '../chatBotView';
@@ -12,7 +13,7 @@ interface BotMessageRowProps {
   viewer: ChatBotViewer;
 }
 
-export function BotMessageRow({
+function BotMessageRowComponent({
   message,
   prev,
   next,
@@ -70,3 +71,5 @@ export function BotMessageRow({
     </div>
   );
 }
+
+export const BotMessageRow = memo(BotMessageRowComponent);

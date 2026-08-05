@@ -31,7 +31,6 @@ export function ChatBotComposer({
           onChange={onChange}
           onEnter={onSend}
           placeholder={t('chat.chatBotPlaceholder')}
-          disabled={streaming}
           multiline
         />
       </div>
