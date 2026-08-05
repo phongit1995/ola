@@ -5493,12 +5493,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
-                    "413": {
-                        "description": "Request Entity Too Large",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
-                        }
-                    },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {

@@ -34,7 +34,7 @@ func httpStatusForError(err error) (int, string) {
 	switch {
 	case errors.Is(err, errEmptyPrompt):
 		return http.StatusBadRequest, "chat bot prompt is empty"
-	case errors.Is(err, ErrUpstreamRejected), errors.Is(err, ErrStreamChanged), errors.Is(err, ErrEmptyResponse), errors.Is(err, ErrResponseTooLarge):
+	case errors.Is(err, ErrUpstreamRejected), errors.Is(err, ErrStreamChanged), errors.Is(err, ErrEmptyResponse):
 		return http.StatusBadGateway, err.Error()
 	default:
 		return http.StatusBadGateway, "chat bot upstream unavailable"
@@ -60,19 +60,11 @@ func httpStatusForError(err error) (int, string) {
 // @Success      200      {object}  utils.BaseResponse[CompletionResponse]
 // @Failure      400      {object}  utils.APIError
 // @Failure      401      {object}  utils.APIError
-// @Failure      413      {object}  utils.APIError
 // @Failure      502      {object}  utils.APIError
 // @Router       /chat-bot [post]
 func (ctrl *Controller) Chat(c *gin.Context) {
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, constants.ChatBotMaxRequestBytes)
-
 	var req CompletionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		var maxBytesErr *http.MaxBytesError
-		if errors.As(err, &maxBytesErr) {
-			utils.RespondError(c, http.StatusRequestEntityTooLarge, "chat bot request body is too large")
-			return
-		}
 		utils.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}

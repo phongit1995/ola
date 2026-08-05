@@ -22,20 +22,14 @@ func NewService(gemini *GeminiClient, logger *zap.SugaredLogger) *Service {
 }
 
 func estimateTokens(text string) int {
-	runes := len([]rune(text))
-	if runes == 0 {
-		return 0
-	}
-	return (runes + 3) / 4
+	return len([]rune(text)) / 4
 }
 
 func buildUsage(prompt, completion string) Usage {
-	promptTokens := estimateTokens(prompt)
-	completionTokens := estimateTokens(completion)
 	return Usage{
-		PromptTokens:     promptTokens,
-		CompletionTokens: completionTokens,
-		TotalTokens:      promptTokens + completionTokens,
+		PromptTokens:     estimateTokens(prompt),
+		CompletionTokens: estimateTokens(completion),
+		TotalTokens:      (len([]rune(prompt)) + len([]rune(completion))) / 4,
 	}
 }
 

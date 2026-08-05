@@ -24,7 +24,6 @@ var (
 	ErrUpstreamRejected = errors.New("chat bot upstream rejected request")
 	ErrStreamChanged    = errors.New("chat bot stream content changed during retry")
 	ErrEmptyResponse    = errors.New("chat bot returned an empty response")
-	ErrResponseTooLarge = errors.New("chat bot upstream response is too large")
 )
 
 var (
@@ -223,7 +222,7 @@ func (g *GeminiClient) Generate(ctx context.Context, prompt string) (string, err
 			return "", ctx.Err()
 		}
 		// Lỗi không thể phục hồi sẽ không thay đổi khi gửi lại cùng payload.
-		if errors.Is(err, ErrUpstreamRejected) || errors.Is(err, ErrResponseTooLarge) {
+		if errors.Is(err, ErrUpstreamRejected) {
 			return "", err
 		}
 		if attempt < constants.ChatBotRetryAttempts-1 {
@@ -248,12 +247,9 @@ func (g *GeminiClient) generateOnce(ctx context.Context, body string) (string, e
 	}
 	defer resp.Body.Close()
 
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, constants.ChatBotMaxResponseBytes+1))
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
-	}
-	if len(raw) > constants.ChatBotMaxResponseBytes {
-		return "", ErrResponseTooLarge
 	}
 	if resp.StatusCode >= http.StatusBadRequest {
 		return "", upstreamStatusError(resp.StatusCode)
@@ -284,7 +280,7 @@ func (g *GeminiClient) GenerateStream(ctx context.Context, prompt string, emit f
 			return err
 		}
 		// Lỗi không thể phục hồi sẽ không thay đổi khi gửi lại cùng payload.
-		if errors.Is(err, ErrUpstreamRejected) || errors.Is(err, ErrResponseTooLarge) || errors.Is(err, ErrStreamChanged) {
+		if errors.Is(err, ErrUpstreamRejected) || errors.Is(err, ErrStreamChanged) {
 			return err
 		}
 		if attempt < constants.ChatBotRetryAttempts-1 {
@@ -329,14 +325,9 @@ func (g *GeminiClient) streamOnce(ctx context.Context, body string, emitted *str
 
 	var buf strings.Builder
 	chunk := make([]byte, 8192)
-	totalBytes := 0
 	for {
 		n, readErr := resp.Body.Read(chunk)
 		if n > 0 {
-			totalBytes += n
-			if totalBytes > constants.ChatBotMaxResponseBytes {
-				return ErrResponseTooLarge
-			}
 			buf.Write(chunk[:n])
 
 			pending := buf.String()

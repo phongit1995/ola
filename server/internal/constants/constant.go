@@ -376,13 +376,9 @@ const (
 	ChatBotGeminiBL         = "boq_assistant-bard-web-server_20260716.08_p0"
 	ChatBotUserAgent        = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
-	ChatBotTimeout          = 180 * time.Second
-	ChatBotRetryAttempts    = 3
-	ChatBotRetryDelay       = 2 * time.Second
-	ChatBotMaxRequestBytes  = 256 << 10
-	ChatBotMaxResponseBytes = 8 << 20
-	ChatBotMaxMessages      = 40
-	ChatBotMaxPromptChars   = 32000
+	ChatBotTimeout       = 180 * time.Second
+	ChatBotRetryAttempts = 3
+	ChatBotRetryDelay    = 2 * time.Second
 
 	ChatBotRoleUser      = "user"
 	ChatBotRoleAssistant = "assistant"

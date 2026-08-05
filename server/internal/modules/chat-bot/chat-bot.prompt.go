@@ -13,13 +13,8 @@ const (
 )
 
 func buildPrompt(req *CompletionRequest) (string, error) {
-	messages := req.Messages
-	if len(messages) > constants.ChatBotMaxMessages {
-		messages = messages[len(messages)-constants.ChatBotMaxMessages:]
-	}
-
 	var sections []string
-	for _, msg := range messages {
+	for _, msg := range req.Messages {
 		text := strings.TrimSpace(msg.Content)
 		if text == "" {
 			continue
@@ -38,11 +33,6 @@ func buildPrompt(req *CompletionRequest) (string, error) {
 	prompt := strings.Join(sections, "\n\n")
 	if strings.TrimSpace(prompt) == "" {
 		return "", errEmptyPrompt
-	}
-
-	promptRunes := []rune(prompt)
-	if len(promptRunes) > constants.ChatBotMaxPromptChars {
-		prompt = string(promptRunes[len(promptRunes)-constants.ChatBotMaxPromptChars:])
 	}
 
 	return prompt, nil
