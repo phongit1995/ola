@@ -30,10 +30,10 @@ func buildPrompt(req *CompletionRequest) (string, error) {
 		}
 	}
 
-	prompt := strings.Join(sections, "\n\n")
-	if strings.TrimSpace(prompt) == "" {
+	if len(sections) == 0 {
 		return "", errEmptyPrompt
 	}
 
-	return prompt, nil
+	persona := fmt.Sprintf(promptSystemLabel, constants.ChatBotSystemPrompt)
+	return strings.Join(append([]string{persona}, sections...), "\n\n"), nil
 }

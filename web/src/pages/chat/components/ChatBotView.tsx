@@ -12,6 +12,7 @@ import {
 import { useStickyScroll } from '@hooks';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import sendIcon from '@/assets/icons/chat/ic_action_send_white.png';
+import chatBotAvatar from '@/assets/icons/chat/ic_chat_bot_ola.png';
 import { chatBotHistory } from '@services';
 import type { ChatBotErrorCode, ChatBotMessage } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
@@ -197,9 +198,11 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
       >
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-8 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ola-primary text-lg font-bold text-white">
-              AI
-            </span>
+            <img
+              src={chatBotAvatar}
+              alt=""
+              className="h-14 w-14 object-cover shadow-sm"
+            />
             <p className="mt-3 text-sm text-black/54">
               {t('chat.chatBotEmptyTitle')}
             </p>

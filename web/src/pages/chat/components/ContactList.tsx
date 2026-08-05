@@ -17,6 +17,7 @@ import { PeopleIcon } from './Icons';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
+import chatBotAvatar from '@/assets/icons/chat/ic_chat_bot_ola.png';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -349,9 +350,11 @@ export function ContactList({
       />
       <ActionRow
         badge={
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-ola-primary text-sm font-bold text-white">
-            AI
-          </span>
+          <img
+            src={chatBotAvatar}
+            alt=""
+            className="h-10 w-10 shrink-0 object-cover"
+          />
         }
         title={t('chat.chatBot')}
         subtitle={t('chat.chatBotSub')}
