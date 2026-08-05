@@ -3,6 +3,7 @@ import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent } from 
 import type { FlashListRef } from '@shopify/flash-list';
 
 const STICK_THRESHOLD = 80;
+const VIEWPORT_RESIZE_EPSILON = 0.5;
 const SETTLE_STEPS = [60, 150, 300, 500, 800, 1200];
 
 export function useStickyBottomList<T>() {
@@ -47,8 +48,21 @@ export function useStickyBottomList<T>() {
 
   const onListLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      viewportHeightRef.current = event.nativeEvent.layout.height;
-      if (shouldPin()) pin();
+      const nextHeight = event.nativeEvent.layout.height;
+      const previousHeight = viewportHeightRef.current;
+      viewportHeightRef.current = nextHeight;
+
+      if (nextHeight <= 0) return;
+
+      const becameVisible = previousHeight <= 0;
+      const viewportShrank =
+        nextHeight < previousHeight - VIEWPORT_RESIZE_EPSILON;
+
+      // A smaller viewport needs an explicit correction to keep the newest
+      // message visible. When it grows (for example, while the keyboard is
+      // closing), the native scroll view clamps its offset to the new bottom;
+      // another JS scrollToEnd would land a frame later and cause a visible jump.
+      if ((becameVisible || viewportShrank) && shouldPin()) pin();
     },
     [pin, shouldPin]
   );
@@ -121,6 +135,10 @@ export function useStickyBottomList<T>() {
     );
   }, [pin]);
 
+  const scrollToBottomIfStuck = useCallback(() => {
+    if (shouldPin()) pin();
+  }, [pin, shouldPin]);
+
   const unstick = useCallback(() => {
     stickRef.current = false;
   }, []);
@@ -137,6 +155,7 @@ export function useStickyBottomList<T>() {
     onMomentumScrollEnd,
     pinOnNextContent,
     requestScrollToBottom,
+    scrollToBottomIfStuck,
     unstick,
     isUserInteracting,
     isStuckToBottom,

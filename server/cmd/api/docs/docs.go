@@ -5444,6 +5444,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/chat-bot": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Body chỉ gồm ` + "`" + `messages` + "`" + ` và ` + "`" + `stream` + "`" + `. Tính cách của bot do server tự gắn, client không cần gửi message ` + "`" + `system` + "`" + `.\n` + "`" + `stream=false` + "`" + ` (mặc định) trả JSON đầy đủ theo schema dưới đây.\n` + "`" + `stream=true` + "`" + ` trả ` + "`" + `text/event-stream` + "`" + `, mỗi frame là một dòng ` + "`" + `data: \u003cjson\u003e` + "`" + ` rồi một dòng trống:\n- chunk nội dung: ` + "`" + `{\"id\":\"chatbot-...\",\"delta\":\"Chào \"}` + "`" + `\n- chunk cuối: ` + "`" + `{\"id\":\"...\",\"finishReason\":\"stop\"}` + "`" + `\n- nếu lỗi giữa stream: ` + "`" + `{\"id\":\"...\",\"error\":\"...\"}` + "`" + `\n- kết thúc: ` + "`" + `data: [DONE]` + "`" + `\nGhép toàn bộ ` + "`" + `delta` + "`" + ` theo thứ tự sẽ được câu trả lời đầy đủ.\nCó dòng ` + "`" + `: ping` + "`" + ` xen giữa các frame để giữ kết nối, client bỏ qua dòng không bắt đầu bằng ` + "`" + `data: ` + "`" + `.\nGiới hạn: tối đa 80 message, 4000 ký tự cho ` + "`" + `user` + "`" + `/` + "`" + `system` + "`" + `, 32000 ký tự cho ` + "`" + `assistant` + "`" + `, toàn bộ body 2MB (vượt trả 413).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "chat-bot"
+                ],
+                "summary": "Chat với bot",
+                "parameters": [
+                    {
+                        "description": "Hội thoại",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_chat-bot.CompletionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_chat-bot_CompletionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/clans": {
             "post": {
                 "security": [
@@ -15829,6 +15887,65 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_chat-bot.CompletionRequest": {
+            "type": "object",
+            "required": [
+                "messages"
+            ],
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "maxItems": 80,
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_chat-bot.Message"
+                    }
+                },
+                "stream": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_modules_chat-bot.CompletionResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Chào bạn, mình có thể giúp gì?"
+                },
+                "finishReason": {
+                    "type": "string",
+                    "example": "stop"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "chatbot-6f1c2a9d4e8b"
+                }
+            }
+        },
+        "internal_modules_chat-bot.Message": {
+            "type": "object",
+            "required": [
+                "content",
+                "role"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Chào bạn"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "user",
+                        "assistant",
+                        "system"
+                    ],
+                    "example": "user"
+                }
+            }
+        },
         "internal_modules_clan.AssignRoleRequest": {
             "type": "object",
             "required": [
@@ -24371,6 +24488,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_auth.RefreshTokenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_chat-bot_CompletionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_chat-bot.CompletionResponse"
                 },
                 "error": {
                     "type": "string"

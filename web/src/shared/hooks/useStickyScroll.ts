@@ -3,9 +3,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 interface UseStickyScrollOptions {
   count: number;
   lastId: string | null;
-  hasMore: boolean;
-  loadingMore: boolean;
-  onLoadMore: () => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
   enabled?: boolean;
   loadMoreAtTop?: number;
   bottomThreshold?: number;
@@ -14,8 +14,8 @@ interface UseStickyScrollOptions {
 export function useStickyScroll({
   count,
   lastId,
-  hasMore,
-  loadingMore,
+  hasMore = false,
+  loadingMore = false,
   onLoadMore,
   enabled = true,
   loadMoreAtTop = 0,
@@ -96,7 +96,12 @@ export function useStickyScroll({
       element.scrollHeight - element.scrollTop - element.clientHeight;
     stickyRef.current = distanceFromBottom < bottomThreshold;
     savedScrollTopRef.current = element.scrollTop;
-    if (element.scrollTop <= loadMoreAtTop && hasMore && !loadingMore) {
+    if (
+      element.scrollTop <= loadMoreAtTop &&
+      hasMore &&
+      !loadingMore &&
+      onLoadMore != null
+    ) {
       prependAnchorRef.current = element.scrollHeight;
       onLoadMore();
     }

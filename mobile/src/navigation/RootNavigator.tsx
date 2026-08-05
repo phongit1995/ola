@@ -10,17 +10,25 @@ import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type {
   AuthStackParamList,
+  ChatStackParamList,
   MainTabParamList,
   RoomStackParamList,
   RootStackParamList,
 } from './types';
-import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
+import {
+  AUTH_ROUTES,
+  CHAT_ROUTES,
+  ROOM_ROUTES,
+  ROOT_ROUTES,
+  TAB_ROUTES,
+} from './routes';
 import { LoginScreen } from '@screens/auth/LoginScreen';
 import { RegisterScreen } from '@screens/auth/RegisterScreen';
 import { ForgotPasswordScreen } from '@screens/auth/ForgotPasswordScreen';
 import { TermsScreen } from '@screens/auth/TermsScreen';
 import { ChatListScreen } from '@screens/chat/ChatListScreen';
 import { ChatDetailScreen } from '@screens/chat/ChatDetailScreen';
+import { ChatBotScreen } from '@screens/chat-bot/ChatBotScreen';
 import { RoomListScreen } from '@screens/room/RoomListScreen';
 import { RoomChatScreen } from '@screens/room/RoomChatScreen';
 import { MeFeedScreen } from '@screens/me/MeFeedScreen';
@@ -59,6 +67,16 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const RoomStack = createNativeStackNavigator<RoomStackParamList>();
+const ChatStack = createNativeStackNavigator<ChatStackParamList>();
+
+function ChatNavigator() {
+  return (
+    <ChatStack.Navigator screenOptions={{ headerShown: false }}>
+      <ChatStack.Screen name={CHAT_ROUTES.ChatList} component={ChatListScreen} />
+      <ChatStack.Screen name={CHAT_ROUTES.ChatBot} component={ChatBotScreen} />
+    </ChatStack.Navigator>
+  );
+}
 
 function RoomNavigator() {
   return (
@@ -138,7 +156,7 @@ function MainTabs() {
       >
         <Tabs.Screen
           name={TAB_ROUTES.Chat}
-          component={ChatListScreen}
+          component={ChatNavigator}
           options={{
             title: t('home.tabChat'),
             tabBarIcon: tabIcon('chat'),

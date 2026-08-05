@@ -1,25 +1,9 @@
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { env } from '../../config/env';
-import { signApiGuard } from '../apiGuardSigner';
-
-function stripQuery(url: string): string {
-  return url.split(/[?#]/, 1)[0] ?? '';
-}
-
-function pathnameOf(url: string): string {
-  const withoutProtocol = url.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]*/i, '');
-  const path = stripQuery(withoutProtocol);
-  return path === '' ? '/' : path;
-}
+import { apiPathOf, signApiGuard } from '../apiGuardSigner';
 
 function resolveRequestPath(config: InternalAxiosRequestConfig): string {
-  const base = config.baseURL ?? env.apiUrl;
-  const url = config.url ?? '';
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) return pathnameOf(url);
-  const basePath = pathnameOf(base).replace(/\/$/, '');
-  const relative = stripQuery(url);
-  const joined = relative.startsWith('/') ? `${basePath}${relative}` : `${basePath}/${relative}`;
-  return joined === '' ? '/' : joined;
+  return apiPathOf(config.url ?? '', config.baseURL ?? env.apiUrl);
 }
 
 export function registerApiGuardInterceptor(http: AxiosInstance): void {

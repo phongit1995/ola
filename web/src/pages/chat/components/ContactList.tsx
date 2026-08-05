@@ -11,12 +11,10 @@ import {
 import { isVipActive, activeVipTypeId, colorForName } from '@lib';
 import type { AuthUser, Relationship } from '@app-types';
 import type { Contact } from '../interface';
-import { SUGGESTED_FRIENDS } from '../data';
 import { BuddyRow } from './BuddyRow';
-import { PeopleIcon } from './Icons';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
-import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
+import { BotAvatar } from '@/pages/chat-bot/components/BotAvatar';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -31,6 +29,7 @@ interface ContactListProps {
   requests?: Relationship[];
   onOpenSuggested?: () => void;
   onOpenRequests?: () => void;
+  onOpenChatBot?: () => void;
 }
 
 function ActionRow({
@@ -81,8 +80,8 @@ export function ContactList({
   onPreviewBuddyImage,
   onComingSoon,
   requests = [],
-  onOpenSuggested,
   onOpenRequests,
+  onOpenChatBot,
 }: ContactListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
@@ -293,6 +292,9 @@ export function ContactList({
         </button>
       )}
 
+      {/* TODO: "Có thể bạn muốn làm quen" — tạm ẩn, chờ API gợi ý kết bạn thật
+          (SuggestedFriendsScreen đang chạy trên SUGGESTED_FRIENDS hardcode, nút Kết bạn chỉ toast).
+          Mở lại thì import lại PeopleIcon, SUGGESTED_FRIENDS và prop onOpenSuggested.
       <button
         type="button"
         onClick={onOpenSuggested}
@@ -323,7 +325,9 @@ export function ContactList({
         </span>
         <span className="shrink-0 text-xl text-black/26">›</span>
       </button>
+      */}
 
+      {/* TODO: "Mời thêm bạn bè" — tạm ẩn, chưa có chức năng mời bạn qua Facebook
       <ActionRow
         badge={
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[#1877f2] text-xl font-bold text-white">
@@ -334,6 +338,9 @@ export function ContactList({
         subtitle={t('chat.inviteFriendsSub')}
         onClick={onComingSoon}
       />
+      */}
+
+      {/* TODO: "Chat nhóm" — tạm ẩn, chưa có chức năng chat nhóm. Mở lại thì import lại groupIcon.
       <ActionRow
         badge={
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-ola-primary">
@@ -344,6 +351,18 @@ export function ContactList({
         subtitle={t('chat.chatGroupSub')}
         showChevron
         onClick={onComingSoon}
+      />
+      */}
+
+      <SectionHeader label={t('chat.sectionApps')} />
+      <ActionRow
+        badge={
+          <BotAvatar name={t('chat.chatBot')} className="h-12 w-12 rounded-lg" />
+        }
+        title={t('chat.chatBot')}
+        subtitle={t('chat.chatBotSub')}
+        showChevron
+        onClick={onOpenChatBot}
       />
 
       {sections.map((section) => (

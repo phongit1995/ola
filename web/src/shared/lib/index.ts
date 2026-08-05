@@ -1,4 +1,5 @@
 export * from '@ola/shared/lib';
+export * from './bubbleGrouping';
 export * from './textInsert';
 export * from './chatSmiley';
 export * from './kul';

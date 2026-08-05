@@ -15,6 +15,7 @@ interface ScreenHeaderProps {
   title: string;
   subtitle?: string;
   onBack: () => void;
+  left?: ReactNode;
   right?: ReactNode;
   centerTitle?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -24,6 +25,7 @@ export function ScreenHeader({
   title,
   subtitle,
   onBack,
+  left,
   right,
   centerTitle = false,
   style,
@@ -47,6 +49,7 @@ export function ScreenHeader({
           />
         </Pressable>
       </View>
+      {left}
       <View className="min-w-0 flex-1">
         <Text
           numberOfLines={1}

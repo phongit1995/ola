@@ -1,22 +1,41 @@
-import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { Platform, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 interface ChatKeyboardAreaProps {
   children: ReactNode;
 }
 
+const IS_ANDROID = Platform.OS === 'android';
+
 // Vùng nội dung có composer: clip (overflow hidden) + translate-with-padding để
 // suốt animation chỉ transform trên UI thread, list không relayout từng frame.
-// Dùng automaticOffset để RNKC lấy tọa độ tuyệt đối bằng getLocationOnScreen trên Android.
-// Không dùng View.measureInWindow: khi cờ edge-to-edge của RN đang tắt
-// (Android <= 14 với cấu hình hiện tại), Fabric trừ status-bar inset dù cửa sổ
-// đã edge-to-edge, khiến composer bị IME che đúng phần inset bị trừ.
+//
+// Android: automaticOffset (RNKC lấy tọa độ tuyệt đối bằng viewPositionInWindow native)
+// bắt buộc — measureInWindow không tin cậy khi cờ edge-to-edge của RN đang tắt
+// (Android <= 14), Fabric trừ status-bar inset dù cửa sổ đã edge-to-edge, khiến
+// composer bị IME che đúng phần inset bị trừ.
+// iOS: giữ cách đo measureInWindow đã dùng trước khi automaticOffset được áp dụng.
+// Lỗi edge-to-edge ở trên chỉ thuộc Android, nên tách theo nền tảng để workaround
+// đó không làm thay đổi cách tính vị trí composer trên iOS.
 export function ChatKeyboardArea({ children }: ChatKeyboardAreaProps) {
+  const contentRef = useRef<View>(null);
+  const [iosOffsetY, setIosOffsetY] = useState(0);
+
+  const measureIos = useCallback(() => {
+    contentRef.current?.measureInWindow((_x, y) => setIosOffsetY(y));
+  }, []);
+
   return (
-    <View className="flex-1" style={{ overflow: 'hidden' }}>
+    <View
+      ref={contentRef}
+      className="flex-1"
+      style={{ overflow: 'hidden' }}
+      onLayout={IS_ANDROID ? undefined : measureIos}
+    >
       <KeyboardAvoidingView
-        automaticOffset
+        automaticOffset={IS_ANDROID}
+        keyboardVerticalOffset={IS_ANDROID ? undefined : iosOffsetY}
         behavior="translate-with-padding"
         style={{ flex: 1 }}
       >

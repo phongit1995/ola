@@ -24,6 +24,7 @@ import { StatusEditDialog } from './components/StatusEditDialog';
 import { UserProfileView } from '../profile/UserProfileView';
 import { SuggestedFriendsScreen } from './components/SuggestedFriendsScreen';
 import { FriendRequestsScreen } from './components/FriendRequestsScreen';
+import { ChatBotScreen } from '@/pages/chat-bot/ChatBotScreen';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { mapFriendsToContacts } from './friends';
@@ -68,6 +69,7 @@ export function ChatPanel() {
   const [statusOpen, setStatusOpen] = useState(false);
   const [suggestedOpen, setSuggestedOpen] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
+  const [chatBotOpen, setChatBotOpen] = useState(false);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const openApp = useAppOverlayStore((s) => s.push);
   const requests = useFriendsStore((s) => s.requests);
@@ -281,6 +283,7 @@ export function ChatPanel() {
               requests={requests}
               onOpenSuggested={() => setSuggestedOpen(true)}
               onOpenRequests={() => setRequestsOpen(true)}
+              onOpenChatBot={() => setChatBotOpen(true)}
             />
             <button
               type="button"
@@ -298,6 +301,7 @@ export function ChatPanel() {
         )}
       </main>
 
+      {chatBotOpen && <ChatBotScreen onClose={() => setChatBotOpen(false)} />}
       {suggestedOpen && (
         <SuggestedFriendsScreen onClose={() => setSuggestedOpen(false)} />
       )}

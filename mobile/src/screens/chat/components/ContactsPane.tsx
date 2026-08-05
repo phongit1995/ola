@@ -10,13 +10,14 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
-import type { RootStackParamList } from '@navigation/types';
-import { ROOT_ROUTES } from '@navigation/routes';
+import type { ChatStackParamList, RootStackParamList } from '@navigation/types';
+import { CHAT_ROUTES, ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
@@ -29,11 +30,11 @@ import { SUGGESTED_FRIENDS } from '@screens/friends/constants';
 import { useFriendsStore } from '@ola/shared/stores/friendsStore';
 import { useFriendsWithPresence } from '@hooks/usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
+import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 const addFriendIcon = require('@assets/icons/room/ic_add_friend.png');
-const groupIcon = require('@assets/icons/room/ic_notify_new_chat_group_message.png');
 const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
 const peopleIcon = require('@assets/icons/chat/ic_people_gray.png');
 
@@ -76,7 +77,13 @@ function SectionHeader({ label }: { label: string }) {
 
 export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) {
   const { t, i18n } = useTranslation();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<
+      CompositeNavigationProp<
+        NativeStackNavigationProp<ChatStackParamList>,
+        NativeStackNavigationProp<RootStackParamList>
+      >
+    >();
   const me = useAuthStore((s) => s.user);
   const startDirect = useChatStore((s) => s.startDirect);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -293,26 +300,13 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           <Text className="text-xl text-ola-ink-hint">›</Text>
         </Pressable>
 
+        <SectionHeader label={t('chat.sectionApps')} />
         <ActionRow
-          badge={
-            <View className="h-10 w-10 items-center justify-center rounded" style={{ backgroundColor: '#1877f2' }}>
-              <Text className="text-xl font-bold text-white">f</Text>
-            </View>
-          }
-          title={t('chat.inviteFriends')}
-          subtitle={t('chat.inviteFriendsSub')}
-          onPress={() => push('info', t('chat.comingSoon'))}
-        />
-        <ActionRow
-          badge={
-            <View className="h-10 w-10 items-center justify-center rounded bg-ola-primary">
-              <Image source={groupIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
-            </View>
-          }
-          title={t('chat.chatGroup')}
-          subtitle={t('chat.chatGroupSub')}
+          badge={<BotAvatar size={48} radius={8} />}
+          title={t('chat.chatBot')}
+          subtitle={t('chat.chatBotSub')}
           showChevron
-          onPress={() => push('info', t('chat.comingSoon'))}
+          onPress={() => navigation.navigate(CHAT_ROUTES.ChatBot)}
         />
 
         {friendsLoading && !friendsLoaded ? (

@@ -20,3 +20,5 @@ export * from './ken.service';
 export * from './kenTreasure.service';
 export * from './miniGame.service';
 export * from './call.service';
+export * from './chatBot.service';
+export * from './chatBotStream';

@@ -18,6 +18,7 @@ import {
   type ListOption,
 } from '@components';
 import {
+  BUBBLE_WALLPAPER,
   chatFriendActionLabel,
   colorForName,
   compressImageForUpload,
@@ -567,7 +568,7 @@ export function ChatConversationView({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto bg-[#ECE5DD] px-2 py-3"
+        className={`flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-2 py-3 ${BUBBLE_WALLPAPER}`}
       >
         {loadingMessages && messages.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">

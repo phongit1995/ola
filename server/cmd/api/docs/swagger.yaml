@@ -2434,6 +2434,48 @@ definitions:
     - callType
     - conversationId
     type: object
+  internal_modules_chat-bot.CompletionRequest:
+    properties:
+      messages:
+        items:
+          $ref: '#/definitions/internal_modules_chat-bot.Message'
+        maxItems: 80
+        minItems: 1
+        type: array
+      stream:
+        example: false
+        type: boolean
+    required:
+    - messages
+    type: object
+  internal_modules_chat-bot.CompletionResponse:
+    properties:
+      content:
+        example: Chào bạn, mình có thể giúp gì?
+        type: string
+      finishReason:
+        example: stop
+        type: string
+      id:
+        example: chatbot-6f1c2a9d4e8b
+        type: string
+    type: object
+  internal_modules_chat-bot.Message:
+    properties:
+      content:
+        example: Chào bạn
+        type: string
+      role:
+        enum:
+        - user
+        - assistant
+        - system
+        example: user
+        type: string
+    required:
+    - content
+    - role
+    type: object
   internal_modules_clan.AssignRoleRequest:
     properties:
       role:
@@ -8252,6 +8294,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_chat-bot_CompletionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_chat-bot.CompletionResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_BanListResponse:
     properties:
       data:
@@ -12166,6 +12225,53 @@ paths:
       summary: Start a call
       tags:
       - calls
+  /chat-bot:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Body chỉ gồm `messages` và `stream`. Tính cách của bot do server tự gắn, client không cần gửi message `system`.
+        `stream=false` (mặc định) trả JSON đầy đủ theo schema dưới đây.
+        `stream=true` trả `text/event-stream`, mỗi frame là một dòng `data: <json>` rồi một dòng trống:
+        - chunk nội dung: `{"id":"chatbot-...","delta":"Chào "}`
+        - chunk cuối: `{"id":"...","finishReason":"stop"}`
+        - nếu lỗi giữa stream: `{"id":"...","error":"..."}`
+        - kết thúc: `data: [DONE]`
+        Ghép toàn bộ `delta` theo thứ tự sẽ được câu trả lời đầy đủ.
+        Có dòng `: ping` xen giữa các frame để giữ kết nối, client bỏ qua dòng không bắt đầu bằng `data: `.
+        Giới hạn: tối đa 80 message, 4000 ký tự cho `user`/`system`, 32000 ký tự cho `assistant`, toàn bộ body 2MB (vượt trả 413).
+      parameters:
+      - description: Hội thoại
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_chat-bot.CompletionRequest'
+      produces:
+      - application/json
+      - text/event-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_chat-bot_CompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Chat với bot
+      tags:
+      - chat-bot
   /clans:
     post:
       consumes:
