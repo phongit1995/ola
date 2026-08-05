@@ -34,7 +34,6 @@ import { DIVIDER } from '@constants';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 const addFriendIcon = require('@assets/icons/room/ic_add_friend.png');
-const groupIcon = require('@assets/icons/room/ic_notify_new_chat_group_message.png');
 const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
 const peopleIcon = require('@assets/icons/chat/ic_people_gray.png');
 
@@ -293,28 +292,6 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           </View>
           <Text className="text-xl text-ola-ink-hint">›</Text>
         </Pressable>
-
-        <ActionRow
-          badge={
-            <View className="h-10 w-10 items-center justify-center rounded" style={{ backgroundColor: '#1877f2' }}>
-              <Text className="text-xl font-bold text-white">f</Text>
-            </View>
-          }
-          title={t('chat.inviteFriends')}
-          subtitle={t('chat.inviteFriendsSub')}
-          onPress={() => push('info', t('chat.comingSoon'))}
-        />
-        <ActionRow
-          badge={
-            <View className="h-10 w-10 items-center justify-center rounded bg-ola-primary">
-              <Image source={groupIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
-            </View>
-          }
-          title={t('chat.chatGroup')}
-          subtitle={t('chat.chatGroupSub')}
-          showChevron
-          onPress={() => push('info', t('chat.comingSoon'))}
-        />
 
         <SectionHeader label={t('chat.sectionApps')} />
         <ActionRow
