@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Avatar,
   ConfirmDialog,
+  DateSeparator,
   FullScreenOverlay,
   ListOptionDialog,
   ScreenHeader,
@@ -10,6 +12,7 @@ import {
   type SmileyInputHandle,
 } from '@components';
 import { useStickyScroll } from '@hooks';
+import { colorForName, formatClockHM, isSameDay } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import sendIcon from '@/assets/icons/chat/ic_action_send_white.png';
 import chatBotAvatar from '@/assets/icons/chat/ic_chat_bot_ola.png';
@@ -34,47 +37,111 @@ const ERROR_KEYS = {
   emptyPrompt: 'chat.chatBotErrorUpstream',
 } as const satisfies Record<ChatBotErrorCode, string>;
 
-function TypingDots() {
+function isoOf(createdAt: number): string {
+  return new Date(createdAt).toISOString();
+}
+
+function BotAvatar({ name }: { name: string }) {
   return (
-    <span className="flex items-center gap-1 py-1">
-      {[0, 1, 2].map((index) => (
-        <span
-          key={index}
-          className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/35"
-          style={{ animationDelay: `${index * 150}ms` }}
-        />
-      ))}
-    </span>
+    <img
+      src={chatBotAvatar}
+      alt={name}
+      className="h-8 w-8 shrink-0 self-start rounded-full object-cover"
+    />
   );
 }
 
-interface BubbleProps {
-  message: ChatBotMessage;
-  streaming: boolean;
+function TypingRow({ name }: { name: string }) {
+  return (
+    <div className="mt-1 flex items-end gap-1">
+      <BotAvatar name={name} />
+      <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3 shadow-sm">
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40" />
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40 [animation-delay:150ms]" />
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40 [animation-delay:300ms]" />
+      </div>
+    </div>
+  );
 }
 
-function Bubble({ message, streaming }: BubbleProps) {
-  const isUser = message.role === 'user';
-  const surface = isUser ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
-  const waiting = streaming && message.content === '';
+interface BotMessageRowProps {
+  message: ChatBotMessage;
+  prev?: ChatBotMessage;
+  next?: ChatBotMessage;
+  botName: string;
+  meName: string;
+  meColor: string;
+  meAvatar?: string;
+}
+
+function BotMessageRow({
+  message,
+  prev,
+  next,
+  botName,
+  meName,
+  meColor,
+  meAvatar,
+}: BotMessageRowProps) {
+  const isOut = message.role === 'user';
+  const boundary = prev == null;
+  const firstInGroup = boundary || prev.role !== message.role;
+  const lastInGroup = next == null || next.role !== message.role;
+  const time = formatClockHM(isoOf(message.createdAt));
+  const showTime =
+    lastInGroup || formatClockHM(isoOf(next.createdAt)) !== time;
+  const failed = message.status === 'failed';
+
+  const surface = failed
+    ? 'bg-[#f8d7d7]'
+    : isOut
+      ? 'bg-[#dcedc8]'
+      : 'bg-white shadow-sm';
+  const groupCorners = isOut
+    ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
+    : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
 
   return (
-    <div className={`flex px-3 py-0.5 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`max-w-[300px] rounded-2xl px-3 py-2 text-sm text-black/87 ${surface}`}
-      >
-        {isUser ? (
-          <span className="break-words whitespace-pre-wrap">{message.content}</span>
-        ) : waiting ? (
-          <TypingDots />
+    <div className={`flex flex-col ${firstInGroup && !boundary ? 'mt-2' : ''}`}>
+      <div className={`flex items-end gap-1 ${isOut ? 'flex-row-reverse' : ''}`}>
+        {isOut ? (
+          firstInGroup ? (
+            <span className="shrink-0 self-start">
+              <Avatar
+                name={meName}
+                color={meColor}
+                src={meAvatar}
+                size={32}
+              />
+            </span>
+          ) : (
+            <span className="w-8 shrink-0" />
+          )
+        ) : firstInGroup ? (
+          <BotAvatar name={botName} />
         ) : (
-          <>
-            <BotMarkdown content={message.content} />
-            {streaming && (
-              <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-black/60 align-middle" />
-            )}
-          </>
+          <span className="w-8 shrink-0" />
         )}
+        <div className={`flex max-w-[78%] flex-col ${isOut ? 'items-end' : ''}`}>
+          <div
+            className={`flex items-center gap-2 ${isOut ? 'flex-row-reverse' : ''}`}
+          >
+            <div
+              className={`rounded-2xl px-3 py-2 text-sm text-black/87 ${groupCorners} ${surface}`}
+            >
+              {isOut ? (
+                <span className="break-words whitespace-pre-wrap">
+                  {message.content}
+                </span>
+              ) : (
+                <BotMarkdown content={message.content} />
+              )}
+            </div>
+            {showTime && (
+              <span className="shrink-0 text-[10px] text-black/38">{time}</span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -86,7 +153,8 @@ interface ChatBotViewProps {
 
 export function ChatBotView({ onClose }: ChatBotViewProps) {
   const { t, i18n } = useTranslation();
-  const userId = useAuthStore((s) => s.user?.id ?? null);
+  const me = useAuthStore((s) => s.user);
+  const userId = me?.id ?? null;
   const messages = useChatBotStore((s) => s.messages);
   const activeTurnId = useChatBotStore((s) => s.activeTurnId);
   const error = useChatBotStore((s) => s.error);
@@ -105,7 +173,11 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
   const composerRef = useRef<SmileyInputHandle>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  const botName = t('chat.chatBot');
   const last = messages.at(-1) ?? null;
+  const visible = messages.filter((message) => message.content !== '');
+  const waiting = streaming && (last?.content ?? '') === '';
+
   const { scrollRef, handleScroll, scrollToBottomIfPinned } = useStickyScroll({
     count: messages.length,
     lastId: last?.id ?? null,
@@ -120,7 +192,7 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
 
   useEffect(() => {
     scrollToBottomIfPinned();
-  }, [last?.content.length, scrollToBottomIfPinned]);
+  }, [last?.content.length, waiting, scrollToBottomIfPinned]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -180,7 +252,16 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
 
   return (
     <FullScreenOverlay position="absolute">
-      <ScreenHeader title={t('chat.chatBot')} onBack={onClose} align="center">
+      <ScreenHeader
+        title={botName}
+        subtitle={
+          waiting || streaming
+            ? t('chat.chatBotThinking')
+            : t('chat.statusActive')
+        }
+        onBack={onClose}
+        left={<BotAvatar name={botName} />}
+      >
         <button
           type="button"
           aria-label={t('common.menu')}
@@ -194,14 +275,14 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto bg-[#f3f3f3] py-2"
+        className="flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto bg-[#ECE5DD] px-2 py-3"
       >
-        {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center px-8 text-center">
+        {visible.length === 0 && !waiting ? (
+          <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
             <img
               src={chatBotAvatar}
               alt=""
-              className="h-14 w-14 object-cover shadow-sm"
+              className="h-16 w-16 rounded-full object-cover shadow-sm"
             />
             <p className="mt-3 text-sm text-black/54">
               {t('chat.chatBotEmptyTitle')}
@@ -212,7 +293,7 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
                   key={key}
                   type="button"
                   onClick={() => void run(t(key))}
-                  className="rounded-full border border-black/12 bg-white px-4 py-2 text-sm text-black/70"
+                  className="rounded-full border border-black/12 bg-white/80 px-4 py-2 text-sm text-black/70 shadow-sm active:scale-[0.98]"
                 >
                   {t(key)}
                 </button>
@@ -221,22 +302,37 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
           </div>
         ) : (
           <>
-            {messages.map((message) => (
-              <Bubble
-                key={message.id}
-                message={message}
-                streaming={streaming && message.id === last?.id}
-              />
-            ))}
+            {visible.map((message, index) => {
+              const prev = visible[index - 1];
+              const showDate = !isSameDay(
+                isoOf(prev?.createdAt ?? 0),
+                isoOf(message.createdAt)
+              );
+              return (
+                <Fragment key={message.id}>
+                  {showDate && <DateSeparator iso={isoOf(message.createdAt)} />}
+                  <BotMessageRow
+                    message={message}
+                    prev={prev}
+                    next={visible[index + 1]}
+                    botName={botName}
+                    meName={me?.username ?? ''}
+                    meColor={colorForName(me?.username ?? '')}
+                    meAvatar={me?.avatar}
+                  />
+                </Fragment>
+              );
+            })}
+            {waiting && <TypingRow name={botName} />}
             {error != null && (
-              <div className="flex flex-col items-center gap-2 py-3">
-                <span className="rounded-lg bg-[#f8d7d7] px-3 py-2 text-xs text-black/70">
+              <div className="mt-2 flex flex-col items-center gap-2">
+                <span className="rounded-full bg-black/45 px-3 py-1 text-[11px] text-white">
                   {t(ERROR_KEYS[error])}
                 </span>
                 <button
                   type="button"
                   onClick={retry}
-                  className="rounded-full bg-ola-primary px-4 py-1.5 text-xs font-bold text-white"
+                  className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-ola-primary shadow-sm active:scale-95"
                 >
                   {t('chat.chatBotRetry')}
                 </button>
@@ -251,7 +347,7 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
           <button
             type="button"
             onClick={stop}
-            className="rounded-full border border-black/20 px-4 py-1 text-xs text-black/70"
+            className="rounded-full border border-black/20 px-4 py-1 text-xs text-black/70 active:scale-95"
           >
             {t('chat.chatBotStop')}
           </button>
@@ -275,7 +371,7 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
           onClick={send}
           disabled={streaming || draft.trim() === ''}
           aria-label={t('chat.send')}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ola-primary disabled:opacity-40"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ola-primary transition-opacity disabled:opacity-40"
         >
           <img
             src={sendIcon}
@@ -287,7 +383,7 @@ export function ChatBotView({ onClose }: ChatBotViewProps) {
 
       <ListOptionDialog
         open={menuOpen}
-        title={t('chat.chatBot')}
+        title={botName}
         options={menuOptions}
         onClose={() => setMenuOpen(false)}
       />
