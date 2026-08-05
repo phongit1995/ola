@@ -13,6 +13,7 @@
     "./lib/vip": "./src/lib/vip.ts",
     "./types": "./src/types/index.ts",
     "./services": "./src/services/index.ts",
+    "./services/*": "./src/services/*.ts",
     "./i18n": "./src/i18n/index.ts",
     "./i18n/locales/*.json": "./src/i18n/locales/*.json",
     "./stores/*": "./src/stores/*.ts"
