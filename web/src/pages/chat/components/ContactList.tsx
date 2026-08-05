@@ -31,6 +31,7 @@ interface ContactListProps {
   requests?: Relationship[];
   onOpenSuggested?: () => void;
   onOpenRequests?: () => void;
+  onOpenChatBot?: () => void;
 }
 
 function ActionRow({
@@ -83,6 +84,7 @@ export function ContactList({
   requests = [],
   onOpenSuggested,
   onOpenRequests,
+  onOpenChatBot,
 }: ContactListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
@@ -344,6 +346,17 @@ export function ContactList({
         subtitle={t('chat.chatGroupSub')}
         showChevron
         onClick={onComingSoon}
+      />
+      <ActionRow
+        badge={
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-ola-primary text-sm font-bold text-white">
+            AI
+          </span>
+        }
+        title={t('chat.chatBot')}
+        subtitle={t('chat.chatBotSub')}
+        showChevron
+        onClick={onOpenChatBot}
       />
 
       {sections.map((section) => (
