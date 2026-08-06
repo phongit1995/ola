@@ -105,3 +105,19 @@ export function SwitchCameraIcon(props: IconProps) {
     </Frame>
   );
 }
+
+export function MinimizeIcon(props: IconProps) {
+  return (
+    <Frame {...props}>
+      <Path d="M5 12h14" />
+    </Frame>
+  );
+}
+
+export function ExpandIcon(props: IconProps) {
+  return (
+    <Frame {...props}>
+      <Path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+    </Frame>
+  );
+}

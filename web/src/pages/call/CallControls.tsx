@@ -1,4 +1,3 @@
-import { Track } from 'livekit-client';
 import { useTranslation } from 'react-i18next';
 import { useCallStore } from '@/store/callStore';
 import {
@@ -10,7 +9,6 @@ import {
 } from './icons';
 import { MicLevelIcon } from './MicLevelIcon';
 import { useCallMediaToggle } from './hooks/useCallMediaToggle';
-import { useTrackMuteSync } from './hooks/useTrackMuteSync';
 
 interface CallControlsProps {
   isVideo: boolean;
@@ -56,9 +54,6 @@ export function CallControls({ isVideo, onOpenSettings }: CallControlsProps) {
   const { localParticipant, micMuted, camOff, toggleMic, toggleCam } =
     useCallMediaToggle();
   const endActive = useCallStore((s) => s.endActive);
-
-  useTrackMuteSync(Track.Source.Microphone, micMuted);
-  useTrackMuteSync(Track.Source.Camera, camOff);
 
   return (
     <div className="flex items-center justify-center gap-4 pb-8 pt-4">

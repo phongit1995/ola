@@ -137,6 +137,37 @@ export function useCallDraggable<T extends HTMLElement>({
     [onChange]
   );
 
+  useEffect(() => {
+    const reclamp = () => {
+      const element = elementRef.current;
+      const container = element?.offsetParent as HTMLElement | null;
+      if (element == null || container == null) return;
+      const bounds = container.getBoundingClientRect();
+      const rect = element.getBoundingClientRect();
+      const staticLeft = rect.left - bounds.left - offset.current.x;
+      const staticTop = rect.top - bounds.top - offset.current.y;
+      const next = {
+        x: clamp(
+          offset.current.x,
+          -staticLeft,
+          bounds.width - rect.width - staticLeft
+        ),
+        y: clamp(
+          offset.current.y,
+          -staticTop,
+          bounds.height - rect.height - staticTop
+        ),
+      };
+      if (next.x === offset.current.x && next.y === offset.current.y) return;
+      offset.current = next;
+      pending.current = next;
+      schedule();
+      onChange(next);
+    };
+    window.addEventListener('resize', reclamp);
+    return () => window.removeEventListener('resize', reclamp);
+  }, [onChange, schedule]);
+
   useEffect(
     () => () => {
       if (frame.current != null) cancelAnimationFrame(frame.current);

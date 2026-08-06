@@ -1,9 +1,15 @@
 package com.olachat.net.org.vn
 
+import android.app.PictureInPictureParams
+import android.content.res.Configuration
+import android.os.Build
+import android.util.Rational
+import androidx.lifecycle.Lifecycle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.olachat.net.org.vn.call.PipModule
 
 class MainActivity : ReactActivity() {
 
@@ -19,4 +25,34 @@ class MainActivity : ReactActivity() {
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+  override fun onUserLeaveHint() {
+    super.onUserLeaveHint()
+    maybeEnterPip()
+  }
+
+  private fun maybeEnterPip() {
+    if (!PipModule.pipEnabled) return
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+    val params =
+        PictureInPictureParams.Builder()
+            .setAspectRatio(Rational(PipModule.aspectWidth, PipModule.aspectHeight))
+            .build()
+    try {
+      enterPictureInPictureMode(params)
+    } catch (_: Exception) {}
+  }
+
+  override fun onPictureInPictureModeChanged(
+      isInPictureInPictureMode: Boolean,
+      newConfig: Configuration,
+  ) {
+    super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+    PipModule.notifyPipChanged(isInPictureInPictureMode)
+    // Thoát PiP mà activity bị stop (CREATED) = user bấm X đóng cửa sổ;
+    // expand thì activity RESUMED. X trên app gọi điện nghĩa là kết thúc call.
+    if (!isInPictureInPictureMode && lifecycle.currentState == Lifecycle.State.CREATED) {
+      PipModule.notifyPipClosed()
+    }
+  }
 }

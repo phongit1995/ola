@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Track } from 'livekit-client';
 import { useRoomContext } from '@livekit/components-react';
-import { peerDisplayName } from '@lib';
+import { computeCallStatusLabel, peerDisplayName } from '@lib';
 import { useCallStore } from '@/store/callStore';
-import { computeStatusLabel } from './callStatus';
 import { CallControls } from './CallControls';
 import { CallMiniWidget } from './CallMiniWidget';
 import { CallSettingsPanel } from './CallSettingsPanel';
@@ -14,6 +14,7 @@ import { useAudioPlayback } from './hooks/useAudioPlayback';
 import { useCallConnectTimeout } from './hooks/useCallConnectTimeout';
 import { useConnectionState, useElapsedSeconds } from './hooks/useCallTelemetry';
 import { usePeerPresenceWatcher } from './hooks/usePeerPresenceWatcher';
+import { useTrackMuteSync } from './hooks/useTrackMuteSync';
 
 export function CallContent() {
   const { t } = useTranslation();
@@ -24,6 +25,7 @@ export function CallContent() {
   const active = useCallStore((s) => s.active);
   const expanded = useCallStore((s) => s.expanded);
   const camOff = useCallStore((s) => s.camOff);
+  const micMuted = useCallStore((s) => s.micMuted);
   const setExpanded = useCallStore((s) => s.setExpanded);
 
   const isVideo = active?.callType === 'video';
@@ -34,11 +36,13 @@ export function CallContent() {
   useArmCallTracks(true, isVideo);
   usePeerPresenceWatcher();
   useCallConnectTimeout();
+  useTrackMuteSync(Track.Source.Microphone, micMuted);
+  useTrackMuteSync(Track.Source.Camera, camOff);
 
   if (active == null) return null;
 
   const peerName = peerDisplayName(active.peer, t('call.unknownUser'));
-  const statusLabel = computeStatusLabel(mode, connectionState, elapsed, t);
+  const statusLabel = computeCallStatusLabel(t, mode, connectionState, elapsed);
 
   const enableAudioButton = audio.blocked ? (
     <button
@@ -60,7 +64,7 @@ export function CallContent() {
   }
 
   return (
-    <div className="absolute inset-0 z-[122] flex flex-col bg-gradient-to-br from-ola-primary-darker via-ola-primary-dark to-ola-primary text-white">
+    <div className="animate-ola-call-expand absolute inset-0 z-[122] flex flex-col bg-gradient-to-br from-ola-primary-darker via-ola-primary-dark to-ola-primary text-white">
       <div className="flex items-center gap-3 px-4 pt-5">
         <div className="min-w-0 flex-1">
           <p className="truncate text-lg font-semibold">{peerName}</p>
