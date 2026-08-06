@@ -15,7 +15,7 @@ export function ChatBotEmptyState({
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-      <BotAvatar bot={bot} name={botName} className="h-16 w-16 text-3xl shadow-sm" />
+      <BotAvatar bot={bot} name={botName} className="h-16 w-16 shadow-sm" />
       <p className="mt-3 text-sm text-black/54">{t(texts.emptyTitle)}</p>
       {texts.emptyHint != null && (
         <p className="mt-1 text-xs text-black/38">{t(texts.emptyHint)}</p>

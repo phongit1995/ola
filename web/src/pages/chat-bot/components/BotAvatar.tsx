@@ -2,8 +2,7 @@ import { cn } from '@lib';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import type { ChatBotType } from '@ola/shared/types';
 import chatBotAvatar from '@/assets/icons/chat/ic_chat_bot_ola.png';
-
-const FORTUNE_AVATAR_BG = '#4527a0';
+import fortuneBotAvatar from '@/assets/icons/chat/ic_chat_bot_olavi.png';
 
 interface BotAvatarProps {
   name: string;
@@ -16,25 +15,12 @@ export function BotAvatar({
   bot = CHAT_BOT_TYPE.olala,
   className,
 }: BotAvatarProps) {
-  if (bot === CHAT_BOT_TYPE.olavi) {
-    return (
-      <span
-        role="img"
-        aria-label={name}
-        className={cn(
-          'flex shrink-0 items-center justify-center rounded-full text-base',
-          className ?? 'h-8 w-8'
-        )}
-        style={{ backgroundColor: FORTUNE_AVATAR_BG }}
-      >
-        🔮
-      </span>
-    );
-  }
+  const avatar =
+    bot === CHAT_BOT_TYPE.olavi ? fortuneBotAvatar : chatBotAvatar;
 
   return (
     <img
-      src={chatBotAvatar}
+      src={avatar}
       alt={name}
       className={cn(
         'shrink-0 rounded-full object-cover',

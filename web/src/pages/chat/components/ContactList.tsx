@@ -370,7 +370,7 @@ export function ContactList({
           <BotAvatar
             bot={CHAT_BOT_TYPE.olavi}
             name={t('chat.fortuneBot')}
-            className="h-12 w-12 rounded-lg text-2xl"
+            className="h-12 w-12 rounded-lg"
           />
         }
         title={t('chat.fortuneBot')}

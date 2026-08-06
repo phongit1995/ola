@@ -1,16 +1,13 @@
 import {
   Image,
-  Text,
-  View,
   type ImageStyle,
   type StyleProp,
-  type ViewStyle,
 } from 'react-native';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import type { ChatBotType } from '@ola/shared/types';
 
 const chatBotAvatar = require('@assets/icons/chat/ic_chat_bot_ola.png');
-const FORTUNE_AVATAR_BG = '#4527a0';
+const fortuneBotAvatar = require('@assets/icons/chat/ic_chat_bot_olavi.png');
 
 interface BotAvatarProps {
   bot?: ChatBotType;
@@ -25,29 +22,12 @@ export function BotAvatar({
   radius,
   style,
 }: BotAvatarProps) {
-  if (bot === CHAT_BOT_TYPE.olavi) {
-    return (
-      <View
-        style={[
-          {
-            width: size,
-            height: size,
-            borderRadius: radius ?? size / 2,
-            backgroundColor: FORTUNE_AVATAR_BG,
-            alignItems: 'center',
-            justifyContent: 'center',
-          },
-          style as StyleProp<ViewStyle>,
-        ]}
-      >
-        <Text style={{ fontSize: Math.round(size * 0.5) }}>🔮</Text>
-      </View>
-    );
-  }
+  const avatar =
+    bot === CHAT_BOT_TYPE.olavi ? fortuneBotAvatar : chatBotAvatar;
 
   return (
     <Image
-      source={chatBotAvatar}
+      source={avatar}
       style={[
         { width: size, height: size, borderRadius: radius ?? size / 2 },
         style,
