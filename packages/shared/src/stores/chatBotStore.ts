@@ -1,20 +1,30 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { CHAT_BOT_TYPE } from '../constants/chatBot';
 import { randomUuid } from '../lib/randomUuid';
 import { sharedPersistStorage } from '../platform/persistStorage';
 import type {
+  ChatBotConversation,
   ChatBotMessage,
   ChatBotState,
+  ChatBotType,
 } from '../types/client/chatBot.type';
 import { registerOnLogout } from './authStore';
 
 export const CHAT_BOT_STORAGE_KEY = 'ola.chatBot';
 
-const emptyConversation = {
-  messages: [] as ChatBotMessage[],
+const emptyConversation: ChatBotConversation = {
+  messages: [],
   activeTurnId: null,
   error: null,
 };
+
+function emptyConversations(): Record<ChatBotType, ChatBotConversation> {
+  return {
+    [CHAT_BOT_TYPE.olala]: { ...emptyConversation },
+    [CHAT_BOT_TYPE.olavi]: { ...emptyConversation },
+  };
+}
 
 function newMessage(
   role: ChatBotMessage['role'],
@@ -41,69 +51,113 @@ function replaceMessage(
   );
 }
 
+function withConversation(
+  conversations: Record<ChatBotType, ChatBotConversation>,
+  bot: ChatBotType,
+  patch: Partial<ChatBotConversation>
+): Record<ChatBotType, ChatBotConversation> {
+  return { ...conversations, [bot]: { ...conversations[bot], ...patch } };
+}
+
+function persistableConversations(
+  conversations: Record<ChatBotType, ChatBotConversation>
+): Record<ChatBotType, ChatBotConversation> {
+  return Object.fromEntries(
+    Object.entries(conversations).map(([bot, conversation]) => [
+      bot,
+      {
+        ...emptyConversation,
+        messages: conversation.messages.map((message) =>
+          message.status === 'streaming'
+            ? { ...message, status: 'failed' as const }
+            : message
+        ),
+      },
+    ])
+  ) as Record<ChatBotType, ChatBotConversation>;
+}
+
 export const useChatBotStore = create<ChatBotState>()(
   persist(
     (set, get) => ({
-      ...emptyConversation,
+      conversations: emptyConversations(),
       ownerId: null,
 
-      beginTurn: (prompt) => {
+      beginTurn: (bot, prompt) => {
         const answer = newMessage('assistant', '', 'streaming');
         set((state) => ({
-          messages: [
-            ...state.messages,
-            newMessage('user', prompt, 'done'),
-            answer,
-          ],
-          activeTurnId: answer.id,
-          error: null,
+          conversations: withConversation(state.conversations, bot, {
+            messages: [
+              ...state.conversations[bot].messages,
+              newMessage('user', prompt, 'done'),
+              answer,
+            ],
+            activeTurnId: answer.id,
+            error: null,
+          }),
         }));
         return answer.id;
       },
 
-      appendDelta: (turnId, delta) =>
+      appendDelta: (bot, turnId, delta) =>
         set((state) => ({
-          messages: replaceMessage(state.messages, turnId, (message) => ({
-            ...message,
-            content: message.content + delta,
-          })),
+          conversations: withConversation(state.conversations, bot, {
+            messages: replaceMessage(
+              state.conversations[bot].messages,
+              turnId,
+              (message) => ({ ...message, content: message.content + delta })
+            ),
+          }),
         })),
 
-      finishTurn: (turnId) =>
+      finishTurn: (bot, turnId) =>
         set((state) => {
-          if (state.activeTurnId !== turnId) return state;
+          const conversation = state.conversations[bot];
+          if (conversation.activeTurnId !== turnId) return state;
           return {
-            messages: replaceMessage(state.messages, turnId, (message) => ({
-              ...message,
-              status: message.content === '' ? 'failed' : 'done',
-            })),
-            activeTurnId: null,
+            conversations: withConversation(state.conversations, bot, {
+              messages: replaceMessage(
+                conversation.messages,
+                turnId,
+                (message) => ({
+                  ...message,
+                  status: message.content === '' ? 'failed' : 'done',
+                })
+              ),
+              activeTurnId: null,
+            }),
           };
         }),
 
-      failTurn: (turnId, code) =>
+      failTurn: (bot, turnId, code) =>
         set((state) => {
-          if (state.activeTurnId !== turnId) return state;
+          const conversation = state.conversations[bot];
+          if (conversation.activeTurnId !== turnId) return state;
           return {
-            messages: replaceMessage(state.messages, turnId, (message) => ({
-              ...message,
-              status: 'failed',
-            })),
-            activeTurnId: null,
-            error: code,
+            conversations: withConversation(state.conversations, bot, {
+              messages: replaceMessage(
+                conversation.messages,
+                turnId,
+                (message) => ({ ...message, status: 'failed' })
+              ),
+              activeTurnId: null,
+              error: code,
+            }),
           };
         }),
 
-      dropLastTurn: () => {
-        const { messages } = get();
+      dropLastTurn: (bot) => {
+        const { messages } = get().conversations[bot];
         const lastUserIndex = lastIndexOfUser(messages);
         if (lastUserIndex < 0) return null;
         const prompt = messages[lastUserIndex]!.content;
-        set({
-          messages: messages.slice(0, lastUserIndex),
-          activeTurnId: null,
-          error: null,
-        });
+        set((state) => ({
+          conversations: withConversation(state.conversations, bot, {
+            messages: messages.slice(0, lastUserIndex),
+            activeTurnId: null,
+            error: null,
+          }),
+        }));
         return prompt;
       },
 
@@ -111,28 +165,60 @@ export const useChatBotStore = create<ChatBotState>()(
         set((state) =>
           state.ownerId === userId
             ? state
-            : { ...emptyConversation, ownerId: userId }
+            : { conversations: emptyConversations(), ownerId: userId }
         ),
 
-      clear: () => set({ ...emptyConversation }),
+      clear: (bot) =>
+        set((state) => ({
+          conversations: withConversation(state.conversations, bot, {
+            ...emptyConversation,
+          }),
+        })),
     }),
     {
       name: CHAT_BOT_STORAGE_KEY,
-      version: 1,
+      version: 2,
       storage: sharedPersistStorage<ChatBotState>(),
       partialize: (state) =>
         ({
           ownerId: state.ownerId,
-          messages: state.messages.map((message) =>
-            message.status === 'streaming'
-              ? { ...message, status: 'failed' }
-              : message
-          ),
+          conversations: persistableConversations(state.conversations),
         }) as ChatBotState,
+      migrate: (persisted, version) => {
+        if (version >= 2) return persisted as ChatBotState;
+        const legacy = persisted as Partial<{
+          ownerId: string | null;
+          messages: ChatBotMessage[];
+        }>;
+        return {
+          ownerId: legacy.ownerId ?? null,
+          conversations: {
+            ...emptyConversations(),
+            [CHAT_BOT_TYPE.olala]: {
+              ...emptyConversation,
+              messages: legacy.messages ?? [],
+            },
+          },
+        } as ChatBotState;
+      },
+      merge: (persisted, current) => {
+        const stored = persisted as Partial<ChatBotState> | undefined;
+        return {
+          ...current,
+          ...stored,
+          conversations: {
+            ...emptyConversations(),
+            ...(stored?.conversations ?? {}),
+          },
+        };
+      },
     }
   )
 );
 
 registerOnLogout(() =>
-  useChatBotStore.setState({ ...emptyConversation, ownerId: null })
+  useChatBotStore.setState({
+    conversations: emptyConversations(),
+    ownerId: null,
+  })
 );

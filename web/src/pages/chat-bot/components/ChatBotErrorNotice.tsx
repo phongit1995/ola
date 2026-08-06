@@ -1,19 +1,24 @@
 import { useTranslation } from 'react-i18next';
-import type { ChatBotErrorCode } from '@app-types';
-import { ERROR_KEYS } from '../constants';
+import { CHAT_BOT_I18N } from '@ola/shared/constants';
+import type { ChatBotErrorCode, ChatBotType } from '@app-types';
 
 interface ChatBotErrorNoticeProps {
+  bot: ChatBotType;
   code: ChatBotErrorCode;
   onRetry: () => void;
 }
 
-export function ChatBotErrorNotice({ code, onRetry }: ChatBotErrorNoticeProps) {
+export function ChatBotErrorNotice({
+  bot,
+  code,
+  onRetry,
+}: ChatBotErrorNoticeProps) {
   const { t } = useTranslation();
 
   return (
     <div className="mt-2 flex flex-col items-center gap-2">
       <span className="rounded-full bg-black/45 px-3 py-1 text-[11px] text-white">
-        {t(ERROR_KEYS[code])}
+        {t(CHAT_BOT_I18N[bot].errors[code])}
       </span>
       <button
         type="button"

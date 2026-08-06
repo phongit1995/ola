@@ -10,6 +10,7 @@ interface ChatBotComposerProps {
   inputRef: RefObject<ChatComposerHandle | null>;
   value: string;
   onChange: (value: string) => void;
+  placeholder: string;
   streaming: boolean;
   onSend: () => void;
   onStop: () => void;
@@ -19,6 +20,7 @@ export function ChatBotComposer({
   inputRef,
   value,
   onChange,
+  placeholder,
   streaming,
   onSend,
   onStop,
@@ -36,7 +38,7 @@ export function ChatBotComposer({
           ref={inputRef}
           value={value}
           onChange={onChange}
-          placeholder={t('chat.chatBotPlaceholder')}
+          placeholder={placeholder}
           maxFontSizeMultiplier={CHAT_MAX_FONT_SIZE_MULTIPLIER}
           minHeight={36}
           maxHeight={128}

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
+import type { ChatBotType } from '@ola/shared/types';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -43,11 +44,11 @@ function TypingDot({ delay }: { delay: number }) {
   );
 }
 
-export function BotTypingRow() {
+export function BotTypingRow({ bot }: { bot: ChatBotType }) {
   return (
     <View className="mt-1 flex-row items-end gap-1 px-2">
       <View className="self-start">
-        <BotAvatar />
+        <BotAvatar bot={bot} />
       </View>
       <View
         className="flex-row items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3"

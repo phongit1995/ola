@@ -9,7 +9,8 @@ import {
   type ListOption,
 } from '@components';
 import { isVipActive, activeVipTypeId, colorForName } from '@lib';
-import type { AuthUser, Relationship } from '@app-types';
+import { CHAT_BOT_TYPE } from '@ola/shared/constants';
+import type { AuthUser, ChatBotType, Relationship } from '@app-types';
 import type { Contact } from '../interface';
 import { BuddyRow } from './BuddyRow';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
@@ -29,7 +30,7 @@ interface ContactListProps {
   requests?: Relationship[];
   onOpenSuggested?: () => void;
   onOpenRequests?: () => void;
-  onOpenChatBot?: () => void;
+  onOpenChatBot?: (bot: ChatBotType) => void;
 }
 
 function ActionRow({
@@ -362,7 +363,20 @@ export function ContactList({
         title={t('chat.chatBot')}
         subtitle={t('chat.chatBotSub')}
         showChevron
-        onClick={onOpenChatBot}
+        onClick={() => onOpenChatBot?.(CHAT_BOT_TYPE.olala)}
+      />
+      <ActionRow
+        badge={
+          <BotAvatar
+            bot={CHAT_BOT_TYPE.olavi}
+            name={t('chat.fortuneBot')}
+            className="h-12 w-12 rounded-lg text-2xl"
+          />
+        }
+        title={t('chat.fortuneBot')}
+        subtitle={t('chat.fortuneBotSub')}
+        showChevron
+        onClick={() => onOpenChatBot?.(CHAT_BOT_TYPE.olavi)}
       />
 
       {sections.map((section) => (

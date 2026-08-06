@@ -59,7 +59,7 @@ func httpStatusForError(err error) (int, string) {
 
 // Chat godoc
 // @Summary      Chat với bot
-// @Description  Body chỉ gồm `messages` và `stream`. Tính cách của bot do server tự gắn, client không cần gửi message `system`.
+// @Description  Body gồm `messages`, `type` và `stream`. Tính cách của bot do server tự gắn theo `type` (OLALA mặc định, OLAVI là thầy tử vi); client không gửi được message `system`.
 // @Description  `stream=false` (mặc định) trả JSON đầy đủ theo schema dưới đây.
 // @Description  `stream=true` trả `text/event-stream`, mỗi frame là một dòng `data: <json>` rồi một dòng trống:
 // @Description  - chunk nội dung: `{"id":"chatbot-...","delta":"Chào "}`
@@ -68,7 +68,7 @@ func httpStatusForError(err error) (int, string) {
 // @Description  - kết thúc: `data: [DONE]`
 // @Description  Ghép toàn bộ `delta` theo thứ tự sẽ được câu trả lời đầy đủ.
 // @Description  Có dòng `: ping` xen giữa các frame để giữ kết nối, client bỏ qua dòng không bắt đầu bằng `data: `.
-// @Description  Giới hạn: tối đa 80 message, 4000 ký tự cho `user`/`system`, 32000 ký tự cho `assistant`, toàn bộ body 2MB (vượt trả 413).
+// @Description  Giới hạn: tối đa 80 message, 4000 ký tự cho `user`, 32000 ký tự cho `assistant`, toàn bộ body 2MB (vượt trả 413).
 // @Tags         chat-bot
 // @Accept       json
 // @Produce      json

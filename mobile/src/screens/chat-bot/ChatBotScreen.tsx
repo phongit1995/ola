@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { CHAT_BOT_DEFAULT_TYPE, CHAT_BOT_I18N } from '@ola/shared/constants';
 import { colorForName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
@@ -20,13 +21,15 @@ const deleteIcon = require('@assets/icons/chat/ic_menu_delete.png');
 
 type Props = NativeStackScreenProps<ChatStackParamList, typeof CHAT_ROUTES.ChatBot>;
 
-export function ChatBotScreen({ navigation }: Props) {
+export function ChatBotScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
   const me = useAuthStore((s) => s.user);
   const [clearOpen, setClearOpen] = useState(false);
-  const conversation = useChatBotConversation();
+  const bot = route.params?.bot ?? CHAT_BOT_DEFAULT_TYPE;
+  const conversation = useChatBotConversation(bot);
 
-  const botName = t('chat.chatBot');
+  const texts = CHAT_BOT_I18N[bot];
+  const botName = t(texts.title);
   const meName = me?.username ?? '';
   const meAvatar = me?.avatar;
   const showSuggestions =
@@ -42,12 +45,12 @@ export function ChatBotScreen({ navigation }: Props) {
       <ScreenHeader
         title={botName}
         subtitle={
-          conversation.streaming ? t('chat.chatBotThinking') : undefined
+          conversation.streaming ? t(texts.thinking) : undefined
         }
         onBack={() => navigation.goBack()}
         left={
           <View className="pr-1">
-            <BotAvatar />
+            <BotAvatar bot={bot} />
           </View>
         }
         right={
@@ -71,6 +74,7 @@ export function ChatBotScreen({ navigation }: Props) {
         <ChatBotMessageList
           list={conversation.list}
           messages={conversation.visible}
+          bot={bot}
           viewer={viewer}
           waiting={conversation.waiting}
           error={conversation.error}
@@ -88,6 +92,7 @@ export function ChatBotScreen({ navigation }: Props) {
           inputRef={conversation.composerRef}
           value={conversation.draft}
           onChange={conversation.setDraft}
+          placeholder={t(texts.placeholder)}
           streaming={conversation.streaming}
           onSend={conversation.send}
           onStop={conversation.stop}
@@ -98,7 +103,7 @@ export function ChatBotScreen({ navigation }: Props) {
         visible={clearOpen}
         danger
         title={t('chat.chatBotClear')}
-        message={t('chat.chatBotClearConfirm')}
+        message={t(texts.clearConfirm)}
         confirmLabel={t('dialog.delete')}
         cancelLabel={t('dialog.no')}
         onConfirm={() => {

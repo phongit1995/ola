@@ -1,22 +1,24 @@
 import {
-  CHAT_BOT_SUGGESTION_KEYS,
+  CHAT_BOT_I18N,
   CHAT_BOT_VISIBLE_SUGGESTIONS,
 } from '../constants/chatBot';
 import type {
   ChatBotGrouping,
   ChatBotMessage,
   ChatBotSurfaceKind,
+  ChatBotType,
 } from '../types/client/chatBot.type';
 import { formatClockHM } from './datetime';
 
-export type ChatBotSuggestionKey = (typeof CHAT_BOT_SUGGESTION_KEYS)[number];
+export type ChatBotSuggestionKey =
+  (typeof CHAT_BOT_I18N)[ChatBotType]['suggestions'][number];
 
 export function chatBotIso(createdAt: number): string {
   return new Date(createdAt).toISOString();
 }
 
-export function pickChatBotSuggestions(): ChatBotSuggestionKey[] {
-  const pool = [...CHAT_BOT_SUGGESTION_KEYS];
+export function pickChatBotSuggestions(bot: ChatBotType): ChatBotSuggestionKey[] {
+  const pool = [...CHAT_BOT_I18N[bot].suggestions];
   for (let index = pool.length - 1; index > 0; index -= 1) {
     const swap = Math.floor(Math.random() * (index + 1));
     [pool[index], pool[swap]] = [pool[swap]!, pool[index]!];

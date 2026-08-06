@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Avatar } from '@components';
-import type { ChatBotMessage } from '@app-types';
+import type { ChatBotMessage, ChatBotType } from '@app-types';
 import { groupingOf } from '../chatBotView';
 import type { ChatBotViewer } from '../interface';
 import { BotAvatar } from './BotAvatar';
@@ -10,6 +10,7 @@ interface BotMessageRowProps {
   message: ChatBotMessage;
   prev?: ChatBotMessage;
   next?: ChatBotMessage;
+  bot: ChatBotType;
   botName: string;
   viewer: ChatBotViewer;
 }
@@ -18,6 +19,7 @@ function BotMessageRowComponent({
   message,
   prev,
   next,
+  bot,
   botName,
   viewer,
 }: BotMessageRowProps) {
@@ -38,7 +40,7 @@ function BotMessageRowComponent({
                 size={32}
               />
             ) : (
-              <BotAvatar name={botName} />
+              <BotAvatar bot={bot} name={botName} />
             )}
           </span>
         ) : (

@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, FullScreenOverlay, ScreenHeader } from '@components';
 import { colorForName } from '@lib';
+import { CHAT_BOT_I18N } from '@ola/shared/constants';
+import type { ChatBotType } from '@ola/shared/types';
 import deleteIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import { useAuthStore } from '@/store/authStore';
 import { useChatBotConversation } from './useChatBotConversation';
@@ -11,16 +13,18 @@ import { ChatBotMessageList } from './components/ChatBotMessageList';
 import { ChatBotSuggestions } from './components/ChatBotSuggestions';
 
 interface ChatBotScreenProps {
+  bot: ChatBotType;
   onClose: () => void;
 }
 
-export function ChatBotScreen({ onClose }: ChatBotScreenProps) {
+export function ChatBotScreen({ bot, onClose }: ChatBotScreenProps) {
   const { t } = useTranslation();
   const me = useAuthStore((s) => s.user);
   const [clearOpen, setClearOpen] = useState(false);
-  const conversation = useChatBotConversation();
+  const conversation = useChatBotConversation(bot);
 
-  const botName = t('chat.chatBot');
+  const texts = CHAT_BOT_I18N[bot];
+  const botName = t(texts.title);
   const meName = me?.username ?? '';
   const meAvatar = me?.avatar;
   const showSuggestions =
@@ -36,10 +40,10 @@ export function ChatBotScreen({ onClose }: ChatBotScreenProps) {
       <ScreenHeader
         title={botName}
         subtitle={
-          conversation.streaming ? t('chat.chatBotThinking') : undefined
+          conversation.streaming ? t(texts.thinking) : undefined
         }
         onBack={onClose}
-        left={<BotAvatar name={botName} />}
+        left={<BotAvatar bot={bot} name={botName} />}
       >
         <button
           type="button"
@@ -60,6 +64,7 @@ export function ChatBotScreen({ onClose }: ChatBotScreenProps) {
         scrollRef={conversation.scrollRef}
         onScroll={conversation.handleScroll}
         messages={conversation.visible}
+        bot={bot}
         botName={botName}
         viewer={viewer}
         waiting={conversation.waiting}
@@ -78,6 +83,7 @@ export function ChatBotScreen({ onClose }: ChatBotScreenProps) {
         inputRef={conversation.composerRef}
         value={conversation.draft}
         onChange={conversation.setDraft}
+        placeholder={t(texts.placeholder)}
         streaming={conversation.streaming}
         onSend={conversation.send}
         onStop={conversation.stop}
@@ -87,7 +93,7 @@ export function ChatBotScreen({ onClose }: ChatBotScreenProps) {
         open={clearOpen}
         danger
         title={t('chat.chatBotClear')}
-        message={t('chat.chatBotClearConfirm')}
+        message={t(texts.clearConfirm)}
         confirmLabel={t('dialog.delete')}
         cancelLabel={t('dialog.no')}
         onConfirm={() => {

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Text, View, useWindowDimensions } from 'react-native';
 import { Avatar } from '@components/ui/Avatar';
-import type { ChatBotMessage } from '@ola/shared/types';
+import type { ChatBotMessage, ChatBotType } from '@ola/shared/types';
 import { groupingOf } from '../chatBotView';
 import type { ChatBotViewer } from '../interface';
 import { BotAvatar } from './BotAvatar';
@@ -13,6 +13,7 @@ interface BotMessageRowProps {
   message: ChatBotMessage;
   prev?: ChatBotMessage;
   next?: ChatBotMessage;
+  bot: ChatBotType;
   viewer: ChatBotViewer;
 }
 
@@ -20,6 +21,7 @@ function BotMessageRowComponent({
   message,
   prev,
   next,
+  bot,
   viewer,
 }: BotMessageRowProps) {
   const group = groupingOf(message, prev, next);
@@ -41,7 +43,7 @@ function BotMessageRowComponent({
                 size={32}
               />
             ) : (
-              <BotAvatar />
+              <BotAvatar bot={bot} />
             )}
           </View>
         ) : (

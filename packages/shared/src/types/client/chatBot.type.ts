@@ -1,3 +1,5 @@
+export type ChatBotType = 'OLALA' | 'OLAVI';
+
 export type ChatBotRole = 'user' | 'assistant' | 'system';
 
 export type ChatBotMessageStatus = 'streaming' | 'done' | 'failed';
@@ -48,16 +50,20 @@ export interface ChatBotGrouping {
   surfaceKind: ChatBotSurfaceKind;
 }
 
-export interface ChatBotState {
+export interface ChatBotConversation {
   messages: ChatBotMessage[];
   activeTurnId: string | null;
-  ownerId: string | null;
   error: ChatBotErrorCode | null;
-  beginTurn: (prompt: string) => string;
-  appendDelta: (turnId: string, delta: string) => void;
-  finishTurn: (turnId: string) => void;
-  failTurn: (turnId: string, code: ChatBotErrorCode) => void;
-  dropLastTurn: () => string | null;
+}
+
+export interface ChatBotState {
+  conversations: Record<ChatBotType, ChatBotConversation>;
+  ownerId: string | null;
+  beginTurn: (bot: ChatBotType, prompt: string) => string;
+  appendDelta: (bot: ChatBotType, turnId: string, delta: string) => void;
+  finishTurn: (bot: ChatBotType, turnId: string) => void;
+  failTurn: (bot: ChatBotType, turnId: string, code: ChatBotErrorCode) => void;
+  dropLastTurn: (bot: ChatBotType) => string | null;
   syncOwner: (userId: string | null) => void;
-  clear: () => void;
+  clear: (bot: ChatBotType) => void;
 }

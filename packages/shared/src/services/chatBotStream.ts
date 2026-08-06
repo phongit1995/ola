@@ -1,5 +1,8 @@
 import { ensureFreshToken, refreshAccessToken } from '../api';
-import type { ChatBotPromptMessage } from '../types/client/chatBot.type';
+import type {
+  ChatBotPromptMessage,
+  ChatBotType,
+} from '../types/client/chatBot.type';
 import {
   buildChatBotRequest,
   chatBotErrorForStatus,
@@ -10,6 +13,7 @@ import { ChatBotStreamError, type ChatBotStreamResponse, type ChatBotTransport }
 export * from './chatBotTransport';
 
 export interface StreamChatBotOptions {
+  bot: ChatBotType;
   messages: ChatBotPromptMessage[];
   language?: string;
   signal: AbortSignal;
@@ -18,11 +22,11 @@ export interface StreamChatBotOptions {
 }
 
 async function openStream(
-  { messages, language, signal, transport }: Omit<StreamChatBotOptions, 'onDelta'>,
+  { bot, messages, language, signal, transport }: Omit<StreamChatBotOptions, 'onDelta'>,
   accessToken: string
 ): Promise<ChatBotStreamResponse | null> {
   const response = await transport(
-    buildChatBotRequest(messages, language, accessToken),
+    buildChatBotRequest(messages, bot, language, accessToken),
     signal
   );
   if (response == null || response.status !== 401) return response;
@@ -34,10 +38,11 @@ async function openStream(
     throw new ChatBotStreamError('auth', await response.readErrorMessage());
   }
 
-  return transport(buildChatBotRequest(messages, language, refreshed), signal);
+  return transport(buildChatBotRequest(messages, bot, language, refreshed), signal);
 }
 
 export async function streamChatBot({
+  bot,
   messages,
   language,
   signal,
@@ -48,7 +53,7 @@ export async function streamChatBot({
   if (accessToken === '') throw new ChatBotStreamError('auth');
 
   const response = await openStream(
-    { messages, language, signal, transport },
+    { bot, messages, language, signal, transport },
     accessToken
   );
   if (response == null) return false;
