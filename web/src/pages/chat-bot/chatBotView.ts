@@ -3,11 +3,7 @@ import type { ChatBotMessage, ChatBotSurfaceKind } from '@ola/shared/types';
 import { bubbleSurface } from '@lib';
 import type { MessageGrouping } from './interface';
 
-export {
-  chatBotIso as isoOf,
-  pickChatBotSuggestions as pickSuggestions,
-  renderableChatBotMessages as renderableMessages,
-} from '@ola/shared/lib';
+export { chatBotIso as isoOf } from '@ola/shared/lib';
 
 function surfaceOf(kind: ChatBotSurfaceKind): string {
   return bubbleSurface(kind === 'out', kind === 'failed');

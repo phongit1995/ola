@@ -2,14 +2,10 @@ package chatbot
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
-	"sync"
-	"time"
 	"unicode/utf8"
 
 	"ola-chat-server/internal/constants"
@@ -117,7 +113,7 @@ func (ctrl *Controller) Chat(c *gin.Context) {
 }
 
 func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
-	flusher, ok := c.Writer.(http.Flusher)
+	session, ok := newSSESession(c)
 	if !ok {
 		utils.RespondError(c, http.StatusInternalServerError, "streaming is not supported by this connection")
 		return
@@ -125,58 +121,20 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 
 	completionID := newCompletionID()
 
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
-	c.Writer.Header().Set("Cache-Control", "no-cache")
-	c.Writer.Header().Set("Connection", "keep-alive")
-	c.Writer.Header().Set("X-Accel-Buffering", "no")
-	c.Writer.WriteHeader(http.StatusOK)
-
-	var writeMu sync.Mutex
-	writeFrame := func(payload string) error {
-		writeMu.Lock()
-		defer writeMu.Unlock()
-		if _, err := io.WriteString(c.Writer, payload); err != nil {
-			return err
-		}
-		flusher.Flush()
-		return nil
-	}
-
-	_ = writeFrame(constants.ChatBotSSEHeartbeat)
-
-	writeChunk := func(chunk StreamChunk) error {
-		payload, err := json.Marshal(chunk)
-		if err != nil {
-			return err
-		}
-		return writeFrame(fmt.Sprintf("data: %s\n\n", payload))
-	}
-
-	stopHeartbeat := ctrl.startHeartbeat(c.Request.Context(), writeFrame)
+	stopHeartbeat := session.startHeartbeat(c.Request.Context())
 	defer stopHeartbeat()
 
 	prompt, full, err := ctrl.service.Stream(c.Request.Context(), req, func(delta string) error {
-		return writeChunk(StreamChunk{ID: completionID, Delta: delta})
+		return session.writeChunk(StreamChunk{ID: completionID, Delta: delta})
 	})
-
-	writeDone := func() {
-		_ = writeFrame(fmt.Sprintf("data: %s\n\n", constants.ChatBotSSEDoneMarker))
-	}
-
-	failStream := func(cause error) {
-		_, message := httpStatusForError(cause)
-		if writeChunk(StreamChunk{ID: completionID, Error: message}) != nil {
-			return
-		}
-		writeDone()
-	}
 
 	if err != nil {
 		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, errEmitAborted) {
 			return
 		}
 		ctrl.logger.Errorw("chat bot stream failed", "promptLen", len(prompt), "streamed", len(full), "error", err)
-		failStream(err)
+		_, message := httpStatusForError(err)
+		session.fail(completionID, message)
 		return
 	}
 
@@ -184,41 +142,10 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 	// thành error frame, nếu không client nhận "stop" với nội dung rỗng và mất nút thử lại.
 	if strings.TrimSpace(full) == "" {
 		ctrl.logger.Errorw("chat bot stream returned empty content", "promptLen", len(prompt))
-		failStream(ErrEmptyResponse)
+		_, message := httpStatusForError(ErrEmptyResponse)
+		session.fail(completionID, message)
 		return
 	}
 
-	_ = writeChunk(StreamChunk{
-		ID:           completionID,
-		FinishReason: constants.ChatBotFinishReasonStop,
-	})
-	writeDone()
-}
-
-func (ctrl *Controller) startHeartbeat(ctx context.Context, writeFrame func(string) error) func() {
-	done := make(chan struct{})
-	stopped := make(chan struct{})
-
-	go func() {
-		defer close(stopped)
-		ticker := time.NewTicker(constants.ChatBotSSEHeartbeatEvery)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-done:
-				return
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				if writeFrame(constants.ChatBotSSEHeartbeat) != nil {
-					return
-				}
-			}
-		}
-	}()
-
-	return func() {
-		close(done)
-		<-stopped
-	}
+	session.finish(completionID)
 }
