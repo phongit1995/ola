@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
@@ -65,7 +66,6 @@ import { ChatHeader } from './components/ChatHeader';
 import { TypingIndicator } from './components/TypingIndicator';
 import { ReplyPreviewBar } from './components/ReplyPreviewBar';
 import { EditingNotice } from './components/EditingNotice';
-import { useBottomBarInset } from '@hooks/useBottomBarInset';
 import type { PendingComposerImage } from '@components/chat/composerTypes';
 
 const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
@@ -78,7 +78,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
   const { t } = useTranslation();
-  const bottomBarInset = useBottomBarInset();
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const push = useToastStore((s) => s.push);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const myName = useAuthStore((s) => s.user?.username) ?? '';
@@ -518,7 +518,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onMore={() => setMenuOpen(true)}
       />
 
-      <ChatKeyboardArea>
+      <ChatKeyboardArea bottomInset={bottomInset}>
       <View
         className="flex-1"
         onStartShouldSetResponderCapture={() => {
@@ -647,7 +647,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           uri={pendingAudio.file.uri}
           duration={pendingAudio.duration}
           waveform={pendingAudio.waveform}
-          bottomInset={bottomBarInset}
+          bottomInset={bottomInset}
           onSend={() => {
             const audio = pendingAudio;
             const sourceConversationId =
@@ -692,7 +692,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <VoiceRecorderControl
           ref={voiceRecorderRef}
           key={currentConversationId ?? conversationId ?? 'draft'}
-          bottomInset={bottomBarInset}
+          bottomInset={bottomInset}
           onRecorded={recording => {
             showPendingAudio(recording);
             setVoiceRecording(false);
@@ -762,7 +762,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       {!voiceRecording && pendingAudio == null && (
         <AttachmentBar
           openTab={openTab}
-          bottomInset={bottomBarInset}
+          bottomInset={bottomInset}
           onToggleTab={(tab) => {
             if (openTab !== tab) Keyboard.dismiss();
             setOpenTab(openTab === tab ? null : tab);

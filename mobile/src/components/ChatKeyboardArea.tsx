@@ -4,9 +4,19 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 interface ChatKeyboardAreaProps {
   children: ReactNode;
+  /** Safe-area padding that is already rendered inside the composer. */
+  bottomInset?: number;
 }
 
 const IS_ANDROID = Platform.OS === 'android';
+
+export function resolveChatKeyboardVerticalOffset(
+  isAndroid: boolean,
+  iosOffsetY: number,
+  bottomInset: number,
+): number {
+  return (isAndroid ? 0 : iosOffsetY) - bottomInset;
+}
 
 // Vùng nội dung có composer: clip (overflow hidden) + translate-with-padding để
 // suốt animation chỉ transform trên UI thread, list không relayout từng frame.
@@ -18,13 +28,25 @@ const IS_ANDROID = Platform.OS === 'android';
 // iOS: giữ cách đo measureInWindow đã dùng trước khi automaticOffset được áp dụng.
 // Lỗi edge-to-edge ở trên chỉ thuộc Android, nên tách theo nền tảng để workaround
 // đó không làm thay đổi cách tính vị trí composer trên iOS.
-export function ChatKeyboardArea({ children }: ChatKeyboardAreaProps) {
+export function ChatKeyboardArea({
+  children,
+  bottomInset = 0,
+}: ChatKeyboardAreaProps) {
   const contentRef = useRef<View>(null);
   const [iosOffsetY, setIosOffsetY] = useState(0);
 
   const measureIos = useCallback(() => {
     contentRef.current?.measureInWindow((_x, y) => setIosOffsetY(y));
   }, []);
+
+  // The composer keeps its safe-area padding while the keyboard is visible.
+  // Subtract that padding from the translation so its controls still meet the
+  // keyboard. On iOS this remains combined with the measured screen offset.
+  const keyboardVerticalOffset = resolveChatKeyboardVerticalOffset(
+    IS_ANDROID,
+    iosOffsetY,
+    bottomInset,
+  );
 
   return (
     <View
@@ -35,7 +57,7 @@ export function ChatKeyboardArea({ children }: ChatKeyboardAreaProps) {
     >
       <KeyboardAvoidingView
         automaticOffset={IS_ANDROID}
-        keyboardVerticalOffset={IS_ANDROID ? undefined : iosOffsetY}
+        keyboardVerticalOffset={keyboardVerticalOffset}
         behavior="translate-with-padding"
         style={{ flex: 1 }}
       >
