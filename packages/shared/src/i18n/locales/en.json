@@ -639,6 +639,7 @@
     "cancelled": "Call cancelled",
     "endedWithDuration": "Call ended · {{duration}}",
     "missedCall": "Missed call",
+    "declinedCall": "Call declined",
     "noAnswer": "No answer",
     "unknownUser": "User",
     "switchCamera": "Switch camera"

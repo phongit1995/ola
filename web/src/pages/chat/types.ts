@@ -14,6 +14,7 @@ export type ChatMessageKind =
   | 'youtube'
   | 'ken'
   | 'vip'
-  | 'stranger';
+  | 'stranger'
+  | 'call';
 
 export type ChatMessageStatus = 'sending' | 'sent' | 'seen' | 'failed';

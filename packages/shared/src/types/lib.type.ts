@@ -39,12 +39,18 @@ export type BuyErrorKey =
   | 'vip.buy.errBlocked'
   | 'vip.buy.errWrongPassword';
 
+export type CallMessageStatus = 'ended' | 'missed' | 'declined';
+
 export interface MessageMetadata {
   url?: string;
   duration?: number;
   waveform?: number[];
   uploadName?: string;
   uploadType?: string;
+  callId?: string;
+  callType?: 'audio' | 'video';
+  callStatus?: CallMessageStatus;
+  durationSeconds?: number;
 }
 
 export interface VipCatalogEntry {

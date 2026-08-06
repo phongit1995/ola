@@ -27,7 +27,7 @@ export function chatMessageAbilities(
 ): ChatMessageAbilities {
   const isOwn = message.senderId === myId;
   return {
-    canReply: !isOwn && !blocked,
+    canReply: !isOwn && !blocked && message.type !== 'call',
     canCopy: isCopyableMessageText(message),
     canEdit: isOwn && message.type === 'text',
     canDelete: isOwn,

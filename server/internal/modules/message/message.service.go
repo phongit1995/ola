@@ -526,6 +526,23 @@ func audioPreviewText() string {
 	return "🎵 Audio"
 }
 
+func callPreviewText(metadata string) string {
+	var meta CallMetadata
+	if err := json.Unmarshal([]byte(metadata), &meta); err != nil {
+		return "📞 Call"
+	}
+	switch meta.CallStatus {
+	case string(models.CallStatusMissed):
+		return "📞 Missed call"
+	case string(models.CallStatusDeclined):
+		return "📞 Call declined"
+	}
+	if meta.CallType == string(models.CallTypeVideo) {
+		return "📹 Video call"
+	}
+	return "📞 Voice call"
+}
+
 func (s *Service) validateMessageContent(messageType, content, metadata string) error {
 	isManagedURL := func(rawURL string) bool {
 		return s.s3 != nil && s.s3.IsManagedURL(rawURL)
@@ -543,12 +560,14 @@ func (s *Service) validateMessageContent(messageType, content, metadata string) 
 	return nil
 }
 
-func previewForType(messageType, content string) string {
+func previewForType(messageType, content, metadata string) string {
 	switch messageType {
 	case constants.MessageTypeImage:
 		return imagePreviewText(content)
 	case constants.MessageTypeAudio:
 		return audioPreviewText()
+	case constants.MessageTypeCall:
+		return callPreviewText(metadata)
 	default:
 		return truncatePreview(content, 100)
 	}
@@ -795,7 +814,7 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 		return nil, fmt.Errorf("failed to create message: %w", err)
 	}
 
-	shortContent := previewForType(messageType, content)
+	shortContent := previewForType(messageType, content, metadata)
 
 	memberIDs := conversation.ActiveMemberIDs(members)
 

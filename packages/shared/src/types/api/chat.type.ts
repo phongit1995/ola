@@ -1,6 +1,6 @@
 export type ConversationKind = 'direct' | 'group';
 
-export type MessageType = 'text' | 'image' | 'file' | 'video' | 'audio';
+export type MessageType = 'text' | 'image' | 'file' | 'video' | 'audio' | 'call';
 
 export type MessageStatus = 'sending' | 'uploading' | 'sent' | 'failed';
 

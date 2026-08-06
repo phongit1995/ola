@@ -1,4 +1,5 @@
 import type { ChatReplySnapshot } from '@app-types';
+import type { MessageMetadata } from '@lib';
 import type {
   ChatMessageKind,
   ChatMessageStatus,
@@ -66,6 +67,7 @@ export interface ChatMessage {
   youtubeDuration?: string;
   kenAmount?: number;
   vipDirection?: 'sent' | 'received';
+  call?: MessageMetadata;
   stranger?: StrangerCard;
   senderName?: string;
   senderColor?: string;

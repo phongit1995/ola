@@ -273,6 +273,7 @@ const (
 	MessageTypeFile  = "file"
 	MessageTypeVideo = "video"
 	MessageTypeAudio = "audio"
+	MessageTypeCall  = "call"
 
 	MessageDeletedPreview = "[Tin nhắn đã bị xóa]"
 )

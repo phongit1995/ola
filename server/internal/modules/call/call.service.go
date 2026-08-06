@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"ola-chat-server/internal/config"
@@ -11,8 +12,10 @@ import (
 	callEvents "ola-chat-server/internal/domain/call"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/conversation"
+	"ola-chat-server/internal/modules/message"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/transport/kafka"
+	"ola-chat-server/internal/utils"
 	"sync"
 	"time"
 
@@ -39,6 +42,7 @@ type Service struct {
 	repo         *Repository
 	convService  *conversation.Service
 	relationship *relationships.Service
+	msgService   *message.Service
 	producer     *kafka.Producer
 	cfg          *config.Config
 	logger       *zap.SugaredLogger
@@ -51,6 +55,7 @@ func NewService(
 	repo *Repository,
 	convService *conversation.Service,
 	relationship *relationships.Service,
+	msgService *message.Service,
 	producer *kafka.Producer,
 	cfg *config.Config,
 	logger *zap.SugaredLogger,
@@ -59,6 +64,7 @@ func NewService(
 		repo:         repo,
 		convService:  convService,
 		relationship: relationship,
+		msgService:   msgService,
 		producer:     producer,
 		cfg:          cfg,
 		logger:       logger.Named("[call_service]"),
@@ -246,6 +252,8 @@ func (s *Service) DeclineCall(ctx context.Context, callID, userID uuid.UUID) err
 	}); err != nil {
 		s.logger.Warnw("Failed to publish CallDeclined", "error", err)
 	}
+
+	s.sendCallLogMessage(call, models.CallStatusDeclined, 0)
 	return nil
 }
 
@@ -293,7 +301,38 @@ func (s *Service) finalizeCall(ctx context.Context, call *models.Call, endedBy s
 	}); err != nil {
 		s.logger.Warnw("Failed to publish CallEnded", "error", err)
 	}
+
+	s.sendCallLogMessage(call, finalStatus, dur)
 	return nil
+}
+
+func (s *Service) sendCallLogMessage(call *models.Call, status models.CallStatus, durationSeconds int) {
+	meta, err := json.Marshal(message.CallMetadata{
+		CallID:          call.ID.String(),
+		CallType:        string(call.CallType),
+		CallStatus:      string(status),
+		DurationSeconds: durationSeconds,
+	})
+	if err != nil {
+		s.logger.Errorw("Failed to marshal call metadata", "callId", call.ID, "error", err)
+		return
+	}
+	callID := call.ID
+	callerID := call.CallerID
+	conversationID := call.ConversationID
+	utils.SafeGo(s.logger, func() {
+		if _, err := s.msgService.SendMessage(
+			callerID,
+			conversationID,
+			constants.MessageTypeCall,
+			"",
+			string(meta),
+			nil,
+			callID.String(),
+		); err != nil {
+			s.logger.Errorw("Failed to send call log message", "callId", callID, "error", err)
+		}
+	})
 }
 
 func (s *Service) HandleLiveKitRoomFinished(ctx context.Context, roomName string) error {

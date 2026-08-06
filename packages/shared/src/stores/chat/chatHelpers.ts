@@ -11,6 +11,7 @@ export function previewOf(message: Message): string {
   if (message.type === 'file') return '📎';
   if (message.type === 'video') return '🎬';
   if (message.type === 'audio') return '🎙️';
+  if (message.type === 'call') return '📞';
   return '';
 }
 

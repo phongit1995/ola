@@ -639,6 +639,7 @@
     "cancelled": "Đã huỷ cuộc gọi",
     "endedWithDuration": "Đã kết thúc · {{duration}}",
     "missedCall": "Cuộc gọi nhỡ",
+    "declinedCall": "Cuộc gọi bị từ chối",
     "noAnswer": "Không có phản hồi",
     "unknownUser": "Người dùng",
     "switchCamera": "Đổi camera"

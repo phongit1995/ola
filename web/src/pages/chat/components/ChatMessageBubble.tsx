@@ -9,10 +9,12 @@ import photoIcon from '@/assets/icons/chat/ic_local.png';
 import {
   bubbleCorners,
   bubbleSurface,
+  callMessageView,
   kulImageForText,
   renderRichText,
   SmileyText,
 } from '@lib';
+import { PhoneIcon, VideoIcon } from '../../call/icons';
 import type { ChatReplySnapshot } from '@app-types';
 import type { ChatMessage } from '../interface';
 import { chatQuoteExcerpt } from '../chatView';
@@ -191,6 +193,38 @@ export function ChatMessageBubble({
           <span className="text-sm text-black/54">{t('chat.kenLabel')}</span>
         </div>
       );
+
+    case 'call': {
+      const view = callMessageView(t, message.call ?? {});
+      const CallIcon = view.isVideo ? VideoIcon : PhoneIcon;
+      return (
+        <div
+          className={`flex items-center gap-2.5 rounded-2xl px-3 py-2 ${groupCorners} ${bubbleBg}`}
+        >
+          <span
+            className={`flex h-9 w-9 items-center justify-center rounded-full ${
+              view.missed
+                ? 'bg-[#e53935]/10 text-[#e53935]'
+                : 'bg-ola-primary/15 text-ola-primary-darker'
+            }`}
+          >
+            <CallIcon className="h-5 w-5" />
+          </span>
+          <span className="flex flex-col pr-1">
+            <span className="text-sm font-medium text-black/87">
+              {view.title}
+            </span>
+            <span
+              className={`text-xs ${
+                view.missed ? 'text-[#e53935]' : 'text-black/54'
+              }`}
+            >
+              {view.detail}
+            </span>
+          </span>
+        </div>
+      );
+    }
 
     case 'vip':
       return (

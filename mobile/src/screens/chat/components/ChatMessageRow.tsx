@@ -1,7 +1,8 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, useWindowDimensions, View } from 'react-native';
-import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
+import { callMessageView, formatDuration, parseMessageMetadata } from '@ola/shared/lib';
+import type { MessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage } from '@components/ui/CachedImage';
@@ -12,6 +13,7 @@ import { ReactionChips } from '@components/chat/ReactionChips';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
+import { PhoneIcon, VideoIcon } from '@screens/call/icons';
 import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
@@ -83,6 +85,55 @@ function ChatQuoteBlock({
         />
       </View>
     </Pressable>
+  );
+}
+
+function CallLogBubble({
+  meta,
+  bg,
+  cornerClass,
+  fromMe,
+}: {
+  meta: MessageMetadata;
+  bg: string;
+  cornerClass: string;
+  fromMe: boolean;
+}) {
+  const { t } = useTranslation();
+  const view = callMessageView(t, meta);
+  const CallIcon = view.isVideo ? VideoIcon : PhoneIcon;
+  return (
+    <View
+      className={`flex-row items-center gap-2.5 rounded-2xl px-3 py-2 ${cornerClass}`}
+      style={[
+        { backgroundColor: bg },
+        fromMe
+          ? null
+          : { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+      ]}
+    >
+      <View
+        className="items-center justify-center rounded-full"
+        style={{
+          width: 36,
+          height: 36,
+          backgroundColor: view.missed ? 'rgba(229,57,53,0.1)' : 'rgba(124,179,66,0.15)',
+        }}
+      >
+        <CallIcon size={20} color={view.missed ? '#e53935' : '#558b2f'} />
+      </View>
+      <View className="pr-1">
+        <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+          {view.title}
+        </Text>
+        <Text
+          className="text-xs"
+          style={{ color: view.missed ? '#e53935' : 'rgba(0,0,0,0.54)' }}
+        >
+          {view.detail}
+        </Text>
+      </View>
+    </View>
   );
 }
 
@@ -193,6 +244,17 @@ export function ChatBubble({
         waveform={meta.waveform}
         isOut={fromMe}
         onLongPress={onLongPress}
+      />
+    );
+  }
+
+  if (message.type === 'call') {
+    return (
+      <CallLogBubble
+        meta={meta}
+        bg={bg}
+        cornerClass={cornerClass}
+        fromMe={fromMe}
       />
     );
   }

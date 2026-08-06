@@ -76,6 +76,13 @@ type ImageMetadata struct {
 	FileName string `json:"fileName,omitempty"`
 }
 
+type CallMetadata struct {
+	CallID          string `json:"callId"`
+	CallType        string `json:"callType"`
+	CallStatus      string `json:"callStatus"`
+	DurationSeconds int    `json:"durationSeconds"`
+}
+
 type AudioMetadata struct {
 	URL      string    `json:"url"`
 	MimeType string    `json:"mimeType"`
