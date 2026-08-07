@@ -1,6 +1,7 @@
 import { useRef, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
+import { MESSAGE_STATUS } from '@constants';
 import { useLongPress } from '@hooks';
 import { reactionChips } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
@@ -199,12 +200,12 @@ function InlineSendStatus({
 }) {
   const { t } = useTranslation();
 
-  if (message.status === 'sending') {
+  if (message.status === MESSAGE_STATUS.sending) {
     return (
       <span className="h-4 w-4 shrink-0 self-center animate-spin rounded-full border-2 border-black/20 border-t-transparent" />
     );
   }
-  if (message.status === 'failed') {
+  if (message.status === MESSAGE_STATUS.failed) {
     return (
       <button
         type="button"

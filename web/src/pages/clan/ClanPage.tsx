@@ -14,6 +14,7 @@ import {
   Spinner,
 } from '@components';
 import type { ListOption } from '@components';
+import { CLAN_ROLE } from '@constants';
 import {
   colorForName,
   compressImagesForUpload,
@@ -441,7 +442,7 @@ export function ClanPage({
     );
   }
 
-  const isOwner = clan.myRole === 'owner';
+  const isOwner = clan.myRole === CLAN_ROLE.owner;
   const privacyOptions: PostVisibility[] = canPostPublicInClan(clan)
     ? ['public', 'private']
     : ['private'];

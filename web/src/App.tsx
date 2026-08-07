@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { ReconnectingBanner, ToastViewport } from '@components';
+import { CALL_MODE } from '@constants';
 import {
   useSoundUnlock,
   useAuthSessionSync,
@@ -41,7 +42,7 @@ const CallOverlay = lazy(() =>
 );
 
 function GlobalCall() {
-  const idle = useCallStore((s) => s.mode === 'idle');
+  const idle = useCallStore((s) => s.mode === CALL_MODE.idle);
   if (idle) return null;
   return (
     <Suspense fallback={null}>

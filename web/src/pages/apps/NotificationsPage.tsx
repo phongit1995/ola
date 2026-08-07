@@ -15,6 +15,7 @@ import {
   Spinner,
   ConfirmDialog,
 } from '@components';
+import { APP_NOTIFICATION_TYPE } from '@constants';
 import { MarriageService, RelationshipService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useFriendsStore } from '@/store/friendsStore';
@@ -126,7 +127,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
 
   function renderActions(item: AppNotification) {
     if (item.refId == null) return null;
-    if (item.type === 'friend_request') {
+    if (item.type === APP_NOTIFICATION_TYPE.friendRequest) {
       return (
         <div className="mt-1 flex">
           <RowButton
@@ -151,7 +152,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
         </div>
       );
     }
-    if (item.type === 'marriage_proposal') {
+    if (item.type === APP_NOTIFICATION_TYPE.marriageProposal) {
       return (
         <div className="mt-1 flex">
           <RowButton

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Avatar, UserName, VipIcon } from '@components';
+import { GENDER } from '@constants';
 import { activeVipTypeId, daysSince, monthsSince, yearsSince } from '@lib';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
 import maleIcon from '@/assets/icons/profile/ic_indicate_male.png';
@@ -43,7 +44,8 @@ export function PeerProfileCard({
       : days >= 1
       ? t('chat.joinedOlaDays', { n: days })
       : t('chat.joinedOlaToday');
-  const genderIcon = profile.gender === 'female' ? femaleIcon : maleIcon;
+  const genderIcon =
+    profile.gender === GENDER.female ? femaleIcon : maleIcon;
   const avatarUrl = profile.avatar ?? avatar ?? '';
 
   const avatarEl = (

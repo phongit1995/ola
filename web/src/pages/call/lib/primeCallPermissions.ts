@@ -1,3 +1,4 @@
+import { CALL_TYPE } from '@constants';
 import type { CallType } from '@app-types';
 
 export type PrimeCallResult = 'ok' | 'denied' | 'insecure' | 'failed';
@@ -13,7 +14,7 @@ export async function primeCallPermissions(
         noiseSuppression: true,
         autoGainControl: true,
       },
-      video: callType === 'video',
+      video: callType === CALL_TYPE.video,
     });
     stream.getTracks().forEach((track) => track.stop());
     return 'ok';

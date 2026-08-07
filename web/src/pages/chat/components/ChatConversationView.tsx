@@ -17,6 +17,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
+import { MESSAGE_TYPE } from '@constants';
 import {
   BUBBLE_WALLPAPER,
   chatFriendActionLabel,
@@ -661,7 +662,7 @@ export function ChatConversationView({
           {editing == null && replyTarget != null && (
             <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
               <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
-              {replyTarget.type === 'image' &&
+              {replyTarget.type === MESSAGE_TYPE.image &&
                 (parseMessageMetadata(replyTarget.metadata).url ?? '') !==
                   '' && (
                   <img

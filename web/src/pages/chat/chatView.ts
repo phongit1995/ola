@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { ChatReplySnapshot, Conversation, Message } from '@app-types';
+import { MESSAGE_TYPE } from '@constants';
 import {
   colorForName,
   DEFAULT_AVATAR_COLOR,
@@ -64,8 +65,8 @@ export function chatQuoteExcerpt(
   t: TFunction,
   replyTo: Pick<ChatReplySnapshot, 'type' | 'excerpt'>
 ): string {
-  if (replyTo.type === 'image') return t('chat.replyImage');
-  if (replyTo.type === 'audio') return t('chat.replyAudio');
+  if (replyTo.type === MESSAGE_TYPE.image) return t('chat.replyImage');
+  if (replyTo.type === MESSAGE_TYPE.audio) return t('chat.replyAudio');
   if (kulImageForText(replyTo.excerpt) != null) return t('chat.replySticker');
   return replyTo.excerpt;
 }
@@ -93,9 +94,9 @@ export function chatMessageAbilities(
 }
 
 export function toBubble(message: Message, myId: string): ChatMessage {
-  const isImage = message.type === 'image';
-  const isAudio = message.type === 'audio';
-  const isCall = message.type === 'call';
+  const isImage = message.type === MESSAGE_TYPE.image;
+  const isAudio = message.type === MESSAGE_TYPE.audio;
+  const isCall = message.type === MESSAGE_TYPE.call;
   const meta =
     isImage || isAudio || isCall ? parseMessageMetadata(message.metadata) : {};
   return {

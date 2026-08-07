@@ -1,4 +1,5 @@
 import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
+import { CALL_MODE } from '@constants';
 import { useCallStore } from '@/store/callStore';
 import { CallContent } from './CallContent';
 import { IncomingCallCard } from './IncomingCallCard';
@@ -10,8 +11,8 @@ export function CallOverlay() {
 
   useEndCallOnUnload();
 
-  if (mode === 'incoming') return <IncomingCallCard />;
-  if (active == null || mode === 'idle') return null;
+  if (mode === CALL_MODE.incoming) return <IncomingCallCard />;
+  if (active == null || mode === CALL_MODE.idle) return null;
 
   return (
     <LiveKitRoom

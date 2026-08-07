@@ -10,6 +10,7 @@ import {
   UserName,
   type ListOption,
 } from '@components';
+import { CLAN_ROLE } from '@constants';
 import { colorForName, toast } from '@lib';
 import { ClanService } from '@services';
 import type { Clan, ClanMember } from '@app-types';
@@ -134,8 +135,8 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
   }
 
   const staff = clan != null && isClanStaff(clan);
-  const owner = clan?.myRole === 'owner';
-  const bannable = (member: ClanMember) => member.role === 'member';
+  const owner = clan?.myRole === CLAN_ROLE.owner;
+  const bannable = (member: ClanMember) => member.role === CLAN_ROLE.member;
 
   const menuOptions: ListOption[] =
     menuTarget == null

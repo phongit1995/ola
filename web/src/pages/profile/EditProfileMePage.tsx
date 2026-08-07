@@ -14,7 +14,12 @@ import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar, ImageCropEditor, ImageCropOverlay } from '@components';
-import { AVATAR_ASPECT, COVER_ASPECT, MIN_IMAGE_SOURCE } from '@constants';
+import {
+  AVATAR_ASPECT,
+  COVER_ASPECT,
+  GENDER,
+  MIN_IMAGE_SOURCE,
+} from '@constants';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
 import { VerifyEmailDialog } from './components/VerifyEmailDialog';
 import { INPUT_CLASS, PHONE_PATTERN } from './constants';
@@ -190,11 +195,11 @@ function GenderSelect({
               : 'border-black/12 text-black/54'
           }`}
         >
-          {option === 'male'
+          {option === GENDER.male
             ? t('profile.genderMale')
             : t('profile.genderFemale')}
           <img
-            src={option === 'male' ? maleIcon : femaleIcon}
+            src={option === GENDER.male ? maleIcon : femaleIcon}
             alt=""
             className="h-4 w-4 object-contain"
           />

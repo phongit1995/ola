@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { COVER_ASPECT, ROUTES } from '@constants';
+import { COVER_ASPECT, GENDER, ROUTES } from '@constants';
 import { MeService, UserService } from '@services';
 import {
   activeVipTypeId,
@@ -308,7 +308,7 @@ export function ProfileMePage() {
                   alt=""
                   className="h-3.5 w-auto shrink-0 object-contain"
                 />
-                {user.gender === 'female'
+                {user.gender === GENDER.female
                   ? t('profile.genderFemale')
                   : t('profile.genderMale')}
               </div>

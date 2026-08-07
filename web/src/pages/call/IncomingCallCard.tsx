@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
+import { CALL_TYPE } from '@constants';
 import { callPeerNameView, colorForName, peerDisplayName } from '@lib';
 import { useCallStore } from '@/store/callStore';
 import { EndCallIcon, PhoneIcon } from './icons';
@@ -38,7 +39,7 @@ export function IncomingCallCard() {
   const name = peerDisplayName(incoming.caller, t('call.unknownUser'));
   const nameView = callPeerNameView(incoming.caller, t('call.unknownUser'));
   const title =
-    incoming.callType === 'video'
+    incoming.callType === CALL_TYPE.video
       ? t('call.incomingVideoCall')
       : t('call.incomingVoiceCall');
 

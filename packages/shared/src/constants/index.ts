@@ -3,6 +3,7 @@ export * from './arcadeBridge';
 export * from './call';
 export * from './chat';
 export * from './chatBot';
+export * from './clan';
 export * from './feed';
 export * from './geo';
 export * from './image';

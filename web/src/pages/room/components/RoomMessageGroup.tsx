@@ -4,6 +4,7 @@ import mentionIcon from '@/assets/icons/room/ic_tag_people.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import { Spinner, VipAvatar } from '@components';
+import { MESSAGE_STATUS, MESSAGE_TYPE } from '@constants';
 import { useLongPress, useUploadPreviewLease } from '@hooks';
 import {
   colorForName,
@@ -44,10 +45,10 @@ interface QuoteBlockProps {
 
 function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
   const { t } = useTranslation();
-  const isImage = replyTo.type === 'image';
+  const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = isImage
     ? t('room.replyImage')
-    : replyTo.type === 'audio'
+    : replyTo.type === MESSAGE_TYPE.audio
     ? t('chat.replyAudio')
     : kulImageForText(replyTo.excerpt) != null
     ? t('room.replySticker')
@@ -116,8 +117,8 @@ function RoomBubble({
   onResendAudio,
 }: RoomBubbleProps) {
   const { t } = useTranslation();
-  const uploading = message.status === 'uploading';
-  const failed = message.status === 'failed';
+  const uploading = message.status === MESSAGE_STATUS.uploading;
+  const failed = message.status === MESSAGE_STATUS.failed;
   const suppressClick = useRef(false);
   const longPress = useLongPress((anchor) => {
     if (uploading || failed) return;
@@ -128,11 +129,11 @@ function RoomBubble({
   const openViewer = useMediaViewerStore((state) => state.openViewer);
   const kul = kulImageForText(message.content);
   const isImage =
-    message.type === 'image' &&
+    message.type === MESSAGE_TYPE.image &&
     message.imageUrl != null &&
     message.imageUrl !== '';
   const isAudio =
-    message.type === 'audio' &&
+    message.type === MESSAGE_TYPE.audio &&
     message.audioUrl != null &&
     message.audioUrl !== '';
   useUploadPreviewLease(isImage ? message.imageUrl : undefined);

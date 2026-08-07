@@ -7,6 +7,7 @@ import {
   createTimeFormatter,
   toast,
 } from '@lib';
+import { RELATIONSHIP_STATUS } from '@constants';
 import { RelationshipService, UserService } from '@services';
 import type { RelationshipStatus, VisitorUser } from '@app-types';
 
@@ -150,7 +151,8 @@ export function MeVisitorsList({
               ? row.fullName
               : row.username;
           const sent =
-            row.status === 'pending_outgoing' || requested[row.id] === true;
+            row.status === RELATIONSHIP_STATUS.pendingOutgoing ||
+            requested[row.id] === true;
           const openProfile = () =>
             onOpenProfile(row.username, colorForName(row.username));
           return (
@@ -185,7 +187,7 @@ export function MeVisitorsList({
                     {formatTime(row.viewedAt)}
                   </span>
                 </button>
-                {row.status === 'friend' ? (
+                {row.status === RELATIONSHIP_STATUS.friend ? (
                   <span className="w-fit rounded bg-black/8 px-3 py-1 text-sm font-medium text-black/45">
                     {t('me.alreadyFriend')}
                   </span>

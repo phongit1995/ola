@@ -8,6 +8,7 @@ import {
   UserName,
   VipAvatar,
 } from '@components';
+import { RELATIONSHIP_STATUS } from '@constants';
 import { toast } from '@lib';
 import { UserService } from '@services';
 import type { UserSearchResult } from '@app-types';
@@ -21,8 +22,8 @@ interface ProposeComposerProps {
 
 function isBlocked(user: UserSearchResult): boolean {
   return (
-    user.relationship === 'blocked_by_me' ||
-    user.relationship === 'blocked_by_them'
+    user.relationship === RELATIONSHIP_STATUS.blockedByMe ||
+    user.relationship === RELATIONSHIP_STATUS.blockedByThem
   );
 }
 

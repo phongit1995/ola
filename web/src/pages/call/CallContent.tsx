@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Track } from 'livekit-client';
 import { useRoomContext } from '@livekit/components-react';
+import { CALL_MODE, CALL_TYPE } from '@constants';
 import { callPeerNameView, computeCallStatusLabel, peerDisplayName } from '@lib';
 import { useCallStore } from '@/store/callStore';
 import { CallControls } from './CallControls';
@@ -29,9 +30,9 @@ export function CallContent() {
   const micMuted = useCallStore((s) => s.micMuted);
   const setExpanded = useCallStore((s) => s.setExpanded);
 
-  const isVideo = active?.callType === 'video';
+  const isVideo = active?.callType === CALL_TYPE.video;
   const connectionState = useConnectionState(room);
-  const elapsed = useElapsedSeconds(mode === 'active');
+  const elapsed = useElapsedSeconds(mode === CALL_MODE.active);
   const audio = useAudioPlayback();
 
   useArmCallTracks(true, isVideo);

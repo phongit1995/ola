@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
+import { MESSAGE_STATUS, MESSAGE_TYPE } from '@constants';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
 import snapIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import kenIcon from '@/assets/icons/chat/ic_ken_white.png';
@@ -30,7 +31,7 @@ interface ChatQuoteBlockProps {
 
 function ChatQuoteBlock({ replyTo, onQuoteClick }: ChatQuoteBlockProps) {
   const { t } = useTranslation();
-  const isImage = replyTo.type === 'image';
+  const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = chatQuoteExcerpt(t, replyTo);
   return (
     <button
@@ -80,7 +81,7 @@ export function ChatMessageBubble({
   const { t } = useTranslation();
   useUploadPreviewLease(message.kind === 'image' ? message.image : undefined);
   const isOut = message.direction === 'out';
-  const failed = isOut && message.status === 'failed';
+  const failed = isOut && message.status === MESSAGE_STATUS.failed;
   const surface = bubbleSurface(isOut, false);
   const groupCorners = bubbleCorners(isOut, firstInGroup, lastInGroup);
   const bubbleBg = bubbleSurface(isOut, failed);

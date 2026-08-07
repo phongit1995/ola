@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import type { RoomMember } from '@app-types';
-import { DEVICE_ICONS, normalizeDevice } from '@constants';
+import { DEVICE_ICONS, GENDER, normalizeDevice } from '@constants';
 import { PresenceBadge, UserName, VipAvatar } from '@components';
 import { colorForName } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -17,7 +17,7 @@ function GenderIcon({ gender }: { gender: RoomMember['gender'] }) {
   if (gender == null) return null;
   return (
     <img
-      src={gender === 'female' ? femaleIcon : maleIcon}
+      src={gender === GENDER.female ? femaleIcon : maleIcon}
       alt=""
       className="h-4 w-4 shrink-0 object-contain"
     />

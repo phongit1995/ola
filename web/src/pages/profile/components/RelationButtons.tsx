@@ -6,6 +6,7 @@ import {
   ReportDialog,
   type ListOption,
 } from '@components';
+import { RELATIONSHIP_STATUS } from '@constants';
 import { profileFriendLabel, toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import type { ProfileActions } from '../types';
@@ -71,14 +72,15 @@ export function RelationButtons({
   const [unfriendOpen, setUnfriendOpen] = useState(false);
 
   const { status } = relationship;
-  const isFriend = status === 'friend';
+  const isFriend = status === RELATIONSHIP_STATUS.friend;
   const following = relationship.isFollowing;
-  const blockedByMe = status === 'blocked_by_me';
+  const blockedByMe = status === RELATIONSHIP_STATUS.blockedByMe;
 
   const comingSoon = () => toast.info(t('profile.comingSoon'));
 
   const friendLabel = profileFriendLabel(t, status);
-  const friendActive = isFriend || status === 'pending_outgoing';
+  const friendActive =
+    isFriend || status === RELATIONSHIP_STATUS.pendingOutgoing;
   const friendIcon = isFriend ? friendsActiveIcon : addFriendIcon;
   const followIconSrc = following ? followingActiveIcon : followIcon;
 

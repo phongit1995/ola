@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { CALL_TYPE } from '@constants';
 import { toast } from '@lib';
 import type { CallType } from '@app-types';
 import { primeCallPermissions } from './primeCallPermissions';
@@ -14,7 +15,7 @@ export async function ensureCallPermissions(
     return false;
   }
   toast.error(
-    t(callType === 'video' ? 'call.cameraDenied' : 'call.micDenied')
+    t(callType === CALL_TYPE.video ? 'call.cameraDenied' : 'call.micDenied')
   );
   return false;
 }
