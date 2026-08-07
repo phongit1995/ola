@@ -3,15 +3,15 @@ import i18n from 'i18next';
 import {
   pickChatBotSuggestions,
   renderableChatBotMessages,
-} from '../lib/chatBotView';
-import { chatBotHistory } from '../services/chatBot.service';
-import { streamChatBot } from '../services/chatBotStream';
+} from '../../lib/chatBotView';
+import { chatBotHistory } from '../../services/chatBot.service';
+import { streamChatBot } from '../../services/chatBotStream';
 import {
   ChatBotStreamError,
   type ChatBotTransport,
-} from '../services/chatBotTransport';
-import type { ChatBotType } from '../types/client/chatBot.type';
-import { useAuthStore } from './authStore';
+} from '../../services/chatBotTransport';
+import type { ChatBotType } from '../../types/client/chatBot.type';
+import { useAuthStore } from '../authStore';
 import { useChatBotStore } from './chatBotStore';
 
 export function useChatBotTurns(bot: ChatBotType, transport: ChatBotTransport) {

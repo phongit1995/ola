@@ -34,7 +34,7 @@ import {
 } from '../me/MePostInteractions';
 import { toMePost } from '../me/mappers';
 import { useEditMePost } from '../me/useEditMePost';
-import { usePostListActions } from '@ola/shared/stores/usePostListActions';
+import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
 
 export function ProfileMePage() {
   const { t, i18n } = useTranslation();

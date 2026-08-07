@@ -4,7 +4,7 @@ import { FullScreenOverlay, ScreenHeader, Avatar, Spinner } from '@components';
 import { colorForName, createTimeFormatter, toast } from '@lib';
 import { MeService } from '@services';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
-import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
+import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import type {
   MeNotification,
   MeNotificationType,

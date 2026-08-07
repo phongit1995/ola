@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MeService } from '@ola/shared/services';
 import { toApiError } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { selfLiker } from '@ola/shared/stores/selfLiker';
+import { selfLiker } from '@ola/shared/stores/feed/selfLiker';
 import type { PostComment } from '@ola/shared/types';
 
 interface UseMeCommentsOptions {

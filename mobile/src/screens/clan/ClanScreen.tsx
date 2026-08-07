@@ -8,7 +8,7 @@ import {
   createTimeFormatter,
 } from '@ola/shared/lib';
 import type { Post, PostReaction, PostVisibility } from '@ola/shared/types';
-import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
+import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useMeLocalStore } from '@store/meLocalStore';

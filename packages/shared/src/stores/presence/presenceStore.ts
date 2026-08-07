@@ -2,16 +2,16 @@ import { create } from 'zustand';
 import {
   PRESENCE_FOCUS_POLL_INTERVAL_MS,
   PRESENCE_LIST_POLL_INTERVAL_MS,
-} from '../constants/presence';
-import { PresenceService } from '../services/presence.service';
-import type { PresenceState } from '../types/client/presence.type';
-import { registerOnLogout } from './authStore';
+} from '../../constants/presence';
+import { PresenceService } from '../../services/presence.service';
+import type { PresenceState } from '../../types/client/presence.type';
+import { registerOnLogout } from '../authStore';
 import {
   configurePresenceForegroundCheck,
   isPresenceForeground,
 } from './presenceForeground.state';
 
-export type { PresenceInfo } from '../types/client/presence.type';
+export type { PresenceInfo } from '../../types/client/presence.type';
 
 export function configurePresenceForeground(check: () => boolean): void {
   configurePresenceForegroundCheck(check);

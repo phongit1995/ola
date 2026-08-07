@@ -1,19 +1,19 @@
 import { useCallback, useRef } from 'react';
 import i18n from 'i18next';
-import { toast } from '../lib/toast';
-import { MeService } from '../services/me.service';
-import type { PostReaction } from '../types/api/me.type';
+import { toast } from '../../lib/toast';
+import { MeService } from '../../services/me.service';
+import type { PostReaction } from '../../types/api/me.type';
 import type {
   PostListActions,
   PostListActionsOptions,
-} from '../types/client/feed.type';
+} from '../../types/client/feed.type';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
 import { selfLiker } from './selfLiker';
 
 export type {
   PostListActions,
   PostListActionsOptions,
-} from '../types/client/feed.type';
+} from '../../types/client/feed.type';
 
 export function usePostListActions({
   posts,

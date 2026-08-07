@@ -12,7 +12,7 @@ import {
 import { colorForName, toast } from '@lib';
 import { ClanService } from '@services';
 import type { ClanCheckNameResult } from '@app-types';
-import { useClanStore } from '@ola/shared/stores/clanStore';
+import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { UserProfileView } from '../profile/UserProfileView';
 import {
   CLAN_HANDLE_PATTERN,

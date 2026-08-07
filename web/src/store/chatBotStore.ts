@@ -1,1 +1,1 @@
-export * from '@ola/shared/stores/chatBotStore';
+export * from '@ola/shared/stores/chat-bot/chatBotStore';

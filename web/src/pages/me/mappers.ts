@@ -3,7 +3,7 @@ import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import type { MePost } from './types';
 
-export { applyPostReaction } from '@ola/shared/stores/postHelpers';
+export { applyPostReaction } from '@ola/shared/stores/feed/postHelpers';
 
 export function reconcileMeLikers(server: MePost, fallback: MePost): MePost {
   if (server.topLikers.length === 0 && server.likes > 0) {

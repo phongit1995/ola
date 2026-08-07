@@ -30,8 +30,8 @@ import type {
   PostVisibility,
   UploadedImage,
 } from '@app-types';
-import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
-import { useClanStore } from '@ola/shared/stores/clanStore';
+import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
+import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import { ImageCropEditor } from '@components';

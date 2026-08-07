@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, Image, Pressable, RefreshControl, Text, View 
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
+import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';

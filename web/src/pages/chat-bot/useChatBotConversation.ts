@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { SmileyInputHandle } from '@components';
 import { useStickyScroll } from '@hooks';
 import { fetchChatBotTransport } from '@ola/shared/services/chatBotFetchTransport';
-import { useChatBotTurns } from '@ola/shared/stores/useChatBotTurns';
+import { useChatBotTurns } from '@ola/shared/stores/chat-bot/useChatBotTurns';
 import type { ChatBotType } from '@app-types';
 
 export function useChatBotConversation(bot: ChatBotType) {

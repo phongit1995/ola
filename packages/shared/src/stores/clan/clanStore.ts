@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { ClanService } from '../services/clan.service';
-import { registerOnLogout } from './authStore';
-import type { ClanState } from '../types/client/clan.type';
+import { ClanService } from '../../services/clan.service';
+import { registerOnLogout } from '../authStore';
+import type { ClanState } from '../../types/client/clan.type';
 
 function errorMessage(error: unknown): string {
   if (error != null && typeof error === 'object' && 'message' in error) {

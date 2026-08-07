@@ -1,19 +1,19 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { CLAN_FEED_PAGE_SIZE } from '../constants/feed';
-import { clanErrorText } from '../lib/clanHelpers';
-import { toast } from '../lib/toast';
-import { ClanService } from '../services/clan.service';
-import { MeService } from '../services/me.service';
-import type { Post, UploadedImage } from '../types/api/me.type';
-import type { ClanFeedState } from '../types/client/clan.type';
-import { applyPostReaction, reconcileTopLikers } from './postHelpers';
-import { registerOnLogout } from './authStore';
-import { selfLiker } from './selfLiker';
+import { CLAN_FEED_PAGE_SIZE } from '../../constants/feed';
+import { clanErrorText } from '../../lib/clanHelpers';
+import { toast } from '../../lib/toast';
+import { ClanService } from '../../services/clan.service';
+import { MeService } from '../../services/me.service';
+import type { Post, UploadedImage } from '../../types/api/me.type';
+import type { ClanFeedState } from '../../types/client/clan.type';
+import { applyPostReaction, reconcileTopLikers } from '../feed/postHelpers';
+import { registerOnLogout } from '../authStore';
+import { selfLiker } from '../feed/selfLiker';
 import {
   currentClanFeedRequestId,
   nextClanFeedRequestId,
-} from './feedRequest.state';
+} from '../feed/feedRequest.state';
 
 function replacePost(posts: Post[], updated: Post): Post[] {
   return posts.map((post) => (post.id === updated.id ? updated : post));

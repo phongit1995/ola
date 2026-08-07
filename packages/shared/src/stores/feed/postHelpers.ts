@@ -1,5 +1,5 @@
-import { FEED_TOP_LIKERS_LIMIT } from '../constants/feed';
-import type { Post, PostAuthor, PostReaction } from '../types/api/me.type';
+import { FEED_TOP_LIKERS_LIMIT } from '../../constants/feed';
+import type { Post, PostAuthor, PostReaction } from '../../types/api/me.type';
 
 function applyTopLikers(
   likers: PostAuthor[] | undefined,

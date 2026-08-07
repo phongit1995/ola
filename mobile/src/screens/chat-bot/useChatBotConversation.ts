@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { xhrChatBotTransport } from '@ola/shared/services/chatBotXhrTransport';
-import { useChatBotTurns } from '@ola/shared/stores/useChatBotTurns';
+import { useChatBotTurns } from '@ola/shared/stores/chat-bot/useChatBotTurns';
 import type { ChatBotMessage, ChatBotType } from '@ola/shared/types';
 import type { ChatComposerHandle } from '@components/ChatComposer';
 

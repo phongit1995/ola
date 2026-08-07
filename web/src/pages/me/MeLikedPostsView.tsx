@@ -10,7 +10,7 @@ import { MePostCard } from './components/MePostCard';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { toMePost } from './mappers';
 import { useEditMePost } from './useEditMePost';
-import { usePostListActions } from '@ola/shared/stores/usePostListActions';
+import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
 
 interface MeLikedPostsViewProps {
   onClose: () => void;

@@ -1,15 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { CHAT_BOT_TYPE } from '../constants/chatBot';
-import { randomUuid } from '../lib/randomUuid';
-import { sharedPersistStorage } from '../platform/persistStorage';
+import { CHAT_BOT_TYPE } from '../../constants/chatBot';
+import { randomUuid } from '../../lib/randomUuid';
+import { sharedPersistStorage } from '../../platform/persistStorage';
 import type {
   ChatBotConversation,
   ChatBotMessage,
   ChatBotState,
   ChatBotType,
-} from '../types/client/chatBot.type';
-import { registerOnLogout } from './authStore';
+} from '../../types/client/chatBot.type';
+import { registerOnLogout } from '../authStore';
 
 export const CHAT_BOT_STORAGE_KEY = 'ola.chatBot';
 
