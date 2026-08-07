@@ -4,7 +4,7 @@ import { Image, Pressable, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CHAT_BOT_DEFAULT_TYPE, CHAT_BOT_I18N } from '@ola/shared/constants';
 import { colorForName } from '@ola/shared/lib';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';

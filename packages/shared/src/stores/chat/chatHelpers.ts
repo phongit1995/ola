@@ -1,4 +1,4 @@
-import { useAuthStore } from '../authStore';
+import { useAuthStore } from '../auth/authStore';
 import type { Conversation, Message } from '../../types/api/chat.type';
 
 export function currentUserId(): string {

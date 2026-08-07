@@ -18,9 +18,9 @@ import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   isSameDay,
   parseMessageMetadata,

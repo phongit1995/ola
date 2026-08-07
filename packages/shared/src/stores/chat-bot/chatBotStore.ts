@@ -9,7 +9,7 @@ import type {
   ChatBotState,
   ChatBotType,
 } from '../../types/client/chatBot.type';
-import { registerOnLogout } from '../authStore';
+import { registerOnLogout } from '../auth/authStore';
 
 export const CHAT_BOT_STORAGE_KEY = 'ola.chatBot';
 

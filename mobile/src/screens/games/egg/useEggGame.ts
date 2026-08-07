@@ -4,7 +4,7 @@ import { randomUuid } from '@ola/shared/lib';
 import { EGG_COST } from '@ola/shared/lib';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { playSmashSound } from './eggSound';
 
 export interface SmashOutcome {

@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { NOTIFICATION_PAGE_SIZE } from '../constants/notification';
-import { toast } from '../lib/toast';
-import { NotificationService } from '../services/notification.service';
-import type { AppNotification } from '../types/api/notification.type';
-import type { AppNotificationState } from '../types/client/notification.type';
+import { NOTIFICATION_PAGE_SIZE } from '../../constants/notification';
+import { toast } from '../../lib/toast';
+import { NotificationService } from '../../services/notification.service';
+import type { AppNotification } from '../../types/api/notification.type';
+import type { AppNotificationState } from '../../types/client/notification.type';
 
 function dedupe(items: AppNotification[]): AppNotification[] {
   const seen = new Set<string>();

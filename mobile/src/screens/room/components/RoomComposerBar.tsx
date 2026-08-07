@@ -11,7 +11,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import type { NativeUploadFile, RoomAudioSendResult } from '@ola/shared/types';
 import type { PendingComposerImage } from '@components/chat/composerTypes';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { kulToken } from '@lib/kul';
 import { pastedImageFile } from '@lib/imagePicker';
 import { compressImageForUpload, ImageTooLargeError } from '@lib/compressImage';

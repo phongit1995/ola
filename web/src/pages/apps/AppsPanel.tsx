@@ -6,7 +6,7 @@ import { HomeHeader } from '@components/HomeHeader';
 import { ROUTES } from '@constants';
 import { formatKen, toast } from '@lib';
 import { AuthService, SocketService } from '@services';
-import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';

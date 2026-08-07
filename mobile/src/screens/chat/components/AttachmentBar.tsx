@@ -1,7 +1,7 @@
 import { Image, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/components/SmileyKulPanel';
 

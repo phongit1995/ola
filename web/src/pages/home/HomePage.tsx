@@ -3,7 +3,7 @@ import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { KenBalanceBadge } from '@components';
 import { useDevicePlatform } from '@hooks';
-import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useAuthStore } from '@/store/authStore';
 import { useRoomChatStore } from '@/store/roomChatStore';

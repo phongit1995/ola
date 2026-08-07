@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useRoomContext } from '@livekit/components-react';
 import { ConnectionState } from 'livekit-client';
 import { CALL_CONNECT_TIMEOUT_MS } from '@ola/shared/constants';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useCallStore } from '@store/callStore';
 
 export function useCallConnectTimeout() {

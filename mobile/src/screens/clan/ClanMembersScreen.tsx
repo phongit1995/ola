@@ -5,7 +5,7 @@ import { FlashList } from '@shopify/flash-list';
 import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { Clan, ClanMember } from '@ola/shared/types';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';

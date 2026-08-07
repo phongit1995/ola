@@ -9,8 +9,8 @@ import {
 } from '@ola/shared/lib';
 import type { Post, PostReaction, PostVisibility } from '@ola/shared/types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
-import { useAuthStore } from '@ola/shared/stores/authStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';

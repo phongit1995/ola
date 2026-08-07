@@ -1,5 +1,5 @@
 import { CHAT_REPLY_EXCERPT_MAX_RUNES } from '../../constants/chat';
-import { useAuthStore } from '../authStore';
+import { useAuthStore } from '../auth/authStore';
 import { parseMessageMetadata } from '../../lib/messageMetadata';
 import type { ChatReplySnapshot, Message } from '../../types/api/chat.type';
 import type {

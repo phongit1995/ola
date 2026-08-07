@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { EggService } from '../services/egg.service';
 import type { EggGameState } from '../types/client/eggGame.type';
-import { useAuthStore } from './authStore';
+import { useAuthStore } from './auth/authStore';
 
 export type { EggPacksStatus } from '../types/client/eggGame.type';
 

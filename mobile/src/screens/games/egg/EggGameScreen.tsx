@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EGG_START_KEN } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';

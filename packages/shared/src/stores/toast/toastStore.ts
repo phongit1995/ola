@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { TOAST_THROTTLE_MS } from '../constants/toast';
-import type { ToastState } from '../types/client/toast.type';
+import { TOAST_THROTTLE_MS } from '../../constants/toast';
+import type { ToastState } from '../../types/client/toast.type';
 import {
   isRecentDuplicateToast,
   nextToastId,
@@ -9,7 +9,7 @@ import {
 export type {
   ToastItem,
   ToastType,
-} from '../types/client/toast.type';
+} from '../../types/client/toast.type';
 
 export const useToastStore = create<ToastState>((set) => ({
   toasts: [],

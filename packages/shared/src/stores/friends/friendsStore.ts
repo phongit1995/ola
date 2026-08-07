@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { RelationshipService } from '../services/relationship.service';
-import type { FriendsState } from '../types/client/friends.type';
-import { registerOnLogout } from './authStore';
+import { RelationshipService } from '../../services/relationship.service';
+import type { FriendsState } from '../../types/client/friends.type';
+import { registerOnLogout } from '../auth/authStore';
 import { initialFriendsState } from './friends.state';
 
 export const useFriendsStore = create<FriendsState>((set, get) => ({

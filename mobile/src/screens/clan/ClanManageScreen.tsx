@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { ClanService } from '@ola/shared/services';
 import type { Clan, ClanPolicy } from '@ola/shared/types';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';

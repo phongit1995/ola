@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { RelationshipService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { Relationship } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { UserListDialog } from '@components/ui/UserListDialog';

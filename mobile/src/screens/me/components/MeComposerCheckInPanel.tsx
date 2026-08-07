@@ -4,7 +4,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import { GeoService } from '@ola/shared/services';
 import type { CheckInAction, GeoVenue } from '@ola/shared/types';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { CHECK_IN_ACTIONS } from '@lib/checkInActions';
 
 const checkInIcon = require('@assets/icons/me/ic_check_in.png');

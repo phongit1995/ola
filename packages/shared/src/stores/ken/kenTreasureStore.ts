@@ -11,7 +11,7 @@ import type {
   KenTreasurePositionState,
   KenTreasureState,
 } from '../../types/client/kenTreasure.type';
-import { useAuthStore } from '../authStore';
+import { useAuthStore } from '../auth/authStore';
 
 export type {
   KenTreasureChest,

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { SUGGESTED_FRIENDS } from './constants';
 import type { SuggestedFriend } from './interface';
 import { ScreenHeader } from '@components/ui/ScreenHeader';

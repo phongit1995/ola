@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useChatStore } from '../chat/chatStore';
-import { useFriendsStore } from '../friendsStore';
+import { useFriendsStore } from '../friends/friendsStore';
 import { usePresenceStore, type PresenceInfo } from './presenceStore';
 import type { Conversation } from '../../types/api/chat.type';
 import type { Friend } from '../../types/api/relationship.type';

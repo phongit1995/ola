@@ -1,5 +1,5 @@
 import type { PostAuthor } from '../../types/api/me.type';
-import { useAuthStore } from '../authStore';
+import { useAuthStore } from '../auth/authStore';
 
 export function selfLiker(): PostAuthor | undefined {
   const user = useAuthStore.getState().user;

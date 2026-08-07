@@ -23,7 +23,7 @@ import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import { ensureFreshToken } from '@ola/shared/api';
 import { ARCADE_BRIDGE_EVENT, ARCADE_BRIDGE_SOURCE } from '@ola/shared/constants';
 import type { ArcadeBridgeMessage, ArcadeKenUpdatedData } from '@ola/shared/types';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { WARNING } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';

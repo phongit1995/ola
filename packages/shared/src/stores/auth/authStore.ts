@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { authTokens } from '../lib/tokenStorage';
-import { sharedPersistStorage } from '../platform/persistStorage';
-import { UserService } from '../services/user.service';
-import type { AuthState, PersistedAuthState } from '../types/client/auth.type';
+import { authTokens } from '../../lib/tokenStorage';
+import { sharedPersistStorage } from '../../platform/persistStorage';
+import { UserService } from '../../services/user.service';
+import type { AuthState, PersistedAuthState } from '../../types/client/auth.type';
 import { notifyLogoutListeners } from './authLogout.state';
 
 export { registerOnLogout } from './authLogout.state';

@@ -6,7 +6,7 @@ import { OlaModal } from '@components/ui/OlaModal';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';

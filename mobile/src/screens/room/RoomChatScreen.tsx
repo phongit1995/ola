@@ -17,12 +17,12 @@ import type {
 } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import {
   memberMatchesFilter,
   useRoomFilterStore,
 } from '@ola/shared/stores/room/roomFilterStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { ReactionType, RoomTab } from '@ola/shared/types';
 import type {
   MainTabParamList,

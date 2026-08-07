@@ -6,7 +6,7 @@ import type {
   KenChestClosedEvent,
   KenUpdatedEvent,
 } from '../../types/realtime/ken.type';
-import { useAuthStore } from '../authStore';
+import { useAuthStore } from '../auth/authStore';
 import {
   markKenRealtimeUpdate,
   resyncKenBalance,

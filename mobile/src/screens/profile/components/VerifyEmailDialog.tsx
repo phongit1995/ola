@@ -4,7 +4,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { isAllowedVerifyEmailDomain } from '@ola/shared/constants';
 import { ApiError } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { OtpInput } from './OtpInput';
 

@@ -1,5 +1,5 @@
 import { ROOM_SOCKET_EVENTS } from '../../constants/socket';
-import { useAuthStore } from '../authStore';
+import { useAuthStore } from '../auth/authStore';
 import { useRoomFilterStore } from './roomFilterStore';
 import { playRoomTagSound } from '../../platform/sound';
 import { RoomService } from '../../services/room.service';

@@ -5,7 +5,7 @@ import {
 } from '../../constants/presence';
 import { PresenceService } from '../../services/presence.service';
 import type { PresenceState } from '../../types/client/presence.type';
-import { registerOnLogout } from '../authStore';
+import { registerOnLogout } from '../auth/authStore';
 import {
   configurePresenceForegroundCheck,
   isPresenceForeground,

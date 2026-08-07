@@ -4,7 +4,7 @@ import { ClanService, MeService } from '@ola/shared/services';
 import type { Clan, Post } from '@ola/shared/types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { pickCroppedImage } from '@lib/imagePicker';
 import { clanErrorText } from '@lib/clanHelpers';
 import { CLAN_AVATAR_OUTPUT, CLAN_COVER_OUTPUT } from './constants';

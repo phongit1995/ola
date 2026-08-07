@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { REPORT_REASONS, type ReportReason } from '@ola/shared/constants';
 import type { ReportTarget } from '@ola/shared/types';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Dialog, DialogButton } from './Dialog';
 
 interface ReportDialogProps {

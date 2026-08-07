@@ -4,7 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RelationshipService, UserService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
 import type { VisitorUser } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';

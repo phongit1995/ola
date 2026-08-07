@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text } from 'react-native';
 import { UserService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { UserListDialog } from '@components/ui/UserListDialog';
 import { UserIdentityRow } from '@components/user/UserIdentityRow';

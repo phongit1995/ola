@@ -8,7 +8,7 @@ import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { applyPostReaction, reconcileTopLikers } from '@ola/shared/stores/feed/postHelpers';
 import { selfLiker } from '@ola/shared/stores/feed/selfLiker';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { MeService } from '@ola/shared/services';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';

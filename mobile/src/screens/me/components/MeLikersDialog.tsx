@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import { MeService, RelationshipService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { PostAuthor } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { Dialog } from '@components/ui/Dialog';

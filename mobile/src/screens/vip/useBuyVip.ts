@@ -9,8 +9,8 @@ import {
   vipPackageLabel,
 } from '@ola/shared/lib';
 import type { BuyVipMode } from '@ola/shared/types';
-import { useAuthStore } from '@ola/shared/stores/authStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/shared/types';
 import type { ListOption } from '@components/ui/ListOptionDialog';
 import {

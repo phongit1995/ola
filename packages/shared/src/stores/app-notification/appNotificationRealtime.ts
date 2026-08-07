@@ -1,10 +1,10 @@
-import { APP_NOTIFICATION_SOCKET_EVENT } from '../constants/socket';
-import { SocketService } from '../services/socket.service';
-import type { AppNotificationIncoming } from '../types/realtime/notification.type';
+import { APP_NOTIFICATION_SOCKET_EVENT } from '../../constants/socket';
+import { SocketService } from '../../services/socket.service';
+import type { AppNotificationIncoming } from '../../types/realtime/notification.type';
 import { useAppNotificationStore } from './appNotificationStore';
-import { useFriendsStore } from './friendsStore';
-import { useMarriageStore } from './marriageStore';
-import { claimRealtimeRegistration } from './realtimeRegistration.state';
+import { useFriendsStore } from '../friends/friendsStore';
+import { useMarriageStore } from '../marriageStore';
+import { claimRealtimeRegistration } from '../realtimeRegistration.state';
 
 export function registerAppNotificationRealtime() {
   if (!claimRealtimeRegistration('app-notification')) return;

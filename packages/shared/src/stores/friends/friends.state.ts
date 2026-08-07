@@ -1,4 +1,4 @@
-import type { FriendsState } from '../types/client/friends.type';
+import type { FriendsState } from '../../types/client/friends.type';
 
 export const initialFriendsState: Pick<
   FriendsState,

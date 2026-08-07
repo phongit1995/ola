@@ -3,7 +3,7 @@ import {
   configureEnv,
   configureSound,
 } from '@ola/shared/platform';
-import { registerOnLogout } from '@ola/shared/stores/authStore';
+import { registerOnLogout } from '@ola/shared/stores/auth/authStore';
 import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';

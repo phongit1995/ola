@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { CallType } from '@ola/shared/types';
 import { primeCallPermissions } from './primeCallPermissions';
 

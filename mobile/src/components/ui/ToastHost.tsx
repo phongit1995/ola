@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { ToastItem, ToastType } from '@ola/shared/types';
 
 const AUTO_DISMISS_MS = 3000;

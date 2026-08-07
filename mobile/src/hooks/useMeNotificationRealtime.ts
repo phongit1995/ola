@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { SocketService } from '@ola/shared/services';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { MeNotification } from '@ola/shared/types';
 
 interface MeNotificationIncoming {

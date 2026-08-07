@@ -8,7 +8,7 @@ import { MeService } from '../../services/me.service';
 import type { Post, UploadedImage } from '../../types/api/me.type';
 import type { ClanFeedState } from '../../types/client/clan.type';
 import { applyPostReaction, reconcileTopLikers } from '../feed/postHelpers';
-import { registerOnLogout } from '../authStore';
+import { registerOnLogout } from '../auth/authStore';
 import { selfLiker } from '../feed/selfLiker';
 import {
   currentClanFeedRequestId,

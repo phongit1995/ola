@@ -22,7 +22,7 @@ import {
   computeCallStatusLabel,
   peerDisplayName,
 } from '@ola/shared/lib';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { CallerBrief } from '@ola/shared/types';
 import { useCallStore } from '@store/callStore';
 import { CALL_BG } from './constants';

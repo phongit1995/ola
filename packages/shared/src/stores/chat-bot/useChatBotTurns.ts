@@ -11,7 +11,7 @@ import {
   type ChatBotTransport,
 } from '../../services/chatBotTransport';
 import type { ChatBotType } from '../../types/client/chatBot.type';
-import { useAuthStore } from '../authStore';
+import { useAuthStore } from '../auth/authStore';
 import { useChatBotStore } from './chatBotStore';
 
 export function useChatBotTurns(bot: ChatBotType, transport: ChatBotTransport) {

@@ -16,7 +16,7 @@ import {
   ConfirmDialog,
 } from '@components';
 import { MarriageService, RelationshipService } from '@services';
-import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useFriendsStore } from '@/store/friendsStore';
 import { useMarriageStore } from '@/store/marriageStore';
 import type { AppNotification } from '@app-types';

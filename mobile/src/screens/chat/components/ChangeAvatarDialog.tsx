@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, View } from 'react-native';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage } from '@components/ui/CachedImage';
 import { AVATAR_OUTPUT } from '@lib/imagePicker';

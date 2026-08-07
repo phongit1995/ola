@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized } from '@ola/shared/api';
 import { authTokens, toast } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { resyncKenBalance } from '@ola/shared/stores/ken/kenRealtime';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
