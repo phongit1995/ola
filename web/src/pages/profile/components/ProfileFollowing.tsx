@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { ProfileFriend } from '../types';
 import { FollowingListOverlay } from './FollowingListOverlay';
 
+const FOLLOWING_PREVIEW_COUNT = 5;
+
 interface ProfileFollowingProps {
   userId: string;
   following: ProfileFriend[];
@@ -31,7 +33,7 @@ export function ProfileFollowing({
           </span>
         </button>
         <div className="grid grid-cols-5 gap-1 px-2">
-          {following.slice(0, 5).map((friend) => (
+          {following.slice(0, FOLLOWING_PREVIEW_COUNT).map((friend) => (
             <button
               key={friend.name}
               type="button"

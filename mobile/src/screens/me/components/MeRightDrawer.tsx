@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Animated, BackHandler, FlatList, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { UserService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { activeVipTypeId, colorForName } from '@ola/shared/lib';
 import { useMeLocalStore } from '@store/meLocalStore';
 import type { ViewedProfile } from '@ola/shared/types';

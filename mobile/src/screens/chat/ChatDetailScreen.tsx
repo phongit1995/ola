@@ -13,18 +13,23 @@ import {
   View,
 } from 'react-native';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   isSameDay,
   parseMessageMetadata,
 } from '@ola/shared/lib';
-import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import {
+  MESSAGE_STATUS,
+  MESSAGE_TYPE,
+  RELATIONSHIP_STATUS,
+} from '@ola/shared/constants';
 import type { Message, NativeUploadFile, ReactionType } from '@ola/shared/types';
 import { ChatCallButtons } from '@screens/call/ChatCallButtons';
 import type { RootStackParamList } from '@navigation/types';
@@ -65,7 +70,6 @@ import { ChatHeader } from './components/ChatHeader';
 import { TypingIndicator } from './components/TypingIndicator';
 import { ReplyPreviewBar } from './components/ReplyPreviewBar';
 import { EditingNotice } from './components/EditingNotice';
-import { useBottomBarInset } from '@hooks/useBottomBarInset';
 import type { PendingComposerImage } from '@components/chat/composerTypes';
 
 const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
@@ -78,7 +82,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
   const { t } = useTranslation();
-  const bottomBarInset = useBottomBarInset();
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const push = useToastStore((s) => s.push);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const myName = useAuthStore((s) => s.user?.username) ?? '';
@@ -326,7 +330,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   async function resendWithAudioCleanup(messageId: string) {
     const target = messages.find((message) => message.id === messageId);
     const previewUri =
-      target?.type === 'audio'
+      target?.type === MESSAGE_TYPE.audio
         ? (parseMessageMetadata(target.metadata).url ?? '')
         : '';
     const sent = await resendMessage(messageId);
@@ -518,7 +522,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onMore={() => setMenuOpen(true)}
       />
 
-      <ChatKeyboardArea>
+      <ChatKeyboardArea bottomInset={bottomInset}>
       <View
         className="flex-1"
         onStartShouldSetResponderCapture={() => {
@@ -647,7 +651,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           uri={pendingAudio.file.uri}
           duration={pendingAudio.duration}
           waveform={pendingAudio.waveform}
-          bottomInset={bottomBarInset}
+          bottomInset={bottomInset}
           onSend={() => {
             const audio = pendingAudio;
             const sourceConversationId =
@@ -665,8 +669,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   .getState()
                   .messages.some(
                     message =>
-                      message.type === 'audio' &&
-                      message.status === 'failed' &&
+                      message.type === MESSAGE_TYPE.audio &&
+                      message.status === MESSAGE_STATUS.failed &&
                       parseMessageMetadata(message.metadata).url ===
                         audio.file.uri,
                   );
@@ -692,7 +696,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <VoiceRecorderControl
           ref={voiceRecorderRef}
           key={currentConversationId ?? conversationId ?? 'draft'}
-          bottomInset={bottomBarInset}
+          bottomInset={bottomInset}
           onRecorded={recording => {
             showPendingAudio(recording);
             setVoiceRecording(false);
@@ -762,7 +766,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       {!voiceRecording && pendingAudio == null && (
         <AttachmentBar
           openTab={openTab}
-          bottomInset={bottomBarInset}
+          bottomInset={bottomInset}
           onToggleTab={(tab) => {
             if (openTab !== tab) Keyboard.dismiss();
             setOpenTab(openTab === tab ? null : tab);

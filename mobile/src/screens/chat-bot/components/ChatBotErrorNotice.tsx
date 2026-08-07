@@ -1,14 +1,19 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
-import type { ChatBotErrorCode } from '@ola/shared/types';
-import { ERROR_KEYS } from '../constants';
+import { CHAT_BOT_I18N } from '@ola/shared/constants';
+import type { ChatBotErrorCode, ChatBotType } from '@ola/shared/types';
 
 interface ChatBotErrorNoticeProps {
+  bot: ChatBotType;
   code: ChatBotErrorCode;
   onRetry: () => void;
 }
 
-export function ChatBotErrorNotice({ code, onRetry }: ChatBotErrorNoticeProps) {
+export function ChatBotErrorNotice({
+  bot,
+  code,
+  onRetry,
+}: ChatBotErrorNoticeProps) {
   const { t } = useTranslation();
 
   return (
@@ -17,7 +22,9 @@ export function ChatBotErrorNotice({ code, onRetry }: ChatBotErrorNoticeProps) {
         className="rounded-full px-3 py-1"
         style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
       >
-        <Text className="text-[11px] text-white">{t(ERROR_KEYS[code])}</Text>
+        <Text className="text-[11px] text-white">
+          {t(CHAT_BOT_I18N[bot].errors[code])}
+        </Text>
       </View>
       <Pressable
         onPress={onRetry}

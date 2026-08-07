@@ -32,6 +32,8 @@ function ReceiverRow({ receiver }: { receiver: TradingVipReceiver }) {
   );
 }
 
+const VIP_STORE_LIMIT = 100;
+
 export function TradingVipDialog({
   open,
   onClose,
@@ -47,7 +49,7 @@ export function TradingVipDialog({
 
   useEffect(() => {
     let active = true;
-    VipService.store({ limit: 100 })
+    VipService.store({ limit: VIP_STORE_LIMIT })
       .then((res) => {
         if (active)
           setVips(res.items.filter((item) => !item.isUsing && !item.isLocked));

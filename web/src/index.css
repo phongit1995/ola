@@ -13,9 +13,21 @@
   --color-ola-bubble-out: #dcedc8;
   --color-ola-bubble-failed: #f8d7d7;
   --color-ola-wallpaper: #ece5dd;
+  --color-ola-surface: #f3f3f3;
+  --color-ola-surface-cool: #eceff1;
+  --color-ola-border-strong: #d5d5d5;
+  --color-ola-call-raised: #26332b;
+  --color-ola-call-bg: #18211c;
+  --color-ola-call-deep: #0e1411;
+  --color-ola-call-surface: #1f2a24;
+  --color-ola-marriage: #ff4d7d;
+  --color-ola-marriage-deep: #c2185b;
+  --color-ola-marriage-soft: #ffd0de;
   --animate-blink: blink 1s steps(1, end) infinite;
   --animate-ola-pop: ola-pop 0.4s ease;
   --animate-ola-pop-out: ola-pop-out 0.4s ease;
+  --animate-ola-call-expand: ola-call-expand 0.25s ease;
+  --animate-ola-call-pop: ola-call-pop 0.2s ease-out;
   --animate-ola-menu-in: ola-menu-in 0.14s ease-out;
   --animate-ola-fly: ola-fly 1.5s ease-in forwards;
   --animate-ola-ken-bump: ola-ken-bump 0.45s ease;
@@ -81,6 +93,28 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes ola-call-expand {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ola-call-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

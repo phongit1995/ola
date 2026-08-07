@@ -16,7 +16,12 @@ import {
   VipIcon,
 } from '@components';
 import { colorForName, validatedImageObjectUrl } from '@lib';
-import { AVATAR_ASPECT, COVER_ASPECT, MIN_IMAGE_SOURCE } from '@constants';
+import {
+  AVATAR_ASPECT,
+  COVER_ASPECT,
+  GENDER,
+  MIN_IMAGE_SOURCE,
+} from '@constants';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
@@ -313,9 +318,9 @@ export function ProfileCard({
 
       <div className="pb-4">
         <InfoRow
-          icon={profile.gender === 'female' ? femaleIcon : maleIcon}
+          icon={profile.gender === GENDER.female ? femaleIcon : maleIcon}
           text={
-            profile.gender === 'female'
+            profile.gender === GENDER.female
               ? t('profile.genderFemale')
               : t('profile.genderMale')
           }

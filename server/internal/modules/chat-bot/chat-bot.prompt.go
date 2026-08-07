@@ -36,12 +36,13 @@ func buildPrompt(req *CompletionRequest) (string, error) {
 		return "", errEmptyPrompt
 	}
 
-	persona := fmt.Sprintf(promptSystemLabel, constants.ChatBotSystemPrompt)
+	bot := personaOf(req.Type)
+	head := fmt.Sprintf(promptSystemLabel, bot.systemPrompt)
 	// Model bám chỉ dẫn ở cuối prompt mạnh hơn ở đầu, nhắc lại để nó không rơi về giọng mặc định.
-	reminder := fmt.Sprintf(promptSystemLabel, constants.ChatBotIdentityReminder)
+	reminder := fmt.Sprintf(promptSystemLabel, bot.identityReminder)
 
 	ordered := make([]string, 0, len(sections)+2)
-	ordered = append(ordered, persona)
+	ordered = append(ordered, head)
 	ordered = append(ordered, sections...)
 	ordered = append(ordered, reminder)
 	return strings.Join(ordered, "\n\n"), nil

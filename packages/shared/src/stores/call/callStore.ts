@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { CallState } from '../../types/client/call.type';
-import { registerOnLogout } from '../authStore';
+import { registerOnLogout } from '../auth/authStore';
 import { createCallActions } from './callActions';
 import { registerCallRealtime } from './callRealtime';
 import { initialCallState } from './callState';

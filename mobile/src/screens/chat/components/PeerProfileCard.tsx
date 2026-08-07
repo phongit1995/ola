@@ -6,6 +6,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DIVIDER } from '@constants';
+import { GENDER } from '@ola/shared/constants';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
 const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
@@ -46,7 +47,7 @@ export function PeerProfileCard({
         : days >= 1
           ? t('chat.joinedOlaDays', { n: days })
           : t('chat.joinedOlaToday');
-  const genderIcon = profile.gender === 'female' ? femaleIcon : maleIcon;
+  const genderIcon = profile.gender === GENDER.female ? femaleIcon : maleIcon;
   const avatarUrl = profile.avatar ?? avatar ?? '';
 
   const avatarEl = <Avatar name={name} uri={avatarUrl !== '' ? avatarUrl : undefined} size={56} rounded={false} />;

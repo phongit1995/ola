@@ -1,3 +1,10 @@
+import type { Gender } from '../types/api/auth.type';
+
+export const GENDER = {
+  male: 'male',
+  female: 'female',
+} as const satisfies Record<string, Gender>;
+
 export const PASSWORD_MIN = 6;
 export const PASSWORD_MAX = 20;
 export const TOKEN_REFRESH_BUFFER_MS = 30_000;

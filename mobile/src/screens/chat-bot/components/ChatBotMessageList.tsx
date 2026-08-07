@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { createDateSeparatorFormatter, isSameDay } from '@ola/shared/lib';
-import type { ChatBotErrorCode, ChatBotMessage } from '@ola/shared/types';
+import type {
+  ChatBotErrorCode,
+  ChatBotMessage,
+  ChatBotType,
+} from '@ola/shared/types';
 import type { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { isoOf } from '../chatBotView';
 import type { ChatBotViewer } from '../interface';
@@ -15,6 +19,7 @@ import { ChatBotErrorNotice } from './ChatBotErrorNotice';
 interface ChatBotMessageListProps {
   list: ReturnType<typeof useStickyBottomList<ChatBotMessage>>;
   messages: ChatBotMessage[];
+  bot: ChatBotType;
   viewer: ChatBotViewer;
   waiting: boolean;
   error: ChatBotErrorCode | null;
@@ -24,6 +29,7 @@ interface ChatBotMessageListProps {
 export function ChatBotMessageList({
   list,
   messages,
+  bot,
   viewer,
   waiting,
   error,
@@ -36,7 +42,7 @@ export function ChatBotMessageList({
   );
   const empty = messages.length === 0 && !waiting;
 
-  if (empty) return <ChatBotEmptyState />;
+  if (empty) return <ChatBotEmptyState bot={bot} />;
 
   return (
     <FlashList
@@ -78,6 +84,7 @@ export function ChatBotMessageList({
               message={item}
               prev={prev}
               next={messages[index + 1]}
+              bot={bot}
               viewer={viewer}
             />
           </Fragment>
@@ -85,9 +92,9 @@ export function ChatBotMessageList({
       }}
       ListFooterComponent={
         <>
-          {waiting && <BotTypingRow />}
+          {waiting && <BotTypingRow bot={bot} />}
           {error != null && (
-            <ChatBotErrorNotice code={error} onRetry={onRetry} />
+            <ChatBotErrorNotice bot={bot} code={error} onRetry={onRetry} />
           )}
         </>
       }

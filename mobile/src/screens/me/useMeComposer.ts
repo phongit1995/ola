@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { hasMePostBody } from '@ola/shared/lib';
 import type {
   CreatePostRequest,

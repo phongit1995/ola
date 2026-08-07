@@ -155,7 +155,7 @@ export function MePanel() {
           >
             <PullToRefresh
               onRefresh={refresh}
-              className="absolute inset-0 overflow-y-auto bg-[#f3f3f3]"
+              className="absolute inset-0 overflow-y-auto bg-ola-surface"
             >
               <MeFeedList
                 posts={posts}

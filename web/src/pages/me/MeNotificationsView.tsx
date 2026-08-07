@@ -4,7 +4,7 @@ import { FullScreenOverlay, ScreenHeader, Avatar, Spinner } from '@components';
 import { colorForName, createTimeFormatter, toast } from '@lib';
 import { MeService } from '@services';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
-import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
+import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import type {
   MeNotification,
   MeNotificationType,
@@ -106,7 +106,7 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
     <FullScreenOverlay>
       <ScreenHeader title={t('me.notifTitle')} onBack={onClose} />
 
-      <div className="flex-1 overflow-y-auto bg-[#f3f3f3]">
+      <div className="flex-1 overflow-y-auto bg-ola-surface">
         {loading && items.length === 0 ? (
           <div className="flex justify-center py-10">
             <Spinner size={24} />

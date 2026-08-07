@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import type { CallerBrief, CallType } from '@ola/shared/types';
 import { useCallStore } from '@store/callStore';

@@ -14,6 +14,7 @@ import {
   Spinner,
 } from '@components';
 import type { ListOption } from '@components';
+import { CLAN_ROLE } from '@constants';
 import {
   colorForName,
   compressImagesForUpload,
@@ -30,8 +31,8 @@ import type {
   PostVisibility,
   UploadedImage,
 } from '@app-types';
-import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
-import { useClanStore } from '@ola/shared/stores/clanStore';
+import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
+import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import { ImageCropEditor } from '@components';
@@ -441,7 +442,7 @@ export function ClanPage({
     );
   }
 
-  const isOwner = clan.myRole === 'owner';
+  const isOwner = clan.myRole === CLAN_ROLE.owner;
   const privacyOptions: PostVisibility[] = canPostPublicInClan(clan)
     ? ['public', 'private']
     : ['private'];
@@ -504,7 +505,7 @@ export function ClanPage({
                   </button>
                 )}
                 <div className="absolute bottom-2 left-2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.24)]">
-                  <div className="relative h-24 w-24 overflow-hidden bg-[#eceff1]">
+                  <div className="relative h-24 w-24 overflow-hidden bg-ola-surface-cool">
                     {clan.avatar != null && clan.avatar !== '' && (
                       <img
                         src={clan.avatar}

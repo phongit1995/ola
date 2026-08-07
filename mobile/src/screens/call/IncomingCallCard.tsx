@@ -3,11 +3,17 @@ import { Pressable, Text, Vibration, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '@components/ui/Avatar';
-import { colorForName, peerDisplayName } from '@ola/shared/lib';
+import {
+  callPeerNameView,
+  colorForName,
+  peerDisplayName,
+} from '@ola/shared/lib';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useCallStore } from '@store/callStore';
+import { CALL_BG } from './constants';
 import { EndCallIcon, PhoneIcon } from './icons';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
+import { CALL_TYPE } from '@ola/shared/constants';
 
 const RING_PATTERN = [0, 700, 1300];
 const ACCEPT_ICON_COLOR = '#33691e';
@@ -35,8 +41,9 @@ export function IncomingCallCard() {
   if (incoming == null) return null;
 
   const name = peerDisplayName(incoming.caller, t('call.unknownUser'));
+  const nameView = callPeerNameView(incoming.caller, t('call.unknownUser'));
   const title =
-    incoming.callType === 'video'
+    incoming.callType === CALL_TYPE.video
       ? t('call.incomingVideoCall')
       : t('call.incomingVoiceCall');
   const busy = pendingAction != null || answering;
@@ -58,8 +65,12 @@ export function IncomingCallCard() {
 
   return (
     <View
-      className="flex-1 items-center justify-between bg-ola-primary-darker"
-      style={{ paddingTop: insets.top + 64, paddingBottom: insets.bottom + 56 }}
+      className="flex-1 items-center justify-between"
+      style={{
+        backgroundColor: CALL_BG,
+        paddingTop: insets.top + 64,
+        paddingBottom: insets.bottom + 56,
+      }}
     >
         <View className="items-center gap-4 px-6">
         <Avatar
@@ -69,8 +80,13 @@ export function IncomingCallCard() {
           color={colorForName(name)}
         />
         <Text className="text-xl font-bold text-white" numberOfLines={1}>
-          {name}
+          {nameView.title}
         </Text>
+        {nameView.subtitle != null && (
+          <Text className="text-sm text-white/80" numberOfLines={1}>
+            {nameView.subtitle}
+          </Text>
+        )}
         <Text className="text-sm text-white/70">{title}</Text>
       </View>
 

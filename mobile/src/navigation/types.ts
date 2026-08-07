@@ -1,4 +1,4 @@
-import type { BuyVipMode } from '@ola/shared/types';
+import type { BuyVipMode, ChatBotType } from '@ola/shared/types';
 import {
   AUTH_ROUTES,
   CHAT_ROUTES,
@@ -52,7 +52,7 @@ export type RootStackParamList = {
 
 export type ChatStackParamList = {
   [CHAT_ROUTES.ChatList]: undefined;
-  [CHAT_ROUTES.ChatBot]: undefined;
+  [CHAT_ROUTES.ChatBot]: { bot?: ChatBotType } | undefined;
 };
 
 export type RoomStackParamList = {

@@ -1,3 +1,21 @@
+import type { MessageStatus, MessageType } from '../types/api/chat.type';
+
+export const MESSAGE_TYPE = {
+  text: 'text',
+  image: 'image',
+  file: 'file',
+  video: 'video',
+  audio: 'audio',
+  call: 'call',
+} as const satisfies Record<string, MessageType>;
+
+export const MESSAGE_STATUS = {
+  sending: 'sending',
+  uploading: 'uploading',
+  sent: 'sent',
+  failed: 'failed',
+} as const satisfies Record<string, MessageStatus>;
+
 export const CHAT_MESSAGE_PAGE_SIZE = 50;
 export const CHAT_REPLY_EXCERPT_MAX_RUNES = 120;
 export const CHAT_PEER_CARD_LONG_CHAT_SHOW_RATE = 0.3;

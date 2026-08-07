@@ -16,6 +16,8 @@ function blockedName(relationship: Relationship): string {
   );
 }
 
+const BLOCKED_PAGE_SIZE = 100;
+
 export function BlockedListDialog({ open, onClose }: BlockedListDialogProps) {
   const { t } = useTranslation();
   const [items, setItems] = useState<Relationship[]>([]);
@@ -24,7 +26,7 @@ export function BlockedListDialog({ open, onClose }: BlockedListDialogProps) {
 
   useEffect(() => {
     let active = true;
-    RelationshipService.blocked({ limit: 100 })
+    RelationshipService.blocked({ limit: BLOCKED_PAGE_SIZE })
       .then((result) => {
         if (active) setItems(result.relationships);
       })

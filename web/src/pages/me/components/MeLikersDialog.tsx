@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Dialog, Spinner } from '@components';
 import { colorForName, toast } from '@lib';
+import { RELATIONSHIP_STATUS } from '@constants';
 import { MeService, RelationshipService } from '@services';
 import type { PostAuthor } from '@app-types';
 import { PAGE_SIZE } from '../constants';
@@ -138,12 +139,14 @@ export function MeLikersDialog({
           !error &&
           likers.map((user) => {
             const isSelf =
-              user.isSelf === true || user.relationship?.status === 'self';
+              user.isSelf === true ||
+              user.relationship?.status === RELATIONSHIP_STATUS.self;
             const isFriend =
-              user.isFriend === true || user.relationship?.status === 'friend';
+              user.isFriend === true ||
+              user.relationship?.status === RELATIONSHIP_STATUS.friend;
             const sent =
               requested[user.id] === true ||
-              user.relationship?.status === 'pending_outgoing';
+              user.relationship?.status === RELATIONSHIP_STATUS.pendingOutgoing;
             return (
               <div
                 key={user.id}

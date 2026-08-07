@@ -3,11 +3,7 @@ import type { ChatBotMessage, ChatBotSurfaceKind } from '@ola/shared/types';
 import { BOT_SURFACE_FAILED, BOT_SURFACE_IN, BOT_SURFACE_OUT } from './constants';
 import type { MessageGrouping } from './interface';
 
-export {
-  chatBotIso as isoOf,
-  pickChatBotSuggestions as pickSuggestions,
-  renderableChatBotMessages as renderableMessages,
-} from '@ola/shared/lib';
+export { chatBotIso as isoOf } from '@ola/shared/lib';
 
 const SURFACES: Record<ChatBotSurfaceKind, string> = {
   out: BOT_SURFACE_OUT,

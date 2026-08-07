@@ -8,9 +8,9 @@ import {
   createTimeFormatter,
 } from '@ola/shared/lib';
 import type { Post, PostReaction, PostVisibility } from '@ola/shared/types';
-import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
-import { useAuthStore } from '@ola/shared/stores/authStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
@@ -31,6 +31,7 @@ import { ROOT_ROUTES } from '@navigation/routes';
 import { canPostPublicInClan, clanFeedErrorText, isClanStaff } from '@lib/clanHelpers';
 import { useClanScreen } from './useClanScreen';
 import { ClanHeaderCard } from './components/ClanHeaderCard';
+import { CLAN_ROLE } from '@ola/shared/constants';
 
 interface ClanScreenProps {
   handle?: string;
@@ -231,7 +232,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
     );
   }
 
-  const isOwner = clan.myRole === 'owner';
+  const isOwner = clan.myRole === CLAN_ROLE.owner;
   const privacyOptions: PostVisibility[] = canPostPublicInClan(clan)
     ? ['public', 'private']
     : ['private'];

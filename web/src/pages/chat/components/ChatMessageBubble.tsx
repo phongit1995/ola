@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
+import { MESSAGE_STATUS, MESSAGE_TYPE } from '@constants';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
 import snapIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import kenIcon from '@/assets/icons/chat/ic_ken_white.png';
@@ -9,10 +10,12 @@ import photoIcon from '@/assets/icons/chat/ic_local.png';
 import {
   bubbleCorners,
   bubbleSurface,
+  callMessageView,
   kulImageForText,
   renderRichText,
   SmileyText,
 } from '@lib';
+import { PhoneIcon, VideoIcon } from '../../call/icons';
 import type { ChatReplySnapshot } from '@app-types';
 import type { ChatMessage } from '../interface';
 import { chatQuoteExcerpt } from '../chatView';
@@ -28,7 +31,7 @@ interface ChatQuoteBlockProps {
 
 function ChatQuoteBlock({ replyTo, onQuoteClick }: ChatQuoteBlockProps) {
   const { t } = useTranslation();
-  const isImage = replyTo.type === 'image';
+  const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = chatQuoteExcerpt(t, replyTo);
   return (
     <button
@@ -37,7 +40,7 @@ function ChatQuoteBlock({ replyTo, onQuoteClick }: ChatQuoteBlockProps) {
         event.stopPropagation();
         onQuoteClick?.(replyTo.messageId);
       }}
-      className="mb-1 block w-full rounded border-l-2 border-[#7cb342] bg-black/5 py-0.5 pl-2 pr-1 text-left"
+      className="mb-1 block w-full rounded border-l-2 border-ola-primary bg-black/5 py-0.5 pl-2 pr-1 text-left"
     >
       <span className="block truncate text-xs font-semibold text-black/60">
         {replyTo.senderName != null && replyTo.senderName !== ''
@@ -78,7 +81,7 @@ export function ChatMessageBubble({
   const { t } = useTranslation();
   useUploadPreviewLease(message.kind === 'image' ? message.image : undefined);
   const isOut = message.direction === 'out';
-  const failed = isOut && message.status === 'failed';
+  const failed = isOut && message.status === MESSAGE_STATUS.failed;
   const surface = bubbleSurface(isOut, false);
   const groupCorners = bubbleCorners(isOut, firstInGroup, lastInGroup);
   const bubbleBg = bubbleSurface(isOut, failed);
@@ -191,6 +194,38 @@ export function ChatMessageBubble({
           <span className="text-sm text-black/54">{t('chat.kenLabel')}</span>
         </div>
       );
+
+    case 'call': {
+      const view = callMessageView(t, message.call ?? {});
+      const CallIcon = view.isVideo ? VideoIcon : PhoneIcon;
+      return (
+        <div
+          className={`flex items-center gap-2.5 rounded-2xl px-3 py-2 ${groupCorners} ${bubbleBg}`}
+        >
+          <span
+            className={`flex h-9 w-9 items-center justify-center rounded-full ${
+              view.missed
+                ? 'bg-[#e53935]/10 text-[#e53935]'
+                : 'bg-ola-primary/15 text-ola-primary-darker'
+            }`}
+          >
+            <CallIcon className="h-5 w-5" />
+          </span>
+          <span className="flex flex-col pr-1">
+            <span className="text-sm font-medium text-black/87">
+              {view.title}
+            </span>
+            <span
+              className={`text-xs ${
+                view.missed ? 'text-[#e53935]' : 'text-black/54'
+              }`}
+            >
+              {view.detail}
+            </span>
+          </span>
+        </div>
+      );
+    }
 
     case 'vip':
       return (

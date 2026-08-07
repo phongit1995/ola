@@ -17,6 +17,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
+import { MESSAGE_TYPE } from '@constants';
 import {
   BUBBLE_WALLPAPER,
   chatFriendActionLabel,
@@ -58,6 +59,8 @@ import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+
+const HIGHLIGHT_DURATION_MS = 1500;
 
 interface PendingImage {
   id: string;
@@ -337,7 +340,10 @@ export function ChatConversationView({
     setHighlightedId(id);
     if (highlightTimerRef.current != null)
       clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
+    highlightTimerRef.current = setTimeout(
+      () => setHighlightedId(null),
+      HIGHLIGHT_DURATION_MS
+    );
   }
 
   async function copyMessage(text: string) {
@@ -661,7 +667,7 @@ export function ChatConversationView({
           {editing == null && replyTarget != null && (
             <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
               <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
-              {replyTarget.type === 'image' &&
+              {replyTarget.type === MESSAGE_TYPE.image &&
                 (parseMessageMetadata(replyTarget.metadata).url ?? '') !==
                   '' && (
                   <img

@@ -4,7 +4,7 @@ import { rotationForIndex } from '../lib/spinWheel';
 import { WheelService } from '../services/wheel.service';
 import type { WheelPlayerSegment } from '../types/api/wheel.type';
 import type { SpinWheelState } from '../types/client/spinWheel.type';
-import { useAuthStore } from './authStore';
+import { useAuthStore } from './auth/authStore';
 
 export type { WheelConfigStatus } from '../types/client/spinWheel.type';
 

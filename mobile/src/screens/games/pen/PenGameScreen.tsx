@@ -14,13 +14,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { formatKen, toApiError } from '@ola/shared/lib';
 import { PenService, SocketService } from '@ola/shared/services';
-import { useAuthStore } from '@ola/shared/stores/authStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   PEN_SHOTS_PAGE,
   PEN_SHOTS_PAGE_MOBILE,
   usePenStore,
-} from '@ola/shared/stores/penStore';
+} from '@ola/shared/stores/pen/penStore';
 import type { PenSettledEvent, PenSide, PenShotView } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';

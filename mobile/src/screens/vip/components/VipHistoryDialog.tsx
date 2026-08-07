@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { createTimeFormatter, formatDateDMY, formatKen, vipName } from '@ola/shared/lib';
 import { VipService } from '@ola/shared/services';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { VipPurchaseHistoryItem, VipTransferHistoryItem } from '@ola/shared/types';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';

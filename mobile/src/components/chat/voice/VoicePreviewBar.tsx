@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Sound from 'react-native-sound';
 import { formatDuration } from '@ola/shared/lib';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { VoiceWaveformBars } from '@components/ui/VoiceWaveformBars';
 import {

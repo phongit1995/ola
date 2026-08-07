@@ -25,9 +25,10 @@ mobile/src                      ← UI React Native; import thẳng @ola/shared/
 ```
 
 - i18n locales (`en.json`/`vi.json`) nằm ở shared → key giống nhau 2 nền tảng → hàm nhận `t: TFunction` đặt shared được.
-- `react` là peerDependency của shared → **hook React đặt trong shared được** (tiền lệ: `stores/presenceHooks.ts`, `stores/usePostListActions.ts`).
+- `react` là peerDependency của shared → **hook React đặt trong shared được** (tiền lệ: `stores/presence/presenceHooks.ts`, `stores/feed/usePostListActions.ts`).
 - `toast` shared (`lib/toast.ts`) đẩy vào `useToastStore` — render được cả 2 nền tảng → trong shared cứ dùng `toast` + `i18n.t(...)`, KHÔNG nhận toast làm tham số.
-- Export map shared: `./lib` qua barrel `lib/index.ts` (thêm file mới NHỚ append barrel); `./stores/*` import thẳng theo tên file, không cần barrel.
+- Export map shared: `./lib` qua barrel `lib/index.ts` (thêm file mới NHỚ append barrel); `./stores/*` import thẳng theo đường dẫn file (match cả subfolder: `stores/chat/chatStore`), không cần barrel.
+- **Cấu trúc `stores/` theo feature-folder**: store nào có file vệ tinh (actions / realtime / `*.state.ts` / helpers / hook) thì cả cụm nằm trong `stores/<feature>/` — hiện có `app-notification/ auth/ call/ chat/ chat-bot/ clan/ feed/ friends/ ken/ pen/ presence/ room/ toast/`. Store một mình (settings, marriage, mediaViewer...) để phẳng ở root. Đuôi `.state.ts` = runtime singleton (không zustand, không persist) — giữ convention này. Thêm vệ tinh cho store đang phẳng → tạo folder rồi dời cả cụm.
 
 ## 1. Phân loại logic trong component trước khi tách
 
@@ -44,9 +45,9 @@ mobile/src                      ← UI React Native; import thẳng @ola/shared/
 
 ## 3. Inventory shared ĐÃ CÓ — tái dùng, đừng viết lại
 
-`lib/`: `formatKen` (number), `formatDateDMY`/`formatDateSlashDMY`/`formatClockHM`/`isSameDay`/`createDateFormatter`/`createTimeFormatter` (datetime), `formatLastActive`/`isBirthdayToday` (presence), `chatFriendActionLabel`/`profileFriendLabel` (relationshipLabels), `vipPackageLabel`/`vipBuyErrorText`/`vipConfirmMessage`/`BuyVipMode` (vipPurchase), `ApiError`/`toApiError`, `toast`, `colorForName`, `isVipActive`/`activeVipTypeId`, `parseMessageMetadata`, `formatDuration`, `randomUuid`, upload helpers.
+`lib/`: `formatKen`/`formatVnd`/`formatVndCurrency` (number), `formatDateDMY`/`formatDateSlashDMY`/`formatClockHM`/`isSameDay`/`createDateFormatter`/`createTimeFormatter` (datetime), `formatLastActive`/`isBirthdayToday` (presence), `chatFriendActionLabel`/`profileFriendLabel` (relationshipLabels), `vipPackageLabel`/`vipBuyErrorText`/`vipConfirmMessage`/`BuyVipMode` (vipPurchase), `ApiError`/`toApiError`, `toast`, `colorForName`, `isVipActive`/`activeVipTypeId`, `parseMessageMetadata`, `formatDuration`, `randomUuid`, upload helpers.
 
-`stores/`: `applyPostReaction`/`reconcileTopLikers` (postHelpers), `selfLiker`, hook `usePostListActions({posts, setPosts, keepOnlyLiked?, reloadAfterPin?})` → `{toggleReaction, adjustCommentCount, deletePost, togglePin}`, `presenceHooks`, `chatStore`/`roomChatStore` + realtime, `meFeedStore`/`clanFeedStore` (mẫu optimistic chuẩn: `reacting` guard + rollback + toast).
+`stores/`: `feed/postHelpers` (`applyPostReaction`/`reconcileTopLikers`), `feed/selfLiker`, hook `feed/usePostListActions({posts, setPosts, keepOnlyLiked?, reloadAfterPin?})` → `{toggleReaction, adjustCommentCount, deletePost, togglePin}`, `presence/presenceHooks`, `chat/chatStore`/`room/roomChatStore` + realtime, `feed/meFeedStore`/`clan/clanFeedStore` (mẫu optimistic chuẩn: `reacting` guard + rollback + toast), `chat-bot/useChatBotTurns` (lõi hội thoại bot, nhận transport per-platform).
 
 ## 4. BẮT BUỘC per-platform — đừng đưa lên shared
 
@@ -63,7 +64,7 @@ mobile/src                      ← UI React Native; import thẳng @ola/shared/
 - `interface.ts` / `types.ts` per-folder (chuẩn mới, `web/pages/chat` đã theo): `interface.ts` = interface export, `types.ts` = type alias, file view-mapper chỉ chứa HÀM, `XxxProps` không export để tại component.
 - **Icon SVG inline** (`function CameraIcon() { <svg>... }` trong component): gom về `components/Icons.tsx` cùng folder, mỗi icon nhận `className` (+ `strokeWidth` nếu stroke) với default đúng chỗ dùng phổ biến — KHÔNG để icon trùng 2 file (vd CheckIcon từng lặp ở ChangeAvatar + ChangeCover). Mẫu: `web/pages/chat/components/Icons.tsx`.
 - **Magic constant** module-level trong component (`const MAX_BALLOONS = 12`, min/max, duration...): dời về `constants.ts` cùng cấp folder page/screen và import vào.
-- **KHÔNG hardcode string literal của union domain** trong so sánh (`status === 'pending_incoming'`): dùng const map trong `@ola/shared/constants` — đã có `RELATIONSHIP_STATUS` (relationship.ts, `as const satisfies Record<string, RelationshipStatus>`); union mới thì tạo const map tương tự cạnh đó.
+- **KHÔNG hardcode string literal của union domain** trong so sánh (`status === 'pending_incoming'`): dùng const map trong `@ola/shared/constants` — đã có `RELATIONSHIP_STATUS`, `GENDER` (auth.ts), `CALL_TYPE`/`CALL_MODE` (call.ts), `MESSAGE_TYPE`/`MESSAGE_STATUS` (chat.ts), `CLAN_ROLE` (clan.ts), `APP_NOTIFICATION_TYPE` (notification.ts) — đều `as const satisfies Record<string, T>`; union mới thì tạo const map tương tự cạnh đó. Union UI cục bộ 1 file (tab/step/tone) so literal được.
 - KHÔNG comment trong code (cả web, mobile, shared) — tên hàm tự diễn giải.
 
 ## 6. Checklist verify (PHẢI sạch trước khi xong)

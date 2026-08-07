@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { BOT_CODE_BG, BOT_CODE_TEXT } from '../constants';
 
 const copyActionIcon = require('@assets/icons/chat/ic_menu_copy.png');

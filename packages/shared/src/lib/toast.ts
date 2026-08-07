@@ -1,4 +1,4 @@
-import { useToastStore } from '../stores/toastStore';
+import { useToastStore } from '../stores/toast/toastStore';
 
 export const toast = {
   error: (message: string) => useToastStore.getState().push('error', message),

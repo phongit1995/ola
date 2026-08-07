@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { ChatState } from '../../types/client/chat.type';
-import { registerOnLogout } from '../authStore';
+import { registerOnLogout } from '../auth/authStore';
 import { createChatConversationActions } from './chatConversationActions';
 import {
   createChatMessageActions,

@@ -30,6 +30,7 @@ import {
   OWN_CORNERS,
   roomBubbleTextMaxWidth,
 } from '../roomConstants';
+import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
 
 const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
 const photoIcon = require('@assets/icons/chat/ic_local.png');
@@ -83,10 +84,10 @@ function QuoteBlock({
 }) {
   const { t } = useTranslation();
   const { width: windowWidth } = useWindowDimensions();
-  const isImage = replyTo.type === 'image';
+  const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = isImage
     ? t('room.replyImage')
-    : replyTo.type === 'audio'
+    : replyTo.type === MESSAGE_TYPE.audio
     ? t('chat.replyAudio')
     : kulImageForText(replyTo.excerpt) != null
     ? t('room.replySticker')
@@ -164,15 +165,15 @@ function BubbleContent({
       : null,
   );
   const isImage =
-    message.type === 'image' &&
+    message.type === MESSAGE_TYPE.image &&
     message.imageUrl != null &&
     message.imageUrl !== '';
   const isAudio =
-    message.type === 'audio' &&
+    message.type === MESSAGE_TYPE.audio &&
     message.audioUrl != null &&
     message.audioUrl !== '';
-  const uploading = message.status === 'uploading';
-  const failed = message.status === 'failed';
+  const uploading = message.status === MESSAGE_STATUS.uploading;
+  const failed = message.status === MESSAGE_STATUS.failed;
 
   if (isImage) {
     const size = fitImageSize(imageRatio);
@@ -306,11 +307,11 @@ export function RoomBubbleBody({
   onResendAudio?: (id: string) => void;
 }) {
   const isImage =
-    message.type === 'image' &&
+    message.type === MESSAGE_TYPE.image &&
     message.imageUrl != null &&
     message.imageUrl !== '';
   const isAudio =
-    message.type === 'audio' &&
+    message.type === MESSAGE_TYPE.audio &&
     message.audioUrl != null &&
     message.audioUrl !== '';
   const kul = isImage || isAudio ? null : kulImageForText(message.content);
@@ -373,8 +374,8 @@ function RoomBubble({
   onResendImage?: (id: string) => void;
   onResendAudio?: (id: string) => void;
 }) {
-  const uploading = message.status === 'uploading';
-  const failed = message.status === 'failed';
+  const uploading = message.status === MESSAGE_STATUS.uploading;
+  const failed = message.status === MESSAGE_STATUS.failed;
   const bubbleRef = useRef<View>(null);
 
   function handleLongPress() {

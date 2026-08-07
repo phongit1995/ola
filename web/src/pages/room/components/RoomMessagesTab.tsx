@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
+import { MESSAGE_TYPE } from '@constants';
 import { SmileyText, toast } from '@lib';
 import { useStickyScroll } from '@hooks';
 import {
@@ -21,7 +22,7 @@ import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import { RoomReactionBalloons } from './RoomReactionBalloons';
 import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
-import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
+import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
 
 interface RoomMessagesTabProps {
   currentUserId: string;
@@ -259,7 +260,7 @@ export function RoomMessagesTab({
       {replyTarget != null && (
         <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
           <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
-          {replyTarget.type === 'image' &&
+          {replyTarget.type === MESSAGE_TYPE.image &&
             replyTarget.imageUrl != null &&
             replyTarget.imageUrl !== '' && (
               <img

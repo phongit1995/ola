@@ -7,6 +7,7 @@ interface ChatBotComposerProps {
   inputRef: RefObject<SmileyInputHandle | null>;
   value: string;
   onChange: (value: string) => void;
+  placeholder: string;
   streaming: boolean;
   onSend: () => void;
   onStop: () => void;
@@ -16,6 +17,7 @@ export function ChatBotComposer({
   inputRef,
   value,
   onChange,
+  placeholder,
   streaming,
   onSend,
   onStop,
@@ -29,7 +31,7 @@ export function ChatBotComposer({
         value={value}
         onChange={onChange}
         onEnter={onSend}
-        placeholder={t('chat.chatBotPlaceholder')}
+        placeholder={placeholder}
         multiline
         className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
       />

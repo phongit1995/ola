@@ -1,6 +1,7 @@
 import { PermissionsAndroid, Platform } from 'react-native';
 import { mediaDevices } from '@livekit/react-native-webrtc';
 import type { CallType } from '@ola/shared/types';
+import { CALL_TYPE } from '@ola/shared/constants';
 
 export type PrimeCallResult = 'ok' | 'denied' | 'insecure' | 'failed';
 
@@ -12,7 +13,7 @@ const ANDROID_NOTIFICATION_SDK = 33;
 // bằng loa/tai nghe trong nên không đưa vào điều kiện bắt buộc.
 async function requestAndroidPermissions(callType: CallType): Promise<boolean> {
   const required = [PermissionsAndroid.PERMISSIONS.RECORD_AUDIO];
-  if (callType === 'video') required.push(PermissionsAndroid.PERMISSIONS.CAMERA);
+  if (callType === CALL_TYPE.video) required.push(PermissionsAndroid.PERMISSIONS.CAMERA);
 
   const wanted = [...required];
   if (Number(Platform.Version) >= ANDROID_BLUETOOTH_SDK) {
@@ -43,7 +44,7 @@ export async function primeCallPermissions(
   try {
     const stream = await mediaDevices.getUserMedia({
       audio: true,
-      video: callType === 'video',
+      video: callType === CALL_TYPE.video,
     });
     stream.getTracks().forEach((track) => track.stop());
     return 'ok';

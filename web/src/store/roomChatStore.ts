@@ -1,1 +1,1 @@
-export * from '@ola/shared/stores/roomChatStore';
+export * from '@ola/shared/stores/room/roomChatStore';

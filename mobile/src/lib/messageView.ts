@@ -1,4 +1,5 @@
 import { kulImageForText } from './kul';
+import { MESSAGE_TYPE } from '@ola/shared/constants';
 
 interface MessageView {
   type?: string;
@@ -17,7 +18,7 @@ function messageType(message: MessageView): string {
 
 export function isCopyableMessageText(message: MessageView): boolean {
   return (
-    messageType(message) === 'text' &&
+    messageType(message) === MESSAGE_TYPE.text &&
     message.content.trim() !== '' &&
     kulImageForText(message.content) == null
   );
@@ -28,8 +29,8 @@ export function messageReplyExcerpt(
   labels: ReplyExcerptLabels,
 ): string {
   const type = messageType(message);
-  if (type === 'image') return labels.image;
-  if (type === 'audio') return labels.audio;
+  if (type === MESSAGE_TYPE.image) return labels.image;
+  if (type === MESSAGE_TYPE.audio) return labels.audio;
   return kulImageForText(message.content) != null
     ? labels.sticker
     : message.content;

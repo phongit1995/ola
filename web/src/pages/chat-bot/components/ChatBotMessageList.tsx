@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import type { RefObject, UIEvent } from 'react';
 import { DateSeparator } from '@components';
 import { BUBBLE_WALLPAPER, isSameDay } from '@lib';
-import type { ChatBotErrorCode, ChatBotMessage } from '@app-types';
+import type { ChatBotErrorCode, ChatBotMessage, ChatBotType } from '@app-types';
 import { isoOf } from '../chatBotView';
 import type { ChatBotViewer } from '../interface';
 import { BotMessageRow } from './BotMessageRow';
@@ -14,6 +14,7 @@ interface ChatBotMessageListProps {
   scrollRef: RefObject<HTMLDivElement | null>;
   onScroll: (event: UIEvent<HTMLDivElement>) => void;
   messages: ChatBotMessage[];
+  bot: ChatBotType;
   botName: string;
   viewer: ChatBotViewer;
   waiting: boolean;
@@ -25,6 +26,7 @@ export function ChatBotMessageList({
   scrollRef,
   onScroll,
   messages,
+  bot,
   botName,
   viewer,
   waiting,
@@ -40,7 +42,7 @@ export function ChatBotMessageList({
       className={`flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-2 py-3 ${BUBBLE_WALLPAPER}`}
     >
       {empty ? (
-        <ChatBotEmptyState botName={botName} />
+        <ChatBotEmptyState bot={bot} botName={botName} />
       ) : (
         <>
           {messages.map((message, index) => {
@@ -56,15 +58,16 @@ export function ChatBotMessageList({
                   message={message}
                   prev={prev}
                   next={messages[index + 1]}
+                  bot={bot}
                   botName={botName}
                   viewer={viewer}
                 />
               </Fragment>
             );
           })}
-          {waiting && <BotTypingRow name={botName} />}
+          {waiting && <BotTypingRow bot={bot} name={botName} />}
           {error != null && (
-            <ChatBotErrorNotice code={error} onRetry={onRetry} />
+            <ChatBotErrorNotice bot={bot} code={error} onRetry={onRetry} />
           )}
         </>
       )}

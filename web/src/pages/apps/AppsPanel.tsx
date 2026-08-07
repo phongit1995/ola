@@ -6,7 +6,7 @@ import { HomeHeader } from '@components/HomeHeader';
 import { ROUTES } from '@constants';
 import { formatKen, toast } from '@lib';
 import { AuthService, SocketService } from '@services';
-import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
@@ -171,7 +171,7 @@ export function AppsPanel() {
         </div>
       </HomeHeader>
       <main className="relative flex-1 overflow-y-auto">
-        <ul className="min-h-full bg-[#d5d5d5]">
+        <ul className="min-h-full bg-ola-border-strong">
           {APP_ITEMS.slice(0, 1).map(renderAppItem)}
           {miniGames.map((game) => (
             <PanelRow

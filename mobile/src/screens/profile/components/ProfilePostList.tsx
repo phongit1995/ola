@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Text } from 'react-native';
-import { useAuthStore } from '@ola/shared/stores/authStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
-import { usePostListActions } from '@ola/shared/stores/usePostListActions';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { useMeLocalStore } from '@store/meLocalStore';

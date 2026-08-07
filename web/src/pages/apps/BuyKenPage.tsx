@@ -4,6 +4,7 @@ import {
   toast,
   formatKen,
   formatVnd,
+  formatVndCurrency,
   buildVietQrImageUrl,
   fillMemoTemplate,
 } from '@lib';
@@ -136,7 +137,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                         : 'border-black/12 bg-white text-black/87'
                     }`}
                   >
-                    {formatVnd(value)}đ
+                    {formatVndCurrency(value)}
                   </button>
                 ))}
               </div>
@@ -165,7 +166,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                 </span>
               </div>
               {!isValid && (
-                <span className="mt-1 block text-xs text-[#e34545]">
+                <span className="mt-1 block text-xs text-ola-error">
                   {t('ken.buy.invalid', {
                     min: formatVnd(minAmount),
                     step: formatVnd(stepAmount),
@@ -230,7 +231,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                         {t('ken.buy.amountLabel')}
                       </span>
                       <span className="block text-lg font-bold text-black/87">
-                        {formatVnd(amount)}đ
+                        {formatVndCurrency(amount)}
                       </span>
                     </div>
                     <p className="mt-2 text-center text-xs text-black/54">
@@ -239,7 +240,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                     <button
                       type="button"
                       onClick={() => toast.info(t('ken.buy.paidPending'))}
-                      className="mt-3 w-full rounded-sm border border-ola-primary-dark bg-[#9ccc65] py-2.5 text-sm font-medium text-white active:opacity-90"
+                      className="mt-3 w-full rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-white active:opacity-90"
                     >
                       {t('ken.buy.paid')}
                     </button>

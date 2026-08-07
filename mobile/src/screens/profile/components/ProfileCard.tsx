@@ -15,6 +15,7 @@ import { DIVIDER } from '@constants';
 import { CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 import { RelationButtons } from './RelationButtons';
+import { GENDER } from '@ola/shared/constants';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
 const kissIcon = require('@assets/icons/profile/sticker_kiss.png');
@@ -106,7 +107,7 @@ export function ProfileCard({
   const { t } = useTranslation();
   const formatDate = useMemo(() => createDateFormatter(language), [language]);
 
-  const gender = profile.gender === 'female' ? 'female' : 'male';
+  const gender = profile.gender === GENDER.female ? GENDER.female : GENDER.male;
   const vipTypeId = activeVipTypeId(profile.vipUsed, profile.vipEndTime);
   const joinDate = `${t('profile.joinedOla')} ${formatDate(profile.createdAt)}`;
   const birthday =
@@ -299,9 +300,9 @@ export function ProfileCard({
 
       <View className="pb-4">
         <InfoRow
-          icon={gender === 'female' ? femaleIcon : maleIcon}
+          icon={gender === GENDER.female ? femaleIcon : maleIcon}
           text={
-            gender === 'female' ? t('profile.genderFemale') : t('profile.genderMale')
+            gender === GENDER.female ? t('profile.genderFemale') : t('profile.genderMale')
           }
         />
         <InfoRow

@@ -4,6 +4,7 @@ import mentionIcon from '@/assets/icons/room/ic_tag_people.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import { Spinner, VipAvatar } from '@components';
+import { MESSAGE_STATUS, MESSAGE_TYPE } from '@constants';
 import { useLongPress, useUploadPreviewLease } from '@hooks';
 import {
   colorForName,
@@ -44,10 +45,10 @@ interface QuoteBlockProps {
 
 function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
   const { t } = useTranslation();
-  const isImage = replyTo.type === 'image';
+  const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = isImage
     ? t('room.replyImage')
-    : replyTo.type === 'audio'
+    : replyTo.type === MESSAGE_TYPE.audio
     ? t('chat.replyAudio')
     : kulImageForText(replyTo.excerpt) != null
     ? t('room.replySticker')
@@ -60,7 +61,7 @@ function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
         onQuoteClick?.(replyTo.messageId);
       }}
       className={`mb-1 block w-full rounded border-l-2 py-0.5 pl-2 pr-1 text-left ${
-        isOwn ? 'border-white/60 bg-white/15' : 'border-[#7cb342] bg-black/5'
+        isOwn ? 'border-white/60 bg-white/15' : 'border-ola-primary bg-black/5'
       }`}
     >
       <span
@@ -116,8 +117,8 @@ function RoomBubble({
   onResendAudio,
 }: RoomBubbleProps) {
   const { t } = useTranslation();
-  const uploading = message.status === 'uploading';
-  const failed = message.status === 'failed';
+  const uploading = message.status === MESSAGE_STATUS.uploading;
+  const failed = message.status === MESSAGE_STATUS.failed;
   const suppressClick = useRef(false);
   const longPress = useLongPress((anchor) => {
     if (uploading || failed) return;
@@ -128,18 +129,18 @@ function RoomBubble({
   const openViewer = useMediaViewerStore((state) => state.openViewer);
   const kul = kulImageForText(message.content);
   const isImage =
-    message.type === 'image' &&
+    message.type === MESSAGE_TYPE.image &&
     message.imageUrl != null &&
     message.imageUrl !== '';
   const isAudio =
-    message.type === 'audio' &&
+    message.type === MESSAGE_TYPE.audio &&
     message.audioUrl != null &&
     message.audioUrl !== '';
   useUploadPreviewLease(isImage ? message.imageUrl : undefined);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bubbleClass = isOwn
-    ? `w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${corners}`
-    : `w-fit max-w-full break-words bg-[#f1f8e9] px-3.5 py-2 text-base text-black/87 ${corners}`;
+    ? `w-fit max-w-full break-words bg-ola-primary px-3.5 py-2 text-base text-white ${corners}`
+    : `w-fit max-w-full break-words bg-ola-primary-light px-3.5 py-2 text-base text-black/87 ${corners}`;
 
   const content = isImage ? (
     <span className="relative block">

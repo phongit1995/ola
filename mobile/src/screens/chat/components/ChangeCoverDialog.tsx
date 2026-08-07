@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text } from 'react-native';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { COVER_ASPECT } from '@ola/shared/constants';
 import { CachedImage } from '@components/ui/CachedImage';
 import { COVER_OUTPUT } from '@lib/imagePicker';

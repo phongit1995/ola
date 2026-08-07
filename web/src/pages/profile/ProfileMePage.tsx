@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { COVER_ASPECT, ROUTES } from '@constants';
+import { COVER_ASPECT, GENDER, ROUTES } from '@constants';
 import { MeService, UserService } from '@services';
 import {
   activeVipTypeId,
@@ -34,7 +34,8 @@ import {
 } from '../me/MePostInteractions';
 import { toMePost } from '../me/mappers';
 import { useEditMePost } from '../me/useEditMePost';
-import { usePostListActions } from '@ola/shared/stores/usePostListActions';
+import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
+import { PROFILE_POSTS_LIMIT } from './constants';
 
 export function ProfileMePage() {
   const { t, i18n } = useTranslation();
@@ -73,7 +74,7 @@ export function ProfileMePage() {
 
   useEffect(() => {
     let active = true;
-    MeService.mine({ limit: 30 })
+    MeService.mine({ limit: PROFILE_POSTS_LIMIT })
       .then((result) => {
         if (active) setPosts(result.items);
       })
@@ -84,7 +85,7 @@ export function ProfileMePage() {
   }, []);
 
   const reloadAfterPin = useCallback(async () => {
-    const result = await MeService.mine({ limit: 30 });
+    const result = await MeService.mine({ limit: PROFILE_POSTS_LIMIT });
     setPosts(() => result.items);
   }, []);
 
@@ -308,7 +309,7 @@ export function ProfileMePage() {
                   alt=""
                   className="h-3.5 w-auto shrink-0 object-contain"
                 />
-                {user.gender === 'female'
+                {user.gender === GENDER.female
                   ? t('profile.genderFemale')
                   : t('profile.genderMale')}
               </div>

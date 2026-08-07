@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Text, View } from 'react-native';
 import { formatVnd } from '@ola/shared/lib';
-import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@ola/shared/stores/penHistoryStore';
+import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@ola/shared/stores/pen/penHistoryStore';
 import type { PenUserBrief } from '@ola/shared/types';
 import { VipBadge } from '@components/ui/VipBadge';
 import { penAssets } from './penAssets';

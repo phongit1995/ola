@@ -13,7 +13,7 @@ import type {
   SentProposal,
   Spouse,
 } from '../types/client/marriage.type';
-import { useAuthStore } from './authStore';
+import { useAuthStore } from './auth/authStore';
 
 export type {
   DiaryEntry,

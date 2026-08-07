@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import { MeService, RelationshipService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { PostAuthor } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { Dialog } from '@components/ui/Dialog';
 import { LIKERS_PAGE_SIZE } from '../constants';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
 interface MeLikersDialogProps {
   postId: string;
@@ -113,10 +114,10 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
               onEndReachedThreshold={0.3}
               ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color="#7cb342" /> : null}
               renderItem={({ item, index }) => {
-                const isSelf = item.isSelf === true || item.relationship?.status === 'self';
-                const isFriend = item.isFriend === true || item.relationship?.status === 'friend';
+                const isSelf = item.isSelf === true || item.relationship?.status === RELATIONSHIP_STATUS.self;
+                const isFriend = item.isFriend === true || item.relationship?.status === RELATIONSHIP_STATUS.friend;
                 const sent =
-                  requested[item.id] === true || item.relationship?.status === 'pending_outgoing';
+                  requested[item.id] === true || item.relationship?.status === RELATIONSHIP_STATUS.pendingOutgoing;
                 const title = item.fullName != null && item.fullName !== '' ? item.fullName : item.username;
                 return (
                   <View

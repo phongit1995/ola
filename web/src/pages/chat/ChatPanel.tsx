@@ -33,7 +33,7 @@ import {
   useFriendsWithPresence,
   usePresenceListPolling,
 } from './usePresence';
-import type { Relationship } from '@app-types';
+import type { ChatBotType, Relationship } from '@app-types';
 
 interface ProfileTarget {
   username: string;
@@ -69,7 +69,7 @@ export function ChatPanel() {
   const [statusOpen, setStatusOpen] = useState(false);
   const [suggestedOpen, setSuggestedOpen] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
-  const [chatBotOpen, setChatBotOpen] = useState(false);
+  const [chatBotOpen, setChatBotOpen] = useState<ChatBotType | null>(null);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const openApp = useAppOverlayStore((s) => s.push);
   const requests = useFriendsStore((s) => s.requests);
@@ -244,7 +244,7 @@ export function ChatPanel() {
 
       <main className="relative flex-1 overflow-y-auto">
         {sub === 'messages' ? (
-          <div className="relative h-full bg-[#f3f3f3]">
+          <div className="relative h-full bg-ola-surface">
             {loadingConversations && conversations.length === 0 ? (
               <div className="flex h-full items-center justify-center">
                 <span className="h-8 w-8 animate-spin rounded-full border-4 border-ola-primary/30 border-t-ola-primary" />
@@ -283,7 +283,7 @@ export function ChatPanel() {
               requests={requests}
               onOpenSuggested={() => setSuggestedOpen(true)}
               onOpenRequests={() => setRequestsOpen(true)}
-              onOpenChatBot={() => setChatBotOpen(true)}
+              onOpenChatBot={setChatBotOpen}
             />
             <button
               type="button"
@@ -301,7 +301,9 @@ export function ChatPanel() {
         )}
       </main>
 
-      {chatBotOpen && <ChatBotScreen onClose={() => setChatBotOpen(false)} />}
+      {chatBotOpen != null && (
+        <ChatBotScreen bot={chatBotOpen} onClose={() => setChatBotOpen(null)} />
+      )}
       {suggestedOpen && (
         <SuggestedFriendsScreen onClose={() => setSuggestedOpen(false)} />
       )}

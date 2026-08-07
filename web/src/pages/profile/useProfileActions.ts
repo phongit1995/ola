@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
+import { RELATIONSHIP_STATUS } from '@constants';
 import { RelationshipService, UserService } from '@services';
 import { compressImageForUpload, toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
@@ -111,20 +112,20 @@ export function useProfileActions({
   const friendAction = useCallback(() => {
     if (userId === '' || busy) return;
     const { status, requestId } = relationship;
-    if (status === 'none')
+    if (status === RELATIONSHIP_STATUS.none)
       runAndReload(RelationshipService.sendRequest(userId));
-    else if (status === 'pending_outgoing' && requestId)
+    else if (status === RELATIONSHIP_STATUS.pendingOutgoing && requestId)
       runAndReload(RelationshipService.cancel(requestId));
-    else if (status === 'pending_incoming' && requestId)
+    else if (status === RELATIONSHIP_STATUS.pendingIncoming && requestId)
       runAndReload(RelationshipService.respond(requestId, 'accept'));
-    else if (status === 'friend' && requestId)
+    else if (status === RELATIONSHIP_STATUS.friend && requestId)
       runAndReload(RelationshipService.unfriend(requestId));
   }, [userId, busy, relationship, runAndReload]);
 
   const blockAction = useCallback(() => {
     if (userId === '' || busy) return;
     const { status, requestId } = relationship;
-    if (status === 'blocked_by_me' && requestId)
+    if (status === RELATIONSHIP_STATUS.blockedByMe && requestId)
       runAndReload(RelationshipService.unblock(requestId));
     else runAndReload(RelationshipService.block(userId));
   }, [userId, busy, relationship, runAndReload]);

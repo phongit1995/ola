@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore';
 import {
   useRoomFilterStore,
   memberMatchesFilter,
-} from '@ola/shared/stores/roomFilterStore';
+} from '@ola/shared/stores/room/roomFilterStore';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import type { ReactionType } from '@app-types';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';

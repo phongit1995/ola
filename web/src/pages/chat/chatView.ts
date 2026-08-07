@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { ChatReplySnapshot, Conversation, Message } from '@app-types';
+import { MESSAGE_TYPE } from '@constants';
 import {
   colorForName,
   DEFAULT_AVATAR_COLOR,
@@ -64,8 +65,8 @@ export function chatQuoteExcerpt(
   t: TFunction,
   replyTo: Pick<ChatReplySnapshot, 'type' | 'excerpt'>
 ): string {
-  if (replyTo.type === 'image') return t('chat.replyImage');
-  if (replyTo.type === 'audio') return t('chat.replyAudio');
+  if (replyTo.type === MESSAGE_TYPE.image) return t('chat.replyImage');
+  if (replyTo.type === MESSAGE_TYPE.audio) return t('chat.replyAudio');
   if (kulImageForText(replyTo.excerpt) != null) return t('chat.replySticker');
   return replyTo.excerpt;
 }
@@ -85,7 +86,7 @@ export function chatMessageAbilities(
 ): ChatMessageAbilities {
   const isOwn = message.direction === 'out';
   return {
-    canReply: !isOwn && !blocked,
+    canReply: !isOwn && !blocked && message.kind !== 'call',
     canCopy: isCopyableText(message),
     canEdit: isOwn && message.kind === 'text',
     canDelete: isOwn,
@@ -93,15 +94,18 @@ export function chatMessageAbilities(
 }
 
 export function toBubble(message: Message, myId: string): ChatMessage {
-  const isImage = message.type === 'image';
-  const isAudio = message.type === 'audio';
-  const meta = isImage || isAudio ? parseMessageMetadata(message.metadata) : {};
+  const isImage = message.type === MESSAGE_TYPE.image;
+  const isAudio = message.type === MESSAGE_TYPE.audio;
+  const isCall = message.type === MESSAGE_TYPE.call;
+  const meta =
+    isImage || isAudio || isCall ? parseMessageMetadata(message.metadata) : {};
   return {
     id: message.id,
     key: message.clientMsgId ?? message.id,
     direction: message.senderId === myId ? 'out' : 'in',
-    kind: isImage ? 'image' : isAudio ? 'voice' : 'text',
-    text: isImage || isAudio ? undefined : message.content,
+    kind: isImage ? 'image' : isAudio ? 'voice' : isCall ? 'call' : 'text',
+    text: isImage || isAudio || isCall ? undefined : message.content,
+    call: isCall ? meta : undefined,
     image: isImage ? meta.url : undefined,
     audioUrl: isAudio ? meta.url : undefined,
     audioDuration: isAudio ? meta.duration : undefined,

@@ -9,7 +9,7 @@ class OlaCallPackage : ReactPackage {
 
   override fun createNativeModules(
     reactContext: ReactApplicationContext,
-  ): List<NativeModule> = listOf(CallServiceModule(reactContext))
+  ): List<NativeModule> = listOf(CallServiceModule(reactContext), PipModule(reactContext))
 
   override fun createViewManagers(
     reactContext: ReactApplicationContext,

@@ -6,6 +6,7 @@ import type {
   ChatBotFrame,
   ChatBotMessage,
   ChatBotPromptMessage,
+  ChatBotType,
 } from '../types/client/chatBot.type';
 
 export const CHAT_BOT_PATH = '/chat-bot';
@@ -23,6 +24,7 @@ export interface ChatBotRequest {
 
 export function buildChatBotRequest(
   messages: ChatBotPromptMessage[],
+  bot: ChatBotType,
   language?: string,
   accessToken?: string
 ): ChatBotRequest {
@@ -52,7 +54,7 @@ export function buildChatBotRequest(
     init: {
       method: 'POST',
       headers,
-      body: JSON.stringify({ messages, stream: true }),
+      body: JSON.stringify({ messages, type: bot, stream: true }),
     },
   };
 }

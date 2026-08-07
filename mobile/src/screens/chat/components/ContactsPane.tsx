@@ -12,10 +12,11 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
+import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import type { ChatStackParamList, RootStackParamList } from '@navigation/types';
 import { CHAT_ROUTES, ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
@@ -27,7 +28,7 @@ import { BuddyRow } from './BuddyRow';
 import { StatusEditDialog } from './StatusEditDialog';
 import { mapFriendsToContacts, type Contact } from '../contacts';
 import { SUGGESTED_FRIENDS } from '@screens/friends/constants';
-import { useFriendsStore } from '@ola/shared/stores/friendsStore';
+import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useFriendsWithPresence } from '@hooks/usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
 import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
@@ -307,6 +308,17 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           subtitle={t('chat.chatBotSub')}
           showChevron
           onPress={() => navigation.navigate(CHAT_ROUTES.ChatBot)}
+        />
+        <ActionRow
+          badge={<BotAvatar bot={CHAT_BOT_TYPE.olavi} size={48} radius={8} />}
+          title={t('chat.fortuneBot')}
+          subtitle={t('chat.fortuneBotSub')}
+          showChevron
+          onPress={() =>
+            navigation.navigate(CHAT_ROUTES.ChatBot, {
+              bot: CHAT_BOT_TYPE.olavi,
+            })
+          }
         />
 
         {friendsLoading && !friendsLoaded ? (

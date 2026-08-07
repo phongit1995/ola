@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { toApiError, vipName } from '@ola/shared/lib';
 import { VipService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { VipIconInstance } from '@ola/shared/types';
 import { TransferReceiverRow } from '@components/transfer/TransferReceiverRow';
 import type { TransferReceiver } from '@components/transfer/types';

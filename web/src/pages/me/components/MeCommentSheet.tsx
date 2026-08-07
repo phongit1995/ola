@@ -79,7 +79,7 @@ export function MeCommentSheet({
       />
 
       <div
-        className={`flex min-h-0 flex-1 flex-col bg-[#eceff1] transition-transform duration-200 ${
+        className={`flex min-h-0 flex-1 flex-col bg-ola-surface-cool transition-transform duration-200 ${
           shown ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

@@ -1,4 +1,4 @@
-import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { ReactionBalloons } from '@components/chat/ReactionBalloons';
 
 function subscribeToRoomReactions(

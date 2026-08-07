@@ -9,8 +9,11 @@ import {
   type ListOption,
 } from '@components';
 import { isVipActive, activeVipTypeId, colorForName } from '@lib';
-import type { AuthUser, Relationship } from '@app-types';
+import { CHAT_BOT_TYPE } from '@ola/shared/constants';
+import type { AuthUser, ChatBotType, Relationship } from '@app-types';
 import type { Contact } from '../interface';
+
+const REQUEST_PREVIEW_COUNT = 3;
 import { BuddyRow } from './BuddyRow';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
@@ -29,7 +32,7 @@ interface ContactListProps {
   requests?: Relationship[];
   onOpenSuggested?: () => void;
   onOpenRequests?: () => void;
-  onOpenChatBot?: () => void;
+  onOpenChatBot?: (bot: ChatBotType) => void;
 }
 
 function ActionRow({
@@ -63,7 +66,7 @@ function ActionRow({
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="flex h-9 items-center bg-[#d5d5d5] px-4">
+    <div className="flex h-9 items-center bg-ola-border-strong px-4">
       <span className="truncate text-sm font-medium text-white">{label}</span>
     </div>
   );
@@ -163,8 +166,8 @@ export function ContactList({
   ];
 
   return (
-    <div className="h-full overflow-y-auto bg-[#f3f3f3]">
-      <div className="border-b border-[#b2b2b2] bg-[#d5d5d5] px-4 py-3">
+    <div className="h-full overflow-y-auto bg-ola-surface">
+      <div className="border-b border-[#b2b2b2] bg-ola-border-strong px-4 py-3">
         <div className="flex h-10 items-center gap-1 rounded-[5px] border border-[#b2b2b2] bg-white px-1">
           <SearchIcon className="h-4 w-4 shrink-0 text-black/38" />
           <input
@@ -251,7 +254,7 @@ export function ContactList({
               {t('chat.friendRequests')}
             </span>
             <span className="mt-1 flex items-center gap-2">
-              {requests.slice(0, 3).map((relationship) => {
+              {requests.slice(0, REQUEST_PREVIEW_COUNT).map((relationship) => {
                 const requester = relationship.requester;
                 const name = requester?.fullName || requester?.username || '';
                 const vipTypeId = activeVipTypeId(
@@ -362,7 +365,20 @@ export function ContactList({
         title={t('chat.chatBot')}
         subtitle={t('chat.chatBotSub')}
         showChevron
-        onClick={onOpenChatBot}
+        onClick={() => onOpenChatBot?.(CHAT_BOT_TYPE.olala)}
+      />
+      <ActionRow
+        badge={
+          <BotAvatar
+            bot={CHAT_BOT_TYPE.olavi}
+            name={t('chat.fortuneBot')}
+            className="h-12 w-12 rounded-lg"
+          />
+        }
+        title={t('chat.fortuneBot')}
+        subtitle={t('chat.fortuneBotSub')}
+        showChevron
+        onClick={() => onOpenChatBot?.(CHAT_BOT_TYPE.olavi)}
       />
 
       {sections.map((section) => (

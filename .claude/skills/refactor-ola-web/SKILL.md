@@ -16,7 +16,7 @@ description: >
 ## 0. Quy ước BẮT BUỘC (đọc `web/CLAUDE.md`)
 - **TUYỆT ĐỐI KHÔNG comment**: không `//`, `/* */`, JSDoc, JSX `{/* */}`, CSS comment. Nếu đoạn khó hiểu → **tách hàm / đặt tên lại**, đừng viết comment. Ngoại lệ duy nhất: chỉ thị công cụ (`// @ts-expect-error`, `// eslint-disable-next-line`) kèm lý do ngắn.
 - **Import alias**: `@/*`, `@api`, `@config`, `@constants`, `@components`, `@lib`, `@hooks`, `@services`, `@app-types`. Mỗi module `shared/*` có barrel `index.ts` — export thêm thì nhớ thêm vào đó.
-- **Tailwind v4**: cấu hình bằng `@theme` trong `src/index.css`, KHÔNG có `tailwind.config.js`. Dùng token màu `ola-*` đã định nghĩa.
+- **Tailwind v4**: cấu hình bằng `@theme` trong `src/index.css`, KHÔNG có `tailwind.config.js`. Dùng token màu `ola-*` đã định nghĩa (primary/button/accent/error/warning, surface, surface-cool, border-strong, bubble-*, wallpaper, bộ `ola-call-*`, bộ `ola-marriage-*`). Màu mới lặp ≥3 lần hoặc ≥2 feature → thêm token vào `@theme`, KHÔNG rải `-[#hex]`; màu trang trí một-lần được để arbitrary.
 - **i18next type-safe**: key phải tồn tại trong `src/i18n/locales/en.json` (sinh type) VÀ `vi.json`. Thêm key vào CẢ HAI trước khi dùng `t('...')`, nếu không TS báo lỗi.
 - **pnpm**. Trước khi coi là xong: `pnpm lint` và `pnpm build` PHẢI sạch.
 - Shell hay reset cwd về `/Volumes/D/ola` — chạy lệnh `web/` thì `cd /Volumes/D/ola/web` trước.
@@ -28,6 +28,7 @@ Trước khi tự viết util, kiểm tra `src/shared/lib` (export qua `@lib`):
 - **Thời lượng m:ss**: `formatDuration(seconds)`, `formatDurationMs(ms)` (`lib/duration.ts`).
 - **Ngày/giờ locale**: `createDateFormatter`, `createTimeFormatter` (`lib/datetime.ts`, dùng dayjs).
 - **Màu avatar**: `colorForName(nameHoặcId)` (`lib/avatarColor.ts`). Đừng tạo bảng màu/hash mới.
+- **Tiền VND**: `formatVnd(value)`, `formatVndCurrency(value)` (kèm hậu tố `đ`) — KHÔNG tự nối `'đ'`.
 - **Rich text / smiley / kul**: `renderRichText`, `SmileyText`, `kulImageForText`, `KUL_IMAGES`, `SMILEY_PANEL` (`lib/richText.tsx`, `SmileyText.tsx`, `kul.ts`, `chatSmiley.ts`).
 - **Toast**: `toast.success/error/info` (`lib/toast.ts`).
 - **Hook**: `useLongPress` (`hooks/useLongPress.ts`) — ĐỪNG tự viết `setTimeout` long-press; `useVoiceRecorder`.

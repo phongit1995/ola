@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { buildVietQrImageUrl, fillMemoTemplate } from '@ola/shared/lib';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import { MIN_AMOUNT, PRESET_AMOUNTS, STEP_AMOUNT } from './constants';
 

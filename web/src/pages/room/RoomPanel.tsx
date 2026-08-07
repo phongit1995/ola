@@ -4,7 +4,7 @@ import { ConfirmDialog, PullToRefresh } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
-import { useRoomListStore } from '@ola/shared/stores/roomListStore';
+import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
 
@@ -90,7 +90,7 @@ export function RoomPanel() {
 
       <PullToRefresh
         onRefresh={refresh}
-        className="relative flex-1 overflow-y-auto bg-[#f3f3f3]"
+        className="relative flex-1 overflow-y-auto bg-ola-surface"
       >
         {loadingRooms && (
           <div className="py-2 text-center text-sm text-ola-primary">

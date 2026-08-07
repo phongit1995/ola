@@ -15,8 +15,9 @@ import {
   Spinner,
   ConfirmDialog,
 } from '@components';
+import { APP_NOTIFICATION_TYPE } from '@constants';
 import { MarriageService, RelationshipService } from '@services';
-import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useFriendsStore } from '@/store/friendsStore';
 import { useMarriageStore } from '@/store/marriageStore';
 import type { AppNotification } from '@app-types';
@@ -39,7 +40,7 @@ interface RowButtonProps {
 function RowButton({ variant, disabled, onClick, children }: RowButtonProps) {
   const cls =
     variant === 'green'
-      ? 'bg-[#9ccc65] text-white'
+      ? 'bg-ola-button text-white'
       : 'ml-2 bg-[#e0e0e0] text-[#636363]';
   return (
     <button
@@ -126,7 +127,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
 
   function renderActions(item: AppNotification) {
     if (item.refId == null) return null;
-    if (item.type === 'friend_request') {
+    if (item.type === APP_NOTIFICATION_TYPE.friendRequest) {
       return (
         <div className="mt-1 flex">
           <RowButton
@@ -151,7 +152,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
         </div>
       );
     }
-    if (item.type === 'marriage_proposal') {
+    if (item.type === APP_NOTIFICATION_TYPE.marriageProposal) {
       return (
         <div className="mt-1 flex">
           <RowButton
@@ -179,7 +180,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
       <ScreenHeader title={t('notify.title')} onBack={onClose} />
 
       <div
-        className="flex-1 overflow-y-auto bg-[#d5d5d5]"
+        className="flex-1 overflow-y-auto bg-ola-border-strong"
         onScroll={handleScroll}
       >
         {loading && items.length === 0 ? (

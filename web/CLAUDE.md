@@ -52,6 +52,14 @@ src/
 
 Khai báo alias ở **2 nơi và phải đồng bộ**: `tsconfig.app.json` (`compilerOptions.paths`) và `vite.config.ts` (`resolve.alias`). Mỗi module trong `shared/` có `index.ts` (barrel) để import gọn: `import { ROUTES } from '@constants'`.
 
+## Không hardcode
+
+- **Union domain** (status/type/role/gender/mode từ server): KHÔNG so sánh chuỗi trần (`status === 'friend'`). Dùng const map trong `@ola/shared/constants` — đã có `RELATIONSHIP_STATUS`, `GENDER`, `CALL_TYPE`, `CALL_MODE`, `MESSAGE_TYPE`, `MESSAGE_STATUS`, `CLAN_ROLE`, `APP_NOTIFICATION_TYPE`; union mới thì thêm map mới theo mẫu `as const satisfies Record<string, T>`. Union UI cục bộ trong 1 file (tab, step, tone) thì so literal thoải mái.
+- **Màu**: ưu tiên token `ola-*` trong `@theme` (`src/index.css`) — gồm cả `ola-surface`, `ola-surface-cool`, `ola-border-strong`, bộ `ola-call-*`, bộ `ola-marriage-*`. Màu mới xuất hiện ≥3 lần hoặc dùng ở ≥2 feature → thêm token, KHÔNG rải `-[#hex]`. Màu trang trí một-lần (gradient game...) được phép để arbitrary.
+- **Magic number** (limit API, slice preview, timeout ms): đặt hằng có tên — dùng ở ≥2 file trong folder thì vào `constants.ts` của folder, 1 file thì module-level const đầu file.
+- **URL ngoài** (social, store, download...): vào `src/shared/constants` (mẫu: `appDownload.ts`, `socialLinks.ts`).
+- **Tiền tệ**: dùng `formatVndCurrency` / `formatVnd` / `formatKen` từ `@lib`, không tự nối hậu tố `đ`.
+
 ## Khác
 
 - Quản lý gói: **pnpm** (`pnpm dev`, `pnpm build`, `pnpm lint`).

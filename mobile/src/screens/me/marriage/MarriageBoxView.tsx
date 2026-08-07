@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { colorForName, toast } from '@ola/shared/lib';
-import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { DiaryEntry } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';

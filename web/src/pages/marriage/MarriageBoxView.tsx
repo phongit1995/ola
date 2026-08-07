@@ -105,7 +105,7 @@ export function MarriageBoxView() {
             src={meAvatar}
             size={84}
           />
-          <span className="text-3xl text-[#ff4d7d]">❤</span>
+          <span className="text-3xl text-ola-marriage">❤</span>
           <FramedAvatar
             name={spouse.name}
             color={spouse.avatarColor}
@@ -113,15 +113,15 @@ export function MarriageBoxView() {
             size={84}
           />
         </div>
-        <p className="mt-3 text-base font-bold text-[#c2185b]">
-          @{meName} <span className="text-[#ff4d7d]">&</span> @{spouse.nick}
+        <p className="mt-3 text-base font-bold text-ola-marriage-deep">
+          @{meName} <span className="text-ola-marriage">&</span> @{spouse.nick}
         </p>
         {marriedSince != null && (
           <p className="text-xs text-black/55">
             {t('marriage.marriedSince', { date: formatDate(marriedSince) })}
           </p>
         )}
-        <div className="mt-3 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-[#ff4d7d] shadow-sm">
+        <div className="mt-3 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-ola-marriage shadow-sm">
           💞 {t('marriage.daysTogether', { days: daysTogether })}
         </div>
         <button
@@ -134,13 +134,13 @@ export function MarriageBoxView() {
       </div>
 
       <div className="flex items-center justify-between px-4 pb-2 pt-4">
-        <h3 className="text-sm font-bold text-[#c2185b]">
+        <h3 className="text-sm font-bold text-ola-marriage-deep">
           {t('marriage.diaryTitle')}
         </h3>
         <button
           type="button"
           onClick={() => setWriteOpen(true)}
-          className="rounded-full bg-[#ff4d7d] px-3 py-1.5 text-xs font-semibold text-white"
+          className="rounded-full bg-ola-marriage px-3 py-1.5 text-xs font-semibold text-white"
         >
           ✎ {t('marriage.writeBox')}
         </button>
@@ -194,7 +194,7 @@ export function MarriageBoxView() {
           onChange={(event) => setDraft(event.target.value)}
           rows={4}
           placeholder={t('marriage.writeHint')}
-          className="w-full resize-none rounded-lg border border-black/10 p-2 text-sm outline-none focus:border-[#ff4d7d]"
+          className="w-full resize-none rounded-lg border border-black/10 p-2 text-sm outline-none focus:border-ola-marriage"
         />
       </Dialog>
     </div>

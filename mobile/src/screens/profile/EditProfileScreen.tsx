@@ -18,8 +18,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { UserService } from '@ola/shared/services';
 import { ApiError, createDateFormatter } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/types';
-import { useAuthStore } from '@ola/shared/stores/authStore';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -32,6 +32,7 @@ import { CoverPreviewOverlay } from './components/CoverPreviewOverlay';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { DIVIDER } from '@constants';
 import { DEFAULT_BIRTHDAY, PHONE_PATTERN, PLACEHOLDER_COLOR } from './constants';
+import { GENDER } from '@ola/shared/constants';
 
 const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
 const lockIcon = require('@assets/icons/profile/ic_lock.png');
@@ -298,9 +299,9 @@ export function EditProfileScreen({ navigation }: Props) {
                       }}
                     >
                       <Text className="text-sm" style={{ color: activeOpt ? '#33691e' : 'rgba(0,0,0,0.54)' }}>
-                        {option === 'male' ? t('profile.genderMale') : t('profile.genderFemale')}
+                        {option === GENDER.male ? t('profile.genderMale') : t('profile.genderFemale')}
                       </Text>
-                      <Image source={option === 'male' ? maleIcon : femaleIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                      <Image source={option === GENDER.male ? maleIcon : femaleIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
                     </Pressable>
                   );
                 })}

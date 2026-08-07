@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { RelationshipService, UserService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { UserListDialog } from '@components/ui/UserListDialog';
 import { UserIdentityRow } from '@components/user/UserIdentityRow';
 import { userIdentityFromSearchResult } from '@components/user/userIdentity';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
 interface AddContactDialogProps {
   onClose: () => void;
@@ -70,21 +71,21 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
   function renderRelationButton(user: UserSearchResult) {
     const busy = busyId === user.id;
     const disabledStyle = { borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' } as const;
-    if (acceptedIds.includes(user.id) || user.relationship === 'friend') {
+    if (acceptedIds.includes(user.id) || user.relationship === RELATIONSHIP_STATUS.friend) {
       return (
         <View className="rounded px-3 py-1.5" style={disabledStyle}>
           <Text className="text-sm text-ola-ink-faint">{t('chat.alreadyFriendShort')}</Text>
         </View>
       );
     }
-    if (sentIds.includes(user.id) || user.relationship === 'pending_outgoing') {
+    if (sentIds.includes(user.id) || user.relationship === RELATIONSHIP_STATUS.pendingOutgoing) {
       return (
         <View className="rounded px-3 py-1.5" style={disabledStyle}>
           <Text className="text-sm text-ola-ink-faint">{t('chat.friendRequestSentShort')}</Text>
         </View>
       );
     }
-    if (user.relationship === 'pending_incoming') {
+    if (user.relationship === RELATIONSHIP_STATUS.pendingIncoming) {
       return (
         <Pressable
           disabled={busy}
@@ -96,14 +97,14 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
         </Pressable>
       );
     }
-    if (user.relationship === 'blocked_by_me') {
+    if (user.relationship === RELATIONSHIP_STATUS.blockedByMe) {
       return (
         <View className="rounded px-3 py-1.5" style={disabledStyle}>
           <Text className="text-sm text-ola-ink-faint">{t('chat.blocked')}</Text>
         </View>
       );
     }
-    if (user.relationship === 'blocked_by_them') {
+    if (user.relationship === RELATIONSHIP_STATUS.blockedByThem) {
       return null;
     }
     return (

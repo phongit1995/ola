@@ -1,12 +1,13 @@
 package chatbot
 
 type Message struct {
-	Role    string `json:"role" binding:"required,oneof=user assistant system" example:"user"`
+	Role    string `json:"role" binding:"required,oneof=user assistant" example:"user"`
 	Content string `json:"content" binding:"required" example:"Chào bạn"`
 }
 
 type CompletionRequest struct {
 	Messages []Message `json:"messages" binding:"required,min=1,max=80,dive"`
+	Type     string    `json:"type" binding:"omitempty,oneof=OLALA OLAVI" example:"OLALA"`
 	Stream   bool      `json:"stream" example:"false"`
 }
 
