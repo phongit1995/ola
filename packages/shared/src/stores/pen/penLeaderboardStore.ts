@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { toApiError } from '../lib/apiError';
-import { toast } from '../lib/toast';
-import { PenService } from '../services/pen.service';
-import type { PenLeaderboardState } from '../types/client/pen.type';
+import { toApiError } from '../../lib/apiError';
+import { toast } from '../../lib/toast';
+import { PenService } from '../../services/pen.service';
+import type { PenLeaderboardState } from '../../types/client/pen.type';
 import { initialPenLeaderboardState } from './penLeaderboard.state';
 import { withPenVip } from './penVip';
 
-export { PEN_LEADERBOARD_PAGE_SIZE as PEN_LEADERBOARD_PAGE } from '../constants/pen';
+export { PEN_LEADERBOARD_PAGE_SIZE as PEN_LEADERBOARD_PAGE } from '../../constants/pen';
 
 export const usePenLeaderboardStore = create<PenLeaderboardState>((set, get) => ({
   ...initialPenLeaderboardState,

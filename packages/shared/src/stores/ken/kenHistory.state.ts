@@ -1,7 +1,7 @@
 import type {
   KenHistorySection,
   KenHistoryTab,
-} from '../types/client/kenHistory.type';
+} from '../../types/client/kenHistory.type';
 
 const emptyKenHistorySection: KenHistorySection = {
   items: [],

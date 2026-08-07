@@ -20,7 +20,7 @@ import {
   PEN_SHOTS_PAGE,
   PEN_SHOTS_PAGE_MOBILE,
   usePenStore,
-} from '@ola/shared/stores/penStore';
+} from '@ola/shared/stores/pen/penStore';
 import type { PenSettledEvent, PenSide, PenShotView } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';

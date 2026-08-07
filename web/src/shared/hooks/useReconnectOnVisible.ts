@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { SocketService } from '@services';
-import { resyncKenBalance } from '@ola/shared/stores/kenRealtime';
+import { resyncKenBalance } from '@ola/shared/stores/ken/kenRealtime';
 
 export function useReconnectOnVisible() {
   useEffect(() => {

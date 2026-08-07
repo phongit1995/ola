@@ -1,18 +1,18 @@
-import { KEN_SOCKET_EVENTS } from '../constants/socket';
-import { SocketService } from '../services/socket.service';
-import { playKenCreditSound } from '../platform/sound';
+import { KEN_SOCKET_EVENTS } from '../../constants/socket';
+import { SocketService } from '../../services/socket.service';
+import { playKenCreditSound } from '../../platform/sound';
 import type {
   KenChestAvailableEvent,
   KenChestClosedEvent,
   KenUpdatedEvent,
-} from '../types/realtime/ken.type';
-import { useAuthStore } from './authStore';
+} from '../../types/realtime/ken.type';
+import { useAuthStore } from '../authStore';
 import {
   markKenRealtimeUpdate,
   resyncKenBalance,
 } from './kenResync.state';
 import { useKenTreasureStore } from './kenTreasureStore';
-import { claimRealtimeRegistration } from './realtimeRegistration.state';
+import { claimRealtimeRegistration } from '../realtimeRegistration.state';
 
 export { resyncKenBalance } from './kenResync.state';
 

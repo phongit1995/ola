@@ -7,7 +7,7 @@ import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import {
   KEN_HISTORY_PAGE,
   useKenHistoryStore,
-} from '@ola/shared/stores/kenHistoryStore';
+} from '@ola/shared/stores/ken/kenHistoryStore';
 import type { KenHistoryRow, KenHistoryTab } from '@ola/shared/types';
 
 const KEN_TX_META = {

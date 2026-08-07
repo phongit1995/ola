@@ -13,7 +13,7 @@ import { authTokens, toast } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
-import { resyncKenBalance } from '@ola/shared/stores/kenRealtime';
+import { resyncKenBalance } from '@ola/shared/stores/ken/kenRealtime';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { RootNavigator } from './navigation/RootNavigator';
 import { AppFontProvider } from './components/AppFontProvider';

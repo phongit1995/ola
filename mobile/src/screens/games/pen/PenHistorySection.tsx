@@ -5,7 +5,7 @@ import { formatVnd, toApiError } from '@ola/shared/lib';
 import { PenService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@ola/shared/stores/penHistoryStore';
+import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@ola/shared/stores/pen/penHistoryStore';
 import type { PenHistorySection as SectionRole, PenSide } from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { VipBadge } from '@components/ui/VipBadge';

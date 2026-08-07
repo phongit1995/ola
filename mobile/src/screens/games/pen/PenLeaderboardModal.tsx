@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
-import { PEN_LEADERBOARD_PAGE, usePenLeaderboardStore } from '@ola/shared/stores/penLeaderboardStore';
+import { PEN_LEADERBOARD_PAGE, usePenLeaderboardStore } from '@ola/shared/stores/pen/penLeaderboardStore';
 import type { PenLeaderboardPeriod } from '@ola/shared/types';
 import { penLeaderboardAssets, penShootAssets } from './penAssets';
 import { PenBg, PenPanel, penTextShadow, sizeByHeight } from './penUi';

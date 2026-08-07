@@ -1,5 +1,5 @@
-import { UserService } from '../services/user.service';
-import { useAuthStore } from './authStore';
+import { UserService } from '../../services/user.service';
+import { useAuthStore } from '../authStore';
 
 let realtimeRevision = 0;
 let resyncQueued = false;

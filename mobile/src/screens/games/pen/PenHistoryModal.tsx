@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
-import { usePenHistoryStore } from '@ola/shared/stores/penHistoryStore';
+import { usePenHistoryStore } from '@ola/shared/stores/pen/penHistoryStore';
 import type { PenHistorySection as SectionRole } from '@ola/shared/types';
 import { penHistoryAssets, penShootAssets } from './penAssets';
 import { PenBg, PenPanel, penTextShadow } from './penUi';

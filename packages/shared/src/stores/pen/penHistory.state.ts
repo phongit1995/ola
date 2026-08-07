@@ -1,7 +1,7 @@
 import type {
   PenHistorySection,
   PenHistorySectionState,
-} from '../types/client/penHistory.type';
+} from '../../types/client/penHistory.type';
 
 const emptyPenHistorySection: PenHistorySectionState = {
   items: [],

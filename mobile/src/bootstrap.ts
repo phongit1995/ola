@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { configureDeviceInfo, configureEnv, configureSound } from '@ola/shared/platform';
 import { registerOnLogout } from '@ola/shared/stores/authStore';
-import { useKenTreasureStore } from '@ola/shared/stores/kenTreasureStore';
+import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';

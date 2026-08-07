@@ -4,7 +4,7 @@ import {
   configureSound,
 } from '@ola/shared/platform';
 import { registerOnLogout } from '@ola/shared/stores/authStore';
-import { useKenTreasureStore } from '@ola/shared/stores/kenTreasureStore';
+import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { webEnv, initAnalytics } from '@config';

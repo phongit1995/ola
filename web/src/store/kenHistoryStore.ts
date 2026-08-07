@@ -1,1 +1,1 @@
-export * from '@ola/shared/stores/kenHistoryStore';
+export * from '@ola/shared/stores/ken/kenHistoryStore';

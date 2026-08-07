@@ -1,4 +1,4 @@
-import type { PenLeaderboardState } from '../types/client/pen.type';
+import type { PenLeaderboardState } from '../../types/client/pen.type';
 
 export const initialPenLeaderboardState: Pick<
   PenLeaderboardState,

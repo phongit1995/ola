@@ -1,22 +1,22 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import i18n from 'i18next';
-import { KEN_TREASURE_OPEN_ANIMATION_MS } from '../constants/ken';
-import { toast } from '../lib/toast';
-import { playKenChestSound } from '../platform/sound';
-import { sharedPersistStorage } from '../platform/persistStorage';
-import { KenTreasureService } from '../services/kenTreasure.service';
+import { KEN_TREASURE_OPEN_ANIMATION_MS } from '../../constants/ken';
+import { toast } from '../../lib/toast';
+import { playKenChestSound } from '../../platform/sound';
+import { sharedPersistStorage } from '../../platform/persistStorage';
+import { KenTreasureService } from '../../services/kenTreasure.service';
 import type {
   KenTreasureChest,
   KenTreasurePositionState,
   KenTreasureState,
-} from '../types/client/kenTreasure.type';
-import { useAuthStore } from './authStore';
+} from '../../types/client/kenTreasure.type';
+import { useAuthStore } from '../authStore';
 
 export type {
   KenTreasureChest,
   KenTreasurePhase,
-} from '../types/client/kenTreasure.type';
+} from '../../types/client/kenTreasure.type';
 
 function hasActiveModal(chests: Record<string, KenTreasureChest>): boolean {
   return Object.values(chests).some((c) => c.phase === 'opening' || c.phase === 'result');
