@@ -4,6 +4,7 @@ import {
   toast,
   formatKen,
   formatVnd,
+  formatVndCurrency,
   buildVietQrImageUrl,
   fillMemoTemplate,
 } from '@lib';
@@ -136,7 +137,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                         : 'border-black/12 bg-white text-black/87'
                     }`}
                   >
-                    {formatVnd(value)}đ
+                    {formatVndCurrency(value)}
                   </button>
                 ))}
               </div>
@@ -230,7 +231,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                         {t('ken.buy.amountLabel')}
                       </span>
                       <span className="block text-lg font-bold text-black/87">
-                        {formatVnd(amount)}đ
+                        {formatVndCurrency(amount)}
                       </span>
                     </div>
                     <p className="mt-2 text-center text-xs text-black/54">

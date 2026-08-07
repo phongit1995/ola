@@ -1,6 +1,7 @@
 import type { ParseKeys } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from '@components';
+import { SOCIAL_LINKS } from '@constants';
 import fanpageIcon from '@/assets/icons/social/fanpage.png';
 import groupIcon from '@/assets/icons/social/group.png';
 import socialMenuIcon from '@/assets/icons/social/social-menu-light.png';
@@ -18,19 +19,19 @@ const SOCIAL_OPTIONS: SocialOption[] = [
     key: 'fanpage',
     icon: fanpageIcon,
     labelKey: 'social.fanpageTitle',
-    url: 'https://www.facebook.com/ola2vn',
+    url: SOCIAL_LINKS.fanpage,
   },
   {
     key: 'group',
     icon: groupIcon,
     labelKey: 'social.groupTitle',
-    url: 'https://www.facebook.com/groups/nghienola',
+    url: SOCIAL_LINKS.group,
   },
   {
     key: 'tiktok',
     icon: tiktokIcon,
     labelKey: 'social.tiktokTitle',
-    url: 'https://www.tiktok.com/@olachat.net',
+    url: SOCIAL_LINKS.tiktok,
   },
 ];
 
