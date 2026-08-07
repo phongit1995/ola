@@ -244,7 +244,7 @@ export function ChatPanel() {
 
       <main className="relative flex-1 overflow-y-auto">
         {sub === 'messages' ? (
-          <div className="relative h-full bg-[#f3f3f3]">
+          <div className="relative h-full bg-ola-surface">
             {loadingConversations && conversations.length === 0 ? (
               <div className="flex h-full items-center justify-center">
                 <span className="h-8 w-8 animate-spin rounded-full border-4 border-ola-primary/30 border-t-ola-primary" />

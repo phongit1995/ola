@@ -4,7 +4,7 @@ import type { ProfileSecondary } from './types';
 export const DEFAULT_COVER_COLOR = '#33691e';
 
 export const INPUT_CLASS =
-  'w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-[#e34545]';
+  'w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-ola-error';
 
 export const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
 

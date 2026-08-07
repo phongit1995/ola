@@ -58,7 +58,7 @@ export function MeCommentComposer({
   return (
     <div ref={areaRef}>
       {replyingTo != null && replyingTo !== '' && (
-        <div className="flex items-center gap-2 border-t border-black/12 bg-[#eceff1] px-4 py-1.5 text-xs text-black/54">
+        <div className="flex items-center gap-2 border-t border-black/12 bg-ola-surface-cool px-4 py-1.5 text-xs text-black/54">
           <span className="min-w-0 flex-1 truncate">
             {t('me.replyingTo', { name: `@${replyingTo}` })}
           </span>

@@ -406,7 +406,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
 
         <div className="p-4">
           {error ? (
-            <div className="mb-4 rounded bg-[#e34545]/10 px-3 py-2 text-sm text-[#e34545]">
+            <div className="mb-4 rounded bg-ola-error/10 px-3 py-2 text-sm text-ola-error">
               {error}
             </div>
           ) : null}

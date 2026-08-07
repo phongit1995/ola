@@ -85,7 +85,7 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
 
       <div className="flex-1 overflow-y-auto bg-[#ececec] pt-2 pb-4">
         {showLowKenWarning && (
-          <p className="mx-2 mb-2 rounded-sm border border-black/12 bg-white px-3 py-2.5 text-xs text-[#e34545]">
+          <p className="mx-2 mb-2 rounded-sm border border-black/12 bg-white px-3 py-2.5 text-xs text-ola-error">
             {t('ken.lowWarning')}
           </p>
         )}
@@ -123,7 +123,7 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={comingSoon}
-          className="flex h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark bg-[#9ccc65] text-sm text-white"
+          className="flex h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark bg-ola-button text-sm text-white"
         >
           {t('ken.support')}
         </button>

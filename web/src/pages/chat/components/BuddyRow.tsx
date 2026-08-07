@@ -58,7 +58,7 @@ export function BuddyRow({
         onClick={handleClick}
         {...longPress}
         className={`flex w-full cursor-pointer items-center border-b border-black/12 px-4 py-3 text-left ${
-          highlight ? 'bg-[#f1f8e9]' : 'bg-white/80'
+          highlight ? 'bg-ola-primary-light' : 'bg-white/80'
         }`}
       >
         <button

@@ -17,7 +17,7 @@ export function FullScreenOverlay({
   const zClass = z === 60 ? 'z-[100]' : z === 50 ? 'z-50' : 'z-40';
   return (
     <div
-      className={`${positionClass} ${zClass} inset-0 flex flex-col bg-[#eceff1] ${className}`}
+      className={`${positionClass} ${zClass} inset-0 flex flex-col bg-ola-surface-cool ${className}`}
     >
       {children}
     </div>

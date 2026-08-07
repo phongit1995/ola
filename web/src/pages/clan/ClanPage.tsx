@@ -505,7 +505,7 @@ export function ClanPage({
                   </button>
                 )}
                 <div className="absolute bottom-2 left-2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.24)]">
-                  <div className="relative h-24 w-24 overflow-hidden bg-[#eceff1]">
+                  <div className="relative h-24 w-24 overflow-hidden bg-ola-surface-cool">
                     {clan.avatar != null && clan.avatar !== '' && (
                       <img
                         src={clan.avatar}

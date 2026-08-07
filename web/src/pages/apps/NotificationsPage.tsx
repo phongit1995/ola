@@ -40,7 +40,7 @@ interface RowButtonProps {
 function RowButton({ variant, disabled, onClick, children }: RowButtonProps) {
   const cls =
     variant === 'green'
-      ? 'bg-[#9ccc65] text-white'
+      ? 'bg-ola-button text-white'
       : 'ml-2 bg-[#e0e0e0] text-[#636363]';
   return (
     <button
@@ -180,7 +180,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
       <ScreenHeader title={t('notify.title')} onBack={onClose} />
 
       <div
-        className="flex-1 overflow-y-auto bg-[#d5d5d5]"
+        className="flex-1 overflow-y-auto bg-ola-border-strong"
         onScroll={handleScroll}
       >
         {loading && items.length === 0 ? (

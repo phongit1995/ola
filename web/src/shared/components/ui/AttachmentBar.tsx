@@ -130,7 +130,7 @@ function PhotoPanel({ onPickImage }: { onPickImage: () => void }) {
   const { t } = useTranslation();
   const [cloud, setCloud] = useState(false);
   return (
-    <div className="relative h-full bg-[#d5d5d5]">
+    <div className="relative h-full bg-ola-border-strong">
       <button
         type="button"
         onClick={onPickImage}

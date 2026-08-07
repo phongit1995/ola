@@ -69,7 +69,7 @@ export function CallContent() {
   const expandedHost = document.getElementById('ola-call-portal');
 
   const expandedView = (
-    <div className="animate-ola-call-expand fixed inset-0 z-[122] flex flex-col bg-gradient-to-br from-[#26332b] via-[#18211c] to-[#0e1411] text-white">
+    <div className="animate-ola-call-expand fixed inset-0 z-[122] flex flex-col bg-gradient-to-br from-ola-call-raised via-ola-call-bg to-ola-call-deep text-white">
       <div className="flex items-center gap-3 px-4 pt-5">
         <div className="min-w-0 flex-1">
           <p className="truncate text-lg font-semibold">{nameView.title}</p>

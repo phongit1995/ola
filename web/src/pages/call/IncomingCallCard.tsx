@@ -57,7 +57,7 @@ export function IncomingCallCard() {
   return (
     <div
       {...drag}
-      className="absolute left-0 top-0 z-[126] w-[300px] max-w-[92%] touch-none rounded-2xl bg-[#18211c]/95 p-4 text-white shadow-2xl backdrop-blur"
+      className="absolute left-0 top-0 z-[126] w-[300px] max-w-[92%] touch-none rounded-2xl bg-ola-call-bg/95 p-4 text-white shadow-2xl backdrop-blur"
     >
       <div className="flex items-center gap-3">
         <Avatar

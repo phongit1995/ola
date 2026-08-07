@@ -101,7 +101,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
               type="button"
               onClick={() => void send()}
               disabled={!canSend}
-              className="rounded-full bg-[#ff4d7d] px-4 py-1.5 text-sm font-bold text-white shadow-[0_2px_0_#c2185b] transition-transform active:translate-y-0.5 active:shadow-none disabled:bg-black/15 disabled:text-white/70 disabled:shadow-none"
+              className="rounded-full bg-ola-marriage px-4 py-1.5 text-sm font-bold text-white shadow-[0_2px_0_#c2185b] transition-transform active:translate-y-0.5 active:shadow-none disabled:bg-black/15 disabled:text-white/70 disabled:shadow-none"
             >
               {t('marriage.send')}
             </button>
@@ -109,7 +109,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="flex flex-col items-center gap-1 px-5 pt-6 pb-4 text-center">
-              <div className="text-5xl text-[#ff4d7d] drop-shadow-[0_2px_4px_rgba(255,77,125,0.35)]">
+              <div className="text-5xl text-ola-marriage drop-shadow-[0_2px_4px_rgba(255,77,125,0.35)]">
                 💍
               </div>
               <p className="max-w-xs text-sm text-black/55">
@@ -119,7 +119,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
 
             <div className="flex flex-col gap-5 px-4 pb-6">
               <section className="flex flex-col gap-2">
-                <p className="px-1 text-xs font-bold uppercase tracking-wide text-[#c2185b]">
+                <p className="px-1 text-xs font-bold uppercase tracking-wide text-ola-marriage-deep">
                   {t('marriage.receiverLabel')}
                 </p>
 
@@ -185,10 +185,10 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                         handleQueryChange(event.target.value)
                       }
                       placeholder={t('marriage.searchPlaceholder')}
-                      className="w-full rounded-2xl border border-[#ffd0de] bg-white py-3 pl-10 pr-3 text-sm outline-none transition-colors focus:border-[#ff4d7d] focus:shadow-[0_0_0_3px_rgba(255,77,125,0.15)]"
+                      className="w-full rounded-2xl border border-ola-marriage-soft bg-white py-3 pl-10 pr-3 text-sm outline-none transition-colors focus:border-ola-marriage focus:shadow-[0_0_0_3px_rgba(255,77,125,0.15)]"
                     />
                     {(results.length > 0 || searching) && (
-                      <ul className="absolute z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-2xl border border-[#ffd0de] bg-white py-1 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
+                      <ul className="absolute z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-2xl border border-ola-marriage-soft bg-white py-1 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
                         {searching && results.length === 0 ? (
                           <li className="px-3 py-2.5 text-sm text-black/45">
                             {t('common.loading')}
@@ -239,10 +239,10 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
               </section>
 
               <section className="flex flex-col gap-2">
-                <p className="px-1 text-xs font-bold uppercase tracking-wide text-[#c2185b]">
+                <p className="px-1 text-xs font-bold uppercase tracking-wide text-ola-marriage-deep">
                   {t('marriage.messageLabel')}
                 </p>
-                <div className="rounded-2xl border border-[#ffd0de] bg-white p-3 shadow-[0_2px_10px_rgba(255,77,125,0.08)] focus-within:border-[#ff4d7d] focus-within:shadow-[0_0_0_3px_rgba(255,77,125,0.15)]">
+                <div className="rounded-2xl border border-ola-marriage-soft bg-white p-3 shadow-[0_2px_10px_rgba(255,77,125,0.08)] focus-within:border-ola-marriage focus-within:shadow-[0_0_0_3px_rgba(255,77,125,0.15)]">
                   <textarea
                     value={message}
                     onChange={(event) =>

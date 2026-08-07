@@ -40,7 +40,7 @@ function ChatQuoteBlock({ replyTo, onQuoteClick }: ChatQuoteBlockProps) {
         event.stopPropagation();
         onQuoteClick?.(replyTo.messageId);
       }}
-      className="mb-1 block w-full rounded border-l-2 border-[#7cb342] bg-black/5 py-0.5 pl-2 pr-1 text-left"
+      className="mb-1 block w-full rounded border-l-2 border-ola-primary bg-black/5 py-0.5 pl-2 pr-1 text-left"
     >
       <span className="block truncate text-xs font-semibold text-black/60">
         {replyTo.senderName != null && replyTo.senderName !== ''

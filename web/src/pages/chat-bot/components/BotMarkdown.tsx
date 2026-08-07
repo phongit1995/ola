@@ -63,7 +63,7 @@ function CodeBlock({ code }: { code: string }) {
           {t('chat.chatBotCopyCode')}
         </button>
       </div>
-      <pre className="overflow-x-auto px-3 py-2 font-mono text-[12px] leading-relaxed text-[#eceff1]">
+      <pre className="overflow-x-auto px-3 py-2 font-mono text-[12px] leading-relaxed text-ola-surface-cool">
         {code}
       </pre>
     </div>

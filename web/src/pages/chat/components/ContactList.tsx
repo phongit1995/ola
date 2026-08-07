@@ -64,7 +64,7 @@ function ActionRow({
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="flex h-9 items-center bg-[#d5d5d5] px-4">
+    <div className="flex h-9 items-center bg-ola-border-strong px-4">
       <span className="truncate text-sm font-medium text-white">{label}</span>
     </div>
   );
@@ -164,8 +164,8 @@ export function ContactList({
   ];
 
   return (
-    <div className="h-full overflow-y-auto bg-[#f3f3f3]">
-      <div className="border-b border-[#b2b2b2] bg-[#d5d5d5] px-4 py-3">
+    <div className="h-full overflow-y-auto bg-ola-surface">
+      <div className="border-b border-[#b2b2b2] bg-ola-border-strong px-4 py-3">
         <div className="flex h-10 items-center gap-1 rounded-[5px] border border-[#b2b2b2] bg-white px-1">
           <SearchIcon className="h-4 w-4 shrink-0 text-black/38" />
           <input

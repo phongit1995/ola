@@ -90,7 +90,7 @@ export function RoomPanel() {
 
       <PullToRefresh
         onRefresh={refresh}
-        className="relative flex-1 overflow-y-auto bg-[#f3f3f3]"
+        className="relative flex-1 overflow-y-auto bg-ola-surface"
       >
         {loadingRooms && (
           <div className="py-2 text-center text-sm text-ola-primary">

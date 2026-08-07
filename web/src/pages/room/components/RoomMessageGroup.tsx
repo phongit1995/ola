@@ -61,7 +61,7 @@ function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
         onQuoteClick?.(replyTo.messageId);
       }}
       className={`mb-1 block w-full rounded border-l-2 py-0.5 pl-2 pr-1 text-left ${
-        isOwn ? 'border-white/60 bg-white/15' : 'border-[#7cb342] bg-black/5'
+        isOwn ? 'border-white/60 bg-white/15' : 'border-ola-primary bg-black/5'
       }`}
     >
       <span
@@ -139,8 +139,8 @@ function RoomBubble({
   useUploadPreviewLease(isImage ? message.imageUrl : undefined);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bubbleClass = isOwn
-    ? `w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${corners}`
-    : `w-fit max-w-full break-words bg-[#f1f8e9] px-3.5 py-2 text-base text-black/87 ${corners}`;
+    ? `w-fit max-w-full break-words bg-ola-primary px-3.5 py-2 text-base text-white ${corners}`
+    : `w-fit max-w-full break-words bg-ola-primary-light px-3.5 py-2 text-base text-black/87 ${corners}`;
 
   const content = isImage ? (
     <span className="relative block">

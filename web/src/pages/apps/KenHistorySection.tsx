@@ -80,7 +80,7 @@ function TransactionRow({ row }: { row: KenHistoryRow }) {
       <div className="shrink-0 text-right">
         <div
           className={`text-sm font-semibold ${
-            credit ? 'text-[#2e7d32]' : 'text-[#e34545]'
+            credit ? 'text-[#2e7d32]' : 'text-ola-error'
           }`}
         >
           {credit ? '+' : '−'}

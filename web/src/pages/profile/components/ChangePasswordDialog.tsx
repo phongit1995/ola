@@ -34,7 +34,7 @@ function PasswordField({
         className={FIELD_CLASS}
         {...field}
       />
-      {error && <p className="mt-1 text-xs text-[#e34545]">{error}</p>}
+      {error && <p className="mt-1 text-xs text-ola-error">{error}</p>}
     </div>
   );
 }

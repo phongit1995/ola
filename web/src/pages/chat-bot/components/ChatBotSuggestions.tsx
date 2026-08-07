@@ -16,7 +16,7 @@ export function ChatBotSuggestions({ keys, onPick }: ChatBotSuggestionsProps) {
           key={key}
           type="button"
           onClick={() => onPick(t(key))}
-          className="shrink-0 rounded-full border border-black/12 bg-[#f3f3f3] px-3 py-1.5 text-xs whitespace-nowrap text-black/70 active:scale-95"
+          className="shrink-0 rounded-full border border-black/12 bg-ola-surface px-3 py-1.5 text-xs whitespace-nowrap text-black/70 active:scale-95"
         >
           {t(key)}
         </button>
