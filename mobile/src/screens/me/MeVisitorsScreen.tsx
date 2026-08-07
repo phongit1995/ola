@@ -13,6 +13,7 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { VISITORS_PAGE_SIZE } from './constants';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
 export function MeVisitorsScreen() {
   const { t, i18n } = useTranslation();
@@ -89,7 +90,7 @@ export function MeVisitorsScreen() {
             ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color="#7cb342" /> : null}
             renderItem={({ item }) => {
               const status = item.relationship?.status ?? 'none';
-              const sent = status === 'pending_outgoing' || requested[item.id] === true;
+              const sent = status === RELATIONSHIP_STATUS.pendingOutgoing || requested[item.id] === true;
               const openProfile = () =>
                 navigation.navigate(ROOT_ROUTES.ProfileView, { userId: item.username });
               return (
@@ -115,7 +116,7 @@ export function MeVisitorsScreen() {
                         {formatTime(item.viewedAt)}
                       </Text>
                     </Pressable>
-                    {status === 'friend' ? (
+                    {status === RELATIONSHIP_STATUS.friend ? (
                       <View className="self-start rounded px-3 py-1" style={{ backgroundColor: 'rgba(0,0,0,0.08)' }}>
                         <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.45)' }}>{t('me.alreadyFriend')}</Text>
                       </View>

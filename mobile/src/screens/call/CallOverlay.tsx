@@ -44,6 +44,7 @@ import {
   startCallForegroundService,
   stopCallForegroundService,
 } from './lib/callForegroundService';
+import { CALL_MODE, CALL_TYPE } from '@ola/shared/constants';
 
 const CONTROLS_HEIGHT = 64;
 const CONTROLS_GAP = 24;
@@ -214,10 +215,10 @@ function CallSessionUi({ withVideo }: { withVideo: boolean }) {
   usePeerPresenceWatcher();
   useCallConnectTimeout();
   const connectionState = useConnectionState(room);
-  const elapsed = useElapsedSeconds(mode === 'active');
+  const elapsed = useElapsedSeconds(mode === CALL_MODE.active);
 
   useEffect(() => {
-    setPipSupported(mode === 'active' || mode === 'outgoing', withVideo);
+    setPipSupported(mode === CALL_MODE.active || mode === CALL_MODE.outgoing, withVideo);
   }, [mode, withVideo]);
 
   useEffect(
@@ -352,7 +353,7 @@ function ActiveCallBody({ withVideo }: { withVideo: boolean }) {
       token={active.token}
       connect
       audio
-      video={active.callType === 'video'}
+      video={active.callType === CALL_TYPE.video}
       options={{ adaptiveStream: true, dynacast: true }}
       onError={() => {
         useToastStore.getState().push('error', i18n.t('call.connectTimeout'));
@@ -360,7 +361,7 @@ function ActiveCallBody({ withVideo }: { withVideo: boolean }) {
       }}
       onDisconnected={endActive}
     >
-      <CallSessionUi withVideo={active.callType === 'video'} />
+      <CallSessionUi withVideo={active.callType === CALL_TYPE.video} />
     </LiveKitRoom>
   );
 }
@@ -372,7 +373,7 @@ export function CallOverlay() {
   const declineIncoming = useCallStore((s) => s.declineIncoming);
   const setExpanded = useCallStore((s) => s.setExpanded);
 
-  const incoming = mode === 'incoming';
+  const incoming = mode === CALL_MODE.incoming;
   const inCall = !incoming && mode !== 'idle' && callType != null;
 
   useEffect(() => {
@@ -397,7 +398,7 @@ export function CallOverlay() {
           <IncomingCallCard />
         </FullscreenLayer>
       ) : (
-        <ActiveCallBody withVideo={callType === 'video'} />
+        <ActiveCallBody withVideo={callType === CALL_TYPE.video} />
       )}
     </View>
   );

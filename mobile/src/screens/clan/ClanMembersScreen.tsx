@@ -16,6 +16,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { CLAN_ROLE_ICONS, clanErrorText, clanRoleLabel, isClanStaff } from '@lib/clanHelpers';
 import { MEMBERS_PAGE_SIZE } from './constants';
+import { CLAN_ROLE } from '@ola/shared/constants';
 
 interface ClanMembersScreenProps {
   clanId: string;
@@ -124,8 +125,8 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
   }
 
   const staff = clan != null && isClanStaff(clan);
-  const owner = clan?.myRole === 'owner';
-  const bannable = (member: ClanMember) => member.role === 'member';
+  const owner = clan?.myRole === CLAN_ROLE.owner;
+  const bannable = (member: ClanMember) => member.role === CLAN_ROLE.member;
 
   const menuOptions: ListOption[] =
     menuTarget == null

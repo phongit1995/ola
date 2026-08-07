@@ -38,6 +38,7 @@ import {
   deleteTemporaryVoiceFile,
   deleteTemporaryVoiceFileAfterUiUpdate,
 } from '@lib/temporaryVoiceFile';
+import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<RoomStackParamList, 'RoomChat'>,
@@ -184,7 +185,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
       const failedAudioUris = useRoomChatStore
         .getState()
         .messages.filter(
-          message => message.type === 'audio' && message.status === 'failed',
+          message => message.type === MESSAGE_TYPE.audio && message.status === MESSAGE_STATUS.failed,
         )
         .map(message => message.audioUrl)
         .filter((uri): uri is string => uri != null && uri !== '');
@@ -256,8 +257,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
         current.activeRoom?.id === sourceRoomId &&
         current.messages.some(
           message =>
-            message.type === 'audio' &&
-            message.status === 'failed' &&
+            message.type === MESSAGE_TYPE.audio &&
+            message.status === MESSAGE_STATUS.failed &&
             message.audioUrl === previewUri,
         );
       if (!retryable) deleteTemporaryVoiceFileAfterUiUpdate(previewUri);

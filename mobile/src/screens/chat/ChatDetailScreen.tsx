@@ -25,7 +25,11 @@ import {
   isSameDay,
   parseMessageMetadata,
 } from '@ola/shared/lib';
-import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import {
+  MESSAGE_STATUS,
+  MESSAGE_TYPE,
+  RELATIONSHIP_STATUS,
+} from '@ola/shared/constants';
 import type { Message, NativeUploadFile, ReactionType } from '@ola/shared/types';
 import { ChatCallButtons } from '@screens/call/ChatCallButtons';
 import type { RootStackParamList } from '@navigation/types';
@@ -326,7 +330,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   async function resendWithAudioCleanup(messageId: string) {
     const target = messages.find((message) => message.id === messageId);
     const previewUri =
-      target?.type === 'audio'
+      target?.type === MESSAGE_TYPE.audio
         ? (parseMessageMetadata(target.metadata).url ?? '')
         : '';
     const sent = await resendMessage(messageId);
@@ -665,8 +669,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   .getState()
                   .messages.some(
                     message =>
-                      message.type === 'audio' &&
-                      message.status === 'failed' &&
+                      message.type === MESSAGE_TYPE.audio &&
+                      message.status === MESSAGE_STATUS.failed &&
                       parseMessageMetadata(message.metadata).url ===
                         audio.file.uri,
                   );

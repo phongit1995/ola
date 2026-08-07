@@ -31,6 +31,7 @@ import { ROOT_ROUTES } from '@navigation/routes';
 import { canPostPublicInClan, clanFeedErrorText, isClanStaff } from '@lib/clanHelpers';
 import { useClanScreen } from './useClanScreen';
 import { ClanHeaderCard } from './components/ClanHeaderCard';
+import { CLAN_ROLE } from '@ola/shared/constants';
 
 interface ClanScreenProps {
   handle?: string;
@@ -231,7 +232,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
     );
   }
 
-  const isOwner = clan.myRole === 'owner';
+  const isOwner = clan.myRole === CLAN_ROLE.owner;
   const privacyOptions: PostVisibility[] = canPostPublicInClan(clan)
     ? ['public', 'private']
     : ['private'];

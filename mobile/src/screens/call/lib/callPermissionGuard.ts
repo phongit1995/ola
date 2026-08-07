@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { CallType } from '@ola/shared/types';
 import { primeCallPermissions } from './primeCallPermissions';
+import { CALL_TYPE } from '@ola/shared/constants';
 
 export async function ensureCallPermissions(
   callType: CallType,
@@ -12,7 +13,7 @@ export async function ensureCallPermissions(
 
   const push = useToastStore.getState().push;
   if (result === 'denied') {
-    push('error', t(callType === 'video' ? 'call.cameraDenied' : 'call.micDenied'));
+    push('error', t(callType === CALL_TYPE.video ? 'call.cameraDenied' : 'call.micDenied'));
     return false;
   }
   // Khác web: web coi 'failed' là qua vì trình duyệt vẫn xin quyền lại lúc

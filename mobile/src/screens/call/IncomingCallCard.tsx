@@ -13,6 +13,7 @@ import { useCallStore } from '@store/callStore';
 import { CALL_BG } from './constants';
 import { EndCallIcon, PhoneIcon } from './icons';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
+import { CALL_TYPE } from '@ola/shared/constants';
 
 const RING_PATTERN = [0, 700, 1300];
 const ACCEPT_ICON_COLOR = '#33691e';
@@ -42,7 +43,7 @@ export function IncomingCallCard() {
   const name = peerDisplayName(incoming.caller, t('call.unknownUser'));
   const nameView = callPeerNameView(incoming.caller, t('call.unknownUser'));
   const title =
-    incoming.callType === 'video'
+    incoming.callType === CALL_TYPE.video
       ? t('call.incomingVideoCall')
       : t('call.incomingVoiceCall');
   const busy = pendingAction != null || answering;

@@ -4,6 +4,7 @@ import {
   isCopyableMessageText,
   messageReplyExcerpt,
 } from '@lib/messageView';
+import { MESSAGE_TYPE } from '@ola/shared/constants';
 
 export function replyExcerpt(t: TFunction, message: Message): string {
   return messageReplyExcerpt(message, {
@@ -29,7 +30,7 @@ export function chatMessageAbilities(
   return {
     canReply: !isOwn && !blocked && message.type !== 'call',
     canCopy: isCopyableMessageText(message),
-    canEdit: isOwn && message.type === 'text',
+    canEdit: isOwn && message.type === MESSAGE_TYPE.text,
     canDelete: isOwn,
   };
 }

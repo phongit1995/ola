@@ -15,6 +15,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { APP_NOTIFICATION_TYPE } from '@ola/shared/constants';
 
 const icFriend = require('@assets/icons/notify/ic_notification_add_friend.png');
 const icHeart = require('@assets/icons/notify/ic_notification_heart.png');
@@ -110,7 +111,7 @@ export function NotificationsScreen() {
 
   function renderActions(item: AppNotification) {
     if (item.refId == null) return null;
-    if (item.type === 'friend_request') {
+    if (item.type === APP_NOTIFICATION_TYPE.friendRequest) {
       return (
         <View className="mt-1 flex-row">
           <RowButton variant="green" disabled={busyId != null} onPress={() => respondFriendRequest(item, true)}>
@@ -122,7 +123,7 @@ export function NotificationsScreen() {
         </View>
       );
     }
-    if (item.type === 'marriage_proposal') {
+    if (item.type === APP_NOTIFICATION_TYPE.marriageProposal) {
       return (
         <View className="mt-1 flex-row">
           <RowButton variant="green" disabled={busyId != null} onPress={() => setProposalAction({ item, kind: 'accept' })}>

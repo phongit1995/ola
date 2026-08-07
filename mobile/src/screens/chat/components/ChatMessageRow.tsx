@@ -15,6 +15,7 @@ import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
 import { PhoneIcon, VideoIcon } from '@screens/call/icons';
 import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
+import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
   const rowWidth = windowWidth - 24 - (fromMe ? 0 : 36);
@@ -51,10 +52,10 @@ function ChatQuoteBlock({
   onQuoteClick?: (messageId: string) => void;
 }) {
   const { t } = useTranslation();
-  const isImage = replyTo.type === 'image';
+  const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = isImage
     ? t('chat.replyImage')
-    : replyTo.type === 'audio'
+    : replyTo.type === MESSAGE_TYPE.audio
       ? t('chat.replyAudio')
       : kulImageForText(replyTo.excerpt) != null
         ? t('chat.replySticker')
@@ -180,7 +181,7 @@ export function ChatBubble({
   const meta = parseMessageMetadata(message.metadata);
   const { width: windowWidth } = useWindowDimensions();
   const [imageRatio, setImageRatio] = useState<number | null>(null);
-  const failed = message.status === 'failed';
+  const failed = message.status === MESSAGE_STATUS.failed;
   const bg = failed ? '#f8d7d7' : fromMe ? '#dcedc8' : '#ffffff';
   const cornerClass = fromMe
     ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
@@ -208,7 +209,7 @@ export function ChatBubble({
       content
     );
 
-  const kul = message.type === 'text' ? kulImageForText(message.content) : null;
+  const kul = message.type === MESSAGE_TYPE.text ? kulImageForText(message.content) : null;
 
   if (kul != null) {
     return quotedWrap(
@@ -216,7 +217,7 @@ export function ChatBubble({
     );
   }
 
-  if (message.type === 'image' && meta.url != null && meta.url !== '') {
+  if (message.type === MESSAGE_TYPE.image && meta.url != null && meta.url !== '') {
     return quotedWrap(
       <Pressable
         onPress={() => onOpenImage(meta.url!)}
@@ -235,7 +236,7 @@ export function ChatBubble({
     );
   }
 
-  if (message.type === 'audio') {
+  if (message.type === MESSAGE_TYPE.audio) {
     return (
       <VoiceBubble
         url={meta.url}
@@ -248,7 +249,7 @@ export function ChatBubble({
     );
   }
 
-  if (message.type === 'call') {
+  if (message.type === MESSAGE_TYPE.call) {
     return (
       <CallLogBubble
         meta={meta}
@@ -310,8 +311,8 @@ export function ChatMessageRow({
   const bubbleRef = useRef<View>(null);
   const chipsRef = useRef<View>(null);
   const showAvatar = !fromMe && firstInGroup;
-  const pending = message.status === 'sending' || message.status === 'uploading';
-  const failed = message.status === 'failed';
+  const pending = message.status === MESSAGE_STATUS.sending || message.status === MESSAGE_STATUS.uploading;
+  const failed = message.status === MESSAGE_STATUS.failed;
   const canAct = !pending && !failed;
 
   function openActions(ref: typeof bubbleRef) {

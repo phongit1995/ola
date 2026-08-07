@@ -16,6 +16,7 @@ import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
 const MESSAGE_LIMIT = 500;
 
@@ -26,7 +27,7 @@ interface ProposeComposerProps {
 }
 
 function isBlocked(user: UserSearchResult): boolean {
-  return user.relationship === 'blocked_by_me' || user.relationship === 'blocked_by_them';
+  return user.relationship === RELATIONSHIP_STATUS.blockedByMe || user.relationship === RELATIONSHIP_STATUS.blockedByThem;
 }
 
 function UserRowName({ user }: { user: UserSearchResult }) {

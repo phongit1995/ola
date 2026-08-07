@@ -18,6 +18,7 @@ import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { clanErrorText, clanPolicyLabel } from '@lib/clanHelpers';
+import { CLAN_ROLE } from '@ola/shared/constants';
 
 const editIcon = require('@assets/icons/me/ic_action_edit.png');
 
@@ -360,7 +361,7 @@ export function ClanManageScreen({
         message={
           revokeRole == null
             ? ''
-            : revokeRole.role === 'deputy'
+            : revokeRole.role === CLAN_ROLE.deputy
               ? t('clan.revokeConfirmDeputy', { username: revokeRole.username })
               : t('clan.revokeConfirmAmbassador', { username: revokeRole.username })
         }
