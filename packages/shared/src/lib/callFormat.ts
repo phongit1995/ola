@@ -13,6 +13,23 @@ export function peerDisplayName(peer: CallerBrief, fallback: string): string {
   return peer.fullName ?? peer.username ?? fallback;
 }
 
+export interface CallPeerNameView {
+  title: string;
+  subtitle: string | null;
+}
+
+export function callPeerNameView(
+  peer: CallerBrief,
+  fallback: string
+): CallPeerNameView {
+  const username = peer.username ?? '';
+  const fullName = peer.fullName ?? '';
+  if (username === '') {
+    return { title: fullName === '' ? fallback : fullName, subtitle: null };
+  }
+  return { title: `@${username}`, subtitle: fullName === '' ? null : fullName };
+}
+
 export interface CallMessageView {
   isVideo: boolean;
   missed: boolean;

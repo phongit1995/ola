@@ -109,6 +109,7 @@ function App() {
         <GlobalArcade />
         <GlobalCall />
       </div>
+      <div id="ola-call-portal" />
       <GlobalMediaViewer />
     </div>
   );

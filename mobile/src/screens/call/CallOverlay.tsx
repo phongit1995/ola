@@ -17,6 +17,7 @@ import {
 import { Track } from 'livekit-client';
 import { Avatar } from '@components/ui/Avatar';
 import {
+  callPeerNameView,
   colorForName,
   computeCallStatusLabel,
   peerDisplayName,
@@ -24,6 +25,7 @@ import {
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { CallerBrief } from '@ola/shared/types';
 import { useCallStore } from '@store/callStore';
+import { CALL_BG } from './constants';
 import { CallControls } from './CallControls';
 import { CallMiniWidget } from './CallMiniWidget';
 import { CallVideoArea } from './CallVideoArea';
@@ -81,6 +83,8 @@ function FullscreenLayer({
 interface CallLayoutProps {
   peer: CallerBrief;
   peerName: string;
+  title: string;
+  subtitle: string | null;
   statusLabel: string;
   videoArea?: React.ReactNode;
   controls?: React.ReactNode;
@@ -90,6 +94,8 @@ interface CallLayoutProps {
 function CallLayout({
   peer,
   peerName,
+  title,
+  subtitle,
   statusLabel,
   videoArea,
   controls,
@@ -100,7 +106,7 @@ function CallLayout({
   const endActive = useCallStore((s) => s.endActive);
 
   return (
-    <View className="flex-1 bg-ola-primary-darker">
+    <View className="flex-1" style={{ backgroundColor: CALL_BG }}>
       {videoArea ?? (
         <View className="absolute inset-0 items-center justify-center">
           <Avatar
@@ -117,8 +123,13 @@ function CallLayout({
         style={{ paddingTop: insets.top + 32 }}
       >
         <Text className="text-xl font-bold text-white" numberOfLines={1}>
-          {peerName}
+          {title}
         </Text>
+        {subtitle != null && (
+          <Text className="text-sm text-white/80" numberOfLines={1}>
+            {subtitle}
+          </Text>
+        )}
         <Text className="text-sm text-white/70">{statusLabel}</Text>
       </View>
 
@@ -165,7 +176,10 @@ function PipCallLayer({
   const showVideo = isVideo && isTrackReference(remoteTrack);
 
   return (
-    <View className="flex-1 items-center justify-center bg-ola-primary-darker">
+    <View
+      className="flex-1 items-center justify-center"
+      style={{ backgroundColor: CALL_BG }}
+    >
       {showVideo ? (
         <VideoTrack
           trackRef={remoteTrack}
@@ -224,6 +238,7 @@ function CallSessionUi({ withVideo }: { withVideo: boolean }) {
   if (active == null) return null;
 
   const peerName = peerDisplayName(active.peer, t('call.unknownUser'));
+  const nameView = callPeerNameView(active.peer, t('call.unknownUser'));
   const statusLabel = computeCallStatusLabel(t, mode, connectionState, elapsed);
 
   if (inPip) {
@@ -244,6 +259,8 @@ function CallSessionUi({ withVideo }: { withVideo: boolean }) {
         <CallLayout
           peer={active.peer}
           peerName={peerName}
+          title={nameView.title}
+          subtitle={nameView.subtitle}
           statusLabel={statusLabel}
           onMinimize={() => setExpanded(false)}
           videoArea={
@@ -262,7 +279,7 @@ function CallSessionUi({ withVideo }: { withVideo: boolean }) {
 
       {!expanded && (
         <CallMiniWidget
-          peerName={peerName}
+          peerName={nameView.title}
           statusLabel={statusLabel}
           isVideo={withVideo}
         />
@@ -315,11 +332,14 @@ function ActiveCallBody({ withVideo }: { withVideo: boolean }) {
 
   if (active == null) return null;
   if (!audioReady) {
+    const nameView = callPeerNameView(active.peer, t('call.unknownUser'));
     return (
       <FullscreenLayer hidden={false}>
         <CallLayout
           peer={active.peer}
           peerName={peerDisplayName(active.peer, t('call.unknownUser'))}
+          title={nameView.title}
+          subtitle={nameView.subtitle}
           statusLabel={t('call.connecting')}
         />
       </FullscreenLayer>

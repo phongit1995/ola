@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
-import { colorForName, peerDisplayName } from '@lib';
+import { callPeerNameView, colorForName, peerDisplayName } from '@lib';
 import { useCallStore } from '@/store/callStore';
 import { EndCallIcon, PhoneIcon } from './icons';
 import {
@@ -36,6 +36,7 @@ export function IncomingCallCard() {
   if (incoming == null) return null;
 
   const name = peerDisplayName(incoming.caller, t('call.unknownUser'));
+  const nameView = callPeerNameView(incoming.caller, t('call.unknownUser'));
   const title =
     incoming.callType === 'video'
       ? t('call.incomingVideoCall')
@@ -55,7 +56,7 @@ export function IncomingCallCard() {
   return (
     <div
       {...drag}
-      className="absolute left-0 top-0 z-[126] w-[300px] max-w-[92%] touch-none rounded-2xl bg-ola-primary-darker/95 p-4 text-white shadow-2xl backdrop-blur"
+      className="absolute left-0 top-0 z-[126] w-[300px] max-w-[92%] touch-none rounded-2xl bg-[#18211c]/95 p-4 text-white shadow-2xl backdrop-blur"
     >
       <div className="flex items-center gap-3">
         <Avatar
@@ -65,7 +66,10 @@ export function IncomingCallCard() {
           size={52}
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-semibold">{name}</p>
+          <p className="truncate text-base font-semibold">{nameView.title}</p>
+          {nameView.subtitle != null && (
+            <p className="truncate text-xs text-white/80">{nameView.subtitle}</p>
+          )}
           <p className="truncate text-xs text-white/70">{title}</p>
         </div>
       </div>

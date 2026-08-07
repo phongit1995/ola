@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Track } from 'livekit-client';
 import { useRoomContext } from '@livekit/components-react';
-import { computeCallStatusLabel, peerDisplayName } from '@lib';
+import { callPeerNameView, computeCallStatusLabel, peerDisplayName } from '@lib';
 import { useCallStore } from '@/store/callStore';
 import { CallControls } from './CallControls';
 import { CallMiniWidget } from './CallMiniWidget';
@@ -42,6 +43,7 @@ export function CallContent() {
   if (active == null) return null;
 
   const peerName = peerDisplayName(active.peer, t('call.unknownUser'));
+  const nameView = callPeerNameView(active.peer, t('call.unknownUser'));
   const statusLabel = computeCallStatusLabel(t, mode, connectionState, elapsed);
 
   const enableAudioButton = audio.blocked ? (
@@ -58,16 +60,21 @@ export function CallContent() {
     return (
       <>
         {enableAudioButton}
-        <CallMiniWidget peerName={peerName} statusLabel={statusLabel} />
+        <CallMiniWidget peerName={nameView.title} statusLabel={statusLabel} />
       </>
     );
   }
 
-  return (
-    <div className="animate-ola-call-expand absolute inset-0 z-[122] flex flex-col bg-gradient-to-br from-ola-primary-darker via-ola-primary-dark to-ola-primary text-white">
+  const expandedHost = document.getElementById('ola-call-portal');
+
+  const expandedView = (
+    <div className="animate-ola-call-expand fixed inset-0 z-[122] flex flex-col bg-gradient-to-br from-[#26332b] via-[#18211c] to-[#0e1411] text-white">
       <div className="flex items-center gap-3 px-4 pt-5">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-lg font-semibold">{peerName}</p>
+          <p className="truncate text-lg font-semibold">{nameView.title}</p>
+          {nameView.subtitle != null && (
+            <p className="truncate text-sm text-white/80">{nameView.subtitle}</p>
+          )}
           <p className="truncate text-sm text-white/70">{statusLabel}</p>
         </div>
         <button
@@ -99,4 +106,8 @@ export function CallContent() {
       {enableAudioButton}
     </div>
   );
+
+  return expandedHost != null
+    ? createPortal(expandedView, expandedHost)
+    : expandedView;
 }

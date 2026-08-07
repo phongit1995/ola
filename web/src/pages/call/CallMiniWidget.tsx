@@ -62,7 +62,7 @@ export function CallMiniWidget({
       style={{ width: CALL_MINI_WIDTH, height: CALL_MINI_HEIGHT }}
       className="absolute left-0 top-0 z-[124] touch-none rounded-2xl text-white"
     >
-      <div className="animate-ola-call-pop absolute inset-0 overflow-hidden rounded-2xl bg-gradient-to-br from-ola-primary-dark to-ola-primary-darker shadow-2xl">
+      <div className="animate-ola-call-pop absolute inset-0 overflow-hidden rounded-2xl bg-gradient-to-br from-[#26332b] to-[#0e1411] shadow-2xl">
         {showVideo && (
           <VideoTrack
             trackRef={remoteTrack}

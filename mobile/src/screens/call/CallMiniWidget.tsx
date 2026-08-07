@@ -28,6 +28,7 @@ import {
 import { colorForName } from '@ola/shared/lib';
 import { Avatar } from '@components/ui/Avatar';
 import { useCallStore } from '@store/callStore';
+import { CALL_BG } from './constants';
 import { EndCallIcon, ExpandIcon, MicIcon, MicOffIcon } from './icons';
 import { useCallMediaToggle } from './hooks/useCallMediaToggle';
 
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     zIndex: 101,
     elevation: 101,
-    backgroundColor: '#33691e',
+    backgroundColor: CALL_BG,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.28,

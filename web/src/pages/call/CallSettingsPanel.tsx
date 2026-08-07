@@ -106,7 +106,7 @@ export function CallSettingsPanel({ onClose }: CallSettingsPanelProps) {
         onClick={onClose}
         className="flex-1"
       />
-      <div className="max-h-[70%] overflow-y-auto rounded-t-3xl bg-ola-primary-darker px-5 pb-8 pt-5">
+      <div className="max-h-[70%] overflow-y-auto rounded-t-3xl bg-[#1f2a24] px-5 pb-8 pt-5">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold text-white">
             {t('call.settingsTitle')}
