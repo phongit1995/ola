@@ -26,6 +26,7 @@ const DEFAULT_BET = 1000;
 import './pen.css';
 
 const KICK_RESULT_MS = 600;
+const WIN_FX_DURATION_MS = 1600;
 
 interface PenGamePageProps {
   onClose: () => void;
@@ -90,7 +91,10 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
   const triggerWinFx = (amount: number) => {
     setWinFx((prev) => ({ id: (prev?.id ?? 0) + 1, amount }));
     if (winFxTimer.current != null) window.clearTimeout(winFxTimer.current);
-    winFxTimer.current = window.setTimeout(() => setWinFx(null), 1600);
+    winFxTimer.current = window.setTimeout(
+      () => setWinFx(null),
+      WIN_FX_DURATION_MS
+    );
   };
 
   const onShotSettled = useRef<(e: PenSettledEvent) => void>(() => {});

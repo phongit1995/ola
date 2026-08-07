@@ -60,6 +60,8 @@ import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
+const HIGHLIGHT_DURATION_MS = 1500;
+
 interface PendingImage {
   id: string;
   file: File;
@@ -338,7 +340,10 @@ export function ChatConversationView({
     setHighlightedId(id);
     if (highlightTimerRef.current != null)
       clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
+    highlightTimerRef.current = setTimeout(
+      () => setHighlightedId(null),
+      HIGHLIGHT_DURATION_MS
+    );
   }
 
   async function copyMessage(text: string) {

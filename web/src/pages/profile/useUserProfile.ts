@@ -38,7 +38,12 @@ import type {
   ProfileSecondary,
   UserProfile,
 } from './types';
-import { EMPTY_SECONDARY, NO_RELATIONSHIP } from './constants';
+import {
+  EMPTY_SECONDARY,
+  FOLLOWING_FETCH_LIMIT,
+  NO_RELATIONSHIP,
+  PROFILE_POSTS_LIMIT,
+} from './constants';
 
 export function useUserProfile(
   username: string,
@@ -111,9 +116,11 @@ export function useUserProfile(
       setSecondary((s) => ({ ...s, loading: true }));
       const canView = canViewInterestedRef.current;
       const [postsResult, followingResult] = await Promise.all([
-        MeService.byUser(id, { limit: 30 }).catch(() => null),
+        MeService.byUser(id, { limit: PROFILE_POSTS_LIMIT }).catch(() => null),
         canView
-          ? UserService.following(id, { limit: 12 }).catch(() => null)
+          ? UserService.following(id, { limit: FOLLOWING_FETCH_LIMIT }).catch(
+              () => null
+            )
           : Promise.resolve(null),
       ]);
       setSecondary({

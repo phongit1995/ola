@@ -12,6 +12,8 @@ import { ClanService } from '@services';
 import type { ClanBan } from '@app-types';
 import { clanErrorText } from './clanHelpers';
 
+const BANS_PAGE_SIZE = 100;
+
 interface ClanBansViewProps {
   clanId: string;
   onClose: () => void;
@@ -24,7 +26,7 @@ export function ClanBansView({ clanId, onClose }: ClanBansViewProps) {
 
   useEffect(() => {
     let active = true;
-    ClanService.bans(clanId, { limit: 100, offset: 0 })
+    ClanService.bans(clanId, { limit: BANS_PAGE_SIZE, offset: 0 })
       .then((result) => {
         if (active) setBans(result.items);
       })

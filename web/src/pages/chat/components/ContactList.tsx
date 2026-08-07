@@ -12,6 +12,8 @@ import { isVipActive, activeVipTypeId, colorForName } from '@lib';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import type { AuthUser, ChatBotType, Relationship } from '@app-types';
 import type { Contact } from '../interface';
+
+const REQUEST_PREVIEW_COUNT = 3;
 import { BuddyRow } from './BuddyRow';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
@@ -252,7 +254,7 @@ export function ContactList({
               {t('chat.friendRequests')}
             </span>
             <span className="mt-1 flex items-center gap-2">
-              {requests.slice(0, 3).map((relationship) => {
+              {requests.slice(0, REQUEST_PREVIEW_COUNT).map((relationship) => {
                 const requester = relationship.requester;
                 const name = requester?.fullName || requester?.username || '';
                 const vipTypeId = activeVipTypeId(

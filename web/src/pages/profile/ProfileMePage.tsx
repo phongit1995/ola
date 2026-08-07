@@ -35,6 +35,7 @@ import {
 import { toMePost } from '../me/mappers';
 import { useEditMePost } from '../me/useEditMePost';
 import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
+import { PROFILE_POSTS_LIMIT } from './constants';
 
 export function ProfileMePage() {
   const { t, i18n } = useTranslation();
@@ -73,7 +74,7 @@ export function ProfileMePage() {
 
   useEffect(() => {
     let active = true;
-    MeService.mine({ limit: 30 })
+    MeService.mine({ limit: PROFILE_POSTS_LIMIT })
       .then((result) => {
         if (active) setPosts(result.items);
       })
@@ -84,7 +85,7 @@ export function ProfileMePage() {
   }, []);
 
   const reloadAfterPin = useCallback(async () => {
-    const result = await MeService.mine({ limit: 30 });
+    const result = await MeService.mine({ limit: PROFILE_POSTS_LIMIT });
     setPosts(() => result.items);
   }, []);
 

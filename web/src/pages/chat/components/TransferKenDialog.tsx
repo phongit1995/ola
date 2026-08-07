@@ -25,8 +25,10 @@ interface TransferKenDialogProps {
 
 type Step = 'recipient' | 'input' | 'confirm';
 
+const AMOUNT_MAX_DIGITS = 12;
+
 function onlyDigits(value: string): string {
-  return value.replace(/\D/g, '').slice(0, 12);
+  return value.replace(/\D/g, '').slice(0, AMOUNT_MAX_DIGITS);
 }
 
 function toReceiver(user: UserSearchResult): TransferKenReceiver {

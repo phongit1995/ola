@@ -5,6 +5,9 @@ import { toApiError, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import i18n from '@/i18n';
 
+const COMMENTS_FETCH_LIMIT = 50;
+const TOP_LIKERS_MAX = 3;
+
 function selfLiker(): PostAuthor | null {
   const user = useAuthStore.getState().user;
   if (user == null) return null;
@@ -43,7 +46,9 @@ export function useMeComments(
     let active = true;
     (async () => {
       try {
-        const result = await MeService.comments(postId, { limit: 50 });
+        const result = await MeService.comments(postId, {
+          limit: COMMENTS_FETCH_LIMIT,
+        });
         if (!active) return;
         setComments(result.items);
         setTotal(result.total);
@@ -107,7 +112,7 @@ export function useMeComments(
           ? [
               self,
               ...currentLikers.filter((liker) => liker.id !== self.id),
-            ].slice(0, 3)
+            ].slice(0, TOP_LIKERS_MAX)
           : currentLikers.filter((liker) => liker.id !== self.id);
       const optimistic: PostComment = {
         ...target,
