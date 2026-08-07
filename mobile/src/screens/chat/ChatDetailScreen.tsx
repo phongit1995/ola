@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
+import { ChatWallpaper } from '@components/ChatWallpaper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
@@ -510,6 +511,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: CHAT_BG }}>
+      <ChatWallpaper />
       <ChatHeader
         title={title}
         subtitle={subtitle}

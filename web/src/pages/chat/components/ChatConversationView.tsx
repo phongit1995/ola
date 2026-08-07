@@ -43,7 +43,12 @@ import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../interface';
 import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../chatView';
 import { usePeerCard } from '../usePeerCard';
-import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
+import {
+  useChatWallpaperStyle,
+  useLongPress,
+  useOutsideClick,
+  useStickyScroll,
+} from '@hooks';
 import { ChatReactionBalloons } from './ChatReactionBalloons';
 import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
@@ -173,6 +178,7 @@ export function ChatConversationView({
 
   useOutsideClick(composerAreaRef, openTab != null, () => setOpenTab(null));
 
+  const wallpaperStyle = useChatWallpaperStyle();
   const peerTyping = typingUsers.length > 0;
 
   useEffect(() => {
@@ -574,6 +580,7 @@ export function ChatConversationView({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
+        style={wallpaperStyle}
         className={`flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-2 py-3 ${BUBBLE_WALLPAPER}`}
       >
         {loadingMessages && messages.length === 0 ? (

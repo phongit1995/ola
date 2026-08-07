@@ -17,6 +17,7 @@ import type { NativeUploadFile } from '@ola/shared/types';
 import { createDateSeparatorFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
+import { ChatWallpaper } from '@components/ChatWallpaper';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
@@ -341,6 +342,7 @@ export function RoomMessagesTab({
 
   return (
     <View className="flex-1">
+      <ChatWallpaper />
       <RoomReactionNotice />
       <RoomReactionBalloons />
       {status !== 'joined' && (

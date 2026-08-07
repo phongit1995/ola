@@ -2,6 +2,8 @@ export const COVER_ASPECT = 16 / 9;
 
 export const AVATAR_ASPECT = 1;
 
+export const WALLPAPER_ASPECT = 9 / 16;
+
 export const MIN_IMAGE_SOURCE = 100;
 
 export const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;

@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import type { RefObject, UIEvent } from 'react';
 import { DateSeparator } from '@components';
+import { useChatWallpaperStyle } from '@hooks';
 import { BUBBLE_WALLPAPER, isSameDay } from '@lib';
 import type { ChatBotErrorCode, ChatBotMessage, ChatBotType } from '@app-types';
 import { isoOf } from '../chatBotView';
@@ -34,11 +35,13 @@ export function ChatBotMessageList({
   onRetry,
 }: ChatBotMessageListProps) {
   const empty = messages.length === 0 && !waiting;
+  const wallpaperStyle = useChatWallpaperStyle();
 
   return (
     <div
       ref={scrollRef}
       onScroll={onScroll}
+      style={wallpaperStyle}
       className={`flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-2 py-3 ${BUBBLE_WALLPAPER}`}
     >
       {empty ? (

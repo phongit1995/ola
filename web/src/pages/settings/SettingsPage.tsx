@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FullScreenOverlay, ScreenHeader } from '@components';
-import { toast } from '@lib';
-import { VipService } from '@services';
+import { FullScreenOverlay, ImageCropOverlay, ScreenHeader } from '@components';
+import { MIN_IMAGE_SOURCE, WALLPAPER_ASPECT } from '@constants';
+import { compressImageForUpload, toast, validatedImageObjectUrl } from '@lib';
+import { UserService, VipService } from '@services';
 import type { UserSettings } from '@app-types';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useDownloadGuideStore } from '@/store/downloadGuideStore';
@@ -34,6 +35,19 @@ function ImageIcon() {
       aria-hidden="true"
     >
       <path d="M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2ZM5 19h14l-4.5-6-3.5 4.5-2.5-3L5 19Zm3.5-8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z" />
     </svg>
   );
 }
@@ -163,6 +177,17 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
   const [vipPrivacyDraft, setVipPrivacyDraft] = useState(0);
   const [vipTouched, setVipTouched] = useState(false);
   const vipTouchedRef = useRef(false);
+  const wallpaperInputRef = useRef<HTMLInputElement>(null);
+  const cropSrcRef = useRef<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
+
+  useEffect(
+    () => () => {
+      if (cropSrcRef.current != null) URL.revokeObjectURL(cropSrcRef.current);
+    },
+    []
+  );
 
   useEffect(() => {
     let active = true;
@@ -196,6 +221,40 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
     value: UserSettings[K]
   ) {
     setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function clearCropSrc() {
+    if (cropSrcRef.current != null) URL.revokeObjectURL(cropSrcRef.current);
+    cropSrcRef.current = null;
+    setCropSrc(null);
+  }
+
+  async function pickWallpaper(event: React.ChangeEvent<HTMLInputElement>) {
+    const picked = event.target.files?.[0];
+    event.target.value = '';
+    if (picked == null) return;
+    const url = await validatedImageObjectUrl(picked, MIN_IMAGE_SOURCE, {
+      tooSmall: t('wallpaper.tooSmall'),
+      error: t('wallpaper.error'),
+    });
+    if (url == null) return;
+    clearCropSrc();
+    cropSrcRef.current = url;
+    setCropSrc(url);
+  }
+
+  async function uploadWallpaper(cropped: File) {
+    setUploadingWallpaper(true);
+    try {
+      const uploaded = await UserService.uploadAvatar(
+        await compressImageForUpload(cropped)
+      );
+      setField('wallpaperUrl', uploaded.url);
+      clearCropSrc();
+    } catch {
+      toast.error(t('wallpaper.error'));
+    }
+    setUploadingWallpaper(false);
   }
 
   function changeVipPrivacy(value: number) {
@@ -356,13 +415,40 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
             />
           </SettingRow>
           <SettingRow label={t('settings.wallpaper')}>
-            <button
-              type="button"
-              className="flex shrink-0 items-center gap-1.5 rounded-lg border border-ola-primary px-3 py-1.5 text-[13px] font-semibold text-ola-primary"
-            >
-              <ImageIcon />
-              {t('settings.upload')}
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <input
+                ref={wallpaperInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={pickWallpaper}
+              />
+              {draft.wallpaperUrl !== '' && (
+                <>
+                  <img
+                    src={draft.wallpaperUrl}
+                    alt=""
+                    className="h-8 w-6 shrink-0 rounded object-cover ring-1 ring-black/10"
+                  />
+                  <button
+                    type="button"
+                    aria-label={t('wallpaper.remove')}
+                    onClick={() => setField('wallpaperUrl', '')}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-black/12 text-black/45"
+                  >
+                    <TrashIcon />
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={() => wallpaperInputRef.current?.click()}
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-ola-primary px-3 text-[13px] font-semibold text-ola-primary"
+              >
+                <ImageIcon />
+                {t('settings.upload')}
+              </button>
+            </div>
           </SettingRow>
         </SettingsCard>
 
@@ -386,6 +472,16 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           {t('settings.appVersion')}
         </p>
       </div>
+
+      {cropSrc != null && (
+        <ImageCropOverlay
+          src={cropSrc}
+          aspect={WALLPAPER_ASPECT}
+          busy={uploadingWallpaper}
+          onCancel={clearCropSrc}
+          onApply={uploadWallpaper}
+        />
+      )}
     </FullScreenOverlay>
   );
 }

@@ -12,8 +12,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
-import { VipService } from '@ola/shared/services';
+import { UserService, VipService } from '@ola/shared/services';
 import type { UserSettings } from '@ola/shared/types';
+import {
+  pickValidatedCroppedImage,
+  WALLPAPER_OUTPUT,
+} from '@lib/imagePicker';
+import { CachedImage } from '@components/ui/CachedImage';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
@@ -27,6 +32,7 @@ const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'
 const iconPrivacy = require('@assets/icons/settings/icon-privacy.webp');
 const iconNotification = require('@assets/icons/settings/icon-notification.webp');
 const iconAppearance = require('@assets/icons/settings/icon-appearance.webp');
+const iconDelete = require('@assets/icons/chat/ic_menu_delete.png');
 
 function SectionIcon({ src }: { src: ImageSourcePropType }) {
   const resolved = Image.resolveAssetSource(src);
@@ -204,6 +210,7 @@ export function SettingsScreen({ navigation }: Props) {
   const [vipPrivacy, setVipPrivacy] = useState<number | null>(null);
   const [vipPrivacyDraft, setVipPrivacyDraft] = useState(0);
   const [vipTouched, setVipTouched] = useState(false);
+  const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
   const vipTouchedRef = useRef(false);
 
   useEffect(() => {
@@ -232,6 +239,26 @@ export function SettingsScreen({ navigation }: Props) {
   function setField<K extends keyof UserSettings>(key: K, value: UserSettings[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
   }
+
+  async function pickWallpaper() {
+    if (uploadingWallpaper) return;
+    const picked = await pickValidatedCroppedImage(
+      WALLPAPER_OUTPUT.width,
+      WALLPAPER_OUTPUT.height,
+      { tooSmall: t('wallpaper.tooSmall'), error: t('wallpaper.error') }
+    );
+    if (picked == null) return;
+    setUploadingWallpaper(true);
+    push('info', t('wallpaper.uploading'));
+    try {
+      const uploaded = await UserService.uploadAvatar(picked);
+      setField('wallpaperUrl', uploaded.url);
+    } catch {
+      push('error', t('wallpaper.error'));
+    }
+    setUploadingWallpaper(false);
+  }
+
 
   function changeVipPrivacy(value: number) {
     vipTouchedRef.current = true;
@@ -372,21 +399,52 @@ export function SettingsScreen({ navigation }: Props) {
             />
           </SettingRow>
           <SettingRow label={t('settings.wallpaper')} last>
-            <Pressable
-              className="shrink-0 flex-row items-center rounded-lg"
-              style={{
-                borderWidth: 1,
-                borderColor: PRIMARY,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                gap: 6,
-              }}
-            >
-              <ImageIcon />
-              <Text className="text-[13px] font-semibold" style={{ color: PRIMARY }}>
-                {t('settings.upload')}
-              </Text>
-            </Pressable>
+            <View className="shrink-0 flex-row items-center" style={{ gap: 8 }}>
+              {draft.wallpaperUrl !== '' && (
+                <>
+                  <CachedImage
+                    uri={draft.wallpaperUrl}
+                    style={{ width: 24, height: 32, borderRadius: 4 }}
+                    resizeMode="cover"
+                  />
+                  <Pressable
+                    accessibilityLabel={t('wallpaper.remove')}
+                    onPress={() => setField('wallpaperUrl', '')}
+                    className="items-center justify-center rounded-lg"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderWidth: 1,
+                      borderColor: 'rgba(0,0,0,0.12)',
+                    }}
+                  >
+                    <Image
+                      source={iconDelete}
+                      style={{ width: 16, height: 16, tintColor: 'rgba(0,0,0,0.45)' }}
+                      resizeMode="contain"
+                    />
+                  </Pressable>
+                </>
+              )}
+              <Pressable
+                onPress={() => void pickWallpaper()}
+                disabled={uploadingWallpaper}
+                className="shrink-0 flex-row items-center rounded-lg"
+                style={{
+                  height: 32,
+                  borderWidth: 1,
+                  borderColor: PRIMARY,
+                  paddingHorizontal: 12,
+                  gap: 6,
+                  opacity: uploadingWallpaper ? 0.5 : 1,
+                }}
+              >
+                <ImageIcon />
+                <Text className="text-[13px] font-semibold" style={{ color: PRIMARY }}>
+                  {t('settings.upload')}
+                </Text>
+              </Pressable>
+            </View>
           </SettingRow>
         </SettingsCard>
 

@@ -1,7 +1,21 @@
+import type { CSSProperties } from 'react';
+
 export const BUBBLE_SURFACE_OUT = 'bg-ola-bubble-out';
 export const BUBBLE_SURFACE_IN = 'bg-white shadow-sm';
 export const BUBBLE_SURFACE_FAILED = 'bg-ola-bubble-failed';
 export const BUBBLE_WALLPAPER = 'bg-ola-wallpaper';
+
+export function chatWallpaperStyle(
+  wallpaperUrl: string
+): CSSProperties | undefined {
+  if (wallpaperUrl === '') return undefined;
+  return {
+    backgroundImage: `url(${wallpaperUrl})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  };
+}
 
 export function bubbleSurface(isOut: boolean, failed: boolean): string {
   if (failed) return BUBBLE_SURFACE_FAILED;

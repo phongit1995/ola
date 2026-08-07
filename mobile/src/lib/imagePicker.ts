@@ -9,6 +9,8 @@ export const AVATAR_OUTPUT = 800;
 
 export const COVER_OUTPUT = { width: 1600, height: 900 };
 
+export const WALLPAPER_OUTPUT = { width: 1080, height: 1920 };
+
 export interface PickedImage {
   file: NativeUploadFile;
   width: number;

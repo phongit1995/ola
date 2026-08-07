@@ -6,6 +6,7 @@ import { CHAT_BOT_DEFAULT_TYPE, CHAT_BOT_I18N } from '@ola/shared/constants';
 import { colorForName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
+import { ChatWallpaper } from '@components/ChatWallpaper';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import type { ChatStackParamList } from '@navigation/types';
@@ -42,6 +43,7 @@ export function ChatBotScreen({ navigation, route }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: CHAT_BG }}>
+      <ChatWallpaper />
       <ScreenHeader
         title={botName}
         subtitle={
