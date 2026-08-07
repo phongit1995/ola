@@ -16,7 +16,7 @@ import type { ReactionType, RoomMessage } from '@ola/shared/types';
 import type { NativeUploadFile } from '@ola/shared/types';
 import { createDateSeparatorFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
+import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';

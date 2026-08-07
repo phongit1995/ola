@@ -4,7 +4,7 @@ import { ConfirmDialog, PullToRefresh } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
-import { useRoomListStore } from '@ola/shared/stores/roomListStore';
+import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
 

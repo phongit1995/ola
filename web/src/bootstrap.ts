@@ -6,7 +6,7 @@ import {
 import { registerOnLogout } from '@ola/shared/stores/authStore';
 import { useKenTreasureStore } from '@ola/shared/stores/kenTreasureStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
-import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { webEnv, initAnalytics } from '@config';
 import {
   playKenChestSound,

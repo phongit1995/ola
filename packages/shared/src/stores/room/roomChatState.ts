@@ -1,12 +1,12 @@
-import type { RoomMember, RoomMessage, RoomReactionNotice } from '../types/api/room.type';
+import type { RoomMember, RoomMessage, RoomReactionNotice } from '../../types/api/room.type';
 import type {
   ActiveRoom,
   RoomChatStateData,
   RoomChatStatus,
   RoomTab,
-} from '../types/client/roomChat.type';
+} from '../../types/client/roomChat.type';
 
-export type { RoomChatGet, RoomChatSet } from '../types/client/roomChat.type';
+export type { RoomChatGet, RoomChatSet } from '../../types/client/roomChat.type';
 
 export const initialRoomChatState: RoomChatStateData = {
   activeRoom: null as ActiveRoom | null,

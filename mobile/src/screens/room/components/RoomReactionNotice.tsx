@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Image, Text, View } from 'react-native';
-import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import type { ReactionType } from '@ola/shared/types';
 import { REACTION_IMAGE } from '@lib/reactions';
 

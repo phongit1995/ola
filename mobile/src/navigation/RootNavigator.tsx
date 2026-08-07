@@ -7,7 +7,7 @@ import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
-import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import type {
   AuthStackParamList,
   ChatStackParamList,

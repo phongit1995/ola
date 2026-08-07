@@ -1,10 +1,10 @@
-import { ROOM_SOCKET_EVENTS } from '../constants/socket';
-import { useAuthStore } from './authStore';
+import { ROOM_SOCKET_EVENTS } from '../../constants/socket';
+import { useAuthStore } from '../authStore';
 import { useRoomFilterStore } from './roomFilterStore';
-import { playRoomTagSound } from '../platform/sound';
-import { RoomService } from '../services/room.service';
-import { SocketService } from '../services/socket.service';
-import type { RoomMessage, RoomReactor } from '../types/api/room.type';
+import { playRoomTagSound } from '../../platform/sound';
+import { RoomService } from '../../services/room.service';
+import { SocketService } from '../../services/socket.service';
+import type { RoomMessage, RoomReactor } from '../../types/api/room.type';
 import {
   markRoomMessageById,
   messageMentionsUser,
@@ -14,7 +14,7 @@ import {
   withVipTypeId,
 } from './roomHelpers';
 import type { RoomChatGet as RoomGet, RoomChatSet as RoomSet } from './roomChatState';
-import { claimRealtimeRegistration } from './realtimeRegistration.state';
+import { claimRealtimeRegistration } from '../realtimeRegistration.state';
 
 async function reloadMembers(get: RoomGet, set: RoomSet, roomId: string) {
   try {

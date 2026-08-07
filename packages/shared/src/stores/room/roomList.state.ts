@@ -1,4 +1,4 @@
-import type { RoomListState } from '../types/client/room.type';
+import type { RoomListState } from '../../types/client/room.type';
 
 export const initialRoomListState: Pick<
   RoomListState,

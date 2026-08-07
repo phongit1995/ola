@@ -3,14 +3,14 @@ import {
   nativeUploadFileFromUri,
   uploadFileMimeType,
   uploadPreviewUrl,
-} from '../lib/upload';
-import { randomUuid } from '../lib/randomUuid';
-import { RoomService } from '../services/room.service';
-import type { RoomMessage } from '../types/api/room.type';
+} from '../../lib/upload';
+import { randomUuid } from '../../lib/randomUuid';
+import { RoomService } from '../../services/room.service';
+import type { RoomMessage } from '../../types/api/room.type';
 import type {
   RoomAudioSendResult,
   RoomMessageActions,
-} from '../types/client/roomChat.type';
+} from '../../types/client/roomChat.type';
 import {
   buildOptimisticRoomAudio,
   buildOptimisticRoomImage,

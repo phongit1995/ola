@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { toast } from '../lib/toast';
-import { RoomService } from '../services/room.service';
-import type { RoomListState } from '../types/client/room.type';
+import { toast } from '../../lib/toast';
+import { RoomService } from '../../services/room.service';
+import type { RoomListState } from '../../types/client/room.type';
 import { initialRoomListState } from './roomList.state';
 
 export const useRoomListStore = create<RoomListState>((set) => ({

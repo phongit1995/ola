@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { RoomChatState } from '../types/client/roomChat.type';
+import type { RoomChatState } from '../../types/client/roomChat.type';
 import { initialRoomChatState } from './roomChatState';
 import { createRoomLifecycleActions } from './roomLifecycleActions';
 import { createRoomMessageActions } from './roomMessageActions';
@@ -11,7 +11,7 @@ export type {
   RoomChatState,
   RoomChatStatus,
   RoomTab,
-} from '../types/client/roomChat.type';
+} from '../../types/client/roomChat.type';
 
 export const useRoomChatStore = create<RoomChatState>((set, get) => {
   registerRoomRealtime(set, get);

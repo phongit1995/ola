@@ -1,11 +1,11 @@
 import {
   ROOM_JOIN_ACK_TIMEOUT_MS,
   ROOM_MESSAGE_PAGE_SIZE,
-} from '../constants/room';
-import { ROOM_SOCKET_EVENTS } from '../constants/socket';
-import { RoomService } from '../services/room.service';
-import { SocketService } from '../services/socket.service';
-import type { RoomLifecycleActions } from '../types/client/roomChat.type';
+} from '../../constants/room';
+import { ROOM_SOCKET_EVENTS } from '../../constants/socket';
+import { RoomService } from '../../services/room.service';
+import { SocketService } from '../../services/socket.service';
+import type { RoomLifecycleActions } from '../../types/client/roomChat.type';
 import {
   mergeRoomMessageSnapshot,
   toRecord,
