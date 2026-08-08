@@ -542,7 +542,7 @@ export function ClanPage({
                     <button
                       type="button"
                       onClick={() => setLeaveConfirm(true)}
-                      className="flex flex-1 flex-col items-center gap-1 py-1 text-xs text-ola-primary"
+                      className="flex flex-1 flex-col items-center gap-1 py-1 text-xs text-ola-primary-ink"
                     >
                       <img
                         src={followingIcon}

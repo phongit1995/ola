@@ -131,9 +131,9 @@ export const VoiceRecorderControl = forwardRef<
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ola-primary text-ola-on-primary shadow-sm transition active:scale-95 disabled:opacity-60"
       >
         {stopping ? (
-          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-ola-on-primary/40 border-t-ola-on-primary" />
         ) : (
-          <span className="h-3 w-3 rounded-[3px] bg-white" />
+          <span className="h-3 w-3 rounded-[3px] bg-ola-on-primary" />
         )}
       </button>
 

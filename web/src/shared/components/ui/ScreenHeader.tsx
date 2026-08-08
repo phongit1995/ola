@@ -74,7 +74,7 @@ export function ScreenHeader({
           {subtitle != null ? (
             <span className="flex min-w-0 flex-col leading-tight">
               <span className="truncate text-sm font-bold">{title}</span>
-              <span className="truncate text-xs text-white/70">{subtitle}</span>
+              <span className="truncate text-xs text-ola-on-primary/70">{subtitle}</span>
             </span>
           ) : (
             <span className="min-w-0 truncate text-lg font-medium">
@@ -88,7 +88,7 @@ export function ScreenHeader({
           {subtitle != null ? (
             <span className="flex min-w-0 flex-1 flex-col leading-tight">
               <span className="truncate text-sm font-bold">{title}</span>
-              <span className="truncate text-xs text-white/70">{subtitle}</span>
+              <span className="truncate text-xs text-ola-on-primary/70">{subtitle}</span>
             </span>
           ) : (
             <span className="flex-1 truncate text-lg font-medium">{title}</span>

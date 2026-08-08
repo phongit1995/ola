@@ -17,7 +17,7 @@ export function ActionLink({
   const toneClass =
     tone === 'primary'
       ? 'bg-ola-primary text-ola-on-primary hover:bg-ola-primary-dark'
-      : 'border border-black/15 text-black/75 hover:border-ola-primary hover:text-ola-primary';
+      : 'border border-black/15 text-black/75 hover:border-ola-primary hover:text-ola-primary-ink';
 
   return (
     <a

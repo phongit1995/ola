@@ -118,7 +118,7 @@ function VipPickerDialog({
                 {item.name}
               </span>
               {item.price != null && (
-                <span className="text-[11px] font-medium text-ola-primary">
+                <span className="text-[11px] font-medium text-ola-primary-ink">
                   {formatKen(item.price)} KEN
                 </span>
               )}
@@ -449,7 +449,7 @@ export function BuyVipPage({
             <span className="text-sm text-black/54">
               {t('vip.buy.balance')}
             </span>
-            <span className="ml-2 text-lg font-bold text-ola-primary">
+            <span className="ml-2 text-lg font-bold text-ola-primary-ink">
               {formatKen(kenBalance)} KEN
             </span>
           </div>
@@ -547,7 +547,7 @@ export function BuyVipPage({
                 {selectedVip?.name}
               </span>
               {selectedShopItem != null && (
-                <span className="text-sm font-medium text-ola-primary">
+                <span className="text-sm font-medium text-ola-primary-ink">
                   {formatKen(selectedShopItem.kenPrice)} KEN
                 </span>
               )}
@@ -595,7 +595,7 @@ export function BuyVipPage({
           <button
             type="button"
             onClick={startPurchase}
-            className="mt-4 w-full rounded border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-white active:opacity-90"
+            className="mt-4 w-full rounded border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-ola-on-primary active:opacity-90"
           >
             {t(MODE_ACTION[mode])}
           </button>

@@ -55,7 +55,7 @@ export function ChatBotScreen({ bot, onClose }: ChatBotScreenProps) {
           <img
             src={deleteIcon}
             alt=""
-            className="h-5 w-5 object-contain brightness-0 invert"
+            className="h-5 w-5 object-contain icon-on-primary"
           />
         </button>
       </ScreenHeader>

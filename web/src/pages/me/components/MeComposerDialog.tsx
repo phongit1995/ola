@@ -242,7 +242,7 @@ export function MeComposerDialog({
               aria-label={t(button.labelKey)}
               onClick={() => handleAttach(button.key)}
               className={`flex flex-col items-center gap-0.5 text-xs ${
-                panel === button.key ? 'text-ola-primary' : 'text-black/54'
+                panel === button.key ? 'text-ola-primary-ink' : 'text-black/54'
               }`}
             >
               {'icon' in button ? (

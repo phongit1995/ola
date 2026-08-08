@@ -684,7 +684,7 @@ export function ChatConversationView({
                   />
                 )}
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-xs font-semibold text-ola-primary">
+                <span className="block truncate text-xs font-semibold text-ola-primary-ink">
                   {t('chat.replyingTo', { name: replyTarget.senderName ?? '' })}
                 </span>
                 <span className="block truncate text-xs text-black/54">

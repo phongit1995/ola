@@ -203,7 +203,7 @@ export function VerifyEmailDialog({
                 type="button"
                 onClick={sendCode}
                 disabled={submitting}
-                className="text-xs font-medium text-ola-primary disabled:opacity-50"
+                className="text-xs font-medium text-ola-primary-ink disabled:opacity-50"
               >
                 {t('verifyEmail.resend')}
               </button>

@@ -7,7 +7,7 @@ interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANTS: Record<'filled' | 'outline', string> = {
   filled: 'bg-ola-primary text-ola-on-primary',
-  outline: 'border border-ola-primary text-ola-primary',
+  outline: 'border border-ola-primary text-ola-primary-ink',
 };
 
 export function ActionButton({

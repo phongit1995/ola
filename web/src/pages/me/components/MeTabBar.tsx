@@ -27,7 +27,7 @@ export function MeTabBar({ active, onChange }: MeTabBarProps) {
               src={isActive ? tab.iconActive : tab.icon}
               alt=""
               className={`h-6 w-6 object-contain ${
-                'invert' in tab && tab.invert ? 'brightness-0 invert' : ''
+                'invert' in tab && tab.invert ? 'icon-on-primary' : ''
               }`}
             />
           </button>

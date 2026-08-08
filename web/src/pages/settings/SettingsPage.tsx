@@ -185,7 +185,7 @@ function SettingsCard({
 }) {
   return (
     <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-      <header className="flex items-center gap-2 border-b border-black/6 bg-ola-primary/5 px-4 py-3 text-ola-primary">
+      <header className="flex items-center gap-2 border-b border-black/6 bg-ola-primary/5 px-4 py-3 text-ola-primary-ink">
         {icon}
         <h2 className="text-base font-bold">
           {index}. {title}
@@ -328,7 +328,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           type="button"
           onClick={handleSave}
           disabled={!dirty || saving}
-          className="rounded-full px-3 py-1 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
+          className="rounded-full px-3 py-1 text-sm font-semibold text-ola-on-primary transition-opacity disabled:opacity-40"
         >
           {saving ? t('common.loading') : t('settings.save')}
         </button>
@@ -478,7 +478,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={() => wallpaperInputRef.current?.click()}
-                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-ola-primary px-3 text-[13px] font-semibold text-ola-primary"
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-ola-primary px-3 text-[13px] font-semibold text-ola-primary-ink"
               >
                 <ImageIcon />
                 {t('settings.upload')}
@@ -492,7 +492,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           onClick={openDownloadGuide}
           className="flex w-full items-center gap-2.5 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-black/5"
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ola-primary/10 text-ola-primary">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ola-primary/10 text-ola-primary-ink">
             <AppDownloadIcon />
           </span>
           <span className="min-w-0 flex-1 text-left text-sm font-semibold text-black/80">

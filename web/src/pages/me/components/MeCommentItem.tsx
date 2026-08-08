@@ -123,7 +123,7 @@ function MeCommentItemComponent({
                 <button
                   type="button"
                   onClick={() => onReply(comment)}
-                  className="flex items-center gap-1 text-xs font-medium text-black/45 transition-colors hover:text-ola-primary"
+                  className="flex items-center gap-1 text-xs font-medium text-black/45 transition-colors hover:text-ola-primary-ink"
                 >
                   <img
                     src={replyIcon}

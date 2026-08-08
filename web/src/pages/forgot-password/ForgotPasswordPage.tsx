@@ -41,7 +41,7 @@ export function ForgotPasswordPage() {
       onSubmit={handleSubmit(onSubmit)}
       className="flex min-h-full flex-col items-center bg-ola-primary px-4 pb-8 font-sans"
     >
-      <header className="flex h-12 w-full items-center text-white">
+      <header className="flex h-12 w-full items-center text-ola-on-primary">
         <button
           type="button"
           onClick={() => navigate(ROUTES.login)}
@@ -70,7 +70,7 @@ export function ForgotPasswordPage() {
         </div>
       ) : (
         <>
-          <p className="w-full max-w-md px-1 text-sm text-white/90">
+          <p className="w-full max-w-md px-1 text-sm text-ola-on-primary/90">
             {t('forgot.desc')}
           </p>
           <TextField
@@ -102,7 +102,7 @@ export function ForgotPasswordPage() {
       <button
         type="button"
         onClick={() => navigate(ROUTES.login)}
-        className="h-12 w-full max-w-md text-center text-xl text-white/70"
+        className="h-12 w-full max-w-md text-center text-xl text-ola-on-primary/70"
       >
         {t('forgot.backToLogin')}
       </button>

@@ -93,7 +93,7 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
         <div className="mx-2 rounded-sm border border-black/12 bg-white p-2">
           <div className="flex items-center px-1 py-1.5">
             <span className="text-sm text-black/54">{t('ken.balance')}</span>
-            <span className="ml-2 flex flex-1 items-center gap-1 text-lg font-bold text-ola-primary">
+            <span className="ml-2 flex flex-1 items-center gap-1 text-lg font-bold text-ola-primary-ink">
               <KenCoin />
               {balanceText}
             </span>
@@ -123,7 +123,7 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={comingSoon}
-          className="flex h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark bg-ola-button text-sm text-white"
+          className="flex h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark bg-ola-button text-sm text-ola-on-primary"
         >
           {t('ken.support')}
         </button>

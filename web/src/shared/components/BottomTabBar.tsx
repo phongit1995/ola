@@ -78,7 +78,7 @@ export function BottomTabBar({
             </span>
             <span
               className={`mt-0.5 text-xs leading-none whitespace-nowrap ${
-                isActive ? 'text-ola-primary' : 'text-black/54'
+                isActive ? 'text-ola-primary-ink' : 'text-black/54'
               }`}
             >
               {t(tab.labelKey)}

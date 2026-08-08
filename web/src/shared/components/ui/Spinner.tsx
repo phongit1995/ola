@@ -3,7 +3,7 @@ import { cn } from '@lib';
 type SpinnerTone = 'primary' | 'light' | 'muted';
 
 const TONE_CLASS: Record<SpinnerTone, string> = {
-  primary: 'text-ola-primary',
+  primary: 'text-ola-primary-ink',
   light: 'text-white',
   muted: 'text-black/40',
 };

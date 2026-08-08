@@ -210,7 +210,7 @@ export function ChatPanel() {
         type="button"
         onClick={() => setSub(value)}
         className={`flex-1 self-stretch text-sm font-bold ${
-          isActive ? 'border-b-2 border-white text-white' : 'text-white/70'
+          isActive ? 'border-b-2 border-ola-on-primary text-ola-on-primary' : 'text-ola-on-primary/70'
         }`}
       >
         <span className="relative inline-flex items-center">
@@ -294,7 +294,7 @@ export function ChatPanel() {
               <img
                 src={addFriendIcon}
                 alt=""
-                className="h-6 w-6 object-contain brightness-0 invert"
+                className="h-6 w-6 object-contain icon-on-primary"
               />
             </button>
           </div>

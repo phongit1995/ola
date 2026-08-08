@@ -46,7 +46,7 @@ function RelationButton({
       type="button"
       onClick={onClick}
       className={`flex flex-1 flex-col items-center gap-1 py-1 text-xs ${
-        active ? 'text-ola-primary' : 'text-black/26'
+        active ? 'text-ola-primary-ink' : 'text-black/26'
       }`}
     >
       <img src={icon} alt="" className="h-5 w-5 object-contain" />

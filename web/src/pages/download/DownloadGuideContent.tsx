@@ -64,7 +64,7 @@ export function DownloadGuideContent() {
       {platform === 'desktop' && (
         <section className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-black/5">
           <div className="flex items-center gap-2 text-black/85">
-            <PhoneIcon className="h-5 w-5 shrink-0 text-ola-primary" />
+            <PhoneIcon className="h-5 w-5 shrink-0 text-ola-primary-ink" />
             <h2 className="text-sm font-bold">{t('download.openOnPhone')}</h2>
           </div>
           <p className="mt-1.5 text-xs leading-relaxed text-black/55">
@@ -90,7 +90,7 @@ export function DownloadGuideContent() {
 
       <section className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-black/5">
         <div className="flex items-center gap-2 text-black/85">
-          <ShieldIcon className="h-5 w-5 shrink-0 text-ola-primary" />
+          <ShieldIcon className="h-5 w-5 shrink-0 text-ola-primary-ink" />
           <h2 className="text-sm font-bold">{t('download.safetyTitle')}</h2>
         </div>
         <p className="mt-1.5 text-xs leading-relaxed text-black/55">

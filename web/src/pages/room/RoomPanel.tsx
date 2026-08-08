@@ -93,7 +93,7 @@ export function RoomPanel() {
         className="relative flex-1 overflow-y-auto bg-ola-surface"
       >
         {loadingRooms && (
-          <div className="py-2 text-center text-sm text-ola-primary">
+          <div className="py-2 text-center text-sm text-ola-primary-ink">
             {t('room.refreshing')}
           </div>
         )}
