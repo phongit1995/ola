@@ -69,7 +69,13 @@ function BotMessageRowComponent({
             ]}
           >
             {group.isOut ? (
-              <Text className="text-sm text-ola-ink">{message.content}</Text>
+              <Text
+                className={`text-sm ${
+                  group.surfaceKind === 'out' ? 'text-white' : 'text-ola-ink'
+                }`}
+              >
+                {message.content}
+              </Text>
             ) : (
               <BotMarkdown content={message.content} />
             )}

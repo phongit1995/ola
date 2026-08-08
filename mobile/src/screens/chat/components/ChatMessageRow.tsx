@@ -14,7 +14,7 @@ import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
 import { PhoneIcon, VideoIcon } from '@screens/call/icons';
-import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
+import { CHAT_MAX_FONT_SIZE_MULTIPLIER, PRIMARY } from '@constants';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
@@ -45,10 +45,12 @@ const photoIcon = require('@assets/icons/chat/ic_local.png');
 function ChatQuoteBlock({
   replyTo,
   maxWidth,
+  onPrimary,
   onQuoteClick,
 }: {
   replyTo: ChatReplySnapshot;
   maxWidth: number;
+  onPrimary: boolean;
   onQuoteClick?: (messageId: string) => void;
 }) {
   const { t } = useTranslation();
@@ -66,10 +68,18 @@ function ChatQuoteBlock({
     <Pressable
       onPress={() => onQuoteClick?.(replyTo.messageId)}
       className="mb-1 rounded py-0.5 pl-2 pr-1"
-      style={{ borderLeftWidth: 2, borderLeftColor: '#7cb342', backgroundColor: 'rgba(0,0,0,0.05)' }}
+      style={{
+        borderLeftWidth: 2,
+        borderLeftColor: onPrimary ? 'rgba(255,255,255,0.6)' : PRIMARY,
+        backgroundColor: onPrimary ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)',
+      }}
     >
       {name !== '' && (
-        <Text numberOfLines={1} className="text-xs font-semibold" style={{ color: 'rgba(0,0,0,0.6)' }}>
+        <Text
+          numberOfLines={1}
+          className="text-xs font-semibold"
+          style={{ color: onPrimary ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.6)' }}
+        >
           {name}
         </Text>
       )}
@@ -77,8 +87,8 @@ function ChatQuoteBlock({
         {isImage && <Image source={photoIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />}
         <RichTextView
           content={excerpt}
-          own={false}
-          color="rgba(0,0,0,0.45)"
+          own={onPrimary}
+          color={onPrimary ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.45)'}
           maxWidth={maxWidth - (isImage ? 32 : 14)}
           fontSize={12}
           maxLines={2}
@@ -94,15 +104,18 @@ function CallLogBubble({
   bg,
   cornerClass,
   fromMe,
+  onPrimary,
 }: {
   meta: MessageMetadata;
   bg: string;
   cornerClass: string;
   fromMe: boolean;
+  onPrimary: boolean;
 }) {
   const { t } = useTranslation();
   const view = callMessageView(t, meta);
   const CallIcon = view.isVideo ? VideoIcon : PhoneIcon;
+  const missedColor = onPrimary ? '#ffcdd2' : '#e53935';
   return (
     <View
       className={`flex-row items-center gap-2.5 rounded-2xl px-3 py-2 ${cornerClass}`}
@@ -118,18 +131,34 @@ function CallLogBubble({
         style={{
           width: 36,
           height: 36,
-          backgroundColor: view.missed ? 'rgba(229,57,53,0.1)' : 'rgba(124,179,66,0.15)',
+          backgroundColor: onPrimary
+            ? 'rgba(255,255,255,0.2)'
+            : view.missed
+              ? 'rgba(229,57,53,0.1)'
+              : 'rgba(124,179,66,0.15)',
         }}
       >
-        <CallIcon size={20} color={view.missed ? '#e53935' : '#558b2f'} />
+        <CallIcon
+          size={20}
+          color={view.missed ? missedColor : onPrimary ? '#ffffff' : '#558b2f'}
+        />
       </View>
       <View className="pr-1">
-        <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+        <Text
+          className="text-sm font-medium"
+          style={{ color: onPrimary ? '#ffffff' : 'rgba(0,0,0,0.87)' }}
+        >
           {view.title}
         </Text>
         <Text
           className="text-xs"
-          style={{ color: view.missed ? '#e53935' : 'rgba(0,0,0,0.54)' }}
+          style={{
+            color: view.missed
+              ? missedColor
+              : onPrimary
+                ? 'rgba(255,255,255,0.8)'
+                : 'rgba(0,0,0,0.54)',
+          }}
         >
           {view.detail}
         </Text>
@@ -182,7 +211,8 @@ export function ChatBubble({
   const { width: windowWidth } = useWindowDimensions();
   const [imageRatio, setImageRatio] = useState<number | null>(null);
   const failed = message.status === MESSAGE_STATUS.failed;
-  const bg = failed ? '#f8d7d7' : fromMe ? '#dcedc8' : '#ffffff';
+  const bg = failed ? '#f8d7d7' : fromMe ? PRIMARY : '#ffffff';
+  const onPrimary = fromMe && !failed;
   const cornerClass = fromMe
     ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
     : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
@@ -201,6 +231,7 @@ export function ChatBubble({
         <ChatQuoteBlock
           replyTo={message.replyTo}
           maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
+          onPrimary={onPrimary}
           onQuoteClick={onQuoteClick}
         />
         {content}
@@ -256,6 +287,7 @@ export function ChatBubble({
         bg={bg}
         cornerClass={cornerClass}
         fromMe={fromMe}
+        onPrimary={onPrimary}
       />
     );
   }
@@ -274,13 +306,14 @@ export function ChatBubble({
         <ChatQuoteBlock
           replyTo={message.replyTo}
           maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
+          onPrimary={onPrimary}
           onQuoteClick={onQuoteClick}
         />
       )}
       <RichTextView
         content={message.content}
-        own={false}
-        color="rgba(0,0,0,0.87)"
+        own={onPrimary}
+        color={onPrimary ? '#ffffff' : 'rgba(0,0,0,0.87)'}
         maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
         onMention={onMention}
       />

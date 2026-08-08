@@ -4,9 +4,9 @@ import {
   WALLPAPER_OPACITY,
 } from '@ola/shared/constants';
 
-export const BUBBLE_SURFACE_OUT = 'bg-ola-bubble-out';
-export const BUBBLE_SURFACE_IN = 'bg-white shadow-sm';
-export const BUBBLE_SURFACE_FAILED = 'bg-ola-bubble-failed';
+export const BUBBLE_SURFACE_OUT = 'bg-ola-primary text-ola-on-primary';
+export const BUBBLE_SURFACE_IN = 'bg-white text-black/87 shadow-sm';
+export const BUBBLE_SURFACE_FAILED = 'bg-ola-bubble-failed text-black/87';
 export const BUBBLE_WALLPAPER = 'bg-ola-wallpaper';
 
 const WALLPAPER_SCRIM_PERCENT = Math.round((1 - WALLPAPER_OPACITY) * 100);

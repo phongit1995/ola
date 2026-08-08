@@ -53,7 +53,7 @@ function BotMessageRowComponent({
             className={`flex items-center gap-2 ${group.isOut ? 'flex-row-reverse' : ''}`}
           >
             <div
-              className={`rounded-2xl px-3 py-2 text-sm text-black/87 ${group.corners} ${group.surface}`}
+              className={`rounded-2xl px-3 py-2 text-sm ${group.corners} ${group.surface}`}
             >
               {group.isOut ? (
                 <span className="break-words whitespace-pre-wrap">
