@@ -50,7 +50,7 @@ export function BottomTabBar({
 }: BottomTabBarProps) {
   const { t } = useTranslation();
   return (
-    <nav className="flex border-t border-[#a0a0a0] bg-white">
+    <nav className="flex border-t border-[#a0a0a0] bg-white bg-linear-to-t from-ola-primary/35 to-ola-primary/15">
       {TABS.map((tab) => {
         const isActive = tab.key === active;
         const badge = badges?.[tab.key];
