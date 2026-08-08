@@ -1,16 +1,20 @@
 import type { CSSProperties } from 'react';
+import { WALLPAPER_OPACITY } from '@ola/shared/constants';
 
 export const BUBBLE_SURFACE_OUT = 'bg-ola-bubble-out';
 export const BUBBLE_SURFACE_IN = 'bg-white shadow-sm';
 export const BUBBLE_SURFACE_FAILED = 'bg-ola-bubble-failed';
 export const BUBBLE_WALLPAPER = 'bg-ola-wallpaper';
 
+const WALLPAPER_SCRIM_PERCENT = Math.round((1 - WALLPAPER_OPACITY) * 100);
+
 export function chatWallpaperStyle(
   wallpaperUrl: string
 ): CSSProperties | undefined {
   if (wallpaperUrl === '') return undefined;
+  const scrim = `color-mix(in srgb, var(--color-ola-wallpaper) ${WALLPAPER_SCRIM_PERCENT}%, transparent)`;
   return {
-    backgroundImage: `url(${wallpaperUrl})`,
+    backgroundImage: `linear-gradient(${scrim}, ${scrim}), url(${wallpaperUrl})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
