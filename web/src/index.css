@@ -7,6 +7,7 @@
   --color-ola-primary-light: #f1f8e9;
   --color-ola-button: #9ccc65;
   --color-ola-on-primary: #ffffff;
+  --color-ola-primary-ink: #7cb342;
   --color-ola-accent: #ff4081;
   --color-ola-accent-dark: #f50057;
   --color-ola-error: #e34545;
@@ -281,12 +282,21 @@ body {
   @apply bg-neutral-800 text-gray-900 antialiased;
 }
 
+:root {
+  --ola-icon-on-primary: invert(1);
+}
+
+@utility icon-on-primary {
+  filter: brightness(0) var(--ola-icon-on-primary);
+}
+
 [data-theme='pink'] {
   --color-ola-primary: #ff0052;
   --color-ola-primary-dark: #b8003b;
   --color-ola-primary-darker: #82002a;
   --color-ola-primary-light: #fdeaf0;
   --color-ola-button: #ef4e81;
+  --color-ola-primary-ink: #ff0052;
 }
 
 [data-theme='yellow'] {
@@ -296,6 +306,8 @@ body {
   --color-ola-primary-light: #fdfaea;
   --color-ola-button: #efd34e;
   --color-ola-on-primary: #2c3947;
+  --color-ola-primary-ink: #8a6d00;
+  --ola-icon-on-primary: invert(0);
 }
 
 [data-theme='teal'] {
@@ -304,6 +316,7 @@ body {
   --color-ola-primary-darker: #006548;
   --color-ola-primary-light: #eafdf8;
   --color-ola-button: #15e1a6;
+  --color-ola-primary-ink: #00c68d;
 }
 
 [data-theme='blue'] {
@@ -312,6 +325,7 @@ body {
   --color-ola-primary-darker: #002b6f;
   --color-ola-primary-light: #eaf1fd;
   --color-ola-button: #2471eb;
+  --color-ola-primary-ink: #0055da;
 }
 
 [data-theme='graphite'] {
@@ -320,6 +334,7 @@ body {
   --color-ola-primary-darker: #151d26;
   --color-ola-primary-light: #f1f3f6;
   --color-ola-button: #394755;
+  --color-ola-primary-ink: #2c3947;
 }
 
 [data-font-size] {
