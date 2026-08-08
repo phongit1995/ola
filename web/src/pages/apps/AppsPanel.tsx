@@ -172,8 +172,11 @@ export function AppsPanel() {
           </div>
         </div>
       </HomeHeader>
-      <main className="relative flex-1 overflow-y-auto">
-        <ul className="min-h-full bg-ola-border-strong" style={wallpaperStyle}>
+      <main
+        className="relative flex-1 overflow-y-auto bg-ola-border-strong"
+        style={wallpaperStyle}
+      >
+        <ul className="min-h-full">
           {APP_ITEMS.slice(0, 1).map(renderAppItem)}
           {miniGames.map((game) => (
             <PanelRow
