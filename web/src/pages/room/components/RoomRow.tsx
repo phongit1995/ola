@@ -27,7 +27,7 @@ export function RoomRow({ room, joined, onEnter }: RoomRowProps) {
   return (
     <li
       className={`flex items-center gap-2 border-b border-black/12 px-4 py-3 ${
-        joined ? 'bg-ola-primary-light' : 'bg-white/80'
+        joined ? 'bg-ola-primary-light/80' : 'bg-white/80'
       }`}
     >
       <button

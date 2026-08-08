@@ -6,6 +6,8 @@ export const WALLPAPER_ASPECT = 9 / 16;
 
 export const WALLPAPER_OPACITY = 0.5;
 
+export const LOBBY_WALLPAPER_OPACITY = 0.75;
+
 export const MIN_IMAGE_SOURCE = 100;
 
 export const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;

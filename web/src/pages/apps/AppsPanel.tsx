@@ -17,6 +17,7 @@ import iconGameDefault from '@/assets/icons/apps/game.png';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { APP_ITEMS, type AppItem } from './constants';
 import { SocialConnectionsDialog } from './SocialConnectionsDialog';
+import { useLobbyWallpaperStyle } from '@hooks';
 
 interface PanelRowProps {
   icon: string;
@@ -60,6 +61,7 @@ function PanelRow({ icon, title, subtitle, badge, onClick }: PanelRowProps) {
 }
 
 export function AppsPanel() {
+  const wallpaperStyle = useLobbyWallpaperStyle();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const openGame = useGameOverlayStore((s) => s.open);
@@ -171,7 +173,7 @@ export function AppsPanel() {
         </div>
       </HomeHeader>
       <main className="relative flex-1 overflow-y-auto">
-        <ul className="min-h-full bg-ola-border-strong">
+        <ul className="min-h-full bg-ola-border-strong" style={wallpaperStyle}>
           {APP_ITEMS.slice(0, 1).map(renderAppItem)}
           {miniGames.map((game) => (
             <PanelRow

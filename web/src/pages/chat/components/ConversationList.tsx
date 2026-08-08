@@ -145,7 +145,7 @@ function ConversationRow({
         onPointerCancel={handlePointerUp}
         style={{ transform: `translateX(${offset}px)` }}
         className={`relative flex min-h-[72px] touch-pan-y items-center gap-4 px-4 ${
-          unread ? 'bg-ola-primary-light' : 'bg-white/80'
+          unread ? 'bg-ola-primary-light/80' : 'bg-white/80'
         } ${offset === 0 ? 'transition-transform' : ''}`}
       >
         <button
