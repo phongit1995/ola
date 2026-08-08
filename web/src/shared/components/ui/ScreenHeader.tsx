@@ -37,7 +37,7 @@ export function ScreenHeader({
 
   if (align === 'center') {
     return (
-      <header className="relative flex h-12 shrink-0 items-center justify-center bg-ola-primary px-12 text-white">
+      <header className="relative flex h-12 shrink-0 items-center justify-center bg-ola-primary px-12 text-ola-on-primary">
         <button
           type="button"
           aria-label={t('chat.back')}
@@ -55,7 +55,7 @@ export function ScreenHeader({
   }
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 bg-ola-primary px-2 text-white shadow-[0_1px_0_rgba(0,0,0,.12)]">
+    <header className="flex h-12 shrink-0 items-center gap-2 bg-ola-primary px-2 text-ola-on-primary shadow-[0_1px_0_rgba(0,0,0,.12)]">
       <button
         type="button"
         aria-label={t('chat.back')}

@@ -23,6 +23,7 @@ export type * from './roomFeed.type';
 export type * from './savedAccount.type';
 export type * from './settings.type';
 export type * from './spinWheel.type';
+export type * from './theme.type';
 export type * from './toast.type';
 export type * from './upload.type';
 export type * from './vipPurchase.type';

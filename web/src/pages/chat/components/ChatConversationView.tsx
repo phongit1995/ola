@@ -774,7 +774,7 @@ export function ChatConversationView({
                 (isTyping || pendingImage != null ? (
                   <button
                     type="submit"
-                    className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
+                    className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-ola-on-primary shadow-sm transition active:scale-95"
                   >
                     {editing != null ? t('chat.actionSave') : t('chat.send')}
                   </button>

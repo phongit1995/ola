@@ -46,7 +46,7 @@ export function ImagePreviewOverlay({
             type="button"
             onClick={onConfirm}
             disabled={uploading}
-            className="h-11 flex-1 rounded-full bg-ola-primary text-base font-bold text-white disabled:opacity-60"
+            className="h-11 flex-1 rounded-full bg-ola-primary text-base font-bold text-ola-on-primary disabled:opacity-60"
           >
             {uploading ? t('common.loading') : t('profileEdit.coverConfirm')}
           </button>

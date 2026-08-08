@@ -12,7 +12,7 @@ export function RoomReturnFab({ label, unread, onClick }: RoomReturnFabProps) {
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary text-white shadow-lg transition hover:brightness-105"
+      className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary text-ola-on-primary shadow-lg transition hover:brightness-105"
     >
       <img src={notifyIcon} alt="" className="h-6 w-6 object-contain" />
       {unread > 0 && (

@@ -128,7 +128,7 @@ export const VoiceRecorderControl = forwardRef<
         disabled={stopping}
         onClick={() => void stop()}
         aria-label={t('chat.voiceTapStop')}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ola-primary text-white shadow-sm transition active:scale-95 disabled:opacity-60"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ola-primary text-ola-on-primary shadow-sm transition active:scale-95 disabled:opacity-60"
       >
         {stopping ? (
           <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />

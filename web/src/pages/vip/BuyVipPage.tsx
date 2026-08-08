@@ -435,7 +435,7 @@ export function BuyVipPage({
               onClick={() => changeMode(item)}
               className={`flex-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors ${
                 mode === item
-                  ? 'bg-ola-primary text-white'
+                  ? 'bg-ola-primary text-ola-on-primary'
                   : 'bg-black/5 text-black/60'
               }`}
             >

@@ -15,7 +15,7 @@ interface RoomTabBarProps {
 
 export function RoomTabBar({ tabs, activeTab, onSelect }: RoomTabBarProps) {
   return (
-    <div className="flex h-11 shrink-0 items-stretch bg-ola-primary text-white shadow-[0_1px_0_rgba(0,0,0,.12)]">
+    <div className="flex h-11 shrink-0 items-stretch bg-ola-primary text-ola-on-primary shadow-[0_1px_0_rgba(0,0,0,.12)]">
       {tabs.map((tab) => {
         const active = activeTab === tab.key;
         return (

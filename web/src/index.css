@@ -6,6 +6,7 @@
   --color-ola-primary-darker: #33691e;
   --color-ola-primary-light: #f1f8e9;
   --color-ola-button: #9ccc65;
+  --color-ola-on-primary: #ffffff;
   --color-ola-accent: #ff4081;
   --color-ola-accent-dark: #f50057;
   --color-ola-error: #e34545;
@@ -278,6 +279,47 @@ body {
 body {
   margin: 0;
   @apply bg-neutral-800 text-gray-900 antialiased;
+}
+
+[data-theme='pink'] {
+  --color-ola-primary: #ff0052;
+  --color-ola-primary-dark: #b8003b;
+  --color-ola-primary-darker: #82002a;
+  --color-ola-primary-light: #fdeaf0;
+  --color-ola-button: #ef4e81;
+}
+
+[data-theme='yellow'] {
+  --color-ola-primary: #ffd400;
+  --color-ola-primary-dark: #b89900;
+  --color-ola-primary-darker: #826c00;
+  --color-ola-primary-light: #fdfaea;
+  --color-ola-button: #efd34e;
+  --color-ola-on-primary: #2c3947;
+}
+
+[data-theme='teal'] {
+  --color-ola-primary: #00c68d;
+  --color-ola-primary-dark: #008f66;
+  --color-ola-primary-darker: #006548;
+  --color-ola-primary-light: #eafdf8;
+  --color-ola-button: #15e1a6;
+}
+
+[data-theme='blue'] {
+  --color-ola-primary: #0055da;
+  --color-ola-primary-dark: #003d9d;
+  --color-ola-primary-darker: #002b6f;
+  --color-ola-primary-light: #eaf1fd;
+  --color-ola-button: #2471eb;
+}
+
+[data-theme='graphite'] {
+  --color-ola-primary: #2c3947;
+  --color-ola-primary-dark: #1f2934;
+  --color-ola-primary-darker: #151d26;
+  --color-ola-primary-light: #f1f3f6;
+  --color-ola-button: #394755;
 }
 
 [data-font-size] {

@@ -139,7 +139,7 @@ function RoomBubble({
   useUploadPreviewLease(isImage ? message.imageUrl : undefined);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bubbleClass = isOwn
-    ? `w-fit max-w-full break-words bg-ola-primary px-3.5 py-2 text-base text-white ${corners}`
+    ? `w-fit max-w-full break-words bg-ola-primary px-3.5 py-2 text-base text-ola-on-primary ${corners}`
     : `w-fit max-w-full break-words bg-ola-primary-light px-3.5 py-2 text-base text-black/87 ${corners}`;
 
   const content = isImage ? (

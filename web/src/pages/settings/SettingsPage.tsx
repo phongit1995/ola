@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ImageCropOverlay, ScreenHeader } from '@components';
-import { MIN_IMAGE_SOURCE, WALLPAPER_ASPECT } from '@constants';
+import { MIN_IMAGE_SOURCE, THEME_OPTIONS, WALLPAPER_ASPECT } from '@constants';
 import { compressImageForUpload, toast, validatedImageObjectUrl } from '@lib';
 import { UserService, VipService } from '@services';
-import type { UserSettings } from '@app-types';
+import type { ThemeId, UserSettings } from '@app-types';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useThemeStore } from '@/store/themeStore';
 import { useDownloadGuideStore } from '@/store/downloadGuideStore';
 import iconPrivacy from '@/assets/icons/settings/icon-privacy.webp';
 import iconNotification from '@/assets/icons/settings/icon-notification.webp';
@@ -116,12 +117,41 @@ function Segmented<T extends string>({
           onClick={() => onChange(option.value)}
           className={`rounded-md px-2.5 py-1 text-[13px] leading-tight transition-colors ${
             value === option.value
-              ? 'bg-ola-primary font-semibold text-white'
+              ? 'bg-ola-primary font-semibold text-ola-on-primary'
               : 'text-black/70'
           }`}
         >
           {option.label}
         </button>
+      ))}
+    </div>
+  );
+}
+
+function ThemeSwatches({
+  value,
+  onChange,
+}: {
+  value: ThemeId;
+  onChange: (value: ThemeId) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      {THEME_OPTIONS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          aria-label={t(`settings.theme_${option.id}`)}
+          aria-pressed={value === option.id}
+          onClick={() => onChange(option.id)}
+          style={{ backgroundColor: option.swatch }}
+          className={`h-7 w-7 rounded-full transition ${
+            value === option.id
+              ? 'ring-2 ring-black/45 ring-offset-2'
+              : 'ring-1 ring-black/10'
+          }`}
+        />
       ))}
     </div>
   );
@@ -171,6 +201,8 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
   const openDownloadGuide = useDownloadGuideStore((s) => s.open);
   const settings = useSettingsStore((s) => s.settings);
   const update = useSettingsStore((s) => s.update);
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
   const [draft, setDraft] = useState(settings);
   const [saving, setSaving] = useState(false);
   const [vipPrivacy, setVipPrivacy] = useState<number | null>(null);
@@ -403,6 +435,9 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           index={3}
           title={t('settings.appearanceTitle')}
         >
+          <SettingRow label={t('settings.theme')}>
+            <ThemeSwatches value={theme} onChange={setTheme} />
+          </SettingRow>
           <SettingRow label={t('settings.fontSize')}>
             <Segmented
               value={draft.fontSize}

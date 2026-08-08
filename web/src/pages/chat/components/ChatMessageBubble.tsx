@@ -328,7 +328,7 @@ export function StrangerCardBubble({
         <button
           type="button"
           onClick={onAddFriend}
-          className="flex items-center gap-1 rounded bg-ola-primary px-3 py-1 text-sm font-medium text-white"
+          className="flex items-center gap-1 rounded bg-ola-primary px-3 py-1 text-sm font-medium text-ola-on-primary"
         >
           <img src={addFriendIcon} alt="" className="h-4 w-4 object-contain" />
           {t('chat.menuMakeFriend')}

@@ -22,7 +22,7 @@ export function LanguageSwitcher({
         const activeClass =
           tone === 'light'
             ? 'bg-white/30 font-semibold text-white'
-            : 'bg-ola-primary font-semibold text-white';
+            : 'bg-ola-primary font-semibold text-ola-on-primary';
         const idleClass = tone === 'light' ? 'text-white/70' : 'text-gray-500';
         return (
           <button

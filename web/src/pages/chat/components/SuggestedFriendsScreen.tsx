@@ -48,7 +48,7 @@ export function SuggestedFriendsScreen({
           <button
             type="button"
             onClick={addAll}
-            className="w-full rounded bg-ola-primary py-2 text-sm font-medium text-white"
+            className="w-full rounded bg-ola-primary py-2 text-sm font-medium text-ola-on-primary"
           >
             {t('chat.makeFriendAll')}
           </button>

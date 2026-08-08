@@ -16,7 +16,7 @@ export function ActionLink({
 }: ActionLinkProps) {
   const toneClass =
     tone === 'primary'
-      ? 'bg-ola-primary text-white hover:bg-ola-primary-dark'
+      ? 'bg-ola-primary text-ola-on-primary hover:bg-ola-primary-dark'
       : 'border border-black/15 text-black/75 hover:border-ola-primary hover:text-ola-primary';
 
   return (
@@ -89,7 +89,7 @@ export function DownloadGuideBody({
       <ol className="space-y-2.5">
         {steps.map((step, index) => (
           <li key={step} className="flex gap-2.5">
-            <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ola-primary text-[11px] font-bold text-white">
+            <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ola-primary text-[11px] font-bold text-ola-on-primary">
               {index + 1}
             </span>
             <span className="text-[13px] leading-relaxed text-black/75">
