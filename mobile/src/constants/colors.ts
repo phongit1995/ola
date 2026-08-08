@@ -15,3 +15,5 @@ export const BUTTON = '#9ccc65';
 export const ERROR = '#e34545';
 
 export const WARNING = '#ff9800';
+
+export const TAB_BAR_BORDER = '#a0a0a0';
