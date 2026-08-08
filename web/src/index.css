@@ -297,6 +297,7 @@ body {
   --color-ola-primary-light: #fdeaf0;
   --color-ola-button: #ef4e81;
   --color-ola-primary-ink: #ff0052;
+  --color-ola-bubble-out: #ffbad0;
 }
 
 [data-theme='yellow'] {
@@ -307,6 +308,7 @@ body {
   --color-ola-button: #efd34e;
   --color-ola-on-primary: #2c3947;
   --color-ola-primary-ink: #8a6d00;
+  --color-ola-bubble-out: #fff3ba;
   --ola-icon-on-primary: invert(0);
 }
 
@@ -317,6 +319,7 @@ body {
   --color-ola-primary-light: #eafdf8;
   --color-ola-button: #15e1a6;
   --color-ola-primary-ink: #00c68d;
+  --color-ola-bubble-out: #baf0e0;
 }
 
 [data-theme='blue'] {
@@ -326,6 +329,7 @@ body {
   --color-ola-primary-light: #eaf1fd;
   --color-ola-button: #2471eb;
   --color-ola-primary-ink: #0055da;
+  --color-ola-bubble-out: #bad1f5;
 }
 
 [data-theme='graphite'] {
@@ -335,6 +339,7 @@ body {
   --color-ola-primary-light: #f1f3f6;
   --color-ola-button: #394755;
   --color-ola-primary-ink: #2c3947;
+  --color-ola-bubble-out: #c6cacd;
 }
 
 [data-font-size] {
