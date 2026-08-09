@@ -66,20 +66,34 @@ function DeleteAction({
   onPress: () => void;
 }) {
   const revealStyle = useAnimatedStyle(() => ({
-    opacity: translation.value < 0 ? 1 : 0,
+    width: Math.min(SWIPE_MAX, Math.max(0, -translation.value)),
   }));
   return (
-    <Animated.View style={[{ height: '100%' }, revealStyle]}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-        onPress={onPress}
-        className="h-full items-center justify-center"
-        style={{ width: SWIPE_MAX, backgroundColor: '#dd4b39' }}
+    <View style={{ width: SWIPE_MAX, height: '100%' }}>
+      <Animated.View
+        style={[
+          { position: 'absolute', top: 0, bottom: 0, right: 0, overflow: 'hidden' },
+          revealStyle,
+        ]}
       >
-        <Text className="text-sm font-medium text-white">{label}</Text>
-      </Pressable>
-    </Animated.View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          onPress={onPress}
+          className="items-center justify-center"
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            width: SWIPE_MAX,
+            backgroundColor: '#dd4b39',
+          }}
+        >
+          <Text className="text-sm font-medium text-white">{label}</Text>
+        </Pressable>
+      </Animated.View>
+    </View>
   );
 }
 
