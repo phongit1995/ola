@@ -16,7 +16,7 @@ import { useThemeStore } from '@ola/shared/stores/themeStore';
 import { THEME_OPTIONS } from '@ola/shared/constants';
 import { withAlpha } from '@ola/shared/lib';
 import { UserService, VipService } from '@ola/shared/services';
-import type { UserSettings } from '@ola/shared/types';
+import type { ThemeId, UserSettings } from '@ola/shared/types';
 import {
   pickValidatedCroppedImage,
   WALLPAPER_OUTPUT,
@@ -73,21 +73,25 @@ function ImageIcon() {
   );
 }
 
-function ThemeSwatches() {
+function ThemeSwatches({
+  value,
+  onChange,
+}: {
+  value: ThemeId;
+  onChange: (value: ThemeId) => void;
+}) {
   const { t } = useTranslation();
-  const theme = useThemeStore((s) => s.theme);
-  const setTheme = useThemeStore((s) => s.setTheme);
   return (
     <View className="shrink-0 flex-row items-center" style={{ gap: 8 }}>
       {THEME_OPTIONS.map((option) => {
-        const selected = theme === option.id;
+        const selected = value === option.id;
         return (
           <Pressable
             key={option.id}
             accessibilityRole="button"
             accessibilityLabel={t(`settings.theme_${option.id}`)}
             accessibilityState={{ selected }}
-            onPress={() => setTheme(option.id)}
+            onPress={() => onChange(option.id)}
             className="rounded-full"
             style={{
               width: 28,
@@ -243,7 +247,10 @@ export function SettingsScreen({ navigation }: Props) {
   const push = useToastStore((s) => s.push);
   const settings = useSettingsStore((s) => s.settings);
   const update = useSettingsStore((s) => s.update);
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
   const [draft, setDraft] = useState(settings);
+  const [themeDraft, setThemeDraft] = useState(theme);
   const [saving, setSaving] = useState(false);
   const [vipPrivacy, setVipPrivacy] = useState<number | null>(null);
   const [vipPrivacyDraft, setVipPrivacyDraft] = useState(0);
@@ -270,7 +277,8 @@ export function SettingsScreen({ navigation }: Props) {
     [draft, settings]
   );
   const vipDirty = vipTouched && vipPrivacyDraft !== vipPrivacy;
-  const dirty = settingsDirty || vipDirty;
+  const themeDirty = themeDraft !== theme;
+  const dirty = settingsDirty || vipDirty || themeDirty;
 
   const vipPrivacyKey = VIP_PRIVACY_KEYS[vipPrivacyDraft] ?? VIP_PRIVACY_KEYS[0];
 
@@ -318,6 +326,7 @@ export function SettingsScreen({ navigation }: Props) {
     }
     setSaving(false);
     if (ok) {
+      if (themeDirty) setTheme(themeDraft);
       setDraft(useSettingsStore.getState().settings);
       if (vipDirty) {
         setVipPrivacy(vipPrivacyDraft);
@@ -426,7 +435,7 @@ export function SettingsScreen({ navigation }: Props) {
 
         <SettingsCard icon={<SectionIcon src={iconAppearance} />} index={3} title={t('settings.appearanceTitle')}>
           <SettingRow label={t('settings.theme')}>
-            <ThemeSwatches />
+            <ThemeSwatches value={themeDraft} onChange={setThemeDraft} />
           </SettingRow>
           <SettingRow label={t('settings.fontSize')}>
             <Segmented
