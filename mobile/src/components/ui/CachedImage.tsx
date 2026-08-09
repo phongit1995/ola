@@ -7,6 +7,7 @@ import FastImage, {
   type Priority,
   type ResizeMode,
 } from '@d11/react-native-fast-image';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 interface CachedImageProps {
   uri?: string | null;
@@ -26,8 +27,6 @@ type RemoteImageStatus = {
   value: 'loading' | 'loaded' | 'error';
 };
 
-const DEFAULT_LOADING_INDICATOR_COLOR = '#7cb342';
-
 function loadingOverlay(show: boolean, color: string): ReactNode {
   if (!show) return null;
   return (
@@ -46,9 +45,10 @@ export function CachedImage({
   tintColor,
   priority = FastImage.priority.normal,
   showLoader = false,
-  loadingIndicatorColor = DEFAULT_LOADING_INDICATOR_COLOR,
+  loadingIndicatorColor,
   onSize,
 }: CachedImageProps) {
+  const colors = useThemeColors();
   const [remoteStatus, setRemoteStatus] = useState<RemoteImageStatus | null>(null);
 
   if (uri != null && uri !== '') {
@@ -86,7 +86,10 @@ export function CachedImage({
         }}
         onError={() => setRemoteStatus({ uri, value: 'error' })}
       >
-        {loadingOverlay(showLoader && status === 'loading' && placeholder == null, loadingIndicatorColor)}
+        {loadingOverlay(
+          showLoader && status === 'loading' && placeholder == null,
+          loadingIndicatorColor ?? colors.primary
+        )}
       </FastImage>
     );
   }
@@ -121,9 +124,10 @@ export function CachedImageBackground({
   placeholder,
   placeholderResizeMode,
   showLoader = false,
-  loadingIndicatorColor = DEFAULT_LOADING_INDICATOR_COLOR,
+  loadingIndicatorColor,
   children,
 }: CachedImageBackgroundProps) {
+  const colors = useThemeColors();
   const [remoteStatus, setRemoteStatus] = useState<RemoteImageStatus | null>(null);
 
   if (uri != null && uri !== '') {
@@ -160,7 +164,10 @@ export function CachedImageBackground({
         onLoad={() => setRemoteStatus({ uri, value: 'loaded' })}
         onError={() => setRemoteStatus({ uri, value: 'error' })}
       >
-        {loadingOverlay(showLoader && status === 'loading' && placeholder == null, loadingIndicatorColor)}
+        {loadingOverlay(
+          showLoader && status === 'loading' && placeholder == null,
+          loadingIndicatorColor ?? colors.primary
+        )}
         {children}
       </FastImage>
     );

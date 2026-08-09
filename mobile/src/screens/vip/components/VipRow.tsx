@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { vipName } from '@ola/shared/lib';
 import type { VipIconInstance } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { VipIconImage } from './VipIconImage';
 
@@ -16,6 +17,7 @@ interface VipRowProps {
 
 export function VipRow({ icon, selectMode, selected, selectable, onSelect, onToggle }: VipRowProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const stateKey =
     icon.isUsing ? 'vip.stateInUse' : icon.isLocked ? 'vip.stateLocked' : 'vip.stateAvailable';
   const disabled = selectMode && !selectable;
@@ -34,8 +36,8 @@ export function VipRow({ icon, selectMode, selected, selectable, onSelect, onTog
               width: 20,
               height: 20,
               borderWidth: 1,
-              borderColor: selected ? '#7cb342' : 'rgba(0,0,0,0.3)',
-              backgroundColor: selected ? '#7cb342' : '#ffffff',
+              borderColor: selected ? colors.primary : 'rgba(0,0,0,0.3)',
+              backgroundColor: selected ? colors.primary : '#ffffff',
             }}
           >
             {selected && <Text className="text-xs font-bold text-white">✓</Text>}

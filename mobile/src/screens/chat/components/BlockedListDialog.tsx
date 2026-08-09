@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { RelationshipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { Relationship } from '@ola/shared/types';
@@ -14,6 +15,7 @@ function blockedName(relationship: Relationship): string {
 
 export function BlockedListDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const [items, setItems] = useState<Relationship[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,9 +81,9 @@ export function BlockedListDialog({ onClose }: { onClose: () => void }) {
               onPress={() => void unblock(item)}
               disabled={busyId === item.id}
               className="rounded px-3 py-1.5"
-              style={{ borderWidth: 1, borderColor: '#7cb342', opacity: busyId === item.id ? 0.5 : 1 }}
+              style={{ borderWidth: 1, borderColor: colors.primary, opacity: busyId === item.id ? 0.5 : 1 }}
             >
-              <Text className="text-sm font-medium" style={{ color: '#7cb342' }}>
+              <Text className="text-sm font-medium" style={{ color: colors.primary }}>
                 {t('chat.unblock')}
               </Text>
             </Pressable>

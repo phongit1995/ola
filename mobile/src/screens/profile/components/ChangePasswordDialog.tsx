@@ -7,6 +7,7 @@ import { ApiError } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 interface ChangePasswordForm {
   current: string;
@@ -27,6 +28,7 @@ function PasswordField({
   onChangeText: (text: string) => void;
   onBlur: () => void;
 }) {
+  const colors = useThemeColors();
   const [focused, setFocused] = useState(false);
   return (
     <View>
@@ -45,7 +47,7 @@ function PasswordField({
         className="rounded bg-white px-3 py-2 text-sm"
         style={{
           borderWidth: 1,
-          borderColor: focused ? '#7cb342' : 'rgba(0,0,0,0.15)',
+          borderColor: focused ? colors.primary : 'rgba(0,0,0,0.15)',
           color: 'rgba(0,0,0,0.87)',
         }}
       />

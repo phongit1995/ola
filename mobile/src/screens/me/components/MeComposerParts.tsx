@@ -13,7 +13,8 @@ import { KUL_IMAGES, stickerImageForCode } from '@lib/kul';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { CachedImage } from '@components/ui/CachedImage';
 import { CloseIcon } from '@components/ui/CloseIcon';
-import { DIVIDER, ERROR, PRIMARY, PRIMARY_LIGHT, TEXT_SECONDARY } from '@constants';
+import { DIVIDER, ERROR, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 import type { ComposedCheckIn } from './MeComposerCheckInPanel';
 import { COMPOSER_MAX_IMAGES } from '../constants';
 import type { PickedPhoto } from '../interface';
@@ -81,6 +82,7 @@ interface PrivacyRowProps {
 
 export function PrivacyRow({ options, privacy, onChange }: PrivacyRowProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   return (
     <View className="flex-row items-center gap-2 px-4 pt-3">
       <Text className="text-sm text-ola-ink-soft">{t('me.privacyTo')}</Text>
@@ -93,13 +95,13 @@ export function PrivacyRow({ options, privacy, onChange }: PrivacyRowProps) {
             className="rounded-full px-3 py-1"
             style={{
               borderWidth: 1,
-              borderColor: active ? PRIMARY : DIVIDER,
-              backgroundColor: active ? PRIMARY_LIGHT : 'transparent',
+              borderColor: active ? colors.primary : DIVIDER,
+              backgroundColor: active ? colors.primaryLight : 'transparent',
             }}
           >
             <Text
               className="text-xs"
-              style={{ color: active ? PRIMARY : TEXT_SECONDARY }}
+              style={{ color: active ? colors.primary : TEXT_SECONDARY }}
             >
               {t(privacyKey(option))}
             </Text>
@@ -277,6 +279,7 @@ export function AttachBar({
   onPress: (key: ComposerAttachKey) => void;
 }) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const buttons: AttachButton[] = [
     { key: 'local', glyph: '📷', label: t('me.attachLocal') },
     { key: 'smiley', glyph: '😀', label: t('me.attachSmiley') },
@@ -306,7 +309,7 @@ export function AttachBar({
           )}
           <Text
             className="text-xs"
-            style={{ color: panel === button.key ? PRIMARY : TEXT_SECONDARY }}
+            style={{ color: panel === button.key ? colors.primary : TEXT_SECONDARY }}
           >
             {button.label}
           </Text>

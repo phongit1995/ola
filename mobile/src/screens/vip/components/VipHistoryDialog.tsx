@@ -6,6 +6,7 @@ import { VipService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { VipPurchaseHistoryItem, VipTransferHistoryItem } from '@ola/shared/types';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { VipIconImage } from './VipIconImage';
 
@@ -43,6 +44,7 @@ interface VipHistoryDialogProps {
 
 export function VipHistoryDialog({ visible, onClose }: VipHistoryDialogProps) {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const myId = useAuthStore((s) => s.user?.id);
   const [tab, setTab] = useState<HistoryTab>('purchases');
   const [purchases, setPurchases] = useState<VipPurchaseHistoryItem[]>([]);
@@ -102,7 +104,7 @@ export function VipHistoryDialog({ visible, onClose }: VipHistoryDialogProps) {
               key={key}
               onPress={() => setTab(key)}
               className="rounded-full px-3 py-1"
-              style={{ backgroundColor: active ? '#7cb342' : '#efefef' }}
+              style={{ backgroundColor: active ? colors.primary : '#efefef' }}
             >
               <Text
                 className="text-xs font-medium"

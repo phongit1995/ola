@@ -14,6 +14,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { CachedImage } from '@components/ui/CachedImage';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { trackEvent } from '@lib/telemetry';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { useArcadeStore } from '@store/arcadeStore';
@@ -245,20 +246,23 @@ export function AppsScreen() {
           </View>
         </View>
       </View>
-      <ScrollView className="flex-1">
-        {APP_ITEMS.slice(0, 1).map(renderAppItem)}
-        {miniGames.map(game => (
-          <PanelRow
-            key={game.id}
-            icon={iconGameDefault}
-            iconUrl={game.iconUrl || undefined}
-            title={game.name}
-            subtitle={game.description || undefined}
-            onPress={() => handleOpenArcade(game)}
-          />
-        ))}
-        {APP_ITEMS.slice(1).map(renderAppItem)}
-      </ScrollView>
+      <View className="flex-1">
+        <LobbyWallpaper />
+        <ScrollView className="flex-1">
+          {APP_ITEMS.slice(0, 1).map(renderAppItem)}
+          {miniGames.map(game => (
+            <PanelRow
+              key={game.id}
+              icon={iconGameDefault}
+              iconUrl={game.iconUrl || undefined}
+              title={game.name}
+              subtitle={game.description || undefined}
+              onPress={() => handleOpenArcade(game)}
+            />
+          ))}
+          {APP_ITEMS.slice(1).map(renderAppItem)}
+        </ScrollView>
+      </View>
       <ConfirmDialog
         visible={logoutOpen}
         danger

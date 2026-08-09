@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, Text, Vibration, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import {
   callPeerNameView,
@@ -16,7 +17,6 @@ import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { CALL_TYPE } from '@ola/shared/constants';
 
 const RING_PATTERN = [0, 700, 1300];
-const ACCEPT_ICON_COLOR = '#33691e';
 
 function useRingVibration(enabled: boolean) {
   useEffect(() => {
@@ -29,6 +29,7 @@ function useRingVibration(enabled: boolean) {
 
 export function IncomingCallCard() {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const incoming = useCallStore((s) => s.incoming);
   const pendingAction = useCallStore((s) => s.pendingAction);
@@ -112,7 +113,7 @@ export function IncomingCallCard() {
           style={{ opacity: busy ? 0.4 : 1 }}
         >
           <View className="h-16 w-16 items-center justify-center rounded-full bg-ola-button">
-            <PhoneIcon size={28} color={ACCEPT_ICON_COLOR} />
+            <PhoneIcon size={28} color={colors.primaryDarker} />
           </View>
           <Text className="text-xs text-white/70">{t('call.accept')}</Text>
         </Pressable>

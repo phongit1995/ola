@@ -8,6 +8,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { useAppTypography } from '@components/AppFontProvider';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { MeLikersDialog } from './MeLikersDialog';
 
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -62,6 +63,7 @@ function MeCommentItemComponent({
   onOpenProfile,
 }: MeCommentItemProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const { multiplier: fontMultiplier, systemFontScale } = useAppTypography();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -102,6 +104,7 @@ function MeCommentItemComponent({
             {renderRichText(comment.content, {
               own: false,
               fontSize: 14 * fontMultiplier * systemFontScale,
+              accentColor: colors.primaryDarker,
               onMention: (nick) => onOpenProfile?.(nick, colorForName(nick)),
             })}
           </Text>

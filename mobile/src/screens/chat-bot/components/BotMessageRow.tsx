@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Text, View, useWindowDimensions } from 'react-native';
 import { Avatar } from '@components/ui/Avatar';
 import type { ChatBotMessage, ChatBotType } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { groupingOf } from '../chatBotView';
 import type { ChatBotViewer } from '../interface';
 import { BotAvatar } from './BotAvatar';
@@ -24,7 +25,8 @@ function BotMessageRowComponent({
   bot,
   viewer,
 }: BotMessageRowProps) {
-  const group = groupingOf(message, prev, next);
+  const colors = useThemeColors();
+  const group = groupingOf(message, colors.primary, prev, next);
   const { width } = useWindowDimensions();
   const maxWidth = Math.round(width * BUBBLE_MAX_RATIO);
 

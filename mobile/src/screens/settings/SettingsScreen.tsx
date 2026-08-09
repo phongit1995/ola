@@ -12,6 +12,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
+import { useThemeStore } from '@ola/shared/stores/themeStore';
+import { THEME_OPTIONS } from '@ola/shared/constants';
+import { withAlpha } from '@ola/shared/lib';
 import { UserService, VipService } from '@ola/shared/services';
 import type { UserSettings } from '@ola/shared/types';
 import {
@@ -23,8 +26,8 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useAppTypography } from '@components/AppFontProvider';
+import { useThemeColors } from '@hooks/useThemeColors';
 
-const PRIMARY = '#7cb342';
 const ROW_BORDER = 'rgba(0,0,0,0.06)';
 const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;
@@ -41,14 +44,15 @@ function SectionIcon({ src }: { src: ImageSourcePropType }) {
 }
 
 function ImageIcon() {
+  const colors = useThemeColors();
   return (
     <View
       className="items-center justify-center"
-      style={{ width: 16, height: 16, borderWidth: 1.5, borderColor: PRIMARY, borderRadius: 3 }}
+      style={{ width: 16, height: 16, borderWidth: 1.5, borderColor: colors.primary, borderRadius: 3 }}
     >
       <View
         className="absolute rounded-full"
-        style={{ top: 2.5, left: 2.5, width: 3, height: 3, backgroundColor: PRIMARY }}
+        style={{ top: 2.5, left: 2.5, width: 3, height: 3, backgroundColor: colors.primary }}
       />
       <View
         className="absolute"
@@ -62,21 +66,52 @@ function ImageIcon() {
           borderBottomWidth: 5.5,
           borderLeftColor: 'transparent',
           borderRightColor: 'transparent',
-          borderBottomColor: PRIMARY,
+          borderBottomColor: colors.primary,
         }}
       />
     </View>
   );
 }
 
+function ThemeSwatches() {
+  const { t } = useTranslation();
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
+  return (
+    <View className="shrink-0 flex-row items-center" style={{ gap: 8 }}>
+      {THEME_OPTIONS.map((option) => {
+        const selected = theme === option.id;
+        return (
+          <Pressable
+            key={option.id}
+            accessibilityRole="button"
+            accessibilityLabel={t(`settings.theme_${option.id}`)}
+            accessibilityState={{ selected }}
+            onPress={() => setTheme(option.id)}
+            className="rounded-full"
+            style={{
+              width: 28,
+              height: 28,
+              backgroundColor: option.swatch,
+              borderWidth: selected ? 2 : 1,
+              borderColor: selected ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.1)',
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
 function ToggleSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
+  const colors = useThemeColors();
   return (
     <Pressable
       accessibilityRole="switch"
       accessibilityState={{ checked: on }}
       onPress={onChange}
       className="shrink-0 rounded-full"
-      style={{ width: 48, height: 28, backgroundColor: on ? PRIMARY : 'rgba(0,0,0,0.2)' }}
+      style={{ width: 48, height: 28, backgroundColor: on ? colors.primary : 'rgba(0,0,0,0.2)' }}
     >
       <View
         className="absolute rounded-full bg-white"
@@ -106,6 +141,7 @@ function Segmented<T extends string>({
   onChange: (value: T) => void;
 }) {
   const { multiplier: fontMultiplier } = useAppTypography();
+  const colors = useThemeColors();
   return (
     <View
       className="shrink-0 flex-row rounded-lg bg-white"
@@ -121,7 +157,7 @@ function Segmented<T extends string>({
             style={{
               paddingHorizontal: 10,
               paddingVertical: 4,
-              backgroundColor: selected ? PRIMARY : 'transparent',
+              backgroundColor: selected ? colors.primary : 'transparent',
             }}
           >
             <Text
@@ -166,6 +202,7 @@ function SettingsCard({
   title: string;
   children: ReactNode;
 }) {
+  const colors = useThemeColors();
   return (
     <View
       className="overflow-hidden rounded-2xl bg-white"
@@ -184,11 +221,11 @@ function SettingsCard({
         style={{
           borderBottomWidth: 1,
           borderBottomColor: ROW_BORDER,
-          backgroundColor: 'rgba(124,179,66,0.05)',
+          backgroundColor: withAlpha(colors.primary, 0.05),
         }}
       >
         {icon}
-        <Text className="text-base font-bold" style={{ color: PRIMARY }}>
+        <Text className="text-base font-bold" style={{ color: colors.primary }}>
           {index}. {title}
         </Text>
       </View>
@@ -202,6 +239,7 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.Setti
 export function SettingsScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const settings = useSettingsStore((s) => s.settings);
   const update = useSettingsStore((s) => s.update);
@@ -387,6 +425,9 @@ export function SettingsScreen({ navigation }: Props) {
         </SettingsCard>
 
         <SettingsCard icon={<SectionIcon src={iconAppearance} />} index={3} title={t('settings.appearanceTitle')}>
+          <SettingRow label={t('settings.theme')}>
+            <ThemeSwatches />
+          </SettingRow>
           <SettingRow label={t('settings.fontSize')}>
             <Segmented
               value={draft.fontSize}
@@ -433,14 +474,14 @@ export function SettingsScreen({ navigation }: Props) {
                 style={{
                   height: 32,
                   borderWidth: 1,
-                  borderColor: PRIMARY,
+                  borderColor: colors.primary,
                   paddingHorizontal: 12,
                   gap: 6,
                   opacity: uploadingWallpaper ? 0.5 : 1,
                 }}
               >
                 <ImageIcon />
-                <Text className="text-[13px] font-semibold" style={{ color: PRIMARY }}>
+                <Text className="text-[13px] font-semibold" style={{ color: colors.primary }}>
                   {t('settings.upload')}
                 </Text>
               </Pressable>

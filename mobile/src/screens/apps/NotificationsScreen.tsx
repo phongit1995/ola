@@ -15,6 +15,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { APP_NOTIFICATION_TYPE } from '@ola/shared/constants';
 
 const icFriend = require('@assets/icons/notify/ic_notification_add_friend.png');
@@ -38,7 +39,7 @@ function RowButton({ variant, disabled, onPress, children }: RowButtonProps) {
     <Pressable
       disabled={disabled}
       onPress={onPress}
-      className={`h-7 min-w-16 flex-1 items-center justify-center rounded-sm ${isGreen ? 'bg-[#9ccc65]' : 'ml-2 bg-[#e0e0e0]'} ${disabled ? 'opacity-50' : ''}`}
+      className={`h-7 min-w-16 flex-1 items-center justify-center rounded-sm ${isGreen ? 'bg-ola-button' : 'ml-2 bg-[#e0e0e0]'} ${disabled ? 'opacity-50' : ''}`}
     >
       <Text className={`text-xs ${isGreen ? 'text-white' : 'text-[#636363]'}`}>{children}</Text>
     </Pressable>
@@ -49,6 +50,7 @@ type ProposalAction = { item: AppNotification; kind: 'accept' | 'deny' } | null;
 
 export function NotificationsScreen() {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation();
   const push = useToastStore((s) => s.push);
   const items = useAppNotificationStore((s) => s.items);
@@ -143,7 +145,7 @@ export function NotificationsScreen() {
       <ScreenHeader title={t('notify.title')} onBack={() => navigation.goBack()} />
 
       {loading && items.length === 0 ? (
-        <ActivityIndicator className="py-10" color="#7cb342" />
+        <ActivityIndicator className="py-10" color={colors.primary} />
       ) : items.length === 0 ? (
         <Text className="py-16 text-center text-sm text-ola-ink-soft">
           {t('notify.empty')}
@@ -155,7 +157,7 @@ export function NotificationsScreen() {
           onEndReached={() => void loadMore()}
           onEndReachedThreshold={0.4}
           ItemSeparatorComponent={InsetListSeparator}
-          ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color="#7cb342" /> : null}
+          ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color={colors.primary} /> : null}
           renderItem={({ item }) => {
             const config = KIND_CONFIG[item.type];
             const name = item.actor?.fullName || item.actor?.username || '';
@@ -189,7 +191,7 @@ export function NotificationsScreen() {
                     </Text>
                   </View>
                 </View>
-                {busyId === item.id && <ActivityIndicator color="#7cb342" />}
+                {busyId === item.id && <ActivityIndicator color={colors.primary} />}
               </View>
             );
           }}

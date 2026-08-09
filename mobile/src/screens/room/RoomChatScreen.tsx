@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type {
@@ -97,6 +98,7 @@ function TabButton({
   indicator?: boolean;
   onPress: () => void;
 }) {
+  const colors = useThemeColors();
   return (
     <Pressable
       onPress={onPress}
@@ -122,7 +124,7 @@ function TabButton({
               top: -4,
               right: -4,
               borderWidth: 2,
-              borderColor: '#7cb342',
+              borderColor: colors.primary,
             }}
           />
         )}
@@ -137,6 +139,7 @@ function TabButton({
 export function RoomChatScreen({ navigation, route }: Props) {
   const { roomId, roomName } = route.params;
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
 
   const status = useRoomChatStore(s => s.status);
@@ -341,7 +344,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
           </View>
         ) : status !== 'joined' ? (
           <View className="flex-1 items-center justify-center gap-3">
-            <ActivityIndicator color="#7cb342" size="large" />
+            <ActivityIndicator color={colors.primary} size="large" />
             <Text className="text-sm text-ola-ink-soft">
               {t('room.joining')}
             </Text>

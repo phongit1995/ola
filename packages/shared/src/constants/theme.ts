@@ -1,4 +1,4 @@
-import type { ThemeId, ThemeOption } from '../types/client/theme.type';
+import type { ThemeColors, ThemeId, ThemeOption } from '../types/client/theme.type';
 
 export const THEME_ID = {
   green: 'green',
@@ -24,4 +24,65 @@ export const THEME_OPTIONS: ThemeOption[] = Object.values(THEME_PALETTE);
 
 export function themeOptionOf(id: ThemeId): ThemeOption {
   return THEME_PALETTE[id];
+}
+
+export const THEME_COLORS = {
+  green: {
+    primary: '#7cb342',
+    primaryDark: '#558b2f',
+    primaryDarker: '#33691e',
+    primaryLight: '#f1f8e9',
+    button: '#9ccc65',
+    onPrimary: '#ffffff',
+    primaryInk: '#7cb342',
+  },
+  pink: {
+    primary: '#ff0052',
+    primaryDark: '#b8003b',
+    primaryDarker: '#82002a',
+    primaryLight: '#fdeaf0',
+    button: '#ef4e81',
+    onPrimary: '#ffffff',
+    primaryInk: '#ff0052',
+  },
+  yellow: {
+    primary: '#ffd400',
+    primaryDark: '#b89900',
+    primaryDarker: '#826c00',
+    primaryLight: '#fdfaea',
+    button: '#efd34e',
+    onPrimary: '#2c3947',
+    primaryInk: '#8a6d00',
+  },
+  teal: {
+    primary: '#00c68d',
+    primaryDark: '#008f66',
+    primaryDarker: '#006548',
+    primaryLight: '#eafdf8',
+    button: '#15e1a6',
+    onPrimary: '#ffffff',
+    primaryInk: '#00c68d',
+  },
+  blue: {
+    primary: '#0055da',
+    primaryDark: '#003d9d',
+    primaryDarker: '#002b6f',
+    primaryLight: '#eaf1fd',
+    button: '#2471eb',
+    onPrimary: '#ffffff',
+    primaryInk: '#0055da',
+  },
+  graphite: {
+    primary: '#2c3947',
+    primaryDark: '#1f2934',
+    primaryDarker: '#151d26',
+    primaryLight: '#f1f3f6',
+    button: '#394755',
+    onPrimary: '#ffffff',
+    primaryInk: '#2c3947',
+  },
+} as const satisfies Record<ThemeId, ThemeColors>;
+
+export function themeColorsOf(id: ThemeId): ThemeColors {
+  return THEME_COLORS[id];
 }

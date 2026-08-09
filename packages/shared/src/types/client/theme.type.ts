@@ -6,6 +6,16 @@ export interface ThemeOption {
   ink: string;
 }
 
+export interface ThemeColors {
+  primary: string;
+  primaryDark: string;
+  primaryDarker: string;
+  primaryLight: string;
+  button: string;
+  onPrimary: string;
+  primaryInk: string;
+}
+
 export interface ThemeState {
   theme: ThemeId;
   setTheme: (theme: ThemeId) => void;

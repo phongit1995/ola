@@ -1,7 +1,8 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, useWindowDimensions, View } from 'react-native';
-import { callMessageView, formatDuration, parseMessageMetadata } from '@ola/shared/lib';
+import { callMessageView, formatDuration, parseMessageMetadata, withAlpha } from '@ola/shared/lib';
+import { useThemeColors } from '@hooks/useThemeColors';
 import type { MessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
@@ -14,7 +15,7 @@ import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
 import { PhoneIcon, VideoIcon } from '@screens/call/icons';
-import { CHAT_MAX_FONT_SIZE_MULTIPLIER, PRIMARY } from '@constants';
+import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
@@ -54,6 +55,7 @@ function ChatQuoteBlock({
   onQuoteClick?: (messageId: string) => void;
 }) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = isImage
     ? t('chat.replyImage')
@@ -70,7 +72,7 @@ function ChatQuoteBlock({
       className="mb-1 rounded py-0.5 pl-2 pr-1"
       style={{
         borderLeftWidth: 2,
-        borderLeftColor: onPrimary ? 'rgba(255,255,255,0.6)' : PRIMARY,
+        borderLeftColor: onPrimary ? 'rgba(255,255,255,0.6)' : colors.primary,
         backgroundColor: onPrimary ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)',
       }}
     >
@@ -113,6 +115,7 @@ function CallLogBubble({
   onPrimary: boolean;
 }) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const view = callMessageView(t, meta);
   const CallIcon = view.isVideo ? VideoIcon : PhoneIcon;
   const missedColor = onPrimary ? '#ffcdd2' : '#e53935';
@@ -135,12 +138,12 @@ function CallLogBubble({
             ? 'rgba(255,255,255,0.2)'
             : view.missed
               ? 'rgba(229,57,53,0.1)'
-              : 'rgba(124,179,66,0.15)',
+              : withAlpha(colors.primary, 0.15),
         }}
       >
         <CallIcon
           size={20}
-          color={view.missed ? missedColor : onPrimary ? '#ffffff' : '#558b2f'}
+          color={view.missed ? missedColor : onPrimary ? colors.onPrimary : colors.primaryDark}
         />
       </View>
       <View className="pr-1">
@@ -209,9 +212,10 @@ export function ChatBubble({
 }) {
   const meta = parseMessageMetadata(message.metadata);
   const { width: windowWidth } = useWindowDimensions();
+  const colors = useThemeColors();
   const [imageRatio, setImageRatio] = useState<number | null>(null);
   const failed = message.status === MESSAGE_STATUS.failed;
-  const bg = failed ? '#f8d7d7' : fromMe ? PRIMARY : '#ffffff';
+  const bg = failed ? '#f8d7d7' : fromMe ? colors.primary : '#ffffff';
   const onPrimary = fromMe && !failed;
   const cornerClass = fromMe
     ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
@@ -341,6 +345,7 @@ export function ChatMessageRow({
   onQuoteClick,
   onOpenProfile,
 }: ChatMessageRowProps) {
+  const colors = useThemeColors();
   const bubbleRef = useRef<View>(null);
   const chipsRef = useRef<View>(null);
   const showAvatar = !fromMe && firstInGroup;
@@ -387,7 +392,7 @@ export function ChatMessageRow({
                 borderWidth: 2,
                 margin: -2,
                 borderRadius: 18,
-                borderColor: highlighted ? 'rgba(124,179,66,0.4)' : 'transparent',
+                borderColor: highlighted ? withAlpha(colors.primary, 0.4) : 'transparent',
               }}
             >
               <ChatBubble

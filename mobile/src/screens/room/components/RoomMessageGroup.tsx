@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { colorForName, formatClockHM, formatDuration } from '@ola/shared/lib';
+import { colorForName, formatClockHM, formatDuration, withAlpha } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '@lib/kul';
 import { ReactionChips } from '@components/chat/ReactionChips';
@@ -19,6 +19,7 @@ import { RichTextView } from '@components/ui/RichTextView';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useThemeColors } from '@hooks/useThemeColors';
 import type { AnchorRect } from './MessageActionSheet';
 import type {
   BubblePosition,
@@ -84,6 +85,7 @@ function QuoteBlock({
 }) {
   const { t } = useTranslation();
   const { width: windowWidth } = useWindowDimensions();
+  const colors = useThemeColors();
   const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = isImage
     ? t('room.replyImage')
@@ -102,7 +104,7 @@ function QuoteBlock({
       className="mb-1 rounded py-0.5 pl-2 pr-1"
       style={{
         borderLeftWidth: 2,
-        borderLeftColor: isOwn ? 'rgba(255,255,255,0.6)' : '#7cb342',
+        borderLeftColor: isOwn ? 'rgba(255,255,255,0.6)' : colors.primary,
         backgroundColor: isOwn ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)',
       }}
     >
@@ -159,6 +161,7 @@ function BubbleContent({
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore(s => s.openViewer);
   const { width: windowWidth } = useWindowDimensions();
+  const colors = useThemeColors();
   const [imageRatio, setImageRatio] = useState<number | null>(() =>
     message.imageUrl != null
       ? imageRatioCache.get(message.imageUrl) ?? null
@@ -204,7 +207,7 @@ function BubbleContent({
         />
         {uploading && (
           <View className="absolute inset-0 items-center justify-center">
-            <ActivityIndicator color="#7cb342" />
+            <ActivityIndicator color={colors.primary} />
           </View>
         )}
         {failed && (
@@ -243,7 +246,7 @@ function BubbleContent({
             pointerEvents="none"
             className="absolute inset-0 items-center justify-center"
           >
-            <ActivityIndicator color="#7cb342" />
+            <ActivityIndicator color={colors.primary} />
           </View>
         )}
         {failed && (
@@ -278,7 +281,7 @@ function BubbleContent({
     <RichTextView
       content={message.content}
       own={isOwn}
-      color={isOwn ? '#ffffff' : 'rgba(0,0,0,0.87)'}
+      color={isOwn ? colors.onPrimary : 'rgba(0,0,0,0.87)'}
       maxWidth={roomBubbleTextMaxWidth(windowWidth, isOwn)}
       onMention={onMention}
     />
@@ -317,14 +320,17 @@ export function RoomBubbleBody({
   const kul = isImage || isAudio ? null : kulImageForText(message.content);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bare = (isImage || isAudio || kul != null) && message.replyTo == null;
+  const colors = useThemeColors();
 
   return (
     <View
       className={bare ? 'rounded-xl' : `${corners} px-3.5 py-2`}
       style={[
-        bare ? null : { backgroundColor: isOwn ? '#7cb342' : '#f1f8e9' },
+        bare
+          ? null
+          : { backgroundColor: isOwn ? colors.primary : colors.primaryLight },
         highlighted
-          ? { borderWidth: 2, borderColor: 'rgba(124,179,66,0.6)' }
+          ? { borderWidth: 2, borderColor: withAlpha(colors.primary, 0.6) }
           : null,
       ]}
     >
@@ -433,8 +439,8 @@ function RoomMessageGroupComponent({
       {isOwn ? (
         <Text
           numberOfLines={1}
-          className="mr-12 self-end text-sm"
-          style={{ color: 'rgba(0,0,0,0.54)', maxWidth: '80%' }}
+          className="mr-12 self-end text-base font-semibold"
+          style={{ color: 'rgba(0,0,0,0.72)', maxWidth: '80%' }}
         >
           {senderName}
         </Text>
@@ -444,7 +450,11 @@ function RoomMessageGroupComponent({
           className="ml-12 self-start"
           style={{ maxWidth: '85%' }}
         >
-          <Text numberOfLines={1} className="text-sm text-ola-ink-soft">
+          <Text
+            numberOfLines={1}
+            className="text-base font-semibold"
+            style={{ color: 'rgba(0,0,0,0.72)' }}
+          >
             {senderName}
           </Text>
         </Pressable>

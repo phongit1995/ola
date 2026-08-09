@@ -6,7 +6,8 @@ import { ApiError, vipName } from '@ola/shared/lib';
 import type { VipIconInstance } from '@ola/shared/types';
 import { Dialog } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
-import { PRIMARY, TEXT_SECONDARY } from '@constants';
+import { TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { PEER_VIP_PAGE_SIZE } from '../constants';
 
 type LoadState = 'loading' | 'private' | 'error' | 'ready';
@@ -18,6 +19,7 @@ interface PeerVipStoreDialogProps {
 }
 
 export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialogProps) {
+  const colors = useThemeColors();
   const { t } = useTranslation();
   const [items, setItems] = useState<VipIconInstance[]>([]);
   const [total, setTotal] = useState(0);
@@ -96,7 +98,7 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
                         padding: 2,
                         borderRadius: 6,
                         borderWidth: icon.isUsing ? 2 : 0,
-                        borderColor: icon.isUsing ? PRIMARY : 'transparent',
+                        borderColor: icon.isUsing ? colors.primary : 'transparent',
                       }}
                     >
                       <VipIconImage typeId={icon.typeId} size={44} rounded />
@@ -106,7 +108,7 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
                       className="w-full text-center text-[11px]"
                       style={{
                         marginTop: 2,
-                        color: icon.isUsing ? PRIMARY : TEXT_SECONDARY,
+                        color: icon.isUsing ? colors.primary : TEXT_SECONDARY,
                         fontWeight: icon.isUsing ? '700' : '400',
                       }}
                     >

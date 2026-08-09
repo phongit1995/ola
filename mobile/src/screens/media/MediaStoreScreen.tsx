@@ -19,6 +19,7 @@ import { ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { CachedImage } from '@components/ui/CachedImage';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { PHOTOS_PAGE_SIZE } from './constants';
 const MUTED = 'rgba(0,0,0,0.45)';
 
@@ -93,6 +94,7 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.Media
 
 export function MediaStoreScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [photos, setPhotos] = useState<MePhoto[]>([]);
@@ -194,7 +196,7 @@ export function MediaStoreScreen({ navigation }: Props) {
               ))}
             </View>
           ))}
-          {loadingMore && <ActivityIndicator className="py-2" color="#7cb342" />}
+          {loadingMore && <ActivityIndicator className="py-2" color={colors.primary} />}
         </ScrollView>
       )}
     </View>

@@ -12,6 +12,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { MeService } from '@ola/shared/services';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { MeCommentSheet } from './components/MeCommentSheet';
@@ -33,6 +34,7 @@ const TYPE_ICON: Record<MeNotificationType, number> = {
 
 export function MeNotificationsScreen() {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const language = i18n.language;
   const push = useToastStore((s) => s.push);
@@ -104,7 +106,7 @@ export function MeNotificationsScreen() {
       <ScreenHeader title={t('me.notifTitle')} onBack={() => navigation.goBack()} />
 
         {loading && items.length === 0 ? (
-          <ActivityIndicator className="py-10" color="#7cb342" />
+          <ActivityIndicator className="py-10" color={colors.primary} />
         ) : items.length === 0 ? (
           <Text className="py-16 text-center text-sm text-ola-ink-soft">
             {t('me.notifEmpty')}
@@ -116,7 +118,7 @@ export function MeNotificationsScreen() {
             onEndReached={() => void loadMore()}
             onEndReachedThreshold={0.4}
             ItemSeparatorComponent={InsetListSeparator}
-            ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color="#7cb342" /> : null}
+            ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color={colors.primary} /> : null}
             renderItem={({ item }) => {
               const name = item.actor?.fullName || item.actor?.username || '';
               return (
@@ -141,7 +143,7 @@ export function MeNotificationsScreen() {
                       </Text>
                     </View>
                   </View>
-                  {openingId === item.id && <ActivityIndicator color="#7cb342" />}
+                  {openingId === item.id && <ActivityIndicator color={colors.primary} />}
                 </Pressable>
               );
             }}

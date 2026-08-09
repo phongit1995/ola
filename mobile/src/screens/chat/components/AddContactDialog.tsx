@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
@@ -16,6 +17,7 @@ interface AddContactDialogProps {
 
 export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
@@ -91,9 +93,9 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
           disabled={busy}
           onPress={() => void acceptRequest(user)}
           className="rounded px-3 py-1.5"
-          style={{ borderWidth: 1, borderColor: '#7cb342', opacity: busy ? 0.5 : 1 }}
+          style={{ borderWidth: 1, borderColor: colors.primary, opacity: busy ? 0.5 : 1 }}
         >
-          <Text className="text-sm font-medium" style={{ color: '#7cb342' }}>{t('chat.acceptRequest')}</Text>
+          <Text className="text-sm font-medium" style={{ color: colors.primary }}>{t('chat.acceptRequest')}</Text>
         </Pressable>
       );
     }
@@ -112,9 +114,9 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
         disabled={busy}
         onPress={() => void sendRequest(user)}
         className="rounded px-3 py-1.5"
-        style={{ borderWidth: 1, borderColor: '#7cb342', opacity: busy ? 0.5 : 1 }}
+        style={{ borderWidth: 1, borderColor: colors.primary, opacity: busy ? 0.5 : 1 }}
       >
-        <Text className="text-sm font-medium" style={{ color: '#7cb342' }}>{t('chat.menuMakeFriend')}</Text>
+        <Text className="text-sm font-medium" style={{ color: colors.primary }}>{t('chat.menuMakeFriend')}</Text>
       </Pressable>
     );
   }

@@ -1,5 +1,6 @@
 import { Children, type ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, Text, TextInput, View } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Dialog } from './Dialog';
 
 interface UserListSearch {
@@ -36,6 +37,7 @@ export function UserListDialog({
   divided = true,
   listMaxHeight = 288,
 }: UserListDialogProps) {
+  const colors = useThemeColors();
   const rows = Children.toArray(children);
   return (
     <Dialog visible={visible} onClose={onClose} title={title}>
@@ -62,7 +64,7 @@ export function UserListDialog({
               {loadingText}
             </Text>
           ) : (
-            <ActivityIndicator className="py-6" color="#7cb342" />
+            <ActivityIndicator className="py-6" color={colors.primary} />
           )
         ) : isEmpty ? (
           empty

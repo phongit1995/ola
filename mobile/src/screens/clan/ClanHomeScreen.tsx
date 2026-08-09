@@ -20,6 +20,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
@@ -70,6 +71,7 @@ function PreviewRow({
 
 export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const myClans = useClanStore((s) => s.myClans);
   const mineLoading = useClanStore((s) => s.mineLoading);
@@ -181,7 +183,7 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
           {t('clan.myClans')}
         </Text>
         {mineLoading && myClans.length === 0 ? (
-          <ActivityIndicator className="py-6" color="#7cb342" />
+          <ActivityIndicator className="py-6" color={colors.primary} />
         ) : myClans.length === 0 ? (
           <Text className="px-1 py-4 text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
             {t('clan.noClans')}
@@ -255,7 +257,7 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
             className="min-w-0 flex-1 rounded px-3 text-base"
             style={{
               borderWidth: 1,
-              borderColor: '#7cb342',
+              borderColor: colors.primary,
               color: 'rgba(0,0,0,0.87)',
               paddingVertical: 10,
             }}
@@ -267,7 +269,7 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
             style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
           >
             {checking ? (
-              <ActivityIndicator size="small" color="#7cb342" />
+              <ActivityIndicator size="small" color={colors.primary} />
             ) : (
               <Text className="text-sm" style={{ color: '#4c4c4c' }}>
                 {t('clan.validate')}

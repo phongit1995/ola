@@ -17,6 +17,7 @@ import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDial
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { MePostCard } from '@screens/me/components/MePostCard';
 import { MeComposerModal } from '@screens/me/components/MeComposerModal';
 import { MeCommentSheet } from '@screens/me/components/MeCommentSheet';
@@ -43,6 +44,7 @@ interface ClanScreenProps {
 
 export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }: ClanScreenProps) {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pushToast = useToastStore((s) => s.push);
   const meId = useAuthStore((s) => s.user?.id ?? null);
@@ -225,7 +227,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
               {loadError}
             </Text>
           ) : (
-            <ActivityIndicator color="#7cb342" size="large" />
+            <ActivityIndicator color={colors.primary} size="large" />
           )}
         </View>
       </View>
@@ -256,7 +258,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
         {t('clan.postedTitle')}
       </Text>
 
-      {feedLoading && <ActivityIndicator className="py-10" color="#7cb342" size="large" />}
+      {feedLoading && <ActivityIndicator className="py-10" color={colors.primary} size="large" />}
       {!feedLoading && feedError != null && (
         <Text className="px-6 py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
           {clanFeedErrorText(feedError)}
@@ -282,13 +284,13 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
         onEndReached={() => void useClanFeedStore.getState().loadMore()}
         onEndReachedThreshold={0.4}
         ListFooterComponent={
-          feedLoadingMore ? <ActivityIndicator className="my-3" color="#7cb342" /> : null
+          feedLoadingMore ? <ActivityIndicator className="my-3" color={colors.primary} /> : null
         }
         renderItem={({ item, index }) => (
           <View>
             {visiblePinned != null && index === 0 && (
               <View className="bg-[#dcedc8] px-4 py-1">
-                <Text className="text-xs font-bold" style={{ color: '#33691e' }}>
+                <Text className="text-xs font-bold" style={{ color: colors.primaryDarker }}>
                   {t('clan.meTop')}
                 </Text>
               </View>

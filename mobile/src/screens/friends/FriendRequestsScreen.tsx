@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
 import { RelationshipService } from '@ola/shared/services';
 import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
@@ -20,6 +21,7 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 export function FriendRequestsScreen() {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const push = useToastStore(s => s.push);
@@ -77,7 +79,7 @@ export function FriendRequestsScreen() {
       />
 
       {loading ? (
-        <ActivityIndicator className="py-10" color="#7cb342" size="large" />
+        <ActivityIndicator className="py-10" color={colors.primary} size="large" />
       ) : requests.length === 0 ? (
         <Text
           className="px-4 py-10 text-center text-sm text-ola-ink-soft"
@@ -154,13 +156,13 @@ export function FriendRequestsScreen() {
                     style={{
                       minWidth: 76,
                       borderWidth: 1,
-                      borderColor: '#7cb342',
+                      borderColor: colors.primary,
                       opacity: busy ? 0.5 : 1,
                     }}
                   >
                     <Text
                       className="text-sm font-medium"
-                      style={{ color: '#7cb342' }}
+                      style={{ color: colors.primary }}
                     >
                       {t('chat.declineRequest')}
                     </Text>

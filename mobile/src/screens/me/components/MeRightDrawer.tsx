@@ -4,6 +4,7 @@ import { ActivityIndicator, Animated, BackHandler, FlatList, Image, Pressable, T
 import { UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { activeVipTypeId, colorForName } from '@ola/shared/lib';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useMeLocalStore } from '@store/meLocalStore';
 import type { ViewedProfile } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
@@ -68,6 +69,7 @@ function MeProfileRow({
 
 export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const translateX = useRef(new Animated.Value(WIDTH)).current;
   const backdrop = useRef(new Animated.Value(0)).current;
@@ -179,7 +181,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
         <View className="flex-1">
           {searching ? (
             loading ? (
-              <ActivityIndicator className="py-6" color="#7cb342" />
+              <ActivityIndicator className="py-6" color={colors.primary} />
             ) : results.length === 0 ? (
               <DrawerEmpty message={t('me.searchEmpty')} />
             ) : (

@@ -12,7 +12,8 @@ import { TransferPasswordField } from '@components/transfer/TransferPasswordFiel
 import { TransferWarning } from '@components/transfer/TransferWarning';
 import { userIdentityFromSearchResult } from '@components/user/userIdentity';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
-import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 
@@ -40,6 +41,7 @@ function toReceiver(user: UserSearchResult): TransferReceiver {
 
 export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDialogProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const myId = useAuthStore((s) => s.user?.id ?? '');
   const balance = useAuthStore((s) => s.user?.ken ?? 0);
   const setUser = useAuthStore((s) => s.setUser);
@@ -219,7 +221,7 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
             <Text className="text-base" style={{ color: TEXT_PRIMARY }}>{t('chat.transferKenReceiver')}</Text>
             {receiver == null && (
               <Pressable onPress={changeReceiver} className="active:opacity-70">
-                <Text className="text-sm font-medium" style={{ color: PRIMARY }}>
+                <Text className="text-sm font-medium" style={{ color: colors.primary }}>
                   {t('chat.transferKenChangeReceiver')}
                 </Text>
               </Pressable>

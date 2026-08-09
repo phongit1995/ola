@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { formatKen, formatVnd } from '@ola/shared/lib';
+import { formatKen, formatVnd, withAlpha } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { CachedImage } from '@components/ui/CachedImage';
-import { DIVIDER, ERROR, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
+import { DIVIDER, ERROR, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { QR_SIZE } from './constants';
 import { useBuyKen } from './useBuyKen';
 import { BankInfoRow } from './components/BankInfoRow';
@@ -17,6 +18,7 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.BuyKe
 
 export function BuyKenScreen({ navigation }: Props) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const vm = useBuyKen();
 
@@ -34,7 +36,7 @@ export function BuyKenScreen({ navigation }: Props) {
           style={{ borderWidth: 1, borderColor: DIVIDER }}
         >
           <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('ken.buy.balance')}</Text>
-          <Text className="ml-2 flex-1 text-lg font-bold" style={{ color: PRIMARY }}>
+          <Text className="ml-2 flex-1 text-lg font-bold" style={{ color: colors.primary }}>
             {formatKen(vm.balance)} KEN
           </Text>
         </View>
@@ -76,13 +78,13 @@ export function BuyKenScreen({ navigation }: Props) {
                         className="items-center rounded px-2 py-2"
                         style={{
                           borderWidth: 1,
-                          borderColor: selected ? PRIMARY : DIVIDER,
-                          backgroundColor: selected ? 'rgba(124,179,66,0.1)' : '#ffffff',
+                          borderColor: selected ? colors.primary : DIVIDER,
+                          backgroundColor: selected ? withAlpha(colors.primary, 0.1) : '#ffffff',
                         }}
                       >
                         <Text
                           className="text-sm font-medium"
-                          style={{ color: selected ? PRIMARY : TEXT_PRIMARY }}
+                          style={{ color: selected ? colors.primary : TEXT_PRIMARY }}
                         >
                           {formatVnd(value)}đ
                         </Text>

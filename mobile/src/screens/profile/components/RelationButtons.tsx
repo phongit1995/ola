@@ -5,6 +5,7 @@ import { profileFriendLabel } from '@ola/shared/lib';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { PublicProfile } from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 const addFriendIcon = require('@assets/icons/profile/ic_add_friend_black_disable.png');
 const friendsActiveIcon = require('@assets/icons/profile/ic_state_friends.png');
@@ -37,6 +38,7 @@ function RelationButton({
   active?: boolean;
   onPress: () => void;
 }) {
+  const colors = useThemeColors();
   return (
     <Pressable onPress={onPress} className="flex-1 items-center gap-1 py-1">
       <Image
@@ -47,7 +49,7 @@ function RelationButton({
       <Text
         numberOfLines={2}
         className="text-center text-xs leading-tight"
-        style={{ color: active ? '#7cb342' : 'rgba(0,0,0,0.26)' }}
+        style={{ color: active ? colors.primary : 'rgba(0,0,0,0.26)' }}
       >
         {label}
       </Text>

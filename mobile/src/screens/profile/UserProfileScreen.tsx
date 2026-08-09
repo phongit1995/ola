@@ -7,6 +7,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { colorForName } from '@ola/shared/lib';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { FollowUser } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { ReportDialog } from '@components/ui/ReportDialog';
@@ -40,6 +41,7 @@ export function UserProfileScreen({
   onEditProfile,
 }: UserProfileScreenProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const push = useToastStore(s => s.push);
 
@@ -130,7 +132,7 @@ export function UserProfileScreen({
       <ScreenHeader title={profile != null ? nick : ''} onBack={onClose} />
 
       {loading ? (
-        <ActivityIndicator className="py-16" color="#7cb342" size="large" />
+        <ActivityIndicator className="py-16" color={colors.primary} size="large" />
       ) : notFound || profile == null ? (
         <Text
           className="py-16 text-center text-sm text-ola-ink-soft"

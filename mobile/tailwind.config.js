@@ -5,14 +5,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'ola-primary': '#7cb342',
-        'ola-primary-dark': '#558b2f',
-        'ola-primary-darker': '#33691e',
-        'ola-primary-light': '#f1f8e9',
-        'ola-button': '#9ccc65',
+        'ola-primary': 'var(--ola-color-primary, #7cb342)',
+        'ola-primary-dark': 'var(--ola-color-primary-dark, #558b2f)',
+        'ola-primary-darker': 'var(--ola-color-primary-darker, #33691e)',
+        'ola-primary-light': 'var(--ola-color-primary-light, #f1f8e9)',
+        'ola-button': 'var(--ola-color-button, #9ccc65)',
         'ola-accent': '#ff4081',
         'ola-accent-dark': '#f50057',
         'ola-error': '#e34545',
+        'ola-surface': '#f3f3f3',
+        'ola-border-strong': '#d5d5d5',
         'ola-ink': 'rgba(0,0,0,0.87)',
         'ola-ink-soft': 'rgba(0,0,0,0.54)',
         'ola-ink-faint': 'rgba(0,0,0,0.38)',

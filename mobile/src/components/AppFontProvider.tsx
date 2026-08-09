@@ -2,6 +2,8 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import type { FontSize } from '@ola/shared/types';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
+import { useThemeStore } from '@ola/shared/stores/themeStore';
+import { appThemeVariables } from '@constants/appTheme';
 import {
   appFontSizeMultiplier,
   appFontVariables,
@@ -22,6 +24,7 @@ const AppTypographyContext = createContext<AppTypography>({
 
 export function AppFontProvider({ children }: { children: ReactNode }) {
   const savedFontSize = useSettingsStore((state) => state.settings.fontSize);
+  const theme = useThemeStore((state) => state.theme);
   const fontSize = normalizeAppFontSize(savedFontSize);
   const { fontScale: systemFontScale } = useWindowDimensions();
   const multiplier = appFontSizeMultiplier(fontSize);
@@ -32,7 +35,10 @@ export function AppFontProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppTypographyContext.Provider value={value}>
-      <View className="flex-1" style={appFontVariables(fontSize)}>
+      <View
+        className="flex-1"
+        style={[appFontVariables(fontSize), appThemeVariables(theme)]}
+      >
         {children}
       </View>
     </AppTypographyContext.Provider>

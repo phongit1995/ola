@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
+import { withAlpha } from '@ola/shared/lib';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { SMILEY_PANEL } from '@lib/chatSmiley';
 import { EMOJI_IMAGES, emojiToken } from '@lib/emoji';
 import { KUL_IMAGES } from '@lib/kul';
@@ -42,6 +44,7 @@ function PanelTabBar({
   tabs: Array<{ key: PanelTab; icon: number }>;
   onSelect: (tab: PanelTab) => void;
 }) {
+  const colors = useThemeColors();
   return (
     <View
       className="flex-row"
@@ -54,7 +57,7 @@ function PanelTabBar({
             key={tab.key}
             onPress={() => onSelect(tab.key)}
             className="flex-1 items-center justify-center"
-            style={{ backgroundColor: isActive ? 'rgba(124,179,66,0.1)' : 'transparent' }}
+            style={{ backgroundColor: isActive ? withAlpha(colors.primary, 0.1) : 'transparent' }}
           >
             <Image
               source={tab.icon}
@@ -64,7 +67,7 @@ function PanelTabBar({
             {isActive && (
               <View
                 className="absolute bottom-0 left-0 right-0"
-                style={{ height: 2, backgroundColor: '#7cb342' }}
+                style={{ height: 2, backgroundColor: colors.primary }}
               />
             )}
           </Pressable>

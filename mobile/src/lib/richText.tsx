@@ -19,6 +19,7 @@ const URL_TRAILING_PUNCTUATION = /[.,;:!?)\]}'"]+$/;
 interface RichTextOptions {
   own: boolean;
   fontSize?: number;
+  accentColor?: string;
   onMention: (nick: string) => void;
 }
 
@@ -70,10 +71,8 @@ function renderUrlToken(part: string, key: number, color: string): ReactNode {
 
 export function renderRichText(
   content: string,
-  { fontSize = 16, onMention }: RichTextOptions
+  { fontSize = 16, accentColor = '#33691e', onMention }: RichTextOptions
 ): ReactNode[] {
-  // Match web: mention/hashtag/url luôn xanh đậm #33691e, kể cả tin của mình.
-  const accentColor = '#33691e';
   return content.split(POST_TOKEN_PATTERN).map((part, index) => {
     if (MENTION_TOKEN_PATTERN.test(part)) {
       return (

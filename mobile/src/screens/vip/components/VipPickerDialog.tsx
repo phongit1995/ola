@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { formatKen } from '@ola/shared/lib';
+import { formatKen, withAlpha } from '@ola/shared/lib';
 import { Dialog } from '@components/ui/Dialog';
-import { PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
+import { TEXT_SECONDARY } from '@constants';
 import type { PickerItem } from '../interface';
 import { VipIconImage } from './VipIconImage';
 
@@ -22,6 +23,7 @@ export function VipPickerDialog({
   onClose,
 }: VipPickerDialogProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   return (
     <Dialog visible={visible} title={t('vip.buy.pickVipTitle')} onClose={onClose}>
       {items.length === 0 ? (
@@ -43,9 +45,9 @@ export function VipPickerDialog({
                   className="items-center gap-1 rounded p-2 active:bg-black/5"
                   style={{
                     width: '33.33%',
-                    backgroundColor: selected ? 'rgba(124,179,66,0.1)' : 'transparent',
+                    backgroundColor: selected ? withAlpha(colors.primary, 0.1) : 'transparent',
                     borderWidth: 1,
-                    borderColor: selected ? PRIMARY : 'transparent',
+                    borderColor: selected ? colors.primary : 'transparent',
                   }}
                 >
                   <VipIconImage typeId={item.typeId} size={44} />
@@ -57,7 +59,7 @@ export function VipPickerDialog({
                     {item.name}
                   </Text>
                   {item.price != null && (
-                    <Text className="text-[11px] font-medium" style={{ color: PRIMARY }}>
+                    <Text className="text-[11px] font-medium" style={{ color: colors.primary }}>
                       {formatKen(item.price)} KEN
                     </Text>
                   )}

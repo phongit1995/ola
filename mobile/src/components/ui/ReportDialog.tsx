@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { REPORT_REASONS, type ReportReason } from '@ola/shared/constants';
 import type { ReportTarget } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Dialog, DialogButton } from './Dialog';
 
 interface ReportDialogProps {
@@ -13,6 +14,7 @@ interface ReportDialogProps {
 
 export function ReportDialog({ onClose }: ReportDialogProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [note, setNote] = useState('');
@@ -57,13 +59,13 @@ export function ReportDialog({ onClose }: ReportDialogProps) {
                   width: 18,
                   height: 18,
                   borderWidth: 2,
-                  borderColor: selected ? '#7cb342' : 'rgba(0,0,0,0.3)',
+                  borderColor: selected ? colors.primary : 'rgba(0,0,0,0.3)',
                 }}
               >
                 {selected && (
                   <View
                     className="rounded-full"
-                    style={{ width: 10, height: 10, backgroundColor: '#7cb342' }}
+                    style={{ width: 10, height: 10, backgroundColor: colors.primary }}
                   />
                 )}
               </View>

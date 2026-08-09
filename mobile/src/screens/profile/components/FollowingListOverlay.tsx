@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UserService } from '@ola/shared/services';
 import type { FollowUser } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
@@ -46,6 +47,7 @@ function FollowingListBody({
   title,
 }: FollowingListOverlayProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const [rows, setRows] = useState<FollowUser[]>([]);
   const [total, setTotal] = useState(0);
@@ -97,7 +99,7 @@ function FollowingListBody({
         onBack={onClose}
       />
       {loading ? (
-        <ActivityIndicator className="py-16" color="#7cb342" size="large" />
+        <ActivityIndicator className="py-16" color={colors.primary} size="large" />
       ) : (
         <FlatList
           data={rows}
@@ -107,7 +109,7 @@ function FollowingListBody({
           onEndReachedThreshold={0.4}
           ListFooterComponent={
             loadingMore ? (
-              <ActivityIndicator className="py-3" color="#7cb342" />
+              <ActivityIndicator className="py-3" color={colors.primary} />
             ) : null
           }
           renderItem={({ item }) => (

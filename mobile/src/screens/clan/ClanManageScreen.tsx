@@ -17,6 +17,7 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { clanErrorText, clanPolicyLabel } from '@lib/clanHelpers';
 import { CLAN_ROLE } from '@ola/shared/constants';
 
@@ -83,6 +84,7 @@ export function ClanManageScreen({
   onOpenBans,
 }: ClanManageScreenProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const pushToast = useToastStore((s) => s.push);
   const [clan, setClan] = useState<Clan | null>(null);
   const [roleDialog, setRoleDialog] = useState<RoleKind | null>(null);
@@ -212,7 +214,7 @@ export function ClanManageScreen({
       <ScreenHeader title={clan != null ? `#${clan.handle}` : t('clan.manage')} onBack={onClose} />
       {clan == null ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7cb342" size="large" />
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
       ) : (
         <ScrollView className="flex-1 p-2">
@@ -254,7 +256,7 @@ export function ClanManageScreen({
               </Text>
               <Switch
                 value={clan.memberPublicPost}
-                trackColor={{ true: '#7cb342' }}
+                trackColor={{ true: colors.primary }}
                 onValueChange={(value) => {
                   if (!value) {
                     setPublicPostConfirm(true);

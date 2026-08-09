@@ -7,6 +7,7 @@ import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
 import type { VisitorUser } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { VipBadge } from '@components/ui/VipBadge';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
@@ -17,6 +18,7 @@ import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
 export function MeVisitorsScreen() {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const language = i18n.language;
   const push = useToastStore((s) => s.push);
@@ -76,7 +78,7 @@ export function MeVisitorsScreen() {
       <ScreenHeader title={t('me.tabVisitors')} onBack={() => navigation.goBack()} />
 
         {loading ? (
-          <ActivityIndicator className="py-6" color="#7cb342" />
+          <ActivityIndicator className="py-6" color={colors.primary} />
         ) : error ? (
           <Text className="py-6 text-center text-sm" style={{ color: '#e34545' }}>{t('me.visitorsError')}</Text>
         ) : rows.length === 0 ? (
@@ -87,7 +89,7 @@ export function MeVisitorsScreen() {
             keyExtractor={(item) => item.id}
             onEndReached={() => void loadMore()}
             onEndReachedThreshold={0.4}
-            ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color="#7cb342" /> : null}
+            ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color={colors.primary} /> : null}
             renderItem={({ item }) => {
               const status = item.relationship?.status ?? 'none';
               const sent = status === RELATIONSHIP_STATUS.pendingOutgoing || requested[item.id] === true;
