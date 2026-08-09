@@ -65,3 +65,33 @@ jobs:
           path: artifacts/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload lên Google Drive + gửi Discord
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          set -e
+          # Cài rclone
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+
+          # Ghi config từ secret
+          mkdir -p ~/.config/rclone
+          printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+
+          APK="artifacts/ola-${{ inputs.environment }}-${{ github.run_number }}.apk"
+          DEST="olagdrive:Ola APK Builds"
+
+          # Upload
+          rclone mkdir "$DEST"
+          rclone copy "$APK" "$DEST" --progress
+
+          # Lấy link public
+          LINK=$(rclone link "$DEST/$(basename "$APK")")
+          echo "Drive link: $LINK"
+
+          # Gửi Discord
+          MSG="📱 **Ola Android** build xong — env: \`${{ inputs.environment }}\`, #${{ github.run_number }} (\`${{ github.sha }}\`)\n⬇️ $LINK"
+          curl -sf -H "Content-Type: application/json" -X POST \
+            -d "$(printf '{"content": "%s"}' "$MSG")" \
+            "$DISCORD_WEBHOOK_URL"
