@@ -1,4 +1,5 @@
 import { Image, Pressable, Text, View } from 'react-native';
+import { withAlpha } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
@@ -47,7 +48,13 @@ export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProf
       onLongPress={onLongPress}
       delayLongPress={400}
       className="flex-row items-center px-4 py-3"
-      style={{ backgroundColor: highlight ? colors.primaryLight : '#fff', borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+      style={{
+        backgroundColor: highlight
+          ? withAlpha(colors.primaryLight, 0.8)
+          : 'rgba(255,255,255,0.8)',
+        borderBottomWidth: 1,
+        borderBottomColor: DIVIDER,
+      }}
     >
       <Pressable
         className="shrink-0"

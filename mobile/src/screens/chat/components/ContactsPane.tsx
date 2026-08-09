@@ -23,6 +23,7 @@ import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
+import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { MessageActionSheet, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
@@ -56,8 +57,12 @@ function ActionRow({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-3 bg-white px-4 py-3"
-      style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+      className="flex-row items-center gap-3 px-4 py-3"
+      style={{
+        borderBottomWidth: 1,
+        borderBottomColor: DIVIDER,
+        backgroundColor: 'rgba(255,255,255,0.8)',
+      }}
     >
       {badge}
       <View className="min-w-0 flex-1">
@@ -166,6 +171,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#f3f3f3' }}>
+      <LobbyWallpaper />
       <View className="px-4 py-3" style={{ backgroundColor: '#d5d5d5', borderBottomWidth: 1, borderBottomColor: '#b2b2b2' }}>
         <View
           className="h-10 flex-row items-center gap-2 rounded bg-white px-3"
@@ -185,7 +191,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
 
       <ScrollView keyboardShouldPersistTaps="handled">
         {me != null && (
-          <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: DIVIDER }}>
+          <View style={{ backgroundColor: 'rgba(255,255,255,0.8)', borderBottomWidth: 1, borderBottomColor: DIVIDER }}>
             {!hasVip && (
               <View className="p-2">
                 <Pressable
@@ -231,8 +237,12 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
         {requests.length > 0 && (
           <Pressable
             onPress={() => navigation.navigate(ROOT_ROUTES.FriendRequests)}
-            className="flex-row items-center gap-3 bg-white px-4 py-2"
-            style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+            className="flex-row items-center gap-3 px-4 py-2"
+            style={{
+              borderBottomWidth: 1,
+              borderBottomColor: DIVIDER,
+              backgroundColor: 'rgba(255,255,255,0.8)',
+            }}
           >
             <View className="h-10 w-10 items-center justify-center rounded-full bg-ola-primary">
               <Image source={addFriendIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
