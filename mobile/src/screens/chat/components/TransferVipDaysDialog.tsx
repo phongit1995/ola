@@ -12,7 +12,8 @@ import { TransferPasswordField } from '@components/transfer/TransferPasswordFiel
 import { TransferWarning } from '@components/transfer/TransferWarning';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
-import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 const vipIcon = require('@assets/icons/apps/vip.png');
 
@@ -23,6 +24,7 @@ interface TransferVipDaysDialogProps {
 }
 
 export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVipDaysDialogProps) {
+  const colors = useThemeColors();
   const { t } = useTranslation();
   const balance = useAuthStore((s) => s.user?.ken ?? 0);
   const setUser = useAuthStore((s) => s.setUser);
@@ -144,7 +146,7 @@ export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVi
           </Text>
           {loading ? (
             <View className="items-center py-4">
-              <ActivityIndicator color={PRIMARY} />
+              <ActivityIndicator color={colors.primary} />
             </View>
           ) : packages.length === 0 ? (
             <Text className="py-3 text-center text-sm" style={{ color: TEXT_SECONDARY }}>

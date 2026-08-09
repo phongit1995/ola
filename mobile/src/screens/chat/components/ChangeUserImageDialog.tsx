@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { MeService, UserService } from '@ola/shared/services';
 import { toast } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/types';
@@ -39,13 +40,14 @@ interface ChangeUserImageDialogProps {
 }
 
 function CheckBox({ checked }: { checked: boolean }) {
+  const colors = useThemeColors();
   return (
     <View
       className="h-5 w-5 items-center justify-center rounded"
       style={{
         borderWidth: checked ? 0 : 1,
         borderColor: 'rgba(0,0,0,0.3)',
-        backgroundColor: checked ? '#7cb342' : 'transparent',
+        backgroundColor: checked ? colors.primary : 'transparent',
       }}
     >
       {checked && <Text className="text-xs font-bold text-white">✓</Text>}

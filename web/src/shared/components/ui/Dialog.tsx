@@ -112,7 +112,7 @@ interface DialogButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const dialogButtonVariants: Record<DialogButtonVariant, string> = {
   default: 'border border-black/10 bg-white text-black/87 hover:bg-gray-50',
   green:
-    'min-w-16 border border-ola-primary-dark bg-ola-button text-white hover:opacity-90',
+    'min-w-16 border border-ola-primary-dark bg-ola-button text-ola-on-primary hover:opacity-90',
   danger: 'bg-[#dd4b39] text-white hover:opacity-90',
 };
 

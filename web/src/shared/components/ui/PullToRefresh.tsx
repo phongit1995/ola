@@ -1,4 +1,10 @@
-import { useRef, useState, type ReactNode, type TouchEvent } from 'react';
+import {
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+  type TouchEvent,
+} from 'react';
 import { cn } from '@lib';
 import { Spinner } from './Spinner';
 
@@ -9,12 +15,14 @@ const RESISTANCE = 0.5;
 interface PullToRefreshProps {
   onRefresh: () => void | Promise<void>;
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
 }
 
 export function PullToRefresh({
   onRefresh,
   className,
+  style,
   children,
 }: PullToRefreshProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -77,6 +85,7 @@ export function PullToRefresh({
     <div
       ref={scrollRef}
       className={cn('overscroll-contain', className)}
+      style={style}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}

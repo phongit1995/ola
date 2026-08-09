@@ -23,7 +23,7 @@ export function ChatBotErrorNotice({
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-ola-primary shadow-sm active:scale-95"
+        className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-ola-primary-ink shadow-sm active:scale-95"
       >
         {t('chat.chatBotRetry')}
       </button>

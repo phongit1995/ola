@@ -158,7 +158,7 @@ function MePostCardComponent({
               />
               {post.pinned && (
                 <PinIcon
-                  className="h-3.5 w-3.5 shrink-0 text-ola-primary"
+                  className="h-3.5 w-3.5 shrink-0 text-ola-primary-ink"
                   title={t('me.pinned')}
                 />
               )}
@@ -288,7 +288,7 @@ function MePostCardComponent({
           type="button"
           onClick={onLikeClick}
           className={`flex h-7 flex-1 items-center justify-center gap-1 text-sm ${
-            post.liked ? 'text-ola-primary' : 'text-black/26'
+            post.liked ? 'text-ola-primary-ink' : 'text-black/26'
           }`}
         >
           <img

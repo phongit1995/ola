@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { CachedImage } from '@components/ui/CachedImage';
+import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
 import { VipAvatar } from '@components/ui/VipAvatar';
@@ -45,7 +46,11 @@ function MemberRow({
     <Pressable
       onPress={() => onOpenUser?.(member.userId)}
       className="flex-row items-center gap-2 px-4 py-3 active:bg-black/5"
-      style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
+      style={{
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.12)',
+        backgroundColor: 'rgba(255,255,255,0.8)',
+      }}
     >
       <GenderIcon gender={member.gender} />
       <View style={{ position: 'relative', width: 40, height: 40 }}>
@@ -112,8 +117,12 @@ export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
 
   if (members.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-white px-8">
-        <Text className="text-center text-sm text-ola-ink-soft">
+      <View className="flex-1 bg-white">
+        <LobbyWallpaper />
+        <Text
+          className="px-4 py-6 text-center text-sm text-ola-ink-soft"
+          style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
+        >
           {t('room.noMembers')}
         </Text>
       </View>
@@ -121,6 +130,7 @@ export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
   }
   return (
     <View className="flex-1 bg-white">
+      <LobbyWallpaper />
       <FlashList
         data={members}
         keyExtractor={(item) => item.userId}

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { formatKen } from '@ola/shared/lib';
+import { formatKen, withAlpha } from '@ola/shared/lib';
 import type { KenTxType } from '@ola/shared/types';
-import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
+import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import {
   KEN_HISTORY_PAGE,
   useKenHistoryStore,
@@ -83,6 +84,7 @@ function TransactionRow({ row }: { row: KenHistoryRow }) {
 
 export function KenHistorySection() {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const [tab, setTab] = useState<KenHistoryTab>('all');
   const section = useKenHistoryStore((s) => s.sections[tab]);
   const load = useKenHistoryStore((s) => s.load);
@@ -111,11 +113,11 @@ export function KenHistorySection() {
               key={item.key}
               onPress={() => setTab(item.key)}
               className="flex-1 items-center rounded-sm py-1.5"
-              style={{ backgroundColor: active ? 'rgba(124,179,66,0.1)' : 'transparent' }}
+              style={{ backgroundColor: active ? withAlpha(colors.primary, 0.1) : 'transparent' }}
             >
               <Text
                 className={active ? 'text-sm font-semibold' : 'text-sm'}
-                style={{ color: active ? PRIMARY : TEXT_SECONDARY }}
+                style={{ color: active ? colors.primary : TEXT_SECONDARY }}
               >
                 {t(item.labelKey)}
               </Text>
@@ -125,7 +127,7 @@ export function KenHistorySection() {
       </View>
 
       {section.loading && section.groups.length === 0 ? (
-        <ActivityIndicator className="py-8" color={PRIMARY} />
+        <ActivityIndicator className="py-8" color={colors.primary} />
       ) : isEmpty ? (
         <Text className="py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
           {t('ken.historyScreen.empty')}

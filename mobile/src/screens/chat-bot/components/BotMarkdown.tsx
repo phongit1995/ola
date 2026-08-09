@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { BOT_CODE_BG, BOT_CODE_TEXT } from '../constants';
 
@@ -25,9 +26,8 @@ const NUMBERED_PATTERN = /^\s*(\d+)[.)]\s+/;
 const HEADING_PATTERN = /^\s*#{1,6}\s+/;
 
 const MONO_FONT = Platform.select({ ios: 'Menlo', default: 'monospace' });
-const LINK_COLOR = '#33691e';
 
-function renderUrl(part: string, key: string): ReactNode {
+function renderUrl(part: string, key: string, linkColor: string): ReactNode {
   const trailingMatch = part.match(URL_TRAILING_PUNCTUATION);
   const trailing = trailingMatch == null ? '' : trailingMatch[0];
   const url =
@@ -38,7 +38,7 @@ function renderUrl(part: string, key: string): ReactNode {
     <Text key={key}>
       <Text
         onPress={() => void Linking.openURL(href).catch(() => undefined)}
-        style={{ color: LINK_COLOR, textDecorationLine: 'underline' }}
+        style={{ color: linkColor, textDecorationLine: 'underline' }}
       >
         {url}
       </Text>
@@ -47,7 +47,7 @@ function renderUrl(part: string, key: string): ReactNode {
   );
 }
 
-function renderInline(text: string, keyPrefix: string): ReactNode[] {
+function renderInline(text: string, keyPrefix: string, linkColor: string): ReactNode[] {
   return text.split(INLINE_PATTERN).map((part, index) => {
     const key = `${keyPrefix}-${index}`;
     if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
@@ -71,7 +71,7 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
         </Text>
       );
     }
-    if (URL_TOKEN_PATTERN.test(part)) return renderUrl(part, key);
+    if (URL_TOKEN_PATTERN.test(part)) return renderUrl(part, key, linkColor);
     return <Text key={key}>{part}</Text>;
   });
 }
@@ -123,7 +123,7 @@ function CodeBlock({ code }: { code: string }) {
   );
 }
 
-function renderParagraphs(text: string, keyPrefix: string): ReactNode[] {
+function renderParagraphs(text: string, keyPrefix: string, linkColor: string): ReactNode[] {
   const blocks: ReactNode[] = [];
   let bullets: string[] = [];
 
@@ -135,7 +135,7 @@ function renderParagraphs(text: string, keyPrefix: string): ReactNode[] {
           <View key={index} className="flex-row">
             <Text className="text-sm text-ola-ink">{'•  '}</Text>
             <Text className="flex-1 text-sm text-ola-ink">
-              {renderInline(item, `${keyPrefix}-li-${index}`)}
+              {renderInline(item, `${keyPrefix}-li-${index}`, linkColor)}
             </Text>
           </View>
         ))}
@@ -164,7 +164,8 @@ function renderParagraphs(text: string, keyPrefix: string): ReactNode[] {
         >
           {renderInline(
             line.replace(HEADING_PATTERN, ''),
-            `${keyPrefix}-h-${index}`
+            `${keyPrefix}-h-${index}`,
+            linkColor
           )}
         </Text>
       );
@@ -177,7 +178,8 @@ function renderParagraphs(text: string, keyPrefix: string): ReactNode[] {
           <Text style={{ fontWeight: '600' }}>{numbered[1]}. </Text>
           {renderInline(
             line.replace(NUMBERED_PATTERN, ''),
-            `${keyPrefix}-n-${index}`
+            `${keyPrefix}-n-${index}`,
+            linkColor
           )}
         </Text>
       );
@@ -185,7 +187,7 @@ function renderParagraphs(text: string, keyPrefix: string): ReactNode[] {
     }
     blocks.push(
       <Text key={`${keyPrefix}-p-${index}`} className="text-sm text-ola-ink">
-        {renderInline(line, `${keyPrefix}-p-${index}`)}
+        {renderInline(line, `${keyPrefix}-p-${index}`, linkColor)}
       </Text>
     );
   });
@@ -194,7 +196,7 @@ function renderParagraphs(text: string, keyPrefix: string): ReactNode[] {
   return blocks;
 }
 
-function buildBlocks(content: string): ReactNode[] {
+function buildBlocks(content: string, linkColor: string): ReactNode[] {
   const parts: ReactNode[] = [];
   let cursor = 0;
   CODE_FENCE_PATTERN.lastIndex = 0;
@@ -204,20 +206,22 @@ function buildBlocks(content: string): ReactNode[] {
     if (match == null) break;
     const before = content.slice(cursor, match.index);
     if (before.trim() !== '') {
-      parts.push(...renderParagraphs(before, `t${cursor}`));
+      parts.push(...renderParagraphs(before, `t${cursor}`, linkColor));
     }
     parts.push(<CodeBlock key={`code-${match.index}`} code={match[2] ?? ''} />);
     cursor = match.index + match[0].length;
   }
 
   const tail = content.slice(cursor);
-  if (tail.trim() !== '') parts.push(...renderParagraphs(tail, `t${cursor}`));
+  if (tail.trim() !== '') parts.push(...renderParagraphs(tail, `t${cursor}`, linkColor));
 
   return parts;
 }
 
 function BotMarkdownComponent({ content }: { content: string }) {
-  const blocks = useMemo(() => buildBlocks(content), [content]);
+  const colors = useThemeColors();
+  const linkColor = colors.primaryDarker;
+  const blocks = useMemo(() => buildBlocks(content, linkColor), [content, linkColor]);
 
   return <View className="gap-0.5">{blocks}</View>;
 }

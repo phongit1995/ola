@@ -10,6 +10,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { isPostEditExpired } from '@lib/post';
@@ -28,6 +29,7 @@ import { ROOT_ROUTES } from '@navigation/routes';
 
 export function MeLikedPostsScreen() {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const language = i18n.language;
   const push = useToastStore((s) => s.push);
@@ -153,7 +155,7 @@ export function MeLikedPostsScreen() {
       <ScreenHeader title={t('me.drawerLikes')} onBack={() => navigation.goBack()} />
 
       {loading && visiblePosts.length === 0 ? (
-        <ActivityIndicator className="py-10" color="#7cb342" size="large" />
+        <ActivityIndicator className="py-10" color={colors.primary} size="large" />
       ) : visiblePosts.length === 0 ? (
         <Text className="px-6 py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
           {t('me.likedEmpty')}

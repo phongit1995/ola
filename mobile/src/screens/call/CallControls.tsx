@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useCallStore } from '@store/callStore';
 import {
   CamIcon,
@@ -13,8 +14,6 @@ import {
 } from './icons';
 import { useCallMediaToggle } from './hooks/useCallMediaToggle';
 import { setSpeakerEnabled } from './lib/callAudioSession';
-
-const ACTIVE_ICON_COLOR = '#33691e';
 
 interface ControlButtonProps {
   label: string;
@@ -55,6 +54,7 @@ interface CallControlsProps {
 
 export function CallControls({ isVideo }: CallControlsProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const endActive = useCallStore((s) => s.endActive);
   const { micMuted, camOff, toggleMic, toggleCam, switchCamera } =
     useCallMediaToggle();
@@ -74,7 +74,7 @@ export function CallControls({ isVideo }: CallControlsProps) {
         onPress={toggleMic}
       >
         {micMuted ? (
-          <MicOffIcon size={24} color={ACTIVE_ICON_COLOR} />
+          <MicOffIcon size={24} color={colors.primaryDarker} />
         ) : (
           <MicIcon size={24} />
         )}
@@ -87,7 +87,7 @@ export function CallControls({ isVideo }: CallControlsProps) {
           onPress={toggleCam}
         >
           {camOff ? (
-            <CamOffIcon size={24} color={ACTIVE_ICON_COLOR} />
+            <CamOffIcon size={24} color={colors.primaryDarker} />
           ) : (
             <CamIcon size={24} />
           )}
@@ -107,7 +107,7 @@ export function CallControls({ isVideo }: CallControlsProps) {
       >
         <SpeakerIcon
           size={24}
-          color={speakerOn ? ACTIVE_ICON_COLOR : undefined}
+          color={speakerOn ? colors.primaryDarker : undefined}
         />
       </ControlButton>
 

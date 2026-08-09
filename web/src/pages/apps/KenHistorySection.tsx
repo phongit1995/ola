@@ -119,7 +119,7 @@ export function KenHistorySection() {
             onClick={() => setTab(item.key)}
             className={`flex-1 rounded-sm py-1.5 ${
               tab === item.key
-                ? 'bg-ola-primary/10 font-semibold text-ola-primary'
+                ? 'bg-ola-primary/10 font-semibold text-ola-primary-ink'
                 : 'text-black/54'
             }`}
           >

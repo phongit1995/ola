@@ -23,6 +23,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage, CachedImageBackground } from '@components/ui/CachedImage';
 import { AVATAR_OUTPUT, COVER_OUTPUT, pickCroppedImage, pickValidatedCroppedImage } from '@lib/imagePicker';
@@ -79,6 +80,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'EditProfile'>;
 
 export function EditProfileScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const refreshUser = useAuthStore((s) => s.refreshUser);
@@ -212,7 +214,7 @@ export function EditProfileScreen({ navigation }: Props) {
         <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
           <CachedImageBackground
             uri={cover !== '' ? cover : undefined}
-            style={{ width: '100%', height: 176, backgroundColor: '#f1f8e9' }}
+            style={{ width: '100%', height: 176, backgroundColor: colors.primaryLight }}
           >
             <Pressable
               onPress={() => void pickCover()}
@@ -294,11 +296,11 @@ export function EditProfileScreen({ navigation }: Props) {
                       className="flex-1 flex-row items-center justify-center gap-1 rounded py-1.5"
                       style={{
                         borderWidth: 1,
-                        borderColor: activeOpt ? '#7cb342' : DIVIDER,
-                        backgroundColor: activeOpt ? '#f1f8e9' : 'transparent',
+                        borderColor: activeOpt ? colors.primary : DIVIDER,
+                        backgroundColor: activeOpt ? colors.primaryLight : 'transparent',
                       }}
                     >
-                      <Text className="text-sm" style={{ color: activeOpt ? '#33691e' : 'rgba(0,0,0,0.54)' }}>
+                      <Text className="text-sm" style={{ color: activeOpt ? colors.primaryDarker : 'rgba(0,0,0,0.54)' }}>
                         {option === GENDER.male ? t('profile.genderMale') : t('profile.genderFemale')}
                       </Text>
                       <Image source={option === GENDER.male ? maleIcon : femaleIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
@@ -405,7 +407,7 @@ export function EditProfileScreen({ navigation }: Props) {
                       setBirthdayPickerDate(null);
                     }}
                   >
-                    <Text className="text-base font-bold" style={{ color: '#558b2f' }}>
+                    <Text className="text-base font-bold" style={{ color: colors.primaryDark }}>
                       {t('dialog.accept')}
                     </Text>
                   </Pressable>

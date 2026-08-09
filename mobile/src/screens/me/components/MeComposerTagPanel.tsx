@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useFriendsStore } from '@store/friendsStore';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 
 interface MeComposerTagPanelProps {
@@ -10,6 +11,7 @@ interface MeComposerTagPanelProps {
 
 export function MeComposerTagPanel({ onMention }: MeComposerTagPanelProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const friends = useFriendsStore((s) => s.friends);
   const loading = useFriendsStore((s) => s.loading);
   const loaded = useFriendsStore((s) => s.loaded);
@@ -43,7 +45,7 @@ export function MeComposerTagPanel({ onMention }: MeComposerTagPanelProps) {
       <ScrollView style={{ maxHeight: 176 }} keyboardShouldPersistTaps="handled">
         {loading || !loaded ? (
           <View className="items-center py-4">
-            <ActivityIndicator color="#7cb342" />
+            <ActivityIndicator color={colors.primary} />
           </View>
         ) : filtered.length === 0 ? (
           <Text className="py-4 text-center text-sm text-ola-ink-soft">

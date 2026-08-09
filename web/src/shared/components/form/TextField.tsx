@@ -22,7 +22,7 @@ export function TextField({
 }: TextFieldProps) {
   return (
     <div className="mt-3 w-full max-w-md">
-      <label className="block px-1 pb-1 text-xs font-medium tracking-wide text-white/90">
+      <label className="block px-1 pb-1 text-xs font-medium tracking-wide text-ola-on-primary/90">
         {label}
       </label>
       <div
@@ -39,7 +39,7 @@ export function TextField({
         />
       </div>
       {error && (
-        <p className="px-1 pt-1 text-xs font-medium text-white italic">
+        <p className="px-1 pt-1 text-xs font-medium text-ola-on-primary italic">
           {error}
         </p>
       )}

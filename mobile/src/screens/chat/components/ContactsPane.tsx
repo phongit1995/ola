@@ -20,6 +20,7 @@ import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import type { ChatStackParamList, RootStackParamList } from '@navigation/types';
 import { CHAT_ROUTES, ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
 import { MessageActionSheet, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
@@ -78,6 +79,7 @@ function SectionHeader({ label }: { label: string }) {
 
 export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const navigation =
     useNavigation<
       CompositeNavigationProp<
@@ -323,7 +325,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
 
         {friendsLoading && !friendsLoaded ? (
           <View className="items-center py-8">
-            <ActivityIndicator color="#7cb342" />
+            <ActivityIndicator color={colors.primary} />
           </View>
         ) : (
           sections.map((section) => (

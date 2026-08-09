@@ -40,7 +40,7 @@ interface RowButtonProps {
 function RowButton({ variant, disabled, onClick, children }: RowButtonProps) {
   const cls =
     variant === 'green'
-      ? 'bg-ola-button text-white'
+      ? 'bg-ola-button text-ola-on-primary'
       : 'ml-2 bg-[#e0e0e0] text-[#636363]';
   return (
     <button

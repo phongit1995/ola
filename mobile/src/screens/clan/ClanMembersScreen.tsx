@@ -10,6 +10,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
@@ -25,6 +26,7 @@ interface ClanMembersScreenProps {
 
 export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pushToast = useToastStore((s) => s.push);
   const [clan, setClan] = useState<Clan | null>(null);
@@ -158,7 +160,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
       <ScreenHeader title={t('clan.members')} onBack={onClose} />
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7cb342" size="large" />
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
       ) : (
         <FlashList
@@ -169,7 +171,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
           onEndReached={() => void loadMore()}
           onEndReachedThreshold={0.4}
           ListFooterComponent={
-            loadingMore ? <ActivityIndicator className="my-3" color="#7cb342" /> : null
+            loadingMore ? <ActivityIndicator className="my-3" color={colors.primary} /> : null
           }
           renderItem={({ item, index }) => {
             const username = item.user?.username ?? '';

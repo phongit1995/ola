@@ -121,7 +121,7 @@ export function LoginPage() {
           <img
             src={olaLogo}
             alt="Ola"
-            className="mb-4 h-14 w-14 object-contain"
+            className="mb-4 h-14 w-14 object-contain icon-on-primary"
           />
         )}
 
@@ -172,7 +172,7 @@ export function LoginPage() {
         </div>
 
         {(errors.username || errors.password || error) && (
-          <div className="mt-2 w-full max-w-md space-y-0.5 text-sm font-medium text-white italic">
+          <div className="mt-2 w-full max-w-md space-y-0.5 text-sm font-medium text-ola-on-primary italic">
             {errors.username && <p>{errors.username.message}</p>}
             {errors.password && <p>{errors.password.message}</p>}
             {error && <p>{error}</p>}
@@ -184,7 +184,7 @@ export function LoginPage() {
         <button
           type="button"
           onClick={() => navigate(ROUTES.forgotPassword)}
-          className="w-full max-w-md py-3 text-right text-sm text-white"
+          className="w-full max-w-md py-3 text-right text-sm text-ola-on-primary"
         >
           {t('login.forgot')}
         </button>
@@ -192,7 +192,7 @@ export function LoginPage() {
         <button
           type="button"
           onClick={() => navigate(ROUTES.register)}
-          className="mt-1 h-12 w-full max-w-md text-center text-xl text-white/70"
+          className="mt-1 h-12 w-full max-w-md text-center text-xl text-ola-on-primary/70"
         >
           {t('login.createAccount')}
         </button>
@@ -201,12 +201,12 @@ export function LoginPage() {
       <button
         type="button"
         onClick={() => navigate(ROUTES.downloadApp)}
-        className="w-full max-w-md pb-3 text-center text-sm text-white/80 underline decoration-white/40"
+        className="w-full max-w-md pb-3 text-center text-sm text-ola-on-primary/80 underline decoration-ola-on-primary/40"
       >
         {t('download.loginLink')}
       </button>
 
-      <div className="w-full max-w-md pb-4 text-right text-[9px] text-white/70">
+      <div className="w-full max-w-md pb-4 text-right text-[9px] text-ola-on-primary/70">
         {t('login.version')}: {APP_VERSION}
       </div>
 

@@ -12,6 +12,7 @@ import { formatDateSlashDMY } from '@ola/shared/lib';
 import type { Clan } from '@ola/shared/types';
 import { DIVIDER } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { CLAN_ROLE_ICONS, clanPolicyLabel } from '@lib/clanHelpers';
 
 const manageIcon = require('@assets/icons/clan/ic_manage_clan.png');
@@ -74,6 +75,7 @@ function ActionItem({
   disabled?: boolean;
   onPress: () => void;
 }) {
+  const colors = useThemeColors();
   return (
     <Pressable
       onPress={onPress}
@@ -82,7 +84,7 @@ function ActionItem({
       style={{ opacity: disabled ? 0.5 : 1 }}
     >
       <Image source={icon} style={{ height: 20, width: 24 }} resizeMode="contain" />
-      <Text className="text-xs" style={{ color: active ? '#7cb342' : 'rgba(0,0,0,0.26)' }}>
+      <Text className="text-xs" style={{ color: active ? colors.primary : 'rgba(0,0,0,0.26)' }}>
         {label}
       </Text>
     </Pressable>
@@ -102,6 +104,7 @@ export function ClanHeaderCard({
   onCompose,
 }: ClanHeaderCardProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const { width } = useWindowDimensions();
   const coverHeight = Math.round(width / 2);
 
@@ -117,7 +120,7 @@ export function ClanHeaderCard({
       }}
     >
       <View style={{ position: 'relative' }}>
-        <View style={{ width: '100%', height: coverHeight, backgroundColor: '#33691e' }}>
+        <View style={{ width: '100%', height: coverHeight, backgroundColor: colors.primaryDarker }}>
           {clan.cover != null && clan.cover !== '' && (
             <CachedImage
               uri={clan.cover}

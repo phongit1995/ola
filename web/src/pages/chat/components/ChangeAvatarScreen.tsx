@@ -54,7 +54,7 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
           ) : (
             <Avatar name={nick} color={colorForName(nick)} size={112} />
           )}
-          <span className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-ola-primary text-white">
+          <span className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-ola-primary text-ola-on-primary">
             <CameraIcon />
           </span>
         </button>

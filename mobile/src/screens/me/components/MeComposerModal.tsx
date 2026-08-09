@@ -14,7 +14,8 @@ import {
   ChatComposer,
   type ChatComposerHandle,
 } from '@components/ChatComposer';
-import { DIVIDER, PRIMARY } from '@constants';
+import { DIVIDER } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import {
@@ -77,6 +78,7 @@ function MeComposerBody({
   postingRef,
 }: MeComposerModalProps & { postingRef: { current: boolean } }) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const bottomBarInset = useBottomBarInset();
   const lastKeyboardHeight = useLastKeyboardHeight();
@@ -132,7 +134,7 @@ function MeComposerBody({
               style={{
                 minHeight: 96,
                 borderWidth: 1,
-                borderColor: inputFocused ? PRIMARY : DIVIDER,
+                borderColor: inputFocused ? colors.primary : DIVIDER,
                 borderRadius: 6,
               }}
             >

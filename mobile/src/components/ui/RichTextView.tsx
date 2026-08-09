@@ -5,6 +5,7 @@ import { renderRichText } from '@lib/richText';
 import { measureRichText, richTextNativeAvailable } from '@lib/richTextNativeConfig';
 import { cappedFontScale, CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
 import { useAppTypography } from '@components/AppFontProvider';
+import { useThemeColors } from '@hooks/useThemeColors';
 import OlaRichTextViewNative from '../specs/OlaRichTextViewNativeComponent';
 
 let nativeRichTextEnabled = true;
@@ -37,8 +38,7 @@ function RichTextViewComponent({
   onMention,
 }: RichTextViewProps) {
   const { multiplier, systemFontScale } = useAppTypography();
-  // Match web: accent (mention/hashtag/url) luôn xanh đậm #33691e, kể cả tin của mình.
-  const accentColor = '#33691e';
+  const accentColor = useThemeColors().primaryDarker;
   const useNative =
     richTextNativeAvailable && nativeRichTextEnabled && hasInlineImages(content);
   const appFontSize = fontSize * multiplier;
@@ -57,7 +57,7 @@ function RichTextViewComponent({
         maxFontSizeMultiplier={CHAT_MAX_FONT_SIZE_MULTIPLIER}
         numberOfLines={maxLines > 0 ? maxLines : undefined}
       >
-        {renderRichText(content, { own, fontSize: nativeFontSize, onMention })}
+        {renderRichText(content, { own, fontSize: nativeFontSize, accentColor, onMention })}
       </Text>
     );
   }

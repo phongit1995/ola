@@ -19,6 +19,7 @@ import { stickerImageForCode } from '@lib/kul';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useAppTypography } from '@components/AppFontProvider';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -211,6 +212,7 @@ function MePostCardComponent({
   onOpenClan,
 }: MePostCardProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const { multiplier: fontMultiplier, systemFontScale } = useAppTypography();
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
@@ -230,6 +232,7 @@ function MePostCardComponent({
   const contentNodes = renderRichText(post.content ?? '', {
     own: false,
     fontSize: 14 * fontMultiplier * systemFontScale,
+    accentColor: colors.primaryDarker,
     onMention: (nick) => onOpenProfile?.(nick, colorForName(nick)),
   });
 
@@ -308,7 +311,7 @@ function MePostCardComponent({
                     onOpenClan == null ? undefined : () => onOpenClan(post.clanHandle ?? '')
                   }
                   className="shrink-0 text-xs font-bold"
-                  style={{ color: '#33691e' }}
+                  style={{ color: colors.primaryDarker }}
                 >
                   #{post.clanHandle}
                 </Text>
@@ -347,7 +350,7 @@ function MePostCardComponent({
             )}
             {clamped && !expanded && (
               <Pressable onPress={() => setExpanded(true)}>
-                <Text className="mt-0.5 text-sm" style={{ color: '#558b2f' }}>
+                <Text className="mt-0.5 text-sm" style={{ color: colors.primaryDark }}>
                   {t('me.seeMore')}
                 </Text>
               </Pressable>
@@ -417,7 +420,7 @@ function MePostCardComponent({
             style={[{ width: 28, height: 28 }, likeIconStyle]}
             resizeMode="contain"
           />
-          <Text className="text-sm" style={{ color: liked ? '#7cb342' : 'rgba(0,0,0,0.26)' }}>
+          <Text className="text-sm" style={{ color: liked ? colors.primary : 'rgba(0,0,0,0.26)' }}>
             {liked ? t('me.liked') : t('me.like')}
           </Text>
         </Pressable>

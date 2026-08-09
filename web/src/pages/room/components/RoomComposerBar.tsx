@@ -314,7 +314,7 @@ export const RoomComposerBar = forwardRef<
               onPointerDown={(event) => event.preventDefault()}
               onClick={() => void handleSend()}
               disabled={disabled}
-              className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-40"
+              className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-ola-on-primary shadow-sm transition active:scale-95 disabled:opacity-40"
             >
               {t('chat.send')}
             </button>

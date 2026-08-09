@@ -50,7 +50,7 @@ export function BottomTabBar({
 }: BottomTabBarProps) {
   const { t } = useTranslation();
   return (
-    <nav className="flex border-t border-[#a0a0a0] bg-white">
+    <nav className="flex border-t border-[#a0a0a0] bg-white bg-linear-to-t from-ola-primary/45 to-ola-primary/25">
       {TABS.map((tab) => {
         const isActive = tab.key === active;
         const badge = badges?.[tab.key];
@@ -78,7 +78,7 @@ export function BottomTabBar({
             </span>
             <span
               className={`mt-0.5 text-xs leading-none whitespace-nowrap ${
-                isActive ? 'text-ola-primary' : 'text-black/54'
+                isActive ? 'text-ola-primary-ink' : 'text-black/54'
               }`}
             >
               {t(tab.labelKey)}

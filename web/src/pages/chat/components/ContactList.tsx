@@ -246,7 +246,7 @@ export function ContactList({
             <img
               src={addFriendIcon}
               alt=""
-              className="h-6 w-6 object-contain brightness-0 invert"
+              className="h-6 w-6 object-contain icon-on-primary"
             />
           </span>
           <span className="min-w-0 flex-1">

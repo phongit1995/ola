@@ -35,7 +35,7 @@ export function DownloadFab({ hidden, onOpen, onDismiss }: DownloadFabProps) {
       >
         <span className="relative shrink-0">
           <img src="/favicon.png" alt="" className="h-9 w-9 rounded-xl" />
-          <span className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-ola-primary text-white">
+          <span className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-ola-primary text-ola-on-primary">
             <DownloadIcon className="h-2.5 w-2.5" />
           </span>
         </span>

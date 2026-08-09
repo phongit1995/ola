@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FullScreenOverlay, ScreenHeader } from '@components';
-import { toast } from '@lib';
-import { VipService } from '@services';
-import type { UserSettings } from '@app-types';
+import { FullScreenOverlay, ImageCropOverlay, ScreenHeader } from '@components';
+import { MIN_IMAGE_SOURCE, THEME_OPTIONS, WALLPAPER_ASPECT } from '@constants';
+import { compressImageForUpload, toast, validatedImageObjectUrl } from '@lib';
+import { UserService, VipService } from '@services';
+import type { ThemeId, UserSettings } from '@app-types';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useThemeStore } from '@/store/themeStore';
 import { useDownloadGuideStore } from '@/store/downloadGuideStore';
 import iconPrivacy from '@/assets/icons/settings/icon-privacy.webp';
 import iconNotification from '@/assets/icons/settings/icon-notification.webp';
@@ -34,6 +36,19 @@ function ImageIcon() {
       aria-hidden="true"
     >
       <path d="M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2ZM5 19h14l-4.5-6-3.5 4.5-2.5-3L5 19Zm3.5-8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z" />
     </svg>
   );
 }
@@ -102,12 +117,41 @@ function Segmented<T extends string>({
           onClick={() => onChange(option.value)}
           className={`rounded-md px-2.5 py-1 text-[13px] leading-tight transition-colors ${
             value === option.value
-              ? 'bg-ola-primary font-semibold text-white'
+              ? 'bg-ola-primary font-semibold text-ola-on-primary'
               : 'text-black/70'
           }`}
         >
           {option.label}
         </button>
+      ))}
+    </div>
+  );
+}
+
+function ThemeSwatches({
+  value,
+  onChange,
+}: {
+  value: ThemeId;
+  onChange: (value: ThemeId) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      {THEME_OPTIONS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          aria-label={t(`settings.theme_${option.id}`)}
+          aria-pressed={value === option.id}
+          onClick={() => onChange(option.id)}
+          style={{ backgroundColor: option.swatch }}
+          className={`h-7 w-7 rounded-full transition ${
+            value === option.id
+              ? 'ring-2 ring-black/45 ring-offset-2'
+              : 'ring-1 ring-black/10'
+          }`}
+        />
       ))}
     </div>
   );
@@ -141,7 +185,7 @@ function SettingsCard({
 }) {
   return (
     <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-      <header className="flex items-center gap-2 border-b border-black/6 bg-ola-primary/5 px-4 py-3 text-ola-primary">
+      <header className="flex items-center gap-2 border-b border-black/6 bg-ola-primary/5 px-4 py-3 text-ola-primary-ink">
         {icon}
         <h2 className="text-base font-bold">
           {index}. {title}
@@ -157,12 +201,25 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
   const openDownloadGuide = useDownloadGuideStore((s) => s.open);
   const settings = useSettingsStore((s) => s.settings);
   const update = useSettingsStore((s) => s.update);
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
   const [draft, setDraft] = useState(settings);
   const [saving, setSaving] = useState(false);
   const [vipPrivacy, setVipPrivacy] = useState<number | null>(null);
   const [vipPrivacyDraft, setVipPrivacyDraft] = useState(0);
   const [vipTouched, setVipTouched] = useState(false);
   const vipTouchedRef = useRef(false);
+  const wallpaperInputRef = useRef<HTMLInputElement>(null);
+  const cropSrcRef = useRef<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
+
+  useEffect(
+    () => () => {
+      if (cropSrcRef.current != null) URL.revokeObjectURL(cropSrcRef.current);
+    },
+    []
+  );
 
   useEffect(() => {
     let active = true;
@@ -196,6 +253,40 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
     value: UserSettings[K]
   ) {
     setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function clearCropSrc() {
+    if (cropSrcRef.current != null) URL.revokeObjectURL(cropSrcRef.current);
+    cropSrcRef.current = null;
+    setCropSrc(null);
+  }
+
+  async function pickWallpaper(event: React.ChangeEvent<HTMLInputElement>) {
+    const picked = event.target.files?.[0];
+    event.target.value = '';
+    if (picked == null) return;
+    const url = await validatedImageObjectUrl(picked, MIN_IMAGE_SOURCE, {
+      tooSmall: t('wallpaper.tooSmall'),
+      error: t('wallpaper.error'),
+    });
+    if (url == null) return;
+    clearCropSrc();
+    cropSrcRef.current = url;
+    setCropSrc(url);
+  }
+
+  async function uploadWallpaper(cropped: File) {
+    setUploadingWallpaper(true);
+    try {
+      const uploaded = await UserService.uploadAvatar(
+        await compressImageForUpload(cropped)
+      );
+      setField('wallpaperUrl', uploaded.url);
+      clearCropSrc();
+    } catch {
+      toast.error(t('wallpaper.error'));
+    }
+    setUploadingWallpaper(false);
   }
 
   function changeVipPrivacy(value: number) {
@@ -237,7 +328,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           type="button"
           onClick={handleSave}
           disabled={!dirty || saving}
-          className="rounded-full px-3 py-1 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
+          className="rounded-full px-3 py-1 text-sm font-semibold text-ola-on-primary transition-opacity disabled:opacity-40"
         >
           {saving ? t('common.loading') : t('settings.save')}
         </button>
@@ -344,6 +435,9 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           index={3}
           title={t('settings.appearanceTitle')}
         >
+          <SettingRow label={t('settings.theme')}>
+            <ThemeSwatches value={theme} onChange={setTheme} />
+          </SettingRow>
           <SettingRow label={t('settings.fontSize')}>
             <Segmented
               value={draft.fontSize}
@@ -356,13 +450,40 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
             />
           </SettingRow>
           <SettingRow label={t('settings.wallpaper')}>
-            <button
-              type="button"
-              className="flex shrink-0 items-center gap-1.5 rounded-lg border border-ola-primary px-3 py-1.5 text-[13px] font-semibold text-ola-primary"
-            >
-              <ImageIcon />
-              {t('settings.upload')}
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <input
+                ref={wallpaperInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={pickWallpaper}
+              />
+              {draft.wallpaperUrl !== '' && (
+                <>
+                  <img
+                    src={draft.wallpaperUrl}
+                    alt=""
+                    className="h-8 w-6 shrink-0 rounded object-cover ring-1 ring-black/10"
+                  />
+                  <button
+                    type="button"
+                    aria-label={t('wallpaper.remove')}
+                    onClick={() => setField('wallpaperUrl', '')}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-black/12 text-black/45"
+                  >
+                    <TrashIcon />
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={() => wallpaperInputRef.current?.click()}
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-ola-primary px-3 text-[13px] font-semibold text-ola-primary-ink"
+              >
+                <ImageIcon />
+                {t('settings.upload')}
+              </button>
+            </div>
           </SettingRow>
         </SettingsCard>
 
@@ -371,7 +492,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           onClick={openDownloadGuide}
           className="flex w-full items-center gap-2.5 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-black/5"
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ola-primary/10 text-ola-primary">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ola-primary/10 text-ola-primary-ink">
             <AppDownloadIcon />
           </span>
           <span className="min-w-0 flex-1 text-left text-sm font-semibold text-black/80">
@@ -386,6 +507,16 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           {t('settings.appVersion')}
         </p>
       </div>
+
+      {cropSrc != null && (
+        <ImageCropOverlay
+          src={cropSrc}
+          aspect={WALLPAPER_ASPECT}
+          busy={uploadingWallpaper}
+          onCancel={clearCropSrc}
+          onApply={uploadWallpaper}
+        />
+      )}
     </FullScreenOverlay>
   );
 }

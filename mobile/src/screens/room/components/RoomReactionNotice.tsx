@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Image, Text, View } from 'react-native';
+import { withAlpha } from '@ola/shared/lib';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import type { ReactionType } from '@ola/shared/types';
 import { REACTION_IMAGE } from '@lib/reactions';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 const NOTICE_DURATION_MS = 2500;
 const ENTER_MS = NOTICE_DURATION_MS * 0.15;
@@ -12,6 +14,7 @@ const EXIT_MS = NOTICE_DURATION_MS * 0.2;
 
 export function RoomReactionNotice() {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const notice = useRoomChatStore((s) => s.reactionNotice);
   const clearReactionNotice = useRoomChatStore((s) => s.clearReactionNotice);
   const progress = useRef(new Animated.Value(0)).current;
@@ -66,7 +69,10 @@ export function RoomReactionNotice() {
         className="max-w-full flex-row items-center gap-2 rounded-full bg-white py-1.5 pl-1.5 pr-4"
       >
         {image != null && (
-          <View className="h-8 w-8 items-center justify-center rounded-full bg-ola-primary/15">
+          <View
+            className="h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: withAlpha(colors.primary, 0.15) }}
+          >
             <Image source={image} style={{ width: 20, height: 20 }} resizeMode="contain" />
           </View>
         )}

@@ -199,7 +199,7 @@ export function MeVisitorsList({
                   <button
                     type="button"
                     onClick={() => void addFriend(row)}
-                    className="w-fit rounded bg-ola-primary px-3 py-1 text-sm font-medium text-white"
+                    className="w-fit rounded bg-ola-primary px-3 py-1 text-sm font-medium text-ola-on-primary"
                   >
                     {t('me.makeFriend')}
                   </button>

@@ -481,7 +481,7 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={() => pushOverlay('vipBuy', 'extend')}
-          className="rounded border border-ola-primary-dark bg-ola-button px-4 py-1.5 text-sm font-medium text-white"
+          className="rounded border border-ola-primary-dark bg-ola-button px-4 py-1.5 text-sm font-medium text-ola-on-primary"
         >
           {t('vip.extendVip')}
         </button>

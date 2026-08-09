@@ -10,7 +10,8 @@ import type { TransferReceiver } from '@components/transfer/types';
 import { TransferPasswordField } from '@components/transfer/TransferPasswordField';
 import { VipBadge } from '@components/ui/VipBadge';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
-import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { TRADING_VIP_PAGE_SIZE } from '../constants';
 
 interface TradingVipDialogProps {
@@ -21,6 +22,7 @@ interface TradingVipDialogProps {
 
 export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialogProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
 
   const [step, setStep] = useState<'select' | 'confirm'>('select');
@@ -116,7 +118,7 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
           </Text>
           {loading ? (
             <View className="items-center py-6">
-              <ActivityIndicator color={PRIMARY} />
+              <ActivityIndicator color={colors.primary} />
             </View>
           ) : vips.length === 0 ? (
             <Text className="mt-2 text-sm" style={{ color: TEXT_SECONDARY }}>

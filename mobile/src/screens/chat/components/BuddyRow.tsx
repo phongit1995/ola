@@ -1,4 +1,5 @@
 import { Image, Pressable, Text, View } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
 import type { Contact } from '../contacts';
@@ -31,6 +32,7 @@ interface BuddyRowProps {
 }
 
 export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProfile, onPreviewImage }: BuddyRowProps) {
+  const colors = useThemeColors();
   const showVip = contact.online && contact.vip;
   const badge =
     contact.group === 'birthday'
@@ -45,7 +47,7 @@ export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProf
       onLongPress={onLongPress}
       delayLongPress={400}
       className="flex-row items-center px-4 py-3"
-      style={{ backgroundColor: highlight ? '#f1f8e9' : '#fff', borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+      style={{ backgroundColor: highlight ? colors.primaryLight : '#fff', borderBottomWidth: 1, borderBottomColor: DIVIDER }}
     >
       <Pressable
         className="shrink-0"

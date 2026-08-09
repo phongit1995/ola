@@ -6,6 +6,7 @@ import { DEVICE_ICONS, GENDER, normalizeDevice } from '@constants';
 import { PresenceBadge, UserName, VipAvatar } from '@components';
 import { colorForName } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useLobbyWallpaperStyle } from '@hooks';
 
 interface RoomMembersTabProps {
   members: RoomMember[];
@@ -31,15 +32,17 @@ export function RoomMembersTab({
 }: RoomMembersTabProps) {
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const wallpaperStyle = useLobbyWallpaperStyle();
 
   return (
     <div
       className={`relative flex-1 overflow-y-auto bg-white ${
         active ? '' : 'hidden'
       }`}
+      style={wallpaperStyle}
     >
       {members.length === 0 ? (
-        <p className="px-4 py-6 text-center text-sm text-black/54">
+        <p className="bg-white/80 px-4 py-6 text-center text-sm text-black/54">
           {t('room.noMembers')}
         </p>
       ) : (
@@ -57,7 +60,7 @@ export function RoomMembersTab({
                 <button
                   type="button"
                   onClick={() => onOpenProfile?.(member.username, color)}
-                  className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-black/[0.03]"
+                  className="flex w-full items-center gap-2 bg-white/80 px-4 py-3 text-left hover:bg-black/[0.03]"
                 >
                   <GenderIcon gender={member.gender} />
                   <span className="relative h-10 w-10 shrink-0">

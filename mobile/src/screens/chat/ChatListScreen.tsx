@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { formatOlaTime } from '@ola/shared/lib';
+import { formatOlaTime, withAlpha } from '@ola/shared/lib';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
@@ -27,6 +27,8 @@ import { ROOT_ROUTES } from '@navigation/routes';
 import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { useAppTypography } from '@components/AppFontProvider';
+import { LobbyWallpaper } from '@components/ChatWallpaper';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { kulImageForText } from '@lib/kul';
 import { SmileyText } from '@lib/richText';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
@@ -84,6 +86,7 @@ function ConversationRow({
   onSwipeableClose,
 }: RowProps) {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const swipeableRef = useRef<SwipeableMethods>(null);
   const openRef = useRef(false);
 
@@ -164,7 +167,12 @@ function ConversationRow({
       <Pressable
         onPress={handlePress}
         className="flex-row items-center gap-4 px-4"
-        style={{ minHeight: 72, backgroundColor: unread ? '#f1f8e9' : '#ffffff' }}
+        style={{
+          minHeight: 72,
+          backgroundColor: unread
+            ? withAlpha(colors.primaryLight, 0.8)
+            : 'rgba(255,255,255,0.8)',
+        }}
       >
         <View className="shrink-0">
           <Avatar name={name} uri={avatarUri} />
@@ -244,6 +252,7 @@ function HeaderTab({
   badge?: number;
   onPress: () => void;
 }) {
+  const colors = useThemeColors();
   return (
     <Pressable onPress={onPress} className="h-full flex-1 items-center justify-center">
       <View className="relative flex-row items-center">
@@ -255,7 +264,7 @@ function HeaderTab({
         {badge > 0 && (
           <View
             className="absolute -right-5 -top-1 h-4 min-w-4 items-center justify-center rounded-full bg-ola-accent px-1"
-            style={{ borderWidth: 2, borderColor: '#7cb342' }}
+            style={{ borderWidth: 2, borderColor: colors.primary }}
           >
             <Text className="text-[10px] font-bold text-white">{badge > 99 ? '99+' : badge}</Text>
           </View>
@@ -268,6 +277,7 @@ function HeaderTab({
 
 export function ChatListScreen() {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const { multiplier: fontMultiplier, systemFontScale } = useAppTypography();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -444,10 +454,11 @@ export function ChatListScreen() {
         <ContactsPane onAccountMenu={() => setMenuOpen(true)} />
       ) : loading && conversations.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7cb342" size="large" />
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
       ) : (
-        <View className="flex-1">
+        <View className="flex-1 bg-ola-surface">
+        <LobbyWallpaper />
         <FlashList
           data={conversations}
           extraData={listExtraData}

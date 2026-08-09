@@ -43,12 +43,12 @@ export function ChatBotComposer({
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ola-primary transition-opacity disabled:opacity-40"
       >
         {streaming ? (
-          <span className="h-3.5 w-3.5 rounded-[2px] bg-white" />
+          <span className="h-3.5 w-3.5 rounded-[2px] bg-ola-on-primary" />
         ) : (
           <img
             src={sendIcon}
             alt=""
-            className="h-5 w-5 object-contain brightness-0 invert"
+            className="h-5 w-5 object-contain icon-on-primary"
           />
         )}
       </button>

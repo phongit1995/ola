@@ -109,7 +109,7 @@ export function MeCommentComposer({
           type="button"
           onClick={submit}
           disabled={submitting || draft.trim() === ''}
-          className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-medium text-white disabled:opacity-40"
+          className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-medium text-ola-on-primary disabled:opacity-40"
         >
           {t('me.commentSend')}
         </button>

@@ -43,7 +43,12 @@ import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../interface';
 import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../chatView';
 import { usePeerCard } from '../usePeerCard';
-import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
+import {
+  useChatWallpaperStyle,
+  useLongPress,
+  useOutsideClick,
+  useStickyScroll,
+} from '@hooks';
 import { ChatReactionBalloons } from './ChatReactionBalloons';
 import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
@@ -173,6 +178,7 @@ export function ChatConversationView({
 
   useOutsideClick(composerAreaRef, openTab != null, () => setOpenTab(null));
 
+  const wallpaperStyle = useChatWallpaperStyle();
   const peerTyping = typingUsers.length > 0;
 
   useEffect(() => {
@@ -574,6 +580,7 @@ export function ChatConversationView({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
+        style={wallpaperStyle}
         className={`flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-2 py-3 ${BUBBLE_WALLPAPER}`}
       >
         {loadingMessages && messages.length === 0 ? (
@@ -677,7 +684,7 @@ export function ChatConversationView({
                   />
                 )}
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-xs font-semibold text-ola-primary">
+                <span className="block truncate text-xs font-semibold text-ola-primary-ink">
                   {t('chat.replyingTo', { name: replyTarget.senderName ?? '' })}
                 </span>
                 <span className="block truncate text-xs text-black/54">
@@ -767,7 +774,7 @@ export function ChatConversationView({
                 (isTyping || pendingImage != null ? (
                   <button
                     type="submit"
-                    className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
+                    className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-ola-on-primary shadow-sm transition active:scale-95"
                   >
                     {editing != null ? t('chat.actionSave') : t('chat.send')}
                   </button>

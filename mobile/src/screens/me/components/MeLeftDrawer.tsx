@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, BackHandler, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 
@@ -40,6 +41,7 @@ export function MeLeftDrawer({
   onLogout,
 }: MeLeftDrawerProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const translateX = useRef(new Animated.Value(-WIDTH)).current;
   const backdrop = useRef(new Animated.Value(0)).current;
 
@@ -85,7 +87,7 @@ export function MeLeftDrawer({
         <Pressable onPress={onViewProfile} style={{ height: 112 }}>
           <CachedImageBackground
             uri={coverUrl}
-            style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#558b2f' }}
+            style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: colors.primaryDark }}
           >
             <View>
               <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">

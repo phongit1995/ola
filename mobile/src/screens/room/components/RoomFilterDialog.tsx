@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import type { RoomFilters } from '@ola/shared/types';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 const FILTER_KEYS = [
   { key: 'showAll', labelKey: 'room.filterShowAll' },
@@ -20,13 +21,14 @@ interface RoomFilterDialogProps {
 }
 
 function Checkbox({ checked }: { checked: boolean }) {
+  const colors = useThemeColors();
   return (
     <View
       className="h-5 w-5 items-center justify-center rounded"
       style={{
         borderWidth: 2,
-        borderColor: checked ? '#7cb342' : 'rgba(0,0,0,0.38)',
-        backgroundColor: checked ? '#7cb342' : 'transparent',
+        borderColor: checked ? colors.primary : 'rgba(0,0,0,0.38)',
+        backgroundColor: checked ? colors.primary : 'transparent',
       }}
     >
       {checked && <Text className="text-xs font-bold text-white">✓</Text>}

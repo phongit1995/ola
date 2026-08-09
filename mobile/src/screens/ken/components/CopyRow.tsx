@@ -2,9 +2,11 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 export function CopyRow({ label, value }: { label: string; value: string }) {
+  const colors = useThemeColors();
   const { t } = useTranslation();
   const push = useToastStore((s) => s.push);
 
@@ -29,7 +31,7 @@ export function CopyRow({ label, value }: { label: string; value: string }) {
         className="ml-2 shrink-0 rounded px-2 py-1 active:bg-black/5"
         style={{ borderWidth: 1, borderColor: DIVIDER }}
       >
-        <Text className="text-xs" style={{ color: PRIMARY }}>{t('common.copy')}</Text>
+        <Text className="text-xs" style={{ color: colors.primary }}>{t('common.copy')}</Text>
       </Pressable>
     </View>
   );

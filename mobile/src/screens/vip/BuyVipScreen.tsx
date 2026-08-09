@@ -9,7 +9,8 @@ import { KeyboardView } from '@components/KeyboardView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
+import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { MODE_ACTION, MODE_ORDER, MODE_TAB, MODE_TITLE } from './constants';
 import { useBuyVip } from './useBuyVip';
 import { ReceiverField } from './components/ReceiverField';
@@ -22,6 +23,7 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.BuyVi
 
 export function BuyVipScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const vm = useBuyVip(route.params?.mode, () => navigation.goBack());
 
   return (
@@ -41,7 +43,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
                 key={item}
                 onPress={() => vm.changeMode(item)}
                 className="flex-1 items-center rounded-full px-2 py-1.5"
-                style={{ backgroundColor: activeTab ? PRIMARY : 'rgba(0,0,0,0.05)' }}
+                style={{ backgroundColor: activeTab ? colors.primary : 'rgba(0,0,0,0.05)' }}
               >
                 <Text
                   className="text-xs font-medium"
@@ -56,7 +58,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
 
         <View className="mt-2 flex-row items-center bg-white px-4 py-3">
           <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('vip.buy.balance')}</Text>
-          <Text className="ml-2 text-lg font-bold" style={{ color: PRIMARY }}>
+          <Text className="ml-2 text-lg font-bold" style={{ color: colors.primary }}>
             {formatKen(vm.kenBalance)} KEN
           </Text>
         </View>
@@ -87,7 +89,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
                 {vm.selectedVip?.name}
               </Text>
               {vm.selectedShopItem != null && (
-                <Text className="text-sm font-medium" style={{ color: PRIMARY }}>
+                <Text className="text-sm font-medium" style={{ color: colors.primary }}>
                   {formatKen(vm.selectedShopItem.kenPrice)} KEN
                 </Text>
               )}

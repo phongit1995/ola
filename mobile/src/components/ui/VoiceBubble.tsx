@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Sound from 'react-native-sound';
 import { formatDuration } from '@ola/shared/lib';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   activateVoicePlayback,
@@ -45,6 +46,7 @@ export function VoiceBubble({
   onLongPress,
 }: VoiceBubbleProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore(state => state.push);
   const soundRef = useRef<Sound | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -61,9 +63,9 @@ export function VoiceBubble({
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
 
-  const baseColor = isOut ? '#7cb342' : '#e8f2dc';
+  const baseColor = isOut ? colors.primary : colors.primaryLight;
   const iconColor = isOut ? '#ffffff' : '#8f8f8f';
-  const badgeColor = isOut ? '#33691e' : '#ffffff';
+  const badgeColor = isOut ? colors.primaryDarker : '#ffffff';
   const badgeBackground = isOut ? '#ffffff' : '#8f8f8f';
   const playSource = isOut ? playMediaIcon : playMediaGrayIcon;
   const pauseSource = isOut ? pauseMediaIcon : pauseMediaGrayIcon;

@@ -15,6 +15,7 @@ import OlaChatComposerNative, {
 import { cappedFontScale } from '@constants';
 import { richTextNativeAvailable } from '@lib/richTextNativeConfig';
 import { useAppTypography } from '@components/AppFontProvider';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 export interface ChatComposerHandle {
   focus: () => void;
@@ -66,11 +67,13 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
     alignTop = false,
     textColor = 'rgba(0,0,0,0.87)',
     placeholderTextColor = 'rgba(0,0,0,0.38)',
-    selectionColor = '#7cb342',
+    selectionColor,
     onPasteImage,
   },
   ref
 ) {
+  const colors = useThemeColors();
+  const effectiveSelectionColor = selectionColor ?? colors.primary;
   const nativeRef = useRef<ElementRef<typeof OlaChatComposerNative>>(null);
   const lastEmitted = useRef(value);
   const lastRenderedFontSize = useRef(fontSize);
@@ -127,7 +130,7 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
       placeholder={placeholder}
       placeholderTextColor={placeholderTextColor}
       textColor={textColor}
-      selectionColor={selectionColor}
+      selectionColor={effectiveSelectionColor}
       editable={editable}
       initialText={initialValue.current}
       onChangeText={(event) => {
@@ -165,10 +168,12 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
     alignTop = false,
     textColor = 'rgba(0,0,0,0.87)',
     placeholderTextColor = 'rgba(0,0,0,0.38)',
-    selectionColor = '#7cb342',
+    selectionColor,
   },
   ref
 ) {
+  const colors = useThemeColors();
+  const effectiveSelectionColor = selectionColor ?? colors.primary;
   const inputRef = useRef<TextInput>(null);
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -197,8 +202,8 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
         flexShrink: 1,
       }}
       maxFontSizeMultiplier={maxFontSizeMultiplier}
-      selectionColor={selectionColor}
-      cursorColor={selectionColor}
+      selectionColor={effectiveSelectionColor}
+      cursorColor={effectiveSelectionColor}
       placeholder={placeholder}
       placeholderTextColor={placeholderTextColor}
       multiline

@@ -13,7 +13,8 @@ import { KenCoin } from './components/KenCoin';
 import { KenHistorySection } from './components/KenHistorySection';
 import { TransferKenDialog } from './components/TransferKenDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { DIVIDER, ERROR, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { DIVIDER, ERROR, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { KEN_LOW_THRESHOLD } from './constants';
 
 interface RowActionProps {
@@ -39,6 +40,7 @@ function RowAction({ icon, label, onPress }: RowActionProps) {
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.KenStore>;
 
 export function KenStoreScreen({ navigation }: Props) {
+  const colors = useThemeColors();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
@@ -82,7 +84,7 @@ export function KenStoreScreen({ navigation }: Props) {
             <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('ken.balance')}</Text>
             <View className="ml-2 flex-1 flex-row items-center gap-1">
               <KenCoin />
-              <Text className="text-lg font-bold" style={{ color: PRIMARY }}>{balanceText}</Text>
+              <Text className="text-lg font-bold" style={{ color: colors.primary }}>{balanceText}</Text>
             </View>
           </View>
 

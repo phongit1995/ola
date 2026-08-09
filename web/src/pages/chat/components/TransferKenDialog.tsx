@@ -258,7 +258,7 @@ export function TransferKenDialog({
               <button
                 type="button"
                 onClick={changeReceiver}
-                className="text-sm font-medium text-ola-primary active:opacity-70"
+                className="text-sm font-medium text-ola-primary-ink active:opacity-70"
               >
                 {t('chat.transferKenChangeReceiver')}
               </button>

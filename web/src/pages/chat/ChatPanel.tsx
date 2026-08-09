@@ -27,6 +27,7 @@ import { FriendRequestsScreen } from './components/FriendRequestsScreen';
 import { ChatBotScreen } from '@/pages/chat-bot/ChatBotScreen';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
+import { useLobbyWallpaperStyle } from '@hooks';
 import { mapFriendsToContacts } from './friends';
 import {
   useConversationsWithPresence,
@@ -43,6 +44,7 @@ interface ProfileTarget {
 type ChatSub = 'messages' | 'contacts';
 
 export function ChatPanel() {
+  const wallpaperStyle = useLobbyWallpaperStyle();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const clearUser = useAuthStore((s) => s.clearUser);
@@ -210,7 +212,7 @@ export function ChatPanel() {
         type="button"
         onClick={() => setSub(value)}
         className={`flex-1 self-stretch text-sm font-bold ${
-          isActive ? 'border-b-2 border-white text-white' : 'text-white/70'
+          isActive ? 'border-b-2 border-ola-on-primary text-ola-on-primary' : 'text-ola-on-primary/70'
         }`}
       >
         <span className="relative inline-flex items-center">
@@ -244,7 +246,7 @@ export function ChatPanel() {
 
       <main className="relative flex-1 overflow-y-auto">
         {sub === 'messages' ? (
-          <div className="relative h-full bg-ola-surface">
+          <div className="relative h-full bg-ola-surface" style={wallpaperStyle}>
             {loadingConversations && conversations.length === 0 ? (
               <div className="flex h-full items-center justify-center">
                 <span className="h-8 w-8 animate-spin rounded-full border-4 border-ola-primary/30 border-t-ola-primary" />
@@ -294,7 +296,7 @@ export function ChatPanel() {
               <img
                 src={addFriendIcon}
                 alt=""
-                className="h-6 w-6 object-contain brightness-0 invert"
+                className="h-6 w-6 object-contain icon-on-primary"
               />
             </button>
           </div>

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
 import { MESSAGE_TYPE } from '@constants';
 import { SmileyText, toast } from '@lib';
-import { useStickyScroll } from '@hooks';
+import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
 import {
   ConfirmDialog,
   DateSeparator,
@@ -72,6 +72,7 @@ export function RoomMessagesTab({
   onDeleteMessage,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
+  const wallpaperStyle = useChatWallpaperStyle();
   const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
   const blockUser = useRoomFilterStore((s) => s.blockUser);
 
@@ -230,6 +231,7 @@ export function RoomMessagesTab({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
+        style={wallpaperStyle}
         className="flex flex-1 flex-col gap-2 overflow-y-auto p-3"
       >
         {loadingMore && (
@@ -270,7 +272,7 @@ export function RoomMessagesTab({
               />
             )}
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-xs font-semibold text-ola-primary">
+            <span className="block truncate text-xs font-semibold text-ola-primary-ink">
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </span>
             <span className="block truncate text-xs text-black/54">

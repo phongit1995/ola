@@ -5,6 +5,7 @@ import { colorForName } from '@ola/shared/lib';
 import { MeService, RelationshipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { PostAuthor } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { Dialog } from '@components/ui/Dialog';
 import { LIKERS_PAGE_SIZE } from '../constants';
@@ -19,6 +20,7 @@ interface MeLikersDialogProps {
 
 export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: MeLikersDialogProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const [likers, setLikers] = useState<PostAuthor[]>([]);
   const [total, setTotal] = useState(0);
@@ -96,7 +98,7 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
       showClose
     >
       {loading ? (
-            <ActivityIndicator className="py-6" color="#7cb342" />
+            <ActivityIndicator className="py-6" color={colors.primary} />
           ) : error ? (
             <Text className="py-6 text-center text-sm" style={{ color: '#e53935' }}>
               {t('me.likersError')}
@@ -112,7 +114,7 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
               style={{ maxHeight: 320 }}
               onEndReached={() => void loadMore()}
               onEndReachedThreshold={0.3}
-              ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color="#7cb342" /> : null}
+              ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color={colors.primary} /> : null}
               renderItem={({ item, index }) => {
                 const isSelf = item.isSelf === true || item.relationship?.status === RELATIONSHIP_STATUS.self;
                 const isFriend = item.isFriend === true || item.relationship?.status === RELATIONSHIP_STATUS.friend;

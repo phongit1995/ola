@@ -13,11 +13,13 @@ import {
   View,
 } from 'react-native';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
+import { ChatWallpaper } from '@components/ChatWallpaper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -82,6 +84,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const { bottom: bottomInset } = useSafeAreaInsets();
   const push = useToastStore((s) => s.push);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -510,6 +513,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: CHAT_BG }}>
+      <ChatWallpaper />
       <ChatHeader
         title={title}
         subtitle={subtitle}
@@ -532,7 +536,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       >
       {loadingMessages ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7cb342" size="large" />
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
       ) : (
         <FlashList
@@ -556,7 +560,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             <>
               {loadingMore && (
                 <View className="items-center py-2">
-                  <ActivityIndicator size="small" color="#7cb342" />
+                  <ActivityIndicator size="small" color={colors.primary} />
                 </View>
               )}
               {peerCardVisible && peerCardAnchorId === '' && peerProfile != null
@@ -634,9 +638,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             <Pressable
               onPress={() => void handleUnblock()}
               className="rounded px-3 py-1.5"
-              style={{ borderWidth: 1, borderColor: '#7cb342' }}
+              style={{ borderWidth: 1, borderColor: colors.primary }}
             >
-              <Text className="text-sm font-medium" style={{ color: '#7cb342' }}>{t('chat.unblock')}</Text>
+              <Text className="text-sm font-medium" style={{ color: colors.primary }}>{t('chat.unblock')}</Text>
             </Pressable>
           )}
         </View>

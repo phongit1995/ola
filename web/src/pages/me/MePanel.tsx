@@ -123,7 +123,7 @@ export function MePanel() {
                 <img
                   src={bellIcon}
                   alt=""
-                  className="h-6 w-6 object-contain brightness-0 invert"
+                  className="h-6 w-6 object-contain icon-on-primary"
                 />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 right-0 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-ola-accent px-1 text-[10px] font-bold text-white">
@@ -141,7 +141,7 @@ export function MePanel() {
               <img
                 src={searchIcon}
                 alt=""
-                className="h-6 w-6 object-contain brightness-0 invert"
+                className="h-6 w-6 object-contain icon-on-primary"
               />
             </button>
           </HomeHeader>
@@ -184,7 +184,7 @@ export function MePanel() {
               onClick={() => setComposerOpen(true)}
               className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-lg transition hover:brightness-105"
             >
-              <img src={editIcon} alt="" className="h-6 w-6 object-contain" />
+              <img src={editIcon} alt="" className="h-6 w-6 object-contain icon-on-primary" />
             </button>
 
             {drawerOpen && (

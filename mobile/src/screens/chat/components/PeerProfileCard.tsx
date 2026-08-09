@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { activeVipTypeId, daysSince, monthsSince, yearsSince } from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
@@ -34,6 +35,7 @@ export function PeerProfileCard({
   onShowAvatar,
 }: PeerProfileCardProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const vipTypeId = activeVipTypeId(profile.vipUsed, profile.vipEndTime);
   const cover = profile.coverPhoto ?? '';
   const years = yearsSince(profile.createdAt);
@@ -56,7 +58,7 @@ export function PeerProfileCard({
     <View className="mt-2 bg-white" style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: DIVIDER }}>
       <CachedImageBackground
         uri={cover !== '' ? cover : undefined}
-        style={{ backgroundColor: '#f1f8e9' }}
+        style={{ backgroundColor: colors.primaryLight }}
       >
         <View
           className="flex-row items-end gap-2 p-2"
@@ -120,7 +122,7 @@ export function PeerProfileCard({
         <Pressable
           onPress={onFriendAction}
           className="rounded-sm px-3 py-1"
-          style={{ borderWidth: 1, borderColor: '#558b2f', backgroundColor: '#7cb342' }}
+          style={{ borderWidth: 1, borderColor: colors.primaryDark, backgroundColor: colors.primary }}
         >
           <Text className="text-sm text-white">{friendLabel}</Text>
         </Pressable>

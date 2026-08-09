@@ -136,7 +136,7 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
         ) : (
           <Avatar name={nick} color={colorForName(nick)} size={96} />
         )}
-        <span className="absolute right-0 bottom-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-ola-primary text-white">
+        <span className="absolute right-0 bottom-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-ola-primary text-ola-on-primary">
           <svg
             viewBox="0 0 24 24"
             className="h-4 w-4"
@@ -329,7 +329,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-white">
-      <header className="flex h-12 shrink-0 items-center gap-2 bg-ola-primary px-2 text-white shadow-[0_1px_0_rgba(0,0,0,.12)]">
+      <header className="flex h-12 shrink-0 items-center gap-2 bg-ola-primary px-2 text-ola-on-primary shadow-[0_1px_0_rgba(0,0,0,.12)]">
         <button
           type="button"
           aria-label={t('chat.back')}
@@ -477,7 +477,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
                 <button
                   type="button"
                   onClick={() => setVerifyOpen(true)}
-                  className="shrink-0 rounded bg-ola-primary px-2.5 py-1 text-xs font-medium text-white"
+                  className="shrink-0 rounded bg-ola-primary px-2.5 py-1 text-xs font-medium text-ola-on-primary"
                 >
                   {t('verifyEmail.verifyAction')}
                 </button>
@@ -500,7 +500,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
           type="button"
           onClick={save}
           disabled={saving || uploading}
-          className="flex-1 rounded bg-ola-primary py-2.5 text-sm font-medium text-white disabled:opacity-60"
+          className="flex-1 rounded bg-ola-primary py-2.5 text-sm font-medium text-ola-on-primary disabled:opacity-60"
         >
           {saving ? t('profileEdit.saving') : t('profileEdit.save')}
         </button>

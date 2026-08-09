@@ -12,14 +12,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
-import { VipService } from '@ola/shared/services';
-import type { UserSettings } from '@ola/shared/types';
+import { useThemeStore } from '@ola/shared/stores/themeStore';
+import { THEME_OPTIONS } from '@ola/shared/constants';
+import { withAlpha } from '@ola/shared/lib';
+import { UserService, VipService } from '@ola/shared/services';
+import type { ThemeId, UserSettings } from '@ola/shared/types';
+import {
+  pickValidatedCroppedImage,
+  WALLPAPER_OUTPUT,
+} from '@lib/imagePicker';
+import { CachedImage } from '@components/ui/CachedImage';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useAppTypography } from '@components/AppFontProvider';
+import { useThemeColors } from '@hooks/useThemeColors';
 
-const PRIMARY = '#7cb342';
 const ROW_BORDER = 'rgba(0,0,0,0.06)';
 const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;
@@ -27,6 +35,7 @@ const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'
 const iconPrivacy = require('@assets/icons/settings/icon-privacy.webp');
 const iconNotification = require('@assets/icons/settings/icon-notification.webp');
 const iconAppearance = require('@assets/icons/settings/icon-appearance.webp');
+const iconDelete = require('@assets/icons/chat/ic_menu_delete.png');
 
 function SectionIcon({ src }: { src: ImageSourcePropType }) {
   const resolved = Image.resolveAssetSource(src);
@@ -35,14 +44,15 @@ function SectionIcon({ src }: { src: ImageSourcePropType }) {
 }
 
 function ImageIcon() {
+  const colors = useThemeColors();
   return (
     <View
       className="items-center justify-center"
-      style={{ width: 16, height: 16, borderWidth: 1.5, borderColor: PRIMARY, borderRadius: 3 }}
+      style={{ width: 16, height: 16, borderWidth: 1.5, borderColor: colors.primary, borderRadius: 3 }}
     >
       <View
         className="absolute rounded-full"
-        style={{ top: 2.5, left: 2.5, width: 3, height: 3, backgroundColor: PRIMARY }}
+        style={{ top: 2.5, left: 2.5, width: 3, height: 3, backgroundColor: colors.primary }}
       />
       <View
         className="absolute"
@@ -56,21 +66,56 @@ function ImageIcon() {
           borderBottomWidth: 5.5,
           borderLeftColor: 'transparent',
           borderRightColor: 'transparent',
-          borderBottomColor: PRIMARY,
+          borderBottomColor: colors.primary,
         }}
       />
     </View>
   );
 }
 
+function ThemeSwatches({
+  value,
+  onChange,
+}: {
+  value: ThemeId;
+  onChange: (value: ThemeId) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View className="shrink-0 flex-row items-center" style={{ gap: 8 }}>
+      {THEME_OPTIONS.map((option) => {
+        const selected = value === option.id;
+        return (
+          <Pressable
+            key={option.id}
+            accessibilityRole="button"
+            accessibilityLabel={t(`settings.theme_${option.id}`)}
+            accessibilityState={{ selected }}
+            onPress={() => onChange(option.id)}
+            className="rounded-full"
+            style={{
+              width: 28,
+              height: 28,
+              backgroundColor: option.swatch,
+              borderWidth: selected ? 2 : 1,
+              borderColor: selected ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.1)',
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
 function ToggleSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
+  const colors = useThemeColors();
   return (
     <Pressable
       accessibilityRole="switch"
       accessibilityState={{ checked: on }}
       onPress={onChange}
       className="shrink-0 rounded-full"
-      style={{ width: 48, height: 28, backgroundColor: on ? PRIMARY : 'rgba(0,0,0,0.2)' }}
+      style={{ width: 48, height: 28, backgroundColor: on ? colors.primary : 'rgba(0,0,0,0.2)' }}
     >
       <View
         className="absolute rounded-full bg-white"
@@ -100,6 +145,7 @@ function Segmented<T extends string>({
   onChange: (value: T) => void;
 }) {
   const { multiplier: fontMultiplier } = useAppTypography();
+  const colors = useThemeColors();
   return (
     <View
       className="shrink-0 flex-row rounded-lg bg-white"
@@ -115,7 +161,7 @@ function Segmented<T extends string>({
             style={{
               paddingHorizontal: 10,
               paddingVertical: 4,
-              backgroundColor: selected ? PRIMARY : 'transparent',
+              backgroundColor: selected ? colors.primary : 'transparent',
             }}
           >
             <Text
@@ -160,6 +206,7 @@ function SettingsCard({
   title: string;
   children: ReactNode;
 }) {
+  const colors = useThemeColors();
   return (
     <View
       className="overflow-hidden rounded-2xl bg-white"
@@ -178,11 +225,11 @@ function SettingsCard({
         style={{
           borderBottomWidth: 1,
           borderBottomColor: ROW_BORDER,
-          backgroundColor: 'rgba(124,179,66,0.05)',
+          backgroundColor: withAlpha(colors.primary, 0.05),
         }}
       >
         {icon}
-        <Text className="text-base font-bold" style={{ color: PRIMARY }}>
+        <Text className="text-base font-bold" style={{ color: colors.primary }}>
           {index}. {title}
         </Text>
       </View>
@@ -196,14 +243,19 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.Setti
 export function SettingsScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const settings = useSettingsStore((s) => s.settings);
   const update = useSettingsStore((s) => s.update);
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
   const [draft, setDraft] = useState(settings);
+  const [themeDraft, setThemeDraft] = useState(theme);
   const [saving, setSaving] = useState(false);
   const [vipPrivacy, setVipPrivacy] = useState<number | null>(null);
   const [vipPrivacyDraft, setVipPrivacyDraft] = useState(0);
   const [vipTouched, setVipTouched] = useState(false);
+  const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
   const vipTouchedRef = useRef(false);
 
   useEffect(() => {
@@ -225,13 +277,34 @@ export function SettingsScreen({ navigation }: Props) {
     [draft, settings]
   );
   const vipDirty = vipTouched && vipPrivacyDraft !== vipPrivacy;
-  const dirty = settingsDirty || vipDirty;
+  const themeDirty = themeDraft !== theme;
+  const dirty = settingsDirty || vipDirty || themeDirty;
 
   const vipPrivacyKey = VIP_PRIVACY_KEYS[vipPrivacyDraft] ?? VIP_PRIVACY_KEYS[0];
 
   function setField<K extends keyof UserSettings>(key: K, value: UserSettings[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
   }
+
+  async function pickWallpaper() {
+    if (uploadingWallpaper) return;
+    const picked = await pickValidatedCroppedImage(
+      WALLPAPER_OUTPUT.width,
+      WALLPAPER_OUTPUT.height,
+      { tooSmall: t('wallpaper.tooSmall'), error: t('wallpaper.error') }
+    );
+    if (picked == null) return;
+    setUploadingWallpaper(true);
+    push('info', t('wallpaper.uploading'));
+    try {
+      const uploaded = await UserService.uploadAvatar(picked);
+      setField('wallpaperUrl', uploaded.url);
+    } catch {
+      push('error', t('wallpaper.error'));
+    }
+    setUploadingWallpaper(false);
+  }
+
 
   function changeVipPrivacy(value: number) {
     vipTouchedRef.current = true;
@@ -253,6 +326,7 @@ export function SettingsScreen({ navigation }: Props) {
     }
     setSaving(false);
     if (ok) {
+      if (themeDirty) setTheme(themeDraft);
       setDraft(useSettingsStore.getState().settings);
       if (vipDirty) {
         setVipPrivacy(vipPrivacyDraft);
@@ -360,6 +434,9 @@ export function SettingsScreen({ navigation }: Props) {
         </SettingsCard>
 
         <SettingsCard icon={<SectionIcon src={iconAppearance} />} index={3} title={t('settings.appearanceTitle')}>
+          <SettingRow label={t('settings.theme')}>
+            <ThemeSwatches value={themeDraft} onChange={setThemeDraft} />
+          </SettingRow>
           <SettingRow label={t('settings.fontSize')}>
             <Segmented
               value={draft.fontSize}
@@ -372,21 +449,52 @@ export function SettingsScreen({ navigation }: Props) {
             />
           </SettingRow>
           <SettingRow label={t('settings.wallpaper')} last>
-            <Pressable
-              className="shrink-0 flex-row items-center rounded-lg"
-              style={{
-                borderWidth: 1,
-                borderColor: PRIMARY,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                gap: 6,
-              }}
-            >
-              <ImageIcon />
-              <Text className="text-[13px] font-semibold" style={{ color: PRIMARY }}>
-                {t('settings.upload')}
-              </Text>
-            </Pressable>
+            <View className="shrink-0 flex-row items-center" style={{ gap: 8 }}>
+              {draft.wallpaperUrl !== '' && (
+                <>
+                  <CachedImage
+                    uri={draft.wallpaperUrl}
+                    style={{ width: 24, height: 32, borderRadius: 4 }}
+                    resizeMode="cover"
+                  />
+                  <Pressable
+                    accessibilityLabel={t('wallpaper.remove')}
+                    onPress={() => setField('wallpaperUrl', '')}
+                    className="items-center justify-center rounded-lg"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderWidth: 1,
+                      borderColor: 'rgba(0,0,0,0.12)',
+                    }}
+                  >
+                    <Image
+                      source={iconDelete}
+                      style={{ width: 16, height: 16, tintColor: 'rgba(0,0,0,0.45)' }}
+                      resizeMode="contain"
+                    />
+                  </Pressable>
+                </>
+              )}
+              <Pressable
+                onPress={() => void pickWallpaper()}
+                disabled={uploadingWallpaper}
+                className="shrink-0 flex-row items-center rounded-lg"
+                style={{
+                  height: 32,
+                  borderWidth: 1,
+                  borderColor: colors.primary,
+                  paddingHorizontal: 12,
+                  gap: 6,
+                  opacity: uploadingWallpaper ? 0.5 : 1,
+                }}
+              >
+                <ImageIcon />
+                <Text className="text-[13px] font-semibold" style={{ color: colors.primary }}>
+                  {t('settings.upload')}
+                </Text>
+              </Pressable>
+            </View>
           </SettingRow>
         </SettingsCard>
 

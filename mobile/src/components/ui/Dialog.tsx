@@ -7,6 +7,7 @@ import {
   View,
   type ImageSourcePropType,
 } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { KeyboardView } from '../KeyboardView';
 
 interface DialogProps {
@@ -136,9 +137,8 @@ interface DialogButtonProps {
   children: string;
 }
 
-const dialogButtonBox: Record<DialogButtonVariant, object> = {
+const dialogButtonBox: Record<Exclude<DialogButtonVariant, 'green'>, object> = {
   default: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: 'rgba(0,0,0,0.1)' },
-  green: { backgroundColor: '#9ccc65', borderWidth: 1, borderColor: '#558b2f' },
   danger: { backgroundColor: '#dd4b39' },
 };
 
@@ -154,6 +154,11 @@ export function DialogButton({
   onPress,
   children,
 }: DialogButtonProps) {
+  const colors = useThemeColors();
+  const boxStyle =
+    variant === 'green'
+      ? { backgroundColor: colors.button, borderWidth: 1, borderColor: colors.primaryDark }
+      : dialogButtonBox[variant];
   return (
     <Pressable
       onPress={onPress}
@@ -161,7 +166,7 @@ export function DialogButton({
       className="flex-1 items-center justify-center px-1 active:opacity-90"
       style={[
         { minHeight: 28, borderRadius: 2, paddingVertical: 5, opacity: disabled ? 0.5 : 1 },
-        dialogButtonBox[variant],
+        boxStyle,
       ]}
     >
       <Text className="text-sm" style={{ color: dialogButtonText[variant] }}>

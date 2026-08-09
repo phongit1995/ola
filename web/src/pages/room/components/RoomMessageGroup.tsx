@@ -139,7 +139,7 @@ function RoomBubble({
   useUploadPreviewLease(isImage ? message.imageUrl : undefined);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bubbleClass = isOwn
-    ? `w-fit max-w-full break-words bg-ola-primary px-3.5 py-2 text-base text-white ${corners}`
+    ? `w-fit max-w-full break-words bg-ola-primary px-3.5 py-2 text-base text-ola-on-primary ${corners}`
     : `w-fit max-w-full break-words bg-ola-primary-light px-3.5 py-2 text-base text-black/87 ${corners}`;
 
   const content = isImage ? (
@@ -310,14 +310,14 @@ function RoomMessageGroupComponent({
         <span className="text-center text-xs text-black/26">{time}</span>
       )}
       {isOwn ? (
-        <span className="mr-12 flex max-w-[80%] items-center gap-1 self-end text-sm text-black/54">
+        <span className="mr-12 flex max-w-[80%] items-center gap-1 self-end text-base font-semibold text-black/72">
           <span className="truncate">{senderName}</span>
         </span>
       ) : (
         <button
           type="button"
           onClick={openSender}
-          className="ml-12 flex max-w-[85%] items-center gap-1 self-start text-sm text-black/54"
+          className="ml-12 flex max-w-[85%] items-center gap-1 self-start text-base font-semibold text-black/72"
         >
           <span className="truncate hover:underline">{senderName}</span>
         </button>

@@ -33,7 +33,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
       <button
         type="button"
         onClick={copyValue}
-        className="ml-2 shrink-0 rounded border border-black/12 px-2 py-1 text-xs text-ola-primary active:bg-black/5"
+        className="ml-2 shrink-0 rounded border border-black/12 px-2 py-1 text-xs text-ola-primary-ink active:bg-black/5"
       >
         {t('common.copy')}
       </button>
@@ -106,7 +106,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
       <div className="flex-1 overflow-y-auto bg-[#ececec] pb-6">
         <div className="m-2 flex items-center rounded-sm border border-black/12 bg-white px-3 py-2.5">
           <span className="text-sm text-black/54">{t('ken.buy.balance')}</span>
-          <span className="ml-2 flex-1 text-lg font-bold text-ola-primary">
+          <span className="ml-2 flex-1 text-lg font-bold text-ola-primary-ink">
             {formatKen(balance)} KEN
           </span>
         </div>
@@ -133,7 +133,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                     onClick={() => selectPreset(value)}
                     className={`rounded border px-2 py-2 text-sm font-medium transition-colors ${
                       amount === value && customText == null
-                        ? 'border-ola-primary bg-ola-primary/10 text-ola-primary'
+                        ? 'border-ola-primary bg-ola-primary/10 text-ola-primary-ink'
                         : 'border-black/12 bg-white text-black/87'
                     }`}
                   >
@@ -240,7 +240,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                     <button
                       type="button"
                       onClick={() => toast.info(t('ken.buy.paidPending'))}
-                      className="mt-3 w-full rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-white active:opacity-90"
+                      className="mt-3 w-full rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-ola-on-primary active:opacity-90"
                     >
                       {t('ken.buy.paid')}
                     </button>

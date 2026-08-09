@@ -8,6 +8,7 @@ import {
   formatDateSlashDMY,
 } from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 import { VipAvatar } from '@components/ui/VipAvatar';
@@ -59,6 +60,7 @@ function InfoRow({
   text: React.ReactNode;
   note?: boolean;
 }) {
+  const colors = useThemeColors();
   if (text == null || text === '') return null;
   return (
     <View className="ml-4 mt-2 flex-row items-center gap-1">
@@ -71,7 +73,7 @@ function InfoRow({
         className="text-xs"
         style={
           note
-            ? { color: '#33691e', fontStyle: 'italic' }
+            ? { color: colors.primaryDarker, fontStyle: 'italic' }
             : { color: 'rgba(0,0,0,0.54)' }
         }
       >
@@ -105,6 +107,7 @@ export function ProfileCard({
   onOpenProfile,
 }: ProfileCardProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const formatDate = useMemo(() => createDateFormatter(language), [language]);
 
   const gender = profile.gender === GENDER.female ? GENDER.female : GENDER.male;
@@ -311,7 +314,7 @@ export function ProfileCard({
             profile.spouse != null ? (
               <>
                 {t('marriage.marryWithLabel')}{' '}
-                <Text style={{ color: '#33691e' }} onPress={openSpouse}>
+                <Text style={{ color: colors.primaryDarker }} onPress={openSpouse}>
                   @{profile.spouse.username}
                 </Text>
               </>
@@ -336,7 +339,7 @@ export function ProfileCard({
               style={{ width: 16, height: 16 }}
               resizeMode="contain"
             />
-            <Text className="text-xs" style={{ color: '#33691e' }}>
+            <Text className="text-xs" style={{ color: colors.primaryDarker }}>
               {t('profile.viewVipStore')}
             </Text>
           </Pressable>

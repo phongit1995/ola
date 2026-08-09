@@ -8,6 +8,8 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
+import { useThemeStore } from '@ola/shared/stores/themeStore';
+import { themeOptionOf } from '@ola/shared/constants';
 import type {
   AuthStackParamList,
   ChatStackParamList,
@@ -60,6 +62,8 @@ import { FriendRequestsScreen } from '@screens/friends/FriendRequestsScreen';
 import { SuggestedFriendsScreen } from '@screens/friends/SuggestedFriendsScreen';
 import { TAB_ICONS } from '@assets/tabIcons';
 import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
+import { TabBarGradient } from '@components/TabBarGradient';
+import { TAB_BAR_BORDER } from '@constants/colors';
 import { useAppTypography } from '@components/AppFontProvider';
 import { mmkvStorage } from '@platform/storage';
 
@@ -109,6 +113,10 @@ function tabIcon(key: keyof typeof TAB_ICONS) {
   };
 }
 
+function renderTabBarBackground() {
+  return <TabBarGradient />;
+}
+
 const ACTIVE_TAB_KEY = 'ola.home.activeTab';
 const VISIBLE_TABS: (keyof MainTabParamList)[] = [
   TAB_ROUTES.Chat,
@@ -132,6 +140,7 @@ function MainTabs() {
   const chatUnread = useChatStore((state) => totalUnreadOf(state.conversations));
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
+  const theme = useThemeStore((state) => state.theme);
   return (
     <View style={{ flex: 1 }}>
       <Tabs.Navigator
@@ -147,10 +156,16 @@ function MainTabs() {
         }}
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#7cb342',
+          tabBarActiveTintColor: themeOptionOf(theme).ink,
           tabBarInactiveTintColor: '#9e9e9e',
           tabBarLabelStyle: {
             fontSize: 10 * fontMultiplier,
+          },
+          tabBarBackground: renderTabBarBackground,
+          tabBarStyle: {
+            backgroundColor: 'transparent',
+            borderTopColor: TAB_BAR_BORDER,
+            elevation: 0,
           },
         }}
       >

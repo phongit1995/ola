@@ -30,6 +30,12 @@
     "save": "Lưu",
     "saving": "Đang lưu…"
   },
+  "wallpaper": {
+    "remove": "Xoá ảnh nền",
+    "uploading": "Đang đổi hình nền cho Ola",
+    "error": "Không thể đổi hình nền vào lúc này. Vui lòng thử lại sau",
+    "tooSmall": "Ảnh quá nhỏ, vui lòng chọn ảnh lớn hơn"
+  },
   "cover": {
     "cancel": "Huỷ",
     "success": "Đã đổi ảnh bìa",
@@ -162,6 +168,13 @@
     "soundGame": "Âm thanh game",
     "soundKen": "Âm thanh Ken",
     "fontSize": "Cỡ chữ",
+    "theme": "Màu giao diện",
+    "theme_green": "Xanh lá",
+    "theme_pink": "Hồng",
+    "theme_yellow": "Vàng",
+    "theme_teal": "Xanh ngọc",
+    "theme_blue": "Xanh dương",
+    "theme_graphite": "Xám than",
     "wallpaper": "Ảnh nền",
     "upload": "Tải lên",
     "save": "Lưu",

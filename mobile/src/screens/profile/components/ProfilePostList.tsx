@@ -6,6 +6,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { isPostEditExpired } from '@lib/post';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
@@ -39,6 +40,7 @@ export function ProfilePostList({
   reloadPosts,
 }: ProfilePostListProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const push = useToastStore(s => s.push);
   const meId = useAuthStore(s => s.user?.id) ?? '';
   const hiddenPostIds = useMeLocalStore(s => s.hiddenPostIds);
@@ -153,7 +155,7 @@ export function ProfilePostList({
         {t('profile.mePosts')}
       </Text>
       {postsLoading && visiblePosts.length === 0 ? (
-        <ActivityIndicator className="py-6" color="#7cb342" />
+        <ActivityIndicator className="py-6" color={colors.primary} />
       ) : (
         visiblePosts.map(post => (
           <MePostCard

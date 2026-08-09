@@ -8,6 +8,7 @@ import type { ClanBan } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Avatar } from '@components/ui/Avatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { clanErrorText } from '@lib/clanHelpers';
 import { BANS_PAGE_SIZE } from './constants';
 
@@ -18,6 +19,7 @@ interface ClanBansScreenProps {
 
 export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const pushToast = useToastStore((s) => s.push);
   const [bans, setBans] = useState<ClanBan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
       <ScreenHeader title={t('clan.banList')} onBack={onClose} />
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7cb342" size="large" />
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
       ) : bans.length === 0 ? (
         <Text className="px-6 py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>

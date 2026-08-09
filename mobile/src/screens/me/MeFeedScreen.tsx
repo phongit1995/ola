@@ -11,6 +11,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { createTimeFormatter, filterVisiblePosts } from '@ola/shared/lib';
 import type { Post, PostReaction } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { useHorizontalSwipe } from '@hooks/useHorizontalSwipe';
@@ -37,6 +38,7 @@ const editIcon = require('@assets/icons/me/ic_action_edit.png');
 
 export function MeFeedScreen() {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pushToast = useToastStore((s) => s.push);
 
@@ -202,7 +204,7 @@ export function MeFeedScreen() {
       >
         {loading && posts.length === 0 ? (
           <View className="flex-1 items-center justify-center">
-            <ActivityIndicator color="#7cb342" size="large" />
+            <ActivityIndicator color={colors.primary} size="large" />
           </View>
         ) : error && posts.length === 0 ? (
           <View className="flex-1 items-center justify-center px-8">
@@ -227,7 +229,7 @@ export function MeFeedScreen() {
             onEndReached={() => void loadMore(TAB_FILTER[tab])}
             onEndReachedThreshold={0.4}
             ListFooterComponent={
-              loadingMore ? <ActivityIndicator className="my-3" color="#7cb342" /> : null
+              loadingMore ? <ActivityIndicator className="my-3" color={colors.primary} /> : null
             }
             renderItem={({ item }) => (
               <MePostCard

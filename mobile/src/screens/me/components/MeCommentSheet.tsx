@@ -6,6 +6,7 @@ import { OlaModal } from '@components/ui/OlaModal';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
@@ -55,6 +56,7 @@ function MeCommentSheetBody({
   onCommentDelta,
 }: MeCommentSheetProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const bottomBarInset = useBottomBarInset();
   const meId = useAuthStore(s => s.user?.id) ?? '';
   const composerRef = useRef<MeCommentComposerHandle>(null);
@@ -112,7 +114,7 @@ function MeCommentSheetBody({
 
             <View className="py-2">
               {loading && (
-                <ActivityIndicator className="py-8" color="#7cb342" />
+                <ActivityIndicator className="py-8" color={colors.primary} />
               )}
               {!loading && error && (
                 <Text

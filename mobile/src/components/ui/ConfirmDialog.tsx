@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { Dialog, DialogButton } from './Dialog';
 
 const infoIcon = require('@assets/icons/chat/ic_dialog_indicate_info.png');
@@ -36,6 +37,7 @@ export function ConfirmDialog({
   onDismiss,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
 
   return (
     <Dialog
@@ -69,8 +71,8 @@ export function ConfirmDialog({
             className="h-5 w-5 shrink-0 items-center justify-center rounded"
             style={{
               borderWidth: 2,
-              borderColor: checked ? '#7cb342' : 'rgba(0,0,0,0.38)',
-              backgroundColor: checked ? '#7cb342' : 'transparent',
+              borderColor: checked ? colors.primary : 'rgba(0,0,0,0.38)',
+              backgroundColor: checked ? colors.primary : 'transparent',
             }}
           >
             {checked && <Text className="text-xs font-bold text-white">✓</Text>}

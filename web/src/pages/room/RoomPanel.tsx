@@ -7,8 +7,10 @@ import type { RoomListItem } from './types';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
+import { useLobbyWallpaperStyle } from '@hooks';
 
 export function RoomPanel() {
+  const wallpaperStyle = useLobbyWallpaperStyle();
   const { t } = useTranslation();
   const apiRooms = useRoomListStore((state) => state.rooms);
   const loadingRooms = useRoomListStore((state) => state.loading);
@@ -91,9 +93,10 @@ export function RoomPanel() {
       <PullToRefresh
         onRefresh={refresh}
         className="relative flex-1 overflow-y-auto bg-ola-surface"
+        style={wallpaperStyle}
       >
         {loadingRooms && (
-          <div className="py-2 text-center text-sm text-ola-primary">
+          <div className="py-2 text-center text-sm text-ola-primary-ink">
             {t('room.refreshing')}
           </div>
         )}

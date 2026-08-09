@@ -13,6 +13,8 @@ import { ROOM_ROUTES } from '@navigation/routes';
 import { DIVIDER } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { LobbyWallpaper } from '@components/ChatWallpaper';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { ROOM_BROWSE_LIMIT } from './roomConstants';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
@@ -53,8 +55,12 @@ function RoomRow({
   return (
     <Pressable
       onPress={() => onEnter(room)}
-      className={`flex-row items-center gap-2 px-4 py-3 active:bg-black/5 ${joined ? 'bg-ola-primary-light' : 'bg-white'}`}
-      style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+      className="flex-row items-center gap-2 px-4 py-3 active:bg-black/5"
+      style={{
+        borderBottomWidth: 1,
+        borderBottomColor: DIVIDER,
+        backgroundColor: joined ? '#fff8e1' : 'rgba(255,255,255,0.8)',
+      }}
     >
       {room.imageUrl != null && room.imageUrl !== '' ? (
         <CachedImage
@@ -92,8 +98,12 @@ function QuickJoinRow({ onPress }: { onPress: () => void }) {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-2 bg-white px-4 py-3 active:bg-black/5"
-      style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+      className="flex-row items-center gap-2 px-4 py-3 active:bg-black/5"
+      style={{
+        borderBottomWidth: 1,
+        borderBottomColor: DIVIDER,
+        backgroundColor: 'rgba(255,255,255,0.8)',
+      }}
     >
       <View
         className="items-center justify-center bg-ola-primary-light"
@@ -115,7 +125,7 @@ function QuickJoinRow({ onPress }: { onPress: () => void }) {
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <View className="px-4 py-1.5" style={{ backgroundColor: '#f3f3f3' }}>
+    <View className="px-4 py-1.5" style={{ backgroundColor: 'rgba(243,243,243,0.8)' }}>
       <Text
         className="text-xs font-medium uppercase"
         style={{ color: 'rgba(0,0,0,0.54)', letterSpacing: 0.5 }}
@@ -128,6 +138,7 @@ function SectionHeader({ label }: { label: string }) {
 
 export function RoomListScreen() {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RoomStackParamList>>();
   const insets = useSafeAreaInsets();
   const rooms = useRoomListStore((s) => s.rooms);
@@ -216,16 +227,18 @@ export function RoomListScreen() {
       </View>
       {loading && rooms.length > 0 && (
         <View className="bg-ola-primary-light px-4 py-1.5">
-          <Text className="text-center text-xs" style={{ color: '#33691e' }}>
+          <Text className="text-center text-xs" style={{ color: colors.primaryInk }}>
             {t('room.refreshing')}
           </Text>
         </View>
       )}
       {loading && rooms.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7cb342" size="large" />
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
       ) : (
+        <View className="flex-1 bg-ola-surface">
+        <LobbyWallpaper />
         <FlashList
           data={rooms}
           keyExtractor={(item) => item.id}
@@ -248,6 +261,7 @@ export function RoomListScreen() {
           )}
           extraData={activeRoom?.id ?? ''}
         />
+        </View>
       )}
 
       <ConfirmDialog
@@ -289,7 +303,7 @@ export function RoomListScreen() {
               </>
             ) : (
               <>
-                <ActivityIndicator color="#7cb342" size="large" />
+                <ActivityIndicator color={colors.primary} size="large" />
                 <Text className="text-sm text-ola-ink-soft">
                   {t('room.joining')}
                 </Text>

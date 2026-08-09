@@ -26,10 +26,15 @@ const noop = () => undefined;
 
 interface ChatQuoteBlockProps {
   replyTo: ChatReplySnapshot;
+  onPrimary: boolean;
   onQuoteClick?: (messageId: string) => void;
 }
 
-function ChatQuoteBlock({ replyTo, onQuoteClick }: ChatQuoteBlockProps) {
+function ChatQuoteBlock({
+  replyTo,
+  onPrimary,
+  onQuoteClick,
+}: ChatQuoteBlockProps) {
   const { t } = useTranslation();
   const isImage = replyTo.type === MESSAGE_TYPE.image;
   const excerpt = chatQuoteExcerpt(t, replyTo);
@@ -40,14 +45,26 @@ function ChatQuoteBlock({ replyTo, onQuoteClick }: ChatQuoteBlockProps) {
         event.stopPropagation();
         onQuoteClick?.(replyTo.messageId);
       }}
-      className="mb-1 block w-full rounded border-l-2 border-ola-primary bg-black/5 py-0.5 pl-2 pr-1 text-left"
+      className={`mb-1 block w-full rounded border-l-2 py-0.5 pl-2 pr-1 text-left ${
+        onPrimary
+          ? 'border-ola-on-primary/60 bg-white/15'
+          : 'border-ola-primary bg-black/5'
+      }`}
     >
-      <span className="block truncate text-xs font-semibold text-black/60">
+      <span
+        className={`block truncate text-xs font-semibold ${
+          onPrimary ? 'text-ola-on-primary/90' : 'text-black/60'
+        }`}
+      >
         {replyTo.senderName != null && replyTo.senderName !== ''
           ? `@${replyTo.senderName}`
           : ''}
       </span>
-      <span className="flex items-center gap-1 text-xs text-black/45">
+      <span
+        className={`flex items-center gap-1 text-xs ${
+          onPrimary ? 'text-ola-on-primary/75' : 'text-black/45'
+        }`}
+      >
         {isImage && (
           <img
             src={photoIcon}
@@ -85,13 +102,18 @@ export function ChatMessageBubble({
   const surface = bubbleSurface(isOut, false);
   const groupCorners = bubbleCorners(isOut, firstInGroup, lastInGroup);
   const bubbleBg = bubbleSurface(isOut, failed);
+  const onPrimary = isOut && !failed;
 
   const quotedWrap = (content: ReactNode) =>
     message.replyTo != null ? (
       <div
         className={`max-w-[300px] rounded-2xl px-3 py-2 ${groupCorners} ${bubbleBg}`}
       >
-        <ChatQuoteBlock replyTo={message.replyTo} onQuoteClick={onQuoteClick} />
+        <ChatQuoteBlock
+          replyTo={message.replyTo}
+          onPrimary={onPrimary}
+          onQuoteClick={onQuoteClick}
+        />
         {content}
       </div>
     ) : (
@@ -146,7 +168,7 @@ export function ChatMessageBubble({
           <div className="flex h-28 items-center justify-center bg-linear-to-br from-[#A5D6A7] to-[#66BB6A] text-4xl">
             📍
           </div>
-          <p className="px-2 py-1.5 text-xs text-black/87">{message.address}</p>
+          <p className="px-2 py-1.5 text-xs">{message.address}</p>
         </div>
       );
 
@@ -185,13 +207,27 @@ export function ChatMessageBubble({
             isOut ? 'rounded-tr-sm' : 'rounded-tl-sm'
           } ${surface}`}
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ola-primary">
-            <img src={kenIcon} alt="" className="h-4 w-4 object-contain" />
+          <span
+            className={`flex h-8 w-8 items-center justify-center rounded-full ${
+              onPrimary ? 'bg-white/20' : 'bg-ola-primary'
+            }`}
+          >
+            <img src={kenIcon} alt="" className="h-4 w-4 object-contain icon-on-primary" />
           </span>
-          <span className="text-2xl font-bold text-ola-primary-darker">
+          <span
+            className={`text-2xl font-bold ${
+              onPrimary ? 'text-ola-on-primary' : 'text-ola-primary-darker'
+            }`}
+          >
             {message.kenAmount}
           </span>
-          <span className="text-sm text-black/54">{t('chat.kenLabel')}</span>
+          <span
+            className={`text-sm ${
+              onPrimary ? 'text-ola-on-primary/70' : 'text-black/54'
+            }`}
+          >
+            {t('chat.kenLabel')}
+          </span>
         </div>
       );
 
@@ -204,7 +240,11 @@ export function ChatMessageBubble({
         >
           <span
             className={`flex h-9 w-9 items-center justify-center rounded-full ${
-              view.missed
+              onPrimary
+                ? `bg-white/20 ${
+                    view.missed ? 'text-[#ffcdd2]' : 'text-ola-on-primary'
+                  }`
+                : view.missed
                 ? 'bg-[#e53935]/10 text-[#e53935]'
                 : 'bg-ola-primary/15 text-ola-primary-darker'
             }`}
@@ -212,12 +252,16 @@ export function ChatMessageBubble({
             <CallIcon className="h-5 w-5" />
           </span>
           <span className="flex flex-col pr-1">
-            <span className="text-sm font-medium text-black/87">
-              {view.title}
-            </span>
+            <span className="text-sm font-medium">{view.title}</span>
             <span
               className={`text-xs ${
-                view.missed ? 'text-[#e53935]' : 'text-black/54'
+                onPrimary
+                  ? view.missed
+                    ? 'text-[#ffcdd2]'
+                    : 'text-ola-on-primary/70'
+                  : view.missed
+                  ? 'text-[#e53935]'
+                  : 'text-black/54'
               }`}
             >
               {view.detail}
@@ -235,7 +279,11 @@ export function ChatMessageBubble({
           } ${surface}`}
         >
           <span className="text-2xl">🎁</span>
-          <span className="text-sm font-medium text-ola-accent">
+          <span
+            className={`text-sm font-medium ${
+              onPrimary ? 'text-ola-on-primary' : 'text-ola-accent'
+            }`}
+          >
             {message.vipDirection === 'received'
               ? t('chat.vipReceived')
               : t('chat.vipSent')}
@@ -246,11 +294,12 @@ export function ChatMessageBubble({
     default:
       return (
         <div
-          className={`max-w-[300px] rounded-2xl px-3 py-2 text-base break-words text-black/87 ${groupCorners} ${bubbleBg}`}
+          className={`max-w-[300px] rounded-2xl px-3 py-2 text-base break-words ${groupCorners} ${bubbleBg}`}
         >
           {message.replyTo != null && (
             <ChatQuoteBlock
               replyTo={message.replyTo}
+              onPrimary={onPrimary}
               onQuoteClick={onQuoteClick}
             />
           )}
@@ -328,7 +377,7 @@ export function StrangerCardBubble({
         <button
           type="button"
           onClick={onAddFriend}
-          className="flex items-center gap-1 rounded bg-ola-primary px-3 py-1 text-sm font-medium text-white"
+          className="flex items-center gap-1 rounded bg-ola-primary px-3 py-1 text-sm font-medium text-ola-on-primary"
         >
           <img src={addFriendIcon} alt="" className="h-4 w-4 object-contain" />
           {t('chat.menuMakeFriend')}

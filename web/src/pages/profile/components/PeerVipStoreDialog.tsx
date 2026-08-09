@@ -114,7 +114,7 @@ export function PeerVipStoreDialog({
                     <span
                       className={`w-full truncate text-center text-[11px] ${
                         icon.isUsing
-                          ? 'font-bold text-ola-primary'
+                          ? 'font-bold text-ola-primary-ink'
                           : 'text-black/54'
                       }`}
                     >

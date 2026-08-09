@@ -15,7 +15,7 @@ interface RoomListProps {
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <li className="bg-ola-surface px-4 py-1.5 text-xs font-medium tracking-wide text-black/54 uppercase">
+    <li className="bg-ola-surface/80 px-4 py-1.5 text-xs font-medium tracking-wide text-black/54 uppercase">
       {label}
     </li>
   );

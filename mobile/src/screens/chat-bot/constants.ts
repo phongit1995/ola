@@ -1,4 +1,3 @@
-export const BOT_SURFACE_OUT = '#dcedc8';
 export const BOT_SURFACE_IN = '#ffffff';
 export const BOT_SURFACE_FAILED = '#f8d7d7';
 export const BOT_CODE_BG = '#263238';

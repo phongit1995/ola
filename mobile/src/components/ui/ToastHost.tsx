@@ -3,16 +3,17 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { ToastItem, ToastType } from '@ola/shared/types';
+import { useThemeColors } from '@hooks/useThemeColors';
 
 const AUTO_DISMISS_MS = 3000;
 
-const backgroundByType: Record<ToastType, string> = {
+const backgroundByType: Record<Exclude<ToastType, 'success'>, string> = {
   error: '#e53935',
-  success: '#558b2f',
   info: 'rgba(0,0,0,0.8)',
 };
 
 function ToastRow({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: number) => void }) {
+  const colors = useThemeColors();
   useEffect(() => {
     const timer = setTimeout(() => onDismiss(toast.id), AUTO_DISMISS_MS);
     return () => clearTimeout(timer);
@@ -22,7 +23,10 @@ function ToastRow({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: numb
     <Pressable
       onPress={() => onDismiss(toast.id)}
       className="max-w-[90%] rounded-full px-4 py-2"
-      style={{ backgroundColor: backgroundByType[toast.type] }}
+      style={{
+        backgroundColor:
+          toast.type === 'success' ? colors.primaryDark : backgroundByType[toast.type],
+      }}
     >
       <Text className="text-center text-sm text-white">{toast.message}</Text>
     </Pressable>

@@ -92,7 +92,7 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
               onClick={() => chooseAction(item)}
               className={`flex items-center gap-1 rounded-full border px-2 py-1 text-xs ${
                 action?.text === item.text
-                  ? 'border-ola-primary bg-ola-primary-light text-ola-primary'
+                  ? 'border-ola-primary bg-ola-primary-light text-ola-primary-ink'
                   : 'border-black/12 text-black/54'
               }`}
             >
@@ -113,7 +113,7 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
             type="button"
             onClick={locate}
             disabled={locating}
-            className="flex w-full items-center gap-2 border-b border-black/12 px-3 py-2 text-left text-sm text-ola-primary disabled:opacity-50"
+            className="flex w-full items-center gap-2 border-b border-black/12 px-3 py-2 text-left text-sm text-ola-primary-ink disabled:opacity-50"
           >
             <span>📡</span>
             {locating ? t('me.checkInLocating') : t('me.checkInLocate')}
@@ -130,7 +130,7 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
                 className="h-6 w-6 shrink-0 object-contain"
               />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-ola-primary">
+                <span className="block truncate text-ola-primary-ink">
                   {t('me.checkInCurrent')}
                 </span>
                 {(current.name !== '' || current.address !== '') && (

@@ -129,7 +129,7 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
             className={cn(
               'rounded-full px-3 py-1 text-xs font-medium transition-colors',
               tab === key
-                ? 'bg-ola-primary text-white'
+                ? 'bg-ola-primary text-ola-on-primary'
                 : 'bg-[#efefef] text-[#5a5a5a] hover:bg-[#e4e4e4]'
             )}
           >

@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { useThemeColors } from '@hooks/useThemeColors';
 import {
   normalizeVoiceWaveform,
   voiceWaveformBarHeight,
@@ -23,6 +24,7 @@ export function VoiceWaveformBars({
   tone,
   fluid = false,
 }: VoiceWaveformBarsProps) {
+  const colors = useThemeColors();
   const barCount = fluid ? VOICE_RECORDING_BAR_COUNT : VOICE_MESSAGE_BAR_COUNT;
   const bars = normalizeVoiceWaveform(
     waveform,
@@ -40,13 +42,13 @@ export function VoiceWaveformBars({
         const played = (index + 1) / bars.length <= progress;
         const backgroundColor =
           tone === 'recording'
-            ? '#7cb342'
+            ? colors.primary
             : tone === 'outgoing'
             ? played
               ? '#ffffff'
               : 'rgba(255,255,255,0.45)'
             : played
-            ? '#7cb342'
+            ? colors.primary
             : tone === 'preview'
             ? 'rgba(0,0,0,0.15)'
             : 'rgba(0,0,0,0.20)';

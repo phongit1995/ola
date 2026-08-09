@@ -79,7 +79,7 @@ export function RegisterPage() {
       onSubmit={handleSubmit(onSubmit)}
       className="flex min-h-full flex-col items-center bg-ola-primary px-4 pb-8 font-sans"
     >
-      <header className="flex h-12 w-full items-center text-white">
+      <header className="flex h-12 w-full items-center text-ola-on-primary">
         <button
           type="button"
           onClick={() => navigate(ROUTES.login)}
@@ -157,7 +157,7 @@ export function RegisterPage() {
       />
 
       <div className="mt-4 w-full max-w-md">
-        <label className="flex cursor-pointer items-start gap-2 text-sm text-white">
+        <label className="flex cursor-pointer items-start gap-2 text-sm text-ola-on-primary">
           <input
             type="checkbox"
             {...register('agree', {
@@ -172,7 +172,7 @@ export function RegisterPage() {
                 terms: (
                   <Link
                     to={ROUTES.terms}
-                    className="font-medium text-white underline underline-offset-2"
+                    className="font-medium text-ola-on-primary underline underline-offset-2"
                   />
                 ),
               }}
@@ -180,14 +180,14 @@ export function RegisterPage() {
           </span>
         </label>
         {errors.agree && (
-          <p className="mt-1 pl-6 text-xs font-medium text-white italic">
+          <p className="mt-1 pl-6 text-xs font-medium text-ola-on-primary italic">
             {errors.agree.message}
           </p>
         )}
       </div>
 
       {submitError && (
-        <p className="mt-3 w-full max-w-md text-sm font-medium text-white italic">
+        <p className="mt-3 w-full max-w-md text-sm font-medium text-ola-on-primary italic">
           {submitError}
         </p>
       )}
@@ -197,7 +197,7 @@ export function RegisterPage() {
       <button
         type="button"
         onClick={() => navigate(ROUTES.login)}
-        className="h-12 w-full max-w-md text-center text-xl text-white/70"
+        className="h-12 w-full max-w-md text-center text-xl text-ola-on-primary/70"
       >
         {t('register.hasAccount')}
       </button>

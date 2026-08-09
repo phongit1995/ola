@@ -5,6 +5,7 @@ import Geolocation from '@react-native-community/geolocation';
 import { GeoService } from '@ola/shared/services';
 import type { CheckInAction, GeoVenue } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { useThemeColors } from '@hooks/useThemeColors';
 import { CHECK_IN_ACTIONS } from '@lib/checkInActions';
 
 const checkInIcon = require('@assets/icons/me/ic_check_in.png');
@@ -17,6 +18,7 @@ interface MeComposerCheckInPanelProps {
 
 export function MeComposerCheckInPanel({ onSelect }: MeComposerCheckInPanelProps) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const pushToast = useToastStore((s) => s.push);
   const [action, setAction] = useState<CheckInAction | null>(null);
   const [nearby, setNearby] = useState<GeoVenue[]>([]);
@@ -98,12 +100,12 @@ export function MeComposerCheckInPanel({ onSelect }: MeComposerCheckInPanelProps
                 className="flex-row items-center gap-1 rounded-full px-2 py-1"
                 style={{
                   borderWidth: 1,
-                  borderColor: active ? '#7cb342' : 'rgba(0,0,0,0.12)',
-                  backgroundColor: active ? '#f1f8e9' : 'transparent',
+                  borderColor: active ? colors.primary : 'rgba(0,0,0,0.12)',
+                  backgroundColor: active ? colors.primaryLight : 'transparent',
                 }}
               >
                 <Text style={{ fontSize: 12 }}>{item.icon}</Text>
-                <Text className="text-xs" style={{ color: active ? '#7cb342' : 'rgba(0,0,0,0.54)' }}>
+                <Text className="text-xs" style={{ color: active ? colors.primary : 'rgba(0,0,0,0.54)' }}>
                   {item.text}
                 </Text>
               </Pressable>
@@ -126,7 +128,7 @@ export function MeComposerCheckInPanel({ onSelect }: MeComposerCheckInPanelProps
             style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)', opacity: locating ? 0.5 : 1 }}
           >
             <Text style={{ fontSize: 14 }}>📡</Text>
-            <Text className="text-sm" style={{ color: '#7cb342' }}>
+            <Text className="text-sm" style={{ color: colors.primary }}>
               {locating ? t('me.checkInLocating') : t('me.checkInLocate')}
             </Text>
           </Pressable>
@@ -139,7 +141,7 @@ export function MeComposerCheckInPanel({ onSelect }: MeComposerCheckInPanelProps
             >
               <Image source={checkInIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
               <View className="min-w-0 flex-1">
-                <Text numberOfLines={1} className="text-sm" style={{ color: '#7cb342' }}>
+                <Text numberOfLines={1} className="text-sm" style={{ color: colors.primary }}>
                   {t('me.checkInCurrent')}
                 </Text>
                 {(current.name !== '' || current.address !== '') && (
