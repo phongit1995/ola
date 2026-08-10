@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
 import { MESSAGE_TYPE } from '@constants';
-import { SmileyText, toast } from '@lib';
+import { BUBBLE_WALLPAPER, SmileyText, toast } from '@lib';
 import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
 import {
   ConfirmDialog,
@@ -232,7 +232,7 @@ export function RoomMessagesTab({
         ref={scrollRef}
         onScroll={handleScroll}
         style={wallpaperStyle}
-        className="flex flex-1 flex-col gap-2 overflow-y-auto p-3"
+        className={`flex flex-1 flex-col gap-2 overflow-y-auto p-3 ${BUBBLE_WALLPAPER}`}
       >
         {loadingMore && (
           <div className="shrink-0 py-1 text-center text-xs text-black/40">

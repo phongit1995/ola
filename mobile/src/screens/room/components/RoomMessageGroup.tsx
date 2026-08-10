@@ -32,6 +32,7 @@ import {
   roomBubbleTextMaxWidth,
 } from '../roomConstants';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
+import { BUBBLE_IN_BG, BUBBLE_IN_SHADOW } from '@screens/chat/constants';
 
 const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
 const photoIcon = require('@assets/icons/chat/ic_local.png');
@@ -328,7 +329,8 @@ export function RoomBubbleBody({
       style={[
         bare
           ? null
-          : { backgroundColor: isOwn ? colors.primary : colors.primaryLight },
+          : { backgroundColor: isOwn ? colors.primary : BUBBLE_IN_BG },
+        bare || isOwn ? null : BUBBLE_IN_SHADOW,
         highlighted
           ? { borderWidth: 2, borderColor: withAlpha(colors.primary, 0.6) }
           : null,

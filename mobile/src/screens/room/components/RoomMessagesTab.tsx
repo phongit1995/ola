@@ -18,6 +18,7 @@ import { createDateSeparatorFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
 import { ChatWallpaper } from '@components/ChatWallpaper';
+import { CHAT_BG } from '@screens/chat/constants';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
@@ -341,7 +342,7 @@ export function RoomMessagesTab({
   );
 
   return (
-    <View className="flex-1">
+    <View className="flex-1" style={{ backgroundColor: CHAT_BG }}>
       <ChatWallpaper />
       <RoomReactionNotice />
       <RoomReactionBalloons />
