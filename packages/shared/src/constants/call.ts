@@ -16,8 +16,8 @@ export const CALL_MODE = {
 export const CALL_RING_TIMEOUT_MS = 30_000;
 export const CALL_RING_TIMEOUT_GRACE_MS = 5_000;
 
-export const CALL_MINI_WIDTH = 176;
-export const CALL_MINI_HEIGHT = 116;
+export const CALL_MINI_WIDTH = 120;
+export const CALL_MINI_HEIGHT = 180;
 export const CALL_MINI_EDGE_GAP = 12;
 export const CALL_MINI_BOTTOM_GAP = 84;
 
