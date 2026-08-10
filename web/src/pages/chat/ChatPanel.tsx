@@ -263,7 +263,7 @@ export function ChatPanel() {
             )}
           </div>
         ) : (
-          <div className="relative h-full">
+          <div className="relative h-full bg-ola-surface" style={wallpaperStyle}>
             <ContactList
               contacts={friends}
               onSelect={(contact) => void startDirect(contact.id)}

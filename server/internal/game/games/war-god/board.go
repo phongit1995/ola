@@ -3,31 +3,35 @@ package wargod
 import "sort"
 
 const (
-	grid             = 8
-	boardSize        = grid * grid
-	baseTileCount    = 6
-	tileCount        = 8
-	specialTileOneIn = 10
+	grid          = 8
+	boardSize     = grid * grid
+	baseTileCount = 6
+	tileCount     = 8
+	// Divisor riêng cho từng ô gốc để cả hai ô đặc biệt ra ~1/60:
+	//   Kiếm Lửa   ≈ 22% / 13 ≈ 1/59
+	//   Đại Trái Tim ≈ 16% / 10 ≈ 1/62
+	specialSwordOneIn = 13
+	specialHeartOneIn = 10
 )
 
 const (
 	tileSword = iota
-	tileFire
+	tilePeach
 	tileHeart
 	tileWater
 	tileShield
-	tileStone
+	tileLightning
 	tileFireSword
 	tileGreaterHeart
 )
 
 var tileNames = [tileCount]string{
 	"sword",
-	"fire",
+	"peach",
 	"heart",
 	"water",
 	"shield",
-	"stone",
+	"lightning",
 	"fireSword",
 	"greaterHeart",
 }
@@ -47,20 +51,38 @@ func (r *rng) next() uint64 {
 	return v
 }
 
+func weightedBase(r uint64) int {
+	switch {
+	case r < 22:
+		return tileSword
+	case r < 38:
+		return tilePeach
+	case r < 54:
+		return tileHeart
+	case r < 69:
+		return tileWater
+	case r < 84:
+		return tileShield
+	default:
+		return tileLightning
+	}
+}
+
 func (r *rng) tile() int {
 	roll := r.next()
-	tile := int(roll % baseTileCount)
-	if (roll/baseTileCount)%specialTileOneIn != 0 {
-		return tile
-	}
+	tile := weightedBase(roll % 100)
+	sel := roll / 100
 	switch tile {
 	case tileSword:
-		return tileFireSword
+		if sel%specialSwordOneIn == 0 {
+			return tileFireSword
+		}
 	case tileHeart:
-		return tileGreaterHeart
-	default:
-		return tile
+		if sel%specialHeartOneIn == 0 {
+			return tileGreaterHeart
+		}
 	}
+	return tile
 }
 
 func createBoard(r *rng) []int {
@@ -144,6 +166,40 @@ func findMatches(board []int) ([]int, map[int]int, int) {
 		counts[board[i]]++
 	}
 	return cellIndexes, counts, maxRun
+}
+
+func computeExplosions(board []int, matched map[int]bool) []int {
+	set := map[int]bool{}
+	add := func(x, y int) {
+		if x >= 0 && x < grid && y >= 0 && y < grid {
+			set[y*grid+x] = true
+		}
+	}
+	for i := range matched {
+		x := i % grid
+		y := i / grid
+		switch board[i] {
+		case tileLightning:
+			add(x, y-1)
+			add(x, y+1)
+			add(x-1, y)
+			add(x+1, y)
+		case tileFireSword:
+			for dy := -1; dy <= 1; dy++ {
+				for dx := -1; dx <= 1; dx++ {
+					add(x+dx, y+dy)
+				}
+			}
+		}
+	}
+	out := make([]int, 0, len(set))
+	for i := range set {
+		if !matched[i] {
+			out = append(out, i)
+		}
+	}
+	sort.Ints(out)
+	return out
 }
 
 func areAdjacent(a, b int) bool {

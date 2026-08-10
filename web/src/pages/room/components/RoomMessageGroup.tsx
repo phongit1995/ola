@@ -7,6 +7,7 @@ import { Spinner, VipAvatar } from '@components';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from '@constants';
 import { useLongPress, useUploadPreviewLease } from '@hooks';
 import {
+  bubbleSurface,
   colorForName,
   formatClockHM,
   formatDuration,
@@ -138,9 +139,10 @@ function RoomBubble({
     message.audioUrl !== '';
   useUploadPreviewLease(isImage ? message.imageUrl : undefined);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
-  const bubbleClass = isOwn
-    ? `w-fit max-w-full break-words bg-ola-primary px-3.5 py-2 text-base text-ola-on-primary ${corners}`
-    : `w-fit max-w-full break-words bg-ola-primary-light px-3.5 py-2 text-base text-black/87 ${corners}`;
+  const bubbleClass = `w-fit max-w-full break-words px-3.5 py-2 text-base ${bubbleSurface(
+    isOwn,
+    false
+  )} ${corners}`;
 
   const content = isImage ? (
     <span className="relative block">

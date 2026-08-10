@@ -5,11 +5,11 @@ import boardCell from './assets/board/cell.png';
 import boardSelMine from './assets/board/sel-mine.png';
 import boardSelFoe from './assets/board/sel-foe.png';
 import itemSword from './assets/items/sword.png';
-import itemFire from './assets/items/fire.png';
+import itemPeach from './assets/items/peach.png';
 import itemHeart from './assets/items/heart.png';
 import itemWater from './assets/items/water.png';
 import itemShield from './assets/items/shield.png';
-import itemStone from './assets/items/stone.png';
+import itemLightning from './assets/items/lightning.png';
 import specialFireSword from './assets/items/fire-sword-v1.png';
 import specialGreaterHeart from './assets/items/greater-heart-v1.png';
 import cardBorderActive from './assets/hud/card-border-active.png';
@@ -73,11 +73,11 @@ export const A = {
   board: { frame: boardFrame, cell: boardCell, selMine: boardSelMine, selFoe: boardSelFoe },
   items: {
     sword: itemSword,
-    fire: itemFire,
+    peach: itemPeach,
     heart: itemHeart,
     water: itemWater,
     shield: itemShield,
-    stone: itemStone,
+    lightning: itemLightning,
     fireSword: specialFireSword,
     greaterHeart: specialGreaterHeart,
   },

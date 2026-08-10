@@ -80,7 +80,7 @@ export function CallMiniWidget({
               aria-label={micMuted ? t('call.unmute') : t('call.mute')}
               onPointerDown={stop}
               onClick={toggleMic}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 hover:bg-white/25"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 hover:bg-white/25"
             >
               {micMuted ? (
                 <MicOffIcon className="h-4 w-4" />
@@ -93,7 +93,7 @@ export function CallMiniWidget({
               aria-label={t('call.expand')}
               onPointerDown={stop}
               onClick={() => setExpanded(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 hover:bg-white/25"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 hover:bg-white/25"
             >
               <ExpandIcon className="h-4 w-4" />
             </button>
@@ -102,7 +102,7 @@ export function CallMiniWidget({
               aria-label={t('call.endCall')}
               onPointerDown={stop}
               onClick={endActive}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-ola-error hover:brightness-110"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-ola-error hover:brightness-110"
             >
               <EndCallIcon className="h-4 w-4" />
             </button>

@@ -11,6 +11,10 @@ import {
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Animated, {
+  useAnimatedStyle,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
@@ -48,6 +52,49 @@ const composeIcon = require('@assets/icons/chat/ic_action_compose_message.png');
 
 function ConversationSeparator() {
   return <View style={{ marginHorizontal: 16, height: 1, backgroundColor: DIVIDER }} />;
+}
+
+function DeleteAction({
+  translation,
+  label,
+  accessibilityLabel,
+  onPress,
+}: {
+  translation: SharedValue<number>;
+  label: string;
+  accessibilityLabel: string;
+  onPress: () => void;
+}) {
+  const revealStyle = useAnimatedStyle(() => ({
+    width: Math.min(SWIPE_MAX, Math.max(0, -translation.value)),
+  }));
+  return (
+    <View style={{ width: SWIPE_MAX, height: '100%' }}>
+      <Animated.View
+        style={[
+          { position: 'absolute', top: 0, bottom: 0, right: 0, overflow: 'hidden' },
+          revealStyle,
+        ]}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          onPress={onPress}
+          className="items-center justify-center"
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            width: SWIPE_MAX,
+            backgroundColor: '#dd4b39',
+          }}
+        >
+          <Text className="text-sm font-medium text-white">{label}</Text>
+        </Pressable>
+      </Animated.View>
+    </View>
+  );
 }
 
 function displayName(conversation: Conversation): string {
@@ -147,9 +194,10 @@ function ConversationRow({
         openRef.current = false;
         if (swipeable != null) onSwipeableClose(swipeable);
       }}
-      renderRightActions={(_progress, _translation, swipeable) => (
-        <Pressable
-          accessibilityRole="button"
+      renderRightActions={(_progress, translation, swipeable) => (
+        <DeleteAction
+          translation={translation}
+          label={t('dialog.delete')}
           accessibilityLabel={t('dialog.deleteAria', { name })}
           onPress={() => {
             swipeable.close();
@@ -157,11 +205,7 @@ function ConversationRow({
             onSwipeableClose(swipeable);
             onRequestDelete(conversation);
           }}
-          className="h-full items-center justify-center"
-          style={{ width: SWIPE_MAX, backgroundColor: '#dd4b39' }}
-        >
-          <Text className="text-sm font-medium text-white">{t('dialog.delete')}</Text>
-        </Pressable>
+        />
       )}
     >
       <Pressable

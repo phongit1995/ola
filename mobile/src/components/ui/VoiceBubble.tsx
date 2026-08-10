@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Sound from 'react-native-sound';
 import { formatDuration } from '@ola/shared/lib';
+import { BUBBLE_IN_BG, BUBBLE_IN_SHADOW } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
@@ -63,7 +64,7 @@ export function VoiceBubble({
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
 
-  const baseColor = isOut ? colors.primary : colors.primaryLight;
+  const baseColor = isOut ? colors.primary : BUBBLE_IN_BG;
   const iconColor = isOut ? '#ffffff' : '#8f8f8f';
   const badgeColor = isOut ? colors.primaryDarker : '#ffffff';
   const badgeBackground = isOut ? '#ffffff' : '#8f8f8f';
@@ -255,8 +256,8 @@ export function VoiceBubble({
 
   return (
     <View
-      className="h-10 w-48 flex-row items-center gap-2 overflow-hidden rounded-full px-2"
-      style={{ backgroundColor: baseColor }}
+      className="h-10 w-48 flex-row items-center gap-2 rounded-full px-2"
+      style={[{ backgroundColor: baseColor }, isOut ? null : BUBBLE_IN_SHADOW]}
     >
       <Pressable
         onPress={toggle}

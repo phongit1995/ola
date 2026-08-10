@@ -15,7 +15,11 @@ import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
 import { PhoneIcon, VideoIcon } from '@screens/call/icons';
-import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
+import {
+  BUBBLE_IN_BG,
+  BUBBLE_IN_SHADOW,
+  CHAT_MAX_FONT_SIZE_MULTIPLIER,
+} from '@constants';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
@@ -126,7 +130,7 @@ function CallLogBubble({
         { backgroundColor: bg },
         fromMe
           ? null
-          : { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+          : BUBBLE_IN_SHADOW,
       ]}
     >
       <View
@@ -215,7 +219,7 @@ export function ChatBubble({
   const colors = useThemeColors();
   const [imageRatio, setImageRatio] = useState<number | null>(null);
   const failed = message.status === MESSAGE_STATUS.failed;
-  const bg = failed ? '#f8d7d7' : fromMe ? colors.primary : '#ffffff';
+  const bg = failed ? '#f8d7d7' : fromMe ? colors.primary : BUBBLE_IN_BG;
   const onPrimary = fromMe && !failed;
   const cornerClass = fromMe
     ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
@@ -229,7 +233,7 @@ export function ChatBubble({
           { backgroundColor: bg },
           fromMe
             ? null
-            : { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+            : BUBBLE_IN_SHADOW,
         ]}
       >
         <ChatQuoteBlock
@@ -303,7 +307,7 @@ export function ChatBubble({
         { backgroundColor: bg },
         fromMe
           ? null
-          : { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+          : BUBBLE_IN_SHADOW,
       ]}
     >
       {message.replyTo != null && (

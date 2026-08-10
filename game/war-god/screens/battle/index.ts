@@ -26,6 +26,7 @@ import {
   createBoard,
   findMatches,
   findValidMoves,
+  computeExplosions,
   swapCells,
   type Board,
   type TileType,
@@ -33,13 +34,14 @@ import {
 import {
   LEVEL_LABELS,
   ULT_COST,
-  ULT_DMG,
   applyAuthoritativeEffects,
+  MAX_FURY,
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
   castUltimate,
   createFighter,
+  decayArmor,
   type BotLevel,
   type Fighter,
 } from '../../logic/battle';
@@ -163,7 +165,7 @@ function sizeSelector(s: Sprite): void {
 function computeTileSize(): number {
   const scale0 = Math.min(window.innerWidth, DESIGN_W) / DESIGN_W;
   const designH0 = (window.innerHeight - lastSafeTop - lastSafeBottom) / scale0;
-  const boardBudget = (designH0 - 156 - 68 - 30 - 6 - 10 - 96 - 10) / 1.1;
+  const boardBudget = (designH0 - 164 - 68 - 30 - 6 - 10 - 96 - 10) / 1.1;
   return Math.max(24, Math.floor(Math.min(470, DESIGN_W - 50, boardBudget) / GRID));
 }
 
@@ -379,6 +381,47 @@ function flyMatched(cells: Set<number>, side: 'me' | 'foe'): Promise<void> {
   return Promise.all(jobs).then(() => undefined);
 }
 
+function crossFlash(i: number): void {
+  const p = cellRootPos(i);
+  const g = new Graphics();
+  const arm = tileSize * 1.4;
+  const th = tileSize * 0.42;
+  g.roundRect(-arm / 2, -th / 2, arm, th, th / 2).fill({ color: 0xffffff, alpha: 0.5 });
+  g.roundRect(-th / 2, -arm / 2, th, arm, th / 2).fill({ color: 0xffffff, alpha: 0.5 });
+  g.roundRect(-arm / 2, -th / 2, arm, th, th / 2).stroke({ width: 2, color: 0xb06bff, alpha: 0.95 });
+  g.roundRect(-th / 2, -arm / 2, th, arm, th / 2).stroke({ width: 2, color: 0xb06bff, alpha: 0.95 });
+  g.position.set(p.x, p.y);
+  flyLayer.addChild(g);
+  void tween(g, { alpha: 0, scale: 1.35 }, 340).then(() => g.destroy());
+}
+
+function blockFlash(i: number): void {
+  const p = cellRootPos(i);
+  const g = new Graphics();
+  const r = tileSize * 0.55;
+  g.circle(0, 0, r).fill({ color: 0xffd75e, alpha: 0.5 });
+  g.circle(0, 0, r * 0.55).fill({ color: 0xff8a2a, alpha: 0.85 });
+  g.position.set(p.x, p.y);
+  flyLayer.addChild(g);
+  void tween(g, { alpha: 0, scale: 2.4 }, 340).then(() => g.destroy());
+}
+
+function explodeFx(matched: Iterable<number>): void {
+  for (const i of matched) {
+    if (board[i] === 'lightning') crossFlash(i);
+    else if (board[i] === 'fireSword') blockFlash(i);
+  }
+}
+
+function updateFuryGlow(): void {
+  const glow = myTurn && !over && me.fury >= MAX_FURY;
+  for (let i = 0; i < CELLS; i++) {
+    const s = sprites[i];
+    if (!s) continue;
+    s.tint = glow && baseTileType(board[i]) === 'sword' ? 0xffe08a : 0xffffff;
+  }
+}
+
 function spawnTrailDot(x: number, y: number): void {
   const g = new Graphics();
   const r = tileSize * 0.19;
@@ -446,17 +489,46 @@ function flySword(
   });
 }
 
-function floatNumber(card: Container, text: string, color: number, line: number): void {
-  const t = makeText(text, 15, color, '800');
-  t.style.stroke = { color: 0x120d02, width: 4, join: 'round' };
-  t.x = card.x + 95;
-  t.y = card.y + 108 + line * 18;
-  flyLayer.addChild(t);
-  void (async () => {
-    await tween(t, { y: t.y - 34 }, 450);
-    await tween(t, { y: t.y - 56, alpha: 0 }, 420);
-    t.destroy();
-  })();
+// Hàng đợi số nổi theo từng card: hiện tuần tự từng số một (xong cái này mới
+// lên cái kế), ngay tại khu thanh thông tin của người chơi thay vì xếp chồng xa nhau.
+const floatQueues = new Map<Container, Array<{ text: string; color: number }>>();
+const floatBusy = new Set<Container>();
+
+function floatNumber(card: Container, text: string, color: number): void {
+  let q = floatQueues.get(card);
+  if (!q) {
+    q = [];
+    floatQueues.set(card, q);
+  }
+  q.push({ text, color });
+  if (!floatBusy.has(card)) void drainFloatQueue(card);
+}
+
+async function drainFloatQueue(card: Container): Promise<void> {
+  floatBusy.add(card);
+  const q = floatQueues.get(card)!;
+  while (q.length > 0) {
+    const next = q.shift()!;
+    await showFloatOnce(card, next.text, next.color);
+  }
+  floatBusy.delete(card);
+}
+
+function showFloatOnce(card: Container, text: string, color: number): Promise<void> {
+  return new Promise((resolve) => {
+    const t = makeText(text, 16, color, '800');
+    t.anchor.set(0.5);
+    t.style.stroke = { color: 0x120d02, width: 4, join: 'round' };
+    t.x = card.x + 95;
+    t.y = card.y + 34;
+    flyLayer.addChild(t);
+    void (async () => {
+      await tween(t, { y: t.y - 16, scale: 1.14 }, 220);
+      await tween(t, { y: t.y - 30, alpha: 0 }, 240);
+      t.destroy();
+      resolve();
+    })();
+  });
 }
 
 function renderTurnClock(): void {
@@ -495,6 +567,7 @@ function updateHud(): void {
   const foeActive = !myTurn && !over;
   updateFighter(hud.me, me, meActive, me.mp >= ULT_COST);
   updateFighter(hud.foe, foe, foeActive, foe.mp >= ULT_COST);
+  updateFuryGlow();
 
   const canUlt = meActive && !busy && me.mp >= ULT_COST;
   hud.me.ultBtn.eventMode = canUlt ? 'static' : 'none';
@@ -682,7 +755,13 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
   for (;;) {
     const match = findMatches(board);
     if (!match) break;
-    if (match.maxRun >= 4) extraTurn = true;
+    // Thêm lượt khi ghép ≥4 thẳng hàng HOẶC dọn ≥5 ô trong một wave.
+    if (match.maxRun >= 4 || match.cells.size >= 5) extraTurn = true;
+
+    const exploded = computeExplosions(board, match.cells);
+    for (const i of exploded) match.counts[board[i]]++;
+    const removed = new Set<number>(match.cells);
+    for (const i of exploded) removed.add(i);
 
     const result = applyTileEffects(attacker, defender, match.counts);
     playSound('match');
@@ -696,24 +775,26 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
       setStatus(`${side === 'me' ? 'Bạn' : 'Máy'}: ${parts.join('  ')}`);
     }
 
-    await Promise.all([animateRemove(match.cells), flyMatched(match.cells, side)]);
+    if (exploded.length > 0) explodeFx(match.cells);
+    await Promise.all([animateRemove(removed), flyMatched(removed, side)]);
     updateHud();
     const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
     const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-    let atkLine = 0;
-    let defLine = 0;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, defLine++);
+    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
     if ((result.armorDamage ?? 0) > 0) {
-      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff, defLine++);
+      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
     }
-    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a, atkLine++);
-    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff, atkLine++);
-    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff, atkLine++);
+    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
+    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
+    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
+    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
+    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
+    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
 
-    const gravity = applyGravity(board, match.cells);
+    const gravity = applyGravity(board, removed);
     await animateGravity(gravity.falls, gravity.spawns);
 
-    if (defender.hp <= 0) return extraTurn;
+    if (defender.hp <= 0 || attacker.hp <= 0) return extraTurn;
   }
 
   await ensurePlayable();
@@ -785,6 +866,7 @@ async function onTileTap(i: number): Promise<void> {
 
   swapCells(board, a, b);
   await animateSwap(a, b);
+  decayArmor(me);
   const extraTurn = await resolveCascades('me');
   if (checkEnd()) return;
 
@@ -810,8 +892,9 @@ async function castMyUltimate(): Promise<void> {
     pvp.sendUlt();
     return;
   }
-  castUltimate(me, foe);
-  setStatus(`TUYỆT CHIÊU! -${ULT_DMG} HP`);
+  decayArmor(me);
+  const ultDmg = castUltimate(me, foe);
+  setStatus(`TUYỆT CHIÊU! -${ultDmg} HP`);
   updateHud();
   await playUltFx('me');
   if (checkEnd()) return;
@@ -834,8 +917,9 @@ async function startBotTurn(): Promise<void> {
     if (stale()) return;
 
     if (botShouldUlt(foe, me, botLevel)) {
-      castUltimate(foe, me);
-      setStatus(`Máy tung TUYỆT CHIÊU! -${ULT_DMG} HP`);
+      decayArmor(foe);
+      const ultDmg = castUltimate(foe, me);
+      setStatus(`Máy tung TUYỆT CHIÊU! -${ultDmg} HP`);
       updateHud();
       await playUltFx('foe');
       if (stale()) return;
@@ -859,6 +943,7 @@ async function startBotTurn(): Promise<void> {
     await sleep(160);
     if (stale()) return;
     botSelectorA.visible = false;
+    decayArmor(foe);
     const extraTurn = await resolveCascades('foe');
     if (stale()) return;
     if (checkEnd()) return;
@@ -921,8 +1006,8 @@ export function startBattle(level: BotLevel = botLevel): void {
 function syncFighters(state: ServerState): void {
   const meF = state.fighters[pvpIdx];
   const foeF = state.fighters[1 - pvpIdx];
-  if (meF) me = { hp: meF.hp, mp: meF.mp, armor: meF.armor };
-  if (foeF) foe = { hp: foeF.hp, mp: foeF.mp, armor: foeF.armor };
+  if (meF) me = { hp: meF.hp, mp: meF.mp, armor: meF.armor, fury: meF.fury };
+  if (foeF) foe = { hp: foeF.hp, mp: foeF.mp, armor: foeF.armor, fury: foeF.fury };
 }
 
 export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void> | void {
@@ -998,6 +1083,7 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     const attacker = side === 'me' ? me : foe;
     const defender = side === 'me' ? foe : me;
     const cells = new Set(step.cells);
+    for (const i of step.exploded ?? []) cells.add(i);
     const result = applyAuthoritativeEffects(attacker, defender, step.effects);
     playSound('match');
     const parts: string[] = [];
@@ -1009,19 +1095,21 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     if (parts.length > 0) {
       setStatus(`${side === 'me' ? 'Bạn' : 'Đối thủ'}: ${parts.join('  ')}`);
     }
+    if ((step.exploded?.length ?? 0) > 0) explodeFx(step.cells);
     await Promise.all([animateRemove(cells), flyMatched(cells, side)]);
     updateHud();
     const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
     const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-    let atkLine = 0;
-    let defLine = 0;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, defLine++);
+    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
     if ((result.armorDamage ?? 0) > 0) {
-      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff, defLine++);
+      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
     }
-    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a, atkLine++);
-    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff, atkLine++);
-    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff, atkLine++);
+    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
+    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
+    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
+    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
+    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
+    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
     return;
   }
   if (step.kind === 'gravity') {
@@ -1045,7 +1133,7 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
   }
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
-  attacker.mp = Math.max(0, attacker.mp - ULT_COST);
+  attacker.mp = 0;
   defender.hp = Math.max(0, defender.hp - step.damage);
   setStatus(
     side === 'me'
@@ -1068,6 +1156,8 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   const side: 'me' | 'foe' = data.lastBy === pvpIdx ? 'me' : 'foe';
   let replayFailed = false;
   if (data.lastMove) {
+    decayArmor(side === 'me' ? me : foe);
+    updateHud();
     try {
       for (const step of state.steps) {
         if (over || flowEpoch !== ep || data.matchId !== pvpMatchId) return;
@@ -1441,7 +1531,7 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
 
   const boardW = tileSize * GRID;
   const overhang = Math.round(boardW * 0.05);
-  const topStart = 156 + insetTop;
+  const topStart = 164 + insetTop;
   const bottomLimit = hud.bottomRow.y - 10;
   const HINT_SPACE = 20;
   const GAP_BOARD_CHAT = 10;

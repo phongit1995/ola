@@ -65,3 +65,67 @@ jobs:
           path: artifacts/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload lên Google Drive + gửi Discord
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          set -e
+          # Cài rclone
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+
+          # Ghi config từ secret
+          mkdir -p ~/.config/rclone
+          printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+
+          ENV="${{ inputs.environment }}"
+          APK="artifacts/ola-${ENV}-${{ github.run_number }}.apk"
+          DEST="olagdrive:Ola APK Builds"
+          FILE="$(basename "$APK")"
+
+          # Upload
+          rclone mkdir "$DEST"
+          rclone copy "$APK" "$DEST" --progress
+
+          # Chỉ giữ 2 bản mới nhất của env này, xoá các bản cũ hơn
+          rclone lsf "$DEST" \
+            | grep "^ola-${ENV}-.*\.apk$" \
+            | sort -t- -k3 -rn \
+            | tail -n +3 \
+            | while read -r old; do
+                echo "Xoá bản cũ: $old"
+                rclone deletefile "$DEST/$old" || echo "  (bỏ qua, không xoá được: $old)"
+              done
+
+          # Lấy link public
+          LINK=$(rclone link "$DEST/$FILE")
+          echo "Drive link: $LINK"
+
+          # Gửi Discord (embed) — xanh cho production, cam cho dev
+          if [ "$ENV" = "production" ]; then COLOR=3066993; else COLOR=15105570; fi
+          PAYLOAD=$(jq -n \
+            --arg env "$ENV" \
+            --arg run "#${{ github.run_number }}" \
+            --arg sha "${GITHUB_SHA:0:7}" \
+            --arg link "$LINK" \
+            --arg file "$FILE" \
+            --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson color "$COLOR" \
+            '{
+              embeds: [{
+                title: "📱 Ola Android — Bản build mới",
+                description: "APK đã sẵn sàng tải về ⬇️",
+                url: $link,
+                color: $color,
+                timestamp: $ts,
+                fields: [
+                  {name: "Môi trường", value: ("`" + $env + "`"), inline: true},
+                  {name: "Build", value: ("`" + $run + "`"), inline: true},
+                  {name: "Commit", value: ("`" + $sha + "`"), inline: true},
+                  {name: "Tải APK", value: ("[" + $file + "](" + $link + ")"), inline: false}
+                ],
+                footer: {text: "Ola CI · GitHub Actions"}
+              }]
+            }')
+          curl -sf -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"

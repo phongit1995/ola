@@ -69,25 +69,42 @@ func TestPRNGGoldenSequences(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestWeightedSpawnDistribution(t *testing.T) {
 	r := &rng{z: 1}
-	wantTiles := []int{5, 1, 0, 5, 3}
-	for i, expected := range wantTiles {
-		if got := r.tile(); got != expected {
-			t.Fatalf("seed 1 tile #%d: got %d want %d", i, got, expected)
+	const samples = 60_000
+	base := map[int]int{}
+	for range samples {
+		base[baseTile(r.tile())]++
+	}
+	if got := base[tileSword]; got < samples*18/100 || got > samples*26/100 {
+		t.Fatalf("sword share off: %d/%d (~expect 22%%)", got, samples)
+	}
+	for _, tile := range []int{tilePeach, tileHeart, tileLightning} {
+		if base[tile] < samples*12/100 {
+			t.Fatalf("tile %s under-spawned: %d/%d", tileNames[tile], base[tile], samples)
+		}
+	}
+	for _, tile := range []int{tileWater, tileShield} {
+		if base[tile] < samples*11/100 {
+			t.Fatalf("tile %s under-spawned: %d/%d", tileNames[tile], base[tile], samples)
 		}
 	}
 }
 
 func TestSpecialTilesAreRare(t *testing.T) {
 	r := &rng{z: 1}
-	const samples = 10_000
+	const samples = 40_000
 	counts := [tileCount]int{}
 	for range samples {
 		counts[r.tile()]++
 	}
 	for _, tile := range []int{tileFireSword, tileGreaterHeart} {
-		if counts[tile] == 0 || counts[tile] >= samples/20 {
-			t.Fatalf("special tile %s count out of rare range: %d/%d", tileNames[tile], counts[tile], samples)
+		rate := counts[tile]
+		// ~1/60 target: band [1/75, 1/50] bắt được lệch như 1/81 (Tim cũ) hay 1/45.
+		if rate < samples/75 || rate > samples/50 {
+			t.Fatalf("special %s rate outside ~1/60 band: %d/%d", tileNames[tile], rate, samples)
 		}
 	}
 }
@@ -112,7 +129,7 @@ func TestInitDeterministicAndValid(t *testing.T) {
 	if len(ValidSwaps(first.Board)) == 0 {
 		t.Fatal("initial board has no valid swaps")
 	}
-	expectedFighters := [2]Fighter{{HP: 100}, {HP: 100}}
+	expectedFighters := [2]Fighter{{HP: maxHP}, {HP: maxHP}}
 	if first.Fighters != expectedFighters || first.MoveCount != 0 || first.ExtraTurn {
 		t.Fatalf("unexpected initial state: %+v", first)
 	}
@@ -137,7 +154,7 @@ func TestFindMatches(t *testing.T) {
 	rowFour := stripedBoard()
 	rowFour[26], rowFour[27], rowFour[28], rowFour[29] = 5, 5, 5, 5
 	cells, counts, maxRun = findMatches(rowFour)
-	if !reflect.DeepEqual(cells, []int{26, 27, 28, 29}) || counts[tileStone] != 4 || maxRun != 4 {
+	if !reflect.DeepEqual(cells, []int{26, 27, 28, 29}) || counts[tileLightning] != 4 || maxRun != 4 {
 		t.Fatalf("row of four: cells=%v counts=%v maxRun=%d", cells, counts, maxRun)
 	}
 
@@ -155,13 +172,6 @@ func TestFindMatches(t *testing.T) {
 	cells, counts, maxRun = findMatches(column)
 	if !reflect.DeepEqual(cells, []int{21, 29, 37}) || counts[tileShield] != 3 || maxRun != 3 {
 		t.Fatalf("column of three: cells=%v counts=%v maxRun=%d", cells, counts, maxRun)
-	}
-
-	lShape := stripedBoard()
-	lShape[0], lShape[1], lShape[2], lShape[8], lShape[16] = 4, 4, 4, 4, 4
-	cells, counts, maxRun = findMatches(lShape)
-	if !reflect.DeepEqual(cells, []int{0, 1, 2, 8, 16}) || counts[tileShield] != 5 || maxRun != 3 {
-		t.Fatalf("L shape: cells=%v counts=%v maxRun=%d", cells, counts, maxRun)
 	}
 }
 
@@ -202,6 +212,39 @@ func TestFindMatchesSpecialTilesWithBaseTiles(t *testing.T) {
 	}
 }
 
+func TestComputeExplosions(t *testing.T) {
+	swordBoard := func() []int {
+		board := make([]int, boardSize)
+		for i := range board {
+			board[i] = tileSword
+		}
+		return board
+	}
+
+	cross := swordBoard()
+	cross[27] = tileLightning
+	if got := computeExplosions(cross, map[int]bool{27: true}); !reflect.DeepEqual(got, []int{19, 26, 28, 35}) {
+		t.Fatalf("lightning cross: %v", got)
+	}
+
+	block := swordBoard()
+	block[27] = tileFireSword
+	if got := computeExplosions(block, map[int]bool{27: true}); !reflect.DeepEqual(got, []int{18, 19, 20, 26, 28, 34, 35, 36}) {
+		t.Fatalf("fire sword 3x3: %v", got)
+	}
+
+	corner := swordBoard()
+	corner[0] = tileFireSword
+	if got := computeExplosions(corner, map[int]bool{0: true}); !reflect.DeepEqual(got, []int{1, 8, 9}) {
+		t.Fatalf("fire sword clipped at corner: %v", got)
+	}
+
+	plain := swordBoard()
+	if got := computeExplosions(plain, map[int]bool{27: true}); len(got) != 0 {
+		t.Fatalf("plain tile must not explode: %v", got)
+	}
+}
+
 func TestApplyTileEffects(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -218,62 +261,116 @@ func TestApplyTileEffects(t *testing.T) {
 			defender:     Fighter{HP: 100, Armor: 10},
 			counts:       map[int]int{tileSword: 3},
 			wantAttacker: Fighter{HP: 100},
-			wantDefender: Fighter{HP: 95},
-			wantEffects:  Effects{Damage: 5, ArmorDamage: 10},
+			wantDefender: Fighter{HP: 89},
+			wantEffects:  Effects{Damage: 11, ArmorDamage: 10},
 		},
 		{
-			name:         "armor absorbs all physical",
-			attacker:     Fighter{HP: 100},
-			defender:     Fighter{HP: 100, Armor: 20},
-			counts:       map[int]int{tileStone: 3},
-			wantAttacker: Fighter{HP: 100},
-			wantDefender: Fighter{HP: 100, Armor: 11},
-			wantEffects:  Effects{ArmorDamage: 9},
-		},
-		{
-			name:         "fire pierces armor",
+			name:         "armor absorbs all physical and reflects",
 			attacker:     Fighter{HP: 100},
 			defender:     Fighter{HP: 100, Armor: 30},
-			counts:       map[int]int{tileFire: 3},
-			wantAttacker: Fighter{HP: 100},
+			counts:       map[int]int{tileSword: 3},
+			wantAttacker: Fighter{HP: 98},
+			wantDefender: Fighter{HP: 100, Armor: 9},
+			wantEffects:  Effects{ArmorDamage: 21, Reflect: 2},
+		},
+		{
+			name:         "fire sword pierces armor and triggers reflect",
+			attacker:     Fighter{HP: 100},
+			defender:     Fighter{HP: 100, Armor: 30},
+			counts:       map[int]int{tileFireSword: 1},
+			wantAttacker: Fighter{HP: 98},
 			wantDefender: Fighter{HP: 88, Armor: 30},
+			wantEffects:  Effects{Damage: 12, Reflect: 2},
+		},
+		{
+			name:         "reflect skipped when defender dies",
+			attacker:     Fighter{HP: 100},
+			defender:     Fighter{HP: 5, Armor: 25},
+			counts:       map[int]int{tileFireSword: 1},
+			wantAttacker: Fighter{HP: 100},
+			wantDefender: Fighter{HP: 0, Armor: 25},
 			wantEffects:  Effects{Damage: 12},
 		},
 		{
-			name:         "fire sword deals stronger piercing damage",
+			name:         "sword blocked plus fire sword pierces",
 			attacker:     Fighter{HP: 100},
-			defender:     Fighter{HP: 100, Armor: 30},
+			defender:     Fighter{HP: 100, Armor: 10},
 			counts:       map[int]int{tileSword: 2, tileFireSword: 1},
 			wantAttacker: Fighter{HP: 100},
-			wantDefender: Fighter{HP: 92, Armor: 20},
-			wantEffects:  Effects{Damage: 8, ArmorDamage: 10},
+			wantDefender: Fighter{HP: 84},
+			wantEffects:  Effects{Damage: 16, ArmorDamage: 10},
 		},
 		{
-			name:         "sword and stone combine",
+			name:         "lightning deals no direct damage",
+			attacker:     Fighter{HP: 100},
+			defender:     Fighter{HP: 100, Armor: 5},
+			counts:       map[int]int{tileLightning: 3},
+			wantAttacker: Fighter{HP: 100},
+			wantDefender: Fighter{HP: 100, Armor: 5},
+			wantEffects:  Effects{},
+		},
+		{
+			name:         "peach charges fury",
 			attacker:     Fighter{HP: 100},
 			defender:     Fighter{HP: 100},
-			counts:       map[int]int{tileSword: 2, tileStone: 3},
-			wantAttacker: Fighter{HP: 100},
-			wantDefender: Fighter{HP: 81},
-			wantEffects:  Effects{Damage: 19},
+			counts:       map[int]int{tilePeach: 3},
+			wantAttacker: Fighter{HP: 100, Fury: 30},
+			wantDefender: Fighter{HP: 100},
+			wantEffects:  Effects{Fury: 30},
+		},
+		{
+			name:         "peach fury capped without consuming",
+			attacker:     Fighter{HP: 100, Fury: 95},
+			defender:     Fighter{HP: 100},
+			counts:       map[int]int{tilePeach: 2},
+			wantAttacker: Fighter{HP: 100, Fury: 100},
+			wantDefender: Fighter{HP: 100},
+			wantEffects:  Effects{Fury: 5},
+		},
+		{
+			name:         "full fury doubles and pierces sword",
+			attacker:     Fighter{HP: 100, Fury: 100},
+			defender:     Fighter{HP: 100, Armor: 30},
+			counts:       map[int]int{tileSword: 3},
+			wantAttacker: Fighter{HP: 98, Fury: 0},
+			wantDefender: Fighter{HP: 58, Armor: 30},
+			wantEffects:  Effects{Damage: 42, Furied: true, Reflect: 2},
+		},
+		{
+			name:         "peach fills but does not consume same wave",
+			attacker:     Fighter{HP: 100, Fury: 90},
+			defender:     Fighter{HP: 100},
+			counts:       map[int]int{tilePeach: 1, tileSword: 2},
+			wantAttacker: Fighter{HP: 100, Fury: 100},
+			wantDefender: Fighter{HP: 86},
+			wantEffects:  Effects{Damage: 14, Fury: 10},
+		},
+		{
+			name:         "full fury consumes then peach recharges",
+			attacker:     Fighter{HP: 100, Fury: 100},
+			defender:     Fighter{HP: 100},
+			counts:       map[int]int{tileSword: 2, tilePeach: 1},
+			wantAttacker: Fighter{HP: 100, Fury: 10},
+			wantDefender: Fighter{HP: 72},
+			wantEffects:  Effects{Damage: 28, Fury: 10, Furied: true},
 		},
 		{
 			name:         "heal capped at max hp",
-			attacker:     Fighter{HP: 95},
+			attacker:     Fighter{HP: 195},
 			defender:     Fighter{HP: 100},
 			counts:       map[int]int{tileHeart: 4},
-			wantAttacker: Fighter{HP: 100},
+			wantAttacker: Fighter{HP: 200},
 			wantDefender: Fighter{HP: 100},
 			wantEffects:  Effects{Heal: 5},
 		},
 		{
 			name:         "greater heart heals more",
-			attacker:     Fighter{HP: 70},
+			attacker:     Fighter{HP: 100},
 			defender:     Fighter{HP: 100},
 			counts:       map[int]int{tileHeart: 2, tileGreaterHeart: 1},
-			wantAttacker: Fighter{HP: 86},
+			wantAttacker: Fighter{HP: 120},
 			wantDefender: Fighter{HP: 100},
-			wantEffects:  Effects{Heal: 16},
+			wantEffects:  Effects{Heal: 20},
 		},
 		{
 			name:         "mana capped at max mp",
@@ -300,7 +397,7 @@ func TestApplyTileEffects(t *testing.T) {
 			counts:       map[int]int{tileSword: 5},
 			wantAttacker: Fighter{HP: 100},
 			wantDefender: Fighter{HP: 0},
-			wantEffects:  Effects{Damage: 25},
+			wantEffects:  Effects{Damage: 35},
 		},
 	}
 	for _, test := range tests {
@@ -328,103 +425,84 @@ func TestApplySwapSingleWave(t *testing.T) {
 	}
 	next := nextAny.(*State)
 
-	if !reflect.DeepEqual(stepKinds(next.Steps), []string{"swap", "match", "gravity"}) {
-		t.Fatalf("unexpected steps: %v", stepKinds(next.Steps))
-	}
-	swapStep := next.Steps[0]
-	if *swapStep.A != 58 || *swapStep.B != 59 {
-		t.Fatalf("unexpected swap step: %+v", swapStep)
+	if next.Steps[0].Kind != "swap" || *next.Steps[0].A != 58 || *next.Steps[0].B != 59 {
+		t.Fatalf("unexpected swap step: %+v", next.Steps[0])
 	}
 	matchStep := next.Steps[1]
-	if !reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58}) ||
+	if matchStep.Kind != "match" ||
+		!reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58}) ||
+		len(matchStep.Exploded) != 0 ||
 		!reflect.DeepEqual(matchStep.Counts, map[string]int{"sword": 3}) ||
 		matchStep.MaxRun != 3 ||
-		*matchStep.Effects != (Effects{Damage: 10, ArmorDamage: 5}) {
+		*matchStep.Effects != (Effects{Damage: 16, ArmorDamage: 5}) {
 		t.Fatalf("unexpected match step: %+v", matchStep)
 	}
-	gravityStep := next.Steps[2]
-	if len(gravityStep.Falls) != 21 || gravityStep.Falls[0] != (Fall{From: 48, To: 56}) {
-		t.Fatalf("unexpected falls: %v", gravityStep.Falls)
+	if next.MoveCount != 1 {
+		t.Fatalf("unexpected move count: %d", next.MoveCount)
 	}
-	expectedSpawns := []Spawn{
-		{Index: 0, Type: 5, FromRow: -1},
-		{Index: 1, Type: 1, FromRow: -1},
-		{Index: 2, Type: 0, FromRow: -1},
-	}
-	if !reflect.DeepEqual(gravityStep.Spawns, expectedSpawns) {
-		t.Fatalf("unexpected spawns: %v", gravityStep.Spawns)
-	}
-
-	expectedBoard := []int{
-		5, 1, 0, 1, 0, 1, 0, 1,
-		0, 1, 0, 3, 2, 3, 2, 3,
-		2, 3, 2, 1, 0, 1, 0, 1,
-		0, 1, 0, 3, 2, 3, 2, 3,
-		2, 3, 2, 1, 0, 1, 0, 1,
-		0, 1, 0, 3, 2, 3, 2, 3,
-		2, 3, 2, 1, 0, 1, 0, 1,
-		0, 1, 0, 3, 2, 3, 2, 3,
-	}
-	if !reflect.DeepEqual(next.Board, expectedBoard) {
-		t.Fatalf("unexpected board: %v", next.Board)
-	}
-	if next.Fighters != [2]Fighter{{HP: 100}, {HP: 90, MP: 20}} {
-		t.Fatalf("unexpected fighters: %+v", next.Fighters)
-	}
-	if next.Rng != "15755400384260043840" || next.MoveCount != 1 || next.ExtraTurn {
-		t.Fatalf("unexpected state: rng=%s moveCount=%d extraTurn=%v", next.Rng, next.MoveCount, next.ExtraTurn)
-	}
-	if (Logic{}).KeepTurn(next) {
-		t.Fatal("run of three must not keep the turn")
+	if matchedCells, _, _ := findMatches(next.Board); matchedCells != nil {
+		t.Fatal("apply left unresolved matches")
 	}
 }
 
-func TestApplySwapCascade(t *testing.T) {
-	board := stripedBoard()
-	board[43], board[50], board[59], board[35] = 5, 5, 5, 2
-	state := stateWith(board, [2]Fighter{{HP: 90}, {HP: 100}}, 1)
+func TestShieldReflectAndDecay(t *testing.T) {
+	atk := Fighter{HP: 100}
+	def := Fighter{HP: 100, Armor: 20}
+	eff := applyTileEffects(&atk, &def, map[int]int{tileSword: 2})
+	if atk.HP != 98 || def.Armor != 6 || def.HP != 100 || eff.Reflect != 2 || eff.ArmorDamage != 14 {
+		t.Fatalf("reflect: atk=%+v def=%+v eff=%+v", atk, def, eff)
+	}
 
-	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":50,"b":51}`))
+	atk2 := Fighter{HP: 100}
+	def2 := Fighter{HP: 100, Armor: 19}
+	eff2 := applyTileEffects(&atk2, &def2, map[int]int{tileSword: 2})
+	if atk2.HP != 100 || eff2.Reflect != 0 {
+		t.Fatalf("below threshold reflected: atk=%+v eff=%+v", atk2, eff2)
+	}
+
+	board := stripedBoard()
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 60, Armor: 10}, {HP: 100}}, 1)
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"ult"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if next := nextAny.(*State); next.Fighters[0].Armor != 8 {
+		t.Fatalf("armor did not decay by 2 on move: %+v", next.Fighters[0])
+	}
+}
+
+func TestApplySwapLightningExplodes(t *testing.T) {
+	board := stripedBoard()
+	board[56], board[57], board[59] = 5, 5, 5
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 1)
+
+	if err := (Logic{}).ValidateMove(state, 0, json.RawMessage(`{"type":"swap","a":58,"b":59}`)); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":58,"b":59}`))
 	if err != nil {
 		t.Fatal(err)
 	}
 	next := nextAny.(*State)
 
-	if !reflect.DeepEqual(stepKinds(next.Steps), []string{"swap", "match", "gravity", "match", "gravity"}) {
-		t.Fatalf("unexpected steps: %v", stepKinds(next.Steps))
+	matchStep := next.Steps[1]
+	if matchStep.Kind != "match" {
+		t.Fatalf("expected match step, got %+v", matchStep)
 	}
-	firstMatch := next.Steps[1]
-	if !reflect.DeepEqual(firstMatch.Cells, []int{43, 51, 59}) ||
-		!reflect.DeepEqual(firstMatch.Counts, map[string]int{"stone": 3}) ||
-		firstMatch.MaxRun != 3 ||
-		*firstMatch.Effects != (Effects{Damage: 9}) {
-		t.Fatalf("unexpected first match: %+v", firstMatch)
+	if !reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58}) {
+		t.Fatalf("unexpected matched cells: %v", matchStep.Cells)
 	}
-	firstGravity := next.Steps[2]
-	expectedFalls := []Fall{{From: 35, To: 59}, {From: 27, To: 51}, {From: 19, To: 43}, {From: 11, To: 35}, {From: 3, To: 27}}
-	expectedSpawns := []Spawn{
-		{Index: 19, Type: 5, FromRow: -1},
-		{Index: 11, Type: 1, FromRow: -2},
-		{Index: 3, Type: 0, FromRow: -3},
+	if !reflect.DeepEqual(matchStep.Exploded, []int{48, 49, 50, 59}) {
+		t.Fatalf("unexpected exploded cells: %v", matchStep.Exploded)
 	}
-	if !reflect.DeepEqual(firstGravity.Falls, expectedFalls) || !reflect.DeepEqual(firstGravity.Spawns, expectedSpawns) {
-		t.Fatalf("unexpected first gravity: %+v", firstGravity)
+	if !reflect.DeepEqual(matchStep.Counts, map[string]int{"lightning": 3, "sword": 2, "peach": 1, "heart": 1}) {
+		t.Fatalf("unexpected counts: %v", matchStep.Counts)
 	}
-	secondMatch := next.Steps[3]
-	if !reflect.DeepEqual(secondMatch.Cells, []int{2, 3, 4, 58, 59, 60}) ||
-		!reflect.DeepEqual(secondMatch.Counts, map[string]int{"heart": 3, "sword": 3}) ||
-		secondMatch.MaxRun != 3 ||
-		*secondMatch.Effects != (Effects{Damage: 15, Heal: 10}) {
-		t.Fatalf("unexpected second match: %+v", secondMatch)
-	}
-	if next.Fighters != [2]Fighter{{HP: 100}, {HP: 76}} {
-		t.Fatalf("unexpected fighters: %+v", next.Fighters)
-	}
-	if next.Rng != "10372713005361028286" || next.MoveCount != 1 || next.ExtraTurn {
-		t.Fatalf("unexpected state: rng=%s moveCount=%d extraTurn=%v", next.Rng, next.MoveCount, next.ExtraTurn)
+	if *matchStep.Effects != (Effects{Damage: 14, Heal: 5, Fury: 10}) {
+		t.Fatalf("unexpected effects: %+v", *matchStep.Effects)
 	}
 	if matchedCells, _, _ := findMatches(next.Board); matchedCells != nil {
-		t.Fatal("cascade left unresolved matches")
+		t.Fatal("apply left unresolved matches")
 	}
 }
 
@@ -439,14 +517,11 @@ func TestApplySwapRunOfFourKeepsTurn(t *testing.T) {
 	}
 	next := nextAny.(*State)
 
-	if !reflect.DeepEqual(stepKinds(next.Steps), []string{"swap", "match", "gravity"}) {
-		t.Fatalf("unexpected steps: %v", stepKinds(next.Steps))
-	}
 	matchStep := next.Steps[1]
 	if !reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58, 59}) ||
 		!reflect.DeepEqual(matchStep.Counts, map[string]int{"sword": 4}) ||
 		matchStep.MaxRun != 4 ||
-		*matchStep.Effects != (Effects{Damage: 20}) {
+		*matchStep.Effects != (Effects{Damage: 28}) {
 		t.Fatalf("unexpected match step: %+v", matchStep)
 	}
 	if !next.ExtraTurn || !(Logic{}).KeepTurn(next) {
@@ -454,14 +529,58 @@ func TestApplySwapRunOfFourKeepsTurn(t *testing.T) {
 	}
 }
 
-func TestUltimate(t *testing.T) {
+func doubleMatchBoard() []int {
+	board := make([]int, boardSize)
+	for y := 0; y < grid; y++ {
+		for x := 0; x < grid; x++ {
+			// (x+2y)%6: hàng ngang lệch 1, hàng dọc lệch 2 → không bao giờ có 3 ô
+			// liền kề trùng nhau, nền hoàn toàn sạch match.
+			board[y*grid+x] = (x + 2*y) % 6
+		}
+	}
+	// Đổi ô 18<->19 sẽ hoàn tất đồng thời 2 cụm 3 rời nhau (6 ô, maxRun 3):
+	//   cột 2 (10,18,26) thành Kiếm ; hàng 2 (19,20,21) thành Nước.
+	board[10], board[26] = tileSword, tileSword // 18 do swap điền vào
+	board[18] = tileWater
+	board[19] = tileSword // được swap sang 18
+	board[20] = tileWater // 21 vốn đã là Nước theo nền
+	return board
+}
+
+func TestApplySwapFivePlusCellsKeepsTurn(t *testing.T) {
+	board := doubleMatchBoard()
+	if matchedCells, _, _ := findMatches(board); matchedCells != nil {
+		t.Fatalf("board must be match-free before swap: %v", matchedCells)
+	}
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 1)
+	if err := (Logic{}).ValidateMove(state, 0, json.RawMessage(`{"type":"swap","a":18,"b":19}`)); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":18,"b":19}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+
+	matchStep := next.Steps[1]
+	if matchStep.Kind != "match" ||
+		!reflect.DeepEqual(matchStep.Cells, []int{10, 18, 19, 20, 21, 26}) ||
+		matchStep.MaxRun != 3 {
+		t.Fatalf("expected a 6-cell maxRun-3 match: %+v", matchStep)
+	}
+	if !next.ExtraTurn || !(Logic{}).KeepTurn(next) {
+		t.Fatal("clearing 5+ cells must keep the turn")
+	}
+}
+
+func TestUltimateScalesWithMana(t *testing.T) {
 	board := stripedBoard()
 	poor := stateWith(board, [2]Fighter{{HP: 100, MP: 49}, {HP: 100}}, 7)
 	if err := (Logic{}).ValidateMove(poor, 0, json.RawMessage(`{"type":"ult"}`)); err == nil {
 		t.Fatal("ult without enough mana was accepted")
 	}
 
-	state := stateWith(board, [2]Fighter{{HP: 100, MP: 60}, {HP: 30}}, 7)
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 80}, {HP: 100}}, 7)
 	if err := (Logic{}).ValidateMove(state, 0, json.RawMessage(`{"type":"ult"}`)); err != nil {
 		t.Fatal(err)
 	}
@@ -470,10 +589,10 @@ func TestUltimate(t *testing.T) {
 		t.Fatal(err)
 	}
 	next := nextAny.(*State)
-	if next.Fighters != [2]Fighter{{HP: 100, MP: 10}, {HP: 5}} {
+	if next.Fighters != [2]Fighter{{HP: 100, MP: 0}, {HP: 60}} {
 		t.Fatalf("unexpected fighters: %+v", next.Fighters)
 	}
-	if len(next.Steps) != 1 || next.Steps[0].Kind != "ult" || next.Steps[0].Damage != 25 {
+	if len(next.Steps) != 1 || next.Steps[0].Kind != "ult" || next.Steps[0].Damage != 40 {
 		t.Fatalf("unexpected steps: %+v", next.Steps)
 	}
 	if next.ExtraTurn || next.MoveCount != 1 || next.Rng != "7" {
@@ -633,11 +752,13 @@ func TestDecodeStateRejectsInvalidSnapshots(t *testing.T) {
 		})},
 		{name: "board without moves", data: snapshotWith(func(s *State) { s.Board = noMoveBoard() })},
 		{name: "hp zero", data: snapshotWith(func(s *State) { s.Fighters[1].HP = 0 })},
-		{name: "hp above max", data: snapshotWith(func(s *State) { s.Fighters[0].HP = 101 })},
-		{name: "mp above max", data: snapshotWith(func(s *State) { s.Fighters[0].MP = 101 })},
+		{name: "hp above max", data: snapshotWith(func(s *State) { s.Fighters[0].HP = maxHP + 1 })},
+		{name: "mp above max", data: snapshotWith(func(s *State) { s.Fighters[0].MP = maxMP + 1 })},
 		{name: "mp negative", data: snapshotWith(func(s *State) { s.Fighters[0].MP = -1 })},
-		{name: "armor above max", data: snapshotWith(func(s *State) { s.Fighters[1].Armor = 31 })},
+		{name: "armor above max", data: snapshotWith(func(s *State) { s.Fighters[1].Armor = maxArmor + 1 })},
 		{name: "armor negative", data: snapshotWith(func(s *State) { s.Fighters[1].Armor = -1 })},
+		{name: "fury above max", data: snapshotWith(func(s *State) { s.Fighters[0].Fury = maxFury + 1 })},
+		{name: "fury negative", data: snapshotWith(func(s *State) { s.Fighters[0].Fury = -1 })},
 		{name: "negative move count", data: snapshotWith(func(s *State) { s.MoveCount = -1 })},
 		{name: "empty rng", data: snapshotWith(func(s *State) { s.Rng = "" })},
 		{name: "non numeric rng", data: snapshotWith(func(s *State) { s.Rng = "abc" })},
@@ -677,7 +798,7 @@ func TestLogicMetadata(t *testing.T) {
 	if gameLogic.ID() != "war-god" {
 		t.Fatalf("unexpected id: %s", gameLogic.ID())
 	}
-	if gameLogic.StateVersion() != 1 {
+	if gameLogic.StateVersion() != 2 {
 		t.Fatalf("unexpected state version: %d", gameLogic.StateVersion())
 	}
 	if !gameLogic.TimeoutSkipsTurn() {

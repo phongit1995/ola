@@ -1,62 +1,103 @@
 package wargod
 
 const (
-	maxHP       = 100
-	maxMP       = 100
-	maxArmor    = 30
-	ultCost     = 50
-	ultDamage   = 25
-	dmgSword    = 5
-	dmgFire     = 4
-	dmgStone    = 3
-	healHeart   = 4
-	manaWater   = 7
-	armorShield = 4
+	maxHP    = 200
+	maxMP    = 100
+	maxFury  = 100
+	maxArmor = 30
+	ultCost  = 50
 
-	fireSwordDamage  = 8
-	greaterHeartHeal = 8
+	dmgSword    = 7
+	healHeart   = 5
+	manaWater   = 7
+	armorShield = 5
+	furyPeach   = 10
+
+	fireSwordDamage  = 12
+	greaterHeartHeal = 10
+
+	armorDecay       = 2
+	reflectThreshold = 20
+	reflectDamage    = 2
 )
 
 type Fighter struct {
 	HP    int `json:"hp"`
 	MP    int `json:"mp"`
 	Armor int `json:"armor"`
+	Fury  int `json:"fury"`
 }
 
 type Effects struct {
-	Damage      int `json:"damage"`
-	Heal        int `json:"heal"`
-	Mana        int `json:"mana"`
-	Armor       int `json:"armor"`
-	ArmorDamage int `json:"armorDamage"`
+	Damage      int  `json:"damage"`
+	Heal        int  `json:"heal"`
+	Mana        int  `json:"mana"`
+	Armor       int  `json:"armor"`
+	ArmorDamage int  `json:"armorDamage"`
+	Fury        int  `json:"fury"`
+	Furied      bool `json:"furied,omitempty"`
+	Reflect     int  `json:"reflect,omitempty"`
 }
 
 func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 	effects := Effects{}
+	defenderArmorBefore := defender.Armor
 
-	physical := counts[tileSword]*dmgSword + counts[tileStone]*dmgStone
-	if physical > 0 {
-		absorbed := physical
-		if defender.Armor < absorbed {
-			absorbed = defender.Armor
-		}
-		defender.Armor -= absorbed
-		effects.ArmorDamage += absorbed
-		dealt := physical - absorbed
-		defender.HP -= dealt
-		if defender.HP < 0 {
-			defender.HP = 0
-		}
-		effects.Damage += dealt
+	swordDmg := counts[tileSword] * dmgSword
+	fireDmg := counts[tileFireSword] * fireSwordDamage
+
+	// Nộ chỉ ×2 khi đã đầy TỪ TRƯỚC wave. Đào ăn trong chính wave này chỉ
+	// nạp Nộ cho các đòn Kiếm sau, không tự kích hoạt ×2 ngay.
+	furied := false
+	if attacker.Fury >= maxFury && (swordDmg > 0 || fireDmg > 0) {
+		swordDmg *= 2
+		fireDmg *= 2
+		attacker.Fury = 0
+		furied = true
+		effects.Furied = true
 	}
 
-	magic := counts[tileFire]*dmgFire + counts[tileFireSword]*fireSwordDamage
-	if magic > 0 {
-		defender.HP -= magic
-		if defender.HP < 0 {
-			defender.HP = 0
+	if counts[tilePeach] > 0 {
+		gained := counts[tilePeach] * furyPeach
+		if room := maxFury - attacker.Fury; room < gained {
+			gained = room
 		}
-		effects.Damage += magic
+		attacker.Fury += gained
+		effects.Fury = gained
+	}
+
+	if swordDmg > 0 {
+		if furied {
+			defender.HP -= swordDmg
+			effects.Damage += swordDmg
+		} else {
+			absorbed := swordDmg
+			if defender.Armor < absorbed {
+				absorbed = defender.Armor
+			}
+			defender.Armor -= absorbed
+			effects.ArmorDamage += absorbed
+			dealt := swordDmg - absorbed
+			defender.HP -= dealt
+			effects.Damage += dealt
+		}
+	}
+
+	if fireDmg > 0 {
+		defender.HP -= fireDmg
+		effects.Damage += fireDmg
+	}
+
+	if defender.HP < 0 {
+		defender.HP = 0
+	}
+
+	if defender.HP > 0 && (counts[tileSword] > 0 || counts[tileFireSword] > 0) && defenderArmorBefore >= reflectThreshold {
+		attacker.HP -= reflectDamage
+		if attacker.HP < 0 {
+			attacker.HP = 0
+		}
+		effects.Reflect = reflectDamage
 	}
 
 	healing := counts[tileHeart]*healHeart + counts[tileGreaterHeart]*greaterHeartHeal

@@ -25,7 +25,7 @@
 
 **Bộ icon có lỗi khả đọc thật**, không phải chuyện thẩm mỹ: bàn 8×8 hiện chỉ có **3 màu đọc được** cộng 3 khối xám-lam. Kiếm và Lửa cùng hue 31°; Đá và Nước cùng hệ lam.
 
-**Hướng đã chốt:** 6 ô mới với **Kiếm là nguồn damage duy nhất**, ba thanh (HP / Nội Lực / Nộ), hệ thống nổ 4 tầng, bảng màu 6 hue cách đều tối thiểu 35°.
+**Hướng đã chốt (Phương án B):** 6 ô mới với **Kiếm là nguồn damage** (Kiếm thường bị giáp chặn, Kiếm Lửa xuyên giáp), ba thanh **HP 200 / Nội Lực 100 / Nộ 100**, giữ 2 ô đặc biệt (Kiếm Lửa + Đại Trái Tim), **nổ theo loại ô** (Lôi nổ chữ thập, Kiếm Lửa nổ 3×3), bảng màu 6 hue cách đều tối thiểu 35°.
 
 ---
 
@@ -46,6 +46,20 @@ Luật nằm hoàn toàn ở server, client chỉ là máy chiếu:
 - Hoa hồng 5% (`WARGOD_COMMISSION_PERCENT`), thắng cược nhận `+0,95 × bet`
 
 Đã kiểm phần cược: client chặn `bet > ken` và `bet > maxBet`, server chặn qua `ensureCanBet` (balance) và hằng `MaxBet` — `maxBet` client nhận chính là `engine.MaxBet` nên **không có lỗ hổng** ở đây.
+
+### 1.1 Bộ ô & tài sản hiện có (đã verify trong code)
+
+Chốt lại điểm xuất phát để phân biệt "đang có" với "sẽ thêm". **Đào Tiên / Nộ / Lôi / hệ nổ đều chưa tồn tại** — toàn bộ mục 3–7 là làm mới, không phải sửa.
+
+| Hạng mục | Hiện tại |
+|---|---|
+| Bộ ô | 6 base: `sword · fire · heart · water · shield · stone` + special `fireSword`, `greaterHeart` ([core.ts:4-7](../game/war-god/logic/core.ts#L4-L7)) |
+| Assets | `sword/fire/heart/water/shield/stone/fire-sword-v1/greater-heart-v1` — **không có** `peach.png`, `lightning.png` |
+| Thanh | 2 thanh HP + MP (nội lực). **Chưa có** thanh/flag Nộ |
+| Nổ | **Không** có cơ chế nổ nào |
+| Đào / ×2 / xuyên giáp | **Không** tồn tại — `Fighter` chỉ có `HP/MP/Armor` ([battle.go:20-24](../server/internal/game/games/war-god/battle.go#L20-L24)) |
+| Guide in-game | Chỉ nhắc `❤️ Tim · 💧 Nước · tuyệt chiêu 50 nội lực` ([guide-popup.ts:11-18](../game/war-god/screens/lobby/guide-popup.ts#L11-L18)) |
+| StateVersion | `1` |
 
 ---
 
@@ -104,18 +118,25 @@ khiên    211x256   169,8°   13%     50%   ← đục
 
 ## 3. Bộ 6 ô mới
 
-**Nguyên tắc: chỉ Kiếm gây damage.** Người mới mở game ra là hiểu ngay, và mỗi ô có một vai tuyệt đối không trùng ai.
+**Nguyên tắc: chỉ Kiếm (thường + Kiếm Lửa) gây damage.** Người mới mở game ra là hiểu ngay, và mỗi ô có một vai không trùng ai.
 
 | ô | vai | trị số |
 |---|---|---|
-| ⚔️ **Kiếm** | **Nguồn damage duy nhất từ ô.** Giáp chặn được | **7/ô** |
+| ⚔️ **Kiếm** | Nguồn damage chính. **Giáp chặn được** | **7/ô** |
 | 🍑 **Đào Tiên** | Nạp thanh Nộ | **+10 Nộ/ô** |
-| 💧 **Nước** | Nạp Nội Lực | **+7 MP/ô** |
+| 💧 **Nước / Xoáy Âm Dương** | Nạp Nội Lực (mana) | **+7 MP/ô** |
 | ❤️ **Tim** | Hồi máu | **5/ô** |
 | 🛡️ **Khiên** | Giáp, tiêu hao 2/lượt, ≥20 giáp thì phản 2 dmg | **5/ô**, cap 30 |
 | ⚡ **Lôi** | **0 damage tự thân** — nổ chữ thập 5 ô | nổ |
 
-**HP: 100 → 120** để cú Nộ không one-shot.
+**2 ô đặc biệt** (giữ từ game hiện tại, sinh hiếm ~1/60, là biến thể của ô thường — ghép chung với ô gốc được):
+
+| ô | sinh từ | vai | trị số |
+|---|---|---|---|
+| 🔥⚔️ **Kiếm Lửa** | Kiếm | Damage **xuyên giáp** + **nổ khối 3×3** | **12/ô** |
+| ❤️➕ **Đại Trái Tim** | Tim | Hồi máu nhiều | **10/ô** |
+
+**Ba thanh: HP 200 · Nội Lực (mana) 100 · Nộ 100.** Để HP 200 cho trận **dài hơn** — máu ít thì trận kết thúc quá nhanh; đồng thời cú Nộ/ult không one-shot. *(Trị số damage/hồi ở trên là điểm khởi đầu cho HP 200, cần playtest lại nhịp trận.)*
 
 ### Vì sao bộ này tốt hơn
 
@@ -184,53 +205,56 @@ Kỹ thuật: đổi `r.tile()` từ `next() % tileCount` ([board.go:37-39](../s
 
 ---
 
-## 6. Hệ thống nổ — 4 tầng leo thang
+## 6. Hệ thống nổ (theo loại ô)
 
-| Nguồn | Hình nổ | Số ô | Độ khó |
+**Nổ = xoá thêm các ô quanh cụm ghép, và các ô bị nổ VẪN tính hiệu ứng.** Damage/hồi/mana đến từ chính các ô bị nổ trúng. Nổ đến từ **loại ô**, không phải từ hình ghép.
+
+| Nguồn | Điều kiện | Hình nổ | Số ô nổ thêm |
 |---|---|---|---|
-| Ghép 3 ⚡ **Lôi** | chữ thập | 5 | tự nhiên, xảy ra liên tục |
-| **BÙNG NỔ** — ghép hình L/T | 3×3 | 9 | cần dựng hình |
-| **PHÙ VĂN** — ghép 4 thẳng | cả hàng hoặc cả cột | 8 | cần ghép 4 |
-| **THẦN KHÍ** — ghép 5 thẳng | xoá **toàn bộ 1 loại ô** | ~10 rải rác | cascade lớn nhất |
+| ⚡ **Lôi** | ghép 3 Lôi | chữ thập (+) | 4 ô kề mỗi Lôi |
+| 🔥⚔️ **Kiếm Lửa** | nằm trong cụm ghép (ghép chung Kiếm được) | khối 3×3 | 8 ô quanh mỗi Kiếm Lửa |
 
-Ô bị nổ vẫn tính hiệu ứng đầy đủ → nổ sinh cascade, cascade sinh nổ tiếp.
+> Lôi **0 damage tự thân** — giá trị là nổ trúng ô Kiếm để lôi damage ra. Kiếm Lửa vừa tự gây 12 damage xuyên giáp, vừa nổ 3×3.
 
-**Ghép 2 ô đặc biệt cạnh nhau** — chỗ dành cho người chơi giỏi:
+### Cách tính (một wave)
 
-| Kết hợp | Kết quả |
-|---|---|
-| Phù Văn + Phù Văn | chữ thập đầy: cả hàng **và** cả cột (15 ô) |
-| Phù Văn + Bùng Nổ | nổ 3 hàng liền |
-| Bùng Nổ + Bùng Nổ | nổ 5×5 |
-| Thần Khí + ô đặc biệt | biến **mọi ô cùng loại** thành ô đặc biệt đó rồi nổ hết |
-| Thần Khí + Thần Khí | xoá sạch bàn |
+```
+1. findMatches       → cụm ghép ≥3 (counts + danh sách ô match)
+2. computeExplosions → từ ô Lôi / Kiếm Lửa TRONG cụm, gom thêm ô bị nổ
+3. gộp counts        → cộng loại của ô bị nổ vào bảng đếm
+4. applyTileEffects  → tính damage/hồi/mana/giáp MỘT LẦN từ counts đã gộp
+5. gravity + spawn   → ô trống rơi xuống, sinh ô mới
+6. lặp lại từ (1)    → cascade nếu tạo cụm mới
+```
 
-### Đổi luật thêm lượt cho khớp
+### Quy tắc
 
-Hiện match-4 cho thêm lượt. Nếu match-4 vừa tạo Phù Văn vừa cho thêm lượt thì quá mạnh:
+- **Không nổ dây tầng-2**: vùng nổ trúng một ô Lôi/Kiếm Lửa khác thì ô đó biến mất, **không** kích nổ tiếp (tránh vô tận). Nổ dây vẫn xảy ra tự nhiên qua bước rơi (5) → tạo cụm mới → nổ mới.
+- **Nộ ×2 chốt theo Nộ TRƯỚC wave**: chỉ ×2 khi thanh Nộ đã đầy 100 *từ trước khi* wave này tính effect, áp cho damage Kiếm/Kiếm Lửa **kể cả** phần damage từ ô Kiếm bị nổ trúng, rồi reset về 0. Ô **Đào ăn trong chính wave này chỉ nạp Nộ cho các nước sau**, không tự làm đầy-rồi-×2 ngay trong wave (tránh mơ hồ thứ tự nạp/tiêu; khớp `applyTileEffects` server & client).
+- **Deterministic**: nổ chỉ dựa vị trí ô, không tiêu RNG → PvP replay khớp tuyệt đối giữa 2 máy.
 
-- match-4 → **tạo Phù Văn, không thêm lượt**
-- thêm lượt chuyển thành thưởng cho **cascade ≥ 3 wave**
+### Ví dụ
 
-Thêm lượt hiện tại là thưởng cho *may mắn có 4 ô thẳng hàng*; sau khi đổi là thưởng cho *kỹ năng dựng cascade*.
+- Ghép 3 **Lôi** nổ trúng 3 Kiếm + 2 Tim + 1 Nước → **21 damage** (3×7, bị giáp chặn) + 10 HP + 7 MP, dù Lôi tự thân 0 damage.
+- Ghép **Kiếm + Kiếm Lửa + Kiếm**: cụm = 2×7 + 1×12 (xuyên giáp) = **26**; Kiếm Lửa nổ 3×3 trúng thêm 3 Nước + 2 Tim + 1 Kiếm → **+7 damage, +21 MP, +10 HP**.
 
-### Không có cascade multiplier
+### Thêm lượt & hệ nhân
 
-Đã có Nộ ×2 làm hệ nhân duy nhất. **Nổ là nguồn cascade, Nộ là nguồn nhân — mỗi hệ một việc.** Thêm hệ nhân thứ hai là nhân chồng nhân gây one-shot.
-
-Kể cả vậy, `3 Kiếm trong Nộ (42) + Phù Văn nổ cả hàng + cascade` vẫn có thể vọt cao. Cần một van an toàn chỉnh được (cap damage/nước, hoặc Nộ chỉ ×2 ở wave đầu) và phải playtest.
+- **Thêm lượt**: ghép ≥4 thẳng hàng (`maxRun≥4`) **hoặc** dọn ≥5 ô trong một wave (`cells≥5`, gồm cả hình chữ T/L/thập không thẳng hàng) → đi thêm 1 lượt.
+- **Chỉ Nộ là hệ nhân duy nhất.** Nổ là nguồn *cascade*, Nộ là nguồn *nhân* — không chồng hệ nhân thứ hai để tránh one-shot.
+- Van an toàn cần playtest: cụm Kiếm lớn trong Nộ + nổ + cascade vẫn có thể vọt cao (cân nhắc cap damage/wave, hoặc Nộ chỉ ×2 ở wave đầu). Với HP 200 thì rủi ro one-shot đã giảm hẳn.
 
 ---
 
-## 7. Bỏ 2 đặc kỹ cũ
+## 7. Ô đặc biệt: giữ Kiếm Lửa + Đại Trái Tim
 
-**Hoả Kiếm** (kiếm + lửa) chết theo ô Lửa.
+Phương án B **giữ 2 ô đặc biệt** sẵn có trong game (`fireSword`, `greaterHeart`) — biến thể của Kiếm/Tim, sinh hiếm ~1/60, ghép chung với ô gốc được. Kiếm Lửa nay thêm **nổ 3×3** (mục 6).
 
-**Đại Trái Tim** cũng bỏ: hồi máu giờ chỉ 12,5% HP/nước so với damage 17,5% nên thế thủ đã tự yếu — không cần cơ chế chống thủ riêng, giữ nó chỉ làm loãng.
+**Đã loại bỏ** hệ "ô đặc biệt tạo theo hình ghép" (Phù Văn match-4 / Bùng Nổ hình L-T / Thần Khí match-5) từng cân nhắc ở bản nháp trước: nó bắt phải refactor `findMatches` để nhận diện hình dạng và thêm một tầng phức tạp lớn. Với B, **nổ đến từ loại ô** (Lôi, Kiếm Lửa) chứ không từ hình ghép → đơn giản hơn nhiều, không cần refactor findMatches, mà vẫn có cascade và cao trào.
 
-Nguồn "khoảnh khắc" giờ đã có ba: Nộ, ult, và hệ thống nổ. Thêm đặc kỹ nữa là bloat.
+Nguồn "khoảnh khắc" đã đủ ba: **Nộ, ult, và nổ** (Lôi + Kiếm Lửa). Thêm nữa là bloat.
 
-> *Ghi chú vui:* `flyMatched` hiện chỉ bay ô kiếm về card đối thủ ([battle/index.ts:372-383](../game/war-god/screens/battle/index.ts#L372-L383)) — FX có sẵn này **khớp hoàn hảo** với thiết kế mới, không phải sửa gì.
+> *Ghi chú:* `flyMatched` hiện bay ô kiếm về card đối thủ ([battle/index.ts:372-383](../game/war-god/screens/battle/index.ts#L372-L383)) — FX có sẵn khớp với thiết kế mới, không phải sửa gì.
 
 ---
 
@@ -290,17 +314,18 @@ So với hiện tại là bước nhảy lớn: bàn đang chỉ có **3 màu đ
 | Outline | Chốt một chuẩn duy nhất — đề xuất viền self-color darken 45% + rim light trên-trái |
 | Tên file | Bỏ hậu tố `-v1` |
 
-### 9.3 Art cho ô đặc biệt — dùng overlay
+### 9.3 Art cho ô đặc biệt & FX nổ — dùng overlay
 
-Giữ 6 icon gốc, phủ lớp lên:
+Giữ icon gốc, phủ lớp lên (2 ô đặc biệt là biến thể của Kiếm/Tim):
 
-| Ô | Cách thể hiện |
+| Ô / FX | Cách thể hiện |
 |---|---|
-| Phù Văn ngang/dọc | Vệt sáng chạy ngang/dọc phía sau icon |
-| Bùng Nổ | Vòng lửa quay quanh icon |
-| Thần Khí | Hào quang chuyển sắc + xoay nhẹ |
+| 🔥⚔️ Kiếm Lửa | Icon Kiếm + hào quang lửa cam quanh viền |
+| ❤️➕ Đại Trái Tim | Icon Tim + vầng sáng + lớn hơn ~10% |
+| FX nổ Lôi (chữ thập) | Chớp tím + vệt sáng dọc/ngang |
+| FX nổ Kiếm Lửa (3×3) | Bùng lửa cam + vòng sốc |
 
-Cả ba đều là hình học → làm được bằng Pixi Graphics, **không cần hoạ sĩ**.
+Tất cả đều là hình học/particle → làm được bằng Pixi Graphics, **không cần hoạ sĩ** (xem mục 11.8).
 
 ### 9.4 Phân định việc
 
@@ -338,25 +363,25 @@ Lưu ý: [hud.ts:189](../game/war-god/screens/battle/hud.ts#L189) đang tái dù
 
 | Phần | Việc |
 |---|---|
-| [`board.go`](../server/internal/game/games/war-god/board.go) | `tileFire`→`tilePeach`, `tileStone`→`tileLightning` + `tileNames` · weighted spawn · encode kind `cell = type \| (kind<<3)` · **refactor `findMatches`** |
-| [`battle.go`](../server/internal/game/games/war-god/battle.go) | Viết lại `applyTileEffects` (một loại damage) · `Fighter` thêm `fury` · giáp tiêu hao + phản dmg · xoá `specialProgress` |
-| [`logic.go`](../server/internal/game/games/war-god/logic.go) | Nộ, ult scale, step mới, resolve nổ đệ quy, `StateVersion` 1→**2** |
+| [`board.go`](../server/internal/game/games/war-god/board.go) | `tileFire`→`tilePeach`, `tileStone`→`tileLightning` + `tileNames` · weighted spawn · thêm `computeExplosions` (Lôi chữ thập, Kiếm Lửa 3×3) |
+| [`battle.go`](../server/internal/game/games/war-god/battle.go) | Viết lại `applyTileEffects` (Kiếm bị chặn + Kiếm Lửa xuyên giáp) · `Fighter` thêm `fury` (Nộ) · giáp tiêu hao + phản dmg · HP 200/MP 100/Nộ 100 |
+| [`logic.go`](../server/internal/game/games/war-god/logic.go) | Nộ, ult scale, `Step.Exploded`, resolve nổ trong cascade, `StateVersion` 1→**2** |
 | [`logic_test.go`](../server/internal/game/games/war-god/logic_test.go) | Phần lớn 20 test phải viết lại |
 | [`server-types.ts`](../game/war-god/logic/server-types.ts) | `TILE_ORDER`, `decodeTile` (`n & 7` + kind), fallback `?? 'stone'` |
-| [`hud.ts`](../game/war-god/screens/battle/hud.ts) | Thanh Nộ, card 162, đèn báo Nộ đầy |
+| [`hud.ts`](../game/war-god/screens/battle/hud.ts) | Thanh Nộ, card 152, nút Tuyệt Chiêu thu nhỏ + badge giáp nằm ngang cạnh nút, đèn báo Nộ đầy |
 | [`battle/index.ts`](../game/war-god/screens/battle/index.ts) | Replay step nổ, FX nổ, phát sáng ô Kiếm khi Nộ đầy, hằng số layout |
 | [`guide-popup.ts`](../game/war-god/screens/lobby/guide-popup.ts) | Viết lại toàn bộ (xem 11.4) |
 | assets | 2 icon mới (Đào Tiên, Lôi) · recolor 4 icon còn lại · overlay ô đặc biệt |
 
-### 11.2 Phần khó nhất: refactor `findMatches`
+### 11.2 `findMatches` KHÔNG cần refactor
 
-Hiện nó quét hàng và cột **độc lập** rồi trộn vào một set phẳng ([board.go:69-110](../server/internal/game/games/war-god/board.go#L69-L110)) → **không biết được run nào dài 4 hay 5, theo hướng nào, và không phát hiện được hình L/T**.
+Phương án B nổ theo **loại ô** (Lôi, Kiếm Lửa) chứ không theo **hình ghép**, nên `findMatches` giữ nguyên — `maxRun` sẵn có đã đủ cho luật thêm lượt. Chỉ cần thêm:
 
-Phải trả về **danh sách run** (điểm đầu, bước, độ dài) thay vì set phẳng, rồi mới suy ra ô đặc biệt nào được tạo và ở đâu.
+- `computeExplosions(board, matched) []int` — từ ô Lôi (chữ thập) / Kiếm Lửa (3×3) trong cụm, trả về danh sách ô bị nổ thêm.
+- `Step.Exploded []int` để client biết ô nào nổ mà vẽ FX.
+- Trong vòng cascade của `Apply`: gộp ô nổ vào `removed` và cộng loại của chúng vào `counts` **trước** `applyTileEffects`.
 
-Encode kind: `cell = type | (kind << 3)` — bits 0-2 loại ô, bits 3-5 kind (0 thường, 1 Phù Văn ngang, 2 Phù Văn dọc, 3 Bùng Nổ, 4 Thần Khí). `findMatches` so `cell & 7`. Giữ `Board []int`, không phá wire format.
-
-Client: `decodeTile` ([server-types.ts:69](../game/war-god/logic/server-types.ts#L69)) là **điểm indirection duy nhất** phải đổi — kiến trúc hiện tại đã đặt sẵn chỗ này.
+**Không** cần encode kind vào tile, **không** cần nhận diện hình L/T/4/5. `fireSword`/`greaterHeart` đã là tile type sẵn có trong `tileCount` → `decodeTile` ([server-types.ts:69](../game/war-god/logic/server-types.ts#L69)) chỉ cần thêm 2 tên ô mới (`peach`, `lightning`), là điểm indirection duy nhất phải đổi.
 
 ### 11.3 Phải làm trước tất cả: dọn việc viết luật hai lần
 
@@ -397,21 +422,45 @@ Hiện chỉ log `move_count`. Cần log thêm: phân bố loại ô đã ghép,
 
 **Không có dữ liệu thì cân bằng chỉ là đoán.**
 
+### 11.8 FX nổ — hạ tầng animation đã có sẵn (đánh giá độ khó)
+
+Đã verify: **animation nổ là phần nhẹ nhất của tính năng**, vì bộ công cụ FX của war-god đã đủ. Phần tốn công là *logic* nổ ở server (§6, §11.2), không phải phần nhìn.
+
+Mảnh dùng lại được ngay:
+
+| Có sẵn | Vị trí | Dùng cho nổ |
+|---|---|---|
+| `tween(target, {alpha,scale,x,y}, dur)` (Promise) | [kit.ts:19](../game/war-god/kit.ts#L19) | animate mọi thứ 1 dòng |
+| Xoá ô match: co lại + mờ dần | [index.ts:439](../game/war-god/screens/battle/index.ts#L439) | áp đúng anim này cho các ô trong `Step.Exploded` |
+| Hiệu ứng "bùng" (2 vòng cam/vàng, bung + mờ) | [index.ts:385-389](../game/war-god/screens/battle/index.ts#L385-L389) | mầm sẵn của FX nổ — chỉnh màu/cỡ |
+| Flash trắng | [index.ts:609-618](../game/war-god/screens/battle/index.ts#L609-L618) | chớp lúc nổ |
+| `AnimatedSprite` + bộ cắt spritesheet (đang dùng cho `ult.png`) | [index.ts:512-523](../game/war-god/screens/battle/index.ts#L512-L523), [:545](../game/war-god/screens/battle/index.ts#L545) | nếu muốn nổ bằng ảnh động |
+| Vòng replay cascade (`await`/`sleep` tuần tự `match → gravity`) | `resolveCascades` [index.ts:677](../game/war-god/screens/battle/index.ts#L677) | chèn thêm 1 nhịp `await` "nổ" vào giữa |
+
+Độ khó phần nhìn:
+
+| Cách | Độ khó | Ghi chú |
+|---|---|---|
+| **Procedural** (flash + vòng sốc + hạt, thuần Pixi Graphics) | 🟢 Dễ (~vài giờ) | **Không cần art.** Dùng lại burst [:385](../game/war-god/screens/battle/index.ts#L385): tím-chữ thập cho Lôi, cam-3×3 cho Kiếm Lửa |
+| **Spritesheet** (ảnh động đẹp hơn) | 🟡 Trung bình | Hạ tầng có sẵn như `ult.png`, chỉ cần **1 PNG explosion** + wiring |
+
+**Đề xuất:** làm procedural trước (đủ đẹp, không chờ art), thay spritesheet sau nếu cần — không phải viết lại gì.
+
 ---
 
 ## 12. Thứ tự triển khai
 
 | Phase | Nội dung | StateVersion |
 |---|---|---|
-| **0** | Bot server-side + xoá luật TS · recolor 4 icon + atlas + pipeline · trị số ra config · telemetry · viết lại hướng dẫn | Không đổi → **deploy an toàn** |
-| **1** | Bộ 6 ô mới (Đào Tiên, Lôi) · Kiếm là damage duy nhất · weighted spawn · giáp tiêu hao + phản dmg · ult scale · HP 120 · bỏ 2 đặc kỹ cũ | **Có** |
-| **2** | Thanh Nộ + HUD 162px + đèn báo + phát sáng ô Kiếm | Có |
-| **3** | Hệ thống nổ 4 tầng + combo ô đặc biệt + đổi luật thêm lượt | Có |
+| **0** | Bot server-side + xoá luật TS · recolor icon + atlas + pipeline · trị số ra config · telemetry · viết lại hướng dẫn | Không đổi → **deploy an toàn** |
+| **1** | Bộ 6 ô mới (Đào Tiên, Lôi) · Kiếm là nguồn damage · weighted spawn · giáp tiêu hao + phản dmg · ult scale · **HP 200 / MP 100 / Nộ 100** · giữ Kiếm Lửa + Đại Trái Tim | **Có** |
+| **2** | Thanh Nộ + HUD (thêm 1 thanh) + đèn báo + phát sáng ô Kiếm khi Nộ đầy | Có |
+| **3** | Hệ nổ theo loại ô (Lôi chữ thập + Kiếm Lửa 3×3): `computeExplosions` + `Step.Exploded` + FX nổ procedural | Có |
 | **4** | Tử Chiến / chống kéo trận (mục 8) | Có |
 
 **Phase 1 và 2 nên gộp một đợt deploy** — cùng bump StateVersion một lần, đỡ phải huỷ trận hai lần.
 
-**Phase 3 đứng riêng** vì nó đụng `findMatches` và cần playtest nhiều nhất.
+**Phase 3** nhẹ hơn hẳn bản nháp cũ (không refactor `findMatches`, không hệ ô-đặc-biệt-theo-hình) — chủ yếu là `computeExplosions` + animation nổ (mục 11.8).
 
 ---
 
