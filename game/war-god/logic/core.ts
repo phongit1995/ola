@@ -35,6 +35,16 @@ export interface GravityResult {
   spawns: Spawn[];
 }
 
+export interface LightningArc {
+  source: number;
+  target: number;
+}
+
+export interface ExplosionPlan {
+  exploded: number[];
+  lightningArcs: LightningArc[];
+}
+
 function randBase(): BaseTileType {
   const r = Math.random() * 100;
   if (r < 22) return 'sword';
@@ -174,32 +184,59 @@ export function findValidMoves(board: Board): Array<[number, number]> {
   return moves;
 }
 
-export function computeExplosions(board: Board, matched: Set<number>): number[] {
+export function computeExplosions(
+  board: Board,
+  matched: Set<number>,
+  random: () => number = Math.random,
+): ExplosionPlan {
   const set = new Set<number>();
   const add = (x: number, y: number): void => {
     if (x >= 0 && x < GRID && y >= 0 && y < GRID) set.add(y * GRID + x);
   };
+
+  // Kiếm Lửa vẫn nổ khối 3×3 như cũ. Tính vùng này trước để các mục tiêu
+  // ngẫu nhiên của Lôi luôn là những ô bị ăn thêm thật sự.
   matched.forEach((i) => {
     const x = i % GRID;
     const y = Math.floor(i / GRID);
     const t = board[i];
-    if (t === 'lightning') {
-      add(x, y - 1);
-      add(x, y + 1);
-      add(x - 1, y);
-      add(x + 1, y);
-    } else if (t === 'fireSword') {
+    if (t === 'fireSword') {
       for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) add(x + dx, y + dy);
       }
     }
   });
-  const out: number[] = [];
-  set.forEach((i) => {
-    if (!matched.has(i)) out.push(i);
-  });
-  out.sort((a, b) => a - b);
-  return out;
+
+  matched.forEach((i) => set.delete(i));
+  const lightningSources = [...matched]
+    .filter((i) => board[i] === 'lightning')
+    .sort((a, b) => a - b);
+  const lightningArcs: LightningArc[] = [];
+
+  if (lightningSources.length > 0) {
+    const pool: number[] = [];
+    for (let i = 0; i < CELLS; i++) {
+      if (!matched.has(i) && !set.has(i)) pool.push(i);
+    }
+    const targetCount = Math.min(lightningSources.length, pool.length);
+    for (let order = 0; order < targetCount; order++) {
+      const rawPick = Math.floor(random() * pool.length);
+      const pick = Math.max(0, Math.min(pool.length - 1, rawPick));
+      const target = pool[pick];
+      pool[pick] = pool[pool.length - 1];
+      pool.pop();
+      set.add(target);
+      lightningArcs.push({
+        source: lightningSources[order % lightningSources.length],
+        target,
+      });
+    }
+  }
+
+  return {
+    exploded: [...set].sort((a, b) => a - b),
+    lightningArcs,
+  };
 }
 
 export function applyGravity(board: Board, removed: Set<number>): GravityResult {

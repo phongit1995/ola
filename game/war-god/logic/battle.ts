@@ -188,12 +188,18 @@ export function botChooseMove(
   let bestScore = -1;
 
   for (const move of moves) {
+    let previewSeed = (((move[0] + 1) * 1103515245) ^ ((move[1] + 1) * 12345)) >>> 0;
+    const previewRandom = (): number => {
+      previewSeed = (Math.imul(previewSeed, 1664525) + 1013904223) >>> 0;
+      return previewSeed / 0x1_0000_0000;
+    };
     swapCells(board, move[0], move[1]);
     const match = findMatches(board);
     let counts: Record<TileType, number> | null = null;
     if (match) {
       counts = { ...match.counts };
-      for (const idx of computeExplosions(board, match.cells)) counts[board[idx]]++;
+      const plan = computeExplosions(board, match.cells, previewRandom);
+      for (const idx of plan.exploded) counts[board[idx]]++;
     }
     swapCells(board, move[0], move[1]);
     if (!counts) continue;

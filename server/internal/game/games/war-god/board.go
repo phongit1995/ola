@@ -199,23 +199,19 @@ func matchBonusTurns(board []int, matchedCount int) int {
 	return bonusTurns
 }
 
-func computeExplosions(board []int, matched map[int]bool) []int {
+func computeExplosions(board []int, matched map[int]bool, r *rng) ([]int, []LightningArc) {
 	set := map[int]bool{}
 	add := func(x, y int) {
 		if x >= 0 && x < grid && y >= 0 && y < grid {
 			set[y*grid+x] = true
 		}
 	}
+	// Resolve Fire Sword first so Lightning always chooses additional cells
+	// instead of wasting a target inside the existing 3x3 blast.
 	for i := range matched {
 		x := i % grid
 		y := i / grid
-		switch board[i] {
-		case tileLightning:
-			add(x, y-1)
-			add(x, y+1)
-			add(x-1, y)
-			add(x+1, y)
-		case tileFireSword:
+		if board[i] == tileFireSword {
 			for dy := -1; dy <= 1; dy++ {
 				for dx := -1; dx <= 1; dx++ {
 					add(x+dx, y+dy)
@@ -223,14 +219,48 @@ func computeExplosions(board []int, matched map[int]bool) []int {
 			}
 		}
 	}
-	out := make([]int, 0, len(set))
-	for i := range set {
-		if !matched[i] {
-			out = append(out, i)
+	for i := range matched {
+		delete(set, i)
+	}
+
+	lightningSources := make([]int, 0, len(matched))
+	for i := range matched {
+		if board[i] == tileLightning {
+			lightningSources = append(lightningSources, i)
 		}
 	}
+	sort.Ints(lightningSources)
+	lightningArcs := make([]LightningArc, 0, len(lightningSources))
+	if len(lightningSources) > 0 {
+		pool := make([]int, 0, boardSize-len(matched)-len(set))
+		for i := 0; i < boardSize; i++ {
+			if !matched[i] && !set[i] {
+				pool = append(pool, i)
+			}
+		}
+		targetCount := len(lightningSources)
+		if len(pool) < targetCount {
+			targetCount = len(pool)
+		}
+		for order := 0; order < targetCount; order++ {
+			pick := int(r.next() % uint64(len(pool)))
+			target := pool[pick]
+			pool[pick] = pool[len(pool)-1]
+			pool = pool[:len(pool)-1]
+			set[target] = true
+			lightningArcs = append(lightningArcs, LightningArc{
+				Source: lightningSources[order%len(lightningSources)],
+				Target: target,
+			})
+		}
+	}
+
+	out := make([]int, 0, len(set))
+	for i := range set {
+		out = append(out, i)
+	}
 	sort.Ints(out)
-	return out
+	return out, lightningArcs
 }
 
 func areAdjacent(a, b int) bool {

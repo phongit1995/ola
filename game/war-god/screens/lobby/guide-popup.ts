@@ -9,7 +9,7 @@ const GUIDE_LINES = [
   '⚔️ Kiếm 7 dmg (giáp chặn được)',
   '💧 Nước +7 nội lực · 🍑 Đào +10 Nộ',
   '❤️ Tim +5 máu · 🛡️ Khiên +5 giáp (tối đa 30)',
-  '⚡ Lôi: ghép 3 → nổ chữ thập 5 ô',
+  '⚡ Lôi: ghép 3/4 → giật 3/4 ô ngẫu nhiên',
   '',
   '🔥⚔️ Kiếm Lửa (hiếm): 12 dmg xuyên giáp + nổ 3×3',
   '❤️➕ Tim Lớn (hiếm): hồi 10 máu',

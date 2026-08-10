@@ -1,4 +1,4 @@
-import type { Board, TileType } from './core';
+import type { Board, LightningArc, TileType } from './core';
 
 export const TILE_ORDER: TileType[] = [
   'sword',
@@ -28,6 +28,7 @@ export interface StepMatch {
   kind: 'match';
   cells: number[];
   exploded?: number[];
+  lightningArcs?: LightningArc[];
   counts: Partial<Record<TileType, number>>;
   maxRun: number;
   bonusTurns?: number;

@@ -25,7 +25,7 @@
 
 **Bộ icon có lỗi khả đọc thật**, không phải chuyện thẩm mỹ: bàn 8×8 hiện chỉ có **3 màu đọc được** cộng 3 khối xám-lam. Kiếm và Lửa cùng hue 31°; Đá và Nước cùng hệ lam.
 
-**Hướng đã chốt (Phương án B):** 6 ô mới với **Kiếm là nguồn damage** (Kiếm thường bị giáp chặn, Kiếm Lửa xuyên giáp), ba thanh **HP 200 / Nội Lực 100 / Nộ 100**, giữ 2 ô đặc biệt (Kiếm Lửa + Đại Trái Tim), **nổ theo loại ô** (Lôi nổ chữ thập, Kiếm Lửa nổ 3×3), bảng màu 6 hue cách đều tối thiểu 35°.
+**Hướng đã chốt (Phương án B):** 6 ô mới với **Kiếm là nguồn damage** (Kiếm thường bị giáp chặn, Kiếm Lửa xuyên giáp), ba thanh **HP 200 / Nội Lực 100 / Nộ 100**, giữ 2 ô đặc biệt (Kiếm Lửa + Đại Trái Tim), **nổ theo loại ô** (Lôi ghép bao nhiêu giật bấy nhiêu ô ngẫu nhiên, Kiếm Lửa nổ 3×3), bảng màu 6 hue cách đều tối thiểu 35°.
 
 ---
 
@@ -127,7 +127,7 @@ khiên    211x256   169,8°   13%     50%   ← đục
 | 💧 **Nước / Xoáy Âm Dương** | Nạp Nội Lực (mana) | **+7 MP/ô** |
 | ❤️ **Tim** | Hồi máu | **5/ô** |
 | 🛡️ **Khiên** | Giáp, tiêu hao 2/lượt, ≥20 giáp thì phản 2 dmg | **5/ô**, cap 30 |
-| ⚡ **Lôi** | **0 damage tự thân** — nổ chữ thập 5 ô | nổ |
+| ⚡ **Lôi** | **0 damage tự thân** — ghép N Lôi giật N ô ngẫu nhiên | nổ |
 
 **2 ô đặc biệt** (giữ từ game hiện tại, sinh hiếm ~1/60, là biến thể của ô thường — ghép chung với ô gốc được):
 
@@ -149,7 +149,7 @@ khiên    211x256   169,8°   13%     50%   ← đục
 | **Trận có nhịp** | nạp → bung → dồn kiếm. Có sóng, có cao trào |
 | **Sửa luôn lỗi tim quá mạnh** | Hồi máu giờ 12,5% HP/nước so với damage 17,5% → thế thủ tự yếu đi, **không cần cơ chế chống thủ riêng** |
 
-**Lôi là ô hay nhất bộ:** 0 damage nhưng nó **tạo cơ hội đánh** — nổ chữ thập xáo trộn bàn, lôi kiếm về gần nhau, và damage đến từ ô Kiếm bị nổ.
+**Lôi là ô hay nhất bộ:** 0 damage nhưng nó **tạo cơ hội đánh** — giật số mục tiêu bằng số Lôi được ghép, xáo trộn ô rơi, và damage đến từ ô Kiếm bị sét ăn.
 
 ### Cái phải đánh đổi
 
@@ -184,7 +184,7 @@ Chỉ Kiếm gây damage mà Kiếm chiếm 1/6 bàn → sẽ có lượt không
 Ba lớp bảo vệ:
 
 1. **Ult là đường ra.** Bàn không có kiếm thì vẫn bung được tuyệt chiêu. Đây chính là lý do giữ ô Nước
-2. **Ô Lôi để "đào" ra kiếm.** Nổ chữ thập xáo trộn vùng bàn, lôi kiếm về gần nhau
+2. **Ô Lôi để "đào" ra kiếm.** Bốn mục tiêu ngẫu nhiên xáo trộn nhiều cột trên bàn, tạo cơ hội cascade mới
 3. **Không lượt nào là lượt trắng.** Lượt không có kiếm thì nạp Đào, hồi máu, lên giáp — đang đầu tư cho cú đánh sau. Cần truyền đạt qua UI: thanh Nộ nhích lên phải thấy rõ và sướng
 
 ### UX bắt buộc
@@ -207,14 +207,16 @@ Kỹ thuật: đổi `r.tile()` từ `next() % tileCount` ([board.go:37-39](../s
 
 ## 6. Hệ thống nổ (theo loại ô)
 
-**Nổ = xoá thêm các ô quanh cụm ghép, và các ô bị nổ VẪN tính hiệu ứng.** Damage/hồi/mana đến từ chính các ô bị nổ trúng. Nổ đến từ **loại ô**, không phải từ hình ghép.
+**Nổ = xoá thêm ô ngoài cụm ghép, và các ô bị nổ VẪN tính hiệu ứng.** Damage/hồi/mana đến từ chính các ô bị nổ trúng. Nổ đến từ **loại ô**, không phải từ hình ghép.
 
 | Nguồn | Điều kiện | Hình nổ | Số ô nổ thêm |
 |---|---|---|---|
-| ⚡ **Lôi** | ghép 3 Lôi | chữ thập (+) | 4 ô kề mỗi Lôi |
+| ⚡ **Lôi** | có Lôi trong cụm ghép | mỗi ô Lôi phóng sét tới 1 mục tiêu ngẫu nhiên, không trùng | bằng số Lôi được ghép |
 | 🔥⚔️ **Kiếm Lửa** | nằm trong cụm ghép (ghép chung Kiếm được) | khối 3×3 | 8 ô quanh mỗi Kiếm Lửa |
 
-> Lôi **0 damage tự thân** — giá trị là nổ trúng ô Kiếm để lôi damage ra. Kiếm Lửa vừa tự gây 12 damage xuyên giáp, vừa nổ 3×3.
+> Lôi **0 damage tự thân** — giá trị là giật trúng ô Kiếm để lôi damage ra. Kiếm Lửa vừa tự gây 12 damage xuyên giáp, vừa nổ 3×3.
+
+![Mock UI ghép ba Lôi giật ba mục tiêu](./war-god-lightning-mock.png)
 
 ### Cách tính (một wave)
 
@@ -231,11 +233,11 @@ Kỹ thuật: đổi `r.tile()` từ `next() % tileCount` ([board.go:37-39](../s
 
 - **Không nổ dây tầng-2**: vùng nổ trúng một ô Lôi/Kiếm Lửa khác thì ô đó biến mất, **không** kích nổ tiếp (tránh vô tận). Nổ dây vẫn xảy ra tự nhiên qua bước rơi (5) → tạo cụm mới → nổ mới.
 - **Nộ ×2 chốt theo Nộ TRƯỚC wave**: chỉ ×2 khi thanh Nộ đã đầy 100 *từ trước khi* wave này tính effect, áp cho damage Kiếm/Kiếm Lửa **kể cả** phần damage từ ô Kiếm bị nổ trúng, rồi reset về 0. Ô **Đào ăn trong chính wave này chỉ nạp Nộ cho các nước sau**, không tự làm đầy-rồi-×2 ngay trong wave (tránh mơ hồ thứ tự nạp/tiêu; khớp `applyTileEffects` server & client).
-- **Deterministic**: nổ chỉ dựa vị trí ô, không tiêu RNG → PvP replay khớp tuyệt đối giữa 2 máy.
+- **Server-authoritative**: PvP dùng RNG đã lưu trong state để chọn số mục tiêu bằng số Lôi được ghép, rồi gửi cả mapping `source → target` cho hai máy replay giống hệt nhau. Bot chọn mục tiêu một lần và dùng chung kết quả cho effect, FX và gravity.
 
 ### Ví dụ
 
-- Ghép 3 **Lôi** nổ trúng 3 Kiếm + 2 Tim + 1 Nước → **21 damage** (3×7, bị giáp chặn) + 10 HP + 7 MP, dù Lôi tự thân 0 damage.
+- Ghép 3 **Lôi** giật trúng 2 Kiếm + 1 Tim → **14 damage** (2×7, bị giáp chặn) + 5 HP, dù Lôi tự thân 0 damage.
 - Ghép **Kiếm + Kiếm Lửa + Kiếm**: cụm = 2×7 + 1×12 (xuyên giáp) = **26**; Kiếm Lửa nổ 3×3 trúng thêm 3 Nước + 2 Tim + 1 Kiếm → **+7 damage, +21 MP, +10 HP**.
 
 ### Thêm lượt & hệ nhân
@@ -322,7 +324,7 @@ Giữ icon gốc, phủ lớp lên (2 ô đặc biệt là biến thể của Ki
 |---|---|
 | 🔥⚔️ Kiếm Lửa | Icon Kiếm + hào quang lửa cam quanh viền |
 | ❤️➕ Đại Trái Tim | Icon Tim + vầng sáng + lớn hơn ~10% |
-| FX nổ Lôi (chữ thập) | Chớp tím + vệt sáng dọc/ngang |
+| FX Lôi giật N ô | Mỗi ô Lôi phóng một bó tia zigzag tím/trắng tới mục tiêu + vòng impact |
 | FX nổ Kiếm Lửa (3×3) | Bùng lửa cam + vòng sốc |
 
 Tất cả đều là hình học/particle → làm được bằng Pixi Graphics, **không cần hoạ sĩ** (xem mục 11.8).
@@ -363,7 +365,7 @@ Lưu ý: [hud.ts:189](../game/war-god/screens/battle/hud.ts#L189) đang tái dù
 
 | Phần | Việc |
 |---|---|
-| [`board.go`](../server/internal/game/games/war-god/board.go) | `tileFire`→`tilePeach`, `tileStone`→`tileLightning` + `tileNames` · weighted spawn · thêm `computeExplosions` (Lôi chữ thập, Kiếm Lửa 3×3) |
+| [`board.go`](../server/internal/game/games/war-god/board.go) | `tileFire`→`tilePeach`, `tileStone`→`tileLightning` + `tileNames` · weighted spawn · thêm `computeExplosions` (N Lôi giật N ô ngẫu nhiên, Kiếm Lửa 3×3) |
 | [`battle.go`](../server/internal/game/games/war-god/battle.go) | Viết lại `applyTileEffects` (Kiếm bị chặn + Kiếm Lửa xuyên giáp) · `Fighter` thêm `fury` (Nộ) · giáp tiêu hao + phản dmg · HP 200/MP 100/Nộ 100 |
 | [`logic.go`](../server/internal/game/games/war-god/logic.go) | Nộ, ult scale, `Step.Exploded`, resolve nổ trong cascade, `StateVersion` 1→**2** |
 | [`logic_test.go`](../server/internal/game/games/war-god/logic_test.go) | Phần lớn 20 test phải viết lại |
@@ -377,8 +379,8 @@ Lưu ý: [hud.ts:189](../game/war-god/screens/battle/hud.ts#L189) đang tái dù
 
 Phương án B nổ theo **loại ô** (Lôi, Kiếm Lửa) chứ không theo **hình ghép**, nên `findMatches` giữ nguyên — `maxRun` sẵn có đã đủ cho luật thêm lượt. Chỉ cần thêm:
 
-- `computeExplosions(board, matched) []int` — từ ô Lôi (chữ thập) / Kiếm Lửa (3×3) trong cụm, trả về danh sách ô bị nổ thêm.
-- `Step.Exploded []int` để client biết ô nào nổ mà vẽ FX.
+- `computeExplosions(board, matched, rng)` — Kiếm Lửa lấy vùng 3×3; nếu wave có N Lôi thì rút N ô ngoài match/vùng nổ, không hoàn lại.
+- `Step.Exploded []int` giữ union ô bị ăn; `Step.LightningArcs` giữ cặp `source → target` để client vẽ đúng tia sét.
 - Trong vòng cascade của `Apply`: gộp ô nổ vào `removed` và cộng loại của chúng vào `counts` **trước** `applyTileEffects`.
 
 **Không** cần encode kind vào tile, **không** cần nhận diện hình L/T/4/5. `fireSword`/`greaterHeart` đã là tile type sẵn có trong `tileCount` → `decodeTile` ([server-types.ts:69](../game/war-god/logic/server-types.ts#L69)) chỉ cần thêm 2 tên ô mới (`peach`, `lightning`), là điểm indirection duy nhất phải đổi.
@@ -441,7 +443,7 @@ Mảnh dùng lại được ngay:
 
 | Cách | Độ khó | Ghi chú |
 |---|---|---|
-| **Procedural** (flash + vòng sốc + hạt, thuần Pixi Graphics) | 🟢 Dễ (~vài giờ) | **Không cần art.** Dùng lại burst [:385](../game/war-god/screens/battle/index.ts#L385): tím-chữ thập cho Lôi, cam-3×3 cho Kiếm Lửa |
+| **Procedural** (tia zigzag + vòng sốc + hạt, thuần Pixi Graphics) | 🟢 Dễ (~vài giờ) | **Không cần art.** Tia Lôi ba lớp tím/trắng nối nguồn tới đích; burst cam cho Kiếm Lửa |
 | **Spritesheet** (ảnh động đẹp hơn) | 🟡 Trung bình | Hạ tầng có sẵn như `ult.png`, chỉ cần **1 PNG explosion** + wiring |
 
 **Đề xuất:** làm procedural trước (đủ đẹp, không chờ art), thay spritesheet sau nếu cần — không phải viết lại gì.
@@ -455,7 +457,7 @@ Mảnh dùng lại được ngay:
 | **0** | Bot server-side + xoá luật TS · recolor icon + atlas + pipeline · trị số ra config · telemetry · viết lại hướng dẫn | Không đổi → **deploy an toàn** |
 | **1** | Bộ 6 ô mới (Đào Tiên, Lôi) · Kiếm là nguồn damage · weighted spawn · giáp tiêu hao + phản dmg · ult scale · **HP 200 / MP 100 / Nộ 100** · giữ Kiếm Lửa + Đại Trái Tim | **Có** |
 | **2** | Thanh Nộ + HUD (thêm 1 thanh) + đèn báo + phát sáng ô Kiếm khi Nộ đầy | Có |
-| **3** | Hệ nổ theo loại ô (Lôi chữ thập + Kiếm Lửa 3×3): `computeExplosions` + `Step.Exploded` + FX nổ procedural | Có |
+| **3** | Hệ nổ theo loại ô (N Lôi giật N ô ngẫu nhiên + Kiếm Lửa 3×3): `computeExplosions` + mapping tia sét + FX procedural | Có |
 | **4** | Tử Chiến / chống kéo trận (mục 8) | Có |
 
 **Phase 1 và 2 nên gộp một đợt deploy** — cùng bump StateVersion một lần, đỡ phải huỷ trận hai lần.

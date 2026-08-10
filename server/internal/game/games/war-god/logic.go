@@ -30,20 +30,26 @@ type State struct {
 	Steps          []Step     `json:"steps"`
 }
 
+type LightningArc struct {
+	Source int `json:"source"`
+	Target int `json:"target"`
+}
+
 type Step struct {
-	Kind       string         `json:"kind"`
-	A          *int           `json:"a,omitempty"`
-	B          *int           `json:"b,omitempty"`
-	Cells      []int          `json:"cells,omitempty"`
-	Exploded   []int          `json:"exploded,omitempty"`
-	Counts     map[string]int `json:"counts,omitempty"`
-	MaxRun     int            `json:"maxRun,omitempty"`
-	BonusTurns int            `json:"bonusTurns,omitempty"`
-	Effects    *Effects       `json:"effects,omitempty"`
-	Falls      []Fall         `json:"falls,omitzero"`
-	Spawns     []Spawn        `json:"spawns,omitzero"`
-	Board      []int          `json:"board,omitempty"`
-	Damage     int            `json:"damage,omitempty"`
+	Kind          string         `json:"kind"`
+	A             *int           `json:"a,omitempty"`
+	B             *int           `json:"b,omitempty"`
+	Cells         []int          `json:"cells,omitempty"`
+	Exploded      []int          `json:"exploded,omitempty"`
+	LightningArcs []LightningArc `json:"lightningArcs,omitempty"`
+	Counts        map[string]int `json:"counts,omitempty"`
+	MaxRun        int            `json:"maxRun,omitempty"`
+	BonusTurns    int            `json:"bonusTurns,omitempty"`
+	Effects       *Effects       `json:"effects,omitempty"`
+	Falls         []Fall         `json:"falls,omitzero"`
+	Spawns        []Spawn        `json:"spawns,omitzero"`
+	Board         []int          `json:"board,omitempty"`
+	Damage        int            `json:"damage,omitempty"`
 }
 
 type Move struct {
@@ -226,20 +232,21 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			for _, i := range matchedCells {
 				removed[i] = true
 			}
-			exploded := computeExplosions(s.Board, removed)
+			exploded, lightningArcs := computeExplosions(s.Board, removed, r)
 			for _, i := range exploded {
 				counts[s.Board[i]]++
 				removed[i] = true
 			}
 			waveEffects := applyTileEffects(attacker, defender, counts)
 			s.Steps = append(s.Steps, Step{
-				Kind:       stepMatch,
-				Cells:      matchedCells,
-				Exploded:   exploded,
-				Counts:     namedCounts(counts),
-				MaxRun:     maxRun,
-				BonusTurns: bonusTurns,
-				Effects:    &waveEffects,
+				Kind:          stepMatch,
+				Cells:         matchedCells,
+				Exploded:      exploded,
+				LightningArcs: lightningArcs,
+				Counts:        namedCounts(counts),
+				MaxRun:        maxRun,
+				BonusTurns:    bonusTurns,
+				Effects:       &waveEffects,
 			})
 			falls, spawns := applyGravity(s.Board, removed, r)
 			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})

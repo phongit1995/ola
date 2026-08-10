@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
 	"testing"
 )
@@ -264,27 +265,92 @@ func TestComputeExplosions(t *testing.T) {
 		return board
 	}
 
-	cross := swordBoard()
-	cross[27] = tileLightning
-	if got := computeExplosions(cross, map[int]bool{27: true}); !reflect.DeepEqual(got, []int{19, 26, 28, 35}) {
-		t.Fatalf("lightning cross: %v", got)
+	lightning := swordBoard()
+	lightning[27] = tileLightning
+	r1, r2 := &rng{z: 7}, &rng{z: 7}
+	got, arcs := computeExplosions(lightning, map[int]bool{27: true}, r1)
+	gotAgain, arcsAgain := computeExplosions(lightning, map[int]bool{27: true}, r2)
+	if !reflect.DeepEqual(got, gotAgain) || !reflect.DeepEqual(arcs, arcsAgain) || r1.z != r2.z {
+		t.Fatalf("lightning targets are not deterministic: got=%v/%v again=%v/%v", got, arcs, gotAgain, arcsAgain)
+	}
+	if len(got) != 1 || len(arcs) != 1 {
+		t.Fatalf("one matched lightning must eat one cell: exploded=%v arcs=%v", got, arcs)
+	}
+	seen := map[int]bool{}
+	for _, arc := range arcs {
+		if arc.Source != 27 || arc.Target == 27 || arc.Target < 0 || arc.Target >= boardSize || seen[arc.Target] {
+			t.Fatalf("invalid lightning arc: %+v (all=%v)", arc, arcs)
+		}
+		seen[arc.Target] = true
+	}
+	for _, target := range got {
+		if !seen[target] {
+			t.Fatalf("exploded cell %d has no lightning arc: %v", target, arcs)
+		}
 	}
 
 	block := swordBoard()
 	block[27] = tileFireSword
-	if got := computeExplosions(block, map[int]bool{27: true}); !reflect.DeepEqual(got, []int{18, 19, 20, 26, 28, 34, 35, 36}) {
+	if got, arcs := computeExplosions(block, map[int]bool{27: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{18, 19, 20, 26, 28, 34, 35, 36}) || len(arcs) != 0 {
 		t.Fatalf("fire sword 3x3: %v", got)
 	}
 
 	corner := swordBoard()
 	corner[0] = tileFireSword
-	if got := computeExplosions(corner, map[int]bool{0: true}); !reflect.DeepEqual(got, []int{1, 8, 9}) {
+	if got, arcs := computeExplosions(corner, map[int]bool{0: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{1, 8, 9}) || len(arcs) != 0 {
 		t.Fatalf("fire sword clipped at corner: %v", got)
 	}
 
 	plain := swordBoard()
-	if got := computeExplosions(plain, map[int]bool{27: true}); len(got) != 0 {
+	if got, arcs := computeExplosions(plain, map[int]bool{27: true}, &rng{z: 1}); len(got) != 0 || len(arcs) != 0 {
 		t.Fatalf("plain tile must not explode: %v", got)
+	}
+
+	multiple := swordBoard()
+	for _, i := range []int{26, 27, 28} {
+		multiple[i] = tileLightning
+	}
+	_, arcs = computeExplosions(multiple, map[int]bool{26: true, 27: true, 28: true}, &rng{z: 11})
+	wantSources := []int{26, 27, 28}
+	for i, arc := range arcs {
+		if arc.Source != wantSources[i] {
+			t.Fatalf("lightning sources are not distributed round-robin: %v", arcs)
+		}
+	}
+	four := swordBoard()
+	fourMatch := map[int]bool{}
+	for _, i := range []int{25, 26, 27, 28} {
+		four[i] = tileLightning
+		fourMatch[i] = true
+	}
+	fourExploded, fourArcs := computeExplosions(four, fourMatch, &rng{z: 13})
+	if len(fourExploded) != 4 || len(fourArcs) != 4 {
+		t.Fatalf("four matched lightning tiles must eat four cells: exploded=%v arcs=%v", fourExploded, fourArcs)
+	}
+
+	mixed := swordBoard()
+	mixed[27], mixed[28] = tileFireSword, tileLightning
+	mixedMatch := map[int]bool{27: true, 28: true}
+	mixedExploded, mixedArcs := computeExplosions(mixed, mixedMatch, &rng{z: 19})
+	fireArea := map[int]bool{18: true, 19: true, 20: true, 26: true, 34: true, 35: true, 36: true}
+	if len(mixedExploded) != len(fireArea)+1 || len(mixedArcs) != 1 {
+		t.Fatalf("mixed wave did not add one target for one lightning: exploded=%v arcs=%v", mixedExploded, mixedArcs)
+	}
+	for _, arc := range mixedArcs {
+		if fireArea[arc.Target] || mixedMatch[arc.Target] {
+			t.Fatalf("lightning wasted a target in an existing removal: %+v", arc)
+		}
+	}
+
+	nearlyFull := make([]int, boardSize)
+	nearlyFullMatch := map[int]bool{}
+	for i := 0; i < boardSize-2; i++ {
+		nearlyFull[i] = tileLightning
+		nearlyFullMatch[i] = true
+	}
+	limited, limitedArcs := computeExplosions(nearlyFull, nearlyFullMatch, &rng{z: 23})
+	if !reflect.DeepEqual(limited, []int{62, 63}) || len(limitedArcs) != 2 {
+		t.Fatalf("lightning must safely use the remaining target pool: exploded=%v arcs=%v", limited, limitedArcs)
 	}
 }
 
@@ -535,17 +601,83 @@ func TestApplySwapLightningExplodes(t *testing.T) {
 	if !reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58}) {
 		t.Fatalf("unexpected matched cells: %v", matchStep.Cells)
 	}
-	if !reflect.DeepEqual(matchStep.Exploded, []int{48, 49, 50, 59}) {
-		t.Fatalf("unexpected exploded cells: %v", matchStep.Exploded)
+	if len(matchStep.Exploded) != 3 || len(matchStep.LightningArcs) != 3 {
+		t.Fatalf("three lightning tiles must eat three random cells: exploded=%v arcs=%v", matchStep.Exploded, matchStep.LightningArcs)
 	}
-	if !reflect.DeepEqual(matchStep.Counts, map[string]int{"lightning": 3, "sword": 2, "peach": 1, "heart": 1}) {
+	wantSources := []int{56, 57, 58}
+	wantExploded := make([]int, 0, 3)
+	wantCounts := map[int]int{tileLightning: 3}
+	swapped := append([]int(nil), board...)
+	swapped[58], swapped[59] = swapped[59], swapped[58]
+	seen := map[int]bool{}
+	for i, arc := range matchStep.LightningArcs {
+		if arc.Source != wantSources[i] || arc.Target < 0 || arc.Target >= boardSize || seen[arc.Target] {
+			t.Fatalf("invalid lightning arc mapping: %v", matchStep.LightningArcs)
+		}
+		if arc.Target == 56 || arc.Target == 57 || arc.Target == 58 {
+			t.Fatalf("lightning targeted a matched cell: %v", matchStep.LightningArcs)
+		}
+		seen[arc.Target] = true
+		wantExploded = append(wantExploded, arc.Target)
+		wantCounts[swapped[arc.Target]]++
+	}
+	sort.Ints(wantExploded)
+	if !reflect.DeepEqual(matchStep.Exploded, wantExploded) {
+		t.Fatalf("exploded cells do not match arcs: exploded=%v arcs=%v", matchStep.Exploded, matchStep.LightningArcs)
+	}
+	if !reflect.DeepEqual(matchStep.Counts, namedCounts(wantCounts)) {
 		t.Fatalf("unexpected counts: %v", matchStep.Counts)
 	}
-	if *matchStep.Effects != (Effects{Damage: 14, Heal: 5, Fury: 10}) {
+	wantAttacker, wantDefender := Fighter{HP: 100}, Fighter{HP: 100}
+	wantEffects := applyTileEffects(&wantAttacker, &wantDefender, wantCounts)
+	if *matchStep.Effects != wantEffects {
 		t.Fatalf("unexpected effects: %+v", *matchStep.Effects)
+	}
+	encoded, err := json.Marshal(matchStep)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded := Step{}
+	if err := json.Unmarshal(encoded, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(decoded.LightningArcs, matchStep.LightningArcs) {
+		t.Fatalf("lightning arc mapping did not survive JSON: got=%v want=%v", decoded.LightningArcs, matchStep.LightningArcs)
+	}
+	againAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":58,"b":59}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	again := againAny.(*State)
+	if !reflect.DeepEqual(again.Steps, next.Steps) || again.Rng != next.Rng || !reflect.DeepEqual(again.Board, next.Board) {
+		t.Fatal("same state and move produced different lightning targets or final state")
 	}
 	if matchedCells, _, _ := findMatches(next.Board); matchedCells != nil {
 		t.Fatal("apply left unresolved matches")
+	}
+}
+
+func TestApplySwapFourLightningHitsFourTargets(t *testing.T) {
+	board := stripedBoard()
+	board[50], board[56], board[57], board[59] = tileLightning, tileLightning, tileLightning, tileLightning
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 17)
+
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":58,"b":50}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	matchStep := next.Steps[1]
+	if !reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58, 59}) {
+		t.Fatalf("unexpected four-lightning match: %v", matchStep.Cells)
+	}
+	if len(matchStep.Exploded) != 4 || len(matchStep.LightningArcs) != 4 {
+		t.Fatalf("four lightning tiles must eat four targets: exploded=%v arcs=%v", matchStep.Exploded, matchStep.LightningArcs)
+	}
+	for i, arc := range matchStep.LightningArcs {
+		if arc.Source != matchStep.Cells[i] {
+			t.Fatalf("each matched lightning must fire once: cells=%v arcs=%v", matchStep.Cells, matchStep.LightningArcs)
+		}
 	}
 }
 

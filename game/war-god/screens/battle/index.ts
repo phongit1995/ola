@@ -29,6 +29,7 @@ import {
   computeExplosions,
   swapCells,
   type Board,
+  type LightningArc,
   type TileType,
 } from '../../logic/core';
 import {
@@ -409,20 +410,6 @@ function flyMatched(cells: Set<number>, side: 'me' | 'foe'): Promise<void> {
   return Promise.all(jobs).then(() => undefined);
 }
 
-function crossFlash(i: number): void {
-  const p = cellRootPos(i);
-  const g = new Graphics();
-  const arm = tileSize * 1.4;
-  const th = tileSize * 0.42;
-  g.roundRect(-arm / 2, -th / 2, arm, th, th / 2).fill({ color: 0xffffff, alpha: 0.5 });
-  g.roundRect(-th / 2, -arm / 2, th, arm, th / 2).fill({ color: 0xffffff, alpha: 0.5 });
-  g.roundRect(-arm / 2, -th / 2, arm, th, th / 2).stroke({ width: 2, color: 0xb06bff, alpha: 0.95 });
-  g.roundRect(-th / 2, -arm / 2, th, arm, th / 2).stroke({ width: 2, color: 0xb06bff, alpha: 0.95 });
-  g.position.set(p.x, p.y);
-  flyLayer.addChild(g);
-  void tween(g, { alpha: 0, scale: 1.35 }, 340).then(() => g.destroy());
-}
-
 function blockFlash(i: number): void {
   const p = cellRootPos(i);
   const g = new Graphics();
@@ -434,11 +421,127 @@ function blockFlash(i: number): void {
   void tween(g, { alpha: 0, scale: 2.4 }, 340).then(() => g.destroy());
 }
 
-function explodeFx(matched: Iterable<number>): void {
-  for (const i of matched) {
-    if (board[i] === 'lightning') crossFlash(i);
-    else if (board[i] === 'fireSword') blockFlash(i);
+function lightningBolt(from: { x: number; y: number }, to: { x: number; y: number }): Graphics {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const distance = Math.max(1, Math.hypot(dx, dy));
+  const nx = -dy / distance;
+  const ny = dx / distance;
+  const segments = Math.max(6, Math.ceil(distance / (tileSize * 0.45)));
+  const bolt = new Graphics();
+  const makePath = (lane: number, jitterScale: number): Array<{ x: number; y: number }> => {
+    const points: Array<{ x: number; y: number }> = [];
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const edgeFade = Math.sin(Math.PI * t);
+      const jitter =
+        (lane * tileSize * 0.11 + (Math.random() * 2 - 1) * tileSize * jitterScale) *
+        edgeFade;
+      points.push({
+        x: from.x + dx * t + nx * jitter,
+        y: from.y + dy * t + ny * jitter,
+      });
+    }
+    return points;
+  };
+  const strokePath = (
+    points: Array<{ x: number; y: number }>,
+    width: number,
+    color: number,
+    alpha: number,
+  ): void => {
+    bolt.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) bolt.lineTo(points[i].x, points[i].y);
+    bolt.stroke({ width, color, alpha, cap: 'round', join: 'round' });
+  };
+
+  const main = makePath(0, 0.2);
+  const left = makePath(-1, 0.13);
+  const right = makePath(1, 0.13);
+
+  // Một tia chính và hai tia phụ cùng hội tụ vào mục tiêu. Mỗi lần flicker
+  // sẽ dựng lại đường gấp khúc nên bó sét luôn có cảm giác đang giật.
+  strokePath(main, 10, 0x5c24e8, 0.28);
+  strokePath(left, 6, 0x5930d9, 0.2);
+  strokePath(right, 6, 0x356cff, 0.2);
+  strokePath(left, 2.4, 0xb78cff, 0.92);
+  strokePath(right, 2.4, 0x82c7ff, 0.9);
+  strokePath(main, 4.8, 0x9f73ff, 0.98);
+  strokePath(main, 1.6, 0xf7fdff, 1);
+
+  // Các nhánh ngắn tỏa ra khỏi thân sét để hiệu ứng dày và tự nhiên hơn,
+  // nhưng không nối sang ô khác nên không làm tăng số mục tiêu gameplay.
+  const forkIndexes = [0.24, 0.46, 0.68, 0.84].map((t) =>
+    Math.max(1, Math.min(main.length - 2, Math.round(t * segments))),
+  );
+  forkIndexes.forEach((index, order) => {
+    const start = main[index];
+    const direction = order % 2 === 0 ? 1 : -1;
+    const length = tileSize * (0.32 + Math.random() * 0.26);
+    const tangent = (Math.random() * 2 - 1) * length * 0.38;
+    const end = {
+      x: start.x + nx * length * direction + (dx / distance) * tangent,
+      y: start.y + ny * length * direction + (dy / distance) * tangent,
+    };
+    const middle = {
+      x: (start.x + end.x) / 2 + nx * (Math.random() * 2 - 1) * tileSize * 0.1,
+      y: (start.y + end.y) / 2 + ny * (Math.random() * 2 - 1) * tileSize * 0.1,
+    };
+    const fork = [start, middle, end];
+    strokePath(fork, 5, 0x6334ef, 0.2);
+    strokePath(fork, 1.8, order % 2 === 0 ? 0xd8bcff : 0xa9dcff, 0.9);
+  });
+  return bolt;
+}
+
+function lightningPulse(i: number): void {
+  const p = cellRootPos(i);
+  const pulse = new Graphics();
+  pulse.circle(0, 0, tileSize * 0.43).fill({ color: 0xf4f0ff, alpha: 0.7 });
+  pulse.circle(0, 0, tileSize * 0.5).stroke({ width: 4, color: 0x9f73ff, alpha: 1 });
+  pulse.position.set(p.x, p.y);
+  flyLayer.addChild(pulse);
+  void tween(pulse, { alpha: 0, scale: 1.65 }, 260).then(() => pulse.destroy());
+}
+
+function lightningImpact(i: number): void {
+  const p = cellRootPos(i);
+  const hit = new Graphics();
+  hit.circle(0, 0, tileSize * 0.18).fill({ color: 0xffffff, alpha: 0.95 });
+  hit.circle(0, 0, tileSize * 0.34).stroke({ width: 4, color: 0xa879ff, alpha: 1 });
+  hit.circle(0, 0, tileSize * 0.48).stroke({ width: 2, color: 0xe2d5ff, alpha: 0.8 });
+  hit.position.set(p.x, p.y);
+  flyLayer.addChild(hit);
+  void tween(hit, { alpha: 0, scale: 1.8 }, 240).then(() => hit.destroy());
+}
+
+async function playLightningArc(arc: LightningArc, order: number): Promise<void> {
+  await sleep(order * 58);
+  const from = cellRootPos(arc.source);
+  const to = cellRootPos(arc.target);
+  const targetSprite = sprites[arc.target];
+  const originalTint = targetSprite?.tint ?? 0xffffff;
+  for (let flicker = 0; flicker < 3; flicker++) {
+    const bolt = lightningBolt(from, to);
+    flyLayer.addChild(bolt);
+    if (targetSprite) targetSprite.tint = flicker % 2 === 0 ? 0xd8c6ff : 0xffffff;
+    await sleep(42);
+    bolt.destroy();
+    await sleep(14);
   }
+  if (targetSprite) targetSprite.tint = originalTint;
+  lightningImpact(arc.target);
+}
+
+async function explodeFx(matched: Iterable<number>, lightningArcs: LightningArc[]): Promise<void> {
+  for (const i of matched) {
+    if (board[i] === 'fireSword') blockFlash(i);
+  }
+  if (lightningArcs.length === 0) return;
+  playSound('lightning');
+  new Set(lightningArcs.map((arc) => arc.source)).forEach(lightningPulse);
+  await Promise.all(lightningArcs.map((arc, order) => playLightningArc(arc, order)));
+  await sleep(80);
 }
 
 function spawnTrailDot(x: number, y: number): void {
@@ -775,7 +878,8 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
     if (!match) break;
     bonusTurns += match.bonusTurns;
 
-    const exploded = computeExplosions(board, match.cells);
+    const explosionPlan = computeExplosions(board, match.cells);
+    const { exploded, lightningArcs } = explosionPlan;
     for (const i of exploded) match.counts[board[i]]++;
     const removed = new Set<number>(match.cells);
     for (const i of exploded) removed.add(i);
@@ -792,7 +896,7 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
       setStatus(`${side === 'me' ? 'Bạn' : 'Máy'}: ${parts.join('  ')}`);
     }
 
-    if (exploded.length > 0) explodeFx(match.cells);
+    if (exploded.length > 0) await explodeFx(match.cells, lightningArcs);
     await Promise.all([animateRemove(removed), flyMatched(removed, side)]);
     updateHud();
     const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
@@ -1142,7 +1246,9 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     if (parts.length > 0) {
       setStatus(`${side === 'me' ? 'Bạn' : 'Đối thủ'}: ${parts.join('  ')}`);
     }
-    if ((step.exploded?.length ?? 0) > 0) explodeFx(step.cells);
+    if ((step.exploded?.length ?? 0) > 0) {
+      await explodeFx(step.cells, step.lightningArcs ?? []);
+    }
     await Promise.all([animateRemove(cells), flyMatched(cells, side)]);
     updateHud();
     const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
@@ -1411,6 +1517,28 @@ export function markBattleRefit(): void {
   pendingRefit = true;
 }
 
+function previewLightningFx(sourceCount = 3): boolean {
+  if (!inGame || tileSize <= 0) return false;
+  const requestedSources = Math.max(1, Math.floor(sourceCount));
+  const sources = board
+    .map((type, index) => ({ type, index }))
+    .filter(({ type }) => type === 'lightning')
+    .map(({ index }) => index)
+    .slice(0, requestedSources);
+  if (sources.length === 0) return false;
+  const preferredTargets = [0, GRID - 1, CELLS - GRID, CELLS - 1];
+  const targets = preferredTargets.filter((target) => !sources.includes(target));
+  for (let i = 0; targets.length < sources.length && i < CELLS; i++) {
+    if (!sources.includes(i) && !targets.includes(i)) targets.push(i);
+  }
+  const arcs = targets.slice(0, sources.length).map((target, order) => ({
+    source: sources[order % sources.length],
+    target,
+  }));
+  void explodeFx(sources, arcs);
+  return true;
+}
+
 export function battleDebug(): Record<string, unknown> {
   return {
     mode,
@@ -1429,6 +1557,7 @@ export function battleDebug(): Record<string, unknown> {
     selected,
     selectorVisible: !!selector?.visible,
     flying: flyLayer ? flyLayer.children.filter((c) => c instanceof Sprite).length : 0,
+    previewLightning: previewLightningFx,
   };
 }
 
