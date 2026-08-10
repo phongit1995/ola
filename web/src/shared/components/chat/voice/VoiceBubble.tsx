@@ -4,7 +4,7 @@ import playMediaIcon from '@/assets/icons/chat/ic_play_media.png';
 import pauseMediaIcon from '@/assets/icons/chat/ic_pause_media.png';
 import playMediaGrayIcon from '@/assets/icons/chat/ic_play_media_gray.png';
 import pauseMediaGrayIcon from '@/assets/icons/chat/ic_pause_media_gray.png';
-import { formatDuration, toast } from '@lib';
+import { bubbleSurface, formatDuration, toast } from '@lib';
 import { useUploadPreviewLease } from '@hooks';
 import { VoiceWaveformBars } from './VoiceWaveformBars';
 
@@ -32,7 +32,7 @@ export function VoiceBubble({
   const [currentTime, setCurrentTime] = useState(0);
   useUploadPreviewLease(url);
 
-  const baseClass = isOut ? 'bg-ola-primary' : 'bg-ola-primary-light';
+  const baseClass = bubbleSurface(isOut, false);
   const badgeClass = isOut
     ? 'bg-white text-ola-primary-darker'
     : 'bg-[#8f8f8f] text-white';

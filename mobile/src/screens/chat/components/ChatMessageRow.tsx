@@ -15,9 +15,12 @@ import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
 import { PhoneIcon, VideoIcon } from '@screens/call/icons';
-import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
+import {
+  BUBBLE_IN_BG,
+  BUBBLE_IN_SHADOW,
+  CHAT_MAX_FONT_SIZE_MULTIPLIER,
+} from '@constants';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
-import { BUBBLE_IN_BG, BUBBLE_IN_SHADOW } from '../constants';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
   const rowWidth = windowWidth - 24 - (fromMe ? 0 : 36);

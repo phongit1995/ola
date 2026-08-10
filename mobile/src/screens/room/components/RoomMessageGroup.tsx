@@ -32,7 +32,7 @@ import {
   roomBubbleTextMaxWidth,
 } from '../roomConstants';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
-import { BUBBLE_IN_BG, BUBBLE_IN_SHADOW } from '@screens/chat/constants';
+import { BUBBLE_IN_BG, BUBBLE_IN_SHADOW } from '@constants';
 
 const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
 const photoIcon = require('@assets/icons/chat/ic_local.png');
