@@ -240,7 +240,7 @@ Kỹ thuật: đổi `r.tile()` từ `next() % tileCount` ([board.go:37-39](../s
 
 ### Thêm lượt & hệ nhân
 
-- **Thêm lượt**: ghép ≥4 thẳng hàng (`maxRun≥4`) **hoặc** dọn ≥5 ô trong một wave (`cells≥5`, gồm cả hình chữ T/L/thập không thẳng hàng) → đi thêm 1 lượt.
+- **Thêm lượt cộng dồn**: mỗi đường ngang/dọc ≥4 ô trong một wave nhận **+1 lượt**; hai đường riêng nhận +2, một đường 5+ vẫn là +1. Các cascade tiếp tục cộng vào bank. Nếu wave không có đường 4+ nhưng dọn ≥5 ô match (T/L/thập hoặc nhiều cụm 3), giữ luật cũ +1; ô chỉ bị nổ không tính điều kiện.
 - **Chỉ Nộ là hệ nhân duy nhất.** Nổ là nguồn *cascade*, Nộ là nguồn *nhân* — không chồng hệ nhân thứ hai để tránh one-shot.
 - Van an toàn cần playtest: cụm Kiếm lớn trong Nộ + nổ + cascade vẫn có thể vọt cao (cân nhắc cap damage/wave, hoặc Nộ chỉ ×2 ở wave đầu). Với HP 200 thì rủi ro one-shot đã giảm hẳn.
 
@@ -400,7 +400,7 @@ Các con số trong [guide-popup.ts:7-20](../game/war-god/screens/lobby/guide-po
 1. Hết giờ = **mất lượt**, và **3 lần mới xử thua** (guide chỉ nói "mỗi lượt có 45 giây")
 2. "45 giây" hardcode ở client, server lấy từ `GAME_TURN_SECONDS` → đổi config là guide nói sai
 3. Mỗi đặc kỹ chỉ kích hoạt **một lần trong một nước**, kể cả cascade dài
-4. Ult **mất quyền thêm lượt**
+4. Ult tiêu một lượt thưởng như nước đi thường; nếu bank còn nhiều lượt thì phải hiển thị số còn lại
 5. Nội lực cap 100; hồi máu không vượt HP tối đa
 6. Bàn **tự đảo lại toàn bộ** khi hết nước đi
 7. Không có kết quả hòa

@@ -42,9 +42,10 @@ func noMoveBoard() []int {
 
 func stateWith(board []int, fighters [2]Fighter, seed uint64) *State {
 	return &State{
-		Board:    append([]int(nil), board...),
-		Fighters: fighters,
-		Rng:      strconv.FormatUint(seed, 10),
+		Board:          append([]int(nil), board...),
+		Fighters:       fighters,
+		Rng:            strconv.FormatUint(seed, 10),
+		ExtraTurnOwner: -1,
 	}
 }
 
@@ -130,7 +131,8 @@ func TestInitDeterministicAndValid(t *testing.T) {
 		t.Fatal("initial board has no valid swaps")
 	}
 	expectedFighters := [2]Fighter{{HP: maxHP}, {HP: maxHP}}
-	if first.Fighters != expectedFighters || first.MoveCount != 0 || first.ExtraTurn {
+	if first.Fighters != expectedFighters || first.MoveCount != 0 || first.ExtraTurn ||
+		first.ExtraTurns != 0 || first.ExtraTurnOwner != -1 {
 		t.Fatalf("unexpected initial state: %+v", first)
 	}
 	other := (Logic{}).Init(10).(*State)
@@ -172,6 +174,47 @@ func TestFindMatches(t *testing.T) {
 	cells, counts, maxRun = findMatches(column)
 	if !reflect.DeepEqual(cells, []int{21, 29, 37}) || counts[tileShield] != 3 || maxRun != 3 {
 		t.Fatalf("column of three: cells=%v counts=%v maxRun=%d", cells, counts, maxRun)
+	}
+}
+
+func doubleRunFourBoard() []int {
+	board := stripedBoard()
+	// Swap 18<->26 completes two separate maximal runs of four:
+	// row 2 cells 16..19 are Swords; row 3 cells 25..28 are Water.
+	board[16], board[17], board[19] = tileSword, tileSword, tileSword
+	board[18] = tileWater
+	board[20] = tileShield
+	board[25], board[27], board[28] = tileWater, tileWater, tileWater
+	board[26] = tileSword
+	board[29] = tileShield
+	return board
+}
+
+func TestMatchBonusTurnsCountsDistinctLongRuns(t *testing.T) {
+	rowFive := stripedBoard()
+	for i := 1; i <= 5; i++ {
+		rowFive[i] = tileHeart
+	}
+	cells, _, _ := findMatches(rowFive)
+	if got := matchBonusTurns(rowFive, len(cells)); got != 1 {
+		t.Fatalf("one run of five earned %d turns, want 1", got)
+	}
+
+	double := doubleRunFourBoard()
+	if cells, _, _ := findMatches(double); cells != nil {
+		t.Fatalf("double-run board must be match-free before swap: %v", cells)
+	}
+	double[18], double[26] = double[26], double[18]
+	cells, _, _ = findMatches(double)
+	if got := matchBonusTurns(double, len(cells)); got != 2 {
+		t.Fatalf("two runs of four earned %d turns, want 2 (cells=%v)", got, cells)
+	}
+
+	twoTriples := doubleMatchBoard()
+	twoTriples[18], twoTriples[19] = twoTriples[19], twoTriples[18]
+	cells, _, _ = findMatches(twoTriples)
+	if got := matchBonusTurns(twoTriples, len(cells)); got != 1 {
+		t.Fatalf("5+ cells made only from triples earned %d turns, want legacy fallback 1", got)
 	}
 }
 
@@ -529,6 +572,66 @@ func TestApplySwapRunOfFourKeepsTurn(t *testing.T) {
 	}
 }
 
+func TestApplySwapTwoRunsBanksTwoTurns(t *testing.T) {
+	board := doubleRunFourBoard()
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 1}}, 1)
+
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":18,"b":26}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	matchStep := next.Steps[1]
+	if matchStep.Kind != stepMatch || matchStep.BonusTurns != 2 {
+		t.Fatalf("two simultaneous runs must earn two turns: %+v", matchStep)
+	}
+	if next.ExtraTurns != 2 || !next.ExtraTurn || next.ExtraTurnOwner != 0 || !(Logic{}).KeepTurn(next) {
+		t.Fatalf("unexpected two-turn bank: %+v", next)
+	}
+}
+
+func TestApplyConsumesOneBankedTurnPerAction(t *testing.T) {
+	state := stateWith(
+		stripedBoard(),
+		[2]Fighter{{HP: 100, MP: 100}, {HP: 100}},
+		7,
+	)
+	state.ExtraTurn = true
+	state.ExtraTurns = 2
+	state.ExtraTurnOwner = 0
+
+	firstAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"ult"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	first := firstAny.(*State)
+	if first.ExtraTurns != 1 || !first.ExtraTurn || first.ExtraTurnOwner != 0 || !(Logic{}).KeepTurn(first) {
+		t.Fatalf("first bonus action did not leave one turn: %+v", first)
+	}
+
+	first.Fighters[0].MP = 100
+	secondAny, err := (Logic{}).Apply(first, 0, json.RawMessage(`{"type":"ult"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	second := secondAny.(*State)
+	if second.ExtraTurns != 0 || second.ExtraTurn || second.ExtraTurnOwner != -1 || (Logic{}).KeepTurn(second) {
+		t.Fatalf("second bonus action did not exhaust the bank: %+v", second)
+	}
+}
+
+func TestTurnSkipClearsBankedTurns(t *testing.T) {
+	state := stateWith(stripedBoard(), [2]Fighter{{HP: 100}, {HP: 100}}, 7)
+	state.ExtraTurn = true
+	state.ExtraTurns = 2
+	state.ExtraTurnOwner = 0
+
+	(Logic{}).OnTurnSkipped(state, 0)
+	if state.ExtraTurn || state.ExtraTurns != 0 || state.ExtraTurnOwner != -1 || (Logic{}).KeepTurn(state) {
+		t.Fatalf("turn skip left bonus turns behind: %+v", state)
+	}
+}
+
 func doubleMatchBoard() []int {
 	board := make([]int, boardSize)
 	for y := 0; y < grid; y++ {
@@ -723,8 +826,27 @@ func TestDecodeStateRoundtrip(t *testing.T) {
 		restored.Fighters != next.Fighters ||
 		restored.Rng != next.Rng ||
 		restored.MoveCount != next.MoveCount ||
-		restored.ExtraTurn != next.ExtraTurn {
+		restored.ExtraTurn != next.ExtraTurn ||
+		restored.ExtraTurns != next.ExtraTurns ||
+		restored.ExtraTurnOwner != next.ExtraTurnOwner {
 		t.Fatalf("roundtrip mismatch: %+v vs %+v", restored, next)
+	}
+}
+
+func TestDecodeStateKeepsLegacyExtraTurn(t *testing.T) {
+	state := (Logic{}).Init(5).(*State)
+	state.ExtraTurn = true
+	data, err := json.Marshal(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restoredAny, err := (Logic{}).DecodeState(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored := restoredAny.(*State)
+	if !restored.ExtraTurn || restored.ExtraTurns != 0 || restored.ExtraTurnOwner != -1 || !(Logic{}).KeepTurn(restored) {
+		t.Fatalf("legacy extra turn was not preserved: %+v", restored)
 	}
 }
 
@@ -760,6 +882,13 @@ func TestDecodeStateRejectsInvalidSnapshots(t *testing.T) {
 		{name: "fury above max", data: snapshotWith(func(s *State) { s.Fighters[0].Fury = maxFury + 1 })},
 		{name: "fury negative", data: snapshotWith(func(s *State) { s.Fighters[0].Fury = -1 })},
 		{name: "negative move count", data: snapshotWith(func(s *State) { s.MoveCount = -1 })},
+		{name: "negative extra turns", data: snapshotWith(func(s *State) { s.ExtraTurns = -1 })},
+		{name: "extra turn owner too high", data: snapshotWith(func(s *State) {
+			s.ExtraTurns, s.ExtraTurnOwner = 1, 2
+		})},
+		{name: "extra turn owner negative", data: snapshotWith(func(s *State) {
+			s.ExtraTurns, s.ExtraTurnOwner = 1, -1
+		})},
 		{name: "empty rng", data: snapshotWith(func(s *State) { s.Rng = "" })},
 		{name: "non numeric rng", data: snapshotWith(func(s *State) { s.Rng = "abc" })},
 		{name: "overflow rng", data: snapshotWith(func(s *State) { s.Rng = "18446744073709551616" })},
@@ -807,7 +936,9 @@ func TestLogicMetadata(t *testing.T) {
 	if gameLogic.MoveCount(&State{MoveCount: 4}) != 4 || gameLogic.MoveCount(nil) != 0 {
 		t.Fatal("unexpected move count")
 	}
-	if gameLogic.KeepTurn(&State{ExtraTurn: true}) != true || gameLogic.KeepTurn(nil) {
+	if gameLogic.KeepTurn(&State{ExtraTurn: true}) != true ||
+		gameLogic.KeepTurn(&State{ExtraTurns: 2}) != true ||
+		gameLogic.KeepTurn(nil) {
 		t.Fatal("unexpected keep turn")
 	}
 }

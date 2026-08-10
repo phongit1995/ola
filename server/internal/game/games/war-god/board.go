@@ -168,6 +168,37 @@ func findMatches(board []int) ([]int, map[int]int, int) {
 	return cellIndexes, counts, maxRun
 }
 
+// matchBonusTurns counts one bonus turn for every distinct horizontal or
+// vertical run of 4+ tiles. A run of 5+ is still one run, while two separate
+// runs earn two turns. Preserve the existing fallback where a wave made only
+// from shorter runs earns one turn when it clears at least five matched cells.
+func matchBonusTurns(board []int, matchedCount int) int {
+	bonusTurns := 0
+	scanLine := func(start, step, length int) {
+		runStart := 0
+		for k := 1; k <= length; k++ {
+			same := k < length && baseTile(board[start+k*step]) == baseTile(board[start+runStart*step])
+			if same {
+				continue
+			}
+			if k-runStart >= 4 {
+				bonusTurns++
+			}
+			runStart = k
+		}
+	}
+	for y := 0; y < grid; y++ {
+		scanLine(y*grid, 1, grid)
+	}
+	for x := 0; x < grid; x++ {
+		scanLine(x, grid, grid)
+	}
+	if bonusTurns == 0 && matchedCount >= 5 {
+		return 1
+	}
+	return bonusTurns
+}
+
 func computeExplosions(board []int, matched map[int]bool) []int {
 	set := map[int]bool{}
 	add := func(x, y int) {

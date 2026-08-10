@@ -23,6 +23,12 @@ type TimeoutSkipper interface {
 	TimeoutSkipsTurn() bool
 }
 
+// TurnSkipHandler lets a game clear or consume turn-bound state when the
+// engine skips an action without calling Apply (currently on turn timeout).
+type TurnSkipHandler interface {
+	OnTurnSkipped(state any, playerIdx int)
+}
+
 var registry = map[string]GameLogic{}
 
 func Register(l GameLogic) {

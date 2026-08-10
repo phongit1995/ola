@@ -1717,6 +1717,9 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 		return
 	}
 	timedOut := m.turnIdx
+	if handler, ok := m.logic.(logic.TurnSkipHandler); ok {
+		handler.OnTurnSkipped(m.state, timedOut)
+	}
 	m.turnIdx = 1 - m.turnIdx
 	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
 	if m.disconnected[m.turnIdx] {

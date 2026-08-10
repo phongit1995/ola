@@ -1,7 +1,11 @@
 import { Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
-import { MAX_ARMOR, MAX_FURY, MAX_HP, MAX_MP, ULT_COST, type Fighter } from '../../logic/battle';
+import { MAX_FURY, MAX_HP, MAX_MP, ULT_COST, type Fighter } from '../../logic/battle';
 import { A, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick } from '../../kit';
+
+const CARD_W = 190;
+const ARMOR_BADGE_W = 56;
+const ARMOR_BADGE_H = 26;
 
 export interface BarUI {
   fill: Graphics;
@@ -145,8 +149,9 @@ function updateBar(bar: BarUI, cur: number, max: number): void {
 }
 
 function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
-  const mirror = side === 'foe';
-  const w = 190;
+  const isMe = side === 'me';
+  const mirror = isMe;
+  const w = CARD_W;
   const h = 152;
   const card = new Container();
 
@@ -165,12 +170,12 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   ring.y = 8;
   card.addChild(ring);
 
-  const face = makeText(mirror ? '🤖' : 'Bạn', 11, 0xffe9b8, '800');
+  const face = makeText(isMe ? 'Bạn' : '🤖', 11, 0xffe9b8, '800');
   face.x = ring.x + 18;
   face.y = ring.y + 18;
   card.addChild(face);
 
-  const name = makeText(mirror ? '@máy' : '@bạn', 13, 0xffffff, '800');
+  const name = makeText(isMe ? '@bạn' : '@máy', 13, 0xffffff, '800');
   name.anchor.set(mirror ? 1 : 0, 0.5);
   name.x = mirror ? w - 56 : 56;
   name.y = 26;
@@ -183,7 +188,7 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   rank.y = 11;
   card.addChild(rank);
 
-  const rankNum = makeText(mirror ? '2' : '1', 13, 0xf6c445, '700', HEADING);
+  const rankNum = makeText(isMe ? '1' : '2', 13, 0xf6c445, '700', HEADING);
   rankNum.x = rank.x + 13;
   rankNum.y = rank.y + 15;
   card.addChild(rankNum);
@@ -205,7 +210,7 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
 
   const ultOn = tex[mirror ? A.hud.ultRightOn : A.hud.ultLeftOn];
   const ultOff = tex[mirror ? A.hud.ultRightOff : A.hud.ultLeftOff];
-  const ultW = 116;
+  const ultW = 106;
   const ultY = 104;
   const ultBtn = new Container();
   const ultFrame = new Sprite(ultOff);
@@ -227,24 +232,25 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   ultLabel.y = ultFrame.height / 2;
   ultBtn.addChild(ultLabel);
 
-  ultBtn.x = 12;
+  // Nút Tuyệt Chiêu bám cạnh NGOÀI card (me phải, máy trái).
+  ultBtn.x = mirror ? w - 12 - ultW : 12;
   ultBtn.y = ultY;
   card.addChild(ultBtn);
 
-  // Giáp: badge nhỏ nằm ngang bên phải nút Tuyệt Chiêu, canh giữa theo chiều cao nút.
+  // Giáp: badge to nằm phía TRONG (về giữa màn), canh giữa theo chiều cao nút Tuyệt Chiêu.
   const armor = new Container();
   const armorBg = new Graphics();
   const armorIc = new Sprite(tex[A.items.shield]);
   armorIc.anchor.set(0.5);
-  armorIc.scale.set(12 / Math.max(armorIc.texture.width, armorIc.texture.height));
-  armorIc.x = 9;
-  armorIc.y = 7;
-  const armorText = makeText(`0/${MAX_ARMOR}`, 8.5, 0x9fd0ff, '800');
-  armorText.x = 25;
-  armorText.y = 7;
+  armorIc.scale.set(20 / Math.max(armorIc.texture.width, armorIc.texture.height));
+  armorIc.x = 17;
+  armorIc.y = ARMOR_BADGE_H / 2;
+  const armorText = makeText('0', 13, 0x9fd0ff, '800');
+  armorText.x = 38;
+  armorText.y = ARMOR_BADGE_H / 2;
   armor.addChild(armorBg, armorIc, armorText);
-  armor.x = 12 + ultW + 8;
-  armor.y = Math.round(ultY + ultFrame.height / 2 - 7);
+  armor.x = mirror ? ultBtn.x - 6 - ARMOR_BADGE_W : ultBtn.x + ultW + 6;
+  armor.y = Math.round(ultY + ultFrame.height / 2 - ARMOR_BADGE_H / 2);
   card.addChild(armor);
 
   if (onUlt) {
@@ -479,11 +485,11 @@ export function updateFighter(f: FighterUI, fighter: Fighter, active: boolean, r
   const hasArmor = fighter.armor > 0;
   f.armorBg
     .clear()
-    .roundRect(0, 0, 48, 15, 7)
+    .roundRect(0, 0, ARMOR_BADGE_W, ARMOR_BADGE_H, 9)
     .fill({ color: hasArmor ? 0x164d82 : 0x0b1827, alpha: hasArmor ? 0.96 : 0.82 })
-    .stroke({ width: 1, color: hasArmor ? 0x8fdcff : 0x526270, alpha: 0.95 });
-  f.armor.alpha = hasArmor ? 1 : 0.68;
-  f.armorText.text = `${fighter.armor}/${MAX_ARMOR}`;
+    .stroke({ width: 1.5, color: hasArmor ? 0x8fdcff : 0x526270, alpha: 0.95 });
+  f.armor.alpha = hasArmor ? 1 : 0.7;
+  f.armorText.text = `${fighter.armor}`;
   f.armorText.style.fill = hasArmor ? 0xc4efff : 0x8795a2;
   f.border.texture = active ? tex[A.hud.cardBorderActive] : tex[A.hud.cardBorderIdle];
   f.ring.texture = active ? tex[A.hud.ringActive] : tex[A.hud.ringIdle];

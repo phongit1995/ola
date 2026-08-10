@@ -304,3 +304,56 @@ func TestWarGodTimeoutSkipsTurnAndThirdConsecutiveTimeoutLoses(t *testing.T) {
 		t.Fatal("finished war-god snapshot remains active")
 	}
 }
+
+func TestWarGodTimeoutClearsBankedExtraTurns(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	if err := gameEngine.startMatch(
+		warGodGameID,
+		wargod.Logic{},
+		protocol.PlayerInfo{ID: "wg-bank-a", Name: "Bank A"},
+		protocol.PlayerInfo{ID: "wg-bank-b", Name: "Bank B"},
+		0,
+	); err != nil {
+		t.Fatal(err)
+	}
+	var match *Match
+	gameEngine.mu.RLock()
+	for _, current := range gameEngine.matches {
+		match = current
+	}
+	gameEngine.mu.RUnlock()
+	if match == nil {
+		t.Fatal("war-god match was not created")
+	}
+
+	match.mu.Lock()
+	timedOut := match.turnIdx
+	state := match.state.(*wargod.State)
+	state.ExtraTurn = true
+	state.ExtraTurns = 2
+	state.ExtraTurnOwner = timedOut
+	match.mu.Unlock()
+
+	fireTurnTimeout(gameEngine, match)
+	match.mu.Lock()
+	state = match.state.(*wargod.State)
+	gotTurn := match.turnIdx
+	match.mu.Unlock()
+	if gotTurn != 1-timedOut {
+		t.Fatalf("turn=%d, want %d after timeout", gotTurn, 1-timedOut)
+	}
+	if state.ExtraTurn || state.ExtraTurns != 0 || state.ExtraTurnOwner != -1 {
+		t.Fatalf("timeout left extra turns in live state: %+v", state)
+	}
+
+	snapshot, ok := activeStore.get(match.GameID, match.ID)
+	if !ok {
+		t.Fatal("timeout state was not persisted")
+	}
+	persisted := decodeWarGodState(t, snapshot.State)
+	if persisted.ExtraTurn || persisted.ExtraTurns != 0 || persisted.ExtraTurnOwner != -1 {
+		t.Fatalf("timeout left extra turns in persisted state: %+v", persisted)
+	}
+}

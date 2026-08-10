@@ -30,6 +30,7 @@ export interface StepMatch {
   exploded?: number[];
   counts: Partial<Record<TileType, number>>;
   maxRun: number;
+  bonusTurns?: number;
   effects: {
     damage: number;
     heal: number;
@@ -66,6 +67,8 @@ export interface ServerState {
   rng: string;
   moveCount: number;
   extraTurn: boolean;
+  extraTurns?: number;
+  extraTurnOwner?: number;
   steps: Step[];
 }
 

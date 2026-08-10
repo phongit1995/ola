@@ -16,6 +16,7 @@ export interface MatchResult {
   cells: Set<number>;
   counts: Record<TileType, number>;
   maxRun: number;
+  bonusTurns: number;
 }
 
 export interface Fall {
@@ -107,6 +108,7 @@ export function baseTileType(type: TileType): BaseTileType {
 export function findMatches(board: Board): MatchResult | null {
   const cells = new Set<number>();
   let maxRun = 0;
+  let bonusTurns = 0;
 
   const scanLine = (start: number, step: number, length: number): void => {
     let runStart = 0;
@@ -118,6 +120,7 @@ export function findMatches(board: Board): MatchResult | null {
         const runLen = k - runStart;
         if (runLen >= 3) {
           maxRun = Math.max(maxRun, runLen);
+          if (runLen >= 4) bonusTurns++;
           for (let r = runStart; r < k; r++) cells.add(start + r * step);
         }
         runStart = k;
@@ -134,7 +137,10 @@ export function findMatches(board: Board): MatchResult | null {
   cells.forEach((i) => {
     counts[board[i]]++;
   });
-  return { cells, counts, maxRun };
+  // Preserve the existing rule for T/L/cross or separate triples: if no
+  // straight run earned a turn, clearing 5+ matched cells still earns one.
+  if (bonusTurns === 0 && cells.size >= 5) bonusTurns = 1;
+  return { cells, counts, maxRun, bonusTurns };
 }
 
 export function areAdjacent(a: number, b: number): boolean {

@@ -35,7 +35,6 @@ import {
   LEVEL_LABELS,
   ULT_COST,
   applyAuthoritativeEffects,
-  MAX_FURY,
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
@@ -71,6 +70,7 @@ import {
 
 const DESIGN_W = 520;
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
+const HINT_DELAY_MS = 10_000;
 const FX_COLS = 6;
 const FX_ROWS = 10;
 const FX_FRAMES = 60;
@@ -120,8 +120,10 @@ let myTurn = true;
 let busy = false;
 let over = false;
 let turnNumber = 1;
+let botModeExtraTurns: [number, number] = [0, 0];
 let selected: number | null = null;
 let turnDeadline = 0;
+let hintDeadline = 0;
 let inGame = false;
 let botLevel: BotLevel = 'normal';
 let mode: 'bot' | 'pvp' = 'bot';
@@ -302,7 +304,9 @@ function setStatus(text: string): void {
 }
 
 function resetTurnClock(): void {
-  turnDeadline = performance.now() + TURN_SECONDS * 1000;
+  const now = performance.now();
+  turnDeadline = now + TURN_SECONDS * 1000;
+  hintDeadline = now + HINT_DELAY_MS;
   clearHint();
 }
 
@@ -314,6 +318,9 @@ function announce(text: string, color: number): void {
   }
   turnAnnounceLabel.text = text;
   turnAnnounceLabel.style.fill = color;
+  turnAnnounce.alpha = 0;
+  turnAnnounce.scale.set(0.7);
+  turnAnnounce.position.set(announceBaseX, announceBaseY);
   turnAnnounce.visible = true;
 
   const IN = 160;
@@ -360,6 +367,27 @@ function announce(text: string, color: number): void {
 function announceTurn(side: 'me' | 'foe'): void {
   if (side === 'me') announce('ĐẾN LƯỢT BẠN', 0xffd75e);
   else announce(mode === 'pvp' ? 'ĐẾN LƯỢT ĐỐI THỦ' : 'ĐẾN LƯỢT MÁY', 0xff6b5e);
+}
+
+function announceExtraTurns(side: 'me' | 'foe', earned: number, remaining: number): void {
+  const mine = side === 'me';
+  const actor = mine ? 'BẠN' : mode === 'pvp' ? 'ĐỐI THỦ' : 'MÁY';
+  const color = mine ? 0x7dff8a : 0xffa94d;
+  let text = `${actor} CÒN ${remaining} LƯỢT!`;
+  if (earned > 1) text = `${actor} +${earned} LƯỢT!`;
+  else if (earned === 1) text = `${actor} THÊM LƯỢT!`;
+  announce(text, color);
+}
+
+function spendBotModeExtraTurn(side: 'me' | 'foe'): void {
+  const idx = side === 'me' ? 0 : 1;
+  botModeExtraTurns[idx] = Math.max(0, botModeExtraTurns[idx] - 1);
+}
+
+function addBotModeExtraTurns(side: 'me' | 'foe', earned: number): number {
+  const idx = side === 'me' ? 0 : 1;
+  botModeExtraTurns[idx] += earned;
+  return botModeExtraTurns[idx];
 }
 
 function cellRootPos(i: number): { x: number; y: number } {
@@ -410,15 +438,6 @@ function explodeFx(matched: Iterable<number>): void {
   for (const i of matched) {
     if (board[i] === 'lightning') crossFlash(i);
     else if (board[i] === 'fireSword') blockFlash(i);
-  }
-}
-
-function updateFuryGlow(): void {
-  const glow = myTurn && !over && me.fury >= MAX_FURY;
-  for (let i = 0; i < CELLS; i++) {
-    const s = sprites[i];
-    if (!s) continue;
-    s.tint = glow && baseTileType(board[i]) === 'sword' ? 0xffe08a : 0xffffff;
   }
 }
 
@@ -558,7 +577,7 @@ function renderTurnClock(): void {
       void startBotTurn();
       return;
     }
-    if (left <= 10_000 && mode === 'bot') showHint();
+    if (mode === 'bot' && performance.now() >= hintDeadline) showHint();
   }
 }
 
@@ -567,7 +586,6 @@ function updateHud(): void {
   const foeActive = !myTurn && !over;
   updateFighter(hud.me, me, meActive, me.mp >= ULT_COST);
   updateFighter(hud.foe, foe, foeActive, foe.mp >= ULT_COST);
-  updateFuryGlow();
 
   const canUlt = meActive && !busy && me.mp >= ULT_COST;
   hud.me.ultBtn.eventMode = canUlt ? 'static' : 'none';
@@ -624,7 +642,7 @@ async function playUltFx(side: 'me' | 'foe'): Promise<void> {
   fx.height = boardW / 2;
   fx.x = boardW / 2;
   fx.y = boardW / 2;
-  if (side === 'foe') fx.scale.x = -Math.abs(fx.scale.x);
+  if (side === 'me') fx.scale.x = -Math.abs(fx.scale.x);
   fxLayer.addChild(fx);
   await new Promise<void>((resolve) => {
     fx.onComplete = () => resolve();
@@ -747,16 +765,15 @@ async function ensurePlayable(): Promise<void> {
   rebuildSprites();
 }
 
-async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
+async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
-  let extraTurn = false;
+  let bonusTurns = 0;
 
   for (;;) {
     const match = findMatches(board);
     if (!match) break;
-    // Thêm lượt khi ghép ≥4 thẳng hàng HOẶC dọn ≥5 ô trong một wave.
-    if (match.maxRun >= 4 || match.cells.size >= 5) extraTurn = true;
+    bonusTurns += match.bonusTurns;
 
     const exploded = computeExplosions(board, match.cells);
     for (const i of exploded) match.counts[board[i]]++;
@@ -794,11 +811,11 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
     const gravity = applyGravity(board, removed);
     await animateGravity(gravity.falls, gravity.spawns);
 
-    if (defender.hp <= 0 || attacker.hp <= 0) return extraTurn;
+    if (defender.hp <= 0 || attacker.hp <= 0) return bonusTurns;
   }
 
   await ensurePlayable();
-  return extraTurn;
+  return bonusTurns;
 }
 
 function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
@@ -866,13 +883,19 @@ async function onTileTap(i: number): Promise<void> {
 
   swapCells(board, a, b);
   await animateSwap(a, b);
+  spendBotModeExtraTurn('me');
   decayArmor(me);
-  const extraTurn = await resolveCascades('me');
+  const earnedExtraTurns = await resolveCascades('me');
+  const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
   if (checkEnd()) return;
 
-  if (extraTurn) {
-    announce('BẠN THÊM LƯỢT!', 0x7dff8a);
-    setStatus('Combo 4+ — bạn được thêm lượt!');
+  if (remainingExtraTurns > 0) {
+    announceExtraTurns('me', earnedExtraTurns, remainingExtraTurns);
+    setStatus(
+      earnedExtraTurns > 0
+        ? `Combo lớn — +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+        : `Bạn còn ${remainingExtraTurns} lượt thưởng!`,
+    );
     endBusy();
     resetTurnClock();
     updateHud();
@@ -892,18 +915,27 @@ async function castMyUltimate(): Promise<void> {
     pvp.sendUlt();
     return;
   }
+  spendBotModeExtraTurn('me');
   decayArmor(me);
   const ultDmg = castUltimate(me, foe);
   setStatus(`TUYỆT CHIÊU! -${ultDmg} HP`);
   updateHud();
   await playUltFx('me');
   if (checkEnd()) return;
+  if (botModeExtraTurns[0] > 0) {
+    announceExtraTurns('me', 0, botModeExtraTurns[0]);
+    setStatus(`Bạn còn ${botModeExtraTurns[0]} lượt thưởng!`);
+    endBusy();
+    resetTurnClock();
+    return;
+  }
   void startBotTurn();
 }
 
 async function startBotTurn(): Promise<void> {
   const ep = flowEpoch;
   const stale = (): boolean => over || flowEpoch !== ep || mode !== 'bot';
+  botModeExtraTurns[0] = 0;
   myTurn = false;
   busy = true;
   setSelected(null);
@@ -917,6 +949,7 @@ async function startBotTurn(): Promise<void> {
     if (stale()) return;
 
     if (botShouldUlt(foe, me, botLevel)) {
+      spendBotModeExtraTurn('foe');
       decayArmor(foe);
       const ultDmg = castUltimate(foe, me);
       setStatus(`Máy tung TUYỆT CHIÊU! -${ultDmg} HP`);
@@ -924,6 +957,11 @@ async function startBotTurn(): Promise<void> {
       await playUltFx('foe');
       if (stale()) return;
       if (checkEnd()) return;
+      if (botModeExtraTurns[1] > 0) {
+        announceExtraTurns('foe', 0, botModeExtraTurns[1]);
+        setStatus(`Máy còn ${botModeExtraTurns[1]} lượt thưởng!`);
+        continue;
+      }
       break;
     }
 
@@ -935,6 +973,7 @@ async function startBotTurn(): Promise<void> {
     }
     await showBotPick(move[0]);
     if (stale()) return;
+    spendBotModeExtraTurn('foe');
     swapCells(board, move[0], move[1]);
     await Promise.all([
       tween(botSelectorA, pos(move[1]), 180),
@@ -944,15 +983,21 @@ async function startBotTurn(): Promise<void> {
     if (stale()) return;
     botSelectorA.visible = false;
     decayArmor(foe);
-    const extraTurn = await resolveCascades('foe');
+    const earnedExtraTurns = await resolveCascades('foe');
+    const remainingExtraTurns = addBotModeExtraTurns('foe', earnedExtraTurns);
     if (stale()) return;
     if (checkEnd()) return;
-    if (!extraTurn) break;
-    announce('MÁY THÊM LƯỢT!', 0xffa94d);
-    setStatus('Máy được thêm lượt!');
+    if (remainingExtraTurns === 0) break;
+    announceExtraTurns('foe', earnedExtraTurns, remainingExtraTurns);
+    setStatus(
+      earnedExtraTurns > 0
+        ? `Máy nhận +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+        : `Máy còn ${remainingExtraTurns} lượt thưởng!`,
+    );
   }
 
   if (stale()) return;
+  botModeExtraTurns[1] = 0;
   myTurn = true;
   endBusy();
   turnNumber++;
@@ -976,6 +1021,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   inGame = true;
   me = createFighter();
   foe = createFighter();
+  botModeExtraTurns = [0, 0];
   board = createBoard();
   myTurn = true;
   busy = true;
@@ -1016,6 +1062,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   flowEpoch++;
   const ep = flowEpoch;
   mode = 'pvp';
+  botModeExtraTurns = [0, 0];
   inGame = true;
   over = false;
   busy = true;
@@ -1153,6 +1200,11 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   clearHint();
   setSelected(null);
   const state = data.state;
+  const earnedExtraTurns = (state.steps ?? []).reduce(
+    (total, step) => total + (step.kind === 'match' ? (step.bonusTurns ?? 0) : 0),
+    0,
+  );
+  const remainingExtraTurns = state.extraTurns ?? (state.extraTurn ? 1 : 0);
   const side: 'me' | 'foe' = data.lastBy === pvpIdx ? 'me' : 'foe';
   let replayFailed = false;
   if (data.lastMove) {
@@ -1183,11 +1235,19 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
     setStatus(data.lastBy === pvpIdx ? 'Hết giờ — bạn mất lượt!' : 'Đối thủ hết giờ — mất lượt!');
   } else if (data.turn === data.lastBy) {
     if (myTurn) {
-      announce('BẠN THÊM LƯỢT!', 0x7dff8a);
-      setStatus('Combo 4+ — bạn được thêm lượt!');
+      announceExtraTurns('me', earnedExtraTurns, remainingExtraTurns);
+      setStatus(
+        earnedExtraTurns > 0
+          ? `Combo lớn — +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+          : `Bạn còn ${remainingExtraTurns} lượt thưởng!`,
+      );
     } else {
-      announce('ĐỐI THỦ THÊM LƯỢT!', 0xffa94d);
-      setStatus('Đối thủ được thêm lượt!');
+      announceExtraTurns('foe', earnedExtraTurns, remainingExtraTurns);
+      setStatus(
+        earnedExtraTurns > 0
+          ? `Đối thủ nhận +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+          : `Đối thủ còn ${remainingExtraTurns} lượt thưởng!`,
+      );
     }
   } else {
     announceTurn(myTurn ? 'me' : 'foe');
@@ -1330,6 +1390,7 @@ function exitToLobby(): void {
   over = true;
   inGame = false;
   busy = false;
+  botModeExtraTurns = [0, 0];
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
   selfDisconnected = false;
@@ -1360,6 +1421,7 @@ export function battleDebug(): Record<string, unknown> {
     inGame,
     botLevel,
     turn: turnNumber,
+    extraTurns: mode === 'bot' ? [...botModeExtraTurns] : undefined,
     status: statusText.text,
     hint: hintPair,
     announce: turnAnnounce?.visible ? turnAnnounceLabel.text : null,
@@ -1507,10 +1569,10 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   lastSafeTop = opts.safeTop;
   lastSafeBottom = opts.safeBottom;
 
-  hud.me.card.x = 8;
-  hud.me.card.y = 8 + insetTop;
-  hud.foe.card.x = DESIGN_W - 8 - 190;
+  hud.foe.card.x = 8;
   hud.foe.card.y = 8 + insetTop;
+  hud.me.card.x = DESIGN_W - 8 - 190;
+  hud.me.card.y = 8 + insetTop;
   hud.banner.x = (DESIGN_W - 92) / 2;
   hud.banner.y = 4 + insetTop;
 

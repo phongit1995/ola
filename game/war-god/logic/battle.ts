@@ -191,10 +191,8 @@ export function botChooseMove(
     swapCells(board, move[0], move[1]);
     const match = findMatches(board);
     let counts: Record<TileType, number> | null = null;
-    let maxRun = 0;
     if (match) {
       counts = { ...match.counts };
-      maxRun = match.maxRun;
       for (const idx of computeExplosions(board, match.cells)) counts[board[idx]]++;
     }
     swapCells(board, move[0], move[1]);
@@ -211,7 +209,7 @@ export function botChooseMove(
       counts.greaterHeart * greaterHeartWeight +
       counts.water * waterWeight +
       counts.shield * shieldWeight;
-    if (maxRun >= 4) score += comboBonus;
+    if (match) score += comboBonus * match.bonusTurns;
     score += Math.random() * jitter;
 
     if (score > bestScore) {

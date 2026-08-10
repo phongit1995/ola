@@ -20,27 +20,30 @@ const (
 )
 
 type State struct {
-	Board     []int      `json:"board"`
-	Fighters  [2]Fighter `json:"fighters"`
-	Rng       string     `json:"rng"`
-	MoveCount int        `json:"moveCount"`
-	ExtraTurn bool       `json:"extraTurn"`
-	Steps     []Step     `json:"steps"`
+	Board          []int      `json:"board"`
+	Fighters       [2]Fighter `json:"fighters"`
+	Rng            string     `json:"rng"`
+	MoveCount      int        `json:"moveCount"`
+	ExtraTurn      bool       `json:"extraTurn"`
+	ExtraTurns     int        `json:"extraTurns,omitempty"`
+	ExtraTurnOwner int        `json:"extraTurnOwner"`
+	Steps          []Step     `json:"steps"`
 }
 
 type Step struct {
-	Kind     string         `json:"kind"`
-	A        *int           `json:"a,omitempty"`
-	B        *int           `json:"b,omitempty"`
-	Cells    []int          `json:"cells,omitempty"`
-	Exploded []int          `json:"exploded,omitempty"`
-	Counts   map[string]int `json:"counts,omitempty"`
-	MaxRun   int            `json:"maxRun,omitempty"`
-	Effects  *Effects       `json:"effects,omitempty"`
-	Falls    []Fall         `json:"falls,omitzero"`
-	Spawns   []Spawn        `json:"spawns,omitzero"`
-	Board    []int          `json:"board,omitempty"`
-	Damage   int            `json:"damage,omitempty"`
+	Kind       string         `json:"kind"`
+	A          *int           `json:"a,omitempty"`
+	B          *int           `json:"b,omitempty"`
+	Cells      []int          `json:"cells,omitempty"`
+	Exploded   []int          `json:"exploded,omitempty"`
+	Counts     map[string]int `json:"counts,omitempty"`
+	MaxRun     int            `json:"maxRun,omitempty"`
+	BonusTurns int            `json:"bonusTurns,omitempty"`
+	Effects    *Effects       `json:"effects,omitempty"`
+	Falls      []Fall         `json:"falls,omitzero"`
+	Spawns     []Spawn        `json:"spawns,omitzero"`
+	Board      []int          `json:"board,omitempty"`
+	Damage     int            `json:"damage,omitempty"`
 }
 
 type Move struct {
@@ -62,14 +65,17 @@ func (Logic) StateVersion() int { return 2 }
 func (Logic) Init(seed int64) any {
 	r := &rng{z: uint64(seed)}
 	return &State{
-		Board:    createBoard(r),
-		Fighters: [2]Fighter{{HP: maxHP}, {HP: maxHP}},
-		Rng:      strconv.FormatUint(r.z, 10),
+		Board:          createBoard(r),
+		Fighters:       [2]Fighter{{HP: maxHP}, {HP: maxHP}},
+		Rng:            strconv.FormatUint(r.z, 10),
+		ExtraTurnOwner: -1,
 	}
 }
 
 func (Logic) DecodeState(data json.RawMessage) (any, error) {
-	state := &State{}
+	// -1 lets version-2 snapshots that predate ExtraTurnOwner remain
+	// distinguishable from snapshots owned by player zero.
+	state := &State{ExtraTurnOwner: -1}
 	if err := json.Unmarshal(data, state); err != nil {
 		return nil, errors.New("invalid saved war-god state")
 	}
@@ -97,6 +103,19 @@ func (Logic) DecodeState(data json.RawMessage) (any, error) {
 	}
 	if state.MoveCount < 0 {
 		return nil, errors.New("invalid saved war-god move count")
+	}
+	if state.ExtraTurns < 0 {
+		return nil, errors.New("invalid saved war-god extra turns")
+	}
+	if state.ExtraTurns > 0 {
+		if state.ExtraTurnOwner < 0 || state.ExtraTurnOwner >= len(state.Fighters) {
+			return nil, errors.New("invalid saved war-god extra turn owner")
+		}
+		state.ExtraTurn = true
+	} else {
+		// Legacy snapshots may still carry ExtraTurn=true for the one bonus
+		// action already granted by the engine. It is consumed by the next move.
+		state.ExtraTurnOwner = -1
 	}
 	if state.Rng == "" {
 		return nil, errors.New("invalid saved war-god rng")
@@ -165,10 +184,18 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 		return current, errors.New("invalid war-god rng state")
 	}
 	s := &State{
-		Board:     append([]int(nil), current.Board...),
-		Fighters:  current.Fighters,
-		MoveCount: current.MoveCount,
-		Steps:     []Step{},
+		Board:          append([]int(nil), current.Board...),
+		Fighters:       current.Fighters,
+		MoveCount:      current.MoveCount,
+		ExtraTurnOwner: -1,
+		Steps:          []Step{},
+	}
+	// The action being applied consumes one previously banked bonus turn.
+	// Ownership prevents a timeout from handing the remaining bank to the
+	// opponent before OnTurnSkipped clears it.
+	remainingExtraTurns := 0
+	if current.ExtraTurns > 0 && current.ExtraTurnOwner == playerIdx {
+		remainingExtraTurns = current.ExtraTurns - 1
 	}
 	r := &rng{z: z}
 	attacker := &s.Fighters[playerIdx]
@@ -191,11 +218,10 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			if matchedCells == nil {
 				break
 			}
-			// Thêm lượt khi ghép ≥4 thẳng hàng HOẶC dọn ≥5 ô trong một wave
-			// (gồm cả hình chữ T/L/thập không thẳng hàng).
-			if maxRun >= 4 || len(matchedCells) >= 5 {
-				s.ExtraTurn = true
-			}
+			// Mỗi đường ghép 4+ nhận một lượt; nhiều đường/cascade được cộng
+			// dồn. Nếu wave chỉ có các đường 3 nhưng dọn ≥5 ô, giữ luật cũ +1.
+			bonusTurns := matchBonusTurns(s.Board, len(matchedCells))
+			remainingExtraTurns += bonusTurns
 			removed := make(map[int]bool, len(matchedCells))
 			for _, i := range matchedCells {
 				removed[i] = true
@@ -207,12 +233,13 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			}
 			waveEffects := applyTileEffects(attacker, defender, counts)
 			s.Steps = append(s.Steps, Step{
-				Kind:     stepMatch,
-				Cells:    matchedCells,
-				Exploded: exploded,
-				Counts:   namedCounts(counts),
-				MaxRun:   maxRun,
-				Effects:  &waveEffects,
+				Kind:       stepMatch,
+				Cells:      matchedCells,
+				Exploded:   exploded,
+				Counts:     namedCounts(counts),
+				MaxRun:     maxRun,
+				BonusTurns: bonusTurns,
+				Effects:    &waveEffects,
 			})
 			falls, spawns := applyGravity(s.Board, removed, r)
 			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
@@ -234,9 +261,13 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			defender.HP = 0
 		}
 		s.Steps = append(s.Steps, Step{Kind: stepUlt, Damage: dmg})
-		s.ExtraTurn = false
 	}
 
+	s.ExtraTurns = remainingExtraTurns
+	s.ExtraTurn = s.ExtraTurns > 0
+	if s.ExtraTurn {
+		s.ExtraTurnOwner = playerIdx
+	}
 	s.MoveCount++
 	s.Rng = strconv.FormatUint(r.z, 10)
 	return s, nil
@@ -285,7 +316,20 @@ func (Logic) KeepTurn(state any) bool {
 	if !ok {
 		return false
 	}
-	return s.ExtraTurn
+	return s.ExtraTurns > 0 || s.ExtraTurn
 }
 
 func (Logic) TimeoutSkipsTurn() bool { return true }
+
+func (Logic) OnTurnSkipped(state any, playerIdx int) {
+	s, ok := state.(*State)
+	if !ok {
+		return
+	}
+	if s.ExtraTurns > 0 && s.ExtraTurnOwner != playerIdx {
+		return
+	}
+	s.ExtraTurn = false
+	s.ExtraTurns = 0
+	s.ExtraTurnOwner = -1
+}
