@@ -3,11 +3,15 @@ package wargod
 import "sort"
 
 const (
-	grid             = 8
-	boardSize        = grid * grid
-	baseTileCount    = 6
-	tileCount        = 8
-	specialTileOneIn = 13
+	grid          = 8
+	boardSize     = grid * grid
+	baseTileCount = 6
+	tileCount     = 8
+	// Divisor riêng cho từng ô gốc để cả hai ô đặc biệt ra ~1/60:
+	//   Kiếm Lửa   ≈ 22% / 13 ≈ 1/59
+	//   Đại Trái Tim ≈ 16% / 10 ≈ 1/62
+	specialSwordOneIn = 13
+	specialHeartOneIn = 10
 )
 
 const (
@@ -67,17 +71,18 @@ func weightedBase(r uint64) int {
 func (r *rng) tile() int {
 	roll := r.next()
 	tile := weightedBase(roll % 100)
-	if (roll/100)%specialTileOneIn != 0 {
-		return tile
-	}
+	sel := roll / 100
 	switch tile {
 	case tileSword:
-		return tileFireSword
+		if sel%specialSwordOneIn == 0 {
+			return tileFireSword
+		}
 	case tileHeart:
-		return tileGreaterHeart
-	default:
-		return tile
+		if sel%specialHeartOneIn == 0 {
+			return tileGreaterHeart
+		}
 	}
+	return tile
 }
 
 func createBoard(r *rng) []int {

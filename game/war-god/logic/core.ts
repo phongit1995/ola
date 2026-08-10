@@ -5,7 +5,10 @@ export type BaseTileType = 'sword' | 'peach' | 'heart' | 'water' | 'shield' | 'l
 export type TileType = BaseTileType | 'fireSword' | 'greaterHeart';
 
 export const TILE_TYPES: BaseTileType[] = ['sword', 'peach', 'heart', 'water', 'shield', 'lightning'];
-export const SPECIAL_TILE_CHANCE = 1 / 13;
+// Divisor riêng cho từng ô gốc để cả hai ô đặc biệt ra ~1/60 (khớp server):
+//   Kiếm Lửa ≈ 22% / 13 ≈ 1/59 ; Đại Trái Tim ≈ 16% / 10 ≈ 1/62
+export const SPECIAL_SWORD_CHANCE = 1 / 13;
+export const SPECIAL_HEART_CHANCE = 1 / 10;
 
 export type Board = TileType[];
 
@@ -43,8 +46,8 @@ function randBase(): BaseTileType {
 
 function randTile(): TileType {
   const base = randBase();
-  if (base === 'sword' && Math.random() < SPECIAL_TILE_CHANCE) return 'fireSword';
-  if (base === 'heart' && Math.random() < SPECIAL_TILE_CHANCE) return 'greaterHeart';
+  if (base === 'sword' && Math.random() < SPECIAL_SWORD_CHANCE) return 'fireSword';
+  if (base === 'heart' && Math.random() < SPECIAL_HEART_CHANCE) return 'greaterHeart';
   return base;
 }
 

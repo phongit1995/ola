@@ -230,7 +230,7 @@ Kỹ thuật: đổi `r.tile()` từ `next() % tileCount` ([board.go:37-39](../s
 ### Quy tắc
 
 - **Không nổ dây tầng-2**: vùng nổ trúng một ô Lôi/Kiếm Lửa khác thì ô đó biến mất, **không** kích nổ tiếp (tránh vô tận). Nổ dây vẫn xảy ra tự nhiên qua bước rơi (5) → tạo cụm mới → nổ mới.
-- **Nộ ×2** (nếu đang có): áp cho damage của Kiếm/Kiếm Lửa trong wave, **kể cả** phần damage từ ô Kiếm bị nổ trúng.
+- **Nộ ×2 chốt theo Nộ TRƯỚC wave**: chỉ ×2 khi thanh Nộ đã đầy 100 *từ trước khi* wave này tính effect, áp cho damage Kiếm/Kiếm Lửa **kể cả** phần damage từ ô Kiếm bị nổ trúng, rồi reset về 0. Ô **Đào ăn trong chính wave này chỉ nạp Nộ cho các nước sau**, không tự làm đầy-rồi-×2 ngay trong wave (tránh mơ hồ thứ tự nạp/tiêu; khớp `applyTileEffects` server & client).
 - **Deterministic**: nổ chỉ dựa vị trí ô, không tiêu RNG → PvP replay khớp tuyệt đối giữa 2 máy.
 
 ### Ví dụ
@@ -240,7 +240,7 @@ Kỹ thuật: đổi `r.tile()` từ `next() % tileCount` ([board.go:37-39](../s
 
 ### Thêm lượt & hệ nhân
 
-- **Giữ luật hiện tại**: ghép ≥4 (`maxRun≥4`) → đi thêm 1 lượt. Không đụng.
+- **Thêm lượt**: ghép ≥4 thẳng hàng (`maxRun≥4`) **hoặc** dọn ≥5 ô trong một wave (`cells≥5`, gồm cả hình chữ T/L/thập không thẳng hàng) → đi thêm 1 lượt.
 - **Chỉ Nộ là hệ nhân duy nhất.** Nổ là nguồn *cascade*, Nộ là nguồn *nhân* — không chồng hệ nhân thứ hai để tránh one-shot.
 - Van an toàn cần playtest: cụm Kiếm lớn trong Nộ + nổ + cascade vẫn có thể vọt cao (cân nhắc cap damage/wave, hoặc Nộ chỉ ×2 ở wave đầu). Với HP 200 thì rủi ro one-shot đã giảm hẳn.
 
@@ -368,7 +368,7 @@ Lưu ý: [hud.ts:189](../game/war-god/screens/battle/hud.ts#L189) đang tái dù
 | [`logic.go`](../server/internal/game/games/war-god/logic.go) | Nộ, ult scale, `Step.Exploded`, resolve nổ trong cascade, `StateVersion` 1→**2** |
 | [`logic_test.go`](../server/internal/game/games/war-god/logic_test.go) | Phần lớn 20 test phải viết lại |
 | [`server-types.ts`](../game/war-god/logic/server-types.ts) | `TILE_ORDER`, `decodeTile` (`n & 7` + kind), fallback `?? 'stone'` |
-| [`hud.ts`](../game/war-god/screens/battle/hud.ts) | Thanh Nộ, card 162, đèn báo Nộ đầy |
+| [`hud.ts`](../game/war-god/screens/battle/hud.ts) | Thanh Nộ, card 152, nút Tuyệt Chiêu thu nhỏ + badge giáp nằm ngang cạnh nút, đèn báo Nộ đầy |
 | [`battle/index.ts`](../game/war-god/screens/battle/index.ts) | Replay step nổ, FX nổ, phát sáng ô Kiếm khi Nộ đầy, hằng số layout |
 | [`guide-popup.ts`](../game/war-god/screens/lobby/guide-popup.ts) | Viết lại toàn bộ (xem 11.4) |
 | assets | 2 icon mới (Đào Tiên, Lôi) · recolor 4 icon còn lại · overlay ô đặc biệt |

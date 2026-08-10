@@ -102,7 +102,8 @@ func TestSpecialTilesAreRare(t *testing.T) {
 	}
 	for _, tile := range []int{tileFireSword, tileGreaterHeart} {
 		rate := counts[tile]
-		if rate < samples/120 || rate > samples/50 {
+		// ~1/60 target: band [1/75, 1/50] bắt được lệch như 1/81 (Tim cũ) hay 1/45.
+		if rate < samples/75 || rate > samples/50 {
 			t.Fatalf("special %s rate outside ~1/60 band: %d/%d", tileNames[tile], rate, samples)
 		}
 	}
@@ -336,11 +337,20 @@ func TestApplyTileEffects(t *testing.T) {
 			wantEffects:  Effects{Damage: 42, Furied: true, Reflect: 2},
 		},
 		{
-			name:         "peach fills and consumes same wave",
+			name:         "peach fills but does not consume same wave",
 			attacker:     Fighter{HP: 100, Fury: 90},
 			defender:     Fighter{HP: 100},
 			counts:       map[int]int{tilePeach: 1, tileSword: 2},
-			wantAttacker: Fighter{HP: 100, Fury: 0},
+			wantAttacker: Fighter{HP: 100, Fury: 100},
+			wantDefender: Fighter{HP: 86},
+			wantEffects:  Effects{Damage: 14, Fury: 10},
+		},
+		{
+			name:         "full fury consumes then peach recharges",
+			attacker:     Fighter{HP: 100, Fury: 100},
+			defender:     Fighter{HP: 100},
+			counts:       map[int]int{tileSword: 2, tilePeach: 1},
+			wantAttacker: Fighter{HP: 100, Fury: 10},
 			wantDefender: Fighter{HP: 72},
 			wantEffects:  Effects{Damage: 28, Fury: 10, Furied: true},
 		},
@@ -516,6 +526,50 @@ func TestApplySwapRunOfFourKeepsTurn(t *testing.T) {
 	}
 	if !next.ExtraTurn || !(Logic{}).KeepTurn(next) {
 		t.Fatal("run of four must keep the turn")
+	}
+}
+
+func doubleMatchBoard() []int {
+	board := make([]int, boardSize)
+	for y := 0; y < grid; y++ {
+		for x := 0; x < grid; x++ {
+			// (x+2y)%6: hàng ngang lệch 1, hàng dọc lệch 2 → không bao giờ có 3 ô
+			// liền kề trùng nhau, nền hoàn toàn sạch match.
+			board[y*grid+x] = (x + 2*y) % 6
+		}
+	}
+	// Đổi ô 18<->19 sẽ hoàn tất đồng thời 2 cụm 3 rời nhau (6 ô, maxRun 3):
+	//   cột 2 (10,18,26) thành Kiếm ; hàng 2 (19,20,21) thành Nước.
+	board[10], board[26] = tileSword, tileSword // 18 do swap điền vào
+	board[18] = tileWater
+	board[19] = tileSword // được swap sang 18
+	board[20] = tileWater // 21 vốn đã là Nước theo nền
+	return board
+}
+
+func TestApplySwapFivePlusCellsKeepsTurn(t *testing.T) {
+	board := doubleMatchBoard()
+	if matchedCells, _, _ := findMatches(board); matchedCells != nil {
+		t.Fatalf("board must be match-free before swap: %v", matchedCells)
+	}
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 1)
+	if err := (Logic{}).ValidateMove(state, 0, json.RawMessage(`{"type":"swap","a":18,"b":19}`)); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":18,"b":19}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+
+	matchStep := next.Steps[1]
+	if matchStep.Kind != "match" ||
+		!reflect.DeepEqual(matchStep.Cells, []int{10, 18, 19, 20, 21, 26}) ||
+		matchStep.MaxRun != 3 {
+		t.Fatalf("expected a 6-cell maxRun-3 match: %+v", matchStep)
+	}
+	if !next.ExtraTurn || !(Logic{}).KeepTurn(next) {
+		t.Fatal("clearing 5+ cells must keep the turn")
 	}
 }
 

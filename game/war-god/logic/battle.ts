@@ -58,14 +58,11 @@ export function applyTileEffects(
   const summary: EffectSummary = { damage: 0, heal: 0, mana: 0, armor: 0, armorDamage: 0, fury: 0 };
   const defenderArmorBefore = defender.armor;
 
-  if (counts.peach > 0) {
-    const gained = Math.min(MAX_FURY - attacker.fury, counts.peach * FURY_PEACH);
-    attacker.fury += gained;
-    summary.fury = gained;
-  }
-
   let swordDmg = counts.sword * DMG_SWORD;
   let fireDmg = counts.fireSword * FIRE_SWORD_DMG;
+
+  // Nộ chỉ ×2 khi đã đầy TỪ TRƯỚC wave. Đào ăn trong chính wave này chỉ
+  // nạp Nộ cho các đòn Kiếm sau, không tự kích hoạt ×2 ngay.
   let furied = false;
   if (attacker.fury >= MAX_FURY && (swordDmg > 0 || fireDmg > 0)) {
     swordDmg *= 2;
@@ -73,6 +70,12 @@ export function applyTileEffects(
     attacker.fury = 0;
     furied = true;
     summary.furied = true;
+  }
+
+  if (counts.peach > 0) {
+    const gained = Math.min(MAX_FURY - attacker.fury, counts.peach * FURY_PEACH);
+    attacker.fury += gained;
+    summary.fury = gained;
   }
 
   if (swordDmg > 0) {
@@ -197,8 +200,9 @@ export function botChooseMove(
     swapCells(board, move[0], move[1]);
     if (!counts) continue;
 
-    const projectedFury = Math.min(MAX_FURY, bot.fury + counts.peach * FURY_PEACH);
-    const furyMul = projectedFury >= MAX_FURY ? 2 : 1;
+    // Nộ chỉ ×2 khi đã đầy từ trước wave; Đào ăn trong wave này chỉ tính điểm
+    // nạp Nộ (peachWeight) chứ không nhân đôi sát thương ngay.
+    const furyMul = bot.fury >= MAX_FURY ? 2 : 1;
     let score =
       (counts.sword * DMG_SWORD + counts.fireSword * FIRE_SWORD_DMG) * furyMul * attackWeight +
       counts.peach * peachWeight +
@@ -222,7 +226,14 @@ export function botChooseMove(
 export function botShouldUlt(bot: Fighter, player: Fighter, level: BotLevel): boolean {
   if (bot.mp < ULT_COST) return false;
   const dmg = Math.floor(bot.mp / 2);
+  if (player.hp <= dmg) return true; // đủ kết liễu — luôn chốt hạ
   if (level === 'easy') return player.hp <= dmg + 5 || Math.random() < 0.2;
-  if (level === 'hard') return true;
+  if (level === 'hard') {
+    // Ult scale theo MP, nên bot KHÓ tích đến đầy để đánh mạnh nhất, chỉ tung
+    // sớm khi đã full (không tích thêm được) hoặc đang nguy cấp cần dứt điểm.
+    if (bot.mp >= MAX_MP) return true;
+    if (bot.hp <= 50 && player.hp <= dmg + 25) return true;
+    return false;
+  }
   return player.hp <= dmg + 10 || Math.random() < 0.5;
 }

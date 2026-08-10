@@ -165,7 +165,7 @@ function sizeSelector(s: Sprite): void {
 function computeTileSize(): number {
   const scale0 = Math.min(window.innerWidth, DESIGN_W) / DESIGN_W;
   const designH0 = (window.innerHeight - lastSafeTop - lastSafeBottom) / scale0;
-  const boardBudget = (designH0 - 180 - 68 - 30 - 6 - 10 - 96 - 10) / 1.1;
+  const boardBudget = (designH0 - 164 - 68 - 30 - 6 - 10 - 96 - 10) / 1.1;
   return Math.max(24, Math.floor(Math.min(470, DESIGN_W - 50, boardBudget) / GRID));
 }
 
@@ -489,17 +489,46 @@ function flySword(
   });
 }
 
-function floatNumber(card: Container, text: string, color: number, line: number): void {
-  const t = makeText(text, 15, color, '800');
-  t.style.stroke = { color: 0x120d02, width: 4, join: 'round' };
-  t.x = card.x + 95;
-  t.y = card.y + 108 + line * 18;
-  flyLayer.addChild(t);
-  void (async () => {
-    await tween(t, { y: t.y - 34 }, 450);
-    await tween(t, { y: t.y - 56, alpha: 0 }, 420);
-    t.destroy();
-  })();
+// Hàng đợi số nổi theo từng card: hiện tuần tự từng số một (xong cái này mới
+// lên cái kế), ngay tại khu thanh thông tin của người chơi thay vì xếp chồng xa nhau.
+const floatQueues = new Map<Container, Array<{ text: string; color: number }>>();
+const floatBusy = new Set<Container>();
+
+function floatNumber(card: Container, text: string, color: number): void {
+  let q = floatQueues.get(card);
+  if (!q) {
+    q = [];
+    floatQueues.set(card, q);
+  }
+  q.push({ text, color });
+  if (!floatBusy.has(card)) void drainFloatQueue(card);
+}
+
+async function drainFloatQueue(card: Container): Promise<void> {
+  floatBusy.add(card);
+  const q = floatQueues.get(card)!;
+  while (q.length > 0) {
+    const next = q.shift()!;
+    await showFloatOnce(card, next.text, next.color);
+  }
+  floatBusy.delete(card);
+}
+
+function showFloatOnce(card: Container, text: string, color: number): Promise<void> {
+  return new Promise((resolve) => {
+    const t = makeText(text, 16, color, '800');
+    t.anchor.set(0.5);
+    t.style.stroke = { color: 0x120d02, width: 4, join: 'round' };
+    t.x = card.x + 95;
+    t.y = card.y + 34;
+    flyLayer.addChild(t);
+    void (async () => {
+      await tween(t, { y: t.y - 16, scale: 1.14 }, 220);
+      await tween(t, { y: t.y - 30, alpha: 0 }, 240);
+      t.destroy();
+      resolve();
+    })();
+  });
 }
 
 function renderTurnClock(): void {
@@ -726,7 +755,8 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
   for (;;) {
     const match = findMatches(board);
     if (!match) break;
-    if (match.maxRun >= 4) extraTurn = true;
+    // Thêm lượt khi ghép ≥4 thẳng hàng HOẶC dọn ≥5 ô trong một wave.
+    if (match.maxRun >= 4 || match.cells.size >= 5) extraTurn = true;
 
     const exploded = computeExplosions(board, match.cells);
     for (const i of exploded) match.counts[board[i]]++;
@@ -750,18 +780,16 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
     updateHud();
     const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
     const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-    let atkLine = 0;
-    let defLine = 0;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, defLine++);
+    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
     if ((result.armorDamage ?? 0) > 0) {
-      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff, defLine++);
+      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
     }
-    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0, defLine++);
-    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a, atkLine++);
-    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff, atkLine++);
-    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb, atkLine++);
-    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e, atkLine++);
-    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff, atkLine++);
+    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
+    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
+    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
+    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
+    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
+    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
 
     const gravity = applyGravity(board, removed);
     await animateGravity(gravity.falls, gravity.spawns);
@@ -1072,18 +1100,16 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     updateHud();
     const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
     const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-    let atkLine = 0;
-    let defLine = 0;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, defLine++);
+    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
     if ((result.armorDamage ?? 0) > 0) {
-      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff, defLine++);
+      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
     }
-    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0, defLine++);
-    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a, atkLine++);
-    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff, atkLine++);
-    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb, atkLine++);
-    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e, atkLine++);
-    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff, atkLine++);
+    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
+    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
+    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
+    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
+    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
+    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
     return;
   }
   if (step.kind === 'gravity') {
@@ -1505,7 +1531,7 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
 
   const boardW = tileSize * GRID;
   const overhang = Math.round(boardW * 0.05);
-  const topStart = 180 + insetTop;
+  const topStart = 164 + insetTop;
   const bottomLimit = hud.bottomRow.y - 10;
   const HINT_SPACE = 20;
   const GAP_BOARD_CHAT = 10;

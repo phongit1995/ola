@@ -147,7 +147,7 @@ function updateBar(bar: BarUI, cur: number, max: number): void {
 function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   const mirror = side === 'foe';
   const w = 190;
-  const h = 168;
+  const h = 152;
   const card = new Container();
 
   const bg = new Graphics().roundRect(0, 0, w, h, 14).fill({ color: 0x101c2c, alpha: 0.88 });
@@ -203,46 +203,49 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   furyRow.view.y = 88;
   card.addChild(furyRow.view);
 
-  const armor = new Container();
-  const armorBg = new Graphics();
-  const armorIc = new Sprite(tex[A.items.shield]);
-  armorIc.anchor.set(0.5);
-  armorIc.scale.set(14 / Math.max(armorIc.texture.width, armorIc.texture.height));
-  armorIc.x = 10;
-  armorIc.y = 8;
-  const armorText = makeText(`0/${MAX_ARMOR}`, 9, 0x9fd0ff, '800');
-  armorText.x = 31;
-  armorText.y = 8;
-  armor.addChild(armorBg, armorIc, armorText);
-  armor.x = mirror ? 14 : w - 14 - 50;
-  armor.y = 47;
-  card.addChild(armor);
-
   const ultOn = tex[mirror ? A.hud.ultRightOn : A.hud.ultLeftOn];
   const ultOff = tex[mirror ? A.hud.ultRightOff : A.hud.ultLeftOff];
+  const ultW = 116;
+  const ultY = 104;
   const ultBtn = new Container();
   const ultFrame = new Sprite(ultOff);
-  ultFrame.width = 166;
+  ultFrame.width = ultW;
   ultFrame.scale.y = ultFrame.scale.x;
   ultBtn.addChild(ultFrame);
 
   const ultFlame = new Sprite(tex[A.hud.flameOff]);
   ultFlame.anchor.set(0.5);
-  const ultFlameScale = 26 / Math.max(ultFlame.texture.width, ultFlame.texture.height);
+  const ultFlameScale = 21 / Math.max(ultFlame.texture.width, ultFlame.texture.height);
   ultFlame.scale.set(ultFlameScale);
   const ultOrbX = ultFrame.height / 2;
-  ultFlame.x = mirror ? 166 - ultOrbX : ultOrbX;
+  ultFlame.x = mirror ? ultW - ultOrbX : ultOrbX;
   ultFlame.y = ultFrame.height / 2;
   ultBtn.addChild(ultFlame);
 
-  const ultLabel = makeText('TUYỆT CHIÊU', 11, 0xcfc9b8, '700', HEADING);
-  ultLabel.x = mirror ? (166 - ultFrame.height) / 2 : ultFrame.height + (166 - ultFrame.height) / 2;
+  const ultLabel = makeText('TUYỆT CHIÊU', 9.5, 0xcfc9b8, '700', HEADING);
+  ultLabel.x = mirror ? (ultW - ultFrame.height) / 2 : ultFrame.height + (ultW - ultFrame.height) / 2;
   ultLabel.y = ultFrame.height / 2;
   ultBtn.addChild(ultLabel);
 
   ultBtn.x = 12;
-  ultBtn.y = 104;
+  ultBtn.y = ultY;
   card.addChild(ultBtn);
+
+  // Giáp: badge nhỏ nằm ngang bên phải nút Tuyệt Chiêu, canh giữa theo chiều cao nút.
+  const armor = new Container();
+  const armorBg = new Graphics();
+  const armorIc = new Sprite(tex[A.items.shield]);
+  armorIc.anchor.set(0.5);
+  armorIc.scale.set(12 / Math.max(armorIc.texture.width, armorIc.texture.height));
+  armorIc.x = 9;
+  armorIc.y = 7;
+  const armorText = makeText(`0/${MAX_ARMOR}`, 8.5, 0x9fd0ff, '800');
+  armorText.x = 25;
+  armorText.y = 7;
+  armor.addChild(armorBg, armorIc, armorText);
+  armor.x = 12 + ultW + 8;
+  armor.y = Math.round(ultY + ultFrame.height / 2 - 7);
+  card.addChild(armor);
 
   if (onUlt) {
     ultBtn.eventMode = 'static';
@@ -476,7 +479,7 @@ export function updateFighter(f: FighterUI, fighter: Fighter, active: boolean, r
   const hasArmor = fighter.armor > 0;
   f.armorBg
     .clear()
-    .roundRect(0, 0, 50, 16, 8)
+    .roundRect(0, 0, 48, 15, 7)
     .fill({ color: hasArmor ? 0x164d82 : 0x0b1827, alpha: hasArmor ? 0.96 : 0.82 })
     .stroke({ width: 1, color: hasArmor ? 0x8fdcff : 0x526270, alpha: 0.95 });
   f.armor.alpha = hasArmor ? 1 : 0.68;

@@ -191,7 +191,9 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			if matchedCells == nil {
 				break
 			}
-			if maxRun >= 4 {
+			// Thêm lượt khi ghép ≥4 thẳng hàng HOẶC dọn ≥5 ô trong một wave
+			// (gồm cả hình chữ T/L/thập không thẳng hàng).
+			if maxRun >= 4 || len(matchedCells) >= 5 {
 				s.ExtraTurn = true
 			}
 			removed := make(map[int]bool, len(matchedCells))

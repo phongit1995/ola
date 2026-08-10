@@ -43,18 +43,11 @@ func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 	effects := Effects{}
 	defenderArmorBefore := defender.Armor
 
-	if counts[tilePeach] > 0 {
-		gained := counts[tilePeach] * furyPeach
-		if room := maxFury - attacker.Fury; room < gained {
-			gained = room
-		}
-		attacker.Fury += gained
-		effects.Fury = gained
-	}
-
 	swordDmg := counts[tileSword] * dmgSword
 	fireDmg := counts[tileFireSword] * fireSwordDamage
 
+	// Nộ chỉ ×2 khi đã đầy TỪ TRƯỚC wave. Đào ăn trong chính wave này chỉ
+	// nạp Nộ cho các đòn Kiếm sau, không tự kích hoạt ×2 ngay.
 	furied := false
 	if attacker.Fury >= maxFury && (swordDmg > 0 || fireDmg > 0) {
 		swordDmg *= 2
@@ -62,6 +55,15 @@ func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 		attacker.Fury = 0
 		furied = true
 		effects.Furied = true
+	}
+
+	if counts[tilePeach] > 0 {
+		gained := counts[tilePeach] * furyPeach
+		if room := maxFury - attacker.Fury; room < gained {
+			gained = room
+		}
+		attacker.Fury += gained
+		effects.Fury = gained
 	}
 
 	if swordDmg > 0 {
