@@ -45,8 +45,8 @@ func requireWarGodBoard(t *testing.T, board []int) {
 func requireWarGodFighters(t *testing.T, fighters [2]wargod.Fighter) {
 	t.Helper()
 	for i, fighter := range fighters {
-		if fighter.HP < 0 || fighter.HP > 100 || fighter.MP < 0 || fighter.MP > 100 ||
-			fighter.Armor < 0 || fighter.Armor > 30 {
+		if fighter.HP < 0 || fighter.HP > 200 || fighter.MP < 0 || fighter.MP > 100 ||
+			fighter.Armor < 0 || fighter.Armor > 30 || fighter.Fury < 0 || fighter.Fury > 100 {
 			t.Fatalf("fighter %d out of range: %+v", i, fighter)
 		}
 	}
@@ -86,7 +86,7 @@ func TestWarGodQueueMatchPlaysValidSwapEndToEnd(t *testing.T) {
 		initial = decodeWarGodState(t, found.State)
 		requireWarGodBoard(t, initial.Board)
 		requireWarGodFighters(t, initial.Fighters)
-		if initial.Fighters[0].HP != 100 || initial.Fighters[1].HP != 100 {
+		if initial.Fighters[0].HP != 200 || initial.Fighters[1].HP != 200 {
 			t.Fatalf("initial fighters are not at full HP: %+v", initial.Fighters)
 		}
 	}
@@ -163,7 +163,7 @@ func TestWarGodRestoredMatchKeepsTurnAfterRunFourSwap(t *testing.T) {
 			{ID: "wg-keep-b", Name: "Keep B"},
 		},
 		State:        state,
-		StateVersion: 1,
+		StateVersion: 2,
 		TurnIndex:    0,
 		TurnDeadline: time.Now().Add(5 * time.Minute).UnixMilli(),
 		StartedAt:    time.Now().UnixMilli(),

@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
-import { MAX_ARMOR, MAX_HP, MAX_MP, ULT_COST, type Fighter } from '../../logic/battle';
+import { MAX_ARMOR, MAX_FURY, MAX_HP, MAX_MP, ULT_COST, type Fighter } from '../../logic/battle';
 import { A, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick } from '../../kit';
 
@@ -19,6 +19,7 @@ export interface FighterUI {
   name: Text;
   hp: BarUI;
   mp: BarUI;
+  fury: BarUI;
   armor: Container;
   armorBg: Graphics;
   armorText: Text;
@@ -146,7 +147,7 @@ function updateBar(bar: BarUI, cur: number, max: number): void {
 function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   const mirror = side === 'foe';
   const w = 190;
-  const h = 144;
+  const h = 168;
   const card = new Container();
 
   const bg = new Graphics().roundRect(0, 0, w, h, 14).fill({ color: 0x101c2c, alpha: 0.88 });
@@ -197,6 +198,11 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   mpRow.view.y = 68;
   card.addChild(mpRow.view);
 
+  const furyRow = makeBar(tex[A.items.peach], 0xff5aa0, 140, mirror);
+  furyRow.view.x = 12;
+  furyRow.view.y = 88;
+  card.addChild(furyRow.view);
+
   const armor = new Container();
   const armorBg = new Graphics();
   const armorIc = new Sprite(tex[A.items.shield]);
@@ -235,7 +241,7 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
   ultBtn.addChild(ultLabel);
 
   ultBtn.x = 12;
-  ultBtn.y = 84;
+  ultBtn.y = 104;
   card.addChild(ultBtn);
 
   if (onUlt) {
@@ -251,6 +257,7 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
     name,
     hp: hpRow.bar,
     mp: mpRow.bar,
+    fury: furyRow.bar,
     armor,
     armorBg,
     armorText,
@@ -465,6 +472,7 @@ export function buildHud(root: Container, actions: HudActions): void {
 export function updateFighter(f: FighterUI, fighter: Fighter, active: boolean, ready: boolean): void {
   updateBar(f.hp, fighter.hp, MAX_HP);
   updateBar(f.mp, fighter.mp, MAX_MP);
+  updateBar(f.fury, fighter.fury, MAX_FURY);
   const hasArmor = fighter.armor > 0;
   f.armorBg
     .clear()

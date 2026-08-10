@@ -2,11 +2,11 @@ import type { Board, TileType } from './core';
 
 export const TILE_ORDER: TileType[] = [
   'sword',
-  'fire',
+  'peach',
   'heart',
   'water',
   'shield',
-  'stone',
+  'lightning',
   'fireSword',
   'greaterHeart',
 ];
@@ -15,6 +15,7 @@ export interface ServerFighter {
   hp: number;
   mp: number;
   armor: number;
+  fury: number;
 }
 
 export interface StepSwap {
@@ -26,6 +27,7 @@ export interface StepSwap {
 export interface StepMatch {
   kind: 'match';
   cells: number[];
+  exploded?: number[];
   counts: Partial<Record<TileType, number>>;
   maxRun: number;
   effects: {
@@ -34,6 +36,9 @@ export interface StepMatch {
     mana: number;
     armor: number;
     armorDamage?: number;
+    fury?: number;
+    furied?: boolean;
+    reflect?: number;
   };
 }
 
@@ -67,7 +72,7 @@ export interface ServerState {
 export type ServerMove = { type: 'swap'; a: number; b: number } | { type: 'ult' };
 
 export function decodeTile(n: number): TileType {
-  return TILE_ORDER[n] ?? 'stone';
+  return TILE_ORDER[n] ?? 'sword';
 }
 
 export function decodeBoard(ints: number[]): Board {

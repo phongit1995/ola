@@ -1,11 +1,11 @@
 export const GRID = 8;
 export const CELLS = GRID * GRID;
 
-export type BaseTileType = 'sword' | 'fire' | 'heart' | 'water' | 'shield' | 'stone';
+export type BaseTileType = 'sword' | 'peach' | 'heart' | 'water' | 'shield' | 'lightning';
 export type TileType = BaseTileType | 'fireSword' | 'greaterHeart';
 
-export const TILE_TYPES: BaseTileType[] = ['sword', 'fire', 'heart', 'water', 'shield', 'stone'];
-export const SPECIAL_TILE_CHANCE = 0.1;
+export const TILE_TYPES: BaseTileType[] = ['sword', 'peach', 'heart', 'water', 'shield', 'lightning'];
+export const SPECIAL_TILE_CHANCE = 1 / 13;
 
 export type Board = TileType[];
 
@@ -31,8 +31,18 @@ export interface GravityResult {
   spawns: Spawn[];
 }
 
+function randBase(): BaseTileType {
+  const r = Math.random() * 100;
+  if (r < 22) return 'sword';
+  if (r < 38) return 'peach';
+  if (r < 54) return 'heart';
+  if (r < 69) return 'water';
+  if (r < 84) return 'shield';
+  return 'lightning';
+}
+
 function randTile(): TileType {
-  const base = TILE_TYPES[Math.floor(Math.random() * TILE_TYPES.length)];
+  const base = randBase();
   if (base === 'sword' && Math.random() < SPECIAL_TILE_CHANCE) return 'fireSword';
   if (base === 'heart' && Math.random() < SPECIAL_TILE_CHANCE) return 'greaterHeart';
   return base;
@@ -41,11 +51,11 @@ function randTile(): TileType {
 export function emptyCounts(): Record<TileType, number> {
   return {
     sword: 0,
-    fire: 0,
+    peach: 0,
     heart: 0,
     water: 0,
     shield: 0,
-    stone: 0,
+    lightning: 0,
     fireSword: 0,
     greaterHeart: 0,
   };
@@ -153,6 +163,34 @@ export function findValidMoves(board: Board): Array<[number, number]> {
     }
   }
   return moves;
+}
+
+export function computeExplosions(board: Board, matched: Set<number>): number[] {
+  const set = new Set<number>();
+  const add = (x: number, y: number): void => {
+    if (x >= 0 && x < GRID && y >= 0 && y < GRID) set.add(y * GRID + x);
+  };
+  matched.forEach((i) => {
+    const x = i % GRID;
+    const y = Math.floor(i / GRID);
+    const t = board[i];
+    if (t === 'lightning') {
+      add(x, y - 1);
+      add(x, y + 1);
+      add(x - 1, y);
+      add(x + 1, y);
+    } else if (t === 'fireSword') {
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) add(x + dx, y + dy);
+      }
+    }
+  });
+  const out: number[] = [];
+  set.forEach((i) => {
+    if (!matched.has(i)) out.push(i);
+  });
+  out.sort((a, b) => a - b);
+  return out;
 }
 
 export function applyGravity(board: Board, removed: Set<number>): GravityResult {

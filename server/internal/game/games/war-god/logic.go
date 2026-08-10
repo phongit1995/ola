@@ -29,17 +29,18 @@ type State struct {
 }
 
 type Step struct {
-	Kind    string         `json:"kind"`
-	A       *int           `json:"a,omitempty"`
-	B       *int           `json:"b,omitempty"`
-	Cells   []int          `json:"cells,omitempty"`
-	Counts  map[string]int `json:"counts,omitempty"`
-	MaxRun  int            `json:"maxRun,omitempty"`
-	Effects *Effects       `json:"effects,omitempty"`
-	Falls   []Fall         `json:"falls,omitzero"`
-	Spawns  []Spawn        `json:"spawns,omitzero"`
-	Board   []int          `json:"board,omitempty"`
-	Damage  int            `json:"damage,omitempty"`
+	Kind     string         `json:"kind"`
+	A        *int           `json:"a,omitempty"`
+	B        *int           `json:"b,omitempty"`
+	Cells    []int          `json:"cells,omitempty"`
+	Exploded []int          `json:"exploded,omitempty"`
+	Counts   map[string]int `json:"counts,omitempty"`
+	MaxRun   int            `json:"maxRun,omitempty"`
+	Effects  *Effects       `json:"effects,omitempty"`
+	Falls    []Fall         `json:"falls,omitzero"`
+	Spawns   []Spawn        `json:"spawns,omitzero"`
+	Board    []int          `json:"board,omitempty"`
+	Damage   int            `json:"damage,omitempty"`
 }
 
 type Move struct {
@@ -56,7 +57,7 @@ func init() {
 
 func (Logic) ID() string { return "war-god" }
 
-func (Logic) StateVersion() int { return 1 }
+func (Logic) StateVersion() int { return 2 }
 
 func (Logic) Init(seed int64) any {
 	r := &rng{z: uint64(seed)}
@@ -90,7 +91,7 @@ func (Logic) DecodeState(data json.RawMessage) (any, error) {
 		if fighter.HP <= 0 {
 			return nil, errors.New("completed war-god state cannot be restored as active")
 		}
-		if fighter.HP > maxHP || fighter.MP < 0 || fighter.MP > maxMP || fighter.Armor < 0 || fighter.Armor > maxArmor {
+		if fighter.HP > maxHP || fighter.MP < 0 || fighter.MP > maxMP || fighter.Armor < 0 || fighter.Armor > maxArmor || fighter.Fury < 0 || fighter.Fury > maxFury {
 			return nil, errors.New("invalid saved war-god fighter")
 		}
 	}
@@ -173,6 +174,13 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 	attacker := &s.Fighters[playerIdx]
 	defender := &s.Fighters[1-playerIdx]
 
+	if attacker.Armor > 0 {
+		attacker.Armor -= armorDecay
+		if attacker.Armor < 0 {
+			attacker.Armor = 0
+		}
+	}
+
 	switch m.Type {
 	case moveSwap:
 		a, b := *m.A, *m.B
@@ -186,37 +194,44 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			if maxRun >= 4 {
 				s.ExtraTurn = true
 			}
-			waveEffects := applyTileEffects(attacker, defender, counts)
-			s.Steps = append(s.Steps, Step{
-				Kind:    stepMatch,
-				Cells:   matchedCells,
-				Counts:  namedCounts(counts),
-				MaxRun:  maxRun,
-				Effects: &waveEffects,
-			})
 			removed := make(map[int]bool, len(matchedCells))
 			for _, i := range matchedCells {
 				removed[i] = true
 			}
+			exploded := computeExplosions(s.Board, removed)
+			for _, i := range exploded {
+				counts[s.Board[i]]++
+				removed[i] = true
+			}
+			waveEffects := applyTileEffects(attacker, defender, counts)
+			s.Steps = append(s.Steps, Step{
+				Kind:     stepMatch,
+				Cells:    matchedCells,
+				Exploded: exploded,
+				Counts:   namedCounts(counts),
+				MaxRun:   maxRun,
+				Effects:  &waveEffects,
+			})
 			falls, spawns := applyGravity(s.Board, removed, r)
 			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
-			if defender.HP <= 0 {
+			if defender.HP <= 0 || attacker.HP <= 0 {
 				break
 			}
 		}
-		if defender.HP > 0 {
+		if attacker.HP > 0 && defender.HP > 0 {
 			ensurePlayable(s, r)
 		}
 	case moveUlt:
 		if attacker.MP < ultCost {
 			return current, errors.New("not enough mana")
 		}
-		attacker.MP -= ultCost
-		defender.HP -= ultDamage
+		dmg := attacker.MP / 2
+		attacker.MP = 0
+		defender.HP -= dmg
 		if defender.HP < 0 {
 			defender.HP = 0
 		}
-		s.Steps = append(s.Steps, Step{Kind: stepUlt, Damage: ultDamage})
+		s.Steps = append(s.Steps, Step{Kind: stepUlt, Damage: dmg})
 		s.ExtraTurn = false
 	}
 
