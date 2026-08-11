@@ -6,6 +6,11 @@ import {
   makeFighterCard,
   type FighterUI,
 } from './hud/card';
+import {
+  buildResultPopup,
+  type ResultPopup,
+  type ResultPopupData,
+} from './result-popup';
 
 export { updateFighter } from './hud/card';
 
@@ -16,7 +21,7 @@ export interface ButtonUI {
 
 export interface HudActions {
   onUlt(): void;
-  onStart(): void;
+  onResultClose(): void;
   onRestart(): void;
   onForfeit(): void;
   onExit(): void;
@@ -32,12 +37,7 @@ export const hud = {} as {
   forfeit: ButtonUI;
   exit: ButtonUI;
   bottomRow: Container;
-  overlay: Container;
-  overlayTitle: Text;
-  overlaySub: Text;
-  overlayKen: Text;
-  overlayBtnLabel: Text;
-  overlayDim: Graphics;
+  result: ResultPopup;
   confirm: Container;
   confirmDim: Graphics;
   confirmTitle: Text;
@@ -97,60 +97,6 @@ function makeDialogCard(w: number, h: number): Container {
     .stroke({ width: 2, color: 0xf6c445 });
   c.addChild(g);
   return c;
-}
-
-function buildOverlay(onStart: () => void): void {
-  hud.overlay = new Container();
-  hud.overlayDim = new Graphics();
-  hud.overlayDim.eventMode = 'static';
-  hud.overlay.addChild(hud.overlayDim);
-
-  const cardW = 340;
-  const cardH = 250;
-  const card = makeDialogCard(cardW, cardH);
-  card.label = 'overlay-card';
-  hud.overlay.addChild(card);
-
-  const logo = makeText('⚔️', 40, 0xffffff);
-  logo.x = cardW / 2;
-  logo.y = 48;
-  card.addChild(logo);
-
-  hud.overlayTitle = makeText('WAR GOD', 30, 0xf6c445, '700', HEADING);
-  hud.overlayTitle.x = cardW / 2;
-  hud.overlayTitle.y = 100;
-  card.addChild(hud.overlayTitle);
-
-  hud.overlaySub = makeText('', 12.5, 0xb9b39e, '700');
-  hud.overlaySub.style.wordWrap = true;
-  hud.overlaySub.style.wordWrapWidth = cardW - 50;
-  hud.overlaySub.style.align = 'center';
-  hud.overlaySub.x = cardW / 2;
-  hud.overlaySub.y = 134;
-  card.addChild(hud.overlaySub);
-
-  hud.overlayKen = makeText('', 16, 0x7dff8a, '800');
-  hud.overlayKen.style.stroke = { color: 0x120d02, width: 3, join: 'round' };
-  hud.overlayKen.x = cardW / 2;
-  hud.overlayKen.y = 160;
-  hud.overlayKen.visible = false;
-  card.addChild(hud.overlayKen);
-
-  const btn = new Container();
-  const btnBg = new Sprite(tex[A.menu.btnBlue]);
-  btnBg.width = 190;
-  btnBg.height = 52;
-  btn.addChild(btnBg);
-  hud.overlayBtnLabel = makeText('Chơi với máy', 16, 0xffffff, '700', HEADING);
-  hud.overlayBtnLabel.x = 95;
-  hud.overlayBtnLabel.y = 26;
-  btn.addChild(hud.overlayBtnLabel);
-  btn.x = (cardW - 190) / 2;
-  btn.y = 180;
-  btn.eventMode = 'static';
-  btn.cursor = 'pointer';
-  btn.on('pointertap', onStart);
-  card.addChild(btn);
 }
 
 function buildConfirm(): void {
@@ -239,9 +185,9 @@ export function buildHud(root: Container, actions: HudActions): void {
   hud.bottomRow.addChild(hud.restart.view, hud.forfeit.view, hud.exit.view);
   root.addChild(hud.bottomRow);
 
-  buildOverlay(actions.onStart);
+  hud.result = buildResultPopup(actions.onResultClose);
   buildConfirm();
-  root.addChild(hud.overlay, hud.confirm);
+  root.addChild(hud.result.view, hud.confirm);
 }
 
 export function disposeHud(): void {
@@ -251,23 +197,8 @@ export function disposeHud(): void {
   confirmAction = null;
 }
 
-export function showOverlay(
-  title: string,
-  titleColor: number,
-  sub: string,
-  btnLabel: string,
-  ken?: { text: string; color: number },
-): void {
-  hud.overlayTitle.text = title;
-  hud.overlayTitle.style.fill = titleColor;
-  hud.overlaySub.text = sub;
-  hud.overlayKen.visible = ken != null;
-  if (ken) {
-    hud.overlayKen.text = ken.text;
-    hud.overlayKen.style.fill = ken.color;
-  }
-  hud.overlayBtnLabel.text = btnLabel;
-  hud.overlay.visible = true;
+export function showResult(data: ResultPopupData): void {
+  hud.result.show(data);
 }
 
 export function showConfirm(question: string, action: () => void): void {

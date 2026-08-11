@@ -60,7 +60,7 @@ import { pvp } from '../../pvp';
 import { playSound } from '../../audio';
 import { A, loadUltTexture, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick, sleep, tween } from '../../kit';
-import { buildHud, hud, showConfirm, showOverlay, updateFighter } from './hud';
+import { buildHud, hud, showConfirm, showResult, updateFighter } from './hud';
 import {
   CHAT_W,
   buildChat,
@@ -880,7 +880,7 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   clearHint();
   updateHud();
   if (mode === 'bot') recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
-  showOverlay(won ? 'CHIẾN THẮNG!' : 'THẤT BẠI', won ? 0xffd75e : 0xff7a6e, sub, 'Chơi lại');
+  showResult({ outcome: won ? 'win' : 'lose', detail: sub, kenText: '0 KEN' });
   setChatInputVisible(false);
   playSound(won ? 'win' : 'lose');
   bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason, won });
@@ -1086,7 +1086,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   setSelected(null);
   botSelectorA.visible = false;
   rebuildSprites();
-  hud.overlay.visible = false;
+  hud.result.hide();
   const userInfo = deps.getUserInfo();
   if (userInfo) hud.me.name.text = `@${userInfo.username}`;
   hud.foe.name.text = `@máy · ${LEVEL_LABELS[botLevel]}`;
@@ -1136,7 +1136,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   setSelected(null);
   botSelectorA.visible = false;
   rebuildSprites();
-  hud.overlay.visible = false;
+  hud.result.hide();
   hud.confirm.visible = false;
   const mePlayer = data.players[pvpIdx];
   const opponent = data.players[1 - pvpIdx];
@@ -1305,6 +1305,12 @@ function matchOverSub(reason: MatchOverData['reason'], won: boolean, draw: boole
   return won ? 'Bạn đã hạ gục đối thủ' : 'Đối thủ đã hạ gục bạn';
 }
 
+function formatKenDelta(delta: number): string {
+  if (delta === 0) return '0 KEN';
+  const sign = delta > 0 ? '+' : '-';
+  return `${sign}${Math.abs(delta).toLocaleString('vi-VN')} KEN`;
+}
+
 async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<void> {
   if (mode !== 'pvp' || data.matchId !== pvpMatchId) return;
   if (handledMatchOvers.has(data.matchId)) return;
@@ -1343,20 +1349,11 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   const bet = data.bet ?? pvp.bet();
   const winnerNet = data.kenDelta ?? bet;
   const kenDelta = won ? winnerNet : -bet;
-  const ken =
-    bet > 0 && !draw
-      ? {
-          text: `${kenDelta >= 0 ? '+' : ''}${kenDelta.toLocaleString('vi-VN')} KEN`,
-          color: kenDelta >= 0 ? 0x7dff8a : 0xff6b5e,
-        }
-      : undefined;
-  showOverlay(
-    draw ? 'HÒA' : won ? 'CHIẾN THẮNG!' : 'THẤT BẠI',
-    draw ? 0xffe9a8 : won ? 0xffd75e : 0xff7a6e,
-    matchOverSub(data.reason, won, draw),
-    'VỀ SẢNH',
-    ken,
-  );
+  showResult({
+    outcome: draw ? 'draw' : won ? 'win' : 'lose',
+    detail: matchOverSub(data.reason, won, draw),
+    kenText: draw ? undefined : formatKenDelta(kenDelta),
+  });
   setStatus(draw ? 'Ván đấu hòa!' : won ? 'Bạn thắng!' : 'Bạn thua!');
   setChatInputVisible(false);
   playSound(draw ? 'click' : won ? 'win' : 'lose');
@@ -1437,7 +1434,7 @@ function exitToLobby(): void {
   clearHint();
   setSelected(null);
   botSelectorA.visible = false;
-  hud.overlay.visible = false;
+  hud.result.hide();
   hud.confirm.visible = false;
   setChatInputVisible(false);
   deps.onExitToLobby();
@@ -1565,13 +1562,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
 
   buildHud(root, {
     onUlt: () => void castMyUltimate(),
-    onStart: () => {
-      if (mode === 'pvp') {
-        exitToLobby();
-        return;
-      }
-      startBattle();
-    },
+    onResultClose: exitToLobby,
     onRestart: () => {
       if (mode === 'pvp') return;
       if (busy) return;
@@ -1643,8 +1634,8 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   turnAnnounce.visible = false;
   root.addChild(turnAnnounce);
 
-  root.addChild(hud.overlay, hud.confirm);
-  hud.overlay.visible = false;
+  root.addChild(hud.result.view, hud.confirm);
+  hud.result.hide();
 
   board = createBoard();
   rebuildBoardVisuals();
@@ -1709,10 +1700,7 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
   layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, opts.rootX, opts.scale);
 
-  hud.overlayDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  const overlayCard = hud.overlay.getChildByLabel('overlay-card')!;
-  overlayCard.x = (DESIGN_W - 340) / 2;
-  overlayCard.y = Math.max(120, designH / 2 - 220);
+  hud.result.layout(designH, insetTop, insetBottom);
 
   hud.confirmDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.6 });
   const confirmCard = hud.confirm.getChildByLabel('confirm-card')!;

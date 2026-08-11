@@ -65,6 +65,15 @@ import confirmPanel from './assets/confirm/panel.png';
 import confirmHeader from './assets/confirm/header.png';
 import confirmBtnCancel from './assets/confirm/btn-cancel.png';
 import confirmBtnOk from './assets/confirm/btn-ok.png';
+import resultPanel from './assets/result/panel.webp';
+import resultTitleFrame from './assets/result/title-frame.webp';
+import resultKenFrame from './assets/result/ken-frame.webp';
+import resultCupWin from './assets/result/cup-win.webp';
+import resultShieldLose from './assets/result/shield-lose.webp';
+import resultBrushWin from './assets/result/brush-win.webp';
+import resultBrushLose from './assets/result/brush-lose.webp';
+import resultBtnClose from './assets/result/btn-close.webp';
+import resultKen from './assets/result/ken.webp';
 import serifFontUrl from './assets/fonts/DejaVuSerif-Bold.ttf';
 import robotoCondensedUrl from './assets/fonts/RobotoCondensed-VF.ttf';
 
@@ -145,6 +154,17 @@ export const A = {
     header: confirmHeader,
     btnCancel: confirmBtnCancel,
     btnOk: confirmBtnOk,
+  },
+  result: {
+    panel: resultPanel,
+    titleFrame: resultTitleFrame,
+    kenFrame: resultKenFrame,
+    cupWin: resultCupWin,
+    shieldLose: resultShieldLose,
+    brushWin: resultBrushWin,
+    brushLose: resultBrushLose,
+    btnClose: resultBtnClose,
+    ken: resultKen,
   },
 } as const;
 
