@@ -421,21 +421,36 @@ function blockFlash(i: number): void {
   void tween(g, { alpha: 0, scale: 2.4 }, 340).then(() => g.destroy());
 }
 
-function lightningBolt(from: { x: number; y: number }, to: { x: number; y: number }): Graphics {
+interface LightningBoltOptions {
+  power?: number;
+  forks?: number;
+  spread?: number;
+}
+
+function lightningBolt(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  options: LightningBoltOptions = {},
+): Graphics {
+  const power = options.power ?? 1;
+  const forkCount = options.forks ?? 6;
+  const spread = options.spread ?? 1;
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const distance = Math.max(1, Math.hypot(dx, dy));
   const nx = -dy / distance;
   const ny = dx / distance;
-  const segments = Math.max(6, Math.ceil(distance / (tileSize * 0.45)));
+  const segments = Math.max(8, Math.ceil(distance / (tileSize * 0.3)));
   const bolt = new Graphics();
+  bolt.blendMode = 'add';
   const makePath = (lane: number, jitterScale: number): Array<{ x: number; y: number }> => {
     const points: Array<{ x: number; y: number }> = [];
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;
       const edgeFade = Math.sin(Math.PI * t);
       const jitter =
-        (lane * tileSize * 0.11 + (Math.random() * 2 - 1) * tileSize * jitterScale) *
+        (lane * tileSize * 0.14 * spread +
+          (Math.random() * 2 - 1) * tileSize * jitterScale * spread) *
         edgeFade;
       points.push({
         x: from.x + dx * t + nx * jitter,
@@ -456,78 +471,198 @@ function lightningBolt(from: { x: number; y: number }, to: { x: number; y: numbe
   };
 
   const main = makePath(0, 0.2);
-  const left = makePath(-1, 0.13);
-  const right = makePath(1, 0.13);
+  const left = makePath(-1, 0.14);
+  const right = makePath(1, 0.14);
 
-  // Một tia chính và hai tia phụ cùng hội tụ vào mục tiêu. Mỗi lần flicker
-  // sẽ dựng lại đường gấp khúc nên bó sét luôn có cảm giác đang giật.
-  strokePath(main, 10, 0x5c24e8, 0.28);
-  strokePath(left, 6, 0x5930d9, 0.2);
-  strokePath(right, 6, 0x356cff, 0.2);
-  strokePath(left, 2.4, 0xb78cff, 0.92);
-  strokePath(right, 2.4, 0x82c7ff, 0.9);
-  strokePath(main, 4.8, 0x9f73ff, 0.98);
-  strokePath(main, 1.6, 0xf7fdff, 1);
+  // Ba luồng sét hội tụ tạo khối lớn, lõi trắng giữ độ rõ trên mọi loại ô.
+  strokePath(main, 18 * power, 0x3816b8, 0.16);
+  strokePath(left, 11 * power, 0x5526dc, 0.14);
+  strokePath(right, 11 * power, 0x176ee8, 0.14);
+  strokePath(main, 10 * power, 0x6334ef, 0.28);
+  strokePath(left, 5.5 * power, 0x8557ff, 0.36);
+  strokePath(right, 5.5 * power, 0x4aa9ff, 0.36);
+  strokePath(left, 2.6 * power, 0xd8bcff, 0.96);
+  strokePath(right, 2.6 * power, 0xa9e7ff, 0.96);
+  strokePath(main, 5.5 * power, 0xa879ff, 1);
+  strokePath(main, 2 * power, 0xffffff, 1);
 
-  // Các nhánh ngắn tỏa ra khỏi thân sét để hiệu ứng dày và tự nhiên hơn,
-  // nhưng không nối sang ô khác nên không làm tăng số mục tiêu gameplay.
-  const forkIndexes = [0.24, 0.46, 0.68, 0.84].map((t) =>
-    Math.max(1, Math.min(main.length - 2, Math.round(t * segments))),
-  );
+  // Nhánh trang trí làm tia sét dày và tự nhiên hơn nhưng không tăng mục tiêu gameplay.
+  const forkIndexes = Array.from({ length: forkCount }, (_, order) => {
+    const t = 0.14 + ((order + 0.5) / forkCount) * 0.72;
+    return Math.max(1, Math.min(main.length - 2, Math.round(t * segments)));
+  });
   forkIndexes.forEach((index, order) => {
     const start = main[index];
     const direction = order % 2 === 0 ? 1 : -1;
-    const length = tileSize * (0.32 + Math.random() * 0.26);
+    const length = tileSize * (0.42 + Math.random() * 0.42) * spread;
     const tangent = (Math.random() * 2 - 1) * length * 0.38;
     const end = {
       x: start.x + nx * length * direction + (dx / distance) * tangent,
       y: start.y + ny * length * direction + (dy / distance) * tangent,
     };
-    const middle = {
-      x: (start.x + end.x) / 2 + nx * (Math.random() * 2 - 1) * tileSize * 0.1,
-      y: (start.y + end.y) / 2 + ny * (Math.random() * 2 - 1) * tileSize * 0.1,
-    };
-    const fork = [start, middle, end];
-    strokePath(fork, 5, 0x6334ef, 0.2);
-    strokePath(fork, 1.8, order % 2 === 0 ? 0xd8bcff : 0xa9dcff, 0.9);
+    const fork = [
+      start,
+      {
+        x: start.x + (end.x - start.x) * 0.42 + nx * (Math.random() * 2 - 1) * tileSize * 0.12,
+        y: start.y + (end.y - start.y) * 0.42 + ny * (Math.random() * 2 - 1) * tileSize * 0.12,
+      },
+      {
+        x: start.x + (end.x - start.x) * 0.72 - nx * (Math.random() * 2 - 1) * tileSize * 0.08,
+        y: start.y + (end.y - start.y) * 0.72 - ny * (Math.random() * 2 - 1) * tileSize * 0.08,
+      },
+      end,
+    ];
+    strokePath(fork, 7 * power, 0x5726db, 0.2);
+    strokePath(fork, 3.2 * power, order % 2 === 0 ? 0x9f73ff : 0x67c8ff, 0.62);
+    strokePath(fork, 1.25 * power, 0xf4fbff, 0.96);
+
+    if (order % 2 === 0) {
+      const twigStart = fork[2];
+      const twig = [
+        twigStart,
+        {
+          x: twigStart.x - nx * direction * length * 0.26 + (dx / distance) * length * 0.12,
+          y: twigStart.y - ny * direction * length * 0.26 + (dy / distance) * length * 0.12,
+        },
+      ];
+      strokePath(twig, 3.5 * power, 0x4f2ad1, 0.2);
+      strokePath(twig, 1.1 * power, 0xcfe9ff, 0.82);
+    }
   });
   return bolt;
+}
+
+function lightningFlash(): void {
+  const margin = tileSize * 0.45;
+  const flash = new Graphics();
+  flash.blendMode = 'add';
+  flash
+    .roundRect(
+      boardBox.x - margin,
+      boardBox.y - margin,
+      tileSize * GRID + margin * 2,
+      tileSize * GRID + margin * 2,
+      tileSize * 0.25,
+    )
+    .fill({ color: 0xb9d7ff, alpha: 0.2 });
+  flyLayer.addChildAt(flash, 0);
+  void tween(flash, { alpha: 0 }, 260).then(() => flash.destroy());
+}
+
+function lightningBurst(i: number, strength: number): void {
+  const p = cellRootPos(i);
+  const burst = new Graphics();
+  burst.blendMode = 'add';
+  const rayCount = 12;
+
+  burst.circle(0, 0, tileSize * 0.3).fill({ color: 0xffffff, alpha: 0.9 });
+  burst.circle(0, 0, tileSize * 0.52).fill({ color: 0x7c4dff, alpha: 0.2 });
+  burst.circle(0, 0, tileSize * 0.48).stroke({ width: 6, color: 0x8f63ff, alpha: 0.92 });
+  burst.circle(0, 0, tileSize * 0.7).stroke({ width: 3, color: 0x8cd8ff, alpha: 0.76 });
+
+  for (let ray = 0; ray < rayCount; ray++) {
+    const angle = (Math.PI * 2 * ray) / rayCount + (Math.random() - 0.5) * 0.2;
+    const inner = tileSize * (0.28 + Math.random() * 0.1);
+    const outer = tileSize * (0.82 + Math.random() * 0.42) * strength;
+    const bend = angle + (Math.random() - 0.5) * 0.32;
+    const points = [
+      { x: Math.cos(angle) * inner, y: Math.sin(angle) * inner },
+      {
+        x: Math.cos(bend) * (inner + outer) * 0.55,
+        y: Math.sin(bend) * (inner + outer) * 0.55,
+      },
+      { x: Math.cos(angle) * outer, y: Math.sin(angle) * outer },
+    ];
+    burst.moveTo(points[0].x, points[0].y);
+    burst.lineTo(points[1].x, points[1].y);
+    burst.lineTo(points[2].x, points[2].y);
+    burst.stroke({ width: 5, color: 0x6231e6, alpha: 0.22, cap: 'round' });
+    burst.moveTo(points[0].x, points[0].y);
+    burst.lineTo(points[1].x, points[1].y);
+    burst.lineTo(points[2].x, points[2].y);
+    burst.stroke({
+      width: 1.5,
+      color: ray % 2 === 0 ? 0xffffff : 0xa9e7ff,
+      alpha: 0.96,
+      cap: 'round',
+    });
+  }
+
+  burst.position.set(p.x, p.y);
+  burst.scale.set(0.68);
+  flyLayer.addChild(burst);
+  void tween(burst, { alpha: 0, scale: 1.55 }, 420).then(() => burst.destroy());
+}
+
+function lightningSparks(i: number, amount: number): void {
+  const p = cellRootPos(i);
+  for (let order = 0; order < amount; order++) {
+    const angle = (Math.PI * 2 * order) / amount + (Math.random() - 0.5) * 0.5;
+    const distance = tileSize * (0.72 + Math.random() * 0.68);
+    const spark = new Graphics();
+    spark.blendMode = 'add';
+    spark.circle(0, 0, tileSize * 0.065).fill({ color: 0x7547f2, alpha: 0.45 });
+    spark.circle(0, 0, tileSize * 0.025).fill({ color: 0xf8fdff, alpha: 1 });
+    spark.position.set(p.x, p.y);
+    flyLayer.addChild(spark);
+    void tween(
+      spark,
+      {
+        x: p.x + Math.cos(angle) * distance,
+        y: p.y + Math.sin(angle) * distance,
+        alpha: 0,
+        scale: 0.15,
+      },
+      280 + Math.random() * 180,
+    ).then(() => spark.destroy());
+  }
 }
 
 function lightningPulse(i: number): void {
   const p = cellRootPos(i);
   const pulse = new Graphics();
-  pulse.circle(0, 0, tileSize * 0.43).fill({ color: 0xf4f0ff, alpha: 0.7 });
-  pulse.circle(0, 0, tileSize * 0.5).stroke({ width: 4, color: 0x9f73ff, alpha: 1 });
+  pulse.blendMode = 'add';
+  pulse.circle(0, 0, tileSize * 0.48).fill({ color: 0xf4f8ff, alpha: 0.76 });
+  pulse.circle(0, 0, tileSize * 0.62).stroke({ width: 6, color: 0x8b5cff, alpha: 1 });
+  pulse.circle(0, 0, tileSize * 0.82).stroke({ width: 3, color: 0x78cfff, alpha: 0.84 });
   pulse.position.set(p.x, p.y);
+  pulse.scale.set(0.7);
   flyLayer.addChild(pulse);
-  void tween(pulse, { alpha: 0, scale: 1.65 }, 260).then(() => pulse.destroy());
+  void tween(pulse, { alpha: 0, scale: 2.15 }, 460).then(() => pulse.destroy());
+  lightningBurst(i, 1.05);
+  lightningSparks(i, 10);
 }
 
 function lightningImpact(i: number): void {
   const p = cellRootPos(i);
   const hit = new Graphics();
-  hit.circle(0, 0, tileSize * 0.18).fill({ color: 0xffffff, alpha: 0.95 });
-  hit.circle(0, 0, tileSize * 0.34).stroke({ width: 4, color: 0xa879ff, alpha: 1 });
-  hit.circle(0, 0, tileSize * 0.48).stroke({ width: 2, color: 0xe2d5ff, alpha: 0.8 });
+  hit.blendMode = 'add';
+  hit.circle(0, 0, tileSize * 0.24).fill({ color: 0xffffff, alpha: 1 });
+  hit.circle(0, 0, tileSize * 0.43).fill({ color: 0x895cff, alpha: 0.24 });
+  hit.circle(0, 0, tileSize * 0.5).stroke({ width: 6, color: 0x9c6fff, alpha: 1 });
+  hit.circle(0, 0, tileSize * 0.72).stroke({ width: 3, color: 0xa9e7ff, alpha: 0.9 });
   hit.position.set(p.x, p.y);
+  hit.scale.set(0.72);
   flyLayer.addChild(hit);
-  void tween(hit, { alpha: 0, scale: 1.8 }, 240).then(() => hit.destroy());
+  void tween(hit, { alpha: 0, scale: 1.85 }, 380).then(() => hit.destroy());
+  lightningBurst(i, 0.9);
+  lightningSparks(i, 8);
 }
 
 async function playLightningArc(arc: LightningArc, order: number): Promise<void> {
-  await sleep(order * 58);
+  await sleep(order * 76);
   const from = cellRootPos(arc.source);
   const to = cellRootPos(arc.target);
   const targetSprite = sprites[arc.target];
   const originalTint = targetSprite?.tint ?? 0xffffff;
-  for (let flicker = 0; flicker < 3; flicker++) {
-    const bolt = lightningBolt(from, to);
+
+  for (let flicker = 0; flicker < 4; flicker++) {
+    const bolt = lightningBolt(from, to, { power: 1.08, forks: 5, spread: 1.08 });
     flyLayer.addChild(bolt);
-    if (targetSprite) targetSprite.tint = flicker % 2 === 0 ? 0xd8c6ff : 0xffffff;
-    await sleep(42);
+    if (targetSprite) targetSprite.tint = flicker % 2 === 0 ? 0xc9e9ff : 0xe0d2ff;
+    await sleep(50);
     bolt.destroy();
-    await sleep(14);
+    await sleep(16);
   }
   if (targetSprite) targetSprite.tint = originalTint;
   lightningImpact(arc.target);
@@ -539,9 +674,10 @@ async function explodeFx(matched: Iterable<number>, lightningArcs: LightningArc[
   }
   if (lightningArcs.length === 0) return;
   playSound('lightning');
+  lightningFlash();
   new Set(lightningArcs.map((arc) => arc.source)).forEach(lightningPulse);
   await Promise.all(lightningArcs.map((arc, order) => playLightningArc(arc, order)));
-  await sleep(80);
+  await sleep(130);
 }
 
 function spawnTrailDot(x: number, y: number): void {
