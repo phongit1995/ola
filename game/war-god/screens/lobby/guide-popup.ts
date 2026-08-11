@@ -17,7 +17,7 @@ const GUIDE_LINES = [
   '',
   'Nộ đầy 100 → đòn Kiếm kế ×2, xuyên giáp.',
   'Khiên: giảm 2/lượt, ≥20 giáp phản 2 dmg.',
-  'Mỗi đường ghép 4+ ô: +1 lượt · được cộng dồn.',
+  'Mỗi cụm ghép liền 4+ ô (kể cả hình T/L): +1 lượt · được cộng dồn.',
   'Tuyệt chiêu: cần 50 nội lực, dmg = nội lực ÷ 2.',
   'Hạ gục đối thủ (200 máu) để thắng!',
 ].join('\n');

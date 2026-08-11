@@ -197,7 +197,7 @@ func TestMatchBonusTurnsCountsDistinctLongRuns(t *testing.T) {
 		rowFive[i] = tileHeart
 	}
 	cells, _, _ := findMatches(rowFive)
-	if got := matchBonusTurns(rowFive, len(cells)); got != 1 {
+	if got := matchBonusTurns(rowFive, cells); got != 1 {
 		t.Fatalf("one run of five earned %d turns, want 1", got)
 	}
 
@@ -207,15 +207,54 @@ func TestMatchBonusTurnsCountsDistinctLongRuns(t *testing.T) {
 	}
 	double[18], double[26] = double[26], double[18]
 	cells, _, _ = findMatches(double)
-	if got := matchBonusTurns(double, len(cells)); got != 2 {
+	if got := matchBonusTurns(double, cells); got != 2 {
 		t.Fatalf("two runs of four earned %d turns, want 2 (cells=%v)", got, cells)
 	}
 
 	twoTriples := doubleMatchBoard()
 	twoTriples[18], twoTriples[19] = twoTriples[19], twoTriples[18]
 	cells, _, _ = findMatches(twoTriples)
-	if got := matchBonusTurns(twoTriples, len(cells)); got != 1 {
-		t.Fatalf("5+ cells made only from triples earned %d turns, want legacy fallback 1", got)
+	if got := matchBonusTurns(twoTriples, cells); got != 0 {
+		t.Fatalf("cascade wave made only from triples earned %d turns, want 0", got)
+	}
+
+	tShape := stripedBoard()
+	for _, index := range []int{19, 26, 27, 28, 35} {
+		tShape[index] = tileLightning
+	}
+	cells, _, maxRun := findMatches(tShape)
+	if len(cells) != 5 || maxRun != 3 {
+		t.Fatalf("invalid T-shape fixture: cells=%v maxRun=%d", cells, maxRun)
+	}
+	if got := matchBonusTurns(tShape, cells); got != 1 {
+		t.Fatalf("connected T-shape of five earned %d turns, want 1", got)
+	}
+}
+
+func TestCascadeWaveBonusRequiresRunOfFour(t *testing.T) {
+	tests := []struct {
+		name string
+		run  int
+		want int
+	}{
+		{name: "three", run: 3, want: 0},
+		{name: "four", run: 4, want: 1},
+		{name: "five", run: 5, want: 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			board := stripedBoard()
+			for x := 0; x < tt.run; x++ {
+				board[(grid-1)*grid+x] = tileLightning
+			}
+			cells, _, maxRun := findMatches(board)
+			if len(cells) != tt.run || maxRun != tt.run {
+				t.Fatalf("invalid cascade fixture: cells=%v maxRun=%d", cells, maxRun)
+			}
+			if got := matchBonusTurns(board, cells); got != tt.want {
+				t.Fatalf("cascade run %d earned %d turns, want %d", tt.run, got, tt.want)
+			}
+		})
 	}
 }
 
@@ -782,7 +821,7 @@ func doubleMatchBoard() []int {
 	return board
 }
 
-func TestApplySwapFivePlusCellsKeepsTurn(t *testing.T) {
+func TestApplySwapSeparateTriplesDoesNotKeepTurn(t *testing.T) {
 	board := doubleMatchBoard()
 	if matchedCells, _, _ := findMatches(board); matchedCells != nil {
 		t.Fatalf("board must be match-free before swap: %v", matchedCells)
@@ -803,8 +842,8 @@ func TestApplySwapFivePlusCellsKeepsTurn(t *testing.T) {
 		matchStep.MaxRun != 3 {
 		t.Fatalf("expected a 6-cell maxRun-3 match: %+v", matchStep)
 	}
-	if !next.ExtraTurn || !(Logic{}).KeepTurn(next) {
-		t.Fatal("clearing 5+ cells must keep the turn")
+	if matchStep.BonusTurns != 0 || next.ExtraTurns != 0 || next.ExtraTurn || (Logic{}).KeepTurn(next) {
+		t.Fatalf("separate triples must not keep the turn: step=%+v state=%+v", matchStep, next)
 	}
 }
 

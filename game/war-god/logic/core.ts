@@ -115,10 +115,46 @@ export function baseTileType(type: TileType): BaseTileType {
   return type;
 }
 
+function countBonusMatchGroups(board: Board, matched: ReadonlySet<number>): number {
+  const visited = new Set<number>();
+  let bonusTurns = 0;
+  for (const start of matched) {
+    if (visited.has(start)) continue;
+    const type = baseTileType(board[start]);
+    const queue = [start];
+    visited.add(start);
+    let size = 0;
+    while (queue.length > 0) {
+      const index = queue.pop()!;
+      size++;
+      const x = index % GRID;
+      const y = Math.floor(index / GRID);
+      const neighbors = [
+        x > 0 ? index - 1 : -1,
+        x < GRID - 1 ? index + 1 : -1,
+        y > 0 ? index - GRID : -1,
+        y < GRID - 1 ? index + GRID : -1,
+      ];
+      for (const neighbor of neighbors) {
+        if (
+          neighbor >= 0 &&
+          matched.has(neighbor) &&
+          !visited.has(neighbor) &&
+          baseTileType(board[neighbor]) === type
+        ) {
+          visited.add(neighbor);
+          queue.push(neighbor);
+        }
+      }
+    }
+    if (size >= 4) bonusTurns++;
+  }
+  return bonusTurns;
+}
+
 export function findMatches(board: Board): MatchResult | null {
   const cells = new Set<number>();
   let maxRun = 0;
-  let bonusTurns = 0;
 
   const scanLine = (start: number, step: number, length: number): void => {
     let runStart = 0;
@@ -130,7 +166,6 @@ export function findMatches(board: Board): MatchResult | null {
         const runLen = k - runStart;
         if (runLen >= 3) {
           maxRun = Math.max(maxRun, runLen);
-          if (runLen >= 4) bonusTurns++;
           for (let r = runStart; r < k; r++) cells.add(start + r * step);
         }
         runStart = k;
@@ -147,9 +182,7 @@ export function findMatches(board: Board): MatchResult | null {
   cells.forEach((i) => {
     counts[board[i]]++;
   });
-  // Preserve the existing rule for T/L/cross or separate triples: if no
-  // straight run earned a turn, clearing 5+ matched cells still earns one.
-  if (bonusTurns === 0 && cells.size >= 5) bonusTurns = 1;
+  const bonusTurns = countBonusMatchGroups(board, cells);
   return { cells, counts, maxRun, bonusTurns };
 }
 

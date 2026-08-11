@@ -224,9 +224,9 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 			if matchedCells == nil {
 				break
 			}
-			// Mỗi đường ghép 4+ nhận một lượt; nhiều đường/cascade được cộng
-			// dồn. Nếu wave chỉ có các đường 3 nhưng dọn ≥5 ô, giữ luật cũ +1.
-			bonusTurns := matchBonusTurns(s.Board, len(matchedCells))
+			// Mỗi cụm ghép liền 4+ nhận một lượt, kể cả hình T/L/cross.
+			// Một wave sập chỉ gồm các cụm 3 thì không nhận lượt thưởng.
+			bonusTurns := matchBonusTurns(s.Board, matchedCells)
 			remainingExtraTurns += bonusTurns
 			removed := make(map[int]bool, len(matchedCells))
 			for _, i := range matchedCells {

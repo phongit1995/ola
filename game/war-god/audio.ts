@@ -1,4 +1,11 @@
-export type GameSound = 'click' | 'match' | 'lightning' | 'ultimate' | 'win' | 'lose';
+export type GameSound =
+  | 'click'
+  | 'match'
+  | 'explosion'
+  | 'lightning'
+  | 'ultimate'
+  | 'win'
+  | 'lose';
 
 type AudioContextConstructor = new () => AudioContext;
 
@@ -59,6 +66,12 @@ export function playSound(sound: GameSound): void {
   if (sound === 'match') {
     tone(ctx, now, 440, 0.09, 0.035, 'triangle');
     tone(ctx, now + 0.065, 660, 0.12, 0.03, 'triangle');
+    return;
+  }
+  if (sound === 'explosion') {
+    tone(ctx, now, 105, 0.24, 0.065, 'sawtooth');
+    tone(ctx, now + 0.025, 62, 0.32, 0.075, 'square');
+    tone(ctx, now + 0.07, 260, 0.12, 0.025, 'sawtooth');
     return;
   }
   if (sound === 'lightning') {
