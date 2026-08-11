@@ -1,4 +1,4 @@
-const DESIGN_W = 520;
+import { DESIGN_W } from '../../../layout';
 
 export function makeOverlayInput(opts: {
   numeric?: boolean;

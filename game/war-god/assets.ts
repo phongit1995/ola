@@ -153,7 +153,24 @@ function collectUrls(node: unknown): string[] {
   return Object.values(node as Record<string, unknown>).flatMap(collectUrls);
 }
 
-export const tex: Record<string, Texture> = {};
+const textureCache: Partial<Record<string, Texture>> = {};
+
+export function texture(url: string): Texture {
+  const loaded = textureCache[url];
+  if (!loaded) throw new Error(`War God texture was used before loading: ${url}`);
+  return loaded;
+}
+
+// Compatibility index for existing render code. Unlike a plain Record cast,
+// every lookup is checked at runtime and fails with the missing asset URL.
+export const tex: Record<string, Texture> = new Proxy(textureCache as Record<string, Texture>, {
+  get(_target, property): Texture {
+    if (typeof property !== 'string') {
+      throw new TypeError(`Invalid War God texture key: ${String(property)}`);
+    }
+    return texture(property);
+  },
+});
 let ultTexturePromise: Promise<Texture> | null = null;
 
 function withoutDeferredAssets(): Omit<typeof A, 'fx'> {
@@ -171,17 +188,17 @@ export async function loadAssets(): Promise<void> {
     serifFont.load().then((f) => document.fonts.add(f)),
     robotoFont.load().then((f) => document.fonts.add(f)),
   ]);
-  Object.assign(tex, loaded);
+  Object.assign(textureCache, loaded);
 }
 
 export function loadUltTexture(): Promise<Texture> {
-  const cached = tex[A.fx.ult];
+  const cached = textureCache[A.fx.ult];
   if (cached) return Promise.resolve(cached);
   if (!ultTexturePromise) {
     ultTexturePromise = Assets.load<Texture>(A.fx.ult)
       .then((texture) => {
         texture.source.autoGenerateMipmaps = false;
-        tex[A.fx.ult] = texture;
+        textureCache[A.fx.ult] = texture;
         return texture;
       })
       .catch((error: unknown) => {

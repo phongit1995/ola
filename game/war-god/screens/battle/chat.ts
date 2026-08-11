@@ -2,6 +2,7 @@ import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { A, tex } from '../../assets';
 import { HEADING, makeText } from '../../kit';
 import { pvp } from '../../pvp';
+import { createChatInput, type ChatInputController } from './chat-input';
 
 export const CHAT_W = 492;
 const CHAT_PAD = 12;
@@ -36,7 +37,7 @@ let scrollZone: Container;
 let inputBg: Sprite;
 let sendBtn: Container;
 let smiley: Sprite;
-let input: HTMLInputElement;
+let input: ChatInputController;
 let chatH = 150;
 let contentH = 0;
 let scrollBack = 0;
@@ -88,9 +89,8 @@ function pushChat(name: string, mine: boolean, text: string): void {
 }
 
 function sendChat(): void {
-  const value = input.value.trim();
+  const value = input.takeValue();
   if (!value) return;
-  input.value = '';
   if (pvpChat) {
     pvp.sendChatText(value.slice(0, 120));
     return;
@@ -159,7 +159,7 @@ export function buildChat(chatDeps: ChatDeps): Container {
   smiley.eventMode = 'static';
   smiley.cursor = 'pointer';
   smiley.on('pointertap', () => {
-    input.value = `${input.value} 🙂`.trimStart();
+    input.append(' 🙂');
   });
   chatBox.addChild(smiley);
 
@@ -180,28 +180,10 @@ export function buildChat(chatDeps: ChatDeps): Container {
   sendBtn.on('pointerupoutside', () => sendBtn.scale.set(1));
   chatBox.addChild(sendBtn);
 
-  input = document.createElement('input');
-  input.type = 'text';
-  input.maxLength = 120;
-  input.placeholder = 'Nhập tin nhắn...';
-  Object.assign(input.style, {
-    position: 'absolute',
-    zIndex: '10',
-    background: 'transparent',
-    border: 'none',
-    outline: 'none',
-    color: '#fff',
-    fontFamily: "'RobotoCondensed', system-ui, sans-serif",
-    fontWeight: '700',
-    padding: '0 8px',
+  input = createChatInput({
+    onSubmit: sendChat,
+    onFocusChange: (focused) => deps.onFocusChange(focused),
   });
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendChat();
-  });
-  input.addEventListener('focus', () => deps.onFocusChange(true));
-  input.addEventListener('blur', () => deps.onFocusChange(false));
-  input.style.display = 'none';
-  document.getElementById('app')!.appendChild(input);
 
   return chatBox;
 }
@@ -220,18 +202,20 @@ export function layoutChat(x: number, y: number, h: number, rootX: number, scale
   sendBtn.x = CHAT_W - CHAT_PAD - 84;
   sendBtn.y = inputY - 2;
 
-  input.style.left = `${rootX + (x + CHAT_PAD + 6) * scale}px`;
-  input.style.top = `${(y + inputY) * scale}px`;
-  input.style.width = `${(inputBg.width - 46) * scale}px`;
-  input.style.height = `${34 * scale}px`;
-  input.style.fontSize = `${13 * scale}px`;
+  input.layout(
+    rootX + (x + CHAT_PAD + 6) * scale,
+    (y + inputY) * scale,
+    (inputBg.width - 46) * scale,
+    34 * scale,
+    13 * scale,
+  );
   renderChat();
 }
 
 export function resetChat(greeting?: string): void {
   clearBotReplyTimers();
   chatLog.length = 0;
-  input.value = '';
+  input.clear();
   if (greeting) {
     pushChat('@máy', false, greeting);
     return;
@@ -249,6 +233,10 @@ export function pushPvpChat(name: string, mine: boolean, text: string): void {
 }
 
 export function setChatInputVisible(visible: boolean): void {
-  if (!visible) input.blur();
-  input.style.display = visible ? 'block' : 'none';
+  input.setVisible(visible);
+}
+
+export function disposeChat(): void {
+  clearBotReplyTimers();
+  input?.dispose();
 }

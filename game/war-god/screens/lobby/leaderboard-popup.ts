@@ -7,9 +7,10 @@ import type {
 } from '../../../src/sdk';
 import { A, tex } from '../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../kit';
+import { DESIGN_W } from '../../layout';
+import { bindDragScroll } from './drag-scroll';
 import { makeWoodBtn } from './ui';
 
-const DESIGN_W = 520;
 const PANEL_W = 400;
 const TAB_W = 150;
 const LIST_W = 340;
@@ -311,25 +312,13 @@ export function buildLeaderboardPopup(): Container {
   const scrollZone = new Container();
   scrollZone.eventMode = 'static';
   scrollZone.hitArea = new Rectangle(-LIST_W / 2, listTop, LIST_W, listH);
-  let dragY: number | null = null;
-  scrollZone.on('pointerdown', (e) => {
-    dragY = e.global.y;
-  });
-  scrollZone.on('pointermove', (e) => {
-    if (dragY == null) return;
-    const scale = card.worldTransform.a || 1;
-    scrollY -= (e.global.y - dragY) / scale;
-    dragY = e.global.y;
-    applyScroll();
-  });
-  const endDrag = (): void => {
-    dragY = null;
-  };
-  scrollZone.on('pointerup', endDrag);
-  scrollZone.on('pointerupoutside', endDrag);
-  scrollZone.on('wheel', (e) => {
-    scrollY += e.deltaY / 3;
-    applyScroll();
+  bindDragScroll(scrollZone, {
+    scale: () => card.worldTransform.a,
+    offset: () => scrollY,
+    setOffset: (value) => {
+      scrollY = value;
+    },
+    apply: applyScroll,
   });
   card.addChild(scrollZone);
 

@@ -8,6 +8,7 @@ import {
   type Ticker,
 } from 'pixi.js';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
+import { DESIGN_W } from '../../layout';
 import {
   GAME_ERROR_CODE,
   bridge,
@@ -43,6 +44,7 @@ import {
   createFighter,
   decayArmor,
   type BotLevel,
+  type EffectSummary,
   type Fighter,
 } from '../../logic/battle';
 import { recordBotMatch } from '../../logic/bot-history';
@@ -68,8 +70,9 @@ import {
   setChatInputVisible,
   setChatPvp,
 } from './chat';
+import { playLightningFx } from './fx/lightning';
+import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
 
-const DESIGN_W = 520;
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
 const HINT_DELAY_MS = 10_000;
 const FX_COLS = 6;
@@ -410,563 +413,7 @@ function flyMatched(cells: Set<number>, side: 'me' | 'foe'): Promise<void> {
   return Promise.all(jobs).then(() => undefined);
 }
 
-function fireSwordBlastCells(source: number, removed: ReadonlySet<number>): number[] {
-  const sourceX = source % GRID;
-  const sourceY = Math.floor(source / GRID);
-  const cells: number[] = [];
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      const x = sourceX + dx;
-      const y = sourceY + dy;
-      if (x < 0 || x >= GRID || y < 0 || y >= GRID) continue;
-      const index = y * GRID + x;
-      if (removed.has(index)) cells.push(index);
-    }
-  }
-  return cells;
-}
 
-function fireBoardFlash(): void {
-  const margin = tileSize * 0.35;
-  const flash = new Graphics();
-  flash.blendMode = 'add';
-  flash
-    .roundRect(
-      boardBox.x - margin,
-      boardBox.y - margin,
-      tileSize * GRID + margin * 2,
-      tileSize * GRID + margin * 2,
-      tileSize * 0.2,
-    )
-    .fill({ color: 0xff6a20, alpha: 0.12 });
-  flyLayer.addChildAt(flash, 0);
-  void tween(flash, { alpha: 0 }, 240).then(() => flash.destroy());
-}
-
-function makeFireSwordChargeIcon(source: number): Sprite {
-  const p = cellRootPos(source);
-  const icon = new Sprite(tex[A.items.fireSword]);
-  icon.anchor.set(0.5);
-  icon.scale.set((tileSize * 0.82) / Math.max(icon.texture.width, icon.texture.height));
-  icon.position.set(p.x, p.y);
-  return icon;
-}
-
-async function chargeFireSword(icon: Sprite): Promise<void> {
-  const glow = new Graphics();
-  glow.blendMode = 'add';
-  glow.circle(0, 0, tileSize * 0.34).fill({ color: 0xffffff, alpha: 0.5 });
-  glow.circle(0, 0, tileSize * 0.52).fill({ color: 0xff7a24, alpha: 0.34 });
-  glow.circle(0, 0, tileSize * 0.62).stroke({ width: 5, color: 0xffc34d, alpha: 0.9 });
-  for (let ray = 0; ray < 8; ray++) {
-    const angle = (Math.PI * 2 * ray) / 8;
-    const inner = tileSize * 0.44;
-    const outer = tileSize * (0.66 + (ray % 2) * 0.12);
-    glow.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
-    glow.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
-    glow.stroke({ width: 3, color: 0xffdf72, alpha: 0.82, cap: 'round' });
-  }
-  glow.position.copyFrom(icon.position);
-  glow.scale.set(0.48);
-  flyLayer.addChild(glow, icon);
-
-  const baseX = icon.x;
-  const baseY = icon.y;
-  const baseScale = icon.scale.x;
-  const baseRotation = icon.rotation;
-  const duration = 140;
-  const shake = new Promise<void>((resolve) => {
-    let elapsed = 0;
-    const step = (ticker: Ticker): void => {
-      if (icon.destroyed) {
-        removeTick(step);
-        resolve();
-        return;
-      }
-      elapsed += ticker.deltaMS;
-      const k = Math.min(1, elapsed / duration);
-      icon.x = baseX + Math.sin(elapsed * 0.22) * tileSize * 0.028 * k;
-      icon.y = baseY + Math.cos(elapsed * 0.27) * tileSize * 0.018 * k;
-      icon.rotation = baseRotation + Math.sin(elapsed * 0.18) * 0.055 * k;
-      icon.scale.set(baseScale * (1 + k * 0.26 + Math.sin(elapsed * 0.24) * 0.025));
-      glow.rotation = elapsed * 0.009;
-      if (k < 1) return;
-      icon.position.set(baseX, baseY);
-      icon.rotation = baseRotation;
-      icon.scale.set(baseScale * 1.26);
-      removeTick(step);
-      resolve();
-    };
-    addTick(step);
-  });
-
-  await Promise.all([shake, tween(glow, { alpha: 0.3, scale: 1.28 }, duration)]);
-  glow.destroy();
-}
-
-function fireEmbers(p: { x: number; y: number }, amount: number): Promise<void> {
-  const jobs: Promise<void>[] = [];
-  for (let order = 0; order < amount; order++) {
-    const angle = (Math.PI * 2 * order) / amount + (Math.random() - 0.5) * 0.42;
-    const distance = tileSize * (0.7 + Math.random() * 0.95);
-    const ember = new Graphics();
-    ember.blendMode = 'add';
-    ember.circle(0, 0, tileSize * 0.075).fill({ color: 0xff5b1a, alpha: 0.58 });
-    ember.circle(0, 0, tileSize * 0.032).fill({ color: 0xfff0a0, alpha: 1 });
-    ember.position.set(p.x, p.y);
-    flyLayer.addChild(ember);
-    jobs.push(
-      tween(
-        ember,
-        {
-          x: p.x + Math.cos(angle) * distance,
-          y: p.y + Math.sin(angle) * distance - tileSize * 0.18,
-          alpha: 0,
-          scale: 0.18,
-        },
-        310 + Math.random() * 150,
-      ).then(() => ember.destroy()),
-    );
-  }
-  return Promise.all(jobs).then(() => undefined);
-}
-
-function fireSmoke(p: { x: number; y: number }): Promise<void> {
-  const jobs: Promise<void>[] = [];
-  for (let order = 0; order < 5; order++) {
-    const angle = (Math.PI * 2 * order) / 5 + Math.random() * 0.45;
-    const puff = new Graphics();
-    puff.circle(0, 0, tileSize * (0.2 + Math.random() * 0.1)).fill({
-      color: order % 2 === 0 ? 0x61180d : 0x9e3215,
-      alpha: 0.3,
-    });
-    puff.position.set(p.x, p.y);
-    puff.scale.set(0.65);
-    flyLayer.addChildAt(puff, 0);
-    jobs.push(
-      tween(
-        puff,
-        {
-          x: p.x + Math.cos(angle) * tileSize * (0.42 + Math.random() * 0.25),
-          y: p.y + Math.sin(angle) * tileSize * 0.34 - tileSize * 0.22,
-          alpha: 0,
-          scale: 1.8,
-        },
-        390,
-      ).then(() => puff.destroy()),
-    );
-  }
-  return Promise.all(jobs).then(() => undefined);
-}
-
-function fireBlast(p: { x: number; y: number }): Promise<void> {
-  const cloud = new Container();
-  cloud.blendMode = 'add';
-  for (let lobe = 0; lobe < 8; lobe++) {
-    const angle = (Math.PI * 2 * lobe) / 8 + (Math.random() - 0.5) * 0.22;
-    const distance = tileSize * (0.16 + Math.random() * 0.18);
-    const flame = new Graphics();
-    flame.ellipse(0, 0, tileSize * 0.3, tileSize * 0.46).fill({
-      color: lobe % 2 === 0 ? 0xff5a16 : 0xff8b20,
-      alpha: 0.7,
-    });
-    flame.ellipse(0, tileSize * 0.04, tileSize * 0.17, tileSize * 0.3).fill({
-      color: 0xffd653,
-      alpha: 0.88,
-    });
-    flame.position.set(Math.cos(angle) * distance, Math.sin(angle) * distance);
-    flame.rotation = angle + Math.PI / 2;
-    cloud.addChild(flame);
-  }
-  cloud.position.set(p.x, p.y);
-  cloud.scale.set(0.32);
-
-  const hotCore = new Graphics();
-  hotCore.blendMode = 'add';
-  hotCore.circle(0, 0, tileSize * 0.24).fill({ color: 0xffffff, alpha: 1 });
-  hotCore.circle(0, 0, tileSize * 0.42).fill({ color: 0xffdc62, alpha: 0.86 });
-  hotCore.position.set(p.x, p.y);
-  hotCore.scale.set(0.42);
-
-  const wave = new Graphics();
-  wave.blendMode = 'add';
-  wave.circle(0, 0, tileSize * 0.64).fill({ color: 0xff5a18, alpha: 0.09 });
-  wave.circle(0, 0, tileSize * 0.62).stroke({ width: 8, color: 0xff5a1b, alpha: 0.38 });
-  wave.circle(0, 0, tileSize * 0.57).stroke({ width: 2.5, color: 0xfff0a0, alpha: 0.96 });
-  wave.position.set(p.x, p.y);
-  wave.scale.set(0.3);
-
-  const echo = new Graphics();
-  echo.blendMode = 'add';
-  echo.circle(0, 0, tileSize * 0.55).stroke({ width: 4, color: 0xff9b36, alpha: 0.72 });
-  echo.circle(0, 0, tileSize * 0.5).stroke({ width: 1.5, color: 0xffe7a0, alpha: 0.86 });
-  echo.position.set(p.x, p.y);
-  echo.scale.set(0.24);
-
-  const tongues = new Graphics();
-  tongues.blendMode = 'add';
-  for (let ray = 0; ray < 8; ray++) {
-    const angle = (Math.PI * 2 * ray) / 8 + (Math.random() - 0.5) * 0.18;
-    const inner = tileSize * 0.16;
-    const outer = tileSize * (0.92 + Math.random() * 0.3);
-    const bend = (ray % 2 === 0 ? 1 : -1) * tileSize * (0.2 + Math.random() * 0.12);
-    const startX = Math.cos(angle) * inner;
-    const startY = Math.sin(angle) * inner;
-    const endX = Math.cos(angle) * outer;
-    const endY = Math.sin(angle) * outer;
-    const controlX = Math.cos(angle) * outer * 0.56 - Math.sin(angle) * bend;
-    const controlY = Math.sin(angle) * outer * 0.56 + Math.cos(angle) * bend;
-    tongues.moveTo(startX, startY);
-    tongues.quadraticCurveTo(controlX, controlY, endX, endY);
-    tongues.stroke({ width: 9, color: 0xb82b0c, alpha: 0.2, cap: 'round' });
-    tongues.moveTo(startX, startY);
-    tongues.quadraticCurveTo(controlX, controlY, endX, endY);
-    tongues.stroke({ width: 3.5, color: 0xff7620, alpha: 0.78, cap: 'round' });
-    tongues.moveTo(startX, startY);
-    tongues.quadraticCurveTo(controlX, controlY, endX * 0.72, endY * 0.72);
-    tongues.stroke({ width: 1.2, color: 0xffef9c, alpha: 0.96, cap: 'round' });
-  }
-  tongues.position.set(p.x, p.y);
-  tongues.scale.set(0.62);
-
-  flyLayer.addChild(wave, echo, tongues, cloud, hotCore);
-  return Promise.all([
-    tween(hotCore, { alpha: 0, scale: 1.3 }, 245).then(() => hotCore.destroy()),
-    tween(cloud, { alpha: 0, scale: 1.52 }, 350).then(() => cloud.destroy({ children: true })),
-    tween(wave, { alpha: 0, scale: 2.2 }, 390).then(() => wave.destroy()),
-    sleep(58).then(() => tween(echo, { alpha: 0, scale: 2.45 }, 360)).then(() => echo.destroy()),
-    tween(tongues, { alpha: 0, scale: 1.34 }, 345).then(() => tongues.destroy()),
-    fireEmbers(p, 14),
-    fireSmoke(p),
-  ]).then(() => undefined);
-}
-
-async function fireCellImpact(index: number, source: number): Promise<void> {
-  const sourceX = source % GRID;
-  const sourceY = Math.floor(source / GRID);
-  const x = index % GRID;
-  const y = Math.floor(index / GRID);
-  const distance = Math.hypot(x - sourceX, y - sourceY);
-  await sleep(32 + distance * 48);
-
-  const p = cellRootPos(index);
-  const impact = new Container();
-  impact.blendMode = 'add';
-
-  const ring = new Graphics();
-  ring.circle(0, 0, tileSize * 0.38).fill({ color: 0xff5b19, alpha: 0.16 });
-  ring.circle(0, 0, tileSize * 0.34).stroke({ width: 4, color: 0xff9f32, alpha: 0.86 });
-  ring.circle(0, 0, tileSize * 0.27).stroke({ width: 1.5, color: 0xfff0a0, alpha: 0.94 });
-  ring.circle(0, 0, tileSize * 0.16).fill({ color: 0xffe276, alpha: 0.72 });
-
-  const petals = new Graphics();
-  for (let ray = 0; ray < 6; ray++) {
-    const angle = (Math.PI * 2 * ray) / 6 + (Math.random() - 0.5) * 0.24;
-    const outer = tileSize * (0.48 + Math.random() * 0.14);
-    const startX = Math.cos(angle) * tileSize * 0.12;
-    const startY = Math.sin(angle) * tileSize * 0.12;
-    const endX = Math.cos(angle) * outer;
-    const endY = Math.sin(angle) * outer;
-    const side = (ray % 2 === 0 ? 1 : -1) * tileSize * 0.12;
-    const controlX = Math.cos(angle) * outer * 0.6 - Math.sin(angle) * side;
-    const controlY = Math.sin(angle) * outer * 0.6 + Math.cos(angle) * side;
-    petals.moveTo(startX, startY);
-    petals.quadraticCurveTo(controlX, controlY, endX, endY);
-    petals.stroke({ width: 5, color: 0xff4d16, alpha: 0.28, cap: 'round' });
-    petals.moveTo(startX, startY);
-    petals.quadraticCurveTo(controlX, controlY, endX, endY);
-    petals.stroke({ width: 1.7, color: 0xffdd73, alpha: 0.94, cap: 'round' });
-  }
-
-  const sparks = new Graphics();
-  for (let spark = 0; spark < 5; spark++) {
-    const angle = (Math.PI * 2 * spark) / 5 + Math.random() * 0.4;
-    const radius = tileSize * (0.34 + Math.random() * 0.22);
-    sparks
-      .circle(Math.cos(angle) * radius, Math.sin(angle) * radius, tileSize * 0.025)
-      .fill({ color: 0xfff4b0, alpha: 0.95 });
-  }
-
-  impact.addChild(ring, petals, sparks);
-  impact.position.set(p.x, p.y);
-  impact.scale.set(0.52);
-  flyLayer.addChild(impact);
-
-  const sprite = sprites[index];
-  if (sprite?.visible) sprite.tint = 0xffad56;
-  await tween(impact, { alpha: 0, scale: 1.38 }, 275);
-  if (sprite && !sprite.destroyed) sprite.tint = 0xffffff;
-  impact.destroy({ children: true });
-}
-
-async function fireSwordExplosionFx(
-  source: number,
-  affected: number[],
-  order: number,
-  preview = false,
-): Promise<void> {
-  await sleep(order * 72);
-  const original = sprites[source];
-  if (!preview && original) original.visible = false;
-
-  const icon = makeFireSwordChargeIcon(source);
-  await chargeFireSword(icon);
-  const p = cellRootPos(source);
-  const iconFade = tween(icon, { alpha: 0, scale: icon.scale.x * 1.65 }, 125).then(() =>
-    icon.destroy(),
-  );
-  const impacts = affected
-    .filter((index) => index !== source)
-    .map((index) => fireCellImpact(index, source));
-  await Promise.all([iconFade, fireBlast(p), ...impacts]);
-}
-
-interface LightningBoltOptions {
-  power?: number;
-  forks?: number;
-  spread?: number;
-}
-
-function lightningBolt(
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-  options: LightningBoltOptions = {},
-): Graphics {
-  const power = options.power ?? 1;
-  const forkCount = options.forks ?? 6;
-  const spread = options.spread ?? 1;
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const distance = Math.max(1, Math.hypot(dx, dy));
-  const nx = -dy / distance;
-  const ny = dx / distance;
-  const segments = Math.max(8, Math.ceil(distance / (tileSize * 0.3)));
-  const bolt = new Graphics();
-  bolt.blendMode = 'add';
-  const makePath = (lane: number, jitterScale: number): Array<{ x: number; y: number }> => {
-    const points: Array<{ x: number; y: number }> = [];
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const edgeFade = Math.sin(Math.PI * t);
-      const jitter =
-        (lane * tileSize * 0.14 * spread +
-          (Math.random() * 2 - 1) * tileSize * jitterScale * spread) *
-        edgeFade;
-      points.push({
-        x: from.x + dx * t + nx * jitter,
-        y: from.y + dy * t + ny * jitter,
-      });
-    }
-    return points;
-  };
-  const strokePath = (
-    points: Array<{ x: number; y: number }>,
-    width: number,
-    color: number,
-    alpha: number,
-  ): void => {
-    bolt.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) bolt.lineTo(points[i].x, points[i].y);
-    bolt.stroke({ width, color, alpha, cap: 'round', join: 'round' });
-  };
-
-  const main = makePath(0, 0.2);
-  const left = makePath(-1, 0.14);
-  const right = makePath(1, 0.14);
-
-  // Ba luồng sét hội tụ tạo khối lớn, lõi trắng giữ độ rõ trên mọi loại ô.
-  strokePath(main, 18 * power, 0x3816b8, 0.16);
-  strokePath(left, 11 * power, 0x5526dc, 0.14);
-  strokePath(right, 11 * power, 0x176ee8, 0.14);
-  strokePath(main, 10 * power, 0x6334ef, 0.28);
-  strokePath(left, 5.5 * power, 0x8557ff, 0.36);
-  strokePath(right, 5.5 * power, 0x4aa9ff, 0.36);
-  strokePath(left, 2.6 * power, 0xd8bcff, 0.96);
-  strokePath(right, 2.6 * power, 0xa9e7ff, 0.96);
-  strokePath(main, 5.5 * power, 0xa879ff, 1);
-  strokePath(main, 2 * power, 0xffffff, 1);
-
-  // Nhánh trang trí làm tia sét dày và tự nhiên hơn nhưng không tăng mục tiêu gameplay.
-  const forkIndexes = Array.from({ length: forkCount }, (_, order) => {
-    const t = 0.14 + ((order + 0.5) / forkCount) * 0.72;
-    return Math.max(1, Math.min(main.length - 2, Math.round(t * segments)));
-  });
-  forkIndexes.forEach((index, order) => {
-    const start = main[index];
-    const direction = order % 2 === 0 ? 1 : -1;
-    const length = tileSize * (0.42 + Math.random() * 0.42) * spread;
-    const tangent = (Math.random() * 2 - 1) * length * 0.38;
-    const end = {
-      x: start.x + nx * length * direction + (dx / distance) * tangent,
-      y: start.y + ny * length * direction + (dy / distance) * tangent,
-    };
-    const fork = [
-      start,
-      {
-        x: start.x + (end.x - start.x) * 0.42 + nx * (Math.random() * 2 - 1) * tileSize * 0.12,
-        y: start.y + (end.y - start.y) * 0.42 + ny * (Math.random() * 2 - 1) * tileSize * 0.12,
-      },
-      {
-        x: start.x + (end.x - start.x) * 0.72 - nx * (Math.random() * 2 - 1) * tileSize * 0.08,
-        y: start.y + (end.y - start.y) * 0.72 - ny * (Math.random() * 2 - 1) * tileSize * 0.08,
-      },
-      end,
-    ];
-    strokePath(fork, 7 * power, 0x5726db, 0.2);
-    strokePath(fork, 3.2 * power, order % 2 === 0 ? 0x9f73ff : 0x67c8ff, 0.62);
-    strokePath(fork, 1.25 * power, 0xf4fbff, 0.96);
-
-    if (order % 2 === 0) {
-      const twigStart = fork[2];
-      const twig = [
-        twigStart,
-        {
-          x: twigStart.x - nx * direction * length * 0.26 + (dx / distance) * length * 0.12,
-          y: twigStart.y - ny * direction * length * 0.26 + (dy / distance) * length * 0.12,
-        },
-      ];
-      strokePath(twig, 3.5 * power, 0x4f2ad1, 0.2);
-      strokePath(twig, 1.1 * power, 0xcfe9ff, 0.82);
-    }
-  });
-  return bolt;
-}
-
-function lightningFlash(): void {
-  const margin = tileSize * 0.45;
-  const flash = new Graphics();
-  flash.blendMode = 'add';
-  flash
-    .roundRect(
-      boardBox.x - margin,
-      boardBox.y - margin,
-      tileSize * GRID + margin * 2,
-      tileSize * GRID + margin * 2,
-      tileSize * 0.25,
-    )
-    .fill({ color: 0xb9d7ff, alpha: 0.2 });
-  flyLayer.addChildAt(flash, 0);
-  void tween(flash, { alpha: 0 }, 260).then(() => flash.destroy());
-}
-
-function lightningBurst(i: number, strength: number): void {
-  const p = cellRootPos(i);
-  const burst = new Graphics();
-  burst.blendMode = 'add';
-  const rayCount = 12;
-
-  burst.circle(0, 0, tileSize * 0.3).fill({ color: 0xffffff, alpha: 0.9 });
-  burst.circle(0, 0, tileSize * 0.52).fill({ color: 0x7c4dff, alpha: 0.2 });
-  burst.circle(0, 0, tileSize * 0.48).stroke({ width: 6, color: 0x8f63ff, alpha: 0.92 });
-  burst.circle(0, 0, tileSize * 0.7).stroke({ width: 3, color: 0x8cd8ff, alpha: 0.76 });
-
-  for (let ray = 0; ray < rayCount; ray++) {
-    const angle = (Math.PI * 2 * ray) / rayCount + (Math.random() - 0.5) * 0.2;
-    const inner = tileSize * (0.28 + Math.random() * 0.1);
-    const outer = tileSize * (0.82 + Math.random() * 0.42) * strength;
-    const bend = angle + (Math.random() - 0.5) * 0.32;
-    const points = [
-      { x: Math.cos(angle) * inner, y: Math.sin(angle) * inner },
-      {
-        x: Math.cos(bend) * (inner + outer) * 0.55,
-        y: Math.sin(bend) * (inner + outer) * 0.55,
-      },
-      { x: Math.cos(angle) * outer, y: Math.sin(angle) * outer },
-    ];
-    burst.moveTo(points[0].x, points[0].y);
-    burst.lineTo(points[1].x, points[1].y);
-    burst.lineTo(points[2].x, points[2].y);
-    burst.stroke({ width: 5, color: 0x6231e6, alpha: 0.22, cap: 'round' });
-    burst.moveTo(points[0].x, points[0].y);
-    burst.lineTo(points[1].x, points[1].y);
-    burst.lineTo(points[2].x, points[2].y);
-    burst.stroke({
-      width: 1.5,
-      color: ray % 2 === 0 ? 0xffffff : 0xa9e7ff,
-      alpha: 0.96,
-      cap: 'round',
-    });
-  }
-
-  burst.position.set(p.x, p.y);
-  burst.scale.set(0.68);
-  flyLayer.addChild(burst);
-  void tween(burst, { alpha: 0, scale: 1.55 }, 420).then(() => burst.destroy());
-}
-
-function lightningSparks(i: number, amount: number): void {
-  const p = cellRootPos(i);
-  for (let order = 0; order < amount; order++) {
-    const angle = (Math.PI * 2 * order) / amount + (Math.random() - 0.5) * 0.5;
-    const distance = tileSize * (0.72 + Math.random() * 0.68);
-    const spark = new Graphics();
-    spark.blendMode = 'add';
-    spark.circle(0, 0, tileSize * 0.065).fill({ color: 0x7547f2, alpha: 0.45 });
-    spark.circle(0, 0, tileSize * 0.025).fill({ color: 0xf8fdff, alpha: 1 });
-    spark.position.set(p.x, p.y);
-    flyLayer.addChild(spark);
-    void tween(
-      spark,
-      {
-        x: p.x + Math.cos(angle) * distance,
-        y: p.y + Math.sin(angle) * distance,
-        alpha: 0,
-        scale: 0.15,
-      },
-      280 + Math.random() * 180,
-    ).then(() => spark.destroy());
-  }
-}
-
-function lightningPulse(i: number): void {
-  const p = cellRootPos(i);
-  const pulse = new Graphics();
-  pulse.blendMode = 'add';
-  pulse.circle(0, 0, tileSize * 0.48).fill({ color: 0xf4f8ff, alpha: 0.76 });
-  pulse.circle(0, 0, tileSize * 0.62).stroke({ width: 6, color: 0x8b5cff, alpha: 1 });
-  pulse.circle(0, 0, tileSize * 0.82).stroke({ width: 3, color: 0x78cfff, alpha: 0.84 });
-  pulse.position.set(p.x, p.y);
-  pulse.scale.set(0.7);
-  flyLayer.addChild(pulse);
-  void tween(pulse, { alpha: 0, scale: 2.15 }, 460).then(() => pulse.destroy());
-  lightningBurst(i, 1.05);
-  lightningSparks(i, 10);
-}
-
-function lightningImpact(i: number): void {
-  const p = cellRootPos(i);
-  const hit = new Graphics();
-  hit.blendMode = 'add';
-  hit.circle(0, 0, tileSize * 0.24).fill({ color: 0xffffff, alpha: 1 });
-  hit.circle(0, 0, tileSize * 0.43).fill({ color: 0x895cff, alpha: 0.24 });
-  hit.circle(0, 0, tileSize * 0.5).stroke({ width: 6, color: 0x9c6fff, alpha: 1 });
-  hit.circle(0, 0, tileSize * 0.72).stroke({ width: 3, color: 0xa9e7ff, alpha: 0.9 });
-  hit.position.set(p.x, p.y);
-  hit.scale.set(0.72);
-  flyLayer.addChild(hit);
-  void tween(hit, { alpha: 0, scale: 1.85 }, 380).then(() => hit.destroy());
-  lightningBurst(i, 0.9);
-  lightningSparks(i, 8);
-}
-
-async function playLightningArc(arc: LightningArc, order: number): Promise<void> {
-  await sleep(order * 76);
-  const from = cellRootPos(arc.source);
-  const to = cellRootPos(arc.target);
-  const targetSprite = sprites[arc.target];
-  const originalTint = targetSprite?.tint ?? 0xffffff;
-
-  for (let flicker = 0; flicker < 4; flicker++) {
-    const bolt = lightningBolt(from, to, { power: 1.08, forks: 5, spread: 1.08 });
-    flyLayer.addChild(bolt);
-    if (targetSprite) targetSprite.tint = flicker % 2 === 0 ? 0xc9e9ff : 0xe0d2ff;
-    await sleep(50);
-    bolt.destroy();
-    await sleep(16);
-  }
-  if (targetSprite) targetSprite.tint = originalTint;
-  lightningImpact(arc.target);
-}
 
 async function explodeFx(
   matched: Iterable<number>,
@@ -979,30 +426,39 @@ async function explodeFx(
   const jobs: Promise<unknown>[] = [];
 
   if (fireSources.length > 0) {
-    playSound('explosion');
-    fireBoardFlash();
-    jobs.push(
-      Promise.all(
-        fireSources.map((source, order) =>
-          fireSwordExplosionFx(source, fireSwordBlastCells(source, removed), order),
-        ),
-      ),
-    );
+    jobs.push(playFireSwordFx(fireSources, removed, fireSwordFxContext()));
   }
 
   if (lightningArcs.length > 0) {
-    playSound('lightning');
-    lightningFlash();
-    new Set(lightningArcs.map((arc) => arc.source)).forEach(lightningPulse);
     jobs.push(
-      Promise.all(lightningArcs.map((arc, order) => playLightningArc(arc, order))).then(() =>
-        sleep(130),
-      ),
+      playLightningFx(lightningArcs, {
+        tileSize,
+        boardX: boardBox.x,
+        boardY: boardBox.y,
+        grid: GRID,
+        flyLayer,
+        cellRootPos,
+        spriteAt: (index) => sprites[index],
+        playSound: () => playSound('lightning'),
+      }),
     );
   }
 
   await Promise.all(jobs);
   return new Set(fireSources);
+}
+
+function fireSwordFxContext(): FireSwordFxContext {
+  return {
+    tileSize,
+    boardX: boardBox.x,
+    boardY: boardBox.y,
+    grid: GRID,
+    flyLayer,
+    cellRootPos,
+    spriteAt: (index) => sprites[index],
+    playSound: () => playSound('explosion'),
+  };
 }
 
 function spawnTrailDot(x: number, y: number): void {
@@ -1300,6 +756,48 @@ async function animateRemove(
   });
 }
 
+interface WaveRenderOptions {
+  side: 'me' | 'foe';
+  actorLabel: string;
+  matched: Iterable<number>;
+  removed: Set<number>;
+  exploded: readonly number[];
+  lightningArcs: LightningArc[];
+  result: EffectSummary;
+}
+
+async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
+  const { side, actorLabel, matched, removed, exploded, lightningArcs, result } = options;
+  playSound('match');
+  const parts: string[] = [];
+  if (result.damage > 0) parts.push(`-${result.damage} HP`);
+  if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
+  if (result.heal > 0) parts.push(`+${result.heal} HP`);
+  if (result.mana > 0) parts.push(`+${result.mana} MP`);
+  if (result.armor > 0) parts.push(`+${result.armor} giáp`);
+  if (parts.length > 0) setStatus(`${actorLabel}: ${parts.join('  ')}`);
+
+  const explodedFireSources =
+    exploded.length > 0
+      ? await explodeFx(matched, exploded, lightningArcs)
+      : new Set<number>();
+  await Promise.all([animateRemove(removed, explodedFireSources), flyMatched(removed, side)]);
+  updateHud();
+
+  const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
+  const defCard = side === 'me' ? hud.foe.card : hud.me.card;
+  if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
+  if ((result.armorDamage ?? 0) > 0) {
+    floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
+  }
+  if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
+  if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
+  if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
+  if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
+  if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
+  if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
+}
+
 async function animateGravity(
   falls: Array<{ from: number; to: number }>,
   spawns: Array<{ index: number; type: TileType; fromRow: number }>,
@@ -1350,38 +848,15 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
     for (const i of exploded) removed.add(i);
 
     const result = applyTileEffects(attacker, defender, match.counts);
-    playSound('match');
-    const parts: string[] = [];
-    if (result.damage > 0) parts.push(`-${result.damage} HP`);
-    if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
-    if (result.heal > 0) parts.push(`+${result.heal} HP`);
-    if (result.mana > 0) parts.push(`+${result.mana} MP`);
-    if (result.armor > 0) parts.push(`+${result.armor} giáp`);
-    if (parts.length > 0) {
-      setStatus(`${side === 'me' ? 'Bạn' : 'Máy'}: ${parts.join('  ')}`);
-    }
-
-    const explodedFireSources =
-      exploded.length > 0
-        ? await explodeFx(match.cells, exploded, lightningArcs)
-        : new Set<number>();
-    await Promise.all([
-      animateRemove(removed, explodedFireSources),
-      flyMatched(removed, side),
-    ]);
-    updateHud();
-    const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
-    const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
-    if ((result.armorDamage ?? 0) > 0) {
-      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
-    }
-    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
-    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
-    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
-    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
-    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
-    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
+    await renderWaveEffects({
+      side,
+      actorLabel: side === 'me' ? 'Bạn' : 'Máy',
+      matched: match.cells,
+      removed,
+      exploded,
+      lightningArcs,
+      result,
+    });
 
     const gravity = applyGravity(board, removed);
     await animateGravity(gravity.falls, gravity.spawns);
@@ -1707,37 +1182,15 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     const cells = new Set(step.cells);
     for (const i of step.exploded ?? []) cells.add(i);
     const result = applyAuthoritativeEffects(attacker, defender, step.effects);
-    playSound('match');
-    const parts: string[] = [];
-    if (result.damage > 0) parts.push(`-${result.damage} HP`);
-    if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
-    if (result.heal > 0) parts.push(`+${result.heal} HP`);
-    if (result.mana > 0) parts.push(`+${result.mana} MP`);
-    if (result.armor > 0) parts.push(`+${result.armor} giáp`);
-    if (parts.length > 0) {
-      setStatus(`${side === 'me' ? 'Bạn' : 'Đối thủ'}: ${parts.join('  ')}`);
-    }
-    const explodedFireSources =
-      (step.exploded?.length ?? 0) > 0
-        ? await explodeFx(step.cells, step.exploded ?? [], step.lightningArcs ?? [])
-        : new Set<number>();
-    await Promise.all([
-      animateRemove(cells, explodedFireSources),
-      flyMatched(cells, side),
-    ]);
-    updateHud();
-    const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
-    const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
-    if ((result.armorDamage ?? 0) > 0) {
-      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
-    }
-    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
-    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
-    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
-    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
-    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
-    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
+    await renderWaveEffects({
+      side,
+      actorLabel: side === 'me' ? 'Bạn' : 'Đối thủ',
+      matched: step.cells,
+      removed: cells,
+      exploded: step.exploded ?? [],
+      lightningArcs: step.lightningArcs ?? [],
+      result,
+    });
     return;
   }
   if (step.kind === 'gravity') {
@@ -2035,13 +1488,7 @@ function previewFireSwordFx(mode: 'center' | 'corner' | 'multi' = 'center'): boo
       }
     }
   });
-  playSound('explosion');
-  fireBoardFlash();
-  void Promise.all(
-    sources.map((source, order) =>
-      fireSwordExplosionFx(source, fireSwordBlastCells(source, removed), order, true),
-    ),
-  );
+  void playFireSwordFx(sources, removed, fireSwordFxContext(), true);
   return true;
 }
 

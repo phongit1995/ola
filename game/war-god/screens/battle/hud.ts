@@ -1,41 +1,13 @@
-import { Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
-import { MAX_FURY, MAX_HP, MAX_MP, ULT_COST, type Fighter } from '../../logic/battle';
+import { Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { A, tex } from '../../assets';
-import { HEADING, addTick, makeText, removeTick } from '../../kit';
+import { HEADING, makeText } from '../../kit';
+import {
+  disposeFighterUI,
+  makeFighterCard,
+  type FighterUI,
+} from './hud/card';
 
-const CARD_W = 190;
-const ARMOR_BADGE_W = 56;
-const ARMOR_BADGE_H = 26;
-
-export interface BarUI {
-  fill: Graphics;
-  label: Text;
-  width: number;
-  color: number;
-  shown?: number;
-  anim?: ((ticker: Ticker) => void) | null;
-}
-
-export interface FighterUI {
-  card: Container;
-  border: Sprite;
-  ring: Sprite;
-  name: Text;
-  hp: BarUI;
-  mp: BarUI;
-  fury: BarUI;
-  armor: Container;
-  armorBg: Graphics;
-  armorText: Text;
-  ultFrame: Sprite;
-  ultFlame: Sprite;
-  ultLabel: Text;
-  ultOn: Texture;
-  ultOff: Texture;
-  ultBtn: Container;
-  ultFlameScale: number;
-  ultPulse: ((ticker: Ticker) => void) | null;
-}
+export { updateFighter } from './hud/card';
 
 export interface ButtonUI {
   view: Container;
@@ -73,213 +45,6 @@ export const hud = {} as {
 
 let confirmAction: (() => void) | null = null;
 
-function makeBar(
-  icon: Texture,
-  color: number,
-  width: number,
-  mirror: boolean,
-  marker?: number,
-): { view: Container; bar: BarUI } {
-  const c = new Container();
-  const ic = new Sprite(icon);
-  ic.anchor.set(0.5);
-  ic.scale.set(17 / Math.max(ic.texture.width, ic.texture.height));
-
-  const track = new Graphics().roundRect(0, 0, width, 14, 7).fill({ color: 0x000000, alpha: 0.55 });
-  track.stroke({ width: 1, color: 0xffffff, alpha: 0.2 });
-  const fill = new Graphics();
-  const label = makeText('', 9.5, 0xffffff, '800');
-  label.y = 7;
-
-  const barX = mirror ? 0 : 22;
-  ic.x = mirror ? width + 11 : 9;
-  ic.y = 7;
-  track.x = barX;
-  fill.x = barX;
-  label.x = barX + width / 2;
-
-  c.addChild(track, fill);
-  if (marker != null) {
-    const mark = new Graphics()
-      .roundRect(-1, 1, 2, 12, 1)
-      .fill({ color: 0xffd75e, alpha: 0.9 });
-    mark.x = barX + width * marker;
-    c.addChild(mark);
-  }
-  c.addChild(ic, label);
-  return { view: c, bar: { fill, label, width, color } };
-}
-
-function drawBar(bar: BarUI, val: number, max: number): void {
-  const frac = Math.max(0, Math.min(1, val / max));
-  const w = bar.width * frac;
-  bar.fill.clear();
-  if (w > 1) {
-    bar.fill.roundRect(0, 0, w, 14, Math.min(7, w / 2)).fill(bar.color);
-  }
-  bar.label.text = `${Math.round(val)}/${max}`;
-}
-
-function updateBar(bar: BarUI, cur: number, max: number): void {
-  if (bar.anim) {
-    removeTick(bar.anim);
-    bar.anim = null;
-  }
-  const from = bar.shown ?? cur;
-  if (from === cur) {
-    bar.shown = cur;
-    drawBar(bar, cur, max);
-    return;
-  }
-  const DUR = 380;
-  let t = 0;
-  bar.anim = (ticker: Ticker): void => {
-    t += ticker.deltaMS;
-    const k = Math.min(1, t / DUR);
-    const e = 1 - (1 - k) * (1 - k);
-    bar.shown = from + (cur - from) * e;
-    drawBar(bar, bar.shown, max);
-    if (k >= 1 && bar.anim) {
-      bar.shown = cur;
-      removeTick(bar.anim);
-      bar.anim = null;
-    }
-  };
-  addTick(bar.anim);
-}
-
-function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
-  const isMe = side === 'me';
-  const mirror = isMe;
-  const w = CARD_W;
-  const h = 152;
-  const card = new Container();
-
-  const bg = new Graphics().roundRect(0, 0, w, h, 14).fill({ color: 0x101c2c, alpha: 0.88 });
-  card.addChild(bg);
-
-  const border = new Sprite(tex[A.hud.cardBorderIdle]);
-  border.width = w;
-  border.height = h;
-  card.addChild(border);
-
-  const ring = new Sprite(tex[A.hud.ringIdle]);
-  ring.width = 36;
-  ring.height = 36;
-  ring.x = mirror ? w - 12 - 36 : 12;
-  ring.y = 8;
-  card.addChild(ring);
-
-  const face = makeText(isMe ? 'Bạn' : '🤖', 11, 0xffe9b8, '800');
-  face.x = ring.x + 18;
-  face.y = ring.y + 18;
-  card.addChild(face);
-
-  const name = makeText(isMe ? '@bạn' : '@máy', 13, 0xffffff, '800');
-  name.anchor.set(mirror ? 1 : 0, 0.5);
-  name.x = mirror ? w - 56 : 56;
-  name.y = 26;
-  card.addChild(name);
-
-  const rank = new Sprite(tex[A.hud.rankFrame]);
-  rank.width = 26;
-  rank.height = 30;
-  rank.x = mirror ? 12 : w - 12 - 26;
-  rank.y = 11;
-  card.addChild(rank);
-
-  const rankNum = makeText(isMe ? '1' : '2', 13, 0xf6c445, '700', HEADING);
-  rankNum.x = rank.x + 13;
-  rankNum.y = rank.y + 15;
-  card.addChild(rankNum);
-
-  const hpRow = makeBar(tex[A.hud.icHp], 0xe6392e, 140, mirror);
-  hpRow.view.x = 12;
-  hpRow.view.y = 48;
-  card.addChild(hpRow.view);
-
-  const mpRow = makeBar(tex[A.hud.icMp], 0x2f7fe0, 140, mirror, ULT_COST / MAX_MP);
-  mpRow.view.x = 12;
-  mpRow.view.y = 68;
-  card.addChild(mpRow.view);
-
-  const furyRow = makeBar(tex[A.items.peach], 0xff5aa0, 140, mirror);
-  furyRow.view.x = 12;
-  furyRow.view.y = 88;
-  card.addChild(furyRow.view);
-
-  const ultOn = tex[mirror ? A.hud.ultRightOn : A.hud.ultLeftOn];
-  const ultOff = tex[mirror ? A.hud.ultRightOff : A.hud.ultLeftOff];
-  const ultW = 106;
-  const ultY = 104;
-  const ultBtn = new Container();
-  const ultFrame = new Sprite(ultOff);
-  ultFrame.width = ultW;
-  ultFrame.scale.y = ultFrame.scale.x;
-  ultBtn.addChild(ultFrame);
-
-  const ultFlame = new Sprite(tex[A.hud.flameOff]);
-  ultFlame.anchor.set(0.5);
-  const ultFlameScale = 21 / Math.max(ultFlame.texture.width, ultFlame.texture.height);
-  ultFlame.scale.set(ultFlameScale);
-  const ultOrbX = ultFrame.height / 2;
-  ultFlame.x = mirror ? ultW - ultOrbX : ultOrbX;
-  ultFlame.y = ultFrame.height / 2;
-  ultBtn.addChild(ultFlame);
-
-  const ultLabel = makeText('TUYỆT CHIÊU', 9.5, 0xcfc9b8, '700', HEADING);
-  ultLabel.x = mirror ? (ultW - ultFrame.height) / 2 : ultFrame.height + (ultW - ultFrame.height) / 2;
-  ultLabel.y = ultFrame.height / 2;
-  ultBtn.addChild(ultLabel);
-
-  // Nút Tuyệt Chiêu bám cạnh NGOÀI card (me phải, máy trái).
-  ultBtn.x = mirror ? w - 12 - ultW : 12;
-  ultBtn.y = ultY;
-  card.addChild(ultBtn);
-
-  // Giáp: badge to nằm phía TRONG (về giữa màn), canh giữa theo chiều cao nút Tuyệt Chiêu.
-  const armor = new Container();
-  const armorBg = new Graphics();
-  const armorIc = new Sprite(tex[A.items.shield]);
-  armorIc.anchor.set(0.5);
-  armorIc.scale.set(20 / Math.max(armorIc.texture.width, armorIc.texture.height));
-  armorIc.x = 17;
-  armorIc.y = ARMOR_BADGE_H / 2;
-  const armorText = makeText('0', 13, 0x9fd0ff, '800');
-  armorText.x = 38;
-  armorText.y = ARMOR_BADGE_H / 2;
-  armor.addChild(armorBg, armorIc, armorText);
-  armor.x = mirror ? ultBtn.x - 6 - ARMOR_BADGE_W : ultBtn.x + ultW + 6;
-  armor.y = Math.round(ultY + ultFrame.height / 2 - ARMOR_BADGE_H / 2);
-  card.addChild(armor);
-
-  if (onUlt) {
-    ultBtn.eventMode = 'static';
-    ultBtn.cursor = 'pointer';
-    ultBtn.on('pointertap', onUlt);
-  }
-
-  return {
-    card,
-    border,
-    ring,
-    name,
-    hp: hpRow.bar,
-    mp: mpRow.bar,
-    fury: furyRow.bar,
-    armor,
-    armorBg,
-    armorText,
-    ultFrame,
-    ultFlame,
-    ultLabel,
-    ultOn,
-    ultOff,
-    ultBtn,
-    ultFlameScale,
-    ultPulse: null,
-  };
-}
 
 function makeMenuButton(label: string, icon: Texture, onTap: () => void): ButtonUI {
   const w = 140;
@@ -441,6 +206,7 @@ function buildConfirm(): void {
 }
 
 export function buildHud(root: Container, actions: HudActions): void {
+  if (hud.me && hud.foe) disposeHud();
   hud.me = makeFighterCard('me', actions.onUlt);
   hud.foe = makeFighterCard('foe');
   root.addChild(hud.me.card, hud.foe.card);
@@ -478,43 +244,11 @@ export function buildHud(root: Container, actions: HudActions): void {
   root.addChild(hud.overlay, hud.confirm);
 }
 
-export function updateFighter(f: FighterUI, fighter: Fighter, active: boolean, ready: boolean): void {
-  updateBar(f.hp, fighter.hp, MAX_HP);
-  updateBar(f.mp, fighter.mp, MAX_MP);
-  updateBar(f.fury, fighter.fury, MAX_FURY);
-  const hasArmor = fighter.armor > 0;
-  f.armorBg
-    .clear()
-    .roundRect(0, 0, ARMOR_BADGE_W, ARMOR_BADGE_H, 9)
-    .fill({ color: hasArmor ? 0x164d82 : 0x0b1827, alpha: hasArmor ? 0.96 : 0.82 })
-    .stroke({ width: 1.5, color: hasArmor ? 0x8fdcff : 0x526270, alpha: 0.95 });
-  f.armor.alpha = hasArmor ? 1 : 0.7;
-  f.armorText.text = `${fighter.armor}`;
-  f.armorText.style.fill = hasArmor ? 0xc4efff : 0x8795a2;
-  f.border.texture = active ? tex[A.hud.cardBorderActive] : tex[A.hud.cardBorderIdle];
-  f.ring.texture = active ? tex[A.hud.ringActive] : tex[A.hud.ringIdle];
-  f.card.alpha = active ? 1 : 0.92;
-  f.ultFrame.texture = ready ? f.ultOn : f.ultOff;
-  f.ultFlame.texture = ready ? tex[A.hud.flameOn] : tex[A.hud.flameOff];
-  f.ultLabel.text = ready ? 'SẴN SÀNG!' : 'TUYỆT CHIÊU';
-  f.ultLabel.style.fill = ready ? 0xffe9a8 : 0xcfc9b8;
-  if (ready && !f.ultPulse) {
-    let elapsed = 0;
-    f.ultPulse = (ticker: Ticker): void => {
-      elapsed += ticker.deltaMS;
-      const wave = (Math.sin(elapsed / 170) + 1) / 2;
-      f.ultFlame.scale.set(f.ultFlameScale * (1 + wave * 0.14));
-      f.ultFrame.alpha = 0.88 + wave * 0.12;
-      f.ultLabel.alpha = 0.82 + wave * 0.18;
-    };
-    addTick(f.ultPulse);
-  } else if (!ready && f.ultPulse) {
-    removeTick(f.ultPulse);
-    f.ultPulse = null;
-    f.ultFlame.scale.set(f.ultFlameScale);
-    f.ultFrame.alpha = 1;
-    f.ultLabel.alpha = 1;
+export function disposeHud(): void {
+  for (const fighter of [hud.me, hud.foe]) {
+    if (fighter) disposeFighterUI(fighter);
   }
+  confirmAction = null;
 }
 
 export function showOverlay(

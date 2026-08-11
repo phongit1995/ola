@@ -6,17 +6,36 @@ import {
   type Board,
   type TileType,
 } from './core';
+import {
+  ARMOR_DECAY,
+  ARMOR_SHIELD,
+  DMG_SWORD,
+  FIRE_SWORD_DMG,
+  FURY_PEACH,
+  GREATER_HEART_HEAL,
+  HEAL_HEART,
+  MAX_ARMOR,
+  MAX_FURY,
+  MAX_HP,
+  MAX_MP,
+  MP_WATER,
+  REFLECT_DAMAGE,
+  REFLECT_THRESHOLD,
+  ULT_COST,
+} from './constants.gen';
 
-export const MAX_HP = 200;
-export const MAX_MP = 100;
-export const MAX_FURY = 100;
-export const MAX_ARMOR = 30;
-export const ULT_COST = 50;
-export const FIRE_SWORD_DMG = 12;
-export const GREATER_HEART_HEAL = 10;
-export const ARMOR_DECAY = 2;
-export const REFLECT_THRESHOLD = 20;
-export const REFLECT_DAMAGE = 2;
+export {
+  ARMOR_DECAY,
+  FIRE_SWORD_DMG,
+  GREATER_HEART_HEAL,
+  MAX_ARMOR,
+  MAX_FURY,
+  MAX_HP,
+  MAX_MP,
+  REFLECT_DAMAGE,
+  REFLECT_THRESHOLD,
+  ULT_COST,
+} from './constants.gen';
 
 export interface Fighter {
   hp: number;
@@ -43,12 +62,6 @@ export interface EffectSummary {
 export function decayArmor(f: Fighter): void {
   f.armor = Math.max(0, f.armor - ARMOR_DECAY);
 }
-
-const DMG_SWORD = 7;
-const HEAL_HEART = 5;
-const MP_WATER = 7;
-const ARMOR_SHIELD = 5;
-const FURY_PEACH = 10;
 
 export function applyTileEffects(
   attacker: Fighter,

@@ -1,11 +1,12 @@
 import { Container, Graphics, Rectangle, type Text } from 'pixi.js';
 import type { GameSession, MatchHistoryOutcome } from '../../../src/sdk';
 import { HEADING, makeText, popIn, tween } from '../../kit';
+import { DESIGN_W } from '../../layout';
 import { LEVEL_LABELS } from '../../logic/battle';
 import { readBotHistory } from '../../logic/bot-history';
+import { bindDragScroll, type DragScrollBinding } from './drag-scroll';
 import { makeWoodBtn } from './ui';
 
-const DESIGN_W = 520;
 const CARD_W = 456;
 const LIST_W = CARD_W - 44;
 const ROW_H = 34;
@@ -48,7 +49,7 @@ let listBottom = 192;
 let extraTop = 0;
 let scrollY = 0;
 let contentH = 0;
-let dragY: number | null = null;
+let historyScroll: DragScrollBinding;
 let getSession: () => GameSession | null = () => null;
 let pvpRows: HistoryRow[] | null = null;
 let loadState: 'loading' | 'error' | 'done' = 'done';
@@ -219,7 +220,7 @@ function startLoad(): void {
 export function openHistoryPopup(next: () => GameSession | null): void {
   getSession = next;
   scrollY = 0;
-  dragY = null;
+  historyScroll.reset();
   pvpRows = null;
   box.visible = true;
   dim.alpha = 0;
@@ -231,7 +232,7 @@ export function openHistoryPopup(next: () => GameSession | null): void {
 export function hideHistoryPopup(): void {
   loadGen++;
   cleanupLoad();
-  dragY = null;
+  historyScroll.reset();
   box.visible = false;
 }
 
@@ -271,24 +272,13 @@ export function buildHistoryPopup(): Container {
 
   scrollZone = new Container();
   scrollZone.eventMode = 'static';
-  scrollZone.on('pointerdown', (e) => {
-    dragY = e.global.y;
-  });
-  scrollZone.on('pointermove', (e) => {
-    if (dragY == null) return;
-    const scale = card.worldTransform.a || 1;
-    scrollY -= (e.global.y - dragY) / scale;
-    dragY = e.global.y;
-    applyScroll();
-  });
-  const endDrag = (): void => {
-    dragY = null;
-  };
-  scrollZone.on('pointerup', endDrag);
-  scrollZone.on('pointerupoutside', endDrag);
-  scrollZone.on('wheel', (e) => {
-    scrollY += e.deltaY / 3;
-    applyScroll();
+  historyScroll = bindDragScroll(scrollZone, {
+    scale: () => card.worldTransform.a,
+    offset: () => scrollY,
+    setOffset: (value) => {
+      scrollY = value;
+    },
+    apply: applyScroll,
   });
   card.addChild(scrollZone);
 

@@ -258,6 +258,86 @@ func TestCascadeWaveBonusRequiresRunOfFour(t *testing.T) {
 	}
 }
 
+func TestApplyResolvesDeterministicMultiWaveCascade(t *testing.T) {
+	state := (Logic{}).Init(1).(*State)
+	move := json.RawMessage(`{"type":"swap","a":41,"b":42}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	wantKinds := []string{stepSwap, stepMatch, stepGravity, stepMatch, stepGravity, stepMatch, stepGravity}
+	if got := stepKinds(next.Steps); !reflect.DeepEqual(got, wantKinds) {
+		t.Fatalf("cascade steps=%v, want %v", got, wantKinds)
+	}
+
+	matchSteps := []Step{next.Steps[1], next.Steps[3], next.Steps[5]}
+	if !reflect.DeepEqual(matchSteps[0].Cells, []int{25, 33, 34, 41, 42, 50}) || matchSteps[0].BonusTurns != 0 {
+		t.Fatalf("first wave should be separate triples without a bonus: %+v", matchSteps[0])
+	}
+	if !reflect.DeepEqual(matchSteps[1].Cells, []int{42, 43, 44, 48, 49, 50}) || matchSteps[1].BonusTurns != 1 {
+		t.Fatalf("second wave should award one turn for its connected 6-cell group: %+v", matchSteps[1])
+	}
+	if !reflect.DeepEqual(matchSteps[2].Cells, []int{1, 9, 17}) || matchSteps[2].BonusTurns != 0 {
+		t.Fatalf("third wave should be a triple without a bonus: %+v", matchSteps[2])
+	}
+	if next.ExtraTurns != 1 || !next.ExtraTurn || next.ExtraTurnOwner != 0 || !(Logic{}).KeepTurn(next) {
+		t.Fatalf("cascade bonus was not banked for the acting player: %+v", next)
+	}
+	if cells, _, _ := findMatches(next.Board); cells != nil {
+		t.Fatalf("cascade left unresolved matches: %v", cells)
+	}
+}
+
+func TestApplyGravityCompactsColumnsAndReportsMovement(t *testing.T) {
+	board := stripedBoard()
+	original := append([]int(nil), board...)
+	removed := map[int]bool{18: true, 42: true, 58: true}
+	fallWant := []Fall{
+		{From: 50, To: 58},
+		{From: 34, To: 50},
+		{From: 26, To: 42},
+		{From: 10, To: 34},
+		{From: 2, To: 26},
+	}
+	spawnLocations := []Spawn{
+		{Index: 18, FromRow: -1},
+		{Index: 10, FromRow: -2},
+		{Index: 2, FromRow: -3},
+	}
+
+	falls, spawns := applyGravity(board, removed, &rng{z: 17})
+	if !reflect.DeepEqual(falls, fallWant) {
+		t.Fatalf("falls=%v, want %v", falls, fallWant)
+	}
+	if len(spawns) != len(spawnLocations) {
+		t.Fatalf("spawns=%v, want %d entries", spawns, len(spawnLocations))
+	}
+	for i, want := range spawnLocations {
+		got := spawns[i]
+		if got.Index != want.Index || got.FromRow != want.FromRow || got.Type < 0 || got.Type >= tileCount {
+			t.Fatalf("spawn #%d=%+v, want index=%d fromRow=%d and a valid tile", i, got, want.Index, want.FromRow)
+		}
+		if board[got.Index] != got.Type {
+			t.Fatalf("spawn #%d reports type %d but board contains %d", i, got.Type, board[got.Index])
+		}
+	}
+	for _, fall := range fallWant {
+		if board[fall.To] != original[fall.From] {
+			t.Fatalf("fall %+v lost tile %d; target contains %d", fall, original[fall.From], board[fall.To])
+		}
+	}
+	for i := range board {
+		if i%grid != 2 && board[i] != original[i] {
+			t.Fatalf("gravity changed untouched cell %d from %d to %d", i, original[i], board[i])
+		}
+	}
+}
+
 func TestFindMatchesSpecialTilesWithBaseTiles(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -797,10 +877,25 @@ func TestTurnSkipClearsBankedTurns(t *testing.T) {
 	state.ExtraTurns = 2
 	state.ExtraTurnOwner = 0
 
+	(Logic{}).OnTurnSkipped(state, 1)
+	if !state.ExtraTurn || state.ExtraTurns != 2 || state.ExtraTurnOwner != 0 || !(Logic{}).KeepTurn(state) {
+		t.Fatalf("another player's skip consumed the owner's bonus turns: %+v", state)
+	}
+
 	(Logic{}).OnTurnSkipped(state, 0)
 	if state.ExtraTurn || state.ExtraTurns != 0 || state.ExtraTurnOwner != -1 || (Logic{}).KeepTurn(state) {
 		t.Fatalf("turn skip left bonus turns behind: %+v", state)
 	}
+
+	legacy := stateWith(stripedBoard(), [2]Fighter{{HP: 100}, {HP: 100}}, 8)
+	legacy.ExtraTurn = true
+	(Logic{}).OnTurnSkipped(legacy, 1)
+	if legacy.ExtraTurn || legacy.ExtraTurns != 0 || legacy.ExtraTurnOwner != -1 {
+		t.Fatalf("legacy extra-turn flag survived a skip: %+v", legacy)
+	}
+
+	(Logic{}).OnTurnSkipped(nil, 0)
+	(Logic{}).OnTurnSkipped("not a war-god state", 0)
 }
 
 func doubleMatchBoard() []int {

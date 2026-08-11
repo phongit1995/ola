@@ -1,10 +1,11 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import type { RoomInfo } from '../../../../src/sdk';
 import { HEADING, makeText, popIn, tween } from '../../../kit';
+import { DESIGN_W } from '../../../layout';
+import { bindDragScroll, type DragScrollBinding } from '../drag-scroll';
 import { makeWoodBtn } from '../ui';
 import { betLabel } from './util';
 
-const DESIGN_W = 520;
 const CARD_W = 470;
 const ROW_W = CARD_W - 44;
 const ROW_H = 64;
@@ -34,7 +35,7 @@ let listTop = -220;
 let listViewH = 340;
 let contentH = 0;
 let scrollOff = 0;
-let dragMoved = 0;
+let roomScroll: DragScrollBinding;
 
 function applyScroll(): void {
   const maxOff = Math.max(0, contentH - listViewH);
@@ -79,7 +80,7 @@ function makeRow(room: RoomInfo): Container {
     row.eventMode = 'static';
     row.cursor = 'pointer';
     row.on('pointertap', () => {
-      if (dragMoved < 8) cb.onJoin(room);
+      if (!roomScroll.wasDragged()) cb.onJoin(room);
     });
   }
   return row;
@@ -135,28 +136,13 @@ export function buildRoomListPopup(callbacks: RoomListCallbacks): Container {
 
   viewport = new Container();
   viewport.eventMode = 'static';
-  let dragY: number | null = null;
-  viewport.on('pointerdown', (e) => {
-    dragY = e.global.y;
-    dragMoved = 0;
-  });
-  viewport.on('pointermove', (e) => {
-    if (dragY == null) return;
-    const scale = card.worldTransform.a || 1;
-    const dy = e.global.y - dragY;
-    dragMoved += Math.abs(dy / scale);
-    scrollOff -= dy / scale;
-    dragY = e.global.y;
-    applyScroll();
-  });
-  const endDrag = (): void => {
-    dragY = null;
-  };
-  viewport.on('pointerup', endDrag);
-  viewport.on('pointerupoutside', endDrag);
-  viewport.on('wheel', (e) => {
-    scrollOff += e.deltaY / 3;
-    applyScroll();
+  roomScroll = bindDragScroll(viewport, {
+    scale: () => card.worldTransform.a,
+    offset: () => scrollOff,
+    setOffset: (value) => {
+      scrollOff = value;
+    },
+    apply: applyScroll,
   });
   card.addChild(viewport);
 

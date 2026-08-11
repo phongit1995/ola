@@ -52,6 +52,12 @@ export function setSoundEnabled(next: boolean): void {
   enabled = next;
 }
 
+export function disposeAudio(): void {
+  const current = context;
+  context = null;
+  if (current && current.state !== 'closed') void current.close().catch(() => {});
+}
+
 export function playSound(sound: GameSound): void {
   if (!enabled) return;
   const ctx = getContext();

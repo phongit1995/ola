@@ -1,10 +1,10 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { A, tex } from '../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../kit';
+import { DESIGN_W } from '../../layout';
 import { attachShimmer } from '../../shimmer';
 import { LEVEL_LABELS, type BotLevel } from '../../logic/battle';
 
-const DESIGN_W = 520;
 const PANEL_W = 312;
 
 const LEVEL_BARS: Record<BotLevel, string> = {

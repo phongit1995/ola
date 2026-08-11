@@ -1,14 +1,15 @@
-export const GRID = 8;
-export const CELLS = GRID * GRID;
+import {
+  CELLS,
+  GRID,
+  SPECIAL_HEART_CHANCE,
+  SPECIAL_SWORD_CHANCE,
+  TILE_ORDER,
+  type BaseTileType,
+  type TileType,
+} from './constants.gen';
 
-export type BaseTileType = 'sword' | 'peach' | 'heart' | 'water' | 'shield' | 'lightning';
-export type TileType = BaseTileType | 'fireSword' | 'greaterHeart';
-
-export const TILE_TYPES: BaseTileType[] = ['sword', 'peach', 'heart', 'water', 'shield', 'lightning'];
-// Divisor riêng cho từng ô gốc để cả hai ô đặc biệt ra ~1/60 (khớp server):
-//   Kiếm Lửa ≈ 22% / 13 ≈ 1/59 ; Đại Trái Tim ≈ 16% / 10 ≈ 1/62
-export const SPECIAL_SWORD_CHANCE = 1 / 13;
-export const SPECIAL_HEART_CHANCE = 1 / 10;
+export { CELLS, GRID, SPECIAL_HEART_CHANCE, SPECIAL_SWORD_CHANCE } from './constants.gen';
+export type { BaseTileType, TileType } from './constants.gen';
 
 export type Board = TileType[];
 
@@ -63,16 +64,7 @@ function randTile(): TileType {
 }
 
 export function emptyCounts(): Record<TileType, number> {
-  return {
-    sword: 0,
-    peach: 0,
-    heart: 0,
-    water: 0,
-    shield: 0,
-    lightning: 0,
-    fireSword: 0,
-    greaterHeart: 0,
-  };
+  return Object.fromEntries(TILE_ORDER.map((tile) => [tile, 0])) as Record<TileType, number>;
 }
 
 export function createBoard(): Board {

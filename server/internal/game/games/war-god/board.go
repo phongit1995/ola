@@ -25,6 +25,8 @@ const (
 	tileGreaterHeart
 )
 
+// tileNames is the wire-format order shared with the TypeScript client.
+// Run `go generate` in this package after changing it or any exported balance value.
 var tileNames = [tileCount]string{
 	"sword",
 	"peach",
@@ -220,6 +222,12 @@ func matchBonusTurns(board, matchedCells []int) int {
 }
 
 func computeExplosions(board []int, matched map[int]bool, r *rng) ([]int, []LightningArc) {
+	return computeExplosionsWithPicker(board, matched, func(limit int) int {
+		return int(r.next() % uint64(limit))
+	})
+}
+
+func computeExplosionsWithPicker(board []int, matched map[int]bool, pickIndex func(int) int) ([]int, []LightningArc) {
 	set := map[int]bool{}
 	add := func(x, y int) {
 		if x >= 0 && x < grid && y >= 0 && y < grid {
@@ -263,7 +271,12 @@ func computeExplosions(board []int, matched map[int]bool, r *rng) ([]int, []Ligh
 			targetCount = len(pool)
 		}
 		for order := 0; order < targetCount; order++ {
-			pick := int(r.next() % uint64(len(pool)))
+			pick := pickIndex(len(pool))
+			if pick < 0 {
+				pick = 0
+			} else if pick >= len(pool) {
+				pick = len(pool) - 1
+			}
 			target := pool[pick]
 			pool[pick] = pool[len(pool)-1]
 			pool = pool[:len(pool)-1]

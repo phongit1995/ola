@@ -1,17 +1,14 @@
-import { Container, Graphics, Sprite, Text } from 'pixi.js';
+import { Container, Sprite, Text } from 'pixi.js';
 import { A, tex } from '../../assets';
-import { SERIF, makeText, popIn, pressable, tween } from '../../kit';
+import { SERIF, makeText, pressable } from '../../kit';
+import { createCardModal, type CardModal } from './card-modal';
 
-const DESIGN_W = 520;
 const PANEL_W = 430;
 const BTN_W = 172;
 
-let box: Container;
-let dim: Graphics;
-let card: Container;
+let modal: CardModal;
 let message: Text;
 let onOkAction: (() => void) | null = null;
-let animGen = 0;
 
 function serifText(label: string, size: number, color: number): Text {
   const t = makeText(label, size, color, '700', SERIF);
@@ -20,36 +17,19 @@ function serifText(label: string, size: number, color: number): Text {
 }
 
 export function openConfirmPopup(text: string, onOk: () => void): void {
-  animGen++;
   onOkAction = onOk;
   message.text = text;
-  box.visible = true;
-  card.alpha = 1;
-  card.scale.set(1);
-  dim.alpha = 0;
-  void tween(dim, { alpha: 1 }, 200);
-  popIn(card, 0, 380);
+  modal.open();
 }
 
 export function closeConfirmPopup(): void {
-  if (!box.visible) return;
-  const gen = ++animGen;
   onOkAction = null;
-  void tween(dim, { alpha: 0 }, 160);
-  void tween(card, { scale: 0.72, alpha: 0 }, 170).then(() => {
-    if (gen !== animGen) return;
-    box.visible = false;
-    card.scale.set(1);
-    card.alpha = 1;
-  });
+  modal.close();
 }
 
 export function hideConfirmPopup(): void {
-  animGen++;
-  box.visible = false;
-  card.scale.set(1);
-  card.alpha = 1;
   onOkAction = null;
+  modal.hide();
 }
 
 function makeConfirmBtn(label: string, texUrl: string, onTap: () => void): Container {
@@ -66,13 +46,8 @@ function makeConfirmBtn(label: string, texUrl: string, onTap: () => void): Conta
 }
 
 export function buildConfirmPopup(): Container {
-  box = new Container();
-  dim = new Graphics();
-  dim.eventMode = 'static';
-  dim.on('pointertap', closeConfirmPopup);
-  box.addChild(dim);
-
-  card = new Container();
+  modal = createCardModal(closeConfirmPopup);
+  const { card } = modal;
 
   const panel = new Sprite(tex[A.confirm.panel]);
   panel.anchor.set(0.5);
@@ -117,13 +92,9 @@ export function buildConfirmPopup(): Container {
   ok.y = btnY;
   card.addChild(ok);
 
-  box.addChild(card);
-  box.visible = false;
-  return box;
+  return modal.box;
 }
 
 export function layoutConfirmPopup(designH: number): void {
-  dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  card.x = DESIGN_W / 2;
-  card.y = designH / 2;
+  modal.layout(designH);
 }
