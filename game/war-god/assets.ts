@@ -74,6 +74,16 @@ import resultBrushWin from './assets/result/brush-win.webp';
 import resultBrushLose from './assets/result/brush-lose.webp';
 import resultBtnClose from './assets/result/btn-close.webp';
 import resultKen from './assets/result/ken.webp';
+import historyPanelFill from './assets/history/panel-fill.webp';
+import historyPanelFrame from './assets/history/panel-frame.webp';
+import historyTitleFrame from './assets/history/title-frame.webp';
+import historyTable from './assets/history/table.webp';
+import historyCloseBase from './assets/history/close-base.webp';
+import historyCloseX from './assets/history/close-x.webp';
+import historyOutcomeWin from './assets/history/outcome-win.webp';
+import historyOutcomeLose from './assets/history/outcome-lose.webp';
+import historyPageNumber from './assets/history/page-number.webp';
+import historyPageArrow from './assets/history/page-arrow.webp';
 import serifFontUrl from './assets/fonts/DejaVuSerif-Bold.ttf';
 import robotoCondensedUrl from './assets/fonts/RobotoCondensed-VF.ttf';
 
@@ -165,6 +175,18 @@ export const A = {
     brushLose: resultBrushLose,
     btnClose: resultBtnClose,
     ken: resultKen,
+  },
+  history: {
+    panelFill: historyPanelFill,
+    panelFrame: historyPanelFrame,
+    titleFrame: historyTitleFrame,
+    table: historyTable,
+    closeBase: historyCloseBase,
+    closeX: historyCloseX,
+    outcomeWin: historyOutcomeWin,
+    outcomeLose: historyOutcomeLose,
+    pageNumber: historyPageNumber,
+    pageArrow: historyPageArrow,
   },
 } as const;
 
