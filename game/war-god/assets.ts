@@ -173,6 +173,15 @@ export const tex: Record<string, Texture> = new Proxy(textureCache as Record<str
 });
 let ultTexturePromise: Promise<Texture> | null = null;
 
+function configureBoardTexture(texture: Texture): void {
+  // These sprites are fixed-size, front-facing UI. Sampling the original with
+  // bilinear filtering stays crisp at the renderer's DPR; generated mipmaps
+  // prefilter away the thin painted outlines and make every board item soft.
+  texture.source.magFilter = 'linear';
+  texture.source.minFilter = 'linear';
+  texture.source.autoGenerateMipmaps = false;
+}
+
 function withoutDeferredAssets(): Omit<typeof A, 'fx'> {
   const { fx: _deferred, ...startupAssets } = A;
   return startupAssets;
@@ -189,6 +198,15 @@ export async function loadAssets(): Promise<void> {
     robotoFont.load().then((f) => document.fonts.add(f)),
   ]);
   Object.assign(textureCache, loaded);
+
+  const scaledUrls = [
+    A.board.frame,
+    A.board.cell,
+    A.board.selMine,
+    A.board.selFoe,
+    ...Object.values(A.items),
+  ];
+  scaledUrls.forEach((url) => configureBoardTexture(texture(url)));
 }
 
 export function loadUltTexture(): Promise<Texture> {

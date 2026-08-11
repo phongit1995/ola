@@ -159,6 +159,7 @@ function pos(i: number): { x: number; y: number } {
 
 function makeSelector(url: string): Sprite {
   const s = new Sprite(tex[url]);
+  s.roundPixels = true;
   s.visible = false;
   return s;
 }
@@ -184,18 +185,22 @@ function placeHint(): void {
 
 function rebuildBoardVisuals(): void {
   const boardW = tileSize * GRID;
-  boardFrame.width = boardW * 1.1;
-  boardFrame.height = boardW * 1.1;
+  const frameOverhang = Math.round(boardW * 0.05);
+  const frameSize = boardW + frameOverhang * 2;
+  boardFrame.width = frameSize;
+  boardFrame.height = frameSize;
   boardFrame.x = boardW / 2;
   boardFrame.y = boardW / 2;
+  const cellInset = Math.max(1, Math.round(tileSize * 0.015));
   cellLayer.removeChildren().forEach((c) => c.destroy());
   for (let i = 0; i < CELLS; i++) {
     const cell = new Sprite(tex[A.board.cell]);
     const p = pos(i);
-    cell.width = tileSize * 0.97;
-    cell.height = tileSize * 0.97;
-    cell.x = p.x + tileSize * 0.015;
-    cell.y = p.y + tileSize * 0.015;
+    cell.roundPixels = true;
+    cell.width = tileSize - cellInset * 2;
+    cell.height = tileSize - cellInset * 2;
+    cell.x = p.x + cellInset;
+    cell.y = p.y + cellInset;
     cellLayer.addChild(cell);
   }
   boardMask
@@ -258,6 +263,7 @@ function clearHint(): void {
 function makeTile(type: TileType, index: number): Container {
   const c = new Container();
   const icon = new Sprite(tex[A.items[type]]);
+  icon.roundPixels = true;
   icon.anchor.set(0.5);
   icon.scale.set(tileIconBaseScale(icon));
   icon.x = tileSize / 2;
@@ -1521,6 +1527,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
 
   boardBox = new Container();
   boardFrame = new Sprite(tex[A.board.frame]);
+  boardFrame.roundPixels = true;
   boardFrame.anchor.set(0.5);
   boardBox.addChild(boardFrame);
 

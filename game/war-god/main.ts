@@ -38,6 +38,11 @@ let lobbyBox: Container;
 let designH = 980;
 let safeTop = 0;
 let safeBottom = 0;
+
+function displayResolution(): number {
+  return Math.max(1, window.devicePixelRatio || 1);
+}
+
 const sessionController = createSessionController({
   setConnecting: lobbySetConnecting,
   setReady: lobbySetReady,
@@ -69,6 +74,10 @@ function layout(): void {
   readSafeInsets();
   const winW = window.innerWidth;
   const winH = window.innerHeight;
+  const resolution = displayResolution();
+  if (app.renderer.resolution !== resolution) {
+    app.renderer.resolution = resolution;
+  }
   const scale = Math.min(winW, DESIGN_W) / DESIGN_W;
   designH = winH / scale;
   const insetTop = Math.round(safeTop / scale);
@@ -105,8 +114,9 @@ async function main(): Promise<void> {
     resizeTo: window,
     backgroundColor: 0x141428,
     antialias: true,
-    resolution: window.devicePixelRatio || 1,
+    resolution: displayResolution(),
     autoDensity: true,
+    roundPixels: true,
     preference: 'webgl',
   });
   document.getElementById('app')!.appendChild(app.canvas);
