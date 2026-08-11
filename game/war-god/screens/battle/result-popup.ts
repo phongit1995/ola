@@ -149,6 +149,15 @@ export function buildResultPopup(onClose: () => void): ResultPopup {
       verdict.text = data.outcome === 'draw' ? 'HÒA' : lose ? 'THUA' : 'THẮNG';
       fitText(verdict, brush.width * 0.57);
       detail.text = data.detail;
+
+      // Không có thanh KEN (vd chơi với Máy) thì hạ khối cúp/vệt sơn/chữ xuống
+      // canh giữa vùng trống để popup không bị hụt phần dưới.
+      const dropY = data.kenText == null ? panelH * 0.1 : 0;
+      outcomeIcon.y = -panelH * 0.145 + dropY;
+      brush.y = panelH * 0.075 + dropY;
+      verdict.y = brush.y - 2;
+      detail.y = brush.y + panelH * 0.072;
+
       kenBox.visible = data.kenText != null;
       if (data.kenText != null) {
         kenText.text = data.kenText;

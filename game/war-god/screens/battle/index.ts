@@ -880,7 +880,7 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   clearHint();
   updateHud();
   if (mode === 'bot') recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
-  showResult({ outcome: won ? 'win' : 'lose', detail: sub, kenText: '0 KEN' });
+  showResult({ outcome: won ? 'win' : 'lose', detail: sub });
   setChatInputVisible(false);
   playSound(won ? 'win' : 'lose');
   bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason, won });
