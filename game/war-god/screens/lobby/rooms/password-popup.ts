@@ -1,14 +1,10 @@
-import { Container, Graphics, Text } from 'pixi.js';
-import { HEADING, makeText, popIn, tween } from '../../../kit';
+import { Container, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
+import { A, tex } from '../../../assets';
+import { HEADING, makeText, popIn, pressable, tween } from '../../../kit';
 import { DESIGN_W } from '../../../layout';
-import { makeWoodBtn } from '../ui';
 import { makeOverlayInput, placeOverlayInput } from './util';
 
-const CARD_W = 400;
-const CARD_H = 300;
-const FIELD_W = 320;
-const FIELD_H = 46;
-const FIELD_Y = -36;
+const CARD_W = 404;
 
 interface PasswordCallbacks {
   onSubmit(password: string): void;
@@ -22,20 +18,39 @@ let card: Container;
 let subText: Text;
 let input: HTMLInputElement;
 let cardScale = 1;
+let cardH = 0;
+let fieldY = 0;
+let fieldW = 0;
+let fieldH = 0;
 
 function placeInput(): void {
+  const w = fieldW * 0.88;
+  const h = fieldH * 0.62;
   placeOverlayInput(
     input,
-    card.x - (FIELD_W / 2) * cardScale,
-    card.y + FIELD_Y * cardScale,
-    FIELD_W * cardScale,
-    FIELD_H * cardScale,
-    16 * cardScale,
+    card.x - (w / 2) * cardScale,
+    card.y + (fieldY - h / 2) * cardScale,
+    w * cardScale,
+    h * cardScale,
+    18 * cardScale,
   );
 }
 
 function submit(): void {
   cb.onSubmit(input.value);
+}
+
+function makeLabel(label: string): Container {
+  const c = new Container();
+  const frame = new Sprite(tex[A.lobby.fieldLabel]);
+  frame.anchor.set(0.5);
+  frame.width = CARD_W * 0.56;
+  frame.scale.y = frame.scale.x;
+  c.addChild(frame);
+  const text = makeText(label, 18, 0xffe15a, '800', HEADING);
+  text.style.stroke = { color: 0x5a1c08, width: 3, join: 'round' };
+  c.addChild(text);
+  return c;
 }
 
 export function openPasswordPopup(ownerName: string): void {
@@ -70,38 +85,88 @@ export function buildPasswordPopup(callbacks: PasswordCallbacks): Container {
   box.addChild(dim);
 
   card = new Container();
-  const bg = new Graphics()
-    .roundRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 18)
-    .fill({ color: 0x101c2c, alpha: 0.96 })
-    .stroke({ width: 2, color: 0xf6c445 });
-  bg.eventMode = 'static';
-  card.addChild(bg);
 
-  const title = makeText('NHẬP MẬT KHẨU', 22, 0xffd84d, '700', HEADING);
-  title.y = -CARD_H / 2 + 40;
-  card.addChild(title);
+  const panel = new Sprite(tex[A.lobby.createPanel]);
+  panel.anchor.set(0.5);
+  panel.width = CARD_W;
+  panel.scale.y = panel.scale.x;
+  panel.eventMode = 'static';
+  card.addChild(panel);
+  cardH = panel.height;
+  const halfH = cardH / 2;
 
-  subText = makeText('', 15, 0xc7d3e0, '700');
-  subText.y = -74;
+  fieldW = CARD_W * 0.84;
+  fieldH = fieldW / (2321 / 432);
+  fieldY = -halfH + cardH * 0.63;
+
+  const lock = new Sprite(tex[A.lobby.lock]);
+  lock.anchor.set(0.5);
+  lock.width = CARD_W * 0.13;
+  lock.scale.y = lock.scale.x;
+  lock.position.set(0, -halfH + cardH * 0.32);
+  card.addChild(lock);
+
+  subText = makeText('', 15, 0xfff2d0, '700', HEADING);
+  subText.style.stroke = { color: 0x4a1206, width: 3, join: 'round' };
+  subText.position.set(0, -halfH + cardH * 0.42);
   card.addChild(subText);
 
-  const field = new Graphics()
-    .roundRect(-FIELD_W / 2, FIELD_Y, FIELD_W, FIELD_H, 10)
-    .fill({ color: 0x0a1522, alpha: 0.92 })
-    .stroke({ width: 1.5, color: 0xf6c445, alpha: 0.5 });
-  card.addChild(field);
+  const label = makeLabel('MẬT KHẨU');
+  label.position.set(0, -halfH + cardH * 0.51);
+  card.addChild(label);
+  const fieldBg = new Sprite(tex[A.lobby.fieldInput]);
+  fieldBg.anchor.set(0.5);
+  fieldBg.width = fieldW;
+  fieldBg.scale.y = fieldBg.scale.x;
+  fieldBg.position.set(0, fieldY);
+  card.addChild(fieldBg);
 
-  const cancel = makeWoodBtn('HỦY', 140, 54, null, () => cb.onCancel());
-  cancel.x = -85;
-  cancel.y = CARD_H / 2 - 52;
-  card.addChild(cancel);
-
-  const ok = makeWoodBtn('VÀO', 140, 54, null, submit);
-  ok.x = 85;
-  ok.y = CARD_H / 2 - 52;
+  const ok = new Container();
+  const okBg = new Sprite(tex[A.lobby.btnOk]);
+  okBg.anchor.set(0.5);
+  okBg.width = CARD_W * 0.22;
+  okBg.scale.y = okBg.scale.x;
+  ok.addChild(okBg);
+  const okLabel = makeText('OK', 17, 0xfff2d0, '800', HEADING);
+  okLabel.style.stroke = { color: 0x5a1c08, width: 3, join: 'round' };
+  okLabel.y = -okBg.height * 0.06;
+  ok.addChild(okLabel);
+  ok.position.set(0, halfH - cardH * 0.09);
+  ok.hitArea = new Rectangle(-okBg.width * 0.5, -okBg.height * 0.4, okBg.width, okBg.height * 0.8);
+  pressable(ok, submit);
   card.addChild(ok);
 
+  const title = new Container();
+  const titleFrame = new Sprite(tex[A.lobby.createTitle]);
+  titleFrame.anchor.set(0.5);
+  titleFrame.width = CARD_W * 0.74;
+  titleFrame.scale.y = titleFrame.scale.x;
+  title.addChild(titleFrame);
+  const titleText = makeText('THAM GIA', 27, 0xffe15a, '800', HEADING);
+  titleText.style.stroke = { color: 0x4a1206, width: 4, join: 'round' };
+  titleText.y = -titleFrame.height * 0.04;
+  title.addChild(titleText);
+  title.y = -halfH + cardH * 0.03;
+  card.addChild(title);
+
+  const close = new Container();
+  const closeSprite = new Sprite(tex[A.lobby.btnX]);
+  closeSprite.anchor.set(0.5);
+  closeSprite.width = CARD_W * 0.15;
+  closeSprite.scale.y = closeSprite.scale.x;
+  close.addChild(closeSprite);
+  const closeIcon = new Sprite(tex[A.lobby.icX]);
+  closeIcon.anchor.set(0.5);
+  closeIcon.width = CARD_W * 0.075;
+  closeIcon.scale.y = closeIcon.scale.x;
+  close.addChild(closeIcon);
+  close.position.set(CARD_W / 2 - CARD_W * 0.04, -halfH + cardH * 0.14);
+  close.hitArea = new Rectangle(-38, -38, 76, 76);
+  pressable(close, () => cb.onCancel());
+  card.addChild(close);
+
   input = makeOverlayInput({ secure: true, maxLength: 64, placeholder: 'Mật khẩu bàn' });
+  input.style.textAlign = 'center';
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submit();
   });
@@ -115,7 +180,7 @@ export function layoutPasswordPopup(designH: number, insetTop: number, insetBott
   if (!box) return;
   dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
   const availH = designH - insetTop - insetBottom - 24;
-  cardScale = Math.min(1, (DESIGN_W * 0.94) / CARD_W, availH / CARD_H);
+  cardScale = Math.min(1, (DESIGN_W * 0.96) / CARD_W, availH / cardH);
   card.scale.set(cardScale);
   card.x = DESIGN_W / 2;
   card.y = insetTop + (designH - insetTop - insetBottom) / 2;
