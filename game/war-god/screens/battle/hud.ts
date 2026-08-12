@@ -22,6 +22,7 @@ export interface ButtonUI {
 export interface HudActions {
   onUlt(): void;
   onResultClose(): void;
+  onResultReplay(): void;
   onRestart(): void;
   onForfeit(): void;
   onExit(): void;
@@ -185,7 +186,7 @@ export function buildHud(root: Container, actions: HudActions): void {
   hud.bottomRow.addChild(hud.restart.view, hud.forfeit.view, hud.exit.view);
   root.addChild(hud.bottomRow);
 
-  hud.result = buildResultPopup(actions.onResultClose);
+  hud.result = buildResultPopup(actions.onResultClose, actions.onResultReplay);
   buildConfirm();
   root.addChild(hud.result.view, hud.confirm);
 }

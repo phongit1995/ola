@@ -84,6 +84,7 @@ export interface BattleDeps {
   onGameStart(): void;
   onRequestLayout(): void;
   onExitToLobby(): void;
+  onReplay(): void;
   onPvpError(text: string): void;
 }
 
@@ -1422,7 +1423,7 @@ function bindPvpHandlers(): void {
   });
 }
 
-function exitToLobby(): void {
+function teardownBattle(): void {
   flowEpoch++;
   over = true;
   inGame = false;
@@ -1437,7 +1438,20 @@ function exitToLobby(): void {
   hud.result.hide();
   hud.confirm.visible = false;
   setChatInputVisible(false);
+}
+
+function exitToLobby(): void {
+  teardownBattle();
   deps.onExitToLobby();
+}
+
+function replayMatch(): void {
+  if (mode === 'pvp') {
+    teardownBattle();
+    deps.onReplay();
+    return;
+  }
+  startBattle();
 }
 
 export function battleChatFocused(): boolean {
@@ -1563,6 +1577,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   buildHud(root, {
     onUlt: () => void castMyUltimate(),
     onResultClose: exitToLobby,
+    onResultReplay: replayMatch,
     onRestart: () => {
       if (mode === 'pvp') return;
       if (busy) return;

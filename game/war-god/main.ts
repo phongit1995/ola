@@ -146,6 +146,10 @@ async function main(): Promise<void> {
       }
       sessionController.openActiveRoom();
     },
+    onReplay: () => {
+      lobbyEnterAnimated();
+      sessionController.startQueue();
+    },
     onPvpError: (text) => lobbyShowToast(text),
   });
 
