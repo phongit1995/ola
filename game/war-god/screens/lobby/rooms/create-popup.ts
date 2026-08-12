@@ -1,16 +1,10 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
+import { A, tex } from '../../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../../kit';
 import { DESIGN_W } from '../../../layout';
-import { makeWoodBtn } from '../ui';
 import { makeOverlayInput, placeOverlayInput } from './util';
 
-const CARD_W = 440;
-const CARD_H = 470;
-const FIELD_W = CARD_W - 68;
-const FIELD_H = 46;
-const BET_FIELD_Y = -122;
-const PASS_FIELD_Y = 20;
-const QUICK_BETS = [0, 1000, 5000, 10000];
+const CARD_W = 404;
 
 interface CreateRoomCallbacks {
   onSubmit(bet: number, password: string): void;
@@ -24,56 +18,53 @@ let card: Container;
 let betInput: HTMLInputElement;
 let passInput: HTMLInputElement;
 let cardScale = 1;
+let cardH = 0;
+let betFieldY = 0;
+let passFieldY = 0;
+let fieldW = 0;
+let fieldH = 0;
+
+function placeOne(input: HTMLInputElement, fieldY: number): void {
+  const w = fieldW * 0.88;
+  const h = fieldH * 0.62;
+  placeOverlayInput(
+    input,
+    card.x - (w / 2) * cardScale,
+    card.y + (fieldY - h / 2) * cardScale,
+    w * cardScale,
+    h * cardScale,
+    18 * cardScale,
+  );
+}
 
 function placeInputs(): void {
-  placeOverlayInput(
-    betInput,
-    card.x - (FIELD_W / 2) * cardScale,
-    card.y + BET_FIELD_Y * cardScale,
-    FIELD_W * cardScale,
-    FIELD_H * cardScale,
-    16 * cardScale,
-  );
-  placeOverlayInput(
-    passInput,
-    card.x - (FIELD_W / 2) * cardScale,
-    card.y + PASS_FIELD_Y * cardScale,
-    FIELD_W * cardScale,
-    FIELD_H * cardScale,
-    16 * cardScale,
-  );
+  placeOne(betInput, betFieldY);
+  placeOne(passInput, passFieldY);
 }
 
 function submit(): void {
   cb.onSubmit(Number(betInput.value || '0'), passInput.value);
 }
 
-function makeFieldBg(y: number): Graphics {
-  return new Graphics()
-    .roundRect(-FIELD_W / 2, y, FIELD_W, FIELD_H, 10)
-    .fill({ color: 0x0a1522, alpha: 0.92 })
-    .stroke({ width: 1.5, color: 0xf6c445, alpha: 0.5 });
+function makeLabel(label: string): Container {
+  const c = new Container();
+  const frame = new Sprite(tex[A.lobby.fieldLabel]);
+  frame.anchor.set(0.5);
+  frame.width = CARD_W * 0.56;
+  frame.scale.y = frame.scale.x;
+  c.addChild(frame);
+  const text = makeText(label, 18, 0xffe15a, '800', HEADING);
+  text.style.stroke = { color: 0x5a1c08, width: 3, join: 'round' };
+  c.addChild(text);
+  return c;
 }
 
-function makeQuickBtn(value: number): Container {
-  const b = new Container();
-  const bg = new Graphics()
-    .roundRect(-43, -17, 86, 34, 9)
-    .fill({ color: 0x223650, alpha: 0.95 })
-    .stroke({ width: 1.5, color: 0xf6c445, alpha: 0.55 });
-  b.addChild(bg);
-  const label = makeText(
-    value > 0 ? value.toLocaleString('vi-VN') : 'MIỄN PHÍ',
-    13,
-    0xffe9a8,
-    '800',
-    HEADING,
-  );
-  b.addChild(label);
-  pressable(b, () => {
-    betInput.value = String(value);
-  });
-  return b;
+function makeFieldBg(): Sprite {
+  const f = new Sprite(tex[A.lobby.fieldInput]);
+  f.anchor.set(0.5);
+  f.width = fieldW;
+  f.scale.y = f.scale.x;
+  return f;
 }
 
 export function openCreateRoomPopup(): void {
@@ -110,49 +101,78 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
   box.addChild(dim);
 
   card = new Container();
-  const bg = new Graphics()
-    .roundRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 18)
-    .fill({ color: 0x101c2c, alpha: 0.96 })
-    .stroke({ width: 2, color: 0xf6c445 });
-  bg.eventMode = 'static';
-  card.addChild(bg);
 
-  const title = makeText('TẠO BÀN', 24, 0xffd84d, '700', HEADING);
-  title.y = -CARD_H / 2 + 42;
+  const panel = new Sprite(tex[A.lobby.createPanel]);
+  panel.anchor.set(0.5);
+  panel.width = CARD_W;
+  panel.scale.y = panel.scale.x;
+  panel.eventMode = 'static';
+  card.addChild(panel);
+  cardH = panel.height;
+  const halfH = cardH / 2;
+
+  fieldW = CARD_W * 0.84;
+  fieldH = fieldW / (2321 / 432);
+  betFieldY = -halfH + cardH * 0.47;
+  passFieldY = -halfH + cardH * 0.78;
+
+  const betLabel = makeLabel('SỐ KEN');
+  betLabel.position.set(0, -halfH + cardH * 0.34);
+  card.addChild(betLabel);
+  const betBg = makeFieldBg();
+  betBg.position.set(0, betFieldY);
+  card.addChild(betBg);
+
+  const passLabel = makeLabel('MẬT KHẨU');
+  passLabel.position.set(0, -halfH + cardH * 0.65);
+  card.addChild(passLabel);
+  const passBg = makeFieldBg();
+  passBg.position.set(0, passFieldY);
+  card.addChild(passBg);
+
+  const ok = new Container();
+  const okBg = new Sprite(tex[A.lobby.btnOk]);
+  okBg.anchor.set(0.5);
+  okBg.width = CARD_W * 0.22;
+  okBg.scale.y = okBg.scale.x;
+  ok.addChild(okBg);
+  const okLabel = makeText('OK', 17, 0xfff2d0, '800', HEADING);
+  okLabel.style.stroke = { color: 0x5a1c08, width: 3, join: 'round' };
+  okLabel.y = -okBg.height * 0.06;
+  ok.addChild(okLabel);
+  ok.position.set(0, halfH - cardH * 0.09);
+  ok.hitArea = new Rectangle(-okBg.width * 0.5, -okBg.height * 0.4, okBg.width, okBg.height * 0.8);
+  pressable(ok, submit);
+  card.addChild(ok);
+
+  const title = new Container();
+  const titleFrame = new Sprite(tex[A.lobby.createTitle]);
+  titleFrame.anchor.set(0.5);
+  titleFrame.width = CARD_W * 0.74;
+  titleFrame.scale.y = titleFrame.scale.x;
+  title.addChild(titleFrame);
+  const titleText = makeText('TẠO BÀN', 27, 0xffe15a, '800', HEADING);
+  titleText.style.stroke = { color: 0x4a1206, width: 4, join: 'round' };
+  titleText.y = -titleFrame.height * 0.04;
+  title.addChild(titleText);
+  title.y = -halfH + cardH * 0.03;
   card.addChild(title);
 
-  const betLabelText = makeText('MỨC CƯỢC (KEN)', 14, 0xc7d3e0, '800', HEADING);
-  betLabelText.anchor.set(0, 0.5);
-  betLabelText.x = -FIELD_W / 2;
-  betLabelText.y = BET_FIELD_Y - 20;
-  card.addChild(betLabelText);
-
-  card.addChild(makeFieldBg(BET_FIELD_Y));
-
-  QUICK_BETS.forEach((value, i) => {
-    const btn = makeQuickBtn(value);
-    btn.x = -143 + i * 95;
-    btn.y = BET_FIELD_Y + FIELD_H + 30;
-    card.addChild(btn);
-  });
-
-  const passLabelText = makeText('MẬT KHẨU (TÙY CHỌN)', 14, 0xc7d3e0, '800', HEADING);
-  passLabelText.anchor.set(0, 0.5);
-  passLabelText.x = -FIELD_W / 2;
-  passLabelText.y = PASS_FIELD_Y - 20;
-  card.addChild(passLabelText);
-
-  card.addChild(makeFieldBg(PASS_FIELD_Y));
-
-  const cancel = makeWoodBtn('HỦY', 150, 56, null, () => cb.onCancel());
-  cancel.x = -105;
-  cancel.y = CARD_H / 2 - 54;
-  card.addChild(cancel);
-
-  const ok = makeWoodBtn('TẠO BÀN', 185, 60, null, submit);
-  ok.x = 92;
-  ok.y = CARD_H / 2 - 54;
-  card.addChild(ok);
+  const close = new Container();
+  const closeSprite = new Sprite(tex[A.lobby.btnX]);
+  closeSprite.anchor.set(0.5);
+  closeSprite.width = CARD_W * 0.15;
+  closeSprite.scale.y = closeSprite.scale.x;
+  close.addChild(closeSprite);
+  const closeIcon = new Sprite(tex[A.lobby.icX]);
+  closeIcon.anchor.set(0.5);
+  closeIcon.width = CARD_W * 0.075;
+  closeIcon.scale.y = closeIcon.scale.x;
+  close.addChild(closeIcon);
+  close.position.set(CARD_W / 2 - CARD_W * 0.04, -halfH + cardH * 0.14);
+  close.hitArea = new Rectangle(-38, -38, 76, 76);
+  pressable(close, () => cb.onCancel());
+  card.addChild(close);
 
   betInput = makeOverlayInput({ numeric: true, maxLength: 9, placeholder: '0' });
   passInput = makeOverlayInput({
@@ -160,6 +180,8 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
     maxLength: 64,
     placeholder: 'Để trống nếu không khóa',
   });
+  betInput.style.textAlign = 'center';
+  passInput.style.textAlign = 'center';
   const onEnter = (e: KeyboardEvent): void => {
     if (e.key === 'Enter') submit();
   };
@@ -179,7 +201,7 @@ export function layoutCreateRoomPopup(
   if (!box) return;
   dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
   const availH = designH - insetTop - insetBottom - 24;
-  cardScale = Math.min(1, (DESIGN_W * 0.94) / CARD_W, availH / CARD_H);
+  cardScale = Math.min(1, (DESIGN_W * 0.96) / CARD_W, availH / cardH);
   card.scale.set(cardScale);
   card.x = DESIGN_W / 2;
   card.y = insetTop + (designH - insetTop - insetBottom) / 2;

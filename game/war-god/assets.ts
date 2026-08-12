@@ -64,6 +64,13 @@ import lobbyBtnBlue from './assets/lobby/btn-blue.png';
 import lobbyPageCurrent from './assets/lobby/page-current.png';
 import lobbyPageArrow from './assets/lobby/page-arrow.png';
 import lobbyParchment from './assets/lobby/parchment.png';
+import lobbyCreatePanel from './assets/lobby/create-panel.png';
+import lobbyCreateTitle from './assets/lobby/create-title.png';
+import lobbyFieldLabel from './assets/lobby/field-label.png';
+import lobbyFieldInput from './assets/lobby/field-input.png';
+import lobbyBtnOk from './assets/lobby/btn-ok.png';
+import lobbyBtnX from './assets/lobby/btn-x.png';
+import lobbyIcX from './assets/lobby/ic-x.png';
 import pickPanel from './assets/pick/panel.png';
 import pickTitle from './assets/pick/title.png';
 import pickCloseBase from './assets/pick/close-base.png';
@@ -169,6 +176,13 @@ export const A = {
     pageCurrent: lobbyPageCurrent,
     pageArrow: lobbyPageArrow,
     parchment: lobbyParchment,
+    createPanel: lobbyCreatePanel,
+    createTitle: lobbyCreateTitle,
+    fieldLabel: lobbyFieldLabel,
+    fieldInput: lobbyFieldInput,
+    btnOk: lobbyBtnOk,
+    btnX: lobbyBtnX,
+    icX: lobbyIcX,
   },
   pick: {
     panel: pickPanel,
