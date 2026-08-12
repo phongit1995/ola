@@ -54,6 +54,16 @@ import lobbyIcSoundOn from './assets/lobby/ic-sound-on.png';
 import lobbyIcSoundOff from './assets/lobby/ic-sound-off.png';
 import lobbyIcGuide from './assets/lobby/ic-guide.png';
 import lobbyBtnExit from './assets/lobby/btn-exit.png';
+import lobbyPvpTitle from './assets/lobby/pvp-title.png';
+import lobbyTableFrame from './assets/lobby/table-frame.png';
+import lobbyTableList from './assets/lobby/table-list.png';
+import lobbySlotFull from './assets/lobby/slot-full.png';
+import lobbySlotOpen from './assets/lobby/slot-open.png';
+import lobbyLock from './assets/lobby/lock.png';
+import lobbyBtnBlue from './assets/lobby/btn-blue.png';
+import lobbyPageCurrent from './assets/lobby/page-current.png';
+import lobbyPageArrow from './assets/lobby/page-arrow.png';
+import lobbyParchment from './assets/lobby/parchment.png';
 import pickPanel from './assets/pick/panel.png';
 import pickTitle from './assets/pick/title.png';
 import pickCloseBase from './assets/pick/close-base.png';
@@ -149,6 +159,16 @@ export const A = {
     icSoundOff: lobbyIcSoundOff,
     icGuide: lobbyIcGuide,
     btnExit: lobbyBtnExit,
+    pvpTitle: lobbyPvpTitle,
+    tableFrame: lobbyTableFrame,
+    tableList: lobbyTableList,
+    slotFull: lobbySlotFull,
+    slotOpen: lobbySlotOpen,
+    lock: lobbyLock,
+    btnBlue: lobbyBtnBlue,
+    pageCurrent: lobbyPageCurrent,
+    pageArrow: lobbyPageArrow,
+    parchment: lobbyParchment,
   },
   pick: {
     panel: pickPanel,

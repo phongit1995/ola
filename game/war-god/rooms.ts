@@ -21,6 +21,7 @@ import {
   layoutRoomListPopup,
   openRoomListPopup,
   renderRoomList,
+  setRoomListUser,
 } from './screens/lobby/rooms/list-popup';
 import {
   buildCreateRoomPopup,
@@ -154,6 +155,7 @@ function showList(refresh: boolean): void {
   hidePasswordPopup();
   hideWaitingPopup();
   if (!isRoomListPopupOpen()) openRoomListPopup();
+  setRoomListUser(deps?.getUserInfo() ?? null);
   renderRoomList(currentRooms());
   if (refresh) activeSession()?.listRooms();
 }
@@ -424,6 +426,7 @@ export function buildRoomsLayer(): Container {
       },
       onRefresh: refreshRooms,
       onJoin: joinRoomFromList,
+      onTopUp: () => toast('Nạp Ken trong app Ola nhé!'),
     }),
     buildCreateRoomPopup({
       onSubmit: submitCreateRoom,
@@ -467,6 +470,7 @@ export function openRoomList(): void {
   }
   hideAllRoomPopups();
   openRoomListPopup();
+  setRoomListUser(deps?.getUserInfo() ?? null);
   renderRoomList(currentRooms());
   s.listRooms();
 }
