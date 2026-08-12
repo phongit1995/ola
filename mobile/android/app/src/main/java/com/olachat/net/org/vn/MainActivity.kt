@@ -3,6 +3,7 @@ package com.olachat.net.org.vn
 import android.app.PictureInPictureParams
 import android.content.res.Configuration
 import android.os.Build
+import android.os.Bundle
 import android.util.Rational
 import androidx.lifecycle.Lifecycle
 import com.facebook.react.ReactActivity
@@ -25,6 +26,14 @@ class MainActivity : ReactActivity() {
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+  // Bỏ savedInstanceState: react-native-screens không cho restore fragment, nếu
+  // để FragmentManager khôi phục state cũ (process bị hệ thống kill lúc app ở
+  // background) thì constructor mặc định của ScreenStackFragment ném và activity
+  // không start được. State màn hình do JS giữ nên không mất gì.
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(null)
+  }
 
   override fun onUserLeaveHint() {
     super.onUserLeaveHint()

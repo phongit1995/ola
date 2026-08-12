@@ -1,50 +1,55 @@
 import { Container, Graphics } from 'pixi.js';
-import { HEADING, makeText, popIn, tween } from '../../kit';
+import { HEADING, makeText } from '../../kit';
+import {
+  ARMOR_DECAY,
+  ARMOR_SHIELD,
+  DMG_SWORD,
+  FIRE_SWORD_DMG,
+  FURY_PEACH,
+  GREATER_HEART_HEAL,
+  HEAL_HEART,
+  MAX_ARMOR,
+  MAX_FURY,
+  MAX_HP,
+  MP_WATER,
+  REFLECT_DAMAGE,
+  REFLECT_THRESHOLD,
+  ULT_COST,
+} from '../../logic/constants.gen';
+import { createCardModal, type CardModal } from './card-modal';
 import { makeWoodBtn } from './ui';
-
-const DESIGN_W = 520;
 
 const GUIDE_LINES = [
   'Ghép 3 ô cùng loại để kích hoạt:',
-  '⚔️ Kiếm 7 dmg (giáp chặn được)',
-  '💧 Nước +7 nội lực · 🍑 Đào +10 Nộ',
-  '❤️ Tim +5 máu · 🛡️ Khiên +5 giáp (tối đa 30)',
-  '⚡ Lôi: ghép 3 → nổ chữ thập 5 ô',
+  `⚔️ Kiếm ${DMG_SWORD} dmg (giáp chặn được)`,
+  `💧 Nước +${MP_WATER} nội lực · 🍑 Đào +${FURY_PEACH} Nộ`,
+  `❤️ Tim +${HEAL_HEART} máu · 🛡️ Khiên +${ARMOR_SHIELD} giáp (tối đa ${MAX_ARMOR})`,
+  '⚡ Lôi: ghép 3/4 → giật 3/4 ô ngẫu nhiên',
   '',
-  '🔥⚔️ Kiếm Lửa (hiếm): 12 dmg xuyên giáp + nổ 3×3',
-  '❤️➕ Tim Lớn (hiếm): hồi 10 máu',
+  `🔥⚔️ Kiếm Lửa (hiếm): ${FIRE_SWORD_DMG} dmg xuyên giáp + nổ 3×3`,
+  `❤️➕ Tim Lớn (hiếm): hồi ${GREATER_HEART_HEAL} máu`,
   'Ô bị nổ vẫn tính hiệu ứng.',
   '',
-  'Nộ đầy 100 → đòn Kiếm kế ×2, xuyên giáp.',
-  'Khiên: giảm 2/lượt, ≥20 giáp phản 2 dmg.',
-  'Ghép 4+ ô: được thêm lượt.',
-  'Tuyệt chiêu: cần 50 nội lực, dmg = nội lực ÷ 2.',
-  'Hạ gục đối thủ (200 máu) để thắng!',
+  `Nộ đầy ${MAX_FURY} → đòn Kiếm kế ×2, xuyên giáp.`,
+  `Khiên: giảm ${ARMOR_DECAY}/lượt, ≥${REFLECT_THRESHOLD} giáp phản ${REFLECT_DAMAGE} dmg.`,
+  'Mỗi cụm ghép liền 4+ ô (kể cả hình T/L): +1 lượt · được cộng dồn.',
+  `Tuyệt chiêu: cần ${ULT_COST} nội lực, dmg = nội lực ÷ 2.`,
+  `Hạ gục đối thủ (${MAX_HP} máu) để thắng!`,
 ].join('\n');
 
-let box: Container;
-let dim: Graphics;
-let card: Container;
+let modal: CardModal;
 
 export function openGuidePopup(): void {
-  box.visible = true;
-  dim.alpha = 0;
-  void tween(dim, { alpha: 1 }, 200);
-  popIn(card, 0, 380);
+  modal.open();
 }
 
 export function hideGuidePopup(): void {
-  box.visible = false;
+  modal.hide();
 }
 
 export function buildGuidePopup(): Container {
-  box = new Container();
-  dim = new Graphics();
-  dim.eventMode = 'static';
-  dim.on('pointertap', hideGuidePopup);
-  box.addChild(dim);
-
-  card = new Container();
+  modal = createCardModal(hideGuidePopup);
+  const { card } = modal;
   const cardW = 440;
   const cardH = 500;
   const bg = new Graphics()
@@ -71,13 +76,9 @@ export function buildGuidePopup(): Container {
   ok.y = cardH / 2 - 52;
   card.addChild(ok);
 
-  box.addChild(card);
-  box.visible = false;
-  return box;
+  return modal.box;
 }
 
 export function layoutGuidePopup(designH: number): void {
-  dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  card.x = DESIGN_W / 2;
-  card.y = designH / 2;
+  modal.layout(designH);
 }

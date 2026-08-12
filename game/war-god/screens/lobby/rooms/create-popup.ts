@@ -1,9 +1,9 @@
 import { Container, Graphics } from 'pixi.js';
 import { HEADING, makeText, popIn, pressable, tween } from '../../../kit';
+import { DESIGN_W } from '../../../layout';
 import { makeWoodBtn } from '../ui';
 import { makeOverlayInput, placeOverlayInput } from './util';
 
-const DESIGN_W = 520;
 const CARD_W = 440;
 const CARD_H = 470;
 const FIELD_W = CARD_W - 68;

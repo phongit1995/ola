@@ -8,6 +8,7 @@ import {
   type Ticker,
 } from 'pixi.js';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
+import { DESIGN_W } from '../../layout';
 import {
   GAME_ERROR_CODE,
   bridge,
@@ -29,13 +30,13 @@ import {
   computeExplosions,
   swapCells,
   type Board,
+  type LightningArc,
   type TileType,
 } from '../../logic/core';
 import {
   LEVEL_LABELS,
   ULT_COST,
   applyAuthoritativeEffects,
-  MAX_FURY,
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
@@ -43,6 +44,7 @@ import {
   createFighter,
   decayArmor,
   type BotLevel,
+  type EffectSummary,
   type Fighter,
 } from '../../logic/battle';
 import { recordBotMatch } from '../../logic/bot-history';
@@ -58,7 +60,7 @@ import { pvp } from '../../pvp';
 import { playSound } from '../../audio';
 import { A, loadUltTexture, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick, sleep, tween } from '../../kit';
-import { buildHud, hud, showConfirm, showOverlay, updateFighter } from './hud';
+import { buildHud, hud, showConfirm, showResult, updateFighter } from './hud';
 import {
   CHAT_W,
   buildChat,
@@ -68,9 +70,11 @@ import {
   setChatInputVisible,
   setChatPvp,
 } from './chat';
+import { playLightningFx } from './fx/lightning';
+import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
 
-const DESIGN_W = 520;
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
+const HINT_DELAY_MS = 10_000;
 const FX_COLS = 6;
 const FX_ROWS = 10;
 const FX_FRAMES = 60;
@@ -120,8 +124,10 @@ let myTurn = true;
 let busy = false;
 let over = false;
 let turnNumber = 1;
+let botModeExtraTurns: [number, number] = [0, 0];
 let selected: number | null = null;
 let turnDeadline = 0;
+let hintDeadline = 0;
 let inGame = false;
 let botLevel: BotLevel = 'normal';
 let mode: 'bot' | 'pvp' = 'bot';
@@ -153,6 +159,7 @@ function pos(i: number): { x: number; y: number } {
 
 function makeSelector(url: string): Sprite {
   const s = new Sprite(tex[url]);
+  s.roundPixels = true;
   s.visible = false;
   return s;
 }
@@ -178,18 +185,22 @@ function placeHint(): void {
 
 function rebuildBoardVisuals(): void {
   const boardW = tileSize * GRID;
-  boardFrame.width = boardW * 1.1;
-  boardFrame.height = boardW * 1.1;
+  const frameOverhang = Math.round(boardW * 0.05);
+  const frameSize = boardW + frameOverhang * 2;
+  boardFrame.width = frameSize;
+  boardFrame.height = frameSize;
   boardFrame.x = boardW / 2;
   boardFrame.y = boardW / 2;
+  const cellInset = Math.max(1, Math.round(tileSize * 0.015));
   cellLayer.removeChildren().forEach((c) => c.destroy());
   for (let i = 0; i < CELLS; i++) {
     const cell = new Sprite(tex[A.board.cell]);
     const p = pos(i);
-    cell.width = tileSize * 0.97;
-    cell.height = tileSize * 0.97;
-    cell.x = p.x + tileSize * 0.015;
-    cell.y = p.y + tileSize * 0.015;
+    cell.roundPixels = true;
+    cell.width = tileSize - cellInset * 2;
+    cell.height = tileSize - cellInset * 2;
+    cell.x = p.x + cellInset;
+    cell.y = p.y + cellInset;
     cellLayer.addChild(cell);
   }
   boardMask
@@ -252,6 +263,7 @@ function clearHint(): void {
 function makeTile(type: TileType, index: number): Container {
   const c = new Container();
   const icon = new Sprite(tex[A.items[type]]);
+  icon.roundPixels = true;
   icon.anchor.set(0.5);
   icon.scale.set(tileIconBaseScale(icon));
   icon.x = tileSize / 2;
@@ -302,7 +314,9 @@ function setStatus(text: string): void {
 }
 
 function resetTurnClock(): void {
-  turnDeadline = performance.now() + TURN_SECONDS * 1000;
+  const now = performance.now();
+  turnDeadline = now + TURN_SECONDS * 1000;
+  hintDeadline = now + HINT_DELAY_MS;
   clearHint();
 }
 
@@ -314,6 +328,9 @@ function announce(text: string, color: number): void {
   }
   turnAnnounceLabel.text = text;
   turnAnnounceLabel.style.fill = color;
+  turnAnnounce.alpha = 0;
+  turnAnnounce.scale.set(0.7);
+  turnAnnounce.position.set(announceBaseX, announceBaseY);
   turnAnnounce.visible = true;
 
   const IN = 160;
@@ -362,6 +379,27 @@ function announceTurn(side: 'me' | 'foe'): void {
   else announce(mode === 'pvp' ? 'ĐẾN LƯỢT ĐỐI THỦ' : 'ĐẾN LƯỢT MÁY', 0xff6b5e);
 }
 
+function announceExtraTurns(side: 'me' | 'foe', earned: number, remaining: number): void {
+  const mine = side === 'me';
+  const actor = mine ? 'BẠN' : mode === 'pvp' ? 'ĐỐI THỦ' : 'MÁY';
+  const color = mine ? 0x7dff8a : 0xffa94d;
+  let text = `${actor} CÒN ${remaining} LƯỢT!`;
+  if (earned > 1) text = `${actor} +${earned} LƯỢT!`;
+  else if (earned === 1) text = `${actor} THÊM LƯỢT!`;
+  announce(text, color);
+}
+
+function spendBotModeExtraTurn(side: 'me' | 'foe'): void {
+  const idx = side === 'me' ? 0 : 1;
+  botModeExtraTurns[idx] = Math.max(0, botModeExtraTurns[idx] - 1);
+}
+
+function addBotModeExtraTurns(side: 'me' | 'foe', earned: number): number {
+  const idx = side === 'me' ? 0 : 1;
+  botModeExtraTurns[idx] += earned;
+  return botModeExtraTurns[idx];
+}
+
 function cellRootPos(i: number): { x: number; y: number } {
   const p = pos(i);
   return { x: boardBox.x + p.x + tileSize / 2, y: boardBox.y + p.y + tileSize / 2 };
@@ -381,45 +419,52 @@ function flyMatched(cells: Set<number>, side: 'me' | 'foe'): Promise<void> {
   return Promise.all(jobs).then(() => undefined);
 }
 
-function crossFlash(i: number): void {
-  const p = cellRootPos(i);
-  const g = new Graphics();
-  const arm = tileSize * 1.4;
-  const th = tileSize * 0.42;
-  g.roundRect(-arm / 2, -th / 2, arm, th, th / 2).fill({ color: 0xffffff, alpha: 0.5 });
-  g.roundRect(-th / 2, -arm / 2, th, arm, th / 2).fill({ color: 0xffffff, alpha: 0.5 });
-  g.roundRect(-arm / 2, -th / 2, arm, th, th / 2).stroke({ width: 2, color: 0xb06bff, alpha: 0.95 });
-  g.roundRect(-th / 2, -arm / 2, th, arm, th / 2).stroke({ width: 2, color: 0xb06bff, alpha: 0.95 });
-  g.position.set(p.x, p.y);
-  flyLayer.addChild(g);
-  void tween(g, { alpha: 0, scale: 1.35 }, 340).then(() => g.destroy());
-}
 
-function blockFlash(i: number): void {
-  const p = cellRootPos(i);
-  const g = new Graphics();
-  const r = tileSize * 0.55;
-  g.circle(0, 0, r).fill({ color: 0xffd75e, alpha: 0.5 });
-  g.circle(0, 0, r * 0.55).fill({ color: 0xff8a2a, alpha: 0.85 });
-  g.position.set(p.x, p.y);
-  flyLayer.addChild(g);
-  void tween(g, { alpha: 0, scale: 2.4 }, 340).then(() => g.destroy());
-}
 
-function explodeFx(matched: Iterable<number>): void {
-  for (const i of matched) {
-    if (board[i] === 'lightning') crossFlash(i);
-    else if (board[i] === 'fireSword') blockFlash(i);
+async function explodeFx(
+  matched: Iterable<number>,
+  exploded: Iterable<number>,
+  lightningArcs: LightningArc[],
+): Promise<Set<number>> {
+  const matchedCells = [...matched];
+  const removed = new Set([...matchedCells, ...exploded]);
+  const fireSources = matchedCells.filter((index) => board[index] === 'fireSword');
+  const jobs: Promise<unknown>[] = [];
+
+  if (fireSources.length > 0) {
+    jobs.push(playFireSwordFx(fireSources, removed, fireSwordFxContext()));
   }
+
+  if (lightningArcs.length > 0) {
+    jobs.push(
+      playLightningFx(lightningArcs, {
+        tileSize,
+        boardX: boardBox.x,
+        boardY: boardBox.y,
+        grid: GRID,
+        flyLayer,
+        cellRootPos,
+        spriteAt: (index) => sprites[index],
+        playSound: () => playSound('lightning'),
+      }),
+    );
+  }
+
+  await Promise.all(jobs);
+  return new Set(fireSources);
 }
 
-function updateFuryGlow(): void {
-  const glow = myTurn && !over && me.fury >= MAX_FURY;
-  for (let i = 0; i < CELLS; i++) {
-    const s = sprites[i];
-    if (!s) continue;
-    s.tint = glow && baseTileType(board[i]) === 'sword' ? 0xffe08a : 0xffffff;
-  }
+function fireSwordFxContext(): FireSwordFxContext {
+  return {
+    tileSize,
+    boardX: boardBox.x,
+    boardY: boardBox.y,
+    grid: GRID,
+    flyLayer,
+    cellRootPos,
+    spriteAt: (index) => sprites[index],
+    playSound: () => playSound('explosion'),
+  };
 }
 
 function spawnTrailDot(x: number, y: number): void {
@@ -558,7 +603,7 @@ function renderTurnClock(): void {
       void startBotTurn();
       return;
     }
-    if (left <= 10_000 && mode === 'bot') showHint();
+    if (mode === 'bot' && performance.now() >= hintDeadline) showHint();
   }
 }
 
@@ -567,7 +612,6 @@ function updateHud(): void {
   const foeActive = !myTurn && !over;
   updateFighter(hud.me, me, meActive, me.mp >= ULT_COST);
   updateFighter(hud.foe, foe, foeActive, foe.mp >= ULT_COST);
-  updateFuryGlow();
 
   const canUlt = meActive && !busy && me.mp >= ULT_COST;
   hud.me.ultBtn.eventMode = canUlt ? 'static' : 'none';
@@ -624,7 +668,7 @@ async function playUltFx(side: 'me' | 'foe'): Promise<void> {
   fx.height = boardW / 2;
   fx.x = boardW / 2;
   fx.y = boardW / 2;
-  if (side === 'foe') fx.scale.x = -Math.abs(fx.scale.x);
+  if (side === 'me') fx.scale.x = -Math.abs(fx.scale.x);
   fxLayer.addChild(fx);
   await new Promise<void>((resolve) => {
     fx.onComplete = () => resolve();
@@ -691,7 +735,10 @@ async function animateSwordEat(sprite: Container, order: number, count: number):
   await tween(sprite, { x: dest.x, y: dest.y, alpha: 0, scale: 0.5 }, 280);
 }
 
-async function animateRemove(cells: Set<number>): Promise<void> {
+async function animateRemove(
+  cells: Set<number>,
+  explodedFireSources: ReadonlySet<number> = new Set(),
+): Promise<void> {
   const jobs: Promise<void>[] = [];
   const swords: number[] = [];
   cells.forEach((i) => {
@@ -700,6 +747,7 @@ async function animateRemove(cells: Set<number>): Promise<void> {
   cells.forEach((i) => {
     const sprite = sprites[i];
     if (!sprite) return;
+    if (explodedFireSources.has(i)) return;
     if (baseTileType(board[i]) === 'sword') {
       jobs.push(animateSwordEat(sprite, swords.indexOf(i), swords.length));
       return;
@@ -712,6 +760,48 @@ async function animateRemove(cells: Set<number>): Promise<void> {
     sprites[i]?.destroy({ children: true });
     sprites[i] = null;
   });
+}
+
+interface WaveRenderOptions {
+  side: 'me' | 'foe';
+  actorLabel: string;
+  matched: Iterable<number>;
+  removed: Set<number>;
+  exploded: readonly number[];
+  lightningArcs: LightningArc[];
+  result: EffectSummary;
+}
+
+async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
+  const { side, actorLabel, matched, removed, exploded, lightningArcs, result } = options;
+  playSound('match');
+  const parts: string[] = [];
+  if (result.damage > 0) parts.push(`-${result.damage} HP`);
+  if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
+  if (result.heal > 0) parts.push(`+${result.heal} HP`);
+  if (result.mana > 0) parts.push(`+${result.mana} MP`);
+  if (result.armor > 0) parts.push(`+${result.armor} giáp`);
+  if (parts.length > 0) setStatus(`${actorLabel}: ${parts.join('  ')}`);
+
+  const explodedFireSources =
+    exploded.length > 0
+      ? await explodeFx(matched, exploded, lightningArcs)
+      : new Set<number>();
+  await Promise.all([animateRemove(removed, explodedFireSources), flyMatched(removed, side)]);
+  updateHud();
+
+  const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
+  const defCard = side === 'me' ? hud.foe.card : hud.me.card;
+  if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
+  if ((result.armorDamage ?? 0) > 0) {
+    floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
+  }
+  if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
+  if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
+  if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
+  if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
+  if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
+  if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
 }
 
 async function animateGravity(
@@ -747,58 +837,41 @@ async function ensurePlayable(): Promise<void> {
   rebuildSprites();
 }
 
-async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
+async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
-  let extraTurn = false;
+  let bonusTurns = 0;
 
   for (;;) {
     const match = findMatches(board);
     if (!match) break;
-    // Thêm lượt khi ghép ≥4 thẳng hàng HOẶC dọn ≥5 ô trong một wave.
-    if (match.maxRun >= 4 || match.cells.size >= 5) extraTurn = true;
+    bonusTurns += match.bonusTurns;
 
-    const exploded = computeExplosions(board, match.cells);
+    const explosionPlan = computeExplosions(board, match.cells);
+    const { exploded, lightningArcs } = explosionPlan;
     for (const i of exploded) match.counts[board[i]]++;
     const removed = new Set<number>(match.cells);
     for (const i of exploded) removed.add(i);
 
     const result = applyTileEffects(attacker, defender, match.counts);
-    playSound('match');
-    const parts: string[] = [];
-    if (result.damage > 0) parts.push(`-${result.damage} HP`);
-    if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
-    if (result.heal > 0) parts.push(`+${result.heal} HP`);
-    if (result.mana > 0) parts.push(`+${result.mana} MP`);
-    if (result.armor > 0) parts.push(`+${result.armor} giáp`);
-    if (parts.length > 0) {
-      setStatus(`${side === 'me' ? 'Bạn' : 'Máy'}: ${parts.join('  ')}`);
-    }
-
-    if (exploded.length > 0) explodeFx(match.cells);
-    await Promise.all([animateRemove(removed), flyMatched(removed, side)]);
-    updateHud();
-    const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
-    const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
-    if ((result.armorDamage ?? 0) > 0) {
-      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
-    }
-    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
-    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
-    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
-    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
-    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
-    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
+    await renderWaveEffects({
+      side,
+      actorLabel: side === 'me' ? 'Bạn' : 'Máy',
+      matched: match.cells,
+      removed,
+      exploded,
+      lightningArcs,
+      result,
+    });
 
     const gravity = applyGravity(board, removed);
     await animateGravity(gravity.falls, gravity.spawns);
 
-    if (defender.hp <= 0 || attacker.hp <= 0) return extraTurn;
+    if (defender.hp <= 0 || attacker.hp <= 0) return bonusTurns;
   }
 
   await ensurePlayable();
-  return extraTurn;
+  return bonusTurns;
 }
 
 function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
@@ -807,7 +880,7 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   clearHint();
   updateHud();
   if (mode === 'bot') recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
-  showOverlay(won ? 'CHIẾN THẮNG!' : 'THẤT BẠI', won ? 0xffd75e : 0xff7a6e, sub, 'Chơi lại');
+  showResult({ outcome: won ? 'win' : 'lose', detail: sub });
   setChatInputVisible(false);
   playSound(won ? 'win' : 'lose');
   bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason, won });
@@ -866,13 +939,19 @@ async function onTileTap(i: number): Promise<void> {
 
   swapCells(board, a, b);
   await animateSwap(a, b);
+  spendBotModeExtraTurn('me');
   decayArmor(me);
-  const extraTurn = await resolveCascades('me');
+  const earnedExtraTurns = await resolveCascades('me');
+  const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
   if (checkEnd()) return;
 
-  if (extraTurn) {
-    announce('BẠN THÊM LƯỢT!', 0x7dff8a);
-    setStatus('Combo 4+ — bạn được thêm lượt!');
+  if (remainingExtraTurns > 0) {
+    announceExtraTurns('me', earnedExtraTurns, remainingExtraTurns);
+    setStatus(
+      earnedExtraTurns > 0
+        ? `Combo lớn — +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+        : `Bạn còn ${remainingExtraTurns} lượt thưởng!`,
+    );
     endBusy();
     resetTurnClock();
     updateHud();
@@ -892,18 +971,27 @@ async function castMyUltimate(): Promise<void> {
     pvp.sendUlt();
     return;
   }
+  spendBotModeExtraTurn('me');
   decayArmor(me);
   const ultDmg = castUltimate(me, foe);
   setStatus(`TUYỆT CHIÊU! -${ultDmg} HP`);
   updateHud();
   await playUltFx('me');
   if (checkEnd()) return;
+  if (botModeExtraTurns[0] > 0) {
+    announceExtraTurns('me', 0, botModeExtraTurns[0]);
+    setStatus(`Bạn còn ${botModeExtraTurns[0]} lượt thưởng!`);
+    endBusy();
+    resetTurnClock();
+    return;
+  }
   void startBotTurn();
 }
 
 async function startBotTurn(): Promise<void> {
   const ep = flowEpoch;
   const stale = (): boolean => over || flowEpoch !== ep || mode !== 'bot';
+  botModeExtraTurns[0] = 0;
   myTurn = false;
   busy = true;
   setSelected(null);
@@ -917,6 +1005,7 @@ async function startBotTurn(): Promise<void> {
     if (stale()) return;
 
     if (botShouldUlt(foe, me, botLevel)) {
+      spendBotModeExtraTurn('foe');
       decayArmor(foe);
       const ultDmg = castUltimate(foe, me);
       setStatus(`Máy tung TUYỆT CHIÊU! -${ultDmg} HP`);
@@ -924,6 +1013,11 @@ async function startBotTurn(): Promise<void> {
       await playUltFx('foe');
       if (stale()) return;
       if (checkEnd()) return;
+      if (botModeExtraTurns[1] > 0) {
+        announceExtraTurns('foe', 0, botModeExtraTurns[1]);
+        setStatus(`Máy còn ${botModeExtraTurns[1]} lượt thưởng!`);
+        continue;
+      }
       break;
     }
 
@@ -935,6 +1029,7 @@ async function startBotTurn(): Promise<void> {
     }
     await showBotPick(move[0]);
     if (stale()) return;
+    spendBotModeExtraTurn('foe');
     swapCells(board, move[0], move[1]);
     await Promise.all([
       tween(botSelectorA, pos(move[1]), 180),
@@ -944,15 +1039,21 @@ async function startBotTurn(): Promise<void> {
     if (stale()) return;
     botSelectorA.visible = false;
     decayArmor(foe);
-    const extraTurn = await resolveCascades('foe');
+    const earnedExtraTurns = await resolveCascades('foe');
+    const remainingExtraTurns = addBotModeExtraTurns('foe', earnedExtraTurns);
     if (stale()) return;
     if (checkEnd()) return;
-    if (!extraTurn) break;
-    announce('MÁY THÊM LƯỢT!', 0xffa94d);
-    setStatus('Máy được thêm lượt!');
+    if (remainingExtraTurns === 0) break;
+    announceExtraTurns('foe', earnedExtraTurns, remainingExtraTurns);
+    setStatus(
+      earnedExtraTurns > 0
+        ? `Máy nhận +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+        : `Máy còn ${remainingExtraTurns} lượt thưởng!`,
+    );
   }
 
   if (stale()) return;
+  botModeExtraTurns[1] = 0;
   myTurn = true;
   endBusy();
   turnNumber++;
@@ -976,6 +1077,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   inGame = true;
   me = createFighter();
   foe = createFighter();
+  botModeExtraTurns = [0, 0];
   board = createBoard();
   myTurn = true;
   busy = true;
@@ -984,7 +1086,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   setSelected(null);
   botSelectorA.visible = false;
   rebuildSprites();
-  hud.overlay.visible = false;
+  hud.result.hide();
   const userInfo = deps.getUserInfo();
   if (userInfo) hud.me.name.text = `@${userInfo.username}`;
   hud.foe.name.text = `@máy · ${LEVEL_LABELS[botLevel]}`;
@@ -1016,6 +1118,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   flowEpoch++;
   const ep = flowEpoch;
   mode = 'pvp';
+  botModeExtraTurns = [0, 0];
   inGame = true;
   over = false;
   busy = true;
@@ -1033,7 +1136,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   setSelected(null);
   botSelectorA.visible = false;
   rebuildSprites();
-  hud.overlay.visible = false;
+  hud.result.hide();
   hud.confirm.visible = false;
   const mePlayer = data.players[pvpIdx];
   const opponent = data.players[1 - pvpIdx];
@@ -1085,31 +1188,15 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     const cells = new Set(step.cells);
     for (const i of step.exploded ?? []) cells.add(i);
     const result = applyAuthoritativeEffects(attacker, defender, step.effects);
-    playSound('match');
-    const parts: string[] = [];
-    if (result.damage > 0) parts.push(`-${result.damage} HP`);
-    if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
-    if (result.heal > 0) parts.push(`+${result.heal} HP`);
-    if (result.mana > 0) parts.push(`+${result.mana} MP`);
-    if (result.armor > 0) parts.push(`+${result.armor} giáp`);
-    if (parts.length > 0) {
-      setStatus(`${side === 'me' ? 'Bạn' : 'Đối thủ'}: ${parts.join('  ')}`);
-    }
-    if ((step.exploded?.length ?? 0) > 0) explodeFx(step.cells);
-    await Promise.all([animateRemove(cells), flyMatched(cells, side)]);
-    updateHud();
-    const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
-    const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
-    if ((result.armorDamage ?? 0) > 0) {
-      floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
-    }
-    if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
-    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
-    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
-    if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
-    if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
-    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
+    await renderWaveEffects({
+      side,
+      actorLabel: side === 'me' ? 'Bạn' : 'Đối thủ',
+      matched: step.cells,
+      removed: cells,
+      exploded: step.exploded ?? [],
+      lightningArcs: step.lightningArcs ?? [],
+      result,
+    });
     return;
   }
   if (step.kind === 'gravity') {
@@ -1153,6 +1240,11 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   clearHint();
   setSelected(null);
   const state = data.state;
+  const earnedExtraTurns = (state.steps ?? []).reduce(
+    (total, step) => total + (step.kind === 'match' ? (step.bonusTurns ?? 0) : 0),
+    0,
+  );
+  const remainingExtraTurns = state.extraTurns ?? (state.extraTurn ? 1 : 0);
   const side: 'me' | 'foe' = data.lastBy === pvpIdx ? 'me' : 'foe';
   let replayFailed = false;
   if (data.lastMove) {
@@ -1183,11 +1275,19 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
     setStatus(data.lastBy === pvpIdx ? 'Hết giờ — bạn mất lượt!' : 'Đối thủ hết giờ — mất lượt!');
   } else if (data.turn === data.lastBy) {
     if (myTurn) {
-      announce('BẠN THÊM LƯỢT!', 0x7dff8a);
-      setStatus('Combo 4+ — bạn được thêm lượt!');
+      announceExtraTurns('me', earnedExtraTurns, remainingExtraTurns);
+      setStatus(
+        earnedExtraTurns > 0
+          ? `Combo lớn — +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+          : `Bạn còn ${remainingExtraTurns} lượt thưởng!`,
+      );
     } else {
-      announce('ĐỐI THỦ THÊM LƯỢT!', 0xffa94d);
-      setStatus('Đối thủ được thêm lượt!');
+      announceExtraTurns('foe', earnedExtraTurns, remainingExtraTurns);
+      setStatus(
+        earnedExtraTurns > 0
+          ? `Đối thủ nhận +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+          : `Đối thủ còn ${remainingExtraTurns} lượt thưởng!`,
+      );
     }
   } else {
     announceTurn(myTurn ? 'me' : 'foe');
@@ -1203,6 +1303,12 @@ function matchOverSub(reason: MatchOverData['reason'], won: boolean, draw: boole
   if (reason === 'timeout') return 'Hết giờ 3 lần liên tiếp';
   if (reason === 'disconnect') return won ? 'Đối thủ mất kết nối' : 'Bạn đã mất kết nối';
   return won ? 'Bạn đã hạ gục đối thủ' : 'Đối thủ đã hạ gục bạn';
+}
+
+function formatKenDelta(delta: number): string {
+  if (delta === 0) return '0 KEN';
+  const sign = delta > 0 ? '+' : '-';
+  return `${sign}${Math.abs(delta).toLocaleString('vi-VN')} KEN`;
 }
 
 async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<void> {
@@ -1243,20 +1349,11 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   const bet = data.bet ?? pvp.bet();
   const winnerNet = data.kenDelta ?? bet;
   const kenDelta = won ? winnerNet : -bet;
-  const ken =
-    bet > 0 && !draw
-      ? {
-          text: `${kenDelta >= 0 ? '+' : ''}${kenDelta.toLocaleString('vi-VN')} KEN`,
-          color: kenDelta >= 0 ? 0x7dff8a : 0xff6b5e,
-        }
-      : undefined;
-  showOverlay(
-    draw ? 'HÒA' : won ? 'CHIẾN THẮNG!' : 'THẤT BẠI',
-    draw ? 0xffe9a8 : won ? 0xffd75e : 0xff7a6e,
-    matchOverSub(data.reason, won, draw),
-    'VỀ SẢNH',
-    ken,
-  );
+  showResult({
+    outcome: draw ? 'draw' : won ? 'win' : 'lose',
+    detail: matchOverSub(data.reason, won, draw),
+    kenText: draw ? undefined : formatKenDelta(kenDelta),
+  });
   setStatus(draw ? 'Ván đấu hòa!' : won ? 'Bạn thắng!' : 'Bạn thua!');
   setChatInputVisible(false);
   playSound(draw ? 'click' : won ? 'win' : 'lose');
@@ -1330,13 +1427,14 @@ function exitToLobby(): void {
   over = true;
   inGame = false;
   busy = false;
+  botModeExtraTurns = [0, 0];
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
   selfDisconnected = false;
   clearHint();
   setSelected(null);
   botSelectorA.visible = false;
-  hud.overlay.visible = false;
+  hud.result.hide();
   hud.confirm.visible = false;
   setChatInputVisible(false);
   deps.onExitToLobby();
@@ -1350,6 +1448,53 @@ export function markBattleRefit(): void {
   pendingRefit = true;
 }
 
+function previewLightningFx(sourceCount = 3): boolean {
+  if (!inGame || tileSize <= 0) return false;
+  const requestedSources = Math.max(1, Math.floor(sourceCount));
+  const sources = board
+    .map((type, index) => ({ type, index }))
+    .filter(({ type }) => type === 'lightning')
+    .map(({ index }) => index)
+    .slice(0, requestedSources);
+  if (sources.length === 0) return false;
+  const preferredTargets = [0, GRID - 1, CELLS - GRID, CELLS - 1];
+  const targets = preferredTargets.filter((target) => !sources.includes(target));
+  for (let i = 0; targets.length < sources.length && i < CELLS; i++) {
+    if (!sources.includes(i) && !targets.includes(i)) targets.push(i);
+  }
+  const arcs = targets.slice(0, sources.length).map((target, order) => ({
+    source: sources[order % sources.length],
+    target,
+  }));
+  void explodeFx(sources, targets, arcs);
+  return true;
+}
+
+function previewFireSwordFx(mode: 'center' | 'corner' | 'multi' = 'center'): boolean {
+  if (!inGame || tileSize <= 0) return false;
+  const center = Math.floor(GRID / 2) * GRID + Math.floor(GRID / 2);
+  const sources =
+    mode === 'corner'
+      ? [0]
+      : mode === 'multi'
+        ? [center - GRID - 1, center]
+        : [center];
+  const removed = new Set<number>();
+  sources.forEach((source) => {
+    const sourceX = source % GRID;
+    const sourceY = Math.floor(source / GRID);
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const x = sourceX + dx;
+        const y = sourceY + dy;
+        if (x >= 0 && x < GRID && y >= 0 && y < GRID) removed.add(y * GRID + x);
+      }
+    }
+  });
+  void playFireSwordFx(sources, removed, fireSwordFxContext(), true);
+  return true;
+}
+
 export function battleDebug(): Record<string, unknown> {
   return {
     mode,
@@ -1360,6 +1505,7 @@ export function battleDebug(): Record<string, unknown> {
     inGame,
     botLevel,
     turn: turnNumber,
+    extraTurns: mode === 'bot' ? [...botModeExtraTurns] : undefined,
     status: statusText.text,
     hint: hintPair,
     announce: turnAnnounce?.visible ? turnAnnounceLabel.text : null,
@@ -1367,6 +1513,8 @@ export function battleDebug(): Record<string, unknown> {
     selected,
     selectorVisible: !!selector?.visible,
     flying: flyLayer ? flyLayer.children.filter((c) => c instanceof Sprite).length : 0,
+    previewLightning: previewLightningFx,
+    previewFireSword: previewFireSwordFx,
   };
 }
 
@@ -1376,6 +1524,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
 
   boardBox = new Container();
   boardFrame = new Sprite(tex[A.board.frame]);
+  boardFrame.roundPixels = true;
   boardFrame.anchor.set(0.5);
   boardBox.addChild(boardFrame);
 
@@ -1413,13 +1562,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
 
   buildHud(root, {
     onUlt: () => void castMyUltimate(),
-    onStart: () => {
-      if (mode === 'pvp') {
-        exitToLobby();
-        return;
-      }
-      startBattle();
-    },
+    onResultClose: exitToLobby,
     onRestart: () => {
       if (mode === 'pvp') return;
       if (busy) return;
@@ -1491,8 +1634,8 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   turnAnnounce.visible = false;
   root.addChild(turnAnnounce);
 
-  root.addChild(hud.overlay, hud.confirm);
-  hud.overlay.visible = false;
+  root.addChild(hud.result.view, hud.confirm);
+  hud.result.hide();
 
   board = createBoard();
   rebuildBoardVisuals();
@@ -1507,10 +1650,10 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   lastSafeTop = opts.safeTop;
   lastSafeBottom = opts.safeBottom;
 
-  hud.me.card.x = 8;
-  hud.me.card.y = 8 + insetTop;
-  hud.foe.card.x = DESIGN_W - 8 - 190;
+  hud.foe.card.x = 8;
   hud.foe.card.y = 8 + insetTop;
+  hud.me.card.x = DESIGN_W - 8 - 190;
+  hud.me.card.y = 8 + insetTop;
   hud.banner.x = (DESIGN_W - 92) / 2;
   hud.banner.y = 4 + insetTop;
 
@@ -1557,10 +1700,7 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
   layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, opts.rootX, opts.scale);
 
-  hud.overlayDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  const overlayCard = hud.overlay.getChildByLabel('overlay-card')!;
-  overlayCard.x = (DESIGN_W - 340) / 2;
-  overlayCard.y = Math.max(120, designH / 2 - 220);
+  hud.result.layout(designH, insetTop, insetBottom);
 
   hud.confirmDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.6 });
   const confirmCard = hud.confirm.getChildByLabel('confirm-card')!;

@@ -1,5 +1,5 @@
 import { Container, Sprite, Texture, type Ticker } from 'pixi.js';
-import { addTick } from './kit';
+import { addTick, removeTick } from './kit';
 
 let streakTex: Texture | null = null;
 
@@ -30,7 +30,7 @@ export interface ShimmerOptions {
   isActive?: () => boolean;
 }
 
-export function attachShimmer(host: Container, shape: Sprite, opts: ShimmerOptions): void {
+export function attachShimmer(host: Container, shape: Sprite, opts: ShimmerOptions): () => void {
   const rotation = opts.rotation ?? -0.4;
   const period = opts.period ?? 4200;
   const sweep = opts.sweep ?? 850;
@@ -57,7 +57,12 @@ export function attachShimmer(host: Container, shape: Sprite, opts: ShimmerOptio
 
   const travel = shape.width / 2 + opts.thickness;
   let clock = -delay;
-  addTick((ticker: Ticker) => {
+  let disposed = false;
+  const tick = (ticker: Ticker): void => {
+    if (host.destroyed || streak.destroyed || mask.destroyed) {
+      dispose();
+      return;
+    }
     if (!isActive()) return;
     clock += ticker.deltaMS;
     const t = ((clock % period) + period) % period;
@@ -70,5 +75,14 @@ export function attachShimmer(host: Container, shape: Sprite, opts: ShimmerOptio
     } else {
       streak.visible = false;
     }
-  });
+  };
+  const dispose = (): void => {
+    if (disposed) return;
+    disposed = true;
+    removeTick(tick);
+    if (!streak.destroyed) streak.destroy();
+    if (!mask.destroyed) mask.destroy();
+  };
+  addTick(tick);
+  return dispose;
 }

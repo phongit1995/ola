@@ -1,15 +1,7 @@
-import type { Board, TileType } from './core';
+import { TILE_ORDER, type TileType } from './constants.gen';
+import type { Board, LightningArc } from './core';
 
-export const TILE_ORDER: TileType[] = [
-  'sword',
-  'peach',
-  'heart',
-  'water',
-  'shield',
-  'lightning',
-  'fireSword',
-  'greaterHeart',
-];
+export { TILE_ORDER } from './constants.gen';
 
 export interface ServerFighter {
   hp: number;
@@ -28,8 +20,10 @@ export interface StepMatch {
   kind: 'match';
   cells: number[];
   exploded?: number[];
+  lightningArcs?: LightningArc[];
   counts: Partial<Record<TileType, number>>;
   maxRun: number;
+  bonusTurns?: number;
   effects: {
     damage: number;
     heal: number;
@@ -66,13 +60,18 @@ export interface ServerState {
   rng: string;
   moveCount: number;
   extraTurn: boolean;
+  extraTurns?: number;
+  extraTurnOwner?: number;
   steps: Step[];
 }
 
 export type ServerMove = { type: 'swap'; a: number; b: number } | { type: 'ult' };
 
 export function decodeTile(n: number): TileType {
-  return TILE_ORDER[n] ?? 'sword';
+  if (!Number.isInteger(n) || n < 0 || n >= TILE_ORDER.length) {
+    throw new RangeError(`Invalid War God tile code: ${n}`);
+  }
+  return TILE_ORDER[n];
 }
 
 export function decodeBoard(ints: number[]): Board {

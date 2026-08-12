@@ -1,14 +1,15 @@
-export const GRID = 8;
-export const CELLS = GRID * GRID;
+import {
+  CELLS,
+  GRID,
+  SPECIAL_HEART_CHANCE,
+  SPECIAL_SWORD_CHANCE,
+  TILE_ORDER,
+  type BaseTileType,
+  type TileType,
+} from './constants.gen';
 
-export type BaseTileType = 'sword' | 'peach' | 'heart' | 'water' | 'shield' | 'lightning';
-export type TileType = BaseTileType | 'fireSword' | 'greaterHeart';
-
-export const TILE_TYPES: BaseTileType[] = ['sword', 'peach', 'heart', 'water', 'shield', 'lightning'];
-// Divisor riêng cho từng ô gốc để cả hai ô đặc biệt ra ~1/60 (khớp server):
-//   Kiếm Lửa ≈ 22% / 13 ≈ 1/59 ; Đại Trái Tim ≈ 16% / 10 ≈ 1/62
-export const SPECIAL_SWORD_CHANCE = 1 / 13;
-export const SPECIAL_HEART_CHANCE = 1 / 10;
+export { CELLS, GRID, SPECIAL_HEART_CHANCE, SPECIAL_SWORD_CHANCE } from './constants.gen';
+export type { BaseTileType, TileType } from './constants.gen';
 
 export type Board = TileType[];
 
@@ -16,6 +17,7 @@ export interface MatchResult {
   cells: Set<number>;
   counts: Record<TileType, number>;
   maxRun: number;
+  bonusTurns: number;
 }
 
 export interface Fall {
@@ -32,6 +34,16 @@ export interface Spawn {
 export interface GravityResult {
   falls: Fall[];
   spawns: Spawn[];
+}
+
+export interface LightningArc {
+  source: number;
+  target: number;
+}
+
+export interface ExplosionPlan {
+  exploded: number[];
+  lightningArcs: LightningArc[];
 }
 
 function randBase(): BaseTileType {
@@ -52,16 +64,7 @@ function randTile(): TileType {
 }
 
 export function emptyCounts(): Record<TileType, number> {
-  return {
-    sword: 0,
-    peach: 0,
-    heart: 0,
-    water: 0,
-    shield: 0,
-    lightning: 0,
-    fireSword: 0,
-    greaterHeart: 0,
-  };
+  return Object.fromEntries(TILE_ORDER.map((tile) => [tile, 0])) as Record<TileType, number>;
 }
 
 export function createBoard(): Board {
@@ -104,6 +107,43 @@ export function baseTileType(type: TileType): BaseTileType {
   return type;
 }
 
+function countBonusMatchGroups(board: Board, matched: ReadonlySet<number>): number {
+  const visited = new Set<number>();
+  let bonusTurns = 0;
+  for (const start of matched) {
+    if (visited.has(start)) continue;
+    const type = baseTileType(board[start]);
+    const queue = [start];
+    visited.add(start);
+    let size = 0;
+    while (queue.length > 0) {
+      const index = queue.pop()!;
+      size++;
+      const x = index % GRID;
+      const y = Math.floor(index / GRID);
+      const neighbors = [
+        x > 0 ? index - 1 : -1,
+        x < GRID - 1 ? index + 1 : -1,
+        y > 0 ? index - GRID : -1,
+        y < GRID - 1 ? index + GRID : -1,
+      ];
+      for (const neighbor of neighbors) {
+        if (
+          neighbor >= 0 &&
+          matched.has(neighbor) &&
+          !visited.has(neighbor) &&
+          baseTileType(board[neighbor]) === type
+        ) {
+          visited.add(neighbor);
+          queue.push(neighbor);
+        }
+      }
+    }
+    if (size >= 4) bonusTurns++;
+  }
+  return bonusTurns;
+}
+
 export function findMatches(board: Board): MatchResult | null {
   const cells = new Set<number>();
   let maxRun = 0;
@@ -134,7 +174,8 @@ export function findMatches(board: Board): MatchResult | null {
   cells.forEach((i) => {
     counts[board[i]]++;
   });
-  return { cells, counts, maxRun };
+  const bonusTurns = countBonusMatchGroups(board, cells);
+  return { cells, counts, maxRun, bonusTurns };
 }
 
 export function areAdjacent(a: number, b: number): boolean {
@@ -168,32 +209,59 @@ export function findValidMoves(board: Board): Array<[number, number]> {
   return moves;
 }
 
-export function computeExplosions(board: Board, matched: Set<number>): number[] {
+export function computeExplosions(
+  board: Board,
+  matched: Set<number>,
+  random: () => number = Math.random,
+): ExplosionPlan {
   const set = new Set<number>();
   const add = (x: number, y: number): void => {
     if (x >= 0 && x < GRID && y >= 0 && y < GRID) set.add(y * GRID + x);
   };
+
+  // Kiếm Lửa vẫn nổ khối 3×3 như cũ. Tính vùng này trước để các mục tiêu
+  // ngẫu nhiên của Lôi luôn là những ô bị ăn thêm thật sự.
   matched.forEach((i) => {
     const x = i % GRID;
     const y = Math.floor(i / GRID);
     const t = board[i];
-    if (t === 'lightning') {
-      add(x, y - 1);
-      add(x, y + 1);
-      add(x - 1, y);
-      add(x + 1, y);
-    } else if (t === 'fireSword') {
+    if (t === 'fireSword') {
       for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) add(x + dx, y + dy);
       }
     }
   });
-  const out: number[] = [];
-  set.forEach((i) => {
-    if (!matched.has(i)) out.push(i);
-  });
-  out.sort((a, b) => a - b);
-  return out;
+
+  matched.forEach((i) => set.delete(i));
+  const lightningSources = [...matched]
+    .filter((i) => board[i] === 'lightning')
+    .sort((a, b) => a - b);
+  const lightningArcs: LightningArc[] = [];
+
+  if (lightningSources.length > 0) {
+    const pool: number[] = [];
+    for (let i = 0; i < CELLS; i++) {
+      if (!matched.has(i) && !set.has(i)) pool.push(i);
+    }
+    const targetCount = Math.min(lightningSources.length, pool.length);
+    for (let order = 0; order < targetCount; order++) {
+      const rawPick = Math.floor(random() * pool.length);
+      const pick = Math.max(0, Math.min(pool.length - 1, rawPick));
+      const target = pool[pick];
+      pool[pick] = pool[pool.length - 1];
+      pool.pop();
+      set.add(target);
+      lightningArcs.push({
+        source: lightningSources[order % lightningSources.length],
+        target,
+      });
+    }
+  }
+
+  return {
+    exploded: [...set].sort((a, b) => a - b),
+    lightningArcs,
+  };
 }
 
 export function applyGravity(board: Board, removed: Set<number>): GravityResult {

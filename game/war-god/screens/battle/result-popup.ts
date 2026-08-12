@@ -1,0 +1,185 @@
+import { Container, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
+import { A, tex } from '../../assets';
+import { HEADING, makeText, popIn, pressable, tween } from '../../kit';
+import { DESIGN_W } from '../../layout';
+
+const PANEL_W = 430;
+
+export type ResultOutcome = 'win' | 'lose' | 'draw';
+
+export interface ResultPopupData {
+  outcome: ResultOutcome;
+  detail: string;
+  kenText?: string;
+}
+
+export interface ResultPopup {
+  view: Container;
+  show(data: ResultPopupData): void;
+  hide(): void;
+  layout(designH: number, insetTop: number, insetBottom: number): void;
+}
+
+function fitText(text: Text, maxWidth: number): void {
+  text.scale.set(1);
+  if (text.width > maxWidth) text.scale.set(maxWidth / text.width);
+}
+
+export function buildResultPopup(onClose: () => void): ResultPopup {
+  const view = new Container();
+  const dim = new Graphics();
+  const card = new Container();
+
+  dim.eventMode = 'static';
+  view.addChild(dim, card);
+
+  const panel = new Sprite(tex[A.result.panel]);
+  panel.anchor.set(0.5);
+  panel.width = PANEL_W;
+  panel.scale.y = panel.scale.x;
+  panel.eventMode = 'static';
+  card.addChild(panel);
+  const panelH = panel.height;
+  const halfH = panelH / 2;
+
+  const titleFrame = new Sprite(tex[A.result.titleFrame]);
+  titleFrame.anchor.set(0.5);
+  titleFrame.width = PANEL_W * 0.73;
+  titleFrame.scale.y = titleFrame.scale.x;
+  titleFrame.y = -halfH + panelH * 0.095;
+  card.addChild(titleFrame);
+
+  const title = makeText('KẾT QUẢ', 38, 0xffdf62, '800', HEADING);
+  title.style.letterSpacing = 1;
+  title.y = titleFrame.y - 2;
+  fitText(title, titleFrame.width * 0.67);
+  card.addChild(title);
+
+  const brush = new Sprite(tex[A.result.brushWin]);
+  brush.anchor.set(0.5);
+  brush.width = PANEL_W * 0.73;
+  brush.scale.y = brush.scale.x;
+  brush.y = panelH * 0.075;
+  card.addChild(brush);
+
+  const outcomeIcon = new Sprite(tex[A.result.cupWin]);
+  outcomeIcon.anchor.set(0.5);
+  outcomeIcon.width = PANEL_W * 0.36;
+  outcomeIcon.scale.y = outcomeIcon.scale.x;
+  outcomeIcon.y = -panelH * 0.145;
+  card.addChild(outcomeIcon);
+
+  const verdict = makeText('THẮNG', 50, 0xffffff, '800', HEADING);
+  verdict.style.fontStyle = 'italic';
+  verdict.style.letterSpacing = 1;
+  verdict.style.stroke = { color: 0x5b1c08, width: 2, join: 'round' };
+  verdict.rotation = -0.035;
+  verdict.y = brush.y - 2;
+  card.addChild(verdict);
+
+  const detail = makeText('', 11, 0xfff0c5, '700', HEADING);
+  detail.style.wordWrap = true;
+  detail.style.wordWrapWidth = PANEL_W * 0.56;
+  detail.style.align = 'center';
+  detail.y = brush.y + panelH * 0.072;
+  card.addChild(detail);
+
+  const kenBox = new Container();
+  const kenFrame = new Sprite(tex[A.result.kenFrame]);
+  kenFrame.anchor.set(0.5);
+  kenFrame.width = PANEL_W * 0.55;
+  kenFrame.scale.y = kenFrame.scale.x;
+  kenBox.addChild(kenFrame);
+
+  const kenIcon = new Sprite(tex[A.result.ken]);
+  kenIcon.anchor.set(0.5);
+  kenIcon.height = kenFrame.height * 0.72;
+  kenIcon.scale.x = kenIcon.scale.y;
+  kenBox.addChild(kenIcon);
+
+  const kenText = makeText('', 21, 0xffdf62, '800', HEADING);
+  kenText.style.stroke = { color: 0x6f2607, width: 2, join: 'round' };
+  kenText.style.letterSpacing = 0.4;
+  kenBox.addChild(kenText);
+  kenBox.y = panelH * 0.3;
+  card.addChild(kenBox);
+
+  const closeButton = new Container();
+  const closeBg = new Sprite(tex[A.result.btnClose]);
+  closeBg.anchor.set(0.5);
+  closeBg.width = PANEL_W * 0.265;
+  closeBg.scale.y = closeBg.scale.x;
+  closeButton.addChild(closeBg);
+  const closeLabel = makeText('ĐÓNG', 18, 0xffdf62, '700', HEADING);
+  closeLabel.y = -1;
+  closeButton.addChild(closeLabel);
+  closeButton.hitArea = new Rectangle(
+    -PANEL_W * 0.2,
+    -closeBg.height * 0.75,
+    PANEL_W * 0.4,
+    closeBg.height * 1.5,
+  );
+  closeButton.y = halfH - panelH * 0.067;
+  pressable(closeButton, () => {
+    view.visible = false;
+    onClose();
+  });
+  card.addChild(closeButton);
+
+  function arrangeKen(): void {
+    const gap = 9;
+    fitText(kenText, kenFrame.width * 0.66);
+    const contentW = kenIcon.width + gap + kenText.width;
+    kenIcon.x = -contentW / 2 + kenIcon.width / 2;
+    kenText.x = -contentW / 2 + kenIcon.width + gap + kenText.width / 2;
+  }
+
+  view.visible = false;
+  return {
+    view,
+    show(data): void {
+      const lose = data.outcome === 'lose';
+      outcomeIcon.texture = tex[lose ? A.result.shieldLose : A.result.cupWin];
+      outcomeIcon.width = PANEL_W * (lose ? 0.378 : 0.36);
+      outcomeIcon.scale.y = outcomeIcon.scale.x;
+      outcomeIcon.tint = data.outcome === 'draw' ? 0xd8d1bd : 0xffffff;
+      brush.texture = tex[lose ? A.result.brushLose : A.result.brushWin];
+      brush.width = PANEL_W * (lose ? 0.78 : 0.73);
+      brush.scale.y = brush.scale.x;
+      verdict.text = data.outcome === 'draw' ? 'HÒA' : lose ? 'THUA' : 'THẮNG';
+      fitText(verdict, brush.width * 0.57);
+      detail.text = data.detail;
+
+      // Không có thanh KEN (vd chơi với Máy) thì hạ khối cúp/vệt sơn/chữ xuống
+      // canh giữa vùng trống để popup không bị hụt phần dưới.
+      const dropY = data.kenText == null ? panelH * 0.1 : 0;
+      outcomeIcon.y = -panelH * 0.145 + dropY;
+      brush.y = panelH * 0.075 + dropY;
+      verdict.y = brush.y - 2;
+      detail.y = brush.y + panelH * 0.072;
+
+      kenBox.visible = data.kenText != null;
+      if (data.kenText != null) {
+        kenText.text = data.kenText;
+        arrangeKen();
+      }
+      view.visible = true;
+      dim.alpha = 0;
+      void tween(dim, { alpha: 1 }, 180);
+      popIn(card, 0, 360);
+    },
+    hide(): void {
+      view.visible = false;
+      card.alpha = 1;
+    },
+    layout(designH, insetTop, insetBottom): void {
+      dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
+      const availW = DESIGN_W * 0.94;
+      const availH = designH - insetTop - insetBottom - 24;
+      const fitScale = Math.min(1, availW / PANEL_W, availH / panelH);
+      card.scale.set(fitScale);
+      card.x = DESIGN_W / 2;
+      card.y = insetTop + (designH - insetTop - insetBottom) / 2;
+    },
+  };
+}

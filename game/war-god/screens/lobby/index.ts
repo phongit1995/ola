@@ -3,6 +3,7 @@ import type { GameSession, UserInfoData } from '../../../src/sdk';
 import { playSound, setSoundEnabled } from '../../audio';
 import { A, tex } from '../../assets';
 import { addTick, iconSprite, makeText, popIn, pressable, removeTick, tween } from '../../kit';
+import { DESIGN_W } from '../../layout';
 import type { BotLevel } from '../../logic/battle';
 import { buildRoomsLayer, hideAllRoomPopups, layoutRooms, openRoomList } from '../../rooms';
 import { PILL_W, makePill, makeWoodBtn } from './ui';
@@ -27,7 +28,6 @@ import {
   openLeaderboardPopup,
 } from './leaderboard-popup';
 
-const DESIGN_W = 520;
 const VIP_FIT_W = 150;
 const VIP_FIT_H = 132;
 const NAME_W = 400;

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
 	"testing"
 )
@@ -42,9 +43,10 @@ func noMoveBoard() []int {
 
 func stateWith(board []int, fighters [2]Fighter, seed uint64) *State {
 	return &State{
-		Board:    append([]int(nil), board...),
-		Fighters: fighters,
-		Rng:      strconv.FormatUint(seed, 10),
+		Board:          append([]int(nil), board...),
+		Fighters:       fighters,
+		Rng:            strconv.FormatUint(seed, 10),
+		ExtraTurnOwner: -1,
 	}
 }
 
@@ -130,7 +132,8 @@ func TestInitDeterministicAndValid(t *testing.T) {
 		t.Fatal("initial board has no valid swaps")
 	}
 	expectedFighters := [2]Fighter{{HP: maxHP}, {HP: maxHP}}
-	if first.Fighters != expectedFighters || first.MoveCount != 0 || first.ExtraTurn {
+	if first.Fighters != expectedFighters || first.MoveCount != 0 || first.ExtraTurn ||
+		first.ExtraTurns != 0 || first.ExtraTurnOwner != -1 {
 		t.Fatalf("unexpected initial state: %+v", first)
 	}
 	other := (Logic{}).Init(10).(*State)
@@ -172,6 +175,166 @@ func TestFindMatches(t *testing.T) {
 	cells, counts, maxRun = findMatches(column)
 	if !reflect.DeepEqual(cells, []int{21, 29, 37}) || counts[tileShield] != 3 || maxRun != 3 {
 		t.Fatalf("column of three: cells=%v counts=%v maxRun=%d", cells, counts, maxRun)
+	}
+}
+
+func doubleRunFourBoard() []int {
+	board := stripedBoard()
+	// Swap 18<->26 completes two separate maximal runs of four:
+	// row 2 cells 16..19 are Swords; row 3 cells 25..28 are Water.
+	board[16], board[17], board[19] = tileSword, tileSword, tileSword
+	board[18] = tileWater
+	board[20] = tileShield
+	board[25], board[27], board[28] = tileWater, tileWater, tileWater
+	board[26] = tileSword
+	board[29] = tileShield
+	return board
+}
+
+func TestMatchBonusTurnsCountsDistinctLongRuns(t *testing.T) {
+	rowFive := stripedBoard()
+	for i := 1; i <= 5; i++ {
+		rowFive[i] = tileHeart
+	}
+	cells, _, _ := findMatches(rowFive)
+	if got := matchBonusTurns(rowFive, cells); got != 1 {
+		t.Fatalf("one run of five earned %d turns, want 1", got)
+	}
+
+	double := doubleRunFourBoard()
+	if cells, _, _ := findMatches(double); cells != nil {
+		t.Fatalf("double-run board must be match-free before swap: %v", cells)
+	}
+	double[18], double[26] = double[26], double[18]
+	cells, _, _ = findMatches(double)
+	if got := matchBonusTurns(double, cells); got != 2 {
+		t.Fatalf("two runs of four earned %d turns, want 2 (cells=%v)", got, cells)
+	}
+
+	twoTriples := doubleMatchBoard()
+	twoTriples[18], twoTriples[19] = twoTriples[19], twoTriples[18]
+	cells, _, _ = findMatches(twoTriples)
+	if got := matchBonusTurns(twoTriples, cells); got != 0 {
+		t.Fatalf("cascade wave made only from triples earned %d turns, want 0", got)
+	}
+
+	tShape := stripedBoard()
+	for _, index := range []int{19, 26, 27, 28, 35} {
+		tShape[index] = tileLightning
+	}
+	cells, _, maxRun := findMatches(tShape)
+	if len(cells) != 5 || maxRun != 3 {
+		t.Fatalf("invalid T-shape fixture: cells=%v maxRun=%d", cells, maxRun)
+	}
+	if got := matchBonusTurns(tShape, cells); got != 1 {
+		t.Fatalf("connected T-shape of five earned %d turns, want 1", got)
+	}
+}
+
+func TestCascadeWaveBonusRequiresRunOfFour(t *testing.T) {
+	tests := []struct {
+		name string
+		run  int
+		want int
+	}{
+		{name: "three", run: 3, want: 0},
+		{name: "four", run: 4, want: 1},
+		{name: "five", run: 5, want: 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			board := stripedBoard()
+			for x := 0; x < tt.run; x++ {
+				board[(grid-1)*grid+x] = tileLightning
+			}
+			cells, _, maxRun := findMatches(board)
+			if len(cells) != tt.run || maxRun != tt.run {
+				t.Fatalf("invalid cascade fixture: cells=%v maxRun=%d", cells, maxRun)
+			}
+			if got := matchBonusTurns(board, cells); got != tt.want {
+				t.Fatalf("cascade run %d earned %d turns, want %d", tt.run, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestApplyResolvesDeterministicMultiWaveCascade(t *testing.T) {
+	state := (Logic{}).Init(1).(*State)
+	move := json.RawMessage(`{"type":"swap","a":41,"b":42}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	wantKinds := []string{stepSwap, stepMatch, stepGravity, stepMatch, stepGravity, stepMatch, stepGravity}
+	if got := stepKinds(next.Steps); !reflect.DeepEqual(got, wantKinds) {
+		t.Fatalf("cascade steps=%v, want %v", got, wantKinds)
+	}
+
+	matchSteps := []Step{next.Steps[1], next.Steps[3], next.Steps[5]}
+	if !reflect.DeepEqual(matchSteps[0].Cells, []int{25, 33, 34, 41, 42, 50}) || matchSteps[0].BonusTurns != 0 {
+		t.Fatalf("first wave should be separate triples without a bonus: %+v", matchSteps[0])
+	}
+	if !reflect.DeepEqual(matchSteps[1].Cells, []int{42, 43, 44, 48, 49, 50}) || matchSteps[1].BonusTurns != 1 {
+		t.Fatalf("second wave should award one turn for its connected 6-cell group: %+v", matchSteps[1])
+	}
+	if !reflect.DeepEqual(matchSteps[2].Cells, []int{1, 9, 17}) || matchSteps[2].BonusTurns != 0 {
+		t.Fatalf("third wave should be a triple without a bonus: %+v", matchSteps[2])
+	}
+	if next.ExtraTurns != 1 || !next.ExtraTurn || next.ExtraTurnOwner != 0 || !(Logic{}).KeepTurn(next) {
+		t.Fatalf("cascade bonus was not banked for the acting player: %+v", next)
+	}
+	if cells, _, _ := findMatches(next.Board); cells != nil {
+		t.Fatalf("cascade left unresolved matches: %v", cells)
+	}
+}
+
+func TestApplyGravityCompactsColumnsAndReportsMovement(t *testing.T) {
+	board := stripedBoard()
+	original := append([]int(nil), board...)
+	removed := map[int]bool{18: true, 42: true, 58: true}
+	fallWant := []Fall{
+		{From: 50, To: 58},
+		{From: 34, To: 50},
+		{From: 26, To: 42},
+		{From: 10, To: 34},
+		{From: 2, To: 26},
+	}
+	spawnLocations := []Spawn{
+		{Index: 18, FromRow: -1},
+		{Index: 10, FromRow: -2},
+		{Index: 2, FromRow: -3},
+	}
+
+	falls, spawns := applyGravity(board, removed, &rng{z: 17})
+	if !reflect.DeepEqual(falls, fallWant) {
+		t.Fatalf("falls=%v, want %v", falls, fallWant)
+	}
+	if len(spawns) != len(spawnLocations) {
+		t.Fatalf("spawns=%v, want %d entries", spawns, len(spawnLocations))
+	}
+	for i, want := range spawnLocations {
+		got := spawns[i]
+		if got.Index != want.Index || got.FromRow != want.FromRow || got.Type < 0 || got.Type >= tileCount {
+			t.Fatalf("spawn #%d=%+v, want index=%d fromRow=%d and a valid tile", i, got, want.Index, want.FromRow)
+		}
+		if board[got.Index] != got.Type {
+			t.Fatalf("spawn #%d reports type %d but board contains %d", i, got.Type, board[got.Index])
+		}
+	}
+	for _, fall := range fallWant {
+		if board[fall.To] != original[fall.From] {
+			t.Fatalf("fall %+v lost tile %d; target contains %d", fall, original[fall.From], board[fall.To])
+		}
+	}
+	for i := range board {
+		if i%grid != 2 && board[i] != original[i] {
+			t.Fatalf("gravity changed untouched cell %d from %d to %d", i, original[i], board[i])
+		}
 	}
 }
 
@@ -221,27 +384,92 @@ func TestComputeExplosions(t *testing.T) {
 		return board
 	}
 
-	cross := swordBoard()
-	cross[27] = tileLightning
-	if got := computeExplosions(cross, map[int]bool{27: true}); !reflect.DeepEqual(got, []int{19, 26, 28, 35}) {
-		t.Fatalf("lightning cross: %v", got)
+	lightning := swordBoard()
+	lightning[27] = tileLightning
+	r1, r2 := &rng{z: 7}, &rng{z: 7}
+	got, arcs := computeExplosions(lightning, map[int]bool{27: true}, r1)
+	gotAgain, arcsAgain := computeExplosions(lightning, map[int]bool{27: true}, r2)
+	if !reflect.DeepEqual(got, gotAgain) || !reflect.DeepEqual(arcs, arcsAgain) || r1.z != r2.z {
+		t.Fatalf("lightning targets are not deterministic: got=%v/%v again=%v/%v", got, arcs, gotAgain, arcsAgain)
+	}
+	if len(got) != 1 || len(arcs) != 1 {
+		t.Fatalf("one matched lightning must eat one cell: exploded=%v arcs=%v", got, arcs)
+	}
+	seen := map[int]bool{}
+	for _, arc := range arcs {
+		if arc.Source != 27 || arc.Target == 27 || arc.Target < 0 || arc.Target >= boardSize || seen[arc.Target] {
+			t.Fatalf("invalid lightning arc: %+v (all=%v)", arc, arcs)
+		}
+		seen[arc.Target] = true
+	}
+	for _, target := range got {
+		if !seen[target] {
+			t.Fatalf("exploded cell %d has no lightning arc: %v", target, arcs)
+		}
 	}
 
 	block := swordBoard()
 	block[27] = tileFireSword
-	if got := computeExplosions(block, map[int]bool{27: true}); !reflect.DeepEqual(got, []int{18, 19, 20, 26, 28, 34, 35, 36}) {
+	if got, arcs := computeExplosions(block, map[int]bool{27: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{18, 19, 20, 26, 28, 34, 35, 36}) || len(arcs) != 0 {
 		t.Fatalf("fire sword 3x3: %v", got)
 	}
 
 	corner := swordBoard()
 	corner[0] = tileFireSword
-	if got := computeExplosions(corner, map[int]bool{0: true}); !reflect.DeepEqual(got, []int{1, 8, 9}) {
+	if got, arcs := computeExplosions(corner, map[int]bool{0: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{1, 8, 9}) || len(arcs) != 0 {
 		t.Fatalf("fire sword clipped at corner: %v", got)
 	}
 
 	plain := swordBoard()
-	if got := computeExplosions(plain, map[int]bool{27: true}); len(got) != 0 {
+	if got, arcs := computeExplosions(plain, map[int]bool{27: true}, &rng{z: 1}); len(got) != 0 || len(arcs) != 0 {
 		t.Fatalf("plain tile must not explode: %v", got)
+	}
+
+	multiple := swordBoard()
+	for _, i := range []int{26, 27, 28} {
+		multiple[i] = tileLightning
+	}
+	_, arcs = computeExplosions(multiple, map[int]bool{26: true, 27: true, 28: true}, &rng{z: 11})
+	wantSources := []int{26, 27, 28}
+	for i, arc := range arcs {
+		if arc.Source != wantSources[i] {
+			t.Fatalf("lightning sources are not distributed round-robin: %v", arcs)
+		}
+	}
+	four := swordBoard()
+	fourMatch := map[int]bool{}
+	for _, i := range []int{25, 26, 27, 28} {
+		four[i] = tileLightning
+		fourMatch[i] = true
+	}
+	fourExploded, fourArcs := computeExplosions(four, fourMatch, &rng{z: 13})
+	if len(fourExploded) != 4 || len(fourArcs) != 4 {
+		t.Fatalf("four matched lightning tiles must eat four cells: exploded=%v arcs=%v", fourExploded, fourArcs)
+	}
+
+	mixed := swordBoard()
+	mixed[27], mixed[28] = tileFireSword, tileLightning
+	mixedMatch := map[int]bool{27: true, 28: true}
+	mixedExploded, mixedArcs := computeExplosions(mixed, mixedMatch, &rng{z: 19})
+	fireArea := map[int]bool{18: true, 19: true, 20: true, 26: true, 34: true, 35: true, 36: true}
+	if len(mixedExploded) != len(fireArea)+1 || len(mixedArcs) != 1 {
+		t.Fatalf("mixed wave did not add one target for one lightning: exploded=%v arcs=%v", mixedExploded, mixedArcs)
+	}
+	for _, arc := range mixedArcs {
+		if fireArea[arc.Target] || mixedMatch[arc.Target] {
+			t.Fatalf("lightning wasted a target in an existing removal: %+v", arc)
+		}
+	}
+
+	nearlyFull := make([]int, boardSize)
+	nearlyFullMatch := map[int]bool{}
+	for i := 0; i < boardSize-2; i++ {
+		nearlyFull[i] = tileLightning
+		nearlyFullMatch[i] = true
+	}
+	limited, limitedArcs := computeExplosions(nearlyFull, nearlyFullMatch, &rng{z: 23})
+	if !reflect.DeepEqual(limited, []int{62, 63}) || len(limitedArcs) != 2 {
+		t.Fatalf("lightning must safely use the remaining target pool: exploded=%v arcs=%v", limited, limitedArcs)
 	}
 }
 
@@ -492,17 +720,83 @@ func TestApplySwapLightningExplodes(t *testing.T) {
 	if !reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58}) {
 		t.Fatalf("unexpected matched cells: %v", matchStep.Cells)
 	}
-	if !reflect.DeepEqual(matchStep.Exploded, []int{48, 49, 50, 59}) {
-		t.Fatalf("unexpected exploded cells: %v", matchStep.Exploded)
+	if len(matchStep.Exploded) != 3 || len(matchStep.LightningArcs) != 3 {
+		t.Fatalf("three lightning tiles must eat three random cells: exploded=%v arcs=%v", matchStep.Exploded, matchStep.LightningArcs)
 	}
-	if !reflect.DeepEqual(matchStep.Counts, map[string]int{"lightning": 3, "sword": 2, "peach": 1, "heart": 1}) {
+	wantSources := []int{56, 57, 58}
+	wantExploded := make([]int, 0, 3)
+	wantCounts := map[int]int{tileLightning: 3}
+	swapped := append([]int(nil), board...)
+	swapped[58], swapped[59] = swapped[59], swapped[58]
+	seen := map[int]bool{}
+	for i, arc := range matchStep.LightningArcs {
+		if arc.Source != wantSources[i] || arc.Target < 0 || arc.Target >= boardSize || seen[arc.Target] {
+			t.Fatalf("invalid lightning arc mapping: %v", matchStep.LightningArcs)
+		}
+		if arc.Target == 56 || arc.Target == 57 || arc.Target == 58 {
+			t.Fatalf("lightning targeted a matched cell: %v", matchStep.LightningArcs)
+		}
+		seen[arc.Target] = true
+		wantExploded = append(wantExploded, arc.Target)
+		wantCounts[swapped[arc.Target]]++
+	}
+	sort.Ints(wantExploded)
+	if !reflect.DeepEqual(matchStep.Exploded, wantExploded) {
+		t.Fatalf("exploded cells do not match arcs: exploded=%v arcs=%v", matchStep.Exploded, matchStep.LightningArcs)
+	}
+	if !reflect.DeepEqual(matchStep.Counts, namedCounts(wantCounts)) {
 		t.Fatalf("unexpected counts: %v", matchStep.Counts)
 	}
-	if *matchStep.Effects != (Effects{Damage: 14, Heal: 5, Fury: 10}) {
+	wantAttacker, wantDefender := Fighter{HP: 100}, Fighter{HP: 100}
+	wantEffects := applyTileEffects(&wantAttacker, &wantDefender, wantCounts)
+	if *matchStep.Effects != wantEffects {
 		t.Fatalf("unexpected effects: %+v", *matchStep.Effects)
+	}
+	encoded, err := json.Marshal(matchStep)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded := Step{}
+	if err := json.Unmarshal(encoded, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(decoded.LightningArcs, matchStep.LightningArcs) {
+		t.Fatalf("lightning arc mapping did not survive JSON: got=%v want=%v", decoded.LightningArcs, matchStep.LightningArcs)
+	}
+	againAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":58,"b":59}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	again := againAny.(*State)
+	if !reflect.DeepEqual(again.Steps, next.Steps) || again.Rng != next.Rng || !reflect.DeepEqual(again.Board, next.Board) {
+		t.Fatal("same state and move produced different lightning targets or final state")
 	}
 	if matchedCells, _, _ := findMatches(next.Board); matchedCells != nil {
 		t.Fatal("apply left unresolved matches")
+	}
+}
+
+func TestApplySwapFourLightningHitsFourTargets(t *testing.T) {
+	board := stripedBoard()
+	board[50], board[56], board[57], board[59] = tileLightning, tileLightning, tileLightning, tileLightning
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 17)
+
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":58,"b":50}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	matchStep := next.Steps[1]
+	if !reflect.DeepEqual(matchStep.Cells, []int{56, 57, 58, 59}) {
+		t.Fatalf("unexpected four-lightning match: %v", matchStep.Cells)
+	}
+	if len(matchStep.Exploded) != 4 || len(matchStep.LightningArcs) != 4 {
+		t.Fatalf("four lightning tiles must eat four targets: exploded=%v arcs=%v", matchStep.Exploded, matchStep.LightningArcs)
+	}
+	for i, arc := range matchStep.LightningArcs {
+		if arc.Source != matchStep.Cells[i] {
+			t.Fatalf("each matched lightning must fire once: cells=%v arcs=%v", matchStep.Cells, matchStep.LightningArcs)
+		}
 	}
 }
 
@@ -529,6 +823,81 @@ func TestApplySwapRunOfFourKeepsTurn(t *testing.T) {
 	}
 }
 
+func TestApplySwapTwoRunsBanksTwoTurns(t *testing.T) {
+	board := doubleRunFourBoard()
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 1}}, 1)
+
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":18,"b":26}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	matchStep := next.Steps[1]
+	if matchStep.Kind != stepMatch || matchStep.BonusTurns != 2 {
+		t.Fatalf("two simultaneous runs must earn two turns: %+v", matchStep)
+	}
+	if next.ExtraTurns != 2 || !next.ExtraTurn || next.ExtraTurnOwner != 0 || !(Logic{}).KeepTurn(next) {
+		t.Fatalf("unexpected two-turn bank: %+v", next)
+	}
+}
+
+func TestApplyConsumesOneBankedTurnPerAction(t *testing.T) {
+	state := stateWith(
+		stripedBoard(),
+		[2]Fighter{{HP: 100, MP: 100}, {HP: 100}},
+		7,
+	)
+	state.ExtraTurn = true
+	state.ExtraTurns = 2
+	state.ExtraTurnOwner = 0
+
+	firstAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"ult"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	first := firstAny.(*State)
+	if first.ExtraTurns != 1 || !first.ExtraTurn || first.ExtraTurnOwner != 0 || !(Logic{}).KeepTurn(first) {
+		t.Fatalf("first bonus action did not leave one turn: %+v", first)
+	}
+
+	first.Fighters[0].MP = 100
+	secondAny, err := (Logic{}).Apply(first, 0, json.RawMessage(`{"type":"ult"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	second := secondAny.(*State)
+	if second.ExtraTurns != 0 || second.ExtraTurn || second.ExtraTurnOwner != -1 || (Logic{}).KeepTurn(second) {
+		t.Fatalf("second bonus action did not exhaust the bank: %+v", second)
+	}
+}
+
+func TestTurnSkipClearsBankedTurns(t *testing.T) {
+	state := stateWith(stripedBoard(), [2]Fighter{{HP: 100}, {HP: 100}}, 7)
+	state.ExtraTurn = true
+	state.ExtraTurns = 2
+	state.ExtraTurnOwner = 0
+
+	(Logic{}).OnTurnSkipped(state, 1)
+	if !state.ExtraTurn || state.ExtraTurns != 2 || state.ExtraTurnOwner != 0 || !(Logic{}).KeepTurn(state) {
+		t.Fatalf("another player's skip consumed the owner's bonus turns: %+v", state)
+	}
+
+	(Logic{}).OnTurnSkipped(state, 0)
+	if state.ExtraTurn || state.ExtraTurns != 0 || state.ExtraTurnOwner != -1 || (Logic{}).KeepTurn(state) {
+		t.Fatalf("turn skip left bonus turns behind: %+v", state)
+	}
+
+	legacy := stateWith(stripedBoard(), [2]Fighter{{HP: 100}, {HP: 100}}, 8)
+	legacy.ExtraTurn = true
+	(Logic{}).OnTurnSkipped(legacy, 1)
+	if legacy.ExtraTurn || legacy.ExtraTurns != 0 || legacy.ExtraTurnOwner != -1 {
+		t.Fatalf("legacy extra-turn flag survived a skip: %+v", legacy)
+	}
+
+	(Logic{}).OnTurnSkipped(nil, 0)
+	(Logic{}).OnTurnSkipped("not a war-god state", 0)
+}
+
 func doubleMatchBoard() []int {
 	board := make([]int, boardSize)
 	for y := 0; y < grid; y++ {
@@ -547,7 +916,7 @@ func doubleMatchBoard() []int {
 	return board
 }
 
-func TestApplySwapFivePlusCellsKeepsTurn(t *testing.T) {
+func TestApplySwapSeparateTriplesDoesNotKeepTurn(t *testing.T) {
 	board := doubleMatchBoard()
 	if matchedCells, _, _ := findMatches(board); matchedCells != nil {
 		t.Fatalf("board must be match-free before swap: %v", matchedCells)
@@ -568,8 +937,8 @@ func TestApplySwapFivePlusCellsKeepsTurn(t *testing.T) {
 		matchStep.MaxRun != 3 {
 		t.Fatalf("expected a 6-cell maxRun-3 match: %+v", matchStep)
 	}
-	if !next.ExtraTurn || !(Logic{}).KeepTurn(next) {
-		t.Fatal("clearing 5+ cells must keep the turn")
+	if matchStep.BonusTurns != 0 || next.ExtraTurns != 0 || next.ExtraTurn || (Logic{}).KeepTurn(next) {
+		t.Fatalf("separate triples must not keep the turn: step=%+v state=%+v", matchStep, next)
 	}
 }
 
@@ -723,8 +1092,27 @@ func TestDecodeStateRoundtrip(t *testing.T) {
 		restored.Fighters != next.Fighters ||
 		restored.Rng != next.Rng ||
 		restored.MoveCount != next.MoveCount ||
-		restored.ExtraTurn != next.ExtraTurn {
+		restored.ExtraTurn != next.ExtraTurn ||
+		restored.ExtraTurns != next.ExtraTurns ||
+		restored.ExtraTurnOwner != next.ExtraTurnOwner {
 		t.Fatalf("roundtrip mismatch: %+v vs %+v", restored, next)
+	}
+}
+
+func TestDecodeStateKeepsLegacyExtraTurn(t *testing.T) {
+	state := (Logic{}).Init(5).(*State)
+	state.ExtraTurn = true
+	data, err := json.Marshal(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restoredAny, err := (Logic{}).DecodeState(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored := restoredAny.(*State)
+	if !restored.ExtraTurn || restored.ExtraTurns != 0 || restored.ExtraTurnOwner != -1 || !(Logic{}).KeepTurn(restored) {
+		t.Fatalf("legacy extra turn was not preserved: %+v", restored)
 	}
 }
 
@@ -760,6 +1148,13 @@ func TestDecodeStateRejectsInvalidSnapshots(t *testing.T) {
 		{name: "fury above max", data: snapshotWith(func(s *State) { s.Fighters[0].Fury = maxFury + 1 })},
 		{name: "fury negative", data: snapshotWith(func(s *State) { s.Fighters[0].Fury = -1 })},
 		{name: "negative move count", data: snapshotWith(func(s *State) { s.MoveCount = -1 })},
+		{name: "negative extra turns", data: snapshotWith(func(s *State) { s.ExtraTurns = -1 })},
+		{name: "extra turn owner too high", data: snapshotWith(func(s *State) {
+			s.ExtraTurns, s.ExtraTurnOwner = 1, 2
+		})},
+		{name: "extra turn owner negative", data: snapshotWith(func(s *State) {
+			s.ExtraTurns, s.ExtraTurnOwner = 1, -1
+		})},
 		{name: "empty rng", data: snapshotWith(func(s *State) { s.Rng = "" })},
 		{name: "non numeric rng", data: snapshotWith(func(s *State) { s.Rng = "abc" })},
 		{name: "overflow rng", data: snapshotWith(func(s *State) { s.Rng = "18446744073709551616" })},
@@ -807,7 +1202,9 @@ func TestLogicMetadata(t *testing.T) {
 	if gameLogic.MoveCount(&State{MoveCount: 4}) != 4 || gameLogic.MoveCount(nil) != 0 {
 		t.Fatal("unexpected move count")
 	}
-	if gameLogic.KeepTurn(&State{ExtraTurn: true}) != true || gameLogic.KeepTurn(nil) {
+	if gameLogic.KeepTurn(&State{ExtraTurn: true}) != true ||
+		gameLogic.KeepTurn(&State{ExtraTurns: 2}) != true ||
+		gameLogic.KeepTurn(nil) {
 		t.Fatal("unexpected keep turn")
 	}
 }

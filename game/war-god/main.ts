@@ -1,10 +1,11 @@
 import { Application, Container, Graphics, Sprite } from 'pixi.js';
-import { GAME_ERROR_CODE, bridge, joinGame, type UserInfoData } from '../src/sdk';
+import { bridge } from '../src/sdk';
 import { A, loadAssets, tex } from './assets';
+import { disposeAudio } from './audio';
 import { initKit } from './kit';
-import { pvp, type PvpGameSession } from './pvp';
-import { hasActiveRoom, initRooms, openWaitingRoom } from './rooms';
-import type { ServerMove, ServerState } from './logic/server-types';
+import { DESIGN_W } from './layout';
+import { createSessionController } from './session-controller';
+import { disposeChat } from './screens/battle/chat';
 import {
   battleChatFocused,
   battleDebug,
@@ -28,7 +29,6 @@ import {
   openSearchPopup,
 } from './screens/lobby';
 
-const DESIGN_W = 520;
 
 let app: Application;
 let root: Container;
@@ -38,15 +38,21 @@ let lobbyBox: Container;
 let designH = 980;
 let safeTop = 0;
 let safeBottom = 0;
-let session: PvpGameSession | null = null;
-let userInfo: UserInfoData | null = null;
-let wiredSession: PvpGameSession | null = null;
 
-const roomsDeps = {
-  getSession: () => session,
-  getUserInfo: () => userInfo,
-  toast: (msg: string) => lobbyShowToast(msg),
-};
+function displayResolution(): number {
+  return Math.max(1, window.devicePixelRatio || 1);
+}
+
+const sessionController = createSessionController({
+  setConnecting: lobbySetConnecting,
+  setReady: lobbySetReady,
+  setError: lobbySetError,
+  updateKen: lobbyUpdateKen,
+  toast: lobbyShowToast,
+  openSearch: openSearchPopup,
+  hideSearch: hideSearchPopup,
+  isSearchOpen: isSearchPopupOpen,
+});
 
 function readSafeInsets(): void {
   const probe = document.createElement('div');
@@ -60,78 +66,6 @@ function readSafeInsets(): void {
   probe.remove();
 }
 
-function waitUserInfo(gameSession: PvpGameSession, timeoutMs: number): Promise<UserInfoData> {
-  return new Promise((resolve, reject) => {
-    const cleanup = (): void => {
-      offInfo();
-      clearTimeout(timer);
-    };
-    const offInfo = gameSession.onUserInfo((data) => {
-      cleanup();
-      resolve(data);
-    });
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error('connect timeout'));
-    }, timeoutMs);
-  });
-}
-
-function wireSessionEvents(next: PvpGameSession): void {
-  if (wiredSession === next) return;
-  wiredSession = next;
-  next.onUserInfo((data) => {
-    userInfo = data;
-    lobbyUpdateKen(data.ken);
-  });
-  next.onError((err) => {
-    if (
-      (err.code === GAME_ERROR_CODE.InRoom || err.code === GAME_ERROR_CODE.AlreadyInRoom) &&
-      isSearchPopupOpen()
-    ) {
-      hideSearchPopup();
-      openWaitingRoom();
-    }
-  });
-}
-
-async function connectToServer(): Promise<void> {
-  lobbySetConnecting();
-  try {
-    session ??= await joinGame<ServerState, ServerMove>('war-god');
-    pvp.init(session);
-    initRooms(roomsDeps);
-    wireSessionEvents(session);
-    userInfo = await waitUserInfo(session, 8000);
-    lobbySetReady(userInfo);
-  } catch {
-    session?.disconnect();
-    session = null;
-    lobbySetError();
-  }
-}
-
-function startPvpQueue(): void {
-  if (hasActiveRoom()) {
-    openWaitingRoom();
-    return;
-  }
-  if (session && userInfo) {
-    openSearchPopup();
-    pvp.startQueue();
-    return;
-  }
-  void connectToServer().then(() => {
-    if (!session || !userInfo) return;
-    if (hasActiveRoom()) {
-      openWaitingRoom();
-      return;
-    }
-    openSearchPopup();
-    pvp.startQueue();
-  });
-}
-
 function layout(): void {
   if (battleChatFocused()) {
     markBattleRefit();
@@ -140,6 +74,10 @@ function layout(): void {
   readSafeInsets();
   const winW = window.innerWidth;
   const winH = window.innerHeight;
+  const resolution = displayResolution();
+  if (app.renderer.resolution !== resolution) {
+    app.renderer.resolution = resolution;
+  }
   const scale = Math.min(winW, DESIGN_W) / DESIGN_W;
   designH = winH / scale;
   const insetTop = Math.round(safeTop / scale);
@@ -176,8 +114,9 @@ async function main(): Promise<void> {
     resizeTo: window,
     backgroundColor: 0x141428,
     antialias: true,
-    resolution: window.devicePixelRatio || 1,
+    resolution: displayResolution(),
     autoDensity: true,
+    roundPixels: true,
     preference: 'webgl',
   });
   document.getElementById('app')!.appendChild(app.canvas);
@@ -197,43 +136,51 @@ async function main(): Promise<void> {
   root.addChild(bgBox);
 
   buildBattleScreen(root, {
-    getUserInfo: () => userInfo,
+    getUserInfo: sessionController.getUserInfo,
     onGameStart: () => lobbySetVisible(false),
     onRequestLayout: layout,
     onExitToLobby: () => {
       lobbyEnterAnimated();
-      if (!userInfo && !session) void connectToServer();
-      if (hasActiveRoom()) openWaitingRoom();
+      if (!sessionController.getUserInfo() && !sessionController.getSession()) {
+        void sessionController.connect();
+      }
+      sessionController.openActiveRoom();
     },
     onPvpError: (text) => lobbyShowToast(text),
   });
 
   lobbyBox = buildLobby({
-    getSession: () => session,
+    getSession: sessionController.getSession,
     onPlay: (level) => startBattle(level),
-    onPvp: startPvpQueue,
+    onPvp: sessionController.startQueue,
     onCancelQueue: () => {
-      pvp.cancelQueue();
+      sessionController.cancelQueue();
       hideSearchPopup();
     },
-    onRetry: () => void connectToServer(),
+    onRetry: () => void sessionController.connect(),
     onExit: () => bridge.exit(),
   });
   root.addChild(lobbyBox);
-  initRooms(roomsDeps);
+  sessionController.initRooms();
 
   layout();
   window.addEventListener('resize', layout);
+  window.addEventListener('pagehide', (event) => {
+    if (event.persisted) return;
+    disposeAudio();
+    sessionController.dispose();
+    disposeChat();
+  });
   bridge.ready();
 
   if (new URLSearchParams(location.search).has('autostart')) {
     startBattle('normal');
   } else {
-    void connectToServer();
+    void sessionController.connect();
   }
 
   Object.defineProperty(window, '__wg', {
-    get: () => ({ ...battleDebug(), userInfo }),
+    get: () => ({ ...battleDebug(), userInfo: sessionController.getUserInfo() }),
   });
 }
 

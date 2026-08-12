@@ -1,10 +1,10 @@
 import { Container, Graphics } from 'pixi.js';
 import type { RoomMember, RoomStateData } from '../../../../src/sdk';
 import { HEADING, makeText, popIn, tween } from '../../../kit';
+import { DESIGN_W } from '../../../layout';
 import { makeWoodBtn } from '../ui';
 import { betLabel, shortRoomCode } from './util';
 
-const DESIGN_W = 520;
 const CARD_W = 470;
 const CARD_H = 480;
 const SEAT_W = 200;

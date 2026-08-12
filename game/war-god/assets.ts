@@ -65,6 +65,25 @@ import confirmPanel from './assets/confirm/panel.png';
 import confirmHeader from './assets/confirm/header.png';
 import confirmBtnCancel from './assets/confirm/btn-cancel.png';
 import confirmBtnOk from './assets/confirm/btn-ok.png';
+import resultPanel from './assets/result/panel.webp';
+import resultTitleFrame from './assets/result/title-frame.webp';
+import resultKenFrame from './assets/result/ken-frame.webp';
+import resultCupWin from './assets/result/cup-win.webp';
+import resultShieldLose from './assets/result/shield-lose.webp';
+import resultBrushWin from './assets/result/brush-win.webp';
+import resultBrushLose from './assets/result/brush-lose.webp';
+import resultBtnClose from './assets/result/btn-close.webp';
+import resultKen from './assets/result/ken.webp';
+import historyPanelFill from './assets/history/panel-fill.webp';
+import historyPanelFrame from './assets/history/panel-frame.webp';
+import historyTitleFrame from './assets/history/title-frame.webp';
+import historyTable from './assets/history/table.webp';
+import historyCloseBase from './assets/history/close-base.webp';
+import historyCloseX from './assets/history/close-x.webp';
+import historyOutcomeWin from './assets/history/outcome-win.webp';
+import historyOutcomeLose from './assets/history/outcome-lose.webp';
+import historyPageNumber from './assets/history/page-number.webp';
+import historyPageArrow from './assets/history/page-arrow.webp';
 import serifFontUrl from './assets/fonts/DejaVuSerif-Bold.ttf';
 import robotoCondensedUrl from './assets/fonts/RobotoCondensed-VF.ttf';
 
@@ -146,6 +165,29 @@ export const A = {
     btnCancel: confirmBtnCancel,
     btnOk: confirmBtnOk,
   },
+  result: {
+    panel: resultPanel,
+    titleFrame: resultTitleFrame,
+    kenFrame: resultKenFrame,
+    cupWin: resultCupWin,
+    shieldLose: resultShieldLose,
+    brushWin: resultBrushWin,
+    brushLose: resultBrushLose,
+    btnClose: resultBtnClose,
+    ken: resultKen,
+  },
+  history: {
+    panelFill: historyPanelFill,
+    panelFrame: historyPanelFrame,
+    titleFrame: historyTitleFrame,
+    table: historyTable,
+    closeBase: historyCloseBase,
+    closeX: historyCloseX,
+    outcomeWin: historyOutcomeWin,
+    outcomeLose: historyOutcomeLose,
+    pageNumber: historyPageNumber,
+    pageArrow: historyPageArrow,
+  },
 } as const;
 
 function collectUrls(node: unknown): string[] {
@@ -153,8 +195,34 @@ function collectUrls(node: unknown): string[] {
   return Object.values(node as Record<string, unknown>).flatMap(collectUrls);
 }
 
-export const tex: Record<string, Texture> = {};
+const textureCache: Partial<Record<string, Texture>> = {};
+
+export function texture(url: string): Texture {
+  const loaded = textureCache[url];
+  if (!loaded) throw new Error(`War God texture was used before loading: ${url}`);
+  return loaded;
+}
+
+// Compatibility index for existing render code. Unlike a plain Record cast,
+// every lookup is checked at runtime and fails with the missing asset URL.
+export const tex: Record<string, Texture> = new Proxy(textureCache as Record<string, Texture>, {
+  get(_target, property): Texture {
+    if (typeof property !== 'string') {
+      throw new TypeError(`Invalid War God texture key: ${String(property)}`);
+    }
+    return texture(property);
+  },
+});
 let ultTexturePromise: Promise<Texture> | null = null;
+
+function configureBoardTexture(texture: Texture): void {
+  // These sprites are fixed-size, front-facing UI. Sampling the original with
+  // bilinear filtering stays crisp at the renderer's DPR; generated mipmaps
+  // prefilter away the thin painted outlines and make every board item soft.
+  texture.source.magFilter = 'linear';
+  texture.source.minFilter = 'linear';
+  texture.source.autoGenerateMipmaps = false;
+}
 
 function withoutDeferredAssets(): Omit<typeof A, 'fx'> {
   const { fx: _deferred, ...startupAssets } = A;
@@ -171,17 +239,26 @@ export async function loadAssets(): Promise<void> {
     serifFont.load().then((f) => document.fonts.add(f)),
     robotoFont.load().then((f) => document.fonts.add(f)),
   ]);
-  Object.assign(tex, loaded);
+  Object.assign(textureCache, loaded);
+
+  const scaledUrls = [
+    A.board.frame,
+    A.board.cell,
+    A.board.selMine,
+    A.board.selFoe,
+    ...Object.values(A.items),
+  ];
+  scaledUrls.forEach((url) => configureBoardTexture(texture(url)));
 }
 
 export function loadUltTexture(): Promise<Texture> {
-  const cached = tex[A.fx.ult];
+  const cached = textureCache[A.fx.ult];
   if (cached) return Promise.resolve(cached);
   if (!ultTexturePromise) {
     ultTexturePromise = Assets.load<Texture>(A.fx.ult)
       .then((texture) => {
         texture.source.autoGenerateMipmaps = false;
-        tex[A.fx.ult] = texture;
+        textureCache[A.fx.ult] = texture;
         return texture;
       })
       .catch((error: unknown) => {

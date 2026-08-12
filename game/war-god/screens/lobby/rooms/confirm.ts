@@ -1,22 +1,19 @@
-import { Container, Graphics, Sprite, Text } from 'pixi.js';
+import { Container, Sprite, Text } from 'pixi.js';
 import { A, tex } from '../../../assets';
-import { SERIF, makeText, popIn, pressable, tween } from '../../../kit';
+import { SERIF, makeText, pressable } from '../../../kit';
+import { createCardModal, type CardModal } from '../card-modal';
 
-const DESIGN_W = 520;
 const PANEL_W = 430;
 const BTN_W = 172;
 const OK_X = PANEL_W / 2 - BTN_W / 2 - 34;
 
-let box: Container;
-let dim: Graphics;
-let card: Container;
+let modal: CardModal;
 let titleText: Text;
 let message: Text;
 let cancelBtn: Container;
 let okBtn: Container;
 let onOkAction: (() => void) | null = null;
 let noticeMode = false;
-let animGen = 0;
 
 function serifText(label: string, size: number, color: number): Text {
   const t = makeText(label, size, color, '700', SERIF);
@@ -25,19 +22,13 @@ function serifText(label: string, size: number, color: number): Text {
 }
 
 function openInternal(text: string, onOk: (() => void) | null, notice: boolean): void {
-  animGen++;
   onOkAction = onOk;
   noticeMode = notice;
   titleText.text = notice ? 'THÔNG BÁO' : 'XÁC NHẬN';
   message.text = text;
   cancelBtn.visible = !notice;
   okBtn.x = notice ? 0 : OK_X;
-  box.visible = true;
-  card.alpha = 1;
-  card.scale.set(1);
-  dim.alpha = 0;
-  void tween(dim, { alpha: 1 }, 200);
-  popIn(card, 0, 380);
+  modal.open();
 }
 
 export function openRoomsConfirm(text: string, onOk: () => void): void {
@@ -49,29 +40,18 @@ export function openRoomsNotice(text: string, onOk?: () => void): void {
 }
 
 export function closeRoomsConfirm(): void {
-  if (!box?.visible) return;
-  const gen = ++animGen;
   onOkAction = null;
-  void tween(dim, { alpha: 0 }, 160);
-  void tween(card, { scale: 0.72, alpha: 0 }, 170).then(() => {
-    if (gen !== animGen) return;
-    box.visible = false;
-    card.scale.set(1);
-    card.alpha = 1;
-  });
+  modal.close();
 }
 
 export function hideRoomsConfirm(): void {
-  if (!box) return;
-  animGen++;
-  box.visible = false;
-  card.scale.set(1);
-  card.alpha = 1;
+  if (!modal) return;
   onOkAction = null;
+  modal.hide();
 }
 
 export function isRoomsConfirmOpen(): boolean {
-  return box?.visible === true;
+  return modal?.isOpen() === true;
 }
 
 function makeConfirmBtn(label: string, texUrl: string, onTap: () => void): Container {
@@ -88,17 +68,12 @@ function makeConfirmBtn(label: string, texUrl: string, onTap: () => void): Conta
 }
 
 export function buildRoomsConfirm(): Container {
-  box = new Container();
-  dim = new Graphics();
-  dim.eventMode = 'static';
-  dim.on('pointertap', () => {
+  modal = createCardModal(() => {
     const action = noticeMode ? onOkAction : null;
     closeRoomsConfirm();
     action?.();
   });
-  box.addChild(dim);
-
-  card = new Container();
+  const { card } = modal;
 
   const panel = new Sprite(tex[A.confirm.panel]);
   panel.anchor.set(0.5);
@@ -143,14 +118,10 @@ export function buildRoomsConfirm(): Container {
   okBtn.y = btnY;
   card.addChild(okBtn);
 
-  box.addChild(card);
-  box.visible = false;
-  return box;
+  return modal.box;
 }
 
 export function layoutRoomsConfirm(designH: number): void {
-  if (!box) return;
-  dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  card.x = DESIGN_W / 2;
-  card.y = designH / 2;
+  if (!modal) return;
+  modal.layout(designH);
 }

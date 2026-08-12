@@ -25,6 +25,8 @@ const (
 	tileGreaterHeart
 )
 
+// tileNames is the wire-format order shared with the TypeScript client.
+// Run `go generate` in this package after changing it or any exported balance value.
 var tileNames = [tileCount]string{
 	"sword",
 	"peach",
@@ -168,23 +170,76 @@ func findMatches(board []int) ([]int, map[int]int, int) {
 	return cellIndexes, counts, maxRun
 }
 
-func computeExplosions(board []int, matched map[int]bool) []int {
+// matchBonusTurns counts one bonus turn for every orthogonally connected group
+// of 4+ matched tiles with the same base type. T/L/cross shapes therefore count,
+// while two separate groups of three do not. Each cascade wave is independent.
+func matchBonusTurns(board, matchedCells []int) int {
+	matched := make(map[int]bool, len(matchedCells))
+	for _, i := range matchedCells {
+		matched[i] = true
+	}
+	visited := make(map[int]bool, len(matchedCells))
+	bonusTurns := 0
+	for _, start := range matchedCells {
+		if visited[start] {
+			continue
+		}
+		tile := baseTile(board[start])
+		queue := []int{start}
+		visited[start] = true
+		size := 0
+		for len(queue) > 0 {
+			last := len(queue) - 1
+			index := queue[last]
+			queue = queue[:last]
+			size++
+			x, y := index%grid, index/grid
+			neighbors := make([]int, 0, 4)
+			if x > 0 {
+				neighbors = append(neighbors, index-1)
+			}
+			if x < grid-1 {
+				neighbors = append(neighbors, index+1)
+			}
+			if y > 0 {
+				neighbors = append(neighbors, index-grid)
+			}
+			if y < grid-1 {
+				neighbors = append(neighbors, index+grid)
+			}
+			for _, neighbor := range neighbors {
+				if matched[neighbor] && !visited[neighbor] && baseTile(board[neighbor]) == tile {
+					visited[neighbor] = true
+					queue = append(queue, neighbor)
+				}
+			}
+		}
+		if size >= 4 {
+			bonusTurns++
+		}
+	}
+	return bonusTurns
+}
+
+func computeExplosions(board []int, matched map[int]bool, r *rng) ([]int, []LightningArc) {
+	return computeExplosionsWithPicker(board, matched, func(limit int) int {
+		return int(r.next() % uint64(limit))
+	})
+}
+
+func computeExplosionsWithPicker(board []int, matched map[int]bool, pickIndex func(int) int) ([]int, []LightningArc) {
 	set := map[int]bool{}
 	add := func(x, y int) {
 		if x >= 0 && x < grid && y >= 0 && y < grid {
 			set[y*grid+x] = true
 		}
 	}
+	// Resolve Fire Sword first so Lightning always chooses additional cells
+	// instead of wasting a target inside the existing 3x3 blast.
 	for i := range matched {
 		x := i % grid
 		y := i / grid
-		switch board[i] {
-		case tileLightning:
-			add(x, y-1)
-			add(x, y+1)
-			add(x-1, y)
-			add(x+1, y)
-		case tileFireSword:
+		if board[i] == tileFireSword {
 			for dy := -1; dy <= 1; dy++ {
 				for dx := -1; dx <= 1; dx++ {
 					add(x+dx, y+dy)
@@ -192,14 +247,53 @@ func computeExplosions(board []int, matched map[int]bool) []int {
 			}
 		}
 	}
-	out := make([]int, 0, len(set))
-	for i := range set {
-		if !matched[i] {
-			out = append(out, i)
+	for i := range matched {
+		delete(set, i)
+	}
+
+	lightningSources := make([]int, 0, len(matched))
+	for i := range matched {
+		if board[i] == tileLightning {
+			lightningSources = append(lightningSources, i)
 		}
 	}
+	sort.Ints(lightningSources)
+	lightningArcs := make([]LightningArc, 0, len(lightningSources))
+	if len(lightningSources) > 0 {
+		pool := make([]int, 0, boardSize-len(matched)-len(set))
+		for i := 0; i < boardSize; i++ {
+			if !matched[i] && !set[i] {
+				pool = append(pool, i)
+			}
+		}
+		targetCount := len(lightningSources)
+		if len(pool) < targetCount {
+			targetCount = len(pool)
+		}
+		for order := 0; order < targetCount; order++ {
+			pick := pickIndex(len(pool))
+			if pick < 0 {
+				pick = 0
+			} else if pick >= len(pool) {
+				pick = len(pool) - 1
+			}
+			target := pool[pick]
+			pool[pick] = pool[len(pool)-1]
+			pool = pool[:len(pool)-1]
+			set[target] = true
+			lightningArcs = append(lightningArcs, LightningArc{
+				Source: lightningSources[order%len(lightningSources)],
+				Target: target,
+			})
+		}
+	}
+
+	out := make([]int, 0, len(set))
+	for i := range set {
+		out = append(out, i)
+	}
 	sort.Ints(out)
-	return out
+	return out, lightningArcs
 }
 
 func areAdjacent(a, b int) bool {
