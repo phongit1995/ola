@@ -28,7 +28,7 @@ export interface HudActions {
   onExit(): void;
 }
 
-export type ConfirmKind = 'restart' | 'forfeit' | 'exit';
+export type ConfirmKind = 'restart' | 'forfeit' | 'exit' | 'kick' | 'leaveRoom';
 
 export interface ConfirmOptions {
   kind: ConfirmKind;
@@ -66,7 +66,7 @@ export const hud = {} as {
 let confirmAction: (() => void) | null = null;
 
 
-function makeMenuButton(label: string, background: string, icon: Texture, onTap: () => void): ButtonUI {
+export function makeMenuButton(label: string, background: string, icon: Texture, onTap: () => void): ButtonUI {
   const w = 140;
   const h = 46;
   const c = new Container();
@@ -236,23 +236,26 @@ export function showResult(data: ResultPopupData): void {
   hud.result.show(data);
 }
 
+const CONFIRM_HEADINGS: Record<ConfirmKind, string> = {
+  restart: 'XÁC NHẬN CHƠI LẠI',
+  forfeit: 'XÁC NHẬN BỎ CUỘC',
+  exit: 'XÁC NHẬN RỜI TRẬN',
+  kick: 'XÁC NHẬN MỜI RA',
+  leaveRoom: 'XÁC NHẬN RỜI BÀN',
+};
+
 export function showConfirm(options: ConfirmOptions): void {
-  const heading =
-    options.kind === 'forfeit'
-      ? 'XÁC NHẬN BỎ CUỘC'
-      : options.kind === 'exit'
-        ? 'XÁC NHẬN RỜI TRẬN'
-        : 'XÁC NHẬN CHƠI LẠI';
+  const heading = CONFIRM_HEADINGS[options.kind];
   const icon =
-    options.kind === 'forfeit'
+    options.kind === 'forfeit' || options.kind === 'kick'
       ? A.menu.icForfeit
-      : options.kind === 'exit'
+      : options.kind === 'exit' || options.kind === 'leaveRoom'
         ? A.menu.icExit
         : A.menu.icRestart;
   const actionBackground =
-    options.kind === 'forfeit'
+    options.kind === 'forfeit' || options.kind === 'kick'
       ? A.menu.btnForfeit
-      : options.kind === 'exit'
+      : options.kind === 'exit' || options.kind === 'leaveRoom'
         ? A.menu.btnExit
         : A.battleConfirm.btnSafe;
 
