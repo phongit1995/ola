@@ -70,6 +70,7 @@ import {
   hud,
   showConfirm,
   showResult,
+  setBattleMode,
   updateFighter,
 } from './hud';
 import {
@@ -164,6 +165,12 @@ let roomPregame = false;
 let flowEpoch = 0;
 let pvpChain: Promise<unknown> = Promise.resolve();
 const handledMatchOvers = new RecentMatchIds();
+
+function changeBattleMode(next: 'bot' | 'pvp'): void {
+  mode = next;
+  setBattleMode(next);
+}
+
 const CHAT_ERROR_CODES = new Set<string>([
   GAME_ERROR_CODE.ChatRateLimited,
   GAME_ERROR_CODE.ChatTooLong,
@@ -1105,7 +1112,7 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   deps.onGameStart();
   preloadUltFx();
   flowEpoch++;
-  mode = 'pvp';
+  changeBattleMode('pvp');
   inGame = false;
   over = false;
   busy = false;
@@ -1188,7 +1195,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
-  mode = 'bot';
+  changeBattleMode('bot');
   pvpMatchId = '';
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
@@ -1239,7 +1246,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
-  mode = 'pvp';
+  changeBattleMode('pvp');
   botModeExtraTurns = [0, 0];
   inGame = true;
   over = false;
@@ -1666,6 +1673,14 @@ export function battleDebug(): Record<string, unknown> {
     over,
     inGame,
     botLevel,
+    actions: {
+      rowVisible: hud.bottomRow?.visible === true,
+      restartVisible: hud.restart?.view.visible === true,
+      restartEnabled: hud.restart?.isEnabled() === true,
+      restartX: hud.restart?.view.x,
+      forfeitX: hud.forfeit?.view.x,
+      exitX: hud.exit?.view.x,
+    },
     turn: turnNumber,
     extraTurns: mode === 'bot' ? [...botModeExtraTurns] : undefined,
     status: statusText.text,

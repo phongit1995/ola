@@ -11,11 +11,13 @@ import {
   type ResultPopup,
   type ResultPopupData,
 } from './result-popup';
+import { battleActionLayout, type BattleMode } from './action-layout';
 
 export { updateFighter } from './hud/card';
 
 export interface ButtonUI {
   view: Container;
+  isEnabled(): boolean;
   setEnabled(on: boolean): void;
 }
 
@@ -63,6 +65,14 @@ export const hud = {} as {
   confirmCancelText: Text;
 };
 
+export function setBattleMode(mode: BattleMode): void {
+  const layout = battleActionLayout(mode);
+  hud.restart.view.visible = layout.restartVisible;
+  hud.restart.view.x = layout.restartX;
+  hud.forfeit.view.x = layout.forfeitX;
+  hud.exit.view.x = layout.exitX;
+}
+
 let confirmAction: (() => void) | null = null;
 
 
@@ -101,6 +111,7 @@ export function makeMenuButton(label: string, background: string, icon: Texture,
 
   return {
     view: c,
+    isEnabled: () => enabled,
     setEnabled(on: boolean) {
       enabled = on;
       c.alpha = on ? 1 : 0.45;
@@ -214,11 +225,9 @@ export function buildHud(root: Container, actions: HudActions): void {
   hud.exit = makeMenuButton('THOÁT', A.menu.btnExit, tex[A.menu.icExit], actions.onExit);
 
   hud.bottomRow = new Container();
-  hud.restart.view.x = 0;
-  hud.forfeit.view.x = 152;
-  hud.exit.view.x = 304;
   hud.bottomRow.addChild(hud.restart.view, hud.forfeit.view, hud.exit.view);
   root.addChild(hud.bottomRow);
+  setBattleMode('bot');
 
   hud.result = buildResultPopup(actions.onResultClose, actions.onResultReplay);
   buildConfirm();
