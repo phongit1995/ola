@@ -24,6 +24,7 @@ let box: Container;
 let dim: Graphics;
 let card: Container;
 let panelH = 0;
+let overhangH = 0;
 let tabDayBg: Sprite;
 let tabWeekBg: Sprite;
 let tabDayLabel: Text;
@@ -254,7 +255,9 @@ export function buildLeaderboardPopup(): Container {
   banner.anchor.set(0.5);
   banner.width = PANEL_W * 0.72;
   banner.scale.y = banner.scale.x;
-  banner.y = -halfH + banner.height / 2 + panelH * 0.03;
+  // Nửa banner nhô lên trên mép panel, giống modal kết quả trận đấu.
+  banner.y = -halfH;
+  overhangH = banner.height / 2;
   card.addChild(banner);
   const bannerLabel = makeText('BẢNG XẾP HẠNG', Math.round(PANEL_W * 0.058), 0xffe36b, '800', HEADING);
   const bannerMax = banner.width * 0.64;
@@ -285,7 +288,7 @@ export function buildLeaderboardPopup(): Container {
   tabWeekBg = weekTab.bg;
   tabWeekLabel = weekTab.text;
   const tabH = dayTab.bg.height;
-  const tabY = banner.y + banner.height / 2 + 16 + tabH / 2;
+  const tabY = banner.y + banner.height / 2 + 10 + tabH / 2;
   dayTab.tab.x = -(TAB_W / 2 + 8);
   dayTab.tab.y = tabY;
   weekTab.tab.x = TAB_W / 2 + 8;
@@ -359,8 +362,11 @@ export function layoutLeaderboardPopup(designH: number, insetTop: number, insetB
   dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
   const availW = DESIGN_W * 0.94;
   const availH = designH - insetTop - insetBottom - 24;
-  const fitScale = Math.min(1, availW / PANEL_W, availH / panelH);
+  // Banner nhô lên trên mép panel nên card cao hơn panelH: phải tính thêm phần
+  // nhô ra khi fit, và dời xuống nửa phần đó để nhìn vẫn cân giữa.
+  const fitScale = Math.min(1, availW / PANEL_W, availH / (panelH + overhangH));
   card.scale.set(fitScale);
   card.x = DESIGN_W / 2;
-  card.y = insetTop + (designH - insetTop - insetBottom) / 2;
+  card.y =
+    insetTop + (designH - insetTop - insetBottom) / 2 + (overhangH / 2) * fitScale;
 }
