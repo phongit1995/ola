@@ -26,6 +26,7 @@ type Emitter interface {
 
 const (
 	finishedResultTTL = 2 * time.Minute
+	maxTurnStartDelay = 20 * time.Second
 	maxChatRunes      = 120
 	chatCooldown      = 500 * time.Millisecond
 	reactionCooldown  = 800 * time.Millisecond
@@ -345,9 +346,13 @@ func (e *Engine) OnConnect(gameID, userID string) {
 		if room, exists := e.store.Get(gameID, ref.RoomID); exists && room.hasMember(userID) {
 			e.emitRoomWaiting(gameID, userID, room)
 			e.emitRoomStateTo(room, userID)
+			e.emitRoomSync(gameID, userID, room.ID)
 		} else {
 			_ = e.store.DeleteUserRef(gameID, userID, ref.RoomID)
+			e.emitRoomSync(gameID, userID, "")
 		}
+	} else {
+		e.emitRoomSync(gameID, userID, "")
 	}
 }
 
@@ -744,6 +749,9 @@ func (e *Engine) LeaveRoom(gameID, userID, roomID string) {
 func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected bool) {
 	ref, ok := e.store.RoomByUser(gameID, userID)
 	if !ok {
+		if !disconnected {
+			e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFound, "room not found")
+		}
 		return
 	}
 	if roomID != "" && roomID != ref.RoomID {
@@ -1022,6 +1030,13 @@ func (e *Engine) emitRoomStateTo(room Room, userID string) {
 	})
 }
 
+func (e *Engine) emitRoomSync(gameID, userID, roomID string) {
+	e.toUser(gameID, userID, protocol.OutEnvelope{
+		Type: protocol.S2CRoomSync,
+		Data: protocol.RoomSyncData{RoomID: roomID},
+	})
+}
+
 func (e *Engine) emitRoomClosed(room Room, reason string) {
 	data := protocol.RoomClosedData{RoomID: room.ID, Reason: reason}
 	e.toUser(room.GameID, room.OwnerID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
@@ -1232,7 +1247,7 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 		m.turnIdx = 1 - m.turnIdx
 	}
 	m.timeoutRuns[playerIdx] = 0
-	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	m.deadline = time.Now().Add(e.turnDuration(m, playerIdx))
 	if m.disconnected[m.turnIdx] {
 		e.invalidateTurnTimer(m)
 		m.pausedRemain = time.Until(m.deadline)
@@ -1588,7 +1603,7 @@ func (e *Engine) startMatchWithRoom(
 	}
 
 	// The first turn begins only after the start record/escrow is durable.
-	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	m.deadline = time.Now().Add(e.turnDuration(m, -1))
 	if err := e.persistMatch(m); err != nil {
 		m.over = true
 		e.removeMatch(m)
@@ -1671,6 +1686,22 @@ func (e *Engine) sendMatchFoundTo(m *Match, userID string, resumed bool) {
 func (e *Engine) armTimerDuration(m *Match, d time.Duration) {
 	m.deadline = time.Now().Add(d)
 	e.scheduleTurnTimer(m)
+}
+
+func (e *Engine) turnDuration(m *Match, previousPlayerIdx int) time.Duration {
+	duration := time.Duration(e.turnSeconds) * time.Second
+	delayer, ok := m.logic.(logic.TurnStartDelayer)
+	if !ok {
+		return duration
+	}
+	delay := delayer.TurnStartDelay(m.state, previousPlayerIdx, m.turnIdx)
+	if delay < 0 {
+		delay = 0
+	}
+	if delay > maxTurnStartDelay {
+		delay = maxTurnStartDelay
+	}
+	return duration + delay
 }
 
 func (e *Engine) scheduleTurnTimer(m *Match) {

@@ -9,11 +9,13 @@ import {
   type RoomListData,
   type RoomRemovedData,
   type RoomStateData,
+  type RoomSyncData,
   type RoomUpsertData,
   type RoomWaitingData,
   type UserInfoData,
 } from '../src/sdk';
 import { errorText } from './logic/error-text';
+import { shouldResetRoomFromSync } from './logic/room-sync';
 import {
   buildRoomListPopup,
   hideRoomListPopup,
@@ -245,12 +247,46 @@ const handleMatchFound = (): void => {
   hideAllRoomPopups();
 };
 
+const handleMatchOver = (): void => {
+  inMatch = false;
+};
+
+function resetCurrentRoom(): void {
+  pendingUntil = 0;
+  currentRoomId = '';
+  currentState = null;
+  currentBet = 0;
+  inMatch = false;
+  joinTarget = null;
+}
+
+const handleRoomSync = (data: RoomSyncData): void => {
+  if (!shouldResetRoomFromSync(currentRoomId, inMatch, data.roomId)) return;
+  resetCurrentRoom();
+  toast('Kết nối bị gián đoạn, bạn đã rời bàn');
+  if (anyRoomsPopupVisible()) {
+    hideRoomsConfirm();
+    showList(true);
+  } else {
+    activeSession()?.listRooms();
+  }
+};
+
 const handleError = (data: ErrorData): void => {
   if (!ROOM_ERROR_CODES.has(data.code)) return;
   const engaged = anyRoomsPopupVisible() || pendingUntil > Date.now();
   pendingUntil = 0;
   if (!engaged) return;
   toast(errorText(data.code));
+  if (
+    data.code === GAME_ERROR_CODE.RoomNotFound &&
+    (isWaitingPopupOpen() || isRoomsConfirmOpen())
+  ) {
+    resetCurrentRoom();
+    hideRoomsConfirm();
+    showList(true);
+    return;
+  }
   if (data.code === GAME_ERROR_CODE.WrongPassword && isPasswordPopupOpen()) return;
   if (isPasswordPopupOpen()) {
     joinTarget = null;
@@ -292,9 +328,11 @@ function wire(): void {
     next.onRoomRemoved(handleRemoved),
     next.onRoomWaiting(handleWaiting),
     next.onRoomState(handleState),
+    next.onRoomSync(handleRoomSync),
     next.onRoomClosed(handleClosed),
     next.onRoomKicked(handleKicked),
     next.onMatchFound(handleMatchFound),
+    next.onMatchOver(handleMatchOver),
     next.onError(handleError),
   );
 }

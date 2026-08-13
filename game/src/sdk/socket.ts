@@ -24,6 +24,7 @@ import {
   type RoomClosedData,
   type RoomKickedData,
   type RoomStateData,
+  type RoomSyncData,
   type RoomWaitingData,
   type StateData,
   type UserInfoData,
@@ -56,6 +57,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onRoomRemoved(handler: (data: RoomRemovedData) => void): () => void;
   onRoomWaiting(handler: (data: RoomWaitingData) => void): () => void;
   onRoomState(handler: (data: RoomStateData) => void): () => void;
+  onRoomSync(handler: (data: RoomSyncData) => void): () => void;
   onRoomClosed(handler: (data: RoomClosedData) => void): () => void;
   onRoomKicked(handler: (data: RoomKickedData) => void): () => void;
   onMatchFound(handler: (data: MatchFoundData<TState>) => void): () => void;
@@ -149,6 +151,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     onRoomRemoved: (handler) => on(S2C.RoomRemoved, handler as Handler),
     onRoomWaiting: (handler) => on(S2C.RoomWaiting, handler as Handler),
     onRoomState: (handler) => on(S2C.RoomState, handler as Handler),
+    onRoomSync: (handler) => on(S2C.RoomSync, handler as Handler),
     onRoomClosed: (handler) => on(S2C.RoomClosed, handler as Handler),
     onRoomKicked: (handler) => on(S2C.RoomKicked, handler as Handler),
     onMatchFound: (handler) => on(S2C.MatchFound, handler as Handler),

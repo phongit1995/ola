@@ -56,6 +56,7 @@ import {
   type Step,
 } from '../../logic/server-types';
 import { errorText } from '../../logic/error-text';
+import { RecentMatchIds } from '../../logic/recent-match-ids';
 import { pvp } from '../../pvp';
 import { playSound } from '../../audio';
 import { A, loadUltTexture, tex } from '../../assets';
@@ -150,7 +151,7 @@ let pausedTurnRemain = 0;
 let selfDisconnected = false;
 let flowEpoch = 0;
 let pvpChain: Promise<unknown> = Promise.resolve();
-const handledMatchOvers = new Set<string>();
+const handledMatchOvers = new RecentMatchIds();
 const CHAT_ERROR_CODES = new Set<string>([
   GAME_ERROR_CODE.ChatRateLimited,
   GAME_ERROR_CODE.ChatTooLong,
@@ -1326,8 +1327,7 @@ function formatKenDelta(delta: number): string {
 async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<void> {
   const exiting = data.matchId === exitingPvpMatchId;
   if (mode !== 'pvp' || (!exiting && data.matchId !== pvpMatchId)) return;
-  if (handledMatchOvers.has(data.matchId)) return;
-  handledMatchOvers.add(data.matchId);
+  if (!handledMatchOvers.mark(data.matchId)) return;
   const draw = data.winnerId == null || data.winnerId === '';
   const won = !draw && data.winnerId === myUserId;
   if (exiting) {

@@ -757,6 +757,17 @@ func TestRoomListAndReconnectView(t *testing.T) {
 	if emitter.count(open.OwnerID, protocol.S2CRoomWaiting) != 1 || emitter.count(open.OwnerID, protocol.S2CRoomState) != 1 {
 		t.Fatal("room owner did not recover room view on reconnect")
 	}
+	envelope, ok = emitter.last(open.OwnerID, protocol.S2CRoomSync)
+	if !ok || envelope.Data.(protocol.RoomSyncData).RoomID != open.ID {
+		t.Fatalf("room owner did not receive authoritative membership sync: %+v", envelope)
+	}
+
+	emitter.clear()
+	gameEngine.OnConnect(open.GameID, "not-in-room")
+	envelope, ok = emitter.last("not-in-room", protocol.S2CRoomSync)
+	if !ok || envelope.Data.(protocol.RoomSyncData).RoomID != "" {
+		t.Fatalf("roomless player did not receive an empty membership sync: %+v", envelope)
+	}
 }
 
 func TestRoomListFailureDoesNotLookLikeAnEmptyLobby(t *testing.T) {
@@ -767,6 +778,35 @@ func TestRoomListFailureDoesNotLookLikeAnEmptyLobby(t *testing.T) {
 	if emitter.count("viewer", protocol.S2CRoomList) != 0 {
 		t.Fatal("room list failure emitted an empty authoritative list")
 	}
+}
+
+func TestWaitingRoomDisconnectReconnectSyncsClearedMembership(t *testing.T) {
+	for _, userID := range []string{"owner", "guest"} {
+		t.Run(userID, func(t *testing.T) {
+			gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+			room := lifecycleRoom("room-reconnect-sync-" + userID)
+			room.GuestID = "guest"
+			room.GuestName = "Guest"
+			if err := rooms.Save(room); err != nil {
+				t.Fatal(err)
+			}
+
+			gameEngine.OnDisconnect(room.GameID, userID)
+			emitter.clear()
+			gameEngine.OnConnect(room.GameID, userID)
+
+			envelope, ok := emitter.last(userID, protocol.S2CRoomSync)
+			if !ok || envelope.Data.(protocol.RoomSyncData).RoomID != "" {
+				t.Fatalf("disconnected %s retained stale room membership: %+v", userID, envelope)
+			}
+		})
+	}
+}
+
+func TestLeaveMissingRoomReturnsRecoverableError(t *testing.T) {
+	gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+	gameEngine.LeaveRoom(persistenceTestGameID, "missing-member", "stale-room")
+	requireErrorCode(t, emitter, "missing-member", "ROOM_NOT_FOUND")
 }
 
 func TestMoveGuardCases(t *testing.T) {

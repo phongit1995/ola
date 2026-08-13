@@ -32,6 +32,7 @@ const (
 	S2CRoomRemoved          = "ROOM_REMOVED"
 	S2CRoomWaiting          = "ROOM_WAITING"
 	S2CRoomState            = "ROOM_STATE"
+	S2CRoomSync             = "ROOM_SYNC"
 	S2CRoomClosed           = "ROOM_CLOSED"
 	S2CRoomKicked           = "ROOM_KICKED"
 	S2COpponentDisconnected = "OPPONENT_DISCONNECTED"
@@ -290,6 +291,10 @@ type RoomStateData struct {
 	Bet     int          `json:"bet"`
 	Locked  bool         `json:"locked"`
 	Members []RoomMember `json:"members"`
+}
+
+type RoomSyncData struct {
+	RoomID string `json:"roomId,omitempty"`
 }
 
 type RoomClosedData struct {

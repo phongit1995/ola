@@ -30,6 +30,7 @@ export const S2C = {
   RoomRemoved: 'ROOM_REMOVED',
   RoomWaiting: 'ROOM_WAITING',
   RoomState: 'ROOM_STATE',
+  RoomSync: 'ROOM_SYNC',
   RoomClosed: 'ROOM_CLOSED',
   RoomKicked: 'ROOM_KICKED',
   OpponentDisconnected: 'OPPONENT_DISCONNECTED',
@@ -242,6 +243,10 @@ export interface RoomStateData {
   bet: number;
   locked: boolean;
   members: RoomMember[];
+}
+
+export interface RoomSyncData {
+  roomId?: string;
 }
 
 export interface RoomClosedData {
