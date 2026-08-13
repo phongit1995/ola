@@ -5,6 +5,11 @@ import { DESIGN_W } from '../../../layout';
 import { makeOverlayInput, placeOverlayInput } from './util';
 
 const CARD_W = 404;
+// Tỉ lệ gốc của ảnh panel vừa đủ cho trạng thái bật mật khẩu. Khi tắt thì ô mật
+// khẩu biến mất, để nguyên chiều cao sẽ thừa một mảng trống lớn, nên nén dọc
+// lại. Mọi vị trí bên trong tính theo cardH nên cả layout co theo.
+const SQUASH_PASSWORD_ON = 1;
+const SQUASH_PASSWORD_OFF = 0.78;
 
 interface CreateRoomCallbacks {
   onSubmit(bet: number, password: string): void;
@@ -23,6 +28,12 @@ let passwordSwitchBg: Graphics;
 let passwordSwitchKnob: Graphics;
 let passwordToggleState: Text;
 let passBg: Sprite;
+let panel: Sprite;
+let betLabelView: Container;
+let betBgView: Sprite;
+let okView: Container;
+let titleView: Container;
+let closeView: Container;
 let passwordEnabled = false;
 let cardScale = 1;
 let cardH = 0;
@@ -30,6 +41,9 @@ let betFieldY = 0;
 let passFieldY = 0;
 let fieldW = 0;
 let fieldH = 0;
+let lastDesignH = 0;
+let lastInsetTop = 0;
+let lastInsetBottom = 0;
 
 function placeOne(input: HTMLInputElement, fieldY: number): void {
   const w = fieldW * 0.88;
@@ -80,12 +94,31 @@ function drawPasswordToggle(): void {
   passwordToggleState.style.fill = passwordEnabled ? 0xfff2d0 : 0xffe15a;
 }
 
+// Đổi chiều cao panel theo trạng thái mật khẩu rồi xếp lại mọi thứ bên trong.
+function applyCardHeight(): void {
+  panel.scale.y =
+    panel.scale.x * (passwordEnabled ? SQUASH_PASSWORD_ON : SQUASH_PASSWORD_OFF);
+  cardH = panel.height;
+  const halfH = cardH / 2;
+  betFieldY = -halfH + cardH * 0.47;
+  passFieldY = -halfH + cardH * 0.78;
+  betLabelView.position.set(0, -halfH + cardH * 0.34);
+  betBgView.position.set(0, betFieldY);
+  passwordToggle.position.set(0, -halfH + cardH * 0.65);
+  passBg.position.set(0, passFieldY);
+  okView.position.set(0, halfH - cardH * 0.09);
+  titleView.y = -halfH + cardH * 0.03;
+  closeView.position.set(CARD_W / 2 - CARD_W * 0.055, -halfH + cardH * 0.05);
+}
+
 function setPasswordEnabled(enabled: boolean, focus = false): void {
   passwordEnabled = enabled;
   passInput.value = '';
   passInput.type = 'password';
   passBg.visible = enabled;
   drawPasswordToggle();
+  applyCardHeight();
+  if (lastDesignH > 0) layoutCreateRoomPopup(lastDesignH, lastInsetTop, lastInsetBottom);
   placeInputs();
   passInput.style.display = box.visible && enabled ? 'block' : 'none';
   if (!enabled) passInput.blur();
@@ -154,26 +187,19 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
 
   card = new Container();
 
-  const panel = new Sprite(tex[A.lobby.createPanel]);
+  panel = new Sprite(tex[A.lobby.createPanel]);
   panel.anchor.set(0.5);
   panel.width = CARD_W;
-  panel.scale.y = panel.scale.x;
   panel.eventMode = 'static';
   card.addChild(panel);
-  cardH = panel.height;
-  const halfH = cardH / 2;
 
   fieldW = CARD_W * 0.84;
   fieldH = fieldW / (2321 / 432);
-  betFieldY = -halfH + cardH * 0.47;
-  passFieldY = -halfH + cardH * 0.78;
 
-  const betLabel = makeLabel('SỐ KEN');
-  betLabel.position.set(0, -halfH + cardH * 0.34);
-  card.addChild(betLabel);
-  const betBg = makeFieldBg();
-  betBg.position.set(0, betFieldY);
-  card.addChild(betBg);
+  betLabelView = makeLabel('SỐ KEN');
+  card.addChild(betLabelView);
+  betBgView = makeFieldBg();
+  card.addChild(betBgView);
 
   passwordToggle = new Container();
   passwordToggleBg = new Graphics();
@@ -201,13 +227,11 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
   passwordToggle.addChild(passwordSwitchBg, passwordSwitchKnob);
   passwordToggleState = makeText('', 10, 0xffe15a, '800', HEADING);
   passwordToggle.addChild(passwordToggleState);
-  passwordToggle.position.set(0, -halfH + cardH * 0.65);
   passwordToggle.hitArea = new Rectangle(-fieldW / 2, -28, fieldW, 56);
   pressable(passwordToggle, () => setPasswordEnabled(!passwordEnabled, true));
   card.addChild(passwordToggle);
 
   passBg = makeFieldBg();
-  passBg.position.set(0, passFieldY);
   card.addChild(passBg);
 
   const ok = new Container();
@@ -220,10 +244,10 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
   okLabel.style.stroke = { color: 0x5a1c08, width: 3, join: 'round' };
   okLabel.y = -okBg.height * 0.06;
   ok.addChild(okLabel);
-  ok.position.set(0, halfH - cardH * 0.09);
   ok.hitArea = new Rectangle(-okBg.width * 0.5, -okBg.height * 0.4, okBg.width, okBg.height * 0.8);
   pressable(ok, submit);
   card.addChild(ok);
+  okView = ok;
 
   const title = new Container();
   const titleFrame = new Sprite(tex[A.lobby.createTitle]);
@@ -235,8 +259,8 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
   titleText.style.stroke = { color: 0x4a1206, width: 4, join: 'round' };
   titleText.y = -titleFrame.height * 0.04;
   title.addChild(titleText);
-  title.y = -halfH + cardH * 0.03;
   card.addChild(title);
+  titleView = title;
 
   const close = new Container();
   const closeSprite = new Sprite(tex[A.lobby.btnX]);
@@ -249,10 +273,10 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
   closeIcon.width = CARD_W * 0.075;
   closeIcon.scale.y = closeIcon.scale.x;
   close.addChild(closeIcon);
-  close.position.set(CARD_W / 2 - CARD_W * 0.04, -halfH + cardH * 0.14);
   close.hitArea = new Rectangle(-38, -38, 76, 76);
   pressable(close, () => cb.onCancel());
   card.addChild(close);
+  closeView = close;
 
   betInput = makeOverlayInput({ numeric: true, maxLength: 9, placeholder: '0' });
   passInput = makeOverlayInput({
@@ -282,6 +306,9 @@ export function layoutCreateRoomPopup(
   insetBottom: number,
 ): void {
   if (!box) return;
+  lastDesignH = designH;
+  lastInsetTop = insetTop;
+  lastInsetBottom = insetBottom;
   dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
   const availH = designH - insetTop - insetBottom - 24;
   cardScale = Math.min(1, (DESIGN_W * 0.96) / CARD_W, availH / cardH);
