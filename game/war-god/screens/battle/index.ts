@@ -60,7 +60,16 @@ import { pvp } from '../../pvp';
 import { playSound } from '../../audio';
 import { A, loadUltTexture, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick, sleep, tween } from '../../kit';
-import { buildHud, hud, showConfirm, showResult, updateFighter } from './hud';
+import {
+  CONFIRM_CARD_H,
+  CONFIRM_CARD_W,
+  buildHud,
+  hideConfirm,
+  hud,
+  showConfirm,
+  showResult,
+  updateFighter,
+} from './hud';
 import {
   CHAT_W,
   buildChat,
@@ -133,6 +142,7 @@ let inGame = false;
 let botLevel: BotLevel = 'normal';
 let mode: 'bot' | 'pvp' = 'bot';
 let pvpMatchId = '';
+let exitingPvpMatchId = '';
 let pvpIdx = 0;
 let myUserId = '';
 let oppAwayUntil = 0;
@@ -620,7 +630,7 @@ function updateHud(): void {
 
   hud.turnCount.text = String(turnNumber);
   hud.restart.setEnabled(mode === 'bot' && !busy);
-  hud.forfeit.setEnabled(!over && !busy && (mode === 'pvp' || myTurn));
+  hud.forfeit.setEnabled(!over && !busy);
   hud.exit.setEnabled(!busy);
 }
 
@@ -1088,6 +1098,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   botSelectorA.visible = false;
   rebuildSprites();
   hud.result.hide();
+  hideConfirm();
   const userInfo = deps.getUserInfo();
   if (userInfo) hud.me.name.text = `@${userInfo.username}`;
   hud.foe.name.text = `@máy · ${LEVEL_LABELS[botLevel]}`;
@@ -1138,7 +1149,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   botSelectorA.visible = false;
   rebuildSprites();
   hud.result.hide();
-  hud.confirm.visible = false;
+  hideConfirm();
   const mePlayer = data.players[pvpIdx];
   const opponent = data.players[1 - pvpIdx];
   myUserId = mePlayer?.id ?? '';
@@ -1313,9 +1324,17 @@ function formatKenDelta(delta: number): string {
 }
 
 async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<void> {
-  if (mode !== 'pvp' || data.matchId !== pvpMatchId) return;
+  const exiting = data.matchId === exitingPvpMatchId;
+  if (mode !== 'pvp' || (!exiting && data.matchId !== pvpMatchId)) return;
   if (handledMatchOvers.has(data.matchId)) return;
   handledMatchOvers.add(data.matchId);
+  const draw = data.winnerId == null || data.winnerId === '';
+  const won = !draw && data.winnerId === myUserId;
+  if (exiting) {
+    exitingPvpMatchId = '';
+    bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
+    return;
+  }
   over = true;
   busy = true;
   const ep = flowEpoch;
@@ -1324,8 +1343,6 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
   selfDisconnected = false;
-  const draw = data.winnerId == null || data.winnerId === '';
-  const won = !draw && data.winnerId === myUserId;
   if (data.reason === 'win' && !draw && inGame && data.state.steps?.length) {
     const side: 'me' | 'foe' = won ? 'me' : 'foe';
     try {
@@ -1436,13 +1453,34 @@ function teardownBattle(): void {
   setSelected(null);
   botSelectorA.visible = false;
   hud.result.hide();
-  hud.confirm.visible = false;
+  hideConfirm();
   setChatInputVisible(false);
 }
 
 function exitToLobby(): void {
   teardownBattle();
   deps.onExitToLobby();
+}
+
+function exitActiveMatch(): void {
+  if (!inGame || over) {
+    exitToLobby();
+    return;
+  }
+  if (mode === 'pvp') {
+    exitingPvpMatchId = pvpMatchId;
+    pvp.leaveMatch();
+    pvpMatchId = '';
+  } else {
+    recordBotMatch({ level: botLevel, won: false, forfeit: true });
+    bridge.gameOver({
+      matchId: `wargod-${Date.now()}`,
+      winnerId: 'bot',
+      reason: 'forfeit',
+      won: false,
+    });
+  }
+  exitToLobby();
 }
 
 function replayMatch(): void {
@@ -1585,20 +1623,37 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
         startBattle();
         return;
       }
-      showConfirm('Chơi lại từ đầu?', () => {
-        if (!busy) startBattle();
+      showConfirm({
+        kind: 'restart',
+        message: 'Ván hiện tại sẽ kết thúc.\nBạn muốn chơi lại từ đầu?',
+        confirmLabel: 'CHƠI LẠI',
+        onConfirm: () => {
+          if (!busy) startBattle();
+        },
       });
     },
     onForfeit: () => {
       if (over) return;
       if (mode === 'pvp') {
-        showConfirm('Bỏ cuộc trận này?', () => {
-          if (!busy && !over) pvp.forfeit();
+        showConfirm({
+          kind: 'forfeit',
+          message: 'Bạn sẽ bị xử thua ván này.\nBạn vẫn có thể chơi ván tiếp theo.',
+          confirmLabel: 'BỎ CUỘC',
+          onConfirm: () => {
+            if (!busy && !over) pvp.forfeit();
+          },
         });
         return;
       }
-      if (!myTurn || busy) return;
-      showConfirm('Bỏ cuộc trận này?', () => finish(false, 'forfeit', 'Bạn đã bỏ cuộc'));
+      if (busy) return;
+      showConfirm({
+        kind: 'forfeit',
+        message: 'Bạn sẽ bị xử thua ván này.\nBạn vẫn có thể chơi ván tiếp theo.',
+        confirmLabel: 'BỎ CUỘC',
+        onConfirm: () => {
+          if (!busy && !over) finish(false, 'forfeit', 'Bạn đã bỏ cuộc');
+        },
+      });
     },
     onExit: () => {
       if (busy) return;
@@ -1606,16 +1661,14 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
         exitToLobby();
         return;
       }
-      if (mode === 'pvp') {
-        showConfirm('Thoát trận về sảnh?', () => {
-          if (busy) return;
-          pvp.leaveMatch();
-          pvpMatchId = '';
-          exitToLobby();
-        });
-        return;
-      }
-      showConfirm('Thoát trận về sảnh?', exitToLobby);
+      showConfirm({
+        kind: 'exit',
+        message: 'Thoát sẽ bị xử thua và rời bàn.\nBạn có chắc muốn thoát?',
+        confirmLabel: 'RỜI TRẬN',
+        onConfirm: () => {
+          if (!busy) exitActiveMatch();
+        },
+      });
     },
   });
   bindPvpHandlers();
@@ -1719,6 +1772,6 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
 
   hud.confirmDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.6 });
   const confirmCard = hud.confirm.getChildByLabel('confirm-card')!;
-  confirmCard.x = (DESIGN_W - 300) / 2;
-  confirmCard.y = designH / 2 - 75;
+  confirmCard.x = (DESIGN_W - CONFIRM_CARD_W) / 2;
+  confirmCard.y = insetTop + (designH - insetTop - insetBottom - CONFIRM_CARD_H) / 2;
 }

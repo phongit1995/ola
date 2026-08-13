@@ -28,6 +28,8 @@ import icMp from './assets/hud/ic-mp.png';
 import turnBanner from './assets/hud/turn-banner.png';
 import noteStrip from './assets/hud/note-strip.png';
 import menuBtnBlue from './assets/menu/btn-blue.png';
+import menuBtnForfeit from './assets/menu/btn-forfeit-v2.webp';
+import menuBtnExit from './assets/menu/btn-exit-v2.webp';
 import menuIcRestart from './assets/menu/ic-restart.png';
 import menuIcForfeit from './assets/menu/ic-forfeit.png';
 import menuIcExit from './assets/menu/ic-exit.png';
@@ -82,6 +84,8 @@ import confirmPanel from './assets/confirm/panel.png';
 import confirmHeader from './assets/confirm/header.png';
 import confirmBtnCancel from './assets/confirm/btn-cancel.png';
 import confirmBtnOk from './assets/confirm/btn-ok.png';
+import battleConfirmPanel from './assets/confirm/panel-v2.webp';
+import battleConfirmBtnSafe from './assets/confirm/btn-safe-v2.webp';
 import resultPanel from './assets/result/panel.webp';
 import resultTitleFrame from './assets/result/title-frame.webp';
 import resultKenFrame from './assets/result/ken-frame.webp';
@@ -137,6 +141,8 @@ export const A = {
   },
   menu: {
     btnBlue: menuBtnBlue,
+    btnForfeit: menuBtnForfeit,
+    btnExit: menuBtnExit,
     icRestart: menuIcRestart,
     icForfeit: menuIcForfeit,
     icExit: menuIcExit,
@@ -199,6 +205,10 @@ export const A = {
     header: confirmHeader,
     btnCancel: confirmBtnCancel,
     btnOk: confirmBtnOk,
+  },
+  battleConfirm: {
+    panel: battleConfirmPanel,
+    btnSafe: battleConfirmBtnSafe,
   },
   result: {
     panel: resultPanel,

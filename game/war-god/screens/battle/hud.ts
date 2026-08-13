@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { A, tex } from '../../assets';
-import { HEADING, makeText } from '../../kit';
+import { HEADING, makeText, popIn, pressable } from '../../kit';
 import {
   disposeFighterUI,
   makeFighterCard,
@@ -28,6 +28,19 @@ export interface HudActions {
   onExit(): void;
 }
 
+export type ConfirmKind = 'restart' | 'forfeit' | 'exit';
+
+export interface ConfirmOptions {
+  kind: ConfirmKind;
+  message: string;
+  confirmLabel: string;
+  cancelLabel?: string;
+  onConfirm(): void;
+}
+
+export const CONFIRM_CARD_W = 340;
+export const CONFIRM_CARD_H = 227;
+
 export const hud = {} as {
   me: FighterUI;
   foe: FighterUI;
@@ -41,17 +54,23 @@ export const hud = {} as {
   result: ResultPopup;
   confirm: Container;
   confirmDim: Graphics;
-  confirmTitle: Text;
+  confirmCard: Container;
+  confirmHeading: Text;
+  confirmMessage: Text;
+  confirmIcon: Sprite;
+  confirmAcceptBg: Sprite;
+  confirmAcceptText: Text;
+  confirmCancelText: Text;
 };
 
 let confirmAction: (() => void) | null = null;
 
 
-function makeMenuButton(label: string, icon: Texture, onTap: () => void): ButtonUI {
+function makeMenuButton(label: string, background: string, icon: Texture, onTap: () => void): ButtonUI {
   const w = 140;
   const h = 46;
   const c = new Container();
-  const bg = new Sprite(tex[A.menu.btnBlue]);
+  const bg = new Sprite(tex[background]);
   bg.width = w;
   bg.height = h;
   c.addChild(bg);
@@ -90,64 +109,79 @@ function makeMenuButton(label: string, icon: Texture, onTap: () => void): Button
   };
 }
 
-function makeDialogCard(w: number, h: number): Container {
-  const c = new Container();
-  const g = new Graphics()
-    .roundRect(0, 0, w, h, 18)
-    .fill({ color: 0x101c2c, alpha: 0.96 })
-    .stroke({ width: 2, color: 0xf6c445 });
-  c.addChild(g);
-  return c;
+function fitText(text: Text, maxWidth: number): void {
+  text.scale.set(1);
+  if (text.width > maxWidth) text.scale.set(maxWidth / text.width);
+}
+
+export function hideConfirm(): void {
+  hud.confirm.visible = false;
+  confirmAction = null;
 }
 
 function buildConfirm(): void {
   hud.confirm = new Container();
   hud.confirmDim = new Graphics();
   hud.confirmDim.eventMode = 'static';
+  hud.confirmDim.cursor = 'pointer';
+  hud.confirmDim.on('pointertap', hideConfirm);
   hud.confirm.addChild(hud.confirmDim);
 
-  const cardW = 300;
-  const cardH = 150;
-  const card = makeDialogCard(cardW, cardH);
-  card.label = 'confirm-card';
-  hud.confirm.addChild(card);
+  hud.confirmCard = new Container();
+  hud.confirmCard.label = 'confirm-card';
+  hud.confirmCard.eventMode = 'static';
+  const panel = new Sprite(tex[A.battleConfirm.panel]);
+  panel.width = CONFIRM_CARD_W;
+  panel.height = CONFIRM_CARD_H;
+  hud.confirmCard.addChild(panel);
+  hud.confirm.addChild(hud.confirmCard);
 
-  hud.confirmTitle = makeText('', 14, 0xffffff, '800');
-  hud.confirmTitle.style.wordWrap = true;
-  hud.confirmTitle.style.wordWrapWidth = cardW - 40;
-  hud.confirmTitle.style.align = 'center';
-  hud.confirmTitle.x = cardW / 2;
-  hud.confirmTitle.y = 45;
-  card.addChild(hud.confirmTitle);
+  hud.confirmHeading = makeText('', 18, 0xffe9b0, '800', HEADING);
+  hud.confirmHeading.x = CONFIRM_CARD_W / 2;
+  hud.confirmHeading.y = 34;
+  hud.confirmCard.addChild(hud.confirmHeading);
 
-  const makeSmallBtn = (label: string, x: number, onTap: () => void): void => {
-    const b = new Container();
-    const bg = new Sprite(tex[A.menu.btnBlue]);
-    bg.width = 120;
-    bg.height = 42;
-    b.addChild(bg);
-    const t = makeText(label, 13, 0xffffff, '700', HEADING);
-    t.x = 60;
-    t.y = 21;
-    b.addChild(t);
-    b.x = x;
-    b.y = 88;
-    b.eventMode = 'static';
-    b.cursor = 'pointer';
-    b.on('pointertap', onTap);
-    card.addChild(b);
-  };
+  hud.confirmIcon = new Sprite(tex[A.menu.icForfeit]);
+  hud.confirmIcon.anchor.set(0.5);
+  hud.confirmIcon.x = CONFIRM_CARD_W / 2;
+  hud.confirmIcon.y = 79;
+  hud.confirmCard.addChild(hud.confirmIcon);
 
-  makeSmallBtn('HUỶ', 22, () => {
-    hud.confirm.visible = false;
-    confirmAction = null;
-  });
-  makeSmallBtn('ĐỒNG Ý', cardW - 22 - 120, () => {
-    hud.confirm.visible = false;
+  hud.confirmMessage = makeText('', 13, 0xfff1ce, '700');
+  hud.confirmMessage.style.wordWrap = true;
+  hud.confirmMessage.style.wordWrapWidth = 278;
+  hud.confirmMessage.style.align = 'center';
+  hud.confirmMessage.style.lineHeight = 17;
+  hud.confirmMessage.x = CONFIRM_CARD_W / 2;
+  hud.confirmMessage.y = 125;
+  hud.confirmCard.addChild(hud.confirmMessage);
+
+  function makeSmallBtn(background: string, x: number, onTap: () => void): { bg: Sprite; text: Text } {
+    const button = new Container();
+    const bg = new Sprite(tex[background]);
+    bg.width = 128;
+    bg.height = 39;
+    button.addChild(bg);
+    const text = makeText('', 12, 0xfff1ce, '800', HEADING);
+    text.x = 64;
+    text.y = 20;
+    button.addChild(text);
+    button.x = x;
+    button.y = 172;
+    pressable(button, onTap);
+    hud.confirmCard.addChild(button);
+    return { bg, text };
+  }
+
+  const cancel = makeSmallBtn(A.battleConfirm.btnSafe, 35, hideConfirm);
+  hud.confirmCancelText = cancel.text;
+  const accept = makeSmallBtn(A.menu.btnForfeit, CONFIRM_CARD_W - 35 - 128, () => {
     const act = confirmAction;
-    confirmAction = null;
+    hideConfirm();
     act?.();
   });
+  hud.confirmAcceptBg = accept.bg;
+  hud.confirmAcceptText = accept.text;
 
   hud.confirm.visible = false;
 }
@@ -175,9 +209,9 @@ export function buildHud(root: Container, actions: HudActions): void {
   hud.banner.addChild(turnLabel, hud.turnCount, hud.timer);
   root.addChild(hud.banner);
 
-  hud.restart = makeMenuButton('CHƠI LẠI', tex[A.menu.icRestart], actions.onRestart);
-  hud.forfeit = makeMenuButton('BỎ CUỘC', tex[A.menu.icForfeit], actions.onForfeit);
-  hud.exit = makeMenuButton('THOÁT', tex[A.menu.icExit], actions.onExit);
+  hud.restart = makeMenuButton('CHƠI LẠI', A.menu.btnBlue, tex[A.menu.icRestart], actions.onRestart);
+  hud.forfeit = makeMenuButton('BỎ CUỘC', A.menu.btnForfeit, tex[A.menu.icForfeit], actions.onForfeit);
+  hud.exit = makeMenuButton('THOÁT', A.menu.btnExit, tex[A.menu.icExit], actions.onExit);
 
   hud.bottomRow = new Container();
   hud.restart.view.x = 0;
@@ -195,15 +229,46 @@ export function disposeHud(): void {
   for (const fighter of [hud.me, hud.foe]) {
     if (fighter) disposeFighterUI(fighter);
   }
-  confirmAction = null;
+  hideConfirm();
 }
 
 export function showResult(data: ResultPopupData): void {
   hud.result.show(data);
 }
 
-export function showConfirm(question: string, action: () => void): void {
-  hud.confirmTitle.text = question;
-  confirmAction = action;
+export function showConfirm(options: ConfirmOptions): void {
+  const heading =
+    options.kind === 'forfeit'
+      ? 'XÁC NHẬN BỎ CUỘC'
+      : options.kind === 'exit'
+        ? 'XÁC NHẬN RỜI TRẬN'
+        : 'XÁC NHẬN CHƠI LẠI';
+  const icon =
+    options.kind === 'forfeit'
+      ? A.menu.icForfeit
+      : options.kind === 'exit'
+        ? A.menu.icExit
+        : A.menu.icRestart;
+  const actionBackground =
+    options.kind === 'forfeit'
+      ? A.menu.btnForfeit
+      : options.kind === 'exit'
+        ? A.menu.btnExit
+        : A.battleConfirm.btnSafe;
+
+  hud.confirmHeading.text = heading;
+  fitText(hud.confirmHeading, 238);
+  hud.confirmMessage.text = options.message;
+  hud.confirmIcon.texture = tex[icon];
+  hud.confirmIcon.scale.set(29 / Math.max(hud.confirmIcon.texture.width, hud.confirmIcon.texture.height));
+  hud.confirmAcceptBg.texture = tex[actionBackground];
+  hud.confirmAcceptBg.width = 128;
+  hud.confirmAcceptBg.height = 39;
+  hud.confirmAcceptText.text = options.confirmLabel;
+  fitText(hud.confirmAcceptText, 94);
+  hud.confirmCancelText.text = options.cancelLabel ?? 'TIẾP TỤC';
+  fitText(hud.confirmCancelText, 94);
+  confirmAction = options.onConfirm;
   hud.confirm.visible = true;
+  popIn(hud.confirmCard, 0, 300);
 }
