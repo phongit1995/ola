@@ -330,6 +330,7 @@ function joinRoomFromList(room: RoomInfo): void {
 }
 
 function submitCreateRoom(bet: number, password: string): void {
+  const normalizedPassword = password.trim();
   if (!Number.isInteger(bet) || bet < 0) {
     toast('Mức cược không hợp lệ');
     return;
@@ -346,7 +347,7 @@ function submitCreateRoom(bet: number, password: string): void {
       return;
     }
   }
-  if (password.length > 64) {
+  if (normalizedPassword.length > 64) {
     toast('Mật khẩu tối đa 64 ký tự');
     return;
   }
@@ -356,7 +357,7 @@ function submitCreateRoom(bet: number, password: string): void {
     return;
   }
   if (!tryLock()) return;
-  s.createRoom(bet, password.length > 0 ? password : undefined);
+  s.createRoom(bet, normalizedPassword || undefined);
 }
 
 function submitPassword(password: string): void {
@@ -365,12 +366,13 @@ function submitPassword(password: string): void {
     showList(true);
     return;
   }
-  if (password.length === 0) {
+  const normalizedPassword = password.trim();
+  if (normalizedPassword.length === 0) {
     toast('Vui lòng nhập mật khẩu');
     return;
   }
   if (!tryLock()) return;
-  activeSession()?.joinRoom(target.id, password);
+  activeSession()?.joinRoom(target.id, normalizedPassword);
 }
 
 function toggleReady(): void {

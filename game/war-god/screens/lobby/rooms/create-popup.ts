@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
+import { Container, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
 import { A, tex } from '../../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../../kit';
 import { DESIGN_W } from '../../../layout';
@@ -17,6 +17,13 @@ let dim: Graphics;
 let card: Container;
 let betInput: HTMLInputElement;
 let passInput: HTMLInputElement;
+let passwordToggle: Container;
+let passwordToggleBg: Graphics;
+let passwordSwitchBg: Graphics;
+let passwordSwitchKnob: Graphics;
+let passwordToggleState: Text;
+let passBg: Sprite;
+let passwordEnabled = false;
 let cardScale = 1;
 let cardH = 0;
 let betFieldY = 0;
@@ -39,11 +46,57 @@ function placeOne(input: HTMLInputElement, fieldY: number): void {
 
 function placeInputs(): void {
   placeOne(betInput, betFieldY);
-  placeOne(passInput, passFieldY);
+  if (passwordEnabled) placeOne(passInput, passFieldY);
 }
 
 function submit(): void {
-  cb.onSubmit(Number(betInput.value || '0'), passInput.value);
+  if (passwordEnabled && passInput.value.trim().length === 0) {
+    showPasswordRequired();
+    passInput.focus();
+    return;
+  }
+  cb.onSubmit(Number(betInput.value || '0'), passwordEnabled ? passInput.value.trim() : '');
+}
+
+function drawPasswordToggle(): void {
+  passwordToggleBg
+    .clear()
+    .roundRect(-fieldW / 2, -28, fieldW, 56, 17)
+    .fill({ color: passwordEnabled ? 0x143b63 : 0xf7ecd7, alpha: passwordEnabled ? 0.94 : 0.78 })
+    .stroke({ width: 2, color: passwordEnabled ? 0xffd45a : 0x9b5a1c, alpha: 0.96 });
+  const switchX = fieldW / 2 - 45;
+  passwordSwitchBg
+    .clear()
+    .roundRect(switchX - 35, -15, 70, 30, 15)
+    .fill({ color: passwordEnabled ? 0xb34217 : 0x68421f, alpha: 0.96 })
+    .stroke({ width: 1.5, color: 0xffd45a, alpha: 0.98 });
+  passwordSwitchKnob
+    .clear()
+    .circle(switchX + (passwordEnabled ? 20 : -20), 0, 11)
+    .fill(passwordEnabled ? 0xffe15a : 0xf7ecd7)
+    .stroke({ width: 1, color: 0x6a3a13 });
+  passwordToggleState.text = passwordEnabled ? 'BẬT' : 'TẮT';
+  passwordToggleState.x = switchX + (passwordEnabled ? -11 : 11);
+  passwordToggleState.style.fill = passwordEnabled ? 0xfff2d0 : 0xffe15a;
+}
+
+function setPasswordEnabled(enabled: boolean, focus = false): void {
+  passwordEnabled = enabled;
+  passInput.value = '';
+  passInput.type = 'password';
+  passBg.visible = enabled;
+  drawPasswordToggle();
+  placeInputs();
+  passInput.style.display = box.visible && enabled ? 'block' : 'none';
+  if (!enabled) passInput.blur();
+  if (enabled && focus) requestAnimationFrame(() => passInput.focus());
+}
+
+function showPasswordRequired(): void {
+  passBg.tint = 0xffb8a0;
+  window.setTimeout(() => {
+    if (!passBg.destroyed) passBg.tint = 0xffffff;
+  }, 520);
 }
 
 function makeLabel(label: string): Container {
@@ -69,14 +122,13 @@ function makeFieldBg(): Sprite {
 
 export function openCreateRoomPopup(): void {
   betInput.value = '0';
-  passInput.value = '';
   box.visible = true;
+  setPasswordEnabled(false);
   dim.alpha = 0;
   void tween(dim, { alpha: 1 }, 200);
   popIn(card, 0, 380);
   placeInputs();
   betInput.style.display = 'block';
-  passInput.style.display = 'block';
 }
 
 export function hideCreateRoomPopup(): void {
@@ -123,10 +175,38 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
   betBg.position.set(0, betFieldY);
   card.addChild(betBg);
 
-  const passLabel = makeLabel('MẬT KHẨU');
-  passLabel.position.set(0, -halfH + cardH * 0.65);
-  card.addChild(passLabel);
-  const passBg = makeFieldBg();
+  passwordToggle = new Container();
+  passwordToggleBg = new Graphics();
+  passwordToggle.addChild(passwordToggleBg);
+  const toggleLock = new Sprite(tex[A.lobby.lock]);
+  toggleLock.anchor.set(0.5);
+  toggleLock.width = 33;
+  toggleLock.scale.y = toggleLock.scale.x;
+  toggleLock.x = -fieldW / 2 + 30;
+  passwordToggle.addChild(toggleLock);
+  const toggleTitle = makeText('MẬT KHẨU', 16, 0xffe15a, '800', HEADING);
+  toggleTitle.anchor.set(0, 0.5);
+  toggleTitle.x = -fieldW / 2 + 55;
+  toggleTitle.y = -8;
+  toggleTitle.style.stroke = { color: 0x5a1c08, width: 3, join: 'round' };
+  passwordToggle.addChild(toggleTitle);
+  const toggleHint = makeText('(TÙY CHỌN)', 11, 0xfff2d0, '700', HEADING);
+  toggleHint.anchor.set(0, 0.5);
+  toggleHint.x = -fieldW / 2 + 55;
+  toggleHint.y = 13;
+  toggleHint.style.stroke = { color: 0x5a1c08, width: 2, join: 'round' };
+  passwordToggle.addChild(toggleHint);
+  passwordSwitchBg = new Graphics();
+  passwordSwitchKnob = new Graphics();
+  passwordToggle.addChild(passwordSwitchBg, passwordSwitchKnob);
+  passwordToggleState = makeText('', 10, 0xffe15a, '800', HEADING);
+  passwordToggle.addChild(passwordToggleState);
+  passwordToggle.position.set(0, -halfH + cardH * 0.65);
+  passwordToggle.hitArea = new Rectangle(-fieldW / 2, -28, fieldW, 56);
+  pressable(passwordToggle, () => setPasswordEnabled(!passwordEnabled, true));
+  card.addChild(passwordToggle);
+
+  passBg = makeFieldBg();
   passBg.position.set(0, passFieldY);
   card.addChild(passBg);
 
@@ -178,15 +258,18 @@ export function buildCreateRoomPopup(callbacks: CreateRoomCallbacks): Container 
   passInput = makeOverlayInput({
     secure: true,
     maxLength: 64,
-    placeholder: 'Để trống nếu không khóa',
+    placeholder: 'Nhập mật khẩu',
   });
   betInput.style.textAlign = 'center';
   passInput.style.textAlign = 'center';
+  passInput.setAttribute('aria-label', 'Mật khẩu bàn');
   const onEnter = (e: KeyboardEvent): void => {
     if (e.key === 'Enter') submit();
   };
   betInput.addEventListener('keydown', onEnter);
   passInput.addEventListener('keydown', onEnter);
+
+  setPasswordEnabled(false);
 
   box.addChild(card);
   box.visible = false;

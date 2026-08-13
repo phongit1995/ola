@@ -165,8 +165,9 @@ export function buildPasswordPopup(callbacks: PasswordCallbacks): Container {
   pressable(close, () => cb.onCancel());
   card.addChild(close);
 
-  input = makeOverlayInput({ secure: true, maxLength: 64, placeholder: 'Mật khẩu bàn' });
+  input = makeOverlayInput({ secure: true, maxLength: 64, placeholder: 'Nhập mật khẩu' });
   input.style.textAlign = 'center';
+  input.setAttribute('aria-label', 'Mật khẩu bàn');
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submit();
   });
