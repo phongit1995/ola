@@ -8,8 +8,15 @@ const CARD_W = 404;
 // Tỉ lệ gốc của ảnh panel vừa đủ cho trạng thái bật mật khẩu. Khi tắt thì ô mật
 // khẩu biến mất, để nguyên chiều cao sẽ thừa một mảng trống lớn, nên nén dọc
 // lại. Mọi vị trí bên trong tính theo cardH nên cả layout co theo.
-const SQUASH_PASSWORD_ON = 1;
+const SQUASH_PASSWORD_ON = 0.95;
 const SQUASH_PASSWORD_OFF = 0.78;
+// Nhãn, ô nhập và toggle đều cao cố định, nên phải xếp dọc bằng khoảng cách cố
+// định. Đặt theo tỉ lệ cardH thì lúc panel co lại chúng dính vào nhau.
+const TOGGLE_H = 56;
+const GAP_TITLE = 18;
+const GAP_LABEL = 12;
+const GAP_BLOCK = 18;
+const OK_BOTTOM = 46;
 
 interface CreateRoomCallbacks {
   onSubmit(bet: number, password: string): void;
@@ -100,15 +107,23 @@ function applyCardHeight(): void {
     panel.scale.x * (passwordEnabled ? SQUASH_PASSWORD_ON : SQUASH_PASSWORD_OFF);
   cardH = panel.height;
   const halfH = cardH / 2;
-  betFieldY = -halfH + cardH * 0.47;
-  passFieldY = -halfH + cardH * 0.78;
-  betLabelView.position.set(0, -halfH + cardH * 0.34);
-  betBgView.position.set(0, betFieldY);
-  passwordToggle.position.set(0, -halfH + cardH * 0.65);
-  passBg.position.set(0, passFieldY);
-  okView.position.set(0, halfH - cardH * 0.09);
+
   titleView.y = -halfH + cardH * 0.03;
   closeView.position.set(CARD_W / 2 - CARD_W * 0.055, -halfH + cardH * 0.05);
+
+  const labelH = betLabelView.height;
+  let top = titleView.y + titleView.height / 2 + GAP_TITLE;
+  betLabelView.position.set(0, top + labelH / 2);
+  top += labelH + GAP_LABEL;
+  betFieldY = top + fieldH / 2;
+  betBgView.position.set(0, betFieldY);
+  top = betFieldY + fieldH / 2 + GAP_BLOCK;
+  passwordToggle.position.set(0, top + TOGGLE_H / 2);
+  top += TOGGLE_H + GAP_LABEL;
+  passFieldY = top + fieldH / 2;
+  passBg.position.set(0, passFieldY);
+
+  okView.position.set(0, halfH - OK_BOTTOM);
 }
 
 function setPasswordEnabled(enabled: boolean, focus = false): void {
