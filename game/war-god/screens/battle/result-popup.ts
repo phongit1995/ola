@@ -104,17 +104,17 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
   kenBox.y = panelH * 0.32;
   card.addChild(kenBox);
 
-  const BTN_W = PANEL_W * 0.42;
-  const BTN_GAP = PANEL_W * 0.05;
+  const BTN_W = PANEL_W * 0.36;
+  const BTN_GAP = PANEL_W * 0.045;
 
-  function makeButton(label: string, onTap: () => void): Container {
+  function makeButton(label: string, background: string, onTap: () => void): Container {
     const btn = new Container();
-    const bg = new Sprite(tex[A.result.btnClose]);
+    const bg = new Sprite(tex[background]);
     bg.anchor.set(0.5);
     bg.width = BTN_W;
     bg.scale.y = bg.scale.x;
     btn.addChild(bg);
-    const text = makeText(label, 20, 0xffdf62, '700', HEADING);
+    const text = makeText(label, 18, 0xffdf62, '700', HEADING);
     text.y = -1;
     fitText(text, BTN_W * 0.74);
     btn.addChild(text);
@@ -127,8 +127,8 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
     return btn;
   }
 
-  const replayButton = makeButton('CHƠI LẠI', onReplay);
-  const closeButton = makeButton('ĐÓNG', onClose);
+  const replayButton = makeButton('CHƠI LẠI', A.result.btnReplay, onReplay);
+  const closeButton = makeButton('ĐÓNG', A.result.btnClose, onClose);
   replayButton.x = -(BTN_W + BTN_GAP) / 2;
   closeButton.x = (BTN_W + BTN_GAP) / 2;
   card.addChild(replayButton, closeButton);

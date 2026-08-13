@@ -89,6 +89,7 @@ import resultCupWin from './assets/result/cup-win.webp';
 import resultShieldLose from './assets/result/shield-lose.webp';
 import resultBrushWin from './assets/result/brush-win.webp';
 import resultBrushLose from './assets/result/brush-lose.webp';
+import resultBtnReplay from './assets/result/btn-replay.png';
 import resultBtnClose from './assets/result/btn-close.webp';
 import resultKen from './assets/result/ken.webp';
 import historyPanelFill from './assets/history/panel-fill.webp';
@@ -207,6 +208,7 @@ export const A = {
     shieldLose: resultShieldLose,
     brushWin: resultBrushWin,
     brushLose: resultBrushLose,
+    btnReplay: resultBtnReplay,
     btnClose: resultBtnClose,
     ken: resultKen,
   },
