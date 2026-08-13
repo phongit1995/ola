@@ -3,6 +3,7 @@ import type { RoomInfo, UserInfoData } from '../../../../src/sdk';
 import { A, tex } from '../../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../../kit';
 import { DESIGN_W } from '../../../layout';
+import { avatarIconUrl } from '../../../vip';
 
 const CONTENT_H = 1000;
 const CARD_W = 486;
@@ -46,6 +47,8 @@ let btnClose: Container;
 let nameLabel: Text;
 let avatarIcon: Sprite;
 let kenLabel: Text;
+let userAvatarLoadGen = 0;
+let userAvatarRequestedUrl = '';
 
 let tableH = 0;
 let rowH = 0;
@@ -72,38 +75,27 @@ function fitText(t: Text, maxWidth: number): void {
   if (t.width > maxWidth) t.scale.set(maxWidth / t.width);
 }
 
-function parseVipId(vipType: string | null | undefined): number | null {
-  if (vipType == null || vipType === '') return null;
-  const id = Number(vipType);
-  return Number.isFinite(id) && id > 0 ? id : null;
-}
-
-function vipUrl(id: number): string {
-  return `/vip-icons/vip_${String(id).padStart(3, '0')}.png`;
-}
-
 function makeAvatar(room: RoomInfo, size: number): Container {
   const av = new Container();
   const color = AVATAR_COLORS[(room.owner.charCodeAt(0) || 0) % AVATAR_COLORS.length];
   av.addChild(new Graphics().circle(0, 0, size / 2).fill(color));
   const letter = makeText((room.owner[0] ?? '?').toUpperCase(), size * 0.5, 0xffffff, '800', HEADING);
-  av.addChild(letter);
-  const vipId = parseVipId(room.ownerVipType);
-  if (vipId != null) {
-    void Assets.load<Texture>(vipUrl(vipId))
-      .then((texture) => {
-        if (av.destroyed) return;
-        letter.visible = false;
-        const icon = new Sprite(texture);
-        icon.anchor.set(0.5);
-        icon.scale.set(Math.min((size * 1.02) / texture.width, (size * 1.02) / texture.height));
-        const mask = new Graphics().circle(0, 0, size / 2).fill(0xffffff);
-        av.addChild(icon, mask);
-        icon.mask = mask;
-      })
-      .catch(() => {});
-  }
-  av.addChild(new Graphics().circle(0, 0, size / 2).stroke({ width: 2.5, color: 0xf6c445, alpha: 0.9 }));
+  const icon = new Sprite(Texture.EMPTY);
+  icon.anchor.set(0.5);
+  icon.visible = false;
+  const mask = new Graphics().circle(0, 0, size / 2).fill(0xffffff);
+  icon.mask = mask;
+  const border = new Graphics().circle(0, 0, size / 2).stroke({ width: 2.5, color: 0xf6c445, alpha: 0.9 });
+  av.addChild(letter, icon, mask, border);
+  void Assets.load<Texture>(avatarIconUrl(room.ownerVipType))
+    .then((texture) => {
+      if (av.destroyed) return;
+      letter.visible = false;
+      icon.texture = texture;
+      icon.scale.set(Math.min((size * 1.02) / texture.width, (size * 1.02) / texture.height));
+      icon.visible = true;
+    })
+    .catch(() => {});
   return av;
 }
 
@@ -194,23 +186,34 @@ export function renderRoomList(list: RoomInfo[]): void {
 }
 
 export function setRoomListUser(info: UserInfoData | null): void {
-  if (!info || !nameLabel) return;
+  if (!nameLabel) return;
+  if (!info) {
+    userAvatarLoadGen++;
+    userAvatarRequestedUrl = '';
+    nameLabel.text = '';
+    kenLabel.text = '0';
+    avatarIcon.visible = false;
+    return;
+  }
   nameLabel.text = info.username;
   fitText(nameLabel, CARD_W * 0.42);
   kenLabel.text = info.ken.toLocaleString('vi-VN');
   fitText(kenLabel, CARD_W * 0.24);
+  const requestedUrl = avatarIconUrl(info.vipType);
+  if (requestedUrl === userAvatarRequestedUrl) return;
+  userAvatarRequestedUrl = requestedUrl;
+  const gen = ++userAvatarLoadGen;
   avatarIcon.visible = false;
-  const vipId = parseVipId(info.vipType);
-  if (vipId != null) {
-    void Assets.load<Texture>(vipUrl(vipId))
-      .then((texture) => {
-        if (avatarIcon.destroyed) return;
-        avatarIcon.texture = texture;
-        avatarIcon.scale.set(Math.min(96 / texture.width, 96 / texture.height));
-        avatarIcon.visible = true;
-      })
-      .catch(() => {});
-  }
+  void Assets.load<Texture>(requestedUrl)
+    .then((texture) => {
+      if (avatarIcon.destroyed || gen !== userAvatarLoadGen) return;
+      avatarIcon.texture = texture;
+      avatarIcon.scale.set(Math.min(96 / texture.width, 96 / texture.height));
+      avatarIcon.visible = true;
+    })
+    .catch(() => {
+      if (gen === userAvatarLoadGen) userAvatarRequestedUrl = '';
+    });
 }
 
 export function openRoomListPopup(): void {

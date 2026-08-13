@@ -5,6 +5,7 @@ import { disposeAudio } from './audio';
 import { initKit } from './kit';
 import { DESIGN_W } from './layout';
 import { createSessionController } from './session-controller';
+import { updateRoomListUser } from './rooms';
 import { disposeChat } from './screens/battle/chat';
 import {
   battleChatFocused,
@@ -25,7 +26,7 @@ import {
   lobbySetReady,
   lobbySetVisible,
   lobbyShowToast,
-  lobbyUpdateKen,
+  lobbyUpdateUser,
   openSearchPopup,
 } from './screens/lobby';
 
@@ -62,7 +63,10 @@ const sessionController = createSessionController({
   setConnecting: lobbySetConnecting,
   setReady: lobbySetReady,
   setError: lobbySetError,
-  updateKen: lobbyUpdateKen,
+  updateUser: (user) => {
+    lobbyUpdateUser(user);
+    updateRoomListUser(user);
+  },
   toast: lobbyShowToast,
   openSearch: openSearchPopup,
   hideSearch: hideSearchPopup,

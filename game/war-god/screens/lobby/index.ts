@@ -27,26 +27,15 @@ import {
   layoutLeaderboardPopup,
   openLeaderboardPopup,
 } from './leaderboard-popup';
+import { avatarIconUrl } from '../../vip';
 
-const VIP_FIT_W = 150;
-const VIP_FIT_H = 132;
+const VIP_FIT_SIZE = 132;
 const NAME_W = 400;
 const KEN_W = 330;
 const WOOD_W = 310;
 const WOOD_H = 86;
 const PILL_GAP = 10;
 const SOUND_KEY = 'wg-sound-on';
-
-function parseVipTypeId(vipType: string | null | undefined): number | null {
-  if (vipType == null || vipType === '') return null;
-  const id = Number(vipType);
-  if (!Number.isInteger(id) || id < 1 || id > 132) return null;
-  return id;
-}
-
-function vipIconUrl(id: number): string {
-  return `/vip-icons/vip_${String(id).padStart(3, '0')}.png`;
-}
 
 interface LobbyDeps {
   getSession(): GameSession | null;
@@ -104,6 +93,9 @@ let spinnerStep: ((ticker: Ticker) => void) | null = null;
 let lastDesignH = 980;
 let lastInsetTop = 0;
 let lastInsetBottom = 0;
+let avatarLoadGen = 0;
+let avatarRequestedUrl = '';
+let animateAvatarOnLoad = false;
 
 function stopSpinner(): void {
   if (spinnerStep) {
@@ -225,6 +217,38 @@ export function lobbyUpdateKen(ken: number): void {
   }
   kenValue = ken;
   kenText.text = ken > 0 ? ken.toLocaleString('vi-VN') : '0';
+}
+
+function updateAvatar(vipType?: string | null, animate = false): void {
+  const url = avatarIconUrl(vipType);
+  if (url === avatarRequestedUrl) {
+    animateAvatarOnLoad ||= animate;
+    if (animate && vipIcon.visible) popIn(vipIcon, 120);
+    return;
+  }
+  avatarRequestedUrl = url;
+  animateAvatarOnLoad = animate;
+  const gen = ++avatarLoadGen;
+  vipIcon.visible = false;
+  void Assets.load<Texture>(url)
+    .then((texture) => {
+      if (gen !== avatarLoadGen || vipIcon.destroyed) return;
+      vipIcon.texture = texture;
+      vipIcon.scale.set(Math.min(VIP_FIT_SIZE / texture.width, VIP_FIT_SIZE / texture.height));
+      vipIcon.visible = true;
+      if (animateAvatarOnLoad) popIn(vipIcon, 120);
+      animateAvatarOnLoad = false;
+    })
+    .catch(() => {
+      if (gen === avatarLoadGen) avatarRequestedUrl = '';
+    });
+}
+
+export function lobbyUpdateUser(info: UserInfoData): void {
+  nameText.text = `@${info.username}`;
+  layoutNameRow();
+  updateAvatar(info.vipType);
+  lobbyUpdateKen(info.ken);
 }
 
 export function buildLobby(lobbyDeps: LobbyDeps): Container {
@@ -528,20 +552,8 @@ export function lobbySetReady(info: UserInfoData): void {
   retryBtn.visible = false;
 
   nameText.text = `@${info.username}`;
-  vipIcon.visible = false;
   layoutNameRow();
-
-  const vipId = parseVipTypeId(info.vipType);
-  if (vipId) {
-    void Assets.load<Texture>(vipIconUrl(vipId))
-      .then((texture) => {
-        vipIcon.texture = texture;
-        vipIcon.scale.set(Math.min(VIP_FIT_W / texture.width, VIP_FIT_H / texture.height));
-        vipIcon.visible = true;
-        popIn(vipIcon, 120);
-      })
-      .catch(() => {});
-  }
+  updateAvatar(info.vipType, true);
 
   layoutLobby(lastDesignH, lastInsetTop, lastInsetBottom);
   revealContent();

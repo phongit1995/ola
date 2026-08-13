@@ -548,6 +548,10 @@ export function openRoomList(): void {
   s.listRooms();
 }
 
+export function updateRoomListUser(info: UserInfoData): void {
+  if (isRoomListPopupOpen()) setRoomListUser(info);
+}
+
 export function hasActiveRoom(): boolean {
   return currentRoomId !== '' && !inMatch;
 }
