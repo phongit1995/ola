@@ -17,8 +17,6 @@ import {
 } from './screens/battle';
 import {
   buildLobby,
-  hideSearchPopup,
-  isSearchPopupOpen,
   layoutLobby,
   lobbyEnterAnimated,
   lobbySetConnecting,
@@ -27,7 +25,6 @@ import {
   lobbySetVisible,
   lobbyShowToast,
   lobbyUpdateUser,
-  openSearchPopup,
 } from './screens/lobby';
 
 
@@ -68,9 +65,6 @@ const sessionController = createSessionController({
     updateRoomListUser(user);
   },
   toast: lobbyShowToast,
-  openSearch: openSearchPopup,
-  hideSearch: hideSearchPopup,
-  isSearchOpen: isSearchPopupOpen,
 });
 
 function readSafeInsets(): void {
@@ -165,9 +159,11 @@ async function main(): Promise<void> {
       }
       sessionController.openActiveRoom();
     },
+    // Trận trong bàn: chơi lại nghĩa là quay về bàn cũ rồi bấm BẮT ĐẦU tiếp,
+    // không còn hàng chờ để ghép trận mới.
     onReplay: () => {
       lobbyEnterAnimated();
-      sessionController.startQueue();
+      sessionController.openActiveRoom();
     },
     onPvpError: (text) => lobbyShowToast(text),
   });
@@ -175,11 +171,6 @@ async function main(): Promise<void> {
   lobbyBox = buildLobby({
     getSession: sessionController.getSession,
     onPlay: (level) => startBattle(level),
-    onPvp: sessionController.startQueue,
-    onCancelQueue: () => {
-      sessionController.cancelQueue();
-      hideSearchPopup();
-    },
     onRetry: () => void sessionController.connect(),
     onExit: () => bridge.exit(),
   });

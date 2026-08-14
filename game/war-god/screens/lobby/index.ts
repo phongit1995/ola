@@ -2,7 +2,7 @@ import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 
 import type { GameSession, UserInfoData } from '../../../src/sdk';
 import { playSound, setSoundEnabled } from '../../audio';
 import { A, tex } from '../../assets';
-import { addTick, iconSprite, makeText, popIn, pressable, removeTick, tween } from '../../kit';
+import { addTick, iconSprite, makeText, popIn, pressable, removeTick } from '../../kit';
 import { DESIGN_W } from '../../layout';
 import type { BotLevel } from '../../logic/battle';
 import { buildRoomsLayer, hideAllRoomPopups, layoutRooms, openRoomList } from '../../rooms';
@@ -40,8 +40,6 @@ const SOUND_KEY = 'wg-sound-on';
 interface LobbyDeps {
   getSession(): GameSession | null;
   onPlay(level: BotLevel): void;
-  onPvp(): void;
-  onCancelQueue(): void;
   onRetry(): void;
   onExit(): void;
 }
@@ -68,10 +66,8 @@ let plusBtn: Container;
 let plusBg: Sprite;
 let plusIc: Sprite;
 let btnBot: Container;
-let btnPvp: Container;
 let btnRoom: Container;
 let btnBotWrap: Container;
-let btnPvpWrap: Container;
 let btnRoomWrap: Container;
 let menuRow: Container;
 let soundIcon: Sprite;
@@ -84,11 +80,6 @@ let toastTimer: number | undefined;
 let pickBox: Container;
 let guideBox: Container;
 let confirmBox: Container;
-let searchBox: Container;
-let searchDim: Graphics;
-let searchCard: Container;
-let searchLabel: Text;
-let searchStep: ((ticker: Ticker) => void) | null = null;
 let spinnerStep: ((ticker: Ticker) => void) | null = null;
 let lastDesignH = 980;
 let lastInsetTop = 0;
@@ -149,64 +140,6 @@ function showToast(message: string): void {
 export function lobbyShowToast(message: string): void {
   if (!box?.visible) return;
   showToast(message);
-}
-
-function stopSearchAnim(): void {
-  if (searchStep) {
-    removeTick(searchStep);
-    searchStep = null;
-  }
-}
-
-function buildSearchPopup(): Container {
-  searchBox = new Container();
-  searchDim = new Graphics();
-  searchDim.eventMode = 'static';
-  searchBox.addChild(searchDim);
-
-  searchCard = new Container();
-  const panel = new Graphics()
-    .roundRect(-190, -95, 380, 190, 18)
-    .fill({ color: 0x101c2c, alpha: 0.94 })
-    .stroke({ width: 2, color: 0xf6c445 });
-  panel.eventMode = 'static';
-  searchCard.addChild(panel);
-
-  searchLabel = makeText('Đang tìm trận...', 20, 0xffe9a8, '800');
-  searchLabel.y = -36;
-  searchCard.addChild(searchLabel);
-
-  const cancel = makeWoodBtn('HỦY', 180, 60, null, () => deps.onCancelQueue());
-  cancel.y = 42;
-  searchCard.addChild(cancel);
-
-  searchBox.addChild(searchCard);
-  searchBox.visible = false;
-  return searchBox;
-}
-
-export function openSearchPopup(): void {
-  stopSearchAnim();
-  searchBox.visible = true;
-  searchDim.alpha = 0;
-  void tween(searchDim, { alpha: 1 }, 200);
-  popIn(searchCard, 0, 380);
-  let t = 0;
-  searchStep = (ticker: Ticker) => {
-    t += ticker.deltaMS;
-    const dots = '.'.repeat(1 + (Math.floor(t / 400) % 3));
-    searchLabel.text = `Đang tìm trận${dots}`;
-  };
-  addTick(searchStep);
-}
-
-export function hideSearchPopup(): void {
-  stopSearchAnim();
-  if (searchBox) searchBox.visible = false;
-}
-
-export function isSearchPopupOpen(): boolean {
-  return searchBox?.visible === true;
 }
 
 export function lobbyUpdateKen(ken: number): void {
@@ -334,12 +267,6 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   btnBotWrap.addChild(btnBot);
   content.addChild(btnBotWrap);
 
-  btnPvp = makeWoodBtn('ĐẤU 1V1', WOOD_W, WOOD_H, A.lobby.icPvp, () => deps.onPvp());
-  btnPvpWrap = new Container();
-  btnPvpWrap.x = DESIGN_W / 2;
-  btnPvpWrap.addChild(btnPvp);
-  content.addChild(btnPvpWrap);
-
   btnRoom = makeWoodBtn('PHÒNG ĐẤU', WOOD_W, WOOD_H, A.lobby.icPvp, openRoomList);
   btnRoomWrap = new Container();
   btnRoomWrap.x = DESIGN_W / 2;
@@ -403,7 +330,6 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   box.addChild(guideBox);
   confirmBox = buildConfirmPopup();
   box.addChild(confirmBox);
-  box.addChild(buildSearchPopup());
   box.addChild(buildRoomsLayer());
   box.addChild(buildHistoryPopup());
   box.addChild(buildLeaderboardPopup());
@@ -458,24 +384,20 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   const menuTop = menuY - 41;
   let btnScale = 1;
   let roomY = menuY - 104;
-  let pvpY = roomY - 104;
-  let botY = pvpY - 104;
+  let botY = roomY - 104;
   if (botY - WOOD_H / 2 < kenBottom + 12) {
     const availTop = kenBottom + 10;
     const availBot = menuTop - 10;
     const span = Math.max(120, availBot - availTop);
-    const need = WOOD_H * 3 + 28;
+    const need = WOOD_H * 2 + 14;
     btnScale = Math.min(1, span / need);
     const blockTop = (availTop + availBot) / 2 - (need * btnScale) / 2;
     botY = blockTop + (WOOD_H * btnScale) / 2;
-    pvpY = botY + (WOOD_H + 14) * btnScale;
-    roomY = pvpY + (WOOD_H + 14) * btnScale;
+    roomY = botY + (WOOD_H + 14) * btnScale;
   }
   btnBotWrap.scale.set(btnScale);
-  btnPvpWrap.scale.set(btnScale);
   btnRoomWrap.scale.set(btnScale);
   btnBotWrap.y = botY;
-  btnPvpWrap.y = pvpY;
   btnRoomWrap.y = roomY;
 
   const gapBottom = botY - (WOOD_H * btnScale) / 2;
@@ -488,9 +410,6 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   layoutRooms(designH, insetTop, insetBottom);
   layoutHistoryPopup(designH, insetTop, insetBottom);
   layoutLeaderboardPopup(designH, insetTop, insetBottom);
-  searchDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  searchCard.x = DESIGN_W / 2;
-  searchCard.y = insetTop + (designH - insetTop - insetBottom) / 2;
 }
 
 function layoutNameRow(): void {
@@ -514,8 +433,7 @@ function revealContent(): void {
   popIn(kenText, 210);
   popIn(plusBtn, 210);
   popIn(btnBot, 320);
-  popIn(btnPvp, 420);
-  popIn(btnRoom, 520);
+  popIn(btnRoom, 420);
   popIn(menuRow, 640);
 }
 
@@ -579,7 +497,6 @@ export function lobbySetVisible(visible: boolean): void {
     hidePickPopup();
     hideGuidePopup();
     hideConfirmPopup();
-    hideSearchPopup();
     hideAllRoomPopups();
     hideHistoryPopup();
     hideLeaderboardPopup();

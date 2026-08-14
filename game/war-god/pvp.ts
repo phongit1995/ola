@@ -69,14 +69,6 @@ export const pvp = {
     handlers = { ...handlers, ...next };
   },
 
-  startQueue(): void {
-    session?.joinQueue();
-  },
-
-  cancelQueue(): void {
-    session?.leaveQueue();
-  },
-
   forfeit(): void {
     if (matchId) session?.forfeit(matchId);
   },
