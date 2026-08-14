@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"ola-chat-server/internal/game/logic"
 	"ola-chat-server/internal/game/protocol"
@@ -60,10 +61,17 @@ func (turnControlTestLogic) KeepTurn(state any) bool {
 	return state.(*turnControlTestState).ExtraTurn
 }
 func (turnControlTestLogic) TimeoutSkipsTurn() bool { return true }
+func (turnControlTestLogic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) time.Duration {
+	if previousPlayerIdx < 0 {
+		return 300 * time.Millisecond
+	}
+	return 1500 * time.Millisecond
+}
 
 var (
-	_ logic.TurnKeeper     = turnControlTestLogic{}
-	_ logic.TimeoutSkipper = turnControlTestLogic{}
+	_ logic.TurnKeeper       = turnControlTestLogic{}
+	_ logic.TurnStartDelayer = turnControlTestLogic{}
+	_ logic.TimeoutSkipper   = turnControlTestLogic{}
 )
 
 func init() {
@@ -141,6 +149,33 @@ func TestTurnKeeperKeepsTurnAfterMove(t *testing.T) {
 	gameEngine.Move(match.GameID, currentID, match.ID, json.RawMessage(`{"keep":false}`))
 	if match.turnIdx != 1-currentIdx {
 		t.Fatalf("turn = %d, want flipped turn %d", match.turnIdx, 1-currentIdx)
+	}
+}
+
+func TestTurnStartDelayExtendsAuthoritativeDeadline(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	startedAt := time.Now()
+	match := startTurnControlTestMatch(t, gameEngine)
+	minimumInitialDeadline := startedAt.Add(time.Duration(gameEngine.turnSeconds)*time.Second + 250*time.Millisecond)
+	if match.deadline.Before(minimumInitialDeadline) {
+		t.Fatalf("initial deadline = %v, want at least %v", match.deadline, minimumInitialDeadline)
+	}
+
+	currentIdx := match.turnIdx
+	currentID := match.players[currentIdx].ID
+	movedAt := time.Now()
+	gameEngine.Move(match.GameID, currentID, match.ID, json.RawMessage(`{"keep":false}`))
+	minimumMoveDeadline := movedAt.Add(time.Duration(gameEngine.turnSeconds)*time.Second + 1400*time.Millisecond)
+	if match.deadline.Before(minimumMoveDeadline) {
+		t.Fatalf("move deadline = %v, want at least %v", match.deadline, minimumMoveDeadline)
+	}
+	for _, player := range match.players {
+		envelope, ok := emitter.last(player.ID, protocol.S2CState)
+		if !ok || envelope.Data.(protocol.StateData).Deadline != match.deadline.UnixMilli() {
+			t.Fatalf("%s did not receive the delayed authoritative deadline", player.ID)
+		}
 	}
 }
 

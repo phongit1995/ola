@@ -1,8 +1,4 @@
-import {
-  GAME_ERROR_CODE,
-  joinGame,
-  type UserInfoData,
-} from '../src/sdk';
+import { joinGame, type UserInfoData } from '../src/sdk';
 import type { ServerMove, ServerState } from './logic/server-types';
 import { pvp, type PvpGameSession } from './pvp';
 import { hasActiveRoom, initRooms, openWaitingRoom } from './rooms';
@@ -11,18 +7,13 @@ export interface SessionControllerUi {
   setConnecting(): void;
   setReady(user: UserInfoData): void;
   setError(): void;
-  updateKen(ken: number): void;
+  updateUser(user: UserInfoData): void;
   toast(message: string): void;
-  openSearch(): void;
-  hideSearch(): void;
-  isSearchOpen(): boolean;
 }
 
 export interface SessionController {
   initRooms(): void;
   connect(): Promise<void>;
-  startQueue(): void;
-  cancelQueue(): void;
   openActiveRoom(): void;
   getSession(): PvpGameSession | null;
   getUserInfo(): UserInfoData | null;
@@ -71,17 +62,7 @@ export function createSessionController(ui: SessionControllerUi): SessionControl
     eventDisposers.push(
       next.onUserInfo((data) => {
         userInfo = data;
-        ui.updateKen(data.ken);
-      }),
-      next.onError((error) => {
-        if (
-          (error.code === GAME_ERROR_CODE.InRoom ||
-            error.code === GAME_ERROR_CODE.AlreadyInRoom) &&
-          ui.isSearchOpen()
-        ) {
-          ui.hideSearch();
-          openWaitingRoom();
-        }
+        ui.updateUser(data);
       }),
     );
   };
@@ -115,32 +96,9 @@ export function createSessionController(ui: SessionControllerUi): SessionControl
     return connecting;
   };
 
-  const beginQueue = (): void => {
-    if (hasActiveRoom()) {
-      openWaitingRoom();
-      return;
-    }
-    if (session && userInfo) {
-      ui.openSearch();
-      pvp.startQueue();
-      return;
-    }
-    void connect().then(() => {
-      if (!session || !userInfo) return;
-      if (hasActiveRoom()) {
-        openWaitingRoom();
-        return;
-      }
-      ui.openSearch();
-      pvp.startQueue();
-    });
-  };
-
   return {
     initRooms: () => initRooms(roomsDeps),
     connect,
-    startQueue: beginQueue,
-    cancelQueue: () => pvp.cancelQueue(),
     openActiveRoom(): void {
       if (hasActiveRoom()) openWaitingRoom();
     },

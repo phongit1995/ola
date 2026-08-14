@@ -3,7 +3,7 @@ import { A, tex } from '../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../kit';
 import { DESIGN_W } from '../../layout';
 
-const PANEL_W = 430;
+const PANEL_W = 375;
 
 export type ResultOutcome = 'win' | 'lose' | 'draw';
 
@@ -25,7 +25,7 @@ function fitText(text: Text, maxWidth: number): void {
   if (text.width > maxWidth) text.scale.set(maxWidth / text.width);
 }
 
-export function buildResultPopup(onClose: () => void): ResultPopup {
+export function buildResultPopup(onClose: () => void, onReplay: () => void): ResultPopup {
   const view = new Container();
   const dim = new Graphics();
   const card = new Container();
@@ -44,9 +44,9 @@ export function buildResultPopup(onClose: () => void): ResultPopup {
 
   const titleFrame = new Sprite(tex[A.result.titleFrame]);
   titleFrame.anchor.set(0.5);
-  titleFrame.width = PANEL_W * 0.73;
+  titleFrame.width = PANEL_W * 0.72;
   titleFrame.scale.y = titleFrame.scale.x;
-  titleFrame.y = -halfH + panelH * 0.095;
+  titleFrame.y = -halfH;
   card.addChild(titleFrame);
 
   const title = makeText('KẾT QUẢ', 38, 0xffdf62, '800', HEADING);
@@ -87,7 +87,7 @@ export function buildResultPopup(onClose: () => void): ResultPopup {
   const kenBox = new Container();
   const kenFrame = new Sprite(tex[A.result.kenFrame]);
   kenFrame.anchor.set(0.5);
-  kenFrame.width = PANEL_W * 0.55;
+  kenFrame.width = PANEL_W * 0.87;
   kenFrame.scale.y = kenFrame.scale.x;
   kenBox.addChild(kenFrame);
 
@@ -101,30 +101,37 @@ export function buildResultPopup(onClose: () => void): ResultPopup {
   kenText.style.stroke = { color: 0x6f2607, width: 2, join: 'round' };
   kenText.style.letterSpacing = 0.4;
   kenBox.addChild(kenText);
-  kenBox.y = panelH * 0.3;
+  kenBox.y = panelH * 0.32;
   card.addChild(kenBox);
 
-  const closeButton = new Container();
-  const closeBg = new Sprite(tex[A.result.btnClose]);
-  closeBg.anchor.set(0.5);
-  closeBg.width = PANEL_W * 0.265;
-  closeBg.scale.y = closeBg.scale.x;
-  closeButton.addChild(closeBg);
-  const closeLabel = makeText('ĐÓNG', 18, 0xffdf62, '700', HEADING);
-  closeLabel.y = -1;
-  closeButton.addChild(closeLabel);
-  closeButton.hitArea = new Rectangle(
-    -PANEL_W * 0.2,
-    -closeBg.height * 0.75,
-    PANEL_W * 0.4,
-    closeBg.height * 1.5,
-  );
-  closeButton.y = halfH - panelH * 0.067;
-  pressable(closeButton, () => {
-    view.visible = false;
-    onClose();
-  });
-  card.addChild(closeButton);
+  const BTN_W = PANEL_W * 0.36;
+  const BTN_GAP = PANEL_W * 0.045;
+
+  function makeButton(label: string, background: string, onTap: () => void): Container {
+    const btn = new Container();
+    const bg = new Sprite(tex[background]);
+    bg.anchor.set(0.5);
+    bg.width = BTN_W;
+    bg.scale.y = bg.scale.x;
+    btn.addChild(bg);
+    const text = makeText(label, 18, 0xffdf62, '700', HEADING);
+    text.y = -1;
+    fitText(text, BTN_W * 0.74);
+    btn.addChild(text);
+    btn.hitArea = new Rectangle(-BTN_W * 0.55, -bg.height * 0.8, BTN_W * 1.1, bg.height * 1.6);
+    btn.y = halfH;
+    pressable(btn, () => {
+      view.visible = false;
+      onTap();
+    });
+    return btn;
+  }
+
+  const replayButton = makeButton('CHƠI LẠI', A.result.btnReplay, onReplay);
+  const closeButton = makeButton('ĐÓNG', A.result.btnClose, onClose);
+  replayButton.x = -(BTN_W + BTN_GAP) / 2;
+  closeButton.x = (BTN_W + BTN_GAP) / 2;
+  card.addChild(replayButton, closeButton);
 
   function arrangeKen(): void {
     const gap = 9;
@@ -140,7 +147,7 @@ export function buildResultPopup(onClose: () => void): ResultPopup {
     show(data): void {
       const lose = data.outcome === 'lose';
       outcomeIcon.texture = tex[lose ? A.result.shieldLose : A.result.cupWin];
-      outcomeIcon.width = PANEL_W * (lose ? 0.378 : 0.36);
+      outcomeIcon.width = PANEL_W * (lose ? 0.48 : 0.46);
       outcomeIcon.scale.y = outcomeIcon.scale.x;
       outcomeIcon.tint = data.outcome === 'draw' ? 0xd8d1bd : 0xffffff;
       brush.texture = tex[lose ? A.result.brushLose : A.result.brushWin];

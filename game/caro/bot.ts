@@ -299,6 +299,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     onRoomRemoved: () => () => {},
     onRoomWaiting: () => () => {},
     onRoomState: () => () => {},
+    onRoomSync: () => () => {},
     onRoomClosed: () => () => {},
     onRoomKicked: () => () => {},
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),

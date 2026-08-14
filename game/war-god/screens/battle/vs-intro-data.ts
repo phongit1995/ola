@@ -1,0 +1,52 @@
+import type { MatchFoundData, UserInfoData } from '../../../src/sdk';
+import { LEVEL_LABELS, type BotLevel } from '../../logic/battle';
+
+export interface VsIntroCombatant {
+  name: string;
+  vipType?: string | null;
+}
+
+export interface VsIntroData {
+  left: VsIntroCombatant;
+  right: VsIntroCombatant;
+}
+
+const BOT_VIP_TYPE: Record<BotLevel, string> = {
+  easy: '1',
+  normal: '2',
+  hard: '3',
+};
+
+export function buildBotVsIntroData(
+  user: UserInfoData | null,
+  level: BotLevel,
+): VsIntroData {
+  return {
+    left: {
+      name: `máy · ${LEVEL_LABELS[level]}`,
+      vipType: BOT_VIP_TYPE[level],
+    },
+    right: {
+      name: user?.username ?? 'bạn',
+      vipType: user?.vipType ?? null,
+    },
+  };
+}
+
+export function buildPvpVsIntroData(
+  data: MatchFoundData<unknown>,
+  user: UserInfoData | null,
+): VsIntroData {
+  const me = data.players[data.you];
+  const foe = data.players[1 - data.you];
+  return {
+    left: {
+      name: foe?.name ?? 'đối thủ',
+      vipType: foe?.vipType ?? null,
+    },
+    right: {
+      name: me?.name ?? user?.username ?? 'bạn',
+      vipType: me?.vipType === undefined ? (user?.vipType ?? null) : me.vipType,
+    },
+  };
+}

@@ -246,3 +246,197 @@ diff --git a/node_modules/react-native-sound/ios/RNSound.mm b/node_modules/react
          }
      }
  }
+diff --git a/node_modules/react-native-sound/android/src/main/java/com/zmxv/RNSound/Sound.kt b/node_modules/react-native-sound/android/src/main/java/com/zmxv/RNSound/Sound.kt
+--- a/node_modules/react-native-sound/android/src/main/java/com/zmxv/RNSound/Sound.kt
++++ b/node_modules/react-native-sound/android/src/main/java/com/zmxv/RNSound/Sound.kt
+@@ -18,6 +18,26 @@
+ import java.io.IOException
+ 
+ 
++/**
++ * A TurboModule Callback may only be invoked once. On the New Architecture a
++ * second invocation hits `LOG(FATAL) << "Callback arg cannot be called more
++ * than once"` in JavaTurboModule.cpp, which aborts the process. That is not a
++ * Java exception, so the try/catch this module used to rely on cannot stop it.
++ *
++ * onPrepared/onError and onCompletion/onError are distinct listener objects
++ * sharing one Callback, so the "already called" flag has to live with the
++ * Callback, not with each listener.
++ */
++private class SingleShotCallback(private var callback: Callback?) {
++  @Synchronized
++  fun invoke(vararg args: Any?) {
++    val target = callback ?: return
++    callback = null
++    target.invoke(*args)
++  }
++}
++
++
+ open class Sound internal constructor(context:ReactApplicationContext):AudioManager.OnAudioFocusChangeListener  {
+   private var playerPool: MutableMap<Double, MediaPlayer> = mutableMapOf()
+   private val reactContext: ReactApplicationContext = context
+@@ -35,15 +55,16 @@
+   }
+ 
+   fun prepare(fileName: String, key: Double?, options: ReadableMap, callback: Callback) {
++    val once = SingleShotCallback(callback)
+     val player = createMediaPlayer(fileName)
+-    if (options.hasKey("speed")) {
+-      player!!.playbackParams = player.playbackParams.setSpeed(options.getDouble("speed").toFloat())
++    if (player != null && options.hasKey("speed")) {
++      player.playbackParams = player.playbackParams.setSpeed(options.getDouble("speed").toFloat())
+     }
+     if (player == null) {
+       val e = Arguments.createMap()
+       e.putInt("code", -1)
+       e.putString("message", "resource not found")
+-      callback.invoke(e, null)
++      once.invoke(e, null)
+       return
+     }
+     if (key != null) {
+@@ -69,40 +90,29 @@
+     }
+ 
+     player.setOnPreparedListener(object : OnPreparedListener {
+-      var callbackWasCalled: Boolean = false
+-
+-      @Synchronized
+       override fun onPrepared(mp: MediaPlayer) {
+-        if (callbackWasCalled) return
+-        callbackWasCalled = true
+-
+         val props = Arguments.createMap()
+         props.putDouble("duration", mp.duration * .001)
+-        try {
+-          callback.invoke(null, props)
+-        } catch (runtimeException: RuntimeException) {
+-          // The callback was already invoked
+-
+-        }
++        once.invoke(null, props)
+       }
+     })
+ 
+     player.setOnErrorListener(object : OnErrorListener {
+-      var callbackWasCalled: Boolean = false
+-
+-      @Synchronized
+       override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
+-        if (callbackWasCalled) return true
+-        callbackWasCalled = true
++        // A player that never finished preparing is never released from JS
++        // (Sound#release is a no-op while _loaded is false), so drop it here or
++        // its decoder stays allocated until the process dies.
++        if (key != null) {
++          playerPool.remove(key)
++        }
+         try {
+-          val props = Arguments.createMap()
+-          props.putInt("what", what)
+-          props.putInt("extra", extra)
+-          callback.invoke(props, null)
+-        } catch (runtimeException: RuntimeException) {
+-          // The callback was already invoked
+-
++          mp?.reset()
++        } catch (ignored: Exception) {
+         }
++        val props = Arguments.createMap()
++        props.putInt("what", what)
++        props.putInt("extra", extra)
++        once.invoke(props, null)
+         return true
+       }
+     })
+@@ -186,12 +196,13 @@
+ 
+ 
+   fun play(key: Double?, callback: Callback?) {
++    val once = SingleShotCallback(callback)
+     val player = playerPool[key]
+     if (player == null) {
+       if (key != null) {
+         setOnPlay(false, key)
+       }
+-      callback?.invoke(false)
++      once.invoke(false)
+       return
+     }
+     if (player.isPlaying) {
+@@ -208,39 +219,23 @@
+     }
+ 
+     player.setOnCompletionListener(object : OnCompletionListener {
+-      var callbackWasCalled: Boolean = false
+-
+-      @Synchronized
+       override fun onCompletion(mp: MediaPlayer) {
+         if (!mp.isLooping) {
+           if (key != null) {
+             setOnPlay(false, key)
+           }
+-          if (callbackWasCalled) return
+-          callbackWasCalled = true
+-          try {
+-            callback?.invoke(true)
+-          } catch (e: Exception) {
+-            //Catches the exception: java.lang.RuntimeException·Illegal callback invocation from native module
+-          }
++          once.invoke(true)
+         }
+       }
+     })
+     player.setOnErrorListener(object : OnErrorListener {
+-      var callbackWasCalled: Boolean = false
+-
+-      @Synchronized
+       override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
+         if (key != null) {
+           setOnPlay(false, key)
+         }
+-        if (callbackWasCalled) return true
+-        callbackWasCalled = true
+-        try {
+-          callback?.invoke(true)
+-        } catch (e: Exception) {
+-          //Catches the exception: java.lang.RuntimeException·Illegal callback invocation from native module
+-        }
++        // Shares `once` with the completion listener above: an error arriving
++        // after playback completed must not invoke the same JS Callback twice.
++        once.invoke(false)
+         return true
+       }
+     })
+@@ -268,10 +263,13 @@
+       player.seekTo(0)
+     }
+ 
+-    // Release audio focus in Android system
+-    if (!this.mixWithOthers && key === this.focusedPlayerKey) {
++    // Release audio focus in Android system.
++    // `==` not `===`: identity comparison between a Double and a boxed Double?
++    // is always false, so focus used to never be abandoned.
++    if (!this.mixWithOthers && key == this.focusedPlayerKey) {
+       val audioManager = reactContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+       audioManager.abandonAudioFocus(this)
++      this.focusedPlayerKey = null
+     }
+ 
+     callback.invoke()
+@@ -292,10 +290,12 @@
+       playerPool.remove(key)
+ 
+ 
+-      // Release audio focus in Android system
+-      if (!this.mixWithOthers && key === this.focusedPlayerKey) {
++      // Release audio focus in Android system.
++      // `==` not `===`: see stop().
++      if (!this.mixWithOthers && key == this.focusedPlayerKey) {
+         val audioManager = reactContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+         audioManager.abandonAudioFocus(this)
++        this.focusedPlayerKey = null
+       }
+     }
+   }

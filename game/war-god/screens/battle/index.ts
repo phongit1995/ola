@@ -15,6 +15,7 @@ import {
   type ErrorData,
   type MatchFoundData,
   type MatchOverData,
+  type RoomStateData,
   type StateData,
   type UserInfoData,
 } from '../../../src/sdk';
@@ -34,7 +35,6 @@ import {
   type TileType,
 } from '../../logic/core';
 import {
-  LEVEL_LABELS,
   ULT_COST,
   applyAuthoritativeEffects,
   applyTileEffects,
@@ -56,11 +56,24 @@ import {
   type Step,
 } from '../../logic/server-types';
 import { errorText } from '../../logic/error-text';
+import { RecentMatchIds } from '../../logic/recent-match-ids';
 import { pvp } from '../../pvp';
 import { playSound } from '../../audio';
 import { A, loadUltTexture, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick, sleep, tween } from '../../kit';
-import { buildHud, hud, showConfirm, showResult, updateFighter } from './hud';
+import {
+  CONFIRM_CARD_H,
+  CONFIRM_CARD_W,
+  buildHud,
+  hideConfirm,
+  hud,
+  showConfirm,
+  showResult,
+  setBattleMode,
+  setFighterAvatar,
+  setFighterBotAvatar,
+  updateFighter,
+} from './hud';
 import {
   CHAT_W,
   buildChat,
@@ -70,8 +83,20 @@ import {
   setChatInputVisible,
   setChatPvp,
 } from './chat';
+import { betLabel, shortRoomCode } from '../lobby/rooms/util';
+import {
+  buildRoomPregame,
+  hideRoomPregame,
+  layoutRoomPregame,
+  setRoomPregameView,
+  showRoomPregame,
+  type RoomPregameCallbacks,
+  type RoomPregameView,
+} from './pregame';
 import { playLightningFx } from './fx/lightning';
 import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
+import { buildVsIntro, type VsIntro } from './vs-intro';
+import { buildBotVsIntroData, buildPvpVsIntroData } from './vs-intro-data';
 
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
 const HINT_DELAY_MS = 10_000;
@@ -84,6 +109,7 @@ export interface BattleDeps {
   onGameStart(): void;
   onRequestLayout(): void;
   onExitToLobby(): void;
+  onReplay(): void;
   onPvpError(text: string): void;
 }
 
@@ -109,6 +135,7 @@ let botSelectorA: Sprite;
 let hintBox: Container;
 let statusText: ReturnType<typeof makeText>;
 let chatBox: Container;
+let vsIntro: VsIntro;
 let sprites: Array<Container | null> = new Array(CELLS).fill(null);
 let tileSize = 0;
 let fxFrames: Texture[] = [];
@@ -132,14 +159,22 @@ let inGame = false;
 let botLevel: BotLevel = 'normal';
 let mode: 'bot' | 'pvp' = 'bot';
 let pvpMatchId = '';
+let exitingPvpMatchId = '';
 let pvpIdx = 0;
 let myUserId = '';
 let oppAwayUntil = 0;
 let pausedTurnRemain = 0;
 let selfDisconnected = false;
+let roomPregame = false;
 let flowEpoch = 0;
 let pvpChain: Promise<unknown> = Promise.resolve();
-const handledMatchOvers = new Set<string>();
+const handledMatchOvers = new RecentMatchIds();
+
+function changeBattleMode(next: 'bot' | 'pvp'): void {
+  mode = next;
+  setBattleMode(next);
+}
+
 const CHAT_ERROR_CODES = new Set<string>([
   GAME_ERROR_CODE.ChatRateLimited,
   GAME_ERROR_CODE.ChatTooLong,
@@ -283,6 +318,7 @@ function rebuildSprites(): void {
   clearHint();
   sprites.forEach((s) => s?.destroy());
   sprites = new Array(CELLS).fill(null);
+  if (roomPregame) return;
   for (let i = 0; i < CELLS; i++) {
     const sprite = makeTile(board[i], i);
     sprites[i] = sprite;
@@ -619,7 +655,7 @@ function updateHud(): void {
 
   hud.turnCount.text = String(turnNumber);
   hud.restart.setEnabled(mode === 'bot' && !busy);
-  hud.forfeit.setEnabled(!over && !busy && (mode === 'pvp' || myTurn));
+  hud.forfeit.setEnabled(!over && !busy);
   hud.exit.setEnabled(!busy);
 }
 
@@ -1063,12 +1099,113 @@ async function startBotTurn(): Promise<void> {
   updateHud();
 }
 
+function clearRoomPregameVisuals(): void {
+  if (!roomPregame) return;
+  roomPregame = false;
+  hideRoomPregame();
+  hud.banner.visible = true;
+  hud.bottomRow.visible = true;
+  hintBox.visible = true;
+}
+
+export function isRoomPregameActive(): boolean {
+  return roomPregame;
+}
+
+export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
+  deps.onGameStart();
+  preloadUltFx();
+  flowEpoch++;
+  vsIntro.cancel();
+  changeBattleMode('pvp');
+  inGame = false;
+  over = false;
+  busy = false;
+  myTurn = false;
+  pvpMatchId = '';
+  oppAwayUntil = 0;
+  pausedTurnRemain = 0;
+  selfDisconnected = false;
+  botModeExtraTurns = [0, 0];
+  clearHint();
+  setSelected(null);
+  botSelectorA.visible = false;
+  hud.result.hide();
+  hideConfirm();
+  roomPregame = true;
+  rebuildSprites();
+  me = createFighter();
+  foe = createFighter();
+  hud.me.name.text = `@${deps.getUserInfo()?.username ?? 'bạn'}`;
+  hud.foe.name.text = 'Đang chờ...';
+  setFighterAvatar(hud.me, deps.getUserInfo()?.vipType);
+  setFighterAvatar(hud.foe, null);
+  updateFighter(hud.me, me, false, false);
+  updateFighter(hud.foe, foe, false, false);
+  hud.me.ultBtn.eventMode = 'none';
+  hud.banner.visible = false;
+  hud.bottomRow.visible = false;
+  hintBox.visible = false;
+  setChatPvp(true);
+  resetChat();
+  setChatInputVisible(false);
+  showRoomPregame(callbacks);
+  deps.onRequestLayout();
+}
+
+export function updateRoomPregame(
+  state: RoomStateData | null,
+  info: { roomId: string; bet: number; locked: boolean } | null,
+): void {
+  if (!roomPregame) return;
+  const roomId = state?.roomId ?? info?.roomId ?? '';
+  const bet = state?.bet ?? info?.bet ?? 0;
+  const locked = state?.locked ?? info?.locked ?? false;
+  const meMember = state ? (state.members.find((m) => m.id === state.youId) ?? null) : null;
+  const foeMember = state ? (state.members.find((m) => m.id !== state.youId) ?? null) : null;
+  const meOwner = state ? state.youId === state.ownerId : true;
+  if (meMember) hud.me.name.text = `@${meMember.name}`;
+  hud.foe.name.text = foeMember ? `@${foeMember.name}` : 'Đang chờ...';
+  if (meMember) setFighterAvatar(hud.me, meMember.vipType);
+  setFighterAvatar(hud.foe, foeMember?.vipType ?? null);
+  let status: string;
+  let main: RoomPregameView['main'] = null;
+  if (!state) {
+    status = 'Đang tải thông tin bàn...';
+  } else if (!foeMember) {
+    status = 'Đang chờ đối thủ vào bàn...';
+  } else if (meOwner) {
+    const guestReady = foeMember.ready === true;
+    status = guestReady ? 'Cả hai đã sẵn sàng — bấm BẮT ĐẦU!' : 'Đang chờ đối thủ sẵn sàng...';
+    main = { label: 'BẮT ĐẦU', action: 'start', enabled: guestReady };
+  } else {
+    const meReady = meMember?.ready === true;
+    status = meReady ? 'Đang chờ chủ bàn bắt đầu...' : 'Đối thủ đã vào bàn — hãy bấm SẴN SÀNG';
+    main = { label: meReady ? 'HỦY SẴN SÀNG' : 'SẴN SÀNG', action: 'toggle', enabled: true };
+  }
+  setRoomPregameView({
+    betText: betLabel(bet),
+    roomLine: roomId ? `Bàn #${shortRoomCode(roomId)}${locked ? ' 🔒' : ''}` : '',
+    status,
+    main,
+    kickVisible: meOwner && foeMember != null,
+  });
+}
+
+export function exitRoomPregame(): void {
+  if (!roomPregame) return;
+  clearRoomPregameVisuals();
+  deps.onExitToLobby();
+}
+
 export function startBattle(level: BotLevel = botLevel): void {
+  clearRoomPregameVisuals();
   deps.onGameStart();
   preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
-  mode = 'bot';
+  vsIntro.cancel();
+  changeBattleMode('bot');
   pvpMatchId = '';
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
@@ -1087,20 +1224,25 @@ export function startBattle(level: BotLevel = botLevel): void {
   botSelectorA.visible = false;
   rebuildSprites();
   hud.result.hide();
+  hideConfirm();
   const userInfo = deps.getUserInfo();
   if (userInfo) hud.me.name.text = `@${userInfo.username}`;
-  hud.foe.name.text = `@máy · ${LEVEL_LABELS[botLevel]}`;
+  hud.foe.name.text = '@Bot';
+  setFighterAvatar(hud.me, userInfo?.vipType);
+  setFighterBotAvatar(hud.foe, botLevel);
   setChatPvp(false);
-  setChatInputVisible(true);
+  setChatInputVisible(false);
   resetChat('Chào! Chơi vui nhé 😄');
   setStatus('Chuẩn bị chiến đấu...');
   updateHud();
-  void dropInBoard().then(() => {
+  const intro = vsIntro.play(buildBotVsIntroData(userInfo, botLevel));
+  void Promise.all([dropInBoard(), intro]).then(() => {
     if (flowEpoch !== ep) return;
     endBusy();
     resetTurnClock();
     announceTurn('me');
     setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
+    setChatInputVisible(true);
     updateHud();
   });
 }
@@ -1113,11 +1255,13 @@ function syncFighters(state: ServerState): void {
 }
 
 export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void> | void {
+  clearRoomPregameVisuals();
   deps.onGameStart();
   preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
-  mode = 'pvp';
+  vsIntro.cancel();
+  changeBattleMode('pvp');
   botModeExtraTurns = [0, 0];
   inGame = true;
   over = false;
@@ -1137,15 +1281,17 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   botSelectorA.visible = false;
   rebuildSprites();
   hud.result.hide();
-  hud.confirm.visible = false;
+  hideConfirm();
   const mePlayer = data.players[pvpIdx];
   const opponent = data.players[1 - pvpIdx];
   myUserId = mePlayer?.id ?? '';
   hud.me.name.text = `@${mePlayer?.name ?? deps.getUserInfo()?.username ?? 'bạn'}`;
   hud.foe.name.text = `@${opponent?.name ?? 'đối thủ'}`;
+  setFighterAvatar(hud.me, mePlayer?.vipType ?? deps.getUserInfo()?.vipType);
+  setFighterAvatar(hud.foe, opponent?.vipType);
   setChatPvp(true);
   if (!data.resumed) resetChat();
-  setChatInputVisible(true);
+  setChatInputVisible(data.resumed === true);
   turnDeadline = performance.now() + (data.deadline - Date.now());
   updateHud();
   if (data.resumed) {
@@ -1158,11 +1304,13 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   }
   bridge.attention({ reason: ARCADE_ATTENTION_REASON.MatchStarted, matchId: data.matchId });
   setStatus('Chuẩn bị chiến đấu...');
-  return dropInBoard().then(() => {
+  const intro = vsIntro.play(buildPvpVsIntroData(data, deps.getUserInfo()));
+  return Promise.all([dropInBoard(), intro]).then(() => {
     if (flowEpoch !== ep) return;
     endBusy();
     announceTurn(myTurn ? 'me' : 'foe');
     setStatus(myTurn ? 'Lượt của bạn — ghép 3 ô để tấn công!' : 'Đợi đối thủ...');
+    setChatInputVisible(true);
     updateHud();
     bridge.turnChanged({ yourTurn: myTurn, deadline: data.deadline });
   });
@@ -1312,9 +1460,16 @@ function formatKenDelta(delta: number): string {
 }
 
 async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<void> {
-  if (mode !== 'pvp' || data.matchId !== pvpMatchId) return;
-  if (handledMatchOvers.has(data.matchId)) return;
-  handledMatchOvers.add(data.matchId);
+  const exiting = data.matchId === exitingPvpMatchId;
+  if (mode !== 'pvp' || (!exiting && data.matchId !== pvpMatchId)) return;
+  if (!handledMatchOvers.mark(data.matchId)) return;
+  const draw = data.winnerId == null || data.winnerId === '';
+  const won = !draw && data.winnerId === myUserId;
+  if (exiting) {
+    exitingPvpMatchId = '';
+    bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
+    return;
+  }
   over = true;
   busy = true;
   const ep = flowEpoch;
@@ -1323,8 +1478,6 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
   selfDisconnected = false;
-  const draw = data.winnerId == null || data.winnerId === '';
-  const won = !draw && data.winnerId === myUserId;
   if (data.reason === 'win' && !draw && inGame && data.state.steps?.length) {
     const side: 'me' | 'foe' = won ? 'me' : 'foe';
     try {
@@ -1422,8 +1575,10 @@ function bindPvpHandlers(): void {
   });
 }
 
-function exitToLobby(): void {
+function teardownBattle(): void {
+  clearRoomPregameVisuals();
   flowEpoch++;
+  vsIntro.cancel();
   over = true;
   inGame = false;
   busy = false;
@@ -1435,9 +1590,43 @@ function exitToLobby(): void {
   setSelected(null);
   botSelectorA.visible = false;
   hud.result.hide();
-  hud.confirm.visible = false;
+  hideConfirm();
   setChatInputVisible(false);
+}
+
+function exitToLobby(): void {
+  teardownBattle();
   deps.onExitToLobby();
+}
+
+function exitActiveMatch(): void {
+  if (!inGame || over) {
+    exitToLobby();
+    return;
+  }
+  if (mode === 'pvp') {
+    exitingPvpMatchId = pvpMatchId;
+    pvp.leaveMatch();
+    pvpMatchId = '';
+  } else {
+    recordBotMatch({ level: botLevel, won: false, forfeit: true });
+    bridge.gameOver({
+      matchId: `wargod-${Date.now()}`,
+      winnerId: 'bot',
+      reason: 'forfeit',
+      won: false,
+    });
+  }
+  exitToLobby();
+}
+
+function replayMatch(): void {
+  if (mode === 'pvp') {
+    teardownBattle();
+    deps.onReplay();
+    return;
+  }
+  startBattle();
 }
 
 export function battleChatFocused(): boolean {
@@ -1495,6 +1684,19 @@ function previewFireSwordFx(mode: 'center' | 'corner' | 'multi' = 'center'): boo
   return true;
 }
 
+function previewVsIntro(
+  opponentName = 'đối thủ',
+  selfName = 'phong',
+  opponentVipType = '2',
+  selfVipType = '135',
+): boolean {
+  void vsIntro.play({
+    left: { name: opponentName, vipType: opponentVipType },
+    right: { name: selfName, vipType: selfVipType },
+  });
+  return true;
+}
+
 export function battleDebug(): Record<string, unknown> {
   return {
     mode,
@@ -1504,6 +1706,14 @@ export function battleDebug(): Record<string, unknown> {
     over,
     inGame,
     botLevel,
+    actions: {
+      rowVisible: hud.bottomRow?.visible === true,
+      restartVisible: hud.restart?.view.visible === true,
+      restartEnabled: hud.restart?.isEnabled() === true,
+      restartX: hud.restart?.view.x,
+      forfeitX: hud.forfeit?.view.x,
+      exitX: hud.exit?.view.x,
+    },
     turn: turnNumber,
     extraTurns: mode === 'bot' ? [...botModeExtraTurns] : undefined,
     status: statusText.text,
@@ -1513,8 +1723,10 @@ export function battleDebug(): Record<string, unknown> {
     selected,
     selectorVisible: !!selector?.visible,
     flying: flyLayer ? flyLayer.children.filter((c) => c instanceof Sprite).length : 0,
+    vsIntroVisible: vsIntro?.isVisible() === true,
     previewLightning: previewLightningFx,
     previewFireSword: previewFireSwordFx,
+    previewVsIntro,
   };
 }
 
@@ -1559,10 +1771,12 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   boardBox.addChild(hintBox);
 
   root.addChild(boardBox);
+  buildRoomPregame(root);
 
   buildHud(root, {
     onUlt: () => void castMyUltimate(),
     onResultClose: exitToLobby,
+    onResultReplay: replayMatch,
     onRestart: () => {
       if (mode === 'pvp') return;
       if (busy) return;
@@ -1570,20 +1784,37 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
         startBattle();
         return;
       }
-      showConfirm('Chơi lại từ đầu?', () => {
-        if (!busy) startBattle();
+      showConfirm({
+        kind: 'restart',
+        message: 'Ván hiện tại sẽ kết thúc.\nBạn muốn chơi lại từ đầu?',
+        confirmLabel: 'CHƠI LẠI',
+        onConfirm: () => {
+          if (!busy) startBattle();
+        },
       });
     },
     onForfeit: () => {
       if (over) return;
       if (mode === 'pvp') {
-        showConfirm('Bỏ cuộc trận này?', () => {
-          if (!busy && !over) pvp.forfeit();
+        showConfirm({
+          kind: 'forfeit',
+          message: 'Bạn sẽ bị xử thua ván này.\nBạn vẫn có thể chơi ván tiếp theo.',
+          confirmLabel: 'BỎ CUỘC',
+          onConfirm: () => {
+            if (!busy && !over) pvp.forfeit();
+          },
         });
         return;
       }
-      if (!myTurn || busy) return;
-      showConfirm('Bỏ cuộc trận này?', () => finish(false, 'forfeit', 'Bạn đã bỏ cuộc'));
+      if (busy) return;
+      showConfirm({
+        kind: 'forfeit',
+        message: 'Bạn sẽ bị xử thua ván này.\nBạn vẫn có thể chơi ván tiếp theo.',
+        confirmLabel: 'BỎ CUỘC',
+        onConfirm: () => {
+          if (!busy && !over) finish(false, 'forfeit', 'Bạn đã bỏ cuộc');
+        },
+      });
     },
     onExit: () => {
       if (busy) return;
@@ -1591,16 +1822,14 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
         exitToLobby();
         return;
       }
-      if (mode === 'pvp') {
-        showConfirm('Thoát trận về sảnh?', () => {
-          if (busy) return;
-          pvp.leaveMatch();
-          pvpMatchId = '';
-          exitToLobby();
-        });
-        return;
-      }
-      showConfirm('Thoát trận về sảnh?', exitToLobby);
+      showConfirm({
+        kind: 'exit',
+        message: 'Thoát sẽ bị xử thua và rời bàn.\nBạn có chắc muốn thoát?',
+        confirmLabel: 'RỜI TRẬN',
+        onConfirm: () => {
+          if (!busy) exitActiveMatch();
+        },
+      });
     },
   });
   bindPvpHandlers();
@@ -1633,6 +1862,9 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   turnAnnounce.addChild(turnAnnounceLabel);
   turnAnnounce.visible = false;
   root.addChild(turnAnnounce);
+
+  vsIntro = buildVsIntro();
+  root.addChild(vsIntro.view);
 
   root.addChild(hud.result.view, hud.confirm);
   hud.result.hide();
@@ -1699,11 +1931,13 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   }
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
   layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, opts.rootX, opts.scale);
+  layoutRoomPregame({ boardX: boardBox.x, boardY: boardBox.y, boardW, rowY: hud.bottomRow.y });
 
   hud.result.layout(designH, insetTop, insetBottom);
+  vsIntro.layout(designH, insetTop, insetBottom);
 
   hud.confirmDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.6 });
   const confirmCard = hud.confirm.getChildByLabel('confirm-card')!;
-  confirmCard.x = (DESIGN_W - 300) / 2;
-  confirmCard.y = designH / 2 - 75;
+  confirmCard.x = (DESIGN_W - CONFIRM_CARD_W) / 2;
+  confirmCard.y = insetTop + (designH - insetTop - insetBottom - CONFIRM_CARD_H) / 2;
 }

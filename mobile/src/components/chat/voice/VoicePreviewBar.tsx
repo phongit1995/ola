@@ -117,7 +117,10 @@ export function VoicePreviewBar({
   function playFrom(sound: Sound) {
     activateVoicePlayback(playbackOwnerRef.current, releaseForReplacement);
     const resumeAt = currentTimeRef.current;
-    if (resumeAt > 0) sound.setCurrentTime(resumeAt);
+    // Tiếp tục sau khi pause thì start() tự chạy từ chỗ đang dừng, không cần
+    // seek. Chỉ seek khi player biết độ dài thật: seek trên player có
+    // duration = 0 bị coi là "past end" và làm media extractor của máy abort.
+    if (resumeAt > 0 && sound.getDuration() > 0) sound.setCurrentTime(resumeAt);
     setPlaying(true);
     clearTimer();
     timerRef.current = setInterval(() => {
@@ -129,28 +132,32 @@ export function VoicePreviewBar({
     }, 200);
     sound.play(success => {
       if (soundRef.current !== sound) return;
+      // Phát xong là bỏ hẳn player, lần sau tạo mới. Dùng lại MediaPlayer ở
+      // trạng thái PlaybackCompleted làm media extractor của máy chết (MIUI:
+      // libmmparser_lite.so abort -> MEDIA_ERROR_SERVER_DIED), lần phát thứ hai
+      // luôn hỏng.
       clearTimer();
-      if (!mountedRef.current) return;
-      setPlaying(false);
-      setProgress(0);
+      const leasedUri = leasedUriRef.current;
+      soundRef.current = null;
+      leasedUriRef.current = null;
       currentTimeRef.current = 0;
-      if (!success) {
-        const leasedUri = leasedUriRef.current;
-        soundRef.current = null;
-        leasedUriRef.current = null;
-        deactivateVoicePlayback(playbackOwnerRef.current);
-        sound.release();
-        if (leasedUri != null) releaseTemporaryVoiceFile(leasedUri);
-        reportPlaybackError();
-        return;
+      deactivateVoicePlayback(playbackOwnerRef.current);
+      sound.release();
+      if (leasedUri != null) releaseTemporaryVoiceFile(leasedUri);
+      if (mountedRef.current) {
+        setPlaying(false);
+        setProgress(0);
       }
-      sound.setCurrentTime(0);
+      if (!success) reportPlaybackError();
     });
   }
 
   function toggle() {
     if (loadingRef.current) return;
-    Sound.setCategory('Playback');
+    // mixWithOthers phải là true như mọi chỗ khác trong app: mặc định false của
+    // lib bật nhánh audio-focus của react-native-sound trên Android, nhánh đó
+    // không nhả focus đúng và đụng MediaPlayer từ main thread.
+    Sound.setCategory('Playback', true);
     const existing = soundRef.current;
     if (existing != null) {
       if (playing) {
@@ -202,7 +209,7 @@ export function VoicePreviewBar({
     if (width <= 0 || duration <= 0) return;
     const ratio = Math.min(1, Math.max(0, event.nativeEvent.locationX / width));
     const seconds = duration * ratio;
-    sound?.setCurrentTime(seconds);
+    if (sound != null && sound.getDuration() > 0) sound.setCurrentTime(seconds);
     currentTimeRef.current = seconds;
     setProgress(ratio);
   }

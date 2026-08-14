@@ -2,7 +2,7 @@ import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 
 import type { GameSession, UserInfoData } from '../../../src/sdk';
 import { playSound, setSoundEnabled } from '../../audio';
 import { A, tex } from '../../assets';
-import { addTick, iconSprite, makeText, popIn, pressable, removeTick, tween } from '../../kit';
+import { addTick, iconSprite, makeText, popIn, pressable, removeTick } from '../../kit';
 import { DESIGN_W } from '../../layout';
 import type { BotLevel } from '../../logic/battle';
 import { buildRoomsLayer, hideAllRoomPopups, layoutRooms, openRoomList } from '../../rooms';
@@ -27,9 +27,10 @@ import {
   layoutLeaderboardPopup,
   openLeaderboardPopup,
 } from './leaderboard-popup';
+import { avatarIconUrl } from '../../vip';
 
-const VIP_FIT_W = 150;
-const VIP_FIT_H = 132;
+// Lòng khung avatar (đo từ asset): vòng trong đường kính ~150px khi khung rộng 235.
+const AVATAR_ICON_D = 148;
 const NAME_W = 400;
 const KEN_W = 330;
 const WOOD_W = 310;
@@ -37,22 +38,9 @@ const WOOD_H = 86;
 const PILL_GAP = 10;
 const SOUND_KEY = 'wg-sound-on';
 
-function parseVipTypeId(vipType: string | null | undefined): number | null {
-  if (vipType == null || vipType === '') return null;
-  const id = Number(vipType);
-  if (!Number.isInteger(id) || id < 1 || id > 132) return null;
-  return id;
-}
-
-function vipIconUrl(id: number): string {
-  return `/vip-icons/vip_${String(id).padStart(3, '0')}.png`;
-}
-
 interface LobbyDeps {
   getSession(): GameSession | null;
   onPlay(level: BotLevel): void;
-  onPvp(): void;
-  onCancelQueue(): void;
   onRetry(): void;
   onExit(): void;
 }
@@ -69,6 +57,7 @@ let avatarFrame: Sprite;
 let nameFrame: Sprite;
 let nameText: Text;
 let vipIcon: Sprite;
+let vipMask: Graphics;
 let kenFrame: Sprite;
 let coin: Sprite;
 let coinBaseScale = 1;
@@ -79,10 +68,8 @@ let plusBtn: Container;
 let plusBg: Sprite;
 let plusIc: Sprite;
 let btnBot: Container;
-let btnPvp: Container;
 let btnRoom: Container;
 let btnBotWrap: Container;
-let btnPvpWrap: Container;
 let btnRoomWrap: Container;
 let menuRow: Container;
 let soundIcon: Sprite;
@@ -95,15 +82,13 @@ let toastTimer: number | undefined;
 let pickBox: Container;
 let guideBox: Container;
 let confirmBox: Container;
-let searchBox: Container;
-let searchDim: Graphics;
-let searchCard: Container;
-let searchLabel: Text;
-let searchStep: ((ticker: Ticker) => void) | null = null;
 let spinnerStep: ((ticker: Ticker) => void) | null = null;
 let lastDesignH = 980;
 let lastInsetTop = 0;
 let lastInsetBottom = 0;
+let avatarLoadGen = 0;
+let avatarRequestedUrl = '';
+let animateAvatarOnLoad = false;
 
 function stopSpinner(): void {
   if (spinnerStep) {
@@ -159,64 +144,6 @@ export function lobbyShowToast(message: string): void {
   showToast(message);
 }
 
-function stopSearchAnim(): void {
-  if (searchStep) {
-    removeTick(searchStep);
-    searchStep = null;
-  }
-}
-
-function buildSearchPopup(): Container {
-  searchBox = new Container();
-  searchDim = new Graphics();
-  searchDim.eventMode = 'static';
-  searchBox.addChild(searchDim);
-
-  searchCard = new Container();
-  const panel = new Graphics()
-    .roundRect(-190, -95, 380, 190, 18)
-    .fill({ color: 0x101c2c, alpha: 0.94 })
-    .stroke({ width: 2, color: 0xf6c445 });
-  panel.eventMode = 'static';
-  searchCard.addChild(panel);
-
-  searchLabel = makeText('Đang tìm trận...', 20, 0xffe9a8, '800');
-  searchLabel.y = -36;
-  searchCard.addChild(searchLabel);
-
-  const cancel = makeWoodBtn('HỦY', 180, 60, null, () => deps.onCancelQueue());
-  cancel.y = 42;
-  searchCard.addChild(cancel);
-
-  searchBox.addChild(searchCard);
-  searchBox.visible = false;
-  return searchBox;
-}
-
-export function openSearchPopup(): void {
-  stopSearchAnim();
-  searchBox.visible = true;
-  searchDim.alpha = 0;
-  void tween(searchDim, { alpha: 1 }, 200);
-  popIn(searchCard, 0, 380);
-  let t = 0;
-  searchStep = (ticker: Ticker) => {
-    t += ticker.deltaMS;
-    const dots = '.'.repeat(1 + (Math.floor(t / 400) % 3));
-    searchLabel.text = `Đang tìm trận${dots}`;
-  };
-  addTick(searchStep);
-}
-
-export function hideSearchPopup(): void {
-  stopSearchAnim();
-  if (searchBox) searchBox.visible = false;
-}
-
-export function isSearchPopupOpen(): boolean {
-  return searchBox?.visible === true;
-}
-
 export function lobbyUpdateKen(ken: number): void {
   if (!kenText || kenValue === ken) return;
   if (box?.visible && content.visible) {
@@ -225,6 +152,38 @@ export function lobbyUpdateKen(ken: number): void {
   }
   kenValue = ken;
   kenText.text = ken > 0 ? ken.toLocaleString('vi-VN') : '0';
+}
+
+function updateAvatar(vipType?: string | null, animate = false): void {
+  const url = avatarIconUrl(vipType);
+  if (url === avatarRequestedUrl) {
+    animateAvatarOnLoad ||= animate;
+    if (animate && vipIcon.visible) popIn(vipIcon, 120);
+    return;
+  }
+  avatarRequestedUrl = url;
+  animateAvatarOnLoad = animate;
+  const gen = ++avatarLoadGen;
+  vipIcon.visible = false;
+  void Assets.load<Texture>(url)
+    .then((texture) => {
+      if (gen !== avatarLoadGen || vipIcon.destroyed) return;
+      vipIcon.texture = texture;
+      vipIcon.scale.set(AVATAR_ICON_D / Math.min(texture.width, texture.height));
+      vipIcon.visible = true;
+      if (animateAvatarOnLoad) popIn(vipIcon, 120);
+      animateAvatarOnLoad = false;
+    })
+    .catch(() => {
+      if (gen === avatarLoadGen) avatarRequestedUrl = '';
+    });
+}
+
+export function lobbyUpdateUser(info: UserInfoData): void {
+  nameText.text = `@${info.username}`;
+  layoutNameRow();
+  updateAvatar(info.vipType);
+  lobbyUpdateKen(info.ken);
 }
 
 export function buildLobby(lobbyDeps: LobbyDeps): Container {
@@ -279,7 +238,9 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   vipIcon = new Sprite(Texture.EMPTY);
   vipIcon.anchor.set(0.5);
   vipIcon.visible = false;
-  content.addChild(vipIcon);
+  vipMask = new Graphics();
+  vipIcon.mask = vipMask;
+  content.addChild(vipIcon, vipMask);
 
   kenFrame = new Sprite(tex[A.lobby.kenFrame]);
   kenFrame.anchor.set(0.5);
@@ -309,12 +270,6 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   btnBotWrap.x = DESIGN_W / 2;
   btnBotWrap.addChild(btnBot);
   content.addChild(btnBotWrap);
-
-  btnPvp = makeWoodBtn('ĐẤU 1V1', WOOD_W, WOOD_H, A.lobby.icPvp, () => deps.onPvp());
-  btnPvpWrap = new Container();
-  btnPvpWrap.x = DESIGN_W / 2;
-  btnPvpWrap.addChild(btnPvp);
-  content.addChild(btnPvpWrap);
 
   btnRoom = makeWoodBtn('PHÒNG ĐẤU', WOOD_W, WOOD_H, A.lobby.icPvp, openRoomList);
   btnRoomWrap = new Container();
@@ -379,7 +334,6 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   box.addChild(guideBox);
   confirmBox = buildConfirmPopup();
   box.addChild(confirmBox);
-  box.addChild(buildSearchPopup());
   box.addChild(buildRoomsLayer());
   box.addChild(buildHistoryPopup());
   box.addChild(buildLeaderboardPopup());
@@ -412,7 +366,8 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   nameFrame.y = insetTop + 338;
   avatarFrame.y = nameFrame.y - 106;
   vipIcon.x = DESIGN_W / 2;
-  vipIcon.y = avatarFrame.y - 8;
+  vipIcon.y = avatarFrame.y;
+  vipMask.clear().circle(DESIGN_W / 2, avatarFrame.y, AVATAR_ICON_D / 2).fill(0xffffff);
   layoutNameRow();
   kenFrame.y = insetTop + 438;
   const kenH = kenFrame.height;
@@ -434,24 +389,20 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   const menuTop = menuY - 41;
   let btnScale = 1;
   let roomY = menuY - 104;
-  let pvpY = roomY - 104;
-  let botY = pvpY - 104;
+  let botY = roomY - 104;
   if (botY - WOOD_H / 2 < kenBottom + 12) {
     const availTop = kenBottom + 10;
     const availBot = menuTop - 10;
     const span = Math.max(120, availBot - availTop);
-    const need = WOOD_H * 3 + 28;
+    const need = WOOD_H * 2 + 14;
     btnScale = Math.min(1, span / need);
     const blockTop = (availTop + availBot) / 2 - (need * btnScale) / 2;
     botY = blockTop + (WOOD_H * btnScale) / 2;
-    pvpY = botY + (WOOD_H + 14) * btnScale;
-    roomY = pvpY + (WOOD_H + 14) * btnScale;
+    roomY = botY + (WOOD_H + 14) * btnScale;
   }
   btnBotWrap.scale.set(btnScale);
-  btnPvpWrap.scale.set(btnScale);
   btnRoomWrap.scale.set(btnScale);
   btnBotWrap.y = botY;
-  btnPvpWrap.y = pvpY;
   btnRoomWrap.y = roomY;
 
   const gapBottom = botY - (WOOD_H * btnScale) / 2;
@@ -464,9 +415,6 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   layoutRooms(designH, insetTop, insetBottom);
   layoutHistoryPopup(designH, insetTop, insetBottom);
   layoutLeaderboardPopup(designH, insetTop, insetBottom);
-  searchDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  searchCard.x = DESIGN_W / 2;
-  searchCard.y = insetTop + (designH - insetTop - insetBottom) / 2;
 }
 
 function layoutNameRow(): void {
@@ -490,8 +438,7 @@ function revealContent(): void {
   popIn(kenText, 210);
   popIn(plusBtn, 210);
   popIn(btnBot, 320);
-  popIn(btnPvp, 420);
-  popIn(btnRoom, 520);
+  popIn(btnRoom, 420);
   popIn(menuRow, 640);
 }
 
@@ -528,20 +475,8 @@ export function lobbySetReady(info: UserInfoData): void {
   retryBtn.visible = false;
 
   nameText.text = `@${info.username}`;
-  vipIcon.visible = false;
   layoutNameRow();
-
-  const vipId = parseVipTypeId(info.vipType);
-  if (vipId) {
-    void Assets.load<Texture>(vipIconUrl(vipId))
-      .then((texture) => {
-        vipIcon.texture = texture;
-        vipIcon.scale.set(Math.min(VIP_FIT_W / texture.width, VIP_FIT_H / texture.height));
-        vipIcon.visible = true;
-        popIn(vipIcon, 120);
-      })
-      .catch(() => {});
-  }
+  updateAvatar(info.vipType, true);
 
   layoutLobby(lastDesignH, lastInsetTop, lastInsetBottom);
   revealContent();
@@ -567,7 +502,6 @@ export function lobbySetVisible(visible: boolean): void {
     hidePickPopup();
     hideGuidePopup();
     hideConfirmPopup();
-    hideSearchPopup();
     hideAllRoomPopups();
     hideHistoryPopup();
     hideLeaderboardPopup();

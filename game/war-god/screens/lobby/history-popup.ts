@@ -154,7 +154,7 @@ function makeRow(row: HistoryRow, slot: number): Container {
   ellipsizeText(opponent, row.opponent, columnW(1) * 0.88);
   view.addChild(opponent);
 
-  const bet = tableText(String(row.bet), 14);
+  const bet = tableText(row.bet.toLocaleString('vi-VN'), 14);
   bet.x = columnX(2);
   fitText(bet, columnW(2) * 0.86);
   view.addChild(bet);
@@ -390,7 +390,7 @@ export function buildHistoryPopup(): Container {
   retryBtn.visible = false;
   card.addChild(retryBtn);
 
-  const pagerY = halfH - panelH * 0.057;
+  const pagerY = halfH - panelH * 0.072;
   prevBtn = makePageControl(A.history.pageArrow, 66, '<', 23, () => {
     if (page <= 0) return;
     page--;
@@ -422,9 +422,9 @@ export function buildHistoryPopup(): Container {
 
   const titleFrame = new Sprite(tex[A.history.titleFrame]);
   titleFrame.anchor.set(0.5);
-  titleFrame.width = PANEL_W * 0.74;
+  titleFrame.width = PANEL_W * 0.82;
   titleFrame.scale.y = titleFrame.scale.x;
-  titleFrame.y = -halfH + panelH * 0.065;
+  titleFrame.y = -halfH + panelH * 0.05;
   card.addChild(titleFrame);
   const title = makeText('LỊCH SỬ ĐẤU', 34, 0xffef9c, '800', HEADING);
   title.rotation = -0.02;
@@ -435,17 +435,17 @@ export function buildHistoryPopup(): Container {
   const close = new Container();
   const closeBase = new Sprite(tex[A.history.closeBase]);
   closeBase.anchor.set(0.5);
-  closeBase.width = PANEL_W * 0.128;
+  closeBase.width = PANEL_W * 0.158;
   closeBase.scale.y = closeBase.scale.x;
   close.addChild(closeBase);
   const closeX = new Sprite(tex[A.history.closeX]);
   closeX.anchor.set(0.5);
-  closeX.width = PANEL_W * 0.065;
+  closeX.width = PANEL_W * 0.08;
   closeX.scale.y = closeX.scale.x;
   close.addChild(closeX);
-  close.x = PANEL_W / 2 - PANEL_W * 0.067;
+  close.x = PANEL_W / 2 - PANEL_W * 0.055;
   close.y = titleFrame.y;
-  close.hitArea = new Rectangle(-36, -36, 72, 72);
+  close.hitArea = new Rectangle(-44, -44, 88, 88);
   pressable(close, hideHistoryPopup);
   card.addChild(close);
 

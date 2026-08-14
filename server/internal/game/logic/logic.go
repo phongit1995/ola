@@ -3,6 +3,7 @@ package logic
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type GameLogic interface {
@@ -17,6 +18,13 @@ type GameLogic interface {
 
 type TurnKeeper interface {
 	KeepTurn(state any) bool
+}
+
+// TurnStartDelayer lets games reserve server-authoritative time for entrance
+// and transition animations before the next player's normal turn time elapses.
+// previousPlayerIdx is -1 for the first turn of a match.
+type TurnStartDelayer interface {
+	TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) time.Duration
 }
 
 type TimeoutSkipper interface {

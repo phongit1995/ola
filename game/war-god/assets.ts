@@ -1,70 +1,91 @@
 import { Assets, Texture } from 'pixi.js';
-import bg from './assets/bg.png';
-import boardFrame from './assets/board/frame.png';
-import boardCell from './assets/board/cell.png';
-import boardSelMine from './assets/board/sel-mine.png';
-import boardSelFoe from './assets/board/sel-foe.png';
-import itemSword from './assets/items/sword.png';
-import itemPeach from './assets/items/peach.png';
-import itemHeart from './assets/items/heart.png';
-import itemWater from './assets/items/water.png';
-import itemShield from './assets/items/shield.png';
-import itemLightning from './assets/items/lightning.png';
-import specialFireSword from './assets/items/fire-sword-v1.png';
-import specialGreaterHeart from './assets/items/greater-heart-v1.png';
-import cardBorderActive from './assets/hud/card-border-active.png';
-import cardBorderIdle from './assets/hud/card-border-idle.png';
-import ringActive from './assets/hud/ring-active.png';
-import ringIdle from './assets/hud/ring-idle.png';
-import rankFrame from './assets/hud/rank-frame.png';
-import ultLeftOn from './assets/hud/ult-left-on.png';
-import ultLeftOff from './assets/hud/ult-left-off.png';
-import ultRightOn from './assets/hud/ult-right-on.png';
-import ultRightOff from './assets/hud/ult-right-off.png';
-import flameOn from './assets/hud/flame-on.png';
-import flameOff from './assets/hud/flame-off.png';
-import icHp from './assets/hud/ic-hp.png';
-import icMp from './assets/hud/ic-mp.png';
-import turnBanner from './assets/hud/turn-banner.png';
-import noteStrip from './assets/hud/note-strip.png';
-import menuBtnBlue from './assets/menu/btn-blue.png';
-import menuIcRestart from './assets/menu/ic-restart.png';
-import menuIcForfeit from './assets/menu/ic-forfeit.png';
-import menuIcExit from './assets/menu/ic-exit.png';
-import chatFrame from './assets/chat/frame.png';
-import chatInput from './assets/chat/input.png';
-import chatBtnSend from './assets/chat/btn-send.png';
-import chatIcSmiley from './assets/chat/ic-smiley.png';
-import fxUlt from './assets/fx/ult.png';
-import lobbyBg from './assets/lobby/bg.png';
-import lobbyLogo from './assets/lobby/logo.png';
-import lobbyAvatarFrame from './assets/lobby/avatar-frame.png';
-import lobbyNameFrame from './assets/lobby/name-frame.png';
-import lobbyKenFrame from './assets/lobby/ken-frame.png';
-import lobbyCoin from './assets/lobby/coin.png';
-import lobbyBtnPlus from './assets/lobby/btn-plus.png';
-import lobbyIcPlus from './assets/lobby/ic-plus.png';
-import lobbyBtnWood from './assets/lobby/btn-wood.png';
-import lobbyIcBot from './assets/lobby/ic-bot.png';
-import lobbyIcPvp from './assets/lobby/ic-pvp.png';
-import lobbyMenuPill from './assets/lobby/menu-pill.png';
-import lobbyRing from './assets/lobby/ring.png';
-import lobbyIcHistory from './assets/lobby/ic-history.png';
-import lobbyIcSoundOn from './assets/lobby/ic-sound-on.png';
-import lobbyIcSoundOff from './assets/lobby/ic-sound-off.png';
-import lobbyIcGuide from './assets/lobby/ic-guide.png';
-import lobbyBtnExit from './assets/lobby/btn-exit.png';
-import pickPanel from './assets/pick/panel.png';
-import pickTitle from './assets/pick/title.png';
-import pickCloseBase from './assets/pick/close-base.png';
-import pickCloseX from './assets/pick/close-x.png';
-import pickLevelEasy from './assets/pick/level-easy.png';
-import pickLevelMid from './assets/pick/level-mid.png';
-import pickLevelHard from './assets/pick/level-hard.png';
-import confirmPanel from './assets/confirm/panel.png';
-import confirmHeader from './assets/confirm/header.png';
-import confirmBtnCancel from './assets/confirm/btn-cancel.png';
-import confirmBtnOk from './assets/confirm/btn-ok.png';
+import bg from './assets/bg.webp';
+import boardFrame from './assets/board/frame.webp';
+import boardCell from './assets/board/cell.webp';
+import boardSelMine from './assets/board/sel-mine.webp';
+import boardSelFoe from './assets/board/sel-foe.webp';
+import itemSword from './assets/items/sword.webp';
+import itemPeach from './assets/items/peach.webp';
+import itemHeart from './assets/items/heart.webp';
+import itemWater from './assets/items/water.webp';
+import itemShield from './assets/items/shield.webp';
+import itemLightning from './assets/items/lightning.webp';
+import specialFireSword from './assets/items/fire-sword-v1.webp';
+import specialGreaterHeart from './assets/items/greater-heart-v1.webp';
+import cardBorderActive from './assets/hud/card-border-active.webp';
+import cardBorderIdle from './assets/hud/card-border-idle.webp';
+import ringActive from './assets/hud/ring-active.webp';
+import ringIdle from './assets/hud/ring-idle.webp';
+import rankFrame from './assets/hud/rank-frame.webp';
+import ultLeftOn from './assets/hud/ult-left-on.webp';
+import ultLeftOff from './assets/hud/ult-left-off.webp';
+import ultRightOn from './assets/hud/ult-right-on.webp';
+import ultRightOff from './assets/hud/ult-right-off.webp';
+import flameOn from './assets/hud/flame-on.webp';
+import flameOff from './assets/hud/flame-off.webp';
+import icHp from './assets/hud/ic-hp.webp';
+import icMp from './assets/hud/ic-mp.webp';
+import turnBanner from './assets/hud/turn-banner.webp';
+import noteStrip from './assets/hud/note-strip.webp';
+import menuBtnBlue from './assets/menu/btn-blue.webp';
+import menuBtnForfeit from './assets/menu/btn-forfeit-v2.webp';
+import menuBtnExit from './assets/menu/btn-exit-v2.webp';
+import menuIcRestart from './assets/menu/ic-restart.webp';
+import menuIcForfeit from './assets/menu/ic-forfeit.webp';
+import menuIcExit from './assets/menu/ic-exit.webp';
+import chatFrame from './assets/chat/frame.webp';
+import chatInput from './assets/chat/input.webp';
+import chatBtnSend from './assets/chat/btn-send.webp';
+import chatIcSmiley from './assets/chat/ic-smiley.webp';
+import fxUlt from './assets/fx/ult.webp';
+import lobbyBg from './assets/lobby/bg.webp';
+import lobbyLogo from './assets/lobby/logo.webp';
+import lobbyAvatarFrame from './assets/lobby/avatar-frame.webp';
+import lobbyNameFrame from './assets/lobby/name-frame.webp';
+import lobbyKenFrame from './assets/lobby/ken-frame.webp';
+import lobbyCoin from './assets/lobby/coin.webp';
+import lobbyBtnPlus from './assets/lobby/btn-plus.webp';
+import lobbyIcPlus from './assets/lobby/ic-plus.webp';
+import lobbyBtnWood from './assets/lobby/btn-wood.webp';
+import lobbyIcBot from './assets/lobby/ic-bot.webp';
+import lobbyIcPvp from './assets/lobby/ic-pvp.webp';
+import lobbyMenuPill from './assets/lobby/menu-pill.webp';
+import lobbyRing from './assets/lobby/ring.webp';
+import lobbyIcHistory from './assets/lobby/ic-history.webp';
+import lobbyIcSoundOn from './assets/lobby/ic-sound-on.webp';
+import lobbyIcSoundOff from './assets/lobby/ic-sound-off.webp';
+import lobbyIcGuide from './assets/lobby/ic-guide.webp';
+import lobbyBtnExit from './assets/lobby/btn-exit.webp';
+import lobbyPvpTitle from './assets/lobby/pvp-title.webp';
+import lobbyTableFrame from './assets/lobby/table-frame.webp';
+import lobbyTableList from './assets/lobby/table-list.webp';
+import lobbySlotFull from './assets/lobby/slot-full.webp';
+import lobbySlotOpen from './assets/lobby/slot-open.webp';
+import lobbyLock from './assets/lobby/lock.webp';
+import lobbyBtnBlue from './assets/lobby/btn-blue.webp';
+import lobbyPageCurrent from './assets/lobby/page-current.webp';
+import lobbyPageArrow from './assets/lobby/page-arrow.webp';
+import lobbyParchment from './assets/lobby/parchment.webp';
+import lobbyCreatePanel from './assets/lobby/create-panel.webp';
+import lobbyCreateTitle from './assets/lobby/create-title.webp';
+import lobbyFieldLabel from './assets/lobby/field-label.webp';
+import lobbyFieldInput from './assets/lobby/field-input.webp';
+import lobbyBtnOk from './assets/lobby/btn-ok.webp';
+import lobbyBtnX from './assets/lobby/btn-x.webp';
+import lobbyIcX from './assets/lobby/ic-x.webp';
+import pickPanel from './assets/pick/panel.webp';
+import pickTitle from './assets/pick/title.webp';
+import pickCloseBase from './assets/pick/close-base.webp';
+import pickCloseX from './assets/pick/close-x.webp';
+import pickLevelEasy from './assets/pick/level-easy.webp';
+import pickLevelMid from './assets/pick/level-mid.webp';
+import pickLevelHard from './assets/pick/level-hard.webp';
+import confirmPanel from './assets/confirm/panel.webp';
+import confirmHeader from './assets/confirm/header.webp';
+import confirmBtnCancel from './assets/confirm/btn-cancel.webp';
+import confirmBtnOk from './assets/confirm/btn-ok.webp';
+import battleConfirmPanel from './assets/confirm/panel-v2.webp';
+import battleConfirmBtnSafe from './assets/confirm/btn-safe-v2.webp';
 import resultPanel from './assets/result/panel.webp';
 import resultTitleFrame from './assets/result/title-frame.webp';
 import resultKenFrame from './assets/result/ken-frame.webp';
@@ -72,6 +93,7 @@ import resultCupWin from './assets/result/cup-win.webp';
 import resultShieldLose from './assets/result/shield-lose.webp';
 import resultBrushWin from './assets/result/brush-win.webp';
 import resultBrushLose from './assets/result/brush-lose.webp';
+import resultBtnReplay from './assets/result/btn-replay.webp';
 import resultBtnClose from './assets/result/btn-close.webp';
 import resultKen from './assets/result/ken.webp';
 import historyPanelFill from './assets/history/panel-fill.webp';
@@ -119,6 +141,8 @@ export const A = {
   },
   menu: {
     btnBlue: menuBtnBlue,
+    btnForfeit: menuBtnForfeit,
+    btnExit: menuBtnExit,
     icRestart: menuIcRestart,
     icForfeit: menuIcForfeit,
     icExit: menuIcExit,
@@ -149,6 +173,23 @@ export const A = {
     icSoundOff: lobbyIcSoundOff,
     icGuide: lobbyIcGuide,
     btnExit: lobbyBtnExit,
+    pvpTitle: lobbyPvpTitle,
+    tableFrame: lobbyTableFrame,
+    tableList: lobbyTableList,
+    slotFull: lobbySlotFull,
+    slotOpen: lobbySlotOpen,
+    lock: lobbyLock,
+    btnBlue: lobbyBtnBlue,
+    pageCurrent: lobbyPageCurrent,
+    pageArrow: lobbyPageArrow,
+    parchment: lobbyParchment,
+    createPanel: lobbyCreatePanel,
+    createTitle: lobbyCreateTitle,
+    fieldLabel: lobbyFieldLabel,
+    fieldInput: lobbyFieldInput,
+    btnOk: lobbyBtnOk,
+    btnX: lobbyBtnX,
+    icX: lobbyIcX,
   },
   pick: {
     panel: pickPanel,
@@ -165,6 +206,10 @@ export const A = {
     btnCancel: confirmBtnCancel,
     btnOk: confirmBtnOk,
   },
+  battleConfirm: {
+    panel: battleConfirmPanel,
+    btnSafe: battleConfirmBtnSafe,
+  },
   result: {
     panel: resultPanel,
     titleFrame: resultTitleFrame,
@@ -173,6 +218,7 @@ export const A = {
     shieldLose: resultShieldLose,
     brushWin: resultBrushWin,
     brushLose: resultBrushLose,
+    btnReplay: resultBtnReplay,
     btnClose: resultBtnClose,
     ken: resultKen,
   },
@@ -229,17 +275,21 @@ function withoutDeferredAssets(): Omit<typeof A, 'fx'> {
   return startupAssets;
 }
 
-export async function loadAssets(): Promise<void> {
+export async function loadAssets(onProgress?: (fraction: number) => void): Promise<void> {
   const serifFont = new FontFace('DejaVuSerif', `url(${serifFontUrl})`);
   const robotoFont = new FontFace('RobotoCondensed', `url(${robotoCondensedUrl})`, {
     weight: '100 900',
   });
   const [loaded] = await Promise.all([
-    Assets.load(collectUrls(withoutDeferredAssets())) as Promise<Record<string, Texture>>,
+    Assets.load(
+      collectUrls(withoutDeferredAssets()),
+      (fraction) => onProgress?.(Math.min(fraction * 0.96, 0.96)),
+    ) as Promise<Record<string, Texture>>,
     serifFont.load().then((f) => document.fonts.add(f)),
     robotoFont.load().then((f) => document.fonts.add(f)),
   ]);
   Object.assign(textureCache, loaded);
+  onProgress?.(1);
 
   const scaledUrls = [
     A.board.frame,

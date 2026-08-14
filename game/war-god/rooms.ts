@@ -1,6 +1,8 @@
 import { Container } from 'pixi.js';
+import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import {
   GAME_ERROR_CODE,
+  bridge,
   type ErrorData,
   type GameSession,
   type RoomClosedData,
@@ -9,11 +11,13 @@ import {
   type RoomListData,
   type RoomRemovedData,
   type RoomStateData,
+  type RoomSyncData,
   type RoomUpsertData,
   type RoomWaitingData,
   type UserInfoData,
 } from '../src/sdk';
 import { errorText } from './logic/error-text';
+import { shouldResetRoomFromSync } from './logic/room-sync';
 import {
   buildRoomListPopup,
   hideRoomListPopup,
@@ -21,6 +25,7 @@ import {
   layoutRoomListPopup,
   openRoomListPopup,
   renderRoomList,
+  setRoomListUser,
 } from './screens/lobby/rooms/list-popup';
 import {
   buildCreateRoomPopup,
@@ -37,19 +42,17 @@ import {
   openPasswordPopup,
 } from './screens/lobby/rooms/password-popup';
 import {
-  buildWaitingPopup,
-  hideWaitingPopup,
-  isWaitingPopupOpen,
-  layoutWaitingPopup,
-  openWaitingPopup,
-  renderWaitingRoom,
-} from './screens/lobby/rooms/waiting-popup';
+  enterRoomPregame,
+  exitRoomPregame,
+  isRoomPregameActive,
+  updateRoomPregame,
+} from './screens/battle';
+import { showConfirm as showBattleConfirm } from './screens/battle/hud';
 import {
   buildRoomsConfirm,
   hideRoomsConfirm,
   isRoomsConfirmOpen,
   layoutRoomsConfirm,
-  openRoomsConfirm,
   openRoomsNotice,
 } from './screens/lobby/rooms/confirm';
 
@@ -100,6 +103,7 @@ const roomMap = new Map<string, RoomInfo>();
 let roomOrder: string[] = [];
 let currentRoomId = '';
 let currentBet = 0;
+let currentLocked = false;
 let currentState: RoomStateData | null = null;
 let inMatch = false;
 let pendingUntil = 0;
@@ -131,7 +135,7 @@ function anyRoomsPopupVisible(): boolean {
     isRoomListPopupOpen() ||
     isCreateRoomPopupOpen() ||
     isPasswordPopupOpen() ||
-    isWaitingPopupOpen() ||
+    isRoomPregameActive() ||
     isRoomsConfirmOpen()
   );
 }
@@ -145,15 +149,18 @@ function showWaiting(): void {
   hideCreateRoomPopup();
   hidePasswordPopup();
   hideRoomsConfirm();
-  if (!isWaitingPopupOpen()) openWaitingPopup();
-  renderWaitingRoom(currentState, currentRoomId ? { roomId: currentRoomId, bet: currentBet } : null);
+  if (!isRoomPregameActive()) enterRoomPregame(pregameCallbacks);
+  updateRoomPregame(
+    currentState,
+    currentRoomId ? { roomId: currentRoomId, bet: currentBet, locked: currentLocked } : null,
+  );
 }
 
 function showList(refresh: boolean): void {
   hideCreateRoomPopup();
   hidePasswordPopup();
-  hideWaitingPopup();
   if (!isRoomListPopupOpen()) openRoomListPopup();
+  setRoomListUser(deps?.getUserInfo() ?? null);
   renderRoomList(currentRooms());
   if (refresh) activeSession()?.listRooms();
 }
@@ -186,6 +193,7 @@ const handleWaiting = (data: RoomWaitingData): void => {
   pendingUntil = 0;
   currentRoomId = data.roomId;
   currentBet = data.bet;
+  currentLocked = data.locked;
   if (currentState && currentState.roomId !== data.roomId) currentState = null;
   inMatch = false;
   joinTarget = null;
@@ -194,15 +202,17 @@ const handleWaiting = (data: RoomWaitingData): void => {
 
 const handleState = (data: RoomStateData): void => {
   pendingUntil = 0;
+  const prevMembers =
+    currentState && currentState.roomId === data.roomId ? currentState.members.length : 0;
   currentRoomId = data.roomId;
   currentState = data;
   currentBet = data.bet;
+  currentLocked = data.locked;
   inMatch = false;
   joinTarget = null;
-  if (isWaitingPopupOpen()) {
-    renderWaitingRoom(data, { roomId: data.roomId, bet: data.bet });
-  } else if (anyRoomsPopupVisible()) {
-    showWaiting();
+  if (anyRoomsPopupVisible()) showWaiting();
+  if (isRoomPregameActive() && prevMembers < 2 && data.members.length === 2) {
+    bridge.attention({ reason: ARCADE_ATTENTION_REASON.OpponentJoined, roomId: data.roomId });
   }
 };
 
@@ -215,7 +225,10 @@ const handleClosed = (data: RoomClosedData): void => {
   inMatch = false;
   const msg = CLOSE_REASON_TEXT[data.reason];
   if (msg && Date.now() - selfLeftAt > 3000) toast(msg);
-  if (isWaitingPopupOpen() || isRoomsConfirmOpen()) {
+  if (isRoomPregameActive()) {
+    exitRoomPregame();
+    showList(true);
+  } else if (isRoomsConfirmOpen()) {
     hideRoomsConfirm();
     showList(true);
   }
@@ -228,8 +241,10 @@ const handleKicked = (data: RoomKickedData): void => {
   currentState = null;
   currentBet = 0;
   inMatch = false;
-  if (anyRoomsPopupVisible()) {
-    hideWaitingPopup();
+  if (isRoomPregameActive()) {
+    exitRoomPregame();
+    openRoomsNotice('Bạn bị mời khỏi bàn', () => showList(true));
+  } else if (anyRoomsPopupVisible()) {
     hideRoomsConfirm();
     openRoomsNotice('Bạn bị mời khỏi bàn', () => showList(true));
   } else {
@@ -243,12 +258,51 @@ const handleMatchFound = (): void => {
   hideAllRoomPopups();
 };
 
+const handleMatchOver = (): void => {
+  inMatch = false;
+};
+
+function resetCurrentRoom(): void {
+  pendingUntil = 0;
+  currentRoomId = '';
+  currentState = null;
+  currentBet = 0;
+  currentLocked = false;
+  inMatch = false;
+  joinTarget = null;
+}
+
+const handleRoomSync = (data: RoomSyncData): void => {
+  if (!shouldResetRoomFromSync(currentRoomId, inMatch, data.roomId)) return;
+  resetCurrentRoom();
+  toast('Kết nối bị gián đoạn, bạn đã rời bàn');
+  if (isRoomPregameActive()) {
+    exitRoomPregame();
+    showList(true);
+  } else if (anyRoomsPopupVisible()) {
+    hideRoomsConfirm();
+    showList(true);
+  } else {
+    activeSession()?.listRooms();
+  }
+};
+
 const handleError = (data: ErrorData): void => {
   if (!ROOM_ERROR_CODES.has(data.code)) return;
   const engaged = anyRoomsPopupVisible() || pendingUntil > Date.now();
   pendingUntil = 0;
   if (!engaged) return;
   toast(errorText(data.code));
+  if (
+    data.code === GAME_ERROR_CODE.RoomNotFound &&
+    (isRoomPregameActive() || isRoomsConfirmOpen())
+  ) {
+    resetCurrentRoom();
+    hideRoomsConfirm();
+    if (isRoomPregameActive()) exitRoomPregame();
+    showList(true);
+    return;
+  }
   if (data.code === GAME_ERROR_CODE.WrongPassword && isPasswordPopupOpen()) return;
   if (isPasswordPopupOpen()) {
     joinTarget = null;
@@ -275,6 +329,7 @@ function wire(): void {
     currentRoomId = '';
     currentState = null;
     currentBet = 0;
+    currentLocked = false;
     inMatch = false;
     joinTarget = null;
     pendingUntil = 0;
@@ -290,9 +345,11 @@ function wire(): void {
     next.onRoomRemoved(handleRemoved),
     next.onRoomWaiting(handleWaiting),
     next.onRoomState(handleState),
+    next.onRoomSync(handleRoomSync),
     next.onRoomClosed(handleClosed),
     next.onRoomKicked(handleKicked),
     next.onMatchFound(handleMatchFound),
+    next.onMatchOver(handleMatchOver),
     next.onError(handleError),
   );
 }
@@ -328,6 +385,7 @@ function joinRoomFromList(room: RoomInfo): void {
 }
 
 function submitCreateRoom(bet: number, password: string): void {
+  const normalizedPassword = password.trim();
   if (!Number.isInteger(bet) || bet < 0) {
     toast('Mức cược không hợp lệ');
     return;
@@ -344,7 +402,7 @@ function submitCreateRoom(bet: number, password: string): void {
       return;
     }
   }
-  if (password.length > 64) {
+  if (normalizedPassword.length > 64) {
     toast('Mật khẩu tối đa 64 ký tự');
     return;
   }
@@ -354,7 +412,7 @@ function submitCreateRoom(bet: number, password: string): void {
     return;
   }
   if (!tryLock()) return;
-  s.createRoom(bet, password.length > 0 ? password : undefined);
+  s.createRoom(bet, normalizedPassword || undefined);
 }
 
 function submitPassword(password: string): void {
@@ -363,12 +421,13 @@ function submitPassword(password: string): void {
     showList(true);
     return;
   }
-  if (password.length === 0) {
+  const normalizedPassword = password.trim();
+  if (normalizedPassword.length === 0) {
     toast('Vui lòng nhập mật khẩu');
     return;
   }
   if (!tryLock()) return;
-  activeSession()?.joinRoom(target.id, password);
+  activeSession()?.joinRoom(target.id, normalizedPassword);
 }
 
 function toggleReady(): void {
@@ -392,22 +451,45 @@ function startMatch(): void {
   activeSession()?.startRoom(state.roomId);
 }
 
-function confirmKick(userId: string): void {
+function confirmKick(): void {
+  const state = currentState;
   const roomId = currentRoomId;
-  if (!roomId) return;
-  openRoomsConfirm('Mời người chơi này\nra khỏi bàn?', () => {
-    activeSession()?.kickRoomMember(roomId, userId);
+  if (!state || !roomId) return;
+  const guest = state.members.find((m) => !m.owner);
+  if (!guest) return;
+  showBattleConfirm({
+    kind: 'kick',
+    message: 'Mời người chơi này\nra khỏi bàn?',
+    confirmLabel: 'MỜI RA',
+    onConfirm: () => {
+      activeSession()?.kickRoomMember(roomId, guest.id);
+    },
   });
 }
 
 function confirmLeave(): void {
   const roomId = currentRoomId;
   if (!roomId) return;
-  openRoomsConfirm('Bạn có chắc muốn\nrời bàn?', () => {
-    selfLeftAt = Date.now();
-    activeSession()?.leaveRoom(roomId);
+  const meOwner = currentState ? currentState.youId === currentState.ownerId : true;
+  showBattleConfirm({
+    kind: 'leaveRoom',
+    message: meOwner
+      ? 'Rời bàn sẽ đóng bàn này.\nBạn có chắc muốn rời?'
+      : 'Bạn sẽ rời bàn, chủ bàn vẫn ở lại.\nBạn có chắc muốn rời?',
+    confirmLabel: 'RỜI BÀN',
+    onConfirm: () => {
+      selfLeftAt = Date.now();
+      activeSession()?.leaveRoom(roomId);
+    },
   });
 }
+
+const pregameCallbacks = {
+  onToggleReady: toggleReady,
+  onStart: startMatch,
+  onKick: confirmKick,
+  onLeave: confirmLeave,
+};
 
 export function initRooms(nextDeps: RoomsDeps): void {
   deps = nextDeps;
@@ -424,6 +506,7 @@ export function buildRoomsLayer(): Container {
       },
       onRefresh: refreshRooms,
       onJoin: joinRoomFromList,
+      onTopUp: () => toast('Nạp Ken trong app Ola nhé!'),
     }),
     buildCreateRoomPopup({
       onSubmit: submitCreateRoom,
@@ -436,12 +519,6 @@ export function buildRoomsLayer(): Container {
         showList(false);
       },
     }),
-    buildWaitingPopup({
-      onToggleReady: toggleReady,
-      onStart: startMatch,
-      onKick: confirmKick,
-      onLeave: confirmLeave,
-    }),
     buildRoomsConfirm(),
   );
   return layer;
@@ -451,7 +528,6 @@ export function layoutRooms(designH: number, insetTop: number, insetBottom: numb
   layoutRoomListPopup(designH, insetTop, insetBottom);
   layoutCreateRoomPopup(designH, insetTop, insetBottom);
   layoutPasswordPopup(designH, insetTop, insetBottom);
-  layoutWaitingPopup(designH, insetTop, insetBottom);
   layoutRoomsConfirm(designH);
 }
 
@@ -467,8 +543,13 @@ export function openRoomList(): void {
   }
   hideAllRoomPopups();
   openRoomListPopup();
+  setRoomListUser(deps?.getUserInfo() ?? null);
   renderRoomList(currentRooms());
   s.listRooms();
+}
+
+export function updateRoomListUser(info: UserInfoData): void {
+  if (isRoomListPopupOpen()) setRoomListUser(info);
 }
 
 export function hasActiveRoom(): boolean {
@@ -488,6 +569,5 @@ export function hideAllRoomPopups(): void {
   hideRoomListPopup();
   hideCreateRoomPopup();
   hidePasswordPopup();
-  hideWaitingPopup();
   hideRoomsConfirm();
 }

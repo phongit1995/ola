@@ -5,6 +5,7 @@ import { disposeAudio } from './audio';
 import { initKit } from './kit';
 import { DESIGN_W } from './layout';
 import { createSessionController } from './session-controller';
+import { updateRoomListUser } from './rooms';
 import { disposeChat } from './screens/battle/chat';
 import {
   battleChatFocused,
@@ -16,8 +17,6 @@ import {
 } from './screens/battle';
 import {
   buildLobby,
-  hideSearchPopup,
-  isSearchPopupOpen,
   layoutLobby,
   lobbyEnterAnimated,
   lobbySetConnecting,
@@ -25,8 +24,7 @@ import {
   lobbySetReady,
   lobbySetVisible,
   lobbyShowToast,
-  lobbyUpdateKen,
-  openSearchPopup,
+  lobbyUpdateUser,
 } from './screens/lobby';
 
 
@@ -43,15 +41,30 @@ function displayResolution(): number {
   return Math.max(1, window.devicePixelRatio || 1);
 }
 
+function setBootProgress(fraction: number): void {
+  const fill = document.querySelector<HTMLElement>('#boot-loader .boot-bar-fill');
+  const label = document.querySelector<HTMLElement>('#boot-loader .boot-percent');
+  const percent = Math.round(fraction * 100);
+  if (fill) fill.style.width = `${percent}%`;
+  if (label) label.textContent = `${percent}%`;
+}
+
+function hideBootLoader(): void {
+  const loader = document.getElementById('boot-loader');
+  if (!loader) return;
+  loader.classList.add('done');
+  window.setTimeout(() => loader.remove(), 400);
+}
+
 const sessionController = createSessionController({
   setConnecting: lobbySetConnecting,
   setReady: lobbySetReady,
   setError: lobbySetError,
-  updateKen: lobbyUpdateKen,
+  updateUser: (user) => {
+    lobbyUpdateUser(user);
+    updateRoomListUser(user);
+  },
   toast: lobbyShowToast,
-  openSearch: openSearchPopup,
-  hideSearch: hideSearchPopup,
-  isSearchOpen: isSearchPopupOpen,
 });
 
 function readSafeInsets(): void {
@@ -122,7 +135,7 @@ async function main(): Promise<void> {
   document.getElementById('app')!.appendChild(app.canvas);
   initKit(app);
 
-  await loadAssets();
+  await loadAssets(setBootProgress);
 
   root = new Container();
   app.stage.addChild(root);
@@ -146,17 +159,18 @@ async function main(): Promise<void> {
       }
       sessionController.openActiveRoom();
     },
+    // Trận trong bàn: chơi lại nghĩa là quay về bàn cũ rồi bấm BẮT ĐẦU tiếp,
+    // không còn hàng chờ để ghép trận mới.
+    onReplay: () => {
+      lobbyEnterAnimated();
+      sessionController.openActiveRoom();
+    },
     onPvpError: (text) => lobbyShowToast(text),
   });
 
   lobbyBox = buildLobby({
     getSession: sessionController.getSession,
     onPlay: (level) => startBattle(level),
-    onPvp: sessionController.startQueue,
-    onCancelQueue: () => {
-      sessionController.cancelQueue();
-      hideSearchPopup();
-    },
     onRetry: () => void sessionController.connect(),
     onExit: () => bridge.exit(),
   });
@@ -172,6 +186,7 @@ async function main(): Promise<void> {
     disposeChat();
   });
   bridge.ready();
+  hideBootLoader();
 
   if (new URLSearchParams(location.search).has('autostart')) {
     startBattle('normal');
