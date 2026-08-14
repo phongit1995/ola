@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { avatarIconUrl, DEFAULT_AVATAR_URL } from './vip';
+import { avatarIconUrl, botAvatarIconUrl, DEFAULT_AVATAR_URL } from './vip';
 
 describe('War God avatar icon URL', () => {
   it.each([
@@ -15,5 +15,15 @@ describe('War God avatar icon URL', () => {
     ['1.5', DEFAULT_AVATAR_URL],
   ])('maps %s consistently with the shared VIP catalog', (vipType, expected) => {
     expect(avatarIconUrl(vipType)).toBe(expected);
+  });
+});
+
+describe('War God bot avatar icon URL', () => {
+  it.each([
+    ['easy', '/vip-icons/vip_001.png'],
+    ['normal', '/vip-icons/vip_002.png'],
+    ['hard', '/vip-icons/vip_003.png'],
+  ] as const)('gives %s the same icon as caro', (level, expected) => {
+    expect(botAvatarIconUrl(level)).toBe(expected);
   });
 });

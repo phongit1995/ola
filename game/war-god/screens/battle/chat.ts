@@ -6,6 +6,7 @@ import { createChatInput, type ChatInputController } from './chat-input';
 
 export const CHAT_W = 492;
 const CHAT_PAD = 12;
+const BOT_NAME = '@Bot';
 const BOT_LINES = [
   'Hihi 😄',
   'Cẩn thận nhé!',
@@ -100,7 +101,7 @@ function sendChat(): void {
     () => {
       botReplyTimers.delete(timer);
       if (!deps.isOver() && Math.random() < 0.75) {
-        pushChat('@máy', false, BOT_LINES[Math.floor(Math.random() * BOT_LINES.length)]);
+        pushChat(BOT_NAME, false, BOT_LINES[Math.floor(Math.random() * BOT_LINES.length)]);
       }
     },
     900 + Math.random() * 1200,
@@ -217,7 +218,7 @@ export function resetChat(greeting?: string): void {
   chatLog.length = 0;
   input.clear();
   if (greeting) {
-    pushChat('@máy', false, greeting);
+    pushChat(BOT_NAME, false, greeting);
     return;
   }
   renderChat();

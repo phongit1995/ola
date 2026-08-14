@@ -35,7 +35,6 @@ import {
   type TileType,
 } from '../../logic/core';
 import {
-  LEVEL_LABELS,
   ULT_COST,
   applyAuthoritativeEffects,
   applyTileEffects,
@@ -71,6 +70,8 @@ import {
   showConfirm,
   showResult,
   setBattleMode,
+  setFighterAvatar,
+  setFighterBotAvatar,
   updateFighter,
 } from './hud';
 import {
@@ -1133,6 +1134,8 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   foe = createFighter();
   hud.me.name.text = `@${deps.getUserInfo()?.username ?? 'bạn'}`;
   hud.foe.name.text = 'Đang chờ...';
+  setFighterAvatar(hud.me, deps.getUserInfo()?.vipType);
+  setFighterAvatar(hud.foe, null);
   updateFighter(hud.me, me, false, false);
   updateFighter(hud.foe, foe, false, false);
   hud.me.ultBtn.eventMode = 'none';
@@ -1159,6 +1162,8 @@ export function updateRoomPregame(
   const meOwner = state ? state.youId === state.ownerId : true;
   if (meMember) hud.me.name.text = `@${meMember.name}`;
   hud.foe.name.text = foeMember ? `@${foeMember.name}` : 'Đang chờ...';
+  if (meMember) setFighterAvatar(hud.me, meMember.vipType);
+  setFighterAvatar(hud.foe, foeMember?.vipType ?? null);
   let status: string;
   let main: RoomPregameView['main'] = null;
   if (!state) {
@@ -1217,7 +1222,9 @@ export function startBattle(level: BotLevel = botLevel): void {
   hideConfirm();
   const userInfo = deps.getUserInfo();
   if (userInfo) hud.me.name.text = `@${userInfo.username}`;
-  hud.foe.name.text = `@máy · ${LEVEL_LABELS[botLevel]}`;
+  hud.foe.name.text = '@Bot';
+  setFighterAvatar(hud.me, userInfo?.vipType);
+  setFighterBotAvatar(hud.foe, botLevel);
   setChatPvp(false);
   setChatInputVisible(true);
   resetChat('Chào! Chơi vui nhé 😄');
@@ -1272,6 +1279,8 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   myUserId = mePlayer?.id ?? '';
   hud.me.name.text = `@${mePlayer?.name ?? deps.getUserInfo()?.username ?? 'bạn'}`;
   hud.foe.name.text = `@${opponent?.name ?? 'đối thủ'}`;
+  setFighterAvatar(hud.me, mePlayer?.vipType ?? deps.getUserInfo()?.vipType);
+  setFighterAvatar(hud.foe, opponent?.vipType);
   setChatPvp(true);
   if (!data.resumed) resetChat();
   setChatInputVisible(true);

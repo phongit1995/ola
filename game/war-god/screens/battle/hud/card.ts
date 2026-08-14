@@ -1,11 +1,14 @@
-import { Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
 import { A, tex } from '../../../assets';
 import { HEADING, addTick, makeText, removeTick } from '../../../kit';
 import { MAX_FURY, MAX_HP, MAX_MP, ULT_COST, type Fighter } from '../../../logic/battle';
+import { avatarIconUrl, botAvatarIconUrl } from '../../../vip';
+import type { BotLevel } from '../../../logic/battle';
 
 const CARD_W = 190;
 const ARMOR_BADGE_W = 56;
 const ARMOR_BADGE_H = 26;
+const AVATAR_FIT = 27;
 
 export interface BarUI {
   fill: Graphics;
@@ -20,6 +23,9 @@ export interface FighterUI {
   card: Container;
   border: Sprite;
   ring: Sprite;
+  avatar: Sprite;
+  avatarUrl: string;
+  avatarGen: number;
   name: Text;
   hp: BarUI;
   mp: BarUI;
@@ -129,10 +135,11 @@ export function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): Fighter
   ring.x = mirror ? width - 48 : 12;
   ring.y = 8;
   card.addChild(ring);
-  const face = makeText(mirror ? 'Bạn' : '🤖', 11, 0xffe9b8, '800');
-  face.x = ring.x + 18;
-  face.y = ring.y + 18;
-  card.addChild(face);
+  const avatar = new Sprite(Texture.EMPTY);
+  avatar.anchor.set(0.5);
+  avatar.visible = false;
+  avatar.position.set(ring.x + 18, ring.y + 18);
+  card.addChild(avatar);
   const name = makeText(mirror ? '@bạn' : '@máy', 13, 0xffffff, '800');
   name.anchor.set(mirror ? 1 : 0, 0.5);
   name.x = mirror ? width - 56 : 56;
@@ -203,6 +210,9 @@ export function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): Fighter
     card,
     border,
     ring,
+    avatar,
+    avatarUrl: '',
+    avatarGen: 0,
     name,
     hp: hpRow.bar,
     mp: mpRow.bar,
@@ -219,6 +229,33 @@ export function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): Fighter
     ultFlameScale,
     ultPulse: null,
   };
+}
+
+// Icon VIP tải lười theo url nên phải chốt bằng gen: đổi đối thủ liên tục thì
+// ảnh về sau mới được gắn, tránh cảnh ảnh của người cũ đè lên người mới.
+function loadAvatar(ui: FighterUI, url: string): void {
+  if (url === ui.avatarUrl) return;
+  ui.avatarUrl = url;
+  const gen = ++ui.avatarGen;
+  ui.avatar.visible = false;
+  void Assets.load<Texture>(url)
+    .then((texture) => {
+      if (ui.avatar.destroyed || gen !== ui.avatarGen) return;
+      ui.avatar.texture = texture;
+      ui.avatar.scale.set(Math.min(AVATAR_FIT / texture.width, AVATAR_FIT / texture.height));
+      ui.avatar.visible = true;
+    })
+    .catch(() => {
+      if (gen === ui.avatarGen) ui.avatarUrl = '';
+    });
+}
+
+export function setFighterAvatar(ui: FighterUI, vipType?: string | null): void {
+  loadAvatar(ui, avatarIconUrl(vipType));
+}
+
+export function setFighterBotAvatar(ui: FighterUI, level: BotLevel): void {
+  loadAvatar(ui, botAvatarIconUrl(level));
 }
 
 export function updateFighter(ui: FighterUI, fighter: Fighter, active: boolean, ready: boolean): void {
