@@ -29,7 +29,8 @@ import {
 } from './leaderboard-popup';
 import { avatarIconUrl } from '../../vip';
 
-const VIP_FIT_SIZE = 132;
+// Lòng khung avatar (đo từ asset): vòng trong đường kính ~150px khi khung rộng 235.
+const AVATAR_ICON_D = 148;
 const NAME_W = 400;
 const KEN_W = 330;
 const WOOD_W = 310;
@@ -56,6 +57,7 @@ let avatarFrame: Sprite;
 let nameFrame: Sprite;
 let nameText: Text;
 let vipIcon: Sprite;
+let vipMask: Graphics;
 let kenFrame: Sprite;
 let coin: Sprite;
 let coinBaseScale = 1;
@@ -167,7 +169,7 @@ function updateAvatar(vipType?: string | null, animate = false): void {
     .then((texture) => {
       if (gen !== avatarLoadGen || vipIcon.destroyed) return;
       vipIcon.texture = texture;
-      vipIcon.scale.set(Math.min(VIP_FIT_SIZE / texture.width, VIP_FIT_SIZE / texture.height));
+      vipIcon.scale.set(AVATAR_ICON_D / Math.min(texture.width, texture.height));
       vipIcon.visible = true;
       if (animateAvatarOnLoad) popIn(vipIcon, 120);
       animateAvatarOnLoad = false;
@@ -236,7 +238,9 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   vipIcon = new Sprite(Texture.EMPTY);
   vipIcon.anchor.set(0.5);
   vipIcon.visible = false;
-  content.addChild(vipIcon);
+  vipMask = new Graphics();
+  vipIcon.mask = vipMask;
+  content.addChild(vipIcon, vipMask);
 
   kenFrame = new Sprite(tex[A.lobby.kenFrame]);
   kenFrame.anchor.set(0.5);
@@ -362,7 +366,8 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   nameFrame.y = insetTop + 338;
   avatarFrame.y = nameFrame.y - 106;
   vipIcon.x = DESIGN_W / 2;
-  vipIcon.y = avatarFrame.y - 8;
+  vipIcon.y = avatarFrame.y;
+  vipMask.clear().circle(DESIGN_W / 2, avatarFrame.y, AVATAR_ICON_D / 2).fill(0xffffff);
   layoutNameRow();
   kenFrame.y = insetTop + 438;
   const kenH = kenFrame.height;
