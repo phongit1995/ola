@@ -99,6 +99,19 @@ function makeAvatar(room: RoomInfo, size: number): Container {
   return av;
 }
 
+// Chữ nhỏ trên nền giấy sáng: dropShadow mặc định của makeText tạo quầng mờ
+// quanh nét, tắt đi cho sắc.
+function crispText(
+  label: string,
+  size: number,
+  color: number,
+  weight: '700' | '800' = '800',
+): Text {
+  const text = makeText(label, size, color, weight, HEADING);
+  text.style.dropShadow = false;
+  return text;
+}
+
 function makeRow(room: RoomInfo): Container {
   const row = new Container();
   const full = room.full === true || room.players >= 2;
@@ -107,7 +120,7 @@ function makeRow(room: RoomInfo): Container {
   avatar.x = cell1Left + rowH * 0.6;
   row.addChild(avatar);
 
-  const name = makeText(`@${room.owner}`, 15, 0x3a2410, '800', HEADING);
+  const name = crispText(`@${room.owner}`, 15, 0x3a2410);
   name.anchor.set(0, 0.5);
   name.x = avatar.x + rowH * 0.58;
   fitText(name, col2 - name.x - rowH * 0.5);
@@ -119,7 +132,7 @@ function makeRow(room: RoomInfo): Container {
   coin.scale.y = coin.scale.x;
   coin.x = cell2Left + rowH * 0.4;
   row.addChild(coin);
-  const bet = makeText(room.bet.toLocaleString('vi-VN'), 15, 0x3a2410, '800', HEADING);
+  const bet = crispText(room.bet.toLocaleString('vi-VN'), 15, 0x3a2410);
   bet.anchor.set(0, 0.5);
   bet.x = coin.x + rowH * 0.42;
   fitText(bet, col3 - bet.x - listW * 0.14);
@@ -131,7 +144,7 @@ function makeRow(room: RoomInfo): Container {
   badge.scale.y = badge.scale.x;
   badge.x = col3;
   row.addChild(badge);
-  const seats = makeText(`${room.players}/2`, 15, 0xffffff, '800', HEADING);
+  const seats = crispText(`${room.players}/2`, 15, 0xffffff);
   seats.style.stroke = { color: 0x5b1c08, width: 2, join: 'round' };
   seats.x = col3;
   row.addChild(seats);
@@ -273,7 +286,7 @@ function buildTopBar(): void {
   nameFrame.scale.y = nameFrame.scale.x;
   nameFrame.position.set(-118, -CONTENT_H / 2 + 118);
   card.addChild(nameFrame);
-  nameLabel = makeText('', 20, 0xffe27a, '800', HEADING);
+  nameLabel = crispText('', 20, 0xffe27a);
   nameLabel.style.stroke = { color: 0x5b1c08, width: 2, join: 'round' };
   nameLabel.position.set(nameFrame.x, nameFrame.y + 2);
   card.addChild(nameLabel);
@@ -296,7 +309,7 @@ function buildTopBar(): void {
   kenFrame.scale.y = kenFrame.scale.x;
   kenFrame.position.set(120, -CONTENT_H / 2 + 118);
   card.addChild(kenFrame);
-  kenLabel = makeText('0', 22, 0xffffff, '800', HEADING);
+  kenLabel = crispText('0', 22, 0xffffff);
   kenLabel.anchor.set(0.5, 0.5);
   kenLabel.style.stroke = { color: 0x123a63, width: 3, join: 'round' };
   kenLabel.position.set(kenFrame.x + 22, kenFrame.y);
@@ -352,7 +365,7 @@ export function buildRoomListPopup(callbacks: RoomListCallbacks): Container {
 
   headerLayer = new Container();
   for (const label of ['CHỦ BÀN', 'KEN CƯỢC', 'THAM GIA']) {
-    const t = makeText(label, 15, 0xffe15a, '800', HEADING);
+    const t = crispText(label, 15, 0xffe15a);
     t.style.stroke = { color: 0x5a2a08, width: 3, join: 'round' };
     headerLayer.addChild(t);
   }
@@ -385,7 +398,7 @@ export function buildRoomListPopup(callbacks: RoomListCallbacks): Container {
   pageFrame.anchor.set(0.5);
   pageFrame.width = CARD_W * 0.28;
   pageFrame.scale.y = pageFrame.scale.x;
-  pageLabel = makeText('TRANG 1', 17, 0xffffff, '800', HEADING);
+  pageLabel = crispText('TRANG 1', 17, 0xffffff);
   pageLabel.style.stroke = { color: 0x123a63, width: 3, join: 'round' };
   prevBtn.x = -CARD_W * 0.26;
   nextBtn.x = CARD_W * 0.26;

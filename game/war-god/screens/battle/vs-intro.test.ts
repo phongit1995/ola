@@ -39,17 +39,20 @@ describe('War God VS intro data', () => {
 });
 
 describe('War God VS intro timeline', () => {
-  it('brings the swords together, flashes once, and completes within board drop time', () => {
+  it('brings the swords together, flashes once, and holds long enough to read the names', () => {
     const start = vsIntroFrame(0);
     const crossed = vsIntroFrame(410);
+    const held = vsIntroFrame(1100);
     const end = vsIntroFrame(VS_INTRO_DURATION_MS);
     expect(start.swordAlpha).toBe(0);
     expect(crossed.leftSwordX).toBeCloseTo(0);
     expect(crossed.rightSwordX).toBeCloseTo(0);
     expect(crossed.impactAlpha).toBe(1);
+    expect(held.rowAlpha).toBe(1);
+    expect(held.swordAlpha).toBe(1);
     expect(end.done).toBe(true);
     expect(end.dimAlpha).toBe(0);
-    expect(VS_INTRO_DURATION_MS).toBeLessThanOrEqual(985);
+    expect(VS_INTRO_DURATION_MS).toBeGreaterThanOrEqual(1400);
   });
 
   it('uses a static, shorter reduced-motion presentation', () => {

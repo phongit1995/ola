@@ -8,7 +8,7 @@ import type { BotLevel } from '../../../logic/battle';
 const CARD_W = 190;
 const ARMOR_BADGE_W = 56;
 const ARMOR_BADGE_H = 26;
-const AVATAR_FIT = 27;
+const AVATAR_FIT = 22;
 
 export interface BarUI {
   fill: Graphics;

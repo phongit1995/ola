@@ -1,5 +1,5 @@
-export const VS_INTRO_DURATION_MS = 900;
-export const VS_INTRO_REDUCED_DURATION_MS = 520;
+export const VS_INTRO_DURATION_MS = 1500;
+export const VS_INTRO_REDUCED_DURATION_MS = 700;
 
 export interface VsIntroFrame {
   done: boolean;
@@ -39,7 +39,7 @@ export function vsIntroFrame(elapsedMs: number, reducedMotion = false): VsIntroF
   const elapsed = Math.max(0, elapsedMs);
   if (reducedMotion) {
     const fadeIn = clamp01(elapsed / 100);
-    const fadeOut = clamp01((elapsed - 360) / 160);
+    const fadeOut = clamp01((elapsed - 540) / 160);
     const alpha = fadeIn * (1 - fadeOut);
     return {
       done: elapsed >= VS_INTRO_REDUCED_DURATION_MS,
@@ -60,7 +60,7 @@ export function vsIntroFrame(elapsedMs: number, reducedMotion = false): VsIntroF
   const rowIn = easeOutCubic(clamp01(elapsed / 180));
   const swordIn = easeOutCubic(clamp01((elapsed - 130) / 260));
   const swordFadeIn = clamp01((elapsed - 80) / 110);
-  const exit = easeInCubic(clamp01((elapsed - 650) / 250));
+  const exit = easeInCubic(clamp01((elapsed - 1200) / 300));
   const visible = 1 - exit;
   const impact = pulse(elapsed, 350, 410, 535);
 
