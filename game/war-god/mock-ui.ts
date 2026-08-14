@@ -1,13 +1,27 @@
-// Harness dev-only: mở riêng từng popup của lobby với dữ liệu giả để xem/chụp
-// UI mà không cần server game. Không được import từ code chạy thật.
+// Harness dev-only: mở riêng từng màn của game với dữ liệu giả để xem/chụp UI
+// mà không cần server game. Không được import từ code chạy thật.
 //
 //   /war-god/mock-ui.html?popup=leaderboard&state=full|short|empty|error|loading
 //   /war-god/mock-ui.html?popup=create-room
+//   /war-god/mock-ui.html?popup=pregame&state=alone|not-ready|ready|guest|guest-ready
+//   /war-god/mock-ui.html?popup=battle&state=my-turn|foe-turn|win|lose
+//   /war-god/mock-ui.html?popup=bot&state=easy|normal|hard
 import { Application, Container, Graphics, Sprite } from 'pixi.js';
-import type { GameSession, LeaderboardData, LeaderboardEntry, LeaderboardPeriod } from '../src/sdk';
+import type {
+  GameSession,
+  LeaderboardData,
+  LeaderboardEntry,
+  LeaderboardPeriod,
+  MatchFoundData,
+  RoomMember,
+  RoomStateData,
+  UserInfoData,
+} from '../src/sdk';
 import { A, loadAssets, tex } from './assets';
 import { initKit } from './kit';
 import { DESIGN_W } from './layout';
+import { createBoard } from './logic/core';
+import { TILE_ORDER, type ServerState } from './logic/server-types';
 import {
   buildLeaderboardPopup,
   layoutLeaderboardPopup,
@@ -18,14 +32,33 @@ import {
   layoutCreateRoomPopup,
   openCreateRoomPopup,
 } from './screens/lobby/rooms/create-popup';
+import {
+  buildBattleScreen,
+  enterRoomPregame,
+  layoutBattleScreen,
+  startBattle,
+  startPvpBattle,
+  updateRoomPregame,
+} from './screens/battle';
+import type { BotLevel } from './logic/battle';
+import { showResult } from './screens/battle/hud';
+import { pushPvpChat, setChatInputVisible } from './screens/battle/chat';
 
-type PopupName = 'leaderboard' | 'create-room';
-type MockState = 'full' | 'short' | 'empty' | 'error' | 'loading';
+type PopupName = 'leaderboard' | 'create-room' | 'pregame' | 'battle' | 'bot';
 
 const params = new URLSearchParams(location.search);
 const popupName = (params.get('popup') ?? 'leaderboard') as PopupName;
-const state = (params.get('state') ?? 'full') as MockState;
+const state = params.get('state') ?? 'full';
 const replyDelay = Number(params.get('delay') ?? 120);
+
+const ME: UserInfoData = {
+  id: 'me',
+  username: 'thanhlong',
+  vipType: '4',
+  vipDays: 30,
+  ken: 1_284_500,
+};
+const FOE_VIP = '15';
 
 const NAMES = [
   'thanhlong', 'mrbeast_vn', 'huyenthoai', 'kiemvuong', 'bangchu',
@@ -76,28 +109,148 @@ function makeMockSession(): GameSession {
   return session as unknown as GameSession;
 }
 
-interface MockPopup {
-  view: Container;
-  layout(designH: number, insetTop: number, insetBottom: number): void;
-  open(): void;
+// Phòng chờ: chủ bàn luôn sẵn sàng, chỉ khách mới bấm SẴN SÀNG.
+function makeRoomState(): RoomStateData {
+  const asGuest = state.startsWith('guest');
+  const guestReady = state === 'ready' || state === 'guest-ready';
+  const members: RoomMember[] = [
+    { id: 'owner', name: 'thanhlong', owner: true, ready: true, vipType: ME.vipType },
+  ];
+  if (state !== 'alone') {
+    members.push({
+      id: 'guest',
+      name: 'kiemvuong',
+      owner: false,
+      ready: guestReady,
+      vipType: FOE_VIP,
+    });
+  }
+  return {
+    roomId: '7f3k92a1b4c8',
+    ownerId: 'owner',
+    youId: asGuest ? 'guest' : 'owner',
+    bet: 50_000,
+    locked: true,
+    members,
+  };
 }
 
-function makePopup(): MockPopup {
+function makeMatch(): MatchFoundData<ServerState> {
+  const foeTurn = state === 'foe-turn';
+  return {
+    matchId: 'wg-match-mock',
+    gameId: 'war-god',
+    players: [
+      { id: 'me', name: 'thanhlong', vipType: ME.vipType },
+      { id: 'foe', name: 'kiemvuong', vipType: FOE_VIP },
+    ],
+    you: 0,
+    turn: foeTurn ? 1 : 0,
+    deadline: Date.now() + 38_000,
+    bet: 50_000,
+    state: {
+      board: createBoard().map((t) => TILE_ORDER.indexOf(t)),
+      fighters: [
+        { hp: 148, mp: 62, armor: 12, fury: 40 },
+        { hp: 96, mp: 34, armor: 0, fury: 70 },
+      ],
+      rng: 'mock',
+      moveCount: 11,
+      extraTurn: false,
+      steps: [],
+    },
+  };
+}
+
+interface MockScene {
+  mount(root: Container): void;
+  layout(designH: number, insetTop: number, insetBottom: number, rootX: number, scale: number): void;
+  open(): Promise<void> | void;
+}
+
+let requestLayout: () => void = () => {};
+
+function simpleScene(
+  view: Container,
+  layout: (designH: number, insetTop: number, insetBottom: number) => void,
+  open: () => void,
+): MockScene {
+  return {
+    mount: (root) => root.addChild(view),
+    layout: (designH, insetTop, insetBottom) => layout(designH, insetTop, insetBottom),
+    open,
+  };
+}
+
+function makeScene(): MockScene {
   if (popupName === 'create-room') {
-    return {
-      view: buildCreateRoomPopup({
+    return simpleScene(
+      buildCreateRoomPopup({
         onSubmit: (bet, password) => console.log('submit', { bet, password }),
         onCancel: () => console.log('cancel'),
       }),
-      layout: layoutCreateRoomPopup,
-      open: openCreateRoomPopup,
+      layoutCreateRoomPopup,
+      openCreateRoomPopup,
+    );
+  }
+
+  if (popupName === 'pregame' || popupName === 'battle' || popupName === 'bot') {
+    return {
+      mount: (root) => {
+        buildBattleScreen(root, {
+          getUserInfo: () => ME,
+          onGameStart: () => {},
+          onRequestLayout: () => requestLayout(),
+          onExitToLobby: () => console.log('exit to lobby'),
+          onReplay: () => console.log('replay'),
+          onPvpError: (text) => console.log('pvp error', text),
+        });
+      },
+      layout: (designH, insetTop, insetBottom, rootX, scale) =>
+        layoutBattleScreen({
+          designH,
+          insetTop,
+          insetBottom,
+          safeTop: 0,
+          safeBottom: 0,
+          rootX,
+          scale,
+        }),
+      open: async () => {
+        if (popupName === 'bot') {
+          startBattle(state as BotLevel);
+          return;
+        }
+        if (popupName === 'pregame') {
+          // Phòng chờ nằm ngay trong màn PK: bàn trống, chưa thả quân cờ.
+          enterRoomPregame({
+            onToggleReady: () => console.log('toggle ready'),
+            onStart: () => console.log('start'),
+            onKick: () => console.log('kick'),
+            onLeave: () => console.log('leave'),
+          });
+          updateRoomPregame(state === 'loading' ? null : makeRoomState(), null);
+          return;
+        }
+        await startPvpBattle(makeMatch());
+        pushPvpChat('kiemvuong', false, 'Chơi hay đấy 😎');
+        pushPvpChat('thanhlong', true, 'Xem lượt này của tôi!');
+        if (state === 'win' || state === 'lose') {
+          // Trận kết thúc thì ô chat bị khoá, giống nhánh finish() thật.
+          setChatInputVisible(false);
+          showResult(
+            state === 'win'
+              ? { outcome: 'win', detail: 'Bạn đã hạ gục @kiemvuong' }
+              : { outcome: 'lose', detail: '@kiemvuong đã hạ gục bạn' },
+          );
+        }
+      },
     };
   }
-  return {
-    view: buildLeaderboardPopup(),
-    layout: layoutLeaderboardPopup,
-    open: () => openLeaderboardPopup(makeMockSession),
-  };
+
+  return simpleScene(buildLeaderboardPopup(), layoutLeaderboardPopup, () =>
+    openLeaderboardPopup(makeMockSession),
+  );
 }
 
 async function main(): Promise<void> {
@@ -130,8 +283,8 @@ async function main(): Promise<void> {
   bgBox.addChild(bgMask);
   root.addChild(bgBox);
 
-  const popup = makePopup();
-  root.addChild(popup.view);
+  const scene = makeScene();
+  scene.mount(root);
 
   function layout(): void {
     const scale = Math.min(window.innerWidth, DESIGN_W) / DESIGN_W;
@@ -147,13 +300,14 @@ async function main(): Promise<void> {
     bgSprite.y = 0;
     bgMask.clear().rect(0, 0, DESIGN_W, designH).fill(0xffffff);
 
-    popup.layout(designH, 0, 0);
+    scene.layout(designH, 0, 0, root.x, scale);
   }
 
+  requestLayout = layout;
   layout();
   window.addEventListener('resize', layout);
 
-  popup.open();
+  await scene.open();
   layout();
 
   Object.defineProperty(window, '__mockReady', { value: true });
