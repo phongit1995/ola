@@ -95,6 +95,8 @@ import {
 } from './pregame';
 import { playLightningFx } from './fx/lightning';
 import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
+import { buildVsIntro, type VsIntro } from './vs-intro';
+import { buildBotVsIntroData, buildPvpVsIntroData } from './vs-intro-data';
 
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
 const HINT_DELAY_MS = 10_000;
@@ -133,6 +135,7 @@ let botSelectorA: Sprite;
 let hintBox: Container;
 let statusText: ReturnType<typeof makeText>;
 let chatBox: Container;
+let vsIntro: VsIntro;
 let sprites: Array<Container | null> = new Array(CELLS).fill(null);
 let tileSize = 0;
 let fxFrames: Texture[] = [];
@@ -1113,6 +1116,7 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   deps.onGameStart();
   preloadUltFx();
   flowEpoch++;
+  vsIntro.cancel();
   changeBattleMode('pvp');
   inGame = false;
   over = false;
@@ -1200,6 +1204,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
+  vsIntro.cancel();
   changeBattleMode('bot');
   pvpMatchId = '';
   oppAwayUntil = 0;
@@ -1226,16 +1231,18 @@ export function startBattle(level: BotLevel = botLevel): void {
   setFighterAvatar(hud.me, userInfo?.vipType);
   setFighterBotAvatar(hud.foe, botLevel);
   setChatPvp(false);
-  setChatInputVisible(true);
+  setChatInputVisible(false);
   resetChat('Chào! Chơi vui nhé 😄');
   setStatus('Chuẩn bị chiến đấu...');
   updateHud();
-  void dropInBoard().then(() => {
+  const intro = vsIntro.play(buildBotVsIntroData(userInfo, botLevel));
+  void Promise.all([dropInBoard(), intro]).then(() => {
     if (flowEpoch !== ep) return;
     endBusy();
     resetTurnClock();
     announceTurn('me');
     setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
+    setChatInputVisible(true);
     updateHud();
   });
 }
@@ -1253,6 +1260,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
+  vsIntro.cancel();
   changeBattleMode('pvp');
   botModeExtraTurns = [0, 0];
   inGame = true;
@@ -1283,7 +1291,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   setFighterAvatar(hud.foe, opponent?.vipType);
   setChatPvp(true);
   if (!data.resumed) resetChat();
-  setChatInputVisible(true);
+  setChatInputVisible(data.resumed === true);
   turnDeadline = performance.now() + (data.deadline - Date.now());
   updateHud();
   if (data.resumed) {
@@ -1296,11 +1304,13 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   }
   bridge.attention({ reason: ARCADE_ATTENTION_REASON.MatchStarted, matchId: data.matchId });
   setStatus('Chuẩn bị chiến đấu...');
-  return dropInBoard().then(() => {
+  const intro = vsIntro.play(buildPvpVsIntroData(data, deps.getUserInfo()));
+  return Promise.all([dropInBoard(), intro]).then(() => {
     if (flowEpoch !== ep) return;
     endBusy();
     announceTurn(myTurn ? 'me' : 'foe');
     setStatus(myTurn ? 'Lượt của bạn — ghép 3 ô để tấn công!' : 'Đợi đối thủ...');
+    setChatInputVisible(true);
     updateHud();
     bridge.turnChanged({ yourTurn: myTurn, deadline: data.deadline });
   });
@@ -1568,6 +1578,7 @@ function bindPvpHandlers(): void {
 function teardownBattle(): void {
   clearRoomPregameVisuals();
   flowEpoch++;
+  vsIntro.cancel();
   over = true;
   inGame = false;
   busy = false;
@@ -1673,6 +1684,19 @@ function previewFireSwordFx(mode: 'center' | 'corner' | 'multi' = 'center'): boo
   return true;
 }
 
+function previewVsIntro(
+  opponentName = 'đối thủ',
+  selfName = 'phong',
+  opponentVipType = '2',
+  selfVipType = '135',
+): boolean {
+  void vsIntro.play({
+    left: { name: opponentName, vipType: opponentVipType },
+    right: { name: selfName, vipType: selfVipType },
+  });
+  return true;
+}
+
 export function battleDebug(): Record<string, unknown> {
   return {
     mode,
@@ -1699,8 +1723,10 @@ export function battleDebug(): Record<string, unknown> {
     selected,
     selectorVisible: !!selector?.visible,
     flying: flyLayer ? flyLayer.children.filter((c) => c instanceof Sprite).length : 0,
+    vsIntroVisible: vsIntro?.isVisible() === true,
     previewLightning: previewLightningFx,
     previewFireSword: previewFireSwordFx,
+    previewVsIntro,
   };
 }
 
@@ -1837,6 +1863,9 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   turnAnnounce.visible = false;
   root.addChild(turnAnnounce);
 
+  vsIntro = buildVsIntro();
+  root.addChild(vsIntro.view);
+
   root.addChild(hud.result.view, hud.confirm);
   hud.result.hide();
 
@@ -1905,6 +1934,7 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   layoutRoomPregame({ boardX: boardBox.x, boardY: boardBox.y, boardW, rowY: hud.bottomRow.y });
 
   hud.result.layout(designH, insetTop, insetBottom);
+  vsIntro.layout(designH, insetTop, insetBottom);
 
   hud.confirmDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.6 });
   const confirmCard = hud.confirm.getChildByLabel('confirm-card')!;
