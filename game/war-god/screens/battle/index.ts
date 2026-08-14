@@ -463,26 +463,39 @@ async function explodeFx(
   lightningArcs: LightningArc[],
 ): Promise<Set<number>> {
   const matchedCells = [...matched];
+  const matchedSet = new Set(matchedCells);
   const removed = new Set([...matchedCells, ...exploded]);
   const fireSources = matchedCells.filter((index) => board[index] === 'fireSword');
   const jobs: Promise<unknown>[] = [];
+  let fireFx = Promise.resolve();
 
   if (fireSources.length > 0) {
-    jobs.push(playFireSwordFx(fireSources, removed, fireSwordFxContext()));
+    fireFx = playFireSwordFx(fireSources, removed, fireSwordFxContext());
+    jobs.push(fireFx);
   }
 
-  if (lightningArcs.length > 0) {
+  const lightningContext = {
+    tileSize,
+    boardX: boardBox.x,
+    boardY: boardBox.y,
+    grid: GRID,
+    flyLayer,
+    cellRootPos,
+    spriteAt: (index: number) => sprites[index],
+    playSound: () => playSound('lightning'),
+  };
+  const directLightningArcs = lightningArcs.filter((arc) => matchedSet.has(arc.source));
+  const fireTriggeredArcs = lightningArcs.filter((arc) => !matchedSet.has(arc.source));
+
+  if (directLightningArcs.length > 0) {
     jobs.push(
-      playLightningFx(lightningArcs, {
-        tileSize,
-        boardX: boardBox.x,
-        boardY: boardBox.y,
-        grid: GRID,
-        flyLayer,
-        cellRootPos,
-        spriteAt: (index) => sprites[index],
-        playSound: () => playSound('lightning'),
-      }),
+      playLightningFx(directLightningArcs, lightningContext),
+    );
+  }
+
+  if (fireTriggeredArcs.length > 0) {
+    jobs.push(
+      fireFx.then(() => playLightningFx(fireTriggeredArcs, lightningContext)),
     );
   }
 

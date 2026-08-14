@@ -47,15 +47,38 @@ func matchAnimationDelay(step Step) time.Duration {
 		removeDelay = 590*time.Millisecond + time.Duration(swords-1)*110*time.Millisecond
 	}
 
-	specialDelay := time.Duration(0)
+	fireDelay := time.Duration(0)
 	if fireSwords > 0 {
-		specialDelay = 930*time.Millisecond + time.Duration(fireSwords-1)*72*time.Millisecond
+		fireDelay = 930*time.Millisecond + time.Duration(fireSwords-1)*72*time.Millisecond
 	}
-	if arcs := len(step.LightningArcs); arcs > 0 {
-		lightningDelay := 400*time.Millisecond + time.Duration(arcs-1)*76*time.Millisecond
-		if lightningDelay > specialDelay {
-			specialDelay = lightningDelay
+	specialDelay := fireDelay
+	matched := make(map[int]bool, len(step.Cells))
+	for _, cell := range step.Cells {
+		matched[cell] = true
+	}
+	directArcs, fireTriggeredArcs := 0, 0
+	for _, arc := range step.LightningArcs {
+		if matched[arc.Source] {
+			directArcs++
+		} else {
+			fireTriggeredArcs++
+		}
+	}
+	if delay := lightningAnimationDelay(directArcs); delay > specialDelay {
+		specialDelay = delay
+	}
+	if fireTriggeredArcs > 0 {
+		delay := fireDelay + lightningAnimationDelay(fireTriggeredArcs)
+		if delay > specialDelay {
+			specialDelay = delay
 		}
 	}
 	return specialDelay + removeDelay
+}
+
+func lightningAnimationDelay(arcs int) time.Duration {
+	if arcs <= 0 {
+		return 0
+	}
+	return 400*time.Millisecond + time.Duration(arcs-1)*76*time.Millisecond
 }

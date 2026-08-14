@@ -24,7 +24,7 @@ const GUIDE_LINES = [
   `⚔️ Kiếm ${DMG_SWORD} dmg (giáp chặn được)`,
   `💧 Nước +${MP_WATER} nội lực · 🍑 Đào +${FURY_PEACH} Nộ`,
   `❤️ Tim +${HEAL_HEART} máu · 🛡️ Khiên +${ARMOR_SHIELD} giáp (tối đa ${MAX_ARMOR})`,
-  '⚡ Lôi: ghép 3/4 → giật 3/4 ô ngẫu nhiên',
+  '⚡ Lôi: mỗi ô được ghép / bị Kiếm Lửa nổ trúng → giật 1 ô',
   '',
   `🔥⚔️ Kiếm Lửa (hiếm): ${FIRE_SWORD_DMG} dmg xuyên giáp + nổ 3×3`,
   `❤️➕ Tim Lớn (hiếm): hồi ${GREATER_HEART_HEAL} máu`,

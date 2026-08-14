@@ -251,11 +251,23 @@ func computeExplosionsWithPicker(board []int, matched map[int]bool, pickIndex fu
 		delete(set, i)
 	}
 
-	lightningSources := make([]int, 0, len(matched))
+	// Lightning activates when matched directly or caught in the initial Fire
+	// Sword blast. Snapshot the sources before adding random targets so those
+	// targets never recurse into another chain.
+	lightningSourceSet := make(map[int]bool, len(matched)+len(set))
 	for i := range matched {
 		if board[i] == tileLightning {
-			lightningSources = append(lightningSources, i)
+			lightningSourceSet[i] = true
 		}
+	}
+	for i := range set {
+		if board[i] == tileLightning {
+			lightningSourceSet[i] = true
+		}
+	}
+	lightningSources := make([]int, 0, len(lightningSourceSet))
+	for i := range lightningSourceSet {
+		lightningSources = append(lightningSources, i)
 	}
 	sort.Ints(lightningSources)
 	lightningArcs := make([]LightningArc, 0, len(lightningSources))

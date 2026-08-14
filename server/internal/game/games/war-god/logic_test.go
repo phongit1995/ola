@@ -414,6 +414,50 @@ func TestComputeExplosions(t *testing.T) {
 		t.Fatalf("fire sword 3x3: %v", got)
 	}
 
+	chained := swordBoard()
+	chained[0], chained[27], chained[28] = tileLightning, tileFireSword, tileLightning
+	chainedExploded, chainedArcs := computeExplosionsWithPicker(chained, map[int]bool{27: true}, func(int) int { return 0 })
+	chainedBlast := map[int]bool{18: true, 19: true, 20: true, 26: true, 28: true, 34: true, 35: true, 36: true}
+	if len(chainedExploded) != len(chainedBlast)+1 || len(chainedArcs) != 1 {
+		t.Fatalf("fire sword must trigger lightning caught in its blast: exploded=%v arcs=%v", chainedExploded, chainedArcs)
+	}
+	if chainedArcs[0].Source != 28 || chainedArcs[0].Target != 0 || chainedBlast[chainedArcs[0].Target] || chainedArcs[0].Target == 27 {
+		t.Fatalf("invalid fire-to-lightning chain: %+v", chainedArcs[0])
+	}
+	foundChainedTarget := false
+	for _, index := range chainedExploded {
+		if index == chainedArcs[0].Target {
+			foundChainedTarget = true
+			break
+		}
+	}
+	if !foundChainedTarget {
+		t.Fatalf("lightning target %d is missing from exploded=%v", chainedArcs[0].Target, chainedExploded)
+	}
+
+	mixedChain := swordBoard()
+	mixedChain[10], mixedChain[27], mixedChain[28] = tileLightning, tileFireSword, tileLightning
+	mixedChainMatch := map[int]bool{10: true, 27: true}
+	mixedChainExploded, mixedChainArcs := computeExplosionsWithPicker(mixedChain, mixedChainMatch, func(int) int { return 0 })
+	if len(mixedChainArcs) != 2 || mixedChainArcs[0].Source != 10 || mixedChainArcs[1].Source != 28 {
+		t.Fatalf("direct and fire-triggered lightning must each fire once: %v", mixedChainArcs)
+	}
+	if mixedChainArcs[0].Target == mixedChainArcs[1].Target {
+		t.Fatalf("direct and fire-triggered lightning targets must be unique: %v", mixedChainArcs)
+	}
+	for _, arc := range mixedChainArcs {
+		if mixedChainMatch[arc.Target] || chainedBlast[arc.Target] {
+			t.Fatalf("mixed lightning targeted an existing removal: arcs=%v exploded=%v", mixedChainArcs, mixedChainExploded)
+		}
+	}
+
+	overlap := swordBoard()
+	overlap[26], overlap[27], overlap[28] = tileFireSword, tileLightning, tileFireSword
+	_, overlapArcs := computeExplosionsWithPicker(overlap, map[int]bool{26: true, 28: true}, func(int) int { return 0 })
+	if len(overlapArcs) != 1 || overlapArcs[0].Source != 27 {
+		t.Fatalf("overlapping fire blasts must trigger one arc per lightning: %v", overlapArcs)
+	}
+
 	corner := swordBoard()
 	corner[0] = tileFireSword
 	if got, arcs := computeExplosions(corner, map[int]bool{0: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{1, 8, 9}) || len(arcs) != 0 {
