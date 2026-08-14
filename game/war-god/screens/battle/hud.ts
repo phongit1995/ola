@@ -149,13 +149,14 @@ function buildConfirm(): void {
 
   hud.confirmHeading = makeText('', 18, 0xffe9b0, '800', HEADING);
   hud.confirmHeading.x = CONFIRM_CARD_W / 2;
-  hud.confirmHeading.y = 34;
+  // Khung + hoa văn của panel chiếm ~32px trên cùng, đặt cao hơn là chữ chui vào khung.
+  hud.confirmHeading.y = 53;
   hud.confirmCard.addChild(hud.confirmHeading);
 
   hud.confirmIcon = new Sprite(tex[A.menu.icForfeit]);
   hud.confirmIcon.anchor.set(0.5);
   hud.confirmIcon.x = CONFIRM_CARD_W / 2;
-  hud.confirmIcon.y = 79;
+  hud.confirmIcon.y = 86;
   hud.confirmCard.addChild(hud.confirmIcon);
 
   hud.confirmMessage = makeText('', 13, 0xfff1ce, '700');
