@@ -11,11 +11,13 @@ import {
   type ResultPopup,
   type ResultPopupData,
 } from './result-popup';
+import { battleActionLayout, type BattleMode } from './action-layout';
 
 export { updateFighter } from './hud/card';
 
 export interface ButtonUI {
   view: Container;
+  isEnabled(): boolean;
   setEnabled(on: boolean): void;
 }
 
@@ -28,7 +30,7 @@ export interface HudActions {
   onExit(): void;
 }
 
-export type ConfirmKind = 'restart' | 'forfeit' | 'exit';
+export type ConfirmKind = 'restart' | 'forfeit' | 'exit' | 'kick' | 'leaveRoom';
 
 export interface ConfirmOptions {
   kind: ConfirmKind;
@@ -63,10 +65,18 @@ export const hud = {} as {
   confirmCancelText: Text;
 };
 
+export function setBattleMode(mode: BattleMode): void {
+  const layout = battleActionLayout(mode);
+  hud.restart.view.visible = layout.restartVisible;
+  hud.restart.view.x = layout.restartX;
+  hud.forfeit.view.x = layout.forfeitX;
+  hud.exit.view.x = layout.exitX;
+}
+
 let confirmAction: (() => void) | null = null;
 
 
-function makeMenuButton(label: string, background: string, icon: Texture, onTap: () => void): ButtonUI {
+export function makeMenuButton(label: string, background: string, icon: Texture, onTap: () => void): ButtonUI {
   const w = 140;
   const h = 46;
   const c = new Container();
@@ -101,6 +111,7 @@ function makeMenuButton(label: string, background: string, icon: Texture, onTap:
 
   return {
     view: c,
+    isEnabled: () => enabled,
     setEnabled(on: boolean) {
       enabled = on;
       c.alpha = on ? 1 : 0.45;
@@ -214,11 +225,9 @@ export function buildHud(root: Container, actions: HudActions): void {
   hud.exit = makeMenuButton('THOÁT', A.menu.btnExit, tex[A.menu.icExit], actions.onExit);
 
   hud.bottomRow = new Container();
-  hud.restart.view.x = 0;
-  hud.forfeit.view.x = 152;
-  hud.exit.view.x = 304;
   hud.bottomRow.addChild(hud.restart.view, hud.forfeit.view, hud.exit.view);
   root.addChild(hud.bottomRow);
+  setBattleMode('bot');
 
   hud.result = buildResultPopup(actions.onResultClose, actions.onResultReplay);
   buildConfirm();
@@ -236,23 +245,26 @@ export function showResult(data: ResultPopupData): void {
   hud.result.show(data);
 }
 
+const CONFIRM_HEADINGS: Record<ConfirmKind, string> = {
+  restart: 'XÁC NHẬN CHƠI LẠI',
+  forfeit: 'XÁC NHẬN BỎ CUỘC',
+  exit: 'XÁC NHẬN RỜI TRẬN',
+  kick: 'XÁC NHẬN MỜI RA',
+  leaveRoom: 'XÁC NHẬN RỜI BÀN',
+};
+
 export function showConfirm(options: ConfirmOptions): void {
-  const heading =
-    options.kind === 'forfeit'
-      ? 'XÁC NHẬN BỎ CUỘC'
-      : options.kind === 'exit'
-        ? 'XÁC NHẬN RỜI TRẬN'
-        : 'XÁC NHẬN CHƠI LẠI';
+  const heading = CONFIRM_HEADINGS[options.kind];
   const icon =
-    options.kind === 'forfeit'
+    options.kind === 'forfeit' || options.kind === 'kick'
       ? A.menu.icForfeit
-      : options.kind === 'exit'
+      : options.kind === 'exit' || options.kind === 'leaveRoom'
         ? A.menu.icExit
         : A.menu.icRestart;
   const actionBackground =
-    options.kind === 'forfeit'
+    options.kind === 'forfeit' || options.kind === 'kick'
       ? A.menu.btnForfeit
-      : options.kind === 'exit'
+      : options.kind === 'exit' || options.kind === 'leaveRoom'
         ? A.menu.btnExit
         : A.battleConfirm.btnSafe;
 

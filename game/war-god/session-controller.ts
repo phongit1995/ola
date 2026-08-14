@@ -11,7 +11,7 @@ export interface SessionControllerUi {
   setConnecting(): void;
   setReady(user: UserInfoData): void;
   setError(): void;
-  updateKen(ken: number): void;
+  updateUser(user: UserInfoData): void;
   toast(message: string): void;
   openSearch(): void;
   hideSearch(): void;
@@ -71,7 +71,7 @@ export function createSessionController(ui: SessionControllerUi): SessionControl
     eventDisposers.push(
       next.onUserInfo((data) => {
         userInfo = data;
-        ui.updateKen(data.ken);
+        ui.updateUser(data);
       }),
       next.onError((error) => {
         if (

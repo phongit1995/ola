@@ -15,6 +15,7 @@ import {
   type ErrorData,
   type MatchFoundData,
   type MatchOverData,
+  type RoomStateData,
   type StateData,
   type UserInfoData,
 } from '../../../src/sdk';
@@ -69,6 +70,7 @@ import {
   hud,
   showConfirm,
   showResult,
+  setBattleMode,
   updateFighter,
 } from './hud';
 import {
@@ -80,6 +82,16 @@ import {
   setChatInputVisible,
   setChatPvp,
 } from './chat';
+import { betLabel, shortRoomCode } from '../lobby/rooms/util';
+import {
+  buildRoomPregame,
+  hideRoomPregame,
+  layoutRoomPregame,
+  setRoomPregameView,
+  showRoomPregame,
+  type RoomPregameCallbacks,
+  type RoomPregameView,
+} from './pregame';
 import { playLightningFx } from './fx/lightning';
 import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
 
@@ -149,9 +161,16 @@ let myUserId = '';
 let oppAwayUntil = 0;
 let pausedTurnRemain = 0;
 let selfDisconnected = false;
+let roomPregame = false;
 let flowEpoch = 0;
 let pvpChain: Promise<unknown> = Promise.resolve();
 const handledMatchOvers = new RecentMatchIds();
+
+function changeBattleMode(next: 'bot' | 'pvp'): void {
+  mode = next;
+  setBattleMode(next);
+}
+
 const CHAT_ERROR_CODES = new Set<string>([
   GAME_ERROR_CODE.ChatRateLimited,
   GAME_ERROR_CODE.ChatTooLong,
@@ -295,6 +314,7 @@ function rebuildSprites(): void {
   clearHint();
   sprites.forEach((s) => s?.destroy());
   sprites = new Array(CELLS).fill(null);
+  if (roomPregame) return;
   for (let i = 0; i < CELLS; i++) {
     const sprite = makeTile(board[i], i);
     sprites[i] = sprite;
@@ -1075,12 +1095,107 @@ async function startBotTurn(): Promise<void> {
   updateHud();
 }
 
+function clearRoomPregameVisuals(): void {
+  if (!roomPregame) return;
+  roomPregame = false;
+  hideRoomPregame();
+  hud.banner.visible = true;
+  hud.bottomRow.visible = true;
+  hintBox.visible = true;
+}
+
+export function isRoomPregameActive(): boolean {
+  return roomPregame;
+}
+
+export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
+  deps.onGameStart();
+  preloadUltFx();
+  flowEpoch++;
+  changeBattleMode('pvp');
+  inGame = false;
+  over = false;
+  busy = false;
+  myTurn = false;
+  pvpMatchId = '';
+  oppAwayUntil = 0;
+  pausedTurnRemain = 0;
+  selfDisconnected = false;
+  botModeExtraTurns = [0, 0];
+  clearHint();
+  setSelected(null);
+  botSelectorA.visible = false;
+  hud.result.hide();
+  hideConfirm();
+  roomPregame = true;
+  rebuildSprites();
+  me = createFighter();
+  foe = createFighter();
+  hud.me.name.text = `@${deps.getUserInfo()?.username ?? 'bạn'}`;
+  hud.foe.name.text = 'Đang chờ...';
+  updateFighter(hud.me, me, false, false);
+  updateFighter(hud.foe, foe, false, false);
+  hud.me.ultBtn.eventMode = 'none';
+  hud.banner.visible = false;
+  hud.bottomRow.visible = false;
+  hintBox.visible = false;
+  setChatPvp(true);
+  resetChat();
+  setChatInputVisible(false);
+  showRoomPregame(callbacks);
+  deps.onRequestLayout();
+}
+
+export function updateRoomPregame(
+  state: RoomStateData | null,
+  info: { roomId: string; bet: number; locked: boolean } | null,
+): void {
+  if (!roomPregame) return;
+  const roomId = state?.roomId ?? info?.roomId ?? '';
+  const bet = state?.bet ?? info?.bet ?? 0;
+  const locked = state?.locked ?? info?.locked ?? false;
+  const meMember = state ? (state.members.find((m) => m.id === state.youId) ?? null) : null;
+  const foeMember = state ? (state.members.find((m) => m.id !== state.youId) ?? null) : null;
+  const meOwner = state ? state.youId === state.ownerId : true;
+  if (meMember) hud.me.name.text = `@${meMember.name}`;
+  hud.foe.name.text = foeMember ? `@${foeMember.name}` : 'Đang chờ...';
+  let status: string;
+  let main: RoomPregameView['main'] = null;
+  if (!state) {
+    status = 'Đang tải thông tin bàn...';
+  } else if (!foeMember) {
+    status = 'Đang chờ đối thủ vào bàn...';
+  } else if (meOwner) {
+    const guestReady = foeMember.ready === true;
+    status = guestReady ? 'Cả hai đã sẵn sàng — bấm BẮT ĐẦU!' : 'Đang chờ đối thủ sẵn sàng...';
+    main = { label: 'BẮT ĐẦU', action: 'start', enabled: guestReady };
+  } else {
+    const meReady = meMember?.ready === true;
+    status = meReady ? 'Đang chờ chủ bàn bắt đầu...' : 'Đối thủ đã vào bàn — hãy bấm SẴN SÀNG';
+    main = { label: meReady ? 'HỦY SẴN SÀNG' : 'SẴN SÀNG', action: 'toggle', enabled: true };
+  }
+  setRoomPregameView({
+    betText: betLabel(bet),
+    roomLine: roomId ? `Bàn #${shortRoomCode(roomId)}${locked ? ' 🔒' : ''}` : '',
+    status,
+    main,
+    kickVisible: meOwner && foeMember != null,
+  });
+}
+
+export function exitRoomPregame(): void {
+  if (!roomPregame) return;
+  clearRoomPregameVisuals();
+  deps.onExitToLobby();
+}
+
 export function startBattle(level: BotLevel = botLevel): void {
+  clearRoomPregameVisuals();
   deps.onGameStart();
   preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
-  mode = 'bot';
+  changeBattleMode('bot');
   pvpMatchId = '';
   oppAwayUntil = 0;
   pausedTurnRemain = 0;
@@ -1126,11 +1241,12 @@ function syncFighters(state: ServerState): void {
 }
 
 export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void> | void {
+  clearRoomPregameVisuals();
   deps.onGameStart();
   preloadUltFx();
   flowEpoch++;
   const ep = flowEpoch;
-  mode = 'pvp';
+  changeBattleMode('pvp');
   botModeExtraTurns = [0, 0];
   inGame = true;
   over = false;
@@ -1441,6 +1557,7 @@ function bindPvpHandlers(): void {
 }
 
 function teardownBattle(): void {
+  clearRoomPregameVisuals();
   flowEpoch++;
   over = true;
   inGame = false;
@@ -1556,6 +1673,14 @@ export function battleDebug(): Record<string, unknown> {
     over,
     inGame,
     botLevel,
+    actions: {
+      rowVisible: hud.bottomRow?.visible === true,
+      restartVisible: hud.restart?.view.visible === true,
+      restartEnabled: hud.restart?.isEnabled() === true,
+      restartX: hud.restart?.view.x,
+      forfeitX: hud.forfeit?.view.x,
+      exitX: hud.exit?.view.x,
+    },
     turn: turnNumber,
     extraTurns: mode === 'bot' ? [...botModeExtraTurns] : undefined,
     status: statusText.text,
@@ -1611,6 +1736,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   boardBox.addChild(hintBox);
 
   root.addChild(boardBox);
+  buildRoomPregame(root);
 
   buildHud(root, {
     onUlt: () => void castMyUltimate(),
@@ -1767,6 +1893,7 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   }
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
   layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, opts.rootX, opts.scale);
+  layoutRoomPregame({ boardX: boardBox.x, boardY: boardBox.y, boardW, rowY: hud.bottomRow.y });
 
   hud.result.layout(designH, insetTop, insetBottom);
 
