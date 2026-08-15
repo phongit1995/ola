@@ -30,6 +30,10 @@ jobs:
     defaults:
       run:
         shell: bash
+    outputs:
+      mac: ${{ steps.drive.outputs.mac }}
+      win: ${{ steps.drive.outputs.win }}
+      linux: ${{ steps.drive.outputs.linux }}
     steps:
       - uses: actions/checkout@v4
 
@@ -65,7 +69,6 @@ jobs:
         run: node ../node_modules/electron-builder/out/cli/cli.js --${{ matrix.platform }} --publish never
 
       - name: Gom installer
-        id: gather
         run: |
           set -e
           ENV="${{ inputs.environment }}"
@@ -87,10 +90,10 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload lên Google Drive + gửi Discord
+      - name: Upload lên Google Drive
+        id: drive
         env:
           RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           set -e
           # Cài rclone theo OS
@@ -118,7 +121,7 @@ jobs:
             $RC copy "$f" "$DEST" --progress
             LINK=$($RC link "$DEST/$FILE")
             echo "Drive link: $FILE -> $LINK"
-            LINKS="${LINKS}[${FILE}](${LINK})\n"
+            LINKS="${LINKS}[${FILE}](${LINK})"$'\n'
           done
 
           # Chỉ giữ file của 2 run mới nhất cho env+OS này
@@ -139,69 +142,81 @@ jobs:
                 esac
               done
 
-          # Discord embed — xanh production, cam dev
-          if [ "$ENV" = "production" ]; then COLOR=3066993; else COLOR=15105570; fi
-          case "$OS" in
-            mac) OS_LABEL="🍎 macOS" ;;
-            win) OS_LABEL="🪟 Windows" ;;
-            *) OS_LABEL="🐧 Linux" ;;
-          esac
-          PAYLOAD=$(jq -n \
-            --arg env "$ENV" \
-            --arg os "$OS_LABEL" \
-            --arg run "#${{ github.run_number }}" \
-            --arg sha "${GITHUB_SHA:0:7}" \
-            --arg links "$(printf "$LINKS")" \
-            --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --argjson color "$COLOR" \
-            '{
-              embeds: [{
-                title: ("🖥️ Ola Desktop — " + $os),
-                description: "Installer đã sẵn sàng tải về ⬇️",
-                color: $color,
-                timestamp: $ts,
-                fields: [
-                  {name: "Môi trường", value: ("`" + $env + "`"), inline: true},
-                  {name: "Build", value: ("`" + $run + "`"), inline: true},
-                  {name: "Commit", value: ("`" + $sha + "`"), inline: true},
-                  {name: "Tải về", value: $links, inline: false}
-                ],
-                footer: {text: "Ola CI · GitHub Actions"}
-              }]
-            }')
-          curl -sf -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
+          # Trả link cho job notify (mỗi leg chỉ set key của OS mình)
+          {
+            echo "${OS}<<OLA_EOF"
+            printf '%s' "$LINKS"
+            echo ""
+            echo "OLA_EOF"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Báo Discord khi build lỗi
-        if: failure()
+  notify:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gửi Discord (1 message)
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+          RESULT: ${{ needs.build.result }}
+          MAC_LINKS: ${{ needs.build.outputs.mac }}
+          WIN_LINKS: ${{ needs.build.outputs.win }}
+          LINUX_LINKS: ${{ needs.build.outputs.linux }}
         run: |
-          case "${{ matrix.platform }}" in
-            mac) OS_LABEL="🍎 macOS" ;;
-            win) OS_LABEL="🪟 Windows" ;;
-            *) OS_LABEL="🐧 Linux" ;;
-          esac
+          set -e
+          ENV="${{ inputs.environment }}"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          PAYLOAD=$(jq -n \
-            --arg os "$OS_LABEL" \
-            --arg env "${{ inputs.environment }}" \
-            --arg run "#${{ github.run_number }}" \
-            --arg sha "${GITHUB_SHA:0:7}" \
-            --arg url "$RUN_URL" \
-            --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '{
-              embeds: [{
-                title: ("❌ Ola Desktop — " + $os + " build LỖI"),
-                description: ("Xem log: " + $url),
-                url: $url,
-                color: 15158332,
-                timestamp: $ts,
-                fields: [
-                  {name: "Môi trường", value: ("`" + $env + "`"), inline: true},
-                  {name: "Build", value: ("`" + $run + "`"), inline: true},
-                  {name: "Commit", value: ("`" + $sha + "`"), inline: true}
-                ],
-                footer: {text: "Ola CI · GitHub Actions"}
-              }]
-            }')
+          TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          if [ "$RESULT" = "success" ]; then
+            if [ "$ENV" = "production" ]; then COLOR=3066993; else COLOR=15105570; fi
+            PAYLOAD=$(jq -n \
+              --arg env "$ENV" \
+              --arg run "#${{ github.run_number }}" \
+              --arg sha "${GITHUB_SHA:0:7}" \
+              --arg mac "$MAC_LINKS" \
+              --arg win "$WIN_LINKS" \
+              --arg linux "$LINUX_LINKS" \
+              --arg ts "$TS" \
+              --argjson color "$COLOR" \
+              '{
+                embeds: [{
+                  title: "🖥️ Ola Desktop — Bản build mới (mac + win + linux)",
+                  description: "Installer 3 OS đã sẵn sàng tải về ⬇️",
+                  color: $color,
+                  timestamp: $ts,
+                  fields: [
+                    {name: "Môi trường", value: ("`" + $env + "`"), inline: true},
+                    {name: "Build", value: ("`" + $run + "`"), inline: true},
+                    {name: "Commit", value: ("`" + $sha + "`"), inline: true},
+                    {name: "🍎 macOS", value: $mac, inline: false},
+                    {name: "🪟 Windows", value: $win, inline: false},
+                    {name: "🐧 Linux", value: $linux, inline: false}
+                  ],
+                  footer: {text: "Ola CI · GitHub Actions"}
+                }]
+              }')
+          else
+            PAYLOAD=$(jq -n \
+              --arg env "$ENV" \
+              --arg run "#${{ github.run_number }}" \
+              --arg sha "${GITHUB_SHA:0:7}" \
+              --arg url "$RUN_URL" \
+              --arg ts "$TS" \
+              '{
+                embeds: [{
+                  title: "❌ Ola Desktop — build LỖI",
+                  description: ("Xem log: " + $url),
+                  url: $url,
+                  color: 15158332,
+                  timestamp: $ts,
+                  fields: [
+                    {name: "Môi trường", value: ("`" + $env + "`"), inline: true},
+                    {name: "Build", value: ("`" + $run + "`"), inline: true},
+                    {name: "Commit", value: ("`" + $sha + "`"), inline: true}
+                  ],
+                  footer: {text: "Ola CI · GitHub Actions"}
+                }]
+              }')
+          fi
           curl -sf -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
