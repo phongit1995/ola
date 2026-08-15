@@ -52,6 +52,7 @@ import lobbyIcPvp from './assets/lobby/ic-pvp.webp';
 import lobbyMenuPill from './assets/lobby/menu-pill.webp';
 import lobbyRing from './assets/lobby/ring.webp';
 import lobbyIcHistory from './assets/lobby/ic-history.webp';
+import lobbyIcLeaderboard from './assets/lobby/ic-leaderboard.webp';
 import lobbyIcSoundOn from './assets/lobby/ic-sound-on.webp';
 import lobbyIcSoundOff from './assets/lobby/ic-sound-off.webp';
 import lobbyIcGuide from './assets/lobby/ic-guide.webp';
@@ -169,6 +170,7 @@ export const A = {
     menuPill: lobbyMenuPill,
     ring: lobbyRing,
     icHistory: lobbyIcHistory,
+    icLeaderboard: lobbyIcLeaderboard,
     icSoundOn: lobbyIcSoundOn,
     icSoundOff: lobbyIcSoundOff,
     icGuide: lobbyIcGuide,

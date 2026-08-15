@@ -233,7 +233,11 @@ export function computeExplosions(
   });
 
   matched.forEach((i) => set.delete(i));
-  const lightningSources = [...matched]
+
+  // Lôi được match trực tiếp hoặc bị Kiếm Lửa chạm trong vùng nổ ban đầu
+  // đều phát đúng một tia. Chốt sources trước khi thêm target để tia sét
+  // không tiếp tục kích hoạt dây chuyền một ô Lôi ngẫu nhiên khác.
+  const lightningSources = [...new Set([...matched, ...set])]
     .filter((i) => board[i] === 'lightning')
     .sort((a, b) => a - b);
   const lightningArcs: LightningArc[] = [];

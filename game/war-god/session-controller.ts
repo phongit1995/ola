@@ -1,4 +1,4 @@
-import { joinGame, type UserInfoData } from '../src/sdk';
+import { bridge, joinGame, type UserInfoData } from '../src/sdk';
 import type { ServerMove, ServerState } from './logic/server-types';
 import { pvp, type PvpGameSession } from './pvp';
 import { hasActiveRoom, initRooms, openWaitingRoom } from './rooms';
@@ -62,6 +62,9 @@ export function createSessionController(ui: SessionControllerUi): SessionControl
     eventDisposers.push(
       next.onUserInfo((data) => {
         userInfo = data;
+        // Server đẩy USER_INFO ngay sau khi tất toán cược: báo app chủ
+        // refetch số dư KEN, không thì header app giữ số cũ tới khi F5.
+        bridge.refreshUser();
         ui.updateUser(data);
       }),
     );

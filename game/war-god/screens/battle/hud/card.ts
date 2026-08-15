@@ -1,7 +1,7 @@
 import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
 import { A, tex } from '../../../assets';
 import { HEADING, addTick, makeText, removeTick } from '../../../kit';
-import { MAX_FURY, MAX_HP, MAX_MP, ULT_COST, type Fighter } from '../../../logic/battle';
+import { MAX_FURY, MAX_HP, MAX_MP, type Fighter } from '../../../logic/battle';
 import { avatarIconUrl, botAvatarIconUrl } from '../../../vip';
 import type { BotLevel } from '../../../logic/battle';
 
@@ -48,7 +48,6 @@ function makeBar(
   color: number,
   width: number,
   mirror: boolean,
-  marker?: number,
 ): { view: Container; bar: BarUI } {
   const view = new Container();
   const iconSprite = new Sprite(icon);
@@ -66,11 +65,6 @@ function makeBar(
   fill.x = barX;
   label.x = barX + width / 2;
   view.addChild(track, fill);
-  if (marker != null) {
-    const mark = new Graphics().roundRect(-1, 1, 2, 12, 1).fill({ color: 0xffd75e, alpha: 0.9 });
-    mark.x = barX + width * marker;
-    view.addChild(mark);
-  }
   view.addChild(iconSprite, label);
   return { view, bar: { fill, label, width, color } };
 }
@@ -157,9 +151,9 @@ export function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): Fighter
   card.addChild(rankNum);
 
   const hpRow = makeBar(tex[A.hud.icHp], 0xe6392e, 140, mirror);
-  const mpRow = makeBar(tex[A.hud.icMp], 0x2f7fe0, 140, mirror, ULT_COST / MAX_MP);
+  const mpRow = makeBar(tex[A.hud.icMp], 0x2f7fe0, 140, mirror);
   const furyRow = makeBar(tex[A.items.peach], 0xff5aa0, 140, mirror);
-  for (const [row, y] of [[hpRow, 48], [mpRow, 68], [furyRow, 88]] as const) {
+  for (const [row, y] of [[hpRow, 48], [furyRow, 68], [mpRow, 88]] as const) {
     row.view.position.set(12, y);
     card.addChild(row.view);
   }

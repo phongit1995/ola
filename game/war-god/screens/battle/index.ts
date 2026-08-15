@@ -78,11 +78,15 @@ import {
   CHAT_W,
   buildChat,
   layoutChat,
+  pickChatLine,
+  pushBotChat,
   pushPvpChat,
   resetChat,
   setChatInputVisible,
   setChatPvp,
+  setRoomChatSender,
 } from './chat';
+import { botFinishLine, botGreeting, botMoveLine } from './bot-chat';
 import { betLabel, shortRoomCode } from '../lobby/rooms/util';
 import {
   buildRoomPregame,
@@ -97,8 +101,15 @@ import { playLightningFx } from './fx/lightning';
 import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
 import { buildVsIntro, type VsIntro } from './vs-intro';
 import { buildBotVsIntroData, buildPvpVsIntroData } from './vs-intro-data';
+import {
+  ULTIMATE_CHAT_GAP,
+  ULTIMATE_CONTROL_SIZE,
+  buildUltimateControl,
+  type UltimateControl,
+} from './ultimate-control';
+import { deriveUltimateControlState } from './ultimate-control-state';
 
-const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
+const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 30;
 const HINT_DELAY_MS = 10_000;
 const FX_COLS = 6;
 const FX_ROWS = 10;
@@ -135,6 +146,7 @@ let botSelectorA: Sprite;
 let hintBox: Container;
 let statusText: ReturnType<typeof makeText>;
 let chatBox: Container;
+let ultimateControl: UltimateControl;
 let vsIntro: VsIntro;
 let sprites: Array<Container | null> = new Array(CELLS).fill(null);
 let tileSize = 0;
@@ -463,26 +475,39 @@ async function explodeFx(
   lightningArcs: LightningArc[],
 ): Promise<Set<number>> {
   const matchedCells = [...matched];
+  const matchedSet = new Set(matchedCells);
   const removed = new Set([...matchedCells, ...exploded]);
   const fireSources = matchedCells.filter((index) => board[index] === 'fireSword');
   const jobs: Promise<unknown>[] = [];
+  let fireFx = Promise.resolve();
 
   if (fireSources.length > 0) {
-    jobs.push(playFireSwordFx(fireSources, removed, fireSwordFxContext()));
+    fireFx = playFireSwordFx(fireSources, removed, fireSwordFxContext());
+    jobs.push(fireFx);
   }
 
-  if (lightningArcs.length > 0) {
+  const lightningContext = {
+    tileSize,
+    boardX: boardBox.x,
+    boardY: boardBox.y,
+    grid: GRID,
+    flyLayer,
+    cellRootPos,
+    spriteAt: (index: number) => sprites[index],
+    playSound: () => playSound('lightning'),
+  };
+  const directLightningArcs = lightningArcs.filter((arc) => matchedSet.has(arc.source));
+  const fireTriggeredArcs = lightningArcs.filter((arc) => !matchedSet.has(arc.source));
+
+  if (directLightningArcs.length > 0) {
     jobs.push(
-      playLightningFx(lightningArcs, {
-        tileSize,
-        boardX: boardBox.x,
-        boardY: boardBox.y,
-        grid: GRID,
-        flyLayer,
-        cellRootPos,
-        spriteAt: (index) => sprites[index],
-        playSound: () => playSound('lightning'),
-      }),
+      playLightningFx(directLightningArcs, lightningContext),
+    );
+  }
+
+  if (fireTriggeredArcs.length > 0) {
+    jobs.push(
+      fireFx.then(() => playLightningFx(fireTriggeredArcs, lightningContext)),
     );
   }
 
@@ -616,10 +641,10 @@ function renderTurnClock(): void {
   if (!inGame) return;
   const left =
     pausedTurnRemain > 0 ? pausedTurnRemain : Math.max(0, turnDeadline - performance.now());
-  const total = Math.ceil(left / 1000);
-  const mm = String(Math.floor(total / 60)).padStart(2, '0');
-  const ss = String(total % 60).padStart(2, '0');
-  hud.timer.text = `${mm}:${ss}`;
+  // Deadline server có cộng thêm buffer animation nên có thể vượt 30s —
+  // hiển thị kẹp về TURN_SECONDS, còn deadline thật vẫn dùng cho timeout.
+  const total = Math.min(Math.ceil(left / 1000), TURN_SECONDS);
+  hud.timer.text = String(total);
   if (mode === 'pvp' && !over && selfDisconnected) {
     setStatus('Mất kết nối, đang kết nối lại...');
     return;
@@ -646,14 +671,28 @@ function renderTurnClock(): void {
 function updateHud(): void {
   const meActive = myTurn && !over;
   const foeActive = !myTurn && !over;
+  // Màu đồng hồ theo người đang giữ lượt: vàng = bạn, xanh nhạt = đối thủ
+  // (đỏ bị chìm trên nền cờ đỏ nên phía đối thủ dùng xanh).
+  hud.timer.style.fill = meActive ? 0xffd75e : 0x8fd3ff;
   updateFighter(hud.me, me, meActive, me.mp >= ULT_COST);
   updateFighter(hud.foe, foe, foeActive, foe.mp >= ULT_COST);
 
   const canUlt = meActive && !busy && me.mp >= ULT_COST;
   hud.me.ultBtn.eventMode = canUlt ? 'static' : 'none';
   hud.me.ultBtn.alpha = canUlt || !meActive ? 1 : 0.85;
+  ultimateControl?.update(
+    deriveUltimateControlState({
+      mana: me.mp,
+      cost: ULT_COST,
+      inGame,
+      roomPregame,
+      over,
+      myTurn,
+      busy,
+      disconnected: selfDisconnected,
+    }),
+  );
 
-  hud.turnCount.text = String(turnNumber);
   hud.restart.setEnabled(mode === 'bot' && !busy);
   hud.forfeit.setEnabled(!over && !busy);
   hud.exit.setEnabled(!busy);
@@ -915,7 +954,10 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   endBusy();
   clearHint();
   updateHud();
-  if (mode === 'bot') recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
+  if (mode === 'bot') {
+    recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
+    pushBotChat(botFinishLine(won ? 'you' : 'bot', reason, pickChatLine));
+  }
   showResult({ outcome: won ? 'win' : 'lose', detail: sub });
   setChatInputVisible(false);
   playSound(won ? 'win' : 'lose');
@@ -1089,6 +1131,7 @@ async function startBotTurn(): Promise<void> {
   }
 
   if (stale()) return;
+  if (Math.random() < 0.25) pushBotChat(botMoveLine(botLevel, pickChatLine));
   botModeExtraTurns[1] = 0;
   myTurn = true;
   endBusy();
@@ -1140,15 +1183,15 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   hud.foe.name.text = 'Đang chờ...';
   setFighterAvatar(hud.me, deps.getUserInfo()?.vipType);
   setFighterAvatar(hud.foe, null);
-  updateFighter(hud.me, me, false, false);
-  updateFighter(hud.foe, foe, false, false);
-  hud.me.ultBtn.eventMode = 'none';
+  updateHud();
   hud.banner.visible = false;
   hud.bottomRow.visible = false;
   hintBox.visible = false;
   setChatPvp(true);
   resetChat();
-  setChatInputVisible(false);
+  // Trong bàn chờ vẫn chat được với người đã vào (giống caro) — kênh gửi
+  // do rooms.ts gắn qua setRoomChatSender.
+  setChatInputVisible(true);
   showRoomPregame(callbacks);
   deps.onRequestLayout();
 }
@@ -1231,8 +1274,9 @@ export function startBattle(level: BotLevel = botLevel): void {
   setFighterAvatar(hud.me, userInfo?.vipType);
   setFighterBotAvatar(hud.foe, botLevel);
   setChatPvp(false);
+  setRoomChatSender(null);
   setChatInputVisible(false);
-  resetChat('Chào! Chơi vui nhé 😄');
+  resetChat(botGreeting(botLevel, pickChatLine));
   setStatus('Chuẩn bị chiến đấu...');
   updateHud();
   const intro = vsIntro.play(buildBotVsIntroData(userInfo, botLevel));
@@ -1290,6 +1334,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   setFighterAvatar(hud.me, mePlayer?.vipType ?? deps.getUserInfo()?.vipType);
   setFighterAvatar(hud.foe, opponent?.vipType);
   setChatPvp(true);
+  setRoomChatSender(null);
   if (!data.resumed) resetChat();
   setChatInputVisible(data.resumed === true);
   turnDeadline = performance.now() + (data.deadline - Date.now());
@@ -1566,6 +1611,7 @@ function bindPvpHandlers(): void {
     onConnectionChange: (connected) => {
       if (mode !== 'pvp' || !inGame || over) return;
       selfDisconnected = !connected;
+      updateHud();
       if (connected) return;
       if (myTurn && pausedTurnRemain === 0) {
         pausedTurnRemain = Math.max(1000, turnDeadline - performance.now());
@@ -1592,6 +1638,7 @@ function teardownBattle(): void {
   hud.result.hide();
   hideConfirm();
   setChatInputVisible(false);
+  ultimateControl.reset();
 }
 
 function exitToLobby(): void {
@@ -1714,6 +1761,7 @@ export function battleDebug(): Record<string, unknown> {
       forfeitX: hud.forfeit?.view.x,
       exitX: hud.exit?.view.x,
     },
+    ultimate: ultimateControl?.getState(),
     turn: turnNumber,
     extraTurns: mode === 'bot' ? [...botModeExtraTurns] : undefined,
     status: statusText.text,
@@ -1834,8 +1882,12 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   });
   bindPvpHandlers();
 
+  ultimateControl = buildUltimateControl(() => void castMyUltimate());
+  root.addChild(ultimateControl.view);
+
   chatBox = buildChat({
     isOver: () => over,
+    getBotLevel: () => botLevel,
     onFocusChange: (focused) => {
       chatFocused = focused;
       if (!focused && pendingRefit) {
@@ -1930,8 +1982,21 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
     turnAnnounce.y = announceBaseY;
   }
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
-  layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, opts.rootX, opts.scale);
-  layoutRoomPregame({ boardX: boardBox.x, boardY: boardBox.y, boardW, rowY: hud.bottomRow.y });
+  const chatGroupW = CHAT_W + ULTIMATE_CHAT_GAP + ULTIMATE_CONTROL_SIZE;
+  const chatGroupX = Math.round((DESIGN_W - chatGroupW) / 2);
+  layoutChat(chatGroupX, chatY, chatH, opts.rootX, opts.scale);
+  ultimateControl.layout(
+    chatGroupX + CHAT_W + ULTIMATE_CHAT_GAP,
+    chatY + chatH - ULTIMATE_CONTROL_SIZE,
+  );
+  layoutRoomPregame({
+    boardX: boardBox.x,
+    boardY: boardBox.y,
+    boardW,
+    rowY: hud.bottomRow.y,
+    badgeMinY: hud.me.card.y + hud.me.card.height + 4,
+    cardGapW: hud.me.card.x - (hud.foe.card.x + hud.foe.card.width) - 12,
+  });
 
   hud.result.layout(designH, insetTop, insetBottom);
   vsIntro.layout(designH, insetTop, insetBottom);

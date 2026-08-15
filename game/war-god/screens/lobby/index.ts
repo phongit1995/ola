@@ -28,9 +28,10 @@ import {
   openLeaderboardPopup,
 } from './leaderboard-popup';
 import { avatarIconUrl } from '../../vip';
+import { avatarFrameFit, drawAvatarFrameMask, fitAvatarIcon } from './avatar-frame';
 
-// Lòng khung avatar (đo từ asset): vòng trong đường kính ~150px khi khung rộng 235.
-const AVATAR_ICON_D = 148;
+const AVATAR_FRAME_W = 235;
+const AVATAR_FIT = avatarFrameFit(AVATAR_FRAME_W);
 const NAME_W = 400;
 const KEN_W = 330;
 const WOOD_W = 310;
@@ -168,8 +169,7 @@ function updateAvatar(vipType?: string | null, animate = false): void {
   void Assets.load<Texture>(url)
     .then((texture) => {
       if (gen !== avatarLoadGen || vipIcon.destroyed) return;
-      vipIcon.texture = texture;
-      vipIcon.scale.set(AVATAR_ICON_D / Math.min(texture.width, texture.height));
+      fitAvatarIcon(vipIcon, texture, AVATAR_FIT);
       vipIcon.visible = true;
       if (animateAvatarOnLoad) popIn(vipIcon, 120);
       animateAvatarOnLoad = false;
@@ -230,7 +230,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
 
   avatarFrame = new Sprite(tex[A.lobby.avatarFrame]);
   avatarFrame.anchor.set(0.5);
-  avatarFrame.width = 235;
+  avatarFrame.width = AVATAR_FRAME_W;
   avatarFrame.scale.y = avatarFrame.scale.x;
   avatarFrame.x = DESIGN_W / 2;
   content.addChild(avatarFrame);
@@ -285,7 +285,9 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   history.x = -1.5 * pillStep;
   menuRow.addChild(history);
 
-  const rank = makePill('HẠNG', A.lobby.coin, () => openLeaderboardPopup(deps.getSession));
+  const rank = makePill('HẠNG', A.lobby.icLeaderboard, () =>
+    openLeaderboardPopup(deps.getSession),
+  );
   rank.x = -0.5 * pillStep;
   menuRow.addChild(rank);
 
@@ -366,8 +368,8 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   nameFrame.y = insetTop + 338;
   avatarFrame.y = nameFrame.y - 106;
   vipIcon.x = DESIGN_W / 2;
-  vipIcon.y = avatarFrame.y;
-  vipMask.clear().circle(DESIGN_W / 2, avatarFrame.y, AVATAR_ICON_D / 2).fill(0xffffff);
+  vipIcon.y = avatarFrame.y + AVATAR_FIT.iconDy;
+  drawAvatarFrameMask(vipMask, DESIGN_W / 2, avatarFrame.y, AVATAR_FIT);
   layoutNameRow();
   kenFrame.y = insetTop + 438;
   const kenH = kenFrame.height;
@@ -410,7 +412,7 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   retryBtn.y = statusPanel.y + 78;
 
   layoutPickPopup(designH, insetTop, insetBottom);
-  layoutGuidePopup(designH);
+  layoutGuidePopup(designH, insetTop, insetBottom);
   layoutConfirmPopup(designH);
   layoutRooms(designH, insetTop, insetBottom);
   layoutHistoryPopup(designH, insetTop, insetBottom);

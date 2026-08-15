@@ -1,21 +1,18 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { A, tex } from '../../assets';
 import { HEADING, makeText } from '../../kit';
+import type { BotLevel } from '../../logic/battle';
 import { pvp } from '../../pvp';
+import { botReply } from './bot-chat';
 import { createChatInput, type ChatInputController } from './chat-input';
 
-export const CHAT_W = 492;
+export const CHAT_W = 398;
 const CHAT_PAD = 12;
 const BOT_NAME = '@Bot';
-const BOT_LINES = [
-  'Hihi 😄',
-  'Cẩn thận nhé!',
-  'Xem chiêu này!',
-  'Bạn chơi hay đấy 👍',
-  'Tới lượt ta!',
-  'Không dễ đâu! 😤',
-  'Trận này gay cấn thật!',
-];
+
+export function pickChatLine(lines: readonly string[]): string {
+  return lines[Math.floor(Math.random() * lines.length)]!;
+}
 
 interface ChatEntry {
   name: string;
@@ -25,6 +22,7 @@ interface ChatEntry {
 
 interface ChatDeps {
   isOver(): boolean;
+  getBotLevel(): BotLevel;
   onFocusChange(focused: boolean): void;
 }
 
@@ -43,6 +41,7 @@ let chatH = 150;
 let contentH = 0;
 let scrollBack = 0;
 let pvpChat = false;
+let roomChatSend: ((text: string) => void) | null = null;
 const botReplyTimers = new Set<number>();
 
 function clearBotReplyTimers(): void {
@@ -92,19 +91,26 @@ function pushChat(name: string, mine: boolean, text: string): void {
 function sendChat(): void {
   const value = input.takeValue();
   if (!value) return;
-  if (pvpChat) {
-    pvp.sendChatText(value.slice(0, 120));
+  const text = value.slice(0, 120);
+  // Đang chờ trong bàn: chat phòng (server chỉ phát khi bàn đủ 2 người,
+  // giống caro — thiếu người thì lặng lẽ bỏ qua).
+  if (roomChatSend) {
+    roomChatSend(text);
     return;
   }
-  pushChat('@bạn', true, value.slice(0, 120));
+  if (pvpChat) {
+    pvp.sendChatText(text);
+    return;
+  }
+  pushChat('@bạn', true, text);
   const timer = window.setTimeout(
     () => {
       botReplyTimers.delete(timer);
-      if (!deps.isOver() && Math.random() < 0.75) {
-        pushChat(BOT_NAME, false, BOT_LINES[Math.floor(Math.random() * BOT_LINES.length)]);
+      if (!deps.isOver()) {
+        pushChat(BOT_NAME, false, botReply(text, deps.getBotLevel(), pickChatLine));
       }
     },
-    900 + Math.random() * 1200,
+    700 + Math.random() * 900,
   );
   botReplyTimers.add(timer);
 }
@@ -231,6 +237,14 @@ export function setChatPvp(on: boolean): void {
 
 export function pushPvpChat(name: string, mine: boolean, text: string): void {
   pushChat(name, mine, text);
+}
+
+export function pushBotChat(text: string): void {
+  pushChat(BOT_NAME, false, text);
+}
+
+export function setRoomChatSender(sender: ((text: string) => void) | null): void {
+  roomChatSend = sender;
 }
 
 export function setChatInputVisible(visible: boolean): void {

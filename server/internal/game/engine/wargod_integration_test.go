@@ -220,16 +220,20 @@ func TestWarGodRestoredMatchKeepsTurnAfterRunFourSwap(t *testing.T) {
 	}
 }
 
+type fastTurnWarGod struct{ wargod.Logic }
+
+func (fastTurnWarGod) TurnSeconds() int { return 1 }
+
 func TestWarGodTimeoutSkipsTurnAndThirdConsecutiveTimeoutLoses(t *testing.T) {
 	activeStore := newMemoryActiveMatchStore()
 	rooms := newMemoryRoomStore()
 	emitter := &captureEmitter{}
-	gameEngine := NewEngine(zap.NewNop().Sugar(), 1, 30, rooms, activeStore)
+	gameEngine := NewEngine(zap.NewNop().Sugar(), 45, 30, rooms, activeStore)
 	gameEngine.SetEmitter(emitter)
 	defer stopEngineTimers(gameEngine)
 	if err := gameEngine.startMatch(
 		warGodGameID,
-		wargod.Logic{},
+		fastTurnWarGod{},
 		protocol.PlayerInfo{ID: "wg-slow-a", Name: "Slow A"},
 		protocol.PlayerInfo{ID: "wg-slow-b", Name: "Slow B"},
 		0,
@@ -248,7 +252,7 @@ func TestWarGodTimeoutSkipsTurnAndThirdConsecutiveTimeoutLoses(t *testing.T) {
 	firstIdx := match.turnIdx
 	firstID := match.players[firstIdx].ID
 
-	waitForCondition(t, 3*time.Second, "turn expiry did not emit STATE", func() bool {
+	waitForCondition(t, 6*time.Second, "turn expiry did not emit STATE", func() bool {
 		return emitter.count(firstID, protocol.S2CState) > 0
 	})
 	match.mu.Lock()

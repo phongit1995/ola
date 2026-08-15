@@ -47,7 +47,6 @@ export const hud = {} as {
   me: FighterUI;
   foe: FighterUI;
   banner: Container;
-  turnCount: Text;
   timer: Text;
   restart: ButtonUI;
   forfeit: ButtonUI;
@@ -209,16 +208,10 @@ export function buildHud(root: Container, actions: HudActions): void {
   bannerBg.width = 92;
   bannerBg.height = 118;
   hud.banner.addChild(bannerBg);
-  const turnLabel = makeText('LƯỢT', 12, 0xffe9a8, '700', HEADING);
-  turnLabel.x = 46;
-  turnLabel.y = 38;
-  hud.turnCount = makeText('1', 24, 0xffffff, '700', HEADING);
-  hud.turnCount.x = 46;
-  hud.turnCount.y = 58;
-  hud.timer = makeText('00:45', 11, 0xffd9d2, '800');
+  hud.timer = makeText('30', 36, 0xffffff, '800', HEADING);
   hud.timer.x = 46;
-  hud.timer.y = 78;
-  hud.banner.addChild(turnLabel, hud.turnCount, hud.timer);
+  hud.timer.y = 68;
+  hud.banner.addChild(hud.timer);
   root.addChild(hud.banner);
 
   hud.restart = makeMenuButton('CHƠI LẠI', A.menu.btnBlue, tex[A.menu.icRestart], actions.onRestart);

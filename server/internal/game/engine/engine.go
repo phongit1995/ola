@@ -1688,8 +1688,17 @@ func (e *Engine) armTimerDuration(m *Match, d time.Duration) {
 	e.scheduleTurnTimer(m)
 }
 
+func (e *Engine) logicTurnSeconds(gameLogic logic.GameLogic) int {
+	if timer, ok := gameLogic.(logic.TurnTimer); ok {
+		if s := timer.TurnSeconds(); s > 0 {
+			return s
+		}
+	}
+	return e.turnSeconds
+}
+
 func (e *Engine) turnDuration(m *Match, previousPlayerIdx int) time.Duration {
-	duration := time.Duration(e.turnSeconds) * time.Second
+	duration := time.Duration(e.logicTurnSeconds(m.logic)) * time.Second
 	delayer, ok := m.logic.(logic.TurnStartDelayer)
 	if !ok {
 		return duration
@@ -1752,7 +1761,7 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 		handler.OnTurnSkipped(m.state, timedOut)
 	}
 	m.turnIdx = 1 - m.turnIdx
-	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	m.deadline = time.Now().Add(time.Duration(e.logicTurnSeconds(m.logic)) * time.Second)
 	if m.disconnected[m.turnIdx] {
 		e.invalidateTurnTimer(m)
 		m.pausedRemain = time.Until(m.deadline)
@@ -2047,7 +2056,7 @@ func (e *Engine) restorePlayingSnapshot(snapshot ActiveMatchSnapshot, expectedGa
 	}
 	deadline := time.UnixMilli(snapshot.TurnDeadline)
 	if snapshot.TurnDeadline <= 0 {
-		deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+		deadline = time.Now().Add(time.Duration(e.logicTurnSeconds(gameLogic)) * time.Second)
 	}
 	pausedRemain := time.Duration(snapshot.PausedRemainMillis) * time.Millisecond
 	if pausedRemain <= 0 {

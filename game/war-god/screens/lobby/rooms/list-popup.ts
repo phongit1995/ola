@@ -4,10 +4,13 @@ import { A, tex } from '../../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../../kit';
 import { DESIGN_W } from '../../../layout';
 import { avatarIconUrl } from '../../../vip';
+import { avatarFrameFit, drawAvatarFrameMask, fitAvatarIcon } from '../avatar-frame';
 
 const CONTENT_H = 1000;
 const CARD_W = 486;
 const PAGE_SIZE = 10;
+const USER_AVATAR_FRAME_W = 132;
+const USER_AVATAR_FIT = avatarFrameFit(USER_AVATAR_FRAME_W);
 // column centers (fraction of list width, relative to list center) from baked table dividers
 const COL1_F = -0.298;
 const COL2_F = 0.059;
@@ -21,7 +24,6 @@ interface RoomListCallbacks {
   onCreate(): void;
   onRefresh(): void;
   onJoin(room: RoomInfo): void;
-  onTopUp(): void;
 }
 
 let cb: RoomListCallbacks;
@@ -92,7 +94,7 @@ function makeAvatar(room: RoomInfo, size: number): Container {
       if (av.destroyed) return;
       letter.visible = false;
       icon.texture = texture;
-      icon.scale.set(Math.min((size * 1.02) / texture.width, (size * 1.02) / texture.height));
+      icon.scale.set(Math.min((size * 0.66) / texture.width, (size * 0.66) / texture.height));
       icon.visible = true;
     })
     .catch(() => {});
@@ -208,7 +210,7 @@ export function setRoomListUser(info: UserInfoData | null): void {
     avatarIcon.visible = false;
     return;
   }
-  nameLabel.text = info.username;
+  nameLabel.text = `@${info.username}`;
   fitText(nameLabel, CARD_W * 0.42);
   kenLabel.text = info.ken.toLocaleString('vi-VN');
   fitText(kenLabel, CARD_W * 0.24);
@@ -220,8 +222,7 @@ export function setRoomListUser(info: UserInfoData | null): void {
   void Assets.load<Texture>(requestedUrl)
     .then((texture) => {
       if (avatarIcon.destroyed || gen !== userAvatarLoadGen) return;
-      avatarIcon.texture = texture;
-      avatarIcon.scale.set(Math.min(96 / texture.width, 96 / texture.height));
+      fitAvatarIcon(avatarIcon, texture, USER_AVATAR_FIT);
       avatarIcon.visible = true;
     })
     .catch(() => {
@@ -293,14 +294,19 @@ function buildTopBar(): void {
 
   const avatarFrame = new Sprite(tex[A.lobby.avatarFrame]);
   avatarFrame.anchor.set(0.5);
-  avatarFrame.width = 132;
+  avatarFrame.width = USER_AVATAR_FRAME_W;
   avatarFrame.scale.y = avatarFrame.scale.x;
   avatarFrame.position.set(nameFrame.x, nameFrame.y - 62);
+  // Lòng khung avatar là nền xanh ĐỤC nên icon phải vẽ đè lên frame, thu vừa
+  // ellipse lòng khung (tâm lệch xuống vì viên ngọc chiếm đỉnh) — giống lobby.
   avatarIcon = new Sprite(Texture.EMPTY);
   avatarIcon.anchor.set(0.5);
-  avatarIcon.position.set(avatarFrame.x, avatarFrame.y - 6);
+  avatarIcon.position.set(avatarFrame.x, avatarFrame.y + USER_AVATAR_FIT.iconDy);
   avatarIcon.visible = false;
-  card.addChild(avatarIcon, avatarFrame);
+  const avatarMask = new Graphics();
+  drawAvatarFrameMask(avatarMask, avatarFrame.x, avatarFrame.y, USER_AVATAR_FIT);
+  avatarIcon.mask = avatarMask;
+  card.addChild(avatarFrame, avatarIcon, avatarMask);
 
   // right: ken box + plus
   const kenFrame = new Sprite(tex[A.lobby.kenFrame]);
@@ -312,29 +318,16 @@ function buildTopBar(): void {
   kenLabel = crispText('0', 22, 0xffffff);
   kenLabel.anchor.set(0.5, 0.5);
   kenLabel.style.stroke = { color: 0x123a63, width: 3, join: 'round' };
-  kenLabel.position.set(kenFrame.x + 22, kenFrame.y);
+  // Coin phải nằm đúng hốc tròn khoét sẵn trong texture kenFrame
+  // (tâm ≈13% chiều rộng, đường kính ≈88% chiều cao) — xem fitBadge ở pregame.
+  kenLabel.position.set(kenFrame.x + kenFrame.width * 0.1075, kenFrame.y);
   card.addChild(kenLabel);
   const kenCoin = new Sprite(tex[A.lobby.coin]);
   kenCoin.anchor.set(0.5);
-  kenCoin.width = 62;
+  kenCoin.width = kenFrame.height * 0.88;
   kenCoin.scale.y = kenCoin.scale.x;
-  kenCoin.position.set(kenFrame.x - kenFrame.width / 2 + 4, kenFrame.y);
+  kenCoin.position.set(kenFrame.x - kenFrame.width * 0.37, kenFrame.y);
   card.addChild(kenCoin);
-  const plus = new Container();
-  const plusBg = new Sprite(tex[A.lobby.btnPlus]);
-  plusBg.anchor.set(0.5);
-  plusBg.width = 58;
-  plusBg.scale.y = plusBg.scale.x;
-  plus.addChild(plusBg);
-  const plusIc = new Sprite(tex[A.lobby.icPlus]);
-  plusIc.anchor.set(0.5);
-  plusIc.width = 26;
-  plusIc.scale.y = plusIc.scale.x;
-  plus.addChild(plusIc);
-  plus.position.set(kenFrame.x + kenFrame.width / 2 + 8, kenFrame.y);
-  plus.hitArea = new Rectangle(-34, -34, 68, 68);
-  pressable(plus, () => cb.onTopUp());
-  card.addChild(plus);
 }
 
 export function buildRoomListPopup(callbacks: RoomListCallbacks): Container {

@@ -118,6 +118,9 @@ func ExportParityFixture() ParityFixture {
 	fireBoard[25], fireBoard[26], fireBoard[27] = tileSword, tileFireSword, tileSword
 	lightningBoard := parityStripedBoard()
 	lightningBoard[0], lightningBoard[1], lightningBoard[2] = tileLightning, tileLightning, tileLightning
+	fireLightningBoard := parityStripedBoard()
+	fireLightningBoard[0] = tileLightning
+	fireLightningBoard[26], fireLightningBoard[27] = tileFireSword, tileLightning
 	explosions := []ParityExplosionCase{
 		makeExplosionFixture(
 			"fire sword clears its surrounding 3x3",
@@ -131,10 +134,16 @@ func ExportParityFixture() ParityFixture {
 			[]int{0, 1, 2},
 			[]float64{0, 0, 0},
 		),
+		makeExplosionFixture(
+			"fire sword triggers lightning inside its blast",
+			fireLightningBoard,
+			[]int{26},
+			[]float64{0},
+		),
 	}
 
 	return ParityFixture{
-		Version:        1,
+		Version:        2,
 		TileOrder:      append([]string(nil), tileNames[:]...),
 		FindMatches:    matches,
 		TileEffects:    effects,

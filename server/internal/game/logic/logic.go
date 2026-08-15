@@ -31,6 +31,11 @@ type TimeoutSkipper interface {
 	TimeoutSkipsTurn() bool
 }
 
+// TurnTimer lets a game override the engine-wide turn duration.
+type TurnTimer interface {
+	TurnSeconds() int
+}
+
 // TurnSkipHandler lets a game clear or consume turn-bound state when the
 // engine skips an action without calling Apply (currently on turn timeout).
 type TurnSkipHandler interface {
