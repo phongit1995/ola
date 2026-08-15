@@ -4,11 +4,13 @@ import { A, tex } from '../../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../../kit';
 import { DESIGN_W } from '../../../layout';
 import { avatarIconUrl } from '../../../vip';
+import { avatarFrameFit, drawAvatarFrameMask, fitAvatarIcon } from '../avatar-frame';
 
 const CONTENT_H = 1000;
 const CARD_W = 486;
 const PAGE_SIZE = 10;
-const USER_AVATAR_D = 84;
+const USER_AVATAR_FRAME_W = 132;
+const USER_AVATAR_FIT = avatarFrameFit(USER_AVATAR_FRAME_W);
 // column centers (fraction of list width, relative to list center) from baked table dividers
 const COL1_F = -0.298;
 const COL2_F = 0.059;
@@ -220,8 +222,7 @@ export function setRoomListUser(info: UserInfoData | null): void {
   void Assets.load<Texture>(requestedUrl)
     .then((texture) => {
       if (avatarIcon.destroyed || gen !== userAvatarLoadGen) return;
-      avatarIcon.texture = texture;
-      avatarIcon.scale.set(USER_AVATAR_D / Math.min(texture.width, texture.height));
+      fitAvatarIcon(avatarIcon, texture, USER_AVATAR_FIT);
       avatarIcon.visible = true;
     })
     .catch(() => {
@@ -293,18 +294,17 @@ function buildTopBar(): void {
 
   const avatarFrame = new Sprite(tex[A.lobby.avatarFrame]);
   avatarFrame.anchor.set(0.5);
-  avatarFrame.width = 132;
+  avatarFrame.width = USER_AVATAR_FRAME_W;
   avatarFrame.scale.y = avatarFrame.scale.x;
   avatarFrame.position.set(nameFrame.x, nameFrame.y - 62);
-  // Lòng khung avatar là nền xanh ĐỤC nên icon phải vẽ đè lên frame và cắt
-  // theo hình tròn lòng khung (≈64% chiều rộng frame) — giống lobby chính.
+  // Lòng khung avatar là nền xanh ĐỤC nên icon phải vẽ đè lên frame, thu vừa
+  // ellipse lòng khung (tâm lệch xuống vì viên ngọc chiếm đỉnh) — giống lobby.
   avatarIcon = new Sprite(Texture.EMPTY);
   avatarIcon.anchor.set(0.5);
-  avatarIcon.position.set(avatarFrame.x, avatarFrame.y);
+  avatarIcon.position.set(avatarFrame.x, avatarFrame.y + USER_AVATAR_FIT.iconDy);
   avatarIcon.visible = false;
-  const avatarMask = new Graphics()
-    .circle(avatarFrame.x, avatarFrame.y, USER_AVATAR_D / 2)
-    .fill(0xffffff);
+  const avatarMask = new Graphics();
+  drawAvatarFrameMask(avatarMask, avatarFrame.x, avatarFrame.y, USER_AVATAR_FIT);
   avatarIcon.mask = avatarMask;
   card.addChild(avatarFrame, avatarIcon, avatarMask);
 
