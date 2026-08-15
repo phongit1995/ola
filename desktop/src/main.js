@@ -153,6 +153,7 @@ app.whenReady().then(() => {
   });
 });
 
+// Đóng cửa sổ là thoát hẳn (kể cả macOS) — không giữ app chạy ngầm ở dock.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  app.quit();
 });

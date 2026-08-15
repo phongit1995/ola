@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "Ola Chat desktop (Electron wrapper cho web/)",
+  "author": "Ola Chat",
   "type": "module",
   "main": "src/main.js",
   "scripts": {
@@ -18,7 +19,7 @@
   "devDependencies": {
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
-    "electron": "^38.2.0",
+    "electron": "43.4.0",
     "electron-builder": "^26.0.12",
     "vite": "^8.0.12",
     "wait-on": "^8.0.3"
