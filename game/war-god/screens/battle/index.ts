@@ -97,6 +97,13 @@ import { playLightningFx } from './fx/lightning';
 import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
 import { buildVsIntro, type VsIntro } from './vs-intro';
 import { buildBotVsIntroData, buildPvpVsIntroData } from './vs-intro-data';
+import {
+  ULTIMATE_CHAT_GAP,
+  ULTIMATE_CONTROL_SIZE,
+  buildUltimateControl,
+  type UltimateControl,
+} from './ultimate-control';
+import { deriveUltimateControlState } from './ultimate-control-state';
 
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 30;
 const HINT_DELAY_MS = 10_000;
@@ -135,6 +142,7 @@ let botSelectorA: Sprite;
 let hintBox: Container;
 let statusText: ReturnType<typeof makeText>;
 let chatBox: Container;
+let ultimateControl: UltimateControl;
 let vsIntro: VsIntro;
 let sprites: Array<Container | null> = new Array(CELLS).fill(null);
 let tileSize = 0;
@@ -668,6 +676,18 @@ function updateHud(): void {
   const canUlt = meActive && !busy && me.mp >= ULT_COST;
   hud.me.ultBtn.eventMode = canUlt ? 'static' : 'none';
   hud.me.ultBtn.alpha = canUlt || !meActive ? 1 : 0.85;
+  ultimateControl?.update(
+    deriveUltimateControlState({
+      mana: me.mp,
+      cost: ULT_COST,
+      inGame,
+      roomPregame,
+      over,
+      myTurn,
+      busy,
+      disconnected: selfDisconnected,
+    }),
+  );
 
   hud.restart.setEnabled(mode === 'bot' && !busy);
   hud.forfeit.setEnabled(!over && !busy);
@@ -1155,9 +1175,7 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   hud.foe.name.text = 'Đang chờ...';
   setFighterAvatar(hud.me, deps.getUserInfo()?.vipType);
   setFighterAvatar(hud.foe, null);
-  updateFighter(hud.me, me, false, false);
-  updateFighter(hud.foe, foe, false, false);
-  hud.me.ultBtn.eventMode = 'none';
+  updateHud();
   hud.banner.visible = false;
   hud.bottomRow.visible = false;
   hintBox.visible = false;
@@ -1581,6 +1599,7 @@ function bindPvpHandlers(): void {
     onConnectionChange: (connected) => {
       if (mode !== 'pvp' || !inGame || over) return;
       selfDisconnected = !connected;
+      updateHud();
       if (connected) return;
       if (myTurn && pausedTurnRemain === 0) {
         pausedTurnRemain = Math.max(1000, turnDeadline - performance.now());
@@ -1607,6 +1626,7 @@ function teardownBattle(): void {
   hud.result.hide();
   hideConfirm();
   setChatInputVisible(false);
+  ultimateControl.reset();
 }
 
 function exitToLobby(): void {
@@ -1729,6 +1749,7 @@ export function battleDebug(): Record<string, unknown> {
       forfeitX: hud.forfeit?.view.x,
       exitX: hud.exit?.view.x,
     },
+    ultimate: ultimateControl?.getState(),
     turn: turnNumber,
     extraTurns: mode === 'bot' ? [...botModeExtraTurns] : undefined,
     status: statusText.text,
@@ -1849,6 +1870,9 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   });
   bindPvpHandlers();
 
+  ultimateControl = buildUltimateControl(() => void castMyUltimate());
+  root.addChild(ultimateControl.view);
+
   chatBox = buildChat({
     isOver: () => over,
     onFocusChange: (focused) => {
@@ -1945,7 +1969,13 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
     turnAnnounce.y = announceBaseY;
   }
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
-  layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, opts.rootX, opts.scale);
+  const chatGroupW = CHAT_W + ULTIMATE_CHAT_GAP + ULTIMATE_CONTROL_SIZE;
+  const chatGroupX = Math.round((DESIGN_W - chatGroupW) / 2);
+  layoutChat(chatGroupX, chatY, chatH, opts.rootX, opts.scale);
+  ultimateControl.layout(
+    chatGroupX + CHAT_W + ULTIMATE_CHAT_GAP,
+    chatY + chatH - ULTIMATE_CONTROL_SIZE,
+  );
   layoutRoomPregame({
     boardX: boardBox.x,
     boardY: boardBox.y,

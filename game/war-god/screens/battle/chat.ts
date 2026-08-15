@@ -4,7 +4,7 @@ import { HEADING, makeText } from '../../kit';
 import { pvp } from '../../pvp';
 import { createChatInput, type ChatInputController } from './chat-input';
 
-export const CHAT_W = 492;
+export const CHAT_W = 398;
 const CHAT_PAD = 12;
 const BOT_NAME = '@Bot';
 const BOT_LINES = [

@@ -43,6 +43,7 @@ import { openCreateRoomPopup } from './screens/lobby/rooms/create-popup';
 import { openRoomListPopup, renderRoomList, setRoomListUser } from './screens/lobby/rooms/list-popup';
 import { openPasswordPopup } from './screens/lobby/rooms/password-popup';
 import {
+  battleDebug,
   buildBattleScreen,
   enterRoomPregame,
   layoutBattleScreen,
@@ -188,6 +189,8 @@ function makeRoomState(): RoomStateData {
 }
 
 function makeMatch(): MatchFoundData<ServerState> {
+  const myMana =
+    state === 'mana-empty' ? 0 : state === 'mana-loading' ? 25 : state === 'mana-ready' ? 50 : 62;
   return {
     matchId: 'wg-match-mock',
     gameId: 'war-god',
@@ -202,7 +205,7 @@ function makeMatch(): MatchFoundData<ServerState> {
     state: {
       board: createBoard().map((t) => TILE_ORDER.indexOf(t)),
       fighters: [
-        { hp: 148, mp: 62, armor: 12, fury: 40 },
+        { hp: 148, mp: myMana, armor: 12, fury: 40 },
         { hp: 96, mp: 34, armor: 0, fury: 70 },
       ],
       rng: 'mock',
@@ -263,7 +266,7 @@ const SCENES: Record<string, () => Promise<void> | void> = {
     updateRoomPregame(makeRoomState(), null);
   },
 
-  // state: my-turn | foe-turn | win | lose | draw
+  // state: my-turn | foe-turn | mana-empty | mana-loading | mana-ready | win | lose | draw
   async battle() {
     await openPvpBattle();
     if (state !== 'win' && state !== 'lose' && state !== 'draw') return;
@@ -396,6 +399,7 @@ async function main(): Promise<void> {
   await SCENES[screen]?.();
   layout();
 
+  Object.defineProperty(window, '__mockBattle', { get: () => battleDebug() });
   Object.defineProperty(window, '__mockReady', { value: true });
 }
 
