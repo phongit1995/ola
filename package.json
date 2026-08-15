@@ -6,6 +6,8 @@
     "web:dev": "pnpm -C web dev",
     "web:build": "pnpm -C web build",
     "web:lint": "pnpm -C web lint",
+    "desktop:dev": "pnpm -C desktop dev",
+    "desktop:dist": "pnpm -C desktop dist",
     "mobile:start": "pnpm -C mobile start",
     "mobile:android": "pnpm -C mobile android",
     "mobile:ios": "pnpm -C mobile ios"

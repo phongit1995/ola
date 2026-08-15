@@ -1,0 +1,26 @@
+{
+  "name": "desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Ola Chat desktop (Electron wrapper cho web/)",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "concurrently -k -n vite,electron \"vite\" \"wait-on http-get://localhost:3005 && pnpm dev:electron-only\"",
+    "dev:electron-only": "cross-env OLA_DESKTOP_DEV=1 ELECTRON_RUN_AS_NODE= electron .",
+    "smoke": "cross-env OLA_DESKTOP_SMOKE=1 ELECTRON_RUN_AS_NODE= electron .",
+    "build:web": "pnpm -C ../web typecheck && vite build",
+    "dist": "pnpm build:web && electron-builder --publish never",
+    "dist:mac": "pnpm build:web && electron-builder --mac --publish never",
+    "dist:win": "pnpm build:web && electron-builder --win --publish never",
+    "dist:linux": "pnpm build:web && electron-builder --linux --publish never"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12",
+    "vite": "^8.0.12",
+    "wait-on": "^8.0.3"
+  }
+}

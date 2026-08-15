@@ -1,0 +1,38 @@
+appId: net.olachat.desktop
+productName: Ola Chat
+directories:
+  output: release
+  buildResources: build
+files:
+  - src/**
+  - dist/**
+  - package.json
+asar: true
+npmRebuild: false
+
+mac:
+  category: public.app-category.social-networking
+  target:
+    - dmg
+    - zip
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    NSMicrophoneUsageDescription: Ola Chat cần micro để gọi thoại và gửi tin nhắn thoại.
+    NSCameraUsageDescription: Ola Chat cần camera để gọi video.
+
+win:
+  icon: build/icon-win.png
+  target:
+    - nsis
+nsis:
+  oneClick: true
+  deleteAppDataOnUninstall: false
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Network
+  maintainer: Ola Chat

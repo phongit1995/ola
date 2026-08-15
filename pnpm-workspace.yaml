@@ -3,11 +3,14 @@ packages:
   - admin
   - mobile
   - game
+  - desktop
   - packages/*
 
 allowBuilds:
   '@firebase/util': false
   protobufjs: false
+  electron: true
+  electron-winstaller: false
 
 overrides:
   firebase: 12.16.0
