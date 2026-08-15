@@ -1,9 +1,11 @@
 {
-  "name": "desktop",
+  "name": "ola-desktop",
   "private": true,
   "version": "0.1.0",
   "description": "Ola Chat desktop (Electron wrapper cho web/)",
   "author": "Ola Chat",
+  "homepage": "https://olachat.net",
+  "desktopName": "OlaChat",
   "type": "module",
   "main": "src/main.js",
   "scripts": {

@@ -36,3 +36,4 @@ linux:
     - deb
   category: Network
   maintainer: Ola Chat
+  syncDesktopName: true
