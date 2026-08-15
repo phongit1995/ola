@@ -1,0 +1,169 @@
+name: Desktop
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Env build (dev = api-dev, production = api prod)'
+        required: true
+        default: 'production'
+        type: choice
+        options: [dev, production]
+
+concurrency:
+  group: desktop-${{ github.ref }}-${{ inputs.environment }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: windows-latest
+            platform: win
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web (vite, env desktop)
+        working-directory: desktop
+        run: |
+          # dev = build production nhưng API dev: .env.production.local đè .env.production
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            cp .env.development .env.production.local
+          fi
+          echo "== VITE env dùng để build =="
+          cat .env .env.production .env.production.local 2>/dev/null || true
+          pnpm build:web
+
+      - name: Đóng gói electron-builder (${{ matrix.platform }})
+        working-directory: desktop
+        env:
+          # Không có cert ký: mac bỏ qua signing, win build nsis không ký
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: pnpm exec electron-builder --${{ matrix.platform }} --publish never
+
+      - name: Gom installer
+        id: gather
+        run: |
+          set -e
+          ENV="${{ inputs.environment }}"
+          RUN="${{ github.run_number }}"
+          OS="${{ matrix.platform }}"
+          mkdir -p artifacts
+          shopt -s nullglob
+          for f in desktop/release/*.dmg desktop/release/*.exe desktop/release/*.AppImage desktop/release/*.deb; do
+            ext="${f##*.}"
+            cp "$f" "artifacts/ola-desktop-${ENV}-${RUN}-${OS}.${ext}"
+          done
+          ls -la artifacts
+          [ -n "$(ls artifacts)" ] || { echo "Không có installer nào!"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ola-desktop-${{ inputs.environment }}-${{ matrix.platform }}
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload lên Google Drive + gửi Discord
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          set -e
+          # Cài rclone theo OS
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            choco install rclone -y >/dev/null
+            export PATH="$PATH:/c/ProgramData/chocolatey/bin"
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            brew install rclone >/dev/null
+          else
+            curl -fsSL https://rclone.org/install.sh | sudo bash
+          fi
+
+          # Config từ secret, trỏ tường minh để đồng nhất 3 OS
+          printf '%s' "$RCLONE_CONF" > rclone.conf
+          RC="rclone --config rclone.conf"
+
+          ENV="${{ inputs.environment }}"
+          OS="${{ matrix.platform }}"
+          DEST="olagdrive:Ola Desktop Builds"
+          $RC mkdir "$DEST"
+
+          LINKS=""
+          for f in artifacts/*; do
+            FILE="$(basename "$f")"
+            $RC copy "$f" "$DEST" --progress
+            LINK=$($RC link "$DEST/$FILE")
+            echo "Drive link: $FILE -> $LINK"
+            LINKS="${LINKS}[${FILE}](${LINK})\n"
+          done
+
+          # Chỉ giữ file của 2 run mới nhất cho env+OS này
+          KEEP_RUNS=$($RC lsf "$DEST" \
+            | grep -E "^ola-desktop-${ENV}-[0-9]+-${OS}\." \
+            | sed -E 's/^ola-desktop-[^-]+-([0-9]+)-.*/\1/' \
+            | sort -rn | uniq | head -2 | tr '\n' ' ')
+          $RC lsf "$DEST" \
+            | grep -E "^ola-desktop-${ENV}-[0-9]+-${OS}\." \
+            | while read -r old; do
+                run=$(echo "$old" | sed -E 's/^ola-desktop-[^-]+-([0-9]+)-.*/\1/')
+                case " $KEEP_RUNS " in
+                  *" $run "*) ;;
+                  *)
+                    echo "Xoá bản cũ: $old"
+                    $RC deletefile "$DEST/$old" || echo "  (bỏ qua, không xoá được: $old)"
+                    ;;
+                esac
+              done
+
+          # Discord embed — xanh production, cam dev
+          if [ "$ENV" = "production" ]; then COLOR=3066993; else COLOR=15105570; fi
+          case "$OS" in
+            mac) OS_LABEL="🍎 macOS" ;;
+            win) OS_LABEL="🪟 Windows" ;;
+            *) OS_LABEL="🐧 Linux" ;;
+          esac
+          PAYLOAD=$(jq -n \
+            --arg env "$ENV" \
+            --arg os "$OS_LABEL" \
+            --arg run "#${{ github.run_number }}" \
+            --arg sha "${GITHUB_SHA:0:7}" \
+            --arg links "$(printf "$LINKS")" \
+            --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson color "$COLOR" \
+            '{
+              embeds: [{
+                title: ("🖥️ Ola Desktop — " + $os),
+                description: "Installer đã sẵn sàng tải về ⬇️",
+                color: $color,
+                timestamp: $ts,
+                fields: [
+                  {name: "Môi trường", value: ("`" + $env + "`"), inline: true},
+                  {name: "Build", value: ("`" + $run + "`"), inline: true},
+                  {name: "Commit", value: ("`" + $sha + "`"), inline: true},
+                  {name: "Tải về", value: $links, inline: false}
+                ],
+                footer: {text: "Ola CI · GitHub Actions"}
+              }]
+            }')
+          curl -sf -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
