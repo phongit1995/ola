@@ -167,3 +167,38 @@ jobs:
               }]
             }')
           curl -sf -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
+
+      - name: Báo Discord khi build lỗi
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          case "${{ matrix.platform }}" in
+            mac) OS_LABEL="🍎 macOS" ;;
+            win) OS_LABEL="🪟 Windows" ;;
+            *) OS_LABEL="🐧 Linux" ;;
+          esac
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          PAYLOAD=$(jq -n \
+            --arg os "$OS_LABEL" \
+            --arg env "${{ inputs.environment }}" \
+            --arg run "#${{ github.run_number }}" \
+            --arg sha "${GITHUB_SHA:0:7}" \
+            --arg url "$RUN_URL" \
+            --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
+              embeds: [{
+                title: ("❌ Ola Desktop — " + $os + " build LỖI"),
+                description: ("Xem log: " + $url),
+                url: $url,
+                color: 15158332,
+                timestamp: $ts,
+                fields: [
+                  {name: "Môi trường", value: ("`" + $env + "`"), inline: true},
+                  {name: "Build", value: ("`" + $run + "`"), inline: true},
+                  {name: "Commit", value: ("`" + $sha + "`"), inline: true}
+                ],
+                footer: {text: "Ola CI · GitHub Actions"}
+              }]
+            }')
+          curl -sf -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
