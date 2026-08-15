@@ -59,7 +59,10 @@ jobs:
         env:
           # Không có cert ký: mac bỏ qua signing, win build nsis không ký
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: pnpm exec electron-builder --${{ matrix.platform }} --publish never
+        # Gọi thẳng CLI (không qua pnpm exec) để module collector chạy chế độ npm:
+        # desktop không có dependency runtime, còn `pnpm list` quét cả monorepo
+        # thì nổ EMFILE trên runner Windows.
+        run: node ../node_modules/electron-builder/out/cli/cli.js --${{ matrix.platform }} --publish never
 
       - name: Gom installer
         id: gather
