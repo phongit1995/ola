@@ -89,6 +89,8 @@ func (Logic) KeepTurn(state any) bool {
 
 func (Logic) TimeoutSkipsTurn() bool { return true }
 
+func (Logic) TurnSeconds() int { return 30 }
+
 func (Logic) OnTurnSkipped(state any, playerIdx int) {
 	s, ok := state.(*State)
 	if !ok {

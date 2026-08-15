@@ -197,7 +197,7 @@ function makeMatch(): MatchFoundData<ServerState> {
     ],
     you: 0,
     turn: state === 'foe-turn' ? 1 : 0,
-    deadline: Date.now() + 38_000,
+    deadline: Date.now() + 30_000,
     bet: 50_000,
     state: {
       board: createBoard().map((t) => TILE_ORDER.indexOf(t)),

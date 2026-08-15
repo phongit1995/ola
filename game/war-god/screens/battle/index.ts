@@ -98,7 +98,7 @@ import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
 import { buildVsIntro, type VsIntro } from './vs-intro';
 import { buildBotVsIntroData, buildPvpVsIntroData } from './vs-intro-data';
 
-const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
+const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 30;
 const HINT_DELAY_MS = 10_000;
 const FX_COLS = 6;
 const FX_ROWS = 10;
@@ -629,10 +629,10 @@ function renderTurnClock(): void {
   if (!inGame) return;
   const left =
     pausedTurnRemain > 0 ? pausedTurnRemain : Math.max(0, turnDeadline - performance.now());
-  const total = Math.ceil(left / 1000);
-  const mm = String(Math.floor(total / 60)).padStart(2, '0');
-  const ss = String(total % 60).padStart(2, '0');
-  hud.timer.text = `${mm}:${ss}`;
+  // Deadline server có cộng thêm buffer animation nên có thể vượt 30s —
+  // hiển thị kẹp về TURN_SECONDS, còn deadline thật vẫn dùng cho timeout.
+  const total = Math.min(Math.ceil(left / 1000), TURN_SECONDS);
+  hud.timer.text = String(total);
   if (mode === 'pvp' && !over && selfDisconnected) {
     setStatus('Mất kết nối, đang kết nối lại...');
     return;
@@ -659,6 +659,9 @@ function renderTurnClock(): void {
 function updateHud(): void {
   const meActive = myTurn && !over;
   const foeActive = !myTurn && !over;
+  // Màu đồng hồ theo người đang giữ lượt: vàng = bạn, xanh nhạt = đối thủ
+  // (đỏ bị chìm trên nền cờ đỏ nên phía đối thủ dùng xanh).
+  hud.timer.style.fill = meActive ? 0xffd75e : 0x8fd3ff;
   updateFighter(hud.me, me, meActive, me.mp >= ULT_COST);
   updateFighter(hud.foe, foe, foeActive, foe.mp >= ULT_COST);
 
@@ -666,7 +669,6 @@ function updateHud(): void {
   hud.me.ultBtn.eventMode = canUlt ? 'static' : 'none';
   hud.me.ultBtn.alpha = canUlt || !meActive ? 1 : 0.85;
 
-  hud.turnCount.text = String(turnNumber);
   hud.restart.setEnabled(mode === 'bot' && !busy);
   hud.forfeit.setEnabled(!over && !busy);
   hud.exit.setEnabled(!busy);

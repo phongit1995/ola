@@ -2,7 +2,7 @@ package wargod
 
 import "time"
 
-const initialBoardAnimationDelay = 1100 * time.Millisecond
+const initialBoardAnimationDelay = 1800 * time.Millisecond
 
 // TurnStartDelay reserves enough authoritative time for the active client to
 // finish replaying the previous move before its normal turn clock is consumed.
