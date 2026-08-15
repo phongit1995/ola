@@ -153,7 +153,7 @@ export function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): Fighter
   const hpRow = makeBar(tex[A.hud.icHp], 0xe6392e, 140, mirror);
   const mpRow = makeBar(tex[A.hud.icMp], 0x2f7fe0, 140, mirror);
   const furyRow = makeBar(tex[A.items.peach], 0xff5aa0, 140, mirror);
-  for (const [row, y] of [[hpRow, 48], [mpRow, 68], [furyRow, 88]] as const) {
+  for (const [row, y] of [[hpRow, 48], [furyRow, 68], [mpRow, 88]] as const) {
     row.view.position.set(12, y);
     card.addChild(row.view);
   }

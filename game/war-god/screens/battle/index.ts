@@ -1944,7 +1944,14 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   }
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
   layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, opts.rootX, opts.scale);
-  layoutRoomPregame({ boardX: boardBox.x, boardY: boardBox.y, boardW, rowY: hud.bottomRow.y });
+  layoutRoomPregame({
+    boardX: boardBox.x,
+    boardY: boardBox.y,
+    boardW,
+    rowY: hud.bottomRow.y,
+    badgeMinY: hud.me.card.y + hud.me.card.height + 4,
+    cardGapW: hud.me.card.x - (hud.foe.card.x + hud.foe.card.width) - 12,
+  });
 
   hud.result.layout(designH, insetTop, insetBottom);
   vsIntro.layout(designH, insetTop, insetBottom);

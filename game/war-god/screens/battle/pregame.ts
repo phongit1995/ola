@@ -32,11 +32,49 @@ let mainLabel: Text;
 let mainEnabled = false;
 let mainAction: 'toggle' | 'start' = 'toggle';
 let badge: Container;
+let badgeFrame: Sprite;
+let badgeCoin: Sprite;
 let badgeText: Text;
+let badgePos: {
+  boardY: number;
+  overhang: number;
+  minY: number;
+  cardGapW: number;
+} | null = null;
 let actionRow: Container;
 let kickBtn: ButtonUI;
 let leaveBtn: ButtonUI;
 let kickShown = false;
+
+// Texture kenFrame có hốc tròn khoét trong suốt bên trái (tâm ≈13% chiều
+// rộng, đường kính ≈82% chiều cao, thân xanh bắt đầu từ ≈23.5%) — coin phải
+// nằm đúng hốc, chữ canh giữa phần thân xanh; pill co giãn ôm sát chữ.
+function fitBadge(): void {
+  const w = Math.max(120, (badgeText.width + 28) / 0.745);
+  badgeFrame.width = w;
+  badgeFrame.scale.y = badgeFrame.scale.x;
+  badgeCoin.width = badgeFrame.height * 0.88;
+  badgeCoin.scale.y = badgeCoin.scale.x;
+  badgeCoin.x = -w / 2 + w * 0.13;
+  badgeText.x = w * 0.1075;
+  placeBadge();
+}
+
+function placeBadge(): void {
+  if (!badgePos) return;
+  badge.scale.set(1);
+  const wantY = badgePos.boardY - badgePos.overhang - badge.height / 2 - 10;
+  if (wantY >= badgePos.minY + badge.height / 2) {
+    badge.position.set(DESIGN_W / 2, wantY);
+    return;
+  }
+  // Màn ngắn: khe dọc giữa card và bàn không đủ — vẫn giữ badge ngay trên mép
+  // bàn một chút, co lại cho lọt khe ngang giữa 2 card (badge nằm giữa nên
+  // không bị card che).
+  const fit = Math.min(1, badgePos.cardGapW / badge.width);
+  badge.scale.set(fit);
+  badge.position.set(DESIGN_W / 2, badgePos.boardY - badgePos.overhang - badge.height / 2 - 6);
+}
 
 function placeRowButtons(): void {
   kickBtn.view.visible = kickShown;
@@ -80,20 +118,15 @@ export function buildRoomPregame(root: Container): void {
   panel.addChild(mainBtn);
 
   badge = new Container();
-  const badgeFrame = new Sprite(tex[A.lobby.kenFrame]);
+  badgeFrame = new Sprite(tex[A.lobby.kenFrame]);
   badgeFrame.anchor.set(0.5);
-  badgeFrame.width = 148;
-  badgeFrame.scale.y = badgeFrame.scale.x;
   badge.addChild(badgeFrame);
-  const coin = new Sprite(tex[A.lobby.coin]);
-  coin.anchor.set(0.5);
-  coin.width = badgeFrame.height * 0.95;
-  coin.scale.y = coin.scale.x;
-  coin.x = -badgeFrame.width / 2 + coin.width * 0.2;
-  badge.addChild(coin);
+  badgeCoin = new Sprite(tex[A.lobby.coin]);
+  badgeCoin.anchor.set(0.5);
+  badge.addChild(badgeCoin);
   badgeText = makeText('', 13, 0xffffff, '800');
-  badgeText.x = coin.width * 0.16;
   badge.addChild(badgeText);
+  fitBadge();
 
   actionRow = new Container();
   kickBtn = makeMenuButton('MỜI RA', A.menu.btnForfeit, tex[A.menu.icForfeit], () => cb?.onKick());
@@ -124,6 +157,7 @@ export function hideRoomPregame(): void {
 export function setRoomPregameView(view: RoomPregameView): void {
   if (!panel) return;
   badgeText.text = view.betText;
+  fitBadge();
   roomText.text = view.roomLine;
   statusText.text = view.status;
   if (view.main) {
@@ -145,6 +179,8 @@ export function layoutRoomPregame(opts: {
   boardY: number;
   boardW: number;
   rowY: number;
+  badgeMinY: number;
+  cardGapW: number;
 }): void {
   if (!panel) return;
   const { boardX, boardY, boardW } = opts;
@@ -158,7 +194,10 @@ export function layoutRoomPregame(opts: {
   statusText.position.set(boardW / 2, boardW * 0.36);
   roomText.position.set(boardW / 2, boardW * 0.46);
   mainBtn.position.set(boardW / 2, boardW * 0.6);
-  badge.position.set(DESIGN_W / 2, boardY - overhang - badge.height / 2 - 6);
+  // Màn ngắn: bàn cờ bị đẩy lên cao, badge neo theo mép bàn sẽ chui vào vùng
+  // 2 card đấu thủ (và bị card che) — kẹp không cho vượt qua đáy card.
+  badgePos = { boardY, overhang, minY: opts.badgeMinY, cardGapW: opts.cardGapW };
+  placeBadge();
   actionRow.y = opts.rowY;
   placeRowButtons();
 }

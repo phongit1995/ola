@@ -506,7 +506,6 @@ export function buildRoomsLayer(): Container {
       },
       onRefresh: refreshRooms,
       onJoin: joinRoomFromList,
-      onTopUp: () => toast('Nạp Ken trong app Ola nhé!'),
     }),
     buildCreateRoomPopup({
       onSubmit: submitCreateRoom,
