@@ -15,6 +15,8 @@ const PANEL_W = 400;
 const TAB_W = 150;
 const LIST_W = 340;
 const ROW_H = 36;
+// Tâm cột thắng-thua (giữa cột tên và cột ken).
+const WL_X = 45;
 const LOAD_TIMEOUT = 8000;
 const MEDALS = ['🥇', '🥈', '🥉'];
 const ERR_TEXT = 'Không tải được BXH';
@@ -105,11 +107,22 @@ function renderRows(items: LeaderboardEntry[]): void {
     ken.x = LIST_W / 2 - 12;
     ken.y = midY;
     row.addChild(ken);
+    // Cột thắng-thua: xanh = thắng, đỏ = thua.
+    const wins = makeText(String(entry.wins ?? 0), 13, 0x8ee27a, '800');
+    wins.anchor.set(1, 0.5);
+    const sep = makeText('/', 13, 0xcfd9e6, '700');
+    sep.anchor.set(0.5, 0.5);
+    const losses = makeText(String(entry.losses ?? 0), 13, 0xff8d7a, '800');
+    losses.anchor.set(0, 0.5);
+    wins.position.set(WL_X - sep.width / 2 - 3, midY);
+    sep.position.set(WL_X, midY);
+    losses.position.set(WL_X + sep.width / 2 + 3, midY);
+    row.addChild(wins, sep, losses);
     const name = makeText(`@${entry.username}`, 15, 0xffffff, '700');
     name.anchor.set(0, 0.5);
     name.x = -LIST_W / 2 + 50;
     name.y = midY;
-    const nameMax = ken.x - ken.width - 12 - name.x;
+    const nameMax = wins.x - wins.width - 10 - name.x;
     if (name.width > nameMax) name.scale.set(nameMax / name.width);
     row.addChild(name);
     listLayer.addChild(row);

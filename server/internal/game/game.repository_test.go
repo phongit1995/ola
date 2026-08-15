@@ -63,15 +63,38 @@ func TestCaroLeaderboardReturnsWinLossRankingAndOnlyActiveVip(t *testing.T) {
 	}
 }
 
+func TestWarGodLeaderboardReturnsWinLossRanking(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &Repository{db: db}
+	userID := uuid.New()
+
+	mock.ExpectQuery(`SELECT .* FROM "game_matches" CROSS JOIN LATERAL .*JOIN users .*game_matches\.game_id = \$1.*ORDER BY wins DESC, losses ASC, ken DESC.*LIMIT \$5`).
+		WithArgs("war-god", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), leaderboardLimit).
+		WillReturnRows(sqlmock.NewRows([]string{"user_id", "username", "vip_type", "vip_end_time", "ken", "wins", "losses"}).
+			AddRow(userID.String(), "chien_than", nil, nil, int64(80000), int64(9), int64(1)))
+
+	data, err := repo.Leaderboard("war-god", "day")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data.Items) != 1 {
+		t.Fatalf("items=%d, want 1", len(data.Items))
+	}
+	if got := data.Items[0]; got.Rank != 1 || got.UserID != userID.String() ||
+		got.Ken != 80000 || got.Wins != 9 || got.Losses != 1 {
+		t.Fatalf("unexpected entry: %+v", got)
+	}
+}
+
 func TestOtherGameLeaderboardKeepsKenRanking(t *testing.T) {
 	db, mock := newSettlementMockDB(t)
 	repo := &Repository{db: db}
 
 	mock.ExpectQuery(`SELECT .* FROM "game_matches" JOIN users .*game_matches\.game_id = \$1.*HAVING COALESCE\(SUM\(game_matches\.ken_delta\), 0\) > 0 ORDER BY ken DESC, COUNT\(\*\) DESC.*LIMIT \$5`).
-		WithArgs("war-god", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), leaderboardLimit).
+		WithArgs("other-game", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), leaderboardLimit).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "username", "vip_type", "vip_end_time", "ken"}))
 
-	data, err := repo.Leaderboard("war-god", "day")
+	data, err := repo.Leaderboard("other-game", "day")
 	if err != nil {
 		t.Fatal(err)
 	}
