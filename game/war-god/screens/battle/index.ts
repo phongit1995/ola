@@ -78,11 +78,15 @@ import {
   CHAT_W,
   buildChat,
   layoutChat,
+  pickChatLine,
+  pushBotChat,
   pushPvpChat,
   resetChat,
   setChatInputVisible,
   setChatPvp,
+  setRoomChatSender,
 } from './chat';
+import { botFinishLine, botGreeting, botMoveLine } from './bot-chat';
 import { betLabel, shortRoomCode } from '../lobby/rooms/util';
 import {
   buildRoomPregame,
@@ -950,7 +954,10 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   endBusy();
   clearHint();
   updateHud();
-  if (mode === 'bot') recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
+  if (mode === 'bot') {
+    recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
+    pushBotChat(botFinishLine(won ? 'you' : 'bot', reason, pickChatLine));
+  }
   showResult({ outcome: won ? 'win' : 'lose', detail: sub });
   setChatInputVisible(false);
   playSound(won ? 'win' : 'lose');
@@ -1124,6 +1131,7 @@ async function startBotTurn(): Promise<void> {
   }
 
   if (stale()) return;
+  if (Math.random() < 0.25) pushBotChat(botMoveLine(botLevel, pickChatLine));
   botModeExtraTurns[1] = 0;
   myTurn = true;
   endBusy();
@@ -1181,7 +1189,9 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   hintBox.visible = false;
   setChatPvp(true);
   resetChat();
-  setChatInputVisible(false);
+  // Trong bàn chờ vẫn chat được với người đã vào (giống caro) — kênh gửi
+  // do rooms.ts gắn qua setRoomChatSender.
+  setChatInputVisible(true);
   showRoomPregame(callbacks);
   deps.onRequestLayout();
 }
@@ -1264,8 +1274,9 @@ export function startBattle(level: BotLevel = botLevel): void {
   setFighterAvatar(hud.me, userInfo?.vipType);
   setFighterBotAvatar(hud.foe, botLevel);
   setChatPvp(false);
+  setRoomChatSender(null);
   setChatInputVisible(false);
-  resetChat('Chào! Chơi vui nhé 😄');
+  resetChat(botGreeting(botLevel, pickChatLine));
   setStatus('Chuẩn bị chiến đấu...');
   updateHud();
   const intro = vsIntro.play(buildBotVsIntroData(userInfo, botLevel));
@@ -1323,6 +1334,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   setFighterAvatar(hud.me, mePlayer?.vipType ?? deps.getUserInfo()?.vipType);
   setFighterAvatar(hud.foe, opponent?.vipType);
   setChatPvp(true);
+  setRoomChatSender(null);
   if (!data.resumed) resetChat();
   setChatInputVisible(data.resumed === true);
   turnDeadline = performance.now() + (data.deadline - Date.now());
@@ -1875,6 +1887,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
 
   chatBox = buildChat({
     isOver: () => over,
+    getBotLevel: () => botLevel,
     onFocusChange: (focused) => {
       chatFocused = focused;
       if (!focused && pendingRefit) {

@@ -3,6 +3,7 @@ import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import {
   GAME_ERROR_CODE,
   bridge,
+  type ChatMessageData,
   type ErrorData,
   type GameSession,
   type RoomClosedData,
@@ -47,6 +48,7 @@ import {
   isRoomPregameActive,
   updateRoomPregame,
 } from './screens/battle';
+import { pushPvpChat, setRoomChatSender } from './screens/battle/chat';
 import { showConfirm as showBattleConfirm } from './screens/battle/hud';
 import {
   buildRoomsConfirm,
@@ -150,6 +152,13 @@ function showWaiting(): void {
   hidePasswordPopup();
   hideRoomsConfirm();
   if (!isRoomPregameActive()) enterRoomPregame(pregameCallbacks);
+  // Chat trong bàn chờ: server chỉ phát khi bàn đủ 2 người (giống caro),
+  // thiếu người thì bỏ qua để khỏi nhận lỗi RoomNotFull.
+  setRoomChatSender((text) => {
+    if (currentState?.members.length === 2) {
+      activeSession()?.sendRoomChat(currentRoomId, text);
+    }
+  });
   updateRoomPregame(
     currentState,
     currentRoomId ? { roomId: currentRoomId, bet: currentBet, locked: currentLocked } : null,
@@ -226,6 +235,7 @@ const handleClosed = (data: RoomClosedData): void => {
   const msg = CLOSE_REASON_TEXT[data.reason];
   if (msg && Date.now() - selfLeftAt > 3000) toast(msg);
   if (isRoomPregameActive()) {
+    setRoomChatSender(null);
     exitRoomPregame();
     showList(true);
   } else if (isRoomsConfirmOpen()) {
@@ -242,6 +252,7 @@ const handleKicked = (data: RoomKickedData): void => {
   currentBet = 0;
   inMatch = false;
   if (isRoomPregameActive()) {
+    setRoomChatSender(null);
     exitRoomPregame();
     openRoomsNotice('Bạn bị mời khỏi bàn', () => showList(true));
   } else if (anyRoomsPopupVisible()) {
@@ -252,9 +263,16 @@ const handleKicked = (data: RoomKickedData): void => {
   }
 };
 
+const handleRoomChat = (data: ChatMessageData): void => {
+  if (!data.roomId || data.roomId !== currentRoomId) return;
+  if (!isRoomPregameActive()) return;
+  pushPvpChat(`@${data.name}`, data.userId === currentState?.youId, data.text);
+};
+
 const handleMatchFound = (): void => {
   pendingUntil = 0;
   inMatch = true;
+  setRoomChatSender(null);
   hideAllRoomPopups();
 };
 
@@ -277,6 +295,7 @@ const handleRoomSync = (data: RoomSyncData): void => {
   resetCurrentRoom();
   toast('Kết nối bị gián đoạn, bạn đã rời bàn');
   if (isRoomPregameActive()) {
+    setRoomChatSender(null);
     exitRoomPregame();
     showList(true);
   } else if (anyRoomsPopupVisible()) {
@@ -299,7 +318,8 @@ const handleError = (data: ErrorData): void => {
   ) {
     resetCurrentRoom();
     hideRoomsConfirm();
-    if (isRoomPregameActive()) exitRoomPregame();
+    if (isRoomPregameActive()) setRoomChatSender(null);
+    exitRoomPregame();
     showList(true);
     return;
   }
@@ -350,6 +370,7 @@ function wire(): void {
     next.onRoomKicked(handleKicked),
     next.onMatchFound(handleMatchFound),
     next.onMatchOver(handleMatchOver),
+    next.onChat(handleRoomChat),
     next.onError(handleError),
   );
 }
