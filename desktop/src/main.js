@@ -21,10 +21,15 @@ const ORIGIN_BY_API_HOST = {
   'api-dev.olachat.net': 'https://chat-dev.olachat.net',
   'localhost:8080': 'http://localhost:3005',
 };
+// Cần cả wss:// vì handshake websocket không khớp pattern https:// —
+// socket.io server cũng check Origin theo đúng allowlist CORS.
 const API_URL_FILTERS = [
   'https://api.olachat.net/*',
+  'wss://api.olachat.net/*',
   'https://api-dev.olachat.net/*',
+  'wss://api-dev.olachat.net/*',
   'http://localhost:8080/*',
+  'ws://localhost:8080/*',
 ];
 
 protocol.registerSchemesAsPrivileged([
@@ -156,9 +161,15 @@ app.whenReady().then(() => {
       // Origin spoof hoạt động — ERR Failed to fetch nghĩa là bị chặn CORS.
       const probeUrl = process.env.OLA_DESKTOP_SMOKE_FETCH;
       if (win != null && probeUrl) {
-        const result = await win.webContents.executeJavaScript(
-          `fetch(${JSON.stringify(probeUrl)}).then((r) => 'HTTP ' + r.status).catch((e) => 'ERR ' + e.message)`,
-        );
+        const script = probeUrl.startsWith('ws')
+          ? `new Promise((res) => {
+               const w = new WebSocket(${JSON.stringify(probeUrl)});
+               w.onopen = () => { w.close(); res('WS OPEN'); };
+               w.onerror = () => res('WS ERR');
+               setTimeout(() => res('WS TIMEOUT'), 8000);
+             })`
+          : `fetch(${JSON.stringify(probeUrl)}).then((r) => 'HTTP ' + r.status).catch((e) => 'ERR ' + e.message)`;
+        const result = await win.webContents.executeJavaScript(script);
         console.log('OLA_DESKTOP_SMOKE_FETCH:', result);
       }
       console.log('OLA_DESKTOP_SMOKE_TITLE:', win?.getTitle());
