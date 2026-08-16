@@ -19,6 +19,7 @@ import {
 import {
   buildUltimatePicker,
   type UltimatePicker,
+  type UltimateSkillId,
 } from './screens/battle/ultimate-picker';
 import {
   buildLobby,
@@ -155,11 +156,11 @@ async function main(): Promise<void> {
   bgBox.addChild(bgMask);
   root.addChild(bgBox);
 
-  let pendingUltimateCast: (() => void) | null = null;
-  ultimatePicker = await buildUltimatePicker(() => {
+  let pendingUltimateCast: ((skill: UltimateSkillId) => void) | null = null;
+  ultimatePicker = await buildUltimatePicker((skill) => {
     const cast = pendingUltimateCast;
     pendingUltimateCast = null;
-    cast?.();
+    cast?.(skill);
   });
 
   buildBattleScreen(root, {

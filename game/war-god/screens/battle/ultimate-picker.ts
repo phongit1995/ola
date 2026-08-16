@@ -3,8 +3,9 @@ import lightningGodUrl from '../../assets/ultimate/lightning-god.webp';
 import myriadSwordsUrl from '../../assets/ultimate/myriad-swords.webp';
 import { addTick, popIn, pressable, removeTick } from '../../kit';
 import { DESIGN_W } from '../../layout';
+import type { UltimateSkillId } from '../../logic/server-types';
 
-export type UltimateSkillId = 'lightning-god' | 'myriad-swords';
+export type { UltimateSkillId } from '../../logic/server-types';
 export type UltimatePickerVariant =
   | 'electric-pulse'
   | 'dual-halo'

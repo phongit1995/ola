@@ -192,6 +192,16 @@ export function swapCells(board: Board, a: number, b: number): void {
   board[b] = tmp;
 }
 
+export function randomTwoByTwoCells(random: () => number = Math.random): number[] {
+  const choicesPerAxis = GRID - 1;
+  const rawChoice = Math.floor(random() * choicesPerAxis * choicesPerAxis);
+  const choice = Math.max(0, Math.min(choicesPerAxis * choicesPerAxis - 1, rawChoice));
+  const row = Math.floor(choice / choicesPerAxis);
+  const col = choice % choicesPerAxis;
+  const topLeft = row * GRID + col;
+  return [topLeft, topLeft + 1, topLeft + GRID, topLeft + GRID + 1];
+}
+
 export function findValidMoves(board: Board): Array<[number, number]> {
   const moves: Array<[number, number]> = [];
   const test = (a: number, b: number): void => {

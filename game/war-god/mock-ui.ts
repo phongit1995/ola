@@ -199,7 +199,13 @@ function makeRoomState(): RoomStateData {
 
 function makeMatch(): MatchFoundData<ServerState> {
   const myMana =
-    state === 'mana-empty' ? 0 : state === 'mana-loading' ? 25 : state === 'mana-ready' ? 50 : 62;
+    state === 'mana-empty'
+      ? 0
+      : state === 'mana-loading'
+        ? 50
+        : state === 'mana-ready' || state === 'ultimate-picker'
+          ? 100
+          : 62;
   return {
     matchId: 'wg-match-mock',
     gameId: 'war-god',

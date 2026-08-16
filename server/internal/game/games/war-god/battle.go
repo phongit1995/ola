@@ -5,7 +5,7 @@ const (
 	maxMP    = 100
 	maxFury  = 100
 	maxArmor = 30
-	ultCost  = 50
+	ultCost  = 100
 
 	dmgSword    = 7
 	healHeart   = 5

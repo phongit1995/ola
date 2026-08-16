@@ -13,6 +13,12 @@ func parseMove(raw json.RawMessage) (*Move, error) {
 	}
 	switch move.Type {
 	case moveUlt:
+		if move.Skill == "" {
+			move.Skill = skillMyriadSwords
+		}
+		if move.Skill != skillLightningGod && move.Skill != skillMyriadSwords {
+			return nil, errors.New("unknown ultimate skill")
+		}
 		return &move, nil
 	case moveSwap:
 		if move.A == nil || move.B == nil {
@@ -91,41 +97,7 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 		a, b := *move.A, *move.B
 		s.Board[a], s.Board[b] = s.Board[b], s.Board[a]
 		s.Steps = append(s.Steps, Step{Kind: stepSwap, A: intPtr(a), B: intPtr(b)})
-		for {
-			matchedCells, counts, maxRun := findMatches(s.Board)
-			if matchedCells == nil {
-				break
-			}
-			// Each connected group of 4+ earns one turn, including T/L/cross
-			// shapes. A collapse wave made only of groups of three earns none.
-			bonusTurns := matchBonusTurns(s.Board, matchedCells)
-			remainingExtraTurns += bonusTurns
-			removed := make(map[int]bool, len(matchedCells))
-			for _, index := range matchedCells {
-				removed[index] = true
-			}
-			exploded, lightningArcs := computeExplosions(s.Board, removed, r)
-			for _, index := range exploded {
-				counts[s.Board[index]]++
-				removed[index] = true
-			}
-			waveEffects := applyTileEffects(attacker, defender, counts)
-			s.Steps = append(s.Steps, Step{
-				Kind:          stepMatch,
-				Cells:         matchedCells,
-				Exploded:      exploded,
-				LightningArcs: lightningArcs,
-				Counts:        namedCounts(counts),
-				MaxRun:        maxRun,
-				BonusTurns:    bonusTurns,
-				Effects:       &waveEffects,
-			})
-			falls, spawns := applyGravity(s.Board, removed, r)
-			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
-			if defender.HP <= 0 || attacker.HP <= 0 {
-				break
-			}
-		}
+		resolveCascades(s, attacker, defender, r, &remainingExtraTurns)
 		if attacker.HP > 0 && defender.HP > 0 {
 			ensurePlayable(s, r)
 		}
@@ -133,13 +105,29 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 		if attacker.MP < ultCost {
 			return current, errors.New("not enough mana")
 		}
-		damage := attacker.MP / 2
+		damage := 0
 		attacker.MP = 0
-		defender.HP -= damage
-		if defender.HP < 0 {
-			defender.HP = 0
+		if move.Skill == skillLightningGod {
+			cells := randomTwoByTwoCells(r)
+			s.Steps = append(s.Steps, Step{Kind: stepUlt, Skill: move.Skill, Cells: cells})
+			removed := make(map[int]bool, len(cells))
+			for _, cell := range cells {
+				removed[cell] = true
+			}
+			falls, spawns := applyGravity(s.Board, removed, r)
+			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
+			resolveCascades(s, attacker, defender, r, &remainingExtraTurns)
+			if attacker.HP > 0 && defender.HP > 0 {
+				ensurePlayable(s, r)
+			}
+		} else {
+			damage = ultCost / 2
+			defender.HP -= damage
+			if defender.HP < 0 {
+				defender.HP = 0
+			}
+			s.Steps = append(s.Steps, Step{Kind: stepUlt, Skill: move.Skill, Damage: damage})
 		}
-		s.Steps = append(s.Steps, Step{Kind: stepUlt, Damage: damage})
 	}
 
 	s.ExtraTurns = remainingExtraTurns
@@ -150,6 +138,55 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 	s.MoveCount++
 	s.Rng = strconv.FormatUint(r.z, 10)
 	return s, nil
+}
+
+func randomTwoByTwoCells(r *rng) []int {
+	choice := int(r.next() % uint64((grid-1)*(grid-1)))
+	row := choice / (grid - 1)
+	col := choice % (grid - 1)
+	topLeft := row*grid + col
+	return []int{topLeft, topLeft + 1, topLeft + grid, topLeft + grid + 1}
+}
+
+func resolveCascades(
+	s *State,
+	attacker, defender *Fighter,
+	r *rng,
+	remainingExtraTurns *int,
+) {
+	for {
+		matchedCells, counts, maxRun := findMatches(s.Board)
+		if matchedCells == nil {
+			break
+		}
+		bonusTurns := matchBonusTurns(s.Board, matchedCells)
+		*remainingExtraTurns += bonusTurns
+		removed := make(map[int]bool, len(matchedCells))
+		for _, index := range matchedCells {
+			removed[index] = true
+		}
+		exploded, lightningArcs := computeExplosions(s.Board, removed, r)
+		for _, index := range exploded {
+			counts[s.Board[index]]++
+			removed[index] = true
+		}
+		waveEffects := applyTileEffects(attacker, defender, counts)
+		s.Steps = append(s.Steps, Step{
+			Kind:          stepMatch,
+			Cells:         matchedCells,
+			Exploded:      exploded,
+			LightningArcs: lightningArcs,
+			Counts:        namedCounts(counts),
+			MaxRun:        maxRun,
+			BonusTurns:    bonusTurns,
+			Effects:       &waveEffects,
+		})
+		falls, spawns := applyGravity(s.Board, removed, r)
+		s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
+		if defender.HP <= 0 || attacker.HP <= 0 {
+			break
+		}
+	}
 }
 
 func ensurePlayable(state *State, r *rng) {

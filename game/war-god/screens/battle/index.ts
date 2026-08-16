@@ -29,6 +29,7 @@ import {
   findMatches,
   findValidMoves,
   computeExplosions,
+  randomTwoByTwoCells,
   swapCells,
   type Board,
   type LightningArc,
@@ -54,6 +55,7 @@ import {
   type ServerMove,
   type ServerState,
   type Step,
+  type UltimateSkillId,
 } from '../../logic/server-types';
 import { errorText } from '../../logic/error-text';
 import { RecentMatchIds } from '../../logic/recent-match-ids';
@@ -97,7 +99,7 @@ import {
   type RoomPregameCallbacks,
   type RoomPregameView,
 } from './pregame';
-import { playLightningFx } from './fx/lightning';
+import { playLightningFx, playUltimateLightningFx } from './fx/lightning';
 import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
 import { buildVsIntro, type VsIntro } from './vs-intro';
 import { buildBotVsIntroData, buildPvpVsIntroData } from './vs-intro-data';
@@ -123,7 +125,7 @@ export interface BattleDeps {
   onReplay(): void;
   onPvpError(text: string): void;
   /** Return true when a picker or another UI takes over the cast request. */
-  onUltimateRequest?(cast: () => void): boolean;
+  onUltimateRequest?(cast: (skill: UltimateSkillId) => void): boolean;
 }
 
 export interface BattleLayoutOpts {
@@ -488,16 +490,7 @@ async function explodeFx(
     jobs.push(fireFx);
   }
 
-  const lightningContext = {
-    tileSize,
-    boardX: boardBox.x,
-    boardY: boardBox.y,
-    grid: GRID,
-    flyLayer,
-    cellRootPos,
-    spriteAt: (index: number) => sprites[index],
-    playSound: () => playSound('lightning'),
-  };
+  const lightningContext = lightningFxContext();
   const directLightningArcs = lightningArcs.filter((arc) => matchedSet.has(arc.source));
   const fireTriggeredArcs = lightningArcs.filter((arc) => !matchedSet.has(arc.source));
 
@@ -515,6 +508,19 @@ async function explodeFx(
 
   await Promise.all(jobs);
   return new Set(fireSources);
+}
+
+function lightningFxContext() {
+  return {
+    tileSize,
+    boardX: boardBox.x,
+    boardY: boardBox.y,
+    grid: GRID,
+    flyLayer,
+    cellRootPos,
+    spriteAt: (index: number) => sprites[index],
+    playSound: () => playSound('lightning'),
+  };
 }
 
 function fireSwordFxContext(): FireSwordFxContext {
@@ -839,6 +845,22 @@ async function animateRemove(
   });
 }
 
+async function animateUltimateLightningRemove(cells: readonly number[]): Promise<void> {
+  await playUltimateLightningFx(cells, lightningFxContext());
+  const jobs: Promise<void>[] = [];
+  for (const index of cells) {
+    const sprite = sprites[index];
+    if (!sprite) continue;
+    centerPivot(sprite);
+    jobs.push(tween(sprite, { alpha: 0, scale: 0.05 }, 170));
+  }
+  await Promise.all(jobs);
+  for (const index of cells) {
+    sprites[index]?.destroy({ children: true });
+    sprites[index] = null;
+  }
+}
+
 interface WaveRenderOptions {
   side: 'me' | 'foe';
   actorLabel: string;
@@ -1040,7 +1062,7 @@ async function onTileTap(i: number): Promise<void> {
   void startBotTurn();
 }
 
-async function castMyUltimate(): Promise<void> {
+async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
   if (!myTurn || busy || over || me.mp < ULT_COST) return;
   busy = true;
   setSelected(null);
@@ -1048,11 +1070,33 @@ async function castMyUltimate(): Promise<void> {
   updateHud();
   if (mode === 'pvp') {
     setStatus('Đang gửi tuyệt chiêu...');
-    pvp.sendUlt();
+    pvp.sendUlt(skill);
     return;
   }
   spendBotModeExtraTurn('me');
   decayArmor(me);
+  if (skill === 'lightning-god') {
+    me.mp = 0;
+    const cells = randomTwoByTwoCells();
+    setStatus('LÔI THẦN GIÁNG THẾ!');
+    updateHud();
+    await animateUltimateLightningRemove(cells);
+    const gravity = applyGravity(board, new Set(cells));
+    await animateGravity(gravity.falls, gravity.spawns);
+    const earnedExtraTurns = await resolveCascades('me');
+    const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
+    if (checkEnd()) return;
+    if (remainingExtraTurns > 0) {
+      announceExtraTurns('me', earnedExtraTurns, remainingExtraTurns);
+      setStatus(`Bạn còn ${remainingExtraTurns} lượt thưởng!`);
+      endBusy();
+      resetTurnClock();
+      updateHud();
+      return;
+    }
+    void startBotTurn();
+    return;
+  }
   const ultDmg = castUltimate(me, foe);
   setStatus(`TUYỆT CHIÊU! -${ultDmg} HP`);
   updateHud();
@@ -1069,8 +1113,9 @@ async function castMyUltimate(): Promise<void> {
 }
 
 function requestMyUltimate(): void {
-  if (deps.onUltimateRequest?.(() => void castMyUltimate())) return;
-  void castMyUltimate();
+  const cast = (skill: UltimateSkillId): void => void castMyUltimate(skill);
+  if (deps.onUltimateRequest?.(cast)) return;
+  cast('myriad-swords');
 }
 
 async function startBotTurn(): Promise<void> {
@@ -1421,11 +1466,19 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
   attacker.mp = 0;
-  defender.hp = Math.max(0, defender.hp - step.damage);
+  if (step.skill === 'lightning-god') {
+    const cells = step.cells ?? [];
+    setStatus(side === 'me' ? 'LÔI THẦN GIÁNG THẾ!' : 'Đối thủ triệu hồi LÔI THẦN!');
+    updateHud();
+    await animateUltimateLightningRemove(cells);
+    return;
+  }
+  const damage = step.damage ?? 0;
+  defender.hp = Math.max(0, defender.hp - damage);
   setStatus(
     side === 'me'
-      ? `TUYỆT CHIÊU! -${step.damage} HP`
-      : `Đối thủ tung TUYỆT CHIÊU! -${step.damage} HP`,
+      ? `TUYỆT CHIÊU! -${damage} HP`
+      : `Đối thủ tung TUYỆT CHIÊU! -${damage} HP`,
   );
   updateHud();
   await playUltFx(side);
@@ -1713,6 +1766,23 @@ function previewLightningFx(sourceCount = 3): boolean {
   return true;
 }
 
+function previewUltimateLightningFx(): number[] | null {
+  if (!inGame || tileSize <= 0 || busy) return null;
+  const cells = randomTwoByTwoCells();
+  busy = true;
+  updateHud();
+  void animateUltimateLightningRemove(cells)
+    .then(() => {
+      const gravity = applyGravity(board, new Set(cells));
+      return animateGravity(gravity.falls, gravity.spawns);
+    })
+    .finally(() => {
+      endBusy();
+      updateHud();
+    });
+  return cells;
+}
+
 function previewFireSwordFx(mode: 'center' | 'corner' | 'multi' = 'center'): boolean {
   if (!inGame || tileSize <= 0) return false;
   const center = Math.floor(GRID / 2) * GRID + Math.floor(GRID / 2);
@@ -1781,6 +1851,7 @@ export function battleDebug(): Record<string, unknown> {
     flying: flyLayer ? flyLayer.children.filter((c) => c instanceof Sprite).length : 0,
     vsIntroVisible: vsIntro?.isVisible() === true,
     previewLightning: previewLightningFx,
+    previewUltimateLightning: previewUltimateLightningFx,
     previewFireSword: previewFireSwordFx,
     previewVsIntro,
   };

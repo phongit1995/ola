@@ -114,7 +114,7 @@ const RULES: GuideRule[] = [
   {
     asset: A.hud.flameOn,
     title: 'TUYỆT CHIÊU',
-    detail: `Cần ${ULT_COST} nội lực · sát thương = nội lực ÷ 2`,
+    detail: `Cần ${ULT_COST} nội lực · mỗi tuyệt chiêu có hiệu ứng riêng`,
     accent: 0xff8051,
   },
   {

@@ -35,6 +35,44 @@ export async function playLightningFx(
   await sleep(130);
 }
 
+export async function playUltimateLightningFx(
+  targets: readonly number[],
+  context: LightningFxContext,
+): Promise<void> {
+  if (targets.length === 0) return;
+  context.playSound();
+  lightningFlash(context);
+  await Promise.all(
+    targets.map(async (target, order) => {
+      const targetRow = Math.floor(order / 2);
+      const targetColumn = order % 2;
+      await sleep(targetRow * 260 + targetColumn * 24);
+      const to = context.cellRootPos(target);
+      const from = {
+        x: context.boardX + context.tileSize * (0.7 + order * 2.2),
+        y: context.boardY - context.tileSize * 3.2,
+      };
+      const targetSprite = context.spriteAt(target);
+      const originalTint = targetSprite?.tint ?? 0xffffff;
+      for (let flicker = 0; flicker < 4; flicker += 1) {
+        const bolt = lightningBolt(from, to, context, {
+          power: 1.48,
+          forks: 7,
+          spread: 1.18,
+        });
+        context.flyLayer.addChild(bolt);
+        if (targetSprite) targetSprite.tint = flicker % 2 === 0 ? 0xffffff : 0xbfa8ff;
+        await sleep(58);
+        bolt.destroy();
+        await sleep(14);
+      }
+      if (targetSprite && !targetSprite.destroyed) targetSprite.tint = originalTint;
+      lightningImpact(target, context, 1.35);
+    }),
+  );
+  await sleep(180);
+}
+
 function lightningBolt(
   from: { x: number; y: number },
   to: { x: number; y: number },
@@ -242,7 +280,7 @@ function lightningPulse(index: number, context: LightningFxContext): void {
   lightningSparks(index, 10, context);
 }
 
-function lightningImpact(index: number, context: LightningFxContext): void {
+function lightningImpact(index: number, context: LightningFxContext, strength = 1): void {
   const { tileSize, flyLayer, cellRootPos } = context;
   const p = cellRootPos(index);
   const hit = new Graphics();
@@ -252,11 +290,11 @@ function lightningImpact(index: number, context: LightningFxContext): void {
   hit.circle(0, 0, tileSize * 0.5).stroke({ width: 6, color: 0x9c6fff, alpha: 1 });
   hit.circle(0, 0, tileSize * 0.72).stroke({ width: 3, color: 0xa9e7ff, alpha: 0.9 });
   hit.position.set(p.x, p.y);
-  hit.scale.set(0.72);
+  hit.scale.set(0.72 * strength);
   flyLayer.addChild(hit);
-  void tween(hit, { alpha: 0, scale: 1.85 }, 380).then(() => hit.destroy());
-  lightningBurst(index, 0.9, context);
-  lightningSparks(index, 8, context);
+  void tween(hit, { alpha: 0, scale: 1.85 * strength }, 420).then(() => hit.destroy());
+  lightningBurst(index, 0.9 * strength, context);
+  lightningSparks(index, Math.round(8 * strength), context);
 }
 
 async function playLightningArc(

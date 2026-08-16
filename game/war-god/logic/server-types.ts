@@ -3,6 +3,8 @@ import type { Board, LightningArc } from './core';
 
 export { TILE_ORDER } from './constants.gen';
 
+export type UltimateSkillId = 'lightning-god' | 'myriad-swords';
+
 export interface ServerFighter {
   hp: number;
   mp: number;
@@ -49,7 +51,9 @@ export interface StepShuffle {
 
 export interface StepUlt {
   kind: 'ult';
-  damage: number;
+  damage?: number;
+  skill?: UltimateSkillId;
+  cells?: number[];
 }
 
 export type Step = StepSwap | StepMatch | StepGravity | StepShuffle | StepUlt;
@@ -65,7 +69,9 @@ export interface ServerState {
   steps: Step[];
 }
 
-export type ServerMove = { type: 'swap'; a: number; b: number } | { type: 'ult' };
+export type ServerMove =
+  | { type: 'swap'; a: number; b: number }
+  | { type: 'ult'; skill: UltimateSkillId };
 
 export function decodeTile(n: number): TileType {
   if (!Number.isInteger(n) || n < 0 || n >= TILE_ORDER.length) {

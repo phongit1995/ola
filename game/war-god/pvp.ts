@@ -8,7 +8,7 @@ import type {
   PlayerInfo,
   StateData,
 } from '../src/sdk';
-import type { ServerMove, ServerState } from './logic/server-types';
+import type { ServerMove, ServerState, UltimateSkillId } from './logic/server-types';
 
 export type PvpGameSession = GameSession<ServerState, ServerMove>;
 
@@ -82,8 +82,8 @@ export const pvp = {
     if (matchId) session?.sendMove(matchId, { type: 'swap', a, b });
   },
 
-  sendUlt(): void {
-    if (matchId) session?.sendMove(matchId, { type: 'ult' });
+  sendUlt(skill: UltimateSkillId): void {
+    if (matchId) session?.sendMove(matchId, { type: 'ult', skill });
   },
 
   sendChatText(text: string): void {
