@@ -40,9 +40,6 @@ import {
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
 
-const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
-const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
-
 interface RoomMessagesTabProps {
   currentUserId: string;
   language: string;
@@ -254,19 +251,21 @@ export function RoomMessagesTab({
     const copyAction: MessageSheetAction = {
       key: 'copy',
       label: t('room.actionCopy'),
+      icon: 'copy',
       onSelect: () => copyMessage(message.content),
     };
     if (!isOwn) {
       actions.push({
         key: 'reply',
         label: t('room.actionReply'),
-        icon: replyActionIcon,
+        icon: 'reply',
         onSelect: () => onSetReplyTarget(message),
       });
       if (canCopy) actions.push(copyAction);
       actions.push({
         key: 'block',
         label: t('room.actionBlock'),
+        icon: 'block',
         destructive: true,
         onSelect: () => {
           pendingSheetDialogRef.current = { kind: 'block', target: message };
@@ -277,7 +276,7 @@ export function RoomMessagesTab({
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
-        icon: deleteActionIcon,
+        icon: 'delete',
         destructive: true,
         onSelect: () => {
           pendingSheetDialogRef.current = { kind: 'delete', target: message };

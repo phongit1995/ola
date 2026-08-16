@@ -33,10 +33,10 @@ import {
 } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
-import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
-import editActionIcon from '@/assets/icons/me/ic_action_edit.png';
+import replyActionIcon from '@/assets/icons/chat/ic_menu_reply.svg';
+import editActionIcon from '@/assets/icons/chat/ic_menu_edit.svg';
 import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
-import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
+import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete_outline.svg';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
