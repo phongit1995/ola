@@ -1,4 +1,4 @@
-import { app, BrowserWindow, protocol, session, shell, net } from 'electron';
+import { app, BrowserWindow, Menu, protocol, session, shell, net } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -140,6 +140,11 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Win/Linux: bỏ menu bar File/Edit/View. macOS giữ menu hệ thống vì
+  // Cmd+C/V/Q đi qua accelerator của menu, bỏ là mất phím tắt.
+  if (process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+  }
   // macOS bỏ qua BrowserWindow.icon; khi chưa đóng gói phải set dock icon tay,
   // bản đóng gói thì electron-builder đã nhúng icns từ build/icon.png.
   if (process.platform === 'darwin' && !app.isPackaged) {
