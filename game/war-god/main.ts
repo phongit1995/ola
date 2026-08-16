@@ -14,7 +14,12 @@ import {
   layoutBattleScreen,
   markBattleRefit,
   startBattle,
+  ultimateControlAnchor,
 } from './screens/battle';
+import {
+  buildUltimatePicker,
+  type UltimatePicker,
+} from './screens/battle/ultimate-picker';
 import {
   buildLobby,
   layoutLobby,
@@ -36,6 +41,7 @@ let lobbyBox: Container;
 let designH = 980;
 let safeTop = 0;
 let safeBottom = 0;
+let ultimatePicker: UltimatePicker;
 
 function displayResolution(): number {
   return Math.max(1, window.devicePixelRatio || 1);
@@ -116,6 +122,7 @@ function layout(): void {
     rootX: root.x,
     scale,
   });
+  ultimatePicker.layout(designH, insetTop, insetBottom, ultimateControlAnchor());
   layoutLobby(designH, insetTop, insetBottom);
 }
 
@@ -148,6 +155,13 @@ async function main(): Promise<void> {
   bgBox.addChild(bgMask);
   root.addChild(bgBox);
 
+  let pendingUltimateCast: (() => void) | null = null;
+  ultimatePicker = await buildUltimatePicker(() => {
+    const cast = pendingUltimateCast;
+    pendingUltimateCast = null;
+    cast?.();
+  });
+
   buildBattleScreen(root, {
     getUserInfo: sessionController.getUserInfo,
     onGameStart: () => lobbySetVisible(false),
@@ -166,6 +180,11 @@ async function main(): Promise<void> {
       sessionController.openActiveRoom();
     },
     onPvpError: (text) => lobbyShowToast(text),
+    onUltimateRequest: (cast) => {
+      pendingUltimateCast = cast;
+      ultimatePicker.open();
+      return true;
+    },
   });
 
   lobbyBox = buildLobby({
@@ -175,6 +194,7 @@ async function main(): Promise<void> {
     onExit: () => bridge.exit(),
   });
   root.addChild(lobbyBox);
+  root.addChild(ultimatePicker.view);
   sessionController.initRooms();
 
   layout();

@@ -122,6 +122,8 @@ export interface BattleDeps {
   onExitToLobby(): void;
   onReplay(): void;
   onPvpError(text: string): void;
+  /** Return true when a picker or another UI takes over the cast request. */
+  onUltimateRequest?(cast: () => void): boolean;
 }
 
 export interface BattleLayoutOpts {
@@ -1066,6 +1068,11 @@ async function castMyUltimate(): Promise<void> {
   void startBotTurn();
 }
 
+function requestMyUltimate(): void {
+  if (deps.onUltimateRequest?.(() => void castMyUltimate())) return;
+  void castMyUltimate();
+}
+
 async function startBotTurn(): Promise<void> {
   const ep = flowEpoch;
   const stale = (): boolean => over || flowEpoch !== ep || mode !== 'bot';
@@ -1762,6 +1769,7 @@ export function battleDebug(): Record<string, unknown> {
       exitX: hud.exit?.view.x,
     },
     ultimate: ultimateControl?.getState(),
+    ultimateAnchor: ultimateControlAnchor(),
     turn: turnNumber,
     extraTurns: mode === 'bot' ? [...botModeExtraTurns] : undefined,
     status: statusText.text,
@@ -1775,6 +1783,21 @@ export function battleDebug(): Record<string, unknown> {
     previewLightning: previewLightningFx,
     previewFireSword: previewFireSwordFx,
     previewVsIntro,
+  };
+}
+
+export function ultimateControlAnchor(): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+} | null {
+  if (ultimateControl == null) return null;
+  return {
+    x: ultimateControl.view.x,
+    y: ultimateControl.view.y,
+    width: ULTIMATE_CONTROL_SIZE,
+    height: ULTIMATE_CONTROL_SIZE,
   };
 }
 
@@ -1822,7 +1845,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   buildRoomPregame(root);
 
   buildHud(root, {
-    onUlt: () => void castMyUltimate(),
+    onUlt: requestMyUltimate,
     onResultClose: exitToLobby,
     onResultReplay: replayMatch,
     onRestart: () => {
@@ -1882,7 +1905,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   });
   bindPvpHandlers();
 
-  ultimateControl = buildUltimateControl(() => void castMyUltimate());
+  ultimateControl = buildUltimateControl(requestMyUltimate);
   root.addChild(ultimateControl.view);
 
   chatBox = buildChat({

@@ -49,14 +49,23 @@ import {
   layoutBattleScreen,
   startBattle,
   startPvpBattle,
+  ultimateControlAnchor,
   updateRoomPregame,
 } from './screens/battle';
 import { showConfirm, showResult } from './screens/battle/hud';
 import { pushPvpChat, setChatInputVisible } from './screens/battle/chat';
+import {
+  buildUltimatePicker,
+  isUltimatePickerVariant,
+  type UltimatePicker,
+  type UltimateSkillId,
+} from './screens/battle/ultimate-picker';
 
 const params = new URLSearchParams(location.search);
 const screen = params.get('screen') ?? 'lobby';
 const state = params.get('state') ?? '';
+const variantParam = params.get('variant');
+const ultimateVariant = isUltimatePickerVariant(variantParam) ? variantParam : undefined;
 const replyDelay = Number(params.get('delay') ?? 120);
 
 const ME: UserInfoData = {
@@ -217,6 +226,8 @@ function makeMatch(): MatchFoundData<ServerState> {
 }
 
 const noop = (): void => {};
+let ultimatePicker: UltimatePicker;
+let chosenUltimate: UltimateSkillId | null = null;
 
 async function openPvpBattle(): Promise<void> {
   await startPvpBattle(makeMatch());
@@ -266,9 +277,13 @@ const SCENES: Record<string, () => Promise<void> | void> = {
     updateRoomPregame(makeRoomState(), null);
   },
 
-  // state: my-turn | foe-turn | mana-empty | mana-loading | mana-ready | win | lose | draw
+  // state: my-turn | foe-turn | mana-empty | mana-loading | mana-ready | ultimate-picker | win | lose | draw
   async battle() {
     await openPvpBattle();
+    if (state === 'ultimate-picker') {
+      ultimatePicker.open();
+      return;
+    }
     if (state !== 'win' && state !== 'lose' && state !== 'draw') return;
     // Trận kết thúc thì ô chat bị khoá, giống nhánh finish() thật.
     setChatInputVisible(false);
@@ -332,6 +347,9 @@ async function main(): Promise<void> {
   initKit(app);
 
   await loadAssets();
+  ultimatePicker = await buildUltimatePicker((skill) => {
+    chosenUltimate = skill;
+  }, ultimateVariant);
 
   const root = new Container();
   app.stage.addChild(root);
@@ -352,6 +370,10 @@ async function main(): Promise<void> {
     onExitToLobby: noop,
     onReplay: noop,
     onPvpError: (text) => console.log('pvp error', text),
+    onUltimateRequest: () => {
+      ultimatePicker.open();
+      return true;
+    },
   });
 
   // buildLobby dựng luôn mọi popup lobby bên trong (pick, guide, confirm,
@@ -365,6 +387,7 @@ async function main(): Promise<void> {
       onExit: noop,
     }),
   );
+  root.addChild(ultimatePicker.view);
 
   function layout(): void {
     const scale = Math.min(window.innerWidth, DESIGN_W) / DESIGN_W;
@@ -390,6 +413,7 @@ async function main(): Promise<void> {
       scale,
     });
     layoutLobby(designH, 0, 0);
+    ultimatePicker.layout(designH, 0, 0, ultimateControlAnchor());
   }
 
   requestLayout = layout;
@@ -400,6 +424,9 @@ async function main(): Promise<void> {
   layout();
 
   Object.defineProperty(window, '__mockBattle', { get: () => battleDebug() });
+  Object.defineProperty(window, '__mockUltimatePicker', {
+    get: () => ({ ...ultimatePicker.getState(), chosen: chosenUltimate }),
+  });
   Object.defineProperty(window, '__mockReady', { value: true });
 }
 
