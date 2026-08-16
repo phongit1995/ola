@@ -14,9 +14,18 @@ const APP_SCHEME = 'app';
 const APP_ORIGIN = `${APP_SCHEME}://ola`;
 const WEB_DIST = path.join(__dirname, '..', 'dist');
 
-// Origin mà server đã allow trong CORS_ALLOWED_ORIGINS (xem env.production).
-const SERVER_ALLOWED_ORIGIN = 'https://olachat.net';
-const API_URL_FILTERS = ['https://api.olachat.net/*', 'http://localhost:8080/*'];
+// Origin mà server đã allow trong CORS_ALLOWED_ORIGINS (env.production /
+// env.development ở root) — mỗi API host giả một origin nằm trong allowlist đó.
+const ORIGIN_BY_API_HOST = {
+  'api.olachat.net': 'https://olachat.net',
+  'api-dev.olachat.net': 'https://chat-dev.olachat.net',
+  'localhost:8080': 'http://localhost:3005',
+};
+const API_URL_FILTERS = [
+  'https://api.olachat.net/*',
+  'https://api-dev.olachat.net/*',
+  'http://localhost:8080/*',
+];
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -45,8 +54,9 @@ function setupSession(ses) {
   // Giả Origin thành domain đã được allow, và nới ACAO ở response để renderer chấp nhận.
   ses.webRequest.onBeforeSendHeaders({ urls: API_URL_FILTERS }, (details, callback) => {
     const headers = { ...details.requestHeaders };
-    if (headers['Origin'] != null || details.resourceType === 'xhr') {
-      headers['Origin'] = SERVER_ALLOWED_ORIGIN;
+    const spoofed = ORIGIN_BY_API_HOST[new URL(details.url).host];
+    if (spoofed != null && (headers['Origin'] != null || details.resourceType === 'xhr')) {
+      headers['Origin'] = spoofed;
     }
     callback({ requestHeaders: headers });
   });
@@ -141,6 +151,15 @@ app.whenReady().then(() => {
       if (win != null && shot) {
         const image = await win.webContents.capturePage();
         fs.writeFileSync(shot, image.toPNG());
+      }
+      // Probe CORS: fetch từ renderer (origin app://ola) tới API để chắc
+      // Origin spoof hoạt động — ERR Failed to fetch nghĩa là bị chặn CORS.
+      const probeUrl = process.env.OLA_DESKTOP_SMOKE_FETCH;
+      if (win != null && probeUrl) {
+        const result = await win.webContents.executeJavaScript(
+          `fetch(${JSON.stringify(probeUrl)}).then((r) => 'HTTP ' + r.status).catch((e) => 'ERR ' + e.message)`,
+        );
+        console.log('OLA_DESKTOP_SMOKE_FETCH:', result);
       }
       console.log('OLA_DESKTOP_SMOKE_TITLE:', win?.getTitle());
       console.log('OLA_DESKTOP_SMOKE_OK');
