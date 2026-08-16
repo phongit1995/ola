@@ -28,7 +28,9 @@ win:
     - nsis
 nsis:
   oneClick: true
-  deleteAppDataOnUninstall: false
+  # Gỡ app là xoá sạch %APPDATA%\Ola Chat (localStorage/token/cache) — người
+  # dùng gỡ-cài-lại sẽ phải đăng nhập lại.
+  deleteAppDataOnUninstall: true
 
 linux:
   target:
