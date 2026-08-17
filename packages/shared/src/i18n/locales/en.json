@@ -1,4 +1,28 @@
 {
+  "reminder": {
+    "channelName": "Reminders",
+    "comeBackTitle": "Ola misses you!",
+    "m1": "Come back and see what's new 💬",
+    "m2": "Your friends are chatting away, you're the only one missing 👀",
+    "m3": "It's been 2 days since you visited Ola, everyone misses you!",
+    "m4": "The chat rooms are buzzing, jump in and join the fun 🎉",
+    "m5": "The Lucky Wheel is waiting for you to try your luck today 🍀",
+    "m6": "You might have missed some fun stuff on the feed 📰",
+    "m7": "Drop by Ola for a bit, long time no see!",
+    "m8": "Your friends just posted something new, check it out 👇",
+    "m9": "Egg Smash with Ken rewards is waiting for you 🥚",
+    "m10": "One quick hello can make your friends' day, hop on Ola 💚",
+    "m11": "Free right now? Come chat with everyone on Ola ☕",
+    "m12": "War God is calling your name, come battle now ⚔️",
+    "m13": "It's been a while since you spun the Lucky Wheel 🎡",
+    "m14": "Ola feels empty without you, come back soon 🥺",
+    "m15": "What if someone special is online waiting for you? 😉",
+    "m16": "Check in and let your friends know you're doing well 👋",
+    "m17": "Chatting, games, new friends — everything is waiting for you on Ola!",
+    "m18": "Don't let the fun stop, open Ola now 🔥",
+    "m19": "How about a quick game to scratch that itch? 🎮",
+    "m20": "Open Ola, you might meet someone who gets you today 💫"
+  },
   "arcade": {
     "minimize": "Minimize",
     "restore": "Restore",

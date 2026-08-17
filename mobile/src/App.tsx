@@ -29,6 +29,11 @@ import { ArcadeOverlay } from './screens/apps/ArcadeOverlay';
 import { CallOverlay } from './screens/call/CallOverlay';
 import { checkForOtaUpdate } from './services/otaUpdate';
 import { initTelemetry, setTelemetryUser, trackScreen } from './lib/telemetry';
+import {
+  cancelComeBackReminder,
+  initComeBackReminder,
+  scheduleComeBackReminder,
+} from './lib/comeBackReminder';
 
 function clearSession() {
   authTokens.clear();
@@ -74,12 +79,18 @@ export default function App() {
     initTelemetry();
     if (!__DEV__) void checkForOtaUpdate();
     setOnUnauthorized(clearSession);
+    void initComeBackReminder();
     const resumeSession = () => {
       SocketService.ensureAlive();
       void resyncKenBalance();
     };
     const appStateSubscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') resumeSession();
+      if (state === 'active') {
+        resumeSession();
+        void cancelComeBackReminder();
+      } else if (state === 'background') {
+        void scheduleComeBackReminder();
+      }
     });
     let hasNetworkState = false;
     let wasOnline = false;
