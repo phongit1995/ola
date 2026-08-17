@@ -28,27 +28,30 @@ export interface AppItem {
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
-export const APP_ITEMS: AppItem[] = [
-  {
-    icon: iconNotify,
-    titleKey: 'home.apps.notifications',
-    app: 'notifications',
-  },
+export const GAME_ITEMS: AppItem[] = [
   { icon: iconEgg, titleKey: 'home.apps.egg', overlay: 'egg' },
   { icon: iconPen, titleKey: 'home.apps.pen', overlay: 'pen' },
   { icon: iconWheel, titleKey: 'home.apps.wheel', overlay: 'wheel' },
   // TODO: mở lại mục Kho game khi có tính năng thật
   // { icon: iconGame, titleKey: 'home.apps.gameStore', subtitleKey: 'home.appGameSubtitle' },
-  { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
-  { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
-  { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
   // TODO: mở lại mục Đăng quảng cáo khi có tính năng thật
   // { icon: iconAdme, titleKey: 'home.apps.advertise' },
-  { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
   // TODO: mở lại mục OlaMall khi có tính năng thật
   // { icon: iconMall, titleKey: 'home.apps.mall', subtitleKey: 'home.appMallSubtitle' },
   // TODO: mở lại mục Lân cận khi NearbyPlacesPage hết dữ liệu mock (MOCK_VENUES)
   // { icon: iconNearby, titleKey: 'home.apps.nearby', app: 'nearby' },
+];
+
+export const PERSONAL_ITEMS: AppItem[] = [
+  {
+    icon: iconNotify,
+    titleKey: 'home.apps.notifications',
+    app: 'notifications',
+  },
+  { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
+  { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
+  { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
+  { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
   { icon: iconSocial, titleKey: 'home.apps.social', action: 'social' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },
   {

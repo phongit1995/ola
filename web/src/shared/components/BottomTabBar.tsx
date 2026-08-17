@@ -6,13 +6,23 @@ import iconMe from '@/assets/icons/me.png';
 import iconMeActive from '@/assets/icons/me-active.png';
 // import iconRss from '@/assets/icons/rss.png';
 // import iconRssActive from '@/assets/icons/rss-active.png';
-import iconApps from '@/assets/icons/apps.png';
-import iconAppsActive from '@/assets/icons/apps-active.png';
+import iconGame from '@/assets/icons/game.svg';
+import iconGameActive from '@/assets/icons/game-active.svg';
+import iconPersonal from '@/assets/icons/personal.svg';
+import iconPersonalActive from '@/assets/icons/personal-active.svg';
 import { useTranslation } from 'react-i18next';
+import type { ParseKeys } from 'i18next';
 
-export type TabKey = 'chat' | 'room' | 'me' | 'rss' | 'apps';
+export type TabKey = 'chat' | 'room' | 'me' | 'rss' | 'game' | 'personal';
 
-const TABS = [
+interface TabDef {
+  key: TabKey;
+  labelKey: ParseKeys;
+  icon: string;
+  iconActive: string;
+}
+
+const TABS: TabDef[] = [
   {
     key: 'chat',
     labelKey: 'home.tabChat',
@@ -28,12 +38,18 @@ const TABS = [
   { key: 'me', labelKey: 'home.tabMe', icon: iconMe, iconActive: iconMeActive },
   // { key: 'rss', labelKey: 'home.tabRss', icon: iconRss, iconActive: iconRssActive },
   {
-    key: 'apps',
-    labelKey: 'home.tabApps',
-    icon: iconApps,
-    iconActive: iconAppsActive,
+    key: 'game',
+    labelKey: 'home.tabGame',
+    icon: iconGame,
+    iconActive: iconGameActive,
   },
-] as const;
+  {
+    key: 'personal',
+    labelKey: 'home.tabPersonal',
+    icon: iconPersonal,
+    iconActive: iconPersonalActive,
+  },
+];
 
 interface BottomTabBarProps {
   active: TabKey;
@@ -60,7 +76,7 @@ export function BottomTabBar({
             key={tab.key}
             type="button"
             onClick={() => onChange(tab.key)}
-            className="relative flex flex-1 flex-col items-center px-1 pt-1 pb-0.5"
+            className="relative flex min-w-0 flex-1 flex-col items-center px-0.5 pt-1 pb-0.5"
           >
             <span className="relative">
               <img
@@ -77,7 +93,7 @@ export function BottomTabBar({
               ) : null}
             </span>
             <span
-              className={`mt-0.5 text-xs leading-none whitespace-nowrap ${
+              className={`mt-0.5 text-[11px] leading-none whitespace-nowrap ${
                 isActive ? 'text-ola-primary-ink' : 'text-black/54'
               }`}
             >
