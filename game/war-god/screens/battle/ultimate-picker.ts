@@ -1,7 +1,7 @@
 import { Assets, Container, Graphics, Rectangle, Sprite, Texture, type Ticker } from 'pixi.js';
 import lightningGodUrl from '../../assets/ultimate/lightning-god.webp';
 import myriadSwordsUrl from '../../assets/ultimate/myriad-swords.webp';
-import { addTick, makeText, popIn, pressable, removeTick } from '../../kit';
+import { addTick, popIn, pressable, removeTick } from '../../kit';
 import { DESIGN_W } from '../../layout';
 import type { UltimateSkillId } from '../../logic/server-types';
 
@@ -41,7 +41,6 @@ interface UltimatePickerAppearance {
   positions: readonly [Point, Point];
   connector?: 'line' | 'arc';
   lightningBackdrop?: boolean;
-  largeLabels?: boolean;
   effect: EffectStyle;
 }
 
@@ -49,12 +48,11 @@ const APPEARANCES: Record<UltimatePickerVariant, UltimatePickerAppearance> = {
   'electric-pulse': {
     frameShape: 'circle',
     frameColors: [0xa855f7, 0xff7a32],
-    frameWidth: 4,
-    itemSize: 126,
-    iconSize: 112,
-    positions: [[0, -272], [0, -118]],
+    frameWidth: 3,
+    itemSize: 72,
+    iconSize: 64,
+    positions: [[0, -122], [0, -46]],
     lightningBackdrop: true,
-    largeLabels: true,
     effect: 'pulse',
   },
   'dual-halo': {
@@ -187,7 +185,6 @@ export interface UltimatePicker {
 interface SkillDefinition {
   id: UltimateSkillId;
   name: string;
-  detail: string;
   texture: Texture;
 }
 
@@ -401,44 +398,31 @@ function animateEffect(effect: Container, style: EffectStyle, index: number): vo
 }
 
 function makeSkillItem(
-  skill: SkillDefinition,
+  texture: Texture,
   index: number,
   appearance: UltimatePickerAppearance,
   onSelect: () => void,
 ): Container {
   const view = new Container();
-  const radius = appearance.itemSize / 2;
-  const plate = new Graphics()
-    .circle(0, 0, radius - appearance.frameWidth)
-    .fill({ color: index === 0 ? 0x170738 : 0x3b0d08, alpha: 0.88 })
-    .circle(0, 0, radius * 0.82)
-    .stroke({ width: 7, color: appearance.frameColors[index]!, alpha: 0.18 });
-  view.addChild(plate);
 
   if (appearance.lightningBackdrop === true && index === 0) {
     const lightning = new Graphics();
-    const innerRadius = radius - appearance.frameWidth - 1;
-    lightning.circle(0, 0, innerRadius).fill({ color: 0x4c1d95, alpha: 0.28 });
+    const radius = appearance.itemSize / 2 - appearance.frameWidth - 1;
+    lightning.circle(0, 0, radius).fill({ color: 0x4c1d95, alpha: 0.28 });
     lightning
-      .moveTo(-innerRadius * 0.28, -innerRadius * 0.82)
-      .lineTo(-innerRadius * 0.48, -innerRadius * 0.26)
-      .lineTo(-innerRadius * 0.27, -innerRadius * 0.32)
-      .lineTo(-innerRadius * 0.5, innerRadius * 0.35)
-      .moveTo(innerRadius * 0.3, -innerRadius * 0.78)
-      .lineTo(innerRadius * 0.48, -innerRadius * 0.22)
-      .lineTo(innerRadius * 0.27, -innerRadius * 0.28)
-      .lineTo(innerRadius * 0.46, innerRadius * 0.38)
-      .moveTo(-innerRadius * 0.18, innerRadius * 0.72)
-      .lineTo(0, innerRadius * 0.36)
-      .lineTo(innerRadius * 0.1, innerRadius * 0.54)
-      .lineTo(innerRadius * 0.26, innerRadius * 0.18)
-      .stroke({
-        width: 3.4,
-        color: 0xd8b4fe,
-        alpha: 0.95,
-        cap: 'round',
-        join: 'round',
-      });
+      .moveTo(-17, -29)
+      .lineTo(-27, -9)
+      .lineTo(-18, -11)
+      .lineTo(-27, 12)
+      .moveTo(17, -27)
+      .lineTo(26, -8)
+      .lineTo(17, -10)
+      .lineTo(25, 14)
+      .moveTo(-8, 25)
+      .lineTo(0, 14)
+      .lineTo(4, 20)
+      .lineTo(11, 7)
+      .stroke({ width: 2.2, color: 0xd8b4fe, alpha: 0.95, cap: 'round', join: 'round' });
     view.addChild(lightning);
   }
 
@@ -451,7 +435,7 @@ function makeSkillItem(
   view.addChild(effect);
   animateEffect(effect, appearance.effect, index);
 
-  const icon = new Sprite(skill.texture);
+  const icon = new Sprite(texture);
   icon.anchor.set(0.5);
   const iconScale = Math.min(
     appearance.iconSize / icon.texture.width,
@@ -470,34 +454,11 @@ function makeSkillItem(
   );
   view.addChild(frame);
 
-  if (appearance.largeLabels === true) {
-    const labelWidth = appearance.itemSize + 42;
-    const labelTop = radius + 7;
-    const labelPanel = new Graphics()
-      .roundRect(-labelWidth / 2, labelTop, labelWidth, 48, 14)
-      .fill({ color: index === 0 ? 0x100526 : 0x2b0904, alpha: 0.94 })
-      .stroke({
-        width: 2.5,
-        color: appearance.frameColors[index]!,
-        alpha: 0.9,
-      });
-    const name = makeText(
-      skill.name.replace('\n', ' '),
-      13,
-      index === 0 ? 0xf0e5ff : 0xffead3,
-      '800',
-    );
-    name.y = labelTop + 15;
-    const detail = makeText(skill.detail, 10, index === 0 ? 0x83dcff : 0xffb15c, '800');
-    detail.y = labelTop + 35;
-    view.addChild(labelPanel, name, detail);
-  }
-
   view.hitArea = new Rectangle(
-    -appearance.itemSize / 2 - 22,
-    -appearance.itemSize / 2 - 8,
-    appearance.itemSize + 44,
-    appearance.itemSize + (appearance.largeLabels === true ? 70 : 16),
+    -appearance.itemSize / 2,
+    -appearance.itemSize / 2,
+    appearance.itemSize,
+    appearance.itemSize,
   );
   pressable(view, onSelect);
   return view;
@@ -509,18 +470,10 @@ export async function buildUltimatePicker(
 ): Promise<UltimatePicker> {
   const appearance = APPEARANCES[variant];
   const halfItem = appearance.itemSize / 2 + 9;
-  const halfContentWidth = Math.max(
-    halfItem,
-    appearance.largeLabels === true ? (appearance.itemSize + 42) / 2 : 0,
-  );
-  const minX = Math.min(...appearance.positions.map(([x]) => x - halfContentWidth));
-  const maxX = Math.max(...appearance.positions.map(([x]) => x + halfContentWidth));
+  const minX = Math.min(...appearance.positions.map(([x]) => x - halfItem));
+  const maxX = Math.max(...appearance.positions.map(([x]) => x + halfItem));
   const minY = Math.min(...appearance.positions.map(([, y]) => y - halfItem));
-  const maxY = Math.max(
-    ...appearance.positions.map(
-      ([, y]) => y + halfItem + (appearance.largeLabels === true ? 48 : 0),
-    ),
-  );
+  const maxY = Math.max(...appearance.positions.map(([, y]) => y + halfItem));
   const contentW = maxX - minX;
   const contentH = maxY - minY;
   const [lightningTexture, swordsTexture] = await Promise.all([
@@ -534,13 +487,11 @@ export async function buildUltimatePicker(
     {
       id: 'lightning-god',
       name: 'LÔI THẦN\nGIÁNG THẾ',
-      detail: '4 TIA SÉT · PHÁ 16 Ô',
       texture: lightningTexture,
     },
     {
       id: 'myriad-swords',
       name: 'VẠN KIẾM\nQUY TÔNG',
-      detail: '50 SÁT THƯƠNG TRỰC TIẾP',
       texture: swordsTexture,
     },
   ];
@@ -579,7 +530,7 @@ export async function buildUltimatePicker(
   };
 
   skills.forEach((skill, index) => {
-    const item = makeSkillItem(skill, index, appearance, () => {
+    const item = makeSkillItem(skill.texture, index, appearance, () => {
       selected = skill.id;
       closePicker();
       onConfirm(skill.id);

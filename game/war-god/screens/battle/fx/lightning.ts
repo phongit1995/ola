@@ -105,34 +105,11 @@ function ultimateStormPrelude(context: LightningFxContext): Container {
   storm.alpha = 0;
 
   const veil = new Graphics()
-    .roundRect(
-      boardX - tileSize * 0.32,
-      boardY - tileSize * 0.42,
-      boardSize + tileSize * 0.64,
-      boardSize + tileSize * 0.74,
-      tileSize * 0.28,
-    )
-    .fill({ color: 0x170545, alpha: 0.42 })
-    .stroke({ width: 8, color: 0x845cff, alpha: 0.72 });
+    .rect(boardX, boardY, boardSize, boardSize)
+    .fill({ color: 0x170545, alpha: 0.42 });
   veil.blendMode = 'add';
   storm.addChild(veil);
 
-  const crown = new Graphics();
-  crown.blendMode = 'add';
-  for (let ray = 0; ray < 13; ray += 1) {
-    const x = boardX + (boardSize * ray) / 12;
-    const lean = ((ray % 3) - 1) * tileSize * 0.7;
-    crown
-      .moveTo(x + lean, boardY - tileSize * 1.9)
-      .lineTo(x - lean * 0.25, boardY - tileSize * 0.35)
-      .stroke({
-        width: ray % 2 === 0 ? 4 : 2,
-        color: ray % 3 === 0 ? 0xffffff : ray % 2 === 0 ? 0x9f7aff : 0x5cc9ff,
-        alpha: ray % 2 === 0 ? 0.72 : 0.48,
-        cap: 'round',
-      });
-  }
-  storm.addChild(crown);
   flyLayer.addChildAt(storm, 0);
   void tween(storm, { alpha: 1 }, 120);
   lightningFlash(context);
@@ -151,12 +128,7 @@ function lightningBlockMarker(cells: readonly number[], context: LightningFxCont
     .circle(0, 0, radius)
     .stroke({ width: 8, color: 0xb99cff, alpha: 0.92 })
     .circle(0, 0, radius * 0.76)
-    .stroke({ width: 3, color: 0xdff7ff, alpha: 0.94 })
-    .moveTo(-radius, 0)
-    .lineTo(radius, 0)
-    .moveTo(0, -radius)
-    .lineTo(0, radius)
-    .stroke({ width: 2.5, color: 0x8bdcff, alpha: 0.66 });
+    .stroke({ width: 3, color: 0xdff7ff, alpha: 0.94 });
   marker.position.set(center.x, center.y);
   marker.scale.set(0.62);
   flyLayer.addChild(marker);
@@ -178,24 +150,12 @@ function lightningBlockImpact(cells: readonly number[], context: LightningFxCont
     .stroke({ width: 12, color: 0x9f78ff, alpha: 0.96 })
     .circle(0, 0, tileSize * 1.32)
     .stroke({ width: 5, color: 0x79d8ff, alpha: 0.9 });
-  for (let ray = 0; ray < 16; ray += 1) {
-    const angle = (Math.PI * 2 * ray) / 16;
-    const inner = tileSize * 0.62;
-    const outer = tileSize * (1.28 + (ray % 2) * 0.28);
-    impact
-      .moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner)
-      .lineTo(
-        Math.cos(angle + (ray % 2 === 0 ? 0.08 : -0.08)) * outer,
-        Math.sin(angle + (ray % 2 === 0 ? 0.08 : -0.08)) * outer,
-      );
-  }
-  impact.stroke({ width: 3.5, color: 0xeefcff, alpha: 0.94, cap: 'round' });
   impact.position.set(center.x, center.y);
   impact.scale.set(0.62);
   flyLayer.addChild(impact);
   void tween(impact, { alpha: 0, scale: 1.7 }, 560).then(() => impact.destroy());
   cells.forEach((cell) => {
-    lightningBurst(cell, 1.28, context);
+    lightningBurst(cell, 1.28, context, false);
     lightningSparks(cell, 12, context);
   });
 }
@@ -323,7 +283,12 @@ function lightningFlash(context: LightningFxContext): void {
   void tween(flash, { alpha: 0 }, 260).then(() => flash.destroy());
 }
 
-function lightningBurst(index: number, strength: number, context: LightningFxContext): void {
+function lightningBurst(
+  index: number,
+  strength: number,
+  context: LightningFxContext,
+  showRays = true,
+): void {
   const { tileSize, flyLayer, cellRootPos } = context;
   const p = cellRootPos(index);
   const burst = new Graphics();
@@ -333,32 +298,34 @@ function lightningBurst(index: number, strength: number, context: LightningFxCon
   burst.circle(0, 0, tileSize * 0.52).fill({ color: 0x7c4dff, alpha: 0.2 });
   burst.circle(0, 0, tileSize * 0.48).stroke({ width: 6, color: 0x8f63ff, alpha: 0.92 });
   burst.circle(0, 0, tileSize * 0.7).stroke({ width: 3, color: 0x8cd8ff, alpha: 0.76 });
-  for (let ray = 0; ray < rayCount; ray++) {
-    const angle = (Math.PI * 2 * ray) / rayCount + (Math.random() - 0.5) * 0.2;
-    const inner = tileSize * (0.28 + Math.random() * 0.1);
-    const outer = tileSize * (0.82 + Math.random() * 0.42) * strength;
-    const bend = angle + (Math.random() - 0.5) * 0.32;
-    const points = [
-      { x: Math.cos(angle) * inner, y: Math.sin(angle) * inner },
-      {
-        x: Math.cos(bend) * (inner + outer) * 0.55,
-        y: Math.sin(bend) * (inner + outer) * 0.55,
-      },
-      { x: Math.cos(angle) * outer, y: Math.sin(angle) * outer },
-    ];
-    burst.moveTo(points[0].x, points[0].y);
-    burst.lineTo(points[1].x, points[1].y);
-    burst.lineTo(points[2].x, points[2].y);
-    burst.stroke({ width: 5, color: 0x6231e6, alpha: 0.22, cap: 'round' });
-    burst.moveTo(points[0].x, points[0].y);
-    burst.lineTo(points[1].x, points[1].y);
-    burst.lineTo(points[2].x, points[2].y);
-    burst.stroke({
-      width: 1.5,
-      color: ray % 2 === 0 ? 0xffffff : 0xa9e7ff,
-      alpha: 0.96,
-      cap: 'round',
-    });
+  if (showRays) {
+    for (let ray = 0; ray < rayCount; ray++) {
+      const angle = (Math.PI * 2 * ray) / rayCount + (Math.random() - 0.5) * 0.2;
+      const inner = tileSize * (0.28 + Math.random() * 0.1);
+      const outer = tileSize * (0.82 + Math.random() * 0.42) * strength;
+      const bend = angle + (Math.random() - 0.5) * 0.32;
+      const points = [
+        { x: Math.cos(angle) * inner, y: Math.sin(angle) * inner },
+        {
+          x: Math.cos(bend) * (inner + outer) * 0.55,
+          y: Math.sin(bend) * (inner + outer) * 0.55,
+        },
+        { x: Math.cos(angle) * outer, y: Math.sin(angle) * outer },
+      ];
+      burst.moveTo(points[0].x, points[0].y);
+      burst.lineTo(points[1].x, points[1].y);
+      burst.lineTo(points[2].x, points[2].y);
+      burst.stroke({ width: 5, color: 0x6231e6, alpha: 0.22, cap: 'round' });
+      burst.moveTo(points[0].x, points[0].y);
+      burst.lineTo(points[1].x, points[1].y);
+      burst.lineTo(points[2].x, points[2].y);
+      burst.stroke({
+        width: 1.5,
+        color: ray % 2 === 0 ? 0xffffff : 0xa9e7ff,
+        alpha: 0.96,
+        cap: 'round',
+      });
+    }
   }
   burst.position.set(p.x, p.y);
   burst.scale.set(0.68);
