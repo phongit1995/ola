@@ -114,7 +114,7 @@ const RULES: GuideRule[] = [
   {
     asset: A.hud.flameOn,
     title: 'TUYỆT CHIÊU',
-    detail: `Cần ${ULT_COST} nội lực · mỗi tuyệt chiêu có hiệu ứng riêng`,
+    detail: `Cần ${ULT_COST} nội lực · Lôi Thần gọi 4 tia, mỗi tia phá 2×2`,
     accent: 0xff8051,
   },
   {

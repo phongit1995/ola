@@ -108,7 +108,11 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 		damage := 0
 		attacker.MP = 0
 		if move.Skill == skillLightningGod {
-			cells := randomTwoByTwoCells(r)
+			blocks := randomFourTwoByTwoBlocks(r)
+			cells := make([]int, 0, len(blocks)*4)
+			for _, block := range blocks {
+				cells = append(cells, block...)
+			}
 			s.Steps = append(s.Steps, Step{Kind: stepUlt, Skill: move.Skill, Cells: cells})
 			removed := make(map[int]bool, len(cells))
 			for _, cell := range cells {
@@ -140,12 +144,42 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 	return s, nil
 }
 
-func randomTwoByTwoCells(r *rng) []int {
-	choice := int(r.next() % uint64((grid-1)*(grid-1)))
-	row := choice / (grid - 1)
-	col := choice % (grid - 1)
-	topLeft := row*grid + col
+func twoByTwoCells(topLeft int) []int {
 	return []int{topLeft, topLeft + 1, topLeft + grid, topLeft + grid + 1}
+}
+
+func randomFourTwoByTwoBlocks(r *rng) [][]int {
+	candidates := make([]int, 0, (grid-1)*(grid-1))
+	for row := 0; row < grid-1; row++ {
+		for col := 0; col < grid-1; col++ {
+			candidates = append(candidates, row*grid+col)
+		}
+	}
+	blocks := make([][]int, 0, 4)
+	occupied := make(map[int]bool, 16)
+	for len(blocks) < 4 && len(candidates) > 0 {
+		pick := int(r.next() % uint64(len(candidates)))
+		cells := twoByTwoCells(candidates[pick])
+		blocks = append(blocks, cells)
+		for _, cell := range cells {
+			occupied[cell] = true
+		}
+		available := candidates[:0]
+		for _, topLeft := range candidates {
+			overlaps := false
+			for _, cell := range twoByTwoCells(topLeft) {
+				if occupied[cell] {
+					overlaps = true
+					break
+				}
+			}
+			if !overlaps {
+				available = append(available, topLeft)
+			}
+		}
+		candidates = available
+	}
+	return blocks
 }
 
 func resolveCascades(

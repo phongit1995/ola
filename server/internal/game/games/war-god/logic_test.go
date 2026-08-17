@@ -1025,7 +1025,7 @@ func TestMyriadSwordsCostsFullMana(t *testing.T) {
 	}
 }
 
-func TestLightningGodRemovesRandomTwoByTwoAndAppliesGravity(t *testing.T) {
+func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
 	board := stripedBoard()
 	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 7)
 	move := json.RawMessage(`{"type":"ult","skill":"lightning-god"}`)
@@ -1045,14 +1045,24 @@ func TestLightningGodRemovesRandomTwoByTwoAndAppliesGravity(t *testing.T) {
 		t.Fatalf("lightning ultimate must be followed by gravity: %+v", next.Steps)
 	}
 	ult := next.Steps[0]
-	if ult.Skill != skillLightningGod || len(ult.Cells) != 4 || ult.Damage != 0 {
+	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != 0 {
 		t.Fatalf("unexpected lightning step: %+v", ult)
 	}
-	if ult.Cells[1]-ult.Cells[0] != 1 || ult.Cells[2]-ult.Cells[0] != grid || ult.Cells[3]-ult.Cells[0] != grid+1 {
-		t.Fatalf("ultimate cells are not a 2x2 block: %v", ult.Cells)
-	}
-	if ult.Cells[0]%grid >= grid-1 || ult.Cells[2] >= boardSize {
-		t.Fatalf("ultimate block is outside the board: %v", ult.Cells)
+	seen := make(map[int]bool, len(ult.Cells))
+	for offset := 0; offset < len(ult.Cells); offset += 4 {
+		cells := ult.Cells[offset : offset+4]
+		if cells[1]-cells[0] != 1 || cells[2]-cells[0] != grid || cells[3]-cells[0] != grid+1 {
+			t.Fatalf("ultimate cells are not four 2x2 blocks: %v", ult.Cells)
+		}
+		if cells[0]%grid >= grid-1 || cells[3] >= boardSize {
+			t.Fatalf("ultimate block is outside the board: %v", cells)
+		}
+		for _, cell := range cells {
+			if seen[cell] {
+				t.Fatalf("ultimate blocks overlap at cell %d: %v", cell, ult.Cells)
+			}
+			seen[cell] = true
+		}
 	}
 	if next.Rng == state.Rng || reflect.DeepEqual(next.Board, board) {
 		t.Fatalf("lightning ultimate did not advance RNG and collapse board: rng=%s board=%v", next.Rng, next.Board)

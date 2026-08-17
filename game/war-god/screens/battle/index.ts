@@ -29,7 +29,7 @@ import {
   findMatches,
   findValidMoves,
   computeExplosions,
-  randomTwoByTwoCells,
+  randomFourTwoByTwoBlocks,
   swapCells,
   type Board,
   type LightningArc,
@@ -846,19 +846,24 @@ async function animateRemove(
 }
 
 async function animateUltimateLightningRemove(cells: readonly number[]): Promise<void> {
-  await playUltimateLightningFx(cells, lightningFxContext());
-  const jobs: Promise<void>[] = [];
-  for (const index of cells) {
-    const sprite = sprites[index];
-    if (!sprite) continue;
-    centerPivot(sprite);
-    jobs.push(tween(sprite, { alpha: 0, scale: 0.05 }, 170));
+  const blocks: number[][] = [];
+  for (let offset = 0; offset < cells.length; offset += 4) {
+    blocks.push([...cells.slice(offset, offset + 4)]);
   }
-  await Promise.all(jobs);
-  for (const index of cells) {
-    sprites[index]?.destroy({ children: true });
-    sprites[index] = null;
-  }
+  await playUltimateLightningFx(blocks, lightningFxContext(), async (block) => {
+    const jobs: Promise<void>[] = [];
+    for (const index of block) {
+      const sprite = sprites[index];
+      if (!sprite) continue;
+      centerPivot(sprite);
+      jobs.push(tween(sprite, { alpha: 0, scale: 0.03 }, 190));
+    }
+    await Promise.all(jobs);
+    for (const index of block) {
+      sprites[index]?.destroy({ children: true });
+      sprites[index] = null;
+    }
+  });
 }
 
 interface WaveRenderOptions {
@@ -1077,8 +1082,8 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
   decayArmor(me);
   if (skill === 'lightning-god') {
     me.mp = 0;
-    const cells = randomTwoByTwoCells();
-    setStatus('LÔI THẦN GIÁNG THẾ!');
+    const cells = randomFourTwoByTwoBlocks().flat();
+    setStatus('LÔI THẦN GIÁNG THẾ · 4 TIA SÉT!');
     updateHud();
     await animateUltimateLightningRemove(cells);
     const gravity = applyGravity(board, new Set(cells));
@@ -1468,7 +1473,11 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
   attacker.mp = 0;
   if (step.skill === 'lightning-god') {
     const cells = step.cells ?? [];
-    setStatus(side === 'me' ? 'LÔI THẦN GIÁNG THẾ!' : 'Đối thủ triệu hồi LÔI THẦN!');
+    setStatus(
+      side === 'me'
+        ? 'LÔI THẦN GIÁNG THẾ · 4 TIA SÉT!'
+        : 'Đối thủ triệu hồi LÔI THẦN · 4 TIA SÉT!',
+    );
     updateHud();
     await animateUltimateLightningRemove(cells);
     return;
@@ -1768,7 +1777,7 @@ function previewLightningFx(sourceCount = 3): boolean {
 
 function previewUltimateLightningFx(): number[] | null {
   if (!inGame || tileSize <= 0 || busy) return null;
-  const cells = randomTwoByTwoCells();
+  const cells = randomFourTwoByTwoBlocks().flat();
   busy = true;
   updateHud();
   void animateUltimateLightningRemove(cells)

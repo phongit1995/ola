@@ -1,23 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { GRID, randomTwoByTwoCells } from './core';
+import { GRID, randomFourTwoByTwoBlocks } from './core';
 
-describe('randomTwoByTwoCells', () => {
-  it.each([
-    [0, [0, 1, 8, 9]],
-    [0.5, [27, 28, 35, 36]],
-    [0.999999, [54, 55, 62, 63]],
-  ])('selects an in-bounds 2x2 block for random=%s', (random, expected) => {
-    expect(randomTwoByTwoCells(() => random)).toEqual(expected);
-  });
+describe('randomFourTwoByTwoBlocks', () => {
+  it.each([0, 0.17, 0.5, 0.83, 0.999999])(
+    'selects four non-overlapping in-bounds 2x2 blocks for random=%s',
+    (random) => {
+      const blocks = randomFourTwoByTwoBlocks(() => random);
+      expect(blocks).toHaveLength(4);
+      const allCells = blocks.flat();
+      expect(new Set(allCells).size).toBe(16);
+      for (const cells of blocks) {
+        expect(cells).toHaveLength(4);
+        expect(cells[1] - cells[0]).toBe(1);
+        expect(cells[2] - cells[0]).toBe(GRID);
+        expect(cells[3] - cells[0]).toBe(GRID + 1);
+        expect(cells[0] % GRID).toBeLessThan(GRID - 1);
+        expect(cells[3]).toBeLessThan(GRID * GRID);
+      }
+    },
+  );
 
-  it('always returns four distinct cells forming a square', () => {
-    for (let sample = 0; sample < 49; sample += 1) {
-      const cells = randomTwoByTwoCells(() => (sample + 0.1) / 49);
-      expect(new Set(cells).size).toBe(4);
-      expect(cells[1] - cells[0]).toBe(1);
-      expect(cells[2] - cells[0]).toBe(GRID);
-      expect(cells[3] - cells[0]).toBe(GRID + 1);
-      expect(cells[0] % GRID).toBeLessThan(GRID - 1);
-    }
+  it('spreads a zero-valued random stream across the first board row', () => {
+    expect(randomFourTwoByTwoBlocks(() => 0)).toEqual([
+      [0, 1, 8, 9],
+      [2, 3, 10, 11],
+      [4, 5, 12, 13],
+      [6, 7, 14, 15],
+    ]);
   });
 });
