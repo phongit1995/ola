@@ -13,6 +13,7 @@ import { Avatar } from '@components';
 import { colorForName } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
+import { LEFT_MINIMIZE_GAME_SLUGS } from './constants';
 
 interface BubblePosition {
   x: number;
@@ -241,6 +242,8 @@ export function ArcadeOverlay() {
 
   if (!active) return null;
 
+  const minimizeOnLeft = LEFT_MINIMIZE_GAME_SLUGS.includes(active.slug);
+
   function commitPendingBubblePosition() {
     if (dragFrameRef.current != null) {
       cancelAnimationFrame(dragFrameRef.current);
@@ -366,7 +369,9 @@ export function ArcadeOverlay() {
           type="button"
           aria-label={t('arcade.minimize')}
           onClick={minimize}
-          className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/65"
+          className={`absolute top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/65 ${
+            minimizeOnLeft ? 'left-3' : 'right-3'
+          }`}
         >
           <span className="block h-0.5 w-4 rounded-full bg-white" />
         </button>
