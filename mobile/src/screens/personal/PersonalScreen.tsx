@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,35 +12,22 @@ import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { CachedImage } from '@components/ui/CachedImage';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
-import { trackEvent } from '@lib/telemetry';
-import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
-import { useArcadeStore } from '@store/arcadeStore';
-import { SocialConnectionsDialog } from './SocialConnectionsDialog';
-import { APP_ITEMS, type AppItem } from './constants';
+import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
+import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
 
-const iconGameDefault = require('@assets/icons/apps/game.png');
 const kenIcon = require('@assets/icons/apps/ken.png');
 
 interface PanelRowProps {
   icon: number;
-  iconUrl?: string;
   title: string;
   subtitle?: string;
   badge?: number;
   onPress: () => void;
 }
 
-function PanelRow({
-  icon,
-  iconUrl,
-  title,
-  subtitle,
-  badge,
-  onPress,
-}: PanelRowProps) {
+function PanelRow({ icon, title, subtitle, badge, onPress }: PanelRowProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -51,9 +38,8 @@ function PanelRow({
         borderBottomColor: 'rgba(0,0,0,0.12)',
       }}
     >
-      <CachedImage
-        uri={iconUrl}
-        placeholder={icon}
+      <Image
+        source={icon}
         style={{ width: 40, height: 40, borderRadius: 8 }}
         resizeMode="contain"
       />
@@ -78,24 +64,17 @@ function PanelRow({
   );
 }
 
-export function AppsScreen() {
+export function PersonalScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const push = useToastStore(s => s.push);
-  const miniGames = useArcadeStore(s => s.games);
-  const fetchGames = useArcadeStore(s => s.fetchGames);
-  const openArcade = useArcadeOverlayStore(s => s.open);
   const notifUnread = useAppNotificationStore(s => s.unreadCount);
   const user = useAuthStore(s => s.user);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
-
-  useEffect(() => {
-    void fetchGames();
-  }, [fetchGames]);
 
   function handleOpen(item: AppItem) {
     if (item.action === 'logout') {
@@ -134,23 +113,10 @@ export function AppsScreen() {
       navigation.navigate(ROOT_ROUTES.Settings);
       return;
     }
-    if (item.action === 'pen') {
-      navigation.navigate(ROOT_ROUTES.PenGame);
-      return;
-    }
-    if (item.action === 'wheel') {
-      navigation.navigate(ROOT_ROUTES.SpinWheel);
-      return;
-    }
-    if (item.action === 'egg') {
-      navigation.navigate(ROOT_ROUTES.EggGame);
-      return;
-    }
     push('info', t('chat.comingSoon'));
   }
 
-  async function confirmLogout() {
-    setLogoutOpen(false);
+  async function signOut() {
     try {
       await AuthService.logout();
     } catch {
@@ -159,6 +125,11 @@ export function AppsScreen() {
       SocketService.disconnect();
       useAuthStore.getState().clearUser();
     }
+  }
+
+  async function confirmLogout() {
+    setLogoutOpen(false);
+    await signOut();
   }
 
   async function confirmRemoveAccount() {
@@ -178,41 +149,7 @@ export function AppsScreen() {
       }
     }
 
-    try {
-      await AuthService.logout();
-    } catch {
-      push('error', t('chat.logoutError'));
-    } finally {
-      SocketService.disconnect();
-      useAuthStore.getState().clearUser();
-    }
-  }
-
-  function handleOpenArcade(game: (typeof miniGames)[number]) {
-    const isNewGame = useArcadeOverlayStore.getState().active == null;
-    if (!openArcade(game)) {
-      push('info', t('arcade.alreadyRunning'));
-      return;
-    }
-    if (isNewGame) {
-      trackEvent('arcade_open', {
-        game_id: game.id,
-        game_slug: game.slug,
-      });
-    }
-  }
-
-  function renderAppItem(item: AppItem) {
-    return (
-      <PanelRow
-        key={item.titleKey}
-        icon={item.icon}
-        title={t(item.titleKey)}
-        subtitle={item.subtitleKey != null ? t(item.subtitleKey) : undefined}
-        badge={item.action === 'notifications' ? notifUnread : undefined}
-        onPress={() => handleOpen(item)}
-      />
-    );
+    await signOut();
   }
 
   return (
@@ -226,7 +163,7 @@ export function AppsScreen() {
             {user?.username != null ? `@${user.username}` : ''}
           </Text>
           <Text className="text-lg font-medium text-white">
-            {t('home.tabApps')}
+            {t('home.tabPersonal')}
           </Text>
           <View className="min-w-0 flex-1 flex-row justify-end">
             <Pressable
@@ -249,18 +186,18 @@ export function AppsScreen() {
       <View className="flex-1">
         <LobbyWallpaper />
         <ScrollView className="flex-1">
-          {APP_ITEMS.slice(0, 1).map(renderAppItem)}
-          {miniGames.map(game => (
+          {PERSONAL_ITEMS.map(item => (
             <PanelRow
-              key={game.id}
-              icon={iconGameDefault}
-              iconUrl={game.iconUrl || undefined}
-              title={game.name}
-              subtitle={game.description || undefined}
-              onPress={() => handleOpenArcade(game)}
+              key={item.titleKey}
+              icon={item.icon}
+              title={t(item.titleKey)}
+              subtitle={
+                item.subtitleKey != null ? t(item.subtitleKey) : undefined
+              }
+              badge={item.action === 'notifications' ? notifUnread : undefined}
+              onPress={() => handleOpen(item)}
             />
           ))}
-          {APP_ITEMS.slice(1).map(renderAppItem)}
         </ScrollView>
       </View>
       <ConfirmDialog

@@ -60,20 +60,20 @@ export function GamesPanel() {
       </HomeHeader>
       <main className="relative flex-1 overflow-y-auto bg-ola-surface">
         <ul className="grid grid-cols-3 gap-3 p-3">
-          {miniGames.map((game) => (
-            <GameTile
-              key={game.id}
-              icon={game.iconUrl || iconGameDefault}
-              title={game.name}
-              onClick={() => handleOpenArcade(game)}
-            />
-          ))}
           {GAME_ITEMS.map((item) => (
             <GameTile
               key={item.titleKey}
               icon={item.icon}
               title={t(item.titleKey)}
               onClick={handleOpen(item)}
+            />
+          ))}
+          {miniGames.map((game) => (
+            <GameTile
+              key={game.id}
+              icon={game.iconUrl || iconGameDefault}
+              title={game.name}
+              onClick={() => handleOpenArcade(game)}
             />
           ))}
         </ul>

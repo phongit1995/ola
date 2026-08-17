@@ -28,6 +28,7 @@ import { WARNING } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { mmkvStorage } from '@platform/storage';
+import { LEFT_MINIMIZE_GAME_SLUGS } from './constants';
 
 interface BubblePosition {
   x: number;
@@ -261,6 +262,7 @@ export function ArcadeOverlay() {
 
   if (!active) return null;
 
+  const minimizeOnLeft = LEFT_MINIMIZE_GAME_SLUGS.includes(active.slug);
   const androidInsets =
     Platform.OS === 'android'
       ? { paddingTop: insets.top, paddingBottom: insets.bottom }
@@ -290,7 +292,11 @@ export function ArcadeOverlay() {
           accessibilityRole="button"
           accessibilityLabel={t('arcade.minimize')}
           onPress={minimize}
-          style={[styles.minimizeButton, { top: insets.top + 12 }]}
+          style={[
+            styles.minimizeButton,
+            { top: insets.top + 12 },
+            minimizeOnLeft ? styles.minimizeLeft : styles.minimizeRight,
+          ]}
         >
           <View style={styles.minimizeLine} />
         </Pressable>
@@ -351,13 +357,18 @@ const styles = StyleSheet.create({
   },
   minimizeButton: {
     position: 'absolute',
-    right: 12,
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  minimizeLeft: {
+    left: 12,
+  },
+  minimizeRight: {
+    right: 12,
   },
   minimizeLine: {
     width: 16,

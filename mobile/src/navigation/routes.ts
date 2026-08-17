@@ -10,7 +10,8 @@ export const TAB_ROUTES = {
   Room: 'RoomTab',
   Me: 'MeTab',
   Rss: 'RssTab',
-  Apps: 'AppsTab',
+  Game: 'GameTab',
+  Personal: 'PersonalTab',
 } as const;
 
 export const CHAT_ROUTES = {
