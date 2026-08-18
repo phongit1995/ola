@@ -84,6 +84,7 @@ export function applyTileEffects(
   defender: Fighter,
   counts: Record<TileType, number>,
   cascadeLevel = 0,
+  furyChain?: { active: boolean },
 ): EffectSummary {
   const summary: EffectSummary = {
     damage: 0,
@@ -98,15 +99,20 @@ export function applyTileEffects(
   let swordDmg = counts.sword * DMG_SWORD;
   let fireDmg = counts.fireSword * FIRE_SWORD_DMG;
 
-  // Nộ chỉ ×2 khi đã đầy TỪ TRƯỚC wave. Đào ăn trong chính wave này chỉ
-  // nạp Nộ cho các đòn Kiếm sau, không tự kích hoạt ×2 ngay.
-  let furied = false;
-  if (attacker.fury >= MAX_FURY && (swordDmg > 0 || fireDmg > 0)) {
+  // Nộ kích hoạt khi đã đầy trước một wave có Kiếm, rồi giữ ×2 đến hết
+  // chuỗi sập hiện tại. Đào ăn trong wave chỉ nạp Nộ cho các wave sau.
+  const hasSwordDamage = swordDmg > 0 || fireDmg > 0;
+  let furied = furyChain?.active === true && hasSwordDamage;
+  if (!furyChain?.active && attacker.fury >= MAX_FURY && hasSwordDamage) {
     swordDmg *= 2;
     fireDmg *= 2;
     attacker.fury = 0;
     furied = true;
     summary.furied = true;
+    if (furyChain) furyChain.active = true;
+  } else if (furied) {
+    swordDmg *= 2;
+    fireDmg *= 2;
   }
 
   swordDmg = scaleCascadeValue(swordDmg, cascadeLevel);
@@ -197,11 +203,8 @@ export function applyAuthoritativeEffects(
   attacker.hp = Math.min(MAX_HP, attacker.hp + effects.heal);
   attacker.mp = Math.min(MAX_MP, attacker.mp + effects.mana);
   attacker.armor = Math.min(MAX_ARMOR, attacker.armor + effects.armor);
-  if (effects.furied) {
-    attacker.fury = 0;
-  } else {
-    attacker.fury = Math.min(MAX_FURY, attacker.fury + (effects.fury ?? 0));
-  }
+  if (effects.furied) attacker.fury = 0;
+  attacker.fury = Math.min(MAX_FURY, attacker.fury + (effects.fury ?? 0));
   return effects;
 }
 
@@ -355,6 +358,7 @@ function simulateExpertMove(
 
   swapCells(nextBoard, move[0], move[1]);
   decayArmor(nextBot);
+  const furyChain = { active: false };
   for (let cascade = 0; cascade < EXPERT_CASCADE_LIMIT; cascade++) {
     const match = findMatches(nextBoard);
     if (!match) break;
@@ -363,7 +367,7 @@ function simulateExpertMove(
     for (const index of plan.exploded) match.counts[nextBoard[index]]++;
     const removed = new Set(match.cells);
     for (const index of plan.exploded) removed.add(index);
-    const effects = applyTileEffects(nextBot, nextPlayer, match.counts, cascade);
+    const effects = applyTileEffects(nextBot, nextPlayer, match.counts, cascade, furyChain);
     total.damage += effects.damage;
     total.heal += effects.heal;
     total.mana += effects.mana;

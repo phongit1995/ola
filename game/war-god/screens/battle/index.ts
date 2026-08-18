@@ -1013,6 +1013,7 @@ async function resolveCascades(
   const defender = side === 'me' ? foe : me;
   let bonusTurns = 0;
   let cascadeLevel = startingCascadeLevel;
+  const furyChain = { active: false };
 
   for (;;) {
     const match = findMatches(board);
@@ -1025,7 +1026,7 @@ async function resolveCascades(
     const removed = new Set<number>(match.cells);
     for (const i of exploded) removed.add(i);
 
-    const result = applyTileEffects(attacker, defender, match.counts, cascadeLevel);
+    const result = applyTileEffects(attacker, defender, match.counts, cascadeLevel, furyChain);
     await renderWaveEffects({
       side,
       actorLabel: side === 'me' ? 'Bạn' : 'Máy',

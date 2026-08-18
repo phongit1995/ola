@@ -724,6 +724,42 @@ func TestCascadeScalesEveryCollectedTileValueAndCapsAtThirtyPercent(t *testing.T
 	}
 }
 
+func TestFullFuryDoublesSwordDamageForEntireCascadeChain(t *testing.T) {
+	attacker := Fighter{HP: maxHP, Fury: maxFury}
+	defender := Fighter{HP: maxHP}
+	furyChainActive := false
+	counts := map[int]int{tileSword: 3}
+
+	firstWave := applyTileEffectsInCascadeChain(
+		&attacker, &defender, counts, 0, &furyChainActive,
+	)
+	firstCascade := applyTileEffectsInCascadeChain(
+		&attacker, &defender, counts, 1, &furyChainActive,
+	)
+	secondCascade := applyTileEffectsInCascadeChain(
+		&attacker, &defender, counts, 2, &furyChainActive,
+	)
+
+	if !firstWave.Furied || firstWave.Damage != 42 {
+		t.Fatalf("first wave effects=%+v, want 42 damage with Fury activation", firstWave)
+	}
+	if firstCascade.Damage != 46 || secondCascade.Damage != 50 {
+		t.Fatalf(
+			"cascade damage=(%d, %d), want (46, 50)",
+			firstCascade.Damage,
+			secondCascade.Damage,
+		)
+	}
+	if attacker.Fury != 0 || defender.HP != 62 || !furyChainActive {
+		t.Fatalf(
+			"attacker=%+v defender=%+v furyChainActive=%v",
+			attacker,
+			defender,
+			furyChainActive,
+		)
+	}
+}
+
 func TestApplySwapSingleWave(t *testing.T) {
 	board := stripedBoard()
 	board[56], board[57], board[58], board[59] = 0, 0, 3, 0

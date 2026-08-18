@@ -199,6 +199,7 @@ func resolveCascades(
 	startingCascadeLevel int,
 ) {
 	cascadeLevel := startingCascadeLevel
+	furyChainActive := false
 	for {
 		matchedCells, counts, maxRun := findMatches(s.Board)
 		if matchedCells == nil {
@@ -215,7 +216,9 @@ func resolveCascades(
 			counts[s.Board[index]]++
 			removed[index] = true
 		}
-		waveEffects := applyTileEffectsAtCascade(attacker, defender, counts, cascadeLevel)
+		waveEffects := applyTileEffectsInCascadeChain(
+			attacker, defender, counts, cascadeLevel, &furyChainActive,
+		)
 		s.Steps = append(s.Steps, Step{
 			Kind:          stepMatch,
 			Cells:         matchedCells,

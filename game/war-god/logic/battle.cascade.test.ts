@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyTileEffects, createFighter } from './battle';
+import { applyAuthoritativeEffects, applyTileEffects, createFighter } from './battle';
 import { emptyCounts } from './core';
 
 describe('cascade tile-effect scaling', () => {
@@ -39,5 +39,39 @@ describe('cascade tile-effect scaling', () => {
     const effects = applyTileEffects(attacker, defender, counts, 3);
 
     expect(effects.reflect).toBe(2);
+  });
+
+  it('keeps full-fury sword damage doubled through the entire cascade chain', () => {
+    const attacker = { ...createFighter(), fury: 100 };
+    const defender = createFighter();
+    const furyChain = { active: false };
+    const counts = Object.assign(emptyCounts(), { sword: 3 });
+
+    const firstWave = applyTileEffects(attacker, defender, counts, 0, furyChain);
+    const firstCascade = applyTileEffects(attacker, defender, counts, 1, furyChain);
+    const secondCascade = applyTileEffects(attacker, defender, counts, 2, furyChain);
+
+    expect(firstWave).toMatchObject({ damage: 42, furied: true });
+    expect(firstCascade.damage).toBe(46);
+    expect(secondCascade.damage).toBe(50);
+    expect(attacker.fury).toBe(0);
+    expect(defender.hp).toBe(62);
+  });
+
+  it('replays Fury consumption before applying same-wave peach recharge', () => {
+    const attacker = { ...createFighter(), fury: 100 };
+    const defender = createFighter();
+
+    applyAuthoritativeEffects(attacker, defender, {
+      damage: 28,
+      heal: 0,
+      mana: 0,
+      armor: 0,
+      fury: 10,
+      furied: true,
+    });
+
+    expect(attacker.fury).toBe(10);
+    expect(defender.hp).toBe(172);
   });
 });

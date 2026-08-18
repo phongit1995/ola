@@ -29,6 +29,7 @@ function lcg(seed: number): () => number {
 
 function resolve(board: Board, attacker: Fighter, defender: Fighter, random: () => number): number {
   let bonus = 0;
+  const furyChain = { active: false };
   for (let wave = 0; wave < 32; wave++) {
     const match = findMatches(board);
     if (!match) break;
@@ -37,7 +38,7 @@ function resolve(board: Board, attacker: Fighter, defender: Fighter, random: () 
     for (const index of plan.exploded) match.counts[board[index]]++;
     const removed = new Set(match.cells);
     for (const index of plan.exploded) removed.add(index);
-    applyTileEffects(attacker, defender, match.counts, wave);
+    applyTileEffects(attacker, defender, match.counts, wave, furyChain);
     applyGravity(board, removed, random);
     if (attacker.hp <= 0 || defender.hp <= 0) break;
   }

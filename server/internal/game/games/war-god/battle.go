@@ -66,21 +66,38 @@ func applyTileEffectsAtCascade(
 	counts map[int]int,
 	cascadeLevel int,
 ) Effects {
+	furyChainActive := false
+	return applyTileEffectsInCascadeChain(attacker, defender, counts, cascadeLevel, &furyChainActive)
+}
+
+func applyTileEffectsInCascadeChain(
+	attacker, defender *Fighter,
+	counts map[int]int,
+	cascadeLevel int,
+	furyChainActive *bool,
+) Effects {
 	effects := Effects{}
 	defenderArmorBefore := defender.Armor
 
 	swordDmg := counts[tileSword] * dmgSword
 	fireDmg := counts[tileFireSword] * fireSwordDamage
 
-	// Nộ chỉ ×2 khi đã đầy TỪ TRƯỚC wave. Đào ăn trong chính wave này chỉ
-	// nạp Nộ cho các đòn Kiếm sau, không tự kích hoạt ×2 ngay.
-	furied := false
-	if attacker.Fury >= maxFury && (swordDmg > 0 || fireDmg > 0) {
+	// Nộ kích hoạt khi đã đầy trước một wave có Kiếm, rồi giữ ×2 đến hết
+	// chuỗi sập hiện tại. Đào ăn trong wave chỉ nạp Nộ cho các wave sau.
+	hasSwordDamage := swordDmg > 0 || fireDmg > 0
+	furied := furyChainActive != nil && *furyChainActive && hasSwordDamage
+	if (furyChainActive == nil || !*furyChainActive) && attacker.Fury >= maxFury && hasSwordDamage {
 		swordDmg *= 2
 		fireDmg *= 2
 		attacker.Fury = 0
 		furied = true
 		effects.Furied = true
+		if furyChainActive != nil {
+			*furyChainActive = true
+		}
+	} else if furied {
+		swordDmg *= 2
+		fireDmg *= 2
 	}
 
 	swordDmg = scaleCascadeValue(swordDmg, cascadeLevel)
