@@ -38,6 +38,14 @@ func TestTurnStartDelayAccountsForOpponentCueAndSpecialEffects(t *testing.T) {
 	}
 }
 
+func TestTurnStartDelayCoversBoardShufflePresentation(t *testing.T) {
+	state := &State{Steps: []Step{{Kind: stepShuffle}}}
+	want := 250*time.Millisecond + shuffleAnimationDelay
+	if got := (Logic{}).TurnStartDelay(state, 0, 1); got != want {
+		t.Fatalf("shuffle delay = %v, want %v", got, want)
+	}
+}
+
 func TestMatchAnimationDelayWaitsForFireTriggeredLightning(t *testing.T) {
 	directArcs := make([]LightningArc, 8)
 	triggeredArcs := make([]LightningArc, 8)

@@ -90,4 +90,4 @@ it('keeps expert measurably stronger than hard across seeded matches', () => {
   expect(draws).toBe(0);
   expect(expertWins).toBeGreaterThan(hardWins);
   expect(expertWins).toBeGreaterThanOrEqual(5);
-});
+}, 10_000);

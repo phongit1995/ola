@@ -120,6 +120,8 @@ const HINT_DELAY_MS = 10_000;
 const FX_COLS = 6;
 const FX_ROWS = 10;
 const FX_FRAMES = 60;
+const SHUFFLE_ANNOUNCEMENT = 'HẾT NƯỚC ĐI — ĐẢO BÀN!';
+const SHUFFLE_COLOR = 0x8fdcff;
 
 export interface BattleDeps {
   getUserInfo(): UserInfoData | null;
@@ -790,6 +792,48 @@ async function dropInBoard(): Promise<void> {
   await Promise.all(jobs);
 }
 
+async function animateBoardOut(): Promise<void> {
+  const center = (GRID - 1) / 2;
+  const jobs: Promise<void>[] = [];
+  for (let i = 0; i < CELLS; i++) {
+    const sprite = sprites[i];
+    if (!sprite) continue;
+    const col = i % GRID;
+    const row = Math.floor(i / GRID);
+    const dx = col - center;
+    const dy = row - center;
+    const distance = Math.abs(dx) + Math.abs(dy);
+    centerPivot(sprite);
+    jobs.push(
+      sleep(distance * 18).then(() =>
+        tween(
+          sprite,
+          {
+            x: sprite.x + dx * tileSize * 0.24,
+            y: sprite.y + dy * tileSize * 0.24,
+            alpha: 0,
+            scale: 0.18,
+          },
+          220,
+        ),
+      ),
+    );
+  }
+  await Promise.all(jobs);
+}
+
+async function showShuffledBoard(nextBoard: Board): Promise<void> {
+  clearHint();
+  setSelected(null);
+  botSelectorA.visible = false;
+  setStatus(SHUFFLE_ANNOUNCEMENT);
+  announce(SHUFFLE_ANNOUNCEMENT, SHUFFLE_COLOR);
+  await animateBoardOut();
+  board = nextBoard;
+  rebuildSprites();
+  await dropInBoard();
+}
+
 async function animateSwap(a: number, b: number): Promise<void> {
   const sa = sprites[a]!;
   const sb = sprites[b]!;
@@ -958,10 +1002,7 @@ async function animateGravity(
 
 async function ensurePlayable(): Promise<void> {
   if (findValidMoves(board).length > 0) return;
-  setStatus('Hết nước đi — đảo bàn!');
-  await sleep(400);
-  board = createBoard();
-  rebuildSprites();
+  await showShuffledBoard(createBoard());
 }
 
 async function resolveCascades(
@@ -1495,10 +1536,7 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     return;
   }
   if (step.kind === 'shuffle') {
-    setStatus('Hết nước đi — đảo bàn!');
-    await sleep(400);
-    board = decodeBoard(step.board);
-    rebuildSprites();
+    await showShuffledBoard(decodeBoard(step.board));
     return;
   }
   const attacker = side === 'me' ? me : foe;
@@ -1866,6 +1904,17 @@ function previewVsIntro(
   return true;
 }
 
+function previewBoardShuffle(): boolean {
+  if (!inGame || tileSize <= 0 || busy || over) return false;
+  busy = true;
+  updateHud();
+  void showShuffledBoard(createBoard()).finally(() => {
+    endBusy();
+    updateHud();
+  });
+  return true;
+}
+
 export function battleDebug(): Record<string, unknown> {
   return {
     mode,
@@ -1899,6 +1948,7 @@ export function battleDebug(): Record<string, unknown> {
     previewUltimateLightning: previewUltimateLightningFx,
     previewFireSword: previewFireSwordFx,
     previewVsIntro,
+    previewBoardShuffle,
   };
 }
 
