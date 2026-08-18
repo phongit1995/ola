@@ -43,7 +43,6 @@ import {
   botChooseMove,
   botShouldUlt,
   BOT_LEVEL_TITLES,
-  cascadeBonusPercent,
   castUltimate,
   createFighter,
   decayArmor,
@@ -925,20 +924,10 @@ interface WaveRenderOptions {
   exploded: readonly number[];
   lightningArcs: LightningArc[];
   result: EffectSummary;
-  cascadeLevel?: number;
 }
 
 async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
-  const {
-    side,
-    actorLabel,
-    matched,
-    removed,
-    exploded,
-    lightningArcs,
-    result,
-    cascadeLevel = 0,
-  } = options;
+  const { side, actorLabel, matched, removed, exploded, lightningArcs, result } = options;
   playSound('match');
   const parts: string[] = [];
   if (result.damage > 0) parts.push(`-${result.damage} HP`);
@@ -946,14 +935,8 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
   if (result.heal > 0) parts.push(`+${result.heal} HP`);
   if (result.mana > 0) parts.push(`+${result.mana} MP`);
   if (result.armor > 0) parts.push(`+${result.armor} giáp`);
-  const cascadeText =
-    cascadeLevel > 0
-      ? `SẬP LV.${Math.min(cascadeLevel, 3)} +${cascadeBonusPercent(cascadeLevel)}%`
-      : '';
   if (parts.length > 0) {
-    setStatus(`${cascadeText ? `${cascadeText} · ` : ''}${actorLabel}: ${parts.join('  ')}`);
-  } else if (cascadeText) {
-    setStatus(cascadeText);
+    setStatus(`${actorLabel}: ${parts.join('  ')}`);
   }
 
   const explodedFireSources =
@@ -965,7 +948,6 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
 
   const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
   const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-  if (cascadeText) floatNumber(atkCard, cascadeText, 0xffd75e);
   if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
   if ((result.armorDamage ?? 0) > 0) {
     floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
@@ -1038,7 +1020,6 @@ async function resolveCascades(
       exploded,
       lightningArcs,
       result,
-      cascadeLevel,
     });
 
     const gravity = applyGravity(board, removed);
@@ -1523,7 +1504,6 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
       exploded: step.exploded ?? [],
       lightningArcs: step.lightningArcs ?? [],
       result,
-      cascadeLevel: step.cascadeLevel ?? 0,
     });
     return;
   }
