@@ -87,6 +87,7 @@ import {
   pickChatLine,
   pushBotChat,
   pushPvpChat,
+  pushReaction,
   resetChat,
   setChatInputVisible,
   setChatPvp,
@@ -201,6 +202,8 @@ const CHAT_ERROR_CODES = new Set<string>([
   GAME_ERROR_CODE.ChatRateLimited,
   GAME_ERROR_CODE.ChatTooLong,
   GAME_ERROR_CODE.InvalidChat,
+  GAME_ERROR_CODE.InvalidReaction,
+  GAME_ERROR_CODE.ReactionRateLimited,
 ]);
 
 let turnAnnounce: Container;
@@ -1720,6 +1723,10 @@ function bindPvpHandlers(): void {
         bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat, matchId: data.matchId });
       }
     },
+    onReaction: (data) => {
+      if (mode !== 'pvp' || data.matchId !== pvpMatchId) return;
+      pushReaction(data.type, data.userId === myUserId);
+    },
     onOpponentDisconnected: (data) => {
       if (mode !== 'pvp' || !inGame || over) return;
       oppAwayUntil = performance.now() + (data.graceDeadline - Date.now());
@@ -2174,7 +2181,14 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
   const chatGroupW = CHAT_W + ULTIMATE_CHAT_GAP + ULTIMATE_CONTROL_SIZE;
   const chatGroupX = Math.round((DESIGN_W - chatGroupW) / 2);
-  layoutChat(chatGroupX, chatY, chatH, opts.rootX, opts.scale);
+  layoutChat(
+    chatGroupX,
+    chatY,
+    chatH,
+    opts.rootX,
+    opts.scale,
+    hud.me.card.y + hud.me.card.height + 28,
+  );
   ultimateControl.layout(
     chatGroupX + CHAT_W + ULTIMATE_CHAT_GAP,
     chatY + chatH - ULTIMATE_CONTROL_SIZE,

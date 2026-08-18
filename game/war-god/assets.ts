@@ -35,8 +35,14 @@ import menuIcForfeit from './assets/menu/ic-forfeit.webp';
 import menuIcExit from './assets/menu/ic-exit.webp';
 import chatFrame from './assets/chat/frame.webp';
 import chatInput from './assets/chat/input.webp';
+import chatBtnSend from './assets/chat/btn-send.webp';
 import chatIcSmiley from './assets/chat/ic-smiley.webp';
-import chatSendIcon from '../caro/assets/board/send-icon.webp';
+import reactionLike from '../caro/assets/reactions/like.webp';
+import reactionLove from '../caro/assets/reactions/love.webp';
+import reactionHaha from '../caro/assets/reactions/haha.webp';
+import reactionWow from '../caro/assets/reactions/wow.webp';
+import reactionSad from '../caro/assets/reactions/sad.webp';
+import reactionAngry from '../caro/assets/reactions/angry.webp';
 import fxUlt from './assets/fx/ult.webp';
 import lobbyBg from './assets/lobby/bg.webp';
 import lobbyLogo from './assets/lobby/logo.webp';
@@ -152,8 +158,16 @@ export const A = {
   chat: {
     frame: chatFrame,
     input: chatInput,
+    btnSend: chatBtnSend,
     icSmiley: chatIcSmiley,
-    sendIcon: chatSendIcon,
+    reactions: {
+      like: reactionLike,
+      love: reactionLove,
+      haha: reactionHaha,
+      wow: reactionWow,
+      sad: reactionSad,
+      angry: reactionAngry,
+    },
   },
   fx: { ult: fxUlt },
   lobby: {
