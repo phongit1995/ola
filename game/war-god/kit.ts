@@ -73,12 +73,18 @@ export function iconSprite(url: string, height: number): Sprite {
   return s;
 }
 
-export function popIn(target: Container, delay: number, dur = 420): void {
+export function popIn(target: Container, delay: number, dur = 420): () => void {
   const base = target.scale.x;
   target.alpha = 0;
   target.scale.set(base * 0.6);
   let t = -delay;
+  let active = true;
   const step = (ticker: Ticker): void => {
+    if (!active || target.destroyed) {
+      active = false;
+      removeTick(step);
+      return;
+    }
     t += ticker.deltaMS;
     if (t < 0) return;
     const k = Math.min(1, t / dur);
@@ -89,10 +95,20 @@ export function popIn(target: Container, delay: number, dur = 420): void {
     if (k >= 1) {
       target.scale.set(base);
       target.alpha = 1;
+      active = false;
       removeTick(step);
     }
   };
   addTick(step);
+  return () => {
+    if (!active) return;
+    active = false;
+    removeTick(step);
+    if (!target.destroyed) {
+      target.scale.set(base);
+      target.alpha = 1;
+    }
+  };
 }
 
 export function makeText(

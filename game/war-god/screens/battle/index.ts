@@ -36,11 +36,14 @@ import {
   type TileType,
 } from '../../logic/core';
 import {
+  LIGHTNING_GOD_DAMAGE,
+  FURY_DAMAGE_MULTIPLIER,
   ULT_COST,
   applyAuthoritativeEffects,
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
+  BOT_LEVEL_TITLES,
   castUltimate,
   createFighter,
   decayArmor,
@@ -74,6 +77,7 @@ import {
   setBattleMode,
   setFighterAvatar,
   setFighterBotAvatar,
+  setFighterName,
   updateFighter,
 } from './hud';
 import {
@@ -83,6 +87,7 @@ import {
   pickChatLine,
   pushBotChat,
   pushPvpChat,
+  pushReaction,
   resetChat,
   setChatInputVisible,
   setChatPvp,
@@ -110,12 +115,18 @@ import {
   type UltimateControl,
 } from './ultimate-control';
 import { deriveUltimateControlState } from './ultimate-control-state';
+import {
+  confirmedSwapDestination,
+  rememberedSelectionsForTurn,
+} from './remembered-selection';
 
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 30;
 const HINT_DELAY_MS = 10_000;
 const FX_COLS = 6;
 const FX_ROWS = 10;
 const FX_FRAMES = 60;
+const SHUFFLE_ANNOUNCEMENT = 'HẾT NƯỚC ĐI — ĐẢO BÀN!';
+const SHUFFLE_COLOR = 0x8fdcff;
 
 export interface BattleDeps {
   getUserInfo(): UserInfoData | null;
@@ -169,6 +180,8 @@ let over = false;
 let turnNumber = 1;
 let botModeExtraTurns: [number, number] = [0, 0];
 let selected: number | null = null;
+let lastSuccessfulSelection: number | null = null;
+let lastOpponentSuccessfulSelection: number | null = null;
 let turnDeadline = 0;
 let hintDeadline = 0;
 let inGame = false;
@@ -195,6 +208,8 @@ const CHAT_ERROR_CODES = new Set<string>([
   GAME_ERROR_CODE.ChatRateLimited,
   GAME_ERROR_CODE.ChatTooLong,
   GAME_ERROR_CODE.InvalidChat,
+  GAME_ERROR_CODE.InvalidReaction,
+  GAME_ERROR_CODE.ReactionRateLimited,
 ]);
 
 let turnAnnounce: Container;
@@ -260,14 +275,15 @@ function rebuildBoardVisuals(): void {
     .fill(0xffffff);
   sizeSelector(selector);
   sizeSelector(botSelectorA);
-  setSelected(null);
   botSelectorA.visible = false;
+  restoreRememberedSelection();
   placeHint();
   rebuildSprites();
 }
 
 function endBusy(): void {
   busy = false;
+  restoreRememberedSelection();
   updateHud();
   if (pendingRefit) deps.onRequestLayout();
 }
@@ -350,8 +366,7 @@ function retargetTaps(): void {
   });
 }
 
-function setSelected(i: number | null): void {
-  selected = i;
+function showSelection(i: number | null): void {
   if (i == null) {
     selector.visible = false;
     return;
@@ -359,6 +374,46 @@ function setSelected(i: number | null): void {
   const p = pos(i);
   selector.position.set(p.x, p.y);
   selector.visible = true;
+}
+
+function showOpponentSelection(i: number | null): void {
+  if (i == null) {
+    botSelectorA.visible = false;
+    return;
+  }
+  const p = pos(i);
+  botSelectorA.position.set(p.x, p.y);
+  botSelectorA.visible = true;
+}
+
+function setSelected(i: number | null): void {
+  selected = i;
+  showSelection(i);
+}
+
+function resetRememberedSelection(): void {
+  lastSuccessfulSelection = null;
+  lastOpponentSuccessfulSelection = null;
+  setSelected(null);
+  showOpponentSelection(null);
+}
+
+function restoreRememberedSelection(): void {
+  selected = null;
+  const visible = rememberedSelectionsForTurn(
+    lastSuccessfulSelection,
+    lastOpponentSuccessfulSelection,
+    {
+      inGame,
+      myTurn,
+      busy,
+      over,
+      roomPregame,
+      mode,
+    },
+  );
+  showSelection(visible.mine);
+  showOpponentSelection(visible.foe);
 }
 
 function setStatus(text: string): void {
@@ -786,6 +841,48 @@ async function dropInBoard(): Promise<void> {
   await Promise.all(jobs);
 }
 
+async function animateBoardOut(): Promise<void> {
+  const center = (GRID - 1) / 2;
+  const jobs: Promise<void>[] = [];
+  for (let i = 0; i < CELLS; i++) {
+    const sprite = sprites[i];
+    if (!sprite) continue;
+    const col = i % GRID;
+    const row = Math.floor(i / GRID);
+    const dx = col - center;
+    const dy = row - center;
+    const distance = Math.abs(dx) + Math.abs(dy);
+    centerPivot(sprite);
+    jobs.push(
+      sleep(distance * 18).then(() =>
+        tween(
+          sprite,
+          {
+            x: sprite.x + dx * tileSize * 0.24,
+            y: sprite.y + dy * tileSize * 0.24,
+            alpha: 0,
+            scale: 0.18,
+          },
+          220,
+        ),
+      ),
+    );
+  }
+  await Promise.all(jobs);
+}
+
+async function showShuffledBoard(nextBoard: Board): Promise<void> {
+  clearHint();
+  setSelected(null);
+  botSelectorA.visible = false;
+  setStatus(SHUFFLE_ANNOUNCEMENT);
+  announce(SHUFFLE_ANNOUNCEMENT, SHUFFLE_COLOR);
+  await animateBoardOut();
+  board = nextBoard;
+  rebuildSprites();
+  await dropInBoard();
+}
+
 async function animateSwap(a: number, b: number): Promise<void> {
   const sa = sprites[a]!;
   const sb = sprites[b]!;
@@ -885,7 +982,9 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
   if (result.heal > 0) parts.push(`+${result.heal} HP`);
   if (result.mana > 0) parts.push(`+${result.mana} MP`);
   if (result.armor > 0) parts.push(`+${result.armor} giáp`);
-  if (parts.length > 0) setStatus(`${actorLabel}: ${parts.join('  ')}`);
+  if (parts.length > 0) {
+    setStatus(`${actorLabel}: ${parts.join('  ')}`);
+  }
 
   const explodedFireSources =
     exploded.length > 0
@@ -900,7 +999,9 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
   if ((result.armorDamage ?? 0) > 0) {
     floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
   }
-  if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
+  if (result.furied) {
+    floatNumber(defCard, `NỘ ×${FURY_DAMAGE_MULTIPLIER}!`, 0xff5aa0);
+  }
   if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
   if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
   if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
@@ -935,16 +1036,18 @@ async function animateGravity(
 
 async function ensurePlayable(): Promise<void> {
   if (findValidMoves(board).length > 0) return;
-  setStatus('Hết nước đi — đảo bàn!');
-  await sleep(400);
-  board = createBoard();
-  rebuildSprites();
+  await showShuffledBoard(createBoard());
 }
 
-async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
+async function resolveCascades(
+  side: 'me' | 'foe',
+  startingCascadeLevel = 0,
+): Promise<number> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
   let bonusTurns = 0;
+  let cascadeLevel = startingCascadeLevel;
+  const furyChain = { active: false };
 
   for (;;) {
     const match = findMatches(board);
@@ -957,7 +1060,7 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
     const removed = new Set<number>(match.cells);
     for (const i of exploded) removed.add(i);
 
-    const result = applyTileEffects(attacker, defender, match.counts);
+    const result = applyTileEffects(attacker, defender, match.counts, cascadeLevel, furyChain);
     await renderWaveEffects({
       side,
       actorLabel: side === 'me' ? 'Bạn' : 'Máy',
@@ -970,6 +1073,7 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
 
     const gravity = applyGravity(board, removed);
     await animateGravity(gravity.falls, gravity.spawns);
+    cascadeLevel++;
 
     if (defender.hp <= 0 || attacker.hp <= 0) return bonusTurns;
   }
@@ -980,6 +1084,7 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
 
 function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   over = true;
+  resetRememberedSelection();
   endBusy();
   clearHint();
   updateHud();
@@ -1044,6 +1149,7 @@ async function onTileTap(i: number): Promise<void> {
     return;
   }
 
+  lastSuccessfulSelection = b;
   swapCells(board, a, b);
   await animateSwap(a, b);
   spendBotModeExtraTurn('me');
@@ -1082,13 +1188,16 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
   decayArmor(me);
   if (skill === 'lightning-god') {
     me.mp = 0;
+    foe.hp = Math.max(0, foe.hp - LIGHTNING_GOD_DAMAGE);
     const cells = randomFourTwoByTwoBlocks().flat();
-    setStatus('LÔI THẦN GIÁNG THẾ · 4 TIA SÉT!');
+    setStatus(`LÔI THẦN GIÁNG THẾ · -${LIGHTNING_GOD_DAMAGE} HP · 4 TIA SÉT!`);
     updateHud();
+    floatNumber(hud.foe.card, `-${LIGHTNING_GOD_DAMAGE} HP`, 0xff6b5e);
     await animateUltimateLightningRemove(cells);
     const gravity = applyGravity(board, new Set(cells));
     await animateGravity(gravity.falls, gravity.spawns);
-    const earnedExtraTurns = await resolveCascades('me');
+    const earnedExtraTurns =
+      me.hp > 0 && foe.hp > 0 ? await resolveCascades('me', 1) : 0;
     const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
     if (checkEnd()) return;
     if (remainingExtraTurns > 0) {
@@ -1228,7 +1337,7 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   selfDisconnected = false;
   botModeExtraTurns = [0, 0];
   clearHint();
-  setSelected(null);
+  resetRememberedSelection();
   botSelectorA.visible = false;
   hud.result.hide();
   hideConfirm();
@@ -1320,14 +1429,14 @@ export function startBattle(level: BotLevel = botLevel): void {
   busy = true;
   over = false;
   turnNumber = 1;
-  setSelected(null);
+  resetRememberedSelection();
   botSelectorA.visible = false;
   rebuildSprites();
   hud.result.hide();
   hideConfirm();
   const userInfo = deps.getUserInfo();
-  if (userInfo) hud.me.name.text = `@${userInfo.username}`;
-  hud.foe.name.text = '@Bot';
+  if (userInfo) setFighterName(hud.me, `@${userInfo.username}`);
+  setFighterName(hud.foe, `@Máy - ${BOT_LEVEL_TITLES[botLevel]}`);
   setFighterAvatar(hud.me, userInfo?.vipType);
   setFighterBotAvatar(hud.foe, botLevel);
   setChatPvp(false);
@@ -1356,6 +1465,7 @@ function syncFighters(state: ServerState): void {
 }
 
 export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void> | void {
+  const keepRememberedSelection = data.resumed === true && data.matchId === pvpMatchId;
   clearRoomPregameVisuals();
   deps.onGameStart();
   preloadUltFx();
@@ -1378,6 +1488,10 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   board = decodeBoard(state.board);
   myTurn = data.turn === pvpIdx;
   turnNumber = state.moveCount + 1;
+  if (!keepRememberedSelection) {
+    lastSuccessfulSelection = null;
+    lastOpponentSuccessfulSelection = null;
+  }
   setSelected(null);
   botSelectorA.visible = false;
   rebuildSprites();
@@ -1386,8 +1500,8 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   const mePlayer = data.players[pvpIdx];
   const opponent = data.players[1 - pvpIdx];
   myUserId = mePlayer?.id ?? '';
-  hud.me.name.text = `@${mePlayer?.name ?? deps.getUserInfo()?.username ?? 'bạn'}`;
-  hud.foe.name.text = `@${opponent?.name ?? 'đối thủ'}`;
+  setFighterName(hud.me, `@${mePlayer?.name ?? deps.getUserInfo()?.username ?? 'bạn'}`);
+  setFighterName(hud.foe, `@${opponent?.name ?? 'đối thủ'}`);
   setFighterAvatar(hud.me, mePlayer?.vipType ?? deps.getUserInfo()?.vipType);
   setFighterAvatar(hud.foe, opponent?.vipType);
   setChatPvp(true);
@@ -1462,23 +1576,23 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     return;
   }
   if (step.kind === 'shuffle') {
-    setStatus('Hết nước đi — đảo bàn!');
-    await sleep(400);
-    board = decodeBoard(step.board);
-    rebuildSprites();
+    await showShuffledBoard(decodeBoard(step.board));
     return;
   }
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
   attacker.mp = 0;
   if (step.skill === 'lightning-god') {
+    const damage = step.damage ?? LIGHTNING_GOD_DAMAGE;
+    defender.hp = Math.max(0, defender.hp - damage);
     const cells = step.cells ?? [];
     setStatus(
       side === 'me'
-        ? 'LÔI THẦN GIÁNG THẾ · 4 TIA SÉT!'
-        : 'Đối thủ triệu hồi LÔI THẦN · 4 TIA SÉT!',
+        ? `LÔI THẦN GIÁNG THẾ · -${damage} HP · 4 TIA SÉT!`
+        : `Đối thủ triệu hồi LÔI THẦN · -${damage} HP · 4 TIA SÉT!`,
     );
     updateHud();
+    floatNumber(side === 'me' ? hud.foe.card : hud.me.card, `-${damage} HP`, 0xff6b5e);
     await animateUltimateLightningRemove(cells);
     return;
   }
@@ -1501,6 +1615,7 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   const ep = flowEpoch;
   clearHint();
   setSelected(null);
+  showOpponentSelection(null);
   const state = data.state;
   const earnedExtraTurns = (state.steps ?? []).reduce(
     (total, step) => total + (step.kind === 'match' ? (step.bonusTurns ?? 0) : 0),
@@ -1508,6 +1623,11 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   );
   const remainingExtraTurns = state.extraTurns ?? (state.extraTurn ? 1 : 0);
   const side: 'me' | 'foe' = data.lastBy === pvpIdx ? 'me' : 'foe';
+  const confirmedSelection = confirmedSwapDestination(data.lastMove);
+  if (confirmedSelection != null) {
+    if (side === 'me') lastSuccessfulSelection = confirmedSelection;
+    else lastOpponentSuccessfulSelection = confirmedSelection;
+  }
   let replayFailed = false;
   if (data.lastMove) {
     decayArmor(side === 'me' ? me : foe);
@@ -1585,6 +1705,7 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
     return;
   }
   over = true;
+  resetRememberedSelection();
   busy = true;
   const ep = flowEpoch;
   updateHud();
@@ -1645,6 +1766,10 @@ function bindPvpHandlers(): void {
         bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat, matchId: data.matchId });
       }
     },
+    onReaction: (data) => {
+      if (mode !== 'pvp' || data.matchId !== pvpMatchId) return;
+      pushReaction(data.type, data.userId === myUserId);
+    },
     onOpponentDisconnected: (data) => {
       if (mode !== 'pvp' || !inGame || over) return;
       oppAwayUntil = performance.now() + (data.graceDeadline - Date.now());
@@ -1702,7 +1827,7 @@ function teardownBattle(): void {
   pausedTurnRemain = 0;
   selfDisconnected = false;
   clearHint();
-  setSelected(null);
+  resetRememberedSelection();
   botSelectorA.visible = false;
   hud.result.hide();
   hideConfirm();
@@ -1830,6 +1955,17 @@ function previewVsIntro(
   return true;
 }
 
+function previewBoardShuffle(): boolean {
+  if (!inGame || tileSize <= 0 || busy || over) return false;
+  busy = true;
+  updateHud();
+  void showShuffledBoard(createBoard()).finally(() => {
+    endBusy();
+    updateHud();
+  });
+  return true;
+}
+
 export function battleDebug(): Record<string, unknown> {
   return {
     mode,
@@ -1856,6 +1992,8 @@ export function battleDebug(): Record<string, unknown> {
     announce: turnAnnounce?.visible ? turnAnnounceLabel.text : null,
     botPick: !!botSelectorA?.visible,
     selected,
+    rememberedSelection: lastSuccessfulSelection,
+    opponentRememberedSelection: lastOpponentSuccessfulSelection,
     selectorVisible: !!selector?.visible,
     flying: flyLayer ? flyLayer.children.filter((c) => c instanceof Sprite).length : 0,
     vsIntroVisible: vsIntro?.isVisible() === true,
@@ -1863,6 +2001,7 @@ export function battleDebug(): Record<string, unknown> {
     previewUltimateLightning: previewUltimateLightningFx,
     previewFireSword: previewFireSwordFx,
     previewVsIntro,
+    previewBoardShuffle,
   };
 }
 
@@ -2087,7 +2226,14 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
   const chatGroupW = CHAT_W + ULTIMATE_CHAT_GAP + ULTIMATE_CONTROL_SIZE;
   const chatGroupX = Math.round((DESIGN_W - chatGroupW) / 2);
-  layoutChat(chatGroupX, chatY, chatH, opts.rootX, opts.scale);
+  layoutChat(
+    chatGroupX,
+    chatY,
+    chatH,
+    opts.rootX,
+    opts.scale,
+    hud.me.card.y + hud.me.card.height + 28,
+  );
   ultimateControl.layout(
     chatGroupX + CHAT_W + ULTIMATE_CHAT_GAP,
     chatY + chatH - ULTIMATE_CONTROL_SIZE,

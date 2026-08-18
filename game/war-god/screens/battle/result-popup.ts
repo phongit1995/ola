@@ -4,6 +4,19 @@ import { HEADING, makeText, popIn, pressable, tween } from '../../kit';
 import { DESIGN_W } from '../../layout';
 
 const PANEL_W = 375;
+const RESULT_REVEAL = {
+  dim: 260,
+  card: 500,
+  titleFrameDelay: 70,
+  titleDelay: 120,
+  outcomeDelay: 190,
+  brushDelay: 300,
+  verdictDelay: 350,
+  detailDelay: 430,
+  kenDelay: 510,
+  replayDelay: 620,
+  closeDelay: 690,
+} as const;
 
 export type ResultOutcome = 'win' | 'lose' | 'draw';
 
@@ -29,6 +42,22 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
   const view = new Container();
   const dim = new Graphics();
   const card = new Container();
+  let cancelReveal: Array<() => void> = [];
+
+  function stopReveal(): void {
+    cancelReveal.forEach((cancel) => cancel());
+    cancelReveal = [];
+  }
+
+  function reveal(target: Container, delay: number, duration: number): void {
+    cancelReveal.push(popIn(target, delay, duration));
+  }
+
+  function hidePopup(): void {
+    stopReveal();
+    view.visible = false;
+    card.alpha = 1;
+  }
 
   dim.eventMode = 'static';
   view.addChild(dim, card);
@@ -121,7 +150,7 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
     btn.hitArea = new Rectangle(-BTN_W * 0.55, -bg.height * 0.8, BTN_W * 1.1, bg.height * 1.6);
     btn.y = halfH;
     pressable(btn, () => {
-      view.visible = false;
+      hidePopup();
       onTap();
     });
     return btn;
@@ -145,6 +174,7 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
   return {
     view,
     show(data): void {
+      stopReveal();
       const lose = data.outcome === 'lose';
       outcomeIcon.texture = tex[lose ? A.result.shieldLose : A.result.cupWin];
       outcomeIcon.width = PANEL_W * (lose ? 0.48 : 0.46);
@@ -172,12 +202,22 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
       }
       view.visible = true;
       dim.alpha = 0;
-      void tween(dim, { alpha: 1 }, 180);
-      popIn(card, 0, 360);
+      void tween(dim, { alpha: 1 }, RESULT_REVEAL.dim);
+
+      // Reveal theo từng lớp để người chơi kịp nhận biết kết quả trước khi thao tác tiếp.
+      reveal(card, 0, RESULT_REVEAL.card);
+      reveal(titleFrame, RESULT_REVEAL.titleFrameDelay, 430);
+      reveal(title, RESULT_REVEAL.titleDelay, 400);
+      reveal(outcomeIcon, RESULT_REVEAL.outcomeDelay, 520);
+      reveal(brush, RESULT_REVEAL.brushDelay, 420);
+      reveal(verdict, RESULT_REVEAL.verdictDelay, 460);
+      reveal(detail, RESULT_REVEAL.detailDelay, 380);
+      if (kenBox.visible) reveal(kenBox, RESULT_REVEAL.kenDelay, 420);
+      reveal(replayButton, RESULT_REVEAL.replayDelay, 360);
+      reveal(closeButton, RESULT_REVEAL.closeDelay, 360);
     },
     hide(): void {
-      view.visible = false;
-      card.alpha = 1;
+      hidePopup();
     },
     layout(designH, insetTop, insetBottom): void {
       dim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });

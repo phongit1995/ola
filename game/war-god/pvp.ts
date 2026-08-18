@@ -1,11 +1,13 @@
 import type {
   ChatMessageData,
   ErrorData,
+  GameReactionType,
   GameSession,
   MatchFoundData,
   MatchOverData,
   OpponentDisconnectedData,
   PlayerInfo,
+  ReactionData,
   StateData,
 } from '../src/sdk';
 import type { ServerMove, ServerState, UltimateSkillId } from './logic/server-types';
@@ -17,6 +19,7 @@ export interface PvpHandlers {
   onState(data: StateData<ServerState, ServerMove>): void;
   onMatchOver(data: MatchOverData<ServerState>): void;
   onChat(data: ChatMessageData): void;
+  onReaction(data: ReactionData): void;
   onOpponentDisconnected(data: OpponentDisconnectedData): void;
   onOpponentReconnected(): void;
   onError(data: ErrorData): void;
@@ -59,6 +62,9 @@ export const pvp = {
     next.onChat((data) => {
       if (data.matchId && data.matchId === matchId) handlers.onChat?.(data);
     });
+    next.onReaction((data) => {
+      if (data.matchId === matchId) handlers.onReaction?.(data);
+    });
     next.onOpponentDisconnected((data) => handlers.onOpponentDisconnected?.(data));
     next.onOpponentReconnected(() => handlers.onOpponentReconnected?.());
     next.onError((data) => handlers.onError?.(data));
@@ -88,6 +94,10 @@ export const pvp = {
 
   sendChatText(text: string): void {
     if (matchId) session?.sendChat(matchId, text);
+  },
+
+  sendReaction(type: GameReactionType): void {
+    if (matchId) session?.sendReaction(matchId, type);
   },
 
   matchId(): string {

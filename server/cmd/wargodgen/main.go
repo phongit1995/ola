@@ -56,6 +56,9 @@ func renderConstants(config wargod.ClientConfig) []byte {
 	writeInt := func(name string, value int) {
 		fmt.Fprintf(&out, "export const %s = %d;\n", name, value)
 	}
+	writeFloat := func(name string, value float64) {
+		fmt.Fprintf(&out, "export const %s = %g;\n", name, value)
+	}
 	writeInt("GRID", config.Grid)
 	out.WriteString("export const CELLS = GRID * GRID;\n")
 	writeInt("BASE_TILE_COUNT", config.BaseTileCount)
@@ -67,8 +70,12 @@ func renderConstants(config wargod.ClientConfig) []byte {
 	writeInt("MAX_HP", config.MaxHP)
 	writeInt("MAX_MP", config.MaxMP)
 	writeInt("MAX_FURY", config.MaxFury)
+	writeFloat("FURY_DAMAGE_MULTIPLIER", config.FuryDamageMultiplier)
 	writeInt("MAX_ARMOR", config.MaxArmor)
 	writeInt("ULT_COST", config.UltCost)
+	writeInt("LIGHTNING_GOD_DAMAGE", config.LightningGodDamage)
+	writeInt("CASCADE_BONUS_PERCENT_PER_LEVEL", config.CascadeBonusPercentPerLevel)
+	writeInt("MAX_CASCADE_LEVEL", config.MaximumCascadeLevel)
 	writeInt("DMG_SWORD", config.DamageSword)
 	writeInt("HEAL_HEART", config.HealHeart)
 	writeInt("MP_WATER", config.ManaWater)

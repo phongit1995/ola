@@ -3,6 +3,7 @@ import { bridge } from '../src/sdk';
 import { A, loadAssets, tex } from './assets';
 import { disposeAudio } from './audio';
 import { initKit } from './kit';
+import { installKeyboardDismiss } from './keyboard-dismiss';
 import { DESIGN_W } from './layout';
 import { createSessionController } from './session-controller';
 import { updateRoomListUser } from './rooms';
@@ -129,6 +130,7 @@ function layout(): void {
 
 async function main(): Promise<void> {
   await document.fonts.ready;
+  const disposeKeyboardDismiss = installKeyboardDismiss();
 
   app = new Application();
   await app.init({
@@ -202,6 +204,7 @@ async function main(): Promise<void> {
   window.addEventListener('resize', layout);
   window.addEventListener('pagehide', (event) => {
     if (event.persisted) return;
+    disposeKeyboardDismiss();
     disposeAudio();
     sessionController.dispose();
     disposeChat();

@@ -42,6 +42,7 @@ type Step struct {
 	Counts        map[string]int `json:"counts,omitempty"`
 	MaxRun        int            `json:"maxRun,omitempty"`
 	BonusTurns    int            `json:"bonusTurns,omitempty"`
+	CascadeLevel  int            `json:"cascadeLevel,omitempty"`
 	Effects       *Effects       `json:"effects,omitempty"`
 	Falls         []Fall         `json:"falls,omitzero"`
 	Spawns        []Spawn        `json:"spawns,omitzero"`

@@ -276,6 +276,9 @@ func TestApplyResolvesDeterministicMultiWaveCascade(t *testing.T) {
 	}
 
 	matchSteps := []Step{next.Steps[1], next.Steps[3], next.Steps[5]}
+	if got := []int{matchSteps[0].CascadeLevel, matchSteps[1].CascadeLevel, matchSteps[2].CascadeLevel}; !reflect.DeepEqual(got, []int{0, 1, 2}) {
+		t.Fatalf("cascade levels=%v, want [0 1 2]", got)
+	}
 	if !reflect.DeepEqual(matchSteps[0].Cells, []int{25, 33, 34, 41, 42, 50}) || matchSteps[0].BonusTurns != 0 {
 		t.Fatalf("first wave should be separate triples without a bonus: %+v", matchSteps[0])
 	}
@@ -600,13 +603,13 @@ func TestApplyTileEffects(t *testing.T) {
 			wantEffects:  Effects{Fury: 5},
 		},
 		{
-			name:         "full fury doubles and pierces sword",
+			name:         "full fury multiplies and pierces sword",
 			attacker:     Fighter{HP: 100, Fury: 100},
 			defender:     Fighter{HP: 100, Armor: 30},
 			counts:       map[int]int{tileSword: 3},
 			wantAttacker: Fighter{HP: 98, Fury: 0},
-			wantDefender: Fighter{HP: 58, Armor: 30},
-			wantEffects:  Effects{Damage: 42, Furied: true, Reflect: 2},
+			wantDefender: Fighter{HP: 68, Armor: 30},
+			wantEffects:  Effects{Damage: 32, Furied: true, Reflect: 2},
 		},
 		{
 			name:         "peach fills but does not consume same wave",
@@ -623,8 +626,8 @@ func TestApplyTileEffects(t *testing.T) {
 			defender:     Fighter{HP: 100},
 			counts:       map[int]int{tileSword: 2, tilePeach: 1},
 			wantAttacker: Fighter{HP: 100, Fury: 10},
-			wantDefender: Fighter{HP: 72},
-			wantEffects:  Effects{Damage: 28, Fury: 10, Furied: true},
+			wantDefender: Fighter{HP: 79},
+			wantEffects:  Effects{Damage: 21, Fury: 10, Furied: true},
 		},
 		{
 			name:         "heal capped at max hp",
@@ -680,6 +683,80 @@ func TestApplyTileEffects(t *testing.T) {
 				t.Fatalf("attacker=%+v defender=%+v effects=%+v", attacker, defender, effects)
 			}
 		})
+	}
+}
+
+func TestCascadeScalesEveryCollectedTileValueAndCapsAtThirtyPercent(t *testing.T) {
+	tests := []struct {
+		level int
+		want  Effects
+	}{
+		{level: 0, want: Effects{Damage: 21, Heal: 15, Mana: 21, Armor: 15, Fury: 30}},
+		{level: 1, want: Effects{Damage: 23, Heal: 17, Mana: 23, Armor: 17, Fury: 33}},
+		{level: 2, want: Effects{Damage: 25, Heal: 18, Mana: 25, Armor: 18, Fury: 36}},
+		{level: 3, want: Effects{Damage: 27, Heal: 20, Mana: 27, Armor: 20, Fury: 39}},
+		{level: 4, want: Effects{Damage: 27, Heal: 20, Mana: 27, Armor: 20, Fury: 39}},
+	}
+	counts := map[int]int{
+		tileSword: 3, tileHeart: 3, tileWater: 3, tileShield: 3, tilePeach: 3,
+	}
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("level_%d", test.level), func(t *testing.T) {
+			attacker := Fighter{HP: 100}
+			defender := Fighter{HP: maxHP}
+			got := applyTileEffectsAtCascade(&attacker, &defender, counts, test.level)
+			if got != test.want {
+				t.Fatalf("effects=%+v, want %+v", got, test.want)
+			}
+		})
+	}
+
+	attacker := Fighter{HP: maxHP}
+	defender := Fighter{HP: maxHP, Armor: maxArmor}
+	reflected := applyTileEffectsAtCascade(
+		&attacker,
+		&defender,
+		map[int]int{tileSword: 3},
+		maximumCascadeLevel,
+	)
+	if reflected.Reflect != reflectDamage {
+		t.Fatalf("fixed reflect damage was scaled: %+v", reflected)
+	}
+}
+
+func TestFullFuryMultipliesSwordDamageForEntireCascadeChain(t *testing.T) {
+	attacker := Fighter{HP: maxHP, Fury: maxFury}
+	defender := Fighter{HP: maxHP}
+	furyChainActive := false
+	counts := map[int]int{tileSword: 3}
+
+	firstWave := applyTileEffectsInCascadeChain(
+		&attacker, &defender, counts, 0, &furyChainActive,
+	)
+	firstCascade := applyTileEffectsInCascadeChain(
+		&attacker, &defender, counts, 1, &furyChainActive,
+	)
+	secondCascade := applyTileEffectsInCascadeChain(
+		&attacker, &defender, counts, 2, &furyChainActive,
+	)
+
+	if !firstWave.Furied || firstWave.Damage != 32 {
+		t.Fatalf("first wave effects=%+v, want 32 damage with Fury activation", firstWave)
+	}
+	if firstCascade.Damage != 35 || secondCascade.Damage != 38 {
+		t.Fatalf(
+			"cascade damage=(%d, %d), want (35, 38)",
+			firstCascade.Damage,
+			secondCascade.Damage,
+		)
+	}
+	if attacker.Fury != 0 || defender.HP != 95 || !furyChainActive {
+		t.Fatalf(
+			"attacker=%+v defender=%+v furyChainActive=%v",
+			attacker,
+			defender,
+			furyChainActive,
+		)
 	}
 }
 
@@ -1045,8 +1122,16 @@ func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
 		t.Fatalf("lightning ultimate must be followed by gravity: %+v", next.Steps)
 	}
 	ult := next.Steps[0]
-	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != 0 {
+	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != lightningGodDamage {
 		t.Fatalf("unexpected lightning step: %+v", ult)
+	}
+	if next.Fighters[1].HP > 100-lightningGodDamage {
+		t.Fatalf("lightning damage was not applied to defender: %+v", next.Fighters[1])
+	}
+	for _, step := range next.Steps {
+		if step.Kind == stepMatch && step.CascadeLevel < 1 {
+			t.Fatalf("post-ultimate collapse must start at level 1: %+v", step)
+		}
 	}
 	seen := make(map[int]bool, len(ult.Cells))
 	for offset := 0; offset < len(ult.Cells); offset += 4 {

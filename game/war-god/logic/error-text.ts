@@ -10,6 +10,8 @@ const ERROR_TEXT = new Map<GameErrorCode, string>([
   [GAME_ERROR_CODE.ChatRateLimited, 'Bạn gửi tin nhắn quá nhanh'],
   [GAME_ERROR_CODE.ChatTooLong, 'Tin nhắn tối đa 120 ký tự'],
   [GAME_ERROR_CODE.InvalidChat, 'Tin nhắn không hợp lệ'],
+  [GAME_ERROR_CODE.InvalidReaction, 'Cảm xúc không hợp lệ'],
+  [GAME_ERROR_CODE.ReactionRateLimited, 'Bạn thả cảm xúc quá nhanh'],
   [GAME_ERROR_CODE.StateSaveFailed, 'Không thể lưu nước đi, vui lòng thử lại'],
   [GAME_ERROR_CODE.UserInfoFailed, 'Không thể tải thông tin người chơi'],
   [GAME_ERROR_CODE.UnknownGame, 'Trò chơi không hợp lệ'],

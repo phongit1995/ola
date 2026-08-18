@@ -46,8 +46,8 @@ export interface ExplosionPlan {
   lightningArcs: LightningArc[];
 }
 
-function randBase(): BaseTileType {
-  const r = Math.random() * 100;
+function randBase(random: () => number = Math.random): BaseTileType {
+  const r = random() * 100;
   if (r < 22) return 'sword';
   if (r < 38) return 'peach';
   if (r < 54) return 'heart';
@@ -56,10 +56,10 @@ function randBase(): BaseTileType {
   return 'lightning';
 }
 
-function randTile(): TileType {
-  const base = randBase();
-  if (base === 'sword' && Math.random() < SPECIAL_SWORD_CHANCE) return 'fireSword';
-  if (base === 'heart' && Math.random() < SPECIAL_HEART_CHANCE) return 'greaterHeart';
+function randTile(random: () => number = Math.random): TileType {
+  const base = randBase(random);
+  if (base === 'sword' && random() < SPECIAL_SWORD_CHANCE) return 'fireSword';
+  if (base === 'heart' && random() < SPECIAL_HEART_CHANCE) return 'greaterHeart';
   return base;
 }
 
@@ -67,16 +67,16 @@ export function emptyCounts(): Record<TileType, number> {
   return Object.fromEntries(TILE_ORDER.map((tile) => [tile, 0])) as Record<TileType, number>;
 }
 
-export function createBoard(): Board {
+export function createBoard(random: () => number = Math.random): Board {
   const board: Board = new Array(CELLS);
   for (let i = 0; i < CELLS; i++) {
-    let type = randTile();
+    let type = randTile(random);
     while (createsMatchAt(board, i, type)) {
-      type = randTile();
+      type = randTile(random);
     }
     board[i] = type;
   }
-  if (findValidMoves(board).length === 0) return createBoard();
+  if (findValidMoves(board).length === 0) return createBoard(random);
   return board;
 }
 
@@ -201,7 +201,7 @@ export function randomFourTwoByTwoBlocks(random: () => number = Math.random): nu
   const choicesPerAxis = GRID - 1;
   let candidates = Array.from(
     { length: choicesPerAxis * choicesPerAxis },
-    (_, choice) => Math.floor(choice / choicesPerAxis) * GRID + (choice % choicesPerAxis),
+    (_, choice) => Math.floor(choice / choicesPerAxis) * GRID + (choice % choicesPerAxis)
   );
   const blocks: number[][] = [];
   const occupied = new Set<number>();
@@ -213,7 +213,7 @@ export function randomFourTwoByTwoBlocks(random: () => number = Math.random): nu
     blocks.push(cells);
     cells.forEach((cell) => occupied.add(cell));
     candidates = candidates.filter((topLeft) =>
-      twoByTwoCells(topLeft).every((cell) => !occupied.has(cell)),
+      twoByTwoCells(topLeft).every((cell) => !occupied.has(cell))
     );
   }
 
@@ -240,7 +240,7 @@ export function findValidMoves(board: Board): Array<[number, number]> {
 export function computeExplosions(
   board: Board,
   matched: Set<number>,
-  random: () => number = Math.random,
+  random: () => number = Math.random
 ): ExplosionPlan {
   const set = new Set<number>();
   const add = (x: number, y: number): void => {
@@ -296,7 +296,11 @@ export function computeExplosions(
   };
 }
 
-export function applyGravity(board: Board, removed: Set<number>): GravityResult {
+export function applyGravity(
+  board: Board,
+  removed: Set<number>,
+  random: () => number = Math.random
+): GravityResult {
   const falls: Fall[] = [];
   const spawns: Spawn[] = [];
 
@@ -315,7 +319,7 @@ export function applyGravity(board: Board, removed: Set<number>): GravityResult 
     let spawnRow = -1;
     for (let y = write; y >= 0; y--) {
       const target = y * GRID + x;
-      const type = randTile();
+      const type = randTile(random);
       board[target] = type;
       spawns.push({ index: target, type, fromRow: spawnRow });
       spawnRow--;

@@ -37,6 +37,12 @@ import chatFrame from './assets/chat/frame.webp';
 import chatInput from './assets/chat/input.webp';
 import chatBtnSend from './assets/chat/btn-send.webp';
 import chatIcSmiley from './assets/chat/ic-smiley.webp';
+import reactionLike from '../caro/assets/reactions/like.webp';
+import reactionLove from '../caro/assets/reactions/love.webp';
+import reactionHaha from '../caro/assets/reactions/haha.webp';
+import reactionWow from '../caro/assets/reactions/wow.webp';
+import reactionSad from '../caro/assets/reactions/sad.webp';
+import reactionAngry from '../caro/assets/reactions/angry.webp';
 import fxUlt from './assets/fx/ult.webp';
 import lobbyBg from './assets/lobby/bg.webp';
 import lobbyLogo from './assets/lobby/logo.webp';
@@ -81,6 +87,7 @@ import pickCloseX from './assets/pick/close-x.webp';
 import pickLevelEasy from './assets/pick/level-easy.webp';
 import pickLevelMid from './assets/pick/level-mid.webp';
 import pickLevelHard from './assets/pick/level-hard.webp';
+import pickLevelExpert from './assets/pick/level-expert.webp';
 import confirmPanel from './assets/confirm/panel.webp';
 import confirmHeader from './assets/confirm/header.webp';
 import confirmBtnCancel from './assets/confirm/btn-cancel.webp';
@@ -153,6 +160,14 @@ export const A = {
     input: chatInput,
     btnSend: chatBtnSend,
     icSmiley: chatIcSmiley,
+    reactions: {
+      like: reactionLike,
+      love: reactionLove,
+      haha: reactionHaha,
+      wow: reactionWow,
+      sad: reactionSad,
+      angry: reactionAngry,
+    },
   },
   fx: { ult: fxUlt },
   lobby: {
@@ -201,6 +216,7 @@ export const A = {
     levelEasy: pickLevelEasy,
     levelMid: pickLevelMid,
     levelHard: pickLevelHard,
+    levelExpert: pickLevelExpert,
   },
   confirm: {
     panel: confirmPanel,
@@ -283,9 +299,8 @@ export async function loadAssets(onProgress?: (fraction: number) => void): Promi
     weight: '100 900',
   });
   const [loaded] = await Promise.all([
-    Assets.load(
-      collectUrls(withoutDeferredAssets()),
-      (fraction) => onProgress?.(Math.min(fraction * 0.96, 0.96)),
+    Assets.load(collectUrls(withoutDeferredAssets()), (fraction) =>
+      onProgress?.(Math.min(fraction * 0.96, 0.96))
     ) as Promise<Record<string, Texture>>,
     serifFont.load().then((f) => document.fonts.add(f)),
     robotoFont.load().then((f) => document.fonts.add(f)),

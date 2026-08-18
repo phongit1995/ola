@@ -26,6 +26,7 @@ export interface StepMatch {
   counts: Partial<Record<TileType, number>>;
   maxRun: number;
   bonusTurns?: number;
+  cascadeLevel?: number;
   effects: {
     damage: number;
     heal: number;

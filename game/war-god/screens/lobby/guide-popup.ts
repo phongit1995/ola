@@ -7,6 +7,7 @@ import {
   ARMOR_SHIELD,
   DMG_SWORD,
   FIRE_SWORD_DMG,
+  FURY_DAMAGE_MULTIPLIER,
   FURY_PEACH,
   GREATER_HEART_HEAL,
   HEAL_HEART,
@@ -95,14 +96,14 @@ const ITEMS: GuideItem[] = [
 const RULES: GuideRule[] = [
   {
     asset: A.items.sword,
-    title: 'COMBO 4+',
-    detail: 'Mỗi cụm 4+ ô liền nhau: +1 lượt · được cộng dồn',
+    title: 'COMBO 4+ · SẬP',
+    detail: 'Cụm 4+: +1 lượt · Sập tự động tăng mọi hiệu ứng +10%/tầng, tối đa +30%',
     accent: 0xffcf62,
   },
   {
     asset: A.items.peach,
     title: `NỘ ĐẦY ${MAX_FURY}`,
-    detail: 'Đòn Kiếm kế tiếp ×2 sát thương và xuyên giáp',
+    detail: `Đòn Kiếm kế tiếp ×${FURY_DAMAGE_MULTIPLIER} sát thương và xuyên giáp`,
     accent: 0xffa45c,
   },
   {
@@ -114,7 +115,7 @@ const RULES: GuideRule[] = [
   {
     asset: A.hud.flameOn,
     title: 'TUYỆT CHIÊU',
-    detail: `Cần ${ULT_COST} nội lực · Lôi Thần gọi 4 tia, mỗi tia phá 2×2`,
+    detail: `Cần ${ULT_COST} nội lực · Lôi Thần gây 20 HP và gọi 4 tia, mỗi tia phá 2×2`,
     accent: 0xff8051,
   },
   {

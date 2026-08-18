@@ -97,7 +97,7 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 		a, b := *move.A, *move.B
 		s.Board[a], s.Board[b] = s.Board[b], s.Board[a]
 		s.Steps = append(s.Steps, Step{Kind: stepSwap, A: intPtr(a), B: intPtr(b)})
-		resolveCascades(s, attacker, defender, r, &remainingExtraTurns)
+		resolveCascades(s, attacker, defender, r, &remainingExtraTurns, 0)
 		if attacker.HP > 0 && defender.HP > 0 {
 			ensurePlayable(s, r)
 		}
@@ -108,19 +108,28 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 		damage := 0
 		attacker.MP = 0
 		if move.Skill == skillLightningGod {
+			damage = lightningGodDamage
+			defender.HP -= damage
+			if defender.HP < 0 {
+				defender.HP = 0
+			}
 			blocks := randomFourTwoByTwoBlocks(r)
 			cells := make([]int, 0, len(blocks)*4)
 			for _, block := range blocks {
 				cells = append(cells, block...)
 			}
-			s.Steps = append(s.Steps, Step{Kind: stepUlt, Skill: move.Skill, Cells: cells})
+			s.Steps = append(s.Steps, Step{
+				Kind: stepUlt, Skill: move.Skill, Cells: cells, Damage: damage,
+			})
 			removed := make(map[int]bool, len(cells))
 			for _, cell := range cells {
 				removed[cell] = true
 			}
 			falls, spawns := applyGravity(s.Board, removed, r)
 			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
-			resolveCascades(s, attacker, defender, r, &remainingExtraTurns)
+			if attacker.HP > 0 && defender.HP > 0 {
+				resolveCascades(s, attacker, defender, r, &remainingExtraTurns, 1)
+			}
 			if attacker.HP > 0 && defender.HP > 0 {
 				ensurePlayable(s, r)
 			}
@@ -187,7 +196,10 @@ func resolveCascades(
 	attacker, defender *Fighter,
 	r *rng,
 	remainingExtraTurns *int,
+	startingCascadeLevel int,
 ) {
+	cascadeLevel := startingCascadeLevel
+	furyChainActive := false
 	for {
 		matchedCells, counts, maxRun := findMatches(s.Board)
 		if matchedCells == nil {
@@ -204,7 +216,9 @@ func resolveCascades(
 			counts[s.Board[index]]++
 			removed[index] = true
 		}
-		waveEffects := applyTileEffects(attacker, defender, counts)
+		waveEffects := applyTileEffectsInCascadeChain(
+			attacker, defender, counts, cascadeLevel, &furyChainActive,
+		)
 		s.Steps = append(s.Steps, Step{
 			Kind:          stepMatch,
 			Cells:         matchedCells,
@@ -213,10 +227,12 @@ func resolveCascades(
 			Counts:        namedCounts(counts),
 			MaxRun:        maxRun,
 			BonusTurns:    bonusTurns,
+			CascadeLevel:  cascadeLevel,
 			Effects:       &waveEffects,
 		})
 		falls, spawns := applyGravity(s.Board, removed, r)
 		s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
+		cascadeLevel++
 		if defender.HP <= 0 || attacker.HP <= 0 {
 			break
 		}

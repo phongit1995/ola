@@ -3,6 +3,7 @@ package wargod
 import "time"
 
 const initialBoardAnimationDelay = 1800 * time.Millisecond
+const shuffleAnimationDelay = 1450 * time.Millisecond
 
 // TurnStartDelay reserves enough authoritative time for the active client to
 // finish replaying the previous move before its normal turn clock is consumed.
@@ -30,7 +31,7 @@ func (Logic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) tim
 		case stepGravity:
 			delay += 350 * time.Millisecond
 		case stepShuffle:
-			delay += 450 * time.Millisecond
+			delay += shuffleAnimationDelay
 		case stepUlt:
 			delay += 2100 * time.Millisecond
 		}
