@@ -152,6 +152,48 @@ func TestTurnKeeperKeepsTurnAfterMove(t *testing.T) {
 	}
 }
 
+func TestPlayerCanForfeitOrExitOutsideTheirTurn(t *testing.T) {
+	tests := []struct {
+		name string
+		act  func(*Engine, *Match, string)
+	}{
+		{
+			name: "forfeit",
+			act: func(gameEngine *Engine, match *Match, userID string) {
+				gameEngine.Forfeit(match.GameID, userID, match.ID)
+			},
+		},
+		{
+			name: "exit",
+			act: func(gameEngine *Engine, match *Match, userID string) {
+				gameEngine.ForfeitAndLeave(match.GameID, userID, match.ID)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			activeStore := newMemoryActiveMatchStore()
+			gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+			defer stopEngineTimers(gameEngine)
+			match := startTurnControlTestMatch(t, gameEngine)
+			actorID := match.players[1-match.turnIdx].ID
+			winnerID := match.players[match.turnIdx].ID
+
+			test.act(gameEngine, match, actorID)
+
+			envelope, ok := emitter.last(actorID, protocol.S2CMatchOver)
+			if !ok {
+				t.Fatal("player acting outside their turn did not receive MATCH_OVER")
+			}
+			data := envelope.Data.(protocol.MatchOverData)
+			if data.Reason != "forfeit" || data.WinnerID != winnerID {
+				t.Fatalf("unexpected result outside player turn: %+v", data)
+			}
+		})
+	}
+}
+
 func TestTurnStartDelayExtendsAuthoritativeDeadline(t *testing.T) {
 	activeStore := newMemoryActiveMatchStore()
 	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)

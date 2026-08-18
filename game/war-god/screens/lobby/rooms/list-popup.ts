@@ -8,6 +8,9 @@ import { avatarFrameFit, drawAvatarFrameMask, fitAvatarIcon } from '../avatar-fr
 
 const CONTENT_H = 1000;
 const CARD_W = 486;
+const ACTION_BUTTON_W = 132;
+const ACTION_BUTTON_GAP = 12;
+const ACTION_BUTTON_FONT_SIZE = 16;
 const PAGE_SIZE = 10;
 const USER_AVATAR_FRAME_W = 132;
 const USER_AVATAR_FIT = avatarFrameFit(USER_AVATAR_FRAME_W);
@@ -253,9 +256,9 @@ function makeBlueButton(label: string, w: number, onTap: () => void): Container 
   bgSprite.width = w;
   bgSprite.scale.y = bgSprite.scale.x;
   btn.addChild(bgSprite);
-  const text = makeText(label, 18, 0xffffff, '800', HEADING);
+  const text = makeText(label, ACTION_BUTTON_FONT_SIZE, 0xffffff, '800', HEADING);
   text.style.stroke = { color: 0x123a63, width: 3, join: 'round' };
-  text.y = -bgSprite.height * 0.04;
+  text.position.set(0, 0);
   fitText(text, w * 0.74);
   btn.addChild(text);
   btn.hitArea = new Rectangle(-w * 0.5, -bgSprite.height * 0.42, w, bgSprite.height * 0.84);
@@ -407,7 +410,7 @@ export function buildRoomListPopup(callbacks: RoomListCallbacks): Container {
   bannerLabel.style.stroke = { color: 0x6a1410, width: 3, join: 'round' };
   tableGroup.addChild(bannerLabel);
 
-  const btnW = CARD_W * 0.32;
+  const btnW = ACTION_BUTTON_W;
   btnCreate = makeBlueButton('TẠO BÀN', btnW, () => cb.onCreate());
   btnRefresh = makeBlueButton('LÀM MỚI', btnW, () => cb.onRefresh());
   btnClose = makeBlueButton('THOÁT', btnW, hideRoomListPopup);
@@ -451,8 +454,8 @@ function layoutStatic(): void {
 
   // place the whole table block, then the buttons under it
   tableGroup.y = -CONTENT_H / 2 + 250 + tableH / 2;
-  const btnGap = CARD_W * 0.02;
-  const btnW = CARD_W * 0.32;
+  const btnGap = ACTION_BUTTON_GAP;
+  const btnW = ACTION_BUTTON_W;
   const btnRowW = btnW * 3 + btnGap * 2;
   const btnY = tableGroup.y + tableH / 2 + 52;
   btnCreate.position.set(-btnRowW / 2 + btnW / 2, btnY);

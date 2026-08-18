@@ -120,6 +120,7 @@ import {
   confirmedSwapDestination,
   rememberedSelectionsForTurn,
 } from './remembered-selection';
+import { battleActionAvailability } from './action-layout';
 
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 30;
 const HINT_DELAY_MS = 10_000;
@@ -757,9 +758,10 @@ function updateHud(): void {
     }),
   );
 
-  hud.restart.setEnabled(mode === 'bot' && !busy);
-  hud.forfeit.setEnabled(!over && !busy);
-  hud.exit.setEnabled(!busy);
+  const actions = battleActionAvailability(mode, busy, over);
+  hud.restart.setEnabled(actions.restartEnabled);
+  hud.forfeit.setEnabled(actions.forfeitEnabled);
+  hud.exit.setEnabled(actions.exitEnabled);
 }
 
 function buildFxFrames(sheet: Texture): Texture[] {
@@ -1414,6 +1416,8 @@ export function updateRoomPregame(
 
 export function exitRoomPregame(): void {
   if (!roomPregame) return;
+  setRoomChatSender(null);
+  setChatInputVisible(false);
   clearRoomPregameVisuals();
   deps.onExitToLobby();
 }
@@ -1533,7 +1537,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   setStatus('Chuẩn bị chiến đấu...');
   const intro = vsIntro.play(buildPvpVsIntroData(data, deps.getUserInfo()));
   return Promise.all([dropInBoard(), intro]).then(() => {
-    if (flowEpoch !== ep) return;
+    if (flowEpoch !== ep || over || data.matchId !== pvpMatchId) return;
     endBusy();
     announceTurn(myTurn ? 'me' : 'foe');
     setStatus(myTurn ? 'Lượt của bạn — ghép 3 ô để tấn công!' : 'Đợi đối thủ...');
@@ -2097,30 +2101,31 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
       });
     },
     onForfeit: () => {
-      if (over) return;
+      if (!battleActionAvailability(mode, busy, over).forfeitEnabled) return;
       if (mode === 'pvp') {
         showConfirm({
           kind: 'forfeit',
           message: 'Bạn sẽ bị xử thua ván này.\nBạn vẫn có thể chơi ván tiếp theo.',
           confirmLabel: 'BỎ CUỘC',
           onConfirm: () => {
-            if (!busy && !over) pvp.forfeit();
+            if (battleActionAvailability(mode, busy, over).forfeitEnabled) pvp.forfeit();
           },
         });
         return;
       }
-      if (busy) return;
       showConfirm({
         kind: 'forfeit',
         message: 'Bạn sẽ bị xử thua ván này.\nBạn vẫn có thể chơi ván tiếp theo.',
         confirmLabel: 'BỎ CUỘC',
         onConfirm: () => {
-          if (!busy && !over) finish(false, 'forfeit', 'Bạn đã bỏ cuộc');
+          if (battleActionAvailability(mode, busy, over).forfeitEnabled) {
+            finish(false, 'forfeit', 'Bạn đã bỏ cuộc');
+          }
         },
       });
     },
     onExit: () => {
-      if (busy) return;
+      if (!battleActionAvailability(mode, busy, over).exitEnabled) return;
       if (over || !inGame) {
         exitToLobby();
         return;
@@ -2130,7 +2135,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
         message: 'Thoát sẽ bị xử thua và rời bàn.\nBạn có chắc muốn thoát?',
         confirmLabel: 'RỜI TRẬN',
         onConfirm: () => {
-          if (!busy) exitActiveMatch();
+          if (battleActionAvailability(mode, busy, over).exitEnabled) exitActiveMatch();
         },
       });
     },
