@@ -101,7 +101,7 @@ export function HomePage() {
       <BottomTabBar
         active={tab}
         onChange={changeTab}
-        badges={{ chat: chatUnread, apps: notifUnread }}
+        badges={{ chat: chatUnread, personal: notifUnread }}
         dots={{ room: roomUnread && tab !== 'room' }}
       />
 

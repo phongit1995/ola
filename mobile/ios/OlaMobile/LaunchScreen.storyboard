@@ -17,25 +17,25 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="OlaSplashLogo" translatesAutoresizingMaskIntoConstraints="NO" id="GJd-Yh-RWb">
-                                <rect key="frame" x="119.5" y="233.5" width="136" height="136"/>
+                                <rect key="frame" x="107.5" y="221.5" width="160" height="160"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="136" id="Hrh-Ae-ubC"/>
-                                    <constraint firstAttribute="height" constant="136" id="rZM-dD-uPY"/>
+                                    <constraint firstAttribute="width" constant="160" id="Hrh-Ae-ubC"/>
+                                    <constraint firstAttribute="height" constant="160" id="rZM-dD-uPY"/>
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ola" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MN2-I3-ftu">
-                                <rect key="frame" x="158" y="385.5" width="59" height="41"/>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="34"/>
+                                <rect key="frame" x="156" y="401.5" width="63" height="43"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="36"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
-                        <color key="backgroundColor" red="0.4862745098" green="0.7019607843" blue="0.2588235294" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.43921568627450980" green="0.76862745098039216" blue="0.14509803921568629" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="MN2-I3-ftu" firstAttribute="top" secondItem="GJd-Yh-RWb" secondAttribute="bottom" constant="16" id="OZV-Vh-mqD"/>
+                            <constraint firstItem="MN2-I3-ftu" firstAttribute="top" secondItem="GJd-Yh-RWb" secondAttribute="bottom" constant="20" id="OZV-Vh-mqD"/>
                             <constraint firstItem="Bcu-3y-fUS" firstAttribute="centerX" secondItem="GJd-Yh-RWb" secondAttribute="centerX" id="Q3B-4B-g5h"/>
                             <constraint firstItem="MN2-I3-ftu" firstAttribute="centerX" secondItem="Bcu-3y-fUS" secondAttribute="centerX" id="akx-eg-2ui"/>
-                            <constraint firstItem="GJd-Yh-RWb" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-32" id="moa-c2-u7t"/>
+                            <constraint firstItem="GJd-Yh-RWb" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-36" id="moa-c2-u7t"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                     </view>
@@ -46,6 +46,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="OlaSplashLogo" width="256" height="256"/>
+        <image name="OlaSplashLogo" width="512" height="512"/>
     </resources>
 </document>

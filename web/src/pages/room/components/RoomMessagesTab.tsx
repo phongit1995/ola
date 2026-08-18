@@ -10,9 +10,9 @@ import {
   MessageActionSheet,
   type MessageSheetAction,
 } from '@components';
-import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
+import replyActionIcon from '@/assets/icons/chat/ic_menu_reply.svg';
 import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
-import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
+import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete_outline.svg';
 import blockActionIcon from '@/assets/icons/chat/ic_menu_block.svg';
 import { buildRoomFeed } from '../messageGroups';
 import { replyExcerpt, roomMessageAbilities } from '../roomMessageView';

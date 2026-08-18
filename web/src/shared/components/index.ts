@@ -40,3 +40,4 @@ export * from './ReconnectingBanner';
 export * from './HomeHeader';
 export * from './Placeholder';
 export * from './BottomTabBar';
+export * from './PanelRow';

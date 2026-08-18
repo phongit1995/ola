@@ -13,8 +13,13 @@ const RssPanel = lazy(() =>
 const MePanel = lazy(() =>
   import('../me/MePanel').then((m) => ({ default: m.MePanel }))
 );
-const AppsPanel = lazy(() =>
-  import('../apps/AppsPanel').then((m) => ({ default: m.AppsPanel }))
+const GamesPanel = lazy(() =>
+  import('../games/GamesPanel').then((m) => ({ default: m.GamesPanel }))
+);
+const PersonalPanel = lazy(() =>
+  import('../personal/PersonalPanel').then((m) => ({
+    default: m.PersonalPanel,
+  }))
 );
 
 export const PANELS: Record<TabKey, LazyExoticComponent<ComponentType>> = {
@@ -22,7 +27,8 @@ export const PANELS: Record<TabKey, LazyExoticComponent<ComponentType>> = {
   room: RoomPanel,
   rss: RssPanel,
   me: MePanel,
-  apps: AppsPanel,
+  game: GamesPanel,
+  personal: PersonalPanel,
 };
 
 export const ACTIVE_TAB_KEY = 'home.activeTab';

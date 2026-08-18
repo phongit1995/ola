@@ -74,11 +74,6 @@ import { ReplyPreviewBar } from './components/ReplyPreviewBar';
 import { EditingNotice } from './components/EditingNotice';
 import type { PendingComposerImage } from '@components/chat/composerTypes';
 
-const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
-const editActionIcon = require('@assets/icons/chat/ic_action_edit.png');
-const copyActionIcon = require('@assets/icons/chat/ic_menu_copy.png');
-const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
-
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
 export function ChatDetailScreen({ navigation, route }: Props) {
@@ -455,7 +450,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       actions.push({
         key: 'reply',
         label: t('chat.actionReply'),
-        icon: replyActionIcon,
+        icon: 'reply',
         onSelect: () => startReply(message),
       });
     }
@@ -463,8 +458,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       actions.push({
         key: 'copy',
         label: t('chat.actionCopy'),
-        icon: copyActionIcon,
-        iconTint: '#595959',
+        icon: 'copy',
         onSelect: () => copyMessage(message.content),
       });
     }
@@ -472,8 +466,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       actions.push({
         key: 'edit',
         label: t('chat.actionEdit'),
-        icon: editActionIcon,
-        iconTint: '#b5b5b5',
+        icon: 'edit',
         onSelect: () => startEdit(message),
       });
     }
@@ -481,7 +474,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
-        icon: deleteActionIcon,
+        icon: 'delete',
         destructive: true,
         onSelect: () => {
           pendingDeleteTargetRef.current = message;

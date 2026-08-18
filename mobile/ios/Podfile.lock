@@ -2652,6 +2652,51 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - RNNotifee (10.5.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNNotifee/NotifeeCore (= 10.5.0)
+    - Yoga
+  - RNNotifee/NotifeeCore (10.5.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNReactNativeHapticFeedback (3.0.0):
     - hermes-engine
     - RCTRequired
@@ -3080,6 +3125,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
   - RNImageCropPicker (from `../../node_modules/react-native-image-crop-picker`)
   - RNLocalize (from `../../node_modules/react-native-localize`)
+  - RNNotifee (from `../../node_modules/react-native-notify-kit`)
   - RNReactNativeHapticFeedback (from `../../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../../node_modules/react-native-reanimated`)
   - RNScreens (from `../../node_modules/react-native-screens`)
@@ -3327,6 +3373,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-image-crop-picker"
   RNLocalize:
     :path: "../../node_modules/react-native-localize"
+  RNNotifee:
+    :path: "../../node_modules/react-native-notify-kit"
   RNReactNativeHapticFeedback:
     :path: "../../node_modules/react-native-haptic-feedback"
   RNReanimated:
@@ -3466,6 +3514,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 7ade813d6efb2b650e01afdd54d699bc435843fb
   RNImageCropPicker: 5c9c8bef4c72d3f451b499aa0ecd90a644ea1bbd
   RNLocalize: 17bce0556e2d33fe1201c8cef53b3b7786e07612
+  RNNotifee: 5c2de0e67f1599c7dab006ae9c0dfd42fb6efd0e
   RNReactNativeHapticFeedback: 9dc72312c12cb53ee240b5b7aae1e167f3d940a6
   RNReanimated: 88aa8b4d603e07d55ad0cb5361dca2c0c25ec9c5
   RNScreens: 8d318eb8905fa1d3439a1ce5d567f82ae8245657

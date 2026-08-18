@@ -733,7 +733,7 @@ func TestShieldReflectAndDecay(t *testing.T) {
 	}
 
 	board := stripedBoard()
-	state := stateWith(board, [2]Fighter{{HP: 100, MP: 60, Armor: 10}, {HP: 100}}, 1)
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100, Armor: 10}, {HP: 100}}, 1)
 	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"ult"}`))
 	if err != nil {
 		t.Fatal(err)
@@ -986,14 +986,14 @@ func TestApplySwapSeparateTriplesDoesNotKeepTurn(t *testing.T) {
 	}
 }
 
-func TestUltimateScalesWithMana(t *testing.T) {
+func TestMyriadSwordsCostsFullMana(t *testing.T) {
 	board := stripedBoard()
-	poor := stateWith(board, [2]Fighter{{HP: 100, MP: 49}, {HP: 100}}, 7)
+	poor := stateWith(board, [2]Fighter{{HP: 100, MP: 99}, {HP: 100}}, 7)
 	if err := (Logic{}).ValidateMove(poor, 0, json.RawMessage(`{"type":"ult"}`)); err == nil {
 		t.Fatal("ult without enough mana was accepted")
 	}
 
-	state := stateWith(board, [2]Fighter{{HP: 100, MP: 80}, {HP: 100}}, 7)
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 7)
 	if err := (Logic{}).ValidateMove(state, 0, json.RawMessage(`{"type":"ult"}`)); err != nil {
 		t.Fatal(err)
 	}
@@ -1002,10 +1002,10 @@ func TestUltimateScalesWithMana(t *testing.T) {
 		t.Fatal(err)
 	}
 	next := nextAny.(*State)
-	if next.Fighters != [2]Fighter{{HP: 100, MP: 0}, {HP: 60}} {
+	if next.Fighters != [2]Fighter{{HP: 100, MP: 0}, {HP: 50}} {
 		t.Fatalf("unexpected fighters: %+v", next.Fighters)
 	}
-	if len(next.Steps) != 1 || next.Steps[0].Kind != "ult" || next.Steps[0].Damage != 40 {
+	if len(next.Steps) != 1 || next.Steps[0].Kind != "ult" || next.Steps[0].Skill != skillMyriadSwords || next.Steps[0].Damage != 50 {
 		t.Fatalf("unexpected steps: %+v", next.Steps)
 	}
 	if next.ExtraTurn || next.MoveCount != 1 || next.Rng != "7" {
@@ -1015,13 +1015,64 @@ func TestUltimateScalesWithMana(t *testing.T) {
 		t.Fatal("ult must not touch the board")
 	}
 
-	lethal := stateWith(board, [2]Fighter{{HP: 100, MP: 50}, {HP: 20}}, 7)
+	lethal := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 20}}, 7)
 	nextAny, err = (Logic{}).Apply(lethal, 0, json.RawMessage(`{"type":"ult"}`))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if over, winner := (Logic{}).Result(nextAny); !over || winner != 0 {
 		t.Fatalf("lethal ult: over=%v winner=%d", over, winner)
+	}
+}
+
+func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
+	board := stripedBoard()
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 7)
+	move := json.RawMessage(`{"type":"ult","skill":"lightning-god"}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	if next.Fighters[0].MP != 0 {
+		t.Fatalf("lightning ultimate did not consume 100 mana: %+v", next.Fighters[0])
+	}
+	if len(next.Steps) < 2 || next.Steps[0].Kind != stepUlt || next.Steps[1].Kind != stepGravity {
+		t.Fatalf("lightning ultimate must be followed by gravity: %+v", next.Steps)
+	}
+	ult := next.Steps[0]
+	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != 0 {
+		t.Fatalf("unexpected lightning step: %+v", ult)
+	}
+	seen := make(map[int]bool, len(ult.Cells))
+	for offset := 0; offset < len(ult.Cells); offset += 4 {
+		cells := ult.Cells[offset : offset+4]
+		if cells[1]-cells[0] != 1 || cells[2]-cells[0] != grid || cells[3]-cells[0] != grid+1 {
+			t.Fatalf("ultimate cells are not four 2x2 blocks: %v", ult.Cells)
+		}
+		if cells[0]%grid >= grid-1 || cells[3] >= boardSize {
+			t.Fatalf("ultimate block is outside the board: %v", cells)
+		}
+		for _, cell := range cells {
+			if seen[cell] {
+				t.Fatalf("ultimate blocks overlap at cell %d: %v", cell, ult.Cells)
+			}
+			seen[cell] = true
+		}
+	}
+	if next.Rng == state.Rng || reflect.DeepEqual(next.Board, board) {
+		t.Fatalf("lightning ultimate did not advance RNG and collapse board: rng=%s board=%v", next.Rng, next.Board)
+	}
+}
+
+func TestUltimateRejectsUnknownSkill(t *testing.T) {
+	state := stateWith(stripedBoard(), [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 7)
+	if err := (Logic{}).ValidateMove(state, 0, json.RawMessage(`{"type":"ult","skill":"ice"}`)); err == nil {
+		t.Fatal("unknown ultimate skill was accepted")
 	}
 }
 

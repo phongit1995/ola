@@ -1,0 +1,592 @@
+import { Assets, Container, Graphics, Rectangle, Sprite, Texture, type Ticker } from 'pixi.js';
+import lightningGodUrl from '../../assets/ultimate/lightning-god.webp';
+import myriadSwordsUrl from '../../assets/ultimate/myriad-swords.webp';
+import { addTick, popIn, pressable, removeTick } from '../../kit';
+import { DESIGN_W } from '../../layout';
+import type { UltimateSkillId } from '../../logic/server-types';
+
+export type { UltimateSkillId } from '../../logic/server-types';
+export type UltimatePickerVariant =
+  | 'electric-pulse'
+  | 'dual-halo'
+  | 'orbit-sparks'
+  | 'storm-hex'
+  | 'arc-diamond'
+  | 'rune-square'
+  | 'shield-charge'
+  | 'chain-link'
+  | 'shock-burst'
+  | 'minimal-breathe';
+
+type FrameShape = 'circle' | 'diamond' | 'hexagon' | 'rounded-square' | 'shield' | 'none';
+type EffectStyle =
+  | 'pulse'
+  | 'dual-halo'
+  | 'orbit'
+  | 'storm'
+  | 'arc'
+  | 'runes'
+  | 'charge'
+  | 'chain'
+  | 'burst'
+  | 'breathe';
+type Point = readonly [x: number, y: number];
+
+interface UltimatePickerAppearance {
+  frameShape: FrameShape;
+  frameColors: [number, number];
+  frameWidth: number;
+  itemSize: number;
+  iconSize: number;
+  positions: readonly [Point, Point];
+  connector?: 'line' | 'arc';
+  lightningBackdrop?: boolean;
+  effect: EffectStyle;
+}
+
+const APPEARANCES: Record<UltimatePickerVariant, UltimatePickerAppearance> = {
+  'electric-pulse': {
+    frameShape: 'circle',
+    frameColors: [0xa855f7, 0xff7a32],
+    frameWidth: 3,
+    itemSize: 72,
+    iconSize: 64,
+    positions: [[0, -122], [0, -46]],
+    lightningBackdrop: true,
+    effect: 'pulse',
+  },
+  'dual-halo': {
+    frameShape: 'circle',
+    frameColors: [0xc084fc, 0xff9b4a],
+    frameWidth: 3,
+    itemSize: 74,
+    iconSize: 62,
+    positions: [[0, -126], [0, -48]],
+    lightningBackdrop: true,
+    effect: 'dual-halo',
+  },
+  'orbit-sparks': {
+    frameShape: 'circle',
+    frameColors: [0x9333ea, 0xff6b24],
+    frameWidth: 2,
+    itemSize: 74,
+    iconSize: 61,
+    positions: [[0, -126], [0, -48]],
+    lightningBackdrop: true,
+    effect: 'orbit',
+  },
+  'storm-hex': {
+    frameShape: 'hexagon',
+    frameColors: [0xa855f7, 0xff7a32],
+    frameWidth: 3,
+    itemSize: 76,
+    iconSize: 61,
+    positions: [[0, -130], [0, -50]],
+    lightningBackdrop: true,
+    effect: 'storm',
+  },
+  'arc-diamond': {
+    frameShape: 'diamond',
+    frameColors: [0xc084fc, 0xff914d],
+    frameWidth: 3,
+    itemSize: 78,
+    iconSize: 58,
+    positions: [[0, -132], [0, -50]],
+    lightningBackdrop: true,
+    effect: 'arc',
+  },
+  'rune-square': {
+    frameShape: 'rounded-square',
+    frameColors: [0x8b5cf6, 0xff7a32],
+    frameWidth: 3,
+    itemSize: 74,
+    iconSize: 60,
+    positions: [[0, -126], [0, -48]],
+    lightningBackdrop: true,
+    effect: 'runes',
+  },
+  'shield-charge': {
+    frameShape: 'shield',
+    frameColors: [0xb76cff, 0xff8b3d],
+    frameWidth: 3,
+    itemSize: 76,
+    iconSize: 57,
+    positions: [[0, -130], [0, -50]],
+    lightningBackdrop: true,
+    effect: 'charge',
+  },
+  'chain-link': {
+    frameShape: 'circle',
+    frameColors: [0xa855f7, 0xff7a32],
+    frameWidth: 3,
+    itemSize: 70,
+    iconSize: 61,
+    positions: [[0, -120], [0, -46]],
+    connector: 'line',
+    lightningBackdrop: true,
+    effect: 'chain',
+  },
+  'shock-burst': {
+    frameShape: 'none',
+    frameColors: [0xa855f7, 0xff7a32],
+    frameWidth: 0,
+    itemSize: 78,
+    iconSize: 66,
+    positions: [[0, -132], [0, -50]],
+    lightningBackdrop: true,
+    effect: 'burst',
+  },
+  'minimal-breathe': {
+    frameShape: 'circle',
+    frameColors: [0x7c3aed, 0xea580c],
+    frameWidth: 2,
+    itemSize: 68,
+    iconSize: 61,
+    positions: [[0, -116], [0, -44]],
+    lightningBackdrop: true,
+    effect: 'breathe',
+  },
+};
+
+export const ULTIMATE_PICKER_VARIANTS = Object.keys(
+  APPEARANCES,
+) as UltimatePickerVariant[];
+
+export function isUltimatePickerVariant(value: string | null): value is UltimatePickerVariant {
+  return value != null && Object.hasOwn(APPEARANCES, value);
+}
+
+export interface UltimatePickerState {
+  visible: boolean;
+  selected: UltimateSkillId | null;
+  options: Array<{ id: UltimateSkillId; name: string }>;
+}
+
+export interface UltimatePickerAnchor {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface UltimatePicker {
+  view: Container;
+  open(): void;
+  close(): void;
+  layout(
+    designH: number,
+    insetTop?: number,
+    insetBottom?: number,
+    anchor?: UltimatePickerAnchor | null,
+  ): void;
+  getState(): UltimatePickerState;
+}
+
+interface SkillDefinition {
+  id: UltimateSkillId;
+  name: string;
+  texture: Texture;
+}
+
+const FLOAT_MARGIN = 10;
+const ULTIMATE_FALLBACK_SIZE = 84;
+const ULTIMATE_FALLBACK_RIGHT = 10;
+const ULTIMATE_FALLBACK_BOTTOM = 58;
+
+function clamp(value: number, min: number, max: number): number {
+  if (max < min) return min;
+  return Math.min(Math.max(value, min), max);
+}
+
+function drawFrame(
+  frame: Graphics,
+  shape: FrameShape,
+  size: number,
+  width: number,
+  color: number,
+): void {
+  if (shape === 'none') return;
+  const radius = size / 2 - width;
+  if (shape === 'circle') {
+    frame.circle(0, 0, radius);
+  } else if (shape === 'diamond') {
+    frame
+      .moveTo(0, -radius)
+      .lineTo(radius, 0)
+      .lineTo(0, radius)
+      .lineTo(-radius, 0)
+      .closePath();
+  } else if (shape === 'hexagon') {
+    for (let index = 0; index < 6; index += 1) {
+      const angle = -Math.PI / 2 + (index * Math.PI) / 3;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      if (index === 0) frame.moveTo(x, y);
+      else frame.lineTo(x, y);
+    }
+    frame.closePath();
+  } else if (shape === 'rounded-square') {
+    frame.roundRect(-radius, -radius, radius * 2, radius * 2, 14);
+  } else {
+    frame
+      .moveTo(0, -radius)
+      .lineTo(radius * 0.78, -radius * 0.62)
+      .lineTo(radius * 0.72, radius * 0.34)
+      .lineTo(0, radius)
+      .lineTo(-radius * 0.72, radius * 0.34)
+      .lineTo(-radius * 0.78, -radius * 0.62)
+      .closePath();
+  }
+  frame.stroke({ width, color, alpha: 1, join: 'round' });
+}
+
+function makeEffectLayer(style: EffectStyle, size: number, color: number, skillIndex: number): Container {
+  const layer = new Container();
+  const effect = new Graphics();
+  const radius = size / 2;
+
+  if (style === 'pulse') {
+    if (skillIndex === 0) {
+      const topBolt = new Graphics()
+        .moveTo(-9, -radius - 7)
+        .lineTo(-2, -radius - 1)
+        .lineTo(-7, -radius + 2)
+        .lineTo(2, -radius + 8)
+        .stroke({ width: 2.2, color: 0xf3e8ff, alpha: 0.96, cap: 'round', join: 'round' });
+      const leftBolt = new Graphics()
+        .moveTo(-radius - 7, -7)
+        .lineTo(-radius - 1, -1)
+        .lineTo(-radius - 5, 3)
+        .lineTo(-radius + 3, 9)
+        .stroke({ width: 2, color: 0xc084fc, alpha: 0.92, cap: 'round', join: 'round' });
+      const rightBolt = new Graphics()
+        .moveTo(radius + 6, -5)
+        .lineTo(radius, 1)
+        .lineTo(radius + 5, 4)
+        .lineTo(radius - 3, 10)
+        .stroke({ width: 2, color: 0xd8b4fe, alpha: 0.92, cap: 'round', join: 'round' });
+      layer.addChild(topBolt, leftBolt, rightBolt);
+    } else {
+      effect
+        .circle(-radius - 2, -6, 2.2)
+        .circle(radius + 1, 5, 1.8)
+        .circle(8, -radius - 2, 1.5)
+        .fill({ color, alpha: 0.84 });
+    }
+  } else if (style === 'dual-halo') {
+    const firstRing = new Graphics()
+      .circle(0, 0, radius - 2)
+      .stroke({ width: 2.2, color, alpha: 0.72 });
+    const secondRing = new Graphics()
+      .circle(0, 0, radius - 2)
+      .stroke({ width: 1.4, color: 0xffffff, alpha: 0.56 });
+    layer.addChild(firstRing, secondRing);
+  } else if (style === 'orbit') {
+    for (let index = 0; index < 4; index += 1) {
+      const angle = (index * Math.PI) / 2;
+      effect
+        .circle(Math.cos(angle) * (radius + 4), Math.sin(angle) * (radius + 4), index % 2 === 0 ? 3 : 2)
+        .fill({ color: index % 2 === 0 ? 0xffffff : color, alpha: 0.95 });
+    }
+  } else if (style === 'storm') {
+    for (let index = 0; index < 6; index += 1) {
+      const angle = (index * Math.PI) / 3;
+      const x = Math.cos(angle) * (radius - 2);
+      const y = Math.sin(angle) * (radius - 2);
+      const tx = Math.cos(angle) * (radius + 7);
+      const ty = Math.sin(angle) * (radius + 7);
+      effect.moveTo(x, y).lineTo(tx, ty);
+    }
+    effect.stroke({ width: 2.5, color, alpha: 0.9, cap: 'round' });
+  } else if (style === 'arc') {
+    effect
+      .arc(0, 0, radius + 4, -Math.PI * 0.42, Math.PI * 0.2)
+      .stroke({ width: 3, color, alpha: 0.9, cap: 'round' })
+      .arc(0, 0, radius + 4, Math.PI * 0.58, Math.PI * 1.2)
+      .stroke({ width: 3, color: 0xffffff, alpha: 0.62, cap: 'round' });
+  } else if (style === 'runes') {
+    const edge = radius + 3;
+    const arm = 9;
+    effect
+      .moveTo(-edge + arm, -edge).lineTo(-edge, -edge).lineTo(-edge, -edge + arm)
+      .moveTo(edge - arm, -edge).lineTo(edge, -edge).lineTo(edge, -edge + arm)
+      .moveTo(edge, edge - arm).lineTo(edge, edge).lineTo(edge - arm, edge)
+      .moveTo(-edge + arm, edge).lineTo(-edge, edge).lineTo(-edge, edge - arm)
+      .stroke({ width: 3, color, alpha: 0.88, cap: 'round', join: 'round' });
+  } else if (style === 'charge') {
+    for (let index = 0; index < 8; index += 1) {
+      const angle = (index * Math.PI) / 4;
+      effect
+        .moveTo(Math.cos(angle) * (radius - 1), Math.sin(angle) * (radius - 1))
+        .lineTo(Math.cos(angle) * (radius + (index % 2 === 0 ? 8 : 4)), Math.sin(angle) * (radius + (index % 2 === 0 ? 8 : 4)));
+    }
+    effect.stroke({ width: 2, color, alpha: 0.7, cap: 'round' });
+  } else if (style === 'chain') {
+    effect
+      .circle(0, -radius - 2, 4).stroke({ width: 2, color, alpha: 0.9 })
+      .circle(0, radius + 2, 4).stroke({ width: 2, color, alpha: 0.9 });
+  } else if (style === 'burst') {
+    for (let index = 0; index < 12; index += 1) {
+      const angle = (index * Math.PI) / 6;
+      const inner = radius - (index % 2 === 0 ? 7 : 3);
+      const outer = radius + (index % 2 === 0 ? 8 : 4);
+      effect
+        .moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner)
+        .lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+    }
+    effect.stroke({ width: 2.5, color, alpha: 0.86, cap: 'round' });
+  } else {
+    effect.circle(0, 0, radius + 1).fill({ color, alpha: 0.14 });
+  }
+
+  if (style !== 'dual-halo' && !(style === 'pulse' && skillIndex === 0)) {
+    layer.addChild(effect);
+  }
+  return layer;
+}
+
+function animateEffect(effect: Container, style: EffectStyle, index: number): void {
+  let elapsed = index * 370;
+  const step = (ticker: Ticker): void => {
+    if (effect.destroyed) {
+      removeTick(step);
+      return;
+    }
+    elapsed += ticker.deltaMS;
+    const wave = (Math.sin(elapsed / 230) + 1) / 2;
+
+    if (style === 'pulse' && index === 0) {
+      effect.children.forEach((bolt, boltIndex) => {
+        const flash = Math.sin(elapsed / (43 + boltIndex * 9) + boltIndex * 2.1);
+        bolt.alpha = flash > 0.15 ? 0.88 : 0.12;
+        bolt.x = flash > 0.72 ? (boltIndex - 1) * 1.2 : 0;
+        bolt.y = flash < -0.55 ? 1 : 0;
+      });
+    } else if (style === 'pulse') {
+      effect.rotation = elapsed / 3600;
+      effect.alpha = 0.42 + wave * 0.46;
+    } else if (style === 'dual-halo') {
+      effect.children.forEach((ring, ringIndex) => {
+        const ripple = ((elapsed / 1400) + ringIndex * 0.5) % 1;
+        const scale = 0.9 + ripple * 0.34;
+        ring.scale.set(scale);
+        ring.alpha = Math.pow(1 - ripple, 1.6) * (ringIndex === 0 ? 0.72 : 0.5);
+      });
+    } else if (style === 'orbit') {
+      effect.rotation = elapsed / 720;
+      effect.alpha = 0.72 + wave * 0.28;
+    } else if (style === 'storm' || style === 'burst') {
+      effect.rotation = style === 'storm' ? elapsed / 2400 : -elapsed / 1800;
+      effect.alpha = 0.48 + wave * 0.52;
+    } else if (style === 'arc' || style === 'runes') {
+      effect.rotation = (style === 'arc' ? 1 : -1) * elapsed / 2100;
+      effect.alpha = 0.7 + wave * 0.3;
+    } else if (style === 'charge') {
+      const scale = 0.92 + wave * 0.14;
+      effect.scale.set(scale);
+      effect.alpha = 0.35 + wave * 0.65;
+    } else if (style === 'chain') {
+      effect.y = -2 + wave * 4;
+      effect.alpha = 0.58 + wave * 0.42;
+    } else {
+      const intensity = style === 'breathe' ? 0.05 : 0.1;
+      effect.scale.set(1 - intensity / 2 + wave * intensity);
+      effect.alpha = 0.5 + wave * 0.5;
+    }
+  };
+  addTick(step);
+}
+
+function makeSkillItem(
+  texture: Texture,
+  index: number,
+  appearance: UltimatePickerAppearance,
+  onSelect: () => void,
+): Container {
+  const view = new Container();
+
+  if (appearance.lightningBackdrop === true && index === 0) {
+    const lightning = new Graphics();
+    const radius = appearance.itemSize / 2 - appearance.frameWidth - 1;
+    lightning.circle(0, 0, radius).fill({ color: 0x4c1d95, alpha: 0.28 });
+    lightning
+      .moveTo(-17, -29)
+      .lineTo(-27, -9)
+      .lineTo(-18, -11)
+      .lineTo(-27, 12)
+      .moveTo(17, -27)
+      .lineTo(26, -8)
+      .lineTo(17, -10)
+      .lineTo(25, 14)
+      .moveTo(-8, 25)
+      .lineTo(0, 14)
+      .lineTo(4, 20)
+      .lineTo(11, 7)
+      .stroke({ width: 2.2, color: 0xd8b4fe, alpha: 0.95, cap: 'round', join: 'round' });
+    view.addChild(lightning);
+  }
+
+  const effect = makeEffectLayer(
+    appearance.effect,
+    appearance.itemSize,
+    appearance.frameColors[index]!,
+    index,
+  );
+  view.addChild(effect);
+  animateEffect(effect, appearance.effect, index);
+
+  const icon = new Sprite(texture);
+  icon.anchor.set(0.5);
+  const iconScale = Math.min(
+    appearance.iconSize / icon.texture.width,
+    appearance.iconSize / icon.texture.height,
+  );
+  icon.scale.set(iconScale);
+  view.addChild(icon);
+
+  const frame = new Graphics();
+  drawFrame(
+    frame,
+    appearance.frameShape,
+    appearance.itemSize,
+    appearance.frameWidth,
+    appearance.frameColors[index]!,
+  );
+  view.addChild(frame);
+
+  view.hitArea = new Rectangle(
+    -appearance.itemSize / 2,
+    -appearance.itemSize / 2,
+    appearance.itemSize,
+    appearance.itemSize,
+  );
+  pressable(view, onSelect);
+  return view;
+}
+
+export async function buildUltimatePicker(
+  onConfirm: (skill: UltimateSkillId) => void = () => {},
+  variant: UltimatePickerVariant = 'electric-pulse',
+): Promise<UltimatePicker> {
+  const appearance = APPEARANCES[variant];
+  const halfItem = appearance.itemSize / 2 + 9;
+  const minX = Math.min(...appearance.positions.map(([x]) => x - halfItem));
+  const maxX = Math.max(...appearance.positions.map(([x]) => x + halfItem));
+  const minY = Math.min(...appearance.positions.map(([, y]) => y - halfItem));
+  const maxY = Math.max(...appearance.positions.map(([, y]) => y + halfItem));
+  const contentW = maxX - minX;
+  const contentH = maxY - minY;
+  const [lightningTexture, swordsTexture] = await Promise.all([
+    Assets.load<Texture>(lightningGodUrl),
+    Assets.load<Texture>(myriadSwordsUrl),
+  ]);
+  lightningTexture.source.autoGenerateMipmaps = false;
+  swordsTexture.source.autoGenerateMipmaps = false;
+
+  const skills: SkillDefinition[] = [
+    {
+      id: 'lightning-god',
+      name: 'LÔI THẦN\nGIÁNG THẾ',
+      texture: lightningTexture,
+    },
+    {
+      id: 'myriad-swords',
+      name: 'VẠN KIẾM\nQUY TÔNG',
+      texture: swordsTexture,
+    },
+  ];
+
+  const view = new Container();
+  const dismissLayer = new Graphics();
+  const options = new Container();
+  view.addChild(dismissLayer, options);
+
+  if (appearance.connector != null) {
+    const connector = new Graphics();
+    const [first, second] = appearance.positions;
+    if (appearance.connector === 'line') {
+      const middleY = (first[1] + second[1]) / 2;
+      connector
+        .moveTo(first[0], first[1])
+        .lineTo(first[0], middleY)
+        .stroke({ width: 3, color: appearance.frameColors[0], alpha: 0.78, cap: 'round' })
+        .moveTo(second[0], middleY)
+        .lineTo(second[0], second[1])
+        .stroke({ width: 3, color: appearance.frameColors[1], alpha: 0.78, cap: 'round' });
+    } else {
+      connector
+        .moveTo(first[0], first[1])
+        .quadraticCurveTo(-8, -104, second[0], second[1])
+        .stroke({ width: 3, color: appearance.frameColors[0], alpha: 0.78, cap: 'round' });
+    }
+    options.addChild(connector);
+  }
+
+  let selected: UltimateSkillId | null = null;
+  let fitScale = 1;
+
+  const closePicker = (): void => {
+    view.visible = false;
+  };
+
+  skills.forEach((skill, index) => {
+    const item = makeSkillItem(skill.texture, index, appearance, () => {
+      selected = skill.id;
+      closePicker();
+      onConfirm(skill.id);
+    });
+    item.position.set(...appearance.positions[index]!);
+    options.addChild(item);
+  });
+
+  dismissLayer.eventMode = 'static';
+  dismissLayer.on('pointertap', closePicker);
+  view.visible = false;
+
+  return {
+    view,
+    open(): void {
+      selected = null;
+      view.visible = true;
+      options.scale.set(fitScale);
+      options.alpha = 1;
+      popIn(options, 0, 260);
+    },
+    close: closePicker,
+    layout(designH, insetTop = 0, insetBottom = 0, anchor = null): void {
+      dismissLayer.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x000000, alpha: 0.001 });
+      const fallbackAnchor: UltimatePickerAnchor = {
+        x: DESIGN_W - ULTIMATE_FALLBACK_RIGHT - ULTIMATE_FALLBACK_SIZE,
+        y: designH - insetBottom - ULTIMATE_FALLBACK_BOTTOM - ULTIMATE_FALLBACK_SIZE,
+        width: ULTIMATE_FALLBACK_SIZE,
+        height: ULTIMATE_FALLBACK_SIZE,
+      };
+      const target = anchor ?? fallbackAnchor;
+      const availableW = DESIGN_W - FLOAT_MARGIN * 2;
+      const availableH = Math.max(appearance.itemSize, target.y - insetTop - FLOAT_MARGIN);
+      fitScale = Math.min(1, availableW / contentW, availableH / contentH);
+
+      const targetCenterX = target.x + target.width / 2;
+      const optionsX = clamp(
+        targetCenterX,
+        FLOAT_MARGIN - minX * fitScale,
+        DESIGN_W - FLOAT_MARGIN - maxX * fitScale,
+      );
+      const optionsY = clamp(
+        target.y,
+        insetTop + FLOAT_MARGIN - minY * fitScale,
+        designH - insetBottom - FLOAT_MARGIN - maxY * fitScale,
+      );
+
+      options.scale.set(fitScale);
+      options.position.set(Math.round(optionsX), Math.round(optionsY));
+    },
+    getState(): UltimatePickerState {
+      return {
+        visible: view.visible,
+        selected,
+        options: skills.map((skill) => ({ id: skill.id, name: skill.name.replace('\n', ' ') })),
+      };
+    },
+  };
+}

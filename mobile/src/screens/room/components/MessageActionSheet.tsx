@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import {
   Animated,
   Image,
-
   Platform,
   Pressable,
   StatusBar,
@@ -15,7 +14,8 @@ import {
 } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { ImageSourcePropType, ViewStyle } from 'react-native';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import type { ViewStyle } from 'react-native';
 import type { ReactionType } from '@ola/shared/types';
 import { useKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { hapticImpact } from '@lib/haptics';
@@ -24,11 +24,12 @@ import { REACTION_IMAGE, REACTION_ORDER } from '@lib/reactions';
 export interface MessageSheetAction {
   key: string;
   label: string;
-  icon?: ImageSourcePropType;
-  iconTint?: string;
+  icon?: MessageActionIconName;
   destructive?: boolean;
   onSelect: () => void;
 }
+
+export type MessageActionIconName = 'reply' | 'copy' | 'edit' | 'block' | 'delete';
 
 export interface AnchorRect {
   x: number;
@@ -66,6 +67,59 @@ const MENU_PADDING_V = 6;
 const MENU_MIN_WIDTH = 168;
 const POPUP_GAP = 8;
 const POPUP_MARGIN = 12;
+
+function MessageActionIcon({ name }: { name: MessageActionIconName }) {
+  const paths = {
+    reply: (
+      <>
+        <Path d="m9 17-5-5 5-5" />
+        <Path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+      </>
+    ),
+    copy: (
+      <>
+        <Rect x="9" y="9" width="11" height="11" rx="2" />
+        <Path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+      </>
+    ),
+    edit: (
+      <>
+        <Path d="M12 20h9" />
+        <Path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      </>
+    ),
+    block: (
+      <>
+        <Circle cx="12" cy="12" r="10" />
+        <Path d="m4.93 4.93 14.14 14.14" />
+      </>
+    ),
+    delete: (
+      <>
+        <Path d="M3 6h18" />
+        <Path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        <Path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+        <Path d="M10 11v6" />
+        <Path d="M14 11v6" />
+      </>
+    ),
+  } satisfies Record<MessageActionIconName, ReactNode>;
+
+  return (
+    <Svg
+      width={20}
+      height={20}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="rgba(0,0,0,0.87)"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {paths[name]}
+    </Svg>
+  );
+}
 
 function ReactionRow({
   onReact,
@@ -123,13 +177,7 @@ function ActionMenu({
           style={{ height: MENU_ITEM_HEIGHT }}
           className="flex-row items-center gap-2.5 px-4 active:bg-neutral-100"
         >
-          {action.icon != null && (
-            <Image
-              source={action.icon}
-              style={{ width: 20, height: 20, tintColor: action.iconTint }}
-              resizeMode="contain"
-            />
-          )}
+          {action.icon != null && <MessageActionIcon name={action.icon} />}
           <Text
             className="text-base"
             style={{ color: action.destructive ? '#e34545' : 'rgba(0,0,0,0.87)' }}
@@ -400,13 +448,7 @@ function BottomSheet({
               }}
               className="flex-row items-center gap-3 px-5 py-3 active:bg-neutral-100"
             >
-              {action.icon != null && (
-                <Image
-                  source={action.icon}
-                  style={{ width: 20, height: 20, tintColor: action.iconTint }}
-                  resizeMode="contain"
-                />
-              )}
+              {action.icon != null && <MessageActionIcon name={action.icon} />}
               <Text
                 className="text-base"
                 style={{ color: action.destructive ? '#e34545' : 'rgba(0,0,0,0.87)' }}

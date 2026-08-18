@@ -11,6 +11,9 @@ const (
 	stepGravity = "gravity"
 	stepShuffle = "shuffle"
 	stepUlt     = "ult"
+
+	skillLightningGod = "lightning-god"
+	skillMyriadSwords = "myriad-swords"
 )
 
 type State struct {
@@ -44,12 +47,14 @@ type Step struct {
 	Spawns        []Spawn        `json:"spawns,omitzero"`
 	Board         []int          `json:"board,omitempty"`
 	Damage        int            `json:"damage,omitempty"`
+	Skill         string         `json:"skill,omitempty"`
 }
 
 type Move struct {
-	Type string `json:"type"`
-	A    *int   `json:"a"`
-	B    *int   `json:"b"`
+	Type  string `json:"type"`
+	A     *int   `json:"a"`
+	B     *int   `json:"b"`
+	Skill string `json:"skill,omitempty"`
 }
 
 type Logic struct{}

@@ -131,10 +131,39 @@ function ActionMenuButton({
       }`}
     >
       {action.icon != null && (
-        <img src={action.icon} alt="" className="h-4 w-4 object-contain" />
+        <ActionIcon action={action} className="h-4 w-4" />
       )}
       {action.label}
     </button>
+  );
+}
+
+function ActionIcon({
+  action,
+  className,
+}: {
+  action: MessageSheetAction;
+  className: string;
+}) {
+  if (action.icon == null) return null;
+
+  const maskImage = `url("${action.icon}")`;
+
+  return (
+    <span
+      aria-hidden="true"
+      className={`${className} shrink-0 bg-black/87`}
+      style={{
+        WebkitMaskImage: maskImage,
+        maskImage,
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+      }}
+    />
   );
 }
 
@@ -211,11 +240,7 @@ function BottomSheet({
               }`}
             >
               {action.icon != null && (
-                <img
-                  src={action.icon}
-                  alt=""
-                  className="h-5 w-5 object-contain"
-                />
+                <ActionIcon action={action} className="h-5 w-5" />
               )}
               {action.label}
             </button>

@@ -34,7 +34,8 @@ import { ChatBotScreen } from '@screens/chat-bot/ChatBotScreen';
 import { RoomListScreen } from '@screens/room/RoomListScreen';
 import { RoomChatScreen } from '@screens/room/RoomChatScreen';
 import { MeFeedScreen } from '@screens/me/MeFeedScreen';
-import { AppsScreen } from '@screens/apps/AppsScreen';
+import { GamesScreen } from '@screens/games/GamesScreen';
+import { PersonalScreen } from '@screens/personal/PersonalScreen';
 import { ProfileViewScreen } from '@screens/profile/ProfileViewScreen';
 import { EditProfileScreen } from '@screens/profile/EditProfileScreen';
 import { VipStoreScreen } from '@screens/vip/VipStoreScreen';
@@ -122,7 +123,8 @@ const VISIBLE_TABS: (keyof MainTabParamList)[] = [
   TAB_ROUTES.Chat,
   TAB_ROUTES.Room,
   TAB_ROUTES.Me,
-  TAB_ROUTES.Apps,
+  TAB_ROUTES.Game,
+  TAB_ROUTES.Personal,
 ];
 
 function readStoredTab(): keyof MainTabParamList {
@@ -215,11 +217,16 @@ function MainTabs() {
           options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
         /> */}
         <Tabs.Screen
-          name={TAB_ROUTES.Apps}
-          component={AppsScreen}
+          name={TAB_ROUTES.Game}
+          component={GamesScreen}
+          options={{ title: t('home.tabGame'), tabBarIcon: tabIcon('game') }}
+        />
+        <Tabs.Screen
+          name={TAB_ROUTES.Personal}
+          component={PersonalScreen}
           options={{
-            title: t('home.tabApps'),
-            tabBarIcon: tabIcon('apps'),
+            title: t('home.tabPersonal'),
+            tabBarIcon: tabIcon('personal'),
             tabBarBadge:
               notifUnread > 0 ? (notifUnread > 99 ? '99+' : notifUnread) : undefined,
             tabBarBadgeStyle: {

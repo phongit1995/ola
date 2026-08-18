@@ -192,6 +192,34 @@ export function swapCells(board: Board, a: number, b: number): void {
   board[b] = tmp;
 }
 
+function twoByTwoCells(topLeft: number): number[] {
+  return [topLeft, topLeft + 1, topLeft + GRID, topLeft + GRID + 1];
+}
+
+/** Pick four non-overlapping 2x2 strike zones for Lôi Thần Giáng Thế. */
+export function randomFourTwoByTwoBlocks(random: () => number = Math.random): number[][] {
+  const choicesPerAxis = GRID - 1;
+  let candidates = Array.from(
+    { length: choicesPerAxis * choicesPerAxis },
+    (_, choice) => Math.floor(choice / choicesPerAxis) * GRID + (choice % choicesPerAxis),
+  );
+  const blocks: number[][] = [];
+  const occupied = new Set<number>();
+
+  while (blocks.length < 4 && candidates.length > 0) {
+    const rawPick = Math.floor(random() * candidates.length);
+    const pick = Math.max(0, Math.min(candidates.length - 1, rawPick));
+    const cells = twoByTwoCells(candidates[pick]);
+    blocks.push(cells);
+    cells.forEach((cell) => occupied.add(cell));
+    candidates = candidates.filter((topLeft) =>
+      twoByTwoCells(topLeft).every((cell) => !occupied.has(cell)),
+    );
+  }
+
+  return blocks;
+}
+
 export function findValidMoves(board: Board): Array<[number, number]> {
   const moves: Array<[number, number]> = [];
   const test = (a: number, b: number): void => {

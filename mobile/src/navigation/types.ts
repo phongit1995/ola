@@ -19,7 +19,8 @@ export type MainTabParamList = {
   [TAB_ROUTES.Room]: undefined;
   [TAB_ROUTES.Me]: undefined;
   [TAB_ROUTES.Rss]: undefined;
-  [TAB_ROUTES.Apps]: undefined;
+  [TAB_ROUTES.Game]: undefined;
+  [TAB_ROUTES.Personal]: undefined;
 };
 
 export type RootStackParamList = {

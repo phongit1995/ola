@@ -21,12 +21,9 @@ export interface AppItem {
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
-export const APP_ITEMS: AppItem[] = [
-  {
-    icon: require('@assets/icons/apps/notify.png'),
-    titleKey: 'home.apps.notifications',
-    action: 'notifications',
-  },
+export const LEFT_MINIMIZE_GAME_SLUGS = ['war-god'];
+
+export const GAME_ITEMS: AppItem[] = [
   {
     icon: require('@assets/icons/apps/egg.png'),
     titleKey: 'home.apps.egg',
@@ -41,6 +38,14 @@ export const APP_ITEMS: AppItem[] = [
     icon: require('@assets/icons/apps/wheel.webp'),
     titleKey: 'home.apps.wheel',
     action: 'wheel',
+  },
+];
+
+export const PERSONAL_ITEMS: AppItem[] = [
+  {
+    icon: require('@assets/icons/apps/notify.png'),
+    titleKey: 'home.apps.notifications',
+    action: 'notifications',
   },
   {
     icon: require('@assets/icons/apps/personal.png'),
