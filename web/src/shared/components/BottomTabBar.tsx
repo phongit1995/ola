@@ -1,9 +1,9 @@
-import iconMessage from '@/assets/icons/message.png';
-import iconMessageActive from '@/assets/icons/message-active.png';
-import iconRoom from '@/assets/icons/room.png';
-import iconRoomActive from '@/assets/icons/room-active.png';
-import iconMe from '@/assets/icons/me.png';
-import iconMeActive from '@/assets/icons/me-active.png';
+import iconMessage from '@/assets/icons/message.svg';
+import iconMessageActive from '@/assets/icons/message-active.svg';
+import iconRoom from '@/assets/icons/room.svg';
+import iconRoomActive from '@/assets/icons/room-active.svg';
+import iconMe from '@/assets/icons/me.svg';
+import iconMeActive from '@/assets/icons/me-active.svg';
 // import iconRss from '@/assets/icons/rss.png';
 // import iconRssActive from '@/assets/icons/rss-active.png';
 import iconGame from '@/assets/icons/game.svg';
