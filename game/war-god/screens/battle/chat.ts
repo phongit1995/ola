@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { A, tex } from '../../assets';
-import { HEADING, makeText } from '../../kit';
+import { makeText } from '../../kit';
 import type { BotLevel } from '../../logic/battle';
 import { pvp } from '../../pvp';
 import { botReply } from './bot-chat';
@@ -155,7 +155,7 @@ export function buildChat(chatDeps: ChatDeps): Container {
   chatBox.addChild(scrollZone);
 
   inputBg = new Sprite(tex[A.chat.input]);
-  inputBg.width = CHAT_W - CHAT_PAD * 2 - 92;
+  inputBg.width = CHAT_W - CHAT_PAD * 2;
   inputBg.height = 34;
   inputBg.x = CHAT_PAD;
   chatBox.addChild(inputBg);
@@ -171,18 +171,15 @@ export function buildChat(chatDeps: ChatDeps): Container {
   chatBox.addChild(smiley);
 
   sendBtn = new Container();
-  const sendBg = new Sprite(tex[A.chat.btnSend]);
-  sendBg.width = 84;
-  sendBg.height = 38;
-  sendBtn.addChild(sendBg);
-  const sendLabel = makeText('GỬI', 14, 0xffffff, '700', HEADING);
-  sendLabel.x = 42;
-  sendLabel.y = 19;
-  sendBtn.addChild(sendLabel);
+  const sendIcon = new Sprite(tex[A.chat.sendIcon]);
+  sendIcon.anchor.set(0.5);
+  sendIcon.scale.set(24 / sendIcon.texture.height);
+  sendBtn.addChild(sendIcon);
+  sendBtn.hitArea = new Rectangle(-18, -17, 36, 34);
   sendBtn.eventMode = 'static';
   sendBtn.cursor = 'pointer';
   sendBtn.on('pointertap', () => sendChat());
-  sendBtn.on('pointerdown', () => sendBtn.scale.set(0.95));
+  sendBtn.on('pointerdown', () => sendBtn.scale.set(0.9));
   sendBtn.on('pointerup', () => sendBtn.scale.set(1));
   sendBtn.on('pointerupoutside', () => sendBtn.scale.set(1));
   chatBox.addChild(sendBtn);
@@ -204,15 +201,15 @@ export function layoutChat(x: number, y: number, h: number, rootX: number, scale
   msgMask.clear().rect(6, 8, CHAT_W - 12, viewH()).fill(0xffffff);
   scrollZone.hitArea = new Rectangle(6, 8, CHAT_W - 12, viewH());
   inputBg.y = inputY;
-  smiley.x = inputBg.x + inputBg.width - 20;
+  smiley.x = inputBg.x + inputBg.width - 52;
   smiley.y = inputY + 17;
-  sendBtn.x = CHAT_W - CHAT_PAD - 84;
-  sendBtn.y = inputY - 2;
+  sendBtn.x = inputBg.x + inputBg.width - 18;
+  sendBtn.y = inputY + 17;
 
   input.layout(
     rootX + (x + CHAT_PAD + 6) * scale,
     (y + inputY) * scale,
-    (inputBg.width - 46) * scale,
+    (inputBg.width - 76) * scale,
     34 * scale,
     13 * scale,
   );

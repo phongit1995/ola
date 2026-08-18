@@ -35,8 +35,8 @@ import menuIcForfeit from './assets/menu/ic-forfeit.webp';
 import menuIcExit from './assets/menu/ic-exit.webp';
 import chatFrame from './assets/chat/frame.webp';
 import chatInput from './assets/chat/input.webp';
-import chatBtnSend from './assets/chat/btn-send.webp';
 import chatIcSmiley from './assets/chat/ic-smiley.webp';
+import chatSendIcon from '../caro/assets/board/send-icon.webp';
 import fxUlt from './assets/fx/ult.webp';
 import lobbyBg from './assets/lobby/bg.webp';
 import lobbyLogo from './assets/lobby/logo.webp';
@@ -152,8 +152,8 @@ export const A = {
   chat: {
     frame: chatFrame,
     input: chatInput,
-    btnSend: chatBtnSend,
     icSmiley: chatIcSmiley,
+    sendIcon: chatSendIcon,
   },
   fx: { ult: fxUlt },
   lobby: {
