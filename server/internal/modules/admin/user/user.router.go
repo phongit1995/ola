@@ -29,5 +29,6 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		users.PATCH("/:id/username", r.controller.UpdateUsername)
 		users.PATCH("/:id/password", r.controller.ResetPassword)
 		users.DELETE("/:id", r.controller.DeleteUser)
+		users.DELETE("/:id/vips/:instanceId", r.controller.DeleteVip)
 	}
 }

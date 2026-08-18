@@ -193,6 +193,37 @@ func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// DeleteVip godoc
+// @Summary      Xoá VIP icon khỏi kho của user
+// @Description  Admin xoá một VIP icon khỏi kho của user. Xoá được cả icon đang khoá; nếu icon đó đang được đeo thì gỡ luôn VIP đang dùng.
+// @Tags         admin-user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id         path string true "User ID"
+// @Param        instanceId path string true "VIP instance ID"
+// @Success      200  {object}  utils.BaseResponse[map[string]string]
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/vips/{instanceId} [delete]
+func (ctrl *Controller) DeleteVip(c *gin.Context) (interface{}, error) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	instanceID, err := uuid.Parse(c.Param("instanceId"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid vip instance id")
+	}
+
+	if err := ctrl.service.DeleteVip(id, instanceID); err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return map[string]string{"message": "vip deleted"}, nil
+}
+
 // AddVipDays godoc
 // @Summary      Cộng / trừ ngày VIP cho user
 // @Tags         admin-user

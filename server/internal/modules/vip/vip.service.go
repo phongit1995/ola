@@ -257,6 +257,34 @@ func (s *Service) Delete(userID, instanceID uuid.UUID) error {
 	return s.clearActiveIfGone(userID, instanceID, item.VipIconID)
 }
 
+func (s *Service) AdminDelete(userID, instanceID uuid.UUID) error {
+	if _, err := s.ownedInstance(userID, instanceID); err != nil {
+		return err
+	}
+	if err := s.repo.SoftDelete(instanceID); err != nil {
+		return err
+	}
+	return s.clearActive(userID, instanceID)
+}
+
+func (s *Service) clearActive(userID, instanceID uuid.UUID) error {
+	u, err := s.repo.GetUser(userID)
+	if err != nil {
+		return err
+	}
+	if u.VipUsedInstanceID == nil || *u.VipUsedInstanceID != instanceID {
+		return nil
+	}
+	if err := s.repo.UpdateUserFields(userID, map[string]interface{}{
+		"vip_used":             nil,
+		"vip_used_instance_id": nil,
+	}); err != nil {
+		return err
+	}
+	s.invalidate(userID)
+	return nil
+}
+
 func (s *Service) BatchDelete(userID uuid.UUID, instanceIDs []uuid.UUID) (int, error) {
 	if len(instanceIDs) == 0 {
 		return 0, nil

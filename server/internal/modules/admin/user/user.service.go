@@ -267,6 +267,27 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 	return &item, nil
 }
 
+func (s *Service) DeleteVip(id, instanceID uuid.UUID) error {
+	if _, err := s.repo.FindByID(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return apperr.ErrUserNotFound
+		}
+		return err
+	}
+
+	if err := s.vipService.AdminDelete(id, instanceID); err != nil {
+		return err
+	}
+
+	if err := s.cache.Delete(fmt.Sprintf(constants.CacheKeyUserProfile, id.String())); err != nil {
+		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
+	}
+
+	s.logger.Infow("Admin deleted vip icon", "user_id", id, "instance_id", instanceID)
+
+	return nil
+}
+
 func (s *Service) AddVipDays(id uuid.UUID, action string, days int) (*AddVipDaysResponse, error) {
 	if _, err := s.repo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

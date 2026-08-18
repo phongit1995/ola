@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Button, Empty, Modal, Skeleton, Tag, Tooltip } from 'antd'
-import { CrownFilled, GiftOutlined, LockFilled } from '@ant-design/icons'
-import { useUserVips } from '@/hooks/useUsers'
+import { App, Button, Empty, Modal, Popconfirm, Skeleton, Tag, Tooltip } from 'antd'
+import { CloseOutlined, CrownFilled, GiftOutlined, LockFilled } from '@ant-design/icons'
+import { useDeleteUserVip, useUserVips } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { GrantVipModal } from './GrantVipModal'
@@ -27,7 +27,24 @@ function sourceLabel(source?: string): string {
   return SOURCE_LABEL[source] ?? source
 }
 
-function VipCard({ item }: { item: AdminUserVipIcon }) {
+function deleteWarning(item: AdminUserVipIcon): string {
+  const notes: string[] = []
+  if (item.isUsing) notes.push('user đang đeo icon này, xoá xong sẽ thành chưa dùng VIP')
+  if (item.isLocked) notes.push('user đã khoá icon này')
+  if (item.source === 'purchase' || item.source === 'icon') {
+    notes.push('icon này do user bỏ Ken ra mua, hệ thống không hoàn Ken')
+  }
+  if (notes.length === 0) return 'Thao tác này không thể hoàn tác từ trang quản trị.'
+  return `Lưu ý: ${notes.join('; ')}.`
+}
+
+interface VipCardProps {
+  item: AdminUserVipIcon
+  onDelete: (item: AdminUserVipIcon) => void
+  deleting: boolean
+}
+
+function VipCard({ item, onDelete, deleting }: VipCardProps) {
   return (
     <div
       style={{
@@ -46,13 +63,24 @@ function VipCard({ item }: { item: AdminUserVipIcon }) {
           />
         </Tooltip>
       )}
-      {item.isLocked && (
-        <Tooltip title="Đã khoá">
-          <LockFilled
-            style={{ position: 'absolute', top: 8, right: 8, color: '#8c98a4', fontSize: 14 }}
-          />
-        </Tooltip>
-      )}
+      <Popconfirm
+        title={`Xoá "${vipName(item.typeId)}" khỏi kho?`}
+        description={deleteWarning(item)}
+        okText="Xoá"
+        okButtonProps={{ danger: true, loading: deleting }}
+        cancelText="Huỷ"
+        placement="topRight"
+        onConfirm={() => onDelete(item)}
+      >
+        <Button
+          type="text"
+          size="small"
+          danger
+          icon={<CloseOutlined />}
+          aria-label="Xoá VIP"
+          style={{ position: 'absolute', top: 4, right: 4 }}
+        />
+      </Popconfirm>
       <img
         src={vipIconUrl(item.typeId)}
         alt={vipName(item.typeId)}
@@ -69,6 +97,11 @@ function VipCard({ item }: { item: AdminUserVipIcon }) {
       <div style={{ fontSize: 11, color: '#8c98a4', marginTop: 2 }}>#{item.typeId}</div>
       <div style={{ marginTop: 8, display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
         {item.source && <Tag style={{ margin: 0 }}>{sourceLabel(item.source)}</Tag>}
+        {item.isLocked && (
+          <Tag icon={<LockFilled />} style={{ margin: 0 }}>
+            Đã khoá
+          </Tag>
+        )}
       </div>
       {item.acquiredAt && (
         <div style={{ fontSize: 11, color: '#b0b8c1', marginTop: 6 }}>
@@ -80,9 +113,25 @@ function VipCard({ item }: { item: AdminUserVipIcon }) {
 }
 
 export function UserVipIconsModal({ open, userId, username, onClose }: UserVipIconsModalProps) {
+  const { message } = App.useApp()
   const { data, isLoading } = useUserVips(open ? userId : null)
   const items = data?.items ?? []
   const [grantOpen, setGrantOpen] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const deleteVip = useDeleteUserVip()
+
+  async function handleDelete(item: AdminUserVipIcon) {
+    if (userId == null) return
+    setDeletingId(item.instanceId)
+    try {
+      await deleteVip.mutateAsync({ id: userId, instanceId: item.instanceId })
+      message.success(`Đã xoá "${vipName(item.typeId)}"`)
+    } catch {
+      message.error('Xoá VIP thất bại')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <Modal
@@ -128,7 +177,12 @@ export function UserVipIconsModal({ open, userId, username, onClose }: UserVipIc
           }}
         >
           {items.map((item) => (
-            <VipCard key={item.instanceId} item={item} />
+            <VipCard
+              key={item.instanceId}
+              item={item}
+              onDelete={handleDelete}
+              deleting={deletingId === item.instanceId}
+            />
           ))}
         </div>
       )}
