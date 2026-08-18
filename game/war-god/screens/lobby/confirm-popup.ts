@@ -5,6 +5,7 @@ import { createCardModal, type CardModal } from './card-modal';
 
 const PANEL_W = 430;
 const BTN_W = 172;
+const BTN_LABEL_SIZE = 20;
 
 let modal: CardModal;
 let message: Text;
@@ -39,7 +40,7 @@ function makeConfirmBtn(label: string, texUrl: string, onTap: () => void): Conta
   bg.width = BTN_W;
   bg.scale.y = bg.scale.x;
   b.addChild(bg);
-  const t = serifText(label, 24, 0xffe9a8);
+  const t = serifText(label, BTN_LABEL_SIZE, 0xffe9a8);
   b.addChild(t);
   pressable(b, onTap);
   return b;
