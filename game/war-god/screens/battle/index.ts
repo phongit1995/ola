@@ -115,6 +115,10 @@ import {
   type UltimateControl,
 } from './ultimate-control';
 import { deriveUltimateControlState } from './ultimate-control-state';
+import {
+  confirmedSwapDestination,
+  rememberedSelectionsForTurn,
+} from './remembered-selection';
 
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 30;
 const HINT_DELAY_MS = 10_000;
@@ -176,6 +180,8 @@ let over = false;
 let turnNumber = 1;
 let botModeExtraTurns: [number, number] = [0, 0];
 let selected: number | null = null;
+let lastSuccessfulSelection: number | null = null;
+let lastOpponentSuccessfulSelection: number | null = null;
 let turnDeadline = 0;
 let hintDeadline = 0;
 let inGame = false;
@@ -269,14 +275,15 @@ function rebuildBoardVisuals(): void {
     .fill(0xffffff);
   sizeSelector(selector);
   sizeSelector(botSelectorA);
-  setSelected(null);
   botSelectorA.visible = false;
+  restoreRememberedSelection();
   placeHint();
   rebuildSprites();
 }
 
 function endBusy(): void {
   busy = false;
+  restoreRememberedSelection();
   updateHud();
   if (pendingRefit) deps.onRequestLayout();
 }
@@ -359,8 +366,7 @@ function retargetTaps(): void {
   });
 }
 
-function setSelected(i: number | null): void {
-  selected = i;
+function showSelection(i: number | null): void {
   if (i == null) {
     selector.visible = false;
     return;
@@ -368,6 +374,46 @@ function setSelected(i: number | null): void {
   const p = pos(i);
   selector.position.set(p.x, p.y);
   selector.visible = true;
+}
+
+function showOpponentSelection(i: number | null): void {
+  if (i == null) {
+    botSelectorA.visible = false;
+    return;
+  }
+  const p = pos(i);
+  botSelectorA.position.set(p.x, p.y);
+  botSelectorA.visible = true;
+}
+
+function setSelected(i: number | null): void {
+  selected = i;
+  showSelection(i);
+}
+
+function resetRememberedSelection(): void {
+  lastSuccessfulSelection = null;
+  lastOpponentSuccessfulSelection = null;
+  setSelected(null);
+  showOpponentSelection(null);
+}
+
+function restoreRememberedSelection(): void {
+  selected = null;
+  const visible = rememberedSelectionsForTurn(
+    lastSuccessfulSelection,
+    lastOpponentSuccessfulSelection,
+    {
+      inGame,
+      myTurn,
+      busy,
+      over,
+      roomPregame,
+      mode,
+    },
+  );
+  showSelection(visible.mine);
+  showOpponentSelection(visible.foe);
 }
 
 function setStatus(text: string): void {
@@ -1038,6 +1084,7 @@ async function resolveCascades(
 
 function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   over = true;
+  resetRememberedSelection();
   endBusy();
   clearHint();
   updateHud();
@@ -1102,6 +1149,7 @@ async function onTileTap(i: number): Promise<void> {
     return;
   }
 
+  lastSuccessfulSelection = b;
   swapCells(board, a, b);
   await animateSwap(a, b);
   spendBotModeExtraTurn('me');
@@ -1289,7 +1337,7 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   selfDisconnected = false;
   botModeExtraTurns = [0, 0];
   clearHint();
-  setSelected(null);
+  resetRememberedSelection();
   botSelectorA.visible = false;
   hud.result.hide();
   hideConfirm();
@@ -1381,7 +1429,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   busy = true;
   over = false;
   turnNumber = 1;
-  setSelected(null);
+  resetRememberedSelection();
   botSelectorA.visible = false;
   rebuildSprites();
   hud.result.hide();
@@ -1417,6 +1465,7 @@ function syncFighters(state: ServerState): void {
 }
 
 export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void> | void {
+  const keepRememberedSelection = data.resumed === true && data.matchId === pvpMatchId;
   clearRoomPregameVisuals();
   deps.onGameStart();
   preloadUltFx();
@@ -1439,6 +1488,10 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   board = decodeBoard(state.board);
   myTurn = data.turn === pvpIdx;
   turnNumber = state.moveCount + 1;
+  if (!keepRememberedSelection) {
+    lastSuccessfulSelection = null;
+    lastOpponentSuccessfulSelection = null;
+  }
   setSelected(null);
   botSelectorA.visible = false;
   rebuildSprites();
@@ -1562,6 +1615,7 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   const ep = flowEpoch;
   clearHint();
   setSelected(null);
+  showOpponentSelection(null);
   const state = data.state;
   const earnedExtraTurns = (state.steps ?? []).reduce(
     (total, step) => total + (step.kind === 'match' ? (step.bonusTurns ?? 0) : 0),
@@ -1569,6 +1623,11 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   );
   const remainingExtraTurns = state.extraTurns ?? (state.extraTurn ? 1 : 0);
   const side: 'me' | 'foe' = data.lastBy === pvpIdx ? 'me' : 'foe';
+  const confirmedSelection = confirmedSwapDestination(data.lastMove);
+  if (confirmedSelection != null) {
+    if (side === 'me') lastSuccessfulSelection = confirmedSelection;
+    else lastOpponentSuccessfulSelection = confirmedSelection;
+  }
   let replayFailed = false;
   if (data.lastMove) {
     decayArmor(side === 'me' ? me : foe);
@@ -1646,6 +1705,7 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
     return;
   }
   over = true;
+  resetRememberedSelection();
   busy = true;
   const ep = flowEpoch;
   updateHud();
@@ -1767,7 +1827,7 @@ function teardownBattle(): void {
   pausedTurnRemain = 0;
   selfDisconnected = false;
   clearHint();
-  setSelected(null);
+  resetRememberedSelection();
   botSelectorA.visible = false;
   hud.result.hide();
   hideConfirm();
@@ -1932,6 +1992,8 @@ export function battleDebug(): Record<string, unknown> {
     announce: turnAnnounce?.visible ? turnAnnounceLabel.text : null,
     botPick: !!botSelectorA?.visible,
     selected,
+    rememberedSelection: lastSuccessfulSelection,
+    opponentRememberedSelection: lastOpponentSuccessfulSelection,
     selectorVisible: !!selector?.visible,
     flying: flyLayer ? flyLayer.children.filter((c) => c instanceof Sprite).length : 0,
     vsIntroVisible: vsIntro?.isVisible() === true,
