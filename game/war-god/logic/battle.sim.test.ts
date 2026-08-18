@@ -37,7 +37,7 @@ function resolve(board: Board, attacker: Fighter, defender: Fighter, random: () 
     for (const index of plan.exploded) match.counts[board[index]]++;
     const removed = new Set(match.cells);
     for (const index of plan.exploded) removed.add(index);
-    applyTileEffects(attacker, defender, match.counts);
+    applyTileEffects(attacker, defender, match.counts, wave);
     applyGravity(board, removed, random);
     if (attacker.hp <= 0 || defender.hp <= 0) break;
   }

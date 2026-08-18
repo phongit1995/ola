@@ -95,8 +95,8 @@ const ITEMS: GuideItem[] = [
 const RULES: GuideRule[] = [
   {
     asset: A.items.sword,
-    title: 'COMBO 4+',
-    detail: 'Mỗi cụm 4+ ô liền nhau: +1 lượt · được cộng dồn',
+    title: 'COMBO 4+ · SẬP',
+    detail: 'Cụm 4+: +1 lượt · Sập tự động tăng mọi hiệu ứng +10%/tầng, tối đa +30%',
     accent: 0xffcf62,
   },
   {
@@ -114,7 +114,7 @@ const RULES: GuideRule[] = [
   {
     asset: A.hud.flameOn,
     title: 'TUYỆT CHIÊU',
-    detail: `Cần ${ULT_COST} nội lực · Lôi Thần gọi 4 tia, mỗi tia phá 2×2`,
+    detail: `Cần ${ULT_COST} nội lực · Lôi Thần gây 20 HP và gọi 4 tia, mỗi tia phá 2×2`,
     accent: 0xff8051,
   },
   {

@@ -19,6 +19,10 @@ const (
 	armorDecay       = 2
 	reflectThreshold = 20
 	reflectDamage    = 2
+
+	lightningGodDamage          = 20
+	cascadeBonusPercentPerLevel = 10
+	maximumCascadeLevel         = 3
 )
 
 type Fighter struct {
@@ -39,7 +43,29 @@ type Effects struct {
 	Reflect     int  `json:"reflect,omitempty"`
 }
 
+func cascadeBonusPercent(cascadeLevel int) int {
+	if cascadeLevel < 0 {
+		cascadeLevel = 0
+	}
+	if cascadeLevel > maximumCascadeLevel {
+		cascadeLevel = maximumCascadeLevel
+	}
+	return cascadeLevel * cascadeBonusPercentPerLevel
+}
+
+func scaleCascadeValue(value, cascadeLevel int) int {
+	return (value*(100+cascadeBonusPercent(cascadeLevel)) + 50) / 100
+}
+
 func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
+	return applyTileEffectsAtCascade(attacker, defender, counts, 0)
+}
+
+func applyTileEffectsAtCascade(
+	attacker, defender *Fighter,
+	counts map[int]int,
+	cascadeLevel int,
+) Effects {
 	effects := Effects{}
 	defenderArmorBefore := defender.Armor
 
@@ -57,8 +83,11 @@ func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 		effects.Furied = true
 	}
 
+	swordDmg = scaleCascadeValue(swordDmg, cascadeLevel)
+	fireDmg = scaleCascadeValue(fireDmg, cascadeLevel)
+
 	if counts[tilePeach] > 0 {
-		gained := counts[tilePeach] * furyPeach
+		gained := scaleCascadeValue(counts[tilePeach]*furyPeach, cascadeLevel)
 		if room := maxFury - attacker.Fury; room < gained {
 			gained = room
 		}
@@ -100,7 +129,10 @@ func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 		effects.Reflect = reflectDamage
 	}
 
-	healing := counts[tileHeart]*healHeart + counts[tileGreaterHeart]*greaterHeartHeal
+	healing := scaleCascadeValue(
+		counts[tileHeart]*healHeart+counts[tileGreaterHeart]*greaterHeartHeal,
+		cascadeLevel,
+	)
 	if healing > 0 {
 		healed := healing
 		if room := maxHP - attacker.HP; room < healed {
@@ -111,7 +143,7 @@ func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 	}
 
 	if counts[tileWater] > 0 {
-		gained := counts[tileWater] * manaWater
+		gained := scaleCascadeValue(counts[tileWater]*manaWater, cascadeLevel)
 		if room := maxMP - attacker.MP; room < gained {
 			gained = room
 		}
@@ -120,7 +152,7 @@ func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 	}
 
 	if counts[tileShield] > 0 {
-		added := counts[tileShield] * armorShield
+		added := scaleCascadeValue(counts[tileShield]*armorShield, cascadeLevel)
 		if room := maxArmor - attacker.Armor; room < added {
 			added = room
 		}

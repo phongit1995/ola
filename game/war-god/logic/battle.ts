@@ -10,12 +10,14 @@ import {
 import {
   ARMOR_DECAY,
   ARMOR_SHIELD,
+  CASCADE_BONUS_PERCENT_PER_LEVEL,
   DMG_SWORD,
   FIRE_SWORD_DMG,
   FURY_PEACH,
   GREATER_HEART_HEAL,
   HEAL_HEART,
   MAX_ARMOR,
+  MAX_CASCADE_LEVEL,
   MAX_FURY,
   MAX_HP,
   MAX_MP,
@@ -27,9 +29,11 @@ import {
 
 export {
   ARMOR_DECAY,
+  CASCADE_BONUS_PERCENT_PER_LEVEL,
   FIRE_SWORD_DMG,
   GREATER_HEART_HEAL,
   MAX_ARMOR,
+  MAX_CASCADE_LEVEL,
   MAX_FURY,
   MAX_HP,
   MAX_MP,
@@ -38,11 +42,22 @@ export {
   ULT_COST,
 } from './constants.gen';
 
+export { LIGHTNING_GOD_DAMAGE } from './constants.gen';
+
 export interface Fighter {
   hp: number;
   mp: number;
   armor: number;
   fury: number;
+}
+
+export function cascadeBonusPercent(cascadeLevel: number): number {
+  const safeLevel = Number.isFinite(cascadeLevel) ? Math.max(0, Math.floor(cascadeLevel)) : 0;
+  return Math.min(MAX_CASCADE_LEVEL, safeLevel) * CASCADE_BONUS_PERCENT_PER_LEVEL;
+}
+
+export function scaleCascadeValue(value: number, cascadeLevel: number): number {
+  return Math.round((value * (100 + cascadeBonusPercent(cascadeLevel))) / 100);
 }
 
 export function createFighter(): Fighter {
@@ -67,7 +82,8 @@ export function decayArmor(f: Fighter): void {
 export function applyTileEffects(
   attacker: Fighter,
   defender: Fighter,
-  counts: Record<TileType, number>
+  counts: Record<TileType, number>,
+  cascadeLevel = 0,
 ): EffectSummary {
   const summary: EffectSummary = {
     damage: 0,
@@ -93,8 +109,14 @@ export function applyTileEffects(
     summary.furied = true;
   }
 
+  swordDmg = scaleCascadeValue(swordDmg, cascadeLevel);
+  fireDmg = scaleCascadeValue(fireDmg, cascadeLevel);
+
   if (counts.peach > 0) {
-    const gained = Math.min(MAX_FURY - attacker.fury, counts.peach * FURY_PEACH);
+    const gained = Math.min(
+      MAX_FURY - attacker.fury,
+      scaleCascadeValue(counts.peach * FURY_PEACH, cascadeLevel),
+    );
     attacker.fury += gained;
     summary.fury = gained;
   }
@@ -126,7 +148,10 @@ export function applyTileEffects(
     summary.reflect = REFLECT_DAMAGE;
   }
 
-  const healing = counts.heart * HEAL_HEART + counts.greaterHeart * GREATER_HEART_HEAL;
+  const healing = scaleCascadeValue(
+    counts.heart * HEAL_HEART + counts.greaterHeart * GREATER_HEART_HEAL,
+    cascadeLevel,
+  );
   if (healing > 0) {
     const healed = Math.min(MAX_HP - attacker.hp, healing);
     attacker.hp += healed;
@@ -134,13 +159,19 @@ export function applyTileEffects(
   }
 
   if (counts.water > 0) {
-    const gained = Math.min(MAX_MP - attacker.mp, counts.water * MP_WATER);
+    const gained = Math.min(
+      MAX_MP - attacker.mp,
+      scaleCascadeValue(counts.water * MP_WATER, cascadeLevel),
+    );
     attacker.mp += gained;
     summary.mana = gained;
   }
 
   if (counts.shield > 0) {
-    const added = Math.min(MAX_ARMOR - attacker.armor, counts.shield * ARMOR_SHIELD);
+    const added = Math.min(
+      MAX_ARMOR - attacker.armor,
+      scaleCascadeValue(counts.shield * ARMOR_SHIELD, cascadeLevel),
+    );
     attacker.armor += added;
     summary.armor = added;
   }
@@ -210,8 +241,8 @@ interface SimulatedMove {
   bonusTurns: number;
 }
 
-const EXPERT_CANDIDATE_LIMIT = 10;
-const EXPERT_ROLLOUTS = 4;
+const EXPERT_CANDIDATE_LIMIT = 12;
+const EXPERT_ROLLOUTS = 6;
 const EXPERT_CASCADE_LIMIT = 16;
 
 // Seed chỉ lấy từ trạng thái bàn nhìn thấy được. Bot mô phỏng nhiều khả năng
@@ -332,7 +363,7 @@ function simulateExpertMove(
     for (const index of plan.exploded) match.counts[nextBoard[index]]++;
     const removed = new Set(match.cells);
     for (const index of plan.exploded) removed.add(index);
-    const effects = applyTileEffects(nextBot, nextPlayer, match.counts);
+    const effects = applyTileEffects(nextBot, nextPlayer, match.counts, cascade);
     total.damage += effects.damage;
     total.heal += effects.heal;
     total.mana += effects.mana;

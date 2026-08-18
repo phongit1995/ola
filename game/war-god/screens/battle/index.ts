@@ -36,12 +36,14 @@ import {
   type TileType,
 } from '../../logic/core';
 import {
+  LIGHTNING_GOD_DAMAGE,
   ULT_COST,
   applyAuthoritativeEffects,
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
   BOT_LEVEL_TITLES,
+  cascadeBonusPercent,
   castUltimate,
   createFighter,
   decayArmor,
@@ -876,10 +878,20 @@ interface WaveRenderOptions {
   exploded: readonly number[];
   lightningArcs: LightningArc[];
   result: EffectSummary;
+  cascadeLevel?: number;
 }
 
 async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
-  const { side, actorLabel, matched, removed, exploded, lightningArcs, result } = options;
+  const {
+    side,
+    actorLabel,
+    matched,
+    removed,
+    exploded,
+    lightningArcs,
+    result,
+    cascadeLevel = 0,
+  } = options;
   playSound('match');
   const parts: string[] = [];
   if (result.damage > 0) parts.push(`-${result.damage} HP`);
@@ -887,7 +899,15 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
   if (result.heal > 0) parts.push(`+${result.heal} HP`);
   if (result.mana > 0) parts.push(`+${result.mana} MP`);
   if (result.armor > 0) parts.push(`+${result.armor} giáp`);
-  if (parts.length > 0) setStatus(`${actorLabel}: ${parts.join('  ')}`);
+  const cascadeText =
+    cascadeLevel > 0
+      ? `SẬP LV.${Math.min(cascadeLevel, 3)} +${cascadeBonusPercent(cascadeLevel)}%`
+      : '';
+  if (parts.length > 0) {
+    setStatus(`${cascadeText ? `${cascadeText} · ` : ''}${actorLabel}: ${parts.join('  ')}`);
+  } else if (cascadeText) {
+    setStatus(cascadeText);
+  }
 
   const explodedFireSources =
     exploded.length > 0
@@ -898,6 +918,7 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
 
   const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
   const defCard = side === 'me' ? hud.foe.card : hud.me.card;
+  if (cascadeText) floatNumber(atkCard, cascadeText, 0xffd75e);
   if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
   if ((result.armorDamage ?? 0) > 0) {
     floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
@@ -943,10 +964,14 @@ async function ensurePlayable(): Promise<void> {
   rebuildSprites();
 }
 
-async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
+async function resolveCascades(
+  side: 'me' | 'foe',
+  startingCascadeLevel = 0,
+): Promise<number> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
   let bonusTurns = 0;
+  let cascadeLevel = startingCascadeLevel;
 
   for (;;) {
     const match = findMatches(board);
@@ -959,7 +984,7 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
     const removed = new Set<number>(match.cells);
     for (const i of exploded) removed.add(i);
 
-    const result = applyTileEffects(attacker, defender, match.counts);
+    const result = applyTileEffects(attacker, defender, match.counts, cascadeLevel);
     await renderWaveEffects({
       side,
       actorLabel: side === 'me' ? 'Bạn' : 'Máy',
@@ -968,10 +993,12 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<number> {
       exploded,
       lightningArcs,
       result,
+      cascadeLevel,
     });
 
     const gravity = applyGravity(board, removed);
     await animateGravity(gravity.falls, gravity.spawns);
+    cascadeLevel++;
 
     if (defender.hp <= 0 || attacker.hp <= 0) return bonusTurns;
   }
@@ -1084,13 +1111,16 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
   decayArmor(me);
   if (skill === 'lightning-god') {
     me.mp = 0;
+    foe.hp = Math.max(0, foe.hp - LIGHTNING_GOD_DAMAGE);
     const cells = randomFourTwoByTwoBlocks().flat();
-    setStatus('LÔI THẦN GIÁNG THẾ · 4 TIA SÉT!');
+    setStatus(`LÔI THẦN GIÁNG THẾ · -${LIGHTNING_GOD_DAMAGE} HP · 4 TIA SÉT!`);
     updateHud();
+    floatNumber(hud.foe.card, `-${LIGHTNING_GOD_DAMAGE} HP`, 0xff6b5e);
     await animateUltimateLightningRemove(cells);
     const gravity = applyGravity(board, new Set(cells));
     await animateGravity(gravity.falls, gravity.spawns);
-    const earnedExtraTurns = await resolveCascades('me');
+    const earnedExtraTurns =
+      me.hp > 0 && foe.hp > 0 ? await resolveCascades('me', 1) : 0;
     const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
     if (checkEnd()) return;
     if (remainingExtraTurns > 0) {
@@ -1448,6 +1478,7 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
       exploded: step.exploded ?? [],
       lightningArcs: step.lightningArcs ?? [],
       result,
+      cascadeLevel: step.cascadeLevel ?? 0,
     });
     return;
   }
@@ -1474,13 +1505,16 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
   const defender = side === 'me' ? foe : me;
   attacker.mp = 0;
   if (step.skill === 'lightning-god') {
+    const damage = step.damage ?? LIGHTNING_GOD_DAMAGE;
+    defender.hp = Math.max(0, defender.hp - damage);
     const cells = step.cells ?? [];
     setStatus(
       side === 'me'
-        ? 'LÔI THẦN GIÁNG THẾ · 4 TIA SÉT!'
-        : 'Đối thủ triệu hồi LÔI THẦN · 4 TIA SÉT!',
+        ? `LÔI THẦN GIÁNG THẾ · -${damage} HP · 4 TIA SÉT!`
+        : `Đối thủ triệu hồi LÔI THẦN · -${damage} HP · 4 TIA SÉT!`,
     );
     updateHud();
+    floatNumber(side === 'me' ? hud.foe.card : hud.me.card, `-${damage} HP`, 0xff6b5e);
     await animateUltimateLightningRemove(cells);
     return;
   }

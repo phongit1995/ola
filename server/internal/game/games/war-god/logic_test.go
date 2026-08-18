@@ -276,6 +276,9 @@ func TestApplyResolvesDeterministicMultiWaveCascade(t *testing.T) {
 	}
 
 	matchSteps := []Step{next.Steps[1], next.Steps[3], next.Steps[5]}
+	if got := []int{matchSteps[0].CascadeLevel, matchSteps[1].CascadeLevel, matchSteps[2].CascadeLevel}; !reflect.DeepEqual(got, []int{0, 1, 2}) {
+		t.Fatalf("cascade levels=%v, want [0 1 2]", got)
+	}
 	if !reflect.DeepEqual(matchSteps[0].Cells, []int{25, 33, 34, 41, 42, 50}) || matchSteps[0].BonusTurns != 0 {
 		t.Fatalf("first wave should be separate triples without a bonus: %+v", matchSteps[0])
 	}
@@ -683,6 +686,44 @@ func TestApplyTileEffects(t *testing.T) {
 	}
 }
 
+func TestCascadeScalesEveryCollectedTileValueAndCapsAtThirtyPercent(t *testing.T) {
+	tests := []struct {
+		level int
+		want  Effects
+	}{
+		{level: 0, want: Effects{Damage: 21, Heal: 15, Mana: 21, Armor: 15, Fury: 30}},
+		{level: 1, want: Effects{Damage: 23, Heal: 17, Mana: 23, Armor: 17, Fury: 33}},
+		{level: 2, want: Effects{Damage: 25, Heal: 18, Mana: 25, Armor: 18, Fury: 36}},
+		{level: 3, want: Effects{Damage: 27, Heal: 20, Mana: 27, Armor: 20, Fury: 39}},
+		{level: 4, want: Effects{Damage: 27, Heal: 20, Mana: 27, Armor: 20, Fury: 39}},
+	}
+	counts := map[int]int{
+		tileSword: 3, tileHeart: 3, tileWater: 3, tileShield: 3, tilePeach: 3,
+	}
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("level_%d", test.level), func(t *testing.T) {
+			attacker := Fighter{HP: 100}
+			defender := Fighter{HP: maxHP}
+			got := applyTileEffectsAtCascade(&attacker, &defender, counts, test.level)
+			if got != test.want {
+				t.Fatalf("effects=%+v, want %+v", got, test.want)
+			}
+		})
+	}
+
+	attacker := Fighter{HP: maxHP}
+	defender := Fighter{HP: maxHP, Armor: maxArmor}
+	reflected := applyTileEffectsAtCascade(
+		&attacker,
+		&defender,
+		map[int]int{tileSword: 3},
+		maximumCascadeLevel,
+	)
+	if reflected.Reflect != reflectDamage {
+		t.Fatalf("fixed reflect damage was scaled: %+v", reflected)
+	}
+}
+
 func TestApplySwapSingleWave(t *testing.T) {
 	board := stripedBoard()
 	board[56], board[57], board[58], board[59] = 0, 0, 3, 0
@@ -1045,8 +1086,16 @@ func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
 		t.Fatalf("lightning ultimate must be followed by gravity: %+v", next.Steps)
 	}
 	ult := next.Steps[0]
-	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != 0 {
+	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != lightningGodDamage {
 		t.Fatalf("unexpected lightning step: %+v", ult)
+	}
+	if next.Fighters[1].HP > 100-lightningGodDamage {
+		t.Fatalf("lightning damage was not applied to defender: %+v", next.Fighters[1])
+	}
+	for _, step := range next.Steps {
+		if step.Kind == stepMatch && step.CascadeLevel < 1 {
+			t.Fatalf("post-ultimate collapse must start at level 1: %+v", step)
+		}
 	}
 	seen := make(map[int]bool, len(ult.Cells))
 	for offset := 0; offset < len(ult.Cells); offset += 4 {
