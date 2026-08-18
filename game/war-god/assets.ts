@@ -81,6 +81,7 @@ import pickCloseX from './assets/pick/close-x.webp';
 import pickLevelEasy from './assets/pick/level-easy.webp';
 import pickLevelMid from './assets/pick/level-mid.webp';
 import pickLevelHard from './assets/pick/level-hard.webp';
+import pickLevelExpert from './assets/pick/level-expert.webp';
 import confirmPanel from './assets/confirm/panel.webp';
 import confirmHeader from './assets/confirm/header.webp';
 import confirmBtnCancel from './assets/confirm/btn-cancel.webp';
@@ -201,6 +202,7 @@ export const A = {
     levelEasy: pickLevelEasy,
     levelMid: pickLevelMid,
     levelHard: pickLevelHard,
+    levelExpert: pickLevelExpert,
   },
   confirm: {
     panel: confirmPanel,
@@ -283,9 +285,8 @@ export async function loadAssets(onProgress?: (fraction: number) => void): Promi
     weight: '100 900',
   });
   const [loaded] = await Promise.all([
-    Assets.load(
-      collectUrls(withoutDeferredAssets()),
-      (fraction) => onProgress?.(Math.min(fraction * 0.96, 0.96)),
+    Assets.load(collectUrls(withoutDeferredAssets()), (fraction) =>
+      onProgress?.(Math.min(fraction * 0.96, 0.96))
     ) as Promise<Record<string, Texture>>,
     serifFont.load().then((f) => document.fonts.add(f)),
     robotoFont.load().then((f) => document.fonts.add(f)),

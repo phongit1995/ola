@@ -37,6 +37,12 @@ const GREETINGS: Record<BotLevel, readonly string[]> = {
     'Đừng chỉ chăm chăm ghép kiếm nhé.',
     'Thử phá thế trận của mình xem nào!',
   ],
+  expert: [
+    'Siêu khó đã mở. Mình sẽ tính cả đường phản công của bạn!',
+    'Khai chiến nhé — từng viên ngọc đều có thể đổi cục diện.',
+    'Mình sẽ không bỏ phí mana, nộ hay lượt thưởng nào đâu.',
+    'Hãy chuẩn bị combo tốt nhất của bạn nhé!',
+  ],
 };
 
 const MOVE_LINES: Record<BotLevel, readonly string[]> = {
@@ -73,6 +79,13 @@ const MOVE_LINES: Record<BotLevel, readonly string[]> = {
     'Bỏ khiên lúc này là nguy hiểm lắm đó.',
     'Bạn còn một cơ hội xoay chuyển thế trận.',
     'Tới lượt bạn tìm combo tối ưu.',
+  ],
+  expert: [
+    'Mình đã tính cả nước đáp trả mạnh nhất của bạn.',
+    'Lượt thưởng này nằm trong kế hoạch rồi.',
+    'Thử tìm một đường tốt hơn xem nào!',
+    'Mỗi tài nguyên trên bàn đều đã được cân nhắc.',
+    'Đến lượt bạn phá thế trận này đấy.',
   ],
 };
 
@@ -132,6 +145,11 @@ const DIFFICULTY_REPLIES: Record<BotLevel, readonly string[]> = {
     'Ở mức này mình sẽ không bỏ qua sơ hở đâu.',
     'Hãy tính trước ít nhất hai lượt nhé.',
   ],
+  expert: [
+    'Đây là mức siêu khó — hãy để ý cả nước phản công sau combo nhé.',
+    'Mình đang cân đồng thời máu, giáp, mana, nộ và lượt thưởng.',
+    'Một nước mạnh trước mắt chưa chắc là nước tốt nhất đâu.',
+  ],
 };
 
 const WINNING_REPLIES = [
@@ -169,6 +187,10 @@ const BOT_IDENTITY_REPLIES: Record<BotLevel, readonly string[]> = {
     'Là bot nhưng mình vẫn biết tung bất ngờ đấy!',
   ],
   hard: ['Đúng, và mình đang phân tích từng lượt của bạn.', 'Máy cũng có binh pháp riêng nhé.'],
+  expert: [
+    'Đúng, ở mức này mình còn mô phỏng cả những cascade có thể xảy ra.',
+    'Mình là bot SIÊU KHÓ — sơ hở nhỏ cũng có thể thành combo lớn đấy.',
+  ],
 };
 
 const CALM_REPLIES = [
@@ -232,11 +254,7 @@ export function botReply(message: string, level: BotLevel, pick: LinePicker): st
   return pick(GENERIC_REPLIES);
 }
 
-export function botFinishLine(
-  winner: MatchWinner,
-  reason: FinishReason,
-  pick: LinePicker,
-): string {
+export function botFinishLine(winner: MatchWinner, reason: FinishReason, pick: LinePicker): string {
   if (reason === 'forfeit') return pick(FINISH_LINES.forfeit);
   if (reason === 'timeout') return pick(FINISH_LINES.timeout);
   if (winner === 'bot') return pick(FINISH_LINES.botWin);

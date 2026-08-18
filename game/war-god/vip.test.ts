@@ -23,7 +23,8 @@ describe('War God bot avatar icon URL', () => {
     ['easy', '/vip-icons/vip_001.png'],
     ['normal', '/vip-icons/vip_002.png'],
     ['hard', '/vip-icons/vip_003.png'],
-  ] as const)('gives %s the same icon as caro', (level, expected) => {
+    ['expert', '/vip-icons/vip_004.png'],
+  ] as const)('gives %s a stable difficulty icon', (level, expected) => {
     expect(botAvatarIconUrl(level)).toBe(expected);
   });
 });

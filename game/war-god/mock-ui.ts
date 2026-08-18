@@ -40,7 +40,11 @@ import { openLeaderboardPopup } from './screens/lobby/leaderboard-popup';
 import { openPickPopup } from './screens/lobby/pick-popup';
 import { openRoomsConfirm, openRoomsNotice } from './screens/lobby/rooms/confirm';
 import { openCreateRoomPopup } from './screens/lobby/rooms/create-popup';
-import { openRoomListPopup, renderRoomList, setRoomListUser } from './screens/lobby/rooms/list-popup';
+import {
+  openRoomListPopup,
+  renderRoomList,
+  setRoomListUser,
+} from './screens/lobby/rooms/list-popup';
 import { openPasswordPopup } from './screens/lobby/rooms/password-popup';
 import {
   battleDebug,
@@ -79,10 +83,26 @@ const ME: UserInfoData = {
 const FOE_VIP = '15';
 
 const NAMES = [
-  'thanhlong', 'mrbeast_vn', 'huyenthoai', 'kiemvuong', 'bangchu',
-  'ducanh97', 'noname', 'chienthan', 'saobang', 'hoangtu_be',
-  'linhmiu', 'tuananh', 'quyvuong', 'phuongthao', 'baolong',
-  'minhtu', 'thienlong', 'catuong', 'ngocbich', 'vantruong',
+  'thanhlong',
+  'mrbeast_vn',
+  'huyenthoai',
+  'kiemvuong',
+  'bangchu',
+  'ducanh97',
+  'noname',
+  'chienthan',
+  'saobang',
+  'hoangtu_be',
+  'linhmiu',
+  'tuananh',
+  'quyvuong',
+  'phuongthao',
+  'baolong',
+  'minhtu',
+  'thienlong',
+  'catuong',
+  'ngocbich',
+  'vantruong',
 ];
 
 function makeLeaderboard(count: number, top: number): LeaderboardEntry[] {
@@ -176,7 +196,13 @@ function makeRoomState(): RoomStateData {
   const asGuest = state.startsWith('guest');
   const guestReady = state === 'ready' || state === 'guest-ready';
   const members: RoomMember[] = [
-    { id: 'owner', name: 'thanhlong', owner: true, ready: true, vipType: ME.vipType },
+    {
+      id: 'owner',
+      name: 'thanhlong',
+      owner: true,
+      ready: true,
+      vipType: ME.vipType,
+    },
   ];
   if (state !== 'alone') {
     members.push({
@@ -202,10 +228,10 @@ function makeMatch(): MatchFoundData<ServerState> {
     state === 'mana-empty'
       ? 0
       : state === 'mana-loading'
-        ? 50
-        : state === 'mana-ready' || state === 'ultimate-picker'
-          ? 100
-          : 62;
+      ? 50
+      : state === 'mana-ready' || state === 'ultimate-picker'
+      ? 100
+      : 62;
   return {
     matchId: 'wg-match-mock',
     gameId: 'war-god',
@@ -279,7 +305,12 @@ const SCENES: Record<string, () => Promise<void> | void> = {
 
   // state: alone | not-ready | ready | guest | guest-ready
   pregame() {
-    enterRoomPregame({ onToggleReady: noop, onStart: noop, onKick: noop, onLeave: noop });
+    enterRoomPregame({
+      onToggleReady: noop,
+      onStart: noop,
+      onKick: noop,
+      onLeave: noop,
+    });
     updateRoomPregame(makeRoomState(), null);
   },
 
@@ -327,7 +358,7 @@ const SCENES: Record<string, () => Promise<void> | void> = {
     });
   },
 
-  // state: easy | normal | hard
+  // state: easy | normal | hard | expert
   bot() {
     startBattle((state || 'normal') as BotLevel);
   },
@@ -391,7 +422,7 @@ async function main(): Promise<void> {
       onPlay: noop,
       onRetry: noop,
       onExit: noop,
-    }),
+    })
   );
   root.addChild(ultimatePicker.view);
 
