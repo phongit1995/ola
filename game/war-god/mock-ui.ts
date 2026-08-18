@@ -20,6 +20,7 @@ import type {
 } from '../src/sdk';
 import { A, loadAssets, tex } from './assets';
 import { initKit } from './kit';
+import { installKeyboardDismiss } from './keyboard-dismiss';
 import { DESIGN_W } from './layout';
 import { createBoard } from './logic/core';
 import { TILE_ORDER, type ServerState } from './logic/server-types';
@@ -368,6 +369,8 @@ let requestLayout: () => void = () => {};
 
 async function main(): Promise<void> {
   await document.fonts.ready;
+  const disposeKeyboardDismiss = installKeyboardDismiss();
+  window.addEventListener('pagehide', disposeKeyboardDismiss, { once: true });
 
   const resolution = Math.max(1, window.devicePixelRatio || 1);
   const app = new Application();
