@@ -8,7 +8,6 @@ import {
   type TileType,
 } from './core';
 import {
-  ARMOR_DECAY,
   ARMOR_SHIELD,
   CASCADE_BONUS_PERCENT_PER_LEVEL,
   DMG_SWORD,
@@ -23,13 +22,10 @@ import {
   MAX_HP,
   MAX_MP,
   MP_WATER,
-  REFLECT_DAMAGE,
-  REFLECT_THRESHOLD,
   ULT_COST,
 } from './constants.gen';
 
 export {
-  ARMOR_DECAY,
   CASCADE_BONUS_PERCENT_PER_LEVEL,
   FIRE_SWORD_DMG,
   FURY_DAMAGE_MULTIPLIER,
@@ -39,8 +35,6 @@ export {
   MAX_FURY,
   MAX_HP,
   MAX_MP,
-  REFLECT_DAMAGE,
-  REFLECT_THRESHOLD,
   ULT_COST,
 } from './constants.gen';
 
@@ -78,11 +72,19 @@ export interface EffectSummary {
   armorDamage?: number;
   fury?: number;
   furied?: boolean;
-  reflect?: number;
 }
 
-export function decayArmor(f: Fighter): void {
-  f.armor = Math.max(0, f.armor - ARMOR_DECAY);
+export interface DamageResult {
+  damage: number;
+  armorDamage: number;
+}
+
+export function applyDamageThroughArmor(defender: Fighter, incoming: number): DamageResult {
+  const armorDamage = Math.min(defender.armor, incoming);
+  defender.armor -= armorDamage;
+  const damage = incoming - armorDamage;
+  defender.hp = Math.max(0, defender.hp - damage);
+  return { damage, armorDamage };
 }
 
 export function applyTileEffects(
@@ -100,7 +102,6 @@ export function applyTileEffects(
     armorDamage: 0,
     fury: 0,
   };
-  const defenderArmorBefore = defender.armor;
 
   let swordDmg = counts.sword * DMG_SWORD;
   let fireDmg = counts.fireSword * FIRE_SWORD_DMG;
@@ -133,31 +134,11 @@ export function applyTileEffects(
     summary.fury = gained;
   }
 
-  if (swordDmg > 0) {
-    if (furied) {
-      defender.hp = Math.max(0, defender.hp - swordDmg);
-      summary.damage += swordDmg;
-    } else {
-      const absorbed = Math.min(defender.armor, swordDmg);
-      defender.armor -= absorbed;
-      summary.armorDamage = absorbed;
-      const dealt = swordDmg - absorbed;
-      defender.hp = Math.max(0, defender.hp - dealt);
-      summary.damage += dealt;
-    }
-  }
-  if (fireDmg > 0) {
-    defender.hp = Math.max(0, defender.hp - fireDmg);
-    summary.damage += fireDmg;
-  }
-
-  if (
-    defender.hp > 0 &&
-    (counts.sword > 0 || counts.fireSword > 0) &&
-    defenderArmorBefore >= REFLECT_THRESHOLD
-  ) {
-    attacker.hp = Math.max(0, attacker.hp - REFLECT_DAMAGE);
-    summary.reflect = REFLECT_DAMAGE;
+  const incomingDamage = swordDmg + fireDmg;
+  if (incomingDamage > 0) {
+    const result = applyDamageThroughArmor(defender, incomingDamage);
+    summary.damage = result.damage;
+    summary.armorDamage = result.armorDamage;
   }
 
   const healing = scaleCascadeValue(
@@ -191,11 +172,10 @@ export function applyTileEffects(
   return summary;
 }
 
-export function castUltimate(attacker: Fighter, defender: Fighter): number {
+export function castUltimate(attacker: Fighter, defender: Fighter): DamageResult {
   const dmg = Math.floor(attacker.mp / 2);
   attacker.mp = 0;
-  defender.hp = Math.max(0, defender.hp - dmg);
-  return dmg;
+  return applyDamageThroughArmor(defender, dmg);
 }
 
 export function applyAuthoritativeEffects(
@@ -205,7 +185,6 @@ export function applyAuthoritativeEffects(
 ): EffectSummary {
   defender.hp = Math.max(0, defender.hp - effects.damage);
   defender.armor = Math.max(0, defender.armor - (effects.armorDamage ?? 0));
-  attacker.hp = Math.max(0, attacker.hp - (effects.reflect ?? 0));
   attacker.hp = Math.min(MAX_HP, attacker.hp + effects.heal);
   attacker.mp = Math.min(MAX_MP, attacker.mp + effects.mana);
   attacker.armor = Math.min(MAX_ARMOR, attacker.armor + effects.armor);
@@ -297,7 +276,6 @@ function scoreResolvedState(
   if (result.bot.hp <= 0) return -1_000_000;
 
   const damage = beforePlayer.hp - result.player.hp;
-  const selfDamage = beforeBot.hp - result.bot.hp + result.heal;
   const lowHealthFactor = beforeBot.hp <= 60 ? 2.2 : beforeBot.hp <= 110 ? 1.45 : 1;
   let score =
     damage * 12 +
@@ -306,12 +284,10 @@ function scoreResolvedState(
     result.mana * 3.2 +
     result.armor * 4.5 * lowHealthFactor +
     result.fury * 2.8 +
-    result.bonusTurns * 280 -
-    selfDamage * 30;
+    result.bonusTurns * 280;
 
   if (result.bot.mp >= ULT_COST && beforeBot.mp < ULT_COST) score += 180;
   if (result.bot.fury >= MAX_FURY && beforeBot.fury < MAX_FURY) score += 140;
-  if (result.bot.armor >= REFLECT_THRESHOLD && beforeBot.armor < REFLECT_THRESHOLD) score += 70;
   if (result.player.hp <= 50) score += (50 - result.player.hp) * 3;
   return score;
 }
@@ -327,7 +303,6 @@ function scoreImmediateMove(
   if (!preview) return Number.NEGATIVE_INFINITY;
   const nextAttacker = { ...attacker };
   const nextDefender = { ...defender };
-  decayArmor(nextAttacker);
   const effects = applyTileEffects(nextAttacker, nextDefender, preview.counts);
   return scoreResolvedState(attacker, defender, {
     bot: nextAttacker,
@@ -363,7 +338,6 @@ function simulateExpertMove(
   };
 
   swapCells(nextBoard, move[0], move[1]);
-  decayArmor(nextBot);
   const furyChain = { active: false };
   for (let cascade = 0; cascade < EXPERT_CASCADE_LIMIT; cascade++) {
     const match = findMatches(nextBoard);
@@ -512,7 +486,7 @@ export function botChooseMove(
 
 export function botShouldUlt(bot: Fighter, player: Fighter, level: BotLevel): boolean {
   if (bot.mp < ULT_COST) return false;
-  const dmg = Math.floor(bot.mp / 2);
+  const dmg = Math.max(0, Math.floor(bot.mp / 2) - player.armor);
   if (player.hp <= dmg) return true; // đủ kết liễu — luôn chốt hạ
   if (level === 'easy') return player.hp <= dmg + 5 || Math.random() < 0.2;
   if (level === 'hard') {

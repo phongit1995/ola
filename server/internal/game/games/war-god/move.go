@@ -85,12 +85,6 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 	r := &rng{z: z}
 	attacker := &s.Fighters[playerIdx]
 	defender := &s.Fighters[1-playerIdx]
-	if attacker.Armor > 0 {
-		attacker.Armor -= armorDecay
-		if attacker.Armor < 0 {
-			attacker.Armor = 0
-		}
-	}
 
 	switch move.Type {
 	case moveSwap:
@@ -106,20 +100,17 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 			return current, errors.New("not enough mana")
 		}
 		damage := 0
+		armorDamage := 0
 		attacker.MP = 0
 		if move.Skill == skillLightningGod {
-			damage = lightningGodDamage
-			defender.HP -= damage
-			if defender.HP < 0 {
-				defender.HP = 0
-			}
+			damage, armorDamage = applyDamageThroughArmor(defender, lightningGodDamage)
 			blocks := randomFourTwoByTwoBlocks(r)
 			cells := make([]int, 0, len(blocks)*4)
 			for _, block := range blocks {
 				cells = append(cells, block...)
 			}
 			s.Steps = append(s.Steps, Step{
-				Kind: stepUlt, Skill: move.Skill, Cells: cells, Damage: damage,
+				Kind: stepUlt, Skill: move.Skill, Cells: cells, Damage: damage, ArmorDamage: armorDamage,
 			})
 			removed := make(map[int]bool, len(cells))
 			for _, cell := range cells {
@@ -134,12 +125,10 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 				ensurePlayable(s, r)
 			}
 		} else {
-			damage = ultCost / 2
-			defender.HP -= damage
-			if defender.HP < 0 {
-				defender.HP = 0
-			}
-			s.Steps = append(s.Steps, Step{Kind: stepUlt, Skill: move.Skill, Damage: damage})
+			damage, armorDamage = applyDamageThroughArmor(defender, ultCost/2)
+			s.Steps = append(s.Steps, Step{
+				Kind: stepUlt, Skill: move.Skill, Damage: damage, ArmorDamage: armorDamage,
+			})
 		}
 	}
 

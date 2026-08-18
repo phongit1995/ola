@@ -5,7 +5,6 @@ import {
   botShouldUlt,
   castUltimate,
   createFighter,
-  decayArmor,
   type BotLevel,
   type Fighter,
 } from './battle';
@@ -56,7 +55,6 @@ function play(seed: number, first: BotLevel, second: BotLevel): 0 | 1 | null {
     const attacker = fighters[side];
     const defender = fighters[1 - side];
     if (extra[side] > 0) extra[side]--;
-    decayArmor(attacker);
     if (botShouldUlt(attacker, defender, levels[side])) {
       castUltimate(attacker, defender);
     } else {

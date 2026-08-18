@@ -540,34 +540,34 @@ func TestApplyTileEffects(t *testing.T) {
 			wantEffects:  Effects{Damage: 11, ArmorDamage: 10},
 		},
 		{
-			name:         "armor absorbs all physical and reflects",
+			name:         "armor absorbs all physical damage",
 			attacker:     Fighter{HP: 100},
 			defender:     Fighter{HP: 100, Armor: 30},
 			counts:       map[int]int{tileSword: 3},
-			wantAttacker: Fighter{HP: 98},
+			wantAttacker: Fighter{HP: 100},
 			wantDefender: Fighter{HP: 100, Armor: 9},
-			wantEffects:  Effects{ArmorDamage: 21, Reflect: 2},
+			wantEffects:  Effects{ArmorDamage: 21},
 		},
 		{
-			name:         "fire sword pierces armor and triggers reflect",
+			name:         "armor absorbs fire sword damage",
 			attacker:     Fighter{HP: 100},
 			defender:     Fighter{HP: 100, Armor: 30},
 			counts:       map[int]int{tileFireSword: 1},
-			wantAttacker: Fighter{HP: 98},
-			wantDefender: Fighter{HP: 88, Armor: 30},
-			wantEffects:  Effects{Damage: 12, Reflect: 2},
+			wantAttacker: Fighter{HP: 100},
+			wantDefender: Fighter{HP: 100, Armor: 18},
+			wantEffects:  Effects{ArmorDamage: 12},
 		},
 		{
-			name:         "reflect skipped when defender dies",
+			name:         "overflow damage reduces HP after armor",
 			attacker:     Fighter{HP: 100},
 			defender:     Fighter{HP: 5, Armor: 25},
-			counts:       map[int]int{tileFireSword: 1},
+			counts:       map[int]int{tileFireSword: 3},
 			wantAttacker: Fighter{HP: 100},
-			wantDefender: Fighter{HP: 0, Armor: 25},
-			wantEffects:  Effects{Damage: 12},
+			wantDefender: Fighter{HP: 0},
+			wantEffects:  Effects{Damage: 11, ArmorDamage: 25},
 		},
 		{
-			name:         "sword blocked plus fire sword pierces",
+			name:         "armor absorbs combined sword damage",
 			attacker:     Fighter{HP: 100},
 			defender:     Fighter{HP: 100, Armor: 10},
 			counts:       map[int]int{tileSword: 2, tileFireSword: 1},
@@ -603,13 +603,13 @@ func TestApplyTileEffects(t *testing.T) {
 			wantEffects:  Effects{Fury: 5},
 		},
 		{
-			name:         "full fury multiplies and pierces sword",
+			name:         "armor absorbs multiplied full fury sword",
 			attacker:     Fighter{HP: 100, Fury: 100},
 			defender:     Fighter{HP: 100, Armor: 30},
 			counts:       map[int]int{tileSword: 3},
-			wantAttacker: Fighter{HP: 98, Fury: 0},
-			wantDefender: Fighter{HP: 68, Armor: 30},
-			wantEffects:  Effects{Damage: 32, Furied: true, Reflect: 2},
+			wantAttacker: Fighter{HP: 100, Fury: 0},
+			wantDefender: Fighter{HP: 98},
+			wantEffects:  Effects{Damage: 2, ArmorDamage: 30, Furied: true},
 		},
 		{
 			name:         "peach fills but does not consume same wave",
@@ -710,18 +710,6 @@ func TestCascadeScalesEveryCollectedTileValueAndCapsAtThirtyPercent(t *testing.T
 			}
 		})
 	}
-
-	attacker := Fighter{HP: maxHP}
-	defender := Fighter{HP: maxHP, Armor: maxArmor}
-	reflected := applyTileEffectsAtCascade(
-		&attacker,
-		&defender,
-		map[int]int{tileSword: 3},
-		maximumCascadeLevel,
-	)
-	if reflected.Reflect != reflectDamage {
-		t.Fatalf("fixed reflect damage was scaled: %+v", reflected)
-	}
 }
 
 func TestFullFuryMultipliesSwordDamageForEntireCascadeChain(t *testing.T) {
@@ -794,29 +782,26 @@ func TestApplySwapSingleWave(t *testing.T) {
 	}
 }
 
-func TestShieldReflectAndDecay(t *testing.T) {
+func TestArmorAbsorptionAndUltimateArmor(t *testing.T) {
 	atk := Fighter{HP: 100}
 	def := Fighter{HP: 100, Armor: 20}
 	eff := applyTileEffects(&atk, &def, map[int]int{tileSword: 2})
-	if atk.HP != 98 || def.Armor != 6 || def.HP != 100 || eff.Reflect != 2 || eff.ArmorDamage != 14 {
-		t.Fatalf("reflect: atk=%+v def=%+v eff=%+v", atk, def, eff)
-	}
-
-	atk2 := Fighter{HP: 100}
-	def2 := Fighter{HP: 100, Armor: 19}
-	eff2 := applyTileEffects(&atk2, &def2, map[int]int{tileSword: 2})
-	if atk2.HP != 100 || eff2.Reflect != 0 {
-		t.Fatalf("below threshold reflected: atk=%+v eff=%+v", atk2, eff2)
+	if atk.HP != 100 || def.Armor != 6 || def.HP != 100 || eff.ArmorDamage != 14 {
+		t.Fatalf("armor absorption: atk=%+v def=%+v eff=%+v", atk, def, eff)
 	}
 
 	board := stripedBoard()
-	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100, Armor: 10}, {HP: 100}}, 1)
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100, Armor: 10}, {HP: 100, Armor: 30}}, 1)
 	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"ult"}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if next := nextAny.(*State); next.Fighters[0].Armor != 8 {
-		t.Fatalf("armor did not decay by 2 on move: %+v", next.Fighters[0])
+	next := nextAny.(*State)
+	if next.Fighters != [2]Fighter{{HP: 100, MP: 0, Armor: 10}, {HP: 80}} {
+		t.Fatalf("ultimate did not consume defender armor before HP: %+v", next.Fighters)
+	}
+	if len(next.Steps) != 1 || next.Steps[0].Damage != 20 || next.Steps[0].ArmorDamage != 30 {
+		t.Fatalf("ultimate armor replay data is incomplete: %+v", next.Steps)
 	}
 }
 
@@ -1070,7 +1055,7 @@ func TestMyriadSwordsCostsFullMana(t *testing.T) {
 		t.Fatal("ult without enough mana was accepted")
 	}
 
-	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 7)
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100, Armor: 30}}, 7)
 	if err := (Logic{}).ValidateMove(state, 0, json.RawMessage(`{"type":"ult"}`)); err != nil {
 		t.Fatal(err)
 	}
@@ -1079,10 +1064,11 @@ func TestMyriadSwordsCostsFullMana(t *testing.T) {
 		t.Fatal(err)
 	}
 	next := nextAny.(*State)
-	if next.Fighters != [2]Fighter{{HP: 100, MP: 0}, {HP: 50}} {
+	if next.Fighters != [2]Fighter{{HP: 100, MP: 0}, {HP: 80}} {
 		t.Fatalf("unexpected fighters: %+v", next.Fighters)
 	}
-	if len(next.Steps) != 1 || next.Steps[0].Kind != "ult" || next.Steps[0].Skill != skillMyriadSwords || next.Steps[0].Damage != 50 {
+	if len(next.Steps) != 1 || next.Steps[0].Kind != "ult" || next.Steps[0].Skill != skillMyriadSwords ||
+		next.Steps[0].Damage != 20 || next.Steps[0].ArmorDamage != 30 {
 		t.Fatalf("unexpected steps: %+v", next.Steps)
 	}
 	if next.ExtraTurn || next.MoveCount != 1 || next.Rng != "7" {
@@ -1104,7 +1090,7 @@ func TestMyriadSwordsCostsFullMana(t *testing.T) {
 
 func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
 	board := stripedBoard()
-	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 7)
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100, Armor: 30}}, 7)
 	move := json.RawMessage(`{"type":"ult","skill":"lightning-god"}`)
 	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
 		t.Fatal(err)
@@ -1122,11 +1108,8 @@ func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
 		t.Fatalf("lightning ultimate must be followed by gravity: %+v", next.Steps)
 	}
 	ult := next.Steps[0]
-	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != lightningGodDamage {
+	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != 0 || ult.ArmorDamage != lightningGodDamage {
 		t.Fatalf("unexpected lightning step: %+v", ult)
-	}
-	if next.Fighters[1].HP > 100-lightningGodDamage {
-		t.Fatalf("lightning damage was not applied to defender: %+v", next.Fighters[1])
 	}
 	for _, step := range next.Steps {
 		if step.Kind == stepMatch && step.CascadeLevel < 1 {

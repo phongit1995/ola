@@ -31,16 +31,6 @@ describe('cascade tile-effect scaling', () => {
     });
   });
 
-  it('does not scale fixed reflect damage', () => {
-    const attacker = createFighter();
-    const defender = { ...createFighter(), armor: 30 };
-    const counts = Object.assign(emptyCounts(), { sword: 3 });
-
-    const effects = applyTileEffects(attacker, defender, counts, 3);
-
-    expect(effects.reflect).toBe(2);
-  });
-
   it('keeps the full-fury damage multiplier through the entire cascade chain', () => {
     const attacker = { ...createFighter(), fury: 100 };
     const defender = createFighter();
