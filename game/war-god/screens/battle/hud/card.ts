@@ -9,6 +9,7 @@ const CARD_W = 190;
 const ARMOR_BADGE_W = 56;
 const ARMOR_BADGE_H = 26;
 const AVATAR_FIT = 22;
+const FIGHTER_NAME_MAX_W = 90;
 
 export interface BarUI {
   fill: Graphics;
@@ -250,6 +251,14 @@ export function setFighterAvatar(ui: FighterUI, vipType?: string | null): void {
 
 export function setFighterBotAvatar(ui: FighterUI, level: BotLevel): void {
   loadAvatar(ui, botAvatarIconUrl(level));
+}
+
+export function setFighterName(ui: FighterUI, value: string): void {
+  ui.name.text = value;
+  ui.name.scale.set(1);
+  if (ui.name.width > FIGHTER_NAME_MAX_W) {
+    ui.name.scale.set(FIGHTER_NAME_MAX_W / ui.name.width);
+  }
 }
 
 export function updateFighter(ui: FighterUI, fighter: Fighter, active: boolean, ready: boolean): void {

@@ -183,6 +183,13 @@ export const LEVEL_LABELS: Record<BotLevel, string> = {
   expert: 'SIÊU KHÓ',
 };
 
+export const BOT_LEVEL_TITLES: Record<BotLevel, string> = {
+  easy: 'Dễ',
+  normal: 'Vừa',
+  hard: 'Khó',
+  expert: 'Siêu khó',
+};
+
 type BotMove = [number, number];
 
 interface MovePreview {

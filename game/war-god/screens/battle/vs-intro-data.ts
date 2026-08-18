@@ -1,5 +1,5 @@
 import type { MatchFoundData, UserInfoData } from '../../../src/sdk';
-import { LEVEL_LABELS, type BotLevel } from '../../logic/battle';
+import { BOT_LEVEL_TITLES, type BotLevel } from '../../logic/battle';
 
 export interface VsIntroCombatant {
   name: string;
@@ -21,7 +21,7 @@ const BOT_VIP_TYPE: Record<BotLevel, string> = {
 export function buildBotVsIntroData(user: UserInfoData | null, level: BotLevel): VsIntroData {
   return {
     left: {
-      name: `máy · ${LEVEL_LABELS[level]}`,
+      name: `Máy - ${BOT_LEVEL_TITLES[level]}`,
       vipType: BOT_VIP_TYPE[level],
     },
     right: {

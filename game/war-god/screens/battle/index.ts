@@ -41,6 +41,7 @@ import {
   applyTileEffects,
   botChooseMove,
   botShouldUlt,
+  BOT_LEVEL_TITLES,
   castUltimate,
   createFighter,
   decayArmor,
@@ -74,6 +75,7 @@ import {
   setBattleMode,
   setFighterAvatar,
   setFighterBotAvatar,
+  setFighterName,
   updateFighter,
 } from './hud';
 import {
@@ -1326,8 +1328,8 @@ export function startBattle(level: BotLevel = botLevel): void {
   hud.result.hide();
   hideConfirm();
   const userInfo = deps.getUserInfo();
-  if (userInfo) hud.me.name.text = `@${userInfo.username}`;
-  hud.foe.name.text = '@Bot';
+  if (userInfo) setFighterName(hud.me, `@${userInfo.username}`);
+  setFighterName(hud.foe, `@Máy - ${BOT_LEVEL_TITLES[botLevel]}`);
   setFighterAvatar(hud.me, userInfo?.vipType);
   setFighterBotAvatar(hud.foe, botLevel);
   setChatPvp(false);
@@ -1386,8 +1388,8 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   const mePlayer = data.players[pvpIdx];
   const opponent = data.players[1 - pvpIdx];
   myUserId = mePlayer?.id ?? '';
-  hud.me.name.text = `@${mePlayer?.name ?? deps.getUserInfo()?.username ?? 'bạn'}`;
-  hud.foe.name.text = `@${opponent?.name ?? 'đối thủ'}`;
+  setFighterName(hud.me, `@${mePlayer?.name ?? deps.getUserInfo()?.username ?? 'bạn'}`);
+  setFighterName(hud.foe, `@${opponent?.name ?? 'đối thủ'}`);
   setFighterAvatar(hud.me, mePlayer?.vipType ?? deps.getUserInfo()?.vipType);
   setFighterAvatar(hud.foe, opponent?.vipType);
   setChatPvp(true);

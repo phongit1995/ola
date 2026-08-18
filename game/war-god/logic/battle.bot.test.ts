@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { LEVEL_LABELS, botChooseMove, botShouldUlt, createFighter } from './battle';
+import {
+  BOT_LEVEL_TITLES,
+  LEVEL_LABELS,
+  botChooseMove,
+  botShouldUlt,
+  createFighter,
+} from './battle';
 import { createBoard, findMatches, findValidMoves, swapCells, type Board } from './core';
 
 function lcg(seed: number): () => number {
@@ -20,6 +26,12 @@ function isImmediateAttack(board: Board, move: [number, number]): boolean {
 describe('War God expert bot', () => {
   it('exposes the SIÊU KHÓ difficulty label', () => {
     expect(LEVEL_LABELS.expert).toBe('SIÊU KHÓ');
+    expect(BOT_LEVEL_TITLES).toEqual({
+      easy: 'Dễ',
+      normal: 'Vừa',
+      hard: 'Khó',
+      expert: 'Siêu khó',
+    });
   });
 
   it('chooses a deterministic valid move without mutating combat state', () => {

@@ -32,7 +32,7 @@ describe('War God VS intro data', () => {
 
   it('maps bot difficulty to a stable VIP icon and label', () => {
     expect(buildBotVsIntroData(user, 'expert')).toEqual({
-      left: { name: 'máy · SIÊU KHÓ', vipType: '4' },
+      left: { name: 'Máy - Siêu khó', vipType: '4' },
       right: { name: 'phong', vipType: '135' },
     });
   });
