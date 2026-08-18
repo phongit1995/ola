@@ -1,5 +1,7 @@
 package wargod
 
+import "math"
+
 const (
 	maxHP    = 200
 	maxMP    = 100
@@ -7,11 +9,12 @@ const (
 	maxArmor = 30
 	ultCost  = 100
 
-	dmgSword    = 7
-	healHeart   = 5
-	manaWater   = 7
-	armorShield = 5
-	furyPeach   = 10
+	dmgSword             = 7
+	healHeart            = 5
+	manaWater            = 7
+	armorShield          = 5
+	furyPeach            = 10
+	furyDamageMultiplier = 1.5
 
 	fireSwordDamage  = 12
 	greaterHeartHeal = 10
@@ -57,6 +60,10 @@ func scaleCascadeValue(value, cascadeLevel int) int {
 	return (value*(100+cascadeBonusPercent(cascadeLevel)) + 50) / 100
 }
 
+func scaleFuryDamage(value int) int {
+	return int(math.Round(float64(value) * furyDamageMultiplier))
+}
+
 func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
 	return applyTileEffectsAtCascade(attacker, defender, counts, 0)
 }
@@ -82,13 +89,13 @@ func applyTileEffectsInCascadeChain(
 	swordDmg := counts[tileSword] * dmgSword
 	fireDmg := counts[tileFireSword] * fireSwordDamage
 
-	// Nộ kích hoạt khi đã đầy trước một wave có Kiếm, rồi giữ ×2 đến hết
+	// Nộ kích hoạt khi đã đầy trước một wave có Kiếm, rồi giữ hệ số sát thương
 	// chuỗi sập hiện tại. Đào ăn trong wave chỉ nạp Nộ cho các wave sau.
 	hasSwordDamage := swordDmg > 0 || fireDmg > 0
 	furied := furyChainActive != nil && *furyChainActive && hasSwordDamage
 	if (furyChainActive == nil || !*furyChainActive) && attacker.Fury >= maxFury && hasSwordDamage {
-		swordDmg *= 2
-		fireDmg *= 2
+		swordDmg = scaleFuryDamage(swordDmg)
+		fireDmg = scaleFuryDamage(fireDmg)
 		attacker.Fury = 0
 		furied = true
 		effects.Furied = true
@@ -96,8 +103,8 @@ func applyTileEffectsInCascadeChain(
 			*furyChainActive = true
 		}
 	} else if furied {
-		swordDmg *= 2
-		fireDmg *= 2
+		swordDmg = scaleFuryDamage(swordDmg)
+		fireDmg = scaleFuryDamage(fireDmg)
 	}
 
 	swordDmg = scaleCascadeValue(swordDmg, cascadeLevel)

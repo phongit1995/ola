@@ -41,7 +41,7 @@ describe('cascade tile-effect scaling', () => {
     expect(effects.reflect).toBe(2);
   });
 
-  it('keeps full-fury sword damage doubled through the entire cascade chain', () => {
+  it('keeps the full-fury damage multiplier through the entire cascade chain', () => {
     const attacker = { ...createFighter(), fury: 100 };
     const defender = createFighter();
     const furyChain = { active: false };
@@ -51,11 +51,11 @@ describe('cascade tile-effect scaling', () => {
     const firstCascade = applyTileEffects(attacker, defender, counts, 1, furyChain);
     const secondCascade = applyTileEffects(attacker, defender, counts, 2, furyChain);
 
-    expect(firstWave).toMatchObject({ damage: 42, furied: true });
-    expect(firstCascade.damage).toBe(46);
-    expect(secondCascade.damage).toBe(50);
+    expect(firstWave).toMatchObject({ damage: 32, furied: true });
+    expect(firstCascade.damage).toBe(35);
+    expect(secondCascade.damage).toBe(38);
     expect(attacker.fury).toBe(0);
-    expect(defender.hp).toBe(62);
+    expect(defender.hp).toBe(95);
   });
 
   it('replays Fury consumption before applying same-wave peach recharge', () => {

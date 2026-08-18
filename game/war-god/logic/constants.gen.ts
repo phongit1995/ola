@@ -25,6 +25,7 @@ export const SPECIAL_HEART_CHANCE = 1 / SPECIAL_HEART_ONE_IN;
 export const MAX_HP = 200;
 export const MAX_MP = 100;
 export const MAX_FURY = 100;
+export const FURY_DAMAGE_MULTIPLIER = 1.5;
 export const MAX_ARMOR = 30;
 export const ULT_COST = 100;
 export const LIGHTNING_GOD_DAMAGE = 20;

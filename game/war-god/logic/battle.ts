@@ -13,6 +13,7 @@ import {
   CASCADE_BONUS_PERCENT_PER_LEVEL,
   DMG_SWORD,
   FIRE_SWORD_DMG,
+  FURY_DAMAGE_MULTIPLIER,
   FURY_PEACH,
   GREATER_HEART_HEAL,
   HEAL_HEART,
@@ -31,6 +32,7 @@ export {
   ARMOR_DECAY,
   CASCADE_BONUS_PERCENT_PER_LEVEL,
   FIRE_SWORD_DMG,
+  FURY_DAMAGE_MULTIPLIER,
   GREATER_HEART_HEAL,
   MAX_ARMOR,
   MAX_CASCADE_LEVEL,
@@ -58,6 +60,10 @@ export function cascadeBonusPercent(cascadeLevel: number): number {
 
 export function scaleCascadeValue(value: number, cascadeLevel: number): number {
   return Math.round((value * (100 + cascadeBonusPercent(cascadeLevel))) / 100);
+}
+
+function scaleFuryDamage(value: number): number {
+  return Math.round(value * FURY_DAMAGE_MULTIPLIER);
 }
 
 export function createFighter(): Fighter {
@@ -99,20 +105,20 @@ export function applyTileEffects(
   let swordDmg = counts.sword * DMG_SWORD;
   let fireDmg = counts.fireSword * FIRE_SWORD_DMG;
 
-  // Nộ kích hoạt khi đã đầy trước một wave có Kiếm, rồi giữ ×2 đến hết
+  // Nộ kích hoạt khi đã đầy trước một wave có Kiếm, rồi giữ hệ số sát thương
   // chuỗi sập hiện tại. Đào ăn trong wave chỉ nạp Nộ cho các wave sau.
   const hasSwordDamage = swordDmg > 0 || fireDmg > 0;
   let furied = furyChain?.active === true && hasSwordDamage;
   if (!furyChain?.active && attacker.fury >= MAX_FURY && hasSwordDamage) {
-    swordDmg *= 2;
-    fireDmg *= 2;
+    swordDmg = scaleFuryDamage(swordDmg);
+    fireDmg = scaleFuryDamage(fireDmg);
     attacker.fury = 0;
     furied = true;
     summary.furied = true;
     if (furyChain) furyChain.active = true;
   } else if (furied) {
-    swordDmg *= 2;
-    fireDmg *= 2;
+    swordDmg = scaleFuryDamage(swordDmg);
+    fireDmg = scaleFuryDamage(fireDmg);
   }
 
   swordDmg = scaleCascadeValue(swordDmg, cascadeLevel);
@@ -481,9 +487,9 @@ export function botChooseMove(
     swapCells(board, move[0], move[1]);
     if (!counts) continue;
 
-    // Nộ chỉ ×2 khi đã đầy từ trước wave; Đào ăn trong wave này chỉ tính điểm
-    // nạp Nộ (peachWeight) chứ không nhân đôi sát thương ngay.
-    const furyMul = bot.fury >= MAX_FURY ? 2 : 1;
+    // Nộ chỉ tăng sát thương khi đã đầy từ trước wave; Đào ăn trong wave này
+    // chỉ tính điểm nạp Nộ (peachWeight), không tăng sát thương ngay.
+    const furyMul = bot.fury >= MAX_FURY ? FURY_DAMAGE_MULTIPLIER : 1;
     let score =
       (counts.sword * DMG_SWORD + counts.fireSword * FIRE_SWORD_DMG) * furyMul * attackWeight +
       counts.peach * peachWeight +

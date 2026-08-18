@@ -7,6 +7,7 @@ import {
   ARMOR_SHIELD,
   DMG_SWORD,
   FIRE_SWORD_DMG,
+  FURY_DAMAGE_MULTIPLIER,
   FURY_PEACH,
   GREATER_HEART_HEAL,
   HEAL_HEART,
@@ -102,7 +103,7 @@ const RULES: GuideRule[] = [
   {
     asset: A.items.peach,
     title: `NỘ ĐẦY ${MAX_FURY}`,
-    detail: 'Đòn Kiếm kế tiếp ×2 sát thương và xuyên giáp',
+    detail: `Đòn Kiếm kế tiếp ×${FURY_DAMAGE_MULTIPLIER} sát thương và xuyên giáp`,
     accent: 0xffa45c,
   },
   {

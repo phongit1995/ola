@@ -37,6 +37,7 @@ import {
 } from '../../logic/core';
 import {
   LIGHTNING_GOD_DAMAGE,
+  FURY_DAMAGE_MULTIPLIER,
   ULT_COST,
   applyAuthoritativeEffects,
   applyTileEffects,
@@ -952,7 +953,9 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
   if ((result.armorDamage ?? 0) > 0) {
     floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
   }
-  if (result.furied) floatNumber(defCard, 'NỘ ×2!', 0xff5aa0);
+  if (result.furied) {
+    floatNumber(defCard, `NỘ ×${FURY_DAMAGE_MULTIPLIER}!`, 0xff5aa0);
+  }
   if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
   if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
   if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "tileOrder": [
     "sword",
     "peach",
@@ -221,7 +221,7 @@
       }
     },
     {
-      "name": "full fury doubles sword damage and special healing caps",
+      "name": "full fury multiplies sword damage and special healing caps",
       "attacker": {
         "hp": 195,
         "mp": 0,
@@ -251,19 +251,20 @@
         "fury": 0
       },
       "wantDefender": {
-        "hp": 0,
+        "hp": 1,
         "mp": 0,
         "armor": 30,
         "fury": 0
       },
       "wantEffects": {
-        "damage": 38,
-        "heal": 5,
+        "damage": 29,
+        "heal": 7,
         "mana": 0,
         "armor": 0,
         "armorDamage": 0,
         "fury": 0,
-        "furied": true
+        "furied": true,
+        "reflect": 2
       }
     }
   ],

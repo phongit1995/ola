@@ -91,7 +91,7 @@ func ExportParityFixture() ParityFixture {
 			},
 		},
 		{
-			name:     "full fury doubles sword damage and special healing caps",
+			name:     "full fury multiplies sword damage and special healing caps",
 			attacker: Fighter{HP: 195, Fury: 100},
 			defender: Fighter{HP: 30, Armor: 30},
 			counts: map[int]int{
@@ -143,7 +143,7 @@ func ExportParityFixture() ParityFixture {
 	}
 
 	return ParityFixture{
-		Version:        2,
+		Version:        3,
 		TileOrder:      append([]string(nil), tileNames[:]...),
 		FindMatches:    matches,
 		TileEffects:    effects,

@@ -603,13 +603,13 @@ func TestApplyTileEffects(t *testing.T) {
 			wantEffects:  Effects{Fury: 5},
 		},
 		{
-			name:         "full fury doubles and pierces sword",
+			name:         "full fury multiplies and pierces sword",
 			attacker:     Fighter{HP: 100, Fury: 100},
 			defender:     Fighter{HP: 100, Armor: 30},
 			counts:       map[int]int{tileSword: 3},
 			wantAttacker: Fighter{HP: 98, Fury: 0},
-			wantDefender: Fighter{HP: 58, Armor: 30},
-			wantEffects:  Effects{Damage: 42, Furied: true, Reflect: 2},
+			wantDefender: Fighter{HP: 68, Armor: 30},
+			wantEffects:  Effects{Damage: 32, Furied: true, Reflect: 2},
 		},
 		{
 			name:         "peach fills but does not consume same wave",
@@ -626,8 +626,8 @@ func TestApplyTileEffects(t *testing.T) {
 			defender:     Fighter{HP: 100},
 			counts:       map[int]int{tileSword: 2, tilePeach: 1},
 			wantAttacker: Fighter{HP: 100, Fury: 10},
-			wantDefender: Fighter{HP: 72},
-			wantEffects:  Effects{Damage: 28, Fury: 10, Furied: true},
+			wantDefender: Fighter{HP: 79},
+			wantEffects:  Effects{Damage: 21, Fury: 10, Furied: true},
 		},
 		{
 			name:         "heal capped at max hp",
@@ -724,7 +724,7 @@ func TestCascadeScalesEveryCollectedTileValueAndCapsAtThirtyPercent(t *testing.T
 	}
 }
 
-func TestFullFuryDoublesSwordDamageForEntireCascadeChain(t *testing.T) {
+func TestFullFuryMultipliesSwordDamageForEntireCascadeChain(t *testing.T) {
 	attacker := Fighter{HP: maxHP, Fury: maxFury}
 	defender := Fighter{HP: maxHP}
 	furyChainActive := false
@@ -740,17 +740,17 @@ func TestFullFuryDoublesSwordDamageForEntireCascadeChain(t *testing.T) {
 		&attacker, &defender, counts, 2, &furyChainActive,
 	)
 
-	if !firstWave.Furied || firstWave.Damage != 42 {
-		t.Fatalf("first wave effects=%+v, want 42 damage with Fury activation", firstWave)
+	if !firstWave.Furied || firstWave.Damage != 32 {
+		t.Fatalf("first wave effects=%+v, want 32 damage with Fury activation", firstWave)
 	}
-	if firstCascade.Damage != 46 || secondCascade.Damage != 50 {
+	if firstCascade.Damage != 35 || secondCascade.Damage != 38 {
 		t.Fatalf(
-			"cascade damage=(%d, %d), want (46, 50)",
+			"cascade damage=(%d, %d), want (35, 38)",
 			firstCascade.Damage,
 			secondCascade.Damage,
 		)
 	}
-	if attacker.Fury != 0 || defender.HP != 62 || !furyChainActive {
+	if attacker.Fury != 0 || defender.HP != 95 || !furyChainActive {
 		t.Fatalf(
 			"attacker=%+v defender=%+v furyChainActive=%v",
 			attacker,
