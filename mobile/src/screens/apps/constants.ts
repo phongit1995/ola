@@ -21,8 +21,6 @@ export interface AppItem {
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
-export const LEFT_MINIMIZE_GAME_SLUGS = ['war-god'];
-
 export const GAME_ITEMS: AppItem[] = [
   {
     icon: require('@assets/icons/apps/egg.png'),

@@ -105,8 +105,6 @@ export const MOCK_VENUES: Venue[] = [
   },
 ];
 
-export const LEFT_MINIMIZE_GAME_SLUGS = ['war-god'];
-
 export const KEN_LOW_THRESHOLD = 10_000;
 export const MIN_AMOUNT = 10_000;
 export const STEP_AMOUNT = 1_000;

@@ -77,6 +77,18 @@ export function useGrantVip() {
   })
 }
 
+export function useDeleteUserVip() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, instanceId }: { id: string; instanceId: string }) =>
+      AdminUserService.deleteVip(id, instanceId),
+    onSuccess: (_data, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'detail', id] })
+    },
+  })
+}
+
 export function useAddVipDays() {
   const queryClient = useQueryClient()
   return useMutation({

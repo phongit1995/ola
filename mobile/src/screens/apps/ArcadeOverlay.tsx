@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   BackHandler,
   Platform,
-  Pressable,
   StyleSheet,
   View,
   useWindowDimensions,
@@ -28,7 +27,6 @@ import { WARNING } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { mmkvStorage } from '@platform/storage';
-import { LEFT_MINIMIZE_GAME_SLUGS } from './constants';
 
 interface BubblePosition {
   x: number;
@@ -37,6 +35,11 @@ interface BubblePosition {
 
 const iconGameDefault = require('@assets/icons/apps/game.png');
 const BUBBLE_POSITION_STORAGE_KEY = 'ola.arcade.bubble-position';
+const MINIMIZE_POSITION_STORAGE_KEY = 'ola.arcade.minimize-position';
+const MINIMIZE_SIZE = 36;
+const MINIMIZE_EDGE_GAP = 8;
+const MINIMIZE_INSET = 12;
+const MINIMIZE_SAFE_LIFT = 12;
 const BUBBLE_SIZE = 56;
 const BUBBLE_EDGE_GAP = 8;
 const BUBBLE_RIGHT = 16;
@@ -62,8 +65,131 @@ function readBubblePosition(): BubblePosition {
   }
 }
 
+function readMinimizePosition(slug: string): BubblePosition {
+  try {
+    const raw = mmkvStorage.getItem(MINIMIZE_POSITION_STORAGE_KEY);
+    if (!raw) return { x: 0, y: 0 };
+    const parsed = (JSON.parse(raw) as Record<string, Partial<BubblePosition>>)[
+      slug
+    ];
+    if (
+      parsed == null ||
+      !Number.isFinite(parsed.x) ||
+      !Number.isFinite(parsed.y)
+    ) {
+      return { x: 0, y: 0 };
+    }
+    return { x: parsed.x as number, y: parsed.y as number };
+  } catch {
+    return { x: 0, y: 0 };
+  }
+}
+
+function storeMinimizePosition(slug: string, position: BubblePosition) {
+  try {
+    const raw = mmkvStorage.getItem(MINIMIZE_POSITION_STORAGE_KEY);
+    const all = raw
+      ? (JSON.parse(raw) as Record<string, BubblePosition>)
+      : ({} as Record<string, BubblePosition>);
+    all[slug] = position;
+    mmkvStorage.setItem(MINIMIZE_POSITION_STORAGE_KEY, JSON.stringify(all));
+  } catch {
+    return;
+  }
+}
+
 function storeBubblePosition(position: BubblePosition) {
   mmkvStorage.setItem(BUBBLE_POSITION_STORAGE_KEY, JSON.stringify(position));
+}
+
+interface MinimizeHandleProps {
+  slug: string;
+  label: string;
+  onMinimize: () => void;
+}
+
+function MinimizeHandle({ slug, label, onMinimize }: MinimizeHandleProps) {
+  const insets = useSafeAreaInsets();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const [initialPosition] = useState(() => readMinimizePosition(slug));
+
+  const overlayPadsInsets = Platform.OS === 'android';
+  const safeTop = overlayPadsInsets ? 0 : insets.top;
+  const contentHeight = overlayPadsInsets
+    ? windowHeight - insets.top - insets.bottom
+    : windowHeight - insets.bottom;
+  const baseLeft = windowWidth - MINIMIZE_INSET - MINIMIZE_SIZE;
+  const baseTop = safeTop + MINIMIZE_INSET;
+  const minTranslateX = MINIMIZE_EDGE_GAP - baseLeft;
+  const maxTranslateX =
+    windowWidth - MINIMIZE_SIZE - MINIMIZE_EDGE_GAP - baseLeft;
+  const minTop = Math.max(MINIMIZE_EDGE_GAP, safeTop - MINIMIZE_SAFE_LIFT);
+  const minTranslateY = minTop - baseTop;
+  const maxTranslateY =
+    contentHeight - MINIMIZE_SIZE - MINIMIZE_EDGE_GAP - baseTop;
+
+  const tx = useSharedValue(
+    clamp(initialPosition.x, minTranslateX, maxTranslateX),
+  );
+  const ty = useSharedValue(
+    clamp(initialPosition.y, minTranslateY, maxTranslateY),
+  );
+  const startX = useSharedValue(0);
+  const startY = useSharedValue(0);
+
+  function commitPosition(x: number, y: number) {
+    storeMinimizePosition(slug, {
+      x: clamp(x, minTranslateX, maxTranslateX),
+      y: clamp(y, minTranslateY, maxTranslateY),
+    });
+  }
+
+  const dragGesture = Gesture.Pan()
+    .minDistance(DRAG_START_DISTANCE)
+    .maxPointers(1)
+    .onStart(() => {
+      startX.value = tx.value;
+      startY.value = ty.value;
+    })
+    .onUpdate(event => {
+      tx.value = clamp(
+        startX.value + event.translationX,
+        minTranslateX,
+        maxTranslateX,
+      );
+      ty.value = clamp(
+        startY.value + event.translationY,
+        minTranslateY,
+        maxTranslateY,
+      );
+    })
+    .onFinalize(() => {
+      runOnJS(commitPosition)(tx.value, ty.value);
+    });
+
+  const tapGesture = Gesture.Tap()
+    .maxDistance(DRAG_START_DISTANCE)
+    .onEnd((_event, success) => {
+      if (success) runOnJS(onMinimize)();
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: tx.value }, { translateY: ty.value }],
+  }));
+
+  return (
+    <GestureDetector gesture={Gesture.Race(dragGesture, tapGesture)}>
+      <Animated.View
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        onAccessibilityTap={onMinimize}
+        style={[styles.minimizeButton, { top: baseTop }, animatedStyle]}
+      >
+        <View style={styles.minimizeLine} />
+      </Animated.View>
+    </GestureDetector>
+  );
 }
 
 export function ArcadeOverlay() {
@@ -262,7 +388,6 @@ export function ArcadeOverlay() {
 
   if (!active) return null;
 
-  const minimizeOnLeft = LEFT_MINIMIZE_GAME_SLUGS.includes(active.slug);
   const androidInsets =
     Platform.OS === 'android'
       ? { paddingTop: insets.top, paddingBottom: insets.bottom }
@@ -288,18 +413,12 @@ export function ArcadeOverlay() {
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction={false}
         />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('arcade.minimize')}
-          onPress={minimize}
-          style={[
-            styles.minimizeButton,
-            { top: insets.top + 12 },
-            minimizeOnLeft ? styles.minimizeLeft : styles.minimizeRight,
-          ]}
-        >
-          <View style={styles.minimizeLine} />
-        </Pressable>
+        <MinimizeHandle
+          key={active.slug}
+          slug={active.slug}
+          label={t('arcade.minimize')}
+          onMinimize={minimize}
+        />
       </View>
 
       {minimized && (
@@ -357,18 +476,14 @@ const styles = StyleSheet.create({
   },
   minimizeButton: {
     position: 'absolute',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    right: MINIMIZE_INSET,
+    zIndex: 10,
+    width: MINIMIZE_SIZE,
+    height: MINIMIZE_SIZE,
+    borderRadius: MINIMIZE_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  minimizeLeft: {
-    left: 12,
-  },
-  minimizeRight: {
-    right: 12,
   },
   minimizeLine: {
     width: 16,

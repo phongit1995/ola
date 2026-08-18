@@ -52,6 +52,10 @@ export const AdminUserService = {
     return data.data
   },
 
+  async deleteVip(id: string, instanceId: string): Promise<void> {
+    await http.delete(`/admin/users/${id}/vips/${instanceId}`)
+  },
+
   async addVipDays(id: string, payload: AddVipDaysRequest): Promise<AddVipDaysResult> {
     const { data } = await http.post<ApiResponse<AddVipDaysResult>>(
       `/admin/users/${id}/vip-days`,
