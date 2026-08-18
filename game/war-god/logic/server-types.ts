@@ -35,7 +35,6 @@ export interface StepMatch {
     armorDamage?: number;
     fury?: number;
     furied?: boolean;
-    reflect?: number;
   };
 }
 
@@ -53,6 +52,7 @@ export interface StepShuffle {
 export interface StepUlt {
   kind: 'ult';
   damage?: number;
+  armorDamage?: number;
   skill?: UltimateSkillId;
   cells?: number[];
 }

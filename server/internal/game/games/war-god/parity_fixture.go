@@ -83,7 +83,7 @@ func ExportParityFixture() ParityFixture {
 		counts   map[int]int
 	}{
 		{
-			name:     "caps gains and resolves armor reflect",
+			name:     "caps gains and resolves armor damage",
 			attacker: Fighter{HP: 150, MP: 90, Armor: 28, Fury: 90},
 			defender: Fighter{HP: 200, Armor: 20},
 			counts: map[int]int{
@@ -91,7 +91,7 @@ func ExportParityFixture() ParityFixture {
 			},
 		},
 		{
-			name:     "full fury multiplies sword damage and special healing caps",
+			name:     "armor absorbs full fury damage and special healing caps",
 			attacker: Fighter{HP: 195, Fury: 100},
 			defender: Fighter{HP: 30, Armor: 30},
 			counts: map[int]int{
@@ -143,7 +143,7 @@ func ExportParityFixture() ParityFixture {
 	}
 
 	return ParityFixture{
-		Version:        3,
+		Version:        5,
 		TileOrder:      append([]string(nil), tileNames[:]...),
 		FindMatches:    matches,
 		TileEffects:    effects,

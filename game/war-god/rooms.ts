@@ -48,7 +48,11 @@ import {
   isRoomPregameActive,
   updateRoomPregame,
 } from './screens/battle';
-import { pushPvpChat, setRoomChatSender } from './screens/battle/chat';
+import {
+  pushPvpChat,
+  setChatInputVisible,
+  setRoomChatSender,
+} from './screens/battle/chat';
 import { showConfirm as showBattleConfirm } from './screens/battle/hud';
 import {
   buildRoomsConfirm,
@@ -166,6 +170,10 @@ function showWaiting(): void {
 }
 
 function showList(refresh: boolean): void {
+  // Input chat là DOM overlay, không tự biến mất theo Pixi layer. Mỗi đường
+  // quay về danh sách phòng phải chủ động đóng nó.
+  setRoomChatSender(null);
+  setChatInputVisible(false);
   hideCreateRoomPopup();
   hidePasswordPopup();
   if (!isRoomListPopupOpen()) openRoomListPopup();
@@ -522,7 +530,6 @@ export function buildRoomsLayer(): Container {
   layer.addChild(
     buildRoomListPopup({
       onCreate: () => {
-        hideRoomListPopup();
         openCreateRoomPopup();
       },
       onRefresh: refreshRooms,
@@ -561,6 +568,8 @@ export function openRoomList(): void {
     showWaiting();
     return;
   }
+  setRoomChatSender(null);
+  setChatInputVisible(false);
   hideAllRoomPopups();
   openRoomListPopup();
   setRoomListUser(deps?.getUserInfo() ?? null);

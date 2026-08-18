@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 5,
   "tileOrder": [
     "sword",
     "peach",
@@ -175,7 +175,7 @@
   ],
   "tileEffects": [
     {
-      "name": "caps gains and resolves armor reflect",
+      "name": "caps gains and resolves armor damage",
       "attacker": {
         "hp": 150,
         "mp": 90,
@@ -199,7 +199,7 @@
         "water": 3
       },
       "wantAttacker": {
-        "hp": 168,
+        "hp": 170,
         "mp": 100,
         "armor": 30,
         "fury": 100
@@ -216,12 +216,11 @@
         "mana": 10,
         "armor": 2,
         "armorDamage": 20,
-        "fury": 10,
-        "reflect": 2
+        "fury": 10
       }
     },
     {
-      "name": "full fury multiplies sword damage and special healing caps",
+      "name": "armor absorbs full fury damage and special healing caps",
       "attacker": {
         "hp": 195,
         "mp": 0,
@@ -251,20 +250,19 @@
         "fury": 0
       },
       "wantDefender": {
-        "hp": 1,
+        "hp": 30,
         "mp": 0,
-        "armor": 30,
+        "armor": 1,
         "fury": 0
       },
       "wantEffects": {
-        "damage": 29,
-        "heal": 7,
+        "damage": 0,
+        "heal": 5,
         "mana": 0,
         "armor": 0,
-        "armorDamage": 0,
+        "armorDamage": 29,
         "fury": 0,
-        "furied": true,
-        "reflect": 2
+        "furied": true
       }
     }
   ],

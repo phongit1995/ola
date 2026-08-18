@@ -83,9 +83,6 @@ func renderConstants(config wargod.ClientConfig) []byte {
 	writeInt("FURY_PEACH", config.FuryPeach)
 	writeInt("FIRE_SWORD_DMG", config.FireSwordDamage)
 	writeInt("GREATER_HEART_HEAL", config.GreaterHeartHeal)
-	writeInt("ARMOR_DECAY", config.ArmorDecay)
-	writeInt("REFLECT_THRESHOLD", config.ReflectThreshold)
-	writeInt("REFLECT_DAMAGE", config.ReflectDamage)
 	return out.Bytes()
 }
 

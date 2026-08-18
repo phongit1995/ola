@@ -48,6 +48,7 @@ type Step struct {
 	Spawns        []Spawn        `json:"spawns,omitzero"`
 	Board         []int          `json:"board,omitempty"`
 	Damage        int            `json:"damage,omitempty"`
+	ArmorDamage   int            `json:"armorDamage,omitempty"`
 	Skill         string         `json:"skill,omitempty"`
 }
 

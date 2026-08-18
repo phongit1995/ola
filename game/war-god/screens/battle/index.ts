@@ -39,6 +39,7 @@ import {
   LIGHTNING_GOD_DAMAGE,
   FURY_DAMAGE_MULTIPLIER,
   ULT_COST,
+  applyDamageThroughArmor,
   applyAuthoritativeEffects,
   applyTileEffects,
   botChooseMove,
@@ -46,8 +47,8 @@ import {
   BOT_LEVEL_TITLES,
   castUltimate,
   createFighter,
-  decayArmor,
   type BotLevel,
+  type DamageResult,
   type EffectSummary,
   type Fighter,
 } from '../../logic/battle';
@@ -119,6 +120,7 @@ import {
   confirmedSwapDestination,
   rememberedSelectionsForTurn,
 } from './remembered-selection';
+import { battleActionAvailability } from './action-layout';
 
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 30;
 const HINT_DELAY_MS = 10_000;
@@ -756,9 +758,10 @@ function updateHud(): void {
     }),
   );
 
-  hud.restart.setEnabled(mode === 'bot' && !busy);
-  hud.forfeit.setEnabled(!over && !busy);
-  hud.exit.setEnabled(!busy);
+  const actions = battleActionAvailability(mode, busy, over);
+  hud.restart.setEnabled(actions.restartEnabled);
+  hud.forfeit.setEnabled(actions.forfeitEnabled);
+  hud.exit.setEnabled(actions.exitEnabled);
 }
 
 function buildFxFrames(sheet: Texture): Texture[] {
@@ -839,6 +842,19 @@ async function dropInBoard(): Promise<void> {
     );
   }
   await Promise.all(jobs);
+}
+
+function directDamageText(result: DamageResult): string {
+  const parts: string[] = [];
+  if (result.armorDamage > 0) parts.push(`-${result.armorDamage} GIÁP`);
+  if (result.damage > 0) parts.push(`-${result.damage} HP`);
+  return parts.join(' · ') || '0 SÁT THƯƠNG';
+}
+
+function showDirectDamage(defenderSide: 'me' | 'foe', result: DamageResult): void {
+  const card = defenderSide === 'me' ? hud.me.card : hud.foe.card;
+  if (result.armorDamage > 0) floatNumber(card, `-${result.armorDamage} giáp`, 0x8fdcff);
+  if (result.damage > 0) floatNumber(card, `-${result.damage} HP`, 0xff6b5e);
 }
 
 async function animateBoardOut(): Promise<void> {
@@ -977,8 +993,8 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
   const { side, actorLabel, matched, removed, exploded, lightningArcs, result } = options;
   playSound('match');
   const parts: string[] = [];
-  if (result.damage > 0) parts.push(`-${result.damage} HP`);
   if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
+  if (result.damage > 0) parts.push(`-${result.damage} HP`);
   if (result.heal > 0) parts.push(`+${result.heal} HP`);
   if (result.mana > 0) parts.push(`+${result.mana} MP`);
   if (result.armor > 0) parts.push(`+${result.armor} giáp`);
@@ -995,17 +1011,16 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
 
   const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
   const defCard = side === 'me' ? hud.foe.card : hud.me.card;
-  if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
   if ((result.armorDamage ?? 0) > 0) {
     floatNumber(defCard, `-${result.armorDamage} giáp`, 0x8fdcff);
   }
+  if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e);
   if (result.furied) {
     floatNumber(defCard, `NỘ ×${FURY_DAMAGE_MULTIPLIER}!`, 0xff5aa0);
   }
   if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a);
   if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff);
   if ((result.fury ?? 0) > 0) floatNumber(atkCard, `+${result.fury} NỘ`, 0xff9ecb);
-  if ((result.reflect ?? 0) > 0) floatNumber(atkCard, `-${result.reflect} phản`, 0xffb36e);
   if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff);
 }
 
@@ -1153,7 +1168,6 @@ async function onTileTap(i: number): Promise<void> {
   swapCells(board, a, b);
   await animateSwap(a, b);
   spendBotModeExtraTurn('me');
-  decayArmor(me);
   const earnedExtraTurns = await resolveCascades('me');
   const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
   if (checkEnd()) return;
@@ -1185,14 +1199,13 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
     return;
   }
   spendBotModeExtraTurn('me');
-  decayArmor(me);
   if (skill === 'lightning-god') {
     me.mp = 0;
-    foe.hp = Math.max(0, foe.hp - LIGHTNING_GOD_DAMAGE);
+    const result = applyDamageThroughArmor(foe, LIGHTNING_GOD_DAMAGE);
     const cells = randomFourTwoByTwoBlocks().flat();
-    setStatus(`LÔI THẦN GIÁNG THẾ · -${LIGHTNING_GOD_DAMAGE} HP · 4 TIA SÉT!`);
+    setStatus(`LÔI THẦN GIÁNG THẾ · ${directDamageText(result)} · 4 TIA SÉT!`);
     updateHud();
-    floatNumber(hud.foe.card, `-${LIGHTNING_GOD_DAMAGE} HP`, 0xff6b5e);
+    showDirectDamage('foe', result);
     await animateUltimateLightningRemove(cells);
     const gravity = applyGravity(board, new Set(cells));
     await animateGravity(gravity.falls, gravity.spawns);
@@ -1211,8 +1224,9 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
     void startBotTurn();
     return;
   }
-  const ultDmg = castUltimate(me, foe);
-  setStatus(`TUYỆT CHIÊU! -${ultDmg} HP`);
+  const ultResult = castUltimate(me, foe);
+  setStatus(`TUYỆT CHIÊU! ${directDamageText(ultResult)}`);
+  showDirectDamage('foe', ultResult);
   updateHud();
   await playUltFx('me');
   if (checkEnd()) return;
@@ -1250,9 +1264,9 @@ async function startBotTurn(): Promise<void> {
 
     if (botShouldUlt(foe, me, botLevel)) {
       spendBotModeExtraTurn('foe');
-      decayArmor(foe);
-      const ultDmg = castUltimate(foe, me);
-      setStatus(`Máy tung TUYỆT CHIÊU! -${ultDmg} HP`);
+      const ultResult = castUltimate(foe, me);
+      setStatus(`Máy tung TUYỆT CHIÊU! ${directDamageText(ultResult)}`);
+      showDirectDamage('me', ultResult);
       updateHud();
       await playUltFx('foe');
       if (stale()) return;
@@ -1282,7 +1296,6 @@ async function startBotTurn(): Promise<void> {
     await sleep(160);
     if (stale()) return;
     botSelectorA.visible = false;
-    decayArmor(foe);
     const earnedExtraTurns = await resolveCascades('foe');
     const remainingExtraTurns = addBotModeExtraTurns('foe', earnedExtraTurns);
     if (stale()) return;
@@ -1403,6 +1416,8 @@ export function updateRoomPregame(
 
 export function exitRoomPregame(): void {
   if (!roomPregame) return;
+  setRoomChatSender(null);
+  setChatInputVisible(false);
   clearRoomPregameVisuals();
   deps.onExitToLobby();
 }
@@ -1522,7 +1537,7 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   setStatus('Chuẩn bị chiến đấu...');
   const intro = vsIntro.play(buildPvpVsIntroData(data, deps.getUserInfo()));
   return Promise.all([dropInBoard(), intro]).then(() => {
-    if (flowEpoch !== ep) return;
+    if (flowEpoch !== ep || over || data.matchId !== pvpMatchId) return;
     endBusy();
     announceTurn(myTurn ? 'me' : 'foe');
     setStatus(myTurn ? 'Lượt của bạn — ghép 3 ô để tấn công!' : 'Đợi đối thủ...');
@@ -1582,28 +1597,31 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
   attacker.mp = 0;
+  const armorDamage = step.armorDamage ?? 0;
+  const fallbackDamage = step.skill === 'lightning-god' ? LIGHTNING_GOD_DAMAGE : 0;
+  const damage = step.damage ?? (armorDamage > 0 ? 0 : fallbackDamage);
+  const result = { damage, armorDamage };
+  defender.armor = Math.max(0, defender.armor - armorDamage);
+  defender.hp = Math.max(0, defender.hp - damage);
   if (step.skill === 'lightning-god') {
-    const damage = step.damage ?? LIGHTNING_GOD_DAMAGE;
-    defender.hp = Math.max(0, defender.hp - damage);
     const cells = step.cells ?? [];
     setStatus(
       side === 'me'
-        ? `LÔI THẦN GIÁNG THẾ · -${damage} HP · 4 TIA SÉT!`
-        : `Đối thủ triệu hồi LÔI THẦN · -${damage} HP · 4 TIA SÉT!`,
+        ? `LÔI THẦN GIÁNG THẾ · ${directDamageText(result)} · 4 TIA SÉT!`
+        : `Đối thủ triệu hồi LÔI THẦN · ${directDamageText(result)} · 4 TIA SÉT!`,
     );
     updateHud();
-    floatNumber(side === 'me' ? hud.foe.card : hud.me.card, `-${damage} HP`, 0xff6b5e);
+    showDirectDamage(side === 'me' ? 'foe' : 'me', result);
     await animateUltimateLightningRemove(cells);
     return;
   }
-  const damage = step.damage ?? 0;
-  defender.hp = Math.max(0, defender.hp - damage);
   setStatus(
     side === 'me'
-      ? `TUYỆT CHIÊU! -${damage} HP`
-      : `Đối thủ tung TUYỆT CHIÊU! -${damage} HP`,
+      ? `TUYỆT CHIÊU! ${directDamageText(result)}`
+      : `Đối thủ tung TUYỆT CHIÊU! ${directDamageText(result)}`,
   );
   updateHud();
+  showDirectDamage(side === 'me' ? 'foe' : 'me', result);
   await playUltFx(side);
 }
 
@@ -1630,7 +1648,6 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   }
   let replayFailed = false;
   if (data.lastMove) {
-    decayArmor(side === 'me' ? me : foe);
     updateHud();
     try {
       for (const step of state.steps) {
@@ -2084,30 +2101,31 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
       });
     },
     onForfeit: () => {
-      if (over) return;
+      if (!battleActionAvailability(mode, busy, over).forfeitEnabled) return;
       if (mode === 'pvp') {
         showConfirm({
           kind: 'forfeit',
           message: 'Bạn sẽ bị xử thua ván này.\nBạn vẫn có thể chơi ván tiếp theo.',
           confirmLabel: 'BỎ CUỘC',
           onConfirm: () => {
-            if (!busy && !over) pvp.forfeit();
+            if (battleActionAvailability(mode, busy, over).forfeitEnabled) pvp.forfeit();
           },
         });
         return;
       }
-      if (busy) return;
       showConfirm({
         kind: 'forfeit',
         message: 'Bạn sẽ bị xử thua ván này.\nBạn vẫn có thể chơi ván tiếp theo.',
         confirmLabel: 'BỎ CUỘC',
         onConfirm: () => {
-          if (!busy && !over) finish(false, 'forfeit', 'Bạn đã bỏ cuộc');
+          if (battleActionAvailability(mode, busy, over).forfeitEnabled) {
+            finish(false, 'forfeit', 'Bạn đã bỏ cuộc');
+          }
         },
       });
     },
     onExit: () => {
-      if (busy) return;
+      if (!battleActionAvailability(mode, busy, over).exitEnabled) return;
       if (over || !inGame) {
         exitToLobby();
         return;
@@ -2117,7 +2135,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
         message: 'Thoát sẽ bị xử thua và rời bàn.\nBạn có chắc muốn thoát?',
         confirmLabel: 'RỜI TRẬN',
         onConfirm: () => {
-          if (!busy) exitActiveMatch();
+          if (battleActionAvailability(mode, busy, over).exitEnabled) exitActiveMatch();
         },
       });
     },

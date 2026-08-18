@@ -19,10 +19,6 @@ const (
 	fireSwordDamage  = 12
 	greaterHeartHeal = 10
 
-	armorDecay       = 2
-	reflectThreshold = 20
-	reflectDamage    = 2
-
 	lightningGodDamage          = 20
 	cascadeBonusPercentPerLevel = 10
 	maximumCascadeLevel         = 3
@@ -43,7 +39,6 @@ type Effects struct {
 	ArmorDamage int  `json:"armorDamage"`
 	Fury        int  `json:"fury"`
 	Furied      bool `json:"furied,omitempty"`
-	Reflect     int  `json:"reflect,omitempty"`
 }
 
 func cascadeBonusPercent(cascadeLevel int) int {
@@ -62,6 +57,20 @@ func scaleCascadeValue(value, cascadeLevel int) int {
 
 func scaleFuryDamage(value int) int {
 	return int(math.Round(float64(value) * furyDamageMultiplier))
+}
+
+func applyDamageThroughArmor(defender *Fighter, incoming int) (damage, armorDamage int) {
+	armorDamage = incoming
+	if defender.Armor < armorDamage {
+		armorDamage = defender.Armor
+	}
+	defender.Armor -= armorDamage
+	damage = incoming - armorDamage
+	defender.HP -= damage
+	if defender.HP < 0 {
+		defender.HP = 0
+	}
+	return damage, armorDamage
 }
 
 func applyTileEffects(attacker, defender *Fighter, counts map[int]int) Effects {
@@ -84,7 +93,6 @@ func applyTileEffectsInCascadeChain(
 	furyChainActive *bool,
 ) Effects {
 	effects := Effects{}
-	defenderArmorBefore := defender.Armor
 
 	swordDmg := counts[tileSword] * dmgSword
 	fireDmg := counts[tileFireSword] * fireSwordDamage
@@ -119,38 +127,10 @@ func applyTileEffectsInCascadeChain(
 		effects.Fury = gained
 	}
 
-	if swordDmg > 0 {
-		if furied {
-			defender.HP -= swordDmg
-			effects.Damage += swordDmg
-		} else {
-			absorbed := swordDmg
-			if defender.Armor < absorbed {
-				absorbed = defender.Armor
-			}
-			defender.Armor -= absorbed
-			effects.ArmorDamage += absorbed
-			dealt := swordDmg - absorbed
-			defender.HP -= dealt
-			effects.Damage += dealt
-		}
-	}
-
-	if fireDmg > 0 {
-		defender.HP -= fireDmg
-		effects.Damage += fireDmg
-	}
-
-	if defender.HP < 0 {
-		defender.HP = 0
-	}
-
-	if defender.HP > 0 && (counts[tileSword] > 0 || counts[tileFireSword] > 0) && defenderArmorBefore >= reflectThreshold {
-		attacker.HP -= reflectDamage
-		if attacker.HP < 0 {
-			attacker.HP = 0
-		}
-		effects.Reflect = reflectDamage
+	if incomingDamage := swordDmg + fireDmg; incomingDamage > 0 {
+		damage, armorDamage := applyDamageThroughArmor(defender, incomingDamage)
+		effects.Damage = damage
+		effects.ArmorDamage = armorDamage
 	}
 
 	healing := scaleCascadeValue(

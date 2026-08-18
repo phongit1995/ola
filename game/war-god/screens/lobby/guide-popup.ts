@@ -3,7 +3,6 @@ import { A, tex } from '../../assets';
 import { HEADING, makeText, pressable } from '../../kit';
 import { DESIGN_W } from '../../layout';
 import {
-  ARMOR_DECAY,
   ARMOR_SHIELD,
   DMG_SWORD,
   FIRE_SWORD_DMG,
@@ -11,12 +10,11 @@ import {
   FURY_PEACH,
   GREATER_HEART_HEAL,
   HEAL_HEART,
+  LIGHTNING_GOD_DAMAGE,
   MAX_ARMOR,
   MAX_FURY,
   MAX_HP,
   MP_WATER,
-  REFLECT_DAMAGE,
-  REFLECT_THRESHOLD,
   ULT_COST,
 } from '../../logic/constants.gen';
 import { createCardModal, type CardModal } from './card-modal';
@@ -82,7 +80,7 @@ const ITEMS: GuideItem[] = [
   {
     asset: A.items.fireSword,
     title: 'KIẾM LỬA · HIẾM',
-    detail: `${FIRE_SWORD_DMG} ST XUYÊN GIÁP · NỔ 3×3`,
+    detail: `${FIRE_SWORD_DMG} SÁT THƯƠNG · NỔ 3×3`,
     accent: 0xff8051,
   },
   {
@@ -103,19 +101,19 @@ const RULES: GuideRule[] = [
   {
     asset: A.items.peach,
     title: `NỘ ĐẦY ${MAX_FURY}`,
-    detail: `Đòn Kiếm kế tiếp ×${FURY_DAMAGE_MULTIPLIER} sát thương và xuyên giáp`,
+    detail: `Đòn Kiếm kế tiếp ×${FURY_DAMAGE_MULTIPLIER} sát thương`,
     accent: 0xffa45c,
   },
   {
     asset: A.items.shield,
-    title: 'GIÁP PHẢN ĐÒN',
-    detail: `Giảm ${ARMOR_DECAY}/lượt · từ ${REFLECT_THRESHOLD} giáp phản ${REFLECT_DAMAGE} sát thương`,
+    title: 'GIÁP HỘ THỂ',
+    detail: '1 giáp chặn 1 sát thương · hết giáp mới trừ máu',
     accent: 0x86c5ff,
   },
   {
     asset: A.hud.flameOn,
     title: 'TUYỆT CHIÊU',
-    detail: `Cần ${ULT_COST} nội lực · Lôi Thần gây 20 HP và gọi 4 tia, mỗi tia phá 2×2`,
+    detail: `Cần ${ULT_COST} nội lực · Lôi Thần gây ${LIGHTNING_GOD_DAMAGE} sát thương và gọi 4 tia, mỗi tia phá 2×2`,
     accent: 0xff8051,
   },
   {

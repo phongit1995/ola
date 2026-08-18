@@ -38,6 +38,3 @@ export const ARMOR_SHIELD = 5;
 export const FURY_PEACH = 10;
 export const FIRE_SWORD_DMG = 12;
 export const GREATER_HEART_HEAL = 10;
-export const ARMOR_DECAY = 2;
-export const REFLECT_THRESHOLD = 20;
-export const REFLECT_DAMAGE = 2;

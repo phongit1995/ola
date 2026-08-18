@@ -11,7 +11,8 @@ describe('War God avatar icon URL', () => {
     ['133', '/vip-icons/vip_133.png'],
     ['134', '/vip-icons/vip_134.png'],
     ['135', '/vip-icons/vip_135.png'],
-    ['136', DEFAULT_AVATAR_URL],
+    ['136', '/vip-icons/vip_136.png'],
+    ['137', DEFAULT_AVATAR_URL],
     ['1.5', DEFAULT_AVATAR_URL],
   ])('maps %s consistently with the shared VIP catalog', (vipType, expected) => {
     expect(avatarIconUrl(vipType)).toBe(expected);
