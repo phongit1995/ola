@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
 import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
-import menuIcon from '@/assets/icons/me/ic_more_white.png';
+import menuIcon from '@/assets/icons/me/header/ic_header_menu.png';
 import { useAuthStore } from '@/store/authStore';
 import { useHorizontalSwipe } from '@hooks';
 import { PullToRefresh } from '@components';
@@ -20,8 +20,8 @@ import { MeNotificationsView } from './MeNotificationsView';
 import { MarriageView } from '../marriage/MarriageView';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
-import bellIcon from '@/assets/icons/me/ic_action_notification.png';
-import searchIcon from '@/assets/icons/me/ic_action_search.png';
+import bellIcon from '@/assets/icons/me/header/ic_header_notification.png';
+import searchIcon from '@/assets/icons/me/header/ic_header_search.png';
 
 export function MePanel() {
   const { t } = useTranslation();
@@ -110,7 +110,11 @@ export function MePanel() {
               onClick={() => setDrawerOpen(true)}
               className="flex h-12 w-10 shrink-0 items-center justify-center"
             >
-              <img src={menuIcon} alt="" className="h-5 w-5 object-contain" />
+              <img
+                src={menuIcon}
+                alt=""
+                className="h-[18px] w-[18px] object-contain icon-on-primary"
+              />
             </button>
             <MeTabBar active={tab} onChange={setTab} />
             <button
@@ -123,7 +127,7 @@ export function MePanel() {
                 <img
                   src={bellIcon}
                   alt=""
-                  className="h-6 w-6 object-contain icon-on-primary"
+                  className="h-[22px] w-[22px] object-contain icon-on-primary"
                 />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 right-0 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-ola-accent px-1 text-[10px] font-bold text-white">
@@ -141,7 +145,7 @@ export function MePanel() {
               <img
                 src={searchIcon}
                 alt=""
-                className="h-6 w-6 object-contain icon-on-primary"
+                className="h-[22px] w-[22px] object-contain icon-on-primary"
               />
             </button>
           </HomeHeader>
@@ -184,7 +188,11 @@ export function MePanel() {
               onClick={() => setComposerOpen(true)}
               className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-lg transition hover:brightness-105"
             >
-              <img src={editIcon} alt="" className="h-6 w-6 object-contain icon-on-primary" />
+              <img
+                src={editIcon}
+                alt=""
+                className="h-6 w-6 object-contain icon-on-primary"
+              />
             </button>
 
             {drawerOpen && (

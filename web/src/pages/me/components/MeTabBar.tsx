@@ -26,7 +26,12 @@ export function MeTabBar({ active, onChange }: MeTabBarProps) {
             <img
               src={isActive ? tab.iconActive : tab.icon}
               alt=""
-              className={`h-6 w-6 object-contain ${
+              style={{
+                width: tab.opticalSize,
+                height: tab.opticalSize,
+                transform: `translateY(${tab.opticalOffsetY}px)`,
+              }}
+              className={`object-contain ${
                 'invert' in tab && tab.invert ? 'icon-on-primary' : ''
               }`}
             />
