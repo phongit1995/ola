@@ -54,7 +54,11 @@ function ManageRow({
         </span>
         {editable && (
           <span className="rounded bg-black/38 p-1">
-            <img src={editIcon} alt="" className="h-4 w-4 object-contain" />
+            <img
+              src={editIcon}
+              alt=""
+              className="h-4 w-4 object-contain brightness-0 invert"
+            />
           </span>
         )}
       </span>

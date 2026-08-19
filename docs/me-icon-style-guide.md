@@ -14,6 +14,7 @@ Các phương án đã chọn và gắn vào app là: `Kết hôn 03 · Yêu th�
 - Chỉ dùng mảng đặc cho chi tiết cần nhấn như đồng tử, đầu người hoặc trái tim đặc.
 - Giữ hình chính cân giữa canvas theo cảm nhận thị giác; không cân máy móc theo bounding box nếu hình có chi tiết nhô lên hoặc chân nặng.
 - Tên file: `ic_header_<semantic>.svg` và bản PNG cùng tên.
+- Action icon giữ tên semantic hiện có và bổ sung SVG nguồn cùng tên, ví dụ `ic_action_edit.svg` và `ic_action_edit.png`.
 
 ## Màu và trạng thái
 
@@ -21,6 +22,7 @@ Các phương án đã chọn và gắn vào app là: `Kết hôn 03 · Yêu th�
 - Trên nền primary, dùng utility `icon-on-primary`; utility tự đổi màu theo theme.
 - Trong menu trái, các icon dùng chung `opacity-[0.26]`, tương đương màu inactive của bottom navigation.
 - Không nhúng sẵn màu trắng vào asset và không thêm `brightness`, `invert` hoặc `opacity` riêng cho từng icon để chữa chênh lệch hình học.
+- Khi cùng một asset đen được đặt trên lớp phủ tối không phụ thuộc theme, dùng `brightness-0 invert` tại nơi hiển thị để ép glyph thành trắng.
 
 ## Kích thước hiển thị
 
@@ -32,6 +34,7 @@ Các phương án đã chọn và gắn vào app là: `Kết hôn 03 · Yêu th�
 | Tab Clan trong header | 32px | +1px |
 | Icon thường trong menu trái | 24px | 0 |
 | Clan trong menu trái | 28px | +1px |
+| Soạn bài và Soạn tin trong FAB 56px | 28px | 0 |
 
 Kích thước quang học là kích thước của hộp `<img>`. Khi một glyph có tỷ lệ ngang/dọc đặc biệt, chỉ điều chỉnh `opticalSize` hoặc `opticalOffsetY` sau khi đã xem ở kích thước thật; không sửa bằng padding ẩn trong ảnh.
 
@@ -70,3 +73,10 @@ PNG cuối phải là `96 × 96`, grayscale + alpha. Xóa file `.tmp.png` sau kh
 | Yêu thích | `ic_header_favorite.png` — phương án 06 |
 | Khách ghé | `ic_header_visitors.png` — phương án 07 |
 | Clan | `ic_header_clan.png` |
+
+## Action icon
+
+| Hành động | Asset hiện tại |
+|---|---|
+| Soạn bài Me | `ic_action_edit.svg` / `ic_action_edit.png` — phương án 06 |
+| Soạn tin nhắn | `ic_action_compose_message.svg` / `ic_action_compose_message.png` — phương án 05 |
