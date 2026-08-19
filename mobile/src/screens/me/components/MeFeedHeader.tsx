@@ -2,21 +2,20 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DIVIDER } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
 import type { MeTab } from '../types';
 
-const menuIcon = require('@assets/icons/me/ic_more_white.png');
-const bellIcon = require('@assets/icons/me/ic_action_notification.png');
-const searchIcon = require('@assets/icons/me/ic_action_search.png');
-const tabOla = require('@assets/icons/me/ic_action_tab_ola.png');
-const tabOlaActive = require('@assets/icons/me/ic_action_tab_ola_selected.png');
-const tabFollower = require('@assets/icons/me/ic_action_tab_follower.png');
-const tabFollowerActive = require('@assets/icons/me/ic_action_tab_follower_selected.png');
-const tabClan = require('@assets/icons/clan/ic_menu_clan.png');
+const menuIcon = require('@assets/icons/me/header/ic_header_menu.png');
+const bellIcon = require('@assets/icons/me/header/ic_header_notification.png');
+const searchIcon = require('@assets/icons/me/header/ic_header_search.png');
+const tabCommunity = require('@assets/icons/me/header/ic_header_community.png');
+const tabPersonal = require('@assets/icons/me/header/ic_header_personal.png');
+const tabClan = require('@assets/icons/me/header/ic_header_clan.png');
 
 const ME_TABS = [
-  { key: 'community' as const, labelKey: 'me.tabCommunity' as const, icon: tabOla, iconActive: tabOlaActive },
-  { key: 'personal' as const, labelKey: 'me.tabPersonal' as const, icon: tabFollower, iconActive: tabFollowerActive },
-  { key: 'clan' as const, labelKey: 'me.tabClan' as const, icon: tabClan, iconActive: tabClan, invert: true },
+  { key: 'community' as const, labelKey: 'me.tabCommunity' as const, icon: tabCommunity, opticalSize: 28, opticalOffsetY: 0 },
+  { key: 'personal' as const, labelKey: 'me.tabPersonal' as const, icon: tabPersonal, opticalSize: 28, opticalOffsetY: 0 },
+  { key: 'clan' as const, labelKey: 'me.tabClan' as const, icon: tabClan, opticalSize: 32, opticalOffsetY: 1 },
 ];
 
 interface MeFeedHeaderProps {
@@ -38,6 +37,7 @@ export function MeFeedHeader({
 }: MeFeedHeaderProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
 
   return (
     <View
@@ -50,7 +50,11 @@ export function MeFeedHeader({
         onPress={onOpenDrawer}
         className="h-12 w-10 items-center justify-center"
       >
-        <Image source={menuIcon} style={{ width: 20, height: 20 }} resizeMode="contain" />
+        <Image
+          source={menuIcon}
+          style={{ width: 18, height: 18, tintColor: colors.onPrimary }}
+          resizeMode="contain"
+        />
       </Pressable>
       <View className="flex-1 flex-row items-center justify-center gap-8">
         {ME_TABS.map((item) => {
@@ -66,11 +70,12 @@ export function MeFeedHeader({
               style={{ opacity: active ? 1 : 0.6 }}
             >
               <Image
-                source={active ? item.iconActive : item.icon}
+                source={item.icon}
                 style={{
-                  width: 24,
-                  height: 24,
-                  tintColor: 'invert' in item && item.invert ? '#ffffff' : undefined,
+                  width: item.opticalSize,
+                  height: item.opticalSize,
+                  transform: [{ translateY: item.opticalOffsetY }],
+                  tintColor: colors.onPrimary,
                 }}
                 resizeMode="contain"
               />
@@ -85,7 +90,7 @@ export function MeFeedHeader({
         className="h-12 w-10 items-center justify-center"
       >
         <View>
-          <Image source={bellIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
+          <Image source={bellIcon} style={{ width: 22, height: 22, tintColor: colors.onPrimary }} resizeMode="contain" />
           {unreadCount > 0 && (
             <View
               className="absolute h-4 min-w-4 items-center justify-center rounded-full bg-ola-accent px-1"
@@ -104,7 +109,7 @@ export function MeFeedHeader({
         onPress={onOpenSearch}
         className="h-12 w-10 items-center justify-center"
       >
-        <Image source={searchIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
+        <Image source={searchIcon} style={{ width: 22, height: 22, tintColor: colors.onPrimary }} resizeMode="contain" />
       </Pressable>
     </View>
   );

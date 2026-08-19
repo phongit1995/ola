@@ -6,11 +6,11 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 
-const personalIcon = require('@assets/icons/me/ic_indicate_personal.png');
-const boxIcon = require('@assets/icons/me/ic_indicate_box.png');
-const likeIcon = require('@assets/icons/me/ic_section_like.png');
-const visitorIcon = require('@assets/icons/me/ic_action_tab_follower.png');
-const clanIcon = require('@assets/icons/clan/ic_menu_clan.png');
+const personalIcon = require('@assets/icons/me/header/ic_header_personal.png');
+const marriageIcon = require('@assets/icons/me/header/ic_header_marriage.png');
+const favoriteIcon = require('@assets/icons/me/header/ic_header_favorite.png');
+const visitorsIcon = require('@assets/icons/me/header/ic_header_visitors.png');
+const clanIcon = require('@assets/icons/me/header/ic_header_clan.png');
 // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
 // const eggIcon = require('@assets/icons/me/ic_indicate_broken_egg.png');
 // const androidIcon = require('@assets/icons/me/ic_indicate_android.png');
@@ -61,18 +61,18 @@ export function MeLeftDrawer({
   }, [onClose]);
 
   const items = [
-    { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal'), tint: undefined },
-    { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage'), tint: 'rgba(0,0,0,0.5)' },
-    { key: 'likes', icon: likeIcon, label: t('me.drawerLikes'), tint: 'rgba(0,0,0,0.5)' },
-    { key: 'visitors', icon: visitorIcon, label: t('me.tabVisitors'), tint: 'rgba(0,0,0,0.6)' },
-    { key: 'clan', icon: clanIcon, label: t('me.drawerClan'), tint: undefined },
+    { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal') },
+    { key: 'marriage', icon: marriageIcon, label: t('me.drawerMarriage') },
+    { key: 'likes', icon: favoriteIcon, label: t('me.drawerLikes') },
+    { key: 'visitors', icon: visitorsIcon, label: t('me.tabVisitors') },
+    { key: 'clan', icon: clanIcon, label: t('me.drawerClan'), opticalSize: 28, opticalOffsetY: 1 },
     // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
-    // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg'), tint: undefined },
-    // { key: 'android', icon: androidIcon, label: '#Android', tint: undefined },
-    // { key: 'ola', icon: olaIcon, label: '#Ola', tint: undefined },
-    // { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny'), tint: undefined },
-    // { key: 'public', icon: publicIcon, label: t('me.drawerPublic'), tint: undefined },
-    // { key: 'rss', icon: rssIcon, label: 'RSS', tint: undefined },
+    // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg') },
+    // { key: 'android', icon: androidIcon, label: '#Android' },
+    // { key: 'ola', icon: olaIcon, label: '#Ola' },
+    // { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny') },
+    // { key: 'public', icon: publicIcon, label: t('me.drawerPublic') },
+    // { key: 'rss', icon: rssIcon, label: 'RSS' },
   ];
 
   return (
@@ -119,7 +119,12 @@ export function MeLeftDrawer({
               <View className="h-8 w-8 items-center justify-center">
                 <Image
                   source={item.icon}
-                  style={{ width: 24, height: 24, tintColor: item.tint }}
+                  style={{
+                    width: item.opticalSize ?? 24,
+                    height: item.opticalSize ?? 24,
+                    transform: [{ translateY: item.opticalOffsetY ?? 0 }],
+                    opacity: 0.26,
+                  }}
                   resizeMode="contain"
                 />
               </View>

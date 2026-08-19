@@ -548,7 +548,7 @@ export function ChatListScreen() {
             shadowOffset: { width: 0, height: 2 },
           }}
         >
-          <Image source={composeIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
+          <Image source={composeIcon} style={{ width: 28, height: 28, tintColor: '#fff' }} resizeMode="contain" />
         </Pressable>
         </View>
       )}
