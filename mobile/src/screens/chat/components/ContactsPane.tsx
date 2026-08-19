@@ -37,6 +37,7 @@ import { DIVIDER } from '@constants';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 const addFriendIcon = require('@assets/icons/room/ic_add_friend.png');
+const addContactIcon = require('@assets/icons/chat/ic_add_contact_gray.png');
 const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
 
 function ActionRow({
@@ -374,7 +375,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           shadowOffset: { width: 0, height: 3 },
         }}
       >
-        <Image source={addFriendIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
+        <Image source={addContactIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
       </Pressable>
 
       <MessageActionSheet

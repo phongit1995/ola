@@ -6,7 +6,7 @@ import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
-import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
+import addContactIcon from '@/assets/icons/chat/ic_add_contact_gray.png';
 import { AuthService, RelationshipService, SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
@@ -294,7 +294,7 @@ export function ChatPanel() {
               className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-[0_3px_6px_rgba(0,0,0,.3)]"
             >
               <img
-                src={addFriendIcon}
+                src={addContactIcon}
                 alt=""
                 className="h-6 w-6 object-contain icon-on-primary"
               />

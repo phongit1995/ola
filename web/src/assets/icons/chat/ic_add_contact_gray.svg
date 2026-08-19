@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none">
+  <defs>
+    <mask id="body-clearance" maskUnits="userSpaceOnUse" x="0" y="0" width="96" height="96">
+      <rect width="96" height="96" fill="#fff" />
+      <circle cx="69.75" cy="71.8" r="21.1" fill="#000" />
+      <path d="M24.7 89V82.4" stroke="#000" stroke-width="3.2" stroke-linecap="round" />
+    </mask>
+    <mask id="plus-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="96" height="96">
+      <rect width="96" height="96" fill="#fff" />
+      <path d="M69.75 64v15.8M61.8 71.9h15.9" stroke="#000" stroke-width="3.2" stroke-linecap="round" />
+    </mask>
+  </defs>
+
+  <circle cx="45.7" cy="27.1" r="21.1" fill="#757575" />
+  <path
+    d="M45.8 51.6c-9.8 0-16.3 3.6-25.3 6.9C12.4 61.5 8 67.7 8 75v8.2c0 3.5 2.8 6.2 6.3 6.2h62.9c3.5 0 6.3-2.7 6.3-6.2V75c0-7.3-4.4-13.5-12.5-16.5-9-3.3-15.4-6.9-25.2-6.9Z"
+    fill="#757575"
+    mask="url(#body-clearance)"
+  />
+  <circle cx="69.75" cy="71.8" r="18.1" fill="#757575" mask="url(#plus-cutout)" />
+</svg>
