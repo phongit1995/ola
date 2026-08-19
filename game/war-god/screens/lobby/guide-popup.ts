@@ -15,6 +15,7 @@ import {
   MAX_FURY,
   MAX_HP,
   MP_WATER,
+  TURN_SECONDS,
   ULT_COST,
 } from '../../logic/constants.gen';
 import { createCardModal, type CardModal } from './card-modal';
@@ -101,7 +102,7 @@ const RULES: GuideRule[] = [
   {
     asset: A.items.peach,
     title: `NỘ ĐẦY ${MAX_FURY}`,
-    detail: `Đòn Kiếm kế tiếp ×${FURY_DAMAGE_MULTIPLIER} sát thương`,
+    detail: `Đòn Kiếm kế tiếp ×${FURY_DAMAGE_MULTIPLIER} sát thương suốt chuỗi sập · dùng xong Nộ về 0`,
     accent: 0xffa45c,
   },
   {
@@ -111,15 +112,21 @@ const RULES: GuideRule[] = [
     accent: 0x86c5ff,
   },
   {
+    asset: A.items.lightning,
+    title: 'LÔI THẦN GIÁNG THẾ',
+    detail: `Tuyệt chiêu ${ULT_COST} nội lực · ${LIGHTNING_GOD_DAMAGE} ST + 4 tia phá 2×2 · ô bị phá cộng hiệu ứng, Lôi bắn tia phụ`,
+    accent: 0xb388ff,
+  },
+  {
     asset: A.hud.flameOn,
-    title: 'TUYỆT CHIÊU',
-    detail: `Cần ${ULT_COST} nội lực · Lôi Thần gây ${LIGHTNING_GOD_DAMAGE} sát thương và gọi 4 tia, mỗi tia phá 2×2`,
+    title: 'VẠN KIẾM QUY TÔNG',
+    detail: `Tuyệt chiêu ${ULT_COST} nội lực · ${ULT_COST / 2} sát thương chắc chắn, đòn dứt điểm ổn định`,
     accent: 0xff8051,
   },
   {
     asset: A.items.heart,
-    title: 'MỤC TIÊU',
-    detail: `Hạ đối thủ từ ${MAX_HP} máu về 0 để chiến thắng`,
+    title: 'MỤC TIÊU · HẾT GIỜ',
+    detail: `Hạ đối thủ từ ${MAX_HP} máu về 0 · Mỗi lượt ${TURN_SECONDS}s, hết giờ mất lượt — 3 lần liên tiếp bị xử thua`,
     accent: 0xff6b7d,
   },
 ];
@@ -326,7 +333,7 @@ export function buildGuidePopup(): Container {
   rulesPage = new Container();
   RULES.forEach((rule, index) => {
     const card = makeRuleCard(rule);
-    card.y = -118 + index * 60;
+    card.y = -126 + index * 57;
     rulesPage.addChild(card);
   });
   content.addChild(rulesPage);

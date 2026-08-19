@@ -34,6 +34,9 @@ func (Logic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) tim
 			delay += shuffleAnimationDelay
 		case stepUlt:
 			delay += 2100 * time.Millisecond
+			if len(step.LightningArcs) > 0 {
+				delay += lightningAnimationDelay(len(step.LightningArcs))
+			}
 		}
 	}
 	return delay

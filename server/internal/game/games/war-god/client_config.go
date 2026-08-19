@@ -27,6 +27,7 @@ type ClientConfig struct {
 	FuryPeach                   int
 	FireSwordDamage             int
 	GreaterHeartHeal            int
+	TurnSeconds                 int
 }
 
 func ExportClientConfig() ClientConfig {
@@ -52,5 +53,6 @@ func ExportClientConfig() ClientConfig {
 		FuryPeach:                   furyPeach,
 		FireSwordDamage:             fireSwordDamage,
 		GreaterHeartHeal:            greaterHeartHeal,
+		TurnSeconds:                 turnSeconds,
 	}
 }

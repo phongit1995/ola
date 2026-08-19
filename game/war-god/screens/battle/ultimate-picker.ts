@@ -1,8 +1,9 @@
 import { Assets, Container, Graphics, Rectangle, Sprite, Texture, type Ticker } from 'pixi.js';
 import lightningGodUrl from '../../assets/ultimate/lightning-god.webp';
 import myriadSwordsUrl from '../../assets/ultimate/myriad-swords.webp';
-import { addTick, popIn, pressable, removeTick } from '../../kit';
+import { HEADING, addTick, makeText, popIn, pressable, removeTick } from '../../kit';
 import { DESIGN_W } from '../../layout';
+import { LIGHTNING_GOD_DAMAGE, ULT_COST } from '../../logic/constants.gen';
 import type { UltimateSkillId } from '../../logic/server-types';
 
 export type { UltimateSkillId } from '../../logic/server-types';
@@ -185,6 +186,7 @@ export interface UltimatePicker {
 interface SkillDefinition {
   id: UltimateSkillId;
   name: string;
+  detail: string;
   texture: Texture;
 }
 
@@ -397,6 +399,35 @@ function animateEffect(effect: Container, style: EffectStyle, index: number): vo
   addTick(step);
 }
 
+function makeSkillLabel(
+  name: string,
+  detail: string,
+  accent: number,
+  itemSize: number,
+): Container {
+  const label = new Container();
+  const right = -(itemSize / 2 + 14);
+  const nameText = makeText(name, 13, accent, '800', HEADING);
+  nameText.anchor.set(1, 0);
+  nameText.style.align = 'right';
+  nameText.style.stroke = { color: 0x120d02, width: 2.5, join: 'round' };
+  const detailText = makeText(detail, 10, 0xfff2d5, '700', HEADING);
+  detailText.anchor.set(1, 0);
+  detailText.style.align = 'right';
+  detailText.style.lineHeight = 12;
+  const gap = 4;
+  const totalH = nameText.height + gap + detailText.height;
+  nameText.position.set(right, -totalH / 2);
+  detailText.position.set(right, -totalH / 2 + nameText.height + gap);
+  const width = Math.max(nameText.width, detailText.width);
+  const bg = new Graphics()
+    .roundRect(right - width - 10, -totalH / 2 - 7, width + 20, totalH + 14, 10)
+    .fill({ color: 0x0b1524, alpha: 0.88 })
+    .stroke({ width: 1.2, color: accent, alpha: 0.72 });
+  label.addChild(bg, nameText, detailText);
+  return label;
+}
+
 function makeSkillItem(
   texture: Texture,
   index: number,
@@ -470,11 +501,11 @@ export async function buildUltimatePicker(
 ): Promise<UltimatePicker> {
   const appearance = APPEARANCES[variant];
   const halfItem = appearance.itemSize / 2 + 9;
-  const minX = Math.min(...appearance.positions.map(([x]) => x - halfItem));
+  let minX = Math.min(...appearance.positions.map(([x]) => x - halfItem));
   const maxX = Math.max(...appearance.positions.map(([x]) => x + halfItem));
   const minY = Math.min(...appearance.positions.map(([, y]) => y - halfItem));
   const maxY = Math.max(...appearance.positions.map(([, y]) => y + halfItem));
-  const contentW = maxX - minX;
+  let contentW = maxX - minX;
   const contentH = maxY - minY;
   const [lightningTexture, swordsTexture] = await Promise.all([
     Assets.load<Texture>(lightningGodUrl),
@@ -486,12 +517,14 @@ export async function buildUltimatePicker(
   const skills: SkillDefinition[] = [
     {
       id: 'lightning-god',
-      name: 'LÔI THẦN\nGIÁNG THẾ',
+      name: 'LÔI THẦN GIÁNG THẾ',
+      detail: `${LIGHTNING_GOD_DAMAGE} ST + 4 tia phá 2×2\nÔ bị phá cộng hiệu ứng · Lôi bắn tia phụ`,
       texture: lightningTexture,
     },
     {
       id: 'myriad-swords',
-      name: 'VẠN KIẾM\nQUY TÔNG',
+      name: 'VẠN KIẾM QUY TÔNG',
+      detail: `${ULT_COST / 2} sát thương chắc chắn\nĐòn dứt điểm ổn định`,
       texture: swordsTexture,
     },
   ];
@@ -536,8 +569,18 @@ export async function buildUltimatePicker(
       onConfirm(skill.id);
     });
     item.position.set(...appearance.positions[index]!);
-    options.addChild(item);
+    const label = makeSkillLabel(
+      skill.name,
+      skill.detail,
+      appearance.frameColors[index]!,
+      appearance.itemSize,
+    );
+    label.position.set(...appearance.positions[index]!);
+    options.addChild(label, item);
+    const labelLeft = appearance.positions[index]![0] + label.getLocalBounds().minX;
+    minX = Math.min(minX, labelLeft);
   });
+  contentW = maxX - minX;
 
   dismissLayer.eventMode = 'static';
   dismissLayer.on('pointertap', closePicker);

@@ -4,7 +4,12 @@ import {
   cascadeBonusPercent,
   scaleCascadeValue,
 } from './battle';
-import { GRID, randomFourTwoByTwoBlocks } from './core';
+import {
+  GRID,
+  computeLightningArcs,
+  randomFourTwoByTwoBlocks,
+  type Board,
+} from './core';
 
 describe('cascade scaling', () => {
   it('adds 10% per automatic cascade and caps at 30%', () => {
@@ -50,5 +55,23 @@ describe('randomFourTwoByTwoBlocks', () => {
       [4, 5, 12, 13],
       [6, 7, 14, 15],
     ]);
+  });
+});
+
+describe('computeLightningArcs', () => {
+  it('fires once per destroyed Lightning tile without recursively firing from a target', () => {
+    const board = new Array(GRID * GRID).fill('sword') as Board;
+    board[0] = 'lightning';
+    board[2] = 'lightning';
+    board[10] = 'lightning';
+    const removed = new Set([0, 1, 10, 11]);
+
+    const arcs = computeLightningArcs(board, [10, 0, 10, 1], removed, () => 0);
+
+    expect(arcs.map((arc) => arc.source)).toEqual([0, 10]);
+    expect(arcs[0]?.target).toBe(2);
+    expect(new Set(arcs.map((arc) => arc.target)).size).toBe(arcs.length);
+    expect(arcs.every((arc) => !removed.has(arc.target))).toBe(true);
+    expect(arcs.some((arc) => arc.source === 2)).toBe(false);
   });
 });

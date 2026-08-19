@@ -589,9 +589,9 @@ func TestApplyTileEffects(t *testing.T) {
 			attacker:     Fighter{HP: 100},
 			defender:     Fighter{HP: 100},
 			counts:       map[int]int{tilePeach: 3},
-			wantAttacker: Fighter{HP: 100, Fury: 30},
+			wantAttacker: Fighter{HP: 100, Fury: 45},
 			wantDefender: Fighter{HP: 100},
-			wantEffects:  Effects{Fury: 30},
+			wantEffects:  Effects{Fury: 45},
 		},
 		{
 			name:         "peach fury capped without consuming",
@@ -625,9 +625,9 @@ func TestApplyTileEffects(t *testing.T) {
 			attacker:     Fighter{HP: 100, Fury: 100},
 			defender:     Fighter{HP: 100},
 			counts:       map[int]int{tileSword: 2, tilePeach: 1},
-			wantAttacker: Fighter{HP: 100, Fury: 10},
+			wantAttacker: Fighter{HP: 100, Fury: 15},
 			wantDefender: Fighter{HP: 79},
-			wantEffects:  Effects{Damage: 21, Fury: 10, Furied: true},
+			wantEffects:  Effects{Damage: 21, Fury: 15, Furied: true},
 		},
 		{
 			name:         "heal capped at max hp",
@@ -691,11 +691,11 @@ func TestCascadeScalesEveryCollectedTileValueAndCapsAtThirtyPercent(t *testing.T
 		level int
 		want  Effects
 	}{
-		{level: 0, want: Effects{Damage: 21, Heal: 15, Mana: 21, Armor: 15, Fury: 30}},
-		{level: 1, want: Effects{Damage: 23, Heal: 17, Mana: 23, Armor: 17, Fury: 33}},
-		{level: 2, want: Effects{Damage: 25, Heal: 18, Mana: 25, Armor: 18, Fury: 36}},
-		{level: 3, want: Effects{Damage: 27, Heal: 20, Mana: 27, Armor: 20, Fury: 39}},
-		{level: 4, want: Effects{Damage: 27, Heal: 20, Mana: 27, Armor: 20, Fury: 39}},
+		{level: 0, want: Effects{Damage: 21, Heal: 15, Mana: 21, Armor: 15, Fury: 45}},
+		{level: 1, want: Effects{Damage: 23, Heal: 17, Mana: 23, Armor: 17, Fury: 50}},
+		{level: 2, want: Effects{Damage: 25, Heal: 18, Mana: 25, Armor: 18, Fury: 54}},
+		{level: 3, want: Effects{Damage: 27, Heal: 20, Mana: 27, Armor: 20, Fury: 59}},
+		{level: 4, want: Effects{Damage: 27, Heal: 20, Mana: 27, Armor: 20, Fury: 59}},
 	}
 	counts := map[int]int{
 		tileSword: 3, tileHeart: 3, tileWater: 3, tileShield: 3, tilePeach: 3,
@@ -1088,8 +1088,11 @@ func TestMyriadSwordsCostsFullMana(t *testing.T) {
 	}
 }
 
-func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
+func TestLightningGodStrikesFourTwoByTwoBlocksTriggersLightningAndAppliesGravity(t *testing.T) {
 	board := stripedBoard()
+	previewBlocks := randomFourTwoByTwoBlocks(&rng{z: 7})
+	lightningSource := previewBlocks[0][0]
+	board[lightningSource] = tileLightning
 	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100, Armor: 30}}, 7)
 	move := json.RawMessage(`{"type":"ult","skill":"lightning-god"}`)
 	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
@@ -1101,8 +1104,17 @@ func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
 		t.Fatal(err)
 	}
 	next := nextAny.(*State)
-	if next.Fighters[0].MP != 0 {
-		t.Fatalf("lightning ultimate did not consume 100 mana: %+v", next.Fighters[0])
+	manaGained := 0
+	for _, step := range next.Steps {
+		if step.Effects != nil {
+			manaGained += step.Effects.Mana
+		}
+	}
+	if next.Fighters[0].MP != manaGained {
+		t.Fatalf(
+			"lightning ultimate must spend all mana before struck-tile gains: mp=%d gained=%d",
+			next.Fighters[0].MP, manaGained,
+		)
 	}
 	if len(next.Steps) < 2 || next.Steps[0].Kind != stepUlt || next.Steps[1].Kind != stepGravity {
 		t.Fatalf("lightning ultimate must be followed by gravity: %+v", next.Steps)
@@ -1110,6 +1122,19 @@ func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
 	ult := next.Steps[0]
 	if ult.Skill != skillLightningGod || len(ult.Cells) != 16 || ult.Damage != 0 || ult.ArmorDamage != lightningGodDamage {
 		t.Fatalf("unexpected lightning step: %+v", ult)
+	}
+	if ult.Effects == nil {
+		t.Fatalf("lightning ultimate must apply struck tile effects: %+v", ult)
+	}
+	struckTiles := 0
+	for _, count := range ult.Counts {
+		struckTiles += count
+	}
+	if struckTiles != len(ult.Cells)+len(ult.Exploded) {
+		t.Fatalf(
+			"strike counts must cover primary and secondary removals: counts=%v cells=%v exploded=%v",
+			ult.Counts, ult.Cells, ult.Exploded,
+		)
 	}
 	for _, step := range next.Steps {
 		if step.Kind == stepMatch && step.CascadeLevel < 1 {
@@ -1131,6 +1156,20 @@ func TestLightningGodStrikesFourTwoByTwoBlocksAndAppliesGravity(t *testing.T) {
 			}
 			seen[cell] = true
 		}
+	}
+	if len(ult.LightningArcs) != 1 || len(ult.Exploded) != 1 {
+		t.Fatalf("one struck lightning must fire one secondary arc: arcs=%v exploded=%v", ult.LightningArcs, ult.Exploded)
+	}
+	arc := ult.LightningArcs[0]
+	if arc.Source != lightningSource || seen[arc.Target] || arc.Target != ult.Exploded[0] {
+		t.Fatalf("invalid ultimate secondary arc: source=%d arc=%+v cells=%v exploded=%v", lightningSource, arc, ult.Cells, ult.Exploded)
+	}
+	expectedCounts := make(map[int]int, len(ult.Cells)+len(ult.Exploded))
+	for _, cell := range append(append([]int(nil), ult.Cells...), ult.Exploded...) {
+		expectedCounts[board[cell]]++
+	}
+	if want := namedCounts(expectedCounts); !reflect.DeepEqual(ult.Counts, want) {
+		t.Fatalf("secondary target effect missing from counts: got=%v want=%v", ult.Counts, want)
 	}
 	if next.Rng == state.Rng || reflect.DeepEqual(next.Board, board) {
 		t.Fatalf("lightning ultimate did not advance RNG and collapse board: rng=%s board=%v", next.Rng, next.Board)

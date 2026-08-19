@@ -247,7 +247,7 @@ function makeMatch(): MatchFoundData<ServerState> {
     state: {
       board: createBoard().map((t) => TILE_ORDER.indexOf(t)),
       fighters: [
-        { hp: 148, mp: myMana, armor: 12, fury: 40 },
+        { hp: 148, mp: myMana, armor: 12, fury: state === 'fury-full' ? 100 : 40 },
         { hp: 96, mp: 34, armor: 0, fury: 70 },
       ],
       rng: 'mock',
@@ -315,7 +315,7 @@ const SCENES: Record<string, () => Promise<void> | void> = {
     updateRoomPregame(makeRoomState(), null);
   },
 
-  // state: my-turn | foe-turn | mana-empty | mana-loading | mana-ready | ultimate-picker | win | lose | draw
+  // state: my-turn | foe-turn | mana-empty | mana-loading | mana-ready | ultimate-picker | fury-full | win | lose | draw
   async battle() {
     await openPvpBattle();
     if (state === 'ultimate-picker') {

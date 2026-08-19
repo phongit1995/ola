@@ -13,7 +13,7 @@ const (
 	healHeart            = 5
 	manaWater            = 7
 	armorShield          = 5
-	furyPeach            = 10
+	furyPeach            = 15
 	furyDamageMultiplier = 1.5
 
 	fireSwordDamage  = 12
