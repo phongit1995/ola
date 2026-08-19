@@ -3,6 +3,7 @@ import type { RoomInfo, UserInfoData } from '../../../../src/sdk';
 import { A, tex } from '../../../assets';
 import { HEADING, makeText, popIn, pressable, tween } from '../../../kit';
 import { DESIGN_W } from '../../../layout';
+import { roomListState } from '../../../logic/room-list';
 import { avatarIconUrl } from '../../../vip';
 import { avatarFrameFit, drawAvatarFrameMask, fitAvatarIcon } from '../avatar-frame';
 
@@ -119,13 +120,23 @@ function crispText(
 
 function makeRow(room: RoomInfo): Container {
   const row = new Container();
-  const full = room.full === true || room.players >= 2;
+  const state = roomListState(room);
+  const playing = state === 'playing';
+  const full = state === 'full';
+
+  if (playing) {
+    const highlight = new Graphics()
+      .roundRect(cell1Left, -rowH * 0.44, listW * 0.99, rowH * 0.88, rowH * 0.12)
+      .fill({ color: 0x6d35a8, alpha: 0.14 });
+    row.addChild(highlight);
+  }
 
   const avatar = makeAvatar(room, rowH * 0.82);
   avatar.x = cell1Left + rowH * 0.6;
   row.addChild(avatar);
 
-  const name = crispText(`@${room.owner}`, 15, 0x3a2410);
+  const rowTextColor = playing ? 0x612797 : 0x3a2410;
+  const name = crispText(`@${room.owner}`, 15, rowTextColor);
   name.anchor.set(0, 0.5);
   name.x = avatar.x + rowH * 0.58;
   fitText(name, col2 - name.x - rowH * 0.5);
@@ -137,34 +148,49 @@ function makeRow(room: RoomInfo): Container {
   coin.scale.y = coin.scale.x;
   coin.x = cell2Left + rowH * 0.4;
   row.addChild(coin);
-  const bet = crispText(room.bet.toLocaleString('vi-VN'), 15, 0x3a2410);
+  const bet = crispText(room.bet.toLocaleString('vi-VN'), 15, rowTextColor);
   bet.anchor.set(0, 0.5);
   bet.x = coin.x + rowH * 0.42;
   fitText(bet, col3 - bet.x - listW * 0.14);
   row.addChild(bet);
 
-  const badge = new Sprite(tex[full ? A.lobby.slotFull : A.lobby.slotOpen]);
-  badge.anchor.set(0.5);
-  badge.width = listW * 0.22;
-  badge.scale.y = badge.scale.x;
-  badge.x = col3;
-  row.addChild(badge);
-  const seats = crispText(`${room.players}/2`, 15, 0xffffff);
-  seats.style.stroke = { color: 0x5b1c08, width: 2, join: 'round' };
-  seats.x = col3;
-  row.addChild(seats);
+  const badgeW = listW * 0.22;
+  if (playing) {
+    const badge = new Graphics()
+      .roundRect(-badgeW / 2, -rowH * 0.32, badgeW, rowH * 0.64, rowH * 0.25)
+      .fill({ color: 0x6d35a8 })
+      .stroke({ color: 0xffd75a, width: 2.5 });
+    badge.x = col3;
+    row.addChild(badge);
+    const status = crispText('ĐANG ĐẤU', 11, 0xffffff);
+    status.style.stroke = { color: 0x321255, width: 2, join: 'round' };
+    status.x = col3;
+    fitText(status, badgeW * 0.78);
+    row.addChild(status);
+  } else {
+    const badge = new Sprite(tex[full ? A.lobby.slotFull : A.lobby.slotOpen]);
+    badge.anchor.set(0.5);
+    badge.width = badgeW;
+    badge.scale.y = badge.scale.x;
+    badge.x = col3;
+    row.addChild(badge);
+    const seats = crispText(`${room.players}/2`, 15, 0xffffff);
+    seats.style.stroke = { color: 0x5b1c08, width: 2, join: 'round' };
+    seats.x = col3;
+    row.addChild(seats);
+  }
   if (room.locked) {
     const lock = new Sprite(tex[A.lobby.lock]);
     lock.anchor.set(0.5);
     lock.width = rowH * 0.56;
     lock.scale.y = lock.scale.x;
-    lock.x = col3 - badge.width / 2 - rowH * 0.42;
+    lock.x = col3 - badgeW / 2 - rowH * 0.42;
     row.addChild(lock);
   }
 
   if (full) {
     row.alpha = 0.72;
-  } else {
+  } else if (!playing) {
     row.eventMode = 'static';
     row.cursor = 'pointer';
     row.hitArea = new Rectangle(cell1Left, -rowH / 2, listW * 0.99, rowH);

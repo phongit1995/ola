@@ -2,6 +2,8 @@ package protocol
 
 import "encoding/json"
 
+const RoomStatusPlaying = "playing"
+
 const (
 	C2SQueueJoin    = "QUEUE_JOIN"
 	C2SQueueLeave   = "QUEUE_LEAVE"
@@ -256,6 +258,7 @@ type RoomInfo struct {
 	Locked       bool    `json:"locked"`
 	Players      int     `json:"players"`
 	Full         bool    `json:"full,omitempty"`
+	Status       string  `json:"status,omitempty"`
 }
 
 type RoomListData struct {

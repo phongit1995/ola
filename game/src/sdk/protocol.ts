@@ -208,6 +208,7 @@ export interface RoomInfo {
   locked: boolean;
   players: number;
   full?: boolean;
+  status?: 'waiting' | 'playing';
 }
 
 export interface RoomListData {

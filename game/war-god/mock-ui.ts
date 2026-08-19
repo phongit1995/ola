@@ -131,15 +131,20 @@ function makeHistory(count: number): MatchHistoryData['items'] {
 }
 
 function makeRooms(count: number): RoomInfo[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `room-${i + 1}f3k92a1`,
-    owner: NAMES[i % NAMES.length]!,
-    ownerVipType: i % 3 === 0 ? null : String((i % 20) + 1),
-    bet: [0, 10_000, 50_000, 200_000, 500_000][i % 5]!,
-    locked: i % 4 === 1,
-    players: i % 5 === 0 ? 2 : 1,
-    full: i % 5 === 0,
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const playing = i % 7 === 0;
+    const full = playing || i % 5 === 0;
+    return {
+      id: `room-${i + 1}f3k92a1`,
+      owner: NAMES[i % NAMES.length]!,
+      ownerVipType: i % 3 === 0 ? null : String((i % 20) + 1),
+      bet: [0, 10_000, 50_000, 200_000, 500_000][i % 5]!,
+      locked: i % 4 === 1,
+      players: full ? 2 : 1,
+      full,
+      ...(playing ? { status: 'playing' as const } : {}),
+    };
+  });
 }
 
 // Một session giả duy nhất phục vụ cả bảng xếp hạng lẫn lịch sử đấu. Trả lời

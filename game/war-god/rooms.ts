@@ -18,6 +18,7 @@ import {
   type UserInfoData,
 } from '../src/sdk';
 import { errorText } from './logic/error-text';
+import { canJoinListedRoom } from './logic/room-list';
 import { shouldResetRoomFromSync } from './logic/room-sync';
 import {
   buildRoomListPopup,
@@ -396,7 +397,7 @@ function refreshRooms(): void {
 }
 
 function joinRoomFromList(room: RoomInfo): void {
-  if (room.full === true || room.players >= 2) return;
+  if (!canJoinListedRoom(room)) return;
   const info = deps?.getUserInfo() ?? null;
   if (info && room.bet > info.ken) {
     toast('Bạn không đủ Ken để vào bàn này');

@@ -30,6 +30,7 @@ const (
 	maxChatRunes      = 120
 	chatCooldown      = 500 * time.Millisecond
 	reactionCooldown  = 800 * time.Millisecond
+	playingRoomGameID = "war-god"
 )
 
 type Engine struct {
@@ -95,6 +96,7 @@ type Match struct {
 	lastChatAt     [2]time.Time
 	lastReactionAt [2]time.Time
 	room           *Room
+	listedRoomID   string
 	escrowVerified bool
 }
 
@@ -917,7 +919,11 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 		e.sendError(gameID, room.GuestID, protocol.ErrorCodeRoomStartFailed, startErr.Error())
 		return
 	}
-	e.emitRoomRemoved(room.GameID, room.ID)
+	if listsPlayingRooms(room.GameID) {
+		e.emitPlayingRoomUpsert(room)
+	} else {
+		e.emitRoomRemoved(room.GameID, room.ID)
+	}
 }
 
 func (e *Engine) restoreRoomAfterFailedStart(room Room) bool {
@@ -955,17 +961,54 @@ func (e *Engine) ListRooms(gameID, userID string) {
 		e.sendError(gameID, userID, protocol.ErrorCodeRoomListFailed, "failed to load rooms")
 		return
 	}
-	sort.Slice(rooms, func(i, j int) bool {
-		if rooms[i].CreatedAt == rooms[j].CreatedAt {
-			return rooms[i].ID < rooms[j].ID
+	type roomListEntry struct {
+		room    Room
+		playing bool
+	}
+	entries := make([]roomListEntry, 0, len(rooms))
+	seen := make(map[string]struct{}, len(rooms))
+	for _, room := range rooms {
+		entries = append(entries, roomListEntry{room: room})
+		seen[room.ID] = struct{}{}
+	}
+	if listsPlayingRooms(gameID) {
+		snapshots, listErr := e.activeStore.List(gameID)
+		if listErr != nil {
+			e.logger.Errorw("Failed to list active matches for room list", "game_id", gameID, "error", listErr)
+			e.sendError(gameID, userID, protocol.ErrorCodeRoomListFailed, "failed to load playing rooms")
+			return
 		}
-		return rooms[i].CreatedAt > rooms[j].CreatedAt
+		for _, snapshot := range snapshots {
+			if snapshot.Status != matchStatusPlaying || snapshot.Room == nil ||
+				snapshot.Room.ID == "" || snapshot.Room.GameID != gameID {
+				continue
+			}
+			if _, exists := seen[snapshot.Room.ID]; exists {
+				continue
+			}
+			entries = append(entries, roomListEntry{room: *snapshot.Room, playing: true})
+			seen[snapshot.Room.ID] = struct{}{}
+		}
+	}
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].room.CreatedAt == entries[j].room.CreatedAt {
+			return entries[i].room.ID < entries[j].room.ID
+		}
+		return entries[i].room.CreatedAt > entries[j].room.CreatedAt
 	})
-	infos := make([]protocol.RoomInfo, 0, len(rooms))
-	for _, r := range rooms {
-		infos = append(infos, roomInfo(r))
+	infos := make([]protocol.RoomInfo, 0, len(entries))
+	for _, entry := range entries {
+		info := roomInfo(entry.room)
+		if entry.playing {
+			info.Status = protocol.RoomStatusPlaying
+		}
+		infos = append(infos, info)
 	}
 	e.toUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CRoomList, Data: protocol.RoomListData{Rooms: infos}})
+}
+
+func listsPlayingRooms(gameID string) bool {
+	return gameID == playingRoomGameID
 }
 
 func roomInfo(room Room) protocol.RoomInfo {
@@ -988,6 +1031,15 @@ func (e *Engine) emitRoomUpsert(room Room) {
 	e.toGame(room.GameID, protocol.OutEnvelope{
 		Type: protocol.S2CRoomUpsert,
 		Data: protocol.RoomUpsertData{Room: roomInfo(room)},
+	})
+}
+
+func (e *Engine) emitPlayingRoomUpsert(room Room) {
+	info := roomInfo(room)
+	info.Status = protocol.RoomStatusPlaying
+	e.toGame(room.GameID, protocol.OutEnvelope{
+		Type: protocol.S2CRoomUpsert,
+		Data: protocol.RoomUpsertData{Room: info},
 	})
 }
 
@@ -1539,6 +1591,9 @@ func (e *Engine) startMatchWithRoom(
 		startedAt:    time.Now(),
 		room:         room,
 	}
+	if room != nil && listsPlayingRooms(gameID) {
+		m.listedRoomID = room.ID
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	var installed bool
@@ -1896,6 +1951,8 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 			e.emitRoomWaiting(waitingRoom.GameID, waitingRoom.GuestID, *waitingRoom)
 		}
 		e.emitRoomState(*waitingRoom)
+	} else if m.listedRoomID != "" {
+		e.emitRoomRemoved(m.GameID, m.listedRoomID)
 	}
 	for _, key := range keys {
 		e.scheduleFinishedCleanup(key, m.ID)
@@ -2080,6 +2137,9 @@ func (e *Engine) restorePlayingSnapshot(snapshot ActiveMatchSnapshot, expectedGa
 		startedAt:    startedAt,
 		graceGen:     1,
 		room:         cloneRoom(snapshot.Room),
+	}
+	if snapshot.Room != nil && listsPlayingRooms(snapshot.GameID) {
+		m.listedRoomID = snapshot.Room.ID
 	}
 	m.graceDeadline = time.Now().Add(time.Duration(e.graceSeconds) * time.Second)
 
