@@ -1,7 +1,8 @@
-import { app, BrowserWindow, Menu, protocol, session, shell, net } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, protocol, session, shell, net } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { checkForOtaUpdate, resolveWebDist, rollbackToBundled } from './updater';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -12,11 +13,20 @@ const DEV_URL = process.env.OLA_DESKTOP_DEV_URL ?? 'http://localhost:3005';
 const WEB_FIXED_WIDTH = 520;
 const APP_SCHEME = 'app';
 const APP_ORIGIN = `${APP_SCHEME}://ola`;
-const WEB_DIST = path.join(__dirname, '..', 'dist');
+const BUNDLED_DIST = path.join(__dirname, '..', 'dist');
+
+// Cho smoke test trỏ userData vào thư mục tạm để dựng state OTA giả.
+if (process.env.OLA_DESKTOP_USERDATA) {
+  app.setPath('userData', process.env.OLA_DESKTOP_USERDATA);
+}
+
+// dist đang phục vụ: bundle OTA ở userData nếu có, không thì dist trong asar.
+let activeWebDist = BUNDLED_DIST;
+let activeOtaVersion = 0;
 
 // Origin mà server đã allow trong CORS_ALLOWED_ORIGINS (env.production /
 // env.development ở root) — mỗi API host giả một origin nằm trong allowlist đó.
-const ORIGIN_BY_API_HOST = {
+const ORIGIN_BY_API_HOST: Record<string, string> = {
   'api.olachat.net': 'https://olachat.net',
   'api-dev.olachat.net': 'https://chat-dev.olachat.net',
   'localhost:8080': 'http://localhost:3005',
@@ -43,18 +53,18 @@ function registerAppProtocol() {
   protocol.handle(APP_SCHEME, (request) => {
     const { pathname } = new URL(request.url);
     const relative = path.posix.normalize(decodeURIComponent(pathname)).replace(/^\/+/, '');
-    const filePath = path.join(WEB_DIST, relative);
-    const inside = filePath === WEB_DIST || filePath.startsWith(WEB_DIST + path.sep);
+    const filePath = path.join(activeWebDist, relative);
+    const inside = filePath === activeWebDist || filePath.startsWith(activeWebDist + path.sep);
     // SPA fallback: đường dẫn không phải file tĩnh (route của BrowserRouter) → index.html
     const target =
       inside && relative !== '' && fs.existsSync(filePath) && fs.statSync(filePath).isFile()
         ? filePath
-        : path.join(WEB_DIST, 'index.html');
+        : path.join(activeWebDist, 'index.html');
     return net.fetch(pathToFileURL(target).toString());
   });
 }
 
-function setupSession(ses) {
+function setupSession(ses: Electron.Session) {
   // App chạy dưới origin app://ola (hoặc http://localhost khi dev) nên server sẽ chặn CORS.
   // Giả Origin thành domain đã được allow, và nới ACAO ở response để renderer chấp nhận.
   ses.webRequest.onBeforeSendHeaders({ urls: API_URL_FILTERS }, (details, callback) => {
@@ -129,6 +139,17 @@ function createWindow() {
     }
   });
 
+  // Bundle OTA hỏng nửa chừng (thiếu asset, giải nén dở...) → quay về dist
+  // trong asar ngay trong phiên này thay vì trắng màn.
+  win.webContents.on('did-fail-load', (_event, errorCode, _desc, _url, isMainFrame) => {
+    if (!isMainFrame || errorCode === -3 || activeOtaVersion === 0) return;
+    console.warn(`[ota] bundle v${activeOtaVersion} failed to load, rolling back to packaged dist`);
+    rollbackToBundled();
+    activeWebDist = BUNDLED_DIST;
+    activeOtaVersion = 0;
+    win.loadURL(`${APP_ORIGIN}/`);
+  });
+
   if (IS_DEV) {
     win.loadURL(DEV_URL);
     win.webContents.openDevTools({ mode: 'detach' });
@@ -150,9 +171,25 @@ app.whenReady().then(() => {
   if (process.platform === 'darwin' && !app.isPackaged) {
     app.dock?.setIcon(path.join(__dirname, '..', 'build', 'icon.png'));
   }
-  if (!IS_DEV) registerAppProtocol();
+
+  if (!IS_DEV) {
+    const resolved = resolveWebDist(BUNDLED_DIST);
+    activeWebDist = resolved.dist;
+    activeOtaVersion = resolved.otaVersion;
+    if (activeOtaVersion > 0) console.log(`[ota] serving bundle desktop-v${activeOtaVersion}`);
+    registerAppProtocol();
+  }
+
+  ipcMain.handle('ola-desktop:info', () => ({
+    platform: process.platform,
+    version: app.getVersion(),
+    otaVersion: activeOtaVersion,
+  }));
+
   setupSession(session.defaultSession);
   createWindow();
+
+  if (!IS_DEV) void checkForOtaUpdate(activeOtaVersion);
 
   if (IS_SMOKE) {
     setTimeout(async () => {
@@ -177,6 +214,7 @@ app.whenReady().then(() => {
         const result = await win.webContents.executeJavaScript(script);
         console.log('OLA_DESKTOP_SMOKE_FETCH:', result);
       }
+      console.log('OLA_DESKTOP_SMOKE_DIST:', activeWebDist);
       console.log('OLA_DESKTOP_SMOKE_TITLE:', win?.getTitle());
       console.log('OLA_DESKTOP_SMOKE_OK');
       app.quit();
