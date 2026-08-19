@@ -105,7 +105,7 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 	}
 
 	var query *gorm.DB
-	if gameID == "caro" || gameID == "war-god" {
+	if gameID == "caro" || gameID == "war-god" || gameID == "thirteen" {
 		query = r.db.Table("game_matches").
 			Select(`results.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
 				COALESCE(SUM(results.ken), 0) AS ken,

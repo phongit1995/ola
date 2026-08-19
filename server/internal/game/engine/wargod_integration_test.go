@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -360,7 +361,7 @@ func TestWarGodTimeoutSkipsTurnAndThirdConsecutiveTimeoutLoses(t *testing.T) {
 			t.Fatalf("match finished after %d alternating timeouts", i+2)
 		}
 	}
-	if match.timeoutRuns != [2]int{2, 2} {
+	if !slices.Equal(match.timeoutRuns, []int{2, 2}) {
 		t.Fatalf("timeout runs = %v, want two per player", match.timeoutRuns)
 	}
 

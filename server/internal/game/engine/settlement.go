@@ -36,9 +36,17 @@ type MatchRecord struct {
 	MatchID   string
 	Player0ID string
 	Player1ID string
+	PlayerIDs []string
 	Bet       int
 	Mode      string
 	StartedAt time.Time
+}
+
+func (r MatchRecord) AllPlayerIDs() []string {
+	if len(r.PlayerIDs) >= 2 {
+		return r.PlayerIDs
+	}
+	return []string{r.Player0ID, r.Player1ID}
 }
 
 type MatchOutcome struct {
@@ -46,11 +54,20 @@ type MatchOutcome struct {
 	MatchID    string
 	Player0ID  string
 	Player1ID  string
+	PlayerIDs  []string
+	Rankings   []string
 	WinnerID   string
 	Reason     string
 	Bet        int
 	MoveCount  int
 	FinishedAt time.Time
+}
+
+func (o MatchOutcome) AllPlayerIDs() []string {
+	if len(o.PlayerIDs) >= 2 {
+		return o.PlayerIDs
+	}
+	return []string{o.Player0ID, o.Player1ID}
 }
 
 type SettledBalance struct {
@@ -303,7 +320,7 @@ func (e *Engine) queueFinishedSettlement(snapshot ActiveMatchSnapshot, outcome M
 					}
 					roomHandled = true
 				}
-				userIDs := []string{outcome.Player0ID, outcome.Player1ID}
+				userIDs := outcome.AllPlayerIDs()
 				deleted, err := e.deleteSnapshotWithStatuses(
 					snapshot.GameID,
 					snapshot.ID,
@@ -465,7 +482,7 @@ func (e *Engine) emitSettledBalances(balances []SettledBalance, fallbackGameID s
 }
 
 func outcomeFromSnapshot(snapshot ActiveMatchSnapshot) (MatchOutcome, bool) {
-	if snapshot.ID == "" || snapshot.GameID == "" || len(snapshot.Players) != 2 {
+	if snapshot.ID == "" || snapshot.GameID == "" || len(snapshot.Players) < 2 {
 		return MatchOutcome{}, false
 	}
 	finishedAt := time.UnixMilli(snapshot.FinishedAt)
@@ -473,10 +490,18 @@ func outcomeFromSnapshot(snapshot ActiveMatchSnapshot) (MatchOutcome, bool) {
 		finishedAt = time.Now()
 	}
 	moveCount := 0
+	var rankings []string
 	if gameLogic, err := logic.Get(snapshot.GameID); err == nil &&
 		snapshot.StateVersion == gameLogic.StateVersion() {
 		if state, decodeErr := gameLogic.DecodeState(snapshot.State); decodeErr == nil {
 			moveCount = stateMoveCount(gameLogic, state)
+			if ranker, ok := gameLogic.(logic.Ranker); ok {
+				for _, idx := range ranker.Rankings(state) {
+					if idx >= 0 && idx < len(snapshot.Players) {
+						rankings = append(rankings, snapshot.Players[idx].ID)
+					}
+				}
+			}
 		}
 	}
 	return MatchOutcome{
@@ -484,6 +509,8 @@ func outcomeFromSnapshot(snapshot ActiveMatchSnapshot) (MatchOutcome, bool) {
 		MatchID:    snapshot.ID,
 		Player0ID:  snapshot.Players[0].ID,
 		Player1ID:  snapshot.Players[1].ID,
+		PlayerIDs:  snapshotPlayerIDs(snapshot),
+		Rankings:   rankings,
 		WinnerID:   snapshot.WinnerID,
 		Reason:     snapshot.ResultReason,
 		Bet:        snapshot.Bet,
@@ -493,7 +520,7 @@ func outcomeFromSnapshot(snapshot ActiveMatchSnapshot) (MatchOutcome, bool) {
 }
 
 func recordFromSnapshot(snapshot ActiveMatchSnapshot) (MatchRecord, bool) {
-	if snapshot.ID == "" || snapshot.GameID == "" || len(snapshot.Players) != 2 {
+	if snapshot.ID == "" || snapshot.GameID == "" || len(snapshot.Players) < 2 {
 		return MatchRecord{}, false
 	}
 	startedAt := time.UnixMilli(snapshot.StartedAt)
@@ -509,6 +536,7 @@ func recordFromSnapshot(snapshot ActiveMatchSnapshot) (MatchRecord, bool) {
 		MatchID:   snapshot.ID,
 		Player0ID: snapshot.Players[0].ID,
 		Player1ID: snapshot.Players[1].ID,
+		PlayerIDs: snapshotPlayerIDs(snapshot),
 		Bet:       snapshot.Bet,
 		Mode:      mode,
 		StartedAt: startedAt,

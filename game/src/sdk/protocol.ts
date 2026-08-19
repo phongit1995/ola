@@ -185,6 +185,11 @@ export interface ReactionData {
   sentAt: number;
 }
 
+export interface RankingEntry {
+  userId: string;
+  place: number;
+}
+
 export interface MatchOverData<TState = unknown> {
   matchId: string;
   winnerId?: string;
@@ -193,6 +198,7 @@ export interface MatchOverData<TState = unknown> {
   bet?: number;
   payout?: number;
   kenDelta?: number;
+  rankings?: RankingEntry[];
 }
 
 export interface ErrorData {
@@ -207,6 +213,7 @@ export interface RoomInfo {
   bet: number;
   locked: boolean;
   players: number;
+  maxPlayers?: number;
   full?: boolean;
   status?: 'waiting' | 'playing';
 }
@@ -227,6 +234,7 @@ export interface RoomWaitingData {
   roomId: string;
   bet: number;
   locked: boolean;
+  maxPlayers?: number;
 }
 
 export interface RoomMember {
@@ -243,6 +251,7 @@ export interface RoomStateData {
   youId: string;
   bet: number;
   locked: boolean;
+  maxPlayers?: number;
   members: RoomMember[];
 }
 
@@ -263,4 +272,9 @@ export interface RoomKickedData {
 export interface OpponentDisconnectedData {
   graceDeadline: number;
   turnRemainingMs?: number;
+  userId?: string;
+}
+
+export interface OpponentReconnectedData {
+  userId?: string;
 }

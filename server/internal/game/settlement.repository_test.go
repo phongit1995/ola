@@ -234,7 +234,7 @@ func TestSettleFinishRejectsOutcomeThatConflictsWithEscrow(t *testing.T) {
 		Bet:        100,
 		MoveCount:  9,
 		FinishedAt: now.Add(time.Minute),
-	}, p0, p1)
+	}, p0, p1, []uuid.UUID{p0, p1})
 	if !errors.Is(err, errMatchConflict) {
 		t.Fatalf("mismatched bet error=%v, want %v", err, errMatchConflict)
 	}
@@ -275,7 +275,7 @@ func TestSettleFinishRetryDoesNotUpdateBalancesAgain(t *testing.T) {
 		))
 	mock.ExpectCommit()
 
-	result, err := repo.settleFinish(context.Background(), out, p0, p1)
+	result, err := repo.settleFinish(context.Background(), out, p0, p1, []uuid.UUID{p0, p1})
 	if err != nil {
 		t.Fatalf("idempotent finish: %v", err)
 	}
@@ -321,7 +321,7 @@ func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 
-	result, err := repo.settleFinish(context.Background(), out, p0, p1)
+	result, err := repo.settleFinish(context.Background(), out, p0, p1, []uuid.UUID{p0, p1})
 	if err != nil {
 		t.Fatalf("settle winner: %v", err)
 	}
@@ -375,7 +375,7 @@ func TestEscrowStartIsIdempotentAndDebitsOnce(t *testing.T) {
 	expectKenUpdate(mock, p1, 55)
 	mock.ExpectCommit()
 
-	result, err := repo.escrowStart(context.Background(), rec, p0, p1)
+	result, err := repo.escrowStart(context.Background(), rec, p0, p1, []uuid.UUID{p0, p1})
 	if err != nil {
 		t.Fatalf("first escrow: %v", err)
 	}
@@ -398,7 +398,7 @@ func TestEscrowStartIsIdempotentAndDebitsOnce(t *testing.T) {
 		))
 	mock.ExpectCommit()
 
-	result, err = repo.escrowStart(context.Background(), rec, p0, p1)
+	result, err = repo.escrowStart(context.Background(), rec, p0, p1, []uuid.UUID{p0, p1})
 	if err != nil {
 		t.Fatalf("idempotent escrow: %v", err)
 	}

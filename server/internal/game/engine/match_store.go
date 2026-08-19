@@ -28,7 +28,8 @@ type ActiveMatchSnapshot struct {
 	State              json.RawMessage       `json:"state"`
 	StateVersion       int                   `json:"stateVersion"`
 	TurnIndex          int                   `json:"turnIndex"`
-	TimeoutRuns        [2]int                `json:"timeoutRuns"`
+	TimeoutRuns        []int                 `json:"timeoutRuns"`
+	Quit               []int                 `json:"quit,omitempty"`
 	TurnDeadline       int64                 `json:"turnDeadline"`
 	Bet                int                   `json:"bet"`
 	StartedAt          int64                 `json:"startedAt"`
