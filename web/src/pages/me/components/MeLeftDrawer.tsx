@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import { DEFAULT_AVATAR_COLOR } from '@lib';
-import personalIcon from '@/assets/icons/me/header/ic_header_personal.png';
+import personalIcon from '@/assets/icons/me/ic_drawer_personal.png';
 import marriageIcon from '@/assets/icons/me/header/ic_header_marriage.png';
 import favoriteIcon from '@/assets/icons/me/header/ic_header_favorite.png';
 import visitorsIcon from '@/assets/icons/me/header/ic_header_visitors.png';
