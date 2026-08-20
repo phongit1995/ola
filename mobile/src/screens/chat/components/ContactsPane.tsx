@@ -36,7 +36,6 @@ import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
-const addFriendIcon = require('@assets/icons/room/ic_add_friend.png');
 const addContactIcon = require('@assets/icons/chat/ic_add_contact_gray.png');
 const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
 
@@ -244,7 +243,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
             }}
           >
             <View className="h-10 w-10 items-center justify-center rounded-full bg-ola-primary">
-              <Image source={addFriendIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
+              <Image source={addContactIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
             </View>
             <View className="min-w-0 flex-1">
               <Text className="text-base text-ola-ink">{t('chat.friendRequests')}</Text>
