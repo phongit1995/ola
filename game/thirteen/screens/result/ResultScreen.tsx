@@ -1,4 +1,5 @@
 import { placeLabel } from '../../helpers/seats';
+import { avatarTone } from '../../helpers/avatar';
 import { useThirteen } from '../../store/useThirteen';
 
 const INSTANT_WIN_LABEL: Record<string, string> = {
@@ -30,8 +31,8 @@ export function ResultScreen() {
 
   return (
     <div className="tl-modal-backdrop tl-result-backdrop">
-      <div className="tl-result-card">
-        <div className="tl-result-banner">KẾT QUẢ</div>
+      <div className="tl-result-card" role="dialog" aria-modal="true" aria-labelledby="tl-result-title">
+        <div id="tl-result-title" className="tl-result-banner">KẾT QUẢ</div>
         {result.instantWin && <div className="tl-result-instant">{INSTANT_WIN_LABEL[result.instantWin] ?? result.instantWin}</div>}
         {result.reason === 'disconnect' && <div className="tl-result-note">Ván kết thúc do mất kết nối</div>}
         {result.reason === 'forfeit' && <div className="tl-result-note">Ván kết thúc do có người rời bàn</div>}
@@ -42,12 +43,18 @@ export function ResultScreen() {
               className={
                 'tl-result-row' +
                 (entry.place === 1 ? ' first' : '') +
+                (entry.place === total ? ' last' : '') +
                 (entry.userId === user?.id ? ' me' : '')
               }
             >
               <span className="tl-result-place">{entry.place}</span>
-              <span className="tl-avatar">{nameOf(entry.userId).charAt(0).toUpperCase()}</span>
-              <span className="tl-result-name">{nameOf(entry.userId)}</span>
+              <span className={`tl-avatar tl-avatar-${avatarTone(entry.userId)}`}>
+                {nameOf(entry.userId).charAt(0).toUpperCase()}
+              </span>
+              <span className="tl-result-name">
+                {nameOf(entry.userId)}
+                {entry.userId === user?.id && entry.place === 1 && <i aria-label="Bạn" />}
+              </span>
               <span
                 className={
                   'tl-badge ' +

@@ -97,12 +97,28 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
     reactions: [{ seat: 1, type: 'HAHA', key: 1 }],
     awaySeats: { 3: performance.now() + 25_000 },
   }),
+  'table-chop': () => ({ ...table(PLAYERS_4), chopFx: Date.now() }),
   'table-disconnected': () => ({ ...table(PLAYERS_4), selfDisconnected: true }),
   'confirm-exit': () => ({ ...table(PLAYERS_4), confirmExit: true }),
   notice: () => ({ phase: 'lobby', rooms: ROOMS, notice: 'Bàn đã bị chủ bàn đóng' }),
   toast: () => ({ phase: 'lobby', rooms: ROOMS, toast: 'Bộ bài không hợp lệ' }),
   result: () => ({
     ...table(PLAYERS_4),
+    finishOrder: [2, 0, 1, 3],
+    result: {
+      rankings: [
+        { userId: 'u-3', place: 1 },
+        { userId: ME.id, place: 2 },
+        { userId: 'u-2', place: 3 },
+        { userId: 'u-4', place: 4 },
+      ],
+      winnerId: 'u-3',
+      reason: 'win',
+    },
+  }),
+  'result-room': () => ({
+    ...table(PLAYERS_4),
+    room: room(0, 4, 4),
     finishOrder: [2, 0, 1, 3],
     result: {
       rankings: [

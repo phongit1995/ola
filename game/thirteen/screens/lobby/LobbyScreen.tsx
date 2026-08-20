@@ -9,7 +9,7 @@ import refreshIcon from '../../assets/icons/ic-refresh.svg';
 import kenIcon from '../../assets/icons/ken.png';
 import { BrandMark } from '../../components/BrandMark';
 import { handleModalKeyDown } from '../../components/modalKeyboard';
-import { userAvatarIconUrl } from '../../helpers/avatar';
+import { avatarTone, userAvatarIconUrl } from '../../helpers/avatar';
 import {
   formatBetInput,
   formatKen,
@@ -18,13 +18,6 @@ import {
   roomCreationError,
 } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
-
-const AVATAR_TONES = ['coral', 'violet', 'sun', 'blue'] as const;
-
-function avatarTone(value: string): (typeof AVATAR_TONES)[number] {
-  const hash = Array.from(value).reduce((total, character) => total + (character.codePointAt(0) ?? 0), 0);
-  return AVATAR_TONES[hash % AVATAR_TONES.length] ?? 'violet';
-}
 
 function KenPill() {
   const user = useThirteen((s) => s.user);

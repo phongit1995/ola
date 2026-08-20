@@ -1,4 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import backIcon from '../../assets/icons/ic-back.svg';
+import checkIcon from '../../assets/icons/ic-check.svg';
+import crownIcon from '../../assets/icons/ic-crown.svg';
+import plusIcon from '../../assets/icons/ic-plus.svg';
+import sendIcon from '../../assets/icons/ic-send.svg';
+import userMinusIcon from '../../assets/icons/ic-user-minus.svg';
+import { avatarTone } from '../../helpers/avatar';
+import { formatKen } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
 
 export function RoomScreen() {
@@ -11,6 +19,11 @@ export function RoomScreen() {
   const kickMember = useThirteen((s) => s.kickMember);
   const sendRoomChatText = useThirteen((s) => s.sendRoomChatText);
   const [draft, setDraft] = useState('');
+  const logRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
+  }, [roomChat]);
 
   if (!room || !user) return null;
   const maxPlayers = room.maxPlayers ?? 4;
@@ -21,6 +34,7 @@ export function RoomScreen() {
   const canStart = room.members.length >= 2 && readyGuests === guests;
 
   const send = (): void => {
+    if (!draft.trim()) return;
     sendRoomChatText(draft);
     setDraft('');
   };
@@ -29,12 +43,12 @@ export function RoomScreen() {
     <div className="tl-screen tl-room">
       <div className="tl-topbar">
         <button type="button" className="tl-icon-btn" onClick={leaveRoom} aria-label="Rời bàn">
-          ←
+          <img src={backIcon} alt="" />
         </button>
         <div className="tl-room-title">
           <span>Bàn chờ</span>
           <small>
-            {room.members.length}/{maxPlayers} người{room.locked ? ' · Có mật khẩu' : ''}
+            {room.members.length}/{maxPlayers} người · {formatKen(room.bet)} Ken{room.locked ? ' · Có mật khẩu' : ''}
           </small>
         </div>
         <span className="tl-topbar-spacer" />
@@ -46,14 +60,16 @@ export function RoomScreen() {
           if (!member) {
             return (
               <div key={`empty-${i}`} className="tl-seat tl-seat-empty">
-                <div className="tl-seat-plus">+</div>
+                <div className="tl-seat-plus">
+                  <img src={plusIcon} alt="" />
+                </div>
                 <span>Ghế trống</span>
               </div>
             );
           }
           return (
             <div key={member.id} className={'tl-seat' + (member.owner ? ' owner' : '')}>
-              {member.owner && <span className="tl-crown">♛</span>}
+              {member.owner && <img className="tl-crown" src={crownIcon} alt="Chủ bàn" />}
               {isOwner && !member.owner && (
                 <button
                   type="button"
@@ -61,15 +77,19 @@ export function RoomScreen() {
                   aria-label={`Mời ${member.name} rời bàn`}
                   onClick={() => kickMember(member.id)}
                 >
-                  ×
+                  <img src={userMinusIcon} alt="" />
                 </button>
               )}
-              <span className="tl-avatar tl-avatar-lg">{member.name.charAt(0).toUpperCase()}</span>
+              <span className={`tl-avatar tl-avatar-lg tl-avatar-${avatarTone(member.id)}`}>
+                {member.name.charAt(0).toUpperCase()}
+              </span>
               <span className="tl-seat-name">{member.id === user.id ? 'Bạn' : member.name}</span>
               {member.owner ? (
                 <span className="tl-badge tl-badge-gold">Chủ bàn</span>
               ) : member.ready ? (
-                <span className="tl-badge tl-badge-green">Đã sẵn sàng</span>
+                <span className="tl-badge tl-badge-green">
+                  <img src={checkIcon} alt="" /> Đã sẵn sàng
+                </span>
               ) : (
                 <span className="tl-badge">Chưa sẵn sàng</span>
               )}
@@ -79,7 +99,7 @@ export function RoomScreen() {
       </div>
 
       <div className="tl-room-chat">
-        <div className="tl-room-chat-log">
+        <div ref={logRef} className="tl-room-chat-log">
           {roomChat.length === 0 && <span className="tl-chat-hint">Trò chuyện với người trong bàn...</span>}
           {roomChat.map((msg) => (
             <div key={`${msg.userId}-${msg.sentAt}`} className="tl-chat-line">
@@ -96,8 +116,9 @@ export function RoomScreen() {
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send()}
           />
-          <button type="button" className="tl-btn tl-btn-gold" onClick={send}>
-            Gửi
+          <button type="button" className="tl-btn tl-btn-gold tl-send-btn" disabled={!draft.trim()} onClick={send}>
+            <span>Gửi</span>
+            <img src={sendIcon} alt="" />
           </button>
         </div>
       </div>
@@ -121,6 +142,7 @@ export function RoomScreen() {
             className={'tl-btn ' + (me?.ready ? 'tl-btn-ghost' : 'tl-btn-gold')}
             onClick={() => setReady(!me?.ready)}
           >
+            {me?.ready && <img className="tl-ready-check" src={checkIcon} alt="" />}
             {me?.ready ? 'Bỏ sẵn sàng' : 'Sẵn sàng'}
           </button>
         )}

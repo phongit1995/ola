@@ -76,7 +76,7 @@ export function App() {
           cancelLabel="Ở lại"
           onConfirm={confirmExitNow}
           onCancel={cancelExit}
-          style02={phase === 'lobby'}
+          style02
         />
       )}
       {notice && (
@@ -87,7 +87,7 @@ export function App() {
           cancelLabel={null}
           onConfirm={dismissNotice}
           onCancel={dismissNotice}
-          style02={phase === 'lobby'}
+          style02
         />
       )}
     </div>
