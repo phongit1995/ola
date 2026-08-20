@@ -96,6 +96,11 @@ const (
 	CacheKeyEmailVerifyCode     = "EMAIL_VERIFY:%s:CODE"
 	CacheKeyEmailVerifyCooldown = "EMAIL_VERIFY:%s:COOLDOWN"
 	CacheKeyEmailVerifyDaily    = "EMAIL_VERIFY:%s:DAILY"
+
+	CacheKeyPasswordResetCode     = "PASSWORD_RESET:%s:CODE"
+	CacheKeyPasswordResetAttempts = "PASSWORD_RESET:%s:ATTEMPTS"
+	CacheKeyPasswordResetCooldown = "PASSWORD_RESET:%s:COOLDOWN"
+	CacheKeyPasswordResetDaily    = "PASSWORD_RESET:%s:DAILY"
 )
 
 const (
@@ -111,6 +116,14 @@ const (
 	EmailVerifyCodeLength      = 6
 	EmailVerifyMaxPerDay       = 3
 	EmailVerifyDailyWindow     = 24 * 60 * 60
+)
+
+const (
+	PasswordResetCooldownSeconds = 60
+	PasswordResetMaxAttempts     = 5
+	PasswordResetCodeLength      = 6
+	PasswordResetMaxPerDay       = 5
+	PasswordResetDailyWindow     = 24 * 60 * 60
 )
 
 var EmailVerifyAllowedDomains = map[string]struct{}{

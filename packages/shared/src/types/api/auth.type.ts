@@ -83,6 +83,12 @@ export interface MessageResult {
   message: string;
 }
 
+export interface ForgotPasswordConfirmRequest {
+  username: string;
+  code: string;
+  newPassword: string;
+}
+
 export interface SendVerifyEmailRequest {
   email: string;
 }

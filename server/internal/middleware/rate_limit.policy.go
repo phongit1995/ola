@@ -26,4 +26,7 @@ var (
 	PolicyChatBot     = RateLimitPolicy{Name: "chat_bot", Limit: perWindow(10, time.Minute)}
 
 	PolicyEmailVerifySend = RateLimitPolicy{Name: "email_verify_send", Limit: perWindow(5, time.Hour)}
+
+	PolicyForgotPasswordSend    = RateLimitPolicy{Name: "forgot_password_send", Limit: perWindow(5, time.Hour)}
+	PolicyForgotPasswordConfirm = RateLimitPolicy{Name: "forgot_password_confirm", Limit: perWindow(10, 10 * time.Minute)}
 )

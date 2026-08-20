@@ -128,6 +128,52 @@ func (s *CacheService) DeleteIfValue(key string, value interface{}) (bool, error
 	return deleted == 1, err
 }
 
+type ConsumeCodeStatus string
+
+const (
+	ConsumeCodeOK      ConsumeCodeStatus = "OK"
+	ConsumeCodeMissing ConsumeCodeStatus = "MISSING"
+	ConsumeCodeInvalid ConsumeCodeStatus = "INVALID"
+	ConsumeCodeTooMany ConsumeCodeStatus = "TOO_MANY"
+)
+
+// ConsumeCode atomically checks an OTP entry: counts the attempt, enforces the
+// attempt cap, and deletes (single-use) the entry when the code matches.
+func (s *CacheService) ConsumeCode(entryKey, attemptsKey, code string, maxAttempts int, dest interface{}) (ConsumeCodeStatus, error) {
+	const script = `
+		local entry = redis.call("GET", KEYS[1])
+		if not entry then return {"MISSING", ""} end
+		local attempts = redis.call("INCR", KEYS[2])
+		if attempts == 1 then
+			local ttl = redis.call("PTTL", KEYS[1])
+			if ttl > 0 then redis.call("PEXPIRE", KEYS[2], ttl) end
+		end
+		if attempts > tonumber(ARGV[2]) then
+			redis.call("DEL", KEYS[1], KEYS[2])
+			return {"TOO_MANY", ""}
+		end
+		local decoded = cjson.decode(entry)
+		if decoded.code ~= ARGV[1] then return {"INVALID", ""} end
+		redis.call("DEL", KEYS[1], KEYS[2])
+		return {"OK", entry}
+	`
+	res, err := s.client.Eval(s.ctx, script, []string{entryKey, attemptsKey}, code, maxAttempts).Slice()
+	if err != nil {
+		return "", err
+	}
+	if len(res) < 2 {
+		return "", fmt.Errorf("unexpected consume code reply")
+	}
+	status, _ := res[0].(string)
+	if ConsumeCodeStatus(status) == ConsumeCodeOK {
+		entry, _ := res[1].(string)
+		if err := json.Unmarshal([]byte(entry), dest); err != nil {
+			return "", err
+		}
+	}
+	return ConsumeCodeStatus(status), nil
+}
+
 // Increment increments a counter
 func (s *CacheService) Increment(key string) (int64, error) {
 	return s.client.Incr(s.ctx, key).Result()

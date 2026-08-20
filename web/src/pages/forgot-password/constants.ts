@@ -1,1 +1,1 @@
-export const USERNAME_MIN = 5;
+export const USERNAME_MIN = 2;

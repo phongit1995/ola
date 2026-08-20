@@ -23,6 +23,8 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		auth.POST("/refresh", r.controller.Refresh)
 		auth.POST("/logout", r.authMiddleware.RequireAuth(), r.controller.Logout)
 		auth.POST("/change-password", r.authMiddleware.RequireAuth(), r.controller.ChangePassword)
+		auth.POST("/forgot-password/send", r.rateLimit.LimitPolicy(middleware.PolicyForgotPasswordSend), r.controller.ForgotPasswordSend)
+		auth.POST("/forgot-password/confirm", r.rateLimit.LimitPolicy(middleware.PolicyForgotPasswordConfirm), r.controller.ForgotPasswordConfirm)
 		auth.POST("/verify-email/send", r.authMiddleware.RequireAuth(), r.rateLimit.LimitPolicy(middleware.PolicyEmailVerifySend), r.controller.SendEmailVerify)
 		auth.POST("/verify-email/confirm", r.authMiddleware.RequireAuth(), r.controller.ConfirmEmailVerify)
 	}

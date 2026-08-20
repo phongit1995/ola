@@ -94,6 +94,54 @@ func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
 	return &ChangePasswordResponse{Message: "Password changed successfully"}, nil
 }
 
+// ForgotPasswordSend godoc
+// @Summary      Request a password reset code
+// @Description  Send a 6-digit reset code to the account's verified email. Always returns a generic message so account existence is not revealed.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body ForgotPasswordSendRequest true "Forgot Password Send Request"
+// @Success      200  {object}  ForgotPasswordSendSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      429  {object}  utils.APIError
+// @Router       /auth/forgot-password/send [post]
+func (ctrl *Controller) ForgotPasswordSend(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[ForgotPasswordSendRequest](c)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ctrl.service.SendPasswordReset(req.Username, c.ClientIP()); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return &ForgotPasswordSendResponse{Message: "If the account has a verified email, a reset code has been sent."}, nil
+}
+
+// ForgotPasswordConfirm godoc
+// @Summary      Confirm password reset
+// @Description  Verify the 6-digit reset code and set a new password. All sessions of the account are revoked.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body ForgotPasswordConfirmRequest true "Forgot Password Confirm Request"
+// @Success      200  {object}  ForgotPasswordConfirmSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      429  {object}  utils.APIError
+// @Router       /auth/forgot-password/confirm [post]
+func (ctrl *Controller) ForgotPasswordConfirm(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[ForgotPasswordConfirmRequest](c)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ctrl.service.ConfirmPasswordReset(req, c.ClientIP()); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return &ForgotPasswordConfirmResponse{Message: "Password has been reset. Please login with your new password."}, nil
+}
+
 // SendEmailVerify godoc
 // @Summary      Send email verification code
 // @Description  Send a 6-digit verification code to the given email for the authenticated user

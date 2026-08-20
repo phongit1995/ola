@@ -70,6 +70,24 @@ type RefreshTokenResponse struct {
 	RefreshToken string `json:"refreshToken" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
 
+type ForgotPasswordSendRequest struct {
+	Username string `json:"username" binding:"required,min=2,max=20" example:"john_doe"`
+}
+
+type ForgotPasswordSendResponse struct {
+	Message string `json:"message" example:"If the account has a verified email, a reset code has been sent."`
+}
+
+type ForgotPasswordConfirmRequest struct {
+	Username    string `json:"username" binding:"required,min=2,max=20" example:"john_doe"`
+	Code        string `json:"code" binding:"required,len=6,numeric" example:"123456"`
+	NewPassword string `json:"newPassword" binding:"required,min=6" example:"newpassword123"`
+}
+
+type ForgotPasswordConfirmResponse struct {
+	Message string `json:"message" example:"Password has been reset. Please login with your new password."`
+}
+
 type SendEmailVerifyRequest struct {
 	Email string `json:"email" binding:"required,email,max=255" example:"john@example.com"`
 }
@@ -88,6 +106,9 @@ type ConfirmEmailVerifyResponse struct {
 	EmailVerified bool `json:"emailVerified" example:"true"`
 	VipRewardDays int  `json:"vipRewardDays" example:"30"`
 }
+
+type ForgotPasswordSendSuccessResponse = utils.BaseResponse[ForgotPasswordSendResponse]
+type ForgotPasswordConfirmSuccessResponse = utils.BaseResponse[ForgotPasswordConfirmResponse]
 
 type SendEmailVerifySuccessResponse = utils.BaseResponse[SendEmailVerifyResponse]
 type ConfirmEmailVerifySuccessResponse = utils.BaseResponse[ConfirmEmailVerifyResponse]

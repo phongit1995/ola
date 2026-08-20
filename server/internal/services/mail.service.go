@@ -84,11 +84,17 @@ func (s *MailService) send(ctx context.Context, toEmail, subject, html string) e
 
 func (s *MailService) SendVerificationCode(ctx context.Context, toEmail, code string) error {
 	subject := "Mã xác thực Ola của bạn"
-	html := buildVerificationEmailHTML(code)
+	html := buildCodeEmailHTML("Xác thực email của bạn", "Dùng mã bên dưới để hoàn tất xác thực email trên Ola. Mã có hiệu lực trong <strong>5 phút</strong>.", code)
 	return s.send(ctx, toEmail, subject, html)
 }
 
-func buildVerificationEmailHTML(code string) string {
+func (s *MailService) SendPasswordResetCode(ctx context.Context, toEmail, code string) error {
+	subject := "Mã đặt lại mật khẩu Ola"
+	html := buildCodeEmailHTML("Đặt lại mật khẩu", "Dùng mã bên dưới để đặt lại mật khẩu tài khoản Ola của bạn. Mã có hiệu lực trong <strong>5 phút</strong>. Nếu bạn không yêu cầu đặt lại mật khẩu, tài khoản của bạn vẫn an toàn — hãy bỏ qua email này.", code)
+	return s.send(ctx, toEmail, subject, html)
+}
+
+func buildCodeEmailHTML(heading, description, code string) string {
 	return fmt.Sprintf(`<!DOCTYPE html>
 <html lang="vi">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -100,8 +106,8 @@ func buildVerificationEmailHTML(code string) string {
           <span style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:0.5px;">Ola</span>
         </td></tr>
         <tr><td style="padding:36px 32px 8px 32px;">
-          <h1 style="margin:0 0 12px 0;font-size:20px;color:#101828;font-weight:600;">Xác thực email của bạn</h1>
-          <p style="margin:0;font-size:15px;line-height:22px;color:#475467;">Dùng mã bên dưới để hoàn tất xác thực email trên Ola. Mã có hiệu lực trong <strong>5 phút</strong>.</p>
+          <h1 style="margin:0 0 12px 0;font-size:20px;color:#101828;font-weight:600;">%s</h1>
+          <p style="margin:0;font-size:15px;line-height:22px;color:#475467;">%s</p>
         </td></tr>
         <tr><td style="padding:24px 32px;">
           <div style="background-color:#f9fafb;border:1px solid #eaecf0;border-radius:12px;padding:20px;text-align:center;">
@@ -118,5 +124,5 @@ func buildVerificationEmailHTML(code string) string {
     </td></tr>
   </table>
 </body>
-</html>`, code)
+</html>`, heading, description, code)
 }

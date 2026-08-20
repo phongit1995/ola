@@ -253,6 +253,7 @@ var (
 	errorsTooManyRequests = map[string]bool{
 		"RATE_LIMITED":                             true,
 		"daily email verification limit reached":   true,
+		"daily password reset limit reached":       true,
 		"please wait before requesting a new code": true,
 	}
 )
