@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import type { RoomInfo } from '../../../src/sdk';
-import kenIcon from '../../../../web/src/assets/icons/apps/ken.png';
 import backIcon from '../../assets/icons/ic-back.svg';
 import cardsEmptyIcon from '../../assets/icons/ic-cards-empty.svg';
 import checkIcon from '../../assets/icons/ic-check.svg';
 import lockIcon from '../../assets/icons/ic-lock.svg';
 import refreshIcon from '../../assets/icons/ic-refresh.svg';
+import kenIcon from '../../assets/icons/ken.png';
 import { BrandMark } from '../../components/BrandMark';
 import { handleModalKeyDown } from '../../components/modalKeyboard';
 import { userAvatarIconUrl } from '../../helpers/avatar';
