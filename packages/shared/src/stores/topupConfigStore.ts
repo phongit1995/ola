@@ -24,3 +24,7 @@ export const useTopupConfigStore = create<TopupConfigState>((set, get) => ({
 export function selectTopupEnabled(state: TopupConfigState): boolean {
   return state.config?.enabled ?? false;
 }
+
+export function selectTopupVisibleOnMobile(state: TopupConfigState): boolean {
+  return state.config?.enabled === true && state.config?.enabledMobile === true;
+}

@@ -4904,6 +4904,9 @@ definitions:
       enabled:
         example: true
         type: boolean
+      enabledMobile:
+        example: true
+        type: boolean
       kenPerVnd:
         example: 1
         type: integer

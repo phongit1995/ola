@@ -1349,6 +1349,7 @@ export interface TopupBankSetting {
 
 export interface TopupSetting {
   enabled: boolean
+  enabledMobile: boolean
   minAmount: number
   stepAmount: number
   presetAmounts: number[]

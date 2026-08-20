@@ -29,6 +29,7 @@ export interface TopupBankInfo {
 
 export interface TopupConfigResult {
   enabled: boolean;
+  enabledMobile?: boolean;
   minAmount: number;
   stepAmount: number;
   presetAmounts: number[];

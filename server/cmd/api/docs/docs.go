@@ -19707,6 +19707,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "enabledMobile": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "kenPerVnd": {
                     "type": "integer",
                     "example": 1

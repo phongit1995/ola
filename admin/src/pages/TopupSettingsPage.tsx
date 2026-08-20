@@ -16,6 +16,7 @@ const DEFAULT_BANK: TopupBankSetting = {
 
 const DEFAULT_TOPUP: TopupSetting = {
   enabled: true,
+  enabledMobile: true,
   minAmount: 10_000,
   stepAmount: 1_000,
   presetAmounts: [10_000, 20_000, 50_000, 100_000, 200_000, 500_000],
@@ -24,6 +25,7 @@ const DEFAULT_TOPUP: TopupSetting = {
 
 interface TopupSettingsFormValues {
   enabled: boolean
+  enabledMobile: boolean
   bankBin?: string
   accountNumber: string
   accountName?: string
@@ -79,6 +81,7 @@ export function TopupSettingsPage() {
     }
     const topupPayload: TopupSetting = {
       enabled: values.enabled,
+      enabledMobile: values.enabledMobile,
       minAmount: values.minAmount,
       stepAmount: values.stepAmount,
       kenPerVnd: values.kenPerVnd,
@@ -99,6 +102,7 @@ export function TopupSettingsPage() {
         layout="vertical"
         initialValues={{
           enabled: topup.enabled,
+          enabledMobile: topup.enabledMobile,
           bankBin: bank.bankBin || undefined,
           accountNumber: bank.accountNumber,
           accountName: bank.accountName,
@@ -115,6 +119,15 @@ export function TopupSettingsPage() {
           label="Cho phép nạp KEN"
           valuePropName="checked"
           extra="Tắt thì app ẩn menu Nạp KEN và khoá màn nạp."
+        >
+          <Switch />
+        </Form.Item>
+
+        <Form.Item
+          name="enabledMobile"
+          label="Hiển thị trên mobile"
+          valuePropName="checked"
+          extra="Tắt thì chỉ app mobile ẩn nút Nạp KEN, web vẫn hiển thị bình thường."
         >
           <Switch />
         </Form.Item>

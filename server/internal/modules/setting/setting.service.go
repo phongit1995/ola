@@ -32,6 +32,7 @@ type TopupBankConfig struct {
 
 type TopupConfig struct {
 	Enabled       bool  `json:"enabled"`
+	EnabledMobile bool  `json:"enabledMobile"`
 	MinAmount     int   `json:"minAmount"`
 	StepAmount    int   `json:"stepAmount"`
 	PresetAmounts []int `json:"presetAmounts"`
@@ -41,6 +42,7 @@ type TopupConfig struct {
 func DefaultTopupConfig() TopupConfig {
 	return TopupConfig{
 		Enabled:       true,
+		EnabledMobile: true,
 		MinAmount:     10_000,
 		StepAmount:    1_000,
 		PresetAmounts: []int{10_000, 20_000, 50_000, 100_000, 200_000, 500_000},

@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { formatKen } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { selectTopupEnabled, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
+import { selectTopupVisibleOnMobile, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { KenCoin } from './components/KenCoin';
@@ -45,7 +45,7 @@ export function KenStoreScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const push = useToastStore((s) => s.push);
-  const topupEnabled = useTopupConfigStore(selectTopupEnabled);
+  const topupEnabled = useTopupConfigStore(selectTopupVisibleOnMobile);
   const loadTopupConfig = useTopupConfigStore((s) => s.load);
   const [transferOpen, setTransferOpen] = useState(false);
 

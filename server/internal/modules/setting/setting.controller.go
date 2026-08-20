@@ -40,6 +40,7 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 
 	resp := TopupConfigResponse{
 		Enabled:       topup.Enabled,
+		EnabledMobile: topup.EnabledMobile,
 		MinAmount:     topup.MinAmount,
 		StepAmount:    topup.StepAmount,
 		PresetAmounts: topup.PresetAmounts,

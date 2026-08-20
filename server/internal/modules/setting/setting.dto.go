@@ -12,6 +12,7 @@ type TopupBankInfo struct {
 
 type TopupConfigResponse struct {
 	Enabled       bool           `json:"enabled" example:"true"`
+	EnabledMobile bool           `json:"enabledMobile" example:"true"`
 	MinAmount     int            `json:"minAmount" example:"10000"`
 	StepAmount    int            `json:"stepAmount" example:"1000"`
 	PresetAmounts []int          `json:"presetAmounts"`
