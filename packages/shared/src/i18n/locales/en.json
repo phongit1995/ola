@@ -106,7 +106,7 @@
     "passwordPlaceholder": "6–20 characters",
     "confirmLabel": "CONFIRM PASSWORD",
     "confirmPlaceholder": "Re-enter password",
-    "agree": "I agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of Ola",
+    "agree": "I confirm that I am at least 18 years old and agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of Ola",
     "submit": "Finish",
     "hasAccount": "Already have an account?",
     "errUsernameRequired": "Please enter a username.",
@@ -119,7 +119,7 @@
     "errPasswordMax": "Password must be at most 20 characters.",
     "errConfirmRequired": "Please re-enter your password.",
     "errConfirmMismatch": "Passwords do not match.",
-    "errAgreeRequired": "You must agree to the Terms of Use to continue.",
+    "errAgreeRequired": "You must confirm you are at least 18 and agree to the Terms of Use to continue.",
     "success": "Account created"
   },
   "forgot": {
@@ -1192,7 +1192,7 @@
           {
             "type": "ul",
             "items": [
-              "You must be 13 or older to create an account. If you are under 18, you need the consent/supervision of a parent or legal guardian.",
+              "You must be 18 or older to create an account and use Ola.",
               "Registration information (username, password…) must be accurate, must not violate good morals, and must not impersonate another individual/organization.",
               "Each person should own only one account and is responsible for keeping login information secure as well as for all activity arising from the account.",
               "If you detect unauthorized access to your account, please change your password and contact us immediately.",
@@ -1409,7 +1409,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Ola is intended for users aged 13 and over. Users under 18 need the consent and supervision of a parent or legal guardian. If we discover an account belonging to a child under 13, we will delete the account and its related data."
+            "text": "Ola is intended for users aged 18 and over. If we discover an account belonging to a person under 18, we will lock or delete the account and its related data."
           }
         ]
       },

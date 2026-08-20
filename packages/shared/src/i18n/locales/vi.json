@@ -106,7 +106,7 @@
     "passwordPlaceholder": "6–20 ký tự",
     "confirmLabel": "NHẬP LẠI MẬT KHẨU",
     "confirmPlaceholder": "Nhập lại mật khẩu",
-    "agree": "Tôi đồng ý với <terms>Điều khoản sử dụng</terms> và <privacy>Chính sách bảo mật</privacy> của Ola",
+    "agree": "Tôi xác nhận mình đủ 18 tuổi và đồng ý với <terms>Điều khoản sử dụng</terms> và <privacy>Chính sách bảo mật</privacy> của Ola",
     "submit": "Hoàn tất",
     "hasAccount": "Đã có tài khoản?",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
@@ -119,7 +119,7 @@
     "errPasswordMax": "Mật khẩu tối đa 20 ký tự.",
     "errConfirmRequired": "Vui lòng nhập lại mật khẩu.",
     "errConfirmMismatch": "Mật khẩu nhập lại không khớp.",
-    "errAgreeRequired": "Bạn cần đồng ý với Điều khoản sử dụng để tiếp tục.",
+    "errAgreeRequired": "Bạn cần xác nhận đủ 18 tuổi và đồng ý với Điều khoản sử dụng để tiếp tục.",
     "success": "Tạo tài khoản thành công"
   },
   "forgot": {
@@ -1192,7 +1192,7 @@
           {
             "type": "ul",
             "items": [
-              "Bạn phải từ 13 tuổi trở lên để tạo tài khoản. Nếu dưới 18 tuổi, bạn cần có sự đồng ý/giám sát của cha mẹ hoặc người giám hộ hợp pháp.",
+              "Bạn phải từ 18 tuổi trở lên để tạo tài khoản và sử dụng Ola.",
               "Thông tin đăng ký (tên đăng nhập, mật khẩu…) phải chính xác, không vi phạm thuần phong mỹ tục, không mạo danh cá nhân/tổ chức khác.",
               "Mỗi người chỉ nên sở hữu một tài khoản và chịu trách nhiệm bảo mật thông tin đăng nhập cũng như mọi hoạt động phát sinh từ tài khoản.",
               "Nếu phát hiện tài khoản bị truy cập trái phép, vui lòng đổi mật khẩu và liên hệ chúng tôi ngay.",
@@ -1409,7 +1409,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Ola dành cho người dùng từ 13 tuổi trở lên. Người dùng dưới 18 tuổi cần có sự đồng ý và giám sát của cha mẹ hoặc người giám hộ hợp pháp. Nếu phát hiện tài khoản của trẻ dưới 13 tuổi, chúng tôi sẽ xóa tài khoản và dữ liệu liên quan."
+            "text": "Ola dành cho người dùng từ 18 tuổi trở lên. Nếu phát hiện tài khoản của người dưới 18 tuổi, chúng tôi sẽ khóa hoặc xóa tài khoản và dữ liệu liên quan."
           }
         ]
       },
