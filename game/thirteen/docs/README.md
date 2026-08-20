@@ -49,6 +49,7 @@ Source React hiện tại quyết định chức năng, dữ liệu và state. C
 
 ```text
 game/thirteen/assets/
+  app-icons/        # app icon đã chốt, SVG nguồn + PNG bo góc 1024 px
   cards/
   icons/
   patterns/

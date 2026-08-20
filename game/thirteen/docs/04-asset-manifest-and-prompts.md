@@ -106,6 +106,10 @@ Tổng asset Style 02 mới bắt buộc: 19 SVG (13 icon chức năng, 4 suit, 
 - không chữ, không starburst dày, không glow;
 - SVG có thể chứa hai group để đổi hai màu.
 
+### 4.5 App icon đã chốt
+
+`assets/app-icons/app-icon-01-card-fan` là icon duy nhất: quạt ba lá với quân 2 cơ ở trung tâm. Thư mục chứa SVG nguồn và PNG master 1024 × 1024 cùng tên. PNG được cắt đúng theo mép ngoài viền navy: inset 16 px, outer radius 208 px; toàn bộ vùng ngoài viền có alpha trong suốt thật. Nội dung chính nằm trong safe area 96 px, vẫn đọc được ở 48 px. Chỉ dùng fill phẳng, outline navy và palette Style 02; không dùng ảnh sinh AI, texture raster, 3D, glow hoặc chi tiết ngẫu nhiên.
+
 ## 5. CSS component manifest
 
 Các phần sau là code, không phải asset file:
