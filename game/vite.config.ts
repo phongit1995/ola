@@ -26,7 +26,9 @@ export default defineConfig({
       // Caro controls image priority at runtime; data-URI inlining would force
       // even modal-only icons into the initial JavaScript chunk.
       const normalized = normalizePath(filePath);
-      return normalized.includes('/game/caro/assets/') || normalized.includes('/game/thirteen/assets/')
+      return normalized.includes('/game/caro/assets/') ||
+        normalized.includes('/game/thirteen/assets/') ||
+        normalized.includes('/game/xiangqi/assets/')
         ? false
         : undefined;
     },
@@ -36,6 +38,7 @@ export default defineConfig({
         caro: resolve(__dirname, 'caro/index.html'),
         wargod: resolve(__dirname, 'war-god/index.html'),
         thirteen: resolve(__dirname, 'thirteen/index.html'),
+        xiangqi: resolve(__dirname, 'xiangqi/index.html'),
       },
     },
   },

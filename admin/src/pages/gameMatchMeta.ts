@@ -23,6 +23,7 @@ export const GAME_ID_LABEL: Record<string, string> = {
   caro: 'Cờ Caro',
   'war-god': 'War God',
   'thirteen': 'Tiến Lên Miền Nam',
+  'xiangqi': 'Cờ Tướng',
 }
 
 export function gameLabel(gameId: string, names?: Record<string, string>) {

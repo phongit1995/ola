@@ -17,6 +17,6 @@
       "@ola/shared/*": ["../packages/shared/src/*"]
     }
   },
-  "include": ["src", "caro", "war-god", "thirteen"],
+  "include": ["src", "caro", "war-god", "thirteen", "xiangqi"],
   "exclude": ["**/*.test.ts", "**/*.test.tsx"]
 }

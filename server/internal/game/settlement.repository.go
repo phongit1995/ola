@@ -67,6 +67,7 @@ func NewSettlementRepository(
 			"caro":     cfg.CaroCommissionPercent,
 			"war-god":  cfg.WarGodCommissionPercent,
 			"thirteen": cfg.ThirteenCommissionPercent,
+			"xiangqi":  cfg.XiangqiCommissionPercent,
 		},
 	}
 }
