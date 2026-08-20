@@ -175,6 +175,12 @@ export function RegisterPage() {
                     className="font-medium text-ola-on-primary underline underline-offset-2"
                   />
                 ),
+                privacy: (
+                  <Link
+                    to={ROUTES.privacy}
+                    className="font-medium text-ola-on-primary underline underline-offset-2"
+                  />
+                ),
               }}
             />
           </span>

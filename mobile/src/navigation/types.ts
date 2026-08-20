@@ -12,6 +12,7 @@ export type AuthStackParamList = {
   [AUTH_ROUTES.Register]: undefined;
   [AUTH_ROUTES.ForgotPassword]: undefined;
   [AUTH_ROUTES.Terms]: undefined;
+  [AUTH_ROUTES.PrivacyPolicy]: undefined;
 };
 
 export type MainTabParamList = {
@@ -49,6 +50,8 @@ export type RootStackParamList = {
   [ROOT_ROUTES.ClanBans]: { clanId: string };
   [ROOT_ROUTES.FriendRequests]: undefined;
   [ROOT_ROUTES.SuggestedFriends]: undefined;
+  [ROOT_ROUTES.Terms]: undefined;
+  [ROOT_ROUTES.PrivacyPolicy]: undefined;
 };
 
 export type ChatStackParamList = {

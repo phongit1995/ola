@@ -3,6 +3,7 @@ export const AUTH_ROUTES = {
   Register: 'Register',
   ForgotPassword: 'ForgotPassword',
   Terms: 'Terms',
+  PrivacyPolicy: 'PrivacyPolicy',
 } as const;
 
 export const TAB_ROUTES = {
@@ -45,6 +46,8 @@ export const ROOT_ROUTES = {
   ClanBans: 'ClanBans',
   FriendRequests: 'FriendRequests',
   SuggestedFriends: 'SuggestedFriends',
+  Terms: 'RootTerms',
+  PrivacyPolicy: 'RootPrivacyPolicy',
 } as const;
 
 export const ROOM_ROUTES = {

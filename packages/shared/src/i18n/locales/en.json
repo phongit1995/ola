@@ -106,7 +106,7 @@
     "passwordPlaceholder": "6–20 characters",
     "confirmLabel": "CONFIRM PASSWORD",
     "confirmPlaceholder": "Re-enter password",
-    "agree": "I agree to the <terms>Terms of Use</terms> of Ola",
+    "agree": "I agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of Ola",
     "submit": "Finish",
     "hasAccount": "Already have an account?",
     "errUsernameRequired": "Please enter a username.",
@@ -183,6 +183,9 @@
     "privacyTitle": "Privacy",
     "notificationTitle": "Notifications",
     "appearanceTitle": "Appearance",
+    "aboutTitle": "About & legal",
+    "termsRow": "Terms of use",
+    "privacyPolicyRow": "Privacy policy",
     "whoCanMessage": "Who can message me",
     "whoCanViewMe": "Who can view my ME",
     "whoCanComment": "Who can comment on my Me",
@@ -1144,10 +1147,8 @@
     "back": "‹ Back",
     "title": "TERMS OF USE",
     "subtitle": "Ola social network",
-    "updated": "Updated 10/06/2026 — Version 1.0",
-    "noticeLabel": "Note:",
-    "notice": "This is a sample terms document for learning / research purposes, not an official legal document.",
-    "footer": "© 2026 Ola — Entertainment social network (demo)",
+    "updated": "Updated 20/08/2026 — Version 1.1",
+    "footer": "© 2026 Ola — Entertainment social network",
     "sections": [
       {
         "title": "1. Acceptance of terms",
@@ -1268,7 +1269,142 @@
         "blocks": [
           {
             "type": "p",
-            "text": "For any feedback, reports or complaints relating to your account, content or the terms of use, please contact us via Ola's support email."
+            "text": "For any feedback, reports or complaints relating to your account, content or the terms of use, please email us at support@olachat.net. We aim to review and respond to reports of violating content within 24 hours."
+          }
+        ]
+      }
+    ]
+  },
+  "privacyPolicy": {
+    "back": "‹ Back",
+    "title": "PRIVACY POLICY",
+    "subtitle": "Ola social network",
+    "updated": "Updated 20/08/2026 — Version 1.0",
+    "footer": "© 2026 Ola — Entertainment social network",
+    "sections": [
+      {
+        "title": "1. Introduction",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "This Privacy Policy explains how Ola (\"Ola\", \"we\") collects, uses, stores and protects your personal information when you use the Ola application and related services. By registering an account and using Ola, you agree to the practices described in this policy."
+          }
+        ]
+      },
+      {
+        "title": "2. Information we collect",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Account information: username and password when you register. Your IP address is recorded at registration and sign-in for security purposes.",
+              "Optional profile information: display name, avatar, cover photo, bio, phone number, gender, date of birth and email — you decide whether to provide these; your email is only saved after you confirm it with an OTP code.",
+              "Content you create: messages, images, voice messages, posts, comments, statuses and other content you upload while using Ola features. Voice and video calls are transmitted in real time and are not recorded by us.",
+              "Check-in location: collected only when you grant location permission and actively attach a check-in to a post.",
+              "Device and usage data: device model, operating system, app version, language, the screens you visit and crash logs — collected through Google Firebase (Analytics and Crashlytics) and linked to your account ID so we can fix errors and improve the product.",
+              "Virtual item transaction history: KEN/VIP transactions within the application."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "3. How we use your information",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Operate the service features: chat, community rooms, the Me feed, calls, games and virtual items;",
+              "Ensure safety: prevent fraud and spam, handle violation reports and enforce the Terms of Use;",
+              "Support users and resolve feedback or complaints;",
+              "Analyze aggregated usage to improve product quality and stability;",
+              "Notify you of important information about the service."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "4. Sharing your information",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "We do not sell your personal information to any third party. Information is shared only with:"
+          },
+          {
+            "type": "ul",
+            "items": [
+              "Service providers that help operate Ola — Google Firebase (usage analytics and crash reporting), cloud storage providers for images/files, and audio/video call infrastructure — each receives only the minimum data needed for its function;",
+              "Competent state authorities when required by applicable law;",
+              "No third party receives your data for advertising purposes."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "5. Device permissions",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Camera: take photos to send in chat and make video calls;",
+              "Microphone: record voice messages and make calls;",
+              "Photo library: choose images to send and save images to your device;",
+              "Location: suggest nearby check-in places when composing a post.",
+              "All permissions are optional — the app still works without them, only the related features are unavailable. You can revoke any permission at any time in your device Settings."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "6. Storage & security",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Your data is transmitted over encrypted connections (HTTPS) and stored on protected servers. We apply appropriate technical and organizational measures to prevent unauthorized access, but no system is absolutely secure — please protect your sign-in credentials."
+          },
+          {
+            "type": "p",
+            "text": "Data is retained while your account is active. When your account is deleted, personal data is removed or anonymized within a reasonable time, except where a longer retention period is required by law."
+          }
+        ]
+      },
+      {
+        "title": "7. Your rights",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "View and edit your profile information directly in the app;",
+              "Delete content you have posted (messages, posts, comments…);",
+              "Delete your account in the app or by emailing support@olachat.net;",
+              "Revoke device permissions (camera, microphone, photos, location) at any time."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "8. Children",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Ola is intended for users aged 13 and over. Users under 18 need the consent and supervision of a parent or legal guardian. If we discover an account belonging to a child under 13, we will delete the account and its related data."
+          }
+        ]
+      },
+      {
+        "title": "9. Changes to this policy",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "We may update this policy from time to time. Significant changes will be announced in the app. Your continued use of the service after a change takes effect means you accept the updated policy."
+          }
+        ]
+      },
+      {
+        "title": "10. Contact",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "For any questions or requests relating to your personal data and privacy, please email us at support@olachat.net. We aim to respond within 24 hours."
           }
         ]
       }
