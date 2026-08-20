@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cardAsset, CARD_BACK, REACTION_ASSETS, type ReactionKey } from '../../assets';
+import backIcon from '../../assets/icons/ic-back.svg';
+import chatIcon from '../../assets/icons/ic-chat.svg';
+import closeIcon from '../../assets/icons/ic-close.svg';
+import sendIcon from '../../assets/icons/ic-send.svg';
+import wifiOffIcon from '../../assets/icons/ic-wifi-off.svg';
+import chopRays from '../../assets/fx/fx-chop-rays.svg';
+import { avatarTone } from '../../helpers/avatar';
 import { TURN_SECONDS } from '../../logic/constants.gen';
+import { cardLabel } from '../../logic/cards';
 import { comboLabel } from '../../logic/beats';
 import { seatSlots, placeLabel } from '../../helpers/seats';
 import { useThirteen } from '../../store/useThirteen';
@@ -27,8 +35,9 @@ function TurnRing({ seat, children }: { seat: number; children: React.ReactNode 
   const active = turn === seat && !animating;
   const left = useCountdown(deadlineAt, active);
   const fraction = Math.max(0, Math.min(1, left / TURN_SECONDS));
+  const progressColor = left <= 5 ? '#e9574d' : '#ffc83d';
   const style = active
-    ? { background: `conic-gradient(#f0b53c ${fraction * 360}deg, rgba(247, 236, 215, 0.18) 0deg)` }
+    ? { background: `conic-gradient(${progressColor} ${fraction * 360}deg, rgba(255, 253, 245, 0.64) 0deg)` }
     : undefined;
   return (
     <span className={'tl-turn-ring' + (active ? ' active' : '') + (active && left <= 5 ? ' urgent' : '')} style={style}>
@@ -78,7 +87,9 @@ function OpponentSeat({ seat }: { seat: number }) {
   return (
     <div className={'tl-opponent' + (quit[seat] ? ' quit' : '')}>
       <TurnRing seat={seat}>
-        <span className="tl-avatar tl-avatar-md">{player.name.charAt(0).toUpperCase()}</span>
+      <span className={`tl-avatar tl-avatar-md tl-avatar-${avatarTone(player.id)}`}>
+        {player.name.charAt(0).toUpperCase()}
+      </span>
       </TurnRing>
       <span className="tl-opponent-name">{player.name}</span>
       {quit[seat] ? (
@@ -112,18 +123,28 @@ function TableCenter() {
   const selected = useThirteen((s) => s.selected);
   const combo = selected.length > 0 ? selectedComboFn() : null;
   const owner = table ? players[table.by] : null;
+  const trickLayout = useMemo(() => {
+    const count = table?.cards.length ?? 0;
+    const cardWidth = 52;
+    const available = 236;
+    const step = count > 1 ? Math.min(34, (available - cardWidth) / (count - 1)) : 0;
+    const total = cardWidth + Math.max(0, count - 1) * step;
+    const start = (available - total) / 2;
+    return { width: available, cards: (table?.cards ?? []).map((card, index) => ({ card, left: start + index * step })) };
+  }, [table]);
   return (
     <div className={'tl-table-center' + (chopFx && Date.now() - chopFx < 900 ? ' chop' : '')} key={chopFx || 'center'}>
       {table ? (
         <>
-          <div className="tl-trick">
-            {table.cards.map((card, i) => (
+          {chopFx > 0 && <img className="tl-chop-rays" src={chopRays} alt="" />}
+          <div className="tl-trick" style={{ width: trickLayout.width }}>
+            {trickLayout.cards.map(({ card, left }, i) => (
               <img
                 key={card}
                 src={cardAsset(card)}
-                alt=""
+                alt={cardLabel(card)}
                 className="tl-trick-card"
-                style={{ transform: `rotate(${(i - (table.cards.length - 1) / 2) * 6}deg)`, zIndex: i }}
+                style={{ left, transform: `rotate(${((i - (table.cards.length - 1) / 2) / Math.max(table.cards.length - 1, 1)) * 8}deg)`, zIndex: i }}
               />
             ))}
           </div>
@@ -144,21 +165,21 @@ function HandFan() {
   const n = hand.length;
   const layout = useMemo(() => {
     const width = Math.min(500, window.innerWidth - 20);
-    const cardWidth = 66;
+    const cardWidth = Math.min(68, Math.max(52, width * 0.141));
     const step = n > 1 ? Math.min(38, (width - cardWidth) / (n - 1)) : 0;
     const total = cardWidth + step * (n - 1);
     const startX = (width - total) / 2;
     return hand.map((card, i) => {
       const mid = (n - 1) / 2;
-      const rot = n > 1 ? ((i - mid) / Math.max(mid, 1)) * 12 : 0;
+      const rot = n > 1 ? ((i - mid) / Math.max(mid, 1)) * 6 : 0;
       const lift = n > 1 ? 22 - Math.pow(Math.abs(i - mid) / Math.max(mid, 1), 2) * 18 : 22;
-      return { card, x: startX + i * step, rot, lift };
+      return { card, cardWidth, x: startX + i * step, rot, lift };
     });
   }, [hand, n]);
 
   return (
     <div className={'tl-hand' + (dealing ? ' dealing' : '')}>
-      {layout.map(({ card, x, rot, lift }, i) => {
+      {layout.map(({ card, cardWidth, x, rot, lift }, i) => {
         const isSelected = selected.includes(card);
         return (
           <button
@@ -166,6 +187,7 @@ function HandFan() {
             type="button"
             className={'tl-hand-card' + (isSelected ? ' selected' : '')}
             style={{
+              width: `${cardWidth}px`,
               left: `${x}px`,
               bottom: `${lift + (isSelected ? 18 : 0)}px`,
               transform: `rotate(${rot}deg)`,
@@ -174,6 +196,7 @@ function HandFan() {
             }}
             onClick={() => toggleCard(card)}
             aria-pressed={isSelected}
+            aria-label={`${cardLabel(card)}${isSelected ? ', đã chọn' : ''}`}
           >
             <img src={cardAsset(card)} alt="" draggable={false} />
           </button>
@@ -240,12 +263,20 @@ function ChatOverlay() {
 
   if (!chatOpen) return null;
   const send = (): void => {
+    if (!draft.trim()) return;
     sendChat(draft);
     setDraft('');
   };
   return (
     <div className="tl-chat-overlay" onClick={(e) => e.target === e.currentTarget && setChatOpen(false)}>
-      <div className="tl-chat-panel">
+      <div className="tl-chat-panel" role="dialog" aria-modal="true" aria-labelledby="tl-table-chat-title">
+        <span className="tl-chat-handle" aria-hidden="true" />
+        <div className="tl-chat-header">
+          <strong id="tl-table-chat-title">Trò chuyện</strong>
+          <button type="button" className="tl-chat-close" onClick={() => setChatOpen(false)} aria-label="Đóng trò chuyện">
+            <img src={closeIcon} alt="" />
+          </button>
+        </div>
         <div className="tl-reaction-row">
           {(Object.keys(REACTION_ASSETS) as ReactionKey[]).map((key) => (
             <button
@@ -279,8 +310,9 @@ function ChatOverlay() {
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send()}
           />
-          <button type="button" className="tl-btn tl-btn-gold" onClick={send}>
-            Gửi
+          <button type="button" className="tl-btn tl-btn-gold tl-send-btn" disabled={!draft.trim()} onClick={send}>
+            <span>Gửi</span>
+            <img src={sendIcon} alt="" />
           </button>
         </div>
       </div>
@@ -297,6 +329,7 @@ export function TableScreen() {
   const requestExit = useThirteen((s) => s.requestExit);
   const setChatOpen = useThirteen((s) => s.setChatOpen);
   const passFxSeat = useThirteen((s) => s.passFxSeat);
+  const passed = useThirteen((s) => s.passed);
   const finishOrder = useThirteen((s) => s.finishOrder);
 
   const slots = seatSlots(players.length, you);
@@ -311,11 +344,11 @@ export function TableScreen() {
     <div className="tl-screen tl-table-screen">
       <div className="tl-topbar">
         <button type="button" className="tl-icon-btn" onClick={requestExit} aria-label="Rời ván">
-          ←
+          <img src={backIcon} alt="" />
         </button>
         <span className="tl-table-title">Tiến Lên Miền Nam</span>
         <button type="button" className="tl-icon-btn" onClick={() => setChatOpen(true)} aria-label="Trò chuyện">
-          💬
+          <img src={chatIcon} alt="" />
         </button>
       </div>
 
@@ -346,12 +379,14 @@ export function TableScreen() {
 
       <div className="tl-my-row">
         <TurnRing seat={you}>
-          <span className="tl-avatar tl-avatar-md">{user?.username.charAt(0).toUpperCase() ?? 'B'}</span>
+          <span className={`tl-avatar tl-avatar-md tl-avatar-${avatarTone(user?.id ?? 'you')}`}>
+            {user?.username.charAt(0).toUpperCase() ?? 'B'}
+          </span>
         </TurnRing>
         <div className="tl-my-info">
           <span className="tl-my-name">Bạn</span>
           {myPlace >= 0 && <span className="tl-badge tl-badge-gold">{placeLabel(myPlace + 1, players.length)}</span>}
-          {passFxSeat === you && <span className="tl-pass-chip">Bỏ lượt</span>}
+          {(passed[you] || passFxSeat === you) && <span className="tl-pass-chip">Bỏ lượt</span>}
         </div>
         <SeatReactions seat={you} />
       </div>
@@ -362,6 +397,7 @@ export function TableScreen() {
 
       {selfDisconnected && (
         <div className="tl-disconnect-overlay">
+          <img src={wifiOffIcon} alt="" />
           <span>Mất kết nối, đang kết nối lại...</span>
         </div>
       )}

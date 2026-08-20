@@ -93,7 +93,7 @@ interface ThirteenStore {
   requestExit(): void;
   cancelExit(): void;
   confirmExitNow(): void;
-  closeResult(toLobby: boolean): void;
+  closeResult(stayInRoom: boolean): void;
   dismissNotice(): void;
   showToast(text: string): void;
   selectedCombo(): Combo | null;
@@ -545,14 +545,22 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       bridge.exit();
     },
 
-    closeResult(toLobby) {
+    closeResult(stayInRoom) {
+      const roomId = get().room?.roomId;
       refs.replayEpoch += 1;
-      set({ result: null, matchId: '', phase: 'lobby', selected: [] });
-      if (toLobby) {
-        const s = get();
-        if (s.room) set({ phase: 'room' });
-        refs.session?.listRooms();
+      set({
+        result: null,
+        matchId: '',
+        phase: stayInRoom && roomId ? 'room' : 'lobby',
+        selected: [],
+        matchChat: [],
+        chatOpen: false,
+        ...(stayInRoom && roomId ? {} : { room: null, roomChat: [] }),
+      });
+      if (!stayInRoom && roomId) {
+        refs.session?.leaveRoom(roomId);
       }
+      refs.session?.listRooms();
     },
 
     dismissNotice() {
