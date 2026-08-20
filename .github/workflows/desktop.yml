@@ -47,7 +47,7 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Build web (vite, env desktop)
+      - name: Build web + main (vite + esbuild, env desktop)
         working-directory: desktop
         run: |
           # dev = build production nhưng API dev: .env.production.local đè .env.production
@@ -57,6 +57,7 @@ jobs:
           echo "== VITE env dùng để build =="
           cat .env .env.production .env.production.local 2>/dev/null || true
           pnpm build:web
+          pnpm build:main
 
       - name: Đóng gói electron-builder (${{ matrix.platform }})
         working-directory: desktop
