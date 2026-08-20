@@ -1697,6 +1697,8 @@
     "giftListTitle": "GIFT LIST",
     "giftListSubtitle": "RANDOM • LUCKY SPIN",
     "giftListEmpty": "No random rewards on this wheel",
+    "oddsTitle": "Outcome rates",
+    "oddsNote": "Odds apply to each spin.",
     "kenRandomTitle": "KEN RANDOM",
     "vipRandomTitle": "VIP RANDOM",
     "kenRange": "{{min}} – {{max}} KEN",
@@ -1764,6 +1766,8 @@
       "subtitle": "EGG SMASH",
       "empty": "No prizes yet.",
       "vipDaysLabel": "{{days}} days of VIP",
+      "missRate": "No-win rate: {{percent}}",
+      "oddsNote": "Odds apply to each egg smash.",
       "section": {
         "ken": "KEN",
         "vip_days": "VIP DAYS",

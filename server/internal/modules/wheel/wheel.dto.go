@@ -100,10 +100,11 @@ type WheelListResponse struct {
 }
 
 type PlayerOptionView struct {
-	Label     string `json:"label"`
-	VipTypeID *int16 `json:"vipTypeId,omitempty"`
-	VipDays   *int   `json:"vipDays,omitempty"`
-	KenAmount *int   `json:"kenAmount,omitempty"`
+	Label     string  `json:"label"`
+	VipTypeID *int16  `json:"vipTypeId,omitempty"`
+	VipDays   *int    `json:"vipDays,omitempty"`
+	KenAmount *int    `json:"kenAmount,omitempty"`
+	Percent   float64 `json:"percent"`
 }
 
 type PlayerSegmentView struct {
@@ -116,6 +117,7 @@ type PlayerSegmentView struct {
 	VipDays   *int                    `json:"vipDays,omitempty"`
 	VipTypeID *int16                  `json:"vipTypeId,omitempty"`
 	SortOrder int                     `json:"sortOrder"`
+	Percent   float64                 `json:"percent"`
 	Options   []PlayerOptionView      `json:"options,omitempty"`
 }
 

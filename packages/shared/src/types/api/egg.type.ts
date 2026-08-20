@@ -41,6 +41,7 @@ export interface EggGiftReward {
   kenAmount?: number;
   vipDays?: number;
   isSuperLucky: boolean;
+  percent?: number;
 }
 
 export interface EggGiftSection {
@@ -50,6 +51,7 @@ export interface EggGiftSection {
 
 export interface EggGiftListResult {
   items: EggGiftSection[];
+  missPercent?: number;
 }
 
 export interface EggDrawResult {

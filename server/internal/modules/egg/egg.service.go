@@ -149,31 +149,57 @@ func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
 	}
 	rewardsByCat := map[uuid.UUID][]models.EggReward{}
 	for _, rw := range rewards {
-		if !rw.IsActive {
+		if !rw.IsActive || rw.Weight <= 0 {
 			continue
 		}
 		rewardsByCat[rw.CategoryID] = append(rewardsByCat[rw.CategoryID], rw)
 	}
+
+	totalCatWeight := 0.0
+	for _, c := range cats {
+		if c.IsActive && c.Weight > 0 {
+			totalCatWeight += c.Weight
+		}
+	}
+
 	byType := map[models.EggCategoryType][]GiftRewardView{}
 	typeOrder := make([]models.EggCategoryType, 0, len(activeCats))
-	seen := map[string]bool{}
+	seenIndex := map[string]int{}
+	seenType := map[string]models.EggCategoryType{}
+	winPercent := 0.0
 	for _, c := range activeCats {
 		if _, ok := byType[c.Type]; !ok {
 			typeOrder = append(typeOrder, c.Type)
 			byType[c.Type] = []GiftRewardView{}
 		}
+		catShare := 0.0
+		if totalCatWeight > 0 && c.Weight > 0 {
+			catShare = c.Weight / totalCatWeight * 100
+		}
+		rewardWeightTotal := 0.0
 		for _, rw := range rewardsByCat[c.ID] {
+			rewardWeightTotal += rw.Weight
+		}
+		for _, rw := range rewardsByCat[c.ID] {
+			percent := 0.0
+			if rewardWeightTotal > 0 {
+				percent = catShare * rw.Weight / rewardWeightTotal
+			}
+			winPercent += percent
 			key := giftIdentity(c.Type, rw)
-			if seen[key] {
+			if idx, ok := seenIndex[key]; ok {
+				byType[seenType[key]][idx].Percent += percent
 				continue
 			}
-			seen[key] = true
+			seenIndex[key] = len(byType[c.Type])
+			seenType[key] = c.Type
 			byType[c.Type] = append(byType[c.Type], GiftRewardView{
 				Label:        rw.Label,
 				VipTypeID:    rw.VipTypeID,
 				KenAmount:    rw.KenAmount,
 				VipDays:      rw.VipDays,
 				IsSuperLucky: rw.IsSuperLucky,
+				Percent:      percent,
 			})
 		}
 	}
@@ -184,7 +210,14 @@ func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
 		}
 		items = append(items, GiftSectionView{Type: catType, Rewards: byType[catType]})
 	}
-	return &GiftListResponse{Items: items}, nil
+	missPercent := 0.0
+	if totalCatWeight > 0 {
+		missPercent = 100 - winPercent
+		if missPercent < 1e-6 {
+			missPercent = 0
+		}
+	}
+	return &GiftListResponse{Items: items, MissPercent: missPercent}, nil
 }
 
 func (s *Service) ListAllPacks() (*PackListResponse, error) {

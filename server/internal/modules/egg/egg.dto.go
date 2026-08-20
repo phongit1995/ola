@@ -87,11 +87,12 @@ type PackListResponse struct {
 }
 
 type GiftRewardView struct {
-	Label        string `json:"label"`
-	VipTypeID    *int16 `json:"vipTypeId,omitempty"`
-	KenAmount    *int   `json:"kenAmount,omitempty"`
-	VipDays      *int   `json:"vipDays,omitempty"`
-	IsSuperLucky bool   `json:"isSuperLucky"`
+	Label        string  `json:"label"`
+	VipTypeID    *int16  `json:"vipTypeId,omitempty"`
+	KenAmount    *int    `json:"kenAmount,omitempty"`
+	VipDays      *int    `json:"vipDays,omitempty"`
+	IsSuperLucky bool    `json:"isSuperLucky"`
+	Percent      float64 `json:"percent"`
 }
 
 type GiftSectionView struct {
@@ -100,7 +101,8 @@ type GiftSectionView struct {
 }
 
 type GiftListResponse struct {
-	Items []GiftSectionView `json:"items"`
+	Items       []GiftSectionView `json:"items"`
+	MissPercent float64           `json:"missPercent"`
 }
 
 type OpenResult struct {

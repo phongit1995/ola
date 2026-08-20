@@ -5030,6 +5030,98 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/forgot-password/confirm": {
+            "post": {
+                "description": "Verify the 6-digit reset code and set a new password. All sessions of the account are revoked.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Confirm password reset",
+                "parameters": [
+                    {
+                        "description": "Forgot Password Confirm Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ForgotPasswordConfirmRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ForgotPasswordConfirmSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/forgot-password/send": {
+            "post": {
+                "description": "Send a 6-digit reset code to the account's verified email. Always returns a generic message so account existence is not revealed.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Request a password reset code",
+                "parameters": [
+                    {
+                        "description": "Forgot Password Send Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ForgotPasswordSendRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ForgotPasswordSendSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticate user and get access token",
@@ -15863,6 +15955,115 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_auth.ForgotPasswordConfirmRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "newPassword",
+                "username"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "123456"
+                },
+                "newPassword": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "newpassword123"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 2,
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordConfirmResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Password has been reset. Please login with your new password."
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordConfirmSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_auth.ForgotPasswordConfirmResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordSendRequest": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 2,
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordSendResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "If the account has a verified email, a reset code has been sent."
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordSendSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_auth.ForgotPasswordSendResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_auth.LoginRequest": {
             "type": "object",
             "required": [
@@ -16825,6 +17026,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/internal_modules_egg.GiftSectionView"
                     }
+                },
+                "missPercent": {
+                    "type": "number"
                 }
             }
         },
@@ -16839,6 +17043,9 @@ const docTemplate = `{
                 },
                 "label": {
                     "type": "string"
+                },
+                "percent": {
+                    "type": "number"
                 },
                 "vipDays": {
                     "type": "integer"
@@ -21409,6 +21616,9 @@ const docTemplate = `{
                 "label": {
                     "type": "string"
                 },
+                "percent": {
+                    "type": "number"
+                },
                 "vipDays": {
                     "type": "integer"
                 },
@@ -21443,6 +21653,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/internal_modules_wheel.PlayerOptionView"
                     }
+                },
+                "percent": {
+                    "type": "number"
                 },
                 "sortOrder": {
                     "type": "integer"

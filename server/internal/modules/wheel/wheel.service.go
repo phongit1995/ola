@@ -119,7 +119,19 @@ func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) 
 		return nil, err
 	}
 	active := activeSortedSegments(segs)
-	playableOptions := playableOptionsBySegment(options)
+	totalSegWeight := 0.0
+	for _, seg := range active {
+		if seg.Weight > 0 {
+			totalSegWeight += seg.Weight
+		}
+	}
+	segPercents := map[uuid.UUID]float64{}
+	for _, seg := range active {
+		if totalSegWeight > 0 && seg.Weight > 0 {
+			segPercents[seg.ID] = seg.Weight / totalSegWeight * 100
+		}
+	}
+	playableOptions := playableOptionsBySegment(options, segPercents)
 	views := make([]PlayerSegmentView, len(active))
 	for i, seg := range active {
 		views[i] = PlayerSegmentView{
@@ -132,6 +144,7 @@ func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) 
 			VipDays:   seg.VipDays,
 			VipTypeID: seg.VipTypeID,
 			SortOrder: seg.SortOrder,
+			Percent:   segPercents[seg.ID],
 			Options:   playableOptions[seg.ID],
 		}
 	}
@@ -584,20 +597,35 @@ func toSpinView(sp models.WheelSpin) SpinView {
 	}
 }
 
-func playableOptionsBySegment(options []models.WheelSegmentOption) map[uuid.UUID][]PlayerOptionView {
-	grouped := map[uuid.UUID][]PlayerOptionView{}
+func playableOptionsBySegment(options []models.WheelSegmentOption, segPercents map[uuid.UUID]float64) map[uuid.UUID][]PlayerOptionView {
+	grouped := map[uuid.UUID][]models.WheelSegmentOption{}
 	for _, opt := range options {
 		if !opt.IsActive || opt.Weight <= 0 {
 			continue
 		}
-		grouped[opt.SegmentID] = append(grouped[opt.SegmentID], PlayerOptionView{
-			Label:     opt.Label,
-			VipTypeID: opt.VipTypeID,
-			VipDays:   opt.VipDays,
-			KenAmount: opt.KenAmount,
-		})
+		grouped[opt.SegmentID] = append(grouped[opt.SegmentID], opt)
 	}
-	return grouped
+	views := map[uuid.UUID][]PlayerOptionView{}
+	for segID, segOptions := range grouped {
+		optWeightTotal := 0.0
+		for _, opt := range segOptions {
+			optWeightTotal += opt.Weight
+		}
+		for _, opt := range segOptions {
+			percent := 0.0
+			if optWeightTotal > 0 {
+				percent = segPercents[segID] * opt.Weight / optWeightTotal
+			}
+			views[segID] = append(views[segID], PlayerOptionView{
+				Label:     opt.Label,
+				VipTypeID: opt.VipTypeID,
+				VipDays:   opt.VipDays,
+				KenAmount: opt.KenAmount,
+				Percent:   percent,
+			})
+		}
+	}
+	return views
 }
 
 func activeSortedSegments(segs []models.WheelSegment) []models.WheelSegment {

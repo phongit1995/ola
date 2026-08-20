@@ -1697,6 +1697,8 @@
     "giftListTitle": "DANH SÁCH QUÀ",
     "giftListSubtitle": "RANDOM • VÒNG QUAY MAY MẮN",
     "giftListEmpty": "Vòng quay chưa có phần quà random",
+    "oddsTitle": "Tỷ lệ kết quả",
+    "oddsNote": "Tỷ lệ áp dụng cho mỗi lượt quay.",
     "kenRandomTitle": "KEN RANDOM",
     "vipRandomTitle": "VIP RANDOM",
     "kenRange": "{{min}} – {{max}} KEN",
@@ -1764,6 +1766,8 @@
       "subtitle": "ĐẬP TRỨNG",
       "empty": "Chưa có quà nào.",
       "vipDaysLabel": "{{days}} ngày VIP",
+      "missRate": "Tỷ lệ không trúng: {{percent}}",
+      "oddsNote": "Tỷ lệ áp dụng cho mỗi lượt đập trứng.",
       "section": {
         "ken": "KEN",
         "vip_days": "NGÀY VIP",
