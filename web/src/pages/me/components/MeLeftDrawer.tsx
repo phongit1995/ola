@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import { DEFAULT_AVATAR_COLOR } from '@lib';
-import personalIcon from '@/assets/icons/me/ic_indicate_personal.png';
-import boxIcon from '@/assets/icons/me/ic_indicate_box.png';
-import likeIcon from '@/assets/icons/me/ic_section_like.png';
-import visitorIcon from '@/assets/icons/me/ic_action_tab_follower.png';
-import clanIcon from '@/assets/icons/clan/ic_menu_clan.png';
+import personalIcon from '@/assets/icons/me/ic_drawer_personal.png';
+import marriageIcon from '@/assets/icons/me/header/ic_header_marriage.png';
+import favoriteIcon from '@/assets/icons/me/header/ic_header_favorite.png';
+import visitorsIcon from '@/assets/icons/me/header/ic_header_visitors.png';
+import clanIcon from '@/assets/icons/me/header/ic_header_clan.png';
 // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
 // import eggIcon from '@/assets/icons/me/ic_indicate_broken_egg.png';
 // import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
@@ -29,7 +29,8 @@ interface DrawerItem {
   key: string;
   icon: string;
   label: string;
-  iconClassName?: string;
+  opticalSize?: number;
+  opticalOffsetY?: number;
 }
 
 export function MeLeftDrawer({
@@ -62,23 +63,26 @@ export function MeLeftDrawer({
     { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal') },
     {
       key: 'marriage',
-      icon: boxIcon,
+      icon: marriageIcon,
       label: t('me.drawerMarriage'),
-      iconClassName: 'opacity-50',
     },
     {
       key: 'likes',
-      icon: likeIcon,
+      icon: favoriteIcon,
       label: t('me.drawerLikes'),
-      iconClassName: 'opacity-50',
     },
     {
       key: 'visitors',
-      icon: visitorIcon,
+      icon: visitorsIcon,
       label: t('me.tabVisitors'),
-      iconClassName: 'brightness-0 opacity-60',
     },
-    { key: 'clan', icon: clanIcon, label: t('me.drawerClan') },
+    {
+      key: 'clan',
+      icon: clanIcon,
+      label: t('me.drawerClan'),
+      opticalSize: 28,
+      opticalOffsetY: 1,
+    },
     // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
     // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg') },
     // { key: 'android', icon: androidIcon, label: '#Android' },
@@ -139,9 +143,12 @@ export function MeLeftDrawer({
                 <img
                   src={item.icon}
                   alt=""
-                  className={`h-6 w-6 object-contain ${
-                    item.iconClassName ?? ''
-                  }`}
+                  style={{
+                    width: item.opticalSize ?? 24,
+                    height: item.opticalSize ?? 24,
+                    transform: `translateY(${item.opticalOffsetY ?? 0}px)`,
+                  }}
+                  className="object-contain opacity-[0.26]"
                 />
               </span>
               <span className="truncate text-base text-black/87">

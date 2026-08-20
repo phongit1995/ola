@@ -19,20 +19,101 @@ const (
 	roomLockKey       = "GAME:%s:ROOMLOCK:%s"
 )
 
+type RoomGuest struct {
+	ID      string  `json:"id"`
+	Name    string  `json:"name"`
+	VipType *string `json:"vipType,omitempty"`
+	Ready   bool    `json:"ready"`
+}
+
 type Room struct {
-	ID           string  `json:"id"`
-	GameID       string  `json:"gameId"`
-	OwnerID      string  `json:"ownerId"`
-	OwnerName    string  `json:"ownerName"`
-	OwnerVipType *string `json:"ownerVipType,omitempty"`
-	GuestID      string  `json:"guestId,omitempty"`
-	GuestName    string  `json:"guestName,omitempty"`
-	GuestVipType *string `json:"guestVipType,omitempty"`
-	GuestReady   bool    `json:"guestReady"`
-	Bet          int     `json:"bet"`
-	Password     string  `json:"password"`
-	CreatedAt    int64   `json:"createdAt"`
-	UpdatedAt    int64   `json:"updatedAt"`
+	ID           string      `json:"id"`
+	GameID       string      `json:"gameId"`
+	OwnerID      string      `json:"ownerId"`
+	OwnerName    string      `json:"ownerName"`
+	OwnerVipType *string     `json:"ownerVipType,omitempty"`
+	GuestID      string      `json:"guestId,omitempty"`
+	GuestName    string      `json:"guestName,omitempty"`
+	GuestVipType *string     `json:"guestVipType,omitempty"`
+	GuestReady   bool        `json:"guestReady"`
+	MaxPlayers   int         `json:"maxPlayers,omitempty"`
+	Guests       []RoomGuest `json:"guests,omitempty"`
+	Bet          int         `json:"bet"`
+	Password     string      `json:"password"`
+	CreatedAt    int64       `json:"createdAt"`
+	UpdatedAt    int64       `json:"updatedAt"`
+}
+
+// normalize migrates legacy single-guest rooms into the Guests slice and keeps
+// the legacy fields mirroring the first guest for older snapshots.
+func (r *Room) normalize() {
+	if len(r.Guests) == 0 && r.GuestID != "" {
+		r.Guests = []RoomGuest{{ID: r.GuestID, Name: r.GuestName, VipType: r.GuestVipType, Ready: r.GuestReady}}
+	}
+	r.syncLegacyGuest()
+}
+
+func (r *Room) syncLegacyGuest() {
+	if len(r.Guests) > 0 {
+		g := r.Guests[0]
+		r.GuestID, r.GuestName, r.GuestVipType, r.GuestReady = g.ID, g.Name, g.VipType, g.Ready
+		return
+	}
+	r.GuestID, r.GuestName, r.GuestVipType, r.GuestReady = "", "", nil, false
+}
+
+func (r Room) capacity() int {
+	if r.MaxPlayers >= 2 {
+		return r.MaxPlayers
+	}
+	return 2
+}
+
+// guestList reads guests with legacy single-guest fallback so rooms saved by
+// older code (or built directly in tests) behave identically.
+func (r Room) guestList() []RoomGuest {
+	if len(r.Guests) == 0 && r.GuestID != "" {
+		return []RoomGuest{{ID: r.GuestID, Name: r.GuestName, VipType: r.GuestVipType, Ready: r.GuestReady}}
+	}
+	return r.Guests
+}
+
+func (r Room) playerCount() int {
+	return 1 + len(r.guestList())
+}
+
+func (r Room) memberIDs() []string {
+	guests := r.guestList()
+	ids := make([]string, 0, 1+len(guests))
+	ids = append(ids, r.OwnerID)
+	for _, g := range guests {
+		ids = append(ids, g.ID)
+	}
+	return ids
+}
+
+func (r Room) guestIndex(userID string) int {
+	for i, g := range r.guestList() {
+		if g.ID == userID {
+			return i
+		}
+	}
+	return -1
+}
+
+func (r *Room) addGuest(g RoomGuest) {
+	r.normalize()
+	r.Guests = append(append([]RoomGuest(nil), r.Guests...), g)
+	r.syncLegacyGuest()
+}
+
+func (r Room) allGuestsReady() bool {
+	for _, g := range r.guestList() {
+		if !g.Ready {
+			return false
+		}
+	}
+	return true
 }
 
 type userRoomRef struct {
@@ -64,6 +145,7 @@ func (s *RoomStore) Save(room Room) error {
 		room.CreatedAt = now
 	}
 	room.UpdatedAt = now
+	room.normalize()
 	roomData, err := json.Marshal(room)
 	if err != nil {
 		return fmt.Errorf("marshal room: %w", err)
@@ -78,11 +160,12 @@ func (s *RoomStore) Save(room Room) error {
 	pipe := s.cache.GetClient().TxPipeline()
 	roomsKey := fmt.Sprintf(roomsHashKey, room.GameID)
 	pipe.HSet(ctx, roomsKey, room.ID, roomData)
-	pipe.Set(ctx, fmt.Sprintf(userRoomKey, room.GameID, room.OwnerID), refData, roomTTL)
-	pipe.Del(ctx, fmt.Sprintf(legacyUserRoomKey, room.OwnerID))
-	if room.GuestID != "" {
-		pipe.Set(ctx, fmt.Sprintf(userRoomKey, room.GameID, room.GuestID), refData, roomTTL)
-		pipe.Del(ctx, fmt.Sprintf(legacyUserRoomKey, room.GuestID))
+	for _, memberID := range room.memberIDs() {
+		if memberID == "" {
+			continue
+		}
+		pipe.Set(ctx, fmt.Sprintf(userRoomKey, room.GameID, memberID), refData, roomTTL)
+		pipe.Del(ctx, fmt.Sprintf(legacyUserRoomKey, memberID))
 	}
 	pipe.Expire(ctx, roomsKey, roomTTL)
 	if _, err := pipe.Exec(ctx); err != nil {
@@ -99,8 +182,9 @@ func (s *RoomStore) Get(gameID, roomID string) (Room, bool) {
 	if err != nil || json.Unmarshal(data, &room) != nil {
 		return Room{}, false
 	}
+	room.normalize()
 	if roomLastActivity(room) < time.Now().Add(-roomTTL).UnixMilli() {
-		_ = s.Delete(gameID, roomID, room.OwnerID, room.GuestID)
+		_ = s.Delete(gameID, roomID, room.memberIDs()...)
 		return Room{}, false
 	}
 	return room, true
@@ -177,8 +261,9 @@ func (s *RoomStore) List(gameID string) ([]Room, error) {
 		if json.Unmarshal([]byte(raw), &room) != nil {
 			continue
 		}
+		room.normalize()
 		if roomLastActivity(room) < cutoff {
-			_ = s.Delete(gameID, id, room.OwnerID, room.GuestID)
+			_ = s.Delete(gameID, id, room.memberIDs()...)
 			continue
 		}
 		rooms = append(rooms, room)

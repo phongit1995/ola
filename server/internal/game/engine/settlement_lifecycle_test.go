@@ -605,7 +605,7 @@ func TestCreateRoomRejectsBetWhosePayoutWouldOverflowPostgresInteger(t *testing.
 	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
 	owner := protocol.PlayerInfo{ID: "max-bet-owner", Name: "Owner"}
 
-	gameEngine.CreateRoom(persistenceTestGameID, owner, MaxBet+1, "")
+	gameEngine.CreateRoom(persistenceTestGameID, owner, MaxBet+1, "", 0)
 
 	requireErrorCode(t, emitter, owner.ID, "INVALID_BET")
 }
@@ -615,7 +615,7 @@ func TestPaidRoomFailsClosedWithoutSettlementService(t *testing.T) {
 	gameEngine, rooms, emitter := newPersistenceTestEngine(activeStore)
 	owner := registeredTestPlayer("paid-owner")
 
-	gameEngine.CreateRoom(persistenceTestGameID, owner, 10, "")
+	gameEngine.CreateRoom(persistenceTestGameID, owner, 10, "", 0)
 
 	requireErrorCode(t, emitter, owner.ID, "BET_NOT_ALLOWED")
 	if len(rooms.rooms) != 0 {

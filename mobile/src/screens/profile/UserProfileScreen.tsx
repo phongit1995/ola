@@ -200,7 +200,7 @@ export function UserProfileScreen({
         >
           <Image
             source={composeIcon}
-            style={{ width: 24, height: 24, tintColor: '#fff' }}
+            style={{ width: 28, height: 28, tintColor: '#fff' }}
             resizeMode="contain"
           />
         </Pressable>

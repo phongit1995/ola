@@ -61,7 +61,7 @@ function ManageRow({
         </Text>
         {editable && (
           <View className="rounded p-1" style={{ backgroundColor: 'rgba(0,0,0,0.38)' }}>
-            <Image source={editIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
+            <Image source={editIcon} style={{ width: 16, height: 16, tintColor: '#ffffff' }} resizeMode="contain" />
           </View>
         )}
       </View>

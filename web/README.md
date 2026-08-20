@@ -49,6 +49,10 @@ web/
         └── types/          # type dùng chung
 ```
 
+## Tài liệu giao diện
+
+- [Style guide icon Me](../docs/me-icon-style-guide.md)
+
 ## Quy ước
 
 - **Import alias:** ngoài `@/` → `src/`, mỗi module trong `shared/` có alias ngắn riêng — khai báo đồng bộ ở `tsconfig.app.json` và `vite.config.ts`:

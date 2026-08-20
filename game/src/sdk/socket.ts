@@ -16,6 +16,7 @@ import {
   type MatchFoundData,
   type MatchOverData,
   type OpponentDisconnectedData,
+  type OpponentReconnectedData,
   type GameReactionType,
   type ReactionData,
   type RoomListData,
@@ -41,7 +42,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   sendRoomChat(roomId: string, text: string): void;
   sendReaction(matchId: string, type: GameReactionType): void;
   forfeit(matchId: string, leaveAfter?: boolean): void;
-  createRoom(bet: number, password?: string): void;
+  createRoom(bet: number, password?: string, maxPlayers?: number): void;
   joinRoom(roomId: string, password?: string): void;
   leaveRoom(roomId?: string): void;
   kickRoomMember(roomId: string, userId: string): void;
@@ -67,7 +68,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onMatchOver(handler: (data: MatchOverData<TState>) => void): () => void;
   onError(handler: (data: ErrorData) => void): () => void;
   onOpponentDisconnected(handler: (data: OpponentDisconnectedData) => void): () => void;
-  onOpponentReconnected(handler: () => void): () => void;
+  onOpponentReconnected(handler: (data?: OpponentReconnectedData) => void): () => void;
   onLeaderboard(handler: (data: LeaderboardData) => void): () => void;
   onHistory(handler: (data: MatchHistoryData) => void): () => void;
   onConnectionChange(handler: (connected: boolean) => void): () => void;
@@ -135,7 +136,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     sendRoomChat: (roomId, text) => send(C2S.ChatSend, { roomId, text }),
     sendReaction: (matchId, type) => send(C2S.ReactionSend, { matchId, type }),
     forfeit: (matchId, leaveAfter = false) => send(C2S.Forfeit, { matchId, leaveAfter }),
-    createRoom: (bet, password) => send(C2S.RoomCreate, { bet, password }),
+    createRoom: (bet, password, maxPlayers) => send(C2S.RoomCreate, { bet, password, ...(maxPlayers ? { maxPlayers } : {}) }),
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
     leaveRoom: (roomId) => send(C2S.RoomLeave, roomId ? { roomId } : undefined),
     kickRoomMember: (roomId, userId) => send(C2S.RoomKick, { roomId, userId }),

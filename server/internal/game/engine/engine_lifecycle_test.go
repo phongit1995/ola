@@ -129,7 +129,7 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
 				gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
-				gameEngine.CreateRoom(test.gameID, lifecyclePlayer("owner"), test.bet, test.password)
+				gameEngine.CreateRoom(test.gameID, lifecyclePlayer("owner"), test.bet, test.password, 0)
 				requireErrorCode(t, emitter, "owner", test.code)
 				if len(rooms.rooms) != 0 {
 					t.Fatal("invalid request created a room")
@@ -141,14 +141,14 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 	t.Run("store failure", func(t *testing.T) {
 		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		rooms.failSave = true
-		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "")
+		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "", 0)
 		requireErrorCode(t, emitter, "owner", "ROOM_CREATE_FAILED")
 	})
 
 	t.Run("success leaves queue and is idempotent", func(t *testing.T) {
 		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		gameEngine.queues[persistenceTestGameID] = []protocol.PlayerInfo{lifecyclePlayer("owner")}
-		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "secret")
+		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "secret", 0)
 		room := onlyRoom(t, rooms)
 		if room.Bet != 10 || room.Password != "secret" || len(gameEngine.queues[persistenceTestGameID]) != 0 {
 			t.Fatalf("unexpected created room: %+v", room)
@@ -159,7 +159,7 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 		}
 		requireRoomUpsert(t, emitter, room.ID, 1)
 
-		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 999, "different")
+		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 999, "different", 0)
 		if repeated := onlyRoom(t, rooms); repeated.ID != room.ID || repeated.Bet != room.Bet {
 			t.Fatalf("idempotent create replaced the room: %+v", repeated)
 		}

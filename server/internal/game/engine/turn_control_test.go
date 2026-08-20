@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"slices"
 	"testing"
 	"time"
 
@@ -253,7 +254,7 @@ func TestTimeoutSkipperSkipsTurnInsteadOfLosing(t *testing.T) {
 		}
 	}
 	snapshot, ok := activeStore.get(match.GameID, match.ID)
-	if !ok || snapshot.TurnIndex != nextIdx || snapshot.TimeoutRuns != [2]int{1, 0} {
+	if !ok || snapshot.TurnIndex != nextIdx || !slices.Equal(snapshot.TimeoutRuns, []int{1, 0}) {
 		t.Fatalf("skipped timeout was not persisted: %+v", snapshot)
 	}
 }
@@ -272,7 +273,7 @@ func TestThirdConsecutiveTimeoutBySamePlayerLosesMatch(t *testing.T) {
 			t.Fatalf("match finished after %d alternating timeouts", i+1)
 		}
 	}
-	if match.timeoutRuns != [2]int{2, 2} {
+	if !slices.Equal(match.timeoutRuns, []int{2, 2}) {
 		t.Fatalf("timeout runs = %v, want two per player", match.timeoutRuns)
 	}
 
@@ -308,7 +309,7 @@ func TestValidMoveResetsTimeoutRunCounter(t *testing.T) {
 		t.Fatalf("timeout runs = %v, want reset for player %d", match.timeoutRuns, currentIdx)
 	}
 	snapshot, ok := activeStore.get(match.GameID, match.ID)
-	if !ok || snapshot.TimeoutRuns != [2]int{0, 0} {
+	if !ok || !slices.Equal(snapshot.TimeoutRuns, []int{0, 0}) {
 		t.Fatalf("reset timeout runs were not persisted: %+v", snapshot)
 	}
 
@@ -331,12 +332,12 @@ func TestMoveRollbackRestoresTimeoutRuns(t *testing.T) {
 	currentID := match.players[currentIdx].ID
 
 	match.mu.Lock()
-	match.timeoutRuns = [2]int{2, 1}
+	match.timeoutRuns = []int{2, 1}
 	match.mu.Unlock()
 	activeStore.failSave = true
 
 	gameEngine.Move(match.GameID, currentID, match.ID, json.RawMessage(`{"keep":false}`))
-	if match.timeoutRuns != [2]int{2, 1} || match.turnIdx != currentIdx {
+	if !slices.Equal(match.timeoutRuns, []int{2, 1}) || match.turnIdx != currentIdx {
 		t.Fatalf("failed move did not roll back timeout runs: %v", match.timeoutRuns)
 	}
 	requireErrorCode(t, emitter, currentID, "STATE_SAVE_FAILED")
@@ -350,7 +351,7 @@ func TestTimeoutRunsSnapshotRoundtrip(t *testing.T) {
 
 	fireTurnTimeout(firstEngine, match)
 	snapshot, ok := activeStore.get(match.GameID, matchID)
-	if !ok || snapshot.TimeoutRuns != [2]int{1, 0} {
+	if !ok || !slices.Equal(snapshot.TimeoutRuns, []int{1, 0}) {
 		t.Fatalf("timeout runs were not persisted: %+v", snapshot)
 	}
 	stopEngineTimers(firstEngine)
@@ -361,7 +362,7 @@ func TestTimeoutRunsSnapshotRoundtrip(t *testing.T) {
 	if restored == nil {
 		t.Fatal("active match was not restored")
 	}
-	if restored.timeoutRuns != [2]int{1, 0} {
+	if !slices.Equal(restored.timeoutRuns, []int{1, 0}) {
 		t.Fatalf("restored timeout runs = %v, want [1 0]", restored.timeoutRuns)
 	}
 }

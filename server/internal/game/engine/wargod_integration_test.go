@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -49,6 +50,82 @@ func requireWarGodFighters(t *testing.T, fighters [2]wargod.Fighter) {
 			fighter.Armor < 0 || fighter.Armor > 30 || fighter.Fury < 0 || fighter.Fury > 100 {
 			t.Fatalf("fighter %d out of range: %+v", i, fighter)
 		}
+	}
+}
+
+func TestWarGodPlayingRoomRemainsInRoomList(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, rooms, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+
+	room := Room{
+		ID:         "wg-listed-room",
+		GameID:     warGodGameID,
+		OwnerID:    "wg-room-owner",
+		OwnerName:  "Room Owner",
+		GuestID:    "wg-room-guest",
+		GuestName:  "Room Guest",
+		GuestReady: true,
+		CreatedAt:  time.Now().UnixMilli(),
+	}
+	if err := rooms.Save(room); err != nil {
+		t.Fatal(err)
+	}
+
+	gameEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+	upsertEnvelope, ok := emitter.last("", protocol.S2CRoomUpsert)
+	if !ok {
+		t.Fatal("starting a War God room did not upsert its playing state")
+	}
+	upsert := upsertEnvelope.Data.(protocol.RoomUpsertData)
+	if upsert.Room.ID != room.ID || upsert.Room.Status != protocol.RoomStatusPlaying ||
+		!upsert.Room.Full || upsert.Room.Players != 2 {
+		t.Fatalf("unexpected playing room upsert: %+v", upsert.Room)
+	}
+	if emitter.count("", protocol.S2CRoomRemoved) != 0 {
+		t.Fatal("starting a War God room removed it from the lobby")
+	}
+
+	gameEngine.ListRooms(room.GameID, "viewer")
+	listEnvelope, ok := emitter.last("viewer", protocol.S2CRoomList)
+	if !ok {
+		t.Fatal("War God room list was not emitted")
+	}
+	listed := listEnvelope.Data.(protocol.RoomListData).Rooms
+	if len(listed) != 1 || listed[0].ID != room.ID || listed[0].Status != protocol.RoomStatusPlaying {
+		t.Fatalf("playing room missing from room list: %+v", listed)
+	}
+
+	match := gameEngine.matchForUser(room.GameID, room.OwnerID)
+	if match == nil {
+		t.Fatal("War God room match was not started")
+	}
+	emitter.clear()
+	gameEngine.Forfeit(room.GameID, room.GuestID, match.ID)
+	waitingEnvelope, ok := emitter.last("", protocol.S2CRoomUpsert)
+	if !ok {
+		t.Fatal("finished War God room did not return to the lobby")
+	}
+	waiting := waitingEnvelope.Data.(protocol.RoomUpsertData).Room
+	if waiting.ID != room.ID || waiting.Status == protocol.RoomStatusPlaying {
+		t.Fatalf("finished room retained playing state: %+v", waiting)
+	}
+
+	gameEngine.SetRoomReady(room.GameID, room.GuestID, room.ID, true)
+	gameEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+	match = gameEngine.matchForUser(room.GameID, room.OwnerID)
+	if match == nil {
+		t.Fatal("War God room did not start its next round")
+	}
+	emitter.clear()
+	gameEngine.ForfeitAndLeave(room.GameID, room.OwnerID, match.ID)
+	requireRoomRemoved(t, emitter, room.ID)
+
+	emitter.clear()
+	gameEngine.ListRooms(room.GameID, "viewer")
+	listEnvelope, ok = emitter.last("viewer", protocol.S2CRoomList)
+	if !ok || len(listEnvelope.Data.(protocol.RoomListData).Rooms) != 0 {
+		t.Fatalf("owner-left playing room remained listed: %#v", listEnvelope.Data)
 	}
 }
 
@@ -284,7 +361,7 @@ func TestWarGodTimeoutSkipsTurnAndThirdConsecutiveTimeoutLoses(t *testing.T) {
 			t.Fatalf("match finished after %d alternating timeouts", i+2)
 		}
 	}
-	if match.timeoutRuns != [2]int{2, 2} {
+	if !slices.Equal(match.timeoutRuns, []int{2, 2}) {
 		t.Fatalf("timeout runs = %v, want two per player", match.timeoutRuns)
 	}
 

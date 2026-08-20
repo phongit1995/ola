@@ -500,7 +500,7 @@ export function ClanPage({
                     <img
                       src={cameraIcon}
                       alt=""
-                      className="h-4 w-4 object-contain"
+                      className="h-4 w-4 object-contain brightness-0 invert"
                     />
                   </button>
                 )}
@@ -523,7 +523,7 @@ export function ClanPage({
                         <img
                           src={cameraIcon}
                           alt=""
-                          className="h-3.5 w-3.5 object-contain"
+                          className="h-3.5 w-3.5 object-contain brightness-0 invert"
                         />
                       </button>
                     )}

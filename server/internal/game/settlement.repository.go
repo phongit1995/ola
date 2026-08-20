@@ -64,8 +64,9 @@ func NewSettlementRepository(
 		users:  users,
 		logger: logger.Named("[game-settle]"),
 		commissionPercents: map[string]int{
-			"caro":    cfg.CaroCommissionPercent,
-			"war-god": cfg.WarGodCommissionPercent,
+			"caro":     cfg.CaroCommissionPercent,
+			"war-god":  cfg.WarGodCommissionPercent,
+			"thirteen": cfg.ThirteenCommissionPercent,
 		},
 	}
 }
@@ -83,6 +84,18 @@ func (s *SettlementRepository) WinnerAmounts(gameID string, bet int) (payout, ne
 	return winnerAmounts(bet, s.commissionPercents[gameID])
 }
 
+func (s *SettlementRepository) winnerAmountsFor(gameID string, bet, playerCount int) (payout, net int) {
+	if bet <= 0 {
+		return 0, 0
+	}
+	if playerCount <= 2 {
+		return s.WinnerAmounts(gameID, bet)
+	}
+	commission := bet * s.commissionPercents[gameID] / 100
+	payout = bet*playerCount - commission
+	return payout, payout - bet
+}
+
 func parsePlayers(a, b string) (uuid.UUID, uuid.UUID, error) {
 	p0, err := uuid.Parse(a)
 	if err != nil {
@@ -96,6 +109,26 @@ func parsePlayers(a, b string) (uuid.UUID, uuid.UUID, error) {
 		return uuid.Nil, uuid.Nil, invalidMatchError("players must be different")
 	}
 	return p0, p1, nil
+}
+
+func parseAllPlayers(ids []string) ([]uuid.UUID, error) {
+	if len(ids) < 2 || len(ids) > 8 {
+		return nil, invalidMatchError("invalid player count")
+	}
+	parsed := make([]uuid.UUID, 0, len(ids))
+	seen := make(map[uuid.UUID]struct{}, len(ids))
+	for _, id := range ids {
+		u, err := uuid.Parse(id)
+		if err != nil {
+			return nil, invalidMatchError("invalid player id")
+		}
+		if _, exists := seen[u]; exists {
+			return nil, invalidMatchError("players must be different")
+		}
+		seen[u] = struct{}{}
+		parsed = append(parsed, u)
+	}
+	return parsed, nil
 }
 
 func parseMatchID(matchID string) (uuid.UUID, error) {
@@ -179,8 +212,12 @@ func (s *SettlementRepository) EscrowStart(ctx context.Context, rec engine.Match
 	if err != nil {
 		return nil, err
 	}
+	allPlayers, err := parseAllPlayers(rec.AllPlayerIDs())
+	if err != nil {
+		return nil, err
+	}
 	if rec.Bet == 0 {
-		registered, err := s.registeredPlayers(ctx, p0, p1)
+		registered, err := s.registeredPlayers(ctx, allPlayers)
 		if err != nil {
 			return nil, err
 		}
@@ -189,7 +226,7 @@ func (s *SettlementRepository) EscrowStart(ctx context.Context, rec engine.Match
 		}
 	}
 
-	result, err := s.escrowStart(ctx, rec, p0, p1)
+	result, err := s.escrowStart(ctx, rec, p0, p1, allPlayers)
 	if err != nil {
 		return nil, err
 	}
@@ -200,6 +237,7 @@ func (s *SettlementRepository) escrowStart(
 	ctx context.Context,
 	rec engine.MatchRecord,
 	p0, p1 uuid.UUID,
+	allPlayers []uuid.UUID,
 ) (settlementResult, error) {
 	var result settlementResult
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -208,15 +246,16 @@ func (s *SettlementRepository) escrowStart(
 			escrowedAt = rec.StartedAt
 		}
 		row := models.GameMatch{
-			GameID:     rec.GameID,
-			MatchID:    rec.MatchID,
-			Player0ID:  p0,
-			Player1ID:  p1,
-			Status:     matchStatusPlaying,
-			Mode:       rec.Mode,
-			Bet:        rec.Bet,
-			StartedAt:  rec.StartedAt,
-			EscrowedAt: escrowedAt,
+			GameID:      rec.GameID,
+			MatchID:     rec.MatchID,
+			Player0ID:   p0,
+			Player1ID:   p1,
+			PlayerCount: len(allPlayers),
+			Status:      matchStatusPlaying,
+			Mode:        rec.Mode,
+			Bet:         rec.Bet,
+			StartedAt:   rec.StartedAt,
+			EscrowedAt:  escrowedAt,
 		}
 		res := tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "match_id"}},
@@ -234,22 +273,39 @@ func (s *SettlementRepository) escrowStart(
 			if err := verifyMatchRecord(existing, rec, p0, p1); err != nil {
 				return err
 			}
+			if rowPlayerCount(existing) != len(allPlayers) {
+				return errMatchConflict
+			}
 			result.gameID = existing.GameID
 			if existing.Bet > 0 {
-				result.userIDs = []uuid.UUID{existing.Player0ID, existing.Player1ID}
+				result.userIDs = allPlayers
 			}
 			return nil
+		}
+
+		if len(allPlayers) > 2 {
+			seats := make([]models.GameMatchPlayer, 0, len(allPlayers))
+			for seat, id := range allPlayers {
+				seats = append(seats, models.GameMatchPlayer{
+					GameMatchID: row.ID,
+					UserID:      id,
+					Seat:        seat,
+				})
+			}
+			if err := tx.Create(&seats).Error; err != nil {
+				return err
+			}
 		}
 
 		result.gameID = row.GameID
 		if row.Bet == 0 {
 			return nil
 		}
-		users, err := lockUsers(tx, []uuid.UUID{p0, p1}, false)
+		users, err := lockUsers(tx, allPlayers, false)
 		if err != nil {
 			return err
 		}
-		for _, id := range orderedUserIDs(p0, p1) {
+		for _, id := range orderedUserIDs(allPlayers...) {
 			u := users[id]
 			if u.Ken < row.Bet {
 				return errInsufficientKen
@@ -263,7 +319,7 @@ func (s *SettlementRepository) escrowStart(
 				return err
 			}
 		}
-		result.userIDs = []uuid.UUID{p0, p1}
+		result.userIDs = allPlayers
 		return nil
 	})
 	return result, err
@@ -302,8 +358,12 @@ func (s *SettlementRepository) SettleFinish(ctx context.Context, out engine.Matc
 	if err != nil {
 		return nil, err
 	}
+	allPlayers, err := parseAllPlayers(out.AllPlayerIDs())
+	if err != nil {
+		return nil, err
+	}
 	if out.Bet == 0 {
-		registered, err := s.registeredPlayers(ctx, p0, p1)
+		registered, err := s.registeredPlayers(ctx, allPlayers)
 		if err != nil {
 			return nil, err
 		}
@@ -312,7 +372,7 @@ func (s *SettlementRepository) SettleFinish(ctx context.Context, out engine.Matc
 		}
 	}
 
-	result, err := s.settleFinish(ctx, out, p0, p1)
+	result, err := s.settleFinish(ctx, out, p0, p1, allPlayers)
 	if err != nil {
 		return nil, err
 	}
@@ -323,6 +383,7 @@ func (s *SettlementRepository) settleFinish(
 	ctx context.Context,
 	out engine.MatchOutcome,
 	p0, p1 uuid.UUID,
+	allPlayers []uuid.UUID,
 ) (settlementResult, error) {
 	var result settlementResult
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -338,14 +399,15 @@ func (s *SettlementRepository) settleFinish(
 		if row.GameID != out.GameID ||
 			row.Player0ID != p0 ||
 			row.Player1ID != p1 ||
-			row.Bet != out.Bet {
+			row.Bet != out.Bet ||
+			rowPlayerCount(row) != len(allPlayers) {
 			return errMatchConflict
 		}
 		if row.EscrowedAt.IsZero() {
 			return invalidMatchError("match %s has no escrow timestamp", row.MatchID)
 		}
 
-		winner, loser, err := outcomePlayers(row, out.WinnerID)
+		winner, loser, err := outcomePlayers(row, out.WinnerID, allPlayers)
 		if err != nil {
 			return err
 		}
@@ -358,7 +420,7 @@ func (s *SettlementRepository) settleFinish(
 			}
 			result.gameID = row.GameID
 			if row.Bet > 0 {
-				result.userIDs = []uuid.UUID{row.Player0ID, row.Player1ID}
+				result.userIDs = allPlayers
 			}
 			return nil
 		}
@@ -368,12 +430,12 @@ func (s *SettlementRepository) settleFinish(
 
 		kenDelta := 0
 		if row.Bet > 0 {
-			users, err := lockUsers(tx, []uuid.UUID{row.Player0ID, row.Player1ID}, true)
+			users, err := lockUsers(tx, allPlayers, true)
 			if err != nil {
 				return err
 			}
 			if winner != nil {
-				amount, winnerNet := s.WinnerAmounts(row.GameID, row.Bet)
+				amount, winnerNet := s.winnerAmountsFor(row.GameID, row.Bet, len(allPlayers))
 				u := users[*winner]
 				after, err := checkedCredit(u.Ken, amount)
 				if err != nil {
@@ -384,7 +446,7 @@ func (s *SettlementRepository) settleFinish(
 				}
 				kenDelta = winnerNet
 			} else {
-				for _, id := range orderedUserIDs(row.Player0ID, row.Player1ID) {
+				for _, id := range orderedUserIDs(allPlayers...) {
 					u := users[id]
 					after, err := checkedCredit(u.Ken, row.Bet)
 					if err != nil {
@@ -395,7 +457,20 @@ func (s *SettlementRepository) settleFinish(
 					}
 				}
 			}
-			result.userIDs = []uuid.UUID{row.Player0ID, row.Player1ID}
+			result.userIDs = allPlayers
+		}
+		if rowPlayerCount(row) > 2 && len(out.Rankings) > 0 {
+			for place, playerID := range out.Rankings {
+				rankedID, parseErr := uuid.Parse(playerID)
+				if parseErr != nil {
+					continue
+				}
+				if err := tx.Model(&models.GameMatchPlayer{}).
+					Where("game_match_id = ? AND user_id = ?", row.ID, rankedID).
+					Update("place", place+1).Error; err != nil {
+					return err
+				}
+			}
 		}
 
 		finishedAt := out.FinishedAt
@@ -424,13 +499,26 @@ func (s *SettlementRepository) settleFinish(
 	return result, err
 }
 
-func outcomePlayers(row models.GameMatch, winnerID string) (winner, loser *uuid.UUID, err error) {
+func outcomePlayers(row models.GameMatch, winnerID string, allPlayers []uuid.UUID) (winner, loser *uuid.UUID, err error) {
 	if winnerID == "" {
 		return nil, nil, nil
 	}
 	w, parseErr := uuid.Parse(winnerID)
-	if parseErr != nil || (w != row.Player0ID && w != row.Player1ID) {
+	if parseErr != nil {
 		return nil, nil, invalidMatchError("winner is not a player")
+	}
+	isPlayer := false
+	for _, id := range allPlayers {
+		if id == w {
+			isPlayer = true
+			break
+		}
+	}
+	if !isPlayer {
+		return nil, nil, invalidMatchError("winner is not a player")
+	}
+	if rowPlayerCount(row) > 2 {
+		return &w, nil, nil
 	}
 	l := row.Player1ID
 	if w == row.Player1ID {
@@ -464,7 +552,10 @@ func sameFinishedOutcome(row models.GameMatch, winner, loser *uuid.UUID, reason 
 	if (row.WinnerID == nil) != (winner == nil) || (row.LoserID == nil) != (loser == nil) {
 		return false
 	}
-	if winner != nil && (*row.WinnerID != *winner || *row.LoserID != *loser) {
+	if winner != nil && *row.WinnerID != *winner {
+		return false
+	}
+	if loser != nil && row.LoserID != nil && *row.LoserID != *loser {
 		return false
 	}
 	return true
@@ -521,10 +612,14 @@ func (s *SettlementRepository) abortMatch(ctx context.Context, matchID string) (
 		if query.RowsAffected == 0 {
 			return nil
 		}
+		matchPlayers, err := matchPlayerIDs(tx, row)
+		if err != nil {
+			return err
+		}
 		if row.Status == matchStatusFinished {
 			result.gameID = row.GameID
 			if row.Bet > 0 {
-				result.userIDs = []uuid.UUID{row.Player0ID, row.Player1ID}
+				result.userIDs = matchPlayers
 			}
 			return nil
 		}
@@ -533,11 +628,11 @@ func (s *SettlementRepository) abortMatch(ctx context.Context, matchID string) (
 		}
 
 		if row.Bet > 0 {
-			users, err := lockUsers(tx, []uuid.UUID{row.Player0ID, row.Player1ID}, true)
+			users, err := lockUsers(tx, matchPlayers, true)
 			if err != nil {
 				return err
 			}
-			for _, id := range orderedUserIDs(row.Player0ID, row.Player1ID) {
+			for _, id := range orderedUserIDs(matchPlayers...) {
 				u := users[id]
 				after, err := checkedCredit(u.Ken, row.Bet)
 				if err != nil {
@@ -547,7 +642,7 @@ func (s *SettlementRepository) abortMatch(ctx context.Context, matchID string) (
 					return err
 				}
 			}
-			result.userIDs = []uuid.UUID{row.Player0ID, row.Player1ID}
+			result.userIDs = matchPlayers
 		}
 
 		finishedAt := time.Now()
@@ -573,12 +668,37 @@ func (s *SettlementRepository) abortMatch(ctx context.Context, matchID string) (
 	return result, err
 }
 
-func (s *SettlementRepository) registeredPlayers(ctx context.Context, p0, p1 uuid.UUID) (bool, error) {
+func (s *SettlementRepository) registeredPlayers(ctx context.Context, ids []uuid.UUID) (bool, error) {
 	var count int64
 	err := s.db.WithContext(ctx).Unscoped().Model(&models.User{}).
-		Where("id IN ?", []uuid.UUID{p0, p1}).
+		Where("id IN ?", ids).
 		Count(&count).Error
-	return count == 2, err
+	return count == int64(len(ids)), err
+}
+
+func rowPlayerCount(row models.GameMatch) int {
+	if row.PlayerCount < 2 {
+		return 2
+	}
+	return row.PlayerCount
+}
+
+func matchPlayerIDs(tx *gorm.DB, row models.GameMatch) ([]uuid.UUID, error) {
+	if rowPlayerCount(row) <= 2 {
+		return []uuid.UUID{row.Player0ID, row.Player1ID}, nil
+	}
+	var seats []models.GameMatchPlayer
+	if err := tx.Where("game_match_id = ?", row.ID).Order("seat ASC").Find(&seats).Error; err != nil {
+		return nil, err
+	}
+	if len(seats) != rowPlayerCount(row) {
+		return nil, invalidMatchError("match %s is missing player seats", row.MatchID)
+	}
+	ids := make([]uuid.UUID, 0, len(seats))
+	for _, seat := range seats {
+		ids = append(ids, seat.UserID)
+	}
+	return ids, nil
 }
 
 func orderedUserIDs(ids ...uuid.UUID) []uuid.UUID {

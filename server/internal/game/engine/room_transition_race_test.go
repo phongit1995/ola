@@ -155,7 +155,7 @@ func TestDelayedQueueStartCannotInstallAfterRoomCommit(t *testing.T) {
 	gameEngine, rooms, _ := newRoomTransitionTestEngine(&fakeSettlement{})
 	player := lifecyclePlayer("delayed-queue-player")
 	opponent := lifecyclePlayer("delayed-queue-opponent")
-	gameEngine.CreateRoom(persistenceTestGameID, player, 0, "")
+	gameEngine.CreateRoom(persistenceTestGameID, player, 0, "", 0)
 
 	ref, exists := rooms.RoomByUser(persistenceTestGameID, player.ID)
 	if !exists {
@@ -332,6 +332,7 @@ func TestFailedRoomStartRestoresOnlyWhileBothPlayersRemainEligible(t *testing.T)
 				lifecyclePlayer(room.OwnerID),
 				7,
 				"new-password",
+				0,
 			)
 		}()
 		waitForRoomTransitionSignal(

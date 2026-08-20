@@ -26,6 +26,8 @@ import {
   areAdjacent,
   baseTileType,
   createBoard,
+  computeLightningArcs,
+  emptyCounts,
   findMatches,
   findValidMoves,
   computeExplosions,
@@ -38,11 +40,13 @@ import {
 import {
   LIGHTNING_GOD_DAMAGE,
   FURY_DAMAGE_MULTIPLIER,
+  MAX_FURY,
   ULT_COST,
   applyDamageThroughArmor,
   applyAuthoritativeEffects,
   applyTileEffects,
   botChooseMove,
+  botChooseUltimateSkill,
   botShouldUlt,
   BOT_LEVEL_TITLES,
   castUltimate,
@@ -52,6 +56,7 @@ import {
   type EffectSummary,
   type Fighter,
 } from '../../logic/battle';
+import { TURN_SECONDS as DEFAULT_TURN_SECONDS } from '../../logic/constants.gen';
 import { recordBotMatch } from '../../logic/bot-history';
 import {
   decodeBoard,
@@ -122,7 +127,8 @@ import {
 } from './remembered-selection';
 import { battleActionAvailability } from './action-layout';
 
-const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 30;
+const TURN_SECONDS =
+  Number(new URLSearchParams(location.search).get('turnsec')) || DEFAULT_TURN_SECONDS;
 const HINT_DELAY_MS = 10_000;
 const FX_COLS = 6;
 const FX_ROWS = 10;
@@ -327,6 +333,44 @@ function clearHint(): void {
     const icon = sprites[i]?.children[0];
     if (icon instanceof Sprite) icon.scale.set(tileIconBaseScale(icon));
   });
+}
+
+// Nộ đầy → mọi ô Kiếm trên bàn nhấp nháy vàng để báo "ăn Kiếm bây giờ sẽ đau".
+// Chỉ đổi tint icon nên không đụng các animation scale (hint, remove, fly).
+let furyGlowTime = 0;
+let furyGlowWasActive = false;
+
+function blendToGold(k: number): number {
+  const r = 0xff;
+  const g = Math.round(0xff - (0xff - 0xc9) * k);
+  const b = Math.round(0xff - (0xff - 0x3e) * k);
+  return (r << 16) | (g << 8) | b;
+}
+
+function setSwordTints(tint: number): void {
+  for (let i = 0; i < sprites.length; i++) {
+    const sprite = sprites[i];
+    if (!sprite) continue;
+    const icon = sprite.children[0];
+    if (!(icon instanceof Sprite)) continue;
+    icon.tint = board[i] != null && baseTileType(board[i]) === 'sword' ? tint : 0xffffff;
+  }
+}
+
+function furyGlowStep(ticker: Ticker): void {
+  const activeFighter = myTurn ? me : foe;
+  const active = inGame && !over && !roomPregame && activeFighter.fury >= MAX_FURY;
+  if (!active) {
+    if (furyGlowWasActive) {
+      furyGlowWasActive = false;
+      setSwordTints(0xffffff);
+    }
+    return;
+  }
+  furyGlowWasActive = true;
+  furyGlowTime += ticker.deltaMS;
+  const wave = (Math.sin(furyGlowTime / 150) + 1) / 2;
+  setSwordTints(blendToGold(0.25 + wave * 0.75));
 }
 
 function makeTile(type: TileType, index: number): Container {
@@ -1008,7 +1052,10 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
       : new Set<number>();
   await Promise.all([animateRemove(removed, explodedFireSources), flyMatched(removed, side)]);
   updateHud();
+  showEffectFloats(side, result);
+}
 
+function showEffectFloats(side: 'me' | 'foe', result: EffectSummary): void {
   const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
   const defCard = side === 'me' ? hud.foe.card : hud.me.card;
   if ((result.armorDamage ?? 0) > 0) {
@@ -1057,12 +1104,12 @@ async function ensurePlayable(): Promise<void> {
 async function resolveCascades(
   side: 'me' | 'foe',
   startingCascadeLevel = 0,
+  furyChain: { active: boolean } = { active: false },
 ): Promise<number> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
   let bonusTurns = 0;
   let cascadeLevel = startingCascadeLevel;
-  const furyChain = { active: false };
 
   for (;;) {
     const match = findMatches(board);
@@ -1187,6 +1234,42 @@ async function onTileTap(i: number): Promise<void> {
   void startBotTurn();
 }
 
+// Bản PvE của Lôi Thần: 16 ô bị phá vẫn cộng hiệu ứng cho người tung; mỗi ô
+// Lôi trong vùng đánh thêm một tia phụ không đệ quy. Chuỗi Nộ nối tiếp vào sập.
+async function castLightningGodLocal(side: 'me' | 'foe'): Promise<number> {
+  const attacker = side === 'me' ? me : foe;
+  const defender = side === 'me' ? foe : me;
+  attacker.mp = 0;
+  const direct = applyDamageThroughArmor(defender, LIGHTNING_GOD_DAMAGE);
+  const cells = randomFourTwoByTwoBlocks().flat();
+  const struck = new Set(cells);
+  const lightningArcs = computeLightningArcs(board, cells, struck);
+  const exploded = lightningArcs.map((arc) => arc.target);
+  const removed = new Set([...cells, ...exploded]);
+  const counts = emptyCounts();
+  for (const index of removed) counts[board[index]]++;
+  setStatus(
+    side === 'me'
+      ? `LÔI THẦN GIÁNG THẾ · ${directDamageText(direct)} · 4 TIA SÉT!`
+      : `Máy triệu hồi LÔI THẦN · ${directDamageText(direct)} · 4 TIA SÉT!`,
+  );
+  updateHud();
+  showDirectDamage(side === 'me' ? 'foe' : 'me', direct);
+  await animateUltimateLightningRemove(cells);
+  if (lightningArcs.length > 0) {
+    await playLightningFx(lightningArcs, lightningFxContext());
+    await animateRemove(new Set(exploded));
+  }
+  const furyChain = { active: false };
+  const strike = applyTileEffects(attacker, defender, counts, 0, furyChain);
+  updateHud();
+  showEffectFloats(side, strike);
+  const gravity = applyGravity(board, removed);
+  await animateGravity(gravity.falls, gravity.spawns);
+  if (attacker.hp <= 0 || defender.hp <= 0) return 0;
+  return resolveCascades(side, 1, furyChain);
+}
+
 async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
   if (!myTurn || busy || over || me.mp < ULT_COST) return;
   busy = true;
@@ -1200,17 +1283,7 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
   }
   spendBotModeExtraTurn('me');
   if (skill === 'lightning-god') {
-    me.mp = 0;
-    const result = applyDamageThroughArmor(foe, LIGHTNING_GOD_DAMAGE);
-    const cells = randomFourTwoByTwoBlocks().flat();
-    setStatus(`LÔI THẦN GIÁNG THẾ · ${directDamageText(result)} · 4 TIA SÉT!`);
-    updateHud();
-    showDirectDamage('foe', result);
-    await animateUltimateLightningRemove(cells);
-    const gravity = applyGravity(board, new Set(cells));
-    await animateGravity(gravity.falls, gravity.spawns);
-    const earnedExtraTurns =
-      me.hp > 0 && foe.hp > 0 ? await resolveCascades('me', 1) : 0;
+    const earnedExtraTurns = await castLightningGodLocal('me');
     const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
     if (checkEnd()) return;
     if (remainingExtraTurns > 0) {
@@ -1264,16 +1337,27 @@ async function startBotTurn(): Promise<void> {
 
     if (botShouldUlt(foe, me, botLevel)) {
       spendBotModeExtraTurn('foe');
-      const ultResult = castUltimate(foe, me);
-      setStatus(`Máy tung TUYỆT CHIÊU! ${directDamageText(ultResult)}`);
-      showDirectDamage('me', ultResult);
-      updateHud();
-      await playUltFx('foe');
+      const skill = botChooseUltimateSkill(foe, me, botLevel);
+      let earnedExtraTurns = 0;
+      if (skill === 'lightning-god') {
+        earnedExtraTurns = await castLightningGodLocal('foe');
+      } else {
+        const ultResult = castUltimate(foe, me);
+        setStatus(`Máy tung TUYỆT CHIÊU! ${directDamageText(ultResult)}`);
+        showDirectDamage('me', ultResult);
+        updateHud();
+        await playUltFx('foe');
+      }
       if (stale()) return;
       if (checkEnd()) return;
-      if (botModeExtraTurns[1] > 0) {
-        announceExtraTurns('foe', 0, botModeExtraTurns[1]);
-        setStatus(`Máy còn ${botModeExtraTurns[1]} lượt thưởng!`);
+      const remainingExtraTurns = addBotModeExtraTurns('foe', earnedExtraTurns);
+      if (remainingExtraTurns > 0) {
+        announceExtraTurns('foe', earnedExtraTurns, remainingExtraTurns);
+        setStatus(
+          earnedExtraTurns > 0
+            ? `Máy nhận +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+            : `Máy còn ${remainingExtraTurns} lượt thưởng!`,
+        );
         continue;
       }
       break;
@@ -1605,6 +1689,8 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
   defender.hp = Math.max(0, defender.hp - damage);
   if (step.skill === 'lightning-god') {
     const cells = step.cells ?? [];
+    const exploded = step.exploded ?? [];
+    const lightningArcs = step.lightningArcs ?? [];
     setStatus(
       side === 'me'
         ? `LÔI THẦN GIÁNG THẾ · ${directDamageText(result)} · 4 TIA SÉT!`
@@ -1613,6 +1699,15 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     updateHud();
     showDirectDamage(side === 'me' ? 'foe' : 'me', result);
     await animateUltimateLightningRemove(cells);
+    if (lightningArcs.length > 0) {
+      await playLightningFx(lightningArcs, lightningFxContext());
+      await animateRemove(new Set(exploded));
+    }
+    if (step.effects) {
+      applyAuthoritativeEffects(attacker, defender, step.effects);
+      updateHud();
+      showEffectFloats(side, step.effects);
+    }
     return;
   }
   setStatus(
@@ -2184,6 +2279,7 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   board = createBoard();
   rebuildBoardVisuals();
 
+  addTick(furyGlowStep);
   setInterval(renderTurnClock, 250);
   resetTurnClock();
   updateHud();

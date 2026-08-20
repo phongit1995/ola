@@ -143,7 +143,7 @@ export function ClanHeaderCard({
             {imageUploading ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Image source={cameraIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
+              <Image source={cameraIcon} style={{ width: 16, height: 16, tintColor: '#ffffff' }} resizeMode="contain" />
             )}
           </Pressable>
         )}
@@ -181,7 +181,7 @@ export function ClanHeaderCard({
               >
                 <Image
                   source={cameraIcon}
-                  style={{ width: 14, height: 14 }}
+                  style={{ width: 14, height: 14, tintColor: '#ffffff' }}
                   resizeMode="contain"
                 />
               </Pressable>

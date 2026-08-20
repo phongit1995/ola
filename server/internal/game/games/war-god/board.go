@@ -227,6 +227,53 @@ func computeExplosions(board []int, matched map[int]bool, r *rng) ([]int, []Ligh
 	})
 }
 
+func pickLightningArcs(
+	board []int,
+	sourceCandidates, removed map[int]bool,
+	pickIndex func(int) int,
+) []LightningArc {
+	sources := make([]int, 0, len(sourceCandidates))
+	for index := range sourceCandidates {
+		if board[index] == tileLightning {
+			sources = append(sources, index)
+		}
+	}
+	sort.Ints(sources)
+
+	unavailable := make(map[int]bool, len(removed)+len(sources))
+	for index := range removed {
+		unavailable[index] = true
+	}
+	for _, source := range sources {
+		unavailable[source] = true
+	}
+	pool := make([]int, 0, boardSize-len(unavailable))
+	for index := 0; index < boardSize; index++ {
+		if !unavailable[index] {
+			pool = append(pool, index)
+		}
+	}
+
+	targetCount := len(sources)
+	if len(pool) < targetCount {
+		targetCount = len(pool)
+	}
+	arcs := make([]LightningArc, 0, targetCount)
+	for order := 0; order < targetCount; order++ {
+		pick := pickIndex(len(pool))
+		if pick < 0 {
+			pick = 0
+		} else if pick >= len(pool) {
+			pick = len(pool) - 1
+		}
+		target := pool[pick]
+		pool[pick] = pool[len(pool)-1]
+		pool = pool[:len(pool)-1]
+		arcs = append(arcs, LightningArc{Source: sources[order], Target: target})
+	}
+	return arcs
+}
+
 func computeExplosionsWithPicker(board []int, matched map[int]bool, pickIndex func(int) int) ([]int, []LightningArc) {
 	set := map[int]bool{}
 	add := func(x, y int) {
@@ -265,39 +312,16 @@ func computeExplosionsWithPicker(board []int, matched map[int]bool, pickIndex fu
 			lightningSourceSet[i] = true
 		}
 	}
-	lightningSources := make([]int, 0, len(lightningSourceSet))
-	for i := range lightningSourceSet {
-		lightningSources = append(lightningSources, i)
+	removed := make(map[int]bool, len(matched)+len(set))
+	for index := range matched {
+		removed[index] = true
 	}
-	sort.Ints(lightningSources)
-	lightningArcs := make([]LightningArc, 0, len(lightningSources))
-	if len(lightningSources) > 0 {
-		pool := make([]int, 0, boardSize-len(matched)-len(set))
-		for i := 0; i < boardSize; i++ {
-			if !matched[i] && !set[i] {
-				pool = append(pool, i)
-			}
-		}
-		targetCount := len(lightningSources)
-		if len(pool) < targetCount {
-			targetCount = len(pool)
-		}
-		for order := 0; order < targetCount; order++ {
-			pick := pickIndex(len(pool))
-			if pick < 0 {
-				pick = 0
-			} else if pick >= len(pool) {
-				pick = len(pool) - 1
-			}
-			target := pool[pick]
-			pool[pick] = pool[len(pool)-1]
-			pool = pool[:len(pool)-1]
-			set[target] = true
-			lightningArcs = append(lightningArcs, LightningArc{
-				Source: lightningSources[order%len(lightningSources)],
-				Target: target,
-			})
-		}
+	for index := range set {
+		removed[index] = true
+	}
+	lightningArcs := pickLightningArcs(board, lightningSourceSet, removed, pickIndex)
+	for _, arc := range lightningArcs {
+		set[arc.Target] = true
 	}
 
 	out := make([]int, 0, len(set))

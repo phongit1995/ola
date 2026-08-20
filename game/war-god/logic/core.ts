@@ -192,6 +192,35 @@ export function swapCells(board: Board, a: number, b: number): void {
   board[b] = tmp;
 }
 
+/** Give every destroyed Lightning source one unique target outside the removal set. */
+export function computeLightningArcs(
+  board: Board,
+  sources: Iterable<number>,
+  removed: ReadonlySet<number>,
+  random: () => number = Math.random,
+): LightningArc[] {
+  const lightningSources = [...new Set(sources)]
+    .filter((index) => board[index] === 'lightning')
+    .sort((a, b) => a - b);
+  const unavailable = new Set(removed);
+  lightningSources.forEach((index) => unavailable.add(index));
+  const pool = Array.from({ length: CELLS }, (_, index) => index).filter(
+    (index) => !unavailable.has(index),
+  );
+  const arcs: LightningArc[] = [];
+
+  const targetCount = Math.min(lightningSources.length, pool.length);
+  for (let order = 0; order < targetCount; order++) {
+    const rawPick = Math.floor(random() * pool.length);
+    const pick = Math.max(0, Math.min(pool.length - 1, rawPick));
+    const target = pool[pick];
+    pool[pick] = pool[pool.length - 1];
+    pool.pop();
+    arcs.push({ source: lightningSources[order], target });
+  }
+  return arcs;
+}
+
 function twoByTwoCells(topLeft: number): number[] {
   return [topLeft, topLeft + 1, topLeft + GRID, topLeft + GRID + 1];
 }
@@ -265,30 +294,10 @@ export function computeExplosions(
   // Lôi được match trực tiếp hoặc bị Kiếm Lửa chạm trong vùng nổ ban đầu
   // đều phát đúng một tia. Chốt sources trước khi thêm target để tia sét
   // không tiếp tục kích hoạt dây chuyền một ô Lôi ngẫu nhiên khác.
-  const lightningSources = [...new Set([...matched, ...set])]
-    .filter((i) => board[i] === 'lightning')
-    .sort((a, b) => a - b);
-  const lightningArcs: LightningArc[] = [];
-
-  if (lightningSources.length > 0) {
-    const pool: number[] = [];
-    for (let i = 0; i < CELLS; i++) {
-      if (!matched.has(i) && !set.has(i)) pool.push(i);
-    }
-    const targetCount = Math.min(lightningSources.length, pool.length);
-    for (let order = 0; order < targetCount; order++) {
-      const rawPick = Math.floor(random() * pool.length);
-      const pick = Math.max(0, Math.min(pool.length - 1, rawPick));
-      const target = pool[pick];
-      pool[pick] = pool[pool.length - 1];
-      pool.pop();
-      set.add(target);
-      lightningArcs.push({
-        source: lightningSources[order % lightningSources.length],
-        target,
-      });
-    }
-  }
+  const lightningSources = new Set([...matched, ...set]);
+  const removed = new Set([...matched, ...set]);
+  const lightningArcs = computeLightningArcs(board, lightningSources, removed, random);
+  lightningArcs.forEach((arc) => set.add(arc.target));
 
   return {
     exploded: [...set].sort((a, b) => a - b),

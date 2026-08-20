@@ -27,6 +27,13 @@ body {
   touch-action: none;
 }
 
+/* Safari iOS auto-zooms focused web text fields whose computed font is below 16px. */
+@supports (-webkit-touch-callout: none) {
+  .war-god-web-chat-input {
+    font-size: 16px !important;
+  }
+}
+
 .startup-error {
   position: absolute;
   inset: 0;

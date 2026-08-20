@@ -16,7 +16,7 @@ import type { Contact } from '../interface';
 const REQUEST_PREVIEW_COUNT = 3;
 import { BuddyRow } from './BuddyRow';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
-import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
+import addContactIcon from '@/assets/icons/chat/ic_add_contact_gray.png';
 import { BotAvatar } from '@/pages/chat-bot/components/BotAvatar';
 
 interface ContactListProps {
@@ -244,7 +244,7 @@ export function ContactList({
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ola-primary">
             <img
-              src={addFriendIcon}
+              src={addContactIcon}
               alt=""
               className="h-6 w-6 object-contain icon-on-primary"
             />

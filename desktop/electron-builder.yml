@@ -4,7 +4,7 @@ directories:
   output: release
   buildResources: build
 files:
-  - src/**
+  - out/**
   - dist/**
   - package.json
 asar: true

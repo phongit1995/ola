@@ -29,7 +29,6 @@ import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
 import { StatusEditDialog } from './StatusEditDialog';
 import { mapFriendsToContacts, type Contact } from '../contacts';
-import { SUGGESTED_FRIENDS } from '@screens/friends/constants';
 import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useFriendsWithPresence } from '@hooks/usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
@@ -37,9 +36,8 @@ import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
-const addFriendIcon = require('@assets/icons/room/ic_add_friend.png');
+const addContactIcon = require('@assets/icons/chat/ic_add_contact_gray.png');
 const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
-const peopleIcon = require('@assets/icons/chat/ic_people_gray.png');
 
 function ActionRow({
   badge,
@@ -245,7 +243,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
             }}
           >
             <View className="h-10 w-10 items-center justify-center rounded-full bg-ola-primary">
-              <Image source={addFriendIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
+              <Image source={addContactIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
             </View>
             <View className="min-w-0 flex-1">
               <Text className="text-base text-ola-ink">{t('chat.friendRequests')}</Text>
@@ -285,6 +283,9 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           </Pressable>
         )}
 
+        {/* TODO: "Có thể bạn muốn làm quen" — tạm ẩn, chờ API gợi ý kết bạn thật
+            (SuggestedFriendsScreen đang chạy trên SUGGESTED_FRIENDS hardcode, nút Kết bạn chỉ toast).
+            Mở lại thì import lại peopleIcon và SUGGESTED_FRIENDS.
         <Pressable
           onPress={() => navigation.navigate(ROOT_ROUTES.SuggestedFriends)}
           className="flex-row items-center gap-3 bg-white px-4 py-2"
@@ -312,6 +313,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           </View>
           <Text className="text-xl text-ola-ink-hint">›</Text>
         </Pressable>
+        */}
 
         <SectionHeader label={t('chat.sectionApps')} />
         <ActionRow
@@ -372,7 +374,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           shadowOffset: { width: 0, height: 3 },
         }}
       >
-        <Image source={addFriendIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
+        <Image source={addContactIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
       </Pressable>
 
       <MessageActionSheet

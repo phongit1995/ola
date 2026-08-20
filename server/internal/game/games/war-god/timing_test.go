@@ -36,6 +36,22 @@ func TestTurnStartDelayAccountsForOpponentCueAndSpecialEffects(t *testing.T) {
 	if got := (Logic{}).TurnStartDelay(special, 0, 1); got <= opponentTurn {
 		t.Fatalf("special delay = %v, want greater than plain delay %v", got, opponentTurn)
 	}
+
+	plainUltimate := &State{Steps: []Step{{Kind: stepUlt}}}
+	lightningUltimate := &State{Steps: []Step{{
+		Kind: stepUlt,
+		LightningArcs: []LightningArc{
+			{Source: 1, Target: 8},
+			{Source: 2, Target: 9},
+			{Source: 3, Target: 10},
+		},
+	}}}
+	wantArcDelay := lightningAnimationDelay(len(lightningUltimate.Steps[0].LightningArcs))
+	gotArcDelay := (Logic{}).TurnStartDelay(lightningUltimate, 0, 1) -
+		(Logic{}).TurnStartDelay(plainUltimate, 0, 1)
+	if gotArcDelay != wantArcDelay {
+		t.Fatalf("ultimate secondary arc delay = %v, want %v", gotArcDelay, wantArcDelay)
+	}
 }
 
 func TestTurnStartDelayCoversBoardShufflePresentation(t *testing.T) {

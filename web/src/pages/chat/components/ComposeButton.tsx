@@ -10,7 +10,7 @@ export function ComposeButton({ onClick }: { onClick: () => void }) {
       aria-label={t('home.composeAria')}
       className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-lg transition hover:brightness-105"
     >
-      <img src={composeIcon} alt="" className="h-6 w-6 object-contain icon-on-primary" />
+      <img src={composeIcon} alt="" className="h-7 w-7 object-contain icon-on-primary" />
     </button>
   );
 }

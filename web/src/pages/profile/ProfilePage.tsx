@@ -142,7 +142,7 @@ export function ProfilePage({
           <img
             src={composeIcon}
             alt=""
-            className="h-6 w-6 object-contain icon-on-primary"
+            className="h-7 w-7 object-contain icon-on-primary"
           />
         </button>
       )}

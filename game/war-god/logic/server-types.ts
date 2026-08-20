@@ -55,6 +55,10 @@ export interface StepUlt {
   armorDamage?: number;
   skill?: UltimateSkillId;
   cells?: number[];
+  exploded?: number[];
+  lightningArcs?: LightningArc[];
+  counts?: Partial<Record<TileType, number>>;
+  effects?: StepMatch['effects'];
 }
 
 export type Step = StepSwap | StepMatch | StepGravity | StepShuffle | StepUlt;

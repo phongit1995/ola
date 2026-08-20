@@ -14,6 +14,7 @@ interface ChatInputOptions {
 
 export function createChatInput(options: ChatInputOptions): ChatInputController {
   const input = document.createElement('input');
+  if (window.ReactNativeWebView == null) input.className = 'war-god-web-chat-input';
   input.type = 'text';
   input.maxLength = 120;
   input.placeholder = 'Nhập tin nhắn...';

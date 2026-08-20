@@ -7,6 +7,7 @@ import {
   type Board,
   type TileType,
 } from './core';
+import type { UltimateSkillId } from './server-types';
 import {
   ARMOR_SHIELD,
   CASCADE_BONUS_PERCENT_PER_LEVEL,
@@ -484,21 +485,27 @@ export function botChooseMove(
   return best;
 }
 
+// ULT_COST bằng MAX_MP nên tới đây MP luôn đầy — tích thêm là lãng phí ô Nước,
+// vì vậy KHÓ/SIÊU KHÓ tung ngay; mức thấp hơn chần chừ ngẫu nhiên cho giống người.
 export function botShouldUlt(bot: Fighter, player: Fighter, level: BotLevel): boolean {
   if (bot.mp < ULT_COST) return false;
   const dmg = Math.max(0, Math.floor(bot.mp / 2) - player.armor);
   if (player.hp <= dmg) return true; // đủ kết liễu — luôn chốt hạ
   if (level === 'easy') return player.hp <= dmg + 5 || Math.random() < 0.2;
-  if (level === 'hard') {
-    // Ult scale theo MP, nên bot KHÓ tích đến đầy để đánh mạnh nhất, chỉ tung
-    // sớm khi đã full (không tích thêm được) hoặc đang nguy cấp cần dứt điểm.
-    if (bot.mp >= MAX_MP) return true;
-    if (bot.hp <= 50 && player.hp <= dmg + 25) return true;
-    return false;
-  }
-  if (level === 'expert') {
-    if (bot.hp <= 70) return true;
-    return bot.mp >= MAX_MP;
-  }
-  return player.hp <= dmg + 10 || Math.random() < 0.5;
+  if (level === 'normal') return player.hp <= dmg + 10 || Math.random() < 0.5;
+  return true;
+}
+
+// Vạn Kiếm ăn chắc 50 nên là đòn kết liễu/dứt điểm; Lôi Thần đổi damage cứng
+// lấy 16 ô hiệu ứng + chuỗi sập nên là đòn lấy giá trị khi trận còn dài.
+export function botChooseUltimateSkill(
+  bot: Fighter,
+  player: Fighter,
+  level: BotLevel,
+): UltimateSkillId {
+  const dmg = Math.max(0, Math.floor(bot.mp / 2) - player.armor);
+  if (player.hp <= dmg + 10) return 'myriad-swords';
+  if (level === 'easy') return Math.random() < 0.5 ? 'lightning-god' : 'myriad-swords';
+  if (level === 'normal') return Math.random() < 0.35 ? 'myriad-swords' : 'lightning-god';
+  return player.hp <= 60 ? 'myriad-swords' : 'lightning-god';
 }

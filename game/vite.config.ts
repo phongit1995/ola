@@ -25,13 +25,17 @@ export default defineConfig({
     assetsInlineLimit(filePath) {
       // Caro controls image priority at runtime; data-URI inlining would force
       // even modal-only icons into the initial JavaScript chunk.
-      return normalizePath(filePath).includes('/game/caro/assets/') ? false : undefined;
+      const normalized = normalizePath(filePath);
+      return normalized.includes('/game/caro/assets/') || normalized.includes('/game/thirteen/assets/')
+        ? false
+        : undefined;
     },
     rollupOptions: {
       input: {
         hub: resolve(__dirname, 'index.html'),
         caro: resolve(__dirname, 'caro/index.html'),
         wargod: resolve(__dirname, 'war-god/index.html'),
+        thirteen: resolve(__dirname, 'thirteen/index.html'),
       },
     },
   },
