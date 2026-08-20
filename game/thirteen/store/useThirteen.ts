@@ -76,7 +76,7 @@ interface ThirteenStore {
   joinQueue(): void;
   leaveQueue(): void;
   refreshRooms(): void;
-  createRoom(maxPlayers: number, password: string): void;
+  createRoom(maxPlayers: number, password: string, bet: number): void;
   joinRoom(room: RoomInfo, password?: string): void;
   leaveRoom(): void;
   setReady(ready: boolean): void;
@@ -450,8 +450,8 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     refreshRooms() {
       refs.session?.listRooms();
     },
-    createRoom(maxPlayers, password) {
-      refs.session?.createRoom(0, password || undefined, maxPlayers);
+    createRoom(maxPlayers, password, bet) {
+      refs.session?.createRoom(bet, password || undefined, maxPlayers);
     },
     joinRoom(room, password) {
       refs.session?.joinRoom(room.id, password);

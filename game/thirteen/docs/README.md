@@ -30,7 +30,8 @@ Source React hiện tại quyết định chức năng, dữ liệu và state. C
 4. [04-asset-manifest-and-prompts.md](./04-asset-manifest-and-prompts.md) — manifest CSS/SVG/raster và prompt tạo mockup/asset.
 5. [05-generation-workflow-and-qa.md](./05-generation-workflow-and-qa.md) — production, export, accessibility, performance và QA.
 6. [06-screen-to-asset-map.md](./06-screen-to-asset-map.md) — mapping DOM class hiện tại sang token/component/asset.
-7. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset hoặc lần sinh hình.
+7. [07-loading-lobby-implementation.md](./07-loading-lobby-implementation.md) — implementation loading/lobby, asset đã cắt, responsive và cách QA.
+8. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset hoặc lần sinh hình.
 
 ## Nguyên tắc bắt buộc
 

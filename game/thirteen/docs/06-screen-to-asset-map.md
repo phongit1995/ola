@@ -70,8 +70,9 @@ tl-lobby
 |---|---|---|
 | `tl-lobby` | layout + CSS | cream header, aqua mat/pattern, coral-cream-navy curve |
 | `tl-ken-pill` | CSS component | balance pill cream/navy |
+| `tl-user-avatar` | shared VIP PNG + CSS frame | `user.vipType` → `/vip-icons/vip_XXX.png`; fallback Ola smiley |
 | `tl-ken-amount` | live text | body.lg navy, tabular nums |
-| `tl-ken-coin` | SVG | IC-09 coin, sun fill/navy outline |
+| `tl-ken-coin` | existing PNG | IC-09 Ken vàng chính thức từ Web, không tạo lại SVG |
 | `tl-logo` | layout | centered text stack, no plaque |
 | `tl-logo-main` | live text | display.xl navy |
 | `tl-logo-sub` | live text + SVG decor | coral spaced text; optional SU-01..04 |
@@ -86,7 +87,9 @@ tl-lobby
 | `tl-room-row` | CSS component | cream flat row, navy outline, radius 16 |
 | `tl-room-info` | layout | minmax info column |
 | `tl-room-name` | live text | 15–16 px navy 800, ellipsis |
-| `tl-room-meta` | layout + live | dots + occupancy teal |
+| `tl-room-meta` | layout + live | occupancy + wager pill, luôn hiện cả khi cược 0 |
+| `tl-room-occupancy` | layout + live | dots + current/max player teal |
+| `tl-room-bet` | existing PNG + live text | icon Ken vàng 15 px + số cược format `vi-VN` |
 | `tl-seat-dots` | CSS primitives | 9 px aqua filled/empty circles |
 | `tl-playing-badge` | CSS component | coral playing pill + live label |
 
@@ -102,9 +105,11 @@ Room row state `.muted` là state modifier hiện có, không giảm opacity to�
 | `tl-modal-text` | live text | body.md navy/teal |
 | `tl-capacity-row` | layout | 3 segment flex, 8 px gap |
 | `tl-capacity-btn` | CSS component | cream segment; `.active` aqua/sun + check/border |
+| `tl-bet-input` | existing PNG + input | icon Ken vàng 26 px, numeric value mặc định 0, suffix KEN |
+| `tl-bet-hint` | live text | helper teal hoặc validation coral; `aria-live` |
 | `tl-modal-actions` | layout | two equal 48 px buttons |
 
-Dynamic text “Tạo bàn mới”, owner name, password errors and button labels remain live.
+Dynamic text “Tạo bàn mới”, số cược, owner name, password errors and button labels remain live. Submit truyền đúng `bet`; khi `bet` vượt balance/maxBet thì nút tạo bàn bị disable.
 
 ## 6. Waiting room
 
@@ -225,7 +230,7 @@ Mọi animation có reduced-motion fallback.
 | Màn | SVG mới | Existing |
 |---|---|---|
 | loading | PT-01 optional | none |
-| lobby | IC-01, IC-03, IC-04, IC-09, IC-14, SU-01..04, PT-01 | VIP optional |
+| lobby | IC-01, IC-03, IC-04, IC-14, SU-01..04, PT-01 | IC-09 Ken PNG vàng, VIP optional |
 | modal | IC-05 optional, IC-11 | none |
 | room | IC-01, IC-06, IC-07, IC-08, IC-11, IC-12, PT-01 | none |
 | table | IC-01, IC-02, IC-10, FX-01, PT-01 | cards, back, reactions |

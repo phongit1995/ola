@@ -148,10 +148,10 @@ Các icon chuẩn:
 - height 44;
 - width theo số, min 142, max 188;
 - cream fill, navy border 2, radius pill;
-- avatar 34, margin 3;
+- avatar 34, margin 3; render ảnh VIP của user theo catalog chung, fallback mặt cười Ola;
 - number flex 1, right aligned hoặc center optical;
 - `font-variant-numeric: tabular-nums`;
-- coin 20 × 20: sun circle, navy outline 1.5, không ký hiệu tiền;
+- icon 20–22 × 20–22: tái sử dụng Ken PNG vàng chính thức `web/src/assets/icons/apps/ken.png`; không dựng sun circle/coin thay thế;
 - khi số quá dài: format compact chỉ khi product cho phép; nếu không giảm font tối thiểu 14 px.
 
 ## 6. Avatar
@@ -261,6 +261,9 @@ Badge không được chỉ là một chấm màu nếu trạng thái quan trọ
 - focus-within outer blue ring;
 - playing/full không đặt `opacity` lên row;
 - locked giữ nội dung đầy đủ, thêm lock;
+- meta luôn gồm occupancy và wager pill; wager `0` vẫn hiển thị;
+- wager pill dùng icon Ken 15 px, nền sun alpha nhẹ, số tabular; không viết thêm chữ “Ken” để row không chật;
+- nếu `bet > user.ken`, row giữ nguyên độ tương phản nhưng action chuyển coral nhạt, label “Thiếu Ken” và bị disable;
 - stale/loading dùng skeleton có cùng geometry, không spinner ở mỗi row.
 
 ### 11.3 Skeleton
@@ -323,7 +326,16 @@ Badge không được chỉ là một chấm màu nếu trạng thái quan trọ
 - error border coral.500 + helper text;
 - disabled cream.200, text navy 55%.
 
-### 14.2 Chat input
+### 14.2 Wager/Ken
+
+- shell height 48, border navy 2, radius 12;
+- grid icon Ken 26 px / input co giãn / suffix “KEN”;
+- giá trị mặc định `0`, chỉ nhận chữ số và format hiển thị theo `vi-VN`;
+- helper 12/17 teal; validation error dùng coral nhưng không đổi geometry;
+- kiểm tra số nguyên an toàn, không âm, không vượt `user.ken` và `user.maxBet` nếu có;
+- state invalid phải có cả màu, nội dung lỗi và `aria-invalid`; submit bị disable.
+
+### 14.3 Chat input
 
 - height 44;
 - flex 1;

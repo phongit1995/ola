@@ -3,6 +3,7 @@ import { ARCADE_BRIDGE_EVENT } from '@ola/shared/constants';
 import type { ArcadeKenUpdatedData } from '@ola/shared/types';
 import { bridge } from '../src/sdk';
 import { preloadCardAssets } from './assets';
+import { BrandMark } from './components/BrandMark';
 import { ConfirmModal } from './components/ConfirmModal';
 import { LobbyScreen } from './screens/lobby/LobbyScreen';
 import { RoomScreen } from './screens/room/RoomScreen';
@@ -45,9 +46,17 @@ export function App() {
   return (
     <div id="tl-app">
       {phase === 'connecting' && (
-        <div className="tl-loading">
-          <span className="tl-loading-title">TIẾN LÊN MIỀN NAM</span>
-          <span className="tl-loading-sub">Đang kết nối...</span>
+        <div className="tl-loading" role="status" aria-live="polite" aria-label="Đang kết nối">
+          <div className="tl-loading-mat" aria-hidden="true" />
+          <div className="tl-loading-content">
+            <BrandMark className="tl-loading-logo" />
+            <span className="tl-loading-sub">Đang kết nối...</span>
+            <span className="tl-loading-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+          </div>
         </div>
       )}
       {phase === 'lobby' && <LobbyScreen assetsReady={assetsReady} />}
@@ -67,6 +76,7 @@ export function App() {
           cancelLabel="Ở lại"
           onConfirm={confirmExitNow}
           onCancel={cancelExit}
+          style02={phase === 'lobby'}
         />
       )}
       {notice && (
@@ -77,6 +87,7 @@ export function App() {
           cancelLabel={null}
           onConfirm={dismissNotice}
           onCancel={dismissNotice}
+          style02={phase === 'lobby'}
         />
       )}
     </div>

@@ -44,7 +44,7 @@ game/thirteen/assets/
 | IC-06 | `icons/ic-send.svg` | SVG | 24 | gửi chat | conditional |
 | IC-07 | `icons/ic-user-minus.svg` | SVG | 24 | kick member | room |
 | IC-08 | `icons/ic-crown.svg` | SVG | 24 | chủ bàn | room |
-| IC-09 | `icons/ic-coin.svg` | SVG | 24 | Ken balance | initial |
+| IC-09 | `../../../web/src/assets/icons/apps/ken.png` | existing PNG | 15/22/26 | Ken balance, room bet, bet input | existing |
 | IC-10 | `icons/ic-wifi-off.svg` | SVG | 24 | disconnect | table |
 | IC-11 | `icons/ic-check.svg` | SVG | 24 | ready/selected | shared |
 | IC-12 | `icons/ic-plus.svg` | SVG | 24 | tạo bàn/seat trống | shared |
@@ -61,7 +61,7 @@ game/thirteen/assets/
 | CD-01 | existing `assets/cards/*.webp` | WebP | existing | mặt bài | existing |
 | CD-02 | existing `assets/cards/back.webp` | WebP | existing | lưng bài | existing |
 
-Tổng asset Style 02 mới bắt buộc: 20 SVG (14 icon chức năng, 4 suit, 1 pattern và 1 chop FX). FX confetti là optional. Không tạo skin button/panel raster.
+Tổng asset Style 02 mới bắt buộc: 19 SVG (13 icon chức năng, 4 suit, 1 pattern và 1 chop FX) + 1 Ken PNG vàng chính thức tái sử dụng từ Web. FX confetti là optional. Không tạo skin button/panel raster và không tạo lại coin Ken.
 
 ## 4. Specification SVG
 
@@ -162,14 +162,15 @@ Design the lobby for Vietnamese Tien Len Mien Nam in the approved “Chieu Bai N
 Top 20 percent is warm cream. The lower area is a fresh aqua woven mat separated by one broad
 festive curve made from a coral line, a cream gap and a thin navy-teal line. At the top, place a
 simple cream square back button with a consistent navy outline, and a cream balance pill with
-a colorful circular initial avatar, live currency number and a small sun-yellow coin icon.
+a colorful circular initial avatar, live currency number and the existing official Ken icon.
 
 Center the typographic game title directly on the cream background, with large deep navy
 “TIEN LEN” and a smaller coral “MIEN NAM”, plus only four tiny suit marks. Below the curve,
 place one wide sunny yellow primary CTA and one wide cream secondary CTA. Then a flat room-list
 header with a refresh icon and a vertical list of reusable cream room rows. Every row has the
 same exact radius, outline and shadow, containing a colored initial avatar, room information,
-seat dots and a compact action button.
+seat dots, an official Ken icon with the wager amount, and a compact action button. The wager
+must remain visible even when its value is zero.
 
 Flat systematic UI, 2 px navy outlines, radius scale 12/16/20, short downward shadows,
 crisp Vietnamese text placeholders, generous spacing, no scene illustration and no decorative frame.
@@ -243,10 +244,11 @@ Nên vẽ icon bằng vector/editor hoặc code. Nếu dùng công cụ sinh hì
 ```text
 Create a coherent set of minimal monoline mobile UI icons on a transparent background:
 back arrow, chat bubble with three dots, refresh arrow, lock, close, send, user minus, crown,
-coin circle, wifi off, check, plus and warning. Friendly rounded geometry, exact 24 by 24 viewBox
+wifi off, check, plus and warning. Friendly rounded geometry, exact 24 by 24 viewBox
 logic, deep navy single-color strokes, 2 unit stroke, round caps and joins, no fill except where
 structurally necessary. Consistent optical weight and center. No labels, shadows, gradients,
-3D, texture, decorative frame or multiple colors.
+3D, texture, decorative frame or multiple colors. Do not generate a coin icon; reuse the official
+yellow Ken PNG supplied by the product.
 ```
 
 Lưu ý: output bitmap/vector từ model phải được redraw thành path sạch; không dùng auto-trace thô làm production.

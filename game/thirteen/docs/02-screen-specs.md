@@ -106,11 +106,11 @@ Balance pill:
 
 - surface cream, border navy 2, radius pill;
 - padding 4 px 12 px 4 px 4 px;
-- avatar 34 px;
+- avatar user 34 px: ảnh VIP theo `user.vipType`; fallback `ola_smiley_online.png` khi chưa có VIP;
 - khoảng avatar→số 8 px;
-- coin 20 px bên phải, cách số 8 px;
+- icon Ken vàng chính thức từ `web/src/assets/icons/apps/ken.png`, 20–22 px bên phải, cách số 8 px; không vẽ coin giả bằng CSS/SVG;
 - số Ken `body.lg`, tabular nums, navy;
-- VIP icon nếu có nằm đè avatar góc phải dưới, tối đa 14 px.
+- VIP là nội dung chính bên trong vòng avatar, không chồng thêm badge VIP thứ hai.
 
 ### 3.4 Logo
 
@@ -198,6 +198,8 @@ Nội dung:
 - seat dots 9 px, gap 4 px;
 - filled `aqua.500`, empty `aqua.100` với outline teal 15%;
 - occupancy `body.sm`, `teal.600`, tabular nums;
+- cược nằm cùng meta row trong pill vàng nhạt: icon Ken 15 px + số Ken đã format dấu chấm, không lặp chữ “Ken” trong row;
+- cược `0` vẫn phải hiện rõ là `0`, vì đây là bàn chơi không cược chứ không phải thiếu dữ liệu;
 - action 84–96 × 42 px.
 
 State:
@@ -205,6 +207,7 @@ State:
 - joinable: action vàng, label “Vào bàn”;
 - playing: row vẫn cream, badge coral nhỏ “Đang chơi”, action aqua nhạt, label navy;
 - full: action `cream.200`, border `teal.700`, label “Đầy”;
+- không đủ Ken: action coral nhạt, border coral, label “Thiếu Ken” và disable join;
 - locked: lock icon sun/coral nhưng tên vẫn navy;
 - muted không dùng opacity cho toàn row vì sẽ làm text khó đọc;
 - hover pointer: fill `#FFF7DF`;
@@ -219,7 +222,7 @@ Empty state:
 
 ## 4. Modal tạo bàn và nhập mật khẩu
 
-Concept tham chiếu đã duyệt cho state tạo bàn: [concept-create-room-style-02-ngay-vui.png](./screenshots/concept-create-room-style-02-ngay-vui.png). Concept giữ nguyên lobby phía sau backdrop, dùng modal kem, mặc định chọn “4 người”, placeholder “Không đặt mật khẩu” và hai hành động “Hủy”/“Tạo bàn”. Modal nhập mật khẩu tái sử dụng cùng shell, input và action family nhưng lấy title/nội dung runtime từ source.
+Concept tham chiếu đã duyệt cho state tạo bàn: [concept-create-room-style-02-ngay-vui.png](./screenshots/concept-create-room-style-02-ngay-vui.png). Concept giữ nguyên lobby phía sau backdrop, dùng modal kem, mặc định chọn “4 người”, cược mặc định `0 Ken`, placeholder “Không đặt mật khẩu” và hai hành động “Hủy”/“Tạo bàn”. Modal nhập mật khẩu tái sử dụng cùng shell, input và action family nhưng lấy title/nội dung runtime từ source.
 
 ### 4.1 Backdrop
 
@@ -259,7 +262,19 @@ Capacity selector:
 - active aqua.100 fill + navy 3 px hoặc sun fill;
 - có check mini hoặc thay đổi border để không dựa riêng màu.
 
-Input:
+Input cược Ken:
+
+- label “Cược mỗi người”;
+- mặc định `0`, đồng nghĩa chơi không cược;
+- height 48 px, grid `26px minmax(0,1fr) auto`;
+- icon đầu ô dùng đúng `web/src/assets/icons/apps/ken.png`, visible 26 × 26 px;
+- số tiền là input numeric keyboard, live text 17 px weight 800, tabular nums và format dấu chấm theo `vi-VN`;
+- suffix “KEN” 13 px weight 800, navy;
+- helper mặc định “0 Ken = chơi không cược.”; khi lớn hơn 0 ghi rõ số Ken mỗi người cần có;
+- nếu cược vượt số dư hoặc `maxBet`: border/helper coral, `aria-invalid=true`, disable nút “Tạo bàn”;
+- server/store nhận đúng số cược đã parse, không hard-code về 0.
+
+Input mật khẩu:
 
 - height 46 px;
 - cream.50 fill;
