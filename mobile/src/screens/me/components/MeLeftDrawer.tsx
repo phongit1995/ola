@@ -6,7 +6,7 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 
-const personalIcon = require('@assets/icons/me/header/ic_header_personal.png');
+const personalIcon = require('@assets/icons/me/ic_drawer_personal.png');
 const marriageIcon = require('@assets/icons/me/header/ic_header_marriage.png');
 const favoriteIcon = require('@assets/icons/me/header/ic_header_favorite.png');
 const visitorsIcon = require('@assets/icons/me/header/ic_header_visitors.png');
