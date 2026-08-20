@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, PanelRow } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { ROUTES } from '@constants';
-import { formatKen, toast } from '@lib';
-import { AuthService, SocketService } from '@services';
+import { authTokens, formatKen, toast } from '@lib';
+import { AuthService, SettingsService, SocketService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
@@ -14,6 +14,7 @@ import { useLobbyWallpaperStyle } from '@hooks';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
+import { ChangeNicknameDialog } from './ChangeNicknameDialog';
 
 export function PersonalPanel() {
   const wallpaperStyle = useLobbyWallpaperStyle();
@@ -25,6 +26,24 @@ export function PersonalPanel() {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
+  const [nicknameOpen, setNicknameOpen] = useState(false);
+  const [nicknameEnabled, setNicknameEnabled] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    SettingsService.usernameChangeConfig()
+      .then((config) => {
+        if (!cancelled) setNicknameEnabled(config.enabled);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visibleItems = nicknameEnabled
+    ? PERSONAL_ITEMS
+    : PERSONAL_ITEMS.filter((item) => item.action !== 'nickname');
 
   function handleOpen(item: AppItem): (() => void) | undefined {
     if (item.action === 'logout') return () => setLogoutOpen(true);
@@ -32,6 +51,7 @@ export function PersonalPanel() {
       return () => setRemoveAccountOpen(true);
     }
     if (item.action === 'social') return () => setSocialOpen(true);
+    if (item.action === 'nickname') return () => setNicknameOpen(true);
     if (item.app) return () => openApp(item.app!);
     return undefined;
   }
@@ -53,23 +73,33 @@ export function PersonalPanel() {
     await signOut();
   }
 
+  function handleNicknameChanged() {
+    setNicknameOpen(false);
+    removeSavedAccountOfCurrentUser();
+    authTokens.clear();
+    SocketService.disconnect();
+    useAuthStore.getState().clearUser();
+    navigate(ROUTES.login);
+  }
+
+  function removeSavedAccountOfCurrentUser() {
+    const currentUsername = useAuthStore.getState().user?.username;
+    if (currentUsername == null) return;
+    const normalizedUsername = currentUsername.trim().toLowerCase();
+    const savedAccount = useSavedAccountsStore
+      .getState()
+      .accounts.find(
+        (account) =>
+          account.username.trim().toLowerCase() === normalizedUsername
+      );
+    if (savedAccount != null) {
+      useSavedAccountsStore.getState().removeAccount(savedAccount.username);
+    }
+  }
+
   async function confirmRemoveAccount() {
     setRemoveAccountOpen(false);
-
-    const currentUsername = useAuthStore.getState().user?.username;
-    if (currentUsername != null) {
-      const normalizedUsername = currentUsername.trim().toLowerCase();
-      const savedAccount = useSavedAccountsStore
-        .getState()
-        .accounts.find(
-          (account) =>
-            account.username.trim().toLowerCase() === normalizedUsername
-        );
-      if (savedAccount != null) {
-        useSavedAccountsStore.getState().removeAccount(savedAccount.username);
-      }
-    }
-
+    removeSavedAccountOfCurrentUser();
     await signOut();
   }
 
@@ -102,7 +132,7 @@ export function PersonalPanel() {
         style={wallpaperStyle}
       >
         <ul className="min-h-full">
-          {PERSONAL_ITEMS.map((item) => (
+          {visibleItems.map((item) => (
             <PanelRow
               key={item.titleKey}
               icon={item.icon}
@@ -140,6 +170,11 @@ export function PersonalPanel() {
       <SocialConnectionsDialog
         open={socialOpen}
         onClose={() => setSocialOpen(false)}
+      />
+      <ChangeNicknameDialog
+        open={nicknameOpen}
+        onClose={() => setNicknameOpen(false)}
+        onSuccess={handleNicknameChanged}
       />
     </>
   );

@@ -1355,6 +1355,16 @@ export interface TopupSetting {
   kenPerVnd: number
 }
 
+export interface UsernameChangeTierSetting {
+  minLength: number
+  cost: number
+}
+
+export interface UsernameChangeSetting {
+  enabled: boolean
+  tiers: UsernameChangeTierSetting[]
+}
+
 export interface DashboardTotals {
   users: number
   posts: number

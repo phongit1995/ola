@@ -4935,6 +4935,39 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_setting.UsernameChangeConfig:
+    properties:
+      enabled:
+        type: boolean
+      tiers:
+        items:
+          $ref: '#/definitions/internal_modules_setting.UsernameChangeTier'
+        type: array
+    type: object
+  internal_modules_setting.UsernameChangeConfigSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_setting.UsernameChangeConfig'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_setting.UsernameChangeTier:
+    properties:
+      cost:
+        type: integer
+      minLength:
+        type: integer
+    type: object
   internal_modules_user-setting.UpdateSettingsRequest:
     properties:
       commentPrivacy:
@@ -5022,6 +5055,79 @@ definitions:
         type: integer
       wallpaperUrl:
         example: ""
+        type: string
+    type: object
+  internal_modules_user.ChangeUsernameRequest:
+    properties:
+      expectedCost:
+        example: 100000
+        minimum: 0
+        type: integer
+      username:
+        example: john_doe
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - expectedCost
+    - username
+    type: object
+  internal_modules_user.ChangeUsernameResponse:
+    properties:
+      cost:
+        example: 100000
+        type: integer
+      kenBalance:
+        example: 900000
+        type: integer
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_user.ChangeUsernameSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.ChangeUsernameResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.CheckUsernameResponse:
+    properties:
+      available:
+        example: true
+        type: boolean
+      cost:
+        example: 100000
+        type: integer
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_user.CheckUsernameSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.CheckUsernameResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
         type: string
     type: object
   internal_modules_user.FollowListResponse:
@@ -15694,6 +15800,24 @@ paths:
       summary: Cấu hình nạp KEN (bank nhận tiền VietQR + mệnh giá) cho app
       tags:
       - settings
+  /settings/username-change:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_setting.UsernameChangeConfigSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình phí đổi username theo độ dài (tính bằng KEN)
+      tags:
+      - settings
   /user-settings:
     get:
       description: Get the authenticated user's settings (returns defaults if not
@@ -15985,6 +16109,69 @@ paths:
       security:
       - BearerAuth: []
       summary: Record a profile view
+      tags:
+      - user
+  /user/change-username:
+    post:
+      consumes:
+      - application/json
+      description: Change the authenticated user's username; the fee depends on the
+        new username length and every session is logged out on success
+      parameters:
+      - description: Change Username Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_user.ChangeUsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.ChangeUsernameSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Change username (costs KEN, revokes all sessions)
+      tags:
+      - user
+  /user/check-username:
+    get:
+      description: Check whether a username can be claimed by the authenticated user
+        and how much KEN it costs
+      parameters:
+      - description: Desired username
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.CheckUsernameSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Check username availability and change cost
       tags:
       - user
   /user/me:

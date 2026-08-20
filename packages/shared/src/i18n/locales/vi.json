@@ -166,6 +166,7 @@
       "nearby": "Lân cận",
       "social": "Mạng Xã Hội",
       "settings": "Cài đặt",
+      "changeNickname": "Đổi nickname",
       "removeAccount": "Xóa tài khoản"
     },
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
@@ -1786,5 +1787,29 @@
       "you have reached the maximum number of clans you can own": "Bạn đã đạt giới hạn số Clan được tạo"
     },
     "createShort": "Tạo"
+  },
+  "changeNickname": {
+    "title": "Đổi nickname",
+    "priceTitle": "Bảng giá theo độ dài nickname",
+    "tierLabel": "{{n}} ký tự",
+    "tierLabelPlus": "{{n}} ký tự trở lên",
+    "tierRange": "{{from}}–{{to}} ký tự",
+    "balance": "Số dư: {{ken}} KEN",
+    "inputLabel": "Nickname mới",
+    "inputPlaceholder": "Nhập nickname mới",
+    "checking": "Đang kiểm tra...",
+    "available": "Nickname có thể sử dụng",
+    "taken": "Nickname đã được sử dụng",
+    "invalid": "Nickname 2-20 ký tự, chỉ gồm chữ thường, số, dấu . _ -",
+    "same": "Nickname mới phải khác nickname hiện tại",
+    "insufficient": "Số dư KEN không đủ",
+    "confirm": "Đổi ({{ken}} KEN)",
+    "cancel": "Hủy",
+    "note": "Đổi nickname thành công sẽ đăng xuất khỏi tất cả thiết bị.",
+    "success": "Đổi nickname thành công. Vui lòng đăng nhập lại.",
+    "error": "Đổi nickname thất bại. Vui lòng thử lại.",
+    "disabledNotice": "Tính năng đổi nickname đang tạm tắt. Vui lòng quay lại sau.",
+    "checkError": "Không kiểm tra được nickname. Vui lòng thử lại.",
+    "costChanged": "Bảng giá vừa được cập nhật. Vui lòng kiểm tra giá mới trước khi đổi."
   }
 }

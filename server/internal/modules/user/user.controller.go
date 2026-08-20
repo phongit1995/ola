@@ -408,6 +408,74 @@ func (ctrl *Controller) UpdateProfile(c *gin.Context) (interface{}, error) {
 	return profile, nil
 }
 
+// CheckUsername godoc
+// @Summary      Check username availability and change cost
+// @Description  Check whether a username can be claimed by the authenticated user and how much KEN it costs
+// @Tags         user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        username query string true "Desired username"
+// @Success      200  {object}  CheckUsernameSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Router       /user/check-username [get]
+func (ctrl *Controller) CheckUsername(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var query CheckUsernameQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	resp, err := ctrl.service.CheckUsername(userID, query.Username)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// ChangeUsername godoc
+// @Summary      Change username (costs KEN, revokes all sessions)
+// @Description  Change the authenticated user's username; the fee depends on the new username length and every session is logged out on success
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body ChangeUsernameRequest true "Change Username Request"
+// @Success      200  {object}  ChangeUsernameSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Router       /user/change-username [post]
+func (ctrl *Controller) ChangeUsername(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := utils.BindJSON[ChangeUsernameRequest](c)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ctrl.service.ChangeUsername(userID, req.Username, *req.ExpectedCost)
+	if err != nil {
+		ctrl.logger.Warnw("Failed to change username",
+			"user_id", userID,
+			"error", err.Error(),
+		)
+		return nil, utils.ServiceError(err)
+	}
+
+	ctrl.logger.Infow("Username changed successfully",
+		"user_id", userID,
+		"username", resp.Username,
+	)
+	return resp, nil
+}
+
 // SearchUsers godoc
 // @Summary      Search users
 // @Description  Search users by username or full name

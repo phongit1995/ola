@@ -166,6 +166,7 @@
       "nearby": "Nearby",
       "social": "Social connections",
       "settings": "Settings",
+      "changeNickname": "Change nickname",
       "removeAccount": "Delete account"
     },
     "appGameSubtitle": "The BEST games for you",
@@ -1786,5 +1787,29 @@
       "you have reached the maximum number of clans you can own": "You have reached the limit of clans you can create"
     },
     "createShort": "Create"
+  },
+  "changeNickname": {
+    "title": "Change nickname",
+    "priceTitle": "Price by nickname length",
+    "tierLabel": "{{n}} characters",
+    "tierLabelPlus": "{{n}}+ characters",
+    "tierRange": "{{from}}–{{to}} characters",
+    "balance": "Balance: {{ken}} KEN",
+    "inputLabel": "New nickname",
+    "inputPlaceholder": "Enter new nickname",
+    "checking": "Checking...",
+    "available": "Nickname is available",
+    "taken": "Nickname is already taken",
+    "invalid": "Nickname must be 2-20 characters: lowercase letters, digits, . _ -",
+    "same": "New nickname must differ from the current one",
+    "insufficient": "Not enough KEN",
+    "confirm": "Change ({{ken}} KEN)",
+    "cancel": "Cancel",
+    "note": "Changing your nickname will log you out of all devices.",
+    "success": "Nickname changed. Please log in again.",
+    "error": "Failed to change nickname. Please try again.",
+    "disabledNotice": "Nickname change is temporarily disabled. Please come back later.",
+    "checkError": "Could not check the nickname. Please try again.",
+    "costChanged": "The price list was just updated. Please review the new price before changing."
   }
 }

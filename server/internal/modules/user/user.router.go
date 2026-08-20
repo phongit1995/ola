@@ -28,6 +28,8 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		user.POST("/upload", r.controller.Upload)
 		user.POST("/presence", r.controller.GetPresenceBatch)
 		user.GET("/search", r.controller.SearchUsers)
+		user.GET("/check-username", r.controller.CheckUsername)
+		user.POST("/change-username", r.controller.ChangeUsername)
 		user.GET("/:id", r.controller.GetUserInfo)
 		user.POST("/:id/view", r.controller.RecordProfileView)
 		user.POST("/:id/kiss", r.rateLimit.LimitPolicy(middleware.PolicyKiss), r.controller.Kiss)

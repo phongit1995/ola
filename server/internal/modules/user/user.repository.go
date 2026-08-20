@@ -1,13 +1,21 @@
 package user
 
 import (
+	"errors"
 	"time"
 
+	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+)
+
+var (
+	ErrUsernameTaken     = errors.New("username already exists")
+	ErrUsernameUnchanged = errors.New("new username must be different")
+	ErrInsufficientKen   = errors.New("insufficient ken balance")
 )
 
 type Repository struct {
@@ -38,6 +46,89 @@ func (r *Repository) FindByUsername(username string) (*models.User, error) {
 
 func (r *Repository) Update(user *models.User) error {
 	return r.db.Save(user).Error
+}
+
+func (r *Repository) UsernameTaken(username string, exclude uuid.UUID) (bool, error) {
+	var count int64
+	err := r.db.Unscoped().Model(&models.User{}).
+		Where("LOWER(username) = LOWER(?) AND id <> ?", username, exclude).
+		Count(&count).Error
+	return count > 0, err
+}
+
+type ChangeUsernameParams struct {
+	UserID      uuid.UUID
+	NewUsername string
+	Cost        int
+}
+
+type ChangeUsernameResult struct {
+	OldUsername string
+	KenBalance  int
+}
+
+func (r *Repository) ChangeUsername(p ChangeUsernameParams) (*ChangeUsernameResult, error) {
+	var result ChangeUsernameResult
+
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var user models.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&user, "id = ?", p.UserID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperr.ErrUserNotFound
+			}
+			return err
+		}
+		if user.Username == p.NewUsername {
+			return ErrUsernameUnchanged
+		}
+		if user.Ken < p.Cost {
+			return ErrInsufficientKen
+		}
+
+		if err := tx.Model(&models.User{}).Where("id = ?", p.UserID).Update("username", p.NewUsername).Error; err != nil {
+			if apperr.IsUniqueViolation(err) {
+				return ErrUsernameTaken
+			}
+			return err
+		}
+
+		balanceAfter := user.Ken - p.Cost
+		if p.Cost > 0 {
+			if err := tx.Model(&models.User{}).Where("id = ?", p.UserID).Update("ken", balanceAfter).Error; err != nil {
+				return err
+			}
+			actorID := p.UserID
+			refID := p.UserID
+			kenTx := models.KenTransaction{
+				UserID:        p.UserID,
+				Direction:     models.KenDirectionDebit,
+				Type:          models.KenTxTypeUsernameChange,
+				Amount:        p.Cost,
+				BalanceBefore: user.Ken,
+				BalanceAfter:  balanceAfter,
+				Description:   "change username @" + user.Username + " -> @" + p.NewUsername,
+				RefType:       "user",
+				RefID:         &refID,
+				ActorType:     models.KenActorUser,
+				ActorID:       &actorID,
+				Metadata: models.JSONB{
+					"oldUsername": user.Username,
+					"newUsername": p.NewUsername,
+				},
+			}
+			if err := tx.Create(&kenTx).Error; err != nil {
+				return err
+			}
+		}
+
+		result.OldUsername = user.Username
+		result.KenBalance = balanceAfter
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 func (r *Repository) IncrementKisses(id uuid.UUID) (int, error) {

@@ -66,6 +66,11 @@ func (ctrl *Controller) Put(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if key == setting.KeyUsernameChange {
+		if err := setting.ValidateUsernameChangeValue(req.Value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	}
 	item, err := ctrl.service.Put(key, req.Value)
 	if err != nil {
 		return nil, utils.ServiceError(err)

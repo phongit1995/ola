@@ -35,3 +35,13 @@ export interface TopupConfigResult {
   kenPerVnd: number;
   bank?: TopupBankInfo;
 }
+
+export interface UsernameChangeTier {
+  minLength: number;
+  cost: number;
+}
+
+export interface UsernameChangeConfigResult {
+  enabled: boolean;
+  tiers: UsernameChangeTier[];
+}

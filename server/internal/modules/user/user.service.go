@@ -11,9 +11,12 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
+	"ola-chat-server/internal/modules/session"
+	"ola-chat-server/internal/modules/setting"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,6 +28,8 @@ type Service struct {
 	repo           *Repository
 	relRepo        *relationships.Repository
 	userSettingSvc *usersetting.Service
+	settingSvc     *setting.Service
+	sessionSvc     *session.Service
 	cache          *CacheService
 	s3Service      *services.S3Service
 	cacheService   *services.CacheService
@@ -37,6 +42,8 @@ func NewService(
 	repo *Repository,
 	relRepo *relationships.Repository,
 	userSettingSvc *usersetting.Service,
+	settingSvc *setting.Service,
+	sessionSvc *session.Service,
 	cache *CacheService,
 	s3Service *services.S3Service,
 	cacheService *services.CacheService,
@@ -48,6 +55,8 @@ func NewService(
 		repo:           repo,
 		relRepo:        relRepo,
 		userSettingSvc: userSettingSvc,
+		settingSvc:     settingSvc,
+		sessionSvc:     sessionSvc,
 		cache:          cache,
 		s3Service:      s3Service,
 		cacheService:   cacheService,
@@ -848,5 +857,137 @@ func (s *Service) UploadImage(ctx context.Context, userID uuid.UUID, file multip
 		Format:    result.Format,
 		Width:     result.Width,
 		Height:    result.Height,
+	}, nil
+}
+
+var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
+
+const (
+	usernameMinLen = 2
+	usernameMaxLen = 20
+)
+
+var (
+	ErrInvalidUsername        = errors.New("invalid username format")
+	ErrUsernameChangeDisabled = errors.New("username change is disabled")
+	ErrUsernameCostChanged    = errors.New("username change cost has changed")
+	ErrRevokeSessionsFailed   = errors.New("username changed but failed to revoke sessions")
+)
+
+const (
+	revokeSessionsAttempts = 3
+	revokeSessionsBackoff  = 200 * time.Millisecond
+)
+
+func normalizeUsername(username string) (string, error) {
+	name := strings.ToLower(strings.TrimSpace(username))
+	name = strings.TrimPrefix(name, "@")
+	if len(name) < usernameMinLen || len(name) > usernameMaxLen || !usernameRegex.MatchString(name) {
+		return "", ErrInvalidUsername
+	}
+	return name, nil
+}
+
+func (s *Service) resolveUsernameChangeCost(username string) (int, error) {
+	cfg, err := s.settingSvc.GetUsernameChange()
+	if err != nil {
+		return 0, err
+	}
+	if !cfg.Enabled {
+		return 0, ErrUsernameChangeDisabled
+	}
+	cost := cfg.CostFor(len(username))
+	if cost < 0 {
+		return 0, ErrInvalidUsername
+	}
+	return cost, nil
+}
+
+func (s *Service) CheckUsername(userID uuid.UUID, username string) (*CheckUsernameResponse, error) {
+	name, err := normalizeUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	cost, err := s.resolveUsernameChangeCost(name)
+	if err != nil {
+		return nil, err
+	}
+	taken, err := s.repo.UsernameTaken(name, userID)
+	if err != nil {
+		return nil, err
+	}
+	return &CheckUsernameResponse{
+		Username:  name,
+		Available: !taken,
+		Cost:      cost,
+	}, nil
+}
+
+func (s *Service) ChangeUsername(userID uuid.UUID, username string, expectedCost int) (*ChangeUsernameResponse, error) {
+	name, err := normalizeUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	cost, err := s.resolveUsernameChangeCost(name)
+	if err != nil {
+		return nil, err
+	}
+	if cost != expectedCost {
+		return nil, ErrUsernameCostChanged
+	}
+	taken, err := s.repo.UsernameTaken(name, userID)
+	if err != nil {
+		return nil, err
+	}
+	if taken {
+		return nil, ErrUsernameTaken
+	}
+
+	result, err := s.repo.ChangeUsername(ChangeUsernameParams{
+		UserID:      userID,
+		NewUsername: name,
+		Cost:        cost,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.cache.InvalidateUser(userID); err != nil {
+		s.logger.Warnw("Failed to invalidate user cache after username change",
+			"user_id", userID,
+			"error", err.Error(),
+		)
+	}
+	var revokeErr error
+	for attempt := 1; attempt <= revokeSessionsAttempts; attempt++ {
+		if _, revokeErr = s.sessionSvc.RevokeAllForUser(userID); revokeErr == nil {
+			break
+		}
+		s.logger.Warnw("Failed to revoke sessions after username change, retrying",
+			"user_id", userID,
+			"attempt", attempt,
+			"error", revokeErr.Error(),
+		)
+		time.Sleep(revokeSessionsBackoff)
+	}
+	if revokeErr != nil {
+		s.logger.Errorw("Sessions not revoked after username change",
+			"user_id", userID,
+			"error", revokeErr.Error(),
+		)
+		return nil, ErrRevokeSessionsFailed
+	}
+
+	s.logger.Infow("Username changed",
+		"user_id", userID,
+		"old_username", result.OldUsername,
+		"new_username", name,
+		"cost", cost,
+	)
+
+	return &ChangeUsernameResponse{
+		Username:   name,
+		Cost:       cost,
+		KenBalance: result.KenBalance,
 	}, nil
 }

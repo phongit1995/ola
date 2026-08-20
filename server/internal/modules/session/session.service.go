@@ -109,6 +109,9 @@ func (s *Service) RevokeAllForUser(userID uuid.UUID) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	for _, id := range ids {
+		s.kickSession(id, "session_revoked")
+	}
 	return int(revoked), nil
 }
 

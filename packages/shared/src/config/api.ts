@@ -34,12 +34,15 @@ export const API_PATH = {
   userSettings: '/user-settings',
   appSettings: {
     topup: '/settings/topup',
+    usernameChange: '/settings/username-change',
   },
   user: {
     me: '/user/me',
     search: '/user/search',
     upload: '/user/upload',
     presence: '/user/presence',
+    checkUsername: '/user/check-username',
+    changeUsername: '/user/change-username',
     detail: (id: string) => `/user/${id}`,
     profileView: (id: string) => `/user/${id}/view`,
     kiss: (id: string) => `/user/${id}/kiss`,

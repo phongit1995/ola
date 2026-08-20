@@ -20,3 +20,5 @@ type TopupConfigResponse struct {
 }
 
 type TopupConfigSuccessResponse = utils.BaseResponse[TopupConfigResponse]
+
+type UsernameChangeConfigSuccessResponse = utils.BaseResponse[UsernameChangeConfig]

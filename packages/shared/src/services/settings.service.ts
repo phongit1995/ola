@@ -4,6 +4,7 @@ import type {
   TopupConfigResult,
   UpdateSettingsRequest,
   UserSettings,
+  UsernameChangeConfigResult,
 } from '../types/api/settings.type';
 
 export class SettingsService {
@@ -17,5 +18,9 @@ export class SettingsService {
 
   static topupConfig(): Promise<TopupConfigResult> {
     return http.get<TopupConfigResult>(API_PATH.appSettings.topup);
+  }
+
+  static usernameChangeConfig(): Promise<UsernameChangeConfigResult> {
+    return http.get<UsernameChangeConfigResult>(API_PATH.appSettings.usernameChange);
   }
 }

@@ -11,6 +11,7 @@ import iconMedia from '@/assets/icons/apps/media.png';
 // import iconMall from '@/assets/icons/apps/mall.png';
 // import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
+import iconNickname from '@/assets/icons/apps/nickname.png';
 import iconRemoveAccount from '@/assets/icons/apps/delete-account.png';
 import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
@@ -24,7 +25,7 @@ export interface AppItem {
   titleKey: ParseKeys;
   app?: AppOverlayKind;
   overlay?: 'pen' | 'egg' | 'wheel';
-  action?: 'logout' | 'social' | 'remove-account';
+  action?: 'logout' | 'social' | 'remove-account' | 'nickname';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -49,6 +50,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     app: 'notifications',
   },
   { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
+  {
+    icon: iconNickname,
+    titleKey: 'home.apps.changeNickname',
+    action: 'nickname',
+  },
   { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
   { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
   { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
