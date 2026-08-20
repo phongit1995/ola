@@ -22,6 +22,7 @@ import { CHAT_BG } from '@screens/chat/constants';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { ReportDialog } from '@components/ui/ReportDialog';
 import {
   buildRoomFeed,
   type GroupedMessage,
@@ -102,12 +103,13 @@ export function RoomMessagesTab({
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
+  const [reportTarget, setReportTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(
     null,
   );
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const pendingSheetDialogRef = useRef<{
-    kind: 'delete' | 'block';
+    kind: 'delete' | 'block' | 'report';
     target: RoomMessage;
   } | null>(null);
   const pendingBlockCommitRef = useRef<RoomMessage | null>(null);
@@ -186,6 +188,7 @@ export function RoomMessagesTab({
     pendingSheetDialogRef.current = null;
     if (pending?.kind === 'delete') setDeleteTarget(pending.target);
     if (pending?.kind === 'block') setBlockTarget(pending.target);
+    if (pending?.kind === 'report') setReportTarget(pending.target);
   }, []);
 
   const commitPendingBlock = useCallback(() => {
@@ -262,6 +265,14 @@ export function RoomMessagesTab({
         onSelect: () => onSetReplyTarget(message),
       });
       if (canCopy) actions.push(copyAction);
+      actions.push({
+        key: 'report',
+        label: t('room.actionReport'),
+        icon: 'report',
+        onSelect: () => {
+          pendingSheetDialogRef.current = { kind: 'report', target: message };
+        },
+      });
       actions.push({
         key: 'block',
         label: t('room.actionBlock'),
@@ -473,6 +484,13 @@ export function RoomMessagesTab({
         }}
         onDismiss={openPendingSheetDialog}
       />
+
+      {reportTarget != null && (
+        <ReportDialog
+          target={{ type: 'message', id: reportTarget.id }}
+          onClose={() => setReportTarget(null)}
+        />
+      )}
 
       <RoomReactionsDialog
         visible={reactionsTargetId != null}

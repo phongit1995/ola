@@ -37,6 +37,7 @@ import { ChatCallButtons } from '@screens/call/ChatCallButtons';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { ReportDialog } from '@components/ui/ReportDialog';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulToken } from '@lib/kul';
@@ -140,6 +141,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [blockOpen, setBlockOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
   const pendingDeleteTargetRef = useRef<Message | null>(null);
+  const [reportTarget, setReportTarget] = useState<Message | null>(null);
+  const pendingReportTargetRef = useRef<Message | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: Message;
     anchor: AnchorRect;
@@ -441,6 +444,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     const target = pendingDeleteTargetRef.current;
     pendingDeleteTargetRef.current = null;
     if (target != null) setDeleteTarget(target);
+    const report = pendingReportTargetRef.current;
+    pendingReportTargetRef.current = null;
+    if (report != null) setReportTarget(report);
   }, []);
 
   function sheetActions(message: Message): MessageSheetAction[] {
@@ -468,6 +474,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         label: t('chat.actionEdit'),
         icon: 'edit',
         onSelect: () => startEdit(message),
+      });
+    }
+    if (abilities.canReport) {
+      actions.push({
+        key: 'report',
+        label: t('chat.actionReport'),
+        icon: 'report',
+        onSelect: () => {
+          pendingReportTargetRef.current = message;
+        },
       });
     }
     if (abilities.canDelete) {
@@ -865,6 +881,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         }}
         onDismiss={openPendingDeleteDialog}
       />
+
+      {reportTarget != null && (
+        <ReportDialog
+          target={{ type: 'message', id: reportTarget.id }}
+          onClose={() => setReportTarget(null)}
+        />
+      )}
 
       <RoomReactionsDialog
         visible={reactionsTargetId != null}

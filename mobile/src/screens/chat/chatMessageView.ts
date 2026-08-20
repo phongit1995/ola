@@ -19,6 +19,7 @@ interface ChatMessageAbilities {
   canCopy: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  canReport: boolean;
 }
 
 export function chatMessageAbilities(
@@ -32,5 +33,6 @@ export function chatMessageAbilities(
     canCopy: isCopyableMessageText(message),
     canEdit: isOwn && message.type === MESSAGE_TYPE.text,
     canDelete: isOwn,
+    canReport: !isOwn && message.type !== 'call',
   };
 }

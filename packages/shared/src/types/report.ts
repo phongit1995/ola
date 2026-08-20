@@ -1,4 +1,4 @@
-export type ReportTargetType = 'account' | 'post' | 'comment';
+export type ReportTargetType = 'account' | 'post' | 'comment' | 'message';
 export type ReportReason = 'spam' | 'sensitive' | 'scam' | 'harassment' | 'other';
 
 export interface ReportTarget {
