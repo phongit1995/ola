@@ -43,5 +43,6 @@ export interface UsernameChangeTier {
 
 export interface UsernameChangeConfigResult {
   enabled: boolean;
+  enabledMobile?: boolean;
   tiers: UsernameChangeTier[];
 }

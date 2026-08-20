@@ -4939,6 +4939,8 @@ definitions:
     properties:
       enabled:
         type: boolean
+      enabledMobile:
+        type: boolean
       tiers:
         items:
           $ref: '#/definitions/internal_modules_setting.UsernameChangeTier'

@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { formatKen } from '@ola/shared/lib';
-import { AuthService, SocketService } from '@ola/shared/services';
+import { authTokens, formatKen } from '@ola/shared/lib';
+import {
+  AuthService,
+  SettingsService,
+  SocketService,
+} from '@ola/shared/services';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
@@ -16,6 +20,7 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
+import { ChangeNicknameDialog } from './ChangeNicknameDialog';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 
@@ -75,6 +80,26 @@ export function PersonalScreen() {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
+  const [nicknameOpen, setNicknameOpen] = useState(false);
+  const [nicknameEnabled, setNicknameEnabled] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    SettingsService.usernameChangeConfig()
+      .then(config => {
+        if (!cancelled) {
+          setNicknameEnabled(config.enabled && config.enabledMobile === true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visibleItems = nicknameEnabled
+    ? PERSONAL_ITEMS
+    : PERSONAL_ITEMS.filter(item => item.action !== 'nickname');
 
   function handleOpen(item: AppItem) {
     if (item.action === 'logout') {
@@ -91,6 +116,10 @@ export function PersonalScreen() {
     }
     if (item.action === 'profile') {
       navigation.navigate(ROOT_ROUTES.EditProfile);
+      return;
+    }
+    if (item.action === 'nickname') {
+      setNicknameOpen(true);
       return;
     }
     if (item.action === 'vip') {
@@ -132,24 +161,33 @@ export function PersonalScreen() {
     await signOut();
   }
 
+  function removeSavedAccountOfCurrentUser() {
+    const currentUsername = useAuthStore.getState().user?.username;
+    if (currentUsername == null) return;
+    const normalizedUsername = currentUsername.trim().toLowerCase();
+    const savedAccount = useSavedAccountsStore
+      .getState()
+      .accounts.find(
+        account =>
+          account.username.trim().toLowerCase() === normalizedUsername,
+      );
+    if (savedAccount != null) {
+      useSavedAccountsStore.getState().removeAccount(savedAccount.username);
+    }
+  }
+
   async function confirmRemoveAccount() {
     setRemoveAccountOpen(false);
-
-    const currentUsername = useAuthStore.getState().user?.username;
-    if (currentUsername != null) {
-      const normalizedUsername = currentUsername.trim().toLowerCase();
-      const savedAccount = useSavedAccountsStore
-        .getState()
-        .accounts.find(
-          account =>
-            account.username.trim().toLowerCase() === normalizedUsername,
-        );
-      if (savedAccount != null) {
-        useSavedAccountsStore.getState().removeAccount(savedAccount.username);
-      }
-    }
-
+    removeSavedAccountOfCurrentUser();
     await signOut();
+  }
+
+  function handleNicknameChanged() {
+    setNicknameOpen(false);
+    removeSavedAccountOfCurrentUser();
+    authTokens.clear();
+    SocketService.disconnect();
+    useAuthStore.getState().clearUser();
   }
 
   return (
@@ -186,7 +224,7 @@ export function PersonalScreen() {
       <View className="flex-1">
         <LobbyWallpaper />
         <ScrollView className="flex-1">
-          {PERSONAL_ITEMS.map(item => (
+          {visibleItems.map(item => (
             <PanelRow
               key={item.titleKey}
               icon={item.icon}
@@ -226,6 +264,11 @@ export function PersonalScreen() {
       <SocialConnectionsDialog
         visible={socialOpen}
         onClose={() => setSocialOpen(false)}
+      />
+      <ChangeNicknameDialog
+        visible={nicknameOpen}
+        onClose={() => setNicknameOpen(false)}
+        onSuccess={handleNicknameChanged}
       />
     </View>
   );

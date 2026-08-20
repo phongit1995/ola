@@ -6,6 +6,7 @@ import type { AppSetting, UsernameChangeSetting, UsernameChangeTierSetting } fro
 
 const DEFAULT_USERNAME_CHANGE: UsernameChangeSetting = {
   enabled: true,
+  enabledMobile: true,
   tiers: [
     { minLength: 2, cost: 2_000_000 },
     { minLength: 3, cost: 1_000_000 },
@@ -16,6 +17,7 @@ const DEFAULT_USERNAME_CHANGE: UsernameChangeSetting = {
 
 interface UsernameChangeFormValues {
   enabled: boolean
+  enabledMobile: boolean
   tiers: UsernameChangeTierSetting[]
 }
 
@@ -27,7 +29,7 @@ function settingValue<T>(settings: AppSetting[] | undefined, key: string, defaul
 
 export function UsernameChangeSettingsPage() {
   const { message } = App.useApp()
-  const { data: settings, isLoading } = useAppSettings()
+  const { data: settings, isLoading, isError } = useAppSettings()
   const putSetting = usePutAppSetting()
 
   if (isLoading) {
@@ -35,6 +37,16 @@ export function UsernameChangeSettingsPage() {
       <div style={{ display: 'flex', justifyContent: 'center', padding: 64 }}>
         <Spin />
       </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <Card title="Đổi nickname" style={{ maxWidth: 680 }}>
+        <Typography.Text type="danger">
+          Không tải được cấu hình hiện tại. Tải lại trang trước khi chỉnh sửa để tránh ghi đè nhầm.
+        </Typography.Text>
+      </Card>
     )
   }
 
@@ -51,7 +63,11 @@ export function UsernameChangeSettingsPage() {
       message.error('Phải có mốc 2 ký tự để mọi độ dài nickname đều có giá')
       return
     }
-    const payload: UsernameChangeSetting = { enabled: values.enabled, tiers }
+    const payload: UsernameChangeSetting = {
+      enabled: values.enabled,
+      enabledMobile: values.enabledMobile,
+      tiers,
+    }
     try {
       await putSetting.mutateAsync({ key: 'username_change', value: { ...payload } })
       message.success('Đã lưu cấu hình đổi nickname')
@@ -69,14 +85,27 @@ export function UsernameChangeSettingsPage() {
       </Typography.Paragraph>
       <Form<UsernameChangeFormValues>
         layout="vertical"
-        initialValues={{ enabled: current.enabled, tiers: current.tiers }}
+        initialValues={{
+          enabled: current.enabled,
+          enabledMobile: current.enabledMobile,
+          tiers: current.tiers,
+        }}
         onFinish={save}
       >
         <Form.Item
           name="enabled"
           label="Cho phép đổi nickname"
           valuePropName="checked"
-          extra="Tắt thì app báo lỗi khi người dùng đổi nickname."
+          extra="Tắt thì cả web lẫn mobile ẩn mục Đổi nickname và server từ chối đổi."
+        >
+          <Switch />
+        </Form.Item>
+
+        <Form.Item
+          name="enabledMobile"
+          label="Hiển thị trên mobile"
+          valuePropName="checked"
+          extra="Tắt thì chỉ app mobile ẩn mục Đổi nickname, web vẫn hiển thị bình thường."
         >
           <Switch />
         </Form.Item>

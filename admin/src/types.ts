@@ -1362,6 +1362,7 @@ export interface UsernameChangeTierSetting {
 
 export interface UsernameChangeSetting {
   enabled: boolean
+  enabledMobile: boolean
   tiers: UsernameChangeTierSetting[]
 }
 

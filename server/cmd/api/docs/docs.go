@@ -19759,6 +19759,9 @@ const docTemplate = `{
                 "enabled": {
                     "type": "boolean"
                 },
+                "enabledMobile": {
+                    "type": "boolean"
+                },
                 "tiers": {
                     "type": "array",
                     "items": {

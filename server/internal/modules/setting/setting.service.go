@@ -58,13 +58,15 @@ type UsernameChangeTier struct {
 }
 
 type UsernameChangeConfig struct {
-	Enabled bool                 `json:"enabled"`
-	Tiers   []UsernameChangeTier `json:"tiers"`
+	Enabled       bool                 `json:"enabled"`
+	EnabledMobile bool                 `json:"enabledMobile"`
+	Tiers         []UsernameChangeTier `json:"tiers"`
 }
 
 func DefaultUsernameChangeConfig() UsernameChangeConfig {
 	return UsernameChangeConfig{
-		Enabled: true,
+		Enabled:       true,
+		EnabledMobile: true,
 		Tiers: []UsernameChangeTier{
 			{MinLength: 2, Cost: 2_000_000},
 			{MinLength: 3, Cost: 1_000_000},
