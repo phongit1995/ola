@@ -31,8 +31,8 @@ Source React quyết định chức năng, dữ liệu và state. Docs quyết �
 | S5 | Phòng chờ (pregame, render trong Board) | 2 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |
 | S6 | Bàn chơi | bàn 9×10, chọn quân → gợi ý nước, đi quân, highlight nước cuối, banner Chiếu, đồng hồ 30s, badge cược, KEN float, chat + reaction, Bỏ cuộc/Thoát |
 | S7 | Kết quả | Thắng/Thua/Hòa + lý do, ±KEN, Chơi lại (về phòng chờ), Đóng |
-| S8 | Lịch sử | 20 trận gần nhất, đối thủ, kết quả, ±KEN, thời gian |
-| S9 | Bảng xếp hạng | tuần/tháng/tất cả, thắng-thua, KEN thắng ròng |
+| S8 | Lịch sử | tối đa 100 trận gần nhất (`matchHistoryLimit`), đối thủ, kết quả, ±KEN (`kenDelta` từ server), thời gian |
+| S9 | Bảng xếp hạng | hôm nay/tuần này (SDK chỉ có `day\|week`), thắng-thua, KEN thắng ròng |
 | O1 | Banner đối thủ mất kết nối | đếm ngược grace 30s |
 | O2 | ConfirmModal | bỏ cuộc, thoát bàn, mời ra |
 | O3 | Toast + turn announce | lỗi server, ĐẾN LƯỢT BẠN |
@@ -47,6 +47,7 @@ Source React quyết định chức năng, dữ liệu và state. Docs quyết �
 4. [04-asset-manifest-and-prompts.md](./04-asset-manifest-and-prompts.md) — manifest CSS/SVG/raster, script sinh quân, prompt.
 5. [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md) — luật VN đầy đủ, state machine, socket protocol, steps replay, reconnect.
 6. [06-screen-to-feature-map.md](./06-screen-to-feature-map.md) — mapping màn → store state → SDK event → component.
+7. [screenshots/](./screenshots/README.md) — 37 ảnh mọi màn/state, chụp từ harness `mock-ui.html` bằng `scripts/xiangqi-shots.mjs`.
 
 ## Nguyên tắc bắt buộc
 

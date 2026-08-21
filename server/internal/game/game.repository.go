@@ -74,6 +74,7 @@ type matchHistoryRow struct {
 	Player0Name string     `gorm:"column:player0_name"`
 	Player1Name string     `gorm:"column:player1_name"`
 	Bet         int        `gorm:"column:bet"`
+	KenDelta    int        `gorm:"column:ken_delta"`
 }
 
 func normalizeLeaderboardPeriod(period string) string {
@@ -176,7 +177,8 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 	err = r.db.Table("game_matches").
 		Select(`game_matches.match_id, game_matches.finished_at AS played_at,
 			game_matches.player0_id, game_matches.player1_id, game_matches.winner_id,
-			game_matches.bet, player0.username AS player0_name, player1.username AS player1_name`).
+			game_matches.bet, game_matches.ken_delta,
+			player0.username AS player0_name, player1.username AS player1_name`).
 		Joins("LEFT JOIN users AS player0 ON player0.id = game_matches.player0_id").
 		Joins("LEFT JOIN users AS player1 ON player1.id = game_matches.player1_id").
 		Where(`game_matches.game_id = ? AND game_matches.status = ?
@@ -204,11 +206,14 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 		}
 
 		outcome := "draw"
+		kenDelta := 0
 		if row.WinnerID != nil {
 			if *row.WinnerID == uid {
 				outcome = "win"
+				kenDelta = row.KenDelta
 			} else {
 				outcome = "lose"
+				kenDelta = -row.Bet
 			}
 		}
 		data.Items[i] = protocol.MatchHistoryEntry{
@@ -218,6 +223,7 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 			OpponentName: opponentName,
 			Bet:          row.Bet,
 			Outcome:      outcome,
+			KenDelta:     kenDelta,
 		}
 	}
 	return data, nil

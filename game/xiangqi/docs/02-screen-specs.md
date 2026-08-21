@@ -131,10 +131,10 @@ Focus trap + Esc đóng (dùng `helpers/dialog.ts` của caro).
 ### 6.3 Lượt & đồng hồ
 - Vòng lượt gold quanh pod đang đi; turn announce `ĐẾN LƯỢT BẠN` khi về mình.
 - Đồng hồ 30 s trong pod: `deadline` từ STATE/MATCH_FOUND, interval 250 ms, ≤10 s chuyển `--xq-danger` + pulse + tick âm.
-- Hết giờ: server xử thua — client chỉ chờ `MATCH_OVER reason:'timeout'`.
+- Hết giờ: server xử thua — client chỉ chờ `MATCH_OVER reason:'timeout'`. Vì server **drop im lặng** mọi `MOVE` sau deadline, khi đồng hồ local về 0 store bật `turnExpired` → bỏ chọn, disable mọi quân/chấm gợi ý và hiện banner `Bạn đã hết giờ — chờ máy chủ xử` (đối thủ hết giờ thì đổi chủ ngữ). Không được để `movePending` treo.
 
 ### 6.4 Chat & reaction
-- Nút Chat mở drawer đáy (input + 20 tin gần nhất, `sendChat`); tin mới khi đóng → chấm đỏ.
+- Nút Chat mở drawer đáy (input + 20 tin gần nhất, `sendChat`); tin mới khi đóng → chấm đỏ. Input `maxLength=120` khớp `maxChatRunes` của engine; server từ chối (`CHAT_TOO_LONG`/`CHAT_RATE_LIMITED`/`INVALID_CHAT`) thì store trả lại draft qua `chatRestore` để không mất tin vừa nhập.
 - Reaction picker 6 cảm xúc → balloon bay cạnh pod (tái dùng component + asset caro).
 
 ### 6.5 Bỏ cuộc / Thoát
@@ -154,7 +154,8 @@ Modal lg 340 px trên backdrop, mở từ `MATCH_OVER` (giữ nguyên bàn phía
 ### 7.1 Nội dung
 - Banner kết quả: `THẮNG` (gold), `THUA` (mực), `HÒA` (kem) + minh họa quân 帥/將.
 - Dòng lý do: `Chiếu bí!` / `Đối thủ hết nước đi` / `Đối thủ đầu hàng` / `Hết giờ` / `Đối thủ mất kết nối` / `Thua do chiếu dai (luật lặp thế)` / `Ván hòa (lặp thế 3 lần)` / `Ván hòa (60 nước không ăn quân)` — map từ `reason` + step cuối (`mate.reason`, `draw.reason`).
-- KEN: `+{kenDelta}` jade / `−{bet}` đỏ / `Hòa — hoàn cược`; reveal delay ≈1.7 s cho animation KEN float chạy trước khi enable nút (pattern caro `revealDelayMs`).
+- KEN: `+{kenDelta}` jade / `−{bet}` đỏ / `Hòa — hoàn cược`.
+- Modal chỉ mở **sau** `RESULT_REVEAL_MS ≈ 1.1 s` kể từ khi bàn nhận nước kết thúc (khi `MATCH_OVER.state.steps` không rỗng), để người chơi thấy nước ăn quân/chiếu bí quyết định; forfeit/timeout/disconnect (steps rỗng) thì mở ngay. Âm win/lose phát lúc modal mở, âm capture/check phát ngay khi nước cuối lên bàn.
 - Nút: `Chơi lại` (về phòng chờ cùng bàn — `showWaitingRoom`, chỉ khi phòng còn) + `Đóng` (về S3).
 - `preserveOutcome`: ROOM_STATE về trước khi user đóng result thì vẫn giữ màn kết quả.
 
@@ -164,13 +165,14 @@ Modal lg 340 px trên backdrop, mở từ `MATCH_OVER` (giữ nguyên bàn phía
 
 - Full-screen, header back + title `Lịch sử đấu`.
 - `getHistory()` → list: mỗi hàng avatar đối thủ, tên, kết quả chip (Thắng jade/Thua đỏ/Hòa kem), ±KEN, lý do ngắn, `formatHistoryTime`.
-- 20 hàng, empty state + skeleton loading. (Không có bot-history localStorage vì v1 không có bot.)
+- ±KEN lấy `kenDelta` **có dấu** từ `HISTORY` (thắng = `bet − commission`, thua = `−bet`, hòa = `Hoàn cược`) — KHÔNG suy ra từ `bet` vì hoa hồng 5% làm thực nhận nhỏ hơn cược.
+- Tối đa `matchHistoryLimit = 100` hàng, empty state + skeleton loading. (Không có bot-history localStorage vì v1 không có bot.)
 
 ---
 
 ## S9. Bảng xếp hạng (LeaderboardScreen)
 
-- Tab `Tuần | Tháng | Tất cả` (`getLeaderboard(period)`, cache 3 period riêng như caro).
+- Tab `Hôm nay | Tuần này` (`getLeaderboard(period)`) — SDK/server chỉ hỗ trợ `day | week` (`game/src/sdk/protocol.ts`, `normalizeLeaderboardPeriod`), không có tháng/tất cả.
 - Hàng: hạng (1–3 huy chương), avatar + VIP, tên, `{wins} thắng — {losses} thua`, KEN thắng ròng.
 - Điều kiện: server đã thêm `xiangqi` vào whitelist leaderboard W/L (`game.repository.go:108`).
 

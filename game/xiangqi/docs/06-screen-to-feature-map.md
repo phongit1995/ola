@@ -12,7 +12,7 @@ Bảng tra nhanh khi implement: mỗi màn cần state gì, bắn/nghe event nà
 | S6 Bàn chơi | `boardMode='playing'`, `match{id,you,bet}`, `board[90]`, `selected`, `hints[]`, `lastFrom/To`, `myTurn`, `deadline`, `movePending`, `capturedMine/Opp`, `check`, `oppAway`, `messages` | `MOVE{from,to}`, `FORFEIT`, `CHAT_SEND`, `REACTION_SEND` | `STATE`, `MATCH_FOUND(resumed)`, `OPPONENT_DIS/RECONNECTED`, `CHAT_MESSAGE`, `REACTION`, `ERROR` | BoardSurface, Piece, MoveHintDot, LastMoveMarker, CheckBanner, PlayerPod+TurnClock+CapturedTray, BetBadge, ActionBar, ChatDrawer, ReactionPicker, OppAwayBanner |
 | S7 Kết quả | `result{outcome,kenDelta,reason,revealDelayMs}`, `matchSeq` | — (`again()` → ROOM_READY flow) | `MATCH_OVER`, `ROOM_WAITING/STATE` (preserveOutcome) | Modal result, fx, Buttons |
 | S8 Lịch sử | `historyData/loading/error` | `HISTORY` | `HISTORY` | HistoryRow, skeleton |
-| S9 BXH | `leaderboard{week,month,all}` | `LEADERBOARD{period}` | `LEADERBOARD` | LeaderboardRow, tabs |
+| S9 BXH | `leaderboard{day,week}` | `LEADERBOARD{period}` | `LEADERBOARD` | LeaderboardRow, tabs |
 | O1 Banner | `oppAway(graceDeadline)` | — | `OPPONENT_*` | OppAwayBanner |
 | O2 Confirm | `notice{title,body,onOk}` | tùy hành động | — | ConfirmModal |
 | O3 Toast | `toast`, `turnAnnounce` | — | `ERROR` | Toast, TurnAnnounce |

@@ -16,6 +16,10 @@ const REACTION_EMOJI: Record<GameReactionType, string> = {
   [GAME_REACTION_TYPE.Angry]: '😡',
 };
 
+// Mirrors maxChatRunes in server/internal/game/engine/engine.go; anything longer
+// is rejected server-side.
+const CHAT_MAX_CHARS = 120;
+
 const FULL_SET: number[] = (() => {
   const kinds: Array<[number, number]> = [
     [1, 1], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 5],
@@ -198,12 +202,14 @@ function PregamePanel() {
 }
 
 function ChatDrawer() {
-  const { messages, chatOpen, closeChat, sendChatText, userInfo } = useXiangqi(
+  const { messages, chatOpen, chatRestore, closeChat, sendChatText, consumeChatRestore, userInfo } = useXiangqi(
     useShallow((s) => ({
       messages: s.messages,
       chatOpen: s.chatOpen,
+      chatRestore: s.chatRestore,
       closeChat: s.closeChat,
       sendChatText: s.sendChatText,
+      consumeChatRestore: s.consumeChatRestore,
       userInfo: s.userInfo,
     })),
   );
@@ -213,6 +219,12 @@ function ChatDrawer() {
   useEffect(() => {
     if (chatOpen) listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages, chatOpen]);
+
+  useEffect(() => {
+    if (chatRestore == null) return;
+    setDraft((current) => (current ? current : chatRestore));
+    consumeChatRestore();
+  }, [chatRestore, consumeChatRestore]);
 
   if (!chatOpen) return null;
   const submit = () => {
@@ -250,7 +262,7 @@ function ChatDrawer() {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder="Nhập tin nhắn..."
-          maxLength={200}
+          maxLength={CHAT_MAX_CHARS}
           aria-label="Tin nhắn"
         />
         <button type="submit" className="xq-btn xq-btn-gold xq-btn-small" disabled={!draft.trim()}>
@@ -277,6 +289,7 @@ export function BoardScreen() {
       myTurn: s.myTurn,
       movePending: s.movePending,
       timerLeftMs: s.timerLeftMs,
+      turnExpired: s.turnExpired,
       turnAnnounce: s.turnAnnounce,
       bet: s.bet,
       oppAway: s.oppAway,
@@ -319,6 +332,7 @@ export function BoardScreen() {
   const seconds = Math.ceil(state.timerLeftMs / 1000);
   const urgent = seconds <= 10;
   const playing = state.boardMode === 'playing';
+  const boardLocked = !playing || !!state.result || state.turnExpired;
   const generalInCheckIdx = useMemo(() => {
     if (!checkVisible) return -1;
     return state.board.indexOf(pieceFor(state.myTurn ? mySide : 1 - mySide, KIND_GENERAL));
@@ -370,7 +384,7 @@ export function BoardScreen() {
                 ].join(' ')}
                 style={{ left: squareLeft(boardX(displayIdx)), top: squareTop(boardY(displayIdx)) }}
                 onClick={() => state.tapSquare(piece.idx)}
-                disabled={!playing || !!state.result}
+                disabled={boardLocked}
                 aria-label={`${pieceLabel(piece.piece)} ${red ? 'đỏ' : 'đen'}`}
               >
                 {pieceGlyph(piece.piece)}
@@ -388,6 +402,7 @@ export function BoardScreen() {
                   className="xq-hint-dot"
                   style={{ left: squareLeft(boardX(displayIdx)), top: squareTop(boardY(displayIdx)) }}
                   onClick={() => state.tapSquare(idx)}
+                  disabled={boardLocked}
                   aria-label={`Đi tới cột ${boardX(displayIdx) + 1} hàng ${boardY(displayIdx) + 1}`}
                 />
               );
@@ -423,6 +438,12 @@ export function BoardScreen() {
       {state.oppAway ? (
         <div className="xq-oppaway" role="status">
           Đối thủ mất kết nối, chờ {oppAwayLeft}s...
+        </div>
+      ) : null}
+
+      {playing && state.turnExpired && !state.result ? (
+        <div className="xq-expired" role="status">
+          {state.myTurn ? 'Bạn đã hết giờ — chờ máy chủ xử' : 'Đối thủ đã hết giờ — chờ máy chủ xử'}
         </div>
       ) : null}
 

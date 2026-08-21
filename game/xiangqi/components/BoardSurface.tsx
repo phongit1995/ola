@@ -4,13 +4,17 @@ const CELL = 40;
 const MARGIN = 20;
 const W = 360;
 const H = 400;
+const LAST_ROW = 9;
 
 function px(x: number): number {
   return MARGIN + x * CELL;
 }
 
+// Trục y của server đi từ nhà Đỏ (y=0) lên nhà Đen (y=9), còn SVG vẽ xuống, nên
+// phải đảo: y=0 nằm ở ĐÁY. Nhờ vậy Đỏ không lật là đã thấy quân mình ở dưới, Đen
+// lật flipIndex là đủ (spec 05 §1 "mình luôn ở dưới").
 function py(y: number): number {
-  return MARGIN + y * CELL;
+  return MARGIN + (LAST_ROW - y) * CELL;
 }
 
 const STAR_POINTS: Array<[number, number]> = [
@@ -76,9 +80,9 @@ export const BoardSurface = memo(function BoardSurface() {
 });
 
 export function squareLeft(x: number): string {
-  return `${((MARGIN + x * CELL) / W) * 100}%`;
+  return `${(px(x) / W) * 100}%`;
 }
 
 export function squareTop(y: number): string {
-  return `${((MARGIN + y * CELL) / H) * 100}%`;
+  return `${(py(y) / H) * 100}%`;
 }

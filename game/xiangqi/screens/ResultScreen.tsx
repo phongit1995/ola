@@ -3,7 +3,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { formatKen } from '../helpers/format';
 import { useXiangqi } from '../store/useXiangqi';
 
-const REVEAL_MS = 900;
+// The store already holds the modal back until the closing move is on the board,
+// so this only needs to swallow a stray tap landing on the fresh buttons.
+const REVEAL_MS = 350;
 
 export function ResultScreen() {
   const { result, roomWaiting, closeResult, playAgain } = useXiangqi(

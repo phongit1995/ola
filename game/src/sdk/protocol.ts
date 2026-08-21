@@ -140,6 +140,7 @@ export interface MatchHistoryEntry {
   opponentName: string;
   bet: number;
   outcome: MatchHistoryOutcome;
+  kenDelta: number;
 }
 
 export interface MatchHistoryData {
