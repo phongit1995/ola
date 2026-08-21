@@ -2170,6 +2170,11 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_announcement.LatestAnnouncementResponse:
+    properties:
+      announcement:
+        $ref: '#/definitions/ola-chat-server_internal_models.Announcement'
+    type: object
   internal_modules_auth.AuthResponse:
     properties:
       refreshToken:
@@ -6286,6 +6291,29 @@ definitions:
     additionalProperties:
       type: string
     type: object
+  ola-chat-server_internal_models.Announcement:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      endsAt:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      link:
+        type: string
+      startsAt:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   ola-chat-server_internal_models.AppSetting:
     properties:
       key:
@@ -6351,6 +6379,76 @@ definitions:
     - WheelSegmentVipDays
     - WheelSegmentVipItem
     - WheelSegmentVipRandom
+  ola-chat-server_internal_modules_announcement.AnnouncementListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.Announcement'
+        type: array
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_announcement.AnnouncementResponse:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      endsAt:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      link:
+        type: string
+      startsAt:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_announcement.CreateAnnouncementRequest:
+    properties:
+      content:
+        type: string
+      endsAt:
+        type: string
+      isActive:
+        type: boolean
+      link:
+        maxLength: 500
+        type: string
+      startsAt:
+        type: string
+      title:
+        maxLength: 200
+        minLength: 1
+        type: string
+    required:
+    - title
+    type: object
+  ola-chat-server_internal_modules_announcement.UpdateAnnouncementRequest:
+    properties:
+      content:
+        type: string
+      endsAt:
+        type: string
+      isActive:
+        type: boolean
+      link:
+        maxLength: 500
+        type: string
+      startsAt:
+        type: string
+      title:
+        maxLength: 200
+        minLength: 1
+        type: string
+    type: object
   ola-chat-server_internal_modules_egg.AdminDrawListResponse:
     properties:
       items:
@@ -9015,6 +9113,99 @@ info:
   title: Chat Server API
   version: "1.0"
 paths:
+  /admin/announcements:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_announcement.AnnouncementListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách thông báo (admin)
+      tags:
+      - admin-announcement
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Announcement
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_announcement.CreateAnnouncementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_announcement.AnnouncementResponse'
+      security:
+      - BearerAuth: []
+      summary: Tạo thông báo (admin)
+      tags:
+      - admin-announcement
+  /admin/announcements/{id}:
+    delete:
+      parameters:
+      - description: Announcement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá thông báo (admin)
+      tags:
+      - admin-announcement
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Announcement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Announcement
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_announcement.UpdateAnnouncementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_announcement.AnnouncementResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cập nhật thông báo (admin)
+      tags:
+      - admin-announcement
   /admin/auth/change-password:
     post:
       consumes:
@@ -12128,6 +12319,20 @@ paths:
       summary: Lưu cấu hình ô + lựa chọn của vòng quay (admin)
       tags:
       - admin-wheel
+  /announcements/latest:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_announcement.LatestAnnouncementResponse'
+      security:
+      - BearerAuth: []
+      summary: Thông báo đang hoạt động mới nhất
+      tags:
+      - announcement
   /auth/change-password:
     post:
       consumes:

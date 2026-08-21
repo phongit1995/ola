@@ -14,7 +14,7 @@ import { ReactionChips } from '@components/chat/ReactionChips';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
-import { PhoneIcon, VideoIcon } from '@screens/call/icons';
+import { ChatPhoneIcon, ChatVideoIcon } from '@screens/call/icons';
 import {
   BUBBLE_IN_BG,
   BUBBLE_IN_SHADOW,
@@ -121,7 +121,7 @@ function CallLogBubble({
   const { t } = useTranslation();
   const colors = useThemeColors();
   const view = callMessageView(t, meta);
-  const CallIcon = view.isVideo ? VideoIcon : PhoneIcon;
+  const CallIcon = view.isVideo ? ChatVideoIcon : ChatPhoneIcon;
   const missedColor = onPrimary ? '#ffcdd2' : '#e53935';
   return (
     <View

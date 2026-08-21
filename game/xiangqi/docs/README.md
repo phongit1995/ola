@@ -1,8 +1,8 @@
-# Cờ Tướng UI — Style: Kỳ Đàn Son Mộc
+# Cờ Tướng UI — Style: Mộc bản thủ công (Kỳ Đàn Son Mộc)
 
 ## Hướng duy nhất
 
-**Kỳ Đàn Son Mộc** là design system duy nhất cho UI Cờ Tướng (gameId `xiangqi`). Toàn bộ tài liệu đặt trực tiếp trong `game/xiangqi/docs/`, không phân tầng theo style.
+**Mộc bản thủ công** là design system duy nhất cho UI Cờ Tướng (gameId `xiangqi`); **Kỳ Đàn Son Mộc** là codename nội bộ của cùng một style. Tài liệu tổng quan đặt trong `game/xiangqi/docs/`; đặc tả triển khai chi tiết nằm tại [`docs/style/`](./style/README.md).
 
 Ngôn ngữ hình ảnh: nền gỗ trầm ấm, mặt bàn cờ giấy kem, quân son đỏ và mực đen khắc chữ Hán truyền thống, outline navy đồng nhất với hệ mini-game Ola, CTA vàng nắng, điểm nhấn đỏ son. Production ưu tiên CSS/SVG code-native (bàn cờ, lưới, cung, sông đều là SVG); raster chỉ dùng cho mặt quân và nền trang trí.
 
@@ -31,8 +31,8 @@ Source React quyết định chức năng, dữ liệu và state. Docs quyết �
 | S5 | Phòng chờ (pregame, render trong Board) | 2 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |
 | S6 | Bàn chơi | bàn 9×10, chọn quân → gợi ý nước, đi quân, highlight nước cuối, banner Chiếu, đồng hồ 30s, badge cược, KEN float, chat + reaction, Bỏ cuộc/Thoát |
 | S7 | Kết quả | Thắng/Thua/Hòa + lý do, ±KEN, Chơi lại (về phòng chờ), Đóng |
-| S8 | Lịch sử | 20 trận gần nhất, đối thủ, kết quả, ±KEN, thời gian |
-| S9 | Bảng xếp hạng | tuần/tháng/tất cả, thắng-thua, KEN thắng ròng |
+| S8 | Lịch sử | tối đa 100 trận gần nhất (`matchHistoryLimit`), đối thủ, kết quả, ±KEN (`kenDelta` từ server), thời gian |
+| S9 | Bảng xếp hạng | hôm nay/tuần này (SDK chỉ có `day\|week`), thắng-thua, KEN thắng ròng |
 | O1 | Banner đối thủ mất kết nối | đếm ngược grace 30s |
 | O2 | ConfirmModal | bỏ cuộc, thoát bàn, mời ra |
 | O3 | Toast + turn announce | lỗi server, ĐẾN LƯỢT BẠN |
@@ -47,6 +47,8 @@ Source React quyết định chức năng, dữ liệu và state. Docs quyết �
 4. [04-asset-manifest-and-prompts.md](./04-asset-manifest-and-prompts.md) — manifest CSS/SVG/raster, script sinh quân, prompt.
 5. [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md) — luật VN đầy đủ, state machine, socket protocol, steps replay, reconnect.
 6. [06-screen-to-feature-map.md](./06-screen-to-feature-map.md) — mapping màn → store state → SDK event → component.
+7. [screenshots/](./screenshots/README.md) — harness và hướng dẫn tạo cục bộ 37 ảnh màn/state bằng `scripts/xiangqi-shots.mjs`; PNG output không lưu trong Git.
+8. [style/](./style/README.md) — design system Mộc bản thủ công: token, từng loại button/control, component, icon, responsive, accessibility và QA.
 
 ## Nguyên tắc bắt buộc
 

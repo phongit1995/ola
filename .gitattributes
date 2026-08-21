@@ -6,3 +6,8 @@ deploy.sh text eol=lf
 # patch-package output: context lines are copied verbatim from upstream, so the
 # whitespace they carry must be preserved or the patch stops applying.
 *.patch -text -whitespace
+
+# Generated parity artifacts: `go generate` writes LF and the Go fixture tests
+# compare bytes, so a CRLF checkout on Windows would fail them.
+*.gen.ts text eol=lf
+server/internal/game/games/*/testdata/parity.json text eol=lf

@@ -1521,6 +1521,11 @@
     "closePreview": "Đóng ảnh",
     "copiedToClipboard": "Đã sao chép"
   },
+  "announcement": {
+    "detailTitle": "Thông báo",
+    "openLink": "Xem thêm",
+    "dismiss": "Ẩn thông báo này"
+  },
   "notify": {
     "title": "Thông báo",
     "comingSoon": "Tính năng đang được phát triển",

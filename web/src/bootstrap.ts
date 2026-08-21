@@ -19,6 +19,7 @@ import { useArcadeOverlayStore } from './store/arcadeOverlayStore';
 import { useGameOverlayStore } from './store/gameOverlayStore';
 import { useAppOverlayStore } from './store/appOverlayStore';
 import { useSettingsStore } from './store/settingsStore';
+import { useAnnouncementStore } from './store/announcementStore';
 
 configureEnv(webEnv);
 configureDeviceInfo({ platform: 'web', appVersion: APP_VERSION });
@@ -37,4 +38,5 @@ registerOnLogout(() => {
   useMediaViewerStore.getState().close();
   useAppOverlayStore.getState().reset();
   useSettingsStore.getState().reset();
+  useAnnouncementStore.getState().reset();
 });

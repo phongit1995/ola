@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { GAME_REACTION_TYPE, type GameReactionType } from '../../src/sdk';
 import { BoardSurface, squareLeft, squareTop } from '../components/BoardSurface';
+import { ModalHeading } from '../components/ModalHeading';
+import { XqIcon } from '../components/XqIcon';
 import { EMPTY, KIND_GENERAL, SIDE_RED, boardX, boardY, flipIndex, pieceFor, pieceKind, pieceSide } from '../logic/board';
 import { pieceGlyph, pieceLabel, sideLabel } from '../logic/pieces';
 import { formatKen } from '../helpers/format';
@@ -15,6 +17,19 @@ const REACTION_EMOJI: Record<GameReactionType, string> = {
   [GAME_REACTION_TYPE.Sad]: '😢',
   [GAME_REACTION_TYPE.Angry]: '😡',
 };
+
+const REACTION_LABEL: Record<GameReactionType, string> = {
+  [GAME_REACTION_TYPE.Like]: 'Thích',
+  [GAME_REACTION_TYPE.Love]: 'Yêu thích',
+  [GAME_REACTION_TYPE.Haha]: 'Cười lớn',
+  [GAME_REACTION_TYPE.Wow]: 'Bất ngờ',
+  [GAME_REACTION_TYPE.Sad]: 'Buồn',
+  [GAME_REACTION_TYPE.Angry]: 'Tức giận',
+};
+
+// Mirrors maxChatRunes in server/internal/game/engine/engine.go; anything longer
+// is rejected server-side.
+const CHAT_MAX_CHARS = 120;
 
 const FULL_SET: number[] = (() => {
   const kinds: Array<[number, number]> = [
@@ -111,10 +126,10 @@ function PregamePanel() {
   return (
     <div className="xq-pregame">
       <div className="xq-pregame-panel">
-        <h2 className="xq-pregame-title">Bàn của @{owner?.name ?? '...'}</h2>
+        <ModalHeading eyebrow="Phòng chờ" title={`Bàn của @${owner?.name ?? '...'}`} icon="owner" />
         <div className="xq-pregame-bet">
           {roomWaiting.bet > 0 ? `Cược ${formatKen(roomWaiting.bet)} KEN` : 'Giao hữu'}
-          {roomWaiting.locked ? ' · 🔒' : ''}
+          {roomWaiting.locked ? <XqIcon name="lock" size={15} /> : null}
         </div>
         <div className="xq-pregame-seats">
           {[meMember, opMember].map((member, index) =>
@@ -198,12 +213,14 @@ function PregamePanel() {
 }
 
 function ChatDrawer() {
-  const { messages, chatOpen, closeChat, sendChatText, userInfo } = useXiangqi(
+  const { messages, chatOpen, chatRestore, closeChat, sendChatText, consumeChatRestore, userInfo } = useXiangqi(
     useShallow((s) => ({
       messages: s.messages,
       chatOpen: s.chatOpen,
+      chatRestore: s.chatRestore,
       closeChat: s.closeChat,
       sendChatText: s.sendChatText,
+      consumeChatRestore: s.consumeChatRestore,
       userInfo: s.userInfo,
     })),
   );
@@ -213,6 +230,12 @@ function ChatDrawer() {
   useEffect(() => {
     if (chatOpen) listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages, chatOpen]);
+
+  useEffect(() => {
+    if (chatRestore == null) return;
+    setDraft((current) => (current ? current : chatRestore));
+    consumeChatRestore();
+  }, [chatRestore, consumeChatRestore]);
 
   if (!chatOpen) return null;
   const submit = () => {
@@ -224,7 +247,7 @@ function ChatDrawer() {
       <div className="xq-chat-head">
         <span>Trò chuyện</span>
         <button type="button" className="xq-icon-btn" onClick={closeChat} aria-label="Đóng chat">
-          ✕
+          <XqIcon name="close" size={20} />
         </button>
       </div>
       <div className="xq-chat-list" ref={listRef}>
@@ -250,10 +273,11 @@ function ChatDrawer() {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder="Nhập tin nhắn..."
-          maxLength={200}
+          maxLength={CHAT_MAX_CHARS}
           aria-label="Tin nhắn"
         />
         <button type="submit" className="xq-btn xq-btn-gold xq-btn-small" disabled={!draft.trim()}>
+          <XqIcon name="send" size={17} />
           Gửi
         </button>
       </form>
@@ -277,6 +301,7 @@ export function BoardScreen() {
       myTurn: s.myTurn,
       movePending: s.movePending,
       timerLeftMs: s.timerLeftMs,
+      turnExpired: s.turnExpired,
       turnAnnounce: s.turnAnnounce,
       bet: s.bet,
       oppAway: s.oppAway,
@@ -319,6 +344,29 @@ export function BoardScreen() {
   const seconds = Math.ceil(state.timerLeftMs / 1000);
   const urgent = seconds <= 10;
   const playing = state.boardMode === 'playing';
+  const boardLocked = !playing || state.movePending || !!state.result || state.turnExpired;
+  let statusTone = 'turn';
+  let statusText = state.myTurn ? 'Lượt của bạn' : 'Lượt đối thủ';
+  let statusIcon: 'check' | 'refresh' | 'warning' | 'wifi-off' | null = state.myTurn ? 'check' : null;
+  if (!playing) {
+    statusTone = 'waiting';
+    statusText = 'Phòng chờ';
+    statusIcon = null;
+  } else if (state.oppAway) {
+    statusTone = 'network';
+    statusText = `Đối thủ mất kết nối · còn ${oppAwayLeft}s`;
+    statusIcon = 'wifi-off';
+  } else if (state.turnExpired && !state.result) {
+    statusTone = 'danger';
+    statusText = state.myTurn ? 'Bạn đã hết giờ · chờ máy chủ xử' : 'Đối thủ đã hết giờ · chờ máy chủ xử';
+    statusIcon = 'warning';
+  } else if (state.movePending) {
+    statusTone = 'pending';
+    statusText = 'Đang xác nhận nước đi…';
+    statusIcon = 'refresh';
+  } else if (state.turnAnnounce) {
+    statusText = state.turnAnnounce;
+  }
   const generalInCheckIdx = useMemo(() => {
     if (!checkVisible) return -1;
     return state.board.indexOf(pieceFor(state.myTurn ? mySide : 1 - mySide, KIND_GENERAL));
@@ -326,126 +374,143 @@ export function BoardScreen() {
 
   return (
     <div className="xq-screen xq-board-screen">
-      <PlayerPod
-        seat={state.op}
-        clockActive={playing && !state.myTurn && !state.result}
-        secondsLeft={seconds}
-        urgent={urgent}
-        captured={capturedByOp}
-        mine={false}
-      />
+      <div className="xq-board-stage">
+        <PlayerPod
+          seat={state.op}
+          clockActive={playing && !state.myTurn && !state.result}
+          secondsLeft={seconds}
+          urgent={urgent}
+          captured={capturedByOp}
+          mine={false}
+        />
 
-      <div className={`xq-board-wrap ${state.boardMode === 'pregame' ? 'xq-board-dimmed' : ''}`}>
-        <BoardSurface />
-        {state.bet > 0 ? <div className="xq-bet-badge">⛁ {formatKen(state.bet)}</div> : null}
-        <div className="xq-board-layer">
-          {state.lastFrom >= 0 ? (
-            <div
-              className="xq-last-marker xq-last-from"
-              style={{ left: squareLeft(boardX(view(state.lastFrom))), top: squareTop(boardY(view(state.lastFrom))) }}
-            />
+        <div className={`xq-board-status xq-board-status-${statusTone}`} role="status" aria-live="polite">
+          {statusIcon ? <XqIcon name={statusIcon} size={15} /> : null}
+          <span>{statusText}</span>
+        </div>
+
+        <div className={`xq-board-wrap ${state.boardMode === 'pregame' ? 'xq-board-dimmed' : ''}`}>
+          <BoardSurface />
+          {state.bet > 0 ? (
+            <div className="xq-bet-badge">
+              <XqIcon name="ken" size={15} />
+              <span>{formatKen(state.bet)}</span>
+            </div>
           ) : null}
-          {state.lastTo >= 0 ? (
-            <div
-              className="xq-last-marker xq-last-to"
-              style={{ left: squareLeft(boardX(view(state.lastTo))), top: squareTop(boardY(view(state.lastTo))) }}
-            />
-          ) : null}
-          {state.pieces.map((piece) => {
-            const displayIdx = view(piece.idx);
-            const red = pieceSide(piece.piece) === SIDE_RED;
-            const isSelected = state.selected === piece.idx;
-            const isCaptureHint = state.hints.includes(piece.idx);
-            const isCheckedGeneral = piece.idx === generalInCheckIdx;
-            return (
-              <button
-                key={piece.key}
-                type="button"
-                className={[
-                  'xq-piece',
-                  red ? 'xq-piece-red' : 'xq-piece-black',
-                  isSelected ? 'xq-piece-selected' : '',
-                  isCaptureHint ? 'xq-piece-capture-hint' : '',
-                  isCheckedGeneral ? 'xq-piece-checked' : '',
-                ].join(' ')}
-                style={{ left: squareLeft(boardX(displayIdx)), top: squareTop(boardY(displayIdx)) }}
-                onClick={() => state.tapSquare(piece.idx)}
-                disabled={!playing || !!state.result}
-                aria-label={`${pieceLabel(piece.piece)} ${red ? 'đỏ' : 'đen'}`}
-              >
-                {pieceGlyph(piece.piece)}
-              </button>
-            );
-          })}
-          {state.hints
-            .filter((idx) => state.board[idx] === EMPTY)
-            .map((idx) => {
-              const displayIdx = view(idx);
+          <div className="xq-board-layer">
+            {state.lastFrom >= 0 ? (
+              <div
+                className="xq-last-marker xq-last-from"
+                style={{ left: squareLeft(boardX(view(state.lastFrom))), top: squareTop(boardY(view(state.lastFrom))) }}
+              />
+            ) : null}
+            {state.lastTo >= 0 ? (
+              <div
+                className="xq-last-marker xq-last-to"
+                style={{ left: squareLeft(boardX(view(state.lastTo))), top: squareTop(boardY(view(state.lastTo))) }}
+              />
+            ) : null}
+            {state.pieces.map((piece) => {
+              const displayIdx = view(piece.idx);
+              const red = pieceSide(piece.piece) === SIDE_RED;
+              const isSelected = state.selected === piece.idx;
+              const isCaptureHint = state.hints.includes(piece.idx);
+              const isCheckedGeneral = piece.idx === generalInCheckIdx;
               return (
                 <button
-                  key={`hint-${idx}`}
+                  key={piece.key}
                   type="button"
-                  className="xq-hint-dot"
+                  className={[
+                    'xq-piece',
+                    red ? 'xq-piece-red' : 'xq-piece-black',
+                    isSelected ? 'xq-piece-selected' : '',
+                    isCaptureHint ? 'xq-piece-capture-hint' : '',
+                    isCheckedGeneral ? 'xq-piece-checked' : '',
+                  ].join(' ')}
                   style={{ left: squareLeft(boardX(displayIdx)), top: squareTop(boardY(displayIdx)) }}
-                  onClick={() => state.tapSquare(idx)}
-                  aria-label={`Đi tới cột ${boardX(displayIdx) + 1} hàng ${boardY(displayIdx) + 1}`}
-                />
+                  onClick={() => state.tapSquare(piece.idx)}
+                  disabled={boardLocked}
+                  aria-label={`${pieceLabel(piece.piece)} ${red ? 'đỏ' : 'đen'}`}
+                >
+                  {pieceGlyph(piece.piece)}
+                </button>
               );
             })}
+            {state.hints
+              .filter((idx) => state.board[idx] === EMPTY)
+              .map((idx) => {
+                const displayIdx = view(idx);
+                return (
+                  <button
+                    key={`hint-${idx}`}
+                    type="button"
+                    className="xq-hint-dot"
+                    style={{ left: squareLeft(boardX(displayIdx)), top: squareTop(boardY(displayIdx)) }}
+                    onClick={() => state.tapSquare(idx)}
+                    disabled={boardLocked}
+                    aria-label={`Đi tới cột ${boardX(displayIdx) + 1} hàng ${boardY(displayIdx) + 1}`}
+                  />
+                );
+              })}
+          </div>
+          {checkVisible ? (
+            <div className="xq-check-banner" role="status">
+              <XqIcon name="warning" size={18} />
+              Chiếu tướng!
+            </div>
+          ) : null}
+          {state.reactionFloats.map((float) => (
+            <div key={float.seq} className={`xq-reaction-float ${float.mine ? 'xq-reaction-mine' : ''}`}>
+              {REACTION_EMOJI[float.type]}
+            </div>
+          ))}
         </div>
-        {checkVisible ? (
-          <div className="xq-check-banner" role="status">
-            Chiếu tướng!
-          </div>
-        ) : null}
-        {state.reactionFloats.map((float) => (
-          <div key={float.seq} className={`xq-reaction-float ${float.mine ? 'xq-reaction-mine' : ''}`}>
-            {REACTION_EMOJI[float.type]}
-          </div>
-        ))}
+
+        <PlayerPod
+          seat={state.me}
+          clockActive={playing && state.myTurn && !state.result}
+          secondsLeft={seconds}
+          urgent={urgent}
+          captured={capturedByMe}
+          mine
+        />
       </div>
-
-      <PlayerPod
-        seat={state.me}
-        clockActive={playing && state.myTurn && !state.result}
-        secondsLeft={seconds}
-        urgent={urgent}
-        captured={capturedByMe}
-        mine
-      />
-
-      {state.turnAnnounce ? (
-        <div className="xq-turn-announce" aria-live="polite">
-          {state.turnAnnounce}
-        </div>
-      ) : null}
-
-      {state.oppAway ? (
-        <div className="xq-oppaway" role="status">
-          Đối thủ mất kết nối, chờ {oppAwayLeft}s...
-        </div>
-      ) : null}
 
       {playing ? (
         <div className="xq-actionbar">
-          <button type="button" className="xq-action" onClick={state.openChat}>
-            💬<span>Chat</span>
+          <button
+            type="button"
+            className="xq-action"
+            onClick={state.openChat}
+            aria-label={state.chatUnread ? 'Mở trò chuyện, có tin nhắn mới' : 'Mở trò chuyện'}
+          >
+            <XqIcon name="chat" size={24} />
+            <span className="xq-action-label">Chat</span>
             {state.chatUnread ? <i className="xq-dot" /> : null}
           </button>
-          <button type="button" className="xq-action" onClick={() => setPickerOpen((open) => !open)}>
-            😊<span>Cảm xúc</span>
+          <button
+            type="button"
+            className="xq-action"
+            onClick={() => setPickerOpen((open) => !open)}
+            aria-expanded={pickerOpen}
+            aria-controls="xq-reaction-picker"
+          >
+            <XqIcon name="reaction" size={24} />
+            <span className="xq-action-label">Cảm xúc</span>
           </button>
           <button type="button" className="xq-action xq-action-danger" onClick={state.forfeitMatch} disabled={!!state.result}>
-            🏳️<span>Bỏ cuộc</span>
+            <XqIcon name="flag" size={24} />
+            <span className="xq-action-label">Bỏ cuộc</span>
           </button>
           <button type="button" className="xq-action" onClick={state.exitMatch}>
-            🚪<span>Thoát</span>
+            <XqIcon name="exit-door" size={24} />
+            <span className="xq-action-label">Thoát</span>
           </button>
         </div>
       ) : null}
 
       {pickerOpen ? (
-        <div className="xq-reaction-picker">
+        <div className="xq-reaction-picker" id="xq-reaction-picker" role="toolbar" aria-label="Chọn cảm xúc">
           {(Object.keys(REACTION_EMOJI) as GameReactionType[]).map((type) => (
             <button
               key={type}
@@ -454,7 +519,7 @@ export function BoardScreen() {
                 state.sendReactionType(type);
                 setPickerOpen(false);
               }}
-              aria-label={type}
+              aria-label={REACTION_LABEL[type]}
             >
               {REACTION_EMOJI[type]}
             </button>

@@ -4,13 +4,17 @@ const CELL = 40;
 const MARGIN = 20;
 const W = 360;
 const H = 400;
+const LAST_ROW = 9;
 
 function px(x: number): number {
   return MARGIN + x * CELL;
 }
 
+// Trục y của server đi từ nhà Đỏ (y=0) lên nhà Đen (y=9), còn SVG vẽ xuống, nên
+// phải đảo: y=0 nằm ở ĐÁY. Nhờ vậy Đỏ không lật là đã thấy quân mình ở dưới, Đen
+// lật flipIndex là đủ (spec 05 §1 "mình luôn ở dưới").
 function py(y: number): number {
-  return MARGIN + y * CELL;
+  return MARGIN + (LAST_ROW - y) * CELL;
 }
 
 const STAR_POINTS: Array<[number, number]> = [
@@ -52,7 +56,14 @@ export const BoardSurface = memo(function BoardSurface() {
   }
   return (
     <svg className="xq-board-svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-      <rect x={2} y={2} width={W - 4} height={H - 4} rx={10} className="xq-board-paper" />
+      <defs>
+        <pattern id="xq-paper-fiber" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M1 5h5M11 14h4M7 9h2" className="xq-board-fiber" />
+        </pattern>
+      </defs>
+      <rect x={2} y={2} width={W - 4} height={H - 4} rx={12} className="xq-board-wood" />
+      <rect x={7} y={7} width={W - 14} height={H - 14} rx={8} className="xq-board-paper" />
+      <rect x={7} y={7} width={W - 14} height={H - 14} rx={8} fill="url(#xq-paper-fiber)" />
       <g className="xq-board-lines">
         {verticals}
         {horizontals}
@@ -76,9 +87,9 @@ export const BoardSurface = memo(function BoardSurface() {
 });
 
 export function squareLeft(x: number): string {
-  return `${((MARGIN + x * CELL) / W) * 100}%`;
+  return `${(px(x) / W) * 100}%`;
 }
 
 export function squareTop(y: number): string {
-  return `${((MARGIN + y * CELL) / H) * 100}%`;
+  return `${(py(y) / H) * 100}%`;
 }

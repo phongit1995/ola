@@ -692,6 +692,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
             opponentName: opponent.name,
             bet: 0,
             outcome: draw ? 'draw' : won ? 'win' : 'lose',
+            kenDelta: 0,
           });
           set((state) => ({ history: mergeMatchHistory(state.history, botHistory) }));
         }

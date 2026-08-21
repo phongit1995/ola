@@ -1521,6 +1521,11 @@
     "closePreview": "Close image",
     "copiedToClipboard": "Copied"
   },
+  "announcement": {
+    "detailTitle": "Announcement",
+    "openLink": "Learn more",
+    "dismiss": "Dismiss this announcement"
+  },
   "notify": {
     "title": "Notifications",
     "comingSoon": "Feature coming soon",

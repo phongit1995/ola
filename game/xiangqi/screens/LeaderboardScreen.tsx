@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import type { LeaderboardPeriod } from '../../src/sdk';
+import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
 import { useXiangqi } from '../store/useXiangqi';
 
@@ -7,8 +8,6 @@ const PERIODS: Array<{ key: LeaderboardPeriod; label: string }> = [
   { key: 'day', label: 'Hôm nay' },
   { key: 'week', label: 'Tuần này' },
 ];
-
-const MEDALS = ['🥇', '🥈', '🥉'];
 
 export function LeaderboardScreen() {
   const { leaderboardItems, leaderboardPeriod, leaderboardLoading, setLeaderboardPeriod, closeLeaderboard } = useXiangqi(
@@ -25,7 +24,7 @@ export function LeaderboardScreen() {
     <div className="xq-screen xq-list-screen">
       <div className="xq-screen-header">
         <button type="button" className="xq-icon-btn" onClick={closeLeaderboard} aria-label="Quay lại">
-          ←
+          <XqIcon name="arrow-left" size={22} />
         </button>
         <h1>Bảng xếp hạng</h1>
         <span />
@@ -49,7 +48,7 @@ export function LeaderboardScreen() {
         {!leaderboardLoading && leaderboardItems.length === 0 ? <div className="xq-empty">Chưa có dữ liệu</div> : null}
         {leaderboardItems.map((item) => (
           <div key={item.userId} className="xq-list-row">
-            <span className="xq-rank">{MEDALS[item.rank - 1] ?? item.rank}</span>
+            <span className={`xq-rank ${item.rank <= 3 ? `xq-rank-${item.rank}` : ''}`}>{item.rank}</span>
             <div className="xq-pod-avatar xq-pod-avatar-red">{item.username.slice(0, 1).toUpperCase()}</div>
             <div className="xq-list-main">
               <span className="xq-list-name">{item.username}</span>

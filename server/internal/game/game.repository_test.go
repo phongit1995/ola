@@ -119,11 +119,11 @@ func TestMatchHistoryReturnsRealOpponentAndOutcome(t *testing.T) {
 		WithArgs("caro", matchStatusFinished, userID, userID, reasonVoid, matchHistoryLimit).
 		WillReturnRows(sqlmock.NewRows([]string{
 			"match_id", "played_at", "player0_id", "player1_id", "winner_id",
-			"bet", "player0_name", "player1_name",
+			"bet", "ken_delta", "player0_name", "player1_name",
 		}).
-			AddRow(winMatchID, now, userID, winOpponentID, userID, 10_000, "you", "doi_thu_1").
-			AddRow(loseMatchID, now.Add(-time.Minute), loseOpponentID, userID, loseOpponentID, 20_000, "doi_thu_2", "you").
-			AddRow(drawMatchID, now.Add(-2*time.Minute), userID, drawOpponentID, nil, 0, "you", "doi_thu_3"))
+			AddRow(winMatchID, now, userID, winOpponentID, userID, 10_000, 9_500, "you", "doi_thu_1").
+			AddRow(loseMatchID, now.Add(-time.Minute), loseOpponentID, userID, loseOpponentID, 20_000, 19_000, "doi_thu_2", "you").
+			AddRow(drawMatchID, now.Add(-2*time.Minute), userID, drawOpponentID, nil, 0, 0, "you", "doi_thu_3"))
 
 	data, err := repo.MatchHistory("caro", userID.String())
 	if err != nil {
@@ -135,15 +135,15 @@ func TestMatchHistoryReturnsRealOpponentAndOutcome(t *testing.T) {
 
 	if got := data.Items[0]; got.ID != winMatchID || got.OpponentID != winOpponentID.String() ||
 		got.OpponentName != "doi_thu_1" || got.Bet != 10_000 || got.Outcome != "win" ||
-		got.PlayedAt != now.UnixMilli() {
+		got.KenDelta != 9_500 || got.PlayedAt != now.UnixMilli() {
 		t.Fatalf("unexpected win history: %+v", got)
 	}
 	if got := data.Items[1]; got.ID != loseMatchID || got.OpponentID != loseOpponentID.String() ||
-		got.OpponentName != "doi_thu_2" || got.Outcome != "lose" {
+		got.OpponentName != "doi_thu_2" || got.Outcome != "lose" || got.KenDelta != -20_000 {
 		t.Fatalf("unexpected lose history: %+v", got)
 	}
 	if got := data.Items[2]; got.ID != drawMatchID || got.OpponentID != drawOpponentID.String() ||
-		got.OpponentName != "doi_thu_3" || got.Outcome != "draw" {
+		got.OpponentName != "doi_thu_3" || got.Outcome != "draw" || got.KenDelta != 0 {
 		t.Fatalf("unexpected draw history: %+v", got)
 	}
 }

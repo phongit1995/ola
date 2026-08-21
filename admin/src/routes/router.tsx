@@ -23,6 +23,7 @@ import { MiniGamePage } from '@/pages/MiniGamePage'
 import { MePage } from '@/pages/MePage'
 import { TopupSettingsPage } from '@/pages/TopupSettingsPage'
 import { UsernameChangeSettingsPage } from '@/pages/UsernameChangeSettingsPage'
+import { AnnouncementPage } from '@/pages/AnnouncementPage'
 import { AuditLogsPage } from '@/pages/AuditLogsPage'
 import { AdminLayout } from '@/layout/AdminLayout'
 import { RedirectIfAuthed, RequireAuth } from './RequireAuth'
@@ -68,6 +69,7 @@ export const router = createBrowserRouter([
       { path: 'me', element: <MePage /> },
       { path: 'settings/topup', element: <TopupSettingsPage /> },
       { path: 'settings/username-change', element: <UsernameChangeSettingsPage /> },
+      { path: 'settings/announcements', element: <AnnouncementPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },
     ],
   },

@@ -4,6 +4,7 @@ import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/modules/admin"
+	"ola-chat-server/internal/modules/announcement"
 	"ola-chat-server/internal/modules/auth"
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
@@ -68,6 +69,7 @@ func CreateServer(
 	marriageDiaryRouter *marriagediary.Router,
 	penRouter *pen.Router,
 	miniGameRouter *minigame.Router,
+	announcementRouter *announcement.Router,
 	chatBotRouter *chatbot.Router,
 	notificationRouter *notification.Router,
 	wsServer *websocket.Server,
@@ -128,6 +130,7 @@ func CreateServer(
 		marriageDiaryRouter.Setup(api)
 		penRouter.Setup(api)
 		miniGameRouter.Setup(api)
+		announcementRouter.Setup(api)
 		chatBotRouter.Setup(api)
 		notificationRouter.Setup(api)
 	}

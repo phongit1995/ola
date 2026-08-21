@@ -38,6 +38,9 @@ export const API_PATH = {
     topup: '/settings/topup',
     usernameChange: '/settings/username-change',
   },
+  announcements: {
+    latest: '/announcements/latest',
+  },
   user: {
     me: '/user/me',
     search: '/user/search',

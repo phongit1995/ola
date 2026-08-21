@@ -12,7 +12,7 @@ import {
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useCallStore } from '@store/callStore';
 import { CALL_BG } from './constants';
-import { EndCallIcon, PhoneIcon } from './icons';
+import { ChatPhoneIcon, EndCallIcon } from './icons';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { CALL_TYPE } from '@ola/shared/constants';
 
@@ -113,7 +113,7 @@ export function IncomingCallCard() {
           style={{ opacity: busy ? 0.4 : 1 }}
         >
           <View className="h-16 w-16 items-center justify-center rounded-full bg-ola-button">
-            <PhoneIcon size={28} color={colors.primaryDarker} />
+            <ChatPhoneIcon size={28} color={colors.primaryDarker} />
           </View>
           <Text className="text-xs text-white/70">{t('call.accept')}</Text>
         </Pressable>

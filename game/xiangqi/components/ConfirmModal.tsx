@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
+import { ModalHeading } from './ModalHeading';
 
 interface ConfirmModalProps {
   title: string;
@@ -10,24 +11,60 @@ interface ConfirmModalProps {
 }
 
 export function ConfirmModal({ title, body, okLabel, danger, onOk, onCancel }: ConfirmModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const okRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const bodyId = useId();
 
   useEffect(() => {
-    okRef.current?.focus();
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    (danger ? cancelRef.current : okRef.current)?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onCancel();
+      if (event.key === 'Escape') {
+        onCancel();
+        return;
+      }
+      if (event.key !== 'Tab' || !modalRef.current) return;
+      const focusable = Array.from(modalRef.current.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onCancel]);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      previousFocus?.focus();
+    };
+  }, [danger, onCancel]);
 
   return (
     <div className="xq-backdrop" role="presentation" onClick={onCancel}>
-      <div className="xq-modal" role="dialog" aria-modal="true" aria-label={title} onClick={(event) => event.stopPropagation()}>
-        <h2 className="xq-modal-title">{title}</h2>
-        <p className="xq-modal-body">{body}</p>
+      <div
+        ref={modalRef}
+        className={`xq-modal xq-confirm-modal ${danger ? 'xq-modal-danger' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={bodyId}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <ModalHeading
+          eyebrow={danger ? 'Hành động quan trọng' : 'Xác nhận'}
+          title={title}
+          icon={danger ? 'warning' : 'check'}
+          titleId={titleId}
+        />
+        <p className="xq-modal-body" id={bodyId}>{body}</p>
         <div className="xq-modal-actions">
-          <button type="button" className="xq-btn xq-btn-paper" onClick={onCancel}>
+          <button type="button" ref={cancelRef} className="xq-btn xq-btn-paper" onClick={onCancel}>
             Hủy
           </button>
           <button type="button" ref={okRef} className={`xq-btn ${danger ? 'xq-btn-danger' : 'xq-btn-gold'}`} onClick={onOk}>

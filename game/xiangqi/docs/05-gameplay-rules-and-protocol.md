@@ -48,6 +48,7 @@ V2 (chưa làm): đuổi dai quân không được bảo vệ (xử như chiếu
 - Bet do chủ bàn đặt khi tạo bàn (0 = giao hữu); escrow khi vào trận.
 - Thắng: `payout = 2*bet − commission` (`XIANGQI_COMMISSION_PERCENT`, default 5%), `kenDelta = payout − bet`; thua `−bet`; **hòa: hoàn cược cả hai, kenDelta 0**.
 - Client tính hiển thị: `draw → 'Hòa — hoàn cược'`, `won → +kenDelta`, `lost → −bet` (công thức caro `useCaro.ts:669`).
+- `HISTORY` cũng trả `kenDelta` **có dấu theo người xem** (thắng `bet − commission`, thua `−bet`, hòa `0`); màn Lịch sử phải dùng field này, không được hiển thị `±bet`.
 
 ## 5. State server (JSON — snapshot Redis mỗi nước, client nhận qua STATE)
 
@@ -100,7 +101,7 @@ MATCH_OVER {winnerId, reason, state, bet, payout, kenDelta}
 ### Sự cố & resume
 
 - Đối thủ rớt: `OPPONENT_DISCONNECTED {graceDeadline, turnRemainingMs}` → O1; `OPPONENT_RECONNECTED` → tắt.
-- Mình rớt, reconnect: engine TỰ gửi `MATCH_FOUND {resumed:true}` (bàn dựng từ state, steps null, không animation) hoặc `MATCH_OVER` buffer (TTL 2 phút) nếu ván đã kết thúc; ngoài trận thì `ROOM_SYNC` khôi phục/clear phòng.
+- Mình rớt, reconnect: engine TỰ gửi `MATCH_FOUND {resumed:true}` (bàn dựng từ state, steps null, không animation) hoặc `MATCH_OVER` buffer (TTL 2 phút) nếu ván đã kết thúc; ngoài trận thì `ROOM_SYNC` khôi phục/clear phòng. Vì steps rỗng, resume phải đọc `state.check` để tăng `checkSeq` → banner `Chiếu tướng!` + viền Tướng, nếu không người chơi vào lại mà không biết đang bị chiếu.
 - Server restart: engine tự khôi phục từ Redis — client không làm gì thêm.
 - `MOVE` sau deadline bị drop im lặng — client phải khóa input khi hết giờ local để tránh cảm giác "nuốt nước".
 
@@ -130,4 +131,5 @@ Bất biến:
 
 - Go: table-driven từng quân (chân mã 4 hướng, mắt tượng, ngòi pháo 0/1/2, tốt biên/cuối bàn, lộ mặt tướng, ngòi bị ghim), chiếu/chiếu bí/khốn tử, chiếu dai 1 chiều = thua / 2 chiều = hòa, 120 ply, DecodeState reject state hỏng/terminal.
 - Parity: `go generate ./internal/game/games/xiangqi` sinh `constants.gen.ts` + `testdata/parity.json`; vitest `logic/parity.test.ts` chạy lại bằng TS mirror.
-- E2E: `xiangqi-e2e-bots.mjs` (2 bot legal-random ưu tiên ăn quân, cap 200 ply), `xiangqi-e2e-browser.mjs` (CDP screenshot từng màn).
+- E2E: `xiangqi-e2e-bots.mjs` (2 bot legal-random ưu tiên ăn quân, cap 200 ply) — CHƯA làm.
+- UI: harness `xiangqi/mock-ui.html?screen=<tên>` (store thật + dữ liệu giả, không cần server) và `node scripts/xiangqi-shots.mjs` tạo cục bộ toàn bộ state theo [hướng dẫn screenshot](./screenshots/README.md).

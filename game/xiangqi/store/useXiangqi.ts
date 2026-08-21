@@ -91,6 +91,7 @@ interface XiangqiState {
   movePending: boolean;
   deadline: number;
   timerLeftMs: number;
+  turnExpired: boolean;
   turnAnnounce: string | null;
   bet: number;
   matchSeq: number;
@@ -98,6 +99,7 @@ interface XiangqiState {
   messages: ChatMessageData[];
   chatOpen: boolean;
   chatUnread: boolean;
+  chatRestore: string | null;
   reactionFloats: ReactionFloat[];
 
   result: MatchResultState | null;
@@ -134,6 +136,7 @@ interface XiangqiState {
   openChat(): void;
   closeChat(): void;
   sendChatText(text: string): void;
+  consumeChatRestore(): void;
   sendReactionType(type: GameReactionType): void;
 
   closeResult(): void;
@@ -153,6 +156,9 @@ interface XiangqiState {
 const SOUND_KEY = 'ola:xiangqi:sound';
 const TURN_ANNOUNCE_MS = 1200;
 const TOAST_MS = 2400;
+// Let the closing move land on the board before the result modal covers it.
+const RESULT_REVEAL_MS = 1100;
+const CHAT_RESTORE_CODES = new Set(['CHAT_TOO_LONG', 'CHAT_RATE_LIMITED', 'INVALID_CHAT']);
 
 type Session = GameSession<ServerState, ServerMove>;
 
@@ -213,7 +219,9 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     timer: 0 as ReturnType<typeof setInterval> | 0,
     announceTimer: 0 as ReturnType<typeof setTimeout> | 0,
     toastTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    resultTimer: 0 as ReturnType<typeof setTimeout> | 0,
     reactionSeq: 0,
+    lastChatText: '',
   };
 
   const rememberMatchId = (matchId: string): boolean => {
@@ -231,12 +239,21 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     refs.timer = 0;
   };
 
+  const cancelResultReveal = () => {
+    if (refs.resultTimer) clearTimeout(refs.resultTimer);
+    refs.resultTimer = 0;
+  };
+
   const startTimer = () => {
     stopTimer();
     refs.timer = setInterval(() => {
-      const { deadline, boardMode } = get();
+      const { deadline, boardMode, turnExpired } = get();
       if (boardMode !== 'playing' || !deadline) return;
-      set({ timerLeftMs: Math.max(0, deadline - Date.now()) });
+      const left = Math.max(0, deadline - Date.now());
+      set({ timerLeftMs: left });
+      // The server drops moves sent past the deadline, so the board must lock
+      // itself instead of leaving the player stuck on movePending.
+      if (left === 0 && !turnExpired) set({ turnExpired: true, selected: null, hints: [] });
     }, 250);
   };
 
@@ -249,7 +266,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
   const applyTurn = (turn: number, deadline: number, silent = false) => {
     const you = refs.match?.you ?? 0;
     const myTurn = turn === you;
-    set({ myTurn, deadline, timerLeftMs: Math.max(0, deadline - Date.now()) });
+    const left = Math.max(0, deadline - Date.now());
+    set({ myTurn, deadline, timerLeftMs: left, turnExpired: deadline > 0 && left === 0 });
     bridge.turnChanged({ yourTurn: myTurn, deadline });
     if (!silent) announce(myTurn ? 'ĐẾN LƯỢT BẠN' : 'ĐẾN LƯỢT ĐỐI THỦ');
   };
@@ -258,6 +276,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     refs.match = null;
     refs.serverState = null;
     stopTimer();
+    cancelResultReveal();
     set({
       boardMode: 'idle',
       roomWaiting: null,
@@ -265,10 +284,12 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       selected: null,
       hints: [],
       movePending: false,
+      turnExpired: false,
       oppAway: null,
       messages: [],
       chatOpen: false,
       chatUnread: false,
+      chatRestore: null,
       result: null,
     });
     refs.session?.listRooms();
@@ -285,6 +306,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       selected: null,
       hints: [],
       movePending: false,
+      turnExpired: false,
       oppAway: null,
       roomActionPending: null,
       ...(preserveOutcome
@@ -367,6 +389,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         refs.matchBet = data.bet ?? get().roomWaiting?.bet ?? 0;
         refs.serverState = serverState;
         refs.exitingMatch = false;
+        cancelResultReveal();
         const you = data.you;
         const players = data.players ?? [];
         const meInfo = players[you];
@@ -388,11 +411,15 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           matchSeq: get().matchSeq + 1,
           oppAway: null,
           result: null,
+          // A resumed match carries no steps, so the check flag is the only way
+          // to raise the banner and the red ring on the general under attack.
+          checkSeq: serverState.check ? get().checkSeq + 1 : get().checkSeq,
         });
         applyTurn(data.turn, data.deadline, data.resumed);
         startTimer();
         if (data.resumed) {
           get().showToast('Đã vào lại trận đấu');
+          if (serverState.check) playSound('check');
         } else {
           bridge.attention({ reason: ARCADE_ATTENTION_REASON.MatchStarted, matchId: data.matchId });
           playSound('place');
@@ -433,19 +460,27 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       guard((data: MatchOverData<ServerState>) => {
         if (!rememberMatchId(`over:${data.matchId}`)) return;
         stopTimer();
+        cancelResultReveal();
         let finalState: ServerState | null = null;
         try {
           finalState = decodeServerState(data.state);
         } catch {
           finalState = null;
         }
+        const finalSteps = finalState?.steps ?? [];
         if (finalState) {
-          set((state) => ({
-            board: finalState.board,
-            pieces: advancePieces(state.pieces, finalState.board, finalState.lastFrom, finalState.lastTo),
-            lastFrom: finalState.lastFrom,
-            lastTo: finalState.lastTo,
+          const state = finalState;
+          const checked = finalSteps.some((step) => step.kind === 'check');
+          set((prev) => ({
+            board: state.board,
+            pieces: advancePieces(prev.pieces, state.board, state.lastFrom, state.lastTo),
+            lastFrom: state.lastFrom,
+            lastTo: state.lastTo,
+            checkSeq: checked ? prev.checkSeq + 1 : prev.checkSeq,
           }));
+          if (finalSteps.some((step) => step.kind === 'capture')) playSound('capture');
+          else if (finalSteps.some((step) => step.kind === 'move')) playSound('place');
+          if (checked) playSound('check');
         }
         const myId = refs.user?.id;
         const draw = data.reason === 'draw';
@@ -470,10 +505,10 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         })();
         bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
         bridge.refreshUser();
-        playSound(draw ? 'place' : won ? 'win' : 'lose');
         set({
           myTurn: false,
           movePending: false,
+          turnExpired: false,
           selected: null,
           hints: [],
           oppAway: null,
@@ -483,14 +518,25 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           backToRanked();
           return;
         }
-        set({
-          result: {
-            matchId: data.matchId,
-            outcome: draw ? 'draw' : won ? 'win' : 'lose',
-            kenDelta,
-            reasonText,
-          },
-        });
+        const matchSeq = get().matchSeq;
+        const reveal = () => {
+          refs.resultTimer = 0;
+          if (get().matchSeq !== matchSeq) return;
+          playSound(draw ? 'place' : won ? 'win' : 'lose');
+          set({
+            result: {
+              matchId: data.matchId,
+              outcome: draw ? 'draw' : won ? 'win' : 'lose',
+              kenDelta,
+              reasonText,
+            },
+          });
+        };
+        if (finalSteps.length > 0) {
+          refs.resultTimer = setTimeout(reveal, RESULT_REVEAL_MS);
+        } else {
+          reveal();
+        }
       }),
     );
 
@@ -500,7 +546,9 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           messages: [...state.messages.slice(-19), data],
           chatUnread: state.chatOpen || data.userId === refs.user?.id ? state.chatUnread : true,
         }));
-        if (data.userId !== refs.user?.id) {
+        if (data.userId === refs.user?.id) {
+          refs.lastChatText = '';
+        } else {
           bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
         }
       }),
@@ -520,6 +568,11 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     target.onError(
       guard((data) => {
         set({ roomActionPending: null, movePending: false });
+        // Give the rejected draft back instead of silently eating what was typed.
+        if (CHAT_RESTORE_CODES.has(data.code) && refs.lastChatText) {
+          set({ chatRestore: refs.lastChatText });
+          refs.lastChatText = '';
+        }
         get().showToast(errorText(data.code));
       }),
     );
@@ -622,6 +675,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     movePending: false,
     deadline: 0,
     timerLeftMs: 0,
+    turnExpired: false,
     turnAnnounce: null,
     bet: 0,
     matchSeq: 0,
@@ -629,6 +683,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     messages: [],
     chatOpen: false,
     chatUnread: false,
+    chatRestore: null,
     reactionFloats: [],
 
     result: null,
@@ -731,8 +786,12 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     tapSquare(idx: number) {
-      const { boardMode, myTurn, movePending, board, selected, hints } = get();
+      const { boardMode, myTurn, movePending, board, selected, hints, deadline } = get();
       if (boardMode !== 'playing' || !myTurn || movePending || get().result) return;
+      if (deadline > 0 && Date.now() >= deadline) {
+        set({ turnExpired: true, selected: null, hints: [] });
+        return;
+      }
       const mySide = refs.match?.you ?? SIDE_RED;
       const piece = board[idx];
       if (selected != null && hints.includes(idx)) {
@@ -800,10 +859,16 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       const match = refs.match;
       const room = get().roomWaiting;
       if (match && get().boardMode === 'playing') {
+        refs.lastChatText = trimmed;
         refs.session?.sendChat(match.matchId, trimmed);
       } else if (room) {
+        refs.lastChatText = trimmed;
         refs.session?.sendRoomChat(room.roomId, trimmed);
       }
+    },
+
+    consumeChatRestore() {
+      if (get().chatRestore != null) set({ chatRestore: null });
     },
 
     sendReactionType(type: GameReactionType) {

@@ -7,6 +7,7 @@ import (
 	"ola-chat-server/internal/logger"
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/modules/admin"
+	"ola-chat-server/internal/modules/announcement"
 	"ola-chat-server/internal/modules/auth"
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
@@ -93,6 +94,7 @@ func NewContainer() (*dig.Container, error) {
 		marriagediary.Provider,
 		pen.Provider,
 		minigame.Provider,
+		announcement.Provider,
 		chatbot.Provider,
 	}
 

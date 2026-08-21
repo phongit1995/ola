@@ -120,14 +120,19 @@ function makeLeaderboard(count: number, top: number): LeaderboardEntry[] {
 function makeHistory(count: number): MatchHistoryData['items'] {
   const outcomes: MatchHistoryOutcome[] = ['win', 'lose', 'draw'];
   const now = Date.now();
-  return Array.from({ length: count }, (_, i) => ({
-    id: `m${i + 1}`,
-    playedAt: now - (i + 1) * 3_600_000,
-    opponentId: `u${i + 1}`,
-    opponentName: NAMES[(i + 3) % NAMES.length]!,
-    bet: [0, 10_000, 50_000, 200_000][i % 4]!,
-    outcome: outcomes[i % 3]!,
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const bet = [0, 10_000, 50_000, 200_000][i % 4]!;
+    const outcome = outcomes[i % 3]!;
+    return {
+      id: `m${i + 1}`,
+      playedAt: now - (i + 1) * 3_600_000,
+      opponentId: `u${i + 1}`,
+      opponentName: NAMES[(i + 3) % NAMES.length]!,
+      bet,
+      outcome,
+      kenDelta: outcome === 'win' ? bet - Math.round(bet * 0.05) : outcome === 'lose' ? -bet : 0,
+    };
+  });
 }
 
 function makeRooms(count: number): RoomInfo[] {
