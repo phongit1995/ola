@@ -132,4 +132,4 @@ Bất biến:
 - Go: table-driven từng quân (chân mã 4 hướng, mắt tượng, ngòi pháo 0/1/2, tốt biên/cuối bàn, lộ mặt tướng, ngòi bị ghim), chiếu/chiếu bí/khốn tử, chiếu dai 1 chiều = thua / 2 chiều = hòa, 120 ply, DecodeState reject state hỏng/terminal.
 - Parity: `go generate ./internal/game/games/xiangqi` sinh `constants.gen.ts` + `testdata/parity.json`; vitest `logic/parity.test.ts` chạy lại bằng TS mirror.
 - E2E: `xiangqi-e2e-bots.mjs` (2 bot legal-random ưu tiên ăn quân, cap 200 ply) — CHƯA làm.
-- UI: harness `xiangqi/mock-ui.html?screen=<tên>` (store thật + dữ liệu giả, không cần server) và `node scripts/xiangqi-shots.mjs` chụp lại toàn bộ [docs/screenshots](./screenshots/README.md).
+- UI: harness `xiangqi/mock-ui.html?screen=<tên>` (store thật + dữ liệu giả, không cần server) và `node scripts/xiangqi-shots.mjs` tạo cục bộ toàn bộ state theo [hướng dẫn screenshot](./screenshots/README.md).

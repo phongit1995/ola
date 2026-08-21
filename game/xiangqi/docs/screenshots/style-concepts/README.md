@@ -1,6 +1,6 @@
 # Hướng mỹ thuật cho bàn Cờ Tướng
 
-Ba ảnh trong thư mục này là **mockup định hướng**, được phát triển từ `../board.png`. Chúng không phải tài nguyên đưa thẳng vào game: khi chốt một hướng, hãy dựng lại giao diện bằng CSS/SVG và text thật để bảo đảm độ sắc nét, khả năng co giãn và tính nhất quán.
+Ba ảnh trong thư mục này là **mockup định hướng**, được phát triển từ mock harness của bàn cờ. Chúng không phải tài nguyên đưa thẳng vào game: khi chốt một hướng, hãy dựng lại giao diện bằng CSS/SVG và text thật để bảo đảm độ sắc nét, khả năng co giãn và tính nhất quán.
 
 **Đã chọn:** Mộc bản thủ công. Đặc tả production chi tiết nằm tại [`docs/style/`](../../style/README.md).
 

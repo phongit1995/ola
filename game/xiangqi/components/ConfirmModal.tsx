@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
+import { ModalHeading } from './ModalHeading';
 
 interface ConfirmModalProps {
   title: string;
@@ -48,14 +49,19 @@ export function ConfirmModal({ title, body, okLabel, danger, onOk, onCancel }: C
     <div className="xq-backdrop" role="presentation" onClick={onCancel}>
       <div
         ref={modalRef}
-        className="xq-modal"
+        className={`xq-modal xq-confirm-modal ${danger ? 'xq-modal-danger' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={bodyId}
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 className="xq-modal-title" id={titleId}>{title}</h2>
+        <ModalHeading
+          eyebrow={danger ? 'Hành động quan trọng' : 'Xác nhận'}
+          title={title}
+          icon={danger ? 'warning' : 'check'}
+          titleId={titleId}
+        />
         <p className="xq-modal-body" id={bodyId}>{body}</p>
         <div className="xq-modal-actions">
           <button type="button" ref={cancelRef} className="xq-btn xq-btn-paper" onClick={onCancel}>

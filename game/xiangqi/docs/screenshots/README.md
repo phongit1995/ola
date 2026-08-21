@@ -1,74 +1,28 @@
 # Cờ Tướng — screenshot UI
 
-**37 PNG** chụp từ harness mock `xiangqi/mock-ui.html?screen=<tên>` ở viewport logic `390 × 844 CSS px`, DPR 2 → file `780 × 1688 px`. Không cần game server: harness ghi đè `init` của store rồi seed dữ liệu giả (`xiangqi/mock-ui.tsx`).
+Thư mục này chứa hướng dẫn tạo **37 screenshot** từ harness mock `xiangqi/mock-ui.html?screen=<tên>`. Các PNG được sinh ở ngay thư mục này chỉ là output cục bộ, không phải runtime asset và không được lưu trong Git.
 
-Chụp lại toàn bộ:
+Viewport logic là `390 × 844 CSS px`, DPR 2, nên mỗi file có kích thước `780 × 1688 px`. Harness ghi đè `init` của store rồi seed dữ liệu giả từ `xiangqi/mock-ui.tsx`; không cần game server.
+
+Chụp lại toàn bộ hoặc một nhóm state:
 
 ```bash
 cd game
-node scripts/xiangqi-shots.mjs            # tất cả
+node scripts/xiangqi-shots.mjs
 node scripts/xiangqi-shots.mjs --only board,board-check
 ```
 
-Script tự bật vite dev (`:5175`) và Chrome headless. Đổi trình duyệt bằng `CHROME_PATH`.
+Script tự bật Vite dev ở cổng `5175` và Chrome headless. Có thể đổi trình duyệt bằng biến môi trường `CHROME_PATH`.
 
-## S1–S2 Kết nối & Lobby
+## Coverage
 
-- [Lobby](./lobby.png)
-- [Đang kết nối](./lobby-connecting.png)
-- [Lỗi kết nối](./lobby-error.png)
+- Kết nối và lobby: `lobby`, `lobby-connecting`, `lobby-error`.
+- Danh sách bàn và modal: `rooms`, `rooms-empty`, `rooms-create`, `rooms-password`, `toast`.
+- Phòng chờ: `pregame-alone`, `pregame-ready`, `pregame-guest`.
+- Bàn chơi: `board`, `board-opp-turn`, `board-selected`, `board-move-pending`, `board-check`, `board-urgent`, `board-expired`, `board-oppaway`, `board-announce`, `board-chat`, `board-chat-restore`, `board-reactions`, `board-toast`.
+- Xác nhận: `confirm-forfeit`, `confirm-exit`.
+- Kết quả: `result-win`, `result-lose`, `result-draw`, `result-friendly`.
+- Lịch sử: `history`, `history-empty`, `history-loading`.
+- Bảng xếp hạng: `leaderboard`, `leaderboard-week`, `leaderboard-empty`, `leaderboard-loading`.
 
-## S3–S4 Danh sách bàn & modal
-
-- [Danh sách bàn](./rooms.png)
-- [Chưa có bàn nào](./rooms-empty.png)
-- [Modal Tạo bàn](./rooms-create.png)
-- [Modal Vào bàn khóa](./rooms-password.png)
-- [Toast không đủ Ken](./toast.png)
-
-## S5 Phòng chờ
-
-- [Chủ bàn, chờ khách](./pregame-alone.png)
-- [Khách đã sẵn sàng — chủ bàn bấm Bắt đầu được](./pregame-ready.png)
-- [Góc nhìn khách](./pregame-guest.png)
-
-## S6 Bàn chơi
-
-- [Lượt của bạn](./board.png)
-- [Lượt đối thủ](./board-opp-turn.png)
-- [Đã chọn quân + gợi ý nước + gợi ý ăn quân](./board-selected.png)
-- [Đang gửi nước (`movePending`)](./board-move-pending.png)
-- [Chiếu tướng](./board-check.png)
-- [Đồng hồ nguy hiểm (≤10 s)](./board-urgent.png)
-- [Hết giờ — bàn bị khóa](./board-expired.png)
-- [Đối thủ mất kết nối](./board-oppaway.png)
-- [Turn announce](./board-announce.png)
-- [Chat trong ván](./board-chat.png)
-- [Chat bị server từ chối, draft được trả lại](./board-chat-restore.png)
-- [Reaction bay](./board-reactions.png)
-- [Toast lỗi nước đi](./board-toast.png)
-
-## O2 Confirm
-
-- [Xác nhận Bỏ cuộc](./confirm-forfeit.png)
-- [Xác nhận Thoát bàn](./confirm-exit.png)
-
-## S7 Kết quả
-
-- [Thắng (+950 sau hoa hồng 5%)](./result-win.png)
-- [Thua](./result-lose.png)
-- [Hòa — hoàn cược](./result-draw.png)
-- [Ván giao hữu](./result-friendly.png)
-
-## S8 Lịch sử
-
-- [Danh sách](./history.png)
-- [Chưa có ván nào](./history-empty.png)
-- [Đang tải](./history-loading.png)
-
-## S9 Bảng xếp hạng
-
-- [Hôm nay](./leaderboard.png)
-- [Tuần này](./leaderboard-week.png)
-- [Chưa có dữ liệu](./leaderboard-empty.png)
-- [Đang tải](./leaderboard-loading.png)
+Ba mockup định hướng mỹ thuật trong [`style-concepts/`](./style-concepts/README.md) là tài liệu được theo dõi riêng và không bị script ghi đè.

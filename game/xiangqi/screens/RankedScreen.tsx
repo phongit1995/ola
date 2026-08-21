@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { RoomInfo } from '../../src/sdk';
+import { ModalHeading } from '../components/ModalHeading';
 import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
 import { useXiangqi } from '../store/useXiangqi';
@@ -20,6 +21,7 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
   );
   const [bet, setBet] = useState('0');
   const [password, setPassword] = useState('');
+  const titleId = useId();
 
   const submit = () => {
     const value = Number(bet);
@@ -40,8 +42,14 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="xq-backdrop" onClick={onClose}>
-      <div className="xq-modal" role="dialog" aria-modal="true" aria-label="Tạo bàn" onClick={(event) => event.stopPropagation()}>
-        <h2 className="xq-modal-title">Tạo bàn</h2>
+      <div
+        className="xq-modal xq-modal-form"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <ModalHeading eyebrow="Mở phòng cờ" title="Tạo bàn" icon="owner" titleId={titleId} />
         <label className="xq-field">
           <span>Ken cược</span>
           <input
@@ -92,10 +100,17 @@ function JoinLockedModal({ room, onClose }: { room: RoomInfo; onClose: () => voi
     useShallow((s) => ({ joinRoom: s.joinRoom, roomActionPending: s.roomActionPending })),
   );
   const [password, setPassword] = useState('');
+  const titleId = useId();
   return (
     <div className="xq-backdrop" onClick={onClose}>
-      <div className="xq-modal" role="dialog" aria-modal="true" aria-label="Vào bàn khóa" onClick={(event) => event.stopPropagation()}>
-        <h2 className="xq-modal-title">Bàn của @{room.owner}</h2>
+      <div
+        className="xq-modal xq-modal-form xq-modal-locked"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <ModalHeading eyebrow="Bàn có mật khẩu" title={`Bàn của @${room.owner}`} icon="lock" titleId={titleId} />
         <label className="xq-field">
           <span>Mật khẩu</span>
           <input

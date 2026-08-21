@@ -31,7 +31,7 @@ Tài liệu này không tự tuyên bố các mục “cần làm” đã đư�
 | `game/xiangqi/components/` | shared components: board, modal, icon wrapper nếu thêm |
 | `game/xiangqi/screens/` | composition và state binding, không tạo token tùy màn |
 | `game/xiangqi/docs/style/` | source of truth cho style/handoff |
-| `game/xiangqi/docs/screenshots/` | baseline state thực từ mock harness |
+| `game/xiangqi/docs/screenshots/` | hướng dẫn và output cục bộ từ mock harness (PNG không lưu trong Git) |
 | `game/xiangqi/docs/screenshots/style-concepts/` | art direction, không dùng trực tiếp ở runtime |
 
 ## 4. Trình tự triển khai đề xuất
