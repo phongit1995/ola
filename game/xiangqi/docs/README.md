@@ -1,8 +1,8 @@
-# Cờ Tướng UI — Style: Kỳ Đàn Son Mộc
+# Cờ Tướng UI — Style: Mộc bản thủ công (Kỳ Đàn Son Mộc)
 
 ## Hướng duy nhất
 
-**Kỳ Đàn Son Mộc** là design system duy nhất cho UI Cờ Tướng (gameId `xiangqi`). Toàn bộ tài liệu đặt trực tiếp trong `game/xiangqi/docs/`, không phân tầng theo style.
+**Mộc bản thủ công** là design system duy nhất cho UI Cờ Tướng (gameId `xiangqi`); **Kỳ Đàn Son Mộc** là codename nội bộ của cùng một style. Tài liệu tổng quan đặt trong `game/xiangqi/docs/`; đặc tả triển khai chi tiết nằm tại [`docs/style/`](./style/README.md).
 
 Ngôn ngữ hình ảnh: nền gỗ trầm ấm, mặt bàn cờ giấy kem, quân son đỏ và mực đen khắc chữ Hán truyền thống, outline navy đồng nhất với hệ mini-game Ola, CTA vàng nắng, điểm nhấn đỏ son. Production ưu tiên CSS/SVG code-native (bàn cờ, lưới, cung, sông đều là SVG); raster chỉ dùng cho mặt quân và nền trang trí.
 
@@ -48,6 +48,7 @@ Source React quyết định chức năng, dữ liệu và state. Docs quyết �
 5. [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md) — luật VN đầy đủ, state machine, socket protocol, steps replay, reconnect.
 6. [06-screen-to-feature-map.md](./06-screen-to-feature-map.md) — mapping màn → store state → SDK event → component.
 7. [screenshots/](./screenshots/README.md) — 37 ảnh mọi màn/state, chụp từ harness `mock-ui.html` bằng `scripts/xiangqi-shots.mjs`.
+8. [style/](./style/README.md) — design system Mộc bản thủ công: token, từng loại button/control, component, icon, responsive, accessibility và QA.
 
 ## Nguyên tắc bắt buộc
 

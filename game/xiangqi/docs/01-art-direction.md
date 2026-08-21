@@ -1,4 +1,6 @@
-# 01 — Art direction: Kỳ Đàn Son Mộc
+# 01 — Art direction: Mộc bản thủ công (Kỳ Đàn Son Mộc)
+
+> Đây là art direction tổng quan. Đặc tả triển khai chi tiết nằm trong [`style/`](./style/README.md).
 
 ## 1. DNA hình ảnh
 
