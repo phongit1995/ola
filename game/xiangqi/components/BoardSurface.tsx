@@ -56,7 +56,14 @@ export const BoardSurface = memo(function BoardSurface() {
   }
   return (
     <svg className="xq-board-svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-      <rect x={2} y={2} width={W - 4} height={H - 4} rx={10} className="xq-board-paper" />
+      <defs>
+        <pattern id="xq-paper-fiber" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M1 5h5M11 14h4M7 9h2" className="xq-board-fiber" />
+        </pattern>
+      </defs>
+      <rect x={2} y={2} width={W - 4} height={H - 4} rx={12} className="xq-board-wood" />
+      <rect x={7} y={7} width={W - 14} height={H - 14} rx={8} className="xq-board-paper" />
+      <rect x={7} y={7} width={W - 14} height={H - 14} rx={8} fill="url(#xq-paper-fiber)" />
       <g className="xq-board-lines">
         {verticals}
         {horizontals}

@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import type { MatchHistoryEntry } from '../../src/sdk';
+import { XqIcon } from '../components/XqIcon';
 import { formatHistoryTime, formatKen } from '../helpers/format';
 import { useXiangqi } from '../store/useXiangqi';
 
@@ -23,7 +24,7 @@ export function HistoryScreen() {
     <div className="xq-screen xq-list-screen">
       <div className="xq-screen-header">
         <button type="button" className="xq-icon-btn" onClick={closeHistory} aria-label="Quay lại">
-          ←
+          <XqIcon name="arrow-left" size={22} />
         </button>
         <h1>Lịch sử đấu</h1>
         <span />

@@ -1,4 +1,5 @@
 import { useShallow } from 'zustand/react/shallow';
+import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
 import { useXiangqi } from '../store/useXiangqi';
 
@@ -43,9 +44,20 @@ export function LobbyScreen() {
           <div />
         )}
         <div className="xq-topbar-right">
-          {userInfo ? <div className="xq-ken-badge">⛁ {formatKen(ken)}</div> : null}
-          <button type="button" className="xq-icon-btn" onClick={toggleSound} aria-label={soundOn ? 'Tắt âm' : 'Bật âm'}>
-            {soundOn ? '🔊' : '🔇'}
+          {userInfo ? (
+            <div className="xq-ken-badge">
+              <XqIcon name="ken" size={18} />
+              <span>{formatKen(ken)}</span>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className="xq-icon-btn"
+            onClick={toggleSound}
+            aria-label={soundOn ? 'Tắt âm' : 'Bật âm'}
+            aria-pressed={soundOn}
+          >
+            <XqIcon name={soundOn ? 'volume-on' : 'volume-off'} size={22} />
           </button>
         </div>
       </div>

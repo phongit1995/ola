@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { RoomInfo } from '../../src/sdk';
+import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
 import { useXiangqi } from '../store/useXiangqi';
 
@@ -57,6 +58,7 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
               type="button"
               className={`xq-chip-btn ${Number(bet) === chip ? 'xq-chip-btn-active' : ''}`}
               onClick={() => setBet(String(chip))}
+              aria-pressed={Number(bet) === chip}
             >
               {chip === 0 ? 'Giao hữu' : formatKen(chip)}
             </button>
@@ -70,7 +72,13 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
           <button type="button" className="xq-btn xq-btn-paper" onClick={onClose}>
             Hủy
           </button>
-          <button type="button" className="xq-btn xq-btn-gold" onClick={submit} disabled={roomActionPending === 'creating'}>
+          <button
+            type="button"
+            className="xq-btn xq-btn-gold"
+            onClick={submit}
+            disabled={roomActionPending === 'creating'}
+            aria-busy={roomActionPending === 'creating'}
+          >
             {roomActionPending === 'creating' ? 'Đang tạo...' : 'Tạo bàn'}
           </button>
         </div>
@@ -107,6 +115,7 @@ function JoinLockedModal({ room, onClose }: { room: RoomInfo; onClose: () => voi
             className="xq-btn xq-btn-gold"
             onClick={() => joinRoom(room.id, password)}
             disabled={roomActionPending === 'joining'}
+            aria-busy={roomActionPending === 'joining'}
           >
             {roomActionPending === 'joining' ? 'Đang vào...' : 'Vào bàn'}
           </button>
@@ -143,11 +152,11 @@ export function RankedScreen() {
     <div className="xq-screen xq-ranked">
       <div className="xq-screen-header">
         <button type="button" className="xq-icon-btn" onClick={closeRanked} aria-label="Quay lại">
-          ←
+          <XqIcon name="arrow-left" size={22} />
         </button>
         <h1>Bàn cờ tướng</h1>
         <button type="button" className="xq-icon-btn" onClick={refreshRooms} aria-label="Làm mới">
-          ⟳
+          <XqIcon name="refresh" size={22} />
         </button>
       </div>
 
@@ -166,9 +175,22 @@ export function RankedScreen() {
               <div className="xq-room-owner">
                 <div className="xq-pod-avatar xq-pod-avatar-red">{room.owner.slice(0, 1).toUpperCase()}</div>
                 <span className="xq-room-owner-name">@{room.owner}</span>
-                {room.locked ? <span aria-label="Có mật khẩu">🔒</span> : null}
+                {room.locked ? (
+                  <span className="xq-room-lock" aria-label="Có mật khẩu">
+                    <XqIcon name="lock" size={16} />
+                  </span>
+                ) : null}
               </div>
-              <div className="xq-room-bet">{room.bet > 0 ? `${formatKen(room.bet)} ⛁` : 'Giao hữu'}</div>
+              <div className="xq-room-bet">
+                {room.bet > 0 ? (
+                  <>
+                    <span>{formatKen(room.bet)}</span>
+                    <XqIcon name="ken" size={15} />
+                  </>
+                ) : (
+                  'Giao hữu'
+                )}
+              </div>
               <div className="xq-room-join">
                 <span className={`xq-chip ${full ? '' : 'xq-chip-jade'}`}>{room.players}/{room.maxPlayers ?? 2}</span>
                 <button
@@ -187,7 +209,7 @@ export function RankedScreen() {
 
       <div className="xq-ranked-footer">
         <button type="button" className="xq-icon-btn" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)} aria-label="Trang trước">
-          ‹
+          <XqIcon name="chevron-left" size={22} />
         </button>
         <button type="button" className="xq-btn xq-btn-gold" onClick={() => setCreateOpen(true)}>
           Tạo bàn
@@ -199,7 +221,7 @@ export function RankedScreen() {
           onClick={() => setPage(currentPage + 1)}
           aria-label="Trang sau"
         >
-          ›
+          <XqIcon name="chevron-right" size={22} />
         </button>
       </div>
 

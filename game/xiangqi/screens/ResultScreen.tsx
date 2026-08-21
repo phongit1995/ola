@@ -46,7 +46,7 @@ export function ResultScreen() {
         </p>
         <div className="xq-modal-actions">
           {roomWaiting ? (
-            <button type="button" className="xq-btn xq-btn-gold" disabled={pending} onClick={playAgain}>
+            <button type="button" className="xq-btn xq-btn-gold" disabled={pending} aria-busy={pending} onClick={playAgain}>
               Chơi lại
             </button>
           ) : null}
