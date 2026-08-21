@@ -40,7 +40,6 @@ import {
 import {
   LIGHTNING_GOD_DAMAGE,
   FURY_DAMAGE_MULTIPLIER,
-  MAX_FURY,
   ULT_COST,
   applyDamageThroughArmor,
   applyAuthoritativeEffects,
@@ -333,44 +332,6 @@ function clearHint(): void {
     const icon = sprites[i]?.children[0];
     if (icon instanceof Sprite) icon.scale.set(tileIconBaseScale(icon));
   });
-}
-
-// Nộ đầy → mọi ô Kiếm trên bàn nhấp nháy vàng để báo "ăn Kiếm bây giờ sẽ đau".
-// Chỉ đổi tint icon nên không đụng các animation scale (hint, remove, fly).
-let furyGlowTime = 0;
-let furyGlowWasActive = false;
-
-function blendToGold(k: number): number {
-  const r = 0xff;
-  const g = Math.round(0xff - (0xff - 0xc9) * k);
-  const b = Math.round(0xff - (0xff - 0x3e) * k);
-  return (r << 16) | (g << 8) | b;
-}
-
-function setSwordTints(tint: number): void {
-  for (let i = 0; i < sprites.length; i++) {
-    const sprite = sprites[i];
-    if (!sprite) continue;
-    const icon = sprite.children[0];
-    if (!(icon instanceof Sprite)) continue;
-    icon.tint = board[i] != null && baseTileType(board[i]) === 'sword' ? tint : 0xffffff;
-  }
-}
-
-function furyGlowStep(ticker: Ticker): void {
-  const activeFighter = myTurn ? me : foe;
-  const active = inGame && !over && !roomPregame && activeFighter.fury >= MAX_FURY;
-  if (!active) {
-    if (furyGlowWasActive) {
-      furyGlowWasActive = false;
-      setSwordTints(0xffffff);
-    }
-    return;
-  }
-  furyGlowWasActive = true;
-  furyGlowTime += ticker.deltaMS;
-  const wave = (Math.sin(furyGlowTime / 150) + 1) / 2;
-  setSwordTints(blendToGold(0.25 + wave * 0.75));
 }
 
 function makeTile(type: TileType, index: number): Container {
@@ -2279,7 +2240,6 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   board = createBoard();
   rebuildBoardVisuals();
 
-  addTick(furyGlowStep);
   setInterval(renderTurnClock, 250);
   resetTurnClock();
   updateHud();
