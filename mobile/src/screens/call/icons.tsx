@@ -29,6 +29,50 @@ function Frame({
   );
 }
 
+function ChatFrame({
+  size,
+  color,
+  children,
+}: IconProps & { children: React.ReactNode }) {
+  return (
+    <Svg
+      width={size ?? 24}
+      height={size ?? 24}
+      viewBox="0 0 48 48"
+      fill="none"
+      stroke={color ?? DEFAULT_COLOR}
+      strokeWidth={3.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {children}
+    </Svg>
+  );
+}
+
+export function ChatPhoneIcon(props: IconProps) {
+  const color = props.color ?? DEFAULT_COLOR;
+  return (
+    <ChatFrame {...props}>
+      <Path d="M10.5 10 16 8.7c1.1-.3 2.2.3 2.7 1.4l2.3 5.8c.4.9.1 1.9-.7 2.6l-3.5 3c1.9 3.8 5 6.9 8.8 8.8l3-3.5c.7-.8 1.7-1.1 2.6-.7l5.8 2.3c1.1.4 1.7 1.6 1.4 2.7l-1.3 5.5c-.3 1.1-1.3 1.9-2.4 1.9-16.5 0-25.2-8.7-25.2-26.1 0-1.1.8-2.1 2-2.4Z" />
+      <Path d="M29.5 8.5a10 10 0 0 1 10 10M30.5 14.5a4.5 4.5 0 0 1 3 3" />
+      <Circle cx="39.5" cy="8.5" r="2.2" fill={color} stroke="none" />
+    </ChatFrame>
+  );
+}
+
+export function ChatVideoIcon(props: IconProps) {
+  const color = props.color ?? DEFAULT_COLOR;
+  return (
+    <ChatFrame {...props}>
+      <Rect x="4" y="9" width="31" height="30" rx="6" />
+      <Path d="m35 19 9-5v20l-9-5" />
+      <Circle cx="19" cy="19" r="4" fill={color} stroke="none" />
+      <Path d="M11.5 31c.7-4.2 3.2-6.5 7.5-6.5s6.8 2.3 7.5 6.5" />
+    </ChatFrame>
+  );
+}
+
 export function PhoneIcon(props: IconProps) {
   return (
     <Frame {...props}>

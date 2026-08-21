@@ -6,7 +6,7 @@ import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import type { CallerBrief, CallType } from '@ola/shared/types';
 import { useCallStore } from '@store/callStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
-import { PhoneIcon, VideoIcon } from './icons';
+import { ChatPhoneIcon, ChatVideoIcon } from './icons';
 
 export function ChatCallButtons() {
   const { t } = useTranslation();
@@ -70,7 +70,7 @@ export function ChatCallButtons() {
         className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
         style={{ opacity: busy ? 0.4 : 1 }}
       >
-        <PhoneIcon size={20} />
+        <ChatPhoneIcon size={24} />
       </Pressable>
       <Pressable
         accessibilityLabel={t('call.videoCall')}
@@ -79,7 +79,7 @@ export function ChatCallButtons() {
         className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
         style={{ opacity: busy ? 0.4 : 1 }}
       >
-        <VideoIcon size={22} />
+        <ChatVideoIcon size={24} />
       </Pressable>
     </View>
   );

@@ -5,7 +5,7 @@ import type { CallerBrief, CallType } from '@app-types';
 import { useCallStore } from '@/store/callStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
-import { PhoneIcon, VideoIcon } from './icons';
+import { ChatPhoneIcon, ChatVideoIcon } from './icons';
 
 export function ChatCallButtons() {
   const { t } = useTranslation();
@@ -75,7 +75,7 @@ export function ChatCallButtons() {
         onClick={() => void handleCall('audio')}
         className="flex h-9 w-9 items-center justify-center rounded-full text-white hover:bg-white/15 disabled:opacity-40"
       >
-        <PhoneIcon />
+        <ChatPhoneIcon />
       </button>
       <button
         type="button"
@@ -84,7 +84,7 @@ export function ChatCallButtons() {
         onClick={() => void handleCall('video')}
         className="flex h-9 w-9 items-center justify-center rounded-full text-white hover:bg-white/15 disabled:opacity-40"
       >
-        <VideoIcon />
+        <ChatVideoIcon />
       </button>
     </>
   );
