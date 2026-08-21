@@ -10,6 +10,7 @@ import { useRoomChatStore } from '@/store/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
+import { AnnouncementBanner } from './AnnouncementBanner';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { GameOverlay } from '../games/GameOverlay';
 import { RoomChatOverlay } from '../room/RoomChatOverlay';
@@ -84,6 +85,7 @@ export function HomePage() {
   return (
     <div className="flex h-dvh flex-col bg-white font-sans">
       <div className="relative flex min-h-0 flex-1 flex-col">
+        <AnnouncementBanner />
         {!hideKenBadge && <KenBalanceBadge ken={ken} />}
         <Suspense fallback={<div className="flex-1" />}>
           <ActivePanel />

@@ -14,6 +14,7 @@ import {
   HeartOutlined,
   LockOutlined,
   LogoutOutlined,
+  NotificationOutlined,
   PlayCircleOutlined,
   RocketOutlined,
   SettingOutlined,
@@ -80,6 +81,7 @@ const MENU_ITEMS = [
     children: [
       { key: '/settings/topup', icon: <DollarOutlined />, label: 'Nạp KEN' },
       { key: '/settings/username-change', icon: <EditOutlined />, label: 'Đổi nickname' },
+      { key: '/settings/announcements', icon: <NotificationOutlined />, label: 'Thông báo banner' },
     ],
   },
 ]
@@ -116,6 +118,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/audit-logs': 'Nhật ký admin',
   '/settings/topup': 'Cài đặt nạp KEN',
   '/settings/username-change': 'Cài đặt đổi nickname',
+  '/settings/announcements': 'Thông báo banner',
 }
 
 export function AdminLayout() {

@@ -27,3 +27,4 @@ export type * from './theme.type';
 export type * from './toast.type';
 export type * from './upload.type';
 export type * from './vipPurchase.type';
+export type * from './announcement.type';

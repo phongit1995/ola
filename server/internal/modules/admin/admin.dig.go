@@ -1,6 +1,7 @@
 package admin
 
 import (
+	adminannouncement "ola-chat-server/internal/modules/admin/announcement"
 	adminaudit "ola-chat-server/internal/modules/admin/audit"
 	adminauth "ola-chat-server/internal/modules/admin/auth"
 	adminclan "ola-chat-server/internal/modules/admin/clan"
@@ -45,6 +46,7 @@ func Provider(c *dig.Container) error {
 		adminrelationship.Provider,
 		adminsetting.Provider,
 		adminminigame.Provider,
+		adminannouncement.Provider,
 	}
 
 	for _, module := range modules {

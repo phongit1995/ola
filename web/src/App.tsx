@@ -6,6 +6,7 @@ import {
   useAuthSessionSync,
   useReconnectOnVisible,
   useSettingsSync,
+  useAnnouncementSync,
 } from '@hooks';
 import { AppRouter } from '@/routes';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
@@ -94,6 +95,7 @@ function App() {
   useSoundUnlock();
   useAuthSessionSync();
   useSettingsSync();
+  useAnnouncementSync();
   useReconnectOnVisible();
   useKenRealtime();
   useMeNotificationRealtime();
