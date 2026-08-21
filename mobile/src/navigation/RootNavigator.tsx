@@ -28,6 +28,7 @@ import { LoginScreen } from '@screens/auth/LoginScreen';
 import { RegisterScreen } from '@screens/auth/RegisterScreen';
 import { ForgotPasswordScreen } from '@screens/auth/ForgotPasswordScreen';
 import { TermsScreen } from '@screens/auth/TermsScreen';
+import { PrivacyPolicyScreen } from '@screens/auth/PrivacyPolicyScreen';
 import { ChatListScreen } from '@screens/chat/ChatListScreen';
 import { ChatDetailScreen } from '@screens/chat/ChatDetailScreen';
 import { ChatBotScreen } from '@screens/chat-bot/ChatBotScreen';
@@ -103,6 +104,7 @@ function AuthNavigator() {
       <AuthStack.Screen name={AUTH_ROUTES.Register} component={RegisterScreen} />
       <AuthStack.Screen name={AUTH_ROUTES.ForgotPassword} component={ForgotPasswordScreen} />
       <AuthStack.Screen name={AUTH_ROUTES.Terms} component={TermsScreen} />
+      <AuthStack.Screen name={AUTH_ROUTES.PrivacyPolicy} component={PrivacyPolicyScreen} />
     </AuthStack.Navigator>
   );
 }
@@ -286,6 +288,8 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.ClanBans} component={ClanBansRouteScreen} />
       <RootStack.Screen name={ROOT_ROUTES.FriendRequests} component={FriendRequestsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.SuggestedFriends} component={SuggestedFriendsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Terms} component={TermsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.PrivacyPolicy} component={PrivacyPolicyScreen} />
     </RootStack.Navigator>
   );
 }

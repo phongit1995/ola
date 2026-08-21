@@ -209,6 +209,30 @@ type KissSuccessResponse = utils.BaseResponse[KissResponse]
 type FollowSuccessResponse = utils.BaseResponse[FollowResponse]
 type FollowListSuccessResponse = utils.BaseResponse[FollowListResponse]
 
+type CheckUsernameQuery struct {
+	Username string `form:"username" binding:"required,min=1,max=100"`
+}
+
+type CheckUsernameResponse struct {
+	Username  string `json:"username" example:"john_doe"`
+	Available bool   `json:"available" example:"true"`
+	Cost      int    `json:"cost" example:"100000"`
+}
+
+type ChangeUsernameRequest struct {
+	Username     string `json:"username" binding:"required,min=1,max=100" example:"john_doe"`
+	ExpectedCost *int   `json:"expectedCost" binding:"required,min=0" example:"100000"`
+}
+
+type ChangeUsernameResponse struct {
+	Username   string `json:"username" example:"john_doe"`
+	Cost       int    `json:"cost" example:"100000"`
+	KenBalance int    `json:"kenBalance" example:"900000"`
+}
+
+type CheckUsernameSuccessResponse = utils.BaseResponse[CheckUsernameResponse]
+type ChangeUsernameSuccessResponse = utils.BaseResponse[ChangeUsernameResponse]
+
 type UserProfileSuccessResponse = utils.BaseResponse[UserProfileResponse]
 type SearchUsersSuccessResponse = utils.BaseResponse[SearchUsersResponse]
 type UploadAvatarSuccessResponse = utils.BaseResponse[UploadAvatarResponse]

@@ -136,3 +136,15 @@ export interface UserPresence {
 export interface PresenceBatchResult {
   users: UserPresence[];
 }
+
+export interface CheckUsernameResult {
+  username: string;
+  available: boolean;
+  cost: number;
+}
+
+export interface ChangeUsernameResult {
+  username: string;
+  cost: number;
+  kenBalance: number;
+}

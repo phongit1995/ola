@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { OlaModal } from '@components/ui/OlaModal';
-import { formatKen } from '@ola/shared/lib';
+import { formatKen, formatOddsPercent } from '@ola/shared/lib';
 import type { WheelPlayerOption, WheelPlayerSegment } from '@ola/shared/types';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { assetRatio } from '@screens/games/pen/penUi';
@@ -161,6 +161,81 @@ function VipRandomSection({ segment }: { segment: WheelPlayerSegment }) {
   );
 }
 
+function OddsSection({ segments }: { segments: WheelPlayerSegment[] }) {
+  const { t } = useTranslation();
+  const rows = segments.filter((segment) => formatOddsPercent(segment.percent) != null);
+  if (rows.length === 0) return null;
+  return (
+    <View
+      style={{
+        borderRadius: 16,
+        borderWidth: 2,
+        borderColor: GOLD,
+        backgroundColor: '#26409e',
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        gap: 6,
+      }}
+    >
+      <Text
+        style={[
+          {
+            textAlign: 'center',
+            fontSize: 14,
+            fontWeight: '800',
+            color: GOLD,
+            textTransform: 'uppercase',
+          },
+          TEXT_SHADOW,
+        ]}
+      >
+        {t('wheelGame.oddsTitle')}
+      </Text>
+      {rows.map((segment) => (
+        <View key={segment.id} style={{ gap: 2 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+            <Text
+              numberOfLines={1}
+              style={[{ flex: 1, fontSize: 12, fontWeight: '700', color: '#ffffff' }, TEXT_SHADOW]}
+            >
+              {segment.label}
+            </Text>
+            <Text style={[{ fontSize: 12, fontWeight: '800', color: GOLD }, TEXT_SHADOW]}>
+              {formatOddsPercent(segment.percent)}
+            </Text>
+          </View>
+          {(segment.options ?? []).map((option, index) =>
+            formatOddsPercent(option.percent) == null ? null : (
+              <View
+                key={`${segment.id}-${index}`}
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  paddingLeft: 14,
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.85)' }}
+                >
+                  {option.label}
+                </Text>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: 'rgba(255,210,74,0.9)' }}>
+                  {formatOddsPercent(option.percent)}
+                </Text>
+              </View>
+            )
+          )}
+        </View>
+      ))}
+      <Text style={{ textAlign: 'center', fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>
+        {t('wheelGame.oddsNote')}
+      </Text>
+    </View>
+  );
+}
+
 function GiftListHeader() {
   const { t } = useTranslation();
   return (
@@ -227,6 +302,7 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
       segment.kind === 'ken_random' ||
       (segment.kind === 'vip_random' && (segment.options?.length ?? 0) > 0)
   );
+  const hasOdds = segments.some((segment) => formatOddsPercent(segment.percent) != null);
 
   const panelWidth = Math.min(windowWidth - 24, 420) - CLOSE_OVERHANG;
   const closeMarkWidth = CLOSE_SIZE * 0.42;
@@ -265,7 +341,7 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
           >
             <GiftListHeader />
 
-            {randomSegments.length === 0 ? (
+            {randomSegments.length === 0 && !hasOdds ? (
               <Text
                 style={[
                   {
@@ -293,6 +369,7 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
                     <VipRandomSection key={segment.id} segment={segment} />
                   )
                 )}
+                {hasOdds && <OddsSection segments={segments} />}
               </ScrollView>
             )}
           </View>

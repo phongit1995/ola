@@ -106,7 +106,7 @@
     "passwordPlaceholder": "6–20 ký tự",
     "confirmLabel": "NHẬP LẠI MẬT KHẨU",
     "confirmPlaceholder": "Nhập lại mật khẩu",
-    "agree": "Tôi đồng ý với <terms>Điều khoản sử dụng</terms> của Ola",
+    "agree": "Tôi xác nhận mình đủ 18 tuổi và đồng ý với <terms>Điều khoản sử dụng</terms> và <privacy>Chính sách bảo mật</privacy> của Ola",
     "submit": "Hoàn tất",
     "hasAccount": "Đã có tài khoản?",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
@@ -119,20 +119,41 @@
     "errPasswordMax": "Mật khẩu tối đa 20 ký tự.",
     "errConfirmRequired": "Vui lòng nhập lại mật khẩu.",
     "errConfirmMismatch": "Mật khẩu nhập lại không khớp.",
-    "errAgreeRequired": "Bạn cần đồng ý với Điều khoản sử dụng để tiếp tục.",
+    "errAgreeRequired": "Bạn cần xác nhận đủ 18 tuổi và đồng ý với Điều khoản sử dụng để tiếp tục.",
     "success": "Tạo tài khoản thành công"
   },
   "forgot": {
     "title": "Quên mật khẩu",
-    "desc": "Nhập tên đăng nhập để chúng tôi giúp bạn khôi phục tài khoản.",
+    "desc": "Nhập tên đăng nhập. Nếu tài khoản có email đã xác thực, chúng tôi sẽ gửi mã đặt lại gồm 6 số tới email đó.",
     "usernameLabel": "TÊN ĐĂNG NHẬP",
     "usernamePlaceholder": "Nhập tên đăng nhập",
-    "submit": "Tiếp tục",
+    "submit": "Gửi mã",
     "backToLogin": "Quay lại đăng nhập",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
     "errUsernameFormat": "Tên đăng nhập gồm chữ thường, số, dấu chấm, gạch ngang và gạch dưới; phải bắt đầu và kết thúc bằng chữ hoặc số.",
-    "doneTitle": "Đã nhận yêu cầu",
-    "doneDesc": "Nếu tài khoản tồn tại, chúng tôi sẽ gửi hướng dẫn khôi phục trong giây lát."
+    "codeSentTitle": "Nhập mã đặt lại",
+    "codeSentDesc": "Nếu tài khoản {{username}} có email đã xác thực, mã gồm 6 số đã được gửi tới email đó. Mã có hiệu lực trong 5 phút.",
+    "noEmailHint": "Nếu tài khoản của bạn chưa xác thực email, hãy liên hệ support@olachat.net để được hỗ trợ.",
+    "codeLabel": "MÃ ĐẶT LẠI",
+    "codePlaceholder": "Mã 6 số",
+    "newPasswordLabel": "MẬT KHẨU MỚI",
+    "newPasswordPlaceholder": "6–20 ký tự",
+    "confirmLabel": "NHẬP LẠI MẬT KHẨU MỚI",
+    "confirmPlaceholder": "Nhập lại mật khẩu mới",
+    "errCodeFormat": "Mã gồm 6 chữ số.",
+    "errPasswordLength": "Mật khẩu phải từ 6–20 ký tự.",
+    "errConfirmMismatch": "Mật khẩu nhập lại không khớp.",
+    "resetSubmit": "Đặt lại mật khẩu",
+    "resend": "Gửi lại mã",
+    "resendIn": "Gửi lại sau {{seconds}}s",
+    "changeUsername": "Đổi tên đăng nhập khác",
+    "successTitle": "Đặt lại mật khẩu thành công",
+    "successDesc": "Vui lòng đăng nhập bằng mật khẩu mới.",
+    "errRateLimited": "Bạn thao tác quá nhiều lần, vui lòng thử lại sau.",
+    "errCodeExpired": "Mã đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới.",
+    "errTooManyAttempts": "Nhập sai quá nhiều lần. Vui lòng yêu cầu mã mới.",
+    "errInvalidCode": "Mã không đúng, vui lòng kiểm tra lại.",
+    "errGeneric": "Có lỗi xảy ra, vui lòng thử lại."
   },
   "home": {
     "tabChat": "Chat",
@@ -166,6 +187,7 @@
       "nearby": "Lân cận",
       "social": "Mạng Xã Hội",
       "settings": "Cài đặt",
+      "changeNickname": "Đổi nickname",
       "removeAccount": "Xóa tài khoản"
     },
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
@@ -182,6 +204,9 @@
     "privacyTitle": "Quyền riêng tư",
     "notificationTitle": "Thông báo",
     "appearanceTitle": "Giao diện",
+    "aboutTitle": "Thông tin & pháp lý",
+    "termsRow": "Điều khoản sử dụng",
+    "privacyPolicyRow": "Chính sách bảo mật",
     "whoCanMessage": "Ai có thể nhắn tin cho tôi",
     "whoCanViewMe": "Ai có thể xem ME của tôi",
     "whoCanComment": "Ai có thể bình luận bài Me",
@@ -346,6 +371,7 @@
     "actionDelete": "Xoá tin nhắn",
     "actionReply": "Trả lời",
     "actionCopy": "Sao chép",
+    "actionReport": "Báo cáo",
     "copied": "Đã sao chép",
     "actionSave": "Lưu",
     "replyingTo": "Đang trả lời @{{name}}",
@@ -719,6 +745,7 @@
     "loadError": "Không tải được danh sách phòng",
     "actionReply": "Trả lời",
     "actionCopy": "Sao chép",
+    "actionReport": "Báo cáo",
     "actionBlock": "Chặn",
     "blockTitle": "Chặn người dùng",
     "blockConfirm": "Chặn @{{name}}? Bạn sẽ không thấy tin nhắn của người này trong bất kỳ phòng nào nữa.",
@@ -1143,10 +1170,8 @@
     "back": "‹ Quay lại",
     "title": "ĐIỀU KHOẢN SỬ DỤNG",
     "subtitle": "Mạng xã hội Ola",
-    "updated": "Cập nhật ngày 10/06/2026 — Phiên bản 1.0",
-    "noticeLabel": "Lưu ý:",
-    "notice": "Đây là bản điều khoản mẫu phục vụ mục đích học tập / nghiên cứu, không phải văn bản pháp lý chính thức.",
-    "footer": "© 2026 Ola — Mạng xã hội giải trí (bản mô phỏng)",
+    "updated": "Cập nhật ngày 20/08/2026 — Phiên bản 1.1",
+    "footer": "© 2026 Ola — Mạng xã hội giải trí",
     "sections": [
       {
         "title": "1. Chấp nhận điều khoản",
@@ -1167,7 +1192,7 @@
           {
             "type": "ul",
             "items": [
-              "Bạn phải từ 13 tuổi trở lên để tạo tài khoản. Nếu dưới 18 tuổi, bạn cần có sự đồng ý/giám sát của cha mẹ hoặc người giám hộ hợp pháp.",
+              "Bạn phải từ 18 tuổi trở lên để tạo tài khoản và sử dụng Ola.",
               "Thông tin đăng ký (tên đăng nhập, mật khẩu…) phải chính xác, không vi phạm thuần phong mỹ tục, không mạo danh cá nhân/tổ chức khác.",
               "Mỗi người chỉ nên sở hữu một tài khoản và chịu trách nhiệm bảo mật thông tin đăng nhập cũng như mọi hoạt động phát sinh từ tài khoản.",
               "Nếu phát hiện tài khoản bị truy cập trái phép, vui lòng đổi mật khẩu và liên hệ chúng tôi ngay.",
@@ -1267,7 +1292,142 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Mọi góp ý, phản ánh, khiếu nại liên quan đến tài khoản, nội dung hoặc điều khoản sử dụng, vui lòng liên hệ qua email hỗ trợ của Ola."
+            "text": "Mọi góp ý, phản ánh, khiếu nại liên quan đến tài khoản, nội dung hoặc điều khoản sử dụng, vui lòng liên hệ qua email support@olachat.net. Chúng tôi cố gắng xem xét và phản hồi các báo cáo nội dung vi phạm trong vòng 24 giờ."
+          }
+        ]
+      }
+    ]
+  },
+  "privacyPolicy": {
+    "back": "‹ Quay lại",
+    "title": "CHÍNH SÁCH BẢO MẬT",
+    "subtitle": "Mạng xã hội Ola",
+    "updated": "Cập nhật ngày 20/08/2026 — Phiên bản 1.0",
+    "footer": "© 2026 Ola — Mạng xã hội giải trí",
+    "sections": [
+      {
+        "title": "1. Giới thiệu",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Chính sách bảo mật này giải thích cách Ola (\"Ola\", \"chúng tôi\") thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân của bạn khi bạn sử dụng ứng dụng Ola và các dịch vụ liên quan. Bằng việc đăng ký tài khoản và sử dụng Ola, bạn đồng ý với các nội dung được mô tả trong chính sách này."
+          }
+        ]
+      },
+      {
+        "title": "2. Thông tin chúng tôi thu thập",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Thông tin tài khoản: tên đăng nhập và mật khẩu khi bạn đăng ký. Địa chỉ IP được ghi nhận khi đăng ký và đăng nhập nhằm mục đích bảo mật.",
+              "Thông tin hồ sơ tùy chọn: tên hiển thị, ảnh đại diện, ảnh bìa, giới thiệu, số điện thoại, giới tính, ngày sinh và email — bạn tự quyết định có cung cấp hay không; email chỉ được lưu sau khi bạn xác nhận bằng mã OTP.",
+              "Nội dung bạn tạo: tin nhắn, hình ảnh, tin nhắn thoại, bài viết, bình luận, trạng thái và các nội dung khác bạn đăng tải khi sử dụng các tính năng của Ola. Cuộc gọi thoại và video được truyền trực tiếp theo thời gian thực và không được chúng tôi ghi âm/ghi hình.",
+              "Vị trí check-in: chỉ được thu thập khi bạn cấp quyền vị trí và chủ động đính kèm check-in vào bài viết.",
+              "Dữ liệu thiết bị và sử dụng: dòng máy, hệ điều hành, phiên bản ứng dụng, ngôn ngữ, các màn hình bạn truy cập và nhật ký lỗi (crash log) — thu thập qua Google Firebase (Analytics và Crashlytics) và gắn với ID tài khoản của bạn để chúng tôi sửa lỗi và cải thiện sản phẩm.",
+              "Lịch sử giao dịch vật phẩm ảo: các giao dịch KEN/VIP trong phạm vi ứng dụng."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "3. Mục đích sử dụng thông tin",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Vận hành các tính năng của dịch vụ: trò chuyện, phòng cộng đồng, bảng tin Me, cuộc gọi, trò chơi và vật phẩm ảo;",
+              "Đảm bảo an toàn: phòng chống gian lận, spam, xử lý báo cáo vi phạm và thực thi Điều khoản sử dụng;",
+              "Hỗ trợ người dùng, giải quyết góp ý, khiếu nại;",
+              "Phân tích dữ liệu sử dụng ở dạng tổng hợp để cải thiện chất lượng và độ ổn định của sản phẩm;",
+              "Thông báo cho bạn các thông tin quan trọng về dịch vụ."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "4. Chia sẻ thông tin",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Chúng tôi không bán thông tin cá nhân của bạn cho bất kỳ bên thứ ba nào. Thông tin chỉ được chia sẻ với:"
+          },
+          {
+            "type": "ul",
+            "items": [
+              "Các nhà cung cấp dịch vụ giúp vận hành Ola — Google Firebase (phân tích sử dụng và báo cáo lỗi), dịch vụ lưu trữ đám mây cho hình ảnh/tệp, và hạ tầng cuộc gọi thoại/video — mỗi bên chỉ nhận lượng dữ liệu tối thiểu cần thiết cho chức năng của mình;",
+              "Cơ quan nhà nước có thẩm quyền khi pháp luật yêu cầu;",
+              "Không có bên thứ ba nào nhận dữ liệu của bạn cho mục đích quảng cáo."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "5. Quyền truy cập thiết bị",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Máy ảnh: chụp ảnh gửi trong chat và thực hiện cuộc gọi video;",
+              "Micro: ghi tin nhắn thoại và thực hiện cuộc gọi;",
+              "Thư viện ảnh: chọn ảnh để gửi và lưu ảnh về máy;",
+              "Vị trí: gợi ý địa điểm check-in gần đây khi đăng bài.",
+              "Tất cả các quyền đều là tùy chọn — ứng dụng vẫn hoạt động khi bạn không cấp quyền, chỉ các tính năng liên quan không dùng được. Bạn có thể thu hồi quyền bất kỳ lúc nào trong phần Cài đặt của thiết bị."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "6. Lưu trữ & bảo mật",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Dữ liệu của bạn được truyền qua kết nối mã hóa (HTTPS) và lưu trữ trên máy chủ được bảo vệ. Chúng tôi áp dụng các biện pháp kỹ thuật và tổ chức phù hợp để ngăn chặn truy cập trái phép, tuy nhiên không hệ thống nào an toàn tuyệt đối — vui lòng tự bảo vệ thông tin đăng nhập của bạn."
+          },
+          {
+            "type": "p",
+            "text": "Dữ liệu được lưu trong thời gian tài khoản còn hoạt động. Khi tài khoản bị xóa, dữ liệu cá nhân sẽ được xóa hoặc ẩn danh hóa trong thời gian hợp lý, trừ trường hợp pháp luật yêu cầu lưu trữ lâu hơn."
+          }
+        ]
+      },
+      {
+        "title": "7. Quyền của bạn",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "Xem và chỉnh sửa thông tin hồ sơ trực tiếp trong ứng dụng;",
+              "Xóa nội dung bạn đã đăng (tin nhắn, bài viết, bình luận…);",
+              "Xóa tài khoản trong ứng dụng hoặc gửi yêu cầu qua email support@olachat.net;",
+              "Thu hồi các quyền thiết bị (máy ảnh, micro, ảnh, vị trí) bất kỳ lúc nào."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "8. Trẻ em",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Ola dành cho người dùng từ 18 tuổi trở lên. Nếu phát hiện tài khoản của người dưới 18 tuổi, chúng tôi sẽ khóa hoặc xóa tài khoản và dữ liệu liên quan."
+          }
+        ]
+      },
+      {
+        "title": "9. Thay đổi chính sách",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Chúng tôi có thể cập nhật chính sách này theo thời gian. Các thay đổi quan trọng sẽ được thông báo trong ứng dụng. Việc bạn tiếp tục sử dụng dịch vụ sau khi thay đổi có hiệu lực đồng nghĩa với việc bạn chấp nhận chính sách đã cập nhật."
+          }
+        ]
+      },
+      {
+        "title": "10. Liên hệ",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Mọi câu hỏi hoặc yêu cầu liên quan đến dữ liệu cá nhân và quyền riêng tư, vui lòng liên hệ email support@olachat.net. Chúng tôi cố gắng phản hồi trong vòng 24 giờ."
           }
         ]
       }
@@ -1537,6 +1697,8 @@
     "giftListTitle": "DANH SÁCH QUÀ",
     "giftListSubtitle": "RANDOM • VÒNG QUAY MAY MẮN",
     "giftListEmpty": "Vòng quay chưa có phần quà random",
+    "oddsTitle": "Tỷ lệ kết quả",
+    "oddsNote": "Tỷ lệ áp dụng cho mỗi lượt quay.",
     "kenRandomTitle": "KEN RANDOM",
     "vipRandomTitle": "VIP RANDOM",
     "kenRange": "{{min}} – {{max}} KEN",
@@ -1604,6 +1766,8 @@
       "subtitle": "ĐẬP TRỨNG",
       "empty": "Chưa có quà nào.",
       "vipDaysLabel": "{{days}} ngày VIP",
+      "missRate": "Tỷ lệ không trúng: {{percent}}",
+      "oddsNote": "Tỷ lệ áp dụng cho mỗi lượt đập trứng.",
       "section": {
         "ken": "KEN",
         "vip_days": "NGÀY VIP",
@@ -1786,5 +1950,29 @@
       "you have reached the maximum number of clans you can own": "Bạn đã đạt giới hạn số Clan được tạo"
     },
     "createShort": "Tạo"
+  },
+  "changeNickname": {
+    "title": "Đổi nickname",
+    "priceTitle": "Bảng giá theo độ dài nickname",
+    "tierLabel": "{{n}} ký tự",
+    "tierLabelPlus": "{{n}} ký tự trở lên",
+    "tierRange": "{{from}}–{{to}} ký tự",
+    "balance": "Số dư: {{ken}} KEN",
+    "inputLabel": "Nickname mới",
+    "inputPlaceholder": "Nhập nickname mới",
+    "checking": "Đang kiểm tra...",
+    "available": "Nickname có thể sử dụng",
+    "taken": "Nickname đã được sử dụng",
+    "invalid": "Nickname 2-20 ký tự, chỉ gồm chữ thường, số, dấu . _ -",
+    "same": "Nickname mới phải khác nickname hiện tại",
+    "insufficient": "Số dư KEN không đủ",
+    "confirm": "Đổi ({{ken}} KEN)",
+    "cancel": "Hủy",
+    "note": "Đổi nickname thành công sẽ đăng xuất khỏi tất cả thiết bị.",
+    "success": "Đổi nickname thành công. Vui lòng đăng nhập lại.",
+    "error": "Đổi nickname thất bại. Vui lòng thử lại.",
+    "disabledNotice": "Tính năng đổi nickname đang tạm tắt. Vui lòng quay lại sau.",
+    "checkError": "Không kiểm tra được nickname. Vui lòng thử lại.",
+    "costChanged": "Bảng giá vừa được cập nhật. Vui lòng kiểm tra giá mới trước khi đổi."
   }
 }

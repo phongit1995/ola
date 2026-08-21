@@ -11,6 +11,7 @@ export interface WheelPlayerOption {
   vipTypeId?: number;
   vipDays?: number;
   kenAmount?: number;
+  percent?: number;
 }
 
 export interface WheelPlayerSegment {
@@ -23,6 +24,7 @@ export interface WheelPlayerSegment {
   vipDays?: number;
   vipTypeId?: number;
   sortOrder: number;
+  percent?: number;
   options?: WheelPlayerOption[];
 }
 

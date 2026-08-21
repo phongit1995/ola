@@ -187,6 +187,12 @@ export function RegisterScreen({ navigation }: Props) {
                           onPress={() => navigation.navigate(AUTH_ROUTES.Terms)}
                         />
                       ),
+                      privacy: (
+                        <Text
+                          className="font-medium text-white underline"
+                          onPress={() => navigation.navigate(AUTH_ROUTES.PrivacyPolicy)}
+                        />
+                      ),
                     }}
                   />
                 </Text>

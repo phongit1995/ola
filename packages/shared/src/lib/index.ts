@@ -1,5 +1,6 @@
 export * from './utils';
 export * from './apiError';
+export * from './forgotPassword';
 export * from './tokenStorage';
 export * from './username';
 export * from './toast';

@@ -372,6 +372,122 @@ type emailVerifyEntry struct {
 	Attempts int    `json:"attempts"`
 }
 
+type passwordResetEntry struct {
+	UserID uuid.UUID `json:"userId"`
+	Code   string    `json:"code"`
+}
+
+const errPasswordResetFailed = "failed to reset password, please try again"
+
+func (s *Service) SendPasswordReset(username, clientIP string) error {
+	username = strings.ToLower(strings.TrimSpace(username))
+
+	cooldownKey := fmt.Sprintf(constants.CacheKeyPasswordResetCooldown, username)
+	if ok, err := s.cache.SetNX(cooldownKey, "1", constants.PasswordResetCooldownSeconds*time.Second); err == nil && !ok {
+		return errors.New("please wait before requesting a new code")
+	}
+
+	dailyKey := fmt.Sprintf(constants.CacheKeyPasswordResetDaily, username)
+	if count, err := s.cache.Increment(dailyKey); err == nil {
+		if count == 1 {
+			_ = s.cache.SetExpire(dailyKey, constants.PasswordResetDailyWindow*time.Second)
+		}
+		if count > constants.PasswordResetMaxPerDay {
+			return errors.New("daily password reset limit reached")
+		}
+	}
+
+	user, err := s.repo.FindByUsername(username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.logger.Infow("Password reset requested for unknown username", "username", username, "ip", clientIP)
+			return nil
+		}
+		return err
+	}
+	if !user.IsActive || !user.EmailVerified || user.Email == "" {
+		s.logger.Infow("Password reset requested without verified email", "user_id", user.ID, "ip", clientIP)
+		return nil
+	}
+
+	code, err := generateNumericCode(constants.PasswordResetCodeLength)
+	if err != nil {
+		return err
+	}
+
+	codeKey := fmt.Sprintf(constants.CacheKeyPasswordResetCode, username)
+	attemptsKey := fmt.Sprintf(constants.CacheKeyPasswordResetAttempts, username)
+	entry := passwordResetEntry{UserID: user.ID, Code: code}
+	if err := s.cache.Set(codeKey, entry, constants.CacheTTLOTP*time.Second); err != nil {
+		return err
+	}
+	_ = s.cache.Delete(attemptsKey)
+
+	userID := user.ID
+	email := user.Email
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if err := s.mailService.SendPasswordResetCode(ctx, email, code); err != nil {
+			s.logger.Errorw("Failed to send password reset email", "user_id", userID, "error", err.Error())
+			_ = s.cache.Delete(codeKey)
+			_, _ = s.cache.Decrement(dailyKey)
+			_ = s.cache.Delete(cooldownKey)
+			return
+		}
+		s.logger.Infow("Password reset code sent", "user_id", userID, "ip", clientIP)
+	}()
+
+	return nil
+}
+
+func (s *Service) ConfirmPasswordReset(req *ForgotPasswordConfirmRequest, clientIP string) error {
+	username := strings.ToLower(strings.TrimSpace(req.Username))
+	codeKey := fmt.Sprintf(constants.CacheKeyPasswordResetCode, username)
+	attemptsKey := fmt.Sprintf(constants.CacheKeyPasswordResetAttempts, username)
+
+	var entry passwordResetEntry
+	status, err := s.cache.ConsumeCode(codeKey, attemptsKey, req.Code, constants.PasswordResetMaxAttempts, &entry)
+	if err != nil {
+		s.logger.Errorw("Failed to verify password reset code", "error", err.Error(), "ip", clientIP)
+		return errors.New(errPasswordResetFailed)
+	}
+
+	switch status {
+	case services.ConsumeCodeMissing:
+		return errors.New("reset code expired or not found")
+	case services.ConsumeCodeTooMany:
+		return errors.New("too many invalid attempts, please request a new code")
+	case services.ConsumeCodeInvalid:
+		return errors.New("invalid reset code")
+	}
+
+	if _, err := s.sessionService.RevokeAllForUser(entry.UserID); err != nil {
+		s.logger.Errorw("Failed to revoke sessions during password reset", "user_id", entry.UserID, "error", err.Error())
+		return errors.New(errPasswordResetFailed)
+	}
+	if err := s.repo.ClearRefreshToken(entry.UserID); err != nil {
+		s.logger.Errorw("Failed to clear refresh token during password reset", "user_id", entry.UserID, "error", err.Error())
+		return errors.New(errPasswordResetFailed)
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	if err := s.repo.UpdatePassword(entry.UserID, string(hashed)); err != nil {
+		s.logger.Errorw("Failed to update password during password reset", "user_id", entry.UserID, "error", err.Error())
+		return errors.New(errPasswordResetFailed)
+	}
+
+	if err := s.userCache.InvalidateUser(entry.UserID); err != nil {
+		s.logger.Warnw("Failed to invalidate user cache after password reset", "user_id", entry.UserID, "error", err.Error())
+	}
+
+	s.logger.Infow("Password reset completed", "user_id", entry.UserID, "ip", clientIP)
+	return nil
+}
+
 func isAllowedEmailDomain(email string) bool {
 	at := strings.LastIndex(email, "@")
 	if at < 0 {

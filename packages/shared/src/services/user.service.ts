@@ -10,6 +10,8 @@ import type {
 import type {
   PublicProfile,
   KissResult,
+  CheckUsernameResult,
+  ChangeUsernameResult,
   FollowResult,
   FollowListResult,
   FollowListParams,
@@ -26,6 +28,17 @@ export class UserService {
 
   static updateMe(payload: UpdateProfileRequest): Promise<AuthUser> {
     return http.put<AuthUser>(API_PATH.user.me, payload);
+  }
+
+  static checkUsername(username: string): Promise<CheckUsernameResult> {
+    return http.get<CheckUsernameResult>(API_PATH.user.checkUsername, { params: { username } });
+  }
+
+  static changeUsername(username: string, expectedCost: number): Promise<ChangeUsernameResult> {
+    return http.post<ChangeUsernameResult>(API_PATH.user.changeUsername, {
+      username,
+      expectedCost,
+    });
   }
 
   static uploadAvatar(file: UploadFile): Promise<UploadAvatarResult> {

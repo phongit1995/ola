@@ -1349,10 +1349,22 @@ export interface TopupBankSetting {
 
 export interface TopupSetting {
   enabled: boolean
+  enabledMobile: boolean
   minAmount: number
   stepAmount: number
   presetAmounts: number[]
   kenPerVnd: number
+}
+
+export interface UsernameChangeTierSetting {
+  minLength: number
+  cost: number
+}
+
+export interface UsernameChangeSetting {
+  enabled: boolean
+  enabledMobile: boolean
+  tiers: UsernameChangeTierSetting[]
 }
 
 export interface DashboardTotals {

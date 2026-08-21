@@ -9,11 +9,13 @@ import {
   DateSeparator,
   MessageActionSheet,
   type MessageSheetAction,
+  ReportDialog,
 } from '@components';
 import replyActionIcon from '@/assets/icons/chat/ic_menu_reply.svg';
 import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete_outline.svg';
 import blockActionIcon from '@/assets/icons/chat/ic_menu_block.svg';
+import reportActionIcon from '@/assets/icons/chat/ic_menu_report.svg';
 import { buildRoomFeed } from '../messageGroups';
 import { replyExcerpt, roomMessageAbilities } from '../roomMessageView';
 import { RoomMessageGroup } from './RoomMessageGroup';
@@ -82,6 +84,7 @@ export function RoomMessagesTab({
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
+  const [reportTarget, setReportTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(
     null
   );
@@ -185,6 +188,12 @@ export function RoomMessagesTab({
         onSelect: () => onSetReplyTarget(message),
       });
       if (canCopy) actions.push(copyAction);
+      actions.push({
+        key: 'report',
+        label: t('room.actionReport'),
+        icon: reportActionIcon,
+        onSelect: () => setReportTarget(message),
+      });
       actions.push({
         key: 'block',
         label: t('room.actionBlock'),
@@ -357,6 +366,12 @@ export function RoomMessagesTab({
         }}
         onCancel={() => setBlockTarget(null)}
       />
+      {reportTarget != null && (
+        <ReportDialog
+          target={{ type: 'message', id: reportTarget.id }}
+          onClose={() => setReportTarget(null)}
+        />
+      )}
     </div>
   );
 }

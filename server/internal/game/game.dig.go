@@ -8,6 +8,7 @@ import (
 	_ "ola-chat-server/internal/game/games/caro"
 	_ "ola-chat-server/internal/game/games/thirteen"
 	_ "ola-chat-server/internal/game/games/war-god"
+	_ "ola-chat-server/internal/game/games/xiangqi"
 
 	"go.uber.org/dig"
 	"go.uber.org/zap"

@@ -18,5 +18,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	settings := api.Group("/settings", r.authMiddleware.RequireAuth())
 	{
 		settings.GET("/topup", r.controller.TopupConfig)
+		settings.GET("/username-change", r.controller.UsernameChangeConfig)
 	}
 }

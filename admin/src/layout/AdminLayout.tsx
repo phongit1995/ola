@@ -8,6 +8,7 @@ import {
   FlagOutlined,
   CrownOutlined,
   DollarOutlined,
+  EditOutlined,
   FileSearchOutlined,
   GiftOutlined,
   HeartOutlined,
@@ -76,7 +77,10 @@ const MENU_ITEMS = [
     key: 'settings',
     icon: <SettingOutlined />,
     label: 'Cài đặt hệ thống',
-    children: [{ key: '/settings/topup', icon: <DollarOutlined />, label: 'Nạp KEN' }],
+    children: [
+      { key: '/settings/topup', icon: <DollarOutlined />, label: 'Nạp KEN' },
+      { key: '/settings/username-change', icon: <EditOutlined />, label: 'Đổi nickname' },
+    ],
   },
 ]
 
@@ -111,6 +115,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/me': 'Quản lý Me',
   '/audit-logs': 'Nhật ký admin',
   '/settings/topup': 'Cài đặt nạp KEN',
+  '/settings/username-change': 'Cài đặt đổi nickname',
 }
 
 export function AdminLayout() {

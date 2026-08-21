@@ -3,9 +3,11 @@
 Thư mục này chứa toàn bộ ảnh tham chiếu đi kèm bộ docs. Tổng cộng **29 PNG**:
 
 - 7 concept đã duyệt cho Style 02 — “Chiếu Bài Ngày Vui”;
-- 22 screenshot chức năng dùng để đối chiếu state và hành vi của source React hiện tại.
+- 22 screenshot chức năng đã được render lại từ source React Style 02 để đối chiếu state và hành vi hiện tại.
 
 Concept quyết định ngôn ngữ hình ảnh. Screenshot chức năng quyết định dữ liệu, control và state bắt buộc. Không dùng bất kỳ ảnh toàn màn nào làm production background.
+
+Các screenshot chức năng được chụp từ `mock-ui.html?screen=<tên>` tại viewport logic `390 × 844 CSS px`, DPR 2, nên file xuất có kích thước `780 × 1688 px`. Hai state modal `create-room` và `password-room` cũng có URL mock độc lập, không cần thao tác tay trước khi chụp.
 
 ## Concept Style 02
 

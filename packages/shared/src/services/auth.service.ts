@@ -8,6 +8,7 @@ import type {
   ChangePasswordRequest,
   ConfirmVerifyEmailRequest,
   ConfirmVerifyEmailResult,
+  ForgotPasswordConfirmRequest,
   LoginRequest,
   MessageResult,
   RefreshTokenResult,
@@ -47,6 +48,20 @@ export class AuthService {
 
   static changePassword(payload: ChangePasswordRequest): Promise<MessageResult> {
     return http.post<MessageResult>(API_PATH.auth.changePassword, payload);
+  }
+
+  static forgotPasswordSend(username: string): Promise<MessageResult> {
+    return http.post<MessageResult>(
+      API_PATH.auth.forgotPasswordSend,
+      { username },
+      { skipAuth: true }
+    );
+  }
+
+  static forgotPasswordConfirm(payload: ForgotPasswordConfirmRequest): Promise<MessageResult> {
+    return http.post<MessageResult>(API_PATH.auth.forgotPasswordConfirm, payload, {
+      skipAuth: true,
+    });
   }
 
   static sendVerifyEmail(payload: SendVerifyEmailRequest): Promise<SendVerifyEmailResult> {

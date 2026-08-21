@@ -40,6 +40,7 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 
 	resp := TopupConfigResponse{
 		Enabled:       topup.Enabled,
+		EnabledMobile: topup.EnabledMobile,
 		MinAmount:     topup.MinAmount,
 		StepAmount:    topup.StepAmount,
 		PresetAmounts: topup.PresetAmounts,
@@ -55,4 +56,24 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 		}
 	}
 	return resp, nil
+}
+
+// UsernameChangeConfig godoc
+// @Summary      Cấu hình phí đổi username theo độ dài (tính bằng KEN)
+// @Tags         settings
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  UsernameChangeConfigSuccessResponse
+// @Failure      401  {object}  utils.APIError
+// @Router       /settings/username-change [get]
+func (ctrl *Controller) UsernameChangeConfig(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+
+	cfg, err := ctrl.service.GetUsernameChange()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return cfg, nil
 }

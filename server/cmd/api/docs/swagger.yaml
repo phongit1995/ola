@@ -2287,6 +2287,81 @@ definitions:
         example: ios
         type: string
     type: object
+  internal_modules_auth.ForgotPasswordConfirmRequest:
+    properties:
+      code:
+        example: "123456"
+        type: string
+      newPassword:
+        example: newpassword123
+        minLength: 6
+        type: string
+      username:
+        example: john_doe
+        maxLength: 20
+        minLength: 2
+        type: string
+    required:
+    - code
+    - newPassword
+    - username
+    type: object
+  internal_modules_auth.ForgotPasswordConfirmResponse:
+    properties:
+      message:
+        example: Password has been reset. Please login with your new password.
+        type: string
+    type: object
+  internal_modules_auth.ForgotPasswordConfirmSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_auth.ForgotPasswordConfirmResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_auth.ForgotPasswordSendRequest:
+    properties:
+      username:
+        example: john_doe
+        maxLength: 20
+        minLength: 2
+        type: string
+    required:
+    - username
+    type: object
+  internal_modules_auth.ForgotPasswordSendResponse:
+    properties:
+      message:
+        example: If the account has a verified email, a reset code has been sent.
+        type: string
+    type: object
+  internal_modules_auth.ForgotPasswordSendSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_auth.ForgotPasswordSendResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_auth.LoginRequest:
     properties:
       device:
@@ -2942,6 +3017,8 @@ definitions:
         items:
           $ref: '#/definitions/internal_modules_egg.GiftSectionView'
         type: array
+      missPercent:
+        type: number
     type: object
   internal_modules_egg.GiftRewardView:
     properties:
@@ -2951,6 +3028,8 @@ definitions:
         type: integer
       label:
         type: string
+      percent:
+        type: number
       vipDays:
         type: integer
       vipTypeId:
@@ -4904,6 +4983,9 @@ definitions:
       enabled:
         example: true
         type: boolean
+      enabledMobile:
+        example: true
+        type: boolean
       kenPerVnd:
         example: 1
         type: integer
@@ -4934,6 +5016,41 @@ definitions:
         type: string
       traceId:
         type: string
+    type: object
+  internal_modules_setting.UsernameChangeConfig:
+    properties:
+      enabled:
+        type: boolean
+      enabledMobile:
+        type: boolean
+      tiers:
+        items:
+          $ref: '#/definitions/internal_modules_setting.UsernameChangeTier'
+        type: array
+    type: object
+  internal_modules_setting.UsernameChangeConfigSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_setting.UsernameChangeConfig'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_setting.UsernameChangeTier:
+    properties:
+      cost:
+        type: integer
+      minLength:
+        type: integer
     type: object
   internal_modules_user-setting.UpdateSettingsRequest:
     properties:
@@ -5022,6 +5139,79 @@ definitions:
         type: integer
       wallpaperUrl:
         example: ""
+        type: string
+    type: object
+  internal_modules_user.ChangeUsernameRequest:
+    properties:
+      expectedCost:
+        example: 100000
+        minimum: 0
+        type: integer
+      username:
+        example: john_doe
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - expectedCost
+    - username
+    type: object
+  internal_modules_user.ChangeUsernameResponse:
+    properties:
+      cost:
+        example: 100000
+        type: integer
+      kenBalance:
+        example: 900000
+        type: integer
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_user.ChangeUsernameSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.ChangeUsernameResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.CheckUsernameResponse:
+    properties:
+      available:
+        example: true
+        type: boolean
+      cost:
+        example: 100000
+        type: integer
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_user.CheckUsernameSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.CheckUsernameResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
         type: string
     type: object
   internal_modules_user.FollowListResponse:
@@ -5973,6 +6163,8 @@ definitions:
         type: integer
       label:
         type: string
+      percent:
+        type: number
       vipDays:
         type: integer
       vipTypeId:
@@ -5996,6 +6188,8 @@ definitions:
         items:
           $ref: '#/definitions/internal_modules_wheel.PlayerOptionView'
         type: array
+      percent:
+        type: number
       sortOrder:
         type: integer
       vipDays:
@@ -11966,6 +12160,68 @@ paths:
       summary: Change password
       tags:
       - auth
+  /auth/forgot-password/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Verify the 6-digit reset code and set a new password. All sessions
+        of the account are revoked.
+      parameters:
+      - description: Forgot Password Confirm Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.ForgotPasswordConfirmRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_auth.ForgotPasswordConfirmSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      summary: Confirm password reset
+      tags:
+      - auth
+  /auth/forgot-password/send:
+    post:
+      consumes:
+      - application/json
+      description: Send a 6-digit reset code to the account's verified email. Always
+        returns a generic message so account existence is not revealed.
+      parameters:
+      - description: Forgot Password Send Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.ForgotPasswordSendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_auth.ForgotPasswordSendSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      summary: Request a password reset code
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -15694,6 +15950,24 @@ paths:
       summary: Cấu hình nạp KEN (bank nhận tiền VietQR + mệnh giá) cho app
       tags:
       - settings
+  /settings/username-change:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_setting.UsernameChangeConfigSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình phí đổi username theo độ dài (tính bằng KEN)
+      tags:
+      - settings
   /user-settings:
     get:
       description: Get the authenticated user's settings (returns defaults if not
@@ -15985,6 +16259,69 @@ paths:
       security:
       - BearerAuth: []
       summary: Record a profile view
+      tags:
+      - user
+  /user/change-username:
+    post:
+      consumes:
+      - application/json
+      description: Change the authenticated user's username; the fee depends on the
+        new username length and every session is logged out on success
+      parameters:
+      - description: Change Username Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_user.ChangeUsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.ChangeUsernameSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Change username (costs KEN, revokes all sessions)
+      tags:
+      - user
+  /user/check-username:
+    get:
+      description: Check whether a username can be claimed by the authenticated user
+        and how much KEN it costs
+      parameters:
+      - description: Desired username
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.CheckUsernameSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Check username availability and change cost
       tags:
       - user
   /user/me:

@@ -498,6 +498,34 @@ export function SettingsScreen({ navigation }: Props) {
           </SettingRow>
         </SettingsCard>
 
+        <SettingsCard icon={<SectionIcon src={iconPrivacy} />} index={4} title={t('settings.aboutTitle')}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.navigate(ROOT_ROUTES.Terms)}
+            className="flex-row items-center justify-between gap-3 px-4 py-3"
+            style={{ borderBottomWidth: 1, borderBottomColor: ROW_BORDER }}
+          >
+            <Text className="min-w-0 flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.8)' }}>
+              {t('settings.termsRow')}
+            </Text>
+            <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.35)' }}>
+              ›
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.navigate(ROOT_ROUTES.PrivacyPolicy)}
+            className="flex-row items-center justify-between gap-3 px-4 py-3"
+          >
+            <Text className="min-w-0 flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.8)' }}>
+              {t('settings.privacyPolicyRow')}
+            </Text>
+            <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.35)' }}>
+              ›
+            </Text>
+          </Pressable>
+        </SettingsCard>
+
         <Text className="pt-2 text-center text-xs" style={{ color: 'rgba(0,0,0,0.4)' }}>
           {t('settings.appVersion')}
         </Text>

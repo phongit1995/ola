@@ -29,9 +29,21 @@ export interface TopupBankInfo {
 
 export interface TopupConfigResult {
   enabled: boolean;
+  enabledMobile?: boolean;
   minAmount: number;
   stepAmount: number;
   presetAmounts: number[];
   kenPerVnd: number;
   bank?: TopupBankInfo;
+}
+
+export interface UsernameChangeTier {
+  minLength: number;
+  cost: number;
+}
+
+export interface UsernameChangeConfigResult {
+  enabled: boolean;
+  enabledMobile?: boolean;
+  tiers: UsernameChangeTier[];
 }

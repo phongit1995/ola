@@ -10,7 +10,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { EGG_GIFT_FIXTURE, formatKen, vipName } from '@ola/shared/lib';
+import { EGG_GIFT_FIXTURE, formatKen, formatOddsPercent, vipName } from '@ola/shared/lib';
 import { EggService } from '@ola/shared/services';
 import type { EggCategoryKind, EggGiftReward, EggGiftSection } from '@ola/shared/types';
 import { Dialog } from '@components/ui/Dialog';
@@ -85,6 +85,7 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
   const { t } = useTranslation();
   const { height: windowHeight } = useWindowDimensions();
   const [sections, setSections] = useState<EggGiftSection[]>([]);
+  const [missPercent, setMissPercent] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const scrollMaxHeight = eggGiftScrollHeight(windowHeight);
@@ -105,7 +106,10 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
       return;
     }
     EggService.listGifts(packId)
-      .then((result) => applyItems(result?.items ?? []))
+      .then((result) => {
+        applyItems(result?.items ?? []);
+        if (alive) setMissPercent(result?.missPercent ?? null);
+      })
       .catch(() => {
         if (!alive) return;
         if (__DEV__) {
@@ -230,6 +234,14 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
                                     >
                                       {label}
                                     </Text>
+                                    {formatOddsPercent(reward.percent) != null && (
+                                      <Text
+                                        className="text-center text-[10px] font-bold"
+                                        style={{ color: '#8a8a8c' }}
+                                      >
+                                        {formatOddsPercent(reward.percent)}
+                                      </Text>
+                                    )}
                                   </View>
                                 );
                               })}
@@ -244,6 +256,20 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
                   </View>
                 );
               })
+            )}
+            {!error && !loading && sections.length > 0 && (
+              <View style={{ marginTop: 4, paddingHorizontal: 4, gap: 2 }}>
+                {missPercent != null && missPercent > 0 && (
+                  <Text className="text-center text-xs" style={{ color: '#8a8a8c' }}>
+                    {t('eggGame.gifts.missRate', {
+                      percent: formatOddsPercent(missPercent) ?? '0%',
+                    })}
+                  </Text>
+                )}
+                <Text className="text-center text-[10px]" style={{ color: '#a5a5a7' }}>
+                  {t('eggGame.gifts.oddsNote')}
+                </Text>
+              </View>
             )}
           </ScrollView>
         </View>

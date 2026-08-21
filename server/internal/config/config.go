@@ -24,6 +24,7 @@ type Config struct {
 	CaroCommissionPercent     int    `env:"CARO_COMMISSION_PERCENT" envDefault:"5" validate:"min=0,max=100"`
 	WarGodCommissionPercent   int    `env:"WARGOD_COMMISSION_PERCENT" envDefault:"5" validate:"min=0,max=100"`
 	ThirteenCommissionPercent int    `env:"THIRTEEN_COMMISSION_PERCENT" envDefault:"5" validate:"min=0,max=100"`
+	XiangqiCommissionPercent  int    `env:"XIANGQI_COMMISSION_PERCENT" envDefault:"5" validate:"min=0,max=100"`
 	GameReconnectGraceSeconds int    `env:"GAME_RECONNECT_GRACE_SECONDS" envDefault:"30" validate:"min=5,max=120"`
 	GameWebSocketRedisPrefix  string `env:"GAME_WEBSOCKET_REDIS_PREFIX" envDefault:"ola-game" validate:"required"`
 

@@ -98,4 +98,5 @@ export interface ChatMessageAbilities {
   canCopy: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  canReport: boolean;
 }

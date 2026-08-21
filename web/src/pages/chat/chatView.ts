@@ -90,6 +90,7 @@ export function chatMessageAbilities(
     canCopy: isCopyableText(message),
     canEdit: isOwn && message.kind === 'text',
     canDelete: isOwn,
+    canReport: !isOwn && message.kind !== 'call',
   };
 }
 

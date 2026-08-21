@@ -5030,6 +5030,98 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/forgot-password/confirm": {
+            "post": {
+                "description": "Verify the 6-digit reset code and set a new password. All sessions of the account are revoked.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Confirm password reset",
+                "parameters": [
+                    {
+                        "description": "Forgot Password Confirm Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ForgotPasswordConfirmRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ForgotPasswordConfirmSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/forgot-password/send": {
+            "post": {
+                "description": "Send a 6-digit reset code to the account's verified email. Always returns a generic message so account existence is not revealed.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Request a password reset code",
+                "parameters": [
+                    {
+                        "description": "Forgot Password Send Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ForgotPasswordSendRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ForgotPasswordSendSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticate user and get access token",
@@ -10931,6 +11023,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/settings/username-change": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Cấu hình phí đổi username theo độ dài (tính bằng KEN)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_setting.UsernameChangeConfigSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/user-settings": {
             "get": {
                 "security": [
@@ -10994,6 +11116,103 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_user-setting.UserSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/change-username": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change the authenticated user's username; the fee depends on the new username length and every session is logged out on success",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Change username (costs KEN, revokes all sessions)",
+                "parameters": [
+                    {
+                        "description": "Change Username Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.ChangeUsernameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.ChangeUsernameSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/check-username": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check whether a username can be claimed by the authenticated user and how much KEN it costs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Check username availability and change cost",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Desired username",
+                        "name": "username",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.CheckUsernameSuccessResponse"
                         }
                     },
                     "400": {
@@ -15736,6 +15955,115 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_auth.ForgotPasswordConfirmRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "newPassword",
+                "username"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "123456"
+                },
+                "newPassword": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "newpassword123"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 2,
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordConfirmResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Password has been reset. Please login with your new password."
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordConfirmSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_auth.ForgotPasswordConfirmResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordSendRequest": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 2,
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordSendResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "If the account has a verified email, a reset code has been sent."
+                }
+            }
+        },
+        "internal_modules_auth.ForgotPasswordSendSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_auth.ForgotPasswordSendResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_auth.LoginRequest": {
             "type": "object",
             "required": [
@@ -16698,6 +17026,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/internal_modules_egg.GiftSectionView"
                     }
+                },
+                "missPercent": {
+                    "type": "number"
                 }
             }
         },
@@ -16712,6 +17043,9 @@ const docTemplate = `{
                 },
                 "label": {
                     "type": "string"
+                },
+                "percent": {
+                    "type": "number"
                 },
                 "vipDays": {
                     "type": "integer"
@@ -19580,6 +19914,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "enabledMobile": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "kenPerVnd": {
                     "type": "integer",
                     "example": 1
@@ -19623,6 +19961,60 @@ const docTemplate = `{
                 },
                 "traceId": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_setting.UsernameChangeConfig": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "enabledMobile": {
+                    "type": "boolean"
+                },
+                "tiers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_setting.UsernameChangeTier"
+                    }
+                }
+            }
+        },
+        "internal_modules_setting.UsernameChangeConfigSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_setting.UsernameChangeConfig"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_setting.UsernameChangeTier": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "integer"
+                },
+                "minLength": {
+                    "type": "integer"
                 }
             }
         },
@@ -19743,6 +20135,112 @@ const docTemplate = `{
                 "wallpaperUrl": {
                     "type": "string",
                     "example": ""
+                }
+            }
+        },
+        "internal_modules_user.ChangeUsernameRequest": {
+            "type": "object",
+            "required": [
+                "expectedCost",
+                "username"
+            ],
+            "properties": {
+                "expectedCost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 100000
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_user.ChangeUsernameResponse": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "integer",
+                    "example": 100000
+                },
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 900000
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_user.ChangeUsernameSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_user.ChangeUsernameResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_user.CheckUsernameResponse": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "cost": {
+                    "type": "integer",
+                    "example": 100000
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_user.CheckUsernameSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_user.CheckUsernameResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -21118,6 +21616,9 @@ const docTemplate = `{
                 "label": {
                     "type": "string"
                 },
+                "percent": {
+                    "type": "number"
+                },
                 "vipDays": {
                     "type": "integer"
                 },
@@ -21152,6 +21653,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/internal_modules_wheel.PlayerOptionView"
                     }
+                },
+                "percent": {
+                    "type": "number"
                 },
                 "sortOrder": {
                     "type": "integer"

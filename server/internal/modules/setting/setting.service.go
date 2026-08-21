@@ -1,7 +1,11 @@
 package setting
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"sort"
 	"strings"
 
 	"ola-chat-server/internal/models"
@@ -10,8 +14,12 @@ import (
 )
 
 const (
-	KeyTopupBank = "topup_bank"
-	KeyTopup     = "topup"
+	KeyTopupBank      = "topup_bank"
+	KeyTopup          = "topup"
+	KeyUsernameChange = "username_change"
+
+	usernameChangeMinLength = 2
+	usernameChangeMaxLength = 20
 )
 
 type TopupBankConfig struct {
@@ -24,6 +32,7 @@ type TopupBankConfig struct {
 
 type TopupConfig struct {
 	Enabled       bool  `json:"enabled"`
+	EnabledMobile bool  `json:"enabledMobile"`
 	MinAmount     int   `json:"minAmount"`
 	StepAmount    int   `json:"stepAmount"`
 	PresetAmounts []int `json:"presetAmounts"`
@@ -33,6 +42,7 @@ type TopupConfig struct {
 func DefaultTopupConfig() TopupConfig {
 	return TopupConfig{
 		Enabled:       true,
+		EnabledMobile: true,
 		MinAmount:     10_000,
 		StepAmount:    1_000,
 		PresetAmounts: []int{10_000, 20_000, 50_000, 100_000, 200_000, 500_000},
@@ -42,6 +52,42 @@ func DefaultTopupConfig() TopupConfig {
 
 func DefaultTopupBankConfig() TopupBankConfig {
 	return TopupBankConfig{MemoTemplate: "@{username}"}
+}
+
+type UsernameChangeTier struct {
+	MinLength int `json:"minLength"`
+	Cost      int `json:"cost"`
+}
+
+type UsernameChangeConfig struct {
+	Enabled       bool                 `json:"enabled"`
+	EnabledMobile bool                 `json:"enabledMobile"`
+	Tiers         []UsernameChangeTier `json:"tiers"`
+}
+
+func DefaultUsernameChangeConfig() UsernameChangeConfig {
+	return UsernameChangeConfig{
+		Enabled:       true,
+		EnabledMobile: true,
+		Tiers: []UsernameChangeTier{
+			{MinLength: 2, Cost: 2_000_000},
+			{MinLength: 3, Cost: 1_000_000},
+			{MinLength: 4, Cost: 500_000},
+			{MinLength: 6, Cost: 100_000},
+		},
+	}
+}
+
+func (c UsernameChangeConfig) CostFor(length int) int {
+	cost := -1
+	bestMin := -1
+	for _, tier := range c.Tiers {
+		if length >= tier.MinLength && tier.MinLength > bestMin {
+			bestMin = tier.MinLength
+			cost = tier.Cost
+		}
+	}
+	return cost
 }
 
 type Service struct {
@@ -114,4 +160,60 @@ func (s *Service) GetTopup() (TopupConfig, error) {
 	}
 	cfg.PresetAmounts = presets
 	return cfg, err
+}
+
+func (s *Service) GetUsernameChange() (UsernameChangeConfig, error) {
+	cfg := DefaultUsernameChangeConfig()
+	err := s.getInto(KeyUsernameChange, &cfg)
+
+	tiers := make([]UsernameChangeTier, 0, len(cfg.Tiers))
+	for _, tier := range cfg.Tiers {
+		if tier.MinLength >= usernameChangeMinLength && tier.MinLength <= usernameChangeMaxLength && tier.Cost >= 0 {
+			tiers = append(tiers, tier)
+		}
+	}
+	sort.Slice(tiers, func(i, j int) bool { return tiers[i].MinLength < tiers[j].MinLength })
+	if len(tiers) == 0 || tiers[0].MinLength != usernameChangeMinLength {
+		s.logger.Warnw("Invalid username_change tiers in app_settings, using defaults", "tiers", cfg.Tiers)
+		tiers = DefaultUsernameChangeConfig().Tiers
+	}
+	cfg.Tiers = tiers
+	return cfg, err
+}
+
+func ValidateUsernameChangeValue(value models.JSONB) error {
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return errors.New("invalid username_change config")
+	}
+	var cfg UsernameChangeConfig
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&cfg); err != nil {
+		return errors.New("invalid username_change config: " + err.Error())
+	}
+	if len(cfg.Tiers) == 0 {
+		return errors.New("username_change config needs at least one tier")
+	}
+	seen := make(map[int]bool, len(cfg.Tiers))
+	hasBaseTier := false
+	for _, tier := range cfg.Tiers {
+		if tier.MinLength < usernameChangeMinLength || tier.MinLength > usernameChangeMaxLength {
+			return fmt.Errorf("tier minLength must be between %d and %d", usernameChangeMinLength, usernameChangeMaxLength)
+		}
+		if tier.Cost < 0 {
+			return errors.New("tier cost must not be negative")
+		}
+		if seen[tier.MinLength] {
+			return fmt.Errorf("duplicate tier minLength %d", tier.MinLength)
+		}
+		seen[tier.MinLength] = true
+		if tier.MinLength == usernameChangeMinLength {
+			hasBaseTier = true
+		}
+	}
+	if !hasBaseTier {
+		return fmt.Errorf("tiers must include minLength %d so every username length has a price", usernameChangeMinLength)
+	}
+	return nil
 }

@@ -11,6 +11,7 @@ import {
   DateSeparator,
   MessageActionSheet,
   type MessageSheetAction,
+  ReportDialog,
   ScreenHeader,
   SmileyInput,
   Spinner,
@@ -37,6 +38,7 @@ import replyActionIcon from '@/assets/icons/chat/ic_menu_reply.svg';
 import editActionIcon from '@/assets/icons/chat/ic_menu_edit.svg';
 import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete_outline.svg';
+import reportActionIcon from '@/assets/icons/chat/ic_menu_report.svg';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
@@ -155,6 +157,7 @@ export function ChatConversationView({
     anchor: DOMRect | null;
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
+  const [reportTarget, setReportTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -386,6 +389,14 @@ export function ChatConversationView({
         label: t('chat.actionEdit'),
         icon: editActionIcon,
         onSelect: () => startEdit(message),
+      });
+    }
+    if (abilities.canReport) {
+      actions.push({
+        key: 'report',
+        label: t('chat.actionReport'),
+        icon: reportActionIcon,
+        onSelect: () => setReportTarget(message),
       });
     }
     if (abilities.canDelete) {
@@ -910,6 +921,12 @@ export function ChatConversationView({
         onConfirm={() => void handleBlock()}
         onCancel={() => setBlockOpen(false)}
       />
+      {reportTarget != null && (
+        <ReportDialog
+          target={{ type: 'message', id: reportTarget.id }}
+          onClose={() => setReportTarget(null)}
+        />
+      )}
 
       {transferKenOpen && peerId !== '' && (
         <TransferKenDialog

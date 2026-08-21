@@ -5,6 +5,7 @@
 //   /thirteen/mock-ui.html?screen=<tên>
 //
 // Xem SCENES bên dưới để biết đủ tên màn.
+import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { ChatMessageData, PlayerInfo, RoomInfo, RoomStateData } from '../src/sdk';
 import { App } from './App';
@@ -81,13 +82,15 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   lobby: () => ({ phase: 'lobby', rooms: ROOMS }),
   'lobby-empty': () => ({ phase: 'lobby', rooms: [] }),
   'lobby-queueing': () => ({ phase: 'lobby', rooms: ROOMS, queueing: true }),
+  'create-room': () => ({ phase: 'lobby', rooms: ROOMS }),
+  'password-room': () => ({ phase: 'lobby', rooms: ROOMS }),
   'room-host': () => ({ phase: 'room', room: room(0, 4, 3), roomChat: ROOM_CHAT }),
   'room-guest': () => ({ phase: 'room', room: room(1, 4, 4), roomChat: [] }),
   'room-2p': () => ({ phase: 'room', room: room(0, 2, 2), roomChat: [] }),
   table: () => table(PLAYERS_4),
   'table-2p': () => table(PLAYERS_4.slice(0, 2)),
   'table-3p': () => table(PLAYERS_4.slice(0, 3)),
-  'table-selected': () => ({ ...table(PLAYERS_4), selected: [18, 19] }),
+  'table-selected': () => ({ ...table(PLAYERS_4), hand: MY_HAND.map((card) => (card === 27 ? 23 : card)), selected: [22, 23] }),
   'table-dealing': () => ({ ...table(PLAYERS_4), dealing: true, table: null }),
   'table-chat': () => ({ ...table(PLAYERS_4), chatOpen: true, matchChat: MATCH_CHAT }),
   'table-fx': () => ({
@@ -147,4 +150,21 @@ const scene = SCENES[screen] ?? SCENES.lobby;
 
 useThirteen.setState({ init: () => {}, dispose: () => {}, user: ME, ...scene() });
 
-createRoot(document.getElementById('root')!).render(<App />);
+function MockApp() {
+  useEffect(() => {
+    if (screen !== 'create-room' && screen !== 'password-room') return;
+    const timer = window.setTimeout(() => {
+      if (screen === 'create-room') {
+        document.querySelector<HTMLButtonElement>('.tl-secondary-btn')?.click();
+        return;
+      }
+      const roomButtons = document.querySelectorAll<HTMLButtonElement>('.tl-room-row > .tl-btn');
+      roomButtons[1]?.click();
+    });
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return <App />;
+}
+
+createRoot(document.getElementById('root')!).render(<MockApp />);

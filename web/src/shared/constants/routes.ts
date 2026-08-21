@@ -3,6 +3,7 @@ export const ROUTES = {
   register: '/register',
   forgotPassword: '/forgot-password',
   terms: '/dieu-khoan',
+  privacy: '/chinh-sach-bao-mat',
   downloadApp: '/tai-app',
   home: '/',
   profile: '/profile',
