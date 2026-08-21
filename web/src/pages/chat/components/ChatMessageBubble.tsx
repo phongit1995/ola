@@ -15,7 +15,7 @@ import {
   renderRichText,
   SmileyText,
 } from '@lib';
-import { PhoneIcon, VideoIcon } from '../../call/icons';
+import { ChatPhoneIcon, ChatVideoIcon } from '../../call/icons';
 import type { ChatReplySnapshot } from '@app-types';
 import type { ChatMessage } from '../interface';
 import { chatQuoteExcerpt } from '../chatView';
@@ -233,7 +233,7 @@ export function ChatMessageBubble({
 
     case 'call': {
       const view = callMessageView(t, message.call ?? {});
-      const CallIcon = view.isVideo ? VideoIcon : PhoneIcon;
+      const CallIcon = view.isVideo ? ChatVideoIcon : ChatPhoneIcon;
       return (
         <div
           className={`flex items-center gap-2.5 rounded-2xl px-3 py-2 ${groupCorners} ${bubbleBg}`}

@@ -4,7 +4,7 @@ import { Avatar } from '@components';
 import { CALL_TYPE } from '@constants';
 import { callPeerNameView, colorForName, peerDisplayName } from '@lib';
 import { useCallStore } from '@/store/callStore';
-import { EndCallIcon, PhoneIcon } from './icons';
+import { ChatPhoneIcon, EndCallIcon } from './icons';
 import {
   useCallDraggable,
   type CallDraggableInitial,
@@ -94,7 +94,7 @@ export function IncomingCallCard() {
           onClick={() => void handleAccept()}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-ola-button text-ola-primary-darker hover:brightness-110 disabled:opacity-50"
         >
-          <PhoneIcon className="h-6 w-6" />
+          <ChatPhoneIcon className="h-6 w-6" />
         </button>
       </div>
     </div>
