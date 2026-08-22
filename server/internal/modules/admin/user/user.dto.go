@@ -124,3 +124,30 @@ type AddVipDaysResponse struct {
 	Days       int    `json:"days"`
 	VipEndTime string `json:"vipEndTime"`
 }
+
+type UsernameChangeUser struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	FullName string `json:"fullName,omitempty"`
+	Avatar   string `json:"avatar,omitempty"`
+}
+
+type UsernameChangeItem struct {
+	ID            string             `json:"id"`
+	User          UsernameChangeUser `json:"user"`
+	OldUsername   string             `json:"oldUsername"`
+	NewUsername   string             `json:"newUsername"`
+	Cost          int                `json:"cost"`
+	ActorType     string             `json:"actorType"`
+	ActorID       string             `json:"actorId,omitempty"`
+	ActorUsername string             `json:"actorUsername,omitempty"`
+	ActorFullName string             `json:"actorFullName,omitempty"`
+	CreatedAt     string             `json:"createdAt"`
+}
+
+type UsernameChangeListResponse struct {
+	Items  []UsernameChangeItem `json:"items"`
+	Total  int64                `json:"total"`
+	Limit  int                  `json:"limit"`
+	Offset int                  `json:"offset"`
+}

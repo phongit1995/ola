@@ -12,9 +12,21 @@ import type {
   ListResult,
   MessageResult,
   UserListParams,
+  UsernameChangeItem,
+  UsernameChangeListParams,
 } from '@/types'
 
 export const AdminUserService = {
+  async listUsernameChanges(
+    params: UsernameChangeListParams = {},
+  ): Promise<ListResult<UsernameChangeItem>> {
+    const { data } = await http.get<ApiResponse<ListResult<UsernameChangeItem>>>(
+      '/admin/username-changes',
+      { params },
+    )
+    return data.data
+  },
+
   async list(params: UserListParams = {}): Promise<ListResult<AdminUserListItem>> {
     const { data } = await http.get<ApiResponse<ListResult<AdminUserListItem>>>(
       '/admin/users',

@@ -2,6 +2,10 @@ package adminuser
 
 import (
 	"net/http"
+	"strings"
+	"time"
+
+	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -312,7 +316,12 @@ func (ctrl *Controller) UpdateUsername(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	resp, err := ctrl.service.UpdateUsername(id, req.Username)
+	adminID, ok := middleware.GetAdminID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+
+	resp, err := ctrl.service.UpdateUsername(id, req.Username, adminID)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
@@ -373,4 +382,60 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
 	return map[string]string{"message": "user deleted"}, nil
+}
+
+// ListUsernameChanges godoc
+// @Summary      Lịch sử đổi nickname
+// @Description  Danh sách các lần đổi username, gồm cả user tự đổi (mất Ken) và admin đổi hộ
+// @Tags         admin-user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        userId    query string false "Lọc theo user"
+// @Param        q         query string false "Tìm theo username (cũ, mới hoặc hiện tại)"
+// @Param        actorType query string false "Người thực hiện (user | admin)"
+// @Param        from      query string false "Từ thời gian (RFC3339)"
+// @Param        to        query string false "Đến thời gian (RFC3339)"
+// @Param        limit     query int    false "Page size"
+// @Param        offset    query int    false "Offset"
+// @Success      200  {object}  utils.BaseResponse[UsernameChangeListResponse]
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Router       /admin/username-changes [get]
+func (ctrl *Controller) ListUsernameChanges(c *gin.Context) (interface{}, error) {
+	f := UsernameChangeFilter{
+		Username:  strings.TrimSpace(c.Query("q")),
+		ActorType: c.Query("actorType"),
+		Limit:     utils.ParseLimit(c, 20, 100),
+		Offset:    utils.ParseOffset(c),
+	}
+	if f.ActorType != "" && f.ActorType != "user" && f.ActorType != "admin" {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid actor type")
+	}
+	if raw := c.Query("userId"); raw != "" {
+		id, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+		}
+		f.UserID = &id
+	}
+	if raw := c.Query("from"); raw != "" {
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
+		}
+		f.From = &t
+	}
+	if raw := c.Query("to"); raw != "" {
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
+		}
+		f.To = &t
+	}
+
+	resp, err := ctrl.service.ListUsernameChanges(f)
+	if err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return resp, nil
 }

@@ -1,12 +1,19 @@
 package adminuser
 
 import (
+	"errors"
 	"fmt"
+	"time"
+
+	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
+
+var errUsernameUnchanged = errors.New("username is unchanged")
 
 type Repository struct {
 	db *gorm.DB
@@ -109,10 +116,33 @@ func (r *Repository) UsernameTaken(username string, exclude uuid.UUID) (bool, er
 	return count > 0, err
 }
 
-func (r *Repository) SetUsername(id uuid.UUID, username string) error {
-	return r.db.Unscoped().Model(&models.User{}).
-		Where("id = ?", id).
-		Update("username", username).Error
+func (r *Repository) SetUsername(id uuid.UUID, username string, adminID uuid.UUID) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var user models.User
+		if err := tx.Unscoped().Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&user, "id = ?", id).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperr.ErrUserNotFound
+			}
+			return err
+		}
+		if user.Username == username {
+			return errUsernameUnchanged
+		}
+		if err := tx.Unscoped().Model(&models.User{}).
+			Where("id = ?", id).
+			Update("username", username).Error; err != nil {
+			return err
+		}
+		actorID := adminID
+		return tx.Create(&models.UsernameChangeLog{
+			UserID:      id,
+			OldUsername: user.Username,
+			NewUsername: username,
+			ActorType:   string(models.KenActorAdmin),
+			ActorID:     &actorID,
+		}).Error
+	})
 }
 
 func (r *Repository) UpdatePassword(id uuid.UUID, hashedPassword string) error {
@@ -168,4 +198,72 @@ func (r *Repository) ListSessions(userID uuid.UUID, limit, offset int) ([]models
 		Offset(offset).
 		Find(&sessions).Error
 	return sessions, err
+}
+
+type UsernameChangeFilter struct {
+	UserID    *uuid.UUID
+	Username  string
+	ActorType string
+	From      *time.Time
+	To        *time.Time
+	Limit     int
+	Offset    int
+}
+
+func usernameChangeScope(f UsernameChangeFilter) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if f.UserID != nil {
+			db = db.Where("username_change_logs.user_id = ?", *f.UserID)
+		}
+		if f.Username != "" {
+			like := "%" + f.Username + "%"
+			db = db.Where(
+				"(username_change_logs.old_username ILIKE ? OR username_change_logs.new_username ILIKE ? OR users.username ILIKE ?)",
+				like, like, like,
+			)
+		}
+		if f.ActorType != "" {
+			db = db.Where("username_change_logs.actor_type = ?", f.ActorType)
+		}
+		if f.From != nil {
+			db = db.Where("username_change_logs.created_at >= ?", *f.From)
+		}
+		if f.To != nil {
+			db = db.Where("username_change_logs.created_at <= ?", *f.To)
+		}
+		return db
+	}
+}
+
+type usernameChangeRow struct {
+	models.UsernameChangeLog
+	CurrentUsername string `gorm:"column:current_username"`
+	FullName        string `gorm:"column:full_name"`
+	Avatar          string `gorm:"column:avatar"`
+	AdminUsername   string `gorm:"column:admin_username"`
+	AdminFullName   string `gorm:"column:admin_full_name"`
+}
+
+func (r *Repository) ListUsernameChanges(f UsernameChangeFilter) ([]usernameChangeRow, int64, error) {
+	base := func() *gorm.DB {
+		return r.db.Table("username_change_logs").
+			Joins("LEFT JOIN users ON users.id = username_change_logs.user_id").
+			Scopes(usernameChangeScope(f))
+	}
+
+	var total int64
+	if err := base().Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var rows []usernameChangeRow
+	err := base().
+		Select(`username_change_logs.*, users.username AS current_username, users.full_name, users.avatar,
+			admin_users.username AS admin_username, admin_users.full_name AS admin_full_name`).
+		Joins("LEFT JOIN admin_users ON username_change_logs.actor_type = 'admin' AND admin_users.id = username_change_logs.actor_id").
+		Order("username_change_logs.created_at DESC, username_change_logs.id DESC").
+		Limit(f.Limit).
+		Offset(f.Offset).
+		Scan(&rows).Error
+	return rows, total, err
 }

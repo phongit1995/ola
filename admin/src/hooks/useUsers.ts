@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminUserService } from '@/services/adminUser.service'
-import type { AddVipDaysRequest, GrantVipRequest, ListParams, UserListParams } from '@/types'
+import type {
+  AddVipDaysRequest,
+  GrantVipRequest,
+  ListParams,
+  UserListParams,
+  UsernameChangeListParams,
+} from '@/types'
 
 const USERS_KEY = 'admin-users'
 
@@ -8,6 +14,14 @@ export function useUsers(params: UserListParams) {
   return useQuery({
     queryKey: [USERS_KEY, params],
     queryFn: () => AdminUserService.list(params),
+    placeholderData: (prev) => prev,
+  })
+}
+
+export function useUsernameChanges(params: UsernameChangeListParams) {
+  return useQuery({
+    queryKey: [USERS_KEY, 'username-changes', params],
+    queryFn: () => AdminUserService.listUsernameChanges(params),
     placeholderData: (prev) => prev,
   })
 }

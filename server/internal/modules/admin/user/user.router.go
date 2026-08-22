@@ -31,4 +31,11 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		users.DELETE("/:id", r.controller.DeleteUser)
 		users.DELETE("/:id/vips/:instanceId", r.controller.DeleteVip)
 	}
+
+	changes := admin.Group("/username-changes",
+		r.authMiddleware.RequireAdmin(),
+	)
+	{
+		changes.GET("", r.controller.ListUsernameChanges)
+	}
 }
