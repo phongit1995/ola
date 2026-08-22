@@ -28,6 +28,10 @@ type SocketData struct {
 	VipType *string
 }
 
+func (d *SocketData) Key() string {
+	return userRoom(d.GameID, d.UserID)
+}
+
 type Server struct {
 	io     *socket.Server
 	engine *engine.Engine
@@ -35,6 +39,8 @@ type Server struct {
 	logger *zap.SugaredLogger
 	connMu sync.Mutex
 	conns  map[string]int
+	// spectating tracks the match each socket is watching so disconnects release the seat.
+	spectating map[socket.SocketId]string
 }
 
 func userRoom(gameID, userID string) string {
@@ -43,6 +49,10 @@ func userRoom(gameID, userID string) string {
 
 func lobbyRoom(gameID string) string {
 	return "game:" + gameID + ":lobby"
+}
+
+func matchRoom(gameID, matchID string) string {
+	return "game:" + gameID + ":match:" + matchID
 }
 
 func NewServer(
@@ -69,11 +79,12 @@ func NewServer(
 	io := socket.NewServer(nil, opts)
 
 	server := &Server{
-		io:     io,
-		engine: gameEngine,
-		repo:   repo,
-		logger: logger.Named("[game-ws]"),
-		conns:  make(map[string]int),
+		io:         io,
+		engine:     gameEngine,
+		repo:       repo,
+		logger:     logger.Named("[game-ws]"),
+		conns:      make(map[string]int),
+		spectating: make(map[socket.SocketId]string),
 	}
 	gameEngine.SetEmitter(server)
 
@@ -141,7 +152,7 @@ func (s *Server) handleConnection(client *socket.Socket) {
 		if len(args) == 0 {
 			return
 		}
-		s.handleMessage(data, args[0])
+		s.handleMessage(client, data, args[0])
 	})
 
 	client.On("disconnect", func(args ...any) {
@@ -151,7 +162,12 @@ func (s *Server) handleConnection(client *socket.Socket) {
 		if last {
 			delete(s.conns, key)
 		}
+		watching := s.spectating[client.Id()]
+		delete(s.spectating, client.Id())
 		s.connMu.Unlock()
+		if watching != "" {
+			s.engine.SpectateLeave(data.GameID, watching, string(client.Id()), nil)
+		}
 		if last {
 			s.engine.OnDisconnect(data.GameID, data.UserID)
 		}
@@ -185,7 +201,51 @@ func socketPlayer(data *SocketData) protocol.PlayerInfo {
 	}
 }
 
-func (s *Server) handleMessage(data *SocketData, raw any) {
+func socketDeliver(client *socket.Socket) engine.Deliver {
+	return func(envelope protocol.OutEnvelope) {
+		client.Emit(messageEvent, envelope)
+	}
+}
+
+func (s *Server) spectateJoin(client *socket.Socket, data *SocketData, matchID string) {
+	s.connMu.Lock()
+	previous := s.spectating[client.Id()]
+	s.connMu.Unlock()
+
+	client.Join(socket.Room(matchRoom(data.GameID, matchID)))
+	if !s.engine.SpectateJoin(data.GameID, data.UserID, matchID, string(client.Id()), socketDeliver(client)) {
+		if previous != matchID {
+			client.Leave(socket.Room(matchRoom(data.GameID, matchID)))
+		}
+		return
+	}
+	s.connMu.Lock()
+	s.spectating[client.Id()] = matchID
+	s.connMu.Unlock()
+	if previous != "" && previous != matchID {
+		client.Leave(socket.Room(matchRoom(data.GameID, previous)))
+		s.engine.SpectateLeave(data.GameID, previous, string(client.Id()), nil)
+	}
+}
+
+func (s *Server) spectateLeave(client *socket.Socket, data *SocketData, matchID string, notify bool) {
+	s.connMu.Lock()
+	watching := s.spectating[client.Id()]
+	if watching == "" || (matchID != "" && matchID != watching) {
+		s.connMu.Unlock()
+		return
+	}
+	delete(s.spectating, client.Id())
+	s.connMu.Unlock()
+	client.Leave(socket.Room(matchRoom(data.GameID, watching)))
+	var deliver engine.Deliver
+	if notify {
+		deliver = socketDeliver(client)
+	}
+	s.engine.SpectateLeave(data.GameID, watching, string(client.Id()), deliver)
+}
+
+func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any) {
 	payload, err := json.Marshal(raw)
 	if err != nil {
 		return
@@ -282,6 +342,22 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 		s.sendLeaderboard(data.GameID, data.UserID, d.Period)
 	case protocol.C2SHistory:
 		s.sendMatchHistory(data.GameID, data.UserID)
+	case protocol.C2SSpectateList:
+		s.engine.SpectateList(data.GameID, data.UserID)
+	case protocol.C2SSpectateJoin:
+		var d protocol.SpectateJoinData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.spectateJoin(client, data, d.MatchID)
+	case protocol.C2SSpectateLeave:
+		var d protocol.SpectateLeaveData
+		if len(env.Data) > 0 {
+			if err := json.Unmarshal(env.Data, &d); err != nil {
+				return
+			}
+		}
+		s.spectateLeave(client, data, d.MatchID, true)
 	default:
 		s.logger.Debugw("Unknown game message type", "type", env.Type, "user_id", data.UserID)
 	}
@@ -311,6 +387,10 @@ func (s *Server) ToUser(gameID string, userID string, envelope protocol.OutEnvel
 
 func (s *Server) ToGame(gameID string, envelope protocol.OutEnvelope) {
 	s.io.To(socket.Room(lobbyRoom(gameID))).Emit(messageEvent, envelope)
+}
+
+func (s *Server) ToMatch(gameID string, matchID string, envelope protocol.OutEnvelope) {
+	s.io.To(socket.Room(matchRoom(gameID, matchID))).Emit(messageEvent, envelope)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

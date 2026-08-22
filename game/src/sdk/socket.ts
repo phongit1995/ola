@@ -27,6 +27,9 @@ import {
   type RoomStateData,
   type RoomSyncData,
   type RoomWaitingData,
+  type SpectateJoinedData,
+  type SpectateLeftData,
+  type SpectateListData,
   type StateData,
   type UserInfoData,
 } from './protocol';
@@ -51,6 +54,9 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   listRooms(): void;
   getLeaderboard(period: LeaderboardPeriod): void;
   getHistory(): void;
+  spectateList(): void;
+  spectateJoin(matchId: string): void;
+  spectateLeave(matchId?: string): void;
   onUserInfo(handler: (data: UserInfoData) => void): () => void;
   onQueueWaiting(handler: () => void): () => void;
   onRoomList(handler: (data: RoomListData) => void): () => void;
@@ -71,6 +77,9 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onOpponentReconnected(handler: (data?: OpponentReconnectedData) => void): () => void;
   onLeaderboard(handler: (data: LeaderboardData) => void): () => void;
   onHistory(handler: (data: MatchHistoryData) => void): () => void;
+  onSpectateList(handler: (data: SpectateListData) => void): () => void;
+  onSpectateJoined(handler: (data: SpectateJoinedData<TState>) => void): () => void;
+  onSpectateLeft(handler: (data: SpectateLeftData) => void): () => void;
   onConnectionChange(handler: (connected: boolean) => void): () => void;
   onConnectionError(handler: (error: Error) => void): () => void;
   disconnect(): void;
@@ -145,6 +154,9 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     listRooms: () => send(C2S.RoomList),
     getLeaderboard: (period) => send(C2S.Leaderboard, { period }),
     getHistory: () => send(C2S.History),
+    spectateList: () => send(C2S.SpectateList),
+    spectateJoin: (matchId) => send(C2S.SpectateJoin, { matchId }),
+    spectateLeave: (matchId) => send(C2S.SpectateLeave, matchId ? { matchId } : undefined),
     onUserInfo: (handler) => on(S2C.UserInfo, handler as Handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
     onRoomList: (handler) => on(S2C.RoomList, handler as Handler),
@@ -165,6 +177,9 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     onOpponentReconnected: (handler) => on(S2C.OpponentReconnected, handler as Handler),
     onLeaderboard: (handler) => on(S2C.Leaderboard, handler as Handler),
     onHistory: (handler) => on(S2C.History, handler as Handler),
+    onSpectateList: (handler) => on(S2C.SpectateList, handler as Handler),
+    onSpectateJoined: (handler) => on(S2C.SpectateJoined, handler as Handler),
+    onSpectateLeft: (handler) => on(S2C.SpectateLeft, handler as Handler),
     onConnectionChange: (handler) => on('connection', handler as Handler),
     onConnectionError: (handler) => on('connection_error', handler as Handler),
     disconnect: () => socket.disconnect(),

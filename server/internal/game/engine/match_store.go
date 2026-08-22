@@ -16,6 +16,7 @@ const (
 	activeMatchKey      = "GAME:%s:MATCH:%s"
 	userMatchKey        = "GAME:%s:USERMATCH:%s"
 	activeMatchesKey    = "GAME:%s:ACTIVE_MATCHES"
+	spectatorsKey       = "GAME:%s:MATCH:%s:SPECTATORS"
 	matchStatusPlaying  = "playing"
 	matchStatusFinished = "finished"
 	matchStatusAborting = "aborting"
@@ -49,7 +50,19 @@ type ActiveMatchRepository interface {
 	DeleteIfStatus(gameID, matchID, status string, userIDs ...string) (bool, error)
 	Get(gameID, matchID string) (ActiveMatchSnapshot, bool, error)
 	List(gameID string) ([]ActiveMatchSnapshot, error)
+	AddSpectator(gameID, matchID, spectatorID string, limit int) (count int, status SpectatorAddStatus, err error)
+	RemoveSpectator(gameID, matchID, spectatorID string) error
+	SpectatorCount(gameID, matchID string) (int, error)
+	ClearSpectators(gameID, matchID string) error
 }
+
+type SpectatorAddStatus uint8
+
+const (
+	SpectatorAdded SpectatorAddStatus = iota
+	SpectatorFull
+	SpectatorMatchNotFound
+)
 
 type MatchStore struct {
 	cache *services.CacheService
@@ -87,19 +100,12 @@ func (s *MatchStore) Save(snapshot ActiveMatchSnapshot) error {
 func (s *MatchStore) Delete(gameID, matchID string, userIDs ...string) error {
 	ctx, cancel := gameRedisContext(s.cache)
 	defer cancel()
-	keys := []string{
-		fmt.Sprintf(activeMatchKey, gameID, matchID),
-		fmt.Sprintf(activeMatchesKey, gameID),
-	}
-	for _, userID := range userIDs {
-		if userID != "" {
-			keys = append(keys, fmt.Sprintf(userMatchKey, gameID, userID))
-		}
-	}
+	keys := matchDeleteKeys(gameID, matchID, userIDs)
 	const deleteMatchScript = `
 redis.call("DEL", KEYS[1])
 redis.call("SREM", KEYS[2], ARGV[1])
-for i = 3, #KEYS do
+redis.call("DEL", KEYS[3])
+for i = 4, #KEYS do
   if redis.call("GET", KEYS[i]) == ARGV[1] then
     redis.call("DEL", KEYS[i])
   end
@@ -114,15 +120,7 @@ return 1`
 func (s *MatchStore) DeleteIfStatus(gameID, matchID, status string, userIDs ...string) (bool, error) {
 	ctx, cancel := gameRedisContext(s.cache)
 	defer cancel()
-	keys := []string{
-		fmt.Sprintf(activeMatchKey, gameID, matchID),
-		fmt.Sprintf(activeMatchesKey, gameID),
-	}
-	for _, userID := range userIDs {
-		if userID != "" {
-			keys = append(keys, fmt.Sprintf(userMatchKey, gameID, userID))
-		}
-	}
+	keys := matchDeleteKeys(gameID, matchID, userIDs)
 	const deleteMatchIfStatusScript = `
 local raw = redis.call("GET", KEYS[1])
 if raw then
@@ -133,7 +131,8 @@ if raw then
 end
 redis.call("DEL", KEYS[1])
 redis.call("SREM", KEYS[2], ARGV[1])
-for i = 3, #KEYS do
+redis.call("DEL", KEYS[3])
+for i = 4, #KEYS do
   if redis.call("GET", KEYS[i]) == ARGV[1] then
     redis.call("DEL", KEYS[i])
   end
@@ -146,6 +145,89 @@ return 1`
 		return false, fmt.Errorf("conditionally delete active match: %w", err)
 	}
 	return deleted == 1, nil
+}
+
+func matchDeleteKeys(gameID, matchID string, userIDs []string) []string {
+	keys := []string{
+		fmt.Sprintf(activeMatchKey, gameID, matchID),
+		fmt.Sprintf(activeMatchesKey, gameID),
+		fmt.Sprintf(spectatorsKey, gameID, matchID),
+	}
+	for _, userID := range userIDs {
+		if userID != "" {
+			keys = append(keys, fmt.Sprintf(userMatchKey, gameID, userID))
+		}
+	}
+	return keys
+}
+
+func (s *MatchStore) AddSpectator(gameID, matchID, spectatorID string, limit int) (int, SpectatorAddStatus, error) {
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
+	const addSpectatorScript = `
+local raw = redis.call("GET", KEYS[2])
+if not raw then
+  return -2
+end
+local snapshot = cjson.decode(raw)
+if snapshot["status"] ~= ARGV[4] then
+  return -2
+end
+if redis.call("SISMEMBER", KEYS[1], ARGV[1]) == 1 then
+  return redis.call("SCARD", KEYS[1])
+end
+local count = redis.call("SCARD", KEYS[1])
+if count >= tonumber(ARGV[2]) then
+  return -1
+end
+redis.call("SADD", KEYS[1], ARGV[1])
+redis.call("EXPIRE", KEYS[1], ARGV[3])
+return count + 1`
+	keys := []string{
+		fmt.Sprintf(spectatorsKey, gameID, matchID),
+		fmt.Sprintf(activeMatchKey, gameID, matchID),
+	}
+	count, err := s.cache.GetClient().
+		Eval(ctx, addSpectatorScript, keys, spectatorID, limit, int(activeMatchTTL.Seconds()), matchStatusPlaying).
+		Int()
+	if err != nil {
+		return 0, SpectatorFull, fmt.Errorf("add spectator: %w", err)
+	}
+	switch {
+	case count == -2:
+		return 0, SpectatorMatchNotFound, nil
+	case count < 0:
+		return limit, SpectatorFull, nil
+	}
+	return count, SpectatorAdded, nil
+}
+
+func (s *MatchStore) RemoveSpectator(gameID, matchID, spectatorID string) error {
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
+	if err := s.cache.GetClient().SRem(ctx, fmt.Sprintf(spectatorsKey, gameID, matchID), spectatorID).Err(); err != nil {
+		return fmt.Errorf("remove spectator: %w", err)
+	}
+	return nil
+}
+
+func (s *MatchStore) SpectatorCount(gameID, matchID string) (int, error) {
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
+	count, err := s.cache.GetClient().SCard(ctx, fmt.Sprintf(spectatorsKey, gameID, matchID)).Result()
+	if err != nil {
+		return 0, fmt.Errorf("count spectators: %w", err)
+	}
+	return int(count), nil
+}
+
+func (s *MatchStore) ClearSpectators(gameID, matchID string) error {
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
+	if err := s.cache.GetClient().Del(ctx, fmt.Sprintf(spectatorsKey, gameID, matchID)).Err(); err != nil {
+		return fmt.Errorf("clear spectators: %w", err)
+	}
+	return nil
 }
 
 func (s *MatchStore) Get(gameID, matchID string) (ActiveMatchSnapshot, bool, error) {
