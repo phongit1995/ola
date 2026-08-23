@@ -114,16 +114,22 @@ func TestMatchHistoryReturnsRealOpponentAndOutcome(t *testing.T) {
 	loseMatchID := uuid.NewString()
 	drawMatchID := uuid.NewString()
 	now := time.Now()
+	activeVip := "12"
+	expiredVip := "7"
 
 	mock.ExpectQuery(`SELECT .* FROM "game_matches" LEFT JOIN users AS player0 .*game_matches\.game_id = \$1.*ORDER BY game_matches\.finished_at DESC.*LIMIT \$6`).
 		WithArgs("caro", matchStatusFinished, userID, userID, reasonVoid, matchHistoryLimit).
 		WillReturnRows(sqlmock.NewRows([]string{
 			"match_id", "played_at", "player0_id", "player1_id", "winner_id",
 			"bet", "ken_delta", "player0_name", "player1_name",
+			"player0_vip", "player0_vip_end", "player1_vip", "player1_vip_end",
 		}).
-			AddRow(winMatchID, now, userID, winOpponentID, userID, 10_000, 9_500, "you", "doi_thu_1").
-			AddRow(loseMatchID, now.Add(-time.Minute), loseOpponentID, userID, loseOpponentID, 20_000, 19_000, "doi_thu_2", "you").
-			AddRow(drawMatchID, now.Add(-2*time.Minute), userID, drawOpponentID, nil, 0, 0, "you", "doi_thu_3"))
+			AddRow(winMatchID, now, userID, winOpponentID, userID, 10_000, 9_500, "you", "doi_thu_1",
+				nil, nil, activeVip, now.Add(time.Hour)).
+			AddRow(loseMatchID, now.Add(-time.Minute), loseOpponentID, userID, loseOpponentID, 20_000, 19_000, "doi_thu_2", "you",
+				expiredVip, now.Add(-time.Hour), nil, nil).
+			AddRow(drawMatchID, now.Add(-2*time.Minute), userID, drawOpponentID, nil, 0, 0, "you", "doi_thu_3",
+				nil, nil, nil, nil))
 
 	data, err := repo.MatchHistory("caro", userID.String())
 	if err != nil {
@@ -135,11 +141,13 @@ func TestMatchHistoryReturnsRealOpponentAndOutcome(t *testing.T) {
 
 	if got := data.Items[0]; got.ID != winMatchID || got.OpponentID != winOpponentID.String() ||
 		got.OpponentName != "doi_thu_1" || got.Bet != 10_000 || got.Outcome != "win" ||
-		got.KenDelta != 9_500 || got.PlayedAt != now.UnixMilli() {
+		got.KenDelta != 9_500 || got.PlayedAt != now.UnixMilli() ||
+		got.OpponentVipType == nil || *got.OpponentVipType != activeVip {
 		t.Fatalf("unexpected win history: %+v", got)
 	}
 	if got := data.Items[1]; got.ID != loseMatchID || got.OpponentID != loseOpponentID.String() ||
-		got.OpponentName != "doi_thu_2" || got.Outcome != "lose" || got.KenDelta != -20_000 {
+		got.OpponentName != "doi_thu_2" || got.Outcome != "lose" || got.KenDelta != -20_000 ||
+		got.OpponentVipType != nil {
 		t.Fatalf("unexpected lose history: %+v", got)
 	}
 	if got := data.Items[2]; got.ID != drawMatchID || got.OpponentID != drawOpponentID.String() ||

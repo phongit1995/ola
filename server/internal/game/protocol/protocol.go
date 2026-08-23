@@ -155,12 +155,13 @@ type LeaderboardData struct {
 }
 
 type MatchHistoryEntry struct {
-	ID           string `json:"id"`
-	PlayedAt     int64  `json:"playedAt"`
-	OpponentID   string `json:"opponentId"`
-	OpponentName string `json:"opponentName"`
-	Bet          int    `json:"bet"`
-	Outcome      string `json:"outcome"`
+	ID              string  `json:"id"`
+	PlayedAt        int64   `json:"playedAt"`
+	OpponentID      string  `json:"opponentId"`
+	OpponentName    string  `json:"opponentName"`
+	OpponentVipType *string `json:"opponentVipType,omitempty"`
+	Bet             int     `json:"bet"`
+	Outcome         string  `json:"outcome"`
 	// KenDelta is signed from the requesting player's point of view: the
 	// commission-adjusted net gain when they won, -bet when they lost, 0 on a draw.
 	KenDelta int `json:"kenDelta"`

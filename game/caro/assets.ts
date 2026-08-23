@@ -396,4 +396,4 @@ export function preloadPriorityAssets(): void {
   })();
 }
 
-export const VIP_DEFAULT_ICON = '/ola_smiley_online.png';
+export { DEFAULT_AVATAR_URL as VIP_DEFAULT_ICON } from '../src/sdk/avatar';

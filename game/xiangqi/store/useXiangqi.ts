@@ -27,6 +27,7 @@ import { legalMovesFrom } from '../logic/moves';
 import { BOT_DIFFICULTY_LABEL, chooseBotMove, type BotDifficulty } from '../logic/bot';
 import { applyLocalMove, createLocalGame, type LocalGameResult, type LocalGameState } from '../logic/local-game';
 import { errorText } from '../helpers/errorText';
+import { avatarIconUrl, botAvatarIconUrl } from '../helpers/player';
 import { playSound, setSoundEnabled } from '../audio';
 
 export type LobbyPhase = 'loading' | 'connecting' | 'error' | 'ready';
@@ -44,6 +45,7 @@ export interface SeatInfo {
   id: string;
   name: string;
   side: number;
+  avatar: string;
 }
 
 export interface MatchResultState {
@@ -395,11 +397,13 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         id: get().userInfo?.id ?? 'local-player',
         name: username,
         side: playerSide,
+        avatar: avatarIconUrl(get().userInfo?.vipType),
       },
       op: {
         id: 'local-bot',
         name: `Máy · ${BOT_DIFFICULTY_LABEL[difficulty]}`,
         side: 1 - playerSide,
+        avatar: botAvatarIconUrl(difficulty),
       },
       myTurn: playerSide === SIDE_RED,
       movePending: false,
@@ -622,8 +626,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           hints: [],
           movePending: false,
           bet: refs.matchBet,
-          me: meInfo ? { id: meInfo.id, name: meInfo.name, side: you } : null,
-          op: opInfo ? { id: opInfo.id, name: opInfo.name, side: 1 - you } : null,
+          me: meInfo ? { id: meInfo.id, name: meInfo.name, side: you, avatar: avatarIconUrl(meInfo.vipType) } : null,
+          op: opInfo ? { id: opInfo.id, name: opInfo.name, side: 1 - you, avatar: avatarIconUrl(opInfo.vipType) } : null,
           matchSeq: get().matchSeq + 1,
           oppAway: null,
           result: null,

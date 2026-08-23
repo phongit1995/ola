@@ -1,6 +1,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
+import { PodAvatar } from '../components/PodAvatar';
 import { useXiangqi } from '../store/useXiangqi';
 
 export function LobbyScreen() {
@@ -39,8 +40,8 @@ export function LobbyScreen() {
       <div className="xq-topbar">
         {userInfo ? (
           <div className="xq-user">
-            <div className="xq-pod-avatar xq-pod-avatar-red">{userInfo.username.slice(0, 1).toUpperCase()}</div>
-            <span className="xq-user-name">{userInfo.username}</span>
+            <PodAvatar vipType={userInfo.vipType} tone="red" />
+            <span className="xq-user-name">@{userInfo.username}</span>
           </div>
         ) : (
           <div />

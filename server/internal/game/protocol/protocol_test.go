@@ -35,6 +35,14 @@ func TestVipTypeFieldsRemainBackwardCompatible(t *testing.T) {
 	if !strings.Contains(string(memberJSON), `"vipType":"vip-42"`) {
 		t.Fatalf("room member VIP type was not encoded: %s", memberJSON)
 	}
+
+	historyJSON, err := json.Marshal(MatchHistoryEntry{OpponentVipType: &vipType})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(historyJSON), `"opponentVipType":"vip-42"`) {
+		t.Fatalf("history opponent VIP type was not encoded: %s", historyJSON)
+	}
 }
 
 func TestUserInfoIncludesStableUserID(t *testing.T) {

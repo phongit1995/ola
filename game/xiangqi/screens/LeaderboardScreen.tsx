@@ -2,6 +2,7 @@ import { useShallow } from 'zustand/react/shallow';
 import type { LeaderboardPeriod } from '../../src/sdk';
 import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
+import { PodAvatar } from '../components/PodAvatar';
 import { useXiangqi } from '../store/useXiangqi';
 
 const PERIODS: Array<{ key: LeaderboardPeriod; label: string }> = [
@@ -49,9 +50,9 @@ export function LeaderboardScreen() {
         {leaderboardItems.map((item) => (
           <div key={item.userId} className="xq-list-row">
             <span className={`xq-rank ${item.rank <= 3 ? `xq-rank-${item.rank}` : ''}`}>{item.rank}</span>
-            <div className="xq-pod-avatar xq-pod-avatar-red">{item.username.slice(0, 1).toUpperCase()}</div>
+            <PodAvatar vipType={item.vipType} tone="red" />
             <div className="xq-list-main">
-              <span className="xq-list-name">{item.username}</span>
+              <span className="xq-list-name">@{item.username}</span>
               {item.wins != null ? (
                 <span className="xq-list-sub">
                   {item.wins} thắng — {item.losses ?? 0} thua

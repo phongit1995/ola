@@ -4,6 +4,7 @@ import type { RoomInfo } from '../../src/sdk';
 import { ModalHeading } from '../components/ModalHeading';
 import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
+import { PodAvatar } from '../components/PodAvatar';
 import { useXiangqi } from '../store/useXiangqi';
 
 const PAGE_SIZE = 9;
@@ -188,7 +189,7 @@ export function RankedScreen() {
           return (
             <div key={room.id} className="xq-room-row">
               <div className="xq-room-owner">
-                <div className="xq-pod-avatar xq-pod-avatar-red">{room.owner.slice(0, 1).toUpperCase()}</div>
+                <PodAvatar vipType={room.ownerVipType} tone="red" />
                 <span className="xq-room-owner-name">@{room.owner}</span>
                 {room.locked ? (
                   <span className="xq-room-lock" aria-label="Có mật khẩu">

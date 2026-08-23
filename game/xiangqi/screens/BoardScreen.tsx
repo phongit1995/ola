@@ -8,6 +8,7 @@ import { EMPTY, KIND_GENERAL, SIDE_RED, boardX, boardY, flipIndex, pieceFor, pie
 import { inCheck } from '../logic/moves';
 import { pieceGlyph, pieceLabel, sideLabel } from '../logic/pieces';
 import { formatKen } from '../helpers/format';
+import { PodAvatar } from '../components/PodAvatar';
 import { useXiangqi, type SeatInfo } from '../store/useXiangqi';
 
 const REACTION_EMOJI: Record<GameReactionType, string> = {
@@ -79,12 +80,10 @@ function PlayerPod({
   const red = seat.side === SIDE_RED;
   return (
     <div className={`xq-pod ${clockActive ? 'xq-pod-active' : ''} ${mine ? 'xq-pod-mine' : ''}`}>
-      <div className={`xq-pod-avatar ${red ? 'xq-pod-avatar-red' : 'xq-pod-avatar-black'}`}>
-        {seat.name.slice(0, 1).toUpperCase()}
-      </div>
+      <PodAvatar src={seat.avatar} tone={red ? 'red' : 'black'} />
       <div className="xq-pod-info">
         <div className="xq-pod-name">
-          {seat.name}
+          @{seat.name}
           <span className={`xq-side-chip ${red ? 'xq-side-chip-red' : 'xq-side-chip-black'}`}>{sideLabel(seat.side)}</span>
         </div>
         <div className="xq-pod-captured" aria-label="Quân đã ăn">
@@ -136,10 +135,8 @@ function PregamePanel() {
           {[meMember, opMember].map((member, index) =>
             member ? (
               <div key={member.id} className="xq-seat">
-                <div className={`xq-pod-avatar ${member.owner ? 'xq-pod-avatar-red' : 'xq-pod-avatar-black'}`}>
-                  {member.name.slice(0, 1).toUpperCase()}
-                </div>
-                <div className="xq-seat-name">{member.id === roomWaiting.youId ? 'Bạn' : member.name}</div>
+                <PodAvatar vipType={member.vipType} tone={member.owner ? 'red' : 'black'} />
+                <div className="xq-seat-name">{member.id === roomWaiting.youId ? 'Bạn' : `@${member.name}`}</div>
                 <div className="xq-seat-side">{member.owner ? 'Đỏ — đi trước' : 'Đen'}</div>
                 {member.owner ? (
                   <span className="xq-chip xq-chip-gold">Chủ bàn</span>
@@ -170,7 +167,7 @@ function PregamePanel() {
                   onClick={() =>
                     showNotice({
                       title: 'Mời ra',
-                      body: `Mời ${opMember.name} ra khỏi bàn?`,
+                      body: `Mời @${opMember.name} ra khỏi bàn?`,
                       okLabel: 'Mời ra',
                       onOk: () => {
                         kickOpponent();
@@ -257,7 +254,7 @@ function ChatDrawer() {
           const mine = message.userId === userInfo?.id;
           return (
             <div key={`${message.sentAt}-${index}`} className={`xq-chat-row ${mine ? 'xq-chat-mine' : ''}`}>
-              {!mine ? <span className="xq-chat-name">{message.name}</span> : null}
+              {!mine ? <span className="xq-chat-name">@{message.name}</span> : null}
               <span className="xq-chat-bubble">{message.text}</span>
             </div>
           );

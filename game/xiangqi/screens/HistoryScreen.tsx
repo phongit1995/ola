@@ -2,6 +2,7 @@ import { useShallow } from 'zustand/react/shallow';
 import type { MatchHistoryEntry } from '../../src/sdk';
 import { XqIcon } from '../components/XqIcon';
 import { formatHistoryTime, formatKen } from '../helpers/format';
+import { PodAvatar } from '../components/PodAvatar';
 import { useXiangqi } from '../store/useXiangqi';
 
 const OUTCOME_LABEL = { win: 'Thắng', lose: 'Thua', draw: 'Hòa' } as const;
@@ -36,9 +37,9 @@ export function HistoryScreen() {
           const kenDelta = historyKenDelta(item);
           return (
             <div key={item.id} className="xq-list-row">
-              <div className="xq-pod-avatar xq-pod-avatar-black">{item.opponentName.slice(0, 1).toUpperCase()}</div>
+              <PodAvatar vipType={item.opponentVipType} tone="black" />
               <div className="xq-list-main">
-                <span className="xq-list-name">{item.opponentName}</span>
+                <span className="xq-list-name">@{item.opponentName}</span>
                 <span className="xq-list-sub">{formatHistoryTime(item.playedAt)}</span>
               </div>
               <div className="xq-list-right">

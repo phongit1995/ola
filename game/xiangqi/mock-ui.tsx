@@ -11,12 +11,18 @@ import type { ChatMessageData, LeaderboardEntry, MatchHistoryEntry, RoomInfo, Ro
 import { App } from './App';
 import { EMPTY, parseBoardRows } from './logic/board';
 import { legalMovesFrom } from './logic/moves';
+import { avatarIconUrl, botAvatarIconUrl } from './helpers/player';
 import { useXiangqi, type PieceView } from './store/useXiangqi';
 
 type Scene = Partial<ReturnType<typeof useXiangqi.getState>>;
 
 const ME = { id: 'u-me', username: 'thanhlong', ken: 1_284_500, vipDays: 30, vipType: '4', maxBet: 500_000 };
 const OP_NAME = 'kiemvuong';
+const OP_VIP = '12';
+
+// VIP thật của từng tên giả; null = chưa mua VIP (mặt cười mặc định).
+const VIPS: Array<string | null> = ['4', '12', '27', null, '8', '55', null, '3', '90', '17'];
+const vipOf = (name: string): string | null => VIPS[NAMES.indexOf(name)] ?? null;
 
 const NAMES = [
   'thanhlong',
@@ -79,6 +85,7 @@ function rooms(count: number): RoomInfo[] {
     return {
       id: `room-${i + 1}`,
       owner: NAMES[(i + 1) % NAMES.length],
+      ownerVipType: vipOf(NAMES[(i + 1) % NAMES.length]),
       bet: [0, 100, 500, 1_000, 5_000][i % 5],
       locked: i % 3 === 1,
       players: full ? 2 : 1,
@@ -99,6 +106,7 @@ function history(count: number): MatchHistoryEntry[] {
       playedAt: now - (i + 1) * 5_400_000,
       opponentId: `u${i + 1}`,
       opponentName: NAMES[(i + 2) % NAMES.length],
+      opponentVipType: vipOf(NAMES[(i + 2) % NAMES.length]),
       bet,
       outcome,
       // Hoa hồng 5%: thắng cược 1.000 chỉ thực nhận +950.
@@ -112,6 +120,7 @@ function leaderboard(count: number, top: number): LeaderboardEntry[] {
     rank: i + 1,
     userId: `u${i + 1}`,
     username: NAMES[i % NAMES.length],
+    vipType: vipOf(NAMES[i % NAMES.length]),
     ken: Math.round(top * Math.pow(0.82, i)),
     wins: 38 - i * 2,
     losses: 3 + i,
@@ -119,9 +128,9 @@ function leaderboard(count: number, top: number): LeaderboardEntry[] {
 }
 
 function room(opts: { asGuest?: boolean; alone?: boolean; guestReady?: boolean }): RoomStateData {
-  const members = [{ id: 'u-owner', name: 'thanhlong', owner: true, ready: true }];
+  const members = [{ id: 'u-owner', name: 'thanhlong', owner: true, ready: true, vipType: ME.vipType }];
   if (!opts.alone) {
-    members.push({ id: 'u-guest', name: OP_NAME, owner: false, ready: !!opts.guestReady });
+    members.push({ id: 'u-guest', name: OP_NAME, owner: false, ready: !!opts.guestReady, vipType: OP_VIP });
   }
   return {
     roomId: 'room-mock',
@@ -150,8 +159,8 @@ function match(over: Partial<Scene> = {}): Scene {
     lastTo: MID_LAST_TO,
     selected: null,
     hints: [],
-    me: { id: ME.id, name: ME.username, side: 0 },
-    op: { id: 'u-op', name: OP_NAME, side: 1 },
+    me: { id: ME.id, name: ME.username, side: 0, avatar: avatarIconUrl(ME.vipType) },
+    op: { id: 'u-op', name: OP_NAME, side: 1, avatar: avatarIconUrl(OP_VIP) },
     myTurn: true,
     movePending: false,
     deadline: Date.now() + 22_000,
@@ -182,8 +191,8 @@ function botMatch(over: Partial<Scene> = {}): Scene {
     botDifficulty: 'medium',
     botPlayerSide: 0,
     botThinking: false,
-    me: { id: ME.id, name: ME.username, side: 0 },
-    op: { id: 'local-bot', name: 'Máy · Vừa', side: 1 },
+    me: { id: ME.id, name: ME.username, side: 0, avatar: avatarIconUrl(ME.vipType) },
+    op: { id: 'local-bot', name: 'Máy · Vừa', side: 1, avatar: botAvatarIconUrl('medium') },
     deadline: 0,
     timerLeftMs: 0,
     bet: 0,

@@ -156,6 +156,7 @@ export interface MatchHistoryEntry {
   playedAt: number;
   opponentId: string;
   opponentName: string;
+  opponentVipType?: string | null;
   bet: number;
   outcome: MatchHistoryOutcome;
   kenDelta: number;
