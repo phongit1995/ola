@@ -5,6 +5,7 @@ import { BoardSurface, squareLeft, squareTop } from '../components/BoardSurface'
 import { ModalHeading } from '../components/ModalHeading';
 import { XqIcon } from '../components/XqIcon';
 import { EMPTY, KIND_GENERAL, SIDE_RED, boardX, boardY, flipIndex, pieceFor, pieceKind, pieceSide } from '../logic/board';
+import { inCheck } from '../logic/moves';
 import { pieceGlyph, pieceLabel, sideLabel } from '../logic/pieces';
 import { formatKen } from '../helpers/format';
 import { useXiangqi, type SeatInfo } from '../store/useXiangqi';
@@ -289,6 +290,8 @@ export function BoardScreen() {
   const state = useXiangqi(
     useShallow((s) => ({
       boardMode: s.boardMode,
+      gameMode: s.gameMode,
+      botThinking: s.botThinking,
       board: s.board,
       pieces: s.pieces,
       selected: s.selected,
@@ -313,6 +316,7 @@ export function BoardScreen() {
       exitMatch: s.exitMatch,
       openChat: s.openChat,
       sendReactionType: s.sendReactionType,
+      restartBotGame: s.restartBotGame,
     })),
   );
   const [checkVisible, setCheckVisible] = useState(false);
@@ -352,6 +356,10 @@ export function BoardScreen() {
     statusTone = 'waiting';
     statusText = 'Phòng chờ';
     statusIcon = null;
+  } else if (state.gameMode === 'bot' && state.botThinking) {
+    statusTone = 'pending';
+    statusText = 'Máy đang suy nghĩ…';
+    statusIcon = 'refresh';
   } else if (state.oppAway) {
     statusTone = 'network';
     statusText = `Đối thủ mất kết nối · còn ${oppAwayLeft}s`;
@@ -369,15 +377,16 @@ export function BoardScreen() {
   }
   const generalInCheckIdx = useMemo(() => {
     if (!checkVisible) return -1;
-    return state.board.indexOf(pieceFor(state.myTurn ? mySide : 1 - mySide, KIND_GENERAL));
-  }, [checkVisible, state.board, state.myTurn, mySide]);
+    const checkedSide = inCheck(state.board, mySide) ? mySide : inCheck(state.board, 1 - mySide) ? 1 - mySide : -1;
+    return checkedSide < 0 ? -1 : state.board.indexOf(pieceFor(checkedSide, KIND_GENERAL));
+  }, [checkVisible, state.board, mySide]);
 
   return (
     <div className="xq-screen xq-board-screen">
       <div className="xq-board-stage">
         <PlayerPod
           seat={state.op}
-          clockActive={playing && !state.myTurn && !state.result}
+          clockActive={state.gameMode === 'online' && playing && !state.myTurn && !state.result}
           secondsLeft={seconds}
           urgent={urgent}
           captured={capturedByOp}
@@ -468,7 +477,7 @@ export function BoardScreen() {
 
         <PlayerPod
           seat={state.me}
-          clockActive={playing && state.myTurn && !state.result}
+          clockActive={state.gameMode === 'online' && playing && state.myTurn && !state.result}
           secondsLeft={seconds}
           urgent={urgent}
           captured={capturedByMe}
@@ -477,27 +486,36 @@ export function BoardScreen() {
       </div>
 
       {playing ? (
-        <div className="xq-actionbar">
-          <button
-            type="button"
-            className="xq-action"
-            onClick={state.openChat}
-            aria-label={state.chatUnread ? 'Mở trò chuyện, có tin nhắn mới' : 'Mở trò chuyện'}
-          >
-            <XqIcon name="chat" size={24} />
-            <span className="xq-action-label">Chat</span>
-            {state.chatUnread ? <i className="xq-dot" /> : null}
-          </button>
-          <button
-            type="button"
-            className="xq-action"
-            onClick={() => setPickerOpen((open) => !open)}
-            aria-expanded={pickerOpen}
-            aria-controls="xq-reaction-picker"
-          >
-            <XqIcon name="reaction" size={24} />
-            <span className="xq-action-label">Cảm xúc</span>
-          </button>
+        <div className={`xq-actionbar ${state.gameMode === 'bot' ? 'xq-actionbar-bot' : ''}`}>
+          {state.gameMode === 'bot' ? (
+            <button type="button" className="xq-action" onClick={state.restartBotGame}>
+              <XqIcon name="refresh" size={24} />
+              <span className="xq-action-label">Ván mới</span>
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="xq-action"
+                onClick={state.openChat}
+                aria-label={state.chatUnread ? 'Mở trò chuyện, có tin nhắn mới' : 'Mở trò chuyện'}
+              >
+                <XqIcon name="chat" size={24} />
+                <span className="xq-action-label">Chat</span>
+                {state.chatUnread ? <i className="xq-dot" /> : null}
+              </button>
+              <button
+                type="button"
+                className="xq-action"
+                onClick={() => setPickerOpen((open) => !open)}
+                aria-expanded={pickerOpen}
+                aria-controls="xq-reaction-picker"
+              >
+                <XqIcon name="reaction" size={24} />
+                <span className="xq-action-label">Cảm xúc</span>
+              </button>
+            </>
+          )}
           <button type="button" className="xq-action xq-action-danger" onClick={state.forfeitMatch} disabled={!!state.result}>
             <XqIcon name="flag" size={24} />
             <span className="xq-action-label">Bỏ cuộc</span>
@@ -509,7 +527,7 @@ export function BoardScreen() {
         </div>
       ) : null}
 
-      {pickerOpen ? (
+      {state.gameMode === 'online' && pickerOpen ? (
         <div className="xq-reaction-picker" id="xq-reaction-picker" role="toolbar" aria-label="Chọn cảm xúc">
           {(Object.keys(REACTION_EMOJI) as GameReactionType[]).map((type) => (
             <button
@@ -528,7 +546,7 @@ export function BoardScreen() {
       ) : null}
 
       {state.boardMode === 'pregame' ? <PregamePanel /> : null}
-      <ChatDrawer />
+      {state.gameMode === 'online' ? <ChatDrawer /> : null}
     </div>
   );
 }

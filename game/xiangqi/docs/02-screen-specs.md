@@ -40,11 +40,12 @@ Hiện khi `lobbyPhase = 'loading' | 'connecting' | 'error'`, nằm trong LobbyS
 | Nút | Style | Hành vi |
 |---|---|---|
 | `Chơi xếp hạng` | CTA vàng 320×64, chữ navy 17/700 | `playRanked()` → mở S3, preload nhóm ranked |
+| `Chơi với máy` | CTA jade 320×48, chữ cream 16/700 | mở modal chọn Dễ/Vừa/Khó và bên Đỏ/Đen; chạy local, không cược |
 | `Lịch sử` | nút giấy kem viền navy 320×52 | mở S8 |
 | `Bảng xếp hạng` | nút giấy kem viền navy 320×52 | mở S9 |
 
-- v2 (chưa làm): `Chơi với máy` — chừa chỗ trong stack, không render.
-- Hover/focus: viền dày 2 px + translateY(-1); disabled khi `lobbyPhase !== 'ready'`.
+- Khi socket chưa kết nối hoặc lỗi, `Chơi với máy` vẫn dùng được vì không phụ thuộc game server.
+- Hover/focus: viền dày 2 px + translateY(-1); các CTA online disabled khi `lobbyPhase !== 'ready'`.
 
 ---
 
@@ -166,7 +167,7 @@ Modal lg 340 px trên backdrop, mở từ `MATCH_OVER` (giữ nguyên bàn phía
 - Full-screen, header back + title `Lịch sử đấu`.
 - `getHistory()` → list: mỗi hàng avatar đối thủ, tên, kết quả chip (Thắng jade/Thua đỏ/Hòa kem), ±KEN, lý do ngắn, `formatHistoryTime`.
 - ±KEN lấy `kenDelta` **có dấu** từ `HISTORY` (thắng = `bet − commission`, thua = `−bet`, hòa = `Hoàn cược`) — KHÔNG suy ra từ `bet` vì hoa hồng 5% làm thực nhận nhỏ hơn cược.
-- Tối đa `matchHistoryLimit = 100` hàng, empty state + skeleton loading. (Không có bot-history localStorage vì v1 không có bot.)
+- Tối đa `matchHistoryLimit = 100` hàng, empty state + skeleton loading. Ván luyện tập với máy không ghi lịch sử server hoặc localStorage.
 
 ---
 

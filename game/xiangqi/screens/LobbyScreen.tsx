@@ -13,6 +13,7 @@ export function LobbyScreen() {
     toggleSound,
     retryConnect,
     playRanked,
+    openBotSetup,
     showHistory,
     showLeaderboard,
     exitGame,
@@ -26,6 +27,7 @@ export function LobbyScreen() {
       toggleSound: s.toggleSound,
       retryConnect: s.retryConnect,
       playRanked: s.playRanked,
+      openBotSetup: s.openBotSetup,
       showHistory: s.showHistory,
       showLeaderboard: s.showLeaderboard,
       exitGame: s.exitGame,
@@ -75,6 +77,9 @@ export function LobbyScreen() {
           <button type="button" className="xq-btn xq-btn-gold xq-btn-big" onClick={playRanked}>
             Chơi xếp hạng
           </button>
+          <button type="button" className="xq-btn xq-btn-jade" onClick={openBotSetup}>
+            Chơi với máy
+          </button>
           <button type="button" className="xq-btn xq-btn-paper" onClick={showHistory}>
             Lịch sử
           </button>
@@ -90,9 +95,17 @@ export function LobbyScreen() {
               <button type="button" className="xq-btn xq-btn-gold" onClick={retryConnect}>
                 Thử lại
               </button>
+              <button type="button" className="xq-btn xq-btn-jade" onClick={openBotSetup}>
+                Chơi với máy
+              </button>
             </>
           ) : (
-            <p>Đang kết nối...</p>
+            <>
+              <p>Đang kết nối...</p>
+              <button type="button" className="xq-btn xq-btn-paper" onClick={openBotSetup}>
+                Chơi với máy trong lúc chờ
+              </button>
+            </>
           )}
         </div>
       )}

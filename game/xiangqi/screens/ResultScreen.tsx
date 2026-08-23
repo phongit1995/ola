@@ -8,10 +8,11 @@ import { useXiangqi } from '../store/useXiangqi';
 const REVEAL_MS = 350;
 
 export function ResultScreen() {
-  const { result, roomWaiting, closeResult, playAgain } = useXiangqi(
+  const { result, roomWaiting, gameMode, closeResult, playAgain } = useXiangqi(
     useShallow((s) => ({
       result: s.result,
       roomWaiting: s.roomWaiting,
+      gameMode: s.gameMode,
       closeResult: s.closeResult,
       playAgain: s.playAgain,
     })),
@@ -38,7 +39,7 @@ export function ResultScreen() {
         aria-describedby={reasonId}
       >
         <div className="xq-result-hero">
-          <span className="xq-result-kicker">Kết quả ván cờ</span>
+          <span className="xq-result-kicker">{gameMode === 'bot' ? 'Kết quả đấu máy' : 'Kết quả ván cờ'}</span>
           <div className="xq-result-glyphs" aria-hidden="true">
             <span className="xq-logo-piece xq-piece-red">帥</span>
             <span className="xq-logo-piece xq-piece-black">將</span>
@@ -48,7 +49,9 @@ export function ResultScreen() {
         <div className="xq-result-summary">
           <p className="xq-result-reason" id={reasonId}>{result.reasonText}</p>
           <p className="xq-result-ken">
-            {result.kenDelta == null
+            {gameMode === 'bot'
+              ? 'Luyện tập · Không tính KEN'
+              : result.kenDelta == null
               ? 'Hòa — hoàn cược'
               : result.kenDelta === 0
                 ? 'Ván giao hữu'
@@ -58,7 +61,7 @@ export function ResultScreen() {
           </p>
         </div>
         <div className="xq-modal-actions">
-          {roomWaiting ? (
+          {roomWaiting || gameMode === 'bot' ? (
             <button type="button" className="xq-btn xq-btn-gold" disabled={pending} aria-busy={pending} onClick={playAgain}>
               Chơi lại
             </button>

@@ -16,6 +16,7 @@ Bảng tra nhanh khi implement: mỗi màn cần state gì, bắn/nghe event nà
 | O1 Banner | `oppAway(graceDeadline)` | — | `OPPONENT_*` | OppAwayBanner |
 | O2 Confirm | `notice{title,body,onOk}` | tùy hành động | — | ConfirmModal |
 | O3 Toast | `toast`, `turnAnnounce` | — | `ERROR` | Toast, TurnAnnounce |
+| O4 Chơi với máy | `gameMode='bot'`, `botDifficulty`, `botPlayerSide`, `botThinking` | — | — | BotSetupModal, BoardScreen, ResultScreen |
 
 ## Logic thuần client (game/xiangqi/logic/)
 
@@ -23,6 +24,8 @@ Bảng tra nhanh khi implement: mỗi màn cần state gì, bắn/nghe event nà
 |---|---|---|
 | `board.ts` | `idx/xy`, `flipIndex`, `pieceSide/Kind`, `inPalace`, `crossedRiver`, `positionKey`, `parseBoard` | S6 render + test |
 | `moves.ts` | `legalMovesFrom` (sorted), `inCheck`, `generalsFacing`, `hasLegalMove` | S6 hints, SR announce |
+| `local-game.ts` | state/apply, chiếu bí, khốn tử, lặp thế, chiếu dai, 120 ply | O4 luật ván local |
+| `bot.ts` | sinh nước hợp lệ, lượng giá, alpha-beta theo 3 độ khó | O4 nước đi của máy |
 | `pieces.ts` | label VN + glyph Hán theo kind | aria-label, tooltip, CapturedTray, S8 |
 | `server-types.ts` | `decodeServerState` (RangeError) | wireSession STATE/MATCH_FOUND |
 | `constants.gen.ts` | GAME_ID, TURN_SECONDS, StartBoard, mã quân... | khắp nơi — DO NOT EDIT |

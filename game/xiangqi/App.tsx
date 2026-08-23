@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { ConfirmModal } from './components/ConfirmModal';
+import { BotSetupModal } from './components/BotSetupModal';
 import { BoardScreen } from './screens/BoardScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { LeaderboardScreen } from './screens/LeaderboardScreen';
@@ -10,7 +11,7 @@ import { ResultScreen } from './screens/ResultScreen';
 import { useXiangqi } from './store/useXiangqi';
 
 export function App() {
-  const { boardMode, lobbyVisible, rankedVisible, historyVisible, leaderboardVisible, result, toast, notice, init, showNotice } =
+  const { boardMode, lobbyVisible, rankedVisible, historyVisible, leaderboardVisible, botSetupVisible, result, toast, notice, init, showNotice } =
     useXiangqi(
       useShallow((s) => ({
         boardMode: s.boardMode,
@@ -18,6 +19,7 @@ export function App() {
         rankedVisible: s.rankedVisible,
         historyVisible: s.historyVisible,
         leaderboardVisible: s.leaderboardVisible,
+        botSetupVisible: s.botSetupVisible,
         result: s.result,
         toast: s.toast,
         notice: s.notice,
@@ -37,6 +39,7 @@ export function App() {
       {boardMode === 'idle' && rankedVisible ? <RankedScreen /> : null}
       {historyVisible ? <HistoryScreen /> : null}
       {leaderboardVisible ? <LeaderboardScreen /> : null}
+      {botSetupVisible ? <BotSetupModal /> : null}
       {result ? <ResultScreen /> : null}
       {notice ? (
         <ConfirmModal

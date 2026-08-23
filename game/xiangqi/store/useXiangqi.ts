@@ -24,11 +24,14 @@ import { GAME_ID, START_BOARD } from '../logic/constants.gen';
 import { decodeServerState, type ServerMove, type ServerState } from '../logic/server-types';
 import { EMPTY, SIDE_RED, pieceSide } from '../logic/board';
 import { legalMovesFrom } from '../logic/moves';
+import { BOT_DIFFICULTY_LABEL, chooseBotMove, type BotDifficulty } from '../logic/bot';
+import { applyLocalMove, createLocalGame, type LocalGameResult, type LocalGameState } from '../logic/local-game';
 import { errorText } from '../helpers/errorText';
 import { playSound, setSoundEnabled } from '../audio';
 
 export type LobbyPhase = 'loading' | 'connecting' | 'error' | 'ready';
 export type BoardMode = 'idle' | 'pregame' | 'playing';
+export type XiangqiGameMode = 'online' | 'bot';
 export type RoomActionPending = 'creating' | 'joining' | 'ready' | 'starting' | 'leaving' | 'kicking' | null;
 
 export interface PieceView {
@@ -71,6 +74,11 @@ interface XiangqiState {
   userInfo: UserInfoData | null;
   ken: number;
   soundOn: boolean;
+  gameMode: XiangqiGameMode;
+  botSetupVisible: boolean;
+  botDifficulty: BotDifficulty;
+  botPlayerSide: number;
+  botThinking: boolean;
 
   rankedVisible: boolean;
   rooms: RoomInfo[];
@@ -118,6 +126,10 @@ interface XiangqiState {
   retryConnect(): void;
   toggleSound(): void;
   exitGame(): void;
+  openBotSetup(): void;
+  closeBotSetup(): void;
+  startBotGame(difficulty: BotDifficulty, playerSide: number): void;
+  restartBotGame(): void;
 
   playRanked(): void;
   closeRanked(): void;
@@ -220,6 +232,9 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     announceTimer: 0 as ReturnType<typeof setTimeout> | 0,
     toastTimer: 0 as ReturnType<typeof setTimeout> | 0,
     resultTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    botTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    botGame: null as LocalGameState | null,
+    botRun: 0,
     reactionSeq: 0,
     lastChatText: '',
   };
@@ -242,6 +257,193 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
   const cancelResultReveal = () => {
     if (refs.resultTimer) clearTimeout(refs.resultTimer);
     refs.resultTimer = 0;
+  };
+
+  const cancelBotTurn = () => {
+    if (refs.botTimer) clearTimeout(refs.botTimer);
+    refs.botTimer = 0;
+  };
+
+  const botResultText = (result: LocalGameResult, humanSide: number): string => {
+    const won = result.winner === humanSide;
+    switch (result.reason) {
+      case 'checkmate':
+        return won ? 'Chiếu bí! Bạn thắng máy' : 'Máy đã chiếu bí';
+      case 'stalemate':
+        return won ? 'Máy hết nước đi' : 'Bạn hết nước đi';
+      case 'perpetual':
+        return won ? 'Máy chiếu dai — phạm luật lặp thế' : 'Bạn chiếu dai — phạm luật lặp thế';
+      case 'halfmove':
+        return 'Ván hòa — 60 nước không ăn quân';
+      case 'repetition':
+        return 'Ván hòa — lặp thế 3 lần';
+    }
+  };
+
+  const finishBotGame = (result: LocalGameResult, immediate = false, reasonOverride?: string) => {
+    cancelBotTurn();
+    cancelResultReveal();
+    const humanSide = refs.botGame ? get().botPlayerSide : SIDE_RED;
+    const outcome: MatchResultState['outcome'] = result.winner == null ? 'draw' : result.winner === humanSide ? 'win' : 'lose';
+    set({ botThinking: false, myTurn: false, movePending: false, selected: null, hints: [], turnExpired: false });
+    const matchSeq = get().matchSeq;
+    const reveal = () => {
+      refs.resultTimer = 0;
+      if (get().gameMode !== 'bot' || get().matchSeq !== matchSeq) return;
+      playSound(outcome === 'draw' ? 'place' : outcome === 'win' ? 'win' : 'lose');
+      set({
+        result: {
+          matchId: `bot-${matchSeq}`,
+          outcome,
+          kenDelta: 0,
+          reasonText: reasonOverride ?? botResultText(result, humanSide),
+        },
+      });
+    };
+    if (immediate) reveal();
+    else refs.resultTimer = setTimeout(reveal, RESULT_REVEAL_MS);
+  };
+
+  const applyBotGameMove = (side: number, from: number, to: number) => {
+    const game = refs.botGame;
+    if (!game || get().gameMode !== 'bot') return;
+    let applied: ReturnType<typeof applyLocalMove>;
+    try {
+      applied = applyLocalMove(game, side, from, to);
+    } catch {
+      set({ movePending: false });
+      get().showToast(side === get().botPlayerSide ? 'Nước đi không hợp lệ' : 'Máy không tìm được nước đi hợp lệ');
+      return;
+    }
+    refs.botGame = applied.state;
+    const nextSide = applied.state.moveCount % 2;
+    const humanTurn = nextSide === get().botPlayerSide;
+    set((state) => ({
+      board: applied.state.board,
+      pieces: advancePieces(state.pieces, applied.state.board, from, to),
+      lastFrom: from,
+      lastTo: to,
+      selected: null,
+      hints: [],
+      movePending: false,
+      botThinking: false,
+      myTurn: humanTurn,
+      checkSeq: applied.checked ? state.checkSeq + 1 : state.checkSeq,
+    }));
+    playSound(applied.captured !== EMPTY ? 'capture' : 'place');
+    if (applied.checked) playSound('check');
+    if (applied.state.result) {
+      finishBotGame(applied.state.result);
+      return;
+    }
+    if (humanTurn) announce('ĐẾN LƯỢT BẠN');
+    else scheduleBotTurn();
+  };
+
+  function scheduleBotTurn() {
+    cancelBotTurn();
+    const game = refs.botGame;
+    if (!game || game.result || get().gameMode !== 'bot') return;
+    const botSide = 1 - get().botPlayerSide;
+    if (game.moveCount % 2 !== botSide) return;
+    const run = refs.botRun;
+    const difficulty = get().botDifficulty;
+    const delay = difficulty === 'easy' ? 360 : difficulty === 'medium' ? 520 : 680;
+    set({ botThinking: true, myTurn: false, selected: null, hints: [] });
+    refs.botTimer = setTimeout(() => {
+      refs.botTimer = 0;
+      if (run !== refs.botRun || get().gameMode !== 'bot' || refs.botGame !== game) return;
+      const move = chooseBotMove(game.board, botSide, difficulty);
+      if (!move) {
+        const terminal = game.check ? 'checkmate' : 'stalemate';
+        finishBotGame({ winner: get().botPlayerSide, reason: terminal });
+        return;
+      }
+      applyBotGameMove(botSide, move.from, move.to);
+    }, delay);
+  }
+
+  const startLocalBotGame = (difficulty: BotDifficulty, requestedSide: number) => {
+    cancelBotTurn();
+    cancelResultReveal();
+    stopTimer();
+    refs.botRun++;
+    refs.botGame = createLocalGame();
+    const playerSide = requestedSide === 1 ? 1 : SIDE_RED;
+    const matchSeq = get().matchSeq + 1;
+    const username = get().userInfo?.username || 'Bạn';
+    set({
+      gameMode: 'bot',
+      botSetupVisible: false,
+      botDifficulty: difficulty,
+      botPlayerSide: playerSide,
+      botThinking: false,
+      boardMode: 'playing',
+      lobbyVisible: false,
+      rankedVisible: false,
+      historyVisible: false,
+      leaderboardVisible: false,
+      roomWaiting: null,
+      board: [...START_BOARD],
+      pieces: buildPieces([...START_BOARD]),
+      lastFrom: -1,
+      lastTo: -1,
+      selected: null,
+      hints: [],
+      checkSeq: 0,
+      me: {
+        id: get().userInfo?.id ?? 'local-player',
+        name: username,
+        side: playerSide,
+      },
+      op: {
+        id: 'local-bot',
+        name: `Máy · ${BOT_DIFFICULTY_LABEL[difficulty]}`,
+        side: 1 - playerSide,
+      },
+      myTurn: playerSide === SIDE_RED,
+      movePending: false,
+      deadline: 0,
+      timerLeftMs: 0,
+      turnExpired: false,
+      turnAnnounce: null,
+      bet: 0,
+      matchSeq,
+      oppAway: null,
+      messages: [],
+      chatOpen: false,
+      chatUnread: false,
+      reactionFloats: [],
+      result: null,
+      notice: null,
+    });
+    playSound('place');
+    if (playerSide === SIDE_RED) announce('ĐẾN LƯỢT BẠN');
+    else scheduleBotTurn();
+  };
+
+  const leaveBotToLobby = () => {
+    cancelBotTurn();
+    cancelResultReveal();
+    refs.botRun++;
+    refs.botGame = null;
+    set({
+      gameMode: 'online',
+      botThinking: false,
+      botSetupVisible: false,
+      boardMode: 'idle',
+      lobbyVisible: true,
+      rankedVisible: false,
+      selected: null,
+      hints: [],
+      movePending: false,
+      turnExpired: false,
+      turnAnnounce: null,
+      me: null,
+      op: null,
+      result: null,
+      notice: null,
+    });
   };
 
   const startTimer = () => {
@@ -273,11 +475,15 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
   };
 
   const backToRanked = () => {
+    cancelBotTurn();
     refs.match = null;
     refs.serverState = null;
+    refs.botGame = null;
     stopTimer();
     cancelResultReveal();
     set({
+      gameMode: 'online',
+      botThinking: false,
       boardMode: 'idle',
       roomWaiting: null,
       rankedVisible: true,
@@ -296,12 +502,16 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
   };
 
   const enterWaitingRoom = (room: RoomStateData) => {
+    cancelBotTurn();
     refs.match = null;
     refs.serverState = null;
+    refs.botGame = null;
     stopTimer();
     const preserveOutcome = get().result != null;
     set({
       roomWaiting: room,
+      gameMode: 'online',
+      botThinking: false,
       rankedVisible: false,
       selected: null,
       hints: [],
@@ -385,6 +595,9 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         } catch {
           return;
         }
+        cancelBotTurn();
+        refs.botRun++;
+        refs.botGame = null;
         refs.match = data;
         refs.matchBet = data.bet ?? get().roomWaiting?.bet ?? 0;
         refs.serverState = serverState;
@@ -395,6 +608,9 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         const meInfo = players[you];
         const opInfo = players[1 - you];
         set({
+          gameMode: 'online',
+          botSetupVisible: false,
+          botThinking: false,
           boardMode: 'playing',
           rankedVisible: false,
           lobbyVisible: false,
@@ -655,6 +871,11 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     userInfo: null,
     ken: 0,
     soundOn: localStorage.getItem(SOUND_KEY) !== '0',
+    gameMode: 'online',
+    botSetupVisible: false,
+    botDifficulty: 'medium',
+    botPlayerSide: SIDE_RED,
+    botThinking: false,
 
     rankedVisible: false,
     rooms: [],
@@ -729,6 +950,29 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       bridge.exit();
     },
 
+    openBotSetup() {
+      playSound('click');
+      set({ botSetupVisible: true });
+    },
+
+    closeBotSetup() {
+      set({ botSetupVisible: false });
+    },
+
+    startBotGame(difficulty: BotDifficulty, playerSide: number) {
+      startLocalBotGame(difficulty, playerSide);
+    },
+
+    restartBotGame() {
+      if (get().gameMode !== 'bot') return;
+      get().showNotice({
+        title: 'Ván mới',
+        body: 'Bàn cờ hiện tại sẽ được xếp lại từ đầu.',
+        okLabel: 'Ván mới',
+        onOk: () => startLocalBotGame(get().botDifficulty, get().botPlayerSide),
+      });
+    },
+
     playRanked() {
       playSound('click');
       set({ rankedVisible: true });
@@ -786,17 +1030,18 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     tapSquare(idx: number) {
-      const { boardMode, myTurn, movePending, board, selected, hints, deadline } = get();
+      const { boardMode, gameMode, botPlayerSide, myTurn, movePending, board, selected, hints, deadline } = get();
       if (boardMode !== 'playing' || !myTurn || movePending || get().result) return;
-      if (deadline > 0 && Date.now() >= deadline) {
+      if (gameMode === 'online' && deadline > 0 && Date.now() >= deadline) {
         set({ turnExpired: true, selected: null, hints: [] });
         return;
       }
-      const mySide = refs.match?.you ?? SIDE_RED;
+      const mySide = gameMode === 'bot' ? botPlayerSide : refs.match?.you ?? SIDE_RED;
       const piece = board[idx];
       if (selected != null && hints.includes(idx)) {
         set({ movePending: true, hints: [], selected: null });
-        refs.session?.sendMove(refs.match!.matchId, { from: selected, to: idx });
+        if (gameMode === 'bot') applyBotGameMove(mySide, selected, idx);
+        else if (refs.match) refs.session?.sendMove(refs.match.matchId, { from: selected, to: idx });
         return;
       }
       if (piece !== EMPTY && pieceSide(piece) === mySide) {
@@ -812,6 +1057,19 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     forfeitMatch() {
+      if (get().gameMode === 'bot') {
+        get().showNotice({
+          title: 'Bỏ cuộc',
+          body: 'Bạn muốn nhận thua ván đấu với máy này?',
+          okLabel: 'Bỏ cuộc',
+          danger: true,
+          onOk: () => {
+            get().showNotice(null);
+            finishBotGame({ winner: 1 - get().botPlayerSide, reason: 'checkmate' }, true, 'Bạn đã bỏ cuộc');
+          },
+        });
+        return;
+      }
       const match = refs.match;
       if (!match) return;
       get().showNotice({
@@ -827,6 +1085,16 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     exitMatch() {
+      if (get().gameMode === 'bot') {
+        get().showNotice({
+          title: 'Thoát luyện tập',
+          body: 'Rời ván đấu với máy và quay về sảnh?',
+          okLabel: 'Thoát',
+          danger: true,
+          onOk: leaveBotToLobby,
+        });
+        return;
+      }
       const match = refs.match;
       if (!match) {
         get().leaveRoom();
@@ -878,6 +1146,10 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     closeResult() {
+      if (get().gameMode === 'bot') {
+        leaveBotToLobby();
+        return;
+      }
       const room = get().roomWaiting;
       set({ result: null });
       if (room) {
@@ -894,6 +1166,10 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     playAgain() {
+      if (get().gameMode === 'bot') {
+        startLocalBotGame(get().botDifficulty, get().botPlayerSide);
+        return;
+      }
       get().closeResult();
     },
 
@@ -937,4 +1213,3 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
   };
 });
-

@@ -176,12 +176,29 @@ function checkMatch(over: Partial<Scene> = {}): Scene {
   });
 }
 
+function botMatch(over: Partial<Scene> = {}): Scene {
+  return match({
+    gameMode: 'bot',
+    botDifficulty: 'medium',
+    botPlayerSide: 0,
+    botThinking: false,
+    me: { id: ME.id, name: ME.username, side: 0 },
+    op: { id: 'local-bot', name: 'Máy · Vừa', side: 1 },
+    deadline: 0,
+    timerLeftMs: 0,
+    bet: 0,
+    messages: [],
+    ...over,
+  });
+}
+
 const noop = (): void => {};
 
 const SCENES: Record<string, () => Scene> = {
   lobby: () => ({ lobbyPhase: 'ready' }),
   'lobby-connecting': () => ({ lobbyPhase: 'connecting', userInfo: null, ken: 0 }),
   'lobby-error': () => ({ lobbyPhase: 'error', lobbyError: 'Không kết nối được máy chủ', userInfo: null, ken: 0 }),
+  'bot-setup': () => ({ lobbyPhase: 'ready', botSetupVisible: true }),
 
   rooms: () => ({ lobbyPhase: 'ready', rankedVisible: true, rooms: rooms(7) }),
   'rooms-empty': () => ({ lobbyPhase: 'ready', rankedVisible: true, rooms: [] }),
@@ -211,6 +228,10 @@ const SCENES: Record<string, () => Scene> = {
       ],
     }),
   'board-toast': () => match({ toast: 'Nước đi không hợp lệ' }),
+  'bot-board': () => botMatch(),
+  'bot-thinking': () => botMatch({ myTurn: false, botThinking: true }),
+  'bot-live-turn': () => ({ lobbyPhase: 'ready' }),
+  'bot-live-black': () => ({ lobbyPhase: 'ready' }),
 
   'confirm-forfeit': () =>
     match({
@@ -247,6 +268,11 @@ const SCENES: Record<string, () => Scene> = {
       bet: 0,
       result: { matchId: 'm-mock', outcome: 'win', kenDelta: 0, reasonText: 'Đối thủ đầu hàng' },
     }),
+  'bot-result': () =>
+    botMatch({
+      myTurn: false,
+      result: { matchId: 'bot-mock', outcome: 'win', kenDelta: 0, reasonText: 'Chiếu bí! Bạn thắng máy' },
+    }),
 
   history: () => ({ lobbyPhase: 'ready', historyVisible: true, historyItems: history(9) }),
   'history-empty': () => ({ lobbyPhase: 'ready', historyVisible: true, historyItems: [] }),
@@ -282,6 +308,16 @@ const CLICK_AFTER_MOUNT: Record<string, () => void> = {
   'board-reactions': () => {
     const buttons = [...document.querySelectorAll<HTMLButtonElement>('.xq-actionbar .xq-action')];
     buttons.find((button) => button.textContent?.includes('Cảm xúc'))?.click();
+  },
+  'bot-live-turn': () => {
+    useXiangqi.getState().startBotGame('easy', 0);
+    window.setTimeout(() => {
+      useXiangqi.getState().tapSquare(19);
+      useXiangqi.getState().tapSquare(22);
+    }, 50);
+  },
+  'bot-live-black': () => {
+    useXiangqi.getState().startBotGame('easy', 1);
   },
 };
 

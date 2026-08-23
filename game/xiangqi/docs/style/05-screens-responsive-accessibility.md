@@ -67,7 +67,7 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
 - Topbar cao tối thiểu 52; tên truncate tại 130 px ở 390.
 - KEN badge paper/navy; sound là icon button.
 - Logo title gold, không texture/text-shadow.
-- CTA Chơi xếp hạng là gold large, width tối đa 320 hoặc 86%.
+- CTA Chơi xếp hạng là gold large; Chơi với máy là jade, width tối đa 320 hoặc 86%.
 - Hai secondary button paper, cùng width và gap 16.
 - Exit là inline action hạ cấp ở đáy.
 - Margin logo dùng responsive clamp, không hardcode một giá trị chỉ đẹp ở 844 px cao.

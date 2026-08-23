@@ -119,6 +119,13 @@ button:focus-visible {
   box-shadow: var(--xq-shadow-md);
 }
 
+.xq-btn-jade {
+  background: linear-gradient(180deg, #3f9a73, var(--xq-jade));
+  border-color: #1e5d43;
+  color: var(--xq-cream);
+  box-shadow: 0 4px 0 #1e5d43, 0 8px 18px rgba(20, 12, 7, 0.16);
+}
+
 .xq-btn-paper {
   background-color: var(--xq-paper);
   background-image: repeating-linear-gradient(0deg, transparent 0 7px, rgba(107, 74, 47, 0.025) 7px 8px);
@@ -614,6 +621,125 @@ button:focus-visible {
   flex: 1;
   padding-left: 14px;
   padding-right: 14px;
+}
+
+/* ---------- Bot setup ---------- */
+
+.xq-bot-setup {
+  width: min(350px, 100%);
+}
+
+.xq-bot-duel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: -2px 0 14px;
+}
+
+.xq-bot-duel .xq-logo-piece {
+  width: 50px;
+  height: 50px;
+  font-size: 27px;
+  border-width: 2px;
+  box-shadow: inset 0 0 0 2px rgba(139, 94, 60, 0.28), 3px 4px 0 rgba(31, 42, 68, 0.38);
+}
+
+.xq-bot-duel strong {
+  color: var(--xq-red-deep);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+
+.xq-bot-fieldset {
+  min-width: 0;
+  border: 0;
+  margin-top: 12px;
+}
+
+.xq-bot-fieldset legend {
+  margin-bottom: 7px;
+  color: rgba(31, 42, 68, 0.78);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.xq-bot-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.xq-bot-difficulties {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.xq-bot-help {
+  min-height: 34px;
+  margin-top: 7px;
+  color: rgba(31, 42, 68, 0.72);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.xq-bot-side {
+  min-height: 58px;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid rgba(31, 42, 68, 0.42);
+  border-radius: 12px;
+  background: var(--xq-paper-bright);
+  color: var(--xq-navy);
+  text-align: left;
+  transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.xq-bot-side-active {
+  border-color: var(--xq-gold-deep);
+  background: color-mix(in srgb, var(--xq-gold) 18%, var(--xq-paper-bright));
+  box-shadow: inset 0 -3px 0 rgba(185, 135, 0, 0.2);
+}
+
+.xq-bot-side-glyph {
+  width: 35px;
+  height: 35px;
+  flex: none;
+  border: 2px solid var(--xq-navy);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--xq-paper);
+  font-family: var(--xq-glyph-font);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.xq-bot-side > span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.xq-bot-side small {
+  margin-top: 2px;
+  color: rgba(31, 42, 68, 0.68);
+  font-size: 10.5px;
+}
+
+.xq-bot-note {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--xq-jade);
+  border-radius: 8px;
+  background: rgba(46, 125, 91, 0.08);
+  color: rgba(31, 42, 68, 0.74);
+  font-size: 11.5px;
+  line-height: 1.4;
 }
 
 .xq-field {
@@ -1133,6 +1259,10 @@ button:focus-visible {
   box-shadow: inset 0 4px 0 rgba(139, 94, 60, 0.22), 0 5px 0 rgba(31, 42, 68, 0.24);
 }
 
+.xq-actionbar-bot {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .xq-action {
   position: relative;
   display: flex;
@@ -1643,6 +1773,10 @@ button:focus-visible {
 
   .xq-btn-paper:not(:disabled):hover {
     background-color: var(--xq-paper-bright);
+  }
+
+  .xq-btn-jade:not(:disabled):hover {
+    filter: brightness(1.06);
   }
 
   .xq-btn-danger:not(:disabled):hover {
