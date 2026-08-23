@@ -72,6 +72,7 @@ func renderConstants(config wargod.ClientConfig) []byte {
 	writeInt("MAX_FURY", config.MaxFury)
 	writeFloat("FURY_DAMAGE_MULTIPLIER", config.FuryDamageMultiplier)
 	writeInt("MAX_ARMOR", config.MaxArmor)
+	writeInt("MAX_EXTRA_TURNS", config.MaxExtraTurns)
 	writeInt("ULT_COST", config.UltCost)
 	writeInt("LIGHTNING_GOD_DAMAGE", config.LightningGodDamage)
 	writeInt("CASCADE_BONUS_PERCENT_PER_LEVEL", config.CascadeBonusPercentPerLevel)

@@ -242,7 +242,7 @@ Kỹ thuật: đổi `r.tile()` từ `next() % tileCount` ([board.go:37-39](../s
 
 ### Thêm lượt & hệ nhân
 
-- **Thêm lượt cộng dồn**: mỗi đường ngang/dọc ≥4 ô trong một wave nhận **+1 lượt**; hai đường riêng nhận +2, một đường 5+ vẫn là +1. Các cascade tiếp tục cộng vào bank. Nếu wave không có đường 4+ nhưng dọn ≥5 ô match (T/L/thập hoặc nhiều cụm 3), giữ luật cũ +1; ô chỉ bị nổ không tính điều kiện.
+- **Thêm lượt cộng dồn, bank tối đa 2**: mỗi cụm liên thông ≥4 ô cùng loại trong một wave nhận **+1 lượt**; các cascade tiếp tục cộng nhưng người chơi không bao giờ dự trữ quá 2 lượt thưởng. Một đường 5+ vẫn là +1; các cụm chỉ gồm 3 ô không thêm lượt và ô chỉ bị nổ không tính điều kiện.
 - **Chỉ Nộ là hệ nhân duy nhất.** Nổ là nguồn *cascade*, Nộ là nguồn *nhân* — không chồng hệ nhân thứ hai để tránh one-shot.
 - Van an toàn cần playtest: cụm Kiếm lớn trong Nộ + nổ + cascade vẫn có thể vọt cao (cân nhắc cap damage/wave, hoặc Nộ chỉ ×2 ở wave đầu). Với HP 200 thì rủi ro one-shot đã giảm hẳn.
 

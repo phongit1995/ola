@@ -12,6 +12,7 @@ import {
   HEAL_HEART,
   LIGHTNING_GOD_DAMAGE,
   MAX_ARMOR,
+  MAX_EXTRA_TURNS,
   MAX_FURY,
   MAX_HP,
   MP_WATER,
@@ -96,7 +97,7 @@ const RULES: GuideRule[] = [
   {
     asset: A.items.sword,
     title: 'COMBO 4+ · SẬP',
-    detail: 'Cụm 4+: +1 lượt · Sập tự động tăng mọi hiệu ứng +10%/tầng, tối đa +30%',
+    detail: `Cụm 4+: +1 lượt, dự trữ tối đa ${MAX_EXTRA_TURNS} · Sập tăng hiệu ứng +10%/tầng, tối đa +30%`,
     accent: 0xffcf62,
   },
   {

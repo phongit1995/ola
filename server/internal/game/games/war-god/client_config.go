@@ -16,6 +16,7 @@ type ClientConfig struct {
 	MaxFury                     int
 	FuryDamageMultiplier        float64
 	MaxArmor                    int
+	MaxExtraTurns               int
 	UltCost                     int
 	LightningGodDamage          int
 	CascadeBonusPercentPerLevel int
@@ -42,6 +43,7 @@ func ExportClientConfig() ClientConfig {
 		MaxFury:                     maxFury,
 		FuryDamageMultiplier:        furyDamageMultiplier,
 		MaxArmor:                    maxArmor,
+		MaxExtraTurns:               maxExtraTurns,
 		UltCost:                     ultCost,
 		LightningGodDamage:          lightningGodDamage,
 		CascadeBonusPercentPerLevel: cascadeBonusPercentPerLevel,

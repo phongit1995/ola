@@ -79,8 +79,12 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 	// Applying an action consumes one previously banked bonus turn. Ownership
 	// prevents a timeout from handing the remaining bank to the opponent.
 	remainingExtraTurns := 0
-	if current.ExtraTurns > 0 && current.ExtraTurnOwner == playerIdx {
-		remainingExtraTurns = current.ExtraTurns - 1
+	bankedExtraTurns := current.ExtraTurns
+	if bankedExtraTurns > maxExtraTurns {
+		bankedExtraTurns = maxExtraTurns
+	}
+	if bankedExtraTurns > 0 && current.ExtraTurnOwner == playerIdx {
+		remainingExtraTurns = bankedExtraTurns - 1
 	}
 	r := &rng{z: z}
 	attacker := &s.Fighters[playerIdx]
@@ -218,8 +222,9 @@ func resolveCascades(
 		if matchedCells == nil {
 			break
 		}
-		bonusTurns := matchBonusTurns(s.Board, matchedCells)
-		*remainingExtraTurns += bonusTurns
+		potentialBonusTurns := matchBonusTurns(s.Board, matchedCells)
+		bonusTurns, totalExtraTurns := grantExtraTurns(*remainingExtraTurns, potentialBonusTurns)
+		*remainingExtraTurns = totalExtraTurns
 		removed := make(map[int]bool, len(matchedCells))
 		for _, index := range matchedCells {
 			removed[index] = true
@@ -250,6 +255,22 @@ func resolveCascades(
 			break
 		}
 	}
+}
+
+func grantExtraTurns(current, earned int) (granted, total int) {
+	if current < 0 {
+		current = 0
+	} else if current > maxExtraTurns {
+		current = maxExtraTurns
+	}
+	if earned <= 0 || current == maxExtraTurns {
+		return 0, current
+	}
+	granted = earned
+	if room := maxExtraTurns - current; granted > room {
+		granted = room
+	}
+	return granted, current + granted
 }
 
 func ensurePlayable(state *State, r *rng) {

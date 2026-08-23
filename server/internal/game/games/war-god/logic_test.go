@@ -947,6 +947,48 @@ func TestApplySwapTwoRunsBanksTwoTurns(t *testing.T) {
 	}
 }
 
+func TestApplyNeverBanksMoreThanTwoTurns(t *testing.T) {
+	board := doubleRunFourBoard()
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 1}}, 1)
+	state.ExtraTurn = true
+	state.ExtraTurns = maxExtraTurns
+	state.ExtraTurnOwner = 0
+
+	nextAny, err := (Logic{}).Apply(state, 0, json.RawMessage(`{"type":"swap","a":18,"b":26}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	matchStep := next.Steps[1]
+	if matchStep.BonusTurns != 1 {
+		t.Fatalf("capped bank should grant only one available turn: %+v", matchStep)
+	}
+	if next.ExtraTurns != maxExtraTurns || !next.ExtraTurn || next.ExtraTurnOwner != 0 {
+		t.Fatalf("bonus-turn bank exceeded its cap: %+v", next)
+	}
+}
+
+func TestGrantExtraTurnsCapsTheBank(t *testing.T) {
+	tests := []struct {
+		current, earned int
+		wantGranted     int
+		wantTotal       int
+	}{
+		{current: 0, earned: 3, wantGranted: 2, wantTotal: 2},
+		{current: 1, earned: 2, wantGranted: 1, wantTotal: 2},
+		{current: 2, earned: 1, wantGranted: 0, wantTotal: 2},
+	}
+	for _, test := range tests {
+		granted, total := grantExtraTurns(test.current, test.earned)
+		if granted != test.wantGranted || total != test.wantTotal {
+			t.Fatalf(
+				"grantExtraTurns(%d, %d) = (%d, %d), want (%d, %d)",
+				test.current, test.earned, granted, total, test.wantGranted, test.wantTotal,
+			)
+		}
+	}
+}
+
 func TestApplyConsumesOneBankedTurnPerAction(t *testing.T) {
 	state := stateWith(
 		stripedBoard(),
@@ -1315,6 +1357,25 @@ func TestDecodeStateKeepsLegacyExtraTurn(t *testing.T) {
 	restored := restoredAny.(*State)
 	if !restored.ExtraTurn || restored.ExtraTurns != 0 || restored.ExtraTurnOwner != -1 || !(Logic{}).KeepTurn(restored) {
 		t.Fatalf("legacy extra turn was not preserved: %+v", restored)
+	}
+}
+
+func TestDecodeStateCapsLegacyExtraTurnBank(t *testing.T) {
+	state := (Logic{}).Init(5).(*State)
+	state.ExtraTurn = true
+	state.ExtraTurns = maxExtraTurns + 3
+	state.ExtraTurnOwner = 0
+	data, err := json.Marshal(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restoredAny, err := (Logic{}).DecodeState(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored := restoredAny.(*State)
+	if restored.ExtraTurns != maxExtraTurns || !restored.ExtraTurn || restored.ExtraTurnOwner != 0 {
+		t.Fatalf("legacy bonus-turn bank was not capped: %+v", restored)
 	}
 }
 

@@ -53,6 +53,11 @@ func (Logic) DecodeState(data json.RawMessage) (any, error) {
 	if state.ExtraTurns < 0 {
 		return nil, errors.New("invalid saved war-god extra turns")
 	}
+	// Older version-2 snapshots may contain an uncapped bonus-turn bank.
+	// Preserve the match while migrating that bank to the current rule.
+	if state.ExtraTurns > maxExtraTurns {
+		state.ExtraTurns = maxExtraTurns
+	}
 	if state.ExtraTurns > 0 {
 		if state.ExtraTurnOwner < 0 || state.ExtraTurnOwner >= len(state.Fighters) {
 			return nil, errors.New("invalid saved war-god extra turn owner")

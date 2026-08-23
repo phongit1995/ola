@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { applyAuthoritativeEffects, applyTileEffects, createFighter } from './battle';
+import {
+  MAX_EXTRA_TURNS,
+  applyAuthoritativeEffects,
+  applyTileEffects,
+  createFighter,
+  grantExtraTurns,
+} from './battle';
 import { emptyCounts } from './core';
 
 describe('cascade tile-effect scaling', () => {
@@ -63,5 +69,14 @@ describe('cascade tile-effect scaling', () => {
 
     expect(attacker.fury).toBe(10);
     expect(defender.hp).toBe(172);
+  });
+});
+
+describe('bonus-turn bank', () => {
+  it('never stores more than two bonus turns', () => {
+    expect(MAX_EXTRA_TURNS).toBe(2);
+    expect(grantExtraTurns(0, 3)).toEqual({ granted: 2, remaining: 2 });
+    expect(grantExtraTurns(1, 2)).toEqual({ granted: 1, remaining: 2 });
+    expect(grantExtraTurns(2, 1)).toEqual({ granted: 0, remaining: 2 });
   });
 });

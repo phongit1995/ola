@@ -7,7 +7,9 @@ const (
 	maxMP    = 100
 	maxFury  = 100
 	maxArmor = 30
-	ultCost  = 100
+	// maxExtraTurns is the number of bonus actions a player may bank at once.
+	maxExtraTurns = 2
+	ultCost       = 100
 
 	dmgSword             = 7
 	healHeart            = 5
