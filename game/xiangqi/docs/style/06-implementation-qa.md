@@ -164,6 +164,24 @@ Chụp nhóm board trọng yếu trong lúc iterate:
 node game/scripts/xiangqi-shots.mjs --only board,board-selected,board-check,board-urgent,board-move-pending
 ```
 
+Audit runtime để bảo đảm các screen/component đại diện thực sự nhận `animation-name` (không chỉ có keyframe chết trong CSS):
+
+```powershell
+pnpm -C game shots:xiangqi:motion
+```
+
+Audit cùng media query giảm chuyển động; probe phải giữ `animation-name` để coverage còn kiểm tra được nhưng duration runtime không được vượt `1 ms`:
+
+```powershell
+node game/scripts/xiangqi-shots.mjs --audit-motion --reduced-motion --settle-ms 0
+```
+
+Chụp giữa choreography khi review nhịp stagger:
+
+```powershell
+node game/scripts/xiangqi-shots.mjs --only lobby,rooms,board --settle-ms 120 --out xiangqi/docs/screenshots/motion-frames
+```
+
 ### Core review set
 
 | Nhóm | Screenshot |

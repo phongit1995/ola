@@ -179,11 +179,11 @@ export function RankedScreen() {
       <div className="xq-room-head">
         <span>Chủ bàn</span>
         <span>Ken cược</span>
-        <span>Tham gia</span>
+        <span>Vào bàn</span>
       </div>
 
       <div className="xq-room-list">
-        {visible.length === 0 ? <div className="xq-empty">Chưa có bàn nào — tạo bàn mới nhé!</div> : null}
+        {visible.length === 0 ? <div className="xq-empty xq-empty-state">Chưa có bàn nào — tạo bàn mới nhé!</div> : null}
         {visible.map((room) => {
           const full = room.full || room.players >= (room.maxPlayers ?? 2);
           return (
@@ -208,14 +208,16 @@ export function RankedScreen() {
                 )}
               </div>
               <div className="xq-room-join">
-                <span className={`xq-chip ${full ? '' : 'xq-chip-jade'}`}>{room.players}/{room.maxPlayers ?? 2}</span>
                 <button
                   type="button"
-                  className="xq-btn xq-btn-gold xq-btn-small"
+                  className={`xq-btn xq-btn-small ${full ? 'xq-btn-room-full' : 'xq-btn-room-join'}`}
                   disabled={full || roomActionPending != null}
                   onClick={() => (room.locked ? setLockedRoom(room) : joinRoom(room.id, ''))}
                 >
-                  Tham gia
+                  <span>{full ? 'Đã đầy' : 'Vào bàn'}</span>
+                  <span className={`xq-room-count ${full ? '' : 'xq-room-count-open'}`}>
+                    {room.players}/{room.maxPlayers ?? 2}
+                  </span>
                 </button>
               </div>
             </div>

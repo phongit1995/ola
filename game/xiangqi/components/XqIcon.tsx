@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import arrowLeft from '../assets/icons/ic-arrow-left.svg';
+import bot from '../assets/icons/ic-bot.svg';
 import chat from '../assets/icons/ic-chat.svg';
 import check from '../assets/icons/ic-check.svg';
 import chevronLeft from '../assets/icons/ic-chevron-left.svg';
@@ -7,11 +8,14 @@ import chevronRight from '../assets/icons/ic-chevron-right.svg';
 import close from '../assets/icons/ic-close.svg';
 import exitDoor from '../assets/icons/ic-exit-door.svg';
 import flag from '../assets/icons/ic-flag.svg';
+import history from '../assets/icons/ic-history.svg';
 import ken from '../assets/icons/ic-ken.svg';
+import leaderboard from '../assets/icons/ic-leaderboard.svg';
 import lock from '../assets/icons/ic-lock.svg';
 import owner from '../assets/icons/ic-owner.svg';
 import reaction from '../assets/icons/ic-reaction.svg';
 import refresh from '../assets/icons/ic-refresh.svg';
+import ranked from '../assets/icons/ic-ranked.svg';
 import send from '../assets/icons/ic-send.svg';
 import volumeOff from '../assets/icons/ic-volume-off.svg';
 import volumeOn from '../assets/icons/ic-volume-on.svg';
@@ -20,6 +24,7 @@ import wifiOff from '../assets/icons/ic-wifi-off.svg';
 
 export type XqIconName =
   | 'arrow-left'
+  | 'bot'
   | 'chat'
   | 'check'
   | 'chevron-left'
@@ -27,11 +32,14 @@ export type XqIconName =
   | 'close'
   | 'exit-door'
   | 'flag'
+  | 'history'
   | 'ken'
+  | 'leaderboard'
   | 'lock'
   | 'owner'
   | 'reaction'
   | 'refresh'
+  | 'ranked'
   | 'send'
   | 'volume-off'
   | 'volume-on'
@@ -40,6 +48,7 @@ export type XqIconName =
 
 const ICONS: Record<XqIconName, string> = {
   'arrow-left': arrowLeft,
+  bot,
   chat,
   check,
   'chevron-left': chevronLeft,
@@ -47,11 +56,14 @@ const ICONS: Record<XqIconName, string> = {
   close,
   'exit-door': exitDoor,
   flag,
+  history,
   ken,
+  leaderboard,
   lock,
   owner,
   reaction,
   refresh,
+  ranked,
   send,
   'volume-off': volumeOff,
   'volume-on': volumeOn,

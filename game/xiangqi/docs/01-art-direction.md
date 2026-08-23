@@ -125,8 +125,12 @@ Stroke 2 px, cap tròn, vẽ trên grid 24; bộ nhỏ 16 cho inline. Không ico
 | Timer ≤10 s | pulse màu `--xq-danger` mỗi 1 s |
 | KEN float ±  | bay lên 24 px + fade 900 ms (giống caro) |
 | Modal | fade backdrop 150 ms + pop 180 ms |
+| Screen entrance | fade + dịch 8–12 px, 240 ms |
+| Lobby/board choreography | stagger 35–50 ms giữa các khối chính |
+| Room/history/leaderboard rows | rise 10 px, 220 ms, stagger 24 ms tối đa 10 row |
+| Result | glyph settle 360 ms → title/summary rise, không particle |
 
-`prefers-reduced-motion`: tắt shake/pulse, quân nhảy thẳng vị trí, giữ fade ≤ 150 ms.
+`prefers-reduced-motion`: tắt shake/pulse/float/stagger, quân và screen về trạng thái cuối gần tức thời.
 
 ## 9. Âm thanh (WebAudio tổng hợp, không file)
 

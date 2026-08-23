@@ -75,17 +75,33 @@ export function LobbyScreen() {
 
       {lobbyPhase === 'ready' ? (
         <div className="xq-cta-stack">
-          <button type="button" className="xq-btn xq-btn-gold xq-btn-big" onClick={playRanked}>
-            Chơi xếp hạng
+          <button type="button" className="xq-btn xq-btn-gold xq-btn-big xq-lobby-action" onClick={playRanked}>
+            <span className="xq-lobby-action-icon">
+              <XqIcon name="ranked" size={23} />
+            </span>
+            <span className="xq-lobby-action-copy">
+              <strong>Chơi xếp hạng</strong>
+              <small>Ghép bàn với người chơi</small>
+            </span>
+            <XqIcon name="chevron-right" size={19} className="xq-lobby-action-arrow" />
           </button>
-          <button type="button" className="xq-btn xq-btn-jade" onClick={openBotSetup}>
-            Chơi với máy
+          <button type="button" className="xq-btn xq-btn-jade xq-lobby-action" onClick={openBotSetup}>
+            <span className="xq-lobby-action-icon">
+              <XqIcon name="bot" size={23} />
+            </span>
+            <span className="xq-lobby-action-copy">
+              <strong>Chơi với máy</strong>
+              <small>Chọn cấp độ và phe</small>
+            </span>
+            <XqIcon name="chevron-right" size={19} className="xq-lobby-action-arrow" />
           </button>
-          <button type="button" className="xq-btn xq-btn-paper" onClick={showHistory}>
-            Lịch sử
+          <button type="button" className="xq-btn xq-btn-paper xq-lobby-shortcut" onClick={showHistory}>
+            <XqIcon name="history" size={20} />
+            <span>Lịch sử</span>
           </button>
-          <button type="button" className="xq-btn xq-btn-paper" onClick={showLeaderboard}>
-            Bảng xếp hạng
+          <button type="button" className="xq-btn xq-btn-paper xq-lobby-shortcut" onClick={showLeaderboard}>
+            <XqIcon name="leaderboard" size={20} />
+            <span>Bảng xếp hạng</span>
           </button>
         </div>
       ) : (

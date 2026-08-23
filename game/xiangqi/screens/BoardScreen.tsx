@@ -32,6 +32,11 @@ const REACTION_LABEL: Record<GameReactionType, string> = {
 // Mirrors maxChatRunes in server/internal/game/engine/engine.go; anything longer
 // is rejected server-side.
 const CHAT_MAX_CHARS = 120;
+const CHAT_TIME_FORMATTER = new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+function formatChatTime(sentAt: number): string {
+  return CHAT_TIME_FORMATTER.format(new Date(sentAt));
+}
 
 const FULL_SET: number[] = (() => {
   const kinds: Array<[number, number]> = [
@@ -235,50 +240,93 @@ function ChatDrawer() {
     consumeChatRestore();
   }, [chatRestore, consumeChatRestore]);
 
+  useEffect(() => {
+    if (!chatOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeChat();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [chatOpen, closeChat]);
+
   if (!chatOpen) return null;
   const submit = () => {
     sendChatText(draft);
     setDraft('');
   };
   return (
-    <div className="xq-chat" role="dialog" aria-label="Trò chuyện">
-      <div className="xq-chat-head">
-        <span>Trò chuyện</span>
-        <button type="button" className="xq-icon-btn" onClick={closeChat} aria-label="Đóng chat">
-          <XqIcon name="close" size={20} />
-        </button>
-      </div>
-      <div className="xq-chat-list" ref={listRef}>
-        {messages.length === 0 ? <div className="xq-chat-empty">Chưa có tin nhắn</div> : null}
-        {messages.map((message, index) => {
-          const mine = message.userId === userInfo?.id;
-          return (
-            <div key={`${message.sentAt}-${index}`} className={`xq-chat-row ${mine ? 'xq-chat-mine' : ''}`}>
-              {!mine ? <span className="xq-chat-name">@{message.name}</span> : null}
-              <span className="xq-chat-bubble">{message.text}</span>
+    <div className="xq-chat-layer">
+      <div className="xq-chat-scrim" aria-hidden="true" onClick={closeChat} />
+      <section className="xq-chat" role="dialog" aria-modal="true" aria-labelledby="xq-chat-title">
+        <div className="xq-chat-grip" aria-hidden="true" />
+        <header className="xq-chat-head">
+          <div className="xq-chat-heading">
+            <span className="xq-chat-heading-icon" aria-hidden="true">
+              <XqIcon name="chat" size={21} />
+            </span>
+            <div className="xq-chat-heading-copy">
+              <div>
+                <h2 id="xq-chat-title">Trò chuyện</h2>
+                <span className="xq-chat-room-chip">Trong bàn</span>
+              </div>
+              <p>{messages.length > 0 ? `${messages.length} tin nhắn gần nhất` : 'Gửi lời chào tới đối thủ'}</p>
             </div>
-          );
-        })}
-      </div>
-      <form
-        className="xq-chat-input"
-        onSubmit={(event) => {
-          event.preventDefault();
-          submit();
-        }}
-      >
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder="Nhập tin nhắn..."
-          maxLength={CHAT_MAX_CHARS}
-          aria-label="Tin nhắn"
-        />
-        <button type="submit" className="xq-btn xq-btn-gold xq-btn-small" disabled={!draft.trim()}>
-          <XqIcon name="send" size={17} />
-          Gửi
-        </button>
-      </form>
+          </div>
+          <button type="button" className="xq-icon-btn xq-chat-close" onClick={closeChat} aria-label="Đóng trò chuyện">
+            <XqIcon name="close" size={20} />
+          </button>
+        </header>
+
+        <div className="xq-chat-list" ref={listRef} role="log" aria-live="polite" aria-relevant="additions">
+          <div className="xq-chat-notice">Tin nhắn chỉ hiển thị trong bàn cờ này</div>
+          {messages.length === 0 ? (
+            <div className="xq-chat-empty">
+              <span aria-hidden="true"><XqIcon name="chat" size={26} /></span>
+              <strong>Chưa có tin nhắn</strong>
+              <small>Một lời chào vui vẻ sẽ làm ván cờ thú vị hơn.</small>
+            </div>
+          ) : null}
+          {messages.map((message, index) => {
+            const mine = message.userId === userInfo?.id;
+            return (
+              <div key={`${message.sentAt}-${index}`} className={`xq-chat-row ${mine ? 'xq-chat-mine' : ''}`}>
+                <div className="xq-chat-message">
+                  <div className="xq-chat-meta">
+                    <strong>{mine ? 'Bạn' : `@${message.name}`}</strong>
+                    <time dateTime={new Date(message.sentAt).toISOString()}>{formatChatTime(message.sentAt)}</time>
+                  </div>
+                  <div className="xq-chat-bubble">{message.text}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <form
+          className="xq-chat-input"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit();
+          }}
+        >
+          <div className="xq-chat-input-shell">
+            <input
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="Nhập tin nhắn..."
+              maxLength={CHAT_MAX_CHARS}
+              aria-label="Tin nhắn"
+            />
+            <span className={`xq-chat-count ${draft ? 'xq-chat-count-visible' : ''}`} aria-hidden="true">
+              {draft.length}/{CHAT_MAX_CHARS}
+            </span>
+          </div>
+          <button type="submit" className="xq-btn xq-btn-gold xq-chat-send" disabled={!draft.trim()} aria-label="Gửi tin nhắn">
+            <XqIcon name="send" size={18} />
+            <span>Gửi</span>
+          </button>
+        </form>
+      </section>
     </div>
   );
 }

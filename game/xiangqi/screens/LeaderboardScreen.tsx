@@ -44,9 +44,9 @@ export function LeaderboardScreen() {
           </button>
         ))}
       </div>
-      <div className="xq-list">
-        {leaderboardLoading ? <div className="xq-empty">Đang tải...</div> : null}
-        {!leaderboardLoading && leaderboardItems.length === 0 ? <div className="xq-empty">Chưa có dữ liệu</div> : null}
+      <div className="xq-list" key={leaderboardPeriod}>
+        {leaderboardLoading ? <div className="xq-empty xq-empty-loading">Đang tải...</div> : null}
+        {!leaderboardLoading && leaderboardItems.length === 0 ? <div className="xq-empty xq-empty-state">Chưa có dữ liệu</div> : null}
         {leaderboardItems.map((item) => (
           <div key={item.userId} className="xq-list-row">
             <span className={`xq-rank ${item.rank <= 3 ? `xq-rank-${item.rank}` : ''}`}>{item.rank}</span>

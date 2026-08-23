@@ -2,7 +2,7 @@
 // Tự bật vite dev, mở Chrome headless, chụp từng `mock-ui.html?screen=<tên>`
 // ở viewport logic 390 x 844 CSS px, DPR 2 -> PNG 780 x 1688.
 //
-//   node scripts/xiangqi-shots.mjs [--out <dir>] [--only <a,b,c>]
+//   node scripts/xiangqi-shots.mjs [--out <dir>] [--only <a,b,c>] [--settle-ms <ms>] [--audit-motion] [--reduced-motion]
 import { spawn } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { existsSync } from 'node:fs';
@@ -36,6 +36,26 @@ function args(name) {
 
 const OUT_DIR = resolve(GAME_DIR, args('--out') ?? 'xiangqi/docs/screenshots');
 const ONLY = args('--only')?.split(',').map((s) => s.trim()).filter(Boolean) ?? null;
+const SETTLE_MS = Number(args('--settle-ms') ?? 900);
+const AUDIT_MOTION = process.argv.includes('--audit-motion');
+const REDUCED_MOTION = process.argv.includes('--reduced-motion');
+
+const MOTION_PROBES = {
+  lobby: ['.xq-lobby', '.xq-lobby .xq-logo', '.xq-cta-stack > .xq-btn'],
+  'lobby-error': ['.xq-lobby-status > *'],
+  'bot-setup': ['.xq-modal', '.xq-bot-duel', '.xq-modal-actions'],
+  rooms: ['.xq-ranked', '.xq-room-row', '.xq-ranked-footer'],
+  'rooms-empty': ['.xq-empty-state'],
+  'rooms-create': ['.xq-modal-form', '.xq-modal-form .xq-field', '.xq-modal-actions'],
+  'pregame-ready': ['.xq-pregame', '.xq-pregame-panel', '.xq-seat', '.xq-pregame-actions'],
+  board: ['.xq-board-screen', '.xq-board-wrap', '.xq-actionbar'],
+  'board-chat': ['.xq-chat', '.xq-chat-row'],
+  'result-win': ['.xq-result', '.xq-result-title', '.xq-result-summary'],
+  history: ['.xq-list-screen', '.xq-list-row'],
+  'history-loading': ['.xq-empty-loading', '.xq-empty-loading::before'],
+  leaderboard: ['.xq-list-screen', '.xq-tab-active', '.xq-list-row'],
+  toast: ['.xq-toast'],
+};
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -97,6 +117,11 @@ async function openPage() {
     deviceScaleFactor: DPR,
     mobile: true,
   });
+  if (REDUCED_MOTION) {
+    await cdp.send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-reduced-motion', value: 'reduce' }],
+    });
+  }
   return cdp;
 }
 
@@ -172,12 +197,42 @@ async function main() {
     await cdp.send('Page.navigate', { url: `${base}?screen=${screen}` });
     try {
       await waitFor(`screen ${screen}`, () => cdp.eval(`window.__mockScreen === '${screen}' && window.__mockReady === true`), 20_000);
-      // Cho animation vào chỗ (xq-pop 0,3 s, replay quân 0,22 s) rồi mới chụp.
-      await sleep(900);
+      // Mặc định chờ animation vào chỗ; --settle-ms cho phép QA chụp giữa choreography.
+      await sleep(SETTLE_MS);
       const rendered = await cdp.eval("document.querySelectorAll('.xq-app > *').length");
       if (!rendered) throw new Error('không render được screen nào');
+      if (AUDIT_MOTION && MOTION_PROBES[screen]) {
+        const audit = await cdp.eval(`(${JSON.stringify(MOTION_PROBES[screen])}).map((selector) => {
+          const pseudo = selector.endsWith('::before') ? '::before' : null;
+          const baseSelector = pseudo ? selector.slice(0, -8) : selector;
+          const element = document.querySelector(baseSelector);
+          const style = element ? getComputedStyle(element, pseudo) : null;
+          const durationMs = style
+            ? Math.max(...style.animationDuration.split(',').map((value) => {
+                const duration = Number.parseFloat(value);
+                return value.trim().endsWith('ms') ? duration : duration * 1000;
+              }))
+            : 0;
+          return {
+            selector,
+            found: Boolean(element),
+            animationName: style?.animationName ?? 'none',
+            durationMs,
+          };
+        })`);
+        const missingMotion = audit.filter((item) => !item.found || item.animationName === 'none');
+        if (missingMotion.length) {
+          throw new Error(`motion audit thiếu: ${missingMotion.map((item) => item.selector).join(', ')}`);
+        }
+        const reducedMotionLeaks = REDUCED_MOTION ? audit.filter((item) => item.durationMs > 1) : [];
+        if (reducedMotionLeaks.length) {
+          throw new Error(`reduced-motion còn duration >1 ms: ${reducedMotionLeaks.map((item) => item.selector).join(', ')}`);
+        }
+      }
       await cdp.shot(resolve(OUT_DIR, `${screen}.png`));
-      console.log(`  ok  ${screen}.png`);
+      console.log(
+        `  ok  ${screen}.png${AUDIT_MOTION && MOTION_PROBES[screen] ? ` · motion ${MOTION_PROBES[screen].length}` : ''}${REDUCED_MOTION ? ' · reduced' : ''}`,
+      );
     } catch (error) {
       failures.push(`${screen}: ${error.message}`);
       console.log(`  FAIL ${screen}: ${error.message}`);

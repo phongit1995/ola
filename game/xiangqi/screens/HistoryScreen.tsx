@@ -31,8 +31,8 @@ export function HistoryScreen() {
         <span />
       </div>
       <div className="xq-list">
-        {historyLoading ? <div className="xq-empty">Đang tải...</div> : null}
-        {!historyLoading && historyItems.length === 0 ? <div className="xq-empty">Chưa có ván nào</div> : null}
+        {historyLoading ? <div className="xq-empty xq-empty-loading">Đang tải...</div> : null}
+        {!historyLoading && historyItems.length === 0 ? <div className="xq-empty xq-empty-state">Chưa có ván nào</div> : null}
         {historyItems.map((item) => {
           const kenDelta = historyKenDelta(item);
           return (
