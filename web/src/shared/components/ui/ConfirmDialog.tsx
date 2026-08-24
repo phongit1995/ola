@@ -12,6 +12,7 @@ interface ConfirmDialogProps {
   message: ReactNode;
   confirmLabel: string;
   cancelLabel: string;
+  hideCancel?: boolean;
   danger?: boolean;
   showIcon?: boolean;
   checkboxLabel?: string;
@@ -27,6 +28,7 @@ export function ConfirmDialog({
   message,
   confirmLabel,
   cancelLabel,
+  hideCancel = false,
   danger = false,
   showIcon = true,
   checkboxLabel,
@@ -49,9 +51,11 @@ export function ConfirmDialog({
           >
             {confirmLabel}
           </DialogButton>
-          <DialogButton variant="default" onClick={onCancel}>
-            {cancelLabel}
-          </DialogButton>
+          {!hideCancel && (
+            <DialogButton variant="default" onClick={onCancel}>
+              {cancelLabel}
+            </DialogButton>
+          )}
         </>
       }
     >

@@ -205,6 +205,7 @@ function BubbleContent({
             opacity: uploading || failed ? 0.6 : 1,
           }}
           resizeMode="cover"
+          showLoader
         />
         {uploading && (
           <View className="absolute inset-0 items-center justify-center">
