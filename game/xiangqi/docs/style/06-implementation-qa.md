@@ -2,7 +2,7 @@
 
 ## 1. Mục tiêu handoff
 
-Một implementation đạt chuẩn khi người dùng thấy cùng một hệ “Mộc bản thủ công” ở tất cả 43 state screenshot, không chỉ ở màn board đẹp nhất. Thành công được đo bằng tính nhất quán, khả năng đọc và coverage trạng thái; không đo bằng số lượng texture/asset trang trí.
+Một implementation đạt chuẩn khi người dùng thấy cùng một hệ “Mộc bản thủ công” ở tất cả 45 state screenshot, không chỉ ở màn board đẹp nhất. Thành công được đo bằng tính nhất quán, khả năng đọc và coverage trạng thái; không đo bằng số lượng texture/asset trang trí.
 
 ## 2. Hiện trạng đã đối chiếu
 
@@ -18,7 +18,7 @@ Một implementation đạt chuẩn khi người dùng thấy cùng một hệ �
 | Piece | CSS + live glyph hiện tại | phù hợp anti-AI | QA font fallback và glyph; chỉ chuyển raster nếu asset được duyệt |
 | Modal/input/chip | đã có | cần state/a11y review | error/loading/focus/keyboard |
 | Reduced motion | đã có media query | cần coverage audit | bảo đảm mọi animation mới được tắt/giảm |
-| Visual regression | 43 screenshots | coverage tốt | dùng cùng harness, review diff theo checklist |
+| Visual regression | 45 screenshots | coverage tốt | dùng cùng harness, review diff theo checklist |
 
 Tài liệu này không tự tuyên bố các mục “cần làm” đã được code. Chúng là acceptance criteria cho phase áp dụng style.
 
@@ -38,7 +38,7 @@ Tài liệu này không tự tuyên bố các mục “cần làm” đã đư�
 
 ### Phase 0 — Khóa baseline
 
-1. Chạy đủ 43 screenshot hiện tại.
+1. Chạy đủ 45 screenshot hiện tại.
 2. Lưu git status và xác định diff không liên quan.
 3. Ghi viewport/browser/DPR của baseline.
 4. Không chỉnh layout và icon cùng một commit nếu muốn review diff dễ.

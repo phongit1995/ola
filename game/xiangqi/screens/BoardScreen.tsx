@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { GAME_REACTION_TYPE, type GameReactionType } from '../../src/sdk';
+import reactionAngry from '../../caro/assets/reactions/angry.webp';
+import reactionHaha from '../../caro/assets/reactions/haha.webp';
+import reactionLike from '../../caro/assets/reactions/like.webp';
+import reactionLove from '../../caro/assets/reactions/love.webp';
+import reactionSad from '../../caro/assets/reactions/sad.webp';
+import reactionWow from '../../caro/assets/reactions/wow.webp';
 import { BoardSurface, squareLeft, squareTop } from '../components/BoardSurface';
 import { ModalHeading } from '../components/ModalHeading';
 import { XqIcon } from '../components/XqIcon';
+import { useDialogFocus } from '../components/useDialogFocus';
 import { EMPTY, KIND_GENERAL, SIDE_RED, boardX, boardY, flipIndex, pieceFor, pieceKind, pieceSide } from '../logic/board';
 import { inCheck } from '../logic/moves';
 import { pieceGlyph, pieceLabel, sideLabel } from '../logic/pieces';
@@ -11,13 +18,13 @@ import { formatKen } from '../helpers/format';
 import { PodAvatar } from '../components/PodAvatar';
 import { useXiangqi, type SeatInfo } from '../store/useXiangqi';
 
-const REACTION_EMOJI: Record<GameReactionType, string> = {
-  [GAME_REACTION_TYPE.Like]: '👍',
-  [GAME_REACTION_TYPE.Love]: '❤️',
-  [GAME_REACTION_TYPE.Haha]: '😆',
-  [GAME_REACTION_TYPE.Wow]: '😮',
-  [GAME_REACTION_TYPE.Sad]: '😢',
-  [GAME_REACTION_TYPE.Angry]: '😡',
+const REACTION_ASSET: Record<GameReactionType, string> = {
+  [GAME_REACTION_TYPE.Like]: reactionLike,
+  [GAME_REACTION_TYPE.Love]: reactionLove,
+  [GAME_REACTION_TYPE.Haha]: reactionHaha,
+  [GAME_REACTION_TYPE.Wow]: reactionWow,
+  [GAME_REACTION_TYPE.Sad]: reactionSad,
+  [GAME_REACTION_TYPE.Angry]: reactionAngry,
 };
 
 const REACTION_LABEL: Record<GameReactionType, string> = {
@@ -33,6 +40,29 @@ const REACTION_LABEL: Record<GameReactionType, string> = {
 // is rejected server-side.
 const CHAT_MAX_CHARS = 120;
 const CHAT_TIME_FORMATTER = new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit' });
+const BOARD_VIEW_WIDTH = 360;
+const BOARD_VIEW_HEIGHT = 400;
+const BOARD_MARGIN = 20;
+const BOARD_CELL = 40;
+const BOARD_LAST_ROW = 9;
+const BOARD_TOUCH_RADIUS = 22;
+
+function nearestBoardIndex(event: ReactPointerEvent<HTMLDivElement>, flip: boolean): number | null {
+  const board = event.currentTarget.parentElement;
+  if (!board) return null;
+  const rect = board.getBoundingClientRect();
+  const viewX = ((event.clientX - rect.left) / rect.width) * BOARD_VIEW_WIDTH;
+  const viewY = ((event.clientY - rect.top) / rect.height) * BOARD_VIEW_HEIGHT;
+  const x = Math.max(0, Math.min(8, Math.round((viewX - BOARD_MARGIN) / BOARD_CELL)));
+  const y = Math.max(0, Math.min(BOARD_LAST_ROW, BOARD_LAST_ROW - Math.round((viewY - BOARD_MARGIN) / BOARD_CELL)));
+  const centerX = BOARD_MARGIN + x * BOARD_CELL;
+  const centerY = BOARD_MARGIN + (BOARD_LAST_ROW - y) * BOARD_CELL;
+  const distanceX = ((viewX - centerX) / BOARD_VIEW_WIDTH) * rect.width;
+  const distanceY = ((viewY - centerY) / BOARD_VIEW_HEIGHT) * rect.height;
+  if (Math.hypot(distanceX, distanceY) > BOARD_TOUCH_RADIUS) return null;
+  const displayedIndex = y * 9 + x;
+  return flip ? flipIndex(displayedIndex) : displayedIndex;
+}
 
 function formatChatTime(sentAt: number): string {
   return CHAT_TIME_FORMATTER.format(new Date(sentAt));
@@ -101,7 +131,7 @@ function PlayerPod({
         </div>
       </div>
       {clockActive ? (
-        <div className={`xq-pod-clock ${urgent ? 'xq-pod-clock-urgent' : ''}`} aria-live={mine ? 'polite' : 'off'}>
+        <div className={`xq-pod-clock ${urgent ? 'xq-pod-clock-urgent' : ''}`} aria-label={`Còn ${secondsLeft} giây`}>
           {secondsLeft}
         </div>
       ) : null}
@@ -140,9 +170,9 @@ function PregamePanel() {
           {[meMember, opMember].map((member, index) =>
             member ? (
               <div key={member.id} className="xq-seat">
-                <PodAvatar vipType={member.vipType} tone={member.owner ? 'red' : 'black'} />
+                <PodAvatar vipType={member.vipType} tone="black" />
                 <div className="xq-seat-name">{member.id === roomWaiting.youId ? 'Bạn' : `@${member.name}`}</div>
-                <div className="xq-seat-side">{member.owner ? 'Đỏ — đi trước' : 'Đen'}</div>
+                <div className="xq-seat-side">{member.owner ? 'Chủ bàn · Chờ xếp phe' : 'Khách · Chờ xếp phe'}</div>
                 {member.owner ? (
                   <span className="xq-chip xq-chip-gold">Chủ bàn</span>
                 ) : member.ready ? (
@@ -229,6 +259,7 @@ function ChatDrawer() {
   );
   const [draft, setDraft] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useDialogFocus<HTMLElement>({ enabled: chatOpen, onEscape: closeChat });
 
   useEffect(() => {
     if (chatOpen) listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -240,15 +271,6 @@ function ChatDrawer() {
     consumeChatRestore();
   }, [chatRestore, consumeChatRestore]);
 
-  useEffect(() => {
-    if (!chatOpen) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeChat();
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [chatOpen, closeChat]);
-
   if (!chatOpen) return null;
   const submit = () => {
     sendChatText(draft);
@@ -257,7 +279,7 @@ function ChatDrawer() {
   return (
     <div className="xq-chat-layer">
       <div className="xq-chat-scrim" aria-hidden="true" onClick={closeChat} />
-      <section className="xq-chat" role="dialog" aria-modal="true" aria-labelledby="xq-chat-title">
+      <section ref={drawerRef} className="xq-chat" role="dialog" aria-modal="true" aria-labelledby="xq-chat-title" tabIndex={-1}>
         <div className="xq-chat-grip" aria-hidden="true" />
         <header className="xq-chat-head">
           <div className="xq-chat-heading">
@@ -316,6 +338,7 @@ function ChatDrawer() {
               placeholder="Nhập tin nhắn..."
               maxLength={CHAT_MAX_CHARS}
               aria-label="Tin nhắn"
+              data-dialog-initial-focus
             />
             <span className={`xq-chat-count ${draft ? 'xq-chat-count-visible' : ''}`} aria-hidden="true">
               {draft.length}/{CHAT_MAX_CHARS}
@@ -360,6 +383,7 @@ export function BoardScreen() {
       forfeitMatch: s.forfeitMatch,
       exitMatch: s.exitMatch,
       openChat: s.openChat,
+      closeChat: s.closeChat,
       sendReactionType: s.sendReactionType,
       restartBotGame: s.restartBotGame,
     })),
@@ -367,6 +391,8 @@ export function BoardScreen() {
   const [checkVisible, setCheckVisible] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [oppAwayLeft, setOppAwayLeft] = useState(0);
+  const reactionTriggerRef = useRef<HTMLButtonElement>(null);
+  const reactionPickerRef = useRef<HTMLDivElement>(null);
 
   const mySide = state.me?.side ?? SIDE_RED;
   const flip = mySide !== SIDE_RED;
@@ -387,13 +413,22 @@ export function BoardScreen() {
     return () => clearInterval(timer);
   }, [state.oppAway]);
 
+  useEffect(() => {
+    if (pickerOpen) reactionPickerRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+  }, [pickerOpen]);
+
   const capturedByMe = useMemo(() => capturedKinds(state.board, 1 - mySide), [state.board, mySide]);
   const capturedByOp = useMemo(() => capturedKinds(state.board, mySide), [state.board, mySide]);
 
   const seconds = Math.ceil(state.timerLeftMs / 1000);
   const urgent = seconds <= 10;
   const playing = state.boardMode === 'playing';
-  const boardLocked = !playing || state.movePending || !!state.result || state.turnExpired;
+  const boardLocked = !playing || !state.myTurn || state.movePending || !!state.result || state.turnExpired;
+  useEffect(() => {
+    if (!playing || state.result || state.gameMode !== 'online') setPickerOpen(false);
+    if (!playing || state.result) setCheckVisible(false);
+    if (state.result) state.closeChat();
+  }, [playing, state.result, state.gameMode, state.closeChat]);
   let statusTone = 'turn';
   let statusText = state.myTurn ? 'Lượt của bạn' : 'Lượt đối thủ';
   let statusIcon: 'check' | 'refresh' | 'warning' | 'wifi-off' | null = state.myTurn ? 'check' : null;
@@ -421,10 +456,10 @@ export function BoardScreen() {
     statusText = state.turnAnnounce;
   }
   const generalInCheckIdx = useMemo(() => {
-    if (!checkVisible) return -1;
+    if (!playing || !checkVisible) return -1;
     const checkedSide = inCheck(state.board, mySide) ? mySide : inCheck(state.board, 1 - mySide) ? 1 - mySide : -1;
     return checkedSide < 0 ? -1 : state.board.indexOf(pieceFor(checkedSide, KIND_GENERAL));
-  }, [checkVisible, state.board, mySide]);
+  }, [playing, checkVisible, state.board, mySide]);
 
   return (
     <div className="xq-screen xq-board-screen">
@@ -438,12 +473,19 @@ export function BoardScreen() {
           mine={false}
         />
 
-        <div className={`xq-board-status xq-board-status-${statusTone}`} role="status" aria-live="polite">
+        <div
+          className={`xq-board-status xq-board-status-${statusTone}`}
+          role="status"
+          aria-live="polite"
+          aria-label={state.oppAway ? 'Đối thủ mất kết nối' : undefined}
+        >
           {statusIcon ? <XqIcon name={statusIcon} size={15} /> : null}
-          <span>{statusText}</span>
+          <span aria-hidden={state.oppAway ? true : undefined}>{statusText}</span>
         </div>
 
-        <div className={`xq-board-wrap ${state.boardMode === 'pregame' ? 'xq-board-dimmed' : ''}`}>
+        <div
+          className={`xq-board-wrap ${state.boardMode === 'pregame' ? 'xq-board-dimmed' : ''} ${boardLocked ? 'xq-board-input-locked' : ''}`}
+        >
           <BoardSurface />
           {state.bet > 0 ? (
             <div className="xq-bet-badge">
@@ -451,7 +493,21 @@ export function BoardScreen() {
               <span>{formatKen(state.bet)}</span>
             </div>
           ) : null}
-          <div className="xq-board-layer">
+          <div
+            className="xq-board-hit-area"
+            aria-hidden="true"
+            onPointerUp={(event) => {
+              if (boardLocked || event.button !== 0) return;
+              const index = nearestBoardIndex(event, flip);
+              if (index != null) state.tapSquare(index);
+            }}
+          />
+          <div
+            className="xq-board-layer"
+            role="group"
+            aria-label={`Bàn cờ Tướng. ${statusText}`}
+            aria-disabled={boardLocked}
+          >
             {state.lastFrom >= 0 ? (
               <div
                 className="xq-last-marker xq-last-from"
@@ -470,6 +526,7 @@ export function BoardScreen() {
               const isSelected = state.selected === piece.idx;
               const isCaptureHint = state.hints.includes(piece.idx);
               const isCheckedGeneral = piece.idx === generalInCheckIdx;
+              const pieceInteractive = !boardLocked && (pieceSide(piece.piece) === mySide || isCaptureHint);
               return (
                 <button
                   key={piece.key}
@@ -483,10 +540,10 @@ export function BoardScreen() {
                   ].join(' ')}
                   style={{ left: squareLeft(boardX(displayIdx)), top: squareTop(boardY(displayIdx)) }}
                   onClick={() => state.tapSquare(piece.idx)}
-                  disabled={boardLocked}
-                  aria-label={`${pieceLabel(piece.piece)} ${red ? 'đỏ' : 'đen'}`}
+                  disabled={!pieceInteractive}
+                  aria-label={`${pieceLabel(piece.piece)} ${red ? 'đỏ' : 'đen'}, cột ${boardX(displayIdx) + 1}, hàng ${boardY(displayIdx) + 1}`}
                 >
-                  {pieceGlyph(piece.piece)}
+                  <span className="xq-piece-face" aria-hidden="true">{pieceGlyph(piece.piece)}</span>
                 </button>
               );
             })}
@@ -507,7 +564,7 @@ export function BoardScreen() {
                 );
               })}
           </div>
-          {checkVisible ? (
+          {playing && checkVisible ? (
             <div className="xq-check-banner" role="status">
               <XqIcon name="warning" size={18} />
               Chiếu tướng!
@@ -515,7 +572,7 @@ export function BoardScreen() {
           ) : null}
           {state.reactionFloats.map((float) => (
             <div key={float.seq} className={`xq-reaction-float ${float.mine ? 'xq-reaction-mine' : ''}`}>
-              {REACTION_EMOJI[float.type]}
+              <img src={REACTION_ASSET[float.type]} alt="" draggable={false} />
             </div>
           ))}
         </div>
@@ -550,6 +607,7 @@ export function BoardScreen() {
                 {state.chatUnread ? <i className="xq-dot" /> : null}
               </button>
               <button
+                ref={reactionTriggerRef}
                 type="button"
                 className="xq-action"
                 onClick={() => setPickerOpen((open) => !open)}
@@ -572,26 +630,40 @@ export function BoardScreen() {
         </div>
       ) : null}
 
-      {state.gameMode === 'online' && pickerOpen ? (
-        <div className="xq-reaction-picker" id="xq-reaction-picker" role="toolbar" aria-label="Chọn cảm xúc">
-          {(Object.keys(REACTION_EMOJI) as GameReactionType[]).map((type) => (
+      {state.gameMode === 'online' && !state.result && pickerOpen ? (
+        <div
+          ref={reactionPickerRef}
+          className="xq-reaction-picker"
+          id="xq-reaction-picker"
+          role="group"
+          aria-label="Chọn cảm xúc"
+          onKeyDown={(event) => {
+            if (event.key !== 'Escape') return;
+            event.preventDefault();
+            event.stopPropagation();
+            setPickerOpen(false);
+            reactionTriggerRef.current?.focus();
+          }}
+        >
+          {(Object.keys(REACTION_ASSET) as GameReactionType[]).map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => {
                 state.sendReactionType(type);
                 setPickerOpen(false);
+                reactionTriggerRef.current?.focus();
               }}
               aria-label={REACTION_LABEL[type]}
             >
-              {REACTION_EMOJI[type]}
+              <img src={REACTION_ASSET[type]} alt="" draggable={false} />
             </button>
           ))}
         </div>
       ) : null}
 
       {state.boardMode === 'pregame' ? <PregamePanel /> : null}
-      {state.gameMode === 'online' ? <ChatDrawer /> : null}
+      {state.gameMode === 'online' && !state.result ? <ChatDrawer /> : null}
     </div>
   );
 }

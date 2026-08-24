@@ -13,8 +13,8 @@
   --xq-gold: #f2b807;
   --xq-gold-deep: #b98700;
   --xq-cream: #fff6e3;
-  --xq-jade: #2e7d5b;
-  --xq-danger: #d64545;
+  --xq-jade: #216647;
+  --xq-danger: #ad2934;
   --xq-danger-soft: #ffb1a6;
   --xq-wood-glint: rgba(255, 246, 227, 0.06);
   --xq-wood-seam: rgba(20, 12, 7, 0.18);
@@ -151,10 +151,10 @@ button:focus-visible {
 }
 
 .xq-btn-jade {
-  background: linear-gradient(180deg, #3d9871, #286e50);
-  border-color: #1e5d43;
+  background: linear-gradient(180deg, #2c7454, #1f6045);
+  border-color: #174b36;
   color: var(--xq-cream);
-  box-shadow: 0 3px 0 #1e5d43, 0 8px 16px rgba(20, 12, 7, 0.16);
+  box-shadow: 0 3px 0 #174b36, 0 8px 16px rgba(20, 12, 7, 0.16);
 }
 
 .xq-btn-paper {
@@ -935,8 +935,16 @@ button:focus-visible {
 
 .xq-field input:focus {
   outline: none;
-  border: 2px solid var(--xq-gold-deep);
+  border: 2px solid var(--xq-navy);
   box-shadow: 0 0 0 2px rgba(242, 184, 7, 0.22);
+}
+
+.xq-modal button:focus-visible,
+.xq-pregame-panel button:focus-visible,
+.xq-reaction-picker button:focus-visible,
+.xq-chat button:focus-visible,
+.xq-room-row button:focus-visible {
+  outline-color: var(--xq-navy);
 }
 
 .xq-chip-row {
@@ -1075,6 +1083,7 @@ button:focus-visible {
   position: relative;
   width: min(100%, 480px);
   margin: 0 auto;
+  container-type: inline-size;
   transition: opacity 0.2s ease;
   filter: drop-shadow(0 7px 0 rgba(31, 42, 68, 0.32)) drop-shadow(0 13px 16px rgba(20, 12, 7, 0.22));
 }
@@ -1137,13 +1146,48 @@ button:focus-visible {
 .xq-board-layer {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.xq-board-hit-area {
+  position: absolute;
+  inset: -5px;
+  z-index: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.xq-board-input-locked .xq-board-hit-area {
+  cursor: default;
 }
 
 .xq-piece {
   position: absolute;
-  width: 10.2%;
-  aspect-ratio: 1;
+  width: 44px;
+  height: 44px;
   transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+  transition: left 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), top 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.xq-piece-face {
+  width: clamp(34px, 9.4vw, 44px);
+  width: min(44px, 10.2cqw);
+  aspect-ratio: 1;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   background:
     repeating-linear-gradient(0deg, transparent 0 5px, rgba(107, 74, 47, 0.025) 5px 6px),
@@ -1153,37 +1197,56 @@ button:focus-visible {
   font-family: var(--xq-glyph-font);
   font-weight: 700;
   font-size: clamp(16px, 5.6vw, 24px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: left 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), top 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), box-shadow 0.15s ease;
-  z-index: 2;
-  padding: 0;
   line-height: 1;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .xq-piece-red {
   color: var(--xq-red-deep);
+}
+
+.xq-piece-red .xq-piece-face {
   box-shadow: 0 4px 0 rgba(31, 42, 68, 0.46), 0 7px 12px rgba(20, 12, 7, 0.22), inset 0 0 0 2.5px rgba(143, 29, 18, 0.58);
 }
 
 .xq-piece-black {
   color: var(--xq-ink);
+}
+
+.xq-piece-black .xq-piece-face {
   box-shadow: 0 4px 0 rgba(31, 42, 68, 0.46), 0 7px 12px rgba(20, 12, 7, 0.22), inset 0 0 0 2.5px rgba(27, 27, 31, 0.54);
 }
 
 .xq-piece-selected {
   z-index: 3;
-  transform: translate(-50%, calc(-50% - 3px));
+}
+
+.xq-piece-selected .xq-piece-face {
+  transform: translateY(-3px);
   box-shadow: 0 8px 0 rgba(31, 42, 68, 0.5), 0 12px 20px rgba(20, 12, 7, 0.32), 0 0 0 3px var(--xq-gold);
 }
 
-.xq-piece-capture-hint {
+.xq-piece-capture-hint .xq-piece-face {
   box-shadow: 0 3px 8px rgba(31, 42, 68, 0.3), 0 0 0 3px rgba(192, 57, 43, 0.85);
 }
 
-.xq-piece-checked {
+.xq-piece-checked .xq-piece-face {
   animation: xq-check-pulse 1s ease infinite;
+}
+
+.xq-piece:disabled {
+  opacity: 1;
+  box-shadow: none;
+  cursor: default;
+}
+
+.xq-piece:focus-visible {
+  outline: none;
+}
+
+.xq-piece:focus-visible .xq-piece-face {
+  outline: 3px solid var(--xq-navy);
+  outline-offset: 1px;
 }
 
 .xq-hint-dot {
@@ -1197,6 +1260,7 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   background: transparent;
+  pointer-events: none;
 }
 
 .xq-hint-dot::after {
@@ -1227,7 +1291,7 @@ button:focus-visible {
 
 .xq-bet-badge {
   position: absolute;
-  top: -4px;
+  top: -34px;
   right: 4px;
   z-index: 5;
   display: inline-flex;
@@ -1242,6 +1306,7 @@ button:focus-visible {
   color: var(--xq-navy);
   font-variant-numeric: tabular-nums;
   box-shadow: 0 3px 0 rgba(185, 135, 0, 0.48);
+  pointer-events: none;
 }
 
 .xq-check-banner {
@@ -1264,6 +1329,7 @@ button:focus-visible {
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .xq-reaction-float {
@@ -1274,6 +1340,13 @@ button:focus-visible {
   z-index: 11;
   animation: xq-float-up 2.4s ease forwards;
   pointer-events: none;
+}
+
+.xq-reaction-float img {
+  display: block;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
 }
 
 .xq-reaction-mine {
@@ -1961,11 +2034,18 @@ button:focus-visible {
 }
 
 .xq-reaction-picker button {
-  font-size: 26px;
   width: 44px;
   height: 44px;
   border-radius: 14px;
+  display: grid;
+  place-items: center;
   transition: transform 0.12s ease, background-color 0.15s ease;
+}
+
+.xq-reaction-picker button img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 
 /* ---------- Overlays ---------- */
@@ -2492,6 +2572,37 @@ button:focus-visible {
   border-radius: 999px;
   background: none;
   animation: xq-spin 0.9s linear infinite;
+}
+
+.xq-empty-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--xq-cream);
+}
+
+.xq-empty-error::before {
+  display: none;
+}
+
+.xq-empty-error > .xq-icon {
+  color: var(--xq-danger-soft);
+}
+
+.xq-empty-error strong {
+  font-size: 16px;
+}
+
+.xq-empty-error > span {
+  max-width: 340px;
+  color: rgba(255, 246, 227, 0.82);
+  line-height: 1.45;
+}
+
+.xq-empty-error .xq-btn {
+  min-width: 132px;
+  margin-top: 8px;
 }
 
 .xq-board-screen {

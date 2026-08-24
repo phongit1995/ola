@@ -356,13 +356,14 @@ type RoomMember struct {
 }
 
 type RoomStateData struct {
-	RoomID     string       `json:"roomId"`
-	OwnerID    string       `json:"ownerId"`
-	YouID      string       `json:"youId"`
-	Bet        int          `json:"bet"`
-	Locked     bool         `json:"locked"`
-	MaxPlayers int          `json:"maxPlayers,omitempty"`
-	Members    []RoomMember `json:"members"`
+	RoomID       string       `json:"roomId"`
+	OwnerID      string       `json:"ownerId"`
+	YouID        string       `json:"youId"`
+	Bet          int          `json:"bet"`
+	Locked       bool         `json:"locked"`
+	MaxPlayers   int          `json:"maxPlayers,omitempty"`
+	Members      []RoomMember `json:"members"`
+	AfterMatchID string       `json:"afterMatchId,omitempty"`
 }
 
 type RoomSyncData struct {
@@ -386,5 +387,7 @@ type OpponentDisconnectedData struct {
 }
 
 type OpponentReconnectedData struct {
-	UserID string `json:"userId,omitempty"`
+	UserID   string `json:"userId,omitempty"`
+	Turn     int    `json:"turn"`
+	Deadline int64  `json:"deadline"`
 }

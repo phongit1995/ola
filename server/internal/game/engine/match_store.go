@@ -42,6 +42,7 @@ type ActiveMatchSnapshot struct {
 	GraceDeadline      int64                 `json:"graceDeadline,omitempty"`
 	PausedRemainMillis int64                 `json:"pausedRemainMillis,omitempty"`
 	Room               *Room                 `json:"room,omitempty"`
+	ClosedRoom         *Room                 `json:"closedRoom,omitempty"`
 }
 
 type ActiveMatchRepository interface {

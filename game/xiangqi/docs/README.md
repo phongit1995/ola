@@ -48,7 +48,7 @@ Source React quyết định chức năng, dữ liệu và state. Docs quyết �
 4. [04-asset-manifest-and-prompts.md](./04-asset-manifest-and-prompts.md) — manifest CSS/SVG/raster, script sinh quân, prompt.
 5. [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md) — luật VN đầy đủ, state machine, socket protocol, steps replay, reconnect.
 6. [06-screen-to-feature-map.md](./06-screen-to-feature-map.md) — mapping màn → store state → SDK event → component.
-7. [screenshots/](./screenshots/README.md) — harness và hướng dẫn tạo cục bộ 43 ảnh màn/state bằng `scripts/xiangqi-shots.mjs`; PNG output không lưu trong Git.
+7. [screenshots/](./screenshots/README.md) — harness và hướng dẫn tạo cục bộ 45 ảnh màn/state bằng `scripts/xiangqi-shots.mjs`; PNG output không lưu trong Git.
 8. [style/](./style/README.md) — design system Mộc bản thủ công: token, từng loại button/control, component, icon, responsive, accessibility và QA.
 
 ## Nguyên tắc bắt buộc

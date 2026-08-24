@@ -27,6 +27,27 @@ func (e *captureEmitter) count(userID, messageType string) int {
 	return count
 }
 
+func requireMessageOrder(t *testing.T, emitter *captureEmitter, userID, before, after string) {
+	t.Helper()
+	emitter.mu.Lock()
+	defer emitter.mu.Unlock()
+	beforeIndex, afterIndex := -1, -1
+	for index, message := range emitter.messages {
+		if message.userID != userID {
+			continue
+		}
+		if beforeIndex < 0 && message.env.Type == before {
+			beforeIndex = index
+		}
+		if afterIndex < 0 && message.env.Type == after {
+			afterIndex = index
+		}
+	}
+	if beforeIndex < 0 || afterIndex < 0 || beforeIndex >= afterIndex {
+		t.Fatalf("message order for %s = %s@%d then %s@%d", userID, before, beforeIndex, after, afterIndex)
+	}
+}
+
 func requireErrorCode(t *testing.T, emitter *captureEmitter, userID, code string) {
 	t.Helper()
 	envelope, ok := emitter.last(userID, protocol.S2CError)
@@ -559,6 +580,12 @@ func TestFinishedRoomMatchReturnsWithGuestUnready(t *testing.T) {
 		if emitter.count(userID, protocol.S2CMatchOver) != 1 || emitter.count(userID, protocol.S2CRoomState) != 1 {
 			t.Fatalf("%s did not receive the result and next-round room state", userID)
 		}
+		envelope, _ := emitter.last(userID, protocol.S2CRoomState)
+		state, ok := envelope.Data.(protocol.RoomStateData)
+		if !ok || state.AfterMatchID != match.ID {
+			t.Fatalf("%s room state did not identify completed match %s: %#v", userID, match.ID, envelope.Data)
+		}
+		requireMessageOrder(t, emitter, userID, protocol.S2CMatchOver, protocol.S2CRoomState)
 	}
 	requireRoomUpsert(t, emitter, room.ID, 2)
 
@@ -596,6 +623,24 @@ func TestOwnerExitMatchDoesNotRestoreWaitingRoom(t *testing.T) {
 	if emitter.count(room.OwnerID, protocol.S2CRoomState) != 0 || emitter.count(room.GuestID, protocol.S2CRoomState) != 0 {
 		t.Fatal("explicit match exit emitted a next-round room state")
 	}
+	closedEnvelope, ok := emitter.last(room.GuestID, protocol.S2CRoomClosed)
+	if !ok {
+		t.Fatal("owner exit did not explicitly close the room for the opponent")
+	}
+	closed, ok := closedEnvelope.Data.(protocol.RoomClosedData)
+	if !ok || closed.RoomID != room.ID || closed.Reason != "owner_left" {
+		t.Fatalf("unexpected owner-exit room closure: %#v", closedEnvelope.Data)
+	}
+	syncEnvelope, ok := emitter.last(room.GuestID, protocol.S2CRoomSync)
+	if !ok {
+		t.Fatal("owner exit did not clear the opponent room membership")
+	}
+	sync, ok := syncEnvelope.Data.(protocol.RoomSyncData)
+	if !ok || sync.RoomID != "" {
+		t.Fatalf("unexpected owner-exit room sync: %#v", syncEnvelope.Data)
+	}
+	requireMessageOrder(t, emitter, room.GuestID, protocol.S2CMatchOver, protocol.S2CRoomClosed)
+	requireMessageOrder(t, emitter, room.GuestID, protocol.S2CRoomClosed, protocol.S2CRoomSync)
 }
 
 func TestGuestExitMatchReturnsOwnerToWaitingRoom(t *testing.T) {
@@ -669,6 +714,55 @@ func TestGuestDisconnectExpiryReturnsOwnerToWaitingRoom(t *testing.T) {
 		t.Fatal("owner did not receive waiting-room state after guest disconnect expiry")
 	}
 	requireRoomUpsert(t, emitter, room.ID, 1)
+}
+
+func TestOwnerDisconnectExpiryClosesRoomForGuest(t *testing.T) {
+	gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+	defer stopEngineTimers(gameEngine)
+	room := lifecycleRoom("room-owner-disconnect")
+	room.GuestID = "guest"
+	room.GuestName = "GUEST"
+	room.GuestVipType = lifecycleVipType("guest")
+	room.GuestReady = true
+	if err := rooms.Save(room); err != nil {
+		t.Fatal(err)
+	}
+
+	gameEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+	match := gameEngine.matchForUser(room.GameID, room.OwnerID)
+	if match == nil {
+		t.Fatal("room match was not started")
+	}
+	emitter.clear()
+	gameEngine.OnDisconnect(room.GameID, room.OwnerID)
+	if match.graceTimer != nil {
+		match.graceTimer.Stop()
+	}
+	gameEngine.onGraceExpire(match.ID, match.graceGen)
+
+	if _, exists := rooms.Get(room.GameID, room.ID); exists {
+		t.Fatal("owner-disconnected room was restored after match expiry")
+	}
+	if emitter.count(room.GuestID, protocol.S2CMatchOver) != 1 ||
+		emitter.count(room.GuestID, protocol.S2CRoomClosed) != 1 ||
+		emitter.count(room.GuestID, protocol.S2CRoomSync) != 1 {
+		t.Fatal("guest did not receive the complete owner-disconnect lifecycle")
+	}
+	if emitter.count(room.GuestID, protocol.S2CRoomState) != 0 {
+		t.Fatal("guest received a stale next-round room state")
+	}
+	closedEnvelope, _ := emitter.last(room.GuestID, protocol.S2CRoomClosed)
+	closed, ok := closedEnvelope.Data.(protocol.RoomClosedData)
+	if !ok || closed.RoomID != room.ID || closed.Reason != "owner_disconnected" {
+		t.Fatalf("unexpected owner-disconnect room closure: %#v", closedEnvelope.Data)
+	}
+	syncEnvelope, _ := emitter.last(room.GuestID, protocol.S2CRoomSync)
+	sync, ok := syncEnvelope.Data.(protocol.RoomSyncData)
+	if !ok || sync.RoomID != "" {
+		t.Fatalf("unexpected owner-disconnect room sync: %#v", syncEnvelope.Data)
+	}
+	requireMessageOrder(t, emitter, room.GuestID, protocol.S2CMatchOver, protocol.S2CRoomClosed)
+	requireMessageOrder(t, emitter, room.GuestID, protocol.S2CRoomClosed, protocol.S2CRoomSync)
 }
 
 func TestQueueLifecycleAndRoomConflict(t *testing.T) {

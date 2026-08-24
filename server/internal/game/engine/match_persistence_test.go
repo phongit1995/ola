@@ -899,6 +899,11 @@ func TestRestoreFinishedSnapshotMakesResultAvailableOnReconnect(t *testing.T) {
 	if emitter.count("player-a", protocol.S2CRoomState) != 1 {
 		t.Fatal("returning player did not recover the next-round room")
 	}
+	roomEnvelope, _ := emitter.last("player-a", protocol.S2CRoomState)
+	roomState, ok := roomEnvelope.Data.(protocol.RoomStateData)
+	if !ok || roomState.AfterMatchID != snapshot.ID {
+		t.Fatalf("recovered room state did not identify finished match %s: %#v", snapshot.ID, roomEnvelope.Data)
+	}
 }
 
 func TestFinishedTombstoneSurvivesDeleteFailureAndIsRecovered(t *testing.T) {

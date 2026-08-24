@@ -4,6 +4,7 @@ import { BOT_DIFFICULTY_LABEL, type BotDifficulty } from '../logic/bot';
 import { SIDE_BLACK, SIDE_RED } from '../logic/board';
 import { useXiangqi } from '../store/useXiangqi';
 import { ModalHeading } from './ModalHeading';
+import { useDialogFocus } from './useDialogFocus';
 
 const DIFFICULTIES: BotDifficulty[] = ['easy', 'medium', 'hard'];
 
@@ -25,14 +26,17 @@ export function BotSetupModal() {
   const [difficulty, setDifficulty] = useState<BotDifficulty>(currentDifficulty);
   const [playerSide, setPlayerSide] = useState(currentSide);
   const titleId = useId();
+  const modalRef = useDialogFocus<HTMLDivElement>({ onEscape: closeBotSetup });
 
   return (
     <div className="xq-backdrop" onClick={closeBotSetup}>
       <div
+        ref={modalRef}
         className="xq-modal xq-bot-setup"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
       >
         <ModalHeading eyebrow="Luyện tập không cược" title="Chơi với máy" icon="reaction" titleId={titleId} />
@@ -53,6 +57,7 @@ export function BotSetupModal() {
                 className={`xq-chip-btn ${difficulty === item ? 'xq-chip-btn-active' : ''}`}
                 aria-pressed={difficulty === item}
                 onClick={() => setDifficulty(item)}
+                data-dialog-initial-focus={difficulty === item ? '' : undefined}
               >
                 {BOT_DIFFICULTY_LABEL[item]}
               </button>

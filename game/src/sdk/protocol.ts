@@ -304,6 +304,8 @@ export interface RoomStateData {
   locked: boolean;
   maxPlayers?: number;
   members: RoomMember[];
+  /** Match whose completed board this waiting-room snapshot follows. */
+  afterMatchId?: string;
 }
 
 export interface RoomSyncData {
@@ -328,4 +330,7 @@ export interface OpponentDisconnectedData {
 
 export interface OpponentReconnectedData {
   userId?: string;
+  /** Authoritative turn/deadline after a paused clock has been re-armed. */
+  turn?: number;
+  deadline?: number;
 }

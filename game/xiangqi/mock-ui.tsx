@@ -286,6 +286,12 @@ const SCENES: Record<string, () => Scene> = {
   history: () => ({ lobbyPhase: 'ready', historyVisible: true, historyItems: history(9) }),
   'history-empty': () => ({ lobbyPhase: 'ready', historyVisible: true, historyItems: [] }),
   'history-loading': () => ({ lobbyPhase: 'ready', historyVisible: true, historyLoading: true }),
+  'history-error': () => ({
+    lobbyPhase: 'ready',
+    historyVisible: true,
+    historyItems: [],
+    historyError: 'Không thể kết nối máy chủ. Vui lòng thử lại.',
+  }),
 
   leaderboard: () => ({ lobbyPhase: 'ready', leaderboardVisible: true, leaderboardItems: leaderboard(9, 1_284_500) }),
   'leaderboard-week': () => ({
@@ -296,8 +302,14 @@ const SCENES: Record<string, () => Scene> = {
   }),
   'leaderboard-empty': () => ({ lobbyPhase: 'ready', leaderboardVisible: true, leaderboardItems: [] }),
   'leaderboard-loading': () => ({ lobbyPhase: 'ready', leaderboardVisible: true, leaderboardLoading: true }),
+  'leaderboard-error': () => ({
+    lobbyPhase: 'ready',
+    leaderboardVisible: true,
+    leaderboardItems: [],
+    leaderboardError: 'Không thể kết nối máy chủ. Vui lòng thử lại.',
+  }),
 
-  toast: () => ({ lobbyPhase: 'ready', rankedVisible: true, rooms: rooms(7), toast: 'Bạn không đủ Ken để tạo bàn' }),
+  toast: () => ({ lobbyPhase: 'ready', rankedVisible: true, rooms: rooms(7), toast: 'Bạn không đủ KEN để tạo bàn' }),
 };
 
 const MOCK_SCREENS = Object.keys(SCENES);

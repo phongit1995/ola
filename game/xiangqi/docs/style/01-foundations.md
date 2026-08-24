@@ -31,8 +31,8 @@ Khi có xung đột, thứ tự ưu tiên là: khả năng đọc → trạng th
 | `--xq-gold` | `#F2B807` | CTA chính, lượt của mình, selected |
 | `--xq-gold-light` | `#FFD34D` | đầu gradient CTA, không dùng làm text |
 | `--xq-gold-deep` | `#B98700` | viền CTA, active edge |
-| `--xq-jade` | `#2E7D5B` | thành công, sẵn sàng, nước đi hợp lệ |
-| `--xq-danger` | `#D64545` | lỗi, timer gấp, destructive action |
+| `--xq-jade` | `#216647` | thành công, sẵn sàng, nước đi hợp lệ |
+| `--xq-danger` | `#AD2934` | lỗi, timer gấp, destructive action |
 | `--xq-danger-soft` | `#FFB1A6` | icon/label cảnh báo trên nền wood tối |
 | `--xq-overlay` | `rgba(31,26,20,.62)` | backdrop modal |
 

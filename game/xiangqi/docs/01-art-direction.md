@@ -28,7 +28,7 @@
 | `--xq-gold` | `#F2B807` | CTA chính, badge cược |
 | `--xq-gold-deep` | `#B98700` | viền/shadow CTA vàng |
 | `--xq-cream` | `#FFF6E3` | chữ trên nền gỗ, mặt quân |
-| `--xq-jade` | `#2E7D5B` | trạng thái thắng/sẵn sàng |
+| `--xq-jade` | `#216647` | trạng thái thắng/sẵn sàng; đủ tương phản cho chữ nhỏ trên paper |
 
 ### 2.2 Semantic tokens
 
@@ -40,7 +40,7 @@
 | `--xq-hint` | `#2E7D5B` 85% | chấm gợi ý nước đi |
 | `--xq-hint-capture` | `--xq-red` 85% | vòng gợi ý đè lên quân ăn được |
 | `--xq-last-move` | `#F2B807` 45% | ô from/to nước vừa đi |
-| `--xq-danger` | `#D64545` | Bỏ cuộc, lỗi, timer ≤10s |
+| `--xq-danger` | `#AD2934` | Bỏ cuộc, lỗi, timer ≤10s; đủ tương phản cho chữ nhỏ trên paper |
 | `--xq-overlay` | `#1F1A14` 62% | backdrop modal |
 
 ### 2.3 Quy tắc tương phản
