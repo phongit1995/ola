@@ -27,7 +27,9 @@
     "minimize": "Minimize",
     "restore": "Restore",
     "hasNotification": "There is a new update in the game",
-    "alreadyRunning": "Another game is already open. Close it before starting a new one."
+    "alreadyRunning": "Another game is already open. Close it before starting a new one.",
+    "dropToClose": "Drop to close game",
+    "dragToClose": "Drag to the trash or press Delete to close the game"
   },
   "common": {
     "clear": "Clear",

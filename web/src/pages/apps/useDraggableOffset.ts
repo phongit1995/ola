@@ -12,6 +12,11 @@ export interface DragOffset {
   y: number;
 }
 
+export interface DragPointerPosition {
+  clientX: number;
+  clientY: number;
+}
+
 interface DragSession {
   pointerId: number;
   startX: number;
@@ -37,6 +42,9 @@ interface UseDraggableOffsetOptions {
   onCommit: (offset: DragOffset) => void;
   onTap: () => void;
   visible: boolean;
+  onDragChange?: (dragging: boolean) => void;
+  onDragMove?: (position: DragPointerPosition) => void;
+  onDrop?: (position: DragPointerPosition) => boolean;
 }
 
 const DRAG_THRESHOLD = 4;
@@ -75,6 +83,9 @@ export function useDraggableOffset({
   onCommit,
   onTap,
   visible,
+  onDragChange,
+  onDragMove,
+  onDrop,
 }: UseDraggableOffsetOptions) {
   const elementRef = useRef<HTMLElement | null>(null);
   const [offset, setOffset] = useState(initialOffset);
@@ -84,10 +95,16 @@ export function useDraggableOffset({
   const sessionRef = useRef<DragSession | null>(null);
   const commitRef = useRef(onCommit);
   const tapRef = useRef(onTap);
+  const dragChangeRef = useRef(onDragChange);
+  const dragMoveRef = useRef(onDragMove);
+  const dropRef = useRef(onDrop);
 
   useEffect(() => {
     commitRef.current = onCommit;
     tapRef.current = onTap;
+    dragChangeRef.current = onDragChange;
+    dragMoveRef.current = onDragMove;
+    dropRef.current = onDrop;
   });
 
   const setElement = useCallback((element: HTMLElement | null) => {
@@ -122,7 +139,8 @@ export function useDraggableOffset({
       x: offsetRef.current.x + clamp(0, bounds.minX, bounds.maxX),
       y: offsetRef.current.y + clamp(0, bounds.minY, bounds.maxY),
     };
-    if (next.x === offsetRef.current.x && next.y === offsetRef.current.y) return;
+    if (next.x === offsetRef.current.x && next.y === offsetRef.current.y)
+      return;
     settle(next);
   }, [settle]);
 
@@ -197,9 +215,13 @@ export function useDraggableOffset({
     if (!session || session.pointerId !== event.pointerId) return;
     const dx = event.clientX - session.startX;
     const dy = event.clientY - session.startY;
-    if (Math.hypot(dx, dy) > DRAG_THRESHOLD) session.moved = true;
+    if (Math.hypot(dx, dy) > DRAG_THRESHOLD && !session.moved) {
+      session.moved = true;
+      dragChangeRef.current?.(true);
+    }
     if (!session.moved) return;
     event.preventDefault();
+    dragMoveRef.current?.({ clientX: event.clientX, clientY: event.clientY });
     schedule(offsetFromPointer(session, event.clientX, event.clientY));
   }
 
@@ -209,19 +231,37 @@ export function useDraggableOffset({
     const dx = event.clientX - session.startX;
     const dy = event.clientY - session.startY;
     const moved = session.moved || Math.hypot(dx, dy) > DRAG_THRESHOLD;
-    if (moved) {
-      pendingRef.current = offsetFromPointer(
-        session,
-        event.clientX,
-        event.clientY
-      );
-      commitPending();
-    }
     sessionRef.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    if (!moved) tapRef.current();
+    if (!moved) {
+      tapRef.current();
+      return;
+    }
+
+    const position = { clientX: event.clientX, clientY: event.clientY };
+    dragMoveRef.current?.(position);
+    const dropped = dropRef.current?.(position) === true;
+    dragChangeRef.current?.(false);
+    if (dropped) {
+      if (frameRef.current != null) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
+      const base = { x: session.baseX, y: session.baseY };
+      offsetRef.current = base;
+      pendingRef.current = base;
+      applyOffset(elementRef.current, base);
+      return;
+    }
+
+    pendingRef.current = offsetFromPointer(
+      session,
+      event.clientX,
+      event.clientY
+    );
+    commitPending();
   }
 
   function endWithoutTap(event: ReactPointerEvent<HTMLElement>) {
@@ -229,6 +269,7 @@ export function useDraggableOffset({
     if (!session || session.pointerId !== event.pointerId) return;
     sessionRef.current = null;
     commitPending();
+    if (session.moved) dragChangeRef.current?.(false);
   }
 
   function onClick(event: ReactMouseEvent<HTMLElement>) {
