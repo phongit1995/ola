@@ -31,8 +31,8 @@ Khi có xung đột, thứ tự ưu tiên là: khả năng đọc → trạng th
 | `--xq-gold` | `#F2B807` | CTA chính, lượt của mình, selected |
 | `--xq-gold-light` | `#FFD34D` | đầu gradient CTA, không dùng làm text |
 | `--xq-gold-deep` | `#B98700` | viền CTA, active edge |
-| `--xq-jade` | `#2E7D5B` | thành công, sẵn sàng, nước đi hợp lệ |
-| `--xq-danger` | `#D64545` | lỗi, timer gấp, destructive action |
+| `--xq-jade` | `#216647` | thành công, sẵn sàng, nước đi hợp lệ |
+| `--xq-danger` | `#AD2934` | lỗi, timer gấp, destructive action |
 | `--xq-danger-soft` | `#FFB1A6` | icon/label cảnh báo trên nền wood tối |
 | `--xq-overlay` | `rgba(31,26,20,.62)` | backdrop modal |
 
@@ -201,9 +201,10 @@ Không tạo radius mới. Component nested phải có radius trong nhỏ hơn r
 ### Nền gỗ
 
 - Base là gradient `180deg` từ wood-700 đến wood-900.
-- Texture tùy chọn: tile liền mạch `256` hoặc `512 px`, đơn sắc, alpha `3–5%`.
+- Thớ mịn giữ alpha `3–5%`; mối ghép ván dùng nhịp rộng `80–96 px` và tương phản cao hơn để còn đọc được sau khi render trên mobile.
 - Vân chạy cùng một hướng trên toàn màn; không đổi hướng giữa các panel.
 - Không có mắt gỗ lớn ngay sau chữ hoặc icon.
+- Có thể dùng viền khắc chìm và inlay vàng rất nhẹ ở mép screen; không biến thành khung trang trí dày hoặc cạnh tranh với nội dung.
 
 ### Giấy
 
@@ -223,14 +224,18 @@ Không tạo radius mới. Component nested phải có radius trong nhỏ hơn r
 |---|---|---|
 | `motion-instant` | `120 ms ease` | pressed, hint dot |
 | `motion-fast` | `150 ms ease` | focus/hover, backdrop |
-| `motion-base` | `180–220 ms cubic-bezier(.2,.8,.3,1)` | modal, drawer, quân đi |
+| `motion-base` | `220–260 ms cubic-bezier(.2,.8,.3,1)` | screen content, modal, drawer, quân đi |
 | `motion-emphasis` | `300–450 ms ease` | turn announce, check banner |
 | `motion-float` | `900 ms ease-out` | KEN delta |
 
 - Hover/pressed chỉ animate `transform`, `opacity`, `background-color`, `border-color`, `box-shadow`.
 - Không animate layout bằng width/height khi có thể dùng transform.
+- Screen route vào bằng fade + dịch tối đa `12 px`; không slide toàn viewport hoặc giữ người dùng chờ transition out.
+- Lobby theo nhịp topbar → logo → CTA. List row stagger `24–45 ms`, tối đa 10 row đầu; các row sau xuất hiện cùng nhịp cuối để tổng thời gian không kéo dài.
+- Board theo nhịp opponent pod → status → board → my pod → action bar. Choreography chỉ chạy khi screen mount, không chạy lại theo từng tick đồng hồ.
+- Modal giữ pop của surface và stagger content ngắn; result được phép nhấn thêm glyph/title nhưng không dùng particle/confetti mặc định.
 - Timer urgent pulse chu kỳ `1 s`, không nhanh hơn.
-- `prefers-reduced-motion: reduce`: bỏ shake/pulse/float/stagger; transition tối đa `150 ms`, quân chuyển ngay vị trí.
+- `prefers-reduced-motion: reduce`: mọi delay về `0`, animation/transition về gần tức thời, quân chuyển ngay vị trí; spinner vẫn có accessible text tĩnh.
 
 ## 11. Responsive foundation
 

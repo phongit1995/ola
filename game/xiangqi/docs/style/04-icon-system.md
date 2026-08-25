@@ -30,6 +30,10 @@ game/xiangqi/assets/icons/
   ic-warning.svg
   ic-check.svg
   ic-owner.svg
+  ic-ranked.svg
+  ic-bot.svg
+  ic-history.svg
+  ic-leaderboard.svg
 ```
 
 Quy tắc tên:
@@ -144,6 +148,7 @@ API gợi ý:
 ```tsx
 type XqIconName =
   | 'arrow-left'
+  | 'bot'
   | 'chevron-left'
   | 'chevron-right'
   | 'close'
@@ -155,12 +160,15 @@ type XqIconName =
   | 'chat'
   | 'reaction'
   | 'flag'
+  | 'history'
   | 'exit-door'
+  | 'leaderboard'
   | 'send'
   | 'wifi-off'
   | 'warning'
   | 'check'
-  | 'owner';
+  | 'owner'
+  | 'ranked';
 
 <XqIcon name="chat" size={24} aria-hidden="true" />
 ```
@@ -185,6 +193,10 @@ Không dùng chuỗi tên icon nhận tùy ý từ server. Union/manifest là ng
 | `🚪` | `ic-exit-door.svg` | 24 | board action | Thoát bàn |
 | pagination glyph | `ic-chevron-left/right.svg` | 20 | room footer | Trang trước/sau |
 | refresh glyph | `ic-refresh.svg` | 20 | room footer | Làm mới danh sách |
+| trophy | `ic-ranked.svg` | 22/24 | CTA lobby | Chơi xếp hạng |
+| robot | `ic-bot.svg` | 22/24 | CTA lobby | Chơi với máy |
+| clock/history | `ic-history.svg` | 20 | shortcut lobby | Xem lịch sử đấu |
+| podium | `ic-leaderboard.svg` | 20 | shortcut lobby | Xem bảng xếp hạng |
 
 Reaction content (`❤️`, vỗ tay…) là một hệ asset riêng. Không dùng reaction face làm icon điều khiển nếu style/size khác hệ line icon.
 

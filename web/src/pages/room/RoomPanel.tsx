@@ -114,8 +114,9 @@ export function RoomPanel() {
         open={fullRoom != null}
         title={fullRoom?.title ?? ''}
         message={t('room.roomFull')}
-        confirmLabel={t('room.buyVip')}
-        cancelLabel={t('dialog.close')}
+        confirmLabel={t('dialog.close')}
+        cancelLabel={t('dialog.cancel')}
+        hideCancel
         onConfirm={() => setFullRoom(null)}
         onCancel={() => setFullRoom(null)}
       />

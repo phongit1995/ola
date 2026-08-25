@@ -66,15 +66,19 @@ type leaderboardRow struct {
 }
 
 type matchHistoryRow struct {
-	MatchID     string     `gorm:"column:match_id"`
-	PlayedAt    time.Time  `gorm:"column:played_at"`
-	Player0ID   uuid.UUID  `gorm:"column:player0_id"`
-	Player1ID   uuid.UUID  `gorm:"column:player1_id"`
-	WinnerID    *uuid.UUID `gorm:"column:winner_id"`
-	Player0Name string     `gorm:"column:player0_name"`
-	Player1Name string     `gorm:"column:player1_name"`
-	Bet         int        `gorm:"column:bet"`
-	KenDelta    int        `gorm:"column:ken_delta"`
+	MatchID       string     `gorm:"column:match_id"`
+	PlayedAt      time.Time  `gorm:"column:played_at"`
+	Player0ID     uuid.UUID  `gorm:"column:player0_id"`
+	Player1ID     uuid.UUID  `gorm:"column:player1_id"`
+	WinnerID      *uuid.UUID `gorm:"column:winner_id"`
+	Player0Name   string     `gorm:"column:player0_name"`
+	Player1Name   string     `gorm:"column:player1_name"`
+	Player0Vip    *string    `gorm:"column:player0_vip"`
+	Player1Vip    *string    `gorm:"column:player1_vip"`
+	Player0VipEnd *time.Time `gorm:"column:player0_vip_end"`
+	Player1VipEnd *time.Time `gorm:"column:player1_vip_end"`
+	Bet           int        `gorm:"column:bet"`
+	KenDelta      int        `gorm:"column:ken_delta"`
 }
 
 func normalizeLeaderboardPeriod(period string) string {
@@ -166,6 +170,13 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 	return data, nil
 }
 
+func activeVipType(vipType *string, vipEnd *time.Time) *string {
+	if vipEnd == nil || !vipEnd.After(time.Now()) {
+		return nil
+	}
+	return vipType
+}
+
 func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryData, error) {
 	data := protocol.MatchHistoryData{Items: []protocol.MatchHistoryEntry{}}
 	uid, err := uuid.Parse(userID)
@@ -178,7 +189,9 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 		Select(`game_matches.match_id, game_matches.finished_at AS played_at,
 			game_matches.player0_id, game_matches.player1_id, game_matches.winner_id,
 			game_matches.bet, game_matches.ken_delta,
-			player0.username AS player0_name, player1.username AS player1_name`).
+			player0.username AS player0_name, player1.username AS player1_name,
+			player0.vip_used AS player0_vip, player0.vip_end_time AS player0_vip_end,
+			player1.vip_used AS player1_vip, player1.vip_end_time AS player1_vip_end`).
 		Joins("LEFT JOIN users AS player0 ON player0.id = game_matches.player0_id").
 		Joins("LEFT JOIN users AS player1 ON player1.id = game_matches.player1_id").
 		Where(`game_matches.game_id = ? AND game_matches.status = ?
@@ -197,9 +210,11 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 	for i, row := range rows {
 		opponentID := row.Player1ID
 		opponentName := row.Player1Name
+		opponentVip := activeVipType(row.Player1Vip, row.Player1VipEnd)
 		if row.Player1ID == uid {
 			opponentID = row.Player0ID
 			opponentName = row.Player0Name
+			opponentVip = activeVipType(row.Player0Vip, row.Player0VipEnd)
 		}
 		if opponentName == "" {
 			opponentName = opponentID.String()[:8]
@@ -217,13 +232,14 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 			}
 		}
 		data.Items[i] = protocol.MatchHistoryEntry{
-			ID:           row.MatchID,
-			PlayedAt:     row.PlayedAt.UnixMilli(),
-			OpponentID:   opponentID.String(),
-			OpponentName: opponentName,
-			Bet:          row.Bet,
-			Outcome:      outcome,
-			KenDelta:     kenDelta,
+			ID:              row.MatchID,
+			PlayedAt:        row.PlayedAt.UnixMilli(),
+			OpponentID:      opponentID.String(),
+			OpponentName:    opponentName,
+			OpponentVipType: opponentVip,
+			Bet:             row.Bet,
+			Outcome:         outcome,
+			KenDelta:        kenDelta,
 		}
 	}
 	return data, nil

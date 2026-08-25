@@ -40,11 +40,12 @@ Hiện khi `lobbyPhase = 'loading' | 'connecting' | 'error'`, nằm trong LobbyS
 | Nút | Style | Hành vi |
 |---|---|---|
 | `Chơi xếp hạng` | CTA vàng 320×64, chữ navy 17/700 | `playRanked()` → mở S3, preload nhóm ranked |
+| `Chơi với máy` | CTA jade 320×48, chữ cream 16/700 | mở modal chọn Dễ/Vừa/Khó và bên Đỏ/Đen; chạy local, không cược |
 | `Lịch sử` | nút giấy kem viền navy 320×52 | mở S8 |
 | `Bảng xếp hạng` | nút giấy kem viền navy 320×52 | mở S9 |
 
-- v2 (chưa làm): `Chơi với máy` — chừa chỗ trong stack, không render.
-- Hover/focus: viền dày 2 px + translateY(-1); disabled khi `lobbyPhase !== 'ready'`.
+- Khi socket chưa kết nối hoặc lỗi, `Chơi với máy` vẫn dùng được vì không phụ thuộc game server.
+- Hover/focus: viền dày 2 px + translateY(-1); các CTA online disabled khi `lobbyPhase !== 'ready'`.
 
 ---
 
@@ -54,7 +55,7 @@ Full-screen đè lobby. Copy hành vi caro `RankedScreen.tsx`.
 
 ### 3.1 Bố cục
 - Header 56 px: nút back (trái), title `Bàn cờ tướng` 20/800, nút `Làm mới` (phải).
-- Bảng cột: `Chủ bàn | Ken cược | Tham gia` — header 10.5% từ đỉnh vùng list.
+- Bảng cột: `Chủ bàn | KEN cược | Tham gia` — header 10.5% từ đỉnh vùng list.
 - **9 hàng/trang cố định**, hàng cao 8.85% vùng list, absolute theo % (pattern caro, tránh reflow).
 - Footer: nút `Tạo bàn` (CTA vàng) giữa, phân trang ‹ › hai bên nếu > 9 bàn.
 
@@ -76,7 +77,7 @@ Full-screen đè lobby. Copy hành vi caro `RankedScreen.tsx`.
 
 ### 4a. Tạo bàn
 - Modal 330 px, radius 20, nền giấy kem, backdrop `--xq-overlay`.
-- Field `Ken cược`: input số, quick-chip `0 / 100 / 500 / 1K / 5K`; validate client (`roomCreationError`): `Số Ken cược không hợp lệ`, `Bạn không đủ Ken để tạo bàn` (so với `userInfo.ken`, trần `maxBet` từ USER_INFO).
+- Field `KEN cược`: input số, quick-chip `0 / 100 / 500 / 1K / 5K`; validate client (`roomCreationError`): `Số KEN cược không hợp lệ`, `Bạn không đủ KEN để tạo bàn` (so với `userInfo.ken`, trần `maxBet` từ USER_INFO).
 - Field `Mật khẩu (tùy chọn)`: ≤ 64 ký tự.
 - Nút `Tạo bàn` (CTA vàng, loading spinner khi `roomActionPending='creating'`) + `Hủy`.
 - Thành công: `ROOM_WAITING` → vào S5.
@@ -154,7 +155,7 @@ Modal lg 340 px trên backdrop, mở từ `MATCH_OVER` (giữ nguyên bàn phía
 ### 7.1 Nội dung
 - Banner kết quả: `THẮNG` (gold), `THUA` (mực), `HÒA` (kem) + minh họa quân 帥/將.
 - Dòng lý do: `Chiếu bí!` / `Đối thủ hết nước đi` / `Đối thủ đầu hàng` / `Hết giờ` / `Đối thủ mất kết nối` / `Thua do chiếu dai (luật lặp thế)` / `Ván hòa (lặp thế 3 lần)` / `Ván hòa (60 nước không ăn quân)` — map từ `reason` + step cuối (`mate.reason`, `draw.reason`).
-- KEN: `+{kenDelta}` jade / `−{bet}` đỏ / `Hòa — hoàn cược`.
+- KEN: `+{kenDelta}` jade / `−{bet}` đỏ / `Hòa — hoàn cược` khi có cược; ván cược `0` dùng nhãn `Ván giao hữu`.
 - Modal chỉ mở **sau** `RESULT_REVEAL_MS ≈ 1.1 s` kể từ khi bàn nhận nước kết thúc (khi `MATCH_OVER.state.steps` không rỗng), để người chơi thấy nước ăn quân/chiếu bí quyết định; forfeit/timeout/disconnect (steps rỗng) thì mở ngay. Âm win/lose phát lúc modal mở, âm capture/check phát ngay khi nước cuối lên bàn.
 - Nút: `Chơi lại` (về phòng chờ cùng bàn — `showWaitingRoom`, chỉ khi phòng còn) + `Đóng` (về S3).
 - `preserveOutcome`: ROOM_STATE về trước khi user đóng result thì vẫn giữ màn kết quả.
@@ -166,7 +167,7 @@ Modal lg 340 px trên backdrop, mở từ `MATCH_OVER` (giữ nguyên bàn phía
 - Full-screen, header back + title `Lịch sử đấu`.
 - `getHistory()` → list: mỗi hàng avatar đối thủ, tên, kết quả chip (Thắng jade/Thua đỏ/Hòa kem), ±KEN, lý do ngắn, `formatHistoryTime`.
 - ±KEN lấy `kenDelta` **có dấu** từ `HISTORY` (thắng = `bet − commission`, thua = `−bet`, hòa = `Hoàn cược`) — KHÔNG suy ra từ `bet` vì hoa hồng 5% làm thực nhận nhỏ hơn cược.
-- Tối đa `matchHistoryLimit = 100` hàng, empty state + skeleton loading. (Không có bot-history localStorage vì v1 không có bot.)
+- Tối đa `matchHistoryLimit = 100` hàng, empty state + skeleton loading. Ván luyện tập với máy không ghi lịch sử server hoặc localStorage.
 
 ---
 

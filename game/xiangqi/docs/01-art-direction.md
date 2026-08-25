@@ -28,7 +28,7 @@
 | `--xq-gold` | `#F2B807` | CTA chính, badge cược |
 | `--xq-gold-deep` | `#B98700` | viền/shadow CTA vàng |
 | `--xq-cream` | `#FFF6E3` | chữ trên nền gỗ, mặt quân |
-| `--xq-jade` | `#2E7D5B` | trạng thái thắng/sẵn sàng |
+| `--xq-jade` | `#216647` | trạng thái thắng/sẵn sàng; đủ tương phản cho chữ nhỏ trên paper |
 
 ### 2.2 Semantic tokens
 
@@ -40,7 +40,7 @@
 | `--xq-hint` | `#2E7D5B` 85% | chấm gợi ý nước đi |
 | `--xq-hint-capture` | `--xq-red` 85% | vòng gợi ý đè lên quân ăn được |
 | `--xq-last-move` | `#F2B807` 45% | ô from/to nước vừa đi |
-| `--xq-danger` | `#D64545` | Bỏ cuộc, lỗi, timer ≤10s |
+| `--xq-danger` | `#AD2934` | Bỏ cuộc, lỗi, timer ≤10s; đủ tương phản cho chữ nhỏ trên paper |
 | `--xq-overlay` | `#1F1A14` 62% | backdrop modal |
 
 ### 2.3 Quy tắc tương phản
@@ -125,8 +125,12 @@ Stroke 2 px, cap tròn, vẽ trên grid 24; bộ nhỏ 16 cho inline. Không ico
 | Timer ≤10 s | pulse màu `--xq-danger` mỗi 1 s |
 | KEN float ±  | bay lên 24 px + fade 900 ms (giống caro) |
 | Modal | fade backdrop 150 ms + pop 180 ms |
+| Screen entrance | fade + dịch 8–12 px, 240 ms |
+| Lobby/board choreography | stagger 35–50 ms giữa các khối chính |
+| Room/history/leaderboard rows | rise 10 px, 220 ms, stagger 24 ms tối đa 10 row |
+| Result | glyph settle 360 ms → title/summary rise, không particle |
 
-`prefers-reduced-motion`: tắt shake/pulse, quân nhảy thẳng vị trí, giữ fade ≤ 150 ms.
+`prefers-reduced-motion`: tắt shake/pulse/float/stagger, quân và screen về trạng thái cuối gần tức thời.
 
 ## 9. Âm thanh (WebAudio tổng hợp, không file)
 

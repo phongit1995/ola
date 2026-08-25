@@ -55,9 +55,9 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
           [帥] [將]
           CỜ TƯỚNG
 
-       [CHƠI XẾP HẠNG]
-       [Lịch sử đấu]
-       [Bảng xếp hạng]
+       [CHƠI XẾP HẠNG + mô tả]
+       [CHƠI VỚI MÁY + mô tả]
+       [Lịch sử] [Bảng xếp hạng]
 
           Thoát game
 ```
@@ -67,10 +67,11 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
 - Topbar cao tối thiểu 52; tên truncate tại 130 px ở 390.
 - KEN badge paper/navy; sound là icon button.
 - Logo title gold, không texture/text-shadow.
-- CTA Chơi xếp hạng là gold large, width tối đa 320 hoặc 86%.
-- Hai secondary button paper, cùng width và gap 16.
+- CTA Chơi xếp hạng là gold hero; Chơi với máy là jade hero, có icon tile + mô tả một dòng, width tối đa 326 hoặc 90%.
+- Hai secondary button paper nằm cùng một hàng, có icon 20 và label một dòng.
 - Exit là inline action hạ cấp ở đáy.
 - Margin logo dùng responsive clamp, không hardcode một giá trị chỉ đẹp ở 844 px cao.
+- Motion vào theo nhịp topbar → logo/glyph → hai CTA → shortcut; chỉ dùng opacity/transform và kết thúc trong khoảng nửa giây.
 
 ### Short height
 
@@ -91,16 +92,17 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
 
 - Room row paper/paper-dim xen kẽ.
 - Owner name navy, cược tabular, lock icon 16.
-- `Vào` dùng gold small nếu là action trực tiếp; full/locked state dùng neutral label hoặc vẫn mở password modal theo logic.
+- `Vào bàn` là paper/ink compact và gộp occupancy trong cùng button; full dùng neutral disabled. Gold toàn màn dành cho `Tạo bàn`.
 - Footer không đè list; có nền wood hoặc gradient scrim nhẹ nếu sticky.
 - Empty state dùng icon line 32 + text, không dùng illustration lớn.
 
 ### Responsive
 
-- 390+: grid `1fr 92px 118px`.
-- 360–389: `1fr 80px 104px`; rút gọn copy hợp lệ trước khi giảm font.
+- 390+: grid `1fr 86px 108px`.
+- 360–389: `1fr 70px 102px`; rút gọn copy hợp lệ trước khi giảm font.
 - Khi tên owner dài, ellipsis; không đẩy cược/action ra ngoài.
 - Số hàng visible được quyết định bởi chiều cao, nhưng row không thấp hơn 56.
+- Row stagger `24 ms`, tối đa 10 hàng; footer rise sau nhóm đầu. Refresh/page mới chỉ animate các row vừa mount.
 
 ## 5. S4 — Tạo bàn / Vào bàn khóa
 
@@ -123,6 +125,7 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
 - `Thoát bàn` paper ở bước đầu; confirm danger nếu hành động có hậu quả.
 - Trạng thái ready dùng chip jade + text; không chỉ vòng xanh quanh avatar.
 - Loading label không làm panel đổi width.
+- Backdrop fade, panel scale/rise nhẹ; hai seat vào tuần tự rồi mới tới nhóm action. Không animate lại chỉ vì ready state đổi.
 
 ## 7. S6 — Bàn chơi
 
@@ -141,6 +144,7 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
 - Opponent/my pod có cùng anatomy; active turn dùng gold border.
 - Action bar giảm tương phản so với board.
 - Overlay không được che thông tin lâu hơn cần thiết.
+- Entrance theo thứ tự pod đối thủ → status → board → pod của bạn → action bar; mọi phần vẫn tương tác được và không đổi geometry trong lúc animate.
 
 ### State styling
 
@@ -173,6 +177,7 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
 - Không dùng confetti/particle mặc định; nếu thêm celebration, phải code-native, thời lượng ngắn và reduced-motion tắt.
 - Chơi lại gold; Đóng paper.
 - Focus chuyển vào modal sau khi kết quả đã được announce; không đọc title/reason lặp.
+- Glyph pair vào lệch nhịp nhẹ, sau đó title và summary rise; không dùng particle, và reduced-motion hiển thị trạng thái cuối tức thời.
 
 ## 9. S8 — Lịch sử
 
@@ -182,6 +187,7 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
 - Outcome có text `Thắng/Thua/Hòa`, không chỉ màu.
 - Timestamp line tối thiểu `12.5/17`, không opacity dưới `.65` trên paper.
 - Empty/loading/error dùng pattern hệ thống.
+- Row mount dùng stagger ngắn; loading có spinner CSS kèm live text, empty dùng mark tĩnh sau reduced-motion.
 
 ## 10. S9 — Bảng xếp hạng
 
@@ -191,6 +197,7 @@ File này mô tả cách áp dụng style “Mộc bản thủ công” lên to�
 - Avatar/name flexible; thắng-thua là text; KEN net tabular.
 - Top 3 có thể dùng border/accent khác nhưng không đổi anatomy row và không thêm crown/particle ngẫu nhiên.
 - Keyboard arrow chuyển tab; list vẫn đọc theo thứ tự DOM.
+- Đổi period remount list để row choreography phản ánh đúng tập dữ liệu mới; tab active chỉ scale rất nhẹ, không trượt indicator qua layout.
 
 ## 11. Overlay matrix
 

@@ -87,6 +87,29 @@ export interface AuditLogListParams {
   offset?: number
 }
 
+export interface UsernameChangeItem {
+  id: string
+  user: { id: string; username: string; fullName?: string; avatar?: string }
+  oldUsername: string
+  newUsername: string
+  cost: number
+  actorType: 'user' | 'admin'
+  actorId?: string
+  actorUsername?: string
+  actorFullName?: string
+  createdAt: string
+}
+
+export interface UsernameChangeListParams {
+  userId?: string
+  q?: string
+  actorType?: 'user' | 'admin'
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
 export interface VipPurchaseHistory {
   id: string
   packageName: string

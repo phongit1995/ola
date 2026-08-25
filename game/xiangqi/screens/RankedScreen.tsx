@@ -4,6 +4,8 @@ import type { RoomInfo } from '../../src/sdk';
 import { ModalHeading } from '../components/ModalHeading';
 import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
+import { PodAvatar } from '../components/PodAvatar';
+import { useDialogFocus } from '../components/useDialogFocus';
 import { useXiangqi } from '../store/useXiangqi';
 
 const PAGE_SIZE = 9;
@@ -22,15 +24,19 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
   const [bet, setBet] = useState('0');
   const [password, setPassword] = useState('');
   const titleId = useId();
+  const close = () => {
+    if (!roomActionPending) onClose();
+  };
+  const modalRef = useDialogFocus<HTMLDivElement>({ onEscape: close });
 
   const submit = () => {
     const value = Number(bet);
     if (!Number.isInteger(value) || value < 0 || (userInfo?.maxBet != null && value > userInfo.maxBet)) {
-      showToast('Số Ken cược không hợp lệ');
+      showToast('Số KEN cược không hợp lệ');
       return;
     }
     if (value > ken) {
-      showToast('Bạn không đủ Ken để tạo bàn');
+      showToast('Bạn không đủ KEN để tạo bàn');
       return;
     }
     if (password.length > 64) {
@@ -41,22 +47,25 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="xq-backdrop" onClick={onClose}>
+    <div className="xq-backdrop" onClick={close}>
       <div
+        ref={modalRef}
         className="xq-modal xq-modal-form"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
       >
         <ModalHeading eyebrow="Mở phòng cờ" title="Tạo bàn" icon="owner" titleId={titleId} />
         <label className="xq-field">
-          <span>Ken cược</span>
+          <span>KEN cược</span>
           <input
             inputMode="numeric"
             value={bet}
             onChange={(event) => setBet(event.target.value.replace(/[^0-9]/g, ''))}
-            aria-label="Ken cược"
+            aria-label="KEN cược"
+            data-dialog-initial-focus
           />
         </label>
         <div className="xq-chip-row">
@@ -74,10 +83,17 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
         </div>
         <label className="xq-field">
           <span>Mật khẩu (tùy chọn)</span>
-          <input value={password} onChange={(event) => setPassword(event.target.value)} maxLength={64} aria-label="Mật khẩu" />
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            maxLength={64}
+            autoComplete="new-password"
+            aria-label="Mật khẩu"
+          />
         </label>
         <div className="xq-modal-actions">
-          <button type="button" className="xq-btn xq-btn-paper" onClick={onClose}>
+          <button type="button" className="xq-btn xq-btn-paper" onClick={close} disabled={roomActionPending === 'creating'}>
             Hủy
           </button>
           <button
@@ -101,13 +117,19 @@ function JoinLockedModal({ room, onClose }: { room: RoomInfo; onClose: () => voi
   );
   const [password, setPassword] = useState('');
   const titleId = useId();
+  const close = () => {
+    if (!roomActionPending) onClose();
+  };
+  const modalRef = useDialogFocus<HTMLDivElement>({ onEscape: close });
   return (
-    <div className="xq-backdrop" onClick={onClose}>
+    <div className="xq-backdrop" onClick={close}>
       <div
+        ref={modalRef}
         className="xq-modal xq-modal-form xq-modal-locked"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
       >
         <ModalHeading eyebrow="Bàn có mật khẩu" title={`Bàn của @${room.owner}`} icon="lock" titleId={titleId} />
@@ -118,11 +140,13 @@ function JoinLockedModal({ room, onClose }: { room: RoomInfo; onClose: () => voi
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             maxLength={64}
+            autoComplete="current-password"
             aria-label="Mật khẩu"
+            data-dialog-initial-focus
           />
         </label>
         <div className="xq-modal-actions">
-          <button type="button" className="xq-btn xq-btn-paper" onClick={onClose}>
+          <button type="button" className="xq-btn xq-btn-paper" onClick={close} disabled={roomActionPending === 'joining'}>
             Hủy
           </button>
           <button
@@ -177,18 +201,18 @@ export function RankedScreen() {
 
       <div className="xq-room-head">
         <span>Chủ bàn</span>
-        <span>Ken cược</span>
-        <span>Tham gia</span>
+        <span>KEN cược</span>
+        <span>Vào bàn</span>
       </div>
 
       <div className="xq-room-list">
-        {visible.length === 0 ? <div className="xq-empty">Chưa có bàn nào — tạo bàn mới nhé!</div> : null}
+        {visible.length === 0 ? <div className="xq-empty xq-empty-state">Chưa có bàn nào — tạo bàn mới nhé!</div> : null}
         {visible.map((room) => {
           const full = room.full || room.players >= (room.maxPlayers ?? 2);
           return (
             <div key={room.id} className="xq-room-row">
               <div className="xq-room-owner">
-                <div className="xq-pod-avatar xq-pod-avatar-red">{room.owner.slice(0, 1).toUpperCase()}</div>
+                <PodAvatar vipType={room.ownerVipType} tone="red" />
                 <span className="xq-room-owner-name">@{room.owner}</span>
                 {room.locked ? (
                   <span className="xq-room-lock" aria-label="Có mật khẩu">
@@ -207,14 +231,16 @@ export function RankedScreen() {
                 )}
               </div>
               <div className="xq-room-join">
-                <span className={`xq-chip ${full ? '' : 'xq-chip-jade'}`}>{room.players}/{room.maxPlayers ?? 2}</span>
                 <button
                   type="button"
-                  className="xq-btn xq-btn-gold xq-btn-small"
+                  className={`xq-btn xq-btn-small ${full ? 'xq-btn-room-full' : 'xq-btn-room-join'}`}
                   disabled={full || roomActionPending != null}
                   onClick={() => (room.locked ? setLockedRoom(room) : joinRoom(room.id, ''))}
                 >
-                  Tham gia
+                  <span>{full ? 'Đã đầy' : 'Vào bàn'}</span>
+                  <span className={`xq-room-count ${full ? '' : 'xq-room-count-open'}`}>
+                    {room.players}/{room.maxPlayers ?? 2}
+                  </span>
                 </button>
               </div>
             </div>

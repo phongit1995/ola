@@ -4,7 +4,7 @@ import { A, loadAssets, tex } from './assets';
 import { disposeAudio } from './audio';
 import { initKit } from './kit';
 import { installKeyboardDismiss } from './keyboard-dismiss';
-import { DESIGN_W } from './layout';
+import { DESIGN_W, renderResolution, watchDevicePixelRatio } from './layout';
 import { createSessionController } from './session-controller';
 import { updateRoomListUser } from './rooms';
 import { disposeChat } from './screens/battle/chat';
@@ -46,7 +46,7 @@ let safeBottom = 0;
 let ultimatePicker: UltimatePicker;
 
 function displayResolution(): number {
-  return Math.max(1, window.devicePixelRatio || 1);
+  return renderResolution(window.devicePixelRatio);
 }
 
 function setBootProgress(fraction: number): void {
@@ -88,6 +88,10 @@ function readSafeInsets(): void {
 }
 
 function layout(): void {
+  const resolution = displayResolution();
+  if (app.renderer.resolution !== resolution) {
+    app.renderer.resolution = resolution;
+  }
   if (battleChatFocused()) {
     markBattleRefit();
     return;
@@ -95,10 +99,6 @@ function layout(): void {
   readSafeInsets();
   const winW = window.innerWidth;
   const winH = window.innerHeight;
-  const resolution = displayResolution();
-  if (app.renderer.resolution !== resolution) {
-    app.renderer.resolution = resolution;
-  }
   const scale = Math.min(winW, DESIGN_W) / DESIGN_W;
   designH = winH / scale;
   const insetTop = Math.round(safeTop / scale);
@@ -202,8 +202,11 @@ async function main(): Promise<void> {
 
   layout();
   window.addEventListener('resize', layout);
+  const disposeResolutionWatcher = watchDevicePixelRatio(window, layout);
   window.addEventListener('pagehide', (event) => {
     if (event.persisted) return;
+    window.removeEventListener('resize', layout);
+    disposeResolutionWatcher();
     disposeKeyboardDismiss();
     disposeAudio();
     sessionController.dispose();

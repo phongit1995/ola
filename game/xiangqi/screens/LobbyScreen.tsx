@@ -1,6 +1,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
+import { PodAvatar } from '../components/PodAvatar';
 import { useXiangqi } from '../store/useXiangqi';
 
 export function LobbyScreen() {
@@ -13,6 +14,7 @@ export function LobbyScreen() {
     toggleSound,
     retryConnect,
     playRanked,
+    openBotSetup,
     showHistory,
     showLeaderboard,
     exitGame,
@@ -26,6 +28,7 @@ export function LobbyScreen() {
       toggleSound: s.toggleSound,
       retryConnect: s.retryConnect,
       playRanked: s.playRanked,
+      openBotSetup: s.openBotSetup,
       showHistory: s.showHistory,
       showLeaderboard: s.showLeaderboard,
       exitGame: s.exitGame,
@@ -37,8 +40,8 @@ export function LobbyScreen() {
       <div className="xq-topbar">
         {userInfo ? (
           <div className="xq-user">
-            <div className="xq-pod-avatar xq-pod-avatar-red">{userInfo.username.slice(0, 1).toUpperCase()}</div>
-            <span className="xq-user-name">{userInfo.username}</span>
+            <PodAvatar vipType={userInfo.vipType} tone="red" />
+            <span className="xq-user-name">@{userInfo.username}</span>
           </div>
         ) : (
           <div />
@@ -72,14 +75,33 @@ export function LobbyScreen() {
 
       {lobbyPhase === 'ready' ? (
         <div className="xq-cta-stack">
-          <button type="button" className="xq-btn xq-btn-gold xq-btn-big" onClick={playRanked}>
-            Chơi xếp hạng
+          <button type="button" className="xq-btn xq-btn-gold xq-btn-big xq-lobby-action" onClick={playRanked}>
+            <span className="xq-lobby-action-icon">
+              <XqIcon name="ranked" size={23} />
+            </span>
+            <span className="xq-lobby-action-copy">
+              <strong>Chơi xếp hạng</strong>
+              <small>Ghép bàn với người chơi</small>
+            </span>
+            <XqIcon name="chevron-right" size={19} className="xq-lobby-action-arrow" />
           </button>
-          <button type="button" className="xq-btn xq-btn-paper" onClick={showHistory}>
-            Lịch sử
+          <button type="button" className="xq-btn xq-btn-jade xq-lobby-action" onClick={openBotSetup}>
+            <span className="xq-lobby-action-icon">
+              <XqIcon name="bot" size={23} />
+            </span>
+            <span className="xq-lobby-action-copy">
+              <strong>Chơi với máy</strong>
+              <small>Chọn cấp độ và phe</small>
+            </span>
+            <XqIcon name="chevron-right" size={19} className="xq-lobby-action-arrow" />
           </button>
-          <button type="button" className="xq-btn xq-btn-paper" onClick={showLeaderboard}>
-            Bảng xếp hạng
+          <button type="button" className="xq-btn xq-btn-paper xq-lobby-shortcut" onClick={showHistory}>
+            <XqIcon name="history" size={20} />
+            <span>Lịch sử</span>
+          </button>
+          <button type="button" className="xq-btn xq-btn-paper xq-lobby-shortcut" onClick={showLeaderboard}>
+            <XqIcon name="leaderboard" size={20} />
+            <span>Bảng xếp hạng</span>
           </button>
         </div>
       ) : (
@@ -90,9 +112,17 @@ export function LobbyScreen() {
               <button type="button" className="xq-btn xq-btn-gold" onClick={retryConnect}>
                 Thử lại
               </button>
+              <button type="button" className="xq-btn xq-btn-jade" onClick={openBotSetup}>
+                Chơi với máy
+              </button>
             </>
           ) : (
-            <p>Đang kết nối...</p>
+            <>
+              <p>Đang kết nối...</p>
+              <button type="button" className="xq-btn xq-btn-paper" onClick={openBotSetup}>
+                Chơi với máy trong lúc chờ
+              </button>
+            </>
           )}
         </div>
       )}

@@ -95,7 +95,7 @@ Focus ring: outline gold 2 px offset 2. Disabled: opacity .45 + pointer-events n
 
 ## 15. ChatDrawer & ReactionPicker
 
-- Drawer đáy 45% màn, kéo xuống để đóng, list bubble (mình phải/kem, đối thủ trái/giấy), input + gửi; giữ 20 tin.
+- Drawer đáy responsive `360–500 px` (khoảng 54% baseline), có scrim bấm để đóng và `Esc`; header gỗ hiển thị phạm vi trong bàn, list có tên + giờ, bubble mình phải/vàng và đối thủ trái/giấy; input có bộ đếm 120 ký tự, giữ 20 tin.
 - ReactionPicker: popover 6 icon 40 (asset caro), balloon bay theo `useXiangqi.subscribe` ngoài render (pattern caro ReactionBalloons).
 
 ## 16. Accessibility checklist (mọi component)

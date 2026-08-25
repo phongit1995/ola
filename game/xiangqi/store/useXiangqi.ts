@@ -24,11 +24,15 @@ import { GAME_ID, START_BOARD } from '../logic/constants.gen';
 import { decodeServerState, type ServerMove, type ServerState } from '../logic/server-types';
 import { EMPTY, SIDE_RED, pieceSide } from '../logic/board';
 import { legalMovesFrom } from '../logic/moves';
+import { BOT_DIFFICULTY_LABEL, chooseBotMove, type BotDifficulty } from '../logic/bot';
+import { applyLocalMove, createLocalGame, type LocalGameResult, type LocalGameState } from '../logic/local-game';
 import { errorText } from '../helpers/errorText';
+import { avatarIconUrl, botAvatarIconUrl } from '../helpers/player';
 import { playSound, setSoundEnabled } from '../audio';
 
 export type LobbyPhase = 'loading' | 'connecting' | 'error' | 'ready';
 export type BoardMode = 'idle' | 'pregame' | 'playing';
+export type XiangqiGameMode = 'online' | 'bot';
 export type RoomActionPending = 'creating' | 'joining' | 'ready' | 'starting' | 'leaving' | 'kicking' | null;
 
 export interface PieceView {
@@ -41,6 +45,7 @@ export interface SeatInfo {
   id: string;
   name: string;
   side: number;
+  avatar: string;
 }
 
 export interface MatchResultState {
@@ -71,6 +76,11 @@ interface XiangqiState {
   userInfo: UserInfoData | null;
   ken: number;
   soundOn: boolean;
+  gameMode: XiangqiGameMode;
+  botSetupVisible: boolean;
+  botDifficulty: BotDifficulty;
+  botPlayerSide: number;
+  botThinking: boolean;
 
   rankedVisible: boolean;
   rooms: RoomInfo[];
@@ -109,15 +119,22 @@ interface XiangqiState {
   historyVisible: boolean;
   historyItems: MatchHistoryEntry[];
   historyLoading: boolean;
+  historyError: string | null;
   leaderboardVisible: boolean;
   leaderboardItems: LeaderboardEntry[];
   leaderboardPeriod: LeaderboardPeriod;
   leaderboardLoading: boolean;
+  leaderboardError: string | null;
 
   init(): Promise<void>;
+  dispose(): void;
   retryConnect(): void;
   toggleSound(): void;
   exitGame(): void;
+  openBotSetup(): void;
+  closeBotSetup(): void;
+  startBotGame(difficulty: BotDifficulty, playerSide: number): void;
+  restartBotGame(): void;
 
   playRanked(): void;
   closeRanked(): void;
@@ -143,8 +160,10 @@ interface XiangqiState {
   playAgain(): void;
 
   showHistory(): void;
+  retryHistory(): void;
   closeHistory(): void;
   showLeaderboard(): void;
+  retryLeaderboard(): void;
   setLeaderboardPeriod(period: LeaderboardPeriod): void;
   closeLeaderboard(): void;
 
@@ -158,7 +177,9 @@ const TURN_ANNOUNCE_MS = 1200;
 const TOAST_MS = 2400;
 // Let the closing move land on the board before the result modal covers it.
 const RESULT_REVEAL_MS = 1100;
+const REQUEST_TIMEOUT_MS = 8000;
 const CHAT_RESTORE_CODES = new Set(['CHAT_TOO_LONG', 'CHAT_RATE_LIMITED', 'INVALID_CHAT']);
+const STALE_ROOM_CODES = new Set(['NOT_ROOM_MEMBER', 'ROOM_NOT_FOUND', 'ROOM_MISMATCH']);
 
 type Session = GameSession<ServerState, ServerMove>;
 
@@ -209,17 +230,29 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
   const refs = {
     session: null as Session | null,
     connectPromise: null as Promise<void> | null,
+    connectCancel: null as (() => void) | null,
+    connectRun: 0,
+    hostKenOff: null as (() => void) | null,
     user: null as UserInfoData | null,
     match: null as MatchFoundData<ServerState> | null,
     matchBet: 0,
     serverState: null as ServerState | null,
     handledMatchIds: new Set<string>(),
-    exitingMatch: false,
+    exitingMatchId: null as string | null,
+    pendingResultMatchId: null as string | null,
+    acceptBufferedResult: false,
+    opponentAwayDeadline: null as number | null,
     roomConnectionLost: false,
     timer: 0 as ReturnType<typeof setInterval> | 0,
     announceTimer: 0 as ReturnType<typeof setTimeout> | 0,
     toastTimer: 0 as ReturnType<typeof setTimeout> | 0,
     resultTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    botTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    historyTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    leaderboardTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    transientTimers: new Set<ReturnType<typeof setTimeout>>(),
+    botGame: null as LocalGameState | null,
+    botRun: 0,
     reactionSeq: 0,
     lastChatText: '',
   };
@@ -239,9 +272,244 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     refs.timer = 0;
   };
 
-  const cancelResultReveal = () => {
+  const cancelResultReveal = (clearPending = true) => {
     if (refs.resultTimer) clearTimeout(refs.resultTimer);
     refs.resultTimer = 0;
+    if (clearPending) refs.pendingResultMatchId = null;
+  };
+
+  const cancelBotTurn = () => {
+    if (refs.botTimer) clearTimeout(refs.botTimer);
+    refs.botTimer = 0;
+  };
+
+  const clearHistoryTimer = () => {
+    if (refs.historyTimer) clearTimeout(refs.historyTimer);
+    refs.historyTimer = 0;
+  };
+
+  const clearLeaderboardTimer = () => {
+    if (refs.leaderboardTimer) clearTimeout(refs.leaderboardTimer);
+    refs.leaderboardTimer = 0;
+  };
+
+  const scheduleTransient = (handler: () => void, delay: number) => {
+    const timer = setTimeout(() => {
+      refs.transientTimers.delete(timer);
+      handler();
+    }, delay);
+    refs.transientTimers.add(timer);
+  };
+
+  const clearTransientTimers = () => {
+    refs.transientTimers.forEach((timer) => clearTimeout(timer));
+    refs.transientTimers.clear();
+  };
+
+  const resultInteractionBlocked = () =>
+    refs.resultTimer !== 0 || refs.pendingResultMatchId != null || get().result != null;
+
+  const botResultText = (result: LocalGameResult, humanSide: number): string => {
+    const won = result.winner === humanSide;
+    switch (result.reason) {
+      case 'checkmate':
+        return won ? 'Chiếu bí! Bạn thắng máy' : 'Máy đã chiếu bí';
+      case 'stalemate':
+        return won ? 'Máy hết nước đi' : 'Bạn hết nước đi';
+      case 'perpetual':
+        return won ? 'Máy chiếu dai — phạm luật lặp thế' : 'Bạn chiếu dai — phạm luật lặp thế';
+      case 'halfmove':
+        return 'Ván hòa — 60 nước không ăn quân';
+      case 'repetition':
+        return 'Ván hòa — lặp thế 3 lần';
+    }
+  };
+
+  const finishBotGame = (result: LocalGameResult, immediate = false, reasonOverride?: string) => {
+    cancelBotTurn();
+    cancelResultReveal();
+    const humanSide = refs.botGame ? get().botPlayerSide : SIDE_RED;
+    const outcome: MatchResultState['outcome'] = result.winner == null ? 'draw' : result.winner === humanSide ? 'win' : 'lose';
+    set({
+      botThinking: false,
+      myTurn: false,
+      movePending: false,
+      selected: null,
+      hints: [],
+      turnExpired: false,
+      chatOpen: false,
+      notice: null,
+    });
+    const matchSeq = get().matchSeq;
+    const reveal = () => {
+      refs.resultTimer = 0;
+      if (get().gameMode !== 'bot' || get().matchSeq !== matchSeq) return;
+      playSound(outcome === 'draw' ? 'place' : outcome === 'win' ? 'win' : 'lose');
+      set({
+        result: {
+          matchId: `bot-${matchSeq}`,
+          outcome,
+          kenDelta: 0,
+          reasonText: reasonOverride ?? botResultText(result, humanSide),
+        },
+      });
+    };
+    if (immediate) reveal();
+    else refs.resultTimer = setTimeout(reveal, RESULT_REVEAL_MS);
+  };
+
+  const applyBotGameMove = (side: number, from: number, to: number) => {
+    const game = refs.botGame;
+    if (!game || get().gameMode !== 'bot') return;
+    let applied: ReturnType<typeof applyLocalMove>;
+    try {
+      applied = applyLocalMove(game, side, from, to);
+    } catch {
+      set({ movePending: false });
+      get().showToast(side === get().botPlayerSide ? 'Nước đi không hợp lệ' : 'Máy không tìm được nước đi hợp lệ');
+      return;
+    }
+    refs.botGame = applied.state;
+    const nextSide = applied.state.moveCount % 2;
+    const humanTurn = nextSide === get().botPlayerSide;
+    set((state) => ({
+      board: applied.state.board,
+      pieces: advancePieces(state.pieces, applied.state.board, from, to),
+      lastFrom: from,
+      lastTo: to,
+      selected: null,
+      hints: [],
+      movePending: false,
+      botThinking: false,
+      myTurn: humanTurn,
+      checkSeq: applied.checked ? state.checkSeq + 1 : state.checkSeq,
+    }));
+    playSound(applied.captured !== EMPTY ? 'capture' : 'place');
+    if (applied.checked) playSound('check');
+    if (applied.state.result) {
+      finishBotGame(applied.state.result);
+      return;
+    }
+    if (humanTurn) announce('ĐẾN LƯỢT BẠN');
+    else scheduleBotTurn();
+  };
+
+  function scheduleBotTurn() {
+    cancelBotTurn();
+    const game = refs.botGame;
+    if (!game || game.result || get().gameMode !== 'bot') return;
+    const botSide = 1 - get().botPlayerSide;
+    if (game.moveCount % 2 !== botSide) return;
+    const run = refs.botRun;
+    const difficulty = get().botDifficulty;
+    const delay = difficulty === 'easy' ? 360 : difficulty === 'medium' ? 520 : 680;
+    set({ botThinking: true, myTurn: false, selected: null, hints: [] });
+    refs.botTimer = setTimeout(() => {
+      refs.botTimer = 0;
+      if (run !== refs.botRun || get().gameMode !== 'bot' || refs.botGame !== game) return;
+      const move = chooseBotMove(game.board, botSide, difficulty);
+      if (!move) {
+        const terminal = game.check ? 'checkmate' : 'stalemate';
+        finishBotGame({ winner: get().botPlayerSide, reason: terminal });
+        return;
+      }
+      applyBotGameMove(botSide, move.from, move.to);
+    }, delay);
+  }
+
+  const startLocalBotGame = (difficulty: BotDifficulty, requestedSide: number) => {
+    cancelBotTurn();
+    cancelResultReveal();
+    stopTimer();
+    refs.botRun++;
+    refs.botGame = createLocalGame();
+    refs.match = null;
+    refs.serverState = null;
+    refs.exitingMatchId = null;
+    refs.acceptBufferedResult = false;
+    refs.opponentAwayDeadline = null;
+    const playerSide = requestedSide === 1 ? 1 : SIDE_RED;
+    const matchSeq = get().matchSeq + 1;
+    const username = get().userInfo?.username || 'Bạn';
+    set({
+      gameMode: 'bot',
+      botSetupVisible: false,
+      botDifficulty: difficulty,
+      botPlayerSide: playerSide,
+      botThinking: false,
+      boardMode: 'playing',
+      lobbyVisible: false,
+      rankedVisible: false,
+      historyVisible: false,
+      leaderboardVisible: false,
+      roomWaiting: null,
+      board: [...START_BOARD],
+      pieces: buildPieces([...START_BOARD]),
+      lastFrom: -1,
+      lastTo: -1,
+      selected: null,
+      hints: [],
+      checkSeq: 0,
+      me: {
+        id: get().userInfo?.id ?? 'local-player',
+        name: username,
+        side: playerSide,
+        avatar: avatarIconUrl(get().userInfo?.vipType),
+      },
+      op: {
+        id: 'local-bot',
+        name: `Máy · ${BOT_DIFFICULTY_LABEL[difficulty]}`,
+        side: 1 - playerSide,
+        avatar: botAvatarIconUrl(difficulty),
+      },
+      myTurn: playerSide === SIDE_RED,
+      movePending: false,
+      deadline: 0,
+      timerLeftMs: 0,
+      turnExpired: false,
+      turnAnnounce: null,
+      bet: 0,
+      matchSeq,
+      oppAway: null,
+      messages: [],
+      chatOpen: false,
+      chatUnread: false,
+      reactionFloats: [],
+      result: null,
+      notice: null,
+    });
+    playSound('place');
+    if (playerSide === SIDE_RED) announce('ĐẾN LƯỢT BẠN');
+    else scheduleBotTurn();
+  };
+
+  const leaveBotToLobby = () => {
+    cancelBotTurn();
+    cancelResultReveal();
+    refs.botRun++;
+    refs.botGame = null;
+    refs.match = null;
+    refs.serverState = null;
+    refs.exitingMatchId = null;
+    refs.acceptBufferedResult = false;
+    refs.opponentAwayDeadline = null;
+    set({
+      gameMode: 'online',
+      botThinking: false,
+      botSetupVisible: false,
+      boardMode: 'idle',
+      lobbyVisible: true,
+      rankedVisible: false,
+      selected: null,
+      hints: [],
+      movePending: false,
+      turnExpired: false,
+      turnAnnounce: null,
+      me: null,
+      op: null,
+      result: null,
+      notice: null,
+    });
   };
 
   const startTimer = () => {
@@ -267,20 +535,36 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     const you = refs.match?.you ?? 0;
     const myTurn = turn === you;
     const left = Math.max(0, deadline - Date.now());
-    set({ myTurn, deadline, timerLeftMs: left, turnExpired: deadline > 0 && left === 0 });
+    set({
+      myTurn,
+      deadline,
+      timerLeftMs: left,
+      turnExpired: deadline > 0 && left === 0,
+      // The server pauses only when the disconnected opponent owns the turn.
+      // Let the local player finish an already-running turn before locking.
+      oppAway: myTurn ? null : refs.opponentAwayDeadline,
+    });
     bridge.turnChanged({ yourTurn: myTurn, deadline });
     if (!silent) announce(myTurn ? 'ĐẾN LƯỢT BẠN' : 'ĐẾN LƯỢT ĐỐI THỦ');
   };
 
   const backToRanked = () => {
+    cancelBotTurn();
     refs.match = null;
     refs.serverState = null;
+    refs.botGame = null;
+    refs.exitingMatchId = null;
+    refs.acceptBufferedResult = false;
+    refs.opponentAwayDeadline = null;
     stopTimer();
     cancelResultReveal();
     set({
+      gameMode: 'online',
+      botThinking: false,
       boardMode: 'idle',
       roomWaiting: null,
       rankedVisible: true,
+      lobbyVisible: false,
       selected: null,
       hints: [],
       movePending: false,
@@ -291,17 +575,35 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       chatUnread: false,
       chatRestore: null,
       result: null,
+      notice: null,
     });
     refs.session?.listRooms();
   };
 
   const enterWaitingRoom = (room: RoomStateData) => {
+    const current = get();
+    const resultMatchId = current.result?.matchId ?? null;
+    const pendingMatchId = refs.pendingResultMatchId;
+    const followsPendingResult =
+      pendingMatchId != null && (room.afterMatchId == null || room.afterMatchId === pendingMatchId);
+    const followsVisibleResult =
+      resultMatchId != null && (room.afterMatchId == null || room.afterMatchId === resultMatchId);
+    const hasTrackedOutcome = pendingMatchId != null || resultMatchId != null;
+    // Ordinary room updates must never tear down a live match. A post-match
+    // snapshot is accepted only for the outcome currently being revealed.
+    if (refs.match && current.boardMode === 'playing' && !hasTrackedOutcome) return;
+    if (hasTrackedOutcome && room.afterMatchId != null && !followsPendingResult && !followsVisibleResult) return;
+    cancelBotTurn();
     refs.match = null;
     refs.serverState = null;
+    refs.botGame = null;
+    refs.opponentAwayDeadline = null;
     stopTimer();
-    const preserveOutcome = get().result != null;
+    const preserveOutcome = current.result != null || followsPendingResult;
     set({
       roomWaiting: room,
+      gameMode: 'online',
+      botThinking: false,
       rankedVisible: false,
       selected: null,
       hints: [],
@@ -323,6 +625,9 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
   };
 
   const wireSession = (target: Session) => {
+    // OnConnect sends USER_INFO, an optional buffered MATCH_OVER, then ROOM_SYNC.
+    // Keep this narrow window open only for that reconnect sequence.
+    refs.acceptBufferedResult = true;
     const guard = <T>(handler: (data: T) => void) => (data: T) => {
       if (refs.session !== target) return;
       handler(data);
@@ -357,27 +662,34 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     );
     target.onRoomSync(
       guard((data) => {
-        if (!data.roomId && get().boardMode === 'pregame') backToRanked();
+        refs.acceptBufferedResult = false;
+        if (data.roomId) return;
+        set({ roomWaiting: null, notice: null });
+        if (resultInteractionBlocked()) return;
+        if (get().boardMode === 'pregame') backToRanked();
       }),
     );
     target.onRoomClosed(
-      guard(() => {
-        if (get().boardMode !== 'playing') {
-          get().showToast('Bàn đã đóng');
-          backToRanked();
-        }
+      guard((data) => {
+        if (get().roomWaiting?.roomId !== data.roomId) return;
+        set({ roomWaiting: null, notice: null });
+        get().showToast('Bàn đã đóng');
+        if (!resultInteractionBlocked() && get().boardMode !== 'playing') backToRanked();
       }),
     );
     target.onRoomKicked(
-      guard(() => {
+      guard((data) => {
+        if (get().roomWaiting?.roomId !== data.roomId) return;
+        set({ roomWaiting: null, notice: null });
         get().showToast('Bạn đã bị mời khỏi bàn');
         bridge.attention({ reason: ARCADE_ATTENTION_REASON.RoomKicked });
-        backToRanked();
+        if (!resultInteractionBlocked() && get().boardMode !== 'playing') backToRanked();
       }),
     );
 
     target.onMatchFound(
       guard((data: MatchFoundData<ServerState>) => {
+        if (refs.handledMatchIds.has(`over:${data.matchId}`)) return;
         if (!data.resumed && !rememberMatchId(`found:${data.matchId}`)) return;
         let serverState: ServerState;
         try {
@@ -385,16 +697,24 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         } catch {
           return;
         }
+        cancelBotTurn();
+        refs.botRun++;
+        refs.botGame = null;
         refs.match = data;
         refs.matchBet = data.bet ?? get().roomWaiting?.bet ?? 0;
         refs.serverState = serverState;
-        refs.exitingMatch = false;
+        refs.exitingMatchId = null;
+        refs.acceptBufferedResult = false;
+        refs.opponentAwayDeadline = null;
         cancelResultReveal();
         const you = data.you;
         const players = data.players ?? [];
         const meInfo = players[you];
         const opInfo = players[1 - you];
         set({
+          gameMode: 'online',
+          botSetupVisible: false,
+          botThinking: false,
           boardMode: 'playing',
           rankedVisible: false,
           lobbyVisible: false,
@@ -406,8 +726,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           hints: [],
           movePending: false,
           bet: refs.matchBet,
-          me: meInfo ? { id: meInfo.id, name: meInfo.name, side: you } : null,
-          op: opInfo ? { id: opInfo.id, name: opInfo.name, side: 1 - you } : null,
+          me: meInfo ? { id: meInfo.id, name: meInfo.name, side: you, avatar: avatarIconUrl(meInfo.vipType) } : null,
+          op: opInfo ? { id: opInfo.id, name: opInfo.name, side: 1 - you, avatar: avatarIconUrl(opInfo.vipType) } : null,
           matchSeq: get().matchSeq + 1,
           oppAway: null,
           result: null,
@@ -458,7 +778,24 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
 
     target.onMatchOver(
       guard((data: MatchOverData<ServerState>) => {
+        const currentMatchId = refs.match?.matchId ?? null;
+        const exiting = refs.exitingMatchId === data.matchId;
+        const bufferedReconnectResult =
+          get().boardMode === 'idle' &&
+          currentMatchId == null &&
+          refs.acceptBufferedResult &&
+          refs.pendingResultMatchId == null &&
+          get().result == null;
+        if (
+          get().gameMode !== 'online' ||
+          (!exiting && currentMatchId !== data.matchId && !bufferedReconnectResult)
+        ) {
+          return;
+        }
+        if (bufferedReconnectResult) refs.acceptBufferedResult = false;
         if (!rememberMatchId(`over:${data.matchId}`)) return;
+        refs.opponentAwayDeadline = null;
+        refs.match = null;
         stopTimer();
         cancelResultReveal();
         let finalState: ServerState | null = null;
@@ -467,15 +804,20 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         } catch {
           finalState = null;
         }
-        const finalSteps = finalState?.steps ?? [];
+        // Timeout/forfeit/disconnect snapshots retain the preceding move's steps.
+        // Replaying those steps here would animate and sound the same move twice.
+        const hasClosingMove = data.reason === 'win' || data.reason === 'draw';
+        const finalSteps = hasClosingMove ? (finalState?.steps ?? []) : [];
         if (finalState) {
           const state = finalState;
           const checked = finalSteps.some((step) => step.kind === 'check');
           set((prev) => ({
             board: state.board,
-            pieces: advancePieces(prev.pieces, state.board, state.lastFrom, state.lastTo),
-            lastFrom: state.lastFrom,
-            lastTo: state.lastTo,
+            pieces: hasClosingMove
+              ? advancePieces(prev.pieces, state.board, state.lastFrom, state.lastTo)
+              : buildPieces(state.board),
+            lastFrom: hasClosingMove ? state.lastFrom : prev.lastFrom,
+            lastTo: hasClosingMove ? state.lastTo : prev.lastTo,
             checkSeq: checked ? prev.checkSeq + 1 : prev.checkSeq,
           }));
           if (finalSteps.some((step) => step.kind === 'capture')) playSound('capture');
@@ -486,6 +828,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         const draw = data.reason === 'draw';
         const won = !draw && data.winnerId != null && data.winnerId === myId;
         const bet = data.bet ?? refs.matchBet;
+        refs.matchBet = bet;
         const winnerPayout = data.payout ?? bet * 2;
         const winnerNet = data.kenDelta ?? winnerPayout - bet;
         const kenDelta = draw ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
@@ -506,22 +849,29 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
         bridge.refreshUser();
         set({
+          bet,
           myTurn: false,
           movePending: false,
           turnExpired: false,
           selected: null,
           hints: [],
           oppAway: null,
+          chatOpen: false,
+          notice: null,
         });
-        if (refs.exitingMatch) {
-          refs.exitingMatch = false;
+        if (exiting) {
+          refs.exitingMatchId = null;
           backToRanked();
           return;
         }
         const matchSeq = get().matchSeq;
         const reveal = () => {
           refs.resultTimer = 0;
-          if (get().matchSeq !== matchSeq) return;
+          if (get().matchSeq !== matchSeq) {
+            if (refs.pendingResultMatchId === data.matchId) refs.pendingResultMatchId = null;
+            return;
+          }
+          if (refs.pendingResultMatchId === data.matchId) refs.pendingResultMatchId = null;
           playSound(draw ? 'place' : won ? 'win' : 'lose');
           set({
             result: {
@@ -532,7 +882,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
             },
           });
         };
-        if (finalSteps.length > 0) {
+        if (hasClosingMove && finalSteps.length > 0) {
+          refs.pendingResultMatchId = data.matchId;
           refs.resultTimer = setTimeout(reveal, RESULT_REVEAL_MS);
         } else {
           reveal();
@@ -559,7 +910,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         refs.reactionSeq += 1;
         const float: ReactionFloat = { seq: refs.reactionSeq, type: data.type, mine: data.userId === refs.user?.id };
         set((state) => ({ reactionFloats: [...state.reactionFloats.slice(-4), float] }));
-        setTimeout(() => {
+        scheduleTransient(() => {
           set((state) => ({ reactionFloats: state.reactionFloats.filter((item) => item.seq !== float.seq) }));
         }, 2600);
       }),
@@ -567,42 +918,81 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
 
     target.onError(
       guard((data) => {
+        const message = errorText(data.code);
         set({ roomActionPending: null, movePending: false });
         // Give the rejected draft back instead of silently eating what was typed.
         if (CHAT_RESTORE_CODES.has(data.code) && refs.lastChatText) {
           set({ chatRestore: refs.lastChatText });
           refs.lastChatText = '';
         }
-        get().showToast(errorText(data.code));
+        if (STALE_ROOM_CODES.has(data.code) && get().roomWaiting && !refs.match) {
+          set({ roomWaiting: null });
+          get().showToast(message);
+          if (resultInteractionBlocked()) return;
+          backToRanked();
+          return;
+        }
+        get().showToast(message);
       }),
     );
 
     target.onHistory(
       guard((data) => {
-        set({ historyItems: data.items ?? [], historyLoading: false });
+        clearHistoryTimer();
+        const message = data.error?.trim() || null;
+        set({ historyItems: message ? [] : data.items ?? [], historyLoading: false, historyError: message });
+        if (message) get().showToast(message);
       }),
     );
 
     target.onLeaderboard(
       guard((data) => {
         if (data.period !== get().leaderboardPeriod) return;
-        set({ leaderboardItems: data.items ?? [], leaderboardLoading: false });
+        clearLeaderboardTimer();
+        const message = data.error?.trim() || null;
+        set({ leaderboardItems: message ? [] : data.items ?? [], leaderboardLoading: false, leaderboardError: message });
+        if (message) get().showToast(message);
       }),
     );
 
     target.onOpponentDisconnected(guard((data) => {
-      set({ oppAway: data.graceDeadline });
+      if (resultInteractionBlocked()) return;
+      refs.opponentAwayDeadline = data.graceDeadline;
+      set({ oppAway: get().myTurn ? null : data.graceDeadline });
       bridge.attention({ reason: ARCADE_ATTENTION_REASON.OpponentDisconnected });
     }));
-    target.onOpponentReconnected(guard(() => set({ oppAway: null })));
+    target.onOpponentReconnected(guard((data) => {
+      if (resultInteractionBlocked()) return;
+      const previous = get();
+      refs.opponentAwayDeadline = null;
+      set({ oppAway: null });
+      if (
+        previous.gameMode === 'online' &&
+        previous.boardMode === 'playing' &&
+        Number.isInteger(data?.turn) &&
+        typeof data?.deadline === 'number' &&
+        Number.isFinite(data.deadline)
+      ) {
+        const turn = data!.turn!;
+        const myTurn = turn === (refs.match?.you ?? 0);
+        const alreadyApplied =
+          previous.oppAway == null &&
+          previous.myTurn === myTurn &&
+          previous.deadline === data.deadline &&
+          !previous.turnExpired;
+        if (!alreadyApplied) applyTurn(turn, data.deadline, true);
+      }
+    }));
 
     target.onConnectionChange(
       guard((connected: boolean) => {
         if (!connected) {
+          refs.acceptBufferedResult = false;
           if (get().boardMode === 'pregame') refs.roomConnectionLost = true;
           if (get().lobbyPhase === 'ready') get().showToast('Mất kết nối, đang thử lại...');
           return;
         }
+        refs.acceptBufferedResult = true;
         if (refs.roomConnectionLost) {
           refs.roomConnectionLost = false;
           if (get().boardMode === 'pregame') {
@@ -610,42 +1000,121 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
             backToRanked();
           }
         }
+        if (get().rankedVisible) target.listRooms();
       }),
     );
   };
 
   const connectToServer = (): Promise<void> => {
     if (refs.connectPromise) return refs.connectPromise;
+    if (refs.session && get().lobbyPhase === 'ready') return Promise.resolve();
+    const run = ++refs.connectRun;
     set({ lobbyPhase: 'connecting', lobbyError: '' });
-    refs.connectPromise = (async () => {
+    let task!: Promise<void>;
+    task = (async () => {
+      let session: Session | null = null;
       try {
-        const session = await joinGame<ServerState, ServerMove>(GAME_ID);
-        refs.session = session;
-        wireSession(session);
+        session = await joinGame<ServerState, ServerMove>(GAME_ID);
+        if (run !== refs.connectRun) {
+          session.disconnect();
+          return;
+        }
+        const connectedSession = session;
+        refs.session = connectedSession;
+        wireSession(connectedSession);
         await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('timeout')), 8000);
-          const offInfo = session.onUserInfo(() => {
-            clearTimeout(timeout);
+          let timeout: ReturnType<typeof setTimeout> | 0 = 0;
+          let offInfo: () => void = () => {};
+          let offErr: () => void = () => {};
+          let cancel = () => {};
+          const cleanup = () => {
+            if (timeout) clearTimeout(timeout);
+            timeout = 0;
             offInfo();
+            offErr();
+            if (refs.connectCancel === cancel) refs.connectCancel = null;
+          };
+          cancel = () => {
+            cleanup();
+            reject(new Error('cancelled'));
+          };
+          refs.connectCancel = cancel;
+          offInfo = connectedSession.onUserInfo(() => {
+            cleanup();
             resolve();
           });
-          const offErr = session.onConnectionError((error) => {
-            clearTimeout(timeout);
-            offErr();
+          offErr = connectedSession.onConnectionError((error) => {
+            if (
+              !(error instanceof GameAuthenticationRequiredError) &&
+              !(error instanceof GameAuthenticationExpiredError)
+            ) {
+              return;
+            }
+            cleanup();
             reject(error);
           });
+          timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error('timeout'));
+          }, REQUEST_TIMEOUT_MS);
         });
       } catch (error) {
-        refs.connectPromise = null;
+        session?.disconnect();
+        if (refs.session === session) refs.session = null;
+        if (run !== refs.connectRun) return;
+        refs.user = null;
         const message =
           error instanceof GameAuthenticationRequiredError || error instanceof GameAuthenticationExpiredError
             ? 'Phiên đăng nhập hết hạn, hãy mở lại game'
             : 'Không kết nối được máy chủ';
-        set({ lobbyPhase: 'error', lobbyError: message });
+        set({ lobbyPhase: 'error', lobbyError: message, userInfo: null });
         throw error;
+      } finally {
+        if (refs.connectPromise === task) refs.connectPromise = null;
       }
     })();
-    return refs.connectPromise;
+    refs.connectPromise = task;
+    return task;
+  };
+
+  const requestHistory = () => {
+    clearHistoryTimer();
+    set({ historyLoading: true, historyError: null });
+    const session = refs.session;
+    if (!session) {
+      const message = 'Chưa kết nối được máy chủ';
+      set({ historyLoading: false, historyError: message });
+      get().showToast(message);
+      return;
+    }
+    session.getHistory();
+    refs.historyTimer = setTimeout(() => {
+      refs.historyTimer = 0;
+      if (!get().historyLoading) return;
+      const message = 'Không tải được lịch sử, hãy thử lại';
+      set({ historyLoading: false, historyError: message });
+      get().showToast(message);
+    }, REQUEST_TIMEOUT_MS);
+  };
+
+  const requestLeaderboard = (period: LeaderboardPeriod) => {
+    clearLeaderboardTimer();
+    set({ leaderboardLoading: true, leaderboardError: null });
+    const session = refs.session;
+    if (!session) {
+      const message = 'Chưa kết nối được máy chủ';
+      set({ leaderboardLoading: false, leaderboardError: message });
+      get().showToast(message);
+      return;
+    }
+    session.getLeaderboard(period);
+    refs.leaderboardTimer = setTimeout(() => {
+      refs.leaderboardTimer = 0;
+      if (!get().leaderboardLoading || get().leaderboardPeriod !== period) return;
+      const message = 'Không tải được bảng xếp hạng, hãy thử lại';
+      set({ leaderboardLoading: false, leaderboardError: message });
+      get().showToast(message);
+    }, REQUEST_TIMEOUT_MS);
   };
 
   return {
@@ -655,6 +1124,11 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     userInfo: null,
     ken: 0,
     soundOn: localStorage.getItem(SOUND_KEY) !== '0',
+    gameMode: 'online',
+    botSetupVisible: false,
+    botDifficulty: 'medium',
+    botPlayerSide: SIDE_RED,
+    botThinking: false,
 
     rankedVisible: false,
     rooms: [],
@@ -693,14 +1167,17 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     historyVisible: false,
     historyItems: [],
     historyLoading: false,
+    historyError: null,
     leaderboardVisible: false,
     leaderboardItems: [],
     leaderboardPeriod: 'day',
     leaderboardLoading: false,
+    leaderboardError: null,
 
     async init() {
       setSoundEnabled(get().soundOn);
-      bridge.onHost(ARCADE_BRIDGE_EVENT.KenUpdated, (data) => {
+      refs.hostKenOff?.();
+      refs.hostKenOff = bridge.onHost(ARCADE_BRIDGE_EVENT.KenUpdated, (data) => {
         const ken = Number((data as { ken?: unknown } | null)?.ken);
         if (Number.isFinite(ken)) set({ ken });
       });
@@ -712,8 +1189,83 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       }
     },
 
-    retryConnect() {
+    dispose() {
+      refs.connectRun++;
+      refs.connectCancel?.();
+      refs.connectCancel = null;
       refs.connectPromise = null;
+      const session = refs.session;
+      refs.session = null;
+      session?.disconnect();
+      refs.hostKenOff?.();
+      refs.hostKenOff = null;
+      refs.user = null;
+      refs.match = null;
+      refs.matchBet = 0;
+      refs.serverState = null;
+      refs.botGame = null;
+      refs.exitingMatchId = null;
+      refs.acceptBufferedResult = false;
+      refs.opponentAwayDeadline = null;
+      refs.roomConnectionLost = false;
+      refs.lastChatText = '';
+      refs.handledMatchIds.clear();
+      refs.botRun++;
+      stopTimer();
+      cancelBotTurn();
+      cancelResultReveal();
+      clearHistoryTimer();
+      clearLeaderboardTimer();
+      clearTransientTimers();
+      if (refs.announceTimer) clearTimeout(refs.announceTimer);
+      if (refs.toastTimer) clearTimeout(refs.toastTimer);
+      refs.announceTimer = 0;
+      refs.toastTimer = 0;
+      set({
+        lobbyVisible: true,
+        lobbyPhase: 'loading',
+        lobbyError: '',
+        userInfo: null,
+        gameMode: 'online',
+        botSetupVisible: false,
+        botThinking: false,
+        rankedVisible: false,
+        roomActionPending: null,
+        roomWaiting: null,
+        boardMode: 'idle',
+        selected: null,
+        hints: [],
+        me: null,
+        op: null,
+        myTurn: false,
+        movePending: false,
+        deadline: 0,
+        timerLeftMs: 0,
+        turnExpired: false,
+        turnAnnounce: null,
+        oppAway: null,
+        messages: [],
+        chatOpen: false,
+        chatUnread: false,
+        chatRestore: null,
+        reactionFloats: [],
+        result: null,
+        toast: null,
+        notice: null,
+        historyVisible: false,
+        historyLoading: false,
+        historyError: null,
+        leaderboardVisible: false,
+        leaderboardLoading: false,
+        leaderboardError: null,
+      });
+    },
+
+    retryConnect() {
+      if (refs.connectPromise) return;
+      refs.session?.disconnect();
+      refs.session = null;
+      refs.user = null;
       void connectToServer().catch(() => undefined);
     },
 
@@ -729,14 +1281,40 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       bridge.exit();
     },
 
-    playRanked() {
+    openBotSetup() {
+      if (get().boardMode !== 'idle' || resultInteractionBlocked()) return;
       playSound('click');
-      set({ rankedVisible: true });
+      set({ botSetupVisible: true });
+    },
+
+    closeBotSetup() {
+      set({ botSetupVisible: false });
+    },
+
+    startBotGame(difficulty: BotDifficulty, playerSide: number) {
+      if (get().boardMode !== 'idle' || resultInteractionBlocked()) return;
+      startLocalBotGame(difficulty, playerSide);
+    },
+
+    restartBotGame() {
+      if (get().gameMode !== 'bot' || resultInteractionBlocked()) return;
+      get().showNotice({
+        title: 'Ván mới',
+        body: 'Bàn cờ hiện tại sẽ được xếp lại từ đầu.',
+        okLabel: 'Ván mới',
+        onOk: () => startLocalBotGame(get().botDifficulty, get().botPlayerSide),
+      });
+    },
+
+    playRanked() {
+      if (resultInteractionBlocked()) return;
+      playSound('click');
+      set({ rankedVisible: true, lobbyVisible: false });
       refs.session?.listRooms();
     },
 
     closeRanked() {
-      set({ rankedVisible: false });
+      set({ rankedVisible: false, lobbyVisible: true });
     },
 
     refreshRooms() {
@@ -744,35 +1322,36 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     createRoom(bet: number, password: string) {
-      if (get().roomActionPending) return;
+      if (get().roomActionPending || resultInteractionBlocked()) return;
       set({ roomActionPending: 'creating' });
       refs.session?.createRoom(bet, password);
     },
 
     joinRoom(roomId: string, password: string) {
-      if (get().roomActionPending) return;
+      if (get().roomActionPending || resultInteractionBlocked()) return;
       set({ roomActionPending: 'joining' });
       refs.session?.joinRoom(roomId, password);
     },
 
     setReady(ready: boolean) {
       const room = get().roomWaiting;
-      if (!room) return;
+      if (!room || resultInteractionBlocked()) return;
       playSound('click');
       refs.session?.setRoomReady(room.roomId, ready);
     },
 
     startMatch() {
       const room = get().roomWaiting;
-      if (!room || get().roomActionPending) return;
+      if (!room || get().roomActionPending || resultInteractionBlocked()) return;
       set({ roomActionPending: 'starting' });
       refs.session?.startRoom(room.roomId);
-      setTimeout(() => {
+      scheduleTransient(() => {
         if (get().roomActionPending === 'starting') set({ roomActionPending: null });
       }, 4000);
     },
 
     leaveRoom() {
+      if (resultInteractionBlocked()) return;
       const room = get().roomWaiting;
       refs.session?.leaveRoom(room?.roomId);
       backToRanked();
@@ -780,23 +1359,24 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
 
     kickOpponent() {
       const room = get().roomWaiting;
-      if (!room) return;
+      if (!room || resultInteractionBlocked()) return;
       const guest = room.members.find((member) => member.id !== room.ownerId);
       if (guest) refs.session?.kickRoomMember(room.roomId, guest.id);
     },
 
     tapSquare(idx: number) {
-      const { boardMode, myTurn, movePending, board, selected, hints, deadline } = get();
-      if (boardMode !== 'playing' || !myTurn || movePending || get().result) return;
-      if (deadline > 0 && Date.now() >= deadline) {
+      const { boardMode, gameMode, botPlayerSide, myTurn, movePending, board, selected, hints, deadline } = get();
+      if (boardMode !== 'playing' || !myTurn || movePending || resultInteractionBlocked()) return;
+      if (gameMode === 'online' && deadline > 0 && Date.now() >= deadline) {
         set({ turnExpired: true, selected: null, hints: [] });
         return;
       }
-      const mySide = refs.match?.you ?? SIDE_RED;
+      const mySide = gameMode === 'bot' ? botPlayerSide : refs.match?.you ?? SIDE_RED;
       const piece = board[idx];
       if (selected != null && hints.includes(idx)) {
         set({ movePending: true, hints: [], selected: null });
-        refs.session?.sendMove(refs.match!.matchId, { from: selected, to: idx });
+        if (gameMode === 'bot') applyBotGameMove(mySide, selected, idx);
+        else if (refs.match) refs.session?.sendMove(refs.match.matchId, { from: selected, to: idx });
         return;
       }
       if (piece !== EMPTY && pieceSide(piece) === mySide) {
@@ -812,6 +1392,20 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     forfeitMatch() {
+      if (resultInteractionBlocked()) return;
+      if (get().gameMode === 'bot') {
+        get().showNotice({
+          title: 'Bỏ cuộc',
+          body: 'Bạn muốn nhận thua ván đấu với máy này?',
+          okLabel: 'Bỏ cuộc',
+          danger: true,
+          onOk: () => {
+            get().showNotice(null);
+            finishBotGame({ winner: 1 - get().botPlayerSide, reason: 'checkmate' }, true, 'Bạn đã bỏ cuộc');
+          },
+        });
+        return;
+      }
       const match = refs.match;
       if (!match) return;
       get().showNotice({
@@ -827,6 +1421,17 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     exitMatch() {
+      if (resultInteractionBlocked()) return;
+      if (get().gameMode === 'bot') {
+        get().showNotice({
+          title: 'Thoát luyện tập',
+          body: 'Rời ván đấu với máy và quay về sảnh?',
+          okLabel: 'Thoát',
+          danger: true,
+          onOk: leaveBotToLobby,
+        });
+        return;
+      }
       const match = refs.match;
       if (!match) {
         get().leaveRoom();
@@ -838,7 +1443,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         okLabel: 'Thoát',
         danger: true,
         onOk: () => {
-          refs.exitingMatch = true;
+          refs.exitingMatchId = match.matchId;
           refs.session?.forfeit(match.matchId, true);
           get().showNotice(null);
         },
@@ -846,6 +1451,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     openChat() {
+      if (resultInteractionBlocked()) return;
       set({ chatOpen: true, chatUnread: false });
     },
 
@@ -854,6 +1460,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     sendChatText(text: string) {
+      if (resultInteractionBlocked()) return;
       const trimmed = text.trim();
       if (!trimmed) return;
       const match = refs.match;
@@ -872,12 +1479,18 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     sendReactionType(type: GameReactionType) {
+      if (resultInteractionBlocked()) return;
       const match = refs.match;
       if (!match) return;
       refs.session?.sendReaction(match.matchId, type);
     },
 
     closeResult() {
+      cancelResultReveal();
+      if (get().gameMode === 'bot') {
+        leaveBotToLobby();
+        return;
+      }
       const room = get().roomWaiting;
       set({ result: null });
       if (room) {
@@ -894,32 +1507,46 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     playAgain() {
+      if (get().gameMode === 'bot') {
+        startLocalBotGame(get().botDifficulty, get().botPlayerSide);
+        return;
+      }
       get().closeResult();
     },
 
     showHistory() {
       playSound('click');
-      set({ historyVisible: true, historyLoading: true });
-      refs.session?.getHistory();
+      set({ historyVisible: true });
+      requestHistory();
+    },
+
+    retryHistory() {
+      requestHistory();
     },
 
     closeHistory() {
-      set({ historyVisible: false });
+      clearHistoryTimer();
+      set({ historyVisible: false, historyLoading: false });
     },
 
     showLeaderboard() {
       playSound('click');
-      set({ leaderboardVisible: true, leaderboardLoading: true });
-      refs.session?.getLeaderboard(get().leaderboardPeriod);
+      set({ leaderboardVisible: true });
+      requestLeaderboard(get().leaderboardPeriod);
+    },
+
+    retryLeaderboard() {
+      requestLeaderboard(get().leaderboardPeriod);
     },
 
     setLeaderboardPeriod(period: LeaderboardPeriod) {
-      set({ leaderboardPeriod: period, leaderboardLoading: true, leaderboardItems: [] });
-      refs.session?.getLeaderboard(period);
+      set({ leaderboardPeriod: period, leaderboardItems: [] });
+      requestLeaderboard(period);
     },
 
     closeLeaderboard() {
-      set({ leaderboardVisible: false });
+      clearLeaderboardTimer();
+      set({ leaderboardVisible: false, leaderboardLoading: false });
     },
 
     showToast(text: string) {
@@ -929,6 +1556,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
 
     clearToast() {
+      if (refs.toastTimer) clearTimeout(refs.toastTimer);
+      refs.toastTimer = 0;
       set({ toast: null });
     },
 
@@ -937,4 +1566,3 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     },
   };
 });
-

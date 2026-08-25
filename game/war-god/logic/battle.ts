@@ -19,6 +19,7 @@ import {
   HEAL_HEART,
   MAX_ARMOR,
   MAX_CASCADE_LEVEL,
+  MAX_EXTRA_TURNS,
   MAX_FURY,
   MAX_HP,
   MAX_MP,
@@ -33,6 +34,7 @@ export {
   GREATER_HEART_HEAL,
   MAX_ARMOR,
   MAX_CASCADE_LEVEL,
+  MAX_EXTRA_TURNS,
   MAX_FURY,
   MAX_HP,
   MAX_MP,
@@ -78,6 +80,18 @@ export interface EffectSummary {
 export interface DamageResult {
   damage: number;
   armorDamage: number;
+}
+
+export interface ExtraTurnGrant {
+  granted: number;
+  remaining: number;
+}
+
+export function grantExtraTurns(current: number, earned: number): ExtraTurnGrant {
+  const safeCurrent = Math.min(MAX_EXTRA_TURNS, Math.max(0, Math.floor(current)));
+  const safeEarned = Math.max(0, Math.floor(earned));
+  const remaining = Math.min(MAX_EXTRA_TURNS, safeCurrent + safeEarned);
+  return { granted: remaining - safeCurrent, remaining };
 }
 
 export function applyDamageThroughArmor(defender: Fighter, incoming: number): DamageResult {
@@ -265,7 +279,7 @@ function previewMove(board: Board, move: BotMove, random: () => number): MovePre
   const plan = computeExplosions(board, match.cells, random);
   for (const index of plan.exploded) counts[board[index]]++;
   swapCells(board, move[0], move[1]);
-  return { counts, bonusTurns: match.bonusTurns };
+  return { counts, bonusTurns: grantExtraTurns(0, match.bonusTurns).remaining };
 }
 
 function scoreResolvedState(
@@ -343,7 +357,7 @@ function simulateExpertMove(
   for (let cascade = 0; cascade < EXPERT_CASCADE_LIMIT; cascade++) {
     const match = findMatches(nextBoard);
     if (!match) break;
-    total.bonusTurns += match.bonusTurns;
+    total.bonusTurns = grantExtraTurns(total.bonusTurns, match.bonusTurns).remaining;
     const plan = computeExplosions(nextBoard, match.cells, random);
     for (const index of plan.exploded) match.counts[nextBoard[index]]++;
     const removed = new Set(match.cells);
@@ -473,7 +487,7 @@ export function botChooseMove(
       counts.greaterHeart * greaterHeartWeight +
       counts.water * waterWeight +
       counts.shield * shieldWeight;
-    if (match) score += comboBonus * match.bonusTurns;
+    if (match) score += comboBonus * grantExtraTurns(0, match.bonusTurns).remaining;
     score += Math.random() * jitter;
 
     if (score > bestScore) {

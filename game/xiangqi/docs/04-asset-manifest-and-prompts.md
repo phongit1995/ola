@@ -37,7 +37,7 @@ Acceptance: chữ sắc nét ở 37 px hiển thị, 2 phe phân biệt được
 | `logo.webp` | raster sinh | prompt §6.2 | S1, S2 |
 | `fx-result-win/lose/draw.webp` | raster sinh (tùy chọn — thử CSS trước) | prompt §6.3 | S7 |
 | `ic-ken` | reuse caro | — | mọi badge KEN |
-| `ic-lock, ic-refresh, ic-back, ic-sound-on/off, ic-chat, ic-reaction, ic-flag, ic-exit, ic-wifi-off, ic-crown` | SVG code-native 24 | vẽ tay theo 01 §3.3 | toàn app |
+| `ic-lock, ic-refresh, ic-back, ic-sound-on/off, ic-chat, ic-reaction, ic-flag, ic-exit, ic-wifi-off, ic-crown, ic-ranked, ic-bot, ic-history, ic-leaderboard` | SVG code-native 24 | vẽ tay theo 01 §3.3 | toàn app |
 | `reactions/*` ×6 | reuse `../caro/assets/reactions/` | — | S6 |
 | vip-icons | shared static copy | vite | pod, row |
 | `app-icons/` | SVG nguồn + PNG 1024 | convention thirteen app-icons/README | admin upload icon `mini_games` |

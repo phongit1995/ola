@@ -27,7 +27,9 @@
     "minimize": "Thu nhỏ",
     "restore": "Mở lại",
     "hasNotification": "Có cập nhật mới trong game",
-    "alreadyRunning": "Bạn đang mở một trò chơi khác. Hãy đóng trò chơi đó trước."
+    "alreadyRunning": "Bạn đang mở một trò chơi khác. Hãy đóng trò chơi đó trước.",
+    "dropToClose": "Thả để đóng game",
+    "dragToClose": "Kéo vào thùng rác hoặc nhấn Delete để đóng game"
   },
   "common": {
     "clear": "Xoá",
@@ -722,7 +724,7 @@
     "buyVip": "Mua VIP",
     "quitTitle": "Rời phòng",
     "quitMessage": "Bạn muốn rời phòng \"{{name}}\"?",
-    "roomFull": "Phòng chat đã đầy. Để vào ngay, bạn cần có VIP",
+    "roomFull": "Phòng chat đã đầy. Vui lòng thử lại sau.",
     "filterTitle": "Chọn bộ lọc",
     "filterShowAll": "Hiện tất cả",
     "filterMedia": "Hiện tin nhắn có hình ảnh",

@@ -27,6 +27,12 @@ import { WARNING } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { mmkvStorage } from '@platform/storage';
+import {
+  ArcadeTrashTarget,
+  TRASH_TARGET_BOTTOM_GAP,
+  TRASH_TARGET_SIZE,
+  TRASH_TARGET_TOLERANCE,
+} from './ArcadeTrashTarget';
 
 interface BubblePosition {
   x: number;
@@ -225,6 +231,10 @@ export function ArcadeOverlay() {
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
   const notifyOpacity = useSharedValue(1);
+  const overTarget = useSharedValue(0);
+  const bubbleFade = useSharedValue(0);
+  const [dragging, setDragging] = useState(false);
+  const [overTrash, setOverTrash] = useState(false);
 
   useEffect(() => {
     const next = {
@@ -274,12 +284,34 @@ export function ArcadeOverlay() {
     storeBubblePosition(next);
   }
 
+  function endBubbleDrag() {
+    setDragging(false);
+    setOverTrash(false);
+  }
+
+  const trashLeft = (windowWidth - TRASH_TARGET_SIZE) / 2;
+  const trashTop =
+    windowHeight - insets.bottom - TRASH_TARGET_BOTTOM_GAP - TRASH_TARGET_SIZE;
+
+  function isBubbleOverTrash(x: number, y: number): boolean {
+    'worklet';
+    const centerX = baseLeft + x + BUBBLE_SIZE / 2;
+    const centerY = baseTop + y + BUBBLE_SIZE / 2;
+    return (
+      centerX >= trashLeft - TRASH_TARGET_TOLERANCE &&
+      centerX <= trashLeft + TRASH_TARGET_SIZE + TRASH_TARGET_TOLERANCE &&
+      centerY >= trashTop - TRASH_TARGET_TOLERANCE &&
+      centerY <= trashTop + TRASH_TARGET_SIZE + TRASH_TARGET_TOLERANCE
+    );
+  }
+
   const dragGesture = Gesture.Pan()
     .minDistance(DRAG_START_DISTANCE)
     .maxPointers(1)
     .onStart(() => {
       startX.value = tx.value;
       startY.value = ty.value;
+      runOnJS(setDragging)(true);
     })
     .onUpdate(event => {
       tx.value = clamp(
@@ -292,9 +324,25 @@ export function ArcadeOverlay() {
         minTranslateY,
         maxTranslateY,
       );
+      const hit = isBubbleOverTrash(tx.value, ty.value) ? 1 : 0;
+      if (hit !== overTarget.value) {
+        overTarget.value = hit;
+        bubbleFade.value = withTiming(hit, { duration: 150 });
+        runOnJS(setOverTrash)(hit === 1);
+      }
     })
     .onFinalize(() => {
-      runOnJS(commitBubblePosition)(tx.value, ty.value);
+      const dropped = overTarget.value === 1;
+      overTarget.value = 0;
+      bubbleFade.value = 0;
+      if (dropped) {
+        tx.value = startX.value;
+        ty.value = startY.value;
+        runOnJS(close)();
+      } else {
+        runOnJS(commitBubblePosition)(tx.value, ty.value);
+      }
+      runOnJS(endBubbleDrag)();
     });
 
   const tapGesture = Gesture.Tap()
@@ -305,7 +353,12 @@ export function ArcadeOverlay() {
 
   const bubbleGesture = Gesture.Race(dragGesture, tapGesture);
   const bubbleAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: tx.value }, { translateY: ty.value }],
+    opacity: 1 - bubbleFade.value,
+    transform: [
+      { translateX: tx.value },
+      { translateY: ty.value },
+      { scale: 1 - bubbleFade.value * 0.25 },
+    ],
   }));
   const notifyAnimatedStyle = useAnimatedStyle(() => ({
     opacity: notifyOpacity.value,
@@ -420,6 +473,14 @@ export function ArcadeOverlay() {
           onMinimize={minimize}
         />
       </View>
+
+      {minimized && (
+        <ArcadeTrashTarget
+          visible={dragging}
+          active={overTrash}
+          bottom={insets.bottom + TRASH_TARGET_BOTTOM_GAP}
+        />
+      )}
 
       {minimized && (
         <GestureDetector gesture={bubbleGesture}>

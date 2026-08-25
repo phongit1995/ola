@@ -27,7 +27,9 @@
     "minimize": "Minimize",
     "restore": "Restore",
     "hasNotification": "There is a new update in the game",
-    "alreadyRunning": "Another game is already open. Close it before starting a new one."
+    "alreadyRunning": "Another game is already open. Close it before starting a new one.",
+    "dropToClose": "Drop to close game",
+    "dragToClose": "Drag to the trash or press Delete to close the game"
   },
   "common": {
     "clear": "Clear",
@@ -722,7 +724,7 @@
     "buyVip": "Buy VIP",
     "quitTitle": "Quit room",
     "quitMessage": "Do you want to quit room \"{{name}}\"?",
-    "roomFull": "Chat room is full. Subscribe to a VIP account to join",
+    "roomFull": "This chat room is full. Please try again later.",
     "filterTitle": "Select filter",
     "filterShowAll": "Show all",
     "filterMedia": "Show messages with images",

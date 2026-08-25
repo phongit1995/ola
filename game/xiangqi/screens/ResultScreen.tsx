@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { useDialogFocus } from '../components/useDialogFocus';
 import { formatKen } from '../helpers/format';
 import { useXiangqi } from '../store/useXiangqi';
 
@@ -8,10 +9,12 @@ import { useXiangqi } from '../store/useXiangqi';
 const REVEAL_MS = 350;
 
 export function ResultScreen() {
-  const { result, roomWaiting, closeResult, playAgain } = useXiangqi(
+  const { result, roomWaiting, gameMode, bet, closeResult, playAgain } = useXiangqi(
     useShallow((s) => ({
       result: s.result,
       roomWaiting: s.roomWaiting,
+      gameMode: s.gameMode,
+      bet: s.bet,
       closeResult: s.closeResult,
       playAgain: s.playAgain,
     })),
@@ -19,6 +22,13 @@ export function ResultScreen() {
   const [pending, setPending] = useState(true);
   const titleId = useId();
   const reasonId = useId();
+  const resultRef = useDialogFocus<HTMLDivElement>({
+    enabled: !!result,
+    initialFocusDelayMs: REVEAL_MS + 25,
+    onEscape: () => {
+      if (!pending) closeResult();
+    },
+  });
 
   useEffect(() => {
     setPending(true);
@@ -31,14 +41,16 @@ export function ResultScreen() {
   return (
     <div className="xq-backdrop xq-result-backdrop">
       <div
+        ref={resultRef}
         className={`xq-modal xq-result xq-result-${result.outcome}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={reasonId}
+        tabIndex={-1}
       >
         <div className="xq-result-hero">
-          <span className="xq-result-kicker">Kết quả ván cờ</span>
+          <span className="xq-result-kicker">{gameMode === 'bot' ? 'Kết quả đấu máy' : 'Kết quả ván cờ'}</span>
           <div className="xq-result-glyphs" aria-hidden="true">
             <span className="xq-logo-piece xq-piece-red">帥</span>
             <span className="xq-logo-piece xq-piece-black">將</span>
@@ -48,9 +60,11 @@ export function ResultScreen() {
         <div className="xq-result-summary">
           <p className="xq-result-reason" id={reasonId}>{result.reasonText}</p>
           <p className="xq-result-ken">
-            {result.kenDelta == null
-              ? 'Hòa — hoàn cược'
-              : result.kenDelta === 0
+            {gameMode === 'bot'
+              ? 'Luyện tập · Không tính KEN'
+              : result.outcome === 'draw' && bet > 0
+                ? 'Hòa — hoàn cược'
+                : result.kenDelta == null || result.kenDelta === 0
                 ? 'Ván giao hữu'
                 : result.kenDelta > 0
                   ? `+${formatKen(result.kenDelta)} KEN`
@@ -58,12 +72,25 @@ export function ResultScreen() {
           </p>
         </div>
         <div className="xq-modal-actions">
-          {roomWaiting ? (
-            <button type="button" className="xq-btn xq-btn-gold" disabled={pending} aria-busy={pending} onClick={playAgain}>
+          {roomWaiting || gameMode === 'bot' ? (
+            <button
+              type="button"
+              className="xq-btn xq-btn-gold"
+              disabled={pending}
+              aria-busy={pending}
+              onClick={playAgain}
+              data-dialog-initial-focus
+            >
               Chơi lại
             </button>
           ) : null}
-          <button type="button" className="xq-btn xq-btn-paper" disabled={pending} onClick={closeResult}>
+          <button
+            type="button"
+            className="xq-btn xq-btn-paper"
+            disabled={pending}
+            onClick={closeResult}
+            data-dialog-initial-focus={roomWaiting || gameMode === 'bot' ? undefined : ''}
+          >
             Đóng
           </button>
         </div>

@@ -8,6 +8,7 @@ import {
   botShouldUlt,
   castUltimate,
   createFighter,
+  grantExtraTurns,
   type BotLevel,
   type Fighter,
 } from './battle';
@@ -93,7 +94,10 @@ function play(seed: number, first: BotLevel, second: BotLevel): 0 | 1 | null {
     if (botShouldUlt(attacker, defender, levels[side])) {
       const skill = botChooseUltimateSkill(attacker, defender, levels[side]);
       if (skill === 'lightning-god') {
-        extra[side] += castLightningGod(board, attacker, defender, random);
+        extra[side] = grantExtraTurns(
+          extra[side],
+          castLightningGod(board, attacker, defender, random),
+        ).remaining;
       } else {
         castUltimate(attacker, defender);
       }
@@ -105,7 +109,10 @@ function play(seed: number, first: BotLevel, second: BotLevel): 0 | 1 | null {
         continue;
       }
       swapCells(board, move[0], move[1]);
-      extra[side] += resolve(board, attacker, defender, random);
+      extra[side] = grantExtraTurns(
+        extra[side],
+        resolve(board, attacker, defender, random),
+      ).remaining;
     }
     if (attacker.hp > 0 && defender.hp > 0 && findValidMoves(board).length === 0) {
       board = createBoard(random);

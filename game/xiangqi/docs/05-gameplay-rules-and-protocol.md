@@ -94,14 +94,15 @@ ROOM_START (chủ bàn) → MATCH_FOUND {you, state, turn, deadline, bet}
 MOVE {matchId, move:{from,to}} → STATE {state, turn, deadline, lastMove, lastBy}
                                ↘ ERROR {INVALID_MOVE|NOT_YOUR_TURN} → toast
 FORFEIT {matchId, leaveAfter?}
-MATCH_OVER {winnerId, reason, state, bet, payout, kenDelta}
-→ ROOM_WAITING/ROOM_STATE (rematch cùng bàn — preserveOutcome giữ màn kết quả)
+MATCH_OVER {matchId, winnerId, reason, state, bet, payout, kenDelta}
+→ ROOM_WAITING/ROOM_STATE {afterMatchId?} (rematch cùng bàn — preserveOutcome giữ màn kết quả)
 ```
 
 ### Sự cố & resume
 
-- Đối thủ rớt: `OPPONENT_DISCONNECTED {graceDeadline, turnRemainingMs}` → O1; `OPPONENT_RECONNECTED` → tắt.
+- Đối thủ rớt: `OPPONENT_DISCONNECTED {graceDeadline, turnRemainingMs}` → O1; `OPPONENT_RECONNECTED {turn, deadline}` → tắt O1 và đồng bộ lại đồng hồ authoritative. Payload deadline là bắt buộc để thứ tự reconnect của hai người không làm client giữ một deadline đã hết hạn.
 - Mình rớt, reconnect: engine TỰ gửi `MATCH_FOUND {resumed:true}` (bàn dựng từ state, steps null, không animation) hoặc `MATCH_OVER` buffer (TTL 2 phút) nếu ván đã kết thúc; ngoài trận thì `ROOM_SYNC` khôi phục/clear phòng. Vì steps rỗng, resume phải đọc `state.check` để tăng `checkSeq` → banner `Chiếu tướng!` + viền Tướng, nếu không người chơi vào lại mà không biết đang bị chiếu.
+- `ROOM_STATE.afterMatchId` chỉ xuất hiện ở snapshot phòng ngay sau `MATCH_OVER`. Client dùng ID này để giữ bàn/nước kết thúc và khóa thao tác phòng cho tới khi modal kết quả được xử lý; không dựa vào delay mạng.
 - Server restart: engine tự khôi phục từ Redis — client không làm gì thêm.
 - `MOVE` sau deadline bị drop im lặng — client phải khóa input khi hết giờ local để tránh cảm giác "nuốt nước".
 
@@ -131,5 +132,5 @@ Bất biến:
 
 - Go: table-driven từng quân (chân mã 4 hướng, mắt tượng, ngòi pháo 0/1/2, tốt biên/cuối bàn, lộ mặt tướng, ngòi bị ghim), chiếu/chiếu bí/khốn tử, chiếu dai 1 chiều = thua / 2 chiều = hòa, 120 ply, DecodeState reject state hỏng/terminal.
 - Parity: `go generate ./internal/game/games/xiangqi` sinh `constants.gen.ts` + `testdata/parity.json`; vitest `logic/parity.test.ts` chạy lại bằng TS mirror.
-- E2E: `xiangqi-e2e-bots.mjs` (2 bot legal-random ưu tiên ăn quân, cap 200 ply) — CHƯA làm.
+- E2E server-vs-server: `xiangqi-e2e-bots.mjs` (2 bot legal-random ưu tiên ăn quân, cap 200 ply) — CHƯA làm. Đây là harness giao thức, khác bot luyện tập local đã có trong client.
 - UI: harness `xiangqi/mock-ui.html?screen=<tên>` (store thật + dữ liệu giả, không cần server) và `node scripts/xiangqi-shots.mjs` tạo cục bộ toàn bộ state theo [hướng dẫn screenshot](./screenshots/README.md).

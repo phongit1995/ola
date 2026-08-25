@@ -292,6 +292,9 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     listRooms() {},
     getLeaderboard() {},
     getHistory() {},
+    spectateList() {},
+    spectateJoin() {},
+    spectateLeave() {},
 
     onUserInfo: () => () => {},
     onRoomList: () => () => {},
@@ -313,6 +316,9 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     onOpponentReconnected: () => () => {},
     onLeaderboard: () => () => {},
     onHistory: () => () => {},
+    onSpectateList: () => () => {},
+    onSpectateJoined: () => () => {},
+    onSpectateLeft: () => () => {},
     onConnectionChange: (handler) => {
       (handler as (c: boolean) => void)(true);
       return () => {};

@@ -21,6 +21,7 @@ infra/web/deploy.env
 # Env local của web/mobile (CI tự ghi lúc build)
 web/.env
 mobile/.env
+mobile/.env*.bak
 
 # Token OTA local — KHÔNG commit
 mobile/.ota-token

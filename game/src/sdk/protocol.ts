@@ -14,6 +14,9 @@ export const C2S = {
   RoomStart: 'ROOM_START',
   Leaderboard: 'LEADERBOARD',
   History: 'HISTORY',
+  SpectateList: 'SPECTATE_LIST',
+  SpectateJoin: 'SPECTATE_JOIN',
+  SpectateLeave: 'SPECTATE_LEAVE',
 } as const;
 
 export const S2C = {
@@ -37,7 +40,17 @@ export const S2C = {
   OpponentReconnected: 'OPPONENT_RECONNECTED',
   Leaderboard: 'LEADERBOARD',
   History: 'HISTORY',
+  SpectateList: 'SPECTATE_LIST',
+  SpectateJoined: 'SPECTATE_JOINED',
+  SpectateLeft: 'SPECTATE_LEFT',
 } as const;
+
+export const SPECTATE_LEFT_REASON = {
+  Left: 'left',
+  MatchOver: 'match_over',
+} as const;
+
+export type SpectateLeftReason = (typeof SPECTATE_LEFT_REASON)[keyof typeof SPECTATE_LEFT_REASON];
 
 export const GAME_ERROR_CODE = {
   AlreadyInRoom: 'ALREADY_IN_ROOM',
@@ -73,6 +86,11 @@ export const GAME_ERROR_CODE = {
   NoMatch: 'NO_MATCH',
   NotYourTurn: 'NOT_YOUR_TURN',
   ReactionRateLimited: 'REACTION_RATE_LIMITED',
+  SpectateFailed: 'SPECTATE_FAILED',
+  SpectateFull: 'SPECTATE_FULL',
+  SpectateNotSupported: 'SPECTATE_NOT_SUPPORTED',
+  SpectateOwnMatch: 'SPECTATE_OWN_MATCH',
+  MatchNotFound: 'MATCH_NOT_FOUND',
   StateSaveFailed: 'STATE_SAVE_FAILED',
   UnknownGame: 'UNKNOWN_GAME',
   UserInfoFailed: 'USER_INFO_FAILED',
@@ -138,6 +156,7 @@ export interface MatchHistoryEntry {
   playedAt: number;
   opponentId: string;
   opponentName: string;
+  opponentVipType?: string | null;
   bet: number;
   outcome: MatchHistoryOutcome;
   kenDelta: number;
@@ -159,6 +178,36 @@ export interface MatchFoundData<TState = unknown> {
   resumed?: boolean;
   bet?: number;
   roomOwnerId?: string;
+}
+
+export interface SpectateListEntry {
+  matchId: string;
+  roomId?: string;
+  players: PlayerInfo[];
+  bet?: number;
+  startedAt: number;
+  spectators: number;
+}
+
+export interface SpectateListData {
+  matches: SpectateListEntry[];
+}
+
+export interface SpectateJoinedData<TState = unknown> {
+  matchId: string;
+  gameId: string;
+  players: PlayerInfo[];
+  state: TState;
+  turn: number;
+  deadline: number;
+  bet?: number;
+  roomOwnerId?: string;
+  spectators: number;
+}
+
+export interface SpectateLeftData {
+  matchId: string;
+  reason: SpectateLeftReason;
 }
 
 export interface StateData<TState = unknown, TMove = unknown> {
@@ -217,6 +266,7 @@ export interface RoomInfo {
   maxPlayers?: number;
   full?: boolean;
   status?: 'waiting' | 'playing';
+  matchId?: string;
 }
 
 export interface RoomListData {
@@ -254,6 +304,8 @@ export interface RoomStateData {
   locked: boolean;
   maxPlayers?: number;
   members: RoomMember[];
+  /** Match whose completed board this waiting-room snapshot follows. */
+  afterMatchId?: string;
 }
 
 export interface RoomSyncData {
@@ -278,4 +330,7 @@ export interface OpponentDisconnectedData {
 
 export interface OpponentReconnectedData {
   userId?: string;
+  /** Authoritative turn/deadline after a paused clock has been re-armed. */
+  turn?: number;
+  deadline?: number;
 }

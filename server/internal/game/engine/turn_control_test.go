@@ -62,6 +62,10 @@ func (turnControlTestLogic) KeepTurn(state any) bool {
 	return state.(*turnControlTestState).ExtraTurn
 }
 func (turnControlTestLogic) TimeoutSkipsTurn() bool { return true }
+func (turnControlTestLogic) MinPlayers() int        { return 2 }
+func (turnControlTestLogic) MaxPlayers() int        { return 4 }
+func (turnControlTestLogic) OnPlayerQuit(state any, playerIdx int) {
+}
 func (turnControlTestLogic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) time.Duration {
 	if previousPlayerIdx < 0 {
 		return 300 * time.Millisecond
@@ -73,6 +77,8 @@ var (
 	_ logic.TurnKeeper       = turnControlTestLogic{}
 	_ logic.TurnStartDelayer = turnControlTestLogic{}
 	_ logic.TimeoutSkipper   = turnControlTestLogic{}
+	_ logic.PlayerCounter    = turnControlTestLogic{}
+	_ logic.QuitHandler      = turnControlTestLogic{}
 )
 
 func init() {
@@ -220,6 +226,151 @@ func TestTurnStartDelayExtendsAuthoritativeDeadline(t *testing.T) {
 			t.Fatalf("%s did not receive the delayed authoritative deadline", player.ID)
 		}
 	}
+}
+
+func TestDualDisconnectReconnectPublishesRearmedDeadline(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	match := startTurnControlTestMatch(t, gameEngine)
+	currentID := match.players[match.turnIdx].ID
+	otherID := match.players[1-match.turnIdx].ID
+
+	gameEngine.OnDisconnect(match.GameID, currentID)
+	gameEngine.OnDisconnect(match.GameID, otherID)
+	match.mu.Lock()
+	if match.pausedRemain <= 0 {
+		match.mu.Unlock()
+		t.Fatal("current-player disconnect did not preserve remaining turn time")
+	}
+	if match.timer != nil {
+		match.timer.Stop()
+	}
+	match.deadline = time.Now().Add(-time.Second)
+	match.mu.Unlock()
+
+	emitter.clear()
+	gameEngine.OnConnect(match.GameID, currentID)
+	staleEnvelope, ok := emitter.last(currentID, protocol.S2CMatchFound)
+	if !ok {
+		t.Fatal("first reconnecting player did not receive resumed MATCH_FOUND")
+	}
+	stale := staleEnvelope.Data.(protocol.MatchFoundData)
+	if stale.Deadline >= time.Now().UnixMilli() {
+		t.Fatalf("test setup expected an expired paused deadline, got %d", stale.Deadline)
+	}
+
+	emitter.clear()
+	rearmedAt := time.Now()
+	gameEngine.OnConnect(match.GameID, otherID)
+	reconnectedEnvelope, ok := emitter.last(currentID, protocol.S2COpponentReconnected)
+	if !ok {
+		t.Fatal("already-reconnected current player did not receive OPPONENT_RECONNECTED")
+	}
+	reconnected, ok := reconnectedEnvelope.Data.(protocol.OpponentReconnectedData)
+	if !ok {
+		t.Fatalf("unexpected reconnect payload: %#v", reconnectedEnvelope.Data)
+	}
+	match.mu.Lock()
+	wantTurn := match.turnIdx
+	wantDeadline := match.deadline.UnixMilli()
+	match.mu.Unlock()
+	if reconnected.Turn != wantTurn || reconnected.Deadline != wantDeadline {
+		t.Fatalf("reconnect turn sync = %+v, want turn=%d deadline=%d", reconnected, wantTurn, wantDeadline)
+	}
+	if reconnected.Deadline <= rearmedAt.UnixMilli() {
+		t.Fatalf("reconnect deadline was not re-armed: %+v", reconnected)
+	}
+	if emitter.count(currentID, protocol.S2CMatchFound) != 0 {
+		t.Fatal("already-connected player should receive a turn sync, not a duplicate MATCH_FOUND")
+	}
+}
+
+func TestOwnerExitDoesNotCloseRoomWhileQuitHandlerMatchContinues(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	room := Room{
+		ID:         "continuing-room",
+		GameID:     turnControlTestGameID,
+		OwnerID:    "owner",
+		OwnerName:  "Owner",
+		MaxPlayers: 3,
+		Guests: []RoomGuest{
+			{ID: "guest-a", Name: "Guest A", Ready: true},
+			{ID: "guest-b", Name: "Guest B", Ready: true},
+		},
+	}
+	room.normalize()
+	players := []protocol.PlayerInfo{
+		{ID: room.OwnerID, Name: room.OwnerName},
+		{ID: room.Guests[0].ID, Name: room.Guests[0].Name},
+		{ID: room.Guests[1].ID, Name: room.Guests[1].Name},
+	}
+	if err := gameEngine.startMatchWithRoom(
+		room.GameID,
+		turnControlTestLogic{},
+		players,
+		0,
+		&room,
+		false,
+		nil,
+	); err != nil {
+		t.Fatalf("start three-player room match: %v", err)
+	}
+	match := gameEngine.matchForUser(room.GameID, room.OwnerID)
+	if match == nil {
+		t.Fatal("three-player room match was not created")
+	}
+
+	emitter.clear()
+	gameEngine.ForfeitAndLeave(room.GameID, room.OwnerID, match.ID)
+
+	match.mu.Lock()
+	over := match.over
+	ownerIdx := match.playerIndex(room.OwnerID)
+	ownerQuit := ownerIdx >= 0 && match.quit[ownerIdx]
+	match.mu.Unlock()
+	if over || !ownerQuit {
+		t.Fatalf("owner exit should eliminate only that seat: over=%t ownerQuit=%t", over, ownerQuit)
+	}
+	for _, guest := range room.Guests {
+		if emitter.count(guest.ID, protocol.S2CRoomClosed) != 0 ||
+			emitter.count(guest.ID, protocol.S2CRoomSync) != 0 {
+			t.Fatalf("continuing match sent premature room closure to %s", guest.ID)
+		}
+		if gameEngine.matchForUser(room.GameID, guest.ID) != match {
+			t.Fatalf("remaining player %s lost the active match", guest.ID)
+		}
+	}
+	snapshot, ok := activeStore.get(match.GameID, match.ID)
+	if !ok || snapshot.Room != nil || snapshot.ClosedRoom == nil || snapshot.ClosedRoom.ID != room.ID {
+		t.Fatalf("owner-left lifecycle was not persisted: %#v", snapshot)
+	}
+
+	stopEngineTimers(gameEngine)
+	restoredEngine, _, restoredEmitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(restoredEngine)
+	restoredMatch := restoredEngine.matchForUser(match.GameID, room.Guests[0].ID)
+	if restoredMatch == nil || restoredMatch.closedRoom == nil || restoredMatch.closedRoom.ID != room.ID {
+		t.Fatal("restored continuing match lost the pending room closure")
+	}
+	restoredEmitter.clear()
+	restoredEngine.ForfeitAndLeave(restoredMatch.GameID, room.Guests[0].ID, restoredMatch.ID)
+	departingID := room.Guests[0].ID
+	if restoredEmitter.count(departingID, protocol.S2CMatchOver) != 1 ||
+		restoredEmitter.count(departingID, protocol.S2CRoomClosed) != 0 ||
+		restoredEmitter.count(departingID, protocol.S2CRoomSync) != 0 {
+		t.Fatalf("departing guest received the deferred room closure")
+	}
+	remainingID := room.Guests[1].ID
+	if restoredEmitter.count(remainingID, protocol.S2CMatchOver) != 1 ||
+		restoredEmitter.count(remainingID, protocol.S2CRoomClosed) != 1 ||
+		restoredEmitter.count(remainingID, protocol.S2CRoomSync) != 1 {
+		t.Fatalf("finished match did not close the owner-left room for %s", remainingID)
+	}
+	requireMessageOrder(t, restoredEmitter, remainingID, protocol.S2CMatchOver, protocol.S2CRoomClosed)
+	requireMessageOrder(t, restoredEmitter, remainingID, protocol.S2CRoomClosed, protocol.S2CRoomSync)
 }
 
 func TestTimeoutSkipperSkipsTurnInsteadOfLosing(t *testing.T) {

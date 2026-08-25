@@ -40,6 +40,9 @@
   --animate-ken-fade-in: ken-fade-in 0.25s ease-out;
   --animate-reaction-notice: reaction-notice 2.5s ease-out forwards;
   --animate-room-balloon: room-balloon 2.2s ease-out both;
+  --animate-trash-chomp: trash-chomp 0.85s ease-in-out infinite;
+  --animate-trash-open: trash-open 0.18s ease-out forwards;
+  --animate-trash-hunger: trash-hunger 0.85s ease-in-out infinite;
   --font-sans: Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
   --font-game: 'Baloo 2', Roboto, ui-sans-serif, system-ui, sans-serif;
@@ -86,6 +89,44 @@
   50.01%,
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes trash-chomp {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: translateY(-1px) rotate(-34deg);
+  }
+  42% {
+    transform: rotate(-3deg);
+  }
+  62% {
+    transform: translateY(-1px) rotate(-24deg);
+  }
+  82% {
+    transform: rotate(-3deg);
+  }
+}
+
+@keyframes trash-open {
+  to {
+    transform: translateY(-1.5px) rotate(-42deg);
+  }
+}
+
+@keyframes trash-hunger {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.06);
+  }
+  62% {
+    transform: scale(1.03);
   }
 }
 

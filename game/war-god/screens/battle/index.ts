@@ -50,6 +50,7 @@ import {
   BOT_LEVEL_TITLES,
   castUltimate,
   createFighter,
+  grantExtraTurns,
   type BotLevel,
   type DamageResult,
   type EffectSummary,
@@ -508,10 +509,14 @@ function spendBotModeExtraTurn(side: 'me' | 'foe'): void {
   botModeExtraTurns[idx] = Math.max(0, botModeExtraTurns[idx] - 1);
 }
 
-function addBotModeExtraTurns(side: 'me' | 'foe', earned: number): number {
+function addBotModeExtraTurns(
+  side: 'me' | 'foe',
+  earned: number,
+): { granted: number; remaining: number } {
   const idx = side === 'me' ? 0 : 1;
-  botModeExtraTurns[idx] += earned;
-  return botModeExtraTurns[idx];
+  const result = grantExtraTurns(botModeExtraTurns[idx], earned);
+  botModeExtraTurns[idx] = result.remaining;
+  return result;
 }
 
 function cellRootPos(i: number): { x: number; y: number } {
@@ -1177,14 +1182,15 @@ async function onTileTap(i: number): Promise<void> {
   await animateSwap(a, b);
   spendBotModeExtraTurn('me');
   const earnedExtraTurns = await resolveCascades('me');
-  const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
+  const { granted: grantedExtraTurns, remaining: remainingExtraTurns } =
+    addBotModeExtraTurns('me', earnedExtraTurns);
   if (checkEnd()) return;
 
   if (remainingExtraTurns > 0) {
-    announceExtraTurns('me', earnedExtraTurns, remainingExtraTurns);
+    announceExtraTurns('me', grantedExtraTurns, remainingExtraTurns);
     setStatus(
-      earnedExtraTurns > 0
-        ? `Combo lớn — +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+      grantedExtraTurns > 0
+        ? `Combo lớn — +${grantedExtraTurns} lượt · còn ${remainingExtraTurns}!`
         : `Bạn còn ${remainingExtraTurns} lượt thưởng!`,
     );
     endBusy();
@@ -1245,10 +1251,11 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
   spendBotModeExtraTurn('me');
   if (skill === 'lightning-god') {
     const earnedExtraTurns = await castLightningGodLocal('me');
-    const remainingExtraTurns = addBotModeExtraTurns('me', earnedExtraTurns);
+    const { granted: grantedExtraTurns, remaining: remainingExtraTurns } =
+      addBotModeExtraTurns('me', earnedExtraTurns);
     if (checkEnd()) return;
     if (remainingExtraTurns > 0) {
-      announceExtraTurns('me', earnedExtraTurns, remainingExtraTurns);
+      announceExtraTurns('me', grantedExtraTurns, remainingExtraTurns);
       setStatus(`Bạn còn ${remainingExtraTurns} lượt thưởng!`);
       endBusy();
       resetTurnClock();
@@ -1311,12 +1318,13 @@ async function startBotTurn(): Promise<void> {
       }
       if (stale()) return;
       if (checkEnd()) return;
-      const remainingExtraTurns = addBotModeExtraTurns('foe', earnedExtraTurns);
+      const { granted: grantedExtraTurns, remaining: remainingExtraTurns } =
+        addBotModeExtraTurns('foe', earnedExtraTurns);
       if (remainingExtraTurns > 0) {
-        announceExtraTurns('foe', earnedExtraTurns, remainingExtraTurns);
+        announceExtraTurns('foe', grantedExtraTurns, remainingExtraTurns);
         setStatus(
-          earnedExtraTurns > 0
-            ? `Máy nhận +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+          grantedExtraTurns > 0
+            ? `Máy nhận +${grantedExtraTurns} lượt · còn ${remainingExtraTurns}!`
             : `Máy còn ${remainingExtraTurns} lượt thưởng!`,
         );
         continue;
@@ -1342,14 +1350,15 @@ async function startBotTurn(): Promise<void> {
     if (stale()) return;
     botSelectorA.visible = false;
     const earnedExtraTurns = await resolveCascades('foe');
-    const remainingExtraTurns = addBotModeExtraTurns('foe', earnedExtraTurns);
+    const { granted: grantedExtraTurns, remaining: remainingExtraTurns } =
+      addBotModeExtraTurns('foe', earnedExtraTurns);
     if (stale()) return;
     if (checkEnd()) return;
     if (remainingExtraTurns === 0) break;
-    announceExtraTurns('foe', earnedExtraTurns, remainingExtraTurns);
+    announceExtraTurns('foe', grantedExtraTurns, remainingExtraTurns);
     setStatus(
-      earnedExtraTurns > 0
-        ? `Máy nhận +${earnedExtraTurns} lượt · còn ${remainingExtraTurns}!`
+      grantedExtraTurns > 0
+        ? `Máy nhận +${grantedExtraTurns} lượt · còn ${remainingExtraTurns}!`
         : `Máy còn ${remainingExtraTurns} lượt thưởng!`,
     );
   }

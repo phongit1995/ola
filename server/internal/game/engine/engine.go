@@ -22,9 +22,11 @@ import (
 type Emitter interface {
 	ToUser(gameID string, userID string, envelope protocol.OutEnvelope)
 	ToGame(gameID string, envelope protocol.OutEnvelope)
+	ToMatch(gameID string, matchID string, envelope protocol.OutEnvelope)
 }
 
 const (
+	MaxSpectators     = 20
 	finishedResultTTL = 2 * time.Minute
 	maxTurnStartDelay = 20 * time.Second
 	maxChatRunes      = 120
@@ -98,6 +100,7 @@ type Match struct {
 	lastChatAt     []time.Time
 	lastReactionAt []time.Time
 	room           *Room
+	closedRoom     *Room
 	listedRoomID   string
 	escrowVerified bool
 }
@@ -195,6 +198,21 @@ func (e *Engine) broadcastState(m *Match, lastMove json.RawMessage, lastBy int) 
 			LastBy:   lastBy,
 		}})
 	}
+	if spectatable(m.logic) {
+		e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{Type: protocol.S2CState, Data: protocol.StateData{
+			MatchID:  m.ID,
+			State:    m.state,
+			Turn:     m.turnIdx,
+			Deadline: deadline,
+			LastMove: lastMove,
+			LastBy:   lastBy,
+		}})
+	}
+}
+
+func spectatable(gameLogic logic.GameLogic) bool {
+	_, hidden := gameLogic.(logic.StateViewer)
+	return !hidden
 }
 
 func (e *Engine) matchRankings(m *Match) []protocol.RankingEntry {
@@ -246,6 +264,12 @@ func (e *Engine) toUser(gameID, userID string, envelope protocol.OutEnvelope) {
 func (e *Engine) toGame(gameID string, envelope protocol.OutEnvelope) {
 	if emitter := e.currentEmitter(); emitter != nil {
 		emitter.ToGame(gameID, envelope)
+	}
+}
+
+func (e *Engine) toMatch(gameID, matchID string, envelope protocol.OutEnvelope) {
+	if emitter := e.currentEmitter(); emitter != nil {
+		emitter.ToMatch(gameID, matchID, envelope)
 	}
 }
 
@@ -412,12 +436,14 @@ func (e *Engine) clearFinished(keys ...string) {
 
 func (e *Engine) OnConnect(gameID, userID string) {
 	key := userKey(gameID, userID)
+	afterMatchID := ""
 	if e.reconnectActiveMatch(gameID, userID) {
 		return
 	}
 
 	if data, ok := e.takeFinished(key); ok {
 		e.toUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
+		afterMatchID = data.MatchID
 	}
 
 	e.roomMu.Lock()
@@ -428,11 +454,12 @@ func (e *Engine) OnConnect(gameID, userID string) {
 	}
 	if data, ok := e.takeFinished(key); ok {
 		e.toUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
+		afterMatchID = data.MatchID
 	}
 	if ref, ok := e.store.RoomByUser(gameID, userID); ok {
 		if room, exists := e.store.Get(gameID, ref.RoomID); exists && room.hasMember(userID) {
 			e.emitRoomWaiting(gameID, userID, room)
-			e.emitRoomStateTo(room, userID)
+			e.emitRoomStateToAfterMatch(room, userID, afterMatchID)
 			e.emitRoomSync(gameID, userID, room.ID)
 		} else {
 			_ = e.store.DeleteUserRef(gameID, userID, ref.RoomID)
@@ -452,15 +479,6 @@ func (e *Engine) reconnectActiveMatch(gameID, userID string) bool {
 			if m.disconnected[idx] {
 				delete(m.disconnected, idx)
 				delete(m.disconnectedAt, idx)
-				for otherIdx, other := range m.players {
-					if otherIdx == idx || m.disconnected[otherIdx] || m.quit[otherIdx] {
-						continue
-					}
-					e.toUser(m.GameID, other.ID, protocol.OutEnvelope{
-						Type: protocol.S2COpponentReconnected,
-						Data: protocol.OpponentReconnectedData{UserID: userID},
-					})
-				}
 				if len(m.disconnected) == 0 {
 					e.cancelGrace(m)
 					if m.pausedRemain > 0 {
@@ -468,6 +486,24 @@ func (e *Engine) reconnectActiveMatch(gameID, userID string) bool {
 						m.pausedRemain = 0
 					}
 				}
+				reconnected := protocol.OpponentReconnectedData{
+					UserID:   userID,
+					Turn:     m.turnIdx,
+					Deadline: m.deadline.UnixMilli(),
+				}
+				for otherIdx, other := range m.players {
+					if otherIdx == idx || m.disconnected[otherIdx] || m.quit[otherIdx] {
+						continue
+					}
+					e.toUser(m.GameID, other.ID, protocol.OutEnvelope{
+						Type: protocol.S2COpponentReconnected,
+						Data: reconnected,
+					})
+				}
+				e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{
+					Type: protocol.S2COpponentReconnected,
+					Data: reconnected,
+				})
 				if err := e.persistMatch(m); err != nil {
 					e.logger.Errorw("Failed to persist reconnected match", "match_id", m.ID, "error", err)
 				}
@@ -1091,6 +1127,7 @@ func (e *Engine) ListRooms(gameID, userID string) {
 	type roomListEntry struct {
 		room    Room
 		playing bool
+		matchID string
 	}
 	entries := make([]roomListEntry, 0, len(rooms))
 	seen := make(map[string]struct{}, len(rooms))
@@ -1113,7 +1150,7 @@ func (e *Engine) ListRooms(gameID, userID string) {
 			if _, exists := seen[snapshot.Room.ID]; exists {
 				continue
 			}
-			entries = append(entries, roomListEntry{room: *snapshot.Room, playing: true})
+			entries = append(entries, roomListEntry{room: *snapshot.Room, playing: true, matchID: snapshot.ID})
 			seen[snapshot.Room.ID] = struct{}{}
 		}
 	}
@@ -1128,6 +1165,7 @@ func (e *Engine) ListRooms(gameID, userID string) {
 		info := roomInfo(entry.room)
 		if entry.playing {
 			info.Status = protocol.RoomStatusPlaying
+			info.MatchID = entry.matchID
 		}
 		infos = append(infos, info)
 	}
@@ -1159,9 +1197,21 @@ func (e *Engine) emitRoomUpsert(room Room) {
 	})
 }
 
+func (e *Engine) matchIDForRoom(roomID string) string {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	for _, m := range e.matches {
+		if m.listedRoomID == roomID {
+			return m.ID
+		}
+	}
+	return ""
+}
+
 func (e *Engine) emitPlayingRoomUpsert(room Room) {
 	info := roomInfo(room)
 	info.Status = protocol.RoomStatusPlaying
+	info.MatchID = e.matchIDForRoom(room.ID)
 	e.toGame(room.GameID, protocol.OutEnvelope{
 		Type: protocol.S2CRoomUpsert,
 		Data: protocol.RoomUpsertData{Room: info},
@@ -1183,12 +1233,20 @@ func (e *Engine) emitRoomWaiting(gameID, userID string, room Room) {
 }
 
 func (e *Engine) emitRoomState(room Room) {
+	e.emitRoomStateAfterMatch(room, "")
+}
+
+func (e *Engine) emitRoomStateAfterMatch(room Room, matchID string) {
 	for _, memberID := range room.memberIDs() {
-		e.emitRoomStateTo(room, memberID)
+		e.emitRoomStateToAfterMatch(room, memberID, matchID)
 	}
 }
 
 func (e *Engine) emitRoomStateTo(room Room, userID string) {
+	e.emitRoomStateToAfterMatch(room, userID, "")
+}
+
+func (e *Engine) emitRoomStateToAfterMatch(room Room, userID, matchID string) {
 	members := make([]protocol.RoomMember, 0, room.playerCount())
 	members = append(members, protocol.RoomMember{
 		ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType, Owner: true, Ready: true,
@@ -1202,7 +1260,7 @@ func (e *Engine) emitRoomStateTo(room Room, userID string) {
 		Type: protocol.S2CRoomState,
 		Data: protocol.RoomStateData{
 			RoomID: room.ID, OwnerID: room.OwnerID, YouID: userID, Bet: room.Bet,
-			Locked: room.Password != "", MaxPlayers: room.capacity(), Members: members,
+			Locked: room.Password != "", MaxPlayers: room.capacity(), Members: members, AfterMatchID: matchID,
 		},
 	})
 }
@@ -1218,6 +1276,17 @@ func (e *Engine) emitRoomClosed(room Room, reason string) {
 	data := protocol.RoomClosedData{RoomID: room.ID, Reason: reason}
 	for _, memberID := range room.memberIDs() {
 		e.toUser(room.GameID, memberID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
+	}
+}
+
+func (e *Engine) emitRoomClosedExcept(room Room, excludedID, reason string) {
+	data := protocol.RoomClosedData{RoomID: room.ID, Reason: reason}
+	for _, memberID := range room.memberIDs() {
+		if memberID == excludedID {
+			continue
+		}
+		e.toUser(room.GameID, memberID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
+		e.emitRoomSync(room.GameID, memberID, "")
 	}
 }
 
@@ -1321,6 +1390,10 @@ func (e *Engine) disconnectActiveMatch(gameID, userID string) bool {
 			Data: e.opponentDisconnectedData(m, idx),
 		})
 	}
+	e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{
+		Type: protocol.S2COpponentDisconnected,
+		Data: e.opponentDisconnectedData(m, idx),
+	})
 	if err := e.persistMatch(m); err != nil {
 		e.logger.Errorw("Failed to persist disconnected match", "match_id", m.ID, "error", err)
 	}
@@ -1647,6 +1720,7 @@ func (e *Engine) Chat(gameID, userID, matchID, text string) {
 			Data: data,
 		})
 	}
+	e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{Type: protocol.S2CChatMessage, Data: data})
 }
 
 func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
@@ -1741,6 +1815,7 @@ func (e *Engine) MatchReaction(gameID, userID, matchID, reactionType string) {
 	for _, player := range m.players {
 		e.toUser(m.GameID, player.ID, protocol.OutEnvelope{Type: protocol.S2CReaction, Data: data})
 	}
+	e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{Type: protocol.S2CReaction, Data: data})
 }
 
 func validReactionType(reactionType string) bool {
@@ -1808,8 +1883,13 @@ func (e *Engine) forfeit(gameID, userID, matchID string, leaveAfter bool) {
 			room := *m.room
 			removeRoomGuest(&room, userID)
 			m.room = &room
-		} else {
+		} else if m.room != nil && m.room.OwnerID == userID {
+			m.closedRoom = cloneRoom(m.room)
 			m.room = nil
+		} else if m.closedRoom != nil && m.closedRoom.guestIndex(userID) >= 0 {
+			room := *m.closedRoom
+			removeRoomGuest(&room, userID)
+			m.closedRoom = &room
 		}
 	}
 	if handler, ok := m.logic.(logic.QuitHandler); ok && len(m.activeIdxs())-1 >= 2 {
@@ -2207,6 +2287,9 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	}
 	if m.room != nil && (len(m.disconnected) > 0 || len(m.quit) > 0) {
 		if gone(m.room.OwnerID) {
+			if m.closedRoom == nil {
+				m.closedRoom = cloneRoom(m.room)
+			}
 			m.room = nil
 		} else {
 			room := *m.room
@@ -2300,6 +2383,7 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	for _, p := range m.players {
 		e.toUser(m.GameID, p.ID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
 	}
+	e.notifySpectatorsMatchOver(m, data)
 	if e.currentSettlement() != nil || m.bet > 0 {
 		e.queueFinishedSettlement(snapshot, outcome)
 	} else if _, err := e.activeStore.DeleteIfStatus(
@@ -2315,9 +2399,16 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 		for _, memberID := range waitingRoom.memberIDs() {
 			e.emitRoomWaiting(waitingRoom.GameID, memberID, *waitingRoom)
 		}
-		e.emitRoomState(*waitingRoom)
+		e.emitRoomStateAfterMatch(*waitingRoom, m.ID)
 	} else if m.listedRoomID != "" {
 		e.emitRoomRemoved(m.GameID, m.listedRoomID)
+	}
+	if m.closedRoom != nil {
+		reason := "owner_left"
+		if ownerIdx := m.playerIndex(m.closedRoom.OwnerID); ownerIdx >= 0 && m.disconnected[ownerIdx] {
+			reason = "owner_disconnected"
+		}
+		e.emitRoomClosedExcept(*m.closedRoom, m.closedRoom.OwnerID, reason)
 	}
 	for _, key := range keys {
 		e.scheduleFinishedCleanup(key, m.ID)
@@ -2369,6 +2460,7 @@ func (e *Engine) snapshotForMatch(m *Match) (ActiveMatchSnapshot, error) {
 		Disconnected:       m.disconnected,
 		PausedRemainMillis: m.pausedRemain.Milliseconds(),
 		Room:               m.room,
+		ClosedRoom:         m.closedRoom,
 	}
 	for idx := range m.quit {
 		if m.quit[idx] {
@@ -2519,6 +2611,7 @@ func (e *Engine) restorePlayingSnapshot(snapshot ActiveMatchSnapshot, expectedGa
 		startedAt:    startedAt,
 		graceGen:     1,
 		room:         cloneRoom(snapshot.Room),
+		closedRoom:   cloneRoom(snapshot.ClosedRoom),
 	}
 	m.ensureSeats()
 	for _, idx := range snapshot.Quit {

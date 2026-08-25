@@ -121,6 +121,19 @@ func (r *Repository) ChangeUsername(p ChangeUsernameParams) (*ChangeUsernameResu
 			}
 		}
 
+		actorID := p.UserID
+		changeLog := models.UsernameChangeLog{
+			UserID:      p.UserID,
+			OldUsername: user.Username,
+			NewUsername: p.NewUsername,
+			Cost:        p.Cost,
+			ActorType:   string(models.KenActorUser),
+			ActorID:     &actorID,
+		}
+		if err := tx.Create(&changeLog).Error; err != nil {
+			return err
+		}
+
 		result.OldUsername = user.Username
 		result.KenBalance = balanceAfter
 		return nil

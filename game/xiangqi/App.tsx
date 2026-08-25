@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { ConfirmModal } from './components/ConfirmModal';
+import { BotSetupModal } from './components/BotSetupModal';
 import { BoardScreen } from './screens/BoardScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { LeaderboardScreen } from './screens/LeaderboardScreen';
@@ -10,33 +11,40 @@ import { ResultScreen } from './screens/ResultScreen';
 import { useXiangqi } from './store/useXiangqi';
 
 export function App() {
-  const { boardMode, lobbyVisible, rankedVisible, historyVisible, leaderboardVisible, result, toast, notice, init, showNotice } =
+  const { boardMode, rankedVisible, historyVisible, leaderboardVisible, botSetupVisible, result, toast, notice, init, dispose, showNotice } =
     useXiangqi(
       useShallow((s) => ({
         boardMode: s.boardMode,
-        lobbyVisible: s.lobbyVisible,
         rankedVisible: s.rankedVisible,
         historyVisible: s.historyVisible,
         leaderboardVisible: s.leaderboardVisible,
+        botSetupVisible: s.botSetupVisible,
         result: s.result,
         toast: s.toast,
         notice: s.notice,
         init: s.init,
+        dispose: s.dispose,
         showNotice: s.showNotice,
       })),
     );
 
   useEffect(() => {
     void init();
-  }, [init]);
+    return dispose;
+  }, [dispose, init]);
 
   return (
     <div className="xq-app">
-      {boardMode !== 'idle' ? <BoardScreen /> : null}
-      {boardMode === 'idle' && lobbyVisible ? <LobbyScreen /> : null}
-      {boardMode === 'idle' && rankedVisible ? <RankedScreen /> : null}
+      {boardMode !== 'idle' ? (
+        <BoardScreen />
+      ) : rankedVisible ? (
+        <RankedScreen />
+      ) : (
+        <LobbyScreen />
+      )}
       {historyVisible ? <HistoryScreen /> : null}
       {leaderboardVisible ? <LeaderboardScreen /> : null}
+      {botSetupVisible ? <BotSetupModal /> : null}
       {result ? <ResultScreen /> : null}
       {notice ? (
         <ConfirmModal

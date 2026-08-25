@@ -35,6 +35,14 @@ func TestVipTypeFieldsRemainBackwardCompatible(t *testing.T) {
 	if !strings.Contains(string(memberJSON), `"vipType":"vip-42"`) {
 		t.Fatalf("room member VIP type was not encoded: %s", memberJSON)
 	}
+
+	historyJSON, err := json.Marshal(MatchHistoryEntry{OpponentVipType: &vipType})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(historyJSON), `"opponentVipType":"vip-42"`) {
+		t.Fatalf("history opponent VIP type was not encoded: %s", historyJSON)
+	}
 }
 
 func TestUserInfoIncludesStableUserID(t *testing.T) {
@@ -133,5 +141,45 @@ func TestMatchOverKeepsZeroNetDelta(t *testing.T) {
 	}
 	if delta, exists := encoded["kenDelta"]; !exists || delta != float64(0) {
 		t.Fatalf("zero net delta must remain explicit: %s", payload)
+	}
+}
+
+func TestOpponentReconnectedIncludesAuthoritativeTurnDeadline(t *testing.T) {
+	payload, err := json.Marshal(OpponentReconnectedData{
+		UserID:   "player-2",
+		Turn:     0,
+		Deadline: 1_725_000_000_000,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var encoded map[string]any
+	if err := json.Unmarshal(payload, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	if turn, exists := encoded["turn"]; !exists || turn != float64(0) {
+		t.Fatalf("red turn must remain explicit in reconnect sync: %s", payload)
+	}
+	if encoded["deadline"] != float64(1_725_000_000_000) {
+		t.Fatalf("reconnect sync omitted authoritative deadline: %s", payload)
+	}
+}
+
+func TestRoomStateIdentifiesPostMatchTransition(t *testing.T) {
+	payload, err := json.Marshal(RoomStateData{RoomID: "room-1", AfterMatchID: "match-1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(payload), `"afterMatchId":"match-1"`) {
+		t.Fatalf("post-match room state omitted transition id: %s", payload)
+	}
+
+	ordinary, err := json.Marshal(RoomStateData{RoomID: "room-1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(ordinary), `"afterMatchId"`) {
+		t.Fatalf("ordinary room state unexpectedly carried post-match context: %s", ordinary)
 	}
 }

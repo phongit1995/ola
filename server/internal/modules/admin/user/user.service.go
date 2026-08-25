@@ -130,20 +130,13 @@ func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
 	return toDetail(user), nil
 }
 
-func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, error) {
+func (s *Service) UpdateUsername(id uuid.UUID, username string, adminID uuid.UUID) (*UserDetail, error) {
 	username = strings.ToLower(strings.TrimSpace(username))
 	if len(username) < usernameMinLen || len(username) > usernameMaxLen {
 		return nil, fmt.Errorf("username must be between %d and %d characters", usernameMinLen, usernameMaxLen)
 	}
 	if !usernameRegex.MatchString(username) {
 		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
-	}
-
-	if _, err := s.repo.FindByIDUnscoped(id); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperr.ErrUserNotFound
-		}
-		return nil, err
 	}
 
 	taken, err := s.repo.UsernameTaken(username, id)
@@ -154,7 +147,7 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, er
 		return nil, errors.New("username already exists")
 	}
 
-	if err := s.repo.SetUsername(id, username); err != nil {
+	if err := s.repo.SetUsername(id, username, adminID); err != nil {
 		if strings.Contains(err.Error(), "users_username_key") {
 			return nil, errors.New("username already exists")
 		}
@@ -421,6 +414,37 @@ func toSessionItem(sess models.UserSession) SessionItem {
 		CreatedAt:    sess.CreatedAt.UTC().Format(time.RFC3339),
 		RevokedAt:    formatTime(sess.RevokedAt),
 	}
+}
+
+func (s *Service) ListUsernameChanges(f UsernameChangeFilter) (*UsernameChangeListResponse, error) {
+	rows, total, err := s.repo.ListUsernameChanges(f)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]UsernameChangeItem, len(rows))
+	for i, row := range rows {
+		item := UsernameChangeItem{
+			ID: row.ID.String(),
+			User: UsernameChangeUser{
+				ID:       row.UserID.String(),
+				Username: row.CurrentUsername,
+				FullName: row.FullName,
+				Avatar:   row.Avatar,
+			},
+			OldUsername:   row.OldUsername,
+			NewUsername:   row.NewUsername,
+			Cost:          row.Cost,
+			ActorType:     row.ActorType,
+			ActorUsername: row.AdminUsername,
+			ActorFullName: row.AdminFullName,
+			CreatedAt:     row.CreatedAt.UTC().Format(time.RFC3339),
+		}
+		if row.ActorID != nil {
+			item.ActorID = row.ActorID.String()
+		}
+		items[i] = item
+	}
+	return &UsernameChangeListResponse{Items: items, Total: total, Limit: f.Limit, Offset: f.Offset}, nil
 }
 
 func isVip(u *models.User) bool {

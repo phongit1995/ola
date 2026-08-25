@@ -16,8 +16,8 @@ Một vùng chỉ có tối đa **một CTA vàng**. Modal có một CTA chính 
 ┌──────────────────────────────────┐
 │  [leading icon]  Label  [badge]  │
 └──────────────────────────────────┘
-   border 2 px       height ≥48
-   radius 16         padding X 22
+   border 1.5–2 px   height ≥48
+   radius 14         padding X 22
 ```
 
 - Label luôn là live text, một dòng ở button chuẩn.
@@ -26,6 +26,7 @@ Một vùng chỉ có tối đa **một CTA vàng**. Modal có một CTA chính 
 - Spinner thay vị trí icon hoặc nằm trước label; không làm button đổi chiều rộng.
 - Button có icon + label không đặt icon bên phải trừ `Tiếp tục`/navigation forward.
 - Không đặt cả leading và trailing icon nếu không có lý do điều hướng rõ ràng.
+- Riêng CTA hero ở lobby được phép có icon tile, label, một dòng mô tả ngắn và chevron; toàn bộ vẫn là một button với một accessible name rõ ràng.
 
 Base class hiện tại:
 
@@ -37,8 +38,8 @@ Base class hiện tại:
   gap: 8px;
   min-height: 48px;
   padding-inline: 22px;
-  border: 2px solid var(--xq-navy);
-  border-radius: 16px;
+  border: 1.5px solid var(--xq-navy);
+  border-radius: 14px;
   font: 700 16px/20px var(--xq-font-ui);
   transition: transform 120ms ease, background-color 150ms ease,
     border-color 150ms ease, box-shadow 150ms ease;
@@ -84,7 +85,7 @@ Class: `.xq-btn.xq-btn-gold`.
 ### Khi dùng
 
 - Chơi xếp hạng.
-- Tạo bàn / Vào bàn.
+- Tạo bàn; `Vào bàn` trong modal xác nhận.
 - Bắt đầu trận.
 - Sẵn sàng.
 - Thử lại kết nối.
@@ -105,9 +106,9 @@ Class: `.xq-btn.xq-btn-gold`.
 |---|---|
 | Nền | `linear-gradient(180deg, #FFD34D, #F2B807)` |
 | Text/icon | navy |
-| Border | gold-deep `2 px` |
-| Radius | `16 px` |
-| Shadow | `md` |
+| Border | gold-deep `1.5–2 px` |
+| Radius | `14 px`; CTA hero lobby `18 px` |
+| Shadow | nổi `3 px` + ambient shadow nhẹ |
 | Hover | tăng sáng đầu gradient, shadow nhích lên; không glow |
 | Pressed | translateY `1 px`, shadow `sm` |
 | Focus | ring gold offset `2 px` |
@@ -139,8 +140,8 @@ Class: `.xq-btn.xq-btn-paper`.
 |---|---|
 | Nền | paper |
 | Text/icon | navy |
-| Border | navy `2 px` |
-| Radius | `16 px` |
+| Border | navy `1.5 px` |
+| Radius | `14 px` |
 | Shadow | none; hover có `sm` |
 | Hover | paper-bright |
 | Pressed | paper-dim + translateY `1 px` |
@@ -167,8 +168,8 @@ Action bar `Bỏ cuộc` dùng variant cảnh báo nhẹ `.xq-action-danger`; bu
 |---|---|
 | Nền | danger |
 | Text/icon | cream |
-| Border | red-deep `2 px` |
-| Radius | `16 px` |
+| Border | red-deep `1.5–2 px` |
+| Radius | `14 px` |
 | Shadow | `sm`; hover `md` |
 | Pressed | red-deep nhẹ + translateY `1 px` |
 | Focus | gold ring |

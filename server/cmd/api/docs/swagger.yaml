@@ -2020,6 +2020,53 @@ definitions:
       username:
         type: string
     type: object
+  internal_modules_admin_user.UsernameChangeItem:
+    properties:
+      actorFullName:
+        type: string
+      actorId:
+        type: string
+      actorType:
+        type: string
+      actorUsername:
+        type: string
+      cost:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: string
+      newUsername:
+        type: string
+      oldUsername:
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_user.UsernameChangeUser'
+    type: object
+  internal_modules_admin_user.UsernameChangeListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_user.UsernameChangeItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_user.UsernameChangeUser:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
   internal_modules_admin_user.VipIconItem:
     properties:
       acquiredAt:
@@ -8540,6 +8587,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_UsernameChangeListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_user.UsernameChangeListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_VipIconItem:
     properties:
       data:
@@ -11322,6 +11386,59 @@ paths:
       summary: Upload an image (admin)
       tags:
       - admin-upload
+  /admin/username-changes:
+    get:
+      description: Danh sách các lần đổi username, gồm cả user tự đổi (mất Ken) và
+        admin đổi hộ
+      parameters:
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Tìm theo username (cũ, mới hoặc hiện tại)
+        in: query
+        name: q
+        type: string
+      - description: Người thực hiện (user | admin)
+        in: query
+        name: actorType
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_UsernameChangeListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử đổi nickname
+      tags:
+      - admin-user
   /admin/users:
     get:
       description: List users with pagination and optional search (admin only)

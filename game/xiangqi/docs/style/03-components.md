@@ -20,11 +20,12 @@ Không giải quyết lỗi chồng lớp bằng z-index tùy ý `9999`. Nếu c
 Class: `.xq-app`, `.xq-screen`.
 
 - App cao `100%`, max-width `520 px`, đặt giữa ở desktop.
-- Screen dùng wood gradient `wood-700 → wood-900`.
+- Screen dùng wood gradient `wood-700 → wood-900`, thớ gỗ và mối ghép ván đủ tương phản để nhận ra ở viewport mobile.
 - Padding: top `safe-area + 12`, ngang `15/20`, bottom `safe-area + 12`.
 - Nội dung không kéo ngang; danh sách và chat tự scroll trong vùng riêng.
 - Không render background minh họa khác nhau cho mỗi màn. Tính nhất quán đến từ một trường nền gỗ liên tục.
 - Nếu dùng texture, đặt một pseudo-element ở app level; mọi screen dùng cùng tile/scale để không bị “texture nhảy”.
+- Screen có thể thêm khung khắc chìm/inlay ở mép và một lớp sáng tối theo chức năng; lớp này không đổi hướng texture hay tạo scene riêng.
 
 ## 3. Screen header
 
@@ -229,14 +230,16 @@ Class: `.xq-room-row`, `.xq-list-row`.
 - Nếu có button `Vào bàn`, row không đồng thời click toàn bộ trừ khi semantics rõ.
 - Tên dài ellipsis; KEN và action không co.
 - Empty/loading là row/panel riêng, không dựng một room giả mờ.
+- Riêng room list được đặt trên một lớp “kệ bàn” gỗ chìm, dùng cùng texture nền và shadow nội; row giấy vẫn là surface đọc dữ liệu chính.
+- `Vào bàn` gộp occupancy `1/2` trong cùng button compact. Dùng paper/ink để không tạo một dải CTA vàng lặp; CTA vàng toàn màn dành cho `Tạo bàn`.
 
 ### Room row tại width cơ sở
 
 ```text
-owner: flexible | bet: 92 px | join/status: 118 px
+owner: flexible | bet: 86 px | join/status: 108 px
 ```
 
-Ở width 360, cột join được phép co xuống `104 px`; nếu vẫn thiếu, chuyển owner+bet thành hai dòng thay vì giảm font dưới 12 px.
+Ở width 360, bet/join co xuống `70/102 px`; nếu vẫn thiếu, chuyển owner+bet thành hai dòng thay vì giảm font dưới 12 px.
 
 ## 10. Inputs và form fields
 
@@ -312,14 +315,14 @@ Class: `.xq-pregame`, `.xq-pregame-panel`, `.xq-seat`.
 
 Class: `.xq-chat`.
 
-- Bottom sheet cao `46%`, paper, border navy 2, radius top `20`, không border dưới.
-- Header height tối thiểu 52; title 15/800; close icon button trên paper.
-- Message list scroll độc lập, padding ngang 14, gap 6.
+- Bottom sheet cao `clamp(360px, 54%, 500px)`, paper, border navy 3, radius top `26`, không border dưới; scrim tối nhẹ đóng khi bấm.
+- Header gỗ height tối thiểu 72; icon chat gold, title 17/800, chip `Trong bàn`, subtitle số tin và close icon button tương phản cao.
+- Message list scroll độc lập, padding ngang 14, gap 9; có notice phạm vi, tên người gửi và giờ gửi.
 - Bubble đối thủ: paper-bright + border navy 35%.
 - Bubble mình: gold + border gold-deep.
-- Bubble radius 12, padding `6 × 12`, max-width `80%`, text `14/20`.
+- Bubble radius bất đối xứng 14/5, padding `8 × 12`, max-width `82%`, text `14/19`.
 - Không dùng texture trong bubble; không dùng avatar AI nhỏ cạnh từng tin.
-- Input row tôn trọng safe-area bottom; input 44 visual, send button small.
+- Input row tôn trọng safe-area bottom; input 44 visual có bộ đếm 120 ký tự, send button 76×44.
 - Text dài break-word; URL không được làm overflow.
 - Khi lỗi gửi, draft được khôi phục và toast giải thích; không biến bubble thành trạng thái lỗi mơ hồ.
 
