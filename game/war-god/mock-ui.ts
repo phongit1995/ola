@@ -21,7 +21,7 @@ import type {
 import { A, loadAssets, tex } from './assets';
 import { initKit } from './kit';
 import { installKeyboardDismiss } from './keyboard-dismiss';
-import { DESIGN_W } from './layout';
+import { DESIGN_W, renderResolution, watchDevicePixelRatio } from './layout';
 import { createBoard } from './logic/core';
 import { TILE_ORDER, type ServerState } from './logic/server-types';
 import type { BotLevel } from './logic/battle';
@@ -401,7 +401,7 @@ async function main(): Promise<void> {
   const disposeKeyboardDismiss = installKeyboardDismiss();
   window.addEventListener('pagehide', disposeKeyboardDismiss, { once: true });
 
-  const resolution = Math.max(1, window.devicePixelRatio || 1);
+  const resolution = renderResolution(window.devicePixelRatio);
   const app = new Application();
   await app.init({
     resizeTo: window,
@@ -459,6 +459,10 @@ async function main(): Promise<void> {
   root.addChild(ultimatePicker.view);
 
   function layout(): void {
+    const nextResolution = renderResolution(window.devicePixelRatio);
+    if (app.renderer.resolution !== nextResolution) {
+      app.renderer.resolution = nextResolution;
+    }
     const scale = Math.min(window.innerWidth, DESIGN_W) / DESIGN_W;
     const designH = window.innerHeight / scale;
     root.scale.set(scale);
@@ -488,6 +492,12 @@ async function main(): Promise<void> {
   requestLayout = layout;
   layout();
   window.addEventListener('resize', layout);
+  const disposeResolutionWatcher = watchDevicePixelRatio(window, layout);
+  window.addEventListener('pagehide', (event) => {
+    if (event.persisted) return;
+    window.removeEventListener('resize', layout);
+    disposeResolutionWatcher();
+  });
 
   await SCENES[screen]?.();
   layout();

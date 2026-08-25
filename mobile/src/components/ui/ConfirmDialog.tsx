@@ -11,6 +11,7 @@ interface ConfirmDialogProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  hideCancel?: boolean;
   danger?: boolean;
   showIcon?: boolean;
   checkboxLabel?: string;
@@ -27,6 +28,7 @@ export function ConfirmDialog({
   message,
   confirmLabel,
   cancelLabel,
+  hideCancel = false,
   danger = false,
   showIcon = true,
   checkboxLabel,
@@ -52,7 +54,9 @@ export function ConfirmDialog({
           <DialogButton variant={danger ? 'danger' : 'green'} onPress={onConfirm}>
             {confirmLabel ?? t('dialog.accept')}
           </DialogButton>
-          <DialogButton onPress={onCancel}>{cancelLabel ?? t('dialog.cancel')}</DialogButton>
+          {!hideCancel && (
+            <DialogButton onPress={onCancel}>{cancelLabel ?? t('dialog.cancel')}</DialogButton>
+          )}
         </>
       }
     >

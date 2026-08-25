@@ -270,6 +270,7 @@ export function ChatBubble({
           }}
           style={{ ...fitChatImageSize(imageRatio), borderRadius: 8 }}
           resizeMode="cover"
+          showLoader
         />
       </Pressable>
     );

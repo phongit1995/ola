@@ -724,7 +724,7 @@
     "buyVip": "Buy VIP",
     "quitTitle": "Quit room",
     "quitMessage": "Do you want to quit room \"{{name}}\"?",
-    "roomFull": "Chat room is full. Subscribe to a VIP account to join",
+    "roomFull": "This chat room is full. Please try again later.",
     "filterTitle": "Select filter",
     "filterShowAll": "Show all",
     "filterMedia": "Show messages with images",

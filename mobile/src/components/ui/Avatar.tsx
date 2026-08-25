@@ -8,12 +8,20 @@ interface AvatarProps {
   size?: number;
   rounded?: boolean;
   color?: string;
+  showLoader?: boolean;
 }
 
-export function Avatar({ name, uri, size = 48, rounded = true, color }: AvatarProps) {
+export function Avatar({
+  name,
+  uri,
+  size = 48,
+  rounded = true,
+  color,
+  showLoader = size >= 40,
+}: AvatarProps) {
   const style = { width: size, height: size, borderRadius: rounded ? size / 2 : 0 };
   if (uri != null && uri !== '') {
-    return <CachedImage uri={uri} style={style} resizeMode="cover" />;
+    return <CachedImage uri={uri} style={style} resizeMode="cover" showLoader={showLoader} />;
   }
   const initial = name.trim().charAt(0).toUpperCase() || '?';
   return (

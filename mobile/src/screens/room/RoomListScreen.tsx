@@ -268,8 +268,8 @@ export function RoomListScreen() {
         visible={fullRoom != null}
         title={fullRoom?.name ?? ''}
         message={t('room.roomFull')}
-        confirmLabel={t('room.buyVip')}
-        cancelLabel={t('dialog.cancel')}
+        confirmLabel={t('dialog.close')}
+        hideCancel
         onConfirm={() => setFullRoom(null)}
         onCancel={() => setFullRoom(null)}
       />
