@@ -1,27 +1,27 @@
 {
   "reminder": {
     "channelName": "Nhắc nhở",
-    "comeBackTitle": "Ola nhớ bạn quá!",
+    "comeBackTitle": "Okela nhớ bạn quá!",
     "m1": "Quay lại xem có gì mới nhé 💬",
     "m2": "Bạn bè đang online rôm rả, thiếu mỗi bạn thôi đó 👀",
-    "m3": "Đã 2 ngày rồi bạn chưa ghé Ola, mọi người nhớ bạn lắm!",
+    "m3": "Đã 2 ngày rồi bạn chưa ghé Okela, mọi người nhớ bạn lắm!",
     "m4": "Phòng chat đang xôm tụ, vào góp vui liền nào 🎉",
     "m5": "Vòng quay may mắn đang chờ bạn thử vận hôm nay 🍀",
     "m6": "Có thể bạn đã bỏ lỡ vài điều thú vị trên bảng tin đó 📰",
-    "m7": "Ghé Ola một chút cho vui nào, lâu quá không thấy bạn!",
+    "m7": "Ghé Okela một chút cho vui nào, lâu quá không thấy bạn!",
     "m8": "Bạn bè vừa đăng bài mới, vào xem ngay kẻo lỡ 👇",
     "m9": "Đập trứng nhận Ken đang chờ bạn đó 🥚",
-    "m10": "Một tin nhắn hỏi thăm cũng đủ làm bạn bè vui, vào Ola nhé 💚",
-    "m11": "Rảnh không? Vào Ola tám chuyện với mọi người nè ☕",
+    "m10": "Một tin nhắn hỏi thăm cũng đủ làm bạn bè vui, vào Okela nhé 💚",
+    "m11": "Rảnh không? Vào Okela tám chuyện với mọi người nè ☕",
     "m12": "Chiến Thần gọi tên bạn, vào so tài ngay ⚔️",
     "m13": "Lâu rồi chưa thấy bạn quay Vòng quay may mắn đó nha 🎡",
-    "m14": "Ola vắng bạn buồn hẳn, quay lại liền nhé 🥺",
+    "m14": "Okela vắng bạn buồn hẳn, quay lại liền nhé 🥺",
     "m15": "Có khi nào người ấy đang online chờ bạn không? 😉",
     "m16": "Vào điểm danh cho bạn bè biết bạn vẫn khỏe nè 👋",
-    "m17": "Tám chuyện, chơi game, kết bạn mới — tất cả đang chờ bạn ở Ola!",
-    "m18": "Đừng để cuộc vui gián đoạn, mở Ola lên nào 🔥",
+    "m17": "Tám chuyện, chơi game, kết bạn mới — tất cả đang chờ bạn ở Okela!",
+    "m18": "Đừng để cuộc vui gián đoạn, mở Okela lên nào 🔥",
     "m19": "Một ván game nhanh cho đỡ ghiền nhé? 🎮",
-    "m20": "Mở Ola lên, biết đâu hôm nay gặp được bạn mới hợp gu 💫"
+    "m20": "Mở Okela lên, biết đâu hôm nay gặp được bạn mới hợp gu 💫"
   },
   "arcade": {
     "minimize": "Thu nhỏ",
@@ -58,7 +58,7 @@
   },
   "wallpaper": {
     "remove": "Xoá ảnh nền",
-    "uploading": "Đang đổi hình nền cho Ola",
+    "uploading": "Đang đổi hình nền cho Okela",
     "error": "Không thể đổi hình nền vào lúc này. Vui lòng thử lại sau",
     "tooSmall": "Ảnh quá nhỏ, vui lòng chọn ảnh lớn hơn"
   },
@@ -89,7 +89,7 @@
     "password": "Mật khẩu",
     "submit": "Đăng nhập",
     "forgot": "Bạn quên mật khẩu?",
-    "createAccount": "Tạo tài khoản Ola",
+    "createAccount": "Tạo tài khoản Okela",
     "version": "Phiên bản",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
     "errUsernameLength": "Tên đăng nhập phải từ 2–20 ký tự.",
@@ -101,14 +101,14 @@
     "removeAccountConfirm": "Bạn có muốn xoá toàn bộ thông tin lưu trữ của tài khoản {{username}} trên thiết bị không?"
   },
   "register": {
-    "title": "Tạo tài khoản Ola",
+    "title": "Tạo tài khoản Okela",
     "usernameLabel": "TÊN ĐĂNG NHẬP",
     "usernamePlaceholder": "6–20 ký tự, chữ thường và số (a–z, 0–9, . _)",
     "passwordLabel": "MẬT KHẨU",
     "passwordPlaceholder": "6–20 ký tự",
     "confirmLabel": "NHẬP LẠI MẬT KHẨU",
     "confirmPlaceholder": "Nhập lại mật khẩu",
-    "agree": "Tôi xác nhận mình đủ 18 tuổi và đồng ý với <terms>Điều khoản sử dụng</terms> và <privacy>Chính sách bảo mật</privacy> của Ola",
+    "agree": "Tôi xác nhận mình đủ 18 tuổi và đồng ý với <terms>Điều khoản sử dụng</terms> và <privacy>Chính sách bảo mật</privacy> của Okela",
     "submit": "Hoàn tất",
     "hasAccount": "Đã có tài khoản?",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
@@ -185,7 +185,7 @@
       "ken": "KEN",
       "advertise": "Đăng Q.Cáo",
       "photos": "Hình Ảnh",
-      "mall": "Ola Mall",
+      "mall": "Okela Mall",
       "nearby": "Lân cận",
       "social": "Mạng Xã Hội",
       "settings": "Cài đặt",
@@ -197,9 +197,9 @@
   },
   "social": {
     "title": "Mạng Xã Hội",
-    "fanpageTitle": "Fanpage Ola",
-    "groupTitle": "Nhóm cộng đồng Ola",
-    "tiktokTitle": "TikTok Ola"
+    "fanpageTitle": "Fanpage Okela",
+    "groupTitle": "Nhóm cộng đồng Okela",
+    "tiktokTitle": "TikTok Okela"
   },
   "settings": {
     "title": "Cài đặt",
@@ -240,7 +240,7 @@
     "fontSmall": "Nhỏ",
     "fontMedium": "Vừa",
     "fontLarge": "Lớn",
-    "appVersion": "Ola Chat v1.0.0",
+    "appVersion": "Okela v1.0.0",
     "facebookJoin": "Tham gia cùng chúng tôi trên Facebook",
     "facebookLike": "Thích",
     "groups": {
@@ -248,11 +248,11 @@
       "display": "Hiển thị",
       "chat": "Cửa sổ Chat",
       "rss": "RSS",
-      "about": "Thông tin Ola"
+      "about": "Thông tin Okela"
     },
     "values": {
       "on": "Bật",
-      "ola": "Ola",
+      "ola": "Okela",
       "vietnamese": "Tiếng Việt",
       "circle": "Tròn",
       "default": "Mặc định",
@@ -283,7 +283,7 @@
       },
       "passcode": {
         "title": "Mật khẩu",
-        "subtitle": "Mật khẩu để mở Ola"
+        "subtitle": "Mật khẩu để mở Okela"
       },
       "newMe": {
         "title": "Thông báo khi có Me mới"
@@ -293,11 +293,11 @@
         "subtitle": "Kiểu khung avatar"
       },
       "wallpaper": {
-        "title": "Hình nền Ola"
+        "title": "Hình nền Okela"
       },
       "quickBrowser": {
         "title": "Trình duyệt nhanh",
-        "subtitle": "Mở link trong Ola"
+        "subtitle": "Mở link trong Okela"
       },
       "video": {
         "title": "Hiển thị video"
@@ -325,10 +325,10 @@
       },
       "rating": {
         "title": "Đánh giá",
-        "subtitle": "Đánh giá Ola trên Google Play"
+        "subtitle": "Đánh giá Okela trên Google Play"
       },
       "beta": {
-        "title": "Ola Beta",
+        "title": "Okela Beta",
         "subtitle": "Tham gia bản thử nghiệm"
       },
       "version": {
@@ -348,10 +348,10 @@
     "no": "Không",
     "logoutButton": "Đăng xuất",
     "logoutTitle": "Đăng xuất",
-    "logoutMessage": "Bạn có muốn đăng xuất khỏi Ola?",
+    "logoutMessage": "Bạn có muốn đăng xuất khỏi Okela?",
     "removeAccountButton": "Xóa tài khoản",
     "removeAccountTitle": "Xóa tài khoản",
-    "removeAccountMessage": "Bạn có chắc muốn xóa tài khoản {{username}} không? Bạn sẽ được đăng xuất khỏi Ola.",
+    "removeAccountMessage": "Bạn có chắc muốn xóa tài khoản {{username}} không? Bạn sẽ được đăng xuất khỏi Okela.",
     "deleteConvTitle": "Xóa hội thoại",
     "deleteConvMessage": "Bạn có muốn xóa hội thoại với {{name}}?",
     "deleteArchived": "Xóa cả tin nhắn phía bạn",
@@ -495,7 +495,7 @@
     "transferKenReceiver": "Người nhận",
     "transferKenReceiverHint": "Nhập nick người nhận",
     "transferKenChangeReceiver": "Đổi",
-    "transferKenWarning": "Nghiêm cấm mua bán vật phẩm trong Ola",
+    "transferKenWarning": "Nghiêm cấm mua bán vật phẩm trong Okela",
     "transferKenAmountLabel": "Lượng KEN cần chuyển",
     "transferKenAmountPlaceholder": "Nhập số KEN cần chuyển",
     "transferKenConfirmAmountLabel": "Số KEN cần chuyển",
@@ -554,10 +554,10 @@
     "makeFriendBlocked": "Hãy bỏ chặn người này trước khi kết bạn",
     "close": "Đóng",
     "hide": "Ẩn",
-    "joinedOlaYears": "Tham gia Ola {{n}} năm",
-    "joinedOlaMonths": "Tham gia Ola {{n}} tháng",
-    "joinedOlaDays": "Tham gia Ola {{n}} ngày",
-    "joinedOlaToday": "Tham gia Ola hôm nay",
+    "joinedOlaYears": "Tham gia Okela {{n}} năm",
+    "joinedOlaMonths": "Tham gia Okela {{n}} tháng",
+    "joinedOlaDays": "Tham gia Okela {{n}} ngày",
+    "joinedOlaToday": "Tham gia Okela hôm nay",
     "fanCount": "Fan: {{n}} Người",
     "antiCount": "Anti: {{n}} Người",
     "alreadyFriend": "Hai bạn đã là bạn bè",
@@ -653,7 +653,7 @@
     "transferVipDaysSuccess": "Đã tặng {{days}} ngày VIP cho {{name}}",
     "strangerClose": "Đóng",
     "strangerAge": "{{age}} tuổi",
-    "strangerJoin": "Tham gia Ola {{year}}",
+    "strangerJoin": "Tham gia Okela {{year}}",
     "strangerFans": "{{count}} người quan tâm",
     "locationSample": "Quận 1, TP. Hồ Chí Minh",
     "youtubeSample": "Video nhạc thư giãn"
@@ -930,7 +930,7 @@
     "unfriend": "Huỷ kết bạn",
     "unfriendConfirm": "Bạn có chắc muốn huỷ kết bạn với {{name}}?",
     "actionError": "Thao tác thất bại, thử lại sau",
-    "joinedOla": "Tham gia Ola",
+    "joinedOla": "Tham gia Okela",
     "viewNote": "Xem bài viết",
     "viewVipStore": "Xem Kho VIP",
     "mediaStore": "Kho Media",
@@ -949,7 +949,7 @@
     "reasonOther": "Khác",
     "notePlaceholder": "Mô tả thêm (không bắt buộc)",
     "send": "Gửi",
-    "sent": "Cảm ơn bạn đã gửi báo cáo đến Ola"
+    "sent": "Cảm ơn bạn đã gửi báo cáo đến Okela"
   },
   "profileEdit": {
     "title": "Thông tin cá nhân",
@@ -971,7 +971,7 @@
     "relationshipLabel": "Quan hệ",
     "passwordLabel": "Mật khẩu",
     "passwordHint": "Chạm vào để đổi mật khẩu",
-    "joinLabel": "Tham gia Ola",
+    "joinLabel": "Tham gia Okela",
     "linkFacebook": "Liên kết tài khoản Facebook",
     "support": "Hỗ trợ khách hàng",
     "supportHotline": "Tổng đài: 1900588883",
@@ -1171,16 +1171,16 @@
   "terms": {
     "back": "‹ Quay lại",
     "title": "ĐIỀU KHOẢN SỬ DỤNG",
-    "subtitle": "Mạng xã hội Ola",
+    "subtitle": "Mạng xã hội Okela",
     "updated": "Cập nhật ngày 20/08/2026 — Phiên bản 1.1",
-    "footer": "© 2026 Ola — Mạng xã hội giải trí",
+    "footer": "© 2026 Okela — Mạng xã hội giải trí",
     "sections": [
       {
         "title": "1. Chấp nhận điều khoản",
         "blocks": [
           {
             "type": "p",
-            "text": "Khi tạo tài khoản và sử dụng ứng dụng/mạng xã hội Ola (\"Ola\", \"chúng tôi\", \"dịch vụ\"), bạn xác nhận đã đọc, hiểu rõ và đồng ý tuân thủ toàn bộ nội dung trong Điều khoản sử dụng này cũng như các quy định, hướng dẫn được công bố kèm theo. Nếu không đồng ý với bất kỳ điều khoản nào, vui lòng không đăng ký hoặc ngừng sử dụng dịch vụ."
+            "text": "Khi tạo tài khoản và sử dụng ứng dụng/mạng xã hội Okela (\"Okela\", \"chúng tôi\", \"dịch vụ\"), bạn xác nhận đã đọc, hiểu rõ và đồng ý tuân thủ toàn bộ nội dung trong Điều khoản sử dụng này cũng như các quy định, hướng dẫn được công bố kèm theo. Nếu không đồng ý với bất kỳ điều khoản nào, vui lòng không đăng ký hoặc ngừng sử dụng dịch vụ."
           },
           {
             "type": "p",
@@ -1194,7 +1194,7 @@
           {
             "type": "ul",
             "items": [
-              "Bạn phải từ 18 tuổi trở lên để tạo tài khoản và sử dụng Ola.",
+              "Bạn phải từ 18 tuổi trở lên để tạo tài khoản và sử dụng Okela.",
               "Thông tin đăng ký (tên đăng nhập, mật khẩu…) phải chính xác, không vi phạm thuần phong mỹ tục, không mạo danh cá nhân/tổ chức khác.",
               "Mỗi người chỉ nên sở hữu một tài khoản và chịu trách nhiệm bảo mật thông tin đăng nhập cũng như mọi hoạt động phát sinh từ tài khoản.",
               "Nếu phát hiện tài khoản bị truy cập trái phép, vui lòng đổi mật khẩu và liên hệ chúng tôi ngay.",
@@ -1208,7 +1208,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Khi sử dụng Ola (đăng bài, bình luận, trò chuyện, đặt tên/trạng thái, phòng cộng đồng…), bạn không được:"
+            "text": "Khi sử dụng Okela (đăng bài, bình luận, trò chuyện, đặt tên/trạng thái, phòng cộng đồng…), bạn không được:"
           },
           {
             "type": "ul",
@@ -1218,7 +1218,7 @@
               "Phát tán thông tin sai sự thật, lừa đảo, spam, quảng cáo trái phép, liên kết độc hại;",
               "Mạo danh người khác, tổ chức, cơ quan nhà nước;",
               "Sử dụng phần mềm/công cụ tự động (bot), khai thác lỗi hệ thống để trục lợi hoặc gây ảnh hưởng đến trải nghiệm chung;",
-              "Mua bán, trao đổi tài khoản, vật phẩm ảo (KEN, VIP…) bằng tiền thật ngoài các kênh chính thức do Ola cung cấp."
+              "Mua bán, trao đổi tài khoản, vật phẩm ảo (KEN, VIP…) bằng tiền thật ngoài các kênh chính thức do Okela cung cấp."
             ]
           },
           {
@@ -1232,7 +1232,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Bạn giữ quyền sở hữu đối với nội dung (bài viết, hình ảnh, tin nhắn, trạng thái…) mà bạn đăng tải. Tuy nhiên, bằng việc đăng tải lên Ola, bạn cấp cho chúng tôi quyền lưu trữ, hiển thị, sao lưu nội dung đó trong phạm vi cần thiết để vận hành và cải thiện dịch vụ."
+            "text": "Bạn giữ quyền sở hữu đối với nội dung (bài viết, hình ảnh, tin nhắn, trạng thái…) mà bạn đăng tải. Tuy nhiên, bằng việc đăng tải lên Okela, bạn cấp cho chúng tôi quyền lưu trữ, hiển thị, sao lưu nội dung đó trong phạm vi cần thiết để vận hành và cải thiện dịch vụ."
           },
           {
             "type": "p",
@@ -1246,7 +1246,7 @@
           {
             "type": "ul",
             "items": [
-              "KEN, VIP và các vật phẩm/tiền tệ ảo khác trong Ola không phải tiền thật, không có giá trị quy đổi ra tiền mặt và chỉ có giá trị sử dụng trong phạm vi ứng dụng.",
+              "KEN, VIP và các vật phẩm/tiền tệ ảo khác trong Okela không phải tiền thật, không có giá trị quy đổi ra tiền mặt và chỉ có giá trị sử dụng trong phạm vi ứng dụng.",
               "Việc nạp/mua KEN hoặc vật phẩm ảo (nếu có) là giao dịch tự nguyện; chúng tôi không chịu trách nhiệm với các giao dịch mua bán bằng tiền thật giữa người dùng với nhau ngoài hệ thống chính thức.",
               "Chúng tôi có quyền điều chỉnh, tạm ngưng hoặc chấm dứt các vật phẩm/tính năng ảo bất kỳ lúc nào nhằm đảm bảo vận hành ổn định, công bằng.",
               "Tài khoản vi phạm (gian lận, khai thác lỗi, mua bán trái phép…) có thể bị thu hồi vật phẩm ảo và/hoặc khóa tài khoản mà không được hoàn lại."
@@ -1272,7 +1272,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Ola được cung cấp \"nguyên trạng\", có thể gặp gián đoạn, lỗi kỹ thuật hoặc bảo trì định kỳ. Chúng tôi nỗ lực đảm bảo dịch vụ ổn định nhưng không cam kết tuyệt đối về tính liên tục, không có lỗi."
+            "text": "Okela được cung cấp \"nguyên trạng\", có thể gặp gián đoạn, lỗi kỹ thuật hoặc bảo trì định kỳ. Chúng tôi nỗ lực đảm bảo dịch vụ ổn định nhưng không cam kết tuyệt đối về tính liên tục, không có lỗi."
           },
           {
             "type": "p",
@@ -1303,16 +1303,16 @@
   "privacyPolicy": {
     "back": "‹ Quay lại",
     "title": "CHÍNH SÁCH BẢO MẬT",
-    "subtitle": "Mạng xã hội Ola",
+    "subtitle": "Mạng xã hội Okela",
     "updated": "Cập nhật ngày 20/08/2026 — Phiên bản 1.0",
-    "footer": "© 2026 Ola — Mạng xã hội giải trí",
+    "footer": "© 2026 Okela — Mạng xã hội giải trí",
     "sections": [
       {
         "title": "1. Giới thiệu",
         "blocks": [
           {
             "type": "p",
-            "text": "Chính sách bảo mật này giải thích cách Ola (\"Ola\", \"chúng tôi\") thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân của bạn khi bạn sử dụng ứng dụng Ola và các dịch vụ liên quan. Bằng việc đăng ký tài khoản và sử dụng Ola, bạn đồng ý với các nội dung được mô tả trong chính sách này."
+            "text": "Chính sách bảo mật này giải thích cách Okela (\"Okela\", \"chúng tôi\") thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân của bạn khi bạn sử dụng ứng dụng Okela và các dịch vụ liên quan. Bằng việc đăng ký tài khoản và sử dụng Okela, bạn đồng ý với các nội dung được mô tả trong chính sách này."
           }
         ]
       },
@@ -1324,7 +1324,7 @@
             "items": [
               "Thông tin tài khoản: tên đăng nhập và mật khẩu khi bạn đăng ký. Địa chỉ IP được ghi nhận khi đăng ký và đăng nhập nhằm mục đích bảo mật.",
               "Thông tin hồ sơ tùy chọn: tên hiển thị, ảnh đại diện, ảnh bìa, giới thiệu, số điện thoại, giới tính, ngày sinh và email — bạn tự quyết định có cung cấp hay không; email chỉ được lưu sau khi bạn xác nhận bằng mã OTP.",
-              "Nội dung bạn tạo: tin nhắn, hình ảnh, tin nhắn thoại, bài viết, bình luận, trạng thái và các nội dung khác bạn đăng tải khi sử dụng các tính năng của Ola. Cuộc gọi thoại và video được truyền trực tiếp theo thời gian thực và không được chúng tôi ghi âm/ghi hình.",
+              "Nội dung bạn tạo: tin nhắn, hình ảnh, tin nhắn thoại, bài viết, bình luận, trạng thái và các nội dung khác bạn đăng tải khi sử dụng các tính năng của Okela. Cuộc gọi thoại và video được truyền trực tiếp theo thời gian thực và không được chúng tôi ghi âm/ghi hình.",
               "Vị trí check-in: chỉ được thu thập khi bạn cấp quyền vị trí và chủ động đính kèm check-in vào bài viết.",
               "Dữ liệu thiết bị và sử dụng: dòng máy, hệ điều hành, phiên bản ứng dụng, ngôn ngữ, các màn hình bạn truy cập và nhật ký lỗi (crash log) — thu thập qua Google Firebase (Analytics và Crashlytics) và gắn với ID tài khoản của bạn để chúng tôi sửa lỗi và cải thiện sản phẩm.",
               "Lịch sử giao dịch vật phẩm ảo: các giao dịch KEN/VIP trong phạm vi ứng dụng."
@@ -1357,7 +1357,7 @@
           {
             "type": "ul",
             "items": [
-              "Các nhà cung cấp dịch vụ giúp vận hành Ola — Google Firebase (phân tích sử dụng và báo cáo lỗi), dịch vụ lưu trữ đám mây cho hình ảnh/tệp, và hạ tầng cuộc gọi thoại/video — mỗi bên chỉ nhận lượng dữ liệu tối thiểu cần thiết cho chức năng của mình;",
+              "Các nhà cung cấp dịch vụ giúp vận hành Okela — Google Firebase (phân tích sử dụng và báo cáo lỗi), dịch vụ lưu trữ đám mây cho hình ảnh/tệp, và hạ tầng cuộc gọi thoại/video — mỗi bên chỉ nhận lượng dữ liệu tối thiểu cần thiết cho chức năng của mình;",
               "Cơ quan nhà nước có thẩm quyền khi pháp luật yêu cầu;",
               "Không có bên thứ ba nào nhận dữ liệu của bạn cho mục đích quảng cáo."
             ]
@@ -1411,7 +1411,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Ola dành cho người dùng từ 18 tuổi trở lên. Nếu phát hiện tài khoản của người dưới 18 tuổi, chúng tôi sẽ khóa hoặc xóa tài khoản và dữ liệu liên quan."
+            "text": "Okela dành cho người dùng từ 18 tuổi trở lên. Nếu phát hiện tài khoản của người dưới 18 tuổi, chúng tôi sẽ khóa hoặc xóa tài khoản và dữ liệu liên quan."
           }
         ]
       },
@@ -1437,12 +1437,12 @@
   },
   "download": {
     "back": "‹ Quay lại",
-    "title": "Tải ứng dụng Ola",
-    "subtitle": "Cài Ola trên điện thoại để nhận thông báo tin nhắn ngay lập tức, nghe gọi và chơi game mượt hơn.",
-    "settingsRow": "Tải ứng dụng Ola",
-    "fab": "Tải app Ola",
+    "title": "Tải ứng dụng Okela",
+    "subtitle": "Cài Okela trên điện thoại để nhận thông báo tin nhắn ngay lập tức, nghe gọi và chơi game mượt hơn.",
+    "settingsRow": "Tải ứng dụng Okela",
+    "fab": "Tải app Okela",
     "hideFab": "Ẩn nút tải app",
-    "loginLink": "Tải ứng dụng Ola cho điện thoại",
+    "loginLink": "Tải ứng dụng Okela cho điện thoại",
     "yourDevice": "Thiết bị của bạn",
     "stepsTitle": "Các bước cài đặt",
     "copyLink": "Sao chép link trang này",
@@ -1457,13 +1457,13 @@
       "action": "Mở thư mục tải APK",
       "size": "Dung lượng {{size}}",
       "steps": [
-        "Nhấn “Mở thư mục tải APK” để vào thư mục Google Drive của Ola, chọn file APK mới nhất (khoảng 56 MB, nên dùng Wi-Fi) rồi bấm biểu tượng tải xuống.",
+        "Nhấn “Mở thư mục tải APK” để vào thư mục Google Drive của Okela, chọn file APK mới nhất (khoảng 56 MB, nên dùng Wi-Fi) rồi bấm biểu tượng tải xuống.",
         "Chrome hiện cảnh báo “Loại tệp này có thể gây hại cho thiết bị” — chọn “Vẫn tải xuống”.",
         "Mở file vừa tải. Nếu máy báo không được phép cài ứng dụng không rõ nguồn gốc, chọn “Cài đặt” rồi bật quyền cho Chrome hoặc trình quản lý tệp.",
         "Play Protect có thể hiện “Không rõ ứng dụng” — chọn “Vẫn cài đặt”.",
-        "Chờ cài xong, mở Ola và đăng nhập bằng tài khoản của bạn."
+        "Chờ cài xong, mở Okela và đăng nhập bằng tài khoản của bạn."
       ],
-      "note": "Các cảnh báo trên là bình thường với file APK cài ngoài Google Play. Bản Ola ở trang này do chính chúng tôi phát hành.",
+      "note": "Các cảnh báo trên là bình thường với file APK cài ngoài Google Play. Bản Okela ở trang này do chính chúng tôi phát hành.",
       "folderLinkLabel": "Link thư mục Google Drive"
     },
     "ios": {
@@ -1474,10 +1474,10 @@
       "steps": [
         "Cài ứng dụng TestFlight của Apple từ App Store (miễn phí). TestFlight là app của Apple dành cho việc thử app trước khi lên App Store; nếu bị hỏi đăng nhập thì dùng luôn tài khoản iCloud của bạn.",
         "Mở TestFlight lần đầu, ở màn “Chào mừng đến TestFlight” nhấn “Tiếp tục”.",
-        "Quay lại trang này, nhấn “Mở lời mời TestFlight”, rồi nhấn “Cài đặt” ở trang Ola - Chat trong TestFlight.",
+        "Quay lại trang này, nhấn “Mở lời mời TestFlight”, rồi nhấn “Cài đặt” ở trang Okela trong TestFlight.",
         "Ở màn “Từ nhà phát triển”, nhấn “Tiếp”.",
         "Ở màn “Chia sẻ phản hồi”, nhấn “Bắt đầu kiểm tra”.",
-        "Ola mở lên, bạn đăng nhập bằng tài khoản của mình là xong."
+        "Okela mở lên, bạn đăng nhập bằng tài khoản của mình là xong."
       ],
       "note": "Mỗi bản TestFlight có hiệu lực 90 ngày. Khi hết hạn, bạn mở TestFlight và cập nhật lại bản mới nhất.",
       "codeLabel": "Mã lời mời TestFlight",
@@ -1512,11 +1512,11 @@
       },
       {
         "question": "Cài app có mất dữ liệu tài khoản không?",
-        "answer": "Không. Tin nhắn và thông tin tài khoản được lưu trên hệ thống Ola, bạn đăng nhập ở thiết bị nào cũng thấy đầy đủ."
+        "answer": "Không. Tin nhắn và thông tin tài khoản được lưu trên hệ thống Okela, bạn đăng nhập ở thiết bị nào cũng thấy đầy đủ."
       }
     ],
-    "safetyTitle": "Chỉ tải Ola từ trang chính thức",
-    "safety": "Ola không bao giờ nhờ bạn tải file cài đặt từ tin nhắn lạ, nhóm Zalo hay Facebook. File từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
+    "safetyTitle": "Chỉ tải Okela từ trang chính thức",
+    "safety": "Okela không bao giờ nhờ bạn tải file cài đặt từ tin nhắn lạ, nhóm Zalo hay Facebook. File từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
     "useWeb": "Tiếp tục dùng bản web",
     "stepLabel": "Bước {{index}}",
     "screenshotsTitle": "Ảnh minh hoạ các bước",
@@ -1628,7 +1628,7 @@
     "title": "Box - Kết Hôn",
     "boxTitle": "Box - Kết Hôn",
     "lockedTitle": "Bạn chưa kết hôn",
-    "lockedDesc": "Tính năng chỉ dành cho người có trạng thái Kết Hôn trên Ola",
+    "lockedDesc": "Tính năng chỉ dành cho người có trạng thái Kết Hôn trên Okela",
     "getMarried": "Kết Hôn ngay",
     "pendingTitle": "Lời cầu hôn đang chờ",
     "proposalFrom": "{{name}} muốn cầu hôn bạn",
@@ -1904,7 +1904,7 @@
     "memberPublicPost": "Thành viên được đăng công khai",
     "memberPublicPostOffConfirm": "Bài công khai cũ của thành viên sẽ chuyển về riêng tư. Tiếp tục?",
     "none": "Chưa có",
-    "enterNick": "Nhập nick Ola",
+    "enterNick": "Nhập nick Okela",
     "assignSuccess": "Đã bổ nhiệm @{{username}}",
     "revokeConfirmDeputy": "Bạn có muốn cách chức phó bang chủ @{{username}}?",
     "revokeConfirmAmbassador": "Bạn có muốn cách chức đại sứ @{{username}}?",

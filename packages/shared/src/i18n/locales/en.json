@@ -1,27 +1,27 @@
 {
   "reminder": {
     "channelName": "Reminders",
-    "comeBackTitle": "Ola misses you!",
+    "comeBackTitle": "Okela misses you!",
     "m1": "Come back and see what's new 💬",
     "m2": "Your friends are chatting away, you're the only one missing 👀",
-    "m3": "It's been 2 days since you visited Ola, everyone misses you!",
+    "m3": "It's been 2 days since you visited Okela, everyone misses you!",
     "m4": "The chat rooms are buzzing, jump in and join the fun 🎉",
     "m5": "The Lucky Wheel is waiting for you to try your luck today 🍀",
     "m6": "You might have missed some fun stuff on the feed 📰",
-    "m7": "Drop by Ola for a bit, long time no see!",
+    "m7": "Drop by Okela for a bit, long time no see!",
     "m8": "Your friends just posted something new, check it out 👇",
     "m9": "Egg Smash with Ken rewards is waiting for you 🥚",
-    "m10": "One quick hello can make your friends' day, hop on Ola 💚",
-    "m11": "Free right now? Come chat with everyone on Ola ☕",
+    "m10": "One quick hello can make your friends' day, hop on Okela 💚",
+    "m11": "Free right now? Come chat with everyone on Okela ☕",
     "m12": "War God is calling your name, come battle now ⚔️",
     "m13": "It's been a while since you spun the Lucky Wheel 🎡",
-    "m14": "Ola feels empty without you, come back soon 🥺",
+    "m14": "Okela feels empty without you, come back soon 🥺",
     "m15": "What if someone special is online waiting for you? 😉",
     "m16": "Check in and let your friends know you're doing well 👋",
-    "m17": "Chatting, games, new friends — everything is waiting for you on Ola!",
-    "m18": "Don't let the fun stop, open Ola now 🔥",
+    "m17": "Chatting, games, new friends — everything is waiting for you on Okela!",
+    "m18": "Don't let the fun stop, open Okela now 🔥",
     "m19": "How about a quick game to scratch that itch? 🎮",
-    "m20": "Open Ola, you might meet someone who gets you today 💫"
+    "m20": "Open Okela, you might meet someone who gets you today 💫"
   },
   "arcade": {
     "minimize": "Minimize",
@@ -58,7 +58,7 @@
   },
   "wallpaper": {
     "remove": "Remove wallpaper",
-    "uploading": "Changing Ola wallpaper",
+    "uploading": "Changing Okela wallpaper",
     "error": "Cannot change the wallpaper at this time. Please try again later",
     "tooSmall": "Image is too small, please choose a larger one"
   },
@@ -89,7 +89,7 @@
     "password": "Password",
     "submit": "Log in",
     "forgot": "Forgot password?",
-    "createAccount": "Create an Ola account",
+    "createAccount": "Create an Okela account",
     "version": "Version",
     "errUsernameRequired": "Please enter your username.",
     "errUsernameLength": "Username must be 2–20 characters.",
@@ -101,14 +101,14 @@
     "removeAccountConfirm": "Do you want to delete all saved data of account {{username}} on this device?"
   },
   "register": {
-    "title": "Create an Ola account",
+    "title": "Create an Okela account",
     "usernameLabel": "USERNAME",
     "usernamePlaceholder": "6–20 chars, lowercase & numbers (a–z, 0–9, . _)",
     "passwordLabel": "PASSWORD",
     "passwordPlaceholder": "6–20 characters",
     "confirmLabel": "CONFIRM PASSWORD",
     "confirmPlaceholder": "Re-enter password",
-    "agree": "I confirm that I am at least 18 years old and agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of Ola",
+    "agree": "I confirm that I am at least 18 years old and agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of Okela",
     "submit": "Finish",
     "hasAccount": "Already have an account?",
     "errUsernameRequired": "Please enter a username.",
@@ -185,7 +185,7 @@
       "ken": "KEN",
       "advertise": "Advertise",
       "photos": "Photos",
-      "mall": "Ola Mall",
+      "mall": "Okela Mall",
       "nearby": "Nearby",
       "social": "Social connections",
       "settings": "Settings",
@@ -197,9 +197,9 @@
   },
   "social": {
     "title": "Social connections",
-    "fanpageTitle": "Ola Fanpage",
-    "groupTitle": "Ola community group",
-    "tiktokTitle": "Ola TikTok"
+    "fanpageTitle": "Okela Fanpage",
+    "groupTitle": "Okela community group",
+    "tiktokTitle": "Okela TikTok"
   },
   "settings": {
     "title": "Settings",
@@ -240,7 +240,7 @@
     "fontSmall": "Small",
     "fontMedium": "Medium",
     "fontLarge": "Large",
-    "appVersion": "Ola Chat v1.0.0",
+    "appVersion": "Okela v1.0.0",
     "facebookJoin": "Join us on Facebook",
     "facebookLike": "Like",
     "groups": {
@@ -248,11 +248,11 @@
       "display": "Display",
       "chat": "Chat window",
       "rss": "RSS",
-      "about": "About Ola"
+      "about": "About Okela"
     },
     "values": {
       "on": "On",
-      "ola": "Ola",
+      "ola": "Okela",
       "vietnamese": "Vietnamese",
       "circle": "Circle",
       "default": "Default",
@@ -283,7 +283,7 @@
       },
       "passcode": {
         "title": "Passcode",
-        "subtitle": "Passcode to open Ola"
+        "subtitle": "Passcode to open Okela"
       },
       "newMe": {
         "title": "Notify unread Me"
@@ -293,11 +293,11 @@
         "subtitle": "Avatar frame style"
       },
       "wallpaper": {
-        "title": "Ola Wallpaper"
+        "title": "Okela Wallpaper"
       },
       "quickBrowser": {
         "title": "Quick browser",
-        "subtitle": "Open links inside Ola"
+        "subtitle": "Open links inside Okela"
       },
       "video": {
         "title": "Play video"
@@ -325,10 +325,10 @@
       },
       "rating": {
         "title": "Rating",
-        "subtitle": "Rate Ola on Google Play"
+        "subtitle": "Rate Okela on Google Play"
       },
       "beta": {
-        "title": "Ola Beta",
+        "title": "Okela Beta",
         "subtitle": "Join the beta program"
       },
       "version": {
@@ -348,10 +348,10 @@
     "no": "No",
     "logoutButton": "Log Out",
     "logoutTitle": "Log Out",
-    "logoutMessage": "Do you want to sign out Ola?",
+    "logoutMessage": "Do you want to sign out Okela?",
     "removeAccountButton": "Delete account",
     "removeAccountTitle": "Delete account",
-    "removeAccountMessage": "Are you sure you want to delete account {{username}}? You will be logged out of Ola.",
+    "removeAccountMessage": "Are you sure you want to delete account {{username}}? You will be logged out of Okela.",
     "deleteConvTitle": "Delete conversation",
     "deleteConvMessage": "Do you want to delete the conversation with {{name}}?",
     "deleteArchived": "Also delete messages on your side",
@@ -495,7 +495,7 @@
     "transferKenReceiver": "Receiver",
     "transferKenReceiverHint": "Enter recipient username",
     "transferKenChangeReceiver": "Change",
-    "transferKenWarning": "Trading items within Ola is strictly prohibited",
+    "transferKenWarning": "Trading items within Okela is strictly prohibited",
     "transferKenAmountLabel": "Transferred KEN amount",
     "transferKenAmountPlaceholder": "Enter KEN amount",
     "transferKenConfirmAmountLabel": "Transferred KEN amount",
@@ -554,10 +554,10 @@
     "makeFriendBlocked": "Unblock this person before adding them",
     "close": "Close",
     "hide": "Hide",
-    "joinedOlaYears": "Joined Ola {{n}} yr",
-    "joinedOlaMonths": "Joined Ola {{n}} mo",
-    "joinedOlaDays": "Joined Ola {{n}}d",
-    "joinedOlaToday": "Joined Ola today",
+    "joinedOlaYears": "Joined Okela {{n}} yr",
+    "joinedOlaMonths": "Joined Okela {{n}} mo",
+    "joinedOlaDays": "Joined Okela {{n}}d",
+    "joinedOlaToday": "Joined Okela today",
     "fanCount": "Fan: {{n}} people",
     "antiCount": "Anti: {{n}} people",
     "alreadyFriend": "You are already friends",
@@ -653,7 +653,7 @@
     "transferVipDaysSuccess": "Gifted {{days}} VIP days to {{name}}",
     "strangerClose": "Close",
     "strangerAge": "{{age}} yrs",
-    "strangerJoin": "Joined Ola {{year}}",
+    "strangerJoin": "Joined Okela {{year}}",
     "strangerFans": "{{count}} followers",
     "locationSample": "District 1, Ho Chi Minh City",
     "youtubeSample": "Relaxing music video"
@@ -930,7 +930,7 @@
     "unfriend": "Unfriend",
     "unfriendConfirm": "Are you sure you want to unfriend {{name}}?",
     "actionError": "Action failed, please try again",
-    "joinedOla": "Joined Ola",
+    "joinedOla": "Joined Okela",
     "viewNote": "View posts",
     "viewVipStore": "View VIP store",
     "mediaStore": "Photos",
@@ -949,7 +949,7 @@
     "reasonOther": "Other",
     "notePlaceholder": "Additional details (optional)",
     "send": "Send",
-    "sent": "Thank you for sending a report to Ola"
+    "sent": "Thank you for sending a report to Okela"
   },
   "profileEdit": {
     "title": "Profile",
@@ -971,7 +971,7 @@
     "relationshipLabel": "Relationship",
     "passwordLabel": "Password",
     "passwordHint": "Tap to change password",
-    "joinLabel": "Joined Ola",
+    "joinLabel": "Joined Okela",
     "linkFacebook": "Link to Facebook account",
     "support": "Customer support",
     "supportHotline": "Hotline: 1900588883",
@@ -1171,16 +1171,16 @@
   "terms": {
     "back": "‹ Back",
     "title": "TERMS OF USE",
-    "subtitle": "Ola social network",
+    "subtitle": "Okela social network",
     "updated": "Updated 20/08/2026 — Version 1.1",
-    "footer": "© 2026 Ola — Entertainment social network",
+    "footer": "© 2026 Okela — Entertainment social network",
     "sections": [
       {
         "title": "1. Acceptance of terms",
         "blocks": [
           {
             "type": "p",
-            "text": "By creating an account and using the Ola application/social network (\"Ola\", \"we\", \"the service\"), you confirm that you have read, understood and agree to comply with all of the content in these Terms of Use, as well as the rules and guidelines published alongside them. If you do not agree with any term, please do not register or stop using the service."
+            "text": "By creating an account and using the Okela application/social network (\"Okela\", \"we\", \"the service\"), you confirm that you have read, understood and agree to comply with all of the content in these Terms of Use, as well as the rules and guidelines published alongside them. If you do not agree with any term, please do not register or stop using the service."
           },
           {
             "type": "p",
@@ -1194,7 +1194,7 @@
           {
             "type": "ul",
             "items": [
-              "You must be 18 or older to create an account and use Ola.",
+              "You must be 18 or older to create an account and use Okela.",
               "Registration information (username, password…) must be accurate, must not violate good morals, and must not impersonate another individual/organization.",
               "Each person should own only one account and is responsible for keeping login information secure as well as for all activity arising from the account.",
               "If you detect unauthorized access to your account, please change your password and contact us immediately.",
@@ -1208,7 +1208,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "When using Ola (posting, commenting, chatting, setting names/statuses, community rooms…), you must not:"
+            "text": "When using Okela (posting, commenting, chatting, setting names/statuses, community rooms…), you must not:"
           },
           {
             "type": "ul",
@@ -1218,7 +1218,7 @@
               "Spread false information, fraud, spam, unauthorized advertising, or malicious links;",
               "Impersonate other people, organizations, or state agencies;",
               "Use automated software/tools (bots) or exploit system bugs for profit or to harm the shared experience;",
-              "Buy, sell or trade accounts or virtual items (KEN, VIP…) with real money outside the official channels provided by Ola."
+              "Buy, sell or trade accounts or virtual items (KEN, VIP…) with real money outside the official channels provided by Okela."
             ]
           },
           {
@@ -1232,7 +1232,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "You retain ownership of the content (posts, images, messages, statuses…) that you upload. However, by uploading it to Ola, you grant us the right to store, display and back up that content to the extent necessary to operate and improve the service."
+            "text": "You retain ownership of the content (posts, images, messages, statuses…) that you upload. However, by uploading it to Okela, you grant us the right to store, display and back up that content to the extent necessary to operate and improve the service."
           },
           {
             "type": "p",
@@ -1246,7 +1246,7 @@
           {
             "type": "ul",
             "items": [
-              "KEN, VIP and other virtual items/currencies in Ola are not real money, have no cash-conversion value, and are only usable within the application.",
+              "KEN, VIP and other virtual items/currencies in Okela are not real money, have no cash-conversion value, and are only usable within the application.",
               "Topping up/purchasing KEN or virtual items (if any) is a voluntary transaction; we are not responsible for real-money trades between users outside the official system.",
               "We have the right to adjust, suspend or terminate any virtual items/features at any time to ensure stable and fair operation.",
               "Violating accounts (fraud, bug exploitation, illegal trading…) may have their virtual items revoked and/or the account locked without refund."
@@ -1272,7 +1272,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Ola is provided \"as is\" and may experience interruptions, technical errors or scheduled maintenance. We strive to keep the service stable but do not absolutely guarantee continuity or freedom from errors."
+            "text": "Okela is provided \"as is\" and may experience interruptions, technical errors or scheduled maintenance. We strive to keep the service stable but do not absolutely guarantee continuity or freedom from errors."
           },
           {
             "type": "p",
@@ -1303,16 +1303,16 @@
   "privacyPolicy": {
     "back": "‹ Back",
     "title": "PRIVACY POLICY",
-    "subtitle": "Ola social network",
+    "subtitle": "Okela social network",
     "updated": "Updated 20/08/2026 — Version 1.0",
-    "footer": "© 2026 Ola — Entertainment social network",
+    "footer": "© 2026 Okela — Entertainment social network",
     "sections": [
       {
         "title": "1. Introduction",
         "blocks": [
           {
             "type": "p",
-            "text": "This Privacy Policy explains how Ola (\"Ola\", \"we\") collects, uses, stores and protects your personal information when you use the Ola application and related services. By registering an account and using Ola, you agree to the practices described in this policy."
+            "text": "This Privacy Policy explains how Okela (\"Okela\", \"we\") collects, uses, stores and protects your personal information when you use the Okela application and related services. By registering an account and using Okela, you agree to the practices described in this policy."
           }
         ]
       },
@@ -1324,7 +1324,7 @@
             "items": [
               "Account information: username and password when you register. Your IP address is recorded at registration and sign-in for security purposes.",
               "Optional profile information: display name, avatar, cover photo, bio, phone number, gender, date of birth and email — you decide whether to provide these; your email is only saved after you confirm it with an OTP code.",
-              "Content you create: messages, images, voice messages, posts, comments, statuses and other content you upload while using Ola features. Voice and video calls are transmitted in real time and are not recorded by us.",
+              "Content you create: messages, images, voice messages, posts, comments, statuses and other content you upload while using Okela features. Voice and video calls are transmitted in real time and are not recorded by us.",
               "Check-in location: collected only when you grant location permission and actively attach a check-in to a post.",
               "Device and usage data: device model, operating system, app version, language, the screens you visit and crash logs — collected through Google Firebase (Analytics and Crashlytics) and linked to your account ID so we can fix errors and improve the product.",
               "Virtual item transaction history: KEN/VIP transactions within the application."
@@ -1357,7 +1357,7 @@
           {
             "type": "ul",
             "items": [
-              "Service providers that help operate Ola — Google Firebase (usage analytics and crash reporting), cloud storage providers for images/files, and audio/video call infrastructure — each receives only the minimum data needed for its function;",
+              "Service providers that help operate Okela — Google Firebase (usage analytics and crash reporting), cloud storage providers for images/files, and audio/video call infrastructure — each receives only the minimum data needed for its function;",
               "Competent state authorities when required by applicable law;",
               "No third party receives your data for advertising purposes."
             ]
@@ -1411,7 +1411,7 @@
         "blocks": [
           {
             "type": "p",
-            "text": "Ola is intended for users aged 18 and over. If we discover an account belonging to a person under 18, we will lock or delete the account and its related data."
+            "text": "Okela is intended for users aged 18 and over. If we discover an account belonging to a person under 18, we will lock or delete the account and its related data."
           }
         ]
       },
@@ -1437,12 +1437,12 @@
   },
   "download": {
     "back": "‹ Back",
-    "title": "Get the Ola app",
-    "subtitle": "Install Ola on your phone for instant message alerts, voice calls and smoother games.",
-    "settingsRow": "Get the Ola app",
-    "fab": "Get Ola app",
+    "title": "Get the Okela app",
+    "subtitle": "Install Okela on your phone for instant message alerts, voice calls and smoother games.",
+    "settingsRow": "Get the Okela app",
+    "fab": "Get Okela app",
     "hideFab": "Hide the download button",
-    "loginLink": "Get the Ola app for your phone",
+    "loginLink": "Get the Okela app for your phone",
     "yourDevice": "Your device",
     "stepsTitle": "Installation steps",
     "copyLink": "Copy this page link",
@@ -1457,11 +1457,11 @@
       "action": "Open the APK folder",
       "size": "Size {{size}}",
       "steps": [
-        "Tap “Open the APK folder” to open the Ola folder on Google Drive, pick the newest APK file (about 56 MB, Wi-Fi recommended), then tap the download icon.",
+        "Tap “Open the APK folder” to open the Okela folder on Google Drive, pick the newest APK file (about 56 MB, Wi-Fi recommended), then tap the download icon.",
         "Chrome warns “This type of file can harm your device” — choose “Download anyway”.",
         "Open the downloaded file. If your phone says installing unknown apps is not allowed, tap “Settings” and allow installs from Chrome or your file manager.",
         "Play Protect may show “Unknown app” — choose “Install anyway”.",
-        "Wait for the install to finish, then open Ola and sign in."
+        "Wait for the install to finish, then open Okela and sign in."
       ],
       "note": "These warnings are normal for APK files installed outside Google Play. The build on this page is published by us.",
       "folderLinkLabel": "Google Drive folder link"
@@ -1474,10 +1474,10 @@
       "steps": [
         "Install Apple TestFlight from the App Store (free). TestFlight is Apple own app for trying builds before they reach the App Store; if it asks you to sign in, use your iCloud account.",
         "Open TestFlight for the first time and tap “Continue” on the “Welcome to TestFlight” screen.",
-        "Come back to this page, tap “Open TestFlight invite”, then tap “Install” on the Ola - Chat page inside TestFlight.",
+        "Come back to this page, tap “Open TestFlight invite”, then tap “Install” on the Okela page inside TestFlight.",
         "On the “From the developer” screen, tap “Next”.",
         "On the “Share feedback” screen, tap “Start Testing”.",
-        "Ola opens up — sign in with your account and you are done."
+        "Okela opens up — sign in with your account and you are done."
       ],
       "note": "Each TestFlight build stays valid for 90 days. When it expires, open TestFlight and update to the latest build.",
       "codeLabel": "TestFlight invite code",
@@ -1512,11 +1512,11 @@
       },
       {
         "question": "Will installing the app lose my account data?",
-        "answer": "No. Messages and account details are stored on Ola servers, so everything is there on any device you sign in from."
+        "answer": "No. Messages and account details are stored on Okela servers, so everything is there on any device you sign in from."
       }
     ],
-    "safetyTitle": "Only download Ola from the official site",
-    "safety": "Ola will never ask you to download an installer from a stranger message, a Zalo group or Facebook. Files from other sources can be repackaged with malware to take over your account.",
+    "safetyTitle": "Only download Okela from the official site",
+    "safety": "Okela will never ask you to download an installer from a stranger message, a Zalo group or Facebook. Files from other sources can be repackaged with malware to take over your account.",
     "useWeb": "Keep using the web version",
     "stepLabel": "Step {{index}}",
     "screenshotsTitle": "Step-by-step screenshots",
@@ -1628,7 +1628,7 @@
     "title": "Box - Marriage",
     "boxTitle": "Box - Marriage",
     "lockedTitle": "You are not married yet",
-    "lockedDesc": "This feature is only for users with Married status on Ola",
+    "lockedDesc": "This feature is only for users with Married status on Okela",
     "getMarried": "Get married now",
     "pendingTitle": "Pending proposals",
     "proposalFrom": "{{name}} wants to propose to you",
@@ -1904,7 +1904,7 @@
     "memberPublicPost": "Members can post publicly",
     "memberPublicPostOffConfirm": "Old public posts by members will become private. Continue?",
     "none": "None",
-    "enterNick": "Enter Ola account",
+    "enterNick": "Enter Okela account",
     "assignSuccess": "Assigned @{{username}}",
     "revokeConfirmDeputy": "Do you want to deprive clan assistant @{{username}}?",
     "revokeConfirmAmbassador": "Do you want to deprive clan supervisor @{{username}}?",
