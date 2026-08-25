@@ -59,6 +59,7 @@ import {
 } from './screens/battle';
 import { showConfirm, showResult } from './screens/battle/hud';
 import { pushPvpChat, setChatInputVisible } from './screens/battle/chat';
+import { isBotStarRating, type BotStarRating } from './logic/bot-rating';
 import {
   buildUltimatePicker,
   isUltimatePickerVariant,
@@ -72,6 +73,11 @@ const state = params.get('state') ?? '';
 const variantParam = params.get('variant');
 const ultimateVariant = isUltimatePickerVariant(variantParam) ? variantParam : undefined;
 const replyDelay = Number(params.get('delay') ?? 120);
+const starParam = params.get('stars');
+const parsedStars = starParam == null ? Number.NaN : Number(starParam);
+const mockStarRating: BotStarRating | undefined = isBotStarRating(parsedStars)
+  ? parsedStars
+  : undefined;
 
 const ME: UserInfoData = {
   id: 'me',
@@ -326,6 +332,7 @@ const SCENES: Record<string, () => Promise<void> | void> = {
   },
 
   // state: my-turn | foe-turn | mana-empty | mana-loading | mana-ready | ultimate-picker | fury-full | win | lose | draw
+  // query stars=0..3 theo bước 0.5 bật biến thể rating khi chơi với Máy.
   async battle() {
     await openPvpBattle();
     if (state === 'ultimate-picker') {
@@ -335,9 +342,21 @@ const SCENES: Record<string, () => Promise<void> | void> = {
     if (state !== 'win' && state !== 'lose' && state !== 'draw') return;
     // Trận kết thúc thì ô chat bị khoá, giống nhánh finish() thật.
     setChatInputVisible(false);
-    if (state === 'win') showResult({ outcome: 'win', detail: 'Bạn đã hạ gục @kiemvuong' });
-    else if (state === 'lose') showResult({ outcome: 'lose', detail: '@kiemvuong đã hạ gục bạn' });
-    else showResult({ outcome: 'draw', detail: 'Hai bên bất phân thắng bại' });
+    if (state === 'win') {
+      showResult({
+        outcome: 'win',
+        detail: 'Bạn đã hạ gục @kiemvuong',
+        starRating: mockStarRating,
+      });
+    } else if (state === 'lose') {
+      showResult({
+        outcome: 'lose',
+        detail: '@kiemvuong đã hạ gục bạn',
+        starRating: mockStarRating,
+      });
+    } else {
+      showResult({ outcome: 'draw', detail: 'Hai bên bất phân thắng bại' });
+    }
   },
 
   // state: restart | forfeit | exit

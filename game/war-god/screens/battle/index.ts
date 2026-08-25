@@ -58,6 +58,7 @@ import {
 } from '../../logic/battle';
 import { TURN_SECONDS as DEFAULT_TURN_SECONDS } from '../../logic/constants.gen';
 import { recordBotMatch } from '../../logic/bot-history';
+import { calculateBotStarRating } from '../../logic/bot-rating';
 import {
   decodeBoard,
   decodeTile,
@@ -1120,7 +1121,24 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
     recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
     pushBotChat(botFinishLine(won ? 'you' : 'bot', reason, pickChatLine));
   }
-  showResult({ outcome: won ? 'win' : 'lose', detail: sub });
+  const botRating =
+    mode === 'bot'
+      ? calculateBotStarRating({
+          won,
+          forfeit: reason === 'forfeit',
+          playerHp: me.hp,
+          playerArmor: me.armor,
+          botHp: foe.hp,
+          botArmor: foe.armor,
+          turns: turnNumber,
+        })
+      : undefined;
+  showResult({
+    outcome: won ? 'win' : 'lose',
+    detail: sub,
+    // PvP không truyền rating nên giữ nguyên popup cũ.
+    starRating: botRating,
+  });
   setChatInputVisible(false);
   playSound(won ? 'win' : 'lose');
   bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason, won });

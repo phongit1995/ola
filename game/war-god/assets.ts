@@ -104,6 +104,7 @@ import resultBrushLose from './assets/result/brush-lose.webp';
 import resultBtnReplay from './assets/result/btn-replay.webp';
 import resultBtnClose from './assets/result/btn-close.webp';
 import resultKen from './assets/result/ken.webp';
+import resultStarGold from './assets/result/star-gold-v1.png';
 import historyPanelFill from './assets/history/panel-fill.webp';
 import historyPanelFrame from './assets/history/panel-frame.webp';
 import historyTitleFrame from './assets/history/title-frame.webp';
@@ -239,6 +240,7 @@ export const A = {
     btnReplay: resultBtnReplay,
     btnClose: resultBtnClose,
     ken: resultKen,
+    starGold: resultStarGold,
   },
   history: {
     panelFill: historyPanelFill,
