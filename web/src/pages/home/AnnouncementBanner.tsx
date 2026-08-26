@@ -1,8 +1,13 @@
+import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
 import { selectVisibleAnnouncement } from '@ola/shared/stores/announcementStore';
 import { useAnnouncementStore } from '@/store/announcementStore';
 import announcementMegaphone from '@/assets/images/announcement-megaphone.png';
+
+const MARQUEE_SPEED_PX_PER_SECOND = 40;
+const MARQUEE_MIN_DURATION_SECONDS = 8;
+const MARQUEE_MAX_DURATION_SECONDS = 45;
 
 export function AnnouncementBanner() {
   const { t } = useTranslation();
@@ -13,6 +18,20 @@ export function AnnouncementBanner() {
   const closeDetail = useAnnouncementStore((s) => s.closeDetail);
   const hide = useAnnouncementStore((s) => s.hide);
   const dismiss = useAnnouncementStore((s) => s.dismiss);
+  const marqueeRef = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const marquee = marqueeRef.current;
+    if (marquee == null) return;
+    const durationSeconds = Math.min(
+      MARQUEE_MAX_DURATION_SECONDS,
+      Math.max(
+        MARQUEE_MIN_DURATION_SECONDS,
+        (marquee.scrollWidth * 2) / MARQUEE_SPEED_PX_PER_SECOND,
+      ),
+    );
+    marquee.style.animationDuration = `${durationSeconds}s`;
+  }, [visible]);
 
   if (announcement == null) return null;
 
@@ -34,6 +53,7 @@ export function AnnouncementBanner() {
             className="block min-w-0 flex-1 overflow-hidden text-left"
           >
             <span
+              ref={marqueeRef}
               onAnimationEnd={(event) => {
                 if (event.animationName === 'ola-marquee') hide();
               }}
