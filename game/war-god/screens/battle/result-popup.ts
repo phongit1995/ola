@@ -1,6 +1,7 @@
-import { Container, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
+import { Container, Graphics, Rectangle, Sprite, Text, Texture, type Ticker } from 'pixi.js';
 import { A, tex } from '../../assets';
-import { HEADING, makeText, popIn, pressable, tween } from '../../kit';
+import { playSound } from '../../audio';
+import { addTick, HEADING, makeText, popIn, pressable, removeTick, tween } from '../../kit';
 import { DESIGN_W } from '../../layout';
 import {
   formatBotStarRating,
@@ -19,14 +20,19 @@ const STAR_ROW_TOP = STAR_CENTER_Y - STAR_CENTER_SIZE / 2;
 const STAR_ROW_BOTTOM = STAR_SIDE_Y + STAR_SIDE_SIZE / 2;
 const STAR_TITLE_GAP = 10;
 const STAR_ICON_GAP = 16;
+const STAR_RIM_TINT = 0x2d1607;
+const STAR_HOLLOW_TINT = 0x4a3122;
+const STAR_HALO_TINT = 0xffc23a;
+const STAR_FLY_MS = 155;
+const STAR_IMPACT_MS = 340;
+const STAR_EARN_DELAY = 300;
+const STAR_EARN_STEP = 190;
 const RESULT_REVEAL = {
   dim: 260,
   card: 500,
   titleFrameDelay: 70,
   titleDelay: 120,
-  starCenterDelay: 170,
-  starLeftDelay: 260,
-  starRightDelay: 350,
+  starRowDelay: 140,
   outcomeDelay: 190,
   brushDelay: 300,
   verdictDelay: 350,
@@ -56,6 +62,7 @@ export interface ResultPopup {
 interface ResultStar {
   view: Container;
   setFill(fill: StarFill): void;
+  playEarn(delay: number, intensity: number, finale: boolean): () => void;
 }
 
 interface PopupLayout {
@@ -69,46 +76,189 @@ function fitText(text: Text, maxWidth: number): void {
   if (text.width > maxWidth) text.scale.set(maxWidth / text.width);
 }
 
+let starHaloTex: Texture | null = null;
+
+function getStarHaloTexture(): Texture {
+  if (starHaloTex) return starHaloTex;
+  const size = 128;
+  const c = document.createElement('canvas');
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, 'rgba(255,255,255,0.9)');
+  g.addColorStop(0.4, 'rgba(255,255,255,0.3)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  starHaloTex = Texture.from(c);
+  return starHaloTex;
+}
+
 function makeResultStar(displaySize: number): ResultStar {
   const view = new Container();
-  const radius = displaySize * 0.447;
-  const innerRadius = radius * 0.48;
-  const inactiveOutline = new Graphics()
-    .star(0, 0, 5, radius, innerRadius, -Math.PI / 2)
-    .stroke({
-      width: displaySize * 0.08,
-      color: 0x3b2418,
-      alpha: 0.62,
-      join: 'round',
-    })
-    .star(0, 0, 5, radius, innerRadius, -Math.PI / 2)
-    .stroke({
-      width: displaySize * 0.052,
-      color: 0xa66a3f,
-      alpha: 0.96,
-      join: 'round',
-    });
-  const goldSprite = new Sprite(tex[A.result.starGold]);
+  const starTexture = tex[A.result.starGold];
+  const halo = new Sprite(getStarHaloTexture());
+  const body = new Container();
+  const goldLayer = new Container();
+  const rimSprite = new Sprite(starTexture);
+  const hollowSprite = new Sprite(starTexture);
+  const goldSprite = new Sprite(starTexture);
   const fillMask = new Graphics();
-  goldSprite.anchor.set(0.5);
-  goldSprite.width = displaySize;
-  goldSprite.scale.y = goldSprite.scale.x;
+  const seam = new Graphics();
+  const seamMask = new Graphics();
+  const burst = new Graphics();
+  const rays = new Graphics();
+
+  halo.anchor.set(0.5);
+  halo.width = displaySize * 2;
+  halo.height = displaySize * 2;
+  halo.tint = STAR_HALO_TINT;
+  halo.blendMode = 'add';
+
+  for (const sprite of [rimSprite, hollowSprite, goldSprite]) {
+    sprite.anchor.set(0.5);
+    sprite.width = displaySize;
+    sprite.scale.y = sprite.scale.x;
+  }
+
+  // Ba lớp dùng chung texture, chung tâm nên mọi trạng thái khớp silhouette:
+  // viền tối nở nhẹ tách sao khỏi nền gỗ cam, thân nâu sẫm là ô sao chưa đạt,
+  // lớp vàng nằm trên chỉ bị cắt theo mức 0 / 0,5 / 1. Quầng sáng cộng màu chỉ
+  // bật khi sao có điểm để mắt bắt ngay số sao đã ăn.
+  rimSprite.tint = STAR_RIM_TINT;
+  rimSprite.alpha = 0.62;
+  rimSprite.scale.set(rimSprite.scale.x * 1.08);
+  hollowSprite.tint = STAR_HOLLOW_TINT;
   goldSprite.mask = fillMask;
-  view.addChild(inactiveOutline, goldSprite, fillMask);
+
+  // Dải sáng nằm trọn bên nửa vàng nên nửa chưa đạt giữ nguyên độ tối: mép cắt
+  // đọc như cạnh vàng đang hắt sáng thay vì một thanh trắng dán ngang ngôi sao.
+  const seamW = displaySize * 0.05;
+  const seamRadius = displaySize * 0.447;
+  seam
+    .rect(-seamW, -displaySize / 2, seamW * 0.55, displaySize)
+    .fill({ color: 0xffe9a8, alpha: 0.45 })
+    .rect(-seamW * 0.45, -displaySize / 2, seamW * 0.45, displaySize)
+    .fill({ color: 0xfff6d8, alpha: 0.9 });
+  seam.blendMode = 'add';
+  seam.alpha = 0.42;
+  seamMask.star(0, 0, 5, seamRadius, seamRadius * 0.48, -Math.PI / 2).fill(0xffffff);
+  seam.mask = seamMask;
+
+  // Vòng xung và chùm tia vẽ sẵn ở kích thước chuẩn rồi chỉ phóng/mờ dần khi
+  // chạy, tránh dựng lại Graphics mỗi khung hình lúc ba sao cùng đập.
+  burst.circle(0, 0, displaySize * 0.5).stroke({ width: 5, color: 0xffe08a, alpha: 0.9 });
+  burst.blendMode = 'add';
+  burst.visible = false;
+  for (let i = 0; i < 10; i++) {
+    const angle = (Math.PI * 2 * i) / 10;
+    const inner = displaySize * 0.44;
+    const outer = displaySize * (0.66 + (i % 2) * 0.1);
+    rays.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+    rays.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+  }
+  rays.stroke({ width: 2, color: 0xffe9a8, alpha: 0.9, cap: 'round' });
+  rays.blendMode = 'add';
+  rays.visible = false;
+
+  goldLayer.addChild(goldSprite, fillMask, seam, seamMask);
+  body.addChild(rimSprite, hollowSprite, goldLayer);
+  view.addChild(halo, body, burst, rays);
+
+  let haloTarget = 0;
+
+  function rest(): void {
+    goldLayer.alpha = 1;
+    goldLayer.scale.set(1);
+    goldLayer.position.set(0, 0);
+    goldLayer.rotation = 0;
+    body.position.set(0, 0);
+    halo.alpha = haloTarget;
+    burst.visible = false;
+    rays.visible = false;
+  }
 
   function setFill(fill: StarFill): void {
-    inactiveOutline.visible = fill < 1;
-    goldSprite.visible = fill > 0;
+    haloTarget = fill === 1 ? 0.4 : 0.22;
+    halo.visible = fill > 0;
+    goldLayer.visible = fill > 0;
+    seam.visible = fill === 0.5;
     fillMask.clear();
     if (fill > 0) {
       fillMask
         .rect(-displaySize / 2, -displaySize / 2, displaySize * fill, displaySize)
         .fill(0xffffff);
     }
+    rest();
+  }
+
+  // Sao lao từ trên xuống theo easing nhanh dần rồi đóng dấu vào hốc: thân sao
+  // rung tắt dần, vòng xung bung ra, quầng sáng mới bật. `intensity` để sao sau
+  // đập mạnh hơn sao trước, `finale` thêm chùm tia cho sao thứ ba ăn trọn.
+  function playEarn(delay: number, intensity: number, finale: boolean): () => void {
+    let clock = -delay;
+    let active = true;
+    let impacted = false;
+    goldLayer.alpha = 0;
+    halo.alpha = 0;
+    burst.visible = false;
+    rays.visible = false;
+
+    const stop = (): void => {
+      if (!active) return;
+      active = false;
+      removeTick(step);
+      if (!view.destroyed) rest();
+    };
+
+    const step = (ticker: Ticker): void => {
+      if (!active || view.destroyed) {
+        active = false;
+        removeTick(step);
+        return;
+      }
+      clock += ticker.deltaMS;
+      if (clock < 0) return;
+      if (clock < STAR_FLY_MS) {
+        const k = clock / STAR_FLY_MS;
+        const e = k * k;
+        goldLayer.alpha = Math.min(1, k * 2.2);
+        goldLayer.scale.set(2 - e);
+        goldLayer.y = -displaySize * 0.5 * (1 - e);
+        goldLayer.rotation = -0.38 * (1 - e);
+        return;
+      }
+      if (!impacted) {
+        impacted = true;
+        playSound('match');
+        burst.visible = true;
+        rays.visible = finale;
+      }
+      const k = Math.min(1, (clock - STAR_FLY_MS) / STAR_IMPACT_MS);
+      goldLayer.alpha = 1;
+      goldLayer.rotation = 0;
+      goldLayer.y = 0;
+      goldLayer.scale.set(1 + 0.2 * intensity * (1 - k) * Math.cos(k * 9));
+      const shake = displaySize * 0.05 * intensity * Math.max(0, 1 - k / 0.55);
+      body.position.set(Math.sin(clock * 0.35) * shake, Math.cos(clock * 0.42) * shake * 0.7);
+      halo.alpha = haloTarget * Math.min(1, k * 3);
+      burst.scale.set(0.5 + 0.85 * k);
+      burst.alpha = 0.85 * (1 - k) * (1 - k);
+      if (finale) {
+        rays.scale.set(0.6 + 0.9 * k);
+        rays.rotation = k * 0.5;
+        rays.alpha = 0.9 * (1 - k);
+      }
+      if (k >= 1) stop();
+    };
+
+    addTick(step);
+    return stop;
   }
 
   setFill(0);
-  return { view, setFill };
+  return { view, setFill, playEarn };
 }
 
 export function buildResultPopup(onClose: () => void, onReplay: () => void): ResultPopup {
@@ -314,10 +464,13 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
         : data.detail;
 
       starRow.visible = withStars;
+      const earned: Array<{ star: ResultStar; fill: StarFill }> = [];
       if (withStars) {
         const starRating = data.starRating ?? 0;
         stars.forEach((star, index) => {
-          star.setFill(starFillAt(starRating, index as 0 | 1 | 2));
+          const fill = starFillAt(starRating, index as 0 | 1 | 2);
+          star.setFill(fill);
+          if (fill > 0) earned.push({ star, fill });
         });
       }
 
@@ -334,16 +487,27 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
       dim.alpha = 0;
       void tween(dim, { alpha: 1 }, RESULT_REVEAL.dim);
 
-      // Giữ choreography cũ; riêng chế độ Máy thêm ba sao pop lần lượt trước cúp/khiên.
+      // Giữ choreography cũ; riêng chế độ Máy: ba hốc sao hiện cùng lúc, rồi
+      // từng sao ăn được mới bay xuống đóng dấu, mỗi cú mạnh hơn cú trước.
       reveal(card, 0, RESULT_REVEAL.card);
       reveal(titleFrame, RESULT_REVEAL.titleFrameDelay, 430);
       reveal(title, RESULT_REVEAL.titleDelay, 400);
+      let lastImpact = 0;
       if (withStars) {
-        reveal(centerStar.view, RESULT_REVEAL.starCenterDelay, 470);
-        reveal(leftStar.view, RESULT_REVEAL.starLeftDelay, 420);
-        reveal(rightStar.view, RESULT_REVEAL.starRightDelay, 420);
+        reveal(starRow, RESULT_REVEAL.starRowDelay, 260);
+        earned.forEach(({ star, fill }, order) => {
+          const earnDelay = STAR_EARN_DELAY + order * STAR_EARN_STEP;
+          const intensity = 0.7 + 0.15 * order;
+          const finale = order === earned.length - 1 && earned.length === 3 && fill === 1;
+          cancelReveal.push(star.playEarn(earnDelay, intensity, finale));
+          lastImpact = earnDelay + STAR_FLY_MS;
+        });
       }
-      const starDelay = withStars ? 250 : 0;
+      // Cúp/khiên khởi động ngay trước cú đập cuối để hai nhịp gối nhau thay vì
+      // bắt người chơi chờ hết cụm sao.
+      const starDelay = withStars
+        ? Math.max(220, lastImpact - RESULT_REVEAL.outcomeDelay - 130)
+        : 0;
       reveal(outcomeIcon, RESULT_REVEAL.outcomeDelay + starDelay, 520);
       reveal(brush, RESULT_REVEAL.brushDelay + starDelay, 420);
       reveal(verdict, RESULT_REVEAL.verdictDelay + starDelay, 460);
