@@ -195,10 +195,10 @@
 
 @keyframes ola-marquee {
   from {
-    transform: translateX(100%);
+    transform: translateX(var(--ola-marquee-from, 100%));
   }
   to {
-    transform: translateX(-100%);
+    transform: translateX(var(--ola-marquee-to, -100%));
   }
 }
 

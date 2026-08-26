@@ -20,18 +20,25 @@ export function AnnouncementBanner() {
   const dismiss = useAnnouncementStore((s) => s.dismiss);
   const marqueeRef = useRef<HTMLSpanElement>(null);
 
-  useLayoutEffect(() => {
+  const applyMarqueeMetrics = () => {
     const marquee = marqueeRef.current;
-    if (marquee == null) return;
+    const clip = marquee?.parentElement;
+    if (marquee == null || clip == null || clip.clientWidth <= 0) return;
+    const clipWidth = clip.clientWidth;
+    const textWidth = marquee.scrollWidth;
     const durationSeconds = Math.min(
       MARQUEE_MAX_DURATION_SECONDS,
       Math.max(
         MARQUEE_MIN_DURATION_SECONDS,
-        (marquee.scrollWidth * 2) / MARQUEE_SPEED_PX_PER_SECOND,
+        (clipWidth + textWidth) / MARQUEE_SPEED_PX_PER_SECOND,
       ),
     );
+    marquee.style.setProperty('--ola-marquee-from', `${clipWidth}px`);
+    marquee.style.setProperty('--ola-marquee-to', `${-textWidth}px`);
     marquee.style.animationDuration = `${durationSeconds}s`;
-  }, [visible]);
+  };
+
+  useLayoutEffect(applyMarqueeMetrics, [visible]);
 
   if (announcement == null) return null;
 
@@ -39,7 +46,12 @@ export function AnnouncementBanner() {
     <>
       {visible != null && (
       <div className="pointer-events-none absolute inset-x-6 top-14 z-50">
-        <div className="pointer-events-auto mx-auto flex h-9 max-w-xs animate-ola-banner-expand items-center gap-1 overflow-hidden rounded-full bg-white/95 pl-3 pr-1 shadow-[0_4px_14px_rgba(0,0,0,0.22)] ring-1 ring-black/10">
+        <div
+          onAnimationEnd={(event) => {
+            if (event.animationName === 'ola-banner-expand') applyMarqueeMetrics();
+          }}
+          className="pointer-events-auto mx-auto flex h-9 max-w-xs animate-ola-banner-expand items-center gap-1 overflow-hidden rounded-full bg-white/95 pl-3 pr-1 shadow-[0_4px_14px_rgba(0,0,0,0.22)] ring-1 ring-black/10"
+        >
           <img
             src={announcementMegaphone}
             alt=""

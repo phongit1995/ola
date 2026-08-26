@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Linking, Pressable, Text, View } from 'react-native';
+import { Animated, Easing, Image, Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import {
@@ -183,14 +183,16 @@ export function AnnouncementBanner() {
           ) : undefined
         }
       >
-        <Text className="mb-1 font-bold" style={{ color: '#3a3839' }}>
-          {announcement.title}
-        </Text>
-        {announcement.content ? (
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
-            {announcement.content}
+        <ScrollView style={{ maxHeight: 360 }}>
+          <Text className="mb-1 font-bold" style={{ color: '#3a3839' }}>
+            {announcement.title}
           </Text>
-        ) : null}
+          {announcement.content ? (
+            <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              {announcement.content}
+            </Text>
+          ) : null}
+        </ScrollView>
       </Dialog>
     </>
   );
