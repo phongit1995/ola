@@ -1,11 +1,14 @@
 package game
 
 import (
+	"errors"
 	"math"
 	"time"
 
 	"ola-chat-server/internal/game/engine"
+	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
+	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
@@ -21,7 +24,7 @@ func NewRepository(db *gorm.DB, users *user.CacheService) *Repository {
 	return &Repository{db: db, users: users}
 }
 
-func (r *Repository) GetUserInfo(userID string) (*protocol.UserInfoData, error) {
+func (r *Repository) GetUserInfo(gameID, userID string) (*protocol.UserInfoData, error) {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, err
@@ -38,6 +41,7 @@ func (r *Repository) GetUserInfo(userID string) (*protocol.UserInfoData, error) 
 		Ken:      u.Ken,
 		MaxBet:   engine.MaxBet,
 	}
+	applyGameLevel(r.db, info, gameID, uid)
 
 	if u.VipUsed != nil && u.VipEndTime != nil {
 		left := time.Until(*u.VipEndTime)
@@ -48,6 +52,39 @@ func (r *Repository) GetUserInfo(userID string) (*protocol.UserInfoData, error) 
 	}
 
 	return info, nil
+}
+
+func (r *Repository) CurrentLevel(gameID, userID string) (int, bool) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return 0, false
+	}
+	exp, err := gameExpFor(r.db, gameID, uid)
+	if err != nil {
+		return 0, false
+	}
+	return progression.LevelFromExp(exp), true
+}
+
+func gameExpFor(db *gorm.DB, gameID string, userID uuid.UUID) (int64, error) {
+	var row models.UserGameLevel
+	err := db.Where("user_id = ? AND game_id = ?", userID, gameID).Take(&row).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	return row.Exp, nil
+}
+
+func applyGameLevel(db *gorm.DB, info *protocol.UserInfoData, gameID string, userID uuid.UUID) {
+	exp, err := gameExpFor(db, gameID, userID)
+	if err != nil {
+		exp = 0
+	}
+	info.Exp = exp
+	info.Level = progression.LevelFromExp(exp)
 }
 
 const leaderboardLimit = 100
@@ -63,6 +100,7 @@ type leaderboardRow struct {
 	Ken        int64      `gorm:"column:ken"`
 	Wins       int64      `gorm:"column:wins"`
 	Losses     int64      `gorm:"column:losses"`
+	GameExp    int64      `gorm:"column:game_exp"`
 }
 
 type matchHistoryRow struct {
@@ -115,30 +153,34 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 			Select(`results.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
 				COALESCE(SUM(results.ken), 0) AS ken,
 				COALESCE(SUM(results.wins), 0) AS wins,
-				COALESCE(SUM(results.losses), 0) AS losses`).
+				COALESCE(SUM(results.losses), 0) AS losses,
+				COALESCE(levels.exp, 0) AS game_exp`).
 			Joins(`CROSS JOIN LATERAL (VALUES
 				(game_matches.winner_id, 1, 0, game_matches.ken_delta),
 				(game_matches.loser_id, 0, 1, 0)
 			) AS results(user_id, wins, losses, ken)`).
 			Joins("JOIN users ON users.id = results.user_id").
+			Joins("LEFT JOIN user_game_levels AS levels ON levels.user_id = results.user_id AND levels.game_id = game_matches.game_id").
 			Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
 				AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
 				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL
 				AND results.user_id IS NOT NULL`,
 				gameID, matchStatusFinished, from, to).
-			Group("results.user_id, users.username, users.vip_used, users.vip_end_time").
+			Group("results.user_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
 			Having("COALESCE(SUM(results.wins), 0) > 0").
 			Order("wins DESC, losses ASC, ken DESC, users.username ASC, results.user_id ASC")
 	} else {
 		query = r.db.Table("game_matches").
 			Select(`game_matches.winner_id AS user_id, users.username, users.vip_used AS vip_type,
-				users.vip_end_time, COALESCE(SUM(game_matches.ken_delta), 0) AS ken`).
+				users.vip_end_time, COALESCE(SUM(game_matches.ken_delta), 0) AS ken,
+				COALESCE(levels.exp, 0) AS game_exp`).
 			Joins("JOIN users ON users.id = game_matches.winner_id").
+			Joins("LEFT JOIN user_game_levels AS levels ON levels.user_id = game_matches.winner_id AND levels.game_id = game_matches.game_id").
 			Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
 				AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
 				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
 				gameID, matchStatusFinished, from, to).
-			Group("game_matches.winner_id, users.username, users.vip_used, users.vip_end_time").
+			Group("game_matches.winner_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
 			Having("COALESCE(SUM(game_matches.ken_delta), 0) > 0").
 			Order("ken DESC, COUNT(*) DESC, users.username ASC, game_matches.winner_id ASC")
 	}
@@ -165,6 +207,7 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 			Ken:      row.Ken,
 			Wins:     row.Wins,
 			Losses:   row.Losses,
+			Level:    progression.LevelFromExp(row.GameExp),
 		}
 	}
 	return data, nil

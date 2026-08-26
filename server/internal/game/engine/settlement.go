@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/game/logic"
+	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
 )
 
@@ -458,6 +459,21 @@ func (e *Engine) deleteSnapshotWithStatuses(
 	return false, nil
 }
 
+func matchExpGains(playerIDs []string, winnerID, reason string, moveCount int) []protocol.ExpGainEntry {
+	gains := make([]protocol.ExpGainEntry, 0, len(playerIDs))
+	for _, id := range playerIDs {
+		if id == "" {
+			continue
+		}
+		exp := progression.MatchExp(winnerID, reason, id, moveCount)
+		if exp <= 0 {
+			continue
+		}
+		gains = append(gains, protocol.ExpGainEntry{UserID: id, Exp: exp})
+	}
+	return gains
+}
+
 func snapshotPlayerIDs(snapshot ActiveMatchSnapshot) []string {
 	userIDs := make([]string, 0, len(snapshot.Players))
 	for _, player := range snapshot.Players {
@@ -478,7 +494,57 @@ func (e *Engine) emitSettledBalances(balances []SettledBalance, fallbackGameID s
 			continue
 		}
 		e.toUser(gameID, balance.UserID, protocol.OutEnvelope{Type: protocol.S2CUserInfo, Data: balance.Info})
+		// Async so callers holding engine locks never contend with roomMu here.
+		go e.applySettledLevel(gameID, balance.UserID, balance.Info.Level)
 	}
+}
+
+// applySettledLevel refreshes the stored level of a waiting room member after a
+// settlement changed it, so the next rounds of the same room do not keep the
+// level captured when the room was created.
+func (e *Engine) applySettledLevel(gameID, userID string, level int) {
+	if level <= 0 {
+		return
+	}
+	e.roomMu.Lock()
+	room, changed := e.applySettledLevelLocked(gameID, userID, level)
+	e.roomMu.Unlock()
+	if changed {
+		e.emitRoomState(room)
+	}
+}
+
+func (e *Engine) applySettledLevelLocked(gameID, userID string, level int) (Room, bool) {
+	ref, ok := e.store.RoomByUser(gameID, userID)
+	if !ok {
+		return Room{}, false
+	}
+	room, ok := e.store.Get(gameID, ref.RoomID)
+	if !ok || !room.hasMember(userID) {
+		return Room{}, false
+	}
+	room.normalize()
+	changed := false
+	if room.OwnerID == userID && room.OwnerLevel != level {
+		room.OwnerLevel = level
+		changed = true
+	}
+	room.Guests = append([]RoomGuest(nil), room.Guests...)
+	for i := range room.Guests {
+		if room.Guests[i].ID == userID && room.Guests[i].Level != level {
+			room.Guests[i].Level = level
+			changed = true
+		}
+	}
+	if !changed {
+		return Room{}, false
+	}
+	room.syncLegacyGuest()
+	if err := e.store.Save(room); err != nil {
+		e.logger.Errorw("Failed to refresh room member level after settle", "room_id", room.ID, "user_id", userID, "error", err)
+		return Room{}, false
+	}
+	return room, true
 }
 
 func outcomeFromSnapshot(snapshot ActiveMatchSnapshot) (MatchOutcome, bool) {

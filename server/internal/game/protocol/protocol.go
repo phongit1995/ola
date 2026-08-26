@@ -121,6 +121,7 @@ type PlayerInfo struct {
 	ID      string  `json:"id"`
 	Name    string  `json:"name"`
 	VipType *string `json:"vipType,omitempty"`
+	Level   int     `json:"level,omitempty"`
 }
 
 type UserInfoData struct {
@@ -130,6 +131,8 @@ type UserInfoData struct {
 	VipDays  int     `json:"vipDays"`
 	Ken      int     `json:"ken"`
 	MaxBet   int     `json:"maxBet"`
+	Level    int     `json:"level"`
+	Exp      int64   `json:"exp"`
 }
 
 type LeaderboardRequestData struct {
@@ -144,6 +147,7 @@ type LeaderboardEntry struct {
 	Ken      int64   `json:"ken"`
 	Wins     int64   `json:"wins"`
 	Losses   int64   `json:"losses"`
+	Level    int     `json:"level,omitempty"`
 }
 
 type LeaderboardData struct {
@@ -199,6 +203,11 @@ type RankingEntry struct {
 	Place  int    `json:"place"`
 }
 
+type ExpGainEntry struct {
+	UserID string `json:"userId"`
+	Exp    int    `json:"exp"`
+}
+
 type MatchOverData struct {
 	MatchID  string         `json:"matchId"`
 	WinnerID string         `json:"winnerId,omitempty"`
@@ -208,6 +217,7 @@ type MatchOverData struct {
 	Payout   int            `json:"payout,omitempty"`
 	KenDelta int            `json:"kenDelta"`
 	Rankings []RankingEntry `json:"rankings,omitempty"`
+	ExpGains []ExpGainEntry `json:"expGains,omitempty"`
 }
 
 type SpectateJoinData struct {
@@ -351,6 +361,7 @@ type RoomMember struct {
 	ID      string  `json:"id"`
 	Name    string  `json:"name"`
 	VipType *string `json:"vipType,omitempty"`
+	Level   int     `json:"level,omitempty"`
 	Owner   bool    `json:"owner"`
 	Ready   bool    `json:"ready"`
 }

@@ -11,6 +11,7 @@ import (
 
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/game/engine"
+	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
@@ -420,9 +421,7 @@ func (s *SettlementRepository) settleFinish(
 				return errMatchConflict
 			}
 			result.gameID = row.GameID
-			if row.Bet > 0 {
-				result.userIDs = allPlayers
-			}
+			result.userIDs = allPlayers
 			return nil
 		}
 		if row.Status != matchStatusPlaying {
@@ -494,10 +493,37 @@ func (s *SettlementRepository) settleFinish(
 		if res.RowsAffected != 1 {
 			return errMatchConflict
 		}
+		// The status flip above runs exactly once per match, so exp grants
+		// inside the same transaction stay idempotent across settle retries.
+		for _, id := range orderedUserIDs(allPlayers...) {
+			gain := progression.MatchExp(out.WinnerID, out.Reason, id.String(), out.MoveCount)
+			if gain <= 0 {
+				continue
+			}
+			if err := grantGameExp(tx, row.GameID, id, gain); err != nil {
+				return err
+			}
+		}
 		result.gameID = row.GameID
+		result.userIDs = allPlayers
 		return nil
 	})
 	return result, err
+}
+
+func grantGameExp(tx *gorm.DB, gameID string, userID uuid.UUID, gain int) error {
+	var exp int64
+	row := tx.Raw(`INSERT INTO user_game_levels (user_id, game_id, exp, level)
+		VALUES (?, ?, ?, ?)
+		ON CONFLICT (user_id, game_id)
+		DO UPDATE SET exp = user_game_levels.exp + EXCLUDED.exp, updated_at = CURRENT_TIMESTAMP
+		RETURNING exp`, userID, gameID, gain, progression.LevelFromExp(int64(gain))).Row()
+	if err := row.Scan(&exp); err != nil {
+		return err
+	}
+	return tx.Model(&models.UserGameLevel{}).
+		Where("user_id = ? AND game_id = ?", userID, gameID).
+		Update("level", progression.LevelFromExp(exp)).Error
 }
 
 func outcomePlayers(row models.GameMatch, winnerID string, allPlayers []uuid.UUID) (winner, loser *uuid.UUID, err error) {
@@ -783,7 +809,7 @@ func (s *SettlementRepository) freshBalances(gameID string, ids []uuid.UUID) []e
 			continue
 		}
 		seen[id] = struct{}{}
-		info, err := s.freshUserInfo(id)
+		info, err := s.freshUserInfo(gameID, id)
 		if err != nil {
 			s.logger.Warnw("Failed to load user info after settle", "user_id", id, "error", err)
 			continue
@@ -793,7 +819,7 @@ func (s *SettlementRepository) freshBalances(gameID string, ids []uuid.UUID) []e
 	return out
 }
 
-func (s *SettlementRepository) freshUserInfo(userID uuid.UUID) (*protocol.UserInfoData, error) {
+func (s *SettlementRepository) freshUserInfo(gameID string, userID uuid.UUID) (*protocol.UserInfoData, error) {
 	deleteErr := s.users.DeleteUser(userID)
 	if deleteErr != nil {
 		s.logger.Warnw("Failed to invalidate user cache after settle; loading balance directly",
@@ -820,6 +846,7 @@ func (s *SettlementRepository) freshUserInfo(userID uuid.UUID) (*protocol.UserIn
 		Ken:      u.Ken,
 		MaxBet:   engine.MaxBet,
 	}
+	applyGameLevel(s.db, info, gameID, userID)
 	if u.VipUsed != nil && u.VipEndTime != nil {
 		left := time.Until(*u.VipEndTime)
 		if left > 0 {
