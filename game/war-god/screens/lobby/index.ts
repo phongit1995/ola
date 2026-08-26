@@ -2,7 +2,7 @@ import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 
 import type { GameSession, UserInfoData } from '../../../src/sdk';
 import { playSound, setSoundEnabled } from '../../audio';
 import { A, tex } from '../../assets';
-import { addTick, iconSprite, makeText, popIn, pressable, removeTick } from '../../kit';
+import { addTick, HEADING, iconSprite, makeText, popIn, pressable, removeTick } from '../../kit';
 import { DESIGN_W } from '../../layout';
 import type { BotLevel } from '../../logic/battle';
 import { buildRoomsLayer, hideAllRoomPopups, layoutRooms, openRoomList } from '../../rooms';
@@ -59,6 +59,9 @@ let nameFrame: Sprite;
 let nameText: Text;
 let vipIcon: Sprite;
 let vipMask: Graphics;
+let levelBadge: Container;
+let levelBadgeBg: Graphics;
+let levelBadgeText: Text;
 let kenFrame: Sprite;
 let coin: Sprite;
 let coinBaseScale = 1;
@@ -179,10 +182,27 @@ function updateAvatar(vipType?: string | null, animate = false): void {
     });
 }
 
+function updateLevelBadge(level?: number | null): void {
+  if (level == null || level <= 0) {
+    levelBadge.visible = false;
+    return;
+  }
+  levelBadgeText.text = `Lv.${level}`;
+  const w = levelBadgeText.width + 26;
+  const h = 26;
+  levelBadgeBg
+    .clear()
+    .roundRect(-w / 2, -h / 2, w, h, h / 2)
+    .fill({ color: 0x14304f, alpha: 0.95 })
+    .stroke({ width: 2, color: 0xffe9a8, alpha: 0.85 });
+  levelBadge.visible = true;
+}
+
 export function lobbyUpdateUser(info: UserInfoData): void {
   nameText.text = `@${info.username}`;
   layoutNameRow();
   updateAvatar(info.vipType);
+  updateLevelBadge(info.level);
   lobbyUpdateKen(info.ken);
 }
 
@@ -241,6 +261,13 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   vipMask = new Graphics();
   vipIcon.mask = vipMask;
   content.addChild(vipIcon, vipMask);
+
+  levelBadge = new Container();
+  levelBadgeBg = new Graphics();
+  levelBadgeText = makeText('', 16, 0xffe9a8, '800', HEADING);
+  levelBadge.addChild(levelBadgeBg, levelBadgeText);
+  levelBadge.visible = false;
+  content.addChild(levelBadge);
 
   kenFrame = new Sprite(tex[A.lobby.kenFrame]);
   kenFrame.anchor.set(0.5);
@@ -370,6 +397,7 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   vipIcon.x = DESIGN_W / 2;
   vipIcon.y = avatarFrame.y + AVATAR_FIT.iconDy;
   drawAvatarFrameMask(vipMask, DESIGN_W / 2, avatarFrame.y, AVATAR_FIT);
+  levelBadge.position.set(DESIGN_W / 2, avatarFrame.y + avatarFrame.height / 2 - 4);
   layoutNameRow();
   kenFrame.y = insetTop + 438;
   const kenH = kenFrame.height;
@@ -479,6 +507,7 @@ export function lobbySetReady(info: UserInfoData): void {
   nameText.text = `@${info.username}`;
   layoutNameRow();
   updateAvatar(info.vipType, true);
+  updateLevelBadge(info.level);
 
   layoutLobby(lastDesignH, lastInsetTop, lastInsetBottom);
   revealContent();

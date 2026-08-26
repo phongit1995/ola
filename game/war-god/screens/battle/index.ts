@@ -84,6 +84,7 @@ import {
   setBattleMode,
   setFighterAvatar,
   setFighterBotAvatar,
+  setFighterLevel,
   setFighterName,
   updateFighter,
 } from './hud';
@@ -1434,6 +1435,8 @@ export function enterRoomPregame(callbacks: RoomPregameCallbacks): void {
   hud.foe.name.text = 'Đang chờ...';
   setFighterAvatar(hud.me, deps.getUserInfo()?.vipType);
   setFighterAvatar(hud.foe, null);
+  setFighterLevel(hud.me, deps.getUserInfo()?.level);
+  setFighterLevel(hud.foe, null);
   updateHud();
   hud.banner.visible = false;
   hud.bottomRow.visible = false;
@@ -1462,6 +1465,8 @@ export function updateRoomPregame(
   hud.foe.name.text = foeMember ? `@${foeMember.name}` : 'Đang chờ...';
   if (meMember) setFighterAvatar(hud.me, meMember.vipType);
   setFighterAvatar(hud.foe, foeMember?.vipType ?? null);
+  if (meMember) setFighterLevel(hud.me, meMember.level ?? deps.getUserInfo()?.level);
+  setFighterLevel(hud.foe, foeMember?.level);
   let status: string;
   let main: RoomPregameView['main'] = null;
   if (!state) {
@@ -1526,6 +1531,8 @@ export function startBattle(level: BotLevel = botLevel): void {
   setFighterName(hud.foe, `@Máy - ${BOT_LEVEL_TITLES[botLevel]}`);
   setFighterAvatar(hud.me, userInfo?.vipType);
   setFighterBotAvatar(hud.foe, botLevel);
+  setFighterLevel(hud.me, userInfo?.level);
+  setFighterLevel(hud.foe, null);
   setChatPvp(false);
   setRoomChatSender(null);
   setChatInputVisible(false);
@@ -1591,6 +1598,8 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
   setFighterName(hud.foe, `@${opponent?.name ?? 'đối thủ'}`);
   setFighterAvatar(hud.me, mePlayer?.vipType ?? deps.getUserInfo()?.vipType);
   setFighterAvatar(hud.foe, opponent?.vipType);
+  setFighterLevel(hud.me, mePlayer?.level ?? deps.getUserInfo()?.level);
+  setFighterLevel(hud.foe, opponent?.level);
   setChatPvp(true);
   setRoomChatSender(null);
   if (!data.resumed) resetChat();
@@ -1808,6 +1817,9 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   resetRememberedSelection();
   busy = true;
   const ep = flowEpoch;
+  // Chốt exp trước khi await replay: USER_INFO sau tất toán có thể đến giữa
+  // chừng và đã cộng sẵn exp mới, lấy sau sẽ đếm trùng phần vừa nhận.
+  const expBeforeMatchOver = deps.getUserInfo()?.exp ?? 0;
   updateHud();
   clearHint();
   oppAwayUntil = 0;
@@ -1837,10 +1849,12 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   const bet = data.bet ?? pvp.bet();
   const winnerNet = data.kenDelta ?? bet;
   const kenDelta = won ? winnerNet : -bet;
+  const expGained = data.expGains?.find((gain) => gain.userId === myUserId)?.exp;
   showResult({
     outcome: draw ? 'draw' : won ? 'win' : 'lose',
     detail: matchOverSub(data.reason, won, draw),
     kenText: draw ? undefined : formatKenDelta(kenDelta),
+    exp: expGained != null ? { gained: expGained, before: expBeforeMatchOver } : undefined,
   });
   setStatus(draw ? 'Ván đấu hòa!' : won ? 'Bạn thắng!' : 'Bạn thua!');
   setChatInputVisible(false);

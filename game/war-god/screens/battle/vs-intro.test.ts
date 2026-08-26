@@ -13,27 +13,29 @@ const user: UserInfoData = {
   vipType: '135',
   vipDays: 2,
   ken: 1000,
+  level: 7,
+  exp: 2200,
 };
 
 describe('War God VS intro data', () => {
   it('keeps the opponent on the left and local PvP player on the right', () => {
     const match = {
       players: [
-        { id: 'foe', name: 'doi-thu', vipType: '2' },
-        { id: 'self', name: 'phong', vipType: '135' },
+        { id: 'foe', name: 'doi-thu', vipType: '2', level: 3 },
+        { id: 'self', name: 'phong', vipType: '135', level: 7 },
       ],
       you: 1,
     } as MatchFoundData<unknown>;
     expect(buildPvpVsIntroData(match, user)).toEqual({
-      left: { name: 'doi-thu', vipType: '2' },
-      right: { name: 'phong', vipType: '135' },
+      left: { name: 'doi-thu', vipType: '2', level: 3 },
+      right: { name: 'phong', vipType: '135', level: 7 },
     });
   });
 
   it('maps bot difficulty to a stable VIP icon and label', () => {
     expect(buildBotVsIntroData(user, 'expert')).toEqual({
       left: { name: 'Máy - Siêu khó', vipType: '4' },
-      right: { name: 'phong', vipType: '135' },
+      right: { name: 'phong', vipType: '135', level: 7 },
     });
   });
 });

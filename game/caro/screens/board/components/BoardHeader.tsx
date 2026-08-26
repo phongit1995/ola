@@ -66,6 +66,7 @@ export function BoardHeader() {
           <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
             <img className="p-vip" src={op.vip} alt="" />
           </div>
+          {op.level != null && op.level > 0 && <span className="player-level">Lv.{op.level}</span>}
           {op.owner && <RoomOwnerIcon />}
           {showBetDeduction && (
             <span key={`op-bet-${matchSeq}`} className="player-ken-change debit">
@@ -108,6 +109,7 @@ export function BoardHeader() {
           <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
             <img className="p-vip" src={me.vip} alt="" />
           </div>
+          {me.level != null && me.level > 0 && <span className="player-level">Lv.{me.level}</span>}
           {me.owner && <RoomOwnerIcon />}
           {showBetDeduction && (
             <span key={`me-bet-${matchSeq}`} className="player-ken-change debit">

@@ -1,4 +1,5 @@
 import { Container, Graphics, Rectangle, Sprite, Text, Texture, type Ticker } from 'pixi.js';
+import { levelFromExp, levelProgress } from '../../../src/sdk';
 import { A, tex } from '../../assets';
 import { playSound } from '../../audio';
 import { addTick, HEADING, makeText, popIn, pressable, removeTick, tween } from '../../kit';
@@ -38,18 +39,29 @@ const RESULT_REVEAL = {
   verdictDelay: 350,
   detailDelay: 430,
   kenDelay: 510,
+  expDelay: 560,
   replayDelay: 620,
   closeDelay: 690,
 } as const;
+const EXP_BAR_W = PANEL_W * 0.6;
+const EXP_BAR_H = 9;
+const EXP_FILL_MS = 650;
+const EXP_LEVELUP_HOLD_MS = 240;
 
 export type ResultOutcome = 'win' | 'lose' | 'draw';
 export type ResultStarRating = BotStarRating;
+
+export interface ResultExpInfo {
+  gained: number;
+  before: number;
+}
 
 export interface ResultPopupData {
   outcome: ResultOutcome;
   detail: string;
   kenText?: string;
   starRating?: ResultStarRating;
+  exp?: ResultExpInfo;
 }
 
 export interface ResultPopup {
@@ -359,6 +371,82 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
   kenBox.addChild(kenText);
   card.addChild(kenBox);
 
+  const expBox = new Container();
+  const expGainText = makeText('', 15, 0xffdf62, '800', HEADING);
+  expGainText.style.stroke = { color: 0x6f2607, width: 2, join: 'round' };
+  expGainText.y = -14;
+  const levelUpText = makeText('LÊN CẤP!', 14, 0xffe9a8, '800', HEADING);
+  levelUpText.style.stroke = { color: 0x6f2607, width: 3, join: 'round' };
+  levelUpText.y = EXP_BAR_H / 2;
+  levelUpText.visible = false;
+  const expBarBg = new Graphics();
+  expBarBg
+    .roundRect(-EXP_BAR_W / 2, 0, EXP_BAR_W, EXP_BAR_H, EXP_BAR_H / 2)
+    .fill({ color: 0x2d1607, alpha: 0.78 });
+  const expBarFill = new Graphics();
+  expBarFill.roundRect(0, 0, EXP_BAR_W, EXP_BAR_H, EXP_BAR_H / 2).fill(0xffc23a);
+  expBarFill.x = -EXP_BAR_W / 2;
+  expBarFill.scale.x = 0;
+  const expLevelText = makeText('', 12, 0xfff0c5, '700', HEADING);
+  expLevelText.y = -14;
+  expBox.addChild(expBarBg, expBarFill, expGainText, expLevelText, levelUpText);
+  expBox.visible = false;
+  card.addChild(expBox);
+
+  // Thanh EXP bơm tới vạch mới; nếu vượt cấp thì bơm đầy, khựng lại khoe chữ
+  // LÊN CẤP! rồi mới rót phần dư của cấp mới, giống nhịp quen thuộc của game RPG.
+  function playExpFill(start: number, end: number, leveledUp: boolean, delay: number): () => void {
+    let clock = -delay;
+    let active = true;
+    let phase = 0;
+    expBarFill.scale.x = start;
+    levelUpText.visible = false;
+    const stop = (): void => {
+      if (!active) return;
+      active = false;
+      removeTick(step);
+    };
+    const step = (ticker: Ticker): void => {
+      if (!active || expBarFill.destroyed) {
+        stop();
+        return;
+      }
+      clock += ticker.deltaMS;
+      if (clock < 0) return;
+      if (phase === 0) {
+        const target = leveledUp ? 1 : end;
+        const k = Math.min(1, clock / EXP_FILL_MS);
+        const e = 1 - (1 - k) * (1 - k);
+        expBarFill.scale.x = start + (target - start) * e;
+        if (k >= 1) {
+          if (!leveledUp) {
+            stop();
+            return;
+          }
+          phase = 1;
+          clock = 0;
+          levelUpText.visible = true;
+          cancelReveal.push(popIn(levelUpText, 0, 300));
+          playSound('match');
+        }
+        return;
+      }
+      if (phase === 1) {
+        if (clock < EXP_LEVELUP_HOLD_MS) return;
+        phase = 2;
+        clock = 0;
+        expBarFill.scale.x = 0;
+        return;
+      }
+      const k = Math.min(1, clock / EXP_FILL_MS);
+      const e = 1 - (1 - k) * (1 - k);
+      expBarFill.scale.x = end * e;
+      if (k >= 1) stop();
+    };
+    addTick(step);
+    return stop;
+  }
+
   const BTN_W = PANEL_W * 0.36;
   const BTN_GAP = PANEL_W * 0.045;
 
@@ -413,14 +501,15 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
     card.y = Math.min(centeredY, maxY);
   }
 
-  function arrangeContent(withStars: boolean, hasKen: boolean): void {
+  function arrangeContent(withStars: boolean, hasKen: boolean, hasExp: boolean): void {
     panel.height = defaultPanelH;
     const panelH = panel.height;
     const halfH = panelH / 2;
 
     titleFrame.y = -halfH;
     title.y = titleFrame.y - 2;
-    kenBox.y = panelH * 0.32;
+    kenBox.y = hasExp ? panelH * 0.27 : panelH * 0.32;
+    expBox.y = hasKen ? panelH * 0.405 : panelH * 0.33;
 
     replayButton.y = halfH;
     closeButton.y = halfH;
@@ -480,7 +569,32 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
         arrangeKen();
       }
 
-      arrangeContent(withStars, kenBox.visible);
+      expBox.visible = data.exp != null;
+      let expAnim: { start: number; end: number; leveledUp: boolean } | null = null;
+      if (data.exp != null) {
+        const after = data.exp.before + data.exp.gained;
+        const progress = levelProgress(after);
+        const leveledUp = progress.level > levelFromExp(data.exp.before);
+        expGainText.text = `+${data.exp.gained} EXP`;
+        fitText(expGainText, PANEL_W * 0.3);
+        expLevelText.text =
+          progress.required > 0
+            ? `Lv.${progress.level}  ${progress.current}/${progress.required}`
+            : `Lv.${progress.level}  MAX`;
+        fitText(expLevelText, PANEL_W * 0.3);
+        expGainText.x = -EXP_BAR_W / 2 + expGainText.width / 2;
+        expLevelText.x = EXP_BAR_W / 2 - expLevelText.width / 2;
+        levelUpText.x = 0;
+        levelUpText.visible = false;
+        expAnim = {
+          start: levelProgress(data.exp.before).ratio,
+          end: progress.ratio,
+          leveledUp,
+        };
+        expBarFill.scale.x = expAnim.start;
+      }
+
+      arrangeContent(withStars, kenBox.visible, expBox.visible);
       if (latestLayout) applyLayout(latestLayout);
 
       view.visible = true;
@@ -513,6 +627,17 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
       reveal(verdict, RESULT_REVEAL.verdictDelay + starDelay, 460);
       reveal(detail, RESULT_REVEAL.detailDelay + starDelay, 380);
       if (kenBox.visible) reveal(kenBox, RESULT_REVEAL.kenDelay + starDelay, 420);
+      if (expBox.visible && expAnim) {
+        reveal(expBox, RESULT_REVEAL.expDelay + starDelay, 420);
+        cancelReveal.push(
+          playExpFill(
+            expAnim.start,
+            expAnim.end,
+            expAnim.leveledUp,
+            RESULT_REVEAL.expDelay + starDelay + 320,
+          ),
+        );
+      }
       reveal(replayButton, RESULT_REVEAL.replayDelay + starDelay, 360);
       reveal(closeButton, RESULT_REVEAL.closeDelay + starDelay, 360);
     },

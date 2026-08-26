@@ -28,6 +28,8 @@ export interface FighterUI {
   avatarUrl: string;
   avatarGen: number;
   name: Text;
+  rankNum: Text;
+  rankSeat: string;
   hp: BarUI;
   mp: BarUI;
   fury: BarUI;
@@ -209,6 +211,8 @@ export function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): Fighter
     avatarUrl: '',
     avatarGen: 0,
     name,
+    rankNum,
+    rankSeat: mirror ? '1' : '2',
     hp: hpRow.bar,
     mp: mpRow.bar,
     fury: furyRow.bar,
@@ -251,6 +255,15 @@ export function setFighterAvatar(ui: FighterUI, vipType?: string | null): void {
 
 export function setFighterBotAvatar(ui: FighterUI, level: BotLevel): void {
   loadAvatar(ui, botAvatarIconUrl(level));
+}
+
+// Slot khung rank vốn in số ghế 1/2; trận online thay bằng level thật của
+// người chơi, đấu máy trả về số ghế vì máy không có level.
+export function setFighterLevel(ui: FighterUI, level?: number | null): void {
+  ui.rankNum.text = level != null && level > 0 ? `Lv${level}` : ui.rankSeat;
+  ui.rankNum.scale.set(1);
+  const maxW = 22;
+  if (ui.rankNum.width > maxW) ui.rankNum.scale.set(maxW / ui.rankNum.width);
 }
 
 export function setFighterName(ui: FighterUI, value: string): void {

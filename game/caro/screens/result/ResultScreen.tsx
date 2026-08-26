@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { levelFromExp, levelProgress } from '../../../src/sdk';
 import { assetBg, assetSrc } from '../../assets';
 import { formatKen } from '../../helpers/format';
 import { handleDialogKeyDown, useDialogFocus } from '../../helpers/dialog';
@@ -43,6 +44,25 @@ export function ResultScreen() {
     return () => window.clearTimeout(timer);
   }, [result, setRevealedResult]);
 
+  const expGained = result?.expGained ?? null;
+  const expInfo =
+    result != null && expGained != null
+      ? (() => {
+          const after = result.expBefore + expGained;
+          const progress = levelProgress(after);
+          const leveledUp = progress.level > levelFromExp(result.expBefore);
+          const startRatio = leveledUp ? 0 : levelProgress(result.expBefore).ratio;
+          return { ...progress, leveledUp, startRatio };
+        })()
+      : null;
+  const [expFilled, setExpFilled] = useState(false);
+  useEffect(() => {
+    setExpFilled(false);
+    if (!result || result.expGained == null || pending) return;
+    const timer = window.setTimeout(() => setExpFilled(true), 400);
+    return () => window.clearTimeout(timer);
+  }, [result, pending]);
+
   return (
     <div
       id="result"
@@ -72,6 +92,24 @@ export function ResultScreen() {
           <img src={assetSrc('resultIcKen')} alt="" />
           <span id="result-ken-text">{kenText}</span>
         </div>
+        {expInfo && (
+          <div id="result-exp">
+            <div className="result-exp-row">
+              <span className="result-exp-gain">+{expGained} EXP</span>
+              {expInfo.leveledUp && <span className="result-levelup">LÊN CẤP!</span>}
+            </div>
+            <div className="result-exp-bar" role="progressbar" aria-label="Kinh nghiệm">
+              <div
+                className="result-exp-fill"
+                style={{ width: `${(expFilled ? expInfo.ratio : expInfo.startRatio) * 100}%` }}
+              />
+            </div>
+            <div className="result-exp-level">
+              <span>Lv.{expInfo.level}</span>
+              <span>{expInfo.required > 0 ? `${expInfo.current}/${expInfo.required}` : 'MAX'}</span>
+            </div>
+          </div>
+        )}
         <div id="result-actions">
           {replayVisible && (
             <button

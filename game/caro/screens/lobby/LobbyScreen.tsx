@@ -96,6 +96,9 @@ export function LobbyScreen({ progress, assetsReady }: LobbyScreenProps) {
         <div id="lobby-content">
           <div className="lobby-avatar" style={assetBg('avatarFrame')}>
             <img id="lobby-vip" className={phase === 'ready' ? '' : 'hidden'} src={vipSrc} alt="VIP" />
+            {phase === 'ready' && userInfo?.level != null && (
+              <span className="lobby-level">Lv.{userInfo.level}</span>
+            )}
           </div>
           <div className="lobby-name" style={assetBg('nameFrame')}>
             <span id="lobby-name-text">{userInfo ? `@${userInfo.username}` : '...'}</span>

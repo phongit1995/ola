@@ -22,6 +22,7 @@ interface CombatantRow {
   fallback: Container;
   fallbackInitial: Text;
   label: Text;
+  levelTag: Text;
   mirrored: boolean;
 }
 
@@ -116,26 +117,38 @@ function buildRow(mirrored: boolean, color: number, glow: number, hot: number): 
   };
   view.addChild(label);
 
-  return { view, icon, fallback, fallbackInitial, label, mirrored };
+  const levelTag = makeText('', 13, 0xffe9a8, '800', HEADING);
+  levelTag.style.stroke = { color: 0x05070d, width: 3, join: 'round' };
+  levelTag.visible = false;
+  view.addChild(levelTag);
+
+  return { view, icon, fallback, fallbackInitial, label, levelTag, mirrored };
 }
 
 function arrangeRow(row: CombatantRow, combatant: VsIntroCombatant): void {
   row.label.text = displayName(combatant.name);
   row.fallbackInitial.text = firstInitial(combatant.name);
-  fitText(row.label, ROW_TEXT_MAX_W);
+  const hasLevel = combatant.level != null && combatant.level > 0;
+  row.levelTag.visible = hasLevel;
+  if (hasLevel) row.levelTag.text = `Lv.${combatant.level}`;
+  const levelW = hasLevel ? row.levelTag.width + 6 : 0;
+  fitText(row.label, ROW_TEXT_MAX_W - levelW);
   const gap = 8;
   if (row.mirrored) {
     row.icon.x = -ICON_SIZE / 2;
     row.fallback.x = row.icon.x;
-    row.label.x = -ICON_SIZE - gap - row.label.width / 2;
+    row.levelTag.x = -ICON_SIZE - gap - row.levelTag.width / 2;
+    row.label.x = -ICON_SIZE - gap - levelW - row.label.width / 2;
   } else {
     row.icon.x = ICON_SIZE / 2;
     row.fallback.x = row.icon.x;
     row.label.x = ICON_SIZE + gap + row.label.width / 2;
+    row.levelTag.x = ICON_SIZE + gap + row.label.width + 6 + row.levelTag.width / 2;
   }
   row.icon.y = 0;
   row.fallback.y = 0;
   row.label.y = 0;
+  row.levelTag.y = 0;
 }
 
 function buildImpact(): Container {
