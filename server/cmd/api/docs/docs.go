@@ -15585,7 +15585,7 @@ const docTemplate = `{
             "properties": {
                 "vipTypeId": {
                     "type": "integer",
-                    "maximum": 136,
+                    "maximum": 138,
                     "minimum": 1,
                     "example": 4
                 }
@@ -24121,7 +24121,7 @@ const docTemplate = `{
                 },
                 "vipTypeId": {
                     "type": "integer",
-                    "maximum": 136,
+                    "maximum": 138,
                     "minimum": 1,
                     "example": 4
                 }

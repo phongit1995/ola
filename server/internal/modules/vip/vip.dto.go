@@ -186,7 +186,7 @@ type ShopListResponse struct {
 }
 
 type CreateShopItemRequest struct {
-	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=136" example:"4"`
+	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=138" example:"4"`
 	KenPrice  int   `json:"kenPrice" binding:"min=0" example:"100"`
 	IsActive  *bool `json:"isActive" example:"true"`
 	SortOrder int   `json:"sortOrder" example:"0"`

@@ -15582,7 +15582,7 @@
             "properties": {
                 "vipTypeId": {
                     "type": "integer",
-                    "maximum": 136,
+                    "maximum": 138,
                     "minimum": 1,
                     "example": 4
                 }
@@ -24118,7 +24118,7 @@
                 },
                 "vipTypeId": {
                     "type": "integer",
-                    "maximum": 136,
+                    "maximum": 138,
                     "minimum": 1,
                     "example": 4
                 }
