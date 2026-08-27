@@ -767,6 +767,7 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 		OwnerID:      owner.ID,
 		OwnerName:    owner.Name,
 		OwnerVipType: owner.VipType,
+		OwnerLevel:   owner.Level,
 		MaxPlayers:   maxPlayers,
 		Bet:          bet,
 		Password:     password,
@@ -883,7 +884,7 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 		return
 	}
 
-	room.addGuest(RoomGuest{ID: joiner.ID, Name: joiner.Name, VipType: joiner.VipType})
+	room.addGuest(RoomGuest{ID: joiner.ID, Name: joiner.Name, VipType: joiner.VipType, Level: joiner.Level})
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomJoinFailed, err.Error())
 		return
@@ -1065,9 +1066,9 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 	// global room mutex lets unrelated rooms continue during that bounded I/O.
 	e.roomMu.Unlock()
 	roomPlayers := make([]protocol.PlayerInfo, 0, room.playerCount())
-	roomPlayers = append(roomPlayers, protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType})
+	roomPlayers = append(roomPlayers, protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType, Level: room.OwnerLevel})
 	for _, g := range room.guestList() {
-		roomPlayers = append(roomPlayers, protocol.PlayerInfo{ID: g.ID, Name: g.Name, VipType: g.VipType})
+		roomPlayers = append(roomPlayers, protocol.PlayerInfo{ID: g.ID, Name: g.Name, VipType: g.VipType, Level: g.Level})
 	}
 	startErr := e.startRoomMatch(gameID, gameLogic, roomPlayers, room.Bet, room)
 	e.roomMu.Lock()
@@ -1249,11 +1250,11 @@ func (e *Engine) emitRoomStateTo(room Room, userID string) {
 func (e *Engine) emitRoomStateToAfterMatch(room Room, userID, matchID string) {
 	members := make([]protocol.RoomMember, 0, room.playerCount())
 	members = append(members, protocol.RoomMember{
-		ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType, Owner: true, Ready: true,
+		ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType, Level: room.OwnerLevel, Owner: true, Ready: true,
 	})
 	for _, g := range room.guestList() {
 		members = append(members, protocol.RoomMember{
-			ID: g.ID, Name: g.Name, VipType: g.VipType, Ready: g.Ready,
+			ID: g.ID, Name: g.Name, VipType: g.VipType, Level: g.Level, Ready: g.Ready,
 		})
 	}
 	e.toUser(room.GameID, userID, protocol.OutEnvelope{
@@ -2360,6 +2361,14 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	if winnerID != "" {
 		payout, kenDelta = e.winnerAmounts(m.GameID, m.bet)
 	}
+	// Exp only reaches the database through settlement, so a match that will
+	// never be settled must not announce gains the players would lose on
+	// reconnect.
+	willSettle := e.currentSettlement() != nil || m.bet > 0
+	var expGains []protocol.ExpGainEntry
+	if willSettle {
+		expGains = matchExpGains(matchPlayerIDs(m), winnerID, reason, outcome.MoveCount)
+	}
 	data := protocol.MatchOverData{
 		MatchID:  m.ID,
 		WinnerID: winnerID,
@@ -2369,6 +2378,7 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 		Payout:   payout,
 		KenDelta: kenDelta,
 		Rankings: rankings,
+		ExpGains: expGains,
 	}
 	keys := make([]string, 0, len(m.players))
 	for _, p := range m.players {
@@ -2384,7 +2394,7 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 		e.toUser(m.GameID, p.ID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
 	}
 	e.notifySpectatorsMatchOver(m, data)
-	if e.currentSettlement() != nil || m.bet > 0 {
+	if willSettle {
 		e.queueFinishedSettlement(snapshot, outcome)
 	} else if _, err := e.activeStore.DeleteIfStatus(
 		m.GameID,
@@ -2885,6 +2895,10 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 	if snapshot.WinnerID != "" {
 		payout, kenDelta = e.winnerAmounts(snapshot.GameID, snapshot.Bet)
 	}
+	var expGains []protocol.ExpGainEntry
+	if e.currentSettlement() != nil || snapshot.Bet > 0 {
+		expGains = matchExpGains(snapshotPlayerIDs(snapshot), snapshot.WinnerID, snapshot.ResultReason, stateMoveCount(gameLogic, state))
+	}
 	data := protocol.MatchOverData{
 		MatchID:  snapshot.ID,
 		WinnerID: snapshot.WinnerID,
@@ -2893,6 +2907,7 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 		Bet:      snapshot.Bet,
 		Payout:   payout,
 		KenDelta: kenDelta,
+		ExpGains: expGains,
 	}
 	if !e.restoreSnapshotRoom(snapshot) {
 		e.logger.Errorw("Deferred waiting-room restore from finished match", "match_id", snapshot.ID)

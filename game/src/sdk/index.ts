@@ -5,4 +5,5 @@ export {
 } from './bridge';
 export { joinGame, type GameSession, type GameStatus } from './socket';
 export * from './protocol';
+export * from './progression';
 export { avatarIconUrl, DEFAULT_AVATAR_URL } from './avatar';

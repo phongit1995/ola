@@ -122,9 +122,19 @@ function renderRows(items: LeaderboardEntry[]): void {
     name.anchor.set(0, 0.5);
     name.x = -LIST_W / 2 + 50;
     name.y = midY;
-    const nameMax = wins.x - wins.width - 10 - name.x;
+    const levelTag =
+      entry.level != null && entry.level > 0
+        ? makeText(`Lv.${entry.level}`, 11, 0xffe9a8, '800')
+        : null;
+    if (levelTag) levelTag.anchor.set(0, 0.5);
+    const levelW = levelTag ? levelTag.width + 6 : 0;
+    const nameMax = wins.x - wins.width - 10 - name.x - levelW;
     if (name.width > nameMax) name.scale.set(nameMax / name.width);
     row.addChild(name);
+    if (levelTag) {
+      levelTag.position.set(name.x + name.width + 6, midY);
+      row.addChild(levelTag);
+    }
     listLayer.addChild(row);
   });
   contentH = items.length * ROW_H;

@@ -23,6 +23,7 @@ type RoomGuest struct {
 	ID      string  `json:"id"`
 	Name    string  `json:"name"`
 	VipType *string `json:"vipType,omitempty"`
+	Level   int     `json:"level,omitempty"`
 	Ready   bool    `json:"ready"`
 }
 
@@ -32,6 +33,7 @@ type Room struct {
 	OwnerID      string      `json:"ownerId"`
 	OwnerName    string      `json:"ownerName"`
 	OwnerVipType *string     `json:"ownerVipType,omitempty"`
+	OwnerLevel   int         `json:"ownerLevel,omitempty"`
 	GuestID      string      `json:"guestId,omitempty"`
 	GuestName    string      `json:"guestName,omitempty"`
 	GuestVipType *string     `json:"guestVipType,omitempty"`

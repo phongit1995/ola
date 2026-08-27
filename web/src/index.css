@@ -32,7 +32,7 @@
   --animate-ola-menu-in: ola-menu-in 0.14s ease-out;
   --animate-ola-fly: ola-fly 1.5s ease-in forwards;
   --animate-ola-marquee: ola-marquee 12s linear infinite;
-  --animate-ola-marquee-once: ola-marquee 10s linear 1.4s 1 forwards;
+  --animate-ola-marquee-once: ola-marquee 12s linear 1.4s 1 both;
   --animate-ola-banner-expand: ola-banner-expand 0.5s ease-out 0.6s both;
   --animate-ola-ken-bump: ola-ken-bump 0.45s ease;
   --animate-hourglass-flip: hourglass-flip 3s ease-in-out infinite;
@@ -195,10 +195,10 @@
 
 @keyframes ola-marquee {
   from {
-    transform: translateX(100%);
+    transform: translateX(var(--ola-marquee-from, 100%));
   }
   to {
-    transform: translateX(-100%);
+    transform: translateX(var(--ola-marquee-to, -100%));
   }
 }
 

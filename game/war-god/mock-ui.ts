@@ -59,6 +59,7 @@ import {
 } from './screens/battle';
 import { showConfirm, showResult } from './screens/battle/hud';
 import { pushPvpChat, setChatInputVisible } from './screens/battle/chat';
+import { isBotStarRating, type BotStarRating } from './logic/bot-rating';
 import {
   buildUltimatePicker,
   isUltimatePickerVariant,
@@ -72,6 +73,19 @@ const state = params.get('state') ?? '';
 const variantParam = params.get('variant');
 const ultimateVariant = isUltimatePickerVariant(variantParam) ? variantParam : undefined;
 const replyDelay = Number(params.get('delay') ?? 120);
+const starParam = params.get('stars');
+const parsedStars = starParam == null ? Number.NaN : Number(starParam);
+const mockStarRating: BotStarRating | undefined = isBotStarRating(parsedStars)
+  ? parsedStars
+  : undefined;
+// query exp=<gained> (+ expBefore=<exp tích luỹ>) bật thanh kinh nghiệm PvP;
+// ví dụ exp=70&expBefore=80 trình diễn nhịp LÊN CẤP!.
+const expParam = Number(params.get('exp') ?? Number.NaN);
+const expBeforeParam = Number(params.get('expBefore') ?? 0);
+const mockExp =
+  Number.isFinite(expParam) && expParam > 0
+    ? { gained: expParam, before: Number.isFinite(expBeforeParam) ? expBeforeParam : 0 }
+    : undefined;
 
 const ME: UserInfoData = {
   id: 'me',
@@ -80,6 +94,8 @@ const ME: UserInfoData = {
   vipDays: 30,
   ken: 1_284_500,
   maxBet: 500_000,
+  level: 7,
+  exp: 2_260,
 };
 const FOE_VIP = '15';
 
@@ -247,8 +263,8 @@ function makeMatch(): MatchFoundData<ServerState> {
     matchId: 'wg-match-mock',
     gameId: 'war-god',
     players: [
-      { id: 'me', name: 'thanhlong', vipType: ME.vipType },
-      { id: 'foe', name: 'kiemvuong', vipType: FOE_VIP },
+      { id: 'me', name: 'thanhlong', vipType: ME.vipType, level: ME.level },
+      { id: 'foe', name: 'kiemvuong', vipType: FOE_VIP, level: 12 },
     ],
     you: 0,
     turn: state === 'foe-turn' ? 1 : 0,
@@ -326,6 +342,7 @@ const SCENES: Record<string, () => Promise<void> | void> = {
   },
 
   // state: my-turn | foe-turn | mana-empty | mana-loading | mana-ready | ultimate-picker | fury-full | win | lose | draw
+  // query stars=0..3 theo bước 0.5 bật biến thể rating khi chơi với Máy.
   async battle() {
     await openPvpBattle();
     if (state === 'ultimate-picker') {
@@ -335,9 +352,25 @@ const SCENES: Record<string, () => Promise<void> | void> = {
     if (state !== 'win' && state !== 'lose' && state !== 'draw') return;
     // Trận kết thúc thì ô chat bị khoá, giống nhánh finish() thật.
     setChatInputVisible(false);
-    if (state === 'win') showResult({ outcome: 'win', detail: 'Bạn đã hạ gục @kiemvuong' });
-    else if (state === 'lose') showResult({ outcome: 'lose', detail: '@kiemvuong đã hạ gục bạn' });
-    else showResult({ outcome: 'draw', detail: 'Hai bên bất phân thắng bại' });
+    if (state === 'win') {
+      showResult({
+        outcome: 'win',
+        detail: 'Bạn đã hạ gục @kiemvuong',
+        starRating: mockStarRating,
+        kenText: mockExp ? '+9.500 KEN' : undefined,
+        exp: mockExp,
+      });
+    } else if (state === 'lose') {
+      showResult({
+        outcome: 'lose',
+        detail: '@kiemvuong đã hạ gục bạn',
+        starRating: mockStarRating,
+        kenText: mockExp ? '-10.000 KEN' : undefined,
+        exp: mockExp,
+      });
+    } else {
+      showResult({ outcome: 'draw', detail: 'Hai bên bất phân thắng bại', exp: mockExp });
+    }
   },
 
   // state: restart | forfeit | exit

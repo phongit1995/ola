@@ -251,6 +251,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
             mark: 'x',
             active: false,
             owner: meMember?.owner ?? false,
+            level: meMember?.level ?? user?.level,
           },
       op: preserveOutcome
         ? s.op
@@ -261,6 +262,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
               mark: 'o',
               active: false,
               owner: opponent.owner,
+              level: opponent.level,
             }
           : { ...EMPTY_PLAYER, name: 'Đang chờ...', mark: 'o' },
     }));
@@ -596,6 +598,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
           mark: meMark,
           active: false,
           owner: data.roomOwnerId === mePlayer.id,
+          level: mePlayer.level ?? user?.level,
         },
         op: {
           name: opponent.name,
@@ -603,6 +606,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
           mark: meMark === 'x' ? 'o' : 'x',
           active: false,
           owner: data.roomOwnerId === opponent.id,
+          level: isBot ? undefined : opponent.level,
         },
         forfeitDisabled: false,
         replayVisible: target === refs.bot,
@@ -710,6 +714,8 @@ export const useCaro = create<CaroStore>()((set, get) => {
       const kenDelta = target === refs.bot ? 0 : draw ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
       const payoutRevealDelay =
         !draw && target !== refs.bot && bet > 0 && winnerPayout > 0 ? WIN_RESULT_REVEAL_MS : 0;
+      const expGained =
+        target === refs.bot ? null : data.expGains?.find((gain) => gain.userId === myId)?.exp ?? null;
       set({
         overlay: null,
         result: {
@@ -718,6 +724,8 @@ export const useCaro = create<CaroStore>()((set, get) => {
           kenDelta,
           winnerPayout: draw || target === refs.bot || bet === 0 ? null : winnerPayout,
           revealDelayMs: line ? WIN_RESULT_REVEAL_MS : payoutRevealDelay,
+          expGained,
+          expBefore: refs.user?.exp ?? 0,
         },
         winLine: line,
         status: draw ? 'Ván đấu hòa!' : won ? 'Bạn thắng!' : 'Bạn thua!',

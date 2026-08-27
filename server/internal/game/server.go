@@ -26,6 +26,7 @@ type SocketData struct {
 	GameID  string
 	Name    string
 	VipType *string
+	Level   int
 }
 
 func (d *SocketData) Key() string {
@@ -176,7 +177,7 @@ func (s *Server) handleConnection(client *socket.Socket) {
 }
 
 func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
-	info, err := s.repo.GetUserInfo(data.UserID)
+	info, err := s.repo.GetUserInfo(data.GameID, data.UserID)
 	if err != nil {
 		s.logger.Warnw("Failed to load user info", "user_id", data.UserID, "error", err)
 		client.Emit(messageEvent, protocol.OutEnvelope{
@@ -190,7 +191,17 @@ func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
 		data.Name = info.Username
 	}
 	data.VipType = info.VipType
+	data.Level = info.Level
 	client.Emit(messageEvent, protocol.OutEnvelope{Type: protocol.S2CUserInfo, Data: *info})
+}
+
+// socketPlayer refreshes the level on every use: exp changes after each
+// settlement, so the value cached at connect time goes stale within a session.
+func (s *Server) socketPlayer(data *SocketData) protocol.PlayerInfo {
+	if level, ok := s.repo.CurrentLevel(data.GameID, data.UserID); ok {
+		data.Level = level
+	}
+	return socketPlayer(data)
 }
 
 func socketPlayer(data *SocketData) protocol.PlayerInfo {
@@ -198,6 +209,7 @@ func socketPlayer(data *SocketData) protocol.PlayerInfo {
 		ID:      data.UserID,
 		Name:    data.Name,
 		VipType: data.VipType,
+		Level:   data.Level,
 	}
 }
 
@@ -257,7 +269,7 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 
 	switch env.Type {
 	case protocol.C2SQueueJoin:
-		s.engine.JoinQueue(data.GameID, socketPlayer(data))
+		s.engine.JoinQueue(data.GameID, s.socketPlayer(data))
 	case protocol.C2SQueueLeave:
 		s.engine.LeaveQueue(data.GameID, data.UserID)
 	case protocol.C2SMove:
@@ -297,13 +309,13 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		s.engine.CreateRoom(data.GameID, socketPlayer(data), d.Bet, d.Password, d.MaxPlayers)
+		s.engine.CreateRoom(data.GameID, s.socketPlayer(data), d.Bet, d.Password, d.MaxPlayers)
 	case protocol.C2SRoomJoin:
 		var d protocol.RoomJoinData
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		s.engine.JoinRoom(data.GameID, socketPlayer(data), d.RoomID, d.Password)
+		s.engine.JoinRoom(data.GameID, s.socketPlayer(data), d.RoomID, d.Password)
 	case protocol.C2SRoomLeave:
 		var d protocol.RoomActionData
 		if len(env.Data) > 0 {

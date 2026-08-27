@@ -63,6 +63,7 @@ import {
 import { FriendRequestsScreen } from '@screens/friends/FriendRequestsScreen';
 import { SuggestedFriendsScreen } from '@screens/friends/SuggestedFriendsScreen';
 import { TAB_ICONS } from '@assets/tabIcons';
+import { AnnouncementBanner } from '@components/ui/AnnouncementBanner';
 import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
 import { TabBarGradient } from '@components/TabBarGradient';
 import { TAB_BAR_BORDER } from '@constants/colors';
@@ -240,6 +241,7 @@ function MainTabs() {
           }}
         />
       </Tabs.Navigator>
+      <AnnouncementBanner />
       <KenBalanceBadge />
     </View>
   );

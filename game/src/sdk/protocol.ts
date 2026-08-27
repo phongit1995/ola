@@ -118,6 +118,7 @@ export interface PlayerInfo {
   id: string;
   name: string;
   vipType?: string | null;
+  level?: number;
 }
 
 export interface UserInfoData {
@@ -127,6 +128,8 @@ export interface UserInfoData {
   vipDays: number;
   ken: number;
   maxBet?: number;
+  level?: number;
+  exp?: number;
 }
 
 export type LeaderboardPeriod = 'day' | 'week';
@@ -139,6 +142,7 @@ export interface LeaderboardEntry {
   ken: number;
   wins?: number;
   losses?: number;
+  level?: number;
 }
 
 export interface LeaderboardData {
@@ -240,6 +244,11 @@ export interface RankingEntry {
   place: number;
 }
 
+export interface ExpGainEntry {
+  userId: string;
+  exp: number;
+}
+
 export interface MatchOverData<TState = unknown> {
   matchId: string;
   winnerId?: string;
@@ -249,6 +258,7 @@ export interface MatchOverData<TState = unknown> {
   payout?: number;
   kenDelta?: number;
   rankings?: RankingEntry[];
+  expGains?: ExpGainEntry[];
 }
 
 export interface ErrorData {
@@ -294,6 +304,7 @@ export interface RoomMember {
   owner: boolean;
   ready: boolean;
   vipType?: string | null;
+  level?: number;
 }
 
 export interface RoomStateData {

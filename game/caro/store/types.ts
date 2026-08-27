@@ -37,6 +37,8 @@ export interface MatchResultState {
   kenDelta: number | null;
   winnerPayout: number | null;
   revealDelayMs: number;
+  expGained: number | null;
+  expBefore: number;
 }
 
 export interface PlayerDisplay {
@@ -45,6 +47,7 @@ export interface PlayerDisplay {
   mark: PlayerMark;
   active: boolean;
   owner: boolean;
+  level?: number;
 }
 
 export interface ChatMsg {

@@ -4,6 +4,7 @@ import { BOT_LEVEL_TITLES, type BotLevel } from '../../logic/battle';
 export interface VsIntroCombatant {
   name: string;
   vipType?: string | null;
+  level?: number | null;
 }
 
 export interface VsIntroData {
@@ -27,6 +28,7 @@ export function buildBotVsIntroData(user: UserInfoData | null, level: BotLevel):
     right: {
       name: user?.username ?? 'bạn',
       vipType: user?.vipType ?? null,
+      level: user?.level ?? null,
     },
   };
 }
@@ -41,10 +43,12 @@ export function buildPvpVsIntroData(
     left: {
       name: foe?.name ?? 'đối thủ',
       vipType: foe?.vipType ?? null,
+      level: foe?.level ?? null,
     },
     right: {
       name: me?.name ?? user?.username ?? 'bạn',
       vipType: me?.vipType === undefined ? user?.vipType ?? null : me.vipType,
+      level: me?.level ?? user?.level ?? null,
     },
   };
 }

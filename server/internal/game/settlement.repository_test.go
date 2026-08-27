@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/game/engine"
+	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/models"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -319,6 +320,8 @@ func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 	expectKenUpdate(mock, p0, 124)
 	mock.ExpectExec(`UPDATE "game_matches" SET .*WHERE id = .*status = `).
 		WillReturnResult(sqlmock.NewResult(0, 1))
+	expectExpGrant(mock, p0, out.GameID, 54, 54)
+	expectExpGrant(mock, p1, out.GameID, 19, 19)
 	mock.ExpectCommit()
 
 	result, err := repo.settleFinish(context.Background(), out, p0, p1, []uuid.UUID{p0, p1})
@@ -417,5 +420,14 @@ func expectLockedUser(mock sqlmock.Sqlmock, userID uuid.UUID, ken int) {
 func expectKenUpdate(mock sqlmock.Sqlmock, userID uuid.UUID, ken int) {
 	mock.ExpectExec(`UPDATE "users" SET .*"ken"=\$1.*WHERE id = \$3`).
 		WithArgs(ken, sqlmock.AnyArg(), userID).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+}
+
+func expectExpGrant(mock sqlmock.Sqlmock, userID uuid.UUID, gameID string, gain int, total int64) {
+	mock.ExpectQuery(`INSERT INTO user_game_levels .*ON CONFLICT .*RETURNING exp`).
+		WithArgs(userID, gameID, gain, progression.LevelFromExp(int64(gain))).
+		WillReturnRows(sqlmock.NewRows([]string{"exp"}).AddRow(total))
+	mock.ExpectExec(`UPDATE "user_game_levels" SET "level"=\$1`).
+		WithArgs(progression.LevelFromExp(total), sqlmock.AnyArg(), userID, gameID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 }

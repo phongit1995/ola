@@ -13,7 +13,13 @@ import {
 } from './result-popup';
 import { battleActionLayout, type BattleMode } from './action-layout';
 
-export { setFighterAvatar, setFighterBotAvatar, setFighterName, updateFighter } from './hud/card';
+export {
+  setFighterAvatar,
+  setFighterBotAvatar,
+  setFighterLevel,
+  setFighterName,
+  updateFighter,
+} from './hud/card';
 
 export interface ButtonUI {
   view: Container;
