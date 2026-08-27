@@ -137,6 +137,8 @@ const VIP_NAMES = [
   'Hồng Qui',
   'Tuyết',
   'Ma Nữ',
+  'Jessy',
+  'Linh Rùa',
 ];
 
 export const VIP_CATALOG: VipCatalogEntry[] = VIP_NAMES.map((name, index) => ({

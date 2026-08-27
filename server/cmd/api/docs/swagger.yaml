@@ -1863,7 +1863,7 @@ definitions:
     properties:
       vipTypeId:
         example: 4
-        maximum: 136
+        maximum: 138
         minimum: 1
         type: integer
     required:
@@ -7673,7 +7673,7 @@ definitions:
         type: integer
       vipTypeId:
         example: 4
-        maximum: 136
+        maximum: 138
         minimum: 1
         type: integer
     required:
