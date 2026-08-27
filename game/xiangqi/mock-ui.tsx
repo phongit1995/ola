@@ -16,7 +16,7 @@ import { useXiangqi, type PieceView } from './store/useXiangqi';
 
 type Scene = Partial<ReturnType<typeof useXiangqi.getState>>;
 
-const ME = { id: 'u-me', username: 'thanhlong', ken: 1_284_500, vipDays: 30, vipType: '4', maxBet: 500_000 };
+const ME = { id: 'u-me', username: 'thanhlong', ken: 1_284_500, vipDays: 30, vipType: '4', maxBet: 500_000, level: 10, exp: 5460 };
 const OP_NAME = 'kiemvuong';
 const OP_VIP = '12';
 
@@ -128,9 +128,9 @@ function leaderboard(count: number, top: number): LeaderboardEntry[] {
 }
 
 function room(opts: { asGuest?: boolean; alone?: boolean; guestReady?: boolean }): RoomStateData {
-  const members = [{ id: 'u-owner', name: 'thanhlong', owner: true, ready: true, vipType: ME.vipType }];
+  const members = [{ id: 'u-owner', name: 'thanhlong', owner: true, ready: true, vipType: ME.vipType, level: ME.level }];
   if (!opts.alone) {
-    members.push({ id: 'u-guest', name: OP_NAME, owner: false, ready: !!opts.guestReady, vipType: OP_VIP });
+    members.push({ id: 'u-guest', name: OP_NAME, owner: false, ready: !!opts.guestReady, vipType: OP_VIP, level: 9 });
   }
   return {
     roomId: 'room-mock',
@@ -159,8 +159,8 @@ function match(over: Partial<Scene> = {}): Scene {
     lastTo: MID_LAST_TO,
     selected: null,
     hints: [],
-    me: { id: ME.id, name: ME.username, side: 0, avatar: avatarIconUrl(ME.vipType) },
-    op: { id: 'u-op', name: OP_NAME, side: 1, avatar: avatarIconUrl(OP_VIP) },
+    me: { id: ME.id, name: ME.username, side: 0, avatar: avatarIconUrl(ME.vipType), level: ME.level },
+    op: { id: 'u-op', name: OP_NAME, side: 1, avatar: avatarIconUrl(OP_VIP), level: 9 },
     myTurn: true,
     movePending: false,
     deadline: Date.now() + 22_000,
@@ -191,7 +191,7 @@ function botMatch(over: Partial<Scene> = {}): Scene {
     botDifficulty: 'medium',
     botPlayerSide: 0,
     botThinking: false,
-    me: { id: ME.id, name: ME.username, side: 0, avatar: avatarIconUrl(ME.vipType) },
+    me: { id: ME.id, name: ME.username, side: 0, avatar: avatarIconUrl(ME.vipType), level: ME.level },
     op: { id: 'local-bot', name: 'Máy · Vừa', side: 1, avatar: botAvatarIconUrl('medium') },
     deadline: 0,
     timerLeftMs: 0,
@@ -260,27 +260,27 @@ const SCENES: Record<string, () => Scene> = {
   'result-win': () =>
     checkMatch({
       roomWaiting: room({ guestReady: true }),
-      result: { matchId: 'm-mock', outcome: 'win', kenDelta: 950, reasonText: 'Chiếu bí! Bạn thắng' },
+      result: { matchId: 'm-mock', outcome: 'win', kenDelta: 950, reasonText: 'Chiếu bí! Bạn thắng', expGained: 68, expBefore: 5460 },
     }),
   'result-lose': () =>
     checkMatch({
       roomWaiting: room({ guestReady: true }),
-      result: { matchId: 'm-mock', outcome: 'lose', kenDelta: -1_000, reasonText: 'Bạn hết giờ suy nghĩ' },
+      result: { matchId: 'm-mock', outcome: 'lose', kenDelta: -1_000, reasonText: 'Bạn hết giờ suy nghĩ', expGained: 27, expBefore: 1234 },
     }),
   'result-draw': () =>
     match({
       roomWaiting: room({ guestReady: true }),
-      result: { matchId: 'm-mock', outcome: 'draw', kenDelta: null, reasonText: 'Ván hòa — lặp thế 3 lần' },
+      result: { matchId: 'm-mock', outcome: 'draw', kenDelta: null, reasonText: 'Ván hòa — lặp thế 3 lần', expGained: 45, expBefore: 700 },
     }),
   'result-friendly': () =>
     match({
       bet: 0,
-      result: { matchId: 'm-mock', outcome: 'win', kenDelta: 0, reasonText: 'Đối thủ đầu hàng' },
+      result: { matchId: 'm-mock', outcome: 'win', kenDelta: 0, reasonText: 'Đối thủ đầu hàng', expGained: 65, expBefore: 300 },
     }),
   'bot-result': () =>
     botMatch({
       myTurn: false,
-      result: { matchId: 'bot-mock', outcome: 'win', kenDelta: 0, reasonText: 'Chiếu bí! Bạn thắng máy' },
+      result: { matchId: 'bot-mock', outcome: 'win', kenDelta: 0, reasonText: 'Chiếu bí! Bạn thắng máy', expGained: null, expBefore: 0 },
     }),
 
   history: () => ({ lobbyPhase: 'ready', historyVisible: true, historyItems: history(9) }),

@@ -1,5 +1,6 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { expTimeline, initialExpStage, useExpAnimation, type ExpTimeline } from '../../src/sdk/exp-animation';
 import { useDialogFocus } from '../components/useDialogFocus';
 import { formatKen } from '../helpers/format';
 import { useXiangqi } from '../store/useXiangqi';
@@ -36,6 +37,14 @@ export function ResultScreen() {
     return () => clearTimeout(timer);
   }, [result?.matchId]);
 
+  const expGained = result?.expGained ?? null;
+  const exp = useMemo<ExpTimeline | null>(() => {
+    if (result == null || result.expGained == null) return null;
+    return expTimeline(result.expBefore, result.expGained);
+  }, [result]);
+  const animatedStage = useExpAnimation(exp, !pending);
+  const expStage = animatedStage ?? initialExpStage(exp);
+
   if (!result) return null;
   const title = result.outcome === 'win' ? 'THẮNG' : result.outcome === 'lose' ? 'THUA' : 'HÒA';
   return (
@@ -70,6 +79,30 @@ export function ResultScreen() {
                   ? `+${formatKen(result.kenDelta)} KEN`
                   : `−${formatKen(Math.abs(result.kenDelta))} KEN`}
           </p>
+          {expStage && (
+            <div className="xq-result-exp">
+              <div className="xq-result-exp-row">
+                <span className="xq-result-exp-gain">+{expGained} EXP</span>
+                {expStage.leveledUp && <span className="xq-result-levelup">LÊN CẤP!</span>}
+                <span className="xq-result-exp-level">
+                  {`Lv.${expStage.level}`}
+                  <span className="xq-result-exp-count">
+                    {expStage.required > 0 ? ` · ${expStage.current}/${expStage.required}` : ' · MAX'}
+                  </span>
+                </span>
+              </div>
+              <div
+                className="xq-result-exp-bar"
+                role="progressbar"
+                aria-label="Kinh nghiệm"
+                aria-valuemin={0}
+                aria-valuemax={expStage.required || 1}
+                aria-valuenow={expStage.required > 0 ? expStage.current : 1}
+              >
+                <div className="xq-result-exp-fill" style={{ width: `${expStage.ratio * 100}%` }} />
+              </div>
+            </div>
+          )}
         </div>
         <div className="xq-modal-actions">
           {roomWaiting || gameMode === 'bot' ? (

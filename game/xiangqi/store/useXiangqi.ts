@@ -46,6 +46,7 @@ export interface SeatInfo {
   name: string;
   side: number;
   avatar: string;
+  level?: number;
 }
 
 export interface MatchResultState {
@@ -53,6 +54,8 @@ export interface MatchResultState {
   outcome: 'win' | 'lose' | 'draw';
   kenDelta: number | null;
   reasonText: string;
+  expGained: number | null;
+  expBefore: number;
 }
 
 export interface NoticeState {
@@ -351,6 +354,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           outcome,
           kenDelta: 0,
           reasonText: reasonOverride ?? botResultText(result, humanSide),
+          expGained: null,
+          expBefore: 0,
         },
       });
     };
@@ -455,6 +460,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         name: username,
         side: playerSide,
         avatar: avatarIconUrl(get().userInfo?.vipType),
+        level: get().userInfo?.level,
       },
       op: {
         id: 'local-bot',
@@ -726,8 +732,24 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           hints: [],
           movePending: false,
           bet: refs.matchBet,
-          me: meInfo ? { id: meInfo.id, name: meInfo.name, side: you, avatar: avatarIconUrl(meInfo.vipType) } : null,
-          op: opInfo ? { id: opInfo.id, name: opInfo.name, side: 1 - you, avatar: avatarIconUrl(opInfo.vipType) } : null,
+          me: meInfo
+            ? {
+                id: meInfo.id,
+                name: meInfo.name,
+                side: you,
+                avatar: avatarIconUrl(meInfo.vipType),
+                level: meInfo.level ?? refs.user?.level,
+              }
+            : null,
+          op: opInfo
+            ? {
+                id: opInfo.id,
+                name: opInfo.name,
+                side: 1 - you,
+                avatar: avatarIconUrl(opInfo.vipType),
+                level: opInfo.level,
+              }
+            : null,
           matchSeq: get().matchSeq + 1,
           oppAway: null,
           result: null,
@@ -832,6 +854,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         const winnerPayout = data.payout ?? bet * 2;
         const winnerNet = data.kenDelta ?? winnerPayout - bet;
         const kenDelta = draw ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
+        const expGained = data.expGains?.find((gain) => gain.userId === myId)?.exp ?? null;
+        const expBefore = refs.user?.exp ?? 0;
         const reasonText = (() => {
           switch (data.reason) {
             case 'forfeit':
@@ -879,6 +903,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
               outcome: draw ? 'draw' : won ? 'win' : 'lose',
               kenDelta,
               reasonText,
+              expGained,
+              expBefore,
             },
           });
         };
