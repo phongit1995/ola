@@ -1,11 +1,99 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { levelFromExp, levelProgress } from '../../../src/sdk';
+import { levelProgress, type LevelProgress } from '../../../src/sdk';
 import { assetBg, assetSrc } from '../../assets';
 import { formatKen } from '../../helpers/format';
 import { handleDialogKeyDown, useDialogFocus } from '../../helpers/dialog';
 import { useCaro } from '../../store/useCaro';
 import { useResult } from './useResult';
+
+const EXP_DELAY_MS = 520;
+const EXP_FILL_MS = 650;
+const EXP_LEVELUP_HOLD_MS = 260;
+
+interface ExpTimeline {
+  before: LevelProgress;
+  after: LevelProgress;
+  leveledUp: boolean;
+}
+
+interface ExpStage {
+  ratio: number;
+  level: number;
+  current: number;
+  required: number;
+  leveledUp: boolean;
+}
+
+function easeOut(t: number): number {
+  const k = Math.min(1, Math.max(0, t));
+  return 1 - (1 - k) * (1 - k);
+}
+
+function stageOf(progress: LevelProgress, ratio: number, leveledUp: boolean): ExpStage {
+  const capped = progress.required > 0 ? ratio : 1;
+  return {
+    ratio: capped,
+    level: progress.level,
+    current: Math.round(capped * progress.required),
+    required: progress.required,
+    leveledUp,
+  };
+}
+
+function useExpAnimation(exp: ExpTimeline | null, active: boolean): ExpStage | null {
+  const [stage, setStage] = useState<ExpStage | null>(null);
+
+  useEffect(() => {
+    if (!exp || !active) {
+      setStage(null);
+      return;
+    }
+    const final = stageOf(exp.after, exp.after.ratio, exp.leveledUp);
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setStage(final);
+      return;
+    }
+
+    const startRatio = exp.before.required > 0 ? exp.before.ratio : 1;
+    const fillTarget = exp.leveledUp ? 1 : final.ratio;
+    const holdStart = EXP_DELAY_MS + EXP_FILL_MS;
+    const pourStart = holdStart + EXP_LEVELUP_HOLD_MS;
+    setStage(stageOf(exp.before, startRatio, false));
+
+    let raf = 0;
+    const startedAt = performance.now();
+    const step = (now: number): void => {
+      const elapsed = now - startedAt;
+      if (elapsed < EXP_DELAY_MS) {
+        raf = requestAnimationFrame(step);
+        return;
+      }
+      if (elapsed < holdStart) {
+        const ratio = startRatio + (fillTarget - startRatio) * easeOut((elapsed - EXP_DELAY_MS) / EXP_FILL_MS);
+        setStage(stageOf(exp.before, ratio, false));
+        raf = requestAnimationFrame(step);
+        return;
+      }
+      if (!exp.leveledUp) {
+        setStage(final);
+        return;
+      }
+      if (elapsed < pourStart) {
+        setStage(stageOf(exp.before, 1, true));
+        raf = requestAnimationFrame(step);
+        return;
+      }
+      const poured = easeOut((elapsed - pourStart) / EXP_FILL_MS);
+      setStage(stageOf(exp.after, final.ratio * poured, true));
+      if (poured < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [exp, active]);
+
+  return stage;
+}
 
 export function ResultScreen() {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -45,30 +133,28 @@ export function ResultScreen() {
   }, [result, setRevealedResult]);
 
   const expGained = result?.expGained ?? null;
-  const expInfo =
-    result != null && expGained != null
-      ? (() => {
-          const after = result.expBefore + expGained;
-          const progress = levelProgress(after);
-          const leveledUp = progress.level > levelFromExp(result.expBefore);
-          const startRatio = leveledUp ? 0 : levelProgress(result.expBefore).ratio;
-          return { ...progress, leveledUp, startRatio };
-        })()
-      : null;
-  const [expFilled, setExpFilled] = useState(false);
-  useEffect(() => {
-    setExpFilled(false);
-    if (!result || result.expGained == null || pending) return;
-    const timer = window.setTimeout(() => setExpFilled(true), 400);
-    return () => window.clearTimeout(timer);
-  }, [result, pending]);
+  const exp = useMemo<ExpTimeline | null>(() => {
+    if (result == null || result.expGained == null) return null;
+    const before = levelProgress(result.expBefore);
+    const after = levelProgress(result.expBefore + result.expGained);
+    return { before, after, leveledUp: after.level > before.level };
+  }, [result]);
+  const animatedStage = useExpAnimation(exp, !pending);
+  const expStage =
+    animatedStage ?? (exp ? stageOf(exp.before, exp.before.required > 0 ? exp.before.ratio : 1, false) : null);
 
   return (
     <div
       id="result"
       className={
         result
-          ? [lose ? 'lose' : draw ? 'draw' : '', pending ? 'pending' : 'revealed'].filter(Boolean).join(' ')
+          ? [
+              lose ? 'lose' : draw ? 'draw' : '',
+              pending ? 'pending' : 'revealed',
+              exp ? 'has-exp' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')
           : 'hidden'
       }
       role="dialog"
@@ -92,21 +178,27 @@ export function ResultScreen() {
           <img src={assetSrc('resultIcKen')} alt="" />
           <span id="result-ken-text">{kenText}</span>
         </div>
-        {expInfo && (
+        {expStage && (
           <div id="result-exp">
             <div className="result-exp-row">
               <span className="result-exp-gain">+{expGained} EXP</span>
-              {expInfo.leveledUp && <span className="result-levelup">LÊN CẤP!</span>}
+              {expStage.leveledUp && <span className="result-levelup">LÊN CẤP!</span>}
+              <span className="result-exp-level">
+                {`Lv.${expStage.level}`}
+                <span className="result-exp-count">
+                  {expStage.required > 0 ? ` · ${expStage.current}/${expStage.required}` : ' · MAX'}
+                </span>
+              </span>
             </div>
-            <div className="result-exp-bar" role="progressbar" aria-label="Kinh nghiệm">
-              <div
-                className="result-exp-fill"
-                style={{ width: `${(expFilled ? expInfo.ratio : expInfo.startRatio) * 100}%` }}
-              />
-            </div>
-            <div className="result-exp-level">
-              <span>Lv.{expInfo.level}</span>
-              <span>{expInfo.required > 0 ? `${expInfo.current}/${expInfo.required}` : 'MAX'}</span>
+            <div
+              className="result-exp-bar"
+              role="progressbar"
+              aria-label="Kinh nghiệm"
+              aria-valuemin={0}
+              aria-valuemax={expStage.required || 1}
+              aria-valuenow={expStage.required > 0 ? expStage.current : 1}
+            >
+              <div className="result-exp-fill" style={{ width: `${expStage.ratio * 100}%` }} />
             </div>
           </div>
         )}

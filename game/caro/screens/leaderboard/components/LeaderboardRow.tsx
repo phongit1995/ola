@@ -30,7 +30,9 @@ export function LeaderboardRow({ player }: { player: LeaderboardEntry }) {
         <img src={avatarIconSrc(player.vipType)} alt="" />
         <span>@{player.username}</span>
         {player.level != null && player.level > 0 && (
-          <span className="leaderboard-level">Lv.{player.level}</span>
+          <span className="leaderboard-level" aria-label={`Cấp ${player.level}`}>
+            {player.level}
+          </span>
         )}
       </div>
       <div className="leaderboard-record" aria-label={`${wins} thắng, ${losses} thua`}>
