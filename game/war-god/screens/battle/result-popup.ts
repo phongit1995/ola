@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, Sprite, Text, Texture, type Ticker } from 'pixi.js';
-import { levelFromExp, levelProgress } from '../../../src/sdk';
+import { levelProgress, type LevelProgress } from '../../../src/sdk';
 import { A, tex } from '../../assets';
 import { playSound } from '../../audio';
 import { addTick, HEADING, makeText, popIn, pressable, removeTick, tween } from '../../kit';
@@ -377,7 +377,7 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
   expGainText.y = -14;
   const levelUpText = makeText('LÊN CẤP!', 14, 0xffe9a8, '800', HEADING);
   levelUpText.style.stroke = { color: 0x6f2607, width: 3, join: 'round' };
-  levelUpText.y = EXP_BAR_H / 2;
+  levelUpText.y = -14;
   levelUpText.visible = false;
   const expBarBg = new Graphics();
   expBarBg
@@ -388,10 +388,24 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
   expBarFill.x = -EXP_BAR_W / 2;
   expBarFill.scale.x = 0;
   const expLevelText = makeText('', 12, 0xfff0c5, '700', HEADING);
+  expLevelText.anchor.set(1, 0.5);
+  expLevelText.x = EXP_BAR_W / 2;
   expLevelText.y = -14;
   expBox.addChild(expBarBg, expBarFill, expGainText, expLevelText, levelUpText);
   expBox.visible = false;
   card.addChild(expBox);
+
+  let expStages: { before: LevelProgress; after: LevelProgress } | null = null;
+
+  function setExpLevelText(stage: 'before' | 'after', ratio: number): void {
+    if (expStages == null) return;
+    const progress = stage === 'before' ? expStages.before : expStages.after;
+    expLevelText.text =
+      progress.required > 0
+        ? `Lv.${progress.level}  ${Math.round(ratio * progress.required)}/${progress.required}`
+        : `Lv.${progress.level}  MAX`;
+    fitText(expLevelText, PANEL_W * 0.3);
+  }
 
   // Thanh EXP bơm tới vạch mới; nếu vượt cấp thì bơm đầy, khựng lại khoe chữ
   // LÊN CẤP! rồi mới rót phần dư của cấp mới, giống nhịp quen thuộc của game RPG.
@@ -418,6 +432,7 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
         const k = Math.min(1, clock / EXP_FILL_MS);
         const e = 1 - (1 - k) * (1 - k);
         expBarFill.scale.x = start + (target - start) * e;
+        setExpLevelText(leveledUp ? 'before' : 'after', expBarFill.scale.x);
         if (k >= 1) {
           if (!leveledUp) {
             stop();
@@ -441,6 +456,7 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
       const k = Math.min(1, clock / EXP_FILL_MS);
       const e = 1 - (1 - k) * (1 - k);
       expBarFill.scale.x = end * e;
+      setExpLevelText('after', expBarFill.scale.x);
       if (k >= 1) stop();
     };
     addTick(step);
@@ -506,9 +522,11 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
     const panelH = panel.height;
     const halfH = panelH / 2;
 
+    const expShift = hasExp ? panelH * 0.06 : 0;
+
     titleFrame.y = -halfH;
     title.y = titleFrame.y - 2;
-    kenBox.y = hasExp ? panelH * 0.27 : panelH * 0.32;
+    kenBox.y = (hasExp ? panelH * 0.27 : panelH * 0.32) - expShift;
     expBox.y = hasKen ? panelH * 0.405 : panelH * 0.33;
 
     replayButton.y = halfH;
@@ -522,8 +540,8 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
       brush.y = outcomeIcon.y + outcomeIcon.height * 0.71;
     } else {
       const dropY = hasKen ? 0 : panelH * 0.1;
-      outcomeIcon.y = -panelH * 0.145 + dropY;
-      brush.y = panelH * 0.075 + dropY;
+      outcomeIcon.y = -panelH * 0.145 + dropY - expShift;
+      brush.y = panelH * 0.075 + dropY - expShift;
     }
     verdict.y = brush.y - 2;
     detail.y = brush.y + panelH * 0.072;
@@ -574,23 +592,23 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
       if (data.exp != null) {
         const after = data.exp.before + data.exp.gained;
         const progress = levelProgress(after);
-        const leveledUp = progress.level > levelFromExp(data.exp.before);
+        const before = levelProgress(data.exp.before);
+        const leveledUp = progress.level > before.level;
+        expStages = { before, after: progress };
         expGainText.text = `+${data.exp.gained} EXP`;
         fitText(expGainText, PANEL_W * 0.3);
-        expLevelText.text =
-          progress.required > 0
-            ? `Lv.${progress.level}  ${progress.current}/${progress.required}`
-            : `Lv.${progress.level}  MAX`;
-        fitText(expLevelText, PANEL_W * 0.3);
         expGainText.x = -EXP_BAR_W / 2 + expGainText.width / 2;
-        expLevelText.x = EXP_BAR_W / 2 - expLevelText.width / 2;
-        levelUpText.x = 0;
+        setExpLevelText('before', 1);
+        const beforeFullW = expLevelText.width;
+        setExpLevelText('after', progress.ratio);
+        const levelW = Math.max(beforeFullW, expLevelText.width);
+        setExpLevelText(leveledUp ? 'before' : 'after', before.ratio);
+        const gapLeft = -EXP_BAR_W / 2 + expGainText.width;
+        const gapRight = EXP_BAR_W / 2 - levelW;
+        fitText(levelUpText, Math.max(24, gapRight - gapLeft - 12));
+        levelUpText.x = (gapLeft + gapRight) / 2;
         levelUpText.visible = false;
-        expAnim = {
-          start: levelProgress(data.exp.before).ratio,
-          end: progress.ratio,
-          leveledUp,
-        };
+        expAnim = { start: before.ratio, end: progress.ratio, leveledUp };
         expBarFill.scale.x = expAnim.start;
       }
 

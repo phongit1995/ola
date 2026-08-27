@@ -260,7 +260,7 @@ export function setFighterBotAvatar(ui: FighterUI, level: BotLevel): void {
 // Slot khung rank vốn in số ghế 1/2; trận online thay bằng level thật của
 // người chơi, đấu máy trả về số ghế vì máy không có level.
 export function setFighterLevel(ui: FighterUI, level?: number | null): void {
-  ui.rankNum.text = level != null && level > 0 ? `Lv${level}` : ui.rankSeat;
+  ui.rankNum.text = level != null && level > 0 ? String(level) : ui.rankSeat;
   ui.rankNum.scale.set(1);
   const maxW = 22;
   if (ui.rankNum.width > maxW) ui.rankNum.scale.set(maxW / ui.rankNum.width);
