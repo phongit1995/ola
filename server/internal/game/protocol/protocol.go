@@ -196,6 +196,9 @@ type StateData struct {
 	Deadline int64           `json:"deadline"`
 	LastMove json.RawMessage `json:"lastMove,omitempty"`
 	LastBy   int             `json:"lastBy"`
+	// AutoMoved marks a move the server played on behalf of LastBy because
+	// their turn clock ran out, rather than a move that player sent.
+	AutoMoved bool `json:"autoMoved,omitempty"`
 }
 
 type RankingEntry struct {

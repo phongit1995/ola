@@ -8,7 +8,7 @@ describe('xiangqi parity fixture', () => {
   it('has the expected shape', () => {
     expect(parity.version).toBe(1);
     expect(parity.legalMoves.length).toBeGreaterThan(10);
-    expect(TURN_SECONDS).toBe(30);
+    expect(TURN_SECONDS).toBe(60);
     expect(REPETITION_LIMIT).toBe(3);
     expect(START_BOARD.length).toBe(BOARD_CELLS);
   });

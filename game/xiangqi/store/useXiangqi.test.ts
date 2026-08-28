@@ -237,6 +237,120 @@ describe('Xiangqi online integration state', () => {
     expect(sdkMocks.bridge.turnChanged).toHaveBeenCalledOnce();
   });
 
+  it('announces the server move played for us after our clock ran out', async () => {
+    const session = new FakeSession();
+    await connect(session);
+    session.emit('matchFound', matchFound('match-auto', Date.now() + 500));
+
+    await vi.advanceTimersByTimeAsync(750);
+    expect(useXiangqi.getState()).toMatchObject({ turnExpired: true, myTurn: true });
+
+    const autoBoard = [...START_BOARD];
+    autoBoard[9] = autoBoard[0];
+    autoBoard[0] = 0;
+    session.emit('state', {
+      matchId: 'match-auto',
+      state: serverState(autoBoard, [{ kind: 'move', from: 0, to: 9 }]),
+      turn: 1,
+      deadline: Date.now() + 60_000,
+      lastBy: 0,
+      autoMoved: true,
+    });
+
+    expect(useXiangqi.getState()).toMatchObject({
+      board: autoBoard,
+      myTurn: false,
+      turnExpired: false,
+      toast: 'Hết giờ — hệ thống đã đi thay bạn',
+    });
+  });
+
+  it('announces the server move even when it lands before the local clock hits zero', async () => {
+    const session = new FakeSession();
+    await connect(session);
+    session.emit('matchFound', matchFound('match-auto-early', Date.now() + 500));
+
+    // The 250 ms tick has not run past the deadline yet, so turnExpired is still
+    // false when the server-played move arrives.
+    await vi.advanceTimersByTimeAsync(400);
+    expect(useXiangqi.getState().turnExpired).toBe(false);
+
+    session.emit('state', {
+      matchId: 'match-auto-early',
+      state: serverState(),
+      turn: 1,
+      deadline: Date.now() + 60_000,
+      lastBy: 0,
+      autoMoved: true,
+    });
+
+    expect(useXiangqi.getState().toast).toBe('Hết giờ — hệ thống đã đi thay bạn');
+  });
+
+  it('stays quiet when our own in-time move is echoed back after the local clock expired', async () => {
+    const session = new FakeSession();
+    await connect(session);
+    session.emit('matchFound', matchFound('match-late-echo', Date.now() + 500));
+    useXiangqi.getState().tapSquare(0);
+    useXiangqi.getState().tapSquare(9);
+    expect(session.sendMove).toHaveBeenCalledWith('match-late-echo', { from: 0, to: 9 });
+
+    await vi.advanceTimersByTimeAsync(750);
+    expect(useXiangqi.getState().turnExpired).toBe(true);
+
+    session.emit('state', {
+      matchId: 'match-late-echo',
+      state: serverState(),
+      turn: 1,
+      deadline: Date.now() + 60_000,
+      lastBy: 0,
+    });
+
+    expect(useXiangqi.getState()).toMatchObject({ myTurn: false, turnExpired: false, toast: null });
+  });
+
+  it('shows a technical abort as a refunded no-result instead of a loss', async () => {
+    const session = new FakeSession();
+    await connect(session);
+    session.emit('matchFound', matchFound('match-aborted'));
+
+    session.emit('matchOver', {
+      matchId: 'match-aborted',
+      winnerId: '',
+      reason: 'aborted',
+      state: serverState(),
+      bet: 10,
+    });
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(useXiangqi.getState().result).toMatchObject({
+      matchId: 'match-aborted',
+      outcome: 'draw',
+      kenDelta: null,
+      reasonText: 'Trận bị hủy do lỗi hệ thống · cược đã được hoàn',
+    });
+  });
+
+  it('stays quiet when the opponent is the one the server moved for', async () => {
+    const session = new FakeSession();
+    await connect(session);
+    session.emit('matchFound', { ...matchFound('match-auto-op', Date.now() + 500), turn: 1 });
+
+    await vi.advanceTimersByTimeAsync(750);
+    expect(useXiangqi.getState().turnExpired).toBe(true);
+
+    session.emit('state', {
+      matchId: 'match-auto-op',
+      state: serverState(),
+      turn: 0,
+      deadline: Date.now() + 60_000,
+      lastBy: 1,
+      autoMoved: true,
+    });
+
+    expect(useXiangqi.getState()).toMatchObject({ myTurn: true, turnExpired: false, toast: null });
+  });
+
   it('keeps an active local turn playable until control passes to the disconnected opponent', async () => {
     const session = new FakeSession();
     await connect(session);

@@ -131,8 +131,9 @@ Focus trap + Esc đóng (dùng `helpers/dialog.ts` của caro).
 
 ### 6.3 Lượt & đồng hồ
 - Vòng lượt gold quanh pod đang đi; turn announce `ĐẾN LƯỢT BẠN` khi về mình.
-- Đồng hồ 30 s trong pod: `deadline` từ STATE/MATCH_FOUND, interval 250 ms, ≤10 s chuyển `--xq-danger` + pulse + tick âm.
-- Hết giờ: server xử thua — client chỉ chờ `MATCH_OVER reason:'timeout'`. Vì server **drop im lặng** mọi `MOVE` sau deadline, khi đồng hồ local về 0 store bật `turnExpired` → bỏ chọn, disable mọi quân/chấm gợi ý và hiện banner `Bạn đã hết giờ — chờ máy chủ xử` (đối thủ hết giờ thì đổi chủ ngữ). Không được để `movePending` treo.
+- Đồng hồ 60 s trong pod: `deadline` từ STATE/MATCH_FOUND, interval 250 ms, ≤10 s chuyển `--xq-danger` + pulse + tick âm.
+- Hết giờ lần 1–2 liên tiếp: server **đi thay một nước** rồi gửi `STATE` như nước thường, kèm `autoMoved: true` và `lastBy` = người hết giờ. Client dựa vào `autoMoved` (KHÔNG suy đoán từ `turnExpired`, sẽ sai khi STATE về sớm/muộn hơn tick 250 ms) để hiện toast `Hết giờ — hệ thống đã đi thay bạn` cho đúng người. Hết giờ lần 3 liên tiếp mới có `MATCH_OVER reason:'timeout'`.
+- Vì server **drop im lặng** mọi `MOVE` sau deadline, khi đồng hồ local về 0 store bật `turnExpired` → bỏ chọn, disable mọi quân/chấm gợi ý và hiện banner `Bạn đã hết giờ · máy chủ đang đi thay` (đối thủ hết giờ thì đổi chủ ngữ); `STATE` kế tiếp reset `turnExpired` và mở lại bàn. Không được để `movePending` treo.
 
 ### 6.4 Chat & reaction
 - Nút Chat mở drawer đáy (input + 20 tin gần nhất, `sendChat`); tin mới khi đóng → chấm đỏ. Input `maxLength=120` khớp `maxChatRunes` của engine; server từ chối (`CHAT_TOO_LONG`/`CHAT_RATE_LIMITED`/`INVALID_CHAT`) thì store trả lại draft qua `chatRestore` để không mất tin vừa nhập.

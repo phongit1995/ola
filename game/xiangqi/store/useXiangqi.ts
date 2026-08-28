@@ -782,6 +782,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         const steps = serverState.steps ?? [];
         const captured = steps.some((step) => step.kind === 'capture');
         const checked = steps.some((step) => step.kind === 'check');
+        const autoMoved = data.autoMoved === true && data.lastBy === refs.match.you;
         set((state) => ({
           board: serverState.board,
           pieces: advancePieces(state.pieces, serverState.board, serverState.lastFrom, serverState.lastTo),
@@ -795,6 +796,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         playSound(captured ? 'capture' : 'place');
         if (checked) playSound('check');
         applyTurn(data.turn, data.deadline);
+        if (autoMoved) get().showToast('Hết giờ — hệ thống đã đi thay bạn');
       }),
     );
 
@@ -847,7 +849,9 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           if (checked) playSound('check');
         }
         const myId = refs.user?.id;
-        const draw = data.reason === 'draw';
+        // A technical abort refunds the escrow, so it must render neutrally
+        // instead of taking the bet off the loser's side.
+        const draw = data.reason === 'draw' || data.reason === 'aborted';
         const won = !draw && data.winnerId != null && data.winnerId === myId;
         const bet = data.bet ?? refs.matchBet;
         refs.matchBet = bet;
@@ -864,6 +868,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
               return won ? 'Đối thủ hết giờ' : 'Bạn hết giờ suy nghĩ';
             case 'disconnect':
               return won ? 'Đối thủ mất kết nối' : 'Bạn mất kết nối quá lâu';
+            case 'aborted':
+              return 'Trận bị hủy do lỗi hệ thống · cược đã được hoàn';
             case 'draw':
               return drawReasonText(finalState);
             default:

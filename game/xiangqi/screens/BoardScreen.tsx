@@ -452,7 +452,7 @@ export function BoardScreen() {
     statusIcon = 'wifi-off';
   } else if (state.turnExpired && !state.result) {
     statusTone = 'danger';
-    statusText = state.myTurn ? 'Bạn đã hết giờ · chờ máy chủ xử' : 'Đối thủ đã hết giờ · chờ máy chủ xử';
+    statusText = state.myTurn ? 'Bạn đã hết giờ · máy chủ đang đi thay' : 'Đối thủ đã hết giờ · máy chủ đang đi thay';
     statusIcon = 'warning';
   } else if (state.movePending) {
     statusTone = 'pending';

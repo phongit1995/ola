@@ -302,7 +302,7 @@ Yêu cầu:
 - Không fixed height cho modal body, row có subtitle hoặc error message.
 - Button label có thể tăng chiều cao; không dùng `overflow:hidden` cho label hành động.
 - Dự phòng dấu và ascender/descender bằng line-height ≥1.25.
-- Test các chuỗi: `Bảng xếp hạng`, `Hủy sẵn sàng`, `Đối thủ mất kết nối`, `Bạn đã hết giờ — chờ máy chủ xử`.
+- Test các chuỗi: `Bảng xếp hạng`, `Hủy sẵn sàng`, `Đối thủ mất kết nối`, `Bạn đã hết giờ · máy chủ đang đi thay`, `Hết giờ — hệ thống đã đi thay bạn`.
 - Dùng ký tự minus `−` hoặc dấu trừ nhất quán; dùng formatter locale cho `1.000`.
 - Không viết hoa toàn bộ body text. Uppercase chỉ cho logo/announce ngắn.
 
