@@ -214,3 +214,35 @@ func (ctrl *Controller) GetSuspects(c *gin.Context) (interface{}, error) {
 	}
 	return resp, nil
 }
+
+// ListLevels godoc
+// @Summary      Level/EXP người chơi theo từng game (admin)
+// @Tags         admin-game-match
+// @Produce      json
+// @Security     BearerAuth
+// @Param        gameId query string false "Lọc theo game (caro, war-god, xiangqi, thirteen)"
+// @Param        userId query string false "Lọc theo user ID"
+// @Param        search query string false "Tìm theo username hoặc tên hiển thị"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  LevelListSuccessResponse
+// @Router       /admin/game-matches/levels [get]
+func (ctrl *Controller) ListLevels(c *gin.Context) (interface{}, error) {
+	var f AdminLevelFilter
+	f.GameID = c.Query("gameId")
+	f.Search = c.Query("search")
+
+	userID, err := parseUUIDQuery(c, "userId")
+	if err != nil {
+		return nil, err
+	}
+	f.UserID = userID
+
+	limit := utils.ParseLimit(c, 50, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.ListLevels(f, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}

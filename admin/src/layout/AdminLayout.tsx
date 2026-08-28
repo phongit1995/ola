@@ -23,7 +23,6 @@ import {
   PictureOutlined,
   TeamOutlined,
   TransactionOutlined,
-  TrophyOutlined,
   UsergroupAddOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -70,7 +69,6 @@ const MENU_ITEMS = [
       { key: '/games/pen', icon: <AimOutlined />, label: 'Sút Pen' },
       { key: '/games/ken-treasure', icon: <GiftOutlined />, label: 'Rương Ken' },
       { key: '/games/mini-game', icon: <PlayCircleOutlined />, label: 'Mini game' },
-      { key: '/games/matches', icon: <TrophyOutlined />, label: 'Trận PvP' },
     ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
@@ -94,6 +92,10 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
 
 const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-transfers']
 
+const MENU_PATH_ALIASES: Record<string, string> = {
+  '/games/matches': '/games/mini-game',
+}
+
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
   '/users': 'Quản lý người dùng',
@@ -112,7 +114,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/games/pen/stats': 'Thống kê Pen',
   '/games/ken-treasure': 'Rương Ken',
   '/games/mini-game': 'Mini game',
-  '/games/matches': 'Trận PvP mini-game',
   '/games/matches/stats': 'Thống kê trận & cược',
   '/users/ken-transfers': 'Lịch sử chuyển Ken',
   '/users/username-changes': 'Lịch sử đổi nickname',
@@ -132,8 +133,13 @@ export function AdminLayout() {
   const admin = useAuthStore((s) => s.admin)
   const clear = useAuthStore((s) => s.clear)
 
+  const menuPath =
+    Object.entries(MENU_PATH_ALIASES).find(([prefix]) =>
+      location.pathname.startsWith(prefix),
+    )?.[1] ?? location.pathname
+
   const selectedKey =
-    LEAF_KEYS.filter((key) => key !== '/' && location.pathname.startsWith(key)).sort(
+    LEAF_KEYS.filter((key) => key !== '/' && menuPath.startsWith(key)).sort(
       (a, b) => b.length - a.length,
     )[0] ?? '/'
 

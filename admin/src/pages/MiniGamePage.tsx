@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   App,
   Avatar,
@@ -7,6 +8,7 @@ import {
   Space,
   Switch,
   Table,
+  Tabs,
   Tag,
   Typography,
   type TableColumnsType,
@@ -21,9 +23,14 @@ import {
 import { useDeleteMiniGame, useMiniGames, useUpdateMiniGame } from '@/hooks/useMiniGames'
 import { ApiError } from '@/lib/apiError'
 import { MiniGameFormModal } from './MiniGameFormModal'
+import { GameMatchesPage } from './GameMatchesPage'
+import { GameLevelsTab } from './GameLevelsTab'
 import type { MiniGame } from '@/types'
 
-export function MiniGamePage() {
+const TAB_KEYS = ['list', 'history', 'levels'] as const
+type TabKey = (typeof TAB_KEYS)[number]
+
+function MiniGameListTab() {
   const { message, modal } = App.useApp()
 
   const [formOpen, setFormOpen] = useState(false)
@@ -154,7 +161,7 @@ export function MiniGamePage() {
   ]
 
   return (
-    <Card>
+    <>
       <div
         style={{
           marginBottom: 16,
@@ -175,6 +182,30 @@ export function MiniGamePage() {
         pagination={false}
       />
       <MiniGameFormModal open={formOpen} game={editing} onClose={() => setFormOpen(false)} />
+    </>
+  )
+}
+
+export function MiniGamePage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeKey: TabKey = TAB_KEYS.includes(tabParam as TabKey) ? (tabParam as TabKey) : 'list'
+
+  function changeTab(key: string) {
+    setSearchParams(key === 'list' ? {} : { tab: key }, { replace: true })
+  }
+
+  return (
+    <Card>
+      <Tabs
+        activeKey={activeKey}
+        onChange={changeTab}
+        items={[
+          { key: 'list', label: 'Danh sách game', children: <MiniGameListTab /> },
+          { key: 'history', label: 'Lịch sử trận PvP', children: <GameMatchesPage /> },
+          { key: 'levels', label: 'Level người chơi', children: <GameLevelsTab /> },
+        ]}
+      />
     </Card>
   )
 }

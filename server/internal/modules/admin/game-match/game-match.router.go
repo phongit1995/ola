@@ -20,5 +20,6 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		matches.GET("", r.controller.ListMatches)
 		matches.GET("/stats", r.controller.GetStats)
 		matches.GET("/suspects", r.controller.GetSuspects)
+		matches.GET("/levels", r.controller.ListLevels)
 	}
 }

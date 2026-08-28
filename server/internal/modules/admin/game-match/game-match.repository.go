@@ -270,3 +270,50 @@ func (r *Repository) UserBriefs(ids []uuid.UUID) (map[uuid.UUID]userBriefRow, er
 	}
 	return out, nil
 }
+
+type levelRow struct {
+	UserID    uuid.UUID `gorm:"column:user_id"`
+	GameID    string    `gorm:"column:game_id"`
+	Exp       int64     `gorm:"column:exp"`
+	Level     int       `gorm:"column:level"`
+	UpdatedAt time.Time `gorm:"column:updated_at"`
+	Username  string    `gorm:"column:username"`
+	FullName  string    `gorm:"column:full_name"`
+	Avatar    string    `gorm:"column:avatar"`
+}
+
+func levelScope(f AdminLevelFilter) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		db = db.Joins("JOIN users ON users.id = user_game_levels.user_id AND users.deleted_at IS NULL")
+		if f.GameID != "" {
+			db = db.Where("user_game_levels.game_id = ?", f.GameID)
+		}
+		if f.UserID != nil {
+			db = db.Where("user_game_levels.user_id = ?", *f.UserID)
+		}
+		if f.Search != "" {
+			like := "%" + f.Search + "%"
+			db = db.Where("(users.username ILIKE ? OR users.full_name ILIKE ?)", like, like)
+		}
+		return db
+	}
+}
+
+func (r *Repository) ListLevels(f AdminLevelFilter, limit, offset int) ([]levelRow, int64, error) {
+	var total int64
+	if err := r.db.Table("user_game_levels").Scopes(levelScope(f)).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var rows []levelRow
+	err := r.db.Table("user_game_levels").
+		Select(`user_game_levels.user_id, user_game_levels.game_id, user_game_levels.exp,
+			user_game_levels.level, user_game_levels.updated_at,
+			users.username, users.full_name, users.avatar`).
+		Scopes(levelScope(f)).
+		Order("user_game_levels.exp DESC, user_game_levels.updated_at DESC, user_game_levels.game_id ASC, user_game_levels.user_id ASC").
+		Limit(limit).
+		Offset(offset).
+		Scan(&rows).Error
+	return rows, total, err
+}
