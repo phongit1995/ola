@@ -281,10 +281,10 @@ export function ChangeNicknameDialog({
                 key={tier.minLength}
                 className="flex-row items-center justify-between px-3 py-1.5"
               >
-                <Text className="text-sm text-black/80">
+                <Text numberOfLines={1} className="flex-1 text-sm text-black/80">
                   {tierLabel(tier, tiers[index + 1], t)}
                 </Text>
-                <View className="flex-row items-center gap-1">
+                <View className="shrink-0 flex-row items-center gap-1">
                   <Text className="text-sm font-semibold text-black/80">
                     {formatKen(tier.cost)}
                   </Text>
