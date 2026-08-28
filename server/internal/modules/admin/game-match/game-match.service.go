@@ -187,3 +187,21 @@ func (s *Service) Suspects(f AdminMatchFilter, minMatches, minPairMatches int) (
 		Pairs:          pairs,
 	}, nil
 }
+
+func (s *Service) ListLevels(f AdminLevelFilter, limit, offset int) (*LevelListResponse, error) {
+	rows, total, err := s.repo.ListLevels(f, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]LevelView, len(rows))
+	for i, row := range rows {
+		items[i] = LevelView{
+			User:      *briefFromRow(row.UserID, row.Username, row.FullName, row.Avatar),
+			GameID:    row.GameID,
+			Level:     row.Level,
+			Exp:       row.Exp,
+			UpdatedAt: formatTime(row.UpdatedAt),
+		}
+	}
+	return &LevelListResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
+}

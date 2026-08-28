@@ -11,7 +11,7 @@ Source React quyết định chức năng, dữ liệu và state. Docs quyết �
 ## Phạm vi v1 (đã chốt)
 
 - PvP 2 người, có đặt cược KEN (commission `XIANGQI_COMMISSION_PERCENT`, mặc định 5%).
-- 30 giây/nước, hết giờ = thua ngay.
+- 60 giây/nước. Hết giờ: server tự đi một nước thay người chơi (bot minimax phía Go, cùng thuật toán với bot luyện tập mức Khó). Hết giờ **3 lần liên tiếp** mới xử thua; đi được một nước là bộ đếm reset.
 - Chiếu bí và hết nước đi (khốn tử) = thua bên tới lượt (đúng luật cờ tướng VN).
 - Lặp thế 3 lần → phân xử: **chiếu dai một chiều = bên chiếu thua**; còn lại = hòa. 60 nước đôi không ăn quân = hòa. Không có nút cầu hòa (v2). Đuổi dai chưa phân xử (v2).
 - Đầu hàng (FORFEIT), reconnect/resume, chat, reaction, lịch sử, bảng xếp hạng — dùng hạ tầng engine + SDK sẵn có.
@@ -29,7 +29,7 @@ Source React quyết định chức năng, dữ liệu và state. Docs quyết �
 | S3 | Danh sách bàn | list bàn + mức cược + khóa, Tạo bàn, Làm mới, tự re-sync, phân trang 9 hàng |
 | S4 | Modal Tạo bàn / Vào bàn khóa | nhập cược, mật khẩu, validate KEN |
 | S5 | Phòng chờ (pregame, render trong Board) | 2 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |
-| S6 | Bàn chơi | bàn 9×10, chọn quân → gợi ý nước, đi quân, highlight nước cuối, banner Chiếu, đồng hồ 30s, badge cược, KEN float, chat + reaction, Bỏ cuộc/Thoát |
+| S6 | Bàn chơi | bàn 9×10, chọn quân → gợi ý nước, đi quân, highlight nước cuối, banner Chiếu, đồng hồ 60s, badge cược, KEN float, chat + reaction, Bỏ cuộc/Thoát |
 | S7 | Kết quả | Thắng/Thua/Hòa + lý do, ±KEN, Chơi lại (về phòng chờ), Đóng |
 | S8 | Lịch sử | tối đa 100 trận gần nhất (`matchHistoryLimit`), đối thủ, kết quả, ±KEN (`kenDelta` từ server), thời gian |
 | S9 | Bảng xếp hạng | hôm nay/tuần này (SDK chỉ có `day\|week`), thắng-thua, KEN thắng ròng |

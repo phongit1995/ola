@@ -41,7 +41,12 @@ export function LobbyScreen() {
         {userInfo ? (
           <div className="xq-user">
             <PodAvatar vipType={userInfo.vipType} tone="red" />
-            <span className="xq-user-name">@{userInfo.username}</span>
+            <span className="xq-user-main">
+              <span className="xq-user-name">@{userInfo.username}</span>
+              {userInfo.level != null && userInfo.level > 0 && (
+                <span className="xq-level-chip">Lv.{userInfo.level}</span>
+              )}
+            </span>
           </div>
         ) : (
           <div />

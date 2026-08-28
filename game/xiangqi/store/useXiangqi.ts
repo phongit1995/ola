@@ -46,6 +46,7 @@ export interface SeatInfo {
   name: string;
   side: number;
   avatar: string;
+  level?: number;
 }
 
 export interface MatchResultState {
@@ -53,6 +54,8 @@ export interface MatchResultState {
   outcome: 'win' | 'lose' | 'draw';
   kenDelta: number | null;
   reasonText: string;
+  expGained: number | null;
+  expBefore: number;
 }
 
 export interface NoticeState {
@@ -351,6 +354,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           outcome,
           kenDelta: 0,
           reasonText: reasonOverride ?? botResultText(result, humanSide),
+          expGained: null,
+          expBefore: 0,
         },
       });
     };
@@ -455,6 +460,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         name: username,
         side: playerSide,
         avatar: avatarIconUrl(get().userInfo?.vipType),
+        level: get().userInfo?.level,
       },
       op: {
         id: 'local-bot',
@@ -726,8 +732,24 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           hints: [],
           movePending: false,
           bet: refs.matchBet,
-          me: meInfo ? { id: meInfo.id, name: meInfo.name, side: you, avatar: avatarIconUrl(meInfo.vipType) } : null,
-          op: opInfo ? { id: opInfo.id, name: opInfo.name, side: 1 - you, avatar: avatarIconUrl(opInfo.vipType) } : null,
+          me: meInfo
+            ? {
+                id: meInfo.id,
+                name: meInfo.name,
+                side: you,
+                avatar: avatarIconUrl(meInfo.vipType),
+                level: meInfo.level ?? refs.user?.level,
+              }
+            : null,
+          op: opInfo
+            ? {
+                id: opInfo.id,
+                name: opInfo.name,
+                side: 1 - you,
+                avatar: avatarIconUrl(opInfo.vipType),
+                level: opInfo.level,
+              }
+            : null,
           matchSeq: get().matchSeq + 1,
           oppAway: null,
           result: null,
@@ -760,6 +782,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         const steps = serverState.steps ?? [];
         const captured = steps.some((step) => step.kind === 'capture');
         const checked = steps.some((step) => step.kind === 'check');
+        const autoMoved = data.autoMoved === true && data.lastBy === refs.match.you;
         set((state) => ({
           board: serverState.board,
           pieces: advancePieces(state.pieces, serverState.board, serverState.lastFrom, serverState.lastTo),
@@ -773,6 +796,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         playSound(captured ? 'capture' : 'place');
         if (checked) playSound('check');
         applyTurn(data.turn, data.deadline);
+        if (autoMoved) get().showToast('Hết giờ — hệ thống đã đi thay bạn');
       }),
     );
 
@@ -825,13 +849,17 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           if (checked) playSound('check');
         }
         const myId = refs.user?.id;
-        const draw = data.reason === 'draw';
+        // A technical abort refunds the escrow, so it must render neutrally
+        // instead of taking the bet off the loser's side.
+        const draw = data.reason === 'draw' || data.reason === 'aborted';
         const won = !draw && data.winnerId != null && data.winnerId === myId;
         const bet = data.bet ?? refs.matchBet;
         refs.matchBet = bet;
         const winnerPayout = data.payout ?? bet * 2;
         const winnerNet = data.kenDelta ?? winnerPayout - bet;
         const kenDelta = draw ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
+        const expGained = data.expGains?.find((gain) => gain.userId === myId)?.exp ?? null;
+        const expBefore = refs.user?.exp ?? 0;
         const reasonText = (() => {
           switch (data.reason) {
             case 'forfeit':
@@ -840,6 +868,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
               return won ? 'Đối thủ hết giờ' : 'Bạn hết giờ suy nghĩ';
             case 'disconnect':
               return won ? 'Đối thủ mất kết nối' : 'Bạn mất kết nối quá lâu';
+            case 'aborted':
+              return 'Trận bị hủy do lỗi hệ thống · cược đã được hoàn';
             case 'draw':
               return drawReasonText(finalState);
             default:
@@ -879,6 +909,8 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
               outcome: draw ? 'draw' : won ? 'win' : 'lose',
               kenDelta,
               reasonText,
+              expGained,
+              expBefore,
             },
           });
         };

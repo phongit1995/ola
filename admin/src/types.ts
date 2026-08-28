@@ -1356,6 +1356,22 @@ export interface GameMatchSuspectsParams {
   minPairMatches?: number
 }
 
+export interface AdminGameLevel {
+  user: GameMatchUserBrief
+  gameId: string
+  level: number
+  exp: number
+  updatedAt: string
+}
+
+export interface GameLevelListParams {
+  gameId?: string
+  userId?: string
+  search?: string
+  limit?: number
+  offset?: number
+}
+
 export interface AppSetting {
   key: string
   value: Record<string, unknown>

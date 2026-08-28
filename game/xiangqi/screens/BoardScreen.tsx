@@ -118,7 +118,8 @@ function PlayerPod({
       <PodAvatar src={seat.avatar} tone={red ? 'red' : 'black'} />
       <div className="xq-pod-info">
         <div className="xq-pod-name">
-          @{seat.name}
+          <span className="xq-pod-name-text">@{seat.name}</span>
+          {seat.level != null && seat.level > 0 && <span className="xq-level-chip">Lv.{seat.level}</span>}
           <span className={`xq-side-chip ${red ? 'xq-side-chip-red' : 'xq-side-chip-black'}`}>{sideLabel(seat.side)}</span>
         </div>
         <div className="xq-pod-captured" aria-label="Quân đã ăn">
@@ -171,7 +172,12 @@ function PregamePanel() {
             member ? (
               <div key={member.id} className="xq-seat">
                 <PodAvatar vipType={member.vipType} tone="black" />
-                <div className="xq-seat-name">{member.id === roomWaiting.youId ? 'Bạn' : `@${member.name}`}</div>
+                <div className="xq-seat-name">
+                  <span className="xq-seat-name-text">
+                    {member.id === roomWaiting.youId ? 'Bạn' : `@${member.name}`}
+                  </span>
+                  {member.level != null && member.level > 0 && <span className="xq-level-chip">Lv.{member.level}</span>}
+                </div>
                 <div className="xq-seat-side">{member.owner ? 'Chủ bàn · Chờ xếp phe' : 'Khách · Chờ xếp phe'}</div>
                 {member.owner ? (
                   <span className="xq-chip xq-chip-gold">Chủ bàn</span>
@@ -446,7 +452,7 @@ export function BoardScreen() {
     statusIcon = 'wifi-off';
   } else if (state.turnExpired && !state.result) {
     statusTone = 'danger';
-    statusText = state.myTurn ? 'Bạn đã hết giờ · chờ máy chủ xử' : 'Đối thủ đã hết giờ · chờ máy chủ xử';
+    statusText = state.myTurn ? 'Bạn đã hết giờ · máy chủ đang đi thay' : 'Đối thủ đã hết giờ · máy chủ đang đi thay';
     statusIcon = 'warning';
   } else if (state.movePending) {
     statusTone = 'pending';

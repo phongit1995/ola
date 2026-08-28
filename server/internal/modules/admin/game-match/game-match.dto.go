@@ -126,6 +126,28 @@ type SuspectsResponse struct {
 	Pairs          []SuspectPair `json:"pairs"`
 }
 
+type AdminLevelFilter struct {
+	GameID string
+	UserID *uuid.UUID
+	Search string
+}
+
+type LevelView struct {
+	User      UserBrief `json:"user"`
+	GameID    string    `json:"gameId" example:"caro"`
+	Level     int       `json:"level" example:"12"`
+	Exp       int64     `json:"exp" example:"7350"`
+	UpdatedAt string    `json:"updatedAt" example:"2026-08-28T10:00:00Z"`
+}
+
+type LevelListResponse struct {
+	Total  int64       `json:"total" example:"1"`
+	Limit  int         `json:"limit" example:"20"`
+	Offset int         `json:"offset" example:"0"`
+	Items  []LevelView `json:"items"`
+}
+
 type MatchListSuccessResponse = utils.BaseResponse[MatchListResponse]
 type MatchStatsSuccessResponse = utils.BaseResponse[MatchStatsResponse]
 type SuspectsSuccessResponse = utils.BaseResponse[SuspectsResponse]
+type LevelListSuccessResponse = utils.BaseResponse[LevelListResponse]

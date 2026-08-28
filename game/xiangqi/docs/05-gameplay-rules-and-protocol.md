@@ -35,7 +35,10 @@ Server (`server/internal/game/games/xiangqi/`) là nguồn chân lý. Client mir
 | **Chiếu dai**: thế lặp lần 3, trong chu kỳ lặp một bên chiếu ở MỌI nước của mình còn bên kia không | bên chiếu dai **thua** (luật VN — chặn ép hòa) | `win` | step `mate` reason `perpetual` |
 | Lặp thế 3 lần, không rơi vào chiếu dai một chiều (cả hai cùng chiếu hoặc không bên nào) | **hòa** | `draw` | step `draw` reason `repetition` |
 | 60 nước đôi (120 ply) không quân nào bị ăn | **hòa** | `draw` | step `draw` reason `halfmove` |
-| Hết 30 s không đi | thua ngay | `timeout` | engine xử, không qua Apply |
+| Hết 60 s không đi (lần 1–2 liên tiếp) | server đi thay một nước, trận tiếp tục | — | `MoveOnTimeout` → engine `Apply` như nước thường, `STATE.lastBy` = người hết giờ + `STATE.autoMoved: true` |
+| Hết giờ nhưng **không lưu được snapshot** | không xử thua, không tính vào 3 lần; engine retry với backoff 2→4→8→16→30 s | — | state rollback nguyên vẹn, **deadline giữ nguyên đã hết hạn** nên mọi `MOVE` vẫn bị từ chối; nước đi được cache, không tính lại bot mỗi lần retry |
+| Retry quá 5 lần vẫn không lưu được | **hủy kỹ thuật**, hoàn cược cả hai bên | `aborted` | `abortMatchTechnically` → `preserveAbortRecovery` → `AbortStart` refund; client hiện kết quả trung tính, `kenDelta` rỗng |
+| Hết 60 s không đi lần 3 liên tiếp, hoặc không còn nước hợp lệ | thua ngay | `timeout` | engine xử, không qua Apply |
 | Bỏ cuộc | thua ngay | `forfeit` | engine (`FORFEIT`) |
 | Rớt mạng quá 30 s grace | thua | `disconnect` | engine |
 

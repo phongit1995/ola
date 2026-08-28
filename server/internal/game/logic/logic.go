@@ -31,6 +31,14 @@ type TimeoutSkipper interface {
 	TimeoutSkipsTurn() bool
 }
 
+// TimeoutMover lets a game answer a turn timeout with a fallback move instead
+// of forfeiting, for games where skipping a turn would break the rules. The
+// engine still forfeits after MaxConsecutiveTimeouts so an idle player cannot
+// stall the match forever. ok is false when no move can be played.
+type TimeoutMover interface {
+	MoveOnTimeout(state any, playerIdx int) (move json.RawMessage, ok bool)
+}
+
 // TurnTimer lets a game override the engine-wide turn duration.
 type TurnTimer interface {
 	TurnSeconds() int

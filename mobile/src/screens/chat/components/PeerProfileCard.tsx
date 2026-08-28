@@ -51,6 +51,9 @@ export function PeerProfileCard({
           : t('chat.joinedOlaToday');
   const genderIcon = profile.gender === GENDER.female ? femaleIcon : maleIcon;
   const avatarUrl = profile.avatar ?? avatar ?? '';
+  const fullName = profile.fullName ?? '';
+  const primaryName = fullName !== '' ? fullName : `@${profile.username}`;
+  const secondaryName = fullName !== '' ? `@${profile.username}` : undefined;
 
   const avatarEl = <Avatar name={name} uri={avatarUrl !== '' ? avatarUrl : undefined} size={56} rounded={false} />;
 
@@ -73,9 +76,9 @@ export function PeerProfileCard({
             <View className="flex-row items-center gap-1">
               <VipAvatar typeId={vipTypeId} size={24} />
               <Text numberOfLines={1} className="min-w-0 shrink text-base text-ola-ink">
-                {name}
-                {profile.fullName != null && profile.fullName !== '' && (
-                  <Text className="text-ola-ink-soft"> · {profile.fullName}</Text>
+                {primaryName}
+                {secondaryName != null && (
+                  <Text className="text-ola-ink-soft"> · {secondaryName}</Text>
                 )}
               </Text>
               {profile.verified && (

@@ -221,6 +221,7 @@ export interface StateData<TState = unknown, TMove = unknown> {
   deadline: number;
   lastMove?: TMove;
   lastBy: number;
+  autoMoved?: boolean;
 }
 
 export interface ChatMessageData {
@@ -252,7 +253,7 @@ export interface ExpGainEntry {
 export interface MatchOverData<TState = unknown> {
   matchId: string;
   winnerId?: string;
-  reason: 'win' | 'forfeit' | 'timeout' | 'disconnect' | 'draw';
+  reason: 'win' | 'forfeit' | 'timeout' | 'disconnect' | 'draw' | 'aborted';
   state: TState;
   bet?: number;
   payout?: number;

@@ -29,6 +29,18 @@ const (
 	MaxSpectators     = 20
 	finishedResultTTL = 2 * time.Minute
 	maxTurnStartDelay = 20 * time.Second
+
+	// MaxConsecutiveTimeouts forfeits a player who keeps letting the clock run
+	// out, whether the game skips their turn or plays a fallback move for them.
+	MaxConsecutiveTimeouts = 3
+	// timeoutMoveRetryDelay backs off before retrying a fallback move whose
+	// snapshot could not be saved; the delay doubles per attempt up to
+	// maxTimeoutMoveRetryDelay, then the match is aborted and the bets refunded.
+	timeoutMoveRetryDelay    = 2 * time.Second
+	maxTimeoutMoveRetryDelay = 30 * time.Second
+	maxTimeoutMoveRetries    = 5
+
+	matchReasonAborted = "aborted"
 	maxChatRunes      = 120
 	chatCooldown      = 500 * time.Millisecond
 	reactionCooldown  = 800 * time.Millisecond
@@ -81,8 +93,13 @@ type Match struct {
 	state          any
 	turnIdx        int
 	timeoutRuns    []int
-	deadline       time.Time
-	timer          *time.Timer
+	// timeoutMove caches the fallback move for the expired turn so a retry
+	// after a save failure never recomputes it, and timeoutMoveFails counts
+	// those failures. Both are cleared as soon as the state advances.
+	timeoutMove      json.RawMessage
+	timeoutMoveFails int
+	deadline         time.Time
+	timer            *time.Timer
 	turnGen        int
 	over           bool
 	bet            int
@@ -187,25 +204,31 @@ func (e *Engine) viewFor(m *Match, playerIdx int) any {
 }
 
 func (e *Engine) broadcastState(m *Match, lastMove json.RawMessage, lastBy int) {
+	e.broadcastStateAutoMoved(m, lastMove, lastBy, false)
+}
+
+func (e *Engine) broadcastStateAutoMoved(m *Match, lastMove json.RawMessage, lastBy int, autoMoved bool) {
 	deadline := m.deadline.UnixMilli()
 	for idx, p := range m.players {
 		e.toUser(m.GameID, p.ID, protocol.OutEnvelope{Type: protocol.S2CState, Data: protocol.StateData{
-			MatchID:  m.ID,
-			State:    e.viewFor(m, idx),
-			Turn:     m.turnIdx,
-			Deadline: deadline,
-			LastMove: lastMove,
-			LastBy:   lastBy,
+			MatchID:   m.ID,
+			State:     e.viewFor(m, idx),
+			Turn:      m.turnIdx,
+			Deadline:  deadline,
+			LastMove:  lastMove,
+			LastBy:    lastBy,
+			AutoMoved: autoMoved,
 		}})
 	}
 	if spectatable(m.logic) {
 		e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{Type: protocol.S2CState, Data: protocol.StateData{
-			MatchID:  m.ID,
-			State:    m.state,
-			Turn:     m.turnIdx,
-			Deadline: deadline,
-			LastMove: lastMove,
-			LastBy:   lastBy,
+			MatchID:   m.ID,
+			State:     m.state,
+			Turn:      m.turnIdx,
+			Deadline:  deadline,
+			LastMove:  lastMove,
+			LastBy:    lastBy,
+			AutoMoved: autoMoved,
 		}})
 	}
 }
@@ -2182,6 +2205,13 @@ func (e *Engine) turnDuration(m *Match, previousPlayerIdx int) time.Duration {
 }
 
 func (e *Engine) scheduleTurnTimer(m *Match) {
+	e.scheduleTurnTimerIn(m, time.Until(m.deadline))
+}
+
+// scheduleTurnTimerIn arms the turn timer for an explicit duration without
+// moving m.deadline, so a retry can be scheduled while the turn stays expired
+// and Move keeps rejecting late moves.
+func (e *Engine) scheduleTurnTimerIn(m *Match, d time.Duration) {
 	if m.timer != nil {
 		m.timer.Stop()
 	}
@@ -2189,7 +2219,7 @@ func (e *Engine) scheduleTurnTimer(m *Match) {
 	matchID := m.ID
 	turnAtArm := m.turnIdx
 	genAtArm := m.turnGen
-	m.timer = time.AfterFunc(time.Until(m.deadline), func() {
+	m.timer = time.AfterFunc(d, func() {
 		e.onTimeout(matchID, turnAtArm, genAtArm)
 	})
 }
@@ -2222,12 +2252,36 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 		}
 		return ""
 	}
+	if mover, ok := m.logic.(logic.TimeoutMover); ok {
+		timedOut := m.turnIdx
+		m.timeoutRuns[timedOut]++
+		if m.timeoutRuns[timedOut] < MaxConsecutiveTimeouts {
+			switch e.applyTimeoutMove(m, mover, timedOut) {
+			case timeoutMovePlayed:
+				return
+			case timeoutMoveDeferred:
+				// A store outage must never cost a player the match, so the
+				// timeout is retried instead of counted against them.
+				m.timeoutRuns[timedOut]--
+				m.timeoutMoveFails++
+				if m.timeoutMoveFails > maxTimeoutMoveRetries {
+					e.abortMatchTechnically(m)
+					return
+				}
+				e.scheduleTurnTimerIn(m, timeoutMoveRetryBackoff(m.timeoutMoveFails))
+				return
+			}
+		}
+		e.clearTimeoutMove(m)
+		e.finishMatch(m, timeoutWinner(), "timeout")
+		return
+	}
 	if skipper, ok := m.logic.(logic.TimeoutSkipper); !ok || !skipper.TimeoutSkipsTurn() {
 		e.finishMatch(m, timeoutWinner(), "timeout")
 		return
 	}
 	m.timeoutRuns[m.turnIdx]++
-	if m.timeoutRuns[m.turnIdx] >= 3 {
+	if m.timeoutRuns[m.turnIdx] >= MaxConsecutiveTimeouts {
 		if handler, ok := m.logic.(logic.QuitHandler); ok && len(m.activeIdxs())-1 >= 2 {
 			e.eliminatePlayer(m, m.turnIdx, handler, "timeout")
 			return
@@ -2266,6 +2320,140 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 		e.scheduleTurnTimer(m)
 	}
 	e.broadcastState(m, nil, timedOut)
+}
+
+type timeoutMoveOutcome int
+
+const (
+	// timeoutMoveNoMove means the game has no move to play, so the normal
+	// timeout forfeit applies.
+	timeoutMoveNoMove timeoutMoveOutcome = iota
+	timeoutMovePlayed
+	// timeoutMoveDeferred means the move is legal but could not be saved. The
+	// match state is unchanged and the timeout must be retried, never forfeited.
+	timeoutMoveDeferred
+)
+
+func timeoutMoveRetryBackoff(attempt int) time.Duration {
+	delay := timeoutMoveRetryDelay << (attempt - 1)
+	if delay > maxTimeoutMoveRetryDelay || delay <= 0 {
+		return maxTimeoutMoveRetryDelay
+	}
+	return delay
+}
+
+func (e *Engine) clearTimeoutMove(m *Match) {
+	m.timeoutMove = nil
+	m.timeoutMoveFails = 0
+}
+
+// applyTimeoutMove plays the game's fallback move for a player who ran out of
+// time. The caller must hold m.mu.
+func (e *Engine) applyTimeoutMove(m *Match, mover logic.TimeoutMover, playerIdx int) timeoutMoveOutcome {
+	// The state is unchanged while retries are pending, so the move computed on
+	// the first attempt stays valid and is never searched for again.
+	move := m.timeoutMove
+	if move == nil {
+		chosen, ok := mover.MoveOnTimeout(m.state, playerIdx)
+		if !ok {
+			return timeoutMoveNoMove
+		}
+		move = chosen
+		m.timeoutMove = chosen
+	}
+	state, err := m.logic.Apply(m.state, playerIdx, move)
+	if err != nil {
+		e.logger.Errorw("Failed to apply timeout move",
+			"match_id", m.ID, "player_idx", playerIdx, "error", err)
+		return timeoutMoveNoMove
+	}
+	previousState := m.state
+	previousTurn := m.turnIdx
+	previousDeadline := m.deadline
+	previousPausedRemain := m.pausedRemain
+	m.state = state
+
+	if over, winnerIdx := m.logic.Result(m.state); over {
+		winnerID := ""
+		reason := "win"
+		if winnerIdx >= 0 {
+			winnerID = m.players[winnerIdx].ID
+		} else {
+			reason = "draw"
+		}
+		e.clearTimeoutMove(m)
+		e.finishMatch(m, winnerID, reason)
+		return timeoutMovePlayed
+	}
+
+	if keeper, ok := m.logic.(logic.TurnKeeper); !ok || !keeper.KeepTurn(m.state) {
+		m.turnIdx = e.nextTurnIdx(m)
+	}
+	m.deadline = time.Now().Add(e.turnDuration(m, playerIdx))
+	if m.disconnected[m.turnIdx] {
+		e.invalidateTurnTimer(m)
+		m.pausedRemain = time.Until(m.deadline)
+		if m.pausedRemain < time.Second {
+			m.pausedRemain = time.Second
+		}
+	}
+	if err := e.persistMatch(m); err != nil {
+		m.state = previousState
+		m.turnIdx = previousTurn
+		m.deadline = previousDeadline
+		m.pausedRemain = previousPausedRemain
+		e.logger.Errorw("Failed to persist timeout move; will retry",
+			"match_id", m.ID, "player_idx", playerIdx, "error", err)
+		return timeoutMoveDeferred
+	}
+	e.clearTimeoutMove(m)
+	if m.pausedRemain == 0 {
+		e.scheduleTurnTimer(m)
+	}
+	e.broadcastStateAutoMoved(m, move, playerIdx, true)
+	return timeoutMovePlayed
+}
+
+// abortMatchTechnically ends a match the engine can no longer advance because
+// its state will not save. Nobody wins or loses: the escrow is refunded through
+// the abort settlement path instead of being paid out.
+func (e *Engine) abortMatchTechnically(m *Match) {
+	m.over = true
+	e.clearTimeoutMove(m)
+	e.markMatchTerminal(m.ID)
+	e.invalidateTurnTimer(m)
+	e.cancelGrace(m)
+	data := protocol.MatchOverData{
+		MatchID: m.ID,
+		Reason:  matchReasonAborted,
+		State:   m.state,
+		Bet:     m.bet,
+	}
+	keys := make([]string, 0, len(m.players))
+	for _, p := range m.players {
+		keys = append(keys, userKey(m.GameID, p.ID))
+	}
+	e.finishedMu.Lock()
+	for _, key := range keys {
+		e.finished[key] = data
+	}
+	e.finishedMu.Unlock()
+	e.removeMatch(m)
+	for _, p := range m.players {
+		e.toUser(m.GameID, p.ID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
+	}
+	e.notifySpectatorsMatchOver(m, data)
+	if m.room != nil {
+		e.emitRoomClosed(*m.room, "match_aborted")
+	} else if m.listedRoomID != "" {
+		e.emitRoomRemoved(m.GameID, m.listedRoomID)
+	}
+	e.preserveAbortRecovery(m)
+	for _, key := range keys {
+		e.scheduleFinishedCleanup(key, m.ID)
+	}
+	e.logger.Errorw("Match aborted after repeated snapshot failures",
+		"match_id", m.ID, "game_id", m.GameID, "attempts", maxTimeoutMoveRetries)
 }
 
 func (e *Engine) winnerAmounts(gameID string, bet int) (payout, net int) {

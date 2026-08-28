@@ -1,7 +1,9 @@
 import http from '@/api/http'
 import type {
+  AdminGameLevel,
   AdminGameMatch,
   ApiResponse,
+  GameLevelListParams,
   GameMatchListParams,
   GameMatchStatsParams,
   GameMatchStatsResponse,
@@ -30,6 +32,14 @@ export const AdminGameMatchService = {
   async getSuspects(params: GameMatchSuspectsParams = {}): Promise<GameMatchSuspectsResponse> {
     const { data } = await http.get<ApiResponse<GameMatchSuspectsResponse>>(
       '/admin/game-matches/suspects',
+      { params },
+    )
+    return data.data
+  },
+
+  async listLevels(params: GameLevelListParams = {}): Promise<ListResult<AdminGameLevel>> {
+    const { data } = await http.get<ApiResponse<ListResult<AdminGameLevel>>>(
+      '/admin/game-matches/levels',
       { params },
     )
     return data.data

@@ -54,6 +54,22 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 	return next, nil
 }
 
+func (Logic) MoveOnTimeout(state any, playerIdx int) (json.RawMessage, bool) {
+	s, ok := state.(*State)
+	if !ok || s.Winner != noneWin || playerIdx != s.MoveCount%2 {
+		return nil, false
+	}
+	move, ok := chooseBestMove(s.Board, playerIdx, timeoutMoveDepth, timeoutMoveBudget)
+	if !ok {
+		return nil, false
+	}
+	raw, err := json.Marshal(Move{From: &move.From, To: &move.To})
+	if err != nil {
+		return nil, false
+	}
+	return raw, true
+}
+
 func (Logic) Result(state any) (bool, int) {
 	s, ok := state.(*State)
 	if !ok {

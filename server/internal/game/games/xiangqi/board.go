@@ -7,7 +7,7 @@ import (
 
 const (
 	GameID      = "xiangqi"
-	TurnSeconds = 30
+	TurnSeconds = 60
 
 	BoardWidth  = 9
 	BoardHeight = 10
