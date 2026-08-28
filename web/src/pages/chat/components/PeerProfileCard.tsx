@@ -47,6 +47,9 @@ export function PeerProfileCard({
   const genderIcon =
     profile.gender === GENDER.female ? femaleIcon : maleIcon;
   const avatarUrl = profile.avatar ?? avatar ?? '';
+  const fullName = profile.fullName ?? '';
+  const primaryName = fullName !== '' ? fullName : `@${profile.username}`;
+  const secondaryName = fullName !== '' ? `@${profile.username}` : undefined;
 
   const avatarEl = (
     <Avatar
@@ -80,8 +83,8 @@ export function PeerProfileCard({
             <div className="flex items-center gap-1">
               <VipIcon typeId={vipTypeId} className="h-6 w-6" />
               <UserName
-                name={name}
-                fullName={profile.fullName}
+                name={primaryName}
+                fullName={secondaryName}
                 className="min-w-0 truncate text-base text-black/87"
                 fullNameClassName="text-black/54"
               />
