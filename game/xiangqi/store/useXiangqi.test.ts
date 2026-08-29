@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { parseBoardRows } from '../logic/board';
 import { START_BOARD } from '../logic/constants.gen';
 
 const sdkMocks = vi.hoisted(() => ({
@@ -146,6 +147,19 @@ function serverState(board: readonly number[] = START_BOARD, steps: any[] = []) 
   };
 }
 
+const CHECK_BOARD = parseBoardRows([
+  '...K.....',
+  '.........',
+  '.........',
+  '.........',
+  '....R....',
+  '.........',
+  '.........',
+  '.........',
+  '.........',
+  '....k....',
+]);
+
 function matchFound(matchId = 'match-1', deadline = Date.now() + 30_000) {
   return {
     matchId,
@@ -285,6 +299,73 @@ describe('Xiangqi online integration state', () => {
     });
 
     expect(useXiangqi.getState().toast).toBe('Hết giờ — hệ thống đã đi thay bạn');
+  });
+
+  it('uses the authoritative check flag when a state update has no check step', async () => {
+    const session = new FakeSession();
+    await connect(session);
+    session.emit('matchFound', matchFound('match-check'));
+    audioMocks.playSound.mockClear();
+
+    session.emit('state', {
+      matchId: 'match-check',
+      state: { ...serverState(CHECK_BOARD), check: true },
+      turn: 1,
+      deadline: Date.now() + 60_000,
+      lastBy: 0,
+    });
+
+    expect(useXiangqi.getState()).toMatchObject({ board: CHECK_BOARD, checkSeq: 1 });
+    expect(audioMocks.playSound).toHaveBeenCalledWith('check');
+  });
+
+  it('signals a standing check once per move even when the snapshot is re-delivered', async () => {
+    const session = new FakeSession();
+    await connect(session);
+    session.emit('matchFound', matchFound('match-dup'));
+    audioMocks.playSound.mockClear();
+
+    const checkedState = (moveCount: number) => ({
+      matchId: 'match-dup',
+      state: { ...serverState(CHECK_BOARD), check: true, moveCount },
+      turn: 1,
+      deadline: Date.now() + 60_000,
+      lastBy: 0,
+    });
+    session.emit('state', checkedState(3));
+    session.emit('state', checkedState(3));
+
+    expect(useXiangqi.getState().checkSeq).toBe(1);
+    expect(audioMocks.playSound.mock.calls.filter(([name]) => name === 'check')).toHaveLength(1);
+
+    session.emit('state', checkedState(5));
+    expect(useXiangqi.getState().checkSeq).toBe(2);
+    expect(audioMocks.playSound.mock.calls.filter(([name]) => name === 'check')).toHaveLength(2);
+  });
+
+  it('raises the check signal when resuming into a checked position without steps', async () => {
+    const session = new FakeSession();
+    await connect(session);
+    audioMocks.playSound.mockClear();
+
+    session.emit('matchFound', {
+      ...matchFound('match-resume'),
+      resumed: true,
+      state: { ...serverState(CHECK_BOARD), check: true, moveCount: 7 },
+      turn: 1,
+    });
+
+    expect(useXiangqi.getState()).toMatchObject({ board: CHECK_BOARD, checkSeq: 1 });
+    expect(audioMocks.playSound).toHaveBeenCalledWith('check');
+
+    session.emit('state', {
+      matchId: 'match-resume',
+      state: { ...serverState(CHECK_BOARD), check: true, moveCount: 7 },
+      turn: 1,
+      deadline: Date.now() + 60_000,
+      lastBy: 0,
+    });
+    expect(useXiangqi.getState().checkSeq).toBe(1);
   });
 
   it('stays quiet when our own in-time move is echoed back after the local clock expired', async () => {

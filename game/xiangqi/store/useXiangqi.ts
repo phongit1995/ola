@@ -245,6 +245,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     pendingResultMatchId: null as string | null,
     acceptBufferedResult: false,
     opponentAwayDeadline: null as number | null,
+    checkSignaledMoveCount: -1,
     roomConnectionLost: false,
     timer: 0 as ReturnType<typeof setInterval> | 0,
     announceTimer: 0 as ReturnType<typeof setTimeout> | 0,
@@ -712,6 +713,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         refs.exitingMatchId = null;
         refs.acceptBufferedResult = false;
         refs.opponentAwayDeadline = null;
+        refs.checkSignaledMoveCount = serverState.check ? serverState.moveCount : -1;
         cancelResultReveal();
         const you = data.you;
         const players = data.players ?? [];
@@ -781,7 +783,13 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         refs.serverState = serverState;
         const steps = serverState.steps ?? [];
         const captured = steps.some((step) => step.kind === 'capture');
-        const checked = steps.some((step) => step.kind === 'check');
+        // state.check is authoritative. Steps are intentionally absent after a
+        // restored snapshot and may also be stripped by compatible servers.
+        // The flag describes the standing position, so a re-delivered snapshot
+        // of the same move must not replay the check banner and sound.
+        const inCheckNow = serverState.check || steps.some((step) => step.kind === 'check');
+        const checked = inCheckNow && serverState.moveCount !== refs.checkSignaledMoveCount;
+        if (checked) refs.checkSignaledMoveCount = serverState.moveCount;
         const autoMoved = data.autoMoved === true && data.lastBy === refs.match.you;
         set((state) => ({
           board: serverState.board,
@@ -834,7 +842,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         const finalSteps = hasClosingMove ? (finalState?.steps ?? []) : [];
         if (finalState) {
           const state = finalState;
-          const checked = finalSteps.some((step) => step.kind === 'check');
+          const checked = hasClosingMove && (state.check || finalSteps.some((step) => step.kind === 'check'));
           set((prev) => ({
             board: state.board,
             pieces: hasClosingMove

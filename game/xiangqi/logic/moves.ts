@@ -187,7 +187,9 @@ function generalAttacked(board: readonly number[], sq: number, bySide: number): 
 export function inCheck(board: readonly number[], side: number): boolean {
   const general = findGeneral(board, side);
   if (general < 0) return false;
-  return generalAttacked(board, general, 1 - side);
+  // An open file between the generals is an attack in Xiangqi (the
+  // "flying general" rule), not merely a separate board-shape violation.
+  return generalAttacked(board, general, 1 - side) || generalsFacing(board);
 }
 
 export function generalsFacing(board: readonly number[]): boolean {
@@ -206,7 +208,7 @@ function moveLeavesIllegal(board: number[], from: number, to: number, side: numb
   const captured = board[to];
   board[to] = board[from];
   board[from] = EMPTY;
-  const bad = inCheck(board, side) || generalsFacing(board);
+  const bad = inCheck(board, side);
   board[from] = board[to];
   board[to] = captured;
   return bad;

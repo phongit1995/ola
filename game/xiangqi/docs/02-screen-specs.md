@@ -127,7 +127,7 @@ Focus trap + Esc đóng (dùng `helpers/dialog.ts` của caro).
 - Quân = absolutely-positioned button trên giao điểm; mình luôn ở dưới (Đen: render `flipIndex(i)=89-i`).
 - **Tương tác**: tap quân mình → chọn (nâng + shadow lg) + chấm gợi ý từ `legalMovesFrom` (TS mirror); tap chấm/quân địch được ăn → gửi `MOVE {from,to}` + `movePending=true` (khóa input, KHÔNG optimistic — bàn chỉ đổi khi `STATE` về); tap chỗ khác/quân khác của mình → đổi chọn; tap lại quân đang chọn → bỏ chọn.
 - Highlight `--xq-last-move` tại from + to nước vừa đi (từ `state.lastFrom/lastTo`).
-- Replay `steps[]`: quân trượt 220 ms, quân bị ăn scale-fade; step `check` → banner `Chiếu tướng!` + viền đỏ pulse quanh Tướng bị chiếu; serialized theo `replayEpoch` (hủy khi state mới về — pattern thirteen).
+- Replay `steps[]`: quân trượt 220 ms, quân bị ăn scale-fade; step `check` → banner `Chiếu tướng!` ngắn. `state.check`/bàn cờ authoritative giữ status nguy hiểm + viền đỏ pulse quanh Tướng trong suốt thế đang bị chiếu, kể cả khi snapshot không còn `steps[]`; serialized theo `replayEpoch` (hủy khi state mới về — pattern thirteen).
 
 ### 6.3 Lượt & đồng hồ
 - Vòng lượt gold quanh pod đang đi; turn announce `ĐẾN LƯỢT BẠN` khi về mình.
