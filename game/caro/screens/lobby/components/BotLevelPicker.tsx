@@ -25,6 +25,9 @@ export function BotLevelPicker({ open, onChoose, onClose }: BotLevelPickerProps)
             <button type="button" data-level="hard" style={assetBg('pickLevel')} onClick={() => onChoose('hard')}>
               <span>Khó</span>
             </button>
+            <button type="button" data-level="expert" style={assetBg('pickLevel')} onClick={() => onChoose('expert')}>
+              <span>Siêu khó</span>
+            </button>
           </div>
         </div>
         <button type="button" id="lobby-pick-close" style={assetBg('pickClose')} aria-label="Đóng" onClick={onClose}>

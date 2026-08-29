@@ -1724,17 +1724,17 @@ button:focus-visible,
 #lobby-pick-levels {
   flex-shrink: 0;
   width: 100%;
-  margin-top: 6cqw;
+  margin-top: 4cqw;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3.5cqw;
+  gap: 2.5cqw;
 }
 
 #lobby-pick-levels button {
   flex-shrink: 0;
   position: relative;
-  width: 62%;
+  width: 56%;
   aspect-ratio: 1702 / 535;
   border: none;
   background-color: transparent;
@@ -1758,6 +1758,10 @@ button:focus-visible,
 
 #lobby-pick-levels button:nth-child(3) {
   animation-delay: 350ms;
+}
+
+#lobby-pick-levels button:nth-child(4) {
+  animation-delay: 420ms;
 }
 
 #lobby-pick-levels button span {

@@ -1,7 +1,7 @@
 export const SIZE = 20;
 export const WIN_LEN = 5;
 
-export type BotLevel = 'easy' | 'normal' | 'hard';
+export type BotLevel = 'easy' | 'normal' | 'hard' | 'expert';
 
 export interface CaroState {
   board: number[];
