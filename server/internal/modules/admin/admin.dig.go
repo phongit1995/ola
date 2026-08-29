@@ -17,6 +17,7 @@ import (
 	adminrelationship "ola-chat-server/internal/modules/admin/relationship"
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminsetting "ola-chat-server/internal/modules/admin/setting"
+	admintopup "ola-chat-server/internal/modules/admin/topup"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
 	adminuser "ola-chat-server/internal/modules/admin/user"
 	adminvip "ola-chat-server/internal/modules/admin/vip"
@@ -47,6 +48,7 @@ func Provider(c *dig.Container) error {
 		adminsetting.Provider,
 		adminminigame.Provider,
 		adminannouncement.Provider,
+		admintopup.Provider,
 	}
 
 	for _, module := range modules {

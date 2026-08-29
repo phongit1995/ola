@@ -21,6 +21,7 @@ import { KenTransfersPage } from '@/pages/KenTransfersPage'
 import { MiniGamePage } from '@/pages/MiniGamePage'
 import { MePage } from '@/pages/MePage'
 import { TopupSettingsPage } from '@/pages/TopupSettingsPage'
+import { TopupTransactionsPage } from '@/pages/TopupTransactionsPage'
 import { UsernameChangeSettingsPage } from '@/pages/UsernameChangeSettingsPage'
 import { UsernameChangesPage } from '@/pages/UsernameChangesPage'
 import { AnnouncementPage } from '@/pages/AnnouncementPage'
@@ -65,6 +66,7 @@ export const router = createBrowserRouter([
       { path: 'games/ken-treasure', element: <KenChestsPage /> },
       { path: 'games/mini-game', element: <MiniGamePage /> },
       { path: 'users/ken-transfers', element: <KenTransfersPage /> },
+      { path: 'users/topups', element: <TopupTransactionsPage /> },
       { path: 'users/username-changes', element: <UsernameChangesPage /> },
       { path: 'ken-transfers', element: <Navigate to="/users/ken-transfers" replace /> },
       { path: 'me', element: <MePage /> },
