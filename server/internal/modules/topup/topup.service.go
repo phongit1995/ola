@@ -238,7 +238,7 @@ func buildMemoRegex(template string) (*regexp.Regexp, bool) {
 	}
 	quoted := make([]string, len(parts))
 	for i, part := range parts {
-		quoted[i] = regexp.QuoteMeta(normalizeMemoText(part))
+		quoted[i] = memoLiteralPattern(part)
 	}
 	re, err := regexp.Compile("(?i)" + strings.Join(quoted, usernameCapturePattern))
 	if err != nil {
@@ -247,7 +247,19 @@ func buildMemoRegex(template string) (*regexp.Regexp, bool) {
 	return re, true
 }
 
+func memoLiteralPattern(part string) string {
+	chunks := strings.Split(normalizeMemoChars(part), " ")
+	for i, chunk := range chunks {
+		chunks[i] = regexp.QuoteMeta(chunk)
+	}
+	return strings.Join(chunks, `\s*`)
+}
+
 func normalizeMemoText(input string) string {
+	return strings.TrimSpace(normalizeMemoChars(input))
+}
+
+func normalizeMemoChars(input string) string {
 	decomposed := norm.NFD.String(input)
 	var b strings.Builder
 	for _, r := range decomposed {
@@ -265,7 +277,7 @@ func normalizeMemoText(input string) string {
 			b.WriteRune(r)
 		}
 	}
-	return strings.TrimSpace(b.String())
+	return b.String()
 }
 
 func truncate(s string, max int) string {
