@@ -175,7 +175,9 @@ export function TopupSettingsPage() {
           label="Nội dung chuyển khoản"
           extra={
             <Typography.Text type="secondary">
-              {'{username}'} sẽ được thay bằng username của người nạp, ví dụ @minhanh
+              {'{username}'} sẽ được thay bằng username của người nạp, ví dụ @minhanh. Nên đặt dấu
+              @ ngay trước {'{username}'} (vd DONATE @{'{username}'}): nếu người nạp gõ thừa chữ,
+              hệ thống sẽ báo cần duyệt tay thay vì cộng nhầm cho user khác.
             </Typography.Text>
           }
         >

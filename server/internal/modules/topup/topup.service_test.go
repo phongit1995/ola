@@ -11,7 +11,10 @@ func TestBuildMemoRegexCapture(t *testing.T) {
 	}{
 		{"default template", "@{username}", "NGUYEN VAN B CHUYEN TIEN @test1 - Ma GD ACSP", "test1"},
 		{"donate template", "DONATE {username}", "Giao dich thu nghiem DONATE admin", "admin"},
-		{"donate no space", "DONATE {username}", "CT DONATEadmin", "admin"},
+		{"glued marker rejected", "DONATE {username}", "CT DONATEadmin", ""},
+		{"marker prefix of another word", "DONATE {username}", "DONATED 500k cho shop", ""},
+		{"anchored template refuses extra word", "DONATE @{username}", "DONATE cho @test1", ""},
+		{"anchored template normal", "DONATE @{username}", "Giao dich DONATE @test1 CT", "test1"},
 		{"donate uppercase input", "DONATE {username}", "ck donate Test_User1 noi dung", "Test_User1"},
 		{"vietnamese diacritics", "NAP {username}", "Nạp nguyen.van.a", "nguyen.van.a"},
 		{"extra word breaks capture", "NAP {username}", "Nap cho nguyen.van.a", "cho"},

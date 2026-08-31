@@ -252,7 +252,7 @@ func memoLiteralPattern(part string) string {
 	for i, chunk := range chunks {
 		chunks[i] = regexp.QuoteMeta(chunk)
 	}
-	return strings.Join(chunks, `\s*`)
+	return strings.Join(chunks, `\s+`)
 }
 
 func normalizeMemoText(input string) string {
