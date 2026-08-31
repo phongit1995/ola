@@ -19,6 +19,11 @@ func TestBuildMemoRegexCapture(t *testing.T) {
 		{"vietnamese diacritics", "NAP {username}", "Nạp nguyen.van.a", "nguyen.van.a"},
 		{"extra word breaks capture", "NAP {username}", "Nap cho nguyen.van.a", "cho"},
 		{"trailing bank noise", "DONATE {username}", "DONATE test1 CT tu 970422", "test1"},
+		{"hyphen marker", "NAP-{username}", "NAP-test1", "test1"},
+		{"hyphen marker with bank noise", "NAP-{username}", "CK NAP-test1 CT tu 970422", "test1"},
+		{"hyphen marker extra word refused", "NAP-{username}", "NAP cho test1", ""},
+		{"hyphen marker glued suffix", "NAP-{username}", "NAP-test1-FT25123456", "test1-FT25123456"},
+		{"hyphen marker lowercase", "NAP-{username}", "nap-Test_User1 chuyen tien", "Test_User1"},
 		{"no match", "DONATE {username}", "chuyen khoan khong ro noi dung", ""},
 	}
 
