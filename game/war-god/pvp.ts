@@ -34,6 +34,14 @@ let matchPlayers: PlayerInfo[] = [];
 let matchBet = 0;
 let matchDeadline = 0;
 
+function acceptMatch(data: MatchFoundData<ServerState>): void {
+  matchId = data.matchId;
+  myIdx = data.you;
+  matchPlayers = data.players;
+  matchBet = data.bet ?? 0;
+  matchDeadline = data.deadline;
+}
+
 export const pvp = {
   ready(): boolean {
     return session != null;
@@ -43,11 +51,7 @@ export const pvp = {
     if (session === next) return;
     session = next;
     next.onMatchFound((data) => {
-      matchId = data.matchId;
-      myIdx = data.you;
-      matchPlayers = data.players;
-      matchBet = data.bet ?? 0;
-      matchDeadline = data.deadline;
+      acceptMatch(data);
       handlers.onMatchFound?.(data);
     });
     next.onState((data) => {
@@ -91,6 +95,11 @@ export const pvp = {
   sendUlt(skill: UltimateSkillId): void {
     if (matchId) session?.sendMove(matchId, { type: 'ult', skill });
   },
+
+  // startPvpBattle is also used by the dev-only mock harness without an
+  // S2C MATCH_FOUND event. Keep the transport's match metadata in sync so a
+  // mock click follows the same send path as a real PvP match.
+  acceptMatch,
 
   sendChatText(text: string): void {
     if (matchId) session?.sendChat(matchId, text);

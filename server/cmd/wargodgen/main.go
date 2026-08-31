@@ -64,8 +64,10 @@ func renderConstants(config wargod.ClientConfig) []byte {
 	writeInt("BASE_TILE_COUNT", config.BaseTileCount)
 	writeInt("SPECIAL_SWORD_ONE_IN", config.SpecialSwordOneIn)
 	writeInt("SPECIAL_HEART_ONE_IN", config.SpecialHeartOneIn)
+	writeInt("SPECIAL_FLYING_DART_ONE_IN", config.SpecialFlyingDartOneIn)
 	out.WriteString("export const SPECIAL_SWORD_CHANCE = 1 / SPECIAL_SWORD_ONE_IN;\n")
 	out.WriteString("export const SPECIAL_HEART_CHANCE = 1 / SPECIAL_HEART_ONE_IN;\n\n")
+	out.WriteString("export const SPECIAL_FLYING_DART_CHANCE = 1 / SPECIAL_FLYING_DART_ONE_IN;\n\n")
 
 	writeInt("MAX_HP", config.MaxHP)
 	writeInt("MAX_MP", config.MaxMP)

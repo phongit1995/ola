@@ -2,6 +2,7 @@ import {
   applyGravity,
   computeExplosions,
   findMatches,
+  findFlyingDartCreation,
   findValidMoves,
   swapCells,
   type Board,
@@ -166,10 +167,13 @@ export function applyTileEffects(
     summary.heal = healed;
   }
 
-  if (counts.water > 0) {
+  // A dart is a wildcard for matching, but it is not a Water resource.
+  // Its own effect is the line clear determined by its axis.
+  const waterCount = counts.water;
+  if (waterCount > 0) {
     const gained = Math.min(
       MAX_MP - attacker.mp,
-      scaleCascadeValue(counts.water * MP_WATER, cascadeLevel),
+      scaleCascadeValue(waterCount * MP_WATER, cascadeLevel),
     );
     attacker.mp += gained;
     summary.mana = gained;
@@ -196,7 +200,7 @@ export function castUltimate(attacker: Fighter, defender: Fighter): DamageResult
 export function applyAuthoritativeEffects(
   attacker: Fighter,
   defender: Fighter,
-  effects: EffectSummary
+  effects: EffectSummary,
 ): EffectSummary {
   defender.hp = Math.max(0, defender.hp - effects.damage);
   defender.armor = Math.max(0, defender.armor - (effects.armorDamage ?? 0));
@@ -229,6 +233,7 @@ type BotMove = [number, number];
 interface MovePreview {
   counts: Record<TileType, number>;
   bonusTurns: number;
+  dartCreations: number;
 }
 
 interface SimulatedMove {
@@ -242,7 +247,13 @@ interface SimulatedMove {
   armorDamage: number;
   fury: number;
   bonusTurns: number;
+  dartCreations: number;
 }
+
+// A created Phi Tiêu remains on the board and can clear an entire line on a
+// later turn, so the non-expert scorers need to account for it as persistent
+// board value instead of valuing only the immediate Water mana.
+const FLYING_DART_CREATION_SCORE = 220;
 
 const EXPERT_CANDIDATE_LIMIT = 12;
 const EXPERT_ROLLOUTS = 6;
@@ -278,14 +289,19 @@ function previewMove(board: Board, move: BotMove, random: () => number): MovePre
   const counts = { ...match.counts };
   const plan = computeExplosions(board, match.cells, random);
   for (const index of plan.exploded) counts[board[index]]++;
+  const dartCreations = findFlyingDartCreation(board, [move[1], move[0]]) ? 1 : 0;
   swapCells(board, move[0], move[1]);
-  return { counts, bonusTurns: grantExtraTurns(0, match.bonusTurns).remaining };
+  return {
+    counts,
+    bonusTurns: grantExtraTurns(0, match.bonusTurns).remaining,
+    dartCreations,
+  };
 }
 
 function scoreResolvedState(
   beforeBot: Fighter,
   beforePlayer: Fighter,
-  result: Omit<SimulatedMove, 'board'>
+  result: Omit<SimulatedMove, 'board'>,
 ): number {
   if (result.player.hp <= 0 && result.bot.hp > 0) return 1_000_000 + result.bot.hp * 100;
   if (result.bot.hp <= 0) return -1_000_000;
@@ -301,6 +317,8 @@ function scoreResolvedState(
     result.fury * 2.8 +
     result.bonusTurns * 280;
 
+  score += result.dartCreations * FLYING_DART_CREATION_SCORE;
+
   if (result.bot.mp >= ULT_COST && beforeBot.mp < ULT_COST) score += 180;
   if (result.bot.fury >= MAX_FURY && beforeBot.fury < MAX_FURY) score += 140;
   if (result.player.hp <= 50) score += (50 - result.player.hp) * 3;
@@ -312,7 +330,7 @@ function scoreImmediateMove(
   attacker: Fighter,
   defender: Fighter,
   move: BotMove,
-  random: () => number
+  random: () => number,
 ): number {
   const preview = previewMove(board, move, random);
   if (!preview) return Number.NEGATIVE_INFINITY;
@@ -329,6 +347,7 @@ function scoreImmediateMove(
     armorDamage: effects.armorDamage ?? 0,
     fury: effects.fury ?? 0,
     bonusTurns: preview.bonusTurns,
+    dartCreations: preview.dartCreations,
   });
 }
 
@@ -337,7 +356,7 @@ function simulateExpertMove(
   bot: Fighter,
   player: Fighter,
   move: BotMove,
-  random: () => number
+  random: () => number,
 ): SimulatedMove {
   const nextBoard = [...board];
   const nextBot = { ...bot };
@@ -350,18 +369,26 @@ function simulateExpertMove(
     armorDamage: 0,
     fury: 0,
     bonusTurns: 0,
+    dartCreations: 0,
   };
 
   swapCells(nextBoard, move[0], move[1]);
   const furyChain = { active: false };
+  let preferredDartCells: readonly number[] = [move[1], move[0]];
   for (let cascade = 0; cascade < EXPERT_CASCADE_LIMIT; cascade++) {
     const match = findMatches(nextBoard);
     if (!match) break;
     total.bonusTurns = grantExtraTurns(total.bonusTurns, match.bonusTurns).remaining;
+    const creation = findFlyingDartCreation(nextBoard, preferredDartCells);
     const plan = computeExplosions(nextBoard, match.cells, random);
     for (const index of plan.exploded) match.counts[nextBoard[index]]++;
     const removed = new Set(match.cells);
     for (const index of plan.exploded) removed.add(index);
+    if (creation) {
+      total.dartCreations++;
+      removed.delete(creation.index);
+      nextBoard[creation.index] = creation.type;
+    }
     const effects = applyTileEffects(nextBot, nextPlayer, match.counts, cascade, furyChain);
     total.damage += effects.damage;
     total.heal += effects.heal;
@@ -370,6 +397,7 @@ function simulateExpertMove(
     total.armorDamage += effects.armorDamage ?? 0;
     total.fury += effects.fury ?? 0;
     applyGravity(nextBoard, removed, random);
+    preferredDartCells = [];
     if (nextBot.hp <= 0 || nextPlayer.hp <= 0) break;
   }
 
@@ -380,7 +408,7 @@ function bestImmediateReplyScore(
   board: Board,
   player: Fighter,
   bot: Fighter,
-  seed: number
+  seed: number,
 ): number {
   const replies = findValidMoves(board);
   let best = 0;
@@ -390,7 +418,7 @@ function bestImmediateReplyScore(
       player,
       bot,
       reply,
-      seededRandom(seed ^ moveSeed(board, reply))
+      seededRandom(seed ^ moveSeed(board, reply)),
     );
     if (score > best) best = score;
   }
@@ -435,7 +463,7 @@ export function botChooseMove(
   board: Board,
   bot: Fighter,
   player: Fighter,
-  level: BotLevel = 'normal'
+  level: BotLevel = 'normal',
 ): [number, number] | null {
   const moves = findValidMoves(board);
   if (moves.length === 0) return null;
@@ -465,16 +493,9 @@ export function botChooseMove(
       previewSeed = (Math.imul(previewSeed, 1664525) + 1013904223) >>> 0;
       return previewSeed / 0x1_0000_0000;
     };
-    swapCells(board, move[0], move[1]);
-    const match = findMatches(board);
-    let counts: Record<TileType, number> | null = null;
-    if (match) {
-      counts = { ...match.counts };
-      const plan = computeExplosions(board, match.cells, previewRandom);
-      for (const idx of plan.exploded) counts[board[idx]]++;
-    }
-    swapCells(board, move[0], move[1]);
-    if (!counts) continue;
+    const preview = previewMove(board, move, previewRandom);
+    if (!preview) continue;
+    const { counts } = preview;
 
     // Nộ chỉ tăng sát thương khi đã đầy từ trước wave; Đào ăn trong wave này
     // chỉ tính điểm nạp Nộ (peachWeight), không tăng sát thương ngay.
@@ -487,7 +508,8 @@ export function botChooseMove(
       counts.greaterHeart * greaterHeartWeight +
       counts.water * waterWeight +
       counts.shield * shieldWeight;
-    if (match) score += comboBonus * grantExtraTurns(0, match.bonusTurns).remaining;
+    score += preview.dartCreations * FLYING_DART_CREATION_SCORE;
+    score += comboBonus * preview.bonusTurns;
     score += Math.random() * jitter;
 
     if (score > bestScore) {

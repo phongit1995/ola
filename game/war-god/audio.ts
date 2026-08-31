@@ -3,6 +3,7 @@ export type GameSound =
   | 'match'
   | 'explosion'
   | 'lightning'
+  | 'dart'
   | 'ultimate'
   | 'win'
   | 'lose';
@@ -84,6 +85,12 @@ export function playSound(sound: GameSound): void {
     tone(ctx, now, 145, 0.16, 0.045, 'sawtooth');
     tone(ctx, now + 0.025, 980, 0.09, 0.025, 'square');
     tone(ctx, now + 0.095, 620, 0.14, 0.02, 'square');
+    return;
+  }
+  if (sound === 'dart') {
+    tone(ctx, now, 760, 0.08, 0.035, 'triangle');
+    tone(ctx, now + 0.055, 1120, 0.12, 0.025, 'sawtooth');
+    tone(ctx, now + 0.13, 420, 0.14, 0.03, 'triangle');
     return;
   }
   if (sound === 'ultimate') {

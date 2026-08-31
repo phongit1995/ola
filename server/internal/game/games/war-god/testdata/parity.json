@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "tileOrder": [
     "sword",
     "peach",
@@ -8,7 +8,9 @@
     "shield",
     "lightning",
     "fireSword",
-    "greaterHeart"
+    "greaterHeart",
+    "flyingDartHorizontal",
+    "flyingDartVertical"
   ],
   "findMatches": [
     {
@@ -171,6 +173,86 @@
       },
       "maxRun": 3,
       "bonusTurns": 1
+    },
+    {
+      "name": "flying dart is a wildcard for swords",
+      "board": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        0,
+        0,
+        8,
+        4,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3
+      ],
+      "cells": [
+        50,
+        51,
+        52
+      ],
+      "counts": {
+        "flyingDartHorizontal": 1,
+        "sword": 2
+      },
+      "maxRun": 3,
+      "bonusTurns": 0
     }
   ],
   "tileEffects": [
@@ -190,6 +272,8 @@
       },
       "counts": {
         "fireSword": 0,
+        "flyingDartHorizontal": 0,
+        "flyingDartVertical": 0,
         "greaterHeart": 0,
         "heart": 4,
         "lightning": 0,
@@ -235,6 +319,8 @@
       },
       "counts": {
         "fireSword": 1,
+        "flyingDartHorizontal": 0,
+        "flyingDartVertical": 0,
         "greaterHeart": 1,
         "heart": 0,
         "lightning": 0,
@@ -349,7 +435,11 @@
         34,
         35
       ],
-      "lightningArcs": []
+      "lightningArcs": [],
+      "dartActivations": [],
+      "fireSwordActivations": [
+        26
+      ]
     },
     {
       "name": "lightning targets remain unique",
@@ -447,7 +537,9 @@
           "source": 2,
           "target": 62
         }
-      ]
+      ],
+      "dartActivations": [],
+      "fireSwordActivations": []
     },
     {
       "name": "fire sword triggers lightning inside its blast",
@@ -539,6 +631,206 @@
           "source": 27,
           "target": 0
         }
+      ],
+      "dartActivations": [],
+      "fireSwordActivations": [
+        26
+      ]
+    },
+    {
+      "name": "horizontal flying dart clears its row",
+      "board": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        8,
+        3,
+        2,
+        3,
+        2,
+        3,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3
+      ],
+      "matched": [
+        26
+      ],
+      "random": null,
+      "exploded": [
+        24,
+        25,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "lightningArcs": [],
+      "dartActivations": [
+        {
+          "source": 26,
+          "axis": "horizontal"
+        }
+      ],
+      "fireSwordActivations": []
+    },
+    {
+      "name": "horizontal dart triggers Fire Sword and Lightning",
+      "board": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        8,
+        3,
+        6,
+        3,
+        5,
+        3,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3
+      ],
+      "matched": [
+        26
+      ],
+      "random": [
+        0
+      ],
+      "exploded": [
+        0,
+        19,
+        20,
+        21,
+        24,
+        25,
+        27,
+        28,
+        29,
+        30,
+        31,
+        35,
+        36,
+        37
+      ],
+      "lightningArcs": [
+        {
+          "source": 30,
+          "target": 0
+        }
+      ],
+      "dartActivations": [
+        {
+          "source": 26,
+          "axis": "horizontal"
+        }
+      ],
+      "fireSwordActivations": [
+        28
       ]
     }
   ]

@@ -11,6 +11,7 @@ type ClientConfig struct {
 	BaseTileCount               int
 	SpecialSwordOneIn           int
 	SpecialHeartOneIn           int
+	SpecialFlyingDartOneIn      int
 	MaxHP                       int
 	MaxMP                       int
 	MaxFury                     int
@@ -38,6 +39,7 @@ func ExportClientConfig() ClientConfig {
 		BaseTileCount:               baseTileCount,
 		SpecialSwordOneIn:           specialSwordOneIn,
 		SpecialHeartOneIn:           specialHeartOneIn,
+		SpecialFlyingDartOneIn:      specialFlyingDartOneIn,
 		MaxHP:                       maxHP,
 		MaxMP:                       maxMP,
 		MaxFury:                     maxFury,

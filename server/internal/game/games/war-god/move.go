@@ -3,6 +3,7 @@ package wargod
 import (
 	"encoding/json"
 	"errors"
+	"sort"
 	"strconv"
 )
 
@@ -96,7 +97,9 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 		s.Board[a], s.Board[b] = s.Board[b], s.Board[a]
 		s.Steps = append(s.Steps, Step{Kind: stepSwap, A: intPtr(a), B: intPtr(b)})
 		furyChainActive := false
-		resolveCascades(s, attacker, defender, r, &remainingExtraTurns, 0, &furyChainActive)
+		resolveCascades(
+			s, attacker, defender, r, &remainingExtraTurns, 0, &furyChainActive, []int{b, a},
+		)
 		if attacker.HP > 0 && defender.HP > 0 {
 			ensurePlayable(s, r)
 		}
@@ -115,9 +118,18 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 				cells = append(cells, block...)
 			}
 			removed := make(map[int]bool, len(cells))
-			lightningSources := make(map[int]bool, len(cells))
+			directFireSwords := make(map[int]bool)
 			for _, cell := range cells {
 				removed[cell] = true
+				if s.Board[cell] == tileFireSword {
+					directFireSwords[cell] = true
+				}
+			}
+			dartActivations, fireSwordActivations := expandDartTriggeredSpecials(
+				s.Board, removed, directFireSwords,
+			)
+			lightningSources := make(map[int]bool, len(removed))
+			for cell := range removed {
 				if s.Board[cell] == tileLightning {
 					lightningSources[cell] = true
 				}
@@ -125,11 +137,20 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 			lightningArcs := pickLightningArcs(s.Board, lightningSources, removed, func(limit int) int {
 				return int(r.next() % uint64(limit))
 			})
-			exploded := make([]int, 0, len(lightningArcs))
+			exploded := make([]int, 0, len(removed)+len(lightningArcs)-len(cells))
 			for _, arc := range lightningArcs {
 				removed[arc.Target] = true
-				exploded = append(exploded, arc.Target)
 			}
+			struck := make(map[int]bool, len(cells))
+			for _, cell := range cells {
+				struck[cell] = true
+			}
+			for cell := range removed {
+				if !struck[cell] {
+					exploded = append(exploded, cell)
+				}
+			}
+			sort.Ints(exploded)
 			counts := make(map[int]int, len(removed))
 			for cell := range removed {
 				counts[s.Board[cell]]++
@@ -142,12 +163,14 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 				Kind: stepUlt, Skill: move.Skill, Cells: cells,
 				Damage: damage, ArmorDamage: armorDamage,
 				Exploded: exploded, LightningArcs: lightningArcs,
-				Counts: namedCounts(counts), Effects: &strikeEffects,
+				DartActivations:      dartActivations,
+				FireSwordActivations: fireSwordActivations,
+				Counts:               namedCounts(counts), Effects: &strikeEffects,
 			})
 			falls, spawns := applyGravity(s.Board, removed, r)
 			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
 			if attacker.HP > 0 && defender.HP > 0 {
-				resolveCascades(s, attacker, defender, r, &remainingExtraTurns, 1, &furyChainActive)
+				resolveCascades(s, attacker, defender, r, &remainingExtraTurns, 1, &furyChainActive, nil)
 			}
 			if attacker.HP > 0 && defender.HP > 0 {
 				ensurePlayable(s, r)
@@ -215,6 +238,7 @@ func resolveCascades(
 	remainingExtraTurns *int,
 	startingCascadeLevel int,
 	furyChainActive *bool,
+	preferredDartCells []int,
 ) {
 	cascadeLevel := startingCascadeLevel
 	for {
@@ -225,11 +249,21 @@ func resolveCascades(
 		potentialBonusTurns := matchBonusTurns(s.Board, matchedCells)
 		bonusTurns, totalExtraTurns := grantExtraTurns(*remainingExtraTurns, potentialBonusTurns)
 		*remainingExtraTurns = totalExtraTurns
-		removed := make(map[int]bool, len(matchedCells))
+		creation := findFlyingDartCreation(s.Board, preferredDartCells)
+		matched := make(map[int]bool, len(matchedCells))
+		for _, index := range matchedCells {
+			matched[index] = true
+		}
+		exploded, lightningArcs, dartActivations, fireSwordActivations := computeExplosionsWithPickerDetailed(s.Board, matched, func(limit int) int {
+			return int(r.next() % uint64(limit))
+		})
+		removed := make(map[int]bool, len(matchedCells)+len(exploded))
 		for _, index := range matchedCells {
 			removed[index] = true
 		}
-		exploded, lightningArcs := computeExplosions(s.Board, removed, r)
+		if creation != nil {
+			delete(removed, creation.Index)
+		}
 		for _, index := range exploded {
 			counts[s.Board[index]]++
 			removed[index] = true
@@ -237,20 +271,31 @@ func resolveCascades(
 		waveEffects := applyTileEffectsInCascadeChain(
 			attacker, defender, counts, cascadeLevel, furyChainActive,
 		)
+		creations := []DartCreation(nil)
+		if creation != nil {
+			creations = append(creations, *creation)
+		}
 		s.Steps = append(s.Steps, Step{
-			Kind:          stepMatch,
-			Cells:         matchedCells,
-			Exploded:      exploded,
-			LightningArcs: lightningArcs,
-			Counts:        namedCounts(counts),
-			MaxRun:        maxRun,
-			BonusTurns:    bonusTurns,
-			CascadeLevel:  cascadeLevel,
-			Effects:       &waveEffects,
+			Kind:                 stepMatch,
+			Cells:                matchedCells,
+			Exploded:             exploded,
+			LightningArcs:        lightningArcs,
+			DartActivations:      dartActivations,
+			FireSwordActivations: fireSwordActivations,
+			DartCreations:        creations,
+			Counts:               namedCounts(counts),
+			MaxRun:               maxRun,
+			BonusTurns:           bonusTurns,
+			CascadeLevel:         cascadeLevel,
+			Effects:              &waveEffects,
 		})
+		if creation != nil {
+			s.Board[creation.Index] = creation.Type
+		}
 		falls, spawns := applyGravity(s.Board, removed, r)
 		s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
 		cascadeLevel++
+		preferredDartCells = nil
 		if defender.HP <= 0 || attacker.HP <= 0 {
 			break
 		}

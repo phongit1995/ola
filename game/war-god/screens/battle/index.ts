@@ -28,12 +28,18 @@ import {
   createBoard,
   computeLightningArcs,
   emptyCounts,
+  expandDartTriggeredSpecials,
+  findFlyingDartCreation,
   findMatches,
+  flyingDartAxis,
   findValidMoves,
+  isFlyingDart,
   computeExplosions,
   randomFourTwoByTwoBlocks,
   swapCells,
   type Board,
+  type DartActivation,
+  type DartCreation,
   type LightningArc,
   type TileType,
 } from '../../logic/core';
@@ -114,6 +120,12 @@ import {
 } from './pregame';
 import { playLightningFx, playUltimateLightningFx } from './fx/lightning';
 import { playFireSwordFx, type FireSwordFxContext } from './fx/fire-sword';
+import {
+  directionDecorator,
+  playFlyingDartCreationFx,
+  playFlyingDartFx,
+  type FlyingDartFxContext,
+} from './fx/flying-dart';
 import { buildVsIntro, type VsIntro } from './vs-intro';
 import { buildBotVsIntroData, buildPvpVsIntroData } from './vs-intro-data';
 import {
@@ -123,10 +135,7 @@ import {
   type UltimateControl,
 } from './ultimate-control';
 import { deriveUltimateControlState } from './ultimate-control-state';
-import {
-  confirmedSwapDestination,
-  rememberedSelectionsForTurn,
-} from './remembered-selection';
+import { confirmedSwapDestination, rememberedSelectionsForTurn } from './remembered-selection';
 import { battleActionAvailability } from './action-layout';
 
 const TURN_SECONDS =
@@ -209,6 +218,19 @@ let flowEpoch = 0;
 let pvpChain: Promise<unknown> = Promise.resolve();
 const handledMatchOvers = new RecentMatchIds();
 
+interface DartIdleView {
+  icon: Sprite;
+  ray: Graphics;
+  glow: Graphics;
+  decorator: Graphics;
+  baseScale: number;
+  phase: number;
+}
+
+const dartIdleViews = new Map<Container, DartIdleView>();
+let dartIdleElapsed = 0;
+let dartIdleStep: ((ticker: Ticker) => void) | null = null;
+
 function changeBattleMode(next: 'bot' | 'pvp'): void {
   mode = next;
   setBattleMode(next);
@@ -281,7 +303,13 @@ function rebuildBoardVisuals(): void {
   }
   boardMask
     .clear()
-    .roundRect(-tileSize * 0.05, -tileSize * 0.05, boardW + tileSize * 0.1, boardW + tileSize * 0.1, 8)
+    .roundRect(
+      -tileSize * 0.05,
+      -tileSize * 0.05,
+      boardW + tileSize * 0.1,
+      boardW + tileSize * 0.1,
+      8,
+    )
     .fill(0xffffff);
   sizeSelector(selector);
   sizeSelector(botSelectorA);
@@ -305,14 +333,18 @@ function tileIconBaseScale(icon: Sprite): number {
   return (tileSize * 0.82) / Math.max(icon.texture.width, icon.texture.height);
 }
 
+function tileIcon(sprite: Container | null): Sprite | null {
+  return sprite?.children.find((child): child is Sprite => child instanceof Sprite) ?? null;
+}
+
 function showHint(): void {
   if (hintPair) return;
   const moves = findValidMoves(board);
   if (moves.length === 0) return;
   hintPair = moves[Math.floor(Math.random() * moves.length)];
   const icons = hintPair
-    .map((i) => sprites[i]?.children[0])
-    .filter((c): c is Sprite => c instanceof Sprite);
+    .map((i) => tileIcon(sprites[i]))
+    .filter((icon): icon is Sprite => icon !== null);
   const bases = icons.map((s) => s.scale.x);
   let t = 0;
   hintStep = (ticker: Ticker) => {
@@ -332,9 +364,74 @@ function clearHint(): void {
     hintStep = null;
   }
   pair.forEach((i) => {
-    const icon = sprites[i]?.children[0];
-    if (icon instanceof Sprite) icon.scale.set(tileIconBaseScale(icon));
+    const icon = tileIcon(sprites[i]);
+    if (icon) icon.scale.set(tileIconBaseScale(icon));
   });
+}
+
+function setupDartIdle(c: Container, icon: Sprite, type: TileType, index: number): void {
+  if (!isFlyingDart(type)) return;
+  const horizontal = type === 'flyingDartHorizontal';
+  const ray = new Graphics();
+  ray.blendMode = 'add';
+  if (horizontal) {
+    ray
+      .roundRect(tileSize * 0.08, tileSize * 0.46, tileSize * 0.84, tileSize * 0.08, 4)
+      .fill({ color: 0x55e5ff, alpha: 0.22 });
+  } else {
+    ray
+      .roundRect(tileSize * 0.46, tileSize * 0.08, tileSize * 0.08, tileSize * 0.84, 4)
+      .fill({ color: 0x55e5ff, alpha: 0.22 });
+  }
+  const glow = new Graphics();
+  glow.blendMode = 'add';
+  glow.circle(tileSize / 2, tileSize / 2, tileSize * 0.28).fill({ color: 0xffdc66, alpha: 0.12 });
+  const decorator = directionDecorator(horizontal ? 'horizontal' : 'vertical', tileSize);
+  decorator.position.set(tileSize / 2, tileSize / 2);
+  decorator.scale.set(0.82);
+  decorator.alpha = 0.3;
+  c.addChildAt(ray, 0);
+  c.addChildAt(glow, 1);
+  c.addChildAt(decorator, 2);
+  dartIdleViews.set(c, {
+    icon,
+    ray,
+    glow,
+    decorator,
+    baseScale: icon.scale.x,
+    phase: index * 0.47,
+  });
+}
+
+function ensureDartIdleTicker(): void {
+  if (dartIdleStep) return;
+  dartIdleStep = (ticker: Ticker): void => {
+    dartIdleElapsed += ticker.deltaMS;
+    for (const [view, fx] of dartIdleViews) {
+      if (view.destroyed || fx.icon.destroyed) {
+        dartIdleViews.delete(view);
+        continue;
+      }
+      if (busy) {
+        fx.icon.scale.set(fx.baseScale);
+        fx.icon.rotation = 0;
+        fx.ray.alpha = 0.14;
+        fx.glow.alpha = 0.08;
+        fx.decorator.alpha = 0.24;
+        continue;
+      }
+      const pulse = (Math.sin(dartIdleElapsed / 430 + fx.phase) + 1) / 2;
+      fx.icon.scale.set(fx.baseScale * (1 + pulse * 0.035));
+      fx.icon.rotation = Math.sin(dartIdleElapsed / 900 + fx.phase) * 0.045;
+      fx.ray.alpha = 0.14 + pulse * 0.22;
+      fx.glow.alpha = 0.08 + pulse * 0.18;
+      fx.glow.scale.set(0.86 + pulse * 0.22);
+      fx.decorator.rotation = dartIdleElapsed / 1250 + fx.phase;
+      fx.decorator.alpha = 0.24 + pulse * 0.28;
+      fx.decorator.scale.set(0.76 + pulse * 0.16);
+    }
+  };
+  addTick(dartIdleStep);
 }
 
 function makeTile(type: TileType, index: number): Container {
@@ -346,6 +443,7 @@ function makeTile(type: TileType, index: number): Container {
   icon.x = tileSize / 2;
   icon.y = tileSize / 2;
   c.addChild(icon);
+  setupDartIdle(c, icon, type, index);
   const p = pos(index);
   c.x = p.x;
   c.y = p.y;
@@ -523,7 +621,10 @@ function addBotModeExtraTurns(
 
 function cellRootPos(i: number): { x: number; y: number } {
   const p = pos(i);
-  return { x: boardBox.x + p.x + tileSize / 2, y: boardBox.y + p.y + tileSize / 2 };
+  return {
+    x: boardBox.x + p.x + tileSize / 2,
+    y: boardBox.y + p.y + tileSize / 2,
+  };
 }
 
 function flyMatched(cells: Set<number>, side: 'me' | 'foe'): Promise<void> {
@@ -540,38 +641,77 @@ function flyMatched(cells: Set<number>, side: 'me' | 'foe'): Promise<void> {
   return Promise.all(jobs).then(() => undefined);
 }
 
-
-
 async function explodeFx(
   matched: Iterable<number>,
   exploded: Iterable<number>,
   lightningArcs: LightningArc[],
+  dartActivations: DartActivation[] = [],
+  fireSwordActivations: number[] = [],
 ): Promise<Set<number>> {
   const matchedCells = [...matched];
   const matchedSet = new Set(matchedCells);
   const removed = new Set([...matchedCells, ...exploded]);
-  const fireSources = matchedCells.filter((index) => board[index] === 'fireSword');
+  const fireSources = [
+    ...new Set([
+      ...matchedCells.filter((index) => board[index] === 'fireSword'),
+      ...fireSwordActivations,
+    ]),
+  ];
+  const directFireSources = fireSources.filter((index) => matchedSet.has(index));
+  const triggeredFireSources = fireSources.filter((index) => !matchedSet.has(index));
   const jobs: Promise<unknown>[] = [];
   let fireFx = Promise.resolve();
 
-  if (fireSources.length > 0) {
-    fireFx = playFireSwordFx(fireSources, removed, fireSwordFxContext());
+  if (directFireSources.length > 0) {
+    fireFx = playFireSwordFx(directFireSources, removed, fireSwordFxContext());
     jobs.push(fireFx);
   }
 
   const lightningContext = lightningFxContext();
   const directLightningArcs = lightningArcs.filter((arc) => matchedSet.has(arc.source));
-  const fireTriggeredArcs = lightningArcs.filter((arc) => !matchedSet.has(arc.source));
+  // A non-matched Lightning source can only have been reached by a Dart line
+  // or a Fire Sword blast. Its bolt must wait for that source animation;
+  // otherwise Dart→Lightning appears to fire at the same time as the sweep.
+  const triggeredLightningArcs = lightningArcs.filter((arc) => !matchedSet.has(arc.source));
 
   if (directLightningArcs.length > 0) {
-    jobs.push(
-      playLightningFx(directLightningArcs, lightningContext),
-    );
+    jobs.push(playLightningFx(directLightningArcs, lightningContext));
   }
 
-  if (fireTriggeredArcs.length > 0) {
+  const directDartActivations = dartActivations.filter((activation) =>
+    matchedSet.has(activation.source),
+  );
+  const triggeredDartActivations = dartActivations.filter(
+    (activation) => !matchedSet.has(activation.source),
+  );
+  const dartContext = flyingDartFxContext();
+  let dartFx = Promise.resolve();
+  if (directDartActivations.length > 0) {
+    dartFx = playFlyingDartFx(directDartActivations, dartContext);
+    jobs.push(dartFx);
+  }
+  if (triggeredDartActivations.length > 0) {
+    const triggeredDartFx = fireFx.then(() =>
+      playFlyingDartFx(triggeredDartActivations, dartContext),
+    );
+    dartFx = Promise.all([dartFx, triggeredDartFx]).then(() => undefined);
+    jobs.push(triggeredDartFx);
+  }
+
+  let allFireFx = fireFx;
+  if (triggeredFireSources.length > 0) {
+    const triggeredFireFx = dartFx.then(() =>
+      playFireSwordFx(triggeredFireSources, removed, fireSwordFxContext()),
+    );
+    allFireFx = Promise.all([fireFx, triggeredFireFx]).then(() => undefined);
+    jobs.push(triggeredFireFx);
+  }
+
+  if (triggeredLightningArcs.length > 0) {
     jobs.push(
-      fireFx.then(() => playLightningFx(fireTriggeredArcs, lightningContext)),
+      Promise.all([dartFx, allFireFx]).then(() =>
+        playLightningFx(triggeredLightningArcs, lightningContext),
+      ),
     );
   }
 
@@ -603,6 +743,40 @@ function fireSwordFxContext(): FireSwordFxContext {
     spriteAt: (index) => sprites[index],
     playSound: () => playSound('explosion'),
   };
+}
+
+function flyingDartFxContext(): FlyingDartFxContext {
+  return {
+    tileSize,
+    boardX: boardBox.x,
+    boardY: boardBox.y,
+    grid: GRID,
+    flyLayer,
+    cellRootPos,
+    playSound: () => playSound('dart'),
+  };
+}
+
+function addDartLineCells(target: Set<number>, activation: DartActivation): void {
+  const x = activation.source % GRID;
+  const y = Math.floor(activation.source / GRID);
+  if (activation.axis === 'horizontal') {
+    for (let column = 0; column < GRID; column++) target.add(y * GRID + column);
+  } else {
+    for (let row = 0; row < GRID; row++) target.add(row * GRID + x);
+  }
+}
+
+function addFireSwordAreaCells(target: Set<number>, source: number): void {
+  const x = source % GRID;
+  const y = Math.floor(source / GRID);
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (x + dx >= 0 && x + dx < GRID && y + dy >= 0 && y + dy < GRID) {
+        target.add((y + dy) * GRID + x + dx);
+      }
+    }
+  }
 }
 
 function spawnTrailDot(x: number, y: number): void {
@@ -970,6 +1144,22 @@ async function animateRemove(
   });
 }
 
+async function animateDartCreation(creation: DartCreation): Promise<void> {
+  board[creation.index] = creation.type;
+  sprites[creation.index]?.destroy({ children: true });
+  const sprite = makeTile(creation.type, creation.index);
+  sprite.alpha = 0;
+  sprites[creation.index] = sprite;
+  boardLayer.addChild(sprite);
+  await playFlyingDartCreationFx(creation, flyingDartFxContext());
+  if (!sprite.destroyed) sprite.alpha = 1;
+  retargetTaps();
+}
+
+async function animateDartCreations(creations: readonly DartCreation[]): Promise<void> {
+  for (const creation of creations) await animateDartCreation(creation);
+}
+
 async function animateUltimateLightningRemove(cells: readonly number[]): Promise<void> {
   const blocks: number[][] = [];
   for (let offset = 0; offset < cells.length; offset += 4) {
@@ -998,11 +1188,23 @@ interface WaveRenderOptions {
   removed: Set<number>;
   exploded: readonly number[];
   lightningArcs: LightningArc[];
+  dartActivations?: readonly DartActivation[];
+  fireSwordActivations?: readonly number[];
   result: EffectSummary;
 }
 
 async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
-  const { side, actorLabel, matched, removed, exploded, lightningArcs, result } = options;
+  const {
+    side,
+    actorLabel,
+    matched,
+    removed,
+    exploded,
+    lightningArcs,
+    dartActivations = [],
+    fireSwordActivations = [],
+    result,
+  } = options;
   playSound('match');
   const parts: string[] = [];
   if ((result.armorDamage ?? 0) > 0) parts.push(`-${result.armorDamage} giáp`);
@@ -1015,8 +1217,17 @@ async function renderWaveEffects(options: WaveRenderOptions): Promise<void> {
   }
 
   const explodedFireSources =
-    exploded.length > 0
-      ? await explodeFx(matched, exploded, lightningArcs)
+    exploded.length > 0 ||
+    lightningArcs.length > 0 ||
+    dartActivations.length > 0 ||
+    fireSwordActivations.length > 0
+      ? await explodeFx(
+          matched,
+          exploded,
+          lightningArcs,
+          [...dartActivations],
+          [...fireSwordActivations],
+        )
       : new Set<number>();
   await Promise.all([animateRemove(removed, explodedFireSources), flyMatched(removed, side)]);
   updateHud();
@@ -1073,6 +1284,7 @@ async function resolveCascades(
   side: 'me' | 'foe',
   startingCascadeLevel = 0,
   furyChain: { active: boolean } = { active: false },
+  preferredDartCells: readonly number[] = [],
 ): Promise<number> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
@@ -1084,11 +1296,13 @@ async function resolveCascades(
     if (!match) break;
     bonusTurns += match.bonusTurns;
 
+    const creation = findFlyingDartCreation(board, preferredDartCells);
     const explosionPlan = computeExplosions(board, match.cells);
-    const { exploded, lightningArcs } = explosionPlan;
+    const { exploded, lightningArcs, dartActivations, fireSwordActivations } = explosionPlan;
     for (const i of exploded) match.counts[board[i]]++;
     const removed = new Set<number>(match.cells);
     for (const i of exploded) removed.add(i);
+    if (creation) removed.delete(creation.index);
 
     const result = applyTileEffects(attacker, defender, match.counts, cascadeLevel, furyChain);
     await renderWaveEffects({
@@ -1098,12 +1312,19 @@ async function resolveCascades(
       removed,
       exploded,
       lightningArcs,
+      dartActivations,
+      fireSwordActivations,
       result,
     });
+
+    if (creation) {
+      await animateDartCreations([creation]);
+    }
 
     const gravity = applyGravity(board, removed);
     await animateGravity(gravity.falls, gravity.spawns);
     cascadeLevel++;
+    preferredDartCells = [];
 
     if (defender.hp <= 0 || attacker.hp <= 0) return bonusTurns;
   }
@@ -1142,7 +1363,12 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   });
   setChatInputVisible(false);
   playSound(won ? 'win' : 'lose');
-  bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason, won });
+  bridge.gameOver({
+    matchId: `wargod-${Date.now()}`,
+    winnerId: won ? 'you' : 'bot',
+    reason,
+    won,
+  });
 }
 
 function checkEnd(): boolean {
@@ -1200,9 +1426,11 @@ async function onTileTap(i: number): Promise<void> {
   swapCells(board, a, b);
   await animateSwap(a, b);
   spendBotModeExtraTurn('me');
-  const earnedExtraTurns = await resolveCascades('me');
-  const { granted: grantedExtraTurns, remaining: remainingExtraTurns } =
-    addBotModeExtraTurns('me', earnedExtraTurns);
+  const earnedExtraTurns = await resolveCascades('me', 0, { active: false }, [b, a]);
+  const { granted: grantedExtraTurns, remaining: remainingExtraTurns } = addBotModeExtraTurns(
+    'me',
+    earnedExtraTurns,
+  );
   if (checkEnd()) return;
 
   if (remainingExtraTurns > 0) {
@@ -1220,8 +1448,8 @@ async function onTileTap(i: number): Promise<void> {
   void startBotTurn();
 }
 
-// Bản PvE của Lôi Thần: 16 ô bị phá vẫn cộng hiệu ứng cho người tung; mỗi ô
-// Lôi trong vùng đánh thêm một tia phụ không đệ quy. Chuỗi Nộ nối tiếp vào sập.
+// Bản PvE của Lôi Thần: 16 ô gốc (cộng thêm line của Phi Tiêu nếu bị trúng)
+// vẫn cộng hiệu ứng cho người tung; mỗi ô Lôi trong vùng đánh thêm một tia phụ.
 async function castLightningGodLocal(side: 'me' | 'foe'): Promise<number> {
   const attacker = side === 'me' ? me : foe;
   const defender = side === 'me' ? foe : me;
@@ -1229,9 +1457,21 @@ async function castLightningGodLocal(side: 'me' | 'foe'): Promise<number> {
   const direct = applyDamageThroughArmor(defender, LIGHTNING_GOD_DAMAGE);
   const cells = randomFourTwoByTwoBlocks().flat();
   const struck = new Set(cells);
-  const lightningArcs = computeLightningArcs(board, cells, struck);
-  const exploded = lightningArcs.map((arc) => arc.target);
-  const removed = new Set([...cells, ...exploded]);
+  const directFireSwords = new Set(cells.filter((index) => board[index] === 'fireSword'));
+  const specialExpansion = expandDartTriggeredSpecials(board, struck, directFireSwords);
+  const { dartActivations, fireSwordActivations } = specialExpansion;
+  const lightningArcs = computeLightningArcs(board, struck, struck);
+  const explodedSet = new Set<number>();
+  lightningArcs.forEach((arc) => {
+    struck.add(arc.target);
+    explodedSet.add(arc.target);
+  });
+  const primary = new Set(cells);
+  struck.forEach((index) => {
+    if (!primary.has(index)) explodedSet.add(index);
+  });
+  const exploded = [...explodedSet].sort((a, b) => a - b);
+  const removed = new Set([...struck, ...exploded]);
   const counts = emptyCounts();
   for (const index of removed) counts[board[index]]++;
   setStatus(
@@ -1242,9 +1482,20 @@ async function castLightningGodLocal(side: 'me' | 'foe'): Promise<number> {
   updateHud();
   showDirectDamage(side === 'me' ? 'foe' : 'me', direct);
   await animateUltimateLightningRemove(cells);
+  if (dartActivations.length > 0) {
+    await playFlyingDartFx(dartActivations, flyingDartFxContext());
+  }
+  if (fireSwordActivations.length > 0) {
+    await playFireSwordFx(fireSwordActivations, removed, fireSwordFxContext());
+  }
+  const arcTargets = new Set(lightningArcs.map((arc) => arc.target));
+  const nonArcRemoved = new Set(removed);
+  cells.forEach((index) => nonArcRemoved.delete(index));
+  arcTargets.forEach((index) => nonArcRemoved.delete(index));
+  await animateRemove(nonArcRemoved);
   if (lightningArcs.length > 0) {
     await playLightningFx(lightningArcs, lightningFxContext());
-    await animateRemove(new Set(exploded));
+    await animateRemove(arcTargets);
   }
   const furyChain = { active: false };
   const strike = applyTileEffects(attacker, defender, counts, 0, furyChain);
@@ -1270,8 +1521,10 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
   spendBotModeExtraTurn('me');
   if (skill === 'lightning-god') {
     const earnedExtraTurns = await castLightningGodLocal('me');
-    const { granted: grantedExtraTurns, remaining: remainingExtraTurns } =
-      addBotModeExtraTurns('me', earnedExtraTurns);
+    const { granted: grantedExtraTurns, remaining: remainingExtraTurns } = addBotModeExtraTurns(
+      'me',
+      earnedExtraTurns,
+    );
     if (checkEnd()) return;
     if (remainingExtraTurns > 0) {
       announceExtraTurns('me', grantedExtraTurns, remainingExtraTurns);
@@ -1337,8 +1590,10 @@ async function startBotTurn(): Promise<void> {
       }
       if (stale()) return;
       if (checkEnd()) return;
-      const { granted: grantedExtraTurns, remaining: remainingExtraTurns } =
-        addBotModeExtraTurns('foe', earnedExtraTurns);
+      const { granted: grantedExtraTurns, remaining: remainingExtraTurns } = addBotModeExtraTurns(
+        'foe',
+        earnedExtraTurns,
+      );
       if (remainingExtraTurns > 0) {
         announceExtraTurns('foe', grantedExtraTurns, remainingExtraTurns);
         setStatus(
@@ -1361,16 +1616,15 @@ async function startBotTurn(): Promise<void> {
     if (stale()) return;
     spendBotModeExtraTurn('foe');
     swapCells(board, move[0], move[1]);
-    await Promise.all([
-      tween(botSelectorA, pos(move[1]), 180),
-      animateSwap(move[0], move[1]),
-    ]);
+    await Promise.all([tween(botSelectorA, pos(move[1]), 180), animateSwap(move[0], move[1])]);
     await sleep(160);
     if (stale()) return;
     botSelectorA.visible = false;
-    const earnedExtraTurns = await resolveCascades('foe');
-    const { granted: grantedExtraTurns, remaining: remainingExtraTurns } =
-      addBotModeExtraTurns('foe', earnedExtraTurns);
+    const earnedExtraTurns = await resolveCascades('foe', 0, { active: false }, [move[1], move[0]]);
+    const { granted: grantedExtraTurns, remaining: remainingExtraTurns } = addBotModeExtraTurns(
+      'foe',
+      earnedExtraTurns,
+    );
     if (stale()) return;
     if (checkEnd()) return;
     if (remainingExtraTurns === 0) break;
@@ -1458,8 +1712,8 @@ export function updateRoomPregame(
   const roomId = state?.roomId ?? info?.roomId ?? '';
   const bet = state?.bet ?? info?.bet ?? 0;
   const locked = state?.locked ?? info?.locked ?? false;
-  const meMember = state ? (state.members.find((m) => m.id === state.youId) ?? null) : null;
-  const foeMember = state ? (state.members.find((m) => m.id !== state.youId) ?? null) : null;
+  const meMember = state ? state.members.find((m) => m.id === state.youId) ?? null : null;
+  const foeMember = state ? state.members.find((m) => m.id !== state.youId) ?? null : null;
   const meOwner = state ? state.youId === state.ownerId : true;
   if (meMember) hud.me.name.text = `@${meMember.name}`;
   hud.foe.name.text = foeMember ? `@${foeMember.name}` : 'Đang chờ...';
@@ -1480,7 +1734,11 @@ export function updateRoomPregame(
   } else {
     const meReady = meMember?.ready === true;
     status = meReady ? 'Đang chờ chủ bàn bắt đầu...' : 'Đối thủ đã vào bàn — hãy bấm SẴN SÀNG';
-    main = { label: meReady ? 'HỦY SẴN SÀNG' : 'SẴN SÀNG', action: 'toggle', enabled: true };
+    main = {
+      label: meReady ? 'HỦY SẴN SÀNG' : 'SẴN SÀNG',
+      action: 'toggle',
+      enabled: true,
+    };
   }
   setRoomPregameView({
     betText: betLabel(bet),
@@ -1499,7 +1757,7 @@ export function exitRoomPregame(): void {
   deps.onExitToLobby();
 }
 
-export function startBattle(level: BotLevel = botLevel): void {
+export function startBattle(level: BotLevel = botLevel, initialBoard?: Board): void {
   clearRoomPregameVisuals();
   deps.onGameStart();
   preloadUltFx();
@@ -1516,7 +1774,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   me = createFighter();
   foe = createFighter();
   botModeExtraTurns = [0, 0];
-  board = createBoard();
+  board = initialBoard ? [...initialBoard] : createBoard();
   myTurn = true;
   busy = true;
   over = false;
@@ -1560,6 +1818,7 @@ function syncFighters(state: ServerState): void {
 
 export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void> | void {
   const keepRememberedSelection = data.resumed === true && data.matchId === pvpMatchId;
+  pvp.acceptMatch(data);
   clearRoomPregameVisuals();
   deps.onGameStart();
   preloadUltFx();
@@ -1614,7 +1873,10 @@ export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void>
     bridge.turnChanged({ yourTurn: myTurn, deadline: data.deadline });
     return;
   }
-  bridge.attention({ reason: ARCADE_ATTENTION_REASON.MatchStarted, matchId: data.matchId });
+  bridge.attention({
+    reason: ARCADE_ATTENTION_REASON.MatchStarted,
+    matchId: data.matchId,
+  });
   setStatus('Chuẩn bị chiến đấu...');
   const intro = vsIntro.play(buildPvpVsIntroData(data, deps.getUserInfo()));
   return Promise.all([dropInBoard(), intro]).then(() => {
@@ -1647,6 +1909,11 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     const defender = side === 'me' ? foe : me;
     const cells = new Set(step.cells);
     for (const i of step.exploded ?? []) cells.add(i);
+    const creations: DartCreation[] = (step.dartCreations ?? []).map((creation) => ({
+      index: creation.index,
+      type: decodeTile(creation.type) as DartCreation['type'],
+    }));
+    creations.forEach((creation) => cells.delete(creation.index));
     const result = applyAuthoritativeEffects(attacker, defender, step.effects);
     await renderWaveEffects({
       side,
@@ -1655,8 +1922,11 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
       removed: cells,
       exploded: step.exploded ?? [],
       lightningArcs: step.lightningArcs ?? [],
+      dartActivations: step.dartActivations ?? [],
+      fireSwordActivations: step.fireSwordActivations ?? [],
       result,
     });
+    await animateDartCreations(creations);
     return;
   }
   if (step.kind === 'gravity') {
@@ -1688,6 +1958,21 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     const cells = step.cells ?? [];
     const exploded = step.exploded ?? [];
     const lightningArcs = step.lightningArcs ?? [];
+    const struck = new Set(cells);
+    const directFireSwords = new Set(cells.filter((index) => board[index] === 'fireSword'));
+    let dartActivations = step.dartActivations;
+    let fireSwordActivations = step.fireSwordActivations;
+    if (dartActivations == null || fireSwordActivations == null) {
+      const derived = expandDartTriggeredSpecials(board, struck, directFireSwords);
+      dartActivations ??= derived.dartActivations;
+      fireSwordActivations ??= derived.fireSwordActivations;
+    }
+    dartActivations ??= [];
+    fireSwordActivations ??= [];
+    dartActivations.forEach((activation) => addDartLineCells(struck, activation));
+    fireSwordActivations.forEach((source) => addFireSwordAreaCells(struck, source));
+    exploded.forEach((index) => struck.add(index));
+    const removed = new Set(struck);
     setStatus(
       side === 'me'
         ? `LÔI THẦN GIÁNG THẾ · ${directDamageText(result)} · 4 TIA SÉT!`
@@ -1696,9 +1981,20 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
     updateHud();
     showDirectDamage(side === 'me' ? 'foe' : 'me', result);
     await animateUltimateLightningRemove(cells);
+    if (dartActivations.length > 0) {
+      await playFlyingDartFx(dartActivations, flyingDartFxContext());
+    }
+    if (fireSwordActivations.length > 0) {
+      await playFireSwordFx(fireSwordActivations, removed, fireSwordFxContext());
+    }
+    const arcTargets = new Set(lightningArcs.map((arc) => arc.target));
+    const nonArcRemoved = new Set(removed);
+    cells.forEach((index) => nonArcRemoved.delete(index));
+    arcTargets.forEach((index) => nonArcRemoved.delete(index));
+    await animateRemove(nonArcRemoved);
     if (lightningArcs.length > 0) {
       await playLightningFx(lightningArcs, lightningFxContext());
-      await animateRemove(new Set(exploded));
+      await animateRemove(arcTargets);
     }
     if (step.effects) {
       applyAuthoritativeEffects(attacker, defender, step.effects);
@@ -1728,7 +2024,7 @@ async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise
   showOpponentSelection(null);
   const state = data.state;
   const earnedExtraTurns = (state.steps ?? []).reduce(
-    (total, step) => total + (step.kind === 'match' ? (step.bonusTurns ?? 0) : 0),
+    (total, step) => total + (step.kind === 'match' ? step.bonusTurns ?? 0 : 0),
     0,
   );
   const remainingExtraTurns = state.extraTurns ?? (state.extraTurn ? 1 : 0);
@@ -1810,7 +2106,12 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   const won = !draw && data.winnerId === myUserId;
   if (exiting) {
     exitingPvpMatchId = '';
-    bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
+    bridge.gameOver({
+      matchId: data.matchId,
+      winnerId: data.winnerId,
+      reason: data.reason,
+      won,
+    });
     return;
   }
   over = true;
@@ -1837,7 +2138,12 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
     }
   }
   if (flowEpoch !== ep) {
-    bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
+    bridge.gameOver({
+      matchId: data.matchId,
+      winnerId: data.winnerId,
+      reason: data.reason,
+      won,
+    });
     return;
   }
   botSelectorA.visible = false;
@@ -1860,7 +2166,12 @@ async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<voi
   setChatInputVisible(false);
   playSound(draw ? 'click' : won ? 'win' : 'lose');
   endBusy();
-  bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
+  bridge.gameOver({
+    matchId: data.matchId,
+    winnerId: data.winnerId,
+    reason: data.reason,
+    won,
+  });
 }
 
 function queuePvp(fn: () => Promise<void> | void): void {
@@ -1877,7 +2188,10 @@ function bindPvpHandlers(): void {
       const mine = data.userId === myUserId;
       pushPvpChat(`@${data.name}`, mine, data.text);
       if (!mine) {
-        bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat, matchId: data.matchId });
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.NewChat,
+          matchId: data.matchId,
+        });
       }
     },
     onReaction: (data) => {
@@ -2035,11 +2349,7 @@ function previewFireSwordFx(mode: 'center' | 'corner' | 'multi' = 'center'): boo
   if (!inGame || tileSize <= 0) return false;
   const center = Math.floor(GRID / 2) * GRID + Math.floor(GRID / 2);
   const sources =
-    mode === 'corner'
-      ? [0]
-      : mode === 'multi'
-        ? [center - GRID - 1, center]
-        : [center];
+    mode === 'corner' ? [0] : mode === 'multi' ? [center - GRID - 1, center] : [center];
   const removed = new Set<number>();
   sources.forEach((source) => {
     const sourceX = source % GRID;
@@ -2053,6 +2363,112 @@ function previewFireSwordFx(mode: 'center' | 'corner' | 'multi' = 'center'): boo
     }
   });
   void playFireSwordFx(sources, removed, fireSwordFxContext(), true);
+  return true;
+}
+
+function previewFlyingDartFx(axis?: 'horizontal' | 'vertical'): boolean {
+  if (!inGame || tileSize <= 0 || busy) return false;
+  const source = board.findIndex(
+    (type) => isFlyingDart(type) && (axis == null || flyingDartAxis(type) === axis),
+  );
+  if (source < 0) return false;
+  void playFlyingDartFx([{ source, axis: flyingDartAxis(board[source]) }], flyingDartFxContext());
+  return true;
+}
+
+// Dev-only preview để kiểm tra riêng khoảnh khắc Phi Tiêu được tạo trên bàn.
+// Luồng thật gọi cùng helper này sau khi server xác nhận match 5 Nước.
+function previewFlyingDartCreation(axis: 'horizontal' | 'vertical' = 'horizontal'): boolean {
+  if (!inGame || tileSize <= 0 || busy || over) return false;
+  const index = board.findIndex((type) => !isFlyingDart(type));
+  if (index < 0) return false;
+  busy = true;
+  void animateDartCreation({
+    index,
+    type: axis === 'horizontal' ? 'flyingDartHorizontal' : 'flyingDartVertical',
+  }).finally(() => {
+    endBusy();
+  });
+  return true;
+}
+
+// Dev-only integration preview: dựng một nước 5 Nước ngang rồi chạy đúng
+// resolveCascades + gravity, để kiểm tra item tạo ra có nằm lại khi ô phía
+// trên sập xuống hay không. Không gửi nước này lên PvP server.
+function previewFlyingDartCascade(): boolean {
+  if (!inGame || tileSize <= 0 || busy || over) return false;
+  busy = true;
+  clearHint();
+  setSelected(null);
+  const fixture = createBoard();
+  const row = Math.floor(GRID / 2);
+  const start = row * GRID;
+  const creationCell = start + 4;
+  const sourceCell = start + 5;
+  for (let offset = 0; offset < 4; offset++) fixture[start + offset] = 'water';
+  fixture[creationCell] = 'heart';
+  fixture[sourceCell] = 'water';
+  board = fixture;
+  rebuildSprites();
+  setStatus('TEST PHI TIÊU · ghép 5 Nước ngang rồi xem gravity');
+  updateHud();
+  swapCells(board, creationCell, sourceCell);
+  void animateSwap(creationCell, sourceCell)
+    .then(() => resolveCascades('me', 0, { active: false }, [sourceCell, creationCell]))
+    .finally(() => {
+      endBusy();
+      setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
+      updateHud();
+    });
+  return true;
+}
+
+// Dev-only rule preview: dựng sẵn đúng combo "2 quân cùng loại + 1 Phi Tiêu",
+// giữ bàn một nhịp để nhìn trạng thái trước khi ăn, rồi chạy match thật,
+// quét cả hàng/cột và gravity thật. Không gửi nước này lên PvP server.
+function previewFlyingDartWildcard(axis: 'horizontal' | 'vertical' = 'horizontal'): boolean {
+  if (!inGame || tileSize <= 0 || busy || over) return false;
+  busy = true;
+  clearHint();
+  setSelected(null);
+
+  const baseTiles: readonly TileType[] = [
+    'sword',
+    'peach',
+    'heart',
+    'water',
+    'shield',
+    'lightning',
+  ];
+  const fixture: Board = Array.from(
+    { length: CELLS },
+    (_, index) => baseTiles[((index % GRID) + Math.floor(index / GRID) * 2) % baseTiles.length]!,
+  );
+  if (axis === 'horizontal') {
+    fixture[50] = 'sword';
+    fixture[51] = 'sword';
+    fixture[52] = 'flyingDartHorizontal';
+    fixture[53] = 'shield';
+    fixture[54] = 'fireSword';
+    fixture[55] = 'lightning';
+    setStatus('TEST · 2 Kiếm + Phi Tiêu ngang');
+  } else {
+    fixture[18] = 'heart';
+    fixture[26] = 'heart';
+    fixture[34] = 'flyingDartVertical';
+    setStatus('TEST · 2 Tim + Phi Tiêu dọc');
+  }
+  board = fixture;
+  rebuildSprites();
+  updateHud();
+
+  void sleep(700)
+    .then(() => resolveCascades('me', 0, { active: false }))
+    .finally(() => {
+      endBusy();
+      setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
+      updateHud();
+    });
   return true;
 }
 
@@ -2114,6 +2530,10 @@ export function battleDebug(): Record<string, unknown> {
     previewLightning: previewLightningFx,
     previewUltimateLightning: previewUltimateLightningFx,
     previewFireSword: previewFireSwordFx,
+    previewFlyingDart: previewFlyingDartFx,
+    previewFlyingDartCreation,
+    previewFlyingDartCascade,
+    previewFlyingDartWildcard,
     previewVsIntro,
     previewBoardShuffle,
   };
@@ -2136,6 +2556,7 @@ export function ultimateControlAnchor(): {
 
 export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void {
   deps = battleDeps;
+  ensureDartIdleTicker();
   tileSize = computeTileSize();
 
   boardBox = new Container();
@@ -2321,8 +2742,7 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   const GAP_BOARD_CHAT = 10;
 
   let chatH = 150;
-  const blockH = (): number =>
-    HINT_SPACE + overhang + boardW + overhang + GAP_BOARD_CHAT + chatH;
+  const blockH = (): number => HINT_SPACE + overhang + boardW + overhang + GAP_BOARD_CHAT + chatH;
   let slack = bottomLimit - topStart - blockH();
   if (slack < 0) {
     chatH = Math.max(96, chatH + slack);

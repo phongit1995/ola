@@ -91,6 +91,12 @@ const ITEMS: GuideItem[] = [
     detail: `+${GREATER_HEART_HEAL} MÁU`,
     accent: 0xff8dbb,
   },
+  {
+    asset: A.items.flyingDart,
+    title: 'PHI TIÊU · ĐẶC BIỆT',
+    detail: 'GHÉP 5 NƯỚC ĐỂ TẠO · THAY 1 Ô TRONG COMBO 3+ → QUÉT HÀNG / CỘT',
+    accent: 0x43dcff,
+  },
 ];
 
 const RULES: GuideRule[] = [
@@ -121,7 +127,9 @@ const RULES: GuideRule[] = [
   {
     asset: A.hud.flameOn,
     title: 'VẠN KIẾM QUY TÔNG',
-    detail: `Tuyệt chiêu ${ULT_COST} nội lực · ${ULT_COST / 2} sát thương chắc chắn, đòn dứt điểm ổn định`,
+    detail: `Tuyệt chiêu ${ULT_COST} nội lực · ${
+      ULT_COST / 2
+    } sát thương chắc chắn, đòn dứt điểm ổn định`,
     accent: 0xff8051,
   },
   {
@@ -223,11 +231,14 @@ function makeRuleCard(rule: GuideRule): Container {
 }
 
 function drawTab(bg: Graphics, label: Text, active: boolean): void {
-  bg
-    .clear()
+  bg.clear()
     .roundRect(-TAB_W / 2, -TAB_H / 2, TAB_W, TAB_H, 12)
     .fill({ color: active ? 0x912a1d : 0x29180f, alpha: active ? 0.98 : 0.88 })
-    .stroke({ width: active ? 2 : 1.5, color: active ? 0xffdf68 : 0xb8782e, alpha: 0.96 });
+    .stroke({
+      width: active ? 2 : 1.5,
+      color: active ? 0xffdf68 : 0xb8782e,
+      alpha: 0.96,
+    });
   label.style.fill = active ? 0xffef9a : 0xd9b77d;
   label.alpha = active ? 1 : 0.8;
 }
@@ -322,11 +333,11 @@ export function buildGuidePopup(): Container {
   itemsPage = new Container();
   ITEMS.forEach((item, index) => {
     const card = makeItemCard(item);
-    card.position.set(index % 2 === 0 ? -101 : 101, -115 + Math.floor(index / 2) * 76);
+    card.position.set(index % 2 === 0 ? -101 : 101, -115 + Math.floor(index / 2) * 70);
     itemsPage.addChild(card);
   });
   const explosionHint = makeText('Ô TRONG VÙNG NỔ VẪN CỘNG HIỆU ỨNG', 11, 0xffdda0, '800', HEADING);
-  explosionHint.y = 168;
+  explosionHint.y = 211;
   explosionHint.style.stroke = { color: 0x51210d, width: 2.5, join: 'round' };
   itemsPage.addChild(explosionHint);
   content.addChild(itemsPage);
@@ -340,18 +351,14 @@ export function buildGuidePopup(): Container {
   content.addChild(rulesPage);
 
   const ok = makeWoodBtn('ĐÃ HIỂU', 178, 56, null, closeGuidePopup);
-  ok.y = halfH - 50;
+  ok.y = halfH - 30;
   content.addChild(ok);
 
   setPage(currentPage);
   return modal.box;
 }
 
-export function layoutGuidePopup(
-  designH: number,
-  insetTop = 0,
-  insetBottom = 0,
-): void {
+export function layoutGuidePopup(designH: number, insetTop = 0, insetBottom = 0): void {
   modal.layout(designH);
   const availableH = designH - insetTop - insetBottom - 24;
   const availableW = DESIGN_W * 0.96;

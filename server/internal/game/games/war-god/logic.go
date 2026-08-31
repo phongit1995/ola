@@ -33,23 +33,26 @@ type LightningArc struct {
 }
 
 type Step struct {
-	Kind          string         `json:"kind"`
-	A             *int           `json:"a,omitempty"`
-	B             *int           `json:"b,omitempty"`
-	Cells         []int          `json:"cells,omitempty"`
-	Exploded      []int          `json:"exploded,omitempty"`
-	LightningArcs []LightningArc `json:"lightningArcs,omitempty"`
-	Counts        map[string]int `json:"counts,omitempty"`
-	MaxRun        int            `json:"maxRun,omitempty"`
-	BonusTurns    int            `json:"bonusTurns,omitempty"`
-	CascadeLevel  int            `json:"cascadeLevel,omitempty"`
-	Effects       *Effects       `json:"effects,omitempty"`
-	Falls         []Fall         `json:"falls,omitzero"`
-	Spawns        []Spawn        `json:"spawns,omitzero"`
-	Board         []int          `json:"board,omitempty"`
-	Damage        int            `json:"damage,omitempty"`
-	ArmorDamage   int            `json:"armorDamage,omitempty"`
-	Skill         string         `json:"skill,omitempty"`
+	Kind                 string           `json:"kind"`
+	A                    *int             `json:"a,omitempty"`
+	B                    *int             `json:"b,omitempty"`
+	Cells                []int            `json:"cells,omitempty"`
+	Exploded             []int            `json:"exploded,omitempty"`
+	LightningArcs        []LightningArc   `json:"lightningArcs,omitempty"`
+	DartActivations      []DartActivation `json:"dartActivations,omitempty"`
+	FireSwordActivations []int            `json:"fireSwordActivations,omitempty"`
+	DartCreations        []DartCreation   `json:"dartCreations,omitempty"`
+	Counts               map[string]int   `json:"counts,omitempty"`
+	MaxRun               int              `json:"maxRun,omitempty"`
+	BonusTurns           int              `json:"bonusTurns,omitempty"`
+	CascadeLevel         int              `json:"cascadeLevel,omitempty"`
+	Effects              *Effects         `json:"effects,omitempty"`
+	Falls                []Fall           `json:"falls,omitzero"`
+	Spawns               []Spawn          `json:"spawns,omitzero"`
+	Board                []int            `json:"board,omitempty"`
+	Damage               int              `json:"damage,omitempty"`
+	ArmorDamage          int              `json:"armorDamage,omitempty"`
+	Skill                string           `json:"skill,omitempty"`
 }
 
 type Move struct {
@@ -65,7 +68,10 @@ func init() {
 	logic.Register(Logic{})
 }
 
-func (Logic) ID() string        { return "war-god" }
+func (Logic) ID() string { return "war-god" }
+
+// The Phi Tiêu fields are additive and the first eight tile codes remain
+// unchanged, so version-2 active snapshots can continue under the new rules.
 func (Logic) StateVersion() int { return 2 }
 
 func (Logic) Result(state any) (bool, int) {
