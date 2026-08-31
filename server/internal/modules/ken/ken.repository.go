@@ -47,6 +47,7 @@ var visibleKenTxTypes = []models.KenTxType{
 	models.KenTxTypeVipPackage,
 	models.KenTxTypeVipIcon,
 	models.KenTxTypeClanCreate,
+	models.KenTxTypeTopup,
 }
 
 func (r *Repository) ListTransactions(userID uuid.UUID, direction string, limit, offset int) ([]models.KenTransaction, int64, error) {

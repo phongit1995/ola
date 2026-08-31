@@ -130,7 +130,7 @@ func parseBody(raw []byte) map[string]interface{} {
 func redact(m map[string]interface{}) {
 	for key, val := range m {
 		lower := strings.ToLower(key)
-		if strings.Contains(lower, "password") || strings.Contains(lower, "token") || strings.Contains(lower, "secret") {
+		if strings.Contains(lower, "password") || strings.Contains(lower, "token") || strings.Contains(lower, "secret") || strings.Contains(lower, "webhook") {
 			m[key] = "***"
 			continue
 		}

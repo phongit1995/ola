@@ -16,4 +16,5 @@ export * from './useDraggable';
 export * from './useDevicePlatform';
 export * from './useUploadPreviewLease';
 export * from './useChatWallpaperStyle';
+export * from './useUnreadTitle';
 export * from './useLobbyWallpaperStyle';

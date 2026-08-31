@@ -58,8 +58,8 @@ type ParityFacing struct {
 }
 
 type ParityTerminal struct {
-	Board []int `json:"board"`
-	Side  int   `json:"side"`
+	Board []int  `json:"board"`
+	Side  int    `json:"side"`
 	Want  string `json:"want"`
 }
 
@@ -138,6 +138,8 @@ func ExportParityFixture() ParityFixture {
 		{fixtureBoard(map[int]string{0: "....K....", 2: ".....h..."}), SideRed},
 		{fixtureBoard(map[int]string{0: "....K....", 1: ".....P...", 2: ".....h..."}), SideRed},
 		{fixtureBoard(map[int]string{0: "....K....", 1: "....p...."}), SideRed},
+		{fixtureBoard(map[int]string{0: "....K....", 9: "....k...."}), SideRed},
+		{fixtureBoard(map[int]string{0: "....K....", 9: "....k...."}), SideBlack},
 		{fixtureBoard(nil), SideRed},
 	}
 	checkFixtures := make([]ParityInCheck, 0, len(checkCases))

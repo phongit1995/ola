@@ -15,6 +15,28 @@ describe('local Xiangqi game', () => {
     expect(result.state.result).toBeNull();
   });
 
+  it('recognizes a discovered cannon check reached from the starting board', () => {
+    const moves = [
+      [boardIdx(1, 2), boardIdx(4, 2)],
+      [boardIdx(0, 6), boardIdx(0, 5)],
+      [boardIdx(4, 3), boardIdx(4, 4)],
+      [boardIdx(2, 6), boardIdx(2, 5)],
+      [boardIdx(4, 4), boardIdx(4, 5)],
+      [boardIdx(6, 6), boardIdx(6, 5)],
+      [boardIdx(4, 5), boardIdx(4, 6)],
+    ] as const;
+    let state = createLocalGame();
+    let checked = false;
+    for (const [from, to] of moves) {
+      const applied = applyLocalMove(state, state.moveCount % 2, from, to);
+      state = applied.state;
+      checked = applied.checked;
+    }
+    expect(checked).toBe(true);
+    expect(state.check).toBe(true);
+    expect(state.result).toBeNull();
+  });
+
   it('rejects an out-of-turn or illegal move', () => {
     const state = createLocalGame();
     expect(() => applyLocalMove(state, SIDE_BLACK, boardIdx(0, 9), boardIdx(0, 8))).toThrow('Chưa đến lượt');
@@ -37,6 +59,24 @@ describe('local Xiangqi game', () => {
     const state = createLocalGame(board, SIDE_BLACK);
     const result = applyLocalMove(state, SIDE_BLACK, boardIdx(1, 1), boardIdx(4, 1));
     expect(result.state.result).toEqual({ winner: SIDE_BLACK, reason: 'checkmate' });
+  });
+
+  it('terminates defensively if a legacy edge state captures a general', () => {
+    const board = parseBoardRows([
+      '...K.....',
+      '.........',
+      '.........',
+      '.........',
+      '.........',
+      '.........',
+      '.........',
+      '.........',
+      '....R....',
+      '....k....',
+    ]);
+    const state = createLocalGame(board, SIDE_RED);
+    const result = applyLocalMove(state, SIDE_RED, boardIdx(4, 8), boardIdx(4, 9));
+    expect(result.state.result).toEqual({ winner: SIDE_RED, reason: 'checkmate' });
   });
 
   it('draws on the third repeated position', () => {

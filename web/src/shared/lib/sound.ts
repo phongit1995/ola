@@ -1,7 +1,7 @@
 import kenChestUrl from '@/assets/sounds/ken-chest.mp3';
 import kenCreditUrl from '@/assets/sounds/ken-credit.mp3';
 import kenShotFailUrl from '@/assets/sounds/ken-shot-fail.mp3';
-import messageUrl from '@/assets/sounds/message.mp3';
+import messageUrl from '@/assets/sounds/message-notification.mp3';
 import roomTagUrl from '@/assets/sounds/room-tag.mp3';
 import type { UserSettings } from '@app-types';
 import { useSettingsStore } from '@/store/settingsStore';

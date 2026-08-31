@@ -2,6 +2,7 @@ import { App, Button, Card, Col, Collapse, Form, Input, InputNumber, Row, Select
 import { SaveOutlined } from '@ant-design/icons'
 import { Typography } from 'antd'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
+import { env } from '@/config/env'
 import { ApiError } from '@/lib/apiError'
 import { VIETQR_BANKS, findBankByBin } from '@/lib/banks'
 import type { AppSetting, TopupBankSetting, TopupSetting } from '@/types'
@@ -12,6 +13,8 @@ const DEFAULT_BANK: TopupBankSetting = {
   accountNumber: '',
   accountName: '',
   memoTemplate: '@{username}',
+  sieuthicodeSecret: '',
+  discordWebhookUrl: '',
 }
 
 const DEFAULT_TOPUP: TopupSetting = {
@@ -30,6 +33,8 @@ interface TopupSettingsFormValues {
   accountNumber: string
   accountName?: string
   memoTemplate?: string
+  sieuthicodeSecret?: string
+  discordWebhookUrl?: string
   minAmount: number
   stepAmount: number
   kenPerVnd: number
@@ -78,6 +83,8 @@ export function TopupSettingsPage() {
       accountNumber: values.accountNumber.trim(),
       accountName: (values.accountName ?? '').trim().toUpperCase(),
       memoTemplate: (values.memoTemplate ?? '').trim() || DEFAULT_BANK.memoTemplate,
+      sieuthicodeSecret: (values.sieuthicodeSecret ?? '').trim(),
+      discordWebhookUrl: (values.discordWebhookUrl ?? '').trim(),
     }
     const topupPayload: TopupSetting = {
       enabled: values.enabled,
@@ -107,6 +114,8 @@ export function TopupSettingsPage() {
           accountNumber: bank.accountNumber,
           accountName: bank.accountName,
           memoTemplate: bank.memoTemplate,
+          sieuthicodeSecret: bank.sieuthicodeSecret,
+          discordWebhookUrl: bank.discordWebhookUrl,
           minAmount: topup.minAmount,
           stepAmount: topup.stepAmount,
           kenPerVnd: topup.kenPerVnd,
@@ -166,11 +175,45 @@ export function TopupSettingsPage() {
           label="Nội dung chuyển khoản"
           extra={
             <Typography.Text type="secondary">
-              {'{username}'} sẽ được thay bằng username của người nạp, ví dụ @minhanh
+              {'{username}'} sẽ được thay bằng username của người nạp, ví dụ @minhanh. Nên đặt dấu
+              @ ngay trước {'{username}'} (vd DONATE @{'{username}'}): nếu người nạp gõ thừa chữ,
+              hệ thống sẽ báo cần duyệt tay thay vì cộng nhầm cho user khác.
             </Typography.Text>
           }
         >
           <Input placeholder="@{username}" maxLength={50} />
+        </Form.Item>
+
+        <Form.Item
+          name="sieuthicodeSecret"
+          label="SieuThiCode webhook secret (tự động cộng KEN)"
+          extra={
+            <Typography.Text type="secondary">
+              Dán secret (Api Key) của SieuThiCode vào đây. Bên SieuThiCode cấu hình webhook gọi{' '}
+              <Typography.Text code copyable>
+                {`${env.apiUrl}/topup/webhook/sieuthicode`}
+              </Typography.Text>{' '}
+              kèm header <Typography.Text code>signature</Typography.Text>. Để trống thì webhook bị
+              khoá.
+            </Typography.Text>
+          }
+        >
+          <Input.Password placeholder="Secret bí mật" maxLength={120} autoComplete="new-password" />
+        </Form.Item>
+
+        <Form.Item
+          name="discordWebhookUrl"
+          label="Discord webhook thông báo nạp KEN"
+          rules={[{ type: 'url', message: 'URL không hợp lệ' }]}
+          extra={
+            <Typography.Text type="secondary">
+              Bắn thông báo vào kênh Discord khi có giao dịch nạp: ai nạp, số tiền, KEN trước → sau,
+              và cả các giao dịch không khớp user / dưới mức tối thiểu cần xử lý tay. Để trống thì
+              tắt thông báo.
+            </Typography.Text>
+          }
+        >
+          <Input placeholder="https://discord.com/api/webhooks/..." maxLength={300} />
         </Form.Item>
 
         <Collapse

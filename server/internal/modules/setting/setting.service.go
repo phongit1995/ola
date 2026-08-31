@@ -23,11 +23,13 @@ const (
 )
 
 type TopupBankConfig struct {
-	BankName      string `json:"bankName"`
-	BankBin       string `json:"bankBin"`
-	AccountNumber string `json:"accountNumber"`
-	AccountName   string `json:"accountName"`
-	MemoTemplate  string `json:"memoTemplate"`
+	BankName          string `json:"bankName"`
+	BankBin           string `json:"bankBin"`
+	AccountNumber     string `json:"accountNumber"`
+	AccountName       string `json:"accountName"`
+	MemoTemplate      string `json:"memoTemplate"`
+	SieuthicodeSecret string `json:"sieuthicodeSecret"`
+	DiscordWebhookURL string `json:"discordWebhookUrl"`
 }
 
 type TopupConfig struct {

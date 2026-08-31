@@ -166,6 +166,7 @@ func TestInCheckDetection(t *testing.T) {
 		{"horse leg blocked no check", map[int]string{0: "....K....", 1: ".....P...", 2: ".....h..."}, false},
 		{"soldier forward check", map[int]string{0: "....K....", 1: "....p...."}, true},
 		{"soldier sideways after river", map[int]string{0: "...pK...."}, true},
+		{"flying general check", map[int]string{0: "....K....", 9: "....k...."}, true},
 		{"quiet board", nil, false},
 	}
 	for _, tc := range cases {
@@ -179,8 +180,12 @@ func TestInCheckDetection(t *testing.T) {
 }
 
 func TestGeneralsFacing(t *testing.T) {
-	if !generalsFacing(fixtureBoard(map[int]string{0: "....K....", 9: "....k...."})) {
+	open := fixtureBoard(map[int]string{0: "....K....", 9: "....k...."})
+	if !generalsFacing(open) {
 		t.Fatal("open file must face")
+	}
+	if !inCheck(open, SideRed) || !inCheck(open, SideBlack) {
+		t.Fatal("facing generals must attack both sides")
 	}
 	if generalsFacing(fixtureBoard(map[int]string{0: "....K....", 5: "....P....", 9: "....k...."})) {
 		t.Fatal("blocked file must not face")

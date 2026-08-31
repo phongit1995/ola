@@ -25,6 +25,7 @@ import (
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/setting"
+	"ola-chat-server/internal/modules/topup"
 	"ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/modules/vip"
@@ -71,6 +72,7 @@ func CreateServer(
 	miniGameRouter *minigame.Router,
 	announcementRouter *announcement.Router,
 	chatBotRouter *chatbot.Router,
+	topupRouter *topup.Router,
 	notificationRouter *notification.Router,
 	wsServer *websocket.Server,
 	apiGuard *middleware.ApiGuardMiddleware,
@@ -133,6 +135,7 @@ func CreateServer(
 		announcementRouter.Setup(api)
 		chatBotRouter.Setup(api)
 		notificationRouter.Setup(api)
+		topupRouter.Setup(api)
 	}
 
 	r.NoRoute(func(c *gin.Context) {

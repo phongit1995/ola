@@ -24,7 +24,7 @@ Server (`server/internal/game/games/xiangqi/`) là nguồn chân lý. Client mir
 | Pháo (炮/砲) | đi như Xe khi không ăn | **ăn phải nhảy qua đúng 1 quân** (ngòi, màu nào cũng được); không ăn kề không ngòi, không nhảy 2 ngòi, không đáp lên ngòi |
 | Tốt (兵/卒) | 1 bước tiến | chưa qua sông: chỉ tiến; qua sông: tiến hoặc ngang; **không bao giờ lùi**; đến hàng cuối chỉ còn đi ngang |
 
-**Tính hợp lệ đầy đủ**: một nước hợp lệ khi (1) đúng kiểu đi của quân, (2) không ăn quân mình, (3) sau nước đi Tướng mình **không bị chiếu**, (4) sau nước đi **không lộ mặt tướng** (kể cả khi quân di chuyển chính là ngòi đang che giữa 2 Tướng). Client dùng `legalMovesFrom` (đã lọc 3–4) để hiện gợi ý; server validate lại y hệt.
+**Tính hợp lệ đầy đủ**: một nước hợp lệ khi (1) đúng kiểu đi của quân, (2) không ăn quân mình, (3) sau nước đi Tướng mình **không bị chiếu**, (4) sau nước đi **không lộ mặt tướng** (kể cả khi quân di chuyển chính là ngòi đang che giữa 2 Tướng). Thế lộ mặt được tính là cả hai Tướng đang tấn công nhau theo luật “Tướng bay”; vì vậy `inCheck` và bộ lọc nước hợp lệ dùng cùng một định nghĩa. Client dùng `legalMovesFrom` (đã lọc 3–4) để hiện gợi ý; server validate lại y hệt.
 
 ## 3. Kết thúc ván
 

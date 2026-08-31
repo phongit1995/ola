@@ -461,11 +461,29 @@ export function BoardScreen() {
   } else if (state.turnAnnounce) {
     statusText = state.turnAnnounce;
   }
+  const checkedSide = useMemo(() => {
+    if (!playing || state.result) return -1;
+    if (inCheck(state.board, mySide)) return mySide;
+    if (inCheck(state.board, 1 - mySide)) return 1 - mySide;
+    return -1;
+  }, [playing, state.result, state.board, mySide]);
+  if (
+    checkedSide >= 0 &&
+    !state.oppAway &&
+    !state.turnExpired &&
+    !state.movePending &&
+    !state.botThinking
+  ) {
+    statusTone = 'danger';
+    statusText = checkedSide === mySide ? 'Tướng của bạn đang bị chiếu' : 'Đối thủ đang bị chiếu';
+    statusIcon = 'warning';
+  }
   const generalInCheckIdx = useMemo(() => {
-    if (!playing || !checkVisible) return -1;
-    const checkedSide = inCheck(state.board, mySide) ? mySide : inCheck(state.board, 1 - mySide) ? 1 - mySide : -1;
-    return checkedSide < 0 ? -1 : state.board.indexOf(pieceFor(checkedSide, KIND_GENERAL));
-  }, [playing, checkVisible, state.board, mySide]);
+    // The banner is a short animation, but the general must stay marked for
+    // the whole checked position so the player cannot miss the constraint.
+    if (checkedSide < 0) return -1;
+    return state.board.indexOf(pieceFor(checkedSide, KIND_GENERAL));
+  }, [checkedSide, state.board]);
 
   return (
     <div className="xq-screen xq-board-screen">

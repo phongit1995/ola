@@ -152,6 +152,130 @@ func TestCheckStepEmitted(t *testing.T) {
 	}
 }
 
+func TestDiscoveredCannonCheckFromOpening(t *testing.T) {
+	game := Logic{}
+	state := any(newGame())
+	moves := [][2]int{
+		{sq(1, 2), sq(4, 2)}, // centralize the red cannon
+		{sq(0, 6), sq(0, 5)},
+		{sq(4, 3), sq(4, 4)},
+		{sq(2, 6), sq(2, 5)},
+		{sq(4, 4), sq(4, 5)},
+		{sq(6, 6), sq(6, 5)},
+		{sq(4, 5), sq(4, 6)}, // capture leaves exactly one cannon screen
+	}
+	for ply, move := range moves {
+		next, err := game.Apply(state, ply%2, mv(move[0], move[1]))
+		if err != nil {
+			t.Fatalf("ply %d: %v", ply, err)
+		}
+		state = next
+	}
+	s := state.(*State)
+	if !s.Check || !inCheck(s.Board, SideBlack) {
+		t.Fatal("opening sequence must leave black in cannon check")
+	}
+	if over, _ := game.Result(s); over {
+		t.Fatal("the discovered check is escapable and must not end the game")
+	}
+	found := false
+	for _, step := range s.Steps {
+		found = found || step.Kind == StepCheck
+	}
+	if !found {
+		t.Fatalf("opening check did not emit a check step: %+v", s.Steps)
+	}
+}
+
+func TestCheckingMovesForBothSides(t *testing.T) {
+	cases := []struct {
+		name      string
+		overrides map[int]string
+		moveCount int
+		from      int
+		to        int
+		checked   int
+	}{
+		{
+			name:      "red chariot checks black",
+			overrides: map[int]string{0: "...K.....", 4: "...R.....", 9: "....k...."},
+			moveCount: 0,
+			from:      sq(3, 4),
+			to:        sq(4, 4),
+			checked:   SideBlack,
+		},
+		{
+			name:      "black chariot checks red",
+			overrides: map[int]string{0: "....K....", 5: "...r.....", 9: "...k....."},
+			moveCount: 1,
+			from:      sq(3, 5),
+			to:        sq(4, 5),
+			checked:   SideRed,
+		},
+		{
+			name:      "red cannon checks over one screen",
+			overrides: map[int]string{0: "...K.....", 4: "...C.....", 7: "....p....", 9: "....k...."},
+			moveCount: 0,
+			from:      sq(3, 4),
+			to:        sq(4, 4),
+			checked:   SideBlack,
+		},
+		{
+			name:      "red horse checks black",
+			overrides: map[int]string{0: "...K.....", 6: "...H.....", 9: "....k...."},
+			moveCount: 0,
+			from:      sq(3, 6),
+			to:        sq(5, 7),
+			checked:   SideBlack,
+		},
+		{
+			name:      "red soldier checks black",
+			overrides: map[int]string{0: "...K.....", 7: "....P....", 9: "....k...."},
+			moveCount: 0,
+			from:      sq(4, 7),
+			to:        sq(4, 8),
+			checked:   SideBlack,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			next, err := (Logic{}).Apply(testState(tc.overrides, tc.moveCount), tc.moveCount%2, mv(tc.from, tc.to))
+			if err != nil {
+				t.Fatal(err)
+			}
+			ns := next.(*State)
+			if !ns.Check || !inCheck(ns.Board, tc.checked) {
+				t.Fatal("checking move did not leave the opponent in check")
+			}
+			found := false
+			for _, step := range ns.Steps {
+				found = found || step.Kind == StepCheck
+			}
+			if !found {
+				t.Fatalf("checking move did not emit check step: %+v", ns.Steps)
+			}
+		})
+	}
+}
+
+func TestGeneralCaptureTerminatesDefensively(t *testing.T) {
+	s := testState(map[int]string{0: "...K.....", 8: "....R....", 9: "....k...."}, SideRed)
+	next, err := (Logic{}).Apply(s, SideRed, mv(sq(4, 8), sq(4, 9)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ns := next.(*State)
+	over, winner := (Logic{}).Result(ns)
+	if !over || winner != SideRed {
+		t.Fatalf("general capture must end the game, got over=%v winner=%d", over, winner)
+	}
+	last := ns.Steps[len(ns.Steps)-1]
+	if last.Kind != StepMate || last.Reason != ReasonCheckmate {
+		t.Fatalf("general capture must end as checkmate, got %+v", last)
+	}
+}
+
 func TestCheckmateWins(t *testing.T) {
 	s := testState(map[int]string{0: "....K....", 1: ".r.......", 2: "..h......"}, 1)
 	next, err := Logic{}.Apply(s, 1, mv(sq(1, 1), sq(4, 1)))

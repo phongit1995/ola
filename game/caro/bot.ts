@@ -11,20 +11,11 @@ import {
   type ReactionData,
   type StateData,
 } from '../src/sdk';
-import {
-  SIZE,
-  checkWin,
-  emptyState,
-  scorePlacement,
-  type BotLevel,
-  type CaroMove,
-  type CaroState,
-} from './types';
+import { SIZE, checkWin, emptyState, type BotLevel, type CaroMove, type CaroState } from './types';
+import { BOT_MARK, PLAYER_MARK, pickBotMove } from './botBrain';
 import { botFinishLine, botGreeting, botMoveLine, botReply } from './helpers/botChat';
 
 const TURN_MS = (Number(import.meta.env.VITE_GAME_TURN_SECONDS) || 45) * 1000;
-const PLAYER_MARK = 1;
-const BOT_MARK = 2;
 const TURN_ANNOUNCE_MS = 1080;
 const MAX_CHAT_LENGTH = 120;
 const REACTION_COOLDOWN_MS = 800;
@@ -33,6 +24,7 @@ export const BOT_LEVELS: Record<BotLevel, { name: string; thinkMs: number }> = {
   easy: { name: 'Máy · Dễ', thinkMs: 350 },
   normal: { name: 'Máy · Thường', thinkMs: 500 },
   hard: { name: 'Máy · Khó', thinkMs: 650 },
+  expert: { name: 'Máy · Siêu khó', thinkMs: 820 },
 };
 
 type Handler = (data: never) => void;
@@ -330,89 +322,4 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       playing = false;
     },
   };
-}
-
-interface ScoredMove extends CaroMove {
-  attack: number;
-  defend: number;
-}
-
-const WIN_SCORE = 1_000_000;
-const OPEN_FOUR_SCORE = 120_000;
-
-function pickBotMove(board: number[], level: BotLevel): CaroMove | null {
-  const candidates = candidateCells(board);
-  if (candidates.length === 0) return null;
-
-  const scored: ScoredMove[] = candidates.map((index) => {
-    const x = index % SIZE;
-    const y = Math.floor(index / SIZE);
-    return {
-      x,
-      y,
-      attack: scorePlacement(board, x, y, BOT_MARK),
-      defend: scorePlacement(board, x, y, PLAYER_MARK),
-    };
-  });
-
-  if (level === 'hard') {
-    const winNow = scored.find((s) => s.attack >= WIN_SCORE);
-    if (winNow) return winNow;
-    const blockWin = scored.find((s) => s.defend >= WIN_SCORE);
-    if (blockWin) return blockWin;
-    const makeOpenFour = bestBy(scored, (s) => (s.attack >= OPEN_FOUR_SCORE ? s.attack : -1));
-    if (makeOpenFour) return makeOpenFour;
-    const blockOpenFour = bestBy(scored, (s) => (s.defend >= OPEN_FOUR_SCORE ? s.defend : -1));
-    if (blockOpenFour) return blockOpenFour;
-    return bestBy(scored, (s) => s.attack + s.defend * 1.05 + Math.random());
-  }
-
-  if (level === 'normal') {
-    const winNow = scored.find((s) => s.attack >= WIN_SCORE);
-    if (winNow) return winNow;
-    const blockWin = scored.find((s) => s.defend >= WIN_SCORE);
-    if (blockWin) return blockWin;
-    return bestBy(scored, (s) => s.attack + s.defend * 0.85 + Math.random() * 1500);
-  }
-
-  const blockObvious = scored.find((s) => s.defend >= WIN_SCORE);
-  if (blockObvious && Math.random() < 0.5) return blockObvious;
-  return bestBy(scored, (s) => s.attack * 0.4 + s.defend * 0.25 + Math.random() * 8000);
-}
-
-function bestBy(moves: ScoredMove[], score: (move: ScoredMove) => number): ScoredMove | null {
-  let best: ScoredMove | null = null;
-  let bestScore = 0;
-  for (const move of moves) {
-    const value = score(move);
-    if (best === null || value > bestScore) {
-      if (value < 0) continue;
-      best = move;
-      bestScore = value;
-    }
-  }
-  return best;
-}
-
-function candidateCells(board: number[]): number[] {
-  const near = new Set<number>();
-  for (let y = 0; y < SIZE; y++) {
-    for (let x = 0; x < SIZE; x++) {
-      if (board[y * SIZE + x] === 0) continue;
-      for (let dy = -2; dy <= 2; dy++) {
-        for (let dx = -2; dx <= 2; dx++) {
-          const nx = x + dx;
-          const ny = y + dy;
-          if (nx < 0 || nx >= SIZE || ny < 0 || ny >= SIZE) continue;
-          const idx = ny * SIZE + nx;
-          if (board[idx] === 0) near.add(idx);
-        }
-      }
-    }
-  }
-  if (near.size === 0) {
-    const center = Math.floor(SIZE / 2);
-    return [center * SIZE + center];
-  }
-  return [...near];
 }

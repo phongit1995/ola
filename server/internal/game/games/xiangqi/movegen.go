@@ -187,7 +187,11 @@ func inCheck(board []int, side int) bool {
 	if g < 0 {
 		return false
 	}
-	return generalAttacked(board, g, 1-side)
+	// An open file between the generals is an attack in Xiangqi (the
+	// "flying general" rule), not just a separate board-shape violation.
+	// Keeping it in inCheck makes check status, mate adjudication, bots, and
+	// clients agree on the meaning of an attacked general.
+	return generalAttacked(board, g, 1-side) || generalsFacing(board)
 }
 
 func generalsFacing(board []int) bool {
@@ -212,7 +216,7 @@ func moveLeavesIllegal(board []int, from, to, side int) bool {
 	captured := board[to]
 	board[to] = board[from]
 	board[from] = Empty
-	bad := inCheck(board, side) || generalsFacing(board)
+	bad := inCheck(board, side)
 	board[from] = board[to]
 	board[to] = captured
 	return bad

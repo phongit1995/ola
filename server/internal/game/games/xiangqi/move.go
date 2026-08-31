@@ -82,6 +82,14 @@ func applyMove(s *State, playerIdx, from, to int) {
 	if oppInCheck {
 		s.Steps = append(s.Steps, Step{Kind: StepCheck, From: -1, To: -1})
 	}
+	// Legal play normally ends at checkmate before a general can be captured.
+	// Still terminate defensively if a restored/legacy edge position reaches
+	// an explicit capture instead of letting a side without a general move on.
+	if captured == pieceFor(opp, KindGeneral) {
+		s.Winner = playerIdx
+		s.Steps = append(s.Steps, Step{Kind: StepMate, From: -1, To: -1, Reason: ReasonCheckmate})
+		return
+	}
 	if !hasLegalMove(s.Board, opp) {
 		s.Winner = playerIdx
 		reason := ReasonStalemate

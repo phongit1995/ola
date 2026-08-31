@@ -1,5 +1,5 @@
 import { HALFMOVE_DRAW_PLIES, REPETITION_LIMIT, START_BOARD } from './constants.gen';
-import { EMPTY, SIDE_RED, pieceSide, positionKey } from './board';
+import { EMPTY, KIND_GENERAL, SIDE_RED, pieceFor, pieceSide, positionKey } from './board';
 import { inCheck, legalMovesFrom, terminalKind } from './moves';
 
 export type LocalResultReason = 'checkmate' | 'stalemate' | 'perpetual' | 'repetition' | 'halfmove';
@@ -98,15 +98,22 @@ export function applyLocalMove(state: LocalGameState, side: number, from: number
   historyChecks.push(checked);
 
   let result: LocalGameResult | null = null;
-  const terminal = terminalKind(board, nextSide);
-  if (terminal !== 'none') {
-    result = { winner: side, reason: terminal };
-  } else if (countKey(history, key) >= REPETITION_LIMIT) {
+  if (captured === pieceFor(nextSide, KIND_GENERAL)) {
+    // Legal play should stop at mate first, but legacy/restored edge states
+    // must not continue after an explicit general capture.
+    result = { winner: side, reason: 'checkmate' };
+  } else {
+    const terminal = terminalKind(board, nextSide);
+    if (terminal !== 'none') {
+      result = { winner: side, reason: terminal };
+    }
+  }
+  if (!result && countKey(history, key) >= REPETITION_LIMIT) {
     const perpetualSide = perpetualChecker(history, historyChecks, key, moveCount);
     result = perpetualSide == null
       ? { winner: null, reason: 'repetition' }
       : { winner: 1 - perpetualSide, reason: 'perpetual' };
-  } else if (halfmoveClock >= HALFMOVE_DRAW_PLIES) {
+  } else if (!result && halfmoveClock >= HALFMOVE_DRAW_PLIES) {
     result = { winner: null, reason: 'halfmove' };
   }
 

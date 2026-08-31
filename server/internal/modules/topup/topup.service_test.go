@@ -1,0 +1,47 @@
+package topup
+
+import "testing"
+
+func TestBuildMemoRegexCapture(t *testing.T) {
+	cases := []struct {
+		name        string
+		template    string
+		description string
+		want        string
+	}{
+		{"default template", "@{username}", "NGUYEN VAN B CHUYEN TIEN @test1 - Ma GD ACSP", "test1"},
+		{"donate template", "DONATE {username}", "Giao dich thu nghiem DONATE admin", "admin"},
+		{"glued marker rejected", "DONATE {username}", "CT DONATEadmin", ""},
+		{"marker prefix of another word", "DONATE {username}", "DONATED 500k cho shop", ""},
+		{"anchored template refuses extra word", "DONATE @{username}", "DONATE cho @test1", ""},
+		{"anchored template normal", "DONATE @{username}", "Giao dich DONATE @test1 CT", "test1"},
+		{"donate uppercase input", "DONATE {username}", "ck donate Test_User1 noi dung", "Test_User1"},
+		{"vietnamese diacritics", "NAP {username}", "Nạp nguyen.van.a", "nguyen.van.a"},
+		{"extra word breaks capture", "NAP {username}", "Nap cho nguyen.van.a", "cho"},
+		{"trailing bank noise", "DONATE {username}", "DONATE test1 CT tu 970422", "test1"},
+		{"hyphen marker", "NAP-{username}", "NAP-test1", "test1"},
+		{"hyphen marker with bank noise", "NAP-{username}", "CK NAP-test1 CT tu 970422", "test1"},
+		{"hyphen marker extra word refused", "NAP-{username}", "NAP cho test1", ""},
+		{"hyphen marker glued suffix", "NAP-{username}", "NAP-test1-FT25123456", "test1-FT25123456"},
+		{"hyphen marker lowercase", "NAP-{username}", "nap-Test_User1 chuyen tien", "Test_User1"},
+		{"no match", "DONATE {username}", "chuyen khoan khong ro noi dung", ""},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			re, ok := buildMemoRegex(tc.template)
+			if !ok {
+				t.Fatalf("buildMemoRegex(%q) not ok", tc.template)
+			}
+			match := re.FindStringSubmatch(normalizeMemoText(tc.description))
+			got := ""
+			if len(match) >= 2 {
+				got = match[1]
+			}
+			if got != tc.want {
+				t.Errorf("template %q description %q: got capture %q, want %q (pattern %s)",
+					tc.template, tc.description, got, tc.want, re.String())
+			}
+		})
+	}
+}

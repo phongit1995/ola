@@ -7,6 +7,7 @@ import {
   useReconnectOnVisible,
   useSettingsSync,
   useAnnouncementSync,
+  useUnreadTitle,
 } from '@hooks';
 import { AppRouter } from '@/routes';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
@@ -100,6 +101,7 @@ function App() {
   useKenRealtime();
   useMeNotificationRealtime();
   useAppNotificationRealtime();
+  useUnreadTitle();
   const fontSize = useSettingsStore((state) => state.settings.fontSize);
   const theme = useThemeStore((state) => state.theme);
 

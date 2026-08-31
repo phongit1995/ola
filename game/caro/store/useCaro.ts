@@ -40,7 +40,7 @@ import {
   type CaroState,
 } from '../types';
 
-const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3 };
+const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3, expert: 4 };
 const CHAT_HISTORY_LIMIT = 100;
 const WIN_RESULT_REVEAL_MS = 1700;
 const LEADERBOARD_REQUEST_TIMEOUT_MS = 8000;

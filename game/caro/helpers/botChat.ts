@@ -36,6 +36,16 @@ const GREETINGS: Record<BotLevel, readonly string[]> = {
     'Đừng chỉ nhìn một hướng trên bàn cờ nhé.',
     'Thử phá thế trận của mình xem nào!',
   ],
+  expert: [
+    'Chào bạn. Ở mức này mình không nhường nước nào đâu.',
+    'Mình luôn tính trước hai nước. Bạn thì sao?',
+    'Rất ít người thắng được mình. Bạn muốn thử chứ?',
+    'Mỗi ô bạn đặt xuống đều nằm trong tính toán của mình.',
+    'Sẵn sàng chưa? Mình sẽ chơi hết sức đấy.',
+    'Đây là thử thách khó nhất của bàn cờ này.',
+    'Mình sẽ không mắc sai lầm nào. Chúc bạn may mắn!',
+    'Một ván đấu xứng tầm nào!',
+  ],
 };
 
 const MOVE_LINES: Record<BotLevel, readonly string[]> = {
@@ -72,6 +82,18 @@ const MOVE_LINES: Record<BotLevel, readonly string[]> = {
     'Chặn sai hướng là nguy hiểm lắm đó.',
     'Bạn còn một cơ hội để xoay thế cờ.',
     'Tới lượt bạn tìm nước tối ưu.',
+  ],
+  expert: [
+    'Nước này mình đã tính từ ba lượt trước.',
+    'Bạn thấy được bao nhiêu mối đe dọa trên bàn?',
+    'Mọi hướng chặn đều đã nằm trong dự tính.',
+    'Chặn được hướng này, mình vẫn còn hướng khác.',
+    'Thế trận đang khép lại từng chút một.',
+    'Nước đi tốt nhất của bạn lúc này là gì nhỉ?',
+    'Mình không để lại sơ hở nào đâu.',
+    'Cẩn thận, sai một ô là hết ván đấy.',
+    'Bàn cờ này đang đi đúng kịch bản của mình.',
+    'Đến lượt bạn. Hãy suy nghĩ thật kỹ.',
   ],
 };
 
@@ -131,6 +153,11 @@ const DIFFICULTY_REPLIES: Record<BotLevel, readonly string[]> = {
     'Ở mức này mình sẽ không bỏ qua sơ hở đâu.',
     'Hãy tính trước ít nhất hai nước nhé.',
   ],
+  expert: [
+    'Đây là mức cao nhất mà, khó là đúng rồi 😄',
+    'Thắng được mình ở mức này mới thật sự là cao thủ.',
+    'Bình tĩnh phân tích từng mối đe dọa, đó là cách duy nhất.',
+  ],
 };
 
 const WINNING_REPLIES = [
@@ -165,6 +192,7 @@ const BOT_IDENTITY_REPLIES: Record<BotLevel, readonly string[]> = {
   easy: ['Mình là máy tập sự thôi 😄', 'Đúng rồi, nhưng mình cũng thích chơi đẹp nhé!'],
   normal: ['Mình là máy, còn nhiệm vụ là cho bạn một ván thật hay.', 'Là bot nhưng mình vẫn biết bất ngờ đấy!'],
   hard: ['Đúng, và mình đang phân tích từng nước của bạn.', 'Máy cũng có chiến thuật riêng nhé.'],
+  expert: ['Đúng, và là phiên bản mạnh nhất ở đây.', 'Là máy, nhưng mình chưa từng chơi dễ dãi.'],
 };
 
 const CALM_REPLIES = [

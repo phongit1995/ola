@@ -4,12 +4,7 @@ import { A, tex } from '../../assets';
 import { playSound } from '../../audio';
 import { addTick, HEADING, makeText, popIn, pressable, removeTick, tween } from '../../kit';
 import { DESIGN_W } from '../../layout';
-import {
-  formatBotStarRating,
-  starFillAt,
-  type BotStarRating,
-  type StarFill,
-} from '../../logic/bot-rating';
+import { starFillAt, type BotStarRating, type StarFill } from '../../logic/bot-rating';
 
 const PANEL_W = 375;
 const STAR_CENTER_SIZE = 90;
@@ -566,9 +561,7 @@ export function buildResultPopup(onClose: () => void, onReplay: () => void): Res
 
       verdict.text = data.outcome === 'draw' ? 'HÒA' : lose ? 'THUA' : 'THẮNG';
       fitText(verdict, brush.width * 0.57);
-      detail.text = withStars
-        ? `${data.detail}\nXẾP HẠNG ${formatBotStarRating(data.starRating ?? 0)} / 3 SAO`
-        : data.detail;
+      detail.text = data.detail;
 
       starRow.visible = withStars;
       const earned: Array<{ star: ResultStar; fill: StarFill }> = [];
