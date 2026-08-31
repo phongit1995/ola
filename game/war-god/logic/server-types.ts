@@ -1,5 +1,5 @@
 import { TILE_ORDER, type TileType } from './constants.gen';
-import type { Board, LightningArc } from './core';
+import type { Board, DartActivation, LightningArc } from './core';
 
 export { TILE_ORDER } from './constants.gen';
 
@@ -23,6 +23,9 @@ export interface StepMatch {
   cells: number[];
   exploded?: number[];
   lightningArcs?: LightningArc[];
+  dartActivations?: DartActivation[];
+  fireSwordActivations?: number[];
+  dartCreations?: Array<{ index: number; type: number }>;
   counts: Partial<Record<TileType, number>>;
   maxRun: number;
   bonusTurns?: number;
@@ -57,6 +60,8 @@ export interface StepUlt {
   cells?: number[];
   exploded?: number[];
   lightningArcs?: LightningArc[];
+  dartActivations?: DartActivation[];
+  fireSwordActivations?: number[];
   counts?: Partial<Record<TileType, number>>;
   effects?: StepMatch['effects'];
 }

@@ -23,6 +23,16 @@ func stripedBoard() []int {
 	return board
 }
 
+func wildcardBoard() []int {
+	board := make([]int, boardSize)
+	for y := 0; y < grid; y++ {
+		for x := 0; x < grid; x++ {
+			board[y*grid+x] = (x + y*2) % baseTileCount
+		}
+	}
+	return board
+}
+
 func noMoveBoard() []int {
 	rows := [grid][grid]int{
 		{0, 0, 1, 1, 2, 2, 0, 0},
@@ -111,6 +121,26 @@ func TestSpecialTilesAreRare(t *testing.T) {
 	}
 }
 
+func TestFlyingDartOnlySpawnsRarelyDuringRefill(t *testing.T) {
+	r := &rng{z: 17}
+	const samples = 200_000
+	darts := 0
+	for range samples {
+		if isFlyingDart(r.refillTile(true)) {
+			darts++
+		}
+	}
+	if darts < samples/520 || darts > samples/300 {
+		t.Fatalf("flying dart rate outside ~1/400 band: %d/%d", darts, samples)
+	}
+	r = &rng{z: 17}
+	for range samples {
+		if tile := r.tile(); isFlyingDart(tile) {
+			t.Fatalf("initial/general tile roll unexpectedly spawned %s", tileNames[tile])
+		}
+	}
+}
+
 func TestInitDeterministicAndValid(t *testing.T) {
 	first := (Logic{}).Init(9).(*State)
 	second := (Logic{}).Init(9).(*State)
@@ -175,6 +205,31 @@ func TestFindMatches(t *testing.T) {
 	cells, counts, maxRun = findMatches(column)
 	if !reflect.DeepEqual(cells, []int{21, 29, 37}) || counts[tileShield] != 3 || maxRun != 3 {
 		t.Fatalf("column of three: cells=%v counts=%v maxRun=%d", cells, counts, maxRun)
+	}
+}
+
+func TestFindFlyingDartCreationFromFiveWater(t *testing.T) {
+	horizontal := stripedBoard()
+	for x := 1; x <= 5; x++ {
+		horizontal[6*grid+x] = tileWater
+	}
+	creation := findFlyingDartCreation(horizontal, []int{6*grid + 3})
+	if creation == nil || *creation != (DartCreation{Index: 6*grid + 3, Type: tileFlyingDartHorizontal}) {
+		t.Fatalf("horizontal creation=%+v", creation)
+	}
+
+	vertical := stripedBoard()
+	for y := 1; y <= 5; y++ {
+		vertical[y*grid+4] = tileWater
+	}
+	creation = findFlyingDartCreation(vertical, []int{3*grid + 4})
+	if creation == nil || *creation != (DartCreation{Index: 3*grid + 4, Type: tileFlyingDartVertical}) {
+		t.Fatalf("vertical creation=%+v", creation)
+	}
+
+	vertical[3*grid+4] = tileFlyingDartVertical
+	if got := findFlyingDartCreation(vertical, nil); got != nil {
+		t.Fatalf("existing dart must not manufacture another dart: %+v", got)
 	}
 }
 
@@ -378,6 +433,196 @@ func TestFindMatchesSpecialTilesWithBaseTiles(t *testing.T) {
 	}
 }
 
+func TestFlyingDartMatchesAnyBaseTile(t *testing.T) {
+	horizontal := wildcardBoard()
+	horizontal[50], horizontal[51], horizontal[52] = tileSword, tileSword, tileFlyingDartHorizontal
+	horizontal[53] = tileShield
+	cells, counts, maxRun := findMatches(horizontal)
+	wantCounts := map[int]int{tileSword: 2, tileFlyingDartHorizontal: 1}
+	if !reflect.DeepEqual(cells, []int{50, 51, 52}) || !reflect.DeepEqual(counts, wantCounts) || maxRun != 3 {
+		t.Fatalf("horizontal wildcard match: cells=%v counts=%v maxRun=%d", cells, counts, maxRun)
+	}
+	exploded, arcs, darts := computeExplosionsWithPicker(horizontal, map[int]bool{50: true, 51: true, 52: true}, func(int) int { return 0 })
+	if !reflect.DeepEqual(exploded, []int{48, 49, 53, 54, 55}) || len(arcs) != 0 ||
+		!reflect.DeepEqual(darts, []DartActivation{{Source: 52, Axis: dartAxisHorizontal}}) {
+		t.Fatalf("horizontal wildcard activation: exploded=%v arcs=%v darts=%v", exploded, arcs, darts)
+	}
+
+	vertical := wildcardBoard()
+	vertical[18], vertical[26], vertical[34] = tileHeart, tileHeart, tileFlyingDartVertical
+	cells, counts, maxRun = findMatches(vertical)
+	wantCounts = map[int]int{tileHeart: 2, tileFlyingDartVertical: 1}
+	if !reflect.DeepEqual(cells, []int{18, 26, 34}) || !reflect.DeepEqual(counts, wantCounts) || maxRun != 3 {
+		t.Fatalf("vertical wildcard match: cells=%v counts=%v maxRun=%d", cells, counts, maxRun)
+	}
+	exploded, arcs, darts = computeExplosionsWithPicker(vertical, map[int]bool{18: true, 26: true, 34: true}, func(int) int { return 0 })
+	if !reflect.DeepEqual(exploded, []int{2, 10, 42, 50, 58}) || len(arcs) != 0 ||
+		!reflect.DeepEqual(darts, []DartActivation{{Source: 34, Axis: dartAxisVertical}}) {
+		t.Fatalf("vertical wildcard activation: exploded=%v arcs=%v darts=%v", exploded, arcs, darts)
+	}
+}
+
+func TestFlyingDartTriggersFireSwordAndLightning(t *testing.T) {
+	board := wildcardBoard()
+	board[50], board[51], board[52] = tileSword, tileSword, tileFlyingDartHorizontal
+	board[53] = tileShield
+	board[54] = tileFireSword
+	board[55] = tileLightning
+	matched := map[int]bool{50: true, 51: true, 52: true}
+	exploded, arcs, darts, fires := computeExplosionsWithPickerDetailed(board, matched, func(int) int { return 0 })
+	if !reflect.DeepEqual(darts, []DartActivation{{Source: 52, Axis: dartAxisHorizontal}}) {
+		t.Fatalf("dart sweep activation=%v", darts)
+	}
+	if !reflect.DeepEqual(fires, []int{54}) {
+		t.Fatalf("fire sword activation=%v", fires)
+	}
+	if len(arcs) != 2 || arcs[0].Source != 47 || arcs[1].Source != 55 {
+		t.Fatalf("lightning caught by dart sweep: arcs=%v", arcs)
+	}
+	for _, want := range []int{0, 45, 46, 47, 48, 49, 53, 54, 55, 60, 61, 62, 63} {
+		found := false
+		for _, got := range exploded {
+			if got == want {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("dart special chain omitted exploded cell %d: %v", want, exploded)
+		}
+	}
+}
+
+func TestFireSwordDoesNotChainThroughAnotherFireSword(t *testing.T) {
+	board := stripedBoard()
+	board[27], board[28] = tileFireSword, tileFireSword
+
+	exploded, _, _, fires := computeExplosionsWithPickerDetailed(
+		board, map[int]bool{27: true}, func(int) int { return 0 },
+	)
+	if !reflect.DeepEqual(fires, []int{27}) {
+		t.Fatalf("fire sword caught by fire blast must not activate: %v", fires)
+	}
+	if !reflect.DeepEqual(exploded, []int{18, 19, 20, 26, 28, 34, 35, 36}) {
+		t.Fatalf("fire sword blast changed unexpectedly: %v", exploded)
+	}
+}
+
+func TestFlyingDartWildcardSupportsThreeFourAndFive(t *testing.T) {
+	for _, length := range []int{3, 4, 5} {
+		t.Run(fmt.Sprintf("run_%d", length), func(t *testing.T) {
+			board := wildcardBoard()
+			start := 56
+			for offset := 0; offset < length; offset++ {
+				board[start+offset] = tileShield
+			}
+			board[start+length-1] = tileFlyingDartHorizontal
+			cells, _, maxRun := findMatches(board)
+			want := make([]int, length)
+			for offset := range want {
+				want[offset] = start + offset
+			}
+			if !reflect.DeepEqual(cells, want) || maxRun != length {
+				t.Fatalf("wildcard run: cells=%v want=%v maxRun=%d", cells, want, maxRun)
+			}
+		})
+	}
+}
+
+func TestFlyingDartRejectsMixedBasesAndMultipleDartsInOneRun(t *testing.T) {
+	mixed := wildcardBoard()
+	mixed[56], mixed[57], mixed[58] = tileSword, tileFlyingDartHorizontal, tileHeart
+	if cells, _, _ := findMatches(mixed); cells != nil {
+		t.Fatalf("mixed Sword-Dart-Heart run matched: %v", cells)
+	}
+
+	multipleDarts := wildcardBoard()
+	multipleDarts[56], multipleDarts[57], multipleDarts[58] =
+		tileSword, tileFlyingDartHorizontal, tileFlyingDartVertical
+	if cells, _, _ := findMatches(multipleDarts); cells != nil {
+		t.Fatalf("run with multiple darts matched: %v", cells)
+	}
+}
+
+func TestFlyingDartCountsWhenGravityCreatesLine(t *testing.T) {
+	board := wildcardBoard()
+	board[18] = tileFlyingDartVertical
+
+	// Before gravity: Heart - Shield - Dart - Heart, so there is no run.
+	if cells, _, _ := findMatches(board); cells != nil {
+		t.Fatalf("unexpected pre-gravity match: %v", cells)
+	}
+
+	// Removing the Shield makes the Dart fall between the two Hearts.
+	applyGravity(board, map[int]bool{10: true}, &rng{z: 17})
+	if board[10] != tileHeart || board[18] != tileFlyingDartVertical || board[26] != tileHeart {
+		t.Fatalf("gravity did not place Heart-Dart-Heart: %v", board[2:34])
+	}
+	cells, _, _ := findMatches(board)
+	if len(cells) == 0 {
+		t.Fatal("gravity-created dart line was not matched")
+	}
+	matched := map[int]bool{}
+	for _, cell := range cells {
+		matched[cell] = true
+	}
+	for _, want := range []int{10, 18, 26} {
+		if !matched[want] {
+			t.Fatalf("gravity-created match omitted cell %d: %v", want, cells)
+		}
+	}
+	_, _, darts := computeExplosionsWithPicker(board, matched, func(int) int { return 0 })
+	if !reflect.DeepEqual(darts, []DartActivation{{Source: 18, Axis: dartAxisVertical}}) {
+		t.Fatalf("gravity-created dart was not activated: %v", darts)
+	}
+}
+
+func TestApplySwapDartTriggersSpecialTiles(t *testing.T) {
+	board := wildcardBoard()
+	// Before the swap this is Sword - Dart - Sword. Swapping 51/52 creates
+	// Sword - Sword - Dart and the dart's horizontal sweep crosses both specials.
+	board[50], board[51], board[52] = tileSword, tileFlyingDartHorizontal, tileSword
+	board[53] = tileShield
+	board[54] = tileFireSword
+	board[55] = tileLightning
+	state := stateWith(board, [2]Fighter{{HP: maxHP}, {HP: maxHP}}, 17)
+	move := json.RawMessage(`{"type":"swap","a":51,"b":52}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	if len(next.Steps) < 2 || next.Steps[1].Kind != stepMatch {
+		t.Fatalf("swap did not produce a match step: %+v", next.Steps)
+	}
+	match := next.Steps[1]
+	hasDart, hasFire, hasLightning := false, false, false
+	for _, activation := range match.DartActivations {
+		if activation.Source == 52 && activation.Axis == dartAxisHorizontal {
+			hasDart = true
+		}
+	}
+	for _, source := range match.FireSwordActivations {
+		if source == 54 {
+			hasFire = true
+		}
+	}
+	for _, arc := range match.LightningArcs {
+		if arc.Source == 55 {
+			hasLightning = true
+		}
+	}
+	if !hasDart || !hasFire || !hasLightning {
+		t.Fatalf("special chain missing: dart=%v fire=%v lightning=%v step=%+v", hasDart, hasFire, hasLightning, match)
+	}
+	if match.Counts["fireSword"] == 0 || match.Counts["lightning"] == 0 {
+		t.Fatalf("special tiles were not counted in the wave: counts=%v", match.Counts)
+	}
+}
+
 func TestComputeExplosions(t *testing.T) {
 	swordBoard := func() []int {
 		board := make([]int, boardSize)
@@ -390,8 +635,8 @@ func TestComputeExplosions(t *testing.T) {
 	lightning := swordBoard()
 	lightning[27] = tileLightning
 	r1, r2 := &rng{z: 7}, &rng{z: 7}
-	got, arcs := computeExplosions(lightning, map[int]bool{27: true}, r1)
-	gotAgain, arcsAgain := computeExplosions(lightning, map[int]bool{27: true}, r2)
+	got, arcs, _ := computeExplosions(lightning, map[int]bool{27: true}, r1)
+	gotAgain, arcsAgain, _ := computeExplosions(lightning, map[int]bool{27: true}, r2)
 	if !reflect.DeepEqual(got, gotAgain) || !reflect.DeepEqual(arcs, arcsAgain) || r1.z != r2.z {
 		t.Fatalf("lightning targets are not deterministic: got=%v/%v again=%v/%v", got, arcs, gotAgain, arcsAgain)
 	}
@@ -413,13 +658,13 @@ func TestComputeExplosions(t *testing.T) {
 
 	block := swordBoard()
 	block[27] = tileFireSword
-	if got, arcs := computeExplosions(block, map[int]bool{27: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{18, 19, 20, 26, 28, 34, 35, 36}) || len(arcs) != 0 {
+	if got, arcs, _ := computeExplosions(block, map[int]bool{27: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{18, 19, 20, 26, 28, 34, 35, 36}) || len(arcs) != 0 {
 		t.Fatalf("fire sword 3x3: %v", got)
 	}
 
 	chained := swordBoard()
 	chained[0], chained[27], chained[28] = tileLightning, tileFireSword, tileLightning
-	chainedExploded, chainedArcs := computeExplosionsWithPicker(chained, map[int]bool{27: true}, func(int) int { return 0 })
+	chainedExploded, chainedArcs, _ := computeExplosionsWithPicker(chained, map[int]bool{27: true}, func(int) int { return 0 })
 	chainedBlast := map[int]bool{18: true, 19: true, 20: true, 26: true, 28: true, 34: true, 35: true, 36: true}
 	if len(chainedExploded) != len(chainedBlast)+1 || len(chainedArcs) != 1 {
 		t.Fatalf("fire sword must trigger lightning caught in its blast: exploded=%v arcs=%v", chainedExploded, chainedArcs)
@@ -441,7 +686,7 @@ func TestComputeExplosions(t *testing.T) {
 	mixedChain := swordBoard()
 	mixedChain[10], mixedChain[27], mixedChain[28] = tileLightning, tileFireSword, tileLightning
 	mixedChainMatch := map[int]bool{10: true, 27: true}
-	mixedChainExploded, mixedChainArcs := computeExplosionsWithPicker(mixedChain, mixedChainMatch, func(int) int { return 0 })
+	mixedChainExploded, mixedChainArcs, _ := computeExplosionsWithPicker(mixedChain, mixedChainMatch, func(int) int { return 0 })
 	if len(mixedChainArcs) != 2 || mixedChainArcs[0].Source != 10 || mixedChainArcs[1].Source != 28 {
 		t.Fatalf("direct and fire-triggered lightning must each fire once: %v", mixedChainArcs)
 	}
@@ -456,19 +701,19 @@ func TestComputeExplosions(t *testing.T) {
 
 	overlap := swordBoard()
 	overlap[26], overlap[27], overlap[28] = tileFireSword, tileLightning, tileFireSword
-	_, overlapArcs := computeExplosionsWithPicker(overlap, map[int]bool{26: true, 28: true}, func(int) int { return 0 })
+	_, overlapArcs, _ := computeExplosionsWithPicker(overlap, map[int]bool{26: true, 28: true}, func(int) int { return 0 })
 	if len(overlapArcs) != 1 || overlapArcs[0].Source != 27 {
 		t.Fatalf("overlapping fire blasts must trigger one arc per lightning: %v", overlapArcs)
 	}
 
 	corner := swordBoard()
 	corner[0] = tileFireSword
-	if got, arcs := computeExplosions(corner, map[int]bool{0: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{1, 8, 9}) || len(arcs) != 0 {
+	if got, arcs, _ := computeExplosions(corner, map[int]bool{0: true}, &rng{z: 1}); !reflect.DeepEqual(got, []int{1, 8, 9}) || len(arcs) != 0 {
 		t.Fatalf("fire sword clipped at corner: %v", got)
 	}
 
 	plain := swordBoard()
-	if got, arcs := computeExplosions(plain, map[int]bool{27: true}, &rng{z: 1}); len(got) != 0 || len(arcs) != 0 {
+	if got, arcs, _ := computeExplosions(plain, map[int]bool{27: true}, &rng{z: 1}); len(got) != 0 || len(arcs) != 0 {
 		t.Fatalf("plain tile must not explode: %v", got)
 	}
 
@@ -476,7 +721,7 @@ func TestComputeExplosions(t *testing.T) {
 	for _, i := range []int{26, 27, 28} {
 		multiple[i] = tileLightning
 	}
-	_, arcs = computeExplosions(multiple, map[int]bool{26: true, 27: true, 28: true}, &rng{z: 11})
+	_, arcs, _ = computeExplosions(multiple, map[int]bool{26: true, 27: true, 28: true}, &rng{z: 11})
 	wantSources := []int{26, 27, 28}
 	for i, arc := range arcs {
 		if arc.Source != wantSources[i] {
@@ -489,7 +734,7 @@ func TestComputeExplosions(t *testing.T) {
 		four[i] = tileLightning
 		fourMatch[i] = true
 	}
-	fourExploded, fourArcs := computeExplosions(four, fourMatch, &rng{z: 13})
+	fourExploded, fourArcs, _ := computeExplosions(four, fourMatch, &rng{z: 13})
 	if len(fourExploded) != 4 || len(fourArcs) != 4 {
 		t.Fatalf("four matched lightning tiles must eat four cells: exploded=%v arcs=%v", fourExploded, fourArcs)
 	}
@@ -497,7 +742,7 @@ func TestComputeExplosions(t *testing.T) {
 	mixed := swordBoard()
 	mixed[27], mixed[28] = tileFireSword, tileLightning
 	mixedMatch := map[int]bool{27: true, 28: true}
-	mixedExploded, mixedArcs := computeExplosions(mixed, mixedMatch, &rng{z: 19})
+	mixedExploded, mixedArcs, _ := computeExplosions(mixed, mixedMatch, &rng{z: 19})
 	fireArea := map[int]bool{18: true, 19: true, 20: true, 26: true, 34: true, 35: true, 36: true}
 	if len(mixedExploded) != len(fireArea)+1 || len(mixedArcs) != 1 {
 		t.Fatalf("mixed wave did not add one target for one lightning: exploded=%v arcs=%v", mixedExploded, mixedArcs)
@@ -514,9 +759,34 @@ func TestComputeExplosions(t *testing.T) {
 		nearlyFull[i] = tileLightning
 		nearlyFullMatch[i] = true
 	}
-	limited, limitedArcs := computeExplosions(nearlyFull, nearlyFullMatch, &rng{z: 23})
+	limited, limitedArcs, _ := computeExplosions(nearlyFull, nearlyFullMatch, &rng{z: 23})
 	if !reflect.DeepEqual(limited, []int{62, 63}) || len(limitedArcs) != 2 {
 		t.Fatalf("lightning must safely use the remaining target pool: exploded=%v arcs=%v", limited, limitedArcs)
+	}
+}
+
+func TestFlyingDartClearsLineAndChainsOnce(t *testing.T) {
+	board := stripedBoard()
+	board[26] = tileFlyingDartHorizontal
+	exploded, arcs, darts := computeExplosionsWithPicker(
+		board, map[int]bool{26: true}, func(int) int { return 0 },
+	)
+	if !reflect.DeepEqual(exploded, []int{24, 25, 27, 28, 29, 30, 31}) || len(arcs) != 0 ||
+		!reflect.DeepEqual(darts, []DartActivation{{Source: 26, Axis: dartAxisHorizontal}}) {
+		t.Fatalf("horizontal dart exploded=%v arcs=%v activations=%v", exploded, arcs, darts)
+	}
+
+	board[29] = tileFlyingDartVertical
+	exploded, arcs, darts = computeExplosionsWithPicker(
+		board, map[int]bool{26: true}, func(int) int { return 0 },
+	)
+	want := []int{5, 13, 21, 24, 25, 27, 28, 29, 30, 31, 37, 45, 53, 61}
+	wantDarts := []DartActivation{
+		{Source: 26, Axis: dartAxisHorizontal},
+		{Source: 29, Axis: dartAxisVertical},
+	}
+	if !reflect.DeepEqual(exploded, want) || len(arcs) != 0 || !reflect.DeepEqual(darts, wantDarts) {
+		t.Fatalf("dart chain exploded=%v arcs=%v activations=%v", exploded, arcs, darts)
 	}
 }
 
@@ -686,6 +956,17 @@ func TestApplyTileEffects(t *testing.T) {
 	}
 }
 
+func TestFlyingDartIsNeutralForResourceEffects(t *testing.T) {
+	attacker := Fighter{HP: maxHP}
+	defender := Fighter{HP: maxHP}
+	effects := applyTileEffects(&attacker, &defender, map[int]int{
+		tileSword: 2, tileFlyingDartHorizontal: 1,
+	})
+	if effects.Damage != 14 || effects.Mana != 0 || attacker.MP != 0 {
+		t.Fatalf("wildcard dart changed resources: attacker=%+v effects=%+v", attacker, effects)
+	}
+}
+
 func TestCascadeScalesEveryCollectedTileValueAndCapsAtThirtyPercent(t *testing.T) {
 	tests := []struct {
 		level int
@@ -780,6 +1061,63 @@ func TestApplySwapSingleWave(t *testing.T) {
 	if matchedCells, _, _ := findMatches(next.Board); matchedCells != nil {
 		t.Fatal("apply left unresolved matches")
 	}
+}
+
+func TestApplySwapFiveWaterCreatesPersistentFlyingDart(t *testing.T) {
+	board := stripedBoard()
+	for _, index := range []int{41, 45, 57, 61} {
+		board[index] = tileShield
+	}
+	for _, index := range []int{49, 50, 52, 53} {
+		board[index] = tileWater
+	}
+	// 43 is already Water; swapping it into 51 joins the two Water pairs.
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 29)
+	move := json.RawMessage(`{"type":"swap","a":43,"b":51}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	matchStep := next.Steps[1]
+	wantCreation := []DartCreation{{Index: 51, Type: tileFlyingDartHorizontal}}
+	if !reflect.DeepEqual(matchStep.Cells, []int{49, 50, 51, 52, 53}) ||
+		!reflect.DeepEqual(matchStep.DartCreations, wantCreation) ||
+		matchStep.Counts["water"] != 5 || matchStep.Effects.Mana != 35 {
+		t.Fatalf("unexpected five-Water match step: %+v", matchStep)
+	}
+	// With wildcard matching enabled, a created dart may immediately participate
+	// in a gravity cascade. In that case it must activate its line exactly once;
+	// otherwise it remains on the board for the next move.
+	created := false
+	activated := false
+	for _, step := range next.Steps {
+		for _, dart := range step.DartCreations {
+			if dart.Index == 51 && dart.Type == tileFlyingDartHorizontal {
+				created = true
+			}
+		}
+		for _, dart := range step.DartActivations {
+			if dart.Source == 51 && dart.Axis == dartAxisHorizontal {
+				activated = true
+			}
+		}
+	}
+	if !created || (!activated && !containsTile(next.Board, tileFlyingDartHorizontal)) {
+		t.Fatalf("created flying dart was neither activated nor preserved: board=%v steps=%+v", next.Board, next.Steps)
+	}
+}
+
+func containsTile(board []int, tile int) bool {
+	for _, got := range board {
+		if got == tile {
+			return true
+		}
+	}
+	return false
 }
 
 func TestArmorAbsorptionAndUltimateArmor(t *testing.T) {
@@ -1215,6 +1553,79 @@ func TestLightningGodStrikesFourTwoByTwoBlocksTriggersLightningAndAppliesGravity
 	}
 	if next.Rng == state.Rng || reflect.DeepEqual(next.Board, board) {
 		t.Fatalf("lightning ultimate did not advance RNG and collapse board: rng=%s board=%v", next.Rng, next.Board)
+	}
+}
+
+func TestLightningGodDartSweepActivatesFireSword(t *testing.T) {
+	const seed = 7
+	blocks := randomFourTwoByTwoBlocks(&rng{z: seed})
+	cells := make([]int, 0, 16)
+	primary := make(map[int]bool, 16)
+	for _, block := range blocks {
+		for _, cell := range block {
+			cells = append(cells, cell)
+			primary[cell] = true
+		}
+	}
+
+	dartSource, fireSource := -1, -1
+	dartType := tileFlyingDartHorizontal
+	for _, source := range cells {
+		rowStart := source / grid * grid
+		for candidate := rowStart; candidate < rowStart+grid; candidate++ {
+			if !primary[candidate] {
+				dartSource, fireSource = source, candidate
+				break
+			}
+		}
+		if dartSource >= 0 {
+			break
+		}
+	}
+	if dartSource < 0 {
+		dartType = tileFlyingDartVertical
+		for _, source := range cells {
+			for candidate := source % grid; candidate < boardSize; candidate += grid {
+				if !primary[candidate] {
+					dartSource, fireSource = source, candidate
+					break
+				}
+			}
+			if dartSource >= 0 {
+				break
+			}
+		}
+	}
+	if dartSource < 0 {
+		t.Fatal("test fixture has no dart line extending outside the primary strike")
+	}
+
+	board := stripedBoard()
+	board[dartSource] = dartType
+	board[fireSource] = tileFireSword
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, seed)
+	nextAny, err := (Logic{}).Apply(
+		state, 0, json.RawMessage(`{"type":"ult","skill":"lightning-god"}`),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ult := nextAny.(*State).Steps[0]
+	if !reflect.DeepEqual(
+		ult.DartActivations,
+		[]DartActivation{{Source: dartSource, Axis: flyingDartAxis(dartType)}},
+	) {
+		t.Fatalf("ultimate dart activation=%v", ult.DartActivations)
+	}
+	if !reflect.DeepEqual(ult.FireSwordActivations, []int{fireSource}) {
+		t.Fatalf("Fire Sword on dart line was not activated: %v", ult.FireSwordActivations)
+	}
+	exploded := make(map[int]bool, len(ult.Exploded))
+	for _, cell := range ult.Exploded {
+		exploded[cell] = true
+	}
+	if !exploded[fireSource] {
+		t.Fatalf("dart-triggered Fire Sword missing from exploded cells: %v", ult.Exploded)
 	}
 }
 

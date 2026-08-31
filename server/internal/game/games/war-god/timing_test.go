@@ -87,3 +87,47 @@ func TestMatchAnimationDelayWaitsForFireTriggeredLightning(t *testing.T) {
 		t.Fatalf("direct and fire-triggered arc groups run in parallel: mixed=%v want=%v", got, want)
 	}
 }
+
+func TestMatchAnimationDelayWaitsForDartTriggeredLightning(t *testing.T) {
+	base := Step{
+		Kind:   stepMatch,
+		Cells:  []int{0, 1, 2},
+		Counts: map[string]int{tileNames[tileWater]: 3},
+	}
+	triggered := base
+	triggered.DartActivations = []DartActivation{{Source: 8, Axis: dartAxisHorizontal}}
+	triggered.LightningArcs = []LightningArc{{Source: 8, Target: 16}}
+
+	// The bolt source is reached only by the Dart sweep, so it must start
+	// after the full Dart FX rather than in parallel with it.
+	wantMinimum := flyingDartAnimationDelay(1) + lightningAnimationDelay(1)
+	if got := matchAnimationDelay(triggered) - matchAnimationDelay(base); got < wantMinimum {
+		t.Fatalf("dart-triggered lightning is undercounted: delay difference=%v want >=%v", got, wantMinimum)
+	}
+}
+
+func TestMatchAnimationDelayCoversSequentialDartsAndCreationFx(t *testing.T) {
+	base := Step{
+		Kind:   stepMatch,
+		Cells:  []int{0, 1, 2},
+		Counts: map[string]int{tileNames[tileWater]: 3},
+	}
+	oneDart := base
+	oneDart.DartActivations = []DartActivation{{Source: 0, Axis: dartAxisHorizontal}}
+	twoDarts := base
+	twoDarts.DartActivations = []DartActivation{
+		{Source: 0, Axis: dartAxisHorizontal},
+		{Source: 1, Axis: dartAxisVertical},
+	}
+	if got := matchAnimationDelay(oneDart); got < 692*time.Millisecond+200*time.Millisecond {
+		t.Fatalf("one dart replay is undercounted: %v", got)
+	}
+	if got := matchAnimationDelay(twoDarts); got < 1454*time.Millisecond+200*time.Millisecond {
+		t.Fatalf("two sequential dart replay is undercounted: %v", got)
+	}
+	created := base
+	created.DartCreations = []DartCreation{{Index: 1, Type: tileFlyingDartHorizontal}}
+	if diff := matchAnimationDelay(created) - matchAnimationDelay(base); diff < 520*time.Millisecond {
+		t.Fatalf("dart creation FX is undercounted: %v", diff)
+	}
+}

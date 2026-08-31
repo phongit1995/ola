@@ -28,12 +28,14 @@ type ParityEffectsCase struct {
 }
 
 type ParityExplosionCase struct {
-	Name          string         `json:"name"`
-	Board         []int          `json:"board"`
-	Matched       []int          `json:"matched"`
-	Random        []float64      `json:"random"`
-	Exploded      []int          `json:"exploded"`
-	LightningArcs []LightningArc `json:"lightningArcs"`
+	Name                 string           `json:"name"`
+	Board                []int            `json:"board"`
+	Matched              []int            `json:"matched"`
+	Random               []float64        `json:"random"`
+	Exploded             []int            `json:"exploded"`
+	LightningArcs        []LightningArc   `json:"lightningArcs"`
+	DartActivations      []DartActivation `json:"dartActivations"`
+	FireSwordActivations []int            `json:"fireSwordActivations"`
 }
 
 // ExportParityFixture produces deterministic golden cases consumed by both
@@ -59,6 +61,20 @@ func ExportParityFixture() ParityFixture {
 				for _, index := range []int{19, 26, 27, 28, 35} {
 					board[index] = tileLightning
 				}
+				return board
+			}(),
+		},
+		{
+			name: "flying dart is a wildcard for swords",
+			board: func() []int {
+				board := make([]int, boardSize)
+				for y := 0; y < grid; y++ {
+					for x := 0; x < grid; x++ {
+						board[y*grid+x] = (x + y*2) % baseTileCount
+					}
+				}
+				board[50], board[51], board[52] = tileSword, tileSword, tileFlyingDartHorizontal
+				board[53] = tileShield
 				return board
 			}(),
 		},
@@ -121,6 +137,8 @@ func ExportParityFixture() ParityFixture {
 	fireLightningBoard := parityStripedBoard()
 	fireLightningBoard[0] = tileLightning
 	fireLightningBoard[26], fireLightningBoard[27] = tileFireSword, tileLightning
+	dartBoard := parityStripedBoard()
+	dartBoard[26] = tileFlyingDartHorizontal
 	explosions := []ParityExplosionCase{
 		makeExplosionFixture(
 			"fire sword clears its surrounding 3x3",
@@ -140,10 +158,28 @@ func ExportParityFixture() ParityFixture {
 			[]int{26},
 			[]float64{0},
 		),
+		makeExplosionFixture(
+			"horizontal flying dart clears its row",
+			dartBoard,
+			[]int{26},
+			nil,
+		),
+		makeExplosionFixture(
+			"horizontal dart triggers Fire Sword and Lightning",
+			func() []int {
+				board := parityStripedBoard()
+				board[26] = tileFlyingDartHorizontal
+				board[28] = tileFireSword
+				board[30] = tileLightning
+				return board
+			}(),
+			[]int{26},
+			[]float64{0},
+		),
 	}
 
 	return ParityFixture{
-		Version:        5,
+		Version:        6,
 		TileOrder:      append([]string(nil), tileNames[:]...),
 		FindMatches:    matches,
 		TileEffects:    effects,
@@ -181,7 +217,7 @@ func makeExplosionFixture(name string, board, matchedCells []int, random []float
 		matched[index] = true
 	}
 	randomIndex := 0
-	exploded, arcs := computeExplosionsWithPicker(board, matched, func(limit int) int {
+	exploded, arcs, darts, fires := computeExplosionsWithPickerDetailed(board, matched, func(limit int) int {
 		if randomIndex >= len(random) {
 			return 0
 		}
@@ -190,11 +226,13 @@ func makeExplosionFixture(name string, board, matchedCells []int, random []float
 		return int(value * float64(limit))
 	})
 	return ParityExplosionCase{
-		Name:          name,
-		Board:         board,
-		Matched:       matchedCells,
-		Random:        random,
-		Exploded:      exploded,
-		LightningArcs: arcs,
+		Name:                 name,
+		Board:                board,
+		Matched:              matchedCells,
+		Random:               random,
+		Exploded:             exploded,
+		LightningArcs:        arcs,
+		DartActivations:      darts,
+		FireSwordActivations: fires,
 	}
 }

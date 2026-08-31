@@ -18,6 +18,8 @@ import {
   computeExplosions,
   createBoard,
   emptyCounts,
+  expandDartTriggeredSpecials,
+  findFlyingDartCreation,
   findMatches,
   findValidMoves,
   randomFourTwoByTwoBlocks,
@@ -40,6 +42,7 @@ function resolve(
   random: () => number,
   startingCascadeLevel = 0,
   furyChain: { active: boolean } = { active: false },
+  preferredDartCells: readonly number[] = [],
 ): number {
   let bonus = 0;
   let cascadeLevel = startingCascadeLevel;
@@ -47,12 +50,18 @@ function resolve(
     const match = findMatches(board);
     if (!match) break;
     bonus += match.bonusTurns;
+    const creation = findFlyingDartCreation(board, preferredDartCells);
     const plan = computeExplosions(board, match.cells, random);
     for (const index of plan.exploded) match.counts[board[index]]++;
     const removed = new Set(match.cells);
     for (const index of plan.exploded) removed.add(index);
+    if (creation) {
+      removed.delete(creation.index);
+      board[creation.index] = creation.type;
+    }
     applyTileEffects(attacker, defender, match.counts, cascadeLevel, furyChain);
     applyGravity(board, removed, random);
+    preferredDartCells = [];
     cascadeLevel++;
     if (attacker.hp <= 0 || defender.hp <= 0) break;
   }
@@ -69,7 +78,9 @@ function castLightningGod(
   applyDamageThroughArmor(defender, LIGHTNING_GOD_DAMAGE);
   const cells = randomFourTwoByTwoBlocks(random).flat();
   const removed = new Set(cells);
-  const lightningArcs = computeLightningArcs(board, cells, removed, random);
+  const directFireSwords = new Set(cells.filter((index) => board[index] === 'fireSword'));
+  expandDartTriggeredSpecials(board, removed, directFireSwords);
+  const lightningArcs = computeLightningArcs(board, removed, removed, random);
   for (const arc of lightningArcs) removed.add(arc.target);
   const counts = emptyCounts();
   for (const index of removed) counts[board[index]]++;
@@ -111,7 +122,7 @@ function play(seed: number, first: BotLevel, second: BotLevel): 0 | 1 | null {
       swapCells(board, move[0], move[1]);
       extra[side] = grantExtraTurns(
         extra[side],
-        resolve(board, attacker, defender, random),
+        resolve(board, attacker, defender, random, 0, { active: false }, [move[1], move[0]]),
       ).remaining;
     }
     if (attacker.hp > 0 && defender.hp > 0 && findValidMoves(board).length === 0) {
@@ -123,6 +134,20 @@ function play(seed: number, first: BotLevel, second: BotLevel): 0 | 1 | null {
   }
   return null;
 }
+
+it('keeps a wildcard dart neutral for resource effects', () => {
+  const attacker = createFighter();
+  const defender = createFighter();
+  const counts = emptyCounts();
+  counts.sword = 2;
+  counts.flyingDartHorizontal = 1;
+
+  const effects = applyTileEffects(attacker, defender, counts);
+
+  expect(effects.damage).toBe(14);
+  expect(effects.mana).toBe(0);
+  expect(attacker.mp).toBe(0);
+});
 
 it('keeps expert measurably stronger than hard across seeded matches with skill selection', () => {
   let expertWins = 0;

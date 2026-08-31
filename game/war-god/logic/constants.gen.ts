@@ -9,6 +9,8 @@ export const TILE_ORDER = [
   "lightning",
   "fireSword",
   "greaterHeart",
+  "flyingDartHorizontal",
+  "flyingDartVertical",
 ] as const;
 
 export type TileType = (typeof TILE_ORDER)[number];
@@ -19,8 +21,11 @@ export const CELLS = GRID * GRID;
 export const BASE_TILE_COUNT = 6;
 export const SPECIAL_SWORD_ONE_IN = 13;
 export const SPECIAL_HEART_ONE_IN = 10;
+export const SPECIAL_FLYING_DART_ONE_IN = 400;
 export const SPECIAL_SWORD_CHANCE = 1 / SPECIAL_SWORD_ONE_IN;
 export const SPECIAL_HEART_CHANCE = 1 / SPECIAL_HEART_ONE_IN;
+
+export const SPECIAL_FLYING_DART_CHANCE = 1 / SPECIAL_FLYING_DART_ONE_IN;
 
 export const MAX_HP = 200;
 export const MAX_MP = 100;

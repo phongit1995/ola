@@ -34,6 +34,12 @@ func (Logic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) tim
 			delay += shuffleAnimationDelay
 		case stepUlt:
 			delay += 2100 * time.Millisecond
+			if len(step.DartActivations) > 0 {
+				delay += flyingDartAnimationDelay(len(step.DartActivations))
+			}
+			if len(step.FireSwordActivations) > 0 {
+				delay += fireSwordAnimationDelay(len(step.FireSwordActivations))
+			}
 			if len(step.LightningArcs) > 0 {
 				delay += lightningAnimationDelay(len(step.LightningArcs))
 			}
@@ -51,33 +57,98 @@ func matchAnimationDelay(step Step) time.Duration {
 		removeDelay = 590*time.Millisecond + time.Duration(swords-1)*110*time.Millisecond
 	}
 
-	fireDelay := time.Duration(0)
-	if fireSwords > 0 {
-		fireDelay = 930*time.Millisecond + time.Duration(fireSwords-1)*72*time.Millisecond
-	}
-	specialDelay := fireDelay
 	matched := make(map[int]bool, len(step.Cells))
 	for _, cell := range step.Cells {
 		matched[cell] = true
 	}
-	directArcs, fireTriggeredArcs := 0, 0
+	directFireSwords, triggeredFireSwords := 0, 0
+	if len(step.FireSwordActivations) == 0 {
+		// Older steps did not record activation provenance; all Fire Swords
+		// represented by Counts were direct matches in that wire format.
+		directFireSwords = fireSwords
+	} else {
+		for _, source := range step.FireSwordActivations {
+			if matched[source] {
+				directFireSwords++
+			} else {
+				triggeredFireSwords++
+			}
+		}
+	}
+	directDarts, triggeredDarts := 0, 0
+	for _, activation := range step.DartActivations {
+		if matched[activation.Source] {
+			directDarts++
+		} else {
+			triggeredDarts++
+		}
+	}
+	directFireDelay := fireSwordAnimationDelay(directFireSwords)
+	directDartDelay := flyingDartAnimationDelay(directDarts)
+	triggeredDartDelay := flyingDartAnimationDelay(triggeredDarts)
+	triggeredFireDelay := fireSwordAnimationDelay(triggeredFireSwords)
+	// Direct Fire Sword and Phi Tiêu FX start together. A special reached by
+	// another special waits for that preceding FX, matching explodeFx on the
+	// client. These maxima model the parallel branches without undercounting
+	// the sequential fire -> dart -> fire/lightning chains.
+	dartDelay := directDartDelay
+	if candidate := directFireDelay + triggeredDartDelay; candidate > dartDelay {
+		dartDelay = candidate
+	}
+	fireDelay := directFireDelay
+	if candidate := dartDelay + triggeredFireDelay; candidate > fireDelay {
+		fireDelay = candidate
+	}
+	specialDelay := fireDelay
+	directArcs, triggeredArcs := 0, 0
 	for _, arc := range step.LightningArcs {
 		if matched[arc.Source] {
 			directArcs++
 		} else {
-			fireTriggeredArcs++
+			triggeredArcs++
 		}
 	}
 	if delay := lightningAnimationDelay(directArcs); delay > specialDelay {
 		specialDelay = delay
 	}
-	if fireTriggeredArcs > 0 {
-		delay := fireDelay + lightningAnimationDelay(fireTriggeredArcs)
+	if dartDelay > specialDelay {
+		specialDelay = dartDelay
+	}
+	if triggeredArcs > 0 {
+		// A non-matched Lightning source may be reached by either a Dart line
+		// or a Fire Sword blast. The client waits for both branches before
+		// showing its bolt, so include the longer prerequisite chain.
+		triggeredLightningBase := fireDelay
+		if dartDelay > triggeredLightningBase {
+			triggeredLightningBase = dartDelay
+		}
+		delay := triggeredLightningBase + lightningAnimationDelay(triggeredArcs)
 		if delay > specialDelay {
 			specialDelay = delay
 		}
 	}
-	return specialDelay + removeDelay
+	creationDelay := time.Duration(0)
+	if len(step.DartCreations) > 0 {
+		creationDelay = 540 * time.Millisecond
+	}
+	return specialDelay + removeDelay + creationDelay
+}
+
+func flyingDartAnimationDelay(darts int) time.Duration {
+	if darts <= 0 {
+		return 0
+	}
+	// charge (260ms) + sweep (about 432ms), with a 70ms gap between
+	// sequential darts. Keep a small frame/network safety margin so the next
+	// player's clock never starts while the replay is still on screen.
+	return 720*time.Millisecond + time.Duration(darts-1)*760*time.Millisecond
+}
+
+func fireSwordAnimationDelay(swords int) time.Duration {
+	if swords <= 0 {
+		return 0
+	}
+	return 930*time.Millisecond + time.Duration(swords-1)*72*time.Millisecond
 }
 
 func lightningAnimationDelay(arcs int) time.Duration {

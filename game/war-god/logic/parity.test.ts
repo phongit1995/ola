@@ -51,6 +51,8 @@ describe('server/client War God parity', () => {
       );
       expect(result.exploded).toEqual(test.exploded);
       expect(result.lightningArcs).toEqual(test.lightningArcs);
+      expect(result.dartActivations).toEqual(test.dartActivations);
+      expect(result.fireSwordActivations).toEqual(test.fireSwordActivations);
     });
   }
 });

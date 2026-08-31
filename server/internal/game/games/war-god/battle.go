@@ -148,8 +148,11 @@ func applyTileEffectsInCascadeChain(
 		effects.Heal = healed
 	}
 
-	if counts[tileWater] > 0 {
-		gained := scaleCascadeValue(counts[tileWater]*manaWater, cascadeLevel)
+	// A dart is a wildcard for matching, but it is not a Water resource.
+	// Its own effect is the line clear determined by its axis.
+	waterCount := counts[tileWater]
+	if waterCount > 0 {
+		gained := scaleCascadeValue(waterCount*manaWater, cascadeLevel)
 		if room := maxMP - attacker.MP; room < gained {
 			gained = room
 		}
