@@ -33,7 +33,11 @@ func (Logic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) tim
 		case stepShuffle:
 			delay += shuffleAnimationDelay
 		case stepUlt:
-			delay += 2100 * time.Millisecond
+			if step.Skill == skillHeartVacuum {
+				delay += heartVacuumAnimationDelay(len(step.Cells))
+			} else {
+				delay += 2100 * time.Millisecond
+			}
 			if len(step.DartActivations) > 0 {
 				delay += flyingDartAnimationDelay(len(step.DartActivations))
 			}
@@ -46,6 +50,15 @@ func (Logic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) tim
 		}
 	}
 	return delay
+}
+
+func heartVacuumAnimationDelay(hearts int) time.Duration {
+	if hearts < 1 {
+		hearts = 1
+	}
+	// Reveal (~440ms), staggered heart flights (46ms each), core flight and
+	// impact (~1.2s), plus a safety margin for slower devices.
+	return 2900*time.Millisecond + time.Duration(hearts-1)*46*time.Millisecond
 }
 
 func matchAnimationDelay(step Step) time.Duration {

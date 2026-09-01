@@ -17,7 +17,7 @@ func parseMove(raw json.RawMessage) (*Move, error) {
 		if move.Skill == "" {
 			move.Skill = skillMyriadSwords
 		}
-		if move.Skill != skillLightningGod && move.Skill != skillMyriadSwords {
+		if move.Skill != skillLightningGod && move.Skill != skillMyriadSwords && move.Skill != skillHeartVacuum {
 			return nil, errors.New("unknown ultimate skill")
 		}
 		return &move, nil
@@ -166,6 +166,40 @@ func (Logic) Apply(state any, playerIdx int, raw json.RawMessage) (any, error) {
 				DartActivations:      dartActivations,
 				FireSwordActivations: fireSwordActivations,
 				Counts:               namedCounts(counts), Effects: &strikeEffects,
+			})
+			falls, spawns := applyGravity(s.Board, removed, r)
+			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})
+			if attacker.HP > 0 && defender.HP > 0 {
+				resolveCascades(s, attacker, defender, r, &remainingExtraTurns, 1, &furyChainActive, nil)
+			}
+			if attacker.HP > 0 && defender.HP > 0 {
+				ensurePlayable(s, r)
+			}
+		} else if move.Skill == skillHeartVacuum {
+			heartCells := make([]int, 0, boardSize)
+			removed := make(map[int]bool)
+			counts := make(map[int]int)
+			for index, tile := range s.Board {
+				if tile != tileHeart && tile != tileGreaterHeart {
+					continue
+				}
+				heartCells = append(heartCells, index)
+				removed[index] = true
+				counts[tile]++
+			}
+			healing := counts[tileHeart]*healHeart + counts[tileGreaterHeart]*greaterHeartHeal
+			if room := maxHP - attacker.HP; room < healing {
+				healing = room
+			}
+			if healing < 0 {
+				healing = 0
+			}
+			attacker.HP += healing
+			furyChainActive := false
+			effects := Effects{Heal: healing}
+			s.Steps = append(s.Steps, Step{
+				Kind: stepUlt, Skill: move.Skill, Cells: heartCells,
+				Counts: namedCounts(counts), Effects: &effects,
 			})
 			falls, spawns := applyGravity(s.Board, removed, r)
 			s.Steps = append(s.Steps, Step{Kind: stepGravity, Falls: falls, Spawns: spawns})

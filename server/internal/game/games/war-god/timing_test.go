@@ -62,6 +62,24 @@ func TestTurnStartDelayCoversBoardShufflePresentation(t *testing.T) {
 	}
 }
 
+func TestTurnStartDelayCoversHeartVacuumAndCollapse(t *testing.T) {
+	state := &State{Steps: []Step{
+		{Kind: stepUlt, Skill: skillHeartVacuum, Cells: []int{0, 1, 2, 3, 4, 5}},
+		{Kind: stepGravity},
+		{Kind: stepMatch, Counts: map[string]int{tileNames[tileSword]: 3}, CascadeLevel: 1},
+	}}
+	wantMinimum := 250*time.Millisecond + heartVacuumAnimationDelay(6) + 350*time.Millisecond + matchAnimationDelay(state.Steps[2])
+	if got := (Logic{}).TurnStartDelay(state, 0, 1); got < wantMinimum {
+		t.Fatalf("heart vacuum replay delay = %v, want >= %v", got, wantMinimum)
+	}
+}
+
+func TestHeartVacuumDelayDoesNotUndercountEmptyBoardReplay(t *testing.T) {
+	if got := heartVacuumAnimationDelay(0); got < 2900*time.Millisecond {
+		t.Fatalf("empty heart vacuum replay delay = %v, want >= 2.9s", got)
+	}
+}
+
 func TestMatchAnimationDelayWaitsForFireTriggeredLightning(t *testing.T) {
 	directArcs := make([]LightningArc, 8)
 	triggeredArcs := make([]LightningArc, 8)

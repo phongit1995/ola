@@ -91,6 +91,7 @@ import {
   type UltimatePicker,
   type UltimateSkillId,
 } from './screens/battle/ultimate-picker';
+import { calculateHeartVacuumHeal } from './screens/battle/heart-vacuum';
 
 const params = new URLSearchParams(location.search);
 // Một số client copy URL Markdown giữ lại dấu `\\` trước `&`, ví dụ
@@ -312,16 +313,31 @@ function createMockDartBoard(): Board {
   return board;
 }
 
+function createMockHeartBoard(): Board {
+  const board = createBoard(mockRandom(0x51a7c0de));
+  const hearts = [1, 5, 10, 14, 18, 23, 29, 34, 39, 44, 50, 57];
+  const greaterHearts = [8, 27, 46];
+  for (const index of hearts) board[index] = 'heart';
+  for (const index of greaterHearts) board[index] = 'greaterHeart';
+  return board;
+}
+
 function makeMatch(): MatchFoundData<ServerState> {
+  const heartVacuum =
+    state === 'heart-vacuum' || state === 'foe-heart-vacuum' || state === 'ultimate-picker';
   const myMana =
     state === 'mana-empty'
       ? 0
       : state === 'mana-loading'
       ? 50
-      : state === 'mana-ready' || state === 'ultimate-picker'
+      : state === 'mana-ready' || state === 'ultimate-picker' || heartVacuum
       ? 100
       : 62;
-  const mockBoard = state === 'flying-dart' ? createMockDartBoard() : createBoard();
+  const mockBoard = heartVacuum
+    ? createMockHeartBoard()
+    : state === 'flying-dart'
+    ? createMockDartBoard()
+    : createBoard();
   return {
     matchId: 'wg-match-mock',
     gameId: 'war-god',
@@ -330,14 +346,24 @@ function makeMatch(): MatchFoundData<ServerState> {
       { id: 'foe', name: 'kiemvuong', vipType: FOE_VIP, level: 12 },
     ],
     you: 0,
-    turn: state === 'foe-turn' ? 1 : 0,
+    turn: state === 'foe-turn' || state === 'foe-heart-vacuum' ? 1 : 0,
     deadline: Date.now() + 30_000,
     bet: 50_000,
     state: {
       board: mockBoard.map((t) => TILE_ORDER.indexOf(t)),
       fighters: [
-        { hp: 148, mp: myMana, armor: 12, fury: state === 'fury-full' ? 100 : 40 },
-        { hp: 96, mp: 34, armor: 0, fury: 70 },
+        {
+          hp: heartVacuum ? 92 : 148,
+          mp: myMana,
+          armor: 12,
+          fury: state === 'fury-full' ? 100 : 40,
+        },
+        {
+          hp: state === 'foe-heart-vacuum' ? 92 : 96,
+          mp: state === 'foe-heart-vacuum' ? 100 : 34,
+          armor: 0,
+          fury: 70,
+        },
       ],
       rng: 'mock',
       moveCount: 11,
@@ -508,6 +534,69 @@ function resolveMockUltimate(
     return { board, fighters, steps, extraTurns };
   }
 
+  if (skill === 'heart-vacuum') {
+    attacker.mp = 0;
+    const cells: number[] = [];
+    const counts = emptyCounts();
+    board.forEach((tile, index) => {
+      if (tile === 'heart' || tile === 'greaterHeart') {
+        cells.push(index);
+        counts[tile]++;
+      }
+    });
+    const greaterHeartCount = counts.greaterHeart;
+    const heal = calculateHeartVacuumHeal(
+      attacker.hp,
+      cells.length - greaterHeartCount,
+      greaterHeartCount,
+    );
+    attacker.hp += heal;
+    steps.push({
+      kind: 'ult',
+      skill,
+      cells,
+      counts,
+      effects: {
+        damage: 0,
+        heal,
+        mana: 0,
+        armor: 0,
+        armorDamage: 0,
+        fury: 0,
+      },
+    });
+    const removed = new Set(cells);
+    const gravity = applyGravity(board, removed, random);
+    steps.push({
+      kind: 'gravity',
+      falls: gravity.falls,
+      spawns: gravity.spawns.map((spawn) => ({
+        index: spawn.index,
+        type: TILE_ORDER.indexOf(spawn.type),
+        fromRow: spawn.fromRow,
+      })),
+    });
+    if (attacker.hp > 0 && defender.hp > 0) {
+      extraTurns = resolveMockCascades(
+        board,
+        fighters,
+        attackerIndex,
+        random,
+        steps,
+        extraTurns,
+        1,
+        [],
+        { active: false },
+      );
+      if (findValidMoves(board).length === 0) {
+        const shuffled = createBoard(random);
+        board.splice(0, board.length, ...shuffled);
+        steps.push({ kind: 'shuffle', board: encodeMockBoard(board) });
+      }
+    }
+    return { board, fighters, steps, extraTurns };
+  }
+
   attacker.mp = 0;
   const direct = applyDamageThroughArmor(defender, LIGHTNING_GOD_DAMAGE);
   const cells = randomFourTwoByTwoBlocks(random).flat();
@@ -621,8 +710,14 @@ function makeMockPvpSession(
       botTimer = null;
       if (!onState || mockTurn !== 1) return;
       const consumedExtraTurns = Math.max(0, extraTurns - 1);
-      if (botShouldUlt(fighters[1]!, fighters[0]!, 'normal')) {
-        const skill = botChooseUltimateSkill(fighters[1]!, fighters[0]!, 'normal');
+      if (
+        state === 'foe-heart-vacuum' ||
+        botShouldUlt(fighters[1]!, fighters[0]!, 'normal')
+      ) {
+        const skill: UltimateSkillId =
+          state === 'foe-heart-vacuum'
+            ? 'heart-vacuum'
+            : botChooseUltimateSkill(fighters[1]!, fighters[0]!, 'normal', board);
         const resolved = resolveMockUltimate(
           board,
           fighters,
@@ -841,7 +936,7 @@ const SCENES: Record<string, () => Promise<void> | void> = {
     updateRoomPregame(makeRoomState(), null);
   },
 
-  // state: my-turn | foe-turn | flying-dart | flying-dart-test | flying-dart-test-vertical | mana-empty | mana-loading | mana-ready | ultimate-picker | fury-full | win | lose | draw
+  // state: my-turn | foe-turn | flying-dart | flying-dart-test | flying-dart-test-vertical | heart-vacuum | foe-heart-vacuum | mana-empty | mana-loading | mana-ready | ultimate-picker | fury-full | win | lose | draw
   // query stars=0..3 theo bước 0.5 bật biến thể rating khi chơi với Máy.
   async battle() {
     await openPvpBattle();
@@ -850,6 +945,11 @@ const SCENES: Record<string, () => Promise<void> | void> = {
       if (typeof preview === 'function') {
         preview(state === 'flying-dart-test-vertical' ? 'vertical' : 'horizontal');
       }
+      return;
+    }
+    if (state === 'heart-vacuum') {
+      const preview = battleDebug().previewHeartVacuum;
+      if (typeof preview === 'function') preview();
       return;
     }
     if (state === 'ultimate-picker') {
@@ -946,7 +1046,9 @@ async function main(): Promise<void> {
     const cast = pendingUltimateCast;
     pendingUltimateCast = null;
     cast?.(skill);
-  }, ultimateVariant);
+  }, ultimateVariant, {
+    includeHeartVacuum: true,
+  });
 
   const root = new Container();
   app.stage.addChild(root);

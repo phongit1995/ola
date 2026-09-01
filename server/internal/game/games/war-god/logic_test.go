@@ -1468,6 +1468,106 @@ func TestMyriadSwordsCostsFullMana(t *testing.T) {
 	}
 }
 
+func TestHeartVacuumAbsorbsHeartsHealsAndResolvesCollapse(t *testing.T) {
+	board := stripedBoard()
+	for index, tile := range board {
+		if tile == tileHeart || tile == tileGreaterHeart {
+			board[index] = tileShield
+		}
+	}
+	board[0] = tileHeart
+	board[1] = tileGreaterHeart
+	// The three swords remain in the column below the absorbed hearts, so the
+	// first gravity step exposes a normal cascade match.
+	board[8], board[16], board[24] = tileSword, tileSword, tileSword
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 7)
+	move := json.RawMessage(`{"type":"ult","skill":"heart-vacuum"}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	if next.Fighters[0].HP != 115 || next.Fighters[0].MP != 0 {
+		t.Fatalf("heart vacuum should heal 15 and spend mana: %+v", next.Fighters[0])
+	}
+	if len(next.Steps) < 3 || next.Steps[0].Kind != stepUlt || next.Steps[1].Kind != stepGravity {
+		t.Fatalf("heart vacuum must be followed by gravity: %+v", next.Steps)
+	}
+	ult := next.Steps[0]
+	if ult.Skill != skillHeartVacuum || !reflect.DeepEqual(ult.Cells, []int{0, 1}) ||
+		ult.Counts[tileNames[tileHeart]] != 1 || ult.Counts[tileNames[tileGreaterHeart]] != 1 ||
+		ult.Effects == nil || ult.Effects.Heal != 15 {
+		t.Fatalf("unexpected heart vacuum step: %+v", ult)
+	}
+	foundCascade := false
+	for _, step := range next.Steps {
+		if step.Kind == stepMatch {
+			foundCascade = true
+			if step.CascadeLevel < 1 {
+				t.Fatalf("heart vacuum collapse must start at cascade level 1: %+v", step)
+			}
+		}
+	}
+	if !foundCascade {
+		t.Fatalf("heart vacuum collapse did not resolve a normal cascade: %+v", next.Steps)
+	}
+
+	// The same authoritative move must work when the other player is the
+	// attacker, which is the direction used by the second half of a 1v1 match.
+	reverse := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100, MP: 100}}, 7)
+	reverseAny, err := (Logic{}).Apply(reverse, 1, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reverseNext := reverseAny.(*State)
+	if reverseNext.Fighters[1].HP != 115 || reverseNext.Fighters[1].MP != 0 {
+		t.Fatalf("player 2 heart vacuum should heal and spend mana: %+v", reverseNext.Fighters)
+	}
+}
+
+func TestHeartVacuumDoesNotCapHealingPerCast(t *testing.T) {
+	board := make([]int, boardSize)
+	for index := range board {
+		board[index] = tileShield
+	}
+	for index := 0; index < 10; index++ {
+		board[index] = tileHeart
+	}
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 19)
+	move := json.RawMessage(`{"type":"ult","skill":"heart-vacuum"}`)
+
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	if len(next.Steps) == 0 || next.Steps[0].Effects == nil {
+		t.Fatalf("heart vacuum did not emit an effect step: %+v", next.Steps)
+	}
+	if got := next.Steps[0].Effects.Heal; got != 10*healHeart {
+		t.Fatalf("heart vacuum healing was capped: got %d want %d", got, 10*healHeart)
+	}
+	if next.Fighters[0].HP < 100+10*healHeart {
+		t.Fatalf("heart vacuum did not apply uncapped healing: %+v", next.Fighters[0])
+	}
+
+	fullState := stateWith(board, [2]Fighter{{HP: maxHP - 2, MP: 100}, {HP: 100}}, 19)
+	fullAny, err := (Logic{}).Apply(fullState, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	full := fullAny.(*State)
+	if got := full.Steps[0].Effects.Heal; got != 2 {
+		t.Fatalf("heart vacuum exceeded max HP: got heal %d want 2", got)
+	}
+	if full.Fighters[0].HP != maxHP {
+		t.Fatalf("heart vacuum should stop at max HP: %+v", full.Fighters[0])
+	}
+}
+
 func TestLightningGodStrikesFourTwoByTwoBlocksTriggersLightningAndAppliesGravity(t *testing.T) {
 	board := stripedBoard()
 	previewBlocks := randomFourTwoByTwoBlocks(&rng{z: 7})

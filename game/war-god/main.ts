@@ -163,7 +163,7 @@ async function main(): Promise<void> {
     const cast = pendingUltimateCast;
     pendingUltimateCast = null;
     cast?.(skill);
-  });
+  }, undefined, { includeHeartVacuum: true });
 
   buildBattleScreen(root, {
     getUserInfo: sessionController.getUserInfo,

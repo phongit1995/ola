@@ -13,6 +13,7 @@ import itemLightning from './assets/items/lightning.webp';
 import specialFireSword from './assets/items/fire-sword-v1.webp';
 import specialGreaterHeart from './assets/items/greater-heart-v1.webp';
 import itemFlyingDart from './assets/items/flying-dart-v2.webp';
+import ultimateHeartVacuum from './assets/ultimate/heart-vacuum.webp';
 import cardBorderActive from './assets/hud/card-border-active.webp';
 import cardBorderIdle from './assets/hud/card-border-idle.webp';
 import ringActive from './assets/hud/ring-active.webp';
@@ -134,6 +135,9 @@ export const A = {
     flyingDart: itemFlyingDart,
     flyingDartHorizontal: itemFlyingDart,
     flyingDartVertical: itemFlyingDart,
+  },
+  ultimate: {
+    heartVacuum: ultimateHeartVacuum,
   },
   hud: {
     cardBorderActive,

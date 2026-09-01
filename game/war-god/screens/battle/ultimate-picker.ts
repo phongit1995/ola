@@ -1,12 +1,15 @@
 import { Assets, Container, Graphics, Rectangle, Sprite, Texture, type Ticker } from 'pixi.js';
 import lightningGodUrl from '../../assets/ultimate/lightning-god.webp';
 import myriadSwordsUrl from '../../assets/ultimate/myriad-swords.webp';
+import heartVacuumUrl from '../../assets/ultimate/heart-vacuum.webp';
 import { HEADING, addTick, makeText, popIn, pressable, removeTick } from '../../kit';
 import { DESIGN_W } from '../../layout';
 import { LIGHTNING_GOD_DAMAGE, ULT_COST } from '../../logic/constants.gen';
 import type { UltimateSkillId } from '../../logic/server-types';
+import { HEART_VACUUM_RULES } from './heart-vacuum';
 
 export type { UltimateSkillId } from '../../logic/server-types';
+export type UltimatePickerSkillId = UltimateSkillId;
 export type UltimatePickerVariant =
   | 'electric-pulse'
   | 'dual-halo'
@@ -35,11 +38,11 @@ type Point = readonly [x: number, y: number];
 
 interface UltimatePickerAppearance {
   frameShape: FrameShape;
-  frameColors: [number, number];
+  frameColors: readonly number[];
   frameWidth: number;
   itemSize: number;
   iconSize: number;
-  positions: readonly [Point, Point];
+  positions: readonly Point[];
   connector?: 'line' | 'arc';
   lightningBackdrop?: boolean;
   effect: EffectStyle;
@@ -159,8 +162,8 @@ export function isUltimatePickerVariant(value: string | null): value is Ultimate
 
 export interface UltimatePickerState {
   visible: boolean;
-  selected: UltimateSkillId | null;
-  options: Array<{ id: UltimateSkillId; name: string }>;
+  selected: UltimatePickerSkillId | null;
+  options: Array<{ id: UltimatePickerSkillId; name: string }>;
 }
 
 export interface UltimatePickerAnchor {
@@ -184,10 +187,26 @@ export interface UltimatePicker {
 }
 
 interface SkillDefinition {
-  id: UltimateSkillId;
+  id: UltimatePickerSkillId;
   name: string;
   detail: string;
   texture: Texture;
+}
+
+export interface UltimatePickerOptions {
+  /** Adds the Heart Vacuum option to the picker. */
+  includeHeartVacuum?: boolean;
+  /** Optional hook for mock-only previews; production confirms the skill normally. */
+  onMockSkill?: () => void;
+}
+
+function skillAccent(
+  appearance: UltimatePickerAppearance,
+  skillId: UltimatePickerSkillId,
+): number {
+  if (skillId === 'heart-vacuum') return 0xff5d9f;
+  if (skillId === 'myriad-swords') return appearance.frameColors[1] ?? 0xff7a32;
+  return appearance.frameColors[0] ?? 0xa855f7;
 }
 
 const FLOAT_MARGIN = 10;
@@ -399,6 +418,122 @@ function animateEffect(effect: Container, style: EffectStyle, index: number): vo
   addTick(step);
 }
 
+interface HeartPickerEffectParts {
+  view: Container;
+  aura: Graphics;
+  outerRing: Graphics;
+  innerRing: Graphics;
+  rays: Graphics;
+  sweep: Graphics;
+  orbit: Graphics[];
+  orbitRadius: number;
+}
+
+/**
+ * Heart Vacuum has its own layered treatment. The generated icon is only the
+ * central heart; the aura, runes, light rays and orbiting motes are separate
+ * display objects so each can animate at a different speed.
+ */
+function makeHeartPickerEffect(size: number): HeartPickerEffectParts {
+  const layer = new Container();
+  const radius = size / 2;
+  const aura = new Graphics()
+    .circle(0, 0, radius * 0.86)
+    .fill({ color: 0xff3a9f, alpha: 0.12 })
+    .circle(0, 0, radius * 0.67)
+    .fill({ color: 0xa836ff, alpha: 0.13 });
+  aura.blendMode = 'add';
+
+  const outerRing = new Graphics()
+    .circle(0, 0, radius * 0.91)
+    .stroke({ width: 2.2, color: 0xff78bd, alpha: 0.76 });
+  outerRing.blendMode = 'add';
+  const innerRing = new Graphics()
+    .circle(0, 0, radius * 0.73)
+    .stroke({ width: 1.4, color: 0xffd75e, alpha: 0.74 });
+  innerRing.blendMode = 'add';
+
+  const rays = new Graphics();
+  for (let index = 0; index < 8; index += 1) {
+    const angle = (index * Math.PI) / 4;
+    const inner = radius * 0.94;
+    const outer = radius * (index % 2 === 0 ? 1.11 : 1.03);
+    rays
+      .moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner)
+      .lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+  }
+  rays.stroke({ width: 1.5, color: 0xffd75e, alpha: 0.72, cap: 'round' });
+  rays.blendMode = 'add';
+
+  const sweep = new Graphics()
+    .moveTo(-radius * 0.98, radius * 0.62)
+    .lineTo(radius * 0.98, -radius * 0.62)
+    .stroke({ width: 2.2, color: 0xffffff, alpha: 0.3, cap: 'round' });
+  sweep.blendMode = 'add';
+
+  const orbit: Graphics[] = [];
+  for (let index = 0; index < 6; index += 1) {
+    const mote = new Graphics()
+      .circle(0, 0, index % 2 === 0 ? 2.6 : 1.8)
+      .fill({ color: index % 2 === 0 ? 0xffd75e : 0xff9bd1, alpha: 0.95 });
+    mote.blendMode = 'add';
+    orbit.push(mote);
+  }
+
+  layer.addChild(aura, rays, outerRing, innerRing, sweep, ...orbit);
+  return {
+    view: layer,
+    aura,
+    outerRing,
+    innerRing,
+    rays,
+    sweep,
+    orbit,
+    orbitRadius: radius * 0.76,
+  };
+}
+
+function animateHeartPickerEffect(
+  parts: HeartPickerEffectParts,
+  icon: Sprite,
+  iconBaseScale: number,
+): void {
+  let elapsed = 0;
+  const step = (ticker: Ticker): void => {
+    if (parts.view.destroyed || icon.destroyed) {
+      removeTick(step);
+      return;
+    }
+    elapsed += ticker.deltaMS;
+    const wave = (Math.sin(elapsed / 185) + 1) / 2;
+    const orbitPhase = elapsed / 920;
+
+    parts.aura.scale.set(0.9 + wave * 0.14);
+    parts.aura.alpha = 0.56 + wave * 0.44;
+    parts.outerRing.rotation = elapsed / 2100;
+    parts.outerRing.scale.set(0.96 + wave * 0.08);
+    parts.outerRing.alpha = 0.56 + wave * 0.38;
+    parts.innerRing.rotation = -elapsed / 1370;
+    parts.innerRing.alpha = 0.5 + (1 - wave) * 0.42;
+    parts.rays.rotation = -elapsed / 1650;
+    parts.rays.alpha = 0.32 + wave * 0.58;
+    parts.sweep.rotation = elapsed / 720;
+    parts.sweep.alpha = 0.06 + wave * 0.42;
+    icon.scale.set(iconBaseScale * (1 + wave * 0.075));
+    icon.rotation = Math.sin(elapsed / 960) * 0.035;
+
+    parts.orbit.forEach((mote, index) => {
+      const angle = orbitPhase + (index * Math.PI * 2) / parts.orbit.length;
+      const orbitRadius = parts.orbitRadius * (1 + (index % 2) * 0.13);
+      mote.x = Math.cos(angle) * orbitRadius;
+      mote.y = Math.sin(angle) * orbitRadius;
+      mote.alpha = 0.3 + ((Math.sin(elapsed / 160 + index) + 1) / 2) * 0.7;
+      mote.scale.set(0.78 + wave * 0.32);
+    });
+  };
+  addTick(step);
+}
+
 function makeSkillLabel(
   name: string,
   detail: string,
@@ -432,6 +567,8 @@ function makeSkillItem(
   texture: Texture,
   index: number,
   appearance: UltimatePickerAppearance,
+  accent: number,
+  isHeartVacuum: boolean,
   onSelect: () => void,
 ): Container {
   const view = new Container();
@@ -457,14 +594,16 @@ function makeSkillItem(
     view.addChild(lightning);
   }
 
-  const effect = makeEffectLayer(
-    appearance.effect,
-    appearance.itemSize,
-    appearance.frameColors[index]!,
-    index,
-  );
+  const heartEffect = isHeartVacuum ? makeHeartPickerEffect(appearance.itemSize) : null;
+  const effect =
+    heartEffect?.view ??
+    makeEffectLayer(
+      appearance.effect,
+      appearance.itemSize,
+      accent,
+      index,
+    );
   view.addChild(effect);
-  animateEffect(effect, appearance.effect, index);
 
   const icon = new Sprite(texture);
   icon.anchor.set(0.5);
@@ -474,6 +613,8 @@ function makeSkillItem(
   );
   icon.scale.set(iconScale);
   view.addChild(icon);
+  if (heartEffect != null) animateHeartPickerEffect(heartEffect, icon, iconScale);
+  else animateEffect(effect, appearance.effect, index);
 
   const frame = new Graphics();
   drawFrame(
@@ -481,7 +622,7 @@ function makeSkillItem(
     appearance.frameShape,
     appearance.itemSize,
     appearance.frameWidth,
-    appearance.frameColors[index]!,
+    accent,
   );
   view.addChild(frame);
 
@@ -498,18 +639,26 @@ function makeSkillItem(
 export async function buildUltimatePicker(
   onConfirm: (skill: UltimateSkillId) => void = () => {},
   variant: UltimatePickerVariant = 'electric-pulse',
+  pickerOptions: UltimatePickerOptions = {},
 ): Promise<UltimatePicker> {
   const appearance = APPEARANCES[variant];
+  // The picker is anchored to the ultimate button. Keep every option above
+  // that anchor; placing the new third option below it makes the icon sit on
+  // top of the button and steals its hit area.
+  const itemPositions: readonly Point[] = pickerOptions.includeHeartVacuum
+    ? [[0, -198], [0, -122], [0, -46]]
+    : appearance.positions;
   const halfItem = appearance.itemSize / 2 + 9;
-  let minX = Math.min(...appearance.positions.map(([x]) => x - halfItem));
-  const maxX = Math.max(...appearance.positions.map(([x]) => x + halfItem));
-  const minY = Math.min(...appearance.positions.map(([, y]) => y - halfItem));
-  const maxY = Math.max(...appearance.positions.map(([, y]) => y + halfItem));
+  let minX = Math.min(...itemPositions.map(([x]) => x - halfItem));
+  const maxX = Math.max(...itemPositions.map(([x]) => x + halfItem));
+  const minY = Math.min(...itemPositions.map(([, y]) => y - halfItem));
+  const maxY = Math.max(...itemPositions.map(([, y]) => y + halfItem));
   let contentW = maxX - minX;
   const contentH = maxY - minY;
-  const [lightningTexture, swordsTexture] = await Promise.all([
+  const [lightningTexture, swordsTexture, heartVacuumTexture] = await Promise.all([
     Assets.load<Texture>(lightningGodUrl),
     Assets.load<Texture>(myriadSwordsUrl),
+    pickerOptions.includeHeartVacuum ? Assets.load<Texture>(heartVacuumUrl) : null,
   ]);
   lightningTexture.source.autoGenerateMipmaps = false;
   swordsTexture.source.autoGenerateMipmaps = false;
@@ -521,13 +670,22 @@ export async function buildUltimatePicker(
       detail: `${LIGHTNING_GOD_DAMAGE} ST + 4 tia phá 2×2\nÔ bị phá cộng hiệu ứng · Lôi bắn tia phụ`,
       texture: lightningTexture,
     },
-    {
-      id: 'myriad-swords',
-      name: 'VẠN KIẾM QUY TÔNG',
-      detail: `${ULT_COST / 2} sát thương chắc chắn\nĐòn dứt điểm ổn định`,
-      texture: swordsTexture,
-    },
   ];
+  if (pickerOptions.includeHeartVacuum && heartVacuumTexture != null) {
+    heartVacuumTexture.source.autoGenerateMipmaps = false;
+    skills.push({
+      id: 'heart-vacuum',
+      name: 'THÁNH TÂM HỒI NGUYÊN',
+      detail: `Tim +${HEART_VACUUM_RULES.healPerHeart} · Tim Lớn +${HEART_VACUUM_RULES.healPerGreaterHeart}\nHút hết Tim · hồi đến đầy máu · sập bàn`,
+      texture: heartVacuumTexture,
+    });
+  }
+  skills.push({
+    id: 'myriad-swords',
+    name: 'VẠN KIẾM QUY TÔNG',
+    detail: `${ULT_COST / 2} sát thương chắc chắn\nĐòn dứt điểm ổn định`,
+    texture: swordsTexture,
+  });
 
   const view = new Container();
   const dismissLayer = new Graphics();
@@ -536,48 +694,89 @@ export async function buildUltimatePicker(
 
   if (appearance.connector != null) {
     const connector = new Graphics();
-    const [first, second] = appearance.positions;
+    const connectorPositions = itemPositions;
     if (appearance.connector === 'line') {
-      const middleY = (first[1] + second[1]) / 2;
-      connector
-        .moveTo(first[0], first[1])
-        .lineTo(first[0], middleY)
-        .stroke({ width: 3, color: appearance.frameColors[0], alpha: 0.78, cap: 'round' })
-        .moveTo(second[0], middleY)
-        .lineTo(second[0], second[1])
-        .stroke({ width: 3, color: appearance.frameColors[1], alpha: 0.78, cap: 'round' });
+      for (let index = 0; index < connectorPositions.length - 1; index += 1) {
+        const first = connectorPositions[index]!;
+        const second = connectorPositions[index + 1]!;
+        const middleY = (first[1] + second[1]) / 2;
+        connector
+          .moveTo(first[0], first[1])
+          .lineTo(first[0], middleY)
+          .stroke({
+            width: 3,
+            color: appearance.frameColors[index % appearance.frameColors.length] ?? 0xffffff,
+            alpha: 0.78,
+            cap: 'round',
+          })
+          .moveTo(second[0], middleY)
+          .lineTo(second[0], second[1])
+          .stroke({
+            width: 3,
+            color: appearance.frameColors[(index + 1) % appearance.frameColors.length] ?? 0xffffff,
+            alpha: 0.78,
+            cap: 'round',
+          });
+      }
     } else {
-      connector
-        .moveTo(first[0], first[1])
-        .quadraticCurveTo(-8, -104, second[0], second[1])
-        .stroke({ width: 3, color: appearance.frameColors[0], alpha: 0.78, cap: 'round' });
+      for (let index = 0; index < connectorPositions.length - 1; index += 1) {
+        const first = connectorPositions[index]!;
+        const second = connectorPositions[index + 1]!;
+        connector
+          .moveTo(first[0], first[1])
+          .quadraticCurveTo(-8, (first[1] + second[1]) / 2, second[0], second[1])
+          .stroke({
+            width: 3,
+            color: appearance.frameColors[index % appearance.frameColors.length] ?? 0xffffff,
+            alpha: 0.78,
+            cap: 'round',
+          });
+      }
     }
     options.addChild(connector);
   }
 
-  let selected: UltimateSkillId | null = null;
+  let selected: UltimatePickerSkillId | null = null;
   let fitScale = 1;
+  const animatedPieces: Container[] = [];
+  const stopPickerPops: Array<() => void> = [];
 
   const closePicker = (): void => {
     view.visible = false;
   };
 
   skills.forEach((skill, index) => {
-    const item = makeSkillItem(skill.texture, index, appearance, () => {
-      selected = skill.id;
-      closePicker();
-      onConfirm(skill.id);
-    });
-    item.position.set(...appearance.positions[index]!);
+    const accent = skillAccent(appearance, skill.id);
+    const item = makeSkillItem(
+      skill.texture,
+      index,
+      appearance,
+      accent,
+      skill.id === 'heart-vacuum',
+      () => {
+        if (skill.id === 'heart-vacuum') {
+          selected = skill.id;
+          closePicker();
+          if (pickerOptions.onMockSkill) pickerOptions.onMockSkill();
+          else onConfirm(skill.id);
+          return;
+        }
+        selected = skill.id;
+        closePicker();
+        onConfirm(skill.id);
+      },
+    );
+    item.position.set(...itemPositions[index]!);
     const label = makeSkillLabel(
       skill.name,
       skill.detail,
-      appearance.frameColors[index]!,
+      accent,
       appearance.itemSize,
     );
-    label.position.set(...appearance.positions[index]!);
+    label.position.set(...itemPositions[index]!);
     options.addChild(label, item);
-    const labelLeft = appearance.positions[index]![0] + label.getLocalBounds().minX;
+    animatedPieces.push(item, label);
+    const labelLeft = itemPositions[index]![0] + label.getLocalBounds().minX;
     minX = Math.min(minX, labelLeft);
   });
   contentW = maxX - minX;
@@ -589,11 +788,17 @@ export async function buildUltimatePicker(
   return {
     view,
     open(): void {
+      stopPickerPops.splice(0).forEach((stop) => stop());
       selected = null;
       view.visible = true;
       options.scale.set(fitScale);
       options.alpha = 1;
-      popIn(options, 0, 260);
+      // Giữ nhịp pop-in cũ của picker, đồng thời cho từng lựa chọn bật lên
+      // tuần tự để người chơi nhận ra item mới vừa được thêm vào.
+      stopPickerPops.push(popIn(options, 0, 260));
+      animatedPieces.forEach((piece, index) => {
+        stopPickerPops.push(popIn(piece, index * 65, 230));
+      });
     },
     close: closePicker,
     layout(designH, insetTop = 0, insetBottom = 0, anchor = null): void {

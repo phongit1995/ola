@@ -62,7 +62,7 @@ import {
   type EffectSummary,
   type Fighter,
 } from '../../logic/battle';
-import { TURN_SECONDS as DEFAULT_TURN_SECONDS } from '../../logic/constants.gen';
+import { MAX_HP, TURN_SECONDS as DEFAULT_TURN_SECONDS } from '../../logic/constants.gen';
 import { recordBotMatch } from '../../logic/bot-history';
 import { calculateBotStarRating } from '../../logic/bot-rating';
 import {
@@ -137,6 +137,7 @@ import {
 import { deriveUltimateControlState } from './ultimate-control-state';
 import { confirmedSwapDestination, rememberedSelectionsForTurn } from './remembered-selection';
 import { battleActionAvailability } from './action-layout';
+import { calculateHeartVacuumHeal } from './heart-vacuum';
 
 const TURN_SECONDS =
   Number(new URLSearchParams(location.search).get('turnsec')) || DEFAULT_TURN_SECONDS;
@@ -846,6 +847,381 @@ function flySword(
   });
 }
 
+/** Visual effect used by the Heart Vacuum spell in PvE and PvP replay. */
+interface HeartVacuumCoreFx {
+  view: Container;
+  veil: Graphics;
+  center: { x: number; y: number };
+  coreRadius: number;
+  absorb(): void;
+  prepareFlight(): Promise<void>;
+  stop(): void;
+}
+
+function createHeartVacuumCore(totalHearts: number): HeartVacuumCoreFx {
+  const boardW = tileSize * GRID;
+  const center = {
+    x: boardBox.x + boardW / 2,
+    y: boardBox.y + boardW / 2,
+  };
+  const coreRadius = Math.max(tileSize * 1.16, 38);
+
+  // Giữ bàn tối nhẹ trong lúc thi triển để lõi Tim và đường hút nổi bật,
+  // nhưng chỉ phủ đúng vùng bàn nên HUD/card vẫn đọc được.
+  const veil = new Graphics()
+    .roundRect(
+      boardBox.x - tileSize * 0.06,
+      boardBox.y - tileSize * 0.06,
+      boardW + tileSize * 0.12,
+      boardW + tileSize * 0.12,
+      tileSize * 0.16,
+    )
+    .fill({ color: 0x090817, alpha: 0.52 });
+  veil.alpha = 0;
+  flyLayer.addChild(veil);
+
+  const view = new Container();
+  view.position.set(center.x, center.y);
+  view.alpha = 0;
+  view.scale.set(0.42);
+
+  const field = new Container();
+  const aura = new Graphics()
+    .circle(0, 0, coreRadius * 1.22)
+    .fill({ color: 0xff2f95, alpha: 0.1 })
+    .circle(0, 0, coreRadius * 0.88)
+    .fill({ color: 0x8c2cff, alpha: 0.12 });
+  aura.blendMode = 'add';
+
+  const vortex = new Graphics();
+  for (let index = 0; index < 3; index += 1) {
+    const radius = coreRadius * (0.88 + index * 0.16);
+    const start = -Math.PI * 0.36 + index * Math.PI * 0.68;
+    vortex
+      .arc(0, 0, radius, start, start + Math.PI * 0.82)
+      .stroke({
+        width: Math.max(1.4, tileSize * 0.035),
+        color: index === 1 ? 0xffd75e : 0xff74bd,
+        alpha: 0.72 - index * 0.12,
+        cap: 'round',
+      });
+  }
+  vortex.blendMode = 'add';
+
+  const rays = new Graphics();
+  for (let index = 0; index < 12; index += 1) {
+    const angle = (index * Math.PI) / 6;
+    const inner = coreRadius * 1.12;
+    const outer = coreRadius * (index % 2 === 0 ? 1.34 : 1.23);
+    rays
+      .moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner)
+      .lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+  }
+  rays.stroke({
+    width: Math.max(1.2, tileSize * 0.03),
+    color: 0xffd75e,
+    alpha: 0.62,
+    cap: 'round',
+  });
+  rays.blendMode = 'add';
+
+  const motes: Graphics[] = [];
+  for (let index = 0; index < 8; index += 1) {
+    const mote = new Graphics()
+      .circle(0, 0, index % 3 === 0 ? tileSize * 0.07 : tileSize * 0.045)
+      .fill({ color: index % 2 === 0 ? 0xffd75e : 0xff8ac8, alpha: 0.9 });
+    mote.blendMode = 'add';
+    motes.push(mote);
+  }
+  field.addChild(aura, rays, vortex, ...motes);
+
+  const coreGlow = new Graphics()
+    .circle(0, 0, coreRadius * 0.76)
+    .fill({ color: 0xff3b91, alpha: 0.18 });
+  coreGlow.blendMode = 'add';
+
+  // Use the clean Greater Heart art as the actual core. The large ornate
+  // ultimate badge is useful in the picker, but becomes visually noisy when
+  // enlarged over the board.
+  const icon = new Sprite(tex[A.items.greaterHeart]);
+  icon.anchor.set(0.5);
+  const iconScale = (coreRadius * 1.5) / Math.max(icon.texture.width, icon.texture.height);
+  icon.scale.set(iconScale);
+
+  const shine = new Graphics()
+    .moveTo(-coreRadius * 0.24, 0)
+    .lineTo(coreRadius * 0.24, 0)
+    .moveTo(0, -coreRadius * 0.24)
+    .lineTo(0, coreRadius * 0.24)
+    .stroke({ width: Math.max(2, tileSize * 0.05), color: 0xffffff, alpha: 0.8, cap: 'round' });
+  shine.blendMode = 'add';
+
+  const counter = new Container();
+  counter.position.set(0, coreRadius * 1.23);
+  const counterBg = new Graphics()
+    .roundRect(-coreRadius * 0.45, -tileSize * 0.16, coreRadius * 0.9, tileSize * 0.32, tileSize * 0.16)
+    .fill({ color: 0x241027, alpha: 0.9 })
+    .stroke({ width: 1, color: 0xffd75e, alpha: 0.78 });
+  const counterText = makeText('0', Math.max(9, tileSize * 0.25), 0xfff1ce, '800', HEADING);
+  counter.addChild(counterBg, counterText);
+
+  view.addChild(field, coreGlow, icon, shine, counter);
+  flyLayer.addChild(view);
+
+  let elapsed = 0;
+  let absorbed = 0;
+  let absorbKick = 0;
+  const pulse = (ticker: Ticker): void => {
+    if (view.destroyed) {
+      removeTick(pulse);
+      return;
+    }
+    elapsed += ticker.deltaMS;
+    absorbKick *= Math.pow(0.83, ticker.deltaMS / 16.67);
+    const wave = (Math.sin(elapsed / 180) + 1) / 2;
+    aura.scale.set(0.92 + wave * 0.13);
+    aura.alpha = 0.56 + wave * 0.38;
+    vortex.rotation = -elapsed / 920;
+    vortex.scale.set(0.96 + wave * 0.06);
+    rays.rotation = elapsed / 2350;
+    rays.alpha = 0.36 + wave * 0.48;
+    coreGlow.scale.set(0.9 + wave * 0.14 + absorbKick * 0.12);
+    coreGlow.alpha = 0.5 + wave * 0.36;
+    icon.scale.set(iconScale * (1 + wave * 0.045 + absorbKick * 0.12));
+    icon.y = -wave * tileSize * 0.025;
+    shine.rotation = elapsed / 1600;
+    shine.alpha = 0.42 + wave * 0.48;
+    motes.forEach((mote, index) => {
+      const angle = elapsed / (820 + (index % 2) * 180) + (index * Math.PI * 2) / motes.length;
+      const orbit = coreRadius * (0.9 + (index % 3) * 0.1);
+      mote.position.set(Math.cos(angle) * orbit, Math.sin(angle) * orbit);
+      mote.alpha = 0.32 + ((Math.sin(elapsed / 145 + index) + 1) / 2) * 0.68;
+    });
+  };
+  addTick(pulse);
+
+  return {
+    view,
+    veil,
+    center,
+    coreRadius,
+    absorb(): void {
+      absorbed = Math.min(totalHearts, absorbed + 1);
+      absorbKick = 1;
+      counterText.text = `${absorbed}`;
+      const ring = new Graphics()
+        .circle(0, 0, coreRadius * 0.55)
+        .stroke({ width: Math.max(1.5, tileSize * 0.035), color: 0xffffff, alpha: 0.8 });
+      ring.blendMode = 'add';
+      view.addChild(ring);
+      void tween(ring, { alpha: 0, scale: 1.85 }, 180).then(() => ring.destroy());
+    },
+    async prepareFlight(): Promise<void> {
+      await Promise.all([
+        tween(field, { alpha: 0, scale: 0.58 }, 210),
+        tween(counter, { alpha: 0, scale: 0.72 }, 170),
+        tween(shine, { alpha: 0, scale: 0.5 }, 170),
+      ]);
+    },
+    stop(): void {
+      removeTick(pulse);
+    },
+  };
+}
+
+async function revealHeartVacuumCore(fx: HeartVacuumCoreFx): Promise<void> {
+  const shockwave = new Graphics()
+    .circle(0, 0, fx.coreRadius * 0.45)
+    .stroke({ width: Math.max(2, tileSize * 0.055), color: 0xff9bd2, alpha: 0.86 });
+  shockwave.position.copyFrom(fx.center);
+  shockwave.blendMode = 'add';
+  flyLayer.addChild(shockwave);
+  await Promise.all([
+    tween(fx.veil, { alpha: 1 }, 240),
+    tween(fx.view, { alpha: 1, scale: 1 }, 340),
+    tween(shockwave, { alpha: 0, scale: 3.1 }, 440),
+  ]);
+  shockwave.destroy();
+  await tween(fx.view, { scale: 1.07 }, 110);
+  await tween(fx.view, { scale: 1 }, 150);
+}
+
+function flyHeartIntoCore(
+  index: number,
+  fx: HeartVacuumCoreFx,
+  type: 'heart' | 'greaterHeart',
+  order: number,
+): Promise<void> {
+  return new Promise((resolve) => {
+    const from = cellRootPos(index);
+    const icon = new Sprite(tex[A.items[type]]);
+    icon.anchor.set(0.5);
+    const scale0 =
+      (tileSize * (type === 'greaterHeart' ? 0.76 : 0.66)) /
+      Math.max(icon.texture.width, icon.texture.height);
+    icon.scale.set(scale0);
+    icon.position.set(from.x, from.y);
+    flyLayer.addChild(icon);
+
+    const glow = new Graphics()
+      .circle(0, 0, tileSize * (type === 'greaterHeart' ? 0.4 : 0.32))
+      .fill({ color: type === 'greaterHeart' ? 0xffd75e : 0xff5a83, alpha: 0.34 });
+    glow.position.copyFrom(icon.position);
+    glow.blendMode = 'add';
+    flyLayer.addChildAt(glow, Math.max(0, flyLayer.children.length - 2));
+
+    const dx = from.x - fx.center.x;
+    const dy = from.y - fx.center.y;
+    const distance = Math.hypot(dx, dy) || 1;
+    const angle = Math.atan2(dy, dx);
+    const swirl = order % 2 === 0 ? 0.86 : -0.86;
+    const c1 = {
+      x: fx.center.x + Math.cos(angle + swirl) * distance * 0.62,
+      y: fx.center.y + Math.sin(angle + swirl) * distance * 0.62,
+    };
+    const c2 = {
+      x: fx.center.x + Math.cos(angle - swirl * 0.55) * distance * 0.2,
+      y: fx.center.y + Math.sin(angle - swirl * 0.55) * distance * 0.2,
+    };
+    const source = sprites[index];
+    if (source && !source.destroyed) {
+      void tween(source, { alpha: 0.08, scale: source.scale.x * 0.72 }, 300);
+    }
+
+    const duration = 430 + (order % 3) * 28;
+    let elapsed = 0;
+    let trailElapsed = 0;
+    const step = (ticker: Ticker): void => {
+      elapsed += ticker.deltaMS;
+      trailElapsed += ticker.deltaMS;
+      const k = Math.min(1, elapsed / duration);
+      const e = k * k * (3 - 2 * k);
+      const u = 1 - e;
+      icon.x =
+        u * u * u * from.x +
+        3 * u * u * e * c1.x +
+        3 * u * e * e * c2.x +
+        e * e * e * fx.center.x;
+      icon.y =
+        u * u * u * from.y +
+        3 * u * u * e * c1.y +
+        3 * u * e * e * c2.y +
+        e * e * e * fx.center.y;
+      const tangentX = 3 * u * u * (c1.x - from.x) + 6 * u * e * (c2.x - c1.x) + 3 * e * e * (fx.center.x - c2.x);
+      const tangentY = 3 * u * u * (c1.y - from.y) + 6 * u * e * (c2.y - c1.y) + 3 * e * e * (fx.center.y - c2.y);
+      icon.rotation = Math.atan2(tangentY, tangentX) + Math.PI / 2;
+      glow.x = icon.x;
+      glow.y = icon.y;
+      glow.alpha = 0.34 * (1 - e * 0.82);
+      glow.scale.set(0.9 + e * 0.55);
+      icon.scale.set(scale0 * (1 - e * 0.63));
+      icon.alpha = 1 - e * 0.3;
+      if (trailElapsed >= 34 && k < 0.9) {
+        trailElapsed = 0;
+        const trail = new Graphics()
+          .circle(icon.x, icon.y, Math.max(1.2, tileSize * 0.035))
+          .fill({ color: type === 'greaterHeart' ? 0xffd75e : 0xff74bd, alpha: 0.65 });
+        trail.blendMode = 'add';
+        flyLayer.addChildAt(trail, Math.max(0, flyLayer.children.indexOf(fx.view)));
+        void tween(trail, { alpha: 0, scale: 0.12 }, 180).then(() => trail.destroy());
+      }
+      if (k >= 1) {
+        removeTick(step);
+        fx.absorb();
+        void Promise.all([
+          tween(icon, { alpha: 0, scale: scale0 * 0.12 }, 100),
+          tween(glow, { alpha: 0, scale: 0.08 }, 100),
+        ]).then(() => {
+          icon.destroy();
+          glow.destroy();
+          resolve();
+        });
+      }
+    };
+    addTick(step);
+  });
+}
+
+async function flyHeartVacuumCoreToCard(fx: HeartVacuumCoreFx, card: Container): Promise<void> {
+  await fx.prepareFlight();
+  const from = { x: fx.view.x, y: fx.view.y };
+  const to = { x: card.x + 95, y: card.y + 34 };
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const curve = len * 0.16;
+  const control = {
+    x: (from.x + to.x) / 2 - (dy / len) * curve,
+    y: (from.y + to.y) / 2 + (dx / len) * curve,
+  };
+  const startScale = fx.view.scale.x;
+  await new Promise<void>((resolve) => {
+    let elapsed = 0;
+    let trailElapsed = 0;
+    const duration = 680;
+    const step = (ticker: Ticker): void => {
+      elapsed += ticker.deltaMS;
+      trailElapsed += ticker.deltaMS;
+      const k = Math.min(1, elapsed / duration);
+      const e = k * k * (3 - 2 * k);
+      const u = 1 - e;
+      fx.view.x = u * u * from.x + 2 * u * e * control.x + e * e * to.x;
+      fx.view.y = u * u * from.y + 2 * u * e * control.y + e * e * to.y;
+      fx.view.scale.set(startScale * (1 - e * 0.56));
+      if (trailElapsed >= 30 && k < 0.94) {
+        trailElapsed = 0;
+        const trail = new Graphics()
+          .circle(fx.view.x, fx.view.y, Math.max(1.5, tileSize * 0.045))
+          .fill({ color: 0xffd75e, alpha: 0.62 });
+        trail.blendMode = 'add';
+        flyLayer.addChild(trail);
+        void tween(trail, { alpha: 0, scale: 0.08 }, 220).then(() => trail.destroy());
+      }
+      if (k >= 1) {
+        removeTick(step);
+        resolve();
+      }
+    };
+    addTick(step);
+  });
+
+  const impact = new Container();
+  impact.position.set(to.x, to.y);
+  impact.blendMode = 'add';
+  const ring = new Graphics()
+    .circle(0, 0, tileSize * 0.3)
+    .stroke({ width: Math.max(2, tileSize * 0.06), color: 0xffd75e, alpha: 0.9 });
+  const flash = new Graphics()
+    .circle(0, 0, tileSize * 0.18)
+    .fill({ color: 0xffffff, alpha: 0.72 });
+  impact.addChild(ring, flash);
+  for (let index = 0; index < 8; index += 1) {
+    const angle = (index * Math.PI * 2) / 8;
+    const mote = new Graphics()
+      .circle(0, 0, index % 2 === 0 ? tileSize * 0.045 : tileSize * 0.03)
+      .fill({ color: index % 2 === 0 ? 0xffd75e : 0xff8ac8, alpha: 0.9 });
+    mote.position.set(Math.cos(angle) * tileSize * 0.22, Math.sin(angle) * tileSize * 0.22);
+    impact.addChild(mote);
+    void tween(
+      mote,
+      {
+        x: Math.cos(angle) * tileSize * 0.7,
+        y: Math.sin(angle) * tileSize * 0.7,
+        alpha: 0,
+        scale: 0.14,
+      },
+      280,
+    ).then(() => mote.destroy());
+  }
+  flyLayer.addChild(impact);
+  await Promise.all([
+    tween(ring, { alpha: 0, scale: 2.2 }, 240),
+    tween(flash, { alpha: 0, scale: 2.8 }, 150),
+    tween(fx.view, { alpha: 0 }, 120),
+  ]);
+  impact.destroy({ children: true });
+}
+
 // Hàng đợi số nổi theo từng card: hiện tuần tự từng số một (xong cái này mới
 // lên cái kế), ngay tại khu thanh thông tin của người chơi thay vì xếp chồng xa nhau.
 const floatQueues = new Map<Container, Array<{ text: string; color: number }>>();
@@ -1537,6 +1913,24 @@ async function castMyUltimate(skill: UltimateSkillId): Promise<void> {
     void startBotTurn();
     return;
   }
+  if (skill === 'heart-vacuum') {
+    const earnedExtraTurns = await castHeartVacuumLocal('me');
+    if (checkEnd()) return;
+    const { granted: grantedExtraTurns, remaining: remainingExtraTurns } = addBotModeExtraTurns(
+      'me',
+      earnedExtraTurns,
+    );
+    if (remainingExtraTurns > 0) {
+      announceExtraTurns('me', grantedExtraTurns, remainingExtraTurns);
+      setStatus(`Bạn còn ${remainingExtraTurns} lượt thưởng!`);
+      endBusy();
+      resetTurnClock();
+      updateHud();
+      return;
+    }
+    void startBotTurn();
+    return;
+  }
   const ultResult = castUltimate(me, foe);
   setStatus(`TUYỆT CHIÊU! ${directDamageText(ultResult)}`);
   showDirectDamage('foe', ultResult);
@@ -1577,10 +1971,12 @@ async function startBotTurn(): Promise<void> {
 
     if (botShouldUlt(foe, me, botLevel)) {
       spendBotModeExtraTurn('foe');
-      const skill = botChooseUltimateSkill(foe, me, botLevel);
+      const skill = botChooseUltimateSkill(foe, me, botLevel, board);
       let earnedExtraTurns = 0;
       if (skill === 'lightning-god') {
         earnedExtraTurns = await castLightningGodLocal('foe');
+      } else if (skill === 'heart-vacuum') {
+        earnedExtraTurns = await castHeartVacuumLocal('foe');
       } else {
         const ultResult = castUltimate(foe, me);
         setStatus(`Máy tung TUYỆT CHIÊU! ${directDamageText(ultResult)}`);
@@ -1954,6 +2350,50 @@ async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
   const result = { damage, armorDamage };
   defender.armor = Math.max(0, defender.armor - armorDamage);
   defender.hp = Math.max(0, defender.hp - damage);
+  if (step.skill === 'heart-vacuum') {
+    const cells = step.cells ?? [];
+    const removed = new Set(cells);
+    const core = createHeartVacuumCore(cells.length);
+    playSound('ultimate');
+    setStatus(
+      side === 'me'
+        ? `THÁNH TÂM HỒI NGUYÊN · HÚT ${cells.length} Ô TIM`
+        : `Đối thủ dùng THÁNH TÂM HỒI NGUYÊN · HÚT ${cells.length} Ô TIM`,
+    );
+    updateHud();
+    try {
+      await revealHeartVacuumCore(core);
+      await Promise.all(
+        cells.map((index, order) =>
+          sleep(order * 46).then(() =>
+            flyHeartIntoCore(
+              index,
+              core,
+              board[index] === 'greaterHeart' ? 'greaterHeart' : 'heart',
+              order,
+            ),
+          ),
+        ),
+      );
+      await tween(core.view, { scale: 1.14 }, 130);
+      await tween(core.view, { scale: 1 }, 180);
+      await Promise.all([
+        animateRemove(removed),
+        flyHeartVacuumCoreToCard(core, side === 'me' ? hud.me.card : hud.foe.card),
+      ]);
+      await tween(core.veil, { alpha: 0 }, 220);
+      if (step.effects) {
+        applyAuthoritativeEffects(attacker, defender, step.effects);
+        updateHud();
+        showEffectFloats(side, step.effects);
+      }
+    } finally {
+      core.stop();
+      if (!core.view.destroyed) core.view.destroy({ children: true });
+      if (!core.veil.destroyed) core.veil.destroy();
+    }
+    return;
+  }
   if (step.skill === 'lightning-god') {
     const cells = step.cells ?? [];
     const exploded = step.exploded ?? [];
@@ -2496,6 +2936,96 @@ function previewBoardShuffle(): boolean {
   return true;
 }
 
+/** Resolve the Heart Vacuum spell locally (PvE and the mock 1v1 transport). */
+async function castHeartVacuumLocal(side: 'me' | 'foe'): Promise<number> {
+  const attacker = side === 'me' ? me : foe;
+  const card = side === 'me' ? hud.me.card : hud.foe.card;
+  attacker.mp = 0;
+  const heartCells = board.reduce<number[]>((cells, type, index) => {
+    if (type === 'heart' || type === 'greaterHeart') cells.push(index);
+    return cells;
+  }, []);
+  if (heartCells.length === 0) {
+    setStatus(
+      side === 'me'
+        ? 'THÁNH TÂM HỒI NGUYÊN · BÀN KHÔNG CÓ TIM'
+        : 'Máy dùng THÁNH TÂM HỒI NGUYÊN · BÀN KHÔNG CÓ TIM',
+    );
+    return 0;
+  }
+
+  const greaterHeartCount = heartCells.filter((index) => board[index] === 'greaterHeart').length;
+  const heal = calculateHeartVacuumHeal(
+    attacker.hp,
+    heartCells.length - greaterHeartCount,
+    greaterHeartCount,
+  );
+  setStatus(
+    side === 'me'
+      ? `THÁNH TÂM HỒI NGUYÊN · HÚT ${heartCells.length} Ô TIM`
+      : `Máy dùng THÁNH TÂM HỒI NGUYÊN · HÚT ${heartCells.length} Ô TIM`,
+  );
+  playSound('ultimate');
+  updateHud();
+
+  const removed = new Set(heartCells);
+  const core = createHeartVacuumCore(heartCells.length);
+  try {
+    await revealHeartVacuumCore(core);
+    await Promise.all(
+      heartCells.map((index, order) =>
+        sleep(order * 46).then(() =>
+          flyHeartIntoCore(
+            index,
+            core,
+            board[index] === 'greaterHeart' ? 'greaterHeart' : 'heart',
+            order,
+          ),
+        ),
+      ),
+    );
+    await tween(core.view, { scale: 1.14 }, 130);
+    await tween(core.view, { scale: 1 }, 180);
+
+    // Tim đã nhập vào lõi: xoá các ô cũ rồi đưa lõi năng lượng về card.
+    await Promise.all([animateRemove(removed), flyHeartVacuumCoreToCard(core, card)]);
+    await tween(core.veil, { alpha: 0 }, 220);
+
+    attacker.hp = Math.min(MAX_HP, attacker.hp + heal);
+    updateHud();
+    if (heal > 0) floatNumber(card, `+${heal} HP`, 0x7dff8a);
+    const gravity = applyGravity(board, removed);
+    await animateGravity(gravity.falls, gravity.spawns);
+    if (attacker.hp <= 0 || (side === 'me' ? foe : me).hp <= 0) return 0;
+    // Collapse after absorption is a normal cascade. Start at level 1 so the
+    // first match created by the collapse gets the same bonus as the server.
+    const bonusTurns = await resolveCascades(side, 1, { active: false });
+    setStatus(
+      heal > 0
+        ? `${side === 'me' ? 'THÁNH TÂM HỒI NGUYÊN' : 'Máy · THÁNH TÂM HỒI NGUYÊN'} · +${heal} HP · BÀN ĐÃ SẬP`
+        : `${side === 'me' ? 'THÁNH TÂM HỒI NGUYÊN' : 'Máy · THÁNH TÂM HỒI NGUYÊN'} · ĐÃ HÚT TIM · BÀN ĐÃ SẬP`,
+    );
+    return bonusTurns;
+  } finally {
+    core.stop();
+    if (!core.view.destroyed) core.view.destroy({ children: true });
+    if (!core.veil.destroyed) core.veil.destroy();
+  }
+}
+
+function previewHeartVacuum(): boolean {
+  if (!inGame || tileSize <= 0 || busy || over) return false;
+  busy = true;
+  clearHint();
+  setSelected(null);
+  botSelectorA.visible = false;
+  void castHeartVacuumLocal('me').finally(() => {
+    endBusy();
+    updateHud();
+  });
+  return true;
+}
+
 export function battleDebug(): Record<string, unknown> {
   return {
     mode,
@@ -2536,6 +3066,7 @@ export function battleDebug(): Record<string, unknown> {
     previewFlyingDartWildcard,
     previewVsIntro,
     previewBoardShuffle,
+    previewHeartVacuum,
   };
 }
 
