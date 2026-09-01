@@ -3,6 +3,7 @@ import {
   BOT_LEVEL_TITLES,
   LEVEL_LABELS,
   botChooseMove,
+  botChooseUltimateSkill,
   botShouldUlt,
   createFighter,
 } from './battle';
@@ -82,5 +83,26 @@ describe('War God expert bot', () => {
     expect(botShouldUlt(bot, player, 'expert')).toBe(true);
     player.hp = 40;
     expect(botShouldUlt(bot, player, 'expert')).toBe(true);
+  });
+
+  it('chooses Heart Vacuum when low on HP and the board has enough hearts', () => {
+    const board = createBoard(lcg(20260901));
+    board[0] = 'heart';
+    board[1] = 'heart';
+    board[2] = 'heart';
+    const bot = { ...createFighter(), hp: 90, mp: 100 };
+    const player = { ...createFighter(), hp: 150 };
+
+    expect(botChooseUltimateSkill(bot, player, 'normal', board)).toBe('heart-vacuum');
+  });
+
+  it('does not choose Heart Vacuum when there are no hearts to absorb', () => {
+    const board = createBoard(lcg(20260902)).map((tile) =>
+      tile === 'heart' || tile === 'greaterHeart' ? 'sword' : tile,
+    );
+    const bot = { ...createFighter(), hp: 90, mp: 100 };
+    const player = { ...createFighter(), hp: 150 };
+
+    expect(botChooseUltimateSkill(bot, player, 'normal', board)).not.toBe('heart-vacuum');
   });
 });

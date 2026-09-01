@@ -6,14 +6,14 @@ const (
 	grid          = 8
 	boardSize     = grid * grid
 	baseTileCount = 6
-	tileCount     = 10
+	tileCount     = 11
 	// Divisor riêng cho từng ô gốc để cả hai ô đặc biệt ra ~1/60:
 	//   Kiếm Lửa   ≈ 22% / 13 ≈ 1/59
 	//   Đại Trái Tim ≈ 16% / 10 ≈ 1/62
 	specialSwordOneIn = 13
 	specialHeartOneIn = 10
 	// Phi Tiêu chỉ có thể sinh ngẫu nhiên ở các ô bù sau khi bàn sập.
-	// Nguồn xuất hiện chính vẫn là ghép một hàng/cột 5 ô Nước.
+	// Nguồn xuất hiện chính vẫn là ghép một hàng/cột 5 ô Nước hoặc hình L/T.
 	specialFlyingDartOneIn = 400
 	maxFlyingDartsOnBoard  = 2
 )
@@ -29,6 +29,7 @@ const (
 	tileGreaterHeart
 	tileFlyingDartHorizontal
 	tileFlyingDartVertical
+	tileFlyingDartCross
 )
 
 // tileNames is the wire-format order shared with the TypeScript client.
@@ -44,11 +45,13 @@ var tileNames = [tileCount]string{
 	"greaterHeart",
 	"flyingDartHorizontal",
 	"flyingDartVertical",
+	"flyingDartCross",
 }
 
 const (
 	dartAxisHorizontal = "horizontal"
 	dartAxisVertical   = "vertical"
+	dartAxisCross      = "cross"
 )
 
 type DartCreation struct {
@@ -159,7 +162,7 @@ func baseTile(tile int) int {
 		return tileSword
 	case tileGreaterHeart:
 		return tileHeart
-	case tileFlyingDartHorizontal, tileFlyingDartVertical:
+	case tileFlyingDartHorizontal, tileFlyingDartVertical, tileFlyingDartCross:
 		return tileWater
 	default:
 		return tile
@@ -167,20 +170,131 @@ func baseTile(tile int) int {
 }
 
 func isFlyingDart(tile int) bool {
-	return tile == tileFlyingDartHorizontal || tile == tileFlyingDartVertical
+	return tile == tileFlyingDartHorizontal || tile == tileFlyingDartVertical || tile == tileFlyingDartCross
 }
 
 func flyingDartAxis(tile int) string {
+	if tile == tileFlyingDartCross {
+		return dartAxisCross
+	}
 	if tile == tileFlyingDartVertical {
 		return dartAxisVertical
 	}
 	return dartAxisHorizontal
 }
 
-// findFlyingDartCreation turns one straight Water run of 5+ into a Phi Tiêu.
-// The swapped destination is preferred so the reward appears where the player
-// acted; cascade-created runs fall back to their center-most plain Water tile.
-func findFlyingDartCreation(board []int, preferred []int) *DartCreation {
+// findFlyingDartCreation turns a straight Water run of 5+ into a directional
+// Phi Tiêu. A connected L/T-shaped Water group of 5+ creates a cross dart that
+// clears both its row and column. matched limits creation to the current wave,
+// preventing an unrelated board run from being converted during a cascade.
+func findFlyingDartCreation(board []int, preferred, matched []int) *DartCreation {
+	matchedSet := make(map[int]bool, len(matched))
+	for _, index := range matched {
+		matchedSet[index] = true
+	}
+
+	// A component with both a horizontal and vertical run of at least three is
+	// an L/T (or a larger cross-like variant). Prefer this special over a plain
+	// straight run so an L/T containing a line of five still gets both axes.
+	if len(matchedSet) > 0 {
+		type waterComponent struct {
+			cells  []int
+			pivots []int
+		}
+		visited := make(map[int]bool, len(matchedSet))
+		components := make([]waterComponent, 0)
+		for start := 0; start < len(board); start++ {
+			if !matchedSet[start] || board[start] != tileWater || visited[start] {
+				continue
+			}
+			queue := []int{start}
+			visited[start] = true
+			cells := make([]int, 0, 8)
+			for len(queue) > 0 {
+				last := len(queue) - 1
+				index := queue[last]
+				queue = queue[:last]
+				cells = append(cells, index)
+				x, y := index%grid, index/grid
+				neighbors := []int{}
+				if x > 0 {
+					neighbors = append(neighbors, index-1)
+				}
+				if x < grid-1 {
+					neighbors = append(neighbors, index+1)
+				}
+				if y > 0 {
+					neighbors = append(neighbors, index-grid)
+				}
+				if y < grid-1 {
+					neighbors = append(neighbors, index+grid)
+				}
+				for _, neighbor := range neighbors {
+					if matchedSet[neighbor] && board[neighbor] == tileWater && !visited[neighbor] {
+						visited[neighbor] = true
+						queue = append(queue, neighbor)
+					}
+				}
+			}
+			if len(cells) < 5 {
+				continue
+			}
+			cellSet := make(map[int]bool, len(cells))
+			for _, index := range cells {
+				cellSet[index] = true
+			}
+			pivots := make([]int, 0, 2)
+			for _, index := range cells {
+				x, y := index%grid, index/grid
+				horizontal := 1
+				for xx := x - 1; xx >= 0 && cellSet[y*grid+xx]; xx-- {
+					horizontal++
+				}
+				for xx := x + 1; xx < grid && cellSet[y*grid+xx]; xx++ {
+					horizontal++
+				}
+				vertical := 1
+				for yy := y - 1; yy >= 0 && cellSet[yy*grid+x]; yy-- {
+					vertical++
+				}
+				for yy := y + 1; yy < grid && cellSet[yy*grid+x]; yy++ {
+					vertical++
+				}
+				if horizontal >= 3 && vertical >= 3 {
+					pivots = append(pivots, index)
+				}
+			}
+			if len(pivots) > 0 {
+				sort.Ints(cells)
+				sort.Ints(pivots)
+				components = append(components, waterComponent{cells: cells, pivots: pivots})
+			}
+		}
+
+		if len(components) > 0 {
+			// Preserve the straight-dart placement rule: the component touched by
+			// the player's swap wins even when another simultaneous shape is larger.
+			for _, index := range preferred {
+				for _, component := range components {
+					if containsIndex(component.cells, index) {
+						pivot := component.pivots[0]
+						if containsIndex(component.pivots, index) {
+							pivot = index
+						}
+						return &DartCreation{Index: pivot, Type: tileFlyingDartCross}
+					}
+				}
+			}
+			chosen := components[0]
+			for _, component := range components[1:] {
+				if len(component.cells) > len(chosen.cells) {
+					chosen = component
+				}
+			}
+			return &DartCreation{Index: chosen.pivots[0], Type: tileFlyingDartCross}
+		}
+	}
+
 	type waterRun struct {
 		cells []int
 		tile  int
@@ -189,6 +303,11 @@ func findFlyingDartCreation(board []int, preferred []int) *DartCreation {
 	appendRun := func(cells []int, tile int) {
 		if len(cells) < 5 {
 			return
+		}
+		for _, index := range cells {
+			if !matchedSet[index] {
+				return
+			}
 		}
 		copied := append([]int(nil), cells...)
 		runs = append(runs, waterRun{cells: copied, tile: tile})
@@ -272,6 +391,15 @@ func findFlyingDartCreation(board []int, preferred []int) *DartCreation {
 		}
 	}
 	return nil
+}
+
+func containsIndex(values []int, target int) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
 }
 
 func findMatches(board []int) ([]int, map[int]int, int) {
@@ -503,11 +631,12 @@ func addFlyingDartActivations(board []int, seed, affected map[int]bool) []DartAc
 			axis := flyingDartAxis(board[source])
 			activations = append(activations, DartActivation{Source: source, Axis: axis})
 			x, y := source%grid, source/grid
-			if axis == dartAxisHorizontal {
+			if axis == dartAxisHorizontal || axis == dartAxisCross {
 				for column := 0; column < grid; column++ {
 					affected[y*grid+column] = true
 				}
-			} else {
+			}
+			if axis == dartAxisVertical || axis == dartAxisCross {
 				for row := 0; row < grid; row++ {
 					affected[row*grid+x] = true
 				}
@@ -543,11 +672,12 @@ func expandDartTriggeredSpecials(
 			activatedDarts[activation.Source] = true
 			dartActivations = append(dartActivations, activation)
 			x, y := activation.Source%grid, activation.Source/grid
-			if activation.Axis == dartAxisHorizontal {
+			if activation.Axis == dartAxisHorizontal || activation.Axis == dartAxisCross {
 				for column := 0; column < grid; column++ {
 					dartSwept[y*grid+column] = true
 				}
-			} else {
+			}
+			if activation.Axis == dartAxisVertical || activation.Axis == dartAxisCross {
 				for row := 0; row < grid; row++ {
 					dartSwept[row*grid+x] = true
 				}
@@ -650,11 +780,12 @@ func computeExplosionsWithPickerDetailed(board []int, matched map[int]bool, pick
 			activatedDarts[activation.Source] = true
 			dartActivations = append(dartActivations, activation)
 			x, y := activation.Source%grid, activation.Source/grid
-			if activation.Axis == dartAxisHorizontal {
+			if activation.Axis == dartAxisHorizontal || activation.Axis == dartAxisCross {
 				for column := 0; column < grid; column++ {
 					dartSwept[y*grid+column] = true
 				}
-			} else {
+			}
+			if activation.Axis == dartAxisVertical || activation.Axis == dartAxisCross {
 				for row := 0; row < grid; row++ {
 					dartSwept[row*grid+x] = true
 				}

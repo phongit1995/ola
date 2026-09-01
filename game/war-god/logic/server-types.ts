@@ -3,7 +3,7 @@ import type { Board, DartActivation, LightningArc } from './core';
 
 export { TILE_ORDER } from './constants.gen';
 
-export type UltimateSkillId = 'lightning-god' | 'myriad-swords';
+export type UltimateSkillId = 'lightning-god' | 'myriad-swords' | 'heart-vacuum';
 
 export interface ServerFighter {
   hp: number;

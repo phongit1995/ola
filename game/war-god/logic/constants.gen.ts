@@ -11,6 +11,7 @@ export const TILE_ORDER = [
   "greaterHeart",
   "flyingDartHorizontal",
   "flyingDartVertical",
+  "flyingDartCross",
 ] as const;
 
 export type TileType = (typeof TILE_ORDER)[number];

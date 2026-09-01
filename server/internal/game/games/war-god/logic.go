@@ -14,6 +14,7 @@ const (
 
 	skillLightningGod = "lightning-god"
 	skillMyriadSwords = "myriad-swords"
+	skillHeartVacuum  = "heart-vacuum"
 )
 
 type State struct {

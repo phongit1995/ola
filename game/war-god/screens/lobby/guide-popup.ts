@@ -40,7 +40,7 @@ const TAB_H = 38;
 const ITEM_CARD_W = 194;
 const ITEM_CARD_H = 68;
 const RULE_CARD_W = 398;
-const RULE_CARD_H = 56;
+const RULE_CARD_H = 52;
 
 const ITEMS: GuideItem[] = [
   {
@@ -93,8 +93,8 @@ const ITEMS: GuideItem[] = [
   },
   {
     asset: A.items.flyingDart,
-    title: 'PHI TIÊU · ĐẶC BIỆT',
-    detail: 'GHÉP 5 NƯỚC ĐỂ TẠO · THAY 1 Ô TRONG COMBO 3+ → QUÉT HÀNG / CỘT',
+    title: 'PHI TIÊU · THAY Ô GHÉP 3+',
+    detail: '5 NƯỚC → 1 TRỤC · L/T → CẢ HAI',
     accent: 0x43dcff,
   },
 ];
@@ -131,6 +131,12 @@ const RULES: GuideRule[] = [
       ULT_COST / 2
     } sát thương chắc chắn, đòn dứt điểm ổn định`,
     accent: 0xff8051,
+  },
+  {
+    asset: A.ultimate.heartVacuum,
+    title: 'THÁNH TÂM HỒI NGUYÊN',
+    detail: `Hút toàn bộ Tim (+${HEAL_HEART}) và Tim Lớn (+${GREATER_HEART_HEAL}) · hồi theo tổng số Tim đến đầy máu · sập bàn và tính combo bình thường`,
+    accent: 0xff5d9f,
   },
   {
     asset: A.items.heart,
@@ -345,7 +351,7 @@ export function buildGuidePopup(): Container {
   rulesPage = new Container();
   RULES.forEach((rule, index) => {
     const card = makeRuleCard(rule);
-    card.y = -126 + index * 57;
+    card.y = -132 + index * 54;
     rulesPage.addChild(card);
   });
   content.addChild(rulesPage);

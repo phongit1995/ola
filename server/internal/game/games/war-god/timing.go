@@ -33,9 +33,13 @@ func (Logic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) tim
 		case stepShuffle:
 			delay += shuffleAnimationDelay
 		case stepUlt:
-			delay += 2100 * time.Millisecond
+			if step.Skill == skillHeartVacuum {
+				delay += heartVacuumAnimationDelay(len(step.Cells))
+			} else {
+				delay += 2100 * time.Millisecond
+			}
 			if len(step.DartActivations) > 0 {
-				delay += flyingDartAnimationDelay(len(step.DartActivations))
+				delay += flyingDartActivationsDelay(step.DartActivations)
 			}
 			if len(step.FireSwordActivations) > 0 {
 				delay += fireSwordAnimationDelay(len(step.FireSwordActivations))
@@ -46,6 +50,15 @@ func (Logic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) tim
 		}
 	}
 	return delay
+}
+
+func heartVacuumAnimationDelay(hearts int) time.Duration {
+	if hearts < 1 {
+		hearts = 1
+	}
+	// Reveal (~440ms), staggered heart flights (46ms each), core flight and
+	// impact (~1.2s), plus a safety margin for slower devices.
+	return 2900*time.Millisecond + time.Duration(hearts-1)*46*time.Millisecond
 }
 
 func matchAnimationDelay(step Step) time.Duration {
@@ -84,8 +97,17 @@ func matchAnimationDelay(step Step) time.Duration {
 		}
 	}
 	directFireDelay := fireSwordAnimationDelay(directFireSwords)
-	directDartDelay := flyingDartAnimationDelay(directDarts)
-	triggeredDartDelay := flyingDartAnimationDelay(triggeredDarts)
+	directDartActivations := make([]DartActivation, 0, directDarts)
+	triggeredDartActivations := make([]DartActivation, 0, triggeredDarts)
+	for _, activation := range step.DartActivations {
+		if matched[activation.Source] {
+			directDartActivations = append(directDartActivations, activation)
+		} else {
+			triggeredDartActivations = append(triggeredDartActivations, activation)
+		}
+	}
+	directDartDelay := flyingDartActivationsDelay(directDartActivations)
+	triggeredDartDelay := flyingDartActivationsDelay(triggeredDartActivations)
 	triggeredFireDelay := fireSwordAnimationDelay(triggeredFireSwords)
 	// Direct Fire Sword and Phi Tiêu FX start together. A special reached by
 	// another special waits for that preceding FX, matching explodeFx on the
@@ -142,6 +164,18 @@ func flyingDartAnimationDelay(darts int) time.Duration {
 	// sequential darts. Keep a small frame/network safety margin so the next
 	// player's clock never starts while the replay is still on screen.
 	return 720*time.Millisecond + time.Duration(darts-1)*760*time.Millisecond
+}
+
+func flyingDartActivationsDelay(activations []DartActivation) time.Duration {
+	delay := flyingDartAnimationDelay(len(activations))
+	for _, activation := range activations {
+		if activation.Axis == dartAxisCross {
+			// A cross dart flashes 15 unique cells instead of 8; reserve the
+			// extra sweep time so a chained replay cannot overtake the clock.
+			delay += 180 * time.Millisecond
+		}
+	}
+	return delay
 }
 
 func fireSwordAnimationDelay(swords int) time.Duration {

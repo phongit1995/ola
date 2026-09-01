@@ -213,7 +213,8 @@ func TestFindFlyingDartCreationFromFiveWater(t *testing.T) {
 	for x := 1; x <= 5; x++ {
 		horizontal[6*grid+x] = tileWater
 	}
-	creation := findFlyingDartCreation(horizontal, []int{6*grid + 3})
+	horizontalMatch := []int{6*grid + 1, 6*grid + 2, 6*grid + 3, 6*grid + 4, 6*grid + 5}
+	creation := findFlyingDartCreation(horizontal, []int{6*grid + 3}, horizontalMatch)
 	if creation == nil || *creation != (DartCreation{Index: 6*grid + 3, Type: tileFlyingDartHorizontal}) {
 		t.Fatalf("horizontal creation=%+v", creation)
 	}
@@ -222,14 +223,68 @@ func TestFindFlyingDartCreationFromFiveWater(t *testing.T) {
 	for y := 1; y <= 5; y++ {
 		vertical[y*grid+4] = tileWater
 	}
-	creation = findFlyingDartCreation(vertical, []int{3*grid + 4})
+	verticalMatch := []int{grid + 4, 2*grid + 4, 3*grid + 4, 4*grid + 4, 5*grid + 4}
+	creation = findFlyingDartCreation(vertical, []int{3*grid + 4}, verticalMatch)
 	if creation == nil || *creation != (DartCreation{Index: 3*grid + 4, Type: tileFlyingDartVertical}) {
 		t.Fatalf("vertical creation=%+v", creation)
 	}
 
 	vertical[3*grid+4] = tileFlyingDartVertical
-	if got := findFlyingDartCreation(vertical, nil); got != nil {
+	if got := findFlyingDartCreation(vertical, nil, verticalMatch); got != nil {
 		t.Fatalf("existing dart must not manufacture another dart: %+v", got)
+	}
+}
+
+func TestFindFlyingDartCreationFromLTWaterShapes(t *testing.T) {
+	tests := []struct {
+		name  string
+		cells []int
+		pivot int
+	}{
+		{
+			name:  "L shape",
+			cells: []int{11, 19, 27, 28, 29}, // row 3 to the right, column 3 upward
+			pivot: 27,
+		},
+		{
+			name:  "T shape",
+			cells: []int{11, 19, 26, 27, 28}, // row 3 bar with a two-cell stem
+			pivot: 27,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			board := noMoveBoard()
+			board[29] = tileLightning // keep the T bar from joining the background Water pair
+			for _, index := range test.cells {
+				board[index] = tileWater
+			}
+			matched, _, maxRun := findMatches(board)
+			if maxRun != 3 || !reflect.DeepEqual(matched, test.cells) {
+				t.Fatalf("matched=%v want=%v maxRun=%d", matched, test.cells, maxRun)
+			}
+			creation := findFlyingDartCreation(board, []int{test.cells[0]}, matched)
+			if creation == nil || creation.Index != test.pivot || creation.Type != tileFlyingDartCross {
+				t.Fatalf("creation=%+v want pivot=%d cross", creation, test.pivot)
+			}
+		})
+	}
+}
+
+func TestFlyingDartCreationPrefersSwappedLTComponent(t *testing.T) {
+	board := make([]int, boardSize)
+	for index := range board {
+		board[index] = tileShield
+	}
+	smallL := []int{9, 17, 25, 26, 27}
+	largerL := []int{36, 37, 38, 45, 53, 61}
+	matched := append(append([]int(nil), smallL...), largerL...)
+	for _, index := range matched {
+		board[index] = tileWater
+	}
+	creation := findFlyingDartCreation(board, []int{27}, matched)
+	if creation == nil || *creation != (DartCreation{Index: 25, Type: tileFlyingDartCross}) {
+		t.Fatalf("creation=%+v, want swapped L pivot 25 instead of larger unrelated shape", creation)
 	}
 }
 
@@ -459,6 +514,68 @@ func TestFlyingDartMatchesAnyBaseTile(t *testing.T) {
 	if !reflect.DeepEqual(exploded, []int{2, 10, 42, 50, 58}) || len(arcs) != 0 ||
 		!reflect.DeepEqual(darts, []DartActivation{{Source: 34, Axis: dartAxisVertical}}) {
 		t.Fatalf("vertical wildcard activation: exploded=%v arcs=%v darts=%v", exploded, arcs, darts)
+	}
+}
+
+func TestCrossFlyingDartClearsBothAxes(t *testing.T) {
+	board := wildcardBoard()
+	board[26], board[28] = tileSword, tileSword
+	board[27] = tileFlyingDartCross
+	matchedCells, counts, maxRun := findMatches(board)
+	if !reflect.DeepEqual(matchedCells, []int{26, 27, 28}) ||
+		!reflect.DeepEqual(counts, map[int]int{tileSword: 2, tileFlyingDartCross: 1}) || maxRun != 3 {
+		t.Fatalf("cross wildcard match: cells=%v counts=%v maxRun=%d", matchedCells, counts, maxRun)
+	}
+	matched := map[int]bool{26: true, 27: true, 28: true}
+	exploded, arcs, darts := computeExplosionsWithPicker(
+		board,
+		matched,
+		func(int) int { return 0 },
+	)
+	if !reflect.DeepEqual(darts, []DartActivation{{Source: 27, Axis: dartAxisCross}}) {
+		t.Fatalf("cross dart activation=%v", darts)
+	}
+	if len(arcs) == 0 {
+		t.Fatal("cross sweep should activate Lightning tiles on its axes")
+	}
+	got := make(map[int]bool, len(exploded)+len(matched))
+	for _, index := range exploded {
+		got[index] = true
+	}
+	for index := range matched {
+		got[index] = true
+	}
+	for column := 0; column < grid; column++ {
+		if !got[3*grid+column] {
+			t.Fatalf("cross dart omitted row cell %d: %v", 3*grid+column, exploded)
+		}
+	}
+	for row := 0; row < grid; row++ {
+		if !got[row*grid+3] {
+			t.Fatalf("cross dart omitted column cell %d: %v", row*grid+3, exploded)
+		}
+	}
+	if containsIndex(exploded, 27) {
+		t.Fatalf("matched dart source must not be duplicated in exploded: %v", exploded)
+	}
+}
+
+func TestCrossFlyingDartActivatesFireSwordsOnBothUltimateAxes(t *testing.T) {
+	board := stripedBoard()
+	board[27] = tileFlyingDartCross
+	board[11], board[29] = tileFireSword, tileFireSword
+	affected := map[int]bool{27: true}
+	darts, fires := expandDartTriggeredSpecials(board, affected, map[int]bool{})
+	if !reflect.DeepEqual(darts, []DartActivation{{Source: 27, Axis: dartAxisCross}}) {
+		t.Fatalf("cross dart activation=%v", darts)
+	}
+	if !reflect.DeepEqual(fires, []int{11, 29}) {
+		t.Fatalf("cross dart did not activate both-axis Fire Swords: %v", fires)
+	}
+	for _, index := range []int{3, 11, 19, 24, 25, 26, 27, 28, 29, 30, 31, 35, 43, 51, 59} {
+		if !affected[index] {
+			t.Fatalf("cross ultimate expansion omitted %d: %v", index, affected)
+		}
 	}
 }
 
@@ -1111,6 +1228,58 @@ func TestApplySwapFiveWaterCreatesPersistentFlyingDart(t *testing.T) {
 	}
 }
 
+func TestApplySwapLTWaterCreatesPersistentCrossFlyingDart(t *testing.T) {
+	board := noMoveBoard()
+	// Before the swap there are only two Water tiles in each arm. Filling the
+	// corner at 27 completes an L: row 3 columns 3..5 plus column 3 rows 1..3.
+	board[11], board[19], board[28], board[29] = tileWater, tileWater, tileWater, tileWater
+	board[27] = tileLightning
+	board[26] = tileWater
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 41)
+	move := json.RawMessage(`{"type":"swap","a":26,"b":27}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	if len(next.Steps) < 2 || next.Steps[1].Kind != stepMatch {
+		t.Fatalf("unexpected steps: %+v", next.Steps)
+	}
+	if !reflect.DeepEqual(next.Steps[1].DartCreations, []DartCreation{{Index: 27, Type: tileFlyingDartCross}}) {
+		t.Fatalf("L-shaped match did not create cross dart: %+v", next.Steps[1])
+	}
+}
+
+func TestApplySwapTWaterCreatesPersistentCrossFlyingDart(t *testing.T) {
+	board := noMoveBoard()
+	// Swapping the Water below into 27 completes a T: row 3 columns 2..4
+	// plus column 3 rows 1..3. Cell 29 is changed to avoid a fourth arm tile.
+	board[11], board[19], board[26], board[28], board[35] =
+		tileWater, tileWater, tileWater, tileWater, tileWater
+	board[27], board[29] = tileLightning, tileLightning
+	state := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100}}, 43)
+	move := json.RawMessage(`{"type":"swap","a":35,"b":27}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	if len(next.Steps) < 2 || next.Steps[1].Kind != stepMatch {
+		t.Fatalf("unexpected steps: %+v", next.Steps)
+	}
+	matchStep := next.Steps[1]
+	if !reflect.DeepEqual(matchStep.Cells, []int{11, 19, 26, 27, 28}) ||
+		!reflect.DeepEqual(matchStep.DartCreations, []DartCreation{{Index: 27, Type: tileFlyingDartCross}}) {
+		t.Fatalf("T-shaped match did not create cross dart: %+v", matchStep)
+	}
+}
+
 func containsTile(board []int, tile int) bool {
 	for _, got := range board {
 		if got == tile {
@@ -1465,6 +1634,106 @@ func TestMyriadSwordsCostsFullMana(t *testing.T) {
 	}
 	if over, winner := (Logic{}).Result(nextAny); !over || winner != 0 {
 		t.Fatalf("lethal ult: over=%v winner=%d", over, winner)
+	}
+}
+
+func TestHeartVacuumAbsorbsHeartsHealsAndResolvesCollapse(t *testing.T) {
+	board := stripedBoard()
+	for index, tile := range board {
+		if tile == tileHeart || tile == tileGreaterHeart {
+			board[index] = tileShield
+		}
+	}
+	board[0] = tileHeart
+	board[1] = tileGreaterHeart
+	// The three swords remain in the column below the absorbed hearts, so the
+	// first gravity step exposes a normal cascade match.
+	board[8], board[16], board[24] = tileSword, tileSword, tileSword
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 7)
+	move := json.RawMessage(`{"type":"ult","skill":"heart-vacuum"}`)
+	if err := (Logic{}).ValidateMove(state, 0, move); err != nil {
+		t.Fatal(err)
+	}
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	if next.Fighters[0].HP != 115 || next.Fighters[0].MP != 0 {
+		t.Fatalf("heart vacuum should heal 15 and spend mana: %+v", next.Fighters[0])
+	}
+	if len(next.Steps) < 3 || next.Steps[0].Kind != stepUlt || next.Steps[1].Kind != stepGravity {
+		t.Fatalf("heart vacuum must be followed by gravity: %+v", next.Steps)
+	}
+	ult := next.Steps[0]
+	if ult.Skill != skillHeartVacuum || !reflect.DeepEqual(ult.Cells, []int{0, 1}) ||
+		ult.Counts[tileNames[tileHeart]] != 1 || ult.Counts[tileNames[tileGreaterHeart]] != 1 ||
+		ult.Effects == nil || ult.Effects.Heal != 15 {
+		t.Fatalf("unexpected heart vacuum step: %+v", ult)
+	}
+	foundCascade := false
+	for _, step := range next.Steps {
+		if step.Kind == stepMatch {
+			foundCascade = true
+			if step.CascadeLevel < 1 {
+				t.Fatalf("heart vacuum collapse must start at cascade level 1: %+v", step)
+			}
+		}
+	}
+	if !foundCascade {
+		t.Fatalf("heart vacuum collapse did not resolve a normal cascade: %+v", next.Steps)
+	}
+
+	// The same authoritative move must work when the other player is the
+	// attacker, which is the direction used by the second half of a 1v1 match.
+	reverse := stateWith(board, [2]Fighter{{HP: 100}, {HP: 100, MP: 100}}, 7)
+	reverseAny, err := (Logic{}).Apply(reverse, 1, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reverseNext := reverseAny.(*State)
+	if reverseNext.Fighters[1].HP != 115 || reverseNext.Fighters[1].MP != 0 {
+		t.Fatalf("player 2 heart vacuum should heal and spend mana: %+v", reverseNext.Fighters)
+	}
+}
+
+func TestHeartVacuumDoesNotCapHealingPerCast(t *testing.T) {
+	board := make([]int, boardSize)
+	for index := range board {
+		board[index] = tileShield
+	}
+	for index := 0; index < 10; index++ {
+		board[index] = tileHeart
+	}
+	state := stateWith(board, [2]Fighter{{HP: 100, MP: 100}, {HP: 100}}, 19)
+	move := json.RawMessage(`{"type":"ult","skill":"heart-vacuum"}`)
+
+	nextAny, err := (Logic{}).Apply(state, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := nextAny.(*State)
+	if len(next.Steps) == 0 || next.Steps[0].Effects == nil {
+		t.Fatalf("heart vacuum did not emit an effect step: %+v", next.Steps)
+	}
+	if got := next.Steps[0].Effects.Heal; got != 10*healHeart {
+		t.Fatalf("heart vacuum healing was capped: got %d want %d", got, 10*healHeart)
+	}
+	if next.Fighters[0].HP < 100+10*healHeart {
+		t.Fatalf("heart vacuum did not apply uncapped healing: %+v", next.Fighters[0])
+	}
+
+	fullState := stateWith(board, [2]Fighter{{HP: maxHP - 2, MP: 100}, {HP: 100}}, 19)
+	fullAny, err := (Logic{}).Apply(fullState, 0, move)
+	if err != nil {
+		t.Fatal(err)
+	}
+	full := fullAny.(*State)
+	if got := full.Steps[0].Effects.Heal; got != 2 {
+		t.Fatalf("heart vacuum exceeded max HP: got heal %d want 2", got)
+	}
+	if full.Fighters[0].HP != maxHP {
+		t.Fatalf("heart vacuum should stop at max HP: %+v", full.Fighters[0])
 	}
 }
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyGravity,
   computeExplosions,
+  expandDartTriggeredSpecials,
   findFlyingDartCreation,
   findMatches,
   type Board,
@@ -39,7 +40,7 @@ describe('Flying Dart', () => {
     [41, 45, 57, 61].forEach((index) => {
       board[index] = 'shield';
     });
-    expect(findFlyingDartCreation(board, [51])).toEqual({
+    expect(findFlyingDartCreation(board, [51], [49, 50, 51, 52, 53])).toEqual({
       index: 51,
       type: 'flyingDartHorizontal',
     });
@@ -50,9 +51,59 @@ describe('Flying Dart', () => {
     [12, 20, 28, 36, 44].forEach((index) => {
       board[index] = 'water';
     });
-    expect(findFlyingDartCreation(board, [28])).toEqual({
+    expect(findFlyingDartCreation(board, [28], [12, 20, 28, 36, 44])).toEqual({
       index: 28,
       type: 'flyingDartVertical',
+    });
+  });
+
+  it.each([
+    {
+      name: 'L shape',
+      cells: [11, 19, 27, 28, 29],
+      pivot: 27,
+    },
+    {
+      name: 'T shape',
+      cells: [11, 19, 26, 27, 28],
+      pivot: 27,
+    },
+  ])('$name creates a cross dart at the intersection', ({ cells, pivot }) => {
+    const board: Board = [
+      ['sword', 'sword', 'peach', 'peach', 'heart', 'heart', 'sword', 'sword'],
+      ['water', 'water', 'shield', 'shield', 'lightning', 'lightning', 'water', 'water'],
+      ['peach', 'peach', 'heart', 'heart', 'sword', 'sword', 'peach', 'peach'],
+      ['shield', 'shield', 'lightning', 'lightning', 'water', 'water', 'shield', 'shield'],
+      ['heart', 'heart', 'sword', 'sword', 'peach', 'peach', 'heart', 'heart'],
+      ['lightning', 'lightning', 'water', 'water', 'shield', 'shield', 'lightning', 'lightning'],
+      ['sword', 'sword', 'peach', 'peach', 'heart', 'heart', 'sword', 'sword'],
+      ['water', 'water', 'shield', 'shield', 'lightning', 'lightning', 'water', 'water'],
+    ].flat() as Board;
+    board[29] = 'lightning';
+    cells.forEach((index) => {
+      board[index] = 'water';
+    });
+    const match = findMatches(board);
+    expect(match).not.toBeNull();
+    expect([...match!.cells].sort((a, b) => a - b)).toEqual(cells);
+    expect(match!.maxRun).toBe(3);
+    expect(findFlyingDartCreation(board, [cells[0]!], match!.cells)).toEqual({
+      index: pivot,
+      type: 'flyingDartCross',
+    });
+  });
+
+  it('prefers the L/T component touched by the swap over a larger unrelated shape', () => {
+    const board: Board = Array.from({ length: 64 }, () => 'shield');
+    const smallL = [9, 17, 25, 26, 27];
+    const largerL = [36, 37, 38, 45, 53, 61];
+    const matched = [...smallL, ...largerL];
+    matched.forEach((index) => {
+      board[index] = 'water';
+    });
+    expect(findFlyingDartCreation(board, [27], matched)).toEqual({
+      index: 25,
+      type: 'flyingDartCross',
     });
   });
 
@@ -66,6 +117,40 @@ describe('Flying Dart', () => {
       { source: 29, axis: 'vertical' },
     ]);
     expect(plan.exploded).toEqual([5, 13, 21, 24, 25, 27, 28, 29, 30, 31, 37, 45, 53, 61]);
+  });
+
+  it('clears both the row and column for a cross dart', () => {
+    const board = wildcardBoard();
+    board[26] = 'sword';
+    board[27] = 'flyingDartCross';
+    board[28] = 'sword';
+    const match = findMatches(board);
+    expect(match).not.toBeNull();
+    expect([...match!.cells].sort((a, b) => a - b)).toEqual([26, 27, 28]);
+    const plan = computeExplosions(board, match!.cells, () => 0);
+    expect(plan.dartActivations).toEqual([{ source: 27, axis: 'cross' }]);
+    expect(plan.lightningArcs.length).toBeGreaterThan(0);
+    const removed = new Set([...match!.cells, ...plan.exploded]);
+    for (let column = 0; column < 8; column++) {
+      expect(removed.has(3 * 8 + column)).toBe(true);
+    }
+    for (let row = 0; row < 8; row++) {
+      expect(removed.has(row * 8 + 3)).toBe(true);
+    }
+    expect(plan.exploded).not.toContain(27);
+  });
+
+  it('activates Fire Swords on both cross axes during an ultimate sweep', () => {
+    const board = stripedBoard();
+    board[27] = 'flyingDartCross';
+    board[11] = 'fireSword';
+    board[29] = 'fireSword';
+    const affected = new Set([27]);
+    const result = expandDartTriggeredSpecials(board, affected);
+    expect(result.dartActivations).toEqual([{ source: 27, axis: 'cross' }]);
+    expect(result.fireSwordActivations).toEqual([11, 29]);
+    expect(affected.has(3)).toBe(true);
+    expect(affected.has(31)).toBe(true);
   });
 
   it('acts as a wildcard for swords and clears its horizontal row', () => {

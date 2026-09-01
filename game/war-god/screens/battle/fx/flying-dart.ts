@@ -26,10 +26,17 @@ function makeDartIcon(point: { x: number; y: number }, context: FlyingDartFxCont
 function lineCells(source: number, axis: FlyingDartAxis, grid: number): number[] {
   const x = source % grid;
   const y = Math.floor(source / grid);
-  return Array.from(
-    { length: grid },
-    (_, offset) => (axis === 'horizontal' ? y * grid + offset : offset * grid + x),
-  );
+  const cells: number[] = [];
+  if (axis === 'horizontal' || axis === 'cross') {
+    for (let column = 0; column < grid; column++) cells.push(y * grid + column);
+  }
+  if (axis === 'vertical' || axis === 'cross') {
+    for (let row = 0; row < grid; row++) {
+      const index = row * grid + x;
+      if (!cells.includes(index)) cells.push(index);
+    }
+  }
+  return cells;
 }
 
 function rotateIn(icon: Sprite, from: number, to: number, duration: number): Promise<void> {
@@ -58,7 +65,8 @@ export function directionDecorator(axis: FlyingDartAxis, tileSize: number): Grap
   const decorator = new Graphics();
   // Giữ blend normal cho decorator: ở kích thước ô nhỏ, additive quá nhạt trên nền vàng.
   decorator.blendMode = 'normal';
-  const horizontal = axis === 'horizontal';
+  const horizontal = axis === 'horizontal' || axis === 'cross';
+  const vertical = axis === 'vertical' || axis === 'cross';
   const barStart = tileSize * 0.52;
   const barEnd = tileSize * 0.72;
   const barWidth = tileSize * 0.065;
@@ -70,7 +78,8 @@ export function directionDecorator(axis: FlyingDartAxis, tileSize: number): Grap
       decorator
         .circle(sign * tileSize * 0.49, 0, tileSize * 0.055)
         .fill({ color: 0x55e5ff, alpha: 1 });
-    } else {
+    }
+    if (vertical) {
       decorator
         .roundRect(-barWidth / 2, sign > 0 ? barStart : -barEnd, barWidth, barEnd - barStart, barWidth / 2)
         .fill({ color: 0xffdf69, alpha: 1 });
@@ -156,7 +165,7 @@ async function sweep(activation: DartActivation, context: FlyingDartFxContext): 
   const point = context.cellRootPos(source);
   const beam = new Graphics();
   beam.blendMode = 'add';
-  if (axis === 'horizontal') {
+  if (axis === 'horizontal' || axis === 'cross') {
     beam
       .roundRect(context.boardX, point.y - context.tileSize * 0.14, boardSize, context.tileSize * 0.28, 8)
       .fill({ color: 0x35d9ff, alpha: 0.34 });
@@ -164,7 +173,8 @@ async function sweep(activation: DartActivation, context: FlyingDartFxContext): 
       .moveTo(context.boardX, point.y)
       .lineTo(context.boardX + boardSize, point.y)
       .stroke({ width: 4, color: 0xffdd67, alpha: 0.92, cap: 'round' });
-  } else {
+  }
+  if (axis === 'vertical' || axis === 'cross') {
     beam
       .roundRect(point.x - context.tileSize * 0.14, context.boardY, context.tileSize * 0.28, boardSize, 8)
       .fill({ color: 0x35d9ff, alpha: 0.34 });
@@ -176,23 +186,28 @@ async function sweep(activation: DartActivation, context: FlyingDartFxContext): 
   beam.alpha = 0;
   context.flyLayer.addChild(beam);
 
-  const traveler = new Container();
-  const travelerIcon = makeDartIcon({ x: 0, y: 0 }, context);
-  travelerIcon.rotation = axis === 'vertical' ? Math.PI / 2 : 0;
-  travelerIcon.position.set(0, 0);
-  traveler.addChild(directionDecorator(axis, context.tileSize), travelerIcon);
-  traveler.scale.set(0.34);
-  traveler.alpha = 0.96;
-  const travelFrom =
-    axis === 'horizontal'
-      ? { x: context.boardX - context.tileSize * 0.8, y: point.y }
-      : { x: point.x, y: context.boardY - context.tileSize * 0.8 };
-  const travelTo =
-    axis === 'horizontal'
-      ? { x: context.boardX + boardSize + context.tileSize * 0.8, y: point.y }
-      : { x: point.x, y: context.boardY + boardSize + context.tileSize * 0.8 };
-  traveler.position.set(travelFrom.x, travelFrom.y);
-  context.flyLayer.addChild(traveler);
+  const travelAxes: Exclude<FlyingDartAxis, 'cross'>[] =
+    axis === 'cross' ? ['horizontal', 'vertical'] : [axis];
+  const travelers = travelAxes.map((travelAxis) => {
+    const traveler = new Container();
+    const travelerIcon = makeDartIcon({ x: 0, y: 0 }, context);
+    travelerIcon.rotation = travelAxis === 'vertical' ? Math.PI / 2 : 0;
+    travelerIcon.position.set(0, 0);
+    traveler.addChild(directionDecorator(travelAxis, context.tileSize), travelerIcon);
+    traveler.scale.set(0.34);
+    traveler.alpha = 0.96;
+    const from =
+      travelAxis === 'horizontal'
+        ? { x: context.boardX - context.tileSize * 0.8, y: point.y }
+        : { x: point.x, y: context.boardY - context.tileSize * 0.8 };
+    const to =
+      travelAxis === 'horizontal'
+        ? { x: context.boardX + boardSize + context.tileSize * 0.8, y: point.y }
+        : { x: point.x, y: context.boardY + boardSize + context.tileSize * 0.8 };
+    traveler.position.set(from.x, from.y);
+    context.flyLayer.addChild(traveler);
+    return { traveler, to };
+  });
 
   const flashes = lineCells(source, axis, context.grid).map(async (index, order) => {
     await sleep(order * 26);
@@ -226,8 +241,10 @@ async function sweep(activation: DartActivation, context: FlyingDartFxContext): 
 
   await Promise.all([
     tween(beam, { alpha: 1 }, 70).then(() => tween(beam, { alpha: 0 }, 330)),
-    tween(traveler, { x: travelTo.x, y: travelTo.y, alpha: 0, scale: 0.12 }, 360).then(() =>
-      traveler.destroy(),
+    ...travelers.map(({ traveler, to }) =>
+      tween(traveler, { x: to.x, y: to.y, alpha: 0, scale: 0.12 }, 360).then(() =>
+        traveler.destroy(),
+      ),
     ),
     ...flashes,
   ]);
@@ -285,7 +302,11 @@ export async function playFlyingDartCreationFx(
   rays.scale.set(0.12);
 
   const direction = directionDecorator(
-    creation.type === 'flyingDartHorizontal' ? 'horizontal' : 'vertical',
+    creation.type === 'flyingDartHorizontal'
+      ? 'horizontal'
+      : creation.type === 'flyingDartVertical'
+      ? 'vertical'
+      : 'cross',
     context.tileSize,
   );
   direction.position.copyFrom(point);

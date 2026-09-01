@@ -289,7 +289,7 @@ function previewMove(board: Board, move: BotMove, random: () => number): MovePre
   const counts = { ...match.counts };
   const plan = computeExplosions(board, match.cells, random);
   for (const index of plan.exploded) counts[board[index]]++;
-  const dartCreations = findFlyingDartCreation(board, [move[1], move[0]]) ? 1 : 0;
+  const dartCreations = findFlyingDartCreation(board, [move[1], move[0]], match.cells) ? 1 : 0;
   swapCells(board, move[0], move[1]);
   return {
     counts,
@@ -379,7 +379,7 @@ function simulateExpertMove(
     const match = findMatches(nextBoard);
     if (!match) break;
     total.bonusTurns = grantExtraTurns(total.bonusTurns, match.bonusTurns).remaining;
-    const creation = findFlyingDartCreation(nextBoard, preferredDartCells);
+    const creation = findFlyingDartCreation(nextBoard, preferredDartCells, match.cells);
     const plan = computeExplosions(nextBoard, match.cells, random);
     for (const index of plan.exploded) match.counts[nextBoard[index]]++;
     const removed = new Set(match.cells);
@@ -538,9 +538,30 @@ export function botChooseUltimateSkill(
   bot: Fighter,
   player: Fighter,
   level: BotLevel,
+  board?: Board,
 ): UltimateSkillId {
   const dmg = Math.max(0, Math.floor(bot.mp / 2) - player.armor);
   if (player.hp <= dmg + 10) return 'myriad-swords';
+
+  // Thánh Tâm is only useful when the current board has hearts to absorb.
+  // Keep the board optional for callers that only need the legacy two-skill
+  // policy, while the live bot passes its authoritative board here.
+  if (board != null && bot.hp < MAX_HP) {
+    let normalHearts = 0;
+    let greaterHearts = 0;
+    for (const tile of board) {
+      if (tile === 'heart') normalHearts++;
+      else if (tile === 'greaterHeart') greaterHearts++;
+    }
+    const availableHeal = Math.min(
+      MAX_HP - bot.hp,
+      normalHearts * HEAL_HEART + greaterHearts * GREATER_HEART_HEAL,
+    );
+    const hpThreshold = level === 'expert' ? 125 : level === 'hard' ? 115 : level === 'normal' ? 105 : 95;
+    const minimumHeal = level === 'easy' ? 25 : 15;
+    if (bot.hp <= hpThreshold && availableHeal >= minimumHeal) return 'heart-vacuum';
+  }
+
   if (level === 'easy') return Math.random() < 0.5 ? 'lightning-god' : 'myriad-swords';
   if (level === 'normal') return Math.random() < 0.35 ? 'myriad-swords' : 'lightning-god';
   return player.hp <= 60 ? 'myriad-swords' : 'lightning-god';
