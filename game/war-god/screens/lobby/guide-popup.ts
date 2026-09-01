@@ -93,8 +93,8 @@ const ITEMS: GuideItem[] = [
   },
   {
     asset: A.items.flyingDart,
-    title: 'PHI TIÊU · ĐẶC BIỆT',
-    detail: 'GHÉP 5 NƯỚC ĐỂ TẠO · THAY 1 Ô TRONG COMBO 3+ → QUÉT HÀNG / CỘT',
+    title: 'PHI TIÊU · THAY Ô GHÉP 3+',
+    detail: '5 NƯỚC → 1 TRỤC · L/T → CẢ HAI',
     accent: 0x43dcff,
   },
 ];

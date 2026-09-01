@@ -15,9 +15,9 @@ import (
 
 const (
 	warGodGameID = "war-god"
-	// The first eight tile codes are legacy values; the two Phi Tiêu variants
-	// are appended so old snapshots remain decodable under state version 2.
-	warGodTileCount = 10
+	// The first eight tile codes are legacy values; all Phi Tiêu variants are
+	// appended so old snapshots remain decodable under state version 2.
+	warGodTileCount = 11
 )
 
 func decodeWarGodState(t *testing.T, state any) *wargod.State {

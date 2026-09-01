@@ -372,14 +372,17 @@ function clearHint(): void {
 
 function setupDartIdle(c: Container, icon: Sprite, type: TileType, index: number): void {
   if (!isFlyingDart(type)) return;
-  const horizontal = type === 'flyingDartHorizontal';
+  const axis = flyingDartAxis(type);
+  const horizontal = axis === 'horizontal';
+  const vertical = axis === 'vertical';
   const ray = new Graphics();
   ray.blendMode = 'add';
-  if (horizontal) {
+  if (horizontal || axis === 'cross') {
     ray
       .roundRect(tileSize * 0.08, tileSize * 0.46, tileSize * 0.84, tileSize * 0.08, 4)
       .fill({ color: 0x55e5ff, alpha: 0.22 });
-  } else {
+  }
+  if (vertical || axis === 'cross') {
     ray
       .roundRect(tileSize * 0.46, tileSize * 0.08, tileSize * 0.08, tileSize * 0.84, 4)
       .fill({ color: 0x55e5ff, alpha: 0.22 });
@@ -387,7 +390,7 @@ function setupDartIdle(c: Container, icon: Sprite, type: TileType, index: number
   const glow = new Graphics();
   glow.blendMode = 'add';
   glow.circle(tileSize / 2, tileSize / 2, tileSize * 0.28).fill({ color: 0xffdc66, alpha: 0.12 });
-  const decorator = directionDecorator(horizontal ? 'horizontal' : 'vertical', tileSize);
+  const decorator = directionDecorator(axis, tileSize);
   decorator.position.set(tileSize / 2, tileSize / 2);
   decorator.scale.set(0.82);
   decorator.alpha = 0.3;
@@ -761,9 +764,10 @@ function flyingDartFxContext(): FlyingDartFxContext {
 function addDartLineCells(target: Set<number>, activation: DartActivation): void {
   const x = activation.source % GRID;
   const y = Math.floor(activation.source / GRID);
-  if (activation.axis === 'horizontal') {
+  if (activation.axis === 'horizontal' || activation.axis === 'cross') {
     for (let column = 0; column < GRID; column++) target.add(y * GRID + column);
-  } else {
+  }
+  if (activation.axis === 'vertical' || activation.axis === 'cross') {
     for (let row = 0; row < GRID; row++) target.add(row * GRID + x);
   }
 }
@@ -1672,7 +1676,7 @@ async function resolveCascades(
     if (!match) break;
     bonusTurns += match.bonusTurns;
 
-    const creation = findFlyingDartCreation(board, preferredDartCells);
+    const creation = findFlyingDartCreation(board, preferredDartCells, match.cells);
     const explosionPlan = computeExplosions(board, match.cells);
     const { exploded, lightningArcs, dartActivations, fireSwordActivations } = explosionPlan;
     for (const i of exploded) match.counts[board[i]]++;
@@ -2806,7 +2810,7 @@ function previewFireSwordFx(mode: 'center' | 'corner' | 'multi' = 'center'): boo
   return true;
 }
 
-function previewFlyingDartFx(axis?: 'horizontal' | 'vertical'): boolean {
+function previewFlyingDartFx(axis?: 'horizontal' | 'vertical' | 'cross'): boolean {
   if (!inGame || tileSize <= 0 || busy) return false;
   const source = board.findIndex(
     (type) => isFlyingDart(type) && (axis == null || flyingDartAxis(type) === axis),
@@ -2818,14 +2822,19 @@ function previewFlyingDartFx(axis?: 'horizontal' | 'vertical'): boolean {
 
 // Dev-only preview để kiểm tra riêng khoảnh khắc Phi Tiêu được tạo trên bàn.
 // Luồng thật gọi cùng helper này sau khi server xác nhận match 5 Nước.
-function previewFlyingDartCreation(axis: 'horizontal' | 'vertical' = 'horizontal'): boolean {
+function previewFlyingDartCreation(axis: 'horizontal' | 'vertical' | 'cross' = 'horizontal'): boolean {
   if (!inGame || tileSize <= 0 || busy || over) return false;
   const index = board.findIndex((type) => !isFlyingDart(type));
   if (index < 0) return false;
   busy = true;
   void animateDartCreation({
     index,
-    type: axis === 'horizontal' ? 'flyingDartHorizontal' : 'flyingDartVertical',
+    type:
+      axis === 'horizontal'
+        ? 'flyingDartHorizontal'
+        : axis === 'vertical'
+        ? 'flyingDartVertical'
+        : 'flyingDartCross',
   }).finally(() => {
     endBusy();
   });
@@ -2863,10 +2872,56 @@ function previewFlyingDartCascade(): boolean {
   return true;
 }
 
+// Dev-only integration preview: hoàn tất đúng hình chữ L/T bằng một nước đổi,
+// sau đó chạy resolveCascades thật để kiểm tra tạo cross dart + gravity.
+function previewFlyingDartLT(shape: 'l' | 't' = 'l'): boolean {
+  if (!inGame || tileSize <= 0 || busy || over) return false;
+  busy = true;
+  clearHint();
+  setSelected(null);
+  const fixture: Board = [
+    ['sword', 'sword', 'peach', 'peach', 'heart', 'heart', 'sword', 'sword'],
+    ['water', 'water', 'shield', 'shield', 'lightning', 'lightning', 'water', 'water'],
+    ['peach', 'peach', 'heart', 'heart', 'sword', 'sword', 'peach', 'peach'],
+    ['shield', 'shield', 'lightning', 'lightning', 'water', 'water', 'shield', 'shield'],
+    ['heart', 'heart', 'sword', 'sword', 'peach', 'peach', 'heart', 'heart'],
+    ['lightning', 'lightning', 'water', 'water', 'shield', 'shield', 'lightning', 'lightning'],
+    ['sword', 'sword', 'peach', 'peach', 'heart', 'heart', 'sword', 'sword'],
+    ['water', 'water', 'shield', 'shield', 'lightning', 'lightning', 'water', 'water'],
+  ].flat() as Board;
+  fixture[11] = 'water';
+  fixture[19] = 'water';
+  fixture[27] = 'lightning';
+  fixture[28] = 'water';
+  let source = 26;
+  if (shape === 'l') {
+    fixture[29] = 'water';
+    fixture[source] = 'water';
+  } else {
+    fixture[26] = 'water';
+    fixture[29] = 'lightning';
+    source = 35;
+    fixture[source] = 'water';
+  }
+  board = fixture;
+  rebuildSprites();
+  setStatus(`TEST · đổi ô tạo hình ${shape.toUpperCase()} Nước → Phi Tiêu giao nhau`);
+  updateHud();
+  swapCells(board, source, 27);
+  void animateSwap(source, 27)
+    .then(() => resolveCascades('me', 0, { active: false }, [27, source]))
+    .finally(() => {
+      endBusy();
+      setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
+      updateHud();
+    });
+  return true;
+}
+
 // Dev-only rule preview: dựng sẵn đúng combo "2 quân cùng loại + 1 Phi Tiêu",
 // giữ bàn một nhịp để nhìn trạng thái trước khi ăn, rồi chạy match thật,
 // quét cả hàng/cột và gravity thật. Không gửi nước này lên PvP server.
-function previewFlyingDartWildcard(axis: 'horizontal' | 'vertical' = 'horizontal'): boolean {
+function previewFlyingDartWildcard(axis: 'horizontal' | 'vertical' | 'cross' = 'horizontal'): boolean {
   if (!inGame || tileSize <= 0 || busy || over) return false;
   busy = true;
   clearHint();
@@ -2892,11 +2947,16 @@ function previewFlyingDartWildcard(axis: 'horizontal' | 'vertical' = 'horizontal
     fixture[54] = 'fireSword';
     fixture[55] = 'lightning';
     setStatus('TEST · 2 Kiếm + Phi Tiêu ngang');
-  } else {
+  } else if (axis === 'vertical') {
     fixture[18] = 'heart';
     fixture[26] = 'heart';
     fixture[34] = 'flyingDartVertical';
     setStatus('TEST · 2 Tim + Phi Tiêu dọc');
+  } else {
+    fixture[26] = 'sword';
+    fixture[27] = 'flyingDartCross';
+    fixture[28] = 'sword';
+    setStatus('TEST · 2 Kiếm + Phi Tiêu giao nhau');
   }
   board = fixture;
   rebuildSprites();
@@ -3063,6 +3123,7 @@ export function battleDebug(): Record<string, unknown> {
     previewFlyingDart: previewFlyingDartFx,
     previewFlyingDartCreation,
     previewFlyingDartCascade,
+    previewFlyingDartLT,
     previewFlyingDartWildcard,
     previewVsIntro,
     previewBoardShuffle,

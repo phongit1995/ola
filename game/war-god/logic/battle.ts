@@ -289,7 +289,7 @@ function previewMove(board: Board, move: BotMove, random: () => number): MovePre
   const counts = { ...match.counts };
   const plan = computeExplosions(board, match.cells, random);
   for (const index of plan.exploded) counts[board[index]]++;
-  const dartCreations = findFlyingDartCreation(board, [move[1], move[0]]) ? 1 : 0;
+  const dartCreations = findFlyingDartCreation(board, [move[1], move[0]], match.cells) ? 1 : 0;
   swapCells(board, move[0], move[1]);
   return {
     counts,
@@ -379,7 +379,7 @@ function simulateExpertMove(
     const match = findMatches(nextBoard);
     if (!match) break;
     total.bonusTurns = grantExtraTurns(total.bonusTurns, match.bonusTurns).remaining;
-    const creation = findFlyingDartCreation(nextBoard, preferredDartCells);
+    const creation = findFlyingDartCreation(nextBoard, preferredDartCells, match.cells);
     const plan = computeExplosions(nextBoard, match.cells, random);
     for (const index of plan.exploded) match.counts[nextBoard[index]]++;
     const removed = new Set(match.cells);

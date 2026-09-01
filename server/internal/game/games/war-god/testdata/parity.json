@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "tileOrder": [
     "sword",
     "peach",
@@ -10,7 +10,8 @@
     "fireSword",
     "greaterHeart",
     "flyingDartHorizontal",
-    "flyingDartVertical"
+    "flyingDartVertical",
+    "flyingDartCross"
   ],
   "findMatches": [
     {
@@ -253,6 +254,87 @@
       },
       "maxRun": 3,
       "bonusTurns": 0
+    },
+    {
+      "name": "L-shaped Water match creates a cross dart",
+      "board": [
+        0,
+        0,
+        1,
+        1,
+        2,
+        2,
+        0,
+        0,
+        3,
+        3,
+        4,
+        3,
+        5,
+        5,
+        3,
+        3,
+        1,
+        1,
+        2,
+        3,
+        0,
+        0,
+        1,
+        1,
+        4,
+        4,
+        5,
+        3,
+        3,
+        3,
+        4,
+        4,
+        2,
+        2,
+        0,
+        0,
+        1,
+        1,
+        2,
+        2,
+        5,
+        5,
+        3,
+        3,
+        4,
+        4,
+        5,
+        5,
+        0,
+        0,
+        1,
+        1,
+        2,
+        2,
+        0,
+        0,
+        3,
+        3,
+        4,
+        4,
+        5,
+        5,
+        3,
+        3
+      ],
+      "cells": [
+        11,
+        19,
+        27,
+        28,
+        29
+      ],
+      "counts": {
+        "water": 5
+      },
+      "maxRun": 3,
+      "bonusTurns": 1
     }
   ],
   "tileEffects": [
@@ -272,6 +354,7 @@
       },
       "counts": {
         "fireSword": 0,
+        "flyingDartCross": 0,
         "flyingDartHorizontal": 0,
         "flyingDartVertical": 0,
         "greaterHeart": 0,
@@ -319,6 +402,7 @@
       },
       "counts": {
         "fireSword": 1,
+        "flyingDartCross": 0,
         "flyingDartHorizontal": 0,
         "flyingDartVertical": 0,
         "greaterHeart": 1,
@@ -723,6 +807,124 @@
         {
           "source": 26,
           "axis": "horizontal"
+        }
+      ],
+      "fireSwordActivations": []
+    },
+    {
+      "name": "cross flying dart wildcard clears its row and column",
+      "board": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        0,
+        10,
+        0,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        0,
+        1,
+        2,
+        3
+      ],
+      "matched": [
+        26,
+        27,
+        28
+      ],
+      "random": null,
+      "exploded": [
+        0,
+        3,
+        11,
+        19,
+        24,
+        25,
+        29,
+        30,
+        31,
+        35,
+        43,
+        51,
+        59,
+        61,
+        62,
+        63
+      ],
+      "lightningArcs": [
+        {
+          "source": 11,
+          "target": 0
+        },
+        {
+          "source": 29,
+          "target": 63
+        },
+        {
+          "source": 35,
+          "target": 62
+        },
+        {
+          "source": 59,
+          "target": 61
+        }
+      ],
+      "dartActivations": [
+        {
+          "source": 27,
+          "axis": "cross"
         }
       ],
       "fireSwordActivations": []

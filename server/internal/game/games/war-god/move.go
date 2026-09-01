@@ -283,7 +283,7 @@ func resolveCascades(
 		potentialBonusTurns := matchBonusTurns(s.Board, matchedCells)
 		bonusTurns, totalExtraTurns := grantExtraTurns(*remainingExtraTurns, potentialBonusTurns)
 		*remainingExtraTurns = totalExtraTurns
-		creation := findFlyingDartCreation(s.Board, preferredDartCells)
+		creation := findFlyingDartCreation(s.Board, preferredDartCells, matchedCells)
 		matched := make(map[int]bool, len(matchedCells))
 		for _, index := range matchedCells {
 			matched[index] = true

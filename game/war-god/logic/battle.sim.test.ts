@@ -50,7 +50,7 @@ function resolve(
     const match = findMatches(board);
     if (!match) break;
     bonus += match.bonusTurns;
-    const creation = findFlyingDartCreation(board, preferredDartCells);
+    const creation = findFlyingDartCreation(board, preferredDartCells, match.cells);
     const plan = computeExplosions(board, match.cells, random);
     for (const index of plan.exploded) match.counts[board[index]]++;
     const removed = new Set(match.cells);

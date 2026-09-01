@@ -78,6 +78,16 @@ func ExportParityFixture() ParityFixture {
 				return board
 			}(),
 		},
+		{
+			name: "L-shaped Water match creates a cross dart",
+			board: func() []int {
+				board := parityNoMoveBoard()
+				for _, index := range []int{11, 19, 27, 28, 29} {
+					board[index] = tileWater
+				}
+				return board
+			}(),
+		},
 	}
 	matches := make([]ParityMatchCase, 0, len(matchCases))
 	for _, test := range matchCases {
@@ -139,6 +149,14 @@ func ExportParityFixture() ParityFixture {
 	fireLightningBoard[26], fireLightningBoard[27] = tileFireSword, tileLightning
 	dartBoard := parityStripedBoard()
 	dartBoard[26] = tileFlyingDartHorizontal
+	crossDartBoard := make([]int, boardSize)
+	for y := 0; y < grid; y++ {
+		for x := 0; x < grid; x++ {
+			crossDartBoard[y*grid+x] = (x + y*2) % baseTileCount
+		}
+	}
+	crossDartBoard[26], crossDartBoard[27], crossDartBoard[28] =
+		tileSword, tileFlyingDartCross, tileSword
 	explosions := []ParityExplosionCase{
 		makeExplosionFixture(
 			"fire sword clears its surrounding 3x3",
@@ -165,6 +183,12 @@ func ExportParityFixture() ParityFixture {
 			nil,
 		),
 		makeExplosionFixture(
+			"cross flying dart wildcard clears its row and column",
+			crossDartBoard,
+			[]int{26, 27, 28},
+			nil,
+		),
+		makeExplosionFixture(
 			"horizontal dart triggers Fire Sword and Lightning",
 			func() []int {
 				board := parityStripedBoard()
@@ -179,7 +203,7 @@ func ExportParityFixture() ParityFixture {
 	}
 
 	return ParityFixture{
-		Version:        6,
+		Version:        7,
 		TileOrder:      append([]string(nil), tileNames[:]...),
 		FindMatches:    matches,
 		TileEffects:    effects,
@@ -197,6 +221,24 @@ func parityStripedBoard() []int {
 				board[y*grid+x] = 2 + x%2
 			}
 		}
+	}
+	return board
+}
+
+func parityNoMoveBoard() []int {
+	rows := [grid][grid]int{
+		{0, 0, 1, 1, 2, 2, 0, 0},
+		{3, 3, 4, 4, 5, 5, 3, 3},
+		{1, 1, 2, 2, 0, 0, 1, 1},
+		{4, 4, 5, 5, 3, 3, 4, 4},
+		{2, 2, 0, 0, 1, 1, 2, 2},
+		{5, 5, 3, 3, 4, 4, 5, 5},
+		{0, 0, 1, 1, 2, 2, 0, 0},
+		{3, 3, 4, 4, 5, 5, 3, 3},
+	}
+	board := make([]int, 0, boardSize)
+	for _, row := range rows {
+		board = append(board, row[:]...)
 	}
 	return board
 }

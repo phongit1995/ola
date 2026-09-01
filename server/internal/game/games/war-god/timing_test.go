@@ -149,3 +149,16 @@ func TestMatchAnimationDelayCoversSequentialDartsAndCreationFx(t *testing.T) {
 		t.Fatalf("dart creation FX is undercounted: %v", diff)
 	}
 }
+
+func TestMatchAnimationDelayCoversCrossDartSweep(t *testing.T) {
+	base := Step{
+		Kind:   stepMatch,
+		Cells:  []int{0, 1, 2},
+		Counts: map[string]int{tileNames[tileWater]: 3},
+	}
+	cross := base
+	cross.DartActivations = []DartActivation{{Source: 27, Axis: dartAxisCross}}
+	if got := matchAnimationDelay(cross) - matchAnimationDelay(base); got < 900*time.Millisecond {
+		t.Fatalf("cross dart replay is undercounted: %v", got)
+	}
+}

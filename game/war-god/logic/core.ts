@@ -48,11 +48,11 @@ export interface LightningArc {
   target: number;
 }
 
-export type FlyingDartAxis = 'horizontal' | 'vertical';
+export type FlyingDartAxis = 'horizontal' | 'vertical' | 'cross';
 
 export interface DartCreation {
   index: number;
-  type: 'flyingDartHorizontal' | 'flyingDartVertical';
+  type: 'flyingDartHorizontal' | 'flyingDartVertical' | 'flyingDartCross';
 }
 
 export interface DartActivation {
@@ -130,15 +130,26 @@ function createsMatchAt(board: Board, i: number, type: TileType): boolean {
 export function baseTileType(type: TileType): BaseTileType {
   if (type === 'fireSword') return 'sword';
   if (type === 'greaterHeart') return 'heart';
-  if (type === 'flyingDartHorizontal' || type === 'flyingDartVertical') return 'water';
+  if (
+    type === 'flyingDartHorizontal' ||
+    type === 'flyingDartVertical' ||
+    type === 'flyingDartCross'
+  ) {
+    return 'water';
+  }
   return type;
 }
 
 export function isFlyingDart(type: TileType): boolean {
-  return type === 'flyingDartHorizontal' || type === 'flyingDartVertical';
+  return (
+    type === 'flyingDartHorizontal' ||
+    type === 'flyingDartVertical' ||
+    type === 'flyingDartCross'
+  );
 }
 
 export function flyingDartAxis(type: TileType): FlyingDartAxis {
+  if (type === 'flyingDartCross') return 'cross';
   return type === 'flyingDartVertical' ? 'vertical' : 'horizontal';
 }
 
@@ -162,9 +173,10 @@ export function addFlyingDartActivations(
       activations.push({ source, axis });
       const x = source % GRID;
       const y = Math.floor(source / GRID);
-      if (axis === 'horizontal') {
+      if (axis === 'horizontal' || axis === 'cross') {
         for (let column = 0; column < GRID; column++) affected.add(y * GRID + column);
-      } else {
+      }
+      if (axis === 'vertical' || axis === 'cross') {
         for (let row = 0; row < GRID; row++) affected.add(row * GRID + x);
       }
     }
@@ -193,9 +205,10 @@ export function expandDartTriggeredSpecials(
       dartActivations.push(activation);
       const x = activation.source % GRID;
       const y = Math.floor(activation.source / GRID);
-      if (activation.axis === 'horizontal') {
+      if (activation.axis === 'horizontal' || activation.axis === 'cross') {
         for (let column = 0; column < GRID; column++) dartSwept.add(y * GRID + column);
-      } else {
+      }
+      if (activation.axis === 'vertical' || activation.axis === 'cross') {
         for (let row = 0; row < GRID; row++) dartSwept.add(row * GRID + x);
       }
       changed = true;
@@ -231,14 +244,95 @@ export function expandDartTriggeredSpecials(
   return { dartActivations, fireSwordActivations };
 }
 
-/** Create one Phi Tiêu from a straight run of at least five plain Water tiles. */
+/**
+ * Create one Phi Tiêu from a straight run of at least five plain Water tiles,
+ * or a connected L/T-shaped Water group of at least five. L/T groups create a
+ * cross dart that clears both the row and column through its creation cell.
+ */
 export function findFlyingDartCreation(
   board: Board,
-  preferred: readonly number[] = [],
+  preferred: readonly number[],
+  matched: Iterable<number>,
 ): DartCreation | null {
+  const matchedSet = new Set(matched);
+
+  if (matchedSet.size > 0) {
+    const visited = new Set<number>();
+    const components: Array<{ cells: number[]; pivots: number[] }> = [];
+    for (let start = 0; start < board.length; start++) {
+      if (visited.has(start) || !matchedSet.has(start) || board[start] !== 'water') continue;
+      const queue = [start];
+      visited.add(start);
+      const cells: number[] = [];
+      while (queue.length > 0) {
+        const index = queue.pop()!;
+        cells.push(index);
+        const x = index % GRID;
+        const y = Math.floor(index / GRID);
+        const neighbors = [
+          x > 0 ? index - 1 : -1,
+          x < GRID - 1 ? index + 1 : -1,
+          y > 0 ? index - GRID : -1,
+          y < GRID - 1 ? index + GRID : -1,
+        ];
+        for (const neighbor of neighbors) {
+          if (
+            neighbor >= 0 &&
+            matchedSet.has(neighbor) &&
+            board[neighbor] === 'water' &&
+            !visited.has(neighbor)
+          ) {
+            visited.add(neighbor);
+            queue.push(neighbor);
+          }
+        }
+      }
+      if (cells.length < 5) continue;
+
+      const cellSet = new Set(cells);
+      const pivots: number[] = [];
+      for (const index of cells) {
+        const x = index % GRID;
+        const y = Math.floor(index / GRID);
+        let horizontal = 1;
+        for (let xx = x - 1; xx >= 0 && cellSet.has(y * GRID + xx); xx--) horizontal++;
+        for (let xx = x + 1; xx < GRID && cellSet.has(y * GRID + xx); xx++) horizontal++;
+        let vertical = 1;
+        for (let yy = y - 1; yy >= 0 && cellSet.has(yy * GRID + x); yy--) vertical++;
+        for (let yy = y + 1; yy < GRID && cellSet.has(yy * GRID + x); yy++) vertical++;
+        if (horizontal >= 3 && vertical >= 3) pivots.push(index);
+      }
+      if (pivots.length > 0) {
+        cells.sort((a, b) => a - b);
+        pivots.sort((a, b) => a - b);
+        components.push({ cells, pivots });
+      }
+    }
+
+    if (components.length > 0) {
+      // Keep placement consistent with straight darts: the shape touched by
+      // the player's swap wins even when another simultaneous shape is larger.
+      for (const index of preferred) {
+        const component = components.find(({ cells }) => cells.includes(index));
+        if (component) {
+          return {
+            index: component.pivots.includes(index) ? index : component.pivots[0]!,
+            type: 'flyingDartCross',
+          };
+        }
+      }
+      const chosen = components.reduce((longest, component) =>
+        component.cells.length > longest.cells.length ? component : longest,
+      );
+      return { index: chosen.pivots[0]!, type: 'flyingDartCross' };
+    }
+  }
+
   const runs: Array<{ cells: number[]; type: DartCreation['type'] }> = [];
   const appendRun = (cells: number[], type: DartCreation['type']): void => {
-    if (cells.length >= 5) runs.push({ cells, type });
+    if (cells.length < 5) return;
+    if (cells.some((index) => !matchedSet.has(index))) return;
+    runs.push({ cells, type });
   };
   for (let y = 0; y < GRID; y++) {
     for (let start = 0; start < GRID; ) {
@@ -542,9 +636,10 @@ export function computeExplosions(
       dartActivations.push(activation);
       const x = activation.source % GRID;
       const y = Math.floor(activation.source / GRID);
-      if (activation.axis === 'horizontal') {
+      if (activation.axis === 'horizontal' || activation.axis === 'cross') {
         for (let column = 0; column < GRID; column++) dartSwept.add(y * GRID + column);
-      } else {
+      }
+      if (activation.axis === 'vertical' || activation.axis === 'cross') {
         for (let row = 0; row < GRID; row++) dartSwept.add(row * GRID + x);
       }
       changed = true;

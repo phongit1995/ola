@@ -135,6 +135,7 @@ export const A = {
     flyingDart: itemFlyingDart,
     flyingDartHorizontal: itemFlyingDart,
     flyingDartVertical: itemFlyingDart,
+    flyingDartCross: itemFlyingDart,
   },
   ultimate: {
     heartVacuum: ultimateHeartVacuum,

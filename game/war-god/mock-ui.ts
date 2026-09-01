@@ -313,6 +313,12 @@ function createMockDartBoard(): Board {
   return board;
 }
 
+function createMockCrossDartBoard(): Board {
+  const board = createMockDartBoard();
+  board[27] = 'flyingDartCross';
+  return board;
+}
+
 function createMockHeartBoard(): Board {
   const board = createBoard(mockRandom(0x51a7c0de));
   const hearts = [1, 5, 10, 14, 18, 23, 29, 34, 39, 44, 50, 57];
@@ -337,6 +343,8 @@ function makeMatch(): MatchFoundData<ServerState> {
     ? createMockHeartBoard()
     : state === 'flying-dart'
     ? createMockDartBoard()
+    : state === 'flying-dart-cross'
+    ? createMockCrossDartBoard()
     : createBoard();
   return {
     matchId: 'wg-match-mock',
@@ -417,7 +425,7 @@ function resolveMockCascades(
     const match = findMatches(board);
     if (!match) break;
 
-    const creation = findFlyingDartCreation(board, preferred);
+    const creation = findFlyingDartCreation(board, preferred, match.cells);
     const plan = computeExplosions(board, match.cells, random);
     const counts = { ...match.counts };
     for (const index of plan.exploded) counts[board[index]]++;
@@ -936,15 +944,30 @@ const SCENES: Record<string, () => Promise<void> | void> = {
     updateRoomPregame(makeRoomState(), null);
   },
 
-  // state: my-turn | foe-turn | flying-dart | flying-dart-test | flying-dart-test-vertical | heart-vacuum | foe-heart-vacuum | mana-empty | mana-loading | mana-ready | ultimate-picker | fury-full | win | lose | draw
+  // state: my-turn | foe-turn | flying-dart | flying-dart-cross | flying-dart-lt-test | flying-dart-t-test | flying-dart-test | flying-dart-test-vertical | flying-dart-test-cross | heart-vacuum | foe-heart-vacuum | mana-empty | mana-loading | mana-ready | ultimate-picker | fury-full | win | lose | draw
   // query stars=0..3 theo bước 0.5 bật biến thể rating khi chơi với Máy.
   async battle() {
     await openPvpBattle();
-    if (state === 'flying-dart-test' || state === 'flying-dart-test-vertical') {
+    if (
+      state === 'flying-dart-test' ||
+      state === 'flying-dart-test-vertical' ||
+      state === 'flying-dart-test-cross'
+    ) {
       const preview = battleDebug().previewFlyingDartWildcard;
       if (typeof preview === 'function') {
-        preview(state === 'flying-dart-test-vertical' ? 'vertical' : 'horizontal');
+        preview(
+          state === 'flying-dart-test-vertical'
+            ? 'vertical'
+            : state === 'flying-dart-test-cross'
+            ? 'cross'
+            : 'horizontal',
+        );
       }
+      return;
+    }
+    if (state === 'flying-dart-lt-test' || state === 'flying-dart-t-test') {
+      const preview = battleDebug().previewFlyingDartLT;
+      if (typeof preview === 'function') preview(state === 'flying-dart-t-test' ? 't' : 'l');
       return;
     }
     if (state === 'heart-vacuum') {
