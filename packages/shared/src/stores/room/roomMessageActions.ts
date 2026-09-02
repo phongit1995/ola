@@ -14,6 +14,7 @@ import type {
 import {
   buildOptimisticRoomAudio,
   buildOptimisticRoomImage,
+  capPinnedRoomMessages,
   markRoomMessageByClientMsgId,
   markRoomMessageById,
   reconcileRoomServerMessage,
@@ -34,9 +35,12 @@ export function createRoomMessageActions(
     try {
       const saved = withSenderVip(await upload());
       if (get().activeRoom?.id !== roomId) return;
-      set((state) => ({
-        messages: reconcileRoomServerMessage(state.messages, saved),
-      }));
+      set((state) =>
+        capPinnedRoomMessages(
+          reconcileRoomServerMessage(state.messages, saved),
+          state.pinnedToBottom
+        )
+      );
     } catch {
       if (get().activeRoom?.id !== roomId) return;
       set((state) => ({
@@ -57,9 +61,12 @@ export function createRoomMessageActions(
     try {
       const saved = withSenderVip(await upload());
       if (get().activeRoom?.id !== roomId) return 'aborted';
-      set((state) => ({
-        messages: reconcileRoomServerMessage(state.messages, saved),
-      }));
+      set((state) =>
+        capPinnedRoomMessages(
+          reconcileRoomServerMessage(state.messages, saved),
+          state.pinnedToBottom
+        )
+      );
       return 'sent';
     } catch {
       if (get().activeRoom?.id !== roomId) return 'aborted';
@@ -93,7 +100,10 @@ export function createRoomMessageActions(
           state.replyTarget?.id === reply?.id ? null : state.replyTarget,
         ...(state.messages.some((item) => item.id === message.id)
           ? {}
-          : { messages: [...state.messages, message] }),
+          : capPinnedRoomMessages(
+              [...state.messages, message],
+              state.pinnedToBottom
+            )),
       }));
     },
 
@@ -102,12 +112,15 @@ export function createRoomMessageActions(
       if (!room) return;
       const clientMsgId = randomUuid();
       const previewUrl = uploadPreviewUrl(file);
-      set((state) => ({
-        messages: [
-          ...state.messages,
-          buildOptimisticRoomImage(room.id, clientMsgId, previewUrl),
-        ],
-      }));
+      set((state) =>
+        capPinnedRoomMessages(
+          [
+            ...state.messages,
+            buildOptimisticRoomImage(room.id, clientMsgId, previewUrl),
+          ],
+          state.pinnedToBottom
+        )
+      );
       await finalizeImageSend(room.id, clientMsgId, () =>
         RoomService.sendImage(room.id, file, clientMsgId)
       );
@@ -123,18 +136,21 @@ export function createRoomMessageActions(
       set((state) => ({
         replyTarget:
           state.replyTarget?.id === reply?.id ? null : state.replyTarget,
-        messages: [
-          ...state.messages,
-          buildOptimisticRoomAudio(
-            room.id,
-            clientMsgId,
-            previewUrl,
-            duration,
-            waveform,
-            mimeType,
-            reply != null ? roomReplySnapshotOf(reply) : undefined
-          ),
-        ],
+        ...capPinnedRoomMessages(
+          [
+            ...state.messages,
+            buildOptimisticRoomAudio(
+              room.id,
+              clientMsgId,
+              previewUrl,
+              duration,
+              waveform,
+              mimeType,
+              reply != null ? roomReplySnapshotOf(reply) : undefined
+            ),
+          ],
+          state.pinnedToBottom
+        ),
       }));
       return finalizeAudioSend(room.id, clientMsgId, () =>
         RoomService.sendAudio(room.id, file, duration, {

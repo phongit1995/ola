@@ -6,9 +6,14 @@ const STICK_THRESHOLD = 80;
 const VIEWPORT_RESIZE_EPSILON = 0.5;
 const SETTLE_STEPS = [60, 150, 300, 500, 800, 1200];
 
-export function useStickyBottomList<T>() {
+interface UseStickyBottomListOptions {
+  onStickChange?: (stuck: boolean) => void;
+}
+
+export function useStickyBottomList<T>(options?: UseStickyBottomListOptions) {
   const listRef = useRef<FlashListRef<T>>(null);
   const stickRef = useRef(true);
+  const onStickChangeRef = useRef(options?.onStickChange);
   const suspendRef = useRef(false);
   const draggingRef = useRef(false);
   const momentumRef = useRef(false);
@@ -17,6 +22,20 @@ export function useStickyBottomList<T>() {
   const settleTimersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
   const viewportHeightRef = useRef(0);
   const contentHeightRef = useRef(0);
+
+  useEffect(() => {
+    onStickChangeRef.current = options?.onStickChange;
+  }, [options?.onStickChange]);
+
+  useEffect(() => {
+    onStickChangeRef.current?.(stickRef.current);
+  }, []);
+
+  const setStuck = useCallback((stuck: boolean) => {
+    if (stickRef.current === stuck) return;
+    stickRef.current = stuck;
+    onStickChangeRef.current?.(stuck);
+  }, []);
 
   const clearSettle = useCallback(() => {
     settlingRef.current = false;
@@ -88,8 +107,8 @@ export function useStickyBottomList<T>() {
     viewportHeightRef.current = layoutMeasurement.height;
     if (settlingRef.current || !isUserInteracting()) return;
     const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
-    stickRef.current = distanceFromBottom < STICK_THRESHOLD;
-  }, [isUserInteracting]);
+    setStuck(distanceFromBottom < STICK_THRESHOLD);
+  }, [isUserInteracting, setStuck]);
 
   const onScrollBeginDrag = useCallback(() => {
     draggingRef.current = true;
@@ -109,19 +128,20 @@ export function useStickyBottomList<T>() {
       momentumRef.current = false;
       const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
       if (layoutMeasurement.height <= 0) return;
-      stickRef.current =
-        contentSize.height - contentOffset.y - layoutMeasurement.height < STICK_THRESHOLD;
+      setStuck(
+        contentSize.height - contentOffset.y - layoutMeasurement.height < STICK_THRESHOLD
+      );
     },
-    []
+    [setStuck]
   );
 
   const pinOnNextContent = useCallback(() => {
     forceNextRef.current = true;
-    stickRef.current = true;
-  }, []);
+    setStuck(true);
+  }, [setStuck]);
 
   const requestScrollToBottom = useCallback(() => {
-    stickRef.current = true;
+    setStuck(true);
     settlingRef.current = true;
     pin();
     settleTimersRef.current.forEach(clearTimeout);
@@ -133,15 +153,15 @@ export function useStickyBottomList<T>() {
         if (ms === SETTLE_STEPS[SETTLE_STEPS.length - 1]) settlingRef.current = false;
       }, ms)
     );
-  }, [pin]);
+  }, [pin, setStuck]);
 
   const scrollToBottomIfStuck = useCallback(() => {
     if (shouldPin()) pin();
   }, [pin, shouldPin]);
 
   const unstick = useCallback(() => {
-    stickRef.current = false;
-  }, []);
+    setStuck(false);
+  }, [setStuck]);
 
   return {
     listRef,

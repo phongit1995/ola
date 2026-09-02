@@ -25,6 +25,7 @@ import { RoomReactionNotice } from './RoomReactionNotice';
 import { RoomReactionBalloons } from './RoomReactionBalloons';
 import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
 import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 
 interface RoomMessagesTabProps {
   currentUserId: string;
@@ -75,6 +76,7 @@ export function RoomMessagesTab({
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
   const wallpaperStyle = useChatWallpaperStyle();
+  const setPinnedToBottom = useRoomChatStore((s) => s.setPinnedToBottom);
   const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
   const blockUser = useRoomFilterStore((s) => s.blockUser);
 
@@ -105,6 +107,7 @@ export function RoomMessagesTab({
       onLoadMore,
       enabled: active && visible,
       loadMoreAtTop: 80,
+      onStickyChange: setPinnedToBottom,
     });
 
   useEffect(() => {

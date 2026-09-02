@@ -1,5 +1,6 @@
 import {
   ROOM_JOIN_ACK_TIMEOUT_MS,
+  ROOM_MESSAGE_CACHE_LIMIT,
   ROOM_MESSAGE_PAGE_SIZE,
 } from '../../constants/room';
 import { ROOM_SOCKET_EVENTS } from '../../constants/socket';
@@ -7,6 +8,7 @@ import { RoomService } from '../../services/room.service';
 import { SocketService } from '../../services/socket.service';
 import type { RoomLifecycleActions } from '../../types/client/roomChat.type';
 import {
+  capPinnedRoomMessages,
   mergeRoomMessageSnapshot,
   toRecord,
   withSenderVip,
@@ -44,13 +46,19 @@ export function createRoomLifecycleActions(
     ]);
     if (get().activeRoom?.id !== roomId) return;
     const snapshot = [...messagesResult.items].reverse().map(withSenderVip);
-    set((state) => ({
-      status: 'joined',
-      messages: mergeRoomMessageSnapshot(state.messages, snapshot),
-      members: withVipTypeId(membersResult.items),
-      memberCount: membersResult.total,
-      hasMore: messagesResult.hasMore,
-    }));
+    set((state) => {
+      const patch = capPinnedRoomMessages(
+        mergeRoomMessageSnapshot(state.messages, snapshot),
+        state.pinnedToBottom
+      );
+      return {
+        status: 'joined',
+        ...patch,
+        members: withVipTypeId(membersResult.items),
+        memberCount: membersResult.total,
+        hasMore: messagesResult.hasMore || patch.hasMore === true,
+      };
+    });
   }
 
   SocketService.onReconnect(() => {
@@ -83,8 +91,10 @@ export function createRoomLifecycleActions(
     },
 
     loadMoreMessages: async () => {
-      const { activeRoom, messages, hasMore, loadingMore } = get();
+      const { activeRoom, messages, hasMore, loadingMore, pinnedToBottom } =
+        get();
       if (!activeRoom || !hasMore || loadingMore) return;
+      if (pinnedToBottom && messages.length >= ROOM_MESSAGE_CACHE_LIMIT) return;
       const oldest = messages[0];
       if (oldest == null) return;
       set({ loadingMore: true });
@@ -95,12 +105,21 @@ export function createRoomLifecycleActions(
         });
         if (get().activeRoom?.id !== activeRoom.id) return;
         const older = [...result.items].reverse().map(withSenderVip);
-        const existingIds = new Set(get().messages.map((item) => item.id));
-        const deduped = older.filter((item) => !existingIds.has(item.id));
-        set({
-          messages: [...deduped, ...get().messages],
-          hasMore: result.hasMore,
-          loadingMore: false,
+        set((state) => {
+          if (state.messages[0]?.id !== oldest.id) {
+            return { loadingMore: false };
+          }
+          const existingIds = new Set(state.messages.map((item) => item.id));
+          const deduped = older.filter((item) => !existingIds.has(item.id));
+          const patch = capPinnedRoomMessages(
+            [...deduped, ...state.messages],
+            state.pinnedToBottom
+          );
+          return {
+            ...patch,
+            hasMore: result.hasMore || patch.hasMore === true,
+            loadingMore: false,
+          };
         });
       } catch {
         if (get().activeRoom?.id === activeRoom.id) {

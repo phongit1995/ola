@@ -1,3 +1,4 @@
+import { ROOM_MESSAGE_CACHE_LIMIT } from '../../constants/room';
 import { activeVipTypeId } from '../../lib/vip';
 import type { RoomMember, RoomMessage, RoomReplySnapshot } from '../../types/api/room.type';
 import { useAuthStore } from '../auth/authStore';
@@ -126,6 +127,35 @@ export function reconcileRoomServerMessage(
   return next;
 }
 
+function isPendingRoomMessage(message: RoomMessage): boolean {
+  return message.status === 'uploading' || message.status === 'failed';
+}
+
+function capRoomMessages(
+  messages: RoomMessage[],
+  limit: number
+): RoomMessage[] {
+  if (messages.length <= limit) return messages;
+  const cut = messages.length - limit;
+  const pending = messages.slice(0, cut).filter(isPendingRoomMessage);
+  if (pending.length === cut) return messages;
+  return [...pending, ...messages.slice(cut)];
+}
+
+export interface CappedRoomMessagesPatch {
+  messages: RoomMessage[];
+  hasMore?: boolean;
+}
+
+export function capPinnedRoomMessages(
+  next: RoomMessage[],
+  pinnedToBottom: boolean
+): CappedRoomMessagesPatch {
+  if (!pinnedToBottom) return { messages: next };
+  const messages = capRoomMessages(next, ROOM_MESSAGE_CACHE_LIMIT);
+  return messages === next ? { messages } : { messages, hasMore: true };
+}
+
 function sortRoomMessagesByTime(messages: RoomMessage[]): RoomMessage[] {
   return messages
     .map((message, index) => ({ message, index, createdAt: Date.parse(message.createdAt) }))
@@ -137,9 +167,7 @@ export function mergeRoomMessageSnapshot(
   messages: RoomMessage[],
   snapshot: RoomMessage[]
 ): RoomMessage[] {
-  const isPending = (message: RoomMessage) =>
-    message.status === 'uploading' || message.status === 'failed';
-  const pending = messages.filter(isPending);
+  const pending = messages.filter(isPendingRoomMessage);
   const sent = snapshot.map((message) => ({ ...message, status: 'sent' as const }));
 
   const coveredIds = new Set(snapshot.map((message) => message.id));
@@ -150,7 +178,9 @@ export function mergeRoomMessageSnapshot(
     coveredIds.has(message.id) ||
     (message.clientMsgId != null && coveredClientMsgIds.has(message.clientMsgId));
 
-  const overlapsHistory = messages.some((message) => !isPending(message) && isCovered(message));
+  const overlapsHistory = messages.some(
+    (message) => !isPendingRoomMessage(message) && isCovered(message)
+  );
   if (!overlapsHistory) return sortRoomMessagesByTime([...pending, ...sent]);
 
   const snapshotTimes = snapshot
@@ -161,7 +191,7 @@ export function mergeRoomMessageSnapshot(
 
   const survivesSnapshot = (message: RoomMessage): boolean => {
     if (isCovered(message)) return false;
-    if (isPending(message)) return true;
+    if (isPendingRoomMessage(message)) return true;
     const createdAt = Date.parse(message.createdAt);
     if (!Number.isFinite(createdAt)) return true;
     return createdAt < oldestCovered || createdAt > newestCovered;

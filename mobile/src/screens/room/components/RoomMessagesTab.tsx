@@ -17,6 +17,7 @@ import type { NativeUploadFile } from '@ola/shared/types';
 import { createDateSeparatorFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { ChatWallpaper } from '@components/ChatWallpaper';
 import { CHAT_BG } from '@screens/chat/constants';
 import { ChatText as Text } from '@components/ui/ChatText';
@@ -93,6 +94,7 @@ export function RoomMessagesTab({
   const { t } = useTranslation();
   const { width: windowWidth } = useWindowDimensions();
   const pushToast = useToastStore(s => s.push);
+  const setPinnedToBottom = useRoomChatStore(s => s.setPinnedToBottom);
   const blockedUserIds = useRoomFilterStore(s => s.blockedUserIds);
   const blockUser = useRoomFilterStore(s => s.blockUser);
   const [actionTarget, setActionTarget] = useState<{
@@ -128,7 +130,7 @@ export function RoomMessagesTab({
     unstick,
     isUserInteracting,
     isStuckToBottom,
-  } = useStickyBottomList<RoomFeedItem>();
+  } = useStickyBottomList<RoomFeedItem>({ onStickChange: setPinnedToBottom });
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const composerRef = useRef<RoomComposerHandle>(null);
   const wasStuckBeforeBackgroundRef = useRef(true);
