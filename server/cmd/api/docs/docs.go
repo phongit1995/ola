@@ -1103,6 +1103,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/game-matches/levels": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-game-match"
+                ],
+                "summary": "Level/EXP người chơi theo từng game (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo game (caro, war-god, xiangqi, thirteen)",
+                        "name": "gameId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user ID",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tìm theo username hoặc tên hiển thị",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_game-match.LevelListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/game-matches/stats": {
             "get": {
                 "security": [
@@ -3509,6 +3565,175 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/topup/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-topup"
+                ],
+                "summary": "Thống kê tiền nạp KEN theo ngày/tháng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339, mặc định 30 ngày trước)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339, mặc định hiện tại)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_topup.StatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/topup/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-topup"
+                ],
+                "summary": "Lịch sử giao dịch nạp KEN qua webhook ngân hàng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "CREDITED|NO_MATCH|BELOW_MIN|SKIPPED_OUT|SKIPPED_DISABLED|FAILED",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "IN|OUT",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tìm theo mã giao dịch, nội dung, username",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_topup.TransactionListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/topup/transactions/{id}/credit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-topup"
+                ],
+                "summary": "Cộng KEN thủ công cho giao dịch nạp chưa khớp user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Topup transaction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Username nhận KEN",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_topup.ManualCreditRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_topup.ManualCreditSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -10162,6 +10387,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/push/token": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "push"
+                ],
+                "summary": "Register the current device's push notification token",
+                "parameters": [
+                    {
+                        "description": "Push token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_push.RegisterTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/relationships/block": {
             "post": {
                 "security": [
@@ -11304,6 +11570,43 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/topup/webhook/sieuthicode": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "topup"
+                ],
+                "summary": "Webhook SieuThiCode nhận giao dịch ngân hàng để tự động cộng KEN",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "SieuThiCode webhook secret",
+                        "name": "signature",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_topup.WebhookResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_topup.WebhookResponse"
                         }
                     }
                 }
@@ -13511,6 +13814,79 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_game-match.LevelListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.LevelView"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_game-match.LevelListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.LevelListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.LevelView": {
+            "type": "object",
+            "properties": {
+                "exp": {
+                    "type": "integer",
+                    "example": 7350
+                },
+                "gameId": {
+                    "type": "string",
+                    "example": "caro"
+                },
+                "level": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2026-08-28T10:00:00Z"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                }
+            }
+        },
         "internal_modules_admin_game-match.MatchListResponse": {
             "type": "object",
             "properties": {
@@ -15532,6 +15908,208 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_topup.ManualCreditRequest": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_topup.ManualCreditResponse": {
+            "type": "object",
+            "properties": {
+                "balanceAfter": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.UserInfo"
+                }
+            }
+        },
+        "internal_modules_admin_topup.ManualCreditSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.ManualCreditResponse"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_topup.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "pending": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.StatsTotals"
+                },
+                "range": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.StatsTotals"
+                },
+                "series": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_topup.StatsSeriesItem"
+                    }
+                },
+                "thisMonth": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.StatsTotals"
+                },
+                "today": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.StatsTotals"
+                }
+            }
+        },
+        "internal_modules_admin_topup.StatsSeriesItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "ken": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_topup.StatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.StatsResponse"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_topup.StatsTotals": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "ken": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_topup.TransactionItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "kenTxId": {
+                    "type": "string"
+                },
+                "matchedUsername": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "providerTxId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.UserInfo"
+                }
+            }
+        },
+        "internal_modules_admin_topup.TransactionListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_topup.TransactionItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_topup.TransactionListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_topup.TransactionListResponse"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_topup.UserInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -19506,6 +20084,17 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_push.RegisterTokenRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_relationships.BlockUserRequest": {
             "type": "object",
             "required": [
@@ -20351,6 +20940,17 @@ const docTemplate = `{
                 },
                 "minLength": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_topup.WebhookResponse": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "boolean"
                 }
             }
         },

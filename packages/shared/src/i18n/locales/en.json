@@ -1981,5 +1981,10 @@
     "disabledNotice": "Nickname change is temporarily disabled. Please come back later.",
     "checkError": "Could not check the nickname. Please try again.",
     "costChanged": "The price list was just updated. Please review the new price before changing."
+  },
+  "push": {
+    "channelMessages": "Messages",
+    "channelSocial": "Me notifications",
+    "channelSystem": "System"
   }
 }

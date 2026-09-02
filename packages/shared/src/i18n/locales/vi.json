@@ -1981,5 +1981,10 @@
     "disabledNotice": "Tính năng đổi nickname đang tạm tắt. Vui lòng quay lại sau.",
     "checkError": "Không kiểm tra được nickname. Vui lòng thử lại.",
     "costChanged": "Bảng giá vừa được cập nhật. Vui lòng kiểm tra giá mới trước khi đổi."
+  },
+  "push": {
+    "channelMessages": "Tin nhắn",
+    "channelSocial": "Thông báo Me",
+    "channelSystem": "Hệ thống"
   }
 }

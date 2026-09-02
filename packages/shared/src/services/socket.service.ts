@@ -6,6 +6,7 @@ import {
 } from '../api/interceptors/refreshTokenInterceptor';
 import { env } from '../config/env';
 import {
+  SOCKET_APP_STATE_EVENT,
   SOCKET_AUTH_CONNECT_ERROR_MESSAGES,
   SOCKET_ENVELOPE_EVENT,
   SOCKET_FORCE_LOGOUT_EVENT,
@@ -47,6 +48,7 @@ export class SocketService {
   private static status: ConnectionStatus = 'offline';
   private static statusListeners = new Set<ConnectionStatusListener>();
   private static lastServerPingAt = 0;
+  private static appState: 'foreground' | 'background' = 'foreground';
 
   static connect(): Socket {
     if (this.socket) return this.socket;
@@ -175,9 +177,17 @@ export class SocketService {
   private static handleConnect(): void {
     this.lastServerPingAt = Date.now();
     this.startHeartbeat();
+    if (this.appState === 'background') {
+      this.socket?.emit(SOCKET_APP_STATE_EVENT, { state: this.appState });
+    }
     if (this.hasConnected) this.reconnectHandlers.forEach((handler) => handler());
     this.hasConnected = true;
     this.setStatus('connected');
+  }
+
+  static emitAppState(state: 'foreground' | 'background'): void {
+    this.appState = state;
+    if (this.socket?.connected) this.socket.emit(SOCKET_APP_STATE_EVENT, { state });
   }
 
   private static handleDisconnect(): void {

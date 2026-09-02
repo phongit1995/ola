@@ -9,6 +9,7 @@ import (
 
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/setting"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,7 +33,7 @@ func (m *Middleware) Record() gin.HandlerFunc {
 		}
 
 		var bodyCopy []byte
-		if strings.HasPrefix(c.ContentType(), "application/json") && c.Request.Body != nil {
+		if !isSensitiveBodyPath(c.Request.URL.Path) && strings.HasPrefix(c.ContentType(), "application/json") && c.Request.Body != nil {
 			bodyCopy, _ = io.ReadAll(io.LimitReader(c.Request.Body, maxAuditBodyBytes))
 			c.Request.Body = io.NopCloser(io.MultiReader(bytes.NewReader(bodyCopy), c.Request.Body))
 		}
@@ -70,6 +71,10 @@ func (m *Middleware) Record() gin.HandlerFunc {
 			Detail:   detail,
 		})
 	}
+}
+
+func isSensitiveBodyPath(path string) bool {
+	return strings.HasSuffix(path, "/admin/settings/"+setting.KeyPushFirebase)
 }
 
 func isMutating(method string) bool {
@@ -130,7 +135,7 @@ func parseBody(raw []byte) map[string]interface{} {
 func redact(m map[string]interface{}) {
 	for key, val := range m {
 		lower := strings.ToLower(key)
-		if strings.Contains(lower, "password") || strings.Contains(lower, "token") || strings.Contains(lower, "secret") || strings.Contains(lower, "webhook") {
+		if strings.Contains(lower, "password") || strings.Contains(lower, "token") || strings.Contains(lower, "secret") || strings.Contains(lower, "webhook") || strings.Contains(lower, "private_key") || strings.Contains(lower, "credential") {
 			m[key] = "***"
 			continue
 		}

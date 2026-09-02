@@ -7,6 +7,9 @@ PODS:
   - Firebase/Crashlytics (12.15.0):
     - Firebase/CoreOnly
     - FirebaseCrashlytics (~> 12.15.0)
+  - Firebase/Messaging (12.15.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 12.15.0)
   - FirebaseAnalytics/Core (12.15.0):
     - FirebaseCore (~> 12.15.0)
     - FirebaseInstallations (~> 12.15.0)
@@ -38,6 +41,15 @@ PODS:
     - GoogleUtilities/Environment (~> 8.1)
     - GoogleUtilities/UserDefaults (~> 8.1)
     - PromisesObjC (~> 2.4)
+  - FirebaseMessaging (12.15.0):
+    - FirebaseCore (~> 12.15.0)
+    - FirebaseInstallations (~> 12.15.0)
+    - GoogleDataTransport (~> 10.1)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Reachability (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - nanopb (~> 3.30910.0)
   - FirebaseRemoteConfigInterop (12.15.0)
   - FirebaseSessions (12.15.0):
     - FirebaseCore (~> 12.15.0)
@@ -2558,6 +2570,31 @@ PODS:
     - ReactNativeDependencies
     - RNFBApp
     - Yoga
+  - RNFBMessaging (25.1.0):
+    - Firebase/Messaging (= 12.15.0)
+    - FirebaseCoreExtension
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNFBApp
+    - Yoga
   - RNGestureHandler (3.0.2):
     - hermes-engine
     - RCTRequired
@@ -3122,6 +3159,7 @@ DEPENDENCIES:
   - "RNFBAnalytics (from `../../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../../node_modules/@react-native-firebase/app`)"
   - "RNFBCrashlytics (from `../../node_modules/@react-native-firebase/crashlytics`)"
+  - "RNFBMessaging (from `../../node_modules/@react-native-firebase/messaging`)"
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
   - RNImageCropPicker (from `../../node_modules/react-native-image-crop-picker`)
   - RNLocalize (from `../../node_modules/react-native-localize`)
@@ -3143,6 +3181,7 @@ SPEC REPOS:
     - FirebaseCoreInternal
     - FirebaseCrashlytics
     - FirebaseInstallations
+    - FirebaseMessaging
     - FirebaseRemoteConfigInterop
     - FirebaseSessions
     - GoogleAppMeasurement
@@ -3367,6 +3406,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@react-native-firebase/app"
   RNFBCrashlytics:
     :path: "../../node_modules/@react-native-firebase/crashlytics"
+  RNFBMessaging:
+    :path: "../../node_modules/@react-native-firebase/messaging"
   RNGestureHandler:
     :path: "../../node_modules/react-native-gesture-handler"
   RNImageCropPicker:
@@ -3400,6 +3441,7 @@ SPEC CHECKSUMS:
   FirebaseCoreInternal: 6ab6a02c94446c026d2cf35cf5383842ebaa4992
   FirebaseCrashlytics: 87e76cc33259b076dd1f96cd829db76849338e08
   FirebaseInstallations: eb29ccbf64eaedf86fd5b2ccc7fabde567660b52
+  FirebaseMessaging: 40017d7bc8457ee295b0f41d480a80fdabc9994e
   FirebaseRemoteConfigInterop: 7e3d57ce4b1e958bb1d15403faa7178f46bbb5b7
   FirebaseSessions: acfe7eadca47cda94ac86592737204581bb1abf6
   GoogleAppMeasurement: a6d37949071d456e9147dac6789c4342e0e7a8c5
@@ -3511,6 +3553,7 @@ SPEC CHECKSUMS:
   RNFBAnalytics: 48bfdf812daecdb7b9f0cc9d8b69e415c7ee2025
   RNFBApp: b43e427e40a6860f4f7db23c5ff89415d5cc618b
   RNFBCrashlytics: 4d954fbce9bf3659e26c061b5be1d15dcdacb98f
+  RNFBMessaging: 9e32671a9f9152458a4e52319b70f66c889ea195
   RNGestureHandler: 7ade813d6efb2b650e01afdd54d699bc435843fb
   RNImageCropPicker: 5c9c8bef4c72d3f451b499aa0ecd90a644ea1bbd
   RNLocalize: 17bce0556e2d33fe1201c8cef53b3b7786e07612

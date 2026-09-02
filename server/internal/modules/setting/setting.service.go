@@ -2,25 +2,41 @@ package setting
 
 import (
 	"bytes"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"sort"
 	"strings"
 
+	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
 
 	"go.uber.org/zap"
 )
 
 const (
-	KeyTopupBank      = "topup_bank"
-	KeyTopup          = "topup"
-	KeyUsernameChange = "username_change"
+	KeyTopupBank        = "topup_bank"
+	KeyTopup            = "topup"
+	KeyUsernameChange   = "username_change"
+	KeyPushFirebase     = "push_firebase"
+	KeyPushNotification = "push_notification"
 
 	usernameChangeMinLength = 2
 	usernameChangeMaxLength = 20
 )
+
+type PushNotificationConfig struct {
+	Enabled bool `json:"enabled"`
+}
+
+type PushFirebaseStored struct {
+	Enc         string `json:"enc"`
+	ProjectID   string `json:"projectId"`
+	ClientEmail string `json:"clientEmail"`
+}
 
 type TopupBankConfig struct {
 	BankName          string `json:"bankName"`
@@ -181,6 +197,107 @@ func (s *Service) GetUsernameChange() (UsernameChangeConfig, error) {
 	}
 	cfg.Tiers = tiers
 	return cfg, err
+}
+
+func ValidatePushFirebaseValue(value models.JSONB) error {
+	accountType, _ := value["type"].(string)
+	projectID, _ := value["project_id"].(string)
+	privateKey, _ := value["private_key"].(string)
+	clientEmail, _ := value["client_email"].(string)
+	if accountType != "service_account" {
+		return errors.New("file phải là service account JSON (type = service_account)")
+	}
+	if projectID == "" || privateKey == "" || clientEmail == "" {
+		return errors.New("service account JSON thiếu project_id, private_key hoặc client_email")
+	}
+	block, _ := pem.Decode([]byte(privateKey))
+	if block == nil {
+		return errors.New("private_key không đúng định dạng PEM")
+	}
+	if _, err := x509.ParsePKCS8PrivateKey(block.Bytes); err != nil {
+		if _, err := x509.ParsePKCS1PrivateKey(block.Bytes); err != nil {
+			return errors.New("private_key không phải khoá RSA hợp lệ")
+		}
+	}
+	return nil
+}
+
+func ValidatePushNotificationValue(value models.JSONB) error {
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return errors.New("invalid push_notification config")
+	}
+	var cfg PushNotificationConfig
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&cfg); err != nil {
+		return errors.New("invalid push_notification config: " + err.Error())
+	}
+	return nil
+}
+
+const pushCredentialEncVersion = "v1:"
+
+func PushCredentialSecrets(cfg *config.Config) []string {
+	secrets := make([]string, 0, 2)
+	if cfg.SettingsEncKey != "" {
+		secrets = append(secrets, cfg.SettingsEncKey)
+	}
+	if cfg.JWTSecret != "" {
+		secrets = append(secrets, cfg.JWTSecret)
+	}
+	return secrets
+}
+
+func EncryptPushFirebaseValue(cfg *config.Config, value models.JSONB) (models.JSONB, error) {
+	secrets := PushCredentialSecrets(cfg)
+	if len(secrets) == 0 {
+		return nil, errors.New("no encryption secret configured")
+	}
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return nil, errors.New("invalid service account JSON")
+	}
+	enc, err := utils.EncryptWithSecret(secrets[0], raw)
+	if err != nil {
+		return nil, err
+	}
+	projectID, _ := value["project_id"].(string)
+	clientEmail, _ := value["client_email"].(string)
+	return models.JSONB{
+		"enc":         pushCredentialEncVersion + enc,
+		"projectId":   projectID,
+		"clientEmail": clientEmail,
+	}, nil
+}
+
+func DecryptPushCredential(cfg *config.Config, enc string) ([]byte, error) {
+	enc = strings.TrimPrefix(enc, pushCredentialEncVersion)
+	var lastErr error
+	for _, secret := range PushCredentialSecrets(cfg) {
+		plain, err := utils.DecryptWithSecret(secret, enc)
+		if err == nil {
+			return plain, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = errors.New("no encryption secret configured")
+	}
+	return nil, lastErr
+}
+
+func MaskPushFirebaseValue(value models.JSONB) models.JSONB {
+	if value == nil {
+		return nil
+	}
+	projectID, _ := value["projectId"].(string)
+	clientEmail, _ := value["clientEmail"].(string)
+	return models.JSONB{
+		"configured":  true,
+		"projectId":   projectID,
+		"clientEmail": clientEmail,
+	}
 }
 
 func ValidateUsernameChangeValue(value models.JSONB) error {

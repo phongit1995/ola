@@ -3,6 +3,7 @@ package main
 import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"context"
@@ -40,12 +41,14 @@ func main() {
 
 	var wsServer *websocket.Server
 	var kafkaConsumer *kafka.Consumer
+	var pushSender *push.Sender
 	var srv *http.Server
 
 	go func() {
-		if err := c.Invoke(func(ws *websocket.Server, consumer *kafka.Consumer, adapter *kafka.KafkaEventAdapter, cfg *config.Config) error {
+		if err := c.Invoke(func(ws *websocket.Server, consumer *kafka.Consumer, adapter *kafka.KafkaEventAdapter, sender *push.Sender, cfg *config.Config) error {
 			wsServer = ws
 			kafkaConsumer = consumer
+			pushSender = sender
 
 			kafka.RegisterEventHandlers(consumer, adapter)
 
@@ -114,6 +117,12 @@ func main() {
 				} else {
 					log.Println("✅ Kafka consumer closed")
 				}
+			}
+
+			if pushSender != nil {
+				log.Println("📲 Draining push sender...")
+				pushSender.Close(5 * time.Second)
+				log.Println("✅ Push sender drained")
 			}
 
 			shutdownDone <- true

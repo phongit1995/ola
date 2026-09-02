@@ -25,6 +25,7 @@ import { TopupTransactionsPage } from '@/pages/TopupTransactionsPage'
 import { UsernameChangeSettingsPage } from '@/pages/UsernameChangeSettingsPage'
 import { UsernameChangesPage } from '@/pages/UsernameChangesPage'
 import { AnnouncementPage } from '@/pages/AnnouncementPage'
+import { NotificationSettingsPage } from '@/pages/NotificationSettingsPage'
 import { AuditLogsPage } from '@/pages/AuditLogsPage'
 import { AdminLayout } from '@/layout/AdminLayout'
 import { RedirectIfAuthed, RequireAuth } from './RequireAuth'
@@ -73,6 +74,7 @@ export const router = createBrowserRouter([
       { path: 'settings/topup', element: <TopupSettingsPage /> },
       { path: 'settings/username-change', element: <UsernameChangeSettingsPage /> },
       { path: 'settings/announcements', element: <AnnouncementPage /> },
+      { path: 'settings/notification', element: <NotificationSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },
     ],
   },

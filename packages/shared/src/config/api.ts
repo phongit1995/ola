@@ -61,6 +61,9 @@ export const API_PATH = {
     unread: '/notifications/unread-count',
     readAll: '/notifications/read-all',
   },
+  push: {
+    token: '/push/token',
+  },
   relationships: {
     request: '/relationships/request',
     respond: (id: string) => `/relationships/${id}/respond`,

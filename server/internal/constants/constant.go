@@ -146,6 +146,7 @@ const (
 const (
 	SocketEventRoomJoin  = "ROOM:JOIN"
 	SocketEventRoomLeave = "ROOM:LEAVE"
+	SocketEventAppState  = "app_state"
 )
 
 const (
@@ -204,6 +205,33 @@ const (
 	LastActiveTTLSeconds   = 365 * 24 * 60 * 60
 	OnlineGraceWindowSecs  = 120
 	CacheKeyPresenceDevice = "PRESENCE:%s:DEVICE"
+
+	CacheKeyPresenceBackground   = "PRESENCE:%s:BACKGROUND"
+	PresenceBackgroundTTLSeconds = 21600
+)
+
+const (
+	CacheKeyPushEvent      = "PUSH:EVENT:%s:%s"
+	PushEventTTLSeconds    = 120
+	CacheKeyPushThrottle   = "PUSH:THROTTLE:%s:%s"
+	PushThrottleTTLSeconds = 45
+	PushExcerptMaxRunes    = 120
+	PushSendTimeoutSeconds = 10
+	PushDispatchWorkers    = 4
+	PushDispatchQueueSize  = 1024
+	PushSourceMeNotif      = "me"
+	PushSourceAppNotif     = "app"
+	PushCollapseDM         = "dm"
+	PushTTLHours           = 24
+	PushSendBatchSize      = 500
+	PushTokenMinLength     = 20
+	PushTokenMaxLength     = 512
+	PushDataTypeDM         = "dm"
+	PushDataTypeMeNotif    = "me_notification"
+	PushDataTypeAppNotif   = "app_notification"
+	PushChannelMessages    = "messages"
+	PushChannelSocial      = "social"
+	PushChannelSystem      = "system"
 )
 
 const (

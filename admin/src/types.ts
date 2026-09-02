@@ -1378,6 +1378,16 @@ export interface AppSetting {
   updatedAt: string
 }
 
+export interface PushFirebaseSettingStatus {
+  configured?: boolean
+  projectId?: string
+  clientEmail?: string
+}
+
+export interface PushNotificationSetting {
+  enabled?: boolean
+}
+
 export interface TopupBankSetting {
   bankName: string
   bankBin: string
