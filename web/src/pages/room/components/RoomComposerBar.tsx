@@ -9,7 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import {
   compressImageForUpload,
-  ImageTooLargeError,
+  imageUploadErrorText,
   kulToken,
   toast,
 } from '@lib';
@@ -141,11 +141,7 @@ export const RoomComposerBar = forwardRef<
           { id: String(imageIdRef.current), file: prepared, url },
         ]);
       } catch (error) {
-        toast.error(
-          error instanceof ImageTooLargeError
-            ? t('chat.imageTooLarge')
-            : t('room.sendError')
-        );
+        toast.error(imageUploadErrorText(t, error, t('room.sendError')));
       }
     }
   }

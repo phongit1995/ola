@@ -24,6 +24,7 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
+  imageUploadErrorText,
   isSameDay,
   parseMessageMetadata,
 } from '@ola/shared/lib';
@@ -41,8 +42,8 @@ import { ReportDialog } from '@components/ui/ReportDialog';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulToken } from '@lib/kul';
-import { pastedImageFile } from '@lib/imagePicker';
-import { compressImageForUpload, ImageTooLargeError } from '@lib/compressImage';
+import { pastedImageFile, uploadFileFromAsset } from '@lib/imagePicker';
+import { compressImageForUpload } from '@lib/compressImage';
 import {
   deleteTemporaryVoiceFile,
   deleteTemporaryVoiceFileAfterUiUpdate,
@@ -273,7 +274,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       const prepared = await compressImageForUpload(file);
       await sendImage(prepared);
     } catch (err) {
-      push('error', err instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('chat.imageError'));
+      push('error', imageUploadErrorText(t, err, t('chat.imageError')));
     }
   }
 
@@ -288,11 +289,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         next.push({
           id: String(imageIdRef.current),
           uri: asset.uri,
-          file: {
-            uri: asset.uri,
-            name: asset.fileName ?? 'photo.jpg',
-            type: asset.type ?? 'image/jpeg',
-          },
+          file: uploadFileFromAsset({ ...asset, uri: asset.uri }),
         });
       }
       return next;
@@ -356,9 +353,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     const result = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 0,
-      maxWidth: 1920,
-      maxHeight: 1920,
-      quality: 0.9,
     });
     if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
     if (result.didCancel) return;
@@ -369,9 +363,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     const keyboardWasVisible = Keyboard.isVisible();
     const result = await launchCamera({
       mediaType: 'photo',
-      maxWidth: 1920,
-      maxHeight: 1920,
-      quality: 0.9,
       saveToPhotos: false,
     });
     if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());

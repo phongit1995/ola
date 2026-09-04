@@ -9,12 +9,13 @@ import { useTranslation } from 'react-i18next';
 import { Image, Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { NativeUploadFile, RoomAudioSendResult } from '@ola/shared/types';
+import { imageUploadErrorText } from '@ola/shared/lib';
 import type { PendingComposerImage } from '@components/chat/composerTypes';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { kulToken } from '@lib/kul';
-import { pastedImageFile } from '@lib/imagePicker';
-import { compressImageForUpload, ImageTooLargeError } from '@lib/compressImage';
+import { pastedImageFile, uploadFileFromAsset } from '@lib/imagePicker';
+import { compressImageForUpload } from '@lib/compressImage';
 import {
   ChatComposer,
   type ChatComposerHandle,
@@ -144,12 +145,7 @@ export const RoomComposerBar = forwardRef<
       const id = String(imageIdRef.current);
       setPendingImages(current => [...current, { id, uri, file: prepared }]);
     } catch (err) {
-      pushToast(
-        'error',
-        err instanceof ImageTooLargeError
-          ? t('chat.imageTooLarge')
-          : t('room.sendError'),
-      );
+      pushToast('error', imageUploadErrorText(t, err, t('room.sendError')));
     }
   }
 
@@ -170,11 +166,7 @@ export const RoomComposerBar = forwardRef<
     }
     for (const asset of assets) {
       if (asset.uri == null) continue;
-      await queueImageFile(asset.uri, {
-        uri: asset.uri,
-        name: asset.fileName ?? 'photo.jpg',
-        type: asset.type ?? 'image/jpeg',
-      });
+      await queueImageFile(asset.uri, uploadFileFromAsset({ ...asset, uri: asset.uri }));
     }
   }
 

@@ -32,6 +32,7 @@
     "dragToClose": "Kéo vào thùng rác hoặc nhấn Delete để đóng game"
   },
   "common": {
+    "imageTooLarge": "Ảnh quá lớn (tối đa 3MB).",
     "clear": "Xoá",
     "showPassword": "Hiện mật khẩu",
     "hidePassword": "Ẩn mật khẩu",
@@ -525,7 +526,6 @@
     "voiceMicUnavailable": "Micro đang bận hoặc không thể sử dụng.",
     "voiceRecordError": "Không ghi âm được. Vui lòng thử lại.",
     "imageError": "Không gửi được ảnh. Vui lòng thử lại.",
-    "imageTooLarge": "Ảnh quá lớn (tối đa 3MB).",
     "voiceDiscard": "Huỷ ghi âm",
     "voiceTapStart": "Chạm để ghi âm",
     "voiceTapStop": "Chạm để dừng",

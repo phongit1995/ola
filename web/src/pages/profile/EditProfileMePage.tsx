@@ -5,6 +5,7 @@ import {
   ApiError,
   colorForName,
   compressImageForUpload,
+  imageUploadErrorText,
   toast,
   validatedImageObjectUrl,
 } from '@lib';
@@ -251,8 +252,8 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
         await refreshUser();
         toast.success(t('profileEdit.coverUpdated'));
         return true;
-      } catch {
-        toast.error(t('profileEdit.coverError'));
+      } catch (error) {
+        toast.error(imageUploadErrorText(t, error, t('profileEdit.coverError')));
         return false;
       } finally {
         setUploadingCover(false);
@@ -290,8 +291,8 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
       );
       setAvatar(result.url);
       toast.success(t('profileEdit.avatarUpdated'));
-    } catch {
-      toast.error(t('profileEdit.avatarError'));
+    } catch (error) {
+      toast.error(imageUploadErrorText(t, error, t('profileEdit.avatarError')));
     } finally {
       setUploading(false);
     }

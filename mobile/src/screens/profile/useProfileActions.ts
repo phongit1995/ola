@@ -4,7 +4,7 @@ import { MeService, RelationshipService, UserService } from '@ola/shared/service
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useMeLocalStore } from '@store/meLocalStore';
-import { activeVipTypeId } from '@ola/shared/lib';
+import { activeVipTypeId, imageUploadErrorText } from '@ola/shared/lib';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
 import {
@@ -176,8 +176,8 @@ export function useProfileActions(username: string) {
     let picked;
     try {
       picked = await pickCroppedImage(COVER_OUTPUT.width, COVER_OUTPUT.height);
-    } catch {
-      push('error', t('profileEdit.coverError'));
+    } catch (err) {
+      push('error', imageUploadErrorText(t, err, t('profileEdit.coverError')));
       return;
     }
     if (picked == null) return;

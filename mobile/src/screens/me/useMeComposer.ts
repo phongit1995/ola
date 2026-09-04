@@ -4,7 +4,7 @@ import { Keyboard } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { hasMePostBody } from '@ola/shared/lib';
+import { hasMePostBody, imageUploadErrorText } from '@ola/shared/lib';
 import type {
   CreatePostRequest,
   NativeUploadFile,
@@ -14,6 +14,7 @@ import type {
 import type { ChatComposerHandle } from '@components/ChatComposer';
 import { findActionIcon } from '@lib/checkInActions';
 import { compressImagesForUpload } from '@lib/compressImage';
+import { uploadFileFromAsset } from '@lib/imagePicker';
 import { isPostEditExpired } from '@lib/post';
 import type { ComposedCheckIn } from './components/MeComposerCheckInPanel';
 import { COMPOSER_MAX_IMAGES, COMPOSER_PRIVACY_OPTIONS } from './constants';
@@ -115,9 +116,6 @@ export function useMeComposer({
     const result = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: room,
-      maxWidth: 1920,
-      maxHeight: 1920,
-      quality: 0.9,
     });
     if (keyboardWasVisible)
       requestAnimationFrame(() => composerRef.current?.focus());
@@ -135,11 +133,7 @@ export function useMeComposer({
         next.push({
           id: `n${imageIdRef.current}`,
           uri: asset.uri,
-          file: {
-            uri: asset.uri,
-            name: asset.fileName ?? 'photo.jpg',
-            type: asset.type ?? 'image/jpeg',
-          },
+          file: uploadFileFromAsset({ ...asset, uri: asset.uri }),
         });
       }
       return next;
@@ -176,9 +170,9 @@ export function useMeComposer({
           .filter(item => item.file != null)
           .map(item => item.file as NativeUploadFile),
       );
-    } catch {
+    } catch (err) {
       setPosting(false);
-      pushToast('error', isEdit ? t('me.editError') : t('me.postError'));
+      pushToast('error', imageUploadErrorText(t, err, isEdit ? t('me.editError') : t('me.postError')));
       return;
     }
     const imageUrls = photos

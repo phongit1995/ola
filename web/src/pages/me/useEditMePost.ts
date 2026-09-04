@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@lib';
+import { imageUploadErrorText, toast } from '@lib';
 import { MeService } from '@services';
 import type { Post, UploadedImage } from '@app-types';
 import { composedToImages, composedToUpdatePayload } from './composer';
@@ -37,7 +37,7 @@ export function useEditMePost(
         return true;
       } catch (error) {
         await MeService.cleanupRejectedImages(error, uploaded);
-        toast.error(t('me.editError'));
+        toast.error(imageUploadErrorText(t, error, t('me.editError')));
         return false;
       }
     },
