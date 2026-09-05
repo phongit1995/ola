@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -361,6 +362,88 @@ func (ctrl *Controller) RoomMessages(c *gin.Context) (interface{}, error) {
 	}
 	limit := utils.ParseLimit(c, 50, 200)
 	resp, err := ctrl.service.GetMessages(c.Request.Context(), id, limit, c.Query("before"))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+func roomBlockHTTPError(err error) error {
+	switch {
+	case errors.Is(err, ErrRoomBlockSelf), errors.Is(err, ErrRoomBlockLimit):
+		return utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	case errors.Is(err, ErrRoomBlockUserNotFound):
+		return utils.NewHTTPError(http.StatusNotFound, err.Error())
+	}
+	return utils.ServiceError(err)
+}
+
+// ListBlockedUsers godoc
+// @Summary      List user IDs whose room messages the current user has hidden
+// @Tags         room
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.BaseResponse[RoomBlockedUsersResponse]
+// @Router       /rooms/blocked [get]
+func (ctrl *Controller) ListBlockedUsers(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.ListBlockedUsers(userID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// BlockUser godoc
+// @Summary      Hide a user's room messages for the current user
+// @Tags         room
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body RoomBlockUserRequest true "User to block"
+// @Success      200  {object}  utils.BaseResponse[RoomBlockedUsersResponse]
+// @Router       /rooms/blocked [post]
+func (ctrl *Controller) BlockUser(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[RoomBlockUserRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	blockedUserID, err := uuid.Parse(req.UserID)
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+	resp, err := ctrl.service.BlockUser(userID, blockedUserID)
+	if err != nil {
+		return nil, roomBlockHTTPError(err)
+	}
+	return resp, nil
+}
+
+// UnblockUser godoc
+// @Summary      Stop hiding a user's room messages for the current user
+// @Tags         room
+// @Produce      json
+// @Security     BearerAuth
+// @Param        userId path string true "User ID"
+// @Success      200  {object}  utils.BaseResponse[RoomBlockedUsersResponse]
+// @Router       /rooms/blocked/{userId} [delete]
+func (ctrl *Controller) UnblockUser(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	blockedUserID, err := utils.ParseUUIDParam(c, "userId", "invalid user id")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.UnblockUser(userID, blockedUserID)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

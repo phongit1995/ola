@@ -8,6 +8,7 @@ import {
 } from '../lib/upload';
 import type {
   Room,
+  RoomBlockedUsersResult,
   RoomJoinTicket,
   RoomListResult,
   RoomMembersResult,
@@ -92,6 +93,18 @@ export class RoomService {
     type: ReactionType
   ): Promise<RoomMessage> {
     return http.post<RoomMessage>(API_PATH.rooms.messageReactions(id, messageId), { type });
+  }
+
+  static blockedUsers(): Promise<RoomBlockedUsersResult> {
+    return http.get<RoomBlockedUsersResult>(API_PATH.rooms.blocked);
+  }
+
+  static blockUser(userId: string): Promise<RoomBlockedUsersResult> {
+    return http.post<RoomBlockedUsersResult>(API_PATH.rooms.blocked, { userId });
+  }
+
+  static unblockUser(userId: string): Promise<RoomBlockedUsersResult> {
+    return http.del<RoomBlockedUsersResult>(API_PATH.rooms.blockedUser(userId));
   }
 }
 

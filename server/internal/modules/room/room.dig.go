@@ -7,6 +7,7 @@ func Provider(c *dig.Container) error {
 		NewRepository,
 		NewMessageRepository,
 		NewRedisMessageRepository,
+		NewBlockRepository,
 		NewService,
 		NewController,
 		NewRouter,

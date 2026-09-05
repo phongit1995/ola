@@ -14,9 +14,12 @@ import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
 import type { NativeUploadFile } from '@ola/shared/types';
-import { createDateSeparatorFormatter } from '@ola/shared/lib';
+import { createDateSeparatorFormatter, filterVisibleRoomMessages } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
+import {
+  RoomBlockLimitError,
+  useRoomFilterStore,
+} from '@ola/shared/stores/room/roomFilterStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { ChatWallpaper } from '@components/ChatWallpaper';
 import { CHAT_BG } from '@screens/chat/constants';
@@ -141,14 +144,14 @@ export function RoomMessagesTab({
     () => createDateSeparatorFormatter(language),
     [language],
   );
-  const feed = useMemo(() => {
-    const blocked = new Set(blockedUserIds);
-    const visible =
-      blocked.size === 0
-        ? messages
-        : messages.filter(item => !blocked.has(item.senderId));
-    return buildRoomFeed(visible, currentUserId);
-  }, [messages, currentUserId, blockedUserIds]);
+  const feed = useMemo(
+    () =>
+      buildRoomFeed(
+        filterVisibleRoomMessages(messages, blockedUserIds),
+        currentUserId,
+      ),
+    [messages, currentUserId, blockedUserIds],
+  );
   const messageById = useMemo(
     () => new Map(messages.map(item => [item.id, item])),
     [messages],
@@ -197,8 +200,14 @@ export function RoomMessagesTab({
     const target = pendingBlockCommitRef.current;
     pendingBlockCommitRef.current = null;
     if (target == null) return;
-    blockUser(target.senderId);
-    pushToast('success', t('room.blockSuccess'));
+    blockUser(target.senderId)
+      .then(() => pushToast('success', t('room.blockSuccess')))
+      .catch((error: unknown) =>
+        pushToast(
+          'error',
+          error instanceof RoomBlockLimitError ? t('room.blockLimit') : t('common.error'),
+        ),
+      );
   }, [blockUser, pushToast, t]);
 
   const handleLongPressMessage = useCallback(

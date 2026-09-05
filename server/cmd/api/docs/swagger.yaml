@@ -4923,6 +4923,20 @@ definitions:
       ticket:
         type: string
     type: object
+  internal_modules_room.RoomBlockUserRequest:
+    properties:
+      userId:
+        type: string
+    required:
+    - userId
+    type: object
+  internal_modules_room.RoomBlockedUsersResponse:
+    properties:
+      userIds:
+        items:
+          type: string
+        type: array
+    type: object
   internal_modules_room.RoomListResponse:
     properties:
       items:
@@ -9160,6 +9174,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_room.JoinRoomResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room.RoomBlockedUsersResponse'
       error:
         type: string
       path:
@@ -16557,6 +16588,62 @@ paths:
       security:
       - BearerAuth: []
       summary: Send an image message to a room (must have joined via socket)
+      tags:
+      - room
+  /rooms/blocked:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse'
+      security:
+      - BearerAuth: []
+      summary: List user IDs whose room messages the current user has hidden
+      tags:
+      - room
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User to block
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_room.RoomBlockUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse'
+      security:
+      - BearerAuth: []
+      summary: Hide a user's room messages for the current user
+      tags:
+      - room
+  /rooms/blocked/{userId}:
+    delete:
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse'
+      security:
+      - BearerAuth: []
+      summary: Stop hiding a user's room messages for the current user
       tags:
       - room
   /sessions:

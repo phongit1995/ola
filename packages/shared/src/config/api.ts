@@ -21,6 +21,8 @@ export const API_PATH = {
     message: (id: string, messageId: string) => `/rooms/${id}/messages/${messageId}`,
     messageReactions: (id: string, messageId: string) =>
       `/rooms/${id}/messages/${messageId}/reactions`,
+    blocked: '/rooms/blocked',
+    blockedUser: (userId: string) => `/rooms/blocked/${userId}`,
   },
   adminRooms: {
     base: '/admin/rooms',

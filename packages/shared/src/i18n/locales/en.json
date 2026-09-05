@@ -752,6 +752,7 @@
     "blockTitle": "Block user",
     "blockConfirm": "Block @{{name}}? You won't see this person's messages in any room anymore.",
     "blockSuccess": "User blocked",
+    "blockLimit": "You have reached the limit of 500 blocked users in rooms",
     "copied": "Copied",
     "replyingTo": "Replying to @{{name}}",
     "replySticker": "[Sticker]",

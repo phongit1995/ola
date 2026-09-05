@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
 import { MESSAGE_TYPE } from '@constants';
-import { BUBBLE_WALLPAPER, SmileyText, toast } from '@lib';
+import {
+  BUBBLE_WALLPAPER,
+  filterVisibleRoomMessages,
+  SmileyText,
+  toast,
+} from '@lib';
 import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
 import {
   ConfirmDialog,
@@ -24,7 +29,10 @@ import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import { RoomReactionBalloons } from './RoomReactionBalloons';
 import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
-import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
+import {
+  RoomBlockLimitError,
+  useRoomFilterStore,
+} from '@ola/shared/stores/room/roomFilterStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 
 interface RoomMessagesTabProps {
@@ -217,14 +225,14 @@ export function RoomMessagesTab({
     return actions;
   }
 
-  const feed = useMemo(() => {
-    const blocked = new Set(blockedUserIds);
-    const visible =
-      blocked.size === 0
-        ? messages
-        : messages.filter((item) => !blocked.has(item.senderId));
-    return buildRoomFeed(visible, currentUserId);
-  }, [messages, currentUserId, blockedUserIds]);
+  const feed = useMemo(
+    () =>
+      buildRoomFeed(
+        filterVisibleRoomMessages(messages, blockedUserIds),
+        currentUserId
+      ),
+    [messages, currentUserId, blockedUserIds]
+  );
 
   return (
     <div
@@ -363,8 +371,15 @@ export function RoomMessagesTab({
           const target = blockTarget;
           setBlockTarget(null);
           if (target != null) {
-            blockUser(target.senderId);
-            toast.success(t('room.blockSuccess'));
+            blockUser(target.senderId)
+              .then(() => toast.success(t('room.blockSuccess')))
+              .catch((error: unknown) =>
+                toast.error(
+                  error instanceof RoomBlockLimitError
+                    ? t('room.blockLimit')
+                    : t('common.error')
+                )
+              );
           }
         }}
         onCancel={() => setBlockTarget(null)}

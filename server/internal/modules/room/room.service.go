@@ -40,11 +40,15 @@ var (
 	ErrRoomDecodeImage       = errors.New("failed to decode image")
 	ErrRoomMessageInProgress = errors.New("message upload already in progress")
 	ErrRoomClientMessageUsed = errors.New("client message ID already used")
+	ErrRoomBlockSelf         = errors.New("cannot block yourself")
+	ErrRoomBlockUserNotFound = errors.New("user not found")
+	ErrRoomBlockLimit        = errors.New("room block limit reached")
 )
 
 type Service struct {
 	repo      *Repository
 	redisMsg  *RedisMessageRepository
+	blockRepo *BlockRepository
 	userCache *userModule.CacheService
 	wsServer  *websocket.Server
 	producer  *kafka.Producer
@@ -53,10 +57,11 @@ type Service struct {
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *userModule.CacheService, wsServer *websocket.Server, producer *kafka.Producer, cache *services.CacheService, s3 *services.S3Service, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, redisMsg *RedisMessageRepository, blockRepo *BlockRepository, userCache *userModule.CacheService, wsServer *websocket.Server, producer *kafka.Producer, cache *services.CacheService, s3 *services.S3Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		redisMsg:  redisMsg,
+		blockRepo: blockRepo,
 		userCache: userCache,
 		wsServer:  wsServer,
 		producer:  producer,
@@ -1147,4 +1152,54 @@ func toRoomResponse(room *models.Room, memberCount int) *RoomResponse {
 		CreatedBy:   room.CreatedBy.String(),
 		CreatedAt:   room.CreatedAt.UTC().Format(time.RFC3339),
 	}
+}
+
+func (s *Service) ListBlockedUsers(userID uuid.UUID) (*RoomBlockedUsersResponse, error) {
+	ids, err := s.blockRepo.ListBlockedUserIDs(userID)
+	if err != nil {
+		return nil, err
+	}
+	return toRoomBlockedUsersResponse(ids), nil
+}
+
+func (s *Service) BlockUser(userID, blockedUserID uuid.UUID) (*RoomBlockedUsersResponse, error) {
+	if userID == blockedUserID {
+		return nil, ErrRoomBlockSelf
+	}
+	exists, err := s.blockRepo.Exists(userID, blockedUserID)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return s.ListBlockedUsers(userID)
+	}
+	if target, err := s.userCache.GetUserCache(blockedUserID, true); err != nil || target == nil {
+		return nil, ErrRoomBlockUserNotFound
+	}
+	count, err := s.blockRepo.CountBlocked(userID)
+	if err != nil {
+		return nil, err
+	}
+	if count >= constants.RoomMaxBlockedUsers {
+		return nil, ErrRoomBlockLimit
+	}
+	if err := s.blockRepo.Create(userID, blockedUserID); err != nil {
+		return nil, err
+	}
+	return s.ListBlockedUsers(userID)
+}
+
+func (s *Service) UnblockUser(userID, blockedUserID uuid.UUID) (*RoomBlockedUsersResponse, error) {
+	if err := s.blockRepo.Delete(userID, blockedUserID); err != nil {
+		return nil, err
+	}
+	return s.ListBlockedUsers(userID)
+}
+
+func toRoomBlockedUsersResponse(ids []uuid.UUID) *RoomBlockedUsersResponse {
+	userIDs := make([]string, 0, len(ids))
+	for _, id := range ids {
+		userIDs = append(userIDs, id.String())
+	}
+	return &RoomBlockedUsersResponse{UserIDs: userIDs}
 }

@@ -752,6 +752,7 @@
     "blockTitle": "Chặn người dùng",
     "blockConfirm": "Chặn @{{name}}? Bạn sẽ không thấy tin nhắn của người này trong bất kỳ phòng nào nữa.",
     "blockSuccess": "Đã chặn người dùng",
+    "blockLimit": "Bạn đã chặn tối đa 500 người trong phòng chat",
     "copied": "Đã sao chép",
     "replyingTo": "Đang trả lời @{{name}}",
     "replySticker": "[Nhãn dán]",

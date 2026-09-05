@@ -10,6 +10,7 @@ export * from './datetime';
 export * from './vip';
 export * from './messageMetadata';
 export * from './postVisibility';
+export * from './roomVisibility';
 export * from './duration';
 export * from './voiceWaveform';
 export * from './number';

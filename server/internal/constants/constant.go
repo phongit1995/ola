@@ -139,6 +139,7 @@ const (
 	RoomPresenceTTLSeconds   = 43200
 	RoomJoinTicketTTLSeconds = 5
 	RoomReplyExcerptMaxRunes = 120
+	RoomMaxBlockedUsers      = 500
 
 	MessageReplyExcerptMaxRunes = 120
 )

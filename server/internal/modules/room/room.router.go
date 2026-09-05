@@ -19,6 +19,9 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	rooms := api.Group("/rooms", r.authMiddleware.RequireAuth())
 	{
 		rooms.GET("", r.controller.BrowseRooms)
+		rooms.GET("/blocked", r.controller.ListBlockedUsers)
+		rooms.POST("/blocked", r.controller.BlockUser)
+		rooms.DELETE("/blocked/:userId", r.controller.UnblockUser)
 		rooms.GET("/:id", r.controller.GetRoom)
 		rooms.POST("/:id/join", r.controller.JoinRoom)
 		rooms.GET("/:id/members", r.controller.RoomMembers)
