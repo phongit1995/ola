@@ -1,4 +1,4 @@
-package com.olachat.net.org.vn.call
+package com.ola.me.net.org.vn.call
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -13,8 +13,8 @@ import android.os.Build
 import android.os.IBinder
 import android.os.ResultReceiver
 import androidx.core.app.NotificationCompat
-import com.olachat.net.org.vn.MainActivity
-import com.olachat.net.org.vn.R
+import com.ola.me.net.org.vn.MainActivity
+import com.ola.me.net.org.vn.R
 
 class CallForegroundService : Service() {
 

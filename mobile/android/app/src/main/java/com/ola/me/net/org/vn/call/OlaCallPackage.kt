@@ -1,4 +1,4 @@
-package com.olachat.net.org.vn.call
+package com.ola.me.net.org.vn.call
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

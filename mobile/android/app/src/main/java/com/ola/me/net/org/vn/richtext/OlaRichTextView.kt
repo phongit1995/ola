@@ -1,4 +1,4 @@
-package com.olachat.net.org.vn.richtext
+package com.ola.me.net.org.vn.richtext
 
 import android.graphics.Canvas
 import android.graphics.Color

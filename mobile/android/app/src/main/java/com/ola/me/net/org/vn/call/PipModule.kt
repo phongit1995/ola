@@ -1,4 +1,4 @@
-package com.olachat.net.org.vn.call
+package com.ola.me.net.org.vn.call
 
 import android.os.Build
 import com.facebook.react.bridge.ReactApplicationContext

@@ -1,4 +1,4 @@
-package com.olachat.net.org.vn
+package com.ola.me.net.org.vn
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -16,8 +16,8 @@ class MainApplication : Application(), ReactApplication {
       context = applicationContext,
       packageList =
         PackageList(this).packages.apply {
-          add(com.olachat.net.org.vn.richtext.OlaRichTextPackage())
-          add(com.olachat.net.org.vn.call.OlaCallPackage())
+          add(com.ola.me.net.org.vn.richtext.OlaRichTextPackage())
+          add(com.ola.me.net.org.vn.call.OlaCallPackage())
         },
     )
   }

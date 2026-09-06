@@ -46,7 +46,7 @@
         </intent-filter>
       </activity>
       <service
-        android:name="com.olachat.net.org.vn.call.CallForegroundService"
+        android:name="com.ola.me.net.org.vn.call.CallForegroundService"
         android:exported="false"
         android:foregroundServiceType="microphone|camera" />
       <meta-data

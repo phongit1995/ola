@@ -1,4 +1,4 @@
-package com.olachat.net.org.vn
+package com.ola.me.net.org.vn
 
 import android.app.PictureInPictureParams
 import android.content.res.Configuration
@@ -10,7 +10,7 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import com.olachat.net.org.vn.call.PipModule
+import com.ola.me.net.org.vn.call.PipModule
 
 class MainActivity : ReactActivity() {
 

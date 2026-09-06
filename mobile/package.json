@@ -7,7 +7,7 @@
     "type": "all",
     "jsSrcsDir": "src/components/specs",
     "android": {
-      "javaPackageName": "com.olachat.net.org.vn.richtext"
+      "javaPackageName": "com.ola.me.net.org.vn.richtext"
     },
     "ios": {
       "componentProvider": {
