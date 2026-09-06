@@ -8,3 +8,9 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# react-native-config đọc BuildConfig qua reflection
+-keep class com.ola.me.net.org.vn.BuildConfig { *; }
+
+# Native module/component tự viết: codegen tra tên class theo chuỗi
+-keep class com.ola.me.net.org.vn.** { *; }
