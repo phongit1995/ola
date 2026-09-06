@@ -21,6 +21,7 @@ import {
   createTimeFormatter,
   filterVisiblePosts,
   formatDateSlashDMY,
+  imageUploadErrorText,
   isPostVisible,
   toast,
 } from '@lib';
@@ -246,7 +247,7 @@ export function ClanPage({
         return true;
       } catch (error) {
         await MeService.cleanupRejectedImages(error, uploaded);
-        toast.error(clanErrorText(error));
+        toast.error(imageUploadErrorText(t, error, clanErrorText(error)));
         return false;
       }
     },
@@ -269,7 +270,13 @@ export function ClanPage({
   const addPost = useCallback(
     async (draft: ComposedPost): Promise<boolean> => {
       if (clan == null) return false;
-      const prepared = await compressImagesForUpload(draft.files);
+      let prepared: File[];
+      try {
+        prepared = await compressImagesForUpload(draft.files);
+      } catch (error) {
+        toast.error(imageUploadErrorText(t, error, t('me.postError')));
+        return false;
+      }
       const created = await useClanFeedStore
         .getState()
         .createPost(
@@ -280,7 +287,7 @@ export function ClanPage({
         );
       return created != null;
     },
-    [clan]
+    [clan, t]
   );
 
   async function handleJoin() {
@@ -383,7 +390,7 @@ export function ClanPage({
       toast.success(t('clan.uploadSuccess'));
       closeImageEdit();
     } catch (error) {
-      toast.error(clanErrorText(error));
+      toast.error(imageUploadErrorText(t, error, clanErrorText(error)));
     } finally {
       setImageUploading(false);
     }

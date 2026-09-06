@@ -6,6 +6,7 @@ import {
   compressImagesForUpload,
   createTimeFormatter,
   filterVisiblePosts,
+  imageUploadErrorText,
   toast,
 } from '@lib';
 import { toMePost } from './mappers';
@@ -72,8 +73,8 @@ export function useMeFeed() {
       let files: File[];
       try {
         files = await compressImagesForUpload(draft.files);
-      } catch {
-        toast.error(i18n.t('me.postError'));
+      } catch (error) {
+        toast.error(imageUploadErrorText(i18n.t, error, i18n.t('me.postError')));
         return false;
       }
       const created = await createPost(
@@ -93,8 +94,8 @@ export function useMeFeed() {
       let files: File[];
       try {
         files = await compressImagesForUpload(draft.files);
-      } catch {
-        toast.error(i18n.t('me.editError'));
+      } catch (error) {
+        toast.error(imageUploadErrorText(i18n.t, error, i18n.t('me.editError')));
         return false;
       }
       const updated = await updatePost(

@@ -25,7 +25,7 @@ import {
   colorForName,
   compressImageForUpload,
   formatLastActive,
-  ImageTooLargeError,
+  imageUploadErrorText,
   isSameDay,
   kulToken,
   parseMessageMetadata,
@@ -433,11 +433,7 @@ export function ChatConversationView({
         return { id, file: prepared, url };
       });
     } catch (error) {
-      toast.error(
-        error instanceof ImageTooLargeError
-          ? t('chat.imageTooLarge')
-          : t('chat.imageError')
-      );
+      toast.error(imageUploadErrorText(t, error, t('chat.imageError')));
     }
   }
 

@@ -34,6 +34,12 @@ import {
   initComeBackReminder,
   scheduleComeBackReminder,
 } from './lib/comeBackReminder';
+import {
+  initPush,
+  notifyPushNavReady,
+  registerPushToken,
+  watchPushTokenRefresh,
+} from './lib/push';
 
 function clearSession() {
   authTokens.clear();
@@ -55,10 +61,16 @@ export default function App() {
     setTelemetryUser(userId ?? null);
   }, [userId]);
   useEffect(() => {
+    notifyPushNavReady();
     if (!authReady || userId == null) return;
     SocketService.connect();
     void useChatStore.getState().loadConversations();
-    return () => SocketService.disconnect();
+    void registerPushToken();
+    const unwatchToken = watchPushTokenRefresh();
+    return () => {
+      unwatchToken();
+      SocketService.disconnect();
+    };
   }, [authReady, userId]);
   useEffect(() => {
     const unsubscribeReplaced = SocketService.onSessionReplaced(() => {
@@ -80,15 +92,21 @@ export default function App() {
     if (!__DEV__) void checkForOtaUpdate();
     setOnUnauthorized(clearSession);
     void initComeBackReminder();
+    const teardownPush = initPush(navigationRef);
+    SocketService.emitAppState(
+      AppState.currentState === 'background' ? 'background' : 'foreground',
+    );
     const resumeSession = () => {
       SocketService.ensureAlive();
       void resyncKenBalance();
     };
     const appStateSubscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
+        SocketService.emitAppState('foreground');
         resumeSession();
         void cancelComeBackReminder();
       } else if (state === 'background') {
+        SocketService.emitAppState('background');
         void scheduleComeBackReminder();
       }
     });
@@ -106,8 +124,9 @@ export default function App() {
       setOnUnauthorized(null);
       appStateSubscription.remove();
       unsubscribeNetInfo();
+      teardownPush();
     };
-  }, []);
+  }, [navigationRef]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -123,6 +142,7 @@ export default function App() {
                 const name = navigationRef.getCurrentRoute()?.name ?? null;
                 routeNameRef.current = name;
                 if (name != null) trackScreen(name);
+                notifyPushNavReady();
               }}
               onStateChange={() => {
                 const name = navigationRef.getCurrentRoute()?.name ?? null;
@@ -130,6 +150,7 @@ export default function App() {
                   routeNameRef.current = name;
                   trackScreen(name);
                 }
+                notifyPushNavReady();
               }}
             >
               <RootNavigator />

@@ -24,6 +24,7 @@ import (
 	minigame "ola-chat-server/internal/modules/mini-game"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/pen"
+	"ola-chat-server/internal/modules/push"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
@@ -98,6 +99,7 @@ func NewContainer() (*dig.Container, error) {
 		announcement.Provider,
 		chatbot.Provider,
 		topup.Provider,
+		push.Provider,
 	}
 
 	for _, module := range modules {

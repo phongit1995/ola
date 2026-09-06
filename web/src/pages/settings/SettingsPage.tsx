@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ImageCropOverlay, ScreenHeader } from '@components';
 import { MIN_IMAGE_SOURCE, THEME_OPTIONS, WALLPAPER_ASPECT } from '@constants';
-import { compressImageForUpload, toast, validatedImageObjectUrl } from '@lib';
+import { compressImageForUpload, imageUploadErrorText, toast, validatedImageObjectUrl } from '@lib';
 import { UserService, VipService } from '@services';
 import type { ThemeId, UserSettings } from '@app-types';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -283,8 +283,8 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
       );
       setField('wallpaperUrl', uploaded.url);
       clearCropSrc();
-    } catch {
-      toast.error(t('wallpaper.error'));
+    } catch (error) {
+      toast.error(imageUploadErrorText(t, error, t('wallpaper.error')));
     }
     setUploadingWallpaper(false);
   }

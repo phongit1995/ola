@@ -224,6 +224,51 @@ func (s *PresenceService) SetLastActive(userID string) error {
 	return nil
 }
 
+func (s *PresenceService) getBackgroundKey(userID string) string {
+	return fmt.Sprintf(constants.CacheKeyPresenceBackground, userID)
+}
+
+func (s *PresenceService) SetBackground(userID string, background bool) error {
+	key := s.getBackgroundKey(userID)
+	client := s.cache.GetClient()
+	ctx := s.cache.GetContext()
+	if background {
+		ttl := time.Duration(constants.PresenceBackgroundTTLSeconds) * time.Second
+		if err := client.Set(ctx, key, "1", ttl).Err(); err != nil {
+			s.logger.Warnw("Failed to set background state", "user_id", userID, "error", err)
+			return err
+		}
+		return nil
+	}
+	if err := client.Del(ctx, key).Err(); err != nil {
+		s.logger.Warnw("Failed to clear background state", "user_id", userID, "error", err)
+		return err
+	}
+	return nil
+}
+
+func (s *PresenceService) RefreshBackground(userID string) {
+	key := s.getBackgroundKey(userID)
+	client := s.cache.GetClient()
+	ctx := s.cache.GetContext()
+	ttl := time.Duration(constants.PresenceBackgroundTTLSeconds) * time.Second
+	if err := client.Expire(ctx, key, ttl).Err(); err != nil {
+		s.logger.Debugw("Failed to refresh background ttl", "user_id", userID, "error", err)
+	}
+}
+
+func (s *PresenceService) IsBackground(userID string) bool {
+	key := s.getBackgroundKey(userID)
+	client := s.cache.GetClient()
+	ctx := s.cache.GetContext()
+	exists, err := client.Exists(ctx, key).Result()
+	if err != nil {
+		s.logger.Warnw("Failed to check background state", "user_id", userID, "error", err)
+		return false
+	}
+	return exists > 0
+}
+
 func (s *PresenceService) GetConnectionCount(userID string) int {
 	key := s.getPresenceKey(userID)
 	client := s.cache.GetClient()

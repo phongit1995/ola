@@ -54,6 +54,10 @@ func (h *EventHandler) handleConnection(client *socket.Socket, userID string) {
 		h.server.logger.Errorw("Failed to add presence", "user_id", userID, "error", err)
 	}
 
+	if err := h.presenceService.SetBackground(userID, false); err != nil {
+		h.server.logger.Warnw("Failed to reset background state on connect", "user_id", userID, "error", err)
+	}
+
 	if data, ok := client.Data().(*SocketData); ok {
 		if err := h.presenceService.SetDevice(userID, data.Platform); err != nil {
 			h.server.logger.Warnw("Failed to set device", "user_id", userID, "error", err)
@@ -79,11 +83,22 @@ func (h *EventHandler) registerClientEvents(client *socket.Socket, userID string
 		if err := h.presenceService.RefreshPresence(userID); err != nil {
 			h.server.logger.Warnw("Failed to refresh presence on ping", "user_id", userID, "error", err)
 		}
+		h.presenceService.RefreshBackground(userID)
 		if h.server.roomPresence != nil {
 			data := client.Data().(*SocketData)
 			for _, roomID := range data.RoomIDs() {
 				h.server.roomPresence.Refresh(context.Background(), roomID, userID)
 			}
+		}
+	})
+
+	client.On(constants.SocketEventAppState, func(args ...any) {
+		state := stringField(argMap(args), "state")
+		if state != "background" && state != "foreground" {
+			return
+		}
+		if err := h.presenceService.SetBackground(userID, state == "background"); err != nil {
+			h.server.logger.Warnw("Failed to update app state", "user_id", userID, "state", state, "error", err)
 		}
 	})
 

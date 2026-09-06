@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       app_version:
-        description: 'App version native mà bundle này áp (phải khớp versionName APK đã cài, vd 1.0)'
+        description: 'App version native mà bundle này áp (phải khớp versionName APK đã cài, vd 1.1)'
         required: true
         type: string
       notes:
@@ -65,7 +65,7 @@ jobs:
           APP_VERSION: ${{ inputs.app_version }}
           NOTES: ${{ inputs.notes }}
         run: |
-          BODY=$(node -e "console.log(JSON.stringify({ app_version: process.env.APP_VERSION, notes: process.env.NOTES }))")
+          BODY=$(node -e "console.log(JSON.stringify({ app_version: process.env.APP_VERSION, bundle_id: 'com.ola.me.net.org.vn', notes: process.env.NOTES }))")
           gh release create "${{ steps.tag.outputs.tag }}" \
             --repo "$OTA_REPO" \
             --title "${{ steps.tag.outputs.tag }}" \

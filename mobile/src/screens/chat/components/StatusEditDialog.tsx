@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { UserService } from '@ola/shared/services';
-import { ApiError } from '@ola/shared/lib';
+import { ApiError, imageUploadErrorText } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { UpdateProfileRequest } from '@ola/shared/types';
@@ -27,14 +27,14 @@ export function StatusEditDialog({ onClose }: { onClose: () => void }) {
 
   async function pickImage() {
     if (uploading) return;
-    const picked = await pickSingleImage();
-    if (picked == null) return;
     setUploading(true);
     try {
+      const picked = await pickSingleImage();
+      if (picked == null) return;
       const result = await UserService.uploadAvatar(picked.file);
       setImageUrl(result.url);
-    } catch {
-      push('error', t('avatar.error'));
+    } catch (err) {
+      push('error', imageUploadErrorText(t, err, t('avatar.error')));
     } finally {
       setUploading(false);
     }

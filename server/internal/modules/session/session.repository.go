@@ -38,13 +38,21 @@ func (r *Repository) ListActiveByUser(userID uuid.UUID) ([]models.UserSession, e
 }
 
 func (r *Repository) RevokeForUser(userID, sessionID uuid.UUID) (bool, error) {
-	res := r.db.Model(&models.UserSession{}).
-		Where("id = ? AND user_id = ? AND revoked_at IS NULL", sessionID, userID).
-		Update("revoked_at", gorm.Expr("NOW()"))
-	if res.Error != nil {
-		return false, res.Error
-	}
-	return res.RowsAffected == 1, nil
+	var revoked bool
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&models.UserSession{}).
+			Where("id = ? AND user_id = ? AND revoked_at IS NULL", sessionID, userID).
+			Update("revoked_at", gorm.Expr("NOW()"))
+		if res.Error != nil {
+			return res.Error
+		}
+		revoked = res.RowsAffected == 1
+		if !revoked {
+			return nil
+		}
+		return tx.Where("session_id = ?", sessionID).Delete(&models.DeviceToken{}).Error
+	})
+	return revoked, err
 }
 
 func (r *Repository) ListActiveIDsExcept(userID, keepID uuid.UUID) ([]uuid.UUID, error) {
@@ -56,10 +64,18 @@ func (r *Repository) ListActiveIDsExcept(userID, keepID uuid.UUID) ([]uuid.UUID,
 }
 
 func (r *Repository) RevokeAllExcept(userID, keepID uuid.UUID) (int64, error) {
-	res := r.db.Model(&models.UserSession{}).
-		Where("user_id = ? AND id <> ? AND revoked_at IS NULL", userID, keepID).
-		Update("revoked_at", gorm.Expr("NOW()"))
-	return res.RowsAffected, res.Error
+	var revoked int64
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&models.UserSession{}).
+			Where("user_id = ? AND id <> ? AND revoked_at IS NULL", userID, keepID).
+			Update("revoked_at", gorm.Expr("NOW()"))
+		if res.Error != nil {
+			return res.Error
+		}
+		revoked = res.RowsAffected
+		return tx.Where("user_id = ? AND session_id <> ?", userID, keepID).Delete(&models.DeviceToken{}).Error
+	})
+	return revoked, err
 }
 
 func (r *Repository) ListActiveIDsForUser(userID uuid.UUID) ([]uuid.UUID, error) {
@@ -71,10 +87,18 @@ func (r *Repository) ListActiveIDsForUser(userID uuid.UUID) ([]uuid.UUID, error)
 }
 
 func (r *Repository) RevokeAllForUser(userID uuid.UUID) (int64, error) {
-	res := r.db.Model(&models.UserSession{}).
-		Where("user_id = ? AND revoked_at IS NULL", userID).
-		Update("revoked_at", gorm.Expr("NOW()"))
-	return res.RowsAffected, res.Error
+	var revoked int64
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&models.UserSession{}).
+			Where("user_id = ? AND revoked_at IS NULL", userID).
+			Update("revoked_at", gorm.Expr("NOW()"))
+		if res.Error != nil {
+			return res.Error
+		}
+		revoked = res.RowsAffected
+		return tx.Where("user_id = ?", userID).Delete(&models.DeviceToken{}).Error
+	})
+	return revoked, err
 }
 
 func (r *Repository) RotateRefreshToken(sessionID uuid.UUID, oldToken, newToken string) (bool, error) {
@@ -91,9 +115,14 @@ func (r *Repository) RotateRefreshToken(sessionID uuid.UUID, oldToken, newToken 
 }
 
 func (r *Repository) Revoke(sessionID uuid.UUID) error {
-	return r.db.Model(&models.UserSession{}).
-		Where("id = ? AND revoked_at IS NULL", sessionID).
-		Update("revoked_at", gorm.Expr("NOW()")).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&models.UserSession{}).
+			Where("id = ? AND revoked_at IS NULL", sessionID).
+			Update("revoked_at", gorm.Expr("NOW()")).Error; err != nil {
+			return err
+		}
+		return tx.Where("session_id = ?", sessionID).Delete(&models.DeviceToken{}).Error
+	})
 }
 
 func (r *Repository) Upsert(sess *models.UserSession) error {

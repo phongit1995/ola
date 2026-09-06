@@ -28,6 +28,7 @@ export interface RoomChatState {
   roomForeground: boolean;
   hasMore: boolean;
   loadingMore: boolean;
+  pinnedToBottom: boolean;
   replyTarget: RoomMessage | null;
   reactionNotice: RoomReactionNotice | null;
   open: (room: ActiveRoom) => Promise<void>;
@@ -35,6 +36,7 @@ export interface RoomChatState {
   reset: () => void;
   setActiveTab: (tab: RoomTab) => void;
   setRoomForeground: (foreground: boolean) => void;
+  setPinnedToBottom: (pinned: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
   sendImage: (file: UploadFile) => Promise<void>;
   sendAudio: (
@@ -68,6 +70,7 @@ export type RoomChatStateData = Pick<
   | 'roomForeground'
   | 'hasMore'
   | 'loadingMore'
+  | 'pinnedToBottom'
   | 'replyTarget'
   | 'reactionNotice'
 >;

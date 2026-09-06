@@ -3,6 +3,7 @@ package adminsetting
 import (
 	"strings"
 
+	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
@@ -13,11 +14,12 @@ import (
 
 type Controller struct {
 	service *setting.Service
+	cfg     *config.Config
 	logger  *zap.SugaredLogger
 }
 
-func NewController(service *setting.Service, logger *zap.SugaredLogger) *Controller {
-	return &Controller{service: service, logger: logger.Named("[admin_setting_controller]")}
+func NewController(service *setting.Service, cfg *config.Config, logger *zap.SugaredLogger) *Controller {
+	return &Controller{service: service, cfg: cfg, logger: logger.Named("[admin_setting_controller]")}
 }
 
 type PutSettingRequest struct {
@@ -43,7 +45,17 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
+	for i := range items {
+		items[i] = maskSensitiveSetting(items[i])
+	}
 	return SettingListResponse{Items: items}, nil
+}
+
+func maskSensitiveSetting(item models.AppSetting) models.AppSetting {
+	if item.Key == setting.KeyPushFirebase {
+		item.Value = setting.MaskPushFirebaseValue(item.Value)
+	}
+	return item
 }
 
 // Put godoc
@@ -71,9 +83,28 @@ func (ctrl *Controller) Put(c *gin.Context) (interface{}, error) {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
 	}
+	if key == setting.KeyPushNotification {
+		if err := setting.ValidatePushNotificationValue(req.Value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	}
+	if key == setting.KeyPushFirebase {
+		if err := setting.ValidatePushFirebaseValue(req.Value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+		encrypted, err := setting.EncryptPushFirebaseValue(ctrl.cfg, req.Value)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		req.Value = encrypted
+	}
 	item, err := ctrl.service.Put(key, req.Value)
 	if err != nil {
 		return nil, utils.ServiceError(err)
+	}
+	if item != nil {
+		masked := maskSensitiveSetting(*item)
+		item = &masked
 	}
 	return item, nil
 }

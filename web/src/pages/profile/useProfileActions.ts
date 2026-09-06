@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RELATIONSHIP_STATUS } from '@constants';
 import { RelationshipService, UserService } from '@services';
-import { compressImageForUpload, toast } from '@lib';
+import { compressImageForUpload, imageUploadErrorText, toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
@@ -38,8 +38,8 @@ export function useProfileActions({
         setProfile((p) => (p ? { ...p, coverPhoto: url } : p));
         await refreshUser();
         toast.success(t('profileEdit.coverUpdated'));
-      } catch {
-        toast.error(t('profileEdit.coverError'));
+      } catch (error) {
+        toast.error(imageUploadErrorText(t, error, t('profileEdit.coverError')));
       }
     },
     [setProfile, refreshUser, t]
@@ -55,8 +55,8 @@ export function useProfileActions({
         setProfile((p) => (p ? { ...p, avatar: url } : p));
         await refreshUser();
         toast.success(t('profileEdit.avatarUpdated'));
-      } catch {
-        toast.error(t('profileEdit.avatarError'));
+      } catch (error) {
+        toast.error(imageUploadErrorText(t, error, t('profileEdit.avatarError')));
       }
     },
     [setProfile, refreshUser, t]

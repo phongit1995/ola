@@ -6,6 +6,7 @@ import { RoomService } from '../../services/room.service';
 import { SocketService } from '../../services/socket.service';
 import type { RoomMessage, RoomReactor } from '../../types/api/room.type';
 import {
+  capPinnedRoomMessages,
   markRoomMessageById,
   messageMentionsUser,
   reconcileRoomServerMessage,
@@ -44,10 +45,13 @@ function handleNewMessage(get: RoomGet, set: RoomSet, data: unknown) {
   const isNew = !get().messages.some(matchesIncoming);
   const fromMe = incoming.senderId === me?.id;
   set((state) => {
-    const messages = reconcileRoomServerMessage(state.messages, incoming);
-    if (fromMe || !isNew) return { messages };
+    const patch = capPinnedRoomMessages(
+      reconcileRoomServerMessage(state.messages, incoming),
+      state.pinnedToBottom
+    );
+    if (fromMe || !isNew) return patch;
     return {
-      messages,
+      ...patch,
       ...(state.roomForeground ? {} : { hasUnread: true }),
       ...(state.activeTab === 'messages' ? {} : { messagesUnread: true }),
     };

@@ -3,10 +3,11 @@ package main
 import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/db"
+	"ola-chat-server/internal/logger"
+	"ola-chat-server/internal/push"
+	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/logger"
-	"ola-chat-server/internal/services"
 
 	"go.uber.org/dig"
 )
@@ -24,6 +25,8 @@ func NewContainer() (*dig.Container, error) {
 		services.NewCacheService,
 		services.NewJWTService,
 		db.NewPostgresDB,
+		push.NewFCMClient,
+		push.NewSender,
 	}
 
 	for _, p := range providers {

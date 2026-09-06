@@ -20,6 +20,7 @@ export const initialRoomChatState: RoomChatStateData = {
   roomForeground: false,
   hasMore: false,
   loadingMore: false,
+  pinnedToBottom: true,
   replyTarget: null,
   reactionNotice: null as RoomReactionNotice | null,
 };

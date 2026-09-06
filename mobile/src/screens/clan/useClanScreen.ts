@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClanService, MeService } from '@ola/shared/services';
+import { imageUploadErrorText } from '@ola/shared/lib';
 import type { Clan, Post } from '@ola/shared/types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
@@ -157,7 +158,7 @@ export function useClanScreen(handle: string | undefined, id: string | undefined
       setClan({ ...clan, [field]: result.url });
       pushToast('success', t('clan.uploadSuccess'));
     } catch (error) {
-      pushToast('error', clanErrorText(error));
+      pushToast('error', imageUploadErrorText(t, error, clanErrorText(error)));
     } finally {
       setImageUploading(false);
     }

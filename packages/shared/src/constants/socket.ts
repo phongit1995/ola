@@ -1,6 +1,7 @@
 export const SOCKET_GUARD_PATH = '/socket.io/';
 export const SOCKET_ENVELOPE_EVENT = 'message';
 export const SOCKET_PING_EVENT = 'ping';
+export const SOCKET_APP_STATE_EVENT = 'app_state';
 export const SOCKET_PING_INTERVAL_MS = 60_000;
 export const SOCKET_STALE_SILENCE_MS = 30_000;
 export const SOCKET_SESSION_REPLACED_EVENT = 'SESSION_REPLACED';

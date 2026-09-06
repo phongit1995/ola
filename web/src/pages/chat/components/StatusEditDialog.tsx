@@ -2,7 +2,7 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
 import { UserService } from '@services';
-import { ApiError, compressImageForUpload, toast } from '@lib';
+import { ApiError, compressImageForUpload, imageUploadErrorText, toast } from '@lib';
 import type { UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
@@ -36,8 +36,8 @@ export function StatusEditDialog({ open, onClose }: StatusEditDialogProps) {
         await compressImageForUpload(file)
       );
       setImageUrl(result.url);
-    } catch {
-      toast.error(t('avatar.error'));
+    } catch (error) {
+      toast.error(imageUploadErrorText(t, error, t('avatar.error')));
     } finally {
       setUploading(false);
     }

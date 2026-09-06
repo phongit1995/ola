@@ -135,3 +135,11 @@ type RoomMessagesListResponse struct {
 	HasMore    bool                  `json:"hasMore"`
 	NextBefore string                `json:"nextBefore,omitempty"`
 }
+
+type RoomBlockUserRequest struct {
+	UserID string `json:"userId" binding:"required,uuid"`
+}
+
+type RoomBlockedUsersResponse struct {
+	UserIDs []string `json:"userIds"`
+}

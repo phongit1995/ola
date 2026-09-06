@@ -32,6 +32,7 @@
     "dragToClose": "Drag to the trash or press Delete to close the game"
   },
   "common": {
+    "imageTooLarge": "Image is too large (max 3MB).",
     "clear": "Clear",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
@@ -525,7 +526,6 @@
     "voiceMicUnavailable": "The microphone is busy or unavailable.",
     "voiceRecordError": "Could not record audio. Please try again.",
     "imageError": "Could not send the photo. Please try again.",
-    "imageTooLarge": "Image is too large (max 3MB).",
     "voiceDiscard": "Discard recording",
     "voiceTapStart": "Tap to record",
     "voiceTapStop": "Tap to stop",
@@ -752,6 +752,7 @@
     "blockTitle": "Block user",
     "blockConfirm": "Block @{{name}}? You won't see this person's messages in any room anymore.",
     "blockSuccess": "User blocked",
+    "blockLimit": "You have reached the limit of 500 blocked users in rooms",
     "copied": "Copied",
     "replyingTo": "Replying to @{{name}}",
     "replySticker": "[Sticker]",
@@ -1981,5 +1982,10 @@
     "disabledNotice": "Nickname change is temporarily disabled. Please come back later.",
     "checkError": "Could not check the nickname. Please try again.",
     "costChanged": "The price list was just updated. Please review the new price before changing."
+  },
+  "push": {
+    "channelMessages": "Messages",
+    "channelSocial": "Me notifications",
+    "channelSystem": "System"
   }
 }

@@ -6,6 +6,7 @@ import {
   compressImagesForUpload,
   createDateFormatter,
   createTimeFormatter,
+  imageUploadErrorText,
   toast,
 } from '@lib';
 import { useAuthStore } from '@/store/authStore';
@@ -185,8 +186,8 @@ export function useUserProfile(
       let files: File[];
       try {
         files = await compressImagesForUpload(draft.files);
-      } catch {
-        toast.error(t('me.postError'));
+      } catch (error) {
+        toast.error(imageUploadErrorText(t, error, t('me.postError')));
         return false;
       }
 
@@ -228,7 +229,7 @@ export function useUserProfile(
         return true;
       } catch (error) {
         await MeService.cleanupRejectedImages(error, uploaded);
-        toast.error(t('me.editError'));
+        toast.error(imageUploadErrorText(t, error, t('me.editError')));
         return false;
       }
     },

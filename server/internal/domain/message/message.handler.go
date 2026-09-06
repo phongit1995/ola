@@ -3,6 +3,7 @@ package message
 import (
 	"ola-chat-server/internal/constants"
 	conversationDomain "ola-chat-server/internal/domain/conversation"
+	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
 	"context"
@@ -13,20 +14,23 @@ import (
 )
 
 type EventHandler struct {
-	wsServer  *websocket.Server
-	convCache *conversationDomain.ConversationCacheAdapter
-	logger    *zap.SugaredLogger
+	wsServer   *websocket.Server
+	convCache  *conversationDomain.ConversationCacheAdapter
+	pushSender *push.Sender
+	logger     *zap.SugaredLogger
 }
 
 func NewEventHandler(
 	wsServer *websocket.Server,
 	convCache *conversationDomain.ConversationCacheAdapter,
+	pushSender *push.Sender,
 	logger *zap.SugaredLogger,
 ) *EventHandler {
 	return &EventHandler{
-		wsServer:  wsServer,
-		convCache: convCache,
-		logger:    logger.Named("[message_events]"),
+		wsServer:   wsServer,
+		convCache:  convCache,
+		pushSender: pushSender,
+		logger:     logger.Named("[message_events]"),
 	}
 }
 
@@ -111,6 +115,22 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 	}
 	wrappedData := utils.WrapWebSocketMessage(constants.WebSocketEventNewMessage, payload)
 	h.wsServer.EmitToUsers(userIDs, constants.WebSocketMessageEvent, wrappedData)
+
+	if h.pushSender != nil {
+		preview := event.Conversation.LastMessageText
+		if preview == "" {
+			preview = event.Message.Content
+		}
+		h.pushSender.SendDM(userIDs, push.DMPush{
+			ConversationID:   conversationID,
+			ConversationType: event.Conversation.Type,
+			MessageID:        event.Message.ID,
+			SenderID:         event.Message.SenderID,
+			SenderName:       event.Message.SenderName,
+			ConversationName: event.Conversation.Name,
+			Preview:          preview,
+		})
+	}
 
 	h.logger.Infow("✅ MESSAGE_CREATED processed successfully",
 		"conversation_id", conversationID,

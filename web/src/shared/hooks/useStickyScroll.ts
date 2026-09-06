@@ -9,6 +9,7 @@ interface UseStickyScrollOptions {
   enabled?: boolean;
   loadMoreAtTop?: number;
   bottomThreshold?: number;
+  onStickyChange?: (sticky: boolean) => void;
 }
 
 export function useStickyScroll({
@@ -20,13 +21,23 @@ export function useStickyScroll({
   enabled = true,
   loadMoreAtTop = 0,
   bottomThreshold = 80,
+  onStickyChange,
 }: UseStickyScrollOptions) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef(true);
+  const onStickyChangeRef = useRef(onStickyChange);
   const lastIdRef = useRef<string | null>(null);
   const prependAnchorRef = useRef<number | null>(null);
   const wasEnabledRef = useRef(enabled);
   const savedScrollTopRef = useRef<number | null>(null);
+
+  useLayoutEffect(() => {
+    onStickyChangeRef.current = onStickyChange;
+  }, [onStickyChange]);
+
+  useLayoutEffect(() => {
+    onStickyChangeRef.current?.(stickyRef.current);
+  }, []);
 
   useLayoutEffect(() => {
     const element = scrollRef.current;
@@ -89,12 +100,18 @@ export function useStickyScroll({
     return () => target.removeEventListener('resize', repinBottom);
   }, []);
 
+  const setSticky = useCallback((sticky: boolean) => {
+    if (stickyRef.current === sticky) return;
+    stickyRef.current = sticky;
+    onStickyChangeRef.current?.(sticky);
+  }, []);
+
   const handleScroll = useCallback(() => {
     const element = scrollRef.current;
     if (element == null || !enabled) return;
     const distanceFromBottom =
       element.scrollHeight - element.scrollTop - element.clientHeight;
-    stickyRef.current = distanceFromBottom < bottomThreshold;
+    setSticky(distanceFromBottom < bottomThreshold);
     savedScrollTopRef.current = element.scrollTop;
     if (
       element.scrollTop <= loadMoreAtTop &&
@@ -103,6 +120,7 @@ export function useStickyScroll({
       onLoadMore != null
     ) {
       prependAnchorRef.current = element.scrollHeight;
+      setSticky(false);
       onLoadMore();
     }
   }, [
@@ -112,15 +130,16 @@ export function useStickyScroll({
     onLoadMore,
     bottomThreshold,
     loadMoreAtTop,
+    setSticky,
   ]);
 
   const pin = useCallback(() => {
-    stickyRef.current = true;
-  }, []);
+    setSticky(true);
+  }, [setSticky]);
 
   const unpin = useCallback(() => {
-    stickyRef.current = false;
-  }, []);
+    setSticky(false);
+  }, [setSticky]);
 
   const scrollToBottomIfPinned = useCallback(() => {
     const element = scrollRef.current;

@@ -32,6 +32,7 @@
     "dragToClose": "Kéo vào thùng rác hoặc nhấn Delete để đóng game"
   },
   "common": {
+    "imageTooLarge": "Ảnh quá lớn (tối đa 3MB).",
     "clear": "Xoá",
     "showPassword": "Hiện mật khẩu",
     "hidePassword": "Ẩn mật khẩu",
@@ -525,7 +526,6 @@
     "voiceMicUnavailable": "Micro đang bận hoặc không thể sử dụng.",
     "voiceRecordError": "Không ghi âm được. Vui lòng thử lại.",
     "imageError": "Không gửi được ảnh. Vui lòng thử lại.",
-    "imageTooLarge": "Ảnh quá lớn (tối đa 3MB).",
     "voiceDiscard": "Huỷ ghi âm",
     "voiceTapStart": "Chạm để ghi âm",
     "voiceTapStop": "Chạm để dừng",
@@ -752,6 +752,7 @@
     "blockTitle": "Chặn người dùng",
     "blockConfirm": "Chặn @{{name}}? Bạn sẽ không thấy tin nhắn của người này trong bất kỳ phòng nào nữa.",
     "blockSuccess": "Đã chặn người dùng",
+    "blockLimit": "Bạn đã chặn tối đa 500 người trong phòng chat",
     "copied": "Đã sao chép",
     "replyingTo": "Đang trả lời @{{name}}",
     "replySticker": "[Nhãn dán]",
@@ -1981,5 +1982,10 @@
     "disabledNotice": "Tính năng đổi nickname đang tạm tắt. Vui lòng quay lại sau.",
     "checkError": "Không kiểm tra được nickname. Vui lòng thử lại.",
     "costChanged": "Bảng giá vừa được cập nhật. Vui lòng kiểm tra giá mới trước khi đổi."
+  },
+  "push": {
+    "channelMessages": "Tin nhắn",
+    "channelSocial": "Thông báo Me",
+    "channelSystem": "Hệ thống"
   }
 }

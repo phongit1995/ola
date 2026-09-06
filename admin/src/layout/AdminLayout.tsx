@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { App, Avatar, Dropdown, Layout, Menu, Typography } from 'antd'
 import {
   AimOutlined,
+  BellOutlined,
   AppstoreOutlined,
   CommentOutlined,
   FlagOutlined,
@@ -82,6 +83,7 @@ const MENU_ITEMS = [
       { key: '/settings/topup', icon: <DollarOutlined />, label: 'Nạp KEN' },
       { key: '/settings/username-change', icon: <EditOutlined />, label: 'Đổi nickname' },
       { key: '/settings/announcements', icon: <NotificationOutlined />, label: 'Thông báo banner' },
+      { key: '/settings/notification', icon: <BellOutlined />, label: 'Thông báo đẩy' },
     ],
   },
 ]
@@ -124,6 +126,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/settings/topup': 'Cài đặt nạp KEN',
   '/settings/username-change': 'Cài đặt đổi nickname',
   '/settings/announcements': 'Thông báo banner',
+  '/settings/notification': 'Cài đặt thông báo đẩy',
 }
 
 export function AdminLayout() {

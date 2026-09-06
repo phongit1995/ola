@@ -8,6 +8,7 @@ const LATEST_RELEASE_URL = `https://api.github.com/repos/${OTA_REPO}/releases/la
 
 interface ReleaseBody {
   app_version: string;
+  bundle_id?: string;
   notes?: string;
 }
 
@@ -39,6 +40,7 @@ export async function checkForOtaUpdate(): Promise<void> {
     }
 
     if (meta.app_version !== DeviceInfo.getVersion()) return;
+    if (meta.bundle_id != null && meta.bundle_id !== DeviceInfo.getBundleId()) return;
 
     const remoteVersion = parseInt((release.tag_name ?? '').replace(/^v/, ''), 10);
     if (Number.isNaN(remoteVersion)) return;

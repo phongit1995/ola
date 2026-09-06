@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, ImageCropOverlay } from '@components';
 import { MeService, UserService } from '@services';
-import { compressImageForUpload, toast, validatedImageObjectUrl } from '@lib';
+import { compressImageForUpload, imageUploadErrorText, toast, validatedImageObjectUrl } from '@lib';
 import { MIN_IMAGE_SOURCE } from '@constants';
 import { useAuthStore } from '@/store/authStore';
 import { CheckIcon } from './Icons';
@@ -48,6 +49,7 @@ export function ChangeUserImageDialog({
   const rawRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { t } = useTranslation();
   const [rawSrc, setRawSrc] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -118,8 +120,8 @@ export function ChangeUserImageDialog({
       setCropped(null);
       setPostToMe(false);
       onClose();
-    } catch {
-      toast.error(texts.error);
+    } catch (error) {
+      toast.error(imageUploadErrorText(t, error, texts.error));
       setSaving(false);
     }
   }

@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { UserService } from '@ola/shared/services';
-import { ApiError, createDateFormatter } from '@ola/shared/lib';
+import { ApiError, createDateFormatter, imageUploadErrorText } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/types';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -144,8 +144,8 @@ export function EditProfileScreen({ navigation }: Props) {
       const picked = await pickCroppedImage(COVER_OUTPUT.width, COVER_OUTPUT.height);
       if (picked == null) return;
       setCoverPreview(picked.file);
-    } catch {
-      push('error', t('profileEdit.coverError'));
+    } catch (err) {
+      push('error', imageUploadErrorText(t, err, t('profileEdit.coverError')));
     }
   }
 

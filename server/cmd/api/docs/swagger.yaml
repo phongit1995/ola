@@ -454,6 +454,56 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_game-match.LevelListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.LevelView'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_game-match.LevelListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_game-match.LevelListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_game-match.LevelView:
+    properties:
+      exp:
+        example: 7350
+        type: integer
+      gameId:
+        example: caro
+        type: string
+      level:
+        example: 12
+        type: integer
+      updatedAt:
+        example: "2026-08-28T10:00:00Z"
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
+    type: object
   internal_modules_admin_game-match.MatchListResponse:
     properties:
       items:
@@ -1829,6 +1879,137 @@ definitions:
       timestamp:
         type: string
       traceId:
+        type: string
+    type: object
+  internal_modules_admin_topup.ManualCreditRequest:
+    properties:
+      username:
+        type: string
+    required:
+    - username
+    type: object
+  internal_modules_admin_topup.ManualCreditResponse:
+    properties:
+      balanceAfter:
+        type: integer
+      id:
+        type: string
+      kenAmount:
+        type: integer
+      status:
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_topup.UserInfo'
+    type: object
+  internal_modules_admin_topup.ManualCreditSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_topup.ManualCreditResponse'
+      success:
+        type: boolean
+    type: object
+  internal_modules_admin_topup.StatsResponse:
+    properties:
+      bucket:
+        type: string
+      pending:
+        $ref: '#/definitions/internal_modules_admin_topup.StatsTotals'
+      range:
+        $ref: '#/definitions/internal_modules_admin_topup.StatsTotals'
+      series:
+        items:
+          $ref: '#/definitions/internal_modules_admin_topup.StatsSeriesItem'
+        type: array
+      thisMonth:
+        $ref: '#/definitions/internal_modules_admin_topup.StatsTotals'
+      today:
+        $ref: '#/definitions/internal_modules_admin_topup.StatsTotals'
+    type: object
+  internal_modules_admin_topup.StatsSeriesItem:
+    properties:
+      amount:
+        type: integer
+      count:
+        type: integer
+      date:
+        type: string
+      ken:
+        type: integer
+    type: object
+  internal_modules_admin_topup.StatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_topup.StatsResponse'
+      success:
+        type: boolean
+    type: object
+  internal_modules_admin_topup.StatsTotals:
+    properties:
+      amount:
+        type: integer
+      count:
+        type: integer
+      ken:
+        type: integer
+    type: object
+  internal_modules_admin_topup.TransactionItem:
+    properties:
+      amount:
+        type: integer
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      kenAmount:
+        type: integer
+      kenTxId:
+        type: string
+      matchedUsername:
+        type: string
+      note:
+        type: string
+      providerTxId:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_topup.UserInfo'
+    type: object
+  internal_modules_admin_topup.TransactionListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_topup.TransactionItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_topup.TransactionListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_topup.TransactionListResponse'
+      success:
+        type: boolean
+    type: object
+  internal_modules_admin_topup.UserInfo:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
         type: string
     type: object
   internal_modules_admin_upload.UploadResponse:
@@ -4530,6 +4711,13 @@ definitions:
         example: "12"
         type: string
     type: object
+  internal_modules_push.RegisterTokenRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
   internal_modules_relationships.BlockUserRequest:
     properties:
       userId:
@@ -4734,6 +4922,20 @@ definitions:
         type: integer
       ticket:
         type: string
+    type: object
+  internal_modules_room.RoomBlockUserRequest:
+    properties:
+      userId:
+        type: string
+    required:
+    - userId
+    type: object
+  internal_modules_room.RoomBlockedUsersResponse:
+    properties:
+      userIds:
+        items:
+          type: string
+        type: array
     type: object
   internal_modules_room.RoomListResponse:
     properties:
@@ -5103,6 +5305,13 @@ definitions:
         type: integer
       minLength:
         type: integer
+    type: object
+  internal_modules_topup.WebhookResponse:
+    properties:
+      msg:
+        type: string
+      status:
+        type: boolean
     type: object
   internal_modules_user-setting.UpdateSettingsRequest:
     properties:
@@ -8978,6 +9187,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room.RoomBlockedUsersResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomListResponse:
     properties:
       data:
@@ -9852,6 +10078,41 @@ paths:
       security:
       - BearerAuth: []
       summary: Danh sách trận PvP mini-game (admin)
+      tags:
+      - admin-game-match
+  /admin/game-matches/levels:
+    get:
+      parameters:
+      - description: Lọc theo game (caro, war-god, xiangqi, thirteen)
+        in: query
+        name: gameId
+        type: string
+      - description: Lọc theo user ID
+        in: query
+        name: userId
+        type: string
+      - description: Tìm theo username hoặc tên hiển thị
+        in: query
+        name: search
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_game-match.LevelListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Level/EXP người chơi theo từng game (admin)
       tags:
       - admin-game-match
   /admin/game-matches/stats:
@@ -11362,6 +11623,112 @@ paths:
       summary: Tạo/cập nhật một cấu hình hệ thống theo key (admin)
       tags:
       - admin-settings
+  /admin/topup/stats:
+    get:
+      parameters:
+      - description: Từ thời gian (RFC3339, mặc định 30 ngày trước)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339, mặc định hiện tại)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_topup.StatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê tiền nạp KEN theo ngày/tháng (admin)
+      tags:
+      - admin-topup
+  /admin/topup/transactions:
+    get:
+      parameters:
+      - description: CREDITED|NO_MATCH|BELOW_MIN|SKIPPED_OUT|SKIPPED_DISABLED|FAILED
+        in: query
+        name: status
+        type: string
+      - description: IN|OUT
+        in: query
+        name: type
+        type: string
+      - description: Tìm theo mã giao dịch, nội dung, username
+        in: query
+        name: search
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_topup.TransactionListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử giao dịch nạp KEN qua webhook ngân hàng (admin)
+      tags:
+      - admin-topup
+  /admin/topup/transactions/{id}/credit:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Topup transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Username nhận KEN
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_topup.ManualCreditRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_topup.ManualCreditSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cộng KEN thủ công cho giao dịch nạp chưa khớp user (admin)
+      tags:
+      - admin-topup
   /admin/upload:
     post:
       consumes:
@@ -15563,6 +15930,31 @@ paths:
       summary: Chụp một lượt PEN (chọn hướng)
       tags:
       - pen
+  /push/token:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Push token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_push.RegisterTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Register the current device's push notification token
+      tags:
+      - push
   /relationships/{id}/cancel:
     delete:
       description: Cancel a sent friend request
@@ -16198,6 +16590,62 @@ paths:
       summary: Send an image message to a room (must have joined via socket)
       tags:
       - room
+  /rooms/blocked:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse'
+      security:
+      - BearerAuth: []
+      summary: List user IDs whose room messages the current user has hidden
+      tags:
+      - room
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User to block
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_room.RoomBlockUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse'
+      security:
+      - BearerAuth: []
+      summary: Hide a user's room messages for the current user
+      tags:
+      - room
+  /rooms/blocked/{userId}:
+    delete:
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse'
+      security:
+      - BearerAuth: []
+      summary: Stop hiding a user's room messages for the current user
+      tags:
+      - room
   /sessions:
     get:
       description: Trả về các phiên đăng nhập đang hoạt động của người dùng hiện tại
@@ -16290,6 +16738,30 @@ paths:
       summary: Cấu hình phí đổi username theo độ dài (tính bằng KEN)
       tags:
       - settings
+  /topup/webhook/sieuthicode:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: SieuThiCode webhook secret
+        in: header
+        name: signature
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_topup.WebhookResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_modules_topup.WebhookResponse'
+      summary: Webhook SieuThiCode nhận giao dịch ngân hàng để tự động cộng KEN
+      tags:
+      - topup
   /user-settings:
     get:
       description: Get the authenticated user's settings (returns defaults if not

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { RoomChatState } from '../../types/client/roomChat.type';
+import { capPinnedRoomMessages } from './roomHelpers';
 import { initialRoomChatState } from './roomChatState';
 import { createRoomLifecycleActions } from './roomLifecycleActions';
 import { createRoomMessageActions } from './roomMessageActions';
@@ -34,6 +35,16 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
           ? { roomForeground: true, hasUnread: false }
           : { roomForeground: false }
       ),
+    setPinnedToBottom: (pinned) =>
+      set((state) => {
+        if (!pinned) {
+          return state.pinnedToBottom ? { pinnedToBottom: false } : {};
+        }
+        return {
+          pinnedToBottom: true,
+          ...capPinnedRoomMessages(state.messages, true),
+        };
+      }),
     setReplyTarget: (message) => set({ replyTarget: message }),
     clearReplyTarget: () => set({ replyTarget: null }),
     clearReactionNotice: (seq) =>

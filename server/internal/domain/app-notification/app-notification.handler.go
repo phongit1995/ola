@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
 
@@ -13,14 +14,16 @@ import (
 )
 
 type EventHandler struct {
-	wsServer *websocket.Server
-	logger   *zap.SugaredLogger
+	wsServer   *websocket.Server
+	pushSender *push.Sender
+	logger     *zap.SugaredLogger
 }
 
-func NewEventHandler(wsServer *websocket.Server, logger *zap.SugaredLogger) *EventHandler {
+func NewEventHandler(wsServer *websocket.Server, pushSender *push.Sender, logger *zap.SugaredLogger) *EventHandler {
 	return &EventHandler{
-		wsServer: wsServer,
-		logger:   logger.Named("[app_notification_events]"),
+		wsServer:   wsServer,
+		pushSender: pushSender,
+		logger:     logger.Named("[app_notification_events]"),
 	}
 }
 
@@ -59,5 +62,9 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 	})
 	h.wsServer.EmitToUser(event.RecipientID, constants.WebSocketMessageEvent, wrapped)
 	h.logger.Infow("✅ APP_NOTIFICATION emitted", "recipient_id", event.RecipientID, "unread_count", event.UnreadCount)
+
+	if h.pushSender != nil {
+		h.pushSender.SendAppNotification(event.RecipientID, notification)
+	}
 	return nil
 }
