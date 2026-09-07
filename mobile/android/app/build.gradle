@@ -77,8 +77,8 @@ def enableProguardInReleaseBuilds = true
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 /**
- * Keystore ký release đọc từ android/keystore.properties (gitignore).
- * Thiếu file thì rơi về debug keystore để máy khác vẫn build được.
+ * Keystore ký release đọc từ android/keystore.properties.
+ * Thiếu file thì rơi về debug keystore để vẫn build được.
  */
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -98,7 +98,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 2
-        versionName "1.1"
+        versionName "1.0.0"
     }
     signingConfigs {
         debug {
