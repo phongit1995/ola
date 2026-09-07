@@ -80,7 +80,8 @@ export function useMeFeed() {
       const created = await createPost(
         composedToPayload(draft),
         files,
-        draft.imageUrls
+        draft.imageUrls,
+        draft.audio
       );
       if (created == null) return false;
       prependPost(created);
@@ -102,7 +103,9 @@ export function useMeFeed() {
         id,
         composedToPayload(draft),
         files,
-        draft.imageUrls
+        draft.imageUrls,
+        undefined,
+        draft.audio
       );
       return updated != null;
     },

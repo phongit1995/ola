@@ -29,7 +29,7 @@ func (r *Repository) Save(post *models.Me) error {
 
 func (r *Repository) UpdateEditable(post *models.Me) error {
 	return r.db.Model(post).
-		Select("Content", "Images", "Mentions", "CheckIn", "Sticker", "Visibility").
+		Select("Content", "Images", "Audios", "Mentions", "CheckIn", "Sticker", "Visibility").
 		Updates(post).Error
 }
 
@@ -55,7 +55,7 @@ func (r *Repository) ReferencedImageURLs(urls []string) (map[string]struct{}, er
 	var rows []imageURLRow
 	const normalizedURL = "split_part(split_part(elem.value->>'url', '#', 1), chr(63), 1)"
 	err := r.db.Table("me AS m").
-		Joins("CROSS JOIN LATERAL jsonb_array_elements(COALESCE(m.images, '[]'::jsonb)) AS elem(value)").
+		Joins("CROSS JOIN LATERAL jsonb_array_elements(COALESCE(m.images, '[]'::jsonb) || COALESCE(m.audios, '[]'::jsonb)) AS elem(value)").
 		Where(normalizedURL+" IN ?", urls).
 		Distinct(normalizedURL + " AS url").
 		Scan(&rows).Error
@@ -188,7 +188,7 @@ type feedRow struct {
 func feedFilterFragment(filter string) string {
 	switch filter {
 	case "media":
-		return " AND jsonb_array_length(m.images) > 0"
+		return " AND (jsonb_array_length(m.images) > 0 OR COALESCE(jsonb_array_length(m.audios), 0) > 0)"
 	case "tagged":
 		return " AND COALESCE(jsonb_array_length(m.mentions), 0) > 0"
 	case "mentions":

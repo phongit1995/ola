@@ -1,8 +1,10 @@
 package me
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"ola-chat-server/internal/utils"
 
@@ -43,6 +45,43 @@ func (ctrl *Controller) UploadImages(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid multipart form")
 	}
 	resp, err := ctrl.service.UploadImages(c.Request.Context(), userID, form.File["images"])
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// UploadAudio godoc
+// @Summary      Upload a post voice recording (≤10MB, ≤300s)
+// @Tags         me
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        file formData file true "Audio file (webm/m4a/mp3/wav/ogg)"
+// @Param        duration formData number true "Duration in seconds"
+// @Param        waveform formData string false "JSON array of 0..1 levels, max 64"
+// @Success      201  {object}  utils.BaseResponse[UploadAudioResponse]
+// @Router       /me/audio [post]
+func (ctrl *Controller) UploadAudio(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "missing file")
+	}
+	duration, err := strconv.ParseFloat(c.PostForm("duration"), 64)
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
+	}
+	var waveform []float64
+	if raw := c.PostForm("waveform"); raw != "" {
+		if err := json.Unmarshal([]byte(raw), &waveform); err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
+		}
+	}
+	resp, err := ctrl.service.UploadAudio(c.Request.Context(), userID, fileHeader, duration, waveform)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

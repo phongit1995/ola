@@ -1,31 +1,63 @@
 import { useTranslation } from 'react-i18next';
+import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
+import { formatDuration } from '@lib';
 import { stickerImage } from '../stickers';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import type { ComposedCheckIn } from './ComposerCheckInPanel';
+
+export interface ComposerAudioPreview {
+  url: string;
+  duration: number;
+  waveform?: number[];
+}
 
 interface ComposerPreviewProps {
   sticker: string | null;
   checkIn: ComposedCheckIn | null;
   photos: { url: string }[];
+  audio: ComposerAudioPreview | null;
   maxReached: boolean;
   onRemoveSticker: () => void;
   onRemoveCheckIn: () => void;
   onRemovePhoto: (url: string) => void;
+  onRemoveAudio: () => void;
 }
 
 export function ComposerPreview({
   sticker,
   checkIn,
   photos,
+  audio,
   maxReached,
   onRemoveSticker,
   onRemoveCheckIn,
   onRemovePhoto,
+  onRemoveAudio,
 }: ComposerPreviewProps) {
   const { t } = useTranslation();
 
   return (
     <>
+      {audio != null && (
+        <div className="mt-2 flex items-center gap-3">
+          <VoiceBubble
+            key={audio.url}
+            url={audio.url}
+            duration={formatDuration(audio.duration)}
+            durationSec={audio.duration}
+            waveform={audio.waveform}
+            isOut={false}
+          />
+          <button
+            type="button"
+            onClick={onRemoveAudio}
+            className="text-xs text-ola-error"
+          >
+            {t('me.removeAudio')}
+          </button>
+        </div>
+      )}
+
       {sticker != null && stickerImage(sticker) != null && (
         <div className="relative mt-2 rounded-md border border-black/12 p-2 pr-20">
           <img

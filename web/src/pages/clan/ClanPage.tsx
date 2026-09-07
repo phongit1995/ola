@@ -30,7 +30,7 @@ import type {
   Clan,
   PostReaction,
   PostVisibility,
-  UploadedImage,
+  PostUploadRef,
 } from '@app-types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
@@ -48,7 +48,7 @@ import {
   type MePostSource,
 } from '../me/MePostInteractions';
 import {
-  composedToImages,
+  composedToAttachments,
   composedToPayload,
   composedToUpdatePayload,
 } from '../me/composer';
@@ -227,26 +227,27 @@ export function ClanPage({
 
   const editPost = useCallback(
     async (postId: string, draft: ComposedPost): Promise<boolean> => {
-      let uploaded: UploadedImage[] = [];
+      const uploaded: PostUploadRef[] = [];
       try {
         const store = useClanFeedStore.getState();
         const raw =
           store.posts.find((item) => item.id === postId) ?? store.pinned;
-        const prepared = await composedToImages(
+        const prepared = await composedToAttachments(
           draft,
           'existingFirst',
-          raw?.images ?? []
+          raw,
+          uploaded
         );
-        uploaded = prepared.uploaded;
         const updated = await MeService.update(postId, {
           ...composedToUpdatePayload(draft),
           images: prepared.images,
+          audios: prepared.audios,
         });
         useClanFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;
       } catch (error) {
-        await MeService.cleanupRejectedImages(error, uploaded);
+        await MeService.cleanupRejectedUploads(error, uploaded);
         toast.error(imageUploadErrorText(t, error, clanErrorText(error)));
         return false;
       }
@@ -283,7 +284,8 @@ export function ClanPage({
           clan.id,
           composedToPayload(draft),
           prepared,
-          draft.imageUrls
+          draft.imageUrls,
+          draft.audio
         );
       return created != null;
     },

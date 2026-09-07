@@ -856,6 +856,8 @@
     "attachTag": "Tag",
     "attachCheckIn": "Check-in",
     "attachSticker": "Sticker",
+    "attachVoice": "Voice",
+    "removeAudio": "Remove recording",
     "privacyTo": "To:",
     "privacy_public": "Public",
     "privacy_friend": "Friends",

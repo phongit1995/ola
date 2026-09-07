@@ -6,7 +6,11 @@ import {
   SmileyInput,
   type SmileyInputHandle,
 } from '@components';
-import { useOutsideClick } from '@hooks';
+import {
+  VoiceRecorderControl,
+  type VoiceRecorderControlHandle,
+} from '@components/chat/voice/VoiceRecorderControl';
+import { useOutsideClick, type VoiceRecording } from '@hooks';
 import { hasMePostBody, toast } from '@lib';
 import {
   ATTACH_BUTTONS,
@@ -15,20 +19,53 @@ import {
   type AttachButtonKey,
 } from '../constants';
 import { type ComposedCheckIn } from './ComposerCheckInPanel';
-import { ComposerPreview } from './ComposerPreview';
+import {
+  ComposerPreview,
+  type ComposerAudioPreview,
+} from './ComposerPreview';
 import { ComposerAttachPanels } from './ComposerAttachPanels';
-import type { PostVisibility } from '@app-types';
+import type { MeAudioDraft, PostVisibility } from '@app-types';
 
 type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'smiley' | null;
 type PickedPhoto = { url: string; file?: File };
+type PickedAudio = { draft: MeAudioDraft; preview: ComposerAudioPreview };
 
 export interface ComposedPost {
   content: string;
   files: File[];
   imageUrls: string[];
+  audio: MeAudioDraft | null;
   checkIn: ComposedCheckIn | null;
   sticker: string | null;
   visibility: PostVisibility;
+}
+
+function pickedAudioFromDraft(draft: MeAudioDraft | null | undefined): PickedAudio | null {
+  if (draft == null || draft.url == null || draft.url === '') return null;
+  return {
+    draft,
+    preview: { url: draft.url, duration: draft.duration, waveform: draft.waveform },
+  };
+}
+
+function pickedAudioFromRecording(recording: VoiceRecording): PickedAudio {
+  const draft: MeAudioDraft = {
+    file: recording.blob,
+    duration: recording.duration,
+    waveform: recording.waveform,
+  };
+  return {
+    draft,
+    preview: {
+      url: URL.createObjectURL(recording.blob),
+      duration: recording.duration,
+      waveform: recording.waveform,
+    },
+  };
+}
+
+function revokePickedAudio(audio: PickedAudio | null) {
+  if (audio?.draft.file != null) URL.revokeObjectURL(audio.preview.url);
 }
 
 interface MeComposerDialogProps {
@@ -70,15 +107,23 @@ export function MeComposerDialog({
   const [sticker, setSticker] = useState<string | null>(
     initial?.sticker ?? null
   );
+  const [audio, setAudio] = useState<PickedAudio | null>(() =>
+    pickedAudioFromDraft(initial?.audio)
+  );
+  const [voiceRecording, setVoiceRecording] = useState(false);
   const [panel, setPanel] = useState<AttachPanel>(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const attachAreaRef = useRef<HTMLDivElement>(null);
+  const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
 
   useOutsideClick(attachAreaRef, panel != null, () => setPanel(null));
+  const attachmentCount = photos.length + (audio != null ? 1 : 0);
   const canSubmit =
-    !submitting && hasMePostBody(content, photos.length, sticker, checkIn);
+    !submitting &&
+    !voiceRecording &&
+    hasMePostBody(content, attachmentCount, sticker, checkIn);
 
   function reset() {
     setContent('');
@@ -86,7 +131,18 @@ export function MeComposerDialog({
     setPhotos([]);
     setCheckIn(null);
     setSticker(null);
+    setAudio(null);
     setPanel(null);
+  }
+
+  function removeAudio() {
+    revokePickedAudio(audio);
+    setAudio(null);
+  }
+
+  function replaceAudio(recording: VoiceRecording) {
+    revokePickedAudio(audio);
+    setAudio(pickedAudioFromRecording(recording));
   }
 
   function revokePhotos(items: PickedPhoto[]) {
@@ -96,19 +152,26 @@ export function MeComposerDialog({
   }
 
   const photosRef = useRef<PickedPhoto[]>([]);
+  const audioRef = useRef<PickedAudio | null>(null);
   useEffect(() => {
     photosRef.current = photos;
   }, [photos]);
+  useEffect(() => {
+    audioRef.current = audio;
+  }, [audio]);
   useEffect(() => {
     return () => {
       photosRef.current.forEach((photo) => {
         if (photo.file != null) URL.revokeObjectURL(photo.url);
       });
+      revokePickedAudio(audioRef.current);
     };
   }, []);
 
   function handleClose() {
+    if (voiceRecording) return;
     revokePhotos(photos);
+    revokePickedAudio(audio);
     reset();
     onClose();
   }
@@ -146,6 +209,12 @@ export function MeComposerDialog({
       fileInputRef.current?.click();
       return;
     }
+    if (key === 'voice') {
+      if (audio != null || voiceRecording) return;
+      setPanel(null);
+      voiceRecorderRef.current?.start();
+      return;
+    }
     setPanel((current) => (current === key ? null : key));
   }
 
@@ -163,6 +232,7 @@ export function MeComposerDialog({
         imageUrls: photos
           .filter((photo) => photo.file == null)
           .map((photo) => photo.url),
+        audio: audio?.draft ?? null,
         checkIn,
         sticker,
         visibility: privacy,
@@ -174,6 +244,7 @@ export function MeComposerDialog({
     }
     if (ok) {
       revokePhotos(photos);
+      revokePickedAudio(audio);
       reset();
       onClose();
     }
@@ -227,21 +298,24 @@ export function MeComposerDialog({
         sticker={sticker}
         checkIn={checkIn}
         photos={photos}
+        audio={audio?.preview ?? null}
         maxReached={photos.length >= MAX_IMAGES}
         onRemoveSticker={() => setSticker(null)}
         onRemoveCheckIn={() => setCheckIn(null)}
         onRemovePhoto={removePhoto}
+        onRemoveAudio={removeAudio}
       />
 
       <div ref={attachAreaRef}>
-        <div className="mt-3 flex justify-around border-t border-black/12 pt-2">
+        <div className="relative mt-3 flex justify-around border-t border-black/12 pt-2">
           {ATTACH_BUTTONS.map((button) => (
             <button
               key={button.key}
               type="button"
               aria-label={t(button.labelKey)}
+              disabled={button.key === 'voice' && audio != null}
               onClick={() => handleAttach(button.key)}
-              className={`flex flex-col items-center gap-0.5 text-xs ${
+              className={`flex flex-col items-center gap-0.5 text-xs disabled:opacity-40 ${
                 panel === button.key ? 'text-ola-primary-ink' : 'text-black/54'
               }`}
             >
@@ -257,6 +331,14 @@ export function MeComposerDialog({
               {t(button.labelKey)}
             </button>
           ))}
+          <VoiceRecorderControl
+            ref={voiceRecorderRef}
+            onRecorded={(recording) => {
+              replaceAudio(recording);
+              setVoiceRecording(false);
+            }}
+            onRecordingChange={setVoiceRecording}
+          />
         </div>
 
         <ComposerAttachPanels

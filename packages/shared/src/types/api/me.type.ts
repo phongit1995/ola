@@ -23,6 +23,15 @@ export interface PostImage {
   mimeType?: string;
 }
 
+export interface PostAudio {
+  url: string;
+  objectName?: string;
+  mimeType?: string;
+  size?: number;
+  duration: number;
+  waveform?: number[];
+}
+
 export interface PostAuthor {
   id: string;
   username: string;
@@ -39,6 +48,7 @@ export interface Post {
   clanHandle?: string;
   content?: string;
   images: PostImage[];
+  audios?: PostAudio[];
   mentions?: string[];
   checkIn?: PostCheckIn | null;
   sticker?: string;
@@ -127,9 +137,27 @@ export interface UploadImagesResult {
   images: UploadedImage[];
 }
 
+export interface UploadedAudio {
+  url: string;
+  objectName: string;
+  mimeType: string;
+  size: number;
+  duration: number;
+  waveform?: number[];
+}
+
+export interface UploadAudioResult {
+  audio: UploadedAudio;
+}
+
+export interface PostUploadRef {
+  objectName?: string;
+}
+
 export interface CreatePostRequest {
   content?: string;
   images?: PostImage[];
+  audios?: PostAudio[];
   checkIn?: PostCheckIn;
   sticker?: string;
   visibility?: PostVisibility;
@@ -138,6 +166,7 @@ export interface CreatePostRequest {
 export interface UpdatePostRequest {
   content?: string;
   images?: PostImage[];
+  audios?: PostAudio[];
   checkIn?: PostCheckIn;
   clearCheckIn?: boolean;
   sticker?: string;

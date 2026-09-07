@@ -11,7 +11,7 @@ import {
 } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
-import type { PostReaction, RelationshipInfo, UploadedImage } from '@app-types';
+import type { PostReaction, PostUploadRef, RelationshipInfo } from '@app-types';
 import {
   applyMeReaction,
   meSelfLiker,
@@ -21,7 +21,7 @@ import {
 import type { MePost } from '../me/types';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
 import {
-  composedToImages,
+  composedToAttachments,
   composedToPayload,
   composedToUpdatePayload,
 } from '../me/composer';
@@ -195,7 +195,8 @@ export function useUserProfile(
       const created = await feed.createPost(
         composedToPayload(draft),
         files,
-        draft.imageUrls
+        draft.imageUrls,
+        draft.audio
       );
       if (created == null) return false;
 
@@ -214,13 +215,18 @@ export function useUserProfile(
 
   const editPost = useCallback(
     async (id: string, draft: ComposedPost): Promise<boolean> => {
-      let uploaded: UploadedImage[] = [];
+      const uploaded: PostUploadRef[] = [];
       try {
-        const prepared = await composedToImages(draft, 'existingFirst');
-        uploaded = prepared.uploaded;
+        const prepared = await composedToAttachments(
+          draft,
+          'existingFirst',
+          null,
+          uploaded
+        );
         const updated = await MeService.update(id, {
           ...composedToUpdatePayload(draft),
           images: prepared.images,
+          audios: prepared.audios,
         });
         const mapped = toMePost(updated, formatTime);
         setPost(id, (p) => ({ ...mapped, color: p.color }));
@@ -228,7 +234,7 @@ export function useUserProfile(
         toast.success(t('me.editSuccess'));
         return true;
       } catch (error) {
-        await MeService.cleanupRejectedImages(error, uploaded);
+        await MeService.cleanupRejectedUploads(error, uploaded);
         toast.error(imageUploadErrorText(t, error, t('me.editError')));
         return false;
       }

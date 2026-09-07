@@ -10,7 +10,8 @@ import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import likeStickerFly from '@/assets/icons/me/sticker_like.png';
 import likeSoundUrl from '@/assets/sounds/like_me.mp3';
 import { Avatar, UserName } from '@components';
-import { DEFAULT_AVATAR_COLOR, portalRoot } from '@lib';
+import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
+import { DEFAULT_AVATAR_COLOR, formatDuration, portalRoot } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
@@ -211,6 +212,18 @@ function MePostCardComponent({
           )
         }
       />
+
+      {post.audio != null && (
+        <div className="mx-4 mt-3">
+          <VoiceBubble
+            url={post.audio.url}
+            duration={formatDuration(post.audio.duration)}
+            durationSec={post.audio.duration}
+            waveform={post.audio.waveform}
+            isOut={false}
+          />
+        </div>
+      )}
 
       {post.checkIn != null && (
         <CheckInCard checkIn={post.checkIn} label={t('me.postMenu')} />

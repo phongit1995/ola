@@ -6,6 +6,13 @@ import type {
 } from '../api/me.type';
 import type { UploadFile } from './upload.type';
 
+export interface MeAudioDraft {
+  file?: UploadFile;
+  url?: string;
+  duration: number;
+  waveform?: number[];
+}
+
 export interface MeFeedState {
   posts: Post[];
   loading: boolean;
@@ -21,7 +28,8 @@ export interface MeFeedState {
   createPost: (
     payload: CreatePostRequest,
     files: UploadFile[],
-    imageUrls: string[]
+    imageUrls: string[],
+    audio?: MeAudioDraft | null
   ) => Promise<Post | null>;
   prependPost: (post: Post) => void;
   updatePost: (
@@ -29,7 +37,8 @@ export interface MeFeedState {
     payload: CreatePostRequest,
     files: UploadFile[],
     imageUrls: string[],
-    existingImages?: Post['images']
+    existingImages?: Post['images'],
+    audio?: MeAudioDraft | null
   ) => Promise<Post | null>;
   removePost: (id: string) => Promise<boolean>;
   togglePin: (id: string, pinned: boolean) => Promise<void>;

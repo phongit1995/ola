@@ -8480,6 +8480,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/me/audio": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Upload a post voice recording (≤10MB, ≤300s)",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Audio file (webm/m4a/mp3/wav/ogg)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Duration in seconds",
+                        "name": "duration",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JSON array of 0..1 levels, max 64",
+                        "name": "waveform",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_UploadAudioResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/me/images": {
             "post": {
                 "security": [
@@ -18922,7 +18971,7 @@ const docTemplate = `{
             "properties": {
                 "objectNames": {
                     "type": "array",
-                    "maxItems": 5,
+                    "maxItems": 6,
                     "minItems": 1,
                     "items": {
                         "type": "string"
@@ -19023,6 +19072,13 @@ const docTemplate = `{
         "internal_modules_me.CreateMeRequest": {
             "type": "object",
             "properties": {
+                "audios": {
+                    "type": "array",
+                    "maxItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_me.MeAudioInput"
+                    }
+                },
                 "checkIn": {
                     "$ref": "#/definitions/internal_modules_me.CheckInInput"
                 },
@@ -19070,6 +19126,63 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_me.MeAudioInput": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "duration": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "objectName": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "size": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "url": {
+                    "type": "string",
+                    "example": "http://localhost:9000/chat-uploads/posts/abc.m4a"
+                },
+                "waveform": {
+                    "type": "array",
+                    "maxItems": 64,
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        "internal_modules_me.MeAudioResponse": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "number"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "waveform": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
                 }
             }
         },
@@ -19243,6 +19356,12 @@ const docTemplate = `{
         "internal_modules_me.MeResponse": {
             "type": "object",
             "properties": {
+                "audios": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_me.MeAudioResponse"
+                    }
+                },
                 "author": {
                     "$ref": "#/definitions/internal_modules_me.AuthorResponse"
                 },
@@ -19327,6 +19446,13 @@ const docTemplate = `{
         "internal_modules_me.UpdateMeRequest": {
             "type": "object",
             "properties": {
+                "audios": {
+                    "type": "array",
+                    "maxItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_me.MeAudioInput"
+                    }
+                },
                 "checkIn": {
                     "$ref": "#/definitions/internal_modules_me.CheckInInput"
                 },
@@ -19358,6 +19484,14 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_me.UploadAudioResponse": {
+            "type": "object",
+            "properties": {
+                "audio": {
+                    "$ref": "#/definitions/internal_modules_me.UploadedAudio"
+                }
+            }
+        },
         "internal_modules_me.UploadImagesResponse": {
             "type": "object",
             "properties": {
@@ -19365,6 +19499,32 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/internal_modules_me.UploadedImage"
+                    }
+                }
+            }
+        },
+        "internal_modules_me.UploadedAudio": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "number"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "objectName": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "waveform": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
                     }
                 }
             }
@@ -23979,6 +24139,13 @@ const docTemplate = `{
         "ola-chat-server_internal_modules_me.CreateMeRequest": {
             "type": "object",
             "properties": {
+                "audios": {
+                    "type": "array",
+                    "maxItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_me.MeAudioInput"
+                    }
+                },
                 "checkIn": {
                     "$ref": "#/definitions/ola-chat-server_internal_modules_me.CheckInInput"
                 },
@@ -24006,6 +24173,63 @@ const docTemplate = `{
                         "private"
                     ],
                     "example": "public"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.MeAudioInput": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "duration": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "objectName": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "size": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "url": {
+                    "type": "string",
+                    "example": "http://localhost:9000/chat-uploads/posts/abc.m4a"
+                },
+                "waveform": {
+                    "type": "array",
+                    "maxItems": 64,
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.MeAudioResponse": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "number"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "waveform": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
                 }
             }
         },
@@ -24056,6 +24280,12 @@ const docTemplate = `{
         "ola-chat-server_internal_modules_me.MeResponse": {
             "type": "object",
             "properties": {
+                "audios": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_me.MeAudioResponse"
+                    }
+                },
                 "author": {
                     "$ref": "#/definitions/ola-chat-server_internal_modules_me.AuthorResponse"
                 },
@@ -26696,6 +26926,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_me.MeResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_UploadAudioResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_me.UploadAudioResponse"
                 },
                 "error": {
                     "type": "string"
