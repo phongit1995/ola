@@ -80,12 +80,12 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
 
-      - name: Build release AAB (đủ 4 kiến trúc cho Play)
+      - name: Build release AAB (arm64 + armv7 cho Play)
         if: env.BUILD_AAB == 'true'
         working-directory: mobile/android
         run: |
           chmod +x ./gradlew
-          ./gradlew bundleRelease --no-daemon
+          ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
 
       - name: Gom artifact + kiểm tra chữ ký
         run: |
