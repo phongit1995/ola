@@ -4,16 +4,15 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { OlaModal } from '@components/ui/OlaModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { NativeUploadFile } from '@ola/shared/types';
-import type {
-  CreatePostRequest,
-  Post,
-  PostVisibility,
-} from '@ola/shared/types';
+import type { Post, PostVisibility } from '@ola/shared/types';
 import {
   ChatComposer,
   type ChatComposerHandle,
 } from '@components/ChatComposer';
+import {
+  VoiceRecorderControl,
+  type VoiceRecorderControlHandle,
+} from '@components/chat/voice/VoiceRecorderControl';
 import { DIVIDER } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
@@ -26,6 +25,7 @@ import { MeComposerTagPanel } from './MeComposerTagPanel';
 import { MeComposerCheckInPanel } from './MeComposerCheckInPanel';
 import {
   AttachBar,
+  AudioPreview,
   CheckInPreview,
   ComposerHeader,
   PhotoStrip,
@@ -34,7 +34,7 @@ import {
   StickerPreview,
 } from './MeComposerParts';
 import { COMPOSER_PRIVACY_OPTIONS } from '../constants';
-import { useMeComposer } from '../useMeComposer';
+import { useMeComposer, type SubmitMePost } from '../useMeComposer';
 
 interface MeComposerModalProps {
   visible: boolean;
@@ -43,11 +43,7 @@ interface MeComposerModalProps {
   editPost?: Post | null;
   title?: string;
   privacyOptions?: PostVisibility[];
-  submitPost?: (
-    payload: CreatePostRequest,
-    files: NativeUploadFile[],
-    imageUrls: string[],
-  ) => Promise<Post | null>;
+  submitPost?: SubmitMePost;
 }
 
 export function MeComposerModal(props: MeComposerModalProps) {
@@ -88,6 +84,7 @@ function MeComposerBody({
   );
   const [inputFocused, setInputFocused] = useState(false);
   const composerRef = useRef<ChatComposerHandle>(null);
+  const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
 
   const vm = useMeComposer({
     visible,
@@ -97,6 +94,7 @@ function MeComposerBody({
     privacyOptions,
     submitPost,
     composerRef,
+    voiceRecorderRef,
   });
   postingRef.current = vm.posting;
 
@@ -180,6 +178,15 @@ function MeComposerBody({
             )}
 
             <PhotoStrip photos={vm.photos} onRemove={vm.removePhoto} />
+
+            {vm.audio != null && (
+              <AudioPreview
+                uri={vm.audio.uri}
+                duration={vm.audio.draft.duration}
+                waveform={vm.audio.draft.waveform}
+                onRemove={vm.removeAudio}
+              />
+            )}
           </View>
 
           {vm.panel === 'sticker' && (
@@ -214,10 +221,23 @@ function MeComposerBody({
           <View className="h-2" />
         </View>
 
-        <AttachBar
-          panel={vm.panel}
-          paddingBottom={vm.panel === 'smiley' ? 0 : bottomBarInset}
-          onPress={vm.handleAttach}
+        {!vm.voiceRecording && (
+          <AttachBar
+            panel={vm.panel}
+            paddingBottom={vm.panel === 'smiley' ? 0 : bottomBarInset}
+            disabledKeys={vm.audio != null ? ['voice'] : []}
+            onPress={vm.handleAttach}
+          />
+        )}
+
+        <VoiceRecorderControl
+          ref={voiceRecorderRef}
+          bottomInset={bottomBarInset}
+          onRecorded={recording => {
+            vm.setRecordedAudio(recording);
+            vm.setVoiceRecording(false);
+          }}
+          onRecordingChange={vm.setVoiceRecording}
         />
 
         {vm.panel === 'smiley' && (

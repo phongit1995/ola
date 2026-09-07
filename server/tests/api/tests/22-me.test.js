@@ -1,7 +1,7 @@
 'use strict'
 const {
-  BASE, ok, section, req, data, summary, is2xx,
-  registerUser, uniqueUsername, randomPassword,
+  BASE, ok, section, req, reqForm, data, summary, is2xx,
+  registerUser, uniqueUsername, randomPassword, silentWav,
 } = require('../helpers')
 
 const FAKE_UUID = '00000000-0000-0000-0000-000000000000'
@@ -355,7 +355,7 @@ async function main() {
     ok('10.1 media filter → 200', r.status === 200)
     ok('10.2 contains post with images', data(r)?.items?.some(p => p.id === withMedia.id))
     ok('10.3 excludes text-only post', !data(r)?.items?.some(p => p.id === noMedia.id))
-    ok('10.4 every item has images', data(r)?.items?.every(p => Array.isArray(p.images) && p.images.length > 0))
+    ok('10.4 every item has images or audio', data(r)?.items?.every(p => (Array.isArray(p.images) && p.images.length > 0) || (Array.isArray(p.audios) && p.audios.length > 0)))
   }
 
   // ──────────────────────────────────────────────────────────
@@ -405,6 +405,103 @@ async function main() {
       body: new FormData(),
     })
     ok('12.3 upload with no images → 400', res.status === 400)
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // SECTION 13: Audio attachments
+  // ──────────────────────────────────────────────────────────
+  console.log('\n── SECTION 13: Audio attachments ──')
+  {
+    const u = await newUser('m13')
+    const fakeAudio = { url: 'http://x/a.wav', mimeType: 'audio/wav', size: 100, duration: 3, waveform: [0.1, 0.5, 0.2] }
+
+    let r = await createPost(u, { content: 'with voice', audios: [fakeAudio] })
+    ok('13.1 create with audio → 201', r.status === 201)
+    ok('13.2 response keeps audio url/duration', data(r)?.audios?.[0]?.url === fakeAudio.url && data(r)?.audios?.[0]?.duration === 3)
+    ok('13.3 waveform preserved', Array.isArray(data(r)?.audios?.[0]?.waveform) && data(r).audios[0].waveform.length === 3)
+    const audioPost = data(r)
+
+    r = await createPost(u, { audios: [fakeAudio] })
+    ok('13.4 audio-only post (no content) → 201', r.status === 201)
+
+    r = await createPost(u, { content: 'two', audios: [fakeAudio, { ...fakeAudio, url: 'http://x/b.wav' }] })
+    ok('13.5 more than 1 audio → 400', r.status === 400)
+
+    r = await createPost(u, { content: 'bad mime', audios: [{ ...fakeAudio, mimeType: 'video/mp4' }] })
+    ok('13.6 audio with non-audio mime → 400', r.status === 400)
+
+    r = await createPost(u, { content: 'bad duration', audios: [{ ...fakeAudio, duration: 0 }] })
+    ok('13.7 audio with zero duration → 400', r.status === 400)
+
+    r = await createPost(u, { content: 'too long', audios: [{ ...fakeAudio, duration: 301 }] })
+    ok('13.8 audio over 300s → 400', r.status === 400)
+
+    r = await createPost(u, { content: 'bad waveform', audios: [{ ...fakeAudio, waveform: [2] }] })
+    ok('13.9 audio with out-of-range waveform → 400', r.status === 400)
+
+    r = await req('GET', '/me?filter=media', undefined, u.token)
+    ok('13.10 media filter includes audio post', data(r)?.items?.some(p => p.id === audioPost.id))
+
+    r = await req('PUT', `/me/${audioPost.id}`, { audios: [] }, u.token)
+    ok('13.11 update clearing audio → 200', r.status === 200)
+    ok('13.12 audios empty after clear', Array.isArray(data(r)?.audios) && data(r).audios.length === 0)
+
+    r = await req('PUT', `/me/${audioPost.id}`, { audios: [fakeAudio] }, u.token)
+    ok('13.13 update re-attaching audio → 200', r.status === 200 && data(r)?.audios?.length === 1)
+
+    r = await createPost(u, {
+      content: 'forged',
+      audios: [{ ...fakeAudio, objectName: `posts/${u.id}/01012026/audio.wav` }],
+    })
+    ok('13.14 audio with unclaimed objectName → 400', r.status === 400)
+
+    const uploadForm = new FormData()
+    uploadForm.append('duration', '1')
+    uploadForm.append('waveform', JSON.stringify([0.08, 0.2, 0.4, 0.2, 0.08]))
+    uploadForm.append('file', new Blob([silentWav()], { type: 'audio/wav' }), 'voice.wav')
+    r = await reqForm('POST', '/me/audio', uploadForm, u.token)
+    ok('13.15 upload audio → 201', r.status === 201)
+    const uploaded = data(r)?.audio
+    ok('13.16 uploaded audio has url/objectName/mime', !!uploaded?.url && !!uploaded?.objectName && uploaded?.mimeType === 'audio/wav')
+    ok('13.17 uploaded objectName under posts/<uid>/', typeof uploaded?.objectName === 'string' && uploaded.objectName.startsWith(`posts/${u.id}/`))
+
+    if (uploaded?.url) {
+      r = await createPost(u, { content: 'real voice', audios: [uploaded] })
+      ok('13.18 create post with uploaded audio → 201', r.status === 201)
+      ok('13.19 uploaded url preserved on post', data(r)?.audios?.[0]?.url === uploaded.url)
+
+      r = await createPost(u, { content: 'reuse', audios: [uploaded] })
+      ok('13.20 reusing claimed upload in another post → 400', r.status === 400)
+    }
+
+    const missingDuration = new FormData()
+    missingDuration.append('file', new Blob([silentWav()], { type: 'audio/wav' }), 'voice.wav')
+    r = await reqForm('POST', '/me/audio', missingDuration, u.token)
+    ok('13.21 upload without duration → 400', r.status === 400)
+
+    const notAudio = new FormData()
+    notAudio.append('duration', '1')
+    notAudio.append('file', new Blob(['hello'], { type: 'audio/wav' }), 'voice.wav')
+    r = await reqForm('POST', '/me/audio', notAudio, u.token)
+    ok('13.22 upload non-audio bytes → 400', r.status === 400)
+
+    const tooLong = new FormData()
+    tooLong.append('duration', '301')
+    tooLong.append('file', new Blob([silentWav()], { type: 'audio/wav' }), 'voice.wav')
+    r = await reqForm('POST', '/me/audio', tooLong, u.token)
+    ok('13.23 upload over 300s → 400', r.status === 400)
+
+    const cleanupForm = new FormData()
+    cleanupForm.append('duration', '1')
+    cleanupForm.append('file', new Blob([silentWav()], { type: 'audio/wav' }), 'voice.wav')
+    r = await reqForm('POST', '/me/audio', cleanupForm, u.token)
+    const pending = data(r)?.audio
+    if (pending?.objectName) {
+      r = await req('POST', '/me/images/cleanup', { objectNames: [pending.objectName] }, u.token)
+      ok('13.24 cleanup pending audio upload → 2xx', is2xx(r.status))
+      r = await createPost(u, { content: 'after cleanup', audios: [pending] })
+      ok('13.25 cleaned upload cannot be attached → 400', r.status === 400)
+    }
   }
 
   const s = summary()

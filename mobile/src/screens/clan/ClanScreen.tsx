@@ -316,8 +316,10 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
         editPost={editingPost}
         title={t('clan.writeMe')}
         privacyOptions={privacyOptions}
-        submitPost={(payload, files, imageUrls) =>
-          useClanFeedStore.getState().createPost(clan.id, payload, files, imageUrls)
+        submitPost={(payload, files, imageUrls, audio) =>
+          useClanFeedStore
+            .getState()
+            .createPost(clan.id, payload, files, imageUrls, audio)
         }
         onSaved={(post) => {
           if (editingPost != null) useClanFeedStore.getState().syncPost(post);

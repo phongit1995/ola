@@ -45,6 +45,35 @@ func (p *MeImages) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, p)
 }
 
+type MeAudio struct {
+	URL      string    `json:"url"`
+	MimeType string    `json:"mimeType"`
+	Size     int64     `json:"size"`
+	Duration float64   `json:"duration"`
+	Waveform []float64 `json:"waveform,omitempty"`
+}
+
+type MeAudios []MeAudio
+
+func (p MeAudios) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return json.Marshal(p)
+}
+
+func (p *MeAudios) Scan(value interface{}) error {
+	if value == nil {
+		*p = nil
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("failed to unmarshal MeAudios value")
+	}
+	return json.Unmarshal(bytes, p)
+}
+
 type CheckIn struct {
 	Name       string  `json:"name"`
 	Address    string  `json:"address,omitempty"`
@@ -99,6 +128,7 @@ type Me struct {
 	ClanID       *uuid.UUID   `gorm:"type:uuid;index"`
 	Content      string       `gorm:"type:text"`
 	Images       MeImages     `gorm:"type:jsonb"`
+	Audios       MeAudios     `gorm:"type:jsonb"`
 	Mentions     MentionIDs   `gorm:"type:jsonb"`
 	CheckIn      *CheckIn     `gorm:"type:jsonb"`
 	Sticker      string       `gorm:"type:varchar(500)"`

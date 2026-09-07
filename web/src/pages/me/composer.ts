@@ -1,6 +1,12 @@
 import { MeService } from '@services';
 import { compressImagesForUpload } from '@lib';
-import type { PostImage, UploadedImage } from '@app-types';
+import type {
+  Post,
+  PostAudio,
+  PostImage,
+  PostUploadRef,
+  UploadedImage,
+} from '@app-types';
 import type { ComposedPost } from './components/MeComposerDialog';
 
 interface ComposedPayload {
@@ -63,4 +69,17 @@ export async function composedToImages(
         : [...existing, ...uploaded],
     uploaded,
   };
+}
+
+export async function composedToAttachments(
+  draft: ComposedPost,
+  order: 'createdFirst' | 'existingFirst',
+  existing: Pick<Post, 'images' | 'audios'> | null | undefined,
+  uploaded: PostUploadRef[]
+): Promise<{ images: PostImage[]; audios: PostAudio[] }> {
+  const imagesResult = await composedToImages(draft, order, existing?.images ?? []);
+  uploaded.push(...imagesResult.uploaded);
+  const audioResult = await MeService.resolveAudios(draft.audio, existing?.audios ?? []);
+  uploaded.push(...audioResult.uploaded);
+  return { images: imagesResult.images, audios: audioResult.audios };
 }

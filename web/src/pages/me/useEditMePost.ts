@@ -2,8 +2,8 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { imageUploadErrorText, toast } from '@lib';
 import { MeService } from '@services';
-import type { Post, UploadedImage } from '@app-types';
-import { composedToImages, composedToUpdatePayload } from './composer';
+import type { Post, PostUploadRef } from '@app-types';
+import { composedToAttachments, composedToUpdatePayload } from './composer';
 import { useMeFeedStore } from './meFeedStore';
 import type { ComposedPost } from './components/MeComposerDialog';
 
@@ -16,18 +16,19 @@ export function useEditMePost(
   const { t } = useTranslation();
   return useCallback(
     async (id, draft) => {
-      let uploaded: UploadedImage[] = [];
+      const uploaded: PostUploadRef[] = [];
       try {
-        const existing = posts.find((item) => item.id === id)?.images ?? [];
-        const prepared = await composedToImages(
+        const existing = posts.find((item) => item.id === id);
+        const prepared = await composedToAttachments(
           draft,
           'existingFirst',
-          existing
+          existing,
+          uploaded
         );
-        uploaded = prepared.uploaded;
         const updated = await MeService.update(id, {
           ...composedToUpdatePayload(draft),
           images: prepared.images,
+          audios: prepared.audios,
         });
         setPosts((current) =>
           current.map((item) => (item.id === id ? updated : item))
@@ -36,7 +37,7 @@ export function useEditMePost(
         toast.success(t('me.editSuccess'));
         return true;
       } catch (error) {
-        await MeService.cleanupRejectedImages(error, uploaded);
+        await MeService.cleanupRejectedUploads(error, uploaded);
         toast.error(imageUploadErrorText(t, error, t('me.editError')));
         return false;
       }

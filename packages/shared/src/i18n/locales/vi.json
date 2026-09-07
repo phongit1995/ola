@@ -856,6 +856,8 @@
     "attachTag": "Gắn thẻ",
     "attachCheckIn": "Check-in",
     "attachSticker": "Sticker",
+    "attachVoice": "Ghi âm",
+    "removeAudio": "Bỏ ghi âm",
     "privacyTo": "Tới:",
     "privacy_public": "Cộng đồng",
     "privacy_friend": "Bạn bè",

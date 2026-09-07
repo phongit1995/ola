@@ -8,6 +8,15 @@ type MeImageInput struct {
 	MimeType   string `json:"mimeType" binding:"omitempty"`
 }
 
+type MeAudioInput struct {
+	URL        string    `json:"url" binding:"required,url" example:"http://localhost:9000/chat-uploads/posts/abc.m4a"`
+	ObjectName string    `json:"objectName" binding:"omitempty,max=500"`
+	MimeType   string    `json:"mimeType" binding:"omitempty"`
+	Size       int64     `json:"size" binding:"omitempty,min=0"`
+	Duration   float64   `json:"duration" binding:"omitempty,min=0"`
+	Waveform   []float64 `json:"waveform" binding:"omitempty,max=64"`
+}
+
 type CheckInInput struct {
 	Name       string  `json:"name" binding:"required,max=255" example:"The Coffee House"`
 	Address    string  `json:"address" binding:"omitempty,max=500" example:"86-88 Cao Thắng, Q3"`
@@ -20,6 +29,7 @@ type CheckInInput struct {
 type CreateMeRequest struct {
 	Content    string         `json:"content" binding:"omitempty,max=5000" example:"Hôm nay trời đẹp quá!"`
 	Images     []MeImageInput `json:"images" binding:"omitempty,max=5,dive"`
+	Audios     []MeAudioInput `json:"audios" binding:"omitempty,max=1,dive"`
 	CheckIn    *CheckInInput  `json:"checkIn" binding:"omitempty"`
 	Sticker    string         `json:"sticker" binding:"omitempty,max=500"`
 	Visibility string         `json:"visibility" binding:"omitempty,oneof=public friend private" example:"public"`
@@ -28,6 +38,7 @@ type CreateMeRequest struct {
 type UpdateMeRequest struct {
 	Content      *string         `json:"content" binding:"omitempty,max=5000"`
 	Images       *[]MeImageInput `json:"images" binding:"omitempty,max=5,dive"`
+	Audios       *[]MeAudioInput `json:"audios" binding:"omitempty,max=1,dive"`
 	CheckIn      *CheckInInput   `json:"checkIn" binding:"omitempty"`
 	ClearCheckIn bool            `json:"clearCheckIn" binding:"omitempty"`
 	Sticker      *string         `json:"sticker" binding:"omitempty,max=500"`
@@ -54,6 +65,14 @@ type MeImageResponse struct {
 	MimeType string `json:"mimeType,omitempty"`
 }
 
+type MeAudioResponse struct {
+	URL      string    `json:"url"`
+	MimeType string    `json:"mimeType,omitempty"`
+	Size     int64     `json:"size,omitempty"`
+	Duration float64   `json:"duration"`
+	Waveform []float64 `json:"waveform,omitempty"`
+}
+
 type AuthorResponse struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
@@ -69,6 +88,7 @@ type MeResponse struct {
 	ClanHandle   string            `json:"clanHandle,omitempty"`
 	Content      string            `json:"content,omitempty"`
 	Images       []MeImageResponse `json:"images"`
+	Audios       []MeAudioResponse `json:"audios"`
 	Mentions     []string          `json:"mentions,omitempty"`
 	CheckIn      *CheckInResponse  `json:"checkIn,omitempty"`
 	Sticker      string            `json:"sticker,omitempty"`
@@ -179,6 +199,19 @@ type UploadImagesResponse struct {
 	Images []UploadedImage `json:"images"`
 }
 
+type UploadedAudio struct {
+	URL        string    `json:"url"`
+	ObjectName string    `json:"objectName"`
+	MimeType   string    `json:"mimeType"`
+	Size       int64     `json:"size"`
+	Duration   float64   `json:"duration"`
+	Waveform   []float64 `json:"waveform,omitempty"`
+}
+
+type UploadAudioResponse struct {
+	Audio UploadedAudio `json:"audio"`
+}
+
 type CleanupImagesRequest struct {
-	ObjectNames []string `json:"objectNames" binding:"required,min=1,max=5,dive,required"`
+	ObjectNames []string `json:"objectNames" binding:"required,min=1,max=6,dive,required"`
 }

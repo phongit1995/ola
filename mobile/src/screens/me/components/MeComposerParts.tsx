@@ -8,11 +8,13 @@ import {
   View,
   type ImageSourcePropType,
 } from 'react-native';
+import { formatDuration } from '@ola/shared/lib';
 import type { PostVisibility } from '@ola/shared/types';
 import { KUL_IMAGES, stickerImageForCode } from '@lib/kul';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { CachedImage } from '@components/ui/CachedImage';
 import { CloseIcon } from '@components/ui/CloseIcon';
+import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { DIVIDER, ERROR, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import type { ComposedCheckIn } from './MeComposerCheckInPanel';
@@ -22,6 +24,7 @@ import type { ComposerAttachKey, ComposerPanel } from '../types';
 
 const checkInCardIcon = require('@assets/icons/me/ic_check_in.png');
 const kulTabIcon = require('@assets/icons/chat/ic_tab_kul.png');
+const voiceIcon = require('@assets/icons/chat/ic_voice.png');
 
 function privacyKey(option: PostVisibility): 'me.privacy_public' {
   return `me.privacy_${option}` as 'me.privacy_public';
@@ -185,6 +188,36 @@ export function CheckInPreview({
   );
 }
 
+export function AudioPreview({
+  uri,
+  duration,
+  waveform,
+  onRemove,
+}: {
+  uri: string;
+  duration: number;
+  waveform?: number[];
+  onRemove: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View className="mx-4 mt-2 flex-row items-center gap-3">
+      <VoiceBubble
+        url={uri}
+        duration={formatDuration(duration)}
+        durationSec={duration}
+        waveform={waveform}
+        isOut={false}
+      />
+      <Pressable onPress={onRemove} className="px-2">
+        <Text className="text-xs" style={{ color: ERROR }}>
+          {t('me.removeAudio')}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
 export function PhotoStrip({
   photos,
   onRemove,
@@ -272,16 +305,19 @@ interface AttachButton {
 export function AttachBar({
   panel,
   paddingBottom,
+  disabledKeys = [],
   onPress,
 }: {
   panel: ComposerPanel;
   paddingBottom: number;
+  disabledKeys?: ComposerAttachKey[];
   onPress: (key: ComposerAttachKey) => void;
 }) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const buttons: AttachButton[] = [
     { key: 'local', glyph: '📷', label: t('me.attachLocal') },
+    { key: 'voice', icon: voiceIcon, label: t('me.attachVoice') },
     { key: 'smiley', glyph: '😀', label: t('me.attachSmiley') },
     { key: 'tag', glyph: '🏷️', label: t('me.attachTag') },
     { key: 'checkin', glyph: '📍', label: t('me.attachCheckIn') },
@@ -296,7 +332,9 @@ export function AttachBar({
         <Pressable
           key={button.key}
           onPress={() => onPress(button.key)}
+          disabled={disabledKeys.includes(button.key)}
           className="items-center gap-0.5 px-2 py-1"
+          style={{ opacity: disabledKeys.includes(button.key) ? 0.4 : 1 }}
         >
           {button.icon != null ? (
             <Image

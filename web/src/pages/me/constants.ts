@@ -1,4 +1,5 @@
 import kulTabIcon from '@/assets/icons/chat/ic_tab_kul.png';
+import voiceIcon from '@/assets/icons/chat/ic_voice.png';
 import tabCommunity from '@/assets/icons/me/header/ic_header_community.png';
 import tabPersonal from '@/assets/icons/me/header/ic_header_personal.png';
 import tabClan from '@/assets/icons/me/header/ic_header_clan.png';
@@ -59,6 +60,7 @@ export { EDIT_WINDOW_MS } from '@ola/shared/constants';
 
 export const ATTACH_BUTTONS = [
   { key: 'local', glyph: '📷', labelKey: 'me.attachLocal' },
+  { key: 'voice', icon: voiceIcon, labelKey: 'me.attachVoice' },
   { key: 'smiley', glyph: '😀', labelKey: 'me.attachSmiley' },
   { key: 'tag', glyph: '🏷️', labelKey: 'me.attachTag' },
   { key: 'checkin', glyph: '📍', labelKey: 'me.attachCheckIn' },

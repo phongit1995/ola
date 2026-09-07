@@ -190,6 +190,14 @@ export function MePostInteractions({
           content: editingPost.content,
           files: [],
           imageUrls: editingPost.photos ?? [],
+          audio:
+            editingPost.audio != null
+              ? {
+                  url: editingPost.audio.url,
+                  duration: editingPost.audio.duration,
+                  waveform: editingPost.audio.waveform,
+                }
+              : null,
           checkIn: editingPost.checkIn
             ? {
                 name: editingPost.checkIn.name,

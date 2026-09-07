@@ -19,6 +19,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	{
 		me.POST("/images", r.controller.UploadImages)
 		me.POST("/images/cleanup", r.controller.CleanupImages)
+		me.POST("/audio", r.controller.UploadAudio)
 		me.POST("", r.controller.Create)
 		me.GET("", r.controller.Feed)
 		me.GET("/mine", r.controller.ListMine)
