@@ -22,7 +22,9 @@ a{color:var(--green-dark)}
 header{background:linear-gradient(135deg,var(--green-dark),var(--green));padding:20px 0 28px}
 .wrap{max-width:720px;margin:0 auto;padding:0 16px}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.topbar a{color:rgba(255,255,255,.92);text-decoration:none;font-size:14px}
+.topbar nav{display:flex;gap:14px;flex-wrap:wrap}
+.topbar a,.topbar strong{color:rgba(255,255,255,.92);text-decoration:none;font-size:13px;font-weight:400}
+.topbar strong{color:#fff;font-weight:700}
 .langs{display:flex;gap:6px}
 .langs button{border:1px solid rgba(255,255,255,.55);background:transparent;color:#fff;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer}
 .langs button[aria-pressed="true"]{background:#fff;color:var(--green-darker);border-color:#fff;font-weight:700}
@@ -34,8 +36,16 @@ main{max-width:720px;margin:0 auto;padding:24px 16px 56px}
 .updated{text-align:center;font-size:12px;color:var(--muted);margin:0 0 16px}
 .card{background:#fff;border-radius:12px;padding:20px 16px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
 .card h2{margin:0 0 10px;font-size:16px;font-weight:800;letter-spacing:.4px;color:var(--green-darker)}
+.card h3{margin:16px 0 4px;font-size:14px;font-weight:700;color:var(--ink)}
 .card p,.card li{font-size:14px;margin:0 0 8px}
-.card ul{padding-left:20px;margin:0 0 8px}
+.card ul,.card ol{padding-left:20px;margin:0 0 8px}
+.card ol li{margin-bottom:8px}
+.faq:first-of-type h3{margin-top:0}
+.faq p{color:#374151}
+.note{background:#fff8e1;border-left:3px solid #f0b429;border-radius:6px;padding:10px 12px;color:#5c4400}
+ul.links{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+ul.links li{margin:0}
+ul.links a{display:inline-block;background:var(--bg);border:1px solid #d8e6d8;border-radius:8px;padding:8px 14px;text-decoration:none;font-weight:600}
 .nav-card{display:block;text-decoration:none;color:inherit}
 .nav-card h2{margin-bottom:4px}
 .nav-card span{font-size:13px;color:var(--muted)}
@@ -50,11 +60,7 @@ footer{padding:0 16px 24px;text-align:center;font-size:12px;color:#7a9a7d}
 <header>
 <div class="wrap">
 <div class="topbar">
-<nav style="display:flex;gap:14px;flex-wrap:wrap">
-<a href="/">Trang chủ</a>
-<a href="/privacy">Chính sách bảo mật</a>
-<span style="color:#fff;font-weight:700;font-size:14px">Điều khoản sử dụng</span>
-</nav>
+<nav><a href="/">Trang chủ</a><a href="/support">Hỗ trợ</a><a href="/delete-account">Xoá tài khoản</a><a href="/privacy">Chính sách bảo mật</a><strong>Điều khoản sử dụng</strong></nav>
 <div class="langs">
 <button type="button" data-set-lang="vi" aria-pressed="false">Tiếng Việt</button>
 <button type="button" data-set-lang="en" aria-pressed="false">English</button>
@@ -78,6 +84,7 @@ footer{padding:0 16px 24px;text-align:center;font-size:12px;color:#7a9a7d}
 <section class="card"><h2>7. Giới hạn trách nhiệm</h2><p>Ola được cung cấp &quot;nguyên trạng&quot;, có thể gặp gián đoạn, lỗi kỹ thuật hoặc bảo trì định kỳ. Chúng tôi nỗ lực đảm bảo dịch vụ ổn định nhưng không cam kết tuyệt đối về tính liên tục, không có lỗi.</p><p>Chúng tôi không chịu trách nhiệm với thiệt hại phát sinh từ: hành vi của người dùng khác, nội dung do người dùng đăng tải, mất mát dữ liệu do lỗi thiết bị/đường truyền của bạn, hoặc các sự kiện bất khả kháng.</p></section>
 <section class="card"><h2>8. Chấm dứt sử dụng</h2><p>Bạn có thể ngừng sử dụng dịch vụ bất kỳ lúc nào. Chúng tôi có quyền tạm khóa hoặc chấm dứt tài khoản nếu phát hiện vi phạm điều khoản, hành vi gây hại đến hệ thống hoặc cộng đồng người dùng, kể cả khi chưa có thông báo trước, nhằm bảo vệ quyền lợi chung.</p></section>
 <section class="card"><h2>9. Liên hệ</h2><p>Mọi góp ý, phản ánh, khiếu nại liên quan đến tài khoản, nội dung hoặc điều khoản sử dụng, vui lòng liên hệ qua email <a href="mailto:support@olachat.net.">support@olachat.net.</a> Chúng tôi cố gắng xem xét và phản hồi các báo cáo nội dung vi phạm trong vòng 24 giờ.</p></section>
+
 </main>
 <footer>© 2026 Ola — Mạng xã hội giải trí</footer>
 </div>
@@ -86,11 +93,7 @@ footer{padding:0 16px 24px;text-align:center;font-size:12px;color:#7a9a7d}
 <header>
 <div class="wrap">
 <div class="topbar">
-<nav style="display:flex;gap:14px;flex-wrap:wrap">
-<a href="/">Home</a>
-<a href="/privacy">Privacy Policy</a>
-<span style="color:#fff;font-weight:700;font-size:14px">Terms of Use</span>
-</nav>
+<nav><a href="/">Home</a><a href="/support">Support</a><a href="/delete-account">Delete account</a><a href="/privacy">Privacy Policy</a><strong>Terms of Use</strong></nav>
 <div class="langs">
 <button type="button" data-set-lang="vi" aria-pressed="false">Tiếng Việt</button>
 <button type="button" data-set-lang="en" aria-pressed="false">English</button>
@@ -114,6 +117,7 @@ footer{padding:0 16px 24px;text-align:center;font-size:12px;color:#7a9a7d}
 <section class="card"><h2>7. Limitation of liability</h2><p>Ola is provided &quot;as is&quot; and may experience interruptions, technical errors or scheduled maintenance. We strive to keep the service stable but do not absolutely guarantee continuity or freedom from errors.</p><p>We are not responsible for damage arising from: the behavior of other users, content uploaded by users, data loss due to faults in your device/connection, or force-majeure events.</p></section>
 <section class="card"><h2>8. Termination of use</h2><p>You may stop using the service at any time. We have the right to temporarily lock or terminate an account if we detect violations of the terms or behavior harmful to the system or the user community, even without prior notice, in order to protect the common interest.</p></section>
 <section class="card"><h2>9. Contact</h2><p>For any feedback, reports or complaints relating to your account, content or the terms of use, please email us at <a href="mailto:support@olachat.net.">support@olachat.net.</a> We aim to review and respond to reports of violating content within 24 hours.</p></section>
+
 </main>
 <footer>© 2026 Ola — Entertainment social network</footer>
 </div>

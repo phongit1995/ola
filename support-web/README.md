@@ -4,23 +4,21 @@ Site tĩnh chứa **Chính sách bảo mật** và **Điều khoản sử dụng
 
 ## Link production (Cloudflare Pages)
 
-| Trang | URL |
-|-------|-----|
-| Chính sách bảo mật | https://ola-me.pages.dev/privacy |
-| Điều khoản sử dụng | https://ola-me.pages.dev/terms |
-| Trang chủ | https://ola-me.pages.dev/ |
+| Trang | URL | Dán vào ô nào |
+|-------|-----|---------------|
+| Chính sách bảo mật | https://ola-me.pages.dev/privacy | Apple *Privacy Policy URL*, Play *Privacy policy* |
+| Hỗ trợ | https://ola-me.pages.dev/support | Apple *Support URL*, Play *Support website* |
+| Xoá tài khoản | https://ola-me.pages.dev/delete-account | Play *Account/Data deletion URL* |
+| Điều khoản sử dụng | https://ola-me.pages.dev/terms | Apple EULA / License Agreement |
+| Trang chủ | https://ola-me.pages.dev/ | Apple *Marketing URL* (tuỳ chọn) |
 
-Alias 301 có sẵn: `/chinh-sach-bao-mat`, `/privacy-policy` → `/privacy`; `/dieu-khoan`, `/terms-of-use`, `/tos` → `/terms`.
+Alias 301 có sẵn: `/chinh-sach-bao-mat`, `/privacy-policy` → `/privacy`; `/dieu-khoan`, `/terms-of-use`, `/tos` → `/terms`; `/ho-tro`, `/hotro`, `/help` → `/support`; `/xoa-tai-khoan`, `/delete-data`, `/data-deletion` → `/delete-account`.
 
 Ép ngôn ngữ bằng query: `?lang=vi` hoặc `?lang=en` (mặc định theo ngôn ngữ trình duyệt, có nút chuyển VI/EN trên đầu trang).
 
-Chỗ dán link:
-- **App Store Connect** → App Information → *Privacy Policy URL* = link privacy; License Agreement / EULA dùng link terms.
-- **Play Console** → App content → *Privacy policy* = link privacy; Store listing → website.
-
 ## Nội dung lấy từ đâu
 
-HTML được **sinh ra** từ i18n dùng chung của app, không viết tay:
+Hai trang pháp lý **sinh ra** từ i18n dùng chung của app, không viết tay:
 
 ```
 packages/shared/src/i18n/locales/vi.json → privacyPolicy, terms
@@ -29,13 +27,21 @@ packages/shared/src/i18n/locales/en.json → privacyPolicy, terms
 
 Sửa nội dung pháp lý thì **sửa file JSON đó** (app và web dùng chung), rồi build lại. Nhớ bump `updated` trong JSON khi đổi nội dung.
 
+Hai trang hỗ trợ / xoá tài khoản chỉ có trên web nên nội dung nằm trong [`content.mjs`](content.mjs) (song ngữ VI/EN), cùng với:
+
+- `PUBLISHER` — tên + địa chỉ nhà phát hành. **Đang để rỗng nên khối này bị ẩn**; điền vào là trang chủ và trang hỗ trợ tự hiện thẻ "Nhà phát hành" (Play Console yêu cầu địa chỉ liên hệ công khai).
+- `CHANNELS`, `DOWNLOADS` — fanpage/group/TikTok và link TestFlight/APK, đồng bộ thủ công với `web/src/shared/constants/{socialLinks,appDownload}.ts`.
+- `RESPONSE_TIME_HOURS` — cam kết thời gian phản hồi hiển thị trên trang.
+
+Các mốc thời gian cam kết ở trang xoá tài khoản (xác minh 7 ngày làm việc, xoá dữ liệu trong 30 ngày, sao lưu ghi đè trong 90 ngày) nằm trong `PAGES['delete-account']` — sửa ở đó nếu vận hành thực tế khác.
+
 ## Build
 
 ```bash
 node support-web/build.mjs
 ```
 
-Sinh ra trong `public/`: `index.html`, `privacy.html`, `terms.html`, `robots.txt`, `sitemap.xml`.
+Sinh ra trong `public/`: `index.html`, `support.html`, `delete-account.html`, `privacy.html`, `terms.html`, `404.html`, `robots.txt`, `sitemap.xml`.
 Các file khác trong `public/` (`favicon.png`, `apple-touch-icon.png`, `og-image.png`, `_headers`, `_redirects`) là tĩnh, không bị build ghi đè.
 
 Xem thử local:
