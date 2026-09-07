@@ -62,6 +62,107 @@ export const UI = {
   },
 };
 
+export const INTRO = {
+  vi: {
+    headline: 'Mạng xã hội chat, kết bạn và giải trí cho người Việt',
+    lead: 'Nhắn tin tức thì, tham gia phòng chat theo chủ đề, kết bạn bốn phương, chia sẻ khoảnh khắc và chơi mini game — tất cả trong một ứng dụng nhẹ, miễn phí.',
+    aboutTitle: `${APP_NAME} là gì?`,
+    about: [
+      `${APP_NAME} là mạng xã hội trò chuyện miễn phí dành cho người Việt, kết hợp nhắn tin nhanh, phòng chat theo chủ đề, kết bạn, chia sẻ khoảnh khắc cùng nhiều mini game và quà tặng.`,
+      'Dù bạn muốn tìm bạn mới, trò chuyện sau giờ làm, tham gia phòng chat sôi động hay đơn giản là giải trí, ứng dụng mang tới một cộng đồng thân thiện và luôn nhộn nhịp — hoạt động mượt trên web, Android và iOS.',
+    ],
+    featuresTitle: 'Tính năng chính',
+    features: [
+      { icon: '💬', name: 'Phòng chat sôi động', desc: 'Hàng nghìn phòng theo chủ đề, sở thích và khu vực để trò chuyện nhóm mỗi ngày.' },
+      { icon: '⚡', name: 'Nhắn tin thời gian thực', desc: 'Tin nhắn gửi tức thì kèm hình ảnh, tin nhắn thoại, sticker và biểu cảm.' },
+      { icon: '📞', name: 'Gọi thoại & video', desc: 'Gọi trực tiếp cho bạn bè ngay trong ứng dụng, truyền theo thời gian thực.' },
+      { icon: '🖼️', name: 'Bảng tin Me', desc: 'Đăng ảnh, ghi âm, check-in và chia sẻ khoảnh khắc với cộng đồng hoặc bạn bè.' },
+      { icon: '🎮', name: 'Mini game', desc: 'Vòng Quay May Mắn, Đập Trứng, Sút Penalty, Tiến Lên — chơi ngay trong app.' },
+      { icon: '🎁', name: 'Quà tặng & VIP', desc: 'Gửi quà, sưu tầm vật phẩm và trải nghiệm đặc quyền VIP dành cho thành viên.' },
+      { icon: '🤝', name: 'Clan & kết bạn', desc: 'Lập clan, tìm bạn ở gần và mở rộng mối quan hệ khắp Việt Nam.' },
+      { icon: '🛡️', name: 'An toàn & văn minh', desc: 'Công cụ quản lý phòng, chặn và báo cáo giúp cộng đồng luôn thân thiện.' },
+    ],
+    stepsTitle: 'Bắt đầu trong 3 bước',
+    steps: [
+      { name: 'Đăng ký miễn phí', desc: 'Tạo tài khoản chỉ trong vài giây.' },
+      { name: 'Chọn phòng hoặc tìm bạn', desc: 'Tham gia phòng chat theo chủ đề hoặc khám phá người dùng gần bạn.' },
+      { name: 'Trò chuyện & kết nối', desc: 'Nhắn tin, tặng quà, chơi game và mở rộng cộng đồng bạn bè.' },
+    ],
+    downloadTitle: 'Tải ứng dụng',
+    downloadDesc: `${APP_NAME} có bản cho Android (file APK) và iPhone/iPad (qua TestFlight).`,
+    linksTitle: 'Hỗ trợ & pháp lý',
+    ageNote: 'Ứng dụng dành cho người dùng từ 18 tuổi trở lên. Miễn phí sử dụng; một số vật phẩm VIP và quà tặng là tuỳ chọn.',
+  },
+  en: {
+    headline: 'A chat, friendship and entertainment social network',
+    lead: 'Instant messaging, themed chat rooms, new friends, shared moments and mini games — all in one lightweight, free app.',
+    aboutTitle: `What is ${APP_NAME}?`,
+    about: [
+      `${APP_NAME} is a free social chat network built for Vietnamese users, combining instant messaging, themed chat rooms, making friends, sharing moments, mini games and gifts.`,
+      'Whether you want to meet new people, chat after work, join a lively room or simply have fun, the app offers a friendly, always-busy community — running smoothly on web, Android and iOS.',
+    ],
+    featuresTitle: 'Key features',
+    features: [
+      { icon: '💬', name: 'Lively chat rooms', desc: 'Thousands of rooms by topic, interest and region for daily group chat.' },
+      { icon: '⚡', name: 'Real-time messaging', desc: 'Instant messages with images, voice notes, stickers and emoji.' },
+      { icon: '📞', name: 'Voice & video calls', desc: 'Call friends directly inside the app, streamed in real time.' },
+      { icon: '🖼️', name: 'Me feed', desc: 'Post photos, voice recordings and check-ins to the community or just your friends.' },
+      { icon: '🎮', name: 'Mini games', desc: 'Lucky Wheel, Egg Smash, Penalty Kick, Thirteen — playable right in the app.' },
+      { icon: '🎁', name: 'Gifts & VIP', desc: 'Send gifts, collect items and enjoy VIP perks for members.' },
+      { icon: '🤝', name: 'Clans & friends', desc: 'Create a clan, find people nearby and grow your circle nationwide.' },
+      { icon: '🛡️', name: 'Safe & civil', desc: 'Room moderation, blocking and reporting tools keep the community friendly.' },
+    ],
+    stepsTitle: 'Start in 3 steps',
+    steps: [
+      { name: 'Sign up for free', desc: 'Create an account in a few seconds.' },
+      { name: 'Pick a room or find friends', desc: 'Join a themed chat room or discover users near you.' },
+      { name: 'Chat & connect', desc: 'Message, send gifts, play games and grow your community.' },
+    ],
+    downloadTitle: 'Download the app',
+    downloadDesc: `${APP_NAME} is available for Android (APK file) and iPhone/iPad (via TestFlight).`,
+    linksTitle: 'Support & legal',
+    ageNote: 'The app is for users aged 18 and over. Free to use; some VIP items and gifts are optional purchases.',
+  },
+};
+
+export const FORM = {
+  vi: {
+    usernameLabel: 'Tên đăng nhập',
+    usernamePlaceholder: 'Tên đăng nhập trong ứng dụng',
+    emailLabel: 'Email liên hệ',
+    emailPlaceholder: 'email@example.com',
+    noteLabel: 'Ghi chú (không bắt buộc)',
+    notePlaceholder: 'Lý do xoá, hoặc thông tin giúp chúng tôi xác minh bạn là chủ tài khoản',
+    confirm:
+      'Tôi hiểu tài khoản, nội dung, số dư KEN và vật phẩm VIP sẽ bị xoá vĩnh viễn và không được hoàn tiền.',
+    submit: 'Gửi yêu cầu xoá',
+    successTitle: 'Đã gửi thành công',
+    successText:
+      'Yêu cầu của bạn đang chờ xử lý. Chúng tôi sẽ xác minh và phản hồi qua email trong vòng 7 ngày làm việc.',
+    errUsername: 'Vui lòng nhập tên đăng nhập hợp lệ.',
+    errEmail: 'Vui lòng nhập email hợp lệ.',
+    errConfirm: 'Vui lòng xác nhận bạn hiểu việc xoá là vĩnh viễn.',
+  },
+  en: {
+    usernameLabel: 'Username',
+    usernamePlaceholder: 'Your username in the app',
+    emailLabel: 'Contact email',
+    emailPlaceholder: 'email@example.com',
+    noteLabel: 'Note (optional)',
+    notePlaceholder:
+      'Reason for deleting, or anything that helps us verify you own the account',
+    confirm:
+      'I understand that my account, content, KEN balance and VIP items will be permanently deleted and are not refundable.',
+    submit: 'Submit deletion request',
+    successTitle: 'Request submitted',
+    successText:
+      'Your request is pending. We will verify it and reply by email within 7 business days.',
+    errUsername: 'Please enter a valid username.',
+    errEmail: 'Please enter a valid email address.',
+    errConfirm: 'Please confirm that you understand deletion is permanent.',
+  },
+};
+
 export const PAGES = {
   support: {
     vi: {
@@ -194,7 +295,17 @@ export const PAGES = {
       footer: '© 2026 Ola — Mạng xã hội giải trí',
       sections: [
         {
-          title: '1. Cách yêu cầu xoá tài khoản',
+          title: '1. Gửi yêu cầu xoá tài khoản',
+          blocks: [
+            {
+              type: 'p',
+              text: 'Điền tên đăng nhập và email liên hệ của bạn. Chúng tôi sẽ xác minh bạn là chủ tài khoản trước khi xoá, nên hãy dùng email đã xác thực trong tài khoản nếu có.',
+            },
+            { type: 'form' },
+          ],
+        },
+        {
+          title: '2. Cách khác: gửi email',
           blocks: [
             {
               type: 'ol',
@@ -212,7 +323,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '2. Dữ liệu sẽ bị xoá',
+          title: '3. Dữ liệu sẽ bị xoá',
           blocks: [
             {
               type: 'ul',
@@ -228,7 +339,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '3. Dữ liệu được giữ lại',
+          title: '4. Dữ liệu được giữ lại',
           blocks: [
             {
               type: 'ul',
@@ -241,7 +352,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '4. Thời gian xử lý',
+          title: '5. Thời gian xử lý',
           blocks: [
             {
               type: 'p',
@@ -250,7 +361,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '5. Không thể hoàn tác',
+          title: '6. Không thể hoàn tác',
           blocks: [
             {
               type: 'p',
@@ -259,7 +370,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '6. Liên hệ',
+          title: '7. Liên hệ',
           blocks: [
             {
               type: 'p',
@@ -276,7 +387,17 @@ export const PAGES = {
       footer: '© 2026 Ola — Entertainment social network',
       sections: [
         {
-          title: '1. How to request account deletion',
+          title: '1. Submit a deletion request',
+          blocks: [
+            {
+              type: 'p',
+              text: 'Enter your username and a contact email. We verify that you own the account before deleting it, so use the email verified on the account when you have one.',
+            },
+            { type: 'form' },
+          ],
+        },
+        {
+          title: '2. Alternative: send an email',
           blocks: [
             {
               type: 'ol',
@@ -294,7 +415,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '2. Data that will be deleted',
+          title: '3. Data that will be deleted',
           blocks: [
             {
               type: 'ul',
@@ -310,7 +431,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '3. Data we keep',
+          title: '4. Data we keep',
           blocks: [
             {
               type: 'ul',
@@ -323,7 +444,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '4. How long it takes',
+          title: '5. How long it takes',
           blocks: [
             {
               type: 'p',
@@ -332,7 +453,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '5. This cannot be undone',
+          title: '6. This cannot be undone',
           blocks: [
             {
               type: 'p',
@@ -341,7 +462,7 @@ export const PAGES = {
           ],
         },
         {
-          title: '6. Contact',
+          title: '7. Contact',
           blocks: [
             {
               type: 'p',

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -5,6 +6,8 @@ import {
   APP_NAME,
   CHANNELS,
   DOWNLOADS,
+  FORM,
+  INTRO,
   NAV,
   PAGES,
   PUBLISHER,
@@ -78,7 +81,35 @@ const renderDownloads = (code) => {
 </ul>`;
 };
 
+const renderForm = (code) => {
+  const form = FORM[code];
+  const id = (field) => `df-${code}-${field}`;
+  return `<form class="deletion-form" data-lang-code="${code}" novalidate>
+<div class="field">
+<label for="${id('username')}">${escapeHtml(form.usernameLabel)}</label>
+<input id="${id('username')}" name="username" type="text" autocomplete="username" required placeholder="${escapeHtml(form.usernamePlaceholder)}">
+</div>
+<div class="field">
+<label for="${id('email')}">${escapeHtml(form.emailLabel)}</label>
+<input id="${id('email')}" name="email" type="email" autocomplete="email" required placeholder="${escapeHtml(form.emailPlaceholder)}">
+</div>
+<div class="field">
+<label for="${id('note')}">${escapeHtml(form.noteLabel)}</label>
+<textarea id="${id('note')}" name="note" rows="3" placeholder="${escapeHtml(form.notePlaceholder)}"></textarea>
+</div>
+<label class="check"><input type="checkbox" name="confirm"> <span>${escapeHtml(form.confirm)}</span></label>
+<input class="trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<p class="form-error" hidden></p>
+<button type="submit">${escapeHtml(form.submit)}</button>
+</form>
+<div class="form-success" hidden>
+<h3>${escapeHtml(form.successTitle)}</h3>
+<p>${escapeHtml(form.successText)}</p>
+</div>`;
+};
+
 const renderBlock = (block, code) => {
+  if (block.type === 'form') return renderForm(code);
   if (block.type === 'ul') {
     return `<ul>${block.items.map((item) => `<li>${linkify(item)}</li>`).join('')}</ul>`;
   }
@@ -149,12 +180,39 @@ main{max-width:720px;margin:0 auto;padding:24px 16px 56px}
 ul.links{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-wrap:wrap;gap:8px}
 ul.links li{margin:0}
 ul.links a{display:inline-block;background:var(--bg);border:1px solid #d8e6d8;border-radius:8px;padding:8px 14px;text-decoration:none;font-weight:600}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field input,.field textarea{width:100%;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1px solid #cfe0cf;border-radius:8px;padding:10px 12px}
+.field input:focus,.field textarea:focus{outline:2px solid var(--green);outline-offset:1px;border-color:var(--green)}
+.field textarea{resize:vertical;min-height:76px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:#374151;margin-bottom:14px}
+.check input{margin-top:3px;width:16px;height:16px;accent-color:var(--green-dark);flex:none}
+.trap{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.deletion-form button{width:100%;font:inherit;font-size:15px;font-weight:700;color:#fff;background:var(--green-dark);border:0;border-radius:10px;padding:12px 16px;cursor:pointer}
+.deletion-form button:hover{background:var(--green-darker)}
+.form-error{background:#fdecea;border-left:3px solid #d93025;border-radius:6px;padding:10px 12px;color:#8c1d16;font-size:13px}
+.form-success{background:#eaf6e6;border:1px solid #bfe0b5;border-radius:10px;padding:16px}
+.form-success h3{margin:0 0 6px;font-size:15px;font-weight:800;color:var(--green-darker)}
+.form-success p{margin:0 0 6px;font-size:14px}
+.lead{font-size:15px;color:#374151}
+.group-title{margin:28px 0 12px;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+ul.features{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+ul.features li{margin:0;display:grid;grid-template-columns:28px 1fr;column-gap:10px;row-gap:2px;align-items:start}
+ul.features .ico{grid-row:span 2;font-size:20px;line-height:1.2}
+ul.features strong{font-size:14px}
+ul.features li>span:last-child{font-size:13px;color:var(--muted)}
+ol.steps{list-style:none;counter-reset:step;padding:0;margin:0}
+ol.steps li{counter-increment:step;position:relative;padding-left:38px;margin-bottom:14px}
+ol.steps li::before{content:counter(step);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;background:var(--green-dark);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+ol.steps strong{display:block;font-size:14px}
+ol.steps span{font-size:13px;color:var(--muted)}
 .nav-card{display:block;text-decoration:none;color:inherit}
 .nav-card h2{margin-bottom:4px}
 .nav-card span{font-size:13px;color:var(--muted)}
 footer{padding:0 16px 24px;text-align:center;font-size:12px;color:#7a9a7d}
-[data-lang]{display:none}
-[data-lang].is-active{display:block}
+[data-lang="en"]{display:none}
+html.js-ready [data-lang]{display:none}
+html.js-ready [data-lang].is-active{display:block}
 `;
 
 const langScript = `
@@ -163,6 +221,7 @@ const langScript = `
   function apply(lang){
     if(supported.indexOf(lang)<0)lang='vi';
     document.documentElement.lang=lang;
+    document.documentElement.classList.add('js-ready');
     document.querySelectorAll('[data-lang]').forEach(function(el){
       el.classList.toggle('is-active',el.getAttribute('data-lang')===lang);
     });
@@ -183,6 +242,49 @@ const langScript = `
 })();
 `;
 
+const formScript = `
+(function(){
+  var MESSAGES=${JSON.stringify(
+    Object.fromEntries(
+      LOCALES.map((code) => [
+        code,
+        {
+          errUsername: FORM[code].errUsername,
+          errEmail: FORM[code].errEmail,
+          errConfirm: FORM[code].errConfirm,
+        },
+      ])
+    )
+  )};
+  var USERNAME=/^[a-zA-Z0-9][a-zA-Z0-9._-]{1,62}[a-zA-Z0-9]$/;
+  var EMAIL=/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/;
+  document.querySelectorAll('.deletion-form').forEach(function(form){
+    var text=MESSAGES[form.dataset.langCode];
+    var errorBox=form.querySelector('.form-error');
+    var success=form.parentElement.querySelector('.form-success');
+    function fail(message){errorBox.textContent=message;errorBox.hidden=false}
+    form.addEventListener('submit',function(event){
+      event.preventDefault();
+      errorBox.hidden=true;
+      var username=form.username.value.trim();
+      var email=form.email.value.trim();
+      if(!USERNAME.test(username))return fail(text.errUsername);
+      if(!EMAIL.test(email))return fail(text.errEmail);
+      if(!form.confirm.checked)return fail(text.errConfirm);
+      form.hidden=true;
+      success.hidden=false;
+      success.scrollIntoView({block:'center',behavior:'smooth'});
+    });
+  });
+})();
+`;
+
+const appScript = `${langScript}
+${formScript}`;
+
+const assetVersion = (content) =>
+  createHash('sha256').update(content).digest('hex').slice(0, 8);
+
 const page = ({ title, description, canonical, body }) => `<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -199,11 +301,11 @@ const page = ({ title, description, canonical, body }) => `<!DOCTYPE html>
 <meta property="og:image" content="${SITE_URL}/og-image.png">
 <meta property="og:url" content="${SITE_URL}${canonical}">
 <meta name="twitter:card" content="summary_large_image">
-<style>${styles}</style>
+<link rel="stylesheet" href="/styles.css?v=${assetVersion(styles)}">
 </head>
 <body>
 ${body}
-<script>${langScript}</script>
+<script src="/app.js?v=${assetVersion(appScript)}" defer></script>
 </body>
 </html>
 `;
@@ -301,6 +403,8 @@ const buildHome = () => {
 
   const body = LOCALES.map((code) => {
     const ui = UI[code];
+    const intro = INTRO[code];
+
     const navCards = cards
       .map(
         (card) =>
@@ -310,20 +414,56 @@ const buildHome = () => {
       )
       .join('\n');
 
+    const features = intro.features
+      .map(
+        (feature) =>
+          `<li><span class="ico" aria-hidden="true">${feature.icon}</span><strong>${escapeHtml(
+            feature.name
+          )}</strong><span>${escapeHtml(feature.desc)}</span></li>`
+      )
+      .join('');
+
+    const steps = intro.steps
+      .map(
+        (step) =>
+          `<li><strong>${escapeHtml(step.name)}</strong><span>${escapeHtml(step.desc)}</span></li>`
+      )
+      .join('');
+
     return `<div data-lang="${code}">
-<span hidden data-title="${escapeHtml(`${APP_NAME} — ${ui.support} & ${ui.privacy}`)}"></span>
+<span hidden data-title="${escapeHtml(`${APP_NAME} — ${intro.headline}`)}"></span>
 <header>
 <div class="wrap">
 ${topbar(code, 'home')}
 <div class="hero">
 <img src="/favicon.png" alt="${APP_NAME}">
 <h1>${APP_NAME}</h1>
-<p>${escapeHtml(ui.tagline)}</p>
+<p>${escapeHtml(intro.headline)}</p>
 </div>
 </div>
 </header>
 <main>
+<section class="card"><p class="lead">${escapeHtml(intro.lead)}</p>${renderDownloads(code)}</section>
+
+<section class="card"><h2>${escapeHtml(intro.aboutTitle)}</h2>${intro.about
+      .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+      .join('')}<p class="note">${escapeHtml(intro.ageNote)}</p></section>
+
+<section class="card"><h2>${escapeHtml(
+      intro.featuresTitle
+    )}</h2><ul class="features">${features}</ul></section>
+
+<section class="card"><h2>${escapeHtml(
+      intro.stepsTitle
+    )}</h2><ol class="steps">${steps}</ol></section>
+
+<section class="card"><h2>${escapeHtml(intro.downloadTitle)}</h2><p>${escapeHtml(
+      intro.downloadDesc
+    )}</p>${renderDownloads(code)}</section>
+
+<h2 class="group-title">${escapeHtml(intro.linksTitle)}</h2>
 ${navCards}
+
 <section class="card"><h2>${escapeHtml(ui.contact)}</h2><p>${escapeHtml(
       ui.contactDesc
     )}</p>${renderChannels()}</section>
@@ -336,8 +476,8 @@ ${renderPublisher(code)}
   writeFileSync(
     resolve(outDir, 'index.html'),
     page({
-      title: `${APP_NAME} — ${UI.vi.support} & ${UI.vi.privacy}`,
-      description: UI.vi.tagline,
+      title: `${APP_NAME} — ${INTRO.vi.headline}`,
+      description: INTRO.vi.lead,
       canonical: '/',
       body,
     })
@@ -384,6 +524,9 @@ ${topbar(code, '')}
   );
 };
 
+writeFileSync(resolve(outDir, 'styles.css'), `${styles.trim()}\n`);
+writeFileSync(resolve(outDir, 'app.js'), `${appScript.trim()}\n`);
+
 buildHome();
 buildNotFound();
 I18N_DOCS.forEach(buildI18nDoc);
@@ -408,5 +551,5 @@ ${NAV.map(
 );
 
 console.log(
-  'Built: index.html, support.html, delete-account.html, privacy.html, terms.html, robots.txt, sitemap.xml'
+  'Built: index.html, support.html, delete-account.html, privacy.html, terms.html, 404.html, styles.css, app.js, robots.txt, sitemap.xml'
 );

@@ -1,6 +1,6 @@
 # support-web — trang pháp lý & hỗ trợ tĩnh cho store
 
-Site tĩnh chứa **Chính sách bảo mật** và **Điều khoản sử dụng** của app **Ola Me**, dùng để dán link vào App Store Connect / Google Play Console.
+Site tĩnh giới thiệu app **Ola Me** kèm các trang hỗ trợ và pháp lý, dùng để dán link vào App Store Connect / Google Play Console.
 
 ## Link production (Cloudflare Pages)
 
@@ -10,7 +10,7 @@ Site tĩnh chứa **Chính sách bảo mật** và **Điều khoản sử dụng
 | Hỗ trợ | https://ola-me.pages.dev/support | Apple *Support URL*, Play *Support website* |
 | Xoá tài khoản | https://ola-me.pages.dev/delete-account | Play *Account/Data deletion URL* |
 | Điều khoản sử dụng | https://ola-me.pages.dev/terms | Apple EULA / License Agreement |
-| Trang chủ | https://ola-me.pages.dev/ | Apple *Marketing URL* (tuỳ chọn) |
+| Giới thiệu (trang chủ) | https://ola-me.pages.dev/ | Apple *Marketing URL*, Play *Store listing website* |
 
 Alias 301 có sẵn: `/chinh-sach-bao-mat`, `/privacy-policy` → `/privacy`; `/dieu-khoan`, `/terms-of-use`, `/tos` → `/terms`; `/ho-tro`, `/hotro`, `/help` → `/support`; `/xoa-tai-khoan`, `/delete-data`, `/data-deletion` → `/delete-account`.
 
@@ -33,7 +33,19 @@ Hai trang hỗ trợ / xoá tài khoản chỉ có trên web nên nội dung n�
 - `CHANNELS`, `DOWNLOADS` — fanpage/group/TikTok và link TestFlight/APK, đồng bộ thủ công với `web/src/shared/constants/{socialLinks,appDownload}.ts`.
 - `RESPONSE_TIME_HOURS` — cam kết thời gian phản hồi hiển thị trên trang.
 
+Nội dung trang giới thiệu (headline, tính năng, 3 bước) nằm trong `INTRO`; nhãn form xoá tài khoản nằm trong `FORM`.
+
 Các mốc thời gian cam kết ở trang xoá tài khoản (xác minh 7 ngày làm việc, xoá dữ liệu trong 30 ngày, sao lưu ghi đè trong 90 ngày) nằm trong `PAGES['delete-account']` — sửa ở đó nếu vận hành thực tế khác.
+
+## Form xoá tài khoản — CHƯA CÓ BACKEND
+
+Form ở `/delete-account` **chỉ chạy phía trình duyệt**: kiểm tra tên đăng nhập/email/ô xác nhận rồi hiện thẻ "Đã gửi thành công". Nó **không gửi dữ liệu đi đâu cả** — không API, không email, không database. Người dùng điền form xong thì bên mình không nhận được gì.
+
+Vì vậy kênh nhận yêu cầu xoá thật sự đang là email `support@olachat.net` (mục 2 của trang). Khi cần form hoạt động thật, thêm một trong các cách sau rồi sửa `formScript` trong `build.mjs` để POST lên:
+
+- Cloudflare Pages Function + D1/KV (không cần dịch vụ ngoài, cấu hình binding trong `wrangler.toml`);
+- Pages Function gọi dịch vụ gửi email (Resend...);
+- Endpoint trên server Ola + màn duyệt trong admin.
 
 ## Build
 
@@ -41,8 +53,10 @@ Các mốc thời gian cam kết ở trang xoá tài khoản (xác minh 7 ngày 
 node support-web/build.mjs
 ```
 
-Sinh ra trong `public/`: `index.html`, `support.html`, `delete-account.html`, `privacy.html`, `terms.html`, `404.html`, `robots.txt`, `sitemap.xml`.
+Sinh ra trong `public/`: `index.html`, `support.html`, `delete-account.html`, `privacy.html`, `terms.html`, `404.html`, `styles.css`, `app.js`, `robots.txt`, `sitemap.xml`.
 Các file khác trong `public/` (`favicon.png`, `apple-touch-icon.png`, `og-image.png`, `_headers`, `_redirects`) là tĩnh, không bị build ghi đè.
+
+CSS và JS nằm trong `build.mjs` (biến `styles`, `langScript`, `formScript`) rồi ghi ra `public/styles.css` + `public/app.js`; mỗi trang link tới chúng kèm `?v=<hash nội dung>` nên cache tự vỡ khi sửa. **Đừng sửa tay 2 file trong `public/`** — build sau sẽ ghi đè.
 
 Xem thử local:
 
