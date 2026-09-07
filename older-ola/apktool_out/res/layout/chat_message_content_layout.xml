@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <LinearLayout android:orientation="vertical" android:id="@id/chatMessageTextContentView" android:background="@drawable/chat_incoming" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="@dimen/metric.32dp" android:minHeight="@dimen/metric.32dp">
-        <com.mg.ola.common.widget.OlaTextView android:id="@id/messageTextContentTextview" android:focusable="false" android:focusableInTouchMode="false" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="@dimen/metric.400dp" style="@style/defaultStyle.text.subhead" />
-        <ViewStub android:id="@id/chatAttachmentViewStub" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.8dp" />
-    </LinearLayout>
-</LinearLayout>

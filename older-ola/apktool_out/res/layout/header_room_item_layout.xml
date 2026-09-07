@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:background="@color/translucent_white_80_percent" android:layout_width="match_parent" android:layout_height="wrap_content" style="?commont.list.item.simple.medium"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:paddingLeft="@dimen/contact.item.horizon.margin" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_weight="1.0">
-        <TextView android:gravity="center_vertical" android:id="@id/txtItemTitle" android:focusable="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxLines="1" style="?contact.item.title" />
-        <TextView android:textColor="#0681bd" android:gravity="center_vertical" android:id="@id/txtItemSubTitle" android:focusable="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxLines="1" android:drawablePadding="@dimen/metric.4dp" style="?contact.item.subTitle" />
-    </LinearLayout>
-    <ImageView android:id="@id/imgRoomIcon" android:padding="@dimen/contact.item.horizon.pading" android:focusable="false" android:layout_width="@dimen/contact.item.avatar.size" android:layout_height="@dimen/contact.item.avatar.size" android:scaleType="centerInside" />
-</LinearLayout>

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<selector android:enterFadeDuration="250" android:exitFadeDuration="250"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_selected="false" android:drawable="@drawable/ic_local_photo_storage" />
-    <item android:state_selected="true" android:drawable="@drawable/ic_cloud_photo_storage" />
-</selector>

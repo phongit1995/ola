@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:drawable="@drawable/menu_dropdown_panel_holo_dark"
-    android:insetLeft="10dp"
-    android:insetRight="10dp"
-    android:insetTop="@dimen/metric.48dp"
-    android:insetBottom="@dimen/metric.48dp"/>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <FrameLayout android:id="@id/cloudAlbumViewLayout" android:background="@drawable/bg_shadown_border" android:layout_width="match_parent" android:layout_height="wrap_content" android:foreground="@drawable/bg_cell_item_selector">
-        <chat.ola.vn.view.OlaRatioImageView android:id="@id/cloudAlbumCoverImageView" android:layout_width="match_parent" android:layout_height="wrap_content" android:scaleType="centerCrop" android:adjustViewBounds="true" />
-        <TextView android:textColor="@color/white" android:gravity="center" android:layout_gravity="right|bottom" android:id="@id/cloudAlbumCheckImageView" android:background="@drawable/bg_round_rect_accent" android:padding="@dimen/metric.4dp" android:layout_width="@dimen/metric.28dp" android:layout_height="@dimen/metric.28dp" android:layout_marginRight="@dimen/metric.2dp" android:layout_marginBottom="@dimen/metric.2dp" android:text="15" style="@style/defaultStyle.text.button" />
-    </FrameLayout>
-</FrameLayout>

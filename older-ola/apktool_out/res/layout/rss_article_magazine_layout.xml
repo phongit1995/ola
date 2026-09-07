@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="vertical" android:background="@color/translucent_white_90_percent" android:paddingTop="@dimen/metric.8dp" android:paddingBottom="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.72dp"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <FrameLayout android:gravity="center_vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp" android:minHeight="@dimen/metric.72dp">
-        <chat.ola.vn.view.OlaRatioImageView android:id="@id/imgNewsThumbnail" android:background="@color/image_background_color" android:focusable="false" android:focusableInTouchMode="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:scaleType="centerCrop" android:adjustViewBounds="true" android:cropToPadding="true" />
-        <TextView android:textSize="@dimen/rss.magazin.title.text.size" android:textColor="@color/white" android:gravity="left|center" android:layout_gravity="bottom" android:id="@id/txtNewsTitle" android:background="@color/translucent_black_38_percent" android:paddingLeft="@dimen/metric.16dp" android:paddingTop="@dimen/metric.4dp" android:paddingRight="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.4dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.72dp" android:maxLines="2" />
-    </FrameLayout>
-    <View android:background="#d5d5d5" android:layout_width="match_parent" android:layout_height="1.0px" android:layout_marginLeft="@dimen/metric.4dp" android:layout_marginTop="@dimen/metric.8dp" android:layout_marginRight="@dimen/metric.4dp" />
-</LinearLayout>
