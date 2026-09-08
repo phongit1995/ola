@@ -145,11 +145,17 @@ jobs:
           rclone mkdir "$DEST"
           rclone copy "$APK" "$DEST" --progress
 
-          # Chỉ giữ 2 bản mới nhất của env này, xoá các bản cũ hơn
+          # Chỉ giữ 2 bản mới nhất của env này, xoá các bản cũ hơn.
+          # Sắp xếp theo số build tách bằng sed: tên cũ (ola-dev-60.apk) và tên mới
+          # (ola-me-dev-66.apk) có số nằm ở trường khác nhau nên không dùng được
+          # `sort -t- -kN`. Loại luôn file vừa upload khỏi danh sách ứng viên xoá.
           rclone lsf "$DEST" \
-            | grep -E "^ola(-me)?-${ENV}-.*\.apk$" \
-            | sort -t- -k3 -rn \
-            | tail -n +3 \
+            | grep -E "^ola(-me)?-${ENV}-[0-9]+\.apk$" \
+            | grep -v -x -F "$FILE" \
+            | sed -E 's/^.*-([0-9]+)\.apk$/\1 &/' \
+            | sort -rn \
+            | cut -d' ' -f2- \
+            | tail -n +2 \
             | while read -r old; do
                 echo "Xoá bản cũ: $old"
                 rclone deletefile "$DEST/$old" || echo "  (bỏ qua, không xoá được: $old)"
