@@ -19,6 +19,10 @@ on:
         description: 'Nhánh/tag muốn build (bỏ trống = nhánh đang chọn ở "Use workflow from")'
         required: false
         type: string
+      version_code:
+        description: 'versionCode nộp Play (phải LỚN HƠN mọi bản đã upload ở mọi track; bỏ trống = lấy mặc định trong build.gradle)'
+        required: false
+        type: string
 
 concurrency:
   group: mobile-android-${{ inputs.ref || github.ref }}-${{ inputs.environment }}-${{ inputs.output }}
@@ -30,6 +34,7 @@ jobs:
     env:
       BUILD_APK: ${{ inputs.output == 'apk' || inputs.output == 'both' }}
       BUILD_AAB: ${{ inputs.output == 'aab' || inputs.output == 'both' }}
+      VERSION_CODE_ARG: ${{ inputs.version_code && format('-PversionCodeOverride={0}', inputs.version_code) || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,14 +83,14 @@ jobs:
         working-directory: mobile/android
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a $VERSION_CODE_ARG
 
       - name: Build release AAB (arm64 + armv7 cho Play)
         if: env.BUILD_AAB == 'true'
         working-directory: mobile/android
         run: |
           chmod +x ./gradlew
-          ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+          ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a $VERSION_CODE_ARG
 
       - name: Gom artifact + kiểm tra chữ ký
         run: |

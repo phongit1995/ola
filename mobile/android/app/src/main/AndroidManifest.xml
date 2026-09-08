@@ -9,8 +9,13 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- TẮT TẠM: hai quyền này khiến Play Console bắt khai báo "Quyền cho dịch vụ
+         trên nền trước" kèm video minh hoạ. Bỏ comment lại cùng lúc với khối
+         <service> bên dưới và phần trong CallOverlay.tsx khi đã quay được video.
+         Hệ quả khi tắt: cuộc gọi chỉ chạy lúc app đang mở trên màn hình.
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+    -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -45,10 +50,12 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      <!-- TẮT TẠM: xem ghi chú ở khối uses-permission phía trên.
       <service
         android:name="com.ola.me.net.org.vn.call.CallForegroundService"
         android:exported="false"
         android:foregroundServiceType="microphone|camera" />
+      -->
       <meta-data
         android:name="com.google.firebase.messaging.default_notification_channel_id"
         android:value="messages"
