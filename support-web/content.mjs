@@ -27,6 +27,7 @@ export const NAV = [
   { slug: 'delete-account', href: '/delete-account', key: 'deleteAccount' },
   { slug: 'privacy', href: '/privacy', key: 'privacy' },
   { slug: 'terms', href: '/terms', key: 'terms' },
+  { slug: 'child-safety', href: '/child-safety', key: 'childSafety' },
 ];
 
 export const UI = {
@@ -36,6 +37,7 @@ export const UI = {
     deleteAccount: 'Xoá tài khoản',
     privacy: 'Chính sách bảo mật',
     terms: 'Điều khoản sử dụng',
+    childSafety: 'An toàn trẻ em',
     contact: 'Liên hệ',
     tagline:
       'Mạng xã hội giải trí — trò chuyện, phòng cộng đồng, bảng tin và trò chơi.',
@@ -43,6 +45,8 @@ export const UI = {
     deleteAccountDesc: 'Cách yêu cầu xoá tài khoản và dữ liệu của bạn.',
     privacyDesc: 'Cách chúng tôi thu thập, sử dụng và bảo vệ dữ liệu của bạn.',
     termsDesc: 'Quy định khi sử dụng dịch vụ, tài khoản và vật phẩm ảo.',
+    childSafetyDesc:
+      'Tiêu chuẩn chống bóc lột, xâm hại tình dục trẻ em và cách báo cáo.',
     contactDesc: 'Mọi câu hỏi, khiếu nại hoặc yêu cầu xoá tài khoản.',
   },
   en: {
@@ -51,6 +55,7 @@ export const UI = {
     deleteAccount: 'Delete account',
     privacy: 'Privacy Policy',
     terms: 'Terms of Use',
+    childSafety: 'Child Safety',
     contact: 'Contact',
     tagline:
       'Entertainment social network — chat, community rooms, feed and games.',
@@ -58,6 +63,8 @@ export const UI = {
     deleteAccountDesc: 'How to request deletion of your account and data.',
     privacyDesc: 'How we collect, use and protect your data.',
     termsDesc: 'Rules for using the service, accounts and virtual items.',
+    childSafetyDesc:
+      'Our standards against child sexual abuse and exploitation, and how to report.',
     contactDesc: 'Any question, complaint or account deletion request.',
   },
 };
@@ -282,6 +289,265 @@ export const PAGES = {
         {
           title: '3. Download the app',
           blocks: [{ type: 'downloads' }],
+        },
+      ],
+    },
+  },
+
+  'child-safety': {
+    vi: {
+      title: 'TIÊU CHUẨN AN TOÀN CHO TRẺ EM',
+      subtitle: `Mạng xã hội ${APP_NAME}`,
+      updated: 'Cập nhật ngày 08/09/2026',
+      footer: '© 2026 Ola — Mạng xã hội giải trí',
+      sections: [
+        {
+          title: '1. Cam kết của chúng tôi',
+          blocks: [
+            {
+              type: 'p',
+              text: `${APP_NAME} không khoan nhượng với mọi hành vi bóc lột và xâm hại tình dục trẻ em (CSAE). Nội dung xâm hại tình dục trẻ em (CSAM) bị cấm tuyệt đối trên toàn bộ dịch vụ: tin nhắn riêng, phòng chat cộng đồng, bảng tin Me, bình luận, ảnh đại diện, ảnh bìa, tên hiển thị và mọi nội dung khác do người dùng tạo ra.`,
+            },
+            {
+              type: 'p',
+              text: 'Trang này công bố tiêu chuẩn an toàn trẻ em của chúng tôi và đầu mối liên hệ, theo yêu cầu của chính sách Tiêu chuẩn an toàn cho trẻ em của Google Play.',
+            },
+          ],
+        },
+        {
+          title: '2. Độ tuổi sử dụng',
+          blocks: [
+            {
+              type: 'p',
+              text: `${APP_NAME} chỉ dành cho người dùng từ 18 tuổi trở lên. Người dưới 18 tuổi không được phép tạo hoặc sử dụng tài khoản. Khi phát hiện hoặc nhận được báo cáo về tài khoản của người chưa đủ tuổi, chúng tôi khoá tài khoản đó và xoá dữ liệu liên quan.`,
+            },
+          ],
+        },
+        {
+          title: '3. Hành vi bị nghiêm cấm',
+          blocks: [
+            {
+              type: 'ul',
+              items: [
+                'Đăng tải, chia sẻ, lưu trữ, quảng bá hoặc yêu cầu nội dung xâm hại tình dục trẻ em dưới mọi hình thức — ảnh, video, âm thanh, văn bản, hoạt hình, hình vẽ hoặc nội dung do AI tạo ra;',
+                'Dụ dỗ, gạ gẫm, làm quen với trẻ em nhằm mục đích tình dục (grooming), hoặc mọi hành vi tiếp cận trẻ em với ý đồ tình dục;',
+                'Đe doạ phát tán hình ảnh riêng tư của trẻ em để tống tiền hoặc tống tình (sextortion);',
+                'Mua bán người, mại dâm trẻ em, du lịch tình dục trẻ em, hoặc quảng cáo, môi giới các hoạt động này;',
+                'Mô tả, bình luận hoặc tình dục hoá trẻ em, kể cả khi không kèm hình ảnh;',
+                'Chia sẻ đường liên kết, mã mời, tên nhóm hoặc bất kỳ chỉ dẫn nào dẫn tới nội dung xâm hại trẻ em ở nền tảng khác.',
+              ],
+            },
+          ],
+        },
+        {
+          title: '4. Cách báo cáo',
+          blocks: [
+            {
+              type: 'p',
+              text: 'Bất kỳ ai cũng có thể báo cáo cho chúng tôi, kể cả khi không có tài khoản:',
+            },
+            {
+              type: 'ol',
+              items: [
+                'Ngay trong ứng dụng: chạm giữ vào tin nhắn, bài viết hoặc mở hồ sơ người dùng, chọn Báo cáo và chọn lý do phù hợp. Báo cáo được gửi thẳng tới đội ngũ kiểm duyệt.',
+                'Chặn người dùng: trong phòng chat hoặc trên trang hồ sơ, chọn Chặn để ngừng nhận nội dung từ người đó ngay lập tức.',
+                `Qua email: gửi tới ${SUPPORT_EMAIL} với tiêu đề "Báo cáo an toàn trẻ em", kèm tên đăng nhập của người vi phạm, ảnh chụp màn hình và mô tả sự việc.`,
+              ],
+            },
+            {
+              type: 'note',
+              text: 'Báo cáo liên quan tới an toàn trẻ em được ưu tiên xử lý trước mọi loại báo cáo khác. Nếu bạn tin rằng một trẻ em đang gặp nguy hiểm tức thời, hãy liên hệ ngay công an địa phương hoặc Tổng đài quốc gia bảo vệ trẻ em 111 trước khi báo cho chúng tôi.',
+            },
+          ],
+        },
+        {
+          title: '5. Cách chúng tôi xử lý',
+          blocks: [
+            {
+              type: 'ol',
+              items: [
+                'Tiếp nhận và xem xét báo cáo trong vòng 24 giờ;',
+                'Gỡ bỏ ngay nội dung vi phạm khỏi dịch vụ;',
+                'Khoá vĩnh viễn tài khoản vi phạm và chặn việc tạo lại tài khoản;',
+                'Lưu giữ bằng chứng phục vụ điều tra theo quy định của pháp luật;',
+                'Chuyển vụ việc tới cơ quan chức năng có thẩm quyền.',
+              ],
+            },
+          ],
+        },
+        {
+          title: '6. Báo cáo cho cơ quan chức năng',
+          blocks: [
+            {
+              type: 'p',
+              text: 'Chúng tôi tuân thủ pháp luật Việt Nam về bảo vệ trẻ em và về an toàn thông tin mạng. Khi phát hiện hoặc xác nhận nội dung xâm hại tình dục trẻ em, chúng tôi báo cáo cho cơ quan chức năng có thẩm quyền tại Việt Nam và hợp tác đầy đủ với cơ quan điều tra, bao gồm việc cung cấp dữ liệu theo yêu cầu hợp pháp.',
+            },
+            {
+              type: 'p',
+              text: 'Chúng tôi cũng phối hợp với các tổ chức bảo vệ trẻ em và các nền tảng phân phối ứng dụng trong phạm vi pháp luật cho phép.',
+            },
+          ],
+        },
+        {
+          title: '7. Phòng ngừa và kiểm duyệt',
+          blocks: [
+            {
+              type: 'ul',
+              items: [
+                'Công cụ báo cáo và chặn có mặt ở mọi nơi hiển thị nội dung do người dùng tạo;',
+                'Phòng chat cộng đồng có quản trị viên và công cụ quản lý thành viên;',
+                'Đội ngũ kiểm duyệt xem xét báo cáo hằng ngày và xử lý theo Điều khoản sử dụng;',
+                'Tài khoản bị xác định là của người dưới 18 tuổi sẽ bị khoá và xoá dữ liệu;',
+                'Chúng tôi rà soát định kỳ các biện pháp an toàn và cập nhật khi cần thiết.',
+              ],
+            },
+          ],
+        },
+        {
+          title: '8. Đầu mối liên hệ',
+          blocks: [
+            {
+              type: 'p',
+              text: `Đầu mối liên hệ chuyên trách về an toàn trẻ em: ${SUPPORT_EMAIL}. Chúng tôi cam kết phản hồi các yêu cầu từ người dùng, cơ quan chức năng, tổ chức bảo vệ trẻ em và nền tảng phân phối ứng dụng liên quan tới nội dung xâm hại trẻ em.`,
+            },
+          ],
+        },
+        {
+          title: '9. Cập nhật',
+          blocks: [
+            {
+              type: 'p',
+              text: 'Tiêu chuẩn này có thể được cập nhật khi pháp luật, chính sách nền tảng hoặc tính năng ứng dụng thay đổi. Ngày cập nhật gần nhất được ghi ở đầu trang.',
+            },
+          ],
+        },
+      ],
+    },
+    en: {
+      title: 'CHILD SAFETY STANDARDS',
+      subtitle: `${APP_NAME} social network`,
+      updated: 'Updated 08/09/2026',
+      footer: '© 2026 Ola — Entertainment social network',
+      sections: [
+        {
+          title: '1. Our commitment',
+          blocks: [
+            {
+              type: 'p',
+              text: `${APP_NAME} has zero tolerance for child sexual abuse and exploitation (CSAE). Child sexual abuse material (CSAM) is strictly prohibited everywhere in the service: private messages, community chat rooms, the Me feed, comments, avatars, cover photos, display names and any other user-generated content.`,
+            },
+            {
+              type: 'p',
+              text: 'This page publishes our child safety standards and our point of contact, as required by the Google Play Child Safety Standards policy.',
+            },
+          ],
+        },
+        {
+          title: '2. Minimum age',
+          blocks: [
+            {
+              type: 'p',
+              text: `${APP_NAME} is for users aged 18 and over. Anyone under 18 is not permitted to create or use an account. When we discover or are told about an underage account, we lock it and delete the related data.`,
+            },
+          ],
+        },
+        {
+          title: '3. Prohibited conduct',
+          blocks: [
+            {
+              type: 'ul',
+              items: [
+                'Uploading, sharing, storing, promoting or soliciting child sexual abuse material in any form — images, video, audio, text, animation, drawings or AI-generated content;',
+                'Grooming, soliciting or befriending a child for sexual purposes, or any approach to a child with sexual intent;',
+                'Threatening to publish a child’s private images for extortion or sexual coercion (sextortion);',
+                'Human trafficking, child prostitution, child sex tourism, or advertising or brokering such activity;',
+                'Describing, commenting on or sexualising children, even without imagery;',
+                'Sharing links, invite codes, group names or any directions to child abuse content on other platforms.',
+              ],
+            },
+          ],
+        },
+        {
+          title: '4. How to report',
+          blocks: [
+            {
+              type: 'p',
+              text: 'Anyone can report to us, including people without an account:',
+            },
+            {
+              type: 'ol',
+              items: [
+                'In the app: long-press a message or post, or open a user profile, choose Report and pick the matching reason. Reports go straight to our moderation team.',
+                'Block a user: in a chat room or on their profile, choose Block to stop receiving their content immediately.',
+                `By email: write to ${SUPPORT_EMAIL} with the subject "Child safety report", including the offending username, screenshots and a description.`,
+              ],
+            },
+            {
+              type: 'note',
+              text: 'Child safety reports are prioritised ahead of every other report type. If you believe a child is in immediate danger, contact your local police first, or in Vietnam the National Child Protection Hotline on 111, before reporting to us.',
+            },
+          ],
+        },
+        {
+          title: '5. How we respond',
+          blocks: [
+            {
+              type: 'ol',
+              items: [
+                'We receive and review the report within 24 hours;',
+                'We remove the violating content from the service immediately;',
+                'We permanently ban the offending account and block re-registration;',
+                'We preserve evidence for investigation as required by law;',
+                'We escalate the case to the competent authorities.',
+              ],
+            },
+          ],
+        },
+        {
+          title: '6. Reporting to authorities',
+          blocks: [
+            {
+              type: 'p',
+              text: 'We comply with Vietnamese law on child protection and network information security. When child sexual abuse material is found or confirmed, we report it to the competent authorities in Vietnam and cooperate fully with investigators, including providing data under lawful request.',
+            },
+            {
+              type: 'p',
+              text: 'We also cooperate with child protection organisations and app distribution platforms to the extent permitted by law.',
+            },
+          ],
+        },
+        {
+          title: '7. Prevention and moderation',
+          blocks: [
+            {
+              type: 'ul',
+              items: [
+                'Reporting and blocking tools are available everywhere user-generated content appears;',
+                'Community chat rooms have moderators and member management tools;',
+                'Our moderation team reviews reports daily and acts under the Terms of Use;',
+                'Accounts identified as belonging to someone under 18 are locked and their data deleted;',
+                'We review our safety measures periodically and update them when needed.',
+              ],
+            },
+          ],
+        },
+        {
+          title: '8. Point of contact',
+          blocks: [
+            {
+              type: 'p',
+              text: `Our designated child safety point of contact is ${SUPPORT_EMAIL}. We commit to responding to enquiries from users, authorities, child protection organisations and app distribution platforms regarding child abuse content.`,
+            },
+          ],
+        },
+        {
+          title: '9. Updates',
+          blocks: [
+            {
+              type: 'p',
+              text: 'These standards may be updated as laws, platform policies or app features change. The date of the most recent update is shown at the top of this page.',
+            },
+          ],
         },
       ],
     },

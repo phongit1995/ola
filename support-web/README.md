@@ -10,9 +10,10 @@ Site tĩnh giới thiệu app **Ola Me** kèm các trang hỗ trợ và pháp l�
 | Hỗ trợ | https://ola-me.pages.dev/support | Apple *Support URL*, Play *Support website* |
 | Xoá tài khoản | https://ola-me.pages.dev/delete-account | Play *Account/Data deletion URL* |
 | Điều khoản sử dụng | https://ola-me.pages.dev/terms | Apple EULA / License Agreement |
+| An toàn trẻ em | https://ola-me.pages.dev/child-safety | Play *Tiêu chuẩn an toàn cho trẻ em → URL của tiêu chuẩn an toàn* |
 | Giới thiệu (trang chủ) | https://ola-me.pages.dev/ | Apple *Marketing URL*, Play *Store listing website* |
 
-Alias 301 có sẵn: `/chinh-sach-bao-mat`, `/privacy-policy` → `/privacy`; `/dieu-khoan`, `/terms-of-use`, `/tos` → `/terms`; `/ho-tro`, `/hotro`, `/help` → `/support`; `/xoa-tai-khoan`, `/delete-data`, `/data-deletion` → `/delete-account`.
+Alias 301 có sẵn: `/chinh-sach-bao-mat`, `/privacy-policy` → `/privacy`; `/dieu-khoan`, `/terms-of-use`, `/tos` → `/terms`; `/ho-tro`, `/hotro`, `/help` → `/support`; `/xoa-tai-khoan`, `/delete-data`, `/data-deletion` → `/delete-account`; `/an-toan-tre-em`, `/csae`, `/child-safety-standards` → `/child-safety`.
 
 Ép ngôn ngữ bằng query: `?lang=vi` hoặc `?lang=en` (mặc định theo ngôn ngữ trình duyệt, có nút chuyển VI/EN trên đầu trang).
 

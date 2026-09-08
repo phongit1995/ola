@@ -9,3 +9,6 @@
 /xoa-tai-khoan       /delete-account  301
 /delete-data         /delete-account  301
 /data-deletion       /delete-account  301
+/an-toan-tre-em      /child-safety    301
+/csae                /child-safety    301
+/child-safety-standards /child-safety 301

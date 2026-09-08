@@ -30,6 +30,7 @@ const I18N_DOCS = [
 const STATIC_DOCS = [
   { file: 'support.html', key: 'support', slug: 'support' },
   { file: 'delete-account.html', key: 'delete-account', slug: 'delete-account' },
+  { file: 'child-safety.html', key: 'child-safety', slug: 'child-safety' },
 ];
 
 const locales = Object.fromEntries(
@@ -399,6 +400,7 @@ const buildHome = () => {
     { key: 'deleteAccount', href: '/delete-account', desc: 'deleteAccountDesc' },
     { key: 'privacy', href: '/privacy', desc: 'privacyDesc' },
     { key: 'terms', href: '/terms', desc: 'termsDesc' },
+    { key: 'childSafety', href: '/child-safety', desc: 'childSafetyDesc' },
   ];
 
   const body = LOCALES.map((code) => {
@@ -551,5 +553,5 @@ ${NAV.map(
 );
 
 console.log(
-  'Built: index.html, support.html, delete-account.html, privacy.html, terms.html, 404.html, styles.css, app.js, robots.txt, sitemap.xml'
+  'Built: index.html, support.html, delete-account.html, child-safety.html, privacy.html, terms.html, 404.html, styles.css, app.js, robots.txt, sitemap.xml'
 );
