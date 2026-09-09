@@ -1596,6 +1596,8 @@
       "customLabel": "Hoặc nhập số tiền (VNĐ)",
       "customHint": "Tối thiểu {{min}}, bội số {{step}}",
       "receive": "Bạn sẽ nhận",
+      "bonusLine": "Gồm {{bonus}} KEN thưởng (+{{percent}}%)",
+      "bonusBadge": "+{{percent}}%",
       "invalid": "Số tiền tối thiểu {{min}}đ và là bội số của {{step}}đ",
       "qrTitle": "Quét mã để thanh toán",
       "qrHint": "Mở app ngân hàng/ví và quét mã QR để nạp {{ken}} KEN.",

@@ -11,4 +11,11 @@ export const AdminSettingsService = {
     const { data } = await http.put<ApiResponse<AppSetting>>(`/admin/settings/${key}`, { value })
     return data.data
   },
+
+  async putMany(items: { key: string; value: Record<string, unknown> }[]): Promise<AppSetting[]> {
+    const { data } = await http.put<ApiResponse<{ items: AppSetting[] }>>('/admin/settings', {
+      items,
+    })
+    return data.data.items
+  },
 }

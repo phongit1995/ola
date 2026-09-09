@@ -1596,6 +1596,8 @@
       "customLabel": "Or enter an amount (VND)",
       "customHint": "Minimum {{min}}, multiples of {{step}}",
       "receive": "You will receive",
+      "bonusLine": "Includes {{bonus}} bonus KEN (+{{percent}}%)",
+      "bonusBadge": "+{{percent}}%",
       "invalid": "Amount must be at least {{min}}đ and a multiple of {{step}}đ",
       "qrTitle": "Scan to pay",
       "qrHint": "Open your bank/e-wallet app and scan the QR to top up {{ken}} KEN.",

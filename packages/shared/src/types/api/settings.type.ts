@@ -27,13 +27,18 @@ export interface TopupBankInfo {
   memoTemplate: string;
 }
 
+export interface TopupBonusTier {
+  minAmount: number;
+  percent: number;
+}
+
 export interface TopupConfigResult {
   enabled: boolean;
   enabledMobile?: boolean;
   minAmount: number;
   stepAmount: number;
   presetAmounts: number[];
-  kenPerVnd: number;
+  bonusTiers?: TopupBonusTier[];
   bank?: TopupBankInfo;
 }
 

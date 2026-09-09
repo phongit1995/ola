@@ -122,8 +122,12 @@ export function TopupTransactionsPage() {
     }
     try {
       const result = await manualCredit.mutateAsync({ id: creditTarget.id, username })
+      const bonusNote =
+        result.bonusKen > 0
+          ? ` (gồm ${vn(result.bonusKen)} thưởng +${result.bonusPercent}%)`
+          : ''
       message.success(
-        `Đã cộng ${vn(result.kenAmount)} KEN cho @${result.user.username}`,
+        `Đã cộng ${vn(result.kenAmount)} KEN${bonusNote} cho @${result.user.username}`,
       )
       setCreditTarget(null)
     } catch (err) {
@@ -203,6 +207,18 @@ export function TopupTransactionsPage() {
       render: (value: number) =>
         value > 0 ? (
           <Typography.Text strong>{vn(value)}</Typography.Text>
+        ) : (
+          <Typography.Text type="secondary">—</Typography.Text>
+        ),
+    },
+    {
+      title: 'KEN thưởng',
+      key: 'bonusKen',
+      width: 110,
+      align: 'right',
+      render: (_, row) =>
+        row.status === 'CREDITED' && row.bonusKen > 0 ? (
+          <Typography.Text type="success">+{vn(row.bonusKen)}</Typography.Text>
         ) : (
           <Typography.Text type="secondary">—</Typography.Text>
         ),
@@ -380,7 +396,13 @@ export function TopupTransactionsPage() {
             <Typography.Text>
               Giao dịch <Typography.Text code>{creditTarget.providerTxId}</Typography.Text> số tiền{' '}
               <Typography.Text strong>{vn(creditTarget.amount)} VNĐ</Typography.Text> sẽ cộng{' '}
-              <Typography.Text strong>{vn(creditTarget.amount)} KEN</Typography.Text>.
+              <Typography.Text strong>
+                {vn(creditTarget.amount + creditTarget.bonusKen)} KEN
+              </Typography.Text>
+              {creditTarget.bonusKen > 0
+                ? ` (gồm ${vn(creditTarget.bonusKen)} KEN thưởng +${creditTarget.bonusPercent}%, theo mốc lúc nhận giao dịch)`
+                : ''}
+              .
             </Typography.Text>
             <Typography.Text type="secondary" style={{ display: 'block' }}>
               Nội dung chuyển khoản: {creditTarget.description || '—'}

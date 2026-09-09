@@ -26,6 +26,8 @@ type TransactionItem struct {
 	Status          string    `json:"status"`
 	MatchedUsername string    `json:"matchedUsername,omitempty"`
 	KenAmount       int64     `json:"kenAmount"`
+	BonusKen        int64     `json:"bonusKen"`
+	BonusPercent    int       `json:"bonusPercent"`
 	KenTxID         string    `json:"kenTxId,omitempty"`
 	Note            string    `json:"note,omitempty"`
 	User            *UserInfo `json:"user,omitempty"`
@@ -48,6 +50,8 @@ type ManualCreditResponse struct {
 	ID           string   `json:"id"`
 	Status       string   `json:"status"`
 	KenAmount    int64    `json:"kenAmount"`
+	BonusKen     int64    `json:"bonusKen"`
+	BonusPercent int      `json:"bonusPercent"`
 	BalanceAfter int      `json:"balanceAfter"`
 	User         UserInfo `json:"user"`
 }

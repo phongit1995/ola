@@ -26,6 +26,7 @@ const (
 
 	usernameChangeMinLength = 2
 	usernameChangeMaxLength = 20
+	topupBonusPercentMax    = 500
 )
 
 type PushNotificationConfig struct {
@@ -48,13 +49,25 @@ type TopupBankConfig struct {
 	DiscordWebhookURL string `json:"discordWebhookUrl"`
 }
 
+type TopupBonusTier struct {
+	MinAmount int `json:"minAmount"`
+	Percent   int `json:"percent"`
+}
+
 type TopupConfig struct {
-	Enabled       bool  `json:"enabled"`
-	EnabledMobile bool  `json:"enabledMobile"`
-	MinAmount     int   `json:"minAmount"`
-	StepAmount    int   `json:"stepAmount"`
-	PresetAmounts []int `json:"presetAmounts"`
-	KenPerVnd     int   `json:"kenPerVnd"`
+	Enabled       bool             `json:"enabled"`
+	EnabledMobile bool             `json:"enabledMobile"`
+	MinAmount     int              `json:"minAmount"`
+	StepAmount    int              `json:"stepAmount"`
+	PresetAmounts []int            `json:"presetAmounts"`
+	BonusTiers    []TopupBonusTier `json:"bonusTiers"`
+}
+
+type TopupQuote struct {
+	Base         int64
+	BonusPercent int
+	Bonus        int64
+	Total        int64
 }
 
 func DefaultTopupConfig() TopupConfig {
@@ -64,8 +77,41 @@ func DefaultTopupConfig() TopupConfig {
 		MinAmount:     10_000,
 		StepAmount:    1_000,
 		PresetAmounts: []int{10_000, 20_000, 50_000, 100_000, 200_000, 500_000},
-		KenPerVnd:     1,
+		BonusTiers:    []TopupBonusTier{},
 	}
+}
+
+func (c TopupConfig) BonusPercentFor(amountVnd int64) int {
+	percent := 0
+	bestMin := int64(-1)
+	for _, tier := range c.BonusTiers {
+		minAmount := int64(tier.MinAmount)
+		if amountVnd >= minAmount && minAmount > bestMin {
+			bestMin = minAmount
+			percent = tier.Percent
+		}
+	}
+	return percent
+}
+
+func (c TopupConfig) QuoteKen(amountVnd int64) TopupQuote {
+	percent := c.BonusPercentFor(amountVnd)
+	bonus := amountVnd * int64(percent) / 100
+	return TopupQuote{Base: amountVnd, BonusPercent: percent, Bonus: bonus, Total: amountVnd + bonus}
+}
+
+func normalizeBonusTiers(tiers []TopupBonusTier) []TopupBonusTier {
+	out := make([]TopupBonusTier, 0, len(tiers))
+	seen := make(map[int]bool, len(tiers))
+	for _, tier := range tiers {
+		if tier.MinAmount < 0 || tier.Percent < 0 || tier.Percent > topupBonusPercentMax || seen[tier.MinAmount] {
+			continue
+		}
+		seen[tier.MinAmount] = true
+		out = append(out, tier)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].MinAmount < out[j].MinAmount })
+	return out
 }
 
 func DefaultTopupBankConfig() TopupBankConfig {
@@ -125,6 +171,26 @@ func (s *Service) Put(key string, value models.JSONB) (*models.AppSetting, error
 	return s.repo.Upsert(strings.TrimSpace(key), value)
 }
 
+func (s *Service) PutMany(items []models.AppSetting) ([]models.AppSetting, error) {
+	for i := range items {
+		items[i].Key = strings.TrimSpace(items[i].Key)
+	}
+	if err := s.repo.UpsertMany(items); err != nil {
+		return nil, err
+	}
+	saved := make([]models.AppSetting, 0, len(items))
+	for _, item := range items {
+		current, err := s.repo.Get(item.Key)
+		if err != nil {
+			return nil, err
+		}
+		if current != nil {
+			saved = append(saved, *current)
+		}
+	}
+	return saved, nil
+}
+
 func (s *Service) getInto(key string, out interface{}) error {
 	item, err := s.repo.Get(key)
 	if err != nil {
@@ -160,9 +226,7 @@ func (s *Service) GetTopup() (TopupConfig, error) {
 	if cfg.StepAmount <= 0 {
 		cfg.StepAmount = 1_000
 	}
-	if cfg.KenPerVnd <= 0 {
-		cfg.KenPerVnd = 1
-	}
+	cfg.BonusTiers = normalizeBonusTiers(cfg.BonusTiers)
 	if cfg.MinAmount%cfg.StepAmount != 0 {
 		cfg.MinAmount = (cfg.MinAmount/cfg.StepAmount + 1) * cfg.StepAmount
 	}
@@ -298,6 +362,50 @@ func MaskPushFirebaseValue(value models.JSONB) models.JSONB {
 		"projectId":   projectID,
 		"clientEmail": clientEmail,
 	}
+}
+
+func ValidateTopupValue(value models.JSONB) error {
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return errors.New("invalid topup config")
+	}
+	var cfg TopupConfig
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&cfg); err != nil {
+		return errors.New("invalid topup config: " + err.Error())
+	}
+	if cfg.MinAmount <= 0 {
+		return errors.New("số tiền tối thiểu phải lớn hơn 0")
+	}
+	if cfg.StepAmount <= 0 {
+		return errors.New("bội số phải lớn hơn 0")
+	}
+	if cfg.MinAmount%cfg.StepAmount != 0 {
+		return fmt.Errorf("số tiền tối thiểu phải là bội số của %d", cfg.StepAmount)
+	}
+	if len(cfg.PresetAmounts) == 0 {
+		return errors.New("cần ít nhất một mệnh giá gợi ý")
+	}
+	for _, preset := range cfg.PresetAmounts {
+		if preset < cfg.MinAmount || preset%cfg.StepAmount != 0 {
+			return fmt.Errorf("mệnh giá %d phải từ mức tối thiểu và là bội số của %d", preset, cfg.StepAmount)
+		}
+	}
+	seen := make(map[int]bool, len(cfg.BonusTiers))
+	for _, tier := range cfg.BonusTiers {
+		if tier.MinAmount < 0 {
+			return errors.New("mốc thưởng không được âm")
+		}
+		if tier.Percent < 0 || tier.Percent > topupBonusPercentMax {
+			return fmt.Errorf("phần trăm thưởng phải từ 0 đến %d", topupBonusPercentMax)
+		}
+		if seen[tier.MinAmount] {
+			return fmt.Errorf("mốc thưởng %d bị khai báo hai lần", tier.MinAmount)
+		}
+		seen[tier.MinAmount] = true
+	}
+	return nil
 }
 
 func ValidateUsernameChangeValue(value models.JSONB) error {

@@ -3519,6 +3519,49 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mọi key được validate trước, sau đó ghi tất cả hoặc không ghi gì",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-settings"
+                ],
+                "summary": "Cập nhật nhiều cấu hình hệ thống trong một transaction (admin)",
+                "parameters": [
+                    {
+                        "description": "Danh sách key/value",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_setting.PutManySettingsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_setting.SettingListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
             }
         },
         "/admin/settings/{key}": {
@@ -15980,12 +16023,43 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_setting.PutManySettingsRequest": {
+            "type": "object",
+            "required": [
+                "items"
+            ],
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_setting.SettingEntry"
+                    }
+                }
+            }
+        },
         "internal_modules_admin_setting.PutSettingRequest": {
             "type": "object",
             "required": [
                 "value"
             ],
             "properties": {
+                "value": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.JSONB"
+                }
+            }
+        },
+        "internal_modules_admin_setting.SettingEntry": {
+            "type": "object",
+            "required": [
+                "key",
+                "value"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
                 "value": {
                     "$ref": "#/definitions/ola-chat-server_internal_models.JSONB"
                 }
@@ -16069,6 +16143,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "balanceAfter": {
+                    "type": "integer"
+                },
+                "bonusKen": {
+                    "type": "integer"
+                },
+                "bonusPercent": {
                     "type": "integer"
                 },
                 "id": {
@@ -16168,6 +16248,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "amount": {
+                    "type": "integer"
+                },
+                "bonusKen": {
+                    "type": "integer"
+                },
+                "bonusPercent": {
                     "type": "integer"
                 },
                 "createdAt": {
@@ -21104,11 +21190,28 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_setting.TopupBonusTier": {
+            "type": "object",
+            "properties": {
+                "minAmount": {
+                    "type": "integer"
+                },
+                "percent": {
+                    "type": "integer"
+                }
+            }
+        },
         "internal_modules_setting.TopupConfigResponse": {
             "type": "object",
             "properties": {
                 "bank": {
                     "$ref": "#/definitions/internal_modules_setting.TopupBankInfo"
+                },
+                "bonusTiers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_setting.TopupBonusTier"
+                    }
                 },
                 "enabled": {
                     "type": "boolean",
@@ -21117,10 +21220,6 @@ const docTemplate = `{
                 "enabledMobile": {
                     "type": "boolean",
                     "example": true
-                },
-                "kenPerVnd": {
-                    "type": "integer",
-                    "example": 1
                 },
                 "minAmount": {
                     "type": "integer",

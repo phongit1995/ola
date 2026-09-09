@@ -2,6 +2,7 @@ package topup
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -105,6 +106,9 @@ func (s *Service) ProcessTransaction(wtx WebhookTransaction) error {
 		row.Status = models.TopupTxStatusFailed
 		row.Note = ptr("invalid amount")
 	default:
+		quote := topupCfg.QuoteKen(amount)
+		row.BonusKen = quote.Bonus
+		row.BonusPercent = quote.BonusPercent
 		capture, u, lookupErr := s.matchUser(bankCfg.MemoTemplate, row.Description)
 		if lookupErr != nil {
 			s.logger.Errorw("Topup user lookup failed", "provider_tx_id", txID, "error", lookupErr.Error())
@@ -166,15 +170,34 @@ func (s *Service) retryExisting(providerTxID string) error {
 	return s.credit(row, *row.UserID, row.Status == models.TopupTxStatusProcessing)
 }
 
+func StoredQuote(row *models.TopupTransaction) setting.TopupQuote {
+	return setting.TopupQuote{
+		Base:         row.Amount,
+		BonusPercent: row.BonusPercent,
+		Bonus:        row.BonusKen,
+		Total:        row.Amount + row.BonusKen,
+	}
+}
+
+func CreditDescription(base string, quote setting.TopupQuote) string {
+	if quote.Bonus <= 0 {
+		return base
+	}
+	return fmt.Sprintf("%s (thưởng %d%%)", base, quote.BonusPercent)
+}
+
 func (s *Service) credit(row *models.TopupTransaction, userID uuid.UUID, notifyOnFail bool) error {
+	quote := StoredQuote(row)
 	updatedUser, kenTx, err := s.repo.Credit(CreditParams{
 		RowID:        row.ID,
 		UserID:       userID,
-		KenAmount:    int(row.Amount),
+		KenAmount:    int(quote.Total),
+		BonusKen:     quote.Bonus,
+		BonusPercent: quote.BonusPercent,
 		ProviderTxID: row.ProviderTxID,
 		AmountVnd:    row.Amount,
 		ActorType:    models.KenActorSystem,
-		Description:  "Nạp KEN qua chuyển khoản",
+		Description:  CreditDescription("Nạp KEN qua chuyển khoản", quote),
 	})
 	if err != nil {
 		if errors.Is(err, ErrAlreadyCredited) {
@@ -203,11 +226,23 @@ func (s *Service) credit(row *models.TopupTransaction, userID uuid.UUID, notifyO
 		})
 		s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
 	}
-	s.notifier.NotifyCredited(row.ProviderTxID, row.Description, row.Amount, updatedUser.Username, kenTx.BalanceBefore, kenTx.BalanceAfter, false)
+	s.notifier.NotifyCredited(CreditedNotice{
+		ProviderTxID:  row.ProviderTxID,
+		Description:   row.Description,
+		AmountVnd:     row.Amount,
+		Username:      updatedUser.Username,
+		BalanceBefore: kenTx.BalanceBefore,
+		BalanceAfter:  kenTx.BalanceAfter,
+		KenAmount:     kenTx.Amount,
+		BonusKen:      quote.Bonus,
+		BonusPercent:  quote.BonusPercent,
+	})
 	s.logger.Infow("Topup credited",
 		"provider_tx_id", row.ProviderTxID,
 		"user_id", userID,
 		"amount_vnd", row.Amount,
+		"ken_amount", kenTx.Amount,
+		"bonus_ken", quote.Bonus,
 		"balance_after", updatedUser.Ken,
 	)
 	return nil

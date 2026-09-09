@@ -10,6 +10,17 @@ export function useAppSettings() {
   })
 }
 
+export function usePutAppSettings() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (items: { key: string; value: Record<string, unknown> }[]) =>
+      AdminSettingsService.putMany(items),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [APP_SETTINGS_KEY] })
+    },
+  })
+}
+
 export function usePutAppSetting() {
   const queryClient = useQueryClient()
   return useMutation({

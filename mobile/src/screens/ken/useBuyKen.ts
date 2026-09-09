@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { buildVietQrImageUrl, fillMemoTemplate } from '@ola/shared/lib';
+import { buildVietQrImageUrl, fillMemoTemplate, quoteTopupKen } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
+import type { TopupBonusTier } from '@ola/shared/types';
 import { MIN_AMOUNT, PRESET_AMOUNTS, STEP_AMOUNT } from './constants';
+
+const NO_BONUS_TIERS: TopupBonusTier[] = [];
 
 export function useBuyKen() {
   const user = useAuthStore((s) => s.user);
@@ -18,7 +21,7 @@ export function useBuyKen() {
   const minAmount = config?.minAmount ?? MIN_AMOUNT;
   const stepAmount = config?.stepAmount ?? STEP_AMOUNT;
   const presetAmounts = config?.presetAmounts ?? PRESET_AMOUNTS;
-  const kenPerVnd = config?.kenPerVnd ?? 1;
+  const bonusTiers = config?.bonusTiers ?? NO_BONUS_TIERS;
   const bank = config?.bank;
 
   const amount =
@@ -28,7 +31,8 @@ export function useBuyKen() {
         ? 0
         : Number(customText);
   const isValid = amount >= minAmount && amount % stepAmount === 0;
-  const kenAmount = amount * kenPerVnd;
+  const quote = quoteTopupKen(amount, bonusTiers);
+  const kenAmount = quote.total;
   const balance = user?.ken ?? 0;
 
   const memo = useMemo(
@@ -62,8 +66,10 @@ export function useBuyKen() {
     minAmount,
     stepAmount,
     presetAmounts,
+    bonusTiers,
     amount,
     isValid,
+    quote,
     kenAmount,
     balance,
     memo,

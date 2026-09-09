@@ -49,21 +49,39 @@ func NewNotifier(settings *setting.Service, logger *zap.SugaredLogger) *Notifier
 	}
 }
 
-func (n *Notifier) NotifyCredited(providerTxID, description string, amountVnd int64, username string, balanceBefore, balanceAfter int, manual bool) {
+type CreditedNotice struct {
+	ProviderTxID  string
+	Description   string
+	AmountVnd     int64
+	Username      string
+	BalanceBefore int
+	BalanceAfter  int
+	KenAmount     int
+	BonusKen      int64
+	BonusPercent  int
+	Manual        bool
+}
+
+func (n *Notifier) NotifyCredited(notice CreditedNotice) {
 	title := "💰 Nạp KEN thành công"
-	if manual {
+	if notice.Manual {
 		title = "✅ Admin cộng KEN thủ công"
+	}
+	kenValue := groupDigits(int64(notice.KenAmount))
+	if notice.BonusKen > 0 {
+		kenValue = fmt.Sprintf("%s (gồm %s thưởng +%d%%)", kenValue, groupDigits(notice.BonusKen), notice.BonusPercent)
 	}
 	n.dispatch(discordEmbed{
 		Title:     title,
 		Color:     colorGreen,
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Fields: []discordField{
-			{Name: "Người nạp", Value: "@" + username, Inline: true},
-			{Name: "Số tiền", Value: groupDigits(amountVnd) + "đ", Inline: true},
-			{Name: "KEN", Value: fmt.Sprintf("%s → %s", groupDigits(int64(balanceBefore)), groupDigits(int64(balanceAfter))), Inline: true},
-			{Name: "Mã GD", Value: orDash(providerTxID), Inline: true},
-			{Name: "Nội dung CK", Value: orDash(description)},
+			{Name: "Người nạp", Value: "@" + notice.Username, Inline: true},
+			{Name: "Số tiền", Value: groupDigits(notice.AmountVnd) + "đ", Inline: true},
+			{Name: "KEN cộng", Value: kenValue, Inline: true},
+			{Name: "Số dư", Value: fmt.Sprintf("%s → %s", groupDigits(int64(notice.BalanceBefore)), groupDigits(int64(notice.BalanceAfter))), Inline: true},
+			{Name: "Mã GD", Value: orDash(notice.ProviderTxID), Inline: true},
+			{Name: "Nội dung CK", Value: orDash(notice.Description)},
 		},
 	})
 }

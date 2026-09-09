@@ -35,6 +35,22 @@ func (r *Repository) Get(key string) (*models.AppSetting, error) {
 	return &item, nil
 }
 
+func (r *Repository) UpsertMany(items []models.AppSetting) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, item := range items {
+			entry := models.AppSetting{Key: item.Key, Value: item.Value}
+			err := tx.Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "key"}},
+				DoUpdates: clause.Assignments(map[string]interface{}{"value": item.Value, "updated_at": gorm.Expr("CURRENT_TIMESTAMP")}),
+			}).Create(&entry).Error
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func (r *Repository) Upsert(key string, value models.JSONB) (*models.AppSetting, error) {
 	item := models.AppSetting{Key: key, Value: value}
 	err := r.db.Clauses(clause.OnConflict{

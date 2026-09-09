@@ -163,16 +163,19 @@ func (s *Service) ManualCredit(rowID, adminID uuid.UUID, req ManualCreditRequest
 		return nil, ErrUserNotFound
 	}
 
+	quote := topup.StoredQuote(row)
 	actorID := adminID
 	updatedUser, kenTx, err := s.topupRepo.Credit(topup.CreditParams{
 		RowID:        row.ID,
 		UserID:       target.ID,
-		KenAmount:    int(row.Amount),
+		KenAmount:    int(quote.Total),
+		BonusKen:     quote.Bonus,
+		BonusPercent: quote.BonusPercent,
 		ProviderTxID: row.ProviderTxID,
 		AmountVnd:    row.Amount,
 		ActorType:    models.KenActorAdmin,
 		ActorID:      &actorID,
-		Description:  "Nạp KEN qua chuyển khoản (admin duyệt)",
+		Description:  topup.CreditDescription("Nạp KEN qua chuyển khoản (admin duyệt)", quote),
 	})
 	if err != nil {
 		if errors.Is(err, topup.ErrAlreadyCredited) {
@@ -190,13 +193,26 @@ func (s *Service) ManualCredit(rowID, adminID uuid.UUID, req ManualCreditRequest
 		})
 		s.wsServer.EmitToUser(target.ID.String(), constants.WebSocketMessageEvent, payload)
 	}
-	s.notifier.NotifyCredited(row.ProviderTxID, row.Description, row.Amount, target.Username, kenTx.BalanceBefore, kenTx.BalanceAfter, true)
+	s.notifier.NotifyCredited(topup.CreditedNotice{
+		ProviderTxID:  row.ProviderTxID,
+		Description:   row.Description,
+		AmountVnd:     row.Amount,
+		Username:      target.Username,
+		BalanceBefore: kenTx.BalanceBefore,
+		BalanceAfter:  kenTx.BalanceAfter,
+		KenAmount:     kenTx.Amount,
+		BonusKen:      quote.Bonus,
+		BonusPercent:  quote.BonusPercent,
+		Manual:        true,
+	})
 	s.logger.Infow("Admin manually credited topup",
 		"admin_id", adminID,
 		"topup_tx_id", row.ID,
 		"provider_tx_id", row.ProviderTxID,
 		"user_id", target.ID,
 		"amount", row.Amount,
+		"ken_amount", kenTx.Amount,
+		"bonus_ken", quote.Bonus,
 		"balance_after", updatedUser.Ken,
 	)
 
@@ -204,6 +220,8 @@ func (s *Service) ManualCredit(rowID, adminID uuid.UUID, req ManualCreditRequest
 		ID:           row.ID.String(),
 		Status:       string(models.TopupTxStatusCredited),
 		KenAmount:    int64(kenTx.Amount),
+		BonusKen:     quote.Bonus,
+		BonusPercent: quote.BonusPercent,
 		BalanceAfter: updatedUser.Ken,
 		User: UserInfo{
 			ID:       target.ID.String(),
@@ -223,6 +241,8 @@ func toTransactionItem(t *models.TopupTransaction) TransactionItem {
 		Type:         t.Type,
 		Status:       string(t.Status),
 		KenAmount:    t.KenAmount,
+		BonusKen:     t.BonusKen,
+		BonusPercent: t.BonusPercent,
 		CreatedAt:    t.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:    t.UpdatedAt.UTC().Format(time.RFC3339),
 	}

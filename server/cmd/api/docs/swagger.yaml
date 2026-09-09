@@ -1833,11 +1833,32 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_setting.PutManySettingsRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_setting.SettingEntry'
+        maxItems: 20
+        minItems: 1
+        type: array
+    required:
+    - items
+    type: object
   internal_modules_admin_setting.PutSettingRequest:
     properties:
       value:
         $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
     required:
+    - value
+    type: object
+  internal_modules_admin_setting.SettingEntry:
+    properties:
+      key:
+        type: string
+      value:
+        $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
+    required:
+    - key
     - value
     type: object
   internal_modules_admin_setting.SettingItemSuccessResponse:
@@ -1891,6 +1912,10 @@ definitions:
   internal_modules_admin_topup.ManualCreditResponse:
     properties:
       balanceAfter:
+        type: integer
+      bonusKen:
+        type: integer
+      bonusPercent:
         type: integer
       id:
         type: string
@@ -1955,6 +1980,10 @@ definitions:
   internal_modules_admin_topup.TransactionItem:
     properties:
       amount:
+        type: integer
+      bonusKen:
+        type: integer
+      bonusPercent:
         type: integer
       createdAt:
         type: string
@@ -5305,19 +5334,27 @@ definitions:
         example: '@{username}'
         type: string
     type: object
+  internal_modules_setting.TopupBonusTier:
+    properties:
+      minAmount:
+        type: integer
+      percent:
+        type: integer
+    type: object
   internal_modules_setting.TopupConfigResponse:
     properties:
       bank:
         $ref: '#/definitions/internal_modules_setting.TopupBankInfo'
+      bonusTiers:
+        items:
+          $ref: '#/definitions/internal_modules_setting.TopupBonusTier'
+        type: array
       enabled:
         example: true
         type: boolean
       enabledMobile:
         example: true
         type: boolean
-      kenPerVnd:
-        example: 1
-        type: integer
       minAmount:
         example: 10000
         type: integer
@@ -11729,6 +11766,33 @@ paths:
       security:
       - BearerAuth: []
       summary: Danh sách cấu hình hệ thống (admin)
+      tags:
+      - admin-settings
+    put:
+      consumes:
+      - application/json
+      description: Mọi key được validate trước, sau đó ghi tất cả hoặc không ghi gì
+      parameters:
+      - description: Danh sách key/value
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_setting.PutManySettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_setting.SettingListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cập nhật nhiều cấu hình hệ thống trong một transaction (admin)
       tags:
       - admin-settings
   /admin/settings/{key}:
