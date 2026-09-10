@@ -23,6 +23,18 @@ const maxTopupAmountVnd = 1_000_000_000
 
 var usernameCapturePattern = `([A-Za-z0-9._-]+)`
 
+const usernameEdgePunctuation = "._-"
+
+var bankNoisePatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(?i)^(?:GD\s*)?MBVCB\.\d+\.\d+\.`),
+	regexp.MustCompile(`(?i)\.CT\s+tu\s+\d+.*$`),
+	regexp.MustCompile(`(?i)\s*-?\s*Ma\s+GD\s+ACSP\b.*$`),
+}
+
+type userFinder interface {
+	FindUserByUsernameCI(username string) (*models.User, error)
+}
+
 type Service struct {
 	repo      *Repository
 	settings  *setting.Service
@@ -249,21 +261,42 @@ func (s *Service) credit(row *models.TopupTransaction, userID uuid.UUID, notifyO
 }
 
 func (s *Service) matchUser(memoTemplate, description string) (string, *models.User, error) {
-	re, ok := buildMemoRegex(memoTemplate)
+	capture, u, ok, err := resolveUser(s.repo, memoTemplate, description)
 	if !ok {
 		s.logger.Warnw("Topup memo template has no {username} placeholder", "template", memoTemplate)
-		return "", nil, nil
 	}
-	match := re.FindStringSubmatch(normalizeMemoText(description))
-	if len(match) < 2 || match[1] == "" {
-		return "", nil, nil
+	return capture, u, err
+}
+
+func resolveUser(finder userFinder, memoTemplate, description string) (string, *models.User, bool, error) {
+	capture, ok := captureUsername(memoTemplate, description)
+	if !ok || capture == "" {
+		return "", nil, ok, nil
 	}
-	capture := match[1]
-	u, err := s.repo.FindUserByUsernameCI(capture)
+	u, err := finder.FindUserByUsernameCI(capture)
 	if err != nil {
-		return capture, nil, err
+		return capture, nil, true, err
 	}
-	return capture, u, nil
+	return capture, u, true, nil
+}
+
+func captureUsername(memoTemplate, description string) (string, bool) {
+	re, ok := buildMemoRegex(memoTemplate)
+	if !ok {
+		return "", false
+	}
+	match := re.FindStringSubmatch(stripBankNoise(normalizeMemoText(description)))
+	if len(match) < 2 {
+		return "", true
+	}
+	return strings.Trim(match[1], usernameEdgePunctuation), true
+}
+
+func stripBankNoise(text string) string {
+	for _, re := range bankNoisePatterns {
+		text = re.ReplaceAllString(text, "")
+	}
+	return strings.TrimSpace(text)
 }
 
 func buildMemoRegex(template string) (*regexp.Regexp, bool) {
