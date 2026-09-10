@@ -1603,7 +1603,7 @@
       "qrHint": "Mở app ngân hàng/ví và quét mã QR để nạp {{ken}} KEN.",
       "amountLabel": "Số tiền cần chuyển",
       "paid": "Tôi đã thanh toán",
-      "paidPending": "Đang chờ xác nhận thanh toán. Tính năng sẽ sớm hoàn thiện.",
+      "paidPending": "Đang chờ xác nhận thanh toán. KEN sẽ được cộng trong giây lát.",
       "bankLabel": "Ngân hàng",
       "accountNumberLabel": "Số tài khoản",
       "accountNameLabel": "Chủ tài khoản",

@@ -11,6 +11,7 @@ import {
   topupBonusPercentFor,
 } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
+import { TOPUP_PAID_REDIRECT_MS } from '@constants';
 import type { TopupBonusTier } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useTopupConfigStore } from '@/store/topupConfigStore';
@@ -54,10 +55,17 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
   const loadConfig = useTopupConfigStore((s) => s.load);
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [customText, setCustomText] = useState<string | null>(null);
+  const [paidPending, setPaidPending] = useState(false);
 
   useEffect(() => {
     void loadConfig();
   }, [loadConfig]);
+
+  useEffect(() => {
+    if (!paidPending) return;
+    const timer = window.setTimeout(onClose, TOPUP_PAID_REDIRECT_MS);
+    return () => window.clearTimeout(timer);
+  }, [paidPending, onClose]);
 
   const minAmount = config?.minAmount ?? MIN_AMOUNT;
   const stepAmount = config?.stepAmount ?? STEP_AMOUNT;
@@ -103,6 +111,12 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
 
   function changeCustom(raw: string) {
     setCustomText(raw.replace(/\D/g, ''));
+  }
+
+  function confirmPaid() {
+    if (paidPending) return;
+    setPaidPending(true);
+    toast.info(t('ken.buy.paidPending'));
   }
 
   return (
@@ -261,8 +275,9 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                     </p>
                     <button
                       type="button"
-                      onClick={() => toast.info(t('ken.buy.paidPending'))}
-                      className="mt-3 w-full rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-ola-on-primary active:opacity-90"
+                      onClick={confirmPaid}
+                      disabled={paidPending}
+                      className="mt-3 w-full rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-ola-on-primary active:opacity-90 disabled:opacity-60"
                     >
                       {t('ken.buy.paid')}
                     </button>

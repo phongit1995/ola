@@ -1603,7 +1603,7 @@
       "qrHint": "Open your bank/e-wallet app and scan the QR to top up {{ken}} KEN.",
       "amountLabel": "Amount to transfer",
       "paid": "I have paid",
-      "paidPending": "Waiting for payment confirmation. This feature is coming soon.",
+      "paidPending": "Waiting for payment confirmation. Your KEN will be credited shortly.",
       "bankLabel": "Bank",
       "accountNumberLabel": "Account number",
       "accountNameLabel": "Account holder",

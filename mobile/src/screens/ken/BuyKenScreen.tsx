@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { TOPUP_PAID_REDIRECT_MS } from '@ola/shared/constants';
 import { formatKen, formatVnd, topupBonusPercentFor, withAlpha } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RootStackParamList } from '@navigation/types';
@@ -21,6 +23,19 @@ export function BuyKenScreen({ navigation }: Props) {
   const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const vm = useBuyKen();
+  const [paidPending, setPaidPending] = useState(false);
+
+  useEffect(() => {
+    if (!paidPending) return;
+    const timer = setTimeout(() => navigation.goBack(), TOPUP_PAID_REDIRECT_MS);
+    return () => clearTimeout(timer);
+  }, [paidPending, navigation]);
+
+  function confirmPaid() {
+    if (paidPending) return;
+    setPaidPending(true);
+    push('info', t('ken.buy.paidPending'));
+  }
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#ececec' }}>
@@ -214,8 +229,10 @@ export function BuyKenScreen({ navigation }: Props) {
                       {t('ken.buy.qrHint', { ken: formatKen(vm.kenAmount) })}
                     </Text>
                     <Pressable
-                      onPress={() => push('info', t('ken.buy.paidPending'))}
+                      onPress={confirmPaid}
+                      disabled={paidPending}
                       className="mt-3 w-full items-center rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 active:opacity-90"
+                      style={paidPending ? { opacity: 0.6 } : undefined}
                     >
                       <Text className="text-sm font-medium text-white">{t('ken.buy.paid')}</Text>
                     </Pressable>
