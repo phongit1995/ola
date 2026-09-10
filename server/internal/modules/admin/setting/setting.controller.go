@@ -26,6 +26,21 @@ type PutSettingRequest struct {
 	Value models.JSONB `json:"value" binding:"required"`
 }
 
+type SettingEntry struct {
+	Key   string       `json:"key" binding:"required"`
+	Value models.JSONB `json:"value" binding:"required"`
+}
+
+type PutManySettingsRequest struct {
+	Items []SettingEntry `json:"items" binding:"required,min=1,max=20,dive"`
+}
+
+const maxSettingKeyLength = 100
+
+func validSettingKey(key string) bool {
+	return key != "" && len(key) <= maxSettingKeyLength
+}
+
 type SettingListResponse struct {
 	Items []models.AppSetting `json:"items"`
 }
@@ -71,34 +86,18 @@ func maskSensitiveSetting(item models.AppSetting) models.AppSetting {
 // @Router       /admin/settings/{key} [put]
 func (ctrl *Controller) Put(c *gin.Context) (interface{}, error) {
 	key := strings.TrimSpace(c.Param("key"))
-	if key == "" || len(key) > 100 {
+	if !validSettingKey(key) {
 		return nil, utils.NewHTTPError(400, "invalid setting key")
 	}
 	req, err := utils.BindJSON[PutSettingRequest](c)
 	if err != nil {
 		return nil, err
 	}
-	if key == setting.KeyUsernameChange {
-		if err := setting.ValidateUsernameChangeValue(req.Value); err != nil {
-			return nil, utils.NewHTTPError(400, err.Error())
-		}
+	value, err := ctrl.prepareValue(key, req.Value)
+	if err != nil {
+		return nil, err
 	}
-	if key == setting.KeyPushNotification {
-		if err := setting.ValidatePushNotificationValue(req.Value); err != nil {
-			return nil, utils.NewHTTPError(400, err.Error())
-		}
-	}
-	if key == setting.KeyPushFirebase {
-		if err := setting.ValidatePushFirebaseValue(req.Value); err != nil {
-			return nil, utils.NewHTTPError(400, err.Error())
-		}
-		encrypted, err := setting.EncryptPushFirebaseValue(ctrl.cfg, req.Value)
-		if err != nil {
-			return nil, utils.ServiceError(err)
-		}
-		req.Value = encrypted
-	}
-	item, err := ctrl.service.Put(key, req.Value)
+	item, err := ctrl.service.Put(key, value)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -107,4 +106,74 @@ func (ctrl *Controller) Put(c *gin.Context) (interface{}, error) {
 		item = &masked
 	}
 	return item, nil
+}
+
+// PutMany godoc
+// @Summary      Cập nhật nhiều cấu hình hệ thống trong một transaction (admin)
+// @Description  Mọi key được validate trước, sau đó ghi tất cả hoặc không ghi gì
+// @Tags         admin-settings
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body PutManySettingsRequest true "Danh sách key/value"
+// @Success      200  {object}  SettingListSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Router       /admin/settings [put]
+func (ctrl *Controller) PutMany(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[PutManySettingsRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	entries := make([]models.AppSetting, 0, len(req.Items))
+	seen := make(map[string]bool, len(req.Items))
+	for _, entry := range req.Items {
+		key := strings.TrimSpace(entry.Key)
+		if !validSettingKey(key) {
+			return nil, utils.NewHTTPError(400, "invalid setting key")
+		}
+		if seen[key] {
+			return nil, utils.NewHTTPError(400, "duplicate setting key: "+key)
+		}
+		seen[key] = true
+		value, err := ctrl.prepareValue(key, entry.Value)
+		if err != nil {
+			return nil, err
+		}
+		entries = append(entries, models.AppSetting{Key: key, Value: value})
+	}
+	items, err := ctrl.service.PutMany(entries)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	for i := range items {
+		items[i] = maskSensitiveSetting(items[i])
+	}
+	return SettingListResponse{Items: items}, nil
+}
+
+func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSONB, error) {
+	switch key {
+	case setting.KeyTopup:
+		if err := setting.ValidateTopupValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	case setting.KeyUsernameChange:
+		if err := setting.ValidateUsernameChangeValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	case setting.KeyPushNotification:
+		if err := setting.ValidatePushNotificationValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	case setting.KeyPushFirebase:
+		if err := setting.ValidatePushFirebaseValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+		encrypted, err := setting.EncryptPushFirebaseValue(ctrl.cfg, value)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		return encrypted, nil
+	}
+	return value, nil
 }

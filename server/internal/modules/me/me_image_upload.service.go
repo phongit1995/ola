@@ -69,22 +69,67 @@ type postUploadRecord struct {
 	URL        string `json:"url"`
 }
 
-func newPostUploadRecord(userID uuid.UUID, image UploadedImage) postUploadRecord {
+type postUploadRef struct {
+	URL        string
+	ObjectName string
+}
+
+func imageUploadRefs(inputs []MeImageInput) []postUploadRef {
+	refs := make([]postUploadRef, 0, len(inputs))
+	for _, input := range inputs {
+		refs = append(refs, postUploadRef{URL: input.URL, ObjectName: input.ObjectName})
+	}
+	return refs
+}
+
+func audioUploadRefs(inputs []MeAudioInput) []postUploadRef {
+	refs := make([]postUploadRef, 0, len(inputs))
+	for _, input := range inputs {
+		refs = append(refs, postUploadRef{URL: input.URL, ObjectName: input.ObjectName})
+	}
+	return refs
+}
+
+func uploadedImageRefs(images []UploadedImage) []postUploadRef {
+	refs := make([]postUploadRef, 0, len(images))
+	for _, image := range images {
+		refs = append(refs, postUploadRef{URL: image.URL, ObjectName: image.ObjectName})
+	}
+	return refs
+}
+
+func knownImageURLs(images models.MeImages) []string {
+	urls := make([]string, 0, len(images))
+	for _, image := range images {
+		urls = append(urls, image.URL)
+	}
+	return urls
+}
+
+func knownAudioURLs(audios models.MeAudios) []string {
+	urls := make([]string, 0, len(audios))
+	for _, audio := range audios {
+		urls = append(urls, audio.URL)
+	}
+	return urls
+}
+
+func newPostUploadRecord(userID uuid.UUID, ref postUploadRef) postUploadRecord {
 	return postUploadRecord{
 		UserID:     userID.String(),
-		ObjectName: image.ObjectName,
-		URL:        image.URL,
+		ObjectName: ref.ObjectName,
+		URL:        ref.URL,
 	}
 }
 
-func (s *Service) rememberPostUploads(userID uuid.UUID, images []UploadedImage) error {
+func (s *Service) rememberPostUploads(userID uuid.UUID, refs []postUploadRef) error {
 	ttl := time.Duration(constants.MePostUploadTTLSeconds) * time.Second
-	remembered := make([]postUploadRecord, 0, len(images))
-	for _, image := range images {
-		if image.ObjectName == "" {
+	remembered := make([]postUploadRecord, 0, len(refs))
+	for _, ref := range refs {
+		if ref.ObjectName == "" {
 			continue
 		}
-		record := newPostUploadRecord(userID, image)
+		record := newPostUploadRecord(userID, ref)
 		if err := s.cache.Set(postUploadCacheKey(userID, record.ObjectName), record, ttl); err != nil {
 			s.logger.Warnw("Failed to track uploaded post image", "object", record.ObjectName, "error", err)
 			s.forgetPostUpload(record)
@@ -120,19 +165,19 @@ func (s *Service) pendingPostUpload(userID uuid.UUID, objectName string) (postUp
 
 func (s *Service) pendingPostUploads(
 	userID uuid.UUID,
-	images []MeImageInput,
-	knownReferences models.MeImages,
+	refs []postUploadRef,
+	knownReferences []string,
 ) ([]postUploadRecord, error) {
 	prefix := postUploadPrefix(userID)
-	records := make([]postUploadRecord, 0, len(images))
-	seenRecords := make(map[string]struct{}, len(images))
-	unresolvedURLs := make(map[string]struct{}, len(images))
+	records := make([]postUploadRecord, 0, len(refs))
+	seenRecords := make(map[string]struct{}, len(refs))
+	unresolvedURLs := make(map[string]struct{}, len(refs))
 	knownURLs := make(map[string]struct{}, len(knownReferences))
-	for _, image := range knownReferences {
-		knownURLs[normalizedPostImageURL(image.URL)] = struct{}{}
+	for _, knownURL := range knownReferences {
+		knownURLs[normalizedPostImageURL(knownURL)] = struct{}{}
 	}
 
-	for _, image := range images {
+	for _, image := range refs {
 		objectName := s.s3.ObjectNameFromURL(image.URL)
 		explicitObjectName := strings.TrimSpace(image.ObjectName)
 		if explicitObjectName != "" {
@@ -278,7 +323,7 @@ func postUploadPrefix(userID uuid.UUID) string {
 }
 
 func validPostUploadObjectNames(userID uuid.UUID, objectNames []string) ([]string, error) {
-	if len(objectNames) == 0 || len(objectNames) > constants.MaxPostImages {
+	if len(objectNames) == 0 || len(objectNames) > constants.MaxPostUploadCleanup {
 		return nil, errInvalidImageCleanup
 	}
 	prefix := postUploadPrefix(userID)
@@ -300,13 +345,13 @@ func validPostUploadObjectNames(userID uuid.UUID, objectNames []string) ([]strin
 	return cleaned, nil
 }
 
-func uploadedObjectNames(images []UploadedImage) []string {
-	objectNames := make([]string, 0, len(images))
-	for _, image := range images {
-		if image.ObjectName == "" {
+func uploadedObjectNames(refs []postUploadRef) []string {
+	objectNames := make([]string, 0, len(refs))
+	for _, ref := range refs {
+		if ref.ObjectName == "" {
 			continue
 		}
-		objectNames = append(objectNames, image.ObjectName)
+		objectNames = append(objectNames, ref.ObjectName)
 	}
 	return objectNames
 }

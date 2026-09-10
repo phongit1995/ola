@@ -40,10 +40,12 @@ import {
   enterCallAudioSession,
   leaveCallAudioSession,
 } from './lib/callAudioSession';
-import {
-  startCallForegroundService,
-  stopCallForegroundService,
-} from './lib/callForegroundService';
+// TẮT TẠM: foreground service bị gỡ khỏi AndroidManifest để khỏi phải khai báo
+// với Play Console. Bỏ comment cả 3 chỗ trong file này khi bật lại.
+// import {
+//   startCallForegroundService,
+//   stopCallForegroundService,
+// } from './lib/callForegroundService';
 import { CALL_MODE, CALL_TYPE } from '@ola/shared/constants';
 
 const CONTROLS_HEIGHT = 64;
@@ -301,11 +303,11 @@ function useCallSession(withVideo: boolean, onFailed: () => void) {
       try {
         await enterCallAudioSession(withVideo);
         if (cancelled) return;
-        await startCallForegroundService(withVideo);
-        if (cancelled) {
-          await stopCallForegroundService().catch(() => {});
-          return;
-        }
+        // await startCallForegroundService(withVideo);
+        // if (cancelled) {
+        //   await stopCallForegroundService().catch(() => {});
+        //   return;
+        // }
         setReady(true);
       } catch {
         if (cancelled) return;
@@ -317,7 +319,7 @@ function useCallSession(withVideo: boolean, onFailed: () => void) {
     void start();
     return () => {
       cancelled = true;
-      void stopCallForegroundService().catch(() => {});
+      // void stopCallForegroundService().catch(() => {});
       void leaveCallAudioSession();
     };
   }, [withVideo, onFailed]);

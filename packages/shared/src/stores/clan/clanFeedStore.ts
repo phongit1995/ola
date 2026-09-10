@@ -5,7 +5,7 @@ import { clanErrorText } from '../../lib/clanHelpers';
 import { toast } from '../../lib/toast';
 import { ClanService } from '../../services/clan.service';
 import { MeService } from '../../services/me.service';
-import type { Post, UploadedImage } from '../../types/api/me.type';
+import type { Post, PostUploadRef } from '../../types/api/me.type';
 import type { ClanFeedState } from '../../types/client/clan.type';
 import { applyPostReaction, reconcileTopLikers } from '../feed/postHelpers';
 import { registerOnLogout } from '../auth/authStore';
@@ -137,19 +137,27 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
       });
     }
   },
-  createPost: async (clanId, payload, files, imageUrls) => {
-    let uploaded: UploadedImage[] = [];
+  createPost: async (clanId, payload, files, imageUrls, audio) => {
+    const uploaded: PostUploadRef[] = [];
     try {
-      uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      const uploadedImages =
+        files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      uploaded.push(...uploadedImages);
       const urlImages = imageUrls.map((url) => ({ url }));
-      const images = [...uploaded, ...urlImages];
-      const created = await ClanService.createPost(clanId, { ...payload, images });
+      const images = [...uploadedImages, ...urlImages];
+      const resolvedAudio = await MeService.resolveAudios(audio);
+      uploaded.push(...resolvedAudio.uploaded);
+      const created = await ClanService.createPost(clanId, {
+        ...payload,
+        images,
+        audios: resolvedAudio.audios,
+      });
       set((state) => ({ posts: [created, ...state.posts] }));
       toast.success(i18n.t('me.postSent'));
       return created;
     } catch (error) {
       console.error('create clan post failed', error);
-      await MeService.cleanupRejectedImages(error, uploaded);
+      await MeService.cleanupRejectedUploads(error, uploaded);
       toast.error(clanErrorText(error));
       return null;
     }

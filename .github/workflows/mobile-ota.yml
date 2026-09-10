@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       app_version:
-        description: 'App version native mà bundle này áp (phải khớp versionName APK đã cài, vd 1.1)'
+        description: 'App version native mà bundle này áp (phải khớp versionName APK đã cài, vd 1.0.0)'
         required: true
         type: string
       notes:

@@ -1,5 +1,6 @@
 import type { Clan, UpdateClanRequest } from '../api/clan.type';
 import type { CreatePostRequest, Post, PostReaction } from '../api/me.type';
+import type { MeAudioDraft } from './feed.type';
 import type { UploadFile } from './upload.type';
 
 export interface ClanState {
@@ -37,7 +38,8 @@ export interface ClanFeedState {
     clanId: string,
     payload: CreatePostRequest,
     files: UploadFile[],
-    imageUrls: string[]
+    imageUrls: string[],
+    audio?: MeAudioDraft | null
   ) => Promise<Post | null>;
   removePost: (id: string) => void;
   removePostsByAuthor: (authorId: string) => void;

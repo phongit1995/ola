@@ -1416,6 +1416,8 @@ export interface TopupTransaction {
   status: TopupTxStatus
   matchedUsername?: string
   kenAmount: number
+  bonusKen: number
+  bonusPercent: number
   kenTxId?: string
   note?: string
   user?: KenCounterparty
@@ -1464,8 +1466,15 @@ export interface TopupManualCreditResult {
   id: string
   status: string
   kenAmount: number
+  bonusKen: number
+  bonusPercent: number
   balanceAfter: number
   user: KenCounterparty
+}
+
+export interface TopupBonusTierSetting {
+  minAmount: number
+  percent: number
 }
 
 export interface TopupSetting {
@@ -1474,7 +1483,7 @@ export interface TopupSetting {
   minAmount: number
   stepAmount: number
   presetAmounts: number[]
-  kenPerVnd: number
+  bonusTiers: TopupBonusTierSetting[]
 }
 
 export interface UsernameChangeTierSetting {

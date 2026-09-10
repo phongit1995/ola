@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="horizontal" android:background="@drawable/bg_round_border_orange" android:paddingLeft="@dimen/metric.16dp" android:paddingTop="@dimen/metric.8dp" android:paddingRight="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="@dimen/metric.8dp"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <LinearLayout android:layout_gravity="left|center" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_weight="1.0">
-        <TextView android:textColor="@color/colorOlaAccent" android:ellipsize="end" android:gravity="left|center" android:id="@id/warningLine1TextView" android:focusable="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxLines="2" style="@style/defaultStyle.text.subhead" />
-        <TextView android:textColor="@color/colorTextBlackSecondaryOrIcon" android:ellipsize="end" android:gravity="left|center" android:id="@id/warningLine2TextView" android:focusable="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:maxLines="3" style="@style/defaultStyle.text.body1" />
-    </LinearLayout>
-    <Button android:layout_gravity="center" android:id="@id/warningButton" android:padding="@dimen/metric.8dp" android:clickable="false" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:minWidth="@dimen/metric.48dp" android:minHeight="@dimen/metric.36dp" style="@style/defaultStyle.button.green" />
-</LinearLayout>

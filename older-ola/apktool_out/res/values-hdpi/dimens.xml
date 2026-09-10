@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <dimen name="mall.entry.tab.margin">56.0dp</dimen>
-    <dimen name="mall.entry.thumb.width">140.0dp</dimen>
-    <dimen name="mall.entry.user.button.height">28.0dp</dimen>
-</resources>

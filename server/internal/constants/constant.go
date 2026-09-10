@@ -336,6 +336,9 @@ const (
 	UploadDateLayout             = "02012006"
 	UploadDateLayoutDay          = "2006-01-02"
 	MaxPostImages                = 5
+	MaxPostAudios                = 1
+	MaxPostAudioDurationSeconds  = 300
+	MaxPostUploadCleanup         = MaxPostImages + MaxPostAudios
 	CacheKeyRateLimitUpload      = "RATE_LIMIT:%s:UPLOAD"
 	RateLimitUploadMaxRequests   = 30
 	RateLimitUploadWindowSeconds = 60

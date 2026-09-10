@@ -7,8 +7,6 @@
 > - Backend reference: `chat-service/internal/transport/websocket/*`, `internal/domain/*/handler.go` (cấu trúc gần như **giống hệt** — ola được dựng theo reference).
 > - Client reference: `chat-service/clients/packages/shared/src/{services/socket.ts, store/chat.realtime.ts, store/chatStore.ts}`.
 > - Client ola: `web/src/shared/services/socket.service.ts`, `web/src/store/roomChatStore.ts`.
->
-> (Không nhầm với [`../older-ola/docs/api/socket-protocol.md`](../older-ola/docs/api/socket-protocol.md) — đó là giao thức TCP nhị phân của APK đời cũ.)
 
 ---
 

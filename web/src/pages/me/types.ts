@@ -1,4 +1,4 @@
-import type { PostCheckIn, PostVisibility } from '@app-types';
+import type { PostAudio, PostCheckIn, PostVisibility } from '@app-types';
 
 export type MeCheckIn = PostCheckIn;
 
@@ -17,6 +17,7 @@ export interface MePost {
   visibility: PostVisibility;
   image: string | null;
   photos?: string[];
+  audio?: PostAudio | null;
   checkIn?: MeCheckIn | null;
   comments: number;
   likes: number;

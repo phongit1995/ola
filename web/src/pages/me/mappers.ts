@@ -1,4 +1,4 @@
-import { colorForName } from '@lib';
+import { colorForName, postAudio } from '@lib';
 import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import type { MePost } from './types';
@@ -106,6 +106,7 @@ export function toMePost(
     visibility: post.visibility,
     image: post.sticker && post.sticker !== '' ? post.sticker : null,
     photos: post.images?.map((image) => image.url) ?? [],
+    audio: postAudio(post),
     checkIn,
     comments: post.commentCount,
     likes: post.likeCount,

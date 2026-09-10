@@ -71,6 +71,8 @@ type CreditParams struct {
 	RowID        uuid.UUID
 	UserID       uuid.UUID
 	KenAmount    int
+	BonusKen     int64
+	BonusPercent int
 	ProviderTxID string
 	AmountVnd    int64
 	ActorType    models.KenActorType
@@ -120,6 +122,8 @@ func (r *Repository) Credit(p CreditParams) (*models.User, *models.KenTransactio
 			Metadata: models.JSONB{
 				"providerTxId": p.ProviderTxID,
 				"amountVnd":    p.AmountVnd,
+				"bonusKen":     p.BonusKen,
+				"bonusPercent": p.BonusPercent,
 			},
 		}
 		if err := tx.Create(&kenTx).Error; err != nil {
@@ -127,12 +131,14 @@ func (r *Repository) Credit(p CreditParams) (*models.User, *models.KenTransactio
 		}
 
 		if err := tx.Model(&models.TopupTransaction{}).Where("id = ?", p.RowID).Updates(map[string]interface{}{
-			"status":     models.TopupTxStatusCredited,
-			"user_id":    p.UserID,
-			"ken_amount": int64(p.KenAmount),
-			"ken_tx_id":  kenTx.ID,
-			"note":       nil,
-			"updated_at": gorm.Expr("CURRENT_TIMESTAMP"),
+			"status":        models.TopupTxStatusCredited,
+			"user_id":       p.UserID,
+			"ken_amount":    int64(p.KenAmount),
+			"bonus_ken":     p.BonusKen,
+			"bonus_percent": p.BonusPercent,
+			"ken_tx_id":     kenTx.ID,
+			"note":          nil,
+			"updated_at":    gorm.Expr("CURRENT_TIMESTAMP"),
 		}).Error; err != nil {
 			return err
 		}

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout android:padding="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="match_parent"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
-        <ListView android:id="@id/lvFacebookAccountList" android:scrollbars="none" android:layout_width="match_parent" android:layout_height="0.0dp" android:cacheColorHint="@color/transparent" android:dividerHeight="0.0dp" android:layout_weight="1.0" style="?commont.list" />
-        <Button android:id="@id/btnRegisterWhite" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp" android:text="@string/string_register_account_by_facebok" style="@style/defaultStyle.button.green" />
-    </LinearLayout>
-    <ProgressBar android:layout_gravity="center" android:id="@id/progressBar" android:visibility="invisible" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/defaultStyle.progresswatting" />
-</FrameLayout>

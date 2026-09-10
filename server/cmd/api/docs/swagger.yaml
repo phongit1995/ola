@@ -1833,11 +1833,32 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_setting.PutManySettingsRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_setting.SettingEntry'
+        maxItems: 20
+        minItems: 1
+        type: array
+    required:
+    - items
+    type: object
   internal_modules_admin_setting.PutSettingRequest:
     properties:
       value:
         $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
     required:
+    - value
+    type: object
+  internal_modules_admin_setting.SettingEntry:
+    properties:
+      key:
+        type: string
+      value:
+        $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
+    required:
+    - key
     - value
     type: object
   internal_modules_admin_setting.SettingItemSuccessResponse:
@@ -1891,6 +1912,10 @@ definitions:
   internal_modules_admin_topup.ManualCreditResponse:
     properties:
       balanceAfter:
+        type: integer
+      bonusKen:
+        type: integer
+      bonusPercent:
         type: integer
       id:
         type: string
@@ -1955,6 +1980,10 @@ definitions:
   internal_modules_admin_topup.TransactionItem:
     properties:
       amount:
+        type: integer
+      bonusKen:
+        type: integer
+      bonusPercent:
         type: integer
       createdAt:
         type: string
@@ -3852,7 +3881,7 @@ definitions:
       objectNames:
         items:
           type: string
-        maxItems: 5
+        maxItems: 6
         minItems: 1
         type: array
     required:
@@ -3920,6 +3949,11 @@ definitions:
     type: object
   internal_modules_me.CreateMeRequest:
     properties:
+      audios:
+        items:
+          $ref: '#/definitions/internal_modules_me.MeAudioInput'
+        maxItems: 1
+        type: array
       checkIn:
         $ref: '#/definitions/internal_modules_me.CheckInInput'
       content:
@@ -3954,6 +3988,45 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  internal_modules_me.MeAudioInput:
+    properties:
+      duration:
+        minimum: 0
+        type: number
+      mimeType:
+        type: string
+      objectName:
+        maxLength: 500
+        type: string
+      size:
+        minimum: 0
+        type: integer
+      url:
+        example: http://localhost:9000/chat-uploads/posts/abc.m4a
+        type: string
+      waveform:
+        items:
+          type: number
+        maxItems: 64
+        type: array
+    required:
+    - url
+    type: object
+  internal_modules_me.MeAudioResponse:
+    properties:
+      duration:
+        type: number
+      mimeType:
+        type: string
+      size:
+        type: integer
+      url:
+        type: string
+      waveform:
+        items:
+          type: number
+        type: array
     type: object
   internal_modules_me.MeFeedResponse:
     properties:
@@ -4067,6 +4140,10 @@ definitions:
     type: object
   internal_modules_me.MeResponse:
     properties:
+      audios:
+        items:
+          $ref: '#/definitions/internal_modules_me.MeAudioResponse'
+        type: array
       author:
         $ref: '#/definitions/internal_modules_me.AuthorResponse'
       checkIn:
@@ -4123,6 +4200,11 @@ definitions:
     type: object
   internal_modules_me.UpdateMeRequest:
     properties:
+      audios:
+        items:
+          $ref: '#/definitions/internal_modules_me.MeAudioInput'
+        maxItems: 1
+        type: array
       checkIn:
         $ref: '#/definitions/internal_modules_me.CheckInInput'
       clearCheckIn:
@@ -4145,11 +4227,33 @@ definitions:
         - private
         type: string
     type: object
+  internal_modules_me.UploadAudioResponse:
+    properties:
+      audio:
+        $ref: '#/definitions/internal_modules_me.UploadedAudio'
+    type: object
   internal_modules_me.UploadImagesResponse:
     properties:
       images:
         items:
           $ref: '#/definitions/internal_modules_me.UploadedImage'
+        type: array
+    type: object
+  internal_modules_me.UploadedAudio:
+    properties:
+      duration:
+        type: number
+      mimeType:
+        type: string
+      objectName:
+        type: string
+      size:
+        type: integer
+      url:
+        type: string
+      waveform:
+        items:
+          type: number
         type: array
     type: object
   internal_modules_me.UploadedImage:
@@ -5230,19 +5334,27 @@ definitions:
         example: '@{username}'
         type: string
     type: object
+  internal_modules_setting.TopupBonusTier:
+    properties:
+      minAmount:
+        type: integer
+      percent:
+        type: integer
+    type: object
   internal_modules_setting.TopupConfigResponse:
     properties:
       bank:
         $ref: '#/definitions/internal_modules_setting.TopupBankInfo'
+      bonusTiers:
+        items:
+          $ref: '#/definitions/internal_modules_setting.TopupBonusTier'
+        type: array
       enabled:
         example: true
         type: boolean
       enabledMobile:
         example: true
         type: boolean
-      kenPerVnd:
-        example: 1
-        type: integer
       minAmount:
         example: 10000
         type: integer
@@ -7298,6 +7410,11 @@ definitions:
     type: object
   ola-chat-server_internal_modules_me.CreateMeRequest:
     properties:
+      audios:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_me.MeAudioInput'
+        maxItems: 1
+        type: array
       checkIn:
         $ref: '#/definitions/ola-chat-server_internal_modules_me.CheckInInput'
       content:
@@ -7319,6 +7436,45 @@ definitions:
         - private
         example: public
         type: string
+    type: object
+  ola-chat-server_internal_modules_me.MeAudioInput:
+    properties:
+      duration:
+        minimum: 0
+        type: number
+      mimeType:
+        type: string
+      objectName:
+        maxLength: 500
+        type: string
+      size:
+        minimum: 0
+        type: integer
+      url:
+        example: http://localhost:9000/chat-uploads/posts/abc.m4a
+        type: string
+      waveform:
+        items:
+          type: number
+        maxItems: 64
+        type: array
+    required:
+    - url
+    type: object
+  ola-chat-server_internal_modules_me.MeAudioResponse:
+    properties:
+      duration:
+        type: number
+      mimeType:
+        type: string
+      size:
+        type: integer
+      url:
+        type: string
+      waveform:
+        items:
+          type: number
+        type: array
     type: object
   ola-chat-server_internal_modules_me.MeImageInput:
     properties:
@@ -7352,6 +7508,10 @@ definitions:
     type: object
   ola-chat-server_internal_modules_me.MeResponse:
     properties:
+      audios:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_me.MeAudioResponse'
+        type: array
       author:
         $ref: '#/definitions/ola-chat-server_internal_modules_me.AuthorResponse'
       checkIn:
@@ -9123,6 +9283,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_me.MeResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_UploadAudioResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.UploadAudioResponse'
       error:
         type: string
       path:
@@ -11589,6 +11766,33 @@ paths:
       security:
       - BearerAuth: []
       summary: Danh sách cấu hình hệ thống (admin)
+      tags:
+      - admin-settings
+    put:
+      consumes:
+      - application/json
+      description: Mọi key được validate trước, sau đó ghi tất cả hoặc không ghi gì
+      parameters:
+      - description: Danh sách key/value
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_setting.PutManySettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_setting.SettingListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cập nhật nhiều cấu hình hệ thống trong một transaction (admin)
       tags:
       - admin-settings
   /admin/settings/{key}:
@@ -15055,6 +15259,37 @@ paths:
       security:
       - BearerAuth: []
       summary: Like or dislike a post (same reaction again removes it)
+      tags:
+      - me
+  /me/audio:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Audio file (webm/m4a/mp3/wav/ogg)
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Duration in seconds
+        in: formData
+        name: duration
+        required: true
+        type: number
+      - description: JSON array of 0..1 levels, max 64
+        in: formData
+        name: waveform
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_UploadAudioResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload a post voice recording (≤10MB, ≤300s)
       tags:
       - me
   /me/images:

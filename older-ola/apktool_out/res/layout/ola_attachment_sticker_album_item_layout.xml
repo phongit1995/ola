@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout android:id="@id/stickerAlbumCoverViewLayout" android:layout_width="wrap_content" android:layout_height="wrap_content"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <chat.ola.vn.view.OlaCachedImageView android:id="@id/stickerAlbumCoverImageView" android:layout_width="@dimen/metric.32dp" android:layout_height="@dimen/metric.32dp" android:scaleType="centerInside" android:adjustViewBounds="true" />
-</FrameLayout>

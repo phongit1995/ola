@@ -4,22 +4,40 @@ import { Keyboard } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { hasMePostBody, imageUploadErrorText } from '@ola/shared/lib';
+import {
+  hasMePostBody,
+  imageUploadErrorText,
+  meAudioDraftFromPost,
+} from '@ola/shared/lib';
 import type {
   CreatePostRequest,
+  MeAudioDraft,
   NativeUploadFile,
   Post,
   PostVisibility,
 } from '@ola/shared/types';
 import type { ChatComposerHandle } from '@components/ChatComposer';
+import type { VoiceRecorderControlHandle } from '@components/chat/voice/VoiceRecorderControl';
+import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 import { findActionIcon } from '@lib/checkInActions';
 import { compressImagesForUpload } from '@lib/compressImage';
 import { uploadFileFromAsset } from '@lib/imagePicker';
 import { isPostEditExpired } from '@lib/post';
+import {
+  deleteTemporaryVoiceFile,
+  deleteTemporaryVoiceFileAfterUiUpdate,
+} from '@lib/temporaryVoiceFile';
 import type { ComposedCheckIn } from './components/MeComposerCheckInPanel';
 import { COMPOSER_MAX_IMAGES, COMPOSER_PRIVACY_OPTIONS } from './constants';
-import type { PickedPhoto } from './interface';
+import type { PickedAudio, PickedPhoto } from './interface';
 import type { ComposerAttachKey, ComposerPanel } from './types';
+
+export type SubmitMePost = (
+  payload: CreatePostRequest,
+  files: NativeUploadFile[],
+  imageUrls: string[],
+  audio: MeAudioDraft | null,
+) => Promise<Post | null>;
 
 interface UseMeComposerInput {
   visible: boolean;
@@ -27,12 +45,27 @@ interface UseMeComposerInput {
   onSaved?: (post: Post) => void;
   editPost?: Post | null;
   privacyOptions?: PostVisibility[];
-  submitPost?: (
-    payload: CreatePostRequest,
-    files: NativeUploadFile[],
-    imageUrls: string[],
-  ) => Promise<Post | null>;
+  submitPost?: SubmitMePost;
   composerRef: RefObject<ChatComposerHandle | null>;
+  voiceRecorderRef?: RefObject<VoiceRecorderControlHandle | null>;
+}
+
+function pickedAudioFromPost(post: Post | null | undefined): PickedAudio | null {
+  const draft = meAudioDraftFromPost(post);
+  if (draft?.url == null) return null;
+  return { draft, uri: draft.url, temporary: false };
+}
+
+function pickedAudioFromRecording(recording: VoiceRecording): PickedAudio {
+  return {
+    draft: {
+      file: recording.file,
+      duration: recording.duration,
+      waveform: recording.waveform,
+    },
+    uri: recording.file.uri,
+    temporary: true,
+  };
 }
 
 export function useMeComposer({
@@ -43,6 +76,7 @@ export function useMeComposer({
   privacyOptions,
   submitPost,
   composerRef,
+  voiceRecorderRef,
 }: UseMeComposerInput) {
   const { t } = useTranslation();
   const createPost = useMeFeedStore(s => s.createPost);
@@ -55,11 +89,29 @@ export function useMeComposer({
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const [sticker, setSticker] = useState<string | null>(null);
   const [checkIn, setCheckIn] = useState<ComposedCheckIn | null>(null);
+  const [audio, setAudio] = useState<PickedAudio | null>(null);
+  const [voiceRecording, setVoiceRecording] = useState(false);
   const [panel, setPanel] = useState<ComposerPanel>(null);
   const [posting, setPosting] = useState(false);
   const imageIdRef = useRef(0);
+  const audioRef = useRef<PickedAudio | null>(null);
+  audioRef.current = audio;
 
   const isEdit = editPost != null;
+
+  useEffect(() => {
+    if (visible) return;
+    const abandoned = audioRef.current;
+    if (abandoned?.temporary) void deleteTemporaryVoiceFile(abandoned.uri);
+  }, [visible]);
+
+  useEffect(
+    () => () => {
+      const owned = audioRef.current;
+      if (owned?.temporary) void deleteTemporaryVoiceFile(owned.uri);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!visible) return;
@@ -98,6 +150,8 @@ export function useMeComposer({
           }
         : null,
     );
+    setAudio(pickedAudioFromPost(editPost));
+    setVoiceRecording(false);
     setPanel(null);
     if (editPost == null) {
       requestAnimationFrame(() => composerRef.current?.focus());
@@ -105,8 +159,20 @@ export function useMeComposer({
   }, [visible, editPost, privacyOptions, composerRef]);
 
   function close() {
-    if (posting) return;
+    if (posting || voiceRecording) return;
     onClose();
+  }
+
+  function removeAudio() {
+    const current = audioRef.current;
+    if (current?.temporary) deleteTemporaryVoiceFileAfterUiUpdate(current.uri);
+    setAudio(null);
+  }
+
+  function setRecordedAudio(recording: VoiceRecording) {
+    const current = audioRef.current;
+    if (current?.temporary) deleteTemporaryVoiceFileAfterUiUpdate(current.uri);
+    setAudio(pickedAudioFromRecording(recording));
   }
 
   async function pickImages() {
@@ -149,12 +215,22 @@ export function useMeComposer({
       void pickImages();
       return;
     }
+    if (key === 'voice') {
+      if (audio != null || voiceRecording) return;
+      Keyboard.dismiss();
+      setPanel(null);
+      voiceRecorderRef?.current?.start();
+      return;
+    }
     if (panel !== key) Keyboard.dismiss();
     setPanel(current => (current === key ? null : key));
   }
 
+  const attachmentCount = photos.length + (audio != null ? 1 : 0);
   const canPost =
-    !posting && hasMePostBody(content, photos.length, sticker, checkIn);
+    !posting &&
+    !voiceRecording &&
+    hasMePostBody(content, attachmentCount, sticker, checkIn);
 
   async function submit() {
     if (!canPost) return;
@@ -178,6 +254,7 @@ export function useMeComposer({
     const imageUrls = photos
       .filter(item => item.file == null)
       .map(item => item.uri);
+    const audioDraft = audio?.draft ?? null;
     const payload = {
       content: content.trim(),
       sticker: sticker ?? undefined,
@@ -197,10 +274,17 @@ export function useMeComposer({
     let result: Post | null = null;
     try {
       result = isEdit
-        ? await updatePost(editPost.id, payload, files, imageUrls, editPost.images)
+        ? await updatePost(
+            editPost.id,
+            payload,
+            files,
+            imageUrls,
+            editPost.images,
+            audioDraft,
+          )
         : submitPost != null
-          ? await submitPost(payload, files, imageUrls)
-          : await createPost(payload, files, imageUrls);
+          ? await submitPost(payload, files, imageUrls, audioDraft)
+          : await createPost(payload, files, imageUrls, audioDraft);
     } catch {
       pushToast('error', isEdit ? t('me.editError') : t('me.postError'));
     } finally {
@@ -225,6 +309,11 @@ export function useMeComposer({
     setSticker,
     checkIn,
     setCheckIn,
+    audio,
+    removeAudio,
+    setRecordedAudio,
+    voiceRecording,
+    setVoiceRecording,
     panel,
     setPanel,
     posting,

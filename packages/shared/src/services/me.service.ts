@@ -1,8 +1,10 @@
 import { http } from '../api/http';
 import { toApiError } from '../lib/apiError';
 import { shouldCleanupRejectedPostUpload } from '../lib/mePost';
-import { appendUploadFile } from '../lib/upload';
+import { appendUploadFile, audioUploadFilename, uploadFileMimeType } from '../lib/upload';
 import type { UploadFile } from '../types/client/upload.type';
+import type { MeAudioDraft } from '../types/client/feed.type';
+import { AUDIO_UPLOAD_TIMEOUT_MS } from '../constants/upload';
 import { API_PATH } from '../config/api';
 import type { MessageResult } from '../types/api/auth.type';
 import type {
@@ -21,7 +23,10 @@ import type {
   FeedCursorParams,
   PostReaction,
   UploadImagesResult,
-  UploadedImage,
+  UploadAudioResult,
+  UploadedAudio,
+  PostAudio,
+  PostUploadRef,
   MeNotificationListResult,
   MeNotificationUnreadResult,
 } from '../types/api/me.type';
@@ -69,11 +74,45 @@ export class MeService {
     return http.postForm<UploadImagesResult>(API_PATH.me.images, form);
   }
 
-  static async cleanupImages(images: readonly UploadedImage[]): Promise<void> {
+  static uploadAudio(
+    file: UploadFile,
+    duration: number,
+    waveform?: number[]
+  ): Promise<UploadAudioResult> {
+    const form = new FormData();
+    appendUploadFile(form, 'file', file, audioUploadFilename(uploadFileMimeType(file)));
+    form.append('duration', String(duration));
+    if (waveform != null && waveform.length > 0) {
+      form.append('waveform', JSON.stringify(waveform));
+    }
+    return http.postForm<UploadAudioResult>(API_PATH.me.audio, form, {
+      timeout: AUDIO_UPLOAD_TIMEOUT_MS,
+    });
+  }
+
+  static async resolveAudios(
+    draft: MeAudioDraft | null | undefined,
+    existing: readonly PostAudio[] = []
+  ): Promise<{ audios: PostAudio[]; uploaded: UploadedAudio[] }> {
+    if (draft == null) return { audios: [], uploaded: [] };
+    if (draft.file != null) {
+      const { audio } = await this.uploadAudio(draft.file, draft.duration, draft.waveform);
+      return { audios: [audio], uploaded: [audio] };
+    }
+    if (draft.url == null || draft.url === '') return { audios: [], uploaded: [] };
+    const kept = existing.find((audio) => audio.url === draft.url) ?? {
+      url: draft.url,
+      duration: draft.duration,
+      waveform: draft.waveform,
+    };
+    return { audios: [kept], uploaded: [] };
+  }
+
+  static async cleanupUploads(uploads: readonly PostUploadRef[]): Promise<void> {
     const objectNames = [
       ...new Set(
-        images
-          .map((image) => image.objectName)
+        uploads
+          .map((upload) => upload.objectName)
           .filter((objectName): objectName is string => objectName != null && objectName !== '')
       ),
     ];
@@ -81,21 +120,21 @@ export class MeService {
     await http.post<MessageResult>(API_PATH.me.cleanupImages, { objectNames });
   }
 
-  static async cleanupRejectedImages(
+  static async cleanupRejectedUploads(
     error: unknown,
-    images: readonly UploadedImage[]
+    uploads: readonly PostUploadRef[]
   ): Promise<void> {
     if (!shouldCleanupRejectedPostUpload(toApiError(error).status)) return;
     let lastError: unknown;
     for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
-        await this.cleanupImages(images);
+        await this.cleanupUploads(uploads);
         return;
       } catch (cleanupError) {
         lastError = cleanupError;
       }
     }
-    console.error('cleanup rejected post images failed', lastError);
+    console.error('cleanup rejected post uploads failed', lastError);
   }
 
   static pin(id: string): Promise<Post> {

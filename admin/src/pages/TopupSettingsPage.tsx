@@ -1,11 +1,22 @@
 import { App, Button, Card, Col, Collapse, Form, Input, InputNumber, Row, Select, Spin, Switch } from 'antd'
-import { SaveOutlined } from '@ant-design/icons'
+import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { Typography } from 'antd'
-import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
+import { useAppSettings, usePutAppSettings } from '@/hooks/useAppSettings'
 import { env } from '@/config/env'
 import { ApiError } from '@/lib/apiError'
 import { VIETQR_BANKS, findBankByBin } from '@/lib/banks'
-import type { AppSetting, TopupBankSetting, TopupSetting } from '@/types'
+import type { AppSetting, TopupBankSetting, TopupBonusTierSetting, TopupSetting } from '@/types'
+
+const BONUS_PERCENT_MAX = 500
+const NEW_TIER: TopupBonusTierSetting = { minAmount: 100_000, percent: 10 }
+
+function formatThousands(value: number | string | undefined) {
+  return `${value ?? ''}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+function parseThousands(value: string | undefined) {
+  return Number((value ?? '').replace(/\D/g, ''))
+}
 
 const DEFAULT_BANK: TopupBankSetting = {
   bankName: '',
@@ -23,7 +34,7 @@ const DEFAULT_TOPUP: TopupSetting = {
   minAmount: 10_000,
   stepAmount: 1_000,
   presetAmounts: [10_000, 20_000, 50_000, 100_000, 200_000, 500_000],
-  kenPerVnd: 1,
+  bonusTiers: [],
 }
 
 interface TopupSettingsFormValues {
@@ -37,7 +48,7 @@ interface TopupSettingsFormValues {
   discordWebhookUrl?: string
   minAmount: number
   stepAmount: number
-  kenPerVnd: number
+  bonusTiers?: TopupBonusTierSetting[]
   presetAmounts: string[]
 }
 
@@ -57,7 +68,7 @@ function parsePresetAmounts(raw: string[]): number[] {
 export function TopupSettingsPage() {
   const { message } = App.useApp()
   const { data: settings, isLoading } = useAppSettings()
-  const putSetting = usePutAppSetting()
+  const putSettings = usePutAppSettings()
 
   if (isLoading) {
     return (
@@ -76,6 +87,12 @@ export function TopupSettingsPage() {
       message.error('Cần ít nhất một mệnh giá gợi ý')
       return
     }
+    const bonusTiers = [...(values.bonusTiers ?? [])].sort((a, b) => a.minAmount - b.minAmount)
+    const tierMins = bonusTiers.map((tier) => tier.minAmount)
+    if (new Set(tierMins).size !== tierMins.length) {
+      message.error('Mỗi mốc thưởng chỉ được khai báo một lần')
+      return
+    }
     const bankBin = values.bankBin ?? ''
     const bankPayload: TopupBankSetting = {
       bankBin,
@@ -91,12 +108,14 @@ export function TopupSettingsPage() {
       enabledMobile: values.enabledMobile,
       minAmount: values.minAmount,
       stepAmount: values.stepAmount,
-      kenPerVnd: values.kenPerVnd,
+      bonusTiers,
       presetAmounts,
     }
     try {
-      await putSetting.mutateAsync({ key: 'topup_bank', value: { ...bankPayload } })
-      await putSetting.mutateAsync({ key: 'topup', value: { ...topupPayload } })
+      await putSettings.mutateAsync([
+        { key: 'topup', value: { ...topupPayload } },
+        { key: 'topup_bank', value: { ...bankPayload } },
+      ])
       message.success('Đã lưu cấu hình nạp KEN')
     } catch (err) {
       message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
@@ -118,7 +137,7 @@ export function TopupSettingsPage() {
           discordWebhookUrl: bank.discordWebhookUrl,
           minAmount: topup.minAmount,
           stepAmount: topup.stepAmount,
-          kenPerVnd: topup.kenPerVnd,
+          bonusTiers: topup.bonusTiers ?? [],
           presetAmounts: topup.presetAmounts.map(String),
         }}
         onFinish={save}
@@ -222,7 +241,7 @@ export function TopupSettingsPage() {
           items={[
             {
               key: 'topup-detail',
-              label: 'Cấu hình nạp KEN (số tiền tối thiểu, mệnh giá, tỉ lệ quy đổi)',
+              label: 'Cấu hình nạp KEN (số tiền tối thiểu, mệnh giá, thưởng %)',
               forceRender: true,
               children: (
                 <>
@@ -247,20 +266,82 @@ export function TopupSettingsPage() {
                     </Col>
                   </Row>
                   <Form.Item
-                    name="kenPerVnd"
-                    label="Tỉ lệ quy đổi (KEN nhận được cho mỗi 1 VNĐ)"
-                    rules={[{ required: true, message: 'Nhập tỉ lệ quy đổi' }]}
-                  >
-                    <InputNumber min={1} style={{ width: '100%' }} />
-                  </Form.Item>
-                  <Form.Item
                     name="presetAmounts"
                     label="Mệnh giá gợi ý (VNĐ)"
-                    extra="Gõ số tiền rồi Enter để thêm"
+                    extra="Gõ số tiền rồi Enter để thêm. Mỗi mệnh giá phải từ mức tối thiểu và là bội số ở trên."
                     rules={[{ required: true, message: 'Cần ít nhất một mệnh giá' }]}
                   >
                     <Select mode="tags" tokenSeparators={[',', ' ']} open={false} suffixIcon={null} />
                   </Form.Item>
+
+                  <Typography.Text strong>Thưởng KEN theo mốc nạp</Typography.Text>
+                  <Typography.Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 8 }}>
+                    Tỉ lệ gốc luôn là 1 VNĐ = 1 KEN. Mỗi dòng cộng thêm % KEN cho số tiền từ mốc đó
+                    đến trước mốc kế tiếp, mốc lớn nhất áp dụng cho mọi số tiền lớn hơn. Không có dòng
+                    nào thì không thưởng. Ví dụ mốc 100.000 thưởng 10%: nạp 100.000đ nhận 110.000 KEN.
+                  </Typography.Paragraph>
+                  <Form.List name="bonusTiers">
+                    {(fields, { add, remove }) => (
+                      <>
+                        {fields.length > 0 && (
+                          <Row gutter={12}>
+                            <Col span={10}>
+                              <Typography.Text type="secondary">Nạp từ (VNĐ)</Typography.Text>
+                            </Col>
+                            <Col span={10}>
+                              <Typography.Text type="secondary">Thưởng (%)</Typography.Text>
+                            </Col>
+                          </Row>
+                        )}
+                        {fields.map((field) => (
+                          <Row gutter={12} key={field.key} style={{ marginTop: 8 }}>
+                            <Col span={10}>
+                              <Form.Item
+                                name={[field.name, 'minAmount']}
+                                rules={[{ required: true, message: 'Nhập mốc tiền' }]}
+                                noStyle
+                              >
+                                <InputNumber<number>
+                                  min={0}
+                                  precision={0}
+                                  step={10_000}
+                                  style={{ width: '100%' }}
+                                  formatter={formatThousands}
+                                  parser={parseThousands}
+                                />
+                              </Form.Item>
+                            </Col>
+                            <Col span={10}>
+                              <Form.Item
+                                name={[field.name, 'percent']}
+                                rules={[{ required: true, message: 'Nhập % thưởng' }]}
+                                noStyle
+                              >
+                                <InputNumber
+                                  min={0}
+                                  max={BONUS_PERCENT_MAX}
+                                  precision={0}
+                                  addonAfter="%"
+                                  style={{ width: '100%' }}
+                                />
+                              </Form.Item>
+                            </Col>
+                            <Col span={4}>
+                              <Button icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
+                            </Col>
+                          </Row>
+                        ))}
+                        <Button
+                          type="dashed"
+                          icon={<PlusOutlined />}
+                          onClick={() => add({ ...NEW_TIER })}
+                          style={{ marginTop: 12 }}
+                        >
+                          Thêm mốc thưởng
+                        </Button>
+                      </>
+                    )}
+                  </Form.List>
                 </>
               ),
             },
@@ -271,7 +352,7 @@ export function TopupSettingsPage() {
           type="primary"
           htmlType="submit"
           icon={<SaveOutlined />}
-          loading={putSetting.isPending}
+          loading={putSettings.isPending}
         >
           Lưu cấu hình
         </Button>

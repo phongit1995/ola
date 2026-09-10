@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:layout_gravity="center" android:orientation="vertical" android:id="@id/meContentView" android:background="@drawable/bg_shadow_2_edges" android:layout_width="match_parent" android:layout_height="wrap_content"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <include layout="@layout/me_entry_body_text_part_layout" />
-    <include android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp" layout="@layout/chat_youtube_attachment_layout" />
-    <ViewStub android:id="@id/meCheckInViewStub" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp" />
-    <include layout="@layout/me_entry_body_media_and_button_part_layout" />
-</LinearLayout>

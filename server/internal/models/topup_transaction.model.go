@@ -28,6 +28,8 @@ type TopupTransaction struct {
 	MatchedUsername *string       `gorm:"type:varchar(50)"`
 	UserID          *uuid.UUID    `gorm:"type:uuid"`
 	KenAmount       int64         `gorm:"not null;default:0"`
+	BonusKen        int64         `gorm:"not null;default:0"`
+	BonusPercent    int           `gorm:"not null;default:0"`
 	KenTxID         *uuid.UUID    `gorm:"type:uuid"`
 	Note            *string       `gorm:"type:varchar(255)"`
 	Raw             JSONB         `gorm:"type:jsonb"`

@@ -23,6 +23,7 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
 	userModule "ola-chat-server/internal/modules/user"
@@ -85,6 +86,8 @@ func NewService(p ServiceParams) *Service {
 
 var (
 	errMaxImages            = errors.New("max 5 images")
+	errMaxAudios            = errors.New("max 1 audio")
+	errInvalidAudio         = errors.New("invalid post audio")
 	errEmptyPost            = errors.New("post must have content or attachments")
 	errPostNotFound         = errors.New("post not found")
 	errNotYourPost          = errors.New("not your post")
@@ -99,9 +102,9 @@ var (
 
 const editWindow = time.Hour
 
-func hasPostBody(content string, imageCount int, sticker string, hasCheckIn bool) bool {
+func hasPostBody(content string, attachmentCount int, sticker string, hasCheckIn bool) bool {
 	return strings.TrimSpace(content) != "" ||
-		imageCount > 0 ||
+		attachmentCount > 0 ||
 		strings.TrimSpace(sticker) != "" ||
 		hasCheckIn
 }
@@ -126,12 +129,23 @@ func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeR
 	if len(req.Images) > constants.MaxPostImages {
 		return nil, errMaxImages
 	}
+	if len(req.Audios) > constants.MaxPostAudios {
+		return nil, errMaxAudios
+	}
 	content := strings.TrimSpace(req.Content)
 	checkIn := toModelCheckIn(req.CheckIn)
-	if !hasPostBody(content, len(req.Images), req.Sticker, checkIn != nil) {
+	if !hasPostBody(content, len(req.Images)+len(req.Audios), req.Sticker, checkIn != nil) {
 		return nil, errEmptyPost
 	}
-	pendingUploads, err := s.pendingPostUploads(userID, req.Images, nil)
+	audios, err := toModelAudios(req.Audios, nil)
+	if err != nil {
+		return nil, err
+	}
+	pendingUploads, err := s.pendingPostUploads(
+		userID,
+		append(imageUploadRefs(req.Images), audioUploadRefs(req.Audios)...),
+		nil,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +157,7 @@ func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeR
 		ClanID:     clanID,
 		Content:    content,
 		Images:     toModelImages(req.Images),
+		Audios:     audios,
 		Mentions:   s.resolveMentions(content),
 		CheckIn:    checkIn,
 		Sticker:    strings.TrimSpace(req.Sticker),
@@ -180,6 +195,7 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 
 	oldMentions := post.Mentions
 	existingImages := post.Images
+	existingAudios := post.Audios
 	if req.Content != nil {
 		post.Content = strings.TrimSpace(*req.Content)
 		post.Mentions = s.resolveMentions(post.Content)
@@ -189,6 +205,16 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 			return nil, errMaxImages
 		}
 		post.Images = toModelImages(*req.Images)
+	}
+	if req.Audios != nil {
+		if len(*req.Audios) > constants.MaxPostAudios {
+			return nil, errMaxAudios
+		}
+		audios, err := toModelAudios(*req.Audios, existingAudios)
+		if err != nil {
+			return nil, err
+		}
+		post.Audios = audios
 	}
 	if req.ClearCheckIn {
 		post.CheckIn = nil
@@ -213,12 +239,23 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 		}
 		post.Visibility = newVisibility
 	}
-	if !hasPostBody(post.Content, len(post.Images), post.Sticker, post.CheckIn != nil) {
+	if !hasPostBody(post.Content, len(post.Images)+len(post.Audios), post.Sticker, post.CheckIn != nil) {
 		return nil, errEmptyPost
 	}
 	var pendingUploads []postUploadRecord
-	if req.Images != nil {
-		pendingUploads, err = s.pendingPostUploads(userID, *req.Images, existingImages)
+	if req.Images != nil || req.Audios != nil {
+		refs := make([]postUploadRef, 0)
+		if req.Images != nil {
+			refs = append(refs, imageUploadRefs(*req.Images)...)
+		}
+		if req.Audios != nil {
+			refs = append(refs, audioUploadRefs(*req.Audios)...)
+		}
+		pendingUploads, err = s.pendingPostUploads(
+			userID,
+			refs,
+			append(knownImageURLs(existingImages), knownAudioURLs(existingAudios)...),
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -884,16 +921,87 @@ func (s *Service) UploadImages(ctx context.Context, userID uuid.UUID, files []*m
 	for _, fileHeader := range files {
 		img, err := s.uploadImage(ctx, folder, fileHeader)
 		if err != nil {
-			s.deletePostObjectsAsync(uploadedObjectNames(images))
+			s.deletePostObjectsAsync(uploadedObjectNames(uploadedImageRefs(images)))
 			return nil, err
 		}
 		images = append(images, *img)
 	}
-	if err := s.rememberPostUploads(userID, images); err != nil {
-		s.deletePostObjectsAsync(uploadedObjectNames(images))
+	if err := s.rememberPostUploads(userID, uploadedImageRefs(images)); err != nil {
+		s.deletePostObjectsAsync(uploadedObjectNames(uploadedImageRefs(images)))
 		return nil, err
 	}
 	return &UploadImagesResponse{Images: images}, nil
+}
+
+func (s *Service) UploadAudio(
+	ctx context.Context,
+	userID uuid.UUID,
+	fileHeader *multipart.FileHeader,
+	duration float64,
+	waveform []float64,
+) (*UploadAudioResponse, error) {
+	if fileHeader == nil {
+		return nil, errors.New("no audio provided")
+	}
+	if err := media.ValidateDuration(duration); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
+	}
+	if duration > constants.MaxPostAudioDurationSeconds {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too long")
+	}
+	if err := media.ValidateWaveform(waveform, constants.MaxAudioWaveformSamples); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
+	}
+	if fileHeader.Size > constants.MaxAudioUploadSize {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too large")
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		return nil, errors.New("failed to open audio")
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(io.LimitReader(file, constants.MaxAudioUploadSize+1))
+	if err != nil {
+		return nil, errors.New("failed to read audio")
+	}
+	if int64(len(data)) > constants.MaxAudioUploadSize {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too large")
+	}
+
+	mimeType, err := media.DetectAudioMime(data, fileHeader.Header.Get("Content-Type"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "unsupported audio type")
+	}
+	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := media.ValidateMeasuredDuration(data, mimeType, duration, constants.MaxPostAudioDurationSeconds); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	folder := postUploadPrefix(userID) + time.Now().Format(constants.UploadDateLayout)
+	safeName := "audio" + media.PickAudioExtension(mimeType, fileHeader.Filename)
+	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, safeName, folder)
+	if err != nil {
+		s.logger.Errorw("Failed to upload post audio", "error", err)
+		return nil, errors.New("failed to upload audio")
+	}
+
+	audio := UploadedAudio{
+		URL:        upload.URL,
+		ObjectName: upload.PublicID,
+		MimeType:   mimeType,
+		Size:       int64(len(data)),
+		Duration:   duration,
+		Waveform:   waveform,
+	}
+	if err := s.rememberPostUploads(userID, []postUploadRef{{URL: audio.URL, ObjectName: audio.ObjectName}}); err != nil {
+		s.deletePostObjectsAsync([]string{audio.ObjectName})
+		return nil, err
+	}
+	return &UploadAudioResponse{Audio: audio}, nil
 }
 
 func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *multipart.FileHeader) (*UploadedImage, error) {
@@ -1219,6 +1327,60 @@ func toModelImages(inputs []MeImageInput) models.MeImages {
 	return images
 }
 
+func toModelAudios(inputs []MeAudioInput, existing models.MeAudios) (models.MeAudios, error) {
+	audios := make(models.MeAudios, 0, len(inputs))
+	for _, input := range inputs {
+		if kept, ok := findExistingAudio(existing, input.URL); ok {
+			audios = append(audios, kept)
+			continue
+		}
+		if !media.IsAllowedAudioMime(input.MimeType) {
+			return nil, errInvalidAudio
+		}
+		if err := media.ValidateDuration(input.Duration); err != nil {
+			return nil, errInvalidAudio
+		}
+		if input.Duration > constants.MaxPostAudioDurationSeconds {
+			return nil, errInvalidAudio
+		}
+		if err := media.ValidateWaveform(input.Waveform, constants.MaxAudioWaveformSamples); err != nil {
+			return nil, errInvalidAudio
+		}
+		audios = append(audios, models.MeAudio{
+			URL:      input.URL,
+			MimeType: media.BaseMime(input.MimeType),
+			Size:     input.Size,
+			Duration: input.Duration,
+			Waveform: input.Waveform,
+		})
+	}
+	return audios, nil
+}
+
+func findExistingAudio(existing models.MeAudios, rawURL string) (models.MeAudio, bool) {
+	target := normalizedPostImageURL(rawURL)
+	for _, audio := range existing {
+		if normalizedPostImageURL(audio.URL) == target {
+			return audio, true
+		}
+	}
+	return models.MeAudio{}, false
+}
+
+func toAudioResponses(audios models.MeAudios) []MeAudioResponse {
+	result := make([]MeAudioResponse, 0, len(audios))
+	for _, audio := range audios {
+		result = append(result, MeAudioResponse{
+			URL:      audio.URL,
+			MimeType: audio.MimeType,
+			Size:     audio.Size,
+			Duration: audio.Duration,
+			Waveform: audio.Waveform,
+		})
+	}
+	return result
+}
+
 func toMeResponse(post *models.Me, myReaction *models.MeReactionType) MeResponse {
 	images := make([]MeImageResponse, 0, len(post.Images))
 	for _, img := range post.Images {
@@ -1242,6 +1404,7 @@ func toMeResponse(post *models.Me, myReaction *models.MeReactionType) MeResponse
 		ClanID:       clanIDString(post),
 		ClanHandle:   clanHandleString(post),
 		Images:       images,
+		Audios:       toAudioResponses(post.Audios),
 		Mentions:     []string(post.Mentions),
 		CheckIn:      toCheckInResponse(post.CheckIn),
 		Sticker:      post.Sticker,

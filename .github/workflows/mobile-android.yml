@@ -9,16 +9,41 @@ on:
         default: 'dev'
         type: choice
         options: [dev, production]
+      output:
+        description: 'Đầu ra: apk (tester, Drive) / aab (Play Console) / both'
+        required: true
+        default: 'apk'
+        type: choice
+        options: [apk, aab, both]
+      ref:
+        description: 'Nhánh/tag muốn build (bỏ trống = nhánh đang chọn ở "Use workflow from")'
+        required: false
+        type: string
+      version_code:
+        description: 'versionCode nộp Play (phải LỚN HƠN mọi bản đã upload ở mọi track; bỏ trống = lấy mặc định trong build.gradle)'
+        required: false
+        type: string
 
 concurrency:
-  group: mobile-android-${{ github.ref }}-${{ inputs.environment }}
+  group: mobile-android-${{ inputs.ref || github.ref }}-${{ inputs.environment }}-${{ inputs.output }}
   cancel-in-progress: true
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
+    env:
+      BUILD_APK: ${{ inputs.output == 'apk' || inputs.output == 'both' }}
+      BUILD_AAB: ${{ inputs.output == 'aab' || inputs.output == 'both' }}
+      VERSION_CODE_ARG: ${{ inputs.version_code && format('-PversionCodeOverride={0}', inputs.version_code) || '' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Ghi nhận commit được build
+        run: |
+          echo "ref=${{ inputs.ref || github.ref_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: pnpm/action-setup@v4
 
@@ -47,26 +72,58 @@ jobs:
           echo "== .env dùng để build =="
           cat .env
 
-      - name: Build release APK
+      - name: Kiểm tra keystore release
+        working-directory: mobile/android
+        run: |
+          test -f keystore.properties || { echo "Thiếu mobile/android/keystore.properties"; exit 1; }
+          test -f app/olame.keystore || { echo "Thiếu mobile/android/app/olame.keystore"; exit 1; }
+
+      - name: Build release APK (arm64)
+        if: env.BUILD_APK == 'true'
         working-directory: mobile/android
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a $VERSION_CODE_ARG
 
-      - name: Gom APK
+      - name: Build release AAB (arm64 + armv7 cho Play)
+        if: env.BUILD_AAB == 'true'
+        working-directory: mobile/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a $VERSION_CODE_ARG
+
+      - name: Gom artifact + kiểm tra chữ ký
         run: |
           mkdir -p artifacts
-          cp mobile/android/app/build/outputs/apk/release/app-release.apk \
-            "artifacts/ola-${{ inputs.environment }}-${{ github.run_number }}.apk"
+          ENV="${{ inputs.environment }}"
+          RUN="${{ github.run_number }}"
+          if [ "$BUILD_APK" = "true" ]; then
+            cp mobile/android/app/build/outputs/apk/release/app-release.apk "artifacts/ola-me-${ENV}-${RUN}.apk"
+          fi
+          if [ "$BUILD_AAB" = "true" ]; then
+            cp mobile/android/app/build/outputs/bundle/release/app-release.aab "artifacts/ola-me-${ENV}-${RUN}.aab"
+          fi
+          APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner"
+          for f in artifacts/*; do
+            echo "== $f"
+            case "$f" in
+              *.apk) CERT=$("$APKSIGNER" verify --print-certs "$f" | grep 'certificate DN') ;;
+              *.aab) CERT=$(jarsigner -verify -verbose:summary -certs "$f" | grep -m1 'CN=') ;;
+            esac
+            echo "$CERT"
+            echo "$CERT" | grep -q 'CN=Ola Me' || { echo "Ký sai keystore (không phải CN=Ola Me): $f"; exit 1; }
+          done
+          ls -la artifacts
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ola-android-${{ inputs.environment }}
-          path: artifacts/*.apk
+          name: ola-me-android-${{ inputs.environment }}-${{ github.run_number }}
+          path: artifacts/*
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
 
-      - name: Upload lên Google Drive + gửi Discord
+      - name: Upload APK lên Google Drive + gửi Discord
+        if: env.BUILD_APK == 'true'
         env:
           RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
@@ -80,7 +137,7 @@ jobs:
           printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
 
           ENV="${{ inputs.environment }}"
-          APK="artifacts/ola-${ENV}-${{ github.run_number }}.apk"
+          APK="artifacts/ola-me-${ENV}-${{ github.run_number }}.apk"
           DEST="olagdrive:Ola APK Builds"
           FILE="$(basename "$APK")"
 
@@ -88,11 +145,17 @@ jobs:
           rclone mkdir "$DEST"
           rclone copy "$APK" "$DEST" --progress
 
-          # Chỉ giữ 2 bản mới nhất của env này, xoá các bản cũ hơn
+          # Chỉ giữ 2 bản mới nhất của env này, xoá các bản cũ hơn.
+          # Sắp xếp theo số build tách bằng sed: tên cũ (ola-dev-60.apk) và tên mới
+          # (ola-me-dev-66.apk) có số nằm ở trường khác nhau nên không dùng được
+          # `sort -t- -kN`. Loại luôn file vừa upload khỏi danh sách ứng viên xoá.
           rclone lsf "$DEST" \
-            | grep "^ola-${ENV}-.*\.apk$" \
-            | sort -t- -k3 -rn \
-            | tail -n +3 \
+            | grep -E "^ola(-me)?-${ENV}-[0-9]+\.apk$" \
+            | grep -v -x -F "$FILE" \
+            | sed -E 's/^.*-([0-9]+)\.apk$/\1 &/' \
+            | sort -rn \
+            | cut -d' ' -f2- \
+            | tail -n +2 \
             | while read -r old; do
                 echo "Xoá bản cũ: $old"
                 rclone deletefile "$DEST/$old" || echo "  (bỏ qua, không xoá được: $old)"
@@ -104,26 +167,35 @@ jobs:
 
           # Gửi Discord (embed) — xanh cho production, cam cho dev
           if [ "$ENV" = "production" ]; then COLOR=3066993; else COLOR=15105570; fi
+          if [ "$BUILD_AAB" = "true" ]; then
+            AAB_NOTE="AAB cho Play Console nằm trong artifact của run này: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          else
+            AAB_NOTE="Không build AAB ở run này."
+          fi
           PAYLOAD=$(jq -n \
             --arg env "$ENV" \
+            --arg ref "${{ inputs.ref || github.ref_name }}" \
             --arg run "#${{ github.run_number }}" \
-            --arg sha "${GITHUB_SHA:0:7}" \
+            --arg sha "$(git rev-parse --short HEAD)" \
             --arg link "$LINK" \
             --arg file "$FILE" \
+            --arg aab "$AAB_NOTE" \
             --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --argjson color "$COLOR" \
             '{
               embeds: [{
-                title: "📱 Ola Android — Bản build mới",
+                title: "📱 Ola Me Android — Bản build mới",
                 description: "APK đã sẵn sàng tải về ⬇️",
                 url: $link,
                 color: $color,
                 timestamp: $ts,
                 fields: [
                   {name: "Môi trường", value: ("`" + $env + "`"), inline: true},
+                  {name: "Nhánh", value: ("`" + $ref + "`"), inline: true},
                   {name: "Build", value: ("`" + $run + "`"), inline: true},
                   {name: "Commit", value: ("`" + $sha + "`"), inline: true},
-                  {name: "Tải APK", value: ("[" + $file + "](" + $link + ")"), inline: false}
+                  {name: "Tải APK", value: ("[" + $file + "](" + $link + ")"), inline: false},
+                  {name: "AAB", value: $aab, inline: false}
                 ],
                 footer: {text: "Ola CI · GitHub Actions"}
               }]

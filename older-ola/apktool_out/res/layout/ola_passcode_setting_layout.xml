@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="vertical" android:background="@color/app_background_color" android:layout_width="match_parent" android:layout_height="match_parent"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <include layout="@layout/ola_top_action_bar_center_title_layout" />
-    <FrameLayout android:id="@id/olaPasscodeFragment" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="1.0" />
-</LinearLayout>

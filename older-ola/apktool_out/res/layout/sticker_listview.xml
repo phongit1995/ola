@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<chat.ola.vn.view.StickyHeaderListview android:id="@id/listView" android:layout_width="match_parent" android:layout_height="match_parent" style="?commont.list"
-  xmlns:android="http://schemas.android.com/apk/res/android" />

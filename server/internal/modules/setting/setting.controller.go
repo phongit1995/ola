@@ -44,7 +44,7 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 		MinAmount:     topup.MinAmount,
 		StepAmount:    topup.StepAmount,
 		PresetAmounts: topup.PresetAmounts,
-		KenPerVnd:     topup.KenPerVnd,
+		BonusTiers:    topup.BonusTiers,
 	}
 	if bank.AccountNumber != "" {
 		resp.Bank = &TopupBankInfo{

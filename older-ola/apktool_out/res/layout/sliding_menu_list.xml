@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:orientation="vertical" android:background="@color/color_slide_menu_background" android:layout_width="match_parent" android:layout_height="match_parent"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <ListView android:id="@id/lvSliderList" android:paddingRight="0.0dp" android:scrollbars="none" android:layout_width="match_parent" android:layout_height="match_parent" android:cacheColorHint="@color/transparent" android:divider="#1e1e1e" android:dividerHeight="1.0dp" android:layout_below="@id/txtSliderMenuTitle" style="?commont.list" />
-    <chat.ola.vn.view.OlaQuickTypingSuggestedText android:enabled="false" android:gravity="center" android:id="@id/txtSliderMenuTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="@dimen/metric.8dp" android:minHeight="38.0dp" android:maxLines="1" android:imeOptions="actionGo" style="?common.editText.menu" />
-    <ProgressBar android:id="@id/progressBar" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true" style="@style/defaultStyle.progresswatting" />
-</RelativeLayout>

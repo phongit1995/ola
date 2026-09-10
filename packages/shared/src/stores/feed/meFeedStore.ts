@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { ME_FEED_PAGE_SIZE } from '../../constants/feed';
 import { toast } from '../../lib/toast';
 import { MeService } from '../../services/me.service';
-import type { Post, UploadedImage } from '../../types/api/me.type';
+import type { Post, PostUploadRef } from '../../types/api/me.type';
 import type { MeFeedState } from '../../types/client/feed.type';
 import i18n from 'i18next';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
@@ -123,18 +123,26 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       });
     }
   },
-  createPost: async (payload, files, imageUrls) => {
-    let uploaded: UploadedImage[] = [];
+  createPost: async (payload, files, imageUrls, audio) => {
+    const uploaded: PostUploadRef[] = [];
     try {
-      uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      const uploadedImages =
+        files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      uploaded.push(...uploadedImages);
       const urlImages = imageUrls.map((url) => ({ url }));
-      const images = [...uploaded, ...urlImages];
-      const created = await MeService.create({ ...payload, images });
+      const images = [...uploadedImages, ...urlImages];
+      const resolvedAudio = await MeService.resolveAudios(audio);
+      uploaded.push(...resolvedAudio.uploaded);
+      const created = await MeService.create({
+        ...payload,
+        images,
+        audios: resolvedAudio.audios,
+      });
       toast.success(i18n.t('me.postSent'));
       return created;
     } catch (error) {
       console.error('create post failed', error);
-      await MeService.cleanupRejectedImages(error, uploaded);
+      await MeService.cleanupRejectedUploads(error, uploaded);
       toast.error(i18n.t('me.postError'));
       return null;
     }
@@ -142,27 +150,36 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   prependPost: (post) => {
     set((state) => ({ posts: [post, ...state.posts] }));
   },
-  updatePost: async (id, payload, files, imageUrls, existing) => {
-    let uploaded: UploadedImage[] = [];
+  updatePost: async (id, payload, files, imageUrls, existing, audio) => {
+    const uploaded: PostUploadRef[] = [];
     try {
-      uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
-      const existingImages = existing ?? get().posts.find((post) => post.id === id)?.images ?? [];
+      const uploadedImages =
+        files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      uploaded.push(...uploadedImages);
+      const current = get().posts.find((post) => post.id === id);
+      const existingImages = existing ?? current?.images ?? [];
       const urlImages = imageUrls.map(
         (url) => existingImages.find((image) => image.url === url) ?? { url }
       );
-      const images = [...urlImages, ...uploaded];
+      const images = [...urlImages, ...uploadedImages];
+      const resolvedAudio =
+        audio === undefined
+          ? null
+          : await MeService.resolveAudios(audio, current?.audios ?? []);
+      if (resolvedAudio != null) uploaded.push(...resolvedAudio.uploaded);
       const updated = await MeService.update(id, {
         ...payload,
         sticker: payload.sticker ?? '',
         clearCheckIn: payload.checkIn == null,
         images,
+        ...(resolvedAudio == null ? {} : { audios: resolvedAudio.audios }),
       });
       set((state) => ({ posts: replacePost(state.posts, updated) }));
       toast.success(i18n.t('me.editSuccess'));
       return updated;
     } catch (error) {
       console.error('update post failed', error);
-      await MeService.cleanupRejectedImages(error, uploaded);
+      await MeService.cleanupRejectedUploads(error, uploaded);
       toast.error(i18n.t('me.editError'));
       return null;
     }

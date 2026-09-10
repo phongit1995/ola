@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { formatKen, formatVnd, withAlpha } from '@ola/shared/lib';
+import { TOPUP_PAID_REDIRECT_MS } from '@ola/shared/constants';
+import { formatKen, formatVnd, topupBonusPercentFor, withAlpha } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -9,7 +11,7 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, ERROR, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { QR_SIZE } from './constants';
+import { KEN_ACCENT, QR_SIZE } from './constants';
 import { useBuyKen } from './useBuyKen';
 import { BankInfoRow } from './components/BankInfoRow';
 import { CopyRow } from './components/CopyRow';
@@ -21,6 +23,19 @@ export function BuyKenScreen({ navigation }: Props) {
   const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const vm = useBuyKen();
+  const [paidPending, setPaidPending] = useState(false);
+
+  useEffect(() => {
+    if (!paidPending) return;
+    const timer = setTimeout(() => navigation.goBack(), TOPUP_PAID_REDIRECT_MS);
+    return () => clearTimeout(timer);
+  }, [paidPending, navigation]);
+
+  function confirmPaid() {
+    if (paidPending) return;
+    setPaidPending(true);
+    push('info', t('ken.buy.paidPending'));
+  }
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#ececec' }}>
@@ -71,6 +86,7 @@ export function BuyKenScreen({ navigation }: Props) {
               <View className="mt-2 flex-row flex-wrap" style={{ marginHorizontal: -4 }}>
                 {vm.presetAmounts.map((value) => {
                   const selected = vm.amount === value && vm.customText == null;
+                  const bonusPercent = topupBonusPercentFor(value, vm.bonusTiers);
                   return (
                     <View key={value} style={{ width: '33.33%', padding: 4 }}>
                       <Pressable
@@ -88,6 +104,22 @@ export function BuyKenScreen({ navigation }: Props) {
                         >
                           {formatVnd(value)}đ
                         </Text>
+                        {bonusPercent > 0 && (
+                          <View
+                            style={{
+                              position: 'absolute',
+                              top: -7,
+                              right: 4,
+                              borderRadius: 999,
+                              paddingHorizontal: 6,
+                              backgroundColor: KEN_ACCENT,
+                            }}
+                          >
+                            <Text style={{ color: '#ffffff', fontSize: 10, fontWeight: '600' }}>
+                              {t('ken.buy.bonusBadge', { percent: bonusPercent })}
+                            </Text>
+                          </View>
+                        )}
                       </Pressable>
                     </View>
                   );
@@ -119,10 +151,18 @@ export function BuyKenScreen({ navigation }: Props) {
                 <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
                   {t('ken.buy.receive')}
                 </Text>
-                <Text className="ml-2 flex-1 text-lg font-bold" style={{ color: '#ff4081' }}>
+                <Text className="ml-2 flex-1 text-lg font-bold" style={{ color: KEN_ACCENT }}>
                   {formatKen(vm.isValid ? vm.kenAmount : 0)} KEN
                 </Text>
               </View>
+              {vm.isValid && vm.quote.bonus > 0 && (
+                <Text className="mt-1 text-xs" style={{ color: KEN_ACCENT }}>
+                  {t('ken.buy.bonusLine', {
+                    bonus: formatKen(vm.quote.bonus),
+                    percent: vm.quote.bonusPercent,
+                  })}
+                </Text>
+              )}
               {!vm.isValid && (
                 <Text className="mt-1 text-xs" style={{ color: ERROR }}>
                   {t('ken.buy.invalid', {
@@ -189,8 +229,10 @@ export function BuyKenScreen({ navigation }: Props) {
                       {t('ken.buy.qrHint', { ken: formatKen(vm.kenAmount) })}
                     </Text>
                     <Pressable
-                      onPress={() => push('info', t('ken.buy.paidPending'))}
+                      onPress={confirmPaid}
+                      disabled={paidPending}
                       className="mt-3 w-full items-center rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 active:opacity-90"
+                      style={paidPending ? { opacity: 0.6 } : undefined}
                     >
                       <Text className="text-sm font-medium text-white">{t('ken.buy.paid')}</Text>
                     </Pressable>

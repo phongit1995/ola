@@ -10,7 +10,7 @@ import Animated, {
   runOnJS,
   type SharedValue,
 } from 'react-native-reanimated';
-import { colorForName } from '@ola/shared/lib';
+import { colorForName, formatDuration, postAudio } from '@ola/shared/lib';
 import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { playLikeMeSound } from '@lib/sound';
@@ -18,6 +18,7 @@ import { renderRichText } from '@lib/richText';
 import { stickerImageForCode } from '@lib/kul';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage } from '@components/ui/CachedImage';
+import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
 
@@ -237,6 +238,7 @@ function MePostCardComponent({
   const likes = post.likeCount;
   const topLikers = post.topLikers ?? [];
   const photos = post.images.map((image) => image.url);
+  const audio = postAudio(post);
   const sticker = post.sticker != null && post.sticker !== '' ? post.sticker : null;
   const stickerImg = stickerImageForCode(post.sticker);
   const contentNodes = renderRichText(post.content ?? '', {
@@ -368,6 +370,18 @@ function MePostCardComponent({
           </View>
         </View>
       ) : null}
+
+      {audio != null && (
+        <View className="mx-4 mt-3 flex-row">
+          <VoiceBubble
+            url={audio.url}
+            duration={formatDuration(audio.duration)}
+            durationSec={audio.duration}
+            waveform={audio.waveform}
+            isOut={false}
+          />
+        </View>
+      )}
 
       {post.checkIn != null && <CheckInCard checkIn={post.checkIn} />}
 

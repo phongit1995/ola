@@ -7,11 +7,17 @@ import {
   formatVndCurrency,
   buildVietQrImageUrl,
   fillMemoTemplate,
+  quoteTopupKen,
+  topupBonusPercentFor,
 } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
+import { TOPUP_PAID_REDIRECT_MS } from '@constants';
+import type { TopupBonusTier } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useTopupConfigStore } from '@/store/topupConfigStore';
 import { MIN_AMOUNT, STEP_AMOUNT, PRESET_AMOUNTS } from './constants';
+
+const NO_BONUS_TIERS: TopupBonusTier[] = [];
 
 function CopyRow({ label, value }: { label: string; value: string }) {
   const { t } = useTranslation();
@@ -49,15 +55,22 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
   const loadConfig = useTopupConfigStore((s) => s.load);
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [customText, setCustomText] = useState<string | null>(null);
+  const [paidPending, setPaidPending] = useState(false);
 
   useEffect(() => {
     void loadConfig();
   }, [loadConfig]);
 
+  useEffect(() => {
+    if (!paidPending) return;
+    const timer = window.setTimeout(onClose, TOPUP_PAID_REDIRECT_MS);
+    return () => window.clearTimeout(timer);
+  }, [paidPending, onClose]);
+
   const minAmount = config?.minAmount ?? MIN_AMOUNT;
   const stepAmount = config?.stepAmount ?? STEP_AMOUNT;
   const presetAmounts = config?.presetAmounts ?? PRESET_AMOUNTS;
-  const kenPerVnd = config?.kenPerVnd ?? 1;
+  const bonusTiers = config?.bonusTiers ?? NO_BONUS_TIERS;
   const bank = config?.bank;
 
   const amount =
@@ -67,7 +80,8 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
       ? 0
       : Number(customText);
   const isValid = amount >= minAmount && amount % stepAmount === 0;
-  const kenAmount = amount * kenPerVnd;
+  const quote = quoteTopupKen(amount, bonusTiers);
+  const kenAmount = quote.total;
   const balance = user?.ken ?? 0;
 
   const memo = useMemo(
@@ -99,6 +113,12 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
     setCustomText(raw.replace(/\D/g, ''));
   }
 
+  function confirmPaid() {
+    if (paidPending) return;
+    setPaidPending(true);
+    toast.info(t('ken.buy.paidPending'));
+  }
+
   return (
     <FullScreenOverlay>
       <ScreenHeader title={t('ken.buy.title')} onBack={onClose} />
@@ -126,20 +146,28 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                 {t('ken.buy.chooseAmount')}
               </span>
               <div className="mt-2 grid grid-cols-3 gap-2">
-                {presetAmounts.map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => selectPreset(value)}
-                    className={`rounded border px-2 py-2 text-sm font-medium transition-colors ${
-                      amount === value && customText == null
-                        ? 'border-ola-primary bg-ola-primary/10 text-ola-primary-ink'
-                        : 'border-black/12 bg-white text-black/87'
-                    }`}
-                  >
-                    {formatVndCurrency(value)}
-                  </button>
-                ))}
+                {presetAmounts.map((value) => {
+                  const bonusPercent = topupBonusPercentFor(value, bonusTiers);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => selectPreset(value)}
+                      className={`relative rounded border px-2 py-2 text-sm font-medium transition-colors ${
+                        amount === value && customText == null
+                          ? 'border-ola-primary bg-ola-primary/10 text-ola-primary-ink'
+                          : 'border-black/12 bg-white text-black/87'
+                      }`}
+                    >
+                      {formatVndCurrency(value)}
+                      {bonusPercent > 0 && (
+                        <span className="absolute -top-1.5 right-1 rounded-full bg-ola-accent px-1.5 text-[10px] font-semibold leading-4 text-white">
+                          {t('ken.buy.bonusBadge', { percent: bonusPercent })}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
               <span className="mt-3 block text-xs text-black/54">
@@ -165,6 +193,14 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                   {formatKen(isValid ? kenAmount : 0)} KEN
                 </span>
               </div>
+              {isValid && quote.bonus > 0 && (
+                <span className="mt-1 block text-xs text-ola-accent">
+                  {t('ken.buy.bonusLine', {
+                    bonus: formatKen(quote.bonus),
+                    percent: quote.bonusPercent,
+                  })}
+                </span>
+              )}
               {!isValid && (
                 <span className="mt-1 block text-xs text-ola-error">
                   {t('ken.buy.invalid', {
@@ -239,8 +275,9 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                     </p>
                     <button
                       type="button"
-                      onClick={() => toast.info(t('ken.buy.paidPending'))}
-                      className="mt-3 w-full rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-ola-on-primary active:opacity-90"
+                      onClick={confirmPaid}
+                      disabled={paidPending}
+                      className="mt-3 w-full rounded-sm border border-ola-primary-dark bg-ola-button py-2.5 text-sm font-medium text-ola-on-primary active:opacity-90 disabled:opacity-60"
                     >
                       {t('ken.buy.paid')}
                     </button>
