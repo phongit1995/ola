@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Ola Me</string>
+    <string name="app_name">OlaKa</string>
     <string name="call_channel_name">Cuộc gọi</string>
     <string name="call_notification_text">Đang trong cuộc gọi</string>
 </resources>
