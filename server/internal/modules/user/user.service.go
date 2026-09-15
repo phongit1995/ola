@@ -16,7 +16,6 @@ import (
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
-	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -860,8 +859,6 @@ func (s *Service) UploadImage(ctx context.Context, userID uuid.UUID, file multip
 	}, nil
 }
 
-var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
-
 const (
 	usernameMinLen = 2
 	usernameMaxLen = 20
@@ -882,7 +879,7 @@ const (
 func normalizeUsername(username string) (string, error) {
 	name := strings.ToLower(strings.TrimSpace(username))
 	name = strings.TrimPrefix(name, "@")
-	if len(name) < usernameMinLen || len(name) > usernameMaxLen || !usernameRegex.MatchString(name) {
+	if len(name) < usernameMinLen || len(name) > usernameMaxLen || !IsValidUsernameFormat(name) {
 		return "", ErrInvalidUsername
 	}
 	return name, nil

@@ -7,10 +7,10 @@ import { AuthService } from '@ola/shared/services';
 import {
   FORGOT_CODE_PATTERN,
   FORGOT_RESEND_COOLDOWN_SECONDS,
+  LEGACY_USERNAME_PATTERN,
   resolveForgotConfirmError,
   resolveForgotSendError,
   USERNAME_MAX,
-  USERNAME_PATTERN,
 } from '@ola/shared/lib';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import type { AuthStackParamList } from '@navigation/types';
@@ -146,7 +146,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
               required: t('forgot.errUsernameRequired'),
               minLength: { value: USERNAME_MIN, message: t('forgot.errUsernameRequired') },
               maxLength: { value: USERNAME_MAX, message: t('forgot.errUsernameRequired') },
-              pattern: { value: USERNAME_PATTERN, message: t('forgot.errUsernameFormat') },
+              pattern: { value: LEGACY_USERNAME_PATTERN, message: t('forgot.errUsernameFormat') },
             }}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
