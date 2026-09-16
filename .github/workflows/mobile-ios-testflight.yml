@@ -7,17 +7,14 @@ on:
         description: 'Build number, phải lớn hơn build đã upload (bỏ trống = GitHub run number)'
         required: false
         type: string
-  push:
-    branches: [main]
-    paths:
-      - 'mobile/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - 'package.json'
-      - '.github/workflows/mobile-ios-testflight.yml'
+      upload_to_testflight:
+        description: 'Upload lên TestFlight sau khi build (tắt = chỉ build IPA làm artifact)'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
-  group: mobile-ios-testflight-${{ github.ref }}
+  group: mobile-ios-testflight
   cancel-in-progress: false
 
 permissions:
@@ -194,6 +191,7 @@ jobs:
           test -f "$RUNNER_TEMP/export/OlaMobile.ipa"
 
       - name: Upload to TestFlight
+        if: inputs.upload_to_testflight
         env:
           ASC_KEY_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
