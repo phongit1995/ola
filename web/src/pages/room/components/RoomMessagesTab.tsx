@@ -371,7 +371,11 @@ export function RoomMessagesTab({
           const target = blockTarget;
           setBlockTarget(null);
           if (target != null) {
-            blockUser(target.senderId)
+            blockUser(target.senderId, {
+              userId: target.senderId,
+              username: target.senderName ?? '',
+              avatar: target.senderAvatar,
+            })
               .then(() => toast.success(t('room.blockSuccess')))
               .catch((error: unknown) =>
                 toast.error(

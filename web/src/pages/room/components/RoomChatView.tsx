@@ -15,6 +15,7 @@ import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
 import { RoomFilterDialog } from './RoomFilterDialog';
+import { RoomBlockedListDialog } from './RoomBlockedListDialog';
 import { UserProfileView } from '../../profile/UserProfileView';
 
 interface ProfileTarget {
@@ -67,6 +68,7 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
     null
   );
   const [filterOpen, setFilterOpen] = useState(false);
+  const [blockedOpen, setBlockedOpen] = useState(false);
   const filters = useRoomFilterStore((state) => state.filters);
   const setFilters = useRoomFilterStore((state) => state.setFilters);
   const visibleMembers = useMemo(
@@ -108,6 +110,29 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
             className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
           >
             <img src={filterIcon} alt="" className="h-5 w-5 object-contain" />
+          </button>
+        )}
+        {activeTab === 'messages' && (
+          <button
+            type="button"
+            aria-label={t('room.blockedListTitle')}
+            onClick={() => setBlockedOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-white"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="m4.93 4.93 14.14 14.14" />
+            </svg>
           </button>
         )}
       </ScreenHeader>
@@ -164,6 +189,9 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
         }}
         onClose={() => setFilterOpen(false)}
       />
+      {blockedOpen && (
+        <RoomBlockedListDialog open onClose={() => setBlockedOpen(false)} />
+      )}
     </FullScreenOverlay>
   );
 }

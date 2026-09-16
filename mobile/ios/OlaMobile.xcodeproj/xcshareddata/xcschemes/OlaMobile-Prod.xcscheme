@@ -14,7 +14,7 @@
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+                     BlueprintIdentifier = "DB43C8806C2D749E847C9AC5"
                      BuildableName = "OlaMobile.app"
                      BlueprintName = "OlaMobile"
                      ReferencedContainer = "container:OlaMobile.xcodeproj">
@@ -32,7 +32,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+               BlueprintIdentifier = "DB43C8806C2D749E847C9AC5"
                BuildableName = "OlaMobile.app"
                BlueprintName = "OlaMobile"
                ReferencedContainer = "container:OlaMobile.xcodeproj">
@@ -50,7 +50,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "00E356ED1AD99517003FC87E"
+               BlueprintIdentifier = "1D2DBFB0EF38100171659A6F"
                BuildableName = "OlaMobileTests.xctest"
                BlueprintName = "OlaMobileTests"
                ReferencedContainer = "container:OlaMobile.xcodeproj">
@@ -72,7 +72,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+            BlueprintIdentifier = "DB43C8806C2D749E847C9AC5"
             BuildableName = "OlaMobile.app"
             BlueprintName = "OlaMobile"
             ReferencedContainer = "container:OlaMobile.xcodeproj">
@@ -89,7 +89,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+            BlueprintIdentifier = "DB43C8806C2D749E847C9AC5"
             BuildableName = "OlaMobile.app"
             BlueprintName = "OlaMobile"
             ReferencedContainer = "container:OlaMobile.xcodeproj">

@@ -50,7 +50,7 @@ const escapeHtml = (value) =>
 const linkify = (value) =>
   escapeHtml(value)
     .replace(
-      /[\w.+-]+@[\w-]+\.[\w.]+/g,
+      /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,
       (email) => `<a href="mailto:${email}">${email}</a>`
     )
     .replace(

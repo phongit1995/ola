@@ -103,8 +103,16 @@ export interface RoomMessagesResult {
   nextBefore?: string;
 }
 
+export interface RoomBlockedUser {
+  userId: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+}
+
 export interface RoomBlockedUsersResult {
   userIds: string[];
+  users: RoomBlockedUser[];
 }
 
 export interface BrowseRoomsParams {

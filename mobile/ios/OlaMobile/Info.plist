@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Ola Me</string>
+	<string>OlaKa</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -34,15 +34,15 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Ola Me cần truy cập máy ảnh để bạn chụp ảnh gửi trong chat và thực hiện cuộc gọi video.</string>
+	<string>OlaKa cần truy cập máy ảnh để bạn chụp ảnh gửi trong chat và thực hiện cuộc gọi video.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Ola Me cần vị trí của bạn để gợi ý địa điểm check-in gần đây khi đăng bài.</string>
+	<string>OlaKa cần vị trí của bạn để gợi ý địa điểm check-in gần đây khi đăng bài.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Ola Me cần truy cập micro để bạn ghi tin nhắn thoại và thực hiện cuộc gọi.</string>
+	<string>OlaKa cần truy cập micro để bạn ghi tin nhắn thoại và thực hiện cuộc gọi.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Ola Me cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
+	<string>OlaKa cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Ola Me cần quyền lưu ảnh để bạn tải ảnh về thư viện ảnh.</string>
+	<string>OlaKa cần quyền lưu ảnh để bạn tải ảnh về thư viện ảnh.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

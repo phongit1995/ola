@@ -14,7 +14,7 @@ interface EditUsernameModalProps {
   onClose: () => void
 }
 
-const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]*[a-z0-9]$/
+const USERNAME_PATTERN = /^[a-z][a-z0-9]*$/
 
 export function EditUsernameModal({ open, userId, currentUsername, onClose }: EditUsernameModalProps) {
   const { message } = App.useApp()
@@ -65,8 +65,7 @@ export function EditUsernameModal({ open, userId, currentUsername, onClose }: Ed
             { min: 2, max: 20, message: 'Username phải từ 2 đến 20 ký tự' },
             {
               pattern: USERNAME_PATTERN,
-              message:
-                'Chỉ gồm chữ thường, số, dấu chấm, gạch ngang, gạch dưới; bắt đầu và kết thúc bằng chữ hoặc số',
+              message: 'Chỉ gồm chữ thường và số, phải bắt đầu bằng chữ',
             },
           ]}
         >

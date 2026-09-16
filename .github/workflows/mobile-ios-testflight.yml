@@ -1,0 +1,226 @@
+name: Mobile iOS TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Build number, phải lớn hơn build đã upload (bỏ trống = GitHub run number)'
+        required: false
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - '.github/workflows/mobile-ios-testflight.yml'
+
+concurrency:
+  group: mobile-ios-testflight-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-upload:
+    runs-on: macos-latest
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/mobile/Gemfile
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      BUILD_NUMBER: ${{ inputs.build_number || github.run_number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.1'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install JavaScript dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install CocoaPods dependencies
+        run: |
+          bundle config set --local path "$RUNNER_TEMP/bundle"
+          bundle install --jobs 4 --retry 3
+          bundle exec pod install --project-directory=mobile/ios
+
+      - name: Select production environment
+        working-directory: mobile
+        run: cp env.production .env
+
+      - name: Validate signing inputs
+        env:
+          IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          IOS_KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          for name in \
+            APPLE_TEAM_ID \
+            IOS_DISTRIBUTION_CERTIFICATE_BASE64 \
+            IOS_DISTRIBUTION_CERTIFICATE_PASSWORD \
+            IOS_PROVISIONING_PROFILE_BASE64 \
+            IOS_KEYCHAIN_PASSWORD \
+            ASC_KEY_ID \
+            ASC_ISSUER_ID \
+            ASC_API_KEY_P8_BASE64; do
+            test -n "${!name:-}" || { echo "Missing GitHub secret: $name" >&2; exit 1; }
+          done
+          case "$BUILD_NUMBER" in
+            ''|*[!0-9]*) echo "BUILD_NUMBER must be a positive integer" >&2; exit 1 ;;
+          esac
+          test "$BUILD_NUMBER" -gt 0
+
+      - name: Import Apple signing certificate and provisioning profile
+        id: signing
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          CERTIFICATE_PATH="$RUNNER_TEMP/ios_distribution.p12"
+          PROFILE_PATH="$RUNNER_TEMP/ios_distribution.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/ios-signing.keychain-db"
+
+          printf '%s' "$CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+          printf '%s' "$PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+          PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
+          security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST"
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PROFILE_PLIST")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$PROFILE_PLIST")
+          PROFILE_APP_ID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$PROFILE_PLIST")
+          [[ "$PROFILE_APP_ID" == "$APPLE_TEAM_ID".* ]] || {
+            echo "Provisioning profile Team ID does not match APPLE_TEAM_ID" >&2
+            exit 1
+          }
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          {
+            echo "PROFILE_UUID=$PROFILE_UUID"
+            echo "PROFILE_NAME=$PROFILE_NAME"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Read and validate app identifiers
+        id: app
+        run: |
+          set -euo pipefail
+          SETTINGS=$(xcodebuild -project mobile/ios/OlaMobile.xcodeproj \
+            -scheme OlaMobile-Prod -configuration Release -showBuildSettings)
+          BUNDLE_ID=$(printf '%s\n' "$SETTINGS" | awk -F ' = ' '/PRODUCT_BUNDLE_IDENTIFIER = / {print $2; exit}')
+          test -n "$BUNDLE_ID" || { echo "Could not read PRODUCT_BUNDLE_IDENTIFIER" >&2; exit 1; }
+          FIREBASE_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :BUNDLE_ID' mobile/ios/OlaMobile/GoogleService-Info.plist)
+          test "$BUNDLE_ID" = "$FIREBASE_BUNDLE_ID" || {
+            echo "Bundle ID mismatch: Xcode=$BUNDLE_ID Firebase=$FIREBASE_BUNDLE_ID" >&2
+            exit 1
+          }
+          PROFILE_APP_ID="$APPLE_TEAM_ID.$BUNDLE_ID"
+          security cms -D -i "$RUNNER_TEMP/ios_distribution.mobileprovision" > "$RUNNER_TEMP/profile-check.plist"
+          PROFILE_APP_ID_ACTUAL=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$RUNNER_TEMP/profile-check.plist")
+          test "$PROFILE_APP_ID_ACTUAL" = "$PROFILE_APP_ID" || {
+            echo "Provisioning profile App ID mismatch: expected=$PROFILE_APP_ID actual=$PROFILE_APP_ID_ACTUAL" >&2
+            exit 1
+          }
+          {
+            echo "BUNDLE_ID=$BUNDLE_ID"
+            echo "PROFILE_NAME=${{ steps.signing.outputs.PROFILE_NAME }}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Archive production app
+        run: |
+          set -euo pipefail
+          rm -rf "$RUNNER_TEMP/OlaMobile.xcarchive"
+          xcodebuild archive \
+            -workspace mobile/ios/OlaMobile.xcworkspace \
+            -scheme OlaMobile-Prod \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/OlaMobile.xcarchive" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY='Apple Distribution' \
+            OLA_PROVISIONING_PROFILE='${{ steps.signing.outputs.PROFILE_NAME }}' \
+            | tee "$RUNNER_TEMP/xcodebuild-archive.log"
+
+      - name: Export IPA
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>export</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>provisioningProfiles</key><dict>
+              <key>${{ steps.app.outputs.BUNDLE_ID }}</key><string>${{ steps.signing.outputs.PROFILE_NAME }}</string>
+            </dict>
+          </dict></plist>
+          PLIST
+          rm -rf "$RUNNER_TEMP/export"
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/OlaMobile.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+          test -f "$RUNNER_TEMP/export/OlaMobile.ipa"
+
+      - name: Upload to TestFlight
+        env:
+          ASC_KEY_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          ASC_KEY_PATH="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          printf '%s' "$ASC_KEY_BASE64" | base64 --decode > "$ASC_KEY_PATH"
+          chmod 600 "$ASC_KEY_PATH"
+          sed 's#<string>export</string>#<string>upload</string>#' \
+            "$RUNNER_TEMP/ExportOptions.plist" > "$RUNNER_TEMP/UploadOptions.plist"
+          rm -rf "$RUNNER_TEMP/upload"
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/OlaMobile.xcarchive" \
+            -exportPath "$RUNNER_TEMP/upload" \
+            -exportOptionsPlist "$RUNNER_TEMP/UploadOptions.plist" \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Upload IPA and archive artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ola-ios-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/export/*.ipa
+            ${{ runner.temp }}/xcodebuild-archive.log
+          if-no-files-found: ignore
+          retention-days: 14

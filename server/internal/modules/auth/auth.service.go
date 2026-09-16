@@ -15,7 +15,6 @@ import (
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
-	"regexp"
 	"strings"
 	"time"
 
@@ -25,12 +24,12 @@ import (
 	"gorm.io/gorm"
 )
 
-var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
-
 const (
 	registerThrottleWindow  = time.Second
 	registerSuccessCooldown = 12 * time.Hour
 	errRateLimited          = "RATE_LIMITED"
+	registerUsernameMinLen  = 6
+	registerUsernameMaxLen  = 20
 )
 
 type Service struct {
@@ -130,6 +129,17 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*Re
 	}, nil
 }
 
+func normalizeRegisterUsername(username string) (string, error) {
+	name := strings.ToLower(strings.TrimSpace(username))
+	if len(name) < registerUsernameMinLen || len(name) > registerUsernameMaxLen {
+		return "", fmt.Errorf("username must be between %d and %d characters", registerUsernameMinLen, registerUsernameMaxLen)
+	}
+	if !user.IsValidUsernameFormat(name) {
+		return "", errors.New(user.UsernameFormatMessage)
+	}
+	return name, nil
+}
+
 func (s *Service) guardRegister(clientIP string) error {
 	doneKey := fmt.Sprintf(constants.CacheKeyRegisterDone, clientIP)
 	if done, err := s.cache.Exists(doneKey); err == nil && done {
@@ -147,10 +157,11 @@ func (s *Service) Register(req *RegisterRequest, clientIP string) (*RegisterResp
 		return nil, err
 	}
 
-	req.Username = strings.ToLower(strings.TrimSpace(req.Username))
-	if !usernameRegex.MatchString(req.Username) {
-		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
+	username, err := normalizeRegisterUsername(req.Username)
+	if err != nil {
+		return nil, err
 	}
+	req.Username = username
 
 	s.logger.Debugw("Checking username availability",
 		"username", req.Username,

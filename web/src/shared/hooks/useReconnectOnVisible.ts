@@ -1,12 +1,14 @@
 import { useEffect } from 'react';
 import { SocketService } from '@services';
 import { resyncKenBalance } from '@ola/shared/stores/ken/kenRealtime';
+import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
 
 export function useReconnectOnVisible() {
   useEffect(() => {
     const resumeSession = () => {
       SocketService.ensureAlive();
       void resyncKenBalance();
+      void useRoomFilterStore.getState().syncBlockedUsers();
     };
 
     const onVisibility = () => {

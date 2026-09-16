@@ -106,6 +106,26 @@ async function main() {
   r = await req('POST', `/rooms/${roomId}/messages`, { content: 'still here?' }, u1.token)
   ok('left user send → 403', r.status === 403)
 
+  // room block list: hide u2's messages for u1, list returns user details
+  r = await req('POST', '/rooms/blocked', { userId: u2.id }, u1.token)
+  ok('block user → 200', r.status === 200)
+  ok('block list has u2 id', data(r)?.userIds?.includes(u2.id))
+  r = await req('GET', '/rooms/blocked', undefined, u1.token)
+  ok('blocked list → 200', r.status === 200)
+  const blockedRow = data(r)?.users?.find(x => x.userId === u2.id)
+  ok('blocked list has u2 with username', !!blockedRow && blockedRow.username === u2.username)
+  r = await req('DELETE', `/rooms/blocked/${u2.id}`, undefined, u1.token)
+  ok('unblock → 200', r.status === 200)
+  ok('unblock removes u2', !data(r)?.userIds?.includes(u2.id) && !data(r)?.users?.some(x => x.userId === u2.id))
+  r = await req('POST', '/rooms/blocked', { userId: u2.id, migration: true }, u1.token)
+  ok('migration upload after unblock → 200', r.status === 200)
+  ok('migration upload does not re-block', !data(r)?.userIds?.includes(u2.id))
+  r = await req('POST', '/rooms/blocked', { userId: u2.id }, u1.token)
+  ok('explicit re-block after unblock → 200', r.status === 200)
+  ok('explicit re-block adds u2 again', data(r)?.userIds?.includes(u2.id))
+  r = await req('DELETE', `/rooms/blocked/${u2.id}`, undefined, u1.token)
+  ok('cleanup unblock → 200', r.status === 200)
+
   // admin disables room → browse hides it, join blocked
   r = await req('PATCH', `/admin/rooms/${roomId}`, { enabled: false }, adminToken)
   ok('admin disable → 200', r.status === 200 && data(r)?.enabled === false)

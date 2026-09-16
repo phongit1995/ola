@@ -9,11 +9,11 @@ import (
 	userBanEvents "ola-chat-server/internal/domain/user-ban"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/session"
+	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/utils"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -30,8 +30,6 @@ const (
 	passwordMinLen = 6
 	passwordMaxLen = 20
 )
-
-var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
 
 type Service struct {
 	repo           *Repository
@@ -135,8 +133,8 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string, adminID uuid.UUI
 	if len(username) < usernameMinLen || len(username) > usernameMaxLen {
 		return nil, fmt.Errorf("username must be between %d and %d characters", usernameMinLen, usernameMaxLen)
 	}
-	if !usernameRegex.MatchString(username) {
-		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
+	if !user.IsValidUsernameFormat(username) {
+		return nil, errors.New(user.UsernameFormatMessage)
 	}
 
 	taken, err := s.repo.UsernameTaken(username, id)

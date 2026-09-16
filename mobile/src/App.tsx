@@ -14,6 +14,7 @@ import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { resyncKenBalance } from '@ola/shared/stores/ken/kenRealtime';
+import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { RootNavigator } from './navigation/RootNavigator';
 import { AppFontProvider } from './components/AppFontProvider';
@@ -99,6 +100,7 @@ export default function App() {
     const resumeSession = () => {
       SocketService.ensureAlive();
       void resyncKenBalance();
+      void useRoomFilterStore.getState().syncBlockedUsers();
     };
     const appStateSubscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') {

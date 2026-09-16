@@ -137,9 +137,18 @@ type RoomMessagesListResponse struct {
 }
 
 type RoomBlockUserRequest struct {
-	UserID string `json:"userId" binding:"required,uuid"`
+	UserID    string `json:"userId" binding:"required,uuid"`
+	Migration bool   `json:"migration"`
+}
+
+type RoomBlockedUser struct {
+	UserID   string `json:"userId"`
+	Username string `json:"username"`
+	FullName string `json:"fullName,omitempty"`
+	Avatar   string `json:"avatar,omitempty"`
 }
 
 type RoomBlockedUsersResponse struct {
-	UserIDs []string `json:"userIds"`
+	UserIDs []string          `json:"userIds"`
+	Users   []RoomBlockedUser `json:"users"`
 }

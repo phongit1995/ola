@@ -34,6 +34,7 @@ export const ROOM_SOCKET_EVENTS = {
   reactionUpdated: 'ROOM_MESSAGE_REACTION_UPDATED',
   memberJoined: 'ROOM_MEMBER_JOINED',
   memberLeft: 'ROOM_MEMBER_LEFT',
+  blockListChanged: 'ROOM_BLOCK_LIST_CHANGED',
 } as const;
 
 export const CALL_SOCKET_EVENTS = {

@@ -10,10 +10,10 @@ import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import {
   FORGOT_CODE_PATTERN,
   FORGOT_RESEND_COOLDOWN_SECONDS,
+  LEGACY_USERNAME_PATTERN,
   resolveForgotConfirmError,
   resolveForgotSendError,
   USERNAME_MAX,
-  USERNAME_PATTERN,
 } from '@lib';
 import { AuthService } from '@services';
 import { USERNAME_MIN } from './constants';
@@ -158,7 +158,7 @@ export function ForgotPasswordPage() {
                 message: t('forgot.errUsernameRequired'),
               },
               pattern: {
-                value: USERNAME_PATTERN,
+                value: LEGACY_USERNAME_PATTERN,
                 message: t('forgot.errUsernameFormat'),
               },
             })}
