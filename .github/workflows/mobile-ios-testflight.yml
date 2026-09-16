@@ -216,6 +216,7 @@ jobs:
 
       - name: Upload IPA and archive artifacts
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: ola-ios-${{ github.run_number }}
@@ -223,4 +224,4 @@ jobs:
             ${{ runner.temp }}/export/*.ipa
             ${{ runner.temp }}/xcodebuild-archive.log
           if-no-files-found: ignore
-          retention-days: 14
+          retention-days: 3
