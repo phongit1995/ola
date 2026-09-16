@@ -21,11 +21,13 @@ type DMPush struct {
 	MessageID        string
 	SenderID         string
 	SenderName       string
+	SenderAvatar     string
 	ConversationName string
 	Preview          string
+	SentAt           string
 }
 
-const fallbackTitle = "Ola"
+const fallbackTitle = "Okela"
 
 func excerpt(s string) string {
 	trimmed := utils.TruncateRunes(s, constants.PushExcerptMaxRunes)
@@ -46,16 +48,24 @@ func firstNonEmpty(values ...string) string {
 
 func buildDMContent(in DMPush) Content {
 	notifID := "dm:" + in.ConversationID
+	data := map[string]string{
+		"type":           constants.PushDataTypeDM,
+		"conversationId": in.ConversationID,
+		"senderId":       in.SenderID,
+	}
+	if in.SenderAvatar != "" {
+		data["senderAvatar"] = in.SenderAvatar
+	}
+	if in.SentAt != "" {
+		data["sentAt"] = in.SentAt
+	}
 	return Content{
 		Title:    firstNonEmpty(in.SenderName, in.ConversationName, fallbackTitle),
 		Body:     excerpt(firstNonEmpty(in.Preview, "Bạn có tin nhắn mới")),
 		NotifID:  notifID,
 		Channel:  constants.PushChannelMessages,
 		Collapse: constants.PushCollapseDM,
-		Data: map[string]string{
-			"type":           constants.PushDataTypeDM,
-			"conversationId": in.ConversationID,
-		},
+		Data:     data,
 	}
 }
 

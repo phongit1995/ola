@@ -7,12 +7,21 @@ import {
 } from '@react-native-firebase/messaging';
 import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import type { ParseKeys } from 'i18next';
-import notifee, { AndroidImportance, EventType, type Event } from 'react-native-notify-kit';
+import notifee, {
+  AndroidImportance,
+  AndroidStyle,
+  AndroidVisibility,
+  EventType,
+  type AndroidPerson,
+  type Event,
+  type NotificationAndroid,
+} from 'react-native-notify-kit';
 import { CommonActions } from '@react-navigation/native';
 import type { NavigationContainerRefWithCurrent } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
 import { PushService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { androidNotificationBase } from '@lib/notificationAndroid';
 import i18n from '../i18n';
 import { ROOT_ROUTES } from '../navigation/routes';
 
@@ -43,6 +52,39 @@ function extractData(
   return data;
 }
 
+function sentAtMs(value: string | undefined): number {
+  const parsed = value ? Date.parse(value) : Number.NaN;
+  return Number.isNaN(parsed) ? Date.now() : parsed;
+}
+
+function person(name: string, id?: string, icon?: string): AndroidPerson {
+  const out: AndroidPerson = { name };
+  if (id) out.id = id;
+  if (icon) out.icon = icon;
+  return out;
+}
+
+function androidOptions(data: PushData, channelId: string): NotificationAndroid {
+  const base = androidNotificationBase(channelId, data.senderAvatar);
+  if (data.type !== 'dm') return base;
+  const me = useAuthStore.getState().user;
+  return {
+    ...base,
+    visibility: AndroidVisibility.PRIVATE,
+    style: {
+      type: AndroidStyle.MESSAGING,
+      person: person(me?.fullName || me?.username || i18n.t('push.you'), me?.id),
+      messages: [
+        {
+          text: data.body,
+          timestamp: sentAtMs(data.sentAt),
+          person: person(data.title, data.senderId, data.senderAvatar),
+        },
+      ],
+    },
+  };
+}
+
 async function displayPush(data: PushData): Promise<void> {
   if (!data.title || !data.body) return;
   const channelId = (CHANNELS as readonly string[]).includes(data.channel)
@@ -50,14 +92,11 @@ async function displayPush(data: PushData): Promise<void> {
     : 'messages';
   try {
     await notifee.displayNotification({
-      id: data.notifId || undefined,
+      ...(data.notifId ? { id: data.notifId } : {}),
       title: data.title,
       body: data.body,
       data,
-      android: {
-        channelId,
-        pressAction: { id: 'default' },
-      },
+      android: androidOptions(data, channelId),
     });
   } catch {
     return;

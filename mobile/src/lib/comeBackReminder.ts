@@ -5,6 +5,7 @@ import notifee, {
   type TimestampTrigger,
 } from 'react-native-notify-kit';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { androidNotificationBase } from '@lib/notificationAndroid';
 import i18n from '../i18n';
 
 const REMINDER_ID = 'come-back-reminder';
@@ -64,10 +65,7 @@ export async function scheduleComeBackReminder(): Promise<void> {
         id: REMINDER_ID,
         title: i18n.t('reminder.comeBackTitle'),
         body: i18n.t(randomMessageKey()),
-        android: {
-          channelId: CHANNEL_ID,
-          pressAction: { id: 'default' },
-        },
+        android: androidNotificationBase(CHANNEL_ID),
       },
       trigger,
     );

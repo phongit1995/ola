@@ -1996,6 +1996,7 @@
   "push": {
     "channelMessages": "Tin nhắn",
     "channelSocial": "Thông báo Me",
-    "channelSystem": "Hệ thống"
+    "channelSystem": "Hệ thống",
+    "you": "Bạn"
   }
 }

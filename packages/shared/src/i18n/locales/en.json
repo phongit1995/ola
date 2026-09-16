@@ -1996,6 +1996,7 @@
   "push": {
     "channelMessages": "Messages",
     "channelSocial": "Me notifications",
-    "channelSystem": "System"
+    "channelSystem": "System",
+    "you": "You"
   }
 }

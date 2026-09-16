@@ -372,8 +372,10 @@ func TestSendDMPayload(t *testing.T) {
 		ConversationType: "direct",
 		SenderID:         "sender",
 		SenderName:       "Hoa",
+		SenderAvatar:     "https://cdn/avatar.png",
 		Preview:          "xin chào",
 		MessageID:        "m1",
+		SentAt:           "2026-09-16T10:00:00Z",
 	})
 	drainJobs(s)
 	if len(fcm.sent) != 1 {
@@ -383,8 +385,8 @@ func TestSendDMPayload(t *testing.T) {
 	if msg.Notification != nil {
 		t.Fatal("expected data-only message without notification payload")
 	}
-	if msg.Android == nil || msg.Android.Priority != "high" {
-		t.Fatal("expected android high priority")
+	if msg.Android == nil || msg.Android.Priority != "high" || msg.Android.CollapseKey != constants.PushCollapseDM {
+		t.Fatal("expected android high priority with stable dm collapse key")
 	}
 	data := msg.Data
 	if data["type"] != constants.PushDataTypeDM || data["conversationId"] != "c1" || data["notifId"] != "dm:c1" {
@@ -393,12 +395,21 @@ func TestSendDMPayload(t *testing.T) {
 	if data["title"] != "Hoa" || data["body"] != "xin chào" {
 		t.Fatalf("unexpected content: %v", data)
 	}
+	if data["senderId"] != "sender" || data["senderAvatar"] != "https://cdn/avatar.png" || data["sentAt"] != "2026-09-16T10:00:00Z" {
+		t.Fatalf("unexpected sender fields: %v", data)
+	}
 }
 
 func TestBuildDMContentFallbacks(t *testing.T) {
 	c := buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct"})
 	if c.Title != fallbackTitle || c.Body != "Bạn có tin nhắn mới" {
 		t.Fatalf("unexpected fallbacks: %q %q", c.Title, c.Body)
+	}
+	if _, ok := c.Data["senderAvatar"]; ok {
+		t.Fatal("expected no senderAvatar when empty")
+	}
+	if _, ok := c.Data["sentAt"]; ok {
+		t.Fatal("expected no sentAt when empty")
 	}
 
 	long := strings.Repeat("а", constants.PushExcerptMaxRunes+40)
