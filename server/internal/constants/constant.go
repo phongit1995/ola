@@ -1,6 +1,9 @@
 package constants
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 const (
 	KafkaTopicMessageCreated             = "CHAT.MESSAGE.CREATED"
@@ -218,12 +221,26 @@ const (
 	PushEventTTLSeconds    = 120
 	CacheKeyPushThrottle   = "PUSH:THROTTLE:%s:%s"
 	PushThrottleTTLSeconds = 45
+	CacheKeyPushPending    = "PUSH:PENDING:%s:%s"
+	PushPendingTTLSeconds  = 120
 	PushExcerptMaxRunes    = 120
 	PushSendTimeoutSeconds = 10
 	PushDispatchWorkers    = 4
 	PushDispatchQueueSize  = 1024
 	PushSourceMeNotif      = "me"
 	PushSourceAppNotif     = "app"
+	PushSourceDMPrefix     = "dm:"
+)
+
+func PushDMSource(conversationID string) string {
+	return PushSourceDMPrefix + conversationID
+}
+
+func PushPendingKey(recipientID, source string) string {
+	return fmt.Sprintf(CacheKeyPushPending, recipientID, source)
+}
+
+const (
 	PushCollapseDM         = "dm"
 	PushTTLHours           = 24
 	PushSendBatchSize      = 500

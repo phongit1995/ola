@@ -3,6 +3,7 @@ package push
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -31,9 +32,16 @@ type fcmSender interface {
 
 type cacheStore interface {
 	Exists(key string) (bool, error)
+	Set(key string, value interface{}, expiration time.Duration) error
 	SetNX(key string, value interface{}, expiration time.Duration) (bool, error)
 	DeleteIfValue(key string, value interface{}) (bool, error)
+	Delete(key string) error
 	Get(key string, dest interface{}) error
+	GetDel(key string, dest interface{}) error
+}
+
+type pendingPush struct {
+	Content Content `json:"content"`
 }
 
 type tokenStore interface {
@@ -43,15 +51,20 @@ type tokenStore interface {
 	PushEnabled() bool
 }
 
-const pushEnabledCacheTTL = time.Minute
+const (
+	pushEnabledCacheTTL = time.Minute
+	trailingGrace       = time.Second
+)
 
 type Sender struct {
-	fcm    fcmSender
-	cache  cacheStore
-	conns  ConnectionCounter
-	store  tokenStore
-	logger *zap.SugaredLogger
-	jobs   chan func()
+	fcm           fcmSender
+	cache         cacheStore
+	conns         ConnectionCounter
+	store         tokenStore
+	logger        *zap.SugaredLogger
+	jobs          chan func()
+	trailingDelay time.Duration
+	schedule      func(delay time.Duration, fn func())
 
 	enabledMu        sync.Mutex
 	enabledVal       bool
@@ -66,12 +79,14 @@ type Sender struct {
 func NewSender(fcm *FCMClient, cache *services.CacheService, presence *websocket.PresenceService, db *gorm.DB, logger *zap.SugaredLogger) *Sender {
 	log := logger.Named("[push_sender]")
 	s := &Sender{
-		fcm:    fcm,
-		cache:  cache,
-		conns:  presence,
-		store:  newGormStore(db, log),
-		logger: log,
-		jobs:   make(chan func(), constants.PushDispatchQueueSize),
+		fcm:           fcm,
+		cache:         cache,
+		conns:         presence,
+		store:         newGormStore(db, log),
+		logger:        log,
+		jobs:          make(chan func(), constants.PushDispatchQueueSize),
+		trailingDelay: time.Duration(constants.PushThrottleTTLSeconds)*time.Second + trailingGrace,
+		schedule:      func(delay time.Duration, fn func()) { time.AfterFunc(delay, fn) },
 	}
 	for i := 0; i < constants.PushDispatchWorkers; i++ {
 		s.workers.Add(1)
@@ -145,36 +160,42 @@ func (s *Sender) SendDM(recipients []string, in DMPush) {
 	if in.ConversationType != constants.ConversationTypeDirect || in.ConversationID == "" {
 		return
 	}
-	content := buildDMContent(in)
-	source := "dm:" + in.ConversationID
+	source := constants.PushDMSource(in.ConversationID)
+	seq := time.Now().UnixNano()
 	for _, uid := range recipients {
 		if uid == in.SenderID || uid == "" {
 			continue
 		}
 		recipientID := uid
+		perUser := in
+		perUser.UnreadCount = in.UnreadByUser[uid]
+		content := buildDMContent(perUser)
+		content.Seq = seq
 		s.enqueue(func() {
 			s.process(recipientID, source, in.MessageID, true, content)
 		})
 	}
 }
 
-func (s *Sender) SendMeNotification(recipientID string, notification map[string]interface{}) {
+func (s *Sender) SendMeNotification(recipientID string, notification map[string]interface{}, unread int) {
 	if recipientID == "" || notification == nil {
 		return
 	}
 	id, ntype, actorName, preview := parseNotifFields(notification)
-	content := buildMeNotifContent(actorName, ntype, preview)
+	content := buildMeNotifContent(id, actorName, ntype, preview, unread)
+	content.Seq = time.Now().UnixNano()
 	s.enqueue(func() {
 		s.process(recipientID, constants.PushSourceMeNotif, id, false, content)
 	})
 }
 
-func (s *Sender) SendAppNotification(recipientID string, notification map[string]interface{}) {
+func (s *Sender) SendAppNotification(recipientID string, notification map[string]interface{}, unread int) {
 	if recipientID == "" || notification == nil {
 		return
 	}
 	id, ntype, actorName, preview := parseNotifFields(notification)
-	content := buildAppNotifContent(actorName, ntype, preview)
+	content := buildAppNotifContent(id, actorName, ntype, preview, unread)
+	content.Seq = time.Now().UnixNano()
 	s.enqueue(func() {
 		s.process(recipientID, constants.PushSourceAppNotif, id, false, content)
 	})
@@ -223,11 +244,13 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 	throttleKey := fmt.Sprintf(constants.CacheKeyPushThrottle, recipientID, source)
 	acquired, err := s.cache.SetNX(throttleKey, owner, time.Duration(constants.PushThrottleTTLSeconds)*time.Second)
 	if err == nil && !acquired {
-		s.rollbackKey(eventKey, owner)
+		s.storePending(recipientID, source, pendingPush{Content: content})
 		return
 	}
 	if err != nil {
 		throttleKey = ""
+	} else {
+		s.clearPending(recipientID, source)
 	}
 
 	if !s.store.PushEnabled() {
@@ -271,7 +294,41 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 	}
 	if successCount > 0 {
 		s.logger.Infow("Push sent", "recipient_id", recipientID, "source", source, "success", successCount, "failure", failureCount)
+		if throttleKey != "" {
+			s.scheduleTrailing(recipientID, source)
+		}
 	}
+}
+
+func (s *Sender) storePending(recipientID, source string, p pendingPush) {
+	key := constants.PushPendingKey(recipientID, source)
+	var existing pendingPush
+	if err := s.cache.Get(key, &existing); err == nil && existing.Content.Seq > p.Content.Seq {
+		return
+	}
+	if err := s.cache.Set(key, p, time.Duration(constants.PushPendingTTLSeconds)*time.Second); err != nil {
+		s.logger.Warnw("Failed to store pending push", "recipient_id", recipientID, "source", source, "error", err.Error())
+	}
+}
+
+func (s *Sender) clearPending(recipientID, source string) {
+	if err := s.cache.Delete(constants.PushPendingKey(recipientID, source)); err != nil {
+		s.logger.Warnw("Failed to clear pending push", "recipient_id", recipientID, "source", source, "error", err.Error())
+	}
+}
+
+func (s *Sender) scheduleTrailing(recipientID, source string) {
+	s.schedule(s.trailingDelay, func() {
+		s.enqueue(func() { s.flushPending(recipientID, source) })
+	})
+}
+
+func (s *Sender) flushPending(recipientID, source string) {
+	var p pendingPush
+	if err := s.cache.GetDel(constants.PushPendingKey(recipientID, source), &p); err != nil {
+		return
+	}
+	s.process(recipientID, source, "", strings.HasPrefix(source, constants.PushSourceDMPrefix), p.Content)
 }
 
 func (s *Sender) sendInChunks(recipientID, source string, tokens []models.DeviceToken, msgs []*messaging.Message) (successCount, failureCount int, firstErr error) {

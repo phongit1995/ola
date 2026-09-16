@@ -74,6 +74,17 @@ func (s *CacheService) Delete(key string) error {
 	return s.client.Del(s.ctx, key).Err()
 }
 
+func (s *CacheService) GetDel(key string, dest interface{}) error {
+	data, err := s.client.GetDel(s.ctx, key).Bytes()
+	if err == redis.Nil {
+		return fmt.Errorf("key not found")
+	}
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, dest)
+}
+
 // GetMany retrieves multiple keys in one MGET round trip; missing keys are nil
 func (s *CacheService) GetMany(keys []string) ([]interface{}, error) {
 	if len(keys) == 0 {

@@ -9,7 +9,8 @@ import { androidNotificationBase } from '@lib/notificationAndroid';
 import i18n from '../i18n';
 
 const REMINDER_ID = 'come-back-reminder';
-const CHANNEL_ID = 'reminders';
+const LEGACY_CHANNEL_ID = 'reminders';
+const CHANNEL_ID = 'reminders_v2';
 const REMINDER_DELAY_MS = 2 * 24 * 60 * 60 * 1000;
 
 const MESSAGE_KEYS = [
@@ -39,6 +40,18 @@ function randomMessageKey(): ParseKeys {
   return MESSAGE_KEYS[Math.floor(Math.random() * MESSAGE_KEYS.length)];
 }
 
+async function migrateLegacyChannel(): Promise<void> {
+  try {
+    const channel = await notifee.getChannel(LEGACY_CHANNEL_ID);
+    if (channel == null) return;
+    await notifee.cancelTriggerNotification(REMINDER_ID);
+    await notifee.deleteChannel(LEGACY_CHANNEL_ID);
+    await scheduleComeBackReminder();
+  } catch {
+    return;
+  }
+}
+
 export async function initComeBackReminder(): Promise<void> {
   try {
     await notifee.requestPermission();
@@ -46,10 +59,12 @@ export async function initComeBackReminder(): Promise<void> {
       id: CHANNEL_ID,
       name: i18n.t('reminder.channelName'),
       importance: AndroidImportance.DEFAULT,
+      badge: false,
     });
   } catch {
     return;
   }
+  await migrateLegacyChannel();
 }
 
 export async function scheduleComeBackReminder(): Promise<void> {

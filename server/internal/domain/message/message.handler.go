@@ -131,6 +131,7 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 			ConversationName: event.Conversation.Name,
 			Preview:          preview,
 			SentAt:           event.Message.CreatedAt,
+			UnreadByUser:     event.UnreadCounts,
 		})
 	}
 

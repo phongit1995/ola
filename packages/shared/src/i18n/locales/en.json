@@ -1997,6 +1997,7 @@
     "channelMessages": "Messages",
     "channelSocial": "Me notifications",
     "channelSystem": "System",
-    "you": "You"
+    "you": "You",
+    "newCount": "{{count}} new notifications"
   }
 }

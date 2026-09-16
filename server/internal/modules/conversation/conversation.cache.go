@@ -148,6 +148,10 @@ func (c *CacheService) ResetUnreadCount(conversationID, userID uuid.UUID) error 
 	return c.cache.Delete(key)
 }
 
+func (c *CacheService) ClearPendingPush(conversationID, userID uuid.UUID) error {
+	return c.cache.Delete(constants.PushPendingKey(userID.String(), constants.PushDMSource(conversationID.String())))
+}
+
 func (c *CacheService) InvalidateConversation(conversationID uuid.UUID) error {
 	if err := c.DeleteConversation(conversationID); err != nil {
 		c.logger.Warnw("Failed to delete conversation cache", "conversation_id", conversationID, "error", err)

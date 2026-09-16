@@ -1997,6 +1997,7 @@
     "channelMessages": "Tin nhắn",
     "channelSocial": "Thông báo Me",
     "channelSystem": "Hệ thống",
-    "you": "Bạn"
+    "you": "Bạn",
+    "newCount": "{{count}} thông báo mới"
   }
 }

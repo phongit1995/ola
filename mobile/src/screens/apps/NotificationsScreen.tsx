@@ -5,6 +5,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { ParseKeys } from 'i18next';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
+import { APP_NOTIF_ID, clearPushNotification } from '@lib/push';
 import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -68,6 +69,7 @@ export function NotificationsScreen() {
 
   useEffect(() => {
     void load().then(() => markAllRead());
+    void clearPushNotification(APP_NOTIF_ID);
   }, [load, markAllRead]);
 
   async function runAction(item: AppNotification, action: () => Promise<void>) {

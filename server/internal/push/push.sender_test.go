@@ -2,6 +2,7 @@ package push
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -53,7 +54,41 @@ func (f *fakeCache) DeleteIfValue(key string, value interface{}) (bool, error) {
 	return false, nil
 }
 
-func (f *fakeCache) Get(string, interface{}) error { return errors.New("key not found") }
+func (f *fakeCache) Get(key string, dest interface{}) error {
+	if f.failed {
+		return errors.New("redis down")
+	}
+	raw, ok := f.values[key]
+	if !ok {
+		return errors.New("key not found")
+	}
+	return json.Unmarshal([]byte(raw), dest)
+}
+
+func (f *fakeCache) Set(key string, value interface{}, _ time.Duration) error {
+	if f.failed {
+		return errors.New("redis down")
+	}
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	f.values[key] = string(raw)
+	return nil
+}
+
+func (f *fakeCache) Delete(key string) error {
+	delete(f.values, key)
+	return nil
+}
+
+func (f *fakeCache) GetDel(key string, dest interface{}) error {
+	if err := f.Get(key, dest); err != nil {
+		return err
+	}
+	delete(f.values, key)
+	return nil
+}
 
 type fakeStore struct {
 	tokens       []models.DeviceToken
@@ -77,15 +112,21 @@ func (f *fakeStore) DeleteToken(token string) error {
 func (f *fakeStore) NotifMessageEnabled(string) bool { return f.notifMessage }
 
 type fakeFCM struct {
-	resp *messaging.BatchResponse
-	err  error
-	sent [][]*messaging.Message
+	resp   *messaging.BatchResponse
+	err    error
+	sent   [][]*messaging.Message
+	onSend func()
 }
 
 func (f *fakeFCM) Enabled() bool { return true }
 
 func (f *fakeFCM) SendEach(_ context.Context, msgs []*messaging.Message) (*messaging.BatchResponse, error) {
 	f.sent = append(f.sent, msgs)
+	if f.onSend != nil {
+		hook := f.onSend
+		f.onSend = nil
+		hook()
+	}
 	if f.err != nil {
 		return nil, f.err
 	}
@@ -100,7 +141,7 @@ func (f *fakeFCM) SendEach(_ context.Context, msgs []*messaging.Message) (*messa
 }
 
 func newTestSender(fcm fcmSender, cache cacheStore, conns ConnectionCounter, store tokenStore) *Sender {
-	return &Sender{
+	s := &Sender{
 		fcm:    fcm,
 		cache:  cache,
 		conns:  conns,
@@ -108,6 +149,20 @@ func newTestSender(fcm fcmSender, cache cacheStore, conns ConnectionCounter, sto
 		logger: zap.NewNop().Sugar(),
 		jobs:   make(chan func(), 16),
 	}
+	testScheduled = nil
+	s.schedule = func(_ time.Duration, fn func()) { testScheduled = append(testScheduled, fn) }
+	return s
+}
+
+var testScheduled []func()
+
+func runScheduled(s *Sender) {
+	fns := testScheduled
+	testScheduled = nil
+	for _, fn := range fns {
+		fn()
+	}
+	drainJobs(s)
 }
 
 func drainJobs(s *Sender) {
@@ -164,7 +219,7 @@ func TestProcessNotifMessageGateBlocksDMOnly(t *testing.T) {
 		t.Fatalf("expected DM blocked by setting, got %d sends", len(fcm.sent))
 	}
 
-	s.process("u1", constants.PushSourceMeNotif, "n1", false, buildMeNotifContent("Hoa", models.MeNotificationLike, ""))
+	s.process("u1", constants.PushSourceMeNotif, "n1", false, buildMeNotifContent("n1", "Hoa", models.MeNotificationLike, "", 0))
 	if len(fcm.sent) != 1 {
 		t.Fatalf("expected me notification to bypass setting gate, got %d sends", len(fcm.sent))
 	}
@@ -189,6 +244,127 @@ func TestProcessThrottleSuppressesSecondSend(t *testing.T) {
 	s.process("u1", "dm:c1", "m2", true, content)
 	if len(fcm.sent) != 1 {
 		t.Fatalf("expected second send throttled, got %d", len(fcm.sent))
+	}
+}
+
+func TestProcessTrailingSendsLatestPendingAfterWindow(t *testing.T) {
+	fcm := &fakeFCM{}
+	cache := newFakeCache()
+	s := newTestSender(fcm, cache, &fakeConns{}, &fakeStore{tokens: oneToken(), notifMessage: true})
+	first := buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct", SenderName: "An", Preview: "1", UnreadCount: 1})
+	second := buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct", SenderName: "An", Preview: "2", UnreadCount: 2})
+	third := buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct", SenderName: "An", Preview: "3", UnreadCount: 3})
+	s.process("u1", "dm:c1", "m1", true, first)
+	s.process("u1", "dm:c1", "m2", true, second)
+	s.process("u1", "dm:c1", "m3", true, third)
+	if len(fcm.sent) != 1 || len(testScheduled) != 1 {
+		t.Fatalf("expected one send and one scheduled flush, got %d sends %d scheduled", len(fcm.sent), len(testScheduled))
+	}
+
+	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	runScheduled(s)
+	if len(fcm.sent) != 2 {
+		t.Fatalf("expected trailing send, got %d", len(fcm.sent))
+	}
+	data := fcm.sent[1][0].Data
+	if data["body"] != "3" || data["unreadCount"] != "3" {
+		t.Fatalf("expected latest pending content, got %v", data)
+	}
+	if _, ok := cache.values[fmt.Sprintf(constants.CacheKeyPushPending, "u1", "dm:c1")]; ok {
+		t.Fatal("expected pending key cleared")
+	}
+
+	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	runScheduled(s)
+	if len(fcm.sent) != 2 {
+		t.Fatalf("expected no send without pending, got %d", len(fcm.sent))
+	}
+}
+
+func TestProcessFreshSendSupersedesOlderPending(t *testing.T) {
+	fcm := &fakeFCM{}
+	cache := newFakeCache()
+	s := newTestSender(fcm, cache, &fakeConns{}, &fakeStore{tokens: oneToken(), notifMessage: true})
+	mk := func(body string, unread int) Content {
+		return buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct", SenderName: "An", Preview: body, UnreadCount: unread})
+	}
+	s.process("u1", "dm:c1", "m1", true, mk("1", 1))
+	s.process("u1", "dm:c1", "m2", true, mk("2", 2))
+	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	s.process("u1", "dm:c1", "m3", true, mk("3", 3))
+	if len(fcm.sent) != 2 {
+		t.Fatalf("expected m1 and m3 sent, got %d", len(fcm.sent))
+	}
+	if _, ok := cache.values[fmt.Sprintf(constants.CacheKeyPushPending, "u1", "dm:c1")]; ok {
+		t.Fatal("expected older pending cleared by the fresh send")
+	}
+	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	runScheduled(s)
+	if len(fcm.sent) != 2 {
+		t.Fatalf("expected no stale trailing send, got %d", len(fcm.sent))
+	}
+}
+
+func TestProcessPendingStoredDuringInFlightSendSurvives(t *testing.T) {
+	fcm := &fakeFCM{}
+	cache := newFakeCache()
+	s := newTestSender(fcm, cache, &fakeConns{}, &fakeStore{tokens: oneToken(), notifMessage: true})
+	first := buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct", SenderName: "An", Preview: "1", UnreadCount: 1})
+	second := buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct", SenderName: "An", Preview: "2", UnreadCount: 2})
+	fcm.onSend = func() { s.process("u1", "dm:c1", "m2", true, second) }
+	s.process("u1", "dm:c1", "m1", true, first)
+	if len(fcm.sent) != 1 {
+		t.Fatalf("expected only m1 sent, got %d", len(fcm.sent))
+	}
+	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	runScheduled(s)
+	if len(fcm.sent) != 2 || fcm.sent[1][0].Data["body"] != "2" {
+		t.Fatalf("expected trailing send of m2, got %d sends", len(fcm.sent))
+	}
+}
+
+func TestStorePendingKeepsNewerSeq(t *testing.T) {
+	fcm := &fakeFCM{}
+	cache := newFakeCache()
+	s := newTestSender(fcm, cache, &fakeConns{}, &fakeStore{tokens: oneToken(), notifMessage: true})
+	mk := func(body string, seq int64) Content {
+		c := buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct", SenderName: "An", Preview: body})
+		c.Seq = seq
+		return c
+	}
+	s.process("u1", "dm:c1", "m1", true, mk("1", 1))
+	s.process("u1", "dm:c1", "m3", true, mk("3", 3))
+	s.process("u1", "dm:c1", "m2", true, mk("2", 2))
+	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	runScheduled(s)
+	if len(fcm.sent) != 2 || fcm.sent[1][0].Data["body"] != "3" {
+		t.Fatalf("expected newer pending m3 to win, got %v", fcm.sent)
+	}
+}
+
+func TestSendDMUsesPerRecipientUnread(t *testing.T) {
+	fcm := &fakeFCM{}
+	s := newTestSender(fcm, newFakeCache(), &fakeConns{}, &fakeStore{tokens: oneToken(), notifMessage: true})
+	s.SendDM([]string{"sender", "a", "b"}, DMPush{
+		ConversationID:   "c1",
+		ConversationType: "direct",
+		SenderID:         "sender",
+		MessageID:        "m1",
+		UnreadByUser:     map[string]int{"a": 4, "sender": 0},
+	})
+	drainJobs(s)
+	if len(fcm.sent) != 2 {
+		t.Fatalf("expected 2 sends, got %d", len(fcm.sent))
+	}
+	got := map[string]string{}
+	for _, batch := range fcm.sent {
+		got[batch[0].Data["conversationId"]+":"+batch[0].Data["unreadCount"]] = batch[0].Data["unreadCount"]
+	}
+	if _, ok := got["c1:4"]; !ok {
+		t.Fatalf("expected recipient a to get unreadCount 4, got %v", got)
+	}
+	if _, ok := got["c1:"]; !ok {
+		t.Fatalf("expected recipient b without unreadCount, got %v", got)
 	}
 }
 
@@ -427,21 +603,21 @@ func TestBuildMeNotifContentAllTypes(t *testing.T) {
 		models.MeNotificationMention,
 		models.MeNotificationCommentLike,
 	} {
-		c := buildMeNotifContent("Hoa", ntype, "nội dung")
+		c := buildMeNotifContent("n1", "Hoa", ntype, "nội dung", 0)
 		if c.Title != "Hoa" || c.Body == "" || c.Channel != constants.PushChannelSocial {
 			t.Fatalf("bad content for %s: %+v", ntype, c)
 		}
 	}
 
-	c := buildMeNotifContent("", "unknown_type", "x")
+	c := buildMeNotifContent("n1", "", "unknown_type", "x", 0)
 	if c.Title != fallbackTitle || c.Body != "Bạn có thông báo mới" {
 		t.Fatalf("unexpected unknown-type content: %+v", c)
 	}
-	c = buildMeNotifContent("Hoa", models.MeNotificationComment, "bình luận dài")
+	c = buildMeNotifContent("n1", "Hoa", models.MeNotificationComment, "bình luận dài", 0)
 	if !strings.Contains(c.Body, "bình luận dài") {
 		t.Fatalf("expected preview appended: %q", c.Body)
 	}
-	c = buildMeNotifContent("Hoa", models.MeNotificationLike, "preview")
+	c = buildMeNotifContent("n1", "Hoa", models.MeNotificationLike, "preview", 0)
 	if strings.Contains(c.Body, "preview") {
 		t.Fatalf("like should not include preview: %q", c.Body)
 	}
@@ -457,19 +633,19 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 		models.AppNotificationClanUnverified,
 		models.AppNotificationClanBanned,
 	} {
-		c := buildAppNotifContent("Hoa", ntype, "")
+		c := buildAppNotifContent("n1", "Hoa", ntype, "", 0)
 		if c.Body == "" || c.Channel != constants.PushChannelSystem {
 			t.Fatalf("bad content for %s: %+v", ntype, c)
 		}
 	}
 
-	if c := buildAppNotifContent("Hoa", models.AppNotificationFriendRequest, ""); c.Title != "Hoa" {
+	if c := buildAppNotifContent("n1", "Hoa", models.AppNotificationFriendRequest, "", 0); c.Title != "Hoa" {
 		t.Fatalf("expected actor title, got %q", c.Title)
 	}
-	if c := buildAppNotifContent("Admin", models.AppNotificationClanBanned, ""); c.Title != fallbackTitle {
+	if c := buildAppNotifContent("n1", "Admin", models.AppNotificationClanBanned, "", 0); c.Title != fallbackTitle {
 		t.Fatalf("expected system title for clan type, got %q", c.Title)
 	}
-	if c := buildAppNotifContent("", "unknown", ""); c.Body != "Bạn có thông báo mới" {
+	if c := buildAppNotifContent("n1", "", "unknown", "", 0); c.Body != "Bạn có thông báo mới" {
 		t.Fatalf("unexpected unknown-type body: %q", c.Body)
 	}
 }

@@ -11,6 +11,7 @@ import {
 } from '@ola/shared/lib';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useFocusPresence } from '@hooks/usePresence';
+import { clearPushNotification, dmNotifId } from '@lib/push';
 
 export function useChatDetail(conversationId: string | null | undefined) {
   const { t, i18n } = useTranslation();
@@ -45,7 +46,10 @@ export function useChatDetail(conversationId: string | null | undefined) {
   const draftRecipient = useChatStore((s) => s.draftRecipient);
 
   useEffect(() => {
-    if (conversationId != null) void openConversation(conversationId);
+    if (conversationId != null) {
+      void openConversation(conversationId);
+      void clearPushNotification(dmNotifId(conversationId));
+    }
     return () => closeConversation();
   }, [conversationId, openConversation, closeConversation]);
 

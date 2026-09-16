@@ -624,7 +624,16 @@ func (s *Service) UnreadNotificationCount(recipientID uuid.UUID) (int64, error) 
 }
 
 func (s *Service) MarkAllNotificationsRead(recipientID uuid.UUID) error {
-	return s.repo.MarkAllMeNotificationsRead(recipientID)
+	if err := s.repo.MarkAllMeNotificationsRead(recipientID); err != nil {
+		return err
+	}
+	if s.cache == nil {
+		return nil
+	}
+	if err := s.cache.Delete(constants.PushPendingKey(recipientID.String(), constants.PushSourceMeNotif)); err != nil {
+		s.logger.Warnw("Failed to clear pending me push", "recipient_id", recipientID, "error", err)
+	}
+	return nil
 }
 
 func (s *Service) createMeNotification(recipientID, actorID uuid.UUID, ntype string, postID uuid.UUID, commentID *uuid.UUID, preview string) {
