@@ -200,7 +200,11 @@ export function RoomMessagesTab({
     const target = pendingBlockCommitRef.current;
     pendingBlockCommitRef.current = null;
     if (target == null) return;
-    blockUser(target.senderId)
+    blockUser(target.senderId, {
+      userId: target.senderId,
+      username: target.senderName ?? '',
+      avatar: target.senderAvatar,
+    })
       .then(() => pushToast('success', t('room.blockSuccess')))
       .catch((error: unknown) =>
         pushToast(

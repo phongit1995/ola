@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,6 +35,7 @@ import { ROOT_ROUTES, TAB_ROUTES } from '@navigation/routes';
 import { RoomMessagesTab } from './components/RoomMessagesTab';
 import { RoomMembersTab } from './components/RoomMembersTab';
 import { RoomFilterDialog } from './components/RoomFilterDialog';
+import { RoomBlockedListDialog } from './components/RoomBlockedListDialog';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import {
   deleteTemporaryVoiceFile,
@@ -170,6 +172,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
   const setFilters = useRoomFilterStore(s => s.setFilters);
   const pushToast = useToastStore(s => s.push);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [blockedOpen, setBlockedOpen] = useState(false);
   const [pendingLeave, setPendingLeave] = useState<NavigationAction | null>(
     null,
   );
@@ -304,6 +307,26 @@ export function RoomChatScreen({ navigation, route }: Props) {
               />
             </Pressable>
           )}
+          {activeTab === 'messages' && (
+            <Pressable
+              className="absolute right-0 h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
+              onPress={() => setBlockedOpen(true)}
+            >
+              <Svg
+                width={20}
+                height={20}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <Circle cx="12" cy="12" r="10" />
+                <Path d="m4.93 4.93 14.14 14.14" />
+              </Svg>
+            </Pressable>
+          )}
         </View>
       </View>
       <DashedLine />
@@ -401,6 +424,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
         }}
         onClose={() => setFilterOpen(false)}
       />
+      {blockedOpen && <RoomBlockedListDialog onClose={() => setBlockedOpen(false)} />}
 
       <ConfirmDialog
         visible={pendingLeave != null}

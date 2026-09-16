@@ -419,7 +419,7 @@ func (ctrl *Controller) BlockUser(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
-	resp, err := ctrl.service.BlockUser(userID, blockedUserID)
+	resp, err := ctrl.service.BlockUser(userID, blockedUserID, req.Migration)
 	if err != nil {
 		return nil, roomBlockHTTPError(err)
 	}

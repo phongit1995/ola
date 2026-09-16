@@ -61,6 +61,7 @@ const (
 	CacheKeyTokenBlacklist      = "JWT_BLACKLIST:%s"
 	CacheKeyRegisterDone        = "REGISTER_DONE:%s"
 	CacheKeyRegisterThrottle    = "REGISTER_THROTTLE:%s"
+	CacheKeyRoomUnblocked       = "ROOM_UNBLOCKED:%s:%s"
 	CacheKeySessionRevoked      = "SESSION_REVOKED:%s"
 	CacheKeyConversation        = "CONVERSATION:%s:DETAIL"
 	CacheKeyConversationList    = "USER:%s:CONVERSATIONS"
@@ -172,6 +173,7 @@ const (
 	WebSocketEventRoomMessageReactionUpdated = "ROOM_MESSAGE_REACTION_UPDATED"
 	WebSocketEventRoomMemberJoined           = "ROOM_MEMBER_JOINED"
 	WebSocketEventRoomMemberLeft             = "ROOM_MEMBER_LEFT"
+	WebSocketEventRoomBlockListChanged       = "ROOM_BLOCK_LIST_CHANGED"
 	WebSocketEventSessionReplaced            = "SESSION_REPLACED"
 	WebSocketEventKenUpdated                 = "KEN_UPDATED"
 	WebSocketEventPenSettled                 = "PEN_SETTLED"
@@ -247,6 +249,7 @@ const (
 	CacheTTLRelationshipAllowed = 300
 	CacheTTLFriendList          = 60
 	CacheTTLUnreadCount         = 2592000
+	CacheTTLRoomUnblocked       = 2592000
 	CacheTTLRateLimit           = 60
 	CacheTTLOTP                 = 300
 	CacheTTLPasswordResetToken  = 1800

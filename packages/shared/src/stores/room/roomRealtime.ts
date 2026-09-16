@@ -115,4 +115,10 @@ export function registerRoomRealtime(set: RoomSet, get: RoomGet) {
   SocketService.on(ROOM_SOCKET_EVENTS.reactionUpdated, (data) => handleReactionUpdated(get, set, data));
   SocketService.on(ROOM_SOCKET_EVENTS.memberJoined, (data) => handleMemberCountChange(get, set, data));
   SocketService.on(ROOM_SOCKET_EVENTS.memberLeft, (data) => handleMemberCountChange(get, set, data));
+  SocketService.on(ROOM_SOCKET_EVENTS.blockListChanged, () => {
+    void useRoomFilterStore.getState().syncBlockedUsers();
+  });
+  SocketService.onReconnect(() => {
+    void useRoomFilterStore.getState().syncBlockedUsers();
+  });
 }

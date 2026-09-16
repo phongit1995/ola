@@ -99,8 +99,8 @@ export class RoomService {
     return http.get<RoomBlockedUsersResult>(API_PATH.rooms.blocked);
   }
 
-  static blockUser(userId: string): Promise<RoomBlockedUsersResult> {
-    return http.post<RoomBlockedUsersResult>(API_PATH.rooms.blocked, { userId });
+  static blockUser(userId: string, migration = false): Promise<RoomBlockedUsersResult> {
+    return http.post<RoomBlockedUsersResult>(API_PATH.rooms.blocked, { userId, migration });
   }
 
   static unblockUser(userId: string): Promise<RoomBlockedUsersResult> {
