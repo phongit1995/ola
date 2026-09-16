@@ -50,10 +50,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install CocoaPods dependencies
+        working-directory: mobile/ios
         run: |
           bundle config set --local path "$RUNNER_TEMP/bundle"
           bundle install --jobs 4 --retry 3
-          bundle exec pod install --project-directory=mobile/ios
+          bundle exec pod install
 
       - name: Select production environment
         working-directory: mobile
