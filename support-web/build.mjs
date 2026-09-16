@@ -72,10 +72,7 @@ const renderChannels = () =>
 
 const renderDownloads = (code) => {
   const ios = code === 'vi' ? 'iOS — TestFlight' : 'iOS — TestFlight';
-  const android =
-    code === 'vi'
-      ? `Android — tải APK (${DOWNLOADS.androidSize})`
-      : `Android — download APK (${DOWNLOADS.androidSize})`;
+  const android = 'Android — Google Play';
   return `<ul class="links">
 <li><a href="${DOWNLOADS.ios}" target="_blank" rel="noopener">${escapeHtml(ios)}</a></li>
 <li><a href="${DOWNLOADS.android}" target="_blank" rel="noopener">${escapeHtml(android)}</a></li>

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { APP_DOWNLOAD } from '@constants';
 import { ActionLink, DownloadGuideBody } from './DownloadGuideBody';
 import { CopyableValue } from './CopyableValue';
-import { DownloadIcon } from './platformIcons';
+import { GooglePlayIcon } from './platformIcons';
 
 export function AndroidGuide({
   isCurrentDevice,
@@ -18,20 +18,20 @@ export function AndroidGuide({
     <DownloadGuideBody
       channel={t('download.android.channel')}
       isCurrentDevice={isCurrentDevice}
-      chips={[t('download.android.size', { size: APP_DOWNLOAD.apkSize })]}
       steps={steps}
-      note={t('download.android.note')}
       footer={
-        <CopyableValue
-          label={t('download.android.folderLinkLabel')}
-          value={APP_DOWNLOAD.apkFolderUrl}
-        />
+        <div className="pt-1">
+          <CopyableValue
+            label={t('download.android.playLinkLabel')}
+            value={APP_DOWNLOAD.playStoreUrl}
+          />
+        </div>
       }
     >
       <ActionLink
-        href={APP_DOWNLOAD.apkFolderUrl}
+        href={APP_DOWNLOAD.playStoreUrl}
         label={t('download.android.action')}
-        icon={<DownloadIcon />}
+        icon={<GooglePlayIcon />}
       />
     </DownloadGuideBody>
   );

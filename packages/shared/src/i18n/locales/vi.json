@@ -1457,23 +1457,19 @@
     "copyLink": "Sao chép link trang này",
     "copied": "Đã sao chép link trang tải app",
     "inAppTitle": "Hãy mở bằng Chrome hoặc Safari",
-    "inAppMessage": "Trình duyệt bên trong Facebook, Messenger hay Zalo thường chặn tải file. Bạn sao chép link rồi dán vào Chrome (Android) hoặc Safari (iPhone) để tải được app.",
+    "inAppMessage": "Trình duyệt bên trong Facebook, Messenger hay Zalo thường không mở được Google Play hoặc App Store. Bạn sao chép link rồi dán vào Chrome (Android) hoặc Safari (iPhone) để tải được app.",
     "openOnPhone": "Mở trang này trên điện thoại",
     "openOnPhoneHint": "Bạn đang dùng máy tính. Nhập địa chỉ bên dưới vào trình duyệt trên điện thoại để tải app.",
     "android": {
       "name": "Android",
-      "channel": "Cài bằng file APK",
-      "action": "Mở thư mục tải APK",
-      "size": "Dung lượng {{size}}",
+      "channel": "Cài từ Google Play",
+      "action": "Tải trên Google Play",
       "steps": [
-        "Nhấn “Mở thư mục tải APK” để vào thư mục Google Drive của Ola, chọn file APK mới nhất (khoảng 56 MB, nên dùng Wi-Fi) rồi bấm biểu tượng tải xuống.",
-        "Chrome hiện cảnh báo “Loại tệp này có thể gây hại cho thiết bị” — chọn “Vẫn tải xuống”.",
-        "Mở file vừa tải. Nếu máy báo không được phép cài ứng dụng không rõ nguồn gốc, chọn “Cài đặt” rồi bật quyền cho Chrome hoặc trình quản lý tệp.",
-        "Play Protect có thể hiện “Không rõ ứng dụng” — chọn “Vẫn cài đặt”.",
-        "Chờ cài xong, mở Ola và đăng nhập bằng tài khoản của bạn."
+        "Nhấn “Tải trên Google Play” để mở trang Ola Me trên Google Play.",
+        "Nhấn “Cài đặt” và chờ tải xong (nên dùng Wi-Fi).",
+        "Mở Ola và đăng nhập bằng tài khoản của bạn."
       ],
-      "note": "Các cảnh báo trên là bình thường với file APK cài ngoài Google Play. Bản Ola ở trang này do chính chúng tôi phát hành.",
-      "folderLinkLabel": "Link thư mục Google Drive"
+      "playLinkLabel": "Link Google Play"
     },
     "ios": {
       "name": "iPhone / iPad",
@@ -1497,19 +1493,11 @@
     "faq": [
       {
         "question": "Nhấn tải nhưng không có gì xảy ra?",
-        "answer": "Bạn đang mở trang bằng trình duyệt trong Facebook/Zalo — loại trình duyệt này chặn tải file. Hãy sao chép link trang và mở bằng Chrome hoặc Safari."
+        "answer": "Bạn đang mở trang bằng trình duyệt trong Facebook/Zalo — loại trình duyệt này thường không mở được Google Play hay App Store. Hãy sao chép link trang và mở bằng Chrome hoặc Safari."
       },
       {
-        "question": "Máy báo không cài được ứng dụng không rõ nguồn gốc?",
-        "answer": "Vào Cài đặt → Ứng dụng → chọn trình duyệt bạn dùng để tải → bật “Cho phép cài ứng dụng từ nguồn này”, rồi mở lại file APK."
-      },
-      {
-        "question": "Play Protect báo ứng dụng có thể gây hại?",
-        "answer": "Đây là cảnh báo mặc định cho mọi file APK cài ngoài Google Play, chọn “Vẫn cài đặt” là được. Chỉ cần chắc chắn bạn tải file từ đúng link hiển thị ở trang này."
-      },
-      {
-        "question": "Link tải APK báo lỗi hoặc không tải được?",
-        "answer": "File APK đang đặt trên Google Drive nên khi quá nhiều người tải cùng lúc Google có thể tạm chặn. Bạn thử lại sau ít phút, hoặc nhấn “Mở thư mục Google Drive” rồi tự chọn file APK mới nhất trong thư mục."
+        "question": "Không tìm thấy Ola trên Google Play?",
+        "answer": "Một số máy không có Google Play Services, hoặc tài khoản Google đang ở quốc gia khác. Bạn thử sao chép link Google Play ở trang này dán vào trình duyệt, đổi tài khoản Google trong app Play, hoặc dùng bản web trong lúc chờ."
       },
       {
         "question": "TestFlight báo lời mời hết chỗ hoặc đã hết hạn?",
@@ -1517,15 +1505,15 @@
       },
       {
         "question": "Cập nhật app thế nào?",
-        "answer": "Android: tải file APK mới ở trang này rồi cài lên bản cũ, dữ liệu vẫn giữ nguyên. iPhone: mở TestFlight và nhấn Update."
+        "answer": "Android: Google Play tự cập nhật, hoặc bạn mở trang Ola Me trên Play rồi nhấn Cập nhật. iPhone: mở TestFlight và nhấn Update."
       },
       {
         "question": "Cài app có mất dữ liệu tài khoản không?",
         "answer": "Không. Tin nhắn và thông tin tài khoản được lưu trên hệ thống Ola, bạn đăng nhập ở thiết bị nào cũng thấy đầy đủ."
       }
     ],
-    "safetyTitle": "Chỉ tải Ola từ trang chính thức",
-    "safety": "Ola không bao giờ nhờ bạn tải file cài đặt từ tin nhắn lạ, nhóm Zalo hay Facebook. File từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
+    "safetyTitle": "Chỉ tải Ola từ nguồn chính thức",
+    "safety": "Ola chỉ phát hành qua Google Play (Android) và TestFlight (iPhone). Chúng tôi không bao giờ nhờ bạn cài file APK nhận từ tin nhắn lạ, nhóm Zalo hay Facebook — file từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
     "useWeb": "Tiếp tục dùng bản web",
     "stepLabel": "Bước {{index}}",
     "screenshotsTitle": "Ảnh minh hoạ các bước",

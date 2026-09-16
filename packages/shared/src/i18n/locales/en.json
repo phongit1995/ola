@@ -1457,23 +1457,19 @@
     "copyLink": "Copy this page link",
     "copied": "Download page link copied",
     "inAppTitle": "Please open in Chrome or Safari",
-    "inAppMessage": "Browsers inside Facebook, Messenger or Zalo usually block file downloads. Copy the link and paste it into Chrome (Android) or Safari (iPhone) to get the app.",
+    "inAppMessage": "Browsers inside Facebook, Messenger or Zalo usually cannot open Google Play or the App Store. Copy the link and paste it into Chrome (Android) or Safari (iPhone) to get the app.",
     "openOnPhone": "Open this page on your phone",
     "openOnPhoneHint": "You are on a computer. Type the address below into your phone browser to download the app.",
     "android": {
       "name": "Android",
-      "channel": "Install from an APK file",
-      "action": "Open the APK folder",
-      "size": "Size {{size}}",
+      "channel": "Install from Google Play",
+      "action": "Get it on Google Play",
       "steps": [
-        "Tap “Open the APK folder” to open the Ola folder on Google Drive, pick the newest APK file (about 56 MB, Wi-Fi recommended), then tap the download icon.",
-        "Chrome warns “This type of file can harm your device” — choose “Download anyway”.",
-        "Open the downloaded file. If your phone says installing unknown apps is not allowed, tap “Settings” and allow installs from Chrome or your file manager.",
-        "Play Protect may show “Unknown app” — choose “Install anyway”.",
-        "Wait for the install to finish, then open Ola and sign in."
+        "Tap “Get it on Google Play” to open the Ola Me listing on Google Play.",
+        "Tap “Install” and wait for the download to finish (Wi-Fi recommended).",
+        "Open Ola and sign in with your account."
       ],
-      "note": "These warnings are normal for APK files installed outside Google Play. The build on this page is published by us.",
-      "folderLinkLabel": "Google Drive folder link"
+      "playLinkLabel": "Google Play link"
     },
     "ios": {
       "name": "iPhone / iPad",
@@ -1497,19 +1493,11 @@
     "faq": [
       {
         "question": "Nothing happens when I tap download?",
-        "answer": "You are viewing this page in the Facebook or Zalo in-app browser, which blocks downloads. Copy the page link and open it in Chrome or Safari."
+        "answer": "You are viewing this page in the Facebook or Zalo in-app browser, which usually cannot open Google Play or the App Store. Copy the page link and open it in Chrome or Safari."
       },
       {
-        "question": "My phone refuses to install apps from unknown sources?",
-        "answer": "Go to Settings → Apps → pick the browser you downloaded with → turn on “Allow app installs from this source”, then open the APK again."
-      },
-      {
-        "question": "Play Protect says the app may be harmful?",
-        "answer": "That is the default warning for any APK installed outside Google Play, so choose “Install anyway”. Just make sure you downloaded the file from the link shown on this page."
-      },
-      {
-        "question": "The APK link fails or will not download?",
-        "answer": "The APK is hosted on Google Drive, which can temporarily block downloads when too many people fetch it at once. Try again in a few minutes, or tap “Open the Google Drive folder” and pick the newest APK file yourself."
+        "question": "I cannot find Ola on Google Play?",
+        "answer": "Some phones ship without Google Play Services, or your Google account is set to another country. Copy the Google Play link on this page into your browser, switch the Google account inside the Play app, or use the web version while you wait."
       },
       {
         "question": "TestFlight says the invite is full or expired?",
@@ -1517,15 +1505,15 @@
       },
       {
         "question": "How do I update the app?",
-        "answer": "Android: download the new APK from this page and install it over the old one — your data stays. iPhone: open TestFlight and tap Update."
+        "answer": "Android: Google Play updates it for you, or open the Ola Me listing on Play and tap Update. iPhone: open TestFlight and tap Update."
       },
       {
         "question": "Will installing the app lose my account data?",
         "answer": "No. Messages and account details are stored on Ola servers, so everything is there on any device you sign in from."
       }
     ],
-    "safetyTitle": "Only download Ola from the official site",
-    "safety": "Ola will never ask you to download an installer from a stranger message, a Zalo group or Facebook. Files from other sources can be repackaged with malware to take over your account.",
+    "safetyTitle": "Only get Ola from official sources",
+    "safety": "Ola ships only through Google Play (Android) and TestFlight (iPhone). We will never ask you to install an APK sent in a stranger message, a Zalo group or on Facebook — files from other sources can be repackaged with malware to take over your account.",
     "useWeb": "Keep using the web version",
     "stepLabel": "Step {{index}}",
     "screenshotsTitle": "Step-by-step screenshots",

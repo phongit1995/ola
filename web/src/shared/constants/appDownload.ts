@@ -1,7 +1,8 @@
+const ANDROID_PACKAGE_ID = 'com.ola.me.net.org.vn';
+
 export const APP_DOWNLOAD = {
-  apkFolderUrl:
-    'https://drive.google.com/drive/folders/1v2rxd3KGoJsN2NLzxLI1DuVB-q-PgtWx',
-  apkSize: '56 MB',
+  androidPackageId: ANDROID_PACKAGE_ID,
+  playStoreUrl: `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE_ID}`,
   testflightUrl: 'https://testflight.apple.com/join/kjTPXnuv',
   testflightCode: 'kjTPXnuv',
   testflightAppStoreUrl:
