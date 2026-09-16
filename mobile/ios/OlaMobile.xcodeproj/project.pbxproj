@@ -341,6 +341,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ola.me.net.org.vn;
 				PRODUCT_NAME = OlaMobile;
+				PROVISIONING_PROFILE_SPECIFIER = "$(OLA_PROVISIONING_PROFILE)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
