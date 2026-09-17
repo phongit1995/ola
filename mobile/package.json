@@ -15,7 +15,8 @@
         "OlaChatComposer": "OlaChatComposerView"
       },
       "modulesProvider": {
-        "OlaRichText": "NativeOlaRichText"
+        "OlaRichText": "NativeOlaRichText",
+        "OlaAppLock": "NativeOlaAppLock"
       }
     }
   },

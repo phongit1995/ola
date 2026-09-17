@@ -19,6 +19,7 @@ target 'OlaMobile' do
   config = use_native_modules!
 
   pod 'OlaRichText', :path => './OlaRichText'
+  pod 'OlaAppLock', :path => './OlaAppLock'
 
   use_react_native!(
     :path => config[:reactNativePath],

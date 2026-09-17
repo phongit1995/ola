@@ -220,6 +220,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - OlaAppLock (1.0.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - OlaRichText (1.0.0):
     - hermes-engine
     - RCTRequired
@@ -3065,6 +3087,7 @@ DEPENDENCIES:
   - NitroMmkv (from `../../node_modules/react-native-mmkv`)
   - NitroModules (from `../../node_modules/react-native-nitro-modules`)
   - NitroSound (from `../../node_modules/react-native-nitro-sound`)
+  - OlaAppLock (from `./OlaAppLock`)
   - OlaRichText (from `./OlaRichText`)
   - RCTDeprecation (from `../../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../../node_modules/react-native/Libraries/Required`)
@@ -3220,6 +3243,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-nitro-modules"
   NitroSound:
     :path: "../../node_modules/react-native-nitro-sound"
+  OlaAppLock:
+    :path: "./OlaAppLock"
   OlaRichText:
     :path: "./OlaRichText"
   RCTDeprecation:
@@ -3458,6 +3483,7 @@ SPEC CHECKSUMS:
   NitroMmkv: 38b271a19e7e152025a6893160c98326872ea05f
   NitroModules: 587af3c2bc93f5c9f9b39aec315eb29509a7c537
   NitroSound: 90d19ad981456113476388338d5b6b2a7d58999d
+  OlaAppLock: 29e88a13da1f9e2bf2135056192cc07ff96477d5
   OlaRichText: 2a2efbc934d8242e331d8a7d0afe5b766d23bc9c
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
@@ -3543,7 +3569,7 @@ SPEC CHECKSUMS:
   React-viewtransitionnativemodule: 6c82bccff3c5649a27134b660bfe7106f741b1f8
   React-webperformancenativemodule: f07a77f0b2407765f3b4e1e71bcb421093ccd35f
   ReactAppDependencyProvider: dcdd0e1b9559a6d8d8aea05286f4ed085091978e
-  ReactCodegen: 2981ef195c88cd0eb55ece2534e9c6c9fa605e88
+  ReactCodegen: 9cbefb213596cd48853a5d390777ee58b7b62efa
   ReactCommon: d5c1bb4427bf51c443de5926aac332c89ddd9363
   ReactNativeDependencies: fa0a54b3f5319ae0e3b9aff32bfee7a424b88e66
   RNCClipboard: 7a7d4557bfd3370b35c99dfecd92ae7b9fc4948a
@@ -3573,6 +3599,6 @@ SPEC CHECKSUMS:
   WebRTC-SDK: 1d7fc2ae91da6edd63e25f3882ff24f86a8d9d8b
   Yoga: c30c859b7e9b75e547b600b486fe33165f60de00
 
-PODFILE CHECKSUM: c0c4ad3ce83a793cbe524cae3231b1921333d672
+PODFILE CHECKSUM: 4db37caaace44214984e5ef3565e94769270e16b
 
 COCOAPODS: 1.16.2

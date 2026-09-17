@@ -1,20 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-  type ImageSourcePropType,
-} from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
 import { THEME_OPTIONS } from '@ola/shared/constants';
-import { withAlpha } from '@ola/shared/lib';
 import { UserService, VipService } from '@ola/shared/services';
 import type { ThemeId, UserSettings } from '@ola/shared/types';
 import {
@@ -25,10 +17,16 @@ import { CachedImage } from '@components/ui/CachedImage';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
+import {
+  ROW_BORDER,
+  SectionIcon,
+  Segmented,
+  SettingRow,
+  SettingsCard,
+  ToggleSwitch,
+} from './components';
 
-const ROW_BORDER = 'rgba(0,0,0,0.06)';
 const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;
 
@@ -36,12 +34,6 @@ const iconPrivacy = require('@assets/icons/settings/icon-privacy.webp');
 const iconNotification = require('@assets/icons/settings/icon-notification.webp');
 const iconAppearance = require('@assets/icons/settings/icon-appearance.webp');
 const iconDelete = require('@assets/icons/chat/ic_menu_delete.png');
-
-function SectionIcon({ src }: { src: ImageSourcePropType }) {
-  const resolved = Image.resolveAssetSource(src);
-  const ratio = resolved != null && resolved.height > 0 ? resolved.width / resolved.height : 1;
-  return <Image source={src} style={{ height: 16, width: 16 * ratio }} resizeMode="contain" />;
-}
 
 function ImageIcon() {
   const colors = useThemeColors();
@@ -103,137 +95,6 @@ function ThemeSwatches({
           />
         );
       })}
-    </View>
-  );
-}
-
-function ToggleSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
-  const colors = useThemeColors();
-  return (
-    <Pressable
-      accessibilityRole="switch"
-      accessibilityState={{ checked: on }}
-      onPress={onChange}
-      className="shrink-0 rounded-full"
-      style={{ width: 48, height: 28, backgroundColor: on ? colors.primary : 'rgba(0,0,0,0.2)' }}
-    >
-      <View
-        className="absolute rounded-full bg-white"
-        style={{
-          top: 2,
-          left: on ? 22 : 2,
-          width: 24,
-          height: 24,
-          shadowColor: '#000',
-          shadowOpacity: 0.15,
-          shadowRadius: 2,
-          shadowOffset: { width: 0, height: 1 },
-          elevation: 2,
-        }}
-      />
-    </Pressable>
-  );
-}
-
-function Segmented<T extends string>({
-  value,
-  options,
-  onChange,
-}: {
-  value: T;
-  options: { value: T; label: string }[];
-  onChange: (value: T) => void;
-}) {
-  const { multiplier: fontMultiplier } = useAppTypography();
-  const colors = useThemeColors();
-  return (
-    <View
-      className="shrink-0 flex-row rounded-lg bg-white"
-      style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.1)', padding: 2 }}
-    >
-      {options.map((option) => {
-        const selected = value === option.value;
-        return (
-          <Pressable
-            key={option.value}
-            onPress={() => onChange(option.value)}
-            className="rounded-md"
-            style={{
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              backgroundColor: selected ? colors.primary : 'transparent',
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 13 * fontMultiplier,
-                lineHeight: 17 * fontMultiplier,
-                color: selected ? '#ffffff' : 'rgba(0,0,0,0.7)',
-                fontWeight: selected ? '600' : '400',
-              }}
-            >
-              {option.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
-
-function SettingRow({ label, last, children }: { label: string; last?: boolean; children: ReactNode }) {
-  return (
-    <View
-      className="flex-row items-center justify-between gap-3 px-4 py-3"
-      style={last === true ? undefined : { borderBottomWidth: 1, borderBottomColor: ROW_BORDER }}
-    >
-      <Text className="min-w-0 flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.8)' }}>
-        {label}
-      </Text>
-      {children}
-    </View>
-  );
-}
-
-function SettingsCard({
-  icon,
-  index,
-  title,
-  children,
-}: {
-  icon: ReactNode;
-  index: number;
-  title: string;
-  children: ReactNode;
-}) {
-  const colors = useThemeColors();
-  return (
-    <View
-      className="overflow-hidden rounded-2xl bg-white"
-      style={{
-        borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.05)',
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        shadowOffset: { width: 0, height: 1 },
-        elevation: 1,
-      }}
-    >
-      <View
-        className="flex-row items-center gap-2 px-4 py-3"
-        style={{
-          borderBottomWidth: 1,
-          borderBottomColor: ROW_BORDER,
-          backgroundColor: withAlpha(colors.primary, 0.05),
-        }}
-      >
-        {icon}
-        <Text className="text-base font-bold" style={{ color: colors.primary }}>
-          {index}. {title}
-        </Text>
-      </View>
-      <View>{children}</View>
     </View>
   );
 }

@@ -5,18 +5,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { authTokens, formatKen } from '@ola/shared/lib';
-import {
-  AuthService,
-  SettingsService,
-  SocketService,
-} from '@ola/shared/services';
+import { SettingsService, SocketService } from '@ola/shared/services';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { removeSavedAccountOfCurrentUser, signOut } from '@lib/session';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
@@ -142,44 +138,27 @@ export function PersonalScreen() {
       navigation.navigate(ROOT_ROUTES.Settings);
       return;
     }
+    if (item.action === 'app-lock') {
+      navigation.navigate(ROOT_ROUTES.AppLock);
+      return;
+    }
     push('info', t('chat.comingSoon'));
   }
 
-  async function signOut() {
-    try {
-      await AuthService.logout();
-    } catch {
-      push('error', t('chat.logoutError'));
-    } finally {
-      SocketService.disconnect();
-      useAuthStore.getState().clearUser();
-    }
+  async function signOutWithNotice() {
+    const revoked = await signOut();
+    if (!revoked) push('error', t('chat.logoutError'));
   }
 
   async function confirmLogout() {
     setLogoutOpen(false);
-    await signOut();
-  }
-
-  function removeSavedAccountOfCurrentUser() {
-    const currentUsername = useAuthStore.getState().user?.username;
-    if (currentUsername == null) return;
-    const normalizedUsername = currentUsername.trim().toLowerCase();
-    const savedAccount = useSavedAccountsStore
-      .getState()
-      .accounts.find(
-        account =>
-          account.username.trim().toLowerCase() === normalizedUsername,
-      );
-    if (savedAccount != null) {
-      useSavedAccountsStore.getState().removeAccount(savedAccount.username);
-    }
+    await signOutWithNotice();
   }
 
   async function confirmRemoveAccount() {
     setRemoveAccountOpen(false);
     removeSavedAccountOfCurrentUser();
-    await signOut();
+    await signOutWithNotice();
   }
 
   function handleNicknameChanged() {
