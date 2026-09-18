@@ -5,11 +5,10 @@ import { toast } from '@lib';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useArcadeStore } from '@/store/arcadeStore';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
-import iconGameDefault from '@/assets/icons/apps/game.png';
 import { GAME_ITEMS, type AppItem } from '../apps/constants';
 
 interface GameTileProps {
-  icon: string;
+  icon?: string;
   title: string;
   onClick?: () => void;
 }
@@ -22,7 +21,11 @@ function GameTile({ icon, title, onClick }: GameTileProps) {
         onClick={onClick}
         className="flex w-full flex-col items-center gap-2 rounded-xl bg-white px-1 py-3 shadow-[0_1px_2px_rgba(0,0,0,.12)] active:bg-black/5"
       >
-        <img src={icon} alt="" className="h-14 w-14 object-contain" />
+        {icon ? (
+          <img src={icon} alt="" className="h-14 w-14 object-contain" />
+        ) : (
+          <span className="h-14 w-14 rounded-xl bg-black/6" />
+        )}
         <span className="line-clamp-2 min-h-8 text-center text-xs leading-4 font-bold text-black/87">
           {title}
         </span>
@@ -71,7 +74,7 @@ export function GamesPanel() {
           {miniGames.map((game) => (
             <GameTile
               key={game.id}
-              icon={game.iconUrl || iconGameDefault}
+              icon={game.iconUrl || undefined}
               title={game.name}
               onClick={() => handleOpenArcade(game)}
             />

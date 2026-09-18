@@ -14,10 +14,8 @@ import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { useArcadeStore } from '@store/arcadeStore';
 import { GAME_ITEMS, type AppItem } from '../apps/constants';
 
-const iconGameDefault = require('@assets/icons/apps/game.png');
-
 interface GameTileProps {
-  icon: number;
+  icon?: number;
   iconUrl?: string;
   title: string;
   onPress: () => void;
@@ -40,7 +38,8 @@ function GameTile({ icon, iconUrl, title, onPress }: GameTileProps) {
         <CachedImage
           uri={iconUrl}
           placeholder={icon}
-          style={{ width: 56, height: 56 }}
+          showLoader
+          style={{ width: 56, height: 56, borderRadius: 12 }}
           resizeMode="contain"
         />
         <Text
@@ -117,7 +116,6 @@ export function GamesScreen() {
           {miniGames.map(game => (
             <GameTile
               key={game.id}
-              icon={iconGameDefault}
               iconUrl={game.iconUrl || undefined}
               title={game.name}
               onPress={() => handleOpenArcade(game)}

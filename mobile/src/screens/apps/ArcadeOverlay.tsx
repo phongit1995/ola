@@ -39,7 +39,6 @@ interface BubblePosition {
   y: number;
 }
 
-const iconGameDefault = require('@assets/icons/apps/game.png');
 const BUBBLE_POSITION_STORAGE_KEY = 'ola.arcade.bubble-position';
 const MINIMIZE_POSITION_STORAGE_KEY = 'ola.arcade.minimize-position';
 const MINIMIZE_SIZE = 36;
@@ -503,7 +502,8 @@ export function ArcadeOverlay() {
           >
             <CachedImage
               uri={active.iconUrl || undefined}
-              placeholder={iconGameDefault}
+              showLoader
+              loadingIndicatorColor="#ffffff"
               style={styles.bubbleIcon}
               resizeMode="cover"
             />
