@@ -7,7 +7,7 @@ import olaLogo from '@/assets/images/ola-logo.png';
 import { ClearableInput } from '@components/form/ClearableInput';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
-import { Spinner } from '@components';
+import { AppDownloadBar, Spinner } from '@components';
 import { AuthService } from '@services';
 import { ApiError, USERNAME_MAX, decodeSecret, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
@@ -198,13 +198,7 @@ export function LoginPage() {
         </button>
       </div>
 
-      <button
-        type="button"
-        onClick={() => navigate(ROUTES.downloadApp)}
-        className="w-full max-w-md pb-3 text-center text-sm text-ola-on-primary/80 underline decoration-ola-on-primary/40"
-      >
-        {t('download.loginLink')}
-      </button>
+      <AppDownloadBar className="pb-3" />
 
       <div className="w-full max-w-md pb-4 text-right text-[9px] text-ola-on-primary/70">
         {t('login.version')}: {APP_VERSION}

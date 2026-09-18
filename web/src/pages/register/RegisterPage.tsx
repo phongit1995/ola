@@ -7,7 +7,7 @@ import olaLogo from '@/assets/images/ola-logo.png';
 import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
-import { Spinner } from '@components';
+import { AppDownloadBar, Spinner } from '@components';
 import { AuthService } from '@services';
 import {
   ApiError,
@@ -207,6 +207,8 @@ export function RegisterPage() {
       >
         {t('register.hasAccount')}
       </button>
+
+      <AppDownloadBar className="mt-auto pt-8" />
 
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/38">
