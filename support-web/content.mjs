@@ -15,7 +15,7 @@ export const CHANNELS = [
 ];
 
 export const DOWNLOADS = {
-  ios: 'https://testflight.apple.com/join/kjTPXnuv',
+  ios: 'https://testflight.apple.com/join/DyBJKdbb',
   android:
     'https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn',
 };
