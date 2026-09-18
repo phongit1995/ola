@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { clearPushNotification, ME_NOTIF_ID } from '@lib/push';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { applyPostReaction, reconcileTopLikers } from '@ola/shared/stores/feed/postHelpers';
 import { selfLiker } from '@ola/shared/stores/feed/selfLiker';
@@ -52,6 +53,7 @@ export function MeNotificationsScreen() {
 
   useEffect(() => {
     void load().then(() => markAllRead());
+    void clearPushNotification(ME_NOTIF_ID);
   }, [load, markAllRead]);
 
   function labelFor(type: MeNotificationType): string {

@@ -64,7 +64,7 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 	h.logger.Infow("✅ APP_NOTIFICATION emitted", "recipient_id", event.RecipientID, "unread_count", event.UnreadCount)
 
 	if h.pushSender != nil {
-		h.pushSender.SendAppNotification(event.RecipientID, notification)
+		h.pushSender.SendAppNotification(event.RecipientID, notification, int(event.UnreadCount))
 	}
 	return nil
 }

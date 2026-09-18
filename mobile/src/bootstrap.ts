@@ -10,6 +10,7 @@ import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useArcadeOverlayStore } from './store/arcadeOverlayStore';
+import { clearAllPushNotifications } from '@lib/push';
 import { mobileEnv } from './platform/env';
 import { configureRichTextNative } from './lib/richTextNativeConfig';
 import {
@@ -39,4 +40,5 @@ registerOnLogout(() => {
   useMediaViewerStore.getState().close();
   useSettingsStore.getState().reset();
   useAnnouncementStore.getState().reset();
+  void clearAllPushNotifications();
 });

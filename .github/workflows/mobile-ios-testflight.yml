@@ -7,17 +7,14 @@ on:
         description: 'Build number, phải lớn hơn build đã upload (bỏ trống = GitHub run number)'
         required: false
         type: string
-  push:
-    branches: [main]
-    paths:
-      - 'mobile/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - 'package.json'
-      - '.github/workflows/mobile-ios-testflight.yml'
+      upload_to_testflight:
+        description: 'Upload lên TestFlight sau khi build (tắt = chỉ build IPA làm artifact)'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
-  group: mobile-ios-testflight-${{ github.ref }}
+  group: mobile-ios-testflight
   cancel-in-progress: false
 
 permissions:
@@ -38,7 +35,7 @@ jobs:
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.1'
+          xcode-version: latest-stable
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -53,10 +50,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install CocoaPods dependencies
+        working-directory: mobile/ios
         run: |
           bundle config set --local path "$RUNNER_TEMP/bundle"
           bundle install --jobs 4 --retry 3
-          bundle exec pod install --project-directory=mobile/ios
+          bundle exec pod install
 
       - name: Select production environment
         working-directory: mobile
@@ -132,9 +130,10 @@ jobs:
         id: app
         run: |
           set -euo pipefail
-          SETTINGS=$(xcodebuild -project mobile/ios/OlaMobile.xcodeproj \
-            -scheme OlaMobile-Prod -configuration Release -showBuildSettings)
-          BUNDLE_ID=$(printf '%s\n' "$SETTINGS" | awk -F ' = ' '/PRODUCT_BUNDLE_IDENTIFIER = / {print $2; exit}')
+          SETTINGS=$(xcodebuild -workspace mobile/ios/OlaMobile.xcworkspace \
+            -scheme OlaMobile-Prod -configuration Release \
+            -destination 'generic/platform=iOS' -showBuildSettings)
+          BUNDLE_ID=$(printf '%s\n' "$SETTINGS" | awk -F ' = ' '/^ *PRODUCT_BUNDLE_IDENTIFIER = / {print $2; exit}')
           test -n "$BUNDLE_ID" || { echo "Could not read PRODUCT_BUNDLE_IDENTIFIER" >&2; exit 1; }
           FIREBASE_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :BUNDLE_ID' mobile/ios/OlaMobile/GoogleService-Info.plist)
           test "$BUNDLE_ID" = "$FIREBASE_BUNDLE_ID" || {
@@ -194,6 +193,7 @@ jobs:
           test -f "$RUNNER_TEMP/export/OlaMobile.ipa"
 
       - name: Upload to TestFlight
+        if: inputs.upload_to_testflight
         env:
           ASC_KEY_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
@@ -216,6 +216,7 @@ jobs:
 
       - name: Upload IPA and archive artifacts
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: ola-ios-${{ github.run_number }}
@@ -223,4 +224,4 @@ jobs:
             ${{ runner.temp }}/export/*.ipa
             ${{ runner.temp }}/xcodebuild-archive.log
           if-no-files-found: ignore
-          retention-days: 14
+          retention-days: 3

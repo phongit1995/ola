@@ -56,6 +56,7 @@ type ConversationMemberData struct {
 type MessageCreatedEvent struct {
 	Conversation *ConversationData `json:"conversation"`
 	Message      *MessageData      `json:"message"`
+	UnreadCounts map[string]int    `json:"unreadCounts,omitempty"`
 }
 
 // MessageDeletedEvent represents a message deletion event

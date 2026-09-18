@@ -913,7 +913,7 @@ func toEventReplySnapshot(snapshot *ReplySnapshot) *messageEvents.ReplySnapshot 
 }
 
 func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversation.ConversationMember,
-	messageID gocql.UUID, shortContent string, senderID uuid.UUID, now time.Time) {
+	messageID gocql.UUID, shortContent string, senderID uuid.UUID, now time.Time) map[string]int {
 
 	activeIDs := conversation.ActiveMemberIDs(members)
 
@@ -924,6 +924,7 @@ func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversat
 	}
 
 	inboxUpdates := make([]*ConversationInboxUpdate, 0, len(activeIDs))
+	unreadByUser := make(map[string]int, len(activeIDs))
 	var hiddenMembers []conversation.ConversationMember
 
 	for _, member := range members {
@@ -959,6 +960,7 @@ func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversat
 					"user_id", member.UserID, "conversation_id", conversationID, "error", incErr)
 				newUnread++
 			}
+			unreadByUser[member.UserID.String()] = newUnread
 		}
 
 		inboxUpdates = append(inboxUpdates, &ConversationInboxUpdate{
@@ -987,14 +989,16 @@ func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversat
 		if err != nil || conv == nil {
 			s.logger.Errorw("Failed to fetch conversation for hidden-member unhide, recipients will not see this message in their inbox until the next one",
 				"conversation_id", conversationID, "hidden_member_count", len(hiddenMembers), "error", err)
-			return
+			return unreadByUser
 		}
-		s.processHiddenMembers(hiddenMembers, conv, members, conversationID, messageID, shortContent, senderID)
+		s.processHiddenMembers(hiddenMembers, conv, members, conversationID, messageID, shortContent, senderID, unreadByUser)
 	}
+	return unreadByUser
 }
 
 func (s *Service) processHiddenMembers(hiddenMembers []conversation.ConversationMember, conv *conversation.Conversation,
-	allMembers []conversation.ConversationMember, conversationID uuid.UUID, messageID gocql.UUID, shortContent string, senderID uuid.UUID) {
+	allMembers []conversation.ConversationMember, conversationID uuid.UUID, messageID gocql.UUID, shortContent string, senderID uuid.UUID,
+	unreadByUser map[string]int) {
 
 	for _, m := range hiddenMembers {
 		s.logger.Infow("Auto-unhiding conversation", "user_id", m.UserID, "conversation_id", conversationID)
@@ -1016,6 +1020,9 @@ func (s *Service) processHiddenMembers(hiddenMembers []conversation.Conversation
 
 		s.convCache.RemoveHiddenConversation(m.UserID, conversationID)
 		s.convCache.SetUnreadCount(conversationID, m.UserID, unreadAfterUnhide)
+		if unreadAfterUnhide > 0 {
+			unreadByUser[m.UserID.String()] = unreadAfterUnhide
+		}
 	}
 }
 
@@ -1023,7 +1030,7 @@ func (s *Service) postSendMessageTasks(conversationID uuid.UUID, memberIDs []uui
 	members []conversation.ConversationMember, msg *Message, response *MessageResponse,
 	shortContent string, senderID uuid.UUID, messageID gocql.UUID, now time.Time) {
 
-	s.applyInboxFanout(conversationID, members, messageID, shortContent, senderID, now)
+	unreadCounts := s.applyInboxFanout(conversationID, members, messageID, shortContent, senderID, now)
 
 	if err := s.cache.SetMessage(msg); err != nil {
 		s.logger.Warnw("Failed to cache message", "message_id", msg.MessageID, "error", err)
@@ -1035,6 +1042,7 @@ func (s *Service) postSendMessageTasks(conversationID uuid.UUID, memberIDs []uui
 		return s.kafkaProducer.PublishMessageCreated(ctx, &messageEvents.MessageCreatedEvent{
 			Conversation: s.conversationEventData(conversationID),
 			Message:      messageDataFromResponse(*response),
+			UnreadCounts: unreadCounts,
 		})
 	})
 }

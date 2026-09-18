@@ -37,7 +37,7 @@ interface DownloadGuideBodyProps {
   isCurrentDevice: boolean;
   chips?: string[];
   steps: string[];
-  note: string;
+  note?: string;
   children: ReactNode;
   illustrations?: ReactNode;
   footer?: ReactNode;
@@ -101,9 +101,11 @@ export function DownloadGuideBody({
 
       {illustrations}
 
-      <p className="mt-3.5 rounded-xl bg-[#fff8e1] px-3 py-2.5 text-xs leading-relaxed text-[#6d4c00]">
-        {note}
-      </p>
+      {note && (
+        <p className="mt-3.5 rounded-xl bg-[#fff8e1] px-3 py-2.5 text-xs leading-relaxed text-[#6d4c00]">
+          {note}
+        </p>
+      )}
 
       {footer}
     </div>

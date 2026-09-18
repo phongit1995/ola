@@ -8,8 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"ola-chat-server/internal/constants"
 	appNotificationEvents "ola-chat-server/internal/domain/app-notification"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/utils"
 
@@ -20,13 +22,15 @@ import (
 type Service struct {
 	repo          *Repository
 	kafkaProducer *kafka.Producer
+	cache         *services.CacheService
 	logger        *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, kafkaProducer *kafka.Producer, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, kafkaProducer *kafka.Producer, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:          repo,
 		kafkaProducer: kafkaProducer,
+		cache:         cache,
 		logger:        logger.Named("[notification_service]"),
 	}
 }
@@ -147,7 +151,13 @@ func (s *Service) UnreadCount(recipientID uuid.UUID) (int64, error) {
 }
 
 func (s *Service) MarkAllRead(recipientID uuid.UUID) error {
-	return s.repo.MarkAllRead(recipientID)
+	if err := s.repo.MarkAllRead(recipientID); err != nil {
+		return err
+	}
+	if err := s.cache.Delete(constants.PushPendingKey(recipientID.String(), constants.PushSourceAppNotif)); err != nil {
+		s.logger.Warnw("Failed to clear pending app push", "recipient_id", recipientID, "error", err)
+	}
+	return nil
 }
 
 func toAppNotificationResponse(n *models.AppNotification) AppNotificationResponse {

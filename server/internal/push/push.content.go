@@ -1,6 +1,8 @@
 package push
 
 import (
+	"strconv"
+
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
@@ -13,6 +15,7 @@ type Content struct {
 	Channel  string
 	Collapse string
 	Data     map[string]string
+	Seq      int64
 }
 
 type DMPush struct {
@@ -21,11 +24,15 @@ type DMPush struct {
 	MessageID        string
 	SenderID         string
 	SenderName       string
+	SenderAvatar     string
 	ConversationName string
 	Preview          string
+	SentAt           string
+	UnreadCount      int
+	UnreadByUser     map[string]int
 }
 
-const fallbackTitle = "Ola"
+const fallbackTitle = "Okela"
 
 func excerpt(s string) string {
 	trimmed := utils.TruncateRunes(s, constants.PushExcerptMaxRunes)
@@ -33,6 +40,12 @@ func excerpt(s string) string {
 		return trimmed + "…"
 	}
 	return s
+}
+
+func withUnread(data map[string]string, unread int) {
+	if unread > 0 {
+		data["unreadCount"] = strconv.Itoa(unread)
+	}
 }
 
 func firstNonEmpty(values ...string) string {
@@ -45,17 +58,26 @@ func firstNonEmpty(values ...string) string {
 }
 
 func buildDMContent(in DMPush) Content {
-	notifID := "dm:" + in.ConversationID
+	notifID := constants.PushDMSource(in.ConversationID)
+	data := map[string]string{
+		"type":           constants.PushDataTypeDM,
+		"conversationId": in.ConversationID,
+		"senderId":       in.SenderID,
+	}
+	if in.SenderAvatar != "" {
+		data["senderAvatar"] = in.SenderAvatar
+	}
+	if in.SentAt != "" {
+		data["sentAt"] = in.SentAt
+	}
+	withUnread(data, in.UnreadCount)
 	return Content{
 		Title:    firstNonEmpty(in.SenderName, in.ConversationName, fallbackTitle),
 		Body:     excerpt(firstNonEmpty(in.Preview, "Bạn có tin nhắn mới")),
 		NotifID:  notifID,
 		Channel:  constants.PushChannelMessages,
 		Collapse: constants.PushCollapseDM,
-		Data: map[string]string{
-			"type":           constants.PushDataTypeDM,
-			"conversationId": in.ConversationID,
-		},
+		Data:     data,
 	}
 }
 
@@ -73,7 +95,13 @@ var meNotifPreviewTypes = map[string]bool{
 	models.MeNotificationMention: true,
 }
 
-func buildMeNotifContent(actorName, ntype, preview string) Content {
+func withItemID(data map[string]string, id string) {
+	if id != "" {
+		data["itemId"] = id
+	}
+}
+
+func buildMeNotifContent(id, actorName, ntype, preview string, unread int) Content {
 	body, known := meNotifBodies[ntype]
 	if !known {
 		body = "Bạn có thông báo mới"
@@ -81,15 +109,18 @@ func buildMeNotifContent(actorName, ntype, preview string) Content {
 	if known && preview != "" && meNotifPreviewTypes[ntype] {
 		body += ": " + excerpt(preview)
 	}
+	data := map[string]string{
+		"type": constants.PushDataTypeMeNotif,
+	}
+	withItemID(data, id)
+	withUnread(data, unread)
 	return Content{
 		Title:    firstNonEmpty(actorName, fallbackTitle),
 		Body:     body,
 		NotifID:  constants.PushSourceMeNotif,
 		Channel:  constants.PushChannelSocial,
 		Collapse: constants.PushSourceMeNotif,
-		Data: map[string]string{
-			"type": constants.PushDataTypeMeNotif,
-		},
+		Data:     data,
 	}
 }
 
@@ -111,7 +142,7 @@ var appNotifSystemTypes = map[string]bool{
 	models.AppNotificationClanBanned:       true,
 }
 
-func buildAppNotifContent(actorName, ntype, preview string) Content {
+func buildAppNotifContent(id, actorName, ntype, preview string, unread int) Content {
 	body, known := appNotifBodies[ntype]
 	if !known {
 		body = "Bạn có thông báo mới"
@@ -123,14 +154,17 @@ func buildAppNotifContent(actorName, ntype, preview string) Content {
 	if known && preview != "" && appNotifSystemTypes[ntype] {
 		body += ": " + excerpt(preview)
 	}
+	data := map[string]string{
+		"type": constants.PushDataTypeAppNotif,
+	}
+	withItemID(data, id)
+	withUnread(data, unread)
 	return Content{
 		Title:    title,
 		Body:     body,
 		NotifID:  constants.PushSourceAppNotif,
 		Channel:  constants.PushChannelSystem,
 		Collapse: constants.PushSourceAppNotif,
-		Data: map[string]string{
-			"type": constants.PushDataTypeAppNotif,
-		},
+		Data:     data,
 	}
 }

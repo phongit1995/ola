@@ -127,8 +127,11 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 			MessageID:        event.Message.ID,
 			SenderID:         event.Message.SenderID,
 			SenderName:       event.Message.SenderName,
+			SenderAvatar:     event.Message.SenderAvatar,
 			ConversationName: event.Conversation.Name,
 			Preview:          preview,
+			SentAt:           event.Message.CreatedAt,
+			UnreadByUser:     event.UnreadCounts,
 		})
 	}
 

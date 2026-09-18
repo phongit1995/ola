@@ -31,7 +31,7 @@ Sửa nội dung pháp lý thì **sửa file JSON đó** (app và web dùng chun
 Hai trang hỗ trợ / xoá tài khoản chỉ có trên web nên nội dung nằm trong [`content.mjs`](content.mjs) (song ngữ VI/EN), cùng với:
 
 - `PUBLISHER` — tên + địa chỉ nhà phát hành. **Đang để rỗng nên khối này bị ẩn**; điền vào là trang chủ và trang hỗ trợ tự hiện thẻ "Nhà phát hành" (Play Console yêu cầu địa chỉ liên hệ công khai).
-- `CHANNELS`, `DOWNLOADS` — fanpage/group/TikTok và link TestFlight/APK, đồng bộ thủ công với `web/src/shared/constants/{socialLinks,appDownload}.ts`.
+- `CHANNELS`, `DOWNLOADS` — fanpage/group/TikTok và link Google Play/TestFlight, đồng bộ thủ công với `web/src/shared/constants/{socialLinks,appDownload}.ts`.
 - `RESPONSE_TIME_HOURS` — cam kết thời gian phản hồi hiển thị trên trang.
 
 Nội dung trang giới thiệu (headline, tính năng, 3 bước) nằm trong `INTRO`; nhãn form xoá tài khoản nằm trong `FORM`.

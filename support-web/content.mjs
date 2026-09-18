@@ -15,10 +15,9 @@ export const CHANNELS = [
 ];
 
 export const DOWNLOADS = {
-  ios: 'https://testflight.apple.com/join/kjTPXnuv',
+  ios: 'https://testflight.apple.com/join/DyBJKdbb',
   android:
-    'https://drive.google.com/drive/folders/1v2rxd3KGoJsN2NLzxLI1DuVB-q-PgtWx',
-  androidSize: '56 MB',
+    'https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn',
 };
 
 export const NAV = [
@@ -96,7 +95,7 @@ export const INTRO = {
       { name: 'Trò chuyện & kết nối', desc: 'Nhắn tin, tặng quà, chơi game và mở rộng cộng đồng bạn bè.' },
     ],
     downloadTitle: 'Tải ứng dụng',
-    downloadDesc: `${APP_NAME} có bản cho Android (file APK) và iPhone/iPad (qua TestFlight).`,
+    downloadDesc: `${APP_NAME} có bản cho Android (trên Google Play) và iPhone/iPad (qua TestFlight).`,
     linksTitle: 'Hỗ trợ & pháp lý',
     ageNote: 'Ứng dụng dành cho người dùng từ 18 tuổi trở lên. Miễn phí sử dụng; một số vật phẩm VIP và quà tặng là tuỳ chọn.',
   },
@@ -126,7 +125,7 @@ export const INTRO = {
       { name: 'Chat & connect', desc: 'Message, send gifts, play games and grow your community.' },
     ],
     downloadTitle: 'Download the app',
-    downloadDesc: `${APP_NAME} is available for Android (APK file) and iPhone/iPad (via TestFlight).`,
+    downloadDesc: `${APP_NAME} is available for Android (on Google Play) and iPhone/iPad (via TestFlight).`,
     linksTitle: 'Support & legal',
     ageNote: 'The app is for users aged 18 and over. Free to use; some VIP items and gifts are optional purchases.',
   },

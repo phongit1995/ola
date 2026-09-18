@@ -765,6 +765,9 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 
 	utils.SafeGo(s.logger, func() {
 		s.cache.ResetUnreadCount(conversationID, userID)
+		if err := s.cache.ClearPendingPush(conversationID, userID); err != nil {
+			s.logger.Warnw("Failed to clear pending dm push", "user_id", userID, "conversation_id", conversationID, "error", err)
+		}
 		if lastReadMessageID != nil {
 			s.cache.SetLastRead(conversationID, userID, lastReadMessageID.String())
 		}
