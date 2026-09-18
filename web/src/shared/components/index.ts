@@ -32,6 +32,8 @@ export * from './ui/VipIcon';
 export * from './ui/VipAvatar';
 export * from './ui/VipBadge';
 export * from './ui/Toast';
+export * from './ui/StoreIcons';
+export * from './ui/AppDownloadBar';
 export * from './form/ClearableInput';
 export * from './form/SubmitButton';
 export * from './form/TextField';
