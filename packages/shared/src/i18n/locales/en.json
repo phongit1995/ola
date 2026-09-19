@@ -210,6 +210,8 @@
     "aboutTitle": "About & legal",
     "termsRow": "Terms of use",
     "privacyPolicyRow": "Privacy policy",
+    "rateAppRow": "Rate the app",
+    "rateAppError": "Could not open the rating page, try again later",
     "whoCanMessage": "Who can message me",
     "whoCanViewMe": "Who can view my ME",
     "whoCanComment": "Who can comment on my Me",
