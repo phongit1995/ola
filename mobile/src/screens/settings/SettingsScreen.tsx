@@ -21,6 +21,7 @@ import {
   pickValidatedCroppedImage,
   WALLPAPER_OUTPUT,
 } from '@lib/imagePicker';
+import { openAppReview } from '@lib/appReview';
 import { CachedImage } from '@components/ui/CachedImage';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -305,6 +306,9 @@ export function SettingsScreen({ navigation }: Props) {
     setUploadingWallpaper(false);
   }
 
+  async function handleRateApp() {
+    if (!(await openAppReview())) push('error', t('settings.rateAppError'));
+  }
 
   function changeVipPrivacy(value: number) {
     vipTouchedRef.current = true;
@@ -516,9 +520,22 @@ export function SettingsScreen({ navigation }: Props) {
             accessibilityRole="button"
             onPress={() => navigation.navigate(ROOT_ROUTES.PrivacyPolicy)}
             className="flex-row items-center justify-between gap-3 px-4 py-3"
+            style={{ borderBottomWidth: 1, borderBottomColor: ROW_BORDER }}
           >
             <Text className="min-w-0 flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.8)' }}>
               {t('settings.privacyPolicyRow')}
+            </Text>
+            <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.35)' }}>
+              ›
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => void handleRateApp()}
+            className="flex-row items-center justify-between gap-3 px-4 py-3"
+          >
+            <Text className="min-w-0 flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.8)' }}>
+              {t('settings.rateAppRow')}
             </Text>
             <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.35)' }}>
               ›

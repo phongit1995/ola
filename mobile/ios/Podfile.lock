@@ -1846,6 +1846,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-in-app-review (4.4.2):
+    - React-Core
   - react-native-keyboard-controller (1.22.0):
     - hermes-engine
     - RCTRequired
@@ -3112,6 +3114,7 @@ DEPENDENCIES:
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - react-native-image-picker (from `../../node_modules/react-native-image-picker`)
   - "react-native-image-resizer (from `../../node_modules/@bam.tech/react-native-image-resizer`)"
+  - react-native-in-app-review (from `../../node_modules/react-native-in-app-review`)
   - react-native-keyboard-controller (from `../../node_modules/react-native-keyboard-controller`)
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
   - react-native-ota-hot-update (from `../../node_modules/react-native-ota-hot-update`)
@@ -3312,6 +3315,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-image-picker"
   react-native-image-resizer:
     :path: "../../node_modules/@bam.tech/react-native-image-resizer"
+  react-native-in-app-review:
+    :path: "../../node_modules/react-native-in-app-review"
   react-native-keyboard-controller:
     :path: "../../node_modules/react-native-keyboard-controller"
   react-native-netinfo:
@@ -3506,6 +3511,7 @@ SPEC CHECKSUMS:
   react-native-get-random-values: 7db8eaf5e8cf979eea17e141007609341d8fc391
   react-native-image-picker: 09cea417bef3ee25008ad21d4426f9a1fc54ad84
   react-native-image-resizer: 3e533c1e3792738abbba561e181ca9b509582160
+  react-native-in-app-review: 1516ba69d60d58053b7eb3aaaf8d2a5a74af8b57
   react-native-keyboard-controller: 7035cde04633689d349fa197e755ad0111d7c26d
   react-native-netinfo: a05f9b897e76ad24b53f615fed1cbb731932363d
   react-native-ota-hot-update: 363bf2e27422085a0cdb75477230c7362d973d4c

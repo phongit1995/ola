@@ -4,6 +4,7 @@ import { Animated, Easing, Image, Pressable, Text, View } from 'react-native';
 import type { EggDrawResult } from '@ola/shared/types';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
+import { APP_REVIEW_TRIGGERS, maybeAskForReview } from '@lib/appReview';
 import { eggAssets } from './eggAssets';
 
 const CARD_H = 250;
@@ -55,6 +56,11 @@ export function EggWinPanel({ result, width, height }: EggWinPanelProps) {
       useNativeDriver: true,
     }).start();
   }, [scale]);
+
+  function close() {
+    closeWin();
+    maybeAskForReview(APP_REVIEW_TRIGGERS.eggWin);
+  }
 
   const cardW = Math.min(300, width - 40);
   const btnW = cardW - 44;
@@ -133,7 +139,7 @@ export function EggWinPanel({ result, width, height }: EggWinPanelProps) {
           </Text>
         </View>
         <Pressable
-          onPress={closeWin}
+          onPress={close}
           style={{
             position: 'absolute',
             bottom: 34 - BTN_H / 2,

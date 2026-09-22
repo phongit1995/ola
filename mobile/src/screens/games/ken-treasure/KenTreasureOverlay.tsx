@@ -25,6 +25,7 @@ import {
 } from '@ola/shared/stores/ken/kenTreasureStore';
 import type { KenTreasureChest } from '@ola/shared/types';
 import { assetRatio } from '@screens/games/pen/penUi';
+import { APP_REVIEW_TRIGGERS, maybeAskForReview } from '@lib/appReview';
 import { kenTreasureAssets, openingFrames } from './kenTreasureAssets';
 
 const STACK_OFFSET_PX = 150;
@@ -548,6 +549,11 @@ export function KenTreasureOverlay() {
   const active = list.find((c) => c.phase === 'opening' || c.phase === 'result');
   const closed = list.filter((c) => c.phase === 'closed');
 
+  function closeResult(chest: KenTreasureChest) {
+    dismiss(chest.id);
+    if (chest.result?.isEmpty === false) maybeAskForReview(APP_REVIEW_TRIGGERS.kenTreasure);
+  }
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {closed.map((chest, i) => (
@@ -555,7 +561,7 @@ export function KenTreasureOverlay() {
       ))}
       {active?.phase === 'opening' && <OpeningChest key={active.id} />}
       {active?.phase === 'result' && (
-        <ResultView key={active.id} result={active.result} onClose={() => dismiss(active.id)} />
+        <ResultView key={active.id} result={active.result} onClose={() => closeResult(active)} />
       )}
     </View>
   );

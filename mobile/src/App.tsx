@@ -30,6 +30,7 @@ import { ArcadeOverlay } from './screens/apps/ArcadeOverlay';
 import { CallOverlay } from './screens/call/CallOverlay';
 import { checkForOtaUpdate } from './services/otaUpdate';
 import { initTelemetry, setTelemetryUser, trackScreen } from './lib/telemetry';
+import { initAppReview } from './lib/appReview';
 import {
   cancelComeBackReminder,
   initComeBackReminder,
@@ -90,6 +91,7 @@ export default function App() {
   }, [t]);
   useEffect(() => {
     initTelemetry();
+    initAppReview();
     if (!__DEV__) void checkForOtaUpdate();
     setOnUnauthorized(clearSession);
     void initComeBackReminder();

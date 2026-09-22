@@ -210,6 +210,8 @@
     "aboutTitle": "Thông tin & pháp lý",
     "termsRow": "Điều khoản sử dụng",
     "privacyPolicyRow": "Chính sách bảo mật",
+    "rateAppRow": "Đánh giá ứng dụng",
+    "rateAppError": "Không mở được trang đánh giá, thử lại sau",
     "whoCanMessage": "Ai có thể nhắn tin cho tôi",
     "whoCanViewMe": "Ai có thể xem ME của tôi",
     "whoCanComment": "Ai có thể bình luận bài Me",
