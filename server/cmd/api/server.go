@@ -109,7 +109,8 @@ func CreateServer(
 
 	apiGroup := r.Group("/api/v1")
 	api := utils.NewAppGroup(apiGroup)
-	api.Use(apiGuard.Verify())
+	// TEMP: tạm tắt check timestamp + chữ ký cho REST, bỏ comment để bật lại
+	// api.Use(apiGuard.Verify())
 	{
 		healthRouter.Setup(api)
 		authRouter.Setup(api)

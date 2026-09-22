@@ -140,16 +140,17 @@ func NewServer(
 			}
 		}
 
-		if cfg.APIGuardSecret != "" {
-			ts := authString(auth, "ts")
-			nonce := authString(auth, "nonce")
-			sig := authString(auth, "sig")
-			if !utils.APIGuardVerify(cfg.APIGuardSecret, ts, nonce, sig, wsGuardMethod, wsGuardPath, wsGuardMaxSkew) {
-				server.logger.Warnw("WebSocket rejected: invalid client signature", "user_id", userID)
-				next(socket.NewExtendedError("invalid client signature", nil))
-				return
-			}
-		}
+		// TEMP: tạm tắt check timestamp + chữ ký lúc handshake, bỏ comment để bật lại
+		// if cfg.APIGuardSecret != "" {
+		// 	ts := authString(auth, "ts")
+		// 	nonce := authString(auth, "nonce")
+		// 	sig := authString(auth, "sig")
+		// 	if !utils.APIGuardVerify(cfg.APIGuardSecret, ts, nonce, sig, wsGuardMethod, wsGuardPath, wsGuardMaxSkew) {
+		// 		server.logger.Warnw("WebSocket rejected: invalid client signature", "user_id", userID)
+		// 		next(socket.NewExtendedError("invalid client signature", nil))
+		// 		return
+		// 	}
+		// }
 
 		platform := resolveSocketPlatform(auth, s.Request().Headers().Peek("User-Agent"))
 		data := NewSocketData(userID.String(), platform, sessionID)
