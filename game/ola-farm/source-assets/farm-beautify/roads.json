@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "origin": {
+    "x": -85,
+    "y": 322
+  },
+  "stepX": 72,
+  "stepY": 36,
+  "scale": 0.85,
+  "endInset": 0.5,
+  "paths": []
+}

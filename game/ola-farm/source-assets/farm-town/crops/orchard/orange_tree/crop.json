@@ -1,0 +1,333 @@
+{
+  "schemaVersion": 1,
+  "key": "orange_tree",
+  "group": "orchard",
+  "titleVi": "Cây Cam",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — mở rộng vườn quả",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 173,
+    "key": "orange",
+    "titleVi": "Cam"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/orange_tree__a52e7e818574f264e98da8fb658e26c9_773.json",
+    "prefab": {
+      "file": "b72c692d7f764894d872a26db5c5b478",
+      "id": 1,
+      "name": "orange_tree",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__b72c692d7f764894d872a26db5c5b478_47.json",
+        "growPhaseCount": 1,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/orange_tree_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1012.json",
+    "index": 0,
+    "entity": "orange_tree",
+    "durationSeconds": 9000,
+    "level": 29,
+    "quantityPerCycle": 5.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 29,
+    "basicPrice": 12.0,
+    "xpOnUse": 3.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 3,
+    "clearTool": {
+      "id": 92,
+      "name": "icon_saw",
+      "titleVi": "Cưa",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 121,
+        "name": "plank",
+        "titleVi": "Ván Gỗ",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "drinks",
+      "entityTitleVi": "Máy Ép Nước",
+      "recipeIndex": 1,
+      "output": "orange_juice",
+      "outputTitleVi": "Nước Cam",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/drinks_JOB_Data__a52e7e818574f264e98da8fb658e26c9_947.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 27963,
+      "sha256": "900244dcebb281d1a3cb11ac4a3f4c52e8afc5370ea89dd54dbd877d5ad7c30c",
+      "size": [
+        128,
+        128
+      ],
+      "source": {
+        "exportPath": "export/sprites/orange_tree__sharedassets0.assets_170.png",
+        "file": "sharedassets0.assets",
+        "pathId": 170,
+        "spriteName": "orange_tree"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 128.0,
+          "height": 128.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 38.32335662841797,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 11042,
+      "sha256": "8f27570386836d9b176b60a86ff48e1a7f851f0321a7e286ff853e1e6d492562",
+      "size": [
+        90,
+        88
+      ],
+      "source": {
+        "exportPath": "export/sprites/orange__sharedassets0.assets_475.png",
+        "file": "sharedassets0.assets",
+        "pathId": 475,
+        "spriteName": "orange"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.07612049579620361,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/orange_bg--8fc4a8c01d.png",
+      "bytes": 42480,
+      "sha256": "e39daa9f73f3940451178411cbc21483a4c2cfe0972356a32ac39939859e8094",
+      "size": [
+        161,
+        167
+      ],
+      "source": {
+        "exportPath": "export/sprites/orange_bg__a3d246f2de4a3654e8cebc6656f5c5b6_1.png",
+        "file": "a3d246f2de4a3654e8cebc6656f5c5b6",
+        "pathId": 1,
+        "spriteName": "orange_bg"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 176.0,
+          "y": 117.0,
+          "width": 161.0,
+          "height": 167.0
+        },
+        "pivot": {
+          "x": 0.4968944191932678,
+          "y": 0.06586826592683792
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/orange_ready--daeada294c.png",
+      "bytes": 1482,
+      "sha256": "8657b29d830dea38e07194252b1a4cead024d4de843654209413cef85bb0b98e",
+      "size": [
+        29,
+        25
+      ],
+      "source": {
+        "exportPath": "export/sprites/orange_ready__0c5fad41378659b4180072beb4d6fbb2_1.png",
+        "file": "0c5fad41378659b4180072beb4d6fbb2",
+        "pathId": 1,
+        "spriteName": "orange_ready"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 29.0,
+          "height": 25.0
+        },
+        "pivot": {
+          "x": 0.5099999904632568,
+          "y": 0.9399999976158142
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/orange_bg--8fc4a8c01d.png",
+    "images/orange_ready--daeada294c.png"
+  ],
+  "phases": [
+    {
+      "key": "TreeOrBush:0:Idle (default)",
+      "role": "Idle (default)",
+      "labelVi": "Nghỉ / mặc định — Idle (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Idle (default)",
+        "file": "cc9b278c4c9bdae47aafff9b72e076fe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Idle_default__cc9b278c4c9bdae47aafff9b72e076fe_1.json",
+        "sha256": "29cafc097834401ed33a0ef2c395668f564c1124744111ad5a09342b3e7d2072"
+      }
+    },
+    {
+      "key": "TreeOrBush:1:Dead",
+      "role": "Dead",
+      "labelVi": "Cạn lượt / kết thúc — Dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Dead",
+        "file": "9775f37177cac834f806bbb7740f765a",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Dead__9775f37177cac834f806bbb7740f765a_1.json",
+        "sha256": "bca205681fca1618b86ab9ce5bf5a8a284813cd80d9d411ce9171066e8254e06"
+      }
+    },
+    {
+      "key": "TreeOrBush:2:Harvest (default)",
+      "role": "Harvest (default)",
+      "labelVi": "Thu / còn sản phẩm — Harvest (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Harvest (default)",
+        "file": "791afc5303083114d9eeec37cadfb08d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Harvest_default__791afc5303083114d9eeec37cadfb08d_1.json",
+        "sha256": "d6e1c04bf79c6e8c08e6c23c5af6e11ffa8f9d49514aa768f2f747cc2b1fd6a6"
+      }
+    },
+    {
+      "key": "TreeOrBush:3:Ready (default)",
+      "role": "Ready (default)",
+      "labelVi": "Chín / có sản phẩm — Ready (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Ready (default)",
+        "file": "51aaeb3b05a42ac469eaf317d404c45f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Ready_default__51aaeb3b05a42ac469eaf317d404c45f_1.json",
+        "sha256": "67e059f264e0824362b8c7fdbd4d0d5bcb5ad7ec933893affe6fd603f4986067"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

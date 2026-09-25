@@ -1,0 +1,2148 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-10",
+  "purpose": "Selected reference assets integrated into the local Farm implementation at the user request; provenance retained, no license claim or publication grant inferred.",
+  "scope": {
+    "cropPlots": 40,
+    "crops": 8,
+    "items": 28,
+    "recipes": 18,
+    "residentSpecies": 2,
+    "machineSites": 7
+  },
+  "images": [
+    {
+      "id": "DecorRoundTree",
+      "titleVi": "Cây tán xanh lam",
+      "category": "trees",
+      "source": "reference/farm-town/images/sprites/assets/tree_small_1_0.png",
+      "game": "farm-town",
+      "sha256": "e17c6a777bbe3c5e53b89a17eaac62d63f6a8ce76831b92ec71b2d6921293bf5",
+      "width": 150,
+      "height": 208,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "tree_small_1_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/34ceb115db1d30f45829eb950d5851b4",
+        "serializedFile": "34ceb115db1d30f45829eb950d5851b4",
+        "pathId": 1,
+        "rect": {
+          "x": 53,
+          "y": 46,
+          "width": 150,
+          "height": 208
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.05999999865889549
+        },
+        "pixelsToUnits": 50,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Cây tán bầu dục; dùng xen ở mép rừng.",
+      "anchor": [
+        0.5,
+        0.06
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoundTree.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoundTree.prefab"
+    },
+    {
+      "id": "DecorWideTree",
+      "titleVi": "Cây tán rộng",
+      "category": "trees",
+      "source": "reference/farm-town/images/sprites/assets/tree_small_3_0.png",
+      "game": "farm-town",
+      "sha256": "7e7e5c5f665d44cdda5e2d83a14943b3eb71bbcbb6d08d4453bde721c0a4834f",
+      "width": 224,
+      "height": 239,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "tree_small_3_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/c0f9d2e5959e6234eb8eeaafc4bd3dba",
+        "serializedFile": "c0f9d2e5959e6234eb8eeaafc4bd3dba",
+        "pathId": 1,
+        "rect": {
+          "x": 78,
+          "y": 82,
+          "width": 224,
+          "height": 239
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.05000000074505806
+        },
+        "pixelsToUnits": 50,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Tán xòe có khoảng hở; tạo silhouette khác cây hiện tại.",
+      "anchor": [
+        0.5,
+        0.05
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorWideTree.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorWideTree.prefab"
+    },
+    {
+      "id": "DecorPineTree",
+      "titleVi": "Thông thấp",
+      "category": "trees",
+      "source": "reference/farm-town/images/sprites/assets/tree_small_6_0.png",
+      "game": "farm-town",
+      "sha256": "58e1c250bd3a5fdbb723d825b3de0c9e92f8cb7252f63954252cbaacccb088ac",
+      "width": 136,
+      "height": 183,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "tree_small_6_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/d7687ebcb535431439e5bb5f6853907d",
+        "serializedFile": "d7687ebcb535431439e5bb5f6853907d",
+        "pathId": 1,
+        "rect": {
+          "x": 56,
+          "y": 36,
+          "width": 136,
+          "height": 183
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.10000000149011612
+        },
+        "pixelsToUnits": 50,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Đặt thành nhóm nhỏ phía ngoài mép rừng.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorPineTree.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorPineTree.prefab"
+    },
+    {
+      "id": "DecorTallTree",
+      "titleVi": "Cây thân cao",
+      "category": "trees",
+      "source": "reference/farm-town/images/sprites/assets/tree_big_2_0.png",
+      "game": "farm-town",
+      "sha256": "c161e6d6e6e40750cf849e14e612f98975192539b7de410a07e6b1a07286b524",
+      "width": 152,
+      "height": 295,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "tree_big_2_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/eb35cd6e4c5a8eb4aa14c6e847e37bac",
+        "serializedFile": "eb35cd6e4c5a8eb4aa14c6e847e37bac",
+        "pathId": 1,
+        "rect": {
+          "x": 115,
+          "y": 73,
+          "width": 152,
+          "height": 295
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.10000000149011612
+        },
+        "pixelsToUnits": 50,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Tạo tầng cao phía sau; đo lại culling theo chiều cao.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorTallTree.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorTallTree.prefab"
+    },
+    {
+      "id": "DecorLightBush",
+      "titleVi": "Bụi xanh sáng",
+      "category": "shrubs",
+      "source": "reference/farm-town/images/sprites/assets/bush_1_0.png",
+      "game": "farm-town",
+      "sha256": "b438099c150ec7dc834a2070ea181844137f1d5350ada5dd77ee056e4637e15f",
+      "width": 75,
+      "height": 81,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "bush_1_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/2fd3e4121d5d8b6489ca3f1211ee576a",
+        "serializedFile": "2fd3e4121d5d8b6489ca3f1211ee576a",
+        "pathId": 1,
+        "rect": {
+          "x": 23,
+          "y": 22,
+          "width": 75,
+          "height": 81
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.10000000149011612
+        },
+        "pixelsToUnits": 50,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Đặt chuyển tiếp từ rừng vào bãi cỏ.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorLightBush.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorLightBush.prefab"
+    },
+    {
+      "id": "DecorDarkBush",
+      "titleVi": "Bụi xanh đậm",
+      "category": "shrubs",
+      "source": "reference/farm-town/images/sprites/assets/bush_2_0.png",
+      "game": "farm-town",
+      "sha256": "94dfbd690a79901adfef00642c2349898b8f49c92e9cd7e631c12e0ad11daf2c",
+      "width": 87,
+      "height": 82,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "bush_2_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/f2e6b1f60f23b91499b83ea59c60f4b6",
+        "serializedFile": "f2e6b1f60f23b91499b83ea59c60f4b6",
+        "pathId": 1,
+        "rect": {
+          "x": 22,
+          "y": 22,
+          "width": 87,
+          "height": 82
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.10000000149011612
+        },
+        "pixelsToUnits": 50,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Biến thể bụi; không phóng lớn thành cây.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorDarkBush.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorDarkBush.prefab"
+    },
+    {
+      "id": "DecorDaisies",
+      "titleVi": "Cụm cúc trắng",
+      "category": "flowers",
+      "source": "reference/farm-town/images/sprites/assets/bush_camomile.png",
+      "game": "farm-town",
+      "sha256": "5b9904c45905fc51cb91f7b78ad760a250252ed3927ae669b519db3e4c2821e9",
+      "width": 115,
+      "height": 90,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "bush_camomile",
+        "source": "reference/farm-town/apk/assets/bin/Data/d1dc87dc31445494bb442e2d438e4678",
+        "serializedFile": "d1dc87dc31445494bb442e2d438e4678",
+        "pathId": 1,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 128,
+          "height": 128
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 70,
+        "textureRectOffset": {
+          "x": 7.0267510414123535,
+          "y": 19.076120376586914
+        }
+      },
+      "usage": "Điểm nhấn cạnh nhà kho và lối đi.",
+      "anchor": [
+        0.49542,
+        0.499154
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorDaisies.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorDaisies.prefab"
+    },
+    {
+      "id": "DecorPoppies",
+      "titleVi": "Cụm hoa đỏ",
+      "category": "flowers",
+      "source": "reference/farm-town/images/sprites/assets/bush_poppy.png",
+      "game": "farm-town",
+      "sha256": "117c3317abbb8269c658f84531ea6abc3b6dd980f3664f80289dd9dac5c1aff4",
+      "width": 105,
+      "height": 84,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "bush_poppy",
+        "source": "reference/farm-town/apk/assets/bin/Data/f6d3cf2b88c15b547b0d371f416ab8a3",
+        "serializedFile": "f6d3cf2b88c15b547b0d371f416ab8a3",
+        "pathId": 1,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 128,
+          "height": 128
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 70,
+        "textureRectOffset": {
+          "x": 12.076120376586914,
+          "y": 22.076120376586914
+        }
+      },
+      "usage": "Dùng ít ở góc công trình để tránh cạnh tranh với cây chín.",
+      "anchor": [
+        0.494513,
+        0.499094
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorPoppies.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorPoppies.prefab"
+    },
+    {
+      "id": "DecorStone",
+      "titleVi": "Đá nhỏ",
+      "category": "rocks",
+      "source": "reference/farm-town/images/sprites/assets/stone3_02_0.png",
+      "game": "farm-town",
+      "sha256": "1465f4fcf59c0c164e4c7ffa658d68e58ce3a7ad5727a75fa94da0bb1b3859d3",
+      "width": 95,
+      "height": 76,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "stone3_02_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/40412ed4f3e929748b35d4a30dc589b4",
+        "serializedFile": "40412ed4f3e929748b35d4a30dc589b4",
+        "pathId": 1,
+        "rect": {
+          "x": 84,
+          "y": 48,
+          "width": 95,
+          "height": 76
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Chân đá rõ; đặt gần giếng hoặc mép ao.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorStone.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorStone.prefab"
+    },
+    {
+      "id": "DecorPebbles",
+      "titleVi": "Cụm sỏi",
+      "category": "ground",
+      "source": "reference/farm-town/images/sprites/assets/stone4_03_0.png",
+      "game": "farm-town",
+      "sha256": "733051942904c7fbd59859379944e527d704e4f11cf35c12b8e03febc0acb828",
+      "width": 95,
+      "height": 36,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "stone4_03_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/331d3976520e66a4185b379f1cd88468",
+        "serializedFile": "331d3976520e66a4185b379f1cd88468",
+        "pathId": 1,
+        "rect": {
+          "x": 92,
+          "y": 90,
+          "width": 95,
+          "height": 36
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Ba viên sỏi trên cùng PNG; trang trí nền, không phải ba item.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorPebbles.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorPebbles.prefab"
+    },
+    {
+      "id": "DecorRockCluster",
+      "titleVi": "Cụm đá có lá",
+      "category": "rocks",
+      "source": "reference/farm-town/images/sprites/assets/stone_6_FT_0.png",
+      "game": "farm-town",
+      "sha256": "0f11ad0e988ee19ad0fd4d6b3bd5a15c372dcd0c88250ccf99d6cbbbf07c5040",
+      "width": 180,
+      "height": 134,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "stone_6_FT_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/177a43b5a860d354aa6c2de07ec7956a",
+        "serializedFile": "177a43b5a860d354aa6c2de07ec7956a",
+        "pathId": 1,
+        "rect": {
+          "x": 36,
+          "y": 16,
+          "width": 180,
+          "height": 134
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.4000000059604645
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Điểm chuyển tiếp giữa rừng và đồng cỏ.",
+      "anchor": [
+        0.5,
+        0.4
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRockCluster.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRockCluster.prefab"
+    },
+    {
+      "id": "DecorStump",
+      "titleVi": "Gốc cây có lá",
+      "category": "rocks",
+      "source": "reference/farm-town/images/sprites/assets/stump_tree_3_plants_FT_0.png",
+      "game": "farm-town",
+      "sha256": "079a5101b8a50c2ad3c1713264e24a0bac3ab948ad948062504d6aec46b73337",
+      "width": 93,
+      "height": 64,
+      "sourceSprite": {
+        "game": "farm-town",
+        "name": "stump_tree_3_plants_FT_0",
+        "source": "reference/farm-town/apk/assets/bin/Data/826ebc9f0861263448cd5fec84e375a0",
+        "serializedFile": "826ebc9f0861263448cd5fec84e375a0",
+        "pathId": 1,
+        "rect": {
+          "x": 16,
+          "y": 7,
+          "width": 93,
+          "height": 64
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.4000000059604645
+        },
+        "pixelsToUnits": 50,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Chi tiết nền; chưa gắn hành vi chặt cây.",
+      "anchor": [
+        0.5,
+        0.4
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorStump.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorStump.prefab"
+    },
+    {
+      "id": "DecorFarmSign",
+      "titleVi": "Biển vườn",
+      "category": "props",
+      "source": "reference/farm-city/images/sprites/datapack/decor_049.png",
+      "game": "farm-city",
+      "sha256": "aba1e521ce28de114063e54dbec34e8eef180d18949c73836252d715edebf914",
+      "width": 110,
+      "height": 139,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "decor_049",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 7515,
+        "rect": {
+          "x": 1905.9422607421875,
+          "y": 430.1194763183594,
+          "width": 110.4894027709961,
+          "height": 139.0982666015625
+        },
+        "pivot": {
+          "x": 0.4293000102043152,
+          "y": 0.18940000236034393
+        },
+        "pixelsToUnits": 98.65125274658203,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Điểm nhận diện cửa vào ruộng; chỉ trang trí.",
+      "anchor": [
+        0.43121,
+        0.189534
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorFarmSign.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorFarmSign.prefab"
+    },
+    {
+      "id": "DecorScarecrow",
+      "titleVi": "Bù nhìn",
+      "category": "props",
+      "source": "reference/farm-city/images/sprites/datapack/decor_050.png",
+      "game": "farm-city",
+      "sha256": "ba4be6e83a189e9007a674ef9c9a085f704a34ff2b26714bde96332037db1bc9",
+      "width": 98,
+      "height": 122,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "decor_050",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 6829,
+        "rect": {
+          "x": 263.3988342285156,
+          "y": 1123.6378173828125,
+          "width": 97.66474151611328,
+          "height": 122.32755279541016
+        },
+        "pivot": {
+          "x": 0.32989999651908875,
+          "y": 0.07360000163316727
+        },
+        "pixelsToUnits": 98.65125274658203,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Hợp chủ đề ruộng; đề xuất làm phiên bản đồng bộ art hiện tại.",
+      "anchor": [
+        0.328771,
+        0.073798
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorScarecrow.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorScarecrow.prefab"
+    },
+    {
+      "id": "DecorProduceCart",
+      "titleVi": "Rổ rau và xe đẩy",
+      "category": "props",
+      "source": "reference/farm-city/images/sprites/datapack/decor_052.png",
+      "game": "farm-city",
+      "sha256": "f4e5b086bb462d270803b361f77df7173280e04e44deae787754ed4623b10199",
+      "width": 144,
+      "height": 90,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "decor_052",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 12346,
+        "rect": {
+          "x": 459.71484375,
+          "y": 1425.5106201171875,
+          "width": 144.0308380126953,
+          "height": 89.77264404296875
+        },
+        "pivot": {
+          "x": 0.5005000233650208,
+          "y": 0.4090999960899353
+        },
+        "pixelsToUnits": 98.65125274658203,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Đặt cạnh kho, giữ khoảng trống quanh vùng bấm.",
+      "anchor": [
+        0.500607,
+        0.408067
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorProduceCart.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorProduceCart.prefab"
+    },
+    {
+      "id": "DecorHay",
+      "titleVi": "Kiện rơm và dụng cụ",
+      "category": "props",
+      "source": "reference/farm-city/images/sprites/datapack/decor_055.png",
+      "game": "farm-city",
+      "sha256": "a5f2d159a7923558efde0029779aa543713859ec9bd87363516d7ba4406eaead",
+      "width": 99,
+      "height": 98,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "decor_055",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 13374,
+        "rect": {
+          "x": 1942.4432373046875,
+          "y": 740.8709106445312,
+          "width": 98.65125274658203,
+          "height": 97.66474151611328
+        },
+        "pivot": {
+          "x": 0.571399986743927,
+          "y": 0.2581000030040741
+        },
+        "pixelsToUnits": 98.65125274658203,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Chi tiết quanh hai chuồng đang hoạt động.",
+      "anchor": [
+        0.569387,
+        0.257217
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorHay.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorHay.prefab"
+    },
+    {
+      "id": "DecorFenceSE",
+      "titleVi": "Rào gỗ buộc dây A",
+      "category": "fences",
+      "source": "reference/golden-island/images/sprites/duplicateassetisolation_0d6055de4397ebc3/fence 1.png",
+      "game": "golden-island",
+      "sha256": "dfb80e0b4791278bd5d237fb08530254182ae9218a939b5106a6890dabbde13e",
+      "width": 130,
+      "height": 127,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "fence 1",
+        "source": "reference/golden-island/apk/assets/aa/Android/duplicateassetisolation_assets_all_0d6055de4397ebc3c6fac7f7494f4c39.bundle",
+        "serializedFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+        "pathId": 8034809239552328000,
+        "rect": {
+          "x": 2362,
+          "y": 1684,
+          "width": 130,
+          "height": 127
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.25
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Khối gỗ dày, bóng mềm; mẫu cho hàng rào mộc mới. Kiểm tra góc nhìn, đầu nối và lớp che.",
+      "anchor": [
+        0.5,
+        0.25
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorFenceSE.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorFenceSE.prefab"
+    },
+    {
+      "id": "DecorFenceNE",
+      "titleVi": "Rào gỗ buộc dây B",
+      "category": "fences",
+      "source": "reference/golden-island/images/sprites/duplicateassetisolation_0d6055de4397ebc3/fence 2.png",
+      "game": "golden-island",
+      "sha256": "fdb7386e3cebb38b34d116dbee4facbae2e449b72c27f6e198eede34525b8b6d",
+      "width": 158,
+      "height": 156,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "fence 2",
+        "source": "reference/golden-island/apk/assets/aa/Android/duplicateassetisolation_assets_all_0d6055de4397ebc3c6fac7f7494f4c39.bundle",
+        "serializedFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+        "pathId": 8595255285114129000,
+        "rect": {
+          "x": 222,
+          "y": 454,
+          "width": 158,
+          "height": 156
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.25
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Khối gỗ dày, bóng mềm; mẫu cho hàng rào mộc mới. Kiểm tra góc nhìn, đầu nối và lớp che.",
+      "anchor": [
+        0.5,
+        0.25
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorFenceNE.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorFenceNE.prefab"
+    },
+    {
+      "id": "DecorMeadowFlowers",
+      "titleVi": "Hoa nhỏ rải nền",
+      "category": "ground",
+      "source": "reference/golden-island/images/sprites/map_10_scenes_all_f165d36a828d9a875785d0/hoa_tt_1.png",
+      "game": "golden-island",
+      "sha256": "f2bf11aef34742e545d4f1baf0dee28ca7330bdb4037a92b0642882c89f058d0",
+      "width": 161,
+      "height": 53,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "hoa_tt_1",
+        "source": "reference/golden-island/apk/assets/aa/Android/map_10_scenes_all_f165d36a828d9a875785d0c86bc1ee73.bundle",
+        "serializedFile": "CAB-184d16f7b91ca52a78e91d25a2d21954.sharedAssets",
+        "pathId": 124,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 162,
+          "height": 53
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 1,
+          "y": 0
+        }
+      },
+      "usage": "Tham khảo lớp nền mềm; cần đồng bộ màu với grass hiện tại và thử seam/alpha.",
+      "anchor": [
+        0.496894,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorMeadowFlowers.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorMeadowFlowers.prefab"
+    },
+    {
+      "id": "DecorGroundLeaves",
+      "titleVi": "Cụm lá sát đất",
+      "category": "ground",
+      "source": "reference/golden-island/images/sprites/map_10_scenes_all_f165d36a828d9a875785d0/hoa_tt_2.png",
+      "game": "golden-island",
+      "sha256": "6f8bf5bba0155f20cc75efba9c63d93ad80d64f88091e19236f0f472bd073712",
+      "width": 47,
+      "height": 38,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "hoa_tt_2",
+        "source": "reference/golden-island/apk/assets/aa/Android/map_10_scenes_all_f165d36a828d9a875785d0c86bc1ee73.bundle",
+        "serializedFile": "CAB-184d16f7b91ca52a78e91d25a2d21954.sharedAssets",
+        "pathId": 134,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 47,
+          "height": 38
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "usage": "Tham khảo lớp nền mềm; cần đồng bộ màu với grass hiện tại và thử seam/alpha.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorGroundLeaves.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorGroundLeaves.prefab"
+    },
+    {
+      "id": "DecorRoad00",
+      "titleVi": "Đường đất · nối 0000",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_6.png",
+      "game": "farm-city",
+      "sha256": "76d9e3a5456e0f73bb44296b53b027b20ee1646c354df7a34bbababfd0f5025c",
+      "width": 126,
+      "height": 74,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_6",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 6006,
+        "rect": {
+          "x": 1921,
+          "y": 4,
+          "width": 126,
+          "height": 74
+        },
+        "pivot": {
+          "x": 0.5634920597076416,
+          "y": 0.43918919563293457
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 13.04296875,
+          "y": 3.076120376586914
+        }
+      },
+      "connections": 0,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.459976,
+        0.39762
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad00.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad00.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad01",
+      "titleVi": "Đường đất · nối 0001",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_16.png",
+      "game": "farm-city",
+      "sha256": "fd970e7c605653ded42c7500810775759bfaefe55f6c2851a1fd77e9c580767f",
+      "width": 192,
+      "height": 99,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_16",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 3424,
+        "rect": {
+          "x": 1800,
+          "y": 219,
+          "width": 192,
+          "height": 99
+        },
+        "pivot": {
+          "x": 0.4791666567325592,
+          "y": 0.5101010203361511
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 1,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.479167,
+        0.510101
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad01.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad01.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad02",
+      "titleVi": "Đường đất · nối 0010",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_14.png",
+      "game": "farm-city",
+      "sha256": "fd85d59b09486e106d86670bd15d78e2e965219877f944507c48bb35857280f2",
+      "width": 182,
+      "height": 95,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_14",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 6141,
+        "rect": {
+          "x": 823,
+          "y": 158,
+          "width": 182,
+          "height": 95
+        },
+        "pivot": {
+          "x": 0.5549450516700745,
+          "y": 0.4894736707210541
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 2,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.554945,
+        0.489474
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad02.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad02.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad03",
+      "titleVi": "Đường đất · nối 0011",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_7.png",
+      "game": "farm-city",
+      "sha256": "f0049176496ae5aa4916b2cc8151b40792cc341e155ee0c50fd12fb988f9e932",
+      "width": 197,
+      "height": 93,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_7",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 6452,
+        "rect": {
+          "x": 921,
+          "y": 212,
+          "width": 197,
+          "height": 93
+        },
+        "pivot": {
+          "x": 0.49238577485084534,
+          "y": 0.4784946143627167
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 3,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.492386,
+        0.478495
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad03.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad03.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad04",
+      "titleVi": "Đường đất · nối 0100",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_15.png",
+      "game": "farm-city",
+      "sha256": "759190203567525d018195cca808ba1927a5e2e639631a81b22ae6aa5dd5924c",
+      "width": 179,
+      "height": 99,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_15",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 8280,
+        "rect": {
+          "x": 1866,
+          "y": 525,
+          "width": 179,
+          "height": 99
+        },
+        "pivot": {
+          "x": 0.5195530652999878,
+          "y": 0.5101010203361511
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 4,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.519553,
+        0.510101
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad04.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad04.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad05",
+      "titleVi": "Đường đất · nối 0101",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_1.png",
+      "game": "farm-city",
+      "sha256": "cfc28e6de8c76174c0f0f41dc8cbd78d87451d30fb324228bda218dcefd5db59",
+      "width": 193,
+      "height": 102,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_1",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 12876,
+        "rect": {
+          "x": 460,
+          "y": 441,
+          "width": 193,
+          "height": 102
+        },
+        "pivot": {
+          "x": 0.4818652868270874,
+          "y": 0.4950980246067047
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 5,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.481865,
+        0.495098
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad05.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad05.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad06",
+      "titleVi": "Đường đất · nối 0110",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_9.png",
+      "game": "farm-city",
+      "sha256": "5b9f86f99f04b7c15f34b9eb848c3bfd03440551c70cf6f6127c90fceb2a44ae",
+      "width": 161,
+      "height": 101,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_9",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 17067,
+        "rect": {
+          "x": 1168,
+          "y": 104,
+          "width": 161,
+          "height": 101
+        },
+        "pivot": {
+          "x": 0.5776397585868835,
+          "y": 0.5099009871482849
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 6,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.57764,
+        0.509901
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad06.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad06.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad07",
+      "titleVi": "Đường đất · nối 0111",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_17.png",
+      "game": "farm-city",
+      "sha256": "ace9c3efb011246f414a3441b6aa9b358d34d2a2aa8d1e5ea4023455c412f65b",
+      "width": 194,
+      "height": 100,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_17",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 14310,
+        "rect": {
+          "x": 141,
+          "y": 485,
+          "width": 194,
+          "height": 100
+        },
+        "pivot": {
+          "x": 0.5257731676101685,
+          "y": 0.5049999952316284
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 7,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.525773,
+        0.505
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad07.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad07.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad08",
+      "titleVi": "Đường đất · nối 1000",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_13.png",
+      "game": "farm-city",
+      "sha256": "5ca77a60166c05fa23e21d6c20ee79c60f813e470558181c79cd028437616675",
+      "width": 187,
+      "height": 93,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_13",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 7501,
+        "rect": {
+          "x": 1,
+          "y": 215,
+          "width": 187,
+          "height": 93
+        },
+        "pivot": {
+          "x": 0.5133689641952515,
+          "y": 0.5430107712745667
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 16.076120376586914,
+          "y": 0
+        }
+      },
+      "connections": 8,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.513369,
+        0.543011
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad08.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad08.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices.",
+      "anchorEvidence": "The extracted PNG already includes the sprite offset. Pixel registration against DecorRoad10 matches at (+5,+5) image pixels; subtracting textureRectOffset.x again shifts this cap sideways by 16.076 source pixels."
+    },
+    {
+      "id": "DecorRoad09",
+      "titleVi": "Đường đất · nối 1001",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_8.png",
+      "game": "farm-city",
+      "sha256": "e4145a723239d0d76dc57671ac90b94eb5300b8b48838b4a56785a910ab14288",
+      "width": 162,
+      "height": 100,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_8",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 15352,
+        "rect": {
+          "x": 737,
+          "y": 102,
+          "width": 162,
+          "height": 100
+        },
+        "pivot": {
+          "x": 0.3827160596847534,
+          "y": 0.5149999856948853
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 9,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.382716,
+        0.515
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad09.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad09.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad10",
+      "titleVi": "Đường đất · nối 1010",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_11.png",
+      "game": "farm-city",
+      "sha256": "8652277894b64206a6777357ff21262d36328d6afbba6bd74d286d120170fc9f",
+      "width": 192,
+      "height": 98,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_11",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 4852,
+        "rect": {
+          "x": 358,
+          "y": 264,
+          "width": 192,
+          "height": 98
+        },
+        "pivot": {
+          "x": 0.5260416865348816,
+          "y": 0.5153061151504517
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 10,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.526042,
+        0.515306
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad10.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad10.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad11",
+      "titleVi": "Đường đất · nối 1011",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_18.png",
+      "game": "farm-city",
+      "sha256": "01793ead889da5b352f9c4601b236c7e092ecfc2cf809f5a3c85455820f1ccec",
+      "width": 184,
+      "height": 99,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_18",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 4304,
+        "rect": {
+          "x": 1,
+          "y": 328,
+          "width": 184,
+          "height": 99
+        },
+        "pivot": {
+          "x": 0.5054348111152649,
+          "y": 0.5101010203361511
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0.026751041412353516,
+          "y": 0
+        }
+      },
+      "connections": 11,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.505289,
+        0.510101
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad11.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad11.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad12",
+      "titleVi": "Đường đất · nối 1100",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_10.png",
+      "game": "farm-city",
+      "sha256": "720e30a8866ed7d61482d806164e5c2d30e005cac383f423bf66fadc0b475e18",
+      "width": 199,
+      "height": 94,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_10",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 18107,
+        "rect": {
+          "x": 11,
+          "y": 538,
+          "width": 199,
+          "height": 94
+        },
+        "pivot": {
+          "x": 0.49246230721473694,
+          "y": 0.5478723645210266
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 12,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.492462,
+        0.547872
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad12.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad12.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad13",
+      "titleVi": "Đường đất · nối 1101",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_3.png",
+      "game": "farm-city",
+      "sha256": "1fc1bc1cb9b6bb85f9d9360f671d7c38948eac2e6d03380d45a2d80f9402d691",
+      "width": 201,
+      "height": 101,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_3",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 18187,
+        "rect": {
+          "x": 1844,
+          "y": 312,
+          "width": 201,
+          "height": 101
+        },
+        "pivot": {
+          "x": 0.5024875402450562,
+          "y": 0.4900990128517151
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 13,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.502488,
+        0.490099
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad13.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad13.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad14",
+      "titleVi": "Đường đất · nối 1110",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_4.png",
+      "game": "farm-city",
+      "sha256": "edbb208f8192134461dd248719e4c59b432ac650b73f950016ea6d1f2fedea94",
+      "width": 183,
+      "height": 98,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_4",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 2269,
+        "rect": {
+          "x": 120,
+          "y": 267,
+          "width": 183,
+          "height": 98
+        },
+        "pivot": {
+          "x": 0.5081967115402222,
+          "y": 0.5051020383834839
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 14,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.508197,
+        0.505102
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad14.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad14.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "DecorRoad15",
+      "titleVi": "Đường đất · nối 1111",
+      "category": "roads",
+      "source": "reference/farm-city/images/sprites/datapack/tile_road_2_5.png",
+      "game": "farm-city",
+      "sha256": "d69133eb5f702f87d003976358339d7c0119b9dd155cf78e3d2e25cb13f40f9c",
+      "width": 201,
+      "height": 98,
+      "sourceSprite": {
+        "game": "farm-city",
+        "name": "tile_road_2_5",
+        "source": "reference/farm-city/apk/assets/bin/Data/datapack.unity3d",
+        "serializedFile": "resources.assets",
+        "pathId": 4578,
+        "rect": {
+          "x": 809,
+          "y": 371,
+          "width": 201,
+          "height": 98
+        },
+        "pivot": {
+          "x": 0.49751242995262146,
+          "y": 0.5051020383834839
+        },
+        "pixelsToUnits": 100,
+        "textureRectOffset": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": 15,
+      "usage": "Lối đi nối kho, nhà, khu ruộng, chuồng và bảy máy.",
+      "anchor": [
+        0.497512,
+        0.505102
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/DecorRoad15.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/DecorRoad15.prefab",
+      "connectionsEvidence": "Verified soil/open-edge quadrants on the original PNG at the recovered Unity pivot. NE=1 NW=2 SW=4 SE=8; filenames are not bitmask indices."
+    },
+    {
+      "id": "GiTreeBushy",
+      "titleVi": "Cây bụi thấp",
+      "category": "trees",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_05.png",
+      "game": "golden-island",
+      "sha256": "8b6bdc99f2092772421f03baaa29e43e129be8ce227d4ee22989371843fc793d",
+      "width": 131,
+      "height": 163,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_05",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cây thấp xen mép rừng.",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiTreeBushy.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiTreeBushy.prefab"
+    },
+    {
+      "id": "GiTreeOak",
+      "titleVi": "Cây tán tròn",
+      "category": "trees",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_07.png",
+      "game": "golden-island",
+      "sha256": "ba09c99d0ecf18e1fa01465ddf6ac5915b9742887e342c53703e2faacfc17e8e",
+      "width": 285,
+      "height": 344,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_07",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cây chủ đạo của vành rừng.",
+      "anchor": [
+        0.5,
+        0.07
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiTreeOak.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiTreeOak.prefab"
+    },
+    {
+      "id": "GiTreeCherry",
+      "titleVi": "Cây hoa hồng phấn",
+      "category": "trees",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_09.png",
+      "game": "golden-island",
+      "sha256": "fbb41fa490ce411cec1c29255ef65fcaf42db60e3cd28d979d61752336849cc8",
+      "width": 242,
+      "height": 319,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_09",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Điểm màu trong rừng.",
+      "anchor": [
+        0.5,
+        0.07
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiTreeCherry.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiTreeCherry.prefab"
+    },
+    {
+      "id": "GiTreeMaple",
+      "titleVi": "Cây lá đỏ",
+      "category": "trees",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_10.png",
+      "game": "golden-island",
+      "sha256": "3207ef31baf42460a63d6661da0a08432704cf211910c849982d99813fbedde7",
+      "width": 214,
+      "height": 347,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_10",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Điểm màu trong rừng.",
+      "anchor": [
+        0.5,
+        0.07
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiTreeMaple.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiTreeMaple.prefab"
+    },
+    {
+      "id": "GiTreeCanopy",
+      "titleVi": "Cây đại thụ",
+      "category": "trees",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_11.png",
+      "game": "golden-island",
+      "sha256": "e1d5f96be0fb04fbc0e652ca7f6226efb384b582c7ed74064b0ee2da06ede0de",
+      "width": 448,
+      "height": 427,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_11",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cây lớn cho lớp ngoài cùng.",
+      "anchor": [
+        0.5,
+        0.06
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiTreeCanopy.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiTreeCanopy.prefab"
+    },
+    {
+      "id": "GiShrubFern",
+      "titleVi": "Bụi dương xỉ",
+      "category": "shrubs",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_01.png",
+      "game": "golden-island",
+      "sha256": "b30f484d8389b6d19da64d714b5539ea297107a94c817868173d6793492c7d75",
+      "width": 117,
+      "height": 112,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_01",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Lớp chuyển giữa cỏ và rừng.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiShrubFern.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiShrubFern.prefab"
+    },
+    {
+      "id": "GiShrubPalmlet",
+      "titleVi": "Bụi lá dài",
+      "category": "shrubs",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_02.png",
+      "game": "golden-island",
+      "sha256": "27350638d534402b6829157b1726de274fd281f37f16628ad241992417c02fee",
+      "width": 132,
+      "height": 99,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_02",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Lớp chuyển giữa cỏ và rừng.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiShrubPalmlet.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiShrubPalmlet.prefab"
+    },
+    {
+      "id": "GiShrubTuft",
+      "titleVi": "Bụi cỏ cao",
+      "category": "shrubs",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_03.png",
+      "game": "golden-island",
+      "sha256": "c6fa974befa46e17fc5b0295702a7ccc4aade3b98aef0d003e8bcfdfc69611ac",
+      "width": 113,
+      "height": 114,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_03",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Rải quanh gốc cây.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiShrubTuft.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiShrubTuft.prefab"
+    },
+    {
+      "id": "GiShrubLeafy",
+      "titleVi": "Bụi lá bản",
+      "category": "shrubs",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_04.png",
+      "game": "golden-island",
+      "sha256": "90b07016390d270adc72030ad602b944d532f59ccb22db570ee896b696d84d29",
+      "width": 131,
+      "height": 141,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_04",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Rải quanh gốc cây.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiShrubLeafy.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiShrubLeafy.prefab"
+    },
+    {
+      "id": "GiShrubSucculent",
+      "titleVi": "Bụi lá mọng",
+      "category": "shrubs",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_43.png",
+      "game": "golden-island",
+      "sha256": "b52d4af5c26c3a61e9f2561bfacc0d299749fcaa41e4ff08e073f40f82527e5a",
+      "width": 139,
+      "height": 124,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_43",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Rải ven đường.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiShrubSucculent.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiShrubSucculent.prefab"
+    },
+    {
+      "id": "GiStump",
+      "titleVi": "Gốc cây cụt",
+      "category": "props",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_44.png",
+      "game": "golden-island",
+      "sha256": "bd0008e0e3eeca2f99f2e6ed0bbc7141c6b1275f952c960a043cb8b2bdde43a2",
+      "width": 184,
+      "height": 133,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_44",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Điểm nhấn trong rừng.",
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiStump.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiStump.prefab"
+    },
+    {
+      "id": "GiLog",
+      "titleVi": "Khúc gỗ đổ",
+      "category": "props",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_46.png",
+      "game": "golden-island",
+      "sha256": "c56806861ac74b5d750911b6f4786c5f8cacb6380d79a9d0e77346e7916515b1",
+      "width": 250,
+      "height": 138,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_46",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Điểm nhấn trong rừng.",
+      "anchor": [
+        0.5,
+        0.2
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiLog.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiLog.prefab"
+    },
+    {
+      "id": "GiRockSmall",
+      "titleVi": "Đá nhỏ",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_12.png",
+      "game": "golden-island",
+      "sha256": "1a69b03aa529f6a034ad758ff228cfb0d0fa76d2273e317bf24a5e4d9136c067",
+      "width": 106,
+      "height": 81,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_12",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Rải lẻ ven rừng.",
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockSmall.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockSmall.prefab"
+    },
+    {
+      "id": "GiRockPile",
+      "titleVi": "Đống đá xám",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_13.png",
+      "game": "golden-island",
+      "sha256": "f910843a61d8020e5316fff173e35aa0fa9c8696b3e18938b8cfe1bab991a86c",
+      "width": 131,
+      "height": 149,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_13",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cụm đá.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockPile.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockPile.prefab"
+    },
+    {
+      "id": "GiRockTall",
+      "titleVi": "Cột đá xám",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_14.png",
+      "game": "golden-island",
+      "sha256": "d90facfd8c4cb8b7745deff460cfcb78f7edd53bd23e00ace9d5561a6274a28b",
+      "width": 204,
+      "height": 222,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_14",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cụm đá lớn.",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockTall.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockTall.prefab"
+    },
+    {
+      "id": "GiRockOchreSmall",
+      "titleVi": "Đá vàng nhỏ",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_15.png",
+      "game": "golden-island",
+      "sha256": "0df1a3b99383d8b31ffbcac30472bffb4a7b49f255a9e4385e8c426d1555c120",
+      "width": 106,
+      "height": 76,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_15",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Rải lẻ ven rừng.",
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockOchreSmall.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockOchreSmall.prefab"
+    },
+    {
+      "id": "GiRockOchre",
+      "titleVi": "Đá vàng",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_16.png",
+      "game": "golden-island",
+      "sha256": "c66b64f1e25418d4a5bca90d18816b47f18abcb9168fe5f1670e642183353597",
+      "width": 141,
+      "height": 137,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_16",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cụm đá.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockOchre.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockOchre.prefab"
+    },
+    {
+      "id": "GiRockOchreTall",
+      "titleVi": "Khối đá vàng",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_17.png",
+      "game": "golden-island",
+      "sha256": "00987a555fa9e2e41866576aefdebcc04c4db28b53c3c8d1e60fe586d2354b84",
+      "width": 206,
+      "height": 201,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_17",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cụm đá lớn.",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockOchreTall.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockOchreTall.prefab"
+    },
+    {
+      "id": "GiRockMossy",
+      "titleVi": "Đá phủ rêu",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_18.png",
+      "game": "golden-island",
+      "sha256": "cdd2d867a73e1ee565c29c383d36d56335120917910fa0a5551d5e49f5f20900",
+      "width": 123,
+      "height": 88,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_18",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Rải lẻ trên cỏ.",
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockMossy.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockMossy.prefab"
+    },
+    {
+      "id": "GiRockCrystal",
+      "titleVi": "Đá có tinh thể",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_19.png",
+      "game": "golden-island",
+      "sha256": "e79dd386ae988fff8b0df7850d2a22b5aaac708744eb9d893d0217a800c881bc",
+      "width": 144,
+      "height": 156,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_19",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Điểm nhấn hiếm.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockCrystal.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockCrystal.prefab"
+    },
+    {
+      "id": "GiRockBoulder",
+      "titleVi": "Tảng đá lớn",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Foreground/r_30.png",
+      "game": "golden-island",
+      "sha256": "2688f834bb6e141254d71084088f4f693f79083960bece462fd95caa13a5e96c",
+      "width": 136,
+      "height": 105,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "r_30",
+        "atlas": "Map_1_Foreground",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cụm đá lớn.",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockBoulder.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockBoulder.prefab"
+    },
+    {
+      "id": "GiRockWhite",
+      "titleVi": "Đá trắng xếp",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Background/da_tt1.png",
+      "game": "golden-island",
+      "sha256": "00033a7b66f49002dbe70d1d608218f3f272c8f69464355ff4c406d072bf6b99",
+      "width": 285,
+      "height": 358,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "da_tt1",
+        "atlas": "Map_1_Background",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cụm đá sáng.",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockWhite.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockWhite.prefab"
+    },
+    {
+      "id": "GiRockWhiteTall",
+      "titleVi": "Cột đá trắng",
+      "category": "rocks",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Background/da_tt3.png",
+      "game": "golden-island",
+      "sha256": "ebfc6adc1f889d746fb122f904737e62bbf6dfa4aa9d81c503caaf1241b7d63f",
+      "width": 334,
+      "height": 371,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "da_tt3",
+        "atlas": "Map_1_Background",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Cụm đá sáng.",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiRockWhiteTall.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiRockWhiteTall.prefab"
+    },
+    {
+      "id": "GiPatchGrass1",
+      "titleVi": "Mảng cỏ đậm 1",
+      "category": "ground",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Background2/co1.png",
+      "game": "golden-island",
+      "sha256": "a402a36e8d0a33d0718a120d7231ae61a6da67a41bf3f40a002365663a8fec5d",
+      "width": 204,
+      "height": 172,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "co1",
+        "atlas": "Map_1_Background2",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Mảng cỏ phá nền phẳng.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiPatchGrass1.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiPatchGrass1.prefab"
+    },
+    {
+      "id": "GiPatchGrass2",
+      "titleVi": "Mảng cỏ đậm 2",
+      "category": "ground",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Background2/co2.png",
+      "game": "golden-island",
+      "sha256": "58e71a5ff28f8f8a5c3577bf1bb9d32fadac6927651a5aa51b0dc4391ba17dff",
+      "width": 221,
+      "height": 174,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "co2",
+        "atlas": "Map_1_Background2",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Mảng cỏ phá nền phẳng.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiPatchGrass2.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiPatchGrass2.prefab"
+    },
+    {
+      "id": "GiPatchMeadow2",
+      "titleVi": "Mảng cỏ sáng 2",
+      "category": "ground",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Background/bb_10.png",
+      "game": "golden-island",
+      "sha256": "261bc925d4f2e0feaf25e4ba7309f995af52edf2e4ae3c4dd8b7b2b3642e8746",
+      "width": 309,
+      "height": 220,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "bb_10",
+        "atlas": "Map_1_Background",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Mảng cỏ sáng quanh ruộng.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiPatchMeadow2.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiPatchMeadow2.prefab"
+    },
+    {
+      "id": "GiPatchMeadow3",
+      "titleVi": "Mảng cỏ sáng 3",
+      "category": "ground",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Background/bb_12.png",
+      "game": "golden-island",
+      "sha256": "e60fcb61b565da2761c3e2f77e8edb05e8b5c8eacb70903f3699dd29c99a8bca",
+      "width": 375,
+      "height": 184,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "bb_12",
+        "atlas": "Map_1_Background",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Mảng cỏ sáng quanh ruộng.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiPatchMeadow3.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiPatchMeadow3.prefab"
+    },
+    {
+      "id": "GiPatchSand1",
+      "titleVi": "Dải cát 1",
+      "category": "ground",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Background/bb_2.png",
+      "game": "golden-island",
+      "sha256": "07c474e400cf1ebcee22e58fe027928da7e2d6009ea085dc17100ef2002e22f9",
+      "width": 427,
+      "height": 265,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "bb_2",
+        "atlas": "Map_1_Background",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Bờ cát ven ao.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiPatchSand1.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiPatchSand1.prefab"
+    },
+    {
+      "id": "GiPatchSand2",
+      "titleVi": "Dải cát 2",
+      "category": "ground",
+      "source": "reference/golden-island/images/map-sprites/Map_1_Background/bb_6.png",
+      "game": "golden-island",
+      "sha256": "bf2af09d930f926d0dc5a80b8f66b5ca1d90d988cf1202a356c72a3cbbc80ee0",
+      "width": 494,
+      "height": 233,
+      "sourceSprite": {
+        "game": "golden-island",
+        "name": "bb_6",
+        "atlas": "Map_1_Background",
+        "source": "reference/golden-island/apk/assets/aa/Android",
+        "note": "Xuất bằng reference/golden-island/analysis/map_sprites.py"
+      },
+      "usage": "Bờ cát ven ao.",
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "runtimeImage": "assets/farm/data/farm-decor/images/GiPatchSand2.png",
+      "runtimePrefab": "assets/farm/prefabs/items/scenery/GiPatchSand2.prefab"
+    }
+  ]
+}

@@ -1,0 +1,1330 @@
+{
+  "schemaVersion": 1,
+  "key": "bush_lilac",
+  "group": "flowers",
+  "titleVi": "Tử Đinh Hương",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C6 — hoa và chuỗi trang trí",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 102,
+    "key": "lilac",
+    "titleVi": "Tử Đinh Hương"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/bush_lilac__a52e7e818574f264e98da8fb658e26c9_713.json",
+    "prefab": {
+      "file": "ebaef1b9e198d354bb058a5d57066c0b",
+      "id": 2,
+      "name": "lilac",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__ebaef1b9e198d354bb058a5d57066c0b_44.json",
+        "growPhaseCount": 2,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/bush_lilac_JOB_Data__a52e7e818574f264e98da8fb658e26c9_336.json",
+    "index": 0,
+    "entity": "bush_lilac",
+    "durationSeconds": 1500,
+    "level": 13,
+    "quantityPerCycle": 1.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 13,
+    "basicPrice": 18.0,
+    "xpOnUse": 5.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 5,
+    "clearTool": {
+      "id": 48,
+      "name": "cutter",
+      "titleVi": "Dao Cắt",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "paint_factory",
+      "entityTitleVi": "Nhà Máy Sơn",
+      "recipeIndex": 2,
+      "output": "paint_pink",
+      "outputTitleVi": "Sơn Hồng",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/paint_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_472.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "flower_factory",
+      "entityTitleVi": "Nhà Máy Hoa",
+      "recipeIndex": 1,
+      "output": "bouquet_lilac",
+      "outputTitleVi": "Bó Hoa Tử Đinh Hương",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/flower_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_602.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 12742,
+      "sha256": "ddd728399b9989eba49800401390bf33e0bfa9c5901f4f4c139c37d8bd331621",
+      "size": [
+        78,
+        77
+      ],
+      "source": {
+        "exportPath": "export/sprites/lilac_3_preview_0__sharedassets0.assets_1002.png",
+        "file": "sharedassets0.assets",
+        "pathId": 1002,
+        "spriteName": "lilac_3_preview_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 27.5,
+          "y": 26.0,
+          "width": 77.5,
+          "height": 77.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.0
+        },
+        "pixelsToUnits": 50.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 8211,
+      "sha256": "858d7714487bf6fc77ae6a1dddf1336f00e50e53f7e3c8783e215596cf46324c",
+      "size": [
+        66,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/lilac__sharedassets0.assets_797.png",
+        "file": "sharedassets0.assets",
+        "pathId": 797,
+        "spriteName": "lilac"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.012912511825561523,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_siren_zem_0--90a913f717.png",
+      "bytes": 3321,
+      "sha256": "8ed7d352fbedee5300b2a2a674e51b8866ff3ee7348db2bfc267914b6a3c1bc1",
+      "size": [
+        103,
+        36
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_siren_ZEM_0__8abede782e254ca42b3255c5e63abec7_1.png",
+        "file": "8abede782e254ca42b3255c5e63abec7",
+        "pathId": 1,
+        "spriteName": "4_siren_ZEM_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 103.0,
+          "height": 36.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_siren_2_0--2d01dc76b1.png",
+      "bytes": 17690,
+      "sha256": "8932385077055b79bbd1b74b497de852eeb2bd7720d4637e16d8dc1f0d9c10b5",
+      "size": [
+        129,
+        135
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_siren_2_0__1ed414b4c1287174d95d8de878830a10_1.png",
+        "file": "1ed414b4c1287174d95d8de878830a10",
+        "pathId": 1,
+        "spriteName": "0_siren_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 129.0,
+          "height": 135.0
+        },
+        "pivot": {
+          "x": 0.5490745306015015,
+          "y": 0.02254038117825985
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_siren_1_0--d531ab69e5.png",
+      "bytes": 29087,
+      "sha256": "4e17e0104688f4a0c68c9b09807b4f6158de1d70d0654776bcd1383a7b30f13f",
+      "size": [
+        156,
+        125
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_siren_1_0__caea401364d475846825ee1af5281b82_1.png",
+        "file": "caea401364d475846825ee1af5281b82",
+        "pathId": 1,
+        "spriteName": "0_siren_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 156.0,
+          "height": 125.0
+        },
+        "pivot": {
+          "x": 0.4965800642967224,
+          "y": 0.30153748393058777
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/1_siren_0--b37ebafd36.png",
+      "bytes": 15908,
+      "sha256": "ab020e5e2a6bc32af35ee3982e109a14f17173d0ec268980a75bde5c101f6307",
+      "size": [
+        139,
+        99
+      ],
+      "source": {
+        "exportPath": "export/sprites/1_siren_0__2be26aacabb2946448e6495ba5692c9d_1.png",
+        "file": "2be26aacabb2946448e6495ba5692c9d",
+        "pathId": 1,
+        "spriteName": "1_siren_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 139.0,
+          "height": 99.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_dop_1_0--4af1fccd81.png",
+      "bytes": 7443,
+      "sha256": "a9884c4c20bc824f6def684eaacb353761d269c5c547ca75275077c185a5ad9e",
+      "size": [
+        115,
+        41
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_dop_1_0__9bb66d78d4a524441a912b9945bb1352_1.png",
+        "file": "9bb66d78d4a524441a912b9945bb1352",
+        "pathId": 1,
+        "spriteName": "3_siren_dop_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 0.0,
+          "width": 115.0,
+          "height": 41.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_siren_listva_1--89b5a91f1b.png",
+      "bytes": 4334,
+      "sha256": "0174e29e747d2b63c2bb82003140df0f95ac74e8e9c93efb5d547d6fd2ce456a",
+      "size": [
+        113,
+        26
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_siren_listva_1__fa766f1129547cf4e8515d8790a113e1_1.png",
+        "file": "fa766f1129547cf4e8515d8790a113e1",
+        "pathId": 1,
+        "spriteName": "4_siren_listva_1"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 113.0,
+          "height": 26.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_siren_list_0--9bd785cd20.png",
+      "bytes": 662,
+      "sha256": "7d1ccb4178d6516514b262abac17e099d57cf287d0647b9251e4da143f08db59",
+      "size": [
+        19,
+        13
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_siren_list_0__5b7f95826fce01f44b504b2b65695519_1.png",
+        "file": "5b7f95826fce01f44b504b2b65695519",
+        "pathId": 1,
+        "spriteName": "4_siren_list_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 19.0,
+          "height": 13.0
+        },
+        "pivot": {
+          "x": 0.5132657289505005,
+          "y": 0.27945804595947266
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_siren_0--08d0434485.png",
+      "bytes": 33723,
+      "sha256": "087b3a19fd0fe5006b9aabe7e01493e2c6624d283d0ce94207da42d3c1ad95a7",
+      "size": [
+        149,
+        146
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_siren_0__778c9da861663584ebad18c39b96fcdc_1.png",
+        "file": "778c9da861663584ebad18c39b96fcdc",
+        "pathId": 1,
+        "spriteName": "4_siren_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 149.0,
+          "height": 146.0
+        },
+        "pivot": {
+          "x": 0.5479850172996521,
+          "y": 0.02306552417576313
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_dop_2_0--ec86deb12d.png",
+      "bytes": 4103,
+      "sha256": "c10e7dd80bf48e8f5de88f8da91e907d63aba13b671e4fbe264d5d1f6920a448",
+      "size": [
+        79,
+        38
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_dop_2_0__c0d5bab4c09879648bc43fecfb9bd788_1.png",
+        "file": "c0d5bab4c09879648bc43fecfb9bd788",
+        "pathId": 1,
+        "spriteName": "3_siren_dop_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 79.0,
+          "height": 38.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/2_siren_0--2383d239b9.png",
+      "bytes": 18456,
+      "sha256": "8934ba49d6cfeeb208d52843ab0cce8d6ca885747962c29f691e0069096311cc",
+      "size": [
+        146,
+        103
+      ],
+      "source": {
+        "exportPath": "export/sprites/2_siren_0__a8cabc85b61d7ad42b1a6a9dadc8e741_1.png",
+        "file": "a8cabc85b61d7ad42b1a6a9dadc8e741",
+        "pathId": 1,
+        "spriteName": "2_siren_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 146.0,
+          "height": 103.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_1_0--3e8dec1cbb.png",
+      "bytes": 2192,
+      "sha256": "8761a851794d97aa5410b0c2acee839e3d0be0b041522571e9f587fa3100f8d8",
+      "size": [
+        36,
+        29
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_1_0__215e5f2495a3ca5419400901bf59ffcb_1.png",
+        "file": "215e5f2495a3ca5419400901bf59ffcb",
+        "pathId": 1,
+        "spriteName": "3_siren_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 36.0,
+          "height": 29.0
+        },
+        "pivot": {
+          "x": 0.8147098422050476,
+          "y": 0.6841107606887817
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_2_0--91501f2366.png",
+      "bytes": 2425,
+      "sha256": "11ab5041d85afa4ff30cc89827f55228906319759914ff0bb70826e55377ff73",
+      "size": [
+        31,
+        36
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_2_0__686776d7bfe623a418bcd9bf25859ec6_1.png",
+        "file": "686776d7bfe623a418bcd9bf25859ec6",
+        "pathId": 1,
+        "spriteName": "3_siren_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 31.0,
+          "height": 36.0
+        },
+        "pivot": {
+          "x": 0.6699291467666626,
+          "y": 0.22286401689052582
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_3_0--800713d2df.png",
+      "bytes": 2403,
+      "sha256": "d477ddd2c0c3b1a644676d034d01f8848a020d0ab731b40b69f18dd5d450fde3",
+      "size": [
+        30,
+        36
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_3_0__818094c272310ff48bca251f0296596b_1.png",
+        "file": "818094c272310ff48bca251f0296596b",
+        "pathId": 1,
+        "spriteName": "3_siren_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 30.0,
+          "height": 36.0
+        },
+        "pivot": {
+          "x": 0.4122033417224884,
+          "y": 0.21621277928352356
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_4_0--6861d556e9.png",
+      "bytes": 2422,
+      "sha256": "3a389d8dbbdbab466d8b462f69e6e59af4d0d82eabf17034efebd3294699d2e1",
+      "size": [
+        39,
+        29
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_4_0__206875c674364854088b1a1a7a22e722_1.png",
+        "file": "206875c674364854088b1a1a7a22e722",
+        "pathId": 1,
+        "spriteName": "3_siren_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 39.0,
+          "height": 29.0
+        },
+        "pivot": {
+          "x": 0.21450726687908173,
+          "y": 0.4550948739051819
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_5_0--1c7a19a31c.png",
+      "bytes": 2320,
+      "sha256": "0f8885deff3e04f6b20c7bf5d456387201c03a75130757f2be0b95434ae9a410",
+      "size": [
+        34,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_5_0__f40a281fbc374be40b2e6e3e81845a8e_1.png",
+        "file": "f40a281fbc374be40b2e6e3e81845a8e",
+        "pathId": 1,
+        "spriteName": "3_siren_5_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 34.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.6701322197914124,
+          "y": 0.2656741440296173
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_6_0--2c8dae3dd1.png",
+      "bytes": 2662,
+      "sha256": "b5630983e6e037f153993544ad7e1c31ab6b28f5fee857bae75417293f001cc8",
+      "size": [
+        31,
+        39
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_6_0__33d6c852c3956a440930972470a745a7_1.png",
+        "file": "33d6c852c3956a440930972470a745a7",
+        "pathId": 1,
+        "spriteName": "3_siren_6_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 7.0,
+          "width": 31.0,
+          "height": 39.0
+        },
+        "pivot": {
+          "x": 0.5764274001121521,
+          "y": 0.1759999841451645
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_7_0--b166887886.png",
+      "bytes": 2677,
+      "sha256": "3894c8baba46dcaaf27e2a222dea4ef7ee4584b42e3e7f262051cf015750fe19",
+      "size": [
+        31,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_7_0__db62156a4f3895747a56ddfd544d7ee1_1.png",
+        "file": "db62156a4f3895747a56ddfd544d7ee1",
+        "pathId": 1,
+        "spriteName": "3_siren_7_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 31.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4487774074077606,
+          "y": 0.1669817417860031
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_siren_8_0--b7a9f02c5b.png",
+      "bytes": 2502,
+      "sha256": "9ddfac3bd0f0a36d120e2bfb2dc15c9840184c8b33274890a3a411c02fd01fca",
+      "size": [
+        36,
+        31
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_siren_8_0__94f569fcad2cb93448508371625746f9_1.png",
+        "file": "94f569fcad2cb93448508371625746f9",
+        "pathId": 1,
+        "spriteName": "3_siren_8_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 36.0,
+          "height": 31.0
+        },
+        "pivot": {
+          "x": 0.2323741316795349,
+          "y": 0.30100417137145996
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/4_siren_zem_0--90a913f717.png",
+    "images/0_siren_2_0--2d01dc76b1.png",
+    "images/0_siren_1_0--d531ab69e5.png",
+    "images/1_siren_0--b37ebafd36.png",
+    "images/3_siren_dop_1_0--4af1fccd81.png"
+  ],
+  "phases": [
+    {
+      "key": "lilac:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/4_siren_listva_1--89b5a91f1b.png",
+        "images/4_siren_list_0--9bd785cd20.png",
+        "images/4_siren_0--08d0434485.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_end",
+        "file": "d4e76101464fdb342a33b681bd799626",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_end__d4e76101464fdb342a33b681bd799626_1.json",
+        "sha256": "ddd3f240cabb4a1c29e862508673690de301ce06fc9ccfbd0ca8d1b71067fce0"
+      }
+    },
+    {
+      "key": "lilac:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/1_siren_0--b37ebafd36.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/0_siren_2_0--2d01dc76b1.png",
+        "images/0_siren_1_0--d531ab69e5.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_1",
+        "file": "55a95a1efdf0893459db44a156493753",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_1__55a95a1efdf0893459db44a156493753_1.json",
+        "sha256": "ced5ce89a24082ddddd0a6e885e4407954217e459fa9a4580e4af63b5c082ac7"
+      }
+    },
+    {
+      "key": "lilac:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/1_siren_0--b37ebafd36.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/0_siren_2_0--2d01dc76b1.png",
+        "images/0_siren_1_0--d531ab69e5.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_1",
+        "file": "55a95a1efdf0893459db44a156493753",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_1__55a95a1efdf0893459db44a156493753_1.json",
+        "sha256": "ced5ce89a24082ddddd0a6e885e4407954217e459fa9a4580e4af63b5c082ac7"
+      }
+    },
+    {
+      "key": "lilac:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/3_siren_dop_2_0--ec86deb12d.png",
+        "images/2_siren_0--2383d239b9.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_2",
+        "file": "3cd89acd952fcca4d89e2a858bfd1876",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_2__3cd89acd952fcca4d89e2a858bfd1876_1.json",
+        "sha256": "8ec37f29ba625251ac09a590797c994e6e59854ce426f534ed1d5d9aa7d6154d"
+      }
+    },
+    {
+      "key": "lilac:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/3_siren_dop_2_0--ec86deb12d.png",
+        "images/2_siren_0--2383d239b9.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_2",
+        "file": "3cd89acd952fcca4d89e2a858bfd1876",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_2__3cd89acd952fcca4d89e2a858bfd1876_1.json",
+        "sha256": "8ec37f29ba625251ac09a590797c994e6e59854ce426f534ed1d5d9aa7d6154d"
+      }
+    },
+    {
+      "key": "lilac:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/3_siren_dop_2_0--ec86deb12d.png",
+        "images/2_siren_0--2383d239b9.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_2",
+        "file": "3cd89acd952fcca4d89e2a858bfd1876",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_2__3cd89acd952fcca4d89e2a858bfd1876_1.json",
+        "sha256": "8ec37f29ba625251ac09a590797c994e6e59854ce426f534ed1d5d9aa7d6154d"
+      }
+    },
+    {
+      "key": "lilac:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "lilac:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/3_siren_dop_2_0--ec86deb12d.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/3_siren_1_0--3e8dec1cbb.png",
+        "images/3_siren_2_0--91501f2366.png",
+        "images/3_siren_3_0--800713d2df.png",
+        "images/3_siren_4_0--6861d556e9.png",
+        "images/3_siren_5_0--1c7a19a31c.png",
+        "images/3_siren_6_0--2c8dae3dd1.png",
+        "images/3_siren_7_0--b166887886.png",
+        "images/3_siren_8_0--b7a9f02c5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_3",
+        "file": "121693f45b7a2c34983b39c9955b2ea2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_3__121693f45b7a2c34983b39c9955b2ea2_1.json",
+        "sha256": "3743dde92785b939cae2053ebb26dff3418055956152a7494f156db73967d760"
+      }
+    },
+    {
+      "key": "lilac:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/3_siren_dop_2_0--ec86deb12d.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/3_siren_1_0--3e8dec1cbb.png",
+        "images/3_siren_2_0--91501f2366.png",
+        "images/3_siren_3_0--800713d2df.png",
+        "images/3_siren_4_0--6861d556e9.png",
+        "images/3_siren_5_0--1c7a19a31c.png",
+        "images/3_siren_6_0--2c8dae3dd1.png",
+        "images/3_siren_7_0--b166887886.png",
+        "images/3_siren_8_0--b7a9f02c5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_3",
+        "file": "121693f45b7a2c34983b39c9955b2ea2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_3__121693f45b7a2c34983b39c9955b2ea2_1.json",
+        "sha256": "3743dde92785b939cae2053ebb26dff3418055956152a7494f156db73967d760"
+      }
+    },
+    {
+      "key": "lilac:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/3_siren_dop_2_0--ec86deb12d.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/3_siren_1_0--3e8dec1cbb.png",
+        "images/3_siren_2_0--91501f2366.png",
+        "images/3_siren_3_0--800713d2df.png",
+        "images/3_siren_4_0--6861d556e9.png",
+        "images/3_siren_5_0--1c7a19a31c.png",
+        "images/3_siren_6_0--2c8dae3dd1.png",
+        "images/3_siren_7_0--b166887886.png",
+        "images/3_siren_8_0--b7a9f02c5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_3",
+        "file": "121693f45b7a2c34983b39c9955b2ea2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_3__121693f45b7a2c34983b39c9955b2ea2_1.json",
+        "sha256": "3743dde92785b939cae2053ebb26dff3418055956152a7494f156db73967d760"
+      }
+    },
+    {
+      "key": "lilac:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/3_siren_dop_2_0--ec86deb12d.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/3_siren_1_0--3e8dec1cbb.png",
+        "images/3_siren_2_0--91501f2366.png",
+        "images/3_siren_3_0--800713d2df.png",
+        "images/3_siren_4_0--6861d556e9.png",
+        "images/3_siren_5_0--1c7a19a31c.png",
+        "images/3_siren_6_0--2c8dae3dd1.png",
+        "images/3_siren_7_0--b166887886.png",
+        "images/3_siren_8_0--b7a9f02c5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_3",
+        "file": "121693f45b7a2c34983b39c9955b2ea2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_3__121693f45b7a2c34983b39c9955b2ea2_1.json",
+        "sha256": "3743dde92785b939cae2053ebb26dff3418055956152a7494f156db73967d760"
+      }
+    },
+    {
+      "key": "lilac:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/3_siren_dop_2_0--ec86deb12d.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/3_siren_1_0--3e8dec1cbb.png",
+        "images/3_siren_2_0--91501f2366.png",
+        "images/3_siren_3_0--800713d2df.png",
+        "images/3_siren_4_0--6861d556e9.png",
+        "images/3_siren_5_0--1c7a19a31c.png",
+        "images/3_siren_6_0--2c8dae3dd1.png",
+        "images/3_siren_7_0--b166887886.png",
+        "images/3_siren_8_0--b7a9f02c5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_3",
+        "file": "121693f45b7a2c34983b39c9955b2ea2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_3__121693f45b7a2c34983b39c9955b2ea2_1.json",
+        "sha256": "3743dde92785b939cae2053ebb26dff3418055956152a7494f156db73967d760"
+      }
+    },
+    {
+      "key": "lilac:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/1_siren_0--b37ebafd36.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/0_siren_2_0--2d01dc76b1.png",
+        "images/0_siren_1_0--d531ab69e5.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_1",
+        "file": "55a95a1efdf0893459db44a156493753",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_1__55a95a1efdf0893459db44a156493753_1.json",
+        "sha256": "ced5ce89a24082ddddd0a6e885e4407954217e459fa9a4580e4af63b5c082ac7"
+      }
+    },
+    {
+      "key": "lilac:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/1_siren_0--b37ebafd36.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/0_siren_2_0--2d01dc76b1.png",
+        "images/0_siren_1_0--d531ab69e5.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_1",
+        "file": "55a95a1efdf0893459db44a156493753",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_1__55a95a1efdf0893459db44a156493753_1.json",
+        "sha256": "ced5ce89a24082ddddd0a6e885e4407954217e459fa9a4580e4af63b5c082ac7"
+      }
+    },
+    {
+      "key": "lilac:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/1_siren_0--b37ebafd36.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/0_siren_2_0--2d01dc76b1.png",
+        "images/0_siren_1_0--d531ab69e5.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_1",
+        "file": "55a95a1efdf0893459db44a156493753",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_1__55a95a1efdf0893459db44a156493753_1.json",
+        "sha256": "ced5ce89a24082ddddd0a6e885e4407954217e459fa9a4580e4af63b5c082ac7"
+      }
+    },
+    {
+      "key": "lilac:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/1_siren_0--b37ebafd36.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/0_siren_2_0--2d01dc76b1.png",
+        "images/0_siren_1_0--d531ab69e5.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_1",
+        "file": "55a95a1efdf0893459db44a156493753",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_1__55a95a1efdf0893459db44a156493753_1.json",
+        "sha256": "ced5ce89a24082ddddd0a6e885e4407954217e459fa9a4580e4af63b5c082ac7"
+      }
+    },
+    {
+      "key": "lilac:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/1_siren_0--b37ebafd36.png",
+        "images/3_siren_dop_1_0--4af1fccd81.png",
+        "images/0_siren_2_0--2d01dc76b1.png",
+        "images/0_siren_1_0--d531ab69e5.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "lilac",
+        "file": "001298e32e14e3040975917252fae95a",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "lilac_1",
+        "file": "55a95a1efdf0893459db44a156493753",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/lilac_1__55a95a1efdf0893459db44a156493753_1.json",
+        "sha256": "ced5ce89a24082ddddd0a6e885e4407954217e459fa9a4580e4af63b5c082ac7"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

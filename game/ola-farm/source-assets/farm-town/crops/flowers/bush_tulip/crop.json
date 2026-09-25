@@ -1,0 +1,1176 @@
+{
+  "schemaVersion": 1,
+  "key": "bush_tulip",
+  "group": "flowers",
+  "titleVi": "Hoa Tulip",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C6 — hoa và chuỗi trang trí",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 151,
+    "key": "tulip",
+    "titleVi": "Hoa Tulip"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/bush_tulip__a52e7e818574f264e98da8fb658e26c9_701.json",
+    "prefab": {
+      "file": "ee80ccf6e89cd034abb813470adfc604",
+      "id": 2,
+      "name": "tulips",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__ee80ccf6e89cd034abb813470adfc604_38.json",
+        "growPhaseCount": 2,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/bush_tulip_JOB_Data__a52e7e818574f264e98da8fb658e26c9_122.json",
+    "index": 0,
+    "entity": "bush_tulip",
+    "durationSeconds": 120,
+    "level": 14,
+    "quantityPerCycle": 1.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 14,
+    "basicPrice": 20.0,
+    "xpOnUse": 3.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 5,
+    "clearTool": {
+      "id": 48,
+      "name": "cutter",
+      "titleVi": "Dao Cắt",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "paint_factory",
+      "entityTitleVi": "Nhà Máy Sơn",
+      "recipeIndex": 0,
+      "output": "paint_red",
+      "outputTitleVi": "Sơn Đỏ",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/paint_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_472.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "flower_factory",
+      "entityTitleVi": "Nhà Máy Hoa",
+      "recipeIndex": 4,
+      "output": "bouquet_romantic",
+      "outputTitleVi": "Bó Hoa Lãng Mạn",
+      "inputQuantity": 4.0,
+      "sourceConfig": "configs/flower_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_602.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 8195,
+      "sha256": "ae8882acb6cb06eb8e1f9c31aec75c677ecb16eba5891a3c331c7f24565b58dd",
+      "size": [
+        70,
+        57
+      ],
+      "source": {
+        "exportPath": "export/sprites/bush_tulip__sharedassets0.assets_193.png",
+        "file": "sharedassets0.assets",
+        "pathId": 193,
+        "spriteName": "bush_tulip"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 7.0267510414123535
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 10702,
+      "sha256": "7be9fbd300dfc12989bc7a003229b8ca5a0d5550bfd3680b70b9655d7cbef7d2",
+      "size": [
+        84,
+        90
+      ],
+      "source": {
+        "exportPath": "export/sprites/tulip__sharedassets0.assets_511.png",
+        "file": "sharedassets0.assets",
+        "pathId": 511,
+        "spriteName": "tulip"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 2.1055727005004883,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_tulpan_zem_0--d82c46a7d5.png",
+      "bytes": 3015,
+      "sha256": "9b089b95054dd4a0e1701fea86e48b62d4d5f4d3b69e5f2c2eee023fa538e656",
+      "size": [
+        83,
+        33
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_tulpan_zem_0__5d05d3993d78de54794a03959db85f6c_1.png",
+        "file": "5d05d3993d78de54794a03959db85f6c",
+        "pathId": 1,
+        "spriteName": "0_tulpan_zem_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 83.0,
+          "height": 33.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_tulpan_1_0--1c0a2b8d9a.png",
+      "bytes": 4819,
+      "sha256": "ec23539988b9f02d81001ccfdfcfa0b01185860f2fcb91913b6a1fdfd3ff6fef",
+      "size": [
+        71,
+        42
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_tulpan_1_0__e4493e2b1006ef74f98de4842cd4591c_1.png",
+        "file": "e4493e2b1006ef74f98de4842cd4591c",
+        "pathId": 1,
+        "spriteName": "0_tulpan_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 71.0,
+          "height": 42.0
+        },
+        "pivot": {
+          "x": 0.43255138397216797,
+          "y": 0.07717511802911758
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/1_tulpan_0--08237bcaf2.png",
+      "bytes": 5857,
+      "sha256": "c7e6876bc9a176e79613d1d205d0ae128a3392675023ec142daef67187c76d07",
+      "size": [
+        78,
+        59
+      ],
+      "source": {
+        "exportPath": "export/sprites/1_tulpan_0__337a1b74d916dfc48a6af4c5dc8c079a_1.png",
+        "file": "337a1b74d916dfc48a6af4c5dc8c079a",
+        "pathId": 1,
+        "spriteName": "1_tulpan_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 78.0,
+          "height": 59.0
+        },
+        "pivot": {
+          "x": 0.5015888214111328,
+          "y": 0.05681580305099487
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_tulpan_2_0--6838ce6592.png",
+      "bytes": 3573,
+      "sha256": "39ba9032c4f4020ce6c5887bdb656224a913fb621773b22b05ebef7fd0f19f02",
+      "size": [
+        74,
+        34
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_tulpan_2_0__b86abfe67850ab84796d377c657cd801_1.png",
+        "file": "b86abfe67850ab84796d377c657cd801",
+        "pathId": 1,
+        "spriteName": "0_tulpan_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 74.0,
+          "height": 34.0
+        },
+        "pivot": {
+          "x": 0.47754210233688354,
+          "y": 0.057034820318222046
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tulpan_0--ae3735a5f3.png",
+      "bytes": 4016,
+      "sha256": "9a6a6d09c9c552c9ad725e29e2538bea7ff7d86e9dd76221dd05848309b7c8dc",
+      "size": [
+        63,
+        42
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tulpan_0__ef5b263b52503b742b18c39124472b4e_1.png",
+        "file": "ef5b263b52503b742b18c39124472b4e",
+        "pathId": 1,
+        "spriteName": "4_tulpan_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 63.0,
+          "height": 42.0
+        },
+        "pivot": {
+          "x": 0.4633263349533081,
+          "y": 0.03571173548698425
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/2_tulpan_0--d9f9ef66a3.png",
+      "bytes": 7088,
+      "sha256": "bd5026cba3fc8a1b4f6d6c34240c4a713abe3b6de9dbb987f3a80abd22daa2ee",
+      "size": [
+        88,
+        61
+      ],
+      "source": {
+        "exportPath": "export/sprites/2_tulpan_0__215cbd2d6c6ed84459f4b7fbe457426f_1.png",
+        "file": "215cbd2d6c6ed84459f4b7fbe457426f",
+        "pathId": 1,
+        "spriteName": "2_tulpan_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 6.0,
+          "width": 88.0,
+          "height": 61.0
+        },
+        "pivot": {
+          "x": 0.49840080738067627,
+          "y": 0.07320576161146164
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_tulpan_8_0--36d84b3875.png",
+      "bytes": 1506,
+      "sha256": "8a5886623dca3713c6570840f056659db0d14d88d0a424c6224d54cc5c4b0252",
+      "size": [
+        30,
+        42
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_tulpan_8_0__4667bcb6776986b488c8b90810c6470f_1.png",
+        "file": "4667bcb6776986b488c8b90810c6470f",
+        "pathId": 1,
+        "spriteName": "3_tulpan_8_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 30.0,
+          "height": 42.0
+        },
+        "pivot": {
+          "x": 0.02250923402607441,
+          "y": 0.03791216015815735
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_tulpan_7_0--d55882c59c.png",
+      "bytes": 1150,
+      "sha256": "dcb0eefd432310f66483ff6797063bc8d475d67ccd7f6a973d302d6ebcd20cf5",
+      "size": [
+        16,
+        60
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_tulpan_7_0__775a8d21d50a6964193c18c90a8bd748_1.png",
+        "file": "775a8d21d50a6964193c18c90a8bd748",
+        "pathId": 1,
+        "spriteName": "3_tulpan_7_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 16.0,
+          "height": 60.0
+        },
+        "pivot": {
+          "x": 0.410470575094223,
+          "y": 0.031190844252705574
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_tulpan_5_0--04f79e6466.png",
+      "bytes": 1272,
+      "sha256": "1457d3097820ea545375972cacb009bc531799f441e65c01ce6ccc3baa07c5ee",
+      "size": [
+        22,
+        61
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_tulpan_5_0__ab7f235442fca6d439fbb288620714e8_1.png",
+        "file": "ab7f235442fca6d439fbb288620714e8",
+        "pathId": 1,
+        "spriteName": "3_tulpan_5_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 22.0,
+          "height": 61.0
+        },
+        "pivot": {
+          "x": 0.07896547764539719,
+          "y": 0.03577735647559166
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_tulpan_3_0--f3e7a3e3d8.png",
+      "bytes": 1382,
+      "sha256": "1532aae23a3be192dc368427195289574bbfd616c008a3c31cc9a3c1f6b8ac95",
+      "size": [
+        22,
+        54
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_tulpan_3_0__8c7477379f83edc44b93c35fd70dbe90_1.png",
+        "file": "8c7477379f83edc44b93c35fd70dbe90",
+        "pathId": 1,
+        "spriteName": "3_tulpan_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 22.0,
+          "height": 54.0
+        },
+        "pivot": {
+          "x": 0.9124419689178467,
+          "y": 0.04631378874182701
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_tulpan_1_0--c6dfee5d56.png",
+      "bytes": 1479,
+      "sha256": "d0a2af9fa53847248ea6f1db5338aecef80c9e0c4e6580d4b0c98210eaa1abca",
+      "size": [
+        27,
+        35
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_tulpan_1_0__d4ae11fcb3c8a304893412e97589cd10_1.png",
+        "file": "d4ae11fcb3c8a304893412e97589cd10",
+        "pathId": 1,
+        "spriteName": "3_tulpan_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 27.0,
+          "height": 35.0
+        },
+        "pivot": {
+          "x": 0.9778019189834595,
+          "y": 0.03149095177650452
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_tulpan_2_0--6992da4e47.png",
+      "bytes": 1132,
+      "sha256": "11d83b7c7b118a72a5c9897c44919eae28b12615bfb24d48a83c2609f31b9a8c",
+      "size": [
+        17,
+        44
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_tulpan_2_0__c2a494ba49b754f49be7be5298d99aae_1.png",
+        "file": "c2a494ba49b754f49be7be5298d99aae",
+        "pathId": 1,
+        "spriteName": "3_tulpan_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 17.0,
+          "height": 44.0
+        },
+        "pivot": {
+          "x": 0.9489911198616028,
+          "y": 0.03227930888533592
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_tulpan_4_0--dfb8c78111.png",
+      "bytes": 1149,
+      "sha256": "76f481d409e5468a0090e847142b69648a26297d8b6b97a702e4c0de2fca4bc1",
+      "size": [
+        15,
+        54
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_tulpan_4_0__cc871e306e2935c48ac09e67015e9b63_1.png",
+        "file": "cc871e306e2935c48ac09e67015e9b63",
+        "pathId": 1,
+        "spriteName": "3_tulpan_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 15.0,
+          "height": 54.0
+        },
+        "pivot": {
+          "x": 0.17849880456924438,
+          "y": 0.029510555788874626
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_tulpan_6_0--ede73365a0.png",
+      "bytes": 1247,
+      "sha256": "6b6411428424f91acd0a967ae0392eefe2cbec7038c34131e20d77881665d320",
+      "size": [
+        20,
+        36
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_tulpan_6_0__bc3c74ba4bdc8724a974565a378f4399_1.png",
+        "file": "bc3c74ba4bdc8724a974565a378f4399",
+        "pathId": 1,
+        "spriteName": "3_tulpan_6_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 20.0,
+          "height": 36.0
+        },
+        "pivot": {
+          "x": 0.04904433339834213,
+          "y": 0.03662863001227379
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/0_tulpan_zem_0--d82c46a7d5.png",
+    "images/0_tulpan_1_0--1c0a2b8d9a.png",
+    "images/1_tulpan_0--08237bcaf2.png",
+    "images/0_tulpan_2_0--6838ce6592.png"
+  ],
+  "phases": [
+    {
+      "key": "tulips:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/4_tulpan_0--ae3735a5f3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_end",
+        "file": "fb4f23e19f8a7f5459232984f09f3820",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_end__fb4f23e19f8a7f5459232984f09f3820_1.json",
+        "sha256": "4155edd5085412c4ffc13176784c5b162e6e7311271ef7fc59affc5c1295b5b4"
+      }
+    },
+    {
+      "key": "tulips:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/1_tulpan_0--08237bcaf2.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_1",
+        "file": "28368cc84744b854197c2c72feb5f794",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_1__28368cc84744b854197c2c72feb5f794_1.json",
+        "sha256": "a95eecc7716bb869af9dd5219cdd47742655c8239a3c382eb1fd095d7d84d19d"
+      }
+    },
+    {
+      "key": "tulips:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/1_tulpan_0--08237bcaf2.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_1",
+        "file": "28368cc84744b854197c2c72feb5f794",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_1__28368cc84744b854197c2c72feb5f794_1.json",
+        "sha256": "a95eecc7716bb869af9dd5219cdd47742655c8239a3c382eb1fd095d7d84d19d"
+      }
+    },
+    {
+      "key": "tulips:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/2_tulpan_0--d9f9ef66a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_2",
+        "file": "d9b89955689444049a53232fd67df07b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_2__d9b89955689444049a53232fd67df07b_1.json",
+        "sha256": "4a79bb8b971648b50cd22c0449036b856777ec689c79ee5ffe6cf18800083f47"
+      }
+    },
+    {
+      "key": "tulips:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/2_tulpan_0--d9f9ef66a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_2",
+        "file": "d9b89955689444049a53232fd67df07b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_2__d9b89955689444049a53232fd67df07b_1.json",
+        "sha256": "4a79bb8b971648b50cd22c0449036b856777ec689c79ee5ffe6cf18800083f47"
+      }
+    },
+    {
+      "key": "tulips:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/2_tulpan_0--d9f9ef66a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_2",
+        "file": "d9b89955689444049a53232fd67df07b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_2__d9b89955689444049a53232fd67df07b_1.json",
+        "sha256": "4a79bb8b971648b50cd22c0449036b856777ec689c79ee5ffe6cf18800083f47"
+      }
+    },
+    {
+      "key": "tulips:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "tulips:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    },
+    {
+      "key": "tulips:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/3_tulpan_8_0--36d84b3875.png",
+        "images/3_tulpan_7_0--d55882c59c.png",
+        "images/3_tulpan_5_0--04f79e6466.png",
+        "images/3_tulpan_3_0--f3e7a3e3d8.png",
+        "images/3_tulpan_1_0--c6dfee5d56.png",
+        "images/3_tulpan_2_0--6992da4e47.png",
+        "images/3_tulpan_4_0--dfb8c78111.png",
+        "images/3_tulpan_6_0--ede73365a0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "tulips",
+        "file": "38c2cca6f3b111c439f92978e6f4466c",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tulpis_3",
+        "file": "a82567fe99291f9439313f6b99aa727c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tulpis_3__a82567fe99291f9439313f6b99aa727c_1.json",
+        "sha256": "e80e38f79192be8a996ded9e2215ce344ea9fadf2609029249a6f8e33ab0b655"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

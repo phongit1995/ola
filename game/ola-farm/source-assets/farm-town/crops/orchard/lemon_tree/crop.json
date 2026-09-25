@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 1,
+  "key": "lemon_tree",
+  "group": "orchard",
+  "titleVi": "Cây Chanh",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — mở rộng vườn quả",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 100,
+    "key": "lemon",
+    "titleVi": "Chanh"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/lemon_tree__a52e7e818574f264e98da8fb658e26c9_666.json",
+    "prefab": {
+      "file": "00683a281d0705b4aa77427ce2abf5e4",
+      "id": 2,
+      "name": "lemon_tree",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__00683a281d0705b4aa77427ce2abf5e4_49.json",
+        "growPhaseCount": 1,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/lemon_tree_JOB_Data__a52e7e818574f264e98da8fb658e26c9_284.json",
+    "index": 0,
+    "entity": "lemon_tree",
+    "durationSeconds": 5400,
+    "level": 34,
+    "quantityPerCycle": 5.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 34,
+    "basicPrice": 14.0,
+    "xpOnUse": 4.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 3,
+    "clearTool": {
+      "id": 92,
+      "name": "icon_saw",
+      "titleVi": "Cưa",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 121,
+        "name": "plank",
+        "titleVi": "Ván Gỗ",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "drinks",
+      "entityTitleVi": "Máy Ép Nước",
+      "recipeIndex": 3,
+      "output": "juice_lemon",
+      "outputTitleVi": "Nước Chanh",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/drinks_JOB_Data__a52e7e818574f264e98da8fb658e26c9_947.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "sushi_bar",
+      "entityTitleVi": "Cửa hàng Sushi",
+      "recipeIndex": 4,
+      "output": "tofu",
+      "outputTitleVi": "Đậu Hũ",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/sushi_bar_JOB_Data__a52e7e818574f264e98da8fb658e26c9_955.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "oven",
+      "entityTitleVi": "Lò Nướng",
+      "recipeIndex": 6,
+      "output": "fish_fried",
+      "outputTitleVi": "Cá Chiên",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/oven_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1212.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 6,
+      "output": "lemon_pie",
+      "outputTitleVi": "Bánh Chanh",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 9436,
+      "sha256": "ef2d2d44f8aa54c4a2910b7ea190beadb7627147007b76ac9f34557565f19af5",
+      "size": [
+        69,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/lemon_tree__sharedassets0.assets_689.png",
+        "file": "sharedassets0.assets",
+        "pathId": 689,
+        "spriteName": "lemon_tree"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0541267991065979,
+          "y": 0.07612049579620361
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 9482,
+      "sha256": "636dbe294086cd4ab4794d51841dca50ae508d54a23453048b2704885a2b05a0",
+      "size": [
+        88,
+        83
+      ],
+      "source": {
+        "exportPath": "export/sprites/lemon__sharedassets0.assets_932.png",
+        "file": "sharedassets0.assets",
+        "pathId": 932,
+        "spriteName": "lemon"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 2.042907953262329,
+          "y": 1.0761204957962036
+        }
+      }
+    },
+    {
+      "path": "images/lemon_bg_0--5f2db66415.png",
+      "bytes": 38580,
+      "sha256": "f8266bba97e9c26f3c055f913cace5eefca51d938a7596d8ec1799fade1afd02",
+      "size": [
+        154,
+        164
+      ],
+      "source": {
+        "exportPath": "export/sprites/lemon_bg_0__c974a90860560c444be5a4e954e9ae45_1.png",
+        "file": "c974a90860560c444be5a4e954e9ae45",
+        "pathId": 1,
+        "spriteName": "lemon_bg_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 47.0,
+          "y": 53.0,
+          "width": 154.0,
+          "height": 164.0
+        },
+        "pivot": {
+          "x": 0.5259740352630615,
+          "y": 0.05146340653300285
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/lemon_top_0--026a2754b3.png",
+      "bytes": 21967,
+      "sha256": "06d43d31a868da9f26806f91b8bc905ae7408a80570a754b6a4ab116c60f307c",
+      "size": [
+        148,
+        103
+      ],
+      "source": {
+        "exportPath": "export/sprites/lemon_top_0__50819d480f6235544837a72c6be96a13_1.png",
+        "file": "50819d480f6235544837a72c6be96a13",
+        "pathId": 1,
+        "spriteName": "lemon_top_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 45.0,
+          "y": 115.0,
+          "width": 148.0,
+          "height": 103.0
+        },
+        "pivot": {
+          "x": 0.5608108043670654,
+          "y": -0.5200000405311584
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/lemon_ready_0--2faa4ea816.png",
+      "bytes": 1210,
+      "sha256": "d6adfcf6affe4acf3a07ad1e53c3b4fb7f2f183cd745bbc9f334ab1a40d8c49b",
+      "size": [
+        20,
+        29
+      ],
+      "source": {
+        "exportPath": "export/sprites/lemon_ready_0__8efb341a6237859459f8bf08054927ce_1.png",
+        "file": "8efb341a6237859459f8bf08054927ce",
+        "pathId": 1,
+        "spriteName": "lemon_ready_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 120.0,
+          "y": 48.0,
+          "width": 20.0,
+          "height": 29.0
+        },
+        "pivot": {
+          "x": 0.4000000059604645,
+          "y": 0.5517241358757019
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/lemon_bg_0--5f2db66415.png",
+    "images/lemon_top_0--026a2754b3.png",
+    "images/lemon_ready_0--2faa4ea816.png"
+  ],
+  "phases": [
+    {
+      "key": "TreeOrBush:0:Idle (default)",
+      "role": "Idle (default)",
+      "labelVi": "Nghỉ / mặc định — Idle (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Idle (default)",
+        "file": "cc9b278c4c9bdae47aafff9b72e076fe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Idle_default__cc9b278c4c9bdae47aafff9b72e076fe_1.json",
+        "sha256": "29cafc097834401ed33a0ef2c395668f564c1124744111ad5a09342b3e7d2072"
+      }
+    },
+    {
+      "key": "TreeOrBush:1:Dead",
+      "role": "Dead",
+      "labelVi": "Cạn lượt / kết thúc — Dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Dead",
+        "file": "9775f37177cac834f806bbb7740f765a",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Dead__9775f37177cac834f806bbb7740f765a_1.json",
+        "sha256": "bca205681fca1618b86ab9ce5bf5a8a284813cd80d9d411ce9171066e8254e06"
+      }
+    },
+    {
+      "key": "TreeOrBush:2:Harvest (default)",
+      "role": "Harvest (default)",
+      "labelVi": "Thu / còn sản phẩm — Harvest (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Harvest (default)",
+        "file": "791afc5303083114d9eeec37cadfb08d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Harvest_default__791afc5303083114d9eeec37cadfb08d_1.json",
+        "sha256": "d6e1c04bf79c6e8c08e6c23c5af6e11ffa8f9d49514aa768f2f747cc2b1fd6a6"
+      }
+    },
+    {
+      "key": "TreeOrBush:3:Ready (default)",
+      "role": "Ready (default)",
+      "labelVi": "Chín / có sản phẩm — Ready (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Ready (default)",
+        "file": "51aaeb3b05a42ac469eaf317d404c45f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Ready_default__51aaeb3b05a42ac469eaf317d404c45f_1.json",
+        "sha256": "67e059f264e0824362b8c7fdbd4d0d5bcb5ad7ec933893affe6fd603f4986067"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "key": "raspberry_bush",
+  "group": "orchard",
+  "titleVi": "Bụi Mâm Xôi",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — mở rộng vườn quả",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 131,
+    "key": "raspbery",
+    "titleVi": "Mâm Xôi"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/raspberry_bush__a52e7e818574f264e98da8fb658e26c9_726.json",
+    "prefab": {
+      "file": "caf3dde6d54d82a4d86c593a5c3211c0",
+      "id": 2,
+      "name": "raspberry_bush",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__caf3dde6d54d82a4d86c593a5c3211c0_38.json",
+        "growPhaseCount": 1,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/raspberry_bush_JOB_Data__a52e7e818574f264e98da8fb658e26c9_209.json",
+    "index": 0,
+    "entity": "raspberry_bush",
+    "durationSeconds": 3600,
+    "level": 21,
+    "quantityPerCycle": 3.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 21,
+    "basicPrice": 7.0,
+    "xpOnUse": 4.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 4,
+    "clearTool": {
+      "id": 93,
+      "name": "icon_shovel",
+      "titleVi": "Xẻng",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "blender",
+      "entityTitleVi": "Máy Xay Sinh Tố",
+      "recipeIndex": 0,
+      "output": "raspbery_coctail",
+      "outputTitleVi": "Cocktail Mâm Xôi",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/blender_JOB_Data__a52e7e818574f264e98da8fb658e26c9_562.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "candy_factory",
+      "entityTitleVi": "Nhà Máy Kẹo",
+      "recipeIndex": 0,
+      "output": "candy_floss",
+      "outputTitleVi": "Kẹo Bông",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/candy_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_974.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "cake_bakery",
+      "entityTitleVi": "Tiệm Bánh Kem",
+      "recipeIndex": 1,
+      "output": "cake",
+      "outputTitleVi": "Bánh Cà Rốt",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/cake_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1414.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 6231,
+      "sha256": "884b40fa4f66c6c73514f5adad0ba7fb292137c99c5cb6f892584a2b1f8be84b",
+      "size": [
+        55,
+        58
+      ],
+      "source": {
+        "exportPath": "export/sprites/raspberry_bush__sharedassets0.assets_939.png",
+        "file": "sharedassets0.assets",
+        "pathId": 939,
+        "spriteName": "raspberry_bush"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 7.012912750244141,
+          "y": 7.012912750244141
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 7833,
+      "sha256": "7d5de8efdad72508ab896dc0e731aceb9b4f7e63e89d6dc53e96849b2596d68d",
+      "size": [
+        63,
+        67
+      ],
+      "source": {
+        "exportPath": "export/sprites/raspbery__sharedassets0.assets_467.png",
+        "file": "sharedassets0.assets",
+        "pathId": 467,
+        "spriteName": "raspbery"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 6.012912750244141,
+          "y": 2.076120376586914
+        }
+      }
+    },
+    {
+      "path": "images/raspberry_bg--3b1b46e9a2.png",
+      "bytes": 12226,
+      "sha256": "d523f46a1034a4d24e22b9c403b82136adccbf3c358dc30ff8595d17635304ac",
+      "size": [
+        84,
+        86
+      ],
+      "source": {
+        "exportPath": "export/sprites/raspberry_bg__e940e46e829ce5c4f92ab41d207ea8cc_1.png",
+        "file": "e940e46e829ce5c4f92ab41d207ea8cc",
+        "pathId": 1,
+        "spriteName": "raspberry_bg"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 256.0,
+          "height": 256.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.23499999940395355
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 84.02674865722656,
+          "y": 51.06585693359375
+        }
+      }
+    },
+    {
+      "path": "images/raspberry_top--ae30389da1.png",
+      "bytes": 8660,
+      "sha256": "80f8c0d1f68e73ff1d18b9d91cca6cd491ac3f93e575ed2bb2ddf89d543545bd",
+      "size": [
+        84,
+        59
+      ],
+      "source": {
+        "exportPath": "export/sprites/raspberry_top__967c30eee46be14458ce5e052c49f38b_1.png",
+        "file": "967c30eee46be14458ce5e052c49f38b",
+        "pathId": 1,
+        "spriteName": "raspberry_top"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 256.0,
+          "height": 256.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.23499999940395355
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 83.07611846923828,
+          "y": 78.07611846923828
+        }
+      }
+    },
+    {
+      "path": "images/raspberry_ready--708a84852c.png",
+      "bytes": 1256,
+      "sha256": "05f18176cdbedbaf5c0b632b677885a008291b04306c1c3b4845315bf800a16b",
+      "size": [
+        23,
+        29
+      ],
+      "source": {
+        "exportPath": "export/sprites/raspberry_ready__4c7d0cb385d4ce44287cd4563024bc2c_1.png",
+        "file": "4c7d0cb385d4ce44287cd4563024bc2c",
+        "pathId": 1,
+        "spriteName": "raspberry_ready"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 256.0,
+          "height": 256.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.25
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 117.05973052978516,
+          "y": 49.02675247192383
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/raspberry_bg--3b1b46e9a2.png",
+    "images/raspberry_top--ae30389da1.png",
+    "images/raspberry_ready--708a84852c.png"
+  ],
+  "phases": [
+    {
+      "key": "TreeOrBush:0:Idle (default)",
+      "role": "Idle (default)",
+      "labelVi": "Nghỉ / mặc định — Idle (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Idle (default)",
+        "file": "cc9b278c4c9bdae47aafff9b72e076fe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Idle_default__cc9b278c4c9bdae47aafff9b72e076fe_1.json",
+        "sha256": "29cafc097834401ed33a0ef2c395668f564c1124744111ad5a09342b3e7d2072"
+      }
+    },
+    {
+      "key": "TreeOrBush:1:Dead",
+      "role": "Dead",
+      "labelVi": "Cạn lượt / kết thúc — Dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Dead",
+        "file": "9775f37177cac834f806bbb7740f765a",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Dead__9775f37177cac834f806bbb7740f765a_1.json",
+        "sha256": "bca205681fca1618b86ab9ce5bf5a8a284813cd80d9d411ce9171066e8254e06"
+      }
+    },
+    {
+      "key": "TreeOrBush:2:Harvest (default)",
+      "role": "Harvest (default)",
+      "labelVi": "Thu / còn sản phẩm — Harvest (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Harvest (default)",
+        "file": "791afc5303083114d9eeec37cadfb08d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Harvest_default__791afc5303083114d9eeec37cadfb08d_1.json",
+        "sha256": "d6e1c04bf79c6e8c08e6c23c5af6e11ffa8f9d49514aa768f2f747cc2b1fd6a6"
+      }
+    },
+    {
+      "key": "TreeOrBush:3:Ready (default)",
+      "role": "Ready (default)",
+      "labelVi": "Chín / có sản phẩm — Ready (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Ready (default)",
+        "file": "51aaeb3b05a42ac469eaf317d404c45f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Ready_default__51aaeb3b05a42ac469eaf317d404c45f_1.json",
+        "sha256": "67e059f264e0824362b8c7fdbd4d0d5bcb5ad7ec933893affe6fd603f4986067"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

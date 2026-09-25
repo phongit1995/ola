@@ -1,10 +1,14 @@
+/// <reference types="vitest/config" />
 import { resolve } from 'path';
 import { defineConfig, normalizePath } from 'vite';
+import { configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // Nguồn gốc duy nhất cho asset dùng chung (xem packages/shared/assets).
 const sharedAssets = resolve(__dirname, '../packages/shared/assets');
+// Project Cocos của Ola Farm có toolchain riêng; bản build nằm ở public/ola-farm.
+const olaFarmProject = resolve(__dirname, 'ola-farm');
 
 export default defineConfig({
   plugins: [
@@ -42,8 +46,14 @@ export default defineConfig({
       },
     },
   },
+  test: {
+    exclude: [...configDefaults.exclude, 'ola-farm/**'],
+  },
   server: {
     port: 5174,
+    watch: {
+      ignored: [`${normalizePath(olaFarmProject)}/**`],
+    },
     proxy: {
       '/socket.io': {
         target: 'http://localhost:8082',

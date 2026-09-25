@@ -1,0 +1,1222 @@
+{
+  "schemaVersion": 1,
+  "key": "corn",
+  "group": "field",
+  "titleVi": "Ngô",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C1 — ngô và bắp cải",
+  "farmCompatibility": "new-field-crop",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 42,
+    "key": "corn",
+    "titleVi": "Ngô"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/corn__e1fe53173efc96247b7706d5a5ad92e7_224.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 42,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 1,
+    "entity": "garden_bed",
+    "durationSeconds": 90,
+    "level": 2,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 1.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 2,
+    "basicPrice": 4.0,
+    "xpOnUse": 2.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 1,
+      "output": "corn_bread",
+      "outputTitleVi": "Bánh Ngô",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 6,
+      "output": "tortilla",
+      "outputTitleVi": "Bánh Tortilla",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 7,
+      "output": "waffle",
+      "outputTitleVi": "Bánh Quế (Waffle)",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "popcorn_factory",
+      "entityTitleVi": "Lò Ngô",
+      "recipeIndex": 0,
+      "output": "popcorn",
+      "outputTitleVi": "Bỏng Ngô",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/popcorn_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_820.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "popcorn_factory",
+      "entityTitleVi": "Lò Ngô",
+      "recipeIndex": 1,
+      "output": "flakes",
+      "outputTitleVi": "Ngũ Cốc Ngô",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/popcorn_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_820.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "popcorn_factory",
+      "entityTitleVi": "Lò Ngô",
+      "recipeIndex": 2,
+      "output": "hf_chipsfries",
+      "outputTitleVi": "Khoai Mandrake Chiên",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/popcorn_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_820.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "popcorn_factory",
+      "entityTitleVi": "Lò Ngô",
+      "recipeIndex": 3,
+      "output": "flakes_cherry",
+      "outputTitleVi": "Ngũ Cốc Ngô Anh Đào",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/popcorn_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_820.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "popcorn_factory",
+      "entityTitleVi": "Lò Ngô",
+      "recipeIndex": 4,
+      "output": "flakes_choko",
+      "outputTitleVi": "Mảnh Sôcôla",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/popcorn_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_820.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "food_processor",
+      "entityTitleVi": "Máy Chế Biến Thực Phẩm",
+      "recipeIndex": 0,
+      "output": "feed_chicken",
+      "outputTitleVi": "Thức Ăn Chim",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/food_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1047.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "food_processor",
+      "entityTitleVi": "Máy Chế Biến Thực Phẩm",
+      "recipeIndex": 1,
+      "output": "feed_cow",
+      "outputTitleVi": "Thức Ăn Bò",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/food_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1047.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 10321,
+      "sha256": "9994f5e03805900a69685da859b436a40bdbec599fb5badcd8d3ae548a958e29",
+      "size": [
+        90,
+        88
+      ],
+      "source": {
+        "exportPath": "export/sprites/corn__sharedassets0.assets_572.png",
+        "file": "sharedassets0.assets",
+        "pathId": 572,
+        "spriteName": "corn"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.04290801286697388,
+          "y": 1.0267510414123535
+        }
+      }
+    },
+    {
+      "path": "images/kuk_1_0--d0aa206b85.png",
+      "bytes": 10243,
+      "sha256": "bcea46a7ff4f35a2d1d6c56364cb935dee46b9e68655246859168ccffaf66f30",
+      "size": [
+        113,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/kuk_1_0__5c26ecc40f107bc49a6d9e9416c814c6_1.png",
+        "file": "5c26ecc40f107bc49a6d9e9416c814c6",
+        "pathId": 1,
+        "spriteName": "kuk_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 113.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.5086020827293396,
+          "y": 0.36382007598876953
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kuk_2_0--13e0737399.png",
+      "bytes": 21272,
+      "sha256": "51d6d24c732a90878f0ef76972377dc48abc42a2028c0b51a5e8440102760e21",
+      "size": [
+        125,
+        108
+      ],
+      "source": {
+        "exportPath": "export/sprites/kuk_2_0__844d8c8f9fcd7c940a16d32a2de9ba1d_1.png",
+        "file": "844d8c8f9fcd7c940a16d32a2de9ba1d",
+        "pathId": 1,
+        "spriteName": "kuk_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 125.0,
+          "height": 108.0
+        },
+        "pivot": {
+          "x": 0.4999999701976776,
+          "y": 0.23026075959205627
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kuk_3ten_0--bd258771b4.png",
+      "bytes": 2657,
+      "sha256": "4cfc9fe18e94ae5a7fdc3815b217ed551c8e3d64a7483ea8e6101ad1b83598b4",
+      "size": [
+        106,
+        55
+      ],
+      "source": {
+        "exportPath": "export/sprites/kuk_3ten_0__4573021624a99964f926a439d1bd006a_1.png",
+        "file": "4573021624a99964f926a439d1bd006a",
+        "pathId": 1,
+        "spriteName": "kuk_3ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 106.0,
+          "height": 55.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kuk_33_0--4d371294da.png",
+      "bytes": 11584,
+      "sha256": "7bd5925d53596d93017a57abe66ea5b19403b87ffd1e897e10e0950b58bf898a",
+      "size": [
+        113,
+        107
+      ],
+      "source": {
+        "exportPath": "export/sprites/kuk_33_0__675d9df613145eb459535b268a85c481_1.png",
+        "file": "675d9df613145eb459535b268a85c481",
+        "pathId": 1,
+        "spriteName": "kuk_33_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 113.0,
+          "height": 107.0
+        },
+        "pivot": {
+          "x": 0.5693516135215759,
+          "y": 0.16059309244155884
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kuk_32_0--03e321c40b.png",
+      "bytes": 13926,
+      "sha256": "284e5691c586eafbba468c2e6094f316c7a5974711adb090e1ff100ee01fb487",
+      "size": [
+        100,
+        107
+      ],
+      "source": {
+        "exportPath": "export/sprites/kuk_32_0__4d3ead90d6ab06d41968765377b7e885_1.png",
+        "file": "4d3ead90d6ab06d41968765377b7e885",
+        "pathId": 1,
+        "spriteName": "kuk_32_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 100.0,
+          "height": 107.0
+        },
+        "pivot": {
+          "x": 0.5286709666252136,
+          "y": 0.12486598640680313
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kuk_31_0--630f2d04d1.png",
+      "bytes": 15352,
+      "sha256": "e11008afcb33b38c92b2b0791161756a7c8cfbfafc1451101d1692b9610c35dd",
+      "size": [
+        101,
+        107
+      ],
+      "source": {
+        "exportPath": "export/sprites/kuk_31_0__f84b21a0a0c9e084ca49e026db06980f_1.png",
+        "file": "f84b21a0a0c9e084ca49e026db06980f",
+        "pathId": 1,
+        "spriteName": "kuk_31_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 101.0,
+          "height": 107.0
+        },
+        "pivot": {
+          "x": 0.4772903621196747,
+          "y": 0.15166133642196655
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_z_0--883118c11b.png",
+      "bytes": 5987,
+      "sha256": "b3b89609a006d7ed55915d935206d66afb998ba6ec24d324f4665e6fef19fc2d",
+      "size": [
+        70,
+        55
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_z_0__3e3d6611d2111e545acc6dd6b2c788d5_1.png",
+        "file": "3e3d6611d2111e545acc6dd6b2c788d5",
+        "pathId": 1,
+        "spriteName": "korzina_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 55.0
+        },
+        "pivot": {
+          "x": 0.5060317516326904,
+          "y": 0.04195280000567436
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_goroh_ten_0--95b1a24536.png",
+      "bytes": 941,
+      "sha256": "7a7791f05c2154cbbb9c628581f869b3d6fe0c14bea7c3527732cfc56c0b72c2",
+      "size": [
+        64,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_goroh_ten_0__92e8bd173cc6243469348943018e68e6_1.png",
+        "file": "92e8bd173cc6243469348943018e68e6",
+        "pathId": 1,
+        "spriteName": "4_goroh_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_p_0--7f793edf56.png",
+      "bytes": 4229,
+      "sha256": "d94006a00ba11282fd57b836c1fbcd17cc35c72de605df40dbe27ee7aaeae92b",
+      "size": [
+        70,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_p_0__019de690601ed6347a8ea922874ee9a8_1.png",
+        "file": "019de690601ed6347a8ea922874ee9a8",
+        "pathId": 1,
+        "spriteName": "korzina_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.04370361566543579
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/ruchka_korzina_0--aaf9e6b4e2.png",
+      "bytes": 1264,
+      "sha256": "f523de6096814f7ef76adc7300b029294e349c09770f22a54fde2f6571d3c976",
+      "size": [
+        18,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/ruchka_korzina_0__76d356cc6b1fef1438dfa8e1ddff75ec_1.png",
+        "file": "76d356cc6b1fef1438dfa8e1ddff75ec",
+        "pathId": 1,
+        "spriteName": "ruchka_korzina_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 18.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.71687251329422,
+          "y": 0.055404335260391235
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kuk_nutr_3_0--4d837393a6.png",
+      "bytes": 4274,
+      "sha256": "599dea89a5614a18b1788df2be4a2f9edb880e639f89cf69778234e00cf75811",
+      "size": [
+        58,
+        39
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kuk_nutr_3_0__cbbabc3ab7c4088489117f1d9ae9d11e_1.png",
+        "file": "cbbabc3ab7c4088489117f1d9ae9d11e",
+        "pathId": 1,
+        "spriteName": "4_kuk_nutr_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 58.0,
+          "height": 39.0
+        },
+        "pivot": {
+          "x": 0.5122179388999939,
+          "y": 0.16774292290210724
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kuk_nutr_2_0--3737568ae9.png",
+      "bytes": 1261,
+      "sha256": "9d744f211681ae43b5d5e84867e941cbfe40478f46f8f64c336c845541333f57",
+      "size": [
+        32,
+        20
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kuk_nutr_2_0__447d4c7c9d7a678449919f3a08a2b469_1.png",
+        "file": "447d4c7c9d7a678449919f3a08a2b469",
+        "pathId": 1,
+        "spriteName": "4_kuk_nutr_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 32.0,
+          "height": 20.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.31530851125717163
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kuk_nutr_1_0--a1489e3a45.png",
+      "bytes": 1442,
+      "sha256": "9fd8e44b1ee7c333a60a196428dfb4395b41694eb44f38fe9f7bbf6cd93b0328",
+      "size": [
+        28,
+        24
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kuk_nutr_1_0__d8383b2055254d54e89240981fa97c6d_1.png",
+        "file": "d8383b2055254d54e89240981fa97c6d",
+        "pathId": 1,
+        "spriteName": "4_kuk_nutr_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 28.0,
+          "height": 24.0
+        },
+        "pivot": {
+          "x": 0.5045854449272156,
+          "y": 0.2672838866710663
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kuk_2_0--842c94c576.png",
+      "bytes": 1283,
+      "sha256": "7d7f32dcd83858f7e1a309a17c5625db20aff819f73c6763856046eb10d2080f",
+      "size": [
+        32,
+        18
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kuk_2_0__583926526679ec540bb9b7ca66af56b8_1.png",
+        "file": "583926526679ec540bb9b7ca66af56b8",
+        "pathId": 1,
+        "spriteName": "4_kuk_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 32.0,
+          "height": 18.0
+        },
+        "pivot": {
+          "x": 0.5046296119689941,
+          "y": 0.332647442817688
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kuk_1_0--fb971f08ad.png",
+      "bytes": 1557,
+      "sha256": "6039dd4df7c3f9a7eb934cf1968897199f50ea96bcf831eac080e58b6150b85b",
+      "size": [
+        24,
+        29
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kuk_1_0__77cdd19cd638eb0488584a01a8407b8f_1.png",
+        "file": "77cdd19cd638eb0488584a01a8407b8f",
+        "pathId": 1,
+        "spriteName": "4_kuk_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 24.0,
+          "height": 29.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_corn:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_corn:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_corn:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/kuk_1_0--d0aa206b85.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_1",
+        "file": "b10f8c2da38a1e742b2cd63be194edeb",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_1__b10f8c2da38a1e742b2cd63be194edeb_1.json",
+        "sha256": "5dcbb93423b5e3b026cb06ac62184732c311748b93c8cba89dddfc2c69e676cc"
+      }
+    },
+    {
+      "key": "farm_corn:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/kuk_2_0--13e0737399.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_2",
+        "file": "5b1aff99e7bd25545b3aeec44162d799",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_2__5b1aff99e7bd25545b3aeec44162d799_1.json",
+        "sha256": "4778afc35c6d22e9f4fc8ba5db3ebc2dde1993b92f661308dd40e1c04719cbf4"
+      }
+    },
+    {
+      "key": "farm_corn:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/kuk_2_0--13e0737399.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_2",
+        "file": "5b1aff99e7bd25545b3aeec44162d799",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_2__5b1aff99e7bd25545b3aeec44162d799_1.json",
+        "sha256": "4778afc35c6d22e9f4fc8ba5db3ebc2dde1993b92f661308dd40e1c04719cbf4"
+      }
+    },
+    {
+      "key": "farm_corn:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/kuk_2_0--13e0737399.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_2",
+        "file": "5b1aff99e7bd25545b3aeec44162d799",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_2__5b1aff99e7bd25545b3aeec44162d799_1.json",
+        "sha256": "4778afc35c6d22e9f4fc8ba5db3ebc2dde1993b92f661308dd40e1c04719cbf4"
+      }
+    },
+    {
+      "key": "farm_corn:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_corn:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/kuk_3ten_0--bd258771b4.png",
+        "images/kuk_33_0--4d371294da.png",
+        "images/kuk_32_0--03e321c40b.png",
+        "images/kuk_31_0--630f2d04d1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_3",
+        "file": "c959e29bc2f98b74298424ccbde7ac21",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_3__c959e29bc2f98b74298424ccbde7ac21_1.json",
+        "sha256": "a96dbee98ecfb2194efd50c32d2723a0d2f69727e33fba70090fb4d03495ce14"
+      }
+    },
+    {
+      "key": "farm_corn:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/kuk_3ten_0--bd258771b4.png",
+        "images/kuk_33_0--4d371294da.png",
+        "images/kuk_32_0--03e321c40b.png",
+        "images/kuk_31_0--630f2d04d1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_3",
+        "file": "c959e29bc2f98b74298424ccbde7ac21",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_3__c959e29bc2f98b74298424ccbde7ac21_1.json",
+        "sha256": "a96dbee98ecfb2194efd50c32d2723a0d2f69727e33fba70090fb4d03495ce14"
+      }
+    },
+    {
+      "key": "farm_corn:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/kuk_3ten_0--bd258771b4.png",
+        "images/kuk_33_0--4d371294da.png",
+        "images/kuk_32_0--03e321c40b.png",
+        "images/kuk_31_0--630f2d04d1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_3",
+        "file": "c959e29bc2f98b74298424ccbde7ac21",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_3__c959e29bc2f98b74298424ccbde7ac21_1.json",
+        "sha256": "a96dbee98ecfb2194efd50c32d2723a0d2f69727e33fba70090fb4d03495ce14"
+      }
+    },
+    {
+      "key": "farm_corn:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/kuk_3ten_0--bd258771b4.png",
+        "images/kuk_33_0--4d371294da.png",
+        "images/kuk_32_0--03e321c40b.png",
+        "images/kuk_31_0--630f2d04d1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_3",
+        "file": "c959e29bc2f98b74298424ccbde7ac21",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_3__c959e29bc2f98b74298424ccbde7ac21_1.json",
+        "sha256": "a96dbee98ecfb2194efd50c32d2723a0d2f69727e33fba70090fb4d03495ce14"
+      }
+    },
+    {
+      "key": "farm_corn:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/kuk_3ten_0--bd258771b4.png",
+        "images/kuk_33_0--4d371294da.png",
+        "images/kuk_32_0--03e321c40b.png",
+        "images/kuk_31_0--630f2d04d1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_3",
+        "file": "c959e29bc2f98b74298424ccbde7ac21",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_3__c959e29bc2f98b74298424ccbde7ac21_1.json",
+        "sha256": "a96dbee98ecfb2194efd50c32d2723a0d2f69727e33fba70090fb4d03495ce14"
+      }
+    },
+    {
+      "key": "farm_corn:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kuk_nutr_3_0--4d837393a6.png",
+        "images/4_kuk_nutr_2_0--3737568ae9.png",
+        "images/4_kuk_nutr_1_0--a1489e3a45.png",
+        "images/4_kuk_2_0--842c94c576.png",
+        "images/4_kuk_1_0--fb971f08ad.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_end",
+        "file": "ea2272328c956714aa116504b980886b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_end__ea2272328c956714aa116504b980886b_1.json",
+        "sha256": "a5f2ac0fe776a3e1695dc8be9b11eab9c28cecd79828ae59bd2c857cc006329f"
+      }
+    },
+    {
+      "key": "farm_corn:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kuk_nutr_3_0--4d837393a6.png",
+        "images/4_kuk_nutr_2_0--3737568ae9.png",
+        "images/4_kuk_nutr_1_0--a1489e3a45.png",
+        "images/4_kuk_2_0--842c94c576.png",
+        "images/4_kuk_1_0--fb971f08ad.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_end",
+        "file": "ea2272328c956714aa116504b980886b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_end__ea2272328c956714aa116504b980886b_1.json",
+        "sha256": "a5f2ac0fe776a3e1695dc8be9b11eab9c28cecd79828ae59bd2c857cc006329f"
+      }
+    },
+    {
+      "key": "farm_corn:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kuk_nutr_3_0--4d837393a6.png",
+        "images/4_kuk_nutr_2_0--3737568ae9.png",
+        "images/4_kuk_nutr_1_0--a1489e3a45.png",
+        "images/4_kuk_2_0--842c94c576.png",
+        "images/4_kuk_1_0--fb971f08ad.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_end",
+        "file": "ea2272328c956714aa116504b980886b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_end__ea2272328c956714aa116504b980886b_1.json",
+        "sha256": "a5f2ac0fe776a3e1695dc8be9b11eab9c28cecd79828ae59bd2c857cc006329f"
+      }
+    },
+    {
+      "key": "farm_corn:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kuk_nutr_3_0--4d837393a6.png",
+        "images/4_kuk_nutr_2_0--3737568ae9.png",
+        "images/4_kuk_nutr_1_0--a1489e3a45.png",
+        "images/4_kuk_2_0--842c94c576.png",
+        "images/4_kuk_1_0--fb971f08ad.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_end",
+        "file": "ea2272328c956714aa116504b980886b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_end__ea2272328c956714aa116504b980886b_1.json",
+        "sha256": "a5f2ac0fe776a3e1695dc8be9b11eab9c28cecd79828ae59bd2c857cc006329f"
+      }
+    },
+    {
+      "key": "farm_corn:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kuk_nutr_3_0--4d837393a6.png",
+        "images/4_kuk_nutr_2_0--3737568ae9.png",
+        "images/4_kuk_nutr_1_0--a1489e3a45.png",
+        "images/4_kuk_2_0--842c94c576.png",
+        "images/4_kuk_1_0--fb971f08ad.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_corn",
+        "file": "834357a466984be4fa9d4ca5d9dab7bb",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kukuruza_end",
+        "file": "ea2272328c956714aa116504b980886b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kukuruza_end__ea2272328c956714aa116504b980886b_1.json",
+        "sha256": "a5f2ac0fe776a3e1695dc8be9b11eab9c28cecd79828ae59bd2c857cc006329f"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "source": "Golden Island 1.0.24 (com.golden.island.survivors.farm.royal)",
+  "images": {
+    "bubble": {
+      "resource": "images/bubble",
+      "size": [
+        61,
+        61
+      ],
+      "border": [
+        28,
+        28,
+        28,
+        28
+      ],
+      "sha256": "97e343d1946bf62a6bc24f2b172af8487f9e785e15b720e6de8efec94a5d3e33",
+      "sourceName": "bg_information_item_1",
+      "sourceNode": "Canvas/DetailPlant",
+      "note": "khung bong bóng cây đang lớn"
+    },
+    "pill": {
+      "resource": "images/pill",
+      "size": [
+        60,
+        53
+      ],
+      "border": [
+        25,
+        25,
+        25,
+        25
+      ],
+      "sha256": "c52abd5431dda4f8693e48b1e364e51cc00633e8cf6f6cd0308b504b91359b4f",
+      "sourceName": "BgMaterial",
+      "sourceNode": "Canvas/DetailPlant/BG",
+      "note": "nền viên thuốc chứa thời gian"
+    },
+    "clock": {
+      "resource": "images/clock",
+      "size": [
+        74,
+        63
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "ea0f0e715e560f91a68c0d569241747da9782b0cff1e0f0e36915944a452497b",
+      "sourceName": "IconTime",
+      "sourceNode": "Canvas/DetailPlant/Icon",
+      "note": "icon đồng hồ"
+    },
+    "button": {
+      "resource": "images/button",
+      "size": [
+        93,
+        107
+      ],
+      "border": [
+        31,
+        49,
+        32,
+        49
+      ],
+      "sha256": "3901e7b99aa786bc94e4593fce018bade4fc64b1643187411ce601a538f36866",
+      "sourceName": "bt_2",
+      "sourceNode": "Canvas/DetailPlant/ButtonComplete",
+      "note": "nút xanh xong ngay"
+    },
+    "gem": {
+      "resource": "images/gem",
+      "size": [
+        117,
+        108
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "cd349c6f984eba32965bcaf02659baed010d4aff7395380c5e4702d9ebb1c81c",
+      "sourceName": "ss_001",
+      "sourceNode": "Canvas/DetailPlant/ButtonComplete/Holder/IconGem",
+      "note": "icon kim cương trên nút"
+    },
+    "ready": {
+      "resource": "images/ready",
+      "size": [
+        99,
+        110
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "9171ae7866f8a18bc7ae8f1f884e3b810ece6cb5570690f25e17456829221926",
+      "sourceName": "bg_ctn",
+      "sourceNode": "HarvestUI/PanelUnlock",
+      "note": "bong bóng đã chín"
+    },
+    "locked": {
+      "resource": "images/locked",
+      "size": [
+        97,
+        129
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "8fa4b7971a06b91755fb50a44764493a41ffa259b3ff62320b5c512dbb53fae8",
+      "sourceName": "bg_ctn_khoa",
+      "sourceNode": "HarvestUI/PanelLock",
+      "note": "bong bóng ô chưa mở"
+    },
+    "tile": {
+      "resource": "images/tile",
+      "size": [
+        195,
+        184
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "39fa8b200896b8dad0cec54062a1eec42bf2023153455a5b520de3c60404b337",
+      "sourceName": "BgToolUI",
+      "sourceNode": "PlantingUI/PopupSeeds/p_01",
+      "note": "ô lục giác chọn giống"
+    },
+    "select": {
+      "resource": "images/select",
+      "size": [
+        195,
+        184
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "3c31a670db105240dcea7a5c677a2ed635a128584815e90cd0e149bce8b81228",
+      "sourceName": "Select",
+      "sourceNode": "PlantingUI/PopupSeeds/p_01/Select",
+      "note": "viền vàng khi chọn"
+    },
+    "info": {
+      "resource": "images/info",
+      "size": [
+        72,
+        71
+      ],
+      "border": [
+        31,
+        30,
+        31,
+        30
+      ],
+      "sha256": "69b09caee412cb1c5d20f616c5dac041f8335bbac24ed90077fd8eb5da17ff79",
+      "sourceName": "BgInfo",
+      "sourceNode": "PlantingUI/DetailSeeds",
+      "note": "thẻ thông tin giống"
+    }
+  }
+}

@@ -1,0 +1,1475 @@
+{
+  "schemaVersion": 1,
+  "key": "wheat",
+  "group": "field",
+  "titleVi": "Lúa Mì",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "REF — đối chiếu, giữ art Farm hiện có",
+  "farmCompatibility": "reference-only-keep-current-art",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 152,
+    "key": "wheat",
+    "titleVi": "Lúa Mì"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/wheat__e1fe53173efc96247b7706d5a5ad92e7_226.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 152,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 0,
+    "entity": "garden_bed",
+    "durationSeconds": 30,
+    "level": 1,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 0.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 1,
+    "basicPrice": 2.0,
+    "xpOnUse": 1.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "pizza_bakery",
+      "entityTitleVi": "Lò Pizza",
+      "recipeIndex": 0,
+      "output": "pizza_diabolo",
+      "outputTitleVi": "Pizza Pepperoni",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pizza_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_412.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pizza_bakery",
+      "entityTitleVi": "Lò Pizza",
+      "recipeIndex": 1,
+      "output": "pizza_marg",
+      "outputTitleVi": "Pizza Margherita",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pizza_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_412.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pizza_bakery",
+      "entityTitleVi": "Lò Pizza",
+      "recipeIndex": 2,
+      "output": "pizza_fish",
+      "outputTitleVi": "Pizza Hải Sản",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pizza_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_412.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pizza_bakery",
+      "entityTitleVi": "Lò Pizza",
+      "recipeIndex": 3,
+      "output": "pizza_sweet",
+      "outputTitleVi": "Pizza Tráng Miệng",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pizza_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_412.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 0,
+      "output": "hat_field",
+      "outputTitleVi": "Mũ Hoa Dại",
+      "inputQuantity": 5.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 2,
+      "output": "hat_beauty",
+      "outputTitleVi": "Mũ Biển",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 3,
+      "output": "hat_summer",
+      "outputTitleVi": "Mũ Mùa Hè",
+      "inputQuantity": 5.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 6,
+      "output": "hat_cute",
+      "outputTitleVi": "Mũ Dễ Thương",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "noodle_factory",
+      "entityTitleVi": "Chảo Wok",
+      "recipeIndex": 1,
+      "output": "wok_pork",
+      "outputTitleVi": "Mì Heo",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/noodle_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_533.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "accessories",
+      "entityTitleVi": "Phụ Kiện",
+      "recipeIndex": 0,
+      "output": "fan_pea",
+      "outputTitleVi": "Quạt Công",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/accessories_JOB_Data__a52e7e818574f264e98da8fb658e26c9_545.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 0,
+      "output": "batton",
+      "outputTitleVi": "Bánh Mì",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 2,
+      "output": "hf_cookies",
+      "outputTitleVi": "Bánh Quy Táo",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 3,
+      "output": "pancake",
+      "outputTitleVi": "Bánh Kẹp Pancake",
+      "inputQuantity": 4.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 4,
+      "output": "cookies",
+      "outputTitleVi": "Bánh Quy",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 5,
+      "output": "croissant",
+      "outputTitleVi": "Bánh Sừng Bò (Croissant)",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 6,
+      "output": "tortilla",
+      "outputTitleVi": "Bánh Tortilla",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 7,
+      "output": "waffle",
+      "outputTitleVi": "Bánh Quế (Waffle)",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "paper_factory",
+      "entityTitleVi": "Nhà Máy Giấy",
+      "recipeIndex": 0,
+      "output": "paper_yellow",
+      "outputTitleVi": "Giấy Vàng",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/paper_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_832.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "sushi_bar",
+      "entityTitleVi": "Cửa hàng Sushi",
+      "recipeIndex": 0,
+      "output": "ramen",
+      "outputTitleVi": "Mì Sợi",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/sushi_bar_JOB_Data__a52e7e818574f264e98da8fb658e26c9_955.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "food_processor",
+      "entityTitleVi": "Máy Chế Biến Thực Phẩm",
+      "recipeIndex": 0,
+      "output": "feed_chicken",
+      "outputTitleVi": "Thức Ăn Chim",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/food_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1047.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 0,
+      "output": "apple_pies",
+      "outputTitleVi": "Bánh Táo",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 1,
+      "output": "pie_cabbage",
+      "outputTitleVi": "Bánh Bắp Cải",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 2,
+      "output": "pie_potato",
+      "outputTitleVi": "Bánh Thịt Nghiền (Shepherd's Pie)",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 3,
+      "output": "hf_pie",
+      "outputTitleVi": "Bánh Pie Lễ Hội",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 4,
+      "output": "pie_pumpkin",
+      "outputTitleVi": "Bánh Bí Ngô",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 5,
+      "output": "pie_blueberry",
+      "outputTitleVi": "Bánh Pie Việt Quất",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 6,
+      "output": "lemon_pie",
+      "outputTitleVi": "Bánh Chanh",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "cake_bakery",
+      "entityTitleVi": "Tiệm Bánh Kem",
+      "recipeIndex": 0,
+      "output": "cream_cake",
+      "outputTitleVi": "Bánh Kem",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/cake_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1414.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "cake_bakery",
+      "entityTitleVi": "Tiệm Bánh Kem",
+      "recipeIndex": 1,
+      "output": "cake",
+      "outputTitleVi": "Bánh Cà Rốt",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/cake_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1414.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "cake_bakery",
+      "entityTitleVi": "Tiệm Bánh Kem",
+      "recipeIndex": 2,
+      "output": "cheesecake",
+      "outputTitleVi": "Bánh Phô Mai",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/cake_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1414.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "cake_bakery",
+      "entityTitleVi": "Tiệm Bánh Kem",
+      "recipeIndex": 3,
+      "output": "donut",
+      "outputTitleVi": "Bánh Donut",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/cake_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1414.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 8623,
+      "sha256": "2570a688d1f13611a504903d0972cf962ddc1d93713009f8d02d9107e3a0e3aa",
+      "size": [
+        85,
+        85
+      ],
+      "source": {
+        "exportPath": "export/sprites/wheat__sharedassets0.assets_207.png",
+        "file": "sharedassets0.assets",
+        "pathId": 207,
+        "spriteName": "wheat"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 2.076120376586914,
+          "y": 3.0267510414123535
+        }
+      }
+    },
+    {
+      "path": "images/pshen_1_0--f907516cde.png",
+      "bytes": 7815,
+      "sha256": "768cbe36e47831d552d1d1fb183d7e946c9e0c89ff3979c4772da2c7732ec0c0",
+      "size": [
+        101,
+        61
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_1_0__de186471a23c00844a22b7dd35735457_1.png",
+        "file": "de186471a23c00844a22b7dd35735457",
+        "pathId": 1,
+        "spriteName": "pshen_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 101.0,
+          "height": 61.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.4216640889644623
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/pshen_2_0--bb95f173c7.png",
+      "bytes": 20185,
+      "sha256": "8a05645f7c0e85d200e1baa108d4fbac0f603a3dde9b68ef645e1c1961ce66ee",
+      "size": [
+        127,
+        103
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_2_0__b331c503ca0ea2440b65e90f717dc896_1.png",
+        "file": "b331c503ca0ea2440b65e90f717dc896",
+        "pathId": 1,
+        "spriteName": "pshen_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 127.0,
+          "height": 103.0
+        },
+        "pivot": {
+          "x": 0.49710243940353394,
+          "y": 0.23383347690105438
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/pshen_3ten_0--8da8920045.png",
+      "bytes": 5045,
+      "sha256": "a12d64cd27468a2075e2db2562dea8a9f91f1ae5b6f740116dee695c1d47d701",
+      "size": [
+        107,
+        62
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_3ten_0__c0c6db07cba4be44cb2b6504f5d6c3b6_1.png",
+        "file": "c0c6db07cba4be44cb2b6504f5d6c3b6",
+        "pathId": 1,
+        "spriteName": "pshen_3ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 107.0,
+          "height": 62.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/pshen_36_0--6acb214fd4.png",
+      "bytes": 7218,
+      "sha256": "fe5dfa5a56a6744910f87ff137f1873e7a4669838ed16b15d7f5c4f9a46c1e6a",
+      "size": [
+        67,
+        83
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_36_0__586dcf93eba255b4ab64d19b9ab388e6_1.png",
+        "file": "586dcf93eba255b4ab64d19b9ab388e6",
+        "pathId": 1,
+        "spriteName": "pshen_36_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 67.0,
+          "height": 83.0
+        },
+        "pivot": {
+          "x": 0.38713982701301575,
+          "y": 0.22668808698654175
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/pshen_35_0--23007a2893.png",
+      "bytes": 4049,
+      "sha256": "04282d11e62bdb0a629e1d36cceb9a891e172f000a8ac11589be90204e5deb82",
+      "size": [
+        53,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_35_0__88d48db22f884924588b41054eecd6ef_1.png",
+        "file": "88d48db22f884924588b41054eecd6ef",
+        "pathId": 1,
+        "spriteName": "pshen_35_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 53.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.37259602546691895,
+          "y": 0.15523402392864227
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/pshen_34_0--bda92f656d.png",
+      "bytes": 6960,
+      "sha256": "1f5dd0d9d20fde166ffd634f5427fa6650d9fb0eee1d2c6d72432c04848cc63e",
+      "size": [
+        76,
+        81
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_34_0__8c1103654711d7b44bd8867d1bb8afb4_1.png",
+        "file": "8c1103654711d7b44bd8867d1bb8afb4",
+        "pathId": 1,
+        "spriteName": "pshen_34_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 76.0,
+          "height": 81.0
+        },
+        "pivot": {
+          "x": 0.4375716745853424,
+          "y": 0.2510574758052826
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/pshen_33_0--cfef80558c.png",
+      "bytes": 7354,
+      "sha256": "9237bb843b132365874ac8b1b5b6360a8e48e2ff87229f12a041f3d9f90a0a1f",
+      "size": [
+        64,
+        78
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_33_0__5dff6501e89849d43aa9f6d062b7cffd_1.png",
+        "file": "5dff6501e89849d43aa9f6d062b7cffd",
+        "pathId": 1,
+        "spriteName": "pshen_33_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 78.0
+        },
+        "pivot": {
+          "x": 0.4464094638824463,
+          "y": 0.20135855674743652
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/pshen_32_0--e7ce423b30.png",
+      "bytes": 7741,
+      "sha256": "9c1ce4f38430d52a3c6da8e14e09fd8954cee0c184a80b0b23b96298e590e7e1",
+      "size": [
+        78,
+        80
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_32_0__708bc3e40e8f9c740999fcd85216cf1f_1.png",
+        "file": "708bc3e40e8f9c740999fcd85216cf1f",
+        "pathId": 1,
+        "spriteName": "pshen_32_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 78.0,
+          "height": 80.0
+        },
+        "pivot": {
+          "x": 0.46056288480758667,
+          "y": 0.19971422851085663
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/pshen_31_0--66ff2eddd8.png",
+      "bytes": 7713,
+      "sha256": "889d3b306b829325ac2aac9def12e542e9e9c9f7bf7968b46ab61e90cc716e91",
+      "size": [
+        71,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/pshen_31_0__b38e1a67aee02124b9192c80017dbe0c_1.png",
+        "file": "b38e1a67aee02124b9192c80017dbe0c",
+        "pathId": 1,
+        "spriteName": "pshen_31_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 71.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.4981885552406311,
+          "y": 0.22071655094623566
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/meshok_z_0--c1848e62a1.png",
+      "bytes": 3512,
+      "sha256": "2914438f128214e7cf2db61f4dfb60d40a0df998edd83fbb2894bffe83df96e6",
+      "size": [
+        58,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/meshok_z_0__6d185a72b0685e44eab2dd6eba27e89a_1.png",
+        "file": "6d185a72b0685e44eab2dd6eba27e89a",
+        "pathId": 1,
+        "spriteName": "meshok_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 58.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.5044493675231934,
+          "y": 0.0322580561041832
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_ten_meshok_0--89cb7583a7.png",
+      "bytes": 1754,
+      "sha256": "2ba5ff1a7b6ffc5a4762aaa98485b7f2fb15569b16d72b540131d86f51c1563e",
+      "size": [
+        67,
+        35
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_ten_meshok_0__a734a3bee3522ca488781cee36fc6ee8_1.png",
+        "file": "a734a3bee3522ca488781cee36fc6ee8",
+        "pathId": 1,
+        "spriteName": "4_ten_meshok_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 67.0,
+          "height": 35.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/meshok_p_0--956db0cfd0.png",
+      "bytes": 4137,
+      "sha256": "10c10e4d0c313cd41804205810c4115de5f676aed85e68bc4bd71bb171e3175e",
+      "size": [
+        62,
+        46
+      ],
+      "source": {
+        "exportPath": "export/sprites/meshok_p_0__fefc504fbde6bfe48ba6999a0ad60683_1.png",
+        "file": "fefc504fbde6bfe48ba6999a0ad60683",
+        "pathId": 1,
+        "spriteName": "meshok_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 62.0,
+          "height": 46.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.033655375242233276
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_pshen_nutr_2_0--a74de476d9.png",
+      "bytes": 4998,
+      "sha256": "8f550575e4e576fc12f72b51b17cf11d5d14569f4f8d3e04d37f216de97f7565",
+      "size": [
+        56,
+        52
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_pshen_nutr_2_0__f76f010c3db14204da36c09b8b30cc04_1.png",
+        "file": "f76f010c3db14204da36c09b8b30cc04",
+        "pathId": 1,
+        "spriteName": "4_pshen_nutr_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 56.0,
+          "height": 52.0
+        },
+        "pivot": {
+          "x": 0.45476189255714417,
+          "y": 0.27948713302612305
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_pshen_nutr_1_0--1f0120acc4.png",
+      "bytes": 1020,
+      "sha256": "872c7babcf1d6ae726d4d7df3c01ef00f307065984ea4f2ce4aaf2c0c633231f",
+      "size": [
+        25,
+        19
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_pshen_nutr_1_0__dea861aa1d720ba43b66df0d0b7d7214_1.png",
+        "file": "dea861aa1d720ba43b66df0d0b7d7214",
+        "pathId": 1,
+        "spriteName": "4_pshen_nutr_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 25.0,
+          "height": 19.0
+        },
+        "pivot": {
+          "x": 0.36311110854148865,
+          "y": 0.5627680420875549
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_pshen_2_0--677f932735.png",
+      "bytes": 899,
+      "sha256": "0e177e9d6f8bc9d7c8152890526c23b6ee672bd6e13b51f15b55d4df6b7e126a",
+      "size": [
+        30,
+        14
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_pshen_2_0__d0f72a1a5563c7b4280f3ba495ae7dcd_1.png",
+        "file": "d0f72a1a5563c7b4280f3ba495ae7dcd",
+        "pathId": 1,
+        "spriteName": "4_pshen_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 30.0,
+          "height": 14.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_pshen_1_0--0091d7f093.png",
+      "bytes": 815,
+      "sha256": "71654eb2b2ba2ed01353b6f373f58de70dfaf67624a249475dc6ca337b68a414",
+      "size": [
+        31,
+        11
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_pshen_1_0__1f9f60963abe7464fb44d88764637216_1.png",
+        "file": "1f9f60963abe7464fb44d88764637216",
+        "pathId": 1,
+        "spriteName": "4_pshen_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 31.0,
+          "height": 11.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_wheat:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_wheat:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_wheat:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/pshen_1_0--f907516cde.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_1",
+        "file": "4ca08c4a5372e764a9a5695fc59ef443",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_1__4ca08c4a5372e764a9a5695fc59ef443_1.json",
+        "sha256": "2e3c5186ae5bff57c2dfd2850848a8e6218096e8cef00c3c9c22c36c88f79e98"
+      }
+    },
+    {
+      "key": "farm_wheat:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/pshen_2_0--bb95f173c7.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_2",
+        "file": "54a7cf00790f5d646a590f37beb1fb35",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_2__54a7cf00790f5d646a590f37beb1fb35_1.json",
+        "sha256": "dbd19341acbf217ce7fa1a7e645d7d452a9619e2cc529680e9460708bb0d0dc9"
+      }
+    },
+    {
+      "key": "farm_wheat:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/pshen_2_0--bb95f173c7.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_2",
+        "file": "54a7cf00790f5d646a590f37beb1fb35",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_2__54a7cf00790f5d646a590f37beb1fb35_1.json",
+        "sha256": "dbd19341acbf217ce7fa1a7e645d7d452a9619e2cc529680e9460708bb0d0dc9"
+      }
+    },
+    {
+      "key": "farm_wheat:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/pshen_2_0--bb95f173c7.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_2",
+        "file": "54a7cf00790f5d646a590f37beb1fb35",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_2__54a7cf00790f5d646a590f37beb1fb35_1.json",
+        "sha256": "dbd19341acbf217ce7fa1a7e645d7d452a9619e2cc529680e9460708bb0d0dc9"
+      }
+    },
+    {
+      "key": "farm_wheat:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_wheat:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/pshen_3ten_0--8da8920045.png",
+        "images/pshen_36_0--6acb214fd4.png",
+        "images/pshen_35_0--23007a2893.png",
+        "images/pshen_34_0--bda92f656d.png",
+        "images/pshen_33_0--cfef80558c.png",
+        "images/pshen_32_0--e7ce423b30.png",
+        "images/pshen_31_0--66ff2eddd8.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_3",
+        "file": "b1d4bd830578f7d4f99b7bab6a4dbd11",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_3__b1d4bd830578f7d4f99b7bab6a4dbd11_1.json",
+        "sha256": "1cd7fc23910bb3721bf6c2f40c8d744a571f2191bac5ee6156936613cf1a554d"
+      }
+    },
+    {
+      "key": "farm_wheat:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/pshen_3ten_0--8da8920045.png",
+        "images/pshen_36_0--6acb214fd4.png",
+        "images/pshen_35_0--23007a2893.png",
+        "images/pshen_34_0--bda92f656d.png",
+        "images/pshen_33_0--cfef80558c.png",
+        "images/pshen_32_0--e7ce423b30.png",
+        "images/pshen_31_0--66ff2eddd8.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_3",
+        "file": "b1d4bd830578f7d4f99b7bab6a4dbd11",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_3__b1d4bd830578f7d4f99b7bab6a4dbd11_1.json",
+        "sha256": "1cd7fc23910bb3721bf6c2f40c8d744a571f2191bac5ee6156936613cf1a554d"
+      }
+    },
+    {
+      "key": "farm_wheat:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/pshen_3ten_0--8da8920045.png",
+        "images/pshen_36_0--6acb214fd4.png",
+        "images/pshen_35_0--23007a2893.png",
+        "images/pshen_34_0--bda92f656d.png",
+        "images/pshen_33_0--cfef80558c.png",
+        "images/pshen_32_0--e7ce423b30.png",
+        "images/pshen_31_0--66ff2eddd8.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_3",
+        "file": "b1d4bd830578f7d4f99b7bab6a4dbd11",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_3__b1d4bd830578f7d4f99b7bab6a4dbd11_1.json",
+        "sha256": "1cd7fc23910bb3721bf6c2f40c8d744a571f2191bac5ee6156936613cf1a554d"
+      }
+    },
+    {
+      "key": "farm_wheat:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/pshen_3ten_0--8da8920045.png",
+        "images/pshen_36_0--6acb214fd4.png",
+        "images/pshen_35_0--23007a2893.png",
+        "images/pshen_34_0--bda92f656d.png",
+        "images/pshen_33_0--cfef80558c.png",
+        "images/pshen_32_0--e7ce423b30.png",
+        "images/pshen_31_0--66ff2eddd8.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_3",
+        "file": "b1d4bd830578f7d4f99b7bab6a4dbd11",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_3__b1d4bd830578f7d4f99b7bab6a4dbd11_1.json",
+        "sha256": "1cd7fc23910bb3721bf6c2f40c8d744a571f2191bac5ee6156936613cf1a554d"
+      }
+    },
+    {
+      "key": "farm_wheat:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/pshen_3ten_0--8da8920045.png",
+        "images/pshen_36_0--6acb214fd4.png",
+        "images/pshen_35_0--23007a2893.png",
+        "images/pshen_34_0--bda92f656d.png",
+        "images/pshen_33_0--cfef80558c.png",
+        "images/pshen_32_0--e7ce423b30.png",
+        "images/pshen_31_0--66ff2eddd8.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_3",
+        "file": "b1d4bd830578f7d4f99b7bab6a4dbd11",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_3__b1d4bd830578f7d4f99b7bab6a4dbd11_1.json",
+        "sha256": "1cd7fc23910bb3721bf6c2f40c8d744a571f2191bac5ee6156936613cf1a554d"
+      }
+    },
+    {
+      "key": "farm_wheat:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_pshen_nutr_2_0--a74de476d9.png",
+        "images/4_pshen_nutr_1_0--1f0120acc4.png",
+        "images/4_pshen_2_0--677f932735.png",
+        "images/4_pshen_1_0--0091d7f093.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_end",
+        "file": "88fa530a7aad02048b80de0f12963c44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_end__88fa530a7aad02048b80de0f12963c44_1.json",
+        "sha256": "d7c64f81e2cffcf2c60a39f7716cce9c328440a6b09a262ae6266fedad9905aa"
+      }
+    },
+    {
+      "key": "farm_wheat:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_pshen_nutr_2_0--a74de476d9.png",
+        "images/4_pshen_nutr_1_0--1f0120acc4.png",
+        "images/4_pshen_2_0--677f932735.png",
+        "images/4_pshen_1_0--0091d7f093.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_end",
+        "file": "88fa530a7aad02048b80de0f12963c44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_end__88fa530a7aad02048b80de0f12963c44_1.json",
+        "sha256": "d7c64f81e2cffcf2c60a39f7716cce9c328440a6b09a262ae6266fedad9905aa"
+      }
+    },
+    {
+      "key": "farm_wheat:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_pshen_nutr_2_0--a74de476d9.png",
+        "images/4_pshen_nutr_1_0--1f0120acc4.png",
+        "images/4_pshen_2_0--677f932735.png",
+        "images/4_pshen_1_0--0091d7f093.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_end",
+        "file": "88fa530a7aad02048b80de0f12963c44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_end__88fa530a7aad02048b80de0f12963c44_1.json",
+        "sha256": "d7c64f81e2cffcf2c60a39f7716cce9c328440a6b09a262ae6266fedad9905aa"
+      }
+    },
+    {
+      "key": "farm_wheat:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_pshen_nutr_2_0--a74de476d9.png",
+        "images/4_pshen_nutr_1_0--1f0120acc4.png",
+        "images/4_pshen_2_0--677f932735.png",
+        "images/4_pshen_1_0--0091d7f093.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_end",
+        "file": "88fa530a7aad02048b80de0f12963c44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_end__88fa530a7aad02048b80de0f12963c44_1.json",
+        "sha256": "d7c64f81e2cffcf2c60a39f7716cce9c328440a6b09a262ae6266fedad9905aa"
+      }
+    },
+    {
+      "key": "farm_wheat:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_pshen_nutr_2_0--a74de476d9.png",
+        "images/4_pshen_nutr_1_0--1f0120acc4.png",
+        "images/4_pshen_2_0--677f932735.png",
+        "images/4_pshen_1_0--0091d7f093.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_wheat",
+        "file": "65902f9ef56bb524f94a619888281732",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "psheno_end",
+        "file": "88fa530a7aad02048b80de0f12963c44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/psheno_end__88fa530a7aad02048b80de0f12963c44_1.json",
+        "sha256": "d7c64f81e2cffcf2c60a39f7716cce9c328440a6b09a262ae6266fedad9905aa"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

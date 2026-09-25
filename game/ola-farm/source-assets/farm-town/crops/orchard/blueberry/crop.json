@@ -1,0 +1,1142 @@
+{
+  "schemaVersion": 1,
+  "key": "blueberry",
+  "group": "orchard",
+  "titleVi": "Việt Quất",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — mở rộng vườn quả",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 73,
+    "key": "blueberry",
+    "titleVi": "Việt Quất"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/blueberry__a52e7e818574f264e98da8fb658e26c9_769.json",
+    "prefab": {
+      "file": "96f81df340e60594184265c469292654",
+      "id": 16,
+      "name": "blueberry",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__96f81df340e60594184265c469292654_75.json",
+        "growPhaseCount": 3,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/blueberry_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1091.json",
+    "index": 0,
+    "entity": "blueberry",
+    "durationSeconds": 4500,
+    "level": 23,
+    "quantityPerCycle": 5.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 23,
+    "basicPrice": 9.0,
+    "xpOnUse": 5.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 4,
+    "clearTool": {
+      "id": 93,
+      "name": "icon_shovel",
+      "titleVi": "Xẻng",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 5,
+      "output": "croissant",
+      "outputTitleVi": "Bánh Sừng Bò (Croissant)",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "candy_factory",
+      "entityTitleVi": "Nhà Máy Kẹo",
+      "recipeIndex": 3,
+      "output": "lollypop",
+      "outputTitleVi": "Kẹo Que",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/candy_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_974.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 5,
+      "output": "pie_blueberry",
+      "outputTitleVi": "Bánh Pie Việt Quất",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 16065,
+      "sha256": "a621d0dbc3e7a1504ca6cebdeab6aba97448389bd6d63961ded62314604a6a49",
+      "size": [
+        99,
+        94
+      ],
+      "source": {
+        "exportPath": "export/sprites/blueberry_3_preview_FT_0__sharedassets0.assets_1023.png",
+        "file": "sharedassets0.assets",
+        "pathId": 1023,
+        "spriteName": "blueberry_3_preview_FT_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 15.0,
+          "y": 20.0,
+          "width": 99.0,
+          "height": 94.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.0
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 12397,
+      "sha256": "d02e0dadde3d07b2b2b27a4d548f5ae8f906ef37b32c4dba4dc8b71f7eb831ab",
+      "size": [
+        88,
+        81
+      ],
+      "source": {
+        "exportPath": "export/sprites/blueberry__sharedassets0.assets_680.png",
+        "file": "sharedassets0.assets",
+        "pathId": 680,
+        "spriteName": "blueberry"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 2.076120376586914,
+          "y": 1.0143554210662842
+        }
+      }
+    },
+    {
+      "path": "images/4_chern_zem_2_0--12fe1d113e.png",
+      "bytes": 2044,
+      "sha256": "811cdd9ed9c02583f12917f9221d672cbe3569e5c0396dbb12964cbb6df3007c",
+      "size": [
+        77,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_chern_zem_2_0__b0dbb22089288514099d5c4b57787333_1.png",
+        "file": "b0dbb22089288514099d5c4b57787333",
+        "pathId": 1,
+        "spriteName": "4_chern_zem_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 77.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_chern_0--d9394b5498.png",
+      "bytes": 11238,
+      "sha256": "c0b4152d3b21eba665906ba97bc626250c7f3f6760fcc66b1b3d04e476d0df6f",
+      "size": [
+        95,
+        84
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_chern_0__58e84dfb9d177a54ab760adc26fe9a9b_1.png",
+        "file": "58e84dfb9d177a54ab760adc26fe9a9b",
+        "pathId": 1,
+        "spriteName": "4_chern_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 95.0,
+          "height": 84.0
+        },
+        "pivot": {
+          "x": 0.48288726806640625,
+          "y": 0.03766214847564697
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_chern_zem_1_0--2c06ada9d8.png",
+      "bytes": 1414,
+      "sha256": "0bb9fb473c4868111cfa7bcaaf9ad54f49271ad260c5f7a67b08d27b42efb556",
+      "size": [
+        59,
+        17
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_chern_zem_1_0__5acbe818440278b47b4f1ce5a394c1f1_1.png",
+        "file": "5acbe818440278b47b4f1ce5a394c1f1",
+        "pathId": 1,
+        "spriteName": "4_chern_zem_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 59.0,
+          "height": 17.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_chern_0--e2239ed5a2.png",
+      "bytes": 12847,
+      "sha256": "bbb3e0d825232dcb8d15bc3b3c9149ef67e8e89589a96c6c79a4c39772d9436b",
+      "size": [
+        100,
+        82
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_chern_0__07080965439ae104689e0c76728426b6_1.png",
+        "file": "07080965439ae104689e0c76728426b6",
+        "pathId": 1,
+        "spriteName": "0_chern_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 100.0,
+          "height": 82.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.04681093618273735
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_chern_5_0--600eb3aeae.png",
+      "bytes": 1257,
+      "sha256": "f0d4fbd8a82a617327901d9608f15502c45dd9adb45a5edfc8c20a3dbaa6bb06",
+      "size": [
+        23,
+        23
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_chern_5_0__969b86663c3966847a08df179b0f79d1_1.png",
+        "file": "969b86663c3966847a08df179b0f79d1",
+        "pathId": 1,
+        "spriteName": "3_chern_5_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 23.0,
+          "height": 23.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_chern_4_0--69f02aeb3b.png",
+      "bytes": 1628,
+      "sha256": "fbc49ec5b1c67a9039e846ba42d95bc4a5d0271422501eb6ce6e705fb28bb6ed",
+      "size": [
+        26,
+        28
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_chern_4_0__ceb8d1aba314d5f45ba3da0133f58f41_1.png",
+        "file": "ceb8d1aba314d5f45ba3da0133f58f41",
+        "pathId": 1,
+        "spriteName": "3_chern_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 26.0,
+          "height": 28.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_chern_2_0--395f5a5bd3.png",
+      "bytes": 1146,
+      "sha256": "db9f63622b76f7640c8a16fb807a591f2ace39eeb2db5dd0f5e305e9e9a6e47d",
+      "size": [
+        20,
+        22
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_chern_2_0__6735e4b9c03b1fe489eeccc24b222726_1.png",
+        "file": "6735e4b9c03b1fe489eeccc24b222726",
+        "pathId": 1,
+        "spriteName": "3_chern_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 20.0,
+          "height": 22.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_chern_1_0--eb4e5a2695.png",
+      "bytes": 1346,
+      "sha256": "df53ac11402239b44a0e453ab671806da7808d6643f58a2fca78765c374d74aa",
+      "size": [
+        25,
+        24
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_chern_1_0__f0db0f0fb6d8847448af918f6ffa3366_1.png",
+        "file": "f0db0f0fb6d8847448af918f6ffa3366",
+        "pathId": 1,
+        "spriteName": "3_chern_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 25.0,
+          "height": 24.0
+        },
+        "pivot": {
+          "x": 0.48470914363861084,
+          "y": 0.5409578084945679
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_chern_3_0--abcf877d9d.png",
+      "bytes": 1056,
+      "sha256": "1d54cf3ecd4411e1ab0c68bd45c0ced3e6d4a6138ff1aac3435c020be35bb477",
+      "size": [
+        22,
+        22
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_chern_3_0__329dce03db662774cbe72f388aff9f9f_1.png",
+        "file": "329dce03db662774cbe72f388aff9f9f",
+        "pathId": 1,
+        "spriteName": "3_chern_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 22.0,
+          "height": 22.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_chern_dop_0--4767c0a6bd.png",
+      "bytes": 2151,
+      "sha256": "5447d58b939c13b6f44182631eb2a800ff9790c62908cc5b3120bfdb3279fb91",
+      "size": [
+        56,
+        21
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_chern_dop_0__aa78df4eee77c2b4781e02158821dd3e_1.png",
+        "file": "aa78df4eee77c2b4781e02158821dd3e",
+        "pathId": 1,
+        "spriteName": "3_chern_dop_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 56.0,
+          "height": 21.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/1_chern_0--9c5b565f8d.png",
+      "bytes": 7939,
+      "sha256": "4151abf3162a974390cc16dcee90028d9c4abf7ea60c77b90c92446a85708bf8",
+      "size": [
+        73,
+        62
+      ],
+      "source": {
+        "exportPath": "export/sprites/1_chern_0__dd50bb7270e3b744ea793cfc40dbf329_1.png",
+        "file": "dd50bb7270e3b744ea793cfc40dbf329",
+        "pathId": 1,
+        "spriteName": "1_chern_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 73.0,
+          "height": 62.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/2_chern_zem__0--c1035b9222.png",
+      "bytes": 5886,
+      "sha256": "958ca3fb8cf65c749839a16dfcb367410ef798b95bbf41fdc47118ac2a49613c",
+      "size": [
+        80,
+        66
+      ],
+      "source": {
+        "exportPath": "export/sprites/2_chern_zem__0__52b19d01638e94c4cb098614c5beb8b0_1.png",
+        "file": "52b19d01638e94c4cb098614c5beb8b0",
+        "pathId": 1,
+        "spriteName": "2_chern_zem__0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 80.0,
+          "height": 66.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "blueberry:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/4_chern_0--d9394b5498.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_4",
+        "file": "be8eab868fdff48418fc3cda629363d1",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_4__be8eab868fdff48418fc3cda629363d1_1.json",
+        "sha256": "c151faed9b41435a0120807e469085182d3e39161ca483e961795f7186347cb6"
+      }
+    },
+    {
+      "key": "blueberry:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_0",
+        "file": "2312dd6e2feff2c45aba4114d06e9abd",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_0__2312dd6e2feff2c45aba4114d06e9abd_1.json",
+        "sha256": "16cecbe3ae1b693ffc29619322f90b3fd8a8e73349734cb1f0b62e4e3e92287b"
+      }
+    },
+    {
+      "key": "blueberry:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_0",
+        "file": "2312dd6e2feff2c45aba4114d06e9abd",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_0__2312dd6e2feff2c45aba4114d06e9abd_1.json",
+        "sha256": "16cecbe3ae1b693ffc29619322f90b3fd8a8e73349734cb1f0b62e4e3e92287b"
+      }
+    },
+    {
+      "key": "blueberry:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/1_chern_0--9c5b565f8d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_1",
+        "file": "2dc386203bfd66d4292b9f15787f87ca",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_1__2dc386203bfd66d4292b9f15787f87ca_1.json",
+        "sha256": "8a99db8ab0dacc1560e250264e72d1404ad301c73ff46a519c568bbd5e8fedda"
+      }
+    },
+    {
+      "key": "blueberry:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/2_chern_zem__0--c1035b9222.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_2",
+        "file": "1507989ce1854fe4e973ccb6899b32d2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_2__1507989ce1854fe4e973ccb6899b32d2_1.json",
+        "sha256": "e395251b75b7291189f26f9c6c9c7c8b86a1e92b79357cc8028bda3603401416"
+      }
+    },
+    {
+      "key": "blueberry:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/2_chern_zem__0--c1035b9222.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_2",
+        "file": "1507989ce1854fe4e973ccb6899b32d2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_2__1507989ce1854fe4e973ccb6899b32d2_1.json",
+        "sha256": "e395251b75b7291189f26f9c6c9c7c8b86a1e92b79357cc8028bda3603401416"
+      }
+    },
+    {
+      "key": "blueberry:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "blueberry:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_2",
+        "file": "33cb7b7eb3c44f14299d52332b326200",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_2__33cb7b7eb3c44f14299d52332b326200_1.json",
+        "sha256": "b7fe1609350e0c1e13d2fc4ab01ae8d15f5ccfb9df5d7d544f789f67be1409dd"
+      }
+    },
+    {
+      "key": "blueberry:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_3",
+        "file": "bfb5611438b0662419145134fddad50e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_3__bfb5611438b0662419145134fddad50e_1.json",
+        "sha256": "5e501c3a7dfae427013ae884c3b06aa20d1b345775f825a928afc8a67fb6fdcc"
+      }
+    },
+    {
+      "key": "blueberry:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_4",
+        "file": "49251ba0cf676394ea6165ba06968756",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_4__49251ba0cf676394ea6165ba06968756_1.json",
+        "sha256": "2e598da2b20de168b48ce9201312b233fde63ba3e468adcb988dd6f04ca4bf7a"
+      }
+    },
+    {
+      "key": "blueberry:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_5",
+        "file": "efce925a09869374ab7704a669637740",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_5__efce925a09869374ab7704a669637740_1.json",
+        "sha256": "b004c0c12e52417e9641a8957e9cbc5a8149977b8985dfa0f2e4c635e1591700"
+      }
+    },
+    {
+      "key": "blueberry:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_1",
+        "file": "936c1d730a152d04f9ce85f4e4e51b8b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_1__936c1d730a152d04f9ce85f4e4e51b8b_1.json",
+        "sha256": "c3a1219e1342e9c735581742baaccccecfb2ee792e4c0f92edf57a52ffb0cf40"
+      }
+    },
+    {
+      "key": "blueberry:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_2",
+        "file": "33cb7b7eb3c44f14299d52332b326200",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_2__33cb7b7eb3c44f14299d52332b326200_1.json",
+        "sha256": "b7fe1609350e0c1e13d2fc4ab01ae8d15f5ccfb9df5d7d544f789f67be1409dd"
+      }
+    },
+    {
+      "key": "blueberry:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_3",
+        "file": "bfb5611438b0662419145134fddad50e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_3__bfb5611438b0662419145134fddad50e_1.json",
+        "sha256": "5e501c3a7dfae427013ae884c3b06aa20d1b345775f825a928afc8a67fb6fdcc"
+      }
+    },
+    {
+      "key": "blueberry:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_4",
+        "file": "49251ba0cf676394ea6165ba06968756",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_4__49251ba0cf676394ea6165ba06968756_1.json",
+        "sha256": "2e598da2b20de168b48ce9201312b233fde63ba3e468adcb988dd6f04ca4bf7a"
+      }
+    },
+    {
+      "key": "blueberry:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_1",
+        "file": "936c1d730a152d04f9ce85f4e4e51b8b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_1__936c1d730a152d04f9ce85f4e4e51b8b_1.json",
+        "sha256": "c3a1219e1342e9c735581742baaccccecfb2ee792e4c0f92edf57a52ffb0cf40"
+      }
+    },
+    {
+      "key": "blueberry:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/4_chern_zem_2_0--12fe1d113e.png",
+        "images/0_chern_0--e2239ed5a2.png",
+        "images/4_chern_zem_1_0--2c06ada9d8.png",
+        "images/3_chern_5_0--600eb3aeae.png",
+        "images/3_chern_4_0--69f02aeb3b.png",
+        "images/3_chern_2_0--395f5a5bd3.png",
+        "images/3_chern_1_0--eb4e5a2695.png",
+        "images/3_chern_3_0--abcf877d9d.png",
+        "images/3_chern_dop_0--4767c0a6bd.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "blueberry",
+        "file": "88c0752507ae68647bc322713002c102",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "blueberry_3_0",
+        "file": "2312dd6e2feff2c45aba4114d06e9abd",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/blueberry_3_0__2312dd6e2feff2c45aba4114d06e9abd_1.json",
+        "sha256": "16cecbe3ae1b693ffc29619322f90b3fd8a8e73349734cb1f0b62e4e3e92287b"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

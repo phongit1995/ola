@@ -1,0 +1,412 @@
+{
+  "schemaVersion": 1,
+  "key": "cacao_tree",
+  "group": "orchard",
+  "titleVi": "Cây Ca Cao",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — mở rộng vườn quả",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 22,
+    "key": "cacao",
+    "titleVi": "Hạt Ca Cao"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/cacao_tree__a52e7e818574f264e98da8fb658e26c9_720.json",
+    "prefab": {
+      "file": "746e03248a7777044a220c26771b594e",
+      "id": 2,
+      "name": "cocoa_tree",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__746e03248a7777044a220c26771b594e_50.json",
+        "growPhaseCount": 1,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/cacao_tree_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1315.json",
+    "index": 0,
+    "entity": "cacao_tree",
+    "durationSeconds": 6000,
+    "level": 19,
+    "quantityPerCycle": 5.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 19,
+    "basicPrice": 13.0,
+    "xpOnUse": 7.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 3,
+    "clearTool": {
+      "id": 92,
+      "name": "icon_saw",
+      "titleVi": "Cưa",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 121,
+        "name": "plank",
+        "titleVi": "Ván Gỗ",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 3,
+      "output": "hat_summer",
+      "outputTitleVi": "Mũ Mùa Hè",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "coffee_machine",
+      "entityTitleVi": "Máy Pha Cà Phê",
+      "recipeIndex": 3,
+      "output": "hot_chocolate",
+      "outputTitleVi": "Sôcôla Nóng",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/coffee_machine_JOB_Data__a52e7e818574f264e98da8fb658e26c9_539.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "popcorn_factory",
+      "entityTitleVi": "Lò Ngô",
+      "recipeIndex": 4,
+      "output": "flakes_choko",
+      "outputTitleVi": "Mảnh Sôcôla",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/popcorn_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_820.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "candy_factory",
+      "entityTitleVi": "Nhà Máy Kẹo",
+      "recipeIndex": 2,
+      "output": "chocolate",
+      "outputTitleVi": "Sôcôla",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/candy_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_974.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "milk_factory",
+      "entityTitleVi": "Nhà Sản Xuất Sữa",
+      "recipeIndex": 6,
+      "output": "chocolate_icecream",
+      "outputTitleVi": "Kem Sôcôla",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/milk_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1204.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 9325,
+      "sha256": "6fa11da3fdf2ca5dc1f4f4991fbd603d2ba4ada00d5c5c2fa785780554d4b553",
+      "size": [
+        65,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/cacao_tree__sharedassets0.assets_773.png",
+        "file": "sharedassets0.assets",
+        "pathId": 773,
+        "spriteName": "cacao_tree"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 4.0267510414123535,
+          "y": 0.012912571430206299
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 12099,
+      "sha256": "6f11641645fcf0833d2eea639dcb27c1212d51012427ac3b5cc644ec4aac6c5f",
+      "size": [
+        87,
+        90
+      ],
+      "source": {
+        "exportPath": "export/sprites/cacao__sharedassets0.assets_838.png",
+        "file": "sharedassets0.assets",
+        "pathId": 838,
+        "spriteName": "cacao"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/cocoa_bg--653a638504.png",
+      "bytes": 34720,
+      "sha256": "9effeaabe88c16946ff14c5e4aa04edc38b37db058d17950a275666f6db96010",
+      "size": [
+        148,
+        163
+      ],
+      "source": {
+        "exportPath": "export/sprites/cocoa_bg__275fcd2fb98e8984f9d6d94d1d298b15_1.png",
+        "file": "275fcd2fb98e8984f9d6d94d1d298b15",
+        "pathId": 1,
+        "spriteName": "cocoa_bg"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 56.0,
+          "y": 53.0,
+          "width": 148.0,
+          "height": 163.0
+        },
+        "pivot": {
+          "x": 0.4864864945411682,
+          "y": 0.05963191017508507
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/cocoa_top--f6f7f77c8f.png",
+      "bytes": 24480,
+      "sha256": "f2100664ee4434559168e96168a85d66a9f325e5a17280015fc1329ce7ee814c",
+      "size": [
+        130,
+        100
+      ],
+      "source": {
+        "exportPath": "export/sprites/cocoa_top__79b8191bbd52f7f45b26a15e31196eed_1.png",
+        "file": "79b8191bbd52f7f45b26a15e31196eed",
+        "pathId": 1,
+        "spriteName": "cocoa_top"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 64.0,
+          "y": 114.0,
+          "width": 130.0,
+          "height": 100.0
+        },
+        "pivot": {
+          "x": 0.4923076927661896,
+          "y": -0.5127999782562256
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/cocoa_ready--19c5c5237c.png",
+      "bytes": 1289,
+      "sha256": "f40cbfd27e419ff95844ef25d2235a0a063a3f32e4363158cccafe8c8af37720",
+      "size": [
+        20,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/cocoa_ready__ede1d23edb5ded442991a9d72892f4f7_1.png",
+        "file": "ede1d23edb5ded442991a9d72892f4f7",
+        "pathId": 1,
+        "spriteName": "cocoa_ready"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 119.0,
+          "y": 45.0,
+          "width": 20.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.44999998807907104,
+          "y": 0.59375
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/cocoa_bg--653a638504.png",
+    "images/cocoa_top--f6f7f77c8f.png",
+    "images/cocoa_ready--19c5c5237c.png"
+  ],
+  "phases": [
+    {
+      "key": "TreeOrBush:0:Idle (default)",
+      "role": "Idle (default)",
+      "labelVi": "Nghỉ / mặc định — Idle (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Idle (default)",
+        "file": "cc9b278c4c9bdae47aafff9b72e076fe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Idle_default__cc9b278c4c9bdae47aafff9b72e076fe_1.json",
+        "sha256": "29cafc097834401ed33a0ef2c395668f564c1124744111ad5a09342b3e7d2072"
+      }
+    },
+    {
+      "key": "TreeOrBush:1:Dead",
+      "role": "Dead",
+      "labelVi": "Cạn lượt / kết thúc — Dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Dead",
+        "file": "9775f37177cac834f806bbb7740f765a",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Dead__9775f37177cac834f806bbb7740f765a_1.json",
+        "sha256": "bca205681fca1618b86ab9ce5bf5a8a284813cd80d9d411ce9171066e8254e06"
+      }
+    },
+    {
+      "key": "TreeOrBush:2:Harvest (default)",
+      "role": "Harvest (default)",
+      "labelVi": "Thu / còn sản phẩm — Harvest (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Harvest (default)",
+        "file": "791afc5303083114d9eeec37cadfb08d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Harvest_default__791afc5303083114d9eeec37cadfb08d_1.json",
+        "sha256": "d6e1c04bf79c6e8c08e6c23c5af6e11ffa8f9d49514aa768f2f747cc2b1fd6a6"
+      }
+    },
+    {
+      "key": "TreeOrBush:3:Ready (default)",
+      "role": "Ready (default)",
+      "labelVi": "Chín / có sản phẩm — Ready (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Ready (default)",
+        "file": "51aaeb3b05a42ac469eaf317d404c45f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Ready_default__51aaeb3b05a42ac469eaf317d404c45f_1.json",
+        "sha256": "67e059f264e0824362b8c7fdbd4d0d5bcb5ad7ec933893affe6fd603f4986067"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

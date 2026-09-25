@@ -1,0 +1,1476 @@
+{
+  "schemaVersion": 1,
+  "key": "cane",
+  "group": "field",
+  "titleVi": "Mía",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C3 — dệt may và đường mía",
+  "farmCompatibility": "new-field-crop",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 26,
+    "key": "cane",
+    "titleVi": "Mía"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/cane__e1fe53173efc96247b7706d5a5ad92e7_184.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 26,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 10,
+    "entity": "garden_bed",
+    "durationSeconds": 3600,
+    "level": 17,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 5.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 17,
+    "basicPrice": 22.0,
+    "xpOnUse": 11.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "sugar_processor",
+      "entityTitleVi": "Máy Chế Biến Đường",
+      "recipeIndex": 2,
+      "output": "sugar_cane",
+      "outputTitleVi": "Đường Nâu",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/sugar_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_497.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 9857,
+      "sha256": "b1f9b45e89e1ab6a9f3d3f35a2ba0d49f8c4a343f92e37b281c89ca0b8418bb7",
+      "size": [
+        90,
+        75
+      ],
+      "source": {
+        "exportPath": "export/sprites/cane__sharedassets0.assets_309.png",
+        "file": "sharedassets0.assets",
+        "pathId": 309,
+        "spriteName": "cane"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 5.0267510414123535
+        }
+      }
+    },
+    {
+      "path": "images/tros_1_0--a4b9dd5c02.png",
+      "bytes": 11975,
+      "sha256": "d892eca91ab471f79b07c61855dea7c2f7a21a3b09e4497a2c1cf5c8121b27db",
+      "size": [
+        102,
+        71
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_1_0__f44a3f400d44b4346b95262619a49707_1.png",
+        "file": "f44a3f400d44b4346b95262619a49707",
+        "pathId": 1,
+        "spriteName": "tros_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 102.0,
+          "height": 71.0
+        },
+        "pivot": {
+          "x": 0.4970764219760895,
+          "y": 0.3991973102092743
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_2_0--403ba94fff.png",
+      "bytes": 16247,
+      "sha256": "e5adc7f9f7c22602300e0e407576de6d350fa15faf2bbcdcf9767c9fc10f8de8",
+      "size": [
+        124,
+        91
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_2_0__870cb6169a806104f86fa15c5b406ed4_1.png",
+        "file": "870cb6169a806104f86fa15c5b406ed4",
+        "pathId": 1,
+        "spriteName": "tros_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 124.0,
+          "height": 91.0
+        },
+        "pivot": {
+          "x": 0.5058272480964661,
+          "y": 0.29751861095428467
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_3ten2_0--3f3f15d3f9.png",
+      "bytes": 7657,
+      "sha256": "c8831cb426412039beaa3b4b753687ef39b548a405fc0d7165e28dfc39c397e6",
+      "size": [
+        123,
+        106
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_3ten2_0__f7788ba619e855643bab41e582e98b7b_1.png",
+        "file": "f7788ba619e855643bab41e582e98b7b",
+        "pathId": 1,
+        "spriteName": "tros_3ten2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 123.0,
+          "height": 106.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_312_0--ef2df5841a.png",
+      "bytes": 4906,
+      "sha256": "13fef8c3d1207fcd3208d97f11926eb37001560e6b548d05fb223522c8f3378a",
+      "size": [
+        44,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_312_0__e72923f69e0442d4f95f509f57478cc6_1.png",
+        "file": "e72923f69e0442d4f95f509f57478cc6",
+        "pathId": 1,
+        "spriteName": "tros_312_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.4711747467517853,
+          "y": 0.06803929060697556
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_311_0--7123d93b9a.png",
+      "bytes": 4420,
+      "sha256": "4d868f0dfb3b65477e4b96d8149ca6ce8e50a48d786b61a46a1ba5fd01063581",
+      "size": [
+        44,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_311_0__5cec200268da7584a9e2e62492dcbc47_1.png",
+        "file": "5cec200268da7584a9e2e62492dcbc47",
+        "pathId": 1,
+        "spriteName": "tros_311_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.48830756545066833,
+          "y": 0.07188782095909119
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_310_0--bdf711ed6d.png",
+      "bytes": 4078,
+      "sha256": "10357dddb83ff1c23c63f283d753876fb2d2f7025d7c2719d92d0718e204c255",
+      "size": [
+        44,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_310_0__9113abc396196204987768de986a7981_1.png",
+        "file": "9113abc396196204987768de986a7981",
+        "pathId": 1,
+        "spriteName": "tros_310_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5467700362205505,
+          "y": 0.07188782095909119
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_3ten1_0--dcd3248b23.png",
+      "bytes": 1843,
+      "sha256": "a30eb838dae247bb5555fb3b4c0a73043f116ec5ce1b9cafc908519ebc66bbb2",
+      "size": [
+        52,
+        34
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_3ten1_0__5875590c89ad7114b805817cb1a29a91_1.png",
+        "file": "5875590c89ad7114b805817cb1a29a91",
+        "pathId": 1,
+        "spriteName": "tros_3ten1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 52.0,
+          "height": 34.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_39_0--484cad070c.png",
+      "bytes": 4466,
+      "sha256": "3f56fe4f1a27ad1e3f0300c3be9e061563b880b806719e60b11d48c7510444be",
+      "size": [
+        44,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_39_0__cb0d95f3e5a5b214b8c71cbaefab9885_1.png",
+        "file": "cb0d95f3e5a5b214b8c71cbaefab9885",
+        "pathId": 1,
+        "spriteName": "tros_39_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.3731689751148224,
+          "y": 0.06987742334604263
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_38_0--f3443bbced.png",
+      "bytes": 4040,
+      "sha256": "f7201450131b4b9c9464ccc52f1f4219af0b64c19f7a1ed6553f1cbf1a52feee",
+      "size": [
+        44,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_38_0__006d127463f818843825fdd039231a11_1.png",
+        "file": "006d127463f818843825fdd039231a11",
+        "pathId": 1,
+        "spriteName": "tros_38_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.4970768988132477,
+          "y": 0.0700504332780838
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_37_0--93e86d8c14.png",
+      "bytes": 4135,
+      "sha256": "9dca41a04d179f014d31e74ddd38ead0f0337a21457929146076c2bdbbfc80e4",
+      "size": [
+        44,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_37_0__bbb590bf16c94594aa531bb2ca2728df_1.png",
+        "file": "bbb590bf16c94594aa531bb2ca2728df",
+        "pathId": 1,
+        "spriteName": "tros_37_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5526162385940552,
+          "y": 0.07372520864009857
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_35_0--62fce29598.png",
+      "bytes": 4488,
+      "sha256": "5c19a815dca035c94b46b8328c6fa47bb5053e7f186ebabb8760d64b62a2221d",
+      "size": [
+        44,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_35_0__d6e772a958d879d468f9aa21946e72eb_1.png",
+        "file": "d6e772a958d879d468f9aa21946e72eb",
+        "pathId": 1,
+        "spriteName": "tros_35_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.453230082988739,
+          "y": 0.0700504332780838
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_36_0--5e45351ffa.png",
+      "bytes": 4406,
+      "sha256": "f3a714c583edb08f974424c0d8f45d5f2ae43e6ba7cb2e784e68a61746e9a9d6",
+      "size": [
+        44,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_36_0__a40faba31d71d8f41ae45acb7ce41dd8_1.png",
+        "file": "a40faba31d71d8f41ae45acb7ce41dd8",
+        "pathId": 1,
+        "spriteName": "tros_36_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.5432378649711609,
+          "y": 0.07906807959079742
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_34_0--fb2b8f1d63.png",
+      "bytes": 4510,
+      "sha256": "fe8f04cb6fd9da0b5591c3bd96bbbb598ff2f8cbf621a9a8454f5dccf1070f15",
+      "size": [
+        44,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_34_0__5722c9cdc89dcb7499d22d32a591d6a6_1.png",
+        "file": "5722c9cdc89dcb7499d22d32a591d6a6",
+        "pathId": 1,
+        "spriteName": "tros_34_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.6052324771881104,
+          "y": 0.06821303814649582
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_33_0--bd414d39bf.png",
+      "bytes": 4257,
+      "sha256": "3e4823b3eeb49d2d87e57f71695f0ebdb4b3ffb2f6ad0f0f5af8944b0306619e",
+      "size": [
+        44,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_33_0__cddb1c0766e3d3049a11458656be038d_1.png",
+        "file": "cddb1c0766e3d3049a11458656be038d",
+        "pathId": 1,
+        "spriteName": "tros_33_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.531707763671875,
+          "y": 0.07722994685173035
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_32_0--ec2ec4a4e7.png",
+      "bytes": 4232,
+      "sha256": "f73b1549b9cbeba7ca46d3d3336629c89bf5a151eb851f87ef87f7897fd666ef",
+      "size": [
+        44,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_32_0__65856ad408a39b1438778eaae8177a17_1.png",
+        "file": "65856ad408a39b1438778eaae8177a17",
+        "pathId": 1,
+        "spriteName": "tros_32_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.4654097259044647,
+          "y": 0.0809062123298645
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tros_31_0--c89775b7ca.png",
+      "bytes": 4503,
+      "sha256": "7e713a45379afb1804e6b77409f036c6a6e1c7f542fb6517255d0bd2e0476ebe",
+      "size": [
+        44,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/tros_31_0__c12862f256ed6ae4282c43029e9720e5_1.png",
+        "file": "c12862f256ed6ae4282c43029e9720e5",
+        "pathId": 1,
+        "spriteName": "tros_31_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.49123066663742065,
+          "y": 0.08474955707788467
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_z_0--883118c11b.png",
+      "bytes": 5987,
+      "sha256": "b3b89609a006d7ed55915d935206d66afb998ba6ec24d324f4665e6fef19fc2d",
+      "size": [
+        70,
+        55
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_z_0__3e3d6611d2111e545acc6dd6b2c788d5_1.png",
+        "file": "3e3d6611d2111e545acc6dd6b2c788d5",
+        "pathId": 1,
+        "spriteName": "korzina_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 55.0
+        },
+        "pivot": {
+          "x": 0.5060317516326904,
+          "y": 0.04195280000567436
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_goroh_ten_0--95b1a24536.png",
+      "bytes": 941,
+      "sha256": "7a7791f05c2154cbbb9c628581f869b3d6fe0c14bea7c3527732cfc56c0b72c2",
+      "size": [
+        64,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_goroh_ten_0__92e8bd173cc6243469348943018e68e6_1.png",
+        "file": "92e8bd173cc6243469348943018e68e6",
+        "pathId": 1,
+        "spriteName": "4_goroh_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_p_0--7f793edf56.png",
+      "bytes": 4229,
+      "sha256": "d94006a00ba11282fd57b836c1fbcd17cc35c72de605df40dbe27ee7aaeae92b",
+      "size": [
+        70,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_p_0__019de690601ed6347a8ea922874ee9a8_1.png",
+        "file": "019de690601ed6347a8ea922874ee9a8",
+        "pathId": 1,
+        "spriteName": "korzina_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.04370361566543579
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/ruchka_korzina_0--aaf9e6b4e2.png",
+      "bytes": 1264,
+      "sha256": "f523de6096814f7ef76adc7300b029294e349c09770f22a54fde2f6571d3c976",
+      "size": [
+        18,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/ruchka_korzina_0__76d356cc6b1fef1438dfa8e1ddff75ec_1.png",
+        "file": "76d356cc6b1fef1438dfa8e1ddff75ec",
+        "pathId": 1,
+        "spriteName": "ruchka_korzina_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 18.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.71687251329422,
+          "y": 0.055404335260391235
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tros_nutr_2_0--cbb3d84b3e.png",
+      "bytes": 5717,
+      "sha256": "a779c635df40b45fa1a7bb964bf1d2e89d32d5290e53e048bdbdb91ada85e879",
+      "size": [
+        64,
+        47
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tros_nutr_2_0__6358512975be84943ade86b53e854e9a_1.png",
+        "file": "6358512975be84943ade86b53e854e9a",
+        "pathId": 1,
+        "spriteName": "4_tros_nutr_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 47.0
+        },
+        "pivot": {
+          "x": 0.5718363523483276,
+          "y": 0.3172314167022705
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tros_nutr_1_0--2d63851839.png",
+      "bytes": 3547,
+      "sha256": "e7cd9288b772bd4681550266e4fe42a1a4a482a6fb7032e90780c892c29b24b3",
+      "size": [
+        47,
+        39
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tros_nutr_1_0__5c6a37cf3142a8b43928bc00a2546f04_1.png",
+        "file": "5c6a37cf3142a8b43928bc00a2546f04",
+        "pathId": 1,
+        "spriteName": "4_tros_nutr_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 47.0,
+          "height": 39.0
+        },
+        "pivot": {
+          "x": 0.5947727560997009,
+          "y": 0.41433995962142944
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tros_1_0--8113c2c79f.png",
+      "bytes": 2967,
+      "sha256": "dff562e1a018cd9c3cc367fe91409139851992188f1b82573880621f2b6aafde",
+      "size": [
+        51,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tros_1_0__04ad10765b28c1a4c987c215efef5eca_1.png",
+        "file": "04ad10765b28c1a4c987c215efef5eca",
+        "pathId": 1,
+        "spriteName": "4_tros_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 51.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.5790123343467712,
+          "y": 0.36095669865608215
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_cane:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_cane:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_cane:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/tros_1_0--a4b9dd5c02.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_1",
+        "file": "b5ed8ca7830d2a344a5a558b5358c927",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_1__b5ed8ca7830d2a344a5a558b5358c927_1.json",
+        "sha256": "800d1fa1ef2a2608627a2f97d8fa05ad30427b150124f908cb778d437faa3d17"
+      }
+    },
+    {
+      "key": "farm_cane:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/tros_2_0--403ba94fff.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_2",
+        "file": "ae2f12e75f224c14491f328175764562",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_2__ae2f12e75f224c14491f328175764562_1.json",
+        "sha256": "fb49bb9f276634b8ff5946a5666eea10e6a6299b586e2619e16ea34c18ace23a"
+      }
+    },
+    {
+      "key": "farm_cane:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/tros_2_0--403ba94fff.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_2",
+        "file": "ae2f12e75f224c14491f328175764562",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_2__ae2f12e75f224c14491f328175764562_1.json",
+        "sha256": "fb49bb9f276634b8ff5946a5666eea10e6a6299b586e2619e16ea34c18ace23a"
+      }
+    },
+    {
+      "key": "farm_cane:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/tros_2_0--403ba94fff.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_2",
+        "file": "ae2f12e75f224c14491f328175764562",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_2__ae2f12e75f224c14491f328175764562_1.json",
+        "sha256": "fb49bb9f276634b8ff5946a5666eea10e6a6299b586e2619e16ea34c18ace23a"
+      }
+    },
+    {
+      "key": "farm_cane:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_cane:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/tros_3ten2_0--3f3f15d3f9.png",
+        "images/tros_312_0--ef2df5841a.png",
+        "images/tros_311_0--7123d93b9a.png",
+        "images/tros_310_0--bdf711ed6d.png",
+        "images/tros_3ten1_0--dcd3248b23.png",
+        "images/tros_39_0--484cad070c.png",
+        "images/tros_38_0--f3443bbced.png",
+        "images/tros_37_0--93e86d8c14.png",
+        "images/tros_35_0--62fce29598.png",
+        "images/tros_36_0--5e45351ffa.png",
+        "images/tros_34_0--fb2b8f1d63.png",
+        "images/tros_33_0--bd414d39bf.png",
+        "images/tros_32_0--ec2ec4a4e7.png",
+        "images/tros_31_0--c89775b7ca.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_3",
+        "file": "5d558637b966adf4d8b5261012641bec",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_3__5d558637b966adf4d8b5261012641bec_1.json",
+        "sha256": "22457a2ea5d5ff805a33dc4e8075d386112009c6b31ac387e8e9c73ce2e2eba5"
+      }
+    },
+    {
+      "key": "farm_cane:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/tros_3ten2_0--3f3f15d3f9.png",
+        "images/tros_312_0--ef2df5841a.png",
+        "images/tros_311_0--7123d93b9a.png",
+        "images/tros_310_0--bdf711ed6d.png",
+        "images/tros_3ten1_0--dcd3248b23.png",
+        "images/tros_39_0--484cad070c.png",
+        "images/tros_38_0--f3443bbced.png",
+        "images/tros_37_0--93e86d8c14.png",
+        "images/tros_35_0--62fce29598.png",
+        "images/tros_36_0--5e45351ffa.png",
+        "images/tros_34_0--fb2b8f1d63.png",
+        "images/tros_33_0--bd414d39bf.png",
+        "images/tros_32_0--ec2ec4a4e7.png",
+        "images/tros_31_0--c89775b7ca.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_3",
+        "file": "5d558637b966adf4d8b5261012641bec",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_3__5d558637b966adf4d8b5261012641bec_1.json",
+        "sha256": "22457a2ea5d5ff805a33dc4e8075d386112009c6b31ac387e8e9c73ce2e2eba5"
+      }
+    },
+    {
+      "key": "farm_cane:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/tros_3ten2_0--3f3f15d3f9.png",
+        "images/tros_312_0--ef2df5841a.png",
+        "images/tros_311_0--7123d93b9a.png",
+        "images/tros_310_0--bdf711ed6d.png",
+        "images/tros_3ten1_0--dcd3248b23.png",
+        "images/tros_39_0--484cad070c.png",
+        "images/tros_38_0--f3443bbced.png",
+        "images/tros_37_0--93e86d8c14.png",
+        "images/tros_35_0--62fce29598.png",
+        "images/tros_36_0--5e45351ffa.png",
+        "images/tros_34_0--fb2b8f1d63.png",
+        "images/tros_33_0--bd414d39bf.png",
+        "images/tros_32_0--ec2ec4a4e7.png",
+        "images/tros_31_0--c89775b7ca.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_3",
+        "file": "5d558637b966adf4d8b5261012641bec",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_3__5d558637b966adf4d8b5261012641bec_1.json",
+        "sha256": "22457a2ea5d5ff805a33dc4e8075d386112009c6b31ac387e8e9c73ce2e2eba5"
+      }
+    },
+    {
+      "key": "farm_cane:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/tros_3ten2_0--3f3f15d3f9.png",
+        "images/tros_312_0--ef2df5841a.png",
+        "images/tros_311_0--7123d93b9a.png",
+        "images/tros_310_0--bdf711ed6d.png",
+        "images/tros_3ten1_0--dcd3248b23.png",
+        "images/tros_39_0--484cad070c.png",
+        "images/tros_38_0--f3443bbced.png",
+        "images/tros_37_0--93e86d8c14.png",
+        "images/tros_35_0--62fce29598.png",
+        "images/tros_36_0--5e45351ffa.png",
+        "images/tros_34_0--fb2b8f1d63.png",
+        "images/tros_33_0--bd414d39bf.png",
+        "images/tros_32_0--ec2ec4a4e7.png",
+        "images/tros_31_0--c89775b7ca.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_3",
+        "file": "5d558637b966adf4d8b5261012641bec",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_3__5d558637b966adf4d8b5261012641bec_1.json",
+        "sha256": "22457a2ea5d5ff805a33dc4e8075d386112009c6b31ac387e8e9c73ce2e2eba5"
+      }
+    },
+    {
+      "key": "farm_cane:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/tros_3ten2_0--3f3f15d3f9.png",
+        "images/tros_312_0--ef2df5841a.png",
+        "images/tros_311_0--7123d93b9a.png",
+        "images/tros_310_0--bdf711ed6d.png",
+        "images/tros_3ten1_0--dcd3248b23.png",
+        "images/tros_39_0--484cad070c.png",
+        "images/tros_38_0--f3443bbced.png",
+        "images/tros_37_0--93e86d8c14.png",
+        "images/tros_35_0--62fce29598.png",
+        "images/tros_36_0--5e45351ffa.png",
+        "images/tros_34_0--fb2b8f1d63.png",
+        "images/tros_33_0--bd414d39bf.png",
+        "images/tros_32_0--ec2ec4a4e7.png",
+        "images/tros_31_0--c89775b7ca.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_3",
+        "file": "5d558637b966adf4d8b5261012641bec",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_3__5d558637b966adf4d8b5261012641bec_1.json",
+        "sha256": "22457a2ea5d5ff805a33dc4e8075d386112009c6b31ac387e8e9c73ce2e2eba5"
+      }
+    },
+    {
+      "key": "farm_cane:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tros_nutr_2_0--cbb3d84b3e.png",
+        "images/4_tros_nutr_1_0--2d63851839.png",
+        "images/4_tros_1_0--8113c2c79f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_end",
+        "file": "758310f076152424f918c72286255886",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_end__758310f076152424f918c72286255886_1.json",
+        "sha256": "6cb74cf9dfc7d5cebdac64a85fd837b5779f3605cef01c3d5bb41017b516dd90"
+      }
+    },
+    {
+      "key": "farm_cane:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tros_nutr_2_0--cbb3d84b3e.png",
+        "images/4_tros_nutr_1_0--2d63851839.png",
+        "images/4_tros_1_0--8113c2c79f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_end",
+        "file": "758310f076152424f918c72286255886",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_end__758310f076152424f918c72286255886_1.json",
+        "sha256": "6cb74cf9dfc7d5cebdac64a85fd837b5779f3605cef01c3d5bb41017b516dd90"
+      }
+    },
+    {
+      "key": "farm_cane:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tros_nutr_2_0--cbb3d84b3e.png",
+        "images/4_tros_nutr_1_0--2d63851839.png",
+        "images/4_tros_1_0--8113c2c79f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_end",
+        "file": "758310f076152424f918c72286255886",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_end__758310f076152424f918c72286255886_1.json",
+        "sha256": "6cb74cf9dfc7d5cebdac64a85fd837b5779f3605cef01c3d5bb41017b516dd90"
+      }
+    },
+    {
+      "key": "farm_cane:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tros_nutr_2_0--cbb3d84b3e.png",
+        "images/4_tros_nutr_1_0--2d63851839.png",
+        "images/4_tros_1_0--8113c2c79f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_end",
+        "file": "758310f076152424f918c72286255886",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_end__758310f076152424f918c72286255886_1.json",
+        "sha256": "6cb74cf9dfc7d5cebdac64a85fd837b5779f3605cef01c3d5bb41017b516dd90"
+      }
+    },
+    {
+      "key": "farm_cane:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tros_nutr_2_0--cbb3d84b3e.png",
+        "images/4_tros_nutr_1_0--2d63851839.png",
+        "images/4_tros_1_0--8113c2c79f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cane",
+        "file": "50c8f311435bad447b21079540088a88",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "trosnik_end",
+        "file": "758310f076152424f918c72286255886",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/trosnik_end__758310f076152424f918c72286255886_1.json",
+        "sha256": "6cb74cf9dfc7d5cebdac64a85fd837b5779f3605cef01c3d5bb41017b516dd90"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

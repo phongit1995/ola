@@ -1,0 +1,1191 @@
+{
+  "schemaVersion": 2,
+  "status": "implemented-web-validated",
+  "date": "2026-09-10",
+  "profile": "simple-1",
+  "baseline": {
+    "items": 207,
+    "recipes": 153,
+    "fieldTypes": 16,
+    "residentSpecies": 7,
+    "machineTypes": 30,
+    "machineSites": 32,
+    "gardenTypes": 16
+  },
+  "target": {
+    "items": 28,
+    "rawItems": 10,
+    "goodsItems": 18,
+    "recipes": 18,
+    "fieldTypes": 8,
+    "cropPlots": 40,
+    "residentSpecies": 2,
+    "activePens": 2,
+    "activePonds": 0,
+    "machineTypes": 7,
+    "machineSites": 7,
+    "gardenTypes": 0,
+    "resourceSites": 0
+  },
+  "items": [
+    {
+      "key": "raw:1",
+      "name": "Lúa mì",
+      "image": "1.wheat",
+      "sellPrice": 12,
+      "tab": "raw",
+      "legacyId": 1
+    },
+    {
+      "key": "farm40:corn",
+      "name": "Ngô",
+      "image": "farm-town/corn",
+      "sellPrice": 8,
+      "tab": "raw",
+      "legacyId": 10
+    },
+    {
+      "key": "farm40:cabbage",
+      "name": "Bắp cải",
+      "image": "farm-town/cabbage",
+      "sellPrice": 10,
+      "tab": "raw",
+      "legacyId": 11
+    },
+    {
+      "key": "raw:4",
+      "name": "Dâu tây",
+      "image": "4.strawberry",
+      "sellPrice": 17,
+      "tab": "raw",
+      "legacyId": 4
+    },
+    {
+      "key": "raw:3",
+      "name": "Nho",
+      "image": "3.grapes",
+      "sellPrice": 16,
+      "tab": "raw",
+      "legacyId": 3
+    },
+    {
+      "key": "town:potato",
+      "name": "Khoai Tây",
+      "image": "farm-town/industry-item-potato",
+      "sellPrice": 20,
+      "tab": "raw",
+      "sourceId": 128,
+      "sourceName": "potato",
+      "sourcePrice": 16
+    },
+    {
+      "key": "town:pumpkin",
+      "name": "Bí Ngô",
+      "image": "farm-town/industry-item-pumpkin",
+      "sellPrice": 22,
+      "tab": "raw",
+      "sourceId": 129,
+      "sourceName": "pumpkin",
+      "sourcePrice": 22
+    },
+    {
+      "key": "town:beet",
+      "name": "Củ Cải Đường",
+      "image": "farm-town/industry-item-beet",
+      "sellPrice": 14,
+      "tab": "raw",
+      "sourceId": 10,
+      "sourceName": "beet",
+      "sourcePrice": 8
+    },
+    {
+      "key": "farm40:egg",
+      "name": "Trứng gà",
+      "image": "farm-town/egg",
+      "sellPrice": 20,
+      "tab": "raw"
+    },
+    {
+      "key": "raw:7",
+      "name": "Sữa bò",
+      "image": "7.cow",
+      "sellPrice": 18,
+      "tab": "raw",
+      "legacyId": 7
+    },
+    {
+      "key": "farm40:chicken-feed",
+      "name": "Thức ăn gà",
+      "image": "farm-town/feed_chicken",
+      "sellPrice": 12,
+      "tab": "goods",
+      "legacyId": 24
+    },
+    {
+      "key": "farm40:cow-feed",
+      "name": "Thức ăn bò",
+      "image": "farm-town/feed_cow",
+      "sellPrice": 14,
+      "tab": "goods",
+      "legacyId": 25
+    },
+    {
+      "key": "goods:7",
+      "name": "Bánh mì",
+      "image": "banhmi",
+      "sellPrice": 85,
+      "tab": "goods",
+      "legacyId": 7
+    },
+    {
+      "key": "goods:9",
+      "name": "Bánh nho",
+      "image": "banhnho",
+      "sellPrice": 95,
+      "tab": "goods",
+      "legacyId": 9
+    },
+    {
+      "key": "goods:10",
+      "name": "Bánh dâu",
+      "image": "banhdau",
+      "sellPrice": 96,
+      "tab": "goods",
+      "legacyId": 10
+    },
+    {
+      "key": "farm40:corn-bread",
+      "name": "Bánh mì ngô",
+      "image": "farm-town/corn_bread",
+      "sellPrice": 145,
+      "tab": "goods",
+      "legacyId": 26
+    },
+    {
+      "key": "town:waffle",
+      "name": "Bánh Quế (Waffle)",
+      "image": "farm-town/industry-item-waffle",
+      "sellPrice": 121,
+      "tab": "goods",
+      "sourceId": 192,
+      "sourceName": "waffle",
+      "sourcePrice": 64
+    },
+    {
+      "key": "goods:20",
+      "name": "Bơ",
+      "image": "bo",
+      "sellPrice": 86,
+      "tab": "goods",
+      "legacyId": 20
+    },
+    {
+      "key": "goods:22",
+      "name": "Phô mai",
+      "image": "cheese",
+      "sellPrice": 90,
+      "tab": "goods",
+      "legacyId": 22
+    },
+    {
+      "key": "town:cream",
+      "name": "Kem sữa",
+      "image": "farm-town/industry-item-cream",
+      "sellPrice": 24,
+      "tab": "goods",
+      "sourceId": 45,
+      "sourceName": "cream",
+      "sourcePrice": 24
+    },
+    {
+      "key": "town:yogurt",
+      "name": "Sữa Chua Dâu Tây",
+      "image": "farm-town/industry-item-yogurt",
+      "sellPrice": 62,
+      "tab": "goods",
+      "sourceId": 155,
+      "sourceName": "yogurt",
+      "sourcePrice": 56
+    },
+    {
+      "key": "town:fries",
+      "name": "Khoai Tây Chiên",
+      "image": "farm-town/industry-item-fries",
+      "sellPrice": 170,
+      "tab": "goods",
+      "sourceId": 72,
+      "sourceName": "fries",
+      "sourcePrice": 76
+    },
+    {
+      "key": "town:toast",
+      "name": "Bánh Mì Nướng",
+      "image": "farm-town/industry-item-toast",
+      "sellPrice": 199,
+      "tab": "goods",
+      "sourceId": 180,
+      "sourceName": "toast",
+      "sourcePrice": 33
+    },
+    {
+      "key": "town:sugar",
+      "name": "Đường Trắng",
+      "image": "farm-town/industry-item-sugar",
+      "sellPrice": 19,
+      "tab": "goods",
+      "sourceId": 145,
+      "sourceName": "sugar",
+      "sourcePrice": 17
+    },
+    {
+      "key": "town:popcorn",
+      "name": "Bỏng Ngô",
+      "image": "farm-town/industry-item-popcorn",
+      "sellPrice": 302,
+      "tab": "goods",
+      "sourceId": 125,
+      "sourceName": "popcorn",
+      "sourcePrice": 302
+    },
+    {
+      "key": "town:flakes",
+      "name": "Ngũ Cốc Ngô",
+      "image": "farm-town/industry-item-flakes",
+      "sellPrice": 63,
+      "tab": "goods",
+      "sourceId": 68,
+      "sourceName": "flakes",
+      "sourcePrice": 61
+    },
+    {
+      "key": "town:pie_cabbage",
+      "name": "Bánh Bắp Cải",
+      "image": "farm-town/industry-item-pie_cabbage",
+      "sellPrice": 99,
+      "tab": "goods",
+      "sourceId": 117,
+      "sourceName": "pie_cabbage",
+      "sourcePrice": 54
+    },
+    {
+      "key": "town:pie_pumpkin",
+      "name": "Bánh Bí Ngô",
+      "image": "farm-town/industry-item-pie_pumpkin",
+      "sellPrice": 108,
+      "tab": "goods",
+      "sourceId": 119,
+      "sourceName": "pie_pumpkin",
+      "sourcePrice": 85
+    }
+  ],
+  "fields": [
+    {
+      "id": 1,
+      "name": "Lúa mì",
+      "key": "wheat",
+      "price": 20,
+      "duration": 102,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "1.wheat"
+    },
+    {
+      "id": 10,
+      "key": "corn",
+      "name": "Ngô",
+      "price": 12,
+      "sellPrice": 8,
+      "duration": 90,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "farm-town/corn",
+      "itemKey": "farm40:corn",
+      "prefab": "corn"
+    },
+    {
+      "id": 11,
+      "key": "cabbage",
+      "name": "Bắp cải",
+      "price": 15,
+      "sellPrice": 10,
+      "duration": 180,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "farm-town/cabbage",
+      "itemKey": "farm40:cabbage",
+      "prefab": "cabbage"
+    },
+    {
+      "id": 4,
+      "name": "Dâu tây",
+      "key": "strawberry",
+      "price": 27,
+      "duration": 102,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "4.strawberry"
+    },
+    {
+      "id": 3,
+      "name": "Nho",
+      "key": "grapes",
+      "price": 26,
+      "duration": 102,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "3.grapes"
+    },
+    {
+      "id": 1128,
+      "key": "potato",
+      "name": "Khoai Tây",
+      "image": "farm-town/agriculture-item-potato",
+      "itemKey": "town:potato",
+      "group": "crop",
+      "prefab": "field-potato",
+      "price": 30,
+      "sellPrice": 20,
+      "duration": 240,
+      "yields": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "source": {
+        "entity": "garden_bed",
+        "source": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+        "index": 6,
+        "output": {
+          "id": 128,
+          "name": "potato",
+          "quantity": 1,
+          "icon": "export/sprites/potato__sharedassets0.assets_714.png"
+        },
+        "ingredients": [
+          {
+            "id": 40,
+            "name": "coin",
+            "quantity": 4,
+            "icon": "export/sprites/coin__sharedassets0.assets_681.png"
+          }
+        ],
+        "time": 2400,
+        "level": 10,
+        "condition": {
+          "rid": -2
+        },
+        "bundleParameter": ""
+      }
+    },
+    {
+      "id": 1129,
+      "key": "pumpkin",
+      "name": "Bí Ngô",
+      "image": "farm-town/agriculture-item-pumpkin",
+      "itemKey": "town:pumpkin",
+      "group": "crop",
+      "prefab": "field-pumpkin",
+      "price": 33,
+      "sellPrice": 22,
+      "duration": 300,
+      "yields": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "source": {
+        "entity": "garden_bed",
+        "source": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+        "index": 7,
+        "output": {
+          "id": 129,
+          "name": "pumpkin",
+          "quantity": 1,
+          "icon": "export/sprites/pumpkin__sharedassets0.assets_465.png"
+        },
+        "ingredients": [
+          {
+            "id": 40,
+            "name": "coin",
+            "quantity": 4,
+            "icon": "export/sprites/coin__sharedassets0.assets_681.png"
+          }
+        ],
+        "time": 3000,
+        "level": 11,
+        "condition": {
+          "rid": -2
+        },
+        "bundleParameter": ""
+      }
+    },
+    {
+      "id": 1010,
+      "key": "beet",
+      "name": "Củ Cải Đường",
+      "image": "farm-town/agriculture-item-beet",
+      "itemKey": "town:beet",
+      "group": "crop",
+      "prefab": "field-beet",
+      "price": 21,
+      "sellPrice": 14,
+      "duration": 90,
+      "yields": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "source": {
+        "entity": "garden_bed",
+        "source": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+        "index": 3,
+        "output": {
+          "id": 10,
+          "name": "beet",
+          "quantity": 1,
+          "icon": "export/sprites/beet__sharedassets0.assets_833.png"
+        },
+        "ingredients": [
+          {
+            "id": 40,
+            "name": "coin",
+            "quantity": 2,
+            "icon": "export/sprites/coin__sharedassets0.assets_681.png"
+          }
+        ],
+        "time": 600,
+        "level": 7,
+        "condition": {
+          "rid": -2
+        },
+        "bundleParameter": ""
+      }
+    }
+  ],
+  "livestock": [
+    {
+      "key": "layer",
+      "name": "Gà đẻ trứng",
+      "feed": "farm40:chicken-feed",
+      "output": "farm40:egg",
+      "duration": 120,
+      "price": 80,
+      "image": "farm-town/egg",
+      "prefab": "layer",
+      "quantity": 1
+    },
+    {
+      "key": "dairy-cow",
+      "name": "Bò sữa",
+      "feed": "farm40:cow-feed",
+      "output": "raw:7",
+      "duration": 180,
+      "price": 120,
+      "image": "farm-town/feed_cow",
+      "prefab": "dairy-cow",
+      "quantity": 1
+    }
+  ],
+  "recipes": [
+    {
+      "id": 24,
+      "key": "recipe:farm40:chicken-feed",
+      "name": "Thức ăn gà",
+      "machine": 5,
+      "inputs": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:corn",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "farm40:chicken-feed",
+          "quantity": 3
+        }
+      ],
+      "duration": 45,
+      "xp": 10,
+      "opportunityMargin": 4
+    },
+    {
+      "id": 25,
+      "key": "recipe:farm40:cow-feed",
+      "name": "Thức ăn bò",
+      "machine": 5,
+      "inputs": [
+        {
+          "key": "farm40:corn",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:cabbage",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "farm40:cow-feed",
+          "quantity": 3
+        }
+      ],
+      "duration": 60,
+      "xp": 10,
+      "opportunityMargin": 6
+    },
+    {
+      "id": 7,
+      "key": "recipe:goods:7",
+      "name": "Bánh mì",
+      "machine": 1,
+      "inputs": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "goods:7",
+          "quantity": 1
+        }
+      ],
+      "duration": 19,
+      "xp": 10,
+      "opportunityMargin": 61
+    },
+    {
+      "id": 9,
+      "key": "recipe:goods:9",
+      "name": "Bánh nho",
+      "machine": 1,
+      "inputs": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "raw:3",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "goods:9",
+          "quantity": 1
+        }
+      ],
+      "duration": 20,
+      "xp": 10,
+      "opportunityMargin": 55
+    },
+    {
+      "id": 10,
+      "key": "recipe:goods:10",
+      "name": "Bánh dâu",
+      "machine": 1,
+      "inputs": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "raw:4",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "goods:10",
+          "quantity": 1
+        }
+      ],
+      "duration": 20,
+      "xp": 10,
+      "opportunityMargin": 55
+    },
+    {
+      "id": 26,
+      "key": "recipe:farm40:corn-bread",
+      "name": "Bánh mì ngô",
+      "machine": 1,
+      "inputs": [
+        {
+          "key": "farm40:corn",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:egg",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "farm40:corn-bread",
+          "quantity": 1
+        }
+      ],
+      "duration": 35,
+      "xp": 14,
+      "opportunityMargin": 89
+    },
+    {
+      "id": 100207,
+      "key": "recipe:town:bakery:7",
+      "name": "Bánh Quế (Waffle)",
+      "machine": 1,
+      "inputs": [
+        {
+          "key": "raw:1",
+          "quantity": 3
+        },
+        {
+          "key": "farm40:egg",
+          "quantity": 2
+        },
+        {
+          "key": "town:sugar",
+          "quantity": 1
+        },
+        {
+          "key": "farm40:corn",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:waffle",
+          "quantity": 1
+        }
+      ],
+      "duration": 300,
+      "xp": 25,
+      "opportunityMargin": 18
+    },
+    {
+      "id": 20,
+      "key": "recipe:goods:20",
+      "name": "Bơ",
+      "machine": 4,
+      "inputs": [
+        {
+          "key": "raw:7",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "goods:20",
+          "quantity": 1
+        }
+      ],
+      "duration": 20,
+      "xp": 10,
+      "opportunityMargin": 50
+    },
+    {
+      "id": 22,
+      "key": "recipe:goods:22",
+      "name": "Phô mai",
+      "machine": 4,
+      "inputs": [
+        {
+          "key": "raw:7",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "goods:22",
+          "quantity": 1
+        }
+      ],
+      "duration": 20,
+      "xp": 10,
+      "opportunityMargin": 54
+    },
+    {
+      "id": 101501,
+      "key": "recipe:town:milk_factory:1",
+      "name": "Kem sữa",
+      "machine": 4,
+      "inputs": [
+        {
+          "key": "raw:7",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:cream",
+          "quantity": 1
+        }
+      ],
+      "duration": 150,
+      "xp": 12,
+      "opportunityMargin": 6
+    },
+    {
+      "id": 101503,
+      "key": "recipe:town:milk_factory:3",
+      "name": "Sữa Chua Dâu Tây",
+      "machine": 4,
+      "inputs": [
+        {
+          "key": "raw:7",
+          "quantity": 1
+        },
+        {
+          "key": "raw:4",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:yogurt",
+          "quantity": 1
+        }
+      ],
+      "duration": 300,
+      "xp": 25,
+      "opportunityMargin": 10
+    },
+    {
+      "id": 101602,
+      "key": "recipe:town:oven:2",
+      "name": "Khoai Tây Chiên",
+      "machine": 2,
+      "inputs": [
+        {
+          "key": "town:potato",
+          "quantity": 3
+        },
+        {
+          "key": "goods:20",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:fries",
+          "quantity": 1
+        }
+      ],
+      "duration": 270,
+      "xp": 22,
+      "opportunityMargin": 24
+    },
+    {
+      "id": 101603,
+      "key": "recipe:town:oven:3",
+      "name": "Bánh Mì Nướng",
+      "machine": 2,
+      "inputs": [
+        {
+          "key": "goods:7",
+          "quantity": 1
+        },
+        {
+          "key": "goods:20",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:toast",
+          "quantity": 1
+        }
+      ],
+      "duration": 60,
+      "xp": 5,
+      "opportunityMargin": 28
+    },
+    {
+      "id": 107101,
+      "key": "recipe:town:sugar_processor:1",
+      "name": "Đường Trắng",
+      "machine": 1071,
+      "inputs": [
+        {
+          "key": "town:beet",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:sugar",
+          "quantity": 1
+        }
+      ],
+      "duration": 120,
+      "xp": 10,
+      "opportunityMargin": 5
+    },
+    {
+      "id": 102000,
+      "key": "recipe:town:popcorn_factory:0",
+      "name": "Bỏng Ngô",
+      "machine": 1020,
+      "inputs": [
+        {
+          "key": "farm40:corn",
+          "quantity": 3
+        },
+        {
+          "key": "goods:20",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:popcorn",
+          "quantity": 1
+        }
+      ],
+      "duration": 600,
+      "xp": 150,
+      "opportunityMargin": 192
+    },
+    {
+      "id": 102001,
+      "key": "recipe:town:popcorn_factory:1",
+      "name": "Ngũ Cốc Ngô",
+      "machine": 1020,
+      "inputs": [
+        {
+          "key": "farm40:corn",
+          "quantity": 2
+        },
+        {
+          "key": "town:sugar",
+          "quantity": 1
+        },
+        {
+          "key": "raw:7",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:flakes",
+          "quantity": 1
+        }
+      ],
+      "duration": 360,
+      "xp": 30,
+      "opportunityMargin": 10
+    },
+    {
+      "id": 101901,
+      "key": "recipe:town:pie_bakery:1",
+      "name": "Bánh Bắp Cải",
+      "machine": 1019,
+      "inputs": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:cabbage",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:egg",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:pie_cabbage",
+          "quantity": 1
+        }
+      ],
+      "duration": 300,
+      "xp": 25,
+      "opportunityMargin": 15
+    },
+    {
+      "id": 101904,
+      "key": "recipe:town:pie_bakery:4",
+      "name": "Bánh Bí Ngô",
+      "machine": 1019,
+      "inputs": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "town:pumpkin",
+          "quantity": 2
+        },
+        {
+          "key": "town:cream",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:pie_pumpkin",
+          "quantity": 1
+        }
+      ],
+      "duration": 450,
+      "xp": 38,
+      "opportunityMargin": 16
+    }
+  ],
+  "machines": [
+    {
+      "type": 5,
+      "buildingId": "feed-1",
+      "name": "Máy thức ăn",
+      "prefab": "feedmill",
+      "initiallyOwned": true,
+      "purchaseCoinsProposal": 0,
+      "purchasePriceSource": "free-starter-proposal",
+      "unlockLevelProposal": null,
+      "recipeIds": [
+        24,
+        25
+      ]
+    },
+    {
+      "type": 1,
+      "buildingId": "bakery-1",
+      "name": "Lò bánh",
+      "prefab": "bakery",
+      "initiallyOwned": true,
+      "purchaseCoinsProposal": 0,
+      "purchasePriceSource": "free-starter-proposal",
+      "unlockLevelProposal": null,
+      "recipeIds": [
+        7,
+        9,
+        10,
+        26,
+        100207
+      ]
+    },
+    {
+      "type": 4,
+      "buildingId": "dairy-1",
+      "name": "Xưởng sữa",
+      "prefab": "dairy",
+      "initiallyOwned": true,
+      "purchaseCoinsProposal": 0,
+      "purchasePriceSource": "free-starter-proposal",
+      "unlockLevelProposal": null,
+      "recipeIds": [
+        20,
+        22,
+        101501,
+        101503
+      ]
+    },
+    {
+      "type": 2,
+      "buildingId": "grill-1",
+      "name": "Bếp nướng",
+      "prefab": "grill",
+      "initiallyOwned": false,
+      "purchaseCoinsProposal": 200,
+      "purchasePriceSource": "simple-profile-proposal",
+      "unlockLevelProposal": null,
+      "recipeIds": [
+        101602,
+        101603
+      ]
+    },
+    {
+      "type": 1071,
+      "buildingId": "industry-sugar_processor",
+      "name": "Máy Chế Biến Đường",
+      "prefab": "industry-sugar_processor",
+      "initiallyOwned": false,
+      "purchaseCoinsProposal": 350,
+      "purchasePriceSource": "current-runtime-price",
+      "unlockLevelProposal": null,
+      "recipeIds": [
+        107101
+      ]
+    },
+    {
+      "type": 1020,
+      "buildingId": "industry-popcorn_factory",
+      "name": "Lò Ngô",
+      "prefab": "industry-popcorn_factory",
+      "initiallyOwned": false,
+      "purchaseCoinsProposal": 350,
+      "purchasePriceSource": "current-runtime-price",
+      "unlockLevelProposal": null,
+      "recipeIds": [
+        102000,
+        102001
+      ]
+    },
+    {
+      "type": 1019,
+      "buildingId": "industry-pie_bakery",
+      "name": "Tiệm Bánh Pie",
+      "prefab": "industry-pie_bakery",
+      "initiallyOwned": false,
+      "purchaseCoinsProposal": 350,
+      "purchasePriceSource": "current-runtime-price",
+      "unlockLevelProposal": null,
+      "recipeIds": [
+        101901,
+        101904
+      ]
+    }
+  ],
+  "initialStateProposal": {
+    "coins": 500,
+    "diamonds": 10,
+    "xp": 0,
+    "inventory": {},
+    "fields": "all 40 empty and unlocked",
+    "machineOwnership": "bakery-1, dairy-1, feed-1 owned with capacity 1; four other selected sites purchasable with coins, without XP gates",
+    "residents": [
+      {
+        "cell": 12,
+        "species": "layer",
+        "count": 1,
+        "capacity": 1
+      },
+      {
+        "cell": 13,
+        "species": "dairy-cow",
+        "count": 1,
+        "capacity": 1
+      }
+    ],
+    "otherPlots": "retained positions, inactive; no batch livestock or ponds",
+    "orders": false,
+    "quests": false,
+    "levelGates": false,
+    "offline": false,
+    "cropAvailability": "all eight seeds available from the beginning; guide recommends wheat/corn/cabbage first",
+    "purchaseSequenceSuggestion": [
+      "industry-sugar_processor",
+      "grill-1",
+      "industry-popcorn_factory",
+      "industry-pie_bakery"
+    ],
+    "deferredSiteVisibility": "only the four selected unowned machines show purchase targets; all out-of-profile sites have no target"
+  },
+  "savePolicy": "New simple profile/key; keep full save bytes and backups untouched. No automatic inventory conversion or grants on reload/import.",
+  "planningAudit": {
+    "allKeysExist": true,
+    "recipeInputsAndOutputsClosed": true,
+    "allSelectedItemsReachable": true,
+    "allSelectedCropsHaveProductionUse": true,
+    "allSevenMachinesHaveRecipes": true,
+    "uniqueRecipeOutputKeys": 18,
+    "allSelectedRecipesHavePositiveOpportunityMarginAtCurrentPrices": true,
+    "note": "Approved selection and dependency audit; runtime domain tests additionally verify fresh-state purchasing and all eighteen recipes. UI and soak evidence are tracked in farm-delivery-status.json."
+  },
+  "revision": 2,
+  "userConstraint": {
+    "cropRange": [
+      7,
+      8
+    ],
+    "machineRange": [
+      6,
+      7
+    ],
+    "itemCount": "moderate"
+  },
+  "selectionRationale": "Eight existing field crops, seven distinct machine types, two resident species, eighteen recipes and twenty-eight stock items. No orchard, mine or new species required.",
+  "deferred": {
+    "items": 179,
+    "recipes": 135,
+    "fieldTypes": 8,
+    "machineTypes": 23,
+    "residentSpecies": 5
+  },
+  "itemGroups": {
+    "fieldCrops": [
+      "raw:1",
+      "farm40:corn",
+      "farm40:cabbage",
+      "raw:4",
+      "raw:3",
+      "town:potato",
+      "town:pumpkin",
+      "town:beet"
+    ],
+    "livestockOutputs": [
+      "farm40:egg",
+      "raw:7"
+    ],
+    "feeds": [
+      "farm40:chicken-feed",
+      "farm40:cow-feed"
+    ],
+    "processedAndIntermediate": [
+      "goods:7",
+      "goods:9",
+      "goods:10",
+      "farm40:corn-bread",
+      "town:waffle",
+      "goods:20",
+      "goods:22",
+      "town:cream",
+      "town:yogurt",
+      "town:fries",
+      "town:toast",
+      "town:sugar",
+      "town:popcorn",
+      "town:flakes",
+      "town:pie_cabbage",
+      "town:pie_pumpkin"
+    ]
+  },
+  "implementedCatalog": "cocos/assets/farm/bundles/farm-town/catalog.json",
+  "baselineSourceSHA256": {
+    "cocos/assets/resources/ported/game.json": "0a1d36e60e826d8e43a29ac043961ac95ca60632a8585d82e9595ff98a7e6d69",
+    "cocos/assets/farm/bundles/farm-town/catalog.json": "85ec0f4075b86e20bade095aa7e021e0c5eb72e1da8a176e098c9a781868daf3",
+    "cocos/assets/farm/bundles/farm-town-industries/catalog.json": "c895ae5e131a55d87773b31e5c3b8a61fb8177c59538fb5790d4742b5d15a6bc",
+    "cocos/assets/farm/bundles/farm-town-agriculture/catalog.json": "d2c70153ce24b50e87e05ccdf8b18f0fdd6d10d629ab7d503c2d62d60a3ea4b1",
+    "cocos/assets/game/farm/FullProductionCatalog.ts": "855bd8f882f93f3633170d05105b00c94ba44cdabd29b6350a2d162b27974ad1",
+    "cocos/assets/game/farm/FarmGame.ts": "d1274e01f8210b322c2d762e94c4c9e7d5317db380cac342711d1bf1485de43c",
+    "cocos/assets/game/farm/FarmSave.ts": "fcdd5d9695b91fb9e3654eb3ca272945be5dffeed736460bf32fa1b11e213f1d",
+    "cocos/assets/game/farm/Art.ts": "ff8443518dd445b1067af3a8e89f4cfd273ae9619add688f03002d7176203235",
+    "cocos/assets/game/farm/FarmCatalog.ts": "94e355bb93ced19320d4f9e1d3a86ca55ad76494f8116d130ffa14a741b1fe8d"
+  },
+  "baselineSourceNote": "Hashes captured before removing uncommitted full-production additions. These are historical, not current-file assertions.",
+  "runtimeCatalogSHA256": "338e11f4d0b626f274d4462a87ad5afcfce261f4aebeb91769acca9ecdf01098"
+}

@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "source": "Golden Island 1.0.24 (com.golden.island.survivors.farm.royal)",
+  "extractedBy": "reference/golden-island/analysis/plot_ui.py",
+  "images": [
+    {
+      "id": "bubble",
+      "source": "reference/golden-island/images/plot-ui/bg_information_item_1.png",
+      "sourceName": "bg_information_item_1",
+      "sourceNode": "Canvas/DetailPlant",
+      "note": "khung bong bóng cây đang lớn",
+      "width": 61,
+      "height": 61,
+      "border": [
+        28,
+        28,
+        28,
+        28
+      ],
+      "sha256": "97e343d1946bf62a6bc24f2b172af8487f9e785e15b720e6de8efec94a5d3e33",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "pill",
+      "source": "reference/golden-island/images/plot-ui/BgMaterial.png",
+      "sourceName": "BgMaterial",
+      "sourceNode": "Canvas/DetailPlant/BG",
+      "note": "nền viên thuốc chứa thời gian",
+      "width": 60,
+      "height": 53,
+      "border": [
+        25,
+        25,
+        25,
+        25
+      ],
+      "sha256": "c52abd5431dda4f8693e48b1e364e51cc00633e8cf6f6cd0308b504b91359b4f",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "clock",
+      "source": "reference/golden-island/images/plot-ui/IconTime.png",
+      "sourceName": "IconTime",
+      "sourceNode": "Canvas/DetailPlant/Icon",
+      "note": "icon đồng hồ",
+      "width": 74,
+      "height": 63,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "ea0f0e715e560f91a68c0d569241747da9782b0cff1e0f0e36915944a452497b",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "button",
+      "source": "reference/golden-island/images/plot-ui/bt_2.png",
+      "sourceName": "bt_2",
+      "sourceNode": "Canvas/DetailPlant/ButtonComplete",
+      "note": "nút xanh xong ngay",
+      "width": 93,
+      "height": 107,
+      "border": [
+        31,
+        49,
+        32,
+        49
+      ],
+      "sha256": "3901e7b99aa786bc94e4593fce018bade4fc64b1643187411ce601a538f36866",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "gem",
+      "source": "reference/golden-island/images/plot-ui/ss_001.png",
+      "sourceName": "ss_001",
+      "sourceNode": "Canvas/DetailPlant/ButtonComplete/Holder/IconGem",
+      "note": "icon kim cương trên nút",
+      "width": 117,
+      "height": 108,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "cd349c6f984eba32965bcaf02659baed010d4aff7395380c5e4702d9ebb1c81c",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "ready",
+      "source": "reference/golden-island/images/plot-ui/bg_ctn.png",
+      "sourceName": "bg_ctn",
+      "sourceNode": "HarvestUI/PanelUnlock",
+      "note": "bong bóng đã chín",
+      "width": 99,
+      "height": 110,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "9171ae7866f8a18bc7ae8f1f884e3b810ece6cb5570690f25e17456829221926",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "locked",
+      "source": "reference/golden-island/images/plot-ui/bg_ctn_khoa.png",
+      "sourceName": "bg_ctn_khoa",
+      "sourceNode": "HarvestUI/PanelLock",
+      "note": "bong bóng ô chưa mở",
+      "width": 97,
+      "height": 129,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "8fa4b7971a06b91755fb50a44764493a41ffa259b3ff62320b5c512dbb53fae8",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "tile",
+      "source": "reference/golden-island/images/plot-ui/BgToolUI.png",
+      "sourceName": "BgToolUI",
+      "sourceNode": "PlantingUI/PopupSeeds/p_01",
+      "note": "ô lục giác chọn giống",
+      "width": 195,
+      "height": 184,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "39fa8b200896b8dad0cec54062a1eec42bf2023153455a5b520de3c60404b337",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "select",
+      "source": "reference/golden-island/images/plot-ui/Select.png",
+      "sourceName": "Select",
+      "sourceNode": "PlantingUI/PopupSeeds/p_01/Select",
+      "note": "viền vàng khi chọn",
+      "width": 195,
+      "height": 184,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "3c31a670db105240dcea7a5c677a2ed635a128584815e90cd0e149bce8b81228",
+      "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "info",
+      "source": "reference/golden-island/images/plot-ui/BgInfo.png",
+      "sourceName": "BgInfo",
+      "sourceNode": "PlantingUI/DetailSeeds",
+      "note": "thẻ thông tin giống",
+      "width": 72,
+      "height": 71,
+      "border": [
+        31,
+        30,
+        31,
+        30
+      ],
+      "sha256": "69b09caee412cb1c5d20f616c5dac041f8335bbac24ed90077fd8eb5da17ff79",
+      "game": "Golden Island 1.0.24"
+    }
+  ]
+}

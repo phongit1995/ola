@@ -1,0 +1,1247 @@
+{
+  "schemaVersion": 1,
+  "key": "bush_roses",
+  "group": "flowers",
+  "titleVi": "Hoa Hồng",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C6 — hoa và chuỗi trang trí",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 133,
+    "key": "rose",
+    "titleVi": "Hoa Hồng"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/bush_roses__a52e7e818574f264e98da8fb658e26c9_694.json",
+    "prefab": {
+      "file": "a22e2c80d244509409903d17240f7f83",
+      "id": 9,
+      "name": "rose",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__a22e2c80d244509409903d17240f7f83_43.json",
+        "growPhaseCount": 2,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/bush_roses_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1149.json",
+    "index": 0,
+    "entity": "bush_roses",
+    "durationSeconds": 1800,
+    "level": 16,
+    "quantityPerCycle": 1.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 16,
+    "basicPrice": 40.0,
+    "xpOnUse": 5.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 5,
+    "clearTool": {
+      "id": 48,
+      "name": "cutter",
+      "titleVi": "Dao Cắt",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 3,
+      "output": "hat_summer",
+      "outputTitleVi": "Mũ Mùa Hè",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "flower_factory",
+      "entityTitleVi": "Nhà Máy Hoa",
+      "recipeIndex": 2,
+      "output": "bouquet_wedding",
+      "outputTitleVi": "Hoa Cưới",
+      "inputQuantity": 7.0,
+      "sourceConfig": "configs/flower_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_602.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 16748,
+      "sha256": "e4125b2911de8d49a9d7eee383fded2d51eb42f6753ad98987f59dfb4b7115fc",
+      "size": [
+        98,
+        94
+      ],
+      "source": {
+        "exportPath": "export/sprites/roses_3_preview_0__sharedassets0.assets_17.png",
+        "file": "sharedassets0.assets",
+        "pathId": 17,
+        "spriteName": "roses_3_preview_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 17.0,
+          "y": 19.0,
+          "width": 98.0,
+          "height": 94.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.0
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 13413,
+      "sha256": "d4d860616c438908fa3ba5a59287ba47e4f8eba99fbe69a7768ad711c06c1c22",
+      "size": [
+        90,
+        90
+      ],
+      "source": {
+        "exportPath": "export/sprites/rose__sharedassets0.assets_358.png",
+        "file": "sharedassets0.assets",
+        "pathId": 358,
+        "spriteName": "rose"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.07612049579620361,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_rose_zem_0--e16545d450.png",
+      "bytes": 3249,
+      "sha256": "09e52485556557c6ddf946ad259f10f475b8bd21c3a2fe9e93da634ddac4ce38",
+      "size": [
+        84,
+        33
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_rose_zem_0__a0f38d5de7a83134cabfdaaf38754ed8_1.png",
+        "file": "a0f38d5de7a83134cabfdaaf38754ed8",
+        "pathId": 1,
+        "spriteName": "0_rose_zem_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 84.0,
+          "height": 33.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_rose_0--8aa7fb4e50.png",
+      "bytes": 10218,
+      "sha256": "52da07b83c65926b4afc82afe05ce10ceac4d8cace24ac0039f438fdd874516c",
+      "size": [
+        88,
+        84
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_rose_0__2bb401a7ad87eb846901fa7fe7d00757_1.png",
+        "file": "2bb401a7ad87eb846901fa7fe7d00757",
+        "pathId": 1,
+        "spriteName": "0_rose_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 88.0,
+          "height": 84.0
+        },
+        "pivot": {
+          "x": 0.45484140515327454,
+          "y": 0.024759698659181595
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/1_rose_0--6af43823de.png",
+      "bytes": 6037,
+      "sha256": "a6ebfe7d22340d2b33ac74afa5fb4e761326065873b59b7609946f654e2463d2",
+      "size": [
+        96,
+        66
+      ],
+      "source": {
+        "exportPath": "export/sprites/1_rose_0__a2208284a751db84abf924003e5e990f_1.png",
+        "file": "a2208284a751db84abf924003e5e990f",
+        "pathId": 1,
+        "spriteName": "1_rose_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 96.0,
+          "height": 66.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_dop_1_0--1d78417081.png",
+      "bytes": 912,
+      "sha256": "d0cb54402473be3c252b3306b989dca70887424ff81a3704359de970c198f806",
+      "size": [
+        26,
+        22
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_dop_1_0__ee8ea0128610d7c47a0d4dd382be503b_1.png",
+        "file": "ee8ea0128610d7c47a0d4dd382be503b",
+        "pathId": 1,
+        "spriteName": "3_rose_dop_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 26.0,
+          "height": 22.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/2_rose__dop_0--b7748150a9.png",
+      "bytes": 471,
+      "sha256": "7279b90560f8bcae036a5622b84fe389089b5ecc30a0c0586e7d8d52f859dc1c",
+      "size": [
+        14,
+        16
+      ],
+      "source": {
+        "exportPath": "export/sprites/2_rose__dop_0__2a0d452c2ade634468c4c38ed8e2ea75_1.png",
+        "file": "2a0d452c2ade634468c4c38ed8e2ea75",
+        "pathId": 1,
+        "spriteName": "2_rose__dop_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 14.0,
+          "height": 16.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_dop_2_0--4d67b7538a.png",
+      "bytes": 870,
+      "sha256": "ccd3d06cca493ec270ba2286e8823653bc27348667289ef0b9287b7a7be060c7",
+      "size": [
+        20,
+        34
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_dop_2_0__3d5fae5c71386ce4383617f8d48d0995_1.png",
+        "file": "3d5fae5c71386ce4383617f8d48d0995",
+        "pathId": 1,
+        "spriteName": "3_rose_dop_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 20.0,
+          "height": 34.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_rose_0--07294cfb87.png",
+      "bytes": 9059,
+      "sha256": "12b8b485b203b9d294a756387d381506210af00d8245bc1c7d2fdf0f13ed45d4",
+      "size": [
+        104,
+        74
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_rose_0__0404a724717cd3648bb21b8a64023306_1.png",
+        "file": "0404a724717cd3648bb21b8a64023306",
+        "pathId": 1,
+        "spriteName": "4_rose_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 104.0,
+          "height": 74.0
+        },
+        "pivot": {
+          "x": 0.5168839693069458,
+          "y": 0.023266173899173737
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/2_rose_0--3a9889eebc.png",
+      "bytes": 8042,
+      "sha256": "2c64958501d82c6e5a8e120829e033dd30dc02d8b6718aba291fb226b05f534a",
+      "size": [
+        95,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/2_rose_0__b6cbc95a64038334db91d287c0feb199_1.png",
+        "file": "b6cbc95a64038334db91d287c0feb199",
+        "pathId": 1,
+        "spriteName": "2_rose_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 95.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_1_0--728c0bc369.png",
+      "bytes": 1150,
+      "sha256": "55d1bef1024eadf6afb35bc26fb1e00483fa8c849be7df4634a1657d843cfe79",
+      "size": [
+        22,
+        23
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_1_0__d7c849ed9a650c7488c1e4354c66df5f_1.png",
+        "file": "d7c849ed9a650c7488c1e4354c66df5f",
+        "pathId": 1,
+        "spriteName": "3_rose_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 22.0,
+          "height": 23.0
+        },
+        "pivot": {
+          "x": 0.6026330590248108,
+          "y": 0.37671566009521484
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_2_0--171ada3aa5.png",
+      "bytes": 1107,
+      "sha256": "1dfadd558f45c51edfbe46f17448bd7d0c9aa956086edaffbd07a35aef1d1485",
+      "size": [
+        23,
+        21
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_2_0__bec362a90fdd6c24782cc7a5167d3154_1.png",
+        "file": "bec362a90fdd6c24782cc7a5167d3154",
+        "pathId": 1,
+        "spriteName": "3_rose_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 23.0,
+          "height": 21.0
+        },
+        "pivot": {
+          "x": 0.4054819941520691,
+          "y": 0.3527719974517822
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_3_0--50be15ab87.png",
+      "bytes": 1066,
+      "sha256": "4639e83c8748af9e4f8c73c16f18a09c4e124ed851fb6fa5f7fb90f0553336b8",
+      "size": [
+        24,
+        22
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_3_0__37a16136ac528e141a177a58301d2b0d_1.png",
+        "file": "37a16136ac528e141a177a58301d2b0d",
+        "pathId": 1,
+        "spriteName": "3_rose_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 24.0,
+          "height": 22.0
+        },
+        "pivot": {
+          "x": 0.6029195189476013,
+          "y": 0.3189837336540222
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_4_0--99b9859d7a.png",
+      "bytes": 1092,
+      "sha256": "c2cb594f54a4db51bbec7fae382b43505151d4b7f3c76ffe29dd3ae33a978296",
+      "size": [
+        22,
+        22
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_4_0__19e3a6742e2500047b2308809a22815d_1.png",
+        "file": "19e3a6742e2500047b2308809a22815d",
+        "pathId": 1,
+        "spriteName": "3_rose_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 22.0,
+          "height": 22.0
+        },
+        "pivot": {
+          "x": 0.37626734375953674,
+          "y": 0.38772404193878174
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_5_0--092a2b17d4.png",
+      "bytes": 1751,
+      "sha256": "f235d815a2985332946e60a4077301a2e4dc456d5ec1a1573ba2f65cabc395ee",
+      "size": [
+        27,
+        29
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_5_0__15dcc57533d81964185f9f1e8eab1d29_1.png",
+        "file": "15dcc57533d81964185f9f1e8eab1d29",
+        "pathId": 1,
+        "spriteName": "3_rose_5_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 27.0,
+          "height": 29.0
+        },
+        "pivot": {
+          "x": 0.5578776597976685,
+          "y": 0.4191707670688629
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_6_0--c40a8c3925.png",
+      "bytes": 890,
+      "sha256": "139945281b0f52fc2ccc5d2c292b5bb4de8a813fe76b5ae915bbc7203a167de8",
+      "size": [
+        20,
+        22
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_6_0__b9d3e555277dd61439f6e5b6b1ce58e3_1.png",
+        "file": "b9d3e555277dd61439f6e5b6b1ce58e3",
+        "pathId": 1,
+        "spriteName": "3_rose_6_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 20.0,
+          "height": 22.0
+        },
+        "pivot": {
+          "x": 0.5882167816162109,
+          "y": 0.41751155257225037
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_7_0--2738d9c78f.png",
+      "bytes": 820,
+      "sha256": "f2b82457f462902ec3874e1d4ea54d04c3c69c776f43d659d11b6ae2d8cc959a",
+      "size": [
+        20,
+        18
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_7_0__5a76da6dfac62fd429b60f379ab18181_1.png",
+        "file": "5a76da6dfac62fd429b60f379ab18181",
+        "pathId": 1,
+        "spriteName": "3_rose_7_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 20.0,
+          "height": 18.0
+        },
+        "pivot": {
+          "x": 0.5021003484725952,
+          "y": 0.3179653286933899
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_rose_8_0--d3ab618ce4.png",
+      "bytes": 930,
+      "sha256": "47b0a6bb8ff45358e985350e88668981f8c027818cc6036d83a600d655d0dffe",
+      "size": [
+        21,
+        22
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_rose_8_0__a41c65bb9026b7b46a241fe0a763acb3_1.png",
+        "file": "a41c65bb9026b7b46a241fe0a763acb3",
+        "pathId": 1,
+        "spriteName": "3_rose_8_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 21.0,
+          "height": 22.0
+        },
+        "pivot": {
+          "x": 0.2671557068824768,
+          "y": 0.353353887796402
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/0_rose_zem_0--e16545d450.png",
+    "images/0_rose_0--8aa7fb4e50.png",
+    "images/1_rose_0--6af43823de.png",
+    "images/3_rose_dop_1_0--1d78417081.png",
+    "images/2_rose__dop_0--b7748150a9.png",
+    "images/3_rose_dop_2_0--4d67b7538a.png"
+  ],
+  "phases": [
+    {
+      "key": "rose:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/4_rose_0--07294cfb87.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_end",
+        "file": "d1da00e9e44d30948a901d01e3b6bb8b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_end__d1da00e9e44d30948a901d01e3b6bb8b_1.json",
+        "sha256": "9d28bc2550702a175da37a2fedbe635cf43063fa1135dc60cb7a4097066249ce"
+      }
+    },
+    {
+      "key": "rose:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/1_rose_0--6af43823de.png",
+        "images/0_rose_0--8aa7fb4e50.png",
+        "images/3_rose_dop_2_0--4d67b7538a.png",
+        "images/2_rose__dop_0--b7748150a9.png",
+        "images/3_rose_dop_1_0--1d78417081.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_1",
+        "file": "2c0d2d46ceb818a4bbf8bb467f581748",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_1__2c0d2d46ceb818a4bbf8bb467f581748_1.json",
+        "sha256": "f350fef6166229eb86fb983c72e60a7c23dc1c6d6859edd1b1e363ed18324d11"
+      }
+    },
+    {
+      "key": "rose:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/1_rose_0--6af43823de.png",
+        "images/0_rose_0--8aa7fb4e50.png",
+        "images/3_rose_dop_2_0--4d67b7538a.png",
+        "images/2_rose__dop_0--b7748150a9.png",
+        "images/3_rose_dop_1_0--1d78417081.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_1",
+        "file": "2c0d2d46ceb818a4bbf8bb467f581748",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_1__2c0d2d46ceb818a4bbf8bb467f581748_1.json",
+        "sha256": "f350fef6166229eb86fb983c72e60a7c23dc1c6d6859edd1b1e363ed18324d11"
+      }
+    },
+    {
+      "key": "rose:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/2_rose_0--3a9889eebc.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_2",
+        "file": "e207650b83c328d46a8e44f1df6176d4",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_2__e207650b83c328d46a8e44f1df6176d4_1.json",
+        "sha256": "fab5235cffdbc68817814fc3d25989a30058fd0fecda2ebb92e8a51c7ff208ed"
+      }
+    },
+    {
+      "key": "rose:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/2_rose_0--3a9889eebc.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_2",
+        "file": "e207650b83c328d46a8e44f1df6176d4",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_2__e207650b83c328d46a8e44f1df6176d4_1.json",
+        "sha256": "fab5235cffdbc68817814fc3d25989a30058fd0fecda2ebb92e8a51c7ff208ed"
+      }
+    },
+    {
+      "key": "rose:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/2_rose_0--3a9889eebc.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_2",
+        "file": "e207650b83c328d46a8e44f1df6176d4",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_2__e207650b83c328d46a8e44f1df6176d4_1.json",
+        "sha256": "fab5235cffdbc68817814fc3d25989a30058fd0fecda2ebb92e8a51c7ff208ed"
+      }
+    },
+    {
+      "key": "rose:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "rose:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/3_rose_1_0--728c0bc369.png",
+        "images/3_rose_2_0--171ada3aa5.png",
+        "images/3_rose_3_0--50be15ab87.png",
+        "images/3_rose_4_0--99b9859d7a.png",
+        "images/3_rose_5_0--092a2b17d4.png",
+        "images/3_rose_6_0--c40a8c3925.png",
+        "images/3_rose_7_0--2738d9c78f.png",
+        "images/3_rose_8_0--d3ab618ce4.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_3",
+        "file": "1d5ffd34a7ca2cd43977b3918545dc30",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_3__1d5ffd34a7ca2cd43977b3918545dc30_1.json",
+        "sha256": "08d95ca32224896174cdc51d3e8aa681f1e55f2646e908fdb47ccb279d7047fd"
+      }
+    },
+    {
+      "key": "rose:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/3_rose_1_0--728c0bc369.png",
+        "images/3_rose_2_0--171ada3aa5.png",
+        "images/3_rose_3_0--50be15ab87.png",
+        "images/3_rose_4_0--99b9859d7a.png",
+        "images/3_rose_5_0--092a2b17d4.png",
+        "images/3_rose_6_0--c40a8c3925.png",
+        "images/3_rose_7_0--2738d9c78f.png",
+        "images/3_rose_8_0--d3ab618ce4.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_3",
+        "file": "1d5ffd34a7ca2cd43977b3918545dc30",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_3__1d5ffd34a7ca2cd43977b3918545dc30_1.json",
+        "sha256": "08d95ca32224896174cdc51d3e8aa681f1e55f2646e908fdb47ccb279d7047fd"
+      }
+    },
+    {
+      "key": "rose:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/3_rose_1_0--728c0bc369.png",
+        "images/3_rose_2_0--171ada3aa5.png",
+        "images/3_rose_3_0--50be15ab87.png",
+        "images/3_rose_4_0--99b9859d7a.png",
+        "images/3_rose_5_0--092a2b17d4.png",
+        "images/3_rose_6_0--c40a8c3925.png",
+        "images/3_rose_7_0--2738d9c78f.png",
+        "images/3_rose_8_0--d3ab618ce4.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_3",
+        "file": "1d5ffd34a7ca2cd43977b3918545dc30",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_3__1d5ffd34a7ca2cd43977b3918545dc30_1.json",
+        "sha256": "08d95ca32224896174cdc51d3e8aa681f1e55f2646e908fdb47ccb279d7047fd"
+      }
+    },
+    {
+      "key": "rose:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/3_rose_1_0--728c0bc369.png",
+        "images/3_rose_2_0--171ada3aa5.png",
+        "images/3_rose_3_0--50be15ab87.png",
+        "images/3_rose_4_0--99b9859d7a.png",
+        "images/3_rose_5_0--092a2b17d4.png",
+        "images/3_rose_6_0--c40a8c3925.png",
+        "images/3_rose_7_0--2738d9c78f.png",
+        "images/3_rose_8_0--d3ab618ce4.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_3",
+        "file": "1d5ffd34a7ca2cd43977b3918545dc30",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_3__1d5ffd34a7ca2cd43977b3918545dc30_1.json",
+        "sha256": "08d95ca32224896174cdc51d3e8aa681f1e55f2646e908fdb47ccb279d7047fd"
+      }
+    },
+    {
+      "key": "rose:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/3_rose_1_0--728c0bc369.png",
+        "images/3_rose_2_0--171ada3aa5.png",
+        "images/3_rose_3_0--50be15ab87.png",
+        "images/3_rose_4_0--99b9859d7a.png",
+        "images/3_rose_5_0--092a2b17d4.png",
+        "images/3_rose_6_0--c40a8c3925.png",
+        "images/3_rose_7_0--2738d9c78f.png",
+        "images/3_rose_8_0--d3ab618ce4.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_3",
+        "file": "1d5ffd34a7ca2cd43977b3918545dc30",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_3__1d5ffd34a7ca2cd43977b3918545dc30_1.json",
+        "sha256": "08d95ca32224896174cdc51d3e8aa681f1e55f2646e908fdb47ccb279d7047fd"
+      }
+    },
+    {
+      "key": "rose:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/1_rose_0--6af43823de.png",
+        "images/0_rose_0--8aa7fb4e50.png",
+        "images/3_rose_dop_2_0--4d67b7538a.png",
+        "images/2_rose__dop_0--b7748150a9.png",
+        "images/3_rose_dop_1_0--1d78417081.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_1",
+        "file": "2c0d2d46ceb818a4bbf8bb467f581748",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_1__2c0d2d46ceb818a4bbf8bb467f581748_1.json",
+        "sha256": "f350fef6166229eb86fb983c72e60a7c23dc1c6d6859edd1b1e363ed18324d11"
+      }
+    },
+    {
+      "key": "rose:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/1_rose_0--6af43823de.png",
+        "images/0_rose_0--8aa7fb4e50.png",
+        "images/3_rose_dop_2_0--4d67b7538a.png",
+        "images/2_rose__dop_0--b7748150a9.png",
+        "images/3_rose_dop_1_0--1d78417081.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_1",
+        "file": "2c0d2d46ceb818a4bbf8bb467f581748",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_1__2c0d2d46ceb818a4bbf8bb467f581748_1.json",
+        "sha256": "f350fef6166229eb86fb983c72e60a7c23dc1c6d6859edd1b1e363ed18324d11"
+      }
+    },
+    {
+      "key": "rose:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/1_rose_0--6af43823de.png",
+        "images/0_rose_0--8aa7fb4e50.png",
+        "images/3_rose_dop_2_0--4d67b7538a.png",
+        "images/2_rose__dop_0--b7748150a9.png",
+        "images/3_rose_dop_1_0--1d78417081.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_1",
+        "file": "2c0d2d46ceb818a4bbf8bb467f581748",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_1__2c0d2d46ceb818a4bbf8bb467f581748_1.json",
+        "sha256": "f350fef6166229eb86fb983c72e60a7c23dc1c6d6859edd1b1e363ed18324d11"
+      }
+    },
+    {
+      "key": "rose:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/1_rose_0--6af43823de.png",
+        "images/0_rose_0--8aa7fb4e50.png",
+        "images/3_rose_dop_2_0--4d67b7538a.png",
+        "images/2_rose__dop_0--b7748150a9.png",
+        "images/3_rose_dop_1_0--1d78417081.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_1",
+        "file": "2c0d2d46ceb818a4bbf8bb467f581748",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_1__2c0d2d46ceb818a4bbf8bb467f581748_1.json",
+        "sha256": "f350fef6166229eb86fb983c72e60a7c23dc1c6d6859edd1b1e363ed18324d11"
+      }
+    },
+    {
+      "key": "rose:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/1_rose_0--6af43823de.png",
+        "images/0_rose_0--8aa7fb4e50.png",
+        "images/3_rose_dop_2_0--4d67b7538a.png",
+        "images/2_rose__dop_0--b7748150a9.png",
+        "images/3_rose_dop_1_0--1d78417081.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "rose",
+        "file": "bf67f9a62e95be6418ae28aa59572aa9",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "rose_1",
+        "file": "2c0d2d46ceb818a4bbf8bb467f581748",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/rose_1__2c0d2d46ceb818a4bbf8bb467f581748_1.json",
+        "sha256": "f350fef6166229eb86fb983c72e60a7c23dc1c6d6859edd1b1e363ed18324d11"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

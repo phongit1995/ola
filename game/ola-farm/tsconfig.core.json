@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "assets/farm/scripts/core/**/*.ts",
+    "assets/farm/scripts/render/types/MapTypes.ts",
+    "assets/farm/scripts/map/FarmModel.ts",
+    "tests/**/*.ts"
+  ]
+}

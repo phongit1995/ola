@@ -1,0 +1,14 @@
+node_modules/
+library/
+temp/
+local/
+profiles/
+build/
+logs/
+.DS_Store
+
+# Generated service binding; this project does not use Cocos cloud services.
+settings/v2/packages/cocos-service.json
+
+# Output của test/mô phỏng (tools/, tests/)
+artifacts/

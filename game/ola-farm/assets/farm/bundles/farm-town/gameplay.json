@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "startingInventory": {},
+  "showWelcome": true,
+  "rescueEnabled": true,
+  "growthStageFraction": 0.5,
+  "requireFeedMill": true,
+  "animals": {
+    "layer": {
+      "name": "Gà đẻ trứng",
+      "maxPens": 2,
+      "maxCapacity": 5,
+      "startingCapacity": 1,
+      "startingAnimals": 1,
+      "feedPerAnimal": 1
+    },
+    "dairy-cow": {
+      "name": "Bò sữa",
+      "maxPens": 2,
+      "maxCapacity": 5,
+      "startingCapacity": 1,
+      "startingAnimals": 1,
+      "feedPerAnimal": 1
+    },
+    "pig": {
+      "name": "Heo",
+      "maxPens": 2,
+      "maxCapacity": 5,
+      "startingCapacity": 1,
+      "startingAnimals": 1,
+      "feedPerAnimal": 1
+    },
+    "sheep": {
+      "name": "Cừu",
+      "maxPens": 2,
+      "maxCapacity": 5,
+      "startingCapacity": 1,
+      "startingAnimals": 1,
+      "feedPerAnimal": 1
+    }
+  },
+  "machines": {
+    "feedmill": {
+      "name": "Máy thức ăn",
+      "maxBuildings": 2,
+      "maxQueueCapacity": 5,
+      "startingCapacity": 1,
+      "trayCapacity": 5
+    },
+    "bakery": {
+      "name": "Lò bánh",
+      "maxBuildings": 2,
+      "maxQueueCapacity": 5,
+      "startingCapacity": 1,
+      "trayCapacity": 5
+    },
+    "milk_factory": {
+      "name": "Xưởng sữa",
+      "maxBuildings": 2,
+      "maxQueueCapacity": 5,
+      "startingCapacity": 1,
+      "trayCapacity": 5
+    },
+    "grill": {
+      "name": "Bếp nướng",
+      "maxBuildings": 2,
+      "maxQueueCapacity": 5,
+      "startingCapacity": 1,
+      "trayCapacity": 5
+    },
+    "sugar_processor": {
+      "name": "Máy Chế Biến Đường",
+      "maxBuildings": 2,
+      "maxQueueCapacity": 5,
+      "startingCapacity": 1,
+      "trayCapacity": 5
+    },
+    "popcorn_factory": {
+      "name": "Lò Ngô",
+      "maxBuildings": 2,
+      "maxQueueCapacity": 5,
+      "startingCapacity": 1,
+      "trayCapacity": 5
+    },
+    "pie_bakery": {
+      "name": "Tiệm Bánh Pie",
+      "maxBuildings": 2,
+      "maxQueueCapacity": 5,
+      "startingCapacity": 1,
+      "trayCapacity": 5
+    },
+    "loom": {
+      "name": "Bàn đan",
+      "maxBuildings": 2,
+      "maxQueueCapacity": 5,
+      "startingCapacity": 1,
+      "trayCapacity": 5
+    }
+  },
+  "gates": {
+    "husbandry": {
+      "mode": "all",
+      "requirements": [
+        {
+          "items": [
+            "farm40:chicken-feed",
+            "farm40:cow-feed"
+          ],
+          "quantity": 1,
+          "label": "nhận cám"
+        },
+        {
+          "items": [
+            "farm40:egg"
+          ],
+          "quantity": 1,
+          "label": "thu trứng"
+        },
+        {
+          "items": [
+            "raw:7"
+          ],
+          "quantity": 1,
+          "label": "thu sữa"
+        }
+      ]
+    },
+    "crafts": {
+      "mode": "all",
+      "requirements": [
+        {
+          "items": [
+            "town:burger"
+          ],
+          "quantity": 1,
+          "label": "nhận burger"
+        }
+      ]
+    }
+  }
+}

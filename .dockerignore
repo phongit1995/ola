@@ -7,5 +7,6 @@
 .DS_Store
 **/.vscode
 **/.idea
+game/ola-farm
 web/README.md
 web/CLAUDE.md

@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "generatedBy": "tools/split-farm40-items.cjs",
+  "items": [
+    {
+      "name": "BroadleafTree",
+      "uuid": "26015803-5f52-41d4-acb3-3ec335d57a02",
+      "rootId": "c587872e-9dc5-44fc-a37b-ba264d8f296a",
+      "resource": "items/scenery/BroadleafTree",
+      "category": "scenery"
+    },
+    {
+      "name": "PineTree",
+      "uuid": "bb4a1b9c-ea37-42d5-a52c-818ed815116c",
+      "rootId": "08de6668-c304-4167-a48b-124daea1f78b",
+      "resource": "items/scenery/PineTree",
+      "category": "scenery"
+    },
+    {
+      "name": "YellowFlowers",
+      "uuid": "67d0dd56-af40-47bf-a987-5b12f68a1422",
+      "rootId": "401b62df-b120-4fe0-a535-a53f483b1dd3",
+      "resource": "items/scenery/YellowFlowers",
+      "category": "scenery"
+    },
+    {
+      "name": "GrassBush",
+      "uuid": "ad3fbe5c-751b-4732-a441-af63b8fc8f44",
+      "rootId": "9368b06d-ab8e-4edc-a7ec-269f52902900",
+      "resource": "items/scenery/GrassBush",
+      "category": "scenery"
+    },
+    {
+      "name": "PondLandscape",
+      "uuid": "79f2e884-b9a2-40e4-a6d2-69e88dadf3cf",
+      "rootId": "c28503d6-538f-4fe4-aac0-e7d805afedba",
+      "resource": "items/buildings/PondLandscape",
+      "category": "buildings"
+    },
+    {
+      "name": "DogHouse",
+      "uuid": "f6582ed3-a6e7-4e12-a7ce-4d4a0f542310",
+      "rootId": "fbc70c37-fd3d-4218-a675-22f87386f413",
+      "resource": "items/buildings/DogHouse",
+      "category": "buildings"
+    },
+    {
+      "name": "Well",
+      "uuid": "45393b38-ad8c-489e-a5b6-c1cb982a5159",
+      "rootId": "8d11948f-8268-49e8-a160-746e75ae38aa",
+      "resource": "items/buildings/Well",
+      "category": "buildings"
+    },
+    {
+      "name": "Barn",
+      "uuid": "81ecce95-3557-4058-ac5b-189b669396e5",
+      "rootId": "6272109f-eaf0-41b5-a1b5-4513eb0c808f",
+      "resource": "items/buildings/Barn",
+      "category": "buildings"
+    },
+    {
+      "name": "FarmHouse",
+      "uuid": "97decce9-ec42-46b1-a886-c1ddde7163b4",
+      "rootId": "795ebf79-b657-409f-a1bf-6ef293c39094",
+      "resource": "items/buildings/FarmHouse",
+      "category": "buildings"
+    },
+    {
+      "name": "WindmillBody",
+      "uuid": "57c7487a-68ab-4b51-affd-e1a66c39b383",
+      "rootId": "e4c392f2-3a42-4bd7-a33a-56bbf33504a0",
+      "resource": "items/buildings/WindmillBody",
+      "category": "buildings"
+    },
+    {
+      "name": "WindmillBlades",
+      "uuid": "1fa03f10-e254-4711-a965-2d6c68814170",
+      "rootId": "99cdd59b-28d3-475c-aaff-45422db74985",
+      "resource": "items/buildings/WindmillBlades",
+      "category": "buildings"
+    },
+    {
+      "name": "Soil0",
+      "uuid": "03bcae11-5d03-49cf-a49a-3faa609270d5",
+      "rootId": "49a25305-b3a8-4330-a999-b16fd6925627",
+      "resource": "items/plots/Soil0",
+      "category": "plots"
+    },
+    {
+      "name": "Soil1",
+      "uuid": "d32cfdbe-2f11-4a9a-a5f7-e6e380a331e3",
+      "rootId": "234a896d-3f32-4c54-a449-6c3a86b36e90",
+      "resource": "items/plots/Soil1",
+      "category": "plots"
+    },
+    {
+      "name": "Soil2",
+      "uuid": "ac4a06a2-cb36-4d00-a502-e07dfb901228",
+      "rootId": "04390871-382e-44f0-a159-85425edfcf39",
+      "resource": "items/plots/Soil2",
+      "category": "plots"
+    },
+    {
+      "name": "Soil3",
+      "uuid": "9ebf68a8-fa31-460f-a1a0-7c6898c0351a",
+      "rootId": "b686e7fd-c9f8-489f-aa1f-ade04b06e153",
+      "resource": "items/plots/Soil3",
+      "category": "plots"
+    },
+    {
+      "name": "Soil4",
+      "uuid": "e1e1dfd2-98ea-43b8-a4fb-655ab77bedb8",
+      "rootId": "0cb13b88-ba83-43ac-ab50-0857b487f02b",
+      "resource": "items/plots/Soil4",
+      "category": "plots"
+    },
+    {
+      "name": "Wheat",
+      "uuid": "05495e85-0840-402d-a3e6-d8131534c9b1",
+      "rootId": "1e81711c-f9ed-4245-a8de-317bf63d2d1d",
+      "resource": "items/crops/Wheat",
+      "category": "crops"
+    },
+    {
+      "name": "Tomato",
+      "uuid": "0e4e6863-43fe-4a67-a924-5eddcda67407",
+      "rootId": "b7e02164-43ef-4624-afe1-dbe60e7255b7",
+      "resource": "items/crops/Tomato",
+      "category": "crops"
+    },
+    {
+      "name": "Grapes",
+      "uuid": "10abec1b-96da-4ee9-a5e3-73702595dd3c",
+      "rootId": "f25585e6-e145-47b1-a637-880d81b6048e",
+      "resource": "items/crops/Grapes",
+      "category": "crops"
+    },
+    {
+      "name": "Strawberry",
+      "uuid": "375981f7-e2e5-4057-aa82-a0dbad4401ee",
+      "rootId": "71192b9e-f7eb-4257-a4d9-bb4e37a2a0bf",
+      "resource": "items/crops/Strawberry",
+      "category": "crops"
+    },
+    {
+      "name": "Pen0",
+      "uuid": "3d37d4cc-e6a5-42de-a6cc-8f84772f56fa",
+      "rootId": "6126c296-1368-4970-a2c5-76b291358f3b",
+      "resource": "items/plots/Pen0",
+      "category": "plots"
+    },
+    {
+      "name": "Pen1",
+      "uuid": "e8902af5-1de2-4413-a6ee-c3c2e7041774",
+      "rootId": "fef5ce32-eead-4d08-ab18-58f6b740b198",
+      "resource": "items/plots/Pen1",
+      "category": "plots"
+    },
+    {
+      "name": "Pen2",
+      "uuid": "1e0f958d-9012-4502-a779-809112aa5361",
+      "rootId": "2cf1828d-8779-4252-ae86-612eb0e8ba64",
+      "resource": "items/plots/Pen2",
+      "category": "plots"
+    },
+    {
+      "name": "Pen3",
+      "uuid": "570f325a-c02d-47f6-a257-08de7840fcd7",
+      "rootId": "65391c6a-1510-4c49-a8f2-2dadbdb05c4b",
+      "resource": "items/plots/Pen3",
+      "category": "plots"
+    },
+    {
+      "name": "Pen4",
+      "uuid": "5613323a-f8e2-48c4-a792-0b34a72ce06f",
+      "rootId": "0fd31c97-8e60-4135-af16-2d52e78795bc",
+      "resource": "items/plots/Pen4",
+      "category": "plots"
+    },
+    {
+      "name": "PondSlot0",
+      "uuid": "bb26ee12-34b5-4171-a12d-cffb69992c0f",
+      "rootId": "8adf45ab-bcb8-4286-a49d-d931d3f44126",
+      "resource": "items/plots/PondSlot0",
+      "category": "plots"
+    },
+    {
+      "name": "PondSlot1",
+      "uuid": "a16c2f6e-f4aa-4e87-a411-25040094f016",
+      "rootId": "93efc684-68ea-41fd-ab39-ab22532f9469",
+      "resource": "items/plots/PondSlot1",
+      "category": "plots"
+    },
+    {
+      "name": "PondSlot2",
+      "uuid": "eb2d02d3-bf4e-45cb-aec8-18455c6d1c8f",
+      "rootId": "c7b083bb-c7f8-424f-a0a6-77e05a22865f",
+      "resource": "items/plots/PondSlot2",
+      "category": "plots"
+    },
+    {
+      "name": "PondSlot3",
+      "uuid": "1e39bbdd-a6d4-4d0e-a9aa-224714dd0a2b",
+      "rootId": "9a716f6c-212c-45a4-a464-c4aefc0b3a61",
+      "resource": "items/plots/PondSlot3",
+      "category": "plots"
+    },
+    {
+      "name": "PondSlot4",
+      "uuid": "90c9deea-1880-412f-a457-aa54fa7ead05",
+      "rootId": "7eff090e-4485-4661-a4e3-7b94563224a9",
+      "resource": "items/plots/PondSlot4",
+      "category": "plots"
+    },
+    {
+      "name": "Chicken",
+      "uuid": "4ec62b7d-7d73-4bb8-a9e1-e51f7341f8ac",
+      "rootId": "133399ed-85f1-4e92-aeed-98b1b852af03",
+      "resource": "items/animals/Chicken",
+      "category": "animals"
+    },
+    {
+      "name": "Pig",
+      "uuid": "b17975d4-ad52-4e19-a900-525de25b5dd0",
+      "rootId": "75723cab-9b06-45a4-a756-0e4f7ab339ce",
+      "resource": "items/animals/Pig",
+      "category": "animals"
+    },
+    {
+      "name": "Cow",
+      "uuid": "581dc6c6-fb47-4548-aacc-01953171701d",
+      "rootId": "0c7e2764-dfc4-4457-a428-90c4c7b7427a",
+      "resource": "items/animals/Cow",
+      "category": "animals"
+    },
+    {
+      "name": "Fish",
+      "uuid": "0900c2ce-e83f-44e5-a7d5-8951d323298c",
+      "rootId": "4d98a4cd-6ce6-40be-a778-2ce3969a5ab2",
+      "resource": "items/animals/Fish",
+      "category": "animals"
+    },
+    {
+      "name": "Shrimp",
+      "uuid": "f157c08b-c486-4234-a215-7a5daa871acd",
+      "rootId": "6fe43b5b-6422-4cf8-a70a-65d97289fc77",
+      "resource": "items/animals/Shrimp",
+      "category": "animals"
+    }
+  ],
+  "sceneryInstances": 21,
+  "forest": {
+    "generatedBy": "tools/plant-forest.cjs",
+    "seed": 40,
+    "rootSize": {
+      "width": 8950,
+      "height": 4835
+    },
+    "clearing": {
+      "left": -3675,
+      "right": 4325,
+      "bottom": -2132.5,
+      "top": 1867.5,
+      "radius": 300,
+      "shape": "diamond"
+    },
+    "trees": 981,
+    "keptInside": 21
+  },
+  "decorInstances": 2496,
+  "groundDecorInstances": 25
+}

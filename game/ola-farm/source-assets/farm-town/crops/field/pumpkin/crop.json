@@ -1,0 +1,1483 @@
+{
+  "schemaVersion": 1,
+  "key": "pumpkin",
+  "group": "field",
+  "titleVi": "Bí Ngô",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C2 — đường và thức ăn heo/cừu",
+  "farmCompatibility": "new-field-crop",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 129,
+    "key": "pumpkin",
+    "titleVi": "Bí Ngô"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/pumpkin__e1fe53173efc96247b7706d5a5ad92e7_279.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 129,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 7,
+    "entity": "garden_bed",
+    "durationSeconds": 3000,
+    "level": 11,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 4.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 11,
+    "basicPrice": 22.0,
+    "xpOnUse": 9.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "accessories",
+      "entityTitleVi": "Phụ Kiện",
+      "recipeIndex": 1,
+      "output": "hf_pumpkin",
+      "outputTitleVi": "Đèn Bí Ngô Jack O’Lantern",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/accessories_JOB_Data__a52e7e818574f264e98da8fb658e26c9_545.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "food_processor",
+      "entityTitleVi": "Máy Chế Biến Thực Phẩm",
+      "recipeIndex": 4,
+      "output": "feed_goat",
+      "outputTitleVi": "Thức Ăn Cừu",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/food_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1047.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "soup_manufacture",
+      "entityTitleVi": "Sản Xuất Súp",
+      "recipeIndex": 1,
+      "output": "pumpkin_soup",
+      "outputTitleVi": "Súp Bí Ngô",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/soup_manufacture_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1050.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "mexico",
+      "entityTitleVi": "Đồ Ăn Mexico",
+      "recipeIndex": 4,
+      "output": "quesadilla",
+      "outputTitleVi": "Bánh Quesadilla",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/mexico_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1183.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 3,
+      "output": "hf_pie",
+      "outputTitleVi": "Bánh Pie Lễ Hội",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 4,
+      "output": "pie_pumpkin",
+      "outputTitleVi": "Bánh Bí Ngô",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 10750,
+      "sha256": "cbe272ce3413f2bfc47ac9c319456a9e923d0fdf94608079bfbad72cf67462d2",
+      "size": [
+        87,
+        89
+      ],
+      "source": {
+        "exportPath": "export/sprites/pumpkin__sharedassets0.assets_465.png",
+        "file": "sharedassets0.assets",
+        "pathId": 465,
+        "spriteName": "pumpkin"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 3.076120376586914,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_1_0--ad4d2ddcb0.png",
+      "bytes": 4815,
+      "sha256": "e284fadfd331fc84bdf3fcf24dd607fe99929d0700a0d2ddd88ccca90ee01f24",
+      "size": [
+        72,
+        46
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_1_0__73e04a3f1d3aba7409a1548772b3307a_1.png",
+        "file": "73e04a3f1d3aba7409a1548772b3307a",
+        "pathId": 1,
+        "spriteName": "tikv_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 72.0,
+          "height": 46.0
+        },
+        "pivot": {
+          "x": 0.5029470324516296,
+          "y": 0.28089454770088196
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_2_0--fa98d973b1.png",
+      "bytes": 9161,
+      "sha256": "736e81c37939abaaae2373511fcba2cd0d2598ed6655d0d8bd3288fcead88117",
+      "size": [
+        91,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_2_0__3bf6ec4465e16be4f83edb0c3b9ac7a2_1.png",
+        "file": "3bf6ec4465e16be4f83edb0c3b9ac7a2",
+        "pathId": 1,
+        "spriteName": "tikv_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 91.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.5190476179122925,
+          "y": 0.34541055560112
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3ten_0--dc4c60d8b1.png",
+      "bytes": 1853,
+      "sha256": "fc2193a2fdc81fdfddf11a485abde849807ebf81a80233fd2de64c9f472b8e27",
+      "size": [
+        102,
+        36
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3ten_0__82b1f9b4210e8f44898497656c73bf14_1.png",
+        "file": "82b1f9b4210e8f44898497656c73bf14",
+        "pathId": 1,
+        "spriteName": "tikv_3ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 102.0,
+          "height": 36.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3t_2_0--63aa69bbfc.png",
+      "bytes": 3858,
+      "sha256": "3e04ba854db700498f82d0b62b56fe59d8a73f9c16237f8af25166959f399e67",
+      "size": [
+        44,
+        45
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3t_2_0__2b1cebe35670dbc4f9c1df82430a2b97_1.png",
+        "file": "2b1cebe35670dbc4f9c1df82430a2b97",
+        "pathId": 1,
+        "spriteName": "tikv_3t_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 45.0
+        },
+        "pivot": {
+          "x": 0.48473483324050903,
+          "y": 0.14177682995796204
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3lian9_0--c4ca03e61d.png",
+      "bytes": 655,
+      "sha256": "64314587bfebd2e314a6160dd817f4cae45d12991dcaf6cff546bee7f015f370",
+      "size": [
+        20,
+        19
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3lian9_0__adf82a8dc08bb104395e8de245c5b362_1.png",
+        "file": "adf82a8dc08bb104395e8de245c5b362",
+        "pathId": 1,
+        "spriteName": "tikv_3lian9_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 20.0,
+          "height": 19.0
+        },
+        "pivot": {
+          "x": 0.35369768738746643,
+          "y": 0.7507473230361938
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3lian8_0--2381a13705.png",
+      "bytes": 495,
+      "sha256": "c608484c3195528880093feff2d640d7664a5adc4d3774c1dd193d7fbee07deb",
+      "size": [
+        18,
+        13
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3lian8_0__2d597a212f6da40429c7315e86483da5_1.png",
+        "file": "2d597a212f6da40429c7315e86483da5",
+        "pathId": 1,
+        "spriteName": "tikv_3lian8_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 18.0,
+          "height": 13.0
+        },
+        "pivot": {
+          "x": 0.08104339987039566,
+          "y": 0.31031152606010437
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3lian5_0--bf45c16c3a.png",
+      "bytes": 603,
+      "sha256": "463d8651fcef315ec278e446ed1f849673ce845e622cbafaa278547754c250e1",
+      "size": [
+        17,
+        14
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3lian5_0__1c70725a32ff2134fb6a9e672659492b_1.png",
+        "file": "1c70725a32ff2134fb6a9e672659492b",
+        "pathId": 1,
+        "spriteName": "tikv_3lian5_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 17.0,
+          "height": 14.0
+        },
+        "pivot": {
+          "x": 0.1435701698064804,
+          "y": 0.22234977781772614
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3lian6_0--74f6db9c45.png",
+      "bytes": 1314,
+      "sha256": "f2db7f0ecfa20ca580a2c8dfdbf59e797bf0d6978d1f7130509881004ffb8427",
+      "size": [
+        31,
+        24
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3lian6_0__552740c3505e5764fb2039a93381553b_1.png",
+        "file": "552740c3505e5764fb2039a93381553b",
+        "pathId": 1,
+        "spriteName": "tikv_3lian6_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 31.0,
+          "height": 24.0
+        },
+        "pivot": {
+          "x": 0.10013870894908905,
+          "y": 0.6892473101615906
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3lian4_0--c8b9151fd6.png",
+      "bytes": 2118,
+      "sha256": "4aa1b23bc35f03a9bfdb5ce755722849264373b90505984626ad90a5abf3c942",
+      "size": [
+        46,
+        31
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3lian4_0__1eb1970372099474abf5442afa3af3fc_1.png",
+        "file": "1eb1970372099474abf5442afa3af3fc",
+        "pathId": 1,
+        "spriteName": "tikv_3lian4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 46.0,
+          "height": 31.0
+        },
+        "pivot": {
+          "x": 0.5269285440444946,
+          "y": 0.42452317476272583
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3lian3_0--6ea723c824.png",
+      "bytes": 1146,
+      "sha256": "7250f9eb53d80deb898657db97d44b05bf64d905d59247cd1a91fa33baee3bfc",
+      "size": [
+        27,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3lian3_0__2b9071d3d0288c548a62a92bd90b2da2_1.png",
+        "file": "2b9071d3d0288c548a62a92bd90b2da2",
+        "pathId": 1,
+        "spriteName": "tikv_3lian3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 27.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.6554126739501953,
+          "y": 0.4693012237548828
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3t_1_0--d3b7d6bff0.png",
+      "bytes": 3835,
+      "sha256": "98d47cec0e563f5841c0780bee08f08bc7a3e47649f36c95996789ff7d9bb446",
+      "size": [
+        47,
+        46
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3t_1_0__048ecb82b8224374aa90eed356b56adc_1.png",
+        "file": "048ecb82b8224374aa90eed356b56adc",
+        "pathId": 1,
+        "spriteName": "tikv_3t_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 47.0,
+          "height": 46.0
+        },
+        "pivot": {
+          "x": 0.468985915184021,
+          "y": 0.19989287853240967
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3lian1_0--003c9da3b0.png",
+      "bytes": 1498,
+      "sha256": "9baf65a764597f1786ef39b25b5d7e0975657fd2c801c6d8d46e5f56c019d493",
+      "size": [
+        36,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3lian1_0__abeef6559dd7d8b4f93428a0a9f7cf1e_1.png",
+        "file": "abeef6559dd7d8b4f93428a0a9f7cf1e",
+        "pathId": 1,
+        "spriteName": "tikv_3lian1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 36.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.04902428388595581,
+          "y": 0.9015399217605591
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/tikv_3lian2_0--7dc3011015.png",
+      "bytes": 2654,
+      "sha256": "0c191f636dafa36d8c29918dd082459116824c944cb7cbfa3522f2b7ff508abb",
+      "size": [
+        53,
+        34
+      ],
+      "source": {
+        "exportPath": "export/sprites/tikv_3lian2_0__c0bc31c2f443a324a8bbcf89c93d772d_1.png",
+        "file": "c0bc31c2f443a324a8bbcf89c93d772d",
+        "pathId": 1,
+        "spriteName": "tikv_3lian2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 53.0,
+          "height": 34.0
+        },
+        "pivot": {
+          "x": 0.36609864234924316,
+          "y": 0.5811723470687866
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_z_0--883118c11b.png",
+      "bytes": 5987,
+      "sha256": "b3b89609a006d7ed55915d935206d66afb998ba6ec24d324f4665e6fef19fc2d",
+      "size": [
+        70,
+        55
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_z_0__3e3d6611d2111e545acc6dd6b2c788d5_1.png",
+        "file": "3e3d6611d2111e545acc6dd6b2c788d5",
+        "pathId": 1,
+        "spriteName": "korzina_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 55.0
+        },
+        "pivot": {
+          "x": 0.5060317516326904,
+          "y": 0.04195280000567436
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_goroh_ten_0--95b1a24536.png",
+      "bytes": 941,
+      "sha256": "7a7791f05c2154cbbb9c628581f869b3d6fe0c14bea7c3527732cfc56c0b72c2",
+      "size": [
+        64,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_goroh_ten_0__92e8bd173cc6243469348943018e68e6_1.png",
+        "file": "92e8bd173cc6243469348943018e68e6",
+        "pathId": 1,
+        "spriteName": "4_goroh_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_p_0--7f793edf56.png",
+      "bytes": 4229,
+      "sha256": "d94006a00ba11282fd57b836c1fbcd17cc35c72de605df40dbe27ee7aaeae92b",
+      "size": [
+        70,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_p_0__019de690601ed6347a8ea922874ee9a8_1.png",
+        "file": "019de690601ed6347a8ea922874ee9a8",
+        "pathId": 1,
+        "spriteName": "korzina_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.04370361566543579
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/ruchka_korzina_0--aaf9e6b4e2.png",
+      "bytes": 1264,
+      "sha256": "f523de6096814f7ef76adc7300b029294e349c09770f22a54fde2f6571d3c976",
+      "size": [
+        18,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/ruchka_korzina_0__76d356cc6b1fef1438dfa8e1ddff75ec_1.png",
+        "file": "76d356cc6b1fef1438dfa8e1ddff75ec",
+        "pathId": 1,
+        "spriteName": "ruchka_korzina_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 18.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.71687251329422,
+          "y": 0.055404335260391235
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tikv_nutr_0--c5280ad59c.png",
+      "bytes": 4668,
+      "sha256": "072127b334b35aff9b48ed60451b8dda5cfdc055e3180031b15fe082af26454e",
+      "size": [
+        57,
+        56
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tikv_nutr_0__b993005083a6f32499599059f3b9a1f5_1.png",
+        "file": "b993005083a6f32499599059f3b9a1f5",
+        "pathId": 1,
+        "spriteName": "4_tikv_nutr_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 57.0,
+          "height": 56.0
+        },
+        "pivot": {
+          "x": 0.4698505401611328,
+          "y": 0.2212522029876709
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tikv_1_0--8146bfc501.png",
+      "bytes": 2920,
+      "sha256": "827adb74fb8d5f47436e8c44cbf567dc4bfab5651aae9721d3b305dcf8ec304e",
+      "size": [
+        41,
+        39
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tikv_1_0__09734ca22d7936c4282d553b26a3ee7e_1.png",
+        "file": "09734ca22d7936c4282d553b26a3ee7e",
+        "pathId": 1,
+        "spriteName": "4_tikv_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 41.0,
+          "height": 39.0
+        },
+        "pivot": {
+          "x": 0.5246913433074951,
+          "y": 0.17812596261501312
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tikv_list_nutr_0--c00567f9eb.png",
+      "bytes": 842,
+      "sha256": "6434b74c5f2bae4173b57a9de3060257a537dad79eea65653827f9f067d69d83",
+      "size": [
+        24,
+        14
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tikv_list_nutr_0__ee43fa8f6c727134d90ee1bc90d5c686_1.png",
+        "file": "ee43fa8f6c727134d90ee1bc90d5c686",
+        "pathId": 1,
+        "spriteName": "4_tikv_list_nutr_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 24.0,
+          "height": 14.0
+        },
+        "pivot": {
+          "x": 0.9707818031311035,
+          "y": 0.5169311165809631
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tikv_list_0--fdd760bee2.png",
+      "bytes": 483,
+      "sha256": "52801e7c29da8860504ccd3fd8f7cc42541d905eb10504c23c41e7456db70e83",
+      "size": [
+        19,
+        11
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tikv_list_0__19a95ad5797562a4f8012f587492e5f5_1.png",
+        "file": "19a95ad5797562a4f8012f587492e5f5",
+        "pathId": 1,
+        "spriteName": "4_tikv_list_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 19.0,
+          "height": 11.0
+        },
+        "pivot": {
+          "x": 0.05061726272106171,
+          "y": 0.4941638112068176
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_tikv_ten_0--1f7c48bfae.png",
+      "bytes": 1030,
+      "sha256": "03210dc9e9371409a030eaab9839b0f0afb0dd7f44e0390ccd732c73e94c5cbb",
+      "size": [
+        43,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_tikv_ten_0__1abec2b445e7b7c488a6717ca88d9605_1.png",
+        "file": "1abec2b445e7b7c488a6717ca88d9605",
+        "pathId": 1,
+        "spriteName": "4_tikv_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 43.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_pumpkin:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_pumpkin:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_pumpkin:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/tikv_1_0--ad4d2ddcb0.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_1",
+        "file": "62f4dc8d691b2344382d557ab1984888",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_1__62f4dc8d691b2344382d557ab1984888_1.json",
+        "sha256": "38101a3fe57059e6200f7626570c135d521b92ec2e90fb8d5bab317af00e8bd9"
+      }
+    },
+    {
+      "key": "farm_pumpkin:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/tikv_2_0--fa98d973b1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_2",
+        "file": "cc3e3bf62a5b88542820a40d0d8c0f17",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_2__cc3e3bf62a5b88542820a40d0d8c0f17_1.json",
+        "sha256": "79c6795af889615bc32e99c4ded4af5b7eeae7f1093f2c3bfa056e52b8249af4"
+      }
+    },
+    {
+      "key": "farm_pumpkin:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/tikv_2_0--fa98d973b1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_2",
+        "file": "cc3e3bf62a5b88542820a40d0d8c0f17",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_2__cc3e3bf62a5b88542820a40d0d8c0f17_1.json",
+        "sha256": "79c6795af889615bc32e99c4ded4af5b7eeae7f1093f2c3bfa056e52b8249af4"
+      }
+    },
+    {
+      "key": "farm_pumpkin:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/tikv_2_0--fa98d973b1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_2",
+        "file": "cc3e3bf62a5b88542820a40d0d8c0f17",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_2__cc3e3bf62a5b88542820a40d0d8c0f17_1.json",
+        "sha256": "79c6795af889615bc32e99c4ded4af5b7eeae7f1093f2c3bfa056e52b8249af4"
+      }
+    },
+    {
+      "key": "farm_pumpkin:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_pumpkin:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/tikv_3ten_0--dc4c60d8b1.png",
+        "images/tikv_3t_2_0--63aa69bbfc.png",
+        "images/tikv_3lian9_0--c4ca03e61d.png",
+        "images/tikv_3lian8_0--2381a13705.png",
+        "images/tikv_3lian5_0--bf45c16c3a.png",
+        "images/tikv_3lian6_0--74f6db9c45.png",
+        "images/tikv_3lian4_0--c8b9151fd6.png",
+        "images/tikv_3lian3_0--6ea723c824.png",
+        "images/tikv_3t_1_0--d3b7d6bff0.png",
+        "images/tikv_3lian1_0--003c9da3b0.png",
+        "images/tikv_3lian2_0--7dc3011015.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_3",
+        "file": "70c3a616414e6bc49b58cebbe7671b44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_3__70c3a616414e6bc49b58cebbe7671b44_1.json",
+        "sha256": "43af291021c2af96b58ce6381804e42b1cccf919dce411f612c418535ed64884"
+      }
+    },
+    {
+      "key": "farm_pumpkin:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/tikv_3ten_0--dc4c60d8b1.png",
+        "images/tikv_3t_2_0--63aa69bbfc.png",
+        "images/tikv_3lian9_0--c4ca03e61d.png",
+        "images/tikv_3lian8_0--2381a13705.png",
+        "images/tikv_3lian5_0--bf45c16c3a.png",
+        "images/tikv_3lian6_0--74f6db9c45.png",
+        "images/tikv_3lian4_0--c8b9151fd6.png",
+        "images/tikv_3lian3_0--6ea723c824.png",
+        "images/tikv_3t_1_0--d3b7d6bff0.png",
+        "images/tikv_3lian1_0--003c9da3b0.png",
+        "images/tikv_3lian2_0--7dc3011015.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_3",
+        "file": "70c3a616414e6bc49b58cebbe7671b44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_3__70c3a616414e6bc49b58cebbe7671b44_1.json",
+        "sha256": "43af291021c2af96b58ce6381804e42b1cccf919dce411f612c418535ed64884"
+      }
+    },
+    {
+      "key": "farm_pumpkin:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/tikv_3ten_0--dc4c60d8b1.png",
+        "images/tikv_3t_2_0--63aa69bbfc.png",
+        "images/tikv_3lian9_0--c4ca03e61d.png",
+        "images/tikv_3lian8_0--2381a13705.png",
+        "images/tikv_3lian5_0--bf45c16c3a.png",
+        "images/tikv_3lian6_0--74f6db9c45.png",
+        "images/tikv_3lian4_0--c8b9151fd6.png",
+        "images/tikv_3lian3_0--6ea723c824.png",
+        "images/tikv_3t_1_0--d3b7d6bff0.png",
+        "images/tikv_3lian1_0--003c9da3b0.png",
+        "images/tikv_3lian2_0--7dc3011015.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_3",
+        "file": "70c3a616414e6bc49b58cebbe7671b44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_3__70c3a616414e6bc49b58cebbe7671b44_1.json",
+        "sha256": "43af291021c2af96b58ce6381804e42b1cccf919dce411f612c418535ed64884"
+      }
+    },
+    {
+      "key": "farm_pumpkin:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/tikv_3ten_0--dc4c60d8b1.png",
+        "images/tikv_3t_2_0--63aa69bbfc.png",
+        "images/tikv_3lian9_0--c4ca03e61d.png",
+        "images/tikv_3lian8_0--2381a13705.png",
+        "images/tikv_3lian5_0--bf45c16c3a.png",
+        "images/tikv_3lian6_0--74f6db9c45.png",
+        "images/tikv_3lian4_0--c8b9151fd6.png",
+        "images/tikv_3lian3_0--6ea723c824.png",
+        "images/tikv_3t_1_0--d3b7d6bff0.png",
+        "images/tikv_3lian1_0--003c9da3b0.png",
+        "images/tikv_3lian2_0--7dc3011015.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_3",
+        "file": "70c3a616414e6bc49b58cebbe7671b44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_3__70c3a616414e6bc49b58cebbe7671b44_1.json",
+        "sha256": "43af291021c2af96b58ce6381804e42b1cccf919dce411f612c418535ed64884"
+      }
+    },
+    {
+      "key": "farm_pumpkin:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/tikv_3ten_0--dc4c60d8b1.png",
+        "images/tikv_3t_2_0--63aa69bbfc.png",
+        "images/tikv_3lian9_0--c4ca03e61d.png",
+        "images/tikv_3lian8_0--2381a13705.png",
+        "images/tikv_3lian5_0--bf45c16c3a.png",
+        "images/tikv_3lian6_0--74f6db9c45.png",
+        "images/tikv_3lian4_0--c8b9151fd6.png",
+        "images/tikv_3lian3_0--6ea723c824.png",
+        "images/tikv_3t_1_0--d3b7d6bff0.png",
+        "images/tikv_3lian1_0--003c9da3b0.png",
+        "images/tikv_3lian2_0--7dc3011015.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_3",
+        "file": "70c3a616414e6bc49b58cebbe7671b44",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_3__70c3a616414e6bc49b58cebbe7671b44_1.json",
+        "sha256": "43af291021c2af96b58ce6381804e42b1cccf919dce411f612c418535ed64884"
+      }
+    },
+    {
+      "key": "farm_pumpkin:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tikv_nutr_0--c5280ad59c.png",
+        "images/4_tikv_1_0--8146bfc501.png",
+        "images/4_tikv_list_nutr_0--c00567f9eb.png",
+        "images/4_tikv_list_0--fdd760bee2.png",
+        "images/4_tikv_ten_0--1f7c48bfae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_end",
+        "file": "f36e3fa176ba4534caf7b0d9c354afea",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_end__f36e3fa176ba4534caf7b0d9c354afea_1.json",
+        "sha256": "0a020fbf14c39f99c90428da66a9cb6fc04461774534f7c530283a47dd585383"
+      }
+    },
+    {
+      "key": "farm_pumpkin:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tikv_nutr_0--c5280ad59c.png",
+        "images/4_tikv_1_0--8146bfc501.png",
+        "images/4_tikv_list_nutr_0--c00567f9eb.png",
+        "images/4_tikv_list_0--fdd760bee2.png",
+        "images/4_tikv_ten_0--1f7c48bfae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_end",
+        "file": "f36e3fa176ba4534caf7b0d9c354afea",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_end__f36e3fa176ba4534caf7b0d9c354afea_1.json",
+        "sha256": "0a020fbf14c39f99c90428da66a9cb6fc04461774534f7c530283a47dd585383"
+      }
+    },
+    {
+      "key": "farm_pumpkin:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tikv_nutr_0--c5280ad59c.png",
+        "images/4_tikv_1_0--8146bfc501.png",
+        "images/4_tikv_list_nutr_0--c00567f9eb.png",
+        "images/4_tikv_list_0--fdd760bee2.png",
+        "images/4_tikv_ten_0--1f7c48bfae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_end",
+        "file": "f36e3fa176ba4534caf7b0d9c354afea",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_end__f36e3fa176ba4534caf7b0d9c354afea_1.json",
+        "sha256": "0a020fbf14c39f99c90428da66a9cb6fc04461774534f7c530283a47dd585383"
+      }
+    },
+    {
+      "key": "farm_pumpkin:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tikv_nutr_0--c5280ad59c.png",
+        "images/4_tikv_1_0--8146bfc501.png",
+        "images/4_tikv_list_nutr_0--c00567f9eb.png",
+        "images/4_tikv_list_0--fdd760bee2.png",
+        "images/4_tikv_ten_0--1f7c48bfae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_end",
+        "file": "f36e3fa176ba4534caf7b0d9c354afea",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_end__f36e3fa176ba4534caf7b0d9c354afea_1.json",
+        "sha256": "0a020fbf14c39f99c90428da66a9cb6fc04461774534f7c530283a47dd585383"
+      }
+    },
+    {
+      "key": "farm_pumpkin:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_tikv_nutr_0--c5280ad59c.png",
+        "images/4_tikv_1_0--8146bfc501.png",
+        "images/4_tikv_list_nutr_0--c00567f9eb.png",
+        "images/4_tikv_list_0--fdd760bee2.png",
+        "images/4_tikv_ten_0--1f7c48bfae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pumpkin",
+        "file": "e85395681dfd45f4ea80d50e0491df60",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "tikva_end",
+        "file": "f36e3fa176ba4534caf7b0d9c354afea",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/tikva_end__f36e3fa176ba4534caf7b0d9c354afea_1.json",
+        "sha256": "0a020fbf14c39f99c90428da66a9cb6fc04461774534f7c530283a47dd585383"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

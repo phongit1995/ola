@@ -1,0 +1,32 @@
+import type { FarmRuntimeConfig } from '../types/RuntimeTypes';
+
+/** Defaults only serve archived profiles and independently instantiated presentation components. */
+export const LEGACY_RUNTIME: FarmRuntimeConfig = {
+  version: 1,
+  session: {
+    autosaveSeconds: 2.5,
+    offlineProgressEnabled: true,
+    maxOfflineSeconds: null,
+    defaultSound: false,
+    defaultMusic: false,
+  },
+  audio: { musicVolume: 0.15, effectVolume: 0.3 },
+  ui: { refreshSeconds: 0.25, toastSeconds: 4, motionEnabled: true },
+  input: {
+    longPressSeconds: 0.45,
+    mapDragSlop: 8,
+    seedDragSlop: 12,
+    buttonDragSlop: 10,
+    wheelZoomStep: 1.12,
+    resizeSettleSeconds: 0.25,
+  },
+  camera: {
+    homePadding: 90,
+    cullMargin: 250,
+    maxZoom: 8,
+    maxDisplayScale: 2,
+    buildingFocusScale: 1.35,
+    facilityFocusScale: 1.1,
+  },
+  assets: { loadConcurrency: 8 },
+};

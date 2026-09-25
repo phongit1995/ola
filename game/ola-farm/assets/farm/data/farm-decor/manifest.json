@@ -1,0 +1,915 @@
+{
+  "schemaVersion": 1,
+  "images": [
+    {
+      "id": "DecorRoundTree",
+      "category": "trees",
+      "uuid": "d2a381ca-49d8-0da5-27ef-31dbe72700f7",
+      "rootId": "8d676bf0-0c4d-3d64-7e2f-57d43eb7c32c",
+      "width": 150,
+      "height": 208,
+      "anchor": [
+        0.5,
+        0.06
+      ],
+      "resource": "items/scenery/DecorRoundTree",
+      "sha256": "e17c6a777bbe3c5e53b89a17eaac62d63f6a8ce76831b92ec71b2d6921293bf5"
+    },
+    {
+      "id": "DecorWideTree",
+      "category": "trees",
+      "uuid": "a865cd91-411f-9d0d-c4a5-e29780f4fc75",
+      "rootId": "077a2d22-52fd-bbf3-204b-e12bbc17a802",
+      "width": 224,
+      "height": 239,
+      "anchor": [
+        0.5,
+        0.05
+      ],
+      "resource": "items/scenery/DecorWideTree",
+      "sha256": "7e7e5c5f665d44cdda5e2d83a14943b3eb71bbcbb6d08d4453bde721c0a4834f"
+    },
+    {
+      "id": "DecorPineTree",
+      "category": "trees",
+      "uuid": "c0369477-9aba-1b50-69d1-8df91abfbede",
+      "rootId": "49cb4f07-069d-4f67-a9cb-d1e25609e354",
+      "width": 136,
+      "height": 183,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/DecorPineTree",
+      "sha256": "58e1c250bd3a5fdbb723d825b3de0c9e92f8cb7252f63954252cbaacccb088ac"
+    },
+    {
+      "id": "DecorTallTree",
+      "category": "trees",
+      "uuid": "ea487757-3c3d-b405-c1ab-879f5967af83",
+      "rootId": "560b38ae-d859-b73d-3483-8c67177e762d",
+      "width": 152,
+      "height": 295,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/DecorTallTree",
+      "sha256": "c161e6d6e6e40750cf849e14e612f98975192539b7de410a07e6b1a07286b524"
+    },
+    {
+      "id": "DecorLightBush",
+      "category": "shrubs",
+      "uuid": "0ad78562-f3cd-32cf-dcb2-a7f41074e4cb",
+      "rootId": "5008d360-0623-dd70-de61-fd38afb5a56e",
+      "width": 75,
+      "height": 81,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/DecorLightBush",
+      "sha256": "b438099c150ec7dc834a2070ea181844137f1d5350ada5dd77ee056e4637e15f"
+    },
+    {
+      "id": "DecorDarkBush",
+      "category": "shrubs",
+      "uuid": "6cbe9585-bff1-efb6-18f5-f93a2e48a5df",
+      "rootId": "84028c88-0c27-99cf-17f7-1c8735cd5efa",
+      "width": 87,
+      "height": 82,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/DecorDarkBush",
+      "sha256": "94dfbd690a79901adfef00642c2349898b8f49c92e9cd7e631c12e0ad11daf2c"
+    },
+    {
+      "id": "DecorDaisies",
+      "category": "flowers",
+      "uuid": "c65bdd57-ed4f-e20d-f54a-7f8b3bdd6081",
+      "rootId": "920ef6a7-c7b0-9465-a5ed-2f83cf32e784",
+      "width": 115,
+      "height": 90,
+      "anchor": [
+        0.49542,
+        0.499154
+      ],
+      "resource": "items/scenery/DecorDaisies",
+      "sha256": "5b9904c45905fc51cb91f7b78ad760a250252ed3927ae669b519db3e4c2821e9"
+    },
+    {
+      "id": "DecorPoppies",
+      "category": "flowers",
+      "uuid": "5f5ab38b-45ce-e7f6-4016-844d445725f7",
+      "rootId": "630a04cd-f5fd-0061-a843-8078cbab76c3",
+      "width": 105,
+      "height": 84,
+      "anchor": [
+        0.494513,
+        0.499094
+      ],
+      "resource": "items/scenery/DecorPoppies",
+      "sha256": "117c3317abbb8269c658f84531ea6abc3b6dd980f3664f80289dd9dac5c1aff4"
+    },
+    {
+      "id": "DecorStone",
+      "category": "rocks",
+      "uuid": "826c71ad-92a8-e085-a356-08c84b880df7",
+      "rootId": "8eef7145-94ba-f6a7-9cdd-43ff76dca956",
+      "width": 95,
+      "height": 76,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/DecorStone",
+      "sha256": "1465f4fcf59c0c164e4c7ffa658d68e58ce3a7ad5727a75fa94da0bb1b3859d3"
+    },
+    {
+      "id": "DecorPebbles",
+      "category": "ground",
+      "uuid": "0d6fd75c-db68-e3b9-01d1-961d21371376",
+      "rootId": "03338c77-cef9-1ab1-b08c-af398a2bf32f",
+      "width": 95,
+      "height": 36,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/DecorPebbles",
+      "sha256": "733051942904c7fbd59859379944e527d704e4f11cf35c12b8e03febc0acb828"
+    },
+    {
+      "id": "DecorRockCluster",
+      "category": "rocks",
+      "uuid": "914d3393-4da6-ac6f-faa4-aa6711ec213f",
+      "rootId": "a4c44387-7b9b-97d8-6acc-f94833132507",
+      "width": 180,
+      "height": 134,
+      "anchor": [
+        0.5,
+        0.4
+      ],
+      "resource": "items/scenery/DecorRockCluster",
+      "sha256": "0f11ad0e988ee19ad0fd4d6b3bd5a15c372dcd0c88250ccf99d6cbbbf07c5040"
+    },
+    {
+      "id": "DecorStump",
+      "category": "rocks",
+      "uuid": "104d79a6-7e0f-fa69-5ff7-41364b5f4c51",
+      "rootId": "7bda545e-d86f-0a91-bd75-c8562459e1ea",
+      "width": 93,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.4
+      ],
+      "resource": "items/scenery/DecorStump",
+      "sha256": "079a5101b8a50c2ad3c1713264e24a0bac3ab948ad948062504d6aec46b73337"
+    },
+    {
+      "id": "DecorFarmSign",
+      "category": "props",
+      "uuid": "22e4862b-b41d-d3fd-9081-cfbae23a04c7",
+      "rootId": "1abb0db6-03d7-4e61-e5c9-84b25706f526",
+      "width": 110,
+      "height": 139,
+      "anchor": [
+        0.43121,
+        0.189534
+      ],
+      "resource": "items/scenery/DecorFarmSign",
+      "sha256": "aba1e521ce28de114063e54dbec34e8eef180d18949c73836252d715edebf914"
+    },
+    {
+      "id": "DecorScarecrow",
+      "category": "props",
+      "uuid": "f0658f95-640f-1d5a-e25f-205a21e951ab",
+      "rootId": "61581e95-352d-0082-4791-9ea6d1980987",
+      "width": 98,
+      "height": 122,
+      "anchor": [
+        0.328771,
+        0.073798
+      ],
+      "resource": "items/scenery/DecorScarecrow",
+      "sha256": "ba4be6e83a189e9007a674ef9c9a085f704a34ff2b26714bde96332037db1bc9"
+    },
+    {
+      "id": "DecorProduceCart",
+      "category": "props",
+      "uuid": "9025541d-1aba-16c3-3952-125ecf2f0166",
+      "rootId": "74cc8128-9aaf-0cca-7792-2aa1ca7e8f12",
+      "width": 144,
+      "height": 90,
+      "anchor": [
+        0.500607,
+        0.408067
+      ],
+      "resource": "items/scenery/DecorProduceCart",
+      "sha256": "f4e5b086bb462d270803b361f77df7173280e04e44deae787754ed4623b10199"
+    },
+    {
+      "id": "DecorHay",
+      "category": "props",
+      "uuid": "814fbc02-ed71-16ec-6f3f-290cf2a4fdc9",
+      "rootId": "38b71b26-5617-9a41-a4c8-d00f94a98cd6",
+      "width": 99,
+      "height": 98,
+      "anchor": [
+        0.569387,
+        0.257217
+      ],
+      "resource": "items/scenery/DecorHay",
+      "sha256": "a5f2d159a7923558efde0029779aa543713859ec9bd87363516d7ba4406eaead"
+    },
+    {
+      "id": "DecorFenceSE",
+      "category": "fences",
+      "uuid": "fd944484-bb7d-2d26-8ee6-41988f2613fa",
+      "rootId": "d1f7de80-b765-57d9-d67d-e70f50e5e9f1",
+      "width": 130,
+      "height": 127,
+      "anchor": [
+        0.5,
+        0.25
+      ],
+      "resource": "items/scenery/DecorFenceSE",
+      "sha256": "dfb80e0b4791278bd5d237fb08530254182ae9218a939b5106a6890dabbde13e"
+    },
+    {
+      "id": "DecorFenceNE",
+      "category": "fences",
+      "uuid": "92abbed1-bb08-8bd6-1ea5-dce3f5890d06",
+      "rootId": "c75160d2-3b6a-ce41-51f0-a346a250abb1",
+      "width": 158,
+      "height": 156,
+      "anchor": [
+        0.5,
+        0.25
+      ],
+      "resource": "items/scenery/DecorFenceNE",
+      "sha256": "fdb7386e3cebb38b34d116dbee4facbae2e449b72c27f6e198eede34525b8b6d"
+    },
+    {
+      "id": "DecorMeadowFlowers",
+      "category": "ground",
+      "uuid": "93af5bb4-0489-4ec2-c427-e32b1e822713",
+      "rootId": "d1fae2b8-f2f1-e6ff-5ef2-31f76ae55006",
+      "width": 161,
+      "height": 53,
+      "anchor": [
+        0.496894,
+        0.5
+      ],
+      "resource": "items/scenery/DecorMeadowFlowers",
+      "sha256": "f2bf11aef34742e545d4f1baf0dee28ca7330bdb4037a92b0642882c89f058d0"
+    },
+    {
+      "id": "DecorGroundLeaves",
+      "category": "ground",
+      "uuid": "7a2599db-ca8d-ebbf-967d-18643bcca2eb",
+      "rootId": "a0d00355-c63a-f595-ffa1-ee554d1e6405",
+      "width": 47,
+      "height": 38,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/DecorGroundLeaves",
+      "sha256": "6f8bf5bba0155f20cc75efba9c63d93ad80d64f88091e19236f0f472bd073712"
+    },
+    {
+      "id": "DecorRoad00",
+      "category": "roads",
+      "uuid": "eb81ec6d-5a09-4bf9-9b19-cf77978364ae",
+      "rootId": "a7d2e1ea-82b5-2d2a-059b-7c13be7be637",
+      "width": 126,
+      "height": 74,
+      "anchor": [
+        0.459976,
+        0.39762
+      ],
+      "resource": "items/scenery/DecorRoad00",
+      "sha256": "76d9e3a5456e0f73bb44296b53b027b20ee1646c354df7a34bbababfd0f5025c"
+    },
+    {
+      "id": "DecorRoad01",
+      "category": "roads",
+      "uuid": "29fbe96b-c6fc-85b2-e9aa-e6f78b4618f9",
+      "rootId": "a41f2449-3c70-232d-9c75-d64f0a7e093a",
+      "width": 192,
+      "height": 99,
+      "anchor": [
+        0.479167,
+        0.510101
+      ],
+      "resource": "items/scenery/DecorRoad01",
+      "sha256": "fd970e7c605653ded42c7500810775759bfaefe55f6c2851a1fd77e9c580767f"
+    },
+    {
+      "id": "DecorRoad02",
+      "category": "roads",
+      "uuid": "2d558294-8ad6-ef2a-8b0d-657e84e7745c",
+      "rootId": "82d91171-a346-c6e0-bd80-25b0e6f259e8",
+      "width": 182,
+      "height": 95,
+      "anchor": [
+        0.554945,
+        0.489474
+      ],
+      "resource": "items/scenery/DecorRoad02",
+      "sha256": "fd85d59b09486e106d86670bd15d78e2e965219877f944507c48bb35857280f2"
+    },
+    {
+      "id": "DecorRoad03",
+      "category": "roads",
+      "uuid": "21064e5f-07a0-0833-cc94-f40e50f21c3b",
+      "rootId": "75ceded7-2ec5-c050-b57f-8f2578b2e91a",
+      "width": 197,
+      "height": 93,
+      "anchor": [
+        0.492386,
+        0.478495
+      ],
+      "resource": "items/scenery/DecorRoad03",
+      "sha256": "f0049176496ae5aa4916b2cc8151b40792cc341e155ee0c50fd12fb988f9e932"
+    },
+    {
+      "id": "DecorRoad04",
+      "category": "roads",
+      "uuid": "d60b2ff6-4751-f452-ae98-9a0677cb32d3",
+      "rootId": "8ab16d9d-b2d7-1e67-df86-00c557d0f9d3",
+      "width": 179,
+      "height": 99,
+      "anchor": [
+        0.519553,
+        0.510101
+      ],
+      "resource": "items/scenery/DecorRoad04",
+      "sha256": "759190203567525d018195cca808ba1927a5e2e639631a81b22ae6aa5dd5924c"
+    },
+    {
+      "id": "DecorRoad05",
+      "category": "roads",
+      "uuid": "d28b41f3-0e3a-6615-4630-1db7ab7186fb",
+      "rootId": "fb0594ae-31dd-df3c-e2a3-11320320f2e4",
+      "width": 193,
+      "height": 102,
+      "anchor": [
+        0.481865,
+        0.495098
+      ],
+      "resource": "items/scenery/DecorRoad05",
+      "sha256": "cfc28e6de8c76174c0f0f41dc8cbd78d87451d30fb324228bda218dcefd5db59"
+    },
+    {
+      "id": "DecorRoad06",
+      "category": "roads",
+      "uuid": "70ce6431-0868-59b0-9f75-d70096fc4337",
+      "rootId": "1b159b15-5656-64c6-4e8e-4b31ca8727f0",
+      "width": 161,
+      "height": 101,
+      "anchor": [
+        0.57764,
+        0.509901
+      ],
+      "resource": "items/scenery/DecorRoad06",
+      "sha256": "5b9f86f99f04b7c15f34b9eb848c3bfd03440551c70cf6f6127c90fceb2a44ae"
+    },
+    {
+      "id": "DecorRoad07",
+      "category": "roads",
+      "uuid": "a137d452-25cd-b4ae-df19-cb37df0dc38a",
+      "rootId": "9c4ef2ab-38e7-8ae3-2669-be903b8b0deb",
+      "width": 194,
+      "height": 100,
+      "anchor": [
+        0.525773,
+        0.505
+      ],
+      "resource": "items/scenery/DecorRoad07",
+      "sha256": "ace9c3efb011246f414a3441b6aa9b358d34d2a2aa8d1e5ea4023455c412f65b"
+    },
+    {
+      "id": "DecorRoad08",
+      "category": "roads",
+      "uuid": "d42334df-0d80-7236-f10c-5aaf0bb5514c",
+      "rootId": "831ff64b-a703-48ca-7678-1306686a7cf4",
+      "width": 187,
+      "height": 93,
+      "anchor": [
+        0.513369,
+        0.543011
+      ],
+      "resource": "items/scenery/DecorRoad08",
+      "sha256": "5ca77a60166c05fa23e21d6c20ee79c60f813e470558181c79cd028437616675"
+    },
+    {
+      "id": "DecorRoad09",
+      "category": "roads",
+      "uuid": "f32680dd-1f63-455b-9908-f455a8cce6a0",
+      "rootId": "424cbb36-409b-3b7c-2710-3d237181c61d",
+      "width": 162,
+      "height": 100,
+      "anchor": [
+        0.382716,
+        0.515
+      ],
+      "resource": "items/scenery/DecorRoad09",
+      "sha256": "e4145a723239d0d76dc57671ac90b94eb5300b8b48838b4a56785a910ab14288"
+    },
+    {
+      "id": "DecorRoad10",
+      "category": "roads",
+      "uuid": "62da3027-00c0-a1e0-17e1-bc3f65ee6b25",
+      "rootId": "31016aae-914e-39ed-351e-b59771966929",
+      "width": 192,
+      "height": 98,
+      "anchor": [
+        0.526042,
+        0.515306
+      ],
+      "resource": "items/scenery/DecorRoad10",
+      "sha256": "8652277894b64206a6777357ff21262d36328d6afbba6bd74d286d120170fc9f"
+    },
+    {
+      "id": "DecorRoad11",
+      "category": "roads",
+      "uuid": "4b81375f-fe64-351d-52c3-b7f347120641",
+      "rootId": "0ed6ebcb-40b0-8ee7-3f9c-4dd19f7c4857",
+      "width": 184,
+      "height": 99,
+      "anchor": [
+        0.505289,
+        0.510101
+      ],
+      "resource": "items/scenery/DecorRoad11",
+      "sha256": "01793ead889da5b352f9c4601b236c7e092ecfc2cf809f5a3c85455820f1ccec"
+    },
+    {
+      "id": "DecorRoad12",
+      "category": "roads",
+      "uuid": "75b00e4a-1f3c-18e6-6fad-30d3ce774961",
+      "rootId": "b92a05f6-1928-352d-d6bc-687ceb491150",
+      "width": 199,
+      "height": 94,
+      "anchor": [
+        0.492462,
+        0.547872
+      ],
+      "resource": "items/scenery/DecorRoad12",
+      "sha256": "720e30a8866ed7d61482d806164e5c2d30e005cac383f423bf66fadc0b475e18"
+    },
+    {
+      "id": "DecorRoad13",
+      "category": "roads",
+      "uuid": "8ef2d378-0a51-a15e-6632-7b30e3ff9e89",
+      "rootId": "28c7eb1a-d860-4fb3-d2f9-9acd7ac8b5e2",
+      "width": 201,
+      "height": 101,
+      "anchor": [
+        0.502488,
+        0.490099
+      ],
+      "resource": "items/scenery/DecorRoad13",
+      "sha256": "1fc1bc1cb9b6bb85f9d9360f671d7c38948eac2e6d03380d45a2d80f9402d691"
+    },
+    {
+      "id": "DecorRoad14",
+      "category": "roads",
+      "uuid": "949aabbf-e96d-0248-915a-e86093df9f79",
+      "rootId": "39778769-3976-f95f-6808-6d18b7a02e9a",
+      "width": 183,
+      "height": 98,
+      "anchor": [
+        0.508197,
+        0.505102
+      ],
+      "resource": "items/scenery/DecorRoad14",
+      "sha256": "edbb208f8192134461dd248719e4c59b432ac650b73f950016ea6d1f2fedea94"
+    },
+    {
+      "id": "DecorRoad15",
+      "category": "roads",
+      "uuid": "39b1b877-1c8e-373a-b999-5d08f009a661",
+      "rootId": "af6289f1-771d-6c52-f364-26e6f464ae39",
+      "width": 201,
+      "height": 98,
+      "anchor": [
+        0.497512,
+        0.505102
+      ],
+      "resource": "items/scenery/DecorRoad15",
+      "sha256": "d69133eb5f702f87d003976358339d7c0119b9dd155cf78e3d2e25cb13f40f9c"
+    },
+    {
+      "id": "GiTreeBushy",
+      "category": "trees",
+      "uuid": "52c8df0e-15b2-d145-02b3-b32d1a9cb305",
+      "rootId": "611e4eb9-db40-adbf-243a-6873fdf3ca13",
+      "width": 131,
+      "height": 163,
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "resource": "items/scenery/GiTreeBushy",
+      "sha256": "8b6bdc99f2092772421f03baaa29e43e129be8ce227d4ee22989371843fc793d"
+    },
+    {
+      "id": "GiTreeOak",
+      "category": "trees",
+      "uuid": "1de96ca9-6be7-6913-7c74-1d67809b6c70",
+      "rootId": "30b7a726-2d0c-4434-4da3-8ef4d65577a8",
+      "width": 285,
+      "height": 344,
+      "anchor": [
+        0.5,
+        0.07
+      ],
+      "resource": "items/scenery/GiTreeOak",
+      "sha256": "ba09c99d0ecf18e1fa01465ddf6ac5915b9742887e342c53703e2faacfc17e8e"
+    },
+    {
+      "id": "GiTreeCherry",
+      "category": "trees",
+      "uuid": "a829348f-f91c-2731-1e97-54fb882dce1a",
+      "rootId": "74a5faad-e994-431d-afb0-b7e06cd4d638",
+      "width": 242,
+      "height": 319,
+      "anchor": [
+        0.5,
+        0.07
+      ],
+      "resource": "items/scenery/GiTreeCherry",
+      "sha256": "fbb41fa490ce411cec1c29255ef65fcaf42db60e3cd28d979d61752336849cc8"
+    },
+    {
+      "id": "GiTreeMaple",
+      "category": "trees",
+      "uuid": "914bb4aa-31d5-4421-ac30-77b61ffa7961",
+      "rootId": "eb2f03a4-2aad-7a40-a54b-d1f5abc77d90",
+      "width": 214,
+      "height": 347,
+      "anchor": [
+        0.5,
+        0.07
+      ],
+      "resource": "items/scenery/GiTreeMaple",
+      "sha256": "3207ef31baf42460a63d6661da0a08432704cf211910c849982d99813fbedde7"
+    },
+    {
+      "id": "GiTreeCanopy",
+      "category": "trees",
+      "uuid": "1d496aaa-7d0c-d2d5-3b7e-0a53cbb0291f",
+      "rootId": "b50b8b8e-e2ea-089d-68d1-86d5af8cb1bf",
+      "width": 448,
+      "height": 427,
+      "anchor": [
+        0.5,
+        0.06
+      ],
+      "resource": "items/scenery/GiTreeCanopy",
+      "sha256": "e1d5f96be0fb04fbc0e652ca7f6226efb384b582c7ed74064b0ee2da06ede0de"
+    },
+    {
+      "id": "GiShrubFern",
+      "category": "shrubs",
+      "uuid": "4bb92c85-0e0a-03e2-e57b-d0c846fb6e04",
+      "rootId": "c2855e92-6051-38c4-5b60-f273b8ef6f91",
+      "width": 117,
+      "height": 112,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiShrubFern",
+      "sha256": "b30f484d8389b6d19da64d714b5539ea297107a94c817868173d6793492c7d75"
+    },
+    {
+      "id": "GiShrubPalmlet",
+      "category": "shrubs",
+      "uuid": "cb4db9d1-e84a-389e-e15f-7cb79d174db3",
+      "rootId": "932c5023-2b5a-2488-fee8-12ece1fd73c0",
+      "width": 132,
+      "height": 99,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiShrubPalmlet",
+      "sha256": "27350638d534402b6829157b1726de274fd281f37f16628ad241992417c02fee"
+    },
+    {
+      "id": "GiShrubTuft",
+      "category": "shrubs",
+      "uuid": "610c8367-d517-7b2b-caaa-2610e2da82b5",
+      "rootId": "a8e66adb-ae12-1957-dbcd-2cf175158f89",
+      "width": 113,
+      "height": 114,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiShrubTuft",
+      "sha256": "c6fa974befa46e17fc5b0295702a7ccc4aade3b98aef0d003e8bcfdfc69611ac"
+    },
+    {
+      "id": "GiShrubLeafy",
+      "category": "shrubs",
+      "uuid": "9795509e-b03b-84ac-08e9-b98e1ab9d2df",
+      "rootId": "1aed54d8-036a-7650-9534-0ec83ee6a1e8",
+      "width": 131,
+      "height": 141,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiShrubLeafy",
+      "sha256": "90b07016390d270adc72030ad602b944d532f59ccb22db570ee896b696d84d29"
+    },
+    {
+      "id": "GiShrubSucculent",
+      "category": "shrubs",
+      "uuid": "bfbaccf6-2ece-3005-3e17-64b16175ac9a",
+      "rootId": "cd50f5ee-c01b-b6f2-3af5-496a486fd73b",
+      "width": 139,
+      "height": 124,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiShrubSucculent",
+      "sha256": "b52d4af5c26c3a61e9f2561bfacc0d299749fcaa41e4ff08e073f40f82527e5a"
+    },
+    {
+      "id": "GiStump",
+      "category": "props",
+      "uuid": "6e51561a-06b6-9a0d-0adf-324f5e3eb0b9",
+      "rootId": "e7da2c8b-d692-c0f8-73ab-1752eaad1c1a",
+      "width": 184,
+      "height": 133,
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "resource": "items/scenery/GiStump",
+      "sha256": "bd0008e0e3eeca2f99f2e6ed0bbc7141c6b1275f952c960a043cb8b2bdde43a2"
+    },
+    {
+      "id": "GiLog",
+      "category": "props",
+      "uuid": "998c2ef6-84e3-d38c-2657-dc339892c979",
+      "rootId": "ecceff20-9e1c-60bc-acfb-0fed1878c103",
+      "width": 250,
+      "height": 138,
+      "anchor": [
+        0.5,
+        0.2
+      ],
+      "resource": "items/scenery/GiLog",
+      "sha256": "c56806861ac74b5d750911b6f4786c5f8cacb6380d79a9d0e77346e7916515b1"
+    },
+    {
+      "id": "GiRockSmall",
+      "category": "rocks",
+      "uuid": "c594fffc-7bb2-fa76-f3ef-ea8826b44fd1",
+      "rootId": "14ad72aa-d8d7-0173-a343-2d83fd3c30a3",
+      "width": 106,
+      "height": 81,
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "resource": "items/scenery/GiRockSmall",
+      "sha256": "1a69b03aa529f6a034ad758ff228cfb0d0fa76d2273e317bf24a5e4d9136c067"
+    },
+    {
+      "id": "GiRockPile",
+      "category": "rocks",
+      "uuid": "d3b84e65-512a-a048-0c57-ba6dc4cb3295",
+      "rootId": "dee5980c-d0c9-3ad4-1459-4d3e9c3ad0cd",
+      "width": 131,
+      "height": 149,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiRockPile",
+      "sha256": "f910843a61d8020e5316fff173e35aa0fa9c8696b3e18938b8cfe1bab991a86c"
+    },
+    {
+      "id": "GiRockTall",
+      "category": "rocks",
+      "uuid": "b1299dea-ea2a-5c45-6039-691e8ed74f55",
+      "rootId": "5138bb4a-4808-2a48-3a38-5abf62a4d72b",
+      "width": 204,
+      "height": 222,
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "resource": "items/scenery/GiRockTall",
+      "sha256": "d90facfd8c4cb8b7745deff460cfcb78f7edd53bd23e00ace9d5561a6274a28b"
+    },
+    {
+      "id": "GiRockOchreSmall",
+      "category": "rocks",
+      "uuid": "68ae0bda-3c28-d251-f101-ecdb47c240a8",
+      "rootId": "d5f1969f-8232-e9be-4269-a4984be2bc54",
+      "width": 106,
+      "height": 76,
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "resource": "items/scenery/GiRockOchreSmall",
+      "sha256": "0df1a3b99383d8b31ffbcac30472bffb4a7b49f255a9e4385e8c426d1555c120"
+    },
+    {
+      "id": "GiRockOchre",
+      "category": "rocks",
+      "uuid": "d9c1c669-ed33-38ea-b9d7-969fb1850118",
+      "rootId": "59c276dc-bdfa-8de1-29de-918ae8aa0bb2",
+      "width": 141,
+      "height": 137,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiRockOchre",
+      "sha256": "c66b64f1e25418d4a5bca90d18816b47f18abcb9168fe5f1670e642183353597"
+    },
+    {
+      "id": "GiRockOchreTall",
+      "category": "rocks",
+      "uuid": "f7d8ea4a-99bb-2ebf-9210-0bf1cad02a71",
+      "rootId": "559c5511-054b-2559-55ff-bcf0a6dfe9a2",
+      "width": 206,
+      "height": 201,
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "resource": "items/scenery/GiRockOchreTall",
+      "sha256": "00987a555fa9e2e41866576aefdebcc04c4db28b53c3c8d1e60fe586d2354b84"
+    },
+    {
+      "id": "GiRockMossy",
+      "category": "rocks",
+      "uuid": "83cde404-7c2c-1570-dec5-a4716c00f192",
+      "rootId": "b0007520-663c-8223-d8bb-a41c24038b98",
+      "width": 123,
+      "height": 88,
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "resource": "items/scenery/GiRockMossy",
+      "sha256": "cdd2d867a73e1ee565c29c383d36d56335120917910fa0a5551d5e49f5f20900"
+    },
+    {
+      "id": "GiRockCrystal",
+      "category": "rocks",
+      "uuid": "a5587f38-12a2-ecfc-2f57-8257257e28ea",
+      "rootId": "664edf8e-57d4-086b-4ab5-57a729e588ae",
+      "width": 144,
+      "height": 156,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiRockCrystal",
+      "sha256": "e79dd386ae988fff8b0df7850d2a22b5aaac708744eb9d893d0217a800c881bc"
+    },
+    {
+      "id": "GiRockBoulder",
+      "category": "rocks",
+      "uuid": "05c74d87-fa1d-2509-3f4a-418750e79ff6",
+      "rootId": "c7b321bf-dfc1-8142-8986-861a5ed7ad00",
+      "width": 136,
+      "height": 105,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "resource": "items/scenery/GiRockBoulder",
+      "sha256": "2688f834bb6e141254d71084088f4f693f79083960bece462fd95caa13a5e96c"
+    },
+    {
+      "id": "GiRockWhite",
+      "category": "rocks",
+      "uuid": "517c6a22-d91d-8f48-4635-29b8400d3f6b",
+      "rootId": "1b884ed3-2015-4eff-97ff-ebf5c2a56fe6",
+      "width": 285,
+      "height": 358,
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "resource": "items/scenery/GiRockWhite",
+      "sha256": "00033a7b66f49002dbe70d1d608218f3f272c8f69464355ff4c406d072bf6b99"
+    },
+    {
+      "id": "GiRockWhiteTall",
+      "category": "rocks",
+      "uuid": "d6b1ca78-52da-0091-95c7-644f642154c4",
+      "rootId": "121b0c7b-5922-85bc-94f2-adfb06114c6e",
+      "width": 334,
+      "height": 371,
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "resource": "items/scenery/GiRockWhiteTall",
+      "sha256": "ebfc6adc1f889d746fb122f904737e62bbf6dfa4aa9d81c503caaf1241b7d63f"
+    },
+    {
+      "id": "GiPatchGrass1",
+      "category": "ground",
+      "uuid": "56b62b54-536d-f3d4-d25b-a77267969647",
+      "rootId": "13a4a1d1-7b19-7fb5-1f88-10ee3407b874",
+      "width": 204,
+      "height": 172,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/GiPatchGrass1",
+      "sha256": "a402a36e8d0a33d0718a120d7231ae61a6da67a41bf3f40a002365663a8fec5d"
+    },
+    {
+      "id": "GiPatchGrass2",
+      "category": "ground",
+      "uuid": "6b673a9c-e53a-2da2-1b41-5b4a028057fa",
+      "rootId": "cebaa155-afb6-2a39-d76c-31980ed1730d",
+      "width": 221,
+      "height": 174,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/GiPatchGrass2",
+      "sha256": "58e71a5ff28f8f8a5c3577bf1bb9d32fadac6927651a5aa51b0dc4391ba17dff"
+    },
+    {
+      "id": "GiPatchMeadow2",
+      "category": "ground",
+      "uuid": "d0977cbc-6c78-7254-b85c-9e7e5b097eab",
+      "rootId": "95b74d46-f3c2-4b9a-5b2e-99824786b704",
+      "width": 309,
+      "height": 220,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/GiPatchMeadow2",
+      "sha256": "261bc925d4f2e0feaf25e4ba7309f995af52edf2e4ae3c4dd8b7b2b3642e8746"
+    },
+    {
+      "id": "GiPatchMeadow3",
+      "category": "ground",
+      "uuid": "8cae8580-1e8e-291a-6e34-c07062b894ab",
+      "rootId": "116b8e4e-080a-a985-01b5-0d0e2843c2ef",
+      "width": 375,
+      "height": 184,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/GiPatchMeadow3",
+      "sha256": "e60fcb61b565da2761c3e2f77e8edb05e8b5c8eacb70903f3699dd29c99a8bca"
+    },
+    {
+      "id": "GiPatchSand1",
+      "category": "ground",
+      "uuid": "50017219-8a4e-6f65-dc43-e72e941a9587",
+      "rootId": "0192b4c2-9b96-b566-e079-bdfcf6e667da",
+      "width": 427,
+      "height": 265,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/GiPatchSand1",
+      "sha256": "07c474e400cf1ebcee22e58fe027928da7e2d6009ea085dc17100ef2002e22f9"
+    },
+    {
+      "id": "GiPatchSand2",
+      "category": "ground",
+      "uuid": "0507cebd-7a24-30b1-d577-2c5e17fb7d6a",
+      "rootId": "7bef369a-c587-c515-ce00-48ab00d940e1",
+      "width": 494,
+      "height": 233,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "resource": "items/scenery/GiPatchSand2",
+      "sha256": "bf2af09d930f926d0dc5a80b8f66b5ca1d90d988cf1202a356c72a3cbbc80ee0"
+    }
+  ]
+}

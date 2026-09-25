@@ -1,0 +1,14 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "a4c81023-b639-991f-87fb-d2f78ab2d4a6",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "isBundle": true,
+    "bundleName": "farm-plot-ui",
+    "priority": 2,
+    "isRemoteBundle": false
+  }
+}

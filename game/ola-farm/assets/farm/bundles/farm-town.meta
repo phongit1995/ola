@@ -1,0 +1,15 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "7dfc76f7-0d79-5056-a546-5ffe744e913d",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "isBundle": true,
+    "bundleName": "farm-town",
+    "priority": 2,
+    "compressionType": {},
+    "isRemoteBundle": false
+  }
+}

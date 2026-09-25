@@ -1,0 +1,1549 @@
+{
+  "schemaVersion": 1,
+  "key": "pepper",
+  "group": "field",
+  "titleVi": "Ớt",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — món ăn mở rộng",
+  "farmCompatibility": "new-field-crop",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 168,
+    "key": "pepper",
+    "titleVi": "Ớt"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/pepper__e1fe53173efc96247b7706d5a5ad92e7_291.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 168,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 11,
+    "entity": "garden_bed",
+    "durationSeconds": 3000,
+    "level": 24,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 5.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 24,
+    "basicPrice": 16.0,
+    "xpOnUse": 8.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "pizza_bakery",
+      "entityTitleVi": "Lò Pizza",
+      "recipeIndex": 0,
+      "output": "pizza_diabolo",
+      "outputTitleVi": "Pizza Pepperoni",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pizza_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_412.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "noodle_factory",
+      "entityTitleVi": "Chảo Wok",
+      "recipeIndex": 0,
+      "output": "wok_fish",
+      "outputTitleVi": "Mì Cá",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/noodle_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_533.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "noodle_factory",
+      "entityTitleVi": "Chảo Wok",
+      "recipeIndex": 2,
+      "output": "wok_vegan",
+      "outputTitleVi": "Mì Chay",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/noodle_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_533.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "mexico",
+      "entityTitleVi": "Đồ Ăn Mexico",
+      "recipeIndex": 3,
+      "output": "nachos",
+      "outputTitleVi": "Bánh Nachos",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/mexico_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1183.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 6880,
+      "sha256": "f1078c62483355002853e77317753d4a88a2a36b622ccf2e644513ff96b6c754",
+      "size": [
+        86,
+        85
+      ],
+      "source": {
+        "exportPath": "export/sprites/pepper__sharedassets0.assets_878.png",
+        "file": "sharedassets0.assets",
+        "pathId": 878,
+        "spriteName": "pepper"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 3.076120376586914,
+          "y": 2.076120376586914
+        }
+      }
+    },
+    {
+      "path": "images/perec_1_0--8621b6143e.png",
+      "bytes": 5315,
+      "sha256": "28da82ddf49d97cfc18737cf3636d3886d66226038b0430933b48a51829062cc",
+      "size": [
+        90,
+        60
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_1_0__5d3d6a1a2f98eca4890a01c327072a61_1.png",
+        "file": "5d3d6a1a2f98eca4890a01c327072a61",
+        "pathId": 1,
+        "spriteName": "perec_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 60.0
+        },
+        "pivot": {
+          "x": 0.5100358128547668,
+          "y": 0.3580645024776459
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_2_0--754ce01fc1.png",
+      "bytes": 18658,
+      "sha256": "25167a18d5e442f05376237652f09f8358cf593a26cf254616d164c491d9cbb8",
+      "size": [
+        131,
+        98
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_2_0__fe467eae00ed372469057eee95912a09_1.png",
+        "file": "fe467eae00ed372469057eee95912a09",
+        "pathId": 1,
+        "spriteName": "perec_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 131.0,
+          "height": 98.0
+        },
+        "pivot": {
+          "x": 0.514336884021759,
+          "y": 0.27194058895111084
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_3ten_0--e7b8ad2f2f.png",
+      "bytes": 2153,
+      "sha256": "00e680aced495f0e44d461a37716cead68dae4038f04d2309abf9f03ac7a958e",
+      "size": [
+        105,
+        51
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_3ten_0__4bc98e34ef52a84409f73850dc304236_1.png",
+        "file": "4bc98e34ef52a84409f73850dc304236",
+        "pathId": 1,
+        "spriteName": "perec_3ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 105.0,
+          "height": 51.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_3kust4_0--41a302f3ae.png",
+      "bytes": 5923,
+      "sha256": "1b5e143dec8d8b1764cb7b9c426d04de9406ed96cba7a47e41a63a53acd6d5fe",
+      "size": [
+        65,
+        80
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_3kust4_0__0944b82c4eb450544be4dcfdb40e522e_1.png",
+        "file": "0944b82c4eb450544be4dcfdb40e522e",
+        "pathId": 1,
+        "spriteName": "perec_3kust4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 65.0,
+          "height": 80.0
+        },
+        "pivot": {
+          "x": 0.5197873711585999,
+          "y": 0.1463022530078888
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_342_0--696e1bc732.png",
+      "bytes": 935,
+      "sha256": "2bb079d4819dcd13973a4bda8f651e2f1e2a32aba8b4dca0cc1a12d8d19e537a",
+      "size": [
+        16,
+        33
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_342_0__a447914cc330815418b2f87c1b77f62d_1.png",
+        "file": "a447914cc330815418b2f87c1b77f62d",
+        "pathId": 1,
+        "spriteName": "perec_342_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 16.0,
+          "height": 33.0
+        },
+        "pivot": {
+          "x": 0.9493790864944458,
+          "y": 0.8088223338127136
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_341_0--a19d93e977.png",
+      "bytes": 940,
+      "sha256": "ef98ba292563dfa0f04997027c6ab4b972478845e0c1a610c8edcd848f44aa26",
+      "size": [
+        19,
+        26
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_341_0__b0d237af8d9df1848aba8e7a1b5f4519_1.png",
+        "file": "b0d237af8d9df1848aba8e7a1b5f4519",
+        "pathId": 1,
+        "spriteName": "perec_341_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 19.0,
+          "height": 26.0
+        },
+        "pivot": {
+          "x": 0.09722453355789185,
+          "y": 0.5384752154350281
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_3kust3_0--2ed2815498.png",
+      "bytes": 6056,
+      "sha256": "586b8c6e360700519db471cc329df432e757fe738454fd9a8f12665a04061de7",
+      "size": [
+        66,
+        72
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_3kust3_0__28b1f6265872cb547b8424764d13ec8a_1.png",
+        "file": "28b1f6265872cb547b8424764d13ec8a",
+        "pathId": 1,
+        "spriteName": "perec_3kust3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 66.0,
+          "height": 72.0
+        },
+        "pivot": {
+          "x": 0.4844100773334503,
+          "y": 0.06591629981994629
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_333_0--c5742c65a6.png",
+      "bytes": 992,
+      "sha256": "59fbb0436d04a18e2e3b60dc7d302e27cb0f528872fa47ae2e21a52d53026048",
+      "size": [
+        16,
+        34
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_333_0__a22fc2be783a46e488e4fae1b43c735f_1.png",
+        "file": "a22fc2be783a46e488e4fae1b43c735f",
+        "pathId": 1,
+        "spriteName": "perec_333_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 16.0,
+          "height": 34.0
+        },
+        "pivot": {
+          "x": 0.0739549845457077,
+          "y": 0.8310005068778992
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_332_0--dc93f6006d.png",
+      "bytes": 887,
+      "sha256": "5c583abb57d5290bfed062ce1002c6f5dcb4788ffdf5a74a88b10ee1924c5846",
+      "size": [
+        19,
+        25
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_332_0__cc8ef68f35b5f0b4a846ebe9f94497e5_1.png",
+        "file": "cc8ef68f35b5f0b4a846ebe9f94497e5",
+        "pathId": 1,
+        "spriteName": "perec_332_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 19.0,
+          "height": 25.0
+        },
+        "pivot": {
+          "x": 0.9163141846656799,
+          "y": 0.5270097255706787
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_331_0--d5132b8a8c.png",
+      "bytes": 711,
+      "sha256": "4d83a52a570a0e17e4419c0eb72017375964c190a39a9aeb434597f48339ea8d",
+      "size": [
+        16,
+        28
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_331_0__f396200153e39b446a34bd48caade2b4_1.png",
+        "file": "f396200153e39b446a34bd48caade2b4",
+        "pathId": 1,
+        "spriteName": "perec_331_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 16.0,
+          "height": 28.0
+        },
+        "pivot": {
+          "x": 0.9052786827087402,
+          "y": 0.9306384325027466
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_3kust2_0--66e42dd4b8.png",
+      "bytes": 5764,
+      "sha256": "8d7d816d5abc45bf3aa9a5b62d0538c612a256f666b279ff21f7c345d8c82f6d",
+      "size": [
+        64,
+        75
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_3kust2_0__cce78cd257bf7f4499c6143f1ef3536c_1.png",
+        "file": "cce78cd257bf7f4499c6143f1ef3536c",
+        "pathId": 1,
+        "spriteName": "perec_3kust2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 64.0,
+          "height": 75.0
+        },
+        "pivot": {
+          "x": 0.6109491586685181,
+          "y": 0.07663451880216599
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_323_0--f7d2fe5736.png",
+      "bytes": 1223,
+      "sha256": "a373fcaa4de85260f3ee7a59ed44e4dea151efa294c9aada1fc85fe89c7978af",
+      "size": [
+        24,
+        33
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_323_0__362b2835b4e9b704b8b34591ebeb5eb2_1.png",
+        "file": "362b2835b4e9b704b8b34591ebeb5eb2",
+        "pathId": 1,
+        "spriteName": "perec_323_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 24.0,
+          "height": 33.0
+        },
+        "pivot": {
+          "x": 0.06770268827676773,
+          "y": 0.773311972618103
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_322_0--ee19ccc7f5.png",
+      "bytes": 960,
+      "sha256": "898aeb9deca6e60bd73a2fb5acfae83fdb0ac5e677de4d741e83731185d90a8d",
+      "size": [
+        18,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_322_0__2057a08b67e1481468710aaea66557ae_1.png",
+        "file": "2057a08b67e1481468710aaea66557ae",
+        "pathId": 1,
+        "spriteName": "perec_322_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 18.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.8691794872283936,
+          "y": 0.614326536655426
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_321_0--3aef360dfa.png",
+      "bytes": 784,
+      "sha256": "fc573cf284c632f24efb081282cc18a58c9c2d45071a281057063951a8981621",
+      "size": [
+        14,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_321_0__70131d29e12787f4386b0ef966f15f6c_1.png",
+        "file": "70131d29e12787f4386b0ef966f15f6c",
+        "pathId": 1,
+        "spriteName": "perec_321_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 14.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.753151535987854,
+          "y": 0.896570086479187
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_313_0--b79864b25c.png",
+      "bytes": 1058,
+      "sha256": "a317917cf1e4e23fcc8ac3ad9ad59b36ffefc0eb70bf70fac465c2924b58c61d",
+      "size": [
+        22,
+        31
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_313_0__555aa2a11de3ee64e993c23221a4a672_1.png",
+        "file": "555aa2a11de3ee64e993c23221a4a672",
+        "pathId": 1,
+        "spriteName": "perec_313_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 22.0,
+          "height": 31.0
+        },
+        "pivot": {
+          "x": 0.04180058091878891,
+          "y": 0.7738305330276489
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_312_0--e91870efc5.png",
+      "bytes": 975,
+      "sha256": "5395880286543e93a5a024c3dfb88b1a099b58105caa593191dcfa1d26943b25",
+      "size": [
+        19,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_312_0__80c53bf0091eed447ba847a04ebee303_1.png",
+        "file": "80c53bf0091eed447ba847a04ebee303",
+        "pathId": 1,
+        "spriteName": "perec_312_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 19.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.8412873148918152,
+          "y": 0.5643087029457092
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_311_0--dc6f99cb4c.png",
+      "bytes": 623,
+      "sha256": "180b2504b90d963b6414321a89dcf8209c2bb7fc023d69f381515904735f5fae",
+      "size": [
+        13,
+        31
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_311_0__a94b0f9eca2bd2c41ab3ee0887a8fbe6_1.png",
+        "file": "a94b0f9eca2bd2c41ab3ee0887a8fbe6",
+        "pathId": 1,
+        "spriteName": "perec_311_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 13.0,
+          "height": 31.0
+        },
+        "pivot": {
+          "x": 0.7555859088897705,
+          "y": 0.9072884321212769
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/perec_3kust1_0--7ed7060f5b.png",
+      "bytes": 6184,
+      "sha256": "563616ad648f3c408c8a452852270e284824fed019859ba0d59f26c8e4d849cf",
+      "size": [
+        65,
+        74
+      ],
+      "source": {
+        "exportPath": "export/sprites/perec_3kust1_0__df7dbaa645d9c884daa1405ca1abcfd4_1.png",
+        "file": "df7dbaa645d9c884daa1405ca1abcfd4",
+        "pathId": 1,
+        "spriteName": "perec_3kust1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 65.0,
+          "height": 74.0
+        },
+        "pivot": {
+          "x": 0.58744877576828,
+          "y": 0.06948906928300858
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_z_0--883118c11b.png",
+      "bytes": 5987,
+      "sha256": "b3b89609a006d7ed55915d935206d66afb998ba6ec24d324f4665e6fef19fc2d",
+      "size": [
+        70,
+        55
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_z_0__3e3d6611d2111e545acc6dd6b2c788d5_1.png",
+        "file": "3e3d6611d2111e545acc6dd6b2c788d5",
+        "pathId": 1,
+        "spriteName": "korzina_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 55.0
+        },
+        "pivot": {
+          "x": 0.5060317516326904,
+          "y": 0.04195280000567436
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_goroh_ten_0--95b1a24536.png",
+      "bytes": 941,
+      "sha256": "7a7791f05c2154cbbb9c628581f869b3d6fe0c14bea7c3527732cfc56c0b72c2",
+      "size": [
+        64,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_goroh_ten_0__92e8bd173cc6243469348943018e68e6_1.png",
+        "file": "92e8bd173cc6243469348943018e68e6",
+        "pathId": 1,
+        "spriteName": "4_goroh_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_p_0--7f793edf56.png",
+      "bytes": 4229,
+      "sha256": "d94006a00ba11282fd57b836c1fbcd17cc35c72de605df40dbe27ee7aaeae92b",
+      "size": [
+        70,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_p_0__019de690601ed6347a8ea922874ee9a8_1.png",
+        "file": "019de690601ed6347a8ea922874ee9a8",
+        "pathId": 1,
+        "spriteName": "korzina_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.04370361566543579
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/ruchka_korzina_0--aaf9e6b4e2.png",
+      "bytes": 1264,
+      "sha256": "f523de6096814f7ef76adc7300b029294e349c09770f22a54fde2f6571d3c976",
+      "size": [
+        18,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/ruchka_korzina_0__76d356cc6b1fef1438dfa8e1ddff75ec_1.png",
+        "file": "76d356cc6b1fef1438dfa8e1ddff75ec",
+        "pathId": 1,
+        "spriteName": "ruchka_korzina_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 18.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.71687251329422,
+          "y": 0.055404335260391235
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_perec_nutr_0--c2da3e5382.png",
+      "bytes": 4049,
+      "sha256": "5926cf7c913532e2cf5914bb156deb6f3798055442469a41354840e876e43d44",
+      "size": [
+        61,
+        35
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_perec_nutr_0__3db452c2c58ecfd4eb3c93c97ba167b7_1.png",
+        "file": "3db452c2c58ecfd4eb3c93c97ba167b7",
+        "pathId": 1,
+        "spriteName": "4_perec_nutr_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 61.0,
+          "height": 35.0
+        },
+        "pivot": {
+          "x": 0.5104838013648987,
+          "y": 0.18677254021167755
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_perec_0--b364799bdb.png",
+      "bytes": 1304,
+      "sha256": "77e4ee85bc580853cd27e01b86deffb7ce7b1742f156feecbc8f27fcd7b79153",
+      "size": [
+        43,
+        17
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_perec_0__2a177263e4bf68443a9d7fe931626c67_1.png",
+        "file": "2a177263e4bf68443a9d7fe931626c67",
+        "pathId": 1,
+        "spriteName": "4_perec_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 43.0,
+          "height": 17.0
+        },
+        "pivot": {
+          "x": 0.5120029449462891,
+          "y": 0.0977228507399559
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_pepper:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_pepper:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_pepper:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/perec_1_0--8621b6143e.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_1",
+        "file": "6271b892f725cb5428c1f3f0c791f74f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_1__6271b892f725cb5428c1f3f0c791f74f_1.json",
+        "sha256": "ad1557db74000dbe2bc6a5e568a136d1b57e34909c7c8c9924e5234d4bd6aaf0"
+      }
+    },
+    {
+      "key": "farm_pepper:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/perec_2_0--754ce01fc1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_2",
+        "file": "db94b122182ce48429f51b406bb61a0c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_2__db94b122182ce48429f51b406bb61a0c_1.json",
+        "sha256": "efbd0ea65105b3a420ad6c98091d86d9a41a84c772149c5f56fd72b6acd76eb6"
+      }
+    },
+    {
+      "key": "farm_pepper:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/perec_2_0--754ce01fc1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_2",
+        "file": "db94b122182ce48429f51b406bb61a0c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_2__db94b122182ce48429f51b406bb61a0c_1.json",
+        "sha256": "efbd0ea65105b3a420ad6c98091d86d9a41a84c772149c5f56fd72b6acd76eb6"
+      }
+    },
+    {
+      "key": "farm_pepper:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/perec_2_0--754ce01fc1.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_2",
+        "file": "db94b122182ce48429f51b406bb61a0c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_2__db94b122182ce48429f51b406bb61a0c_1.json",
+        "sha256": "efbd0ea65105b3a420ad6c98091d86d9a41a84c772149c5f56fd72b6acd76eb6"
+      }
+    },
+    {
+      "key": "farm_pepper:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_pepper:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/perec_3ten_0--e7b8ad2f2f.png",
+        "images/perec_3kust4_0--41a302f3ae.png",
+        "images/perec_342_0--696e1bc732.png",
+        "images/perec_341_0--a19d93e977.png",
+        "images/perec_3kust3_0--2ed2815498.png",
+        "images/perec_333_0--c5742c65a6.png",
+        "images/perec_332_0--dc93f6006d.png",
+        "images/perec_331_0--d5132b8a8c.png",
+        "images/perec_3kust2_0--66e42dd4b8.png",
+        "images/perec_323_0--f7d2fe5736.png",
+        "images/perec_322_0--ee19ccc7f5.png",
+        "images/perec_321_0--3aef360dfa.png",
+        "images/perec_313_0--b79864b25c.png",
+        "images/perec_312_0--e91870efc5.png",
+        "images/perec_311_0--dc6f99cb4c.png",
+        "images/perec_3kust1_0--7ed7060f5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_3",
+        "file": "44d25f83619f71e4bbafd276d71cc029",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_3__44d25f83619f71e4bbafd276d71cc029_1.json",
+        "sha256": "0de93d670b55143768aa20c994dbb200cb2f5ca68365a5fdb294ea27d0c8874c"
+      }
+    },
+    {
+      "key": "farm_pepper:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/perec_3ten_0--e7b8ad2f2f.png",
+        "images/perec_3kust4_0--41a302f3ae.png",
+        "images/perec_342_0--696e1bc732.png",
+        "images/perec_341_0--a19d93e977.png",
+        "images/perec_3kust3_0--2ed2815498.png",
+        "images/perec_333_0--c5742c65a6.png",
+        "images/perec_332_0--dc93f6006d.png",
+        "images/perec_331_0--d5132b8a8c.png",
+        "images/perec_3kust2_0--66e42dd4b8.png",
+        "images/perec_323_0--f7d2fe5736.png",
+        "images/perec_322_0--ee19ccc7f5.png",
+        "images/perec_321_0--3aef360dfa.png",
+        "images/perec_313_0--b79864b25c.png",
+        "images/perec_312_0--e91870efc5.png",
+        "images/perec_311_0--dc6f99cb4c.png",
+        "images/perec_3kust1_0--7ed7060f5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_3",
+        "file": "44d25f83619f71e4bbafd276d71cc029",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_3__44d25f83619f71e4bbafd276d71cc029_1.json",
+        "sha256": "0de93d670b55143768aa20c994dbb200cb2f5ca68365a5fdb294ea27d0c8874c"
+      }
+    },
+    {
+      "key": "farm_pepper:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/perec_3ten_0--e7b8ad2f2f.png",
+        "images/perec_3kust4_0--41a302f3ae.png",
+        "images/perec_342_0--696e1bc732.png",
+        "images/perec_341_0--a19d93e977.png",
+        "images/perec_3kust3_0--2ed2815498.png",
+        "images/perec_333_0--c5742c65a6.png",
+        "images/perec_332_0--dc93f6006d.png",
+        "images/perec_331_0--d5132b8a8c.png",
+        "images/perec_3kust2_0--66e42dd4b8.png",
+        "images/perec_323_0--f7d2fe5736.png",
+        "images/perec_322_0--ee19ccc7f5.png",
+        "images/perec_321_0--3aef360dfa.png",
+        "images/perec_313_0--b79864b25c.png",
+        "images/perec_312_0--e91870efc5.png",
+        "images/perec_311_0--dc6f99cb4c.png",
+        "images/perec_3kust1_0--7ed7060f5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_3",
+        "file": "44d25f83619f71e4bbafd276d71cc029",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_3__44d25f83619f71e4bbafd276d71cc029_1.json",
+        "sha256": "0de93d670b55143768aa20c994dbb200cb2f5ca68365a5fdb294ea27d0c8874c"
+      }
+    },
+    {
+      "key": "farm_pepper:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/perec_3ten_0--e7b8ad2f2f.png",
+        "images/perec_3kust4_0--41a302f3ae.png",
+        "images/perec_342_0--696e1bc732.png",
+        "images/perec_341_0--a19d93e977.png",
+        "images/perec_3kust3_0--2ed2815498.png",
+        "images/perec_333_0--c5742c65a6.png",
+        "images/perec_332_0--dc93f6006d.png",
+        "images/perec_331_0--d5132b8a8c.png",
+        "images/perec_3kust2_0--66e42dd4b8.png",
+        "images/perec_323_0--f7d2fe5736.png",
+        "images/perec_322_0--ee19ccc7f5.png",
+        "images/perec_321_0--3aef360dfa.png",
+        "images/perec_313_0--b79864b25c.png",
+        "images/perec_312_0--e91870efc5.png",
+        "images/perec_311_0--dc6f99cb4c.png",
+        "images/perec_3kust1_0--7ed7060f5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_3",
+        "file": "44d25f83619f71e4bbafd276d71cc029",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_3__44d25f83619f71e4bbafd276d71cc029_1.json",
+        "sha256": "0de93d670b55143768aa20c994dbb200cb2f5ca68365a5fdb294ea27d0c8874c"
+      }
+    },
+    {
+      "key": "farm_pepper:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/perec_3ten_0--e7b8ad2f2f.png",
+        "images/perec_3kust4_0--41a302f3ae.png",
+        "images/perec_342_0--696e1bc732.png",
+        "images/perec_341_0--a19d93e977.png",
+        "images/perec_3kust3_0--2ed2815498.png",
+        "images/perec_333_0--c5742c65a6.png",
+        "images/perec_332_0--dc93f6006d.png",
+        "images/perec_331_0--d5132b8a8c.png",
+        "images/perec_3kust2_0--66e42dd4b8.png",
+        "images/perec_323_0--f7d2fe5736.png",
+        "images/perec_322_0--ee19ccc7f5.png",
+        "images/perec_321_0--3aef360dfa.png",
+        "images/perec_313_0--b79864b25c.png",
+        "images/perec_312_0--e91870efc5.png",
+        "images/perec_311_0--dc6f99cb4c.png",
+        "images/perec_3kust1_0--7ed7060f5b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_3",
+        "file": "44d25f83619f71e4bbafd276d71cc029",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_3__44d25f83619f71e4bbafd276d71cc029_1.json",
+        "sha256": "0de93d670b55143768aa20c994dbb200cb2f5ca68365a5fdb294ea27d0c8874c"
+      }
+    },
+    {
+      "key": "farm_pepper:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_perec_nutr_0--c2da3e5382.png",
+        "images/4_perec_0--b364799bdb.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_end",
+        "file": "2659cc90a2934c54f8a9949ed4ee9ae1",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_end__2659cc90a2934c54f8a9949ed4ee9ae1_1.json",
+        "sha256": "e59592eff3000e5e438c739312252944d5d3c380b5316e57a0e09ae00c1a3ba0"
+      }
+    },
+    {
+      "key": "farm_pepper:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_perec_nutr_0--c2da3e5382.png",
+        "images/4_perec_0--b364799bdb.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_end",
+        "file": "2659cc90a2934c54f8a9949ed4ee9ae1",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_end__2659cc90a2934c54f8a9949ed4ee9ae1_1.json",
+        "sha256": "e59592eff3000e5e438c739312252944d5d3c380b5316e57a0e09ae00c1a3ba0"
+      }
+    },
+    {
+      "key": "farm_pepper:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_perec_nutr_0--c2da3e5382.png",
+        "images/4_perec_0--b364799bdb.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_end",
+        "file": "2659cc90a2934c54f8a9949ed4ee9ae1",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_end__2659cc90a2934c54f8a9949ed4ee9ae1_1.json",
+        "sha256": "e59592eff3000e5e438c739312252944d5d3c380b5316e57a0e09ae00c1a3ba0"
+      }
+    },
+    {
+      "key": "farm_pepper:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_perec_nutr_0--c2da3e5382.png",
+        "images/4_perec_0--b364799bdb.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_end",
+        "file": "2659cc90a2934c54f8a9949ed4ee9ae1",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_end__2659cc90a2934c54f8a9949ed4ee9ae1_1.json",
+        "sha256": "e59592eff3000e5e438c739312252944d5d3c380b5316e57a0e09ae00c1a3ba0"
+      }
+    },
+    {
+      "key": "farm_pepper:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_perec_nutr_0--c2da3e5382.png",
+        "images/4_perec_0--b364799bdb.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_pepper",
+        "file": "0cbffdf2994a57a41aeff7b65de960d4",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "perec_end",
+        "file": "2659cc90a2934c54f8a9949ed4ee9ae1",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/perec_end__2659cc90a2934c54f8a9949ed4ee9ae1_1.json",
+        "sha256": "e59592eff3000e5e438c739312252944d5d3c380b5316e57a0e09ae00c1a3ba0"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

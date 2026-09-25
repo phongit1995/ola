@@ -1,0 +1,21 @@
+/** Stable panel routes used by UI navigation and the registry. */
+export const PANEL_VIEWS = {
+  WELCOME: 'welcome',
+  SHOP: 'shop',
+  INDUSTRIES: 'industries',
+  INDUSTRY: 'industry',
+  INGREDIENTS: 'ingredients',
+  LIVESTOCK: 'livestock',
+  FACTORY: 'factory',
+  INVENTORY: 'inventory',
+  INVENTORY_ITEM: 'inventory-item',
+  INVENTORY_SALES: 'inventory-sales',
+  PAUSE: 'pause',
+  RESTART_CONFIRM: 'restart-confirm',
+  HELP: 'help',
+  PLOTS: 'plots',
+  IMPROVE: 'improve',
+  SAVE_TEXT: 'save-text',
+  COINS: 'coins',
+  GEMS: 'gems',
+} as const;

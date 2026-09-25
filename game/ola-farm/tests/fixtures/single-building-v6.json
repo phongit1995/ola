@@ -1,0 +1,1184 @@
+{
+  "contentProfile": "simple-1",
+  "rulesVersion": "happy-farm-town-husbandry-1",
+  "initialMachines": [
+    1,
+    4,
+    5
+  ],
+  "residentPens": [
+    {
+      "cell": 12,
+      "species": "layer"
+    },
+    {
+      "cell": 13,
+      "species": "dairy-cow"
+    },
+    {
+      "cell": 14,
+      "species": "pig",
+      "purchasePrice": 250,
+      "unlock": "husbandry"
+    },
+    {
+      "cell": 15,
+      "species": "sheep",
+      "purchasePrice": 350,
+      "unlock": "crafts"
+    }
+  ],
+  "farm": [
+    {
+      "id": 1,
+      "name": "Lúa mì",
+      "key": "wheat",
+      "price": 20,
+      "duration": 102,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "1.wheat"
+    },
+    {
+      "id": 10,
+      "key": "corn",
+      "name": "Ngô",
+      "price": 12,
+      "sellPrice": 8,
+      "duration": 90,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "farm-town/corn",
+      "itemKey": "farm40:corn",
+      "prefab": "corn"
+    },
+    {
+      "id": 11,
+      "key": "cabbage",
+      "name": "Bắp cải",
+      "price": 15,
+      "sellPrice": 10,
+      "duration": 180,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "farm-town/cabbage",
+      "itemKey": "farm40:cabbage",
+      "prefab": "cabbage"
+    },
+    {
+      "id": 4,
+      "name": "Dâu tây",
+      "key": "strawberry",
+      "price": 27,
+      "duration": 102,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "4.strawberry"
+    },
+    {
+      "id": 3,
+      "name": "Nho",
+      "key": "grapes",
+      "price": 26,
+      "duration": 102,
+      "yields": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "group": "crop",
+      "image": "3.grapes"
+    },
+    {
+      "id": 1128,
+      "key": "potato",
+      "name": "Khoai Tây",
+      "image": "farm-town/agriculture-item-potato",
+      "itemKey": "town:potato",
+      "group": "crop",
+      "prefab": "field-potato",
+      "price": 30,
+      "sellPrice": 20,
+      "duration": 240,
+      "yields": [
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": 1129,
+      "key": "pumpkin",
+      "name": "Bí Ngô",
+      "image": "farm-town/agriculture-item-pumpkin",
+      "itemKey": "town:pumpkin",
+      "group": "crop",
+      "prefab": "field-pumpkin",
+      "price": 33,
+      "sellPrice": 22,
+      "duration": 300,
+      "yields": [
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": 1010,
+      "key": "beet",
+      "name": "Củ Cải Đường",
+      "image": "farm-town/agriculture-item-beet",
+      "itemKey": "town:beet",
+      "group": "crop",
+      "prefab": "field-beet",
+      "price": 21,
+      "sellPrice": 14,
+      "duration": 90,
+      "yields": [
+        3,
+        4,
+        5,
+        6
+      ]
+    }
+  ],
+  "items": [
+    {
+      "key": "raw:1",
+      "name": "Lúa mì",
+      "image": "1.wheat",
+      "sellPrice": 12,
+      "tab": "raw",
+      "legacyId": 1
+    },
+    {
+      "key": "farm40:corn",
+      "name": "Ngô",
+      "image": "farm-town/corn",
+      "sellPrice": 8,
+      "tab": "raw",
+      "legacyId": 10
+    },
+    {
+      "key": "farm40:cabbage",
+      "name": "Bắp cải",
+      "image": "farm-town/cabbage",
+      "sellPrice": 10,
+      "tab": "raw",
+      "legacyId": 11
+    },
+    {
+      "key": "raw:4",
+      "name": "Dâu tây",
+      "image": "4.strawberry",
+      "sellPrice": 17,
+      "tab": "raw",
+      "legacyId": 4
+    },
+    {
+      "key": "raw:3",
+      "name": "Nho",
+      "image": "3.grapes",
+      "sellPrice": 16,
+      "tab": "raw",
+      "legacyId": 3
+    },
+    {
+      "key": "town:potato",
+      "name": "Khoai Tây",
+      "image": "farm-town/industry-item-potato",
+      "sellPrice": 20,
+      "tab": "raw",
+      "sourceId": 128,
+      "sourceName": "potato",
+      "sourcePrice": 16
+    },
+    {
+      "key": "town:pumpkin",
+      "name": "Bí Ngô",
+      "image": "farm-town/industry-item-pumpkin",
+      "sellPrice": 22,
+      "tab": "raw",
+      "sourceId": 129,
+      "sourceName": "pumpkin",
+      "sourcePrice": 22
+    },
+    {
+      "key": "town:beet",
+      "name": "Củ Cải Đường",
+      "image": "farm-town/industry-item-beet",
+      "sellPrice": 14,
+      "tab": "raw",
+      "sourceId": 10,
+      "sourceName": "beet",
+      "sourcePrice": 8
+    },
+    {
+      "key": "farm40:egg",
+      "name": "Trứng gà",
+      "image": "farm-town/egg",
+      "sellPrice": 20,
+      "tab": "raw"
+    },
+    {
+      "key": "raw:7",
+      "name": "Sữa bò",
+      "image": "7.cow",
+      "sellPrice": 18,
+      "tab": "raw",
+      "legacyId": 7
+    },
+    {
+      "key": "farm40:chicken-feed",
+      "name": "Thức ăn gà",
+      "image": "farm-town/feed_chicken",
+      "sellPrice": 12,
+      "tab": "goods",
+      "legacyId": 24
+    },
+    {
+      "key": "farm40:cow-feed",
+      "name": "Thức ăn bò",
+      "image": "farm-town/feed_cow",
+      "sellPrice": 14,
+      "tab": "goods",
+      "legacyId": 25
+    },
+    {
+      "key": "goods:7",
+      "name": "Bánh mì",
+      "image": "banhmi",
+      "sellPrice": 36,
+      "tab": "goods",
+      "legacyId": 7
+    },
+    {
+      "key": "goods:9",
+      "name": "Bánh nho",
+      "image": "banhnho",
+      "sellPrice": 60,
+      "tab": "goods",
+      "legacyId": 9
+    },
+    {
+      "key": "goods:10",
+      "name": "Bánh dâu",
+      "image": "banhdau",
+      "sellPrice": 62,
+      "tab": "goods",
+      "legacyId": 10
+    },
+    {
+      "key": "farm40:corn-bread",
+      "name": "Bánh mì ngô",
+      "image": "farm-town/corn_bread",
+      "sellPrice": 80,
+      "tab": "goods",
+      "legacyId": 26
+    },
+    {
+      "key": "town:waffle",
+      "name": "Bánh Quế (Waffle)",
+      "image": "farm-town/industry-item-waffle",
+      "sellPrice": 148,
+      "tab": "goods",
+      "sourceId": 192,
+      "sourceName": "waffle",
+      "sourcePrice": 64
+    },
+    {
+      "key": "goods:20",
+      "name": "Bơ",
+      "image": "bo",
+      "sellPrice": 52,
+      "tab": "goods",
+      "legacyId": 20
+    },
+    {
+      "key": "goods:22",
+      "name": "Phô mai",
+      "image": "cheese",
+      "sellPrice": 56,
+      "tab": "goods",
+      "legacyId": 22
+    },
+    {
+      "key": "town:cream",
+      "name": "Kem sữa",
+      "image": "farm-town/industry-item-cream",
+      "sellPrice": 30,
+      "tab": "goods",
+      "sourceId": 45,
+      "sourceName": "cream",
+      "sourcePrice": 24
+    },
+    {
+      "key": "town:yogurt",
+      "name": "Sữa Chua Dâu Tây",
+      "image": "farm-town/industry-item-yogurt",
+      "sellPrice": 80,
+      "tab": "goods",
+      "sourceId": 155,
+      "sourceName": "yogurt",
+      "sourcePrice": 56
+    },
+    {
+      "key": "town:fries",
+      "name": "Khoai Tây Chiên",
+      "image": "farm-town/industry-item-fries",
+      "sellPrice": 156,
+      "tab": "goods",
+      "sourceId": 72,
+      "sourceName": "fries",
+      "sourcePrice": 76
+    },
+    {
+      "key": "town:toast",
+      "name": "Bánh Mì Nướng",
+      "image": "farm-town/industry-item-toast",
+      "sellPrice": 112,
+      "tab": "goods",
+      "sourceId": 180,
+      "sourceName": "toast",
+      "sourcePrice": 33
+    },
+    {
+      "key": "town:sugar",
+      "name": "Đường Trắng",
+      "image": "farm-town/industry-item-sugar",
+      "sellPrice": 26,
+      "tab": "goods",
+      "sourceId": 145,
+      "sourceName": "sugar",
+      "sourcePrice": 17
+    },
+    {
+      "key": "town:popcorn",
+      "name": "Bỏng Ngô",
+      "image": "farm-town/industry-item-popcorn",
+      "sellPrice": 142,
+      "tab": "goods",
+      "sourceId": 125,
+      "sourceName": "popcorn",
+      "sourcePrice": 302
+    },
+    {
+      "key": "town:flakes",
+      "name": "Ngũ Cốc Ngô",
+      "image": "farm-town/industry-item-flakes",
+      "sellPrice": 104,
+      "tab": "goods",
+      "sourceId": 68,
+      "sourceName": "flakes",
+      "sourcePrice": 61
+    },
+    {
+      "key": "town:pie_cabbage",
+      "name": "Bánh Bắp Cải",
+      "image": "farm-town/industry-item-pie_cabbage",
+      "sellPrice": 132,
+      "tab": "goods",
+      "sourceId": 117,
+      "sourceName": "pie_cabbage",
+      "sourcePrice": 54
+    },
+    {
+      "key": "town:pie_pumpkin",
+      "name": "Bánh Bí Ngô",
+      "image": "farm-town/industry-item-pie_pumpkin",
+      "sellPrice": 158,
+      "tab": "goods",
+      "sourceId": 119,
+      "sourceName": "pie_pumpkin",
+      "sourcePrice": 85
+    },
+    {
+      "key": "town:feed_pig",
+      "name": "Cám heo",
+      "image": "farm-town/industry-item-feed_pig",
+      "sellPrice": 24,
+      "tab": "goods"
+    },
+    {
+      "key": "town:beacon",
+      "name": "Thịt xông khói",
+      "image": "farm-town/industry-item-beacon",
+      "sellPrice": 36,
+      "tab": "raw"
+    },
+    {
+      "key": "town:burger",
+      "name": "Burger",
+      "image": "farm-town/industry-item-burger",
+      "sellPrice": 220,
+      "tab": "goods"
+    },
+    {
+      "key": "town:pie_potato",
+      "name": "Pie khoai thịt",
+      "image": "farm-town/industry-item-pie_potato",
+      "sellPrice": 212,
+      "tab": "goods"
+    },
+    {
+      "key": "town:feed_goat",
+      "name": "Cám cừu",
+      "image": "farm-town/industry-item-feed_goat",
+      "sellPrice": 24,
+      "tab": "goods"
+    },
+    {
+      "key": "town:wool",
+      "name": "Len",
+      "image": "farm-town/industry-item-wool",
+      "sellPrice": 40,
+      "tab": "raw"
+    },
+    {
+      "key": "town:woolly",
+      "name": "Áo len",
+      "image": "farm-town/industry-item-woolly",
+      "sellPrice": 176,
+      "tab": "goods"
+    }
+  ],
+  "livestock": [
+    {
+      "key": "layer",
+      "name": "Gà đẻ trứng",
+      "feed": "farm40:chicken-feed",
+      "output": "farm40:egg",
+      "duration": 120,
+      "price": 80,
+      "image": "farm-town/egg",
+      "prefab": "layer",
+      "quantity": 1
+    },
+    {
+      "key": "dairy-cow",
+      "name": "Bò sữa",
+      "feed": "farm40:cow-feed",
+      "output": "raw:7",
+      "duration": 180,
+      "price": 120,
+      "image": "farm-town/feed_cow",
+      "prefab": "dairy-cow",
+      "quantity": 1
+    },
+    {
+      "key": "pig",
+      "name": "Heo",
+      "feed": "town:feed_pig",
+      "output": "town:beacon",
+      "duration": 240,
+      "price": 140,
+      "image": "farm-town/industry-item-beacon",
+      "prefab": "pig",
+      "quantity": 1
+    },
+    {
+      "key": "sheep",
+      "name": "Cừu",
+      "feed": "town:feed_goat",
+      "output": "town:wool",
+      "duration": 360,
+      "price": 180,
+      "image": "farm-town/industry-item-wool",
+      "prefab": "sheep",
+      "quantity": 1
+    }
+  ],
+  "products": [
+    {
+      "id": 24,
+      "key": "recipe:farm40:chicken-feed",
+      "name": "Thức ăn gà",
+      "image": "farm-town/feed_chicken",
+      "machine": 5,
+      "duration": 30,
+      "price": 12,
+      "xp": 10,
+      "ingredients": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:corn",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "farm40:chicken-feed",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "key": "recipe:farm40:cow-feed",
+      "name": "Thức ăn bò",
+      "image": "farm-town/feed_cow",
+      "machine": 5,
+      "duration": 40,
+      "price": 14,
+      "xp": 10,
+      "ingredients": [
+        {
+          "key": "farm40:corn",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:cabbage",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "farm40:cow-feed",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Bánh mì",
+      "image": "banhmi",
+      "duration": 45,
+      "price": 36,
+      "machine": 1,
+      "ingredients": [
+        {
+          "id": 1,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Bánh nho",
+      "image": "banhnho",
+      "duration": 75,
+      "price": 60,
+      "machine": 1,
+      "ingredients": [
+        {
+          "id": 1,
+          "quantity": 2
+        },
+        {
+          "id": 3,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Bánh dâu",
+      "image": "banhdau",
+      "duration": 75,
+      "price": 62,
+      "machine": 1,
+      "ingredients": [
+        {
+          "id": 1,
+          "quantity": 2
+        },
+        {
+          "id": 4,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "key": "recipe:farm40:corn-bread",
+      "name": "Bánh mì ngô",
+      "image": "farm-town/corn_bread",
+      "machine": 1,
+      "duration": 90,
+      "price": 80,
+      "xp": 14,
+      "ingredients": [
+        {
+          "key": "farm40:corn",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:egg",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "farm40:corn-bread",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 100207,
+      "key": "recipe:town:bakery:7",
+      "name": "Bánh Quế (Waffle)",
+      "image": "farm-town/industry-item-waffle",
+      "machine": 1,
+      "duration": 135,
+      "price": 148,
+      "xp": 25,
+      "ingredients": [
+        {
+          "key": "raw:1",
+          "quantity": 3
+        },
+        {
+          "key": "farm40:egg",
+          "quantity": 2
+        },
+        {
+          "key": "town:sugar",
+          "quantity": 1
+        },
+        {
+          "key": "farm40:corn",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:waffle",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Bơ",
+      "image": "bo",
+      "duration": 60,
+      "price": 52,
+      "machine": 4,
+      "ingredients": [
+        {
+          "id": 7,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Phô mai",
+      "image": "cheese",
+      "duration": 75,
+      "price": 56,
+      "machine": 4,
+      "ingredients": [
+        {
+          "id": 7,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": 101501,
+      "key": "recipe:town:milk_factory:1",
+      "name": "Kem sữa",
+      "image": "farm-town/industry-item-cream",
+      "machine": 4,
+      "duration": 45,
+      "price": 30,
+      "xp": 12,
+      "ingredients": [
+        {
+          "key": "raw:7",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:cream",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 101503,
+      "key": "recipe:town:milk_factory:3",
+      "name": "Sữa Chua Dâu Tây",
+      "image": "farm-town/industry-item-yogurt",
+      "machine": 4,
+      "duration": 105,
+      "price": 80,
+      "xp": 25,
+      "ingredients": [
+        {
+          "key": "raw:7",
+          "quantity": 1
+        },
+        {
+          "key": "raw:4",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:yogurt",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 101602,
+      "key": "recipe:town:oven:2",
+      "name": "Khoai Tây Chiên",
+      "image": "farm-town/industry-item-fries",
+      "machine": 2,
+      "duration": 150,
+      "price": 156,
+      "xp": 22,
+      "ingredients": [
+        {
+          "key": "town:potato",
+          "quantity": 3
+        },
+        {
+          "key": "goods:20",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:fries",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 101603,
+      "key": "recipe:town:oven:3",
+      "name": "Bánh Mì Nướng",
+      "image": "farm-town/industry-item-toast",
+      "machine": 2,
+      "duration": 90,
+      "price": 112,
+      "xp": 5,
+      "ingredients": [
+        {
+          "key": "goods:7",
+          "quantity": 1
+        },
+        {
+          "key": "goods:20",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:toast",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 107101,
+      "key": "recipe:town:sugar_processor:1",
+      "name": "Đường Trắng",
+      "image": "farm-town/industry-item-sugar",
+      "machine": 1071,
+      "duration": 45,
+      "price": 26,
+      "xp": 10,
+      "ingredients": [
+        {
+          "key": "town:beet",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:sugar",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 102000,
+      "key": "recipe:town:popcorn_factory:0",
+      "name": "Bỏng Ngô",
+      "image": "farm-town/industry-item-popcorn",
+      "machine": 1020,
+      "duration": 210,
+      "price": 142,
+      "xp": 150,
+      "ingredients": [
+        {
+          "key": "farm40:corn",
+          "quantity": 3
+        },
+        {
+          "key": "goods:20",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:popcorn",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 102001,
+      "key": "recipe:town:popcorn_factory:1",
+      "name": "Ngũ Cốc Ngô",
+      "image": "farm-town/industry-item-flakes",
+      "machine": 1020,
+      "duration": 150,
+      "price": 104,
+      "xp": 30,
+      "ingredients": [
+        {
+          "key": "farm40:corn",
+          "quantity": 2
+        },
+        {
+          "key": "town:sugar",
+          "quantity": 1
+        },
+        {
+          "key": "raw:7",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:flakes",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 101901,
+      "key": "recipe:town:pie_bakery:1",
+      "name": "Bánh Bắp Cải",
+      "image": "farm-town/industry-item-pie_cabbage",
+      "machine": 1019,
+      "duration": 165,
+      "price": 132,
+      "xp": 25,
+      "ingredients": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:cabbage",
+          "quantity": 2
+        },
+        {
+          "key": "farm40:egg",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:pie_cabbage",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 101904,
+      "key": "recipe:town:pie_bakery:4",
+      "name": "Bánh Bí Ngô",
+      "image": "farm-town/industry-item-pie_pumpkin",
+      "machine": 1019,
+      "duration": 210,
+      "price": 158,
+      "xp": 38,
+      "ingredients": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "town:pumpkin",
+          "quantity": 2
+        },
+        {
+          "key": "town:cream",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:pie_pumpkin",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": 105003,
+      "key": "recipe:town:feed_pig",
+      "name": "Cám heo",
+      "image": "farm-town/industry-item-feed_pig",
+      "machine": 5,
+      "duration": 45,
+      "price": 24,
+      "xp": 10,
+      "ingredients": [
+        {
+          "key": "farm40:cabbage",
+          "quantity": 2
+        },
+        {
+          "key": "town:potato",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:feed_pig",
+          "quantity": 3
+        }
+      ],
+      "unlock": "husbandry"
+    },
+    {
+      "id": 101604,
+      "key": "recipe:town:burger",
+      "name": "Burger",
+      "image": "farm-town/industry-item-burger",
+      "machine": 2,
+      "duration": 180,
+      "price": 220,
+      "xp": 30,
+      "ingredients": [
+        {
+          "key": "goods:7",
+          "quantity": 2
+        },
+        {
+          "key": "town:beacon",
+          "quantity": 1
+        },
+        {
+          "key": "goods:22",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:burger",
+          "quantity": 1
+        }
+      ],
+      "unlock": "husbandry"
+    },
+    {
+      "id": 101902,
+      "key": "recipe:town:pie_potato",
+      "name": "Pie khoai thịt",
+      "image": "farm-town/industry-item-pie_potato",
+      "machine": 1019,
+      "duration": 240,
+      "price": 212,
+      "xp": 35,
+      "ingredients": [
+        {
+          "key": "raw:1",
+          "quantity": 2
+        },
+        {
+          "key": "town:potato",
+          "quantity": 2
+        },
+        {
+          "key": "town:beacon",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:pie_potato",
+          "quantity": 1
+        }
+      ],
+      "unlock": "husbandry"
+    },
+    {
+      "id": 105004,
+      "key": "recipe:town:feed_goat",
+      "name": "Cám cừu",
+      "image": "farm-town/industry-item-feed_goat",
+      "machine": 5,
+      "duration": 60,
+      "price": 24,
+      "xp": 12,
+      "ingredients": [
+        {
+          "key": "town:potato",
+          "quantity": 2
+        },
+        {
+          "key": "town:pumpkin",
+          "quantity": 1
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:feed_goat",
+          "quantity": 3
+        }
+      ],
+      "unlock": "crafts"
+    },
+    {
+      "id": 102101,
+      "key": "recipe:town:woolly",
+      "name": "Áo len",
+      "image": "farm-town/industry-item-woolly",
+      "machine": 1021,
+      "duration": 300,
+      "price": 176,
+      "xp": 45,
+      "ingredients": [
+        {
+          "key": "town:wool",
+          "quantity": 2
+        }
+      ],
+      "outputs": [
+        {
+          "key": "town:woolly",
+          "quantity": 1
+        }
+      ],
+      "unlock": "crafts"
+    }
+  ],
+  "machineTypes": [
+    {
+      "id": 5,
+      "key": "feedmill",
+      "name": "Máy thức ăn",
+      "prefab": "feedmill",
+      "image": "farm-town/industry-factory-food_processor",
+      "buildingIds": [
+        "feed-1"
+      ],
+      "purchasePrices": []
+    },
+    {
+      "id": 1,
+      "key": "bakery",
+      "name": "Lò bánh",
+      "prefab": "bakery",
+      "image": "farm-town/industry-factory-bakery",
+      "buildingIds": [
+        "bakery-1"
+      ],
+      "purchasePrices": []
+    },
+    {
+      "id": 4,
+      "key": "milk_factory",
+      "name": "Xưởng sữa",
+      "prefab": "dairy",
+      "image": "farm-town/industry-factory-milk_factory",
+      "buildingIds": [
+        "dairy-1"
+      ],
+      "purchasePrices": []
+    },
+    {
+      "id": 2,
+      "key": "grill",
+      "name": "Bếp nướng",
+      "prefab": "grill",
+      "image": "farm-town/industry-factory-oven",
+      "buildingIds": [
+        "grill-1"
+      ],
+      "purchasePrices": [
+        200
+      ]
+    },
+    {
+      "id": 1071,
+      "key": "sugar_processor",
+      "name": "Máy Chế Biến Đường",
+      "prefab": "industry-sugar_processor",
+      "image": "farm-town/industry-factory-sugar_processor",
+      "buildingIds": [
+        "industry-sugar_processor"
+      ],
+      "purchasePrices": [
+        350
+      ]
+    },
+    {
+      "id": 1020,
+      "key": "popcorn_factory",
+      "name": "Lò Ngô",
+      "prefab": "industry-popcorn_factory",
+      "image": "farm-town/industry-factory-popcorn_factory",
+      "buildingIds": [
+        "industry-popcorn_factory"
+      ],
+      "purchasePrices": [
+        350
+      ]
+    },
+    {
+      "id": 1019,
+      "key": "pie_bakery",
+      "name": "Tiệm Bánh Pie",
+      "prefab": "industry-pie_bakery",
+      "image": "farm-town/industry-factory-pie_bakery",
+      "buildingIds": [
+        "industry-pie_bakery"
+      ],
+      "purchasePrices": [
+        350
+      ]
+    },
+    {
+      "id": 1021,
+      "key": "loom",
+      "name": "Bàn đan",
+      "prefab": "industry-loom",
+      "image": "farm-town/industry-factory-loom",
+      "buildingIds": [
+        "industry-loom"
+      ],
+      "purchasePrices": [
+        500
+      ],
+      "unlock": "crafts"
+    }
+  ]
+}

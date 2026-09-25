@@ -1,0 +1,1195 @@
+{
+  "schemaVersion": 1,
+  "key": "cabbage",
+  "group": "field",
+  "titleVi": "Bắp Cải",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C1 — ngô và bắp cải",
+  "farmCompatibility": "new-field-crop",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 21,
+    "key": "cabbage",
+    "titleVi": "Bắp Cải"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/cabbage__e1fe53173efc96247b7706d5a5ad92e7_187.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 21,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 2,
+    "entity": "garden_bed",
+    "durationSeconds": 300,
+    "level": 5,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 2.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 5,
+    "basicPrice": 10.0,
+    "xpOnUse": 3.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "food_processor",
+      "entityTitleVi": "Máy Chế Biến Thực Phẩm",
+      "recipeIndex": 1,
+      "output": "feed_cow",
+      "outputTitleVi": "Thức Ăn Bò",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/food_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1047.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "food_processor",
+      "entityTitleVi": "Máy Chế Biến Thực Phẩm",
+      "recipeIndex": 3,
+      "output": "feed_pig",
+      "outputTitleVi": "Thức Ăn Heo",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/food_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1047.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 1,
+      "output": "pie_cabbage",
+      "outputTitleVi": "Bánh Bắp Cải",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 13095,
+      "sha256": "a979fe765d67332af69761440f65bfd51bbb1eb981d6a653bedf2a7c10faba2e",
+      "size": [
+        90,
+        82
+      ],
+      "source": {
+        "exportPath": "export/sprites/cabbage__sharedassets0.assets_564.png",
+        "file": "sharedassets0.assets",
+        "pathId": 564,
+        "spriteName": "cabbage"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.051316678524017334,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kap_1_0--469bac7fe6.png",
+      "bytes": 6100,
+      "sha256": "065a8a934bc1e847b31e3167764567f2890599a1b0acd88e2423e55cacd73456",
+      "size": [
+        93,
+        61
+      ],
+      "source": {
+        "exportPath": "export/sprites/kap_1_0__1c8c0390936f025448a2d1b4988a7216_1.png",
+        "file": "1c8c0390936f025448a2d1b4988a7216",
+        "pathId": 1,
+        "spriteName": "kap_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 93.0,
+          "height": 61.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.3928961455821991
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kap_2_0--507bcf772a.png",
+      "bytes": 11189,
+      "sha256": "8d224132a361c203dc26725b74e5205c56cd0901be4d10ca9ab89f1885dc00c6",
+      "size": [
+        115,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/kap_2_0__f2ca48328dfe02942bda614fc70a004b_1.png",
+        "file": "f2ca48328dfe02942bda614fc70a004b",
+        "pathId": 1,
+        "spriteName": "kap_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 115.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.4899641275405884,
+          "y": 0.37813615798950195
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kap_3ten_0--5ef2250fc9.png",
+      "bytes": 2147,
+      "sha256": "a0a93098c46e07980396177491dac9b0712dee205c56aa0941d294d85513a4e2",
+      "size": [
+        111,
+        50
+      ],
+      "source": {
+        "exportPath": "export/sprites/kap_3ten_0__b4434c278f3ebcb409fdbb30b654fb2a_1.png",
+        "file": "b4434c278f3ebcb409fdbb30b654fb2a",
+        "pathId": 1,
+        "spriteName": "kap_3ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 111.0,
+          "height": 50.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kap_34_0--6806a0ce74.png",
+      "bytes": 4529,
+      "sha256": "396327c7065fcd8f6b1b53408dda8656200896dc346bf7cd3d00aa087cdb69a4",
+      "size": [
+        51,
+        44
+      ],
+      "source": {
+        "exportPath": "export/sprites/kap_34_0__e6156cef63eb0494dafcf45fc1402bd6_1.png",
+        "file": "e6156cef63eb0494dafcf45fc1402bd6",
+        "pathId": 1,
+        "spriteName": "kap_34_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 51.0,
+          "height": 44.0
+        },
+        "pivot": {
+          "x": 0.5016112327575684,
+          "y": 0.26282110810279846
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kap_33_0--5c00d89db8.png",
+      "bytes": 4558,
+      "sha256": "589c2a6eedaf5876d56e923dc5d4bc2369e600579c693c77835019ed32937878",
+      "size": [
+        50,
+        44
+      ],
+      "source": {
+        "exportPath": "export/sprites/kap_33_0__556a25917304c64488339c2b149d7f9e_1.png",
+        "file": "556a25917304c64488339c2b149d7f9e",
+        "pathId": 1,
+        "spriteName": "kap_33_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 50.0,
+          "height": 44.0
+        },
+        "pivot": {
+          "x": 0.5016434192657471,
+          "y": 0.23480786383152008
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kap_32_0--54f9a9cabd.png",
+      "bytes": 4392,
+      "sha256": "fefff038b339a06cc9f5ad453f8424f62d18a3df1b181d16b65d3e0b8ccb5071",
+      "size": [
+        50,
+        45
+      ],
+      "source": {
+        "exportPath": "export/sprites/kap_32_0__5e4d0860af8c88041852c6a0cd7d1ba4_1.png",
+        "file": "5e4d0860af8c88041852c6a0cd7d1ba4",
+        "pathId": 1,
+        "spriteName": "kap_32_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 50.0,
+          "height": 45.0
+        },
+        "pivot": {
+          "x": 0.5319042801856995,
+          "y": 0.27051326632499695
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kap_31_0--48b4aa6fff.png",
+      "bytes": 4575,
+      "sha256": "86f77369d7b70ce65841d9a5895fd2e79fbc467e3be71213c2b3425fa1dbd93a",
+      "size": [
+        50,
+        44
+      ],
+      "source": {
+        "exportPath": "export/sprites/kap_31_0__599ceedc998c98b459b1d633a721ae43_1.png",
+        "file": "599ceedc998c98b459b1d633a721ae43",
+        "pathId": 1,
+        "spriteName": "kap_31_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 50.0,
+          "height": 44.0
+        },
+        "pivot": {
+          "x": 0.5230082273483276,
+          "y": 0.2516157925128937
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_z_0--883118c11b.png",
+      "bytes": 5987,
+      "sha256": "b3b89609a006d7ed55915d935206d66afb998ba6ec24d324f4665e6fef19fc2d",
+      "size": [
+        70,
+        55
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_z_0__3e3d6611d2111e545acc6dd6b2c788d5_1.png",
+        "file": "3e3d6611d2111e545acc6dd6b2c788d5",
+        "pathId": 1,
+        "spriteName": "korzina_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 55.0
+        },
+        "pivot": {
+          "x": 0.5060317516326904,
+          "y": 0.04195280000567436
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_goroh_ten_0--95b1a24536.png",
+      "bytes": 941,
+      "sha256": "7a7791f05c2154cbbb9c628581f869b3d6fe0c14bea7c3527732cfc56c0b72c2",
+      "size": [
+        64,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_goroh_ten_0__92e8bd173cc6243469348943018e68e6_1.png",
+        "file": "92e8bd173cc6243469348943018e68e6",
+        "pathId": 1,
+        "spriteName": "4_goroh_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_p_0--7f793edf56.png",
+      "bytes": 4229,
+      "sha256": "d94006a00ba11282fd57b836c1fbcd17cc35c72de605df40dbe27ee7aaeae92b",
+      "size": [
+        70,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_p_0__019de690601ed6347a8ea922874ee9a8_1.png",
+        "file": "019de690601ed6347a8ea922874ee9a8",
+        "pathId": 1,
+        "spriteName": "korzina_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.04370361566543579
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/ruchka_korzina_0--aaf9e6b4e2.png",
+      "bytes": 1264,
+      "sha256": "f523de6096814f7ef76adc7300b029294e349c09770f22a54fde2f6571d3c976",
+      "size": [
+        18,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/ruchka_korzina_0__76d356cc6b1fef1438dfa8e1ddff75ec_1.png",
+        "file": "76d356cc6b1fef1438dfa8e1ddff75ec",
+        "pathId": 1,
+        "spriteName": "ruchka_korzina_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 18.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.71687251329422,
+          "y": 0.055404335260391235
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kapusta_nutr_3_0--31a3799ab9.png",
+      "bytes": 3674,
+      "sha256": "274ddcfb8fc892021f100e88f0049704e28cf92fa4f24ded00f7a5b6b553afec",
+      "size": [
+        44,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kapusta_nutr_3_0__e664548de88ebc845a823d65a5c1f611_1.png",
+        "file": "e664548de88ebc845a823d65a5c1f611",
+        "pathId": 1,
+        "spriteName": "4_kapusta_nutr_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4999999701976776,
+          "y": 0.16814805567264557
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kapusta_nutr_2_0--e0ea82e125.png",
+      "bytes": 2436,
+      "sha256": "e2904e4166ef633b57abb440405bb7122819cb8c80ee64c4bd35dba79eb1db66",
+      "size": [
+        33,
+        33
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kapusta_nutr_2_0__c325c60da7257d440a0c379534b6fc7f_1.png",
+        "file": "c325c60da7257d440a0c379534b6fc7f",
+        "pathId": 1,
+        "spriteName": "4_kapusta_nutr_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 33.0,
+          "height": 33.0
+        },
+        "pivot": {
+          "x": 0.5078563094139099,
+          "y": 0.19098393619060516
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kapusta_nutr_1_0--eacd3b8a64.png",
+      "bytes": 3655,
+      "sha256": "fb40fc565e7b7bd565198171285fc38e4ff06444d98959ae8afa0f25eff9e801",
+      "size": [
+        43,
+        39
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kapusta_nutr_1_0__fc2d4e0cd5022194c8bc44d7de6d91af_1.png",
+        "file": "fc2d4e0cd5022194c8bc44d7de6d91af",
+        "pathId": 1,
+        "spriteName": "4_kapusta_nutr_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 43.0,
+          "height": 39.0
+        },
+        "pivot": {
+          "x": 0.516480028629303,
+          "y": 0.18591323494911194
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kapusta_0--a330ca311a.png",
+      "bytes": 3357,
+      "sha256": "8401ad4676f822864fc20ba9b625e0e129d7e721a5032fa37332c6938caf15f8",
+      "size": [
+        41,
+        38
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kapusta_0__670542a6be5d97941ada68aca99bcdc0_1.png",
+        "file": "670542a6be5d97941ada68aca99bcdc0",
+        "pathId": 1,
+        "spriteName": "4_kapusta_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 41.0,
+          "height": 38.0
+        },
+        "pivot": {
+          "x": 0.5313158631324768,
+          "y": 0.1881091147661209
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kapusta_ten_0--5be3f509a3.png",
+      "bytes": 813,
+      "sha256": "3b03e6db29f2e8d10760f71bd4ecfc61ab8918716719955d082124bfcd5418a0",
+      "size": [
+        41,
+        26
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kapusta_ten_0__efe0a583e10fa6a4dbd5eabb20e9d53f_1.png",
+        "file": "efe0a583e10fa6a4dbd5eabb20e9d53f",
+        "pathId": 1,
+        "spriteName": "4_kapusta_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 41.0,
+          "height": 26.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_cabbage:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_cabbage:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_cabbage:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/kap_1_0--469bac7fe6.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_1",
+        "file": "f8a50c6c586b32946ae3960c87cfd959",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_1__f8a50c6c586b32946ae3960c87cfd959_1.json",
+        "sha256": "9529cefc70db99b8cce545ec11f535777290f4efd710f04612f2a243cc813614"
+      }
+    },
+    {
+      "key": "farm_cabbage:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/kap_1_0--469bac7fe6.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_1",
+        "file": "f8a50c6c586b32946ae3960c87cfd959",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_1__f8a50c6c586b32946ae3960c87cfd959_1.json",
+        "sha256": "9529cefc70db99b8cce545ec11f535777290f4efd710f04612f2a243cc813614"
+      }
+    },
+    {
+      "key": "farm_cabbage:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/kap_2_0--507bcf772a.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_2",
+        "file": "b4d047bf87c383d4ab006d6d489f6ef8",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_2__b4d047bf87c383d4ab006d6d489f6ef8_1.json",
+        "sha256": "4546580a5fb3c74780128a63228fdb64fbd25502d07f3d9c5fd9e29982750501"
+      }
+    },
+    {
+      "key": "farm_cabbage:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/kap_2_0--507bcf772a.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_2",
+        "file": "b4d047bf87c383d4ab006d6d489f6ef8",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_2__b4d047bf87c383d4ab006d6d489f6ef8_1.json",
+        "sha256": "4546580a5fb3c74780128a63228fdb64fbd25502d07f3d9c5fd9e29982750501"
+      }
+    },
+    {
+      "key": "farm_cabbage:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_cabbage:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/kap_3ten_0--5ef2250fc9.png",
+        "images/kap_34_0--6806a0ce74.png",
+        "images/kap_33_0--5c00d89db8.png",
+        "images/kap_32_0--54f9a9cabd.png",
+        "images/kap_31_0--48b4aa6fff.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_3",
+        "file": "b9e5a75c2955dce4798a569ef7fc771f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_3__b9e5a75c2955dce4798a569ef7fc771f_1.json",
+        "sha256": "fd00ba74e6de63b0b2f92995ffe6a819b61535f645fbef573ad7791f4a128f01"
+      }
+    },
+    {
+      "key": "farm_cabbage:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/kap_3ten_0--5ef2250fc9.png",
+        "images/kap_34_0--6806a0ce74.png",
+        "images/kap_33_0--5c00d89db8.png",
+        "images/kap_32_0--54f9a9cabd.png",
+        "images/kap_31_0--48b4aa6fff.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_3",
+        "file": "b9e5a75c2955dce4798a569ef7fc771f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_3__b9e5a75c2955dce4798a569ef7fc771f_1.json",
+        "sha256": "fd00ba74e6de63b0b2f92995ffe6a819b61535f645fbef573ad7791f4a128f01"
+      }
+    },
+    {
+      "key": "farm_cabbage:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/kap_3ten_0--5ef2250fc9.png",
+        "images/kap_34_0--6806a0ce74.png",
+        "images/kap_33_0--5c00d89db8.png",
+        "images/kap_32_0--54f9a9cabd.png",
+        "images/kap_31_0--48b4aa6fff.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_3",
+        "file": "b9e5a75c2955dce4798a569ef7fc771f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_3__b9e5a75c2955dce4798a569ef7fc771f_1.json",
+        "sha256": "fd00ba74e6de63b0b2f92995ffe6a819b61535f645fbef573ad7791f4a128f01"
+      }
+    },
+    {
+      "key": "farm_cabbage:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/kap_3ten_0--5ef2250fc9.png",
+        "images/kap_34_0--6806a0ce74.png",
+        "images/kap_33_0--5c00d89db8.png",
+        "images/kap_32_0--54f9a9cabd.png",
+        "images/kap_31_0--48b4aa6fff.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_3",
+        "file": "b9e5a75c2955dce4798a569ef7fc771f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_3__b9e5a75c2955dce4798a569ef7fc771f_1.json",
+        "sha256": "fd00ba74e6de63b0b2f92995ffe6a819b61535f645fbef573ad7791f4a128f01"
+      }
+    },
+    {
+      "key": "farm_cabbage:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/kap_3ten_0--5ef2250fc9.png",
+        "images/kap_34_0--6806a0ce74.png",
+        "images/kap_33_0--5c00d89db8.png",
+        "images/kap_32_0--54f9a9cabd.png",
+        "images/kap_31_0--48b4aa6fff.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_3",
+        "file": "b9e5a75c2955dce4798a569ef7fc771f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_3__b9e5a75c2955dce4798a569ef7fc771f_1.json",
+        "sha256": "fd00ba74e6de63b0b2f92995ffe6a819b61535f645fbef573ad7791f4a128f01"
+      }
+    },
+    {
+      "key": "farm_cabbage:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kapusta_nutr_3_0--31a3799ab9.png",
+        "images/4_kapusta_nutr_2_0--e0ea82e125.png",
+        "images/4_kapusta_nutr_1_0--eacd3b8a64.png",
+        "images/4_kapusta_0--a330ca311a.png",
+        "images/4_kapusta_ten_0--5be3f509a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_end",
+        "file": "6c3db6c57cda09948bec3ae844c06d95",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_end__6c3db6c57cda09948bec3ae844c06d95_1.json",
+        "sha256": "0b4ebb81f0c0eb26fc898e982e29889305a86fda6fe323595b5e30c5740d1b25"
+      }
+    },
+    {
+      "key": "farm_cabbage:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kapusta_nutr_3_0--31a3799ab9.png",
+        "images/4_kapusta_nutr_2_0--e0ea82e125.png",
+        "images/4_kapusta_nutr_1_0--eacd3b8a64.png",
+        "images/4_kapusta_0--a330ca311a.png",
+        "images/4_kapusta_ten_0--5be3f509a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_end",
+        "file": "6c3db6c57cda09948bec3ae844c06d95",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_end__6c3db6c57cda09948bec3ae844c06d95_1.json",
+        "sha256": "0b4ebb81f0c0eb26fc898e982e29889305a86fda6fe323595b5e30c5740d1b25"
+      }
+    },
+    {
+      "key": "farm_cabbage:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kapusta_nutr_3_0--31a3799ab9.png",
+        "images/4_kapusta_nutr_2_0--e0ea82e125.png",
+        "images/4_kapusta_nutr_1_0--eacd3b8a64.png",
+        "images/4_kapusta_0--a330ca311a.png",
+        "images/4_kapusta_ten_0--5be3f509a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_end",
+        "file": "6c3db6c57cda09948bec3ae844c06d95",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_end__6c3db6c57cda09948bec3ae844c06d95_1.json",
+        "sha256": "0b4ebb81f0c0eb26fc898e982e29889305a86fda6fe323595b5e30c5740d1b25"
+      }
+    },
+    {
+      "key": "farm_cabbage:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kapusta_nutr_3_0--31a3799ab9.png",
+        "images/4_kapusta_nutr_2_0--e0ea82e125.png",
+        "images/4_kapusta_nutr_1_0--eacd3b8a64.png",
+        "images/4_kapusta_0--a330ca311a.png",
+        "images/4_kapusta_ten_0--5be3f509a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_end",
+        "file": "6c3db6c57cda09948bec3ae844c06d95",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_end__6c3db6c57cda09948bec3ae844c06d95_1.json",
+        "sha256": "0b4ebb81f0c0eb26fc898e982e29889305a86fda6fe323595b5e30c5740d1b25"
+      }
+    },
+    {
+      "key": "farm_cabbage:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_kapusta_nutr_3_0--31a3799ab9.png",
+        "images/4_kapusta_nutr_2_0--e0ea82e125.png",
+        "images/4_kapusta_nutr_1_0--eacd3b8a64.png",
+        "images/4_kapusta_0--a330ca311a.png",
+        "images/4_kapusta_ten_0--5be3f509a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cabbage",
+        "file": "a98205aef4167a34d8f28a4fd182e18d",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kapusta_end",
+        "file": "6c3db6c57cda09948bec3ae844c06d95",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kapusta_end__6c3db6c57cda09948bec3ae844c06d95_1.json",
+        "sha256": "0b4ebb81f0c0eb26fc898e982e29889305a86fda6fe323595b5e30c5740d1b25"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

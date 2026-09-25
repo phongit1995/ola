@@ -1,0 +1,948 @@
+{
+  "schemaVersion": 1,
+  "source": "Golden Island 1.0.24 / com.golden.island.survivors.farm.royal",
+  "sourceBundle": "duplicateassetisolation_assets_all_0d6055de4397ebc3c6fac7f7494f4c39.bundle",
+  "sourceBundleSHA256": "bf16cab7ebac633cbd525fb3ab8e38f5ace1e44d55c5f53d7cd8d88278629d18",
+  "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+  "images": {
+    "window": {
+      "resource": "images/window",
+      "size": [
+        200,
+        204
+      ],
+      "border": [
+        72.0,
+        87.0,
+        65.0,
+        65.0
+      ],
+      "sha256": "e93f502df1a6b45bf4fc8b8fbd97ceec97d2c7856dcefec6b6fee1221c552412",
+      "sourceName": "Ui2",
+      "sourceNode": "InventoryUI/Popup",
+      "sourcePathId": "209159048028136520",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        72.0,
+        87.0,
+        65.0,
+        65.0
+      ],
+      "sourceRect": [
+        200.0,
+        204.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        1204.28759765625,
+        910.5806274414062
+      ]
+    },
+    "buildingWindow": {
+      "resource": "images/buildingWindow",
+      "size": [
+        460,
+        460
+      ],
+      "border": [
+        197.0,
+        152.0,
+        187.0,
+        210.0
+      ],
+      "sha256": "47f0486a3dc35ac613e971bc37ea147400edacf732e04c2c86286eafd1a6a141",
+      "sourceName": "Popup",
+      "sourceNode": "UpgradeHouseUI/Popup/PanelRequirement",
+      "sourcePathId": "-4255193896169441630",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        197.0,
+        152.0,
+        187.0,
+        210.0
+      ],
+      "sourceRect": [
+        460.0,
+        460.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        967.4099731445312,
+        591.0700073242188
+      ]
+    },
+    "close": {
+      "resource": "images/close",
+      "size": [
+        92,
+        88
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "302c160a30c6a7bd73c581bba15af8d44c9508c28c93fe4f7e59c12f5f6149f9",
+      "sourceName": "X",
+      "sourceNode": "UpgradeHouseUI/Popup/PanelRequirement/ButtonClose",
+      "sourcePathId": "-45823030823605370",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sourceRect": [
+        92.0,
+        88.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        92.0,
+        88.0
+      ]
+    },
+    "card": {
+      "resource": "images/card",
+      "size": [
+        238,
+        230
+      ],
+      "border": [
+        100.0,
+        102.0,
+        100.0,
+        100.0
+      ],
+      "sha256": "857d487da9445ecd49fc3cc89a240b7c39ad06357bb7328d6a747a4cea40948c",
+      "sourceName": "ui1",
+      "sourceNode": "UpgradeHouseUI/Popup/PanelRequirement/UpgradeElements/UpgradeHouseElement",
+      "sourcePathId": "1527293709264809525",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        100.0,
+        102.0,
+        100.0,
+        100.0
+      ],
+      "sourceRect": [
+        238.0,
+        230.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        288.5899963378906,
+        411.19000244140625
+      ]
+    },
+    "inset": {
+      "resource": "images/inset",
+      "size": [
+        200,
+        204
+      ],
+      "border": [
+        72.0,
+        87.0,
+        66.0,
+        65.0
+      ],
+      "sha256": "b69ba5cec15e7dd41e58df90d94d59c07b3bc4eb0c50f6ce95fd7fe09bf7844a",
+      "sourceName": "Ui1",
+      "sourceNode": "PopupMissingMultiple/Popup/BG",
+      "sourcePathId": "8136066658448113782",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        72.0,
+        87.0,
+        66.0,
+        65.0
+      ],
+      "sourceRect": [
+        200.0,
+        204.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        855.6500244140625,
+        429.21160888671875
+      ]
+    },
+    "panelInfo": {
+      "resource": "images/panelInfo",
+      "size": [
+        164,
+        136
+      ],
+      "border": [
+        71.0,
+        69.70588235294117,
+        76.0,
+        65.29411764705883
+      ],
+      "sha256": "e444b83d0f93b324ae7fc541abce52ffdd2d332b1d338bf5f7c96601f4b4aa1f",
+      "sourceName": "popup1",
+      "sourceNode": "UpgradeHouseUI/Popup/PanelInfo",
+      "sourcePathId": "6844019589834724985",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        71.0,
+        79.0,
+        76.0,
+        74.0
+      ],
+      "sourceRect": [
+        164.0,
+        136.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        338.54998779296875,
+        549.0999755859375
+      ],
+      "borderAdjustment": [
+        "Overlapping source borders normalized proportionally with one center pixel."
+      ]
+    },
+    "green": {
+      "resource": "images/green",
+      "size": [
+        132,
+        108
+      ],
+      "border": [
+        46.0,
+        41.0,
+        44.0,
+        41.0
+      ],
+      "sha256": "c92a1a837450ef2bf77ef4c47a3a67d6d5acbb45556d56ce4314c6132c64e4a2",
+      "sourceName": "Button Green",
+      "sourceNode": "UpgradeHouseUI/Popup/PanelRequirement/ButtonUpgradeAll",
+      "sourcePathId": "2076791917025543088",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        46.0,
+        41.0,
+        44.0,
+        41.0
+      ],
+      "sourceRect": [
+        132.0,
+        108.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        265.8599853515625,
+        83.239990234375
+      ]
+    },
+    "slot": {
+      "resource": "images/slot",
+      "size": [
+        198,
+        196
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "ebe048fa319b8ebbfdf5a6cabb466446735993e224299c817bdfc2614127ea93",
+      "sourceName": "BgSlot",
+      "sourceNode": "Crafting/Popup/SlotCrafting/Slot1",
+      "sourcePathId": "3657340520912829934",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sourceRect": [
+        198.0,
+        196.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        199.114501953125,
+        197.1060028076172
+      ]
+    },
+    "recipe": {
+      "resource": "images/recipe",
+      "size": [
+        195,
+        184
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "39fa8b200896b8dad0cec54062a1eec42bf2023153455a5b520de3c60404b337",
+      "sourceName": "BgToolUI",
+      "sourceNode": "Crafting/Popup/ListTool/ToolUI",
+      "sourcePathId": "-2596899740224348790",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sourceRect": [
+        195.0,
+        184.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        195.0,
+        184.0
+      ]
+    },
+    "selected": {
+      "resource": "images/selected",
+      "size": [
+        195,
+        184
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "3c31a670db105240dcea7a5c677a2ed635a128584815e90cd0e149bce8b81228",
+      "sourceName": "Select",
+      "sourceNode": "Crafting/Popup/ListTool/ToolUI/Select",
+      "sourcePathId": "-4255238317037598441",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sourceRect": [
+        195.0,
+        184.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        195.0,
+        184.0
+      ]
+    },
+    "material": {
+      "resource": "images/material",
+      "size": [
+        60,
+        53
+      ],
+      "border": [
+        25.0,
+        25.0,
+        25.0,
+        25.0
+      ],
+      "sha256": "c52abd5431dda4f8693e48b1e364e51cc00633e8cf6f6cd0308b504b91359b4f",
+      "sourceName": "BgMaterial",
+      "sourceNode": "Crafting/Popup/ToolDetails/Material1",
+      "sourcePathId": "-995071625408611749",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        25.0,
+        25.0,
+        25.0,
+        25.0
+      ],
+      "sourceRect": [
+        60.0,
+        53.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        229.41749572753906,
+        52.54199981689453
+      ]
+    },
+    "info": {
+      "resource": "images/info",
+      "size": [
+        72,
+        71
+      ],
+      "border": [
+        31.0,
+        30.0,
+        31.0,
+        30.0
+      ],
+      "sha256": "69b09caee412cb1c5d20f616c5dac041f8335bbac24ed90077fd8eb5da17ff79",
+      "sourceName": "BgInfo",
+      "sourceNode": "Crafting/Popup/ToolDetails",
+      "sourcePathId": "-1119123070576407207",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        31.0,
+        30.0,
+        31.0,
+        30.0
+      ],
+      "sourceRect": [
+        72.0,
+        71.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        259.8525085449219,
+        0.0
+      ]
+    },
+    "tab": {
+      "resource": "images/tab",
+      "size": [
+        140,
+        104
+      ],
+      "border": [
+        52.0,
+        0,
+        52.0,
+        0
+      ],
+      "sha256": "000b702265ca14b8a442d03c4929ca2324ddbc15b44b1dc3c79cd91d1314de35",
+      "sourceName": "tab",
+      "sourceNode": "InventoryUI/Popup/TabResource/OpenResource",
+      "sourcePathId": "-6909126524282243184",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        52.0,
+        0.0,
+        52.0,
+        0.0
+      ],
+      "sourceRect": [
+        140.0,
+        104.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        200.0,
+        96.27950286865234
+      ]
+    },
+    "tabInactive": {
+      "resource": "images/tabInactive",
+      "size": [
+        140,
+        104
+      ],
+      "border": [
+        52.0,
+        0,
+        52.0,
+        0
+      ],
+      "sha256": "c978c5520d99b39901d484c35ab3649bc571650fb5dd8e09aa8eca1c220aff5c",
+      "sourceName": "tab2",
+      "sourceNode": "InventoryUI/Popup/ButtonOpenResourceTab",
+      "sourcePathId": "4138627853242301913",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        52.0,
+        0.0,
+        52.0,
+        0.0
+      ],
+      "sourceRect": [
+        140.0,
+        104.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        200.0,
+        99.4269790649414
+      ]
+    },
+    "progress": {
+      "resource": "images/progress",
+      "size": [
+        64,
+        36
+      ],
+      "border": [
+        23.0,
+        12.0,
+        21.0,
+        13.0
+      ],
+      "sha256": "d175030458a1201772c800e7d0677b6154b620db28821fcefd3774a5e2ba37bf",
+      "sourceName": "Loading",
+      "sourceNode": "InventoryUI/Popup/SliderCapacity/Background",
+      "sourcePathId": "-571689497506819196",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        23.0,
+        12.0,
+        21.0,
+        13.0
+      ],
+      "sourceRect": [
+        64.0,
+        36.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        0.0,
+        0.0
+      ]
+    },
+    "progressFill": {
+      "resource": "images/progressFill",
+      "size": [
+        66,
+        38
+      ],
+      "border": [
+        23.0,
+        0,
+        22.0,
+        0
+      ],
+      "sha256": "8fd4a044b3466f69c362bcdba5f5c05c2b581e22d5c57fde246dda091e30e877",
+      "sourceName": "Loading1",
+      "sourceNode": "InventoryUI/Popup/SliderCapacity/Fill Area/Fill/BackgroundGreen",
+      "sourcePathId": "5889543605713204273",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        23.0,
+        0.0,
+        22.0,
+        0.0
+      ],
+      "sourceRect": [
+        66.0,
+        38.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        454.4836120605469,
+        45.643001556396484
+      ]
+    },
+    "shopTab": {
+      "resource": "images/shopTab",
+      "size": [
+        180,
+        104
+      ],
+      "border": [
+        76.0,
+        0,
+        74.0,
+        0
+      ],
+      "sha256": "300751bca8322b3d222cf313cbe1fa0624f4f3a3b3e896dba036a77ddb7c3a44",
+      "sourceName": "UImain3",
+      "sourceNode": "BuildingUI/All/Btn/BtnBuilding",
+      "sourcePathId": "-3689956493084992207",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        76.0,
+        0.0,
+        74.0,
+        0.0
+      ],
+      "sourceRect": [
+        180.0,
+        104.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        267.7349853515625,
+        117.0
+      ]
+    },
+    "shopTabOpen": {
+      "resource": "images/shopTabOpen",
+      "size": [
+        240,
+        132
+      ],
+      "border": [
+        108.0,
+        0,
+        115.0,
+        0
+      ],
+      "sha256": "2e02c4fd9fd76cbcac03bc51041ec5635bffddd542a126ef2245111c467148ce",
+      "sourceName": "StateOpen",
+      "sourceNode": "BuildingUI/All/HeadingIcon/Building/HeaderBuilding/Open",
+      "sourcePathId": "7592237874239859551",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        108.0,
+        0.0,
+        115.0,
+        0.0
+      ],
+      "sourceRect": [
+        240.0,
+        132.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        343.8529052734375,
+        158.77049255371094
+      ]
+    },
+    "shopRim": {
+      "resource": "images/shopRim",
+      "size": [
+        14,
+        32
+      ],
+      "border": [
+        6.0,
+        0,
+        6.0,
+        0
+      ],
+      "sha256": "5f4bd2710c67cb7e1a764a322eab628481226664f96182f7c3ed2be780a4b91c",
+      "sourceName": "UImain",
+      "sourceNode": "BuildingUI/All/HeadingIcon/Building/HeaderBuilding/Open/Left",
+      "sourcePathId": "-40091456154239596",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        6.0,
+        0.0,
+        6.0,
+        0.0
+      ],
+      "sourceRect": [
+        14.0,
+        32.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        1206.85302734375,
+        63.04119873046875
+      ]
+    },
+    "shopBuilding": {
+      "resource": "images/shopBuilding",
+      "size": [
+        150,
+        140
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "78e3bbf0ee15e51605259c6b7bb15229ea2f6688f9e900ac986c48177d35fb49",
+      "sourceName": "IconBuilding",
+      "sourceNode": "BuildingUI/All/HeadingIcon/Building/IconBuilding",
+      "sourcePathId": "4411972411148896896",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sourceRect": [
+        150.0,
+        140.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        150.0,
+        140.0
+      ]
+    },
+    "shopAnimal": {
+      "resource": "images/shopAnimal",
+      "size": [
+        156,
+        148
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "240348b51d6becdebd6e388ff8347120333c50a3efd1fa16015efbc69ee2a24a",
+      "sourceName": "IconAnimal",
+      "sourceNode": "BuildingUI/All/HeadingIcon/Animal/IconAnimal",
+      "sourcePathId": "1524583117652309725",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sourceRect": [
+        156.0,
+        148.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        156.0,
+        148.0
+      ]
+    },
+    "shopCardLocked": {
+      "resource": "images/shopCardLocked",
+      "size": [
+        238,
+        230
+      ],
+      "border": [
+        99.0,
+        98.0,
+        95.0,
+        89.0
+      ],
+      "sha256": "1161b42d4b25f1d6b1f3c69a49d378cf023f331feab866a2ae84185bcc723a8f",
+      "sourceName": "ui2",
+      "sourceNode": "HouseBuildingUI",
+      "sourcePathId": "-1109556530181115338",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        99.0,
+        98.0,
+        95.0,
+        89.0
+      ],
+      "sourceRect": [
+        238.0,
+        230.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        285.75,
+        408.79998779296875
+      ]
+    },
+    "shopPrice": {
+      "resource": "images/shopPrice",
+      "size": [
+        80,
+        68
+      ],
+      "border": [
+        32.0,
+        28.0,
+        31.0,
+        28.0
+      ],
+      "sha256": "2060dbbfa77d3116cf76a5e480ffeefef069cea5bd14aed6f8adf33b03703b11",
+      "sourceName": "lockui1",
+      "sourceNode": "AnimalBuildingUI/Price",
+      "sourcePathId": "-5077226847215697857",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        32.0,
+        28.0,
+        31.0,
+        28.0
+      ],
+      "sourceRect": [
+        80.0,
+        68.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        239.60000610351562,
+        64.69999694824219
+      ]
+    },
+    "shopLock": {
+      "resource": "images/shopLock",
+      "size": [
+        36,
+        40
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "cdf4c934c3e7bf158655398179d4d9336c4e3edb383bb835bea3af7457e009ea",
+      "sourceName": "Lock",
+      "sourceNode": "AnimalBuildingUI/Lock/Icon",
+      "sourcePathId": "4887603948703973654",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sourceRect": [
+        36.0,
+        40.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        36.0,
+        40.0
+      ]
+    },
+    "shopQuantity": {
+      "resource": "images/shopQuantity",
+      "size": [
+        60,
+        27
+      ],
+      "border": [
+        22.0,
+        0,
+        24.0,
+        0
+      ],
+      "sha256": "8027dc3cc85fcfa128fe51f0374951b41df8cd7891e503f748a114ef33feb2fb",
+      "sourceName": "bg_slot",
+      "sourceNode": "AnimalBuildingUI/BgUnlock/QuantityBG",
+      "sourcePathId": "6209954408127948357",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        22.0,
+        0.0,
+        24.0,
+        0.0
+      ],
+      "sourceRect": [
+        60.0,
+        27.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        60.0,
+        27.0
+      ]
+    },
+    "navShop": {
+      "resource": "images/navShop",
+      "size": [
+        196,
+        224
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "93a797e8f67a6d6a922ea4a50337e0dcca7dc4c6378bd5e54b4e49ed838434f8",
+      "sourceName": "icon_building",
+      "sourceNode": "GameplayMainUI/SafeArea/PanelBot/GroupLeft/Building",
+      "sourcePathId": "7746233789321162327",
+      "sourceAssetFile": "CAB-e15518adb41e06a21dbd3b2317d9b019",
+      "sourceBorder": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sourceRect": [
+        196.0,
+        224.0
+      ],
+      "sourceOffset": [
+        0.0,
+        0.0
+      ],
+      "sourceNodeSize": [
+        178.18182373046875,
+        203.63636779785156
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "3b7d0595-1c93-543c-9d4d-84b1436c92ea",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "isBundle": true,
+    "bundleName": "golden-island-ui",
+    "priority": 2,
+    "isRemoteBundle": false
+  }
+}

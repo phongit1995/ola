@@ -1,0 +1,1171 @@
+{
+  "schemaVersion": 1,
+  "key": "strawberry_bush",
+  "group": "orchard",
+  "titleVi": "Bụi Dâu Tây",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — mở rộng vườn quả",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 143,
+    "key": "strawbery",
+    "titleVi": "Dâu Tây"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/strawberry_bush__a52e7e818574f264e98da8fb658e26c9_690.json",
+    "prefab": {
+      "file": "5ab18b880e1a2e44da49fa077dec36ca",
+      "id": 7,
+      "name": "strawbery",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__5ab18b880e1a2e44da49fa077dec36ca_77.json",
+        "growPhaseCount": 3,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/strawberry_bush_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1195.json",
+    "index": 0,
+    "entity": "strawberry_bush",
+    "durationSeconds": 2400,
+    "level": 6,
+    "quantityPerCycle": 5.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 6,
+    "basicPrice": 7.0,
+    "xpOnUse": 4.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 4,
+    "clearTool": {
+      "id": 93,
+      "name": "icon_shovel",
+      "titleVi": "Xẻng",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "sugar_processor",
+      "entityTitleVi": "Máy Chế Biến Đường",
+      "recipeIndex": 0,
+      "output": "hf_jellyworms",
+      "outputTitleVi": "Kẹo Dẻo Hình Giun",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/sugar_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_497.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "blender",
+      "entityTitleVi": "Máy Xay Sinh Tố",
+      "recipeIndex": 3,
+      "output": "strawberry_smoothies",
+      "outputTitleVi": "Sinh Tố Dâu Tây",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/blender_JOB_Data__a52e7e818574f264e98da8fb658e26c9_562.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "milk_factory",
+      "entityTitleVi": "Nhà Sản Xuất Sữa",
+      "recipeIndex": 0,
+      "output": "hf_milkshake",
+      "outputTitleVi": "Cocktail Hình Con Mắt",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/milk_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1204.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "milk_factory",
+      "entityTitleVi": "Nhà Sản Xuất Sữa",
+      "recipeIndex": 3,
+      "output": "yogurt",
+      "outputTitleVi": "Sữa Chua Dâu Tây",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/milk_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1204.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "milk_factory",
+      "entityTitleVi": "Nhà Sản Xuất Sữa",
+      "recipeIndex": 5,
+      "output": "strawberry_icecream",
+      "outputTitleVi": "Kem Dâu Tây",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/milk_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1204.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "jam_factory",
+      "entityTitleVi": "Nhà Máy Mứt",
+      "recipeIndex": 1,
+      "output": "strawbery_jam",
+      "outputTitleVi": "Mứt Dâu Tây",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/jam_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1373.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "cake_bakery",
+      "entityTitleVi": "Tiệm Bánh Kem",
+      "recipeIndex": 2,
+      "output": "cheesecake",
+      "outputTitleVi": "Bánh Phô Mai",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/cake_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1414.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 17382,
+      "sha256": "e667d846c164f7f08c89301090069f05d8ede25134555769a5e05a15297fc0e1",
+      "size": [
+        105,
+        93
+      ],
+      "source": {
+        "exportPath": "export/sprites/field_strawberry_FT_3_preview_0__sharedassets0.assets_16.png",
+        "file": "sharedassets0.assets",
+        "pathId": 16,
+        "spriteName": "field_strawberry_FT_3_preview_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 12.0,
+          "y": 15.0,
+          "width": 105.0,
+          "height": 93.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.0
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 9964,
+      "sha256": "87033f1316aa46b4530983e345414a8a03a80c7af1197c53a1ff22ed2edd9458",
+      "size": [
+        89,
+        88
+      ],
+      "source": {
+        "exportPath": "export/sprites/strawbery__sharedassets0.assets_39.png",
+        "file": "sharedassets0.assets",
+        "pathId": 39,
+        "spriteName": "strawbery"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 1.051316738128662,
+          "y": 1.0761204957962036
+        }
+      }
+    },
+    {
+      "path": "images/0_klub_1_0--f461a341b6.png",
+      "bytes": 2891,
+      "sha256": "49829f0a5dbef118448a59953378e38250a749e6786543f202b2f7ef07e41fb1",
+      "size": [
+        85,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_klub_1_0__8c6b8cff4096c5243b7ff791a2b3d50a_1.png",
+        "file": "8c6b8cff4096c5243b7ff791a2b3d50a",
+        "pathId": 1,
+        "spriteName": "0_klub_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 85.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_klub_2_0--4c018620ee.png",
+      "bytes": 12306,
+      "sha256": "bd967b1699e8032e0fb24791b81ea05507877851456f984ce41e42372c9dbad7",
+      "size": [
+        115,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_klub_2_0__7b86b29199cc42842bee9c493b1a1bee_1.png",
+        "file": "7b86b29199cc42842bee9c493b1a1bee",
+        "pathId": 1,
+        "spriteName": "4_klub_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 115.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.5027808547019958,
+          "y": 0.10372211784124374
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_klub_3_0--c9a809d72c.png",
+      "bytes": 1843,
+      "sha256": "be96d4ec6c822b0d3b5f60e09abe8ac4d1150d8ba79eb0bc1c76b64331cddb77",
+      "size": [
+        66,
+        19
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_klub_3_0__cec0b8867fa470649805fe2d5b632c24_1.png",
+        "file": "cec0b8867fa470649805fe2d5b632c24",
+        "pathId": 1,
+        "spriteName": "0_klub_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 66.0,
+          "height": 19.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_klub_1_0--97f12b3110.png",
+      "bytes": 4616,
+      "sha256": "1ba3dd65a93c8f9738839334c627f40124e4cab0a421075d0beb21d870b781a3",
+      "size": [
+        70,
+        48
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_klub_1_0__ef3d8616f68eec446941a20fe54da737_1.png",
+        "file": "ef3d8616f68eec446941a20fe54da737",
+        "pathId": 1,
+        "spriteName": "4_klub_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 48.0
+        },
+        "pivot": {
+          "x": 0.1500134915113449,
+          "y": 0.46009233593940735
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_klub_2_0--9bfd33f14a.png",
+      "bytes": 13599,
+      "sha256": "a0f0c2b209de7630e16aec7029742b695cf301f82d80a0b91e254c902be7007c",
+      "size": [
+        105,
+        84
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_klub_2_0__b4d190c60e25df74b9e9e7b8aa2281ff_1.png",
+        "file": "b4d190c60e25df74b9e9e7b8aa2281ff",
+        "pathId": 1,
+        "spriteName": "0_klub_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 105.0,
+          "height": 84.0
+        },
+        "pivot": {
+          "x": 0.5154829621315002,
+          "y": 0.03336133435368538
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_klub_2_0--515892eacd.png",
+      "bytes": 1118,
+      "sha256": "3903bf94349d1fd761003adc26d9d4716c989daa7f7031cadff9c7f9f6d7dd23",
+      "size": [
+        21,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_klub_2_0__5f28fe0394315e74894b215ec396966e_1.png",
+        "file": "5f28fe0394315e74894b215ec396966e",
+        "pathId": 1,
+        "spriteName": "3_klub_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 21.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.5696132183074951,
+          "y": 0.7098065614700317
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_klub_1_0--14a7ee6f91.png",
+      "bytes": 1392,
+      "sha256": "2304754003c6310fde77c639bf3cdbb9159880045d16583d5c4b47129fb6025b",
+      "size": [
+        25,
+        28
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_klub_1_0__34819de440e7dfe4488888b70a8aae19_1.png",
+        "file": "34819de440e7dfe4488888b70a8aae19",
+        "pathId": 1,
+        "spriteName": "3_klub_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 25.0,
+          "height": 28.0
+        },
+        "pivot": {
+          "x": 0.5126023888587952,
+          "y": 0.7723016738891602
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_klub_3_0--e437f63e1a.png",
+      "bytes": 1493,
+      "sha256": "dec3a9fb43e597ad2a55cd2b7200f084782293e511f464c471a03201f68c4018",
+      "size": [
+        25,
+        37
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_klub_3_0__6da7e5f86dd83174394fb79524332a39_1.png",
+        "file": "6da7e5f86dd83174394fb79524332a39",
+        "pathId": 1,
+        "spriteName": "3_klub_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 25.0,
+          "height": 37.0
+        },
+        "pivot": {
+          "x": 0.6376181244850159,
+          "y": 0.581915557384491
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_klub_4_0--a8a3601cb9.png",
+      "bytes": 1666,
+      "sha256": "8b7e41a2e7fc8f182734be87f16ebcd9d82fc836635cb9ba13c304c8b804067c",
+      "size": [
+        26,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_klub_4_0__722fcb0d31f8c154f9cd30187b533d31_1.png",
+        "file": "722fcb0d31f8c154f9cd30187b533d31",
+        "pathId": 1,
+        "spriteName": "3_klub_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 26.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.5961335897445679,
+          "y": 0.8012758493423462
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_klub_5_0--c6d0ab965d.png",
+      "bytes": 1591,
+      "sha256": "e225bb599d0d735c0cd1c877af03ec623088c58c3c5d02447e613f4b93666632",
+      "size": [
+        28,
+        34
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_klub_5_0__ef89df057ee51eb4a9dd74cca879b161_1.png",
+        "file": "ef89df057ee51eb4a9dd74cca879b161",
+        "pathId": 1,
+        "spriteName": "3_klub_5_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 28.0,
+          "height": 34.0
+        },
+        "pivot": {
+          "x": 0.4837968945503235,
+          "y": 0.7357388734817505
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/1_klub_0--50ed31f88f.png",
+      "bytes": 7939,
+      "sha256": "576536e284d86ab67faa6937c391e61a34979d17001d5210a73383872415a6a3",
+      "size": [
+        78,
+        74
+      ],
+      "source": {
+        "exportPath": "export/sprites/1_klub_0__9d950b1de8d55024e8ff666668f40d86_1.png",
+        "file": "9d950b1de8d55024e8ff666668f40d86",
+        "pathId": 1,
+        "spriteName": "1_klub_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 78.0,
+          "height": 74.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/2_klub_0--afd06ad060.png",
+      "bytes": 6442,
+      "sha256": "bb396da5b9989e4dcc6fa070f99c070537f17d5862c8cf83266e832f9590ba0e",
+      "size": [
+        77,
+        61
+      ],
+      "source": {
+        "exportPath": "export/sprites/2_klub_0__e4b369f0b56c722448f5c37a30e3a388_1.png",
+        "file": "e4b369f0b56c722448f5c37a30e3a388",
+        "pathId": 1,
+        "spriteName": "2_klub_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 77.0,
+          "height": 61.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "strawberry:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/4_klub_2_0--4c018620ee.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/4_klub_1_0--97f12b3110.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_4",
+        "file": "5d891abb762b4a646ae56d8755a0b324",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_4__5d891abb762b4a646ae56d8755a0b324_1.json",
+        "sha256": "fc8dea3f41a723b531fa57c9f4a3d93d5b423826c71cd072b7e90d988d47d6b0"
+      }
+    },
+    {
+      "key": "strawberry:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_0",
+        "file": "62c9d3bdfb79e434a873380e797ce5dc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_0__62c9d3bdfb79e434a873380e797ce5dc_1.json",
+        "sha256": "0c3faa2ea6587bd0f45bccd542b40d58eb4622fe9d7a1731eb0da81b32e0e58f"
+      }
+    },
+    {
+      "key": "strawberry:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_0",
+        "file": "62c9d3bdfb79e434a873380e797ce5dc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_0__62c9d3bdfb79e434a873380e797ce5dc_1.json",
+        "sha256": "0c3faa2ea6587bd0f45bccd542b40d58eb4622fe9d7a1731eb0da81b32e0e58f"
+      }
+    },
+    {
+      "key": "strawberry:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/1_klub_0--50ed31f88f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_1",
+        "file": "340c6c606e543524894c379068048ac3",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_1__340c6c606e543524894c379068048ac3_1.json",
+        "sha256": "56b1ad439c442bf2b3948e1ca1b636b0626a26e188b11092e13ee5729fa8f5e3"
+      }
+    },
+    {
+      "key": "strawberry:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/2_klub_0--afd06ad060.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_2",
+        "file": "95751cfa3c6df8542a8c52d50fbb35d3",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_2__95751cfa3c6df8542a8c52d50fbb35d3_1.json",
+        "sha256": "f525543052452a8cd476576015723423a4941da18bf848bbd1ebadd0d268e239"
+      }
+    },
+    {
+      "key": "strawberry:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/2_klub_0--afd06ad060.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_2",
+        "file": "95751cfa3c6df8542a8c52d50fbb35d3",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_2__95751cfa3c6df8542a8c52d50fbb35d3_1.json",
+        "sha256": "f525543052452a8cd476576015723423a4941da18bf848bbd1ebadd0d268e239"
+      }
+    },
+    {
+      "key": "strawberry:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "strawberry:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_2",
+        "file": "9130867318b8339408d76b3334a14189",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_2__9130867318b8339408d76b3334a14189_1.json",
+        "sha256": "092709edfd635b81b985e53c52eb1e6ef51ba03a54f05308d7c075998262fc34"
+      }
+    },
+    {
+      "key": "strawberry:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_3",
+        "file": "ca0b20ec887a4b44d9600f408460aa37",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_3__ca0b20ec887a4b44d9600f408460aa37_1.json",
+        "sha256": "186fe102af6389342843325083b982d501b0a16afe9f330e11652653a9bd4d1d"
+      }
+    },
+    {
+      "key": "strawberry:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_4",
+        "file": "7049f2f9d72b9f340bc2563e87b4ee9c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_4__7049f2f9d72b9f340bc2563e87b4ee9c_1.json",
+        "sha256": "7c79051678840899298902aa31ceeaf43c4119ff4b547069f7ce5fd6c8e0030e"
+      }
+    },
+    {
+      "key": "strawberry:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_5",
+        "file": "e5795213730b37742aaaecd48d03ebf2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_5__e5795213730b37742aaaecd48d03ebf2_1.json",
+        "sha256": "a8984f0a95231d31359f7dcf2b14483e2e5a5a4fe5389a29a7b13d78833fba22"
+      }
+    },
+    {
+      "key": "strawberry:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_1",
+        "file": "8c3f879e96f2f9a45989abc32589ce4b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_1__8c3f879e96f2f9a45989abc32589ce4b_1.json",
+        "sha256": "bbb430bd54d3387bc0109949589f03965e4d1e9a5d6dbdf40d0b6df89385c3c1"
+      }
+    },
+    {
+      "key": "strawberry:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_2",
+        "file": "9130867318b8339408d76b3334a14189",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_2__9130867318b8339408d76b3334a14189_1.json",
+        "sha256": "092709edfd635b81b985e53c52eb1e6ef51ba03a54f05308d7c075998262fc34"
+      }
+    },
+    {
+      "key": "strawberry:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_3",
+        "file": "ca0b20ec887a4b44d9600f408460aa37",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_3__ca0b20ec887a4b44d9600f408460aa37_1.json",
+        "sha256": "186fe102af6389342843325083b982d501b0a16afe9f330e11652653a9bd4d1d"
+      }
+    },
+    {
+      "key": "strawberry:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_4",
+        "file": "7049f2f9d72b9f340bc2563e87b4ee9c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_4__7049f2f9d72b9f340bc2563e87b4ee9c_1.json",
+        "sha256": "7c79051678840899298902aa31ceeaf43c4119ff4b547069f7ce5fd6c8e0030e"
+      }
+    },
+    {
+      "key": "strawberry:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_1",
+        "file": "8c3f879e96f2f9a45989abc32589ce4b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_1__8c3f879e96f2f9a45989abc32589ce4b_1.json",
+        "sha256": "bbb430bd54d3387bc0109949589f03965e4d1e9a5d6dbdf40d0b6df89385c3c1"
+      }
+    },
+    {
+      "key": "strawberry:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/0_klub_1_0--f461a341b6.png",
+        "images/0_klub_2_0--9bfd33f14a.png",
+        "images/0_klub_3_0--c9a809d72c.png",
+        "images/3_klub_2_0--515892eacd.png",
+        "images/3_klub_1_0--14a7ee6f91.png",
+        "images/3_klub_3_0--e437f63e1a.png",
+        "images/3_klub_4_0--a8a3601cb9.png",
+        "images/3_klub_5_0--c6d0ab965d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "strawberry",
+        "file": "bc412b47cc941b14882df72176782ee8",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "strawberry_3_0",
+        "file": "62c9d3bdfb79e434a873380e797ce5dc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/strawberry_3_0__62c9d3bdfb79e434a873380e797ce5dc_1.json",
+        "sha256": "0c3faa2ea6587bd0f45bccd542b40d58eb4622fe9d7a1731eb0da81b32e0e58f"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

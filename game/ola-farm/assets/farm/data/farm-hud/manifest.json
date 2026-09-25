@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "images": [
+    {
+      "id": "HudAvatarBacking",
+      "uuid": "c0018fcc-0883-4b67-388c-f81f45a36d61",
+      "spriteFrame": "c0018fcc-0883-4b67-388c-f81f45a36d61@f9941",
+      "width": 120,
+      "height": 120,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "9b4fe11b13b62d2ec8339362c5f074385c6ef363ff3d18e519de0c63db38867e",
+      "game": "golden-island",
+      "sourceName": "bg_avatar_1"
+    },
+    {
+      "id": "HudAvatar",
+      "uuid": "e4f0a5a3-e05e-a305-29a6-edb61795fb2c",
+      "spriteFrame": "e4f0a5a3-e05e-a305-29a6-edb61795fb2c@f9941",
+      "width": 120,
+      "height": 120,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "2ddc8d5ac832fa6a0af34d8e713396c581cbf5d23fa57356dc235f0672531251",
+      "game": "golden-island",
+      "sourceName": "avatar_1"
+    },
+    {
+      "id": "HudAvatarFrame",
+      "uuid": "d67c5996-6cad-2054-0f2b-68d75768ed1b",
+      "spriteFrame": "d67c5996-6cad-2054-0f2b-68d75768ed1b@f9941",
+      "width": 147,
+      "height": 148,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "2fdee881703bc4a81965ada076a48077b7f865b5286951de5f9f51f300ed8045",
+      "game": "golden-island",
+      "sourceName": "bg_avatar_2"
+    },
+    {
+      "id": "HudLevelStar",
+      "uuid": "17d24d75-6a8f-84f1-3b66-41cd5e4e6217",
+      "spriteFrame": "17d24d75-6a8f-84f1-3b66-41cd5e4e6217@f9941",
+      "width": 88,
+      "height": 80,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "26ad7edee4284e8e11152514101081efc2334240d4c78d3081b431e9f1a0b9d9",
+      "game": "golden-island",
+      "sourceName": "icon_lvl"
+    },
+    {
+      "id": "HudBox",
+      "uuid": "1eee9c7f-ebc1-6a7c-2ca8-6661fd928876",
+      "spriteFrame": "1eee9c7f-ebc1-6a7c-2ca8-6661fd928876@f9941",
+      "width": 68,
+      "height": 56,
+      "border": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "sha256": "8382479b3516a6ca4d2d80be25ec7ff56611bf662c65bbee6a6c04d9da115fe1",
+      "game": "golden-island",
+      "sourceName": "bg_cani"
+    },
+    {
+      "id": "HudXpFill",
+      "uuid": "191fbe73-5777-a591-96e9-934c0d557fa9",
+      "spriteFrame": "191fbe73-5777-a591-96e9-934c0d557fa9@f9941",
+      "width": 64,
+      "height": 52,
+      "border": [
+        24,
+        24,
+        25,
+        23
+      ],
+      "sha256": "d287d897b2e269dd4327d3358538af99262ae10426eefbaf4e748e4e851c7491",
+      "game": "golden-island",
+      "sourceName": "exp"
+    },
+    {
+      "id": "HudGem",
+      "uuid": "8ef2c975-af03-54bc-400d-f52fbc3449fc",
+      "spriteFrame": "8ef2c975-af03-54bc-400d-f52fbc3449fc@f9941",
+      "width": 96,
+      "height": 96,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "2df0d72c3df7a075e7662435598e108e18c866cc18f88421ef60fc7b58d660af",
+      "game": "golden-island",
+      "sourceName": "diammond"
+    },
+    {
+      "id": "HudPlus",
+      "uuid": "71450839-7f5d-c51d-6b02-b42c14b5c585",
+      "spriteFrame": "71450839-7f5d-c51d-6b02-b42c14b5c585@f9941",
+      "width": 80,
+      "height": 84,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "f2c312cbde116d300c6eaa4642db0e53ece10c15414f25edefbd0689e61924b4",
+      "game": "golden-island",
+      "sourceName": "bt_+"
+    },
+    {
+      "id": "HudMenu",
+      "uuid": "2ede7ccf-dfc3-ee64-3156-1a51e5148fb9",
+      "spriteFrame": "2ede7ccf-dfc3-ee64-3156-1a51e5148fb9@f9941",
+      "width": 80,
+      "height": 84,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "513ad2c5735d9553ef9918510c86c628612450acae084aac3946e828c9fb3d53",
+      "game": "golden-island",
+      "sourceName": "bt_setting"
+    }
+  ]
+}

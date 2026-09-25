@@ -1,0 +1,3 @@
+export const TOAST_HEIGHT = 42,
+  MAX_WIDTH = 640,
+  SIDE_MARGIN = 28;

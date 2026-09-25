@@ -1,0 +1,112 @@
+{
+  "sites": [
+    {
+      "id": "pen:50",
+      "source": "pen:12",
+      "node": "Cell50",
+      "position": {
+        "x": 648,
+        "y": -144
+      }
+    },
+    {
+      "id": "pen:51",
+      "source": "pen:13",
+      "node": "Cell51",
+      "position": {
+        "x": -540,
+        "y": 828
+      }
+    },
+    {
+      "id": "pen:52",
+      "source": "pen:14",
+      "node": "Cell52",
+      "position": {
+        "x": 288,
+        "y": 1224
+      }
+    },
+    {
+      "id": "pen:53",
+      "source": "pen:15",
+      "node": "Cell53",
+      "position": {
+        "x": 1008,
+        "y": 936
+      }
+    },
+    {
+      "id": "feed-2",
+      "source": "feed-1",
+      "node": "feed-2",
+      "position": {
+        "x": 2448,
+        "y": -54
+      }
+    },
+    {
+      "id": "bakery-2",
+      "source": "bakery-1",
+      "node": "bakery-2",
+      "position": {
+        "x": 180,
+        "y": -1872
+      }
+    },
+    {
+      "id": "dairy-2",
+      "source": "dairy-1",
+      "node": "dairy-2",
+      "position": {
+        "x": -1476,
+        "y": 144
+      }
+    },
+    {
+      "id": "grill-2",
+      "source": "grill-1",
+      "node": "grill-2",
+      "position": {
+        "x": 1332,
+        "y": -594
+      }
+    },
+    {
+      "id": "industry-sugar_processor-2",
+      "source": "industry-sugar_processor",
+      "node": "industry-sugar_processor-2",
+      "position": {
+        "x": 2700,
+        "y": -774
+      }
+    },
+    {
+      "id": "industry-popcorn_factory-2",
+      "source": "industry-popcorn_factory",
+      "node": "industry-popcorn_factory-2",
+      "position": {
+        "x": -2088,
+        "y": -756
+      }
+    },
+    {
+      "id": "industry-pie_bakery-2",
+      "source": "industry-pie_bakery",
+      "node": "industry-pie_bakery-2",
+      "position": {
+        "x": 1548,
+        "y": 720
+      }
+    },
+    {
+      "id": "industry-loom-2",
+      "source": "industry-loom",
+      "node": "industry-loom-2",
+      "position": {
+        "x": -1512,
+        "y": -1008
+      }
+    }
+  ]
+}

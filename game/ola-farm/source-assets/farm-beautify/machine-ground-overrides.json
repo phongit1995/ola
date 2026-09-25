@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "machines": {
+    "dairy": {
+      "layer": "osnova-137",
+      "imageSize": [299, 303],
+      "method": "Authored ground plane in osnova-137 image pixels (origin at top left). The left lean-to foundation extends beyond this image into the line_1 layers. Front vertices follow the foundation, conveyor and milk-can feet; the rear vertex closes the hidden isometric base. Roofs, pipes and wall height are excluded.",
+      "polygon": [
+        { "x": -40, "y": 230 },
+        { "x": 163, "y": 144 },
+        { "x": 273, "y": 198 },
+        { "x": 296, "y": 241 },
+        { "x": 292, "y": 246 },
+        { "x": 270, "y": 255 },
+        { "x": 146, "y": 294 },
+        { "x": 100, "y": 299 },
+        { "x": 94, "y": 299 },
+        { "x": 67, "y": 293 },
+        { "x": 23, "y": 275 },
+        { "x": -31, "y": 248 },
+        { "x": -35, "y": 243 }
+      ]
+    }
+  }
+}

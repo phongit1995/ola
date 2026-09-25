@@ -1,0 +1,857 @@
+{
+  "schemaVersion": 1,
+  "key": "pear_tree",
+  "group": "orchard",
+  "titleVi": "Quả Lê",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — mở rộng vườn quả",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 190,
+    "key": "pear",
+    "titleVi": "Quả Lê"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/pear_tree__a52e7e818574f264e98da8fb658e26c9_937.json",
+    "prefab": {
+      "file": "9e94c0de3e7ea704d99b05b72faf7513",
+      "id": 8,
+      "name": "field_pear",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__9e94c0de3e7ea704d99b05b72faf7513_38.json",
+        "growPhaseCount": 2,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/pear_tree_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1253.json",
+    "index": 0,
+    "entity": "pear_tree",
+    "durationSeconds": 9000,
+    "level": 52,
+    "quantityPerCycle": 5.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 52,
+    "basicPrice": 30.0,
+    "xpOnUse": 2.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 1,
+    "clearTool": {
+      "id": 92,
+      "name": "icon_saw",
+      "titleVi": "Cưa",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": []
+  },
+  "sourceConsumers": [
+    {
+      "entity": "pizza_bakery",
+      "entityTitleVi": "Lò Pizza",
+      "recipeIndex": 3,
+      "output": "pizza_sweet",
+      "outputTitleVi": "Pizza Tráng Miệng",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pizza_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_412.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 16834,
+      "sha256": "2ae309cc946a3d1e85dd982ba4152112fd379db90f8e9d14ea146598a0b18c66",
+      "size": [
+        90,
+        128
+      ],
+      "source": {
+        "exportPath": "export/sprites/pear_tree__sharedassets0.assets_843.png",
+        "file": "sharedassets0.assets",
+        "pathId": 843,
+        "spriteName": "pear_tree"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 128.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 36.57142639160156,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 8240,
+      "sha256": "82d65f6c63d41bd4937b1750cd1c0fd120d7c1166d0341fbc659a7774f5138d8",
+      "size": [
+        83,
+        85
+      ],
+      "source": {
+        "exportPath": "export/sprites/pear_icon_viking_0__sharedassets0.assets_1010.png",
+        "file": "sharedassets0.assets",
+        "pathId": 1010,
+        "spriteName": "pear_icon_viking_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 5.0,
+          "y": 1.0,
+          "width": 83.0,
+          "height": 85.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/grusha_0_0--db94f40f0a.png",
+      "bytes": 43412,
+      "sha256": "92e3a0327d826601a07af62a726b6da4a449577671c802e1bcdca016dd186b98",
+      "size": [
+        175,
+        239
+      ],
+      "source": {
+        "exportPath": "export/sprites/grusha_0_0__4ea63c8b838dc6148834552f7ac3da3c_1.png",
+        "file": "4ea63c8b838dc6148834552f7ac3da3c",
+        "pathId": 1,
+        "spriteName": "grusha_0_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 175.0,
+          "height": 239.0
+        },
+        "pivot": {
+          "x": 0.4824119210243225,
+          "y": 0.05999257415533066
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kust_3_0--afef416234.png",
+      "bytes": 742,
+      "sha256": "2842c869bf613e00143b4bfd477cfeb688e5012db39cf75b6efd46bbf91273d2",
+      "size": [
+        29,
+        17
+      ],
+      "source": {
+        "exportPath": "export/sprites/kust_3_0__90315663f386c2a4eb688b85b0f41238_1.png",
+        "file": "90315663f386c2a4eb688b85b0f41238",
+        "pathId": 1,
+        "spriteName": "kust_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 29.0,
+          "height": 17.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kust_12_0--8fc984ef3f.png",
+      "bytes": 859,
+      "sha256": "a0a381fe293126ab417202b573782e87e180c96e759c90ef3e62f6a19e58b5d8",
+      "size": [
+        28,
+        19
+      ],
+      "source": {
+        "exportPath": "export/sprites/kust_12_0__342c4ed1f03b82443a597f60b5c9906a_1.png",
+        "file": "342c4ed1f03b82443a597f60b5c9906a",
+        "pathId": 1,
+        "spriteName": "kust_12_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 28.0,
+          "height": 19.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kust_4_0--63fdd134dc.png",
+      "bytes": 660,
+      "sha256": "bec11d7ecc66a54c07a922d8ba9b4afc8576d3a3b6da2ecd2af0fa489be8375a",
+      "size": [
+        26,
+        18
+      ],
+      "source": {
+        "exportPath": "export/sprites/kust_4_0__a9bc23bbc45c712489ff8d9573b88b62_1.png",
+        "file": "a9bc23bbc45c712489ff8d9573b88b62",
+        "pathId": 1,
+        "spriteName": "kust_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 26.0,
+          "height": 18.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/grusha_4_0--5bee3782a4.png",
+      "bytes": 67109,
+      "sha256": "7706baee40cc4ca584d2bcb486a7b742aed1fe644185ca22a7ae16700746d7fb",
+      "size": [
+        189,
+        249
+      ],
+      "source": {
+        "exportPath": "export/sprites/grusha_4_0__cf7191f01cfefd547b778c2e9c4db661_1.png",
+        "file": "cf7191f01cfefd547b778c2e9c4db661",
+        "pathId": 1,
+        "spriteName": "grusha_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 189.0,
+          "height": 249.0
+        },
+        "pivot": {
+          "x": 0.49151962995529175,
+          "y": 0.10195164382457733
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/gr_1_0--38656efde4.png",
+      "bytes": 11731,
+      "sha256": "2c981c2616d7adfca5500333b5507a729a4c5766a89a9dfea319729effacd7e9",
+      "size": [
+        146,
+        156
+      ],
+      "source": {
+        "exportPath": "export/sprites/gr_1_0__bf824e9c48eca7649aae0af131802abd_1.png",
+        "file": "bf824e9c48eca7649aae0af131802abd",
+        "pathId": 1,
+        "spriteName": "gr_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 146.0,
+          "height": 156.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/gl_2_0--a0a20911f5.png",
+      "bytes": 1268,
+      "sha256": "604d8338e6b67e2c2d9b5ca7d4a5103965b62157669c77ef0c9350067537df61",
+      "size": [
+        23,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/gl_2_0__f21b476669b8fc448b1d9bb6f83403d7_1.png",
+        "file": "f21b476669b8fc448b1d9bb6f83403d7",
+        "pathId": 1,
+        "spriteName": "gl_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 23.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.5375737547874451,
+          "y": 0.9435299038887024
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/gr_3_0--1d45dfb3ae.png",
+      "bytes": 1741,
+      "sha256": "f29641879b6ff2693a632151c702c439cb9728b8a225f02a8dac534978a341f1",
+      "size": [
+        28,
+        33
+      ],
+      "source": {
+        "exportPath": "export/sprites/gr_3_0__f8c447a372a1bb4439781a2c8b338fed_1.png",
+        "file": "f8c447a372a1bb4439781a2c8b338fed",
+        "pathId": 1,
+        "spriteName": "gr_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 28.0,
+          "height": 33.0
+        },
+        "pivot": {
+          "x": 0.6117495894432068,
+          "y": 0.9357109069824219
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/grusha_0_0--db94f40f0a.png",
+    "images/kust_3_0--afef416234.png",
+    "images/kust_12_0--8fc984ef3f.png",
+    "images/kust_4_0--63fdd134dc.png"
+  ],
+  "phases": [
+    {
+      "key": "pear:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/grusha_4_0--5bee3782a4.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_4",
+        "file": "d3e2772df9433024e8240cf6b6bfdf0e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_4__d3e2772df9433024e8240cf6b6bfdf0e_1.json",
+        "sha256": "07757a34451fe50186c75c6fe49ea62d987c68a19915fc9032da3df157c3aaec"
+      }
+    },
+    {
+      "key": "pear:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/gr_1_0--38656efde4.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_1",
+        "file": "d9acf671dc585134a828b43c6fe449ee",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_1__d9acf671dc585134a828b43c6fe449ee_1.json",
+        "sha256": "e154323a3cae55322b42316d85b57b4e31af7ed49b662dea8b8b08e9f3cb5cf5"
+      }
+    },
+    {
+      "key": "pear:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/gr_1_0--38656efde4.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_1",
+        "file": "d9acf671dc585134a828b43c6fe449ee",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_1__d9acf671dc585134a828b43c6fe449ee_1.json",
+        "sha256": "e154323a3cae55322b42316d85b57b4e31af7ed49b662dea8b8b08e9f3cb5cf5"
+      }
+    },
+    {
+      "key": "pear:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/gl_2_0--a0a20911f5.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_2",
+        "file": "087a02770d5d7374098de99858c4650b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_2__087a02770d5d7374098de99858c4650b_1.json",
+        "sha256": "e57120b81e43000370398dd53f37306f0438f40c9f6a145c8f56c4859f47e534"
+      }
+    },
+    {
+      "key": "pear:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow2",
+        "file": "16c9a4bd92086644caa5d56f275079d2",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow2__16c9a4bd92086644caa5d56f275079d2_1.json",
+        "sha256": "11b126f0500dc5e5b04a91f2a345956dc4d2f29f25ca0392dee551e57cbc0f42"
+      }
+    },
+    {
+      "key": "pear:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow3",
+        "file": "f5148b692daf893428d7db5c6521d28f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow3__f5148b692daf893428d7db5c6521d28f_1.json",
+        "sha256": "2bde8f83564684b4a29ec07eb4040362b49461770dbc4ec562a90adff0e59c26"
+      }
+    },
+    {
+      "key": "pear:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "pear:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_2",
+        "file": "79530d14a32e90a4ab57915e96173b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_2__79530d14a32e90a4ab57915e96173b54_1.json",
+        "sha256": "f2a5f4ece34c60cd6486fd55407530e12dec21a827ee76daf77571763aaa5b31"
+      }
+    },
+    {
+      "key": "pear:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_3",
+        "file": "4f7f486ef6ea11945a50432746d81063",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_3__4f7f486ef6ea11945a50432746d81063_1.json",
+        "sha256": "3235e2d18b82fc3f6816a0662c988ca1cebad9df93100f05038a3efefa85c836"
+      }
+    },
+    {
+      "key": "pear:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_4",
+        "file": "aea66a8c5641ed144885fb13ed16af49",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_4__aea66a8c5641ed144885fb13ed16af49_1.json",
+        "sha256": "95d7b2baa9c87fb94a36f076fb44f93f34674778c190773b974a9775a8e672b6"
+      }
+    },
+    {
+      "key": "pear:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_5",
+        "file": "d630a0e4ccb7edd4287e2c7a1fefb562",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_5__d630a0e4ccb7edd4287e2c7a1fefb562_1.json",
+        "sha256": "8b60713e768f419bea82a52a0954ac495f8f229f10c678d6077d6d3cd17e78b8"
+      }
+    },
+    {
+      "key": "pear:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_1",
+        "file": "490434cb75b78124b9e1080cf6f91c9b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_1__490434cb75b78124b9e1080cf6f91c9b_1.json",
+        "sha256": "fb49e9fb8dc498e817157d841505682c155351526dffce6a1d25ba27762c26b7"
+      }
+    },
+    {
+      "key": "pear:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_3",
+        "file": "4f7f486ef6ea11945a50432746d81063",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_3__4f7f486ef6ea11945a50432746d81063_1.json",
+        "sha256": "3235e2d18b82fc3f6816a0662c988ca1cebad9df93100f05038a3efefa85c836"
+      }
+    },
+    {
+      "key": "pear:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_4",
+        "file": "aea66a8c5641ed144885fb13ed16af49",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_4__aea66a8c5641ed144885fb13ed16af49_1.json",
+        "sha256": "95d7b2baa9c87fb94a36f076fb44f93f34674778c190773b974a9775a8e672b6"
+      }
+    },
+    {
+      "key": "pear:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_5",
+        "file": "d630a0e4ccb7edd4287e2c7a1fefb562",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_5__d630a0e4ccb7edd4287e2c7a1fefb562_1.json",
+        "sha256": "8b60713e768f419bea82a52a0954ac495f8f229f10c678d6077d6d3cd17e78b8"
+      }
+    },
+    {
+      "key": "pear:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_2",
+        "file": "79530d14a32e90a4ab57915e96173b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_2__79530d14a32e90a4ab57915e96173b54_1.json",
+        "sha256": "f2a5f4ece34c60cd6486fd55407530e12dec21a827ee76daf77571763aaa5b31"
+      }
+    },
+    {
+      "key": "pear:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/gr_3_0--1d45dfb3ae.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "pear",
+        "file": "7d2845a27f02c8f4cae9dc135e92460b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "field_pear_3_1",
+        "file": "490434cb75b78124b9e1080cf6f91c9b",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/field_pear_3_1__490434cb75b78124b9e1080cf6f91c9b_1.json",
+        "sha256": "fb49e9fb8dc498e817157d841505682c155351526dffce6a1d25ba27762c26b7"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

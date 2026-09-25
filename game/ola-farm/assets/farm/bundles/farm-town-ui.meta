@@ -1,0 +1,14 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "6c30a850-2869-5038-8517-cd3a047d937a",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "isBundle": true,
+    "bundleName": "farm-town-ui",
+    "priority": 2,
+    "isRemoteBundle": false
+  }
+}

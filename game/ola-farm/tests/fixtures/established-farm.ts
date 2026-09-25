@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { FarmGame } from '../../assets/farm/scripts/core/FarmGame';
+import { xpToNext } from '../../assets/farm/scripts/core/Progression';
+
+export function xpForLevel(game: FarmGame, level: number): number {
+  return Array.from({ length: level - 1 }, (_, index) =>
+    xpToNext(index + 1, game.catalog.economy?.experience.curve)
+  ).reduce((sum, xp) => sum + xp, 0);
+}
+
+/** Explicit owned-building fixture for production, livestock and historical-save tests.
+ * Fresh games deliberately own no production buildings. Buy the former starters
+ * through core actions, then restore the test's wallet and XP independently of
+ * their construction costs. Catalog defaults are never replaced by this helper.
+ */
+export function establishFarm(game: FarmGame): FarmGame {
+  const { coins, xp } = game.state;
+  game.state.coins = 1000000;
+  game.state.xp = 100000000;
+  for (const type of [1, 4, 5]) {
+    if (!game.state.machines.some(machine => machine.type === type)) {
+      assert.equal(game.buyMachine(type).error, undefined, `fixture machine ${type}`);
+    }
+  }
+  for (const id of [12, 13]) {
+    if (!game.residentPlot(id)!.residents) {
+      assert.equal(game.buyPen(id).error, undefined, `fixture pen ${id}`);
+    }
+  }
+  game.state.coins = coins;
+  game.state.xp = xp;
+  return game;
+}

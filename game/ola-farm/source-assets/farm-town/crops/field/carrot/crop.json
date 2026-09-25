@@ -1,0 +1,1033 @@
+{
+  "schemaVersion": 1,
+  "key": "carrot",
+  "group": "field",
+  "titleVi": "Cà Rốt",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C2 — đường và thức ăn heo/cừu",
+  "farmCompatibility": "new-field-crop",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 29,
+    "key": "carrot",
+    "titleVi": "Cà Rốt"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/carrot__e1fe53173efc96247b7706d5a5ad92e7_278.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 29,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 4,
+    "entity": "garden_bed",
+    "durationSeconds": 1800,
+    "level": 8,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 3.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 8,
+    "basicPrice": 12.0,
+    "xpOnUse": 6.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "popcorn_factory",
+      "entityTitleVi": "Lò Ngô",
+      "recipeIndex": 2,
+      "output": "hf_chipsfries",
+      "outputTitleVi": "Khoai Mandrake Chiên",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/popcorn_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_820.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "food_processor",
+      "entityTitleVi": "Máy Chế Biến Thực Phẩm",
+      "recipeIndex": 3,
+      "output": "feed_pig",
+      "outputTitleVi": "Thức Ăn Heo",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/food_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1047.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "soup_manufacture",
+      "entityTitleVi": "Sản Xuất Súp",
+      "recipeIndex": 0,
+      "output": "tomato_soup",
+      "outputTitleVi": "Súp Cà Chua",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/soup_manufacture_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1050.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "cake_bakery",
+      "entityTitleVi": "Tiệm Bánh Kem",
+      "recipeIndex": 1,
+      "output": "cake",
+      "outputTitleVi": "Bánh Cà Rốt",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/cake_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1414.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 8997,
+      "sha256": "3f679338bb89db0cdd1c28027c0120333a18073637bfd0703628962c0559def0",
+      "size": [
+        86,
+        86
+      ],
+      "source": {
+        "exportPath": "export/sprites/carrot__sharedassets0.assets_408.png",
+        "file": "sharedassets0.assets",
+        "pathId": 408,
+        "spriteName": "carrot"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 1.0197869539260864,
+          "y": 3.076120376586914
+        }
+      }
+    },
+    {
+      "path": "images/mork_1_0--b7b0239d00.png",
+      "bytes": 5490,
+      "sha256": "489f8d3ee6d712e362b0e3fb4f645acb659cde4c45cda4a97323db74501307c3",
+      "size": [
+        99,
+        57
+      ],
+      "source": {
+        "exportPath": "export/sprites/mork_1_0__aed298b755f636547bc08c35b6459ff4_1.png",
+        "file": "aed298b755f636547bc08c35b6459ff4",
+        "pathId": 1,
+        "spriteName": "mork_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 99.0,
+          "height": 57.0
+        },
+        "pivot": {
+          "x": 0.4928315281867981,
+          "y": 0.4377475678920746
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/mork_2_0--48fcb22a60.png",
+      "bytes": 9103,
+      "sha256": "1e748c5e2b6fdc953df9f28ecacbf14dabaac78740f0597f79d404028db655a2",
+      "size": [
+        104,
+        64
+      ],
+      "source": {
+        "exportPath": "export/sprites/mork_2_0__80f243f22cd68894388533e15470ce0a_1.png",
+        "file": "80f243f22cd68894388533e15470ce0a",
+        "pathId": 1,
+        "spriteName": "mork_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 104.0,
+          "height": 64.0
+        },
+        "pivot": {
+          "x": 0.4928315579891205,
+          "y": 0.36487454175949097
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/mork_3ten_0--44efd39cf2.png",
+      "bytes": 2308,
+      "sha256": "b6225c24ea5408a31c80b010854f9a101a2e73f3a2df238cc626bf182f62b630",
+      "size": [
+        100,
+        53
+      ],
+      "source": {
+        "exportPath": "export/sprites/mork_3ten_0__485f84a446ef2d94f9b6580acd346b9e_1.png",
+        "file": "485f84a446ef2d94f9b6580acd346b9e",
+        "pathId": 1,
+        "spriteName": "mork_3ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 100.0,
+          "height": 53.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/mork_3_0--c65b56eb8b.png",
+      "bytes": 1482,
+      "sha256": "3bfc829e5235820f5d6922c07d22079e6cfbe226595cdacb17cd23a3ff319856",
+      "size": [
+        29,
+        34
+      ],
+      "source": {
+        "exportPath": "export/sprites/mork_3_0__9e866c41ef07dfe42ae0695f15bb3f5c_1.png",
+        "file": "9e866c41ef07dfe42ae0695f15bb3f5c",
+        "pathId": 1,
+        "spriteName": "mork_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 29.0,
+          "height": 34.0
+        },
+        "pivot": {
+          "x": 0.5188491344451904,
+          "y": 0.18202923238277435
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_z_0--883118c11b.png",
+      "bytes": 5987,
+      "sha256": "b3b89609a006d7ed55915d935206d66afb998ba6ec24d324f4665e6fef19fc2d",
+      "size": [
+        70,
+        55
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_z_0__3e3d6611d2111e545acc6dd6b2c788d5_1.png",
+        "file": "3e3d6611d2111e545acc6dd6b2c788d5",
+        "pathId": 1,
+        "spriteName": "korzina_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 55.0
+        },
+        "pivot": {
+          "x": 0.5060317516326904,
+          "y": 0.04195280000567436
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_goroh_ten_0--95b1a24536.png",
+      "bytes": 941,
+      "sha256": "7a7791f05c2154cbbb9c628581f869b3d6fe0c14bea7c3527732cfc56c0b72c2",
+      "size": [
+        64,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_goroh_ten_0__92e8bd173cc6243469348943018e68e6_1.png",
+        "file": "92e8bd173cc6243469348943018e68e6",
+        "pathId": 1,
+        "spriteName": "4_goroh_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_p_0--7f793edf56.png",
+      "bytes": 4229,
+      "sha256": "d94006a00ba11282fd57b836c1fbcd17cc35c72de605df40dbe27ee7aaeae92b",
+      "size": [
+        70,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_p_0__019de690601ed6347a8ea922874ee9a8_1.png",
+        "file": "019de690601ed6347a8ea922874ee9a8",
+        "pathId": 1,
+        "spriteName": "korzina_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.04370361566543579
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/ruchka_korzina_0--aaf9e6b4e2.png",
+      "bytes": 1264,
+      "sha256": "f523de6096814f7ef76adc7300b029294e349c09770f22a54fde2f6571d3c976",
+      "size": [
+        18,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/ruchka_korzina_0__76d356cc6b1fef1438dfa8e1ddff75ec_1.png",
+        "file": "76d356cc6b1fef1438dfa8e1ddff75ec",
+        "pathId": 1,
+        "spriteName": "ruchka_korzina_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 18.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.71687251329422,
+          "y": 0.055404335260391235
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_mor_nutr_2_0--0c3c7b9d80.png",
+      "bytes": 5864,
+      "sha256": "1d3fb4398875b0319cb50f75a347480dbdc3fce460712ad93c0e9f0f501bb235",
+      "size": [
+        62,
+        50
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_mor_nutr_2_0__797975de5dd858349ad84a8b1f8a5588_1.png",
+        "file": "797975de5dd858349ad84a8b1f8a5588",
+        "pathId": 1,
+        "spriteName": "4_mor_nutr_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 62.0,
+          "height": 50.0
+        },
+        "pivot": {
+          "x": 0.5099561810493469,
+          "y": 0.33456793427467346
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_mor_2_0--ba82bfe63a.png",
+      "bytes": 1058,
+      "sha256": "fb04f1367218523611e1aa21e286bd7265cf9d5c520677bc5de368ddc75bb816",
+      "size": [
+        32,
+        18
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_mor_2_0__f85f36ad5fc476c44bf2a86ff22a4b16_1.png",
+        "file": "f85f36ad5fc476c44bf2a86ff22a4b16",
+        "pathId": 1,
+        "spriteName": "4_mor_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 32.0,
+          "height": 18.0
+        },
+        "pivot": {
+          "x": 0.4922839403152466,
+          "y": 0.18998625874519348
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_mor_1_0--445eea10fe.png",
+      "bytes": 1203,
+      "sha256": "857ef4ab4de79ee0e131a26f57557c4a3e49a6a5b9438e807ef8ade2adde0800",
+      "size": [
+        29,
+        23
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_mor_1_0__f139147a743abf74a976dbc54258c0f5_1.png",
+        "file": "f139147a743abf74a976dbc54258c0f5",
+        "pathId": 1,
+        "spriteName": "4_mor_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 29.0,
+          "height": 23.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.29066023230552673
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_mor_ten_0--cb628d9095.png",
+      "bytes": 549,
+      "sha256": "1a6f03c40b0f823393e937bd6382da2a4cb67911e7fa732371225f558af62cc4",
+      "size": [
+        32,
+        26
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_mor_ten_0__7789665b1904bde4285f8e7df5e94e5b_1.png",
+        "file": "7789665b1904bde4285f8e7df5e94e5b",
+        "pathId": 1,
+        "spriteName": "4_mor_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 2.0,
+          "y": 1.0,
+          "width": 32.0,
+          "height": 26.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_carrot:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_carrot:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_carrot:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/mork_1_0--b7b0239d00.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_1",
+        "file": "4f82cf432a68ed3458adf0af5349ad43",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_1__4f82cf432a68ed3458adf0af5349ad43_1.json",
+        "sha256": "97a314a3132a0f0368dd098394adcbf6cab6fb959e2e15e504238e5f0c6e92b7"
+      }
+    },
+    {
+      "key": "farm_carrot:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/mork_2_0--48fcb22a60.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_2",
+        "file": "6b54a0249faca5846bc9c8f253d179bc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_2__6b54a0249faca5846bc9c8f253d179bc_1.json",
+        "sha256": "2fdccc3d4245764f7e5509b4d4aee34dcbbcc6dd53aa3881499762bc5d6bdad3"
+      }
+    },
+    {
+      "key": "farm_carrot:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/mork_2_0--48fcb22a60.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_2",
+        "file": "6b54a0249faca5846bc9c8f253d179bc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_2__6b54a0249faca5846bc9c8f253d179bc_1.json",
+        "sha256": "2fdccc3d4245764f7e5509b4d4aee34dcbbcc6dd53aa3881499762bc5d6bdad3"
+      }
+    },
+    {
+      "key": "farm_carrot:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/mork_2_0--48fcb22a60.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_2",
+        "file": "6b54a0249faca5846bc9c8f253d179bc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_2__6b54a0249faca5846bc9c8f253d179bc_1.json",
+        "sha256": "2fdccc3d4245764f7e5509b4d4aee34dcbbcc6dd53aa3881499762bc5d6bdad3"
+      }
+    },
+    {
+      "key": "farm_carrot:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_carrot:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/mork_3ten_0--44efd39cf2.png",
+        "images/mork_3_0--c65b56eb8b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_3",
+        "file": "afe2b00da53553d4094d1c76aaea9d60",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_3__afe2b00da53553d4094d1c76aaea9d60_1.json",
+        "sha256": "587af762c85c6e8b06fe50f980bd9309941a27a0e150d14b8c4893beb499b3a2"
+      }
+    },
+    {
+      "key": "farm_carrot:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/mork_3ten_0--44efd39cf2.png",
+        "images/mork_3_0--c65b56eb8b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_3",
+        "file": "afe2b00da53553d4094d1c76aaea9d60",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_3__afe2b00da53553d4094d1c76aaea9d60_1.json",
+        "sha256": "587af762c85c6e8b06fe50f980bd9309941a27a0e150d14b8c4893beb499b3a2"
+      }
+    },
+    {
+      "key": "farm_carrot:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/mork_3ten_0--44efd39cf2.png",
+        "images/mork_3_0--c65b56eb8b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_3",
+        "file": "afe2b00da53553d4094d1c76aaea9d60",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_3__afe2b00da53553d4094d1c76aaea9d60_1.json",
+        "sha256": "587af762c85c6e8b06fe50f980bd9309941a27a0e150d14b8c4893beb499b3a2"
+      }
+    },
+    {
+      "key": "farm_carrot:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/mork_3ten_0--44efd39cf2.png",
+        "images/mork_3_0--c65b56eb8b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_3",
+        "file": "afe2b00da53553d4094d1c76aaea9d60",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_3__afe2b00da53553d4094d1c76aaea9d60_1.json",
+        "sha256": "587af762c85c6e8b06fe50f980bd9309941a27a0e150d14b8c4893beb499b3a2"
+      }
+    },
+    {
+      "key": "farm_carrot:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/mork_3ten_0--44efd39cf2.png",
+        "images/mork_3_0--c65b56eb8b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_3",
+        "file": "afe2b00da53553d4094d1c76aaea9d60",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_3__afe2b00da53553d4094d1c76aaea9d60_1.json",
+        "sha256": "587af762c85c6e8b06fe50f980bd9309941a27a0e150d14b8c4893beb499b3a2"
+      }
+    },
+    {
+      "key": "farm_carrot:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_mor_nutr_2_0--0c3c7b9d80.png",
+        "images/4_mor_2_0--ba82bfe63a.png",
+        "images/4_mor_1_0--445eea10fe.png",
+        "images/4_mor_ten_0--cb628d9095.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_end",
+        "file": "973c3bbdc9e00f147ab533118a7c9c9c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_end__973c3bbdc9e00f147ab533118a7c9c9c_1.json",
+        "sha256": "7ced85c8d769538059c319c9feeb63c6ef13a608c0e843acb86b7062f9d6973d"
+      }
+    },
+    {
+      "key": "farm_carrot:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_mor_nutr_2_0--0c3c7b9d80.png",
+        "images/4_mor_2_0--ba82bfe63a.png",
+        "images/4_mor_1_0--445eea10fe.png",
+        "images/4_mor_ten_0--cb628d9095.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_end",
+        "file": "973c3bbdc9e00f147ab533118a7c9c9c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_end__973c3bbdc9e00f147ab533118a7c9c9c_1.json",
+        "sha256": "7ced85c8d769538059c319c9feeb63c6ef13a608c0e843acb86b7062f9d6973d"
+      }
+    },
+    {
+      "key": "farm_carrot:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_mor_nutr_2_0--0c3c7b9d80.png",
+        "images/4_mor_2_0--ba82bfe63a.png",
+        "images/4_mor_1_0--445eea10fe.png",
+        "images/4_mor_ten_0--cb628d9095.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_end",
+        "file": "973c3bbdc9e00f147ab533118a7c9c9c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_end__973c3bbdc9e00f147ab533118a7c9c9c_1.json",
+        "sha256": "7ced85c8d769538059c319c9feeb63c6ef13a608c0e843acb86b7062f9d6973d"
+      }
+    },
+    {
+      "key": "farm_carrot:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_mor_nutr_2_0--0c3c7b9d80.png",
+        "images/4_mor_2_0--ba82bfe63a.png",
+        "images/4_mor_1_0--445eea10fe.png",
+        "images/4_mor_ten_0--cb628d9095.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_end",
+        "file": "973c3bbdc9e00f147ab533118a7c9c9c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_end__973c3bbdc9e00f147ab533118a7c9c9c_1.json",
+        "sha256": "7ced85c8d769538059c319c9feeb63c6ef13a608c0e843acb86b7062f9d6973d"
+      }
+    },
+    {
+      "key": "farm_carrot:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_mor_nutr_2_0--0c3c7b9d80.png",
+        "images/4_mor_2_0--ba82bfe63a.png",
+        "images/4_mor_1_0--445eea10fe.png",
+        "images/4_mor_ten_0--cb628d9095.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_carrot",
+        "file": "b3124f7b9e8eb2144970e03d73493dbe",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "morkov_end",
+        "file": "973c3bbdc9e00f147ab533118a7c9c9c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/morkov_end__973c3bbdc9e00f147ab533118a7c9c9c_1.json",
+        "sha256": "7ced85c8d769538059c319c9feeb63c6ef13a608c0e843acb86b7062f9d6973d"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

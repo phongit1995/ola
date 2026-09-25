@@ -1,0 +1,906 @@
+{
+  "schemaVersion": 1,
+  "key": "apple_tree",
+  "group": "orchard",
+  "titleVi": "Cây Táo",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C4 — vườn táo đầu tiên",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 1,
+    "key": "apple",
+    "titleVi": "Táo"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/apple_tree__a52e7e818574f264e98da8fb658e26c9_686.json",
+    "prefab": {
+      "file": "f2a6b54bd274f8a4882ee48e40ed8014",
+      "id": 4,
+      "name": "apple_tree",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__f2a6b54bd274f8a4882ee48e40ed8014_39.json",
+        "growPhaseCount": 3,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/apple_tree_JOB_Data__a52e7e818574f264e98da8fb658e26c9_359.json",
+    "index": 0,
+    "entity": "apple_tree",
+    "durationSeconds": 5400,
+    "level": 6,
+    "quantityPerCycle": 5.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 6,
+    "basicPrice": 11.0,
+    "xpOnUse": 6.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 3,
+    "clearTool": {
+      "id": 92,
+      "name": "icon_saw",
+      "titleVi": "Cưa",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 121,
+        "name": "plank",
+        "titleVi": "Ván Gỗ",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "sugar_processor",
+      "entityTitleVi": "Máy Chế Biến Đường",
+      "recipeIndex": 0,
+      "output": "hf_jellyworms",
+      "outputTitleVi": "Kẹo Dẻo Hình Giun",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/sugar_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_497.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "bakery",
+      "entityTitleVi": "Tiệm Bánh",
+      "recipeIndex": 2,
+      "output": "hf_cookies",
+      "outputTitleVi": "Bánh Quy Táo",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_809.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "drinks",
+      "entityTitleVi": "Máy Ép Nước",
+      "recipeIndex": 0,
+      "output": "juice_apple",
+      "outputTitleVi": "Nước Táo",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/drinks_JOB_Data__a52e7e818574f264e98da8fb658e26c9_947.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "oven",
+      "entityTitleVi": "Lò Nướng",
+      "recipeIndex": 0,
+      "output": "hf_caramelapple",
+      "outputTitleVi": "Táo Caramen",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/oven_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1212.json",
+      "bundleParameter": "halloween"
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 0,
+      "output": "apple_pies",
+      "outputTitleVi": "Bánh Táo",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "jam_factory",
+      "entityTitleVi": "Nhà Máy Mứt",
+      "recipeIndex": 0,
+      "output": "apple_jam",
+      "outputTitleVi": "Mứt Táo",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/jam_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1373.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 14160,
+      "sha256": "7cd3ac619b8d67459b239f13fffa421231f3dfd6ca8fb9d65e15263527f91b2c",
+      "size": [
+        86,
+        94
+      ],
+      "source": {
+        "exportPath": "export/sprites/new_apple_tree_3_preview_FT_0__sharedassets0.assets_1015.png",
+        "file": "sharedassets0.assets",
+        "pathId": 1015,
+        "spriteName": "new_apple_tree_3_preview_FT_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 21.5,
+          "y": 26.5,
+          "width": 86.5,
+          "height": 94.5
+        },
+        "pivot": {
+          "x": 0.481351375579834,
+          "y": 0.059027332812547684
+        },
+        "pixelsToUnits": 50.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 8137,
+      "sha256": "f46a6267c85b8d22213f4009ac2009b1fc5737841d4c86f13727cd6f4d6a178f",
+      "size": [
+        69,
+        65
+      ],
+      "source": {
+        "exportPath": "export/sprites/apple__sharedassets0.assets_891.png",
+        "file": "sharedassets0.assets",
+        "pathId": 891,
+        "spriteName": "apple"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 1.0761204957962036,
+          "y": 1.0019323825836182
+        }
+      }
+    },
+    {
+      "path": "images/yablonya_off2_0--ddf32e5a05.png",
+      "bytes": 7700,
+      "sha256": "7f431333d3a02b526c78690e85934caf4ddba89b65790ddbba912e2e71055e78",
+      "size": [
+        107,
+        54
+      ],
+      "source": {
+        "exportPath": "export/sprites/yablonya_off2_0__db85abde327032c469c248ec47b2fef8_1.png",
+        "file": "db85abde327032c469c248ec47b2fef8",
+        "pathId": 1,
+        "spriteName": "yablonya_off2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 107.0,
+          "height": 54.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/yablonya_off_0--818e1dae18.png",
+      "bytes": 41719,
+      "sha256": "50ba0643bef144ab45f5f13e5214670788d8d7b7293be8f4569b4bb27495540a",
+      "size": [
+        161,
+        183
+      ],
+      "source": {
+        "exportPath": "export/sprites/yablonya_off_0__3ce1bd1a5a6dccf47a9fd9647025dda9_1.png",
+        "file": "3ce1bd1a5a6dccf47a9fd9647025dda9",
+        "pathId": 1,
+        "spriteName": "yablonya_off_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 161.0,
+          "height": 183.0
+        },
+        "pivot": {
+          "x": 0.5071622729301453,
+          "y": 0.058916207402944565
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/yablonya_on_0--8769d28273.png",
+      "bytes": 43469,
+      "sha256": "421a539abd55ca3c6c4b01213d336ec3372a7df41a59779adbd168265f983658",
+      "size": [
+        175,
+        190
+      ],
+      "source": {
+        "exportPath": "export/sprites/yablonya_on_0__8bfb3a00d44410a45bba40007aa6f46e_1.png",
+        "file": "8bfb3a00d44410a45bba40007aa6f46e",
+        "pathId": 1,
+        "spriteName": "yablonya_on_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 175.0,
+          "height": 190.0
+        },
+        "pivot": {
+          "x": 0.4838689863681793,
+          "y": 0.05639566481113434
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/apple_3_0--70a7044a9b.png",
+      "bytes": 1401,
+      "sha256": "79af07baa59936d45ffc27de04f016cd8b3a10eafad8d7116ebb731f94dbfb29",
+      "size": [
+        27,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/apple_3_0__1aa6fe3b5efbb344192b9c74c7b4cc8c_1.png",
+        "file": "1aa6fe3b5efbb344192b9c74c7b4cc8c",
+        "pathId": 1,
+        "spriteName": "apple_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 27.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.4800850450992584,
+          "y": 0.8293424844741821
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/yablonya_dop_3_0--35a70b9169.png",
+      "bytes": 13829,
+      "sha256": "3fd876e23ab47cfa6c1bb336099f82d7d5cde94bf76406997d1da76f26b8b7f3",
+      "size": [
+        137,
+        108
+      ],
+      "source": {
+        "exportPath": "export/sprites/yablonya_dop_3_0__b9375e55724f8c742b2151eaa5e3a48d_1.png",
+        "file": "b9375e55724f8c742b2151eaa5e3a48d",
+        "pathId": 1,
+        "spriteName": "yablonya_dop_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 137.0,
+          "height": 108.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/yablonya_1_0--5750105b05.png",
+      "bytes": 18753,
+      "sha256": "47e56f19e567d8e9b42114f309795dc2c86e1eb2800fe9f006aea2bf752cf5dc",
+      "size": [
+        146,
+        120
+      ],
+      "source": {
+        "exportPath": "export/sprites/yablonya_1_0__d09c06eb8b5277541bdc6c5f285bf0eb_1.png",
+        "file": "d09c06eb8b5277541bdc6c5f285bf0eb",
+        "pathId": 1,
+        "spriteName": "yablonya_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 146.0,
+          "height": 120.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/apple_2_0--85e45083a4.png",
+      "bytes": 1441,
+      "sha256": "a609ade8f02ecbcde5ea2dbda04b948e424d529dea57918329e4a83cef89690f",
+      "size": [
+        27,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/apple_2_0__8dfd1ce1c6bc85e4e91e445a90e7bd17_1.png",
+        "file": "8dfd1ce1c6bc85e4e91e445a90e7bd17",
+        "pathId": 1,
+        "spriteName": "apple_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 27.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.48195210099220276,
+          "y": 0.8180938363075256
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "apple:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/yablonya_off2_0--ddf32e5a05.png",
+        "images/yablonya_off_0--818e1dae18.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_4",
+        "file": "d4f90b1b20a27f7438cd39f88e55920c",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_4__d4f90b1b20a27f7438cd39f88e55920c_1.json",
+        "sha256": "bcd7410081e90f9a1f071a6abeaf5bba0943acda17218ea8192dadadbf6bec53"
+      }
+    },
+    {
+      "key": "apple:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_0",
+        "file": "f52fd8209be6bf4498e08293d04ff69d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_0__f52fd8209be6bf4498e08293d04ff69d_1.json",
+        "sha256": "d328194ec3bec6e0b3b74b76669b0b770cda8bfe5b9d94005c9e2a50f33861c8"
+      }
+    },
+    {
+      "key": "apple:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_0",
+        "file": "f52fd8209be6bf4498e08293d04ff69d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_0__f52fd8209be6bf4498e08293d04ff69d_1.json",
+        "sha256": "d328194ec3bec6e0b3b74b76669b0b770cda8bfe5b9d94005c9e2a50f33861c8"
+      }
+    },
+    {
+      "key": "apple:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/yablonya_1_0--5750105b05.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_1",
+        "file": "8459ef4dfa81e2844a7c28d2742bc40f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_1__8459ef4dfa81e2844a7c28d2742bc40f_1.json",
+        "sha256": "235cfe2e3cb2cc4e6fd332e8d65b4b88aa27d86f5c90f81b9a9ce01f2cd89b1a"
+      }
+    },
+    {
+      "key": "apple:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/apple_2_0--85e45083a4.png",
+        "images/yablonya_on_0--8769d28273.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_2",
+        "file": "7d2f1ed8f2c4940449e451224273e6ea",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_2__7d2f1ed8f2c4940449e451224273e6ea_1.json",
+        "sha256": "232a4f7f8917e07f923421f346ac55e70d4b63c05d2d86bd37cbd7b1bfec85c1"
+      }
+    },
+    {
+      "key": "apple:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/apple_2_0--85e45083a4.png",
+        "images/yablonya_on_0--8769d28273.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_2",
+        "file": "7d2f1ed8f2c4940449e451224273e6ea",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_2__7d2f1ed8f2c4940449e451224273e6ea_1.json",
+        "sha256": "232a4f7f8917e07f923421f346ac55e70d4b63c05d2d86bd37cbd7b1bfec85c1"
+      }
+    },
+    {
+      "key": "apple:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "apple:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_2",
+        "file": "2c9c6f3395aa52347a12fbf05d580549",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_2__2c9c6f3395aa52347a12fbf05d580549_1.json",
+        "sha256": "152e60f89fb0bb233e2d9d36ccef5f846671f134361f2d1ab26ec1ba71a8dbd5"
+      }
+    },
+    {
+      "key": "apple:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_3",
+        "file": "80afee5b35282914784dc2d3603b63bf",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_3__80afee5b35282914784dc2d3603b63bf_1.json",
+        "sha256": "e2a46a62bbcb90d0e53722dfe30dd19dc93cbef640c72f004ea894b4edfca4a5"
+      }
+    },
+    {
+      "key": "apple:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_4",
+        "file": "e3b021c04f2b6ad468f0cfb6cf41f1fd",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_4__e3b021c04f2b6ad468f0cfb6cf41f1fd_1.json",
+        "sha256": "bc58201b6c1664a220f1234134aba9ad1230a6589d3e293505a02ebe05fd9c53"
+      }
+    },
+    {
+      "key": "apple:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_5",
+        "file": "3bdebd3d29a76904eb37d0dd30dcae90",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_5__3bdebd3d29a76904eb37d0dd30dcae90_1.json",
+        "sha256": "7ea51a3dc6978e757d5eaadb89a56742330b99522756b5bb9f57b03137ec0e5e"
+      }
+    },
+    {
+      "key": "apple:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_1",
+        "file": "fff484ff0b4c6674a809cf9d7285b032",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_1__fff484ff0b4c6674a809cf9d7285b032_1.json",
+        "sha256": "64fa23071a9ede44eeabd8c31127059e99ec40c38904ccd1bda5ce55c636fe2c"
+      }
+    },
+    {
+      "key": "apple:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_2",
+        "file": "2c9c6f3395aa52347a12fbf05d580549",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_2__2c9c6f3395aa52347a12fbf05d580549_1.json",
+        "sha256": "152e60f89fb0bb233e2d9d36ccef5f846671f134361f2d1ab26ec1ba71a8dbd5"
+      }
+    },
+    {
+      "key": "apple:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_3",
+        "file": "80afee5b35282914784dc2d3603b63bf",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_3__80afee5b35282914784dc2d3603b63bf_1.json",
+        "sha256": "e2a46a62bbcb90d0e53722dfe30dd19dc93cbef640c72f004ea894b4edfca4a5"
+      }
+    },
+    {
+      "key": "apple:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_4",
+        "file": "e3b021c04f2b6ad468f0cfb6cf41f1fd",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_4__e3b021c04f2b6ad468f0cfb6cf41f1fd_1.json",
+        "sha256": "bc58201b6c1664a220f1234134aba9ad1230a6589d3e293505a02ebe05fd9c53"
+      }
+    },
+    {
+      "key": "apple:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_1",
+        "file": "fff484ff0b4c6674a809cf9d7285b032",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_1__fff484ff0b4c6674a809cf9d7285b032_1.json",
+        "sha256": "64fa23071a9ede44eeabd8c31127059e99ec40c38904ccd1bda5ce55c636fe2c"
+      }
+    },
+    {
+      "key": "apple:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/yablonya_on_0--8769d28273.png",
+        "images/apple_3_0--70a7044a9b.png",
+        "images/yablonya_dop_3_0--35a70b9169.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "apple",
+        "file": "e6ab478a98b6bef4a82d6544d43bcb27",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "apple_3_0",
+        "file": "f52fd8209be6bf4498e08293d04ff69d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/apple_3_0__f52fd8209be6bf4498e08293d04ff69d_1.json",
+        "sha256": "d328194ec3bec6e0b3b74b76669b0b770cda8bfe5b9d94005c9e2a50f33861c8"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

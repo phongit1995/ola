@@ -1,0 +1,1225 @@
+{
+  "schemaVersion": 1,
+  "key": "cotton",
+  "group": "field",
+  "titleVi": "Bông",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C3 — dệt may và đường mía",
+  "farmCompatibility": "new-field-crop",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 44,
+    "key": "cotton",
+    "titleVi": "Bông"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/cotton__e1fe53173efc96247b7706d5a5ad92e7_157.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 44,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 8,
+    "entity": "garden_bed",
+    "durationSeconds": 3600,
+    "level": 13,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 5.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 13,
+    "basicPrice": 22.0,
+    "xpOnUse": 11.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "loom",
+      "entityTitleVi": "Bàn Đan Len",
+      "recipeIndex": 0,
+      "output": "hat",
+      "outputTitleVi": "Mũ Len",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/loom_JOB_Data__a52e7e818574f264e98da8fb658e26c9_242.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "sewing",
+      "entityTitleVi": "Bàn May",
+      "recipeIndex": 0,
+      "output": "teeshort",
+      "outputTitleVi": "Áo Thun",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/sewing_JOB_Data__a52e7e818574f264e98da8fb658e26c9_357.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 1,
+      "output": "hat_bandage",
+      "outputTitleVi": "Điện Capitolium",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 7,
+      "output": "hat_ev",
+      "outputTitleVi": "Mũ Dạ Hội",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 8,
+      "output": "hat_marry",
+      "outputTitleVi": "Mũ Cưới",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "accessories",
+      "entityTitleVi": "Phụ Kiện",
+      "recipeIndex": 4,
+      "output": "bag_feather",
+      "outputTitleVi": "Túi Lông Vũ",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/accessories_JOB_Data__a52e7e818574f264e98da8fb658e26c9_545.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 9045,
+      "sha256": "96209547c5ffb12ff3d3334258f1cf900d7d8dd6d0c9a692daffa0dcb07816af",
+      "size": [
+        90,
+        90
+      ],
+      "source": {
+        "exportPath": "export/sprites/cotton__sharedassets0.assets_569.png",
+        "file": "sharedassets0.assets",
+        "pathId": 569,
+        "spriteName": "cotton"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/hlop_1_0--df2643f353.png",
+      "bytes": 8312,
+      "sha256": "d677eeda1477db73e62c4b9853deb112580f644c1b4fdfe3f0b2e8a59297754a",
+      "size": [
+        114,
+        66
+      ],
+      "source": {
+        "exportPath": "export/sprites/hlop_1_0__969df251fc6c68c46bf585f41a62da1d_1.png",
+        "file": "969df251fc6c68c46bf585f41a62da1d",
+        "pathId": 1,
+        "spriteName": "hlop_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 114.0,
+          "height": 66.0
+        },
+        "pivot": {
+          "x": 0.48709675669670105,
+          "y": 0.39103934168815613
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/hlop_2_0--b262ca0928.png",
+      "bytes": 22310,
+      "sha256": "88c488280e005f37035b22712d8bb50945e651235b06e7b62569b125ca6bcfe9",
+      "size": [
+        144,
+        101
+      ],
+      "source": {
+        "exportPath": "export/sprites/hlop_2_0__7abf7b8ff8e3600489e59776942b55c6_1.png",
+        "file": "7abf7b8ff8e3600489e59776942b55c6",
+        "pathId": 1,
+        "spriteName": "hlop_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 144.0,
+          "height": 101.0
+        },
+        "pivot": {
+          "x": 0.5159896016120911,
+          "y": 0.2865360677242279
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/hlop_3ten_0--02a00500d4.png",
+      "bytes": 11910,
+      "sha256": "d111903b5819dcfa4f8de6a7efa076214b3311f6ee173c38b115770a25529e2d",
+      "size": [
+        126,
+        89
+      ],
+      "source": {
+        "exportPath": "export/sprites/hlop_3ten_0__2982c78b6e75dec48ac85da3734003f0_1.png",
+        "file": "2982c78b6e75dec48ac85da3734003f0",
+        "pathId": 1,
+        "spriteName": "hlop_3ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 126.0,
+          "height": 89.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/hlop_35_0--a7b92effe4.png",
+      "bytes": 5833,
+      "sha256": "1c42bdd47744b6591bc23fdac520d5274c56551a23fca8adec3f89cb9d2c9087",
+      "size": [
+        52,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/hlop_35_0__36eaa2efd91f17648b9044d8736c29cb_1.png",
+        "file": "36eaa2efd91f17648b9044d8736c29cb",
+        "pathId": 1,
+        "spriteName": "hlop_35_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 52.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.5497773885726929,
+          "y": 0.03912120312452316
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/hlop_34_0--ad12d6dbca.png",
+      "bytes": 12228,
+      "sha256": "3d63f82085cad04feb554d9ccc19bd7637dcbfbea84f614d412cc3947bbd72d5",
+      "size": [
+        104,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/hlop_34_0__2b535a783d850764dbb793e920858aa1_1.png",
+        "file": "2b535a783d850764dbb793e920858aa1",
+        "pathId": 1,
+        "spriteName": "hlop_34_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 104.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.04188350960612297
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/hlop_33_0--9907bdbf02.png",
+      "bytes": 12637,
+      "sha256": "4cec7d3ad2cc256f742310b7bfe6c18ebfce14017dc2586aefc4e943b1ec58e4",
+      "size": [
+        147,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/hlop_33_0__82d743571f765724187dbdab521d514b_1.png",
+        "file": "82d743571f765724187dbdab521d514b",
+        "pathId": 1,
+        "spriteName": "hlop_33_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 147.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.5028673410415649,
+          "y": 0.05100514367222786
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/hlop_32_0--8a2731de94.png",
+      "bytes": 11665,
+      "sha256": "dfe868698fae0775661d0693e4f3fac45620d79371719afd7f863f25f2051515",
+      "size": [
+        95,
+        67
+      ],
+      "source": {
+        "exportPath": "export/sprites/hlop_32_0__53a58a19890842e4bb451e210985beb0_1.png",
+        "file": "53a58a19890842e4bb451e210985beb0",
+        "pathId": 1,
+        "spriteName": "hlop_32_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 95.0,
+          "height": 67.0
+        },
+        "pivot": {
+          "x": 0.5263497233390808,
+          "y": 0.03920716419816017
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/hlop_31_0--231b2160a2.png",
+      "bytes": 6344,
+      "sha256": "7d2198440b567ed9a688c7bd924220017d21b787c3857bc4b0048f08a45cbc75",
+      "size": [
+        51,
+        69
+      ],
+      "source": {
+        "exportPath": "export/sprites/hlop_31_0__93df8561adc7596489ee3432ad43fc0a_1.png",
+        "file": "93df8561adc7596489ee3432ad43fc0a",
+        "pathId": 1,
+        "spriteName": "hlop_31_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 51.0,
+          "height": 69.0
+        },
+        "pivot": {
+          "x": 0.5547114014625549,
+          "y": 0.06803929060697556
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_z_0--883118c11b.png",
+      "bytes": 5987,
+      "sha256": "b3b89609a006d7ed55915d935206d66afb998ba6ec24d324f4665e6fef19fc2d",
+      "size": [
+        70,
+        55
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_z_0__3e3d6611d2111e545acc6dd6b2c788d5_1.png",
+        "file": "3e3d6611d2111e545acc6dd6b2c788d5",
+        "pathId": 1,
+        "spriteName": "korzina_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 55.0
+        },
+        "pivot": {
+          "x": 0.5060317516326904,
+          "y": 0.04195280000567436
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/korzina_p_0--7f793edf56.png",
+      "bytes": 4229,
+      "sha256": "d94006a00ba11282fd57b836c1fbcd17cc35c72de605df40dbe27ee7aaeae92b",
+      "size": [
+        70,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/korzina_p_0__019de690601ed6347a8ea922874ee9a8_1.png",
+        "file": "019de690601ed6347a8ea922874ee9a8",
+        "pathId": 1,
+        "spriteName": "korzina_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 70.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.4999999403953552,
+          "y": 0.04370361566543579
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_goroh_ten_0--95b1a24536.png",
+      "bytes": 941,
+      "sha256": "7a7791f05c2154cbbb9c628581f869b3d6fe0c14bea7c3527732cfc56c0b72c2",
+      "size": [
+        64,
+        30
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_goroh_ten_0__92e8bd173cc6243469348943018e68e6_1.png",
+        "file": "92e8bd173cc6243469348943018e68e6",
+        "pathId": 1,
+        "spriteName": "4_goroh_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 30.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/ruchka_korzina_0--aaf9e6b4e2.png",
+      "bytes": 1264,
+      "sha256": "f523de6096814f7ef76adc7300b029294e349c09770f22a54fde2f6571d3c976",
+      "size": [
+        18,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/ruchka_korzina_0__76d356cc6b1fef1438dfa8e1ddff75ec_1.png",
+        "file": "76d356cc6b1fef1438dfa8e1ddff75ec",
+        "pathId": 1,
+        "spriteName": "ruchka_korzina_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 18.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.71687251329422,
+          "y": 0.055404335260391235
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_hlop_nutr_0--c7570d8ec1.png",
+      "bytes": 6054,
+      "sha256": "6acf76a1977a3d287a79007a4451d7d699170c53cfaec802cdc5671480011237",
+      "size": [
+        63,
+        45
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_hlop_nutr_0__6ffd2885d7ccc46469d495e293454e21_1.png",
+        "file": "6ffd2885d7ccc46469d495e293454e21",
+        "pathId": 1,
+        "spriteName": "4_hlop_nutr_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 0.0,
+          "width": 63.0,
+          "height": 45.0
+        },
+        "pivot": {
+          "x": 0.5018420815467834,
+          "y": 0.35558298230171204
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_hlop_3_0--57395cbdf8.png",
+      "bytes": 1201,
+      "sha256": "c732a317ffa8a893cdc90570dfd1f002ba3f986f5674db0767e5ad457d23709b",
+      "size": [
+        22,
+        23
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_hlop_3_0__b099b99d04271d440853a4b404b1c7af_1.png",
+        "file": "b099b99d04271d440853a4b404b1c7af",
+        "pathId": 1,
+        "spriteName": "4_hlop_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 22.0,
+          "height": 23.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_hlop_2_0--bf51fbfffc.png",
+      "bytes": 1076,
+      "sha256": "3e899e7d969d624494aec0999cd09a62371a8cb1893ee66a0ec96d83a7bd51a3",
+      "size": [
+        21,
+        21
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_hlop_2_0__4e77ed040235f744197d7ea6d84fd7bf_1.png",
+        "file": "4e77ed040235f744197d7ea6d84fd7bf",
+        "pathId": 1,
+        "spriteName": "4_hlop_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 21.0,
+          "height": 21.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_hlop_1_0--84c9442f34.png",
+      "bytes": 1143,
+      "sha256": "5d033fee13ca53b347e232c77c1cede6281d8e2a4b03879f898a5bb1fbb1ff5e",
+      "size": [
+        22,
+        23
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_hlop_1_0__8cfacc2e898a55e4cb7344ec6dcbfdbf_1.png",
+        "file": "8cfacc2e898a55e4cb7344ec6dcbfdbf",
+        "pathId": 1,
+        "spriteName": "4_hlop_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 22.0,
+          "height": 23.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_cotton:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_cotton:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_cotton:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/hlop_1_0--df2643f353.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_1",
+        "file": "cfd27013b47603247bd826fc6a4d6197",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_1__cfd27013b47603247bd826fc6a4d6197_1.json",
+        "sha256": "6f8818f69eb013e72bd0518ab0dcc710084496fc98dade57d702ba5ab9d751b9"
+      }
+    },
+    {
+      "key": "farm_cotton:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/hlop_2_0--b262ca0928.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_2",
+        "file": "0d103ad0506ab934ea494b341108573d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_2__0d103ad0506ab934ea494b341108573d_1.json",
+        "sha256": "17814fc789218031d930b6ac2d9edcc594b20652a6c23c215f1d19a773dea9e0"
+      }
+    },
+    {
+      "key": "farm_cotton:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/hlop_2_0--b262ca0928.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_2",
+        "file": "0d103ad0506ab934ea494b341108573d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_2__0d103ad0506ab934ea494b341108573d_1.json",
+        "sha256": "17814fc789218031d930b6ac2d9edcc594b20652a6c23c215f1d19a773dea9e0"
+      }
+    },
+    {
+      "key": "farm_cotton:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/hlop_2_0--b262ca0928.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_2",
+        "file": "0d103ad0506ab934ea494b341108573d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_2__0d103ad0506ab934ea494b341108573d_1.json",
+        "sha256": "17814fc789218031d930b6ac2d9edcc594b20652a6c23c215f1d19a773dea9e0"
+      }
+    },
+    {
+      "key": "farm_cotton:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_cotton:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/hlop_3ten_0--02a00500d4.png",
+        "images/hlop_35_0--a7b92effe4.png",
+        "images/hlop_34_0--ad12d6dbca.png",
+        "images/hlop_33_0--9907bdbf02.png",
+        "images/hlop_32_0--8a2731de94.png",
+        "images/hlop_31_0--231b2160a2.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_3",
+        "file": "53340eb8035c7f24ab0f2d57b5964486",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_3__53340eb8035c7f24ab0f2d57b5964486_1.json",
+        "sha256": "989f0337c595e1145cc24416dcb2b84f090a9ae087b45195bc7e48f771db4527"
+      }
+    },
+    {
+      "key": "farm_cotton:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/hlop_3ten_0--02a00500d4.png",
+        "images/hlop_35_0--a7b92effe4.png",
+        "images/hlop_34_0--ad12d6dbca.png",
+        "images/hlop_33_0--9907bdbf02.png",
+        "images/hlop_32_0--8a2731de94.png",
+        "images/hlop_31_0--231b2160a2.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_3",
+        "file": "53340eb8035c7f24ab0f2d57b5964486",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_3__53340eb8035c7f24ab0f2d57b5964486_1.json",
+        "sha256": "989f0337c595e1145cc24416dcb2b84f090a9ae087b45195bc7e48f771db4527"
+      }
+    },
+    {
+      "key": "farm_cotton:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/hlop_3ten_0--02a00500d4.png",
+        "images/hlop_35_0--a7b92effe4.png",
+        "images/hlop_34_0--ad12d6dbca.png",
+        "images/hlop_33_0--9907bdbf02.png",
+        "images/hlop_32_0--8a2731de94.png",
+        "images/hlop_31_0--231b2160a2.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_3",
+        "file": "53340eb8035c7f24ab0f2d57b5964486",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_3__53340eb8035c7f24ab0f2d57b5964486_1.json",
+        "sha256": "989f0337c595e1145cc24416dcb2b84f090a9ae087b45195bc7e48f771db4527"
+      }
+    },
+    {
+      "key": "farm_cotton:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/hlop_3ten_0--02a00500d4.png",
+        "images/hlop_35_0--a7b92effe4.png",
+        "images/hlop_34_0--ad12d6dbca.png",
+        "images/hlop_33_0--9907bdbf02.png",
+        "images/hlop_32_0--8a2731de94.png",
+        "images/hlop_31_0--231b2160a2.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_3",
+        "file": "53340eb8035c7f24ab0f2d57b5964486",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_3__53340eb8035c7f24ab0f2d57b5964486_1.json",
+        "sha256": "989f0337c595e1145cc24416dcb2b84f090a9ae087b45195bc7e48f771db4527"
+      }
+    },
+    {
+      "key": "farm_cotton:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/hlop_3ten_0--02a00500d4.png",
+        "images/hlop_35_0--a7b92effe4.png",
+        "images/hlop_34_0--ad12d6dbca.png",
+        "images/hlop_33_0--9907bdbf02.png",
+        "images/hlop_32_0--8a2731de94.png",
+        "images/hlop_31_0--231b2160a2.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_3",
+        "file": "53340eb8035c7f24ab0f2d57b5964486",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_3__53340eb8035c7f24ab0f2d57b5964486_1.json",
+        "sha256": "989f0337c595e1145cc24416dcb2b84f090a9ae087b45195bc7e48f771db4527"
+      }
+    },
+    {
+      "key": "farm_cotton:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_hlop_nutr_0--c7570d8ec1.png",
+        "images/4_hlop_3_0--57395cbdf8.png",
+        "images/4_hlop_2_0--bf51fbfffc.png",
+        "images/4_hlop_1_0--84c9442f34.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_end",
+        "file": "ea6dafa72efe3224488f79517021f130",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_end__ea6dafa72efe3224488f79517021f130_1.json",
+        "sha256": "edb18de7bb5b218626576700851c6172f7e0c63a07c51b057ef453d05c1dd213"
+      }
+    },
+    {
+      "key": "farm_cotton:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_hlop_nutr_0--c7570d8ec1.png",
+        "images/4_hlop_3_0--57395cbdf8.png",
+        "images/4_hlop_2_0--bf51fbfffc.png",
+        "images/4_hlop_1_0--84c9442f34.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_end",
+        "file": "ea6dafa72efe3224488f79517021f130",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_end__ea6dafa72efe3224488f79517021f130_1.json",
+        "sha256": "edb18de7bb5b218626576700851c6172f7e0c63a07c51b057ef453d05c1dd213"
+      }
+    },
+    {
+      "key": "farm_cotton:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_hlop_nutr_0--c7570d8ec1.png",
+        "images/4_hlop_3_0--57395cbdf8.png",
+        "images/4_hlop_2_0--bf51fbfffc.png",
+        "images/4_hlop_1_0--84c9442f34.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_end",
+        "file": "ea6dafa72efe3224488f79517021f130",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_end__ea6dafa72efe3224488f79517021f130_1.json",
+        "sha256": "edb18de7bb5b218626576700851c6172f7e0c63a07c51b057ef453d05c1dd213"
+      }
+    },
+    {
+      "key": "farm_cotton:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_hlop_nutr_0--c7570d8ec1.png",
+        "images/4_hlop_3_0--57395cbdf8.png",
+        "images/4_hlop_2_0--bf51fbfffc.png",
+        "images/4_hlop_1_0--84c9442f34.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_end",
+        "file": "ea6dafa72efe3224488f79517021f130",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_end__ea6dafa72efe3224488f79517021f130_1.json",
+        "sha256": "edb18de7bb5b218626576700851c6172f7e0c63a07c51b057ef453d05c1dd213"
+      }
+    },
+    {
+      "key": "farm_cotton:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/korzina_z_0--883118c11b.png",
+        "images/korzina_p_0--7f793edf56.png",
+        "images/4_goroh_ten_0--95b1a24536.png",
+        "images/ruchka_korzina_0--aaf9e6b4e2.png",
+        "images/4_hlop_nutr_0--c7570d8ec1.png",
+        "images/4_hlop_3_0--57395cbdf8.png",
+        "images/4_hlop_2_0--bf51fbfffc.png",
+        "images/4_hlop_1_0--84c9442f34.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_cotton",
+        "file": "2ca1074aae3b3c544a8d13f0e7d828f5",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "hlopok_end",
+        "file": "ea6dafa72efe3224488f79517021f130",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/hlopok_end__ea6dafa72efe3224488f79517021f130_1.json",
+        "sha256": "edb18de7bb5b218626576700851c6172f7e0c63a07c51b057ef453d05c1dd213"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

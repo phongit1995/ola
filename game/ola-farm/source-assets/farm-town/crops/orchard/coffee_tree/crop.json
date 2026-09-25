@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "key": "coffee_tree",
+  "group": "orchard",
+  "titleVi": "Cây Cà Phê",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C5 — mở rộng vườn quả",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 37,
+    "key": "coffee",
+    "titleVi": "Hạt Cà Phê"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/coffee_tree__a52e7e818574f264e98da8fb658e26c9_670.json",
+    "prefab": {
+      "file": "b0e9b569a5796ac4da323ac1c6daa0f7",
+      "id": 2,
+      "name": "coffee_bush",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__b0e9b569a5796ac4da323ac1c6daa0f7_34.json",
+        "growPhaseCount": 1,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/coffee_tree_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1251.json",
+    "index": 0,
+    "entity": "coffee_tree",
+    "durationSeconds": 7200,
+    "level": 22,
+    "quantityPerCycle": 4.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 22,
+    "basicPrice": 15.0,
+    "xpOnUse": 8.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 3,
+    "clearTool": {
+      "id": 93,
+      "name": "icon_shovel",
+      "titleVi": "Xẻng",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "coffee_machine",
+      "entityTitleVi": "Máy Pha Cà Phê",
+      "recipeIndex": 0,
+      "output": "coffee_black",
+      "outputTitleVi": "Cà Phê Đen",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/coffee_machine_JOB_Data__a52e7e818574f264e98da8fb658e26c9_539.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "coffee_machine",
+      "entityTitleVi": "Máy Pha Cà Phê",
+      "recipeIndex": 1,
+      "output": "coffee_latte",
+      "outputTitleVi": "Latte",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/coffee_machine_JOB_Data__a52e7e818574f264e98da8fb658e26c9_539.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "coffee_machine",
+      "entityTitleVi": "Máy Pha Cà Phê",
+      "recipeIndex": 2,
+      "output": "cappuccino",
+      "outputTitleVi": "Cappuccino",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/coffee_machine_JOB_Data__a52e7e818574f264e98da8fb658e26c9_539.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 10230,
+      "sha256": "c544568e9871c43313c705d3243d2922dc5dbbc704b2eae19743be29a144eda3",
+      "size": [
+        68,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/coffee_tree__sharedassets0.assets_414.png",
+        "file": "sharedassets0.assets",
+        "pathId": 414,
+        "spriteName": "coffee_tree"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 1.0761204957962036,
+          "y": 0.012912571430206299
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 10372,
+      "sha256": "31e37a0170e9734ee08415e1c7705adf9c36e0e620ed29e36e666891630901af",
+      "size": [
+        88,
+        89
+      ],
+      "source": {
+        "exportPath": "export/sprites/coffee__sharedassets0.assets_440.png",
+        "file": "sharedassets0.assets",
+        "pathId": 440,
+        "spriteName": "coffee"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 1.0563716888427734,
+          "y": 0.07612049579620361
+        }
+      }
+    },
+    {
+      "path": "images/coffee_bg--3db2c4bdd9.png",
+      "bytes": 24275,
+      "sha256": "a7327f5c9c85ab22adcd13d068a5a285c204d5a9d55c99dcaf1538304d6ae6c5",
+      "size": [
+        116,
+        134
+      ],
+      "source": {
+        "exportPath": "export/sprites/coffee_bg__1311d4020aa2e5a4cab8c4ff503a0d1f_1.png",
+        "file": "1311d4020aa2e5a4cab8c4ff503a0d1f",
+        "pathId": 1,
+        "spriteName": "coffee_bg"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 256.0,
+          "height": 256.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.25
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 69.07611846923828,
+          "y": 52.02675247192383
+        }
+      }
+    },
+    {
+      "path": "images/coffee_top--bcb34163b3.png",
+      "bytes": 16728,
+      "sha256": "374485b07bc93c7c83efa86f720cd4fc9296a1aca9af9e80cca25340f04efc2f",
+      "size": [
+        120,
+        92
+      ],
+      "source": {
+        "exportPath": "export/sprites/coffee_top__ab9a20296ae992945a2f96b71b601803_1.png",
+        "file": "ab9a20296ae992945a2f96b71b601803",
+        "pathId": 1,
+        "spriteName": "coffee_top"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 256.0,
+          "height": 256.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.25
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 62.07612228393555,
+          "y": 87.07611846923828
+        }
+      }
+    },
+    {
+      "path": "images/coffee_ready--19d1cfdc1f.png",
+      "bytes": 4046,
+      "sha256": "2bdd86c491dea88be72d8a294f67b832c720692d9a866d11ef24c25510e90301",
+      "size": [
+        37,
+        64
+      ],
+      "source": {
+        "exportPath": "export/sprites/coffee_ready__8e1562ed4de1fa04aa1a749347a57708_1.png",
+        "file": "8e1562ed4de1fa04aa1a749347a57708",
+        "pathId": 1,
+        "spriteName": "coffee_ready"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 256.0,
+          "height": 256.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.25
+        },
+        "pixelsToUnits": 90.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 110.07611846923828,
+          "y": 33.07612228393555
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/coffee_bg--3db2c4bdd9.png",
+    "images/coffee_top--bcb34163b3.png",
+    "images/coffee_ready--19d1cfdc1f.png"
+  ],
+  "phases": [
+    {
+      "key": "TreeOrBush:0:Idle (default)",
+      "role": "Idle (default)",
+      "labelVi": "Nghỉ / mặc định — Idle (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Idle (default)",
+        "file": "cc9b278c4c9bdae47aafff9b72e076fe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Idle_default__cc9b278c4c9bdae47aafff9b72e076fe_1.json",
+        "sha256": "29cafc097834401ed33a0ef2c395668f564c1124744111ad5a09342b3e7d2072"
+      }
+    },
+    {
+      "key": "TreeOrBush:1:Dead",
+      "role": "Dead",
+      "labelVi": "Cạn lượt / kết thúc — Dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Dead",
+        "file": "9775f37177cac834f806bbb7740f765a",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Dead__9775f37177cac834f806bbb7740f765a_1.json",
+        "sha256": "bca205681fca1618b86ab9ce5bf5a8a284813cd80d9d411ce9171066e8254e06"
+      }
+    },
+    {
+      "key": "TreeOrBush:2:Harvest (default)",
+      "role": "Harvest (default)",
+      "labelVi": "Thu / còn sản phẩm — Harvest (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Harvest (default)",
+        "file": "791afc5303083114d9eeec37cadfb08d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Harvest_default__791afc5303083114d9eeec37cadfb08d_1.json",
+        "sha256": "d6e1c04bf79c6e8c08e6c23c5af6e11ffa8f9d49514aa768f2f747cc2b1fd6a6"
+      }
+    },
+    {
+      "key": "TreeOrBush:3:Ready (default)",
+      "role": "Ready (default)",
+      "labelVi": "Chín / có sản phẩm — Ready (default)",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "TreeOrBush",
+        "file": "6bbbbd9ccb94e794f80a7bb4f32233ce",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "Ready (default)",
+        "file": "51aaeb3b05a42ac469eaf317d404c45f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/Ready_default__51aaeb3b05a42ac469eaf317d404c45f_1.json",
+        "sha256": "67e059f264e0824362b8c7fdbd4d0d5bcb5ad7ec933893affe6fd603f4986067"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

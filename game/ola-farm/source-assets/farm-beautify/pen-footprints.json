@@ -1,0 +1,461 @@
+{
+  "version": 1,
+  "fieldWidth": 196,
+  "targetFieldWidths": 4,
+  "sourceYardWidth": 190,
+  "displayScale": 4.126315789473685,
+  "alphaThreshold": 16,
+  "method": "Convex hull of opaque floor and fence pixels after prefab transforms. Roofs, shelters and animals are excluded; the reservation includes visible fence height to keep adjoining yards apart.",
+  "pens": {
+    "pen:12": {
+      "prefab": "yard-coop",
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/yard-coop.prefab": "688bc8e51220e7b926e83578bc9c69cbbb042fd74041eb01e7848c2c342b16db",
+        "assets/farm/bundles/farm-town/images/agriculture-sp-75463653d0ab-2.png": "ab27a1503c79de7993bd5d6173586a1dee19d57ed557da4edb94f445954b3f6f",
+        "assets/farm/bundles/farm-town/images/agriculture-sp-75463653d0ab-9.png": "129b208a7568854ba26d9ee024fffbe27635f90be4471a857455e7eb04f84886"
+      },
+      "polygon": [
+        {
+          "x": -383.411,
+          "y": 84.411
+        },
+        {
+          "x": -381.264,
+          "y": 82.03
+        },
+        {
+          "x": -374.823,
+          "y": 74.889
+        },
+        {
+          "x": -16.4,
+          "y": -101.877
+        },
+        {
+          "x": -2.043,
+          "y": -107.328
+        },
+        {
+          "x": 4.11,
+          "y": -108.678
+        },
+        {
+          "x": 374.823,
+          "y": 81.939
+        },
+        {
+          "x": 381.264,
+          "y": 89.08
+        },
+        {
+          "x": 383.411,
+          "y": 91.461
+        },
+        {
+          "x": 383.411,
+          "y": 105.276
+        },
+        {
+          "x": 381.264,
+          "y": 147.797
+        },
+        {
+          "x": 379.117,
+          "y": 181.683
+        },
+        {
+          "x": 377.632,
+          "y": 183.39
+        },
+        {
+          "x": 26.692,
+          "y": 372.356
+        },
+        {
+          "x": -13.81,
+          "y": 378.146
+        },
+        {
+          "x": -18.104,
+          "y": 378.567
+        },
+        {
+          "x": -26.693,
+          "y": 379.407
+        },
+        {
+          "x": -379.427,
+          "y": 179.801
+        },
+        {
+          "x": -381.478,
+          "y": 153.195
+        },
+        {
+          "x": -383.411,
+          "y": 98.226
+        }
+      ]
+    },
+    "pen:13": {
+      "prefab": "yard-cowshed",
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/yard-cowshed.prefab": "ea7994a472735515052b3b8d3d60e9ff54aefe74a91541e8764541be19d17f5f",
+        "assets/farm/bundles/farm-town/images/agriculture-sp-b9002b05f98b-27.png": "677d1bd0442f5bde8387ab3fc177d65058e90de86e7c23866ddb72ede6e58927",
+        "assets/farm/bundles/farm-town/images/agriculture-sp-b9002b05f98b-18.png": "b24f085cd133c99af785956ea84ef1b52af3691e175e47575b888e8e7349cf60",
+        "assets/farm/bundles/farm-town/images/agriculture-sp-b9002b05f98b-28.png": "c4fdc5b732b6e8e711e14a7525c857c83e02523ca3d77e60bfb37309647eac11"
+      },
+      "polygon": [
+        {
+          "x": -389.055,
+          "y": 139.065
+        },
+        {
+          "x": -384.637,
+          "y": 81.362
+        },
+        {
+          "x": -383.164,
+          "y": 79.364
+        },
+        {
+          "x": -369.911,
+          "y": 71.476
+        },
+        {
+          "x": -362.548,
+          "y": 67.794
+        },
+        {
+          "x": -135.95,
+          "y": -45.505
+        },
+        {
+          "x": -125.641,
+          "y": -50.659
+        },
+        {
+          "x": -10.553,
+          "y": -107.489
+        },
+        {
+          "x": -0.358,
+          "y": -107.489
+        },
+        {
+          "x": 6.144,
+          "y": -106.168
+        },
+        {
+          "x": 10.663,
+          "y": -105.169
+        },
+        {
+          "x": 122.136,
+          "y": -50.694
+        },
+        {
+          "x": 132.681,
+          "y": -45.422
+        },
+        {
+          "x": 340.783,
+          "y": 58.629
+        },
+        {
+          "x": 363.379,
+          "y": 69.927
+        },
+        {
+          "x": 369.404,
+          "y": 72.94
+        },
+        {
+          "x": 382.962,
+          "y": 80.98
+        },
+        {
+          "x": 384.468,
+          "y": 82.995
+        },
+        {
+          "x": 388.987,
+          "y": 140.749
+        },
+        {
+          "x": 388.987,
+          "y": 147.055
+        },
+        {
+          "x": 6.421,
+          "y": 337.487
+        },
+        {
+          "x": -5.36,
+          "y": 334.548
+        },
+        {
+          "x": -6.833,
+          "y": 334.024
+        },
+        {
+          "x": -9.778,
+          "y": 332.974
+        },
+        {
+          "x": -389.055,
+          "y": 145.372
+        }
+      ]
+    },
+    "pen:14": {
+      "prefab": "yard-pigpen",
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/yard-pigpen.prefab": "a686943527869dbce885a231b4d200499935dddf3c3ba2bac190b9fad4f126f8",
+        "assets/farm/bundles/farm-town/images/yard-pigpen-32.png": "9b78afe05176981c2a09a10664826a5c259229077cc492e23c077e90e82a06e3",
+        "assets/farm/bundles/farm-town/images/yard-pigpen-30.png": "9b78afe05176981c2a09a10664826a5c259229077cc492e23c077e90e82a06e3",
+        "assets/farm/bundles/farm-town/images/yard-pigpen-29.png": "596470ff989a83c6c86925602ac7172b02df79e13d7a2b653b9ece900c01d4cc",
+        "assets/farm/bundles/farm-town/images/yard-pigpen-31.png": "6cb01f6bcdb65553cbed3a92af2ba2b687e3190670c9acd65a3f3c0fa19f82a7",
+        "assets/farm/bundles/farm-town/images/yard-pigpen-28.png": "6cb01f6bcdb65553cbed3a92af2ba2b687e3190670c9acd65a3f3c0fa19f82a7"
+      },
+      "polygon": [
+        {
+          "x": -390.441,
+          "y": 87.009
+        },
+        {
+          "x": -388.881,
+          "y": 78.673
+        },
+        {
+          "x": -318.715,
+          "y": 42.079
+        },
+        {
+          "x": -209.153,
+          "y": -13.594
+        },
+        {
+          "x": -0.932,
+          "y": -119.256
+        },
+        {
+          "x": 0.932,
+          "y": -119.256
+        },
+        {
+          "x": 150.265,
+          "y": -52.176
+        },
+        {
+          "x": 154.326,
+          "y": -50.145
+        },
+        {
+          "x": 388.881,
+          "y": 78.673
+        },
+        {
+          "x": 390.441,
+          "y": 87.009
+        },
+        {
+          "x": 390.441,
+          "y": 148.971
+        },
+        {
+          "x": 388.881,
+          "y": 151.214
+        },
+        {
+          "x": 385.763,
+          "y": 154.189
+        },
+        {
+          "x": 195.875,
+          "y": 253.89
+        },
+        {
+          "x": 194.316,
+          "y": 254.67
+        },
+        {
+          "x": 189.638,
+          "y": 257.009
+        },
+        {
+          "x": 184.96,
+          "y": 259.348
+        },
+        {
+          "x": 138.183,
+          "y": 267.624
+        },
+        {
+          "x": 4.061,
+          "y": 268.661
+        },
+        {
+          "x": -8.122,
+          "y": 268.661
+        },
+        {
+          "x": -138.743,
+          "y": 267.343
+        },
+        {
+          "x": -185.521,
+          "y": 259.067
+        },
+        {
+          "x": -187.08,
+          "y": 258.288
+        },
+        {
+          "x": -196.436,
+          "y": 253.61
+        },
+        {
+          "x": -385.763,
+          "y": 154.189
+        },
+        {
+          "x": -388.881,
+          "y": 151.214
+        },
+        {
+          "x": -390.441,
+          "y": 148.971
+        }
+      ]
+    },
+    "pen:15": {
+      "prefab": "yard-sheepfold",
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/yard-sheepfold.prefab": "08894bb1a94939cf79a2bae23c910321b5f05db1c8069523fdeb28ae434657cf",
+        "assets/farm/bundles/farm-town/images/yard-sheepfold-42.png": "00b0f5984c180d54458728ee39ed73bc5c727d1bf6e8d3338becc3bd44dbc937",
+        "assets/farm/bundles/farm-town/images/yard-sheepfold-40.png": "00b0f5984c180d54458728ee39ed73bc5c727d1bf6e8d3338becc3bd44dbc937",
+        "assets/farm/bundles/farm-town/images/yard-sheepfold-45.png": "a2250c21a59873e404567ebef42750867828996cbabfaef756d4cc293586d89e",
+        "assets/farm/bundles/farm-town/images/yard-sheepfold-41.png": "70afada31f9df2cde08f8e47f2fa836b27adb63692297a0dd196d0cc032ed0f7",
+        "assets/farm/bundles/farm-town/images/yard-sheepfold-36.png": "70afada31f9df2cde08f8e47f2fa836b27adb63692297a0dd196d0cc032ed0f7",
+        "assets/farm/bundles/farm-town/images/yard-sheepfold-37.png": "00b0f5984c180d54458728ee39ed73bc5c727d1bf6e8d3338becc3bd44dbc937",
+        "assets/farm/bundles/farm-town/images/yard-sheepfold-39.png": "00b0f5984c180d54458728ee39ed73bc5c727d1bf6e8d3338becc3bd44dbc937",
+        "assets/farm/bundles/farm-town/images/yard-sheepfold-46.png": "70afada31f9df2cde08f8e47f2fa836b27adb63692297a0dd196d0cc032ed0f7"
+      },
+      "polygon": [
+        {
+          "x": -392.0,
+          "y": 76.571
+        },
+        {
+          "x": -360.249,
+          "y": 59.522
+        },
+        {
+          "x": -247.078,
+          "y": -0.035
+        },
+        {
+          "x": -245.589,
+          "y": -0.78
+        },
+        {
+          "x": -32.65,
+          "y": -107.25
+        },
+        {
+          "x": -26.693,
+          "y": -110.228
+        },
+        {
+          "x": -6.697,
+          "y": -119.11
+        },
+        {
+          "x": -2.017,
+          "y": -119.11
+        },
+        {
+          "x": 7.942,
+          "y": -116.935
+        },
+        {
+          "x": 27.3,
+          "y": -110.228
+        },
+        {
+          "x": 30.278,
+          "y": -108.739
+        },
+        {
+          "x": 246.196,
+          "y": -0.78
+        },
+        {
+          "x": 247.685,
+          "y": -0.035
+        },
+        {
+          "x": 392.0,
+          "y": 74.779
+        },
+        {
+          "x": 392.0,
+          "y": 127.816
+        },
+        {
+          "x": 385.76,
+          "y": 138.736
+        },
+        {
+          "x": 76.44,
+          "y": 297.081
+        },
+        {
+          "x": 74.951,
+          "y": 297.825
+        },
+        {
+          "x": 45.169,
+          "y": 311.23
+        },
+        {
+          "x": 13.898,
+          "y": 320.922
+        },
+        {
+          "x": 10.92,
+          "y": 320.925
+        },
+        {
+          "x": -10.313,
+          "y": 320.925
+        },
+        {
+          "x": -13.291,
+          "y": 320.922
+        },
+        {
+          "x": -44.562,
+          "y": 311.23
+        },
+        {
+          "x": -74.344,
+          "y": 297.825
+        },
+        {
+          "x": -75.833,
+          "y": 297.081
+        },
+        {
+          "x": -385.76,
+          "y": 140.528
+        },
+        {
+          "x": -392.0,
+          "y": 129.609
+        }
+      ]
+    }
+  }
+}

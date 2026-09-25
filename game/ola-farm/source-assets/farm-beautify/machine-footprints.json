@@ -1,0 +1,1097 @@
+{
+  "version": 1,
+  "targetWidth": 784,
+  "fieldWidth": 196,
+  "targetFieldWidths": 4,
+  "alphaThreshold": 16,
+  "machines": {
+    "feedmill": {
+      "prefab": "feedmill",
+      "sourceWidth": 205.0,
+      "widthSource": "manifest-verified-against-prefab",
+      "sourceBounds": {
+        "left": -102.5,
+        "right": 102.5,
+        "bottom": -29.999999999999986,
+        "top": 161.95060067592058
+      },
+      "targetWidth": 784,
+      "scale": 3.824390243902439,
+      "bounds": {
+        "left": -392.0,
+        "right": 392.0,
+        "bottom": -114.73170731707312,
+        "top": 619.3622972191304
+      },
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/feedmill.prefab": "15ff5a1eefa378e9b9141f712841166e594881572a0705a2612fcb1315bbade3",
+        "assets/farm/bundles/farm-town/images/feedmill-106.png": "902d4d6b16130ae33180b48411d81d4ca80f1108e7d623f6b9cc95a0de7aafa5",
+        "assets/farm/bundles/farm-town/images/feedmill-88.png": "d9828a79d4756b83c2a8b8a005eae1ca1f73c9546042a33ed2ab33dabdfec80e",
+        "assets/farm/bundles/farm-town/images/feedmill-94.png": "d17f69b74ae7b60e69c0bb1c28e2bc9580564fac191e4b78e8826d7664383279",
+        "assets/farm/bundles/farm-town/images/feedmill-114.png": "b4443991f9575fab1ddd7b4b30a74fce0df182e389c4f7b9e6d121e9d7d0f110",
+        "assets/farm/bundles/farm-town/images/feedmill-116.png": "2e832f6f7faac232b40750785c3a0521cbe4d15d54c225619e2158361d644baf",
+        "assets/farm/bundles/farm-town/images/feedmill-101.png": "cbeb3198349f9319559190bff19a6b54f94f4c0e69eddeca82ef88cd21e61233",
+        "assets/farm/bundles/farm-town/images/feedmill-112.png": "5892b012f38e6d218f0e9cdc0a0684eb91baa5b2dce3abb42970541477d77d80",
+        "assets/farm/bundles/farm-town/images/feedmill-119.png": "5401bbeea20390823e3f060f104119ff9b0d8f571e857cf817b9574f2c7154e3",
+        "assets/farm/bundles/farm-town/images/feedmill-89.png": "5b5d84b288c2c7cde65f9d77f21f15ea085df1d0f8371e63609d71d14f580a25",
+        "assets/farm/bundles/farm-town/images/feedmill-120.png": "5b5d84b288c2c7cde65f9d77f21f15ea085df1d0f8371e63609d71d14f580a25",
+        "assets/farm/bundles/farm-town/images/feedmill-100.png": "5b5d84b288c2c7cde65f9d77f21f15ea085df1d0f8371e63609d71d14f580a25",
+        "assets/farm/bundles/farm-town/images/feedmill-91.png": "5b5d84b288c2c7cde65f9d77f21f15ea085df1d0f8371e63609d71d14f580a25",
+        "assets/farm/bundles/farm-town/images/feedmill-115.png": "b93b5a929ea0e930848497c8660991786ba177947ce1b8b241a539958f771b1b",
+        "assets/farm/bundles/farm-town/images/feedmill-117.png": "5c050f4adb908ddf933fc65ac2d69bf8125ce0cf4bc9dd3fe8b9fa6c9ffb5296",
+        "assets/farm/bundles/farm-town/images/feedmill-107.png": "34a1474427e04b53ec062fc7c94c2a8df7e3d3dfff37491a7f0b52c7ed1c4d9f",
+        "assets/farm/bundles/farm-town/images/feedmill-90.png": "9534a679de3bc83294f1e11a2303ccb32ad75a82cb6aa0dd1770943209136f0b",
+        "assets/farm/bundles/farm-town/images/feedmill-93.png": "5b5d84b288c2c7cde65f9d77f21f15ea085df1d0f8371e63609d71d14f580a25",
+        "assets/farm/bundles/farm-town/images/feedmill-111.png": "b1198a8caafa75be26a31a8048c2bec1d6d943fa1cacdffcb6d92718a82a7278",
+        "assets/farm/bundles/farm-town/images/feedmill-113.png": "0d77c8d46dd4beee0f77899517c6fbdd37d840c868a0328f8d765b34f184b7ed",
+        "assets/farm/bundles/farm-town/images/feedmill-110.png": "49f70557fe8db3bc8547bab3c4a6b210cb49e6974a10d98a0539b0780032c427",
+        "assets/farm/bundles/farm-town/images/feedmill-104.png": "465f3c25f40b784d432ce94b11c46a9e815187cc27eda3cfe9eeb34c07d6d0f2",
+        "assets/farm/bundles/farm-town/images/feedmill-92.png": "9f62b4d7010501f76b39a429360be46d1cada31e9d11957cbf9c7459b4a70df9",
+        "assets/farm/bundles/farm-town/images/feedmill-118.png": "2ef30a37513424692e2f393c24695d3a39d3d408290d1479cffd0d2e04bb229c",
+        "assets/farm/bundles/farm-town/images/feedmill-96.png": "34f06d5f24eae9683c4ceba7871c27f8c39e9cdf2e11f846b4319c6d8846145f",
+        "assets/farm/bundles/farm-town/images/feedmill-105.png": "7d68376813cb7a35d509ec0008bf603633a095b3cdf1cb21aa9238720ed09e8d",
+        "assets/farm/bundles/farm-town/images/feedmill-95.png": "073293a3504c279df8f9e5e79251d166db88bc0f576b52c6823e5652a97770ff"
+      },
+      "floorLayers": [
+        "podlozka-88"
+      ],
+      "groundMethod": "Convex hull of opaque floor pixels after prefab transforms; roofs, machinery and wall height are excluded.",
+      "polygon": [
+        {
+          "x": -392.0,
+          "y": 54.319
+        },
+        {
+          "x": -281.75,
+          "y": -19.181
+        },
+        {
+          "x": -104.125,
+          "y": -92.681
+        },
+        {
+          "x": -9.188,
+          "y": -107.994
+        },
+        {
+          "x": 55.125,
+          "y": -107.994
+        },
+        {
+          "x": 278.687,
+          "y": 5.319
+        },
+        {
+          "x": 315.437,
+          "y": 29.819
+        },
+        {
+          "x": 373.625,
+          "y": 72.694
+        },
+        {
+          "x": 385.875,
+          "y": 84.944
+        },
+        {
+          "x": 388.937,
+          "y": 97.194
+        },
+        {
+          "x": 388.937,
+          "y": 103.319
+        },
+        {
+          "x": 373.625,
+          "y": 115.569
+        },
+        {
+          "x": 284.812,
+          "y": 176.819
+        },
+        {
+          "x": 153.125,
+          "y": 222.756
+        },
+        {
+          "x": 143.938,
+          "y": 225.819
+        },
+        {
+          "x": 27.563,
+          "y": 241.131
+        },
+        {
+          "x": -6.125,
+          "y": 241.131
+        },
+        {
+          "x": -192.937,
+          "y": 225.819
+        },
+        {
+          "x": -364.437,
+          "y": 124.756
+        },
+        {
+          "x": -379.75,
+          "y": 109.444
+        },
+        {
+          "x": -392.0,
+          "y": 91.069
+        }
+      ]
+    },
+    "bakery": {
+      "prefab": "bakery",
+      "sourceWidth": 210.0,
+      "widthSource": "manifest-verified-against-prefab",
+      "sourceBounds": {
+        "left": -104.99999999999997,
+        "right": 104.99999999999999,
+        "bottom": -29.999999999999993,
+        "top": 149.19983501960147
+      },
+      "targetWidth": 784,
+      "scale": 3.7333333333333334,
+      "bounds": {
+        "left": -391.9999999999999,
+        "right": 391.99999999999994,
+        "bottom": -111.99999999999997,
+        "top": 557.0127174065121
+      },
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/bakery.prefab": "bf157eb1619af7d82083352d2fe14ebddf49aa9ab693a71f54bae8225f4d6261",
+        "assets/farm/bundles/farm-town/images/bakery-113.png": "12d97f5c6add84c50bebd2c360ec5816a1e7cf9f3fda5e6ab009ab2ba82d7ec7",
+        "assets/farm/bundles/farm-town/images/bakery-117.png": "77a71d5d65ddd2d1b44db63c7b1bf70676ad36b236899e6d9f20b6ea9186dc30",
+        "assets/farm/bundles/farm-town/images/bakery-119.png": "74e1331ee49f6eab0d919c89a5971fc4cc0a3819e76ce99aee75fe3f932a41d6",
+        "assets/farm/bundles/farm-town/images/bakery-128.png": "e335850b35717a6d8bd96ec9b4122289c1cbba50d293600b21d8b95258e1a447",
+        "assets/farm/bundles/farm-town/images/bakery-123.png": "808cfa4d625a91b2a932392b72ffb9a9d725404470ed3186ee81f7fea94459ca",
+        "assets/farm/bundles/farm-town/images/bakery-120.png": "aff6d732a625eec04a4ec3d4bfb2c54f6039ee2034b50cd6353856f5e8421f40",
+        "assets/farm/bundles/farm-town/images/bakery-112.png": "eb623fa29c6b45aa2c1c3266339011934df0ed052ae8a837ff7f70c52026d433",
+        "assets/farm/bundles/farm-town/images/bakery-126.png": "4fc4d757a85a2584fb82dc1ee09845dbe716ced141808ddb912200a38aa5609a",
+        "assets/farm/bundles/farm-town/images/bakery-114.png": "bbe6909dc0c7cdd8c926ca6026e416e68007a5d80db54f7182b1eae901800d30",
+        "assets/farm/bundles/farm-town/images/bakery-122.png": "66a45d08e6e434633b1160749c3d01dc716fa3748da239fc124a2194b9976fe2",
+        "assets/farm/bundles/farm-town/images/bakery-115.png": "4c707d2326f0c85606c7d7b7c7136d8deca0dd4b7455ed3f87fdb05fb717d7c1",
+        "assets/farm/bundles/farm-town/images/bakery-127.png": "3c68be3c96785813f87d42b6f824afba72a6dc4a7e8978fd74e7f4bf14fbbf79",
+        "assets/farm/bundles/farm-town/images/bakery-121.png": "292c4449043605fc04eb3c132009cbc24c8c39a418a0897af1d5264324e83e8f",
+        "assets/farm/bundles/farm-town/images/bakery-116.png": "8f513e085e425d37533e425f31774c878ab386d7148955094bc19d58a87b0be2",
+        "assets/farm/bundles/farm-town/images/bakery-125.png": "74ed8200a7a1cf66de0456bd1e54586e9ad905e70932a794e955b26eecff12f6",
+        "assets/farm/bundles/farm-town/images/bakery-124.png": "3ab66439b77cc44309e8de8bb049a3812effac92486e33f8315639948d0c3357",
+        "assets/farm/bundles/farm-town/images/bakery-111.png": "cb4001ce115780b41a1b39cf7b1c26fbb309a26cc8c9dcccdc898b08a8ca469e"
+      },
+      "floorLayers": [
+        "podlozka-113"
+      ],
+      "groundMethod": "Convex hull of opaque floor pixels after prefab transforms; roofs, machinery and wall height are excluded.",
+      "polygon": [
+        {
+          "x": -392.0,
+          "y": 58.738
+        },
+        {
+          "x": -388.516,
+          "y": 55.253
+        },
+        {
+          "x": -367.609,
+          "y": 37.831
+        },
+        {
+          "x": -318.827,
+          "y": 13.44
+        },
+        {
+          "x": -231.716,
+          "y": -28.373
+        },
+        {
+          "x": -109.76,
+          "y": -84.124
+        },
+        {
+          "x": -29.618,
+          "y": -112.0
+        },
+        {
+          "x": 5.227,
+          "y": -112.0
+        },
+        {
+          "x": 19.164,
+          "y": -108.516
+        },
+        {
+          "x": 40.071,
+          "y": -101.547
+        },
+        {
+          "x": 283.982,
+          "y": -0.498
+        },
+        {
+          "x": 315.342,
+          "y": 20.409
+        },
+        {
+          "x": 350.187,
+          "y": 44.8
+        },
+        {
+          "x": 353.671,
+          "y": 72.676
+        },
+        {
+          "x": 353.671,
+          "y": 79.644
+        },
+        {
+          "x": 346.702,
+          "y": 100.551
+        },
+        {
+          "x": 318.827,
+          "y": 114.489
+        },
+        {
+          "x": 311.858,
+          "y": 117.973
+        },
+        {
+          "x": 266.56,
+          "y": 135.396
+        },
+        {
+          "x": 162.027,
+          "y": 170.24
+        },
+        {
+          "x": -57.493,
+          "y": 198.116
+        },
+        {
+          "x": -88.853,
+          "y": 198.116
+        },
+        {
+          "x": -141.12,
+          "y": 194.631
+        },
+        {
+          "x": -168.996,
+          "y": 184.178
+        },
+        {
+          "x": -353.671,
+          "y": 100.551
+        },
+        {
+          "x": -360.64,
+          "y": 97.067
+        },
+        {
+          "x": -388.516,
+          "y": 79.644
+        },
+        {
+          "x": -392.0,
+          "y": 76.16
+        }
+      ]
+    },
+    "dairy": {
+      "prefab": "dairy",
+      "sourceWidth": 210.0,
+      "widthSource": "manifest-verified-against-prefab",
+      "sourceBounds": {
+        "left": -104.99999999999999,
+        "right": 105.0,
+        "bottom": -29.999999999999993,
+        "top": 155.51020587979775
+      },
+      "targetWidth": 784,
+      "scale": 3.7333333333333334,
+      "bounds": {
+        "left": -391.99999999999994,
+        "right": 392.0,
+        "bottom": -111.99999999999997,
+        "top": 580.5714352845782
+      },
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/dairy.prefab": "385930cbc97e5ad5d16aa4e64eb9995f492ee0886a283340358609f547d3676b",
+        "assets/farm/bundles/farm-town/images/dairy-137.png": "97e6456e970b5b5e4fd57cae5df71a713b5c77a4401afa345c935a3023cc42f9",
+        "source-assets/farm-beautify/machine-ground-overrides.json": "b54a3ed10e855fa1b444760c43190461849b7ee06b4d060496918ab26348f4e6",
+        "assets/farm/bundles/farm-town/images/dairy-130.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-134.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-128.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-136.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-142.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-129.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-125.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-126.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-141.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-124.png": "45655bfefd0fc12336e8d633511a1ecf93623099d19bcdcbfce09185a3d56331",
+        "assets/farm/bundles/farm-town/images/dairy-131.png": "b6291cbf18a0255d07654ce69d6f8948c4d427c561d3b7e2ed864054115a04c5",
+        "assets/farm/bundles/farm-town/images/dairy-133.png": "b6291cbf18a0255d07654ce69d6f8948c4d427c561d3b7e2ed864054115a04c5",
+        "assets/farm/bundles/farm-town/images/dairy-127.png": "39c6dea8d9a2fe5097fe45c9bae5b534317ba3955933a84b5495974597391188",
+        "assets/farm/bundles/farm-town/images/dairy-140.png": "5fe57e0875971292300fcc0bef50b6e1c838a700f831118a6324725d70a75f80",
+        "assets/farm/bundles/farm-town/images/dairy-138.png": "c82e7f6531577bc1bd8532398adeba256308dce4bcc97e4a99bfddc0200d0153",
+        "assets/farm/bundles/farm-town/images/dairy-139.png": "3a3b7a20667cb4f8f45b88d065188da30f225992741acdfb3a717eef299cef54",
+        "assets/farm/bundles/farm-town/images/dairy-132.png": "483f1dc225f83594297e87a2b0e3895dee1265aab1dd0cc92dfe1fdf453b9b13"
+      },
+      "floorLayers": [],
+      "groundMethod": "Authored ground plane in osnova-137 image pixels (origin at top left). The left lean-to foundation extends beyond this image into the line_1 layers. Front vertices follow the foundation, conveyor and milk-can feet; the rear vertex closes the hidden isometric base. Roofs, pipes and wall height are excluded.",
+      "polygon": [
+        {
+          "x": -382.857,
+          "y": 54.857
+        },
+        {
+          "x": -371.427,
+          "y": 25.143
+        },
+        {
+          "x": -362.285,
+          "y": 13.714
+        },
+        {
+          "x": -238.856,
+          "y": -48.0
+        },
+        {
+          "x": -138.286,
+          "y": -89.143
+        },
+        {
+          "x": -76.571,
+          "y": -102.857
+        },
+        {
+          "x": -62.857,
+          "y": -102.857
+        },
+        {
+          "x": 42.286,
+          "y": -91.429
+        },
+        {
+          "x": 325.714,
+          "y": -2.286
+        },
+        {
+          "x": 376.0,
+          "y": 18.286
+        },
+        {
+          "x": 385.143,
+          "y": 29.714
+        },
+        {
+          "x": 332.571,
+          "y": 128.0
+        },
+        {
+          "x": 81.143,
+          "y": 251.429
+        }
+      ]
+    },
+    "grill": {
+      "prefab": "grill",
+      "sourceWidth": 190.0,
+      "widthSource": "prefab-transforms",
+      "sourceBounds": {
+        "left": -95.0,
+        "right": 95.00000000000001,
+        "bottom": -30.0,
+        "top": 149.84280373221372
+      },
+      "targetWidth": 784,
+      "scale": 4.126315789473685,
+      "bounds": {
+        "left": -392.00000000000006,
+        "right": 392.0000000000001,
+        "bottom": -123.78947368421053,
+        "top": 618.2987269792399
+      },
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/grill.prefab": "ad9da833b1da488ad3ce9f7fe9094202f86dea4e7e0c4de4d9aedaa3990df211",
+        "assets/farm/bundles/farm-town/images/grill-99.png": "623ea884a5641109b46ad99f177b43288aeeb89fb1b90a77c1c8d35363ee8339",
+        "assets/farm/bundles/farm-town/images/grill-106.png": "b7f7132e45e0800c0fd3c827fb098ac63bf0f3014d3da0f2ca19cb26ea1e275e",
+        "assets/farm/bundles/farm-town/images/grill-98.png": "c4b906c7ea9e693cc111721bd4159afbf02b96968855acffca31d1f7bbcfff83",
+        "assets/farm/bundles/farm-town/images/grill-97.png": "cf9714c88a694c1f23da5e0b9b934c868ecccfece2bef8e812f762786e0b58c9",
+        "assets/farm/bundles/farm-town/images/grill-108.png": "7e81ebdf83299fde5b8bb40d07fa4474ee21740699924aef90aca7041d84e5a1",
+        "assets/farm/bundles/farm-town/images/grill-102.png": "a87c54303b968fb7cb4dd122ee737dff82c6abf177de6198faa82bec0c2e406a",
+        "assets/farm/bundles/farm-town/images/grill-104.png": "fe47251495ef930df67e4daafe98875bf0876af73291c9cd59e4e8531e1cd4dc",
+        "assets/farm/bundles/farm-town/images/grill-103.png": "cd794610fbf5a705cd2268249587d79b366c52b310b6e221f09eaf764c99e390",
+        "assets/farm/bundles/farm-town/images/grill-109.png": "f98383a7c4ba56251d394a653f994223a9941cc531288589187e360e56ccc0ac",
+        "assets/farm/bundles/farm-town/images/grill-105.png": "f98383a7c4ba56251d394a653f994223a9941cc531288589187e360e56ccc0ac",
+        "assets/farm/bundles/farm-town/images/grill-100.png": "f98383a7c4ba56251d394a653f994223a9941cc531288589187e360e56ccc0ac"
+      },
+      "floorLayers": [
+        "podlozka-99"
+      ],
+      "groundMethod": "Convex hull of opaque floor pixels after prefab transforms; roofs, machinery and wall height are excluded.",
+      "polygon": [
+        {
+          "x": -372.648,
+          "y": 66.566
+        },
+        {
+          "x": -369.422,
+          "y": 63.34
+        },
+        {
+          "x": -272.631,
+          "y": -10.867
+        },
+        {
+          "x": -4.843,
+          "y": -120.563
+        },
+        {
+          "x": 11.289,
+          "y": -120.563
+        },
+        {
+          "x": 243.587,
+          "y": -7.64
+        },
+        {
+          "x": 385.547,
+          "y": 66.566
+        },
+        {
+          "x": 385.547,
+          "y": 92.377
+        },
+        {
+          "x": 382.321,
+          "y": 95.603
+        },
+        {
+          "x": 330.699,
+          "y": 137.546
+        },
+        {
+          "x": 282.304,
+          "y": 163.357
+        },
+        {
+          "x": 72.59,
+          "y": 266.601
+        },
+        {
+          "x": 24.194,
+          "y": 279.506
+        },
+        {
+          "x": 11.289,
+          "y": 279.506
+        },
+        {
+          "x": -37.106,
+          "y": 269.827
+        },
+        {
+          "x": -301.668,
+          "y": 147.225
+        },
+        {
+          "x": -340.385,
+          "y": 124.641
+        },
+        {
+          "x": -366.196,
+          "y": 102.056
+        },
+        {
+          "x": -369.422,
+          "y": 98.83
+        },
+        {
+          "x": -372.648,
+          "y": 73.019
+        }
+      ]
+    },
+    "industry-sugar_processor": {
+      "prefab": "industry-sugar_processor",
+      "sourceWidth": 205.0,
+      "widthSource": "manifest-verified-against-prefab",
+      "sourceBounds": {
+        "left": -102.49999999999999,
+        "right": 102.49999999999999,
+        "bottom": -29.999999999999993,
+        "top": 155.04534459674227
+      },
+      "targetWidth": 784,
+      "scale": 3.824390243902439,
+      "bounds": {
+        "left": -391.99999999999994,
+        "right": 391.99999999999994,
+        "bottom": -114.73170731707314,
+        "top": 592.9539032382728
+      },
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/industry-sugar_processor.prefab": "0f1170d7e7334af1b4f600cdecf63d3b0769fe77dc123f3770c74c3a2f2e8da6",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-14.png": "d011b5ff239b837438a19de7b5cc39cd4fcea42dfec576c733a3cc524ca14655",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-13.png": "af4185029a3b33476e64c09cffd4086e2f6f16e8b33d95407840848d880105f5",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-10.png": "acaca5202abe1095e61eed91cd55ab7b4964b34cd02c8ba5197cd5fdd1344cbb",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-12.png": "70d1fffc77ea1fea996e407fb4227e6bfb9c71bb83eedb2b0e56b29abfbb5d84",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-1.png": "4b0efc85704a6f6cb5b0963d810c156a5ba00812d56c43d33f1e336aea5bafa9",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-21.png": "060f5e2877baf8f74aebd9f2cd3f88f0309b393a51f177a8b515d82353bf7694",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-20.png": "927fb830f2267b62e74fa765f48dd052bf956ab1943be6b2ecc4152d48b4acd0",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-15.png": "4ca14f7b6190ebdfc28149fb345bbb257ce5a8f4545f88aa3a373e1aa8ea55ac",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-23.png": "8ca4bf57c22ff128ec38c08be6710ca11c801f8916cc7084baa32a4419ab8699",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-7.png": "0626d1c96fdfb2089253d96143f691ff692ea8b0eb5ede3bf86d42ad9b58c4ca",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-19.png": "2005fb37b41fe5d0969fe24dc4542776351ad674fb0f55a0b5df8f45fdc8db46",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-11.png": "d06d28c3fafc4a2d3cb030485208183cca4c6ae4c0ffac926615c8276f424c9e",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-22.png": "1fa107432ffeb9815c3f11887383895a2d9780cb3aae83c978e44c37454c1002",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-25.png": "557ea83d8750d0f5146590a2014fb01028b0519ee0d391c4167d1329bf9843d8",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-2.png": "9fe7c1636ae32f4a5862e60986697464d9d5078c7f8939b0e3b92fb69fe1d11a",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-18.png": "15a69c552762277c74c9ecea24cbde574f0c8cc6ac8c5d65a8f8369651095b3d",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-24.png": "bf71199f1fb0393d5f5db4e62773b680bf20f198680bcd835473f2da15e12e5e",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-9.png": "24220498a563a61c7a38e6b6d2791e06003d47e4984dc149ddfaf6bb20af44c1",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-6.png": "dd28d6ededfac2f15ef32f95c220748e2ed0c001810ed05186c0377307679023",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-4.png": "623e139d551c0ffdbfeee7b30b4a291808a31680fb0e4e080e0c4a8d9bda0974",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-5.png": "18effa0cef27a1b786febcbfb1e034a6e7e23df866bb85116ba6ed86de965122",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-8.png": "9247223eb1076637559d6daeb3bd0bab6f1fa3a60548a7a3604ad6daafa38998"
+      },
+      "floorLayers": [
+        "podlozka-174"
+      ],
+      "groundMethod": "Convex hull of opaque floor pixels after prefab transforms; roofs, machinery and wall height are excluded.",
+      "polygon": [
+        {
+          "x": -392.0,
+          "y": 72.596
+        },
+        {
+          "x": -385.062,
+          "y": 55.251
+        },
+        {
+          "x": -378.124,
+          "y": 48.313
+        },
+        {
+          "x": -305.274,
+          "y": 3.215
+        },
+        {
+          "x": -253.239,
+          "y": -21.068
+        },
+        {
+          "x": -117.947,
+          "y": -83.51
+        },
+        {
+          "x": -45.097,
+          "y": -111.263
+        },
+        {
+          "x": -10.407,
+          "y": -114.732
+        },
+        {
+          "x": 27.752,
+          "y": -114.732
+        },
+        {
+          "x": 58.973,
+          "y": -107.794
+        },
+        {
+          "x": 72.85,
+          "y": -104.325
+        },
+        {
+          "x": 305.274,
+          "y": -7.192
+        },
+        {
+          "x": 346.903,
+          "y": 13.622
+        },
+        {
+          "x": 392.0,
+          "y": 58.72
+        },
+        {
+          "x": 392.0,
+          "y": 69.127
+        },
+        {
+          "x": 371.186,
+          "y": 138.507
+        },
+        {
+          "x": 176.92,
+          "y": 180.136
+        },
+        {
+          "x": -38.159,
+          "y": 207.888
+        },
+        {
+          "x": -58.973,
+          "y": 207.888
+        },
+        {
+          "x": -107.54,
+          "y": 204.419
+        },
+        {
+          "x": -128.354,
+          "y": 197.481
+        },
+        {
+          "x": -169.982,
+          "y": 180.136
+        },
+        {
+          "x": -211.611,
+          "y": 162.79
+        },
+        {
+          "x": -360.779,
+          "y": 100.348
+        },
+        {
+          "x": -392.0,
+          "y": 83.003
+        }
+      ]
+    },
+    "industry-popcorn_factory": {
+      "prefab": "industry-popcorn_factory",
+      "sourceWidth": 205.0,
+      "widthSource": "manifest-verified-against-prefab",
+      "sourceBounds": {
+        "left": -102.5,
+        "right": 102.5,
+        "bottom": -30.000000000000004,
+        "top": 153.33963134046274
+      },
+      "targetWidth": 784,
+      "scale": 3.824390243902439,
+      "bounds": {
+        "left": -392.0,
+        "right": 392.0,
+        "bottom": -114.73170731707317,
+        "top": 586.4305901020624
+      },
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/industry-popcorn_factory.prefab": "3a5d97f330e65d4fd95652415b88eaf630cf504cbe7b08728477bb303ab4918c",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-13.png": "36750a05a5739726d31a0f0ab40776fd6040c5b3f70761d6dc3f7431dccbcd81",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-10.png": "3adf0a3a9f311086770f4395c08bfecb7341318953ea44e071cf9716b152b91a",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-1.png": "fe05bbe5a777945fdcc0e2cd01ff5aca16c2600bb10a36f111782b7b7e4f3fec",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-9.png": "0e810dc886c0459bf7b90710d2ec6bd0407ffb8c1cf771af19fdc9437faec512",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-19.png": "ac7b4f6551f09532a3e13e813df5457f053b20e22a978781cfd542c2b8bbc68b",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-14.png": "7eaedfed8d054011ef079be396947667ca02d16183c5771fbc0e47c976190525",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-16.png": "a1e1d1b7020f61c74d5d7492874b0e3a821ab2d621a982dc62602719a2850fd5",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-17.png": "7e0c31719f7dc37fe265e6cf7dc419f0463203c24393914921544e0e601006fe",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-15.png": "b2db3a2a7dd31a6dae63966c1dea4da0dbb4288ed8b430fca389007fc586df6b",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-18.png": "9281c7825a6cc9cfc909dfe536cc5a3a2ec040f11fbbee0995f1d670dbf1cac4",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-11.png": "d92b3a2a51f88db2debc3a45eb6d72e53ac77e201798404ee6a0128fb66c2a67",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-25.png": "d5345e34976b504e9c9588b069d756f3516f0dd7e2f1cc40a5f74108d9312ec6",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-26.png": "b36b7db27f5bf8d915e67a0214ff17e8f70a8144e8c66b925e29353dae024f2d",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-12.png": "b74b8d4cdf2abca3dc5df15f064f420d707ce681f6b9ca12e08dbcbebdece7be",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-27.png": "df125aa2750b8605fde8d894442779012becacf39d43b189c457a419de23bc0b",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-8.png": "5cb395b16b228c2b936dfcfea2c602071912c3b5eee906f48657026d9a8a7eea",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-4.png": "73140ef933cd35c5e11b559f7e98c03b4789823c9c71843d27473d702f0f64cf",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-34.png": "ccd08199cfea586746832c45277f1aa035afbc77052b3721e3b1d2e3c6c8c8c3",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-5.png": "dcc198a4b4400058240111ee79ddf582166c019925350ac9b05a3654e56cb399",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-35.png": "e4f70a5c225cdc10e4982a8f9cbbe30354699a75bc4538c773dece8be9ddd129",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-20.png": "619a236593daae6cc6476330767e9942cc77c65fe5566c82ed5a3ddbe5224d5d",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-36.png": "8318b2a979ab028beebfa65460b171395e5618f93844da36ece94cd6ac0cfda0",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-29.png": "dda702ad5c5e34388b00a7c1810ce353edeb3493a69743da6545e62f41f81ad9",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-31.png": "59e5effe190199d44f2505727425abd9cc87dada8fc2a37f7ceee0c9bf6a16bd",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-32.png": "c5b1eb6e2bff98d96b79ee8a0079640f450695a0f89d6d8e91b88910958e53a1",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-33.png": "b2dddd5963bbfc671a3427b9228aa7aeb99ebcb0957fcd8d8c60ae1f51865aae",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-30.png": "fad810490092bfaa4a04c4871c7aa57bf2d66d74d18ec6e1278f466c99dbde71",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-2.png": "827d629e06af27027dfe852162c046f0f86eea123ed649af58e638d27a702226",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-6.png": "81266ccebf56a9a8912b7de60e427de86f7a76188714d06bb52a81f08cfffc80",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-3.png": "c9328bc7f165f9fad65ebda0c495ae00412a045f3b2bfed56c322189fd570d49",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-24.png": "3bce82c6879e4331451d0c52812ba3109fea61826fa50a982c31af8bb3db7ab5",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-28.png": "49fe88784d878d742d19d516e23b9c9146306ad8e7860d867bdc96f75b0553f1",
+        "assets/farm/bundles/farm-town/images/industry-sp-444b38ae487e-7.png": "2c84b5bf7413936e1dd440ef3c40e4ac90bc9128fc7c2da1463c6ae7f1b694f6"
+      },
+      "floorLayers": [
+        "podlozka-209"
+      ],
+      "groundMethod": "Convex hull of opaque floor pixels after prefab transforms; roofs, machinery and wall height are excluded.",
+      "polygon": [
+        {
+          "x": -323.955,
+          "y": 59.819
+        },
+        {
+          "x": -312.121,
+          "y": 47.985
+        },
+        {
+          "x": -235.198,
+          "y": -2.308
+        },
+        {
+          "x": -69.524,
+          "y": -73.313
+        },
+        {
+          "x": 13.313,
+          "y": -108.814
+        },
+        {
+          "x": 25.147,
+          "y": -108.815
+        },
+        {
+          "x": 99.109,
+          "y": -82.188
+        },
+        {
+          "x": 285.494,
+          "y": 12.483
+        },
+        {
+          "x": 368.332,
+          "y": 59.819
+        },
+        {
+          "x": 371.291,
+          "y": 71.653
+        },
+        {
+          "x": 371.291,
+          "y": 83.487
+        },
+        {
+          "x": 359.457,
+          "y": 95.321
+        },
+        {
+          "x": 318.038,
+          "y": 127.864
+        },
+        {
+          "x": 273.66,
+          "y": 151.532
+        },
+        {
+          "x": 78.4,
+          "y": 246.204
+        },
+        {
+          "x": 48.815,
+          "y": 255.08
+        },
+        {
+          "x": 25.147,
+          "y": 255.08
+        },
+        {
+          "x": 1.479,
+          "y": 252.121
+        },
+        {
+          "x": -19.23,
+          "y": 249.163
+        },
+        {
+          "x": -264.785,
+          "y": 133.781
+        },
+        {
+          "x": -297.328,
+          "y": 113.072
+        },
+        {
+          "x": -320.996,
+          "y": 92.363
+        },
+        {
+          "x": -323.955,
+          "y": 89.404
+        }
+      ]
+    },
+    "industry-pie_bakery": {
+      "prefab": "industry-pie_bakery",
+      "sourceWidth": 205.0,
+      "widthSource": "manifest-verified-against-prefab",
+      "sourceBounds": {
+        "left": -102.50000000000003,
+        "right": 102.50000000000003,
+        "bottom": -30.000000000000007,
+        "top": 124.03629718511812
+      },
+      "targetWidth": 784,
+      "scale": 3.824390243902439,
+      "bounds": {
+        "left": -392.0000000000001,
+        "right": 392.0000000000001,
+        "bottom": -114.73170731707319,
+        "top": 474.3632048445493
+      },
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/industry-pie_bakery.prefab": "355d7f2f07ec79886e77269a7ddb609ad4658d64cdaa1830d3cf317db0d9a815",
+        "assets/farm/bundles/farm-town/images/industry-sp-28136c089ccd-14.png": "d011b5ff239b837438a19de7b5cc39cd4fcea42dfec576c733a3cc524ca14655",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-11.png": "ccdd28980f1a01d6541e69dac9f7b95b690c2fe70d61e92f9194d7a44c127b85",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-12.png": "00e94ac0faae557bf885dcf1ef4ea120e702d9209338ff862da201135dbef5ff",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-17.png": "ca2d8dc871cb9843aed6cf0748d6a1783a53c18eccc9b81134abc09aa5790033",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-10.png": "6c4b5870613606ab41cc892058d375d459f88d48ec23298779d379e8f6644f5c",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-13.png": "4709d5bcee8ae7a9d7f7dac802081c4b3a395cab1b2958ef3a7c5c361a654e6e",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-7.png": "d4937353e3aaa3f17450515ef3a467172400c2c26903ed10c34938676b5c953f",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-5.png": "9da19f1f43751efaeb37dd085cc727620f83abaad1b67fd6ac12a51438fecf8b",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-16.png": "a1aa6a782eb10bb29a79ce27326aef68789e89ea638286eafaabfe2271b7c1a4",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-9.png": "4f00a4a63a386c612b93155f23d552e1483987f23305c373b23c5974a85a2402",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-2.png": "35c153c1abf9a4f1d4761583221f88a780eb14200bfb9ec8c2fe33475be1cc70",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-14.png": "4be5a56dc160516ee13ebfab909468989c558fb23ade55b4c148eb6a6cf1d682",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-1.png": "04fed7b4ad4bf907102795aa8ead852f8913da85774558bcf416a29894b301d8",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-8.png": "65b479e39cd6676fff7db38380312a5967d40bdbdd57982a84396c16af3286d6",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-15.png": "f997b22afc4497f4e183a51e421a82c85e844850bdfbb348fd25d97566c1d4e6",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-3.png": "cb5e2b21b0eecde048fab12c41c930ccb1d26e4763bb731c85218ef01397c239",
+        "assets/farm/bundles/farm-town/images/industry-sp-f5c6c878459b-4.png": "ad442a2a78bc759c055f893096ce8302d52a4f26950e9f3c52ac7677a2e8b3cd"
+      },
+      "floorLayers": [
+        "podlozka-169"
+      ],
+      "groundMethod": "Convex hull of opaque floor pixels after prefab transforms; roofs, machinery and wall height are excluded.",
+      "polygon": [
+        {
+          "x": -314.214,
+          "y": 38.849
+        },
+        {
+          "x": -308.526,
+          "y": 24.628
+        },
+        {
+          "x": -302.838,
+          "y": 18.94
+        },
+        {
+          "x": -243.112,
+          "y": -18.033
+        },
+        {
+          "x": -200.451,
+          "y": -37.941
+        },
+        {
+          "x": -89.532,
+          "y": -89.135
+        },
+        {
+          "x": -29.806,
+          "y": -111.888
+        },
+        {
+          "x": -1.365,
+          "y": -114.732
+        },
+        {
+          "x": 29.92,
+          "y": -114.732
+        },
+        {
+          "x": 55.517,
+          "y": -109.044
+        },
+        {
+          "x": 66.893,
+          "y": -106.199
+        },
+        {
+          "x": 257.446,
+          "y": -26.565
+        },
+        {
+          "x": 291.575,
+          "y": -9.501
+        },
+        {
+          "x": 328.548,
+          "y": 27.472
+        },
+        {
+          "x": 328.548,
+          "y": 36.005
+        },
+        {
+          "x": 311.484,
+          "y": 92.886
+        },
+        {
+          "x": 152.215,
+          "y": 127.015
+        },
+        {
+          "x": -24.118,
+          "y": 149.768
+        },
+        {
+          "x": -41.182,
+          "y": 149.768
+        },
+        {
+          "x": -80.999,
+          "y": 146.924
+        },
+        {
+          "x": -98.064,
+          "y": 141.236
+        },
+        {
+          "x": -166.322,
+          "y": 112.795
+        },
+        {
+          "x": -288.617,
+          "y": 61.601
+        },
+        {
+          "x": -314.214,
+          "y": 47.381
+        }
+      ]
+    },
+    "industry-loom": {
+      "prefab": "industry-loom",
+      "sourceWidth": 205.00000000000003,
+      "widthSource": "manifest-verified-against-prefab",
+      "sourceBounds": {
+        "left": -102.5,
+        "right": 102.5,
+        "bottom": -30.000000000000004,
+        "top": 169.94786453471863
+      },
+      "targetWidth": 784,
+      "scale": 3.8243902439024384,
+      "bounds": {
+        "left": -391.99999999999994,
+        "right": 391.99999999999994,
+        "bottom": -114.73170731707317,
+        "top": 649.9469550986312
+      },
+      "sources": {
+        "assets/farm/bundles/farm-town/prefabs/industry-loom.prefab": "9518b035501542520edde1a0fc8a0dbc6a7369aac8cc746027ad199d687ef44b",
+        "assets/farm/bundles/farm-town/images/industry-loom-46.png": "4e688e41579ea5112dd03b2d999fc45c458d269a2eef212ff780125e4a835261",
+        "assets/farm/bundles/farm-town/images/industry-loom-54.png": "c6a40fd28729fbdc954db0f280eb7466568be1aad353b44c89febec06481941a",
+        "assets/farm/bundles/farm-town/images/industry-loom-55.png": "925474cb7d11da7e35c12796c0e72d4a41d8b76b0a11060279146dee8334d0bc",
+        "assets/farm/bundles/farm-town/images/industry-loom-43.png": "83ab87ceb2c0c193166218fafded478596fd327e43cc990511f0745cb132143d",
+        "assets/farm/bundles/farm-town/images/industry-loom-44.png": "ca6067953e791e677f6a143029be50872157ba1ee687e764e02eacd1fbf38df4",
+        "assets/farm/bundles/farm-town/images/industry-loom-47.png": "0d1b55ec9444f429a7af4323bc808a31b0ad2ca61fdeac7de328478d038168cb",
+        "assets/farm/bundles/farm-town/images/industry-loom-50.png": "8f7d156493717c56c574df43cf66ae972ca0d436ec259e2aaf2718f6e9d1520b",
+        "assets/farm/bundles/farm-town/images/industry-loom-49.png": "003a876d3dd97024ea17a876dc827844e27d8f024331eed793986243c274f26a",
+        "assets/farm/bundles/farm-town/images/industry-loom-52.png": "003a876d3dd97024ea17a876dc827844e27d8f024331eed793986243c274f26a",
+        "assets/farm/bundles/farm-town/images/industry-loom-45.png": "925474cb7d11da7e35c12796c0e72d4a41d8b76b0a11060279146dee8334d0bc",
+        "assets/farm/bundles/farm-town/images/industry-loom-51.png": "003a876d3dd97024ea17a876dc827844e27d8f024331eed793986243c274f26a",
+        "assets/farm/bundles/farm-town/images/industry-loom-48.png": "85f020a9787d3b06341157b4fd713bdf6a11302600cc4ef9c1c069ee4d387529",
+        "assets/farm/bundles/farm-town/images/industry-loom-53.png": "3079dc24f56002e1b35374a95ab1ca9a2717044e6ed45398c3076e33439306bb"
+      },
+      "floorLayers": [
+        "podlpzka_2_0-46"
+      ],
+      "groundMethod": "Convex hull of opaque floor pixels after prefab transforms; roofs, machinery and wall height are excluded.",
+      "polygon": [
+        {
+          "x": -392.0,
+          "y": 63.619
+        },
+        {
+          "x": -371.564,
+          "y": 39.467
+        },
+        {
+          "x": -339.981,
+          "y": 4.169
+        },
+        {
+          "x": -107.754,
+          "y": -99.869
+        },
+        {
+          "x": -53.877,
+          "y": -114.732
+        },
+        {
+          "x": -20.436,
+          "y": -114.732
+        },
+        {
+          "x": 98.464,
+          "y": -96.154
+        },
+        {
+          "x": 287.962,
+          "y": -25.556
+        },
+        {
+          "x": 349.27,
+          "y": 11.6
+        },
+        {
+          "x": 377.137,
+          "y": 33.894
+        },
+        {
+          "x": 378.995,
+          "y": 35.752
+        },
+        {
+          "x": 392.0,
+          "y": 71.05
+        },
+        {
+          "x": 392.0,
+          "y": 91.486
+        },
+        {
+          "x": 380.853,
+          "y": 111.922
+        },
+        {
+          "x": 364.133,
+          "y": 130.501
+        },
+        {
+          "x": 293.536,
+          "y": 167.657
+        },
+        {
+          "x": 187.64,
+          "y": 195.524
+        },
+        {
+          "x": -50.161,
+          "y": 217.818
+        },
+        {
+          "x": -133.763,
+          "y": 217.818
+        },
+        {
+          "x": -213.649,
+          "y": 197.382
+        },
+        {
+          "x": -358.559,
+          "y": 111.922
+        },
+        {
+          "x": -360.417,
+          "y": 110.065
+        },
+        {
+          "x": -392.0,
+          "y": 76.624
+        }
+      ]
+    }
+  }
+}

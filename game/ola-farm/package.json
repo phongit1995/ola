@@ -1,0 +1,32 @@
+{
+  "name": "ola-farm-cocos",
+  "private": true,
+  "version": "0.1.0",
+  "uuid": "a513c595-3aee-4cde-9616-a67e516b0449",
+  "creator": {
+    "version": "3.8.8"
+  },
+  "scripts": {
+    "start": "node tools/serve.cjs",
+    "assets:check": "node tools/assets.cjs --check && node tools/check-farm-town.cjs && node tools/farm-decor-assets.cjs --check && node tools/farm-layout.cjs --check && node tools/hud-assets.cjs --check && node tools/plot-ui-assets.cjs --check && node tools/check-island-ui.cjs",
+    "test": "tsx --test tests/*.test.ts",
+    "typecheck:core": "tsc -p tsconfig.core.json",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run assets:check && npm run prefabs:check && npm run layers:check && npm run structure:check && npm run format:check && npm run typecheck:core && npm test",
+    "prefabs:check": "node tools/link-prefab-components.cjs --check && node tools/script-meta.cjs --check",
+    "simulate:balance": "tsx tools/simulate-real-time-economy.ts",
+    "timing:check": "node tools/load-farm-catalog.cjs",
+    "config:check": "node tools/load-farm-catalog.cjs",
+    "format": "prettier --write \"assets/farm/scripts/**/*.ts\" \"tests/**/*.ts\" \"tools/*.ts\"",
+    "format:check": "prettier --check \"assets/farm/scripts/**/*.ts\" \"tests/**/*.ts\" \"tools/*.ts\"",
+    "layers:check": "node tools/check-layers.cjs",
+    "structure:check": "node tools/check-code-structure.cjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.19.3",
+    "typescript": "~5.8.3",
+    "prettier": "^3.9.6",
+    "playwright": "^1.63.0"
+  }
+}

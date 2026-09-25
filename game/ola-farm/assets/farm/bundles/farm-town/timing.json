@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "boostSecondsPerGem": 900,
+  "crops": {
+    "wheat": {
+      "name": "Lúa mì",
+      "durationSeconds": 300
+    },
+    "corn": {
+      "name": "Ngô",
+      "durationSeconds": 900
+    },
+    "cabbage": {
+      "name": "Bắp cải",
+      "durationSeconds": 2700
+    },
+    "beet": {
+      "name": "Củ Cải Đường",
+      "durationSeconds": 7200
+    },
+    "potato": {
+      "name": "Khoai Tây",
+      "durationSeconds": 14400
+    },
+    "strawberry": {
+      "name": "Dâu tây",
+      "durationSeconds": 21600
+    },
+    "pumpkin": {
+      "name": "Bí Ngô",
+      "durationSeconds": 28800
+    },
+    "grapes": {
+      "name": "Nho",
+      "durationSeconds": 43200
+    }
+  },
+  "animals": {
+    "layer": {
+      "name": "Gà đẻ trứng",
+      "durationSeconds": 1800
+    },
+    "dairy-cow": {
+      "name": "Bò sữa",
+      "durationSeconds": 7200
+    },
+    "pig": {
+      "name": "Heo",
+      "durationSeconds": 21600
+    },
+    "sheep": {
+      "name": "Cừu",
+      "durationSeconds": 43200
+    }
+  },
+  "recipes": {
+    "24": {
+      "name": "Thức ăn gà",
+      "durationSeconds": 300
+    },
+    "25": {
+      "name": "Thức ăn bò",
+      "durationSeconds": 900
+    },
+    "7": {
+      "name": "Bánh mì",
+      "durationSeconds": 600
+    },
+    "9": {
+      "name": "Bánh nho",
+      "durationSeconds": 7200
+    },
+    "10": {
+      "name": "Bánh dâu",
+      "durationSeconds": 5400
+    },
+    "26": {
+      "name": "Bánh mì ngô",
+      "durationSeconds": 2700
+    },
+    "100207": {
+      "name": "Bánh Quế (Waffle)",
+      "durationSeconds": 10800
+    },
+    "20": {
+      "name": "Bơ",
+      "durationSeconds": 1800
+    },
+    "22": {
+      "name": "Phô mai",
+      "durationSeconds": 3600
+    },
+    "101501": {
+      "name": "Kem sữa",
+      "durationSeconds": 1200
+    },
+    "101503": {
+      "name": "Sữa Chua Dâu Tây",
+      "durationSeconds": 7200
+    },
+    "101602": {
+      "name": "Khoai Tây Chiên",
+      "durationSeconds": 5400
+    },
+    "101603": {
+      "name": "Bánh Mì Nướng",
+      "durationSeconds": 3600
+    },
+    "107101": {
+      "name": "Đường Trắng",
+      "durationSeconds": 1800
+    },
+    "102000": {
+      "name": "Bỏng Ngô",
+      "durationSeconds": 7200
+    },
+    "102001": {
+      "name": "Ngũ Cốc Ngô",
+      "durationSeconds": 5400
+    },
+    "101901": {
+      "name": "Bánh Bắp Cải",
+      "durationSeconds": 7200
+    },
+    "101904": {
+      "name": "Bánh Bí Ngô",
+      "durationSeconds": 10800
+    },
+    "105003": {
+      "name": "Cám heo",
+      "durationSeconds": 1800
+    },
+    "101604": {
+      "name": "Burger",
+      "durationSeconds": 10800
+    },
+    "101902": {
+      "name": "Pie khoai thịt",
+      "durationSeconds": 14400
+    },
+    "105004": {
+      "name": "Cám cừu",
+      "durationSeconds": 3600
+    },
+    "102101": {
+      "name": "Áo len",
+      "durationSeconds": 21600
+    }
+  }
+}

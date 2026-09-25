@@ -1,0 +1,1201 @@
+{
+  "schemaVersion": 1,
+  "key": "bush_hriz",
+  "group": "flowers",
+  "titleVi": "Cúc Vàng",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C6 — hoa và chuỗi trang trí",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 89,
+    "key": "hrizantema",
+    "titleVi": "Cúc Vàng"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/bush_hriz__a52e7e818574f264e98da8fb658e26c9_704.json",
+    "prefab": {
+      "file": "e3abc455d7c621b45a0c2e631bab702c",
+      "id": 11,
+      "name": "chrysanthemums",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__e3abc455d7c621b45a0c2e631bab702c_40.json",
+        "growPhaseCount": 2,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/bush_hriz_JOB_Data__a52e7e818574f264e98da8fb658e26c9_171.json",
+    "index": 0,
+    "entity": "bush_hriz",
+    "durationSeconds": 1200,
+    "level": 17,
+    "quantityPerCycle": 1.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 17,
+    "basicPrice": 32.0,
+    "xpOnUse": 5.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 5,
+    "clearTool": {
+      "id": 48,
+      "name": "cutter",
+      "titleVi": "Dao Cắt",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 6,
+      "output": "hat_cute",
+      "outputTitleVi": "Mũ Dễ Thương",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "flower_factory",
+      "entityTitleVi": "Nhà Máy Hoa",
+      "recipeIndex": 4,
+      "output": "bouquet_romantic",
+      "outputTitleVi": "Bó Hoa Lãng Mạn",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/flower_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_602.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 20072,
+      "sha256": "9e128aa39cb0df8d329f0e9e87d5945101c3add6d7fa8567201967be5940b98b",
+      "size": [
+        105,
+        94
+      ],
+      "source": {
+        "exportPath": "export/sprites/chrysanthemums_3_preview_0__sharedassets0.assets_18.png",
+        "file": "sharedassets0.assets",
+        "pathId": 18,
+        "spriteName": "chrysanthemums_3_preview_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 12.899225234985352,
+          "y": 18.852712631225586,
+          "width": 103.19380187988281,
+          "height": 92.27906799316406
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.0
+        },
+        "pixelsToUnits": 99.22480773925781,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 13226,
+      "sha256": "2c66528977a3b23f0856dc38fd1f5bca34a6afe8ef2581e1fa3a5f2a846d8c77",
+      "size": [
+        88,
+        90
+      ],
+      "source": {
+        "exportPath": "export/sprites/hrizantema__sharedassets0.assets_706.png",
+        "file": "sharedassets0.assets",
+        "pathId": 706,
+        "spriteName": "hrizantema"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 2.042907953262329,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_hriz_2_0--0dd32f113e.png",
+      "bytes": 2962,
+      "sha256": "aa5680c99b4fc6e9761b8e566951b490b21e1a1d9d5f7cc7088bd9b84a106b22",
+      "size": [
+        84,
+        33
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_hriz_2_0__0cc2e075c3695c9439bbf0586ebac711_1.png",
+        "file": "0cc2e075c3695c9439bbf0586ebac711",
+        "pathId": 1,
+        "spriteName": "0_hriz_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 84.0,
+          "height": 33.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_hriz_1_0--c776b3752f.png",
+      "bytes": 11399,
+      "sha256": "0a847d87f4bbb22b5e83f999f0cb185aad93c27c4d875277bb9c03e75ec810a8",
+      "size": [
+        99,
+        79
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_hriz_1_0__65994965cf8756c49812156eb38949f5_1.png",
+        "file": "65994965cf8756c49812156eb38949f5",
+        "pathId": 1,
+        "spriteName": "0_hriz_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 99.0,
+          "height": 79.0
+        },
+        "pivot": {
+          "x": 0.4793778359889984,
+          "y": 0.036981645971536636
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/1_hriz_0--e762f9ebe1.png",
+      "bytes": 5584,
+      "sha256": "20a3bc57e59c3a9978ea19d28ee08f54bdb290231d0d2df7e6c335848981fc52",
+      "size": [
+        83,
+        59
+      ],
+      "source": {
+        "exportPath": "export/sprites/1_hriz_0__213af7184dd70bf45bd81bb17c6edd70_1.png",
+        "file": "213af7184dd70bf45bd81bb17c6edd70",
+        "pathId": 1,
+        "spriteName": "1_hriz_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 83.0,
+          "height": 59.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_dop_2_0--96dfc11e2e.png",
+      "bytes": 1203,
+      "sha256": "ef3122d7bff49172006a9a821513738a08a6fc258568b595fbc9ca90ca79f1d4",
+      "size": [
+        28,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_dop_2_0__f9ac14f967ed07d43b87e7d3ed9dd8a5_1.png",
+        "file": "f9ac14f967ed07d43b87e7d3ed9dd8a5",
+        "pathId": 1,
+        "spriteName": "3_hriz_dop_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 28.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_dop_0--6cf33f7a47.png",
+      "bytes": 2488,
+      "sha256": "3756a8fb316fdeff30af90c4482c4efe573a9d31157e42fa66d5bc7c41c8fc65",
+      "size": [
+        70,
+        28
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_dop_0__2c75b087132e75042ac08859fe5def2d_1.png",
+        "file": "2c75b087132e75042ac08859fe5def2d",
+        "pathId": 1,
+        "spriteName": "3_hriz_dop_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 28.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_hriz_2--e054cfd54a.png",
+      "bytes": 9559,
+      "sha256": "b2ce04ef4270af93d3a4978b3436d84c72d45ee5a12275528b1c2344b369d85c",
+      "size": [
+        100,
+        83
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_hriz_2__bd385b3c343d1d24d924bda258a7a661_1.png",
+        "file": "bd385b3c343d1d24d924bda258a7a661",
+        "pathId": 1,
+        "spriteName": "4_hriz_2"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 2.0,
+          "width": 100.0,
+          "height": 83.0
+        },
+        "pivot": {
+          "x": 0.4891619384288788,
+          "y": 0.014681238681077957
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/2_hriz_0--63b06fcb48.png",
+      "bytes": 8832,
+      "sha256": "0d0fed90d3a334307af8a3a39b81743e2be0148f6fbb600c16ff208838591a26",
+      "size": [
+        89,
+        61
+      ],
+      "source": {
+        "exportPath": "export/sprites/2_hriz_0__163ce50b1ff0c984d9df6914d086caba_1.png",
+        "file": "163ce50b1ff0c984d9df6914d086caba",
+        "pathId": 1,
+        "spriteName": "2_hriz_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 89.0,
+          "height": 61.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_5_0--b46760f1ee.png",
+      "bytes": 1662,
+      "sha256": "0d8110548b2146b3ece998980424260e9b2ab87d6c193d9d5fa0e4d1e2216cf7",
+      "size": [
+        29,
+        25
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_5_0__8c00f3a8165516844aefd285eee3da1d_1.png",
+        "file": "8c00f3a8165516844aefd285eee3da1d",
+        "pathId": 1,
+        "spriteName": "3_hriz_5_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 29.0,
+          "height": 25.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_6_0--851dbfb8f8.png",
+      "bytes": 1955,
+      "sha256": "e91dd732040749e5c100ac4bc51efdf15956f0fe0b96d745fca76da91b35e7a6",
+      "size": [
+        32,
+        28
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_6_0__1bab27fc3a0af524288cbea3f819da74_1.png",
+        "file": "1bab27fc3a0af524288cbea3f819da74",
+        "pathId": 1,
+        "spriteName": "3_hriz_6_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 32.0,
+          "height": 28.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_3_0--a999a21f8f.png",
+      "bytes": 1304,
+      "sha256": "b778484ab74071d161bae32c68687bd70f684c8fe693cf603abef48d5c0121af",
+      "size": [
+        23,
+        25
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_3_0__31fd652d37e4c094681586f00e883526_1.png",
+        "file": "31fd652d37e4c094681586f00e883526",
+        "pathId": 1,
+        "spriteName": "3_hriz_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 23.0,
+          "height": 25.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_1_0--d40377289f.png",
+      "bytes": 1814,
+      "sha256": "ffda115475d0eed80292b9b0e4998d7b8816da0c41f65f7bda362d4e52fa7958",
+      "size": [
+        28,
+        26
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_1_0__b034c856f5d59b7408194f226db15ae2_1.png",
+        "file": "b034c856f5d59b7408194f226db15ae2",
+        "pathId": 1,
+        "spriteName": "3_hriz_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 28.0,
+          "height": 26.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_2_0--9f36fc6483.png",
+      "bytes": 1470,
+      "sha256": "9b095d1d52d3f1d14e5b6d04ece66e4ea839965e46ca9abaa8c08f90455fc9cd",
+      "size": [
+        24,
+        26
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_2_0__edac59f5fad5f034d9963c1f2aa6eae4_1.png",
+        "file": "edac59f5fad5f034d9963c1f2aa6eae4",
+        "pathId": 1,
+        "spriteName": "3_hriz_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 24.0,
+          "height": 26.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_4_0--346d2c49d7.png",
+      "bytes": 1402,
+      "sha256": "9c78277eed1d8cc9cfd55895a3c97eff02c563db25475d0f64f33de16df7959b",
+      "size": [
+        26,
+        22
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_4_0__716e6e144ebf7344abbdb54896a41b97_1.png",
+        "file": "716e6e144ebf7344abbdb54896a41b97",
+        "pathId": 1,
+        "spriteName": "3_hriz_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 26.0,
+          "height": 22.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_7_0--e15a216d7d.png",
+      "bytes": 1922,
+      "sha256": "698420d2d3997ef8267f949fac314a7af87fe4b4c18be202ec66f76c07068adb",
+      "size": [
+        28,
+        28
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_7_0__b080f3cbdf74b6043b160569b9023d77_1.png",
+        "file": "b080f3cbdf74b6043b160569b9023d77",
+        "pathId": 1,
+        "spriteName": "3_hriz_7_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 28.0,
+          "height": 28.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_hriz_8_0--d5b03d8c3d.png",
+      "bytes": 1691,
+      "sha256": "b7ca785467a31eeadced0b6721b45b2cb4ddff927edd7eaa7e649c95e30b4bc8",
+      "size": [
+        27,
+        25
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_hriz_8_0__ff051667d9c86dc45af30d5490a5ae70_1.png",
+        "file": "ff051667d9c86dc45af30d5490a5ae70",
+        "pathId": 1,
+        "spriteName": "3_hriz_8_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 27.0,
+          "height": 25.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/0_hriz_2_0--0dd32f113e.png",
+    "images/0_hriz_1_0--c776b3752f.png",
+    "images/1_hriz_0--e762f9ebe1.png",
+    "images/3_hriz_dop_2_0--96dfc11e2e.png",
+    "images/3_hriz_dop_0--6cf33f7a47.png"
+  ],
+  "phases": [
+    {
+      "key": "chrysanthemums:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/4_hriz_2--e054cfd54a.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_end",
+        "file": "bbe310ef7931c4746843e0f7855311ab",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_end__bbe310ef7931c4746843e0f7855311ab_1.json",
+        "sha256": "20bddff515226ad61cfa8cefdfe7ccb43e3400946728b15f3c7577426851c5d0"
+      }
+    },
+    {
+      "key": "chrysanthemums:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/1_hriz_0--e762f9ebe1.png",
+        "images/3_hriz_dop_0--6cf33f7a47.png",
+        "images/3_hriz_dop_2_0--96dfc11e2e.png",
+        "images/0_hriz_1_0--c776b3752f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_1",
+        "file": "e04994f011c27d2418152b1b53f7f41e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_1__e04994f011c27d2418152b1b53f7f41e_1.json",
+        "sha256": "280f3238cf03b5e5e948b0f02467d70a0acdfa4c5780bc25762fcd12aa564f29"
+      }
+    },
+    {
+      "key": "chrysanthemums:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/1_hriz_0--e762f9ebe1.png",
+        "images/3_hriz_dop_0--6cf33f7a47.png",
+        "images/3_hriz_dop_2_0--96dfc11e2e.png",
+        "images/0_hriz_1_0--c776b3752f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_1",
+        "file": "e04994f011c27d2418152b1b53f7f41e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_1__e04994f011c27d2418152b1b53f7f41e_1.json",
+        "sha256": "280f3238cf03b5e5e948b0f02467d70a0acdfa4c5780bc25762fcd12aa564f29"
+      }
+    },
+    {
+      "key": "chrysanthemums:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/2_hriz_0--63b06fcb48.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_2",
+        "file": "d78c21f9e7ce6d245877b7da35076033",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_2__d78c21f9e7ce6d245877b7da35076033_1.json",
+        "sha256": "ec1e13081d638f62a6e8be94475d6c5550068a5534e5e70c60d35358a74a508b"
+      }
+    },
+    {
+      "key": "chrysanthemums:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/2_hriz_0--63b06fcb48.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_2",
+        "file": "d78c21f9e7ce6d245877b7da35076033",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_2__d78c21f9e7ce6d245877b7da35076033_1.json",
+        "sha256": "ec1e13081d638f62a6e8be94475d6c5550068a5534e5e70c60d35358a74a508b"
+      }
+    },
+    {
+      "key": "chrysanthemums:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/2_hriz_0--63b06fcb48.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_2",
+        "file": "d78c21f9e7ce6d245877b7da35076033",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_2__d78c21f9e7ce6d245877b7da35076033_1.json",
+        "sha256": "ec1e13081d638f62a6e8be94475d6c5550068a5534e5e70c60d35358a74a508b"
+      }
+    },
+    {
+      "key": "chrysanthemums:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "chrysanthemums:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/3_hriz_5_0--b46760f1ee.png",
+        "images/3_hriz_6_0--851dbfb8f8.png",
+        "images/3_hriz_3_0--a999a21f8f.png",
+        "images/3_hriz_1_0--d40377289f.png",
+        "images/3_hriz_2_0--9f36fc6483.png",
+        "images/3_hriz_4_0--346d2c49d7.png",
+        "images/3_hriz_7_0--e15a216d7d.png",
+        "images/3_hriz_8_0--d5b03d8c3d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_3",
+        "file": "e7269520ce86e134c826407430cbe126",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_3__e7269520ce86e134c826407430cbe126_1.json",
+        "sha256": "81b418fbdca2ba4235613d3f585a728b10ba75a64a37d06c2cc5926315e819e6"
+      }
+    },
+    {
+      "key": "chrysanthemums:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/3_hriz_5_0--b46760f1ee.png",
+        "images/3_hriz_6_0--851dbfb8f8.png",
+        "images/3_hriz_3_0--a999a21f8f.png",
+        "images/3_hriz_1_0--d40377289f.png",
+        "images/3_hriz_2_0--9f36fc6483.png",
+        "images/3_hriz_4_0--346d2c49d7.png",
+        "images/3_hriz_7_0--e15a216d7d.png",
+        "images/3_hriz_8_0--d5b03d8c3d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_3",
+        "file": "e7269520ce86e134c826407430cbe126",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_3__e7269520ce86e134c826407430cbe126_1.json",
+        "sha256": "81b418fbdca2ba4235613d3f585a728b10ba75a64a37d06c2cc5926315e819e6"
+      }
+    },
+    {
+      "key": "chrysanthemums:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/3_hriz_5_0--b46760f1ee.png",
+        "images/3_hriz_6_0--851dbfb8f8.png",
+        "images/3_hriz_3_0--a999a21f8f.png",
+        "images/3_hriz_1_0--d40377289f.png",
+        "images/3_hriz_2_0--9f36fc6483.png",
+        "images/3_hriz_4_0--346d2c49d7.png",
+        "images/3_hriz_7_0--e15a216d7d.png",
+        "images/3_hriz_8_0--d5b03d8c3d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_3",
+        "file": "e7269520ce86e134c826407430cbe126",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_3__e7269520ce86e134c826407430cbe126_1.json",
+        "sha256": "81b418fbdca2ba4235613d3f585a728b10ba75a64a37d06c2cc5926315e819e6"
+      }
+    },
+    {
+      "key": "chrysanthemums:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/3_hriz_5_0--b46760f1ee.png",
+        "images/3_hriz_6_0--851dbfb8f8.png",
+        "images/3_hriz_3_0--a999a21f8f.png",
+        "images/3_hriz_1_0--d40377289f.png",
+        "images/3_hriz_2_0--9f36fc6483.png",
+        "images/3_hriz_4_0--346d2c49d7.png",
+        "images/3_hriz_7_0--e15a216d7d.png",
+        "images/3_hriz_8_0--d5b03d8c3d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_3",
+        "file": "e7269520ce86e134c826407430cbe126",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_3__e7269520ce86e134c826407430cbe126_1.json",
+        "sha256": "81b418fbdca2ba4235613d3f585a728b10ba75a64a37d06c2cc5926315e819e6"
+      }
+    },
+    {
+      "key": "chrysanthemums:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/3_hriz_5_0--b46760f1ee.png",
+        "images/3_hriz_6_0--851dbfb8f8.png",
+        "images/3_hriz_3_0--a999a21f8f.png",
+        "images/3_hriz_1_0--d40377289f.png",
+        "images/3_hriz_2_0--9f36fc6483.png",
+        "images/3_hriz_4_0--346d2c49d7.png",
+        "images/3_hriz_7_0--e15a216d7d.png",
+        "images/3_hriz_8_0--d5b03d8c3d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_3",
+        "file": "e7269520ce86e134c826407430cbe126",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_3__e7269520ce86e134c826407430cbe126_1.json",
+        "sha256": "81b418fbdca2ba4235613d3f585a728b10ba75a64a37d06c2cc5926315e819e6"
+      }
+    },
+    {
+      "key": "chrysanthemums:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/1_hriz_0--e762f9ebe1.png",
+        "images/3_hriz_dop_0--6cf33f7a47.png",
+        "images/3_hriz_dop_2_0--96dfc11e2e.png",
+        "images/0_hriz_1_0--c776b3752f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_1",
+        "file": "e04994f011c27d2418152b1b53f7f41e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_1__e04994f011c27d2418152b1b53f7f41e_1.json",
+        "sha256": "280f3238cf03b5e5e948b0f02467d70a0acdfa4c5780bc25762fcd12aa564f29"
+      }
+    },
+    {
+      "key": "chrysanthemums:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/1_hriz_0--e762f9ebe1.png",
+        "images/3_hriz_dop_0--6cf33f7a47.png",
+        "images/3_hriz_dop_2_0--96dfc11e2e.png",
+        "images/0_hriz_1_0--c776b3752f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_1",
+        "file": "e04994f011c27d2418152b1b53f7f41e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_1__e04994f011c27d2418152b1b53f7f41e_1.json",
+        "sha256": "280f3238cf03b5e5e948b0f02467d70a0acdfa4c5780bc25762fcd12aa564f29"
+      }
+    },
+    {
+      "key": "chrysanthemums:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/1_hriz_0--e762f9ebe1.png",
+        "images/3_hriz_dop_0--6cf33f7a47.png",
+        "images/3_hriz_dop_2_0--96dfc11e2e.png",
+        "images/0_hriz_1_0--c776b3752f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_1",
+        "file": "e04994f011c27d2418152b1b53f7f41e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_1__e04994f011c27d2418152b1b53f7f41e_1.json",
+        "sha256": "280f3238cf03b5e5e948b0f02467d70a0acdfa4c5780bc25762fcd12aa564f29"
+      }
+    },
+    {
+      "key": "chrysanthemums:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/1_hriz_0--e762f9ebe1.png",
+        "images/3_hriz_dop_0--6cf33f7a47.png",
+        "images/3_hriz_dop_2_0--96dfc11e2e.png",
+        "images/0_hriz_1_0--c776b3752f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_1",
+        "file": "e04994f011c27d2418152b1b53f7f41e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_1__e04994f011c27d2418152b1b53f7f41e_1.json",
+        "sha256": "280f3238cf03b5e5e948b0f02467d70a0acdfa4c5780bc25762fcd12aa564f29"
+      }
+    },
+    {
+      "key": "chrysanthemums:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/1_hriz_0--e762f9ebe1.png",
+        "images/3_hriz_dop_0--6cf33f7a47.png",
+        "images/3_hriz_dop_2_0--96dfc11e2e.png",
+        "images/0_hriz_1_0--c776b3752f.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "chrysanthemums",
+        "file": "1eb0ade704a6f9c4d9b79b88169ae09b",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "chrysanthemums_1",
+        "file": "e04994f011c27d2418152b1b53f7f41e",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/chrysanthemums_1__e04994f011c27d2418152b1b53f7f41e_1.json",
+        "sha256": "280f3238cf03b5e5e948b0f02467d70a0acdfa4c5780bc25762fcd12aa564f29"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

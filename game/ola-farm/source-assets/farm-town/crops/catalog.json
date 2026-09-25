@@ -1,0 +1,492 @@
+{
+  "schemaVersion": 1,
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "sourceApkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+  "auditSHA256": "7948756bb756934ea1059efc2a4f630d0a249125e45fa7a1e6fc0514c42cc1f1",
+  "counts": {
+    "field": 14,
+    "orchard": 10,
+    "flowers": 6
+  },
+  "pngFiles": 430,
+  "pngBytes": 2760518,
+  "uniqueImageHashes": 386,
+  "crops": [
+    {
+      "key": "wheat",
+      "titleVi": "Lúa Mì",
+      "group": "field",
+      "folder": "field/wheat",
+      "manifest": "field/wheat/crop.json",
+      "readme": "field/wheat/README.md",
+      "plannedBatch": "REF — đối chiếu, giữ art Farm hiện có",
+      "farmCompatibility": "reference-only-keep-current-art",
+      "product": {
+        "sourceItemId": 152,
+        "key": "wheat",
+        "titleVi": "Lúa Mì"
+      }
+    },
+    {
+      "key": "corn",
+      "titleVi": "Ngô",
+      "group": "field",
+      "folder": "field/corn",
+      "manifest": "field/corn/crop.json",
+      "readme": "field/corn/README.md",
+      "plannedBatch": "C1 — ngô và bắp cải",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 42,
+        "key": "corn",
+        "titleVi": "Ngô"
+      }
+    },
+    {
+      "key": "cabbage",
+      "titleVi": "Bắp Cải",
+      "group": "field",
+      "folder": "field/cabbage",
+      "manifest": "field/cabbage/crop.json",
+      "readme": "field/cabbage/README.md",
+      "plannedBatch": "C1 — ngô và bắp cải",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 21,
+        "key": "cabbage",
+        "titleVi": "Bắp Cải"
+      }
+    },
+    {
+      "key": "beet",
+      "titleVi": "Củ Cải Đường",
+      "group": "field",
+      "folder": "field/beet",
+      "manifest": "field/beet/crop.json",
+      "readme": "field/beet/README.md",
+      "plannedBatch": "C2 — đường và thức ăn heo/cừu",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 10,
+        "key": "beet",
+        "titleVi": "Củ Cải Đường"
+      }
+    },
+    {
+      "key": "carrot",
+      "titleVi": "Cà Rốt",
+      "group": "field",
+      "folder": "field/carrot",
+      "manifest": "field/carrot/crop.json",
+      "readme": "field/carrot/README.md",
+      "plannedBatch": "C2 — đường và thức ăn heo/cừu",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 29,
+        "key": "carrot",
+        "titleVi": "Cà Rốt"
+      }
+    },
+    {
+      "key": "rice",
+      "titleVi": "Gạo",
+      "group": "field",
+      "folder": "field/rice",
+      "manifest": "field/rice/crop.json",
+      "readme": "field/rice/README.md",
+      "plannedBatch": "C5 — món ăn mở rộng",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 160,
+        "key": "rice",
+        "titleVi": "Gạo"
+      }
+    },
+    {
+      "key": "potato",
+      "titleVi": "Khoai Tây",
+      "group": "field",
+      "folder": "field/potato",
+      "manifest": "field/potato/crop.json",
+      "readme": "field/potato/README.md",
+      "plannedBatch": "C2 — đường và thức ăn heo/cừu",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 128,
+        "key": "potato",
+        "titleVi": "Khoai Tây"
+      }
+    },
+    {
+      "key": "pumpkin",
+      "titleVi": "Bí Ngô",
+      "group": "field",
+      "folder": "field/pumpkin",
+      "manifest": "field/pumpkin/crop.json",
+      "readme": "field/pumpkin/README.md",
+      "plannedBatch": "C2 — đường và thức ăn heo/cừu",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 129,
+        "key": "pumpkin",
+        "titleVi": "Bí Ngô"
+      }
+    },
+    {
+      "key": "cotton",
+      "titleVi": "Bông",
+      "group": "field",
+      "folder": "field/cotton",
+      "manifest": "field/cotton/crop.json",
+      "readme": "field/cotton/README.md",
+      "plannedBatch": "C3 — dệt may và đường mía",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 44,
+        "key": "cotton",
+        "titleVi": "Bông"
+      }
+    },
+    {
+      "key": "flax",
+      "titleVi": "Cây Lanh",
+      "group": "field",
+      "folder": "field/flax",
+      "manifest": "field/flax/crop.json",
+      "readme": "field/flax/README.md",
+      "plannedBatch": "C3 — dệt may và đường mía",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 71,
+        "key": "flax",
+        "titleVi": "Cây Lanh"
+      }
+    },
+    {
+      "key": "cane",
+      "titleVi": "Mía",
+      "group": "field",
+      "folder": "field/cane",
+      "manifest": "field/cane/crop.json",
+      "readme": "field/cane/README.md",
+      "plannedBatch": "C3 — dệt may và đường mía",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 26,
+        "key": "cane",
+        "titleVi": "Mía"
+      }
+    },
+    {
+      "key": "pepper",
+      "titleVi": "Ớt",
+      "group": "field",
+      "folder": "field/pepper",
+      "manifest": "field/pepper/crop.json",
+      "readme": "field/pepper/README.md",
+      "plannedBatch": "C5 — món ăn mở rộng",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 168,
+        "key": "pepper",
+        "titleVi": "Ớt"
+      }
+    },
+    {
+      "key": "beans",
+      "titleVi": "Đậu",
+      "group": "field",
+      "folder": "field/beans",
+      "manifest": "field/beans/crop.json",
+      "readme": "field/beans/README.md",
+      "plannedBatch": "C5 — món ăn mở rộng",
+      "farmCompatibility": "new-field-crop",
+      "product": {
+        "sourceItemId": 169,
+        "key": "beans",
+        "titleVi": "Đậu"
+      }
+    },
+    {
+      "key": "tomato",
+      "titleVi": "Cà Chua",
+      "group": "field",
+      "folder": "field/tomato",
+      "manifest": "field/tomato/crop.json",
+      "readme": "field/tomato/README.md",
+      "plannedBatch": "REF — đối chiếu, giữ art Farm hiện có",
+      "farmCompatibility": "reference-only-keep-current-art",
+      "product": {
+        "sourceItemId": 150,
+        "key": "tomato",
+        "titleVi": "Cà Chua"
+      }
+    },
+    {
+      "key": "apple_tree",
+      "titleVi": "Cây Táo",
+      "group": "orchard",
+      "folder": "orchard/apple_tree",
+      "manifest": "orchard/apple_tree/crop.json",
+      "readme": "orchard/apple_tree/README.md",
+      "plannedBatch": "C4 — vườn táo đầu tiên",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 1,
+        "key": "apple",
+        "titleVi": "Táo"
+      }
+    },
+    {
+      "key": "strawberry_bush",
+      "titleVi": "Bụi Dâu Tây",
+      "group": "orchard",
+      "folder": "orchard/strawberry_bush",
+      "manifest": "orchard/strawberry_bush/crop.json",
+      "readme": "orchard/strawberry_bush/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 143,
+        "key": "strawbery",
+        "titleVi": "Dâu Tây"
+      }
+    },
+    {
+      "key": "cherry_tree",
+      "titleVi": "Cây Anh Đào",
+      "group": "orchard",
+      "folder": "orchard/cherry_tree",
+      "manifest": "orchard/cherry_tree/crop.json",
+      "readme": "orchard/cherry_tree/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 32,
+        "key": "cherry",
+        "titleVi": "Anh Đào"
+      }
+    },
+    {
+      "key": "cacao_tree",
+      "titleVi": "Cây Ca Cao",
+      "group": "orchard",
+      "folder": "orchard/cacao_tree",
+      "manifest": "orchard/cacao_tree/crop.json",
+      "readme": "orchard/cacao_tree/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 22,
+        "key": "cacao",
+        "titleVi": "Hạt Ca Cao"
+      }
+    },
+    {
+      "key": "raspberry_bush",
+      "titleVi": "Bụi Mâm Xôi",
+      "group": "orchard",
+      "folder": "orchard/raspberry_bush",
+      "manifest": "orchard/raspberry_bush/crop.json",
+      "readme": "orchard/raspberry_bush/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 131,
+        "key": "raspbery",
+        "titleVi": "Mâm Xôi"
+      }
+    },
+    {
+      "key": "coffee_tree",
+      "titleVi": "Cây Cà Phê",
+      "group": "orchard",
+      "folder": "orchard/coffee_tree",
+      "manifest": "orchard/coffee_tree/crop.json",
+      "readme": "orchard/coffee_tree/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 37,
+        "key": "coffee",
+        "titleVi": "Hạt Cà Phê"
+      }
+    },
+    {
+      "key": "blueberry",
+      "titleVi": "Việt Quất",
+      "group": "orchard",
+      "folder": "orchard/blueberry",
+      "manifest": "orchard/blueberry/crop.json",
+      "readme": "orchard/blueberry/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 73,
+        "key": "blueberry",
+        "titleVi": "Việt Quất"
+      }
+    },
+    {
+      "key": "orange_tree",
+      "titleVi": "Cây Cam",
+      "group": "orchard",
+      "folder": "orchard/orange_tree",
+      "manifest": "orchard/orange_tree/crop.json",
+      "readme": "orchard/orange_tree/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 173,
+        "key": "orange",
+        "titleVi": "Cam"
+      }
+    },
+    {
+      "key": "lemon_tree",
+      "titleVi": "Cây Chanh",
+      "group": "orchard",
+      "folder": "orchard/lemon_tree",
+      "manifest": "orchard/lemon_tree/crop.json",
+      "readme": "orchard/lemon_tree/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 100,
+        "key": "lemon",
+        "titleVi": "Chanh"
+      }
+    },
+    {
+      "key": "pear_tree",
+      "titleVi": "Quả Lê",
+      "group": "orchard",
+      "folder": "orchard/pear_tree",
+      "manifest": "orchard/pear_tree/crop.json",
+      "readme": "orchard/pear_tree/README.md",
+      "plannedBatch": "C5 — mở rộng vườn quả",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 190,
+        "key": "pear",
+        "titleVi": "Quả Lê"
+      }
+    },
+    {
+      "key": "bush_lilac",
+      "titleVi": "Tử Đinh Hương",
+      "group": "flowers",
+      "folder": "flowers/bush_lilac",
+      "manifest": "flowers/bush_lilac/crop.json",
+      "readme": "flowers/bush_lilac/README.md",
+      "plannedBatch": "C6 — hoa và chuỗi trang trí",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 102,
+        "key": "lilac",
+        "titleVi": "Tử Đinh Hương"
+      }
+    },
+    {
+      "key": "bush_tulip",
+      "titleVi": "Hoa Tulip",
+      "group": "flowers",
+      "folder": "flowers/bush_tulip",
+      "manifest": "flowers/bush_tulip/crop.json",
+      "readme": "flowers/bush_tulip/README.md",
+      "plannedBatch": "C6 — hoa và chuỗi trang trí",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 151,
+        "key": "tulip",
+        "titleVi": "Hoa Tulip"
+      }
+    },
+    {
+      "key": "bush_roses",
+      "titleVi": "Hoa Hồng",
+      "group": "flowers",
+      "folder": "flowers/bush_roses",
+      "manifest": "flowers/bush_roses/crop.json",
+      "readme": "flowers/bush_roses/README.md",
+      "plannedBatch": "C6 — hoa và chuỗi trang trí",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 133,
+        "key": "rose",
+        "titleVi": "Hoa Hồng"
+      }
+    },
+    {
+      "key": "bush_hriz",
+      "titleVi": "Cúc Vàng",
+      "group": "flowers",
+      "folder": "flowers/bush_hriz",
+      "manifest": "flowers/bush_hriz/crop.json",
+      "readme": "flowers/bush_hriz/README.md",
+      "plannedBatch": "C6 — hoa và chuỗi trang trí",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 89,
+        "key": "hrizantema",
+        "titleVi": "Cúc Vàng"
+      }
+    },
+    {
+      "key": "bush_lily",
+      "titleVi": "Hoa Ly",
+      "group": "flowers",
+      "folder": "flowers/bush_lily",
+      "manifest": "flowers/bush_lily/crop.json",
+      "readme": "flowers/bush_lily/README.md",
+      "plannedBatch": "C6 — hoa và chuỗi trang trí",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 103,
+        "key": "lily",
+        "titleVi": "Hoa Ly"
+      }
+    },
+    {
+      "key": "bush_iris",
+      "titleVi": "Hoa Diên Vĩ",
+      "group": "flowers",
+      "folder": "flowers/bush_iris",
+      "manifest": "flowers/bush_iris/crop.json",
+      "readme": "flowers/bush_iris/README.md",
+      "plannedBatch": "C6 — hoa và chuỗi trang trí",
+      "farmCompatibility": "new-perennial-system",
+      "product": {
+        "sourceItemId": 94,
+        "key": "iris",
+        "titleVi": "Hoa Diên Vĩ"
+      }
+    }
+  ],
+  "existingFarmFieldCrops": [
+    "wheat",
+    "tomato",
+    "grapes",
+    "strawberry"
+  ],
+  "newFieldCandidates": [
+    "corn",
+    "cabbage",
+    "beet",
+    "carrot",
+    "rice",
+    "potato",
+    "pumpkin",
+    "cotton",
+    "flax",
+    "cane",
+    "pepper",
+    "beans"
+  ],
+  "notes": [
+    "Crops use semantic source keys, not production save IDs.",
+    "Per-crop PNGs remain byte-identical to audited exports.",
+    "Original Unity clip bodies/hierarchies remain in the audit; this pack contains referenced PNGs and mapping metadata."
+  ]
+}

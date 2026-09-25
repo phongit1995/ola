@@ -1,0 +1,26 @@
+{
+  "name": "Ola Farm",
+  "platform": "web-mobile",
+  "buildPath": "project://build",
+  "outputName": "ola-farm",
+  "debug": false,
+  "sourceMaps": false,
+  "md5Cache": true,
+  "mainBundleCompressionType": "merge_dep",
+  "startScene": "d627b1f2-fac5-4c8a-9f78-740c689465dc",
+  "scenes": [
+    {
+      "url": "db://assets/farm/scenes/Loading.scene",
+      "uuid": "d627b1f2-fac5-4c8a-9f78-740c689465dc"
+    },
+    {
+      "url": "db://assets/farm/scenes/Farm.scene",
+      "uuid": "aabee94d-01f5-0125-fc4a-f4fa10948325"
+    }
+  ],
+  "packages": {
+    "web-mobile": {
+      "orientation": "auto"
+    }
+  }
+}

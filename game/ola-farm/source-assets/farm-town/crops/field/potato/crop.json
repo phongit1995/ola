@@ -1,0 +1,1334 @@
+{
+  "schemaVersion": 1,
+  "key": "potato",
+  "group": "field",
+  "titleVi": "Khoai Tây",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C2 — đường và thức ăn heo/cừu",
+  "farmCompatibility": "new-field-crop",
+  "icon": "icon.png",
+  "productIcon": "icon.png",
+  "product": {
+    "sourceItemId": 128,
+    "key": "potato",
+    "titleVi": "Khoai Tây"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/potato__e1fe53173efc96247b7706d5a5ad92e7_145.json",
+    "prefab": {
+      "file": "62c4c11796580784ea412d1b243a2642",
+      "id": 7,
+      "name": "garden_bed",
+      "type": "GameObject"
+    },
+    "view": {
+      "itemId": 128,
+      "scale": 1.0,
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "sourceRecipe": {
+    "config": "configs/garden_bed_JOB_Data__a52e7e818574f264e98da8fb658e26c9_8.json",
+    "index": 6,
+    "entity": "garden_bed",
+    "durationSeconds": 2400,
+    "level": 10,
+    "quantityPerCycle": 1.0,
+    "ingredients": [
+      {
+        "id": 40,
+        "name": "coin",
+        "quantity": 4.0,
+        "titleVi": "Xu"
+      }
+    ],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 10,
+    "basicPrice": 16.0,
+    "xpOnUse": 8.0
+  },
+  "sourceLifeCycle": null,
+  "sourceConsumers": [
+    {
+      "entity": "food_processor",
+      "entityTitleVi": "Máy Chế Biến Thực Phẩm",
+      "recipeIndex": 4,
+      "output": "feed_goat",
+      "outputTitleVi": "Thức Ăn Cừu",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/food_processor_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1047.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "mexico",
+      "entityTitleVi": "Đồ Ăn Mexico",
+      "recipeIndex": 2,
+      "output": "enchiladas",
+      "outputTitleVi": "Bánh Enchiladas",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/mexico_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1183.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "oven",
+      "entityTitleVi": "Lò Nướng",
+      "recipeIndex": 2,
+      "output": "fries",
+      "outputTitleVi": "Khoai Tây Chiên",
+      "inputQuantity": 3.0,
+      "sourceConfig": "configs/oven_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1212.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "pie_bakery",
+      "entityTitleVi": "Tiệm Bánh Pie",
+      "recipeIndex": 2,
+      "output": "pie_potato",
+      "outputTitleVi": "Bánh Thịt Nghiền (Shepherd's Pie)",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/pie_bakery_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1371.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 10459,
+      "sha256": "87a2522c9f05f33769831fdadc3c2e0b0754fd4ee42f860e1885eb985b9fb307",
+      "size": [
+        89,
+        77
+      ],
+      "source": {
+        "exportPath": "export/sprites/potato__sharedassets0.assets_714.png",
+        "file": "sharedassets0.assets",
+        "pathId": 714,
+        "spriteName": "potato"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 90.0,
+          "height": 90.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 3.076120376586914
+        }
+      }
+    },
+    {
+      "path": "images/kart_1_0--7fc289c00d.png",
+      "bytes": 6961,
+      "sha256": "12a08cb0751e1e5cadc0dbd2dbabfcee6ed9c01e2bea99ed308bf58fd4d2e57a",
+      "size": [
+        98,
+        66
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_1_0__1f8d52434a495794abde54727304868a_1.png",
+        "file": "1f8d52434a495794abde54727304868a",
+        "pathId": 1,
+        "spriteName": "kart_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 98.0,
+          "height": 66.0
+        },
+        "pivot": {
+          "x": 0.5143369436264038,
+          "y": 0.3105354905128479
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kart_2_0--380c74fa7b.png",
+      "bytes": 20764,
+      "sha256": "3e0acbd7957adada235fa2e3ab0c5bb21dffd1586ac7f887d9deccce864bbd92",
+      "size": [
+        131,
+        95
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_2_0__d86efa686aee1e140aa7843de232658c_1.png",
+        "file": "d86efa686aee1e140aa7843de232658c",
+        "pathId": 1,
+        "spriteName": "kart_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 131.0,
+          "height": 95.0
+        },
+        "pivot": {
+          "x": 0.49856626987457275,
+          "y": 0.22519896924495697
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kart_3ten_0--b5da0ed74d.png",
+      "bytes": 3572,
+      "sha256": "efb52b2eb112b31e99cbbd2e90644db3db3190b85dca65cae5422612775e6389",
+      "size": [
+        110,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_3ten_0__aeb4469b280af2d4b8bac6f1dfdb9b85_1.png",
+        "file": "aeb4469b280af2d4b8bac6f1dfdb9b85",
+        "pathId": 1,
+        "spriteName": "kart_3ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 110.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kart_34_0--f61fd8b461.png",
+      "bytes": 8508,
+      "sha256": "062fb35e032e74f6f5afba4a395f5e3673d756461cb738509e30485218ca9bfa",
+      "size": [
+        97,
+        77
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_34_0__c33e01d0e61548d4b9c208048ddf417d_1.png",
+        "file": "c33e01d0e61548d4b9c208048ddf417d",
+        "pathId": 1,
+        "spriteName": "kart_34_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 97.0,
+          "height": 77.0
+        },
+        "pivot": {
+          "x": 0.5272400975227356,
+          "y": 0.2363123893737793
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kart_312_0--0df57412a7.png",
+      "bytes": 2202,
+      "sha256": "7c864087bc24511eabc6c7d36bbe7109bed214aeb907c6c10913c26183dd6e4c",
+      "size": [
+        44,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_312_0__12aaed6bc976a1a45ab880f8d8232f8e_1.png",
+        "file": "12aaed6bc976a1a45ab880f8d8232f8e",
+        "pathId": 1,
+        "spriteName": "kart_312_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.5089931488037109,
+          "y": 0.5586220622062683
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kart_332_0--f5bc70c44f.png",
+      "bytes": 2009,
+      "sha256": "359beffea3e4086422eb9b358fe777beef264a9007ec1428733f2d4719f5bf79",
+      "size": [
+        44,
+        26
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_332_0__884a57105bf2c48458ab2aa9e86372cf_1.png",
+        "file": "884a57105bf2c48458ab2aa9e86372cf",
+        "pathId": 1,
+        "spriteName": "kart_332_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 26.0
+        },
+        "pivot": {
+          "x": 0.42355814576148987,
+          "y": 0.5659496784210205
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kart_331_0--deafe63ce3.png",
+      "bytes": 6528,
+      "sha256": "40dcbdea86d3c738c9406251d6148f55b51ba44a6eb5425a84c340737dafbac5",
+      "size": [
+        62,
+        62
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_331_0__1cef67d13cac616419a94fe1beba0af2_1.png",
+        "file": "1cef67d13cac616419a94fe1beba0af2",
+        "pathId": 1,
+        "spriteName": "kart_331_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 62.0,
+          "height": 62.0
+        },
+        "pivot": {
+          "x": 0.4631204605102539,
+          "y": 0.08326133340597153
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kart_321_0--8ca8ed1acd.png",
+      "bytes": 6441,
+      "sha256": "d5cce253ce70a3ff12b0ae169e3e1eba461afe2c40bd99ff1392a64ef11d9b8b",
+      "size": [
+        62,
+        62
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_321_0__24d6bca62e731f6478787d239dd8e2d6_1.png",
+        "file": "24d6bca62e731f6478787d239dd8e2d6",
+        "pathId": 1,
+        "spriteName": "kart_321_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 62.0,
+          "height": 62.0
+        },
+        "pivot": {
+          "x": 0.5331915616989136,
+          "y": 0.07588543742895126
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/kart_311_0--f364f1577d.png",
+      "bytes": 7911,
+      "sha256": "f8f25a85cc53e961134ec683e89961b3041ba926481af0ffc550e8ec618a9cb0",
+      "size": [
+        67,
+        65
+      ],
+      "source": {
+        "exportPath": "export/sprites/kart_311_0__dbd0ab78e60d8e84f8d6fa369aa7d712_1.png",
+        "file": "dbd0ab78e60d8e84f8d6fa369aa7d712",
+        "pathId": 1,
+        "spriteName": "kart_311_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 67.0,
+          "height": 65.0
+        },
+        "pivot": {
+          "x": 0.5485248565673828,
+          "y": 0.08735251426696777
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/meshok_z_0--c1848e62a1.png",
+      "bytes": 3512,
+      "sha256": "2914438f128214e7cf2db61f4dfb60d40a0df998edd83fbb2894bffe83df96e6",
+      "size": [
+        58,
+        32
+      ],
+      "source": {
+        "exportPath": "export/sprites/meshok_z_0__6d185a72b0685e44eab2dd6eba27e89a_1.png",
+        "file": "6d185a72b0685e44eab2dd6eba27e89a",
+        "pathId": 1,
+        "spriteName": "meshok_z_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 58.0,
+          "height": 32.0
+        },
+        "pivot": {
+          "x": 0.5044493675231934,
+          "y": 0.0322580561041832
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_ten_meshok_0--89cb7583a7.png",
+      "bytes": 1754,
+      "sha256": "2ba5ff1a7b6ffc5a4762aaa98485b7f2fb15569b16d72b540131d86f51c1563e",
+      "size": [
+        67,
+        35
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_ten_meshok_0__a734a3bee3522ca488781cee36fc6ee8_1.png",
+        "file": "a734a3bee3522ca488781cee36fc6ee8",
+        "pathId": 1,
+        "spriteName": "4_ten_meshok_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 67.0,
+          "height": 35.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/meshok_p_0--956db0cfd0.png",
+      "bytes": 4137,
+      "sha256": "10c10e4d0c313cd41804205810c4115de5f676aed85e68bc4bd71bb171e3175e",
+      "size": [
+        62,
+        46
+      ],
+      "source": {
+        "exportPath": "export/sprites/meshok_p_0__fefc504fbde6bfe48ba6999a0ad60683_1.png",
+        "file": "fefc504fbde6bfe48ba6999a0ad60683",
+        "pathId": 1,
+        "spriteName": "meshok_p_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 62.0,
+          "height": 46.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.033655375242233276
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kart_nutr_3_0--15bc50ab29.png",
+      "bytes": 2571,
+      "sha256": "89fc34307cbd4b59df31e3f21d806ff2ee8195c79de6f2d620bc23540f6ab731",
+      "size": [
+        39,
+        33
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kart_nutr_3_0__4e1fe28fc04d9474784b6ff880a1cae4_1.png",
+        "file": "4e1fe28fc04d9474784b6ff880a1cae4",
+        "pathId": 1,
+        "spriteName": "4_kart_nutr_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 39.0,
+          "height": 33.0
+        },
+        "pivot": {
+          "x": 0.5155112147331238,
+          "y": 0.3140665888786316
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kart_nutr_2_0--019cfa9f30.png",
+      "bytes": 1743,
+      "sha256": "7ebebda21d775c1b9b4cc97e8456343e146f07fece93d7db3aecc6c6211f9cca",
+      "size": [
+        32,
+        26
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kart_nutr_2_0__2618b48066b95b74ca21e404036b7365_1.png",
+        "file": "2618b48066b95b74ca21e404036b7365",
+        "pathId": 1,
+        "spriteName": "4_kart_nutr_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 32.0,
+          "height": 26.0
+        },
+        "pivot": {
+          "x": 0.5086419582366943,
+          "y": 0.2500474154949188
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kart_nutr_1_0--ff6279a7bb.png",
+      "bytes": 1851,
+      "sha256": "23041130d1d38bd6d7613f4dc9c86dc61c35ca02898ea44e51b146ce80f13ec8",
+      "size": [
+        32,
+        27
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kart_nutr_1_0__415815898224bed498766447c57ceb9c_1.png",
+        "file": "415815898224bed498766447c57ceb9c",
+        "pathId": 1,
+        "spriteName": "4_kart_nutr_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 32.0,
+          "height": 27.0
+        },
+        "pivot": {
+          "x": 0.5111883282661438,
+          "y": 0.28783726692199707
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kart_3_0--356629bffb.png",
+      "bytes": 657,
+      "sha256": "f6020b02f30c7b8a0fc7b115bd784764321bade93a8e8694672acb0b81180f4a",
+      "size": [
+        16,
+        15
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kart_3_0__d3f7a0fc982e1a644a6ab29eec7ab2f4_1.png",
+        "file": "d3f7a0fc982e1a644a6ab29eec7ab2f4",
+        "pathId": 1,
+        "spriteName": "4_kart_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 16.0,
+          "height": 15.0
+        },
+        "pivot": {
+          "x": 0.5052469372749329,
+          "y": 0.18658429384231567
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kart_2_0--41c203a51f.png",
+      "bytes": 922,
+      "sha256": "b9725f81cfda44eec4c5f23a766bdb91ac7b8cd02a85dbf6d0b0d1c97a21faee",
+      "size": [
+        20,
+        18
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kart_2_0__59e09912d7ed1fb42a42672b57a051b6_1.png",
+        "file": "59e09912d7ed1fb42a42672b57a051b6",
+        "pathId": 1,
+        "spriteName": "4_kart_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 20.0,
+          "height": 18.0
+        },
+        "pivot": {
+          "x": 0.48271608352661133,
+          "y": 0.2914951741695404
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kart_1_0--e307a2685f.png",
+      "bytes": 696,
+      "sha256": "f19c96b21d551be642d92b672276ed4de076d15c5e83ca912b01c9431559e815",
+      "size": [
+        22,
+        15
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kart_1_0__01311582a906ebb44a882ec52b507bbc_1.png",
+        "file": "01311582a906ebb44a882ec52b507bbc",
+        "pathId": 1,
+        "spriteName": "4_kart_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 22.0,
+          "height": 15.0
+        },
+        "pivot": {
+          "x": 0.49427613615989685,
+          "y": 0.20337441563606262
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_kart_ten_0--2dac6354a3.png",
+      "bytes": 578,
+      "sha256": "170017ef6b68fba284f178875435457cbf1b4f1816614eee84ec788d8511b437",
+      "size": [
+        32,
+        19
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_kart_ten_0__5c0fd3d1f76f9214295ff1a6c19231d8_1.png",
+        "file": "5c0fd3d1f76f9214295ff1a6c19231d8",
+        "pathId": 1,
+        "spriteName": "4_kart_ten_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 32.0,
+          "height": 19.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [],
+  "phases": [
+    {
+      "key": "farm_potato:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_potato:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "idle",
+        "file": "93230255dfb39cc43ad0b0e601159b54",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/idle__93230255dfb39cc43ad0b0e601159b54_1.json",
+        "sha256": "6349000965bc16627a6d1e059ddda4b81246e32b8da18fe89afeea70d1663a80"
+      }
+    },
+    {
+      "key": "farm_potato:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/kart_1_0--7fc289c00d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_1",
+        "file": "51d67e7876fbddf47923624a794f26ce",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_1__51d67e7876fbddf47923624a794f26ce_1.json",
+        "sha256": "848c6330d0e4ea1ba953dc0da67c793014f684247dbe102c1ea02acf7fc2442a"
+      }
+    },
+    {
+      "key": "farm_potato:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/kart_2_0--380c74fa7b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_2",
+        "file": "42c95e3afcb330a41a2b080496e1282d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_2__42c95e3afcb330a41a2b080496e1282d_1.json",
+        "sha256": "ff006c13228b7a04e47c43e46a1ae1f7fda51e3710aa415d284b62f970bf733b"
+      }
+    },
+    {
+      "key": "farm_potato:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/kart_2_0--380c74fa7b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_2",
+        "file": "42c95e3afcb330a41a2b080496e1282d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_2__42c95e3afcb330a41a2b080496e1282d_1.json",
+        "sha256": "ff006c13228b7a04e47c43e46a1ae1f7fda51e3710aa415d284b62f970bf733b"
+      }
+    },
+    {
+      "key": "farm_potato:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/kart_2_0--380c74fa7b.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_2",
+        "file": "42c95e3afcb330a41a2b080496e1282d",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_2__42c95e3afcb330a41a2b080496e1282d_1.json",
+        "sha256": "ff006c13228b7a04e47c43e46a1ae1f7fda51e3710aa415d284b62f970bf733b"
+      }
+    },
+    {
+      "key": "farm_potato:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "farm_potato:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/kart_3ten_0--b5da0ed74d.png",
+        "images/kart_34_0--f61fd8b461.png",
+        "images/kart_312_0--0df57412a7.png",
+        "images/kart_332_0--f5bc70c44f.png",
+        "images/kart_331_0--deafe63ce3.png",
+        "images/kart_321_0--8ca8ed1acd.png",
+        "images/kart_311_0--f364f1577d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_3",
+        "file": "ede7c58767b6d194ea16f87d726c5681",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_3__ede7c58767b6d194ea16f87d726c5681_1.json",
+        "sha256": "0e86547af7c538b7065df71e960f41e86f958d2ce2900078b551ba7e3fe0d9e8"
+      }
+    },
+    {
+      "key": "farm_potato:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/kart_3ten_0--b5da0ed74d.png",
+        "images/kart_34_0--f61fd8b461.png",
+        "images/kart_312_0--0df57412a7.png",
+        "images/kart_332_0--f5bc70c44f.png",
+        "images/kart_331_0--deafe63ce3.png",
+        "images/kart_321_0--8ca8ed1acd.png",
+        "images/kart_311_0--f364f1577d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_3",
+        "file": "ede7c58767b6d194ea16f87d726c5681",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_3__ede7c58767b6d194ea16f87d726c5681_1.json",
+        "sha256": "0e86547af7c538b7065df71e960f41e86f958d2ce2900078b551ba7e3fe0d9e8"
+      }
+    },
+    {
+      "key": "farm_potato:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/kart_3ten_0--b5da0ed74d.png",
+        "images/kart_34_0--f61fd8b461.png",
+        "images/kart_312_0--0df57412a7.png",
+        "images/kart_332_0--f5bc70c44f.png",
+        "images/kart_331_0--deafe63ce3.png",
+        "images/kart_321_0--8ca8ed1acd.png",
+        "images/kart_311_0--f364f1577d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_3",
+        "file": "ede7c58767b6d194ea16f87d726c5681",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_3__ede7c58767b6d194ea16f87d726c5681_1.json",
+        "sha256": "0e86547af7c538b7065df71e960f41e86f958d2ce2900078b551ba7e3fe0d9e8"
+      }
+    },
+    {
+      "key": "farm_potato:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/kart_3ten_0--b5da0ed74d.png",
+        "images/kart_34_0--f61fd8b461.png",
+        "images/kart_312_0--0df57412a7.png",
+        "images/kart_332_0--f5bc70c44f.png",
+        "images/kart_331_0--deafe63ce3.png",
+        "images/kart_321_0--8ca8ed1acd.png",
+        "images/kart_311_0--f364f1577d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_3",
+        "file": "ede7c58767b6d194ea16f87d726c5681",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_3__ede7c58767b6d194ea16f87d726c5681_1.json",
+        "sha256": "0e86547af7c538b7065df71e960f41e86f958d2ce2900078b551ba7e3fe0d9e8"
+      }
+    },
+    {
+      "key": "farm_potato:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/kart_3ten_0--b5da0ed74d.png",
+        "images/kart_34_0--f61fd8b461.png",
+        "images/kart_312_0--0df57412a7.png",
+        "images/kart_332_0--f5bc70c44f.png",
+        "images/kart_331_0--deafe63ce3.png",
+        "images/kart_321_0--8ca8ed1acd.png",
+        "images/kart_311_0--f364f1577d.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_3",
+        "file": "ede7c58767b6d194ea16f87d726c5681",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_3__ede7c58767b6d194ea16f87d726c5681_1.json",
+        "sha256": "0e86547af7c538b7065df71e960f41e86f958d2ce2900078b551ba7e3fe0d9e8"
+      }
+    },
+    {
+      "key": "farm_potato:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_kart_nutr_3_0--15bc50ab29.png",
+        "images/4_kart_nutr_2_0--019cfa9f30.png",
+        "images/4_kart_nutr_1_0--ff6279a7bb.png",
+        "images/4_kart_3_0--356629bffb.png",
+        "images/4_kart_2_0--41c203a51f.png",
+        "images/4_kart_1_0--e307a2685f.png",
+        "images/4_kart_ten_0--2dac6354a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_end",
+        "file": "2c55643fb1973bf42a7467e99cc822cc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_end__2c55643fb1973bf42a7467e99cc822cc_1.json",
+        "sha256": "2dd67e8563a8eafc4c3edac235416b65890b410224b568361049b36079a06aa1"
+      }
+    },
+    {
+      "key": "farm_potato:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_kart_nutr_3_0--15bc50ab29.png",
+        "images/4_kart_nutr_2_0--019cfa9f30.png",
+        "images/4_kart_nutr_1_0--ff6279a7bb.png",
+        "images/4_kart_3_0--356629bffb.png",
+        "images/4_kart_2_0--41c203a51f.png",
+        "images/4_kart_1_0--e307a2685f.png",
+        "images/4_kart_ten_0--2dac6354a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_end",
+        "file": "2c55643fb1973bf42a7467e99cc822cc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_end__2c55643fb1973bf42a7467e99cc822cc_1.json",
+        "sha256": "2dd67e8563a8eafc4c3edac235416b65890b410224b568361049b36079a06aa1"
+      }
+    },
+    {
+      "key": "farm_potato:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_kart_nutr_3_0--15bc50ab29.png",
+        "images/4_kart_nutr_2_0--019cfa9f30.png",
+        "images/4_kart_nutr_1_0--ff6279a7bb.png",
+        "images/4_kart_3_0--356629bffb.png",
+        "images/4_kart_2_0--41c203a51f.png",
+        "images/4_kart_1_0--e307a2685f.png",
+        "images/4_kart_ten_0--2dac6354a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_end",
+        "file": "2c55643fb1973bf42a7467e99cc822cc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_end__2c55643fb1973bf42a7467e99cc822cc_1.json",
+        "sha256": "2dd67e8563a8eafc4c3edac235416b65890b410224b568361049b36079a06aa1"
+      }
+    },
+    {
+      "key": "farm_potato:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_kart_nutr_3_0--15bc50ab29.png",
+        "images/4_kart_nutr_2_0--019cfa9f30.png",
+        "images/4_kart_nutr_1_0--ff6279a7bb.png",
+        "images/4_kart_3_0--356629bffb.png",
+        "images/4_kart_2_0--41c203a51f.png",
+        "images/4_kart_1_0--e307a2685f.png",
+        "images/4_kart_ten_0--2dac6354a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_end",
+        "file": "2c55643fb1973bf42a7467e99cc822cc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_end__2c55643fb1973bf42a7467e99cc822cc_1.json",
+        "sha256": "2dd67e8563a8eafc4c3edac235416b65890b410224b568361049b36079a06aa1"
+      }
+    },
+    {
+      "key": "farm_potato:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/meshok_z_0--c1848e62a1.png",
+        "images/4_ten_meshok_0--89cb7583a7.png",
+        "images/meshok_p_0--956db0cfd0.png",
+        "images/4_kart_nutr_3_0--15bc50ab29.png",
+        "images/4_kart_nutr_2_0--019cfa9f30.png",
+        "images/4_kart_nutr_1_0--ff6279a7bb.png",
+        "images/4_kart_3_0--356629bffb.png",
+        "images/4_kart_2_0--41c203a51f.png",
+        "images/4_kart_1_0--e307a2685f.png",
+        "images/4_kart_ten_0--2dac6354a3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "farm_potato",
+        "file": "176bfddc0eec40649a0c91c2b5b54477",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "kartoshka_end",
+        "file": "2c55643fb1973bf42a7467e99cc822cc",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/kartoshka_end__2c55643fb1973bf42a7467e99cc822cc_1.json",
+        "sha256": "2dd67e8563a8eafc4c3edac235416b65890b410224b568361049b36079a06aa1"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}

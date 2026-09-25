@@ -1,0 +1,1246 @@
+{
+  "schemaVersion": 1,
+  "key": "bush_iris",
+  "group": "flowers",
+  "titleVi": "Hoa Diên Vĩ",
+  "status": "source-images-prepared",
+  "runtimeEnabled": false,
+  "plannedBatch": "C6 — hoa và chuỗi trang trí",
+  "farmCompatibility": "new-perennial-system",
+  "icon": "icon.png",
+  "productIcon": "product.png",
+  "product": {
+    "sourceItemId": 94,
+    "key": "iris",
+    "titleVi": "Hoa Diên Vĩ"
+  },
+  "source": {
+    "apkSHA256": "4233a96b74efe5ec1b73b91e5846f5c0309b7b96c402851abf23ddad438ece5b",
+    "config": "configs/bush_iris__a52e7e818574f264e98da8fb658e26c9_669.json",
+    "prefab": {
+      "file": "99217a6243f7f694a9a6b987aa4911a5",
+      "id": 7,
+      "name": "irises",
+      "type": "GameObject"
+    },
+    "view": [
+      {
+        "class": "EntityFarmView",
+        "source": "agriculture-configs/EntityFarmView__99217a6243f7f694a9a6b987aa4911a5_41.json",
+        "growPhaseCount": 2,
+        "controlMode": 1,
+        "animators": []
+      }
+    ]
+  },
+  "sourceRecipe": {
+    "config": "configs/bush_iris_JOB_Data__a52e7e818574f264e98da8fb658e26c9_1036.json",
+    "index": 0,
+    "entity": "bush_iris",
+    "durationSeconds": 2700,
+    "level": 20,
+    "quantityPerCycle": 1.0,
+    "ingredients": [],
+    "condition": {
+      "rid": -2
+    },
+    "bundleParameter": ""
+  },
+  "sourceItemFields": {
+    "level": 20,
+    "basicPrice": 36.0,
+    "xpOnUse": 6.0
+  },
+  "sourceLifeCycle": {
+    "unlimited": false,
+    "cyclesToStart": 5,
+    "clearTool": {
+      "id": 48,
+      "name": "cutter",
+      "titleVi": "Dao Cắt",
+      "quantity": 1.0
+    },
+    "guaranteedClearDrops": [
+      {
+        "id": 166,
+        "name": "rope",
+        "titleVi": "Dây Thừng",
+        "quantity": 1.0
+      }
+    ]
+  },
+  "sourceConsumers": [
+    {
+      "entity": "paint_factory",
+      "entityTitleVi": "Nhà Máy Sơn",
+      "recipeIndex": 2,
+      "output": "paint_pink",
+      "outputTitleVi": "Sơn Hồng",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/paint_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_472.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 2,
+      "output": "hat_beauty",
+      "outputTitleVi": "Mũ Biển",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "hats_prod",
+      "entityTitleVi": "Mũ",
+      "recipeIndex": 6,
+      "output": "hat_cute",
+      "outputTitleVi": "Mũ Dễ Thương",
+      "inputQuantity": 2.0,
+      "sourceConfig": "configs/hats_prod_JOB_Data__a52e7e818574f264e98da8fb658e26c9_511.json",
+      "bundleParameter": ""
+    },
+    {
+      "entity": "flower_factory",
+      "entityTitleVi": "Nhà Máy Hoa",
+      "recipeIndex": 6,
+      "output": "bouquet_night",
+      "outputTitleVi": "Bó Hoa Paris Đêm",
+      "inputQuantity": 1.0,
+      "sourceConfig": "configs/flower_factory_JOB_Data__a52e7e818574f264e98da8fb658e26c9_602.json",
+      "bundleParameter": ""
+    }
+  ],
+  "images": [
+    {
+      "path": "icon.png",
+      "bytes": 19222,
+      "sha256": "929e1c3cda58170494116cc81dba885358dc3e0e8329080803a0028fe8793db3",
+      "size": [
+        96,
+        98
+      ],
+      "source": {
+        "exportPath": "export/sprites/irises_3_preview_0__sharedassets0.assets_1013.png",
+        "file": "sharedassets0.assets",
+        "pathId": 1013,
+        "spriteName": "irises_3_preview_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 16.5,
+          "y": 17.5,
+          "width": 95.5,
+          "height": 96.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 50.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "product.png",
+      "bytes": 8746,
+      "sha256": "7f596c6ed06d4e2910846dc1b5e8bb5b191a1507d8d012946ec9e27b1b3cbfcb",
+      "size": [
+        67,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/iris__sharedassets0.assets_120.png",
+        "file": "sharedassets0.assets",
+        "pathId": 120,
+        "spriteName": "iris"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 70.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 1.042907953262329,
+          "y": 0.02675098180770874
+        }
+      }
+    },
+    {
+      "path": "images/0_iris_zem_1_0--0b4e6fb4e6.png",
+      "bytes": 3438,
+      "sha256": "e756dc397d373474f3956d3bbe64674fe3c6ed3363ef93524175033c1383f839",
+      "size": [
+        85,
+        35
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_iris_zem_1_0__1d5e9d729c4e66f4db8552ec4fa12943_1.png",
+        "file": "1d5e9d729c4e66f4db8552ec4fa12943",
+        "pathId": 1,
+        "spriteName": "0_iris_zem_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 85.0,
+          "height": 35.0
+        },
+        "pivot": {
+          "x": 0.5095682740211487,
+          "y": 0.35061806440353394
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_iris_2_0--487e3aa464.png",
+      "bytes": 2117,
+      "sha256": "3fa8ebed060bdaf1761ead715f898a9f2a84dde0650e3ed50dd607e3d7c73b42",
+      "size": [
+        44,
+        40
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_iris_2_0__cd184da360d561d4a93803cb926c6d06_1.png",
+        "file": "cd184da360d561d4a93803cb926c6d06",
+        "pathId": 1,
+        "spriteName": "0_iris_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 44.0,
+          "height": 40.0
+        },
+        "pivot": {
+          "x": 0.5400986075401306,
+          "y": 0.1008191704750061
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_iris_1_0--0568f2c446.png",
+      "bytes": 4764,
+      "sha256": "1a23999aab793a6c9d5d05df35d7535b492c9fc49807ddc2654d13538eab8f66",
+      "size": [
+        79,
+        45
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_iris_1_0__13de1784ed7f2494980e86b772d6a761_1.png",
+        "file": "13de1784ed7f2494980e86b772d6a761",
+        "pathId": 1,
+        "spriteName": "0_iris_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 79.0,
+          "height": 45.0
+        },
+        "pivot": {
+          "x": 0.4808300733566284,
+          "y": 0.028846120461821556
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/1_iris_3--cf16641b52.png",
+      "bytes": 6991,
+      "sha256": "5268e9df0943e96d87d6fe41b14c3f0db7007522495598093a3ba7398bafef20",
+      "size": [
+        64,
+        68
+      ],
+      "source": {
+        "exportPath": "export/sprites/1_iris_3__d0dada4cbd527c8469c4b28513abd72c_1.png",
+        "file": "d0dada4cbd527c8469c4b28513abd72c",
+        "pathId": 1,
+        "spriteName": "1_iris_3"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 64.0,
+          "height": 68.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/0_iris_zem_2_0--52449dff05.png",
+      "bytes": 762,
+      "sha256": "2d07337e6bc16814702791918bc6167234aaf4aecd976cb9352babce223f2655",
+      "size": [
+        40,
+        12
+      ],
+      "source": {
+        "exportPath": "export/sprites/0_iris_zem_2_0__240ae3b59d08c3442809ae972b092c29_1.png",
+        "file": "240ae3b59d08c3442809ae972b092c29",
+        "pathId": 1,
+        "spriteName": "0_iris_zem_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 40.0,
+          "height": 12.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_iris_zem_0--999329fa21.png",
+      "bytes": 333,
+      "sha256": "2a7664aff9c2d3fd0c65e9a5c52b5dad84acb935f21d0ccb8589c46a963bdf26",
+      "size": [
+        14,
+        8
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_iris_zem_0__144217396fa79a643ae36bbaff0d5e75_1.png",
+        "file": "144217396fa79a643ae36bbaff0d5e75",
+        "pathId": 1,
+        "spriteName": "4_iris_zem_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 14.0,
+          "height": 8.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/4_iris_0--8c4a2f35c3.png",
+      "bytes": 6427,
+      "sha256": "8d4d5a192f4455a86bf281def0a488a43f2c382b54a1dbd8c8114759a2930966",
+      "size": [
+        75,
+        62
+      ],
+      "source": {
+        "exportPath": "export/sprites/4_iris_0__13fbfabcd145a2d48b61040bfe924261_1.png",
+        "file": "13fbfabcd145a2d48b61040bfe924261",
+        "pathId": 1,
+        "spriteName": "4_iris_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 75.0,
+          "height": 62.0
+        },
+        "pivot": {
+          "x": 0.46236079931259155,
+          "y": 0.22681254148483276
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/2_iris_1--6d8e70216a.png",
+      "bytes": 8727,
+      "sha256": "bc9b49645fa8e6781504f2fa4fa9c0c13d992c16a9f60b9efb4b872d68b18f49",
+      "size": [
+        77,
+        74
+      ],
+      "source": {
+        "exportPath": "export/sprites/2_iris_1__977a39f98f7d8af4c9be30a5431fa61b_1.png",
+        "file": "977a39f98f7d8af4c9be30a5431fa61b",
+        "pathId": 1,
+        "spriteName": "2_iris_1"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 77.0,
+          "height": 74.0
+        },
+        "pivot": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_iris_8_0--9e828475c7.png",
+      "bytes": 2886,
+      "sha256": "2c5b366217e5d592f545e70a3559b43520f5eb3550b6145507c95ba5a752e4bb",
+      "size": [
+        34,
+        70
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_iris_8_0__adda423576264ce4fa89992525f7294d_1.png",
+        "file": "adda423576264ce4fa89992525f7294d",
+        "pathId": 1,
+        "spriteName": "3_iris_8_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 34.0,
+          "height": 70.0
+        },
+        "pivot": {
+          "x": 0.041865888983011246,
+          "y": 0.01822841167449951
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_iris_7_0--63ebbf89cb.png",
+      "bytes": 2702,
+      "sha256": "37315068d71441a3c470841e0694b0df3121d00f7965b5150f785531b6a4cc57",
+      "size": [
+        39,
+        53
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_iris_7_0__c2b53a33b315dec489a5b28a49fed679_1.png",
+        "file": "c2b53a33b315dec489a5b28a49fed679",
+        "pathId": 1,
+        "spriteName": "3_iris_7_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 39.0,
+          "height": 53.0
+        },
+        "pivot": {
+          "x": 0.03198797255754471,
+          "y": 0.024834254756569862
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_iris_6_0--61d06db333.png",
+      "bytes": 2939,
+      "sha256": "0108de8d03192676fd8f28775d07247492ca2a39e43e6800e9aeaa9537e23b16",
+      "size": [
+        40,
+        66
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_iris_6_0__869580b77eecaa94c9f3abf24ec1ce69_1.png",
+        "file": "869580b77eecaa94c9f3abf24ec1ce69",
+        "pathId": 1,
+        "spriteName": "3_iris_6_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 40.0,
+          "height": 66.0
+        },
+        "pivot": {
+          "x": 0.96775883436203,
+          "y": 0.03905780613422394
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_iris_5_0--a69ad42b39.png",
+      "bytes": 2851,
+      "sha256": "1e5ee420ce1a2132504408df7399980462999bdd6a005756d55c9fc4de092232",
+      "size": [
+        26,
+        84
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_iris_5_0__5a26ab072fec0e646a7b09cc981a94d4_1.png",
+        "file": "5a26ab072fec0e646a7b09cc981a94d4",
+        "pathId": 1,
+        "spriteName": "3_iris_5_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 26.0,
+          "height": 84.0
+        },
+        "pivot": {
+          "x": 0.882111132144928,
+          "y": 0.031210925430059433
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_iris_4_0--24c92fe295.png",
+      "bytes": 2305,
+      "sha256": "e2b00e5f1cc7aaea6094eb38b0bdcb7569da7039a64c6a8bc3d5eff538d85d9d",
+      "size": [
+        25,
+        62
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_iris_4_0__356ff9164f79e4244853367da10c53e9_1.png",
+        "file": "356ff9164f79e4244853367da10c53e9",
+        "pathId": 1,
+        "spriteName": "3_iris_4_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 25.0,
+          "height": 62.0
+        },
+        "pivot": {
+          "x": 0.38170546293258667,
+          "y": 0.02734239585697651
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_iris_3_0--d945202d9d.png",
+      "bytes": 2059,
+      "sha256": "fa3a5bc204e231e5a18b4805072b85884fc541be95b7fff06a9d28745f4861c7",
+      "size": [
+        25,
+        46
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_iris_3_0__93ff098ae60dfa54f8c11acd3df209ba_1.png",
+        "file": "93ff098ae60dfa54f8c11acd3df209ba",
+        "pathId": 1,
+        "spriteName": "3_iris_3_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 25.0,
+          "height": 46.0
+        },
+        "pivot": {
+          "x": 0.028166407719254494,
+          "y": 0.024396538734436035
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_iris_2_0--68e1bd5ab1.png",
+      "bytes": 2142,
+      "sha256": "c0bff08e036b9d7ef113fc06088433c45b24e65136fb6e8d49ff8d946abf69ab",
+      "size": [
+        26,
+        49
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_iris_2_0__2b87bab782d29564d9989a3cb8916846_1.png",
+        "file": "2b87bab782d29564d9989a3cb8916846",
+        "pathId": 1,
+        "spriteName": "3_iris_2_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 26.0,
+          "height": 49.0
+        },
+        "pivot": {
+          "x": 0.8831614255905151,
+          "y": 0.03435439616441727
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "path": "images/3_iris_1_0--488c9a2dba.png",
+      "bytes": 2302,
+      "sha256": "552cc78a14a32acf437a438313b8d539fc3ec5015d3c93edb08bebd76f2d8d31",
+      "size": [
+        41,
+        44
+      ],
+      "source": {
+        "exportPath": "export/sprites/3_iris_1_0__38fc7d1e60eddf84db183bb8a6e5f686_1.png",
+        "file": "38fc7d1e60eddf84db183bb8a6e5f686",
+        "pathId": 1,
+        "spriteName": "3_iris_1_0"
+      },
+      "unitySprite": {
+        "rect": {
+          "x": 1.0,
+          "y": 1.0,
+          "width": 41.0,
+          "height": 44.0
+        },
+        "pivot": {
+          "x": 0.98544842004776,
+          "y": 0.02349582128226757
+        },
+        "pixelsToUnits": 100.0,
+        "border": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.0
+        },
+        "textureRectOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    }
+  ],
+  "staticImages": [
+    "images/0_iris_zem_1_0--0b4e6fb4e6.png",
+    "images/0_iris_2_0--487e3aa464.png",
+    "images/0_iris_1_0--0568f2c446.png",
+    "images/1_iris_3--cf16641b52.png",
+    "images/0_iris_zem_2_0--52449dff05.png"
+  ],
+  "phases": [
+    {
+      "key": "irises:0:dead",
+      "role": "dead",
+      "labelVi": "Cạn lượt / kết thúc — dead",
+      "images": [
+        "images/4_iris_zem_0--999329fa21.png",
+        "images/4_iris_0--8c4a2f35c3.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_end",
+        "file": "0c7a9cf50ecd72a41bf369fe6919d4b3",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_end__0c7a9cf50ecd72a41bf369fe6919d4b3_1.json",
+        "sha256": "105475dacf384739ae9d4c25c3e4ec3568268f7238c51dfc7f9693f8ea797700"
+      }
+    },
+    {
+      "key": "irises:1:idle",
+      "role": "idle",
+      "labelVi": "Nghỉ / mặc định — idle",
+      "images": [
+        "images/1_iris_3--cf16641b52.png",
+        "images/0_iris_1_0--0568f2c446.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_1",
+        "file": "16299bf8cf8746b45a5779314245e178",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_1__16299bf8cf8746b45a5779314245e178_1.json",
+        "sha256": "87534fe77a8260177432460fea4190bd0ab713c727a04ae60692830c839d5562"
+      }
+    },
+    {
+      "key": "irises:2:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [
+        "images/1_iris_3--cf16641b52.png",
+        "images/0_iris_1_0--0568f2c446.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_1",
+        "file": "16299bf8cf8746b45a5779314245e178",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_1__16299bf8cf8746b45a5779314245e178_1.json",
+        "sha256": "87534fe77a8260177432460fea4190bd0ab713c727a04ae60692830c839d5562"
+      }
+    },
+    {
+      "key": "irises:3:grow1",
+      "role": "grow1",
+      "labelVi": "Mọc — grow1",
+      "images": [
+        "images/2_iris_1--6d8e70216a.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_2",
+        "file": "485cadaaec201e548938d4a0d12a7ebe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_2__485cadaaec201e548938d4a0d12a7ebe_1.json",
+        "sha256": "f3d753fe19f77c2d30e61711a65e568b50c50818f73696b7bbabf4b6ace1ce0c"
+      }
+    },
+    {
+      "key": "irises:4:grow2",
+      "role": "grow2",
+      "labelVi": "Mọc — grow2",
+      "images": [
+        "images/2_iris_1--6d8e70216a.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_2",
+        "file": "485cadaaec201e548938d4a0d12a7ebe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_2__485cadaaec201e548938d4a0d12a7ebe_1.json",
+        "sha256": "f3d753fe19f77c2d30e61711a65e568b50c50818f73696b7bbabf4b6ace1ce0c"
+      }
+    },
+    {
+      "key": "irises:5:grow3",
+      "role": "grow3",
+      "labelVi": "Mọc — grow3",
+      "images": [
+        "images/2_iris_1--6d8e70216a.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_2",
+        "file": "485cadaaec201e548938d4a0d12a7ebe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_2__485cadaaec201e548938d4a0d12a7ebe_1.json",
+        "sha256": "f3d753fe19f77c2d30e61711a65e568b50c50818f73696b7bbabf4b6ace1ce0c"
+      }
+    },
+    {
+      "key": "irises:6:grow0",
+      "role": "grow0",
+      "labelVi": "Mọc — grow0",
+      "images": [],
+      "emptyReason": "Clip không có tham chiếu thay Sprite; cần đối chiếu transform và hình gán sẵn. Không phải ảnh bị xuất thiếu.",
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "grow0",
+        "file": "f0fdad379bf16194d8726d8d68f54c6f",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/grow0__f0fdad379bf16194d8726d8d68f54c6f_1.json",
+        "sha256": "927dec8e4274a94e8c70a384377c7c0031f95725d4b907dca4d95862b8b2d14c"
+      }
+    },
+    {
+      "key": "irises:7:ready2",
+      "role": "ready2",
+      "labelVi": "Chín / có sản phẩm — ready2",
+      "images": [
+        "images/3_iris_8_0--9e828475c7.png",
+        "images/3_iris_7_0--63ebbf89cb.png",
+        "images/3_iris_6_0--61d06db333.png",
+        "images/3_iris_5_0--a69ad42b39.png",
+        "images/3_iris_4_0--24c92fe295.png",
+        "images/3_iris_3_0--d945202d9d.png",
+        "images/3_iris_2_0--68e1bd5ab1.png",
+        "images/3_iris_1_0--488c9a2dba.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_3",
+        "file": "ef307ae6d781ce547b5855afd2014cbe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_3__ef307ae6d781ce547b5855afd2014cbe_1.json",
+        "sha256": "7736bacb21426c9257a19b83719e79465c92c59c2480a6b48d8fed325bfdb798"
+      }
+    },
+    {
+      "key": "irises:8:ready3",
+      "role": "ready3",
+      "labelVi": "Chín / có sản phẩm — ready3",
+      "images": [
+        "images/3_iris_8_0--9e828475c7.png",
+        "images/3_iris_7_0--63ebbf89cb.png",
+        "images/3_iris_6_0--61d06db333.png",
+        "images/3_iris_5_0--a69ad42b39.png",
+        "images/3_iris_4_0--24c92fe295.png",
+        "images/3_iris_3_0--d945202d9d.png",
+        "images/3_iris_2_0--68e1bd5ab1.png",
+        "images/3_iris_1_0--488c9a2dba.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_3",
+        "file": "ef307ae6d781ce547b5855afd2014cbe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_3__ef307ae6d781ce547b5855afd2014cbe_1.json",
+        "sha256": "7736bacb21426c9257a19b83719e79465c92c59c2480a6b48d8fed325bfdb798"
+      }
+    },
+    {
+      "key": "irises:9:ready4",
+      "role": "ready4",
+      "labelVi": "Chín / có sản phẩm — ready4",
+      "images": [
+        "images/3_iris_8_0--9e828475c7.png",
+        "images/3_iris_7_0--63ebbf89cb.png",
+        "images/3_iris_6_0--61d06db333.png",
+        "images/3_iris_5_0--a69ad42b39.png",
+        "images/3_iris_4_0--24c92fe295.png",
+        "images/3_iris_3_0--d945202d9d.png",
+        "images/3_iris_2_0--68e1bd5ab1.png",
+        "images/3_iris_1_0--488c9a2dba.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_3",
+        "file": "ef307ae6d781ce547b5855afd2014cbe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_3__ef307ae6d781ce547b5855afd2014cbe_1.json",
+        "sha256": "7736bacb21426c9257a19b83719e79465c92c59c2480a6b48d8fed325bfdb798"
+      }
+    },
+    {
+      "key": "irises:10:ready5",
+      "role": "ready5",
+      "labelVi": "Chín / có sản phẩm — ready5",
+      "images": [
+        "images/3_iris_8_0--9e828475c7.png",
+        "images/3_iris_7_0--63ebbf89cb.png",
+        "images/3_iris_6_0--61d06db333.png",
+        "images/3_iris_5_0--a69ad42b39.png",
+        "images/3_iris_4_0--24c92fe295.png",
+        "images/3_iris_3_0--d945202d9d.png",
+        "images/3_iris_2_0--68e1bd5ab1.png",
+        "images/3_iris_1_0--488c9a2dba.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_3",
+        "file": "ef307ae6d781ce547b5855afd2014cbe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_3__ef307ae6d781ce547b5855afd2014cbe_1.json",
+        "sha256": "7736bacb21426c9257a19b83719e79465c92c59c2480a6b48d8fed325bfdb798"
+      }
+    },
+    {
+      "key": "irises:11:ready1",
+      "role": "ready1",
+      "labelVi": "Chín / có sản phẩm — ready1",
+      "images": [
+        "images/3_iris_8_0--9e828475c7.png",
+        "images/3_iris_7_0--63ebbf89cb.png",
+        "images/3_iris_6_0--61d06db333.png",
+        "images/3_iris_5_0--a69ad42b39.png",
+        "images/3_iris_4_0--24c92fe295.png",
+        "images/3_iris_3_0--d945202d9d.png",
+        "images/3_iris_2_0--68e1bd5ab1.png",
+        "images/3_iris_1_0--488c9a2dba.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_3",
+        "file": "ef307ae6d781ce547b5855afd2014cbe",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_3__ef307ae6d781ce547b5855afd2014cbe_1.json",
+        "sha256": "7736bacb21426c9257a19b83719e79465c92c59c2480a6b48d8fed325bfdb798"
+      }
+    },
+    {
+      "key": "irises:12:harvest2",
+      "role": "harvest2",
+      "labelVi": "Thu / còn sản phẩm — harvest2",
+      "images": [
+        "images/1_iris_3--cf16641b52.png",
+        "images/0_iris_1_0--0568f2c446.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_1",
+        "file": "16299bf8cf8746b45a5779314245e178",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_1__16299bf8cf8746b45a5779314245e178_1.json",
+        "sha256": "87534fe77a8260177432460fea4190bd0ab713c727a04ae60692830c839d5562"
+      }
+    },
+    {
+      "key": "irises:13:harvest3",
+      "role": "harvest3",
+      "labelVi": "Thu / còn sản phẩm — harvest3",
+      "images": [
+        "images/1_iris_3--cf16641b52.png",
+        "images/0_iris_1_0--0568f2c446.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_1",
+        "file": "16299bf8cf8746b45a5779314245e178",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_1__16299bf8cf8746b45a5779314245e178_1.json",
+        "sha256": "87534fe77a8260177432460fea4190bd0ab713c727a04ae60692830c839d5562"
+      }
+    },
+    {
+      "key": "irises:14:harvest4",
+      "role": "harvest4",
+      "labelVi": "Thu / còn sản phẩm — harvest4",
+      "images": [
+        "images/1_iris_3--cf16641b52.png",
+        "images/0_iris_1_0--0568f2c446.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_1",
+        "file": "16299bf8cf8746b45a5779314245e178",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_1__16299bf8cf8746b45a5779314245e178_1.json",
+        "sha256": "87534fe77a8260177432460fea4190bd0ab713c727a04ae60692830c839d5562"
+      }
+    },
+    {
+      "key": "irises:15:harvest1",
+      "role": "harvest1",
+      "labelVi": "Thu / còn sản phẩm — harvest1",
+      "images": [
+        "images/1_iris_3--cf16641b52.png",
+        "images/0_iris_1_0--0568f2c446.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_1",
+        "file": "16299bf8cf8746b45a5779314245e178",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_1__16299bf8cf8746b45a5779314245e178_1.json",
+        "sha256": "87534fe77a8260177432460fea4190bd0ab713c727a04ae60692830c839d5562"
+      }
+    },
+    {
+      "key": "irises:16:harvest0",
+      "role": "harvest0",
+      "labelVi": "Thu / còn sản phẩm — harvest0",
+      "images": [
+        "images/1_iris_3--cf16641b52.png",
+        "images/0_iris_1_0--0568f2c446.png"
+      ],
+      "emptyReason": null,
+      "controller": {
+        "name": "irises",
+        "file": "303574e4ba4e68340b8898c2305edc31",
+        "id": 1,
+        "type": "AnimatorOverrideController"
+      },
+      "clip": {
+        "name": "irises_1",
+        "file": "16299bf8cf8746b45a5779314245e178",
+        "id": 1,
+        "type": "AnimationClip",
+        "exportPath": "export/AnimationClip/irises_1__16299bf8cf8746b45a5779314245e178_1.json",
+        "sha256": "87534fe77a8260177432460fea4190bd0ab713c727a04ae60692830c839d5562"
+      }
+    }
+  ],
+  "notes": [
+    "Giữ nguyên byte PNG xuất từ nguồn đã kiểm tra, chưa ghép mảnh/chuyển animation Cocos.",
+    "Role ready1…ready5/harvest… là role controller nguồn, không được coi là các frame liên tiếp hoặc tự hiểu là cấp ruộng.",
+    "Giá/thời gian/XP nguồn chỉ để đối chiếu; chưa là cân bằng Farm, chưa nối vào save/runtime."
+  ]
+}
