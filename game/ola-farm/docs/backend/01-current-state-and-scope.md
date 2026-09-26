@@ -91,7 +91,7 @@ Các cột sau mô tả hành vi hiện có, không tự thêm action hoặc đ�
 | 22 | `boostAnimal(plot, animal)` | Trừ kim cương, job của con sẵn sàng nhận | Job chưa xong, giá theo thời gian server; không tự cộng sản phẩm |
 | 23 | `collectAnimals(plot, animal?)` | Nhận một hoặc mọi con có job đã xong; cộng kho/XP/gate và bỏ job | Lọc theo thời gian server, tổng lượng an toàn, không tự cho ăn vòng mới |
 | 24 | `buyCoins(pack)` | Trừ kim cương, cộng gói xu cố định; không cộng XP hoặc doanh thu bán hàng | Pack nằm trong catalog release; không nhận giá/số xu/số kim cương do client gửi |
-| 25 | `boostMachine(machine)` | Trừ kim cương, món đang làm của máy vào khay ngay, món chờ kế tiếp bắt đầu | Máy có job đang chạy chưa xong; giá theo thời gian server; không tự cộng thành phẩm/XP, chỉ cộng khi collect |
+| 25 | `boostMachine(machine, job?)` | Trừ kim cương, một món vào khay ngay: món đang làm (món chờ kế tiếp bắt đầu) hoặc một món đang chờ | Job tồn tại và chưa xong; giá theo thời gian còn lại của món đang làm hoặc toàn bộ duration của món chờ; tray còn chỗ cho cả job đang chạy; không tự cộng thành phẩm/XP, chỉ cộng khi collect |
 
 Các action cộng XP (`plant`, `harvest`, `collect`, `collectAll`, `sellItem`, `collectAnimals`, cùng năm action xây dựng `improve`, `expandQueue`, `buyMachine`, `buyPen`, `expandPen` theo `experience.buildXP`) còn trả thưởng kim cương khi vượt level mới và cập nhật `rewardedLevel` trong cùng commit. Server tự tính thưởng, không nhận số kim cương hay level từ client.
 

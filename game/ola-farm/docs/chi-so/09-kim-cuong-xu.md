@@ -63,7 +63,7 @@ Nghĩa là **cứ 1 phút còn lại tốn 1 kim cương**; phần lẻ tính tr
 | Bánh mì (10 phút) | vừa bắt đầu làm | 10 phút | 10 |
 | Bánh mì (10 phút) | sau 5 phút | 5 phút | 5 |
 
-Với nhà máy: Lò bánh đang làm bánh mì và còn 1 bánh mì nữa trong hàng chờ. Bấm "Xong ngay" lúc còn 5 phút tốn 5 kim cương; bánh đầu vào khay, bánh sau bắt đầu ngay nên nút lại hiện 10 kim cương.
+Với nhà máy: Lò bánh đang làm bánh mì và còn 1 bánh mì nữa trong hàng chờ. Nút dưới bánh đang làm hiện 5 kim cương lúc còn 5 phút; nút dưới bánh đang chờ hiện 10 kim cương (cả 10 phút, vì chưa bắt đầu). Bấm bánh đang làm thì bánh đó vào khay và bánh sau bắt đầu; bấm bánh đang chờ thì bánh đó vào khay ngay, bánh đang làm vẫn chạy tiếp.
 
 ### Lưu ý cân bằng
 
@@ -75,7 +75,7 @@ Với nhà máy: Lò bánh đang làm bánh mì và còn 1 bánh mì nữa trong
 
 - **Cây:** chạm cây đang lớn, bong bóng hiện nút giá kim cương (cạnh nút hủy). Cây chín ngay, vẫn phải bấm thu hoạch.
 - **Vật nuôi:** mở chuồng, con đang ăn có nút giá kim cương dưới hình. Sản phẩm sẵn sàng ngay, vẫn phải bấm thu.
-- **Nhà máy:** mở máy; khi khay trống mà máy đang làm, nút "Nhận hàng" đổi thành "Xong ngay · N kim cương". Khay còn hàng thì phải nhận hàng trước. Xem [06](06-nha-may.md#luật).
+- **Nhà máy:** mở máy; mỗi món trong hàng chờ có nút giá kim cương ngay dưới ô, bấm để xong ngay món đó. Xem [06](06-nha-may.md#luật).
 - Mỗi lần bấm chỉ boost một việc; không có boost cả hàng chờ hay cả ruộng một lần.
 
 ### Giá nếu làm xong ngay từ đầu

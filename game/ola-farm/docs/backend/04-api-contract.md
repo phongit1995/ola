@@ -193,7 +193,7 @@ Nguồn đối chiếu: [ActionTypes.FarmAction](../../assets/farm/scripts/core/
 | `collectAll` | `machine:int` | Thu các mẻ trong tray của máy, atomically kiểm tổng inventory/stat limits. Không thu máy không thuộc farm. |
 | `cancelQueued` | `machine:int`, `job:int` | Job còn nằm trong waiting; không hủy job đang chạy; hoàn đủ inputs đã chụp và xóa waiting job. |
 | `expandQueue` | `machine:int` | Kiểm cấp/slot/max capacity; tính phí tại server, trừ xu và tăng một slot. |
-| `boostMachine` | `machine:int` | Máy thuộc farm và có job đang chạy chưa ready theo đồng hồ server; server tính gems theo thời gian còn lại, trừ gems, đưa job vào tray và bắt đầu job chờ kế tiếp. Không cộng output/XP cho tới khi collect. |
+| `boostMachine` | `machine:int`, `job?:int` | Bỏ `job` (hoặc là job đang chạy): job đang chạy chưa ready theo đồng hồ server, gems theo thời gian còn lại, vào tray, job chờ kế tiếp bắt đầu. `job` là job đang chờ: gems theo toàn bộ duration, job rời hàng chờ vào tray ngay, job đang chạy giữ nguyên; tray phải còn chỗ cho cả job đang chạy. Không cộng output/XP cho tới khi collect. |
 | `buyMachine` | `machineType:int`, `building?:string` | Kiểm site còn lại/thứ tự, điều kiện mở, giá, giới hạn loại và chỗ đặt; cấp machine ID, trừ xu và thêm layout atomically. |
 | `sellItem` | `item:string`, `quantity:int > 0` | Có item và đủ kho; tính giá bán/XP tích lũy bằng rule server, kiểm overflow, trừ kho và cộng xu; không nhận giá bán. |
 | `setPenSpecies` | `plot:int`, `species:string|null` | Có trong union để hỗ trợ legacy nhưng `simple-1` khóa loài theo chuồng: online profile này trả `ACTION_NOT_AVAILABLE`, không âm thầm đổi loài. |

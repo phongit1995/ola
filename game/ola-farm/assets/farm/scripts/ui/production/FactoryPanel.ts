@@ -1,12 +1,22 @@
-import { Color, instantiate, Label, Node, Sprite, UITransform, view } from 'cc';
+import { Color, instantiate, Label, Node, UITransform, view } from 'cc';
 import { FactoryBodyView } from './FactoryBodyView';
 import { FactoryQueueSlotView } from './FactoryQueueSlotView';
 import { recipeInputs, recipeOutputs } from '../../core/FarmCatalog';
 import type { Machine } from '../../core/types/ProductionTypes';
 import type { PanelContext, PanelDefinition } from '../shared/PanelContext.types';
 import { rememberProductionTarget, returnToProduction } from './ProductionNavigation';
-import { PANEL_BROWN as brown, PANEL_MUTED as muted, PANEL_GREEN as green } from '../shared/PanelPalette.constants';
+import { PANEL_BROWN as brown, PANEL_MUTED as muted } from '../shared/PanelPalette.constants';
 import { factoryLayout } from './FactoryLayout';
+import {
+  QUEUE_BOOST_GAP,
+  QUEUE_BOOST_HEIGHT,
+  QUEUE_ROW_TOP,
+  QUEUE_SLOT_GAP,
+  QUEUE_SLOT_MAX,
+  QUEUE_SLOT_SIZE,
+} from './FactoryLayout.constants';
+import { PANEL_BOOST_SCALE } from './FactoryPanel.constants';
+import { countdown, remainingSeconds } from '../../core/Countdown';
 
 /** One recipe workspace, with fixed queue/actions and a scrollable ingredient or recipe list. */
 export const factoryPanel: PanelDefinition = {
@@ -116,117 +126,72 @@ export const factoryPanel: PanelDefinition = {
     const queueWidth = split ? Math.max(236, w * 0.44) : w;
     const workspaceWidth = split ? w - queueWidth - 18 : w;
     const workspaceX = split ? left + queueWidth + 18 + workspaceWidth / 2 : 0;
-    const statusY = h / 2 - 84,
-      statusWidth = queueWidth * 0.57;
-    const statusX = left + statusWidth / 2;
-    const status = text(
-      card,
+    // The queue row opens the panel. Finished batches come first (tap to collect them all), then the running job,
+    // queued jobs and free or locked slots. Each job shows its time behind a clock and its own finish-now price.
+    for (const name of [
       'MachineStatus',
-      '',
-      statusX,
-      statusY + 7,
-      statusWidth - 4,
-      23,
-      14,
-      green,
-      Label.HorizontalAlign.LEFT
-    );
-    const substatus = text(
-      card,
       'MachineStatusDetail',
-      '',
-      statusX,
-      statusY - 12,
-      statusWidth - 4,
-      19,
-      11,
-      muted,
-      Label.HorizontalAlign.LEFT
-    );
-    const progress = skin(card, 'progress', statusX, statusY - 27, statusWidth - 4, 7, 'ProductionProgress');
-    progress.active = !!selected.job;
-    const fillNode = v.place(v.element(card, 'ProductionProgressFill'), statusX, statusY - 27, statusWidth - 8, 4, u);
-    fillNode.active = !!selected.job;
-    const fill = selected.job ? fillNode.getComponent(Sprite)! : null;
-    if (fill) {
-      fill.type = Sprite.Type.FILLED;
-      fill.fillType = Sprite.FillType.HORIZONTAL;
-      fill.fillStart = 0;
-    }
-    ctx.timer(() => {
-      if (!status.isValid) return;
-      status.string = selected.job
-        ? product(selected.job.product).name
-        : selected.tray.length >= game.trayCapacity(selected.type)
-          ? 'Khay đã đầy'
-          : 'Sẵn sàng';
-      substatus.string = selected.job
-        ? `Đang làm · ${wait(selected.job.ready - s.time)}`
-        : selected.tray.length >= game.trayCapacity(selected.type)
-          ? 'Nhận hàng để làm tiếp'
-          : 'Chọn món để bắt đầu';
-      if (fill && selected.job)
-        fill.fillRange = Math.max(0, Math.min(1, (s.time - selected.job.started) / selected.job.duration));
-    });
-    const collectWidth = queueWidth - statusWidth - 8;
-    // Once the tray is empty, the same button finishes the running job for diamonds.
-    const boostPrice = selected.tray.length ? 0 : game.machineBoostPrice(selected.id);
-    button(
-      card,
-      (boostPrice ? 'boost-machine-' : 'collect-') + selected.id,
-      selected.tray.length
-        ? `Nhận hàng · ${selected.tray.length}`
-        : boostPrice
-          ? `Xong ngay\n${boostPrice} kim cương`
-          : 'Chưa có hàng',
-      left + queueWidth - collectWidth / 2,
-      statusY,
-      collectWidth,
-      44,
-      () =>
-        app.act(
-          boostPrice ? { type: 'boostMachine', machine: selected.id } : { type: 'collectAll', machine: selected.id },
-          'Chon sp'
-        ),
-      ctx.canAct && (selected.tray.length > 0 || (boostPrice > 0 && s.diamonds >= boostPrice)),
-      selected.tray.length ? 'green' : 'info'
-    );
-    const queueLabelY = h / 2 - 125,
-      queueY = h / 2 - 158;
-    text(
-      card,
+      'ProductionProgress',
+      'ProductionProgressFill',
       'QueueCount',
-      `Hàng đợi   ${selected.waiting.length + (selected.job ? 1 : 0)}/${selected.capacity}`,
-      left + queueWidth / 2,
-      queueLabelY,
-      queueWidth,
-      18,
-      12,
-      muted,
-      Label.HorizontalAlign.LEFT
-    );
-    const queueLimit = Math.max(selected.capacity, game.queueCapacityLimit(selected.type));
-    v.queue.children.forEach((node, i) => {
-      node.active = i < queueLimit;
-    });
-    const slotW = queueWidth / queueLimit,
-      slotSize = Math.min(52, slotW - 3);
-    for (let slot = 0; slot < queueLimit; slot++) {
-      const running = slot === 0 && !!selected.job;
+    ])
+      v.element(card, name).active = false;
+    v.collect.active = false;
+    const queueLimit = Math.max(selected.capacity, game.queueCapacityLimit(selected.type)),
+      ready = selected.tray.length ? 1 : 0,
+      slotCount = ready + queueLimit;
+    const slots = v.queueSlotNodes(slotCount);
+    const boostRow = v.resetBoostRow();
+    // Slots that all fit stretch to fill the row (up to QUEUE_SLOT_MAX); when some overflow, size them so the
+    // last visible one is cut in half, a hint that the row scrolls.
+    const slotGap = QUEUE_SLOT_GAP,
+      fit = queueWidth / (QUEUE_SLOT_SIZE + slotGap),
+      slotSize =
+        slotCount <= fit
+          ? Math.min(QUEUE_SLOT_MAX, queueWidth / slotCount - slotGap)
+          : queueWidth / (Math.floor(fit) + 0.5) - slotGap,
+      rowHeight = slotSize + QUEUE_BOOST_GAP + QUEUE_BOOST_HEIGHT,
+      rowTop = h / 2 - QUEUE_ROW_TOP,
+      rowY = rowTop - rowHeight / 2,
+      slotY = rowHeight / 2 - slotSize / 2,
+      boostY = -rowHeight / 2 + QUEUE_BOOST_HEIGHT / 2,
+      // A row that fits sits centred; an overflowing one starts at the left edge.
+      rowOffset = Math.max(0, (queueWidth - slotCount * (slotSize + slotGap)) / 2);
+    // Extra height above and below keeps the cancel badges, which overhang the slot corners, inside the mask.
+    v.resizeQueue(left + queueWidth / 2, rowY, queueWidth, rowHeight + 24, slotCount * (slotSize + slotGap), u);
+    for (let index = 0; index < slotCount; index++) {
+      const slotView = slots[index].getComponent(FactoryQueueSlotView)!,
+        slotX = rowOffset + slotGap / 2 + index * (slotSize + slotGap) + slotSize / 2;
+      slotView.node.setPosition(slotX * u, slotY * u);
+      if (index < ready) {
+        const batches = selected.tray.length;
+        slotView.render(
+          ctx,
+          'collect-' + selected.id,
+          slotSize,
+          u,
+          () => app.act({ type: 'collectAll', machine: selected.id }, 'Chon sp'),
+          ctx.canAct,
+          {
+            image: product(selected.tray[0].product).image,
+            label: batches > 1 ? `Nhận ${batches}` : 'Nhận',
+            tone: 'ready',
+          },
+          false,
+          false,
+          0
+        );
+        continue;
+      }
+      const slot = index - ready,
+        running = slot === 0 && !!selected.job;
       const job = running ? selected.job : selected.waiting[slot - (selected.job ? 1 : 0)];
       const locked = slot >= selected.capacity,
-        next = slot === selected.capacity,
-        x = left + slotW * (slot + 0.5);
+        next = slot === selected.capacity;
       const price = game.queueSlotPrice(selected.id, slot),
         access = game.queueSlotUnlockStatus(selected.id, slot);
-      const id = locked
-        ? next
-          ? 'expand-queue'
-          : 'queue-locked-' + slot
-        : job && !running
-          ? 'cancel-job-' + job.id
-          : 'queue-slot-' + slot;
-      const slotView = v.queue.children[slot].getComponent(FactoryQueueSlotView)!;
+      const id = locked ? (next ? 'expand-queue' : 'queue-locked-' + slot) : 'queue-slot-' + slot;
+      const queued = job && !running ? job : null;
       slotView.render(
         ctx,
         id,
@@ -234,21 +199,85 @@ export const factoryPanel: PanelDefinition = {
         u,
         () => {
           if (locked) app.act({ type: 'expandQueue', machine: selected.id });
-          else if (job && !running) app.act({ type: 'cancelQueued', machine: selected.id, job: job.id });
         },
-        ctx.canAct && (locked ? next && access.unlocked && s.coins >= price : !!job && !running),
-        job ? { image: product(job.product).image, running } : null,
+        ctx.canAct && locked && next && access.unlocked && s.coins >= price,
+        job
+          ? {
+              image: product(job.product).image,
+              label: countdown(running ? remainingSeconds(job.ready, s.time, ctx.speed) : job.duration / ctx.speed),
+              tone: running ? 'running' : 'queued',
+              ...(queued && {
+                cancel: {
+                  id: 'cancel-job-' + queued.id,
+                  action: () => app.act({ type: 'cancelQueued', machine: selected.id, job: queued.id }),
+                  enabled: ctx.canAct,
+                },
+              }),
+            }
+          : null,
         locked,
         next,
         price,
         access.unlocked ? undefined : access.requiredLevel
       );
-      slotView.node.setPosition(x * u, queueY * u);
+      // Every job has its own finish-now price right under it: time left for the running one, all of it when queued.
+      const boostPrice = job ? game.machineBoostPrice(selected.id, job.id) : 0;
+      if (job && boostPrice) {
+        const pill = ui.node(
+          boostRow,
+          'boost-job-' + job.id,
+          slotX * u,
+          boostY * u,
+          (slotSize - 4) * u,
+          QUEUE_BOOST_HEIGHT * u
+        );
+        const face = art.island(
+          pill,
+          'info',
+          0,
+          0,
+          (slotSize - 4) / PANEL_BOOST_SCALE,
+          QUEUE_BOOST_HEIGHT / PANEL_BOOST_SCALE,
+          'Face'
+        );
+        face.setScale(PANEL_BOOST_SCALE * u, PANEL_BOOST_SCALE * u, 1);
+        const affordable = s.diamonds >= boostPrice;
+        const label = ui.text(
+          pill,
+          'Title',
+          String(boostPrice),
+          // "N" ends just left of centre and the gem sits just right of it, so the pair reads as one centred group.
+          -(slotSize / 4 + 1) * u,
+          u,
+          (slotSize / 2 - 6) * u,
+          22 * u,
+          13 * u,
+          affordable ? brown : muted
+        );
+        label.horizontalAlign = Label.HorizontalAlign.RIGHT;
+        label.overflow = Label.Overflow.SHRINK;
+        if (art.shopFont) label.font = art.shopFont;
+        art.plot(pill, 'gem', 10 * u, 0, 16 * u, 16 * u, 'Gem');
+        const target = job.id;
+        ui.bindButton(
+          pill,
+          'boost-job-' + job.id,
+          () => app.act({ type: 'boostMachine', machine: selected.id, job: target }, 'Chon sp'),
+          ctx.canAct && affordable
+        );
+      }
+      if (running && job) {
+        const current = job;
+        ctx.timer(() => {
+          if (slotView.stateLabel.isValid)
+            slotView.stateLabel.string = countdown(remainingSeconds(current.ready, s.time, ctx.speed));
+        });
+      }
     }
     const hasReturn =
       state.recipeReturnMachineId >= 0 &&
       (state.recipeReturnMachineId !== selected.id || state.recipeReturnRecipeId !== r.id);
-    const bodyTop = split ? 62 : 190,
+    const bodyTop = split ? 62 : QUEUE_ROW_TOP + rowHeight + 14,
       footerY = -h / 2 + layout.footerBottom + 22;
     const scrollHeight = h - bodyTop - layout.footerBottom - 44 - 10;
     const cols = workspaceWidth >= 400 ? 3 : 2,

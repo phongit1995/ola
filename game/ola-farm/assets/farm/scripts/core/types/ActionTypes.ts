@@ -26,7 +26,8 @@ export type FarmAction =
   | { type: 'collectAll'; machine: number }
   | { type: 'cancelQueued'; machine: number; job: number }
   | { type: 'expandQueue'; machine: number }
-  | { type: 'boostMachine'; machine: number }
+  /** Finishes one job now: the running one when `job` is omitted, or any queued job by id. */
+  | { type: 'boostMachine'; machine: number; job?: number }
   | { type: 'buyMachine'; machineType: number; building?: string }
   | { type: 'sellItem'; item: string; quantity: number }
   | { type: 'setPenSpecies'; plot: number; species: string | null }

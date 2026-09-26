@@ -46,9 +46,13 @@ Mở đủ hàng chờ cho cả 16 nhà: **11.200 xu**. Ô hàng chờ không th
 - **Xếp món:** trừ nguyên liệu ngay, việc vào hàng chờ. Máy làm lần lượt từng việc.
 - "Hàng chờ 1" nghĩa là chỉ làm được 1 việc tại một thời điểm, không có chỗ chờ; mở ô 2–5 để xếp sẵn thêm việc.
 - **Khay nhận:** việc xong nằm trong khay. Khay đầy (5 mẻ) thì máy **dừng**, việc đang chờ không chạy tiếp cho tới khi nhận hàng.
-- **Nhận hàng:** giao diện nhận hết khay một lần, cộng thành phẩm vào kho và EXP của từng mẻ.
-- **Hủy:** chỉ hủy được việc đang chờ (chưa bắt đầu), hoàn đủ nguyên liệu. Việc đang làm không hủy được.
-- **Làm xong ngay:** khi khay trống mà máy đang làm, nút "Nhận hàng" đổi thành "Xong ngay" kèm giá kim cương. Bấm là món đang làm xong ngay và vào khay, món chờ kế tiếp bắt đầu luôn; thành phẩm và EXP vẫn nhận khi lấy từ khay. Giá: cứ 1 phút còn lại của món đang làm tốn 1 kim cương, làm tròn lên (xem [09](09-kim-cuong-xu.md#giá-làm-xong-ngay)). Khay còn hàng thì phải nhận hàng trước.
+- **Nhận hàng:** hàng đã xong hiện ở ô đầu tiên của hàng chờ (chữ "Nhận", có số mẻ nếu nhiều hơn 1). Chạm ô đó nhận hết khay một lần, cộng thành phẩm vào kho và EXP của từng mẻ.
+- **Hủy:** chỉ hủy được việc đang chờ (chưa bắt đầu), bằng nút tròn có dấu × đỏ ở góc trên ô; hoàn đủ nguyên liệu. Việc đang làm không hủy được. Ô món hiện thời gian kèm icon đồng hồ: món đang làm đếm ngược, món đang chờ hiện thời gian làm.
+- **Làm xong ngay (từng món):** từ 26/09/2026 mỗi món trong hàng chờ có nút riêng, giá kim cương hiện ngay dưới ô.
+  - Món đang làm: 1 kim cương cho mỗi phút còn lại, làm tròn lên. Bấm là món vào khay, món chờ kế tiếp bắt đầu luôn.
+  - Món đang chờ: chưa chạy nên tính cả thời gian làm (ví dụ bánh mì 10 phút = 10 kim cương). Bấm là món đó vào khay ngay, món đang làm vẫn chạy tiếp.
+  - Khay phải còn chỗ cho món đang làm: khi khay chỉ còn đúng 1 chỗ mà máy đang làm, món chờ không xong ngay được ("Khay nhận đã đầy. Nhận hàng trước.").
+  - Thành phẩm và EXP vẫn nhận khi lấy từ khay. Xem [09](09-kim-cuong-xu.md#giá-làm-xong-ngay).
 - Nguyên liệu, thành phẩm, EXP và thời gian **chốt lúc xếp**.
 
 ## Chỉnh ở đâu

@@ -12,7 +12,7 @@ Theo dõi các quyết định về số liệu và luật. Phần đầu là nh
 | B1 | Giá ruộng | Tổng 102.021.000 xu (sàn 2.000 × k, 4 xu mỗi EXP); cuối game dư hàng chục triệu xu | Tổng 30.712.600 xu (sàn 500…6.000, 6 xu mỗi EXP); xem [04](04-ruong.md#giá-đã-được-đặt-ra-thế-nào) |
 | C1 | Nguồn kim cương | Chỉ 10 viên lúc bắt đầu | +2 viên mỗi level mới (tới level 68: 134 viên); đổi KEN còn mở (C4) |
 | C2 | Giá làm xong ngay, đổi xu | 1 kim cương mỗi 15 phút còn lại (nho 48); đổi xu 200–250 xu mỗi kim cương, 10 kim cương đầu đổi được 2.200 xu | 1 kim cương cho mỗi phút còn lại, làm tròn lên (nho 720); đổi xu 50–60 xu mỗi kim cương; xem [09](09-kim-cuong-xu.md#giá-làm-xong-ngay) |
-| C3 | Làm xong ngay cho nhà máy | Không có | Có: nút "Xong ngay" khi khay trống, cùng cách tính giá; xem [06](06-nha-may.md#luật) |
+| C3 | Làm xong ngay cho nhà máy | Không có | Có, từng món: nút giá kim cương dưới mỗi ô hàng chờ (26/09/2026; trước đó chỉ món đang làm, khi khay trống); xem [06](06-nha-may.md#luật) |
 
 ## Đã chốt đợt 26/09/2026
 

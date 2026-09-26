@@ -123,6 +123,75 @@ test('a machine boost finishes only the running job; the next job starts and XP 
   assert.deepEqual(g.state, done);
 });
 
+test('each queued job can be finished on its own for its whole duration, straight into the tray', () => {
+  const g = establishFarm(new FarmGame(catalog)),
+    bread = g.product(7)!;
+  g.state.xp = xpForLevel(g, bread.requiredLevel!);
+  g.state.coins = 10000;
+  g.state.diamonds = 1000;
+  g.state.inventory['raw:1'] = 20;
+  const bakery = g.state.machines.find(m => m.type === bread.machine)!;
+  ok(g.expandQueue(bakery.id));
+  ok(g.expandQueue(bakery.id));
+  for (let i = 0; i < 3; i++) ok(g.produce(bread.id, bakery.id));
+  const running = bakery.job!,
+    [second, third] = bakery.waiting;
+  g.tick(bread.duration - 120);
+  assert.equal(g.machineBoostPrice(bakery.id), 2, 'the running job pays for its two minutes left');
+  assert.equal(g.machineBoostPrice(bakery.id, running.id), 2);
+  assert.equal(
+    g.machineBoostPrice(bakery.id, third.id),
+    Math.ceil(bread.duration / 60),
+    'a queued job pays for all of it'
+  );
+  assert.equal(g.machineBoostPrice(bakery.id, 424242), 0);
+
+  const xp = g.state.xp,
+    diamonds = g.state.diamonds,
+    result = g.boostMachine(bakery.id, third.id);
+  ok(result);
+  assert.equal(result.message, `Xong ngay · −${Math.ceil(bread.duration / 60)} kim cương`);
+  assert.equal(g.state.diamonds, diamonds - Math.ceil(bread.duration / 60));
+  assert.deepEqual(
+    bakery.tray.map(b => b.id),
+    [third.id]
+  );
+  assert.equal(bakery.job, running, 'the running job keeps going');
+  assert.deepEqual(
+    bakery.waiting.map(j => j.id),
+    [second.id]
+  );
+  assert.equal(g.state.xp, xp, 'XP still waits for collection');
+  g.validate();
+
+  ok(g.boostMachine(bakery.id, running.id));
+  assert.deepEqual(
+    bakery.tray.map(b => b.id),
+    [third.id, running.id]
+  );
+  assert.equal(bakery.job!.id, second.id, 'the next queued job starts');
+  ok(g.collectAll(bakery.id));
+  assert.equal(g.state.xp, xp + 2 * bread.xp!);
+  g.validate();
+
+  // The tray must keep room for the running job: queued boosts stop one short of a full tray.
+  g.state.inventory['raw:1'] = 20;
+  for (let i = 0; i < 2; i++) ok(g.produce(bread.id, bakery.id));
+  for (const job of [...bakery.waiting]) ok(g.boostMachine(bakery.id, job.id));
+  for (let i = 0; i < 2; i++) ok(g.produce(bread.id, bakery.id));
+  for (const job of [...bakery.waiting]) ok(g.boostMachine(bakery.id, job.id));
+  assert.equal(bakery.tray.length, 4);
+  ok(g.produce(bread.id, bakery.id));
+  const full = copy(g.state);
+  assert.equal(g.boostMachine(bakery.id, bakery.waiting[0].id).error, 'Khay nhận đã đầy. Nhận hàng trước.');
+  assert.deepEqual(g.state, full);
+  g.state.diamonds = 0;
+  const poor = copy(g.state);
+  assert.match(g.boostMachine(bakery.id).error!, /kim cương/);
+  assert.deepEqual(g.state, poor);
+  g.validate();
+});
+
 test('machine boost is saved once through the session and survives reload', () => {
   const game = establishFarm(new FarmGame(catalog)),
     bread = game.product(7)!;

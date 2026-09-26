@@ -531,18 +531,37 @@ export class FarmGame {
     };
   }
   /** Diamonds to finish a machine's running job now; waiting jobs keep their place in the queue. */
-  machineBoostPrice(id: number): number {
-    const job = this.state.machines.find(m => m.id === id)?.job;
-    return job && job.ready > this.state.time ? boostGems(this.catalog, job.ready - this.state.time) : 0;
+  /**
+   * Diamonds to finish one job now. The running job (the default) pays for its time left; a queued job has not
+   * started, so it pays for its whole duration. Unknown or finished jobs cost nothing and cannot be bought.
+   */
+  machineBoostPrice(id: number, jobId?: number): number {
+    const m = this.state.machines.find(m => m.id === id);
+    if (!m) return 0;
+    if (jobId === undefined || m.job?.id === jobId) {
+      const job = m.job;
+      return job && job.ready > this.state.time ? boostGems(this.catalog, job.ready - this.state.time) : 0;
+    }
+    const queued = m.waiting.find(j => j.id === jobId);
+    return queued ? boostGems(this.catalog, queued.duration) : 0;
   }
-  boostMachine(id: number): ActionResult {
+  boostMachine(id: number, jobId?: number): ActionResult {
     const m = this.state.machines.find(m => m.id === id),
-      price = this.machineBoostPrice(id);
-    if (!m?.job || !price) return failure('Máy không có món đang làm để làm xong ngay.');
+      price = this.machineBoostPrice(id, jobId);
+    if (!m || !price) return failure('Máy không có món này để làm xong ngay.');
+    const queued = jobId === undefined || m.job?.id === jobId ? null : m.waiting.find(j => j.id === jobId)!;
+    // A queued job goes straight to the tray, which must still hold the running job when that one finishes.
+    if (queued && m.tray.length + (m.job ? 1 : 0) >= this.trayCapacity(m.type))
+      return failure('Khay nhận đã đầy. Nhận hàng trước.');
     if (this.state.diamonds < price) return failure(`Cần ${price} kim cương.`);
     this.state.diamonds -= price;
-    m.job.ready = this.state.time;
-    this.advanceMachines(this.state.time);
+    if (queued) {
+      m.waiting.splice(m.waiting.indexOf(queued), 1);
+      m.tray.push({ id: queued.id, product: queued.product, outputs: queued.outputs, xp: queued.xp });
+    } else {
+      m.job!.ready = this.state.time;
+      this.advanceMachines(this.state.time);
+    }
     return { message: `Xong ngay · −${price} kim cương`, machine: m };
   }
   cancelQueued(id: number, jobId: number): ActionResult {

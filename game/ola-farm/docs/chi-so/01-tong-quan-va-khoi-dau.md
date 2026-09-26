@@ -67,7 +67,7 @@ Mỗi nhà máy và chuồng chiếm bề ngang bằng **4 ô ruộng** trên b�
 | Nhận từng mẻ | collect | Không (giao diện dùng "nhận hết") |
 | Hủy món đang chờ (hoàn đủ nguyên liệu) | cancelQueued | Có |
 | Mở thêm ô hàng chờ | expandQueue | Có |
-| Làm xong ngay món đang làm trong máy | boostMachine | Có (nút "Xong ngay" hiện khi khay trống) |
+| Làm xong ngay từng món trong máy (đang làm hoặc đang chờ) | boostMachine | Có (nút giá kim cương dưới mỗi ô hàng chờ) |
 | Xây nhà máy | buyMachine | Có |
 | Bán hàng trong kho | sellItem | Có |
 | Xây chuồng (kèm 1 con) | buyPen | Có |
