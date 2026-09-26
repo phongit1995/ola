@@ -20,9 +20,18 @@ export class StockCardView extends AuthoredUiView {
   @property(Label) count: Label = null!;
   @property(Label) itemName: Label = null!;
 
-  render(ctx: PanelContext, item: StockItem, x: number, y: number, columnWidth: number, rowHeight: number): void {
+  /** Sizes are CSS pixels scaled by `unit`, matching the warehouse layout. */
+  render(
+    ctx: PanelContext,
+    item: StockItem,
+    x: number,
+    y: number,
+    columnWidth: number,
+    rowHeight: number,
+    unit: number
+  ): void {
     this.begin(ctx.ui);
-    this.place(this.node, x, y, columnWidth - 8, rowHeight - 8);
+    this.place(this.node, x, y, columnWidth - 6, rowHeight - 6, unit);
     this.bind(ctx.ui, this.node, 'stock-' + item.key, () => {
       ctx.state.saleKey = item.key;
       ctx.state.saleQuantity = 1;
@@ -33,20 +42,29 @@ export class StockCardView extends AuthoredUiView {
       ctx.art,
       legacyIcon(ctx.art, item.tab, item.legacyId) ?? `assets/sprites/${item.image}.png`,
       0,
-      22,
-      Math.min(80, columnWidth - 30)
+      12,
+      Math.min(50, columnWidth - 26),
+      unit
     );
     // Items not in stock stay visible for discovery but fade out and drop their badge.
     const count = ctx.game.quantity(item.key),
       digits = format(count).length,
-      badgeWidth = Math.max(43, 16 + digits * 12);
+      badgeWidth = Math.max(26, 14 + digits * 8);
     this.product.color = count > 0 ? FULL : FADED;
     this.badge.active = this.count.node.active = count > 0;
-    this.place(this.badge, columnWidth * 0.24, -8, badgeWidth, 43);
-    this.text(this.count, format(count), columnWidth * 0.24, -8, badgeWidth, 36, digits > 3 ? 18 : 22);
-    this.text(this.itemName, item.name, 0, -52, columnWidth - 10, 42, 20, 1, count > 0 ? PANEL_BROWN : PANEL_MUTED);
+    this.place(this.badge, columnWidth * 0.22, -6, badgeWidth, 26, unit);
+    this.text(this.count, format(count), columnWidth * 0.22, -6, badgeWidth, 22, digits > 3 ? 11 : 13, unit);
+    this.text(
+      this.itemName,
+      item.name,
+      0,
+      -rowHeight / 2 + 16,
+      columnWidth - 6,
+      20,
+      12,
+      unit,
+      count > 0 ? PANEL_BROWN : PANEL_MUTED
+    );
     fitProductionTarget(this.node, ctx.app.width);
-    this.count.lineHeight = this.count.fontSize + 7;
-    this.itemName.lineHeight = this.itemName.fontSize + 7;
   }
 }

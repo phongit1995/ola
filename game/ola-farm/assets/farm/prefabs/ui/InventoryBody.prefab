@@ -253,7 +253,7 @@
     "_overflow": 2,
     "_enableWrapText": true,
     "_font": {
-      "__uuid__": "cd1a811f-1b96-4d60-8843-f0fa4befb575",
+      "__uuid__": "464ea96b-baea-ba87-30ba-d48758b81bca",
       "__expectedType__": "cc.TTFFont"
     },
     "_isSystemFontUsed": false,
@@ -568,7 +568,7 @@
     "_overflow": 2,
     "_enableWrapText": true,
     "_font": {
-      "__uuid__": "cd1a811f-1b96-4d60-8843-f0fa4befb575",
+      "__uuid__": "464ea96b-baea-ba87-30ba-d48758b81bca",
       "__expectedType__": "cc.TTFFont"
     },
     "_isSystemFontUsed": false,
@@ -883,7 +883,7 @@
     "_overflow": 2,
     "_enableWrapText": true,
     "_font": {
-      "__uuid__": "cd1a811f-1b96-4d60-8843-f0fa4befb575",
+      "__uuid__": "464ea96b-baea-ba87-30ba-d48758b81bca",
       "__expectedType__": "cc.TTFFont"
     },
     "_isSystemFontUsed": false,
@@ -2242,7 +2242,7 @@
     "_overflow": 2,
     "_enableWrapText": true,
     "_font": {
-      "__uuid__": "cd1a811f-1b96-4d60-8843-f0fa4befb575",
+      "__uuid__": "464ea96b-baea-ba87-30ba-d48758b81bca",
       "__expectedType__": "cc.TTFFont"
     },
     "_isSystemFontUsed": false,
@@ -2557,7 +2557,7 @@
     "_overflow": 2,
     "_enableWrapText": true,
     "_font": {
-      "__uuid__": "cd1a811f-1b96-4d60-8843-f0fa4befb575",
+      "__uuid__": "464ea96b-baea-ba87-30ba-d48758b81bca",
       "__expectedType__": "cc.TTFFont"
     },
     "_isSystemFontUsed": false,
@@ -2656,7 +2656,6 @@
     "quickSaleTitle": {
       "__id__": 125
     },
-    "rowHeight": 160,
     "layoutNodes": [
       {
         "__id__": 1

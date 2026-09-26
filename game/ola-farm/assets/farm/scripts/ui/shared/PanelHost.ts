@@ -22,7 +22,8 @@ import type { PanelContext, PanelState } from './PanelContext.types';
 import { PANELS } from '../panels/index';
 import { factoryLayout } from '../production/FactoryLayout';
 import { livestockLayout } from '../livestock/LivestockLayout';
-import { fitProductionTarget, fitProductionTargets, productionTargetSize } from './ProductionTouch';
+import { inventoryLayout } from '../inventory/InventoryLayout';
+import { fitProductionTargets, productionTargetSize } from './ProductionTouch';
 import { AUTHORED_BODIES } from './PanelHost.constants';
 
 const { ccclass } = _decorator;
@@ -272,31 +273,31 @@ export class PanelHost extends Component implements PanelState {
     this.renderedBodyView = view;
     this.width = Math.min(shell.authoredWidth, app.width - shell.marginX);
     this.height = Math.min(shell.authoredHeight, app.height - shell.marginY);
-    const responsive = view === 'factory' || view === 'livestock';
+    // The warehouse and its two sale dialogs share one frame and size so moving between them never jumps.
+    const warehouse = view === 'inventory' || view === 'inventory-item' || view === 'inventory-sales';
+    const responsive = view === 'factory' || view === 'livestock' || warehouse;
     const building = responsive || view === 'industry';
     const frame = cocosView.getFrameSize();
+    const responsiveLayout = responsive
+      ? (view === 'livestock' ? livestockLayout : warehouse ? inventoryLayout : factoryLayout)(
+          app.width,
+          frame.width,
+          frame.height
+        )
+      : null;
     // Unbuilt-building details retain their compact large-screen scale.
     const buildingScale = view === 'industry' && Math.min(frame.width, frame.height) >= 600 ? 0.8 : 1;
     if (building) {
       this.width = Math.min(shell.buildingMaxWidth, app.width - shell.marginX);
       this.height = Math.min(shell.buildingMaxHeight, app.height - shell.marginY);
-      if (responsive) {
-        const layout =
-          view === 'livestock'
-            ? livestockLayout(app.width, frame.width, frame.height)
-            : factoryLayout(app.width, frame.width, frame.height);
-        this.width = layout.width * layout.unit;
-        this.height = layout.height * layout.unit;
+      if (responsiveLayout) {
+        this.width = responsiveLayout.width * responsiveLayout.unit;
+        this.height = responsiveLayout.height * responsiveLayout.unit;
       }
     }
     ui.theme = 'island';
     try {
-      const header = responsive
-        ? (view === 'factory'
-            ? factoryLayout(app.width, frame.width, frame.height)
-            : livestockLayout(app.width, frame.width, frame.height)
-          ).header
-        : null;
+      const header = responsiveLayout?.header ?? null;
       const definition = PANELS[view],
         ctx = this.context();
       const title = typeof definition.title === 'function' ? definition.title(ctx) : definition.title;
@@ -306,7 +307,15 @@ export class PanelHost extends Component implements PanelState {
         screenWidth: app.width,
         screenHeight: app.height,
         unit: app.width / Math.max(1, frame.width),
-        kind: view === 'factory' ? 'factory' : view === 'livestock' ? 'livestock' : building ? 'building' : 'window',
+        // The warehouse reuses the factory frame: title on the ear, close button on the right edge.
+        kind:
+          view === 'factory' || warehouse
+            ? 'factory'
+            : view === 'livestock'
+              ? 'livestock'
+              : building
+                ? 'building'
+                : 'window',
         scale: buildingScale,
         header,
         title,
@@ -318,11 +327,7 @@ export class PanelHost extends Component implements PanelState {
         else app.close();
       });
       definition.render(ctx);
-      if (!responsive) {
-        // Authored inventory labels apply CSS minimums themselves so Inspector font edits survive.
-        if (view === 'inventory') fitProductionTarget(shell.activeCloseButton, app.width);
-        else fitProductionTargets(this.card, app.width);
-      }
+      if (!responsive) fitProductionTargets(this.card, app.width);
       this.frameWidth = cocosView.getFrameSize().width;
     } finally {
       ui.theme = 'farm';
@@ -379,7 +384,7 @@ export class PanelHost extends Component implements PanelState {
 
   private footer(id: string, title: string, action: () => void, left?: boolean): void {
     const x = left === undefined ? 0 : (left ? -1 : 1) * this.width * 0.235;
-    const variant = /^(focus-|inventory-sales|show-json|back-stock)/.test(id) ? 'blue' : 'green';
+    const variant = /^(focus-|inventory-sales|show-json)/.test(id) ? 'blue' : 'green';
     const touch = productionTargetSize(this.app.width);
     this.app.ui.button(
       this.dialogInstance!.body,

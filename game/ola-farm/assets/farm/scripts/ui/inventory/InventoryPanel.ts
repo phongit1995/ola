@@ -1,11 +1,11 @@
-import { instantiate } from 'cc';
+import { Color, instantiate, Label, LabelOutline, Node, view } from 'cc';
 import { InventoryBodyView } from './InventoryBodyView';
+import { inventoryLayout } from './InventoryLayout';
 import { format } from '../../core/Format';
 import { ink } from '../../render/constants/Ui.constants';
-import { PANEL_MUTED } from '../shared/PanelPalette.constants';
+import { PANEL_BROWN, PANEL_MUTED } from '../shared/PanelPalette.constants';
 import type { PanelContext, PanelDefinition } from '../shared/PanelContext.types';
 import { legacyIcon } from '../../render/Icons';
-import { productionTargetSize } from '../shared/ProductionTouch';
 
 /** Storage uses Golden Island category tabs and a recessed item grid. */
 export const inventoryPanel: PanelDefinition = {
@@ -22,81 +22,157 @@ export const inventoryPanel: PanelDefinition = {
   },
 };
 
+/** The warehouse layout for the current screen, shared by the sale dialogs so the frame never jumps. */
+function saleLayout(ctx: PanelContext) {
+  const frame = view.getFrameSize();
+  return inventoryLayout(ctx.app.width, frame.width, frame.height);
+}
+
+/** Labels built in code take the Golden Island face used by the warehouse, factory and livestock prefabs. */
+function goldenIsland(ctx: PanelContext, node: Node): void {
+  const font = ctx.art.shopFont;
+  if (font) for (const label of node.getComponentsInChildren(Label)) label.font = font;
+}
+
+/** A one-line label that shrinks rather than running into the frame border. */
+function fitLine(label: Label): void {
+  label.enableWrapText = false;
+  label.overflow = Label.Overflow.SHRINK;
+}
+
+const DISABLED_TITLE = new Color(PANEL_MUTED.r, PANEL_MUTED.g, PANEL_MUTED.b, 140),
+  PRIMARY_OUTLINE = new Color(54, 105, 15);
+/** FactoryBody.prefab draws button artwork at this scale, which keeps corners small (about 14–20 CSS px). */
+const FACE_SCALE = 0.45;
+
+/** Island artwork behind a card or button, scaled like the factory's so its corners stay small. */
+function softFace(ctx: PanelContext, parent: Node, key: string, width: number, height: number, u: number): Node {
+  const face = ctx.art.island(parent, key, 0, 0, width / FACE_SCALE, height / FACE_SCALE, 'Face');
+  face.setScale(FACE_SCALE * u, FACE_SCALE * u, 1);
+  return face;
+}
+
+/**
+ * A factory-style button in CSS pixels: green or white (`info`) artwork with small corners and a one-line title.
+ * A disabled green button turns white, and a disabled white one fades its title, as in the factory dialog.
+ */
+function softButton(
+  ctx: PanelContext,
+  parent: Node,
+  id: string,
+  title: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  action: () => void,
+  options: { enabled?: boolean; primary?: boolean; size?: number } = {}
+): Node {
+  const u = saleLayout(ctx).unit,
+    enabled = options.enabled ?? true,
+    primary = (options.primary ?? false) && enabled;
+  const node = ctx.ui.node(parent, id, x * u, y * u, width * u, height * u);
+  softFace(ctx, node, primary ? 'green' : 'info', width, height, u);
+  const label = ctx.ui.text(
+    node,
+    'Title',
+    title,
+    0,
+    (primary ? 2 : 0) * u,
+    (width - 12) * u,
+    (height - 6) * u,
+    (options.size ?? 15) * u,
+    primary ? Color.WHITE : enabled ? PANEL_BROWN : DISABLED_TITLE
+  );
+  fitLine(label);
+  if (primary) {
+    const outline = label.node.addComponent(LabelOutline);
+    outline.color = PRIMARY_OUTLINE;
+    outline.width = 2;
+  }
+  return ctx.ui.bindButton(node, id, action, enabled);
+}
+
 export const salePanel: PanelDefinition = {
   title: 'Bán sản phẩm',
   render(ctx: PanelContext): void {
-    const { app, state, game, ui, art, width: w } = ctx,
+    const { app, state, game, ui, card } = ctx,
+      layout = saleLayout(ctx),
+      { unit: u, height: h, contentWidth } = layout,
       item = game.item(state.saleKey);
     if (!item) {
-      ctx.footer('back-stock', 'Về kho', () => app.open('inventory'));
+      goldenIsland(ctx, card);
       return;
     }
     const count = game.quantity(item.key),
       quantity = Math.min(count, Math.max(1, state.saleQuantity));
     state.saleQuantity = quantity;
-    const content = ctx.list(600),
-      cx = (w - 80) / 2;
-    ui.item(content, `assets/sprites/${item.image}.png`, cx, -80, 110);
-    ui.text(content, 'SaleItem', item.name, cx, -160, w - 100, 48, 30, ink);
+    // A short landscape window puts "Tối đa" beside the stepper so the stack still fits above the buttons.
+    const top = h / 2,
+      short = layout.short,
+      stepperX = short ? -90 : 0,
+      stepperY = top - (short ? 206 : 244);
+    ui.item(card, `assets/sprites/${item.image}.png`, 0, (top - (short ? 92 : 108)) * u, (short ? 48 : 72) * u);
+    ui.text(card, 'SaleItem', item.name, 0, (top - (short ? 136 : 166)) * u, contentWidth * u, 28 * u, 20 * u, ink);
     ui.text(
-      content,
+      card,
       'SaleStock',
       `Trong kho: ${format(count)} · Giá: ${format(item.sellPrice)} xu/cái`,
-      cx,
-      -205,
-      w - 100,
-      36,
-      22,
+      0,
+      (top - (short ? 160 : 192)) * u,
+      contentWidth * u,
+      20 * u,
+      13 * u,
       PANEL_MUTED
     );
-    art.island(content, 'inset', cx, -290, 156, 76);
-    ui.text(content, 'SaleQuantity', String(quantity), cx, -290, 140, 60, 32, ink);
+    softFace(ctx, ui.node(card, 'SaleQuantityBox', stepperX * u, stepperY * u, 96 * u, 44 * u), 'material', 96, 44, u);
+    ui.text(card, 'SaleQuantity', format(quantity), stepperX * u, stepperY * u, 90 * u, 36 * u, 20 * u, ink);
     const change = (next: number): void => {
       state.saleQuantity = Math.max(1, Math.min(count, next));
       ctx.render();
     };
-    ui.islandButton(
-      content,
-      'sale-minus',
-      '−',
-      cx - 135,
-      -290,
-      90,
-      76,
-      () => change(quantity - 1),
-      quantity > 1,
-      'card'
+    for (const [id, title, dx, next, enabled] of [
+      ['sale-minus', '−', -82, quantity - 1, quantity > 1],
+      ['sale-plus', '+', 82, quantity + 1, quantity < count],
+    ] as const)
+      softButton(ctx, card, id, title, stepperX + dx, stepperY, 52, 44, () => change(next), { enabled, size: 22 });
+    softButton(
+      ctx,
+      card,
+      'sale-max',
+      `Tối đa (${format(count)})`,
+      short ? 130 : 0,
+      short ? stepperY : top - 300,
+      short ? 150 : 180,
+      44,
+      () => change(count),
+      { enabled: quantity < count }
     );
-    ui.islandButton(
-      content,
-      'sale-plus',
-      '+',
-      cx + 135,
-      -290,
-      90,
-      76,
-      () => change(quantity + 1),
-      quantity < count,
-      'card'
+    ui.text(
+      card,
+      'SaleReward',
+      `Nhận ${format(quantity * item.sellPrice)} xu`,
+      0,
+      (top - (short ? 250 : 352)) * u,
+      contentWidth * u,
+      28 * u,
+      20 * u,
+      ink
     );
-    // Secondary white button: the green confirm below stays the one primary action.
-    ui.button(content, 'sale-max', `Tối đa (${format(count)})`, cx, -375, 260, 60, () => change(count), {
-      enabled: quantity < count,
-      variant: 'blue',
-    });
-    ui.text(content, 'SaleReward', `Nhận ${format(quantity * item.sellPrice)} xu`, cx, -450, w - 100, 50, 30, ink);
-    ui.button(
-      content,
+    // One green action, inset from the frame border like the factory footer.
+    softButton(
+      ctx,
+      card,
       'sale-confirm',
-      `Bán ${quantity} sản phẩm`,
-      cx,
-      -530,
-      w - 180,
-      70,
+      `Bán ${format(quantity)} sản phẩm`,
+      0,
+      layout.buttonY,
+      layout.buttonWidth,
+      layout.buttonHeight,
       () => app.act({ type: 'sellItem', item: item.key, quantity }, 'Sao tien bay', () => app.open('inventory')),
-      { enabled: ctx.canAct && quantity > 0 }
+      { enabled: ctx.canAct && quantity > 0, primary: true, size: 16 }
     );
-    ctx.footer('back-stock', 'Về kho', () => app.open('inventory'));
+    goldenIsland(ctx, card);
   },
 };
 
@@ -104,105 +180,131 @@ export const salePanel: PanelDefinition = {
 export const quickSalePanel: PanelDefinition = {
   title: 'Bán nhanh',
   render(ctx: PanelContext): void {
-    const { app, state, game, ui, art, card, width: w, height: h, farm: s } = ctx;
+    const { app, state, game, ui, art, card, farm: s } = ctx,
+      layout = saleLayout(ctx),
+      { unit: u, height: h, contentWidth } = layout;
     // Only what can be sold right now; empty goods would only show disabled buttons.
     const items = game.items.filter(
       item => (state.inventoryTab === 'all' || item.tab === state.inventoryTab) && game.quantity(item.key) > 0
     );
-    const touch = productionTargetSize(app.width),
-      cols = w < 900 ? 2 : 3,
-      rowH = 220 + touch;
-    const top = h / 2 - 110,
-      bottom = -h / 2 + touch + 60;
-    const list = ui.scroll(card, w - 80, top - bottom, 120 + Math.ceil(items.length / cols) * rowH);
-    list.scroll.node.setPosition(0, (top + bottom) / 2);
-    ctx.adoptScroll(list.scroll);
-    const content = list.content;
     const tabs = [
       ['all', 'Tất cả'],
       ['raw', 'Nguyên liệu'],
       ['goods', 'Thành phẩm'],
     ] as const;
+    // Pill buttons as before, with the factory's smaller corners; green marks the selected filter.
+    const tabWidth = (contentWidth - 8 * (tabs.length - 1)) / tabs.length;
     tabs.forEach(([id, title], i) =>
-      ui.button(
-        content,
+      softButton(
+        ctx,
+        card,
         'tab-' + id,
         title,
-        ((w - 80) * (i + 0.5)) / tabs.length,
-        -touch / 2 - 6,
-        (w - 120) / tabs.length - 10,
-        touch,
+        (i - (tabs.length - 1) / 2) * (tabWidth + 8),
+        layout.tabsY,
+        tabWidth,
+        40,
         () => {
           state.inventoryTab = id;
           ctx.render();
         },
-        { variant: state.inventoryTab === id ? 'green' : 'blue' }
+        { primary: state.inventoryTab === id }
       )
     );
+    // A narrow phone gets one wide card per row: icon and name on top, two full-size buttons below.
+    const columns = contentWidth >= 600 ? 3 : contentWidth >= 400 ? 2 : 1,
+      single = columns === 1,
+      rowH = single ? 118 : 158,
+      top = layout.tabsY - 28,
+      bottom = -h / 2 + 24,
+      cw = contentWidth / columns;
+    const list = ui.scroll(card, contentWidth * u, (top - bottom) * u, Math.ceil(items.length / columns) * rowH * u);
+    list.scroll.node.setPosition(0, ((top + bottom) / 2) * u);
+    ctx.adoptScroll(list.scroll);
+    const content = list.content;
     if (!items.length)
       ui.text(
         content,
         'StockEmpty',
         'Chưa có sản phẩm để bán.',
-        (w - 80) / 2,
-        -touch - 90,
-        w - 120,
-        50,
-        26,
+        (contentWidth / 2) * u,
+        -40 * u,
+        contentWidth * u,
+        30 * u,
+        16 * u,
         PANEL_MUTED
       );
-    const cw = (w - 100) / cols;
     items.forEach((item, i) => {
-      const suffix = `${item.tab}-${item.legacyId ?? item.key}`;
-      const x = 10 + cw * ((i % cols) + 0.5),
-        y = -112 - rowH / 2 - Math.floor(i / cols) * rowH;
-      const count = game.quantity(item.key);
-      const cell = ui.box(content, 'StockItem', x, y, cw - 8, rowH - 12);
+      const suffix = `${item.tab}-${item.legacyId ?? item.key}`,
+        count = game.quantity(item.key);
+      const x = cw * ((i % columns) + 0.5),
+        y = -rowH / 2 - Math.floor(i / columns) * rowH;
+      const cell = ui.node(content, 'StockItem', x * u, y * u, (cw - 8) * u, (rowH - 8) * u);
+      softFace(ctx, cell, 'info', cw - 8, rowH - 8, u);
+      const textX = single ? 26 : 0,
+        textWidth = single ? cw - 84 : cw - 16;
       ui.item(
         cell,
         legacyIcon(art, item.tab, item.legacyId) ?? `assets/sprites/${item.image}.png`,
-        0,
-        rowH / 2 - 62,
-        77
+        (single ? -cw / 2 + 40 : 0) * u,
+        (rowH / 2 - (single ? 38 : 34)) * u,
+        44 * u
       );
-      ui.text(cell, 'StockLabel', `${item.name}\n× ${count}`, 0, rowH / 2 - 130, cw - 14, 54, 23, ink);
-      ui.text(cell, 'Price', `${item.sellPrice} xu / sản phẩm`, 0, rowH / 2 - 175, cw - 12, 28, 20, ink);
-      // Raised so the buttons sit inside the rounded card, clear of its bottom corners.
-      const buttonY = -rowH / 2 + touch / 2 + 22;
-      ui.button(
+      ui.text(
         cell,
-        `sell-${suffix}`,
-        'Bán 1',
-        -cw * 0.225,
-        buttonY,
-        cw * 0.42,
-        touch,
-        () => app.act({ type: 'sellItem', item: item.key, quantity: 1 }, 'Sao tien bay'),
-        { enabled: ctx.canAct && count > 0 }
+        'StockLabel',
+        `${item.name} × ${format(count)}`,
+        textX * u,
+        (rowH / 2 - (single ? 28 : 72)) * u,
+        textWidth * u,
+        20 * u,
+        14 * u,
+        ink
       );
-      ui.button(
+      ui.text(
         cell,
-        `sell-all-${suffix}`,
-        'Bán hết',
-        cw * 0.225,
-        buttonY,
-        cw * 0.42,
-        touch,
-        () => app.act({ type: 'sellItem', item: item.key, quantity: count }, 'Sao tien bay'),
-        { enabled: ctx.canAct && count > 0 }
+        'Price',
+        `${format(item.sellPrice)} xu / sản phẩm`,
+        textX * u,
+        (rowH / 2 - (single ? 50 : 94)) * u,
+        textWidth * u,
+        18 * u,
+        12 * u,
+        PANEL_MUTED
       );
+      const buttonY = -rowH / 2 + (single ? 30 : 34),
+        buttonW = (cw - (single ? 40 : 44)) / 2;
+      for (const [id, title, side, quantity] of [
+        [`sell-${suffix}`, 'Bán 1', -1, 1],
+        [`sell-all-${suffix}`, 'Bán hết', 1, count],
+      ] as const)
+        softButton(
+          ctx,
+          cell,
+          id,
+          title,
+          side * (buttonW / 2 + 3),
+          buttonY,
+          buttonW,
+          40,
+          () => app.act({ type: 'sellItem', item: item.key, quantity }, 'Sao tien bay'),
+          { enabled: ctx.canAct && count > 0, primary: true }
+        );
     });
-    ui.text(
-      card,
-      'StockSummary',
-      `Tổng kho: ${format(Object.values(s.inventory).reduce((n, v) => n + v, 0))} · Thu hoạch: ${format(s.harvested)} · Doanh thu: ${format(s.earned)} xu`,
-      0,
-      -h / 2 + touch + 35,
-      w - 110,
-      28,
-      19,
-      ink
+    // Same place as the warehouse summary, above the tabs.
+    fitLine(
+      ui.text(
+        card,
+        'StockSummary',
+        `Tổng kho: ${format(Object.values(s.inventory).reduce((n, v) => n + v, 0))} · Thu hoạch: ${format(s.harvested)} · Doanh thu: ${format(s.earned)} xu`,
+        0,
+        layout.summaryY * u,
+        contentWidth * u,
+        20 * u,
+        12 * u,
+        PANEL_MUTED
+      )
     );
-    ctx.footer('inventory-sales', 'Về kho', () => app.open('inventory'));
+    goldenIsland(ctx, card);
   },
 };

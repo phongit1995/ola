@@ -90,7 +90,7 @@ Hai phần cùng lấy dữ liệu nguồn từ `tools/farm-layout.cjs`, nên kh
 | `Shop`, `ShopCard` | Cửa hàng và thẻ mua công trình. |
 | `FactoryDialogFrame`, `FactoryBody`, `FactoryQueueSlot`, `RecipeChoice`, `IngredientItem` | Khung xưởng, nội dung sản xuất, hàng đợi, công thức và nguyên liệu. |
 | `LivestockBody`, `HerdSlot`, `HerdQuickBar` | Quản lý chuồng, ô vật nuôi và thanh chăm đàn. |
-| `InventoryBody`, `StockCard` | Kho và thẻ vật phẩm. |
+| `InventoryBody`, `StockCard` | Kho và thẻ vật phẩm; kích thước theo `ui/inventory/InventoryLayout.ts` (pixel CSS × `unit`, cùng khung và số đo với `FactoryLayout`). |
 | `SeedPicker`, `SeedTile`, `PlotBubble` | Chọn giống, thẻ hạt và bong bóng ô đất. |
 | `LandPurchase` | Bảng mua đất. |
 

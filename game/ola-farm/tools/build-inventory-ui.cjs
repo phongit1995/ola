@@ -8,7 +8,8 @@ const { stableId } = require('./cocos-ids.cjs');
 const island = key => 'farm/bundles/golden-island-ui/images/' + key + '.png';
 const skinInfo = read(path.join(assets, 'farm/bundles/golden-island-ui/manifest.json')).images;
 const index = read(path.join(assets, 'resources/ported/asset-index.json'));
-const genericFont = assetRef('resources/' + Object.entries(index).find(([source]) => source.endsWith('.ttf'))[1] + '.ttf', 'cc.TTFFont');
+// Same Golden Island face as the factory and livestock dialogs.
+const genericFont = assetRef('fonts/hud/PoetsenOne-Regular.ttf', 'cc.TTFFont');
 const buttonType = componentTypeByName('FarmButton');
 const tint = [162, 66, 49];
 function skin(b, parent, name, key, x, y, w, h) { return b.sprite(parent, name, island(key), x, y, w, h, { sliced: skinInfo[key].border.some(v => v > 0) }); }
@@ -59,5 +60,5 @@ const quick = skin(b, b.root, 'inventory-sales', 'card', 0, -392, 870, 88); butt
 const quickTitle = label(b, quick, 'Title', 'Bán nhanh', 0, 1, 846, 76, 25);
 write(b, 'InventoryBody', { stockCardPrefab: { __uuid__: cardUuid, __expectedType__: 'cc.Prefab' }, count: b.reference(summary, 'cc.Label'), tabs, tabTitles,
   activeTab: assetRef(island('tab')), inactiveTab: assetRef(island('tabInactive')), grid: ref(grid), scroll: ref(scrollComponent), preview: ref(preview),
-  hint: b.reference(hint, 'cc.Label'), quickSale: ref(quick), quickSaleTitle: b.reference(quickTitle, 'cc.Label'), rowHeight: 160 });
+  hint: b.reference(hint, 'cc.Label'), quickSale: ref(quick), quickSaleTitle: b.reference(quickTitle, 'cc.Label') });
 console.log('Authored InventoryBody and StockCard with native shelf, category tabs and six linked preview cells.');
