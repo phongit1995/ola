@@ -102,7 +102,7 @@ Chạm chuồng mở thẳng popup; bảng quản lý chỉ hiện chuồng đan
 
 ## Save và kiểm tra
 
-Save hiện dùng state v7/pack v6/layout v6, profile `simple-1`, khóa `ola-farm-cocos-simple-v1`. Các phiên bản cũ được kiểm tra và chuyển đổi trước khi ghi. Khóa full `ola-farm-cocos-40-v1`, snapshot bố cục cũ, IDs và mã `farm40:*` còn cần cho tương thích. Không xóa chúng theo tên “legacy”. Lỗi ghi sẽ giữ giao dịch chờ để thử lại hoặc xuất dữ liệu. Profile hiện hành chạy 1×, dùng clock v1 tùy chọn để tính công việc đã trả tiền khi offline; job trong save cũ giữ snapshot, không tự nhận hàng hay cho ăn.
+Save hiện dùng state v7/pack v6/layout v6, profile `simple-1`, khóa `ola-farm-cocos-simple-v1`; trong app Ola khóa có thêm `@<mã tài khoản>` lấy từ accessToken (bridge `get_token` như các game khác, hoặc `?token=` khi thử riêng). Các phiên bản cũ được kiểm tra và chuyển đổi trước khi ghi. Khóa full `ola-farm-cocos-40-v1`, snapshot bố cục cũ, IDs và mã `farm40:*` còn cần cho tương thích. Không xóa chúng theo tên “legacy”. Lỗi ghi sẽ giữ giao dịch chờ để thử lại hoặc xuất dữ liệu. Profile hiện hành chạy 1×, dùng clock v1 tùy chọn để tính công việc đã trả tiền khi offline; job trong save cũ giữ snapshot, không tự nhận hàng hay cho ăn.
 
 Khi chưa có khóa Ola, game đọc bản lưu từ khóa `happy-farm-cocos-*` tương ứng và ghi sang khóa Ola ở lần lưu thành công tiếp theo. Nội dung và các bản dự phòng trong khóa cũ được giữ nguyên. Nếu khóa Ola đã tồn tại nhưng lỗi, game mở chế độ phục hồi để tránh thay tiến trình mới bằng bản cũ. Các tên cũ còn trong code tương thích và fixture lịch sử phục vụ việc đọc bản lưu trước khi đổi tên.
 

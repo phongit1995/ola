@@ -7,3 +7,6 @@ export const PREVIOUS_SAVE_KEYS: Readonly<Record<string, string>> = {
   [FARM_KEY]: 'happy-farm-cocos-40-v1',
   [SIMPLE_FARM_KEY]: 'happy-farm-cocos-simple-v1',
 };
+
+/** Which Ola account owns the saves written before farms were kept per account; that account inherits them. */
+export const DEVICE_FARM_OWNER_KEY = 'ola-farm.device-owner';

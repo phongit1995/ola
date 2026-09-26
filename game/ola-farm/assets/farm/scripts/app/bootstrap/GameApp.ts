@@ -28,6 +28,8 @@ import { ContextualFooter } from '../layout/ContextualFooter';
 import { installDebugApi, uninstallDebugApi } from '../debug/DebugApi';
 import { applyDesignResolution } from '../layout/Layout';
 import { claimPreparedFarm } from './PreparedFarm';
+import { accountStorage } from '../../core/AccountStorage';
+import { olaReady } from '../services/OlaBridge';
 import { downloadJson, pickJsonFile } from '../services/SaveFiles';
 import { FarmGame } from '../../core/FarmGame';
 import { machineSites, penBuildingId, penDefinition } from '../../core/FarmCatalog';
@@ -80,6 +82,8 @@ export class GameApp extends Component implements AppFacade {
   /** Set by the root's SIZE_CHANGED; the footer and toast are re-laid out in update(). */
   private layoutDirty = false;
   private tabHidden = false;
+  /** Ola account whose save is open; null for the device-wide save. */
+  private account: string | null = null;
 
   // Thin accessors kept for tests and the debug API.
   get game(): FarmGame {
@@ -137,6 +141,7 @@ export class GameApp extends Component implements AppFacade {
         return;
       }
       this.art = prepared.art;
+      this.account = prepared.account;
       this.ui = new Ui(this.art);
       this.tabHidden = prepared.isHidden();
       this.ui.prefabs = this.uiPrefabs;
@@ -163,7 +168,7 @@ export class GameApp extends Component implements AppFacade {
 
   private boot(): void {
     const catalog = this.art.data.data;
-    this.session = new GameSession(catalog, new FarmSave(sys.localStorage, catalog));
+    this.session = new GameSession(catalog, new FarmSave(accountStorage(sys.localStorage, this.account), catalog));
     this.session.hidden = this.tabHidden;
     this.motion = this.motion && this.session.runtime.ui.motionEnabled;
     this.session.on('toast', message => this.toast(message));
@@ -197,6 +202,7 @@ export class GameApp extends Component implements AppFacade {
       else if (!this.game.state.guideDismissed) this.open('welcome');
     }
     if (DEBUG) installDebugApi(this);
+    olaReady();
   }
 
   /** Child order is draw order: map, HUD, contextual footer, panels, toast. Widgets size everything to the canvas. */

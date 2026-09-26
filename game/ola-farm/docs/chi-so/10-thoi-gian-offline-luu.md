@@ -33,12 +33,12 @@ Từ 26/09/2026, luật này giống Hay Day: đồng hồ **không dừng** khi
 
 | Thông số | Giá trị |
 | --- | --- |
-| Nơi lưu | localStorage của trình duyệt/WebView, khóa `ola-farm-cocos-simple-v1` |
+| Nơi lưu | localStorage của trình duyệt/WebView. Mở trong app Ola: khóa `ola-farm-cocos-simple-v1@<mã tài khoản>`, mỗi tài khoản một nông trại. Chạy riêng không có token: khóa `ola-farm-cocos-simple-v1` chung của máy |
 | Lưu tự động | mỗi 2,5 giây (`session.autosaveSeconds`) |
 | Lưu theo thao tác | mỗi thao tác thành công lưu ngay; lưu lỗi thì game tạm dừng và giữ bản chờ để thử lại |
 | Âm thanh/nhạc mặc định | âm thanh tắt, nhạc tắt |
 
-Bản lưu chưa gắn tài khoản Ola: cùng một thiết bị, mọi tài khoản dùng chung một nông trại; xóa app hoặc dữ liệu trình duyệt là mất.
+Từ 26/09/2026 game xin accessToken từ app Ola như các game khác (`?token=` trên URL, nếu không có thì hỏi host qua bridge `get_token`). Mã tài khoản trong token chỉ dùng để chọn bản lưu: mỗi tài khoản trên cùng một máy có nông trại riêng. Tài khoản đầu tiên mở game sau bản cập nhật này nhận lại nông trại cũ của máy; tài khoản khác bắt đầu mới. Bản lưu vẫn nằm trên máy, chưa lên server: xóa app hoặc dữ liệu trình duyệt là mất, và không chống sửa số.
 
 ## Việc được chốt lúc bắt đầu
 

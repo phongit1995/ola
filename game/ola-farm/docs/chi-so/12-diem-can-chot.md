@@ -82,7 +82,7 @@ Hàng "Đồng hồ khi mở menu" là cách hai game này vận hành, không n
 | D4 | **Bán con vật** có trong code (hoàn 50%) nhưng không có nút. | Làm nút bán con hay bỏ hẳn? |
 | D5 | **Hướng dẫn tân thủ gần như không có:** chỉ một bảng chào mừng; các cờ theo dõi tiến trình tân thủ trong code được ghi nhưng không dùng, 3 cờ còn phụ thuộc món Tortilla không còn trong game. | Có làm luồng hướng dẫn 30 phút đầu không? |
 | D6 | **Tên hiển thị viết hoa không thống nhất:** "Củ Cải Đường", "Khoai Tây", "Bí Ngô", "Máy Chế Biến Đường" viết hoa từng chữ; "Lúa mì", "Bắp cải", "Máy thức ăn" thì không. | Chốt một kiểu viết tên. |
-| D7 | **Bản lưu chưa gắn tài khoản** (localStorage): nhiều tài khoản trên cùng máy dùng chung một nông trại; không chống sửa số. | Làm backend lưu theo tài khoản (Mức 1 hay Mức 2) trước khi phát hành? |
+| D7 | **Bản lưu chỉ nằm trên máy** (localStorage). Từ 26/09/2026 đã tách theo tài khoản Ola nhờ accessToken, nhưng đổi máy là mất nông trại và không chống sửa số. | Làm backend lưu theo tài khoản (Mức 1 hay Mức 2) trước khi phát hành? |
 | D8 | **Level farm tách biệt hệ level game của Ola.** Các game PvP của Ola lưu level theo từng game trên server (bảng `user_game_levels`, lên từ level L cần 100 × L EXP, tối đa 99); farm có đường level riêng như trên và không báo EXP về Ola. | Giữ level riêng, hay quy đổi/đồng bộ với level game của Ola? |
 
 Nguồn so sánh (tra ngày 25/09/2026): [Hay Day Wiki – Experience](https://hayday.fandom.com/wiki/Experience), [Hay Day Wiki – Trade](https://hayday.fandom.com/wiki/Trade) (bán ở sạp chỉ ra xu; đơn xe tải/tàu ra xu và EXP), [Township Wiki – Xp](https://township.fandom.com/wiki/Xp).
