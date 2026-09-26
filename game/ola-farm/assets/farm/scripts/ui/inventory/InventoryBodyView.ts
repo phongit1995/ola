@@ -1,9 +1,10 @@
-import { _decorator, instantiate, Label, Node, Prefab, ScrollView, Sprite, SpriteFrame, view } from 'cc';
+import { _decorator, instantiate, Label, Node, Prefab, ScrollView, Sprite, SpriteFrame, view, Color } from 'cc';
 import { format } from '../../core/Format';
 import { AuthoredUiView } from '../shared/AuthoredUiView';
 import type { PanelContext } from '../shared/PanelContext.types';
 import { productionTargetSize } from '../shared/ProductionTouch';
 import { StockCardView } from './StockCardView';
+import { PANEL_BROWN, PANEL_MUTED } from '../shared/PanelPalette.constants';
 
 const { ccclass, property } = _decorator;
 
@@ -42,7 +43,18 @@ export class InventoryBodyView extends AuthoredUiView {
         width = (w - 90) / 2;
       this.place(node, ((i - 0.5) * (w - 80)) / 2, h / 2 - 166, width, touch);
       this.stateFrame(node.getComponent(Sprite)!, id === tab ? this.activeTab : this.inactiveTab);
-      this.text(title, id === 'raw' ? 'Nguyên liệu' : 'Thành phẩm', 0, 1, width - 24, touch - 10, targetFont);
+      const units = game.stock(id).reduce((sum, item) => sum + game.quantity(item.key), 0);
+      this.text(
+        title,
+        `${id === 'raw' ? 'Nguyên liệu' : 'Thành phẩm'} (${format(units)})`,
+        0,
+        1,
+        width - 24,
+        touch - 10,
+        targetFont,
+        1,
+        id === tab ? PANEL_BROWN : PANEL_MUTED
+      );
       title.lineHeight = title.fontSize + 6;
       this.bind(ctx.ui, node, 'tab-' + id, () => {
         state.inventoryTab = id;
@@ -56,7 +68,12 @@ export class InventoryBodyView extends AuthoredUiView {
       gridH = gridTop - gridBottom,
       gridY = (gridTop + gridBottom) / 2;
     this.place(this.grid, 0, gridY, gridW + 12, gridH + 12);
-    const items = game.stock(tab),
+    // Owned items first, each group in catalog order.
+    const items = game
+        .stock(tab)
+        .map((item, order) => ({ item, order, owned: game.quantity(item.key) > 0 }))
+        .sort((a, b) => Number(b.owned) - Number(a.owned) || a.order - b.order)
+        .map(entry => entry.item),
       columns = w < 800 ? 4 : 6,
       columnWidth = gridW / columns;
     const content = this.scroll.content!,
@@ -98,7 +115,9 @@ export class InventoryBodyView extends AuthoredUiView {
     this.text(this.hint, 'Chạm vào sản phẩm để chọn số lượng bán', 0, hintY, w - 70, 34, 21);
     this.hint.lineHeight = this.hint.fontSize + 7;
     this.place(this.quickSale, 0, -h / 2 + touch / 2 + 14, w - 130, touch);
-    this.text(this.quickSaleTitle, 'Bán nhanh', 0, 1, w - 154, touch - 10, targetFont);
+    // The only button on this screen uses the primary green frame so it does not read as disabled.
+    this.stateFrame(this.quickSale.getComponent(Sprite)!, ctx.art.frame('island-ui/green'));
+    this.text(this.quickSaleTitle, 'Bán nhanh', 0, 3, w - 154, touch - 10, targetFont, 1, Color.WHITE);
     this.quickSaleTitle.lineHeight = this.quickSaleTitle.fontSize + 6;
     this.bind(ctx.ui, this.quickSale, 'inventory-sales', () => ctx.app.open('inventory-sales'));
     ctx.adoptScroll(this.scroll);

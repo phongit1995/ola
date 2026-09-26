@@ -27,7 +27,7 @@ test('new farm grants six empty fields and applies every approved land price at 
     [0, 1, 2, 3, 4, 5]
   );
   assert.ok(fields.every(p => p.level === 1 && p.crop === null));
-  assert.deepEqual([game.state.coins, game.state.diamonds, game.progress.level], [500, 10, 1]);
+  assert.deepEqual([game.state.coins, game.state.diamonds, game.progress.level], [700, 10, 1]);
   assert.equal(game.nextLockedCrop()?.id, 6);
   fields.forEach((plot, index) => {
     const config = catalog.economy!.fields[plot.id];

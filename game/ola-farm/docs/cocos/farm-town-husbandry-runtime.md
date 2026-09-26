@@ -8,12 +8,12 @@ Mỗi loại máy và mỗi loài có tối đa **hai nhà**: 16 máy và tám c
 
 ## Lượt chơi và mở nội dung
 
-Cấu hình mặc định bắt đầu với **500 xu, 10 kim cương, kho trống, 6 ruộng trống mở sẵn, chưa có máy hoặc chuồng**. Ruộng còn lại mua tuần tự tại level 2, 4, …, 68 theo [bảng giá đất](land-purchase.md); map chỉ hiện một ô đất xanh kế tiếp để mua. Level 1 chỉ xây được máy thức ăn và chuồng gà; lò bánh mở ở level 5, bò/xưởng sữa ở level 10, các nhóm sau cách nhau khoảng năm level trong [bảng mốc xây](economy-config.md). Đạt level chỉ cho phép mua, không tự cấp nhà hoặc ruộng. Lúa mì, ngô và cám gà mở ngay ở level 1 để nuôi gà được từ đầu. Tám cây là lúa mì, ngô, bắp cải, dâu tây, nho, khoai tây, bí ngô và củ cải đường.
+Cấu hình mặc định bắt đầu với **700 xu, 10 kim cương, 4 lúa mì + 2 ngô trong kho, 6 ruộng trống mở sẵn, chưa có máy hoặc chuồng**. Ruộng còn lại mua tuần tự tại level 2, 4, …, 68 theo [bảng giá đất](land-purchase.md); map chỉ hiện một ô đất xanh kế tiếp để mua. Level 1 chỉ xây được máy thức ăn và chuồng gà; lò bánh mở ở level 5, bò/xưởng sữa ở level 10, các nhóm sau cách nhau khoảng năm level trong [bảng mốc xây](economy-config.md). Đạt level chỉ cho phép mua, không tự cấp nhà hoặc ruộng. Lúa mì, ngô và cám gà mở ngay ở level 1 để nuôi gà được từ đầu. Tám cây là lúa mì, ngô, bắp cải, dâu tây, nho, khoai tây, bí ngô và củ cải đường.
 
 - Đạt **level 15** và nhận cám, trứng, sữa lần đầu để mở chuồng heo. Giá **4.860 xu**, gồm chuồng 4.500 và một heo 360.
 - Đạt **level 35** và nhận burger đầu tiên để mở chuồng cừu và bàn đan. Chuồng **12.600 xu**, gồm chuồng 12.000 và một cừu 600; bàn đan **22.000 xu**.
 - Nhà thứ nhất: bếp nướng level 15/1.800 xu, máy đường level 20/6.000 xu, lò ngô level 25/9.000 xu, lò pie level 30/14.000 xu.
-- Mốc mở nội dung theo giao dịch nhận hàng; chỉ có đồ trong kho của lượt chơi mới không tự hoàn thành mốc. Cây mở ở level 1/1/4/7/10/14/18/24, công thức theo level nguyên liệu/máy. Ô 2/3/4/5 của gà và hàng đợi máy thức ăn theo level 5/10/15/20; ô bò giữ level 2/3/4/5. [Bảng tiến trình và thời gian chơi](real-time-economy.md).
+- Mốc mở nội dung theo giao dịch nhận hàng; chỉ có đồ trong kho của lượt chơi mới không tự hoàn thành mốc. Cây mở ở level 1/1/4/7/10/14/18/24, công thức theo level nguyên liệu/máy. Ô 2/3/4/5 của gà theo level 3/9/15/20, hàng đợi máy thức ăn theo level 5/10/15/20; ô bò giữ level 2/3/4/5. [Bảng tiến trình và thời gian chơi](real-time-economy.md).
 
 Có thể đặt từng ruộng thành ô phải mua theo giá/level trong JSON; chạm ô khóa để mua mở. Các ô đã có trong save không bị thu hồi khi đổi cấu hình. [Cách chỉnh giá và ô đất](economy-config.md).
 
@@ -29,7 +29,7 @@ Con đang nuôi hiện đồng hồ + thời gian còn lại; nút tăng tốc c
 
 Mỗi chuồng bắt đầu một ô/một con, tối đa **năm ô/năm con**. Mở ô 2–5 tuần tự, trả phí chỗ **45/75/120/180 xu cộng giá một con** trong cùng giao dịch. Giá con gà/bò/heo/cừu là **120/240/360/600 xu**. Ví dụ ô gà thứ hai giá 165 và có ngay một gà chờ ăn. Con mới không tự ăn cám.
 
-Nút mở ô chỉ hiện **số giá + icon xu**, có ổ khóa lớn trên thẻ. Ô gà 2/3/4/5 yêu cầu level **5/10/15/20**, ô bò giữ **2/3/4/5**; thiếu level hiện `Level N` và không mua được. Lợn/cừu chưa có khóa level theo ô. Điều kiện ô nuôi được kiểm trong core và bảng chuồng; ô đã mở trong save cũ vẫn được giữ.
+Nút mở ô chỉ hiện **số giá + icon xu**, có ổ khóa lớn trên thẻ. Ô gà 2/3/4/5 yêu cầu level **3/9/15/20**, ô bò giữ **2/3/4/5**; thiếu level hiện `Level N` và không mua được. Lợn/cừu chưa có khóa level theo ô. Điều kiện ô nuôi được kiểm trong core và bảng chuồng; ô đã mở trong save cũ vẫn được giữ.
 
 Logic bán con vẫn tồn tại trong core, chỉ cho bán con đói và để lại ô trống đã trả phí; bảng chăm hiện không hiển thị thao tác bán. Mua lại chỉ trả giá con và lấp đúng ô được bấm; Mua lại con và mở ô thực hiện trong bảng của đúng chuồng; Shop chỉ xây nhà. Những con còn lại giữ vị trí. Bấm lặp cùng ô không mua sang ô kế tiếp. Xem [đầy đủ giá và công suất](farm-town-husbandry-balance.md).
 

@@ -23,7 +23,7 @@ Một farm là một aggregate: một thao tác thường đổi cùng lúc ví,
 | Nội dung | Catalog release bất biến; không sao chép giá/level vào SQL trigger. |
 | Ngoài phạm vi | Payment, player trade, leaderboard, reset/import online, native auth nếu chưa chọn nền tảng đó. |
 
-Đầu vào hiện có: [FarmState](../../assets/farm/scripts/core/types/StateTypes.ts), [FarmAction](../../assets/farm/scripts/core/types/ActionTypes.ts), [FarmGame](../../assets/farm/scripts/core/FarmGame.ts), [FarmValidation](../../assets/farm/scripts/core/FarmValidation.ts) và [farm-town JSON](../../assets/farm/bundles/farm-town/). Baseline có 25 action trong union; `setPenSpecies` bị từ chối ở online simple. Farm mới có 500 xu, 10 kim cương, 6/40 ruộng mở, 0 máy/chuồng đã mua, state v7/layout v6. Giá trị này dùng làm fixture; server đọc catalog, không ghi cứng vào `DEFAULT` của DB.
+Đầu vào hiện có: [FarmState](../../assets/farm/scripts/core/types/StateTypes.ts), [FarmAction](../../assets/farm/scripts/core/types/ActionTypes.ts), [FarmGame](../../assets/farm/scripts/core/FarmGame.ts), [FarmValidation](../../assets/farm/scripts/core/FarmValidation.ts) và [farm-town JSON](../../assets/farm/bundles/farm-town/). Baseline có 25 action trong union; `setPenSpecies` bị từ chối ở online simple. Farm mới có 700 xu, 10 kim cương, 4 lúa mì + 2 ngô, 6/40 ruộng mở, 0 máy/chuồng đã mua, state v7/layout v6. Giá trị này dùng làm fixture; server đọc catalog, không ghi cứng vào `DEFAULT` của DB.
 
 ## 2. Sơ đồ dữ liệu và nguồn có thẩm quyền
 

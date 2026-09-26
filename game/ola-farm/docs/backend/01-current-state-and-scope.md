@@ -26,7 +26,7 @@ Nguồn là [catalog.json](../../assets/farm/bundles/farm-town/catalog.json), [e
 | --- | --- |
 | Profile, rules, thời gian | `simple-1`, `town-real-time-1`, `timeMode: "real"` |
 | State và layout mới | `FarmState.version = 7`, `buildingLayout.version = 6`; `FarmPack.version = 6` |
-| Ví khởi đầu | 500 xu, 10 kim cương, 0 XP |
+| Ví khởi đầu | 700 xu, 10 kim cương, 0 XP; kho 4 lúa mì + 2 ngô |
 | Kho, cây, vật nuôi khởi đầu | Kho rỗng; không có cây đang trồng; không có con vật |
 | Ruộng | 40 plot loại `crop` trong mô hình; 6 ruộng mở sẵn |
 | Plot tổng | 54: 50 vị trí lịch sử và 4 plot chuồng bổ sung; không đồng nghĩa mọi plot đều hoạt động trong profile hiện tại |
@@ -209,7 +209,7 @@ Việc giữ game local không có nghĩa bảo đảm các tài sản local dù
 
 | Kịch bản | Hiện tại | Kết quả yêu cầu trong kế hoạch online |
 | --- | --- | --- |
-| Tạo farm mới | Local fresh state | Server tạo một lần: 500 xu/10 kim cương, 6 ruộng, 0 máy/chuồng/con; retry/bootstrap không cấp thêm |
+| Tạo farm mới | Local fresh state | Server tạo một lần: 700 xu/10 kim cương, 4 lúa mì + 2 ngô, 6 ruộng, 0 máy/chuồng/con; retry/bootstrap không cấp thêm |
 | Nhấn xây máy hai lần/đứt mạng sau commit | Local UI/save xử lý trong một phiên | Cùng command ID cho cùng lần mua có một receipt, một máy, một lần trừ tiền |
 | Hai thiết bị cùng tiêu 10 kim cương | Không có account/revision | Một state thứ tự hóa; lệnh từ revision cũ bị từ chối và client cập nhật |
 | Cây chín trong lúc đóng app | Local `Date.now` và pack clock | Timer server tiếp tục; sync xác nhận sẵn sàng; thu hoạch là command riêng |

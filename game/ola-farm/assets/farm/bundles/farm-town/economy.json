@@ -1,7 +1,7 @@
 {
   "version": 1,
   "startingWallet": {
-    "coins": 500,
+    "coins": 700,
     "diamonds": 10,
     "xp": 0
   },
@@ -422,11 +422,11 @@
       "slots": [
         {
           "price": 45,
-          "requiredLevel": 5
+          "requiredLevel": 3
         },
         {
           "price": 75,
-          "requiredLevel": 10
+          "requiredLevel": 9
         },
         {
           "price": 120,

@@ -269,18 +269,18 @@ test('a fresh level-one farm can buy its chicken buildings and produce feed and 
 
   assertNoBuildings(game);
   assert.equal(game.progress.level, 1);
-  assert.equal(game.state.coins, 500);
-  assert.deepEqual(game.state.inventory, {});
+  assert.equal(game.state.coins, 700);
+  assert.deepEqual(game.state.inventory, { 'raw:1': 4, 'farm40:corn': 2 }, 'enough for two batches of chicken feed');
   assert.equal(game.machineConstructionOffer(feedmill.id).unlocked, true);
   assert.equal(game.machinePurchasePrice(feedmill.id), 200);
   ok(game.buyMachine(feedmill.id, 'feed-1'));
   assert.equal(game.penPurchasePrice(12), 220);
   ok(game.buyPen(12));
-  assert.equal(game.state.coins, 80);
+  assert.equal(game.state.coins, 280, 'both starter buildings leave coins to plant every open field');
   harvest(wheat);
   harvest(wheat);
   harvest(corn);
-  assert.equal(game.state.coins, 10);
+  assert.equal(game.state.coins, 210);
   assert.equal(game.progress.level, 3, 'build XP reaches level 2, the corn harvest level 3');
 
   const recipe = game.product(24)!,
@@ -303,7 +303,7 @@ test('a fresh level-one farm can buy its chicken buildings and produce feed and 
     assert.equal(game.quantity(chicken.output), (batch + 1) * chicken.quantity);
   }
   ok(game.sellItem(chicken.output, game.quantity(chicken.output)));
-  assert.equal(game.state.coins, 106, 'selling the first three eggs funds another planting cycle');
+  assert.equal(game.state.coins, 306, 'selling the first three eggs funds another planting cycle');
   assert.equal(game.progress.level, 3, 'the first feed and egg cycle stays on level 3');
   assert.deepEqual(
     game.state.machines.map(candidate => candidate.buildingId),

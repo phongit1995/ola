@@ -113,10 +113,10 @@ test('fresh state has six open fields of 40 and no constructed pens or machines;
     s = g.state;
   assert.equal(s.version, 7);
   assert.equal(s.contentProfile, 'simple-1');
-  assert.equal(s.coins, 500);
+  assert.equal(s.coins, 700);
   assert.equal(s.diamonds, 10);
   assert.equal(s.xp, 0);
-  assert.deepEqual(s.inventory, {});
+  assert.deepEqual(s.inventory, { 'raw:1': 4, 'farm40:corn': 2 }, 'starter stock for the first chicken feed');
   assert.equal(s.plots.length, 54);
   assert.equal(orderedCrops(s.plots).length, 40);
   assert.ok(orderedCrops(s.plots).every(p => p.crop === null));
@@ -333,6 +333,9 @@ test('crop refunds and boost settle once, and zero-capital rescue works with hun
   ok(g.harvest(0));
   g = new FarmGame(catalog);
   g.state.coins = 0;
+  // Rescue waits until the starter stock is used or sold.
+  assert.equal(g.canRescue(), false);
+  g.state.inventory = {};
   const xp = g.state.xp;
   assert.equal(g.canRescue(), true);
   ok(g.rescue());

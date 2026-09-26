@@ -8,7 +8,7 @@ Thời gian hiện được tách vào [timing.json](../../assets/farm/bundles/f
 
 ## Thay đổi và mục tiêu
 
-Cây mất 5 phút–12 giờ, lượt nuôi 30 phút–12 giờ, mẻ máy 5 phút–6 giờ. Lúa mì/ngô cùng mở ở level 1; các cây còn lại ở 4/7/10/14/18/24. Nhà đầu tiên mở theo các nhóm level 1/5/10/15/20/25/30/35; nhà thứ hai từ level 12 đến 54. Lượt mới có 500 xu, 10 kim cương, 6 ruộng mở sẵn và chưa có máy/chuồng. 34 ruộng còn lại mua dần tại các level chẵn 2–68 theo [bảng giá đất](land-purchase.md). Level 1 chỉ cho mua máy thức ăn và chuồng gà; nguyên liệu và công thức cám gà dùng được ngay. Xem [toàn bộ mốc xây](economy-config.md). Lên level không tự cấp công trình hoặc ruộng; các lần mua vẫn kiểm tiền và mốc sản phẩm.
+Cây mất 5 phút–12 giờ, lượt nuôi 30 phút–12 giờ, mẻ máy 5 phút–6 giờ. Lúa mì/ngô cùng mở ở level 1; các cây còn lại ở 4/7/10/14/18/24. Nhà đầu tiên mở theo các nhóm level 1/5/10/15/20/25/30/35; nhà thứ hai từ level 12 đến 54. Lượt mới có 700 xu, 10 kim cương, 4 lúa mì + 2 ngô, 6 ruộng mở sẵn và chưa có máy/chuồng. 34 ruộng còn lại mua dần tại các level chẵn 2–68 theo [bảng giá đất](land-purchase.md). Level 1 chỉ cho mua máy thức ăn và chuồng gà; nguyên liệu và công thức cám gà dùng được ngay. Xem [toàn bộ mốc xây](economy-config.md). Lên level không tự cấp công trình hoặc ruộng; các lần mua vẫn kiểm tiền và mốc sản phẩm.
 
 Mục tiêu là cho phép gieo/đặt mẻ rồi quay lại sau, kéo dài việc hoàn thiện trang trại theo yêu cầu chơi lâu hơn. Cây dài giờ cho lãi mỗi lần thu cao hơn, cây ngắn giờ cho lãi theo giờ cao hơn nếu chăm liên tục. Việc kéo dài mốc tối đa chưa chứng minh game có đủ nội dung hấp dẫn trong nhiều năm.
 

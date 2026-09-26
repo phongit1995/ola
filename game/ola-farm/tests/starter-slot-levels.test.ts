@@ -12,6 +12,8 @@ import { addBuildXP, xpForLevel } from './fixtures/established-farm';
 
 const catalog = loadFarmCatalog();
 const levels = [5, 10, 15, 20];
+// Chicken slots open earlier so a new farm has something at levels 3 and 9.
+const chickenLevels = [3, 9, 15, 20];
 const settings = { speed: 1, sound: false, music: false };
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 const ok = (result: ActionResult) => assert.equal(result.error, undefined, result.error);
@@ -43,7 +45,7 @@ function memory(state: FarmState) {
 test('only chicken pens and feed-mill queues use the wider starter slot levels', () => {
   assert.deepEqual(
     catalog.economy!.animals.layer.slots.map(slot => slot.requiredLevel),
-    levels
+    chickenLevels
   );
   assert.deepEqual(
     catalog.economy!.machines.feedmill.queueSlots.map(slot => slot.requiredLevel),
@@ -74,7 +76,7 @@ for (const plot of [12, 50]) {
     const initial = copy(game.state);
     assert.ok(game.expandPen(plot, 2).error, 'a later slot cannot be purchased even at a high level');
     assert.deepEqual(game.state, initial);
-    for (const [index, level] of levels.entries()) {
+    for (const [index, level] of chickenLevels.entries()) {
       const slot = index + 1;
       game.state.xp = xpForLevel(game, level) - 1;
       game.state.coins = 1000000;

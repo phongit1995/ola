@@ -200,12 +200,14 @@ Chỉ liệt kê những level có thứ mới. Level ghi ở đây là level **
 | ---: | ---: | --- |
 | 1 | 0 | **Cây:** Lúa mì, Ngô · **Công thức:** Thức ăn gà · **Nhà máy:** Máy thức ăn 1 · **Chuồng:** Chuồng gà 1 |
 | 2 | 15 | **Ruộng:** Ruộng 7 |
+| 3 | 42 | **Ô chuồng:** Chuồng gà 1: ô 2 |
 | 4 | 81 | **Cây:** Bắp cải · **Ruộng:** Ruộng 8 |
-| 5 | 132 | **Công thức:** Bánh mì, Bánh mì ngô · **Nhà máy:** Lò bánh 1 · **Ô chuồng:** Chuồng gà 1: ô 2 · **Ô hàng chờ:** Máy thức ăn 1: ô 2, Lò bánh 1: ô 2, 3, 4, 5 |
+| 5 | 132 | **Công thức:** Bánh mì, Bánh mì ngô · **Nhà máy:** Lò bánh 1 · **Ô hàng chờ:** Máy thức ăn 1: ô 2, Lò bánh 1: ô 2, 3, 4, 5 |
 | 6 | 195 | **Ruộng:** Ruộng 9 |
 | 7 | 270 | **Cây:** Củ Cải Đường |
 | 8 | 357 | **Ruộng:** Ruộng 10 |
-| 10 | 567 | **Cây:** Khoai Tây · **Công thức:** Thức ăn bò, Bơ, Phô mai, Kem sữa · **Nhà máy:** Xưởng sữa 1 · **Chuồng:** Chuồng bò 1 · **Ô chuồng:** Chuồng gà 1: ô 3, Chuồng bò 1: ô 2, 3, 4, 5 · **Ô hàng chờ:** Máy thức ăn 1: ô 3, Xưởng sữa 1: ô 2, 3, 4, 5 · **Ruộng:** Ruộng 11 |
+| 9 | 456 | **Ô chuồng:** Chuồng gà 1: ô 3 |
+| 10 | 567 | **Cây:** Khoai Tây · **Công thức:** Thức ăn bò, Bơ, Phô mai, Kem sữa · **Nhà máy:** Xưởng sữa 1 · **Chuồng:** Chuồng bò 1 · **Ô chuồng:** Chuồng bò 1: ô 2, 3, 4, 5 · **Ô hàng chờ:** Máy thức ăn 1: ô 3, Xưởng sữa 1: ô 2, 3, 4, 5 · **Ruộng:** Ruộng 11 |
 | 12 | 905 | **Nhà máy:** Máy thức ăn 2 · **Chuồng:** Chuồng gà 2 · **Ô chuồng:** Chuồng gà 2: ô 2, 3 · **Ô hàng chờ:** Máy thức ăn 2: ô 2, 3 · **Ruộng:** Ruộng 12 |
 | 14 | 2.251 | **Cây:** Dâu tây · **Công thức:** Bánh dâu, Sữa Chua Dâu Tây · **Ruộng:** Ruộng 13 |
 | 15 | 3.702 | **Công thức:** Cám heo (cần mốc Chăn nuôi), Khoai Tây Chiên, Bánh Mì Nướng, Burger (cần mốc Chăn nuôi) · **Nhà máy:** Bếp nướng 1 · **Chuồng:** Chuồng heo 1 (cần mốc Chăn nuôi) · **Ô chuồng:** Chuồng gà 1: ô 4, Chuồng gà 2: ô 4, Chuồng heo 1: ô 2, 3, 4, 5 · **Ô hàng chờ:** Máy thức ăn 1: ô 4, Máy thức ăn 2: ô 4, Bếp nướng 1: ô 2, 3, 4, 5 |
@@ -239,7 +241,7 @@ Chỉ liệt kê những level có thứ mới. Level ghi ở đây là level **
 | 66 | 4.584.335 | **Ruộng:** Ruộng 39 |
 | 68 | 5.096.737 | **Ruộng:** Ruộng 40 |
 
-Level cấu hình của ô chuồng bò (2/3/4/5), heo (1/1/1/1), cừu (1/1/1/1) không cao hơn level mở chuồng (bò 10, heo 15, cừu 35), nên thực tế các ô này mở cùng lúc với chuồng. Chỉ ô chuồng gà (5/10/15/20) có mốc level riêng.
+Level cấu hình của ô chuồng bò (2/3/4/5), heo (1/1/1/1), cừu (1/1/1/1) không cao hơn level mở chuồng (bò 10, heo 15, cừu 35), nên thực tế các ô này mở cùng lúc với chuồng. Chỉ ô chuồng gà (3/9/15/20) có mốc level riêng.
 
 ## Điều kiện nội dung (mốc Chăn nuôi và mốc Thủ công)
 

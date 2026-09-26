@@ -24,11 +24,14 @@ function storage() {
 }
 
 test('the five-file loader keeps the default fresh economy and owns immutable config copies', () => {
-  assert.deepEqual(new FarmGame(defaults).state, new FarmGame(base).state);
+  const plain = new FarmGame(base).state;
+  assert.deepEqual(plain.inventory, {});
+  plain.inventory = { 'raw:1': 4, 'farm40:corn': 2 };
+  assert.deepEqual(new FarmGame(defaults).state, plain, 'gameplay.json only adds the starter stock');
   const config = copy(gameplay!),
     cat = configured(config);
   config.startingInventory['raw:1'] = 99;
-  assert.equal(cat.gameplay!.startingInventory['raw:1'], undefined);
+  assert.equal(cat.gameplay!.startingInventory['raw:1'], 4);
 });
 
 test('an unknown construction species returns a locked offer without changing the farm', () => {
@@ -154,6 +157,7 @@ test('rescue, growth-stage timing and feed-mill requirement are configurable', (
   assert.equal(game.canRescue(), false);
   const rescue = new FarmGame(defaults);
   rescue.state.coins = 0;
+  rescue.state.inventory = {};
   assert.equal(rescue.canRescue(), true);
 });
 

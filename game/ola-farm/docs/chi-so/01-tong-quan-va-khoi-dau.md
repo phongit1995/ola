@@ -7,7 +7,7 @@
 Gieo hạt trên ruộng → thu hoạch → làm thức ăn ở **Máy thức ăn** → cho vật nuôi ăn → thu trứng, sữa, thịt xông khói, len → chế biến ở các nhà máy → **bán trong kho lấy xu** → dùng xu mua hạt, xây nhà máy, xây chuồng, mở rộng và mua thêm ruộng.
 
 - **Nguồn xu duy nhất do chơi mà có là bán hàng trong kho.** Ngoài ra chỉ có đổi kim cương lấy xu và tiền hoàn khi hủy cây.
-- Không có đơn hàng, nhiệm vụ, thành tích, ao cá. Kim cương chỉ có thêm khi lên level (+2 mỗi level mới).
+- Không có đơn hàng, nhiệm vụ, thành tích, ao cá. Đơn hàng đã chốt không làm (26/09/2026, xem [12](12-diem-can-chot.md#đã-chốt-đợt-26092026)). Kim cương chỉ có thêm khi lên level (+2 mỗi level mới).
 - Kho **không giới hạn sức chứa**.
 
 ## Ba chỉ số của người chơi
@@ -22,11 +22,12 @@ Level không lưu riêng mà tính lại từ tổng EXP mỗi lần, xem [02](0
 
 ## Trạng thái khởi đầu
 
-- 500 xu, 10 kim cương, 0 EXP (level 1).
+- 700 xu, 10 kim cương, 0 EXP (level 1).
 - 6 ruộng mở sẵn (Ruộng 1 đến Ruộng 6), chưa gieo gì. 34 ruộng còn lại mua dần theo level, xem [04](04-ruong.md).
-- Kho trống, chưa có nhà máy, chưa có chuồng.
+- Kho có sẵn **4 Lúa mì + 2 Ngô**, đủ làm 2 mẻ Thức ăn gà ngay khi xây xong Máy thức ăn (`gameplay.json` `startingInventory`). Chưa có nhà máy, chưa có chuồng.
 - Bảng chào mừng hiện khi mới vào (`showWelcome: true`).
-- 500 xu vừa đủ mua **Máy thức ăn 1** (200) và **Chuồng gà 1 kèm 1 con** (100 + 120 = 220), tổng 420, còn 80 xu. Hai công trình này cho 20 + 15 = 35 EXP, đủ lên level 2 ngay (+2 kim cương).
+- Ở level 1 xây được **Máy thức ăn 1** (200) và **Chuồng gà 1 kèm 1 con** (100 + 120 = 220), tổng 420, còn 280 xu đủ gieo cả 6 ruộng. Hai công trình này cho 20 + 15 = 35 EXP, đủ lên level 2 ngay (+2 kim cương).
+- Level 3 mở ô chuồng gà thứ 2, level 9 mở ô thứ 3, để các level đầu level nào cũng có thứ mới (trước 26/09/2026 level 3 và 9 không mở gì).
 
 ## Giới hạn
 

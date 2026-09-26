@@ -128,10 +128,10 @@ test('a failed land purchase save leaves the visible farm intact and retry charg
   assert.deepEqual(session.game.state, before);
   fail = false;
   assert.equal(session.retrySave(), true);
-  assert.equal(session.game.state.coins, 377);
+  assert.equal(session.game.state.coins, 577);
   assert.equal(session.game.state.plots[1].unlocked, true);
   assert.equal(session.dispatch({ type: 'improve', plot: 1 }).ok, false);
-  assert.equal(session.game.state.coins, 377);
+  assert.equal(session.game.state.coins, 577);
   assert.deepEqual(new GameSession(cat, saver, () => 0).game.state, session.game.state);
 });
 
@@ -191,7 +191,7 @@ test('recipe price, XP and unlock level share the configured source and paid sna
   config.items['goods:7'].sellPrice = 77;
   const game = new FarmGame(catalog(config), paid);
   ok(game.cancel(0));
-  assert.equal(game.state.coins, 486);
+  assert.equal(game.state.coins, 686);
   game.state.inventory['raw:1'] = 2;
   assert.match(game.produce(7, 0).error!, /level 2/);
   game.state.xp = xpFor(2);

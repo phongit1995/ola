@@ -2,6 +2,7 @@ import { instantiate } from 'cc';
 import { InventoryBodyView } from './InventoryBodyView';
 import { format } from '../../core/Format';
 import { ink } from '../../render/constants/Ui.constants';
+import { PANEL_MUTED } from '../shared/PanelPalette.constants';
 import type { PanelContext, PanelDefinition } from '../shared/PanelContext.types';
 import { legacyIcon } from '../../render/Icons';
 import { productionTargetSize } from '../shared/ProductionTouch';
@@ -33,12 +34,23 @@ export const salePanel: PanelDefinition = {
     const count = game.quantity(item.key),
       quantity = Math.min(count, Math.max(1, state.saleQuantity));
     state.saleQuantity = quantity;
-    const content = ctx.list(540),
+    const content = ctx.list(600),
       cx = (w - 80) / 2;
-    ui.item(content, `assets/sprites/${item.image}.png`, cx, -65, 104);
-    ui.text(content, 'SaleItem', `${item.name} · Kho: ${format(count)}`, cx, -144, w - 100, 48, 28, ink);
-    art.island(content, 'inset', cx, -222, 156, 76);
-    ui.text(content, 'SaleQuantity', String(quantity), cx, -222, 140, 60, 32, ink);
+    ui.item(content, `assets/sprites/${item.image}.png`, cx, -80, 110);
+    ui.text(content, 'SaleItem', item.name, cx, -160, w - 100, 48, 30, ink);
+    ui.text(
+      content,
+      'SaleStock',
+      `Trong kho: ${format(count)} · Giá: ${format(item.sellPrice)} xu/cái`,
+      cx,
+      -205,
+      w - 100,
+      36,
+      22,
+      PANEL_MUTED
+    );
+    art.island(content, 'inset', cx, -290, 156, 76);
+    ui.text(content, 'SaleQuantity', String(quantity), cx, -290, 140, 60, 32, ink);
     const change = (next: number): void => {
       state.saleQuantity = Math.max(1, Math.min(count, next));
       ctx.render();
@@ -48,7 +60,7 @@ export const salePanel: PanelDefinition = {
       'sale-minus',
       '−',
       cx - 135,
-      -222,
+      -290,
       90,
       76,
       () => change(quantity - 1),
@@ -60,22 +72,25 @@ export const salePanel: PanelDefinition = {
       'sale-plus',
       '+',
       cx + 135,
-      -222,
+      -290,
       90,
       76,
       () => change(quantity + 1),
       quantity < count,
       'card'
     );
-    ui.button(content, 'sale-max', 'Tối đa', cx, -312, 240, 64, () => change(count), { enabled: count > 0 });
-    art.town(content, 'coin', cx - 100, -392, 44, 44);
-    ui.text(content, 'SaleReward', `${format(quantity * item.sellPrice)} xu`, cx + 30, -392, 250, 55, 29, ink);
+    // Secondary white button: the green confirm below stays the one primary action.
+    ui.button(content, 'sale-max', `Tối đa (${format(count)})`, cx, -375, 260, 60, () => change(count), {
+      enabled: count > 0,
+      variant: 'blue',
+    });
+    ui.text(content, 'SaleReward', `Nhận ${format(quantity * item.sellPrice)} xu`, cx, -450, w - 100, 50, 30, ink);
     ui.button(
       content,
       'sale-confirm',
       `Bán ${quantity} sản phẩm`,
       cx,
-      -479,
+      -530,
       w - 180,
       70,
       () => app.act({ type: 'sellItem', item: item.key, quantity }, 'Sao tien bay', () => app.open('inventory')),
@@ -90,7 +105,10 @@ export const quickSalePanel: PanelDefinition = {
   title: 'Bán nhanh',
   render(ctx: PanelContext): void {
     const { app, state, game, ui, art, card, width: w, height: h, farm: s } = ctx;
-    const items = game.items.filter(item => state.inventoryTab === 'all' || item.tab === state.inventoryTab);
+    // Only what can be sold right now; empty goods would only show disabled buttons.
+    const items = game.items.filter(
+      item => (state.inventoryTab === 'all' || item.tab === state.inventoryTab) && game.quantity(item.key) > 0
+    );
     const touch = productionTargetSize(app.width),
       cols = w < 900 ? 2 : 3,
       rowH = 220 + touch;
@@ -118,9 +136,21 @@ export const quickSalePanel: PanelDefinition = {
           state.inventoryTab = id;
           ctx.render();
         },
-        { variant: 'blue' }
+        { variant: state.inventoryTab === id ? 'green' : 'blue' }
       )
     );
+    if (!items.length)
+      ui.text(
+        content,
+        'StockEmpty',
+        'Chưa có sản phẩm để bán.',
+        (w - 80) / 2,
+        -touch - 90,
+        w - 120,
+        50,
+        26,
+        PANEL_MUTED
+      );
     const cw = (w - 100) / cols;
     items.forEach((item, i) => {
       const suffix = `${item.tab}-${item.legacyId ?? item.key}`;
@@ -137,12 +167,13 @@ export const quickSalePanel: PanelDefinition = {
       );
       ui.text(cell, 'StockLabel', `${item.name}\n× ${count}`, 0, rowH / 2 - 130, cw - 14, 54, 23, ink);
       ui.text(cell, 'Price', `${item.sellPrice} xu / sản phẩm`, 0, rowH / 2 - 175, cw - 12, 28, 20, ink);
-      const buttonY = -rowH / 2 + touch / 2 + 12;
+      // Raised so the buttons sit inside the rounded card, clear of its bottom corners.
+      const buttonY = -rowH / 2 + touch / 2 + 22;
       ui.button(
         cell,
         `sell-${suffix}`,
         'Bán 1',
-        -cw * 0.23,
+        -cw * 0.225,
         buttonY,
         cw * 0.42,
         touch,
@@ -153,7 +184,7 @@ export const quickSalePanel: PanelDefinition = {
         cell,
         `sell-all-${suffix}`,
         'Bán hết',
-        cw * 0.23,
+        cw * 0.225,
         buttonY,
         cw * 0.42,
         touch,

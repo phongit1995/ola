@@ -11,7 +11,7 @@ Game bắt đầu với **6 ô được cấp sẵn**, mua thêm tuần tự đ�
 - Đạt level chỉ mở quyền mua; vẫn phải trả đủ xu. Ô chưa mua được giữ lại để mua sau, không mất khi lên level.
 - Mỗi giao dịch chỉ mở một ô. Đất đã mua được giữ vĩnh viễn, không thu phí duy trì.
 - Map chỉ hiện những ô đã sở hữu và một ô xanh kế tiếp, dùng prefab `Soil0` hiện có. Chạm ô xanh mở `LandPurchase.prefab`: icon khóa và level yêu cầu khi chưa đủ cấp; icon xu, giá mua và nút mua khi đủ cấp. Thiếu xu thì nút mua bị vô hiệu hóa; mua thành công ô đổi thành đất trồng `Soil1` và hiện ô xanh tiếp theo.
-- Giới hạn vẫn là 40 ô. Giữ ví khởi đầu 500 xu và đường cong XP hiện tại cho phương án này.
+- Giới hạn vẫn là 40 ô. Ví khởi đầu (700 xu từ 26/09/2026) và đường cong XP lấy từ economy.json.
 
 ## Cơ sở tính giá
 

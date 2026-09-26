@@ -43,7 +43,7 @@ Mỗi chuồng tối đa năm ô/năm con. Mở ô 2–5 tuần tự, trả phí
 | Heo | 405 | 435 | 480 | 540 |
 | Cừu | 645 | 675 | 720 | 780 |
 
-Ô gà 2/3/4/5 yêu cầu level **5/10/15/20**; ô bò giữ level 2/3/4/5. Heo/cừu không có khóa level riêng cho từng ô sau khi đã mua chuồng. Mua lại ở ô đã trả phí chỉ tốn giá con. ID, ô trống và tài sản đã mua trong save cũ được giữ. Bảng chăm hiện không có nút bán con, dù core vẫn hỗ trợ bán con đang đói.
+Ô gà 2/3/4/5 yêu cầu level **3/9/15/20**; ô bò giữ level 2/3/4/5. Heo/cừu không có khóa level riêng cho từng ô sau khi đã mua chuồng. Mua lại ở ô đã trả phí chỉ tốn giá con. ID, ô trống và tài sản đã mua trong save cũ được giữ. Bảng chăm hiện không có nút bán con, dù core vẫn hỗ trợ bán con đang đói.
 
 ## Máy và hàng đợi
 

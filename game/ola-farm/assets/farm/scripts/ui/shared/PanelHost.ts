@@ -379,7 +379,7 @@ export class PanelHost extends Component implements PanelState {
 
   private footer(id: string, title: string, action: () => void, left?: boolean): void {
     const x = left === undefined ? 0 : (left ? -1 : 1) * this.width * 0.235;
-    const variant = /^(focus-|inventory-sales|show-json)/.test(id) ? 'blue' : 'green';
+    const variant = /^(focus-|inventory-sales|show-json|back-stock)/.test(id) ? 'blue' : 'green';
     const touch = productionTargetSize(this.app.width);
     this.app.ui.button(
       this.dialogInstance!.body,

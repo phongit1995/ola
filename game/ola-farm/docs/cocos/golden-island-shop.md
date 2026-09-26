@@ -4,7 +4,7 @@ Nút **Shop** thay **Nông trại** ở navigation, cạnh Kho và Nhà máy. M�
 
 Shop có một thẻ cho mỗi loại: tám loại máy và bốn loài. Bộ đếm **0/2 → 1/2 → 2/2** là số nhà đã xây. Nhà thứ hai cần **level 12–54 tùy loại**, đã có nhà 1, đủ điều kiện nội dung và đủ xu. Thiếu level vẫn hiện giá số + icon xu, ổ khóa và `Cần level N`; thiếu tiền hiện số xu còn thiếu. Đủ hai nhà hiện `Đã đủ 2 nhà` và khóa mua.
 
-Tab Vật nuôi xây chuồng, mỗi chuồng mới có một ô kèm một con. Mua thêm con hoặc mở ô nuôi nằm trong popup của đúng chuồng. Ô gà 2–5 cần level 5/10/15/20; ô bò dùng level 2/3/4/5, độc lập với level xây nhà 2. Mỗi chuồng tối đa năm con.
+Tab Vật nuôi xây chuồng, mỗi chuồng mới có một ô kèm một con. Mua thêm con hoặc mở ô nuôi nằm trong popup của đúng chuồng. Ô gà 2–5 cần level 3/9/15/20; ô bò dùng level 2/3/4/5, độc lập với level xây nhà 2. Mỗi chuồng tối đa năm con.
 
 Giá và level theo từng loại nằm trong [bảng cân bằng hiện hành](farm-town-husbandry-balance.md#máy-và-hàng-đợi). Ví dụ chuồng gà thứ hai cần level 12/4.120 xu gồm một con; máy thức ăn thứ hai cần level 12/5.000 xu.
 

@@ -1,6 +1,9 @@
 {
   "version": 1,
-  "startingInventory": {},
+  "startingInventory": {
+    "raw:1": 4,
+    "farm40:corn": 2
+  },
   "showWelcome": true,
   "rescueEnabled": true,
   "growthStageFraction": 0.5,

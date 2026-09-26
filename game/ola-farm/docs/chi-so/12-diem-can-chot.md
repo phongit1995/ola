@@ -16,11 +16,14 @@ Theo dõi các quyết định về số liệu và luật. Phần đầu là nh
 
 ## Đã chốt đợt 26/09/2026
 
-Hai luật nhỏ cho giống Hay Day và Township.
+Hai luật nhỏ cho giống Hay Day và Township, quyết định không làm bảng đơn hàng, và sửa khởi đầu cho người mới.
 
 | # | Nội dung | Trước | Sau |
 | ---: | --- | --- | --- |
 | A6 | EXP khi xây dựng | Xây nhà máy, chuồng, mở ô, mua ruộng không có EXP | Cộng một lần lúc trả tiền: nhà máy 20, chuồng 15, ô chuồng 5, ô hàng chờ 3, ruộng 10 (`experience.buildXP`); cả trang trại 1.132 EXP. Mua lại con đã bán không có EXP; xem [02](02-exp-level-mo-khoa.md#nguồn-exp) |
+| D1 | Bảng đơn hàng, nhiệm vụ | Chưa quyết | **Không làm.** Bán trong kho vẫn là nguồn xu duy nhất do chơi mà có |
+| A5 | EXP khi bán hàng | Chưa quyết: giữ, hay chuyển sang đơn hàng | Giữ 1 EXP mỗi 100 xu doanh thu, vì không làm đơn hàng (D1) |
+| D5 | Khởi đầu người mới | 500 xu, kho trống; xây 2 nhà xong còn 80 xu, chỉ gieo được 3 ruộng; level 3 và 9 không mở gì. Chạy thử 60 phút đầu: dài nhất 24 phút liền không có gì làm | 700 xu, kho có sẵn 4 Lúa mì + 2 Ngô; ô chuồng gà 2 và 3 mở ở level 3 và 9 (trước là 5 và 10). Chạy thử 60 phút đầu: dài nhất 4 phút liền không có gì làm, lên level 5 (mở Lò bánh) ngay trong giờ đầu. Hướng dẫn từng bước vẫn chưa làm; xem [01](01-tong-quan-va-khoi-dau.md#trạng-thái-khởi-đầu) |
 | D2 | Menu và dời công trình | Mở menu tạm dừng hoặc dời công trình thì cây, vật nuôi, máy đứng yên; thời gian đó mất, thoát game lúc đang tạm dừng không được cộng offline | Đồng hồ luôn chạy như Hay Day; Menu và dời công trình chỉ chặn thao tác khác; bỏ phím Space tạm dừng; chỉ lỗi lưu mới dừng trang trại; xem [10](10-thoi-gian-offline-luu.md#menu-và-dời-công-trình-không-dừng-đồng-hồ) |
 
 Các số nhịp chơi ở [02](02-exp-level-mo-khoa.md#nhịp-chơi-ước-tính) chạy trước hai thay đổi này. Chạy bộ mô phỏng có sẵn trong repo (`tools/simulate-real-time-economy.ts`, 6 lịch chơi) có và không có EXP xây dựng: level 10 đến sớm hơn 0,5–1 ngày, mốc mua hết công trình sớm hơn khoảng 1–1,5 ngày trên hơn 3 năm. Luật menu không đổi kết quả mô phỏng vì người chơi giả không mở menu.
@@ -35,10 +38,10 @@ Các số nhịp chơi ở [02](02-exp-level-mo-khoa.md#nhịp-chơi-ước-tín
 | EXP khi xây dựng | Có khi khánh thành nhà sản xuất hoặc nhà dịch vụ mới, khi đặt trang trí vừa mua | Có khi xây nhà ở, công trình công cộng, nhà máy, chuồng thú | **Có** (A6): nhà máy, chuồng, ô chuồng, ô hàng chờ |
 | EXP khi mở rộng đất | Có khi dọn đá, dọn đầm lầy, chặt cây bụi | Có khi mở rộng đất | **Có** (A6): 10 EXP mỗi ruộng mua |
 | Bán hàng | Sạp bên đường chỉ ra xu, không EXP; đơn xe tải và tàu ra xu và EXP | Đơn trực thăng, tàu hỏa, máy bay ra xu và EXP | Bán trong kho ra xu và 1 EXP mỗi 100 xu, thay cho đơn hàng (A5) |
-| Đơn hàng, nhiệm vụ | Nguồn EXP và xu chính | Nguồn EXP và xu chính (trực thăng cho nhiều EXP nhất) | Chưa có (D1) |
+| Đơn hàng, nhiệm vụ | Nguồn EXP và xu chính | Nguồn EXP và xu chính (trực thăng cho nhiều EXP nhất) | **Không làm** (D1) |
 | Đồng hồ khi mở menu | Không dừng | Không dừng | **Không dừng** (D2) |
 
-Hàng "Đồng hồ khi mở menu" là cách hai game này vận hành, không nằm trong các trang nguồn dưới đây. Khác biệt lớn nhất còn lại là đơn hàng (D1): hai game kia dùng đơn hàng để vừa cho EXP, xu, vừa chỉ cho người chơi nên làm gì tiếp.
+Hàng "Đồng hồ khi mở menu" là cách hai game này vận hành, không nằm trong các trang nguồn dưới đây. Khác biệt lớn nhất là không có đơn hàng (D1, đã chốt không làm). Hai game kia dùng đơn hàng để vừa cho EXP, xu, vừa chỉ cho người chơi nên làm gì tiếp; ở đây bán trong kho thay phần EXP và xu, còn phần chỉ đường cho người mới phải dựa vào hướng dẫn 30 phút đầu (D5).
 
 ## Còn mở
 
@@ -47,18 +50,17 @@ Hàng "Đồng hồ khi mở menu" là cách hai game này vận hành, không n
 | # | Hiện trạng | Cần chốt |
 | ---: | --- | --- |
 | A2 | **Cây ngắn cho EXP/giờ gấp nhiều lần cây dài:** Lúa mì 24 EXP/giờ/ô, Nho 2,17 (gấp 11,1 lần) nếu gieo lại liên tục. Với người chơi 3 lần/ngày thì ngược lại: mỗi ô lúa mì chỉ 6,7 EXP/ngày, nho 45,8 (xem [03](03-cay-trong.md#mỗi-ô-mỗi-ngày-theo-lịch-chơi)). | Giữ để người cày lợi hơn khi canh cây ngắn, hay thu hẹp khoảng cách? |
-| A5 | **Bán hàng cho EXP** (1 EXP mỗi 100 xu). Hay Day không cho EXP khi bán ở sạp mà cho EXP qua đơn hàng. | Giữ EXP bán hàng, hay chuyển sang đơn hàng/nhiệm vụ (xem D1)? |
 | A7 | **Sau level 68 không còn gì để mở** (thứ cuối cùng là Ruộng 40), trong khi level tối đa là 99. | Hạ level tối đa, hay thêm nội dung cho level 69–99? |
-| A8 | **Cuối game thưa:** kéo dài 3–4 năm với 68 level có nội dung nghĩa là năm thứ 4 người chơi 3 lần/ngày chỉ có 7 level mới, có lúc 59 ngày không có gì mới (xem [02](02-exp-level-mo-khoa.md#nhịp-chơi-ước-tính)). | Thêm việc cho giai đoạn cuối: đơn hàng (D1), nâng cấp đất (B7), sự kiện? |
+| A8 | **Cuối game thưa:** kéo dài 3–4 năm với 68 level có nội dung nghĩa là năm thứ 4 người chơi 3 lần/ngày chỉ có 7 level mới, có lúc 59 ngày không có gì mới (xem [02](02-exp-level-mo-khoa.md#nhịp-chơi-ước-tính)). | Thêm việc cho giai đoạn cuối (nâng cấp đất B7, sự kiện), hay rút ngắn cuối game (hạ level tối đa A7, hạ giá ruộng cuối)? |
 
 ### B. Giá và kinh tế
 
 | # | Hiện trạng | Cần chốt |
 | ---: | --- | --- |
 | B2 | **Giá ô hàng chờ giống nhau cho mọi máy** (60/120/200/320), dù nhà máy rẻ nhất 100 xu còn đắt nhất 44.000 xu. | Có cho giá ô hàng chờ tăng theo giá trị máy không? |
-| B3 | **Level ô chuồng không có tác dụng với bò, heo, cừu:** ô chuồng bò cấu hình level 2/3/4/5 nhưng chuồng mở ở level 10; ô chuồng heo cấu hình level 1/1/1/1 nhưng chuồng mở ở level 15; ô chuồng cừu cấu hình level 1/1/1/1 nhưng chuồng mở ở level 35. Chỉ ô chuồng gà (level 5/10/15/20) và hàng chờ Máy thức ăn (level 5/10/15/20) là có mốc level thật; hàng chờ các máy khác đều level 1. | Có đặt mốc level cho ô chuồng và ô hàng chờ các máy khác không? |
+| B3 | **Level ô chuồng không có tác dụng với bò, heo, cừu:** ô chuồng bò cấu hình level 2/3/4/5 nhưng chuồng mở ở level 10; ô chuồng heo cấu hình level 1/1/1/1 nhưng chuồng mở ở level 15; ô chuồng cừu cấu hình level 1/1/1/1 nhưng chuồng mở ở level 35. Chỉ ô chuồng gà (level 3/9/15/20) và hàng chờ Máy thức ăn (level 5/10/15/20) là có mốc level thật; hàng chờ các máy khác đều level 1. | Có đặt mốc level cho ô chuồng và ô hàng chờ các máy khác không? |
 | B4 | **Bơ và Phô mai cùng dùng 2 Sữa bò, cùng máy:** Bơ (30 phút) lãi 122 xu/giờ máy, Phô mai (1 giờ) 76. Với người chơi 3 lần/ngày thì Phô mai lại hơn: 1.140 so với 915 xu/ngày/máy. | Giữ như vậy (mỗi món hợp một kiểu chơi), hay chỉnh giá/thời gian? |
-| B5 | **Cây không có chỗ dùng trong nhiều level:** Bắp cải mở ở L4 nhưng công thức đầu tiên dùng tới ở L10; Củ Cải Đường mở ở L7 nhưng công thức đầu tiên dùng tới ở L20; Khoai Tây mở ở L10 nhưng công thức đầu tiên dùng tới ở L15; Bí Ngô mở ở L18 nhưng công thức đầu tiên dùng tới ở L30. Trong khoảng đó chỉ bán thô được. | Có thêm công dụng sớm hơn (công thức, đơn hàng) hoặc dời level mở cây không? |
+| B5 | **Cây không có chỗ dùng trong nhiều level:** Bắp cải mở ở L4 nhưng công thức đầu tiên dùng tới ở L10; Củ Cải Đường mở ở L7 nhưng công thức đầu tiên dùng tới ở L20; Khoai Tây mở ở L10 nhưng công thức đầu tiên dùng tới ở L15; Bí Ngô mở ở L18 nhưng công thức đầu tiên dùng tới ở L30. Trong khoảng đó chỉ bán thô được. | Có thêm công thức dùng sớm hơn hoặc dời level mở cây không? |
 | B6 | **Kho không giới hạn** nên không có nâng cấp kho như Hay Day (một chỗ tiêu xu và giữ nhịp chơi). | Có cần giới hạn kho và nâng cấp kho không? |
 | B7 | **Nâng cấp đất (cấp 2–4) có trong cấu hình nhưng không có cách nâng.** Sản lượng 5/7/9 (và 4/5/6) chưa dùng. | Bỏ hẳn, hay làm tính năng nâng cấp đất (một chỗ tiêu xu, giải nút thắt nguyên liệu)? |
 | B8 | **Sữa là nút thắt cuối game:** tối đa 10 bò, người chơi 3 lần/ngày thu khoảng 30 sữa/ngày, trong khi Bơ, Phô mai, Kem sữa, Sữa Chua Dâu Tây, Ngũ Cốc Ngô cần sữa và Khoai Tây Chiên, Bánh Mì Nướng, Bỏng Ngô cần bơ. Trong mô phỏng (năm 3–4, người chơi 3 lần/ngày) Lò Ngô bỏ trống 100% ô hàng chờ, Bếp nướng 67%, Xưởng sữa 33%. | Cho bò ra 2 sữa mỗi lượt (`animals.dairy-cow.quantity`), thêm bò, hay bớt công thức dùng sữa/bơ? |
@@ -76,7 +78,6 @@ Hàng "Đồng hồ khi mở menu" là cách hai game này vận hành, không n
 
 | # | Hiện trạng | Cần chốt |
 | ---: | --- | --- |
-| D1 | **Không có đơn hàng, nhiệm vụ, thành tích.** Ở Hay Day/Township đơn hàng là nguồn EXP và xu lớn nhất, và cho người chơi biết nên làm gì tiếp. | Có làm bảng đơn hàng không? (tính năng mới) |
 | D3 | **Offline không giới hạn** (`maxOfflineSeconds: null`). | Giữ không giới hạn hay đặt trần (ví dụ 24–72 giờ)? |
 | D4 | **Bán con vật** có trong code (hoàn 50%) nhưng không có nút. | Làm nút bán con hay bỏ hẳn? |
 | D5 | **Hướng dẫn tân thủ gần như không có:** chỉ một bảng chào mừng; các cờ theo dõi tiến trình tân thủ trong code được ghi nhưng không dùng, 3 cờ còn phụ thuộc món Tortilla không còn trong game. | Có làm luồng hướng dẫn 30 phút đầu không? |

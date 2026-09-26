@@ -32,7 +32,7 @@ test('a fresh session starts unpaused with the starter farm and persists after t
   assert.equal(s.recovered, false);
   assert.equal(s.paused, false);
   assert.equal(s.canAct, true);
-  assert.equal(s.game.state.coins, 500);
+  assert.equal(s.game.state.coins, 700);
   assert.equal(store.data.size, 0);
   const toasts: string[] = [],
     committed: FarmAction[] = [];
@@ -42,10 +42,10 @@ test('a fresh session starts unpaused with the starter farm and persists after t
   assert.equal(result.ok, true);
   assert.equal(result.result.plot?.id, 0);
   assert.equal(s.game.state.plots[0].crop, 1);
-  assert.equal(s.game.state.coins, 480);
+  assert.equal(s.game.state.coins, 680);
   assert.deepEqual(committed, [{ type: 'plant', plot: 0, crop: 1 }]);
   assert.deepEqual(toasts, []);
-  assert.equal(JSON.parse(store.data.get(SIMPLE_FARM_KEY)!).free.coins, 480);
+  assert.equal(JSON.parse(store.data.get(SIMPLE_FARM_KEY)!).free.coins, 680);
 });
 
 test('a rejected action leaves the farm and the store untouched', () => {
@@ -159,7 +159,7 @@ test('a failed write pauses, keeps the visible farm, and retry commits the pendi
   assert.equal(result.result.error, undefined);
   assert.equal(s.storageFailed, true);
   assert.equal(s.paused, true);
-  assert.equal(s.pendingPack?.free.coins, 480);
+  assert.equal(s.pendingPack?.free.coins, 680);
   assert.equal(s.game.state.plots[0].crop, null, 'the visible farm is not advanced past the last persisted state');
   assert.equal(store.data.get(SIMPLE_FARM_KEY), stored);
   assert.deepEqual(events, ['saveFailed', 'toast:save-failed']);
@@ -171,7 +171,7 @@ test('a failed write pauses, keeps the visible farm, and retry commits the pendi
   assert.equal(s.paused, false);
   assert.equal(s.pendingPack, null);
   assert.equal(s.game.state.plots[0].crop, 1);
-  assert.equal(JSON.parse(store.data.get(SIMPLE_FARM_KEY)!).free.coins, 480);
+  assert.equal(JSON.parse(store.data.get(SIMPLE_FARM_KEY)!).free.coins, 680);
   assert.ok(events.includes('replaced'));
 });
 
@@ -232,7 +232,7 @@ test('menus pause and restore, import replaces the farm, restart starts over', (
   assert.throws(() => s.importText('{"version":4}'), /không được hỗ trợ/);
   assert.equal(s.game.state.coins, 4242, 'a rejected import changes nothing');
   assert.equal(s.restart(), true);
-  assert.equal(s.game.state.coins, 500);
+  assert.equal(s.game.state.coins, 700);
   assert.equal(replaced, 2);
   assert.equal(s.toggleAudio('music'), false);
   assert.equal(s.settings.music, false);

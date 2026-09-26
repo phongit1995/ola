@@ -4,7 +4,7 @@
 
 [economy.json](../../assets/farm/bundles/farm-town/economy.json) là nơi chỉnh các con số cân bằng của bản Cocos. Game tải file này cùng [timing.json](../../assets/farm/bundles/farm-town/timing.json) và [catalog.json](../../assets/farm/bundles/farm-town/catalog.json) khi khởi động. Giá và điều kiện trên Shop, bảng chuồng, máy, ruộng và giao dịch trong core cùng dùng dữ liệu đã tải.
 
-Lượt mới có 500 xu/10 kim cương, **6 ruộng mở sẵn**, chưa xây máy hoặc chuồng nào. Mỗi level chẵn từ 2 đến 68 cho phép mua thêm một ruộng, tối đa 40 ruộng; giá từ 500 đến 3.080.000 xu theo [bảng giá đất](land-purchase.md). File có tên tiếng Việt ở từng mục để dễ tìm. `name` trong economy chỉ là nhãn tra cứu; tên hiển thị và ID vẫn lấy từ catalog.
+Lượt mới có 700 xu/10 kim cương, 4 lúa mì + 2 ngô trong kho, **6 ruộng mở sẵn**, chưa xây máy hoặc chuồng nào. Mỗi level chẵn từ 2 đến 68 cho phép mua thêm một ruộng, tối đa 40 ruộng; giá từ 500 đến 3.080.000 xu theo [bảng giá đất](land-purchase.md). File có tên tiếng Việt ở từng mục để dễ tìm. `name` trong economy chỉ là nhãn tra cứu; tên hiển thị và ID vẫn lấy từ catalog.
 
 ## Tìm đúng mục
 
@@ -58,12 +58,12 @@ Mốc xây nhà đầu tiên và nhà thứ hai được giãn theo tiến trìn
 | Bàn đan | 35 | 54 | 22.000 xu |
 | Chuồng cừu | 35 | 54 | 12.600 xu, gồm một cừu |
 
-Level 1–4 chỉ xây được máy thức ăn và chuồng gà đầu tiên. Ngô và cám gà mở ở level 1 để làm được cám ngay; 500 xu khởi đầu đủ mua máy + chuồng (420 xu) và giữ 80 xu trồng nguyên liệu. Công thức được đặt theo máy và nguồn nguyên liệu: cám bò level 10, cám heo 15, đường/bánh quế 20, cám cừu 35. Giá và nguyên liệu giữ nguyên. Chuồng còn yêu cầu đã xây máy thức ăn; heo/cừu vẫn cần mốc thu sản phẩm. `catalog.initialMachines` đang rỗng, mọi site có `initial: false`.
+Level 1–4 chỉ xây được máy thức ăn và chuồng gà đầu tiên. Ngô và cám gà mở ở level 1 để làm được cám ngay; 700 xu khởi đầu đủ mua máy + chuồng (420 xu) và giữ 280 xu gieo cả 6 ruộng; 4 lúa mì + 2 ngô có sẵn làm được 2 mẻ cám gà ngay. Công thức được đặt theo máy và nguồn nguyên liệu: cám bò level 10, cám heo 15, đường/bánh quế 20, cám cừu 35. Giá và nguyên liệu giữ nguyên. Chuồng còn yêu cầu đã xây máy thức ăn; heo/cừu vẫn cần mốc thu sản phẩm. `catalog.initialMachines` đang rỗng, mọi site có `initial: false`.
 
 **Ô gà thứ hai:** sửa `animals.layer.slots[0]`, mặc định:
 
 ```json
-{ "price": 45, "requiredLevel": 5 }
+{ "price": 45, "requiredLevel": 3 }
 ```
 
 `price` ở ô chuồng là **phí chỗ**, giá người chơi trả = phí chỗ + `animals.layer.purchasePrice`. Mặc định `45 + 120 = 165 xu`, có ngay một con. Giá mua lại con ở ô trống đã trả phí chỉ là `purchasePrice`.

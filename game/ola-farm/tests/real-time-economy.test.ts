@@ -86,9 +86,10 @@ test('crop unlocks use exact levels in core; failed or repeated attempts cannot 
     g.tick(duration - 1);
     assert.ok(g.harvest(0).error);
     g.tick(1);
+    const held = g.quantity(cropItemKey(crop));
     ok(g.harvest(0));
     assert.equal(g.state.xp, before + xp);
-    assert.equal(g.quantity(cropItemKey(crop)), 3);
+    assert.equal(g.quantity(cropItemKey(crop)), held + 3);
     ok(g.plant(0, id));
     ok(g.cancel(0));
     assert.equal(g.state.xp, before + xp);
@@ -353,7 +354,7 @@ test('import preserves the supplied source and settles its paid work only once',
   store.advance(180);
   s.tick(180);
   assert.equal(s.game.isReady(s.game.state.plots[0]), true);
-  assert.equal(s.game.quantity('raw:1'), 0);
+  assert.equal(s.game.quantity('raw:1'), 4, 'only the starter stock; a ready crop waits for harvest');
 });
 
 test('offline save failures keep visible jobs and source intact; retry publishes once and imports reject malformed clocks', () => {
