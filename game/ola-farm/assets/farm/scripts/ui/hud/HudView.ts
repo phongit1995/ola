@@ -1,6 +1,6 @@
 import { _decorator, Component, Label, Node, Sprite, UITransform } from 'cc';
 import { GameSession } from '../../core/GameSession';
-import { formatWallet } from '../../core/Format';
+import { format, formatWallet } from '../../core/Format';
 import { Ui } from '../../render/Ui';
 import type { HudActions } from './HudView.types';
 import { COMPACT_WIDTH } from './HudView.constants';
@@ -84,7 +84,7 @@ export class HudView extends Component {
     this.level.string = String(p.level);
     this.xp.string = `${p.current}/${p.need}`;
     this.fillXp(p.current / p.need);
-    this.stock.string = `Kho ${Object.values(s.inventory).reduce((n, v) => n + v, 0)}`;
+    this.stock.string = `Kho ${format(Object.values(s.inventory).reduce((n, v) => n + v, 0))}`;
   }
 
   private fillXp(ratio: number): void {

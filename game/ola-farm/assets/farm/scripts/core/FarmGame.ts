@@ -13,6 +13,7 @@ import type { Recipe, Machine } from './types/ProductionTypes';
 import type { ItemAmount } from './types/ItemTypes';
 import type { TownUnlock, UnlockStatus, ConstructionOffer } from './types/ConstructionTypes';
 import type { BuildXP } from './types/EconomyTypes';
+import { format } from './Format';
 import {
   cropItemKey,
   recipeInputs,
@@ -650,7 +651,10 @@ export class FarmGame {
     s.sold += quantity;
     if (item.tab === 'goods') s.soldProducts[key] = (s.soldProducts[key] ?? 0) + quantity;
     if (key === 'farm40:tortilla') s.guide.soldTortilla = true;
-    return { message: `Đã bán ${quantity} ${item.name.toLowerCase()} · +${coins} xu${levelUp}`, coins };
+    return {
+      message: `Đã bán ${format(quantity)} ${item.name.toLowerCase()} · +${format(coins)} xu${levelUp}`,
+      coins,
+    };
   }
   setPenSpecies(id: number, species: string | null): ActionResult {
     if (this.simple) return failure('Mỗi chuồng giữ loài vật nuôi riêng.');

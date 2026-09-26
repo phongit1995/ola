@@ -81,7 +81,7 @@ export const salePanel: PanelDefinition = {
     );
     // Secondary white button: the green confirm below stays the one primary action.
     ui.button(content, 'sale-max', `Tối đa (${format(count)})`, cx, -375, 260, 60, () => change(count), {
-      enabled: count > 0,
+      enabled: quantity < count,
       variant: 'blue',
     });
     ui.text(content, 'SaleReward', `Nhận ${format(quantity * item.sellPrice)} xu`, cx, -450, w - 100, 50, 30, ink);
@@ -195,7 +195,7 @@ export const quickSalePanel: PanelDefinition = {
     ui.text(
       card,
       'StockSummary',
-      `Tổng kho: ${Object.values(s.inventory).reduce((n, v) => n + v, 0)} · Thu hoạch: ${s.harvested} · Doanh thu: ${format(s.earned)} xu`,
+      `Tổng kho: ${format(Object.values(s.inventory).reduce((n, v) => n + v, 0))} · Thu hoạch: ${format(s.harvested)} · Doanh thu: ${format(s.earned)} xu`,
       0,
       -h / 2 + touch + 35,
       w - 110,
