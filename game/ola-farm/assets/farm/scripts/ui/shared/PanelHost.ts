@@ -168,7 +168,7 @@ export class PanelHost extends Component implements PanelState {
   }
 
   /**
-   * Only what the clock changes without an action: ripe plots, finished jobs and animal boost prices.
+   * Only what the clock changes without an action: ripe plots, finished jobs and animal/machine boost prices.
    * Everything else arrives through a committed action, which `refresh` detects by game identity.
    */
   private snapshot(): string {
@@ -182,7 +182,7 @@ export class PanelHost extends Component implements PanelState {
         return (g.isReady(p) ? 'r' : '.') + (herd?.join(',') ?? '');
       })
       .join('|');
-    const machines = s.machines.map(m => `${m.job?.id ?? '-'}:${m.tray.length}`).join('|');
+    const machines = s.machines.map(m => `${m.job?.id ?? '-'}:${m.tray.length}:${g.machineBoostPrice(m.id)}`).join('|');
     const field = this.view === 'improve' && g.simple ? g.fieldUnlockOffer(this.improveId ?? -1) : null;
     // The open land offer must reflect wallet, level and sequential eligibility on every refresh.
     const land = field ? `${s.coins}:${g.progress.level}:${field.unlocked}:${field.price}:${field.reason}` : '';

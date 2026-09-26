@@ -46,10 +46,18 @@ export function withFarmEconomy(source: FarmContentSource, input: unknown): Farm
   noDuplicates(source, ['economy', 'plantingXP', 'saleXpCoins'], 'config');
   const wallet = object(root.startingWallet, 'startingWallet', ['coins', 'diamonds', 'xp']);
   for (const key of Object.keys(wallet)) integer(wallet[key], `startingWallet.${key}`);
-  const xp = object(root.experience, 'experience', ['plantingXP', 'saleCoinsPerXP', 'animalXPPerUnit', 'curve']);
+  const xp = object(root.experience, 'experience', [
+    'plantingXP',
+    'saleCoinsPerXP',
+    'levelUpDiamonds',
+    'buildXP',
+    'curve',
+  ]);
   integer(xp.plantingXP, 'experience.plantingXP');
   integer(xp.saleCoinsPerXP, 'experience.saleCoinsPerXP', 1);
-  integer(xp.animalXPPerUnit, 'experience.animalXPPerUnit');
+  integer(xp.levelUpDiamonds, 'experience.levelUpDiamonds', 0, 100);
+  const build = object(xp.buildXP, 'experience.buildXP', ['machine', 'pen', 'penSlot', 'queueSlot', 'field']);
+  for (const key of Object.keys(build)) integer(build[key], `experience.buildXP.${key}`, 0, 10000);
   const curve = object(xp.curve, 'experience.curve', [
     'maxLevel',
     'baseXP',
@@ -174,14 +182,15 @@ export function withFarmEconomy(source: FarmContentSource, input: unknown): Farm
     }),
     livestock: source.livestock.map(a => {
       const field = `animals.${a.key}`;
-      noDuplicates(a, ['price', 'quantity'], field);
-      const p = object(animals[a.key], field, ['name', 'purchasePrice', 'quantity', 'slots']);
+      noDuplicates(a, ['price', 'quantity', 'xp'], field);
+      const p = object(animals[a.key], field, ['name', 'purchasePrice', 'quantity', 'xp', 'slots']);
       name(p.name, field + '.name');
       integer(p.purchasePrice, field + '.purchasePrice');
       integer(p.quantity, field + '.quantity', 1);
+      integer(p.xp, field + '.xp');
       slots(p.slots, field + '.slots');
       p.slots.forEach((s: SlotPrice) => integer(s.price + p.purchasePrice, field + '.slots: giá gộp'));
-      return { ...a, price: p.purchasePrice, quantity: p.quantity };
+      return { ...a, price: p.purchasePrice, quantity: p.quantity, xp: p.xp };
     }),
     products: source.products.map(r => {
       const field = `recipes.${r.id}`;

@@ -13,7 +13,7 @@ Cả tám xưởng dùng chung `FactoryPanel`/`FactoryBody`/`FactoryQueueSlot`; 
 | Lò bánh, xưởng sữa, máy thức ăn | Phải mua trong Shop; máy thức ăn/lò bánh/xưởng sữa lần đầu mở ở level 1/5/10, rồi chạm máy đã xây để sản xuất |
 | Bếp nướng, máy đường, lò ngô, lò pie, bàn đan | Shop hiện 0/2, 1/2 hoặc 2/2; nhà thứ hai cần level 12–54 tùy loại. Mua xong xuất hiện trên map, chạm để sản xuất đúng nhà |
 | Nhà kho | Mở tab nguyên liệu/thành phẩm; chọn món và số lượng bán |
-| Nhà ở | Menu tạm dừng/cài đặt; đóng khôi phục trạng thái trước đó |
+| Nhà ở | Menu/cài đặt; lúc mở chặn thao tác trên map nhưng không dừng đồng hồ; đóng trả lại trạng thái trước đó |
 | Chuồng gà/bò/heo/cừu | Chạm chuồng đã xây mở thẳng popup của chuồng đó, có mua ô/con, cho ăn, tăng tốc và nhận sản phẩm |
 
 Tám anchor máy đầu tiên là `bakery-1`, `dairy-1`, `feed-1`, `grill-1`, `industry-sugar_processor`, `industry-popcorn_factory`, `industry-pie_bakery`, `industry-loom`. Thêm tám anchor máy nhà 2 có hậu tố `-2`; giữ ID của 50 ô cũ và thêm chuồng plot 50–53 (`Cell50–53`, `cell: null`). Các ruộng đã sở hữu, một ô đất xanh kế tiếp và các chuồng đã xây có tương tác (7 vị trí lúc khởi đầu: 6 ruộng và 1 ô xanh; 48 khi mua đủ 40 ruộng và tám chuồng). Nhóm `Livestock` vẫn giữ 10 anchor `Cell12–21` để định vị bốn chuồng và tương thích hình học save cũ. Đã xóa 10 preview chuồng/ao legacy cùng liên kết instance; hình sân và vật nuôi thật do `FarmTownViews` dựng riêng.
@@ -27,7 +27,7 @@ Khung chung nằm trong `assets/farm/prefabs/ui/DialogShell.prefab`; `FactoryBod
 - Nhà máy: trạng thái mẻ đang chạy, nút **Nhận hàng**, hàng chờ tối đa năm ô, vùng chọn công thức/nguyên liệu và nút làm món. Chạm **Chọn món** đổi danh sách công thức; chạm nguyên liệu xem nơi cung cấp. Ghim món và đường quay về giữ đúng máy/công thức. Khay nhận tối đa năm mẻ; mẻ đang chờ có thể hủy/hoàn nguyên liệu theo luật hiện hành.
 - Kho: tab cố định, lưới cuộn, icon giữ tỉ lệ và số lượng kể cả tồn kho 0. Chọn món để giảm/tăng/tối đa số lượng, xem tiền rồi bán; quay về giữ tab.
 - Chuồng: mở thẳng chế độ chăm của **chuồng đang chọn**, với **năm thẻ ô trên một hàng cuộn ngang**. Không có tab chọn loài khác trong bảng; đóng rồi chạm chuồng khác trên map để đổi đàn. Ban đầu mở một ô có một con. Mua ô khóa mở ô kèm một con; mỗi chuồng tối đa năm con cùng loài. Con đang nuôi hiện đồng hồ + thời gian và nút số giá + kim cương để tăng tốc; tăng tốc xong cần nhận sản phẩm riêng. Gà có nút **Cho ăn / Nhận trứng**, các loài khác dùng sản phẩm tương ứng. Lượng cám có icon lớn bên dưới hàng thẻ, không có liên kết tìm cám hoặc nút bán con. Cho cả đàn ăn cần đủ phần cho các con đói; nhận cả đàn chỉ lấy sản phẩm đã xong.
-- Popup có khung giữa màn hình, nút đóng và nền chặn thao tác map phía sau. Nội dung dài cuộn trong vùng riêng; resize giữ panel, máy, chuồng và tab. Các action vẫn đi qua `GameSession`, bao gồm khóa giao dịch khi tạm dừng hoặc lỗi lưu.
+- Popup có khung giữa màn hình, nút đóng và nền chặn thao tác map phía sau. Nội dung dài cuộn trong vùng riêng; resize giữ panel, máy, chuồng và tab. Các action vẫn đi qua `GameSession`, bao gồm khóa giao dịch khi mở Menu hoặc lỗi lưu.
 
 ## Art Golden Island đang dùng
 
@@ -60,4 +60,4 @@ Giá ghi trên ô khóa đã gồm phí mở ô và một con vật; chỉ ô k�
 
 `PanelHost.ts` quản lý modal và giữ offset cuộn cùng chuồng. `FactoryPanel.ts` dựng sản xuất; `LivestockPanel.ts` dựng năm ô; `InventoryPanel.ts` dựng kho. `GameSession.dispatch` giữ giao dịch và lỗi ghi. Thao tác, điều kiện và bộ đếm lấy từ domain, không suy ra từ hình khóa hoặc tên sprite.
 
-Sau khi build, `factory-cards.browser.cjs` và `gameplay-runtime-config.browser.cjs` trong `cocos/tests/` kiểm các thẻ Factory và UI chuồng. Các test lịch sử như `livestock-layout.browser.cjs` còn kỳ vọng thanh chăm nhanh/bán con/tìm cám; `animal-boost.browser.cjs` còn đọc node `HerdCount` đã bỏ; `pen-slot-levels.browser.cjs` dùng mốc ô gà cũ. Cần cập nhật chúng trước khi nghiệm thu lại. Kiểm luồng khởi đầu và level ô hiện tại bằng `construction-reset.browser.cjs` và `starter-slot-levels.browser.cjs` sau khi build lại. Báo cáo cục bộ chỉ áp dụng cho phiên bản đã chạy.
+Sau khi build, `factory-cards.browser.cjs` và `gameplay-runtime-config.browser.cjs` trong `game/ola-farm/tests/` kiểm các thẻ Factory và UI chuồng. Các test lịch sử như `livestock-layout.browser.cjs` còn kỳ vọng thanh chăm nhanh/bán con/tìm cám; `animal-boost.browser.cjs` còn đọc node `HerdCount` đã bỏ; `pen-slot-levels.browser.cjs` dùng mốc ô gà cũ. Cần cập nhật chúng trước khi nghiệm thu lại. Kiểm luồng khởi đầu và level ô hiện tại bằng `construction-reset.browser.cjs` và `starter-slot-levels.browser.cjs` sau khi build lại. Báo cáo cục bộ chỉ áp dụng cho phiên bản đã chạy.

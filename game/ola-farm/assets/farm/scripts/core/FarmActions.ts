@@ -30,6 +30,8 @@ export function applyAction(game: FarmGame, action: FarmAction): ActionResult {
       return game.cancelQueued(action.machine, action.job);
     case 'expandQueue':
       return game.expandQueue(action.machine);
+    case 'boostMachine':
+      return game.boostMachine(action.machine);
     case 'buyMachine':
       return game.buyMachine(action.machineType, action.building);
     case 'sellItem':

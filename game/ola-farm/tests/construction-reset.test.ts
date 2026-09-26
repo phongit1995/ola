@@ -281,7 +281,7 @@ test('a fresh level-one farm can buy its chicken buildings and produce feed and 
   harvest(wheat);
   harvest(corn);
   assert.equal(game.state.coins, 10);
-  assert.equal(game.progress.level, 1);
+  assert.equal(game.progress.level, 3, 'build XP reaches level 2, the corn harvest level 3');
 
   const recipe = game.product(24)!,
     machine = game.state.machines[0],
@@ -304,7 +304,7 @@ test('a fresh level-one farm can buy its chicken buildings and produce feed and 
   }
   ok(game.sellItem(chicken.output, game.quantity(chicken.output)));
   assert.equal(game.state.coins, 106, 'selling the first three eggs funds another planting cycle');
-  assert.equal(game.progress.level, 1);
+  assert.equal(game.progress.level, 3, 'the first feed and egg cycle stays on level 3');
   assert.deepEqual(
     game.state.machines.map(candidate => candidate.buildingId),
     ['feed-1']
@@ -315,7 +315,11 @@ test('a fresh level-one farm can buy its chicken buildings and produce feed and 
   );
   assert.equal(game.state.husbandry!.feedReceived, true);
   assert.equal(game.state.husbandry!.eggsCollected, true);
-  assert.equal(game.state.diamonds, catalog.economy!.startingWallet.diamonds, 'no boosts or coin packs were needed');
+  assert.equal(
+    game.state.diamonds,
+    catalog.economy!.startingWallet.diamonds + 2 * catalog.economy!.experience.levelUpDiamonds,
+    'only the level-2 and level-3 rewards; no boosts or coin packs were needed'
+  );
   game.validate();
 });
 

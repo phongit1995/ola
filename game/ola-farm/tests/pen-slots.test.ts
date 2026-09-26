@@ -1,4 +1,4 @@
-import { establishFarm, xpForLevel } from './fixtures/established-farm';
+import { addBuildXP, establishFarm, xpForLevel } from './fixtures/established-farm';
 import { loadFarmCatalog } from '../tools/load-farm-catalog';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -81,6 +81,7 @@ test('chicken and cow slots use their configured exact XP thresholds, with atomi
         pen = expected.plots.find(p => p.id === id)!.residents!;
       expected.coins -= g.penExpansionPrice(id)!;
       pen.animals.push({ id: expected.nextId++, slot: pen.capacity++, job: null });
+      addBuildXP(g, expected, 'penSlot');
       ok(g.expandPen(id, slot));
       assert.deepEqual(g.state, expected);
       assert.ok(g.expandPen(id, slot).error);
@@ -137,8 +138,13 @@ test('each of four pens opens paid slots two through five with exactly one anima
         expectedPen = expected.plots.find(p => p.id === id)!.residents!;
       expected.coins = 0;
       expectedPen.animals.push({ id: expected.nextId++, slot: expectedPen.capacity++, job: null });
+      addBuildXP(g, expected, 'penSlot');
       ok(g.expandPen(id));
-      assert.deepEqual(g.state, expected, 'only the slot, one fresh animal, ID counter and bundle price change');
+      assert.deepEqual(
+        g.state,
+        expected,
+        'only the slot, one fresh animal, ID counter, bundle price and build XP change'
+      );
       assert.deepEqual(pen.animals[0].job, firstJob);
       assert.equal(g.quantity(type.feed), 0, 'opening a slot does not feed it');
     }

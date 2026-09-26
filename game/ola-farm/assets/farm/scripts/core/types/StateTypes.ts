@@ -14,6 +14,8 @@ export interface FarmState {
   coins: number;
   diamonds: number;
   xp: number;
+  /** Highest level whose diamond reward has been paid; older saves gain it on their next XP. */
+  rewardedLevel?: number;
   time: number;
   earned: number;
   harvested: number;

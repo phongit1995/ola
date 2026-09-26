@@ -19,7 +19,10 @@ const oldCatalog: FarmCatalog = JSON.parse(
 );
 const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 const xpFor = (level: number) =>
-  Array.from({ length: level - 1 }, (_, i) => xpToNext(i + 1)).reduce((a, b) => a + b, 0);
+  Array.from({ length: level - 1 }, (_, i) => xpToNext(i + 1, catalog.economy!.experience.curve)).reduce(
+    (a, b) => a + b,
+    0
+  );
 function setup(state?: FarmState) {
   let clock = 1800000000000,
     fail = false;
@@ -90,8 +93,10 @@ test('crop unlocks use exact levels in core; failed or repeated attempts cannot 
     ok(g.cancel(0));
     assert.equal(g.state.xp, before + xp);
   }
-  assert.equal(progression(2520).level, 10);
-  assert.equal(progression(xpFor(24)).level, 24);
+  const curve = catalog.economy!.experience.curve;
+  assert.equal(progression(xpFor(10), curve).level, 10);
+  assert.equal(progression(xpFor(10) - 1, curve).level, 9);
+  assert.equal(progression(xpFor(24), curve).level, 24);
 });
 
 test('every processed batch and animal cycle adds value; later crops pay more per visit without dominating short-crop hourly income', () => {
@@ -229,18 +234,18 @@ test('hide/show, explicit pause and backwards clocks settle each interval once',
   assert.equal(s.game.state.time, 180);
   s.togglePause();
   s.suspend();
-  store.advance(600);
+  store.advance(60);
   s.resume();
-  assert.equal(s.game.state.time, 180);
+  assert.equal(s.game.state.time, 240, 'a pause never stops real time, like Hay Day');
   s.togglePause();
   store.advance(-300);
   s.tick(1);
-  assert.equal(s.game.state.time, 180);
+  assert.equal(s.game.state.time, 240, 'a clock moved backwards replays nothing');
   store.advance(330);
   s.tick(1);
-  assert.equal(s.game.state.time, 210);
-  store.advance(90);
-  s.tick(90);
+  assert.equal(s.game.state.time, 270);
+  store.advance(30);
+  s.tick(30);
   assert.equal(s.game.isReady(s.game.state.plots[0]), true);
 });
 
@@ -261,7 +266,7 @@ test('input between frames starts a paid job at the current wall clock', () => {
   assert.equal(resumed.game.isReady(resumed.game.state.plots[0]), true);
 });
 
-test('pause, menu and layout persist their clock state before a reload without a hide event', () => {
+test('pause, menu and layout block input but keep the clock running, also across a reload', () => {
   for (const mode of ['pause', 'menu', 'layout'] as const) {
     const store = setup(),
       s = store.session();
@@ -270,15 +275,18 @@ test('pause, menu and layout persist their clock state before a reload without a
     if (mode === 'pause') s.togglePause();
     else if (mode === 'menu') s.enterMenu();
     else assert.equal(s.beginLayout(), true);
-    assert.equal(store.saver.load()!.clock!.running, false);
-    store.advance(600);
-    assert.equal(store.session().game.state.time, 60, mode);
+    assert.equal(s.canAct, false, mode);
+    assert.equal(s.dispatch({ type: 'harvest', plot: 0 }).result.error, s.blockedMessage, mode);
+    assert.equal(store.saver.load()!.clock!.running, true, mode);
+    store.advance(240);
+    s.tick(1);
+    assert.equal(s.game.isReady(s.game.state.plots[0]), true, mode);
+    assert.equal(store.session().game.isReady(s.game.state.plots[0]), true, mode);
     if (mode === 'pause') s.togglePause();
     else if (mode === 'menu') s.leaveMenu();
     else s.endLayout();
     assert.equal(store.saver.load()!.clock!.running, true);
-    store.advance(240);
-    assert.equal(store.session().game.isReady(s.game.state.plots[0]), true, mode);
+    assert.equal(s.dispatch({ type: 'harvest', plot: 0 }).ok, true, mode);
   }
 });
 

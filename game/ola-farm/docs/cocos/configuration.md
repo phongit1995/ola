@@ -1,6 +1,8 @@
 # Các cấu hình của game Cocos
 
-Bản hiện hành tải năm JSON trong `cocos/assets/farm/bundles/farm-town/`. Các file này đã nối vào luật chơi, giao diện và bộ kiểm tra; sửa số rồi khởi động lại game/build để áp dụng. Bộ giá trị mặc định giữ nguyên nhịp chơi trước khi tách cấu hình.
+> **Số liệu hiện hành đã kiểm chứng nằm ở [Chỉ số game](../chi-so/README.md).** Tài liệu này giữ phần giải thích và lịch sử thiết kế; nếu con số ở đây lệch với `docs/chi-so/` hoặc file JSON thì lấy `docs/chi-so/` và JSON làm chuẩn.
+
+Bản hiện hành tải năm JSON trong `game/ola-farm/assets/farm/bundles/farm-town/`. Các file này đã nối vào luật chơi, giao diện và bộ kiểm tra; sửa số rồi khởi động lại game/build để áp dụng. Bộ giá trị mặc định giữ nguyên nhịp chơi trước khi tách cấu hình.
 
 | Muốn chỉnh | File / mục |
 | --- | --- |
@@ -90,7 +92,7 @@ Tăng yêu cầu có thể khóa lại công thức chưa đáp ứng; công tr�
 | `camera.buildingFocusScale`, `facilityFocusScale` | Tỷ lệ mong muốn khi tập trung vào chuồng/máy và công trình chức năng: `1.35`, `1.1`; vẫn thu nhỏ để vừa màn hình |
 | `assets.loadConcurrency` | Số luồng tải tài nguyên ported: `8`, cho phép `1–32`; config được đọc trước đợt tải này |
 
-Ví dụ giới hạn offline tám giờ: `maxOfflineSeconds: 28800`. Chỉ phần thời gian được phép được cộng; phần dư bị bỏ, không phát lại khi tải lại trang. Cây, vật nuôi và máy chỉ hoàn thành công việc đã bắt đầu, không tự thu, cho ăn hoặc xếp thêm món. Khi đang chơi, đồng hồ tiếp tục chạy bình thường và không bị trần offline. Menu tạm dừng, chế độ sắp xếp và lỗi lưu vẫn dừng tiến độ.
+Ví dụ giới hạn offline tám giờ: `maxOfflineSeconds: 28800`. Chỉ phần thời gian được phép được cộng; phần dư bị bỏ, không phát lại khi tải lại trang. Cây, vật nuôi và máy chỉ hoàn thành công việc đã bắt đầu, không tự thu, cho ăn hoặc xếp thêm món. Khi đang chơi, đồng hồ tiếp tục chạy bình thường và không bị trần offline. Menu và chế độ sắp xếp không dừng đồng hồ, chỉ chặn thao tác; chỉ lỗi lưu mới dừng tiến độ.
 
 Giá trị runtime áp dụng lúc khởi động; không đổi giới hạn hoặc volume giữa một phiên đang chạy. `autosaveSeconds` lớn không trì hoãn việc lưu giao dịch. Khoảng thời gian autosave khi đang mở ứng dụng dùng thời gian frame, còn tiến độ công việc dùng đồng hồ thực.
 
@@ -109,9 +111,9 @@ Các bất biến vẫn ở code: version/khóa save, ID vị trí/vật phẩm,
 Từ gốc repo:
 
 ```sh
-npm run config:check --prefix cocos
-npm run verify --prefix cocos
-npm run typecheck --prefix cocos
+npm run config:check --prefix game/ola-farm
+npm run verify --prefix game/ola-farm
+npm run typecheck --prefix game/ola-farm
 ```
 
 `config:check` đọc cả năm file theo cùng luồng với [Art.ts](../../assets/farm/scripts/render/Art.ts): economy → timing → gameplay → runtime. Thiếu mục, gõ sai khóa, sai kiểu, ngoài giới hạn hoặc vật phẩm không tồn tại sẽ báo tên file và đường dẫn mục lỗi trước khi tạo game. File hiện hành không được âm thầm thay bằng mặc định nếu tải thất bại.

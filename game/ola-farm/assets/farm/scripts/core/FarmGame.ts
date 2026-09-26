@@ -12,6 +12,7 @@ import type { FarmState } from './types/StateTypes';
 import type { Recipe, Machine } from './types/ProductionTypes';
 import type { ItemAmount } from './types/ItemTypes';
 import type { TownUnlock, UnlockStatus, ConstructionOffer } from './types/ConstructionTypes';
+import type { BuildXP } from './types/EconomyTypes';
 import {
   cropItemKey,
   recipeInputs,
@@ -24,6 +25,7 @@ import {
   penDefinition,
 } from './FarmCatalog';
 import { progression } from './Progression';
+import { boostGems } from './FarmTiming';
 import { cropSnapshot, productionSnapshot, loadFarmState } from './FarmMigration';
 import { assertFarmState } from './FarmValidation';
 import type { BuildingPosition } from './types/BuildingTypes';
@@ -333,12 +335,13 @@ export class FarmGame {
       snapshot: snap,
     });
     this.state.planted[key] = planted;
-    this.state.xp += xp;
+    const levelUp = this.gainXP(xp);
     if (f.id > 9) this.state.guide.plantedNew = true;
     return {
-      message: rescue
-        ? 'Đã gieo lúa hỗ trợ. Chờ thu rồi bán để có vốn.'
-        : (f.group === PlotGroups.Crop ? 'Đã gieo ' : 'Đã nuôi ') + f.name.toLowerCase(),
+      message:
+        (rescue
+          ? 'Đã gieo lúa hỗ trợ. Chờ thu rồi bán để có vốn.'
+          : (f.group === PlotGroups.Crop ? 'Đã gieo ' : 'Đã nuôi ') + f.name.toLowerCase()) + levelUp,
       plot: p,
     };
   }
@@ -366,10 +369,10 @@ export class FarmGame {
       true
     );
   }
-  /** Charge one gem per started interval of remaining time; current real-time crops use 15 minutes. */
+  /** Diamonds to ripen a crop now, priced by the timing.json tier that covers its remaining time. */
   boostPrice(p: Plot): number {
     if (p.crop === null || this.isReady(p)) return 0;
-    return Math.max(1, Math.ceil((p.ready - this.state.time) / (this.catalog.boostSecondsPerGem ?? 60)));
+    return boostGems(this.catalog, p.ready - this.state.time);
   }
   boost(id: number): ActionResult {
     const p = this.state.plots.find(p => p.id === id);
@@ -397,7 +400,7 @@ export class FarmGame {
       if (this.state.coins < offer.price) return failure(`Cần ${offer.price} xu để mở ô đất.`);
       this.state.coins -= offer.price;
       p.unlocked = true;
-      return { message: `Đã mở ô đất · −${offer.price} xu`, plot: p };
+      return { message: `Đã mở ô đất · −${offer.price} xu${this.gainBuildXP('field')}`, plot: p };
     }
     const p = this.state.plots.find(p => p.id === id);
     if (!p || p.unlocked) return failure('Ô này đã được cải tạo.');
@@ -433,12 +436,12 @@ export class FarmGame {
       return failure('Thống kê đã đạt giới hạn.');
     this.add([snap.output]);
     this.state.harvested += snap.output.quantity;
-    this.state.xp += snap.harvestXP;
+    const levelUp = this.gainXP(snap.harvestXP);
     this.recordCollected([snap.output]);
     if (f.id > 9) this.state.guide.harvestedNew = true;
     Object.assign(p, { crop: null, boosted: false, ready: 0, started: 0, snapshot: null });
     return {
-      message: `+${snap.output.quantity} ${f.name.toLowerCase()}`,
+      message: `+${snap.output.quantity} ${f.name.toLowerCase()}${levelUp}`,
       amount: snap.output.quantity,
       item: f,
       plot: p,
@@ -492,12 +495,12 @@ export class FarmGame {
     if (!this.canAdd(batch.outputs)) return failure('Số lượng trong kho đã đạt giới hạn.');
     if (!this.canRecordCollected(batch.outputs, batch.xp)) return failure('Thống kê đã đạt giới hạn.');
     this.add(batch.outputs);
-    this.state.xp += batch.xp;
+    const levelUp = this.gainXP(batch.xp);
     this.recordCollected(batch.outputs);
     m.tray.splice(m.tray.indexOf(batch), 1);
     this.startNext(m, this.state.time);
     return {
-      message: batch.outputs.map(o => `+${o.quantity} ${this.item(o.key)!.name.toLowerCase()}`).join(', '),
+      message: batch.outputs.map(o => `+${o.quantity} ${this.item(o.key)!.name.toLowerCase()}`).join(', ') + levelUp,
       machine: m,
     };
   }
@@ -513,17 +516,33 @@ export class FarmGame {
       xp = m.tray.reduce((sum, b) => sum + b.xp, 0);
     if (!this.canRecordCollected(outputs, xp)) return failure('Thống kê đã đạt giới hạn.');
     this.add(outputs);
-    this.state.xp += xp;
+    const levelUp = this.gainXP(xp);
     this.recordCollected(outputs);
     m.tray = [];
     this.startNext(m, this.state.time);
     return {
       message:
         `Đã nhận ${count} mẻ · ` +
-        outputs.map(o => `+${o.quantity} ${this.item(o.key)!.name.toLowerCase()}`).join(', '),
+        outputs.map(o => `+${o.quantity} ${this.item(o.key)!.name.toLowerCase()}`).join(', ') +
+        levelUp,
       amount: count,
       machine: m,
     };
+  }
+  /** Diamonds to finish a machine's running job now; waiting jobs keep their place in the queue. */
+  machineBoostPrice(id: number): number {
+    const job = this.state.machines.find(m => m.id === id)?.job;
+    return job && job.ready > this.state.time ? boostGems(this.catalog, job.ready - this.state.time) : 0;
+  }
+  boostMachine(id: number): ActionResult {
+    const m = this.state.machines.find(m => m.id === id),
+      price = this.machineBoostPrice(id);
+    if (!m?.job || !price) return failure('Máy không có món đang làm để làm xong ngay.');
+    if (this.state.diamonds < price) return failure(`Cần ${price} kim cương.`);
+    this.state.diamonds -= price;
+    m.job.ready = this.state.time;
+    this.advanceMachines(this.state.time);
+    return { message: `Xong ngay · −${price} kim cương`, machine: m };
   }
   cancelQueued(id: number, jobId: number): ActionResult {
     const m = this.state.machines.find(m => m.id === id),
@@ -543,7 +562,7 @@ export class FarmGame {
     if (this.state.coins < price) return failure(`Cần ${price} xu để mở ô.`);
     this.state.coins -= price;
     m.capacity++;
-    return { message: `Đã mở ô thứ ${m.capacity} · −${price} xu`, machine: m };
+    return { message: `Đã mở ô thứ ${m.capacity} · −${price} xu${this.gainBuildXP('queueSlot')}`, machine: m };
   }
   queueSlotPrice(id: number, slot: number): number {
     const machine = this.state.machines.find(m => m.id === id),
@@ -594,7 +613,10 @@ export class FarmGame {
     if (layout) this.state.buildingLayout = layout;
     this.state.coins -= price;
     this.state.machines.push(m);
-    return { message: `Đã mua ${definition.name.toLowerCase()} · −${price} xu`, machine: m };
+    return {
+      message: `Đã mua ${definition.name.toLowerCase()} · −${price} xu${this.gainBuildXP('machine')}`,
+      machine: m,
+    };
   }
   /** Trade diamonds for a fixed coin pack; no XP, and `earned` stays a sales figure. */
   buyCoins(pack: number): ActionResult {
@@ -624,11 +646,11 @@ export class FarmGame {
     s.inventory[key] -= quantity;
     s.coins += coins;
     s.earned += coins;
-    s.xp += xp;
+    const levelUp = this.gainXP(xp);
     s.sold += quantity;
     if (item.tab === 'goods') s.soldProducts[key] = (s.soldProducts[key] ?? 0) + quantity;
     if (key === 'farm40:tortilla') s.guide.soldTortilla = true;
-    return { message: `Đã bán ${quantity} ${item.name.toLowerCase()} · +${coins} xu`, coins };
+    return { message: `Đã bán ${quantity} ${item.name.toLowerCase()} · +${coins} xu${levelUp}`, coins };
   }
   setPenSpecies(id: number, species: string | null): ActionResult {
     if (this.simple) return failure('Mỗi chuồng giữ loài vật nuôi riêng.');
@@ -683,7 +705,7 @@ export class FarmGame {
       capacity: this.catalog.gameplay?.animals[definition.species].startingCapacity ?? 1,
       animals,
     };
-    return { message: `Đã xây chuồng kèm ${animals.length} con · −${price} xu`, plot: p };
+    return { message: `Đã xây chuồng kèm ${animals.length} con · −${price} xu${this.gainBuildXP('pen')}`, plot: p };
   }
   buyAnimal(id: number, expectedSlot?: number): ActionResult {
     const p = this.residentPlot(id),
@@ -750,7 +772,10 @@ export class FarmGame {
     this.state.coins -= price;
     pen.capacity++;
     pen.animals.push(animal);
-    return { message: `Đã mở chỗ ${pen.capacity} và mua thêm một con · −${price} xu`, plot: p };
+    return {
+      message: `Đã mở chỗ ${pen.capacity} và mua thêm một con · −${price} xu${this.gainBuildXP('penSlot')}`,
+      plot: p,
+    };
   }
   sellAnimal(id: number, animalId: number): ActionResult {
     const p = this.residentPlot(id),
@@ -780,16 +805,14 @@ export class FarmGame {
         started: this.state.time,
         ready: this.state.time + type.duration,
         output: { key: type.output, quantity: type.quantity },
-        xp: (this.catalog.economy?.experience.animalXPPerUnit ?? 3) * type.quantity,
+        xp: type.xp ?? 3 * type.quantity,
       };
     return { message: `Đã cho ${animals.length} con ăn.`, plot: p };
   }
-  /** Match crop finish-now pricing using the catalog interval. */
+  /** Same finish-now price list as crops, from the selected animal's remaining time. */
   animalBoostPrice(id: number, animalId: number): number {
     const job = this.residentPlot(id)?.residents?.animals.find(a => a.id === animalId)?.job;
-    return job && job.ready > this.state.time
-      ? Math.ceil((job.ready - this.state.time) / (this.catalog.boostSecondsPerGem ?? 60))
-      : 0;
+    return job && job.ready > this.state.time ? boostGems(this.catalog, job.ready - this.state.time) : 0;
   }
   boostAnimal(id: number, animalId: number): ActionResult {
     const p = this.residentPlot(id),
@@ -825,19 +848,45 @@ export class FarmGame {
     if (!Number.isFinite(this.state.harvested + outputs.reduce((amount, o) => amount + o.quantity, 0)))
       return failure('Thống kê đã đạt giới hạn.');
     this.add(outputs);
-    let amount = 0;
+    let amount = 0,
+      xp = 0;
     for (const a of animals) {
       amount += a.job!.output.quantity;
-      this.state.xp += a.job!.xp;
+      xp += a.job!.xp;
       a.job = null;
     }
+    const levelUp = this.gainXP(xp);
     this.state.harvested += amount;
     this.recordCollected(outputs);
     return {
-      message: outputs.map(o => `+${o.quantity} ${this.item(o.key)!.name.toLowerCase()}`).join(', '),
+      message: outputs.map(o => `+${o.quantity} ${this.item(o.key)!.name.toLowerCase()}`).join(', ') + levelUp,
       amount,
       plot: p,
     };
+  }
+  /**
+   * Adds earned XP and returns the level-up note for the result message. Each level pays its configured diamonds
+   * once: levels already rewarded, or skipped by a later curve change without XP, pay nothing.
+   */
+  private gainXP(xp: number): string {
+    const before = this.progress.level;
+    this.state.xp += xp;
+    const level = this.progress.level;
+    if (level <= before) return '';
+    const reward = this.catalog.economy?.experience.levelUpDiamonds ?? 0,
+      paid = Math.max(this.state.rewardedLevel ?? 0, before);
+    let gems = 0;
+    if (reward > 0 && level > paid) {
+      gems = (level - paid) * reward;
+      this.state.diamonds += gems;
+      this.state.rewardedLevel = level;
+    }
+    return ` · Lên level ${level}${gems ? ` · +${gems} kim cương` : ''}`;
+  }
+  /** One-time construction XP from `experience.buildXP`; buying back a sold animal is not construction. */
+  private gainBuildXP(kind: keyof BuildXP): string {
+    const xp = this.catalog.economy?.experience.buildXP[kind] ?? 0;
+    return xp > 0 ? ` · +${xp} EXP${this.gainXP(xp)}` : '';
   }
   tick(seconds: number): void {
     if (!Number.isFinite(seconds) || seconds <= 0 || !Number.isFinite(this.state.time + seconds)) return;

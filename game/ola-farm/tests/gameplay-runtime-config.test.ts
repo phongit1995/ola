@@ -203,7 +203,7 @@ test('offline caps and disabling offline progress consume the gap once; active p
     session.enterMenu();
     now += 500000;
     session.leaveMenu();
-    assert.equal(session.game.state.time, enabled ? 180 : 120);
+    assert.equal(session.game.state.time, enabled ? 680 : 620, 'an open menu is active play: time runs uncapped');
   }
   const config = copy(runtime!);
   config.session.maxOfflineSeconds = 30;

@@ -1,4 +1,4 @@
-import { establishFarm } from './fixtures/established-farm';
+import { addBuildXP, establishFarm } from './fixtures/established-farm';
 import { loadFarmCatalog } from '../tools/load-farm-catalog';
 import assert from 'node:assert/strict';
 import { xpToNext } from '../assets/farm/scripts/core/Progression';
@@ -36,7 +36,10 @@ const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 const ok = (r: ActionResult) => assert.equal(r.error, undefined, r.error);
 const settings = { speed: 1, sound: false, music: false };
 const xpFor = (level: number) =>
-  Array.from({ length: level - 1 }, (_, i) => xpToNext(i + 1)).reduce((a, b) => a + b, 0);
+  Array.from({ length: level - 1 }, (_, i) => xpToNext(i + 1, catalog.economy!.experience.curve)).reduce(
+    (a, b) => a + b,
+    0
+  );
 function funded(xp = 100000000) {
   const g = establishFarm(new FarmGame(catalog));
   g.state.coins = 1000000;
@@ -144,6 +147,7 @@ test('every second factory and pen is blocked below its own level threshold and 
       waiting: [],
       tray: [],
     });
+    addBuildXP(g, expected, 'machine');
     ok(g.buyMachine(type.id, offer.buildingId!));
     assert.deepEqual(g.state, expected);
     for (const site of [undefined, machineSites(type)[0], offer.buildingId!]) {
@@ -172,6 +176,7 @@ test('every second factory and pen is blocked below its own level threshold and 
     expected.coins -= offer.price!;
     p.unlocked = true;
     p.residents = { species: animal.key, capacity: 1, animals: [{ id: expected.nextId++, slot: 0, job: null }] };
+    addBuildXP(g, expected, 'pen');
     ok(g.buyPen(offer.plotId!));
     assert.deepEqual(g.state, expected);
     assert.ok(g.buyPen(offer.plotId!).error);
@@ -224,6 +229,7 @@ test('second houses keep independent paid slots, residents, jobs, boosts and col
   const pen = g.state.plots[50].residents!,
     otherAnimal = copy(pen.animals[1]);
   const eggs = g.quantity('farm40:egg');
+  g.state.diamonds = 100;
   ok(g.boostAnimal(50, pen.animals[0].id));
   assert.deepEqual(pen.animals[1], otherAnimal);
   assert.equal(g.quantity('farm40:egg'), eggs);

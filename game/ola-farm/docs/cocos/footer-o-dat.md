@@ -11,9 +11,9 @@ Bong bóng nằm trong `World` của bản đồ nên trôi theo khi kéo map, n
 
 ## Cách tính thời gian và giá "xong ngay"
 
-`core/Countdown.ts` theo đúng chuỗi định dạng có trong `global-metadata.dat` của Golden Island: hai đơn vị lớn nhất, cắt dần — `01:42` → `2:05:09` → `1d02h`. Profile hiện hành chạy 1× theo thời gian thực và hỗ trợ offline cho công việc đã trả tiền. Lúa mì 300 giây hiện `05:00`; nho 12 giờ. Menu tạm dừng không tích thời gian. [Luật đồng hồ](real-time-economy.md#đồng-hồ-offline-và-bản-lưu).
+`core/Countdown.ts` theo đúng chuỗi định dạng có trong `global-metadata.dat` của Golden Island: hai đơn vị lớn nhất, cắt dần — `01:42` → `2:05:09` → `1d02h`. Profile hiện hành chạy 1× theo thời gian thực và hỗ trợ offline cho công việc đã trả tiền. Lúa mì 300 giây hiện `05:00`; nho 12 giờ. Mở Menu không dừng đồng hồ. [Luật đồng hồ](real-time-economy.md#đồng-hồ-offline-và-bản-lưu).
 
-`FarmGame.boostPrice` tính **một kim cương cho mỗi 15 phút còn lại, làm tròn lên**, tối thiểu một khi chưa chín. Lúa mì vừa gieo là 1 kim cương; nho vừa gieo là 48. `boost` giờ cho chín ngay (`ready = time`) thay vì rút còn nửa đơn vị như trước.
+`FarmGame.boostPrice` tính **một kim cương cho mỗi phút còn lại**, làm tròn lên (`boostSecondsPerGem` = 60 trong `timing.json`, xem [chi-so/09](../chi-so/09-kim-cuong-xu.md#giá-làm-xong-ngay)). Lúa mì vừa gieo là 5 kim cương; nho vừa gieo là 720. `boost` cho chín ngay (`ready = time`) thay vì rút còn nửa đơn vị như trước.
 
 ## Đối chiếu Golden Island
 
@@ -22,22 +22,22 @@ Bong bóng nằm trong `World` của bản đồ nên trôi theo khi kéo map, n
 - Prefab ô đất là `b_01` mang script `Farm`, có `Canvas` world-space (1920×1080, scale 0,01) chứa `DetailPlant` 200×110 (`bg_information_item_1`, viền 28): `Name` 36px màu `#9B412F` ở y +31,4; viên `BgMaterial` 177,3×43,3 ở y −21,4 với `IconTime` 44×37 lệch trái 54 và chữ thời gian 32px màu `#D05712`; `ButtonComplete` 176×56 (`bt_2`) nổi trên mép bong bóng 34px, bên trong là giá và icon kim cương `ss_001` 50×50.
 - `HarvestUI/PanelUnlock` (`bg_ctn`) là bong bóng đã chín, `PanelLock` (`bg_ctn_khoa`) là ô bị khoá.
 - `PlantingUI` xếp sáu ô `BgToolUI` 195×184 hai bên màn hình, `Select` là viền chọn, `DetailSeeds` (`BgInfo`) hiện tên và thời gian. Bản Cocos giữ bộ ảnh và tỉ lệ đó nhưng xếp thành một dải kéo ngang ở đáy để gieo chỉ một chạm, và đưa thẻ lên phía trên thay vì sang phải.
-- Ảnh và viền nine-slice nằm ở bundle `assets/farm/bundles/farm-plot-ui/`; xem `cocos/source-assets/farm-plot-ui/README.md`. Chữ dùng Poetsen One mà HUD đã liên kết sẵn.
+- Ảnh và viền nine-slice nằm ở bundle `assets/farm/bundles/farm-plot-ui/`; xem `game/ola-farm/source-assets/farm-plot-ui/README.md`. Chữ dùng Poetsen One mà HUD đã liên kết sẵn.
 
 Nguồn art được ghi trong manifest; các sprite đã chọn nằm trong bundle runtime. Hồ sơ nguồn không thay thế giấy phép của studio.
 
 ## Chỉnh và kiểm tra
 
-- `cocos/assets/farm/prefabs/ui/SeedPicker.prefab` và `SeedTile.prefab`: cấu trúc dải giống, thẻ thông tin và từng ô hạt; mở trong Editor để chỉnh art, font và offset. `scripts/ui/crops/PlotFooter.ts` nối dữ liệu giống, nhấn giữ và hành động gieo. `PLOT_FOOTER_TOP` là mép trên tính từ đáy màn hình, hiện 184 đơn vị thiết kế.
-- `cocos/assets/farm/prefabs/ui/PlotBubble.prefab`: ba nhánh `Growing`, `Ready`, `Locked` có sẵn hình, chữ và vùng bấm. `map/crops/PlotBubbleView.ts` bind dữ liệu/nút; `map/crops/PlotBubbles.ts` giữ cache, vị trí và tỉ lệ ngược camera.
-- `cocos/assets/farm/scripts/core/Countdown.ts`: định dạng đếm ngược. `FarmGame.boostPrice`: giá xong ngay.
+- `game/ola-farm/assets/farm/prefabs/ui/SeedPicker.prefab` và `SeedTile.prefab`: cấu trúc dải giống, thẻ thông tin và từng ô hạt; mở trong Editor để chỉnh art, font và offset. `scripts/ui/crops/PlotFooter.ts` nối dữ liệu giống, nhấn giữ và hành động gieo. `PLOT_FOOTER_TOP` là mép trên tính từ đáy màn hình, hiện 184 đơn vị thiết kế.
+- `game/ola-farm/assets/farm/prefabs/ui/PlotBubble.prefab`: ba nhánh `Growing`, `Ready`, `Locked` có sẵn hình, chữ và vùng bấm. `map/crops/PlotBubbleView.ts` bind dữ liệu/nút; `map/crops/PlotBubbles.ts` giữ cache, vị trí và tỉ lệ ngược camera.
+- `game/ola-farm/assets/farm/scripts/core/Countdown.ts`: định dạng đếm ngược. `FarmGame.boostPrice`: giá xong ngay.
 - `GameApp.ts`: định tuyến chạm ô, dựng footer cho ô trống, nối hành động của bong bóng.
 - `UiPrefabs` trên Canvas giữ liên kết tới các module. `Art.ts` nạp icon theo dữ liệu; khung và font tĩnh được liên kết ngay trong prefab.
 
-Build bằng `cocos/build-configs/farm-web-mobile.json`, rồi chạy từ thư mục repo:
+Build bằng `game/ola-farm/build-configs/farm-web-mobile.json`, rồi chạy từ thư mục repo:
 
 ```sh
-node cocos/tests/plot-footer.browser.cjs
+node game/ola-farm/tests/plot-footer.browser.cjs
 ```
 
 Suite dùng browser context riêng và tiền/nguyên liệu giả lập, không sửa bản lưu của người chơi. Kiểm tra desktop 1280×720, dọc 390×844, ngang 844×390 và màn nhỏ 320×568: vị trí dải giống khi kéo map và xoay màn hình, đủ tám giống không cần nút trang, gieo và số tiền bay lên, bong bóng đếm ngược, nút xong ngay trừ đúng kim cương, thu hoạch từ bong bóng, hoàn tiền khi đào bỏ, khoá thao tác khi thiếu tiền và khôi phục điều hướng. Ảnh `*-seeds.png`, `*-growing.png`, `*-ready.png` cùng kết quả ở `artifacts/cocos-footer/`.

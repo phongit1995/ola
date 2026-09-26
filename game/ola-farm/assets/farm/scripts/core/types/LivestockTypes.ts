@@ -32,6 +32,8 @@ export interface AnimalType {
   image: string;
   prefab: string;
   quantity: number;
+  /** XP for each animal on every collected cycle; older catalogs fall back to 3 per product. */
+  xp?: number;
 }
 
 export interface AnimalJob {

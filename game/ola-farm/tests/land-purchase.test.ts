@@ -10,9 +10,9 @@ import { xpForLevel } from './fixtures/established-farm';
 const catalog = loadFarmCatalog();
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 const prices = [
-  2000, 4000, 6000, 8000, 10000, 12000, 27000, 72000, 150000, 240000, 370000, 520000, 690000, 890000, 1110000, 1360000,
-  1640000, 1940000, 2270000, 2620000, 3000000, 3400000, 3830000, 4290000, 4770000, 5280000, 5810000, 6360000, 6950000,
-  7560000, 8190000, 8850000, 9540000, 10250000,
+  500, 1000, 1500, 2500, 4000, 6000, 8100, 22000, 44000, 73000, 110000, 160000, 210000, 270000, 340000, 410000, 500000,
+  590000, 680000, 790000, 900000, 1030000, 1150000, 1290000, 1440000, 1590000, 1750000, 1910000, 2090000, 2270000,
+  2460000, 2660000, 2870000, 3080000,
 ];
 
 test('new farm grants six empty fields and applies every approved land price at two-level intervals', () => {
@@ -37,7 +37,7 @@ test('new farm grants six empty fields and applies every approved land price at 
   });
   assert.equal(
     prices.reduce((sum, price) => sum + price, 0),
-    102021000
+    30712600
   );
 });
 
@@ -66,7 +66,7 @@ test('each next field rejects early/poor/repeated purchases and unlocks exactly 
     assert.equal(game.improve(field.id).error, undefined);
     assert.equal(game.state.coins, 0);
     assert.equal(game.state.diamonds, 10);
-    assert.equal(game.state.xp, beforeCoins.xp);
+    assert.equal(game.state.xp, beforeCoins.xp + catalog.economy!.experience.buildXP.field, 'land pays build XP');
     assert.equal(field.unlocked, true);
     assert.equal(orderedCrops(game.state.plots).filter(p => p.unlocked).length, 7 + index);
     const purchased = copy(game.state);
@@ -133,7 +133,7 @@ test('the first land purchase persists atomically and retry after a save failure
   );
   const session = new GameSession(catalog, saver, () => 0);
   session.game.state.xp = xpForLevel(session.game, 2);
-  session.game.state.coins = 2100;
+  session.game.state.coins = prices[0] + 100;
   session.save();
   const before = copy(session.game.state);
   fail = true;

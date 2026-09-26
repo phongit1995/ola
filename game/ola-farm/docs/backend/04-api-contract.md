@@ -52,7 +52,7 @@ Các đường dẫn trong bảng đều bắt đầu bằng `/api/v1`.
 | `GET /me/bootstrap` | Phiên hợp lệ | Account tối thiểu, farm đang chọn, durable snapshot, catalog/policy, serverTime. Không settlement hoặc reward ngầm. |
 | `POST /me/farms` | Account đã xác thực chưa có farm active + body `{operationId: UUID}` đã lưu trước request | Tạo một farm từ catalog server và opening ledger trong một transaction; retry cùng operation và cùng fingerprint trả cùng farm, không cấp starter lần hai. Cùng operation với payload khác trả `OPERATION_ID_REUSED`. Nếu account đã có farm active thì ghi/tra operation theo policy và trả farm đó, không tạo farm thứ hai. |
 | `GET /farms/{farmId}/state` | Owner | Full durable snapshot + revision/epoch/catalog/time. Không ghi và không khởi tạo `FarmGame` có side effect. |
-| `POST /farms/{farmId}/sync` | Owner + envelope không có action | Quyết toán timer bằng đồng hồ server, commit state/revision/receipt, trả snapshot. Đây là lifecycle operation riêng, không thêm `sync` vào union 24 action hiện tại. |
+| `POST /farms/{farmId}/sync` | Owner + envelope không có action | Quyết toán timer bằng đồng hồ server, commit state/revision/receipt, trả snapshot. Đây là lifecycle operation riêng, không thêm `sync` vào union 25 action hiện tại. |
 | `POST /farms/{farmId}/commands` | Owner + envelope có đúng một action | Áp dụng ý định gameplay trong một transaction; success hoặc rejection có receipt terminal. |
 | `GET /farms/{farmId}/commands/{commandId}` | Owner | Tra receipt trên primary, dùng cho lost response; không chạy action và không settlement. Receipt sync dùng cùng route này. |
 | `GET /catalogs/{catalogVersion}` | Có thể public nếu release được phát hành | Gameplay/config manifest đúng version + content hash; immutable caching, ETag. Chỉ trả dữ liệu công khai. |
@@ -174,7 +174,7 @@ Receipt lookup trả HTTP `200` khi tìm thấy receipt, kể cả outcome là r
 
 Không cho client gửi `seconds`, `savedAt`, `running`, `delta`, `speed`, `grantOfflineReward` hoặc full save trong sync. Chỉ khi cả durable state, `state.time` và watermark không đổi thì sync được committed/no-op với revision giữ nguyên; sync thường xuyên vẫn có thể tăng revision do thời gian tiến lên. Khi command nghiệp vụ bị reject, candidate settlement bị bỏ; sync tiếp theo lấy delta từ watermark đã commit, không mất thời gian đó.
 
-## 5. Allow-list đầy đủ 24 action hiện tại
+## 5. Allow-list đầy đủ 25 action hiện tại
 
 Nguồn đối chiếu: [ActionTypes.FarmAction](../../assets/farm/scripts/core/types/ActionTypes.ts) và [applyAction](../../assets/farm/scripts/core/FarmActions.ts). Bảng này mô tả trường nằm **bên trong `action`**; `type` luôn bắt buộc. Dấu `?` giữ nghĩa optional hiện tại. Domain IDs phải tồn tại trong farm/epoch/catalog tương ứng và đúng loại tài nguyên.
 
@@ -193,6 +193,7 @@ Nguồn đối chiếu: [ActionTypes.FarmAction](../../assets/farm/scripts/core/
 | `collectAll` | `machine:int` | Thu các mẻ trong tray của máy, atomically kiểm tổng inventory/stat limits. Không thu máy không thuộc farm. |
 | `cancelQueued` | `machine:int`, `job:int` | Job còn nằm trong waiting; không hủy job đang chạy; hoàn đủ inputs đã chụp và xóa waiting job. |
 | `expandQueue` | `machine:int` | Kiểm cấp/slot/max capacity; tính phí tại server, trừ xu và tăng một slot. |
+| `boostMachine` | `machine:int` | Máy thuộc farm và có job đang chạy chưa ready theo đồng hồ server; server tính gems theo thời gian còn lại, trừ gems, đưa job vào tray và bắt đầu job chờ kế tiếp. Không cộng output/XP cho tới khi collect. |
 | `buyMachine` | `machineType:int`, `building?:string` | Kiểm site còn lại/thứ tự, điều kiện mở, giá, giới hạn loại và chỗ đặt; cấp machine ID, trừ xu và thêm layout atomically. |
 | `sellItem` | `item:string`, `quantity:int > 0` | Có item và đủ kho; tính giá bán/XP tích lũy bằng rule server, kiểm overflow, trừ kho và cộng xu; không nhận giá bán. |
 | `setPenSpecies` | `plot:int`, `species:string|null` | Có trong union để hỗ trợ legacy nhưng `simple-1` khóa loài theo chuồng: online profile này trả `ACTION_NOT_AVAILABLE`, không âm thầm đổi loài. |
@@ -207,7 +208,9 @@ Nguồn đối chiếu: [ActionTypes.FarmAction](../../assets/farm/scripts/core/
 
 Khi người chơi nhắm một mục cụ thể, UI nên gửi `machine`, `batch`, `building`, `slot` tương ứng. Nếu optional bị bỏ, server dùng lựa chọn xác định của domain trên đúng expectedRevision và lưu target thực tế vào result. Không chọn lại một mục khác sau revision conflict. Việc bỏ `animal` chỉ dùng có chủ đích cho “cho cả đàn ăn/thu cả đàn”.
 
-Action schema được sinh/kiểm đồng bộ với 24 nhánh hiện tại, nhưng không tự động cho phép action mới chỉ vì một developer thêm nó vào TypeScript union. API cần review quyền, idempotency, economy effect, code lỗi và test trước khi thêm vào allow-list production.
+Các action cộng XP (`plant`, `harvest`, `collect`, `collectAll`, `sellItem`, `collectAnimals`, và XP xây dựng một lần của `improve`, `expandQueue`, `buyMachine`, `buyPen`, `expandPen` theo `experience.buildXP`) còn trả thưởng kim cương khi lên level mới theo `experience.levelUpDiamonds` và ghi `rewardedLevel`, trong cùng commit với XP; mỗi level chỉ trả một lần.
+
+Action schema được sinh/kiểm đồng bộ với 25 nhánh hiện tại, nhưng không tự động cho phép action mới chỉ vì một developer thêm nó vào TypeScript union. API cần review quyền, idempotency, economy effect, code lỗi và test trước khi thêm vào allow-list production.
 
 `buyGems` không có trong `FarmAction` hiện tại; các gói gems ở UI/catalog chỉ là hiển thị/mock. Nếu công cụ simulator hoặc bản dev bổ sung thao tác này, production vẫn từ chối. Tương lai IAP phải nhận transaction/receipt của nhà cung cấp, xác minh server-side, chống trùng transaction và xử lý refund/revocation; không đổi mock button thành endpoint tự cộng gems. Tính năng đó là phase riêng, mặc định `purchasesEnabled:false`.
 
@@ -302,7 +305,7 @@ Không log access/refresh token, OAuth code, PKCE verifier, cookie hoặc full s
 
 ## 9. Gate nghiệm thu contract
 
-- OpenAPI/JSON Schema và TypeScript contract cùng một nguồn versioned; kiểm đủ 24 action và từ chối tất cả action/trường ngoài allow-list.
+- OpenAPI/JSON Schema và TypeScript contract cùng một nguồn versioned; kiểm đủ 25 action và từ chối tất cả action/trường ngoài allow-list.
 - Snapshot/revision/epoch/catalog/stateAsOf trong một response phải cùng phiên bản; command chỉ được báo committed sau transaction commit.
 - Contract test bao stale/duplicate/changed-payload/lost-response, sync revision conflict, old-epoch replay và tombstone sau retention.
 - Auth test bao cross-account farmId, commandId của farm khác, ID token sai issuer/audience/nonce, redirect lạ, refresh token reuse, link conflict bị thay farm trong lúc chọn.

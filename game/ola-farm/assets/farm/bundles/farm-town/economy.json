@@ -8,13 +8,20 @@
   "experience": {
     "plantingXP": 0,
     "saleCoinsPerXP": 100,
-    "animalXPPerUnit": 3,
+    "levelUpDiamonds": 2,
+    "buildXP": {
+      "machine": 20,
+      "pen": 15,
+      "penSlot": 5,
+      "queueSlot": 3,
+      "field": 10
+    },
     "curve": {
       "maxLevel": 99,
-      "baseXP": 80,
-      "linearXP": 50,
+      "baseXP": 15,
+      "linearXP": 12,
       "quadraticAfterLevel": 10,
-      "quadraticXP": 400
+      "quadraticXP": 80
     }
   },
   "refunds": {
@@ -23,15 +30,15 @@
   },
   "coinPacks": [
     {
-      "coins": 1000,
+      "coins": 250,
       "diamonds": 5
     },
     {
-      "coins": 2200,
+      "coins": 550,
       "diamonds": 10
     },
     {
-      "coins": 5000,
+      "coins": 1200,
       "diamonds": 20
     }
   ],
@@ -411,6 +418,7 @@
       "name": "Gà đẻ trứng",
       "purchasePrice": 120,
       "quantity": 1,
+      "xp": 3,
       "slots": [
         {
           "price": 45,
@@ -434,6 +442,7 @@
       "name": "Bò sữa",
       "purchasePrice": 240,
       "quantity": 1,
+      "xp": 6,
       "slots": [
         {
           "price": 45,
@@ -457,6 +466,7 @@
       "name": "Heo",
       "purchasePrice": 360,
       "quantity": 1,
+      "xp": 12,
       "slots": [
         {
           "price": 45,
@@ -480,6 +490,7 @@
       "name": "Cừu",
       "purchasePrice": 600,
       "quantity": 1,
+      "xp": 20,
       "slots": [
         {
           "price": 45,
@@ -839,238 +850,238 @@
       "name": "Ruộng 7",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 2000,
+      "unlockPrice": 500,
       "requiredLevel": 2
     },
     "7": {
       "name": "Ruộng 8",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 4000,
+      "unlockPrice": 1000,
       "requiredLevel": 4
     },
     "8": {
       "name": "Ruộng 9",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 6000,
+      "unlockPrice": 1500,
       "requiredLevel": 6
     },
     "9": {
       "name": "Ruộng 10",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 8000,
+      "unlockPrice": 2500,
       "requiredLevel": 8
     },
     "10": {
       "name": "Ruộng 11",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 10000,
+      "unlockPrice": 4000,
       "requiredLevel": 10
     },
     "11": {
       "name": "Ruộng 12",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 12000,
+      "unlockPrice": 6000,
       "requiredLevel": 12
     },
     "22": {
       "name": "Ruộng 13",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 27000,
+      "unlockPrice": 8100,
       "requiredLevel": 14
     },
     "23": {
       "name": "Ruộng 14",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 72000,
+      "unlockPrice": 22000,
       "requiredLevel": 16
     },
     "24": {
       "name": "Ruộng 15",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 150000,
+      "unlockPrice": 44000,
       "requiredLevel": 18
     },
     "25": {
       "name": "Ruộng 16",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 240000,
+      "unlockPrice": 73000,
       "requiredLevel": 20
     },
     "26": {
       "name": "Ruộng 17",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 370000,
+      "unlockPrice": 110000,
       "requiredLevel": 22
     },
     "27": {
       "name": "Ruộng 18",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 520000,
+      "unlockPrice": 160000,
       "requiredLevel": 24
     },
     "28": {
       "name": "Ruộng 19",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 690000,
+      "unlockPrice": 210000,
       "requiredLevel": 26
     },
     "29": {
       "name": "Ruộng 20",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 890000,
+      "unlockPrice": 270000,
       "requiredLevel": 28
     },
     "30": {
       "name": "Ruộng 21",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 1110000,
+      "unlockPrice": 340000,
       "requiredLevel": 30
     },
     "31": {
       "name": "Ruộng 22",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 1360000,
+      "unlockPrice": 410000,
       "requiredLevel": 32
     },
     "32": {
       "name": "Ruộng 23",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 1640000,
+      "unlockPrice": 500000,
       "requiredLevel": 34
     },
     "33": {
       "name": "Ruộng 24",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 1940000,
+      "unlockPrice": 590000,
       "requiredLevel": 36
     },
     "34": {
       "name": "Ruộng 25",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 2270000,
+      "unlockPrice": 680000,
       "requiredLevel": 38
     },
     "35": {
       "name": "Ruộng 26",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 2620000,
+      "unlockPrice": 790000,
       "requiredLevel": 40
     },
     "36": {
       "name": "Ruộng 27",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 3000000,
+      "unlockPrice": 900000,
       "requiredLevel": 42
     },
     "37": {
       "name": "Ruộng 28",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 3400000,
+      "unlockPrice": 1030000,
       "requiredLevel": 44
     },
     "38": {
       "name": "Ruộng 29",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 3830000,
+      "unlockPrice": 1150000,
       "requiredLevel": 46
     },
     "39": {
       "name": "Ruộng 30",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 4290000,
+      "unlockPrice": 1290000,
       "requiredLevel": 48
     },
     "40": {
       "name": "Ruộng 31",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 4770000,
+      "unlockPrice": 1440000,
       "requiredLevel": 50
     },
     "41": {
       "name": "Ruộng 32",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 5280000,
+      "unlockPrice": 1590000,
       "requiredLevel": 52
     },
     "42": {
       "name": "Ruộng 33",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 5810000,
+      "unlockPrice": 1750000,
       "requiredLevel": 54
     },
     "43": {
       "name": "Ruộng 34",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 6360000,
+      "unlockPrice": 1910000,
       "requiredLevel": 56
     },
     "44": {
       "name": "Ruộng 35",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 6950000,
+      "unlockPrice": 2090000,
       "requiredLevel": 58
     },
     "45": {
       "name": "Ruộng 36",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 7560000,
+      "unlockPrice": 2270000,
       "requiredLevel": 60
     },
     "46": {
       "name": "Ruộng 37",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 8190000,
+      "unlockPrice": 2460000,
       "requiredLevel": 62
     },
     "47": {
       "name": "Ruộng 38",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 8850000,
+      "unlockPrice": 2660000,
       "requiredLevel": 64
     },
     "48": {
       "name": "Ruộng 39",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 9540000,
+      "unlockPrice": 2870000,
       "requiredLevel": 66
     },
     "49": {
       "name": "Ruộng 40",
       "initiallyUnlocked": false,
       "initialLevel": 1,
-      "unlockPrice": 10250000,
+      "unlockPrice": 3080000,
       "requiredLevel": 68
     }
   }

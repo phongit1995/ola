@@ -1,4 +1,4 @@
-import { establishFarm, xpForLevel } from './fixtures/established-farm';
+import { addBuildXP, establishFarm, xpForLevel } from './fixtures/established-farm';
 import { loadFarmCatalog } from '../tools/load-farm-catalog';
 import assert from 'node:assert/strict';
 import { historicalState } from './fixtures/historical-state';
@@ -353,7 +353,12 @@ test('buying on occupied former sites finds nearby free ground and preserves exi
         animals: [{ id: expected.nextId++, slot: 0, job: null }],
       };
     }
-    assert.deepEqual(g.state, expected, 'only purchase ownership, its included animal, price and new position change');
+    addBuildXP(g, expected, type ? 'machine' : 'pen');
+    assert.deepEqual(
+      g.state,
+      expected,
+      'only purchase ownership, its included animal, price, build XP and new position change'
+    );
     assert.deepEqual(memory().saver.parse(JSON.stringify(farmPack(g.state, settings))).free, expected);
   }
 });

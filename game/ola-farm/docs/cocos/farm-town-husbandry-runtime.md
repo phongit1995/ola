@@ -1,5 +1,7 @@
 # Chăn nuôi và chế biến hiện hành
 
+> **Số liệu hiện hành đã kiểm chứng nằm ở [Chỉ số game](../chi-so/README.md).** Tài liệu này giữ phần giải thích và lịch sử thiết kế; nếu con số ở đây lệch với `docs/chi-so/` hoặc file JSON thì lấy `docs/chi-so/` và JSON làm chuẩn.
+
 Farm có **40 ruộng, 8 cây, 4 loài gà/bò/heo/cừu, 8 loại máy, 23 công thức và 35 vật phẩm**. [Catalog](../../assets/farm/bundles/farm-town/catalog.json) giữ nội dung/identity; [economy.json](../../assets/farm/bundles/farm-town/economy.json) giữ giá/level/ví/XP/ô đất; [timing.json](../../assets/farm/bundles/farm-town/timing.json) giữ thời gian trồng/nuôi/chế biến. Game ghép thêm `gameplay.json` và `runtime.json` khi tải, tổng cộng [năm file cấu hình](configuration.md); profile là `simple-1`. [Cách chỉnh thời gian](timing-config.md). [Farm Town nguồn có bảy loài](farm-town-agriculture-inventory.md); ong, đà điểu và chim công không nằm trong runtime này.
 
 Mỗi loại máy và mỗi loài có tối đa **hai nhà**: 16 máy và tám chuồng. Nhà thứ hai yêu cầu **level 12–54 tùy loại**, đã có nhà thứ nhất, đủ mốc nội dung và đủ xu. Đạt level không tự cấp nhà. Xem [giá và level hiện hành](farm-town-husbandry-balance.md).
@@ -23,7 +25,7 @@ Chạm chuồng đã xây mở thẳng bảng **chuồng đang chọn**. Cho ăn
 
 Năm thẻ nằm trên **một hàng kéo ngang**, không có tab loài. Mỗi ô có số, hình con, trạng thái và nút riêng; lượng cám với icon lớn nằm dưới hàng thẻ, nút chăm cả đàn nằm cố định ở đáy. Vuốt tới ô ngoài khung, đóng bảng rồi chạm chuồng khác để đổi đàn. Bảng hiện không có dòng đếm đàn riêng, nút bán con hoặc liên kết tìm cám.
 
-Con đang nuôi hiện đồng hồ + thời gian còn lại; nút tăng tốc chỉ có số giá + icon kim cương. Giá là một kim cương cho mỗi 15 phút còn lại, làm tròn lên. Lượt gà/bò/heo/cừu lần lượt là 30 phút/2 giờ/6 giờ/12 giờ thực. Tăng tốc chỉ làm sản phẩm sẵn sàng; người chơi vẫn bấm nhận để đưa vào kho. Gà cho trứng `farm40:egg`, bò cho sữa `raw:7`, heo cho thịt xông khói `town:beacon`, cừu cho len `town:wool`.
+Con đang nuôi hiện đồng hồ + thời gian còn lại; nút tăng tốc chỉ có số giá + icon kim cương. Giá là một kim cương cho mỗi phút còn lại của con đó, làm tròn lên (`boostSecondsPerGem` trong `timing.json`, dùng chung với cây và nhà máy): gà vừa ăn 30 kim cương, cừu 720; xem [chi-so/09](../chi-so/09-kim-cuong-xu.md#giá-làm-xong-ngay). Lượt gà/bò/heo/cừu lần lượt là 30 phút/2 giờ/6 giờ/12 giờ thực. Tăng tốc chỉ làm sản phẩm sẵn sàng; người chơi vẫn bấm nhận để đưa vào kho. Gà cho trứng `farm40:egg`, bò cho sữa `raw:7`, heo cho thịt xông khói `town:beacon`, cừu cho len `town:wool`.
 
 Mỗi chuồng bắt đầu một ô/một con, tối đa **năm ô/năm con**. Mở ô 2–5 tuần tự, trả phí chỗ **45/75/120/180 xu cộng giá một con** trong cùng giao dịch. Giá con gà/bò/heo/cừu là **120/240/360/600 xu**. Ví dụ ô gà thứ hai giá 165 và có ngay một gà chờ ăn. Con mới không tự ăn cám.
 

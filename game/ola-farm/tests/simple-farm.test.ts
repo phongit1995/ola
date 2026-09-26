@@ -21,7 +21,10 @@ const ok = (r: ActionResult) => assert.equal(r.error, undefined);
 const settings = { speed: 1, sound: false, music: false };
 const reload = (g: FarmGame) => new FarmGame(catalog, clone(g.state));
 const xpFor = (level: number) =>
-  Array.from({ length: level - 1 }, (_, i) => xpToNext(i + 1)).reduce((a, b) => a + b, 0);
+  Array.from({ length: level - 1 }, (_, i) => xpToNext(i + 1, catalog.economy!.experience.curve)).reduce(
+    (a, b) => a + b,
+    0
+  );
 const identity = ({ price, sellPrice, duration, xp, harvestXP, requiredLevel, yields, quantity, ...rest }: any) => rest;
 const fixture = () => {
   const g = establishFarm(new FarmGame(catalog));
@@ -320,8 +323,11 @@ test('crop refunds and boost settle once, and zero-capital rescue works with hun
   assert.ok(g.cancel(0).error);
   g.state.xp = xpFor(g.farm(10)!.requiredLevel!);
   ok(g.plant(0, 10));
+  // Corn needs 15 minutes: one diamond per minute left.
+  assert.equal(g.boostPrice(g.state.plots[0]), 15);
+  g.state.diamonds = 20;
   ok(g.boost(0));
-  assert.equal(g.state.diamonds, 9);
+  assert.equal(g.state.diamonds, 5);
   assert.ok(g.boost(0).error);
   g.tick(0.5);
   ok(g.harvest(0));
@@ -485,7 +491,7 @@ test('fresh 500-coin farm earns every crop level and opens all 23 recipes using 
   }
   function reach(level: number) {
     let guard = 0;
-    while (progression(g.state.xp).level < level) {
+    while (progression(g.state.xp, catalog.economy!.experience.curve).level < level) {
       assert.ok(++guard < 10000);
       earn();
     }
@@ -575,7 +581,9 @@ test('fresh 500-coin farm earns every crop level and opens all 23 recipes using 
   assert.equal(harvested.size, 8);
   assert.equal(g.state.machines.length, 8);
   assert.equal(g.state.plots.filter(p => p.residents).length, 4);
-  assert.equal(g.state.diamonds, 10);
+  // Diamonds only come from level rewards; this route never boosts or buys coins.
+  assert.equal(g.state.diamonds, 10 + catalog.economy!.experience.levelUpDiamonds * (g.progress.level - 1));
+  assert.equal(g.state.rewardedLevel, g.progress.level);
   assert.ok(g.state.coins >= 20);
   g.validate();
 });

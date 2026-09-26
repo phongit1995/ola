@@ -2,8 +2,11 @@
 
 Bản chơi hiện hành là scene **Farm** trong Cocos Creator **3.8.8**: **40 ruộng, 8 cây, tối đa 8 chuồng, 5 con mỗi chuồng, 8 loại máy (tối đa 16 nhà), 23 công thức và 35 vật phẩm**. Mỗi loại có tối đa hai nhà; nhà thứ hai mở ở level 12–54 tùy loại. Mở ô chuồng mới gồm cả một con. Bảng chăm chỉ hiển thị chuồng đang chọn, với năm thẻ trên một hàng kéo ngang.
 
+**Mọi con số (giá, level, EXP, thời gian, nhà máy, chuồng, công thức, ruộng, kim cương) xem [Chỉ số game](chi-so/README.md)** — bộ tài liệu sinh từ file JSON và đã kiểm chứng bằng cách chạy code game. Các tài liệu dưới đây giữ phần giải thích kỹ thuật, Editor và lịch sử thiết kế.
+
 | Cần tra cứu | Tài liệu |
 | --- | --- |
+| **Toàn bộ chỉ số game và điểm cần chốt** | [Chỉ số game](chi-so/README.md) |
 | Cài đặt, build, chạy và kiểm tra | [Cocos README](../README.md) |
 | Cách chia logic, hằng số, dữ liệu sinh tự động và prefab | [Cấu trúc code](cocos/code-structure.md) |
 | Kế hoạch backend: kiến trúc, database, API, đồng bộ, vận hành và lộ trình | [Backend](backend/README.md) |

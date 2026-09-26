@@ -8,7 +8,7 @@ import type { ActionResult } from '../assets/farm/scripts/core/types/ActionTypes
 import type { FarmCatalog } from '../assets/farm/scripts/core/types/CatalogTypes';
 import type { FarmState } from '../assets/farm/scripts/core/types/StateTypes';
 import { GameSession } from '../assets/farm/scripts/core/GameSession';
-import { xpForLevel } from './fixtures/established-farm';
+import { addBuildXP, xpForLevel } from './fixtures/established-farm';
 
 const catalog = loadFarmCatalog();
 const levels = [5, 10, 15, 20];
@@ -107,8 +107,13 @@ for (const plot of [12, 50]) {
       expected.coins = 0;
       expectedPen.capacity++;
       expectedPen.animals.push({ id: expected.nextId++, slot, job: null });
+      addBuildXP(game, expected, 'penSlot');
       ok(game.expandPen(plot, slot));
-      assert.deepEqual(game.state, expected, 'the bundle changes only its wallet, slot, resident and ID allocation');
+      assert.deepEqual(
+        game.state,
+        expected,
+        'the bundle changes only its wallet, slot, resident, ID allocation and XP'
+      );
       game.state.coins = 1000000;
       const bought = copy(game.state);
       assert.ok(game.expandPen(plot, slot).error, 'a duplicate click must not buy the following slot');
@@ -158,8 +163,9 @@ for (const building of ['feed-1', 'feed-2']) {
       const expected = copy(game.state);
       expected.coins = 0;
       expected.machines.find(candidate => candidate.id === machine.id)!.capacity++;
+      addBuildXP(game, expected, 'queueSlot');
       ok(game.expandQueue(machine.id));
-      assert.deepEqual(game.state, expected, 'only the selected machine capacity and wallet change');
+      assert.deepEqual(game.state, expected, 'only the selected machine capacity, wallet and XP change');
       game.state.coins = 1000000;
       const bought = copy(game.state);
       assert.ok(game.expandQueue(machine.id).error, 'the next queue slot remains locked at this exact threshold');

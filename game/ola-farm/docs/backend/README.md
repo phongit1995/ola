@@ -1,5 +1,7 @@
 # Kế hoạch backend cho Cocos Farm
 
+> **Bối cảnh:** kế hoạch này viết khi Ola Farm còn là repo farm-game chạy độc lập (backend Node/Fastify, tài khoản riêng). Trong Ola, farm dùng tài khoản và server Go sẵn có của Ola; kế hoạch chỉ còn giá trị tham khảo về giao dịch, đồng bộ và chống gian lận. Đường dẫn `cocos/` trong các file 01–08 tương ứng thư mục `game/ola-farm/` hiện tại. Số liệu gameplay hiện hành xem [Chỉ số game](../chi-so/README.md).
+
 Ngày lập: **20/09/2026**; rà soát lần gần nhất: **23/09/2026**. Baseline gameplay tại commit **`c6c2d26`**; đường dẫn nguồn được cập nhật theo refactor **`58a13f5`** và đợt gỡ HTML cũ ngày 23/09/2026. Trạng thái: **kế hoạch đề xuất, chưa triển khai backend**. Các đường dẫn API, bảng dữ liệu, thư mục server và tiêu chí bên dưới mô tả công việc sẽ làm; chưa phải tính năng có sẵn.
 
 Đề xuất xây một backend TypeScript quản lý tài khoản, trạng thái nông trại và toàn bộ giao dịch gameplay. Client Cocos gửi thao tác; server kiểm tra luật, tính thời gian và lưu kết quả. Mục tiêu đầu tiên là chơi cùng một farm trên nhiều thiết bị, tránh mất tiến trình hoặc nhận thưởng hai lần khi mạng chập chờn, đồng thời tái sử dụng domain hiện tại.

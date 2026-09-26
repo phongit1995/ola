@@ -1,6 +1,6 @@
 # Cách chia code, hằng số và prefab
 
-Project game hiện tại nằm trong `cocos/`. Cấu trúc này chia theo trách nhiệm: luật chơi, hiển thị bản đồ, giao diện và nguồn dữ liệu. Một chức năng có thể có code ở nhiều lớp; prefab giữ hình và liên kết component, còn giao dịch đi qua `GameSession`.
+Project game hiện tại nằm trong `game/ola-farm/`. Cấu trúc này chia theo trách nhiệm: luật chơi, hiển thị bản đồ, giao diện và nguồn dữ liệu. Một chức năng có thể có code ở nhiều lớp; prefab giữ hình và liên kết component, còn giao dịch đi qua `GameSession`.
 
 ## Thư mục assets
 
@@ -107,9 +107,9 @@ Script component cũng mang theo `.ts.meta` khi chuyển thư mục. Công cụ 
 Từ gốc repo:
 
 ```sh
-node cocos/tools/farm-layout.cjs --check
-npm run verify --prefix cocos
-npm run typecheck --prefix cocos
+node game/ola-farm/tools/farm-layout.cjs --check
+npm run verify --prefix game/ola-farm
+npm run typecheck --prefix game/ola-farm
 ```
 
-`verify` kiểm asset/UUID, đồ thị prefab, hướng phụ thuộc, cách tách logic/type/constants/enum, format, TypeScript core và unit test. `npm run structure:check --prefix cocos` kiểm riêng quy tắc tổ chức code để tránh trộn trở lại. Sau khi đổi đường dẫn prefab hoặc module runtime, build lại bằng Creator và kiểm tra luồng mở UI trên bản build mới; build cũ không phản ánh thay đổi nguồn.
+`verify` kiểm asset/UUID, đồ thị prefab, hướng phụ thuộc, cách tách logic/type/constants/enum, format, TypeScript core và unit test. `npm run structure:check --prefix game/ola-farm` kiểm riêng quy tắc tổ chức code để tránh trộn trở lại. Sau khi đổi đường dẫn prefab hoặc module runtime, build lại bằng Creator và kiểm tra luồng mở UI trên bản build mới; build cũ không phản ánh thay đổi nguồn.

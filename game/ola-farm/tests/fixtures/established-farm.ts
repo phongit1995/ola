@@ -1,11 +1,27 @@
 import assert from 'node:assert/strict';
 import { FarmGame } from '../../assets/farm/scripts/core/FarmGame';
-import { xpToNext } from '../../assets/farm/scripts/core/Progression';
+import { progression, xpToNext } from '../../assets/farm/scripts/core/Progression';
+import type { BuildXP } from '../../assets/farm/scripts/core/types/EconomyTypes';
+import type { FarmState } from '../../assets/farm/scripts/core/types/StateTypes';
 
 export function xpForLevel(game: FarmGame, level: number): number {
   return Array.from({ length: level - 1 }, (_, index) =>
     xpToNext(index + 1, game.catalog.economy?.experience.curve)
   ).reduce((sum, xp) => sum + xp, 0);
+}
+
+/** Applies a construction purchase's one-time XP to an expected state, with the diamonds of any new level it reaches. */
+export function addBuildXP(game: FarmGame, state: FarmState, kind: keyof BuildXP): void {
+  const experience = game.catalog.economy!.experience,
+    level = (xp: number) => progression(xp, experience.curve).level,
+    before = level(state.xp);
+  state.xp += experience.buildXP[kind];
+  const after = level(state.xp),
+    paid = Math.max(state.rewardedLevel ?? 0, before);
+  if (after > paid && experience.levelUpDiamonds > 0) {
+    state.diamonds += (after - paid) * experience.levelUpDiamonds;
+    state.rewardedLevel = after;
+  }
 }
 
 /** Explicit owned-building fixture for production, livestock and historical-save tests.

@@ -1,10 +1,4 @@
-import {
-  MAP_INSET,
-  PAUSED_MESSAGE,
-  TOAST_ABOVE_NAVIGATION,
-  TOAST_ABOVE_FOOTER,
-  TOAST_ABOVE_PANEL,
-} from './GameApp.constants';
+import { MAP_INSET, TOAST_ABOVE_NAVIGATION, TOAST_ABOVE_FOOTER, TOAST_ABOVE_PANEL } from './GameApp.constants';
 import {
   _decorator,
   Component,
@@ -285,7 +279,7 @@ export class GameApp extends Component implements AppFacade {
 
   act(action: FarmAction, sound = 'Click 1', after?: () => void): boolean {
     if (!this.session.canDispatch(action)) {
-      this.toast(PAUSED_MESSAGE);
+      this.toast(this.session.blockedMessage);
       return false;
     }
     const { ok, result } = this.session.dispatch(action);
@@ -321,7 +315,7 @@ export class GameApp extends Component implements AppFacade {
   /** One routing for map taps and plot-list rows: ripe beds harvest, resident pens open the herd, locked slots offer the upgrade. */
   tapPlot(id: number): void {
     if (!this.session.canAct) {
-      this.toast(PAUSED_MESSAGE);
+      this.toast(this.session.blockedMessage);
       return;
     }
     const p = this.game.state.plots.find(plot => plot.id === id);
@@ -615,7 +609,7 @@ export class GameApp extends Component implements AppFacade {
       else this.close();
       return;
     }
-    if (e.keyCode === KeyCode.SPACE && !this.panels.view && !this.session.storageFailed) {
+    if (e.keyCode === KeyCode.SPACE && !this.session.realTime && !this.panels.view && !this.session.storageFailed) {
       this.session.togglePause();
       this.refresh();
     }

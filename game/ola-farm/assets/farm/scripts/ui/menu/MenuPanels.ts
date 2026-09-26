@@ -122,7 +122,7 @@ export const plotsPanel: PanelDefinition = {
 };
 
 export const pausePanel: PanelDefinition = {
-  title: 'Tạm dừng',
+  title: 'Menu',
   render(ctx: PanelContext): void {
     const { app, ui, art, width: w } = ctx,
       settings = app.session.settings;
@@ -165,7 +165,7 @@ export const pausePanel: PanelDefinition = {
       ui.text(
         content,
         'RealTime',
-        'Thời gian thực · Menu đang tạm dừng công việc',
+        'Thời gian thực · cây, vật nuôi, máy vẫn chạy',
         (w - 80) / 2,
         y,
         w - 100,
@@ -257,7 +257,7 @@ export const helpPanel: PanelDefinition = {
     ui.text(
       content,
       'Help',
-      'Chào mừng đến với Ola Farm. Chạm ô trống để gieo, cây chín để thu hoạch. Chạm cây đang lớn để hủy hoặc làm chín bằng kim cương; giá tăng theo thời gian còn lại.\n\nNhà máy chế biến nguyên liệu; Kho bán sản phẩm lấy xu. Khởi đầu có 500 xu và 10 kim cương.\n\nKéo/chụm/cuộn để di chuyển và thu phóng. Shop xây chuồng và máy. Mở ô kèm con trong bảng chuồng. Menu → Nông trại đưa về khu ruộng và chuồng. Space tạm dừng, Esc đóng bảng.\n\nĐồng hồ dùng thời gian thực. OFFLINE_GUIDE Tạm dừng hoặc mở Menu sẽ dừng công việc cho đến khi tiếp tục.\n\nTiến độ tự lưu. Xuất JSON để sao lưu; nhập bản lưu Ola Farm để tiếp tục trên máy khác.'
+      'Chào mừng đến với Ola Farm. Chạm ô trống để gieo, cây chín để thu hoạch. Chạm cây đang lớn để hủy hoặc làm chín bằng kim cương; giá tăng theo thời gian còn lại. Mỗi lần lên level được thưởng kim cương.\n\nNhà máy chế biến nguyên liệu; Kho bán sản phẩm lấy xu. Khởi đầu có 500 xu và 10 kim cương.\n\nKéo/chụm/cuộn để di chuyển và thu phóng. Shop xây chuồng và máy. Mở ô kèm con trong bảng chuồng. Menu → Nông trại đưa về khu ruộng và chuồng. Esc đóng bảng.\n\nĐồng hồ dùng thời gian thực, như Hay Day: mở Menu hay sắp xếp công trình không làm dừng cây, vật nuôi và nhà máy. OFFLINE_GUIDE\n\nTiến độ tự lưu. Xuất JSON để sao lưu; nhập bản lưu Ola Farm để tiếp tục trên máy khác.'
         .replace('OFFLINE_GUIDE', offlineGuide(ctx))
         .replace(
           '500 xu và 10 kim cương',
@@ -283,7 +283,7 @@ export const helpPanel: PanelDefinition = {
     ui.text(
       content,
       'NewFarmHelp',
-      '8 cây: lúa mì, ngô, bắp cải, dâu, nho, khoai tây, bí ngô, củ cải đường.\n\nLượt mới chưa có máy hay chuồng. Bắt đầu bằng máy thức ăn, chuồng gà và cám gà. Các nhóm công trình sau mở cách nhau nhiều level; xem mốc và giá trong Shop. Lên level không tự cấp nhà.\n\nMỗi máy có hàng đợi và khay nhận riêng; xem số ô trong cửa sổ máy. Trả nguyên liệu khi xếp; hủy việc đang chờ hoàn đúng nguyên liệu. Nhận hàng trong khay để máy chạy tiếp.\n\nGà, bò, heo, cừu nuôi theo từng ô. Làm thức ăn rồi cho ăn và nhận sản phẩm. Xem sức chứa tối đa trong cửa sổ chuồng; mua ô mới đã kèm một con.\n\nKho có 35 loại vật phẩm. Tìm nguyên liệu trong thẻ công thức chỉ nơi trồng, nuôi hoặc máy cần mua. Bản này dùng lượt lưu riêng; bản lưu cũ vẫn giữ để xuất.',
+      '8 cây: lúa mì, ngô, bắp cải, dâu, nho, khoai tây, bí ngô, củ cải đường.\n\nLượt mới chưa có máy hay chuồng. Bắt đầu bằng máy thức ăn, chuồng gà và cám gà. Các nhóm công trình sau mở cách nhau nhiều level; xem mốc và giá trong Shop. Lên level không tự cấp nhà.\n\nMỗi máy có hàng đợi và khay nhận riêng; xem số ô trong cửa sổ máy. Trả nguyên liệu khi xếp; hủy việc đang chờ hoàn đúng nguyên liệu. Nhận hàng trong khay để máy chạy tiếp; khay trống thì món đang làm có thể xong ngay bằng kim cương.\n\nGà, bò, heo, cừu nuôi theo từng ô. Làm thức ăn rồi cho ăn và nhận sản phẩm. Xem sức chứa tối đa trong cửa sổ chuồng; mua ô mới đã kèm một con.\n\nKho có 35 loại vật phẩm. Tìm nguyên liệu trong thẻ công thức chỉ nơi trồng, nuôi hoặc máy cần mua. Bản này dùng lượt lưu riêng; bản lưu cũ vẫn giữ để xuất.',
       cx,
       -1090,
       w - 135,

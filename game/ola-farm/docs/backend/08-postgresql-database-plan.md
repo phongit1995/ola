@@ -23,7 +23,7 @@ Một farm là một aggregate: một thao tác thường đổi cùng lúc ví,
 | Nội dung | Catalog release bất biến; không sao chép giá/level vào SQL trigger. |
 | Ngoài phạm vi | Payment, player trade, leaderboard, reset/import online, native auth nếu chưa chọn nền tảng đó. |
 
-Đầu vào hiện có: [FarmState](../../assets/farm/scripts/core/types/StateTypes.ts), [FarmAction](../../assets/farm/scripts/core/types/ActionTypes.ts), [FarmGame](../../assets/farm/scripts/core/FarmGame.ts), [FarmValidation](../../assets/farm/scripts/core/FarmValidation.ts) và [farm-town JSON](../../assets/farm/bundles/farm-town/). Baseline có 24 action trong union; `setPenSpecies` bị từ chối ở online simple. Farm mới có 500 xu, 10 kim cương, 6/40 ruộng mở, 0 máy/chuồng đã mua, state v7/layout v6. Giá trị này dùng làm fixture; server đọc catalog, không ghi cứng vào `DEFAULT` của DB.
+Đầu vào hiện có: [FarmState](../../assets/farm/scripts/core/types/StateTypes.ts), [FarmAction](../../assets/farm/scripts/core/types/ActionTypes.ts), [FarmGame](../../assets/farm/scripts/core/FarmGame.ts), [FarmValidation](../../assets/farm/scripts/core/FarmValidation.ts) và [farm-town JSON](../../assets/farm/bundles/farm-town/). Baseline có 25 action trong union; `setPenSpecies` bị từ chối ở online simple. Farm mới có 500 xu, 10 kim cương, 6/40 ruộng mở, 0 máy/chuồng đã mua, state v7/layout v6. Giá trị này dùng làm fixture; server đọc catalog, không ghi cứng vào `DEFAULT` của DB.
 
 ## 2. Sơ đồ dữ liệu và nguồn có thẩm quyền
 
@@ -337,7 +337,7 @@ Chọn migration runner duy trì sẵn sau spike, dùng SQL migration có versio
 | DB-00 / P0 | ADR database/provider/roles/retention | Chốt PG major, cap số/JSON, source hashes, lock order, IdP, RPO/RTO; prototype package domain | 1–2 |
 | DB-01 / P1 | 001 schema/roles; 002 accounts/catalog/farms/ownership; 003 registry/receipt/ledger/audit | DB trắng migrate được; grants và FK/unique/CHECK bị thử bằng negative cases | 2–4 |
 | DB-02 / P2 | 004 sessions/enrollment/provision | Guest → confirm → mua máy → duplicate/reload, opening ledger đúng; fault/concurrency gate | 3–5 |
-| DB-03 / P3 | Index/constraints theo workload, không tạo bảng mỗi action | Tất cả 24 action có policy, validation, ledger oracle; 23 action khả dụng theo điều kiện simple | 2–4 |
+| DB-03 / P3 | Index/constraints theo workload, không tạo bảng mỗi action | Tất cả 25 action có policy, validation, ledger oracle; 24 action khả dụng theo điều kiện simple | 2–4 |
 | DB-04 / P4 | 005 identities/auth transactions/link receipts; 006 export/delete jobs | Link/reauth/delete giữ receipt/local save; native refresh chỉ nếu native được chọn | 2–4 |
 | DB-05 / P5 | 007 recovery/archive/checkpoints; maintenance indexes | Load/soak, catalog backfill, restore drill, rollout/rollback và báo cáo chi phí | 3–5 |
 | Tổng phần DB trong kế hoạch tổng | Không cộng lại vào estimate P0–P5 | Chưa gồm dự phòng 20–30%, UI, tích hợp IdP thật và chờ provider | **13–24** |

@@ -19,7 +19,7 @@ V1 cần bảo vệ bốn tài sản: quyền sở hữu farm, tính toàn vẹn
 | Chiếm cookie/token, liên kết nhầm tài khoản | Phiên có thể thu hồi, reauth khi thao tác nhạy cảm, liên kết có kiểm chứng | Thử replay phiên đã thu hồi và xung đột liên kết |
 | Nhân viên hoặc automation cấp thưởng sai | Quyền tối thiểu, ledger và audit cho mọi điều chỉnh | Cấp bù lặp không nhân đôi, xác định được ai/why/when |
 
-Không tiếp nhận các thao tác local reset/import tùy ý/pause/speed làm API kinh tế v1. Đóng tab, mở menu hay di chuyển công trình không được đóng băng thời gian chung của server. Đây là thay đổi hành vi cần giải thích trong UI và kiểm thử chuyển đổi.
+Không tiếp nhận các thao tác local reset/import tùy ý/pause/speed làm API kinh tế v1. Đóng tab, mở menu hay di chuyển công trình không được đóng băng thời gian chung của server. Bản local đã theo luật này từ 26/09/2026 (menu và sắp xếp không dừng đồng hồ), nên chuyển sang server không đổi hành vi người chơi thấy.
 
 ## 2. Khách, tài khoản và phiên đăng nhập
 

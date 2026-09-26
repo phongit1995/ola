@@ -2,21 +2,21 @@
 
 [Mở project và chạy](../../README.md) · [Nguồn Farm Town](farm-town-agriculture-inventory.md) · [Di chuyển công trình](di-chuyen-cong-trinh.md)
 
-Runtime vào từ `cocos/assets/farm/scenes/Loading.scene`, tải tài nguyên rồi chuyển sang `Farm.scene` cùng thư mục. Asset đã nhập, prefab và `.meta` được giữ trong Git; build không cần APK hoặc thư mục khảo sát `reference/` và `artifacts/`.
+Runtime vào từ `game/ola-farm/assets/farm/scenes/Loading.scene`, tải tài nguyên rồi chuyển sang `Farm.scene` cùng thư mục. Asset đã nhập, prefab và `.meta` được giữ trong Git; build không cần APK hoặc thư mục khảo sát `reference/` và `artifacts/`.
 
-Bộ nguồn [30 loại cây, 430 PNG](../../source-assets/farm-town/crops/README.md) và [gallery](../../source-assets/farm-town/crops/index.html) vẫn được giữ trong `source-assets/farm-town/crops/`. Đây là ảnh, role và hồ sơ nguồn nằm ngoài bundle runtime. Tám giống đang chơi lấy từ catalog và prefab đã nhập trong `assets/`; không suy số giống runtime từ số thư mục của gallery. Chạy `python3 cocos/tools/prepare-crop-sources.py --check` để kiểm bộ nguồn mà không cần APK; các nhãn đợt nhập trong hồ sơ là phân nhóm khảo sát cũ.
+Bộ nguồn [30 loại cây, 430 PNG](../../source-assets/farm-town/crops/README.md) và [gallery](../../source-assets/farm-town/crops/index.html) vẫn được giữ trong `source-assets/farm-town/crops/`. Đây là ảnh, role và hồ sơ nguồn nằm ngoài bundle runtime. Tám giống đang chơi lấy từ catalog và prefab đã nhập trong `assets/`; không suy số giống runtime từ số thư mục của gallery. Chạy `python3 game/ola-farm/tools/prepare-crop-sources.py --check` để kiểm bộ nguồn mà không cần APK; các nhãn đợt nhập trong hồ sơ là phân nhóm khảo sát cũ.
 
 ## Nguồn và kiểm tra
 
 | Nội dung | Nơi quản lý |
 | --- | --- |
-| Cây, bốn sân/loài nuôi, tám máy Farm Town | `cocos/assets/farm/bundles/farm-town/manifest.json`, `prefabs/`, `images/` |
-| Catalog gameplay | `cocos/assets/farm/bundles/farm-town/catalog.json` |
+| Cây, bốn sân/loài nuôi, tám máy Farm Town | `game/ola-farm/assets/farm/bundles/farm-town/manifest.json`, `prefabs/`, `images/` |
+| Catalog gameplay | `game/ola-farm/assets/farm/bundles/farm-town/catalog.json` |
 | Popup và Shop Golden Island | [Hướng dẫn nguồn](../../source-assets/golden-island-ui/README.md), manifest trong `assets/farm/bundles/golden-island-ui/` |
 | HUD | [Nguồn HUD](../../source-assets/farm-hud/README.md) |
 | Footer và bong bóng cây | [Nguồn ô đất](../../source-assets/farm-plot-ui/README.md) |
 | Rừng, viền bãi cỏ, đá và decor | [Nguồn cảnh quan](../../source-assets/farm-beautify/README.md) |
-| Asset gốc được port còn dùng | `cocos/asset-manifest.json`, `assets/resources/ported/` |
+| Asset gốc được port còn dùng | `game/ola-farm/asset-manifest.json`, `assets/resources/ported/` |
 
 Manifest ghi nguồn, hash, rect, pivot/trim hoặc hierarchy tùy nhóm asset. Ảnh nguồn giữ nguyên pixel; dùng transform của node để sửa bố cục. Sprite cùng tên ở hai bundle không nhất thiết là cùng ảnh: đối chiếu file nguồn và object/PPtr. Giữ `.meta` để UUID trong scene/prefab không đổi.
 
@@ -51,7 +51,7 @@ Mở prefab, chỉnh node hình bên trong rồi Preview scene. Tám module UI �
 
 `FactoryBodyView.recipeChoicePrefab` và `ingredientItemPrefab` liên kết hai nguồn thẻ. Chỉnh hình/font/màu trong `RecipeChoice` hoặc `IngredientItem` để áp dụng cho mọi thẻ khi chơi. Các instance trong `choicePreviews`/`ingredientPreviews` chỉ minh họa bố cục trong Editor và được ẩn khi chạy; override riêng trên thẻ mẫu không áp dụng cho danh sách runtime. Danh sách tạo thêm thẻ theo dữ liệu, tái sử dụng khi refresh/đổi món/resize và ẩn thẻ dư; số thẻ mẫu không giới hạn số công thức hay nguyên liệu. `FactoryPanel` giữ việc chọn món, tìm nguồn và giao dịch; View con giữ phần hình, chữ và trạng thái thẻ.
 
-Mở riêng `FactoryDialogFrame.prefab` để chỉnh khung ngoài của máy. `Background` dùng Sprite `buildingWindow` gốc với nine-slice và scale 0.42, giữ viền dày, phần tiêu đề nhô lên và bóng; `Title` dùng font/màu gốc; `close-panel/CloseFace` dùng hình nút X gốc. Đổi hình/màu ở Sprite, font ở Label, vị trí X bằng `Top`/`Right` của Widget trên `close-panel`. Editor hiển thị trực tiếp các Sprite/Label này. Runtime chỉ đổi kích thước gốc, scale toàn khung theo màn hình và tên máy; không vẽ lại kiểu khung khác. Khi so với game điện thoại, đặt UITransform của root bằng kích thước khung đang chạy; mặc định prefab là 560×450, điện thoại 393px dùng khung 369×450. `DialogShellView.factoryDialogPrefab` giữ tham chiếu nguồn và tạo một instance để tái sử dụng khi đổi món/refresh. Chạy `node cocos/tools/build-factory-dialog-frame.cjs` giữ nguyên chỉnh sửa Inspector; chỉ thêm `--reset` khi chủ động muốn khôi phục mẫu UI gốc.
+Mở riêng `FactoryDialogFrame.prefab` để chỉnh khung ngoài của máy. `Background` dùng Sprite `buildingWindow` gốc với nine-slice và scale 0.42, giữ viền dày, phần tiêu đề nhô lên và bóng; `Title` dùng font/màu gốc; `close-panel/CloseFace` dùng hình nút X gốc. Đổi hình/màu ở Sprite, font ở Label, vị trí X bằng `Top`/`Right` của Widget trên `close-panel`. Editor hiển thị trực tiếp các Sprite/Label này. Runtime chỉ đổi kích thước gốc, scale toàn khung theo màn hình và tên máy; không vẽ lại kiểu khung khác. Khi so với game điện thoại, đặt UITransform của root bằng kích thước khung đang chạy; mặc định prefab là 560×450, điện thoại 393px dùng khung 369×450. `DialogShellView.factoryDialogPrefab` giữ tham chiếu nguồn và tạo một instance để tái sử dụng khi đổi món/refresh. Chạy `node game/ola-farm/tools/build-factory-dialog-frame.cjs` giữ nguyên chỉnh sửa Inspector; chỉ thêm `--reset` khi chủ động muốn khôi phục mẫu UI gốc.
 
 `LivestockBody` chỉ giữ vùng thức ăn, hàng `HerdSlot`, hai nút chăm đàn và nhánh xem chuồng chưa xây. Các node cũ cho số con lặp, bán/quản lý đàn và đường dẫn nguồn đã được xóa khỏi prefab cùng các binding không còn dùng.
 
@@ -68,12 +68,12 @@ Các prefab nguồn đã nhỏ theo đối tượng nên được giữ nguyên:
 `tools/farm-layout.cjs` đọc anchor và dữ liệu footprint, sinh `assets/farm/data/farm-layout/layout.json`, `assets/farm/scripts/core/generated/FarmLayoutManifest.ts` và `assets/farm/scripts/map/generated/BuildingPresentationData.ts`. Không sửa tay các đầu ra này. `core/FarmLayoutData.ts` giữ điểm truy cập nhỏ, ổn định cho hình học va chạm; dữ liệu hiển thị nằm ở tầng map. Footprint sân/máy ghi hình học và hash nguồn trong `pen-footprints.json`/`machine-footprints.json`; khi thay art phải tạo lại và kiểm hình học trước khi dùng bố cục mới. Bản đồ hiện không có road; ruộng và sân giữ nguyên các ID phục vụ bản lưu.
 
 ```sh
-npm run verify --prefix cocos
-npm run typecheck --prefix cocos
-node cocos/tools/farm-layout.cjs --check
+npm run verify --prefix game/ola-farm
+npm run typecheck --prefix game/ola-farm
+node game/ola-farm/tools/farm-layout.cjs --check
 ```
 
-`verify` kiểm manifest/asset, liên kết prefab/meta, toàn bộ graph scene/prefab (ownership, local reference, UUID/type ngoài asset) và domain tests. Sau khi build bằng Creator, dùng các browser test phù hợp trong `cocos/tests/`; hình học, ảnh thực và thao tác cần được kiểm trên bản build đã thay đổi. Importer là công cụ tái tạo từ nguồn, không phải bước bắt buộc khi mở project. Trước khi chạy một importer, đọc phạm vi đầu ra của nó để tránh ghi đè asset đã chỉnh trong Editor.
+`verify` kiểm manifest/asset, liên kết prefab/meta, toàn bộ graph scene/prefab (ownership, local reference, UUID/type ngoài asset) và domain tests. Sau khi build bằng Creator, dùng các browser test phù hợp trong `game/ola-farm/tests/`; hình học, ảnh thực và thao tác cần được kiểm trên bản build đã thay đổi. Importer là công cụ tái tạo từ nguồn, không phải bước bắt buộc khi mở project. Trước khi chạy một importer, đọc phạm vi đầu ra của nó để tránh ghi đè asset đã chỉnh trong Editor.
 
 `tools/extract-hud.cjs` là migration một lần; chạy lại chỉ kiểm prefab đã liên kết, không ghi đè HUD. Các `build-*-*.cjs` tạo mặc định UI là công cụ reset có chủ đích, không nằm trong build/verify; không chạy chúng sau khi chỉnh Inspector nếu muốn giữ art đã chỉnh. Helper `ui-prefab-builder.cjs` giữ fileId ổn định và `.meta` hiện có. `tools/ui-prefab-paths.cjs` là bảng đường dẫn dùng chung của công cụ UI; UUID gốc độc lập với thư mục để tái tạo cũng không đổi liên kết. Khi chuyển nhóm, di chuyển cả `.prefab` và `.meta`, cập nhật bảng đường dẫn và chạy các kiểm tra graph/prefab.
 
@@ -81,4 +81,4 @@ node cocos/tools/farm-layout.cjs --check
 
 Nhánh nhập vật nuôi hiện hành là [import-town-husbandry.py](../../tools/import-town-husbandry.py), dùng helper [farm-town-prefab.py](../../tools/farm-town-prefab.py). Helper giữ cách serialize prefab/UUID; không có bước chạy lại importer đầy đủ cũ để thay toàn bộ catalog.
 
-`node cocos/tools/prepare-item-edit-check.cjs` tạo project thử riêng trong `artifacts/`, dịch Visual của loài rừng đầu tiên 17 đơn vị và Stage3 của Wheat 11 đơn vị; đồng thời dịch root/placement của `ForestNE` và tắt `ForestNW` để kiểm việc giữ transform và visibility sau khi đổi parent. Build project được in ra, rồi chạy `item-prefabs.browser.cjs` với `COCOS_ITEM_BUILD`, `COCOS_ITEM_SOURCE` (thư mục `assets/farm/prefabs/items` của bản sao) và `COCOS_ITEM_EDIT_TEST=1`. Test yêu cầu có instance thật và đối chiếu vị trí với prefab đã chỉnh; project chính không bị sửa.
+`node game/ola-farm/tools/prepare-item-edit-check.cjs` tạo project thử riêng trong `artifacts/`, dịch Visual của loài rừng đầu tiên 17 đơn vị và Stage3 của Wheat 11 đơn vị; đồng thời dịch root/placement của `ForestNE` và tắt `ForestNW` để kiểm việc giữ transform và visibility sau khi đổi parent. Build project được in ra, rồi chạy `item-prefabs.browser.cjs` với `COCOS_ITEM_BUILD`, `COCOS_ITEM_SOURCE` (thư mục `assets/farm/prefabs/items` của bản sao) và `COCOS_ITEM_EDIT_TEST=1`. Test yêu cầu có instance thật và đối chiếu vị trí với prefab đã chỉnh; project chính không bị sửa.

@@ -14,6 +14,11 @@ function keys(value: Record<string, unknown>, allowed: string[], field: string):
   for (const key of Object.keys(value)) if (!allowed.includes(key)) fail(`${field}.${key}`, 'khóa không được hỗ trợ.');
 }
 
+/** Diamonds to finish a job now: one gem per started `boostSecondsPerGem` of remaining time (60 = 1 gem a minute). */
+export function boostGems(catalog: FarmCatalog, remainingSeconds: number): number {
+  return remainingSeconds > 0 ? Math.ceil(remainingSeconds / (catalog.boostSecondsPerGem ?? 60)) : 0;
+}
+
 /** Used by the Cocos asset loader and Node tools. Missing/typoed durations never silently fall back. */
 export function withFarmTiming(source: FarmCatalogSource, value: unknown): FarmCatalog {
   if (!isRecord(value) || value.version !== 1) return fail('version', 'chỉ hỗ trợ phiên bản 1.');

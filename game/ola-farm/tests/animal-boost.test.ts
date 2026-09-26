@@ -18,19 +18,21 @@ function feeding() {
   game.state.inventory['farm40:chicken-feed'] = 3;
   assert.equal(game.expandPen(12).error, undefined);
   assert.equal(game.feedAnimals(12).error, undefined);
+  game.state.diamonds = 100;
   return { game, id: game.state.plots[12].residents!.animals[0].id };
 }
 
 test('animal boost charges by remaining game time; only the selected job becomes ready, eggs require collection', () => {
   const { game: g, id } = feeding();
-  assert.equal(g.animalBoostPrice(12, id), 2);
+  // One diamond per started minute left: a fresh 30-minute egg costs 30, 15 min 0.1 s costs 16, 15 min costs 15.
+  assert.equal(g.animalBoostPrice(12, id), 30);
   g.tick(899.9);
-  assert.equal(g.animalBoostPrice(12, id), 2);
+  assert.equal(g.animalBoostPrice(12, id), 16);
   g.tick(0.1);
-  assert.equal(g.animalBoostPrice(12, id), 1);
+  assert.equal(g.animalBoostPrice(12, id), 15);
   const before = copy(g.state),
     expected = copy(before);
-  expected.diamonds--;
+  expected.diamonds -= 15;
   expected.plots[12].residents!.animals[0].job!.ready = expected.time;
   assert.equal(g.boostAnimal(12, id).error, undefined);
   assert.deepEqual(g.state, expected);
@@ -47,7 +49,7 @@ test('animal boost charges by remaining game time; only the selected job becomes
   assert.equal(reloaded.state.plots[12].residents!.animals.length, 2);
   assert.ok(reloaded.collectAnimals(12, id).error);
   assert.equal(reloaded.feedAnimals(12, id).error, undefined);
-  assert.equal(reloaded.animalBoostPrice(12, id), 2);
+  assert.equal(reloaded.animalBoostPrice(12, id), 30);
 });
 
 test('insufficient diamonds, invalid targets, hungry and naturally ready animals never spend currency', () => {
@@ -100,11 +102,11 @@ test('boost action persists once; a failed save keeps live diamonds/job intact a
   assert.equal(storage.get(SIMPLE_FARM_KEY), bytes);
   fail = false;
   assert.equal(session.retrySave(), true);
-  assert.equal(session.game.state.diamonds, before.diamonds - 2);
+  assert.equal(session.game.state.diamonds, before.diamonds - 30);
   assert.equal(session.game.state.plots[12].residents!.animals[0].job!.ready, before.time);
   assert.equal(session.dispatch({ type: 'boostAnimal', plot: 12, animal: id }).ok, false);
   const restored = new GameSession(catalog, saver, () => 0);
-  assert.equal(restored.game.state.diamonds, before.diamonds - 2);
+  assert.equal(restored.game.state.diamonds, before.diamonds - 30);
   assert.equal(restored.game.collectAnimals(12, id).error, undefined);
   assert.equal(restored.game.quantity('farm40:egg'), 1);
 });

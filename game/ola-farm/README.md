@@ -10,7 +10,7 @@ Project nằm ở `game/ola-farm/`, dùng toolchain riêng (npm + Cocos Creator)
 pnpm -C game build:farm
 ```
 
-Lệnh dùng [ola-web-mobile.json](build-configs/ola-web-mobile.json) (release, md5Cache); đặt `COCOS_CREATOR` nếu Creator nằm ở chỗ khác. Tài liệu trong `docs/` được viết khi project còn ở repo farm-game: đường dẫn `cocos/...` trong đó tương ứng với thư mục này.
+Lệnh dùng [ola-web-mobile.json](build-configs/ola-web-mobile.json) (release, md5Cache); đặt `COCOS_CREATOR` nếu Creator nằm ở chỗ khác. Toàn bộ chỉ số game (giá, level, EXP, thời gian, nhà máy, chuồng, công thức, ruộng, kim cương) và các điểm cần chốt nằm ở [docs/chi-so](docs/chi-so/README.md). Kế hoạch backend trong `docs/backend/` viết cho repo farm-game cũ, đường dẫn `cocos/` trong đó tương ứng thư mục này.
 
 ## Chạy và build
 
@@ -40,6 +40,8 @@ npm start
 Mở **http://127.0.0.1:4173**. CLI Creator trả exit 36 khi build thành công; cần kiểm tra log `Finished` và output. Build không nằm trong Git và phải tạo lại sau khi sửa code/prefab. Chạy game không cần APK hoặc thư mục khảo sát.
 
 ## Chỉnh giá, level, ô đất và thời gian
+
+Bảng đầy đủ mọi con số hiện hành và khóa JSON tương ứng: [docs/chi-so](docs/chi-so/README.md).
 
 Sửa [economy.json](assets/farm/bundles/farm-town/economy.json) để đổi giá xây nhà/chuồng, ô nuôi, hàng đợi, hạt/sản phẩm, ví/XP và ruộng mở sẵn hoặc mua mở theo level. Chạy `npm run config:check`; [bảng mục cấu hình và ví dụ](docs/cocos/economy-config.md).
 

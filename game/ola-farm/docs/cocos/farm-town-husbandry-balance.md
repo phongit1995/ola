@@ -1,8 +1,10 @@
 # Giá, thời gian và mốc mở hiện hành
 
+> **Số liệu hiện hành đã kiểm chứng nằm ở [Chỉ số game](../chi-so/README.md).** Tài liệu này giữ phần giải thích và lịch sử thiết kế; nếu con số ở đây lệch với `docs/chi-so/` hoặc file JSON thì lấy `docs/chi-so/` và JSON làm chuẩn.
+
 Áp dụng cho Cocos `simple-1`, catalog `town-real-time-1`. Thời gian được chỉnh riêng trong [timing.json](../../assets/farm/bundles/farm-town/timing.json); xem [cách áp dụng](timing-config.md). Giá, level, ví/XP và ô đất được chỉnh trong [economy.json](../../assets/farm/bundles/farm-town/economy.json); xem [hướng dẫn giá và mở ô](economy-config.md). [Catalog](../../assets/farm/bundles/farm-town/catalog.json) giữ identity/công thức; [FarmGame.ts](../../assets/farm/scripts/core/FarmGame.ts) thực thi giao dịch. Bảng này thay thế các mức giá/tốc độ thử nghiệm trước đây; các mức thử nghiệm cũ có thể tra cứu trong lịch sử Git.
 
-Thời gian dưới đây là thời gian thực ở 1×. Đóng game vẫn hoàn tất cây, lượt nuôi và các mẻ đã trả nguyên liệu; người chơi phải quay lại nhận hàng và bắt đầu lượt tiếp theo. Tạm dừng, menu tạm dừng và chế độ di chuyển công trình dừng đồng hồ. [Cách tính tiến trình, mô phỏng thời gian chơi và giới hạn](real-time-economy.md).
+Thời gian dưới đây là thời gian thực ở 1×. Đóng game vẫn hoàn tất cây, lượt nuôi và các mẻ đã trả nguyên liệu; người chơi phải quay lại nhận hàng và bắt đầu lượt tiếp theo. Menu và chế độ di chuyển công trình không dừng đồng hồ; chỉ lỗi lưu mới dừng. [Cách tính tiến trình, mô phỏng thời gian chơi và giới hạn](real-time-economy.md).
 
 ## Cây trồng
 
@@ -21,7 +23,7 @@ Với cấu hình mặc định, mỗi ô cấp 1 thu ba sản phẩm. Giá bán
 
 ## Chăn nuôi và chuồng
 
-Mỗi con ăn một cám, cho một sản phẩm/lượt và 3 XP khi nhận. Mọi chuồng phải mua trong Shop. Gà và cám gà mở ở level 1; bò và cám bò ở level 10. Con đói chờ ăn, không chết. Mua mới không tự cho ăn.
+Mỗi con ăn một cám, cho một sản phẩm/lượt và XP theo loài khi nhận (gà 3, bò 6, heo 12, cừu 20). Mọi chuồng phải mua trong Shop. Gà và cám gà mở ở level 1; bò và cám bò ở level 10. Con đói chờ ăn, không chết. Mua mới không tự cho ăn.
 
 | Loài | Thời gian/lượt | Giá con | Bán/sản phẩm | Chuồng 1: level · giá gồm một con | Chuồng 2: level · giá gồm một con |
 | --- | --- | ---: | ---: | --- | --- |
@@ -94,6 +96,6 @@ Nuôi liên tục 40 con (10 con mỗi loài) cần trung bình `Σ(10 × thời
 
 Từ lượt mới, mua đủ 16 máy, tám chuồng, 40 con và nâng mọi hàng đợi lên năm ô tốn **297.060 xu**, gồm 204.500 xây máy + 67.440 xây chuồng kèm con đầu + 13.920 mở ô kèm 32 con + 11.200 mở hàng đợi. Chưa gồm hạt giống, nguyên liệu hoặc mua lại con đã bán. Đủ tiền vẫn phải đạt các level tương ứng.
 
-Ruộng bắt đầu với sáu ô miễn phí; mua thêm 34 ô theo [bảng giá đất](land-purchase.md) tốn riêng **102.021.000 xu**, tại các level chẵn 2–68. Tổng đất cộng công trình/con/hàng đợi nói trên là **102.318.060 xu**. Giá đất này chưa được đo lại bằng mô phỏng tiến trình dài hạn.
+Ruộng bắt đầu với sáu ô miễn phí; mua thêm 34 ô theo [bảng giá đất](land-purchase.md) tốn riêng **30.712.600 xu**, tại các level chẵn 2–68. Tổng đất cộng công trình/con/hàng đợi nói trên là **31.009.660 xu**. Giá đất đặt lại và đo bằng mô phỏng ngày 25/09/2026, xem [chi-so/02](../chi-so/02-exp-level-mo-khoa.md#nhịp-chơi-ước-tính).
 
-Xong ngay cây/vật nuôi: một kim cương cho mỗi 15 phút còn lại, làm tròn lên. Bán hàng nhận một XP mỗi 100 xu doanh thu cộng dồn; bán lẻ nhiều lần không tăng XP so với bán gộp. Hạt hỗ trợ khi hết vốn không cho XP thu hoạch; sản phẩm vẫn bán để có vốn.
+Xong ngay cây, vật nuôi và món đang làm trong máy: một kim cương cho mỗi phút còn lại, làm tròn lên (`boostSecondsPerGem` trong `timing.json`, xem [chi-so/09](../chi-so/09-kim-cuong-xu.md#giá-làm-xong-ngay)). Mỗi level mới thưởng kim cương theo `experience.levelUpDiamonds`. Bán hàng nhận một XP mỗi 100 xu doanh thu cộng dồn; bán lẻ nhiều lần không tăng XP so với bán gộp. Hạt hỗ trợ khi hết vốn không cho XP thu hoạch; sản phẩm vẫn bán để có vốn.

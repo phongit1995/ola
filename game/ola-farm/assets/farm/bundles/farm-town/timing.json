@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "boostSecondsPerGem": 900,
+  "boostSecondsPerGem": 60,
   "crops": {
     "wheat": {
       "name": "Lúa mì",

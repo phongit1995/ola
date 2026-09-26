@@ -83,7 +83,7 @@ export class LandPurchaseView extends Component {
     this.wallet.string = app.session.storageFailed
       ? 'Chưa lưu được. Hãy thử lưu lại.'
       : !app.session.canAct
-        ? 'Nông trại đang tạm dừng'
+        ? app.session.blockedMessage.replace(/\.$/, '')
         : available && !affordable
           ? `Còn thiếu ${formatWallet(field.price! - game.state.coins)} xu`
           : `Số dư: ${formatWallet(game.state.coins)} xu`;

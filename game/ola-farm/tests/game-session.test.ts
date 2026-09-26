@@ -190,14 +190,15 @@ test('real-time sessions use wall time, normalize old speed settings and autosav
   s.togglePause();
   now += 1000;
   s.tick(1);
-  assert.equal(s.game.state.time, 101);
+  assert.equal(s.game.state.time, 102, 'like Hay Day, a pause blocks input but never stops real time');
+  assert.equal(s.canAct, false);
   s.togglePause();
   s.suspend();
   now += 1000;
   s.tick(1);
-  assert.equal(s.game.state.time, 101);
-  s.resume();
   assert.equal(s.game.state.time, 102);
+  s.resume();
+  assert.equal(s.game.state.time, 103);
   store.data.clear();
   now += AUTOSAVE_SECONDS * 1000;
   s.tick(AUTOSAVE_SECONDS);

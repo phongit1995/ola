@@ -1,6 +1,7 @@
 import { legacyMachineTypes } from './legacy/LegacyMachineCatalog';
 import { TRAY_CAPACITY } from './constants/ProductionDefaults';
 import { PEN_CAPACITY_LIMIT } from './constants/HusbandryDefaults';
+import { MAX_LEVEL } from './constants/ProgressionDefaults';
 import { BUILDINGS_PER_TYPE } from './constants/BuildingLimits';
 import type { FarmCatalog } from './types/CatalogTypes';
 import type { FarmState } from './types/StateTypes';
@@ -64,6 +65,11 @@ export function assertFarmState(
   for (const key of ['coins', 'xp', 'time', 'earned', 'harvested', 'sold'])
     if (!nonnegative(s[key])) throw Error('Ví/thống kê không hợp lệ.');
   if (!integer(s.diamonds) || !integer(s.nextId) || s.nextId < 1) throw Error('Bộ đếm không hợp lệ.');
+  if (
+    s.rewardedLevel !== undefined &&
+    (!integer(s.rewardedLevel) || s.rewardedLevel < 1 || s.rewardedLevel > MAX_LEVEL)
+  )
+    throw Error('Mốc thưởng level không hợp lệ.');
   const unique = (id: unknown): void => {
     if (!integer(id) || id < 1 || id >= s.nextId || ids.has(id)) throw Error('ID giao dịch bị trùng/sai.');
     ids.add(id);

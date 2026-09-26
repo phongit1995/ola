@@ -65,13 +65,14 @@ export const factoryPanel: PanelDefinition = {
       enabled = true,
       key = 'info'
     ) => {
-      const node = id.startsWith('collect-')
-        ? v.collect
-        : id.startsWith('produce-')
-          ? v.produce
-          : id === 'pin-recipe' || id === 'factory-production-return'
-            ? v.pin
-            : v.element(parent, id);
+      const node =
+        id.startsWith('collect-') || id.startsWith('boost-machine-')
+          ? v.collect
+          : id.startsWith('produce-')
+            ? v.produce
+            : id === 'pin-recipe' || id === 'factory-production-return'
+              ? v.pin
+              : v.element(parent, id);
       return v.action(
         node,
         ui,
@@ -168,16 +169,26 @@ export const factoryPanel: PanelDefinition = {
         fill.fillRange = Math.max(0, Math.min(1, (s.time - selected.job.started) / selected.job.duration));
     });
     const collectWidth = queueWidth - statusWidth - 8;
+    // Once the tray is empty, the same button finishes the running job for diamonds.
+    const boostPrice = selected.tray.length ? 0 : game.machineBoostPrice(selected.id);
     button(
       card,
-      'collect-' + selected.id,
-      selected.tray.length ? `Nhận hàng · ${selected.tray.length}` : 'Chưa có hàng',
+      (boostPrice ? 'boost-machine-' : 'collect-') + selected.id,
+      selected.tray.length
+        ? `Nhận hàng · ${selected.tray.length}`
+        : boostPrice
+          ? `Xong ngay\n${boostPrice} kim cương`
+          : 'Chưa có hàng',
       left + queueWidth - collectWidth / 2,
       statusY,
       collectWidth,
       44,
-      () => app.act({ type: 'collectAll', machine: selected.id }, 'Chon sp'),
-      ctx.canAct && selected.tray.length > 0,
+      () =>
+        app.act(
+          boostPrice ? { type: 'boostMachine', machine: selected.id } : { type: 'collectAll', machine: selected.id },
+          'Chon sp'
+        ),
+      ctx.canAct && (selected.tray.length > 0 || (boostPrice > 0 && s.diamonds >= boostPrice)),
       selected.tray.length ? 'green' : 'info'
     );
     const queueLabelY = h / 2 - 125,

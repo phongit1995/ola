@@ -17,17 +17,32 @@ export interface FieldConfig extends Named {
   requiredLevel: number;
 }
 
+/** One-time XP for each construction purchase, like building in Hay Day or Township. */
+export interface BuildXP {
+  machine: number;
+  pen: number;
+  penSlot: number;
+  queueSlot: number;
+  field: number;
+}
+
 export interface FarmEconomyConfig {
   version: 1;
   startingWallet: { coins: number; diamonds: number; xp: number };
-  experience: { plantingXP: number; saleCoinsPerXP: number; animalXPPerUnit: number; curve: ProgressionConfig };
+  experience: {
+    plantingXP: number;
+    saleCoinsPerXP: number;
+    levelUpDiamonds: number;
+    buildXP: BuildXP;
+    curve: ProgressionConfig;
+  };
   refunds: { cropCancelRate: number; animalSaleRate: number };
   coinPacks: { coins: number; diamonds: number }[];
   gemPacks: { gems: number; price: string }[];
   crops: Record<string, Named & { seedPrice: number; requiredLevel: number; harvestXP: number; yields: number[] }>;
   items: Record<string, Named & { sellPrice: number }>;
   recipes: Record<string, Named & { requiredLevel: number; xp: number }>;
-  animals: Record<string, Named & { purchasePrice: number; quantity: number; slots: SlotPrice[] }>;
+  animals: Record<string, Named & { purchasePrice: number; quantity: number; xp: number; slots: SlotPrice[] }>;
   machines: Record<
     string,
     Named & { sites: { price: number | null; requiredLevel: number }[]; queueSlots: SlotPrice[] }
@@ -51,7 +66,7 @@ export type FarmContentSource = Omit<
 > & {
   farm: Omit<FarmCatalogSource['farm'][number], 'price' | 'sellPrice' | 'requiredLevel' | 'harvestXP' | 'yields'>[];
   products: Omit<FarmCatalogSource['products'][number], 'price' | 'requiredLevel' | 'xp'>[];
-  livestock: Omit<FarmCatalogSource['livestock'][number], 'price' | 'quantity'>[];
+  livestock: Omit<FarmCatalogSource['livestock'][number], 'price' | 'quantity' | 'xp'>[];
   items: Omit<NonNullable<FarmCatalogSource['items']>[number], 'sellPrice'>[];
   machineTypes: (Omit<NonNullable<FarmCatalogSource['machineTypes']>[number], 'buildSites'> & {
     buildSites: Omit<

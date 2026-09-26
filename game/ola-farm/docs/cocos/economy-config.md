@@ -1,8 +1,10 @@
 # Chỉnh giá, level và ô đất bằng JSON
 
+> **Số liệu hiện hành đã kiểm chứng nằm ở [Chỉ số game](../chi-so/README.md).** Tài liệu này giữ phần giải thích và lịch sử thiết kế; nếu con số ở đây lệch với `docs/chi-so/` hoặc file JSON thì lấy `docs/chi-so/` và JSON làm chuẩn.
+
 [economy.json](../../assets/farm/bundles/farm-town/economy.json) là nơi chỉnh các con số cân bằng của bản Cocos. Game tải file này cùng [timing.json](../../assets/farm/bundles/farm-town/timing.json) và [catalog.json](../../assets/farm/bundles/farm-town/catalog.json) khi khởi động. Giá và điều kiện trên Shop, bảng chuồng, máy, ruộng và giao dịch trong core cùng dùng dữ liệu đã tải.
 
-Lượt mới có 500 xu/10 kim cương, **6 ruộng mở sẵn**, chưa xây máy hoặc chuồng nào. Mỗi level chẵn từ 2 đến 68 cho phép mua thêm một ruộng, tối đa 40 ruộng; giá từ 2.000 đến 10.250.000 xu theo [bảng giá đất](land-purchase.md). File có tên tiếng Việt ở từng mục để dễ tìm. `name` trong economy chỉ là nhãn tra cứu; tên hiển thị và ID vẫn lấy từ catalog.
+Lượt mới có 500 xu/10 kim cương, **6 ruộng mở sẵn**, chưa xây máy hoặc chuồng nào. Mỗi level chẵn từ 2 đến 68 cho phép mua thêm một ruộng, tối đa 40 ruộng; giá từ 500 đến 3.080.000 xu theo [bảng giá đất](land-purchase.md). File có tên tiếng Việt ở từng mục để dễ tìm. `name` trong economy chỉ là nhãn tra cứu; tên hiển thị và ID vẫn lấy từ catalog.
 
 ## Tìm đúng mục
 
@@ -13,7 +15,7 @@ Lượt mới có 500 xu/10 kim cương, **6 ruộng mở sẵn**, chưa xây m�
 | Sản lượng cây theo cấp đất | `crops.<key>.yields` | Bốn số tương ứng cấp đất 1–4 |
 | Giá bán mọi nguyên liệu/sản phẩm | `items.<itemKey>.sellPrice` | Xu cho một đơn vị; gồm nông sản, trứng/sữa/thịt/len, cám và thành phẩm |
 | Level và XP của công thức | `recipes.<id>` | `requiredLevel`, `xp`; XP nhận khi lấy mẻ đã xong |
-| Giá con và sản lượng mỗi lượt | `animals.<key>` | `purchasePrice`, `quantity` |
+| Giá con, sản lượng và XP mỗi lượt | `animals.<key>` | `purchasePrice`, `quantity`, `xp` (XP mỗi con mỗi lượt) |
 | Giá mở ô chuồng, level mỗi ô | `animals.<key>.slots` | Bốn mục lần lượt là ô 2, 3, 4, 5 |
 | Giá xây máy/nhà, level xây | `machines.<key>.sites` | Hai mục lần lượt là nhà 1 và nhà 2 |
 | Giá và level mở hàng đợi máy | `machines.<key>.queueSlots` | Bốn mục lần lượt là ô 2, 3, 4, 5 |
@@ -21,12 +23,13 @@ Lượt mới có 500 xu/10 kim cương, **6 ruộng mở sẵn**, chưa xây m�
 | Ruộng nào mở sẵn, giá/level mở thêm | `fields.<plotId>` | `initiallyUnlocked`, `unlockPrice`, `requiredLevel` |
 | Cấp đất ban đầu của từng ruộng | `fields.<plotId>.initialLevel` | 1–4; chỉ áp dụng lượt mới |
 | Công thức XP lên level | `experience.curve` | `baseXP`, `linearXP`, `quadraticAfterLevel`, `quadraticXP`, `maxLevel` |
-| XP gieo/bán/thu vật nuôi | `experience` | `plantingXP`, `saleCoinsPerXP`, `animalXPPerUnit` |
+| XP gieo/bán, thưởng kim cương khi lên level | `experience` | `plantingXP`, `saleCoinsPerXP`, `levelUpDiamonds` |
+| XP xây dựng (một lần lúc trả tiền) | `experience.buildXP` | `machine`, `pen`, `penSlot`, `queueSlot`, `field`; số nguyên 0–10.000, 0 để tắt |
 | Tỷ lệ hoàn hạt/bán lại con | `refunds` | `cropCancelRate`, `animalSaleRate`, từ 0 đến 1 |
 | Gói đổi kim cương thành xu | `coinPacks` | `coins`, `diamonds` của từng gói |
 | Gói kim cương hiển thị | `gemPacks` | Giá chữ và số lượng; cửa hàng này vẫn chưa mở bán thật |
 
-Thời gian trồng/nuôi/chế biến và số giây/kim cương tăng tốc nằm trong `timing.json`; xem [hướng dẫn thời gian](timing-config.md). Công thức nguyên liệu/đầu ra, nơi gắn mốc `husbandry`/`crafts` và định danh hình ảnh nằm trong `catalog.json`. Kho, số con/ô khi tạo chuồng/máy, sức chứa và yêu cầu từng mốc nằm trong `gameplay.json`; xem [bảng cấu hình đầy đủ](configuration.md). `sourcePrice` trong catalog là dữ liệu nguồn để đối chiếu, không phải giá bán đang dùng.
+Thời gian trồng/nuôi/chế biến và số giây mỗi kim cương khi làm xong ngay (`boostSecondsPerGem`) nằm trong `timing.json`; xem [hướng dẫn thời gian](timing-config.md). Công thức nguyên liệu/đầu ra, nơi gắn mốc `husbandry`/`crafts` và định danh hình ảnh nằm trong `catalog.json`. Kho, số con/ô khi tạo chuồng/máy, sức chứa và yêu cầu từng mốc nằm trong `gameplay.json`; xem [bảng cấu hình đầy đủ](configuration.md). `sourcePrice` trong catalog là dữ liệu nguồn để đối chiếu, không phải giá bán đang dùng.
 
 ## Ví dụ giá nhà và ô
 
@@ -108,7 +111,7 @@ Ví dụ đặt ruộng thứ hai thành ô phải mua ở level 2, giá 123 xu:
 Từ gốc repo:
 
 ```sh
-npm run config:check --prefix cocos
+npm run config:check --prefix game/ola-farm
 ```
 
 Lệnh kiểm cả năm file và báo đúng đường dẫn mục bị lỗi. Giá/XP/level/số lượng dùng số nguyên; level từ 1 đến `maxLevel` (tối đa 99). Giá âm, thiếu mục, sai khóa, số lượng ô không đúng hoặc giá trị trùng trong catalog bị từ chối. `timing:check` cũ vẫn dùng cùng bộ kiểm tra.
@@ -127,4 +130,4 @@ Cây, lượt nuôi và mẻ đã trả nguyên liệu giữ snapshot đầu ra/
 
 `economy-config.test.ts` kiểm giá/level, ví/XP, sản lượng, hoàn tiền, mở ruộng, dữ liệu sai, giữ tài sản cũ và lỗi lưu/thử lại. `economy-config.browser.cjs` thay JSON asset trong context thử nghiệm để kiểm giá thực trên UI và số xu trừ khi mua ruộng, nhà, chuồng, ô máy và ô nuôi, rồi tải lại ở ba viewport. File nguồn mặc định không bị thay bằng số liệu thử nghiệm.
 
-Chạy `npm run verify --prefix cocos`, `npm run typecheck --prefix cocos` và các browser test trên bản build mới khi sửa luật. Để đo lại tiến trình theo config, chạy `npm run simulate:balance --prefix cocos`. Mô phỏng cũng đọc giá/level/ruộng từ JSON; nó mua các ruộng đang khóa khi đủ điều kiện. Kiểm tra cấu hình hợp lệ không chứng minh mọi cách chỉnh giá đều cân bằng hoặc mọi chiến thuật đều hoàn thành trong cùng thời gian.
+Chạy `npm run verify --prefix game/ola-farm`, `npm run typecheck --prefix game/ola-farm` và các browser test trên bản build mới khi sửa luật. Để đo lại tiến trình theo config, chạy `npm run simulate:balance --prefix game/ola-farm`. Mô phỏng cũng đọc giá/level/ruộng từ JSON; nó mua các ruộng đang khóa khi đủ điều kiện. Kiểm tra cấu hình hợp lệ không chứng minh mọi cách chỉnh giá đều cân bằng hoặc mọi chiến thuật đều hoàn thành trong cùng thời gian.

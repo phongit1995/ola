@@ -24,7 +24,7 @@ export class GameSession extends Emitter<SessionEvents> {
   hidden = false;
   storageFailed = false;
   pendingPack: FarmPack | null = null;
-  /** Pause state before the menu opened, so closing the menu restores it. */
+  /** Pause state before the menu opened, so closing the menu restores it. In real time a pause only blocks input. */
   pauseBeforeMenu: boolean | null = null;
   /** The stored save could not be read; the previous bytes are kept for export. */
   readonly recovered: boolean;
@@ -85,6 +85,11 @@ export class GameSession extends Emitter<SessionEvents> {
   canDispatch(action: FarmAction): boolean {
     return action.type === 'moveBuilding' ? this.layoutEditing && !this.hidden && !this.storageFailed : this.canAct;
   }
+  /** Why input is refused. Real time never stops for the menu or building moves, so name what is open instead. */
+  get blockedMessage(): string {
+    if (!this.realTime || this.storageFailed || this.hidden) return PAUSED_MESSAGE;
+    return this.layoutEditing ? 'Đang sắp xếp công trình.' : 'Đang mở Menu.';
+  }
   beginLayout(): boolean {
     if (this.hidden || this.storageFailed || !this.game.simple) return false;
     this.tick(0);
@@ -110,14 +115,12 @@ export class GameSession extends Emitter<SessionEvents> {
   private packNow(state = this.game.state, savedAt = this.lastWallTime): FarmPack {
     return {
       ...farmPack(state, { ...this.pack.settings, speed: this.realTime ? 1 : this.speed }),
-      ...(this.realTime
-        ? { clock: { version: 1 as const, savedAt, running: !this.paused && !this.layoutEditing } }
-        : {}),
+      ...(this.realTime ? { clock: { version: 1 as const, savedAt, running: true } } : {}),
     };
   }
 
   /** Offline advancement only finishes already paid work. Persist before publishing it. */
-  private advanceOffline(running = !this.paused && !this.layoutEditing): void {
+  private advanceOffline(running = true): void {
     if (!this.realTime || this.storageFailed) return;
     const stamp = this.wallStamp(),
       seconds = (stamp - this.lastWallTime) / 1000;
@@ -155,7 +158,7 @@ export class GameSession extends Emitter<SessionEvents> {
   dispatch(action: FarmAction): Dispatch {
     // Input can arrive before the next frame. Start new work at this wall-clock instant.
     if (this.realTime) this.tick(0);
-    if (!this.canDispatch(action)) return { ok: false, result: { error: PAUSED_MESSAGE } };
+    if (!this.canDispatch(action)) return { ok: false, result: { error: this.blockedMessage } };
     const candidate = this.createGame(this.game.state);
     const result = applyAction(candidate, action);
     if (result.error) return { ok: false, result };
@@ -177,8 +180,9 @@ export class GameSession extends Emitter<SessionEvents> {
     if (this.hidden || !Number.isFinite(dt) || dt < 0) return;
     if (this.realTime) {
       const stamp = this.wallStamp();
-      if (this.canAct) this.game.tick((stamp - this.lastWallTime) / 1000);
-      // Pausing consumes wall time without advancing work; moving the clock backwards never replays it.
+      // Like Hay Day, the menu and building moves never stop the farm; only a failed save freezes it.
+      // Moving the clock backwards never replays time.
+      if (!this.storageFailed) this.game.tick((stamp - this.lastWallTime) / 1000);
       this.lastWallTime = stamp;
     } else if (this.canAct) this.game.tick(Math.min(MAX_TICK_SECONDS, dt) * this.speed);
     this.saveElapsed += dt;
@@ -303,7 +307,7 @@ export class GameSession extends Emitter<SessionEvents> {
     this.emit('paused', this.paused);
   }
 
-  /** The pause menu always pauses; closing it restores whatever the player had before. */
+  /** The menu always blocks input; closing it restores whatever the player had before. Real time keeps running. */
   enterMenu(): void {
     if (this.pauseBeforeMenu !== null) return;
     this.tick(0);

@@ -2,13 +2,13 @@
 
 ## Cách dùng
 
-Nhấn giữ công trình khoảng 0,45 giây, kéo bằng cùng ngón tay hoặc chuột, rồi **thả để đặt**. Vị trí hợp lệ được lưu ngay và game tiếp tục chạy, không cần mở Tạm dừng, bấm xác nhận hay bấm Xong. Giữ yên rồi thả không đổi vị trí và không mở bảng.
+Nhấn giữ công trình khoảng 0,45 giây, kéo bằng cùng ngón tay hoặc chuột, rồi **thả để đặt**. Vị trí hợp lệ được lưu ngay, không cần mở Menu, bấm xác nhận hay bấm Xong. Giữ yên rồi thả không đổi vị trí và không mở bảng.
 
 Vùng xanh cho biết đặt được. Vùng đỏ báo sát/đè ruộng, công trình khác, ao/giếng/cối xay/nhà chó hoặc ra ngoài bãi cỏ. Phần chân công trình cần cách ruộng ít nhất 24 đơn vị bản đồ. Road đã được gỡ khỏi map và không còn footprint chặn đặt công trình. Thả ở vị trí không hợp lệ trả công trình về chỗ cũ. Chạm nhanh vào chuồng mở popup chăm đàn: từ toàn cảnh sẽ phóng vừa chuồng, còn camera đã chỉnh thủ công được giữ nguyên. Chạm ruộng không đổi zoom; kéo nhanh trước khi đủ thời gian giữ vẫn di chuyển camera.
 
 Ngón thứ hai hủy vị trí đang kéo và chuyển sang zoom. Escape, hủy cảm ứng, cuộn chuột, xoay màn hình, ẩn tab, mở bảng và thay phiên chơi cũng bỏ thao tác chưa thả. Các vị trí đã thả và lưu trước đó vẫn được giữ.
 
-Menu Tạm dừng → **Sắp xếp** là lối vào phụ để chọn công trình bằng mũi tên. Trong menu này, thả vẫn lưu ngay; **Bỏ chọn** bỏ lựa chọn hiện tại, **Xong** thoát chế độ. Không có nút xác nhận vị trí.
+Menu → **Sắp xếp** là lối vào phụ để chọn công trình bằng mũi tên. Trong menu này, thả vẫn lưu ngay; **Bỏ chọn** bỏ lựa chọn hiện tại, **Xong** thoát chế độ. Không có nút xác nhận vị trí.
 
 ## Phạm vi
 
@@ -79,18 +79,18 @@ Các snapshot hình học nằm trong `assets/farm/scripts/core/legacy/`. Layout
 
 Action `{ type: 'moveBuilding', building, position }` xác thực trên bản sao state, ghi thành công rồi mới công bố vị trí. Nếu ghi lỗi lúc thả, hình về chỗ cũ và vị trí đang chờ nằm trong `pendingPack`; thử lưu lại thành công mới áp dụng. Autosave không thấy vị trí đang giữ.
 
-Trong lúc giữ/kéo, `layoutEditing` tạm ngừng thời gian sản xuất và các action khác. Khi thả hoặc hủy, game khôi phục trạng thái tạm dừng trước đó. Lỗi lưu dùng luồng phục hồi sẵn có.
+Trong lúc giữ/kéo, `layoutEditing` chặn các action khác nhưng không dừng đồng hồ (từ 26/09/2026, giống Hay Day): cây, vật nuôi và máy vẫn chạy. Khi thả hoặc hủy, game trả lại trạng thái trước đó. Lỗi lưu dùng luồng phục hồi sẵn có.
 
 ## Kiểm tra
 
 ```sh
-node cocos/tools/farm-layout.cjs --check
-npm run verify --prefix cocos
-npm run typecheck --prefix cocos
+node game/ola-farm/tools/farm-layout.cjs --check
+npm run verify --prefix game/ola-farm
+npm run typecheck --prefix game/ola-farm
 ```
 
-Sau build, chạy `node cocos/tests/machine-placement-outline.browser.cjs` từ gốc repo để kiểm cả 16 nhà sản xuất: kích thước hình, khung nền khi giữ/kéo, thả và tải lại vị trí trên máy tính, điện thoại dọc và ngang. Ảnh và báo cáo nằm trong `artifacts/machine-move-audit/verified/`.
+Sau build, chạy `node game/ola-farm/tests/machine-placement-outline.browser.cjs` từ gốc repo để kiểm cả 16 nhà sản xuất: kích thước hình, khung nền khi giữ/kéo, thả và tải lại vị trí trên máy tính, điện thoại dọc và ngang. Ảnh và báo cáo nằm trong `artifacts/machine-move-audit/verified/`.
 
-Các bài `building-long-press.browser.cjs`, `building-move.browser.cjs`, `building-move-gestures.browser.cjs`, `fixed-roads-save.browser.cjs`, `herd-size-focus.browser.cjs` và `camera-limits.browser.cjs` trong `cocos/tests/` kiểm thêm vị trí hợp lệ/sai, hủy cử chỉ, mua trên đất chưa đặt trước, nguồn save cũ, retry khi ghi lỗi và focus không che UI. Một số fixture lịch sử còn giả định công trình mở sẵn hoặc giá cũ; cần cập nhật theo cấu hình hiện hành trước khi dùng để nghiệm thu. Tên bài kiểm road được giữ vì nó kiểm bản lưu trước/sau gỡ đường; map hiện không có đường.
+Các bài `building-long-press.browser.cjs`, `building-move.browser.cjs`, `building-move-gestures.browser.cjs`, `fixed-roads-save.browser.cjs`, `herd-size-focus.browser.cjs` và `camera-limits.browser.cjs` trong `game/ola-farm/tests/` kiểm thêm vị trí hợp lệ/sai, hủy cử chỉ, mua trên đất chưa đặt trước, nguồn save cũ, retry khi ghi lỗi và focus không che UI. Một số fixture lịch sử còn giả định công trình mở sẵn hoặc giá cũ; cần cập nhật theo cấu hình hiện hành trước khi dùng để nghiệm thu. Tên bài kiểm road được giữ vì nó kiểm bản lưu trước/sau gỡ đường; map hiện không có đường.
 
 Không dùng kết quả của bố cục sân/máy nhỏ hơn trong lịch sử để chứng nhận hình học hiện tại.

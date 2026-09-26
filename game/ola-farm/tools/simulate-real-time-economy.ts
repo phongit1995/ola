@@ -223,7 +223,11 @@ function run(
       g.validate();
     }
   assert.equal(g.state.coins, initialCoins + g.state.earned - spending - seedCosts);
-  assert.equal(g.state.diamonds, initialGems);
+  // Never spends diamonds; every new level pays its configured reward once.
+  assert.equal(
+    g.state.diamonds,
+    initialGems + (catalog.economy?.experience.levelUpDiamonds ?? 0) * (g.progress.level - 1)
+  );
   return {
     visits,
     minutesPerVisit,

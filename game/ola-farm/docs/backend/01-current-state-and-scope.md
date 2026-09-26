@@ -35,8 +35,9 @@ Nguồn là [catalog.json](../../assets/farm/bundles/farm-town/catalog.json), [e
 | Giới hạn | Mỗi loại máy tối đa 2 nhà; mỗi loài tối đa 2 chuồng; hàng chờ máy, khay và sức chứa chuồng tối đa 5 theo cấu hình hiện tại |
 | Chuồng khi mua | Khởi đầu 1 chỗ và 1 con; giá xây bao gồm phần công trình cùng giá con khởi đầu |
 | Điều kiện nuôi | Phải có máy thức ăn; gà/bò không bị gate sản phẩm nâng cao. Heo cần đã nhận cám, trứng, sữa; cừu và bàn đan cần đã nhận burger; từng site vẫn có điều kiện level |
-| Đổi xu | 5 kim cương → 1.000 xu; 10 → 2.200; 20 → 5.000 |
-| Hoàn thành ngay | Giá cây và vật nuôi tính theo mỗi khoảng 900 giây còn lại, làm tròn lên |
+| Đổi xu | 5 kim cương → 250 xu; 10 → 550; 20 → 1.200 |
+| Hoàn thành ngay | Cây, vật nuôi và món đang làm trong máy: 1 kim cương cho mỗi 60 giây còn lại, làm tròn lên (`boostSecondsPerGem`) |
+| Thưởng lên level | +2 kim cương cho mỗi level mới (`experience.levelUpDiamonds`), mỗi level trả một lần; state lưu `rewardedLevel` |
 
 Vì vậy, với lượt chơi mới hiện tại, người chơi vào Shop và chủ động xây máy/chuồng sau khi đủ xu, level và điều kiện. Lên level chỉ mở quyền mua. Server tạo farm mới phải dùng cùng quy tắc này; không tự xây nhà để thuận tiện cho fixture hoặc onboarding. Save cũ đã có nhà được giữ nguyên quyền sở hữu theo migration hiện có.
 
@@ -71,25 +72,28 @@ Các cột sau mô tả hành vi hiện có, không tự thêm action hoặc đ�
 | 3 | `harvest(plot)` | Thu output, XP, cập nhật thống kê/gate, làm trống plot | Đã tới `ready` theo server; cùng một lứa chỉ thu một lần; không lấy quantity/XP từ request |
 | 4 | `cancel(plot)` | Hủy lứa chưa chín, hoàn `snapshot.refundCoins` | Không hủy lứa đã chín; hoàn theo snapshot đã trả, không định giá lại theo catalog mới |
 | 5 | `boost(plot)` | Trừ kim cương, đặt cây sẵn sàng ngay | Còn thời gian, đủ số dư; giá tính tại lúc server xét lệnh; chưa tự thu sản phẩm |
-| 6 | `improve(plot)` | Với simple: trừ xu và mở ruộng kế tiếp | Thứ tự ruộng, level, giá; nhánh legacy trừ 1 kim cương không được vô tình áp dụng cho online simple |
+| 6 | `improve(plot)` | Với simple: trừ xu, mở ruộng kế tiếp và cộng XP xây dựng | Thứ tự ruộng, level, giá; nhánh legacy trừ 1 kim cương không được vô tình áp dụng cho online simple |
 | 7 | `rescue` | Gieo lúa hỗ trợ miễn phí, không planting/harvest XP, không refund | Đúng điều kiện cạn vốn/kho/công việc và có plot trống; không biến thành endpoint nhận tiền tùy ý |
 | 8 | `dismissGuide` | Ghi cờ đã bỏ hướng dẫn | Vẫn ghi state/receipt nhất quán; không cấp ví khởi đầu lần nữa |
 | 9 | `produce(recipe, machine?)` | Trừ đủ nguyên liệu ngay lúc xếp hàng, tạo job snapshot, có thể chạy ngay | Máy đúng loại/đã mua, công thức mở, queue còn chỗ; server tạo ID, inputs, outputs, XP, duration |
 | 10 | `collect(machine, batch?)` | Nhận một mẻ trong khay, cộng kho/XP/gate, có thể cho máy chạy tiếp | Mẻ thực sự có trong khay; chỉ collect mới cộng kho; receipt nêu mẻ thực tế |
 | 11 | `collectAll(machine)` | Nhận toàn bộ khay hiện có bằng một action | Không nhận việc đang chạy/chờ; kiểm tra tổng output trước khi sửa; all-or-nothing |
 | 12 | `cancelQueued(machine, job)` | Hủy việc còn chờ và hoàn đủ nguyên liệu snapshot | Không hủy việc đang chạy hoặc đã xong; cùng job không hoàn hai lần |
-| 13 | `expandQueue(machine)` | Trừ xu, tăng capacity một chỗ | Chỗ tiếp theo, giá, level và giới hạn; capacity hiện có không bị hạ vì config mới |
-| 14 | `buyMachine(machineType, building?)` | Trừ xu, mua máy mới và đặt layout hợp lệ | Gate/level, số nhà, site tiếp theo, có chỗ đặt; site kỳ vọng chống thao tác trên offer cũ |
+| 13 | `expandQueue(machine)` | Trừ xu, tăng capacity một chỗ, cộng XP xây dựng | Chỗ tiếp theo, giá, level và giới hạn; capacity hiện có không bị hạ vì config mới |
+| 14 | `buyMachine(machineType, building?)` | Trừ xu, mua máy mới, đặt layout hợp lệ, cộng XP xây dựng | Gate/level, số nhà, site tiếp theo, có chỗ đặt; site kỳ vọng chống thao tác trên offer cũ |
 | 15 | `sellItem(item, quantity)` | Trừ kho, cộng xu/doanh thu/XP/thống kê | Quantity nguyên dương, đủ hàng; giá server; XP theo chênh lệch tổng doanh thu tránh lợi dụng chia nhỏ giao dịch |
 | 16 | `setPenSpecies(plot, species)` | Chỉ nhánh legacy cho đổi loài chuồng trống | Online `simple-1` trả `ACTION_NOT_AVAILABLE`; không mở tính năng mới chỉ vì union có action này |
 | 17 | `buyAnimal(plot, slot?)` | Trừ xu, thêm con vào slot trống đã mở | Chuồng đúng loài, slot chưa đổi, còn capacity, có máy thức ăn; ID do server cấp |
-| 18 | `buyPen(plot)` | Trừ giá xây kèm con, mở chuồng, cấp số con khởi đầu và layout | Loài/site cố định, gate, level, thứ tự nhà, max pens, máy thức ăn và diện tích; một giao dịch cho mọi phần |
-| 19 | `expandPen(plot, slot?)` | Trừ giá chỗ cộng giá con, tăng capacity và thêm một con | Chỉ mở chỗ kế tiếp, đủ level/xu, đúng slot kỳ vọng và giới hạn |
+| 18 | `buyPen(plot)` | Trừ giá xây kèm con, mở chuồng, cấp số con khởi đầu và layout, cộng XP xây dựng | Loài/site cố định, gate, level, thứ tự nhà, max pens, máy thức ăn và diện tích; một giao dịch cho mọi phần |
+| 19 | `expandPen(plot, slot?)` | Trừ giá chỗ cộng giá con, tăng capacity, thêm một con, cộng XP xây dựng | Chỉ mở chỗ kế tiếp, đủ level/xu, đúng slot kỳ vọng và giới hạn |
 | 20 | `sellAnimal(plot, animal)` | Bỏ con và hoàn xu theo tỷ lệ bán con hiện hành | Chỉ bán con không có job; slot vẫn tồn tại, capacity không giảm; không nhân đôi hoàn tiền |
 | 21 | `feedAnimals(plot, animal?)` | Trừ thức ăn, tạo job cho một hoặc mọi con đang đói | Omit `animal` là chủ ý cho ăn tất cả con đủ điều kiện; đủ tổng cám, dùng snapshot output/XP hiện tại |
 | 22 | `boostAnimal(plot, animal)` | Trừ kim cương, job của con sẵn sàng nhận | Job chưa xong, giá theo thời gian server; không tự cộng sản phẩm |
 | 23 | `collectAnimals(plot, animal?)` | Nhận một hoặc mọi con có job đã xong; cộng kho/XP/gate và bỏ job | Lọc theo thời gian server, tổng lượng an toàn, không tự cho ăn vòng mới |
 | 24 | `buyCoins(pack)` | Trừ kim cương, cộng gói xu cố định; không cộng XP hoặc doanh thu bán hàng | Pack nằm trong catalog release; không nhận giá/số xu/số kim cương do client gửi |
+| 25 | `boostMachine(machine)` | Trừ kim cương, món đang làm của máy vào khay ngay, món chờ kế tiếp bắt đầu | Máy có job đang chạy chưa xong; giá theo thời gian server; không tự cộng thành phẩm/XP, chỉ cộng khi collect |
+
+Các action cộng XP (`plant`, `harvest`, `collect`, `collectAll`, `sellItem`, `collectAnimals`, cùng năm action xây dựng `improve`, `expandQueue`, `buyMachine`, `buyPen`, `expandPen` theo `experience.buildXP`) còn trả thưởng kim cương khi vượt level mới và cập nhật `rewardedLevel` trong cùng commit. Server tự tính thưởng, không nhận số kim cương hay level từ client.
 
 ### 2.1. Kim cương và trường hợp `buyGems`
 
@@ -131,7 +135,7 @@ Luồng hiện tại là `GameApp.act → GameSession.dispatch → applyAction �
 | Đồng hồ lùi | Session dùng `max(lastWallTime, now)`; không phát lại đoạn thời gian đã đi qua trong cùng chuỗi clock |
 | Đồng hồ tiến xa | Có thể tăng thời gian tương ứng; không có nguồn thời gian độc lập để xác thực |
 | Ẩn tab/đóng rồi mở | Nếu pack ghi `clock.running = true`, candidate tiến thời gian offline, lưu rồi publish |
-| Chủ động pause/menu/sắp xếp | Thời gian local không tăng; `clock.running` phản ánh pause/sắp xếp; thời gian tạm dừng bị tiêu thụ mà không chạy công việc |
+| Chủ động pause/menu/sắp xếp | Từ 26/09/2026 thời gian local vẫn tăng như Hay Day; chỉ chặn action khác; `clock.running` luôn ghi `true` (save cũ có `false` thì lần mở đầu không cộng offline) |
 | Lỗi lưu | Pause; retry không chạy bù quãng chờ lỗi lưu |
 | Profile legacy | Có tốc độ 1/6/12; mỗi delta frame clamp tối đa 2 giây trước khi nhân speed |
 
@@ -172,7 +176,7 @@ Validation hiện kiểm tra ID, loài, số lượng, queue, layout, snapshot v
 ### 5.1. Backend đầu tiên cần hoàn thành
 
 1. Tài khoản/phiên đăng nhập và quyền sở hữu farm; bootstrap phân biệt người mới với farm đã tồn tại. Nhà cung cấp đăng nhập, guest account và cách liên kết account còn cần quyết định.
-2. Nông trại online `simple-1` với behavior gameplay hiện tại, các action được phép trong bảng 24 action, server clock và catalog release bất biến.
+2. Nông trại online `simple-1` với behavior gameplay hiện tại, các action được phép trong bảng 25 action, server clock và catalog release bất biến.
 3. REST dưới `/api/v1`, command có `commandId`, `farmEpoch`, `expectedRevision`, `catalogVersion`; ghi state, receipt và economy ledger bằng một transaction theo [03](03-data-and-transactions.md).
 4. GET state chỉ đọc snapshot durable; `/sync` dùng cơ chế receipt chung để commit thời gian/công việc tới hạn. Rejected command lưu kết quả từ chối, không commit settlement của candidate.
 5. Hỗ trợ mất phản hồi, retry, xung đột nhiều thiết bị/tab, cache cũ, hết phiên và upgrade client bằng hành vi UX xác định ở [05](05-client-sync-and-migration.md).
@@ -218,7 +222,7 @@ Việc giữ game local không có nghĩa bảo đảm các tài sản local dù
 
 ## 8. Tiêu chí nghiệm thu phạm vi
 
-1. **SCOPE-01 — Baseline rõ:** tài liệu và task triển khai đối chiếu đúng 24 action; `setPenSpecies` được nêu là không khả dụng ở online simple; không còn hàm/route cấp gems client trong allowlist.
+1. **SCOPE-01 — Baseline rõ:** tài liệu và task triển khai đối chiếu đúng 25 action; `setPenSpecies` được nêu là không khả dụng ở online simple; không còn hàm/route cấp gems client trong allowlist.
 2. **SCOPE-02 — Khởi đầu đúng:** integration test tạo account/farm mới và retry chứng minh đúng tài sản, ruộng và 0 công trình đã xây theo release hiện hành.
 3. **SCOPE-03 — Không nhầm static server:** hệ thống online có service/API/DB riêng theo kiến trúc, không đánh dấu hoàn thành chỉ vì `npm start` phục vụ được build Cocos.
 4. **SCOPE-04 — Economy đúng nguồn:** giá, gate, XP, duration và footprint server lấy từ release đã validate; client không gửi giá trị làm quyền quyết định.

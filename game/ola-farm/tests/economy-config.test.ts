@@ -43,6 +43,9 @@ test('JSON building prices and slot levels govern purchases; old purchases survi
   ok(game.buyPen(50));
   assert.equal(game.state.coins, coins - 475);
   assert.equal(game.penSlotPrice(12, 1), 48);
+  // The two builds paid construction XP; step back below level 3 to test the slot gate.
+  assert.equal(game.state.xp, xpFor(2) + config.experience.buildXP.machine + config.experience.buildXP.pen);
+  game.state.xp = xpFor(2);
   assert.match(game.expandPen(12).error!, /level 3/);
   game.state.xp = xpFor(3);
   coins = game.state.coins;
@@ -132,20 +135,21 @@ test('a failed land purchase save leaves the visible farm intact and retry charg
   assert.deepEqual(new GameSession(cat, saver, () => 0).game.state, session.game.state);
 });
 
-test('seed/sale prices, yields, refunds, wallet, XP curve, animal rewards and coin packs are read from JSON', () => {
+test('seed/sale prices, yields, refunds, wallet, XP curve, level rewards, animal XP and coin packs are read from JSON', () => {
   const config = copy(defaults);
   config.startingWallet = { coins: 200, diamonds: 8, xp: 0 };
   Object.assign(config.crops.wheat, { seedPrice: 7, harvestXP: 11, yields: [5, 6, 7, 8] });
   config.items['raw:1'].sellPrice = 4;
   config.experience.plantingXP = 2;
   config.experience.saleCoinsPerXP = 20;
-  config.experience.animalXPPerUnit = 5;
+  config.experience.levelUpDiamonds = 3;
   config.experience.curve.baseXP = 10;
   config.refunds.cropCancelRate = 0.5;
   config.refunds.animalSaleRate = 0.25;
   config.coinPacks = [{ coins: 50, diamonds: 2 }];
   config.animals.layer.purchasePrice = 40;
   config.animals.layer.quantity = 2;
+  config.animals.layer.xp = 10;
   const game = establishFarm(new FarmGame(catalog(config)));
   assert.deepEqual([game.state.coins, game.state.diamonds, game.progress.need], [200, 8, 10]);
   ok(game.plant(0, 1));
@@ -157,12 +161,13 @@ test('seed/sale prices, yields, refunds, wallet, XP curve, animal rewards and co
   assert.equal(game.quantity('raw:1'), 5);
   assert.equal(game.state.xp, 13);
   assert.equal(game.progress.level, 2);
+  assert.equal(game.state.diamonds, 11, 'reaching level 2 pays the configured level reward once');
   ok(game.sellItem('raw:1', 5));
   assert.equal(game.state.coins, 213);
   assert.equal(game.state.xp, 14);
   ok(game.buyCoins(0));
   assert.equal(game.state.coins, 263);
-  assert.equal(game.state.diamonds, 6);
+  assert.equal(game.state.diamonds, 9);
   assert.equal(game.state.xp, 14);
   assert.ok(game.buyCoins(1).error);
   game.state.inventory['farm40:chicken-feed'] = 1;
@@ -249,6 +254,30 @@ test('malformed economy config fails at its field before a game or save is chang
     },
     (c: any) => {
       c.coinPacks[0].diamonds = 0;
+    },
+    (c: any) => {
+      c.experience.animalXPPerUnit = 3;
+    },
+    (c: any) => {
+      c.experience.levelUpDiamonds = -1;
+    },
+    (c: any) => {
+      delete c.experience.levelUpDiamonds;
+    },
+    (c: any) => {
+      delete c.experience.buildXP.field;
+    },
+    (c: any) => {
+      c.experience.buildXP.machine = -1;
+    },
+    (c: any) => {
+      c.experience.buildXP.animal = 2;
+    },
+    (c: any) => {
+      c.animals.layer.xp = 1.5;
+    },
+    (c: any) => {
+      delete c.animals.sheep.xp;
     },
   ]) {
     const config = copy(defaults);

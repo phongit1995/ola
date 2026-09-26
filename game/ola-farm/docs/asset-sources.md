@@ -1,6 +1,8 @@
 # Nguồn APK và dữ liệu trích xuất
 
-Game Cocos dùng asset đã nhập trong `cocos/assets/`. Bản HTML cũ đã được gỡ; `assets/` và `data/unity/` ở gốc giữ tài nguyên đã trích xuất để tra cứu nguồn. Chạy, kiểm thử và build Cocos không cần gói APK cũ. Xem [asset pipeline Cocos](cocos/asset-pipeline.md) khi chỉnh hoặc nhập lại tài nguyên.
+> **Trong Ola chỉ có project Cocos** (`game/ola-farm/`). Các thư mục khảo sát nhắc tới dưới đây (`hf/`, `reference/`, `assets/`, `data/unity/`, `scripts/`, `extract_hf.py`, `artifacts/`) và lịch sử Git của chúng nằm ở repo farm-game gốc (`/Volumes/D/GAME/farm-game`), không được đưa sang Ola.
+
+Game Cocos dùng asset đã nhập trong `game/ola-farm/assets/`. Bản HTML cũ đã được gỡ; `assets/` và `data/unity/` ở gốc giữ tài nguyên đã trích xuất để tra cứu nguồn. Chạy, kiểm thử và build Cocos không cần gói APK cũ. Xem [asset pipeline Cocos](cocos/asset-pipeline.md) khi chỉnh hoặc nhập lại tài nguyên.
 
 ## Nguồn cục bộ
 
@@ -10,7 +12,7 @@ Game Cocos dùng asset đã nhập trong `cocos/assets/`. Bản HTML cũ đã đ
 - `hf/extracted/assets/bin/Data/Managed/Metadata/global-metadata.dat`: metadata dùng khi phân tích dữ liệu Unity.
 - `hf/extracted/lib/arm64-v8a/libil2cpp.so`: mã native dùng trong các công cụ khảo sát.
 
-`reference/` giữ dữ liệu Farm Town, Farm City và Golden Island để khảo sát/nhập lại asset. Hai thư mục này là dữ liệu cục bộ được Git bỏ qua. Asset đã nhập và hồ sơ nguồn phục vụ game hiện tại nằm trong `cocos/assets/` và `cocos/source-assets/`.
+`reference/` giữ dữ liệu Farm Town, Farm City và Golden Island để khảo sát/nhập lại asset. Hai thư mục này là dữ liệu cục bộ được Git bỏ qua. Asset đã nhập và hồ sơ nguồn phục vụ game hiện tại nằm trong `game/ola-farm/assets/` và `game/ola-farm/source-assets/`.
 
 `python3 extract_hf.py --help` hướng dẫn xuất lại asset Happy Farm. Mặc định công cụ đọc thư mục Unity trên và ghi vào `artifacts/extracted-assets`; dùng `--source` hoặc `--output` để chọn vị trí khác.
 
