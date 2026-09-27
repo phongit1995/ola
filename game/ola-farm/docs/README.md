@@ -22,6 +22,7 @@ Bản chơi hiện hành là scene **Farm** trong Cocos Creator **3.8.8**: **40 
 | Chỉnh prefab, nguồn ảnh và generator | [Asset pipeline](cocos/asset-pipeline.md) |
 | Shop và hai prefab chỉnh trong Editor | [Shop](cocos/golden-island-shop.md) |
 | Popup xưởng, kho và chăm đàn | [Giao diện công trình](cocos/farm-town-modals.md) |
+| Cách viết giá tiền và số trên màn hình, chỗ đang lỗi và đề xuất | [Hiển thị giá tiền](cocos/hien-thi-gia-tien.md) |
 | Phân biệt dữ liệu APK Farm Town với game đang chạy | [Kiểm kê nguồn](cocos/farm-town-agriculture-inventory.md) |
 
 [Bộ nguồn 30 loại cây](../source-assets/farm-town/crops/README.md) giữ ảnh và hồ sơ để tra cứu; [gallery](../source-assets/farm-town/crops/index.html) giúp xem các mảnh nguồn. Bộ này không tự đưa 30 loại vào game: runtime hiện có tám giống trong catalog.

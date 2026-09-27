@@ -25,7 +25,7 @@ Bộ tài liệu này ghi **toàn bộ chỉ số đang chạy** của Ola Farm 
 
 ## Quy ước đọc bảng
 
-- **Đơn vị:** xu, kim cương, EXP. Số viết theo kiểu Việt Nam: `1.250` là một nghìn hai trăm năm mươi, `2,5` là hai phẩy năm.
+- **Đơn vị:** xu, kim cương, EXP. Số viết theo kiểu Việt Nam: `1.250` là một nghìn hai trăm năm mươi, `2,5` là hai phẩy năm. Đây là cách viết của tài liệu; game hiển thị số khác, xem [Hiển thị giá tiền](../cocos/hien-thi-gia-tien.md).
 - **Số cấu hình** là số ghi thẳng trong JSON. **Số tính ra** là số suy từ cấu hình để dễ so sánh (lãi mỗi giờ, EXP mỗi giờ, tổng lũy kế…); công thức tính ghi ngay dưới bảng. Số tính ra được làm tròn tối đa 2 chữ số thập phân.
 - **Level** là level tối thiểu để mua/gieo/làm. Một số thứ còn cần điều kiện nội dung (mốc Chăn nuôi, mốc Thủ công), xem [02](02-exp-level-mo-khoa.md#điều-kiện-nội-dung-mốc-chăn-nuôi-và-mốc-thủ-công).
 - **Giá trị theo giá bán** là tổng giá bán ở kho của một nhóm vật phẩm. **Giá vốn hạt giống** chỉ tính tiền hạt đã bỏ ra để làm ra vật phẩm (qua mọi bước chế biến và chăn nuôi), không tính tiền xây nhà, mua con hay thời gian.
