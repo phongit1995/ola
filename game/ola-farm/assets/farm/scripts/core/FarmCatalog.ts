@@ -4,6 +4,7 @@ import type { Recipe, MachineType } from './types/ProductionTypes';
 import type { StockItem, ItemAmount } from './types/ItemTypes';
 import type { ResidentPenDefinition } from './types/LivestockTypes';
 import { legacyMachineSites, legacyMachineTypes } from './legacy/LegacyMachineCatalog';
+import { contentName } from './i18n/LocalizeContent';
 
 export const cropItemKey = (f: FarmItem): string => f.itemKey ?? `raw:${f.id}`;
 export const recipeKey = (r: Recipe): string => r.key ?? `recipe:goods:${r.id}`;
@@ -15,7 +16,7 @@ export function stockCatalog(catalog: FarmCatalog): StockItem[] {
   for (const f of catalog.farm)
     result.set(cropItemKey(f), {
       key: cropItemKey(f),
-      name: f.id === 7 ? 'Sữa bò' : f.name,
+      name: f.id === 7 ? contentName('Sữa bò') : f.name,
       image: f.image,
       sellPrice: f.sellPrice ?? Math.ceil(f.price * 0.6),
       tab: 'raw',

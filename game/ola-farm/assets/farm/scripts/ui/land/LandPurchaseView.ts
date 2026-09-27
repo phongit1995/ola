@@ -2,6 +2,7 @@ import { _decorator, Button, Component, Graphics, Label, Node, Sprite, UITransfo
 import { orderedCrops } from '../../core/FarmGame';
 import { formatWallet } from '../../core/Format';
 import type { AppFacade } from '../shared/AppFacade.types';
+import { t } from '../../core/i18n/I18n';
 
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -66,34 +67,44 @@ export class LandPurchaseView extends Component {
       available = field.unlocked && field.price !== null,
       affordable = available && game.state.coins >= field.price!,
       canBuy = app.session.canAct && affordable;
-    this.title.string = `Mua ô đất #${fields.findIndex(plot => plot.id === id) + 1}`;
-    this.ownership.string = `${fields.filter(plot => plot.unlocked).length} / ${fields.length} ô đã mở`;
+    // Fixed wording authored in the prefab, rewritten for the player's language.
+    for (const [label, key] of [
+      [this.card.getChildByName('Eyebrow'), 'land.eyebrow'],
+      [this.card.getChildByName('Benefit'), 'land.benefit'],
+      [this.laterButton.getChildByName('Title'), 'land.later'],
+    ] as const)
+      label!.getComponent(Label)!.string = t(key);
+    this.title.string = t('land.title', { number: fields.findIndex(plot => plot.id === id) + 1 });
+    this.ownership.string = t('land.ownership', {
+      open: fields.filter(plot => plot.unlocked).length,
+      total: fields.length,
+    });
     this.lock.active = !available;
     this.coin.active = available;
     this.offer.string = available
-      ? `${formatWallet(field.price!)} xu`
+      ? t('common.coins', { coins: formatWallet(field.price!) })
       : belowLevel
-        ? `Cần level ${field.requiredLevel}`
+        ? t('common.needLevel', { level: field.requiredLevel })
         : field.reason;
     this.requirement.string = belowLevel
-      ? `Bạn đang ở level ${game.progress.level}`
+      ? t('land.yourLevel', { level: game.progress.level })
       : available
-        ? 'Thêm đất, trồng thêm cây!'
-        : 'Mở lần lượt từng ô đất';
+        ? t('land.moreLand')
+        : t('land.inOrder');
     this.wallet.string = app.session.storageFailed
-      ? 'Chưa lưu được. Hãy thử lưu lại.'
+      ? t('land.saveFailed')
       : !app.session.canAct
         ? app.session.blockedMessage.replace(/\.$/, '')
         : available && !affordable
-          ? `Còn thiếu ${formatWallet(field.price! - game.state.coins)} xu`
-          : `Số dư: ${formatWallet(game.state.coins)} xu`;
+          ? t('land.missingCoins', { coins: formatWallet(field.price! - game.state.coins) })
+          : t('land.balance', { coins: formatWallet(game.state.coins) });
     this.buyTitle.string = belowLevel
-      ? `Đạt level ${field.requiredLevel} để mở`
+      ? t('land.reachLevel', { level: field.requiredLevel })
       : !available
-        ? 'Chưa thể mua'
+        ? t('land.cannotBuy')
         : !affordable
-          ? 'Chưa đủ xu'
-          : 'Mua ô đất';
+          ? t('land.notEnoughCoins')
+          : t('land.buy');
     this.buyFace.grayscale = !canBuy;
     const bind = (node: Node, key: string, callback: () => void, enabled = true): void => {
       node.off(Button.EventType.CLICK);

@@ -6,6 +6,8 @@ import type { Plot } from '../../core/types/PlotTypes';
 import type { HerdBarActions } from './LivestockQuickBar.types';
 import { Ui } from '../../render/Ui';
 import { PANEL_BROWN as DEFAULT_TITLE, PANEL_MUTED as DEFAULT_DETAIL } from '../shared/PanelPalette.constants';
+import { t } from '../../core/i18n/I18n';
+import { contentName } from '../../core/i18n/LocalizeContent';
 
 const { ccclass, property } = _decorator;
 
@@ -46,13 +48,10 @@ export class HerdQuickBarView extends Component {
     const ready = pen?.animals.filter(a => a.job && a.job.ready <= game.state.time).length ?? 0;
     const feed = species ? game.quantity(species.feed) : 0,
       status = game.penUnlockStatus(plot.id);
-    this.summary.string =
-      (
-        { layer: 'Chuồng gà', 'dairy-cow': 'Chuồng bò', pig: 'Chuồng heo', sheep: 'Chuồng cừu' } as Record<
-          string,
-          string
-        >
-      )[species?.key ?? ''] ?? 'Chuồng vật nuôi';
+    const penTitle = (
+      { layer: 'Chuồng gà', 'dairy-cow': 'Chuồng bò', pig: 'Chuồng heo', sheep: 'Chuồng cừu' } as Record<string, string>
+    )[species?.key ?? ''];
+    this.summary.string = penTitle ? contentName(penTitle) : t('pen.fallbackName');
     widen(this.summary.node, delta + (pen ? 0 : 114));
     if (!pen) move(this.summary.node, 57);
     widen(this.count.node, delta);
@@ -65,13 +64,13 @@ export class HerdQuickBarView extends Component {
     this.unlock.node.active = this.buildActions.active = !pen;
     if (pen) {
       const state = !pen.animals.length
-        ? 'Chuồng trống'
+        ? t('herd.empty')
         : ready
-          ? `${ready} sẵn thu`
+          ? t('herd.readyShort', { count: ready })
           : hungry
-            ? `${hungry} chờ ăn`
-            : 'Đang nuôi';
-      this.count.string = `${pen.animals.length}/${pen.capacity} con · ${state}`;
+            ? t('herd.hungryShort', { count: hungry })
+            : t('herd.growing');
+      this.count.string = t('herd.count', { animals: pen.animals.length, capacity: pen.capacity, state });
       this.feedQuantity.string = String(feed);
       const item = species ? game.item(species.feed) : undefined;
       this.feedIcon.node.active = !!item;
@@ -82,11 +81,13 @@ export class HerdQuickBarView extends Component {
         this.feedIcon.spriteFrame = frame;
         t.setContentSize(frame.width * fit, frame.height * fit);
       }
-    } else this.unlock.string = status.reason || `Mở chuồng kèm ${species ? game.startingAnimals(species.key) : 1} con`;
-    this.details[0].string = `${hungry} con · ${feedNeeded} cám`;
-    this.details[1].string = `${ready} con sẵn thu`;
+    } else
+      this.unlock.string =
+        status.reason || t('herd.unlockWith', { count: species ? game.startingAnimals(species.key) : 1 });
+    this.details[0].string = t('herd.feedNeed', { count: hungry, feed: feedNeeded });
+    this.details[1].string = t('herd.readyCount', { count: ready });
     const price = game.penPurchasePrice(plot.id);
-    this.details[3].string = `${price ?? 0} xu`;
+    this.details[3].string = t('common.coins', { coins: price ?? 0 });
     const enabled = [
       actions.enabled && hungry > 0 && feed >= feedNeeded,
       actions.enabled && ready > 0,

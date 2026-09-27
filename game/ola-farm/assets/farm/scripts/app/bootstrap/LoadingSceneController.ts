@@ -4,7 +4,8 @@ import { applyDesignResolution } from '../layout/Layout';
 import { clearPreparedFarm, stagePreparedFarm } from './PreparedFarm';
 import { LoadingScreenView } from '../../ui/loading/LoadingScreenView';
 import { accountFromToken } from '../../core/AccountStorage';
-import { requestOlaToken, watchOlaKen } from '../services/OlaBridge';
+import { olaLocale, requestOlaToken, watchOlaKen } from '../services/OlaBridge';
+import { setLocale } from '../../core/i18n/I18n';
 
 const { ccclass, property } = _decorator;
 
@@ -21,6 +22,8 @@ export class LoadingSceneController extends Component {
   private transferred = false;
 
   onLoad(): void {
+    // Every string and content name reads the language, so it is set before anything draws or loads.
+    setLocale(olaLocale());
     try {
       if (!this.screen || !this.plotFont || !this.walletFont)
         throw Error('Loading.scene thiếu liên kết màn hình tải hoặc font.');

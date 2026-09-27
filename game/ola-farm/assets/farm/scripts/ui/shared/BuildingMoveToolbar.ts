@@ -2,6 +2,7 @@ import { MOVE_TOOLBAR_COLOR, MOVE_ERROR_COLOR, MOVE_MESSAGE_COLOR } from './Buil
 import { BlockInputEvents, Label, Node } from 'cc';
 import { BuildingMoveController } from '../../map/buildings/BuildingMoveController';
 import { Ui } from '../../render/Ui';
+import { t } from '../../core/i18n/I18n';
 
 export class BuildingMoveToolbar {
   readonly node: Node;
@@ -28,8 +29,8 @@ export class BuildingMoveToolbar {
       ui.button(this.node, 'move-prev', '‹', -w / 2 + 34, 59, 48, 40, () => actions.cycle(-1));
       ui.button(this.node, 'move-next', '›', w / 2 - 34, 59, 48, 40, () => actions.cycle(1));
       const cw = (w - 30) / 2;
-      ui.button(this.node, 'move-cancel', 'Bỏ chọn', -(cw + 6) / 2, -47, cw, 56, actions.cancel);
-      ui.button(this.node, 'move-finish', 'Xong', (cw + 6) / 2, -47, cw, 56, actions.finish);
+      ui.button(this.node, 'move-cancel', t('move.deselect'), -(cw + 6) / 2, -47, cw, 56, actions.cancel);
+      ui.button(this.node, 'move-finish', t('move.done'), (cw + 6) / 2, -47, cw, 56, actions.finish);
     }
     ui.theme = theme;
     this.update();

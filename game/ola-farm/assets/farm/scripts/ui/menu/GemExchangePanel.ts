@@ -4,6 +4,7 @@ import { ink } from '../../render/constants/Ui.constants';
 import { PANEL_ERROR, PANEL_MUTED } from '../shared/PanelPalette.constants';
 import type { PanelContext, PanelDefinition } from '../shared/PanelContext.types';
 import { fitLine, goldenIsland, saleLayout, softButton, softFace } from '../inventory/SoftUi';
+import { t } from '../../core/i18n/I18n';
 
 /** Digits the player typed, read as whole KEN; anything else is ignored. */
 function typedKen(text: string): number {
@@ -17,7 +18,7 @@ function typedKen(text: string): number {
  * explains that it opens in a later version.
  */
 export const gemsPanel: PanelDefinition = {
-  title: 'Thêm kim cương',
+  title: () => t('gems.title'),
   render(ctx: PanelContext): void {
     const { app, state, game, ui, art, card, farm: s } = ctx,
       layout = saleLayout(ctx),
@@ -36,19 +37,7 @@ export const gemsPanel: PanelDefinition = {
       kenCoin = (parent: Node, x: number, y: number, size: number, name: string) =>
         art.plot(parent, 'ken', x * u, y * u, size * u, size * u, name);
 
-    fitLine(
-      ui.text(
-        card,
-        'GemRule',
-        'Kim cương chỉ thêm được bằng cách chuyển từ KEN.',
-        0,
-        (top - 50) * u,
-        cw * u,
-        18 * u,
-        12 * u,
-        PANEL_MUTED
-      )
-    );
+    fitLine(ui.text(card, 'GemRule', t('gems.rule'), 0, (top - 50) * u, cw * u, 18 * u, 12 * u, PANEL_MUTED));
 
     // From the KEN wallet → to the diamond wallet.
     const walletY = top - (short ? 86 : 94),
@@ -56,8 +45,8 @@ export const gemsPanel: PanelDefinition = {
       arrow = 34,
       walletW = (cw - arrow) / 2;
     for (const [side, title, value] of [
-      [-1, 'Từ KEN của bạn', ken === null ? '—' : format(ken)],
-      [1, 'Sang kim cương', format(s.diamonds)],
+      [-1, t('gems.fromKen'), ken === null ? '—' : format(ken)],
+      [1, t('gems.toGems'), format(s.diamonds)],
     ] as const) {
       const x = (side * (walletW + arrow)) / 2,
         box = ui.node(card, side < 0 ? 'FromKen' : 'ToGems', x * u, walletY * u, walletW * u, walletH * u);
@@ -74,7 +63,7 @@ export const gemsPanel: PanelDefinition = {
     const captionY = walletY - walletH / 2 - (short ? 14 : 20),
       inputY = captionY - (short ? 26 : 30),
       inputH = short ? 38 : 44;
-    fitLine(ui.text(card, 'KenCaption', 'Số KEN muốn chuyển', 0, captionY * u, cw * u, 18 * u, 13 * u, PANEL_MUTED));
+    fitLine(ui.text(card, 'KenCaption', t('gems.amountCaption'), 0, captionY * u, cw * u, 18 * u, 13 * u, PANEL_MUTED));
     const field = ui.node(card, 'ken-amount', 0, inputY * u, cw * u, inputH * u);
     softFace(ctx, field, 'info', cw, inputH, u);
     // Attach EditBox while the node is inactive so it adopts these labels instead of creating its own defaults.
@@ -84,7 +73,7 @@ export const gemsPanel: PanelDefinition = {
     edit.placeholderLabel = ui.text(
       field,
       'Placeholder',
-      'Nhập số KEN',
+      t('gems.placeholder'),
       0,
       0,
       (cw - 24) * u,
@@ -118,7 +107,7 @@ export const gemsPanel: PanelDefinition = {
         ctx,
         card,
         chip.id,
-        all ? 'Tất cả' : format(value * rate),
+        all ? t('common.all') : format(value * rate),
         (i - (chips.length - 1) / 2) * (chipW + 6),
         chipsY,
         chipW,
@@ -142,7 +131,7 @@ export const gemsPanel: PanelDefinition = {
     const describe = (amount: number): void => {
       const cost = amount * rate,
         missing = ken !== null && cost > ken;
-      receive.string = `Nhận ${format(amount)} kim cương`;
+      receive.string = t('gems.receive', { count: format(amount) });
       // The gem sits right before the text; centre the pair by the text's measured width.
       receive.updateRenderData(true);
       const textW = receive.node.getComponent(UITransform)!.width,
@@ -153,12 +142,12 @@ export const gemsPanel: PanelDefinition = {
       receive.node.setPosition(start + iconW + gap + textW / 2, receiveY * u);
       note.string =
         amount === 0
-          ? `Tối thiểu ${format(rate)} KEN · 1 kim cương = ${format(rate)} KEN`
+          ? t('gems.minimum', { rate: format(rate) })
           : missing
-            ? `Còn thiếu ${format(cost - ken!)} KEN. Nạp thêm KEN trong app Ola.`
+            ? t('gems.missingKen', { ken: format(cost - ken!) })
             : ken === null
-              ? 'Mở game trong app Ola để chuyển KEN.'
-              : `Dùng ${format(cost)} KEN · 1 kim cương = ${format(rate)} KEN`;
+              ? t('gems.openInOla')
+              : t('gems.uses', { ken: format(cost), rate: format(rate) });
       note.color = missing ? PANEL_ERROR : PANEL_MUTED;
     };
     describe(gems);
@@ -175,12 +164,12 @@ export const gemsPanel: PanelDefinition = {
       ctx,
       card,
       'gem-transfer',
-      gems > 0 ? `Chuyển ${format(cost)} KEN` : 'Chuyển KEN',
+      gems > 0 ? t('gems.transferAmount', { ken: format(cost) }) : t('gems.transfer'),
       0,
       layout.buttonY,
       layout.buttonWidth,
       layout.buttonHeight,
-      () => app.toast('Chuyển KEN sang kim cương đang được hoàn thiện và sẽ mở ở bản sau.'),
+      () => app.toast(t('gems.comingSoon')),
       { primary: ready, size: 16 }
     );
     goldenIsland(ctx, card);

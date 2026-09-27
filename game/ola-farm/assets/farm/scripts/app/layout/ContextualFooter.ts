@@ -6,6 +6,7 @@ import { BuildingMoveToolbar } from '../../ui/shared/BuildingMoveToolbar';
 import { HEADER_HEIGHT } from '../../ui/hud/HudView.constants';
 import { PlotFooter } from '../../ui/crops/PlotFooter';
 import { fitProductionTarget } from '../../ui/shared/ProductionTouch';
+import { t } from '../../core/i18n/I18n';
 
 /**
  * The strip under the map that follows what the player is doing: the seed picker for an empty plot, the move
@@ -151,7 +152,7 @@ export class ContextualFooter {
     const button = app.ui.townButton(
       this.root,
       'return-production',
-      `Về ${product.name}`,
+      t('factory.backTo', { name: product.name }),
       0,
       0,
       width,

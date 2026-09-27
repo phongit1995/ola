@@ -3,6 +3,7 @@ import { _decorator, Label, Node, Sprite } from 'cc';
 import type { Recipe } from '../../core/types/ProductionTypes';
 import { AuthoredUiView } from '../shared/AuthoredUiView';
 import type { PanelContext } from '../shared/PanelContext.types';
+import { t } from '../../core/i18n/I18n';
 
 const { ccclass, property } = _decorator;
 
@@ -34,7 +35,7 @@ export class RecipeChoiceView extends AuthoredUiView {
     this.icon(this.product, ctx.art, `assets/sprites/${recipe.image}.png`, 0, 12, 43, unit);
     this.text(
       this.recipeName,
-      recipe.name + (unlocked ? '' : ' · Chưa mở'),
+      recipe.name + (unlocked ? '' : t('recipe.lockedSuffix')),
       0,
       -34,
       width - 4,

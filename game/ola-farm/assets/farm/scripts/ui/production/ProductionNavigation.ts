@@ -1,4 +1,5 @@
 import type { ProductionContext } from './ProductionNavigation.types';
+import { t } from '../../core/i18n/I18n';
 
 /** Keep the original paid machine/selected recipe while inspecting a chain of ingredient sources. */
 export function rememberProductionTarget(ctx: ProductionContext, machineId: number, recipeId: number): void {
@@ -22,5 +23,5 @@ export function returnToProduction(ctx: ProductionContext): void {
 
 export function productionReturnLabel(ctx: ProductionContext): string {
   const recipe = ctx.game.product(ctx.state.recipeReturnRecipeId);
-  return recipe ? `Về ${recipe.name}` : 'Về công trình';
+  return recipe ? t('factory.backTo', { name: recipe.name }) : t('factory.backToBuilding');
 }

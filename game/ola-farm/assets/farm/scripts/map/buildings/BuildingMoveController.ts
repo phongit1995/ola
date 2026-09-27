@@ -9,6 +9,8 @@ import {
   snapPosition,
 } from '../../core/BuildingPlacement';
 import { EMPTY_LAYOUT } from '../../core/constants/PlacementDefaults';
+import { t } from '../../core/i18n/I18n';
+import { contentName } from '../../core/i18n/LocalizeContent';
 
 /** A draft lives here only; production state changes exclusively through moveBuilding. */
 export class BuildingMoveController {
@@ -71,10 +73,11 @@ export class BuildingMoveController {
     return this.active && this.changed && !this.error;
   }
   get message(): string {
-    if (!this.selected) return 'Chạm công trình rồi kéo đến chỗ mới. Đất giữ cố định.';
-    return this.error ?? 'Kéo đến chỗ mới rồi thả để đặt.';
+    if (!this.selected) return t('move.hintPick');
+    return this.error ?? t('move.hintDrag');
   }
   get title(): string {
-    return FARM_LAYOUT.buildings.find(b => b.id === this.selected)?.name ?? 'Sắp xếp nông trại';
+    const name = FARM_LAYOUT.buildings.find(b => b.id === this.selected)?.name;
+    return name ? contentName(name) : t('move.title');
   }
 }

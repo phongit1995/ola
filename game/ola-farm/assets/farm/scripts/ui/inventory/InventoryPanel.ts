@@ -6,10 +6,11 @@ import { ink } from '../../render/constants/Ui.constants';
 import { PANEL_MUTED } from '../shared/PanelPalette.constants';
 import type { PanelContext, PanelDefinition } from '../shared/PanelContext.types';
 import { legacyIcon } from '../../render/Icons';
+import { t } from '../../core/i18n/I18n';
 
 /** Storage uses Golden Island category tabs and a recessed item grid. */
 export const inventoryPanel: PanelDefinition = {
-  title: 'Kho nông sản',
+  title: () => t('stock.title'),
   render(ctx: PanelContext): void {
     let body = ctx.card.getComponentInChildren(InventoryBodyView);
     if (!body) {
@@ -23,7 +24,7 @@ export const inventoryPanel: PanelDefinition = {
 };
 
 export const salePanel: PanelDefinition = {
-  title: 'Bán sản phẩm',
+  title: () => t('sell.title'),
   render(ctx: PanelContext): void {
     const { app, state, game, ui, card } = ctx,
       layout = saleLayout(ctx),
@@ -46,7 +47,7 @@ export const salePanel: PanelDefinition = {
     ui.text(
       card,
       'SaleStock',
-      `Trong kho: ${format(count)} · Giá: ${format(item.sellPrice)} xu/cái`,
+      t('sell.stockAndPrice', { count: format(count), price: format(item.sellPrice) }),
       0,
       (top - (short ? 160 : 192)) * u,
       contentWidth * u,
@@ -69,7 +70,7 @@ export const salePanel: PanelDefinition = {
       ctx,
       card,
       'sale-max',
-      `Tối đa (${format(count)})`,
+      t('sell.max', { count: format(count) }),
       short ? 130 : 0,
       short ? stepperY : top - 300,
       short ? 150 : 180,
@@ -80,7 +81,7 @@ export const salePanel: PanelDefinition = {
     ui.text(
       card,
       'SaleReward',
-      `Nhận ${format(quantity * item.sellPrice)} xu`,
+      t('sell.receive', { coins: format(quantity * item.sellPrice) }),
       0,
       (top - (short ? 250 : 352)) * u,
       contentWidth * u,
@@ -93,7 +94,7 @@ export const salePanel: PanelDefinition = {
       ctx,
       card,
       'sale-confirm',
-      `Bán ${format(quantity)} sản phẩm`,
+      t('sell.confirm', { count: format(quantity) }),
       0,
       layout.buttonY,
       layout.buttonWidth,
@@ -107,7 +108,7 @@ export const salePanel: PanelDefinition = {
 
 /** Legacy quick-sale grid with per-item "sell one / sell all" buttons. */
 export const quickSalePanel: PanelDefinition = {
-  title: 'Bán nhanh',
+  title: () => t('stock.quickSale'),
   render(ctx: PanelContext): void {
     const { app, state, game, ui, art, card, farm: s } = ctx,
       layout = saleLayout(ctx),
@@ -117,9 +118,9 @@ export const quickSalePanel: PanelDefinition = {
       item => (state.inventoryTab === 'all' || item.tab === state.inventoryTab) && game.quantity(item.key) > 0
     );
     const tabs = [
-      ['all', 'Tất cả'],
-      ['raw', 'Nguyên liệu'],
-      ['goods', 'Thành phẩm'],
+      ['all', t('common.all')],
+      ['raw', t('stock.raw')],
+      ['goods', t('stock.goods')],
     ] as const;
     // Pill buttons as before, with the factory's smaller corners; green marks the selected filter.
     const tabWidth = (contentWidth - 8 * (tabs.length - 1)) / tabs.length;
@@ -155,7 +156,7 @@ export const quickSalePanel: PanelDefinition = {
       ui.text(
         content,
         'StockEmpty',
-        'Chưa có sản phẩm để bán.',
+        t('sell.nothing'),
         (contentWidth / 2) * u,
         -40 * u,
         contentWidth * u,
@@ -193,7 +194,7 @@ export const quickSalePanel: PanelDefinition = {
       ui.text(
         cell,
         'Price',
-        `${format(item.sellPrice)} xu / sản phẩm`,
+        t('sell.pricePerItem', { price: format(item.sellPrice) }),
         textX * u,
         (rowH / 2 - (single ? 50 : 94)) * u,
         textWidth * u,
@@ -204,8 +205,8 @@ export const quickSalePanel: PanelDefinition = {
       const buttonY = -rowH / 2 + (single ? 30 : 34),
         buttonW = (cw - (single ? 40 : 44)) / 2;
       for (const [id, title, side, quantity] of [
-        [`sell-${suffix}`, 'Bán 1', -1, 1],
-        [`sell-all-${suffix}`, 'Bán hết', 1, count],
+        [`sell-${suffix}`, t('sell.one'), -1, 1],
+        [`sell-all-${suffix}`, t('sell.all'), 1, count],
       ] as const)
         softButton(
           ctx,
@@ -225,7 +226,11 @@ export const quickSalePanel: PanelDefinition = {
       ui.text(
         card,
         'StockSummary',
-        `Tổng kho: ${format(Object.values(s.inventory).reduce((n, v) => n + v, 0))} · Thu hoạch: ${format(s.harvested)} · Doanh thu: ${format(s.earned)} xu`,
+        t('sell.stats', {
+          stock: format(Object.values(s.inventory).reduce((n, v) => n + v, 0)),
+          harvested: format(s.harvested),
+          revenue: format(s.earned),
+        }),
         0,
         layout.summaryY * u,
         contentWidth * u,

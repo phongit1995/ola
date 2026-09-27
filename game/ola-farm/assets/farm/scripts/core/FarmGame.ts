@@ -31,6 +31,8 @@ import { cropSnapshot, productionSnapshot, loadFarmState } from './FarmMigration
 import { assertFarmState } from './FarmValidation';
 import type { BuildingPosition } from './types/BuildingTypes';
 import { assertBuildingLayout, canMoveBuilding, movedLayout, purchaseBuildingLayout } from './BuildingPlacement';
+import { t } from './i18n/I18n';
+import { contentName } from './i18n/LocalizeContent';
 
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 const failure = (error: string): ActionResult => ({ error });
@@ -107,53 +109,58 @@ export class FarmGame {
       );
       const unlocked = !met.length || (gate.mode === 'all' ? met.every(Boolean) : met.some(Boolean));
       const missing = gate.requirements.filter((_, i) => !met[i]).map(r => `${r.label} ×${r.quantity}`);
-      return { unlocked, reason: unlocked ? '' : 'Cần ' + missing.join(gate.mode === 'all' ? ', ' : ' hoặc ') + '.' };
+      return {
+        unlocked,
+        reason: unlocked ? '' : t('unlock.needs', { list: missing.join(gate.mode === 'all' ? ', ' : t('unlock.or')) }),
+      };
     }
     if (unlock === TownUnlocks.Crafts)
       return {
         unlocked: !!p?.burgerCollected,
-        reason: p?.burgerCollected ? '' : 'Nhận burger đầu tiên để mở cừu và bàn đan.',
+        reason: p?.burgerCollected ? '' : t('unlock.crafts'),
       };
     const missing = [
-      !p?.feedReceived && 'nhận cám',
-      !p?.eggsCollected && 'thu trứng',
-      !p?.milkCollected && 'thu sữa',
+      !p?.feedReceived && t('unlock.collectFeed'),
+      !p?.eggsCollected && t('unlock.collectEggs'),
+      !p?.milkCollected && t('unlock.collectMilk'),
     ].filter(Boolean);
     return {
       unlocked: missing.length === 0,
-      reason: missing.length ? 'Mở heo: ' + missing.join(', ') + ' lần đầu.' : '',
+      reason: missing.length ? t('unlock.pigs', { list: missing.join(', ') }) : '',
     };
   }
   penUnlockStatus(id: number): UnlockStatus {
     const plot = this.state.plots.find(p => p.id === id),
       pen = penDefinition(this.catalog, plot);
-    if (!pen) return { unlocked: false, reason: 'Vị trí này chưa có chuồng.' };
+    if (!pen) return { unlocked: false, reason: t('pen.noSite') };
     if (plot?.residents) return { unlocked: true, reason: '' };
     const limit = this.penLimit(pen.species);
     if (
       (pen.ordinal ?? 1) > limit ||
       this.state.plots.filter(p => p.residents?.species === pen.species).length >= limit
     )
-      return { unlocked: false, reason: `Đã đủ ${limit} nhà` };
+      return { unlocked: false, reason: t('build.limitReached', { limit }) };
     const access = this.unlockStatus(pen.unlock);
     if (!access.unlocked) return access;
     const earlier = this.catalog.residentPens!.filter(
       site => site.species === pen.species && (site.ordinal ?? 1) < (pen.ordinal ?? 1)
     );
     if (earlier.some(site => !this.state.plots.find(p => p.id === penPlotId(site))?.residents))
-      return { unlocked: false, reason: 'Xây nhà trước đó trước.' };
+      return { unlocked: false, reason: t('build.earlierFirst') };
     const required = pen.requiredLevel ?? 1;
     return this.progress.level >= required
       ? { unlocked: true, reason: '' }
-      : { unlocked: false, reason: `Cần level ${required}` };
+      : { unlocked: false, reason: t('common.needLevel', { level: required }) };
   }
   penName(id: number): string {
     const site = penDefinition(this.catalog, { id });
-    return site ? `${penNames[site.species] ?? site.species} ${site.ordinal ?? 1}` : 'Chuồng vật nuôi';
+    return site
+      ? `${penNames[site.species] ? contentName(penNames[site.species]) : site.species} ${site.ordinal ?? 1}`
+      : t('pen.fallbackName');
   }
   machineName(machine: Machine): string {
     const type = this.machineTypes.find(t => t.id === machine.type);
-    return `${type?.name ?? 'Nhà máy'} ${Math.max(0, type ? machineSites(type).indexOf(machine.buildingId!) : 0) + 1}`;
+    return `${type?.name ?? t('machine.fallbackName')} ${Math.max(0, type ? machineSites(type).indexOf(machine.buildingId!) : 0) + 1}`;
   }
   penConstructionOffer(species: string): ConstructionOffer {
     const sites = (this.catalog.residentPens ?? [])
@@ -170,11 +177,11 @@ export class FarmGame {
       buildingId: next ? penBuildingId(next) : null,
       plotId: next ? penPlotId(next) : undefined,
     };
-    if (count >= limit || !next) return { ...base, unlocked: false, reason: `Đã đủ ${limit} nhà` };
+    if (count >= limit || !next) return { ...base, unlocked: false, reason: t('build.limitReached', { limit }) };
     const access = this.penUnlockStatus(penPlotId(next));
     return {
       ...base,
-      ...(access.unlocked && !this.animalPurchasingReady ? { unlocked: false, reason: 'Cần máy thức ăn.' } : access),
+      ...(access.unlocked && !this.animalPurchasingReady ? { unlocked: false, reason: t('pen.needFeedMill') } : access),
     };
   }
   machineConstructionOffer(type: number): ConstructionOffer {
@@ -193,27 +200,27 @@ export class FarmGame {
       return {
         ...base,
         unlocked: false,
-        reason: count >= limit ? `Đã đủ ${limit} nhà` : 'Không còn vị trí mua máy này.',
+        reason: count >= limit ? t('build.limitReached', { limit }) : t('machine.noSite'),
       };
     const access = this.machineUnlockStatus(type);
     if (!access.unlocked) return { ...base, ...access };
     return {
       ...base,
       ...(this.progress.level < base.requiredLevel
-        ? { unlocked: false, reason: `Cần level ${base.requiredLevel}` }
+        ? { unlocked: false, reason: t('common.needLevel', { level: base.requiredLevel }) }
         : { unlocked: true, reason: '' }),
     };
   }
   recipeUnlockStatus(id: number): UnlockStatus {
     const recipe = this.product(id);
-    if (!recipe) return { unlocked: false, reason: 'Công thức không hợp lệ.' };
+    if (!recipe) return { unlocked: false, reason: t('recipe.invalid') };
     const level = recipe.requiredLevel ?? 1;
-    if (this.progress.level < level) return { unlocked: false, reason: `Cần level ${level}` };
+    if (this.progress.level < level) return { unlocked: false, reason: t('common.needLevel', { level }) };
     return this.unlockStatus(recipe.unlock);
   }
   machineUnlockStatus(type: number): UnlockStatus {
     const machine = this.machineTypes.find(m => m.id === type);
-    return machine ? this.unlockStatus(machine.unlock) : { unlocked: false, reason: 'Máy không hợp lệ.' };
+    return machine ? this.unlockStatus(machine.unlock) : { unlocked: false, reason: t('machine.invalid') };
   }
   private recordCollected(outputs: ItemAmount[]): void {
     const p = this.state.husbandry;
@@ -235,18 +242,18 @@ export class FarmGame {
   }
   dismissGuide(): ActionResult {
     this.state.guideDismissed = true;
-    return { message: 'Vào Shop xây máy thức ăn và chuồng gà, rồi trồng lúa mì/ngô để làm cám nhé!' };
+    return { message: t('guide.start') };
   }
   validate(): void {
     assertFarmState(this.state, this.catalog);
   }
   moveBuilding(id: string, position: BuildingPosition): ActionResult {
-    if (!canMoveBuilding(this.state, id)) return failure('Chọn công trình đã xây để di chuyển.');
+    if (!canMoveBuilding(this.state, id)) return failure(t('move.pickBuilt'));
     try {
       const layout = movedLayout(this.state.buildingLayout!, id, position);
       assertBuildingLayout(layout, this.state);
       this.state.buildingLayout = layout;
-      return { message: 'Đã lưu vị trí công trình.' };
+      return { message: t('move.saved') };
     } catch (e) {
       return failure((e as Error).message);
     }
@@ -257,9 +264,9 @@ export class FarmGame {
   cropUnlockStatus(id: number): UnlockStatus & { requiredLevel: number } {
     const crop = this.farm(id),
       requiredLevel = crop?.requiredLevel ?? 1;
-    if (!crop) return { unlocked: false, requiredLevel, reason: 'Giống không hợp lệ.' };
+    if (!crop) return { unlocked: false, requiredLevel, reason: t('crop.invalid') };
     const unlocked = this.progress.level >= requiredLevel;
-    return { unlocked, requiredLevel, reason: unlocked ? '' : `Cần level ${requiredLevel}` };
+    return { unlocked, requiredLevel, reason: unlocked ? '' : t('common.needLevel', { level: requiredLevel }) };
   }
   product(id: number): Recipe | undefined {
     return this.catalog.products.find(p => p.id === id);
@@ -317,16 +324,15 @@ export class FarmGame {
       p.residents !== null ||
       p.group !== f.group
     )
-      return failure('Chọn ô trống đúng loại: ruộng, chuồng hoặc ao.');
+      return failure(t('plant.wrongPlot'));
     const access = this.cropUnlockStatus(crop);
     if (!access.unlocked) return failure(access.reason);
     const snap = cropSnapshot(this.catalog, crop, p.level, rescue);
-    if (this.state.coins < snap.paidCoins) return failure('Chưa đủ xu. Bán nông sản trong kho để có thêm vốn.');
+    if (this.state.coins < snap.paidCoins) return failure(t('plant.needCoins'));
     const key = cropItemKey(f),
       planted = (this.state.planted[key] ?? 0) + 1;
     const xp = rescue ? 0 : (this.catalog.plantingXP ?? 2);
-    if (!Number.isSafeInteger(planted) || !Number.isFinite(this.state.xp + xp))
-      return failure('Thống kê đã đạt giới hạn.');
+    if (!Number.isSafeInteger(planted) || !Number.isFinite(this.state.xp + xp)) return failure(t('common.statsLimit'));
     this.state.coins -= snap.paidCoins;
     Object.assign(p, {
       crop,
@@ -341,8 +347,8 @@ export class FarmGame {
     return {
       message:
         (rescue
-          ? 'Đã gieo lúa hỗ trợ. Chờ thu rồi bán để có vốn.'
-          : (f.group === PlotGroups.Crop ? 'Đã gieo ' : 'Đã nuôi ') + f.name.toLowerCase()) + levelUp,
+          ? t('plant.rescue')
+          : t(f.group === PlotGroups.Crop ? 'plant.sown' : 'plant.raised', { name: f.name.toLowerCase() })) + levelUp,
       plot: p,
     };
   }
@@ -363,7 +369,7 @@ export class FarmGame {
     );
   }
   rescue(): ActionResult {
-    if (!this.canRescue()) return failure('Hãy bán hàng trong kho hoặc nhận sản phẩm đang chờ trước.');
+    if (!this.canRescue()) return failure(t('plant.rescueUnavailable'));
     return this.plantCrop(
       this.state.plots.find(p => p.group === PlotGroups.Crop && p.unlocked && p.crop === null)!.id,
       1,
@@ -377,38 +383,38 @@ export class FarmGame {
   }
   boost(id: number): ActionResult {
     const p = this.state.plots.find(p => p.id === id);
-    if (!p?.crop || this.isReady(p)) return failure('Ô này không cần làm chín nhanh.');
+    if (!p?.crop || this.isReady(p)) return failure(t('boost.notNeeded'));
     const price = this.boostPrice(p);
-    if (this.state.diamonds < price) return failure(`Cần ${price} kim cương.`);
+    if (this.state.diamonds < price) return failure(t('common.needGems', { count: price }));
     this.state.diamonds -= price;
     p.ready = this.state.time;
     p.boosted = true;
-    return { message: `Xong ngay · −${price} kim cương`, plot: p };
+    return { message: t('boost.done', { count: price }), plot: p };
   }
   cancel(id: number): ActionResult {
     const p = this.state.plots.find(p => p.id === id);
-    if (!p?.crop || this.isReady(p)) return failure('Chọn cây hoặc vật nuôi đang lớn để hủy.');
+    if (!p?.crop || this.isReady(p)) return failure(t('cancel.pickGrowing'));
     const refund = p.snapshot!.refundCoins;
     this.state.coins += refund;
     Object.assign(p, { crop: null, started: 0, ready: 0, boosted: false, snapshot: null });
-    return { message: `Đã hủy · hoàn ${refund} xu`, coins: refund, plot: p };
+    return { message: t('cancel.done', { coins: refund }), coins: refund, plot: p };
   }
   improve(id: number): ActionResult {
     if (this.simple) {
       const p = this.state.plots.find(p => p.id === id),
         offer = this.fieldUnlockOffer(id);
       if (!offer.unlocked || offer.price === null || !p) return failure(offer.reason);
-      if (this.state.coins < offer.price) return failure(`Cần ${offer.price} xu để mở ô đất.`);
+      if (this.state.coins < offer.price) return failure(t('field.needCoins', { coins: offer.price }));
       this.state.coins -= offer.price;
       p.unlocked = true;
-      return { message: `Đã mở ô đất · −${offer.price} xu${this.gainBuildXP('field')}`, plot: p };
+      return { message: t('field.opened', { coins: offer.price, xp: this.gainBuildXP('field') }), plot: p };
     }
     const p = this.state.plots.find(p => p.id === id);
-    if (!p || p.unlocked) return failure('Ô này đã được cải tạo.');
-    if (this.state.diamonds < 1) return failure('Cần 1 kim cương.');
+    if (!p || p.unlocked) return failure(t('field.alreadyImproved'));
+    if (this.state.diamonds < 1) return failure(t('field.needOneGem'));
     this.state.diamonds--;
     p.unlocked = true;
-    return { message: 'Đã cải tạo ô · −1 kim cương', plot: p };
+    return { message: t('field.improved'), plot: p };
   }
   nextLockedCrop(): Plot | undefined {
     return orderedCrops(this.state.plots).find(plot => !plot.unlocked);
@@ -417,24 +423,23 @@ export class FarmGame {
     const p = this.state.plots.find(p => p.id === id),
       config = this.catalog.economy?.fields[id];
     const base = { price: config?.unlockPrice ?? null, requiredLevel: config?.requiredLevel ?? 1 };
-    if (!p || p.group !== 'crop' || !config)
-      return { ...base, unlocked: false, reason: 'Ô đất không nằm trong cấu hình hiện tại.' };
-    if (p.unlocked) return { ...base, unlocked: false, reason: 'Ô đất đã mở.' };
-    if (this.nextLockedCrop()?.id !== id) return { ...base, unlocked: false, reason: 'Mở ô đất trước đó trước.' };
+    if (!p || p.group !== 'crop' || !config) return { ...base, unlocked: false, reason: t('field.notConfigured') };
+    if (p.unlocked) return { ...base, unlocked: false, reason: t('field.alreadyOpen') };
+    if (this.nextLockedCrop()?.id !== id) return { ...base, unlocked: false, reason: t('field.earlierFirst') };
     const unlocked = this.progress.level >= base.requiredLevel;
-    return { ...base, unlocked, reason: unlocked ? '' : `Cần level ${base.requiredLevel}` };
+    return { ...base, unlocked, reason: unlocked ? '' : t('common.needLevel', { level: base.requiredLevel }) };
   }
   harvest(id: number): ActionResult {
     const p = this.state.plots.find(p => p.id === id);
-    if (!p || !this.isReady(p)) return failure('Nông sản vẫn đang lớn.');
+    if (!p || !this.isReady(p)) return failure(t('harvest.growing'));
     const f = this.farm(p.crop!)!,
       snap = p.snapshot!;
-    if (!this.canAdd([snap.output])) return failure('Số lượng trong kho đã đạt giới hạn.');
+    if (!this.canAdd([snap.output])) return failure(t('common.stockLimit'));
     if (
       !Number.isFinite(this.state.harvested + snap.output.quantity) ||
       !this.canRecordCollected([snap.output], snap.harvestXP)
     )
-      return failure('Thống kê đã đạt giới hạn.');
+      return failure(t('common.statsLimit'));
     this.add([snap.output]);
     this.state.harvested += snap.output.quantity;
     const levelUp = this.gainXP(snap.harvestXP);
@@ -454,22 +459,22 @@ export class FarmGame {
   produce(id: number, machineId?: number): ActionResult {
     const r = this.product(id),
       s = this.state;
-    if (!r) return failure('Công thức không hợp lệ.');
+    if (!r) return failure(t('recipe.invalid'));
     const access = this.recipeUnlockStatus(id);
     if (!access.unlocked) return failure(access.reason);
     const m =
       machineId === undefined
         ? s.machines.find(m => m.type === r.machine && this.canQueue(m))
         : s.machines.find(m => m.id === machineId && m.type === r.machine);
-    if (!m || !this.canQueue(m)) return failure('Máy đã đầy hàng đợi. Nhận hàng hoặc mở thêm ô.');
+    if (!m || !this.canQueue(m)) return failure(t('machine.queueFull'));
     const inputs = recipeInputs(r);
-    if (!this.has(inputs)) return failure('Chưa đủ nguyên liệu. Thu hoạch hoặc chế biến thêm nhé!');
+    if (!this.has(inputs)) return failure(t('machine.needInputs'));
     const job = productionSnapshot(this.catalog, id, this.allocate(), s.time);
     this.take(inputs);
     m.waiting.push(job);
     this.startNext(m, s.time);
     if (recipeOutputs(r).some(o => o.key === 'farm40:tortilla')) s.guide.cookedTortilla = true;
-    return { message: 'Đã xếp ' + r.name.toLowerCase(), machine: m };
+    return { message: t('machine.queued', { name: r.name.toLowerCase() }), machine: m };
   }
   private startNext(m: Machine, time: number): void {
     if (m.job || m.tray.length >= this.trayCapacity(m.type) || !m.waiting.length) return;
@@ -492,9 +497,9 @@ export class FarmGame {
   collect(id: number, batchId?: number): ActionResult {
     const m = this.state.machines.find(m => m.id === id),
       batch = m?.tray.find(b => batchId === undefined || b.id === batchId);
-    if (!m || !batch) return failure('Chưa có sản phẩm trong khay nhận.');
-    if (!this.canAdd(batch.outputs)) return failure('Số lượng trong kho đã đạt giới hạn.');
-    if (!this.canRecordCollected(batch.outputs, batch.xp)) return failure('Thống kê đã đạt giới hạn.');
+    if (!m || !batch) return failure(t('machine.trayEmpty'));
+    if (!this.canAdd(batch.outputs)) return failure(t('common.stockLimit'));
+    if (!this.canRecordCollected(batch.outputs, batch.xp)) return failure(t('common.statsLimit'));
     this.add(batch.outputs);
     const levelUp = this.gainXP(batch.xp);
     this.recordCollected(batch.outputs);
@@ -508,14 +513,14 @@ export class FarmGame {
   /** One transaction for the selected machine's existing tray, never its running/waiting jobs. */
   collectAll(id: number): ActionResult {
     const m = this.state.machines.find(m => m.id === id);
-    if (!m?.tray.length) return failure('Chưa có sản phẩm trong khay nhận.');
+    if (!m?.tray.length) return failure(t('machine.trayEmpty'));
     const totals: Record<string, number> = {};
     for (const batch of m.tray) for (const o of batch.outputs) totals[o.key] = (totals[o.key] ?? 0) + o.quantity;
     const outputs = Object.entries(totals).map(([key, quantity]) => ({ key, quantity }));
-    if (!this.canAdd(outputs)) return failure('Số lượng trong kho đã đạt giới hạn.');
+    if (!this.canAdd(outputs)) return failure(t('common.stockLimit'));
     const count = m.tray.length,
       xp = m.tray.reduce((sum, b) => sum + b.xp, 0);
-    if (!this.canRecordCollected(outputs, xp)) return failure('Thống kê đã đạt giới hạn.');
+    if (!this.canRecordCollected(outputs, xp)) return failure(t('common.statsLimit'));
     this.add(outputs);
     const levelUp = this.gainXP(xp);
     this.recordCollected(outputs);
@@ -523,9 +528,10 @@ export class FarmGame {
     this.startNext(m, this.state.time);
     return {
       message:
-        `Đã nhận ${count} mẻ · ` +
-        outputs.map(o => `+${o.quantity} ${this.item(o.key)!.name.toLowerCase()}`).join(', ') +
-        levelUp,
+        t('machine.collected', {
+          count,
+          items: outputs.map(o => `+${o.quantity} ${this.item(o.key)!.name.toLowerCase()}`).join(', '),
+        }) + levelUp,
       amount: count,
       machine: m,
     };
@@ -548,12 +554,11 @@ export class FarmGame {
   boostMachine(id: number, jobId?: number): ActionResult {
     const m = this.state.machines.find(m => m.id === id),
       price = this.machineBoostPrice(id, jobId);
-    if (!m || !price) return failure('Máy không có món này để làm xong ngay.');
+    if (!m || !price) return failure(t('machine.noJobToBoost'));
     const queued = jobId === undefined || m.job?.id === jobId ? null : m.waiting.find(j => j.id === jobId)!;
     // A queued job goes straight to the tray, which must still hold the running job when that one finishes.
-    if (queued && m.tray.length + (m.job ? 1 : 0) >= this.trayCapacity(m.type))
-      return failure('Khay nhận đã đầy. Nhận hàng trước.');
-    if (this.state.diamonds < price) return failure(`Cần ${price} kim cương.`);
+    if (queued && m.tray.length + (m.job ? 1 : 0) >= this.trayCapacity(m.type)) return failure(t('machine.trayFull'));
+    if (this.state.diamonds < price) return failure(t('common.needGems', { count: price }));
     this.state.diamonds -= price;
     if (queued) {
       m.waiting.splice(m.waiting.indexOf(queued), 1);
@@ -562,27 +567,30 @@ export class FarmGame {
       m.job!.ready = this.state.time;
       this.advanceMachines(this.state.time);
     }
-    return { message: `Xong ngay · −${price} kim cương`, machine: m };
+    return { message: t('boost.done', { count: price }), machine: m };
   }
   cancelQueued(id: number, jobId: number): ActionResult {
     const m = this.state.machines.find(m => m.id === id),
       job = m?.waiting.find(j => j.id === jobId);
-    if (!m || !job) return failure('Chỉ hủy được việc chưa bắt đầu.');
-    if (!this.canAdd(job.inputs)) return failure('Kho không đủ chỗ hoàn nguyên liệu.');
+    if (!m || !job) return failure(t('machine.cancelQueuedOnly'));
+    if (!this.canAdd(job.inputs)) return failure(t('machine.noRoomForRefund'));
     this.add(job.inputs);
     m.waiting.splice(m.waiting.indexOf(job), 1);
-    return { message: 'Đã hủy việc chờ và hoàn đủ nguyên liệu.', machine: m };
+    return { message: t('machine.cancelled'), machine: m };
   }
   expandQueue(id: number): ActionResult {
     const m = this.state.machines.find(m => m.id === id);
-    if (!m || m.capacity >= this.queueCapacityLimit(m.type)) return failure('Máy đã đạt sức chứa tối đa.');
+    if (!m || m.capacity >= this.queueCapacityLimit(m.type)) return failure(t('machine.queueMax'));
     const access = this.queueSlotUnlockStatus(id, m.capacity);
     if (!access.unlocked) return failure(access.reason);
     const price = this.queueSlotPrice(id, m.capacity);
-    if (this.state.coins < price) return failure(`Cần ${price} xu để mở ô.`);
+    if (this.state.coins < price) return failure(t('machine.needCoinsForSlot', { coins: price }));
     this.state.coins -= price;
     m.capacity++;
-    return { message: `Đã mở ô thứ ${m.capacity} · −${price} xu${this.gainBuildXP('queueSlot')}`, machine: m };
+    return {
+      message: t('machine.slotOpened', { slot: m.capacity, coins: price, xp: this.gainBuildXP('queueSlot') }),
+      machine: m,
+    };
   }
   queueSlotPrice(id: number, slot: number): number {
     const machine = this.state.machines.find(m => m.id === id),
@@ -599,10 +607,10 @@ export class FarmGame {
       slot < 0 ||
       slot >= Math.max(machine.capacity, this.queueCapacityLimit(machine.type))
     )
-      return { unlocked: false, requiredLevel: 0, reason: 'Ô máy không hợp lệ.' };
+      return { unlocked: false, requiredLevel: 0, reason: t('machine.invalidSlot') };
     const requiredLevel = this.catalog.economy?.machines[type.key].queueSlots[slot - 1]?.requiredLevel ?? 1;
     const unlocked = slot < machine.capacity || this.progress.level >= requiredLevel;
-    return { unlocked, requiredLevel, reason: unlocked ? '' : `Cần level ${requiredLevel}` };
+    return { unlocked, requiredLevel, reason: unlocked ? '' : t('common.needLevel', { level: requiredLevel }) };
   }
   machinePurchasePrice(type: number): number | null {
     return this.machineConstructionOffer(type).price;
@@ -612,15 +620,14 @@ export class FarmGame {
     if (!access.unlocked) return failure(access.reason);
     const price = access.price;
     const definition = this.machineTypes.find(t => t.id === type);
-    if (price === null || !definition) return failure('Không còn vị trí mua máy này.');
-    if (this.state.coins < price) return failure(`Cần ${price} xu để mua máy.`);
+    if (price === null || !definition) return failure(t('machine.noSite'));
+    if (this.state.coins < price) return failure(t('machine.needCoins', { coins: price }));
     const id = Math.max(-1, ...this.state.machines.map(m => m.id)) + 1;
     const buildingId = access.buildingId;
-    if (expectedBuildingId !== undefined && expectedBuildingId !== buildingId)
-      return failure('Nhà này đã được xây hoặc chưa đến lượt xây.');
-    if (!buildingId || !Number.isSafeInteger(id)) return failure('Không còn vị trí hợp lệ.');
+    if (expectedBuildingId !== undefined && expectedBuildingId !== buildingId) return failure(t('build.notNext'));
+    if (!buildingId || !Number.isSafeInteger(id)) return failure(t('build.noValidSite'));
     const layout = this.simple ? purchaseBuildingLayout(this.state, buildingId) : this.state.buildingLayout;
-    if (this.simple && !layout) return failure('Chưa có chỗ trống để xây máy. Di chuyển công trình rồi thử lại.');
+    if (this.simple && !layout) return failure(t('machine.noRoom'));
     const m: Machine = {
       id,
       type,
@@ -634,26 +641,31 @@ export class FarmGame {
     this.state.coins -= price;
     this.state.machines.push(m);
     return {
-      message: `Đã mua ${definition.name.toLowerCase()} · −${price} xu${this.gainBuildXP('machine')}`,
+      message: t('machine.bought', {
+        name: definition.name.toLowerCase(),
+        coins: price,
+        xp: this.gainBuildXP('machine'),
+      }),
       machine: m,
     };
   }
   /** Trade diamonds for a fixed coin pack; no XP, and `earned` stays a sales figure. */
   buyCoins(pack: number): ActionResult {
     const p = this.coinPacks[pack];
-    if (!p) return failure('Gói xu không hợp lệ.');
-    if (this.state.diamonds < p.diamonds) return failure(`Cần ${p.diamonds} kim cương.`);
+    if (!p) return failure(t('coins.invalidPack'));
+    if (this.state.diamonds < p.diamonds) return failure(t('common.needGems', { count: p.diamonds }));
     this.state.diamonds -= p.diamonds;
     this.state.coins += p.coins;
-    return { message: `+${p.coins.toLocaleString('en-US')} xu · −${p.diamonds} kim cương`, coins: p.coins };
+    return { message: t('coins.bought', { coins: p.coins.toLocaleString('en-US'), gems: p.diamonds }), coins: p.coins };
   }
   sellItem(key: string, quantity = 1): ActionResult {
     const item = this.item(key),
       s = this.state;
     if (!item || !Number.isSafeInteger(quantity) || quantity <= 0 || this.quantity(key) < quantity)
-      return failure('Không đủ sản phẩm trong kho.');
+      return failure(t('sell.notEnough'));
     const coins = item.sellPrice * quantity;
-    if (!Number.isFinite(s.coins + coins) || !Number.isFinite(s.earned + coins)) return failure('Số dư đạt giới hạn.');
+    if (!Number.isFinite(s.coins + coins) || !Number.isFinite(s.earned + coins))
+      return failure(t('common.balanceLimit'));
     // Lifetime revenue carries fractional XP across sales, so splitting a sale cannot award extra XP.
     const unit = this.catalog.saleXpCoins ?? 10;
     const xp = Math.floor((s.earned + coins) / unit) - Math.floor(s.earned / unit);
@@ -662,7 +674,7 @@ export class FarmGame {
       !Number.isFinite(s.sold + quantity) ||
       (item.tab === 'goods' && !Number.isSafeInteger((s.soldProducts[key] ?? 0) + quantity))
     )
-      return failure('Thống kê đã đạt giới hạn.');
+      return failure(t('common.statsLimit'));
     s.inventory[key] -= quantity;
     s.coins += coins;
     s.earned += coins;
@@ -671,20 +683,25 @@ export class FarmGame {
     if (item.tab === 'goods') s.soldProducts[key] = (s.soldProducts[key] ?? 0) + quantity;
     if (key === 'farm40:tortilla') s.guide.soldTortilla = true;
     return {
-      message: `Đã bán ${format(quantity)} ${item.name.toLowerCase()} · +${format(coins)} xu${levelUp}`,
+      message: t('sell.done', {
+        count: format(quantity),
+        name: item.name.toLowerCase(),
+        coins: format(coins),
+        levelUp,
+      }),
       coins,
     };
   }
   setPenSpecies(id: number, species: string | null): ActionResult {
-    if (this.simple) return failure('Mỗi chuồng giữ loài vật nuôi riêng.');
+    if (this.simple) return failure(t('pen.fixedSpecies'));
     const p = this.state.plots.find(p => p.id === id),
       type = this.catalog.livestock?.find(a => a.key === species);
     if (!p || p.group !== 'pen' || !p.unlocked || p.crop !== null || p.residents?.animals.length)
-      return failure('Chuồng phải trống, không còn lứa hoặc con vật.');
-    if (species !== null && !type) return failure('Loài vật nuôi không hợp lệ.');
+      return failure(t('pen.mustBeEmpty'));
+    if (species !== null && !type) return failure(t('pen.invalidSpecies'));
     p.residents = species === null ? null : { species, capacity: 1, animals: [] };
     return {
-      message: species === null ? 'Đã chọn nuôi theo lứa.' : 'Đã chuẩn bị chuồng. Mua con rồi cho ăn.',
+      message: species === null ? t('pen.batchMode') : t('pen.prepared'),
       plot: p,
     };
   }
@@ -703,18 +720,18 @@ export class FarmGame {
     const p = this.residentPlot(id),
       price = this.penPurchasePrice(id),
       access = this.penUnlockStatus(id);
-    if (!p || price === null) return failure('Chuồng đã được xây hoặc vị trí không hợp lệ.');
+    if (!p || price === null) return failure(t('pen.builtOrInvalid'));
     if (!access.unlocked) return failure(access.reason);
-    if (!this.animalPurchasingReady) return failure('Mua máy thức ăn trước để có thể nuôi con vật.');
-    if (this.state.coins < price) return failure(`Cần ${price} xu để xây chuồng.`);
+    if (!this.animalPurchasingReady) return failure(t('pen.buyFeedMillFirst'));
+    if (this.state.coins < price) return failure(t('pen.needCoins', { coins: price }));
     const definition = penDefinition(this.catalog, p)!;
     if (
       this.state.plots.filter(plot => plot.residents?.species === definition.species).length >=
       this.penLimit(definition.species)
     )
-      return failure(`Đã đủ ${this.penLimit(definition.species)} nhà`);
+      return failure(t('build.limitReached', { limit: this.penLimit(definition.species) }));
     const layout = purchaseBuildingLayout(this.state, penBuildingId(definition));
-    if (!layout) return failure('Chưa có chỗ trống để xây chuồng. Di chuyển công trình rồi thử lại.');
+    if (!layout) return failure(t('pen.noRoom'));
     const animals = Array.from({ length: this.startingAnimals(definition.species) }, (_, slot) => ({
       id: this.allocate(),
       slot,
@@ -728,26 +745,25 @@ export class FarmGame {
       capacity: this.catalog.gameplay?.animals[definition.species].startingCapacity ?? 1,
       animals,
     };
-    return { message: `Đã xây chuồng kèm ${animals.length} con · −${price} xu${this.gainBuildXP('pen')}`, plot: p };
+    return { message: t('pen.built', { count: animals.length, coins: price, xp: this.gainBuildXP('pen') }), plot: p };
   }
   buyAnimal(id: number, expectedSlot?: number): ActionResult {
     const p = this.residentPlot(id),
       pen = p?.residents,
       type = this.catalog.livestock?.find(a => a.key === pen?.species);
-    if (!p || !pen || !type || pen.animals.length >= pen.capacity)
-      return failure('Chuồng chưa sẵn sàng hoặc đã đủ con.');
+    if (!p || !pen || !type || pen.animals.length >= pen.capacity) return failure(t('pen.notReadyOrFull'));
     const slot =
       expectedSlot === undefined
         ? Array.from({ length: pen.capacity }, (_, slot) => slot).find(slot => !pen.animals.some(a => a.slot === slot))!
         : expectedSlot;
     if (!Number.isInteger(slot) || slot < 0 || slot >= pen.capacity || pen.animals.some(a => a.slot === slot))
-      return failure('Chỗ này đã thay đổi. Chọn lại chỗ trống để mua con.');
-    if (!this.animalPurchasingReady) return failure('Mua máy thức ăn trước để có thể nuôi con vật.');
-    if (this.state.coins < type.price) return failure(`Cần ${type.price} xu để mua con.`);
+      return failure(t('pen.slotChanged'));
+    if (!this.animalPurchasingReady) return failure(t('pen.buyFeedMillFirst'));
+    if (this.state.coins < type.price) return failure(t('pen.needCoinsAnimal', { coins: type.price }));
     const animal = { id: this.allocate(), slot, job: null };
     this.state.coins -= type.price;
     pen.animals.push(animal);
-    return { message: `Đã mua ${type.name.toLowerCase()} · −${type.price} xu`, plot: p };
+    return { message: t('pen.animalBought', { name: type.name.toLowerCase(), coins: type.price }), plot: p };
   }
   penExpansionPrice(id: number): number | null {
     const pen = this.residentPlot(id)?.residents,
@@ -772,31 +788,30 @@ export class FarmGame {
       slot < 0 ||
       slot >= Math.max(pen.capacity, this.penCapacityLimit(pen.species))
     )
-      return { unlocked: false, requiredLevel: 0, reason: 'Ô chuồng không hợp lệ.' };
+      return { unlocked: false, requiredLevel: 0, reason: t('pen.invalidSlot') };
     const requiredLevel =
       this.catalog.economy?.animals[pen.species].slots[slot - 1]?.requiredLevel ??
       (pen.species === 'layer' || pen.species === 'dairy-cow' ? PEN_SLOT_LEVELS[slot] : 1);
     // Already purchased slots remain available in older saves, even below the new level requirement.
     const unlocked = slot < pen.capacity || this.progress.level >= requiredLevel;
-    return { unlocked, requiredLevel, reason: unlocked ? '' : `Cần level ${requiredLevel}` };
+    return { unlocked, requiredLevel, reason: unlocked ? '' : t('common.needLevel', { level: requiredLevel }) };
   }
   expandPen(id: number, expectedSlot?: number): ActionResult {
     const p = this.residentPlot(id),
       pen = p?.residents,
       price = this.penExpansionPrice(id);
-    if (!p || !pen || price === null) return failure('Chuồng đã đạt sức chứa tối đa.');
-    if (expectedSlot !== undefined && expectedSlot !== pen.capacity)
-      return failure('Chỗ này đã được mở hoặc chưa đến lượt mở.');
+    if (!p || !pen || price === null) return failure(t('pen.full'));
+    if (expectedSlot !== undefined && expectedSlot !== pen.capacity) return failure(t('pen.slotNotNext'));
     const access = this.penSlotUnlockStatus(id, pen.capacity);
     if (!access.unlocked) return failure(access.reason);
-    if (!this.animalPurchasingReady) return failure('Mua máy thức ăn trước để có thể nuôi con vật.');
-    if (this.state.coins < price) return failure(`Cần ${price} xu để mở chỗ và mua con.`);
+    if (!this.animalPurchasingReady) return failure(t('pen.buyFeedMillFirst'));
+    if (this.state.coins < price) return failure(t('pen.needCoinsSlot', { coins: price }));
     const animal = { id: this.allocate(), slot: pen.capacity, job: null };
     this.state.coins -= price;
     pen.capacity++;
     pen.animals.push(animal);
     return {
-      message: `Đã mở chỗ ${pen.capacity} và mua thêm một con · −${price} xu${this.gainBuildXP('penSlot')}`,
+      message: t('pen.slotOpened', { slot: pen.capacity, coins: price, xp: this.gainBuildXP('penSlot') }),
       plot: p,
     };
   }
@@ -805,23 +820,22 @@ export class FarmGame {
       pen = p?.residents,
       type = this.catalog.livestock?.find(t => t.key === pen?.species),
       animal = pen?.animals.find(a => a.id === animalId);
-    if (!p || !pen || !type || !animal || animal.job)
-      return failure('Chỉ bán con đang chờ ăn; nhận hết sản phẩm trước.');
+    if (!p || !pen || !type || !animal || animal.job) return failure(t('pen.sellHungryOnly'));
     const coins = Math.floor(type.price * (this.catalog.economy?.refunds.animalSaleRate ?? 0.5));
-    if (!Number.isFinite(this.state.coins + coins)) return failure('Số dư đã đạt giới hạn.');
+    if (!Number.isFinite(this.state.coins + coins)) return failure(t('common.balanceLimitReached'));
     pen.animals.splice(pen.animals.indexOf(animal), 1);
     this.state.coins += coins;
-    return { message: `Đã bán ${type.name.toLowerCase()} · +${coins} xu`, plot: p };
+    return { message: t('pen.animalSold', { name: type.name.toLowerCase(), coins }), plot: p };
   }
   feedAnimals(id: number, animalId?: number): ActionResult {
     const p = this.residentPlot(id),
       pen = p?.residents,
       type = this.catalog.livestock?.find(a => a.key === pen?.species);
     const animals = pen?.animals.filter(a => a.job === null && (animalId === undefined || a.id === animalId)) ?? [];
-    if (!p || !type || !animals.length) return failure('Không có con đang chờ ăn.');
+    if (!p || !type || !animals.length) return failure(t('feed.noneHungry'));
     const feed = animals.length * this.feedPerAnimal(type.key);
     if (this.quantity(type.feed) < feed)
-      return failure(`Thiếu thức ăn: cần ${feed} ${this.item(type.feed)!.name.toLowerCase()}.`);
+      return failure(t('feed.missing', { count: feed, name: this.item(type.feed)!.name.toLowerCase() }));
     this.state.inventory[type.feed] -= feed;
     for (const a of animals)
       a.job = {
@@ -830,7 +844,7 @@ export class FarmGame {
         output: { key: type.output, quantity: type.quantity },
         xp: type.xp ?? 3 * type.quantity,
       };
-    return { message: `Đã cho ${animals.length} con ăn.`, plot: p };
+    return { message: t('feed.done', { count: animals.length }), plot: p };
   }
   /** Same finish-now price list as crops, from the selected animal's remaining time. */
   animalBoostPrice(id: number, animalId: number): number {
@@ -841,11 +855,11 @@ export class FarmGame {
     const p = this.residentPlot(id),
       animal = p?.residents?.animals.find(a => a.id === animalId);
     const price = this.animalBoostPrice(id, animalId);
-    if (!p || !animal?.job || !price) return failure('Chỉ tăng tốc con đang chờ sản phẩm.');
-    if (this.state.diamonds < price) return failure(`Cần ${price} kim cương để tăng tốc.`);
+    if (!p || !animal?.job || !price) return failure(t('animalBoost.onlyWorking'));
+    if (this.state.diamonds < price) return failure(t('animalBoost.needGems', { count: price }));
     this.state.diamonds -= price;
     animal.job.ready = this.state.time;
-    return { message: `Sản phẩm sẵn sàng nhận · −${price} kim cương`, plot: p };
+    return { message: t('animalBoost.done', { count: price }), plot: p };
   }
   collectAnimals(id: number, animalId?: number): ActionResult {
     const p = this.residentPlot(id),
@@ -853,23 +867,23 @@ export class FarmGame {
         p?.residents?.animals.filter(
           a => a.job && a.job.ready <= this.state.time && (animalId === undefined || a.id === animalId)
         ) ?? [];
-    if (!p || !animals.length) return failure('Vật nuôi chưa có sản phẩm sẵn nhận.');
+    if (!p || !animals.length) return failure(t('collect.nothingReady'));
     const totals: Record<string, number> = {};
     for (const a of animals) {
       const o = a.job!.output;
       totals[o.key] = (totals[o.key] ?? 0) + o.quantity;
     }
     const outputs = Object.entries(totals).map(([key, quantity]) => ({ key, quantity }));
-    if (!this.canAdd(outputs)) return failure('Kho đã đạt giới hạn.');
+    if (!this.canAdd(outputs)) return failure(t('common.warehouseLimit'));
     if (
       !this.canRecordCollected(
         outputs,
         animals.reduce((xp, a) => xp + a.job!.xp, 0)
       )
     )
-      return failure('Thống kê đã đạt giới hạn.');
+      return failure(t('common.statsLimit'));
     if (!Number.isFinite(this.state.harvested + outputs.reduce((amount, o) => amount + o.quantity, 0)))
-      return failure('Thống kê đã đạt giới hạn.');
+      return failure(t('common.statsLimit'));
     this.add(outputs);
     let amount = 0,
       xp = 0;
@@ -904,7 +918,7 @@ export class FarmGame {
       this.state.diamonds += gems;
       this.state.rewardedLevel = level;
     }
-    return ` · Lên level ${level}${gems ? ` · +${gems} kim cương` : ''}`;
+    return t('xp.levelUp', { level }) + (gems ? t('xp.levelUpGems', { count: gems }) : '');
   }
   /** One-time construction XP from `experience.buildXP`; buying back a sold animal is not construction. */
   private gainBuildXP(kind: keyof BuildXP): string {

@@ -5,6 +5,7 @@ import type { FarmState } from './types/StateTypes';
 import { isRecord } from './utils/TypeGuards';
 import { needsResidentSlots } from './FarmMigration';
 import type { FarmSettings, FarmPack, StoragePort } from './types/SaveTypes';
+import { t } from './i18n/I18n';
 
 /** One pack constructor for autosave, actions, restart and export. */
 export function farmPack(free: FarmState, settings: FarmSettings): FarmPack {
@@ -30,10 +31,7 @@ export class FarmSave {
   }
   private prepare(value: unknown): FarmPack {
     const simple = this.catalog.contentProfile === 'simple-1';
-    if (simple && isRecord(value) && [1, 2, 3].includes(value.version))
-      throw Error(
-        'Đây là bản lưu nông trại cũ/đầy đủ. Hãy dùng bản game tương ứng để khôi phục; bản mới dùng lượt chơi riêng.'
-      );
+    if (simple && isRecord(value) && [1, 2, 3].includes(value.version)) throw Error(t('save.oldProfile'));
     if (
       !isRecord(value) ||
       !(simple
@@ -47,7 +45,7 @@ export class FarmSave {
       !isRecord(value.free) ||
       value.free.version !== value.version + 1
     )
-      throw Error('Phiên bản hoặc nội dung bản lưu không được hỗ trợ.');
+      throw Error(t('save.unsupported'));
     const free = new FarmGame(this.catalog, value.free).state;
     if (
       value.clock !== undefined &&
@@ -57,7 +55,7 @@ export class FarmSave {
         value.clock.savedAt < 0 ||
         typeof value.clock.running !== 'boolean')
     )
-      throw Error('Đồng hồ bản lưu không hợp lệ.');
+      throw Error(t('save.badClock'));
     return {
       ...farmPack(free, {
         speed: value.settings.speed,
@@ -85,7 +83,7 @@ export class FarmSave {
     return raw === null ? null : this.parse(raw);
   }
   parse(text: string): FarmPack {
-    if (text.length > 2_000_000) throw Error('Bản lưu quá lớn.');
+    if (text.length > 2_000_000) throw Error(t('save.tooLarge'));
     return this.prepare(JSON.parse(text));
   }
   save(pack: FarmPack): void {

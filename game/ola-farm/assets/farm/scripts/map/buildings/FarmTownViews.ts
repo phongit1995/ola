@@ -12,6 +12,8 @@ import type { DrawEntry } from '../types/FarmItems.types';
 import type { MapBounds, PlotPosition } from '../../render/types/MapTypes';
 import { herdDisplayScale, herdResidentScale } from './HerdPresentation';
 import { machineArtBounds, machineDisplayScale } from './MachinePresentation';
+import { t } from '../../core/i18n/I18n';
+import { contentName } from '../../core/i18n/LocalizeContent';
 const dispose = (node: Node): void => {
   node.active = false;
   node.destroy();
@@ -94,17 +96,17 @@ export class FarmTownViews {
       // A machine can run a new batch while finished batches remain in its tray.
       if (inView) view.motion.sample(m.job ? 'working' : 'idle', presentationTime, motion);
       const status = m.tray.length
-        ? `${m.tray.length} mẻ${m.job ? ' · Đang làm' : ' sẵn nhận'}`
+        ? t('map.machineTray', { count: m.tray.length, state: t(m.job ? 'map.trayWorking' : 'map.trayReady') })
         : m.job
-          ? 'Đang chế biến…'
-          : 'Chạm mở';
+          ? t('map.machineWorking')
+          : t('map.machineTapOpen');
       view.label.string = expanded
-        ? `${site.name}\n${status}`
+        ? `${contentName(site.name)}\n${status}`
         : m.tray.length
           ? `✓ ${m.tray.length}`
           : m.job
             ? '…'
-            : 'Mở';
+            : t('map.machineOpen');
       const badge = this.machineBadgeMetrics(this.machineArtBounds(site.prefab, p), displayScale, expanded);
       view.badge.getComponent(UITransform)!.setContentSize(badge.w, badge.h);
       view.label.node.getComponent(UITransform)!.setContentSize(badge.w - 14, badge.h - 12);
@@ -207,21 +209,22 @@ export class FarmTownViews {
         view.pen = p.plot.id;
         const ready = !!animal.job && animal.job.ready <= time,
           phase = animal.id * 1.73,
-          t = presentationTime + phase;
-        const walking = motion && !animal.job && t % 10 < 4;
+          phaseTime = presentationTime + phase;
+        const walking = motion && !animal.job && phaseTime % 10 < 4;
         // Each ID has a small separate walking area. Selling one animal never reindexes the remaining slots.
-        const walkPhase = (Math.min(t % 10, 4) / 4) * Math.PI * 2;
+        const walkPhase = (Math.min(phaseTime % 10, 4) / 4) * Math.PI * 2;
         const dx = motion && !animal.job ? 5 * Math.sin(walkPhase) : 0;
         const dy = motion && !animal.job ? 2.5 * (1 - Math.cos(walkPhase)) : 0;
         const offset = style.slots[slot];
         view.node.setScale(residentSize, residentSize, 1);
         view.node.setPosition(p.x + (offset[0] + dx) * size, p.y + (offset[1] + dy) * size);
         view.walking = walking;
-        view.label.string = ready ? '✓' : animal.job ? '…' : 'Cám';
+        view.label.string = ready ? '✓' : animal.job ? '…' : t('map.animalFeed');
         view.label.node.setScale(1 / residentSize, 1 / residentSize, 1);
         view.label.node.active = selected === p.plot.id && !arranging;
         view.node.active = inView;
-        if (view.node.active) view.motion.sample(ready ? 'ready' : animal.job ? 'working' : 'idle', t, motion, walking);
+        if (view.node.active)
+          view.motion.sample(ready ? 'ready' : animal.job ? 'working' : 'idle', phaseTime, motion, walking);
         draw.push({ node: view.node, depth: 1000 - view.node.position.y + 0.1 });
       }
       const hungry = residents.filter(a => !a.job).length,
@@ -230,16 +233,16 @@ export class FarmTownViews {
       const expanded = selected === p.plot.id;
       yard.label.string = expanded
         ? ready
-          ? `${ready} sẵn thu${hungry ? ` · ${hungry} chờ ăn` : ''}`
+          ? t('map.penReady', { count: ready, hungry: hungry ? ' · ' + t('herd.hungryShort', { count: hungry }) : '' })
           : hungry
-            ? `${hungry} chờ ăn`
+            ? t('herd.hungryShort', { count: hungry })
             : busy
-              ? `${busy} đang nuôi`
-              : 'Chuồng trống'
+              ? t('map.penBusy', { count: busy })
+              : t('herd.empty')
         : ready
           ? `✓ ${ready}`
           : hungry
-            ? `Ăn ${hungry}`
+            ? t('map.hungryBadge', { count: hungry })
             : busy
               ? `… ${busy}`
               : '+';

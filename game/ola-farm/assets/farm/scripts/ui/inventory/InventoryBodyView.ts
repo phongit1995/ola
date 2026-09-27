@@ -19,6 +19,7 @@ import type { PanelContext } from '../shared/PanelContext.types';
 import { PANEL_BROWN, PANEL_MUTED } from '../shared/PanelPalette.constants';
 import { inventoryLayout } from './InventoryLayout';
 import { StockCardView } from './StockCardView';
+import { t } from '../../core/i18n/I18n';
 
 const { ccclass, property } = _decorator;
 
@@ -79,16 +80,7 @@ export class InventoryBodyView extends AuthoredUiView {
     this.preview.active = false;
     const tab = state.inventoryTab === 'goods' ? 'goods' : 'raw';
     const total = Object.values(ctx.farm.inventory).reduce((sum, count) => sum + count, 0);
-    this.text(
-      this.count,
-      `${format(total)} sản phẩm · Không giới hạn kho`,
-      0,
-      layout.summaryY,
-      contentWidth,
-      20,
-      13,
-      u
-    );
+    this.text(this.count, t('stock.summary', { count: format(total) }), 0, layout.summaryY, contentWidth, 20, 13, u);
     const tabWidth = (contentWidth - 8) / 2;
     (['raw', 'goods'] as const).forEach((id, i) => {
       const node = this.tabs[i],
@@ -100,7 +92,7 @@ export class InventoryBodyView extends AuthoredUiView {
       this.tabTitles[i].overflow = Label.Overflow.SHRINK;
       this.text(
         this.tabTitles[i],
-        `${id === 'raw' ? 'Nguyên liệu' : 'Thành phẩm'} (${format(units)})`,
+        `${t(id === 'raw' ? 'stock.raw' : 'stock.goods')} (${format(units)})`,
         0,
         1,
         tabWidth - 16,
@@ -167,14 +159,13 @@ export class InventoryBodyView extends AuthoredUiView {
     });
     // A short window drops the hint so whole rows still fit above the button.
     this.hint.node.active = !layout.short;
-    if (!layout.short)
-      this.text(this.hint, 'Chạm vào sản phẩm để chọn số lượng bán', 0, layout.hintY, w - 60, 20, 13, u);
+    if (!layout.short) this.text(this.hint, t('stock.hint'), 0, layout.hintY, w - 60, 20, 13, u);
     this.place(this.quickSale, 0, layout.buttonY, layout.buttonWidth, layout.buttonHeight, u);
     // The only button on this screen uses the primary green frame so it does not read as disabled.
     this.stateFrame(this.quickSale.getComponent(Sprite)!, ctx.art.frame('island-ui/green'));
     this.text(
       this.quickSaleTitle,
-      'Bán nhanh',
+      t('stock.quickSale'),
       0,
       2,
       layout.buttonWidth - 20,

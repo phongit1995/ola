@@ -1,5 +1,7 @@
 import { OLA_BRIDGE_EVENT, OLA_BRIDGE_SOURCE, TOKEN_TIMEOUT_MS } from './OlaBridge.constants';
 import type { OlaBridgeMessage, ReactNativeWebViewPort } from './OlaBridge.types';
+import { parseLocale } from '../../core/i18n/I18n';
+import type { Locale } from '../../core/i18n/I18n.types';
 
 /**
  * The Ola arcade bridge, as in game/src/sdk/bridge.ts: the web host embeds the game in an iframe and answers with
@@ -75,6 +77,12 @@ function nextFromHost(type: string, timeoutMs: number): Promise<unknown> {
 /** Tells the Ola host the farm is on screen; the host then pushes its state, as for every arcade game. */
 export function olaReady(): void {
   if (browser) send(OLA_BRIDGE_EVENT.Ready);
+}
+
+/** The language from `?lang=vi|en` on the game URL, which the Ola host can set; Vietnamese when absent. */
+export function olaLocale(): Locale {
+  if (!browser) return 'vi';
+  return parseLocale(new URLSearchParams(location.search).get('lang')) ?? 'vi';
 }
 
 /**

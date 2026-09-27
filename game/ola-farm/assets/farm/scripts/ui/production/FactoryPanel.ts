@@ -17,12 +17,13 @@ import {
 } from './FactoryLayout.constants';
 import { PANEL_BOOST_SCALE } from './FactoryPanel.constants';
 import { countdown, remainingSeconds } from '../../core/Countdown';
+import { t } from '../../core/i18n/I18n';
 
 /** One recipe workspace, with fixed queue/actions and a scrollable ingredient or recipe list. */
 export const factoryPanel: PanelDefinition = {
   title(ctx) {
     const selected = ctx.farm.machines.find(m => m.id === ctx.state.machineId);
-    return selected ? ctx.game.machineName(selected) : 'Nhà máy';
+    return selected ? ctx.game.machineName(selected) : t('machine.fallbackName');
   },
   render(ctx: PanelContext): void {
     const { app, state, game, farm: s, ui, art } = ctx;
@@ -108,9 +109,10 @@ export const factoryPanel: PanelDefinition = {
       u
     );
     v.bind(ui, all, 'all-buildings', () => app.open('industries'));
-    text(all, 'Title', '‹ Máy', 0, 0, 46, 28, 12);
+    text(all, 'Title', t('factory.back'), 0, 0, 46, 28, 12);
     const wait = (seconds: number): string =>
-      `${Math.max(0, Math.ceil(seconds / ctx.speed))} giây${ctx.speed === 1 ? '' : ` · ${ctx.speed}×`}`;
+      t('time.seconds', { count: Math.max(0, Math.ceil(seconds / ctx.speed)) }) +
+      (ctx.speed === 1 ? '' : ` · ${ctx.speed}×`);
     const product = (id: number) => {
       const r = game.product(id);
       if (!r) throw Error('Công thức không hợp lệ: ' + id);
@@ -174,7 +176,7 @@ export const factoryPanel: PanelDefinition = {
           ctx.canAct,
           {
             image: product(selected.tray[0].product).image,
-            label: batches > 1 ? `Nhận ${batches}` : 'Nhận',
+            label: batches > 1 ? t('factory.collectCount', { count: batches }) : t('factory.collect'),
             tone: 'ready',
           },
           false,
@@ -304,7 +306,7 @@ export const factoryPanel: PanelDefinition = {
       text(
         content,
         'RecipePickerTitle',
-        'Chọn công thức',
+        t('factory.pickRecipe'),
         workspaceWidth / 2,
         -13,
         workspaceWidth,
@@ -359,7 +361,7 @@ export const factoryPanel: PanelDefinition = {
       button(
         content,
         hasReturn ? 'factory-production-return' : 'pin-recipe',
-        hasReturn ? 'Quay lại' : pinned ? 'Bỏ ghim' : 'Ghim',
+        hasReturn ? t('factory.return') : pinned ? t('factory.unpin') : t('factory.pin'),
         workspaceWidth - 28,
         -heroHeight / 2,
         56,
@@ -383,7 +385,7 @@ export const factoryPanel: PanelDefinition = {
       text(
         content,
         'IngredientsTitle',
-        'Nguyên liệu',
+        t('stock.raw'),
         workspaceWidth / 2,
         -heroHeight - 10,
         workspaceWidth,
@@ -412,7 +414,7 @@ export const factoryPanel: PanelDefinition = {
       text(
         content,
         'RecipeHint',
-        unlock.unlocked ? 'Chạm nguyên liệu để tìm nguồn' : unlock.reason,
+        unlock.unlocked ? t('factory.sourcesHint') : unlock.reason,
         workspaceWidth / 2,
         -contentHeight + 9,
         workspaceWidth - 4,
@@ -426,7 +428,7 @@ export const factoryPanel: PanelDefinition = {
     button(
       card,
       'choose-recipe',
-      state.factoryRecipesExpanded ? 'Về món chọn' : 'Chọn món',
+      state.factoryRecipesExpanded ? t('factory.backToRecipe') : t('factory.recipes'),
       left + chooseWidth / 2,
       footerY,
       chooseWidth,
@@ -441,12 +443,12 @@ export const factoryPanel: PanelDefinition = {
       card,
       'produce-' + r.id,
       !unlock.unlocked
-        ? 'Chưa mở món'
+        ? t('factory.recipeLocked')
         : !enough
-          ? 'Tìm nguyên liệu'
+          ? t('factory.findInputs')
           : !game.canQueue(selected)
-            ? 'Hàng đợi đầy'
-            : 'Chế biến',
+            ? t('factory.queueFull')
+            : t('factory.produce'),
       left + chooseWidth + 10 + produceWidth / 2,
       footerY,
       produceWidth,

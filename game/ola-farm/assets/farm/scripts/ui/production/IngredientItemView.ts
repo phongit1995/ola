@@ -3,6 +3,7 @@ import { _decorator, Label, Sprite } from 'cc';
 import type { ItemAmount } from '../../core/types/ItemTypes';
 import { AuthoredUiView } from '../shared/AuthoredUiView';
 import type { PanelContext } from '../shared/PanelContext.types';
+import { t } from '../../core/i18n/I18n';
 
 const { ccclass, property } = _decorator;
 
@@ -33,7 +34,7 @@ export class IngredientItemView extends AuthoredUiView {
     this.text(this.itemName, source?.name ?? ingredient.key, 19, 11, width - 48, 21, 12, unit, PANEL_BROWN);
     this.text(
       this.stock,
-      `${quantity} / ${ingredient.quantity}${missing ? ' · Thiếu' : ''}`,
+      `${quantity} / ${ingredient.quantity}${missing ? t('ingredient.missing') : ''}`,
       19,
       -10,
       width - 48,

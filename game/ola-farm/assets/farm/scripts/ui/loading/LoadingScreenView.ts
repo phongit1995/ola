@@ -2,6 +2,7 @@ import type { LoadingContentScale } from './LoadingScreenView.types';
 import { _decorator, Component, Label, Node, Sprite, UITransform, Widget } from 'cc';
 import type { ArtLoadProgress } from '../../render/types/Art.types';
 import { STATUS } from './LoadingScreenView.constants';
+import { t } from '../../core/i18n/I18n';
 
 const { ccclass, property } = _decorator;
 
@@ -51,7 +52,7 @@ export class LoadingScreenView extends Component {
 
   setProgress(progress: ArtLoadProgress): void {
     if (this.failed) return;
-    this.status.string = STATUS[progress.phase];
+    this.status.string = t(STATUS[progress.phase]);
     if (progress.phase === 'ported' && Number.isFinite(progress.total) && progress.total > 0) {
       const total = Math.max(1, Math.floor(progress.total));
       const done = Math.max(0, Math.min(total, Math.floor(Number.isFinite(progress.done) ? progress.done : 0)));
@@ -64,9 +65,9 @@ export class LoadingScreenView extends Component {
     this.updateProgress();
   }
 
-  showError(message = 'Hãy tải lại trang để thử lại.'): void {
+  showError(message = t('loading.reload')): void {
     this.failed = true;
-    this.status.string = 'Chưa thể mở nông trại';
+    this.status.string = t('loading.failed');
     this.progressText.string = message;
     this.progressTrack.node.active = false;
   }

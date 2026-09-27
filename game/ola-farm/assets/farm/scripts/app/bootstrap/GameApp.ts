@@ -48,6 +48,7 @@ import { PanelHost } from '../../ui/shared/PanelHost';
 
 import { ToastView } from '../../ui/shared/ToastView';
 import { isPanelView } from '../../ui/panels/index';
+import { t } from '../../core/i18n/I18n';
 
 const { ccclass, property } = _decorator;
 
@@ -198,7 +199,7 @@ export class GameApp extends Component implements AppFacade {
     this.refresh();
     if (this.session.recovered) {
       this.open('help');
-      this.toast('Bản lưu đang lỗi. Dữ liệu cũ được giữ; nhập bản lưu hợp lệ để tiếp tục.');
+      this.toast(t('save.corrupt'));
     } else {
       this.session.save();
       if (this.session.storageFailed) this.open('help');
@@ -384,7 +385,7 @@ export class GameApp extends Component implements AppFacade {
   private openByName(name: string): void {
     const [view, argument] = name.split(':');
     if (!isPanelView(view)) {
-      this.toast('Mục này chưa có trong nông trại hiện tại.');
+      this.toast(t('app.notOnFarm'));
       return;
     }
     this.open(view, argument === undefined ? {} : { machineType: Number(argument) });
@@ -510,17 +511,17 @@ export class GameApp extends Component implements AppFacade {
   exportSave(kind: SaveExport = 'current'): void {
     const text = this.session.exportSource(kind);
     if (!text) {
-      this.toast('Chưa có dữ liệu này để xuất.');
+      this.toast(t('save.nothingToExport'));
       return;
     }
-    if (downloadJson(text, `ola-farm-${kind}-save.json`)) this.toast('Đã xuất bản lưu.');
+    if (downloadJson(text, `ola-farm-${kind}-save.json`)) this.toast(t('save.exported'));
     else this.open('save-text', { saveText: text });
   }
 
   importSave(): void {
     const opened = pickJsonFile(
       text => this.importText(text),
-      () => this.toast('File quá lớn.')
+      () => this.toast(t('save.fileTooLarge'))
     );
     if (!opened) this.open('save-text', { saveText: '' });
   }
@@ -531,24 +532,23 @@ export class GameApp extends Component implements AppFacade {
       this.audio.stopMusic();
       this.close();
       this.map.focusHome();
-      this.toast('Đã khôi phục nông trại.');
+      this.toast(t('save.restored'));
     } catch (error) {
-      this.toast(`Không thể nhập: ${(error as Error).message}`);
+      this.toast(t('save.importFailed', { reason: (error as Error).message }));
     }
   }
 
   private hintFor(p: Plot | undefined): string {
-    if (!p) return 'Chạm ô đất để chọn giống';
-    if (penDefinition(this.game.catalog, p))
-      return p.residents ? 'Chạm chuồng để xem thông tin đàn' : 'Chạm để xem điều kiện xây chuồng';
+    if (!p) return t('hint.pickPlot');
+    if (penDefinition(this.game.catalog, p)) return p.residents ? t('hint.pen') : t('hint.penLocked');
     if (p.crop) {
       const name = this.game.farm(p.crop)?.name ?? '';
       const status = this.game.isReady(p)
-        ? 'Chạm để thu hoạch'
+        ? t('hint.harvest')
         : countdown(remainingSeconds(p.ready, this.game.state.time, this.session.speed));
       return `${name} · ${status}`;
     }
-    return p.unlocked ? 'Chạm ô để chọn giống' : 'Chạm ô để cải tạo';
+    return p.unlocked ? t('hint.pickSeed') : t('hint.improve');
   }
 
   refresh(): void {

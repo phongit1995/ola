@@ -16,6 +16,7 @@ import type { PanelContext } from '../shared/PanelContext.types';
 import { ShopCardView } from './ShopCardView';
 import { productionReturnLabel, returnToProduction } from '../production/ProductionNavigation';
 import type { ShopEntry, AuthoredNode } from './ShopView.types';
+import { t } from '../../core/i18n/I18n';
 
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -68,12 +69,12 @@ export class ShopView extends Component {
   private original(node: Node): AuthoredNode {
     let value = this.authored.get(node);
     if (!value) {
-      const t = node.getComponent(UITransform)!;
+      const transform = node.getComponent(UITransform)!;
       value = {
         x: node.position.x,
         y: node.position.y,
-        width: t.width,
-        height: t.height,
+        width: transform.width,
+        height: transform.height,
         scaleX: node.scale.x,
         scaleY: node.scale.y,
       };
@@ -91,7 +92,8 @@ export class ShopView extends Component {
       compact = !portrait && frame.height < 500;
     if (!this.authored.size) {
       this.sourceBodyTop = this.drawer.position.y + this.drawer.getComponent(UITransform)!.height / 2;
-      for (const node of this.node.getComponentsInChildren(UITransform).map(t => t.node)) this.original(node);
+      for (const node of this.node.getComponentsInChildren(UITransform).map(transform => transform.node))
+        this.original(node);
       for (const label of this.node.getComponentsInChildren(Label)) this.labelSizes.set(label, label.fontSize);
     }
     const source = (this.cardPrefab.data as Node).getComponent(UITransform)!;
@@ -140,12 +142,12 @@ export class ShopView extends Component {
       for (const label of tab.getComponentsInChildren(Label)) {
         label.fontSize = Math.max(this.labelSizes.get(label)!, (12 * cssRatio) / headerScale);
         label.lineHeight = label.fontSize * 1.08;
-        const t = label.node.getComponent(UITransform)!,
+        const transform = label.node.getComponent(UITransform)!,
           original = this.original(label.node);
-        t.height = Math.max(original.height, (16 * cssRatio) / headerScale);
+        transform.height = Math.max(original.height, (16 * cssRatio) / headerScale);
         label.node.setPosition(
           original.x,
-          Math.max(original.y, -this.headerHeight / 2 + t.height / 2 + (2 * cssRatio) / headerScale)
+          Math.max(original.y, -this.headerHeight / 2 + transform.height / 2 + (2 * cssRatio) / headerScale)
         );
       }
       const prefix = key === 'animals' ? 'Animal' : 'Building';
@@ -159,6 +161,9 @@ export class ShopView extends Component {
           bodyTop + (original.y - this.sourceBodyTop) * headerScale
         );
       }
+      tab.getChildByName('CategoryName')!.getComponent(Label)!.string = t(
+        key === 'animals' ? 'shop.tabAnimals' : 'shop.tabBuildings'
+      );
       const icon = tab.getChildByName('CategoryIcon')!,
         authoredIcon = this.original(icon);
       const factor = state.shopTab === key ? 1 : 0.74;
@@ -215,7 +220,9 @@ export class ShopView extends Component {
     const emptyClose = this.empty.getChildByName('shop-all-built-close')!;
     size(emptyClose, Math.max(180 * scale, touch * 3), touch);
     emptyClose.setPosition(0, -touch / 2);
+    emptyClose.getComponentInChildren(Label)!.string = t('shop.backToFarm');
     const emptyLabel = this.empty.getChildByName('ShopEmpty')!;
+    emptyLabel.getComponent(Label)!.string = t('shop.allBuilt');
     size(emptyLabel, w - 40, touch);
     emptyLabel.setPosition(0, touch);
     for (const label of this.empty.getComponentsInChildren(Label)) {

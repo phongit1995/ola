@@ -4,6 +4,9 @@ import type { ConstructionOffer } from '../../core/types/ConstructionTypes';
 import type { PanelContext, PanelDefinition } from '../shared/PanelContext.types';
 import type { ShopEntry } from './ShopView.types';
 import { ShopView } from './ShopView';
+import { t } from '../../core/i18n/I18n';
+import { contentName } from '../../core/i18n/LocalizeContent';
+import { SHORT_MACHINE_NAMES } from './ShopPanel.constants';
 
 function construction(
   ctx: PanelContext,
@@ -17,10 +20,14 @@ function construction(
     description: !offer.unlocked
       ? offer.reason
       : price !== null && ctx.farm.coins < price
-        ? `Cần thêm ${price - ctx.farm.coins} xu`
+        ? t('shop.needMoreCoins', { coins: price - ctx.farm.coins })
         : detail,
     detail: true,
-    label: full ? `Đã đủ ${offer.limit} nhà` : price === null ? 'Không thể xây' : String(price),
+    label: full
+      ? t('build.limitReached', { limit: offer.limit })
+      : price === null
+        ? t('shop.cannotBuild')
+        : String(price),
     coinPrice: !full && price !== null ? price : undefined,
     locked: !full && !offer.unlocked,
     enabled: ctx.canAct && offer.unlocked && !full && price !== null && ctx.farm.coins >= price,
@@ -32,8 +39,7 @@ function entries(ctx: PanelContext): ShopEntry[] {
   if (state.shopTab === 'buildings')
     return game.machineTypes.map(type => {
       const offer = game.machineConstructionOffer(type.id);
-      const name =
-        ({ 1071: 'Máy đường', 1019: 'Lò pie', 1020: 'Lò ngô' } as Record<number, string>)[type.id] ?? type.name;
+      const name = (SHORT_MACHINE_NAMES[type.id] ? t(SHORT_MACHINE_NAMES[type.id]) : undefined) ?? type.name;
       return {
         id: 'shop-machine-' + type.id,
         name,
@@ -41,7 +47,10 @@ function entries(ctx: PanelContext): ShopEntry[] {
         ...construction(
           ctx,
           offer,
-          `Xây nhà ${offer.count + 1} · ${game.catalog.products.filter(r => r.machine === type.id).length} công thức`
+          t('shop.buildMachine', {
+            number: offer.count + 1,
+            count: game.catalog.products.filter(r => r.machine === type.id).length,
+          })
         ),
         buy: () => {
           if (!offer.buildingId) return;
@@ -66,9 +75,13 @@ function entries(ctx: PanelContext): ShopEntry[] {
     return [
       {
         id: 'shop-animal-' + penPlotId(first),
-        name: penNames[type.key] ?? type.name,
+        name: penNames[type.key] ? contentName(penNames[type.key]) : type.name,
         prefab,
-        ...construction(ctx, offer, `Xây chuồng ${offer.count + 1} kèm ${game.startingAnimals(type.key)} con`),
+        ...construction(
+          ctx,
+          offer,
+          t('shop.buildPen', { number: offer.count + 1, count: game.startingAnimals(type.key) })
+        ),
         buy: () => {
           if (offer.plotId === undefined || !offer.buildingId) return;
           const building = offer.buildingId;
@@ -84,7 +97,7 @@ function entries(ctx: PanelContext): ShopEntry[] {
 
 /** Construction counts houses. Animal slots and purchases belong to the selected pen. */
 export const shopPanel: PanelDefinition = {
-  title: 'Cửa hàng',
+  title: () => t('shop.title'),
   render(ctx): void {
     ctx.card.getComponent(ShopView)!.render(ctx, entries(ctx));
   },

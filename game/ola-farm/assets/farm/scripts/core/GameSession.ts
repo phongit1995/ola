@@ -7,7 +7,8 @@ import type { FarmAction } from './types/ActionTypes';
 import { applyAction } from './FarmActions';
 import type { FarmCatalog } from './types/CatalogTypes';
 import type { SessionEvents, Dispatch, AudioKind, SaveExport } from './types/SessionTypes';
-import { SPEEDS, PAUSED_MESSAGE, MAX_TICK_SECONDS } from './constants/SessionDefaults';
+import { SPEEDS, MAX_TICK_SECONDS } from './constants/SessionDefaults';
+import { t } from './i18n/I18n';
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 
@@ -87,8 +88,8 @@ export class GameSession extends Emitter<SessionEvents> {
   }
   /** Why input is refused. Real time never stops for the menu or building moves, so name what is open instead. */
   get blockedMessage(): string {
-    if (!this.realTime || this.storageFailed || this.hidden) return PAUSED_MESSAGE;
-    return this.layoutEditing ? 'Đang sắp xếp công trình.' : 'Đang mở Menu.';
+    if (!this.realTime || this.storageFailed || this.hidden) return t('session.paused');
+    return this.layoutEditing ? t('session.arranging') : t('session.menuOpen');
   }
   beginLayout(): boolean {
     if (this.hidden || this.storageFailed || !this.game.simple) return false;
@@ -213,12 +214,12 @@ export class GameSession extends Emitter<SessionEvents> {
     this.paused = true;
     this.emit('saveFailed');
     this.emit('paused', true);
-    this.emit('toast', 'Không lưu được. Đã tạm dừng; vào Cách chơi để thử lại hoặc xuất dữ liệu.');
+    this.emit('toast', t('save.failed'));
   }
 
   retrySave(): boolean {
     if (!this.pendingPack) {
-      this.emit('toast', 'Nhập bản lưu hợp lệ hoặc khôi phục bản dự phòng.');
+      this.emit('toast', t('save.importOrRestore'));
       return false;
     }
     try {
@@ -227,10 +228,10 @@ export class GameSession extends Emitter<SessionEvents> {
       if (this.realTime) candidate.clock = { version: 1, savedAt: this.wallStamp(), running: true };
       this.saver.save(candidate);
       this.adopt(candidate);
-      this.emit('toast', 'Đã lưu lại thành công.');
+      this.emit('toast', t('save.retried'));
       return true;
     } catch {
-      this.emit('toast', 'Vẫn chưa lưu được. Có thể xuất dữ liệu đang chờ lưu.');
+      this.emit('toast', t('save.stillFailing'));
       return false;
     }
   }
@@ -264,7 +265,7 @@ export class GameSession extends Emitter<SessionEvents> {
   restart(): boolean {
     this.layoutEditing = false;
     if (this.storageFailed) {
-      this.emit('toast', 'Khôi phục việc lưu trước khi chơi lại.');
+      this.emit('toast', t('save.restoreBeforeRestart'));
       return false;
     }
     const next = this.createGame(),

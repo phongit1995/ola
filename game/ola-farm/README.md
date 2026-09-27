@@ -47,6 +47,21 @@ Sửa [economy.json](assets/farm/bundles/farm-town/economy.json) để đổi gi
 
 Sửa [timing.json](assets/farm/bundles/farm-town/timing.json) để đổi thời gian của tám cây, bốn loài và 23 công thức; `durationSeconds` tính bằng giây. Chạy `npm run timing:check` từ `game/ola-farm/`, rồi khởi động lại Preview hoặc build lại Web Mobile. Lượt đã bắt đầu giữ timer trong save. [Cách chỉnh và áp dụng](docs/cocos/timing-config.md).
 
+## Ngôn ngữ (vi/en)
+
+Game đọc ngôn ngữ từ `?lang=vi|en` trên URL: `LoadingSceneController` gọi `setLocale` trước khi vẽ gì. Thiếu `lang` hoặc giá trị lạ thì dùng tiếng Việt, và trong game không có nút đổi ngôn ngữ. App Ola (web, mobile) **chưa truyền** `lang` nên hiện luôn là tiếng Việt. Để xem bản tiếng Anh, thêm `?lang=en` vào URL.
+
+- **Câu chữ giao diện, toast và lỗi người chơi thấy** nằm trong [Strings.vi.constants.ts](assets/farm/scripts/core/i18n/Strings.vi.constants.ts) (nguồn) và [Strings.en.constants.ts](assets/farm/scripts/core/i18n/Strings.en.constants.ts).
+  - Code gọi `t('khóa', { tham_số })`; `{tên}` trong câu được thay bằng tham số.
+  - Sửa câu thì sửa trong hai bảng này, không sửa trong code.
+  - Thêm câu mới thì thêm khóa vào cả hai bảng: TypeScript báo lỗi nếu bảng tiếng Anh thiếu khóa.
+- **Tên nội dung** (cây, vật phẩm, công thức, máy, chuồng, loài) vẫn viết tiếng Việt trong JSON.
+  - [ContentNames.en.constants.ts](assets/farm/scripts/core/i18n/ContentNames.en.constants.ts) ánh xạ từng tên sang tiếng Anh.
+  - `Art.loadTown` đổi tên sau khi kiểm tra config (`localizeContent`); save chỉ lưu id/khóa nên dùng chung cho cả hai ngôn ngữ.
+  - Thêm cây, món hay nhà mới vào JSON thì thêm tên tiếng Anh vào bảng này, nếu không `tests/i18n.test.ts` sẽ fail.
+- **Chữ cố định trong prefab** (nút HUD, tab Shop, hộp mua đất) được code gán lại lúc chạy; chữ trong prefab chỉ để xem trước trong Editor.
+- **Không dịch:** lỗi dành cho dev (config/save hỏng, thiếu prefab) và `console.error`.
+
 ## Code và Editor
 
 Các lớp xếp theo thứ tự `core → render → map → ui → app`; một file chỉ import lớp của mình hoặc lớp bên trái. `npm run layers:check` kiểm tra hướng import, `npm run format` chạy Prettier (cấu hình trong `.prettierrc.json`); cả hai nằm trong `verify`.
@@ -57,6 +72,7 @@ Các lớp xếp theo thứ tự `core → render → map → ui → app`; một
 | `assets/farm/scripts/core/constants/` | Giới hạn, giá trị dự phòng và khóa lưu theo từng chức năng; giá/level đang chơi vẫn lấy từ JSON |
 | `assets/farm/scripts/core/types/`, `core/enums/` | Kiểu dữ liệu theo domain và các nhóm giá trị chuỗi cố định; tách khỏi xử lý gameplay |
 | `assets/farm/scripts/core/legacy/` | Dữ liệu và adapter đọc save cũ; giữ các snapshot hình học lịch sử |
+| `assets/farm/scripts/core/i18n/` | `t()`/`setLocale`, bảng câu vi/en và tên nội dung tiếng Anh; không import `cc` |
 | `assets/farm/scripts/core/generated/` | Hình học va chạm/bố cục được công cụ sinh ra |
 | `assets/farm/scripts/map/generated/` | Scale và bounds hiển thị được công cụ sinh ra |
 | `assets/farm/scripts/render/` | Bộ dụng cụ trình bày dùng chung: `Art`, `Ui`, `UiPrefabs`, `FarmButton`, kiểu dữ liệu map, icon và số đo |

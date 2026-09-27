@@ -24,6 +24,7 @@ import { withFarmRuntime, runtimeConfig } from '../core/FarmRuntime';
 import { withFarmTiming } from '../core/FarmTiming';
 import type { FarmContentSource } from '../core/types/EconomyTypes';
 import { withFarmEconomy } from '../core/FarmEconomy';
+import { localizeContent } from '../core/i18n/LocalizeContent';
 
 /** Registry of every dynamically loaded texture, clip, font and Farm Town prefab. Editor-linked assets bypass it. */
 export class Art {
@@ -116,12 +117,15 @@ export class Art {
       Art.fromBundle<JsonAsset>(bundle, 'runtime', JsonAsset),
     ]);
     this.townManifest = manifest.json as TownManifest;
-    const extension = withFarmRuntime(
-      withFarmGameplay(
-        withFarmTiming(withFarmEconomy(catalog.json as FarmContentSource, economy.json), timing.json),
-        gameplay.json
-      ),
-      runtime.json
+    // Validated in Vietnamese, the language the JSON is written in, then renamed for the player's language.
+    const extension = localizeContent(
+      withFarmRuntime(
+        withFarmGameplay(
+          withFarmTiming(withFarmEconomy(catalog.json as FarmContentSource, economy.json), timing.json),
+          gameplay.json
+        ),
+        runtime.json
+      )
     );
     this.data = { ...this.data, data: extension };
     // Prefabs load their own image dependencies. Only item icons enter the UI texture registry.

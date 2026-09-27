@@ -5,7 +5,7 @@ import { LivestockBodyView } from './LivestockBodyView';
 import { HerdSlotView } from './HerdSlotView';
 import { AuthoredUiView } from '../shared/AuthoredUiView';
 import { countdown, remainingSeconds } from '../../core/Countdown';
-import { penNames, yardPrefabs } from './LivestockPanel.constants';
+import { penNames, yardPrefabs, READY_LABELS } from './LivestockPanel.constants';
 import {
   PANEL_BROWN as brown,
   PANEL_MUTED as muted,
@@ -13,6 +13,7 @@ import {
   PANEL_WARNING,
 } from '../shared/PanelPalette.constants';
 import { livestockLayout } from './LivestockLayout';
+import { t } from '../../core/i18n/I18n';
 
 /** Prefab roots include a generic canvas; fit the visible animal parts, not that empty canvas. */
 function animalPortrait(parent: Node, prefab: Prefab, width: number, height: number): void {
@@ -141,7 +142,7 @@ export const livestockPanel: PanelDefinition = {
     const definition = penDefinition(game.catalog, p);
     const type = game.catalog.livestock?.find(animal => animal.key === (p?.residents?.species ?? definition?.species));
     if (!p || !type) return;
-    const name = penNames[type.key] ?? type.name.toLowerCase();
+    const name = penNames[type.key] ? t(penNames[type.key]) : type.name.toLowerCase();
     const pen = p.residents;
     v.owned.active = !!pen;
     v.unopened.active = !pen;
@@ -172,8 +173,8 @@ export const livestockPanel: PanelDefinition = {
         !unlock.unlocked
           ? unlock.reason
           : !hasMill
-            ? 'Cần máy thức ăn để nuôi con vật.'
-            : `Xây chuồng có sẵn ${game.startingAnimals(type.key)} ${name}.\nMua thêm ô để nuôi tối đa ${game.penCapacityLimit(type.key)} con.`,
+            ? t('pen.needFeedMillToRaise')
+            : t('pen.buildHint', { count: game.startingAnimals(type.key), name, max: game.penCapacityLimit(type.key) }),
         compact ? left + previewWidth + 14 + detailWidth / 2 : 0,
         compact ? (top + bottom) / 2 : bottom + (areaHeight - previewHeight) / 2,
         detailWidth,
@@ -184,7 +185,7 @@ export const livestockPanel: PanelDefinition = {
       button(
         card,
         'purchase-pen',
-        unlock.unlocked ? `Xây chuồng + ${name} · ${price} xu` : 'Chưa mở chuồng',
+        unlock.unlocked ? t('pen.buildButton', { name, coins: String(price) }) : t('pen.locked'),
         0,
         footerY,
         w,
@@ -206,7 +207,7 @@ export const livestockPanel: PanelDefinition = {
     text(
       feedLink,
       'FeedStock',
-      `${feedStock} ${feed?.name.toLowerCase() ?? 'phần cám'}`,
+      t('pen.feedStock', { count: feedStock, name: feed?.name.toLowerCase() ?? t('pen.feedFallback') }),
       26,
       0,
       168,
@@ -253,7 +254,17 @@ export const livestockPanel: PanelDefinition = {
         artY = small ? cellHeight / 2 - 24 : cellHeight / 2 - 46;
       const titleX = small ? 22 : 0,
         titleWidth = small ? cellWidth - 52 : cellWidth - 10;
-      text(cell, 'SlotNumber', `Ô ${slot + 1}`, titleX, cellHeight / 2 - 11, titleWidth, 16, 11, muted);
+      text(
+        cell,
+        'SlotNumber',
+        t('pen.slotNumber', { number: slot + 1 }),
+        titleX,
+        cellHeight / 2 - 11,
+        titleWidth,
+        16,
+        11,
+        muted
+      );
       const statusY = small ? cellHeight / 2 - 36 : -24;
       const statusWidth = small ? cellWidth - 52 : cellWidth - 10;
       const actionY = -cellHeight / 2 + 26,
@@ -264,7 +275,7 @@ export const livestockPanel: PanelDefinition = {
         text(
           cell,
           'SlotStatus',
-          access.unlocked ? 'Chưa mở' : 'Chưa đủ cấp',
+          access.unlocked ? t('common.locked') : t('pen.levelTooLow'),
           titleX,
           statusY,
           statusWidth,
@@ -304,11 +315,11 @@ export const livestockPanel: PanelDefinition = {
       }
       if (!animal) {
         text(cell, 'SlotEmpty', '+', artX, artY, 36, 36, 26, muted);
-        text(cell, 'SlotStatus', 'Ô trống', titleX, statusY, statusWidth, small ? 26 : 20, 11, muted);
+        text(cell, 'SlotStatus', t('plots.empty'), titleX, statusY, statusWidth, small ? 26 : 20, 11, muted);
         button(
           cell,
           'buy-animal-' + slot,
-          `Mua ${name}\n${type.price} xu`,
+          t('pen.buyAnimal', { name, coins: type.price }),
           0,
           actionY,
           actionWidth,
@@ -335,16 +346,13 @@ export const livestockPanel: PanelDefinition = {
             u
           );
       }
-      const readyLabel =
-        ({ layer: 'Có trứng', 'dairy-cow': 'Có sữa', pig: 'Có thịt', sheep: 'Có len' } as Record<string, string>)[
-          type.key
-        ] ?? 'Có sản phẩm';
+      const readyLabel = READY_LABELS[type.key] ? t(READY_LABELS[type.key]) : t('livestock.ready');
       const timeLeft = () => countdown(remainingSeconds(animal.job!.ready, s.time, ctx.speed));
       const boosting = !!animal.job && !isReady;
       const status = text(
         cell,
         'SlotStatus',
-        !animal.job ? 'Đói' : isReady ? readyLabel : timeLeft(),
+        !animal.job ? t('livestock.hungry') : isReady ? readyLabel : timeLeft(),
         titleX + (boosting ? 11 : 0),
         statusY,
         boosting ? 56 : statusWidth,
@@ -356,17 +364,17 @@ export const livestockPanel: PanelDefinition = {
       {
         const collectLabel =
           type.key === 'layer'
-            ? 'Nhận trứng'
+            ? t('livestock.collectEggs')
             : type.key === 'dairy-cow'
-              ? 'Nhận sữa'
+              ? t('livestock.collectMilk')
               : type.key === 'pig'
-                ? 'Nhận thịt'
-                : 'Nhận len';
+                ? t('livestock.collectBacon')
+                : t('livestock.collectWool');
         const price = game.animalBoostPrice(p.id, animal.id);
         button(
           cell,
           (boosting ? 'boost-animal-' : 'animal-') + animal.id,
-          isReady ? collectLabel : boosting ? String(price) : 'Cho ăn',
+          isReady ? collectLabel : boosting ? String(price) : t('livestock.feed'),
           0,
           actionY,
           actionWidth,
@@ -407,7 +415,7 @@ export const livestockPanel: PanelDefinition = {
       button(
         card,
         'feed-all',
-        `Cho ăn tất cả\n${hungry * feedPerAnimal} phần cám`,
+        t('livestock.feedAll', { count: hungry * feedPerAnimal }),
         -(bw / 2 + 4),
         footerY,
         bw,
@@ -419,7 +427,7 @@ export const livestockPanel: PanelDefinition = {
       button(
         card,
         'collect-all-animals',
-        `Thu hoạch tất cả\n${ready} con sẵn thu`,
+        t('livestock.collectAll', { count: ready }),
         bw / 2 + 4,
         footerY,
         bw,

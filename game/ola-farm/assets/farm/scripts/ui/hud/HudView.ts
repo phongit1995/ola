@@ -4,6 +4,7 @@ import { format, formatWallet } from '../../core/Format';
 import { Ui } from '../../render/Ui';
 import type { HudActions } from './HudView.types';
 import { COMPACT_WIDTH } from './HudView.constants';
+import { t } from '../../core/i18n/I18n';
 
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -59,6 +60,12 @@ export class HudView extends Component {
     ui.bindButton(this.shopButton, 'shop', () => actions.open('shop'));
     ui.bindButton(this.inventoryButton, 'inventory', () => actions.open('inventory'));
     ui.bindButton(this.factoryButton, 'factory', () => actions.open('factory'));
+    // The prefab carries the Vietnamese titles; the stock button's title is rewritten on every refresh.
+    for (const [button, key] of [
+      [this.shopButton, 'hud.shop'],
+      [this.factoryButton, 'hud.factory'],
+    ] as const)
+      button.getChildByName('Title')!.getComponent(Label)!.string = t(key);
     this.layout();
   }
 
@@ -84,7 +91,7 @@ export class HudView extends Component {
     this.level.string = String(p.level);
     this.xp.string = `${p.current}/${p.need}`;
     this.fillXp(p.current / p.need);
-    this.stock.string = `Kho ${format(Object.values(s.inventory).reduce((n, v) => n + v, 0))}`;
+    this.stock.string = t('hud.stock', { count: format(Object.values(s.inventory).reduce((n, v) => n + v, 0)) });
   }
 
   private fillXp(ratio: number): void {

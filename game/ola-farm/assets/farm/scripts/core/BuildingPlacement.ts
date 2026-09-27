@@ -10,6 +10,8 @@ import { roadFootprints } from './FarmRoadLayout';
 import type { FarmState } from './types/StateTypes';
 import { isRecord } from './utils/TypeGuards';
 import { TOWN_SITES, EMPTY_LAYOUT, FIELD_CLEARANCE, ROAD_CLEARANCE } from './constants/PlacementDefaults';
+import { t } from './i18n/I18n';
+import { contentName } from './i18n/LocalizeContent';
 
 export { FARM_LAYOUT } from './FarmLayoutData';
 
@@ -82,22 +84,22 @@ export function groundError(
     const { b, polygons } = groups[i];
     if (only && b.id !== only) continue;
     if (polygons.some(poly => !poly.every(p => insideClearing(p, manifest.bounds))))
-      return b.name + ': cần nằm trong bãi cỏ.';
+      return t('place.outsideClearing', { name: contentName(b.name) });
     const obstacle = manifest.obstacles.find(o =>
       polygons.some(p => tooClose(p, o.polygon, manifest.roadPlan && /^R\d/.test(o.id) ? FIELD_CLEARANCE : 0))
     );
     if (obstacle)
-      return (
-        b.name + (/^R\d/.test(obstacle.id) ? ': cần cách ruộng một khoảng trống.' : ': vướng vật trang trí cố định.')
-      );
+      return t(/^R\d/.test(obstacle.id) ? 'place.tooCloseToField' : 'place.blockedByDecor', {
+        name: contentName(b.name),
+      });
     if (
       manifest.roadPlan &&
       roadFootprints(manifest).some(road => polygons.some(p => tooClose(p, road, ROAD_CLEARANCE)))
     )
-      return b.name + ': không được đặt trên đường hoặc sát mép đường.';
+      return t('place.onRoad', { name: contentName(b.name) });
     for (let j = 0; j < groups.length; j++)
       if (j !== i && polygons.some(p => groups[j].polygons.some(q => overlaps(p, q))))
-        return b.name + ': vướng ' + groups[j].b.name + '.';
+        return t('place.overlaps', { name: contentName(b.name), other: contentName(groups[j].b.name) });
   }
   return null;
 }
