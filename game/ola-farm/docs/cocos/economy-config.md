@@ -27,7 +27,7 @@ Lượt mới có 700 xu/10 kim cương, 4 lúa mì + 2 ngô trong kho, **6 ru�
 | XP xây dựng (một lần lúc trả tiền) | `experience.buildXP` | `machine`, `pen`, `penSlot`, `queueSlot`, `field`; số nguyên 0–10.000, 0 để tắt |
 | Tỷ lệ hoàn hạt/bán lại con | `refunds` | `cropCancelRate`, `animalSaleRate`, từ 0 đến 1 |
 | Gói đổi kim cương thành xu | `coinPacks` | `coins`, `diamonds` của từng gói |
-| Gói kim cương hiển thị | `gemPacks` | Giá chữ và số lượng; cửa hàng này vẫn chưa mở bán thật |
+| Đổi KEN lấy kim cương | `kenExchange` | `kenPerDiamond` (hiện 1.000 KEN mỗi kim cương), `packs` (1–6 số kim cương chọn nhanh, hiện 10/50/100); form đã có, server trừ KEN chưa làm |
 
 Thời gian trồng/nuôi/chế biến và số giây mỗi kim cương khi làm xong ngay (`boostSecondsPerGem`) nằm trong `timing.json`; xem [hướng dẫn thời gian](timing-config.md). Công thức nguyên liệu/đầu ra, nơi gắn mốc `husbandry`/`crafts` và định danh hình ảnh nằm trong `catalog.json`. Kho, số con/ô khi tạo chuồng/máy, sức chứa và yêu cầu từng mốc nằm trong `gameplay.json`; xem [bảng cấu hình đầy đủ](configuration.md). `sourcePrice` trong catalog là dữ liệu nguồn để đối chiếu, không phải giá bán đang dùng.
 

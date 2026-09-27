@@ -4,7 +4,7 @@ import { applyDesignResolution } from '../layout/Layout';
 import { clearPreparedFarm, stagePreparedFarm } from './PreparedFarm';
 import { LoadingScreenView } from '../../ui/loading/LoadingScreenView';
 import { accountFromToken } from '../../core/AccountStorage';
-import { requestOlaToken } from '../services/OlaBridge';
+import { requestOlaToken, watchOlaKen } from '../services/OlaBridge';
 
 const { ccclass, property } = _decorator;
 
@@ -38,6 +38,7 @@ export class LoadingSceneController extends Component {
   }
 
   private async loadFarm(): Promise<void> {
+    watchOlaKen();
     // The token arrives while assets load; it only picks which account's save the farm opens.
     const account = requestOlaToken()
       .then(accountFromToken)

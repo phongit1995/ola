@@ -26,6 +26,8 @@ export interface PanelState {
   penId: number;
   saleKey: string;
   saleQuantity: number;
+  /** Diamonds chosen in the KEN exchange form. */
+  gemAmount: number;
   inventoryTab: InventoryTab;
   improveId: number | null;
   saveText: string;

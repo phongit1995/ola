@@ -1,4 +1,4 @@
-import { MENU_ROW_COLOR, MENU_QUESTION_COLOR, MENU_INPUT_COLOR, GROUP_NAMES, GEM_PACKS } from './MenuPanels.constants';
+import { MENU_ROW_COLOR, MENU_QUESTION_COLOR, MENU_INPUT_COLOR, GROUP_NAMES } from './MenuPanels.constants';
 import { EditBox } from 'cc';
 import { countdown, remainingSeconds } from '../../core/Countdown';
 import { orderedCrops } from '../../core/FarmGame';
@@ -214,7 +214,7 @@ function confirmPanel(kind: 'improve' | 'restart-confirm'): PanelDefinition {
         28,
         ink
       );
-      if (kind === 'improve') art.image(card, art.data.ui.widgets.hudDiamond.texture, 0, -40, 62, 62);
+      if (kind === 'improve') art.plot(card, 'gem', 0, -40, 62, (62 * 108) / 117);
       ui.button(
         card,
         'confirm',
@@ -345,7 +345,7 @@ export const coinsPanel: PanelDefinition = {
       ui.box(content, 'PackRow', (w - 80) / 2, y, w - 110, 100, MENU_ROW_COLOR);
       art.image(content, art.data.ui.widgets.dollar.texture, 70, y, 56, 56, 'PackCoin');
       ui.text(content, 'PackText', `${formatWallet(pack.coins)} xu`, (w - 80) * 0.4, y, (w - 80) * 0.5, 90, 28, ink);
-      art.image(content, art.data.ui.widgets.hudDiamond.texture, (w - 80) * 0.72 - 8, y, 40, 40, 'PackGem');
+      art.plot(content, 'gem', (w - 80) * 0.72 - 8, y, 40, (40 * 108) / 117, 'PackGem');
       ui.button(
         content,
         `coin-pack-${i}`,
@@ -361,45 +361,6 @@ export const coinsPanel: PanelDefinition = {
     ctx.footer('coins-close', 'Đóng', () => app.close());
   },
 };
-export const gemsPanel: PanelDefinition = {
-  title: 'Thêm kim cương',
-  render(ctx: PanelContext): void {
-    const { app, farm: s, ui, art, width: w } = ctx,
-      packs = ctx.game.catalog.economy?.gemPacks ?? GEM_PACKS,
-      content = ctx.list(packs.length * 110 + 140);
-    ui.text(
-      content,
-      'GemsHelp',
-      `Bạn đang có ${formatWallet(s.diamonds)} kim cương. Cửa hàng kim cương chưa mở bán; các gói dưới đây chỉ là bản xem trước.`,
-      (w - 80) / 2,
-      -50,
-      w - 140,
-      80,
-      23,
-      ink
-    );
-    packs.forEach((pack, i) => {
-      const y = -150 - i * 110;
-      ui.box(content, 'PackRow', (w - 80) / 2, y, w - 110, 100, MENU_ROW_COLOR);
-      art.image(content, art.data.ui.widgets.hudDiamond.texture, 70, y, 52, 52, 'PackGem');
-      ui.text(content, 'PackText', `${pack.gems} kim cương`, (w - 80) * 0.4, y, (w - 80) * 0.5, 90, 28, ink);
-      // Tappable on purpose: a disabled button would never reach the handler, and the toast explains why nothing happens.
-      ui.button(
-        content,
-        `gem-pack-${i}`,
-        pack.price,
-        (w - 80) * 0.83,
-        y,
-        130,
-        58,
-        () => app.toast('Cửa hàng kim cương sẽ mở ở bản sau.'),
-        { variant: 'blue' }
-      );
-    });
-    ctx.footer('gems-close', 'Đóng', () => app.close());
-  },
-};
-
 export const saveTextPanel: PanelDefinition = {
   title: 'Bản lưu JSON',
   render(ctx: PanelContext): void {

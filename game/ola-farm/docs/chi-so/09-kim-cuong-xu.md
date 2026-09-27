@@ -1,6 +1,6 @@
 # 09. Kim cương, xu, tăng tốc, hoàn tiền
 
-> Nguồn: [economy.json](../../assets/farm/bundles/farm-town/economy.json) (`startingWallet`, `experience.levelUpDiamonds`, `coinPacks`, `gemPacks`, `refunds`), [timing.json](../../assets/farm/bundles/farm-town/timing.json) (`boostSecondsPerGem`), [gameplay.json](../../assets/farm/bundles/farm-town/gameplay.json) (`rescueEnabled`), [FarmGame.ts](../../assets/farm/scripts/core/FarmGame.ts), [FarmTiming.ts](../../assets/farm/scripts/core/FarmTiming.ts) (`boostGems`). Đối chiếu ngày 25/09/2026.
+> Nguồn: [economy.json](../../assets/farm/bundles/farm-town/economy.json) (`startingWallet`, `experience.levelUpDiamonds`, `coinPacks`, `kenExchange`, `refunds`), [timing.json](../../assets/farm/bundles/farm-town/timing.json) (`boostSecondsPerGem`), [gameplay.json](../../assets/farm/bundles/farm-town/gameplay.json) (`rescueEnabled`), [FarmGame.ts](../../assets/farm/scripts/core/FarmGame.ts), [FarmTiming.ts](../../assets/farm/scripts/core/FarmTiming.ts) (`boostGems`). Đối chiếu ngày 25/09/2026.
 
 ## Ví khởi đầu
 
@@ -25,15 +25,20 @@
 
 Đổi xu không cho EXP và không tính vào doanh thu bán hàng. Tính theo xu thì đổi kim cương lấy xu luôn lợi hơn boost: 1 kim cương đổi được 50–60 xu, còn boost 1 kim cương chỉ bớt được 1 phút chờ (ví dụ lúa mì vừa gieo tốn 5 kim cương để lấy sớm một lứa lãi 4 xu). Boost là để có hàng ngay, không phải để kiếm xu; xem C5 ở [12](12-diem-can-chot.md).
 
-### Gói kim cương (chỉ hiển thị)
+### Đổi KEN lấy kim cương (mới có giao diện)
 
-| Gói | Kim cương | Giá hiển thị |
+Tỷ giá đã chốt ngày 26/09/2026: **1 kim cương = 1.000 KEN** (nạp 1 VND = 1 KEN). Không có gói giảm giá.
+
+| Gói chọn nhanh | Kim cương | KEN |
 | --- | ---: | ---: |
-| 1 | 20 | 0,99 $ |
-| 2 | 120 | 4,99 $ |
-| 3 | 300 | 9,99 $ |
+| 1 | 10 | 10.000 |
+| 2 | 50 | 50.000 |
+| 3 | 100 | 100.000 |
 
-**Chưa bán được:** bấm vào chỉ hiện thông báo "Cửa hàng kim cương sẽ mở ở bản sau". Không có thanh toán thật.
+- **Kim cương chỉ có thêm bằng cách chuyển từ KEN** (ngoài thưởng lên level). Bảng "Thêm kim cương" (nút "+" cạnh số kim cương) là form chuyển: thẻ "Từ KEN của bạn" → thẻ "Sang kim cương", ô nhập số KEN muốn chuyển, nút chọn nhanh 10.000 / 50.000 / 100.000 / Tất cả, dòng "Nhận N kim cương" và nút "Chuyển … KEN".
+- Số KEN do app Ola gửi qua bridge `ken_updated`; mở game ngoài app thì hiện "—".
+- Nhập tay được làm tròn xuống bội số 1.000 KEN (nhập 25.500 → chuyển 25.000 KEN, nhận 25 kim cương). "Tất cả" lấy hết số KEN chia hết cho 1.000. Thiếu KEN thì báo đỏ số còn thiếu và nút chuyển sang trắng.
+- **Chưa chuyển thật:** bấm "Chuyển … KEN" chỉ hiện thông báo "đang được hoàn thiện". Phần server trừ KEN (sổ `ken_transactions`, chống trừ trùng, cộng kim cương vào bản lưu) và giới hạn theo ngày chưa làm; xem C4 ở [12](12-diem-can-chot.md).
 
 ## Giá làm xong ngay
 
@@ -149,7 +154,7 @@ Lúa cứu trợ không cho EXP khi gieo và khi thu, hủy không hoàn tiền.
 | Ví khởi đầu | economy.json | `startingWallet` |
 | Thưởng kim cương mỗi level mới | economy.json | `experience.levelUpDiamonds` |
 | Gói đổi xu | economy.json | `coinPacks` |
-| Gói kim cương hiển thị | economy.json | `gemPacks` |
+| Tỷ giá và gói đổi KEN lấy kim cương | economy.json | `kenExchange.kenPerDiamond`, `kenExchange.packs` |
 | Số giây cho mỗi kim cương khi làm xong ngay | timing.json | `boostSecondsPerGem` |
 | Tỷ lệ hoàn | economy.json | `refunds.cropCancelRate`, `refunds.animalSaleRate` |
 | Lúa cứu trợ | gameplay.json | `rescueEnabled` |

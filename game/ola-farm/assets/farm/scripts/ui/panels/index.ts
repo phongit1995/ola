@@ -6,7 +6,6 @@ import { inventoryPanel, quickSalePanel, salePanel } from '../inventory/Inventor
 import { livestockPanel } from '../livestock/LivestockPanel';
 import {
   coinsPanel,
-  gemsPanel,
   helpPanel,
   improvePanel,
   pausePanel,
@@ -15,6 +14,7 @@ import {
   saveTextPanel,
   welcomePanel,
 } from '../menu/MenuPanels';
+import { gemsPanel } from '../menu/GemExchangePanel';
 import { industriesPanel, industryPanel, ingredientsPanel } from '../production/ProductionBrowser';
 import { shopPanel } from '../shop/ShopPanel';
 

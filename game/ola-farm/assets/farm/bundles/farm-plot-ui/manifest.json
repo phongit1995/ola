@@ -171,6 +171,23 @@
       "sourceName": "BgInfo",
       "sourceNode": "PlantingUI/DetailSeeds",
       "note": "thẻ thông tin giống"
+    },
+    "ken": {
+      "resource": "images/ken",
+      "size": [
+        144,
+        144
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "b850b3fd2a3afaee934e97ae30cf2c042708aa3068d09ff13b2987b769104b81",
+      "sourceName": "ken",
+      "sourceNode": "Ola web/src/assets/icons/apps/ken.png",
+      "note": "icon KEN của Ola (đồng xu vàng chữ K)"
     }
   }
 }

@@ -71,7 +71,7 @@ Hàng "Đồng hồ khi mở menu" là cách hai game này vận hành, không n
 
 | # | Hiện trạng | Cần chốt |
 | ---: | --- | --- |
-| C4 | **Đổi KEN lấy kim cương chưa làm:** cần ví KEN phía server (backend) và tỷ giá; gói kim cương trong game vẫn chỉ hiển thị. | Tỷ giá KEN → kim cương, giới hạn mua theo ngày, và làm backend trước khi mở? |
+| C4 | **Đổi KEN lấy kim cương mới có giao diện:** tỷ giá đã chốt 1 kim cương = 1.000 KEN (26/09/2026), form trong game đã xong ([09](09-kim-cuong-xu.md#đổi-ken-lấy-kim-cương-mới-có-giao-diện)) nhưng nút đổi chưa trừ KEN. | Làm phần server (trừ KEN, ghi sổ, chống trừ trùng, cộng kim cương khi game mở lại) và có giới hạn theo ngày không? |
 | C5 | **Boost việc dài rất đắt so với nguồn kim cương:** 1 kim cương cho mỗi phút còn lại nên nho vừa gieo tốn 720 kim cương, trong khi thưởng lên level chỉ +2 mỗi level (tới level 68 có 134 viên). Tính theo xu, 1 kim cương đổi được 50–60 xu nhưng boost chỉ bớt 1 phút chờ, nên người chơi tính toán sẽ đổi kim cương lấy xu thay vì boost. | Giữ 1 phút một kim cương (chờ đổi KEN), hay tăng `boostSecondsPerGem`: 300 thì nho 144, 900 thì 48? Có hạ tiếp tỷ giá đổi xu không? |
 
 ### D. Nội dung và luật

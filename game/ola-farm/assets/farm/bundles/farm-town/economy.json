@@ -42,20 +42,14 @@
       "diamonds": 20
     }
   ],
-  "gemPacks": [
-    {
-      "gems": 20,
-      "price": "0,99 $"
-    },
-    {
-      "gems": 120,
-      "price": "4,99 $"
-    },
-    {
-      "gems": 300,
-      "price": "9,99 $"
-    }
-  ],
+  "kenExchange": {
+    "kenPerDiamond": 1000,
+    "packs": [
+      10,
+      50,
+      100
+    ]
+  },
   "crops": {
     "wheat": {
       "name": "Lúa mì",

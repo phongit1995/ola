@@ -91,3 +91,40 @@ export async function requestOlaToken(): Promise<string | null> {
   const token = String((await reply) ?? '').trim();
   return token || null;
 }
+
+let kenBalance: number | null = null;
+const kenListeners = new Set<(ken: number) => void>();
+let watchingKen = false;
+
+/**
+ * Listens for the host's KEN balance (`ken_updated`), which Ola sends after `ready` and whenever it changes.
+ * Call before `olaReady()` so the first balance is not missed. Standalone play never receives one.
+ */
+export function watchOlaKen(): void {
+  if (!browser || watchingKen) return;
+  watchingKen = true;
+  const origin = parentOrigin();
+  const accept = (raw: unknown): void => {
+    const message = hostMessage(raw);
+    if (message?.type !== OLA_BRIDGE_EVENT.KenUpdated) return;
+    const ken = (message.data as { ken?: unknown } | undefined)?.ken;
+    if (typeof ken !== 'number' || !Number.isSafeInteger(ken) || ken < 0) return;
+    kenBalance = ken;
+    kenListeners.forEach(listener => listener(ken));
+  };
+  window.addEventListener('message', event => {
+    if (!framed() || event.source !== window.parent || (origin !== null && event.origin !== origin)) return;
+    accept(event.data);
+  });
+  document.addEventListener('message', event => accept((event as MessageEvent).data));
+}
+
+/** The player's KEN as last reported by the host; null until Ola sends one (or when playing standalone). */
+export function olaKen(): number | null {
+  return kenBalance;
+}
+
+export function onOlaKen(listener: (ken: number) => void): () => void {
+  kenListeners.add(listener);
+  return () => kenListeners.delete(listener);
+}

@@ -33,7 +33,7 @@ export function withFarmEconomy(source: FarmContentSource, input: unknown): Farm
     'experience',
     'refunds',
     'coinPacks',
-    'gemPacks',
+    'kenExchange',
     'crops',
     'items',
     'recipes',
@@ -83,11 +83,12 @@ export function withFarmEconomy(source: FarmContentSource, input: unknown): Farm
     integer(v.coins, `coinPacks.${i}.coins`, 1);
     integer(v.diamonds, `coinPacks.${i}.diamonds`, 1);
   });
-  if (!Array.isArray(root.gemPacks)) fail('gemPacks', 'cần danh sách gói hiển thị.');
-  root.gemPacks.forEach((p: unknown, i: number) => {
-    const v = object(p, `gemPacks.${i}`, ['gems', 'price']);
-    integer(v.gems, `gemPacks.${i}.gems`, 1);
-    name(v.price, `gemPacks.${i}.price`);
+  const exchange = object(root.kenExchange, 'kenExchange', ['kenPerDiamond', 'packs']);
+  integer(exchange.kenPerDiamond, 'kenExchange.kenPerDiamond', 1, 1_000_000);
+  if (!Array.isArray(exchange.packs) || !exchange.packs.length || exchange.packs.length > 6)
+    fail('kenExchange.packs', 'cần 1–6 gói kim cương chọn nhanh.');
+  exchange.packs.forEach((p: unknown, i: number) => {
+    integer(p, `kenExchange.packs.${i}`, 1, 10_000);
   });
   const crops = object(
     root.crops,

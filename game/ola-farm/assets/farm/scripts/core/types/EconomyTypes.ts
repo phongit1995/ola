@@ -38,7 +38,8 @@ export interface FarmEconomyConfig {
   };
   refunds: { cropCancelRate: number; animalSaleRate: number };
   coinPacks: { coins: number; diamonds: number }[];
-  gemPacks: { gems: number; price: string }[];
+  /** KEN → diamond exchange shown in the diamond panel: the rate and the quick-pick diamond amounts. */
+  kenExchange: { kenPerDiamond: number; packs: number[] };
   crops: Record<string, Named & { seedPrice: number; requiredLevel: number; harvestXP: number; yields: number[] }>;
   items: Record<string, Named & { sellPrice: number }>;
   recipes: Record<string, Named & { requiredLevel: number; xp: number }>;

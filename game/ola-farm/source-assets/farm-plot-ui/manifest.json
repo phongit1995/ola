@@ -172,6 +172,23 @@
       ],
       "sha256": "69b09caee412cb1c5d20f616c5dac041f8335bbac24ed90077fd8eb5da17ff79",
       "game": "Golden Island 1.0.24"
+    },
+    {
+      "id": "ken",
+      "source": "../web/src/assets/icons/apps/ken.png",
+      "sourceName": "ken",
+      "sourceNode": "Ola web/src/assets/icons/apps/ken.png",
+      "note": "icon KEN của Ola (đồng xu vàng chữ K)",
+      "width": 144,
+      "height": 144,
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "b850b3fd2a3afaee934e97ae30cf2c042708aa3068d09ff13b2987b769104b81",
+      "game": "Ola"
     }
   ]
 }

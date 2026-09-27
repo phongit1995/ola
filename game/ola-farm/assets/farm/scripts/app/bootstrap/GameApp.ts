@@ -29,7 +29,7 @@ import { installDebugApi, uninstallDebugApi } from '../debug/DebugApi';
 import { applyDesignResolution } from '../layout/Layout';
 import { claimPreparedFarm } from './PreparedFarm';
 import { accountStorage } from '../../core/AccountStorage';
-import { olaReady } from '../services/OlaBridge';
+import { olaKen, olaReady, onOlaKen } from '../services/OlaBridge';
 import { downloadJson, pickJsonFile } from '../services/SaveFiles';
 import { FarmGame } from '../../core/FarmGame';
 import { machineSites, penBuildingId, penDefinition } from '../../core/FarmCatalog';
@@ -94,6 +94,9 @@ export class GameApp extends Component implements AppFacade {
   }
   set paused(value: boolean) {
     if (value !== this.session.paused) this.session.togglePause();
+  }
+  get ken(): number | null {
+    return olaKen();
   }
   get speed(): number {
     return this.session.speed;
@@ -202,6 +205,10 @@ export class GameApp extends Component implements AppFacade {
       else if (!this.game.state.guideDismissed) this.open('welcome');
     }
     if (DEBUG) installDebugApi(this);
+    // The diamond panel shows the KEN balance; redraw it when the host reports a new one.
+    onOlaKen(() => {
+      if (this.panels?.view === 'gems') this.panels.refresh(true);
+    });
     olaReady();
   }
 

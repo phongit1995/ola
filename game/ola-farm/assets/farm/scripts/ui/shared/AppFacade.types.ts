@@ -30,6 +30,8 @@ export interface AppFacade {
   /** Current canvas size in design units. */
   readonly width: number;
   readonly height: number;
+  /** The player's KEN from the Ola host; null before the host reports it or when playing standalone. */
+  readonly ken: number | null;
 
   /** Apply a player action with feedback; returns whether it was committed. */
   act(action: FarmAction, sound?: string, after?: () => void): boolean;

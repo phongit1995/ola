@@ -48,6 +48,7 @@ export class PanelHost extends Component implements PanelState {
   penId = 12;
   saleKey = '';
   saleQuantity = 1;
+  gemAmount = 10;
   inventoryTab: InventoryTab = 'raw';
   improveId: number | null = null;
   saveText = '';
@@ -274,7 +275,9 @@ export class PanelHost extends Component implements PanelState {
     this.width = Math.min(shell.authoredWidth, app.width - shell.marginX);
     this.height = Math.min(shell.authoredHeight, app.height - shell.marginY);
     // The warehouse and its two sale dialogs share one frame and size so moving between them never jumps.
-    const warehouse = view === 'inventory' || view === 'inventory-item' || view === 'inventory-sales';
+    // The KEN exchange form shares the same frame, sized like the warehouse.
+    const warehouse =
+      view === 'inventory' || view === 'inventory-item' || view === 'inventory-sales' || view === 'gems';
     const responsive = view === 'factory' || view === 'livestock' || warehouse;
     const building = responsive || view === 'industry';
     const frame = cocosView.getFrameSize();
