@@ -822,16 +822,7 @@
     "rule4": "Từ phải có trong từ điển tiếng Việt.",
     "rule5": "Mỗi từ đúng được +1 điểm. Nối tới khi không còn từ nào để nối tiếp là thắng ván.",
     "rule6": "1 giờ không ai nối đúng thì bắt đầu phiên mới, tin nhắn cũ sẽ được xoá.",
-    "rule7": "Mỗi người có 3 lượt đoán cho mỗi từ. Sai hết 3 lượt thì phải chờ người khác nối đúng mới được đoán tiếp.",
-    "roomSubtitle": "Nối từ tiếng Việt 2 âm tiết cùng mọi người",
-    "tools": "Công cụ nối từ",
-    "startWith": "Nối bằng",
-    "lookupCurrentWord": "Tra nghĩa từ hiện tại",
-    "history": "Lịch sử nối từ",
-    "loadEarlier": "Xem tin cũ hơn",
-    "emptyTitle": "Chưa có ai nối",
-    "emptyHint": "Hãy là người đầu tiên nối tiếp từ hiện tại!",
-    "latest": "Tin mới nhất"
+    "rule7": "Mỗi người có 3 lượt đoán cho mỗi từ. Sai hết 3 lượt thì phải chờ người khác nối đúng mới được đoán tiếp."
   },
   "me": {
     "tabFeed": "Bảng tin",

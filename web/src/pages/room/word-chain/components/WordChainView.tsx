@@ -1,27 +1,63 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DateSeparator, FullScreenOverlay, Spinner } from '@components';
+import { DateSeparator, FullScreenOverlay, ScreenHeader } from '@components';
 import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
-import { buildWordChainFeed } from '@lib';
+import { BUBBLE_WALLPAPER, buildWordChainFeed } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
-import { remainingGuesses, sessionMessages } from '@ola/shared/stores/word-chain/wordChainHelpers';
+import {
+  remainingGuesses,
+  sessionMessages,
+} from '@ola/shared/stores/word-chain/wordChainHelpers';
 import { WordChainMessageRow } from './WordChainMessageRow';
 import { WordChainComposer } from './WordChainComposer';
 import { WordChainLeaderboardDialog } from './WordChainLeaderboardDialog';
 import { WordChainLookupDialog } from './WordChainLookupDialog';
 import { WordChainRulesDialog } from './WordChainRulesDialog';
-import { WordChainBoard } from './WordChainBoard';
-import { WordChainIcon } from './WordChainIcon';
 
-const TOOLS = [
-  { id: 'lookup', icon: 'book', label: 'wordChain.lookupTitle' },
-  { id: 'leaderboard', icon: 'trophy', label: 'wordChain.leaderboardTitle' },
-  { id: 'rules', icon: 'help', label: 'wordChain.rulesTitle' },
-] as const;
-type WordChainDialog = (typeof TOOLS)[number]['id'];
+const LOAD_MORE_AT_TOP_PX = 80;
 
-export function WordChainView({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+type WordChainDialog = 'leaderboard' | 'lookup' | 'rules';
+
+interface WordChainViewProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+function HeaderButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        {children}
+      </svg>
+    </button>
+  );
+}
+
+export function WordChainView({ visible, onClose }: WordChainViewProps) {
   const { t } = useTranslation();
   const wallpaperStyle = useChatWallpaperStyle();
   const state = useWordChainStore((store) => store.state);
@@ -34,46 +70,122 @@ export function WordChainView({ visible, onClose }: { visible: boolean; onClose:
   const sendMove = useWordChainStore((store) => store.sendMove);
   const currentUserId = useAuthStore((store) => store.user?.id) ?? '';
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
-  const [pinned, setPinned] = useState(true);
-  const messages = useMemo(() => sessionMessages(allMessages, state?.sessionId), [allMessages, state?.sessionId]);
+
+  const messages = useMemo(
+    () => sessionMessages(allMessages, state?.sessionId),
+    [allMessages, state?.sessionId]
+  );
   const feed = useMemo(() => buildWordChainFeed(messages), [messages]);
   const remaining = remainingGuesses(state, guesses);
-  const { scrollRef, handleScroll, pin } = useStickyScroll({ count: messages.length, lastId: messages.at(-1)?.id ?? null, hasMore, loadingMore, onLoadMore: loadMoreMessages, enabled: visible, loadMoreAtTop: 80, onStickyChange: setPinned });
-
-  function jumpToLatest() {
-    pin();
-    const element = scrollRef.current;
-    if (element != null) element.scrollTop = element.scrollHeight;
-  }
+  const { scrollRef, handleScroll, pin } = useStickyScroll({
+    count: messages.length,
+    lastId: messages.at(-1)?.id ?? null,
+    hasMore,
+    loadingMore,
+    onLoadMore: loadMoreMessages,
+    enabled: visible,
+    loadMoreAtTop: LOAD_MORE_AT_TOP_PX,
+  });
 
   return (
-    <FullScreenOverlay position="absolute" className="bg-[#f7f8f5]">
-      <header className="flex shrink-0 items-center gap-2 bg-white px-3 pt-3 pb-1">
-        <button type="button" aria-label={t('chat.back')} onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-black/8 text-black/65 hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-ola-primary"><WordChainIcon name="back" /></button>
-        <div className="min-w-0 flex-1 pl-1">
-          <h1 className="font-game text-2xl leading-none text-ola-primary-darker">{t('wordChain.title')}</h1>
-          <p className="mt-1 text-[11px] text-black/50">{t('wordChain.roomSubtitle')}</p>
-        </div>
-        <button type="button" onClick={() => setDialog('leaderboard')} aria-label={`${t('wordChain.leaderboardTitle')}, ${t('wordChain.points', { value: points })}`} className="flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-50 px-2.5 py-2 text-sm font-semibold text-amber-800 ring-1 ring-amber-200/60 hover:bg-amber-100">
-          <WordChainIcon name="trophy" className="h-4 w-4" /><span className="tabular-nums">{t('wordChain.points', { value: points })}</span>
-        </button>
-      </header>
-      <nav aria-label={t('wordChain.tools')} className="grid shrink-0 grid-cols-3 gap-1 bg-white px-4 py-2">
-        {TOOLS.map((tool) => <button key={tool.id} type="button" onClick={() => setDialog(tool.id)} className="flex min-h-10 items-center justify-center gap-1.5 rounded-xl px-1 text-xs font-medium text-black/60 hover:bg-ola-primary-light hover:text-ola-primary-darker focus-visible:outline-2 focus-visible:outline-ola-primary"><WordChainIcon name={tool.icon} className="h-4 w-4 shrink-0" />{t(tool.label)}</button>)}
-      </nav>
-      <WordChainBoard state={state} remaining={remaining} onLookup={() => setDialog('lookup')} />
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <div ref={scrollRef} onScroll={handleScroll} style={wallpaperStyle} aria-label={t('wordChain.history')} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-4 py-4">
-          {hasMore && <button type="button" disabled={loadingMore} onClick={() => void loadMoreMessages()} className="mx-auto flex shrink-0 items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs text-black/55 ring-1 ring-black/5 disabled:opacity-60">{loadingMore && <Spinner size={12} />}{t(loadingMore ? 'common.loading' : 'wordChain.loadEarlier')}</button>}
-          {feed.length === 0 && <div className="m-auto max-w-60 py-6 text-center"><WordChainIcon name="link" className="mx-auto mb-3 h-9 w-9 text-ola-primary-dark" /><p className="font-game text-xl text-ola-primary-darker">{t('wordChain.emptyTitle')}</p><p className="mt-1 text-sm leading-relaxed text-black/50">{t('wordChain.emptyHint')}</p></div>}
-          {feed.map((item) => item.kind === 'date' ? <DateSeparator key={item.key} iso={item.createdAt} /> : <WordChainMessageRow key={item.key} item={item} isOwn={item.message.senderId === currentUserId} />)}
-        </div>
-        {!pinned && <button type="button" onClick={jumpToLatest} className="absolute right-4 bottom-3 flex items-center gap-1.5 rounded-full border border-ola-primary/20 bg-white px-3 py-2 text-xs font-medium text-ola-primary-darker shadow-md">{t('wordChain.latest')}<WordChainIcon name="down" className="h-4 w-4" /></button>}
+    <FullScreenOverlay position="absolute">
+      <ScreenHeader title={t('wordChain.title')} onBack={onClose} align="center">
+        <HeaderButton
+          label={t('wordChain.lookupTitle')}
+          onClick={() => setDialog('lookup')}
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z" />
+          <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" />
+        </HeaderButton>
+        <HeaderButton
+          label={t('wordChain.leaderboardTitle')}
+          onClick={() => setDialog('leaderboard')}
+        >
+          <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" />
+          <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" />
+        </HeaderButton>
+        <HeaderButton
+          label={t('wordChain.rulesTitle')}
+          onClick={() => setDialog('rules')}
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01" />
+        </HeaderButton>
+      </ScreenHeader>
+
+      <div className="flex shrink-0 items-center gap-3 border-b border-black/12 bg-white px-4 py-2">
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs text-black/45">
+            {t('wordChain.currentWord')}
+          </span>
+          <span className="block truncate text-lg font-semibold text-black/87">
+            {state?.word ?? ''}
+          </span>
+        </span>
+        <span className="flex shrink-0 flex-col items-end gap-1">
+          <span className="rounded-full bg-ola-primary-light px-3 py-0.5 text-sm font-semibold text-ola-primary-ink tabular-nums">
+            {t('wordChain.points', { value: points })}
+          </span>
+          <span
+            className={`text-xs tabular-nums ${
+              remaining === 0 ? 'font-medium text-ola-error' : 'text-black/45'
+            }`}
+          >
+            {t('wordChain.guessesBadge', {
+              value: remaining,
+              limit: state?.guessLimit ?? 0,
+            })}
+          </span>
+        </span>
       </div>
-      <WordChainComposer syllable={state?.requiredSyllable} locked={remaining === 0} onBeforeSend={pin} onSend={sendMove} />
-      <WordChainLeaderboardDialog open={visible && dialog === 'leaderboard'} onClose={() => setDialog(null)} />
-      {visible && dialog === 'lookup' && <WordChainLookupDialog open initialWord={state?.word} onClose={() => setDialog(null)} />}
-      <WordChainRulesDialog open={visible && dialog === 'rules'} onClose={() => setDialog(null)} />
+
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        style={wallpaperStyle}
+        className={`flex flex-1 flex-col gap-3 overflow-y-auto p-3 ${BUBBLE_WALLPAPER}`}
+      >
+        {loadingMore && (
+          <div className="shrink-0 py-1 text-center text-xs text-black/40">
+            {t('common.loading')}
+          </div>
+        )}
+        {feed.length === 0 && (
+          <p className="py-6 text-center text-sm text-black/45">
+            {t('wordChain.empty')}
+          </p>
+        )}
+        {feed.map((item) =>
+          item.kind === 'date' ? (
+            <DateSeparator key={item.key} iso={item.createdAt} />
+          ) : (
+            <WordChainMessageRow
+              key={item.key}
+              item={item}
+              isOwn={item.message.senderId === currentUserId}
+            />
+          )
+        )}
+      </div>
+
+      <WordChainComposer
+        syllable={state?.requiredSyllable}
+        locked={remaining === 0}
+        onBeforeSend={pin}
+        onSend={sendMove}
+      />
+
+      <WordChainLeaderboardDialog
+        open={dialog === 'leaderboard'}
+        onClose={() => setDialog(null)}
+      />
+      {dialog === 'lookup' && (
+        <WordChainLookupDialog open onClose={() => setDialog(null)} />
+      )}
+      <WordChainRulesDialog
+        open={dialog === 'rules'}
+        onClose={() => setDialog(null)}
+      />
     </FullScreenOverlay>
   );
 }
