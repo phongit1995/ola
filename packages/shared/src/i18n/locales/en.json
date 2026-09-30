@@ -822,7 +822,16 @@
     "rule4": "The word must be in the Vietnamese dictionary.",
     "rule5": "Each valid word earns 1 point. Play a word nothing can follow to win the game.",
     "rule6": "After 1 hour without a valid word a new session starts and old messages are cleared.",
-    "rule7": "Everyone gets 3 guesses per word. After 3 wrong guesses you must wait until someone else chains a valid word."
+    "rule7": "Everyone gets 3 guesses per word. After 3 wrong guesses you must wait until someone else chains a valid word.",
+    "roomSubtitle": "Chain two-syllable Vietnamese words with everyone",
+    "tools": "Word chain tools",
+    "startWith": "Start with",
+    "lookupCurrentWord": "Look up the current word",
+    "history": "Word chain history",
+    "loadEarlier": "Load earlier messages",
+    "emptyTitle": "Nobody has played yet",
+    "emptyHint": "Be the first to chain the current word!",
+    "latest": "Latest"
   },
   "me": {
     "tabFeed": "Newsfeed",
