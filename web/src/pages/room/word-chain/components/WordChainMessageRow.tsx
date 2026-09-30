@@ -1,5 +1,5 @@
 import { memo, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { VipAvatar } from '@components';
 import { WORD_CHAIN_MESSAGE_TYPE, WORD_CHAIN_SENDER_TYPE } from '@constants';
 import wordChainBotIcon from '@/assets/icons/word-chain/bot-06.png';
@@ -12,68 +12,70 @@ import {
 } from '@lib';
 import type { WordChainFeedMessage, WordChainMessage } from '@app-types';
 import { WordChainStatusIcon } from './WordChainStatusIcon';
-import { resolveWordChainStatus } from './wordChainStatus';
+import {
+  resolveWordChainStatus,
+  type WordChainMoveStatus,
+} from './wordChainStatus';
 
 interface WordChainMessageRowProps {
   item: WordChainFeedMessage;
   isOwn: boolean;
 }
 
-function CurrentWordLine({ word }: { word?: string }) {
-  const { t } = useTranslation();
-  if (word == null || word === '') return null;
+function ReplyQuote({ message }: { message: WordChainMessage }) {
   return (
-    <span className="text-sm text-black/80">
-      {t('wordChain.currentWord')}:{' '}
-      <strong className="text-base text-black/87">{word}</strong>
+    <span className="mb-1.5 block w-full rounded border-l-2 border-ola-primary bg-black/5 py-0.5 pl-2 pr-1">
+      <span className="block truncate text-xs font-semibold text-black/60">
+        @{message.senderName}
+      </span>
+      <span className="line-clamp-2 text-xs text-black/45">
+        {message.content}
+      </span>
     </span>
   );
 }
 
 function BotReply({
   replyTo,
-  accent,
+  status,
   time,
   children,
-  footer,
 }: {
   replyTo?: WordChainMessage;
-  accent: string;
+  status: WordChainMoveStatus;
   time: string;
   children: ReactNode;
-  footer?: ReactNode;
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex w-full max-w-[90%] flex-col gap-1 self-start">
-      {replyTo != null && (
-        <span className="ml-12 flex min-w-0 items-center gap-1 text-xs text-black/45">
-          <span aria-hidden="true">↳</span>
-          <span className="shrink-0 font-semibold text-black/60">
-            @{replyTo.senderName}
-          </span>
-          <span className="truncate">{replyTo.content}</span>
+    <div className="flex w-full flex-col gap-0.5 self-start">
+      <span className="ml-10 flex max-w-[85%] items-baseline gap-1.5 text-sm font-semibold text-ola-primary-ink">
+        <span className="truncate">{t('wordChain.bot')}</span>
+        <span className="shrink-0 text-xs font-normal text-black/35">
+          {time}
         </span>
-      )}
-      <div className="flex items-start gap-2">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center">
-          <img
-            src={wordChainBotIcon}
-            alt=""
-            className="h-full w-full object-contain"
-          />
-        </span>
-        <div className="flex min-w-0 flex-col gap-1">
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-ola-primary-ink">
-            {t('wordChain.bot')}
-            <span className="text-xs font-normal text-black/35">{time}</span>
+      </span>
+      <div className="flex max-w-[85%] items-start gap-2">
+        <img
+          src={wordChainBotIcon}
+          alt=""
+          className="h-8 w-8 shrink-0 object-contain"
+        />
+        <div
+          className={`w-fit max-w-full break-words rounded-2xl px-3.5 py-2 text-sm ${bubbleSurface(
+            false,
+            false
+          )}`}
+        >
+          {replyTo != null && <ReplyQuote message={replyTo} />}
+          <span className="flex items-start gap-1.5 text-black/80">
+            <WordChainStatusIcon
+              status={status}
+              className="h-5 w-5"
+              decorative
+            />
+            <span className="min-w-0">{children}</span>
           </span>
-          <div
-            className={`rounded-md border-l-4 bg-white px-3 py-2 text-sm text-black/80 shadow-sm ${accent}`}
-          >
-            {children}
-          </div>
-          {footer}
         </div>
       </div>
     </div>
@@ -112,9 +114,8 @@ function BotMessage({
     return (
       <BotReply
         replyTo={replyTo}
-        accent="border-amber-400"
+        status={resolveWordChainStatus(message) ?? 'error'}
         time={time}
-        footer={<CurrentWordLine word={message.word} />}
       >
         <strong className="text-black/87">
           {wordChainWrongReason(t, message)}
@@ -127,17 +128,16 @@ function BotMessage({
   if (message.type === WORD_CHAIN_MESSAGE_TYPE.win) {
     const winner = replyTo?.senderName;
     return (
-      <BotReply replyTo={replyTo} accent="border-ola-primary" time={time}>
-        <strong className="text-black/87">
-          <WordChainStatusIcon
-            status="win"
-            className="mr-1 inline-block h-6 w-6 align-middle"
-            decorative
+      <BotReply replyTo={replyTo} status="win" time={time}>
+        {winner != null && winner !== '' ? (
+          <Trans
+            i18nKey="wordChain.winTitle"
+            values={{ name: winner }}
+            components={{ mention: <strong className="text-black/87" /> }}
           />
-          {winner != null && winner !== ''
-            ? t('wordChain.winTitle', { name: winner })
-            : t('wordChain.winTitleUnknown')}
-        </strong>{' '}
+        ) : (
+          t('wordChain.winTitleUnknown')
+        )}{' '}
         {t('wordChain.winBody', { syllable: lastSyllable(message.word) })}
       </BotReply>
     );
@@ -163,8 +163,8 @@ function MoveBubble({
       } ${hasReaction ? 'pb-3' : ''}`}
     >
       <span
-        className={`flex max-w-[80%] items-center gap-1.5 text-sm font-semibold text-black/72 ${
-          isOwn ? 'mr-10' : 'ml-10'
+        className={`flex max-w-[80%] items-baseline gap-1.5 text-sm font-semibold text-black/72 ${
+          isOwn ? 'mr-10 flex-row-reverse' : 'ml-10'
         }`}
       >
         <span className="truncate">{message.senderName}</span>

@@ -789,7 +789,7 @@
     "sessionStarted": "A new session has started!",
     "gameStarted": "A new game has started!",
     "startWord": "Starting word:",
-    "winTitle": "{{name}} wins!",
+    "winTitle": "<mention>@{{name}}</mention> wins!",
     "winTitleUnknown": "We have a winner!",
     "winBody": "Nothing can follow “{{syllable}}”.",
     "wrongInvalidFormat": "Words must have 2 syllables and start with “{{syllable}}”!",

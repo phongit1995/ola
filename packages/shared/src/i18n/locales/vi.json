@@ -789,7 +789,7 @@
     "sessionStarted": "Phiên mới bắt đầu!",
     "gameStarted": "Ván mới bắt đầu!",
     "startWord": "Từ bắt đầu:",
-    "winTitle": "{{name}} thắng!",
+    "winTitle": "<mention>@{{name}}</mention> thắng!",
     "winTitleUnknown": "Có người thắng!",
     "winBody": "Từ “{{syllable}}” không còn từ nào để nối tiếp.",
     "wrongInvalidFormat": "Từ bắt buộc phải gồm 2 âm tiết và bắt đầu bằng “{{syllable}}”!",

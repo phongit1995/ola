@@ -89,7 +89,12 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
 
   return (
     <FullScreenOverlay position="absolute">
-      <ScreenHeader title={t('wordChain.title')} onBack={onClose} align="center">
+      <ScreenHeader
+        title={t('wordChain.title')}
+        onBack={onClose}
+        align="center"
+        left={<WordChainRoomIcon className="h-8 w-8" />}
+      >
         <HeaderButton
           label={t('wordChain.lookupTitle')}
           onClick={() => setDialog('lookup')}
@@ -112,28 +117,6 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
           <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01" />
         </HeaderButton>
       </ScreenHeader>
-
-      <div className="flex shrink-0 items-center gap-3 border-b border-black/12 bg-white px-4 py-2">
-        <WordChainRoomIcon className="h-10 w-10" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-xs text-black/45">
-            {t('wordChain.currentWord')}
-          </span>
-          <span className="block truncate text-lg font-semibold text-black/87">
-            {state?.word ?? ''}
-          </span>
-        </span>
-        <span
-          className={`shrink-0 text-sm tabular-nums ${
-            remaining === 0 ? 'font-medium text-ola-error' : 'text-black/54'
-          }`}
-        >
-          {t('wordChain.guessesBadge', {
-            value: remaining,
-            limit: state?.guessLimit ?? 0,
-          })}
-        </span>
-      </div>
 
       <div
         ref={scrollRef}
@@ -163,6 +146,25 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
             />
           )
         )}
+      </div>
+
+      <div className="flex shrink-0 items-baseline gap-3 border-t border-black/12 bg-white px-4 pt-2 text-sm">
+        <span className="min-w-0 flex-1 truncate text-black/54">
+          {t('wordChain.currentWord')}:{' '}
+          <strong className="text-base font-semibold text-black/87">
+            {state?.word ?? ''}
+          </strong>
+        </span>
+        <span
+          className={`shrink-0 tabular-nums ${
+            remaining === 0 ? 'font-medium text-ola-error' : 'text-black/54'
+          }`}
+        >
+          {t('wordChain.guessesBadge', {
+            value: remaining,
+            limit: state?.guessLimit ?? 0,
+          })}
+        </span>
       </div>
 
       <WordChainComposer
