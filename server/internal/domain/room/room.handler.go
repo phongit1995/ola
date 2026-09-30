@@ -86,3 +86,20 @@ func (h *EventHandler) OnMessageDeleted(ctx context.Context, message []byte) err
 	h.logger.Infow("✅ ROOM_MESSAGE_DELETED broadcast", "room_id", event.RoomID, "message_id", event.MessageID)
 	return nil
 }
+
+func (h *EventHandler) OnWordChainEvent(ctx context.Context, message []byte) error {
+	var event WordChainEvent
+	if err := json.Unmarshal(message, &event); err != nil {
+		h.logger.Errorw("Failed to unmarshal WordChainEvent", "error", err)
+		return err
+	}
+	switch event.Event {
+	case constants.WebSocketEventWordChainNewMessage, constants.WebSocketEventWordChainStateUpdated:
+	default:
+		return errors.New("unsupported word chain event")
+	}
+
+	h.wsServer.EmitToWordChain(event.Event, event.Data)
+	h.logger.Infow("✅ WORD_CHAIN event broadcast", "event", event.Event)
+	return nil
+}

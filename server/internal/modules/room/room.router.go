@@ -2,17 +2,19 @@ package room
 
 import (
 	"ola-chat-server/internal/middleware"
+	"ola-chat-server/internal/modules/room/wordchain"
 	"ola-chat-server/internal/utils"
 )
 
 type Router struct {
 	controller     *Controller
+	wordChain      *wordchain.Router
 	authMiddleware *middleware.AuthMiddleware
 	rateLimit      *middleware.RateLimitMiddleware
 }
 
-func NewRouter(controller *Controller, authMiddleware *middleware.AuthMiddleware, rateLimit *middleware.RateLimitMiddleware) *Router {
-	return &Router{controller: controller, authMiddleware: authMiddleware, rateLimit: rateLimit}
+func NewRouter(controller *Controller, wordChain *wordchain.Router, authMiddleware *middleware.AuthMiddleware, rateLimit *middleware.RateLimitMiddleware) *Router {
+	return &Router{controller: controller, wordChain: wordChain, authMiddleware: authMiddleware, rateLimit: rateLimit}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
@@ -31,5 +33,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		rooms.POST("/:id/messages/audio", r.rateLimit.LimitPolicy(middleware.PolicyRoomMessage), r.controller.SendRoomAudioMessage)
 		rooms.DELETE("/:id/messages/:messageId", r.controller.DeleteRoomMessage)
 		rooms.POST("/:id/messages/:messageId/reactions", r.controller.ToggleRoomMessageReaction)
+		r.wordChain.Setup(rooms)
 	}
 }

@@ -21,6 +21,7 @@ const (
 	KafkaTopicRoomMessageCreated         = "CHAT.ROOM.MESSAGE.CREATED"
 	KafkaTopicRoomMessageDeleted         = "CHAT.ROOM.MESSAGE.DELETED"
 	KafkaTopicRoomMessageReactionUpdated = "CHAT.ROOM.MESSAGE.REACTION_UPDATED"
+	KafkaTopicWordChainEvent             = "CHAT.WORD_CHAIN.EVENT"
 	KafkaTopicKenChestAvailable          = "CHAT.KEN.CHEST.AVAILABLE"
 	KafkaTopicKenChestClosed             = "CHAT.KEN.CHEST.CLOSED"
 	KafkaTopicMeNotification             = "CHAT.ME.NOTIFICATION"
@@ -45,6 +46,7 @@ func AllKafkaTopics() []string {
 		KafkaTopicRoomMessageCreated,
 		KafkaTopicRoomMessageDeleted,
 		KafkaTopicRoomMessageReactionUpdated,
+		KafkaTopicWordChainEvent,
 		KafkaTopicKenChestAvailable,
 		KafkaTopicKenChestClosed,
 		KafkaTopicMeNotification,
@@ -149,9 +151,11 @@ const (
 )
 
 const (
-	SocketEventRoomJoin  = "ROOM:JOIN"
-	SocketEventRoomLeave = "ROOM:LEAVE"
-	SocketEventAppState  = "app_state"
+	SocketEventRoomJoin       = "ROOM:JOIN"
+	SocketEventRoomLeave      = "ROOM:LEAVE"
+	SocketEventWordChainJoin  = "WORD_CHAIN:JOIN"
+	SocketEventWordChainLeave = "WORD_CHAIN:LEAVE"
+	SocketEventAppState       = "app_state"
 )
 
 const (
@@ -177,6 +181,8 @@ const (
 	WebSocketEventRoomMemberJoined           = "ROOM_MEMBER_JOINED"
 	WebSocketEventRoomMemberLeft             = "ROOM_MEMBER_LEFT"
 	WebSocketEventRoomBlockListChanged       = "ROOM_BLOCK_LIST_CHANGED"
+	WebSocketEventWordChainNewMessage        = "WORD_CHAIN_NEW_MESSAGE"
+	WebSocketEventWordChainStateUpdated      = "WORD_CHAIN_STATE_UPDATED"
 	WebSocketEventSessionReplaced            = "SESSION_REPLACED"
 	WebSocketEventKenUpdated                 = "KEN_UPDATED"
 	WebSocketEventPenSettled                 = "PEN_SETTLED"

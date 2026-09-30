@@ -106,6 +106,10 @@ func (a *KafkaEventAdapter) HandleRoomMessageReactionUpdated(ctx context.Context
 	return a.roomHandler.OnReactionUpdated(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleWordChainEvent(ctx context.Context, message []byte) error {
+	return a.roomHandler.OnWordChainEvent(ctx, message)
+}
+
 func (a *KafkaEventAdapter) HandleKenChestAvailable(ctx context.Context, message []byte) error {
 	return a.kenChestHandler.OnAvailable(ctx, message)
 }
@@ -142,6 +146,7 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicRoomMessageCreated, adapter.HandleRoomMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicRoomMessageDeleted, adapter.HandleRoomMessageDeleted)
 	consumer.RegisterHandler(constants.KafkaTopicRoomMessageReactionUpdated, adapter.HandleRoomMessageReactionUpdated)
+	consumer.RegisterHandler(constants.KafkaTopicWordChainEvent, adapter.HandleWordChainEvent)
 	consumer.RegisterHandler(constants.KafkaTopicKenChestAvailable, adapter.HandleKenChestAvailable)
 	consumer.RegisterHandler(constants.KafkaTopicKenChestClosed, adapter.HandleKenChestClosed)
 	consumer.RegisterHandler(constants.KafkaTopicMeNotification, adapter.HandleMeNotification)
