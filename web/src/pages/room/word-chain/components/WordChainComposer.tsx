@@ -72,9 +72,9 @@ export function WordChainComposer({
         title={t('wordChain.hint')}
         onClick={onHint}
         disabled={sending || locked}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 hover:bg-amber-200 disabled:opacity-50"
+        className="-my-0.5 flex h-11 w-11 shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
       >
-        <WordChainHintIcon className="h-5 w-5" />
+        <WordChainHintIcon className="h-11 w-11" />
       </button>
       <button
         type="submit"
