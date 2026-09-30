@@ -4,6 +4,7 @@ import { DateSeparator, FullScreenOverlay, ScreenHeader } from '@components';
 import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
 import { BUBBLE_WALLPAPER, buildWordChainFeed } from '@lib';
 import { useAuthStore } from '@/store/authStore';
+import wordChainRoomIcon from '@/assets/icons/word-chain/room-02.png';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import {
   remainingGuesses,
@@ -61,7 +62,6 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   const { t } = useTranslation();
   const wallpaperStyle = useChatWallpaperStyle();
   const state = useWordChainStore((store) => store.state);
-  const points = useWordChainStore((store) => store.points);
   const guesses = useWordChainStore((store) => store.guesses);
   const allMessages = useWordChainStore((store) => store.messages);
   const hasMore = useWordChainStore((store) => store.hasMore);
@@ -114,6 +114,9 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
       </ScreenHeader>
 
       <div className="flex shrink-0 items-center gap-3 border-b border-black/12 bg-white px-4 py-2">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-ola-primary-light">
+          <img src={wordChainRoomIcon} alt="" className="h-10 w-10 object-contain" />
+        </span>
         <span className="min-w-0 flex-1">
           <span className="block text-xs text-black/45">
             {t('wordChain.currentWord')}
@@ -122,20 +125,15 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
             {state?.word ?? ''}
           </span>
         </span>
-        <span className="flex shrink-0 flex-col items-end gap-1">
-          <span className="rounded-full bg-ola-primary-light px-3 py-0.5 text-sm font-semibold text-ola-primary-ink tabular-nums">
-            {t('wordChain.points', { value: points })}
-          </span>
-          <span
-            className={`text-xs tabular-nums ${
-              remaining === 0 ? 'font-medium text-ola-error' : 'text-black/45'
-            }`}
-          >
-            {t('wordChain.guessesBadge', {
-              value: remaining,
-              limit: state?.guessLimit ?? 0,
-            })}
-          </span>
+        <span
+          className={`shrink-0 text-sm tabular-nums ${
+            remaining === 0 ? 'font-medium text-ola-error' : 'text-black/54'
+          }`}
+        >
+          {t('wordChain.guessesBadge', {
+            value: remaining,
+            limit: state?.guessLimit ?? 0,
+          })}
         </span>
       </div>
 
@@ -151,9 +149,12 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
           </div>
         )}
         {feed.length === 0 && (
-          <p className="py-6 text-center text-sm text-black/45">
-            {t('wordChain.empty')}
-          </p>
+          <div className="flex flex-col items-center gap-2 py-6 text-center">
+            <span className="flex h-16 w-16 items-center justify-center rounded bg-ola-primary-light">
+              <img src={wordChainRoomIcon} alt="" className="h-14 w-14 object-contain" />
+            </span>
+            <p className="text-sm text-black/45">{t('wordChain.empty')}</p>
+          </div>
         )}
         {feed.map((item) =>
           item.kind === 'date' ? (

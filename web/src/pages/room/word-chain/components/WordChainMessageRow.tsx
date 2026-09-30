@@ -2,6 +2,7 @@ import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VipAvatar } from '@components';
 import { WORD_CHAIN_MESSAGE_TYPE, WORD_CHAIN_SENDER_TYPE } from '@constants';
+import wordChainBotIcon from '@/assets/icons/word-chain/bot-06.png';
 import {
   bubbleSurface,
   formatClockHM,
@@ -53,8 +54,12 @@ function BotReply({
         </span>
       )}
       <div className="flex items-start gap-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ola-primary-light text-lg">
-          🤖
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+          <img
+            src={wordChainBotIcon}
+            alt=""
+            className="h-full w-full object-contain"
+          />
         </span>
         <div className="flex min-w-0 flex-col gap-1">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-ola-primary-ink">

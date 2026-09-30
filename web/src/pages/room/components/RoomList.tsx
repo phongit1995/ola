@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import autoJoinIcon from '@/assets/icons/room/ic_action_auto_join_room.png';
+import wordChainRoomIcon from '@/assets/icons/word-chain/room-02.png';
 import type { RoomListItem } from '../types';
 import { RoomRow } from './RoomRow';
 
@@ -100,7 +101,7 @@ export function RoomList({
             <img
               src={autoJoinIcon}
               alt=""
-              className="h-12 w-12 object-contain"
+              className="h-14 w-14 object-contain"
             />
           }
           title={t('room.quickJoin')}
@@ -109,7 +110,13 @@ export function RoomList({
         />
       )}
       <SpecialRow
-        icon="🔤"
+        icon={
+          <img
+            src={wordChainRoomIcon}
+            alt=""
+            className="h-14 w-14 object-contain"
+          />
+        }
         title={t('wordChain.entryTitle')}
         subtitle={t('wordChain.entryDesc')}
         onClick={onWordChain}
