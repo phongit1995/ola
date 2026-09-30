@@ -31,7 +31,7 @@ Kết quả của từ hợp lệ:
 - Từ sai không bị trừ điểm, nhưng **mỗi người chỉ có 3 lượt đoán cho mỗi từ hiện tại**. Mọi kiểu sai (`invalid_format`, `mismatch`, `repeated`, `not_in_dict`) đều trừ 1 lượt.
   - Mỗi lần sai, bot gửi 1 tin `wrong_answer` ngay sau tin sai: lý do sai, số lượt còn lại, và từ hiện tại.
   - Hết 3 lượt thì server chặn (`403 WORD_CHAIN_NO_GUESSES`), không lưu tin. Người đó phải chờ tới khi có người khác nối đúng.
-  - Khi từ hiện tại đổi (có người nối đúng, thắng ván, hoặc sang phiên mới) thì mọi người có lại đủ 3 lượt.
+  - Khi từ hiện tại đổi (có người nối đúng, thắng ván, hoặc bot thay từ vì 12 giờ không ai nối) thì mọi người có lại đủ 3 lượt.
   - Số lượt sai nằm trong state (`wrongCounts`, không trả ra client). Mỗi lần từ đổi, `turn` tăng 1.
 - Không có luật lượt. Một người được nối nhiều lần liên tiếp, giống bot gốc.
 - Một ván giữ tối đa 100 từ gần nhất để kiểm tra từ lặp.
@@ -45,20 +45,23 @@ Chuẩn hoá trước khi chấm (`wordchain.normalize.go`):
 ## 3. Vòng đời phiên và ván
 
 ```text
-Phiên (session)                         xoá toàn bộ tin nhắn khi sang phiên mới
- ├─ Ván 1: từ mở đầu → nối … → ngõ cụt → 🏆 thắng
- ├─ Ván 2: bot tự mở ván mới              tin nhắn vẫn giữ
+Phiên (session)                         tạo 1 lần, không hết hạn, tin nhắn luôn giữ
+ ├─ Ván 1: bot đưa từ → nối … → ngõ cụt → 🏆 thắng
+ ├─ Ván 2: bot đưa từ mới
+ │    └─ 12 giờ không ai nối từ của bot → bot thay từ khác
  └─ …
-    1 giờ không có từ hợp lệ nào → phiên mới
 ```
 
-- **Phiên mới** được tạo khi:
-  - có người vào lần đầu mà chưa có phiên nào;
-  - phiên hiện tại đã quá **1 giờ** kể từ lần có từ hợp lệ gần nhất (`lastProgressAt`).
-- Khi sang phiên mới, server **xoá toàn bộ tin nhắn phiên cũ**, chọn từ mở đầu mới và đăng tin bot `session_started`. Điểm vẫn giữ.
-- Từ sai không kéo dài phiên. Chỉ từ hợp lệ mới cập nhật `lastProgressAt`.
-- Server đặt timer đúng thời điểm hết hạn, và kiểm tra lại mỗi khi có request đọc hoặc nối từ, nên phiên vẫn được thay đúng hạn kể cả khi server restart.
-- **Ván mới** (sau khi có người thắng) vẫn nằm trong phiên cũ. Tin nhắn giữ nguyên, bot đăng thêm tin `win` và `game_started`.
+- **Phiên** chỉ được tạo khi chưa có state nào (lần đầu có người vào, hoặc Redis mất state). Phiên không hết hạn, `sessionId` giữ nguyên, **tin nhắn không bao giờ bị xoá theo thời gian**.
+- **Từ do bot đưa ra** (từ mở phiên, từ mở ván sau khi thắng) có hạn **12 giờ** tính từ lúc bot đưa ra (`lastProgressAt`). Hết hạn mà chưa ai nối đúng thì bot thay bằng từ khác:
+  - ghi đè tin bot đã đưa ra từ cũ (`session_started` hoặc `game_started`) thành tin `game_started` với từ mới, **giữ nguyên `id`**, `seq` mới nên tin chuyển xuống cuối danh sách. Không có tin thông báo "đổi từ";
+  - event realtime gửi lại tin đó (cùng `id`), client gộp theo `id` nên tự thay tin cũ;
+  - tin người chơi (kể cả các lần đoán sai từ cũ) giữ nguyên. `turn` tăng 1, mọi người có lại đủ lượt.
+- **Từ do người chơi nối** thì không bao giờ hết hạn. Phòng chờ tới khi có người nối tiếp.
+- Từ sai không kéo dài hạn của từ bot.
+- State lưu `botMessageId` là id tin bot đang đưa ra từ hiện tại. "Từ hiện tại là của bot" được suy ra từ `history` chỉ có 1 từ.
+- Server đặt timer đúng thời điểm từ bot hết hạn, và kiểm tra lại mỗi khi có request đọc hoặc nối từ, nên từ vẫn được thay đúng hạn kể cả khi server restart. Nếu lúc đó không chọn được từ mới (API từ điển lỗi) thì giữ nguyên từ cũ, vẫn cho nối, và thử lại sau 30 giây.
+- **Ván mới** (sau khi có người thắng) vẫn nằm trong phiên. Tin nhắn giữ nguyên, bot đăng thêm tin `win` và `game_started`.
 
 ## 4. Từ điển
 
@@ -84,7 +87,7 @@ Cách kiểm tra "còn từ để nối" sau một từ đúng, ví dụ sau "đ
 3. Gọi `lookup` cho **mọi** ứng viên chưa biết kết quả, mỗi đợt 10 từ song song, ưu tiên ứng viên từ `suggest`. Gặp 1 từ hợp lệ là dừng ngay và kết luận còn từ.
 4. Chỉ kết luận ngõ cụt (người vừa nối thắng) khi **đã kiểm tra hết** ứng viên và không từ nào hợp lệ. Nếu API lỗi ở ứng viên nào đó thì không kết luận thắng, nước đi trả `503` và không lưu gì.
 
-Ví dụ: từ điển local có "đẽ mị" nhưng API `lookup` trả 404, còn `suggest("đẽ")` chỉ ra "đẽo…". Vậy "đẹp đẽ" là ngõ cụt và người nối nó thắng. Nếu chỉ tin từ điển local, phòng sẽ kẹt ở từ "đẽ" tới khi hết phiên.
+Ví dụ: từ điển local có "đẽ mị" nhưng API `lookup` trả 404, còn `suggest("đẽ")` chỉ ra "đẽo…". Vậy "đẹp đẽ" là ngõ cụt và người nối nó thắng. Nếu chỉ tin từ điển local, phòng sẽ kẹt mãi ở từ "đẽ", vì từ người chơi nối không hết hạn.
 
 Chi phí: trung vị mỗi âm tiết có 5 ứng viên, nhiều nhất là 225 (âm "ăn"). Âm tiết nhiều ứng viên hầu như luôn gặp từ hợp lệ ngay đợt đầu, nên chỉ trường hợp gần như mọi ứng viên đều không hợp lệ mới phải gọi nhiều đợt. Việc này chạy ngoài lock.
 
@@ -95,8 +98,8 @@ Kết quả `lookup` (có hoặc không) được cache 24 giờ trong Redis, n�
 Nếu API lỗi, hoặc không chọn được từ mở ván còn nối được, thì:
 
 - nước đi (kể cả nước đi thắng) trả `503 WORD_CHAIN_VERIFY_FAILED` và **không lưu gì**;
-- mở phiên lúc có người vào trả `503`, lần gọi sau sẽ thử lại;
-- mở phiên do hết hạn (timer) thì thử lại sau 30 giây.
+- mở phiên lúc có người vào (chưa có state) trả `503`, lần gọi sau sẽ thử lại;
+- thay từ bot đã hết hạn thì giữ nguyên từ cũ, request vẫn chạy bình thường, timer thử lại sau 30 giây.
 
 ## 5. Khác biệt so với bot gốc
 
@@ -106,7 +109,7 @@ Nếu API lỗi, hoặc không chọn được từ mở ván còn nối đượ
 | Kiểm tra ngõ cụt | Chỉ từ điển local | Còn từ chưa dùng được API chấp nhận. Ứng viên lấy từ local + `suggest` |
 | Lịch sử ván mới sau khi thắng | Rỗng (từ mở ván chơi lại được) | Có sẵn từ mở ván |
 | Kênh chơi | Kênh Discord do admin thêm | 1 phòng cố định |
-| Kết thúc | Thắng thì mở ván mới | Giống bot gốc, thêm hết hạn phiên sau 1 giờ và xoá tin nhắn |
+| Kết thúc | Thắng thì mở ván mới | Giống bot gốc, thêm: từ của bot sau 12 giờ không ai nối thì bot thay từ khác (ghi đè tin bot cũ, giữ tin người chơi) |
 | Thống kê | Chuỗi, kỷ lục, số lần thắng | Điểm = số từ hợp lệ |
 | Luật sai 3 lần reset chuỗi | Có | Không |
 | Xin ván mới (vote 15 giây), gợi ý, góp ý, thêm từ | Có | Không |
@@ -123,7 +126,7 @@ Về text dán vào: cả bot gốc và Ola đều không phân biệt được 
 
 | Key | Kiểu | Nội dung |
 |---|---|---|
-| `WORD_CHAIN:STATE` | STRING (JSON) | Phiên hiện tại: `sessionId`, `word`, `history`, `sessionStartedAt`, `lastProgressAt`, `revision` |
+| `WORD_CHAIN:STATE` | STRING (JSON) | Phiên hiện tại: `sessionId`, `word`, `history`, `sessionStartedAt`, `lastProgressAt`, `revision`, `turn`, `wrongCounts`, `botMessageId` |
 | `WORD_CHAIN:STATE_REV` | STRING (INCR) | Bộ đếm `revision` của state, tăng mỗi lần state đổi |
 | `WORD_CHAIN:MSG` | HASH | `messageId → JSON tin nhắn`. Chỉ lưu `senderId`, không lưu tên, avatar, VIP |
 | `WORD_CHAIN:MSG_INDEX` | ZSET | `messageId`, score = `seq` |
@@ -131,13 +134,13 @@ Về text dán vào: cả bot gốc và Ola đều không phân biệt được 
 | `WORD_CHAIN:POINTS` | ZSET | `userId`, score = điểm |
 | `WORD_CHAIN:LOOKUP_COOLDOWN:<userId>` | STRING, TTL 5 giây | Cooldown tra từ |
 | `WORD_CHAIN:WORD_EXISTS:<từ>` | STRING, TTL 24 giờ | Cache kết quả API `lookup`: `1` có, `0` không |
-| `LOCK:WORD_CHAIN` | STRING, TTL 15 giây | Lock toàn cục khi xử lý nước đi và đổi phiên |
+| `LOCK:WORD_CHAIN` | STRING, TTL 15 giây | Lock toàn cục khi xử lý nước đi, tạo phiên và thay từ bot |
 
-- Mỗi phiên giữ tối đa 5000 tin. Vượt thì xoá tin cũ nhất.
+- Phòng giữ tối đa 5000 tin gần nhất. Vượt thì xoá tin cũ nhất. Ngoài giới hạn này không tin nào bị xoá; tin bot đưa ra từ đã hết hạn chỉ bị ghi đè bằng từ mới.
 - Mọi thao tác ghi của một nước đi (state, điểm, tin người chơi, tin bot) nằm trong **một transaction Redis** (MULTI/EXEC), nên không có chuyện đổi từ mà không cộng điểm.
 - Khi server đã lấy được lock, request bị hủy giữa chừng vẫn ghi đủ và vẫn phát event.
 - **Không gọi API từ điển khi đang giữ lock.** Nước đi được chấm xong (kể cả chọn từ mở ván mới khi thắng) ở ngoài lock, dựa trên state có `revision` R. Vào lock, server chỉ kiểm tra state vẫn ở `revision` R rồi ghi. Nếu có người khác vừa nối trước (revision đã đổi) thì server chấm lại theo state mới, tối đa 3 lần, sau đó trả `409`.
-- Tạo phiên mới (lúc vào lần đầu, lúc hết hạn) cũng chọn và kiểm tra từ mở đầu trước khi lấy lock.
+- Tạo phiên (lúc vào lần đầu) và thay từ bot hết hạn cũng chọn và kiểm tra từ mới trước khi lấy lock.
 
 ## 7. Luồng realtime
 
@@ -158,7 +161,7 @@ API service ──Kafka CHAT.WORD_CHAIN.EVENT──▶ Chat service ──Socket
 | `wordchain.verifier.go` | Client gọi dict.minhqnd.com (`lookup`, `suggest`) và cache kết quả `lookup` |
 | `wordchain.oracle.go` | Tiêu chí chung: từ có tồn tại, còn từ để nối không, chọn từ mở ván |
 | `wordchain.engine.go` | Luật chấm một nước đi, không có I/O |
-| `wordchain.service.go` | Lock, xử lý nước đi, phiên, timer hết hạn, phát event |
+| `wordchain.service.go` | Lock, xử lý nước đi, tạo phiên, timer thay từ bot hết hạn, phát event |
 | `wordchain.store.go` | Đọc và ghi Redis, transaction `Apply` |
 | `wordchain.messages.go` | Nội dung tin bot |
 | `wordchain.lookup.go` | Tra từ và cooldown |

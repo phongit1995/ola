@@ -38,7 +38,7 @@ func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *servi
 		publisher: publisher,
 		logger:    logger.Named("[word_chain_service]"),
 	}
-	utils.SafeGo(s.logger, s.resumeSessionTimer)
+	utils.SafeGo(s.logger, s.resumeExpiryTimer)
 	return s
 }
 
@@ -150,7 +150,7 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 			return err
 		}
 		now := time.Now()
-		if state.Revision != revision || !state.Active() || state.Expired(now) {
+		if state.Revision != revision || !state.Active() {
 			return errStaleState
 		}
 
@@ -173,10 +173,9 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 		mutation.Messages = append(mutation.Messages, move)
 		switch {
 		case res.Code == CodeWin:
-			mutation.Messages = append(mutation.Messages,
-				winMessage(state.SessionID, move, now),
-				gameStartedMessage(state.SessionID, state.Word, now),
-			)
+			started := gameStartedMessage(state.SessionID, state.Word, now)
+			state.BotMessageID = started.ID
+			mutation.Messages = append(mutation.Messages, winMessage(state.SessionID, move, now), started)
 		case !res.Scored:
 			mutation.Messages = append(mutation.Messages, wrongAnswerMessage(state.SessionID, state, res, now))
 		}
@@ -194,7 +193,7 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 		}
 		if res.StateChanged {
 			batch.state(state)
-			s.scheduleSessionExpiry(state.SessionID, state.ExpiresAt())
+			s.syncExpiryTimer(state)
 		}
 		resp = &MoveResponse{
 			Message:          mutation.Messages[0],
@@ -228,6 +227,9 @@ func (s *Service) activeState(ctx context.Context) (GameState, error) {
 	word, err := s.pickStartWord(ctx)
 	if err != nil {
 		s.logger.Warnw("Word chain start word unavailable", "error", err)
+		if state.Active() {
+			return state, nil
+		}
 		return GameState{}, ErrVerifyFailed
 	}
 	err = s.withLock(ctx, func(ctx context.Context, batch *eventBatch) error {
@@ -235,25 +237,39 @@ func (s *Service) activeState(ctx context.Context) (GameState, error) {
 		if err != nil {
 			return err
 		}
-		if current.Active() && !current.Expired(time.Now()) {
-			state = current
-			return nil
-		}
-		state, err = s.startSessionLocked(ctx, batch, word)
+		state, err = s.refreshStateLocked(ctx, batch, current, word)
 		return err
 	})
 	return state, err
 }
 
-func (s *Service) startSessionLocked(ctx context.Context, batch *eventBatch, word string) (GameState, error) {
-	state := newSession(word, time.Now())
-	mutation := &Mutation{State: &state, ResetMessages: true, Messages: []Message{sessionStartedMessage(state)}}
+func (s *Service) refreshStateLocked(ctx context.Context, batch *eventBatch, current GameState, word string) (GameState, error) {
+	now := time.Now()
+	switch {
+	case !current.Active():
+		state := newSession(word, now)
+		return s.announceBotWordLocked(ctx, batch, state, sessionStartedMessage(state), "")
+	case current.Expired(now):
+		state := current.withBotWord(word, now)
+		return s.announceBotWordLocked(ctx, batch, state, gameStartedMessage(state.SessionID, word, now), current.BotMessageID)
+	}
+	s.syncExpiryTimer(current)
+	return current, nil
+}
+
+func (s *Service) announceBotWordLocked(ctx context.Context, batch *eventBatch, state GameState, announcement Message, replacedID string) (GameState, error) {
+	if replacedID != "" {
+		announcement.ID = replacedID
+	}
+	state.BotMessageID = announcement.ID
+	mutation := &Mutation{State: &state, Messages: []Message{announcement}}
 	if _, err := s.store.Apply(ctx, mutation); err != nil {
 		return GameState{}, err
 	}
+	s.trimMessages(ctx)
 	batch.state(state)
 	batch.message(mutation.Messages[0])
-	s.scheduleSessionExpiry(state.SessionID, state.ExpiresAt())
+	s.syncExpiryTimer(state)
 	return state, nil
 }
 
@@ -347,7 +363,15 @@ func (s *Service) Leaderboard(ctx context.Context, userID uuid.UUID) (*Leaderboa
 	return resp, nil
 }
 
-func (s *Service) scheduleSessionExpiry(sessionID string, at time.Time) {
+func (s *Service) syncExpiryTimer(state GameState) {
+	if !state.CanExpire() {
+		s.stopTimer()
+		return
+	}
+	s.scheduleExpiry(state.ExpiresAt())
+}
+
+func (s *Service) scheduleExpiry(at time.Time) {
 	delay := max(time.Until(at), 0)
 	s.timerMu.Lock()
 	defer s.timerMu.Unlock()
@@ -355,7 +379,7 @@ func (s *Service) scheduleSessionExpiry(sessionID string, at time.Time) {
 		s.timer.Stop()
 	}
 	s.timer = time.AfterFunc(delay, func() {
-		utils.SafeGo(s.logger, func() { s.expireSession(sessionID) })
+		utils.SafeGo(s.logger, s.expireBotWord)
 	})
 }
 
@@ -368,57 +392,59 @@ func (s *Service) stopTimer() {
 	}
 }
 
-func (s *Service) expireSession(sessionID string) {
+func (s *Service) expireBotWord() {
 	ctx, cancel := context.WithTimeout(context.Background(), BackgroundTimeout)
 	defer cancel()
 
 	state, err := s.store.LoadState(ctx)
-	if err != nil || state.SessionID != sessionID {
+	if err != nil {
+		s.logger.Warnw("Failed to load word chain state, retrying", "error", err)
+		s.scheduleExpiry(time.Now().Add(BotWordRetryDelay))
+		return
+	}
+	if !state.CanExpire() {
 		return
 	}
 	if !state.Expired(time.Now()) {
-		s.scheduleSessionExpiry(sessionID, state.ExpiresAt())
+		s.scheduleExpiry(state.ExpiresAt())
 		return
 	}
 	word, err := s.pickStartWord(ctx)
 	if err != nil {
-		s.logger.Warnw("Word chain start word unavailable, retrying", "error", err)
-		s.scheduleSessionExpiry(sessionID, time.Now().Add(SessionRetryDelay))
+		s.logger.Warnw("Word chain replacement word unavailable, retrying", "error", err)
+		s.scheduleExpiry(time.Now().Add(BotWordRetryDelay))
 		return
 	}
 	err = s.withLock(ctx, func(ctx context.Context, batch *eventBatch) error {
-		state, err := s.store.LoadState(ctx)
-		if err != nil || state.SessionID != sessionID {
+		current, err := s.store.LoadState(ctx)
+		if err != nil {
 			return err
 		}
-		if !state.Expired(time.Now()) {
-			s.scheduleSessionExpiry(sessionID, state.ExpiresAt())
-			return nil
-		}
-		_, err = s.startSessionLocked(ctx, batch, word)
+		_, err = s.refreshStateLocked(ctx, batch, current, word)
 		return err
 	})
 	if errors.Is(err, ErrBusy) {
-		s.scheduleSessionExpiry(sessionID, time.Now().Add(LockRetryWait))
+		s.scheduleExpiry(time.Now().Add(LockRetryWait))
 		return
 	}
 	if err != nil {
-		s.logger.Errorw("Failed to start new word chain session", "error", err)
+		s.logger.Errorw("Failed to replace word chain bot word, retrying", "error", err)
+		s.scheduleExpiry(time.Now().Add(BotWordRetryDelay))
 	}
 }
 
-func (s *Service) resumeSessionTimer() {
+func (s *Service) resumeExpiryTimer() {
 	ctx, cancel := context.WithTimeout(context.Background(), BackgroundTimeout)
 	defer cancel()
 	state, err := s.store.LoadState(ctx)
-	if err != nil || !state.Active() {
+	if err != nil {
 		return
 	}
 	s.timerMu.Lock()
 	idle := s.timer == nil
 	s.timerMu.Unlock()
 	if idle {
-		s.scheduleSessionExpiry(state.SessionID, state.ExpiresAt())
+		s.syncExpiryTimer(state)
 	}
 }
 
@@ -437,7 +463,9 @@ func toStateView(state GameState) *StateResponse {
 	if state.Active() {
 		view.SessionStartedAt = state.SessionStartedAt.UTC().Format(time.RFC3339)
 		view.LastProgressAt = state.LastProgressAt.UTC().Format(time.RFC3339)
-		view.SessionExpiresAt = state.ExpiresAt().UTC().Format(time.RFC3339)
+	}
+	if state.CanExpire() {
+		view.WordExpiresAt = state.ExpiresAt().UTC().Format(time.RFC3339)
 	}
 	return view
 }

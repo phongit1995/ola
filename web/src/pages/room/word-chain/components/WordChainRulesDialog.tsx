@@ -8,7 +8,6 @@ const RULE_KEYS = [
   'wordChain.rule4',
   'wordChain.rule5',
   'wordChain.rule6',
-  'wordChain.rule7',
 ] as const;
 
 interface WordChainRulesDialogProps {

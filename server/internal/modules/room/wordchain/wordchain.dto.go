@@ -74,7 +74,7 @@ type StateResponse struct {
 	HistoryCount     int    `json:"historyCount"`
 	SessionStartedAt string `json:"sessionStartedAt,omitempty"`
 	LastProgressAt   string `json:"lastProgressAt,omitempty"`
-	SessionExpiresAt string `json:"sessionExpiresAt,omitempty"`
+	WordExpiresAt    string `json:"wordExpiresAt,omitempty"`
 }
 
 type OverviewResponse struct {

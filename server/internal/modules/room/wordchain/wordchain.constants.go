@@ -9,14 +9,14 @@ const (
 	NewWordMaxAttempts      = 100000
 	StartWordMaxAttempts    = 10
 	ContinuationConcurrency = 10
-	SessionRetryDelay       = 30 * time.Second
+	BotWordRetryDelay       = 30 * time.Second
 	MoveMaxAttempts         = 3
 	WordExistsCacheTTL      = 24 * time.Hour
-	SessionIdleTimeout      = time.Hour
+	BotWordTimeout          = 12 * time.Hour
 	LeaderboardLimit        = 10
 	MessagePageSize         = 50
 	MessagePageMax          = 100
-	MaxSessionMessages      = 5000
+	MaxStoredMessages       = 5000
 	BackgroundTimeout       = 30 * time.Second
 
 	LookupURL             = "https://dict.minhqnd.com/api/v1/lookup"

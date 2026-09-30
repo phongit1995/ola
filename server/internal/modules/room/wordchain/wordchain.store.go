@@ -42,10 +42,9 @@ func (s *Store) LoadState(ctx context.Context) (GameState, error) {
 }
 
 type Mutation struct {
-	State         *GameState
-	ResetMessages bool
-	ScoreUserID   string
-	Messages      []Message
+	State       *GameState
+	ScoreUserID string
+	Messages    []Message
 }
 
 func (s *Store) Apply(ctx context.Context, m *Mutation) (int64, error) {
@@ -89,9 +88,6 @@ func (s *Store) Apply(ctx context.Context, m *Mutation) (int64, error) {
 		if stateData != nil {
 			pipe.Set(ctx, CacheKeyState, stateData, 0)
 		}
-		if m.ResetMessages {
-			pipe.Del(ctx, CacheKeyMsgIndex, CacheKeyMsgData)
-		}
 		if m.ScoreUserID != "" {
 			points = pipe.ZIncrBy(ctx, CacheKeyPoints, 1, m.ScoreUserID)
 		}
@@ -115,7 +111,7 @@ func (s *Store) TrimMessages(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	overflow := size - MaxSessionMessages
+	overflow := size - MaxStoredMessages
 	if overflow <= 0 {
 		return nil
 	}

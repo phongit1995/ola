@@ -21,6 +21,7 @@ type GameState struct {
 	Revision         int64          `json:"revision"`
 	Turn             int64          `json:"turn"`
 	WrongCounts      map[string]int `json:"wrongCounts,omitempty"`
+	BotMessageID     string         `json:"botMessageId,omitempty"`
 }
 
 func (s GameState) RemainingGuesses(userID string) int {
@@ -49,12 +50,29 @@ func (s GameState) Active() bool {
 	return s.SessionID != "" && s.Word != ""
 }
 
+func (s GameState) HasPlayerWord() bool {
+	return len(s.History) > 1
+}
+
+func (s GameState) CanExpire() bool {
+	return s.Active() && !s.HasPlayerWord()
+}
+
 func (s GameState) ExpiresAt() time.Time {
-	return s.LastProgressAt.Add(SessionIdleTimeout)
+	return s.LastProgressAt.Add(BotWordTimeout)
 }
 
 func (s GameState) Expired(now time.Time) bool {
-	return !now.Before(s.ExpiresAt())
+	return s.CanExpire() && !now.Before(s.ExpiresAt())
+}
+
+func (s GameState) withBotWord(word string, now time.Time) GameState {
+	s.Word = word
+	s.History = []string{word}
+	s.Turn++
+	s.WrongCounts = nil
+	s.LastProgressAt = now
+	return s
 }
 
 type WordOracle interface {

@@ -51,9 +51,9 @@ Khi lỗi thì `success = false`, câu báo lỗi (tiếng Việt) nằm ở `er
 | `type` | `senderType` | Khi nào |
 |---|---|---|
 | `move` | `user` | Mỗi lần gửi từ, cả đúng lẫn sai |
-| `session_started` | `bot` | Tin đầu tiên của mỗi phiên |
+| `session_started` | `bot` | Tin đầu tiên của phiên, đưa ra từ đầu tiên |
 | `win` | `bot` | Có người thắng ván. Tin `move` thắng là tin ngay trước nó (`seq` nhỏ hơn 1) |
-| `game_started` | `bot` | Ngay sau `win`, báo từ mở ván mới |
+| `game_started` | `bot` | Ngay sau `win`, báo từ mở ván mới. Cũng dùng khi từ của bot 12 giờ không ai nối: server ghi đè tin bot đã đưa ra từ cũ, **giữ nguyên `id`**, đổi `word` sang từ mới và cho `seq` mới (xuống cuối danh sách) |
 | `wrong_answer` | `bot` | Ngay sau một tin `move` sai (`seq` nhỏ hơn 1). Có `code` (lý do), `requiredSyllable`, `remainingGuesses` (số lượt còn lại của người vừa sai) và `word` (từ hiện tại). Client hiện dạng reply, trích tin sai ngay trước nó |
 
 Server không gửi id, tên hay avatar của bot. Client tự hiển thị tin bot khi `senderType = bot`.
@@ -79,19 +79,18 @@ Server không gửi id, tên hay avatar của bot. Client tự hiển thị tin 
   "requiredSyllable": "trời",
   "historyCount": 5,
   "sessionStartedAt": "2026-09-29T08:00:00Z",
-  "lastProgressAt": "2026-09-29T09:36:21Z",
-  "sessionExpiresAt": "2026-09-29T10:36:21Z"
+  "lastProgressAt": "2026-09-29T09:36:21Z"
 }
 ```
 
-- `revision` tăng mỗi lần state đổi, và tiếp tục tăng qua các phiên.
-- `sessionExpiresAt = lastProgressAt + 1 giờ`. Client có thể hiện đếm ngược.
+- `revision` tăng mỗi lần state đổi.
+- `wordExpiresAt` chỉ có khi từ hiện tại do bot đưa ra: `lastProgressAt + 12 giờ`, tới lúc đó chưa ai nối thì bot thay từ. Từ do người chơi nối không có field này vì không hết hạn.
 
 ## 2. REST
 
 ### `GET /rooms/word-chain`
 
-Lấy state phiên hiện tại và điểm của mình. Nếu chưa có phiên hoặc phiên đã hết hạn thì server tạo phiên mới luôn.
+Lấy state phiên hiện tại và điểm của mình. Nếu chưa có phiên thì server tạo luôn. Nếu từ của bot đã quá 12 giờ chưa ai nối thì server thay từ trước khi trả.
 
 ```json
 { "state": { "…": "State" }, "points": 12, "remainingGuesses": 3 }
@@ -110,7 +109,7 @@ Tin nhắn của phiên hiện tại, **mới nhất trước**.
 { "items": [ "Message…" ], "hasMore": true, "nextBefore": "0b7c…" }
 ```
 
-Nếu `before` trỏ tới tin đã bị xoá (ví dụ vì đã sang phiên mới) thì trả `items: []`.
+Nếu `before` trỏ tới tin đã bị xoá (tin bot bị thay, hoặc tin cũ quá giới hạn 5000) thì trả `items: []`.
 
 ### `POST /rooms/word-chain/moves`
 
@@ -222,14 +221,15 @@ socket.on('message', ({ type, data }) => { … })
 - Người gửi cũng nhận lại event cho chính tin của mình.
 - Khi thắng ván, client nhận lần lượt 3 tin (`move`, `win`, `game_started`) rồi 1 state.
 - Khi sai, client nhận 2 tin (`move`, `wrong_answer`) rồi 1 state (revision tăng vì số lượt sai thay đổi, từ hiện tại giữ nguyên).
-- Khi sang phiên mới, client nhận state có `sessionId` mới và tin `session_started`.
+- Khi từ của bot hết hạn, client nhận 1 state (`turn` tăng, từ mới) và 1 tin `game_started` trùng `id` với tin bot cũ. Gộp theo `id` là tin cũ tự được thay.
+- Chỉ khi chưa có state nào server mới tạo phiên, client nhận state có `sessionId` mới và tin `session_started`.
 
 ## 4. Quy tắc phía client
 
 Event có thể tới **đảo thứ tự**, và có thể trùng với dữ liệu vừa nhận từ REST. Client cần:
 
 1. **Tin nhắn**
-   - Bỏ tin trùng theo `id`.
+   - Gộp tin theo `id`: tin tới sau thay tin cùng `id` đang có (kể cả khi `seq` đổi).
    - Chèn và sắp danh sách theo `seq`.
    - Bỏ tin có `sessionId` khác phiên đang hiển thị.
 2. **State**

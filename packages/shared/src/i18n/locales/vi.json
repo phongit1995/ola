@@ -825,8 +825,7 @@
     "rule3": "Không dùng lại từ đã có trong ván.",
     "rule4": "Từ phải có trong từ điển tiếng Việt.",
     "rule5": "Mỗi từ đúng được +1 điểm. Nối tới khi không còn từ nào để nối tiếp là thắng ván.",
-    "rule6": "1 giờ không ai nối đúng thì bắt đầu phiên mới, tin nhắn cũ sẽ được xoá.",
-    "rule7": "Mỗi người có 3 lượt đoán cho mỗi từ. Sai hết 3 lượt thì phải chờ người khác nối đúng mới được đoán tiếp."
+    "rule6": "Mỗi người có 3 lượt đoán cho mỗi từ. Sai hết 3 lượt thì phải chờ người khác nối đúng mới được đoán tiếp."
   },
   "me": {
     "tabFeed": "Bảng tin",

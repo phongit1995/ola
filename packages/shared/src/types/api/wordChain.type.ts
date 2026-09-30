@@ -47,7 +47,7 @@ export interface WordChainState {
   historyCount: number;
   sessionStartedAt?: string;
   lastProgressAt?: string;
-  sessionExpiresAt?: string;
+  wordExpiresAt?: string;
 }
 
 export interface WordChainOverview {
