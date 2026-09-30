@@ -11,6 +11,8 @@ import {
   wordChainWrongReason,
 } from '@lib';
 import type { WordChainFeedMessage, WordChainMessage } from '@app-types';
+import { WordChainStatusIcon } from './WordChainStatusIcon';
+import { resolveWordChainStatus } from './wordChainStatus';
 
 interface WordChainMessageRowProps {
   item: WordChainFeedMessage;
@@ -45,7 +47,7 @@ function BotReply({
   return (
     <div className="flex w-full max-w-[90%] flex-col gap-1 self-start">
       {replyTo != null && (
-        <span className="ml-10 flex min-w-0 items-center gap-1 text-xs text-black/45">
+        <span className="ml-12 flex min-w-0 items-center gap-1 text-xs text-black/45">
           <span aria-hidden="true">↳</span>
           <span className="shrink-0 font-semibold text-black/60">
             @{replyTo.senderName}
@@ -54,7 +56,7 @@ function BotReply({
         </span>
       )}
       <div className="flex items-start gap-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center">
           <img
             src={wordChainBotIcon}
             alt=""
@@ -127,7 +129,11 @@ function BotMessage({
     return (
       <BotReply replyTo={replyTo} accent="border-ola-primary" time={time}>
         <strong className="text-black/87">
-          🏆{' '}
+          <WordChainStatusIcon
+            status="win"
+            className="mr-1 inline-block h-6 w-6 align-middle"
+            decorative
+          />
           {winner != null && winner !== ''
             ? t('wordChain.winTitle', { name: winner })
             : t('wordChain.winTitleUnknown')}
@@ -147,11 +153,14 @@ function MoveBubble({
   message: WordChainMessage;
   isOwn: boolean;
 }) {
+  const status = resolveWordChainStatus(message);
+  const hasReaction = status != null || Boolean(message.reaction);
+
   return (
     <div
       className={`flex w-full flex-col gap-0.5 ${
         isOwn ? 'items-end' : 'items-start'
-      }`}
+      } ${hasReaction ? 'pb-3' : ''}`}
     >
       <span
         className={`flex max-w-[80%] items-center gap-1.5 text-sm font-semibold text-black/72 ${
@@ -178,13 +187,21 @@ function MoveBubble({
           >
             {message.content}
           </div>
-          {message.reaction != null && message.reaction !== '' && (
+          {hasReaction && (
             <span
-              className={`absolute -bottom-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)] ${
+              className={`absolute -bottom-3 flex h-7 min-w-7 items-center justify-center ${
                 isOwn ? '-left-2' : '-right-2'
+              } ${
+                status == null
+                  ? 'rounded-full bg-white px-1 text-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)]'
+                  : ''
               }`}
             >
-              {message.reaction}
+              {status != null ? (
+                <WordChainStatusIcon status={status} />
+              ) : (
+                message.reaction
+              )}
             </span>
           )}
         </div>
@@ -193,7 +210,10 @@ function MoveBubble({
   );
 }
 
-function WordChainMessageRowComponent({ item, isOwn }: WordChainMessageRowProps) {
+function WordChainMessageRowComponent({
+  item,
+  isOwn,
+}: WordChainMessageRowProps) {
   if (item.message.senderType === WORD_CHAIN_SENDER_TYPE.bot) {
     return <BotMessage message={item.message} replyTo={item.replyTo} />;
   }

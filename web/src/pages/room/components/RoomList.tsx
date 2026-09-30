@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import autoJoinIcon from '@/assets/icons/room/ic_action_auto_join_room.png';
-import wordChainRoomIcon from '@/assets/icons/word-chain/room-02.png';
+import { WordChainRoomIcon } from '../word-chain/components/WordChainRoomIcon';
 import type { RoomListItem } from '../types';
 import { RoomRow } from './RoomRow';
 
@@ -28,11 +28,13 @@ function SpecialRow({
   title,
   subtitle,
   onClick,
+  bareIcon = false,
 }: {
   icon: ReactNode;
   title: string;
   subtitle: string;
   onClick: () => void;
+  bareIcon?: boolean;
 }) {
   return (
     <li>
@@ -41,7 +43,11 @@ function SpecialRow({
         onClick={onClick}
         className="flex w-full items-center gap-2 border-b border-black/12 bg-white/80 px-4 py-3 text-left"
       >
-        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-ola-primary-light text-3xl">
+        <span
+          className={`flex h-16 w-16 shrink-0 items-center justify-center text-3xl ${
+            bareIcon ? '' : 'rounded bg-ola-primary-light'
+          }`}
+        >
           {icon}
         </span>
         <span className="min-w-0 flex-1 pl-2">
@@ -110,13 +116,8 @@ export function RoomList({
         />
       )}
       <SpecialRow
-        icon={
-          <img
-            src={wordChainRoomIcon}
-            alt=""
-            className="h-14 w-14 object-contain"
-          />
-        }
+        icon={<WordChainRoomIcon className="h-16 w-16" />}
+        bareIcon
         title={t('wordChain.entryTitle')}
         subtitle={t('wordChain.entryDesc')}
         onClick={onWordChain}

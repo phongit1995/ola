@@ -4,13 +4,13 @@ import { DateSeparator, FullScreenOverlay, ScreenHeader } from '@components';
 import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
 import { BUBBLE_WALLPAPER, buildWordChainFeed } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-import wordChainRoomIcon from '@/assets/icons/word-chain/room-02.png';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import {
   remainingGuesses,
   sessionMessages,
 } from '@ola/shared/stores/word-chain/wordChainHelpers';
 import { WordChainMessageRow } from './WordChainMessageRow';
+import { WordChainRoomIcon } from './WordChainRoomIcon';
 import { WordChainComposer } from './WordChainComposer';
 import { WordChainLeaderboardDialog } from './WordChainLeaderboardDialog';
 import { WordChainLookupDialog } from './WordChainLookupDialog';
@@ -114,9 +114,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
       </ScreenHeader>
 
       <div className="flex shrink-0 items-center gap-3 border-b border-black/12 bg-white px-4 py-2">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-ola-primary-light">
-          <img src={wordChainRoomIcon} alt="" className="h-10 w-10 object-contain" />
-        </span>
+        <WordChainRoomIcon className="h-10 w-10" />
         <span className="min-w-0 flex-1">
           <span className="block text-xs text-black/45">
             {t('wordChain.currentWord')}
@@ -150,9 +148,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
         )}
         {feed.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded bg-ola-primary-light">
-              <img src={wordChainRoomIcon} alt="" className="h-14 w-14 object-contain" />
-            </span>
+            <WordChainRoomIcon className="h-16 w-16" />
             <p className="text-sm text-black/45">{t('wordChain.empty')}</p>
           </div>
         )}
