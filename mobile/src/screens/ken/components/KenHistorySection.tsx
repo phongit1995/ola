@@ -30,6 +30,10 @@ const KEN_TX_META = {
   PEN_REFUND: { icon: '↩️', labelKey: 'ken.historyScreen.types.PEN_REFUND' },
   KEN_CHEST: { icon: '🧰', labelKey: 'ken.historyScreen.types.KEN_CHEST' },
   CLAN_CREATE: { icon: '🛡️', labelKey: 'ken.historyScreen.types.CLAN_CREATE' },
+  WORD_CHAIN_HINT: {
+    icon: '💡',
+    labelKey: 'ken.historyScreen.types.WORD_CHAIN_HINT',
+  },
 } as const satisfies Record<KenTxType, { icon: string; labelKey: string }>;
 
 const KEN_TX_META_FALLBACK = { icon: '🪙', labelKey: 'ken.historyScreen.types.UNKNOWN' } as const;

@@ -273,8 +273,9 @@ func TestConnectedWordsStayAsOneList(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	userID := uuid.New()
+	players := []uuid.UUID{uuid.New(), uuid.New()}
 	for i := range 3 {
+		userID := players[i%len(players)]
 		word := fmt.Sprintf("%s nối%d", lastWord(state.Word), i)
 		res, err := processMove(state, userID.String(), word, acceptAllOracle{})
 		if err != nil || res.Code != CodeOK {

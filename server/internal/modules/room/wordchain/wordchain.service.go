@@ -23,12 +23,13 @@ type Service struct {
 	cache     *services.CacheService
 	userCache *userModule.CacheService
 	publisher EventPublisher
+	wallet    HintWallet
 	logger    *zap.SugaredLogger
 	timerMu   sync.Mutex
 	timer     *time.Timer
 }
 
-func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *services.CacheService, userCache *userModule.CacheService, publisher EventPublisher, logger *zap.SugaredLogger) *Service {
+func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *services.CacheService, userCache *userModule.CacheService, publisher EventPublisher, wallet *Wallet, logger *zap.SugaredLogger) *Service {
 	s := &Service{
 		dict:      dict,
 		verifier:  verifier,
@@ -36,6 +37,7 @@ func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *servi
 		cache:     cache,
 		userCache: userCache,
 		publisher: publisher,
+		wallet:    wallet,
 		logger:    logger.Named("[word_chain_service]"),
 	}
 	utils.SafeGo(s.logger, s.resumeExpiryTimer)
@@ -128,6 +130,9 @@ func (s *Service) HandleMove(ctx context.Context, userID uuid.UUID, req *MoveReq
 		res, err := processMove(state, userID.String(), req.Content, oracle)
 		if errors.Is(err, errNoGuessesLeft) {
 			return nil, ErrNoGuessesLeft
+		}
+		if errors.Is(err, errOwnWord) {
+			return nil, ErrWaitTurn
 		}
 		if err != nil {
 			s.logger.Warnw("Word chain dictionary verification failed", "error", err)
@@ -286,6 +291,7 @@ func (s *Service) Overview(ctx context.Context, userID uuid.UUID) (*OverviewResp
 		State:            toStateView(state),
 		Points:           points,
 		RemainingGuesses: state.RemainingGuesses(userID.String()),
+		HintPrice:        HintPriceKen,
 	}, nil
 }
 
@@ -456,6 +462,7 @@ func toStateView(state GameState) *StateResponse {
 		GuessLimit:   MaxWrongGuesses,
 		Word:         state.Word,
 		HistoryCount: len(state.History),
+		WordOwnerID:  state.WordOwnerID,
 	}
 	if state.Word != "" {
 		view.RequiredSyllable = lastWord(state.Word)

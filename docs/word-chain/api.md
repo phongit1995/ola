@@ -79,12 +79,14 @@ Server không gửi id, tên hay avatar của bot. Client tự hiển thị tin 
   "requiredSyllable": "trời",
   "historyCount": 5,
   "sessionStartedAt": "2026-09-29T08:00:00Z",
-  "lastProgressAt": "2026-09-29T09:36:21Z"
+  "lastProgressAt": "2026-09-29T09:36:21Z",
+  "wordOwnerId": "a1b2…"
 }
 ```
 
 - `revision` tăng mỗi lần state đổi.
 - `wordExpiresAt` chỉ có khi từ hiện tại do bot đưa ra: `lastProgressAt + 12 giờ`, tới lúc đó chưa ai nối thì bot thay từ. Từ do người chơi nối không có field này vì không hết hạn.
+- `wordOwnerId` là id người đã nối ra từ hiện tại, không có khi từ do bot đưa ra. Nếu bằng id của mình thì client khoá ô nhập ("chờ người khác nối tiếp"), vì server sẽ trả `403 WORD_CHAIN_WAIT_TURN`.
 
 ## 2. REST
 
@@ -93,8 +95,10 @@ Server không gửi id, tên hay avatar của bot. Client tự hiển thị tin 
 Lấy state phiên hiện tại và điểm của mình. Nếu chưa có phiên thì server tạo luôn. Nếu từ của bot đã quá 12 giờ chưa ai nối thì server thay từ trước khi trả.
 
 ```json
-{ "state": { "…": "State" }, "points": 12, "remainingGuesses": 3 }
+{ "state": { "…": "State" }, "points": 12, "remainingGuesses": 3, "hintPrice": 500 }
 ```
+
+`hintPrice` là giá một lần gợi ý (KEN), client dùng để hiện trên bảng gợi ý.
 
 ### `GET /rooms/word-chain/messages?limit=50&before=<messageId>`
 
@@ -146,7 +150,38 @@ Lỗi:
 | 409 | | Server đang bận: chờ lock quá 10 giây, hoặc có người nối trước liên tục 3 lần | Toast "Phòng nối từ đang xử lý, vui lòng thử lại." |
 | 429 | | Vượt rate limit | Toast, cho gửi lại sau |
 | 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã sai đủ 3 lần với từ hiện tại | Toast, khoá ô nhập tới khi `turn` đổi. Server không lưu gì |
+| 403 | `WORD_CHAIN_WAIT_TURN` | Từ hiện tại do chính người gửi nối ra (`wordOwnerId`) | Toast, khoá ô nhập tới khi có người khác nối. Không trừ lượt, server không lưu gì |
 | 503 | `WORD_CHAIN_VERIFY_FAILED` | Không gọi được API từ điển | Toast, giữ nội dung trong ô nhập để gửi lại. Server không lưu gì |
+
+### `POST /rooms/word-chain/hints`
+
+Mua gợi ý cho từ hiện tại. Không có body. Server chỉ trừ KEN khi tìm được ít nhất 1 từ.
+
+```json
+{
+  "sessionId": "5f1e…",
+  "turn": 5,
+  "word": "quãng đường",
+  "hints": ["đường phố", "đường xá", "đường đi"],
+  "price": 500,
+  "kenBalance": 12000
+}
+```
+
+- `hints`: tối đa 5 từ, đều bắt đầu bằng âm tiết cuối của `word`, chưa dùng trong ván, có trong từ điển.
+- `kenBalance`: số dư sau khi trừ, client ghi vào `user.ken`. Server cũng bắn `KEN_UPDATED` `{ "ken": kenBalance }` tới mọi socket của user.
+- Gợi ý chỉ đúng với `sessionId` + `turn` này. Khi state đổi `turn` thì client coi gợi ý là cũ.
+
+Lỗi:
+
+| HTTP | `code` | Khi nào |
+|---|---|---|
+| 400 | `WORD_CHAIN_INSUFFICIENT_KEN` | Không đủ KEN |
+| 403 | `WORD_CHAIN_WAIT_TURN` | Từ hiện tại do chính người gửi nối ra |
+| 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã hết lượt đoán với từ hiện tại |
+| 409 | `WORD_CHAIN_NO_HINT` | Không tìm được gợi ý. Không trừ KEN |
+| 429 | | Vượt rate limit |
+| 503 | `WORD_CHAIN_VERIFY_FAILED` | API từ điển lỗi: `suggest` lỗi, hoặc `lookup` lỗi ở bất kỳ từ nào đang xét. Không trừ KEN |
 
 ### `GET /rooms/word-chain/leaderboard`
 

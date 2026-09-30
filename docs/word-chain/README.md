@@ -9,8 +9,8 @@ Code backend: `server/internal/modules/room/wordchain/`. Luật chơi lấy từ
 - Toàn hệ thống chỉ có **1 phòng nối từ**. Phòng không gắn với bảng `rooms`, không có `roomId`, không có danh sách phòng, không đếm số người.
 - Người chơi nối từ với nhau (PvP). **Bot chỉ làm trọng tài**: chấm từng từ, báo thắng, mở ván mới. Bot không tự nối từ.
 - User đã đăng nhập là chơi được, không cần join phòng qua ticket. Join socket chỉ để nhận realtime.
-- Mọi dữ liệu nằm ở **Redis**. Không có bảng, không có migration.
-- Chỉ có 2 tính năng phụ: **Tra từ** và **Bảng xếp hạng**.
+- Dữ liệu ván chơi nằm ở **Redis**. Không có bảng, không có migration. Riêng tiền **Gợi ý** trừ vào `users.ken` và ghi `ken_transactions` ở Postgres.
+- Tính năng phụ: **Tra từ**, **Bảng xếp hạng** và **Gợi ý** (mất KEN).
 
 ## 2. Luật chơi
 
@@ -33,7 +33,8 @@ Kết quả của từ hợp lệ:
   - Hết 3 lượt thì server chặn (`403 WORD_CHAIN_NO_GUESSES`), không lưu tin. Người đó phải chờ tới khi có người khác nối đúng.
   - Khi từ hiện tại đổi (có người nối đúng, thắng ván, hoặc bot thay từ vì 12 giờ không ai nối) thì mọi người có lại đủ 3 lượt.
   - Số lượt sai nằm trong state (`wrongCounts`, không trả ra client). Mỗi lần từ đổi, `turn` tăng 1.
-- Không có luật lượt. Một người được nối nhiều lần liên tiếp, giống bot gốc.
+- **Không được nối 2 lần liên tiếp.** State lưu `wordOwnerId` là người đã nối ra từ hiện tại. Người đó gửi gì cũng bị chặn (`403 WORD_CHAIN_WAIT_TURN`), không trừ lượt, không lưu tin, tới khi có người khác nối đúng.
+  - Từ do bot đưa ra (mở phiên, mở ván sau khi thắng, thay từ sau 12 giờ) không thuộc về ai, nên ai cũng nối được, kể cả người vừa thắng ván.
 - Một ván giữ tối đa 100 từ gần nhất để kiểm tra từ lặp.
 
 Chuẩn hoá trước khi chấm (`wordchain.normalize.go`):
@@ -41,6 +42,16 @@ Chuẩn hoá trước khi chấm (`wordchain.normalize.go`):
 - Đưa về NFC, chữ thường, bỏ khoảng trắng hai đầu.
 - Đổi kiểu bỏ dấu cũ sang kiểu mới ở cuối âm tiết: `oà → òa`, `uý → úy` (trừ sau `q`, ví dụ `quý` giữ nguyên).
 - Tin hiển thị giữ nguyên nội dung người gõ (`content`), từ đã chuẩn hoá nằm ở `word`.
+
+### Gợi ý (mất KEN)
+
+- Nút 💡 cạnh nút Gửi. Mỗi lần gợi ý tốn **500 KEN** (`HintPriceKen`), server trả tối đa **5 từ** (`HintMaxWords`) nối được vào từ hiện tại.
+- Từ gợi ý lấy từ từ điển local (từ còn nối tiếp được đứng trước) rồi tới `suggest`, bỏ từ đã dùng trong ván, và phải được API `lookup` chấp nhận, cùng tiêu chí với lúc chấm từ.
+- Server tìm gợi ý **trước**, có ít nhất 1 từ mới trừ KEN. Không tìm được thì trả `409 WORD_CHAIN_NO_HINT` và **không trừ tiền**. API từ điển lỗi thì trả `503` và cũng không trừ, kể cả khi chỉ lỗi `suggest` hoặc lỗi `lookup` ở một từ trong khi các từ khác vẫn tra được.
+- Người đang không được chơi thì không mua được gợi ý: từ hiện tại do chính mình nối (`403 WORD_CHAIN_WAIT_TURN`) hoặc đã hết lượt đoán (`403 WORD_CHAIN_NO_GUESSES`). Không đủ KEN thì trả `400 WORD_CHAIN_INSUFFICIENT_KEN`.
+- Trừ KEN trong một transaction Postgres có khoá dòng `users` (`FOR UPDATE`), ghi `ken_transactions` loại `WORD_CHAIN_HINT` (hiện trong lịch sử KEN của user với tên "Gợi ý nối từ"), rồi xoá user cache và bắn `KEN_UPDATED` cho mọi tab/thiết bị của user.
+- Gợi ý chỉ là danh sách từ. Gửi từ gợi ý vẫn đi qua `POST /moves` như từ tự gõ, được chấm và cộng điểm bình thường. Nếu trong lúc đó có người khác nối trước thì gợi ý không còn khớp; client báo gợi ý đã cũ và khoá nút gửi.
+- Tuỳ chọn **Tự động gửi** lưu ở máy người dùng (web: localStorage, mobile: MMKV, key `ola.word-chain.prefs`). Bật thì mua xong client gửi luôn từ đầu tiên; tắt thì hiện danh sách gợi ý, mỗi từ có nút Gửi.
 
 ## 3. Vòng đời phiên và ván
 
@@ -112,6 +123,7 @@ Nếu API lỗi, hoặc không chọn được từ mở ván còn nối đượ
 | Kết thúc | Thắng thì mở ván mới | Giống bot gốc, thêm: từ của bot sau 12 giờ không ai nối thì bot thay từ khác (ghi đè tin bot cũ, giữ tin người chơi) |
 | Thống kê | Chuỗi, kỷ lục, số lần thắng | Điểm = số từ hợp lệ |
 | Luật sai 3 lần reset chuỗi | Có | Không |
+| Nối 2 lần liên tiếp | Được | Không được, phải chờ người khác nối |
 | Xin ván mới (vote 15 giây), gợi ý, góp ý, thêm từ | Có | Không |
 | Chơi với bot, DM | Có | Không |
 | Phát hiện dán text / chống copy | Không có | Không có |
@@ -126,7 +138,7 @@ Về text dán vào: cả bot gốc và Ola đều không phân biệt được 
 
 | Key | Kiểu | Nội dung |
 |---|---|---|
-| `WORD_CHAIN:STATE` | STRING (JSON) | Phiên hiện tại: `sessionId`, `word`, `history`, `sessionStartedAt`, `lastProgressAt`, `revision`, `turn`, `wrongCounts`, `botMessageId` |
+| `WORD_CHAIN:STATE` | STRING (JSON) | Phiên hiện tại: `sessionId`, `word`, `history`, `sessionStartedAt`, `lastProgressAt`, `revision`, `turn`, `wrongCounts`, `botMessageId`, `wordOwnerId` |
 | `WORD_CHAIN:STATE_REV` | STRING (INCR) | Bộ đếm `revision` của state, tăng mỗi lần state đổi |
 | `WORD_CHAIN:MSG` | HASH | `messageId → JSON tin nhắn`. Chỉ lưu `senderId`, không lưu tên, avatar, VIP |
 | `WORD_CHAIN:MSG_INDEX` | ZSET | `messageId`, score = `seq` |
@@ -165,6 +177,8 @@ API service ──Kafka CHAT.WORD_CHAIN.EVENT──▶ Chat service ──Socket
 | `wordchain.store.go` | Đọc và ghi Redis, transaction `Apply` |
 | `wordchain.messages.go` | Nội dung tin bot |
 | `wordchain.lookup.go` | Tra từ và cooldown |
+| `wordchain.hint.go` | Gợi ý: chọn từ, kiểm tra điều kiện, gọi ví trừ KEN |
+| `wordchain.wallet.go` | Trừ KEN cho gợi ý trong transaction Postgres, ghi `ken_transactions` |
 | `wordchain.controller.go`, `wordchain.router.go` | REST |
 
 Ngoài folder `wordchain`, tính năng này còn đụng tới:

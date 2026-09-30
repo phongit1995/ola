@@ -48,12 +48,23 @@ export interface WordChainState {
   sessionStartedAt?: string;
   lastProgressAt?: string;
   wordExpiresAt?: string;
+  wordOwnerId?: string;
 }
 
 export interface WordChainOverview {
   state: WordChainState;
   points: number;
   remainingGuesses: number;
+  hintPrice: number;
+}
+
+export interface WordChainHint {
+  sessionId: string;
+  turn: number;
+  word: string;
+  hints: string[];
+  price: number;
+  kenBalance: number;
 }
 
 export interface WordChainMessagesResult {

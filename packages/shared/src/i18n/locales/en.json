@@ -800,6 +800,22 @@
     "noGuesses": "You are out of guesses for this word, wait for someone else to chain it.",
     "guessesBadge": "{{value}}/{{limit}} guesses",
     "inputHintLocked": "Out of guesses, wait for someone else…",
+    "waitTurn": "You just chained a word, wait for someone else to play next.",
+    "inputHintWaitTurn": "Wait for someone else to play…",
+    "hint": "Hint",
+    "hintTitle": "Word hints",
+    "hintIntro": "The referee will suggest a few words that start with “{{syllable}}”. Each hint costs <ken>{{price}}</ken>.",
+    "hintBalance": "Your balance: <ken>{{value}}</ken>",
+    "hintAutoSend": "Send automatically",
+    "hintAutoSendHelp": "Send the first suggested word right after buying the hint.",
+    "hintBuy": "Use hint · <ken>{{price}}</ken>",
+    "hintListTitle": "Hints for “{{syllable}}”",
+    "hintListHelp": "<ken>{{price}}</ken> charged. Pick a word to send.",
+    "hintSend": "Send",
+    "hintStale": "The current word has changed, these hints no longer apply.",
+    "hintKenShort": "You don't have enough KEN for a hint.",
+    "hintNone": "No hint found for this word, you were not charged.",
+    "hintError": "Could not get a hint right now",
     "sendError": "Could not send the word",
     "verifyFailed": "Could not check the word right now, please try again",
     "busy": "The room is busy, please try again",
@@ -825,7 +841,8 @@
     "rule3": "Words already used in this game cannot be played again.",
     "rule4": "The word must be in the Vietnamese dictionary.",
     "rule5": "Each valid word earns 1 point. Play a word nothing can follow to win the game.",
-    "rule6": "Everyone gets 3 guesses per word. After 3 wrong guesses you must wait until someone else chains a valid word."
+    "rule6": "Everyone gets 3 guesses per word. After 3 wrong guesses you must wait until someone else chains a valid word.",
+    "rule7": "No two words in a row. After you chain a word, someone else must play before you can play again."
   },
   "me": {
     "tabFeed": "Newsfeed",
@@ -1639,6 +1656,7 @@
         "PEN_REFUND": "Pen refund",
         "KEN_CHEST": "KEN chest",
         "CLAN_CREATE": "Clan creation",
+        "WORD_CHAIN_HINT": "Word chain hint",
         "UNKNOWN": "KEN transaction"
       }
     },

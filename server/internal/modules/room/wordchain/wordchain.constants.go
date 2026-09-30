@@ -66,4 +66,10 @@ const (
 	ErrorCodeVerifyFailed = "WORD_CHAIN_VERIFY_FAILED"
 	ErrorCodeCooldown     = "WORD_CHAIN_COOLDOWN"
 	ErrorCodeNoGuesses    = "WORD_CHAIN_NO_GUESSES"
+	ErrorCodeWaitTurn     = "WORD_CHAIN_WAIT_TURN"
+	ErrorCodeNoHint       = "WORD_CHAIN_NO_HINT"
+	ErrorCodeKenShort     = "WORD_CHAIN_INSUFFICIENT_KEN"
+
+	HintPriceKen = 500
+	HintMaxWords = 5
 )

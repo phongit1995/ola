@@ -75,12 +75,23 @@ type StateResponse struct {
 	SessionStartedAt string `json:"sessionStartedAt,omitempty"`
 	LastProgressAt   string `json:"lastProgressAt,omitempty"`
 	WordExpiresAt    string `json:"wordExpiresAt,omitempty"`
+	WordOwnerID      string `json:"wordOwnerId,omitempty"`
 }
 
 type OverviewResponse struct {
 	State            *StateResponse `json:"state"`
 	Points           int64          `json:"points"`
 	RemainingGuesses int            `json:"remainingGuesses"`
+	HintPrice        int            `json:"hintPrice"`
+}
+
+type HintResponse struct {
+	SessionID  string   `json:"sessionId"`
+	Turn       int64    `json:"turn"`
+	Word       string   `json:"word"`
+	Hints      []string `json:"hints"`
+	Price      int      `json:"price"`
+	KenBalance int      `json:"kenBalance"`
 }
 
 type LeaderboardEntry struct {

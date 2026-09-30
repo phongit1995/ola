@@ -28,6 +28,7 @@ export const API_PATH = {
     overview: '/rooms/word-chain',
     messages: '/rooms/word-chain/messages',
     moves: '/rooms/word-chain/moves',
+    hints: '/rooms/word-chain/hints',
     leaderboard: '/rooms/word-chain/leaderboard',
     lookup: '/rooms/word-chain/lookup',
   },

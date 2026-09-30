@@ -75,9 +75,28 @@ export function wordChainMoveErrorText(t: TFunction, error: unknown): string {
   const apiError = toApiError(error);
   if (apiError.code === WORD_CHAIN_ERROR_CODE.verifyFailed) return t('wordChain.verifyFailed');
   if (apiError.code === WORD_CHAIN_ERROR_CODE.noGuesses) return t('wordChain.noGuesses');
+  if (apiError.code === WORD_CHAIN_ERROR_CODE.waitTurn) return t('wordChain.waitTurn');
   if (apiError.status === HTTP_CONFLICT) return t('wordChain.busy');
   if (apiError.status === HTTP_TOO_MANY_REQUESTS) return t('wordChain.tooFast');
   return t('wordChain.sendError');
+}
+
+export function wordChainHintErrorText(t: TFunction, error: unknown): string {
+  const apiError = toApiError(error);
+  switch (apiError.code) {
+    case WORD_CHAIN_ERROR_CODE.kenShort:
+      return t('wordChain.hintKenShort');
+    case WORD_CHAIN_ERROR_CODE.noHint:
+      return t('wordChain.hintNone');
+    case WORD_CHAIN_ERROR_CODE.verifyFailed:
+      return t('wordChain.verifyFailed');
+    case WORD_CHAIN_ERROR_CODE.noGuesses:
+      return t('wordChain.noGuesses');
+    case WORD_CHAIN_ERROR_CODE.waitTurn:
+      return t('wordChain.waitTurn');
+  }
+  if (apiError.status === HTTP_TOO_MANY_REQUESTS) return t('wordChain.tooFast');
+  return t('wordChain.hintError');
 }
 
 export function wordChainLookupErrorText(t: TFunction, error: unknown): string {

@@ -1,6 +1,7 @@
 import { http } from '../api/http';
 import { API_PATH } from '../config/api';
 import type {
+  WordChainHint,
   WordChainLeaderboard,
   WordChainLookup,
   WordChainMessagesParams,
@@ -21,6 +22,10 @@ export class WordChainService {
 
   static move(payload: WordChainMoveRequest): Promise<WordChainMoveResult> {
     return http.post<WordChainMoveResult>(API_PATH.wordChain.moves, payload);
+  }
+
+  static hint(): Promise<WordChainHint> {
+    return http.post<WordChainHint>(API_PATH.wordChain.hints);
   }
 
   static leaderboard(): Promise<WordChainLeaderboard> {

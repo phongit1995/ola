@@ -20,6 +20,7 @@ func (r *Router) Setup(rooms *utils.AppGroup) {
 		wordChain.GET("", r.controller.Overview)
 		wordChain.GET("/messages", r.controller.Messages)
 		wordChain.POST("/moves", r.rateLimit.LimitPolicy(middleware.PolicyRoomMessage), r.controller.Move)
+		wordChain.POST("/hints", r.rateLimit.LimitPolicy(middleware.PolicyRoomMessage), r.controller.Hint)
 		wordChain.GET("/leaderboard", r.controller.Leaderboard)
 		wordChain.GET("/lookup", r.controller.Lookup)
 	}

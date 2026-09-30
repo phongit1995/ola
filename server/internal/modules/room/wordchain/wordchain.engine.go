@@ -10,6 +10,7 @@ import (
 var (
 	errNoActiveGame  = errors.New("word chain has no active game")
 	errNoGuessesLeft = errors.New("word chain player has no guesses left")
+	errOwnWord       = errors.New("word chain player must wait for someone else to chain their word")
 )
 
 type GameState struct {
@@ -22,6 +23,7 @@ type GameState struct {
 	Turn             int64          `json:"turn"`
 	WrongCounts      map[string]int `json:"wrongCounts,omitempty"`
 	BotMessageID     string         `json:"botMessageId,omitempty"`
+	WordOwnerID      string         `json:"wordOwnerId,omitempty"`
 }
 
 func (s GameState) RemainingGuesses(userID string) int {
@@ -71,6 +73,7 @@ func (s GameState) withBotWord(word string, now time.Time) GameState {
 	s.History = []string{word}
 	s.Turn++
 	s.WrongCounts = nil
+	s.WordOwnerID = ""
 	s.LastProgressAt = now
 	return s
 }
@@ -105,6 +108,9 @@ func newSession(word string, now time.Time) GameState {
 func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveResult, error) {
 	if !state.Active() {
 		return MoveResult{}, errNoActiveGame
+	}
+	if state.WordOwnerID == userID {
+		return MoveResult{}, errOwnWord
 	}
 	if state.RemainingGuesses(userID) == 0 {
 		return MoveResult{}, errNoGuessesLeft
@@ -162,10 +168,12 @@ func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveRe
 		res.Code = CodeWin
 		next.Word = word
 		next.History = []string{word}
+		next.WordOwnerID = ""
 	} else {
 		res.Code = CodeOK
 		next.Word = normalized
 		next.History = append(append([]string{}, state.History...), normalized)
+		next.WordOwnerID = userID
 	}
 	if len(next.History) > MaxHistory {
 		next.History = next.History[len(next.History)-MaxHistory:]

@@ -170,6 +170,33 @@ launch:
 	return false, ctx.Err()
 }
 
+func (v *Verifier) ExistingWords(ctx context.Context, words []string, limit int) ([]string, error) {
+	found := make([]string, 0, limit)
+	for start := 0; start < len(words) && len(found) < limit; start += ContinuationConcurrency {
+		batch := words[start:min(start+ContinuationConcurrency, len(words))]
+		exists := make([]bool, len(batch))
+		errs := make([]error, len(batch))
+		var wg sync.WaitGroup
+		for i, word := range batch {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				exists[i], errs[i] = v.Exists(ctx, word)
+			}()
+		}
+		wg.Wait()
+		if err := errors.Join(errs...); err != nil {
+			return nil, err
+		}
+		for i, word := range batch {
+			if exists[i] && len(found) < limit {
+				found = append(found, word)
+			}
+		}
+	}
+	return found, nil
+}
+
 func (v *Verifier) lookupExists(ctx context.Context, word string) (bool, error) {
 	result, err := v.Lookup(ctx, word)
 	if err != nil {

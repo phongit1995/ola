@@ -1,5 +1,6 @@
 import type { StoreApi } from 'zustand';
 import type {
+  WordChainHint,
   WordChainLeaderboard,
   WordChainLookup,
   WordChainMessage,
@@ -35,6 +36,7 @@ export interface WordChainStoreState {
   status: WordChainStatus;
   state: WordChainState | null;
   points: number;
+  hintPrice: number;
   guesses: WordChainGuesses | null;
   messages: WordChainMessage[];
   hasMore: boolean;
@@ -46,6 +48,7 @@ export interface WordChainStoreState {
   loadMoreMessages: () => Promise<void>;
   sendMove: (content: string) => Promise<WordChainMoveResult>;
   fetchLeaderboard: () => Promise<void>;
+  buyHint: () => Promise<WordChainHint>;
   lookup: (word: string) => Promise<WordChainLookup>;
   reset: () => void;
 }
@@ -56,6 +59,7 @@ export type WordChainStoreData = Pick<
   | 'status'
   | 'state'
   | 'points'
+  | 'hintPrice'
   | 'guesses'
   | 'messages'
   | 'hasMore'
@@ -63,6 +67,13 @@ export type WordChainStoreData = Pick<
   | 'leaderboard'
   | 'leaderboardLoading'
 >;
+
+export interface WordChainPrefsState {
+  hintAutoSend: boolean;
+  setHintAutoSend: (hintAutoSend: boolean) => void;
+}
+
+export type PersistedWordChainPrefs = Pick<WordChainPrefsState, 'hintAutoSend'>;
 
 export type WordChainSet = StoreApi<WordChainStoreState>['setState'];
 export type WordChainGet = StoreApi<WordChainStoreState>['getState'];

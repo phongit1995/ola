@@ -15,6 +15,7 @@ func Provider(c *dig.Container) error {
 		NewDictionary,
 		NewVerifier,
 		NewStore,
+		NewWallet,
 		provideEventPublisher,
 		NewService,
 		NewController,

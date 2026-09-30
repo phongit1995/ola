@@ -800,6 +800,22 @@
     "noGuesses": "Bạn đã hết lượt đoán cho từ này, chờ người khác nối đúng nhé.",
     "guessesBadge": "Còn {{value}}/{{limit}} lượt",
     "inputHintLocked": "Hết lượt đoán, chờ người khác nối đúng…",
+    "waitTurn": "Bạn vừa nối đúng, chờ người khác nối tiếp nhé.",
+    "inputHintWaitTurn": "Chờ người khác nối tiếp nhé…",
+    "hint": "Gợi ý",
+    "hintTitle": "Gợi ý từ",
+    "hintIntro": "Trọng tài sẽ đưa ra vài từ nối được với “{{syllable}}”. Mỗi lần gợi ý tốn <ken>{{price}}</ken>.",
+    "hintBalance": "Số dư của bạn: <ken>{{value}}</ken>",
+    "hintAutoSend": "Tự động gửi",
+    "hintAutoSendHelp": "Dùng gợi ý xong sẽ gửi luôn từ đầu tiên.",
+    "hintBuy": "Dùng gợi ý · <ken>{{price}}</ken>",
+    "hintListTitle": "Gợi ý cho “{{syllable}}”",
+    "hintListHelp": "Đã trừ <ken>{{price}}</ken>. Chọn một từ để gửi.",
+    "hintSend": "Gửi",
+    "hintStale": "Từ hiện tại đã đổi, các gợi ý này không còn dùng được.",
+    "hintKenShort": "Bạn không đủ KEN để dùng gợi ý.",
+    "hintNone": "Chưa tìm được gợi ý cho từ này, bạn chưa bị trừ KEN.",
+    "hintError": "Không lấy được gợi ý lúc này",
     "sendError": "Không gửi được từ",
     "verifyFailed": "Chưa kiểm tra được từ lúc này, thử lại sau nhé",
     "busy": "Phòng đang xử lý, thử lại nhé",
@@ -825,7 +841,8 @@
     "rule3": "Không dùng lại từ đã có trong ván.",
     "rule4": "Từ phải có trong từ điển tiếng Việt.",
     "rule5": "Mỗi từ đúng được +1 điểm. Nối tới khi không còn từ nào để nối tiếp là thắng ván.",
-    "rule6": "Mỗi người có 3 lượt đoán cho mỗi từ. Sai hết 3 lượt thì phải chờ người khác nối đúng mới được đoán tiếp."
+    "rule6": "Mỗi người có 3 lượt đoán cho mỗi từ. Sai hết 3 lượt thì phải chờ người khác nối đúng mới được đoán tiếp.",
+    "rule7": "Không được nối 2 lần liên tiếp. Nối đúng xong phải chờ người khác nối tiếp mới được chơi tiếp."
   },
   "me": {
     "tabFeed": "Bảng tin",
@@ -1639,6 +1656,7 @@
         "PEN_REFUND": "Hoàn Pen",
         "KEN_CHEST": "Rương KEN",
         "CLAN_CREATE": "Tạo Clan",
+        "WORD_CHAIN_HINT": "Gợi ý nối từ",
         "UNKNOWN": "Giao dịch KEN"
       }
     },

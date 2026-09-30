@@ -76,6 +76,25 @@ func (ctrl *Controller) Move(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// Hint godoc
+// @Summary      Buy hints for the current word (costs KEN, nothing is charged when no hint is found)
+// @Tags         word-chain
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.BaseResponse[HintResponse]
+// @Router       /rooms/word-chain/hints [post]
+func (ctrl *Controller) Hint(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Hint(c.Request.Context(), userID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // Leaderboard godoc
 // @Summary      Word chain leaderboard (top 10 by points, one point per valid word)
 // @Tags         word-chain

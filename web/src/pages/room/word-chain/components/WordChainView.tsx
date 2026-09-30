@@ -12,13 +12,14 @@ import {
 import { WordChainMessageRow } from './WordChainMessageRow';
 import { WordChainRoomIcon } from './WordChainRoomIcon';
 import { WordChainComposer } from './WordChainComposer';
+import { WordChainHintDialog } from './WordChainHintDialog';
 import { WordChainLeaderboardDialog } from './WordChainLeaderboardDialog';
 import { WordChainLookupDialog } from './WordChainLookupDialog';
 import { WordChainRulesDialog } from './WordChainRulesDialog';
 
 const LOAD_MORE_AT_TOP_PX = 80;
 
-type WordChainDialog = 'leaderboard' | 'lookup' | 'rules';
+type WordChainDialog = 'hint' | 'leaderboard' | 'lookup' | 'rules';
 
 interface WordChainViewProps {
   visible: boolean;
@@ -77,6 +78,13 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   );
   const feed = useMemo(() => buildWordChainFeed(messages), [messages]);
   const remaining = remainingGuesses(state, guesses);
+  const ownsCurrentWord =
+    currentUserId !== '' && state?.wordOwnerId === currentUserId;
+  const lockedHint = ownsCurrentWord
+    ? t('wordChain.inputHintWaitTurn')
+    : remaining === 0
+      ? t('wordChain.inputHintLocked')
+      : undefined;
   const { scrollRef, handleScroll, pin } = useStickyScroll({
     count: messages.length,
     lastId: messages.at(-1)?.id ?? null,
@@ -169,10 +177,18 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
 
       <WordChainComposer
         syllable={state?.requiredSyllable}
-        locked={remaining === 0}
+        lockedHint={lockedHint}
         onBeforeSend={pin}
         onSend={sendMove}
+        onHint={() => setDialog('hint')}
       />
+
+      {dialog === 'hint' && (
+        <WordChainHintDialog
+          onClose={() => setDialog(null)}
+          onSend={sendMove}
+        />
+      )}
 
       <WordChainLeaderboardDialog
         open={dialog === 'leaderboard'}

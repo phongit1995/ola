@@ -20,6 +20,7 @@ import type {
   WordChainStoreData,
   WordChainStoreState,
 } from '../../types/client/wordChain.type';
+import { useAuthStore } from '../auth/authStore';
 import { claimRealtimeRegistration } from '../realtimeRegistration.state';
 import { toRecord } from '../room/roomHelpers';
 import {
@@ -37,6 +38,7 @@ const initialWordChainState: WordChainStoreData = {
   status: 'connecting',
   state: null,
   points: 0,
+  hintPrice: 0,
   guesses: null,
   messages: [],
   hasMore: false,
@@ -44,6 +46,10 @@ const initialWordChainState: WordChainStoreData = {
   leaderboard: null,
   leaderboardLoading: false,
 };
+
+function syncAuthKen(ken: number) {
+  useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
+}
 
 function createWordChainSync(set: WordChainSet, get: WordChainGet) {
   function addMessages(items: WordChainMessage[]) {
@@ -100,6 +106,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     set((store) => ({
       status: 'joined',
       points: overview.points,
+      hintPrice: overview.hintPrice,
       guesses: guessesFor(overview.state, overview.remainingGuesses),
       hasMore: page.hasMore,
       messages: sessionMessages(store.messages, store.state?.sessionId),
@@ -211,6 +218,12 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
         set({ leaderboardLoading: false });
         toast.error(i18n.t('wordChain.leaderboardError'));
       }
+    },
+
+    buyHint: async () => {
+      const result = await WordChainService.hint();
+      syncAuthKen(result.kenBalance);
+      return result;
     },
 
     lookup: (word) => WordChainService.lookup(word),
