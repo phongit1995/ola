@@ -125,7 +125,10 @@ func (s *Service) HandleMove(ctx context.Context, userID uuid.UUID, req *MoveReq
 		if err != nil {
 			return nil, err
 		}
-		res, err := processMove(state, req.Content, oracle)
+		res, err := processMove(state, userID.String(), req.Content, oracle)
+		if errors.Is(err, errNoGuessesLeft) {
+			return nil, ErrNoGuessesLeft
+		}
 		if err != nil {
 			s.logger.Warnw("Word chain dictionary verification failed", "error", err)
 			return nil, ErrVerifyFailed
@@ -154,7 +157,9 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 		mutation := &Mutation{}
 		if res.StateChanged {
 			state = res.State
-			state.LastProgressAt = now
+			if res.Scored {
+				state.LastProgressAt = now
+			}
 			mutation.State = &state
 		}
 		var points int64
@@ -166,11 +171,14 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 
 		move := moveMessage(state.SessionID, userID.String(), sender, content, res, now)
 		mutation.Messages = append(mutation.Messages, move)
-		if res.Code == CodeWin {
+		switch {
+		case res.Code == CodeWin:
 			mutation.Messages = append(mutation.Messages,
 				winMessage(state.SessionID, move, now),
 				gameStartedMessage(state.SessionID, state.Word, now),
 			)
+		case !res.Scored:
+			mutation.Messages = append(mutation.Messages, wrongAnswerMessage(state.SessionID, state, res, now))
 		}
 		total, err := s.store.Apply(ctx, mutation)
 		if err != nil {
@@ -189,10 +197,11 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 			s.scheduleSessionExpiry(state.SessionID, state.ExpiresAt())
 		}
 		resp = &MoveResponse{
-			Message:     mutation.Messages[0],
-			BotMessages: append([]Message{}, mutation.Messages[1:]...),
-			State:       toStateView(state),
-			Points:      points,
+			Message:          mutation.Messages[0],
+			BotMessages:      append([]Message{}, mutation.Messages[1:]...),
+			State:            toStateView(state),
+			Points:           points,
+			RemainingGuesses: res.RemainingGuesses,
 		}
 		return nil
 	})
@@ -257,7 +266,11 @@ func (s *Service) Overview(ctx context.Context, userID uuid.UUID) (*OverviewResp
 	if err != nil {
 		return nil, err
 	}
-	return &OverviewResponse{State: toStateView(state), Points: points}, nil
+	return &OverviewResponse{
+		State:            toStateView(state),
+		Points:           points,
+		RemainingGuesses: state.RemainingGuesses(userID.String()),
+	}, nil
 }
 
 func (s *Service) Messages(ctx context.Context, limit int, beforeID string) (*MessageListResponse, error) {
@@ -413,6 +426,8 @@ func toStateView(state GameState) *StateResponse {
 	view := &StateResponse{
 		SessionID:    state.SessionID,
 		Revision:     state.Revision,
+		Turn:         state.Turn,
+		GuessLimit:   MaxWrongGuesses,
 		Word:         state.Word,
 		HistoryCount: len(state.History),
 	}

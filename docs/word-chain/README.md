@@ -28,7 +28,11 @@ Kết quả của từ hợp lệ:
 - Nếu còn từ để nối tiếp: `code = ok` (✅). Từ đó thành từ hiện tại.
 - Nếu **không còn từ nào để nối tiếp**: `code = win` (🏆). Người vừa nối **thắng ván**, bot mở ngay ván mới với từ mới. Từ mở ván được đưa luôn vào lịch sử, nên không ai nối lại được từ đó.
 - Mỗi từ hợp lệ (`ok` hoặc `win`) được **+1 điểm**. Điểm cộng dồn mãi, không reset theo phiên.
-- Từ sai không bị trừ điểm và không có giới hạn số lần sai.
+- Từ sai không bị trừ điểm, nhưng **mỗi người chỉ có 3 lượt đoán cho mỗi từ hiện tại**. Mọi kiểu sai (`invalid_format`, `mismatch`, `repeated`, `not_in_dict`) đều trừ 1 lượt.
+  - Mỗi lần sai, bot gửi 1 tin `wrong_answer` ngay sau tin sai: lý do sai, số lượt còn lại, và từ hiện tại.
+  - Hết 3 lượt thì server chặn (`403 WORD_CHAIN_NO_GUESSES`), không lưu tin. Người đó phải chờ tới khi có người khác nối đúng.
+  - Khi từ hiện tại đổi (có người nối đúng, thắng ván, hoặc sang phiên mới) thì mọi người có lại đủ 3 lượt.
+  - Số lượt sai nằm trong state (`wrongCounts`, không trả ra client). Mỗi lần từ đổi, `turn` tăng 1.
 - Không có luật lượt. Một người được nối nhiều lần liên tiếp, giống bot gốc.
 - Một ván giữ tối đa 100 từ gần nhất để kiểm tra từ lặp.
 

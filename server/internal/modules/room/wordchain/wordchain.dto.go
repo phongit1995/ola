@@ -26,6 +26,7 @@ type Message struct {
 	Code             string  `json:"code,omitempty"`
 	Reaction         string  `json:"reaction,omitempty"`
 	RequiredSyllable string  `json:"requiredSyllable,omitempty"`
+	RemainingGuesses *int    `json:"remainingGuesses,omitempty"`
 	CreatedAt        string  `json:"createdAt"`
 }
 
@@ -41,6 +42,7 @@ type storedMessage struct {
 	Code             string `json:"code,omitempty"`
 	Reaction         string `json:"reaction,omitempty"`
 	RequiredSyllable string `json:"requiredSyllable,omitempty"`
+	RemainingGuesses *int   `json:"remainingGuesses,omitempty"`
 	CreatedAt        string `json:"createdAt"`
 }
 
@@ -55,15 +57,18 @@ type MoveRequest struct {
 }
 
 type MoveResponse struct {
-	Message     Message        `json:"message"`
-	BotMessages []Message      `json:"botMessages"`
-	State       *StateResponse `json:"state"`
-	Points      int64          `json:"points"`
+	Message          Message        `json:"message"`
+	BotMessages      []Message      `json:"botMessages"`
+	State            *StateResponse `json:"state"`
+	Points           int64          `json:"points"`
+	RemainingGuesses int            `json:"remainingGuesses"`
 }
 
 type StateResponse struct {
 	SessionID        string `json:"sessionId,omitempty"`
 	Revision         int64  `json:"revision"`
+	Turn             int64  `json:"turn"`
+	GuessLimit       int    `json:"guessLimit"`
 	Word             string `json:"word,omitempty"`
 	RequiredSyllable string `json:"requiredSyllable,omitempty"`
 	HistoryCount     int    `json:"historyCount"`
@@ -73,8 +78,9 @@ type StateResponse struct {
 }
 
 type OverviewResponse struct {
-	State  *StateResponse `json:"state"`
-	Points int64          `json:"points"`
+	State            *StateResponse `json:"state"`
+	Points           int64          `json:"points"`
+	RemainingGuesses int            `json:"remainingGuesses"`
 }
 
 type LeaderboardEntry struct {

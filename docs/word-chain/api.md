@@ -54,6 +54,7 @@ Khi lỗi thì `success = false`, câu báo lỗi (tiếng Việt) nằm ở `er
 | `session_started` | `bot` | Tin đầu tiên của mỗi phiên |
 | `win` | `bot` | Có người thắng ván. Tin `move` thắng là tin ngay trước nó (`seq` nhỏ hơn 1) |
 | `game_started` | `bot` | Ngay sau `win`, báo từ mở ván mới |
+| `wrong_answer` | `bot` | Ngay sau một tin `move` sai (`seq` nhỏ hơn 1). Có `code` (lý do), `requiredSyllable`, `remainingGuesses` (số lượt còn lại của người vừa sai) và `word` (từ hiện tại). Client hiện dạng reply, trích tin sai ngay trước nó |
 
 Server không gửi id, tên hay avatar của bot. Client tự hiển thị tin bot khi `senderType = bot`.
 
@@ -72,6 +73,8 @@ Server không gửi id, tên hay avatar của bot. Client tự hiển thị tin 
 {
   "sessionId": "5f1e…",
   "revision": 17,
+  "turn": 5,
+  "guessLimit": 3,
   "word": "chân trời",
   "requiredSyllable": "trời",
   "historyCount": 5,
@@ -91,7 +94,7 @@ Server không gửi id, tên hay avatar của bot. Client tự hiển thị tin 
 Lấy state phiên hiện tại và điểm của mình. Nếu chưa có phiên hoặc phiên đã hết hạn thì server tạo phiên mới luôn.
 
 ```json
-{ "state": { "…": "State" }, "points": 12 }
+{ "state": { "…": "State" }, "points": 12, "remainingGuesses": 3 }
 ```
 
 ### `GET /rooms/word-chain/messages?limit=50&before=<messageId>`
@@ -126,12 +129,14 @@ Response:
   "message": { "…": "Message của người gửi" },
   "botMessages": [ "Message…" ],
   "state": { "…": "State" },
-  "points": 13
+  "points": 13,
+  "remainingGuesses": 3
 }
 ```
 
 - Từ sai vẫn trả **200** kèm `code` và `reaction` tương ứng. Tin sai vẫn được lưu và broadcast cho mọi người.
-- Khi thắng, `botMessages` có 2 tin: `win` rồi `game_started`. Các trường hợp khác là mảng rỗng.
+- Khi thắng, `botMessages` có 2 tin: `win` rồi `game_started`. Khi sai có 1 tin `wrong_answer`. Nối đúng mà chưa thắng thì là mảng rỗng.
+- `remainingGuesses`: số lượt đoán còn lại của người gửi cho từ hiện tại (sau lượt này).
 - `points` là tổng điểm hiện tại của người gửi.
 
 Lỗi:
@@ -141,6 +146,7 @@ Lỗi:
 | 400 | | `content` sai định dạng body | Báo lỗi nhập |
 | 409 | | Server đang bận: chờ lock quá 10 giây, hoặc có người nối trước liên tục 3 lần | Toast "Phòng nối từ đang xử lý, vui lòng thử lại." |
 | 429 | | Vượt rate limit | Toast, cho gửi lại sau |
+| 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã sai đủ 3 lần với từ hiện tại | Toast, khoá ô nhập tới khi `turn` đổi. Server không lưu gì |
 | 503 | `WORD_CHAIN_VERIFY_FAILED` | Không gọi được API từ điển | Toast, giữ nội dung trong ô nhập để gửi lại. Server không lưu gì |
 
 ### `GET /rooms/word-chain/leaderboard`
@@ -195,8 +201,8 @@ Dùng lại kết nối Socket.IO sẵn có (auth bằng token như chat).
 
 | Event | Payload | Ack |
 |---|---|---|
-| `WORD_CHAIN:JOIN` | không có | `{ "joined": true }` |
-| `WORD_CHAIN:LEAVE` | không có | `{ "joined": false }` |
+| `WORD_CHAIN:JOIN` | không có | `{ "ok": true, "data": { "joined": true } }` |
+| `WORD_CHAIN:LEAVE` | không có | `{ "ok": true, "data": { "joined": false } }` |
 
 Gửi `WORD_CHAIN:JOIN` khi mở màn nối từ và **gửi lại sau mỗi lần socket reconnect**, vì server không nhớ kênh qua các lần kết nối. Gửi `WORD_CHAIN:LEAVE` khi đóng màn.
 
@@ -215,6 +221,7 @@ socket.on('message', ({ type, data }) => { … })
 
 - Người gửi cũng nhận lại event cho chính tin của mình.
 - Khi thắng ván, client nhận lần lượt 3 tin (`move`, `win`, `game_started`) rồi 1 state.
+- Khi sai, client nhận 2 tin (`move`, `wrong_answer`) rồi 1 state (revision tăng vì số lượt sai thay đổi, từ hiện tại giữ nguyên).
 - Khi sang phiên mới, client nhận state có `sessionId` mới và tin `session_started`.
 
 ## 4. Quy tắc phía client
@@ -232,7 +239,7 @@ Event có thể tới **đảo thứ tự**, và có thể trùng với dữ li�
 Luồng khi mở màn. **JOIN trước, tải dữ liệu sau**, để không lỡ event phát ra giữa hai bước:
 
 ```text
-1. emit WORD_CHAIN:JOIN, chờ ack { joined: true }
+1. emit WORD_CHAIN:JOIN, chờ ack có ok = true
    → từ đây event bắt đầu tới. Giữ chúng vào hàng đợi, chưa hiển thị
 2. GET /rooms/word-chain          → state + điểm
 3. GET /rooms/word-chain/messages → trang tin đầu tiên

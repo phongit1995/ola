@@ -5,6 +5,7 @@ import "time"
 const (
 	WordLength              = 2
 	MaxHistory              = 100
+	MaxWrongGuesses         = 3
 	NewWordMaxAttempts      = 100000
 	StartWordMaxAttempts    = 10
 	ContinuationConcurrency = 10
@@ -57,10 +58,12 @@ const (
 	MessageTypeWin            = "win"
 	MessageTypeGameStarted    = "game_started"
 	MessageTypeSessionStarted = "session_started"
+	MessageTypeWrongAnswer    = "wrong_answer"
 
 	SenderTypeUser = "user"
 	SenderTypeBot  = "bot"
 
 	ErrorCodeVerifyFailed = "WORD_CHAIN_VERIFY_FAILED"
 	ErrorCodeCooldown     = "WORD_CHAIN_COOLDOWN"
+	ErrorCodeNoGuesses    = "WORD_CHAIN_NO_GUESSES"
 )

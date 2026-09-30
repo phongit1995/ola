@@ -43,6 +43,31 @@ func winMessage(sessionID string, move Message, now time.Time) Message {
 	return botMessage(sessionID, MessageTypeWin, content, move.Word, now)
 }
 
+func wrongAnswerMessage(sessionID string, state GameState, res MoveResult, now time.Time) Message {
+	var reason string
+	switch res.Code {
+	case CodeInvalidFormat:
+		reason = fmt.Sprintf("Từ bắt buộc phải gồm 2 âm tiết và bắt đầu bằng **\"%s\"**!", res.RequiredSyllable)
+	case CodeMismatch:
+		reason = fmt.Sprintf("Từ đầu của bạn phải là **\"%s\"**!", res.RequiredSyllable)
+	case CodeRepeated:
+		reason = "**Từ này đã được trả lời trước đó!**"
+	default:
+		reason = "**Từ không có trong bộ từ điển!**"
+	}
+	guesses := fmt.Sprintf("Bạn còn **%d** lần đoán.", res.RemainingGuesses)
+	if res.RemainingGuesses == 0 {
+		guesses = "Bạn đã hết lượt đoán cho từ này, chờ người khác nối đúng nhé."
+	}
+	content := fmt.Sprintf("%s %s\nTừ hiện tại: **%s**", reason, guesses, state.Word)
+	msg := botMessage(sessionID, MessageTypeWrongAnswer, content, state.Word, now)
+	msg.Code = res.Code
+	msg.RequiredSyllable = res.RequiredSyllable
+	remaining := res.RemainingGuesses
+	msg.RemainingGuesses = &remaining
+	return msg
+}
+
 func gameStartedMessage(sessionID, word string, now time.Time) Message {
 	content := fmt.Sprintf("**Game mới bắt đầu!**\nTừ hiện tại: **%s**", word)
 	return botMessage(sessionID, MessageTypeGameStarted, content, word, now)
@@ -81,6 +106,7 @@ func (m Message) stored() storedMessage {
 		Code:             m.Code,
 		Reaction:         m.Reaction,
 		RequiredSyllable: m.RequiredSyllable,
+		RemainingGuesses: m.RemainingGuesses,
 		CreatedAt:        m.CreatedAt,
 	}
 }
@@ -98,6 +124,7 @@ func (m storedMessage) toMessage(sender *models.User) Message {
 		Code:             m.Code,
 		Reaction:         m.Reaction,
 		RequiredSyllable: m.RequiredSyllable,
+		RemainingGuesses: m.RemainingGuesses,
 		CreatedAt:        m.CreatedAt,
 	}.withSender(sender)
 }
