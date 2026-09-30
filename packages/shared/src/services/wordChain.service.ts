@@ -3,12 +3,15 @@ import { API_PATH } from '../config/api';
 import type {
   WordChainHint,
   WordChainLeaderboard,
+  WordChainLeaderboardQuery,
   WordChainLookup,
   WordChainMessagesParams,
   WordChainMessagesResult,
   WordChainMoveRequest,
   WordChainMoveResult,
   WordChainOverview,
+  WordChainWinsParams,
+  WordChainWinsResult,
 } from '../types/api/wordChain.type';
 
 export class WordChainService {
@@ -28,8 +31,12 @@ export class WordChainService {
     return http.post<WordChainHint>(API_PATH.wordChain.hints);
   }
 
-  static leaderboard(): Promise<WordChainLeaderboard> {
-    return http.get<WordChainLeaderboard>(API_PATH.wordChain.leaderboard);
+  static leaderboard(query: WordChainLeaderboardQuery): Promise<WordChainLeaderboard> {
+    return http.get<WordChainLeaderboard>(API_PATH.wordChain.leaderboard, { params: query });
+  }
+
+  static wins(params: WordChainWinsParams): Promise<WordChainWinsResult> {
+    return http.get<WordChainWinsResult>(API_PATH.wordChain.wins, { params });
   }
 
   static lookup(word: string): Promise<WordChainLookup> {

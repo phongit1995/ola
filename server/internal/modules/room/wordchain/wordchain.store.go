@@ -10,9 +10,9 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type PointEntry struct {
+type ScoreEntry struct {
 	UserID string
-	Points int64
+	Score  int64
 }
 
 type Store struct {
@@ -44,6 +44,7 @@ func (s *Store) LoadState(ctx context.Context) (GameState, error) {
 type Mutation struct {
 	State       *GameState
 	ScoreUserID string
+	WinUserID   string
 	Messages    []Message
 }
 
@@ -89,7 +90,10 @@ func (s *Store) Apply(ctx context.Context, m *Mutation) (int64, error) {
 			pipe.Set(ctx, CacheKeyState, stateData, 0)
 		}
 		if m.ScoreUserID != "" {
-			points = pipe.ZIncrBy(ctx, CacheKeyPoints, 1, m.ScoreUserID)
+			points = pipe.ZIncrBy(ctx, CacheKeyPoints, PointsPerWord, m.ScoreUserID)
+		}
+		if m.WinUserID != "" {
+			pipe.ZIncrBy(ctx, CacheKeyWins, 1, m.WinUserID)
 		}
 		for i, msg := range m.Messages {
 			pipe.HSet(ctx, CacheKeyMsgData, msg.ID, messageData[i])
@@ -175,47 +179,69 @@ func (s *Store) ListMessages(ctx context.Context, limit int, beforeID string) ([
 	return out, nil
 }
 
-func (s *Store) AddPoint(ctx context.Context, userID string) (int64, error) {
-	total, err := s.client.ZIncrBy(ctx, CacheKeyPoints, 1, userID).Result()
-	return int64(total), err
-}
-
-func (s *Store) Points(ctx context.Context, userID string) (int64, error) {
-	score, err := s.client.ZScore(ctx, CacheKeyPoints, userID).Result()
+func (s *Store) Score(ctx context.Context, key, userID string) (int64, error) {
+	score, err := s.client.ZScore(ctx, key, userID).Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, nil
 	}
 	return int64(score), err
 }
 
-func (s *Store) TopPoints(ctx context.Context, limit int) ([]PointEntry, int64, error) {
-	rows, err := s.client.ZRevRangeWithScores(ctx, CacheKeyPoints, 0, int64(limit-1)).Result()
+func (s *Store) Scores(ctx context.Context, key string, userIDs []string) (map[string]int64, error) {
+	scores := make(map[string]int64, len(userIDs))
+	if len(userIDs) == 0 {
+		return scores, nil
+	}
+	cmds := make([]*redis.FloatCmd, len(userIDs))
+	if _, err := s.client.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+		for i, userID := range userIDs {
+			cmds[i] = pipe.ZScore(ctx, key, userID)
+		}
+		return nil
+	}); err != nil && !errors.Is(err, redis.Nil) {
+		return nil, err
+	}
+	for i, cmd := range cmds {
+		score, err := cmd.Result()
+		if errors.Is(err, redis.Nil) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		scores[userIDs[i]] = int64(score)
+	}
+	return scores, nil
+}
+
+func (s *Store) Top(ctx context.Context, key string, limit int) ([]ScoreEntry, int64, error) {
+	rows, err := s.client.ZRevRangeWithScores(ctx, key, 0, int64(limit-1)).Result()
 	if err != nil {
 		return nil, 0, err
 	}
-	total, err := s.client.ZCard(ctx, CacheKeyPoints).Result()
+	total, err := s.client.ZCard(ctx, key).Result()
 	if err != nil {
 		return nil, 0, err
 	}
-	out := make([]PointEntry, 0, len(rows))
+	out := make([]ScoreEntry, 0, len(rows))
 	for _, row := range rows {
 		userID, _ := row.Member.(string)
-		out = append(out, PointEntry{UserID: userID, Points: int64(row.Score)})
+		out = append(out, ScoreEntry{UserID: userID, Score: int64(row.Score)})
 	}
 	return out, total, nil
 }
 
-func (s *Store) Rank(ctx context.Context, userID string) (int64, int64, bool, error) {
-	rank, err := s.client.ZRevRank(ctx, CacheKeyPoints, userID).Result()
+func (s *Store) Rank(ctx context.Context, key, userID string) (int64, int64, bool, error) {
+	rank, err := s.client.ZRevRank(ctx, key, userID).Result()
 	if errors.Is(err, redis.Nil) {
 		return 0, 0, false, nil
 	}
 	if err != nil {
 		return 0, 0, false, err
 	}
-	points, err := s.Points(ctx, userID)
+	score, err := s.Score(ctx, key, userID)
 	if err != nil {
 		return 0, 0, false, err
 	}
-	return rank + 1, points, true, nil
+	return rank + 1, score, true, nil
 }

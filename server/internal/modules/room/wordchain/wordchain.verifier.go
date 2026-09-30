@@ -68,12 +68,17 @@ func NewVerifier(cache *services.CacheService) *Verifier {
 }
 
 func (v *Verifier) Lookup(ctx context.Context, word string) (*DictLookup, error) {
+	if cached, ok := v.CachedLookup(ctx, word); ok {
+		return cached, nil
+	}
 	body, status, err := v.get(ctx, v.lookupURL, url.Values{"word": {word}})
 	if err != nil {
 		return nil, err
 	}
 	if status == http.StatusNotFound {
-		return &DictLookup{Exists: false, Word: word}, nil
+		out := &DictLookup{Exists: false, Word: word}
+		v.cacheLookup(ctx, word, out)
+		return out, nil
 	}
 	if status != http.StatusOK {
 		return nil, fmt.Errorf("%w: status %d", ErrDictionaryUnavailable, status)
@@ -82,7 +87,32 @@ func (v *Verifier) Lookup(ctx context.Context, word string) (*DictLookup, error)
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
 	}
+	v.cacheLookup(ctx, word, &out)
 	return &out, nil
+}
+
+func (v *Verifier) CachedLookup(ctx context.Context, word string) (*DictLookup, bool) {
+	raw, err := v.redis.Get(ctx, lookupCacheKey(word)).Bytes()
+	if err != nil {
+		return nil, false
+	}
+	var out DictLookup
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, false
+	}
+	return &out, true
+}
+
+func (v *Verifier) cacheLookup(ctx context.Context, word string, result *DictLookup) {
+	data, err := json.Marshal(result)
+	if err != nil {
+		return
+	}
+	_ = v.redis.Set(ctx, lookupCacheKey(word), data, LookupCacheTTL).Err()
+}
+
+func lookupCacheKey(word string) string {
+	return fmt.Sprintf(CacheKeyLookupResult, normalizeVietnamese(word))
 }
 
 func (v *Verifier) Exists(ctx context.Context, word string) (bool, error) {

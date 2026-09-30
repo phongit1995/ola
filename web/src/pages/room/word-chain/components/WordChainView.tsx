@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DateSeparator, FullScreenOverlay, ScreenHeader } from '@components';
 import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
@@ -71,6 +71,11 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   const sendMove = useWordChainStore((store) => store.sendMove);
   const currentUserId = useAuthStore((store) => store.user?.id) ?? '';
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
+  const [lookupWord, setLookupWord] = useState('');
+  const openLookup = useCallback((word: string) => {
+    setLookupWord(word);
+    setDialog('lookup');
+  }, []);
 
   const messages = useMemo(
     () => sessionMessages(allMessages, state?.sessionId),
@@ -105,7 +110,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
       >
         <HeaderButton
           label={t('wordChain.lookupTitle')}
-          onClick={() => setDialog('lookup')}
+          onClick={() => openLookup('')}
         >
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z" />
           <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" />
@@ -151,6 +156,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
               key={item.key}
               item={item}
               isOwn={item.message.senderId === currentUserId}
+              onWordInfo={openLookup}
             />
           )
         )}
@@ -195,7 +201,11 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
         onClose={() => setDialog(null)}
       />
       {dialog === 'lookup' && (
-        <WordChainLookupDialog open onClose={() => setDialog(null)} />
+        <WordChainLookupDialog
+          open
+          initialWord={lookupWord}
+          onClose={() => setDialog(null)}
+        />
       )}
       <WordChainRulesDialog
         open={dialog === 'rules'}

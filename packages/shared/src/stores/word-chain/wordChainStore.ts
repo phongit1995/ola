@@ -5,6 +5,7 @@ import {
   WORD_CHAIN_ERROR_CODE,
   WORD_CHAIN_JOIN_ACK_TIMEOUT_MS,
   WORD_CHAIN_MESSAGE_PAGE_SIZE,
+  WORD_CHAIN_WIN_PAGE_SIZE,
 } from '../../constants/wordChain';
 import { toApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
@@ -31,6 +32,7 @@ import {
   toWordChainMessage,
   toWordChainState,
   withLatestPage,
+  wordChainLeaderboardKey,
 } from './wordChainHelpers';
 
 const initialWordChainState: WordChainStoreData = {
@@ -43,8 +45,13 @@ const initialWordChainState: WordChainStoreData = {
   messages: [],
   hasMore: false,
   loadingMore: false,
-  leaderboard: null,
-  leaderboardLoading: false,
+  leaderboards: {},
+  leaderboardPending: [],
+  wins: [],
+  winsMine: false,
+  winsHasMore: false,
+  winsNextBefore: null,
+  winsLoading: false,
 };
 
 function syncAuthKen(ken: number) {
@@ -140,6 +147,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
 
 export const useWordChainStore = create<WordChainStoreState>((set, get) => {
   const sync = createWordChainSync(set, get);
+  let winsRequest = 0;
 
   return {
     ...initialWordChainState,
@@ -154,6 +162,7 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
     close: () => {
       if (!get().opened) return;
       SocketService.connect().emit(WORD_CHAIN_SOCKET_EVENTS.leave);
+      winsRequest += 1;
       set({ ...initialWordChainState });
     },
 
@@ -209,14 +218,57 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
       }
     },
 
-    fetchLeaderboard: async () => {
-      set({ leaderboardLoading: true });
+    fetchLeaderboard: async (query) => {
+      const key = wordChainLeaderboardKey(query);
+      if (get().leaderboardPending.includes(key)) return;
+      set((store) => ({ leaderboardPending: [...store.leaderboardPending, key] }));
       try {
-        const leaderboard = await WordChainService.leaderboard();
-        set({ leaderboard, leaderboardLoading: false });
+        const leaderboard = await WordChainService.leaderboard(query);
+        set((store) => ({ leaderboards: { ...store.leaderboards, [key]: leaderboard } }));
       } catch {
-        set({ leaderboardLoading: false });
         toast.error(i18n.t('wordChain.leaderboardError'));
+      } finally {
+        set((store) => ({
+          leaderboardPending: store.leaderboardPending.filter((item) => item !== key),
+        }));
+      }
+    },
+
+    fetchWins: async ({ mine, more = false }) => {
+      const current = get();
+      const before = more ? current.winsNextBefore : null;
+      if (more && (current.winsLoading || current.winsMine !== mine || before == null)) {
+        return;
+      }
+      const request = ++winsRequest;
+      set(
+        more
+          ? { winsLoading: true }
+          : {
+              winsLoading: true,
+              winsMine: mine,
+              wins: [],
+              winsHasMore: false,
+              winsNextBefore: null,
+            }
+      );
+      try {
+        const page = await WordChainService.wins({
+          limit: WORD_CHAIN_WIN_PAGE_SIZE,
+          before: before ?? undefined,
+          mine,
+        });
+        if (request !== winsRequest) return;
+        set((store) => ({
+          wins: more ? [...store.wins, ...page.items] : page.items,
+          winsHasMore: page.hasMore,
+          winsNextBefore: page.nextBefore ?? null,
+          winsLoading: false,
+        }));
+      } catch {
+        if (request !== winsRequest) return;
+        set({ winsLoading: false });
+        toast.error(i18n.t('wordChain.winsError'));
       }
     },
 
@@ -228,6 +280,9 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
 
     lookup: (word) => WordChainService.lookup(word),
 
-    reset: () => set({ ...initialWordChainState }),
+    reset: () => {
+      winsRequest += 1;
+      set({ ...initialWordChainState });
+    },
   };
 });

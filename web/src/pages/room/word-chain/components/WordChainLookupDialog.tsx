@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, Spinner } from '@components';
 import { WORD_CHAIN_LOOKUP_MAX_LENGTH } from '@constants';
@@ -82,20 +82,32 @@ export function WordChainLookupDialog({
   const [word, setWord] = useState(initialWord);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<WordChainLookup | null>(null);
+  const initialLookupStarted = useRef(false);
   const query = word.trim();
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (query === '' || loading) return;
+  async function runLookup(target: string) {
     setLoading(true);
     try {
-      setResult(await lookup(query));
+      setResult(await lookup(target));
     } catch (error) {
       toast.error(wordChainLookupErrorText(t, error));
     } finally {
       setLoading(false);
     }
   }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (query === '' || loading) return;
+    void runLookup(query);
+  }
+
+  useEffect(() => {
+    const target = initialWord.trim();
+    if (target === '' || initialLookupStarted.current) return;
+    initialLookupStarted.current = true;
+    void runLookup(target);
+  });
 
   return (
     <Dialog

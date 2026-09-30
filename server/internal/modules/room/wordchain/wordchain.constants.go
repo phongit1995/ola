@@ -12,8 +12,12 @@ const (
 	BotWordRetryDelay       = 30 * time.Second
 	MoveMaxAttempts         = 3
 	WordExistsCacheTTL      = 24 * time.Hour
+	LookupCacheTTL          = 24 * time.Hour
 	BotWordTimeout          = 12 * time.Hour
 	LeaderboardLimit        = 10
+	PointsPerWord           = 1
+	WinPageSize             = 20
+	WinPageMax              = 50
 	MessagePageSize         = 50
 	MessagePageMax          = 100
 	MaxStoredMessages       = 5000
@@ -35,11 +39,13 @@ const (
 	CacheKeyLock           = "LOCK:WORD_CHAIN"
 	CacheKeyState          = "WORD_CHAIN:STATE"
 	CacheKeyPoints         = "WORD_CHAIN:POINTS"
+	CacheKeyWins           = "WORD_CHAIN:WINS"
 	CacheKeyMsgIndex       = "WORD_CHAIN:MSG_INDEX"
 	CacheKeyMsgData        = "WORD_CHAIN:MSG"
 	CacheKeyMsgSeq         = "WORD_CHAIN:MSG_SEQ"
 	CacheKeyStateRev       = "WORD_CHAIN:STATE_REV"
 	CacheKeyWordExists     = "WORD_CHAIN:WORD_EXISTS:%s"
+	CacheKeyLookupResult   = "WORD_CHAIN:LOOKUP:%s"
 	CacheKeyLookupCooldown = "WORD_CHAIN:LOOKUP_COOLDOWN:%s"
 
 	CodeOK            = "ok"
@@ -62,6 +68,13 @@ const (
 
 	SenderTypeUser = "user"
 	SenderTypeBot  = "bot"
+
+	LeaderboardSortPoints  = "points"
+	LeaderboardSortWins    = "wins"
+	LeaderboardPeriodDay   = "day"
+	LeaderboardPeriodWeek  = "week"
+	LeaderboardPeriodMonth = "month"
+	LeaderboardPeriodAll   = "all"
 
 	ErrorCodeVerifyFailed = "WORD_CHAIN_VERIFY_FAILED"
 	ErrorCodeCooldown     = "WORD_CHAIN_COOLDOWN"

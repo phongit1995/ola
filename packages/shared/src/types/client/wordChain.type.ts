@@ -2,10 +2,14 @@ import type { StoreApi } from 'zustand';
 import type {
   WordChainHint,
   WordChainLeaderboard,
+  WordChainLeaderboardPeriod,
+  WordChainLeaderboardQuery,
+  WordChainLeaderboardSort,
   WordChainLookup,
   WordChainMessage,
   WordChainMoveResult,
   WordChainState,
+  WordChainWin,
 } from '../api/wordChain.type';
 
 export type WordChainStatus = 'connecting' | 'joined' | 'error';
@@ -31,6 +35,13 @@ export interface WordChainFeedMessage {
 
 export type WordChainFeedItem = WordChainFeedDate | WordChainFeedMessage;
 
+export type WordChainLeaderboardKey = `${WordChainLeaderboardSort}:${WordChainLeaderboardPeriod}`;
+
+export interface WordChainFetchWinsOptions {
+  mine: boolean;
+  more?: boolean;
+}
+
 export interface WordChainStoreState {
   opened: boolean;
   status: WordChainStatus;
@@ -41,13 +52,19 @@ export interface WordChainStoreState {
   messages: WordChainMessage[];
   hasMore: boolean;
   loadingMore: boolean;
-  leaderboard: WordChainLeaderboard | null;
-  leaderboardLoading: boolean;
+  leaderboards: Partial<Record<WordChainLeaderboardKey, WordChainLeaderboard>>;
+  leaderboardPending: WordChainLeaderboardKey[];
+  wins: WordChainWin[];
+  winsMine: boolean;
+  winsHasMore: boolean;
+  winsNextBefore: string | null;
+  winsLoading: boolean;
   open: () => Promise<void>;
   close: () => void;
   loadMoreMessages: () => Promise<void>;
   sendMove: (content: string) => Promise<WordChainMoveResult>;
-  fetchLeaderboard: () => Promise<void>;
+  fetchLeaderboard: (query: WordChainLeaderboardQuery) => Promise<void>;
+  fetchWins: (options: WordChainFetchWinsOptions) => Promise<void>;
   buyHint: () => Promise<WordChainHint>;
   lookup: (word: string) => Promise<WordChainLookup>;
   reset: () => void;
@@ -64,8 +81,13 @@ export type WordChainStoreData = Pick<
   | 'messages'
   | 'hasMore'
   | 'loadingMore'
-  | 'leaderboard'
-  | 'leaderboardLoading'
+  | 'leaderboards'
+  | 'leaderboardPending'
+  | 'wins'
+  | 'winsMine'
+  | 'winsHasMore'
+  | 'winsNextBefore'
+  | 'winsLoading'
 >;
 
 export interface WordChainPrefsState {

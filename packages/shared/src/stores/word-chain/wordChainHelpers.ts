@@ -1,10 +1,21 @@
 import { activeVipTypeId } from '../../lib/vip';
 import type {
+  WordChainLeaderboardQuery,
   WordChainMessage,
   WordChainState,
 } from '../../types/api/wordChain.type';
-import type { WordChainGuesses } from '../../types/client/wordChain.type';
+import type {
+  WordChainGuesses,
+  WordChainLeaderboardKey,
+} from '../../types/client/wordChain.type';
 import { toRecord } from '../room/roomHelpers';
+
+export function wordChainLeaderboardKey({
+  sort,
+  period,
+}: WordChainLeaderboardQuery): WordChainLeaderboardKey {
+  return `${sort}:${period}`;
+}
 
 export function toWordChainMessage(value: unknown): WordChainMessage | null {
   const record = toRecord(value);

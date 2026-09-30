@@ -1,5 +1,7 @@
 import type {
   WordChainCode,
+  WordChainLeaderboardPeriod,
+  WordChainLeaderboardSort,
   WordChainMessageType,
   WordChainSenderType,
 } from '../types/api/wordChain.type';
@@ -36,6 +38,19 @@ export const WORD_CHAIN_ERROR_CODE = {
 } as const;
 
 export const WORD_CHAIN_MESSAGE_PAGE_SIZE = 50;
+export const WORD_CHAIN_WIN_PAGE_SIZE = 20;
+
+export const WORD_CHAIN_LEADERBOARD_SORT = {
+  points: 'points',
+  wins: 'wins',
+} as const satisfies Record<string, WordChainLeaderboardSort>;
+
+export const WORD_CHAIN_LEADERBOARD_PERIOD = {
+  day: 'day',
+  week: 'week',
+  month: 'month',
+  all: 'all',
+} as const satisfies Record<string, WordChainLeaderboardPeriod>;
 export const WORD_CHAIN_JOIN_ACK_TIMEOUT_MS = 10_000;
 export const WORD_CHAIN_MOVE_MAX_LENGTH = 200;
 export const WORD_CHAIN_LOOKUP_MAX_LENGTH = 80;

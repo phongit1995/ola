@@ -21,15 +21,17 @@ func (s *Service) Lookup(ctx context.Context, userID uuid.UUID, word string) (*L
 	if utf8.RuneCountInString(trimmed) > LookupMaxWordRunes {
 		return nil, ErrLookupTooLong
 	}
-	if err := s.acquireCooldown(fmt.Sprintf(CacheKeyLookupCooldown, userID.String()),
-		LookupCooldownSeconds, "⏳ Vui lòng chờ %ds trước khi tra tiếp."); err != nil {
-		return nil, err
-	}
-
-	result, err := s.verifier.Lookup(ctx, trimmed)
-	if err != nil {
-		s.logger.Warnw("Word chain lookup failed", "word", trimmed, "error", err)
-		return nil, ErrLookupFailed
+	result, cached := s.verifier.CachedLookup(ctx, trimmed)
+	if !cached {
+		if err := s.acquireCooldown(fmt.Sprintf(CacheKeyLookupCooldown, userID.String()),
+			LookupCooldownSeconds, "⏳ Vui lòng chờ %ds trước khi tra tiếp."); err != nil {
+			return nil, err
+		}
+		var err error
+		if result, err = s.verifier.Lookup(ctx, trimmed); err != nil {
+			s.logger.Warnw("Word chain lookup failed", "word", trimmed, "error", err)
+			return nil, ErrLookupFailed
+		}
 	}
 	resp := &LookupResponse{Word: trimmed, Results: []LookupResult{}, Source: lookupSource}
 	if result.Word != "" {

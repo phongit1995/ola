@@ -30,6 +30,7 @@ export const API_PATH = {
     moves: '/rooms/word-chain/moves',
     hints: '/rooms/word-chain/hints',
     leaderboard: '/rooms/word-chain/leaderboard',
+    wins: '/rooms/word-chain/wins',
     lookup: '/rooms/word-chain/lookup',
   },
   adminRooms: {

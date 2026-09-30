@@ -24,12 +24,13 @@ type Service struct {
 	userCache *userModule.CacheService
 	publisher EventPublisher
 	wallet    HintWallet
+	scores    ScoreLog
 	logger    *zap.SugaredLogger
 	timerMu   sync.Mutex
 	timer     *time.Timer
 }
 
-func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *services.CacheService, userCache *userModule.CacheService, publisher EventPublisher, wallet *Wallet, logger *zap.SugaredLogger) *Service {
+func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *services.CacheService, userCache *userModule.CacheService, publisher EventPublisher, wallet *Wallet, scores *ScoreRepository, logger *zap.SugaredLogger) *Service {
 	s := &Service{
 		dict:      dict,
 		verifier:  verifier,
@@ -38,6 +39,7 @@ func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *servi
 		userCache: userCache,
 		publisher: publisher,
 		wallet:    wallet,
+		scores:    scores,
 		logger:    logger.Named("[word_chain_service]"),
 	}
 	utils.SafeGo(s.logger, s.resumeExpiryTimer)
@@ -149,6 +151,7 @@ func (s *Service) HandleMove(ctx context.Context, userID uuid.UUID, req *MoveReq
 
 func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *models.User, content string, revision int64, res MoveResult) (*MoveResponse, error) {
 	var resp *MoveResponse
+	var score *models.WordChainScore
 	err := s.withLock(ctx, func(ctx context.Context, batch *eventBatch) error {
 		state, err := s.store.LoadState(ctx)
 		if err != nil {
@@ -158,6 +161,7 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 		if state.Revision != revision || !state.Active() {
 			return errStaleState
 		}
+		previousWord := state.Word
 
 		mutation := &Mutation{}
 		if res.StateChanged {
@@ -170,7 +174,10 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 		var points int64
 		if res.Scored {
 			mutation.ScoreUserID = userID.String()
-		} else if points, err = s.store.Points(ctx, userID.String()); err != nil {
+			if res.Code == CodeWin {
+				mutation.WinUserID = userID.String()
+			}
+		} else if points, err = s.store.Score(ctx, CacheKeyPoints, userID.String()); err != nil {
 			return err
 		}
 
@@ -190,6 +197,7 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 		}
 		if res.Scored {
 			points = total
+			score = s.scoreRecord(userID, move, previousWord, now)
 		}
 		s.trimMessages(ctx)
 
@@ -211,6 +219,9 @@ func (s *Service) commitMove(ctx context.Context, userID uuid.UUID, sender *mode
 	})
 	if err != nil {
 		return nil, err
+	}
+	if score != nil {
+		s.recordScore(ctx, score)
 	}
 	return resp, nil
 }
@@ -283,7 +294,7 @@ func (s *Service) Overview(ctx context.Context, userID uuid.UUID) (*OverviewResp
 	if err != nil {
 		return nil, err
 	}
-	points, err := s.store.Points(ctx, userID.String())
+	points, err := s.store.Score(ctx, CacheKeyPoints, userID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -326,45 +337,6 @@ func (s *Service) Messages(ctx context.Context, limit int, beforeID string) (*Me
 	resp := &MessageListResponse{Items: items, HasMore: len(stored) == limit}
 	if len(items) > 0 {
 		resp.NextBefore = items[len(items)-1].ID
-	}
-	return resp, nil
-}
-
-func (s *Service) Leaderboard(ctx context.Context, userID uuid.UUID) (*LeaderboardResponse, error) {
-	top, total, err := s.store.TopPoints(ctx, LeaderboardLimit)
-	if err != nil {
-		return nil, err
-	}
-	rank, points, ranked, err := s.store.Rank(ctx, userID.String())
-	if err != nil {
-		return nil, err
-	}
-
-	ids := make([]uuid.UUID, 0, len(top)+1)
-	for _, entry := range top {
-		if id, err := uuid.Parse(entry.UserID); err == nil {
-			ids = append(ids, id)
-		}
-	}
-	ids = append(ids, userID)
-	users := s.userCache.GetUsersBatch(ids, true)
-	toEntry := func(rank int, id string, points int64) LeaderboardEntry {
-		entry := LeaderboardEntry{Rank: rank, UserID: id, Points: points}
-		if uid, err := uuid.Parse(id); err == nil {
-			if u := users[uid]; u != nil {
-				entry.Username, entry.FullName, entry.Avatar = u.Username, u.FullName, u.Avatar
-			}
-		}
-		return entry
-	}
-
-	resp := &LeaderboardResponse{Items: make([]LeaderboardEntry, 0, len(top)), Total: total}
-	for i, entry := range top {
-		resp.Items = append(resp.Items, toEntry(i+1, entry.UserID, entry.Points))
-	}
-	if ranked {
-		me := toEntry(int(rank), userID.String(), points)
-		resp.Me = &me
 	}
 	return resp, nil
 }

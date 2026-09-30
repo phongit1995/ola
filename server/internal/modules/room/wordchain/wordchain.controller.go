@@ -96,10 +96,12 @@ func (ctrl *Controller) Hint(c *gin.Context) (interface{}, error) {
 }
 
 // Leaderboard godoc
-// @Summary      Word chain leaderboard (top 10 by points, one point per valid word)
+// @Summary      Word chain leaderboard (top 10 by points or wins, all time or current day/week/month in GMT+7)
 // @Tags         word-chain
 // @Produce      json
 // @Security     BearerAuth
+// @Param        sort query string false "points (default) or wins"
+// @Param        period query string false "all (default), day, week or month"
 // @Success      200  {object}  utils.BaseResponse[LeaderboardResponse]
 // @Router       /rooms/word-chain/leaderboard [get]
 func (ctrl *Controller) Leaderboard(c *gin.Context) (interface{}, error) {
@@ -107,7 +109,30 @@ func (ctrl *Controller) Leaderboard(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.Leaderboard(c.Request.Context(), userID)
+	resp, err := ctrl.service.Leaderboard(c.Request.Context(), userID, c.Query("sort"), c.Query("period"))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// Wins godoc
+// @Summary      Word chain win history (newest first)
+// @Tags         word-chain
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit query int false "Page size"
+// @Param        before query string false "Win id to paginate before (nextBefore of the previous page)"
+// @Param        mine query bool false "Only the current user's wins"
+// @Success      200  {object}  utils.BaseResponse[WinListResponse]
+// @Router       /rooms/word-chain/wins [get]
+func (ctrl *Controller) Wins(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, WinPageSize, WinPageMax)
+	resp, err := ctrl.service.Wins(c.Request.Context(), userID, c.Query("mine") == "true", c.Query("before"), limit)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

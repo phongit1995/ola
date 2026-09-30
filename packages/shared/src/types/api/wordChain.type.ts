@@ -90,6 +90,15 @@ export interface WordChainMoveResult {
   remainingGuesses: number;
 }
 
+export type WordChainLeaderboardSort = 'points' | 'wins';
+
+export type WordChainLeaderboardPeriod = 'day' | 'week' | 'month' | 'all';
+
+export interface WordChainLeaderboardQuery {
+  sort: WordChainLeaderboardSort;
+  period: WordChainLeaderboardPeriod;
+}
+
 export interface WordChainLeaderboardEntry {
   rank: number;
   userId: string;
@@ -97,12 +106,38 @@ export interface WordChainLeaderboardEntry {
   fullName?: string;
   avatar?: string;
   points: number;
+  wins: number;
 }
 
 export interface WordChainLeaderboard {
   items: WordChainLeaderboardEntry[];
   total: number;
   me: WordChainLeaderboardEntry | null;
+  sort: WordChainLeaderboardSort;
+  period: WordChainLeaderboardPeriod;
+}
+
+export interface WordChainWin {
+  id: string;
+  userId: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+  word: string;
+  previousWord: string;
+  createdAt: string;
+}
+
+export interface WordChainWinsParams {
+  limit?: number;
+  before?: string;
+  mine?: boolean;
+}
+
+export interface WordChainWinsResult {
+  items: WordChainWin[];
+  hasMore: boolean;
+  nextBefore?: string;
 }
 
 export interface WordChainLookupMeaning {

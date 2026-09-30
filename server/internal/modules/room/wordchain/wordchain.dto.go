@@ -101,12 +101,32 @@ type LeaderboardEntry struct {
 	FullName string `json:"fullName,omitempty"`
 	Avatar   string `json:"avatar,omitempty"`
 	Points   int64  `json:"points"`
+	Wins     int64  `json:"wins"`
 }
 
 type LeaderboardResponse struct {
-	Items []LeaderboardEntry `json:"items"`
-	Total int64              `json:"total"`
-	Me    *LeaderboardEntry  `json:"me"`
+	Items  []LeaderboardEntry `json:"items"`
+	Total  int64              `json:"total"`
+	Me     *LeaderboardEntry  `json:"me"`
+	Sort   string             `json:"sort"`
+	Period string             `json:"period"`
+}
+
+type WinEntry struct {
+	ID           string `json:"id"`
+	UserID       string `json:"userId"`
+	Username     string `json:"username"`
+	FullName     string `json:"fullName,omitempty"`
+	Avatar       string `json:"avatar,omitempty"`
+	Word         string `json:"word"`
+	PreviousWord string `json:"previousWord"`
+	CreatedAt    string `json:"createdAt"`
+}
+
+type WinListResponse struct {
+	Items      []WinEntry `json:"items"`
+	HasMore    bool       `json:"hasMore"`
+	NextBefore string     `json:"nextBefore,omitempty"`
 }
 
 type LookupMeaning struct {

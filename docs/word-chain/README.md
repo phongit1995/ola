@@ -9,8 +9,8 @@ Code backend: `server/internal/modules/room/wordchain/`. Luật chơi lấy từ
 - Toàn hệ thống chỉ có **1 phòng nối từ**. Phòng không gắn với bảng `rooms`, không có `roomId`, không có danh sách phòng, không đếm số người.
 - Người chơi nối từ với nhau (PvP). **Bot chỉ làm trọng tài**: chấm từng từ, báo thắng, mở ván mới. Bot không tự nối từ.
 - User đã đăng nhập là chơi được, không cần join phòng qua ticket. Join socket chỉ để nhận realtime.
-- Dữ liệu ván chơi nằm ở **Redis**. Không có bảng, không có migration. Riêng tiền **Gợi ý** trừ vào `users.ken` và ghi `ken_transactions` ở Postgres.
-- Tính năng phụ: **Tra từ**, **Bảng xếp hạng** và **Gợi ý** (mất KEN).
+- Dữ liệu ván chơi nằm ở **Redis**. Postgres chỉ giữ 2 thứ: tiền **Gợi ý** (`users.ken`, `ken_transactions`) và lịch sử ghi điểm `word_chain_scores` để thống kê theo thời gian (xem mục 6).
+- Tính năng phụ: **Tra từ** (hộp tra từ, và nút ⓘ nhỏ nằm ngoài bubble, cạnh mỗi từ nối đúng, để ai cũng xem được nghĩa), **Bảng xếp hạng** và **Gợi ý** (mất KEN).
 
 ## 2. Luật chơi
 
@@ -27,7 +27,8 @@ Kết quả của từ hợp lệ:
 
 - Nếu còn từ để nối tiếp: `code = ok` (✅). Từ đó thành từ hiện tại.
 - Nếu **không còn từ nào để nối tiếp**: `code = win` (🏆). Người vừa nối **thắng ván**, bot mở ngay ván mới với từ mới. Từ mở ván được đưa luôn vào lịch sử, nên không ai nối lại được từ đó.
-- Mỗi từ hợp lệ (`ok` hoặc `win`) được **+1 điểm**. Điểm cộng dồn mãi, không reset theo phiên.
+- Mỗi từ hợp lệ (`ok` hoặc `win`) được **+1 điểm**. Từ `win` được thêm **+1 trận thắng**. Điểm và trận thắng cộng dồn mãi, không reset theo phiên.
+- Bảng xếp hạng có 2 tab **Điểm** và **Thắng**, lọc theo **Hôm nay / Tuần này / Tháng này / Tất cả** (giờ Việt Nam, tuần bắt đầu thứ Hai), và tab **Lịch sử** các trận thắng (tất cả hoặc của mình).
 - Từ sai không bị trừ điểm, nhưng **mỗi người chỉ có 3 lượt đoán cho mỗi từ hiện tại**. Mọi kiểu sai (`invalid_format`, `mismatch`, `repeated`, `not_in_dict`) đều trừ 1 lượt.
   - Mỗi lần sai, bot gửi 1 tin `wrong_answer` ngay sau tin sai: lý do sai, số lượt còn lại, và từ hiện tại.
   - Hết 3 lượt thì server chặn (`403 WORD_CHAIN_NO_GUESSES`), không lưu tin. Người đó phải chờ tới khi có người khác nối đúng.
@@ -121,7 +122,7 @@ Nếu API lỗi, hoặc không chọn được từ mở ván còn nối đượ
 | Lịch sử ván mới sau khi thắng | Rỗng (từ mở ván chơi lại được) | Có sẵn từ mở ván |
 | Kênh chơi | Kênh Discord do admin thêm | 1 phòng cố định |
 | Kết thúc | Thắng thì mở ván mới | Giống bot gốc, thêm: từ của bot sau 12 giờ không ai nối thì bot thay từ khác (ghi đè tin bot cũ, giữ tin người chơi) |
-| Thống kê | Chuỗi, kỷ lục, số lần thắng | Điểm = số từ hợp lệ |
+| Thống kê | Chuỗi, kỷ lục, số lần thắng | Điểm = số từ hợp lệ, số trận thắng, lọc theo ngày/tuần/tháng, lịch sử thắng |
 | Luật sai 3 lần reset chuỗi | Có | Không |
 | Nối 2 lần liên tiếp | Được | Không được, phải chờ người khác nối |
 | Xin ván mới (vote 15 giây), gợi ý, góp ý, thêm từ | Có | Không |
@@ -134,7 +135,9 @@ Về text dán vào: cả bot gốc và Ola đều không phân biệt được 
 - xuống dòng hoặc tab;
 - dấu cách không ngắt (NBSP) hoặc ký tự vô hình, thường gặp khi copy từ web.
 
-## 6. Lưu trữ Redis
+## 6. Lưu trữ
+
+### Redis
 
 | Key | Kiểu | Nội dung |
 |---|---|---|
@@ -143,9 +146,11 @@ Về text dán vào: cả bot gốc và Ola đều không phân biệt được 
 | `WORD_CHAIN:MSG` | HASH | `messageId → JSON tin nhắn`. Chỉ lưu `senderId`, không lưu tên, avatar, VIP |
 | `WORD_CHAIN:MSG_INDEX` | ZSET | `messageId`, score = `seq` |
 | `WORD_CHAIN:MSG_SEQ` | STRING (INCR) | Bộ đếm `seq` của tin nhắn |
-| `WORD_CHAIN:POINTS` | ZSET | `userId`, score = điểm |
+| `WORD_CHAIN:POINTS` | ZSET | `userId`, score = tổng điểm từ trước tới nay |
+| `WORD_CHAIN:WINS` | ZSET | `userId`, score = tổng số trận thắng từ trước tới nay |
 | `WORD_CHAIN:LOOKUP_COOLDOWN:<userId>` | STRING, TTL 5 giây | Cooldown tra từ |
 | `WORD_CHAIN:WORD_EXISTS:<từ>` | STRING, TTL 24 giờ | Cache kết quả API `lookup`: `1` có, `0` không |
+| `WORD_CHAIN:LOOKUP:<từ đã chuẩn hoá>` | STRING (JSON), TTL 24 giờ | Toàn bộ kết quả API `lookup` (nghĩa, dịch, từ liên quan). Tra từ trúng cache thì không tính cooldown |
 | `LOCK:WORD_CHAIN` | STRING, TTL 15 giây | Lock toàn cục khi xử lý nước đi, tạo phiên và thay từ bot |
 
 - Phòng giữ tối đa 5000 tin gần nhất. Vượt thì xoá tin cũ nhất. Ngoài giới hạn này không tin nào bị xoá; tin bot đưa ra từ đã hết hạn chỉ bị ghi đè bằng từ mới.
@@ -153,6 +158,28 @@ Về text dán vào: cả bot gốc và Ola đều không phân biệt được 
 - Khi server đã lấy được lock, request bị hủy giữa chừng vẫn ghi đủ và vẫn phát event.
 - **Không gọi API từ điển khi đang giữ lock.** Nước đi được chấm xong (kể cả chọn từ mở ván mới khi thắng) ở ngoài lock, dựa trên state có `revision` R. Vào lock, server chỉ kiểm tra state vẫn ở `revision` R rồi ghi. Nếu có người khác vừa nối trước (revision đã đổi) thì server chấm lại theo state mới, tối đa 3 lần, sau đó trả `409`.
 - Tạo phiên (lúc vào lần đầu) và thay từ bot hết hạn cũng chọn và kiểm tra từ mới trước khi lấy lock.
+
+### Postgres: `word_chain_scores`
+
+Mỗi từ nối đúng là một dòng. Đây là nguồn cho thống kê theo thời gian và lịch sử thắng.
+
+| Cột | Kiểu | Nội dung |
+|---|---|---|
+| `message_id` | uuid, PK | id tin nối từ. Ghi bằng `ON CONFLICT DO NOTHING` nên không bao giờ trùng |
+| `session_id` | uuid | phiên chơi |
+| `user_id` | uuid, FK `users` | người nối |
+| `word`, `previous_word` | varchar(100) | từ vừa nối và từ được nối vào |
+| `points` | smallint, mặc định 1 | điểm của lần nối này |
+| `is_win` | boolean | đây có phải từ cuối (thắng) không |
+| `created_at` | timestamptz | thời điểm nối |
+
+Index: `(created_at)` cho bảng xếp hạng theo kỳ; `(created_at DESC) WHERE is_win` cho lịch sử thắng; `(user_id, created_at DESC) WHERE is_win` cho lịch sử thắng của một người.
+
+- Điểm trong kỳ = `SUM(points)`, trận thắng trong kỳ = `COUNT(*) FILTER (WHERE is_win)`. Muốn thống kê khoảng khác chỉ cần đổi điều kiện `created_at`.
+- Kỳ **Tất cả** đọc từ Redis ZSET (`POINTS`, `WINS`): nhanh và giữ nguyên điểm tích luỹ từ trước khi có bảng này. Hôm nay / Tuần / Tháng đọc từ Postgres, nên chỉ tính từ lúc deploy bảng.
+- Mốc kỳ tính theo GMT+7: ngày từ 00:00, tuần từ 00:00 thứ Hai, tháng từ 00:00 ngày 1.
+- Ghi Postgres **sau** khi transaction Redis thành công và **ngoài lock**. Ghi lỗi thì chỉ log, nước đi vẫn thành công; khi đó số liệu theo kỳ thiếu 1 dòng nhưng "Tất cả" vẫn đúng. Không ghi Postgres trước, vì Redis lỗi sau đó sẽ để lại dòng điểm không có thật.
+- Đo trên 5 triệu dòng (khoảng 13.700 từ/ngày trong 1 năm): ghi 1 dòng ~0,1 ms; bảng xếp hạng hôm nay / tuần / tháng ~16 / 65 / 125 ms; lịch sử thắng dưới 1,5 ms. Thời gian truy vấn theo kỳ tăng theo số dòng trong kỳ, không theo tổng kích thước bảng. Khi lượng chơi tăng khoảng 10 lần thì nên thêm bảng cộng dồn theo ngày, dựng lại được từ bảng này.
 
 ## 7. Luồng realtime
 
@@ -176,9 +203,11 @@ API service ──Kafka CHAT.WORD_CHAIN.EVENT──▶ Chat service ──Socket
 | `wordchain.service.go` | Lock, xử lý nước đi, tạo phiên, timer thay từ bot hết hạn, phát event |
 | `wordchain.store.go` | Đọc và ghi Redis, transaction `Apply` |
 | `wordchain.messages.go` | Nội dung tin bot |
-| `wordchain.lookup.go` | Tra từ và cooldown |
+| `wordchain.lookup.go` | Tra từ, cooldown chỉ áp dụng khi phải gọi API ngoài |
 | `wordchain.hint.go` | Gợi ý: chọn từ, kiểm tra điều kiện, gọi ví trừ KEN |
 | `wordchain.wallet.go` | Trừ KEN cho gợi ý trong transaction Postgres, ghi `ken_transactions` |
+| `wordchain.leaderboard.go` | Ghi điểm vào Postgres, bảng xếp hạng theo điểm/thắng và theo kỳ (GMT+7), lịch sử thắng |
+| `wordchain.repository.go` | Đọc và ghi bảng `word_chain_scores` |
 | `wordchain.controller.go`, `wordchain.router.go` | REST |
 
 Ngoài folder `wordchain`, tính năng này còn đụng tới:

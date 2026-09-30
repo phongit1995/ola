@@ -20,6 +20,40 @@ import {
 interface WordChainMessageRowProps {
   item: WordChainFeedMessage;
   isOwn: boolean;
+  onWordInfo: (word: string) => void;
+}
+
+function WordInfoButton({
+  word,
+  onWordInfo,
+}: {
+  word: string;
+  onWordInfo: (word: string) => void;
+}) {
+  const { t } = useTranslation();
+  const label = t('wordChain.wordInfo', { word });
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={() => onWordInfo(word)}
+      className="relative -mx-0.5 flex h-5 w-5 shrink-0 items-center justify-center self-center rounded-full text-black/45 transition-colors after:absolute after:-inset-2 after:content-[''] hover:text-ola-primary-ink"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-full w-full"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 11v5.5M12 7.5h.01" />
+      </svg>
+    </button>
+  );
 }
 
 function ReplyQuote({ message }: { message: WordChainMessage }) {
@@ -149,12 +183,15 @@ function BotMessage({
 function MoveBubble({
   message,
   isOwn,
+  onWordInfo,
 }: {
   message: WordChainMessage;
   isOwn: boolean;
+  onWordInfo: (word: string) => void;
 }) {
   const status = resolveWordChainStatus(message);
   const hasReaction = status != null || Boolean(message.reaction);
+  const isValidWord = status === 'correct' || status === 'win';
 
   return (
     <div
@@ -205,6 +242,12 @@ function MoveBubble({
             </span>
           )}
         </div>
+        {isValidWord && (
+          <WordInfoButton
+            word={message.word || message.content}
+            onWordInfo={onWordInfo}
+          />
+        )}
       </div>
     </div>
   );
@@ -213,11 +256,14 @@ function MoveBubble({
 function WordChainMessageRowComponent({
   item,
   isOwn,
+  onWordInfo,
 }: WordChainMessageRowProps) {
   if (item.message.senderType === WORD_CHAIN_SENDER_TYPE.bot) {
     return <BotMessage message={item.message} replyTo={item.replyTo} />;
   }
-  return <MoveBubble message={item.message} isOwn={isOwn} />;
+  return (
+    <MoveBubble message={item.message} isOwn={isOwn} onWordInfo={onWordInfo} />
+  );
 }
 
 export const WordChainMessageRow = memo(WordChainMessageRowComponent);

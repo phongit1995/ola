@@ -183,26 +183,67 @@ Lỗi:
 | 429 | | Vượt rate limit |
 | 503 | `WORD_CHAIN_VERIFY_FAILED` | API từ điển lỗi: `suggest` lỗi, hoặc `lookup` lỗi ở bất kỳ từ nào đang xét. Không trừ KEN |
 
-### `GET /rooms/word-chain/leaderboard`
+### `GET /rooms/word-chain/leaderboard?sort=points&period=all`
 
-Top 10 theo điểm.
+Top 10 theo điểm hoặc theo số trận thắng, trong một kỳ.
+
+| Tham số | Giá trị | Mặc định |
+|---|---|---|
+| `sort` | `points`, `wins` | `points` |
+| `period` | `day` (hôm nay), `week` (tuần này, từ thứ Hai), `month` (tháng này), `all` (từ trước tới nay) | `all` |
+
+Giá trị lạ được coi là mặc định. Mốc ngày/tuần/tháng tính theo giờ Việt Nam (GMT+7).
 
 ```json
 {
   "items": [
-    { "rank": 1, "userId": "…", "username": "alice", "fullName": "…", "avatar": "…", "points": 120 }
+    { "rank": 1, "userId": "…", "username": "alice", "fullName": "…", "avatar": "…", "points": 120, "wins": 7 }
   ],
   "total": 37,
-  "me": { "rank": 12, "userId": "…", "username": "bob", "points": 8 }
+  "me": { "rank": 12, "userId": "…", "username": "bob", "points": 8, "wins": 0 },
+  "sort": "points",
+  "period": "all"
 }
 ```
 
-- `total` là tổng số người đã có điểm.
-- `me` là `null` nếu mình chưa có điểm nào.
+- Mỗi dòng có cả `points` lẫn `wins` trong kỳ đó, sắp theo `sort`. Bằng nhau thì: với `day`/`week`/`month` xét tiếp chỉ số còn lại; với `all` (Redis) sắp theo `userId`.
+- `total` là số người có `sort` > 0 trong kỳ (tab Thắng chỉ đếm người đã thắng ít nhất 1 trận).
+- `me` là `null` nếu mình chưa có điểm (hoặc chưa thắng, với `sort=wins`) trong kỳ.
+- `period=all` đọc từ Redis nên gồm cả điểm từ trước khi có thống kê theo kỳ; các kỳ khác chỉ tính từ lúc có bảng `word_chain_scores`.
+
+### `GET /rooms/word-chain/wins?limit=20&before=<id>&mine=true`
+
+Lịch sử các trận thắng, mới nhất trước (sắp theo `createdAt` rồi `id`). `limit` mặc định 20, tối đa 50. `mine=true` chỉ lấy trận thắng của mình.
+
+```json
+{
+  "items": [
+    {
+      "id": "…",
+      "userId": "…",
+      "username": "alice",
+      "fullName": "…",
+      "avatar": "…",
+      "word": "phùn phụt",
+      "previousWord": "mưa phùn",
+      "createdAt": "2026-09-30T15:20:27.826173Z"
+    }
+  ],
+  "hasMore": true,
+  "nextBefore": "…"
+}
+```
+
+- `id` là id tin nối từ thắng.
+- `word` là từ cuối người đó nối được, `previousWord` là từ được nối vào.
+- Phân trang bằng cursor: tải thêm thì gửi `before` = `nextBefore` của trang trước. Có trận thắng mới xen vào giữa hai lần tải cũng không làm trùng hay sót dòng. `nextBefore` chỉ có khi `hasMore = true`.
+- `before` không phải id hợp lệ hoặc không tồn tại thì trả danh sách rỗng.
 
 ### `GET /rooms/word-chain/lookup?word=<từ>`
 
-Tra nghĩa của từ qua dict.minhqnd.com. Mỗi người chỉ được tra 1 lần mỗi 5 giây.
+Tra nghĩa của từ qua dict.minhqnd.com. Kết quả được cache 24 giờ trong Redis. Từ đã có trong cache (mọi từ đã được chấm khi nối, hoặc đã có người tra) trả ngay và **không tính cooldown**. Chỉ khi phải gọi API ngoài thì mỗi người mới bị giới hạn 1 lần mỗi 5 giây (`429 WORD_CHAIN_COOLDOWN`).
+
+Client dùng endpoint này cho cả hộp **Tra từ** lẫn nút ⓘ nhỏ nằm ngoài bubble, cạnh từ đã nối đúng (`ok`/`win`; tin người khác thì ở bên phải, tin của mình ở bên trái): bấm ⓘ mở hộp Tra từ điền sẵn từ đó và tra luôn.
 
 ```json
 {

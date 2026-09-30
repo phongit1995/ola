@@ -72,6 +72,7 @@ func newTestService(t *testing.T) *Service {
 		store:     NewStore(cache),
 		cache:     cache,
 		publisher: &recordingPublisher{},
+		scores:    &recordingScoreLog{},
 		logger:    zap.NewNop().Sugar(),
 	}
 	t.Cleanup(svc.stopTimer)
