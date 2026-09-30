@@ -18,7 +18,7 @@ function renderKey(message: RoomMessage): string {
   return message.clientMsgId ?? message.id;
 }
 
-function dayKey(iso: string): string {
+export function messageDayKey(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
@@ -92,7 +92,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
   };
 
   for (const message of messages) {
-    const day = dayKey(message.createdAt);
+    const day = messageDayKey(message.createdAt);
     const time = new Date(message.createdAt).getTime();
 
     if (day !== lastDay) {

@@ -14,6 +14,7 @@ import { AnnouncementBanner } from './AnnouncementBanner';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { GameOverlay } from '../games/GameOverlay';
 import { RoomChatOverlay } from '../room/RoomChatOverlay';
+import { WordChainOverlay } from '../room/word-chain/WordChainOverlay';
 import { AppOverlay } from '../apps/AppOverlay';
 import { ClanOverlayHost } from '../clan/ClanOverlayHost';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
@@ -91,6 +92,7 @@ export function HomePage() {
           <ActivePanel />
         </Suspense>
         <RoomChatOverlay visible={tab === 'room'} />
+        <WordChainOverlay visible={tab === 'room'} />
         {downloadFabMounted && (
           <DownloadFab
             hidden={hideKenBadge || guideOpen}

@@ -24,6 +24,13 @@ export const API_PATH = {
     blocked: '/rooms/blocked',
     blockedUser: (userId: string) => `/rooms/blocked/${userId}`,
   },
+  wordChain: {
+    overview: '/rooms/word-chain',
+    messages: '/rooms/word-chain/messages',
+    moves: '/rooms/word-chain/moves',
+    leaderboard: '/rooms/word-chain/leaderboard',
+    lookup: '/rooms/word-chain/lookup',
+  },
   adminRooms: {
     base: '/admin/rooms',
     detail: (id: string) => `/admin/rooms/${id}`,

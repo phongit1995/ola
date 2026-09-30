@@ -10,6 +10,7 @@ interface RoomListProps {
   onEnter: (room: RoomListItem) => void;
   onAroundYou: () => void;
   onQuickJoin: () => void;
+  onWordChain: () => void;
   showQuickJoin: boolean;
 }
 
@@ -60,6 +61,7 @@ export function RoomList({
   joinedRoomId,
   onEnter,
   onQuickJoin,
+  onWordChain,
   showQuickJoin,
 }: RoomListProps) {
   const { t } = useTranslation();
@@ -106,6 +108,12 @@ export function RoomList({
           onClick={onQuickJoin}
         />
       )}
+      <SpecialRow
+        icon="🔤"
+        title={t('wordChain.entryTitle')}
+        subtitle={t('wordChain.entryDesc')}
+        onClick={onWordChain}
+      />
 
       <SectionHeader label={t('room.sectionPublic')} />
 
