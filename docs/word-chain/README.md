@@ -56,7 +56,7 @@ Chuẩn hoá trước khi chấm (`wordchain.normalize.go`):
 - Người đang không được chơi thì không mua được gợi ý: từ hiện tại do chính mình nối (`403 WORD_CHAIN_WAIT_TURN`) hoặc đã hết lượt đoán (`403 WORD_CHAIN_NO_GUESSES`). Không đủ KEN thì trả `400 WORD_CHAIN_INSUFFICIENT_KEN`.
 - Trừ KEN trong một transaction Postgres có khoá dòng `users` (`FOR UPDATE`): kiểm tra lượt này đã mua chưa, trừ tiền, ghi `ken_transactions` loại `WORD_CHAIN_HINT` và dòng `word_chain_hint_purchases` (hiện trong lịch sử KEN của user với tên "Gợi ý nối từ"), rồi xoá user cache và bắn `KEN_UPDATED` cho mọi tab/thiết bị của user.
 - Gợi ý chỉ là danh sách từ. Gửi từ gợi ý vẫn đi qua `POST /moves` như từ tự gõ, được chấm và cộng điểm bình thường. Nếu trong lúc đó có người khác nối trước thì gợi ý không còn khớp; client báo gợi ý đã cũ và khoá nút gửi.
-- Tuỳ chọn **Tự động gửi** lưu ở máy người dùng (store `wordChainPrefsStore`, key `ola.word-chain.prefs`; web lưu ở localStorage). Bật thì mua xong client gửi luôn từ đầu tiên; tắt thì hiện danh sách gợi ý, mỗi từ có nút Gửi. Mobile chưa có màn nối từ.
+- Tuỳ chọn **Tự động gửi** lưu ở máy người dùng (store `wordChainPrefsStore`, key `ola.word-chain.prefs`; web lưu ở localStorage, mobile lưu ở MMKV). Bật thì mua xong client gửi luôn từ đầu tiên; tắt thì hiện danh sách gợi ý, mỗi từ có nút Gửi.
 
 ## 3. Vòng đời phiên và ván
 
@@ -268,3 +268,15 @@ Cấu hình lưu ở `app_settings`, key `word_chain`:
 - Giá gợi ý đọc lại ở mỗi lần mua, nên đổi giá có hiệu lực ngay. `hintPrice` trong `GET /rooms/word-chain` và `price` trong response gợi ý là giá thật đã áp dụng; client cập nhật giá hiển thị theo response.
 - Đọc cấu hình lỗi (DB lỗi) thì server **coi như phòng đóng**, để không vô tình mở lại phòng admin đã tắt: trả `503 WORD_CHAIN_UNAVAILABLE` cho các endpoint trên, timer thay từ thử lại sau 30 giây.
 - API admin (cần quyền admin): `GET /admin/word-chain` (tổng quan, không tạo phiên mới), `GET /admin/word-chain/messages?limit&before`, `GET /admin/word-chain/wins?limit&before&userId`.
+
+## 10. Mobile
+
+Màn nối từ trên mobile nằm ở `mobile/src/screens/room/word-chain/`, dùng chung toàn bộ logic với web qua `@ola/shared` (`wordChainStore`, `wordChainConfigStore`, `wordChainPrefsStore`, `lib/wordChain`, chuỗi dịch). Mobile chỉ viết lại tầng giao diện.
+
+- Route `WordChain` nằm trong stack của tab Phòng chat, nên tab bar vẫn hiện như phòng chat thường. Vào màn thì mở phòng, thoát thì đóng; admin tắt phòng thì tự quay về danh sách. Đăng xuất reset store.
+- Danh sách phòng có dòng **Phòng nối từ** ngay dưới **Chọn phòng nhanh**, ẩn khi admin tắt. Cấu hình đọc lại mỗi lần mở tab và khi kéo làm mới.
+- Feed dùng `FlashList` + `useStickyBottomList` (bám đáy, tải thêm tin cũ khi cuộn lên đầu), bàn phím qua `ChatKeyboardArea` như phòng chat.
+- Hộp thoại dùng `Dialog` chuẩn của mobile: Gợi ý, Tra từ / nghĩa từ, Bảng xếp hạng (Thắng / Điểm / Lịch sử + lọc kỳ), Luật chơi.
+- Hiệu ứng thắng dùng Reanimated: pháo giấy tính quỹ đạo trên UI thread, thẻ cúp có tia sáng SVG xoay, viền vàng quanh bubble từ thắng. Máy bật giảm chuyển động thì bỏ pháo giấy và hiệu ứng nảy. Khác web: chữ từ thắng màu vàng đặc (RN không có chữ gradient) và dùng font hệ thống đậm thay cho Baloo 2.
+- Icon nối từ (`.webp`) copy từ web vào `mobile/src/assets/icons/word-chain/`, gom trong `wordChainAssets.ts`.
+

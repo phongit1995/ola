@@ -7,6 +7,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
+import { useWordChainConfigStore } from '@ola/shared/stores/word-chain/wordChainConfigStore';
 import type { Room } from '@ola/shared/types';
 import type { RoomStackParamList } from '@navigation/types';
 import { ROOM_ROUTES } from '@navigation/routes';
@@ -16,6 +17,7 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { ROOM_BROWSE_LIMIT } from './roomConstants';
+import { WORD_CHAIN_ICONS } from './word-chain/wordChainAssets';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
 const quickJoinIcon = require('@assets/icons/room/ic_action_auto_join_room.png');
@@ -123,6 +125,31 @@ function QuickJoinRow({ onPress }: { onPress: () => void }) {
   );
 }
 
+function WordChainRow({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <Pressable
+      onPress={onPress}
+      className="flex-row items-center gap-2 px-4 py-3 active:bg-black/5"
+      style={{
+        borderBottomWidth: 1,
+        borderBottomColor: DIVIDER,
+        backgroundColor: 'rgba(255,255,255,0.8)',
+      }}
+    >
+      <Image source={WORD_CHAIN_ICONS.room} style={{ width: 64, height: 64 }} resizeMode="contain" />
+      <View className="min-w-0 flex-1 pl-2">
+        <Text numberOfLines={1} className="text-base text-ola-ink">
+          {t('wordChain.entryTitle')}
+        </Text>
+        <Text numberOfLines={1} className="mt-1 text-sm text-ola-ink-soft">
+          {t('wordChain.entryDesc')}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
 function SectionHeader({ label }: { label: string }) {
   return (
     <View className="px-4 py-1.5" style={{ backgroundColor: 'rgba(243,243,243,0.8)' }}>
@@ -145,19 +172,27 @@ export function RoomListScreen() {
   const loading = useRoomListStore((s) => s.loading);
   const loaded = useRoomListStore((s) => s.loaded);
   const fetchRooms = useRoomListStore((s) => s.fetchRooms);
+  const wordChainEnabled = useWordChainConfigStore((s) => s.enabled);
+  const loadWordChainConfig = useWordChainConfigStore((s) => s.load);
 
-  const load = useCallback(
-    () => fetchRooms({ limit: ROOM_BROWSE_LIMIT }),
-    [fetchRooms]
-  );
+  const load = useCallback(() => {
+    void loadWordChainConfig();
+    return fetchRooms({ limit: ROOM_BROWSE_LIMIT });
+  }, [fetchRooms, loadWordChainConfig]);
 
   useFocusEffect(
     useCallback(() => {
+      void loadWordChainConfig();
       void fetchRooms(
         { limit: ROOM_BROWSE_LIMIT },
         { silent: useRoomListStore.getState().loaded }
       );
-    }, [fetchRooms])
+    }, [fetchRooms, loadWordChainConfig])
+  );
+
+  const openWordChain = useCallback(
+    () => navigation.navigate(ROOM_ROUTES.WordChain),
+    [navigation]
   );
 
   const joinStatus = useRoomChatStore((s) => s.status);
@@ -204,10 +239,11 @@ export function RoomListScreen() {
     () => (
       <View>
         {loaded && <QuickJoinRow onPress={quickJoin} />}
+        {wordChainEnabled && <WordChainRow onPress={openWordChain} />}
         <SectionHeader label={t('room.sectionPublic')} />
       </View>
     ),
-    [loaded, quickJoin, t]
+    [loaded, quickJoin, wordChainEnabled, openWordChain, t]
   );
 
   return (

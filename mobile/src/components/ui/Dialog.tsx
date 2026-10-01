@@ -134,7 +134,7 @@ interface DialogButtonProps {
   variant?: DialogButtonVariant;
   disabled?: boolean;
   onPress: () => void;
-  children: string;
+  children: ReactNode;
 }
 
 const dialogButtonBox: Record<Exclude<DialogButtonVariant, 'green'>, object> = {
@@ -169,9 +169,13 @@ export function DialogButton({
         boxStyle,
       ]}
     >
-      <Text className="text-sm" style={{ color: dialogButtonText[variant] }}>
-        {children}
-      </Text>
+      {typeof children === 'string' ? (
+        <Text className="text-sm" style={{ color: dialogButtonText[variant] }}>
+          {children}
+        </Text>
+      ) : (
+        children
+      )}
     </Pressable>
   );
 }

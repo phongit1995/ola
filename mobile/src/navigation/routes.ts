@@ -53,4 +53,5 @@ export const ROOT_ROUTES = {
 export const ROOM_ROUTES = {
   RoomList: 'RoomList',
   RoomChat: 'RoomChat',
+  WordChain: 'WordChain',
 } as const;

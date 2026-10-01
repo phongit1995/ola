@@ -34,6 +34,7 @@ import { ChatDetailScreen } from '@screens/chat/ChatDetailScreen';
 import { ChatBotScreen } from '@screens/chat-bot/ChatBotScreen';
 import { RoomListScreen } from '@screens/room/RoomListScreen';
 import { RoomChatScreen } from '@screens/room/RoomChatScreen';
+import { WordChainScreen } from '@screens/room/word-chain/WordChainScreen';
 import { MeFeedScreen } from '@screens/me/MeFeedScreen';
 import { GamesScreen } from '@screens/games/GamesScreen';
 import { PersonalScreen } from '@screens/personal/PersonalScreen';
@@ -94,6 +95,7 @@ function RoomNavigator() {
         component={RoomChatScreen}
         options={{ gestureEnabled: false }}
       />
+      <RoomStack.Screen name={ROOM_ROUTES.WordChain} component={WordChainScreen} />
     </RoomStack.Navigator>
   );
 }

@@ -8,6 +8,7 @@ import { registerOnLogout } from '@ola/shared/stores/auth/authStore';
 import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
+import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useArcadeOverlayStore } from './store/arcadeOverlayStore';
 import { clearAllPushNotifications } from '@lib/push';
@@ -35,6 +36,7 @@ configureSound({
 });
 registerOnLogout(() => {
   useRoomChatStore.getState().reset();
+  useWordChainStore.getState().reset();
   useArcadeOverlayStore.getState().close();
   useKenTreasureStore.getState().reset();
   useMediaViewerStore.getState().close();
