@@ -366,4 +366,4 @@ POST /moves (kèm sessionId + turn đang hiển thị)
 Hiển thị gợi ý:
 
 - Header: "Từ hiện tại: **{state.word}**".
-- Ô nhập: placeholder `Nhập từ bắt đầu bằng "{state.requiredSyllable}"…`.
+- Ô nhập: placeholder `Nối tiếp "{state.requiredSyllable}"…`. Bên trái ô nhập là nút **Tra từ**, bên phải là nút **Gợi ý** và **Gửi**; header chỉ còn **Bảng xếp hạng** và **Luật chơi**.

@@ -17,10 +17,11 @@ import { WordChainMessageRow } from './WordChainMessageRow';
 import { WordChainRoomIcon } from './WordChainRoomIcon';
 import { WordChainComposer } from './WordChainComposer';
 import { WordChainHintDialog } from './WordChainHintDialog';
-import { HelpIcon, LookupIcon, TrophyIcon } from './WordChainIcons';
+import { HelpIcon, TrophyIcon } from './WordChainIcons';
 import { WordChainLeaderboardDialog } from './WordChainLeaderboardDialog';
 import { WordChainLookupDialog } from './WordChainLookupDialog';
 import { WordChainRulesDialog } from './WordChainRulesDialog';
+import { WordChainWinCelebration } from './WordChainWinCelebration';
 import { UserProfileView } from '../../../profile/UserProfileView';
 
 const LOAD_MORE_AT_TOP_PX = 80;
@@ -51,7 +52,7 @@ function HeaderButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+      className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/15"
     >
       {children}
     </button>
@@ -70,6 +71,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   const sendMove = useWordChainStore((store) => store.sendMove);
   const lookup = useWordChainStore((store) => store.lookup);
   const clearLookup = useWordChainStore((store) => store.clearLookup);
+  const celebration = useWordChainStore((store) => store.celebration);
   const currentUserId = useAuthStore((store) => store.user?.id) ?? '';
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
   const [lookupWord, setLookupWord] = useState('');
@@ -128,22 +130,16 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
         left={<WordChainRoomIcon className="h-8 w-8" />}
       >
         <HeaderButton
-          label={t('wordChain.lookupTitle')}
-          onClick={() => openLookup('')}
-        >
-          <LookupIcon />
-        </HeaderButton>
-        <HeaderButton
           label={t('wordChain.leaderboardTitle')}
           onClick={() => setDialog('leaderboard')}
         >
-          <TrophyIcon />
+          <TrophyIcon className="h-11 w-11" />
         </HeaderButton>
         <HeaderButton
           label={t('wordChain.rulesTitle')}
           onClick={() => setDialog('rules')}
         >
-          <HelpIcon />
+          <HelpIcon className="h-9 w-9" />
         </HeaderButton>
       </ScreenHeader>
 
@@ -173,6 +169,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
               message={item.message}
               replyTo={item.replyTo}
               isOwn={item.message.senderId === currentUserId}
+              celebrating={item.message.id === celebration?.id}
               onWordInfo={openLookup}
               onOpenProfile={openProfile}
             />
@@ -207,7 +204,16 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
         }
         onSend={send}
         onHint={() => setDialog('hint')}
+        onLookup={() => openLookup('')}
       />
+
+      {celebration != null && (
+        <WordChainWinCelebration
+          key={celebration.id}
+          winner={celebration}
+          isOwn={celebration.senderId === currentUserId}
+        />
+      )}
 
       {dialog === 'hint' && (
         <WordChainHintDialog onClose={closeDialog} onSend={send} />

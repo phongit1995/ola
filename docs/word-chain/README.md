@@ -10,7 +10,7 @@ Code backend: `server/internal/modules/room/wordchain/`. Luật chơi lấy từ
 - Người chơi nối từ với nhau (PvP). **Bot chỉ làm trọng tài**: chấm từng từ, báo thắng, mở ván mới. Bot không tự nối từ.
 - User đã đăng nhập là chơi được, không cần join phòng qua ticket. Join socket chỉ để nhận realtime.
 - Dữ liệu ván chơi nằm ở **Redis**. Postgres chỉ giữ 3 thứ: tiền **Gợi ý** (`users.ken`, `ken_transactions`, `word_chain_hint_purchases`), lịch sử ghi điểm `word_chain_scores` để thống kê theo thời gian (xem mục 6), và cấu hình bật/tắt phòng, giá gợi ý trong `app_settings` (xem mục 9).
-- Tính năng phụ: **Tra từ** (hộp tra từ, và nút ⓘ nhỏ nằm ngoài bubble, cạnh mỗi từ nối đúng, để ai cũng xem được nghĩa), **Bảng xếp hạng** và **Gợi ý** (mất KEN).
+- Tính năng phụ: **Tra từ** (hộp tra từ mở từ nút bên trái ô nhập, và nút ⓘ nhỏ nằm ngoài bubble, cạnh mỗi từ nối đúng, để ai cũng xem được nghĩa), **Bảng xếp hạng** và **Gợi ý** (mất KEN).
 
 ## 2. Luật chơi
 
@@ -27,6 +27,7 @@ Kết quả của từ hợp lệ:
 
 - Nếu còn từ để nối tiếp: `code = ok` (✅). Từ đó thành từ hiện tại.
 - Nếu **không còn từ nào để nối tiếp**: `code = win` (🏆). Người vừa nối **thắng ván**, bot mở ngay ván mới với từ mới. Từ mở ván được đưa luôn vào lịch sử, nên không ai nối lại được từ đó.
+  - Web hiện hiệu ứng chúc mừng cho mọi người đang mở phòng: pháo giấy bắn từ 2 góc, thẻ có cúp, tên người thắng, từ thắng và "+1 trận thắng", bubble từ thắng sáng viền vàng. Thẻ tự tắt sau khoảng 4 giây hoặc khi bấm vào, không chặn ô nhập. Chỉ chạy khi tin thắng tới realtime (socket hoặc response của chính người thắng), tải lại lịch sử không hiện lại; máy bật giảm chuyển động thì bỏ pháo giấy và hiệu ứng nảy.
 - Mỗi từ hợp lệ (`ok` hoặc `win`) được **+1 điểm**. Từ `win` được thêm **+1 trận thắng**. Điểm và trận thắng cộng dồn mãi, không reset theo phiên.
 - Bảng xếp hạng có 2 tab **Thắng** (mở mặc định) và **Điểm**, lọc theo **Hôm nay / Tuần này / Tháng này / Tất cả** (giờ Việt Nam, tuần bắt đầu thứ Hai), và tab **Lịch sử** các trận thắng (tất cả hoặc của mình).
 - Từ sai không bị trừ điểm, nhưng **mỗi người chỉ có 3 lượt đoán cho mỗi từ hiện tại**. Mọi kiểu sai (`invalid_format`, `mismatch`, `repeated`, `not_in_dict`) đều trừ 1 lượt.

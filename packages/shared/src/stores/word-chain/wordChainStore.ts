@@ -29,6 +29,7 @@ import { setAuthUserKen } from '../auth/authStore';
 import { claimRealtimeRegistration } from '../realtimeRegistration.state';
 import { useWordChainConfigStore } from './wordChainConfigStore';
 import {
+  freshWinningMove,
   guessesFor,
   hasMoreInSession,
   isNewerWordChainState,
@@ -60,6 +61,7 @@ const initialWordChainState: WordChainStoreData = {
   winsFailed: false,
   lookupResult: null,
   lookupLoading: false,
+  celebration: null,
 };
 
 function errorCode(error: unknown): string | undefined {
@@ -71,6 +73,15 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
 
   function addMessages(items: WordChainMessage[]) {
     set((store) => ({ messages: mergeWordChainMessages(store.messages, items) }));
+  }
+
+  function addLiveMessages(items: WordChainMessage[]) {
+    const winner = freshWinningMove(get().messages, items);
+    addMessages(items);
+    const sessionId = get().state?.sessionId;
+    if (winner != null && (sessionId == null || winner.sessionId === sessionId)) {
+      set({ celebration: winner });
+    }
   }
 
   function setGuesses(state: WordChainState, remaining: number) {
@@ -180,7 +191,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     SocketService.on(WORD_CHAIN_SOCKET_EVENTS.newMessage, (data) => {
       if (!get().opened) return;
       const message = toWordChainMessage(toRecord(data)?.message);
-      if (message != null) addMessages([message]);
+      if (message != null) addLiveMessages([message]);
     });
     SocketService.on(WORD_CHAIN_SOCKET_EVENTS.stateUpdated, (data) => {
       if (!get().opened) return;
@@ -194,6 +205,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
 
   return {
     addMessages,
+    addLiveMessages,
     applyState,
     setGuesses,
     rejoin,
@@ -264,7 +276,7 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
           turn: sent?.turn,
         });
         if (get().opened) {
-          sync.addMessages([result.message, ...result.botMessages]);
+          sync.addLiveMessages([result.message, ...result.botMessages]);
           sync.applyState(result.state);
           sync.setGuesses(result.state, result.remainingGuesses);
         }
@@ -374,6 +386,10 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
     clearLookup: () => {
       lookupRequest += 1;
       set({ lookupResult: null, lookupLoading: false });
+    },
+
+    dismissCelebration: (id) => {
+      if (get().celebration?.id === id) set({ celebration: null });
     },
 
     reset: clear,

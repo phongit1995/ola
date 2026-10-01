@@ -14,11 +14,13 @@ import {
 import type { WordChainMessage, WordChainMoveStatus } from '@app-types';
 import { InfoIcon } from './WordChainIcons';
 import { WordChainStatusIcon } from './WordChainStatusIcon';
+import '../wordChain.css';
 
 interface WordChainMessageRowProps {
   message: WordChainMessage;
   replyTo?: WordChainMessage;
   isOwn: boolean;
+  celebrating: boolean;
   onWordInfo: (word: string) => void;
   onOpenProfile: (username: string) => void;
 }
@@ -194,11 +196,13 @@ function BotMessage({
 function MoveBubble({
   message,
   isOwn,
+  celebrating,
   onWordInfo,
   onOpenProfile,
 }: {
   message: WordChainMessage;
   isOwn: boolean;
+  celebrating: boolean;
   onWordInfo: (word: string) => void;
   onOpenProfile: (username: string) => void;
 }) {
@@ -259,7 +263,11 @@ function MoveBubble({
             className={`w-fit max-w-full rounded-2xl px-3.5 py-2 text-base break-words ${bubbleSurface(
               isOwn,
               false
-            )}`}
+            )} ${
+              celebrating
+                ? 'word-chain-win-glow'
+                : ''
+            }`}
           >
             {message.content}
           </div>
@@ -288,6 +296,7 @@ function WordChainMessageRowComponent({
   message,
   replyTo,
   isOwn,
+  celebrating,
   onWordInfo,
   onOpenProfile,
 }: WordChainMessageRowProps) {
@@ -300,6 +309,7 @@ function WordChainMessageRowComponent({
     <MoveBubble
       message={message}
       isOwn={isOwn}
+      celebrating={celebrating}
       onWordInfo={onWordInfo}
       onOpenProfile={onOpenProfile}
     />

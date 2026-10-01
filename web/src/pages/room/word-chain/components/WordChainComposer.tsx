@@ -4,12 +4,14 @@ import { Spinner } from '@components';
 import { WORD_CHAIN_MOVE_MAX_LENGTH } from '@constants';
 import { toast, wordChainMoveErrorText } from '@lib';
 import { WordChainHintIcon } from './WordChainHintIcon';
+import { LookupIcon } from './WordChainIcons';
 
 interface WordChainComposerProps {
   syllable?: string;
   lockedHint?: string;
   onSend: (content: string) => Promise<unknown>;
   onHint: () => void;
+  onLookup: () => void;
 }
 
 export function WordChainComposer({
@@ -17,6 +19,7 @@ export function WordChainComposer({
   lockedHint,
   onSend,
   onHint,
+  onLookup,
 }: WordChainComposerProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +48,15 @@ export function WordChainComposer({
       onSubmit={submit}
       className="flex shrink-0 items-center gap-2 bg-white px-3 py-2"
     >
+      <button
+        type="button"
+        aria-label={t('wordChain.lookupTitle')}
+        title={t('wordChain.lookupTitle')}
+        onClick={onLookup}
+        className="flex h-10 w-10 shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95"
+      >
+        <LookupIcon className="h-8 w-8" />
+      </button>
       <input
         ref={inputRef}
         value={text}
@@ -70,9 +82,9 @@ export function WordChainComposer({
         title={t('wordChain.hint')}
         onClick={onHint}
         disabled={sending || locked}
-        className="-my-0.5 flex h-11 w-11 shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+        className="flex h-10 w-10 shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
       >
-        <WordChainHintIcon className="h-11 w-11" />
+        <WordChainHintIcon className="h-10 w-10" />
       </button>
       <button
         type="submit"

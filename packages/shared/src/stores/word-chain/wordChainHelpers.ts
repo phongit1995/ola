@@ -1,3 +1,4 @@
+import { WORD_CHAIN_CODE, WORD_CHAIN_MESSAGE_TYPE } from '../../constants/wordChain';
 import { toRecord } from '../../lib/utils';
 import { activeVipTypeId } from '../../lib/vip';
 import type {
@@ -43,6 +44,24 @@ export function mergeWordChainMessages(
     byId.set(message.id, withWordChainSenderVip(message));
   }
   return [...byId.values()].sort((a, b) => a.seq - b.seq);
+}
+
+export function freshWinningMove(
+  current: WordChainMessage[],
+  incoming: WordChainMessage[]
+): WordChainMessage | null {
+  const known = new Set(current.map((message) => message.id));
+  let winner: WordChainMessage | null = null;
+  for (const message of incoming) {
+    if (
+      message.type === WORD_CHAIN_MESSAGE_TYPE.move &&
+      message.code === WORD_CHAIN_CODE.win &&
+      !known.has(message.id)
+    ) {
+      winner = message;
+    }
+  }
+  return winner;
 }
 
 export function withLatestPage(

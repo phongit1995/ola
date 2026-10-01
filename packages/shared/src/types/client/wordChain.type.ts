@@ -74,6 +74,7 @@ export interface WordChainStoreState {
   winsFailed: boolean;
   lookupResult: WordChainLookup | null;
   lookupLoading: boolean;
+  celebration: WordChainMessage | null;
   open: () => void;
   close: () => void;
   loadMoreMessages: () => Promise<void>;
@@ -83,6 +84,7 @@ export interface WordChainStoreState {
   buyHint: () => Promise<WordChainHint>;
   lookup: (word: string) => Promise<void>;
   clearLookup: () => void;
+  dismissCelebration: (id: string) => void;
   reset: () => void;
 }
 
@@ -97,6 +99,7 @@ export type WordChainStoreData = Omit<
   | 'buyHint'
   | 'lookup'
   | 'clearLookup'
+  | 'dismissCelebration'
   | 'reset'
 >;
 
