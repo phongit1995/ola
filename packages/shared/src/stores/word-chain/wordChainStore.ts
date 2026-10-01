@@ -9,65 +9,79 @@ import {
 } from '../../constants/wordChain';
 import { toApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
+import { toRecord } from '../../lib/utils';
+import {
+  isSameWordChainTurn,
+  sessionMessages,
+  wordChainLeaderboardKey,
+  wordChainLookupErrorText,
+} from '../../lib/wordChain';
 import { SocketService } from '../../services/socket.service';
 import { WordChainService } from '../../services/wordChain.service';
-import type {
-  WordChainMessage,
-  WordChainState,
-} from '../../types/api/wordChain.type';
+import type { WordChainMessage, WordChainState } from '../../types/api/wordChain.type';
 import type {
   WordChainGet,
   WordChainSet,
   WordChainStoreData,
   WordChainStoreState,
 } from '../../types/client/wordChain.type';
-import { useAuthStore } from '../auth/authStore';
+import { setAuthUserKen } from '../auth/authStore';
 import { claimRealtimeRegistration } from '../realtimeRegistration.state';
 import { useWordChainConfigStore } from './wordChainConfigStore';
-import { toRecord } from '../room/roomHelpers';
 import {
   guessesFor,
+  hasMoreInSession,
   isNewerWordChainState,
   mergeWordChainMessages,
-  sessionMessages,
+  newerGuesses,
   toWordChainMessage,
   toWordChainState,
   withLatestPage,
-  wordChainLeaderboardKey,
 } from './wordChainHelpers';
 
 const initialWordChainState: WordChainStoreData = {
   opened: false,
   status: 'connecting',
   state: null,
-  points: 0,
   hintPrice: 0,
+  hint: null,
   guesses: null,
   messages: [],
   hasMore: false,
   loadingMore: false,
   leaderboards: {},
   leaderboardPending: [],
+  leaderboardFailed: [],
   wins: [],
   winsMine: false,
   winsHasMore: false,
   winsNextBefore: null,
   winsLoading: false,
+  winsFailed: false,
+  lookupResult: null,
+  lookupLoading: false,
 };
 
-function syncAuthKen(ken: number) {
-  useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
-}
-
-function isRoomDisabled(error: unknown): boolean {
-  if (toApiError(error).code !== WORD_CHAIN_ERROR_CODE.disabled) return false;
-  useWordChainConfigStore.getState().markDisabled();
-  return true;
+function errorCode(error: unknown): string | undefined {
+  return toApiError(error).code;
 }
 
 function createWordChainSync(set: WordChainSet, get: WordChainGet) {
+  let joinAttempt = 0;
+
   function addMessages(items: WordChainMessage[]) {
     set((store) => ({ messages: mergeWordChainMessages(store.messages, items) }));
+  }
+
+  function setGuesses(state: WordChainState, remaining: number) {
+    set((store) => ({
+      guesses: newerGuesses(store.guesses, guessesFor(state, remaining)),
+    }));
+  }
+
+  function disableRoom() {
+    useWordChainConfigStore.getState().markDisabled();
+    get().close();
   }
 
   async function reloadMessages() {
@@ -75,20 +89,19 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
       limit: WORD_CHAIN_MESSAGE_PAGE_SIZE,
     });
     if (!get().opened) return;
-    set((store) => ({
-      messages: sessionMessages(
-        withLatestPage(store.messages, page.items),
-        store.state?.sessionId
-      ),
-      hasMore: page.hasMore,
-    }));
+    set((store) => {
+      const sessionId = store.state?.sessionId;
+      return {
+        messages: sessionMessages(withLatestPage(store.messages, page.items), sessionId),
+        hasMore: hasMoreInSession(page, sessionId),
+      };
+    });
   }
 
   function applyState(incoming: WordChainState) {
     const current = get().state;
     if (!isNewerWordChainState(current, incoming)) return;
-    const sessionChanged =
-      current != null && current.sessionId !== incoming.sessionId;
+    const sessionChanged = current != null && current.sessionId !== incoming.sessionId;
     set((store) => ({
       state: incoming,
       messages: sessionMessages(store.messages, incoming.sessionId),
@@ -96,15 +109,23 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     if (sessionChanged) void reloadMessages().catch(() => undefined);
   }
 
-  async function join() {
-    const socket = await SocketService.ready(WORD_CHAIN_JOIN_ACK_TIMEOUT_MS);
+  async function refreshOverview() {
+    const overview = await WordChainService.overview();
     if (!get().opened) return;
+    applyState(overview.state);
+    setGuesses(overview.state, overview.remainingGuesses);
+  }
+
+  async function join(attempt: number) {
+    const live = () => attempt === joinAttempt && get().opened;
+    const socket = await SocketService.ready(WORD_CHAIN_JOIN_ACK_TIMEOUT_MS);
+    if (!live()) return;
     const ack = toRecord(
       await socket
         .timeout(WORD_CHAIN_JOIN_ACK_TIMEOUT_MS)
         .emitWithAck(WORD_CHAIN_SOCKET_EVENTS.join)
     );
-    if (!get().opened) return;
+    if (!live()) return;
     if (ack?.ok !== true) {
       set({ status: 'error' });
       return;
@@ -114,29 +135,45 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
       WordChainService.overview(),
       WordChainService.messages({ limit: WORD_CHAIN_MESSAGE_PAGE_SIZE }),
     ]);
-    if (!get().opened) return;
+    if (!live()) return;
     set((store) => ({ messages: withLatestPage(store.messages, page.items) }));
     applyState(overview.state);
-    set((store) => ({
-      status: 'joined',
-      points: overview.points,
-      hintPrice: overview.hintPrice,
-      guesses: guessesFor(overview.state, overview.remainingGuesses),
-      hasMore: page.hasMore,
-      messages: sessionMessages(store.messages, store.state?.sessionId),
-    }));
+    setGuesses(overview.state, overview.remainingGuesses);
+    set((store) => {
+      const sessionId = store.state?.sessionId;
+      return {
+        status: 'joined',
+        hintPrice: overview.hintPrice,
+        hasMore: hasMoreInSession(page, sessionId),
+        messages: sessionMessages(store.messages, sessionId),
+      };
+    });
   }
 
   function rejoin() {
-    join().catch((error: unknown) => {
-      if (!get().opened) return;
-      if (isRoomDisabled(error)) {
+    const attempt = ++joinAttempt;
+    join(attempt).catch((error: unknown) => {
+      if (attempt !== joinAttempt || !get().opened) return;
+      if (errorCode(error) === WORD_CHAIN_ERROR_CODE.disabled) {
         toast.error(i18n.t('wordChain.disabled'));
-        get().close();
+        disableRoom();
         return;
       }
       set({ status: 'error' });
     });
+  }
+
+  function handleActionError(error: unknown) {
+    const code = errorCode(error);
+    if (code === WORD_CHAIN_ERROR_CODE.disabled) {
+      disableRoom();
+    } else if (code === WORD_CHAIN_ERROR_CODE.wordChanged && get().opened) {
+      void refreshOverview().catch(() => undefined);
+    }
+  }
+
+  function cancelJoin() {
+    joinAttempt += 1;
   }
 
   if (claimRealtimeRegistration('word-chain')) {
@@ -155,17 +192,32 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     });
   }
 
-  return { addMessages, applyState, rejoin };
+  return {
+    addMessages,
+    applyState,
+    setGuesses,
+    rejoin,
+    cancelJoin,
+    handleActionError,
+  };
 }
 
 export const useWordChainStore = create<WordChainStoreState>((set, get) => {
   const sync = createWordChainSync(set, get);
   let winsRequest = 0;
+  let lookupRequest = 0;
+
+  function clear() {
+    winsRequest += 1;
+    lookupRequest += 1;
+    sync.cancelJoin();
+    set({ ...initialWordChainState });
+  }
 
   return {
     ...initialWordChainState,
 
-    open: async () => {
+    open: () => {
       if (get().opened) return;
       SocketService.connect();
       set({ ...initialWordChainState, opened: true });
@@ -175,14 +227,14 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
     close: () => {
       if (!get().opened) return;
       SocketService.connect().emit(WORD_CHAIN_SOCKET_EVENTS.leave);
-      winsRequest += 1;
-      set({ ...initialWordChainState });
+      clear();
     },
 
     loadMoreMessages: async () => {
       const { opened, hasMore, loadingMore, state, messages } = get();
+      const sessionId = state?.sessionId;
       if (!opened || !hasMore || loadingMore) return;
-      const oldest = sessionMessages(messages, state?.sessionId)[0];
+      const oldest = sessionMessages(messages, sessionId)[0];
       if (oldest == null) return;
       set({ loadingMore: true });
       try {
@@ -192,45 +244,41 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
         });
         const store = get();
         if (!store.opened) return;
-        if (sessionMessages(store.messages, store.state?.sessionId)[0]?.id !== oldest.id) {
+        if (sessionMessages(store.messages, sessionId)[0]?.id !== oldest.id) {
           set({ loadingMore: false });
           return;
         }
-        sync.addMessages(page.items);
-        set({ hasMore: page.hasMore, loadingMore: false });
+        sync.addMessages(sessionMessages(page.items, sessionId));
+        set({ hasMore: hasMoreInSession(page, sessionId), loadingMore: false });
       } catch {
         if (get().opened) set({ loadingMore: false });
       }
     },
 
     sendMove: async (content) => {
-      const sentState = get().state;
+      const sent = get().state;
       try {
-        const result = await WordChainService.move({ content });
+        const result = await WordChainService.move({
+          content,
+          sessionId: sent?.sessionId,
+          turn: sent?.turn,
+        });
         if (get().opened) {
           sync.addMessages([result.message, ...result.botMessages]);
           sync.applyState(result.state);
-          set({
-            points: result.points,
-            guesses: guessesFor(result.state, result.remainingGuesses),
-          });
+          sync.setGuesses(result.state, result.remainingGuesses);
         }
         return result;
       } catch (error) {
-        if (isRoomDisabled(error)) {
-          get().close();
-          throw error;
-        }
         const state = get().state;
         if (
-          sentState != null &&
           state != null &&
-          state.sessionId === sentState.sessionId &&
-          state.turn === sentState.turn &&
-          toApiError(error).code === WORD_CHAIN_ERROR_CODE.noGuesses
+          isSameWordChainTurn(state, sent) &&
+          errorCode(error) === WORD_CHAIN_ERROR_CODE.noGuesses
         ) {
-          set({ guesses: guessesFor(state, 0) });
+          sync.setGuesses(state, 0);
         }
+        sync.handleActionError(error);
         throw error;
       }
     },
@@ -238,11 +286,17 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
     fetchLeaderboard: async (query) => {
       const key = wordChainLeaderboardKey(query);
       if (get().leaderboardPending.includes(key)) return;
-      set((store) => ({ leaderboardPending: [...store.leaderboardPending, key] }));
+      set((store) => ({
+        leaderboardPending: [...store.leaderboardPending, key],
+        leaderboardFailed: store.leaderboardFailed.filter((item) => item !== key),
+      }));
       try {
         const leaderboard = await WordChainService.leaderboard(query);
+        if (!get().opened) return;
         set((store) => ({ leaderboards: { ...store.leaderboards, [key]: leaderboard } }));
       } catch {
+        if (!get().opened) return;
+        set((store) => ({ leaderboardFailed: [...store.leaderboardFailed, key] }));
         toast.error(i18n.t('wordChain.leaderboardError'));
       } finally {
         set((store) => ({
@@ -260,9 +314,10 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
       const request = ++winsRequest;
       set(
         more
-          ? { winsLoading: true }
+          ? { winsLoading: true, winsFailed: false }
           : {
               winsLoading: true,
+              winsFailed: false,
               winsMine: mine,
               wins: [],
               winsHasMore: false,
@@ -284,7 +339,7 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
         }));
       } catch {
         if (request !== winsRequest) return;
-        set({ winsLoading: false });
+        set({ winsLoading: false, winsFailed: true });
         toast.error(i18n.t('wordChain.winsError'));
       }
     },
@@ -292,20 +347,35 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
     buyHint: async () => {
       try {
         const result = await WordChainService.hint();
-        syncAuthKen(result.kenBalance);
-        set({ hintPrice: result.price });
+        setAuthUserKen(result.kenBalance);
+        if (get().opened) {
+          set(result.charged ? { hintPrice: result.price, hint: result } : { hint: result });
+        }
         return result;
       } catch (error) {
-        if (isRoomDisabled(error)) get().close();
+        sync.handleActionError(error);
         throw error;
       }
     },
 
-    lookup: (word) => WordChainService.lookup(word),
-
-    reset: () => {
-      winsRequest += 1;
-      set({ ...initialWordChainState });
+    lookup: async (word) => {
+      const request = ++lookupRequest;
+      set({ lookupLoading: true });
+      try {
+        const result = await WordChainService.lookup(word);
+        if (request === lookupRequest) set({ lookupResult: result, lookupLoading: false });
+      } catch (error) {
+        if (request !== lookupRequest) return;
+        set({ lookupLoading: false });
+        toast.error(wordChainLookupErrorText(i18n.t, error));
+      }
     },
+
+    clearLookup: () => {
+      lookupRequest += 1;
+      set({ lookupResult: null, lookupLoading: false });
+    },
+
+    reset: clear,
   };
 });

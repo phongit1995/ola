@@ -4,16 +4,12 @@ import { rotationForIndex } from '../lib/spinWheel';
 import { WheelService } from '../services/wheel.service';
 import type { WheelPlayerSegment } from '../types/api/wheel.type';
 import type { SpinWheelState } from '../types/client/spinWheel.type';
-import { useAuthStore } from './auth/authStore';
+import { setAuthUserKen } from './auth/authStore';
 
 export type { WheelConfigStatus } from '../types/client/spinWheel.type';
 
 function sortedSegments(segments: WheelPlayerSegment[]): WheelPlayerSegment[] {
   return [...segments].sort((a, b) => a.sortOrder - b.sortOrder);
-}
-
-function syncAuthKen(ken: number) {
-  useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
 }
 
 export const useSpinWheelStore = create<SpinWheelState>((set, get) => ({
@@ -75,7 +71,7 @@ export const useSpinWheelStore = create<SpinWheelState>((set, get) => ({
         ? { ...current.config, freeAvailable: result.freeAvailable }
         : current.config,
     }));
-    syncAuthKen(result.kenBalance);
+    setAuthUserKen(result.kenBalance);
   },
   syncKen: (ken) =>
     set((state) => (state.suppressKenSync || ken === state.ken ? state : { ken })),

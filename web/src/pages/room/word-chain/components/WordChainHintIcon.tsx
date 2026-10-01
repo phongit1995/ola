@@ -1,4 +1,4 @@
-import hintStarIcon from '@/assets/icons/word-chain/hint-star.png';
+import hintStarIcon from '@/assets/icons/word-chain/hint-star.webp';
 
 export function WordChainHintIcon({ className }: { className: string }) {
   return (

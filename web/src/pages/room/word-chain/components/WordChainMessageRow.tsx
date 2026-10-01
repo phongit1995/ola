@@ -2,26 +2,29 @@ import { memo, type ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { VipAvatar } from '@components';
 import { WORD_CHAIN_MESSAGE_TYPE, WORD_CHAIN_SENDER_TYPE } from '@constants';
-import wordChainBotIcon from '@/assets/icons/word-chain/bot-06.png';
+import wordChainBotIcon from '@/assets/icons/word-chain/bot-06.webp';
 import {
   bubbleSurface,
   formatClockHM,
   lastSyllable,
   wordChainGuessesText,
+  wordChainMoveStatus,
   wordChainWrongReason,
 } from '@lib';
-import type { WordChainFeedMessage, WordChainMessage } from '@app-types';
+import type { WordChainMessage, WordChainMoveStatus } from '@app-types';
+import { InfoIcon } from './WordChainIcons';
 import { WordChainStatusIcon } from './WordChainStatusIcon';
-import {
-  resolveWordChainStatus,
-  type WordChainMoveStatus,
-} from './wordChainStatus';
 
 interface WordChainMessageRowProps {
-  item: WordChainFeedMessage;
+  message: WordChainMessage;
+  replyTo?: WordChainMessage;
   isOwn: boolean;
   onWordInfo: (word: string) => void;
 }
+
+const WORD_LINE_COMPONENTS = {
+  word: <strong className="text-base text-black/87" />,
+};
 
 function WordInfoButton({
   word,
@@ -40,18 +43,7 @@ function WordInfoButton({
       onClick={() => onWordInfo(word)}
       className="relative -mx-0.5 flex h-5 w-5 shrink-0 items-center justify-center self-center rounded-full text-black/45 transition-colors after:absolute after:-inset-2 after:content-[''] hover:text-ola-primary-ink"
     >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-full w-full"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 11v5.5M12 7.5h.01" />
-      </svg>
+      <InfoIcon className="h-full w-full" />
     </button>
   );
 }
@@ -125,10 +117,13 @@ function NoticeCard({ message }: { message: WordChainMessage }) {
         {isSession ? t('wordChain.sessionStarted') : t('wordChain.gameStarted')}
       </span>
       <span className="text-sm text-black/70">
-        {isSession
-          ? t('wordChain.startWord')
-          : `${t('wordChain.currentWord')}:`}{' '}
-        <strong className="text-base text-black/87">{message.word}</strong>
+        <Trans
+          i18nKey={
+            isSession ? 'wordChain.startWordLine' : 'wordChain.currentWordLine'
+          }
+          values={{ word: message.word ?? '' }}
+          components={WORD_LINE_COMPONENTS}
+        />
       </span>
     </div>
   );
@@ -148,7 +143,7 @@ function BotMessage({
     return (
       <BotReply
         replyTo={replyTo}
-        status={resolveWordChainStatus(message) ?? 'error'}
+        status={wordChainMoveStatus(message) ?? 'error'}
         time={time}
       >
         <strong className="text-black/87">
@@ -189,15 +184,14 @@ function MoveBubble({
   isOwn: boolean;
   onWordInfo: (word: string) => void;
 }) {
-  const status = resolveWordChainStatus(message);
-  const hasReaction = status != null || Boolean(message.reaction);
+  const status = wordChainMoveStatus(message);
   const isValidWord = status === 'correct' || status === 'win';
 
   return (
     <div
       className={`flex w-full flex-col gap-0.5 ${
         isOwn ? 'items-end' : 'items-start'
-      } ${hasReaction ? 'pb-3' : ''}`}
+      } ${status != null ? 'pb-3' : ''}`}
     >
       <span
         className={`flex max-w-[80%] items-baseline gap-1.5 text-sm font-semibold text-black/72 ${
@@ -224,21 +218,13 @@ function MoveBubble({
           >
             {message.content}
           </div>
-          {hasReaction && (
+          {status != null && (
             <span
-              className={`absolute -bottom-3 flex h-7 min-w-7 items-center justify-center ${
+              className={`absolute -bottom-3 flex h-7 w-7 items-center justify-center ${
                 isOwn ? '-left-2' : '-right-2'
-              } ${
-                status == null
-                  ? 'rounded-full bg-white px-1 text-sm shadow-[0_1px_3px_rgba(0,0,0,0.15)]'
-                  : ''
               }`}
             >
-              {status != null ? (
-                <WordChainStatusIcon status={status} />
-              ) : (
-                message.reaction
-              )}
+              <WordChainStatusIcon status={status} />
             </span>
           )}
         </div>
@@ -254,16 +240,15 @@ function MoveBubble({
 }
 
 function WordChainMessageRowComponent({
-  item,
+  message,
+  replyTo,
   isOwn,
   onWordInfo,
 }: WordChainMessageRowProps) {
-  if (item.message.senderType === WORD_CHAIN_SENDER_TYPE.bot) {
-    return <BotMessage message={item.message} replyTo={item.replyTo} />;
+  if (message.senderType === WORD_CHAIN_SENDER_TYPE.bot) {
+    return <BotMessage message={message} replyTo={replyTo} />;
   }
-  return (
-    <MoveBubble message={item.message} isOwn={isOwn} onWordInfo={onWordInfo} />
-  );
+  return <MoveBubble message={message} isOwn={isOwn} onWordInfo={onWordInfo} />;
 }
 
 export const WordChainMessageRow = memo(WordChainMessageRowComponent);

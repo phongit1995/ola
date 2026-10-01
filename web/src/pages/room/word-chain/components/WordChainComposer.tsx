@@ -8,7 +8,6 @@ import { WordChainHintIcon } from './WordChainHintIcon';
 interface WordChainComposerProps {
   syllable?: string;
   lockedHint?: string;
-  onBeforeSend: () => void;
   onSend: (content: string) => Promise<unknown>;
   onHint: () => void;
 }
@@ -16,7 +15,6 @@ interface WordChainComposerProps {
 export function WordChainComposer({
   syllable,
   lockedHint,
-  onBeforeSend,
   onSend,
   onHint,
 }: WordChainComposerProps) {
@@ -31,7 +29,6 @@ export function WordChainComposer({
     event.preventDefault();
     if (content === '' || sending || locked) return;
     setSending(true);
-    onBeforeSend();
     try {
       await onSend(content);
       setText((current) => (current.trim() === content ? '' : current));
@@ -51,6 +48,7 @@ export function WordChainComposer({
       <input
         ref={inputRef}
         value={text}
+        aria-label={t('wordChain.inputLabel')}
         onChange={(event) => setText(event.target.value)}
         maxLength={WORD_CHAIN_MOVE_MAX_LENGTH}
         disabled={locked}

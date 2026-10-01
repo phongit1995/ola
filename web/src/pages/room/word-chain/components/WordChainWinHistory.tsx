@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Avatar, Spinner } from '@components';
-import { colorForName, createTimeFormatter } from '@lib';
+import { Spinner } from '@components';
+import { createTimeFormatter } from '@lib';
 import type { WordChainWin } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
-import { WordChainFilterChips } from './WordChainTabs';
+import { WordChainListStatus, WordChainUserRow } from './WordChainList';
+import { WordChainStatusIcon } from './WordChainStatusIcon';
+import { WordChainTabs } from './WordChainTabs';
 import { WORD_CHAIN_PANEL_HEIGHT } from './wordChainLayout';
 
 type WinFilter = 'all' | 'mine';
@@ -26,44 +28,37 @@ function WinRow({
 }) {
   const { t } = useTranslation();
   return (
-    <li
-      className={`flex items-center gap-2 px-3 py-2 ${
-        highlighted ? 'bg-ola-primary-light' : ''
-      }`}
+    <WordChainUserRow
+      name={win.username}
+      avatar={win.avatar}
+      highlighted={highlighted}
+      trailing={
+        <WordChainStatusIcon status="win" className="h-6 w-6" decorative />
+      }
     >
-      <Avatar
-        name={win.username}
-        color={colorForName(win.username)}
-        src={win.avatar}
-        size={36}
-      />
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm text-black/80">
-          <Trans
-            i18nKey="wordChain.winHistoryItem"
-            values={{ name: win.username, word: win.word }}
-            components={WIN_TEXT_COMPONENTS}
-          />
-        </span>
-        <span className="truncate text-xs text-black/45">
-          {t('wordChain.winHistoryFrom', { word: win.previousWord })} ·{' '}
-          {formatTime(win.createdAt)}
-        </span>
+      <span className="truncate text-sm text-black/80">
+        <Trans
+          i18nKey="wordChain.winHistoryItem"
+          values={{ name: win.username, word: win.word }}
+          components={WIN_TEXT_COMPONENTS}
+        />
       </span>
-      <span aria-hidden="true" className="shrink-0 text-lg">
-        🏆
+      <span className="truncate text-xs text-black/45">
+        {t('wordChain.winHistoryFrom', { word: win.previousWord })} ·{' '}
+        {formatTime(win.createdAt)}
       </span>
-    </li>
+    </WordChainUserRow>
   );
 }
 
-export function WordChainWinHistory({ open }: { open: boolean }) {
+export function WordChainWinHistory() {
   const { t, i18n } = useTranslation();
   const [filter, setFilter] = useState<WinFilter>('all');
   const currentUserId = useAuthStore((store) => store.user?.id);
   const wins = useWordChainStore((store) => store.wins);
   const hasMore = useWordChainStore((store) => store.winsHasMore);
   const loading = useWordChainStore((store) => store.winsLoading);
+  const failed = useWordChainStore((store) => store.winsFailed);
   const fetchWins = useWordChainStore((store) => store.fetchWins);
   const formatTime = useMemo(
     () => createTimeFormatter(i18n.language),
@@ -72,8 +67,8 @@ export function WordChainWinHistory({ open }: { open: boolean }) {
   const mine = filter === 'mine';
 
   useEffect(() => {
-    if (open) void fetchWins({ mine });
-  }, [open, mine, fetchWins]);
+    void fetchWins({ mine });
+  }, [mine, fetchWins]);
 
   const filters = [
     { key: 'all' as const, label: t('wordChain.winHistoryAll') },
@@ -82,23 +77,22 @@ export function WordChainWinHistory({ open }: { open: boolean }) {
 
   return (
     <div className={`flex flex-col gap-2 ${WORD_CHAIN_PANEL_HEIGHT}`}>
-      <WordChainFilterChips
+      <WordChainTabs
+        variant="chips"
         items={filters}
         value={filter}
         onChange={setFilter}
       />
       {wins.length === 0 ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center text-center text-sm text-black/54">
-          {loading ? (
-            <Spinner size={28} />
-          ) : (
-            t(
-              mine
-                ? 'wordChain.winHistoryMineEmpty'
-                : 'wordChain.winHistoryEmpty'
-            )
+        <WordChainListStatus
+          loading={loading}
+          failed={failed}
+          emptyText={t(
+            mine ? 'wordChain.winHistoryMineEmpty' : 'wordChain.winHistoryEmpty'
           )}
-        </div>
+          errorText={t('wordChain.winsError')}
+          onRetry={() => void fetchWins({ mine })}
+        />
       ) : (
         <div className="-mx-2 min-h-0 flex-1 overflow-y-auto">
           <ul className="divide-y divide-black/6">

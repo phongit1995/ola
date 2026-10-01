@@ -1,23 +1,31 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { DateSeparator, FullScreenOverlay, ScreenHeader } from '@components';
+import { WORD_CHAIN_INPUT_LOCK_HINT_KEYS } from '@constants';
 import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
-import { BUBBLE_WALLPAPER, buildWordChainFeed } from '@lib';
-import { useAuthStore } from '@/store/authStore';
-import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import {
+  BUBBLE_WALLPAPER,
+  buildWordChainFeed,
   remainingGuesses,
   sessionMessages,
-} from '@ola/shared/stores/word-chain/wordChainHelpers';
+  wordChainInputLock,
+} from '@lib';
+import { useAuthStore } from '@/store/authStore';
+import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { WordChainMessageRow } from './WordChainMessageRow';
 import { WordChainRoomIcon } from './WordChainRoomIcon';
 import { WordChainComposer } from './WordChainComposer';
 import { WordChainHintDialog } from './WordChainHintDialog';
+import { HelpIcon, LookupIcon, TrophyIcon } from './WordChainIcons';
 import { WordChainLeaderboardDialog } from './WordChainLeaderboardDialog';
 import { WordChainLookupDialog } from './WordChainLookupDialog';
 import { WordChainRulesDialog } from './WordChainRulesDialog';
 
 const LOAD_MORE_AT_TOP_PX = 80;
+
+const CURRENT_WORD_COMPONENTS = {
+  word: <strong className="text-base font-semibold text-black/87" />,
+};
 
 type WordChainDialog = 'hint' | 'leaderboard' | 'lookup' | 'rules';
 
@@ -43,18 +51,7 @@ function HeaderButton({
       onClick={onClick}
       className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
     >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        {children}
-      </svg>
+      {children}
     </button>
   );
 }
@@ -69,13 +66,21 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   const loadingMore = useWordChainStore((store) => store.loadingMore);
   const loadMoreMessages = useWordChainStore((store) => store.loadMoreMessages);
   const sendMove = useWordChainStore((store) => store.sendMove);
+  const lookup = useWordChainStore((store) => store.lookup);
+  const clearLookup = useWordChainStore((store) => store.clearLookup);
   const currentUserId = useAuthStore((store) => store.user?.id) ?? '';
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
   const [lookupWord, setLookupWord] = useState('');
-  const openLookup = useCallback((word: string) => {
-    setLookupWord(word);
-    setDialog('lookup');
-  }, []);
+
+  const openLookup = useCallback(
+    (word: string) => {
+      clearLookup();
+      setLookupWord(word);
+      setDialog('lookup');
+      if (word !== '') void lookup(word);
+    },
+    [clearLookup, lookup]
+  );
 
   const messages = useMemo(
     () => sessionMessages(allMessages, state?.sessionId),
@@ -83,13 +88,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   );
   const feed = useMemo(() => buildWordChainFeed(messages), [messages]);
   const remaining = remainingGuesses(state, guesses);
-  const ownsCurrentWord =
-    currentUserId !== '' && state?.wordOwnerId === currentUserId;
-  const lockedHint = ownsCurrentWord
-    ? t('wordChain.inputHintWaitTurn')
-    : remaining === 0
-      ? t('wordChain.inputHintLocked')
-      : undefined;
+  const lock = wordChainInputLock(state, guesses, currentUserId);
   const { scrollRef, handleScroll, pin } = useStickyScroll({
     count: messages.length,
     lastId: messages.at(-1)?.id ?? null,
@@ -99,6 +98,16 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
     enabled: visible,
     loadMoreAtTop: LOAD_MORE_AT_TOP_PX,
   });
+
+  const send = useCallback(
+    (content: string) => {
+      pin();
+      return sendMove(content);
+    },
+    [pin, sendMove]
+  );
+
+  const closeDialog = () => setDialog(null);
 
   return (
     <FullScreenOverlay position="absolute">
@@ -112,22 +121,19 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
           label={t('wordChain.lookupTitle')}
           onClick={() => openLookup('')}
         >
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z" />
-          <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" />
+          <LookupIcon />
         </HeaderButton>
         <HeaderButton
           label={t('wordChain.leaderboardTitle')}
           onClick={() => setDialog('leaderboard')}
         >
-          <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" />
-          <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" />
+          <TrophyIcon />
         </HeaderButton>
         <HeaderButton
           label={t('wordChain.rulesTitle')}
           onClick={() => setDialog('rules')}
         >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01" />
+          <HelpIcon />
         </HeaderButton>
       </ScreenHeader>
 
@@ -154,7 +160,8 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
           ) : (
             <WordChainMessageRow
               key={item.key}
-              item={item}
+              message={item.message}
+              replyTo={item.replyTo}
               isOwn={item.message.senderId === currentUserId}
               onWordInfo={openLookup}
             />
@@ -164,10 +171,11 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
 
       <div className="flex shrink-0 items-baseline gap-3 border-t border-black/12 bg-white px-4 pt-2 text-sm">
         <span className="min-w-0 flex-1 truncate text-black/54">
-          {t('wordChain.currentWord')}:{' '}
-          <strong className="text-base font-semibold text-black/87">
-            {state?.word ?? ''}
-          </strong>
+          <Trans
+            i18nKey="wordChain.currentWordLine"
+            values={{ word: state?.word ?? '' }}
+            components={CURRENT_WORD_COMPONENTS}
+          />
         </span>
         <span
           className={`shrink-0 tabular-nums ${
@@ -183,34 +191,24 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
 
       <WordChainComposer
         syllable={state?.requiredSyllable}
-        lockedHint={lockedHint}
-        onBeforeSend={pin}
-        onSend={sendMove}
+        lockedHint={
+          lock != null ? t(WORD_CHAIN_INPUT_LOCK_HINT_KEYS[lock]) : undefined
+        }
+        onSend={send}
         onHint={() => setDialog('hint')}
       />
 
       {dialog === 'hint' && (
-        <WordChainHintDialog
-          onClose={() => setDialog(null)}
-          onSend={sendMove}
-        />
+        <WordChainHintDialog onClose={closeDialog} onSend={send} />
       )}
-
       <WordChainLeaderboardDialog
         open={dialog === 'leaderboard'}
-        onClose={() => setDialog(null)}
+        onClose={closeDialog}
       />
       {dialog === 'lookup' && (
-        <WordChainLookupDialog
-          open
-          initialWord={lookupWord}
-          onClose={() => setDialog(null)}
-        />
+        <WordChainLookupDialog initialWord={lookupWord} onClose={closeDialog} />
       )}
-      <WordChainRulesDialog
-        open={dialog === 'rules'}
-        onClose={() => setDialog(null)}
-      />
+      <WordChainRulesDialog open={dialog === 'rules'} onClose={closeDialog} />
     </FullScreenOverlay>
   );
 }

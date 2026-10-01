@@ -4,11 +4,15 @@ import { Spinner } from '@components';
 
 interface RoomJoiningOverlayProps {
   status: RoomChatStatus;
+  joiningText?: string;
+  errorText?: string;
   onClose: () => void;
 }
 
 export function RoomJoiningOverlay({
   status,
+  joiningText,
+  errorText,
   onClose,
 }: RoomJoiningOverlayProps) {
   const { t } = useTranslation();
@@ -19,7 +23,9 @@ export function RoomJoiningOverlay({
       <div className="flex flex-col items-center gap-3 rounded-lg bg-white px-8 py-6 text-center shadow-xl">
         {isError ? (
           <>
-            <p className="text-base text-black/70">{t('room.joinError')}</p>
+            <p className="text-base text-black/70">
+              {errorText ?? t('room.joinError')}
+            </p>
             <button
               type="button"
               onClick={onClose}
@@ -31,7 +37,9 @@ export function RoomJoiningOverlay({
         ) : (
           <>
             <Spinner size={36} thickness={3} />
-            <p className="text-sm text-black/54">{t('room.joining')}</p>
+            <p className="text-sm text-black/54">
+              {joiningText ?? t('room.joining')}
+            </p>
           </>
         )}
       </div>

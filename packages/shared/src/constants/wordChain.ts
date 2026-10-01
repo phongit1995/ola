@@ -1,4 +1,8 @@
 import type {
+  WordChainInputLock,
+  WordChainLeaderboardTab,
+} from '../types/client/wordChain.type';
+import type {
   WordChainCode,
   WordChainLeaderboardPeriod,
   WordChainLeaderboardSort,
@@ -36,6 +40,8 @@ export const WORD_CHAIN_ERROR_CODE = {
   noHint: 'WORD_CHAIN_NO_HINT',
   kenShort: 'WORD_CHAIN_INSUFFICIENT_KEN',
   disabled: 'WORD_CHAIN_DISABLED',
+  wordChanged: 'WORD_CHAIN_WORD_CHANGED',
+  unavailable: 'WORD_CHAIN_UNAVAILABLE',
 } as const;
 
 export const WORD_CHAIN_MESSAGE_PAGE_SIZE = 50;
@@ -52,6 +58,25 @@ export const WORD_CHAIN_LEADERBOARD_PERIOD = {
   month: 'month',
   all: 'all',
 } as const satisfies Record<string, WordChainLeaderboardPeriod>;
+
+export const WORD_CHAIN_LEADERBOARD_PERIOD_LABEL_KEYS = {
+  day: 'wordChain.periodDay',
+  week: 'wordChain.periodWeek',
+  month: 'wordChain.periodMonth',
+  all: 'wordChain.periodAll',
+} as const satisfies Record<WordChainLeaderboardPeriod, string>;
+
+export const WORD_CHAIN_LEADERBOARD_TABS = [
+  { key: 'points', labelKey: 'wordChain.leaderboardTabPoints' },
+  { key: 'wins', labelKey: 'wordChain.leaderboardTabWins' },
+  { key: 'history', labelKey: 'wordChain.leaderboardTabHistory' },
+] as const satisfies readonly { key: WordChainLeaderboardTab; labelKey: string }[];
+
+export const WORD_CHAIN_INPUT_LOCK_HINT_KEYS = {
+  waitTurn: 'wordChain.inputHintWaitTurn',
+  noGuesses: 'wordChain.inputHintLocked',
+} as const satisfies Record<WordChainInputLock, string>;
+
 export const WORD_CHAIN_JOIN_ACK_TIMEOUT_MS = 10_000;
 export const WORD_CHAIN_MOVE_MAX_LENGTH = 200;
 export const WORD_CHAIN_LOOKUP_MAX_LENGTH = 80;

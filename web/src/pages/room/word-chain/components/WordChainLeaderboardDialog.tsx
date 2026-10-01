@@ -1,44 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Dialog, Spinner, UserName } from '@components';
+import { Dialog, UserName } from '@components';
 import {
   WORD_CHAIN_LEADERBOARD_PERIOD,
+  WORD_CHAIN_LEADERBOARD_PERIOD_LABEL_KEYS,
   WORD_CHAIN_LEADERBOARD_SORT,
+  WORD_CHAIN_LEADERBOARD_TABS,
 } from '@constants';
-import { colorForName } from '@lib';
+import { wordChainLeaderboardKey } from '@lib';
 import type {
   WordChainLeaderboardEntry,
   WordChainLeaderboardPeriod,
   WordChainLeaderboardSort,
+  WordChainLeaderboardTab,
 } from '@app-types';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
-import { wordChainLeaderboardKey } from '@ola/shared/stores/word-chain/wordChainHelpers';
-import { WordChainFilterChips, WordChainSegmentedTabs } from './WordChainTabs';
+import { WordChainListStatus, WordChainUserRow } from './WordChainList';
+import { WordChainTabs } from './WordChainTabs';
 import { WordChainWinHistory } from './WordChainWinHistory';
 import { WORD_CHAIN_PANEL_HEIGHT } from './wordChainLayout';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
-
-type LeaderboardTab = WordChainLeaderboardSort | 'history';
-
-const TABS = [
-  {
-    key: WORD_CHAIN_LEADERBOARD_SORT.points,
-    labelKey: 'wordChain.leaderboardTabPoints',
-  },
-  {
-    key: WORD_CHAIN_LEADERBOARD_SORT.wins,
-    labelKey: 'wordChain.leaderboardTabWins',
-  },
-  { key: 'history', labelKey: 'wordChain.leaderboardTabHistory' },
-] as const satisfies readonly { key: LeaderboardTab; labelKey: string }[];
-
-const PERIOD_LABEL_KEYS = {
-  day: 'wordChain.periodDay',
-  week: 'wordChain.periodWeek',
-  month: 'wordChain.periodMonth',
-  all: 'wordChain.periodAll',
-} as const satisfies Record<WordChainLeaderboardPeriod, string>;
 
 interface WordChainLeaderboardDialogProps {
   open: boolean;
@@ -68,42 +50,34 @@ function LeaderboardRow({
   const wins = t('wordChain.wins', { value: entry.wins });
   const byWins = sort === WORD_CHAIN_LEADERBOARD_SORT.wins;
   return (
-    <li
-      className={`flex items-center gap-2 px-3 py-2 ${
-        highlighted ? 'bg-ola-primary-light' : ''
-      }`}
-    >
-      <RankBadge rank={entry.rank} />
-      <Avatar
-        name={entry.username}
-        color={colorForName(entry.username)}
-        src={entry.avatar}
-        size={36}
-      />
-      <span className="flex min-w-0 flex-1 flex-col">
-        <UserName
-          name={entry.username}
-          fullName={entry.fullName}
-          className="truncate text-sm text-black/87"
-        />
-        <span className="truncate text-xs text-black/45 tabular-nums">
-          {byWins ? points : wins}
+    <WordChainUserRow
+      name={entry.username}
+      avatar={entry.avatar}
+      highlighted={highlighted}
+      leading={<RankBadge rank={entry.rank} />}
+      trailing={
+        <span className="shrink-0 text-sm font-semibold text-ola-primary-ink tabular-nums">
+          {byWins ? wins : points}
         </span>
+      }
+    >
+      <UserName
+        name={entry.username}
+        fullName={entry.fullName}
+        className="truncate text-sm text-black/87"
+      />
+      <span className="truncate text-xs text-black/45 tabular-nums">
+        {byWins ? points : wins}
       </span>
-      <span className="shrink-0 text-sm font-semibold text-ola-primary-ink tabular-nums">
-        {byWins ? wins : points}
-      </span>
-    </li>
+    </WordChainUserRow>
   );
 }
 
 function LeaderboardPanel({
-  open,
   sort,
   period,
   onPeriodChange,
 }: {
-  open: boolean;
   sort: WordChainLeaderboardSort;
   period: WordChainLeaderboardPeriod;
   onPeriodChange: (period: WordChainLeaderboardPeriod) => void;
@@ -114,38 +88,42 @@ function LeaderboardPanel({
   const loading = useWordChainStore((state) =>
     state.leaderboardPending.includes(key)
   );
+  const failed = useWordChainStore((state) =>
+    state.leaderboardFailed.includes(key)
+  );
   const fetchLeaderboard = useWordChainStore((state) => state.fetchLeaderboard);
 
   useEffect(() => {
-    if (open) void fetchLeaderboard({ sort, period });
-  }, [open, sort, period, fetchLeaderboard]);
+    void fetchLeaderboard({ sort, period });
+  }, [sort, period, fetchLeaderboard]);
 
   const me = leaderboard?.me ?? null;
   const items = leaderboard?.items ?? [];
   const periods = Object.values(WORD_CHAIN_LEADERBOARD_PERIOD).map((item) => ({
     key: item,
-    label: t(PERIOD_LABEL_KEYS[item]),
+    label: t(WORD_CHAIN_LEADERBOARD_PERIOD_LABEL_KEYS[item]),
   }));
 
   return (
     <div className={`flex flex-col gap-2 ${WORD_CHAIN_PANEL_HEIGHT}`}>
-      <WordChainFilterChips
+      <WordChainTabs
+        variant="chips"
         items={periods}
         value={period}
         onChange={onPeriodChange}
       />
-      {loading && leaderboard == null ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center">
-          <Spinner size={28} />
-        </div>
-      ) : items.length === 0 ? (
-        <p className="flex min-h-0 flex-1 items-center justify-center text-center text-sm text-black/54">
-          {t(
+      {items.length === 0 ? (
+        <WordChainListStatus
+          loading={loading && leaderboard == null}
+          failed={failed}
+          emptyText={t(
             sort === WORD_CHAIN_LEADERBOARD_SORT.wins
               ? 'wordChain.winsEmpty'
               : 'wordChain.leaderboardEmpty'
           )}
-        </p>
+          errorText={t('wordChain.leaderboardError')}
+          onRetry={() => void fetchLeaderboard({ sort, period })}
+        />
       ) : (
         <ul className="-mx-2 min-h-0 flex-1 divide-y divide-black/6 overflow-y-auto">
           {items.map((entry) => (
@@ -182,13 +160,16 @@ export function WordChainLeaderboardDialog({
   onClose,
 }: WordChainLeaderboardDialogProps) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<LeaderboardTab>(
+  const [tab, setTab] = useState<WordChainLeaderboardTab>(
     WORD_CHAIN_LEADERBOARD_SORT.points
   );
   const [period, setPeriod] = useState<WordChainLeaderboardPeriod>(
     WORD_CHAIN_LEADERBOARD_PERIOD.all
   );
-  const tabs = TABS.map((item) => ({ key: item.key, label: t(item.labelKey) }));
+  const tabs = WORD_CHAIN_LEADERBOARD_TABS.map((item) => ({
+    key: item.key,
+    label: t(item.labelKey),
+  }));
 
   return (
     <Dialog
@@ -198,12 +179,16 @@ export function WordChainLeaderboardDialog({
       showClose
     >
       <div className="flex flex-col gap-3">
-        <WordChainSegmentedTabs items={tabs} value={tab} onChange={setTab} />
+        <WordChainTabs
+          variant="segmented"
+          items={tabs}
+          value={tab}
+          onChange={setTab}
+        />
         {tab === 'history' ? (
-          <WordChainWinHistory open={open} />
+          <WordChainWinHistory />
         ) : (
           <LeaderboardPanel
-            open={open}
             sort={tab}
             period={period}
             onPeriodChange={setPeriod}

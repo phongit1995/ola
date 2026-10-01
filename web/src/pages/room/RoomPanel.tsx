@@ -113,7 +113,7 @@ export function RoomPanel() {
           onEnter={enterRoom}
           onAroundYou={aroundYou}
           onQuickJoin={quickJoin}
-          onWordChain={() => void openWordChain()}
+          onWordChain={openWordChain}
           showQuickJoin={roomsLoaded}
           showWordChain={wordChainEnabled}
         />

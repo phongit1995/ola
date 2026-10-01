@@ -1,21 +1,11 @@
+import { toRecord } from '../../lib/utils';
 import { activeVipTypeId } from '../../lib/vip';
 import type {
-  WordChainLeaderboardQuery,
   WordChainMessage,
+  WordChainMessagesResult,
   WordChainState,
 } from '../../types/api/wordChain.type';
-import type {
-  WordChainGuesses,
-  WordChainLeaderboardKey,
-} from '../../types/client/wordChain.type';
-import { toRecord } from '../room/roomHelpers';
-
-export function wordChainLeaderboardKey({
-  sort,
-  period,
-}: WordChainLeaderboardQuery): WordChainLeaderboardKey {
-  return `${sort}:${period}`;
-}
+import type { WordChainGuesses } from '../../types/client/wordChain.type';
 
 export function toWordChainMessage(value: unknown): WordChainMessage | null {
   const record = toRecord(value);
@@ -36,9 +26,7 @@ export function toWordChainState(value: unknown): WordChainState | null {
   return record as unknown as WordChainState;
 }
 
-export function withWordChainSenderVip(
-  message: WordChainMessage
-): WordChainMessage {
+function withWordChainSenderVip(message: WordChainMessage): WordChainMessage {
   return {
     ...message,
     senderVipTypeId: activeVipTypeId(message.senderVip, message.senderVipEnd),
@@ -73,33 +61,33 @@ export function isNewerWordChainState(
   return current == null || incoming.revision > current.revision;
 }
 
-export function sessionMessages(
-  messages: WordChainMessage[],
-  sessionId: string | undefined
-): WordChainMessage[] {
-  if (sessionId == null) return [];
-  return messages.filter((message) => message.sessionId === sessionId);
-}
-
 export function guessesFor(
   state: WordChainState,
   remaining: number
 ): WordChainGuesses | null {
   if (state.sessionId == null) return null;
-  return { sessionId: state.sessionId, turn: state.turn, remaining };
+  return {
+    sessionId: state.sessionId,
+    turn: state.turn,
+    revision: state.revision,
+    remaining,
+  };
 }
 
-export function remainingGuesses(
-  state: WordChainState | null,
-  guesses: WordChainGuesses | null
-): number {
-  if (state == null) return 0;
-  if (
-    guesses != null &&
-    guesses.sessionId === state.sessionId &&
-    guesses.turn === state.turn
-  ) {
-    return guesses.remaining;
-  }
-  return state.guessLimit;
+export function newerGuesses(
+  current: WordChainGuesses | null,
+  incoming: WordChainGuesses | null
+): WordChainGuesses | null {
+  if (incoming == null) return current;
+  if (current != null && current.revision > incoming.revision) return current;
+  return incoming;
+}
+
+export function hasMoreInSession(
+  page: WordChainMessagesResult,
+  sessionId: string | undefined
+): boolean {
+  return (
+    page.hasMore && page.items.every((message) => message.sessionId === sessionId)
+  );
 }

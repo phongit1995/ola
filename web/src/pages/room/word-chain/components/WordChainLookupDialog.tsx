@@ -1,14 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, Spinner } from '@components';
 import { WORD_CHAIN_LOOKUP_MAX_LENGTH } from '@constants';
-import { toast, wordChainLookupErrorText } from '@lib';
-import type { WordChainLookup, WordChainLookupResult } from '@app-types';
+import type { WordChainLookupResult } from '@app-types';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 
 interface WordChainLookupDialogProps {
-  open: boolean;
-  initialWord?: string;
+  initialWord: string;
   onClose: () => void;
 }
 
@@ -43,7 +41,7 @@ function LookupResultBlock({ result }: { result: WordChainLookupResult }) {
       {result.translations.length > 0 && (
         <div className="text-sm text-black/70">
           <span className="font-medium text-black/54">
-            {t('wordChain.lookupTranslations')}:{' '}
+            {t('wordChain.lookupTranslations')}{' '}
           </span>
           {result.translations
             .map((item) => `${item.translation} (${item.langName})`)
@@ -73,54 +71,30 @@ function LookupResultBlock({ result }: { result: WordChainLookupResult }) {
 }
 
 export function WordChainLookupDialog({
-  open,
-  initialWord = '',
+  initialWord,
   onClose,
 }: WordChainLookupDialogProps) {
   const { t } = useTranslation();
   const lookup = useWordChainStore((state) => state.lookup);
+  const result = useWordChainStore((state) => state.lookupResult);
+  const loading = useWordChainStore((state) => state.lookupLoading);
   const [word, setWord] = useState(initialWord);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<WordChainLookup | null>(null);
-  const initialLookupStarted = useRef(false);
   const query = word.trim();
-
-  async function runLookup(target: string) {
-    setLoading(true);
-    try {
-      setResult(await lookup(target));
-    } catch (error) {
-      toast.error(wordChainLookupErrorText(t, error));
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function submit(event: FormEvent) {
     event.preventDefault();
     if (query === '' || loading) return;
-    void runLookup(query);
+    void lookup(query);
   }
 
-  useEffect(() => {
-    const target = initialWord.trim();
-    if (target === '' || initialLookupStarted.current) return;
-    initialLookupStarted.current = true;
-    void runLookup(target);
-  });
-
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title={t('wordChain.lookupTitle')}
-      showClose
-    >
+    <Dialog open onClose={onClose} title={t('wordChain.lookupTitle')} showClose>
       <div className="flex flex-col gap-3">
         <form onSubmit={submit} className="flex items-center gap-2">
           <input
             value={word}
             onChange={(event) => setWord(event.target.value)}
+            aria-label={t('wordChain.lookupTitle')}
             maxLength={WORD_CHAIN_LOOKUP_MAX_LENGTH}
             placeholder={t('wordChain.lookupHint')}
             autoComplete="off"

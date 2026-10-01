@@ -1,4 +1,5 @@
 import type { StoreApi } from 'zustand';
+import type { RoomChatStatus } from './roomChat.type';
 import type {
   WordChainHint,
   WordChainLeaderboard,
@@ -12,11 +13,21 @@ import type {
   WordChainWin,
 } from '../api/wordChain.type';
 
-export type WordChainStatus = 'connecting' | 'joined' | 'error';
+export type WordChainMoveStatus = 'correct' | 'win' | 'warning' | 'error';
+
+export type WordChainInputLock = 'waitTurn' | 'noGuesses';
+
+export type WordChainLeaderboardTab = WordChainLeaderboardSort | 'history';
+
+export interface WordChainTurnRef {
+  sessionId?: string;
+  turn: number;
+}
 
 export interface WordChainGuesses {
   sessionId: string;
   turn: number;
+  revision: number;
   remaining: number;
 }
 
@@ -44,50 +55,49 @@ export interface WordChainFetchWinsOptions {
 
 export interface WordChainStoreState {
   opened: boolean;
-  status: WordChainStatus;
+  status: RoomChatStatus;
   state: WordChainState | null;
-  points: number;
   hintPrice: number;
+  hint: WordChainHint | null;
   guesses: WordChainGuesses | null;
   messages: WordChainMessage[];
   hasMore: boolean;
   loadingMore: boolean;
   leaderboards: Partial<Record<WordChainLeaderboardKey, WordChainLeaderboard>>;
   leaderboardPending: WordChainLeaderboardKey[];
+  leaderboardFailed: WordChainLeaderboardKey[];
   wins: WordChainWin[];
   winsMine: boolean;
   winsHasMore: boolean;
   winsNextBefore: string | null;
   winsLoading: boolean;
-  open: () => Promise<void>;
+  winsFailed: boolean;
+  lookupResult: WordChainLookup | null;
+  lookupLoading: boolean;
+  open: () => void;
   close: () => void;
   loadMoreMessages: () => Promise<void>;
   sendMove: (content: string) => Promise<WordChainMoveResult>;
   fetchLeaderboard: (query: WordChainLeaderboardQuery) => Promise<void>;
   fetchWins: (options: WordChainFetchWinsOptions) => Promise<void>;
   buyHint: () => Promise<WordChainHint>;
-  lookup: (word: string) => Promise<WordChainLookup>;
+  lookup: (word: string) => Promise<void>;
+  clearLookup: () => void;
   reset: () => void;
 }
 
-export type WordChainStoreData = Pick<
+export type WordChainStoreData = Omit<
   WordChainStoreState,
-  | 'opened'
-  | 'status'
-  | 'state'
-  | 'points'
-  | 'hintPrice'
-  | 'guesses'
-  | 'messages'
-  | 'hasMore'
-  | 'loadingMore'
-  | 'leaderboards'
-  | 'leaderboardPending'
-  | 'wins'
-  | 'winsMine'
-  | 'winsHasMore'
-  | 'winsNextBefore'
-  | 'winsLoading'
+  | 'open'
+  | 'close'
+  | 'loadMoreMessages'
+  | 'sendMove'
+  | 'fetchLeaderboard'
+  | 'fetchWins'
+  | 'buyHint'
+  | 'lookup'
+  | 'clearLookup'
+  | 'reset'
 >;
 
 export interface WordChainConfigState {

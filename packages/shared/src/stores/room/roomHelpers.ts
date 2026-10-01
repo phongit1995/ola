@@ -3,10 +3,6 @@ import { activeVipTypeId } from '../../lib/vip';
 import type { RoomMember, RoomMessage, RoomReplySnapshot } from '../../types/api/room.type';
 import { useAuthStore } from '../auth/authStore';
 
-export function toRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
-}
-
 export function withVipTypeId(members: RoomMember[]): RoomMember[] {
   const resolved = members.map((member) => ({
     ...member,

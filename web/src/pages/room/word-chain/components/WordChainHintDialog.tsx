@@ -3,12 +3,12 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, Spinner } from '@components';
 import {
   formatKen,
+  isSameWordChainTurn,
   lastSyllable,
   toast,
   wordChainHintErrorText,
   wordChainMoveErrorText,
 } from '@lib';
-import type { WordChainHint } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useWordChainPrefsStore } from '@ola/shared/stores/word-chain/wordChainPrefsStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
@@ -20,9 +20,7 @@ interface WordChainHintDialogProps {
   onSend: (word: string) => Promise<unknown>;
 }
 
-const HINT_DIALOG_ICON = (
-  <WordChainHintIcon className="h-6 w-6 text-amber-500" />
-);
+const HINT_DIALOG_ICON = <WordChainHintIcon className="h-6 w-6" />;
 
 const KEN_PILL = { ken: <WordChainKen /> };
 
@@ -35,14 +33,16 @@ export function WordChainHintDialog({
   const { t } = useTranslation();
   const state = useWordChainStore((store) => store.state);
   const price = useWordChainStore((store) => store.hintPrice);
+  const hint = useWordChainStore((store) => store.hint);
   const buyHint = useWordChainStore((store) => store.buyHint);
   const ken = useAuthStore((store) => store.user?.ken);
   const autoSend = useWordChainPrefsStore((store) => store.hintAutoSend);
   const setAutoSend = useWordChainPrefsStore((store) => store.setHintAutoSend);
-  const [hint, setHint] = useState<WordChainHint | null>(null);
+  const [boughtHere, setBoughtHere] = useState(false);
   const [buying, setBuying] = useState(false);
   const [sendingWord, setSendingWord] = useState<string | null>(null);
   const canAfford = ken == null || ken >= price;
+  const current = isSameWordChainTurn(hint, state);
 
   async function send(word: string) {
     setSendingWord(word);
@@ -59,7 +59,7 @@ export function WordChainHintDialog({
     setBuying(true);
     try {
       const result = await buyHint();
-      setHint(result);
+      setBoughtHere(true);
       if (autoSend) await send(result.hints[0]!);
     } catch (error) {
       toast.error(wordChainHintErrorText(t, error));
@@ -68,11 +68,8 @@ export function WordChainHintDialog({
     }
   }
 
-  if (hint != null) {
-    const stale =
-      state == null ||
-      state.sessionId !== hint.sessionId ||
-      state.turn !== hint.turn;
+  if (hint != null && (current || boughtHere)) {
+    const stale = !current;
     return (
       <Dialog
         open
@@ -88,7 +85,11 @@ export function WordChainHintDialog({
             t('wordChain.hintStale')
           ) : (
             <Trans
-              i18nKey="wordChain.hintListHelp"
+              i18nKey={
+                hint.charged
+                  ? 'wordChain.hintListHelp'
+                  : 'wordChain.hintListHelpFree'
+              }
               values={{ price: formatKen(hint.price) }}
               components={KEN_PILL}
             />

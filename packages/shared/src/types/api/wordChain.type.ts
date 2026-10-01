@@ -65,6 +65,7 @@ export interface WordChainHint {
   hints: string[];
   price: number;
   kenBalance: number;
+  charged: boolean;
 }
 
 export interface WordChainMessagesResult {
@@ -80,6 +81,8 @@ export interface WordChainMessagesParams {
 
 export interface WordChainMoveRequest {
   content: string;
+  sessionId?: string;
+  turn?: number;
 }
 
 export interface WordChainMoveResult {

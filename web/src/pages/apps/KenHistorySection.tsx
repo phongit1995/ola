@@ -2,63 +2,13 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatKen } from '@lib';
 import { Spinner } from '@components';
-import type { KenTxType } from '@app-types';
 import {
-  KEN_HISTORY_PAGE,
-  useKenHistoryStore,
-} from '@/store/kenHistoryStore';
+  KEN_HISTORY_TABS,
+  KEN_TX_META,
+  KEN_TX_META_FALLBACK,
+} from '@constants';
+import { KEN_HISTORY_PAGE, useKenHistoryStore } from '@/store/kenHistoryStore';
 import type { KenHistoryRow, KenHistoryTab } from '@ola/shared/types';
-
-const KEN_TX_META = {
-  VIP_PACKAGE: { icon: '👑', labelKey: 'ken.historyScreen.types.VIP_PACKAGE' },
-  VIP_ICON: { icon: '👑', labelKey: 'ken.historyScreen.types.VIP_ICON' },
-  ADMIN_GRANT: { icon: '➕', labelKey: 'ken.historyScreen.types.ADMIN_GRANT' },
-  ADMIN_DEDUCT: {
-    icon: '➖',
-    labelKey: 'ken.historyScreen.types.ADMIN_DEDUCT',
-  },
-  REWARD: { icon: '🏆', labelKey: 'ken.historyScreen.types.REWARD' },
-  EGG_OPEN: { icon: '🥚', labelKey: 'ken.historyScreen.types.EGG_OPEN' },
-  TOPUP: { icon: '💰', labelKey: 'ken.historyScreen.types.TOPUP' },
-  REFUND: { icon: '↩️', labelKey: 'ken.historyScreen.types.REFUND' },
-  GIFT_SENT: { icon: '🎁', labelKey: 'ken.historyScreen.types.GIFT_SENT' },
-  GIFT_RECEIVED: {
-    icon: '🎁',
-    labelKey: 'ken.historyScreen.types.GIFT_RECEIVED',
-  },
-  TRANSFER_IN: { icon: '📥', labelKey: 'ken.historyScreen.types.TRANSFER_IN' },
-  TRANSFER_OUT: {
-    icon: '📤',
-    labelKey: 'ken.historyScreen.types.TRANSFER_OUT',
-  },
-  PEN_SHOOT: { icon: '⚽', labelKey: 'ken.historyScreen.types.PEN_SHOOT' },
-  PEN_CATCH: { icon: '🧤', labelKey: 'ken.historyScreen.types.PEN_CATCH' },
-  PEN_WIN: { icon: '🏆', labelKey: 'ken.historyScreen.types.PEN_WIN' },
-  PEN_REFUND: { icon: '↩️', labelKey: 'ken.historyScreen.types.PEN_REFUND' },
-  KEN_CHEST: { icon: '🧰', labelKey: 'ken.historyScreen.types.KEN_CHEST' },
-  CLAN_CREATE: { icon: '🛡️', labelKey: 'ken.historyScreen.types.CLAN_CREATE' },
-  WORD_CHAIN_HINT: {
-    icon: '💡',
-    labelKey: 'ken.historyScreen.types.WORD_CHAIN_HINT',
-  },
-} as const satisfies Record<KenTxType, { icon: string; labelKey: string }>;
-
-const KEN_TX_META_FALLBACK = {
-  icon: '🪙',
-  labelKey: 'ken.historyScreen.types.UNKNOWN',
-} as const;
-
-const TABS: {
-  key: KenHistoryTab;
-  labelKey:
-    | 'ken.historyScreen.tabAll'
-    | 'ken.historyScreen.tabCredit'
-    | 'ken.historyScreen.tabDebit';
-}[] = [
-  { key: 'all', labelKey: 'ken.historyScreen.tabAll' },
-  { key: 'credit', labelKey: 'ken.historyScreen.tabCredit' },
-  { key: 'debit', labelKey: 'ken.historyScreen.tabDebit' },
-];
 
 function TransactionRow({ row }: { row: KenHistoryRow }) {
   const { t } = useTranslation();
@@ -116,7 +66,7 @@ export function KenHistorySection() {
       </div>
 
       <div className="mx-2 flex gap-0.5 rounded-sm border border-black/12 bg-white p-0.5 text-sm">
-        {TABS.map((item) => (
+        {KEN_HISTORY_TABS.map((item) => (
           <button
             key={item.key}
             type="button"
@@ -148,8 +98,8 @@ export function KenHistorySection() {
                 {group.dayLabel === 'today'
                   ? t('ken.historyScreen.today')
                   : group.dayLabel === 'yesterday'
-                  ? t('ken.historyScreen.yesterday')
-                  : group.dateText}
+                    ? t('ken.historyScreen.yesterday')
+                    : group.dateText}
               </div>
               <div className="mx-2 overflow-hidden rounded-sm border border-black/12 bg-white">
                 {group.rows.map((row, index) => (
