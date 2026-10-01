@@ -12,6 +12,7 @@ import (
 
 	"ola-chat-server/internal/config"
 	roomEvents "ola-chat-server/internal/domain/room"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/services"
 
 	miniredis "github.com/alicebob/miniredis/v2"
@@ -73,6 +74,7 @@ func newTestService(t *testing.T) *Service {
 		cache:     cache,
 		publisher: &recordingPublisher{},
 		scores:    &recordingScoreLog{},
+		settings:  &fakeSettings{cfg: setting.DefaultWordChainConfig()},
 		logger:    zap.NewNop().Sugar(),
 	}
 	t.Cleanup(svc.stopTimer)

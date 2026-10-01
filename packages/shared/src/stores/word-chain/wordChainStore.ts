@@ -23,6 +23,7 @@ import type {
 } from '../../types/client/wordChain.type';
 import { useAuthStore } from '../auth/authStore';
 import { claimRealtimeRegistration } from '../realtimeRegistration.state';
+import { useWordChainConfigStore } from './wordChainConfigStore';
 import { toRecord } from '../room/roomHelpers';
 import {
   guessesFor,
@@ -56,6 +57,12 @@ const initialWordChainState: WordChainStoreData = {
 
 function syncAuthKen(ken: number) {
   useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
+}
+
+function isRoomDisabled(error: unknown): boolean {
+  if (toApiError(error).code !== WORD_CHAIN_ERROR_CODE.disabled) return false;
+  useWordChainConfigStore.getState().markDisabled();
+  return true;
 }
 
 function createWordChainSync(set: WordChainSet, get: WordChainGet) {
@@ -121,8 +128,14 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
   }
 
   function rejoin() {
-    join().catch(() => {
-      if (get().opened) set({ status: 'error' });
+    join().catch((error: unknown) => {
+      if (!get().opened) return;
+      if (isRoomDisabled(error)) {
+        toast.error(i18n.t('wordChain.disabled'));
+        get().close();
+        return;
+      }
+      set({ status: 'error' });
     });
   }
 
@@ -204,6 +217,10 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
         }
         return result;
       } catch (error) {
+        if (isRoomDisabled(error)) {
+          get().close();
+          throw error;
+        }
         const state = get().state;
         if (
           sentState != null &&
@@ -273,9 +290,15 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
     },
 
     buyHint: async () => {
-      const result = await WordChainService.hint();
-      syncAuthKen(result.kenBalance);
-      return result;
+      try {
+        const result = await WordChainService.hint();
+        syncAuthKen(result.kenBalance);
+        set({ hintPrice: result.price });
+        return result;
+      } catch (error) {
+        if (isRoomDisabled(error)) get().close();
+        throw error;
+      }
     },
 
     lookup: (word) => WordChainService.lookup(word),

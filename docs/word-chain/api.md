@@ -98,7 +98,9 @@ Lấy state phiên hiện tại và điểm của mình. Nếu chưa có phiên 
 { "state": { "…": "State" }, "points": 12, "remainingGuesses": 3, "hintPrice": 500 }
 ```
 
-`hintPrice` là giá một lần gợi ý (KEN), client dùng để hiện trên bảng gợi ý.
+`hintPrice` là giá một lần gợi ý (KEN) theo cấu hình admin (mặc định 500), client dùng để hiện trên bảng gợi ý.
+
+Admin tắt phòng thì trả `403 WORD_CHAIN_DISABLED`.
 
 ### `GET /rooms/word-chain/messages?limit=50&before=<messageId>`
 
@@ -151,6 +153,7 @@ Lỗi:
 | 429 | | Vượt rate limit | Toast, cho gửi lại sau |
 | 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã sai đủ 3 lần với từ hiện tại | Toast, khoá ô nhập tới khi `turn` đổi. Server không lưu gì |
 | 403 | `WORD_CHAIN_WAIT_TURN` | Từ hiện tại do chính người gửi nối ra (`wordOwnerId`) | Toast, khoá ô nhập tới khi có người khác nối. Không trừ lượt, server không lưu gì |
+| 403 | `WORD_CHAIN_DISABLED` | Admin đã tắt phòng nối từ | Toast "Phòng nối từ đang tạm đóng", đóng phòng, ẩn mục khỏi danh sách phòng |
 | 503 | `WORD_CHAIN_VERIFY_FAILED` | Không gọi được API từ điển | Toast, giữ nội dung trong ô nhập để gửi lại. Server không lưu gì |
 
 ### `POST /rooms/word-chain/hints`
@@ -169,6 +172,7 @@ Mua gợi ý cho từ hiện tại. Không có body. Server chỉ trừ KEN khi 
 ```
 
 - `hints`: tối đa 5 từ, đều bắt đầu bằng âm tiết cuối của `word`, chưa dùng trong ván, có trong từ điển.
+- `price`: giá thật đã trừ theo cấu hình lúc mua. Client cập nhật giá hiển thị theo số này.
 - `kenBalance`: số dư sau khi trừ, client ghi vào `user.ken`. Server cũng bắn `KEN_UPDATED` `{ "ken": kenBalance }` tới mọi socket của user.
 - Gợi ý chỉ đúng với `sessionId` + `turn` này. Khi state đổi `turn` thì client coi gợi ý là cũ.
 
@@ -176,7 +180,8 @@ Lỗi:
 
 | HTTP | `code` | Khi nào |
 |---|---|---|
-| 400 | `WORD_CHAIN_INSUFFICIENT_KEN` | Không đủ KEN |
+| 400 | `WORD_CHAIN_INSUFFICIENT_KEN` | Không đủ KEN. Câu `error` ghi giá hiện tại |
+| 403 | `WORD_CHAIN_DISABLED` | Admin đã tắt phòng nối từ. Không trừ KEN |
 | 403 | `WORD_CHAIN_WAIT_TURN` | Từ hiện tại do chính người gửi nối ra |
 | 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã hết lượt đoán với từ hiện tại |
 | 409 | `WORD_CHAIN_NO_HINT` | Không tìm được gợi ý. Không trừ KEN |
@@ -267,6 +272,16 @@ Client dùng endpoint này cho cả hộp **Tra từ** lẫn nút ⓘ nhỏ nằ
   - `400`: từ trống hoặc dài quá 80 ký tự;
   - `429 WORD_CHAIN_COOLDOWN`: câu `error` dạng "⏳ Vui lòng chờ 3s trước khi tra tiếp.";
   - `502`: API tra từ lỗi.
+
+### `GET /settings/word-chain`
+
+Nằm ngoài `/rooms/word-chain`, cần đăng nhập. Client đọc để biết có hiện mục **Phòng nối từ** trong danh sách phòng hay không.
+
+```json
+{ "enabled": true, "hintPrice": 500 }
+```
+
+Chưa cấu hình thì trả mặc định như trên. Gọi lỗi thì client coi như đang bật.
 
 ## 3. Socket
 

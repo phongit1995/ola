@@ -819,6 +819,7 @@
     "sendError": "Could not send the word",
     "verifyFailed": "Could not check the word right now, please try again",
     "busy": "The room is busy, please try again",
+    "disabled": "The word chain room is temporarily closed",
     "tooFast": "You are sending too fast, wait a moment",
     "empty": "No messages yet",
     "leaderboardTitle": "Leaderboard",

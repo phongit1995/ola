@@ -819,6 +819,7 @@
     "sendError": "Không gửi được từ",
     "verifyFailed": "Chưa kiểm tra được từ lúc này, thử lại sau nhé",
     "busy": "Phòng đang xử lý, thử lại nhé",
+    "disabled": "Phòng nối từ đang tạm đóng",
     "tooFast": "Bạn gửi nhanh quá, chờ chút nhé",
     "empty": "Chưa có tin nhắn nào",
     "leaderboardTitle": "Bảng xếp hạng",

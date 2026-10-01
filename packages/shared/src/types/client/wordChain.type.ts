@@ -90,6 +90,12 @@ export type WordChainStoreData = Pick<
   | 'winsLoading'
 >;
 
+export interface WordChainConfigState {
+  enabled: boolean;
+  load: () => Promise<void>;
+  markDisabled: () => void;
+}
+
 export interface WordChainPrefsState {
   hintAutoSend: boolean;
   setHintAutoSend: (hintAutoSend: boolean) => void;

@@ -8,6 +8,10 @@ import (
 )
 
 func (s *Service) Hint(ctx context.Context, userID uuid.UUID) (*HintResponse, error) {
+	cfg, err := s.enabledConfig()
+	if err != nil {
+		return nil, err
+	}
 	state, err := s.activeState(ctx)
 	if err != nil {
 		return nil, err
@@ -36,13 +40,13 @@ func (s *Service) Hint(ctx context.Context, userID uuid.UUID) (*HintResponse, er
 
 	balance, err := s.wallet.ChargeHint(HintCharge{
 		UserID: userID,
-		Price:  HintPriceKen,
+		Price:  cfg.HintPrice,
 		Word:   state.Word,
 		Turn:   state.Turn,
 		Hints:  hints,
 	})
 	if errors.Is(err, errKenShort) {
-		return nil, ErrKenShort
+		return nil, kenShortError(cfg.HintPrice)
 	}
 	if err != nil {
 		return nil, err
@@ -52,7 +56,7 @@ func (s *Service) Hint(ctx context.Context, userID uuid.UUID) (*HintResponse, er
 		Turn:       state.Turn,
 		Word:       state.Word,
 		Hints:      hints,
-		Price:      HintPriceKen,
+		Price:      cfg.HintPrice,
 		KenBalance: balance,
 	}, nil
 }

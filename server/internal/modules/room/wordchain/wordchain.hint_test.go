@@ -6,8 +6,11 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
+
+	"ola-chat-server/internal/modules/setting"
 
 	"github.com/google/uuid"
 )
@@ -63,6 +66,7 @@ func newHintService(t *testing.T, state GameState, wallet *fakeWallet) *Service 
 func TestHintChargesAndReturnsValidWords(t *testing.T) {
 	wallet := &fakeWallet{balance: 2000}
 	svc := newHintService(t, newSession("mặt trời", time.Now()), wallet)
+	svc.settings = &fakeSettings{cfg: setting.WordChainConfig{Enabled: true, HintPrice: 700}}
 	userID := uuid.New()
 
 	resp, err := svc.Hint(context.Background(), userID)
@@ -72,10 +76,10 @@ func TestHintChargesAndReturnsValidWords(t *testing.T) {
 	if len(resp.Hints) != 1 || resp.Hints[0] != "trời đất" {
 		t.Fatalf("hints = %v, want [trời đất]", resp.Hints)
 	}
-	if resp.Price != HintPriceKen || resp.KenBalance != 2000-HintPriceKen || resp.Word != "mặt trời" {
+	if resp.Price != 700 || resp.KenBalance != 1300 || resp.Word != "mặt trời" {
 		t.Fatalf("unexpected response: %+v", resp)
 	}
-	if len(wallet.charges) != 1 || wallet.charges[0].UserID != userID || wallet.charges[0].Price != HintPriceKen {
+	if len(wallet.charges) != 1 || wallet.charges[0].UserID != userID || wallet.charges[0].Price != 700 {
 		t.Fatalf("charges = %+v", wallet.charges)
 	}
 }
@@ -134,9 +138,11 @@ func TestHintBlockedWhenPlayerCannotMove(t *testing.T) {
 func TestHintNeedsEnoughKen(t *testing.T) {
 	wallet := &fakeWallet{err: errKenShort}
 	svc := newHintService(t, newSession("mặt trời", time.Now()), wallet)
+	svc.settings = &fakeSettings{cfg: setting.WordChainConfig{Enabled: true, HintPrice: 700}}
 
-	if _, err := svc.Hint(context.Background(), uuid.New()); !errors.Is(err, ErrKenShort) {
-		t.Fatalf("err = %v, want ErrKenShort", err)
+	_, err := svc.Hint(context.Background(), uuid.New())
+	if !hasErrorCode(err, ErrorCodeKenShort) || !strings.Contains(err.Error(), "700") {
+		t.Fatalf("err = %v, want %s mentioning 700 KEN", err, ErrorCodeKenShort)
 	}
 }
 

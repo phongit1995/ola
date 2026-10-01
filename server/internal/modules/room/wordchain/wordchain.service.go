@@ -6,6 +6,7 @@ import (
 	"ola-chat-server/internal/constants"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/setting"
 	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
@@ -25,12 +26,13 @@ type Service struct {
 	publisher EventPublisher
 	wallet    HintWallet
 	scores    ScoreLog
+	settings  Settings
 	logger    *zap.SugaredLogger
 	timerMu   sync.Mutex
 	timer     *time.Timer
 }
 
-func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *services.CacheService, userCache *userModule.CacheService, publisher EventPublisher, wallet *Wallet, scores *ScoreRepository, logger *zap.SugaredLogger) *Service {
+func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *services.CacheService, userCache *userModule.CacheService, publisher EventPublisher, wallet *Wallet, scores *ScoreRepository, settings *setting.Service, logger *zap.SugaredLogger) *Service {
 	s := &Service{
 		dict:      dict,
 		verifier:  verifier,
@@ -40,6 +42,7 @@ func NewService(dict *Dictionary, verifier *Verifier, store *Store, cache *servi
 		publisher: publisher,
 		wallet:    wallet,
 		scores:    scores,
+		settings:  settings,
 		logger:    logger.Named("[word_chain_service]"),
 	}
 	utils.SafeGo(s.logger, s.resumeExpiryTimer)
@@ -122,6 +125,9 @@ func (s *Service) sender(userID uuid.UUID) *models.User {
 var errStaleState = errors.New("word chain state changed")
 
 func (s *Service) HandleMove(ctx context.Context, userID uuid.UUID, req *MoveRequest) (*MoveResponse, error) {
+	if _, err := s.enabledConfig(); err != nil {
+		return nil, err
+	}
 	sender := s.sender(userID)
 	oracle := liveOracle{ctx: ctx, service: s}
 	for attempt := 0; attempt < MoveMaxAttempts; attempt++ {
@@ -290,6 +296,10 @@ func (s *Service) announceBotWordLocked(ctx context.Context, batch *eventBatch, 
 }
 
 func (s *Service) Overview(ctx context.Context, userID uuid.UUID) (*OverviewResponse, error) {
+	cfg, err := s.enabledConfig()
+	if err != nil {
+		return nil, err
+	}
 	state, err := s.activeState(ctx)
 	if err != nil {
 		return nil, err
@@ -302,7 +312,7 @@ func (s *Service) Overview(ctx context.Context, userID uuid.UUID) (*OverviewResp
 		State:            toStateView(state),
 		Points:           points,
 		RemainingGuesses: state.RemainingGuesses(userID.String()),
-		HintPrice:        HintPriceKen,
+		HintPrice:        cfg.HintPrice,
 	}, nil
 }
 
@@ -310,6 +320,10 @@ func (s *Service) Messages(ctx context.Context, limit int, beforeID string) (*Me
 	if _, err := s.activeState(ctx); err != nil {
 		return nil, err
 	}
+	return s.messagePage(ctx, limit, beforeID)
+}
+
+func (s *Service) messagePage(ctx context.Context, limit int, beforeID string) (*MessageListResponse, error) {
 	stored, err := s.store.ListMessages(ctx, limit, beforeID)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import type { RoomListItem } from './types';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
+import { useWordChainConfigStore } from '@ola/shared/stores/word-chain/wordChainConfigStore';
 import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
 import { useLobbyWallpaperStyle } from '@hooks';
 
@@ -20,11 +21,14 @@ export function RoomPanel() {
   const activeRoom = useRoomChatStore((state) => state.activeRoom);
   const openRoom = useRoomChatStore((state) => state.open);
   const openWordChain = useWordChainStore((state) => state.open);
+  const wordChainEnabled = useWordChainConfigStore((state) => state.enabled);
+  const loadWordChainConfig = useWordChainConfigStore((state) => state.load);
   const [fullRoom, setFullRoom] = useState<RoomListItem | null>(null);
 
   useEffect(() => {
     void fetchRooms(undefined, { silent: useRoomListStore.getState().loaded });
-  }, [fetchRooms]);
+    void loadWordChainConfig();
+  }, [fetchRooms, loadWordChainConfig]);
 
   const rooms = useMemo<RoomListItem[]>(
     () =>
@@ -48,6 +52,7 @@ export function RoomPanel() {
   }
 
   function refresh() {
+    void loadWordChainConfig();
     return fetchRooms();
   }
 
@@ -110,6 +115,7 @@ export function RoomPanel() {
           onQuickJoin={quickJoin}
           onWordChain={() => void openWordChain()}
           showQuickJoin={roomsLoaded}
+          showWordChain={wordChainEnabled}
         />
       </PullToRefresh>
 

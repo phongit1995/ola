@@ -9,7 +9,7 @@ Code backend: `server/internal/modules/room/wordchain/`. Luật chơi lấy từ
 - Toàn hệ thống chỉ có **1 phòng nối từ**. Phòng không gắn với bảng `rooms`, không có `roomId`, không có danh sách phòng, không đếm số người.
 - Người chơi nối từ với nhau (PvP). **Bot chỉ làm trọng tài**: chấm từng từ, báo thắng, mở ván mới. Bot không tự nối từ.
 - User đã đăng nhập là chơi được, không cần join phòng qua ticket. Join socket chỉ để nhận realtime.
-- Dữ liệu ván chơi nằm ở **Redis**. Postgres chỉ giữ 2 thứ: tiền **Gợi ý** (`users.ken`, `ken_transactions`) và lịch sử ghi điểm `word_chain_scores` để thống kê theo thời gian (xem mục 6).
+- Dữ liệu ván chơi nằm ở **Redis**. Postgres chỉ giữ 3 thứ: tiền **Gợi ý** (`users.ken`, `ken_transactions`), lịch sử ghi điểm `word_chain_scores` để thống kê theo thời gian (xem mục 6), và cấu hình bật/tắt phòng, giá gợi ý trong `app_settings` (xem mục 9).
 - Tính năng phụ: **Tra từ** (hộp tra từ, và nút ⓘ nhỏ nằm ngoài bubble, cạnh mỗi từ nối đúng, để ai cũng xem được nghĩa), **Bảng xếp hạng** và **Gợi ý** (mất KEN).
 
 ## 2. Luật chơi
@@ -46,7 +46,7 @@ Chuẩn hoá trước khi chấm (`wordchain.normalize.go`):
 
 ### Gợi ý (mất KEN)
 
-- Nút 💡 cạnh nút Gửi. Mỗi lần gợi ý tốn **500 KEN** (`HintPriceKen`), server trả tối đa **5 từ** (`HintMaxWords`) nối được vào từ hiện tại.
+- Nút 💡 cạnh nút Gửi. Mỗi lần gợi ý tốn **500 KEN** theo mặc định, admin đổi được giá (mục 9). Server trả tối đa **5 từ** (`HintMaxWords`) nối được vào từ hiện tại.
 - Từ gợi ý lấy từ từ điển local (từ còn nối tiếp được đứng trước) rồi tới `suggest`, bỏ từ đã dùng trong ván, và phải được API `lookup` chấp nhận, cùng tiêu chí với lúc chấm từ.
 - Server tìm gợi ý **trước**, có ít nhất 1 từ mới trừ KEN. Không tìm được thì trả `409 WORD_CHAIN_NO_HINT` và **không trừ tiền**. API từ điển lỗi thì trả `503` và cũng không trừ, kể cả khi chỉ lỗi `suggest` hoặc lỗi `lookup` ở một từ trong khi các từ khác vẫn tra được.
 - Người đang không được chơi thì không mua được gợi ý: từ hiện tại do chính mình nối (`403 WORD_CHAIN_WAIT_TURN`) hoặc đã hết lượt đoán (`403 WORD_CHAIN_NO_GUESSES`). Không đủ KEN thì trả `400 WORD_CHAIN_INSUFFICIENT_KEN`.
@@ -208,6 +208,8 @@ API service ──Kafka CHAT.WORD_CHAIN.EVENT──▶ Chat service ──Socket
 | `wordchain.wallet.go` | Trừ KEN cho gợi ý trong transaction Postgres, ghi `ken_transactions` |
 | `wordchain.leaderboard.go` | Ghi điểm vào Postgres, bảng xếp hạng theo điểm/thắng và theo kỳ (GMT+7), lịch sử thắng |
 | `wordchain.repository.go` | Đọc và ghi bảng `word_chain_scores` |
+| `wordchain.config.go` | Đọc cấu hình `word_chain` (bật/tắt, giá gợi ý), chặn khi phòng bị tắt |
+| `wordchain.admin.go` | Dữ liệu cho trang admin: tổng quan ván hiện tại, lịch sử tin, trận thắng |
 | `wordchain.controller.go`, `wordchain.router.go` | REST |
 
 Ngoài folder `wordchain`, tính năng này còn đụng tới:
@@ -216,4 +218,32 @@ Ngoài folder `wordchain`, tính năng này còn đụng tới:
 - `domain/room`: handler Kafka → socket;
 - `transport/kafka`: producer, adapter;
 - `transport/websocket`: kênh `word_chain`, event join/leave;
-- `modules/room/room.dig.go` và `room.router.go`: gắn DI và route.
+- `modules/room/room.dig.go` và `room.router.go`: gắn DI và route;
+- `modules/setting`: key `word_chain` trong `app_settings`, endpoint `GET /settings/word-chain`;
+- `modules/admin/wordchain`: API admin `/admin/word-chain`.
+
+## 9. Admin
+
+Menu admin **Phòng chat** tách thành 2 mục con:
+
+- **Danh sách phòng** (`/rooms`): các phòng chat thường, như trước.
+- **Phòng nối từ** (`/rooms/word-chain`): thẻ tổng quan (từ hiện tại, người đưa ra từ, các từ trong ván, số người đã ghi điểm/đã thắng, trạng thái hiển thị và giá gợi ý) và 3 tab:
+  - **Lịch sử nối từ**: tin nhắn của phòng, mới nhất trước, có nút tải thêm (Redis giữ 5000 tin gần nhất). Mỗi tin có nhãn kết quả: Đúng, Thắng, Sai âm đầu, Từ đã dùng, Không có trong từ điển, Sai định dạng, hoặc loại tin của trọng tài.
+  - **Trận thắng**: đọc từ `word_chain_scores`, bấm vào người thắng để chỉ xem trận của người đó.
+  - **Cấu hình**: bật/tắt hiển thị phòng và giá gợi ý.
+
+Cấu hình lưu ở `app_settings`, key `word_chain`:
+
+```json
+{ "enabled": true, "hintPrice": 500 }
+```
+
+- Chưa có dòng nào thì dùng mặc định: **hiển thị**, gợi ý **500 KEN**.
+- Admin lưu qua `PUT /admin/settings/word_chain`. Server bắt buộc có đủ 2 trường, `hintPrice` là số nguyên từ 1 đến 10.000.000, không nhận trường lạ.
+- Tắt phòng (`enabled = false`):
+  - web ẩn mục **Phòng nối từ** khỏi danh sách phòng (đọc `GET /settings/word-chain` mỗi lần mở tab Phòng chat và khi kéo làm mới);
+  - server trả `403 WORD_CHAIN_DISABLED` cho `GET /rooms/word-chain`, `POST /moves` và `POST /hints`. Người đang ở trong phòng thì lần gửi tiếp theo bị từ chối, client báo "Phòng nối từ đang tạm đóng", đóng phòng và ẩn luôn mục đó;
+  - lịch sử, điểm, trận thắng và bảng xếp hạng giữ nguyên; timer thay từ của trọng tài vẫn chạy.
+- Giá gợi ý đọc lại ở mỗi lần mua, nên đổi giá có hiệu lực ngay. `hintPrice` trong `GET /rooms/word-chain` và `price` trong response gợi ý là giá thật đã áp dụng; client cập nhật giá hiển thị theo response.
+- Đọc cấu hình lỗi (DB lỗi) thì server dùng mặc định và ghi log, không chặn người chơi.
+- API admin (cần quyền admin): `GET /admin/word-chain` (tổng quan, không tạo phiên mới), `GET /admin/word-chain/messages?limit&before`, `GET /admin/word-chain/wins?limit&before&userId`.

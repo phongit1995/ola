@@ -22,6 +22,7 @@ import (
 	adminuser "ola-chat-server/internal/modules/admin/user"
 	adminvip "ola-chat-server/internal/modules/admin/vip"
 	adminwheel "ola-chat-server/internal/modules/admin/wheel"
+	adminwordchain "ola-chat-server/internal/modules/admin/wordchain"
 
 	"go.uber.org/dig"
 )
@@ -49,6 +50,7 @@ func Provider(c *dig.Container) error {
 		adminminigame.Provider,
 		adminannouncement.Provider,
 		admintopup.Provider,
+		adminwordchain.Provider,
 	}
 
 	for _, module := range modules {

@@ -161,6 +161,10 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateUsernameChangeValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyWordChain:
+		if err := setting.ValidateWordChainValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
 	case setting.KeyPushNotification:
 		if err := setting.ValidatePushNotificationValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

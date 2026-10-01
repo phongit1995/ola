@@ -13,6 +13,7 @@ interface RoomListProps {
   onQuickJoin: () => void;
   onWordChain: () => void;
   showQuickJoin: boolean;
+  showWordChain: boolean;
 }
 
 function SectionHeader({ label }: { label: string }) {
@@ -70,6 +71,7 @@ export function RoomList({
   onQuickJoin,
   onWordChain,
   showQuickJoin,
+  showWordChain,
 }: RoomListProps) {
   const { t } = useTranslation();
   return (
@@ -115,13 +117,15 @@ export function RoomList({
           onClick={onQuickJoin}
         />
       )}
-      <SpecialRow
-        icon={<WordChainRoomIcon className="h-16 w-16" />}
-        bareIcon
-        title={t('wordChain.entryTitle')}
-        subtitle={t('wordChain.entryDesc')}
-        onClick={onWordChain}
-      />
+      {showWordChain && (
+        <SpecialRow
+          icon={<WordChainRoomIcon className="h-16 w-16" />}
+          bareIcon
+          title={t('wordChain.entryTitle')}
+          subtitle={t('wordChain.entryDesc')}
+          onClick={onWordChain}
+        />
+      )}
 
       <SectionHeader label={t('room.sectionPublic')} />
 

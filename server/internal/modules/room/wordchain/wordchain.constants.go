@@ -82,7 +82,7 @@ const (
 	ErrorCodeWaitTurn     = "WORD_CHAIN_WAIT_TURN"
 	ErrorCodeNoHint       = "WORD_CHAIN_NO_HINT"
 	ErrorCodeKenShort     = "WORD_CHAIN_INSUFFICIENT_KEN"
+	ErrorCodeDisabled     = "WORD_CHAIN_DISABLED"
 
-	HintPriceKen = 500
 	HintMaxWords = 5
 )

@@ -295,7 +295,7 @@ func TestWinPageUsesCursorAndDetectsMore(t *testing.T) {
 	me := uuid.New()
 	cursor := uuid.New()
 
-	rows, hasMore, err := svc.winPage(context.Background(), me, true, cursor.String(), 2)
+	rows, hasMore, err := svc.winPage(context.Background(), &me, cursor.String(), 2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -306,7 +306,7 @@ func TestWinPageUsesCursorAndDetectsMore(t *testing.T) {
 		t.Fatalf("query = user %v before %v limit %d", log.winsUser, log.winsBefore, log.winsLimit)
 	}
 
-	rows, hasMore, err = svc.winPage(context.Background(), me, false, "", 3)
+	rows, hasMore, err = svc.winPage(context.Background(), nil, "", 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -319,7 +319,7 @@ func TestWinPageIgnoresBrokenCursor(t *testing.T) {
 	svc := newTestService(t)
 	scoreLog(svc).wins = fakeWins(2)
 
-	rows, hasMore, err := svc.winPage(context.Background(), uuid.New(), false, "not-an-id", 20)
+	rows, hasMore, err := svc.winPage(context.Background(), nil, "not-an-id", 20)
 	if err != nil || len(rows) != 0 || hasMore {
 		t.Fatalf("rows = %d, hasMore = %v, err = %v", len(rows), hasMore, err)
 	}

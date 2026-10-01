@@ -5,6 +5,7 @@ import type {
   UpdateSettingsRequest,
   UserSettings,
   UsernameChangeConfigResult,
+  WordChainConfigResult,
 } from '../types/api/settings.type';
 
 export class SettingsService {
@@ -22,5 +23,9 @@ export class SettingsService {
 
   static usernameChangeConfig(): Promise<UsernameChangeConfigResult> {
     return http.get<UsernameChangeConfigResult>(API_PATH.appSettings.usernameChange);
+  }
+
+  static wordChainConfig(): Promise<WordChainConfigResult> {
+    return http.get<WordChainConfigResult>(API_PATH.appSettings.wordChain);
   }
 }

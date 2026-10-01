@@ -73,6 +73,7 @@ export function wordChainGuessesText(t: TFunction, remaining: number): string {
 
 export function wordChainMoveErrorText(t: TFunction, error: unknown): string {
   const apiError = toApiError(error);
+  if (apiError.code === WORD_CHAIN_ERROR_CODE.disabled) return t('wordChain.disabled');
   if (apiError.code === WORD_CHAIN_ERROR_CODE.verifyFailed) return t('wordChain.verifyFailed');
   if (apiError.code === WORD_CHAIN_ERROR_CODE.noGuesses) return t('wordChain.noGuesses');
   if (apiError.code === WORD_CHAIN_ERROR_CODE.waitTurn) return t('wordChain.waitTurn');
@@ -94,6 +95,8 @@ export function wordChainHintErrorText(t: TFunction, error: unknown): string {
       return t('wordChain.noGuesses');
     case WORD_CHAIN_ERROR_CODE.waitTurn:
       return t('wordChain.waitTurn');
+    case WORD_CHAIN_ERROR_CODE.disabled:
+      return t('wordChain.disabled');
   }
   if (apiError.status === HTTP_TOO_MANY_REQUESTS) return t('wordChain.tooFast');
   return t('wordChain.hintError');

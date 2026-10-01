@@ -48,6 +48,7 @@ export const API_PATH = {
   appSettings: {
     topup: '/settings/topup',
     usernameChange: '/settings/username-change',
+    wordChain: '/settings/word-chain',
   },
   announcements: {
     latest: '/announcements/latest',

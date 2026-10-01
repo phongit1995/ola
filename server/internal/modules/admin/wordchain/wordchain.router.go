@@ -1,4 +1,4 @@
-package setting
+package adminwordchain
 
 import (
 	"ola-chat-server/internal/middleware"
@@ -14,11 +14,11 @@ func NewRouter(controller *Controller, authMiddleware *middleware.AuthMiddleware
 	return &Router{controller: controller, authMiddleware: authMiddleware}
 }
 
-func (r *Router) Setup(api *utils.AppGroup) {
-	settings := api.Group("/settings", r.authMiddleware.RequireAuth())
+func (r *Router) Setup(admin *utils.AppGroup) {
+	wordChain := admin.Group("/word-chain", r.authMiddleware.RequireAdmin())
 	{
-		settings.GET("/topup", r.controller.TopupConfig)
-		settings.GET("/username-change", r.controller.UsernameChangeConfig)
-		settings.GET("/word-chain", r.controller.WordChainConfig)
+		wordChain.GET("", r.controller.Overview)
+		wordChain.GET("/messages", r.controller.Messages)
+		wordChain.GET("/wins", r.controller.Wins)
 	}
 }

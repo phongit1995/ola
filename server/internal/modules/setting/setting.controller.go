@@ -77,3 +77,23 @@ func (ctrl *Controller) UsernameChangeConfig(c *gin.Context) (interface{}, error
 	}
 	return cfg, nil
 }
+
+// WordChainConfig godoc
+// @Summary      Cấu hình phòng nối từ (bật/tắt, giá gợi ý tính bằng KEN)
+// @Tags         settings
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  WordChainConfigSuccessResponse
+// @Failure      401  {object}  utils.APIError
+// @Router       /settings/word-chain [get]
+func (ctrl *Controller) WordChainConfig(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+
+	cfg, err := ctrl.service.GetWordChain()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return cfg, nil
+}

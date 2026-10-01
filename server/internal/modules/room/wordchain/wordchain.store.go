@@ -214,6 +214,10 @@ func (s *Store) Scores(ctx context.Context, key string, userIDs []string) (map[s
 	return scores, nil
 }
 
+func (s *Store) Count(ctx context.Context, key string) (int64, error) {
+	return s.client.ZCard(ctx, key).Result()
+}
+
 func (s *Store) Top(ctx context.Context, key string, limit int) ([]ScoreEntry, int64, error) {
 	rows, err := s.client.ZRevRangeWithScores(ctx, key, 0, int64(limit-1)).Result()
 	if err != nil {

@@ -161,3 +161,18 @@ type LookupResponse struct {
 	Results []LookupResult `json:"results"`
 	Source  string         `json:"source"`
 }
+
+type AdminPlayer struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	FullName string `json:"fullName,omitempty"`
+	Avatar   string `json:"avatar,omitempty"`
+}
+
+type AdminOverviewResponse struct {
+	State     *StateResponse `json:"state"`
+	History   []string       `json:"history"`
+	WordOwner *AdminPlayer   `json:"wordOwner,omitempty"`
+	Players   int64          `json:"players"`
+	Winners   int64          `json:"winners"`
+}

@@ -35,6 +35,7 @@ export const WORD_CHAIN_ERROR_CODE = {
   waitTurn: 'WORD_CHAIN_WAIT_TURN',
   noHint: 'WORD_CHAIN_NO_HINT',
   kenShort: 'WORD_CHAIN_INSUFFICIENT_KEN',
+  disabled: 'WORD_CHAIN_DISABLED',
 } as const;
 
 export const WORD_CHAIN_MESSAGE_PAGE_SIZE = 50;

@@ -149,11 +149,8 @@ func (s *Service) leaderboardRows(ctx context.Context, userID uuid.UUID, sort, p
 	return rows, nil
 }
 
-func (s *Service) winPage(ctx context.Context, userID uuid.UUID, mine bool, before string, limit int) ([]models.WordChainScore, bool, error) {
-	var filter, cursor *uuid.UUID
-	if mine {
-		filter = &userID
-	}
+func (s *Service) winPage(ctx context.Context, filter *uuid.UUID, before string, limit int) ([]models.WordChainScore, bool, error) {
+	var cursor *uuid.UUID
 	if before != "" {
 		id, err := uuid.Parse(before)
 		if err != nil {
@@ -172,7 +169,15 @@ func (s *Service) winPage(ctx context.Context, userID uuid.UUID, mine bool, befo
 }
 
 func (s *Service) Wins(ctx context.Context, userID uuid.UUID, mine bool, before string, limit int) (*WinListResponse, error) {
-	rows, hasMore, err := s.winPage(ctx, userID, mine, before, limit)
+	var filter *uuid.UUID
+	if mine {
+		filter = &userID
+	}
+	return s.winList(ctx, filter, before, limit)
+}
+
+func (s *Service) winList(ctx context.Context, filter *uuid.UUID, before string, limit int) (*WinListResponse, error) {
+	rows, hasMore, err := s.winPage(ctx, filter, before, limit)
 	if err != nil {
 		return nil, err
 	}

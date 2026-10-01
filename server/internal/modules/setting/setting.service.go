@@ -23,10 +23,13 @@ const (
 	KeyUsernameChange   = "username_change"
 	KeyPushFirebase     = "push_firebase"
 	KeyPushNotification = "push_notification"
+	KeyWordChain        = "word_chain"
 
-	usernameChangeMinLength = 2
-	usernameChangeMaxLength = 20
-	topupBonusPercentMax    = 500
+	usernameChangeMinLength   = 2
+	usernameChangeMaxLength   = 20
+	topupBonusPercentMax      = 500
+	wordChainDefaultHintPrice = 500
+	wordChainHintPriceMax     = 10_000_000
 )
 
 type PushNotificationConfig struct {
@@ -154,6 +157,19 @@ func (c UsernameChangeConfig) CostFor(length int) int {
 	return cost
 }
 
+type WordChainConfig struct {
+	Enabled   bool `json:"enabled"`
+	HintPrice int  `json:"hintPrice"`
+}
+
+func DefaultWordChainConfig() WordChainConfig {
+	return WordChainConfig{Enabled: true, HintPrice: wordChainDefaultHintPrice}
+}
+
+func validWordChainHintPrice(price int) bool {
+	return price >= 1 && price <= wordChainHintPriceMax
+}
+
 type Service struct {
 	repo   *Repository
 	logger *zap.SugaredLogger
@@ -260,6 +276,16 @@ func (s *Service) GetUsernameChange() (UsernameChangeConfig, error) {
 		tiers = DefaultUsernameChangeConfig().Tiers
 	}
 	cfg.Tiers = tiers
+	return cfg, err
+}
+
+func (s *Service) GetWordChain() (WordChainConfig, error) {
+	cfg := DefaultWordChainConfig()
+	err := s.getInto(KeyWordChain, &cfg)
+	if !validWordChainHintPrice(cfg.HintPrice) {
+		s.logger.Warnw("Invalid word_chain hintPrice in app_settings, using default", "hintPrice", cfg.HintPrice)
+		cfg.HintPrice = wordChainDefaultHintPrice
+	}
 	return cfg, err
 }
 
@@ -441,6 +467,29 @@ func ValidateUsernameChangeValue(value models.JSONB) error {
 	}
 	if !hasBaseTier {
 		return fmt.Errorf("tiers must include minLength %d so every username length has a price", usernameChangeMinLength)
+	}
+	return nil
+}
+
+func ValidateWordChainValue(value models.JSONB) error {
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return errors.New("invalid word_chain config")
+	}
+	var cfg struct {
+		Enabled   *bool `json:"enabled"`
+		HintPrice *int  `json:"hintPrice"`
+	}
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&cfg); err != nil {
+		return errors.New("invalid word_chain config: " + err.Error())
+	}
+	if cfg.Enabled == nil || cfg.HintPrice == nil {
+		return errors.New("cấu hình nối từ cần đủ enabled và hintPrice")
+	}
+	if !validWordChainHintPrice(*cfg.HintPrice) {
+		return fmt.Errorf("giá gợi ý phải từ 1 đến %d KEN", wordChainHintPriceMax)
 	}
 	return nil
 }
