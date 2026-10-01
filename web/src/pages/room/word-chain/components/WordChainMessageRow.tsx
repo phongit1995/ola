@@ -108,7 +108,13 @@ function BotReply({
   );
 }
 
-function NoticeCard({ message }: { message: WordChainMessage }) {
+function NoticeCard({
+  message,
+  onWordInfo,
+}: {
+  message: WordChainMessage;
+  onWordInfo: (word: string) => void;
+}) {
   const { t } = useTranslation();
   const isSession = message.type === WORD_CHAIN_MESSAGE_TYPE.sessionStarted;
   return (
@@ -116,14 +122,21 @@ function NoticeCard({ message }: { message: WordChainMessage }) {
       <span className="text-sm font-semibold text-ola-primary-ink">
         {isSession ? t('wordChain.sessionStarted') : t('wordChain.gameStarted')}
       </span>
-      <span className="text-sm text-black/70">
-        <Trans
-          i18nKey={
-            isSession ? 'wordChain.startWordLine' : 'wordChain.currentWordLine'
-          }
-          values={{ word: message.word ?? '' }}
-          components={WORD_LINE_COMPONENTS}
-        />
+      <span className="flex items-center gap-1.5 text-sm text-black/70">
+        <span>
+          <Trans
+            i18nKey={
+              isSession
+                ? 'wordChain.startWordLine'
+                : 'wordChain.currentWordLine'
+            }
+            values={{ word: message.word ?? '' }}
+            components={WORD_LINE_COMPONENTS}
+          />
+        </span>
+        {message.word != null && message.word !== '' && (
+          <WordInfoButton word={message.word} onWordInfo={onWordInfo} />
+        )}
       </span>
     </div>
   );
@@ -132,9 +145,11 @@ function NoticeCard({ message }: { message: WordChainMessage }) {
 function BotMessage({
   message,
   replyTo,
+  onWordInfo,
 }: {
   message: WordChainMessage;
   replyTo?: WordChainMessage;
+  onWordInfo: (word: string) => void;
 }) {
   const { t } = useTranslation();
   const time = formatClockHM(message.createdAt);
@@ -172,7 +187,7 @@ function BotMessage({
     );
   }
 
-  return <NoticeCard message={message} />;
+  return <NoticeCard message={message} onWordInfo={onWordInfo} />;
 }
 
 function MoveBubble({
@@ -246,7 +261,9 @@ function WordChainMessageRowComponent({
   onWordInfo,
 }: WordChainMessageRowProps) {
   if (message.senderType === WORD_CHAIN_SENDER_TYPE.bot) {
-    return <BotMessage message={message} replyTo={replyTo} />;
+    return (
+      <BotMessage message={message} replyTo={replyTo} onWordInfo={onWordInfo} />
+    );
   }
   return <MoveBubble message={message} isOwn={isOwn} onWordInfo={onWordInfo} />;
 }

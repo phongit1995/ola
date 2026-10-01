@@ -67,8 +67,8 @@ export const WORD_CHAIN_LEADERBOARD_PERIOD_LABEL_KEYS = {
 } as const satisfies Record<WordChainLeaderboardPeriod, string>;
 
 export const WORD_CHAIN_LEADERBOARD_TABS = [
-  { key: 'points', labelKey: 'wordChain.leaderboardTabPoints' },
   { key: 'wins', labelKey: 'wordChain.leaderboardTabWins' },
+  { key: 'points', labelKey: 'wordChain.leaderboardTabPoints' },
   { key: 'history', labelKey: 'wordChain.leaderboardTabHistory' },
 ] as const satisfies readonly { key: WordChainLeaderboardTab; labelKey: string }[];
 

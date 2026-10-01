@@ -161,7 +161,7 @@ export function WordChainLeaderboardDialog({
 }: WordChainLeaderboardDialogProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<WordChainLeaderboardTab>(
-    WORD_CHAIN_LEADERBOARD_SORT.points
+    WORD_CHAIN_LEADERBOARD_SORT.wins
   );
   const [period, setPeriod] = useState<WordChainLeaderboardPeriod>(
     WORD_CHAIN_LEADERBOARD_PERIOD.all

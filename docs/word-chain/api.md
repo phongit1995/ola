@@ -260,7 +260,7 @@ Lịch sử các trận thắng, mới nhất trước (sắp theo `createdAt` r
 
 Tra nghĩa của từ qua dict.minhqnd.com. Server chuẩn hoá từ (giống lúc chấm) rồi mới gọi API, nên tra "Hoà Bình" hay "hòa  bình" đều ra cùng kết quả với "hòa bình". Khi không tìm thấy, `word` trong response là từ người dùng gõ. Kết quả được cache 24 giờ trong Redis. Từ đã có trong cache (mọi từ đã được chấm khi nối, hoặc đã có người tra) trả ngay và **không tính cooldown**. Chỉ khi phải gọi API ngoài thì mỗi người mới bị giới hạn 1 lần mỗi 5 giây (`429 WORD_CHAIN_COOLDOWN`).
 
-Client dùng endpoint này cho cả hộp **Tra từ** lẫn nút ⓘ nhỏ nằm ngoài bubble, cạnh từ đã nối đúng (`ok`/`win`; tin người khác thì ở bên phải, tin của mình ở bên trái): bấm ⓘ mở hộp Tra từ điền sẵn từ đó và tra luôn.
+Client dùng endpoint này cho cả hộp **Tra từ** lẫn nút ⓘ nhỏ nằm ngoài bubble, cạnh từ đã nối đúng (`ok`/`win`; tin người khác thì ở bên phải, tin của mình ở bên trái): bấm ⓘ mở hộp nghĩa của từ đó (tiêu đề là từ, không có ô tìm kiếm) và tra luôn. `source` là tên hiển thị dưới kết quả ("Nguồn: Ola Me"), dữ liệu vẫn lấy từ dict.minhqnd.com.
 
 ```json
 {
@@ -275,7 +275,7 @@ Client dùng endpoint này cho cả hộp **Tra từ** lẫn nút ⓘ nhỏ nằ
       "relations": [ { "word": "…", "type": "đồng nghĩa" } ]
     }
   ],
-  "source": "dict.minhqnd.com"
+  "source": "Ola Me"
 }
 ```
 

@@ -190,7 +190,7 @@ const (
 	WordChainMessagePageMax          = 100
 	WordChainMaxStoredMessages       = 5000
 
-	WordChainLookupSource          = "dict.minhqnd.com"
+	WordChainLookupSource          = "Ola Me"
 	WordChainLookupURL             = "https://dict.minhqnd.com/api/v1/lookup"
 	WordChainSuggestURL            = "https://dict.minhqnd.com/api/v1/suggest"
 	WordChainSuggestLimit          = "50"
