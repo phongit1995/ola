@@ -57,7 +57,7 @@ func (s GameState) withWrongGuess(userID string) GameState {
 func (s GameState) historySet() map[string]struct{} {
 	set := make(map[string]struct{}, len(s.History))
 	for _, word := range s.History {
-		set[word] = struct{}{}
+		set[wordKey(word)] = struct{}{}
 	}
 	return set
 }
@@ -150,12 +150,16 @@ func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveRe
 	if len(splitSyllables(normalized)) != constants.WordChainWordLength {
 		return wrong(constants.WordChainCodeInvalidFormat)
 	}
-	if firstWord(normalized) != res.RequiredSyllable {
+	if syllableKey(firstWord(normalized)) != syllableKey(res.RequiredSyllable) {
 		return wrong(constants.WordChainCodeMismatch)
 	}
 	history := state.historySet()
-	if _, used := history[normalized]; used {
+	key := wordKey(normalized)
+	if _, used := history[key]; used {
 		return wrong(constants.WordChainCodeRepeated)
+	}
+	if misspelledY(normalized) {
+		return wrong(constants.WordChainCodeNotInDict)
 	}
 
 	exists, err := oracle.Exists(normalized)
@@ -168,7 +172,7 @@ func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveRe
 
 	res.Scored = true
 	res.RemainingGuesses = constants.WordChainMaxWrongGuesses
-	history[normalized] = struct{}{}
+	history[key] = struct{}{}
 	hasNext, err := oracle.HasContinuation(lastWord(normalized), history)
 	if err != nil {
 		return MoveResult{}, err

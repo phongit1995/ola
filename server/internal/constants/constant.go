@@ -199,6 +199,7 @@ const (
 	WordChainLookupMaxWordRunes    = 80
 	WordChainLookupCooldownSeconds = 5
 	WordChainLookupLangVietnamese  = "vi"
+	WordChainSpellingVariantsMax   = 4
 
 	WordChainCodeOK            = "ok"
 	WordChainCodeWin           = "win"

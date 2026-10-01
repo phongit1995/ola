@@ -73,14 +73,31 @@ func (v *Verifier) Lookup(ctx context.Context, word string) (*DictLookup, error)
 	if cached, ok := v.CachedLookup(ctx, word); ok {
 		return cached, nil
 	}
+	var out *DictLookup
+	for _, spelling := range spellingVariants(word) {
+		result, err := v.fetchLookup(ctx, spelling)
+		if err != nil {
+			return nil, err
+		}
+		if out == nil {
+			out = result
+		}
+		if hasVietnamese(result) {
+			out = result
+			break
+		}
+	}
+	v.cacheLookup(ctx, word, out)
+	return out, nil
+}
+
+func (v *Verifier) fetchLookup(ctx context.Context, word string) (*DictLookup, error) {
 	body, status, err := v.get(ctx, v.lookupURL, url.Values{"word": {word}})
 	if err != nil {
 		return nil, err
 	}
 	if status == http.StatusNotFound {
-		out := &DictLookup{Exists: false, Word: word}
-		v.cacheLookup(ctx, word, out)
-		return out, nil
+		return &DictLookup{Exists: false, Word: word}, nil
 	}
 	if status != http.StatusOK {
 		return nil, fmt.Errorf("%w: status %d", ErrDictionaryUnavailable, status)
@@ -89,8 +106,19 @@ func (v *Verifier) Lookup(ctx context.Context, word string) (*DictLookup, error)
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
 	}
-	v.cacheLookup(ctx, word, &out)
 	return &out, nil
+}
+
+func hasVietnamese(result *DictLookup) bool {
+	if !result.Exists {
+		return false
+	}
+	for _, r := range result.Results {
+		if r.LangCode == constants.WordChainLookupLangVietnamese {
+			return true
+		}
+	}
+	return false
 }
 
 func (v *Verifier) CachedLookup(ctx context.Context, word string) (*DictLookup, bool) {
@@ -228,18 +256,29 @@ func (v *Verifier) lookupExists(ctx context.Context, word string) (bool, error) 
 	if err != nil {
 		return false, err
 	}
-	if !result.Exists {
-		return false, nil
-	}
-	for _, r := range result.Results {
-		if r.LangCode == constants.WordChainLookupLangVietnamese {
-			return true, nil
-		}
-	}
-	return false, nil
+	return hasVietnamese(result), nil
 }
 
 func (v *Verifier) Continuations(ctx context.Context, syllable string) ([]string, error) {
+	key := syllableKey(syllable)
+	words := make([]string, 0)
+	for _, spelling := range spellingVariants(syllable) {
+		suggestions, err := v.suggest(ctx, spelling)
+		if err != nil {
+			return nil, err
+		}
+		for _, suggestion := range suggestions {
+			normalized := normalizeVietnamese(suggestion)
+			parts := splitSyllables(normalized)
+			if len(parts) == constants.WordChainWordLength && syllableKey(parts[0]) == key {
+				words = append(words, normalized)
+			}
+		}
+	}
+	return words, nil
+}
+
+func (v *Verifier) suggest(ctx context.Context, syllable string) ([]string, error) {
 	body, status, err := v.get(ctx, v.suggestURL, url.Values{"q": {syllable + " "}, "limit": {constants.WordChainSuggestLimit}})
 	if err != nil {
 		return nil, err
@@ -254,15 +293,7 @@ func (v *Verifier) Continuations(ctx context.Context, syllable string) ([]string
 	if err := json.Unmarshal(body, &out); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
 	}
-	words := make([]string, 0, len(out.Suggestions))
-	for _, suggestion := range out.Suggestions {
-		normalized := normalizeVietnamese(suggestion)
-		parts := splitSyllables(normalized)
-		if len(parts) == constants.WordChainWordLength && parts[0] == syllable {
-			words = append(words, normalized)
-		}
-	}
-	return words, nil
+	return out.Suggestions, nil
 }
 
 func (v *Verifier) get(ctx context.Context, endpoint string, query url.Values) ([]byte, int, error) {

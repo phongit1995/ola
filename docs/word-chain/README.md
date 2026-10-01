@@ -19,9 +19,9 @@ Một từ hợp lệ khi thỏa lần lượt các điều kiện dưới đây
 | Thứ tự | Điều kiện | `code` khi sai | Reaction |
 |---|---|---|---|
 | 1 | Đúng **2 âm tiết** (khoảng trắng thừa đã được gộp, xem phần chuẩn hoá) | `invalid_format` | ⚠️ |
-| 2 | Âm tiết đầu trùng âm tiết cuối của từ hiện tại | `mismatch` | ❌ |
-| 3 | Chưa dùng trong ván hiện tại | `repeated` | ❌ |
-| 4 | Có trong từ điển tiếng Việt (gọi API dict.minhqnd.com) | `not_in_dict` | ❌ |
+| 2 | Âm tiết đầu trùng âm tiết cuối của từ hiện tại (các cách viết tương đương coi là một, xem phần chuẩn hoá) | `mismatch` | ❌ |
+| 3 | Chưa dùng trong ván hiện tại (`bánh mì` và `bánh mỳ` tính là cùng một từ) | `repeated` | ❌ |
+| 4 | Có trong từ điển tiếng Việt (gọi API dict.minhqnd.com). Âm tiết `y` sau phụ âm ghép (`chý`, `thỵ`, `nghỷ`) là sai chính tả, bị chấm luôn mà không gọi API | `not_in_dict` | ❌ |
 
 Kết quả của từ hợp lệ:
 
@@ -43,8 +43,14 @@ Chuẩn hoá trước khi chấm (`wordchain.normalize.go`):
 
 - Đưa về NFC, chữ thường, bỏ khoảng trắng hai đầu.
 - Gộp mọi khoảng trắng giữa các âm tiết (nhiều dấu cách, tab, xuống dòng, NBSP và các khoảng trắng Unicode khác) thành 1 dấu cách, nên gõ thừa dấu cách không bị mất lượt.
-- Đổi kiểu bỏ dấu cũ sang kiểu mới ở cuối âm tiết: `oà → òa`, `uý → úy` (trừ sau `q`, ví dụ `quý` giữ nguyên).
-- Tin hiển thị giữ nguyên nội dung người gõ (`content`), từ đã chuẩn hoá nằm ở `word`.
+- Đặt dấu thanh lên `o`/`u` ở cuối âm tiết: `oà → òa`, `oè → òe`, `uý → úy` (trừ sau `q`, ví dụ `quý` giữ nguyên).
+- Tin hiển thị giữ nguyên nội dung người gõ (`content`), từ đã chuẩn hoá nằm ở `word`. `word` vẫn giữ `i`/`y` như người gõ (`bánh mỳ`, `công ty`).
+- Khi so âm tiết, kiểm tra từ lặp và lọc từ nối tiếp, server dùng khoá so sánh (`syllableKey` / `wordKey`), coi các cách viết tương đương là một:
+  - Âm tiết chỉ gồm 1 phụ âm `h k l m s t` + `y` thì so như `i`: `mỳ = mì`, `kỹ = kĩ`, `ty = ti`. Từ điển lưu dạng `i`.
+  - `qu` + `i` (kèm `t` hoặc không) so như `qu` + `y`: `quí = quý`, `quít = quýt`.
+  - Nhờ vậy sau "bánh mỳ" gõ "mì chính" hay "mỳ tôm" đều được, và gợi ý `suggest` trả về "mì …" vẫn được tính là từ nối tiếp.
+- Chặn `y` sau phụ âm ghép `ch gh kh nh ph th ngh`. API từ điển đổi `y → i` sau mọi chữ `h`, nên báo "báo chý" là có (thành "báo chí"). Nếu không chặn, âm tiết "chý" không khớp gợi ý "chí …" nào, server tưởng hết từ nối và cho thắng ngay.
+- API chỉ đổi `qui → quy` khi chuỗi có "qui" không dấu, còn từ điển lưu lẫn cả hai kiểu ("quý báu" nhưng "yêu quí"). Vì vậy tra từ và chấm từ có âm tiết `qu` + `i/y` sẽ thử lần lượt các cách viết (tối đa 4 request); từ không có `qu` chỉ gọi 1 request như cũ.
 
 ### Gợi ý (mất KEN)
 
