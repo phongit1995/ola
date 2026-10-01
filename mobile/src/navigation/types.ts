@@ -36,6 +36,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.MediaStore]: undefined;
   [ROOT_ROUTES.Notifications]: undefined;
   [ROOT_ROUTES.Settings]: undefined;
+  [ROOT_ROUTES.AppLock]: undefined;
   [ROOT_ROUTES.PenGame]: undefined;
   [ROOT_ROUTES.SpinWheel]: undefined;
   [ROOT_ROUTES.EggGame]: undefined;

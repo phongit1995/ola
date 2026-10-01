@@ -8,7 +8,10 @@ import {
   type ImageSourcePropType,
 } from 'react-native';
 import { useThemeColors } from '@hooks/useThemeColors';
+import { AppLockOverlaySlot, useBlockedByAppLock } from '@components/applock/appLockModal';
 import { KeyboardView } from '../KeyboardView';
+
+function noop() {}
 
 interface DialogProps {
   visible: boolean;
@@ -40,12 +43,13 @@ export function Dialog({
   footer,
 }: DialogProps) {
   const Body = avoidKeyboard ? KeyboardView : View;
+  const blockedByAppLock = useBlockedByAppLock();
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={blockedByAppLock ? noop : onClose}
       onDismiss={onDismiss}
     >
       <Pressable
@@ -124,6 +128,7 @@ export function Dialog({
           </View>
         </View>
       </Body>
+      <AppLockOverlaySlot />
     </Modal>
   );
 }
