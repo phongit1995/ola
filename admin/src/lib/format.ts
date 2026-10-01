@@ -13,6 +13,10 @@ export function formatDateTime(value?: string | null): string {
   return dateTimeFormatter.format(date)
 }
 
+export function formatKen(value: number): string {
+  return `${value.toLocaleString('vi-VN')} KEN`
+}
+
 export const kenNumberInputProps = {
   formatter: (value?: string | number) =>
     value === undefined || value === '' ? '' : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.'),

@@ -10,6 +10,7 @@ export const KEN_TX_TYPE: Record<string, string> = {
   GIFT_RECEIVED: 'Nhận quà',
   TRANSFER_IN: 'Nhận chuyển',
   TRANSFER_OUT: 'Chuyển đi',
+  WORD_CHAIN_HINT: 'Gợi ý nối từ',
 }
 
 export function kenTypeLabel(type: string): string {

@@ -64,7 +64,7 @@ export function WordChainWinsTab() {
       >
         {winner ? (
           <Tag closable color="blue" onClose={() => setWinner(null)}>
-            Chỉ trận thắng của @{winner.username}
+            Chỉ trận thắng của @{winner.username || winner.id}
           </Tag>
         ) : (
           <Typography.Text type="secondary">

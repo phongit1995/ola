@@ -1,12 +1,12 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { AdminWordChainService } from '@/services/adminWordChain.service'
-import type { WordChainPage, WordChainWinsParams } from '@/types'
+import type { WordChainCursorPage, WordChainWinsParams } from '@/types'
 
 const WORD_CHAIN_KEY = 'admin-word-chain'
 const MESSAGE_PAGE_SIZE = 50
 const WIN_PAGE_SIZE = 30
 
-function nextCursor<T>(page: WordChainPage<T>) {
+function nextCursor<T>(page: WordChainCursorPage<T>) {
   return page.hasMore ? page.nextBefore : undefined
 }
 

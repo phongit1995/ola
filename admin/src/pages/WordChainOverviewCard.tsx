@@ -3,14 +3,15 @@ import { ReloadOutlined, RobotOutlined } from '@ant-design/icons'
 import { UserCell } from '@/components/UserCell'
 import { useAppSettings } from '@/hooks/useAppSettings'
 import { useWordChainOverview } from '@/hooks/useWordChain'
-import { formatDateTime } from '@/lib/format'
-import { formatKen, wordChainSetting } from './word-chain/wordChainMeta'
+import { formatDateTime, formatKen } from '@/lib/format'
+import { wordChainSetting } from './wordChainMeta'
 
 export function WordChainOverviewCard() {
   const { data, isLoading, isFetching, refetch } = useWordChainOverview()
-  const { data: settings } = useAppSettings()
-  const setting = wordChainSetting(settings)
+  const { data: settings, isLoading: settingsLoading, isError: settingsError } = useAppSettings()
+  const setting = settings ? wordChainSetting(settings) : null
   const state = data?.state ?? null
+  const settingFallback = settingsLoading ? '…' : settingsError ? 'Không tải được' : '—'
 
   return (
     <Card
@@ -27,13 +28,17 @@ export function WordChainOverviewCard() {
         <>
           <Descriptions bordered size="small" column={{ xs: 1, md: 2, xl: 3 }}>
             <Descriptions.Item label="Hiển thị cho người dùng">
-              {setting.enabled ? (
+              {setting == null ? (
+                settingFallback
+              ) : setting.enabled ? (
                 <Tag color="green">Đang hiển thị</Tag>
               ) : (
                 <Tag color="red">Đang ẩn</Tag>
               )}
             </Descriptions.Item>
-            <Descriptions.Item label="Giá gợi ý">{formatKen(setting.hintPrice)}</Descriptions.Item>
+            <Descriptions.Item label="Giá gợi ý">
+              {setting == null ? settingFallback : formatKen(setting.hintPrice)}
+            </Descriptions.Item>
             <Descriptions.Item label="Từ hiện tại">
               {state?.word ? (
                 <Space size={6}>
@@ -49,6 +54,8 @@ export function WordChainOverviewCard() {
             <Descriptions.Item label="Người đưa ra từ">
               {data?.wordOwner ? (
                 <UserCell user={data.wordOwner} />
+              ) : state?.wordOwnerId ? (
+                <Typography.Text type="secondary">{state.wordOwnerId}</Typography.Text>
               ) : (
                 <Space size={6}>
                   <RobotOutlined />

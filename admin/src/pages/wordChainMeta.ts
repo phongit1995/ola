@@ -1,3 +1,4 @@
+import { settingValue } from '@/lib/appSetting'
 import type { AppSetting, WordChainCode, WordChainMessageType, WordChainSetting } from '@/types'
 
 export const WORD_CHAIN_SETTING_KEY = 'word_chain'
@@ -10,13 +11,7 @@ export const DEFAULT_WORD_CHAIN_SETTING: WordChainSetting = {
 export const WORD_CHAIN_HINT_PRICE_MAX = 10_000_000
 
 export function wordChainSetting(settings: AppSetting[] | undefined): WordChainSetting {
-  const found = settings?.find((item) => item.key === WORD_CHAIN_SETTING_KEY)
-  if (!found) return DEFAULT_WORD_CHAIN_SETTING
-  return { ...DEFAULT_WORD_CHAIN_SETTING, ...(found.value as Partial<WordChainSetting>) }
-}
-
-export function formatKen(value: number) {
-  return `${value.toLocaleString('vi-VN')} KEN`
+  return settingValue(settings, WORD_CHAIN_SETTING_KEY, DEFAULT_WORD_CHAIN_SETTING)
 }
 
 export const CODE_META: Record<WordChainCode, { label: string; color: string }> = {

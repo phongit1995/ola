@@ -4,7 +4,7 @@ import { UserCell } from '@/components/UserCell'
 import { useWordChainMessages } from '@/hooks/useWordChain'
 import { formatDateTime } from '@/lib/format'
 import type { WordChainMessage } from '@/types'
-import { BOT_TYPE_LABEL, CODE_META } from './word-chain/wordChainMeta'
+import { BOT_TYPE_LABEL, CODE_META } from './wordChainMeta'
 
 function BotContent({ text }: { text: string }) {
   return (
@@ -28,7 +28,7 @@ function Sender({ message }: { message: WordChainMessage }) {
   return (
     <UserCell
       user={{
-        username: message.senderName || message.senderId || '—',
+        username: message.senderName || message.senderId || '',
         avatar: message.senderAvatar,
       }}
     />

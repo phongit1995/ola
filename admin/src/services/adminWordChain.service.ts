@@ -3,14 +3,11 @@ import type {
   ApiResponse,
   WordChainMessage,
   WordChainOverview,
-  WordChainPage,
+  WordChainCursorPage,
+  WordChainCursorParams,
   WordChainWin,
+  WordChainWinsParams,
 } from '@/types'
-
-interface CursorParams {
-  limit?: number
-  before?: string
-}
 
 export const AdminWordChainService = {
   async overview(): Promise<WordChainOverview> {
@@ -18,8 +15,8 @@ export const AdminWordChainService = {
     return data.data
   },
 
-  async messages(params: CursorParams = {}): Promise<WordChainPage<WordChainMessage>> {
-    const { data } = await http.get<ApiResponse<WordChainPage<WordChainMessage>>>(
+  async messages(params: WordChainCursorParams = {}): Promise<WordChainCursorPage<WordChainMessage>> {
+    const { data } = await http.get<ApiResponse<WordChainCursorPage<WordChainMessage>>>(
       '/admin/word-chain/messages',
       { params },
     )
@@ -27,9 +24,9 @@ export const AdminWordChainService = {
   },
 
   async wins(
-    params: CursorParams & { userId?: string } = {},
-  ): Promise<WordChainPage<WordChainWin>> {
-    const { data } = await http.get<ApiResponse<WordChainPage<WordChainWin>>>(
+    params: WordChainWinsParams = {},
+  ): Promise<WordChainCursorPage<WordChainWin>> {
+    const { data } = await http.get<ApiResponse<WordChainCursorPage<WordChainWin>>>(
       '/admin/word-chain/wins',
       { params },
     )

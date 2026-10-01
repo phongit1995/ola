@@ -45,7 +45,8 @@ Khi lỗi thì `success = false`, câu báo lỗi (tiếng Việt) nằm ở `er
 | `senderName`, `senderAvatar`, `senderGender`, `senderVip`, `senderVipEnd` | Chỉ có ở tin `move`. Không lưu trong Redis, server lấy từ user cache mỗi lần trả tin, giống phòng chat. User đổi tên hoặc avatar thì tin cũ cũng hiện thông tin mới |
 | `content` | Nội dung hiển thị. Tin bot có `**…**` để in đậm và `\n` để xuống dòng |
 | `word` | Tin `move`: từ đã chuẩn hoá. Tin bot: từ liên quan (từ thắng, từ mở ván) |
-| `code`, `reaction` | Chỉ có ở tin `move`. Client hiển thị `reaction` như badge trên tin |
+| `code` | Tin `move` (kết quả chấm) và tin `wrong_answer` (lý do sai). Client chọn icon trạng thái theo `code` |
+| `reaction` | Chỉ có ở tin `move`, là emoji tương ứng với `code` (bảng dưới). Web hiện icon riêng theo `code`, không dùng emoji này |
 | `requiredSyllable` | Âm tiết mà từ này lẽ ra phải bắt đầu bằng, dùng để hiện gợi ý khi sai |
 
 | `type` | `senderType` | Khi nào |
@@ -100,7 +101,7 @@ Lấy state phiên hiện tại và điểm của mình. Nếu chưa có phiên 
 
 `hintPrice` là giá một lần gợi ý (KEN) theo cấu hình admin (mặc định 500), client dùng để hiện trên bảng gợi ý.
 
-Admin tắt phòng thì trả `403 WORD_CHAIN_DISABLED`.
+Admin tắt phòng thì trả `403 WORD_CHAIN_DISABLED`. Server không đọc được cấu hình thì trả `503 WORD_CHAIN_UNAVAILABLE`.
 
 ### `GET /rooms/word-chain/messages?limit=50&before=<messageId>`
 
@@ -115,17 +116,21 @@ Tin nhắn của phiên hiện tại, **mới nhất trước**.
 { "items": [ "Message…" ], "hasMore": true, "nextBefore": "0b7c…" }
 ```
 
-Nếu `before` trỏ tới tin đã bị xoá (tin bot bị thay, hoặc tin cũ quá giới hạn 5000) thì trả `items: []`.
+- Nếu `before` trỏ tới tin đã bị xoá (tin cũ quá giới hạn 5000) thì trả `items: []`.
+- Tin bot bị thay từ sau 12 giờ **không bị xoá**: nó giữ `id` và nhận `seq` mới (xuống cuối). Nếu `before` trỏ tới đúng tin đó thì trang trả về tính từ vị trí mới, nên có thể lặp lại tin client đã có. Client gộp theo `id` nên không bị trùng khi hiển thị. Client nên lấy cursor là tin cũ nhất **của phiên hiện tại** đang có.
+- Trang có tin của phiên cũ nghĩa là đã tới đầu phiên hiện tại; client coi như hết tin để tải thêm.
+- Admin tắt phòng thì trả `403 WORD_CHAIN_DISABLED`, không đọc được cấu hình thì `503 WORD_CHAIN_UNAVAILABLE`.
 
 ### `POST /rooms/word-chain/moves`
 
-Gửi một từ. Rate limit 3 lần / 2 giây / người.
+Gửi một từ. Rate limit 3 lần / 2 giây / người. Bucket này (`rl:room_message:<userId>`) **dùng chung** với `POST /hints` và gửi tin ở phòng chat thường.
 
 ```json
-{ "content": "chân trời" }
+{ "content": "chân trời", "sessionId": "5f1e…", "turn": 5 }
 ```
 
-`content` bắt buộc, dài 1–200 ký tự.
+- `content` bắt buộc, dài 1–200 ký tự.
+- `sessionId`, `turn` (không bắt buộc): `state.sessionId` và `state.turn` của từ người chơi đang nhìn thấy. Có thì server so với từ hiện tại; từ đã đổi thì trả `409 WORD_CHAIN_WORD_CHANGED` thay vì chấm sai theo từ mới. `turn` phải ≥ 0.
 
 Response:
 
@@ -149,16 +154,18 @@ Lỗi:
 | HTTP | `code` | Khi nào | Client nên làm |
 |---|---|---|---|
 | 400 | | `content` sai định dạng body | Báo lỗi nhập |
-| 409 | | Server đang bận: chờ lock quá 10 giây, hoặc có người nối trước liên tục 3 lần | Toast "Phòng nối từ đang xử lý, vui lòng thử lại." |
+| 409 | `WORD_CHAIN_WORD_CHANGED` | Từ hiện tại đã đổi so với `sessionId`/`turn` client gửi (có người nối trước, thắng ván, bot thay từ) | Toast, giữ nội dung trong ô nhập, tải lại state. **Không trừ lượt**, server không lưu gì |
+| 409 | | Server đang bận: chờ lock quá 10 giây, hoặc state đổi liên tục 3 lần mà từ vẫn vậy | Toast "Phòng nối từ đang xử lý, vui lòng thử lại." |
 | 429 | | Vượt rate limit | Toast, cho gửi lại sau |
 | 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã sai đủ 3 lần với từ hiện tại | Toast, khoá ô nhập tới khi `turn` đổi. Server không lưu gì |
 | 403 | `WORD_CHAIN_WAIT_TURN` | Từ hiện tại do chính người gửi nối ra (`wordOwnerId`) | Toast, khoá ô nhập tới khi có người khác nối. Không trừ lượt, server không lưu gì |
 | 403 | `WORD_CHAIN_DISABLED` | Admin đã tắt phòng nối từ | Toast "Phòng nối từ đang tạm đóng", đóng phòng, ẩn mục khỏi danh sách phòng |
 | 503 | `WORD_CHAIN_VERIFY_FAILED` | Không gọi được API từ điển | Toast, giữ nội dung trong ô nhập để gửi lại. Server không lưu gì |
+| 503 | `WORD_CHAIN_UNAVAILABLE` | Server không đọc được cấu hình phòng | Toast, thử lại sau |
 
 ### `POST /rooms/word-chain/hints`
 
-Mua gợi ý cho từ hiện tại. Không có body. Server chỉ trừ KEN khi tìm được ít nhất 1 từ.
+Mua gợi ý cho từ hiện tại. Không có body. Server chỉ trừ KEN khi tìm được ít nhất 1 từ, và mỗi người chỉ trả tiền 1 lần cho mỗi lượt (`sessionId` + `turn`).
 
 ```json
 {
@@ -167,13 +174,15 @@ Mua gợi ý cho từ hiện tại. Không có body. Server chỉ trừ KEN khi 
   "word": "quãng đường",
   "hints": ["đường phố", "đường xá", "đường đi"],
   "price": 500,
-  "kenBalance": 12000
+  "kenBalance": 12000,
+  "charged": true
 }
 ```
 
 - `hints`: tối đa 5 từ, đều bắt đầu bằng âm tiết cuối của `word`, chưa dùng trong ván, có trong từ điển.
-- `price`: giá thật đã trừ theo cấu hình lúc mua. Client cập nhật giá hiển thị theo số này.
-- `kenBalance`: số dư sau khi trừ, client ghi vào `user.ken`. Server cũng bắn `KEN_UPDATED` `{ "ken": kenBalance }` tới mọi socket của user.
+- `charged`: `true` nếu lần gọi này vừa trừ KEN. `false` nếu người này đã mua gợi ý cho lượt này rồi (ghi nhận trong Postgres cùng transaction trừ tiền, không hết hạn): server trả lại đúng danh sách cũ, không gọi API từ điển và không trừ tiền.
+- `price`: giá đã trả cho gợi ý này (với `charged = false` là giá của lần mua trước). Khi `charged = true` client cập nhật giá hiển thị theo số này.
+- `kenBalance`: số dư hiện tại (sau khi trừ nếu có), client ghi vào `user.ken`. Khi trừ tiền, server cũng bắn `KEN_UPDATED` `{ "ken": kenBalance }` tới mọi socket của user.
 - Gợi ý chỉ đúng với `sessionId` + `turn` này. Khi state đổi `turn` thì client coi gợi ý là cũ.
 
 Lỗi:
@@ -185,8 +194,11 @@ Lỗi:
 | 403 | `WORD_CHAIN_WAIT_TURN` | Từ hiện tại do chính người gửi nối ra |
 | 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã hết lượt đoán với từ hiện tại |
 | 409 | `WORD_CHAIN_NO_HINT` | Không tìm được gợi ý. Không trừ KEN |
-| 429 | | Vượt rate limit |
-| 503 | `WORD_CHAIN_VERIFY_FAILED` | API từ điển lỗi: `suggest` lỗi, hoặc `lookup` lỗi ở bất kỳ từ nào đang xét. Không trừ KEN |
+| 409 | `WORD_CHAIN_WORD_CHANGED` | Từ hiện tại đổi trong lúc server tìm gợi ý. Không trừ KEN |
+| 409 | | Server đang bận (chờ lock quá 10 giây). Phân biệt với 2 dòng trên bằng `code` |
+| 429 | | Vượt rate limit (bucket chung với `POST /moves`) |
+| 503 | `WORD_CHAIN_VERIFY_FAILED` | API từ điển lỗi: `suggest` lỗi, hoặc `lookup` lỗi khi chưa đủ 5 từ hợp lệ. Không trừ KEN |
+| 503 | `WORD_CHAIN_UNAVAILABLE` | Server không đọc được cấu hình phòng. Không trừ KEN |
 
 ### `GET /rooms/word-chain/leaderboard?sort=points&period=all`
 
@@ -211,10 +223,10 @@ Giá trị lạ được coi là mặc định. Mốc ngày/tuần/tháng tính 
 }
 ```
 
-- Mỗi dòng có cả `points` lẫn `wins` trong kỳ đó, sắp theo `sort`. Bằng nhau thì: với `day`/`week`/`month` xét tiếp chỉ số còn lại; với `all` (Redis) sắp theo `userId`.
+- Mỗi dòng có cả `points` lẫn `wins` trong kỳ đó, sắp theo `sort`. Bằng nhau thì xét tiếp chỉ số còn lại.
 - `total` là số người có `sort` > 0 trong kỳ (tab Thắng chỉ đếm người đã thắng ít nhất 1 trận).
 - `me` là `null` nếu mình chưa có điểm (hoặc chưa thắng, với `sort=wins`) trong kỳ.
-- `period=all` đọc từ Redis nên gồm cả điểm từ trước khi có thống kê theo kỳ; các kỳ khác chỉ tính từ lúc có bảng `word_chain_scores`.
+- Mọi kỳ, kể cả `all`, đọc từ bảng `word_chain_scores`, nên `points` ở đây khớp với `points` trong `GET /rooms/word-chain`.
 
 ### `GET /rooms/word-chain/wins?limit=20&before=<id>&mine=true`
 
@@ -242,11 +254,11 @@ Lịch sử các trận thắng, mới nhất trước (sắp theo `createdAt` r
 - `id` là id tin nối từ thắng.
 - `word` là từ cuối người đó nối được, `previousWord` là từ được nối vào.
 - Phân trang bằng cursor: tải thêm thì gửi `before` = `nextBefore` của trang trước. Có trận thắng mới xen vào giữa hai lần tải cũng không làm trùng hay sót dòng. `nextBefore` chỉ có khi `hasMore = true`.
-- `before` không phải id hợp lệ hoặc không tồn tại thì trả danh sách rỗng.
+- `before` không phải UUID thì trả `400 WORD_CHAIN_INVALID_CURSOR`. `before` là UUID nhưng không tồn tại thì trả danh sách rỗng.
 
 ### `GET /rooms/word-chain/lookup?word=<từ>`
 
-Tra nghĩa của từ qua dict.minhqnd.com. Kết quả được cache 24 giờ trong Redis. Từ đã có trong cache (mọi từ đã được chấm khi nối, hoặc đã có người tra) trả ngay và **không tính cooldown**. Chỉ khi phải gọi API ngoài thì mỗi người mới bị giới hạn 1 lần mỗi 5 giây (`429 WORD_CHAIN_COOLDOWN`).
+Tra nghĩa của từ qua dict.minhqnd.com. Server chuẩn hoá từ (giống lúc chấm) rồi mới gọi API, nên tra "Hoà Bình" hay "hòa  bình" đều ra cùng kết quả với "hòa bình". Khi không tìm thấy, `word` trong response là từ người dùng gõ. Kết quả được cache 24 giờ trong Redis. Từ đã có trong cache (mọi từ đã được chấm khi nối, hoặc đã có người tra) trả ngay và **không tính cooldown**. Chỉ khi phải gọi API ngoài thì mỗi người mới bị giới hạn 1 lần mỗi 5 giây (`429 WORD_CHAIN_COOLDOWN`).
 
 Client dùng endpoint này cho cả hộp **Tra từ** lẫn nút ⓘ nhỏ nằm ngoài bubble, cạnh từ đã nối đúng (`ok`/`win`; tin người khác thì ở bên phải, tin của mình ở bên trái): bấm ⓘ mở hộp Tra từ điền sẵn từ đó và tra luôn.
 
@@ -281,7 +293,7 @@ Nằm ngoài `/rooms/word-chain`, cần đăng nhập. Client đọc để biế
 { "enabled": true, "hintPrice": 500 }
 ```
 
-Chưa cấu hình thì trả mặc định như trên. Gọi lỗi thì client coi như đang bật.
+Chưa cấu hình thì trả mặc định như trên. Client ẩn mục cho tới khi đọc xong cấu hình; gọi lỗi thì client coi như đang bật (server vẫn tự chặn nếu phòng tắt).
 
 ## 3. Socket
 
@@ -345,8 +357,10 @@ Sau mỗi lần socket reconnect, làm lại đúng 4 bước trên để bù ph
 Luồng gửi từ:
 
 ```text
-POST /moves → hiện ngay message trong response (dedupe theo id khi event tới sau)
-            → cập nhật state và điểm nếu revision mới hơn
+POST /moves (kèm sessionId + turn đang hiển thị)
+            → hiện ngay message trong response (dedupe theo id khi event tới sau)
+            → cập nhật state nếu revision mới hơn; số lượt còn lại chỉ ghi đè bản có revision cũ hơn
+            → lỗi WORD_CHAIN_WORD_CHANGED: giữ nội dung ô nhập, gọi lại GET /rooms/word-chain
 ```
 
 Hiển thị gợi ý:

@@ -14,7 +14,7 @@ export function UserCell({ user }: { user: UserCellUser }) {
       <Space direction="vertical" size={0}>
         {user.fullName && <Typography.Text>{user.fullName}</Typography.Text>}
         <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          @{user.username}
+          {user.username ? `@${user.username}` : '—'}
         </Typography.Text>
       </Space>
     </Space>

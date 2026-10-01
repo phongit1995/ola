@@ -1898,12 +1898,17 @@ export interface WordChainWin {
   createdAt: string
 }
 
-export interface WordChainPage<T> {
+export interface WordChainCursorPage<T> {
   items: T[]
   hasMore: boolean
   nextBefore?: string
 }
 
-export interface WordChainWinsParams {
+export interface WordChainCursorParams {
+  limit?: number
+  before?: string
+}
+
+export interface WordChainWinsParams extends WordChainCursorParams {
   userId?: string
 }

@@ -8,7 +8,7 @@ import {
   WORD_CHAIN_HINT_PRICE_MAX,
   WORD_CHAIN_SETTING_KEY,
   wordChainSetting,
-} from './word-chain/wordChainMeta'
+} from './wordChainMeta'
 
 export function WordChainSettingsTab() {
   const { message, modal } = App.useApp()
