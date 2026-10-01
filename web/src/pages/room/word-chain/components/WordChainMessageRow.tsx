@@ -20,6 +20,7 @@ interface WordChainMessageRowProps {
   replyTo?: WordChainMessage;
   isOwn: boolean;
   onWordInfo: (word: string) => void;
+  onOpenProfile: (username: string) => void;
 }
 
 const WORD_LINE_COMPONENTS = {
@@ -194,13 +195,21 @@ function MoveBubble({
   message,
   isOwn,
   onWordInfo,
+  onOpenProfile,
 }: {
   message: WordChainMessage;
   isOwn: boolean;
   onWordInfo: (word: string) => void;
+  onOpenProfile: (username: string) => void;
 }) {
   const status = wordChainMoveStatus(message);
   const isValidWord = status === 'correct' || status === 'win';
+  const senderName = message.senderName ?? '';
+  const canOpenProfile = !isOwn && senderName !== '';
+  const openSender = () => onOpenProfile(senderName);
+  const avatar = (
+    <VipAvatar typeId={message.senderVipTypeId} className="h-8 w-8" />
+  );
 
   return (
     <div
@@ -213,7 +222,17 @@ function MoveBubble({
           isOwn ? 'mr-10 flex-row-reverse' : 'ml-10'
         }`}
       >
-        <span className="truncate">{message.senderName}</span>
+        {canOpenProfile ? (
+          <button
+            type="button"
+            onClick={openSender}
+            className="min-w-0 truncate hover:underline"
+          >
+            {senderName}
+          </button>
+        ) : (
+          <span className="truncate">{senderName}</span>
+        )}
         <span className="shrink-0 text-xs font-normal text-black/35">
           {formatClockHM(message.createdAt)}
         </span>
@@ -223,7 +242,18 @@ function MoveBubble({
           isOwn ? 'flex-row-reverse' : ''
         }`}
       >
-        <VipAvatar typeId={message.senderVipTypeId} className="h-8 w-8" />
+        {canOpenProfile ? (
+          <button
+            type="button"
+            onClick={openSender}
+            aria-label={senderName}
+            className="shrink-0"
+          >
+            {avatar}
+          </button>
+        ) : (
+          <span className="shrink-0">{avatar}</span>
+        )}
         <div className="relative">
           <div
             className={`w-fit max-w-full rounded-2xl px-3.5 py-2 text-base break-words ${bubbleSurface(
@@ -259,13 +289,21 @@ function WordChainMessageRowComponent({
   replyTo,
   isOwn,
   onWordInfo,
+  onOpenProfile,
 }: WordChainMessageRowProps) {
   if (message.senderType === WORD_CHAIN_SENDER_TYPE.bot) {
     return (
       <BotMessage message={message} replyTo={replyTo} onWordInfo={onWordInfo} />
     );
   }
-  return <MoveBubble message={message} isOwn={isOwn} onWordInfo={onWordInfo} />;
+  return (
+    <MoveBubble
+      message={message}
+      isOwn={isOwn}
+      onWordInfo={onWordInfo}
+      onOpenProfile={onOpenProfile}
+    />
+  );
 }
 
 export const WordChainMessageRow = memo(WordChainMessageRowComponent);

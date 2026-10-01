@@ -6,6 +6,7 @@ import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
 import {
   BUBBLE_WALLPAPER,
   buildWordChainFeed,
+  colorForName,
   remainingGuesses,
   sessionMessages,
   wordChainInputLock,
@@ -20,6 +21,7 @@ import { HelpIcon, LookupIcon, TrophyIcon } from './WordChainIcons';
 import { WordChainLeaderboardDialog } from './WordChainLeaderboardDialog';
 import { WordChainLookupDialog } from './WordChainLookupDialog';
 import { WordChainRulesDialog } from './WordChainRulesDialog';
+import { UserProfileView } from '../../../profile/UserProfileView';
 
 const LOAD_MORE_AT_TOP_PX = 80;
 
@@ -71,6 +73,14 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   const currentUserId = useAuthStore((store) => store.user?.id) ?? '';
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
   const [lookupWord, setLookupWord] = useState('');
+  const [profileTarget, setProfileTarget] = useState<{
+    username: string;
+    color: string;
+  } | null>(null);
+
+  const openProfile = useCallback((username: string) => {
+    setProfileTarget({ username, color: colorForName(username) });
+  }, []);
 
   const openLookup = useCallback(
     (word: string) => {
@@ -164,6 +174,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
               replyTo={item.replyTo}
               isOwn={item.message.senderId === currentUserId}
               onWordInfo={openLookup}
+              onOpenProfile={openProfile}
             />
           )
         )}
@@ -209,6 +220,18 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
         <WordChainLookupDialog initialWord={lookupWord} onClose={closeDialog} />
       )}
       <WordChainRulesDialog open={dialog === 'rules'} onClose={closeDialog} />
+
+      {profileTarget != null && (
+        <UserProfileView
+          key={profileTarget.username}
+          username={profileTarget.username}
+          color={profileTarget.color}
+          onClose={() => setProfileTarget(null)}
+          onOpenFriend={(friend) =>
+            setProfileTarget({ username: friend.name, color: friend.color })
+          }
+        />
+      )}
     </FullScreenOverlay>
   );
 }
