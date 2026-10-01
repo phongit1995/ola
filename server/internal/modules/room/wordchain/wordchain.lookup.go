@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"ola-chat-server/internal/constants"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -11,20 +12,17 @@ import (
 	"github.com/google/uuid"
 )
 
-const lookupSource = "dict.minhqnd.com"
-
 func (s *Service) Lookup(ctx context.Context, userID uuid.UUID, word string) (*LookupResponse, error) {
 	trimmed := strings.TrimSpace(word)
 	if trimmed == "" {
 		return nil, ErrLookupEmpty
 	}
-	if utf8.RuneCountInString(trimmed) > LookupMaxWordRunes {
+	if utf8.RuneCountInString(trimmed) > constants.WordChainLookupMaxWordRunes {
 		return nil, ErrLookupTooLong
 	}
 	result, cached := s.verifier.CachedLookup(ctx, trimmed)
 	if !cached {
-		if err := s.acquireCooldown(fmt.Sprintf(CacheKeyLookupCooldown, userID.String()),
-			LookupCooldownSeconds, "⏳ Vui lòng chờ %ds trước khi tra tiếp."); err != nil {
+		if err := s.acquireLookupCooldown(userID); err != nil {
 			return nil, err
 		}
 		var err error
@@ -33,13 +31,13 @@ func (s *Service) Lookup(ctx context.Context, userID uuid.UUID, word string) (*L
 			return nil, ErrLookupFailed
 		}
 	}
-	resp := &LookupResponse{Word: trimmed, Results: []LookupResult{}, Source: lookupSource}
-	if result.Word != "" {
-		resp.Word = result.Word
-	}
+	resp := &LookupResponse{Word: trimmed, Results: []LookupResult{}, Source: constants.WordChainLookupSource}
 	if !result.Exists || len(result.Results) == 0 {
 		resp.Message = fmt.Sprintf("Không tìm thấy định nghĩa cho từ \"%s\", đây có thể là một từ ghép hán việt, vui lòng tra cứu ở các nguồn khác.", trimmed)
 		return resp, nil
+	}
+	if result.Word != "" {
+		resp.Word = result.Word
 	}
 	resp.Found = true
 	for _, r := range result.Results {
@@ -64,23 +62,21 @@ func (s *Service) Lookup(ctx context.Context, userID uuid.UUID, word string) (*L
 	return resp, nil
 }
 
-func (s *Service) acquireCooldown(key string, seconds int, template string) error {
-	acquired, err := s.cache.SetNX(key, 1, time.Duration(seconds)*time.Second)
+func (s *Service) acquireLookupCooldown(userID uuid.UUID) error {
+	key := fmt.Sprintf(constants.CacheKeyWordChainLookupCooldown, userID.String())
+	window := constants.WordChainLookupCooldownSeconds * time.Second
+	acquired, err := s.cache.SetNX(key, 1, window)
 	if err != nil {
 		return err
 	}
 	if acquired {
 		return nil
 	}
-	return cooldownError(template, s.remainingSeconds(key, seconds))
-}
-
-func (s *Service) remainingSeconds(key string, fallback int) int {
-	ttl, err := s.cache.GetTTL(key)
-	if err != nil || ttl <= 0 {
-		return fallback
+	seconds := constants.WordChainLookupCooldownSeconds
+	if ttl, err := s.cache.GetTTL(key); err == nil && ttl > 0 {
+		seconds = int(math.Ceil(ttl.Seconds()))
 	}
-	return int(math.Ceil(ttl.Seconds()))
+	return cooldownError(seconds)
 }
 
 func deref(value *string) string {

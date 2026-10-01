@@ -6,17 +6,12 @@ type Settings interface {
 	GetWordChain() (setting.WordChainConfig, error)
 }
 
-func (s *Service) config() setting.WordChainConfig {
+func (s *Service) enabledConfig() (setting.WordChainConfig, error) {
 	cfg, err := s.settings.GetWordChain()
 	if err != nil {
-		s.logger.Warnw("Failed to load word chain settings, using defaults", "error", err)
-		return setting.DefaultWordChainConfig()
+		s.logger.Warnw("Failed to load word chain settings, keeping the room closed", "error", err)
+		return cfg, ErrUnavailable
 	}
-	return cfg
-}
-
-func (s *Service) enabledConfig() (setting.WordChainConfig, error) {
-	cfg := s.config()
 	if !cfg.Enabled {
 		return cfg, ErrDisabled
 	}

@@ -3,6 +3,7 @@ package wordchain
 import (
 	"context"
 	"errors"
+	"ola-chat-server/internal/constants"
 )
 
 var errNoPlayableStartWord = errors.New("word chain could not find a playable start word")
@@ -24,6 +25,24 @@ func (o liveOracle) StartWord() (string, error) {
 	return o.service.pickStartWord(o.ctx)
 }
 
+func unusedCandidates(used map[string]struct{}, groups ...[]string) []string {
+	seen := make(map[string]struct{})
+	candidates := make([]string, 0)
+	for _, group := range groups {
+		for _, word := range group {
+			if _, ok := used[word]; ok {
+				continue
+			}
+			if _, ok := seen[word]; ok {
+				continue
+			}
+			seen[word] = struct{}{}
+			candidates = append(candidates, word)
+		}
+	}
+	return candidates
+}
+
 func (s *Service) hasContinuation(ctx context.Context, syllable string, used map[string]struct{}) (bool, error) {
 	local := s.dict.Continuations(syllable, used)
 	known := s.verifier.Known(ctx, local)
@@ -38,25 +57,17 @@ func (s *Service) hasContinuation(ctx context.Context, syllable string, used map
 		return false, err
 	}
 	candidates := make([]string, 0, len(suggested)+len(local))
-	seen := make(map[string]struct{}, len(suggested)+len(local))
-	for _, word := range append(suggested, local...) {
-		if _, ok := used[word]; ok {
-			continue
+	for _, word := range unusedCandidates(used, suggested, local) {
+		if exists, ok := known[word]; !ok || exists {
+			candidates = append(candidates, word)
 		}
-		if _, ok := seen[word]; ok {
-			continue
-		}
-		seen[word] = struct{}{}
-		if exists, ok := known[word]; ok && !exists {
-			continue
-		}
-		candidates = append(candidates, word)
 	}
-	return s.verifier.AnyExists(ctx, candidates)
+	found, err := s.verifier.ExistingWords(ctx, candidates, 1)
+	return len(found) > 0, err
 }
 
 func (s *Service) pickStartWord(ctx context.Context) (string, error) {
-	for attempt := 0; attempt < StartWordMaxAttempts; attempt++ {
+	for attempt := 0; attempt < constants.WordChainStartWordMaxAttempts; attempt++ {
 		word := s.dict.NewWord()
 		if word == "" {
 			break

@@ -11,15 +11,11 @@ func (s *Service) AdminOverview(ctx context.Context) (*AdminOverviewResponse, er
 	if err != nil {
 		return nil, err
 	}
-	players, err := s.store.Count(ctx, CacheKeyPoints)
+	counts, err := s.scores.Counts(ctx)
 	if err != nil {
 		return nil, err
 	}
-	winners, err := s.store.Count(ctx, CacheKeyWins)
-	if err != nil {
-		return nil, err
-	}
-	resp := &AdminOverviewResponse{History: []string{}, Players: players, Winners: winners}
+	resp := &AdminOverviewResponse{History: []string{}, Players: counts.Players, Winners: counts.Winners}
 	if !state.Active() {
 		return resp, nil
 	}

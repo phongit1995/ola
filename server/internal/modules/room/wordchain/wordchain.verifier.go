@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"sync"
 
@@ -60,14 +61,15 @@ type Verifier struct {
 
 func NewVerifier(cache *services.CacheService) *Verifier {
 	return &Verifier{
-		client:     &http.Client{Timeout: LookupTimeout},
+		client:     &http.Client{Timeout: constants.WordChainLookupTimeout},
 		redis:      cache.GetClient(),
-		lookupURL:  LookupURL,
-		suggestURL: SuggestURL,
+		lookupURL:  constants.WordChainLookupURL,
+		suggestURL: constants.WordChainSuggestURL,
 	}
 }
 
 func (v *Verifier) Lookup(ctx context.Context, word string) (*DictLookup, error) {
+	word = normalizeVietnamese(word)
 	if cached, ok := v.CachedLookup(ctx, word); ok {
 		return cached, nil
 	}
@@ -108,11 +110,11 @@ func (v *Verifier) cacheLookup(ctx context.Context, word string, result *DictLoo
 	if err != nil {
 		return
 	}
-	_ = v.redis.Set(ctx, lookupCacheKey(word), data, LookupCacheTTL).Err()
+	_ = v.redis.Set(ctx, lookupCacheKey(word), data, constants.WordChainLookupTTL).Err()
 }
 
 func lookupCacheKey(word string) string {
-	return fmt.Sprintf(CacheKeyLookupResult, normalizeVietnamese(word))
+	return fmt.Sprintf(constants.CacheKeyWordChainLookup, normalizeVietnamese(word))
 }
 
 func (v *Verifier) Exists(ctx context.Context, word string) (bool, error) {
@@ -127,7 +129,7 @@ func (v *Verifier) Exists(ctx context.Context, word string) (bool, error) {
 	if exists {
 		value = "1"
 	}
-	_ = v.redis.Set(ctx, fmt.Sprintf(CacheKeyWordExists, word), value, WordExistsCacheTTL).Err()
+	_ = v.redis.Set(ctx, fmt.Sprintf(constants.CacheKeyWordChainWordExists, word), value, constants.WordChainWordExistsTTL).Err()
 	return exists, nil
 }
 
@@ -138,7 +140,7 @@ func (v *Verifier) Known(ctx context.Context, words []string) map[string]bool {
 	}
 	keys := make([]string, len(words))
 	for i, word := range words {
-		keys[i] = fmt.Sprintf(CacheKeyWordExists, word)
+		keys[i] = fmt.Sprintf(constants.CacheKeyWordChainWordExists, word)
 	}
 	values, err := v.redis.MGet(ctx, keys...).Result()
 	if err != nil {
@@ -152,28 +154,35 @@ func (v *Verifier) Known(ctx context.Context, words []string) map[string]bool {
 	return known
 }
 
-func (v *Verifier) AnyExists(ctx context.Context, words []string) (bool, error) {
-	if len(words) == 0 {
-		return false, nil
+type existence struct {
+	checked bool
+	exists  bool
+	err     error
+}
+
+func (v *Verifier) ExistingWords(ctx context.Context, words []string, limit int) ([]string, error) {
+	if len(words) == 0 || limit <= 0 {
+		return []string{}, nil
 	}
 	checkCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var (
-		wg       sync.WaitGroup
-		mu       sync.Mutex
-		found    bool
-		firstErr error
+		wg      sync.WaitGroup
+		mu      sync.Mutex
+		results = make([]existence, len(words))
+		settled int
+		found   int
 	)
-	slots := make(chan struct{}, ContinuationConcurrency)
+	slots := make(chan struct{}, constants.WordChainContinuationConcurrency)
 launch:
-	for _, word := range words {
+	for i, word := range words {
 		select {
 		case slots <- struct{}{}:
 		case <-checkCtx.Done():
 			break launch
 		}
 		wg.Add(1)
-		go func(word string) {
+		go func() {
 			defer func() {
 				<-slots
 				wg.Done()
@@ -181,50 +190,37 @@ launch:
 			exists, err := v.Exists(checkCtx, word)
 			mu.Lock()
 			defer mu.Unlock()
-			switch {
-			case exists:
-				found = true
-				cancel()
-			case err != nil && firstErr == nil:
-				firstErr = err
+			results[i] = existence{checked: true, exists: exists, err: err}
+			for settled < len(results) && results[settled].checked {
+				if results[settled].exists {
+					found++
+				}
+				settled++
 			}
-		}(word)
+			if found >= limit {
+				cancel()
+			}
+		}()
 	}
 	wg.Wait()
-	if found {
-		return true, nil
-	}
-	if firstErr != nil {
-		return false, firstErr
-	}
-	return false, ctx.Err()
-}
 
-func (v *Verifier) ExistingWords(ctx context.Context, words []string, limit int) ([]string, error) {
-	found := make([]string, 0, limit)
-	for start := 0; start < len(words) && len(found) < limit; start += ContinuationConcurrency {
-		batch := words[start:min(start+ContinuationConcurrency, len(words))]
-		exists := make([]bool, len(batch))
-		errs := make([]error, len(batch))
-		var wg sync.WaitGroup
-		for i, word := range batch {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				exists[i], errs[i] = v.Exists(ctx, word)
-			}()
-		}
-		wg.Wait()
-		if err := errors.Join(errs...); err != nil {
-			return nil, err
-		}
-		for i, word := range batch {
-			if exists[i] && len(found) < limit {
-				found = append(found, word)
-			}
+	out := make([]string, 0, limit)
+	var errs []error
+	for i := 0; i < len(results) && len(out) < limit; i++ {
+		switch {
+		case results[i].exists:
+			out = append(out, words[i])
+		case results[i].err != nil:
+			errs = append(errs, results[i].err)
 		}
 	}
-	return found, nil
+	if len(out) >= limit {
+		return out, nil
+	}
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
+	}
+	return out, ctx.Err()
 }
 
 func (v *Verifier) lookupExists(ctx context.Context, word string) (bool, error) {
@@ -236,7 +232,7 @@ func (v *Verifier) lookupExists(ctx context.Context, word string) (bool, error) 
 		return false, nil
 	}
 	for _, r := range result.Results {
-		if r.LangCode == LookupLangVietnamese {
+		if r.LangCode == constants.WordChainLookupLangVietnamese {
 			return true, nil
 		}
 	}
@@ -244,7 +240,7 @@ func (v *Verifier) lookupExists(ctx context.Context, word string) (bool, error) 
 }
 
 func (v *Verifier) Continuations(ctx context.Context, syllable string) ([]string, error) {
-	body, status, err := v.get(ctx, v.suggestURL, url.Values{"q": {syllable + " "}, "limit": {SuggestLimit}})
+	body, status, err := v.get(ctx, v.suggestURL, url.Values{"q": {syllable + " "}, "limit": {constants.WordChainSuggestLimit}})
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +258,7 @@ func (v *Verifier) Continuations(ctx context.Context, syllable string) ([]string
 	for _, suggestion := range out.Suggestions {
 		normalized := normalizeVietnamese(suggestion)
 		parts := splitSyllables(normalized)
-		if len(parts) == WordLength && parts[0] == syllable {
+		if len(parts) == constants.WordChainWordLength && parts[0] == syllable {
 			words = append(words, normalized)
 		}
 	}
@@ -279,11 +275,11 @@ func (v *Verifier) get(ctx context.Context, endpoint string, query url.Values) (
 		return nil, 0, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, LookupMaxBytes+1))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, constants.WordChainLookupMaxBytes+1))
 	if err != nil {
 		return nil, 0, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
 	}
-	if len(body) > LookupMaxBytes {
+	if len(body) > constants.WordChainLookupMaxBytes {
 		return nil, 0, fmt.Errorf("%w: response too large", ErrDictionaryUnavailable)
 	}
 	return body, resp.StatusCode, nil

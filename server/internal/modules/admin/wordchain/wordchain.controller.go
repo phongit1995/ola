@@ -3,6 +3,7 @@ package adminwordchain
 import (
 	"net/http"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/room/wordchain"
 	"ola-chat-server/internal/utils"
 
@@ -43,7 +44,7 @@ func (ctrl *Controller) Overview(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[wordchain.MessageListResponse]
 // @Router       /admin/word-chain/messages [get]
 func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
-	limit := utils.ParseLimit(c, wordchain.MessagePageSize, wordchain.MessagePageMax)
+	limit := utils.ParseLimit(c, constants.WordChainMessagePageSize, constants.WordChainMessagePageMax)
 	resp, err := ctrl.service.AdminMessages(c.Request.Context(), limit, c.Query("before"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
@@ -70,7 +71,7 @@ func (ctrl *Controller) Wins(c *gin.Context) (interface{}, error) {
 		}
 		userID = &parsed
 	}
-	limit := utils.ParseLimit(c, wordchain.WinPageSize, wordchain.WinPageMax)
+	limit := utils.ParseLimit(c, constants.WordChainWinPageSize, constants.WordChainWinPageMax)
 	resp, err := ctrl.service.AdminWins(c.Request.Context(), userID, c.Query("before"), limit)
 	if err != nil {
 		return nil, utils.ServiceError(err)

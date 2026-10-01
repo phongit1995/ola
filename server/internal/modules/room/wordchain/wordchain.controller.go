@@ -1,6 +1,7 @@
 package wordchain
 
 import (
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,7 @@ func (ctrl *Controller) Overview(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[MessageListResponse]
 // @Router       /rooms/word-chain/messages [get]
 func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
-	limit := utils.ParseLimit(c, MessagePageSize, MessagePageMax)
+	limit := utils.ParseLimit(c, constants.WordChainMessagePageSize, constants.WordChainMessagePageMax)
 	resp, err := ctrl.service.Messages(c.Request.Context(), limit, c.Query("before"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
@@ -57,8 +58,10 @@ func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
+// @Description  Send sessionId and turn of the word being answered; if the word changed meanwhile the move is rejected with 409 WORD_CHAIN_WORD_CHANGED and no guess is used
 // @Param        request body MoveRequest true "Word"
 // @Success      200  {object}  utils.BaseResponse[MoveResponse]
+// @Failure      409  {object}  utils.APIError
 // @Router       /rooms/word-chain/moves [post]
 func (ctrl *Controller) Move(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -77,11 +80,13 @@ func (ctrl *Controller) Move(c *gin.Context) (interface{}, error) {
 }
 
 // Hint godoc
-// @Summary      Buy hints for the current word (costs KEN, nothing is charged when no hint is found)
+// @Summary      Buy hints for the current word (costs KEN once per word, nothing is charged when no hint is found)
+// @Description  Buying again for the same word returns the same hints with charged=false; 409 WORD_CHAIN_WORD_CHANGED when the word changed before payment
 // @Tags         word-chain
 // @Produce      json
 // @Security     BearerAuth
 // @Success      200  {object}  utils.BaseResponse[HintResponse]
+// @Failure      409  {object}  utils.APIError
 // @Router       /rooms/word-chain/hints [post]
 func (ctrl *Controller) Hint(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -131,7 +136,7 @@ func (ctrl *Controller) Wins(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	limit := utils.ParseLimit(c, WinPageSize, WinPageMax)
+	limit := utils.ParseLimit(c, constants.WordChainWinPageSize, constants.WordChainWinPageMax)
 	resp, err := ctrl.service.Wins(c.Request.Context(), userID, c.Query("mine") == "true", c.Query("before"), limit)
 	if err != nil {
 		return nil, utils.ServiceError(err)

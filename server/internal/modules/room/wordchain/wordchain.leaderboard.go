@@ -2,6 +2,7 @@ package wordchain
 
 import (
 	"context"
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"time"
 
@@ -10,67 +11,58 @@ import (
 
 var gmt7 = time.FixedZone("GMT+7", 7*60*60)
 
+type TimeRange struct {
+	From time.Time
+	To   time.Time
+}
+
 func normalizeLeaderboardSort(sort string) string {
-	if sort == LeaderboardSortWins {
-		return LeaderboardSortWins
+	if _, ok := leaderboardOrders[sort]; ok {
+		return sort
 	}
-	return LeaderboardSortPoints
+	return constants.WordChainLeaderboardSortPoints
 }
 
 func normalizeLeaderboardPeriod(period string) string {
 	switch period {
-	case LeaderboardPeriodDay, LeaderboardPeriodWeek, LeaderboardPeriodMonth:
+	case constants.WordChainLeaderboardPeriodDay, constants.WordChainLeaderboardPeriodWeek, constants.WordChainLeaderboardPeriodMonth:
 		return period
 	}
-	return LeaderboardPeriodAll
+	return constants.WordChainLeaderboardPeriodAll
 }
 
-func periodRange(now time.Time, period string) (time.Time, time.Time) {
+func periodRange(now time.Time, period string) *TimeRange {
+	if period == constants.WordChainLeaderboardPeriodAll {
+		return nil
+	}
 	local := now.In(gmt7)
 	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, gmt7)
 	switch period {
-	case LeaderboardPeriodWeek:
+	case constants.WordChainLeaderboardPeriodWeek:
 		start = start.AddDate(0, 0, -((int(local.Weekday()) + 6) % 7))
-	case LeaderboardPeriodMonth:
+	case constants.WordChainLeaderboardPeriodMonth:
 		start = time.Date(local.Year(), local.Month(), 1, 0, 0, 0, 0, gmt7)
 	}
-	return start.UTC(), now.UTC()
-}
-
-func (s *Service) scoreRecord(userID uuid.UUID, move Message, previousWord string, now time.Time) *models.WordChainScore {
-	messageID, err := uuid.Parse(move.ID)
-	if err != nil {
-		s.logger.Errorw("Invalid word chain message id for score", "message_id", move.ID, "error", err)
-		return nil
-	}
-	sessionID, err := uuid.Parse(move.SessionID)
-	if err != nil {
-		s.logger.Errorw("Invalid word chain session id for score", "session_id", move.SessionID, "error", err)
-		return nil
-	}
-	return &models.WordChainScore{
-		MessageID:    messageID,
-		SessionID:    sessionID,
-		UserID:       userID,
-		Word:         move.Word,
-		PreviousWord: previousWord,
-		Points:       PointsPerWord,
-		IsWin:        move.Code == CodeWin,
-		CreatedAt:    now.UTC(),
-	}
+	return &TimeRange{From: start.UTC(), To: now.UTC()}
 }
 
 func (s *Service) recordScore(ctx context.Context, score *models.WordChainScore) {
-	recordCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), BackgroundTimeout)
+	recordCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), constants.WordChainBackgroundTimeout)
 	defer cancel()
-	if err := s.scores.Record(recordCtx, score); err != nil {
+	err := s.scores.Record(recordCtx, score)
+	for attempt := 1; err != nil && attempt < constants.WordChainScoreRecordAttempts && recordCtx.Err() == nil; attempt++ {
+		s.logger.Warnw("Failed to record word chain score, retrying", "message_id", score.MessageID, "attempt", attempt, "error", err)
+		time.Sleep(time.Duration(attempt) * constants.WordChainScoreRecordBackoff)
+		err = s.scores.Record(recordCtx, score)
+	}
+	if err != nil {
 		s.logger.Errorw("Failed to record word chain score", "message_id", score.MessageID, "user_id", score.UserID, "is_win", score.IsWin, "error", err)
 	}
 }
 
 func (s *Service) Leaderboard(ctx context.Context, userID uuid.UUID, sort, period string) (*LeaderboardResponse, error) {
 	sort, period = normalizeLeaderboardSort(sort), normalizeLeaderboardPeriod(period)
-	rows, err := s.leaderboardRows(ctx, userID, sort, period)
+	rows, err := s.scores.Leaderboard(ctx, sort, periodRange(time.Now(), period), userID, constants.WordChainLeaderboardLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +79,7 @@ func (s *Service) Leaderboard(ctx context.Context, userID uuid.UUID, sort, perio
 			entry.Username, entry.FullName, entry.Avatar = u.Username, u.FullName, u.Avatar
 		}
 		resp.Total = row.Total
-		if row.Rank <= LeaderboardLimit {
+		if row.Rank <= constants.WordChainLeaderboardLimit {
 			resp.Items = append(resp.Items, entry)
 		}
 		if row.UserID == userID {
@@ -98,63 +90,12 @@ func (s *Service) Leaderboard(ctx context.Context, userID uuid.UUID, sort, perio
 	return resp, nil
 }
 
-func (s *Service) leaderboardRows(ctx context.Context, userID uuid.UUID, sort, period string) ([]LeaderboardRow, error) {
-	if period != LeaderboardPeriodAll {
-		from, to := periodRange(time.Now(), period)
-		return s.scores.Leaderboard(ctx, sort, from, to, userID, LeaderboardLimit)
-	}
-	key, otherKey := CacheKeyPoints, CacheKeyWins
-	if sort == LeaderboardSortWins {
-		key, otherKey = CacheKeyWins, CacheKeyPoints
-	}
-	top, total, err := s.store.Top(ctx, key, LeaderboardLimit)
-	if err != nil {
-		return nil, err
-	}
-	entries := make([]ScoreEntry, 0, len(top)+1)
-	ranks := make([]int64, 0, len(top)+1)
-	for i, entry := range top {
-		entries = append(entries, entry)
-		ranks = append(ranks, int64(i+1))
-	}
-	rank, score, ranked, err := s.store.Rank(ctx, key, userID.String())
-	if err != nil {
-		return nil, err
-	}
-	if ranked && rank > int64(len(top)) {
-		entries = append(entries, ScoreEntry{UserID: userID.String(), Score: score})
-		ranks = append(ranks, rank)
-	}
-	ids := make([]string, len(entries))
-	for i, entry := range entries {
-		ids[i] = entry.UserID
-	}
-	others, err := s.store.Scores(ctx, otherKey, ids)
-	if err != nil {
-		return nil, err
-	}
-
-	rows := make([]LeaderboardRow, 0, len(entries))
-	for i, entry := range entries {
-		id, err := uuid.Parse(entry.UserID)
-		if err != nil {
-			continue
-		}
-		row := LeaderboardRow{UserID: id, Rank: ranks[i], Total: total, Points: entry.Score, Wins: others[entry.UserID]}
-		if sort == LeaderboardSortWins {
-			row.Points, row.Wins = others[entry.UserID], entry.Score
-		}
-		rows = append(rows, row)
-	}
-	return rows, nil
-}
-
 func (s *Service) winPage(ctx context.Context, filter *uuid.UUID, before string, limit int) ([]models.WordChainScore, bool, error) {
 	var cursor *uuid.UUID
 	if before != "" {
 		id, err := uuid.Parse(before)
 		if err != nil {
-			return nil, false, nil
+			return nil, false, ErrBadCursor
 		}
 		cursor = &id
 	}

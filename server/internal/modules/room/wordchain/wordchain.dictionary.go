@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
+	"ola-chat-server/internal/constants"
 	"sort"
 	"sync"
 )
@@ -16,7 +17,6 @@ var embeddedWordPairs []byte
 var embeddedCustomWords []byte
 
 type Dictionary struct {
-	mu    sync.RWMutex
 	pairs map[string][]string
 	list  []string
 	rngMu sync.Mutex
@@ -75,15 +75,7 @@ func (d *Dictionary) rebuildList() {
 	}
 }
 
-func (d *Dictionary) Size() int {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-	return len(d.list)
-}
-
 func (d *Dictionary) Continuations(start string, used map[string]struct{}) []string {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
 	var playable, repeating, deadEnds []string
 	for _, second := range d.pairs[start] {
 		word := start + " " + second
@@ -102,7 +94,7 @@ func (d *Dictionary) Continuations(start string, used map[string]struct{}) []str
 	return append(append(playable, repeating...), deadEnds...)
 }
 
-func (d *Dictionary) uniqueWordLocked(start string) bool {
+func (d *Dictionary) uniqueWord(start string) bool {
 	possible := d.pairs[start]
 	if len(possible) == 0 {
 		return true
@@ -119,13 +111,11 @@ func (d *Dictionary) uniqueWordLocked(start string) bool {
 }
 
 func (d *Dictionary) NewWord() string {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
 	if len(d.list) == 0 {
 		return ""
 	}
 	word := d.list[d.intN(len(d.list))]
-	for attempt := 0; attempt < NewWordMaxAttempts && d.uniqueWordLocked(lastWord(word)); attempt++ {
+	for attempt := 0; attempt < constants.WordChainNewWordMaxAttempts && d.uniqueWord(lastWord(word)); attempt++ {
 		word = d.list[d.intN(len(d.list))]
 	}
 	return word

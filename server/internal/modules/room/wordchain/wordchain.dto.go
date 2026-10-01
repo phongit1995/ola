@@ -2,32 +2,13 @@ package wordchain
 
 import (
 	"context"
+	"ola-chat-server/internal/constants"
 	roomEvents "ola-chat-server/internal/domain/room"
+	"time"
 )
 
 type EventPublisher interface {
 	PublishWordChainEvent(ctx context.Context, event *roomEvents.WordChainEvent) error
-}
-
-type Message struct {
-	ID               string  `json:"id"`
-	Seq              int64   `json:"seq"`
-	SessionID        string  `json:"sessionId"`
-	Type             string  `json:"type"`
-	SenderType       string  `json:"senderType"`
-	SenderID         string  `json:"senderId,omitempty"`
-	SenderName       string  `json:"senderName,omitempty"`
-	SenderAvatar     string  `json:"senderAvatar,omitempty"`
-	SenderGender     string  `json:"senderGender,omitempty"`
-	SenderVip        *string `json:"senderVip,omitempty"`
-	SenderVipEnd     *string `json:"senderVipEnd,omitempty"`
-	Content          string  `json:"content"`
-	Word             string  `json:"word,omitempty"`
-	Code             string  `json:"code,omitempty"`
-	Reaction         string  `json:"reaction,omitempty"`
-	RequiredSyllable string  `json:"requiredSyllable,omitempty"`
-	RemainingGuesses *int    `json:"remainingGuesses,omitempty"`
-	CreatedAt        string  `json:"createdAt"`
 }
 
 type storedMessage struct {
@@ -46,6 +27,15 @@ type storedMessage struct {
 	CreatedAt        string `json:"createdAt"`
 }
 
+type Message struct {
+	storedMessage
+	SenderName   string  `json:"senderName,omitempty"`
+	SenderAvatar string  `json:"senderAvatar,omitempty"`
+	SenderGender string  `json:"senderGender,omitempty"`
+	SenderVip    *string `json:"senderVip,omitempty"`
+	SenderVipEnd *string `json:"senderVipEnd,omitempty"`
+}
+
 type MessageListResponse struct {
 	Items      []Message `json:"items"`
 	HasMore    bool      `json:"hasMore"`
@@ -53,7 +43,9 @@ type MessageListResponse struct {
 }
 
 type MoveRequest struct {
-	Content string `json:"content" binding:"required,min=1,max=200" example:"chân trời"`
+	Content   string `json:"content" binding:"required,min=1,max=200" example:"chân trời"`
+	SessionID string `json:"sessionId" example:"7b0c8f3e-2a51-4c1e-9d2f-5a6b7c8d9e0f"`
+	Turn      *int64 `json:"turn" binding:"omitempty,min=0" example:"3"`
 }
 
 type MoveResponse struct {
@@ -92,6 +84,7 @@ type HintResponse struct {
 	Hints      []string `json:"hints"`
 	Price      int      `json:"price"`
 	KenBalance int      `json:"kenBalance"`
+	Charged    bool     `json:"charged"`
 }
 
 type LeaderboardEntry struct {
@@ -175,4 +168,27 @@ type AdminOverviewResponse struct {
 	WordOwner *AdminPlayer   `json:"wordOwner,omitempty"`
 	Players   int64          `json:"players"`
 	Winners   int64          `json:"winners"`
+}
+
+func toStateView(state GameState) *StateResponse {
+	view := &StateResponse{
+		Revision:     state.Revision,
+		Turn:         state.Turn,
+		GuessLimit:   constants.WordChainMaxWrongGuesses,
+		Word:         state.Word,
+		HistoryCount: len(state.History),
+		WordOwnerID:  state.WordOwnerID,
+	}
+	if state.Word != "" {
+		view.RequiredSyllable = lastWord(state.Word)
+	}
+	if state.Active() {
+		view.SessionID = state.SessionID.String()
+		view.SessionStartedAt = state.SessionStartedAt.UTC().Format(time.RFC3339)
+		view.LastProgressAt = state.LastProgressAt.UTC().Format(time.RFC3339)
+	}
+	if state.CanExpire() {
+		view.WordExpiresAt = state.ExpiresAt().UTC().Format(time.RFC3339)
+	}
+	return view
 }

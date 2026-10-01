@@ -12,7 +12,7 @@ var oaToneShift = map[rune]rune{'à': 'ò', 'á': 'ó', 'ả': 'ỏ', 'ã': 'õ'
 var uyToneShift = map[rune]rune{'ý': 'ú', 'ỳ': 'ù', 'ỷ': 'ủ', 'ỹ': 'ũ', 'ỵ': 'ụ'}
 
 func normalizeVietnamese(text string) string {
-	normalized := strings.TrimSpace(strings.ToLower(norm.NFC.String(text)))
+	normalized := strings.Join(strings.Fields(strings.ToLower(norm.NFC.String(text))), " ")
 	runes := []rune(normalized)
 	runes = shiftTonePair(runes, 'o', 'a', oaToneShift, false)
 	runes = shiftTonePair(runes, 'u', 'y', uyToneShift, true)

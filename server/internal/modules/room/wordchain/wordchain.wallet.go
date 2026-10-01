@@ -1,7 +1,7 @@
 package wordchain
 
 import (
-	"errors"
+	"context"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
@@ -10,76 +10,43 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-var errKenShort = errors.New("insufficient ken balance for word chain hint")
-
-type HintCharge struct {
-	UserID uuid.UUID
-	Price  int
-	Word   string
-	Turn   int64
-	Hints  []string
-}
-
 type HintWallet interface {
-	ChargeHint(charge HintCharge) (int, error)
+	ChargeHint(ctx context.Context, charge HintCharge) (HintChargeResult, error)
+	Purchase(ctx context.Context, userID, sessionID uuid.UUID, turn int64) (*models.WordChainHintPurchase, error)
+	Balance(ctx context.Context, userID uuid.UUID) (int, error)
 }
 
 type Wallet struct {
-	db        *gorm.DB
+	repo      *Repository
 	userCache *userModule.CacheService
 	wsServer  *websocket.Server
 	logger    *zap.SugaredLogger
 }
 
-func NewWallet(db *gorm.DB, userCache *userModule.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Wallet {
-	return &Wallet{db: db, userCache: userCache, wsServer: wsServer, logger: logger.Named("[word_chain_wallet]")}
+func NewWallet(repo *Repository, userCache *userModule.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Wallet {
+	return &Wallet{repo: repo, userCache: userCache, wsServer: wsServer, logger: logger.Named("[word_chain_wallet]")}
 }
 
-func (w *Wallet) ChargeHint(charge HintCharge) (int, error) {
-	var balance int
-	err := w.db.Transaction(func(tx *gorm.DB) error {
-		var user models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Select("id", "ken").First(&user, "id = ?", charge.UserID).Error; err != nil {
-			return err
-		}
-		if user.Ken < charge.Price {
-			return errKenShort
-		}
-		balance = user.Ken - charge.Price
-		if err := tx.Model(&models.User{}).Where("id = ?", charge.UserID).Update("ken", balance).Error; err != nil {
-			return err
-		}
-		actorID := charge.UserID
-		return tx.Create(&models.KenTransaction{
-			UserID:        charge.UserID,
-			Direction:     models.KenDirectionDebit,
-			Type:          models.KenTxTypeWordChainHint,
-			Amount:        charge.Price,
-			BalanceBefore: user.Ken,
-			BalanceAfter:  balance,
-			Description:   "word chain hint for " + charge.Word,
-			RefType:       "word_chain",
-			ActorType:     models.KenActorUser,
-			ActorID:       &actorID,
-			Metadata: models.JSONB{
-				"word":  charge.Word,
-				"turn":  charge.Turn,
-				"hints": charge.Hints,
-			},
-		}).Error
-	})
-	if err != nil {
-		return 0, err
+func (w *Wallet) Balance(ctx context.Context, userID uuid.UUID) (int, error) {
+	return w.repo.KenBalance(ctx, userID)
+}
+
+func (w *Wallet) Purchase(ctx context.Context, userID, sessionID uuid.UUID, turn int64) (*models.WordChainHintPurchase, error) {
+	return w.repo.HintPurchase(ctx, userID, sessionID, turn)
+}
+
+func (w *Wallet) ChargeHint(ctx context.Context, charge HintCharge) (HintChargeResult, error) {
+	result, err := w.repo.ChargeHint(ctx, charge)
+	if err != nil || !result.Charged {
+		return result, err
 	}
 	if err := w.userCache.InvalidateUser(charge.UserID); err != nil {
 		w.logger.Warnw("Failed to invalidate user cache after word chain hint", "user_id", charge.UserID, "error", err)
 	}
-	w.emitKenUpdate(charge.UserID, balance)
-	return balance, nil
+	w.emitKenUpdate(charge.UserID, result.Balance)
+	return result, nil
 }
 
 func (w *Wallet) emitKenUpdate(userID uuid.UUID, ken int) {
