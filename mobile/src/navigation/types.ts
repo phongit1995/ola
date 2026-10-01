@@ -62,4 +62,5 @@ export type ChatStackParamList = {
 export type RoomStackParamList = {
   [ROOM_ROUTES.RoomList]: undefined;
   [ROOM_ROUTES.RoomChat]: { roomId: string; roomName: string };
+  [ROOM_ROUTES.WordChain]: undefined;
 };

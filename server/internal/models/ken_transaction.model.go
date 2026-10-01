@@ -31,6 +31,7 @@ const (
 	KenTxTypeKenChest       KenTxType = "KEN_CHEST"
 	KenTxTypeClanCreate     KenTxType = "CLAN_CREATE"
 	KenTxTypeUsernameChange KenTxType = "USERNAME_CHANGE"
+	KenTxTypeWordChainHint  KenTxType = "WORD_CHAIN_HINT"
 )
 
 type KenActorType string

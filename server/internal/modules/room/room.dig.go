@@ -1,8 +1,16 @@
 package room
 
-import "go.uber.org/dig"
+import (
+	"ola-chat-server/internal/modules/room/wordchain"
+
+	"go.uber.org/dig"
+)
 
 func Provider(c *dig.Container) error {
+	if err := wordchain.Provider(c); err != nil {
+		return err
+	}
+
 	providers := []interface{}{
 		NewRepository,
 		NewMessageRepository,

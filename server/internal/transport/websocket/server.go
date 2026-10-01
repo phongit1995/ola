@@ -231,6 +231,8 @@ func (s *Server) SetRoomHandler(svc RoomSocketService) {
 
 const broadcastRoom = socket.Room("broadcast:online")
 
+const wordChainChannel = socket.Room("word_chain")
+
 func roomChannel(roomID string) socket.Room {
 	return socket.Room("room:" + roomID)
 }
@@ -243,6 +245,12 @@ func (s *Server) BroadcastToAll(eventType string, data any) {
 	wrapped := utils.WrapWebSocketMessage(eventType, data)
 	s.io.To(broadcastRoom).Emit(constants.WebSocketMessageEvent, wrapped)
 	s.logger.Infow("📡 Broadcast to all online", "event", eventType)
+}
+
+func (s *Server) EmitToWordChain(eventType string, data any) {
+	wrapped := utils.WrapWebSocketMessage(eventType, data)
+	s.io.To(wordChainChannel).Emit(constants.WebSocketMessageEvent, wrapped)
+	s.logger.Debugw("📤 Emitted to word chain", "event", eventType)
 }
 
 func (s *Server) EmitToRoom(roomID string, eventType string, data any) {

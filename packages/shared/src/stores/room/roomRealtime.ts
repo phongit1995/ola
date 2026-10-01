@@ -1,3 +1,4 @@
+import { toRecord } from '../../lib/utils';
 import { ROOM_SOCKET_EVENTS } from '../../constants/socket';
 import { useAuthStore } from '../auth/authStore';
 import { useRoomFilterStore } from './roomFilterStore';
@@ -10,7 +11,6 @@ import {
   markRoomMessageById,
   messageMentionsUser,
   reconcileRoomServerMessage,
-  toRecord,
   withSenderVip,
   withVipTypeId,
 } from './roomHelpers';

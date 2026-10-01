@@ -11,7 +11,7 @@ import type {
   KenTreasurePositionState,
   KenTreasureState,
 } from '../../types/client/kenTreasure.type';
-import { useAuthStore } from '../auth/authStore';
+import { setAuthUserKen } from '../auth/authStore';
 
 export type {
   KenTreasureChest,
@@ -30,10 +30,6 @@ function patchChests(
   const current = chests[id];
   if (!current) return chests;
   return { ...chests, [id]: { ...current, ...patch } };
-}
-
-function syncAuthKen(ken: number) {
-  useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
 }
 
 export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
@@ -63,7 +59,7 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
       set((state) => ({ chests: patchChests(state.chests, id, { phase: 'closed' }) }));
       return;
     }
-    syncAuthKen(result.kenBalance);
+    setAuthUserKen(result.kenBalance);
     set((state) => ({
       chests: patchChests(state.chests, id, {
         phase: 'result',

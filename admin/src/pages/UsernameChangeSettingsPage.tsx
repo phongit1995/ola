@@ -2,7 +2,8 @@ import { App, Button, Card, Col, Form, InputNumber, Row, Spin, Switch, Typograph
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
 import { ApiError } from '@/lib/apiError'
-import type { AppSetting, UsernameChangeSetting, UsernameChangeTierSetting } from '@/types'
+import { settingValue } from '@/lib/appSetting'
+import type { UsernameChangeSetting, UsernameChangeTierSetting } from '@/types'
 
 const DEFAULT_USERNAME_CHANGE: UsernameChangeSetting = {
   enabled: true,
@@ -19,12 +20,6 @@ interface UsernameChangeFormValues {
   enabled: boolean
   enabledMobile: boolean
   tiers: UsernameChangeTierSetting[]
-}
-
-function settingValue<T>(settings: AppSetting[] | undefined, key: string, defaults: T): T {
-  const found = settings?.find((item) => item.key === key)
-  if (!found) return defaults
-  return { ...defaults, ...(found.value as Partial<T>) }
 }
 
 export function UsernameChangeSettingsPage() {

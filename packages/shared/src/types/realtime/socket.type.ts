@@ -19,4 +19,5 @@ export type RealtimeRegistration =
   | 'call'
   | 'chat'
   | 'ken'
-  | 'room';
+  | 'room'
+  | 'word-chain';

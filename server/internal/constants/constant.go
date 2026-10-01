@@ -21,6 +21,7 @@ const (
 	KafkaTopicRoomMessageCreated         = "CHAT.ROOM.MESSAGE.CREATED"
 	KafkaTopicRoomMessageDeleted         = "CHAT.ROOM.MESSAGE.DELETED"
 	KafkaTopicRoomMessageReactionUpdated = "CHAT.ROOM.MESSAGE.REACTION_UPDATED"
+	KafkaTopicWordChainEvent             = "CHAT.WORD_CHAIN.EVENT"
 	KafkaTopicKenChestAvailable          = "CHAT.KEN.CHEST.AVAILABLE"
 	KafkaTopicKenChestClosed             = "CHAT.KEN.CHEST.CLOSED"
 	KafkaTopicMeNotification             = "CHAT.ME.NOTIFICATION"
@@ -45,6 +46,7 @@ func AllKafkaTopics() []string {
 		KafkaTopicRoomMessageCreated,
 		KafkaTopicRoomMessageDeleted,
 		KafkaTopicRoomMessageReactionUpdated,
+		KafkaTopicWordChainEvent,
 		KafkaTopicKenChestAvailable,
 		KafkaTopicKenChestClosed,
 		KafkaTopicMeNotification,
@@ -149,9 +151,101 @@ const (
 )
 
 const (
-	SocketEventRoomJoin  = "ROOM:JOIN"
-	SocketEventRoomLeave = "ROOM:LEAVE"
-	SocketEventAppState  = "app_state"
+	CacheKeyWordChainLock           = "LOCK:WORD_CHAIN"
+	CacheKeyWordChainState          = "WORD_CHAIN:STATE"
+	CacheKeyWordChainStateRev       = "WORD_CHAIN:STATE_REV"
+	CacheKeyWordChainMsgIndex       = "WORD_CHAIN:MSG_INDEX"
+	CacheKeyWordChainMsgData        = "WORD_CHAIN:MSG"
+	CacheKeyWordChainMsgSeq         = "WORD_CHAIN:MSG_SEQ"
+	CacheKeyWordChainWordExists     = "WORD_CHAIN:WORD_EXISTS:%s"
+	CacheKeyWordChainLookup         = "WORD_CHAIN:LOOKUP:%s"
+	CacheKeyWordChainLookupCooldown = "WORD_CHAIN:LOOKUP_COOLDOWN:%s"
+
+	WordChainWordExistsTTL = 24 * time.Hour
+	WordChainLookupTTL     = 24 * time.Hour
+	WordChainLockTTL       = 15 * time.Second
+	WordChainLockWait      = 10 * time.Second
+	WordChainLockRetryWait = 25 * time.Millisecond
+)
+
+const (
+	WordChainWordLength              = 2
+	WordChainMaxHistory              = 100
+	WordChainMaxWrongGuesses         = 3
+	WordChainNewWordMaxAttempts      = 100000
+	WordChainStartWordMaxAttempts    = 10
+	WordChainContinuationConcurrency = 10
+	WordChainMoveMaxAttempts         = 3
+	WordChainBotWordTimeout          = 12 * time.Hour
+	WordChainBotWordRetryDelay       = 30 * time.Second
+	WordChainBackgroundTimeout       = 30 * time.Second
+	WordChainPointsPerWord           = 1
+	WordChainScoreRecordAttempts     = 3
+	WordChainScoreRecordBackoff      = 100 * time.Millisecond
+	WordChainHintMaxWords            = 5
+	WordChainLeaderboardLimit        = 10
+	WordChainWinPageSize             = 20
+	WordChainWinPageMax              = 50
+	WordChainMessagePageSize         = 50
+	WordChainMessagePageMax          = 100
+	WordChainMaxStoredMessages       = 5000
+
+	WordChainLookupSource          = "Ola Me"
+	WordChainLookupURL             = "https://dict.minhqnd.com/api/v1/lookup"
+	WordChainSuggestURL            = "https://dict.minhqnd.com/api/v1/suggest"
+	WordChainSuggestLimit          = "50"
+	WordChainLookupTimeout         = 5 * time.Second
+	WordChainLookupMaxBytes        = 128 * 1024
+	WordChainLookupMaxWordRunes    = 80
+	WordChainLookupCooldownSeconds = 5
+	WordChainLookupLangVietnamese  = "vi"
+
+	WordChainCodeOK            = "ok"
+	WordChainCodeWin           = "win"
+	WordChainCodeMismatch      = "mismatch"
+	WordChainCodeRepeated      = "repeated"
+	WordChainCodeNotInDict     = "not_in_dict"
+	WordChainCodeInvalidFormat = "invalid_format"
+
+	WordChainReactionOK            = "✅"
+	WordChainReactionWin           = "🏆"
+	WordChainReactionInvalidFormat = "⚠️"
+	WordChainReactionError         = "❌"
+
+	WordChainMessageTypeMove           = "move"
+	WordChainMessageTypeWin            = "win"
+	WordChainMessageTypeGameStarted    = "game_started"
+	WordChainMessageTypeSessionStarted = "session_started"
+	WordChainMessageTypeWrongAnswer    = "wrong_answer"
+
+	WordChainSenderTypeUser = "user"
+	WordChainSenderTypeBot  = "bot"
+
+	WordChainLeaderboardSortPoints  = "points"
+	WordChainLeaderboardSortWins    = "wins"
+	WordChainLeaderboardPeriodDay   = "day"
+	WordChainLeaderboardPeriodWeek  = "week"
+	WordChainLeaderboardPeriodMonth = "month"
+	WordChainLeaderboardPeriodAll   = "all"
+
+	ErrorCodeWordChainVerifyFailed = "WORD_CHAIN_VERIFY_FAILED"
+	ErrorCodeWordChainCooldown     = "WORD_CHAIN_COOLDOWN"
+	ErrorCodeWordChainNoGuesses    = "WORD_CHAIN_NO_GUESSES"
+	ErrorCodeWordChainWaitTurn     = "WORD_CHAIN_WAIT_TURN"
+	ErrorCodeWordChainNoHint       = "WORD_CHAIN_NO_HINT"
+	ErrorCodeWordChainKenShort     = "WORD_CHAIN_INSUFFICIENT_KEN"
+	ErrorCodeWordChainDisabled     = "WORD_CHAIN_DISABLED"
+	ErrorCodeWordChainUnavailable  = "WORD_CHAIN_UNAVAILABLE"
+	ErrorCodeWordChainWordChanged  = "WORD_CHAIN_WORD_CHANGED"
+	ErrorCodeWordChainBadCursor    = "WORD_CHAIN_INVALID_CURSOR"
+)
+
+const (
+	SocketEventRoomJoin       = "ROOM:JOIN"
+	SocketEventRoomLeave      = "ROOM:LEAVE"
+	SocketEventWordChainJoin  = "WORD_CHAIN:JOIN"
+	SocketEventWordChainLeave = "WORD_CHAIN:LEAVE"
+	SocketEventAppState       = "app_state"
 )
 
 const (
@@ -177,6 +271,8 @@ const (
 	WebSocketEventRoomMemberJoined           = "ROOM_MEMBER_JOINED"
 	WebSocketEventRoomMemberLeft             = "ROOM_MEMBER_LEFT"
 	WebSocketEventRoomBlockListChanged       = "ROOM_BLOCK_LIST_CHANGED"
+	WebSocketEventWordChainNewMessage        = "WORD_CHAIN_NEW_MESSAGE"
+	WebSocketEventWordChainStateUpdated      = "WORD_CHAIN_STATE_UPDATED"
 	WebSocketEventSessionReplaced            = "SESSION_REPLACED"
 	WebSocketEventKenUpdated                 = "KEN_UPDATED"
 	WebSocketEventPenSettled                 = "PEN_SETTLED"
@@ -241,17 +337,17 @@ func PushPendingKey(recipientID, source string) string {
 }
 
 const (
-	PushCollapseDM         = "dm"
-	PushTTLHours           = 24
-	PushSendBatchSize      = 500
-	PushTokenMinLength     = 20
-	PushTokenMaxLength     = 512
-	PushDataTypeDM         = "dm"
-	PushDataTypeMeNotif    = "me_notification"
-	PushDataTypeAppNotif   = "app_notification"
-	PushChannelMessages    = "messages"
-	PushChannelSocial      = "social"
-	PushChannelSystem      = "system"
+	PushCollapseDM       = "dm"
+	PushTTLHours         = 24
+	PushSendBatchSize    = 500
+	PushTokenMinLength   = 20
+	PushTokenMaxLength   = 512
+	PushDataTypeDM       = "dm"
+	PushDataTypeMeNotif  = "me_notification"
+	PushDataTypeAppNotif = "app_notification"
+	PushChannelMessages  = "messages"
+	PushChannelSocial    = "social"
+	PushChannelSystem    = "system"
 )
 
 const (

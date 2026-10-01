@@ -47,6 +47,11 @@ export interface UsernameChangeTier {
   cost: number;
 }
 
+export interface WordChainConfigResult {
+  enabled: boolean;
+  hintPrice: number;
+}
+
 export interface UsernameChangeConfigResult {
   enabled: boolean;
   enabledMobile?: boolean;

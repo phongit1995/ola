@@ -37,6 +37,13 @@ export const ROOM_SOCKET_EVENTS = {
   blockListChanged: 'ROOM_BLOCK_LIST_CHANGED',
 } as const;
 
+export const WORD_CHAIN_SOCKET_EVENTS = {
+  join: 'WORD_CHAIN:JOIN',
+  leave: 'WORD_CHAIN:LEAVE',
+  newMessage: 'WORD_CHAIN_NEW_MESSAGE',
+  stateUpdated: 'WORD_CHAIN_STATE_UPDATED',
+} as const;
+
 export const CALL_SOCKET_EVENTS = {
   incoming: 'INCOMING_CALL',
   accepted: 'CALL_ACCEPTED',

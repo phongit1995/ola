@@ -1,13 +1,9 @@
 import { create } from 'zustand';
 import { EggService } from '../services/egg.service';
 import type { EggGameState } from '../types/client/eggGame.type';
-import { useAuthStore } from './auth/authStore';
+import { setAuthUserKen } from './auth/authStore';
 
 export type { EggPacksStatus } from '../types/client/eggGame.type';
-
-function syncAuthKen(ken: number) {
-  useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
-}
 
 export const useEggGameStore = create<EggGameState>((set, get) => ({
   ken: 0,
@@ -52,7 +48,7 @@ export const useEggGameStore = create<EggGameState>((set, get) => ({
       totalWin: result.kenAmount ? state.totalWin + result.kenAmount : state.totalWin,
       suppressKenSync: false,
     }));
-    syncAuthKen(result.kenBalance);
+    setAuthUserKen(result.kenBalance);
   },
   syncKen: (ken) =>
     set((state) => (state.suppressKenSync || ken === state.ken ? state : { ken })),

@@ -39,3 +39,7 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+export function setAuthUserKen(ken: number) {
+  useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
+}

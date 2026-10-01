@@ -5,7 +5,8 @@ import { useAppSettings, usePutAppSettings } from '@/hooks/useAppSettings'
 import { env } from '@/config/env'
 import { ApiError } from '@/lib/apiError'
 import { VIETQR_BANKS, findBankByBin } from '@/lib/banks'
-import type { AppSetting, TopupBankSetting, TopupBonusTierSetting, TopupSetting } from '@/types'
+import { settingValue } from '@/lib/appSetting'
+import type { TopupBankSetting, TopupBonusTierSetting, TopupSetting } from '@/types'
 
 const BONUS_PERCENT_MAX = 500
 const NEW_TIER: TopupBonusTierSetting = { minAmount: 100_000, percent: 10 }
@@ -50,12 +51,6 @@ interface TopupSettingsFormValues {
   stepAmount: number
   bonusTiers?: TopupBonusTierSetting[]
   presetAmounts: string[]
-}
-
-function settingValue<T>(settings: AppSetting[] | undefined, key: string, defaults: T): T {
-  const found = settings?.find((item) => item.key === key)
-  if (!found) return defaults
-  return { ...defaults, ...(found.value as Partial<T>) }
 }
 
 function parsePresetAmounts(raw: string[]): number[] {

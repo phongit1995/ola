@@ -7,6 +7,7 @@ import {
   AppstoreOutlined,
   CommentOutlined,
   FlagOutlined,
+  FontSizeOutlined,
   CrownOutlined,
   DollarOutlined,
   EditOutlined,
@@ -24,6 +25,7 @@ import {
   PictureOutlined,
   TeamOutlined,
   TransactionOutlined,
+  UnorderedListOutlined,
   UsergroupAddOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -49,7 +51,15 @@ const MENU_ITEMS = [
       { key: '/users/username-changes', icon: <EditOutlined />, label: 'Đổi nickname' },
     ],
   },
-  { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
+  {
+    key: 'rooms',
+    icon: <CommentOutlined />,
+    label: 'Phòng chat',
+    children: [
+      { key: '/rooms', icon: <UnorderedListOutlined />, label: 'Danh sách phòng' },
+      { key: '/rooms/word-chain', icon: <FontSizeOutlined />, label: 'Phòng nối từ' },
+    ],
+  },
   { key: '/clans', icon: <FlagOutlined />, label: 'Clan' },
   {
     key: 'vip',
@@ -105,6 +115,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/users/relationships': 'Quan hệ bạn bè & theo dõi',
   '/users/marriages': 'Kết hôn & cầu hôn',
   '/rooms': 'Quản lý phòng chat',
+  '/rooms/word-chain': 'Phòng nối từ',
   '/clans': 'Quản lý clan',
   '/vip-packages': 'Quản lý gói VIP',
   '/vip-shop': 'Shop VIP',
@@ -150,6 +161,7 @@ export function AdminLayout() {
 
   const openKeys = [
     ...(selectedKey.startsWith('/users') ? ['users'] : []),
+    ...(selectedKey.startsWith('/rooms') ? ['rooms'] : []),
     ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
     ...(selectedKey.startsWith('/settings') ? ['settings'] : []),

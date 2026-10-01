@@ -56,6 +56,7 @@ const KEN_TYPE_LABEL: Record<string, string> = {
   PEN_WIN: 'Thắng penalty',
   PEN_REFUND: 'Hoàn penalty',
   KEN_CHEST: 'Rương KEN',
+  WORD_CHAIN_HINT: 'Gợi ý nối từ',
 }
 
 function isoDate(d: Date) {

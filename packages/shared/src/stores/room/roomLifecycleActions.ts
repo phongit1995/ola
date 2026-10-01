@@ -1,3 +1,4 @@
+import { toRecord } from '../../lib/utils';
 import {
   ROOM_JOIN_ACK_TIMEOUT_MS,
   ROOM_MESSAGE_CACHE_LIMIT,
@@ -10,7 +11,6 @@ import type { RoomLifecycleActions } from '../../types/client/roomChat.type';
 import {
   capPinnedRoomMessages,
   mergeRoomMessageSnapshot,
-  toRecord,
   withSenderVip,
   withVipTypeId,
 } from './roomHelpers';

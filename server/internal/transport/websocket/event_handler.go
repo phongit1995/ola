@@ -105,6 +105,20 @@ func (h *EventHandler) registerClientEvents(client *socket.Socket, userID string
 	if h.server.roomPresence != nil {
 		h.registerRoomEvents(client, userID)
 	}
+	h.registerWordChainEvents(client)
+}
+
+func (h *EventHandler) registerWordChainEvents(client *socket.Socket) {
+	client.On(constants.SocketEventWordChainJoin, func(args ...any) {
+		ack, _ := extractAck(args)
+		client.Join(wordChainChannel)
+		replyAck(ack, map[string]any{"joined": true}, "")
+	})
+	client.On(constants.SocketEventWordChainLeave, func(args ...any) {
+		ack, _ := extractAck(args)
+		client.Leave(wordChainChannel)
+		replyAck(ack, map[string]any{"joined": false}, "")
+	})
 }
 
 func (h *EventHandler) registerRoomEvents(client *socket.Socket, userID string) {

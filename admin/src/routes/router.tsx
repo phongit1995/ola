@@ -5,6 +5,7 @@ import { UsersPage } from '@/pages/UsersPage'
 import { MarriagesPage } from '@/pages/MarriagesPage'
 import { RelationshipsPage } from '@/pages/RelationshipsPage'
 import { RoomsPage } from '@/pages/RoomsPage'
+import { WordChainPage } from '@/pages/WordChainPage'
 import { ClansPage } from '@/pages/ClansPage'
 import { VipPackagesPage } from '@/pages/VipPackagesPage'
 import { VipShopPage } from '@/pages/VipShopPage'
@@ -52,6 +53,7 @@ export const router = createBrowserRouter([
       { path: 'users/marriages', element: <MarriagesPage /> },
       { path: 'users/relationships', element: <RelationshipsPage /> },
       { path: 'rooms', element: <RoomsPage /> },
+      { path: 'rooms/word-chain', element: <WordChainPage /> },
       { path: 'clans', element: <ClansPage /> },
       { path: 'vip-packages', element: <VipPackagesPage /> },
       { path: 'vip-shop', element: <VipShopPage /> },
