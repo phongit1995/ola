@@ -91,7 +91,7 @@ Phiên (session)                         tạo 1 lần, không hết hạn, tin 
 |---|---|
 | Kiểm tra từ có tồn tại | Luôn gọi API `dict.minhqnd.com/api/v1/lookup`, chỉ nhận kết quả có `lang_code = vi` |
 | Kiểm tra ngõ cụt (còn từ nối tiếp không) | Còn ít nhất 1 từ chưa dùng **được API `lookup` chấp nhận**, cùng tiêu chí với lúc chấm từ (xem bên dưới) |
-| Chọn từ mở đầu phiên và ván | Bốc ngẫu nhiên từ từ điển local, rồi kiểm tra như trên. Thử tối đa 10 từ, không từ nào nối được thì báo lỗi, không mở ván bằng ngõ cụt |
+| Chọn từ mở đầu phiên và ván | Bốc ngẫu nhiên từ từ điển local. Bản thân từ đó phải được API `lookup` chấp nhận (từ điển local có từ sai chính tả, ví dụ "quến dỗ") và không còn là ngõ cụt theo cách kiểm tra ở trên. Thử tối đa 20 từ, không từ nào đạt thì báo lỗi |
 | Tra từ cho người chơi | API `lookup` |
 
 Từ điển local nằm ở `wordchain/assets/` (`wordPairs.json`, `customWords.json`, copy từ repo gốc) và được `go:embed` vào binary. **Hai file này phải có trong git**, thiếu thì server không build được.

@@ -173,7 +173,7 @@ const (
 	WordChainMaxHistory              = 100
 	WordChainMaxWrongGuesses         = 3
 	WordChainNewWordMaxAttempts      = 100000
-	WordChainStartWordMaxAttempts    = 10
+	WordChainStartWordMaxAttempts    = 20
 	WordChainContinuationConcurrency = 10
 	WordChainMoveMaxAttempts         = 3
 	WordChainBotWordTimeout          = 12 * time.Hour

@@ -73,6 +73,16 @@ func (s *Service) pickStartWord(ctx context.Context) (string, error) {
 		if word == "" {
 			break
 		}
+		if misspelledY(word) {
+			continue
+		}
+		exists, err := s.verifier.Exists(ctx, word)
+		if err != nil {
+			return "", err
+		}
+		if !exists {
+			continue
+		}
 		ok, err := s.hasContinuation(ctx, lastWord(word), map[string]struct{}{wordKey(word): {}})
 		if err != nil {
 			return "", err
