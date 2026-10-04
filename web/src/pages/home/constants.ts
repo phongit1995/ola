@@ -7,8 +7,8 @@ const ChatPanel = lazy(() =>
 const RoomPanel = lazy(() =>
   import('../room/RoomPanel').then((m) => ({ default: m.RoomPanel }))
 );
-const RssPanel = lazy(() =>
-  import('../rss/RssPanel').then((m) => ({ default: m.RssPanel }))
+const StoryPanel = lazy(() =>
+  import('../story/StoryPanel').then((m) => ({ default: m.StoryPanel }))
 );
 const MePanel = lazy(() =>
   import('../me/MePanel').then((m) => ({ default: m.MePanel }))
@@ -25,7 +25,7 @@ const PersonalPanel = lazy(() =>
 export const PANELS: Record<TabKey, LazyExoticComponent<ComponentType>> = {
   chat: ChatPanel,
   room: RoomPanel,
-  rss: RssPanel,
+  rss: StoryPanel,
   me: MePanel,
   game: GamesPanel,
   personal: PersonalPanel,

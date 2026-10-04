@@ -15,6 +15,8 @@ import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { GameOverlay } from '../games/GameOverlay';
 import { RoomChatOverlay } from '../room/RoomChatOverlay';
 import { WordChainOverlay } from '../room/word-chain/WordChainOverlay';
+import { StoryOverlay } from '../story/StoryOverlay';
+import { useStoryOverlayStore } from '@/store/storyOverlayStore';
 import { AppOverlay } from '../apps/AppOverlay';
 import { ClanOverlayHost } from '../clan/ClanOverlayHost';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
@@ -55,7 +57,9 @@ export function HomePage() {
   const gameActive = useGameOverlayStore((state) => state.active != null);
   const appActive = useAppOverlayStore((state) => state.stack.length > 0);
   const clanActive = useClanOverlayStore((state) => state.stack.length > 0);
-  const hideKenBadge = gameActive || appActive || clanActive;
+  const storyActive = useStoryOverlayStore((state) => state.stack.length > 0);
+  const hideKenBadge =
+    gameActive || appActive || clanActive || (storyActive && tab === 'rss');
   const { isStandalone } = useDevicePlatform();
   const guideOpen = useDownloadGuideStore((state) => state.visible);
   const openGuide = useDownloadGuideStore((state) => state.open);
@@ -93,6 +97,7 @@ export function HomePage() {
         </Suspense>
         <RoomChatOverlay visible={tab === 'room'} />
         <WordChainOverlay visible={tab === 'room'} />
+        <StoryOverlay visible={tab === 'rss'} />
         {downloadFabMounted && (
           <DownloadFab
             hidden={hideKenBadge || guideOpen}

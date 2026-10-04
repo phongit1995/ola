@@ -1,0 +1,69 @@
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { createTimeFormatter, formatCompactCount } from '@lib';
+import { STORY_KIND } from '@constants';
+import type { Story } from '@app-types';
+import { StoryCover } from './StoryCover';
+import { EyeIcon } from './StoryIcons';
+import { StoryStatusBadge, StoryTag } from './StoryTags';
+
+const ROW_GENRE_LIMIT = 2;
+
+interface StoryRowProps {
+  story: Story;
+  onOpen: (storyId: string) => void;
+}
+
+export function StoryRow({ story, onOpen }: StoryRowProps) {
+  const { t, i18n } = useTranslation();
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
+  const isShort = story.kind === STORY_KIND.short;
+
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => onOpen(story.id)}
+        className="flex w-full gap-3 px-3 py-3 text-left active:bg-black/5"
+      >
+        <StoryCover
+          title={story.title}
+          coverUrl={story.coverUrl}
+          size="sm"
+          className="w-16 shrink-0"
+        />
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="line-clamp-2 text-[15px] leading-5 font-semibold text-black/87">
+            {story.title}
+          </span>
+          <span className="mt-0.5 truncate text-xs text-black/54">
+            {story.authorName}
+          </span>
+          <span className="mt-1.5 flex flex-wrap items-center gap-1">
+            <StoryStatusBadge status={story.status} />
+            {story.genres.slice(0, ROW_GENRE_LIMIT).map((genre) => (
+              <StoryTag key={genre}>{genre}</StoryTag>
+            ))}
+          </span>
+          <span className="mt-1.5 flex items-center gap-2 text-xs text-black/54">
+            <span>
+              {isShort
+                ? t('story.kindShort')
+                : t('story.chapterCount', { count: story.chapterCount })}
+            </span>
+            <span className="inline-flex items-center gap-0.5">
+              <EyeIcon />
+              {formatCompactCount(story.viewCount, i18n.language)}
+            </span>
+            <span className="ml-auto shrink-0">
+              {formatTime(story.updatedAt)}
+            </span>
+          </span>
+        </span>
+      </button>
+    </li>
+  );
+}

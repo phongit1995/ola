@@ -19,4 +19,5 @@ export type * from './kenTreasure.type';
 export type * from './marriage.type';
 export type * from './miniGame.type';
 export type * from './announcement.type';
+export type * from './story.type';
 export type * from './wordChain.type';

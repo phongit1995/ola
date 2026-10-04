@@ -4,8 +4,8 @@ import iconRoom from '@/assets/icons/room.svg';
 import iconRoomActive from '@/assets/icons/room-active.svg';
 import iconMe from '@/assets/icons/me.svg';
 import iconMeActive from '@/assets/icons/me-active.svg';
-// import iconRss from '@/assets/icons/rss.png';
-// import iconRssActive from '@/assets/icons/rss-active.png';
+import iconRss from '@/assets/icons/rss.png';
+import iconRssActive from '@/assets/icons/rss-active.png';
 import iconGame from '@/assets/icons/game.svg';
 import iconGameActive from '@/assets/icons/game-active.svg';
 import iconPersonal from '@/assets/icons/personal.svg';
@@ -36,7 +36,12 @@ const TABS: TabDef[] = [
     iconActive: iconRoomActive,
   },
   { key: 'me', labelKey: 'home.tabMe', icon: iconMe, iconActive: iconMeActive },
-  // { key: 'rss', labelKey: 'home.tabRss', icon: iconRss, iconActive: iconRssActive },
+  {
+    key: 'rss',
+    labelKey: 'home.tabRss',
+    icon: iconRss,
+    iconActive: iconRssActive,
+  },
   {
     key: 'game',
     labelKey: 'home.tabGame',
