@@ -1,6 +1,6 @@
 # Vnkings: danh sách truyện, thể loại và nội dung chương
 
-Ngày kiểm tra: **28/09/2026**. Website: [vnkings.com](https://vnkings.com/).
+Ngày kiểm tra: **28/09/2026**, bổ sung ngày **01/10/2026** và **03/10/2026** (số lượng truyện, cách web sắp xếp, theo dõi chương mới). Website: [vnkings.com](https://vnkings.com/).
 
 Tài liệu tổng hợp kết quả HTTP request, HTML/JavaScript công khai và lần tải trang bằng Chrome headless trong phiên khảo sát. Đây là mô tả hành vi quan sát được, không phải tài liệu API chính thức hoặc cam kết ổn định từ Vnkings. Các số lượng bên dưới là số tại thời điểm kiểm tra.
 
@@ -12,9 +12,12 @@ Tài liệu tổng hợp kết quả HTTP request, HTML/JavaScript công khai v�
 | Nội dung một post | REST `/wp/v2/posts/{id}` | HTML ở `content.rendered` |
 | Chuyên mục/thể loại | REST `/wp/v2/categories` | ID, tên, slug, parent, count |
 | Tags | REST `/wp/v2/tags` | Có thể dùng ID tag để lọc post |
-| Danh sách chương của truyện | POST `admin-ajax.php`, action `vnk_single_chapters` | JSON chứa HTML tên/link chương và thông tin phân trang |
+| Danh sách chương của truyện | POST `admin-ajax.php`, action `vnk_single_chapters` | JSON chứa HTML tên/link/ngày đăng chương, 10 chương mỗi trang |
 | Nội dung chương công khai đã thử | GET URL chương | HTML có sẵn trong `#content.vnkings-editor` |
 | URL post/chương công khai | Sitemap | XML chứa URL |
+| Truyện mới cập nhật và số chương mới | REST lọc `modified_after` + AJAX trang chương cuối | Xem mục 9 |
+| Lượt xem, số bình luận | HTML trang thể loại, trang chủ | Không có trong REST |
+| RSS | `/feed` | Đã tắt: chuyển hướng sang google.com |
 
 Luồng phù hợp với kết quả khảo sát:
 
@@ -62,6 +65,26 @@ Kết quả đã quan sát:
 Để duyệt toàn bộ tập kết quả REST, đọc `X-WP-TotalPages` rồi tăng `page`. Nếu dữ liệu thay đổi trong lúc duyệt, cần khử trùng theo `id` và đối chiếu lại số lượng. Duyệt theo `orderby=id&order=asc` giúp thứ tự rõ ràng.
 
 **10.351 là số post công khai API báo, chưa phải số truyện độc lập đã được phân loại.** Các chuyên mục có cả bảng tin và nội dung khác. Phiên khảo sát chưa tải đủ 104 trang để đối chiếu toàn bộ ID với sitemap.
+
+### Số lượng truyện (01/10/2026)
+
+Trên WordPress, mọi bài đăng đều là post: truyện, thơ, tản văn, nhật ký, bảng tin. Với truyện ngắn, post là trọn truyện; với truyện dài, post chỉ là trang giới thiệu. Chương là post type riêng (`tap-truyen`), không tính vào số post.
+
+| | Số lượng | Cách đếm |
+| --- | --- | --- |
+| Tổng post | 10.359 | `X-WP-Total` của `/wp/v2/posts` |
+| Post truyện, không đếm trùng | 4.500 | `/wp/v2/posts&categories=<danh sách ID chuyên mục truyện>`, đọc `X-WP-Total` |
+| • Nhánh "Đọc Truyện" | 4.407 | Gồm Truyện Ngắn 1.902, Tình Cảm 701, Tiểu Thuyết 378, Viễn Tưởng – Kỳ Ảo 224… |
+| • Truyện Audio / Truyện Dự Thi / Truyện Việt Ra Mắt Mới | 63 / 29 / 1 | |
+| Post không phải truyện | khoảng 5.859 | Góc Thơ 2.297, Tản Văn 1.282, Nhật Ký Online 534, Giao Lưu – Kết Bạn 366, Hội Họa 336… |
+| Truyện có ít nhất 1 chương | khoảng 2.818 | Tách slug truyện từ URL trong sitemap chương |
+| Tổng số chương | 30.160 | Sitemap `tap-truyen` |
+
+Danh sách ID chuyên mục truyện đã dùng: nhánh Đọc Truyện `1,3,126,137,21,132,319,131,5,127,258,110,2,112,2639,267,129,111,22008,130,1776`, Truyện Dự Thi `844,1549,1548,4037`, Truyện Việt Ra Mắt Mới `17770,17774,17826`, Truyện Audio `209`. Khi tham số `categories` có nhiều ID, REST trả post thuộc **bất kỳ** ID nào, nên `X-WP-Total` là số đã bỏ trùng.
+
+Phân bố số chương của truyện dài: 1 chương 221 truyện (7,8%), 2–5 chương 1.303 (46,2%), 6–20 chương 972 (34,5%), 21–100 chương 303 (10,8%), trên 100 chương 19 (0,7%). Trung bình 10,6, trung vị 5. Truyện dài nhất là "Tân Phong Vân Anh Hùng Truyện" (521 chương). Có 412 URL chương không nằm dưới link truyện nào.
+
+Số truyện dài (khoảng 2.818) cộng Truyện Ngắn (1.902) vượt 4.500 khoảng 220. Có thể một số bài Truyện Ngắn cũng được đăng thành chương; muốn xác nhận phải kiểm tra từng truyện qua AJAX.
 
 ## 4. Thể loại, tags và sắp xếp
 
@@ -114,6 +137,20 @@ Post mẫu `255240` có:
 
 Do đó không nên suy ra mọi thể loại tác giả viết trong phần giới thiệu đều lọc được qua taxonomy.
 
+### Cách web sắp xếp (01/10/2026)
+
+Trang thể loại, ví dụ [Tiểu Thuyết](https://vnkings.com/doc-truyen/tieu-thuyet), có 2 khối:
+
+| Khối | Sắp theo | Hiển thị |
+| --- | --- | --- |
+| "Top Tiểu Thuyết" | Lượt xem giảm dần, 15 truyện | Tên, tác giả, lượt xem, số bình luận |
+| "Bài mới Tiểu Thuyết" | Ngày sửa (`modified`) giảm dần, 20 truyện mỗi trang, phân trang `/page/2` | Tên, tác giả, **ngày đăng**, lượt xem, bình luận |
+
+- 12 mục đầu của "Bài mới" khớp hoàn toàn với REST `categories=137&orderby=modified&order=desc`. Vì trang hiện ngày đăng nhưng lại sắp theo ngày sửa, nên nhìn danh sách sẽ thấy ngày không theo thứ tự. Ví dụ "Là duyên cũng là mệnh" đăng 06/02/2024 nhưng đứng thứ 4 vì vừa sửa ngày 29/09/2026.
+- Trang chủ có khối "Top View Tuần" và danh sách bài mới gộp mọi chuyên mục, kể cả thơ và tản văn.
+- Lượt xem và số bình luận **không có trong REST**, chỉ đọc được từ HTML. Muốn sắp theo lượt xem phải đọc HTML trang thể loại hoặc trang chủ.
+- Tên truyện trên trang có thể khác slug: tiêu đề "Định mệnh mang tên “oan gia”" là post `tiem-tra-va-ki-uc` (đổi tên nhưng giữ slug). Đối chiếu bằng ID hoặc link, không bằng tên.
+
 ## 5. Lấy nội dung post bằng REST
 
 Endpoint đã kiểm tra:
@@ -155,6 +192,8 @@ Trên trang truyện mẫu, phần tử chứa `data-story-id="255240"` có thu�
 
 Nonce cần lấy từ HTML của trang đang truy cập, không hardcode hoặc xem là token mở quyền truy cập.
 
+Với khách chưa đăng nhập, mọi trang truyện trả **cùng một nonce**, nên lấy từ một trang truyện bất kỳ là gọi được cho mọi `story_id`. Nonce đổi theo thời gian: ngày 01/10 là `260446f3b9`, ngày 03/10 là `ebbc4c4173`. Mỗi lần quét phải đọc lại nonce từ HTML.
+
 Request với truyện `255240`, trang 1 đã trả thành công, gồm 2 chương. Cấu trúc rút gọn:
 
 ```json
@@ -169,7 +208,23 @@ Request với truyện `255240`, trang 1 đã trả thành công, gồm 2 chươ
 }
 ```
 
-`data.items` là **HTML danh sách**, không phải mảng chương JSON và không chứa toàn bộ nội dung chương. Có thể parse `.vnk_list_chapter a[href]` để lấy tên/link. `data.pagination` chứa HTML điều hướng khi có; dùng `page` và `totalPages` để duyệt. Chưa thử AJAX trên truyện có nhiều trang chương.
+`data.items` là **HTML danh sách**, không phải mảng chương JSON và không chứa toàn bộ nội dung chương. Có thể parse `.vnk_list_chapter a[href]` để lấy tên/link. `data.pagination` chứa HTML điều hướng khi có; dùng `page` và `totalPages` để duyệt.
+
+Mỗi chương trong `data.items` có dạng:
+
+```html
+<div class="vnk_list_chapter">
+  <h3 class="title_chapter">
+    <a href="https://vnkings.com/the-great-uprising-dai-khoi-nghia/phan-1-chuong-1-p255139.html">Phần 1: Chương 1</a>
+    <i class="pull-right">30/09/2026 lúc 1:41</i>
+  </h3>
+</div>
+```
+
+- `<i class="pull-right">` là **ngày giờ đăng chương**. Giờ hiện kiểu 12 tiếng nhưng không có SA/CH (23:18 hiện thành "11:18"), nên chỉ tin được phần ngày.
+- ID chương là số sau `-p` trong URL (`p255139` → `255139`). ID tăng dần theo thời gian đăng.
+- Chương xếp theo thứ tự đọc, **10 chương mỗi trang**. Số chương của truyện = `(totalPages - 1) × 10 + số chương ở trang cuối`, nên chỉ cần 2 request (trang 1 và trang cuối). Đã kiểm tra trên "Tân Phong Vân Anh Hùng Truyện" (`story_id=2467`): `totalPages=53`, trang cuối có 1 chương, ra 521 chương.
+- Truyện không tồn tại hoặc chưa xuất bản trả `{"success": false, "data": {"message": "Truyện không tồn tại hoặc chưa được xuất bản."}}`.
 
 Một truyện cũ với `story_id=189` trả `404` và thông báo truyện không tồn tại hoặc chưa được xuất bản, dù một URL chương cũ vẫn tải được HTML. Vì vậy cần xử lý lỗi từng truyện; không khẳng định mọi URL trong sitemap đều có truyện cha còn hoạt động.
 
@@ -239,7 +294,41 @@ Ví dụ:
 
 Sitemap cung cấp URL, không phải nội dung chương hay bảo đảm tất cả URL vẫn truy cập được. Số 30.118 là số URL chương/tập đếm được, không phải số truyện độc lập. Nên đọc sitemap index để lấy danh sách file hiện tại thay vì cố định 6 hoặc 16 file.
 
-## 9. Phạm vi kiểm chứng và lưu ý triển khai
+## 9. Theo dõi truyện mới cập nhật và số chương mới
+
+Kiểm tra ngày 03/10/2026. Không có RSS để dùng (`/feed` chuyển hướng sang google.com), nhưng làm được bằng REST và AJAX.
+
+**Cơ sở:** khi tác giả thêm chương, `modified` của post truyện được đặt đúng bằng giờ đăng chương mới nhất.
+
+| Truyện | `modified` của post | Chương mới nhất trong AJAX |
+| --- | --- | --- |
+| `255129` The Great Uprising | 2026-10-03 02:52:53 | "Phần 1: Chương 2.2", 03/10/2026 lúc 2:52 |
+| `255240` Hành Trình: Số Không | 2026-10-01 23:18:15 | "Chương 6", 01/10/2026 lúc 11:18 |
+
+Ngày 01/10, `modified` của `255129` là 2026-10-01 02:24:14, đúng giờ đăng "Chương 2.1". Sau khi có "Chương 2.2" thì nhảy sang 03/10.
+
+**Cách quét:**
+
+1. Lấy truyện có sửa đổi từ lần quét trước, lùi thêm khoảng 1 giờ cho chắc, vì ngày giờ REST là giờ của site:
+
+   ```text
+   GET https://vnkings.com/?rest_route=/wp/v2/posts&categories=<ID chuyên mục truyện>&modified_after=2026-09-26T00:00:00&orderby=modified&order=desc&per_page=100&_fields=id,slug,date,modified
+   ```
+
+   `modified_after` hoạt động: từ 26/09 trả 21 truyện, từ 02/10 trả 5 truyện. Nhiều hơn 100 truyện thì duyệt tiếp theo `page`.
+2. Lấy nonce mới từ HTML một trang truyện bất kỳ (mục 6).
+3. Với mỗi truyện, gọi `vnk_single_chapters` ở **trang cuối**, đọc lùi về trang trước cho tới khi gặp chương đã biết. Chương mới luôn nằm cuối danh sách.
+4. Chương mới là chương có ID lớn hơn ID chương lớn nhất đã lưu của truyện đó. So theo ID thay vì theo giờ, vì giờ hiển thị không có SA/CH.
+
+**Kết quả thử 7 ngày (26/09 – 03/10/2026):** 21 truyện có `modified` mới, 19 truyện có chương mới, tổng 72 chương mới. Cả lần thử tốn khoảng 25 request. Nhiều nhất là "Nhân Tâm Sở Hướng" (11 chương), "Trầm niên đổi lấy mật đường" (8), rồi một số truyện 6 chương.
+
+**Giới hạn:**
+
+- `modified` cũng đổi khi chỉ sửa giới thiệu hoặc nội dung. Ví dụ "Thân phận thật sự của tôi" có `modified` 03/10 nhưng không có chương mới trong 7 ngày. Vì vậy phải đếm chương ở bước 3 mới biết có chương mới thật hay không.
+- Post truyện mới đăng nhưng chưa có chương vẫn xuất hiện ở bước 1, với 0 chương.
+- Cách này không phát hiện chương bị sửa nội dung hoặc bị xoá. Muốn biết thì định kỳ so lại tổng số chương (`totalPages` và trang cuối) với số đã lưu.
+
+## 10. Phạm vi kiểm chứng và lưu ý triển khai
 
 - Chỉ kiểm tra một số post/chương mẫu và metadata phân trang; chưa tải toàn bộ nội dung website.
 - REST lấy post và AJAX danh sách chương mẫu không cần đăng nhập. Các endpoint `/wp/v2/settings`, `/wp/v2/users/me` đã trả `401` khi chưa xác thực.
