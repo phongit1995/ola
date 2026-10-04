@@ -325,6 +325,7 @@ Ngày 01/10, `modified` của `255129` là 2026-10-01 02:24:14, đúng giờ đ�
 **Giới hạn:**
 
 - `modified` cũng đổi khi chỉ sửa giới thiệu hoặc nội dung. Ví dụ "Thân phận thật sự của tôi" có `modified` 03/10 nhưng không có chương mới trong 7 ngày. Vì vậy phải đếm chương ở bước 3 mới biết có chương mới thật hay không.
+- Web còn có những đợt **sửa hàng loạt** làm `modified` của nhiều truyện trùng nhau dù không có chương mới. Trong 100 truyện lấy ngày 04/10/2026: 19 truyện cùng `modified` 2026-08-18 07:29 (UTC), 6 truyện cùng 2026-10-04 13:21. Vì vậy để sắp "Mới cập nhật" nên dùng ngày ra chương mới nhất (`last_chapter_at`), chỉ dùng `modified` khi truyện chưa có chương.
 - Post truyện mới đăng nhưng chưa có chương vẫn xuất hiện ở bước 1, với 0 chương.
 - Cách này không phát hiện chương bị sửa nội dung hoặc bị xoá. Muốn biết thì định kỳ so lại tổng số chương (`totalPages` và trang cuối) với số đã lưu.
 
@@ -337,4 +338,20 @@ Ngày 01/10, `modified` của `255129` là 2026-10-01 02:24:14, đúng giờ đ�
 - Kiểm tra điều khoản và [robots.txt](https://vnkings.com/robots.txt) theo mục đích sử dụng. Website có thông báo không đăng tải lại nội dung; truy cập được bằng HTTP không đồng nghĩa được phép sao chép hoặc tái xuất bản.
 - Không lưu nonce cố định, cookie hoặc log trình duyệt chứa thông tin phiên vào mã nguồn.
 
-Tài liệu này tổng hợp khả năng truy cập dữ liệu đã quan sát. Nó không triển khai crawler hay tích hợp Vnkings vào ứng dụng Ola.
+## 11. Xuất JSON để xem UI đọc truyện
+
+Script [`scripts/vnkings/export_stories.py`](../scripts/vnkings/export_stories.py) dùng đúng các cách lấy ở trên để xuất truyện ra JSON cho tab RSS (đọc truyện) trên web:
+
+```bash
+python3 scripts/vnkings/export_stories.py --limit 100
+python3 scripts/vnkings/export_stories.py --limit 150 --resume
+```
+
+- Lấy truyện theo `modified` mới nhất trong các chuyên mục truyện. Truyện có chương thì lấy hết chương (`--max-chapters` để giới hạn); truyện không có chương thì coi là truyện ngắn nếu nội dung post đủ dài, còn lại bỏ qua.
+- Thông tin tác giả, tình trạng, lượt xem, bình luận, lượt thích, độ tuổi, nguồn, ảnh bìa lấy từ HTML trang truyện. Nội dung chương lấy từ `#content.vnkings-editor`, đổi thành chữ theo đoạn, bỏ tiêu đề chương lặp lại và dòng gạch trang trí.
+- Mặc định cách nhau 0,5 giây mỗi request (`--gap`). Gặp 403/429/503 thì chờ rồi thử lại, bị chặn liên tục thì dừng.
+- `--resume` giữ truyện đã có trong `index.json`, bỏ truyện trùng, chỉ lấy thêm cho đủ `--limit`.
+- Kết quả ghi vào `web/public/story-data/`: `index.json` (danh sách truyện và danh sách chương) và `chapters/<id truyện>.json` (nội dung từng chương theo vị trí). Thư mục này không commit.
+- Lần chạy ngày 04/10/2026: 100 truyện (52 truyện dài, 48 truyện ngắn), 700 chương, khoảng 11 MB, 855 request.
+
+`StoryService` (`packages/shared/src/services/story.service.ts`) đọc `/story-data/index.json`; không có file thì dùng dữ liệu mẫu tự viết trong `story.mock.ts`.

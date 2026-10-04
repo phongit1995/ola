@@ -1,11 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { sharedPersistStorage } from '../../platform/persistStorage';
-import {
-  clampStoryFontSize,
-  STORY_READER_DEFAULTS,
-  STORY_RECENT_LIMIT,
-} from '../../lib/story';
+import { clampStoryFontSize, STORY_READER_DEFAULTS, STORY_RECENT_LIMIT } from '../../lib/story';
 import type {
   PersistedStoryPrefs,
   StoryPrefsState,

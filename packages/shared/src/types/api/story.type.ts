@@ -24,6 +24,9 @@ export interface Story {
   publishedAt: string;
   updatedAt: string;
   lastChapterAt: string | null;
+  likeCount?: number;
+  ageRating?: string;
+  sourceUrl?: string;
 }
 
 export interface StoryGenreItem {

@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createTimeFormatter, formatCompactCount } from '@lib';
+import { formatCompactCount, formatDateSlashDMY } from '@lib';
 import { STORY_KIND } from '@constants';
 import type { Story } from '@app-types';
 import { StoryCover } from './StoryCover';
@@ -16,10 +15,6 @@ interface StoryRowProps {
 
 export function StoryRow({ story, onOpen }: StoryRowProps) {
   const { t, i18n } = useTranslation();
-  const formatTime = useMemo(
-    () => createTimeFormatter(i18n.language),
-    [i18n.language]
-  );
   const isShort = story.kind === STORY_KIND.short;
 
   return (
@@ -59,7 +54,7 @@ export function StoryRow({ story, onOpen }: StoryRowProps) {
               {formatCompactCount(story.viewCount, i18n.language)}
             </span>
             <span className="ml-auto shrink-0">
-              {formatTime(story.updatedAt)}
+              {formatDateSlashDMY(story.lastChapterAt ?? story.updatedAt)}
             </span>
           </span>
         </span>

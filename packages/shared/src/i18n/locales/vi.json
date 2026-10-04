@@ -897,6 +897,7 @@
     "readContinue": "Đọc tiếp chương {{position}}",
     "readShort": "Đọc truyện",
     "intro": "Giới thiệu",
+    "sourceFrom": "Nguồn: {{host}}",
     "showMore": "Xem thêm",
     "showLess": "Thu gọn",
     "chapterList": "Danh sách chương",

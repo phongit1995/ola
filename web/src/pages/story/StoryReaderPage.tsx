@@ -57,6 +57,7 @@ export function StoryReaderPage({
     saveProgress({
       storyId,
       storyTitle: story.title,
+      coverUrl: story.coverUrl,
       position: chapter.position,
       chapterTitle: chapter.title,
       chapterCount: story.chapterCount,

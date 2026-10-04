@@ -77,7 +77,7 @@ export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
         onClick={() => onOpen(progress)}
         className="w-full text-left active:opacity-80"
       >
-        <StoryCover title={progress.storyTitle}>
+        <StoryCover title={progress.storyTitle} coverUrl={progress.coverUrl}>
           <span className="absolute inset-x-0 bottom-0 h-1 bg-black/30">
             <span
               className="block h-full bg-ola-primary"

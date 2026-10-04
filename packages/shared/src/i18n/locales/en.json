@@ -897,6 +897,7 @@
     "readContinue": "Continue chapter {{position}}",
     "readShort": "Read story",
     "intro": "Synopsis",
+    "sourceFrom": "Source: {{host}}",
     "showMore": "Show more",
     "showLess": "Show less",
     "chapterList": "Chapters",

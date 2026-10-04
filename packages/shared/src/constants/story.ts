@@ -1,9 +1,4 @@
-import type {
-  StoryKind,
-  StorySort,
-  StoryStatus,
-  StoryStatusFilter,
-} from '../types/api/story.type';
+import type { StoryKind, StorySort, StoryStatus, StoryStatusFilter } from '../types/api/story.type';
 
 export const STORY_STATUS = {
   ongoing: 'ongoing',

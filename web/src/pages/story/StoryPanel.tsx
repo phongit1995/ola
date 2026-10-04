@@ -13,7 +13,11 @@ import {
   SORT_OPTIONS,
   STATUS_FILTER_OPTIONS,
 } from './constants';
-import { ContinueCard, StoryShelf, TopStoryCard } from './components/StoryCards';
+import {
+  ContinueCard,
+  StoryShelf,
+  TopStoryCard,
+} from './components/StoryCards';
 import { StoryRow } from './components/StoryRow';
 
 interface ChipProps {

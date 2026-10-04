@@ -66,7 +66,15 @@ const SEEDS: MockStorySeed[] = [
     lastChapterHoursAgo: 2,
     hero: 'Vy',
     place: 'phố Mai Lâm',
-    chapterTitles: ['Chiếc chìa khoá cũ', 'Người khách lúc chạng vạng', 'Xấp thư không địa chỉ', 'Mưa đầu mùa', 'Tấm bản đồ trong sách', 'Hẹn ở bến xe', 'Ký ức của bà'],
+    chapterTitles: [
+      'Chiếc chìa khoá cũ',
+      'Người khách lúc chạng vạng',
+      'Xấp thư không địa chỉ',
+      'Mưa đầu mùa',
+      'Tấm bản đồ trong sách',
+      'Hẹn ở bến xe',
+      'Ký ức của bà',
+    ],
   },
   {
     id: '102',
@@ -86,7 +94,14 @@ const SEEDS: MockStorySeed[] = [
     lastChapterHoursAgo: 40 * 24,
     hero: 'Thiên Lãng',
     place: 'trấn Bạch Vân',
-    chapterTitles: ['Thanh kiếm gãy', 'Quán trọ ven sông', 'Lời thề năm cũ', 'Đêm trăng máu', 'Cao thủ áo xám', 'Đỉnh Vọng Phong'],
+    chapterTitles: [
+      'Thanh kiếm gãy',
+      'Quán trọ ven sông',
+      'Lời thề năm cũ',
+      'Đêm trăng máu',
+      'Cao thủ áo xám',
+      'Đỉnh Vọng Phong',
+    ],
   },
   {
     id: '103',
@@ -106,7 +121,13 @@ const SEEDS: MockStorySeed[] = [
     lastChapterHoursAgo: 20,
     hero: 'Kha',
     place: 'thành phố Lumen',
-    chapterTitles: ['Ca trực thứ một nghìn', 'Giấc mơ lỗi', 'Tầng hầm số 0', 'Người không có mã định danh', 'Cơn mưa nhân tạo'],
+    chapterTitles: [
+      'Ca trực thứ một nghìn',
+      'Giấc mơ lỗi',
+      'Tầng hầm số 0',
+      'Người không có mã định danh',
+      'Cơn mưa nhân tạo',
+    ],
   },
   {
     id: '104',
@@ -146,7 +167,14 @@ const SEEDS: MockStorySeed[] = [
     lastChapterHoursAgo: 30,
     hero: 'thanh tra Huy',
     place: 'đảo Sương Mù',
-    chapterTitles: ['Đêm bão', 'Ngọn đèn tắt', 'Cuốn nhật ký ướt', 'Lời khai thứ ba', 'Dấu chân trên cát', 'Căn phòng khoá trái'],
+    chapterTitles: [
+      'Đêm bão',
+      'Ngọn đèn tắt',
+      'Cuốn nhật ký ướt',
+      'Lời khai thứ ba',
+      'Dấu chân trên cát',
+      'Căn phòng khoá trái',
+    ],
   },
   {
     id: '106',
@@ -166,7 +194,15 @@ const SEEDS: MockStorySeed[] = [
     lastChapterHoursAgo: 5,
     hero: 'Tiểu An',
     place: 'kinh thành',
-    chapterTitles: ['Tỉnh dậy ở nơi xa lạ', 'Thư sinh nghèo', 'Kỳ thi Hương', 'Vị khách ở trà lâu', 'Bài văn gây chấn động', 'Âm mưu chốn quan trường', 'Đêm trước kỳ thi Hội'],
+    chapterTitles: [
+      'Tỉnh dậy ở nơi xa lạ',
+      'Thư sinh nghèo',
+      'Kỳ thi Hương',
+      'Vị khách ở trà lâu',
+      'Bài văn gây chấn động',
+      'Âm mưu chốn quan trường',
+      'Đêm trước kỳ thi Hội',
+    ],
   },
   {
     id: '107',
@@ -186,7 +222,13 @@ const SEEDS: MockStorySeed[] = [
     lastChapterHoursAgo: 120 * 24,
     hero: 'Quân',
     place: 'con hẻm số 13',
-    chapterTitles: ['Mười ba tiếng chuông', 'Căn phòng trên gác', 'Bức ảnh không người', 'Tiếng bước chân', 'Người hàng xóm cũ'],
+    chapterTitles: [
+      'Mười ba tiếng chuông',
+      'Căn phòng trên gác',
+      'Bức ảnh không người',
+      'Tiếng bước chân',
+      'Người hàng xóm cũ',
+    ],
   },
   {
     id: '108',
@@ -226,7 +268,15 @@ const SEEDS: MockStorySeed[] = [
     lastChapterHoursAgo: 9,
     hero: 'Lạc Thiên',
     place: 'Thiên Vực',
-    chapterTitles: ['Phế vật của tông môn', 'Mảnh tinh thạch', 'Đột phá', 'Bí cảnh ngàn năm', 'Kẻ thù từ Thiên Vực', 'Đại hội tông môn', 'Thiên kiếp'],
+    chapterTitles: [
+      'Phế vật của tông môn',
+      'Mảnh tinh thạch',
+      'Đột phá',
+      'Bí cảnh ngàn năm',
+      'Kẻ thù từ Thiên Vực',
+      'Đại hội tông môn',
+      'Thiên kiếp',
+    ],
   },
   {
     id: '110',
@@ -246,7 +296,14 @@ const SEEDS: MockStorySeed[] = [
     lastChapterHoursAgo: 70 * 24,
     hero: 'Linh',
     place: 'phố cũ',
-    chapterTitles: ['Trở về', 'Căn nhà có giàn hoa giấy', 'Người bạn cũ', 'Mưa phùn tháng Ba', 'Quán cà phê góc phố', 'Lời hẹn'],
+    chapterTitles: [
+      'Trở về',
+      'Căn nhà có giàn hoa giấy',
+      'Người bạn cũ',
+      'Mưa phùn tháng Ba',
+      'Quán cà phê góc phố',
+      'Lời hẹn',
+    ],
   },
 ];
 
@@ -255,11 +312,16 @@ function isoAgo(ms: number): string {
 }
 
 function capitalizeSentences(text: string): string {
-  return text.replace(/(^|[.!?]\s+)(\p{Ll})/gu, (_, lead: string, letter: string) => lead + letter.toUpperCase());
+  return text.replace(
+    /(^|[.!?]\s+)(\p{Ll})/gu,
+    (_, lead: string, letter: string) => lead + letter.toUpperCase()
+  );
 }
 
 function fillPlaceholders(text: string, seed: MockStorySeed): string {
-  return capitalizeSentences(text.replaceAll('{hero}', seed.hero).replaceAll('{place}', seed.place));
+  return capitalizeSentences(
+    text.replaceAll('{hero}', seed.hero).replaceAll('{place}', seed.place)
+  );
 }
 
 function chapterParagraphs(seed: MockStorySeed, position: number): string[] {
@@ -303,7 +365,9 @@ function buildSummary(seed: MockStorySeed, position: number): StoryChapterSummar
 }
 
 function buildStory(seed: MockStorySeed): Story {
-  const chapters = Array.from({ length: seed.chapterCount }, (_, index) => buildSummary(seed, index + 1));
+  const chapters = Array.from({ length: seed.chapterCount }, (_, index) =>
+    buildSummary(seed, index + 1)
+  );
   return {
     id: seed.id,
     slug: seed.slug,

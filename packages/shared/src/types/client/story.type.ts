@@ -51,6 +51,7 @@ export interface StoryStoreState {
 export interface StoryProgress {
   storyId: string;
   storyTitle: string;
+  coverUrl?: string | null;
   position: number;
   chapterTitle: string;
   chapterCount: number;
