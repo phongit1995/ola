@@ -61,6 +61,7 @@ interface BottomTabBarProps {
   onChange: (key: TabKey) => void;
   badges?: Partial<Record<TabKey, number>>;
   dots?: Partial<Record<TabKey, boolean>>;
+  hidden?: Partial<Record<TabKey, boolean>>;
 }
 
 export function BottomTabBar({
@@ -68,11 +69,12 @@ export function BottomTabBar({
   onChange,
   badges,
   dots,
+  hidden,
 }: BottomTabBarProps) {
   const { t } = useTranslation();
   return (
     <nav className="flex border-t border-[#a0a0a0] bg-white bg-linear-to-t from-ola-primary/45 to-ola-primary/25">
-      {TABS.map((tab) => {
+      {TABS.filter((tab) => !hidden?.[tab.key]).map((tab) => {
         const isActive = tab.key === active;
         const badge = badges?.[tab.key];
         const dot = dots?.[tab.key];

@@ -464,6 +464,15 @@ const (
 )
 
 const (
+	HeaderPlatform   = "X-Platform"
+	HeaderAppVersion = "X-App-Version"
+
+	PlatformWeb     = "web"
+	PlatformAndroid = "android"
+	PlatformIOS     = "ios"
+)
+
+const (
 	MessageTypeText  = "text"
 	MessageTypeImage = "image"
 	MessageTypeFile  = "file"

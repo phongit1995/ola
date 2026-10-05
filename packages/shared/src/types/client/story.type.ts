@@ -74,3 +74,8 @@ export interface StoryPrefsState extends PersistedStoryPrefs {
   setReader: (patch: Partial<StoryReaderPrefs>) => void;
   saveProgress: (progress: Omit<StoryProgress, 'updatedAt'>) => void;
 }
+
+export interface StoryConfigState {
+  enabled: boolean | null;
+  load: () => Promise<void>;
+}
