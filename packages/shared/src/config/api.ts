@@ -53,6 +53,13 @@ export const API_PATH = {
   announcements: {
     latest: '/announcements/latest',
   },
+  stories: {
+    list: '/stories',
+    genres: '/stories/genres',
+    detail: (id: string) => `/stories/${id}`,
+    chapters: (id: string) => `/stories/${id}/chapters`,
+    chapter: (id: string, position: number) => `/stories/${id}/chapters/${position}`,
+  },
   user: {
     me: '/user/me',
     search: '/user/search',

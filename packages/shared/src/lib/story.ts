@@ -30,16 +30,6 @@ export function splitStoryParagraphs(content: string): string[] {
     .filter((paragraph) => paragraph.length > 0);
 }
 
-export function foldVietnamese(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLowerCase()
-    .trim();
-}
-
 export function formatCompactCount(value: number, locale: string): string {
   const format = (scaled: number, suffix: string) =>
     `${scaled.toLocaleString(locale, { maximumFractionDigits: 1 })}${suffix}`;

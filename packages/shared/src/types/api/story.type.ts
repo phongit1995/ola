@@ -24,14 +24,18 @@ export interface Story {
   publishedAt: string;
   updatedAt: string;
   lastChapterAt: string | null;
-  likeCount?: number;
-  ageRating?: string;
-  sourceUrl?: string;
+  likeCount: number;
+  ageRating: string;
+  sourceUrl: string;
 }
 
 export interface StoryGenreItem {
   name: string;
   count: number;
+}
+
+export interface StoryGenreListResult {
+  items: StoryGenreItem[];
 }
 
 export interface StoryChapterSummary {
@@ -40,7 +44,11 @@ export interface StoryChapterSummary {
   position: number;
   title: string;
   wordCount: number;
-  publishedAt: string;
+  publishedAt: string | null;
+}
+
+export interface StoryChapterListResult {
+  items: StoryChapterSummary[];
 }
 
 export interface StoryChapter extends StoryChapterSummary {

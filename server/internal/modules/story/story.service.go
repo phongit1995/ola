@@ -1,0 +1,231 @@
+package story
+
+import (
+	"context"
+	"crypto/sha256"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
+
+	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
+)
+
+var (
+	ErrStoryNotFound             = utils.NewHTTPError(http.StatusNotFound, "story not found")
+	ErrChapterNotFound           = utils.NewHTTPError(http.StatusNotFound, "chapter not found")
+	ErrChapterContentUnavailable = utils.NewHTTPErrorWithCode(http.StatusBadGateway, "chapter content unavailable", constants.ErrorCodeStoryContentUnavailable)
+)
+
+var storyStatuses = map[string]bool{
+	constants.StoryStatusOngoing:   true,
+	constants.StoryStatusCompleted: true,
+}
+
+type Service struct {
+	store   Store
+	source  ContentSource
+	logger  *zap.SugaredLogger
+	fetches singleflight.Group
+}
+
+func NewService(repo *Repository, source *VnkingsSource, logger *zap.SugaredLogger) *Service {
+	return &Service{store: repo, source: source, logger: logger.Named("[story_service]")}
+}
+
+func normalizeListQuery(query ListQuery) ListQuery {
+	if _, ok := storyOrders[query.Sort]; !ok {
+		query.Sort = constants.StorySortUpdated
+	}
+	if !storyStatuses[query.Status] {
+		query.Status = ""
+	}
+	query.Genre = strings.TrimSpace(query.Genre)
+	query.Query = strings.TrimSpace(query.Query)
+	if runes := []rune(query.Query); len(runes) > constants.StoryQueryMaxRunes {
+		query.Query = string(runes[:constants.StoryQueryMaxRunes])
+	}
+	if query.Offset < 0 {
+		query.Offset = 0
+	}
+	if query.Limit <= 0 {
+		query.Limit = constants.StoryPageSize
+	}
+	if query.Limit > constants.StoryPageMax {
+		query.Limit = constants.StoryPageMax
+	}
+	return query
+}
+
+func parseID(raw string) (int64, bool) {
+	id, err := strconv.ParseInt(raw, 10, 64)
+	return id, err == nil && id > 0
+}
+
+func nonNil(values []string) []string {
+	if values == nil {
+		return []string{}
+	}
+	return values
+}
+
+func toStoryResponse(item models.Story) StoryResponse {
+	return StoryResponse{
+		ID:            strconv.FormatInt(item.ID, 10),
+		Slug:          item.Slug,
+		Title:         item.Title,
+		AuthorName:    item.AuthorName,
+		Kind:          item.Kind,
+		Genres:        nonNil(item.Genres),
+		Tags:          nonNil(item.Tags),
+		Intro:         item.Intro,
+		CoverURL:      item.CoverURL,
+		Status:        item.Status,
+		AgeRating:     item.AgeRating,
+		ChapterCount:  item.ChapterCount,
+		WordCount:     item.WordCount,
+		ViewCount:     item.ViewCount,
+		CommentCount:  item.CommentCount,
+		LikeCount:     item.LikeCount,
+		SourceURL:     item.SourceURL,
+		PublishedAt:   item.PublishedAt,
+		UpdatedAt:     item.SourceUpdatedAt,
+		LastChapterAt: item.LastChapterAt,
+	}
+}
+
+func toChapterSummary(item models.StoryChapter) ChapterSummaryResponse {
+	return ChapterSummaryResponse{
+		ID:          strconv.FormatInt(item.ID, 10),
+		StoryID:     strconv.FormatInt(item.StoryID, 10),
+		Position:    item.Position,
+		Title:       item.Title,
+		WordCount:   item.WordCount,
+		PublishedAt: item.PublishedAt,
+	}
+}
+
+func (s *Service) List(ctx context.Context, query ListQuery) (*StoryListResponse, error) {
+	query = normalizeListQuery(query)
+	stories, total, err := s.store.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]StoryResponse, 0, len(stories))
+	for _, item := range stories {
+		items = append(items, toStoryResponse(item))
+	}
+	return &StoryListResponse{
+		Items:   items,
+		Total:   total,
+		HasMore: int64(query.Offset+len(items)) < total,
+	}, nil
+}
+
+func (s *Service) Genres(ctx context.Context) (*GenreListResponse, error) {
+	items, err := s.store.Genres(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if items == nil {
+		items = []GenreItem{}
+	}
+	return &GenreListResponse{Items: items}, nil
+}
+
+func (s *Service) findStory(ctx context.Context, rawID string) (*models.Story, error) {
+	id, ok := parseID(rawID)
+	if !ok {
+		return nil, ErrStoryNotFound
+	}
+	item, err := s.store.FindStory(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if item == nil {
+		return nil, ErrStoryNotFound
+	}
+	return item, nil
+}
+
+func (s *Service) Detail(ctx context.Context, rawID string) (*StoryResponse, error) {
+	item, err := s.findStory(ctx, rawID)
+	if err != nil {
+		return nil, err
+	}
+	resp := toStoryResponse(*item)
+	return &resp, nil
+}
+
+func (s *Service) Chapters(ctx context.Context, rawID string) (*ChapterListResponse, error) {
+	item, err := s.findStory(ctx, rawID)
+	if err != nil {
+		return nil, err
+	}
+	chapters, err := s.store.Chapters(ctx, item.ID)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]ChapterSummaryResponse, 0, len(chapters))
+	for _, chapter := range chapters {
+		items = append(items, toChapterSummary(chapter))
+	}
+	return &ChapterListResponse{Items: items}, nil
+}
+
+func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*ChapterResponse, error) {
+	id, ok := parseID(rawID)
+	if !ok {
+		return nil, ErrStoryNotFound
+	}
+	position, err := strconv.Atoi(rawPosition)
+	if err != nil || position < 1 {
+		return nil, ErrChapterNotFound
+	}
+	row, err := s.store.Chapter(ctx, id, position)
+	if err != nil {
+		return nil, err
+	}
+	if row == nil {
+		return nil, ErrChapterNotFound
+	}
+	if row.ContentText == "" {
+		if err := s.loadContent(ctx, row); err != nil {
+			return nil, err
+		}
+	}
+	return &ChapterResponse{
+		ChapterSummaryResponse: toChapterSummary(row.StoryChapter),
+		Content:                row.ContentText,
+		PrevPosition:           row.PrevPosition,
+		NextPosition:           row.NextPosition,
+	}, nil
+}
+
+func (s *Service) loadContent(ctx context.Context, row *ChapterRow) error {
+	key := strconv.FormatInt(row.ID, 10)
+	value, err, _ := s.fetches.Do(key, func() (interface{}, error) {
+		fetchCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), constants.StoryFetchTimeout)
+		defer cancel()
+		content, err := s.source.ChapterContent(fetchCtx, row)
+		if err != nil {
+			return nil, err
+		}
+		hash := sha256.Sum256([]byte(content))
+		if err := s.store.SaveChapterContent(fetchCtx, row.ID, row.StoryID, content, len(strings.Fields(content)), hash[:]); err != nil {
+			s.logger.Errorw("save chapter content failed", "chapterId", row.ID, "error", err)
+		}
+		return content, nil
+	})
+	if err != nil {
+		s.logger.Warnw("fetch chapter content failed", "chapterId", row.ID, "url", row.SourceURL, "error", err)
+		return ErrChapterContentUnavailable
+	}
+	row.ContentText = value.(string)
+	row.WordCount = len(strings.Fields(row.ContentText))
+	return nil
+}

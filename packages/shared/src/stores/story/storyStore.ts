@@ -30,7 +30,9 @@ function storiesById(stories: Story[]): Record<string, Story> {
 function toChapterItems(chapters: StoryChapterSummary[], nowMs: number): StoryChapterItem[] {
   return chapters.map((chapter) => ({
     ...chapter,
-    isNew: nowMs - new Date(chapter.publishedAt).getTime() < STORY_NEW_CHAPTER_MS,
+    isNew:
+      chapter.publishedAt !== null &&
+      nowMs - new Date(chapter.publishedAt).getTime() < STORY_NEW_CHAPTER_MS,
   }));
 }
 

@@ -215,12 +215,13 @@ def drop_repeated_title(paragraphs: list[str], title: str) -> list[str]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Xuất truyện Vnkings ra JSON cho UI đọc truyện")
+    parser = argparse.ArgumentParser(description="Xuất truyện Vnkings ra JSON để nạp vào database")
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--max-chapters", type=int, default=0, help="0 = lấy hết chương")
     parser.add_argument("--gap", type=float, default=0.5, help="giây giữa 2 request")
-    parser.add_argument("--out", default="web/public/story-data")
+    parser.add_argument("--out", default="scripts/vnkings/data")
     parser.add_argument("--resume", action="store_true", help="giữ truyện đã có trong index.json, chỉ lấy thêm cho đủ --limit")
+    parser.add_argument("--content", action=argparse.BooleanOptionalAction, default=True, help="--no-content: chỉ lấy danh sách chương, không tải nội dung")
     args = parser.parse_args()
 
     out = Path(args.out)
@@ -249,7 +250,7 @@ def main():
         posts = client.json(
             f"{REST}/wp/v2/posts&categories={','.join(map(str, STORY_CATEGORY_IDS))}"
             f"&orderby=modified&order=desc&per_page=50&page={rest_page}"
-            "&_fields=id,slug,link,title,content,excerpt,date_gmt,modified_gmt,categories,tags"
+            "&_fields=id,slug,link,title,content,excerpt,date_gmt,modified_gmt,categories,tags,author"
         )
         if not posts:
             break
@@ -273,27 +274,34 @@ def main():
                 contents: dict[str, str] = {}
                 summaries: list[dict] = []
                 for position, link in enumerate(selected, start=1):
-                    page = client.text(link["url"])
-                    paragraphs = drop_repeated_title(html_paragraphs(element_inner(page, 'id="content"')), link["title"])
-                    contents[str(position)] = "\n\n".join(paragraphs)
-                    summaries.append({
+                    summary = {
                         "id": link["sourceId"],
                         "storyId": str(story_id),
                         "position": position,
                         "title": link["title"],
-                        "wordCount": word_count(paragraphs),
-                        "publishedAt": meta_time(page, "article:published_time") or chapter_date(link["dateLabel"]),
-                    })
+                        "url": link["url"],
+                        "wordCount": 0,
+                        "publishedAt": chapter_date(link["dateLabel"]),
+                    }
+                    if args.content:
+                        page = client.text(link["url"])
+                        paragraphs = drop_repeated_title(html_paragraphs(element_inner(page, 'id="content"')), link["title"])
+                        contents[str(position)] = "\n\n".join(paragraphs)
+                        summary["wordCount"] = word_count(paragraphs)
+                        summary["publishedAt"] = meta_time(page, "article:published_time") or summary["publishedAt"]
+                    summaries.append(summary)
                 intro = "\n\n".join(post_paragraphs)
             elif is_short_category or sum(len(p) for p in post_paragraphs) >= MIN_SHORT_STORY_CHARS:
                 kind = "short"
-                contents = {"1": "\n\n".join(post_paragraphs)}
+                story_paragraphs = drop_repeated_title(post_paragraphs, title)
+                contents = {"1": "\n\n".join(story_paragraphs)} if args.content else {}
                 summaries = [{
                     "id": str(story_id),
                     "storyId": str(story_id),
                     "position": 1,
                     "title": title,
-                    "wordCount": word_count(post_paragraphs),
+                    "url": post["link"],
+                    "wordCount": word_count(story_paragraphs),
                     "publishedAt": iso_utc(post["date_gmt"]),
                 }]
                 intro = plain(post["excerpt"]["rendered"]).replace("[…]", "…")
@@ -307,6 +315,7 @@ def main():
                 "slug": post["slug"],
                 "title": title,
                 "authorName": info["authorName"],
+                "sourceAuthorId": post.get("author"),
                 "kind": kind,
                 "genres": genres,
                 "tags": [],
@@ -327,7 +336,8 @@ def main():
                 "lastChapterAt": max((s["publishedAt"] for s in summaries if s["publishedAt"]), default=None),
             })
             chapter_index[str(story_id)] = summaries
-            (out / "chapters" / f"{story_id}.json").write_text(json.dumps(contents, ensure_ascii=False), encoding="utf-8")
+            if contents:
+                (out / "chapters" / f"{story_id}.json").write_text(json.dumps(contents, ensure_ascii=False), encoding="utf-8")
             print(f"{len(stories):>3}/{args.limit} {kind:5} {len(summaries):>4} chương  {title}  (đã gọi {client.count} request)", flush=True)
 
     tag_ids = sorted({tag for story in stories for tag in story.get("tagIds", [])})
