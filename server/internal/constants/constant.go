@@ -244,6 +244,9 @@ const (
 const (
 	StoryPageSize      = 10
 	StoryPageMax       = 50
+	StoryAdminPageSize = 20
+	StoryAdminPageMax  = 100
+	StoryBulkIDsMax    = 500
 	StoryQueryMaxRunes = 100
 	StorySourceVnkings = "vnkings"
 
@@ -258,6 +261,10 @@ const (
 	StoryKindShort = "short"
 	StoryKindLong  = "long"
 
+	StoryVisibilityAll     = "all"
+	StoryVisibilityVisible = "visible"
+	StoryVisibilityHidden  = "hidden"
+
 	StoryFetchTimeout     = 15 * time.Second
 	StoryFetchMaxBytes    = 4 << 20
 	StoryFetchConcurrency = 4
@@ -265,6 +272,8 @@ const (
 	StoryVnkingsHost      = "vnkings.com"
 	StoryVnkingsPostURL   = "https://vnkings.com/?rest_route=/wp/v2/posts/%d&_fields=content"
 	StoryVnkingsContentID = "content"
+	StoryBulkFetchTimeout = 30 * time.Minute
+	StoryBulkFetchGap     = 500 * time.Millisecond
 
 	ErrorCodeStoryContentUnavailable = "STORY_CONTENT_UNAVAILABLE"
 )

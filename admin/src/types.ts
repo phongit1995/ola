@@ -1,3 +1,11 @@
+import type {
+  Story,
+  StoryChapterSummary,
+  StoryKind,
+  StorySort,
+  StoryStatus,
+} from '@ola/shared/types'
+
 export interface ApiResponse<T> {
   success: boolean
   status: number
@@ -1911,4 +1919,65 @@ export interface WordChainCursorParams {
 
 export interface WordChainWinsParams extends WordChainCursorParams {
   userId?: string
+}
+
+export type AdminStoryVisibility = 'all' | 'visible' | 'hidden'
+
+export interface AdminStory extends Story {
+  source: string
+  sourceStoryId: string
+  isHidden: boolean
+  contentChapters: number
+  crawledAt: string | null
+  createdAt: string
+}
+
+export interface AdminStoryFilter {
+  q?: string
+  genre?: string
+  status?: Exclude<StoryStatus, 'unknown'>
+  kind?: StoryKind
+  visibility?: AdminStoryVisibility
+  source?: string
+}
+
+export interface AdminStoryListParams extends ListParams, AdminStoryFilter {
+  sort?: StorySort
+}
+
+export interface AdminStorySource {
+  name: string
+  count: number
+}
+
+export type AdminStoryBulkVisibilityInput =
+  | { isHidden: boolean; ids: string[] }
+  | { isHidden: boolean; filter: AdminStoryFilter }
+
+export interface AdminStoryBulkVisibilityResult {
+  updated: number
+}
+
+export interface AdminStorySummary {
+  stories: number
+  hiddenStories: number
+  longStories: number
+  shortStories: number
+  chapters: number
+  contentChapters: number
+  lastCrawledAt: string | null
+}
+
+export interface AdminStoryChapter extends StoryChapterSummary {
+  sourceUrl: string
+  hasContent: boolean
+  crawledAt: string | null
+}
+
+export interface AdminStoryChapterDetail extends AdminStoryChapter {
+  content: string
+}
+
+export interface AdminStoryFetchResult {
+  queued: number
 }

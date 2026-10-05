@@ -41,8 +41,8 @@ func (f *fakeSource) ChapterContent(context.Context, *ChapterRow) (string, error
 	return f.content, f.err
 }
 
-func newTestService(store Store, source ContentSource) *Service {
-	return &Service{store: store, source: source, logger: zap.NewNop().Sugar()}
+func newTestService(store *fakeStore, source ContentSource) *Service {
+	return &Service{store: store, admin: &fakeAdminStore{fakeStore: store}, source: source, logger: zap.NewNop().Sugar()}
 }
 
 func (f *fakeStore) List(_ context.Context, query ListQuery) ([]models.Story, int64, error) {
@@ -97,7 +97,7 @@ func (f *fakeStore) Chapter(_ context.Context, storyID int64, position int) (*Ch
 	return nil, f.err
 }
 
-func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID int64, content string, wordCount int, _ []byte) error {
+func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID int64, content string, wordCount int, _ []byte, replace bool) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.saves++
@@ -106,7 +106,7 @@ func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID int
 	}
 	for i := range f.chapters[storyID] {
 		chapter := &f.chapters[storyID][i]
-		if chapter.ID == chapterID && chapter.ContentText == "" {
+		if chapter.ID == chapterID && (replace || chapter.ContentText == "") {
 			chapter.ContentText = content
 			chapter.WordCount = wordCount
 		}

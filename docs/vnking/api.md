@@ -128,3 +128,23 @@ Một `Chapter`. Truyện không có: `404 story not found`. Không có chương
 | 404 | `story not found` | `id` không phải số dương, không có truyện, hoặc truyện đã ẩn |
 | 404 | `chapter not found` | `position` không phải số ≥ 1 hoặc vượt số chương |
 | 502 | `chapter content unavailable` (`code: STORY_CONTENT_UNAVAILABLE`) | Chương chưa có nội dung và lấy từ nguồn thất bại |
+
+## 4. API cho admin
+
+Trang admin: menu **Truyện** (`/stories`), code ở `admin/src/pages/StoriesPage.tsx` và `StoryChaptersModal.tsx`. Mọi endpoint nằm dưới `/api/v1/admin/stories`, cần token admin (`RequireAdmin`), được ghi vào nhật ký admin như các module khác. Server: `server/internal/modules/admin/story/`, logic dùng chung `story.Service` (`story.admin.go`).
+
+| Endpoint | Việc |
+|---|---|
+| `GET /admin/stories` | Danh sách gồm cả truyện ẩn. Query giống bản công khai (`q`, `genre`, `status`, `sort`, `offset`, `limit` mặc định 20 tối đa 100) thêm `kind` (`short`/`long`), `visibility` (`all`/`visible`/`hidden`, mặc định `all`) và `source` (ví dụ `vnkings`). Trả `{items, total, limit, offset}`, mỗi truyện thêm `source`, `sourceStoryId`, `isHidden`, `contentChapters` (số chương đã có nội dung), `crawledAt`, `createdAt` |
+| `PATCH /admin/stories` | Ẩn/hiện nhiều truyện một lần. Body `{"isHidden": true, "ids": ["1", "2"]}` (tối đa 500 ID) hoặc `{"isHidden": true, "filter": {"q", "genre", "status", "kind", "visibility", "source"}}` để đổi mọi truyện khớp bộ lọc, giống bộ lọc của `GET /admin/stories`. Có `ids` thì bỏ qua `filter`; `filter: {}` là toàn bộ truyện. Trả `{"updated": n}`, chỉ đếm truyện thực sự đổi trạng thái. Thiếu cả hai hoặc ID sai: `400` |
+| `GET /admin/stories/summary` | `stories`, `hiddenStories`, `longStories`, `shortStories`, `chapters`, `contentChapters`, `lastCrawledAt` |
+| `GET /admin/stories/genres` | Thể loại, tính cả truyện ẩn |
+| `GET /admin/stories/sources` | Các nguồn và số truyện mỗi nguồn, `{"items": [{"name": "vnkings", "count": 200}]}` |
+| `GET /admin/stories/{id}` | Một truyện (kể cả đang ẩn) |
+| `PATCH /admin/stories/{id}` | Body `{"isHidden": true}` để ẩn, `false` để hiện. Truyện ẩn trả 404 với người dùng; lệnh nạp không đụng tới cột này nên nạp lại vẫn giữ ẩn |
+| `DELETE /admin/stories/{id}` | Xoá truyện và mọi chương. Nếu truyện còn trong file dữ liệu thì lần nạp sau sẽ thêm lại; muốn gỡ hẳn thì ẩn |
+| `GET /admin/stories/{id}/chapters` | Mọi chương kèm `sourceUrl`, `hasContent`, `crawledAt` |
+| `GET /admin/stories/{id}/chapters/{position}` | Xem nội dung đang lưu, **không** tự lấy từ nguồn |
+| `POST /admin/stories/{id}/chapters/{position}/refetch` | Lấy lại từ nguồn và ghi đè nội dung cũ (kể cả khi đã có). Lỗi nguồn: `502 STORY_CONTENT_UNAVAILABLE`, nội dung cũ giữ nguyên |
+| `POST /admin/stories/{id}/fetch-content` | Lấy nội dung mọi chương còn thiếu, chạy nền, trả `{"queued": n}`. Lấy lần lượt, cách nhau 0,5 giây, tối đa 30 phút; truyện đang chạy thì trả `409`. Trang admin tự tải lại danh sách chương mỗi 3 giây cho tới khi đủ |
+

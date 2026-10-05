@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
@@ -27,17 +28,27 @@ var storyStatuses = map[string]bool{
 }
 
 type Service struct {
-	store   Store
-	source  ContentSource
-	logger  *zap.SugaredLogger
-	fetches singleflight.Group
+	store       Store
+	admin       AdminStore
+	source      ContentSource
+	logger      *zap.SugaredLogger
+	fetches     singleflight.Group
+	bulkFetches sync.Map
 }
 
 func NewService(repo *Repository, source *VnkingsSource, logger *zap.SugaredLogger) *Service {
-	return &Service{store: repo, source: source, logger: logger.Named("[story_service]")}
+	return &Service{store: repo, admin: repo, source: source, logger: logger.Named("[story_service]")}
 }
 
 func normalizeListQuery(query ListQuery) ListQuery {
+	query = normalizePaging(query, constants.StoryPageSize, constants.StoryPageMax)
+	query.Kind = ""
+	query.Visibility = ""
+	query.Source = ""
+	return query
+}
+
+func normalizePaging(query ListQuery, pageSize, pageMax int) ListQuery {
 	if _, ok := storyOrders[query.Sort]; !ok {
 		query.Sort = constants.StorySortUpdated
 	}
@@ -53,10 +64,10 @@ func normalizeListQuery(query ListQuery) ListQuery {
 		query.Offset = 0
 	}
 	if query.Limit <= 0 {
-		query.Limit = constants.StoryPageSize
+		query.Limit = pageSize
 	}
-	if query.Limit > constants.StoryPageMax {
-		query.Limit = constants.StoryPageMax
+	if query.Limit > pageMax {
+		query.Limit = pageMax
 	}
 	return query
 }
@@ -194,7 +205,7 @@ func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*Chap
 		return nil, ErrChapterNotFound
 	}
 	if row.ContentText == "" {
-		if err := s.loadContent(ctx, row); err != nil {
+		if err := s.loadContent(ctx, row, false); err != nil {
 			return nil, err
 		}
 	}
@@ -206,8 +217,8 @@ func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*Chap
 	}, nil
 }
 
-func (s *Service) loadContent(ctx context.Context, row *ChapterRow) error {
-	key := strconv.FormatInt(row.ID, 10)
+func (s *Service) loadContent(ctx context.Context, row *ChapterRow, replace bool) error {
+	key := strconv.FormatInt(row.ID, 10) + ":" + strconv.FormatBool(replace)
 	value, err, _ := s.fetches.Do(key, func() (interface{}, error) {
 		fetchCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), constants.StoryFetchTimeout)
 		defer cancel()
@@ -216,7 +227,7 @@ func (s *Service) loadContent(ctx context.Context, row *ChapterRow) error {
 			return nil, err
 		}
 		hash := sha256.Sum256([]byte(content))
-		if err := s.store.SaveChapterContent(fetchCtx, row.ID, row.StoryID, content, len(strings.Fields(content)), hash[:]); err != nil {
+		if err := s.store.SaveChapterContent(fetchCtx, row.ID, row.StoryID, content, len(strings.Fields(content)), hash[:], replace); err != nil {
 			s.logger.Errorw("save chapter content failed", "chapterId", row.ID, "error", err)
 		}
 		return content, nil
