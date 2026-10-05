@@ -65,7 +65,7 @@ function ChapterRow({ chapter, current, onOpen }: ChapterRowProps) {
           </span>
         )}
         <span className="shrink-0 text-xs text-black/40">
-          {formatDateSlashDMY(chapter.publishedAt)}
+          {formatDateSlashDMY(chapter.publishedAt ?? '')}
         </span>
       </button>
     </li>

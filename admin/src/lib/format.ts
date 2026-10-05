@@ -6,6 +6,19 @@ const dateTimeFormatter = new Intl.DateTimeFormat('vi-VN', {
   minute: '2-digit',
 })
 
+const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+})
+
+export function formatDate(value?: string | null): string {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '—'
+  return dateFormatter.format(date)
+}
+
 export function formatDateTime(value?: string | null): string {
   if (!value) return '—'
   const date = new Date(value)

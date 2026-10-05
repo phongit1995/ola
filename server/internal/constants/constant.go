@@ -242,6 +242,43 @@ const (
 )
 
 const (
+	StoryPageSize      = 10
+	StoryPageMax       = 50
+	StoryAdminPageSize = 20
+	StoryAdminPageMax  = 100
+	StoryBulkIDsMax    = 500
+	StoryQueryMaxRunes = 100
+	StorySourceVnkings = "vnkings"
+
+	StorySortUpdated = "updated"
+	StorySortViews   = "views"
+	StorySortNew     = "new"
+
+	StoryStatusAll       = "all"
+	StoryStatusOngoing   = "ongoing"
+	StoryStatusCompleted = "completed"
+
+	StoryKindShort = "short"
+	StoryKindLong  = "long"
+
+	StoryVisibilityAll     = "all"
+	StoryVisibilityVisible = "visible"
+	StoryVisibilityHidden  = "hidden"
+
+	StoryFetchTimeout     = 15 * time.Second
+	StoryFetchMaxBytes    = 4 << 20
+	StoryFetchConcurrency = 4
+	StoryFetchUserAgent   = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36"
+	StoryVnkingsHost      = "vnkings.com"
+	StoryVnkingsPostURL   = "https://vnkings.com/?rest_route=/wp/v2/posts/%d&_fields=content"
+	StoryVnkingsContentID = "content"
+	StoryBulkFetchTimeout = 30 * time.Minute
+	StoryBulkFetchGap     = 500 * time.Millisecond
+
+	ErrorCodeStoryContentUnavailable = "STORY_CONTENT_UNAVAILABLE"
+)
+
+const (
 	SocketEventRoomJoin       = "ROOM:JOIN"
 	SocketEventRoomLeave      = "ROOM:LEAVE"
 	SocketEventWordChainJoin  = "WORD_CHAIN:JOIN"

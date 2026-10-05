@@ -23,6 +23,7 @@ import {
   SmileOutlined,
   SwapOutlined,
   PictureOutlined,
+  ReadOutlined,
   TeamOutlined,
   TransactionOutlined,
   UnorderedListOutlined,
@@ -84,6 +85,7 @@ const MENU_ITEMS = [
     ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
+  { key: '/stories', icon: <ReadOutlined />, label: 'Truyện' },
   { key: '/audit-logs', icon: <FileSearchOutlined />, label: 'Nhật ký admin' },
   {
     key: 'settings',
@@ -133,6 +135,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/users/topups': 'Lịch sử nạp KEN',
   '/users/username-changes': 'Lịch sử đổi nickname',
   '/me': 'Quản lý Me',
+  '/stories': 'Quản lý truyện',
   '/audit-logs': 'Nhật ký admin',
   '/settings/topup': 'Cài đặt nạp KEN',
   '/settings/username-change': 'Cài đặt đổi nickname',
