@@ -1,6 +1,7 @@
 import { http } from '../api/http';
 import { API_PATH } from '../config/api';
 import type {
+  StoryConfigResult,
   TopupConfigResult,
   UpdateSettingsRequest,
   UserSettings,
@@ -27,5 +28,9 @@ export class SettingsService {
 
   static wordChainConfig(): Promise<WordChainConfigResult> {
     return http.get<WordChainConfigResult>(API_PATH.appSettings.wordChain);
+  }
+
+  static storyConfig(): Promise<StoryConfigResult> {
+    return http.get<StoryConfigResult>(API_PATH.appSettings.story);
   }
 }

@@ -1,6 +1,7 @@
 package setting
 
 import (
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -96,4 +97,28 @@ func (ctrl *Controller) WordChainConfig(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 	return cfg, nil
+}
+
+// StoryConfig godoc
+// @Summary      Truyện có đang bật cho app đang gọi không
+// @Description  Server đọc nền tảng (web | android | ios) và phiên bản app từ header, so với cấu hình bật/tắt và danh sách bản bị tắt của nền tảng đó. Thiếu X-Platform thì tính là web
+// @Tags         settings
+// @Produce      json
+// @Security     BearerAuth
+// @Param        X-Platform header string false "web | android | ios"
+// @Param        X-App-Version header string false "Phiên bản app, ví dụ 1.0.0 (45)"
+// @Success      200  {object}  FeatureEnabledSuccessResponse
+// @Failure      401  {object}  utils.APIError
+// @Router       /settings/story [get]
+func (ctrl *Controller) StoryConfig(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+
+	cfg, err := ctrl.service.GetStory()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	enabled := cfg.EnabledFor(c.GetHeader(constants.HeaderPlatform), c.GetHeader(constants.HeaderAppVersion))
+	return FeatureEnabledResponse{Enabled: enabled}, nil
 }

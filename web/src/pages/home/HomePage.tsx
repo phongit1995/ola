@@ -17,6 +17,7 @@ import { RoomChatOverlay } from '../room/RoomChatOverlay';
 import { WordChainOverlay } from '../room/word-chain/WordChainOverlay';
 import { StoryOverlay } from '../story/StoryOverlay';
 import { useStoryOverlayStore } from '@/store/storyOverlayStore';
+import { useStoryConfigStore } from '@ola/shared/stores/story/storyConfigStore';
 import { AppOverlay } from '../apps/AppOverlay';
 import { ClanOverlayHost } from '../clan/ClanOverlayHost';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
@@ -46,12 +47,14 @@ function rollDownloadFabVisible(): boolean {
 
 export function HomePage() {
   const [tab, setTab] = useState<TabKey>(readStoredTab);
+  const storyHidden = useStoryConfigStore((state) => state.enabled === false);
+  const activeTab: TabKey = storyHidden && tab === 'rss' ? 'chat' : tab;
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
   const chatUnread = useChatStore((state) =>
     totalUnreadOf(state.conversations)
   );
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
-  const ActivePanel = PANELS[tab];
+  const ActivePanel = PANELS[activeTab];
   const authReady = useAuthStore((state) => state.authReady);
   const ken = useAuthStore((state) => state.user?.ken);
   const gameActive = useGameOverlayStore((state) => state.active != null);
@@ -59,7 +62,7 @@ export function HomePage() {
   const clanActive = useClanOverlayStore((state) => state.stack.length > 0);
   const storyActive = useStoryOverlayStore((state) => state.stack.length > 0);
   const hideKenBadge =
-    gameActive || appActive || clanActive || (storyActive && tab === 'rss');
+    gameActive || appActive || clanActive || (storyActive && activeTab === 'rss');
   const { isStandalone } = useDevicePlatform();
   const guideOpen = useDownloadGuideStore((state) => state.visible);
   const openGuide = useDownloadGuideStore((state) => state.open);
@@ -79,6 +82,7 @@ export function HomePage() {
 
   useEffect(() => {
     void useChatStore.getState().loadConversations();
+    void useStoryConfigStore.getState().load();
   }, []);
 
   useEffect(() => {
@@ -95,9 +99,9 @@ export function HomePage() {
         <Suspense fallback={<div className="flex-1" />}>
           <ActivePanel />
         </Suspense>
-        <RoomChatOverlay visible={tab === 'room'} />
-        <WordChainOverlay visible={tab === 'room'} />
-        <StoryOverlay visible={tab === 'rss'} />
+        <RoomChatOverlay visible={activeTab === 'room'} />
+        <WordChainOverlay visible={activeTab === 'room'} />
+        <StoryOverlay visible={activeTab === 'rss'} />
         {downloadFabMounted && (
           <DownloadFab
             hidden={hideKenBadge || guideOpen}
@@ -108,10 +112,11 @@ export function HomePage() {
       </div>
 
       <BottomTabBar
-        active={tab}
+        active={activeTab}
         onChange={changeTab}
         badges={{ chat: chatUnread, personal: notifUnread }}
-        dots={{ room: roomUnread && tab !== 'room' }}
+        dots={{ room: roomUnread && activeTab !== 'room' }}
+        hidden={{ rss: storyHidden }}
       />
 
       <ActiveConversationOverlay />

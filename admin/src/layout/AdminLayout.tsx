@@ -85,7 +85,15 @@ const MENU_ITEMS = [
     ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
-  { key: '/stories', icon: <ReadOutlined />, label: 'Truyện' },
+  {
+    key: 'stories',
+    icon: <ReadOutlined />,
+    label: 'Truyện',
+    children: [
+      { key: '/stories', icon: <UnorderedListOutlined />, label: 'Danh sách' },
+      { key: '/stories/settings', icon: <SettingOutlined />, label: 'Cài đặt' },
+    ],
+  },
   { key: '/audit-logs', icon: <FileSearchOutlined />, label: 'Nhật ký admin' },
   {
     key: 'settings',
@@ -136,6 +144,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/users/username-changes': 'Lịch sử đổi nickname',
   '/me': 'Quản lý Me',
   '/stories': 'Quản lý truyện',
+  '/stories/settings': 'Cài đặt truyện',
   '/audit-logs': 'Nhật ký admin',
   '/settings/topup': 'Cài đặt nạp KEN',
   '/settings/username-change': 'Cài đặt đổi nickname',
@@ -167,6 +176,7 @@ export function AdminLayout() {
     ...(selectedKey.startsWith('/rooms') ? ['rooms'] : []),
     ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
+    ...(selectedKey.startsWith('/stories') ? ['stories'] : []),
     ...(selectedKey.startsWith('/settings') ? ['settings'] : []),
   ]
 

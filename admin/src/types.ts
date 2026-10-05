@@ -1958,6 +1958,15 @@ export interface AdminStoryBulkVisibilityResult {
   updated: number
 }
 
+export type StoryPlatform = 'web' | 'android' | 'ios'
+
+export interface StoryPlatformRule {
+  enabled: boolean
+  disableVersions: string[]
+}
+
+export type StorySetting = Record<StoryPlatform, StoryPlatformRule>
+
 export interface AdminStorySummary {
   stories: number
   hiddenStories: number

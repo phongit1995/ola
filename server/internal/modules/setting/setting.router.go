@@ -20,5 +20,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		settings.GET("/topup", r.controller.TopupConfig)
 		settings.GET("/username-change", r.controller.UsernameChangeConfig)
 		settings.GET("/word-chain", r.controller.WordChainConfig)
+		settings.GET("/story", r.controller.StoryConfig)
 	}
 }
