@@ -145,7 +145,6 @@ export function StoryDetailPage({
               <h1 className="text-lg leading-6 font-bold text-black/87">
                 {story.title}
               </h1>
-              <p className="mt-1 text-sm text-black/60">{story.authorName}</p>
               <div className="mt-2 flex flex-wrap gap-1">
                 <StoryStatusBadge status={story.status} />
                 {isShort && <StoryTag>{t('story.kindShort')}</StoryTag>}
