@@ -34,9 +34,6 @@ export function StoryRow({ story, onOpen }: StoryRowProps) {
           <span className="line-clamp-2 text-[15px] leading-5 font-semibold text-black/87">
             {story.title}
           </span>
-          <span className="mt-0.5 truncate text-xs text-black/54">
-            {story.authorName}
-          </span>
           <span className="mt-1.5 flex flex-wrap items-center gap-1">
             <StoryStatusBadge status={story.status} />
             {story.genres.slice(0, ROW_GENRE_LIMIT).map((genre) => (
