@@ -20,6 +20,7 @@ import (
 	"ola-chat-server/internal/constants"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 )
@@ -39,12 +40,28 @@ type exportIndex struct {
 	Chapters    map[string][]exportChapter `json:"chapters"`
 }
 
+type sourceID string
+
+func (s *sourceID) UnmarshalJSON(data []byte) error {
+	var text string
+	if err := json.Unmarshal(data, &text); err == nil {
+		*s = sourceID(text)
+		return nil
+	}
+	var number json.Number
+	if err := json.Unmarshal(data, &number); err != nil {
+		return err
+	}
+	*s = sourceID(number.String())
+	return nil
+}
+
 type exportStory struct {
 	ID             string    `json:"id"`
 	Slug           string    `json:"slug"`
 	Title          string    `json:"title"`
 	AuthorName     string    `json:"authorName"`
-	SourceAuthorID *int64    `json:"sourceAuthorId"`
+	SourceAuthorID *sourceID `json:"sourceAuthorId"`
 	Kind           string    `json:"kind"`
 	Genres         []string  `json:"genres"`
 	Tags           []string  `json:"tags"`
@@ -52,8 +69,6 @@ type exportStory struct {
 	CoverURL       *string   `json:"coverUrl"`
 	Status         string    `json:"status"`
 	AgeRating      string    `json:"ageRating"`
-	ViewCount      int64     `json:"viewCount"`
-	CommentCount   int       `json:"commentCount"`
 	LikeCount      int       `json:"likeCount"`
 	SourceURL      string    `json:"sourceUrl"`
 	PublishedAt    time.Time `json:"publishedAt"`
@@ -81,9 +96,9 @@ type importResult struct {
 const upsertStorySQL = `
 INSERT INTO stories (
 	source, source_story_id, slug, source_url, title, author_name, source_author_id, kind, genres, tags,
-	intro, cover_url, status, age_rating, view_count, comment_count, like_count,
+	intro, cover_url, status, age_rating, like_count,
 	published_at, source_updated_at, crawled_at, content_hash
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
 ON CONFLICT (source, source_story_id) DO UPDATE SET
 	slug = EXCLUDED.slug,
 	source_url = EXCLUDED.source_url,
@@ -97,8 +112,6 @@ ON CONFLICT (source, source_story_id) DO UPDATE SET
 	cover_url = EXCLUDED.cover_url,
 	status = EXCLUDED.status,
 	age_rating = EXCLUDED.age_rating,
-	view_count = EXCLUDED.view_count,
-	comment_count = EXCLUDED.comment_count,
 	like_count = EXCLUDED.like_count,
 	published_at = EXCLUDED.published_at,
 	source_updated_at = EXCLUDED.source_updated_at,
@@ -266,9 +279,9 @@ func nonNil(values []string) []string {
 
 func importStory(ctx context.Context, db *sql.DB, source, dir string, crawledAt time.Time, item exportStory, chapters []exportChapter) (importResult, error) {
 	var result importResult
-	sourceStoryID, err := strconv.ParseInt(item.ID, 10, 64)
-	if err != nil {
-		return result, fmt.Errorf("story id: %w", err)
+	sourceStoryID := strings.TrimSpace(item.ID)
+	if sourceStoryID == "" {
+		return result, errors.New("story id is empty")
 	}
 	contents, err := readContents(dir, item.ID)
 	if err != nil {
@@ -281,21 +294,21 @@ func importStory(ctx context.Context, db *sql.DB, source, dir string, crawledAt 
 	}
 	defer tx.Rollback()
 
-	var storyID int64
+	var storyID uuid.UUID
 	err = tx.QueryRowContext(ctx, upsertStorySQL,
 		source, sourceStoryID, item.Slug, item.SourceURL, item.Title, item.AuthorName, item.SourceAuthorID,
 		item.Kind, nonNil(item.Genres), nonNil(item.Tags), item.Intro, item.CoverURL, item.Status, item.AgeRating,
-		item.ViewCount, item.CommentCount, item.LikeCount, item.PublishedAt, item.UpdatedAt, crawledAt, hash(item.Intro),
+		item.LikeCount, item.PublishedAt, item.UpdatedAt, crawledAt, hash(item.Intro),
 	).Scan(&storyID, &result.storyInserted)
 	if err != nil {
 		return result, fmt.Errorf("upsert story: %w", err)
 	}
 
-	keep := make([]int64, 0, len(chapters))
+	keep := make([]string, 0, len(chapters))
 	for _, chapter := range chapters {
-		chapterID, err := strconv.ParseInt(chapter.ID, 10, 64)
-		if err != nil {
-			return result, fmt.Errorf("chapter id %q: %w", chapter.ID, err)
+		chapterID := strings.TrimSpace(chapter.ID)
+		if chapterID == "" {
+			return result, fmt.Errorf("story %s has a chapter without id", sourceStoryID)
 		}
 		sourceURL := chapter.URL
 		if sourceURL == "" {

@@ -18,7 +18,7 @@ Code: server ở `server/internal/modules/story/`, client ở `StoryService` (`p
 
 ```json
 {
-  "id": "16",
+  "id": "6f1c2a7e-3b9d-4c51-9a0e-2d7b8f4c1e35",
   "slug": "la-duyen-cung-la-menh",
   "title": "Là duyên cũng là mệnh",
   "authorName": "…",
@@ -31,8 +31,8 @@ Code: server ở `server/internal/modules/story/`, client ở `StoryService` (`p
   "ageRating": "[T] Không dành cho trẻ dưới 13 tuổi",
   "chapterCount": 109,
   "wordCount": 120345,
-  "viewCount": 25923,
-  "commentCount": 12,
+  "viewCount": 0,
+  "commentCount": 0,
   "likeCount": 28,
   "sourceUrl": "https://vnkings.com/la-duyen-cung-la-menh.html",
   "publishedAt": "2024-02-06T03:12:45Z",
@@ -55,7 +55,7 @@ Code: server ở `server/internal/modules/story/`, client ở `StoryService` (`p
 ### ChapterSummary
 
 ```json
-{ "id": "254", "storyId": "16", "position": 1, "title": "Chương 1", "wordCount": 1096, "publishedAt": "2024-02-05T17:00:00Z" }
+{ "id": "b2e8d4a1-7c3f-4e09-8d6a-5f1e9c2b7a40", "storyId": "6f1c2a7e-3b9d-4c51-9a0e-2d7b8f4c1e35", "position": 1, "title": "Chương 1", "wordCount": 1096, "publishedAt": "2024-02-05T17:00:00Z" }
 ```
 
 `position` bắt đầu từ 1 và liền nhau. `publishedAt` có thể là `null`.
@@ -125,7 +125,7 @@ Một `Chapter`. Truyện không có: `404 story not found`. Không có chương
 | HTTP | `error` | Khi nào |
 |---|---|---|
 | 401 | `authorization header required` | Thiếu token |
-| 404 | `story not found` | `id` không phải số dương, không có truyện, hoặc truyện đã ẩn |
+| 404 | `story not found` | `id` không phải UUID hợp lệ, không có truyện, hoặc truyện đã ẩn |
 | 404 | `chapter not found` | `position` không phải số ≥ 1 hoặc vượt số chương |
 | 502 | `chapter content unavailable` (`code: STORY_CONTENT_UNAVAILABLE`) | Chương chưa có nội dung và lấy từ nguồn thất bại |
 
@@ -136,7 +136,7 @@ Trang admin: menu **Truyện** (`/stories`), code ở `admin/src/pages/StoriesPa
 | Endpoint | Việc |
 |---|---|
 | `GET /admin/stories` | Danh sách gồm cả truyện ẩn. Query giống bản công khai (`q`, `genre`, `status`, `sort`, `offset`, `limit` mặc định 20 tối đa 100) thêm `kind` (`short`/`long`), `visibility` (`all`/`visible`/`hidden`, mặc định `all`) và `source` (ví dụ `vnkings`). Trả `{items, total, limit, offset}`, mỗi truyện thêm `source`, `sourceStoryId`, `isHidden`, `contentChapters` (số chương đã có nội dung), `crawledAt`, `createdAt` |
-| `PATCH /admin/stories` | Ẩn/hiện nhiều truyện một lần. Body `{"isHidden": true, "ids": ["1", "2"]}` (tối đa 500 ID) hoặc `{"isHidden": true, "filter": {"q", "genre", "status", "kind", "visibility", "source"}}` để đổi mọi truyện khớp bộ lọc, giống bộ lọc của `GET /admin/stories`. Có `ids` thì bỏ qua `filter`; `filter: {}` là toàn bộ truyện. Trả `{"updated": n}`, chỉ đếm truyện thực sự đổi trạng thái. Thiếu cả hai hoặc ID sai: `400` |
+| `PATCH /admin/stories` | Ẩn/hiện nhiều truyện một lần. Body `{"isHidden": true, "ids": ["<uuid>", "<uuid>"]}` (tối đa 500 ID) hoặc `{"isHidden": true, "filter": {"q", "genre", "status", "kind", "visibility", "source"}}` để đổi mọi truyện khớp bộ lọc, giống bộ lọc của `GET /admin/stories`. Có `ids` thì bỏ qua `filter`; `filter: {}` là toàn bộ truyện. Trả `{"updated": n}`, chỉ đếm truyện thực sự đổi trạng thái. Thiếu cả hai hoặc ID sai: `400` |
 | `GET /admin/stories/summary` | `stories`, `hiddenStories`, `longStories`, `shortStories`, `chapters`, `contentChapters`, `lastCrawledAt` |
 | `GET /admin/stories/genres` | Thể loại, tính cả truyện ẩn |
 | `GET /admin/stories/sources` | Các nguồn và số truyện mỗi nguồn, `{"items": [{"name": "vnkings", "count": 200}]}` |

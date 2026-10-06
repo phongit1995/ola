@@ -350,7 +350,7 @@ cd server && go run ./cmd/storyimport
 ```
 
 - Lấy truyện theo `modified` mới nhất trong các chuyên mục truyện. Truyện có chương thì lấy hết chương (`--max-chapters` để giới hạn); truyện không có chương thì coi là truyện ngắn nếu nội dung post đủ dài, còn lại bỏ qua.
-- Thông tin tác giả, tình trạng, lượt xem, bình luận, lượt thích, độ tuổi, nguồn, ảnh bìa lấy từ HTML trang truyện. ID tác giả lấy từ REST `author`. Nội dung chương lấy từ `#content.vnkings-editor`, đổi thành chữ theo đoạn, bỏ dòng gạch trang trí và bỏ đoạn đầu nếu trùng tên chương (truyện ngắn: trùng tên truyện). Mỗi chương giữ link gốc (`url`).
+- Thông tin tác giả, tình trạng, lượt thích, độ tuổi, nguồn, ảnh bìa lấy từ HTML trang truyện. Lượt xem và số bình luận của nguồn không lấy; trong app hai số này bắt đầu từ 0. ID tác giả lấy từ REST `author`. Nội dung chương lấy từ `#content.vnkings-editor`, đổi thành chữ theo đoạn, bỏ dòng gạch trang trí và bỏ đoạn đầu nếu trùng tên chương (truyện ngắn: trùng tên truyện). Mỗi chương giữ link gốc (`url`).
 - Mặc định cách nhau 0,5 giây mỗi request (`--gap`). Gặp 403/429/503 thì chờ rồi thử lại, bị chặn liên tục thì dừng.
 - `--resume` giữ truyện đã có trong `index.json`, bỏ truyện trùng, chỉ lấy thêm cho đủ `--limit`.
 - `--no-content` chỉ lấy thông tin truyện và danh sách chương (tên, link, ngày đăng theo danh sách AJAX), không tải trang chương. Mỗi truyện chỉ tốn khoảng 3 request thay vì 1 request mỗi chương. Truyện ngắn không lưu nội dung nhưng vẫn đếm số chữ từ nội dung post có sẵn trong REST; truyện dài có số chữ bằng 0. Không ghi file `chapters/<id>.json`. Nội dung từng chương được API lấy khi có người mở chương đó. Lần chạy ngày 05/10/2026: 200 truyện (82 dài, 118 ngắn), 1.274 chương, 370 request, khoảng 3 phút.

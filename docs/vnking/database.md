@@ -28,7 +28,8 @@ Trên WordPress, mỗi truyện là một **post**: với truyện ngắn post l
 | Tên tác giả | HTML trang truyện (`Tác giả`) | ✓ |
 | ID tác giả | REST `author` | ✓ |
 | Ảnh bìa | HTML trang truyện (`img.lazyload[data-original]`, không có thì `og:image`) | ✓ |
-| Lượt xem, bình luận, lượt thích, độ tuổi | HTML trang truyện (`Lượt xem`, `Bình luận`, `Lượt thích`, `Rating`) | ✓ |
+| Lượt thích, độ tuổi | HTML trang truyện (`Lượt thích`, `Rating`) | ✓ |
+| Lượt xem, bình luận | Không lấy từ nguồn, bắt đầu từ 0 | — |
 | Danh sách chương và thứ tự | AJAX `vnk_single_chapters`, 10 chương mỗi trang | ✓ |
 | Nội dung chương | HTML `#content.vnkings-editor` của trang chương | ✓ |
 | Trạng thái hoàn thành | HTML trang truyện (`Tình trạng`: "Chưa hoàn thành" / "Hoàn thành") | ✓ |
@@ -44,14 +45,14 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
 CREATE TABLE stories (
-  id bigserial PRIMARY KEY,
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   source varchar(30) NOT NULL DEFAULT 'vnkings',
-  source_story_id bigint NOT NULL,
+  source_story_id varchar(100) NOT NULL,
   slug varchar(255) NOT NULL,
   source_url text NOT NULL,
   title varchar(500) NOT NULL,
   author_name varchar(200) NOT NULL DEFAULT '',
-  source_author_id bigint,
+  source_author_id varchar(100),
   kind varchar(10) NOT NULL,                       -- short | long
   genres text[] NOT NULL DEFAULT '{}',
   tags text[] NOT NULL DEFAULT '{}',
@@ -76,15 +77,15 @@ CREATE TABLE stories (
   UNIQUE (source, source_story_id)
 );
 CREATE INDEX idx_stories_activity ON stories ((COALESCE(last_chapter_at, source_updated_at)) DESC, id DESC) WHERE NOT is_hidden;
-CREATE INDEX idx_stories_views ON stories (view_count DESC, id DESC) WHERE NOT is_hidden;
+CREATE INDEX idx_stories_views ON stories (view_count DESC, (COALESCE(last_chapter_at, source_updated_at)) DESC, id DESC) WHERE NOT is_hidden;
 CREATE INDEX idx_stories_published ON stories (published_at DESC, id DESC) WHERE NOT is_hidden;
 CREATE INDEX idx_stories_genres ON stories USING gin (genres);
 CREATE INDEX idx_stories_search_text ON stories USING gin (search_text gin_trgm_ops);
 
 CREATE TABLE story_chapters (
-  id bigserial PRIMARY KEY,
-  story_id bigint NOT NULL REFERENCES stories(id) ON DELETE CASCADE,
-  source_chapter_id bigint NOT NULL,
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  story_id uuid NOT NULL REFERENCES stories(id) ON DELETE CASCADE,
+  source_chapter_id varchar(100) NOT NULL,
   position int NOT NULL,
   title varchar(500) NOT NULL,
   source_url text NOT NULL,
@@ -113,7 +114,8 @@ So với bản thiết kế đầu:
 
 | Cột | Ý nghĩa | Nguồn |
 | --- | --- | --- |
-| `source`, `source_story_id` | Nguồn và ID post gốc. Cặp này là khoá duy nhất, cập nhật lại bằng upsert | REST `id` |
+| `id` | Khoá chính UUID (`gen_random_uuid()`) như các bảng khác; API và app chỉ dùng ID này | Tự sinh |
+| `source`, `source_story_id` | Nguồn và ID truyện gốc. Lưu dạng chữ (`varchar`) vì mỗi nguồn có kiểu ID khác nhau (Vnkings là số). Cặp này là khoá duy nhất, cập nhật lại bằng upsert | REST `id` |
 | `slug`, `source_url` | Slug và link trang truyện | REST `slug`, `link` |
 | `title` | Tiêu đề (đã giải mã HTML entity) | REST `title.rendered` |
 | `author_name`, `source_author_id` | Tên và ID tác giả | HTML / REST `author` |
@@ -125,7 +127,8 @@ So với bản thiết kế đầu:
 | `status` | `ongoing` / `completed` / `unknown` | HTML `Tình trạng` |
 | `age_rating` | Nhãn độ tuổi, ví dụ `[T] Không dành cho trẻ dưới 13 tuổi` | HTML `Rating` |
 | `chapter_count`, `word_count` | Tính lại sau mỗi lần nạp chương, để trang danh sách khỏi phải đếm | Tự tính |
-| `view_count`, `comment_count`, `like_count` | Lượt xem, bình luận, lượt thích | HTML |
+| `view_count`, `comment_count` | Lượt xem, bình luận của app. Không lấy từ nguồn; truyện mới bắt đầu từ 0 và lệnh nạp không ghi đè hai cột này | Tự tính |
+| `like_count` | Lượt thích | HTML |
 | `published_at`, `source_updated_at` | Ngày đăng, ngày sửa gần nhất trên nguồn | REST `date_gmt`, `modified_gmt` |
 | `last_chapter_at` | Ngày đăng của chương mới nhất | Tự tính |
 | `crawled_at` | Thời điểm script xuất chạy (`generatedAt` của `index.json`) | Tự tính |
@@ -138,7 +141,7 @@ So với bản thiết kế đầu:
 | Cột | Ý nghĩa | Nguồn |
 | --- | --- | --- |
 | `story_id` | Truyện chứa chương | — |
-| `source_chapter_id` | ID chương gốc, là số sau `-p` trong URL (ví dụ `…-p255242.html` → `255242`). Truyện ngắn dùng luôn ID post | URL chương |
+| `source_chapter_id` | ID chương gốc, lưu dạng chữ. Với Vnkings là số sau `-p` trong URL (ví dụ `…-p255242.html` → `255242`); truyện ngắn dùng luôn ID post | URL chương |
 | `position` | Thứ tự chương, bắt đầu từ 1 | Vị trí trong danh sách AJAX |
 | `title`, `source_url` | Tên và link chương | Thẻ `<a>` trong `data.items` của AJAX |
 | `content_text` | Nội dung chương, các đoạn cách nhau bằng một dòng trống | HTML `#content.vnkings-editor` |
@@ -153,7 +156,7 @@ So với bản thiết kế đầu:
 - **Tìm theo tên truyện hoặc tác giả, không phân biệt dấu:** `WHERE search_text LIKE '%' || lower(unaccent($1)) || '%'` (dùng index trigram). API escape `%`, `_` trong từ khoá trước khi ghép.
 - **Sắp xếp** (API `GET /stories?sort=`):
   - `updated`: `ORDER BY COALESCE(last_chapter_at, source_updated_at) DESC`. Dùng ngày có chương mới thay cho `modified`, vì `modified` đổi cả khi chỉ sửa giới thiệu hoặc khi web sửa hàng loạt (mục 9 của [vnkings-data-access.md](../vnkings-data-access.md)).
-  - `views` ("Top"): `ORDER BY view_count DESC`.
+  - `views` ("Top"): `ORDER BY view_count DESC, COALESCE(last_chapter_at, source_updated_at) DESC, id DESC`. Hiện mọi truyện đều 0 lượt xem nên "Top" thực tế là truyện mới có chương gần nhất, cho tới khi app tự đếm lượt xem.
   - `new`: `ORDER BY published_at DESC`.
 - **Danh sách chương:** `SELECT id, position, title, word_count, published_at FROM story_chapters WHERE story_id = $1 ORDER BY position`. Postgres cất text dài ở vùng riêng (TOAST) và chỉ đọc khi câu `SELECT` có `content_text`, nên để nội dung chung bảng không làm chậm danh sách chương.
 - **Đổi thứ tự chương:** ràng buộc `UNIQUE (story_id, position)` là `DEFERRABLE`, nên khi web chèn hoặc đổi thứ tự chương có thể cập nhật lại cả loạt `position` trong một transaction mà không bị báo trùng giữa chừng.
@@ -192,7 +195,7 @@ Cách lấy truyện và chương mới xem mục 9 của [vnkings-data-access.m
 3. Lấy ID chương lớn nhất đã lưu của truyện:
 
    ```sql
-   SELECT coalesce(max(source_chapter_id), 0) FROM story_chapters WHERE story_id = $1;
+   SELECT coalesce(max(source_chapter_id::bigint), 0) FROM story_chapters WHERE story_id = $1;
    ```
 
 4. Đọc danh sách chương qua AJAX từ trang cuối lùi về, cho tới khi gặp chương có ID nhỏ hơn hoặc bằng số trên. Mỗi chương có ID lớn hơn là chương mới: insert vào `story_chapters` với `position` nối tiếp, rồi lấy nội dung từ HTML trang chương.

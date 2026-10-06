@@ -8,6 +8,7 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -15,7 +16,7 @@ type ChapterRow struct {
 	models.StoryChapter
 	StorySource   string
 	StoryKind     string
-	StorySourceID int64
+	StorySourceID string
 	PrevPosition  *int
 	NextPosition  *int
 }
@@ -28,31 +29,31 @@ type AdminChapterRow struct {
 type Store interface {
 	List(ctx context.Context, query ListQuery) ([]models.Story, int64, error)
 	Genres(ctx context.Context) ([]GenreItem, error)
-	FindStory(ctx context.Context, id int64) (*models.Story, error)
-	Chapters(ctx context.Context, storyID int64) ([]models.StoryChapter, error)
-	Chapter(ctx context.Context, storyID int64, position int) (*ChapterRow, error)
-	SaveChapterContent(ctx context.Context, chapterID, storyID int64, content string, wordCount int, hash []byte, replace bool) error
+	FindStory(ctx context.Context, id uuid.UUID) (*models.Story, error)
+	Chapters(ctx context.Context, storyID uuid.UUID) ([]models.StoryChapter, error)
+	Chapter(ctx context.Context, storyID uuid.UUID, position int) (*ChapterRow, error)
+	SaveChapterContent(ctx context.Context, chapterID, storyID uuid.UUID, content string, wordCount int, hash []byte, replace bool) error
 }
 
 type AdminStore interface {
 	Store
 	AllGenres(ctx context.Context) ([]GenreItem, error)
 	Summary(ctx context.Context) (*AdminSummaryResponse, error)
-	ContentCounts(ctx context.Context, storyIDs []int64) (map[int64]int, error)
-	FindAnyStory(ctx context.Context, id int64) (*models.Story, error)
+	ContentCounts(ctx context.Context, storyIDs []uuid.UUID) (map[uuid.UUID]int, error)
+	FindAnyStory(ctx context.Context, id uuid.UUID) (*models.Story, error)
 	Sources(ctx context.Context) ([]SourceItem, error)
-	SetHidden(ctx context.Context, id int64, hidden bool) (bool, error)
-	SetHiddenByIDs(ctx context.Context, ids []int64, hidden bool) (int64, error)
+	SetHidden(ctx context.Context, id uuid.UUID, hidden bool) (bool, error)
+	SetHiddenByIDs(ctx context.Context, ids []uuid.UUID, hidden bool) (int64, error)
 	SetHiddenByFilter(ctx context.Context, query ListQuery, hidden bool) (int64, error)
-	DeleteStory(ctx context.Context, id int64) (bool, error)
-	AdminChapters(ctx context.Context, storyID int64) ([]AdminChapterRow, error)
-	AnyChapter(ctx context.Context, storyID int64, position int) (*ChapterRow, error)
-	MissingContentChapters(ctx context.Context, storyID int64) ([]ChapterRow, error)
+	DeleteStory(ctx context.Context, id uuid.UUID) (bool, error)
+	AdminChapters(ctx context.Context, storyID uuid.UUID) ([]AdminChapterRow, error)
+	AnyChapter(ctx context.Context, storyID uuid.UUID, position int) (*ChapterRow, error)
+	MissingContentChapters(ctx context.Context, storyID uuid.UUID) ([]ChapterRow, error)
 }
 
 var storyOrders = map[string]string{
 	constants.StorySortUpdated: "COALESCE(last_chapter_at, source_updated_at) DESC, id DESC",
-	constants.StorySortViews:   "view_count DESC, id DESC",
+	constants.StorySortViews:   "view_count DESC, COALESCE(last_chapter_at, source_updated_at) DESC, id DESC",
 	constants.StorySortNew:     "published_at DESC, id DESC",
 }
 
@@ -199,7 +200,7 @@ func (r *Repository) AllGenres(ctx context.Context) ([]GenreItem, error) {
 	return r.genres(ctx, true)
 }
 
-func (r *Repository) findStory(ctx context.Context, id int64, includeHidden bool) (*models.Story, error) {
+func (r *Repository) findStory(ctx context.Context, id uuid.UUID, includeHidden bool) (*models.Story, error) {
 	var item models.Story
 	err := r.db.WithContext(ctx).Where("id = ? AND (? OR NOT is_hidden)", id, includeHidden).First(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -211,15 +212,15 @@ func (r *Repository) findStory(ctx context.Context, id int64, includeHidden bool
 	return &item, nil
 }
 
-func (r *Repository) FindStory(ctx context.Context, id int64) (*models.Story, error) {
+func (r *Repository) FindStory(ctx context.Context, id uuid.UUID) (*models.Story, error) {
 	return r.findStory(ctx, id, false)
 }
 
-func (r *Repository) FindAnyStory(ctx context.Context, id int64) (*models.Story, error) {
+func (r *Repository) FindAnyStory(ctx context.Context, id uuid.UUID) (*models.Story, error) {
 	return r.findStory(ctx, id, true)
 }
 
-func (r *Repository) Chapters(ctx context.Context, storyID int64) ([]models.StoryChapter, error) {
+func (r *Repository) Chapters(ctx context.Context, storyID uuid.UUID) ([]models.StoryChapter, error) {
 	var items []models.StoryChapter
 	err := r.db.WithContext(ctx).
 		Select("id", "story_id", "position", "title", "word_count", "published_at").
@@ -232,7 +233,7 @@ func (r *Repository) Chapters(ctx context.Context, storyID int64) ([]models.Stor
 	return items, nil
 }
 
-func (r *Repository) chapter(ctx context.Context, storyID int64, position int, includeHidden bool) (*ChapterRow, error) {
+func (r *Repository) chapter(ctx context.Context, storyID uuid.UUID, position int, includeHidden bool) (*ChapterRow, error) {
 	var row ChapterRow
 	tx := r.db.WithContext(ctx).Raw(chapterQuery, includeHidden, storyID, position).Scan(&row)
 	if tx.Error != nil {
@@ -244,15 +245,15 @@ func (r *Repository) chapter(ctx context.Context, storyID int64, position int, i
 	return &row, nil
 }
 
-func (r *Repository) Chapter(ctx context.Context, storyID int64, position int) (*ChapterRow, error) {
+func (r *Repository) Chapter(ctx context.Context, storyID uuid.UUID, position int) (*ChapterRow, error) {
 	return r.chapter(ctx, storyID, position, false)
 }
 
-func (r *Repository) AnyChapter(ctx context.Context, storyID int64, position int) (*ChapterRow, error) {
+func (r *Repository) AnyChapter(ctx context.Context, storyID uuid.UUID, position int) (*ChapterRow, error) {
 	return r.chapter(ctx, storyID, position, true)
 }
 
-func (r *Repository) SaveChapterContent(ctx context.Context, chapterID, storyID int64, content string, wordCount int, hash []byte, replace bool) error {
+func (r *Repository) SaveChapterContent(ctx context.Context, chapterID, storyID uuid.UUID, content string, wordCount int, hash []byte, replace bool) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		saved := tx.Exec(saveChapterContentQuery, content, wordCount, hash, chapterID, replace)
 		if saved.Error != nil || saved.RowsAffected == 0 {
@@ -271,13 +272,13 @@ func (r *Repository) Summary(ctx context.Context) (*AdminSummaryResponse, error)
 	return &summary, nil
 }
 
-func (r *Repository) ContentCounts(ctx context.Context, storyIDs []int64) (map[int64]int, error) {
-	counts := make(map[int64]int, len(storyIDs))
+func (r *Repository) ContentCounts(ctx context.Context, storyIDs []uuid.UUID) (map[uuid.UUID]int, error) {
+	counts := make(map[uuid.UUID]int, len(storyIDs))
 	if len(storyIDs) == 0 {
 		return counts, nil
 	}
 	var rows []struct {
-		StoryID int64
+		StoryID uuid.UUID
 		Count   int
 	}
 	if err := r.db.WithContext(ctx).Raw(contentCountsQuery, storyIDs).Scan(&rows).Error; err != nil {
@@ -297,7 +298,7 @@ func (r *Repository) Sources(ctx context.Context) ([]SourceItem, error) {
 	return items, nil
 }
 
-func (r *Repository) SetHidden(ctx context.Context, id int64, hidden bool) (bool, error) {
+func (r *Repository) SetHidden(ctx context.Context, id uuid.UUID, hidden bool) (bool, error) {
 	tx := r.db.WithContext(ctx).Model(&models.Story{}).Where("id = ?", id).Update("is_hidden", hidden)
 	return tx.RowsAffected > 0, tx.Error
 }
@@ -308,7 +309,7 @@ func (r *Repository) setHiddenWhere(ctx context.Context, scope func(*gorm.DB) *g
 	return tx.RowsAffected, tx.Error
 }
 
-func (r *Repository) SetHiddenByIDs(ctx context.Context, ids []int64, hidden bool) (int64, error) {
+func (r *Repository) SetHiddenByIDs(ctx context.Context, ids []uuid.UUID, hidden bool) (int64, error) {
 	return r.setHiddenWhere(ctx, func(db *gorm.DB) *gorm.DB {
 		return db.Where("id IN ?", ids)
 	}, hidden)
@@ -318,12 +319,12 @@ func (r *Repository) SetHiddenByFilter(ctx context.Context, query ListQuery, hid
 	return r.setHiddenWhere(ctx, listFilter(query), hidden)
 }
 
-func (r *Repository) DeleteStory(ctx context.Context, id int64) (bool, error) {
-	tx := r.db.WithContext(ctx).Delete(&models.Story{}, id)
+func (r *Repository) DeleteStory(ctx context.Context, id uuid.UUID) (bool, error) {
+	tx := r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Story{})
 	return tx.RowsAffected > 0, tx.Error
 }
 
-func (r *Repository) AdminChapters(ctx context.Context, storyID int64) ([]AdminChapterRow, error) {
+func (r *Repository) AdminChapters(ctx context.Context, storyID uuid.UUID) ([]AdminChapterRow, error) {
 	var rows []AdminChapterRow
 	if err := r.db.WithContext(ctx).Raw(adminChaptersQuery, storyID).Scan(&rows).Error; err != nil {
 		return nil, err
@@ -331,7 +332,7 @@ func (r *Repository) AdminChapters(ctx context.Context, storyID int64) ([]AdminC
 	return rows, nil
 }
 
-func (r *Repository) MissingContentChapters(ctx context.Context, storyID int64) ([]ChapterRow, error) {
+func (r *Repository) MissingContentChapters(ctx context.Context, storyID uuid.UUID) ([]ChapterRow, error) {
 	var rows []ChapterRow
 	if err := r.db.WithContext(ctx).Raw(missingContentQuery, storyID).Scan(&rows).Error; err != nil {
 		return nil, err

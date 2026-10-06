@@ -3,6 +3,7 @@ package story
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -12,13 +13,14 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type fakeStore struct {
 	mu        sync.Mutex
-	stories   map[int64]models.Story
-	chapters  map[int64][]models.StoryChapter
+	stories   map[uuid.UUID]models.Story
+	chapters  map[uuid.UUID][]models.StoryChapter
 	lastQuery ListQuery
 	total     int64
 	err       error
@@ -48,8 +50,8 @@ func newTestService(store *fakeStore, source ContentSource) *Service {
 func (f *fakeStore) List(_ context.Context, query ListQuery) ([]models.Story, int64, error) {
 	f.lastQuery = query
 	var items []models.Story
-	for id := int64(1); id <= int64(len(f.stories)); id++ {
-		items = append(items, f.stories[id])
+	for n := 1; n <= len(f.stories); n++ {
+		items = append(items, f.stories[testID(n)])
 	}
 	end := query.Offset + query.Limit
 	if query.Offset >= len(items) {
@@ -65,7 +67,7 @@ func (f *fakeStore) Genres(context.Context) ([]GenreItem, error) {
 	return nil, f.err
 }
 
-func (f *fakeStore) FindStory(_ context.Context, id int64) (*models.Story, error) {
+func (f *fakeStore) FindStory(_ context.Context, id uuid.UUID) (*models.Story, error) {
 	item, ok := f.stories[id]
 	if !ok || item.IsHidden {
 		return nil, f.err
@@ -73,11 +75,11 @@ func (f *fakeStore) FindStory(_ context.Context, id int64) (*models.Story, error
 	return &item, f.err
 }
 
-func (f *fakeStore) Chapters(_ context.Context, storyID int64) ([]models.StoryChapter, error) {
+func (f *fakeStore) Chapters(_ context.Context, storyID uuid.UUID) ([]models.StoryChapter, error) {
 	return f.chapters[storyID], f.err
 }
 
-func (f *fakeStore) Chapter(_ context.Context, storyID int64, position int) (*ChapterRow, error) {
+func (f *fakeStore) Chapter(_ context.Context, storyID uuid.UUID, position int) (*ChapterRow, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	chapters := f.chapters[storyID]
@@ -97,7 +99,7 @@ func (f *fakeStore) Chapter(_ context.Context, storyID int64, position int) (*Ch
 	return nil, f.err
 }
 
-func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID int64, content string, wordCount int, _ []byte, replace bool) error {
+func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID uuid.UUID, content string, wordCount int, _ []byte, replace bool) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.saves++
@@ -114,10 +116,19 @@ func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID int
 	return nil
 }
 
+func testID(n int) uuid.UUID {
+	return uuid.MustParse(fmt.Sprintf("00000000-0000-4000-8000-%012d", n))
+}
+
+func sid(n int) string {
+	return testID(n).String()
+}
+
 func newFakeStore(count int) *fakeStore {
-	store := &fakeStore{stories: map[int64]models.Story{}, chapters: map[int64][]models.StoryChapter{}, total: int64(count)}
-	for id := int64(1); id <= int64(count); id++ {
-		store.stories[id] = models.Story{ID: id, Title: "Truyện", Kind: "long", PublishedAt: time.Unix(id, 0)}
+	store := &fakeStore{stories: map[uuid.UUID]models.Story{}, chapters: map[uuid.UUID][]models.StoryChapter{}, total: int64(count)}
+	for n := 1; n <= count; n++ {
+		id := testID(n)
+		store.stories[id] = models.Story{ID: id, Title: "Truyện", Kind: "long", PublishedAt: time.Unix(int64(n), 0)}
 	}
 	return store
 }
@@ -187,45 +198,45 @@ func TestListHasMore(t *testing.T) {
 }
 
 func TestStoryResponseHasNoNullArrays(t *testing.T) {
-	resp := toStoryResponse(models.Story{ID: 42})
-	if resp.ID != "42" || resp.Genres == nil || resp.Tags == nil {
+	resp := toStoryResponse(models.Story{ID: testID(42)})
+	if resp.ID != sid(42) || resp.Genres == nil || resp.Tags == nil {
 		t.Fatalf("got %+v", resp)
 	}
 }
 
 func TestDetailNotFound(t *testing.T) {
 	store := newFakeStore(2)
-	hidden := store.stories[2]
+	hidden := store.stories[testID(2)]
 	hidden.IsHidden = true
-	store.stories[2] = hidden
+	store.stories[testID(2)] = hidden
 	service := newTestService(store, &fakeSource{})
-	for _, id := range []string{"", "abc", "0", "-1", "2", "3", "99999999999999999999"} {
+	for _, id := range []string{"", "abc", "0", "-1", "99999999999999999999", uuid.Nil.String(), sid(2), sid(3)} {
 		if _, err := service.Detail(context.Background(), id); !errors.Is(err, ErrStoryNotFound) {
 			t.Fatalf("id %q: got %v", id, err)
 		}
 	}
-	if _, err := service.Chapters(context.Background(), "2"); !errors.Is(err, ErrStoryNotFound) {
+	if _, err := service.Chapters(context.Background(), sid(2)); !errors.Is(err, ErrStoryNotFound) {
 		t.Fatalf("hidden story chapters: got %v", err)
 	}
 }
 
 func TestChapterNavigation(t *testing.T) {
 	store := newFakeStore(1)
-	store.chapters[1] = []models.StoryChapter{
-		{ID: 10, StoryID: 1, Position: 1, ContentText: "một"},
-		{ID: 11, StoryID: 1, Position: 2, ContentText: "hai"},
-		{ID: 12, StoryID: 1, Position: 3, ContentText: "ba"},
+	store.chapters[testID(1)] = []models.StoryChapter{
+		{ID: testID(10), StoryID: testID(1), Position: 1, ContentText: "một"},
+		{ID: testID(11), StoryID: testID(1), Position: 2, ContentText: "hai"},
+		{ID: testID(12), StoryID: testID(1), Position: 3, ContentText: "ba"},
 	}
 	service := newTestService(store, &fakeSource{})
 
-	first, err := service.Chapter(context.Background(), "1", "1")
+	first, err := service.Chapter(context.Background(), sid(1), "1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if first.PrevPosition != nil || first.NextPosition == nil || *first.NextPosition != 2 || first.Content != "một" || first.ID != "10" {
+	if first.PrevPosition != nil || first.NextPosition == nil || *first.NextPosition != 2 || first.Content != "một" || first.ID != sid(10) {
 		t.Fatalf("first chapter: %+v", first)
 	}
-	last, err := service.Chapter(context.Background(), "1", "3")
+	last, err := service.Chapter(context.Background(), sid(1), "3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -233,7 +244,7 @@ func TestChapterNavigation(t *testing.T) {
 		t.Fatalf("last chapter: %+v", last)
 	}
 	for _, position := range []string{"0", "-1", "x", "4"} {
-		if _, err := service.Chapter(context.Background(), "1", position); !errors.Is(err, ErrChapterNotFound) {
+		if _, err := service.Chapter(context.Background(), sid(1), position); !errors.Is(err, ErrChapterNotFound) {
 			t.Fatalf("position %q: got %v", position, err)
 		}
 	}
@@ -244,9 +255,9 @@ func TestChapterNavigation(t *testing.T) {
 
 func newEmptyChapterStore() *fakeStore {
 	store := newFakeStore(1)
-	store.chapters[1] = []models.StoryChapter{
-		{ID: 10, StoryID: 1, Position: 1, Title: "Chương 1"},
-		{ID: 11, StoryID: 1, Position: 2, Title: "Chương 2", ContentText: "đã có"},
+	store.chapters[testID(1)] = []models.StoryChapter{
+		{ID: testID(10), StoryID: testID(1), Position: 1, Title: "Chương 1"},
+		{ID: testID(11), StoryID: testID(1), Position: 2, Title: "Chương 2", ContentText: "đã có"},
 	}
 	return store
 }
@@ -257,7 +268,7 @@ func TestChapterLoadsMissingContentOnce(t *testing.T) {
 	service := newTestService(store, source)
 
 	for range 2 {
-		chapter, err := service.Chapter(context.Background(), "1", "1")
+		chapter, err := service.Chapter(context.Background(), sid(1), "1")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -268,7 +279,7 @@ func TestChapterLoadsMissingContentOnce(t *testing.T) {
 	if source.calls.Load() != 1 || store.saves != 1 {
 		t.Fatalf("source calls %d, saves %d", source.calls.Load(), store.saves)
 	}
-	if _, err := service.Chapter(context.Background(), "1", "2"); err != nil || source.calls.Load() != 1 {
+	if _, err := service.Chapter(context.Background(), sid(1), "2"); err != nil || source.calls.Load() != 1 {
 		t.Fatalf("stored chapter should not be fetched: err %v calls %d", err, source.calls.Load())
 	}
 }
@@ -284,7 +295,7 @@ func TestChapterConcurrentReadsShareOneFetch(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			chapter, err := service.Chapter(context.Background(), "1", "1")
+			chapter, err := service.Chapter(context.Background(), sid(1), "1")
 			if err == nil && chapter.Content != "nội dung" {
 				err = errors.New("wrong content " + chapter.Content)
 			}
@@ -308,7 +319,7 @@ func TestChapterConcurrentReadsShareOneFetch(t *testing.T) {
 func TestChapterContentUnavailable(t *testing.T) {
 	store := newEmptyChapterStore()
 	service := newTestService(store, &fakeSource{err: errEmptyContent})
-	if _, err := service.Chapter(context.Background(), "1", "1"); !errors.Is(err, ErrChapterContentUnavailable) {
+	if _, err := service.Chapter(context.Background(), sid(1), "1"); !errors.Is(err, ErrChapterContentUnavailable) {
 		t.Fatalf("got %v", err)
 	}
 	if store.saves != 0 {
@@ -320,7 +331,7 @@ func TestChapterSaveFailureStillReturnsContent(t *testing.T) {
 	store := newEmptyChapterStore()
 	store.saveErr = errors.New("db down")
 	service := newTestService(store, &fakeSource{content: "nội dung"})
-	chapter, err := service.Chapter(context.Background(), "1", "1")
+	chapter, err := service.Chapter(context.Background(), sid(1), "1")
 	if err != nil || chapter.Content != "nội dung" {
 		t.Fatalf("got %+v, %v", chapter, err)
 	}

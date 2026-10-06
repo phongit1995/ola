@@ -12,6 +12,7 @@ import (
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 )
@@ -72,9 +73,9 @@ func normalizePaging(query ListQuery, pageSize, pageMax int) ListQuery {
 	return query
 }
 
-func parseID(raw string) (int64, bool) {
-	id, err := strconv.ParseInt(raw, 10, 64)
-	return id, err == nil && id > 0
+func parseID(raw string) (uuid.UUID, bool) {
+	id, err := uuid.Parse(raw)
+	return id, err == nil && id != uuid.Nil
 }
 
 func nonNil(values []string) []string {
@@ -86,7 +87,7 @@ func nonNil(values []string) []string {
 
 func toStoryResponse(item models.Story) StoryResponse {
 	return StoryResponse{
-		ID:            strconv.FormatInt(item.ID, 10),
+		ID:            item.ID.String(),
 		Slug:          item.Slug,
 		Title:         item.Title,
 		AuthorName:    item.AuthorName,
@@ -111,8 +112,8 @@ func toStoryResponse(item models.Story) StoryResponse {
 
 func toChapterSummary(item models.StoryChapter) ChapterSummaryResponse {
 	return ChapterSummaryResponse{
-		ID:          strconv.FormatInt(item.ID, 10),
-		StoryID:     strconv.FormatInt(item.StoryID, 10),
+		ID:          item.ID.String(),
+		StoryID:     item.StoryID.String(),
 		Position:    item.Position,
 		Title:       item.Title,
 		WordCount:   item.WordCount,
@@ -218,7 +219,7 @@ func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*Chap
 }
 
 func (s *Service) loadContent(ctx context.Context, row *ChapterRow, replace bool) error {
-	key := strconv.FormatInt(row.ID, 10) + ":" + strconv.FormatBool(replace)
+	key := row.ID.String() + ":" + strconv.FormatBool(replace)
 	value, err, _ := s.fetches.Do(key, func() (interface{}, error) {
 		fetchCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), constants.StoryFetchTimeout)
 		defer cancel()
