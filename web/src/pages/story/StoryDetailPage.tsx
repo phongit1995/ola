@@ -148,7 +148,6 @@ export function StoryDetailPage({
               <div className="mt-2 flex flex-wrap gap-1">
                 <StoryStatusBadge status={story.status} />
                 {isShort && <StoryTag>{t('story.kindShort')}</StoryTag>}
-                {story.ageRating && <StoryTag>{story.ageRating}</StoryTag>}
               </div>
               <div className="mt-2 flex flex-wrap gap-1">
                 {story.genres.map((genre) => (
