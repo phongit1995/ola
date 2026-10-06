@@ -31,12 +31,24 @@ function cleanRule(rule: Partial<StoryPlatformRule> | undefined, versioned: bool
   }
 }
 
+function versionKey(version: string): string {
+  const parts = version.split('.').map(Number)
+  while (parts.length > 1 && parts[parts.length - 1] === 0) parts.pop()
+  return parts.join('.')
+}
+
 function validateVersions(_: unknown, versions: string[] | undefined) {
   const cleaned = cleanVersions(versions)
   const invalid = cleaned.find((version) => !STORY_VERSION_PATTERN.test(version))
   if (invalid) return Promise.reject(new Error(`"${invalid}" không đúng dạng 1.0.0`))
   if (cleaned.length > STORY_DISABLE_VERSIONS_MAX) {
     return Promise.reject(new Error(`Tối đa ${STORY_DISABLE_VERSIONS_MAX} bản`))
+  }
+  const seen = new Map<string, string>()
+  for (const version of cleaned) {
+    const first = seen.get(versionKey(version))
+    if (first) return Promise.reject(new Error(`"${version}" trùng với "${first}"`))
+    seen.set(versionKey(version), version)
   }
   return Promise.resolve()
 }

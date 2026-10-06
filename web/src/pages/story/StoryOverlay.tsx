@@ -24,6 +24,7 @@ export function StoryOverlay({ visible }: { visible: boolean }) {
             <StoryReaderPage
               storyId={screen.storyId}
               position={screen.position}
+              active={visible && index === stack.length - 1}
               onBack={back}
               onChangeChapter={goToChapter}
             />

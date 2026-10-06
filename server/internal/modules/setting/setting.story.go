@@ -21,11 +21,16 @@ const (
 
 var (
 	versionPattern        = regexp.MustCompile(`^\d{1,6}(\.\d{1,6}){0,3}$`)
-	leadingVersionPattern = regexp.MustCompile(`^\s*(\d{1,6}(?:\.\d{1,6}){0,3})`)
+	leadingVersionPattern = regexp.MustCompile(`^\s*(\d{1,6}(?:\.\d{1,6}){0,3})(?:$|[\s(])`)
 )
 
 type PlatformRule struct {
 	Enabled         bool     `json:"enabled"`
+	DisableVersions []string `json:"disableVersions"`
+}
+
+type platformRuleInput struct {
+	Enabled         *bool    `json:"enabled"`
 	DisableVersions []string `json:"disableVersions"`
 }
 
@@ -99,12 +104,12 @@ func (c StoryConfig) EnabledFor(platform, appVersion string) bool {
 	if !rule.Enabled {
 		return false
 	}
-	if !versioned {
+	if !versioned || len(rule.DisableVersions) == 0 {
 		return true
 	}
 	current, ok := parseVersion(appVersionName(appVersion))
 	if !ok {
-		return true
+		return false
 	}
 	for _, raw := range rule.DisableVersions {
 		if disabled, ok := parseVersion(raw); ok && sameVersion(current, disabled) {
@@ -159,9 +164,9 @@ func ValidateStoryValue(value models.JSONB) error {
 		return errors.New("invalid story config")
 	}
 	var cfg struct {
-		Web     *PlatformRule `json:"web"`
-		Android *PlatformRule `json:"android"`
-		IOS     *PlatformRule `json:"ios"`
+		Web     *platformRuleInput `json:"web"`
+		Android *platformRuleInput `json:"android"`
+		IOS     *platformRuleInput `json:"ios"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()
@@ -170,6 +175,9 @@ func ValidateStoryValue(value models.JSONB) error {
 	}
 	if cfg.Web == nil || cfg.Android == nil || cfg.IOS == nil {
 		return errors.New("cấu hình truyện cần đủ web, android và ios")
+	}
+	if cfg.Web.Enabled == nil || cfg.Android.Enabled == nil || cfg.IOS.Enabled == nil {
+		return errors.New("mỗi nền tảng cần có enabled")
 	}
 	if len(cfg.Web.DisableVersions) > 0 {
 		return errors.New("web không dùng danh sách bản bị tắt")
