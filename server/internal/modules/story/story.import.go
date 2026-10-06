@@ -6,8 +6,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
+
+	"ola-chat-server/internal/constants"
 
 	"github.com/google/uuid"
 )
@@ -81,7 +84,7 @@ ON CONFLICT (source, source_story_id) DO UPDATE SET
 	updated_at = CURRENT_TIMESTAMP
 RETURNING id, (xmax = 0) AS inserted`
 
-const upsertChapterSQL = `
+var upsertChapterSQL = `
 INSERT INTO story_chapters (
 	story_id, source_chapter_id, position, title, source_url, content_text, word_count, published_at, crawled_at, content_hash
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -91,7 +94,7 @@ ON CONFLICT (story_id, source_chapter_id) DO UPDATE SET
 	source_url = EXCLUDED.source_url,
 	content_text = EXCLUDED.content_text,
 	word_count = EXCLUDED.word_count,
-	published_at = EXCLUDED.published_at,
+	` + publishedAtSetSQL + `,
 	crawled_at = EXCLUDED.crawled_at,
 	content_hash = EXCLUDED.content_hash,
 	updated_at = CURRENT_TIMESTAMP
@@ -99,10 +102,22 @@ WHERE story_chapters.content_hash IS DISTINCT FROM EXCLUDED.content_hash
 	OR story_chapters.position <> EXCLUDED.position
 	OR story_chapters.title <> EXCLUDED.title
 	OR story_chapters.source_url <> EXCLUDED.source_url
-	OR story_chapters.published_at IS DISTINCT FROM EXCLUDED.published_at
+	OR ` + publishedAtChangedSQL + `
 RETURNING (xmax = 0) AS inserted`
 
-const upsertChapterInfoSQL = `
+func sourceClock(column string) string {
+	return "((" + column + " AT TIME ZONE 'UTC') + interval '" + strconv.Itoa(constants.StoryVnkingsUTCOffsetSeconds) + " seconds')"
+}
+
+var keepPreciseTimeSQL = "COALESCE(story_chapters.published_at IS NOT NULL AND " +
+	sourceClock("EXCLUDED.published_at") + "::time = time '00:00' AND " +
+	sourceClock("story_chapters.published_at") + "::date = " + sourceClock("EXCLUDED.published_at") + "::date, false)"
+
+var publishedAtSetSQL = "published_at = CASE WHEN " + keepPreciseTimeSQL + " THEN story_chapters.published_at ELSE EXCLUDED.published_at END"
+
+var publishedAtChangedSQL = "NOT (story_chapters.published_at IS NOT DISTINCT FROM EXCLUDED.published_at OR " + keepPreciseTimeSQL + ")"
+
+var upsertChapterInfoSQL = `
 INSERT INTO story_chapters (
 	story_id, source_chapter_id, position, title, source_url, word_count, published_at, crawled_at
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -110,13 +125,13 @@ ON CONFLICT (story_id, source_chapter_id) DO UPDATE SET
 	position = EXCLUDED.position,
 	title = EXCLUDED.title,
 	source_url = EXCLUDED.source_url,
-	published_at = EXCLUDED.published_at,
+	` + publishedAtSetSQL + `,
 	crawled_at = EXCLUDED.crawled_at,
 	updated_at = CURRENT_TIMESTAMP
 WHERE story_chapters.position <> EXCLUDED.position
 	OR story_chapters.title <> EXCLUDED.title
 	OR story_chapters.source_url <> EXCLUDED.source_url
-	OR story_chapters.published_at IS DISTINCT FROM EXCLUDED.published_at
+	OR ` + publishedAtChangedSQL + `
 RETURNING (xmax = 0) AS inserted`
 
 const removeStaleChaptersSQL = `

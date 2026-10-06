@@ -27,18 +27,17 @@ var (
 )
 
 var (
-	tagPattern        = regexp.MustCompile(`<[^>]+>`)
-	likePattern       = regexp.MustCompile(`Lượt thích</span><strong>:\s*([\d.]+)`)
-	coverPattern      = regexp.MustCompile(`<img class="lazyload" data-original="([^"]+)"`)
-	ogImagePattern    = regexp.MustCompile(`<meta property="og:image" content="([^"]+)"`)
-	noncePattern      = regexp.MustCompile(`data-story-id="\d+" data-nonce="([0-9a-f]+)"`)
-	chapterPattern    = regexp.MustCompile(`(?s)<a href="([^"]+)">(.*?)</a>\s*<i class="pull-right">(.*?)</i>`)
-	chapterIDPattern  = regexp.MustCompile(`-p(\d+)\.html`)
-	chapterDateFormat = regexp.MustCompile(`^(\d{1,2})/(\d{1,2})/(\d{4})`)
-	nonDigits         = regexp.MustCompile(`[^\d]`)
-	authorPattern     = infoPattern("Tác giả")
-	statusPattern     = infoPattern("Tình trạng")
-	ratingPattern     = infoPattern("Rating")
+	tagPattern       = regexp.MustCompile(`<[^>]+>`)
+	likePattern      = regexp.MustCompile(`Lượt thích</span><strong>:\s*([\d.]+)`)
+	coverPattern     = regexp.MustCompile(`<img class="lazyload" data-original="([^"]+)"`)
+	ogImagePattern   = regexp.MustCompile(`<meta property="og:image" content="([^"]+)"`)
+	noncePattern     = regexp.MustCompile(`data-story-id="\d+" data-nonce="([0-9a-f]+)"`)
+	chapterPattern   = regexp.MustCompile(`(?s)<a href="([^"]+)">(.*?)</a>\s*<i class="pull-right">(.*?)</i>`)
+	chapterIDPattern = regexp.MustCompile(`-p(\d+)\.html`)
+	nonDigits        = regexp.MustCompile(`[^\d]`)
+	authorPattern    = infoPattern("Tác giả")
+	statusPattern    = infoPattern("Tình trạng")
+	ratingPattern    = infoPattern("Rating")
 )
 
 func infoPattern(label string) *regexp.Regexp {
@@ -270,6 +269,7 @@ func (c *VnkingsCatalog) StoryPage(ctx context.Context, link string) (StoryPageI
 
 func (c *VnkingsCatalog) ChapterLinks(ctx context.Context, storyID int64, nonce string) ([]ChapterLink, error) {
 	var links []ChapterLink
+	seen := map[string]bool{}
 	for page := 1; ; page++ {
 		form := url.Values{
 			"action":        {constants.StoryVnkingsChaptersAction},
@@ -297,6 +297,12 @@ func (c *VnkingsCatalog) ChapterLinks(ctx context.Context, storyID int64, nonce 
 		pageLinks := parseChapterLinks(result.Data.Items)
 		if len(pageLinks) == 0 && page > 1 {
 			return nil, fmt.Errorf("%w: story %d page %d is empty", errIncompleteChapters, storyID, page)
+		}
+		for _, link := range pageLinks {
+			if seen[link.SourceID] {
+				return nil, fmt.Errorf("%w: story %d page %d repeats chapter %s", errIncompleteChapters, storyID, page, link.SourceID)
+			}
+			seen[link.SourceID] = true
 		}
 		links = append(links, pageLinks...)
 		if page >= max(int(result.Data.TotalPages), 1) {
@@ -553,19 +559,6 @@ func parseChapterLinks(items string) []ChapterLink {
 		})
 	}
 	return links
-}
-
-func chapterDate(label string) *time.Time {
-	match := chapterDateFormat.FindStringSubmatch(strings.TrimSpace(label))
-	if match == nil {
-		return nil
-	}
-	day, _ := strconv.Atoi(match[1])
-	month, _ := strconv.Atoi(match[2])
-	year, _ := strconv.Atoi(match[3])
-	zone := time.FixedZone("ICT", constants.StoryVnkingsUTCOffsetSeconds)
-	value := time.Date(year, time.Month(month), day, 0, 0, 0, 0, zone).UTC()
-	return &value
 }
 
 func gmtTime(value string) (time.Time, error) {

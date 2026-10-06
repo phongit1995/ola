@@ -202,10 +202,12 @@ func TestCatalogRejectsIncompleteChapterList(t *testing.T) {
 	pages["1"] = map[string]string{"1": firstPage, "2": `{"success":false,"data":"Có lỗi"}`}
 	pages["2"] = map[string]string{"1": firstPage, "2": `{"success":true,"data":{"items":"","totalPages":2}}`}
 	pages["3"] = map[string]string{"1": `{"success":false,"data":"Không có chương"}`}
-	pages["4"] = map[string]string{"1": firstPage, "2": firstPage}
+	secondItem := `<a href="https://vnkings.com/truyen-x-p102.html">Chương 2</a> <i class="pull-right">02/10/2026</i>`
+	pages["4"] = map[string]string{"1": firstPage, "2": `{"success":true,"data":{"items":` + strconv.Quote(secondItem) + `,"totalPages":2}}`}
+	pages["5"] = map[string]string{"1": firstPage, "2": firstPage}
 	ctx := context.Background()
 
-	for _, storyID := range []int64{1, 2} {
+	for _, storyID := range []int64{1, 2, 5} {
 		if links, err := catalog.ChapterLinks(ctx, storyID, "n"); !errors.Is(err, errIncompleteChapters) || links != nil {
 			t.Fatalf("story %d: a failed later page must not return a partial list, got %d links, %v", storyID, len(links), err)
 		}

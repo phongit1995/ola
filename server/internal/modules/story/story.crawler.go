@@ -460,7 +460,7 @@ func (c *Crawler) processPost(ctx context.Context, run *crawlRun, post SourcePos
 			return err
 		}
 	}
-	item, chapters, ok := buildImport(post, info, links, run.categories, tags)
+	item, chapters, ok := buildImport(post, info, links, run.categories, tags, time.Now())
 	switch {
 	case !ok && isKnown:
 		return errNoChapters
@@ -563,7 +563,7 @@ func charCount(paragraphs []string) int {
 	return total
 }
 
-func buildImport(post SourcePost, info StoryPageInfo, links []ChapterLink, categories, tags map[int64]string) (StoryImport, []ChapterImport, bool) {
+func buildImport(post SourcePost, info StoryPageInfo, links []ChapterLink, categories, tags map[int64]string, now time.Time) (StoryImport, []ChapterImport, bool) {
 	sourceID := strconv.FormatInt(post.ID, 10)
 	title := plainText(post.Title.Rendered)
 	publishedAt, err := gmtTime(post.DateGMT)
@@ -601,6 +601,11 @@ func buildImport(post SourcePost, info StoryPageInfo, links []ChapterLink, categ
 	case len(links) > 0:
 		item.Kind = constants.StoryKindLong
 		item.Intro = strings.Join(paragraphs, "\n\n")
+		labels := make([]string, 0, len(links))
+		for _, link := range links {
+			labels = append(labels, link.DateLabel)
+		}
+		times := chapterTimes(labels, now, publishedAt, updatedAt)
 		chapters := make([]ChapterImport, 0, len(links))
 		for index, link := range links {
 			chapters = append(chapters, ChapterImport{
@@ -608,7 +613,7 @@ func buildImport(post SourcePost, info StoryPageInfo, links []ChapterLink, categ
 				Position:        index + 1,
 				Title:           link.Title,
 				URL:             link.URL,
-				PublishedAt:     chapterDate(link.DateLabel),
+				PublishedAt:     times[index],
 			})
 		}
 		return item, chapters, true

@@ -288,6 +288,7 @@ const (
 	StoryVnkingsPerPage          = 100
 	StoryVnkingsUTCOffsetSeconds = 7 * 60 * 60
 	StoryShortMinChars           = 1500
+	StoryChapterAnchorTolerance  = 5 * time.Minute
 
 	StoryCrawlGap             = time.Second
 	StoryCrawlRetries         = 2
