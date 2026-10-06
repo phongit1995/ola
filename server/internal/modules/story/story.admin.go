@@ -10,6 +10,8 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -52,11 +54,11 @@ func filterQuery(filter StoryFilter) ListQuery {
 	})
 }
 
-func parseIDs(raw []string) ([]int64, bool) {
+func parseIDs(raw []string) ([]uuid.UUID, bool) {
 	if len(raw) > constants.StoryBulkIDsMax {
 		return nil, false
 	}
-	ids := make([]int64, 0, len(raw))
+	ids := make([]uuid.UUID, 0, len(raw))
 	for _, value := range raw {
 		id, ok := parseID(value)
 		if !ok {
@@ -71,7 +73,7 @@ func toAdminStoryResponse(item models.Story, contentChapters int) AdminStoryResp
 	return AdminStoryResponse{
 		StoryResponse:   toStoryResponse(item),
 		Source:          item.Source,
-		SourceStoryID:   strconv.FormatInt(item.SourceStoryID, 10),
+		SourceStoryID:   item.SourceStoryID,
 		IsHidden:        item.IsHidden,
 		ContentChapters: contentChapters,
 		CrawledAt:       item.CrawledAt,
@@ -106,7 +108,7 @@ func (s *Service) AdminList(ctx context.Context, query ListQuery) (*AdminStoryLi
 	if err != nil {
 		return nil, err
 	}
-	ids := make([]int64, 0, len(stories))
+	ids := make([]uuid.UUID, 0, len(stories))
 	for _, item := range stories {
 		ids = append(ids, item.ID)
 	}
@@ -194,7 +196,7 @@ func (s *Service) AdminDetail(ctx context.Context, rawID string) (*AdminStoryRes
 	if err != nil {
 		return nil, err
 	}
-	counts, err := s.admin.ContentCounts(ctx, []int64{item.ID})
+	counts, err := s.admin.ContentCounts(ctx, []uuid.UUID{item.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +309,7 @@ func (s *Service) FetchMissingContent(ctx context.Context, rawID string) (*Fetch
 	return &FetchMissingResponse{Queued: len(rows)}, nil
 }
 
-func (s *Service) fetchChapters(storyID int64, rows []ChapterRow) {
+func (s *Service) fetchChapters(storyID uuid.UUID, rows []ChapterRow) {
 	defer s.bulkFetches.Delete(storyID)
 	ctx, cancel := context.WithTimeout(context.Background(), constants.StoryBulkFetchTimeout)
 	defer cancel()

@@ -19,6 +19,12 @@ export const STORY_READER_DEFAULTS: StoryReaderPrefs = {
   lineHeight: 1.8,
 };
 
+const STORY_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isStoryId(value: string): boolean {
+  return STORY_ID_PATTERN.test(value);
+}
+
 export function storyChapterKey(storyId: string, position: number): string {
   return `${storyId}:${position}`;
 }

@@ -3,14 +3,14 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
 CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 
 CREATE TABLE IF NOT EXISTS public.stories (
-    id bigserial NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     source character varying(30) DEFAULT 'vnkings' NOT NULL,
-    source_story_id bigint NOT NULL,
+    source_story_id character varying(100) NOT NULL,
     slug character varying(255) NOT NULL,
     source_url text NOT NULL,
     title character varying(500) NOT NULL,
     author_name character varying(200) DEFAULT '' NOT NULL,
-    source_author_id bigint,
+    source_author_id character varying(100),
     kind character varying(10) NOT NULL,
     genres text[] DEFAULT '{}' NOT NULL,
     tags text[] DEFAULT '{}' NOT NULL,
@@ -53,7 +53,7 @@ CREATE TRIGGER stories_search_text
 
 CREATE INDEX IF NOT EXISTS idx_stories_activity ON public.stories ((COALESCE(last_chapter_at, source_updated_at)) DESC, id DESC) WHERE NOT is_hidden;
 
-CREATE INDEX IF NOT EXISTS idx_stories_views ON public.stories (view_count DESC, id DESC) WHERE NOT is_hidden;
+CREATE INDEX IF NOT EXISTS idx_stories_views ON public.stories (view_count DESC, (COALESCE(last_chapter_at, source_updated_at)) DESC, id DESC) WHERE NOT is_hidden;
 
 CREATE INDEX IF NOT EXISTS idx_stories_published ON public.stories (published_at DESC, id DESC) WHERE NOT is_hidden;
 
@@ -62,9 +62,9 @@ CREATE INDEX IF NOT EXISTS idx_stories_genres ON public.stories USING gin (genre
 CREATE INDEX IF NOT EXISTS idx_stories_search_text ON public.stories USING gin (search_text public.gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS public.story_chapters (
-    id bigserial NOT NULL,
-    story_id bigint NOT NULL REFERENCES public.stories(id) ON DELETE CASCADE,
-    source_chapter_id bigint NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    story_id uuid NOT NULL REFERENCES public.stories(id) ON DELETE CASCADE,
+    source_chapter_id character varying(100) NOT NULL,
     "position" integer NOT NULL,
     title character varying(500) NOT NULL,
     source_url text NOT NULL,

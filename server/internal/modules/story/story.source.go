@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"ola-chat-server/internal/constants"
@@ -67,7 +68,11 @@ func (v *VnkingsSource) chapterParagraphs(ctx context.Context, rawURL string) ([
 	return pageParagraphs(page, constants.StoryVnkingsContentID)
 }
 
-func (v *VnkingsSource) postParagraphs(ctx context.Context, postID int64) ([]string, error) {
+func (v *VnkingsSource) postParagraphs(ctx context.Context, rawPostID string) ([]string, error) {
+	postID, err := strconv.ParseUint(rawPostID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("%w: post %q", errUnsupportedSource, rawPostID)
+	}
 	body, err := v.get(ctx, fmt.Sprintf(constants.StoryVnkingsPostURL, postID))
 	if err != nil {
 		return nil, err

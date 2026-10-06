@@ -1,9 +1,12 @@
 package story
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
+
+	"ola-chat-server/internal/constants"
 )
 
 func TestPageParagraphs(t *testing.T) {
@@ -55,5 +58,15 @@ func TestFragmentParagraphs(t *testing.T) {
 	want := []string{"Con chày đất", "Nhà tôi ở bến sông.", "UỲNH!"}
 	if !reflect.DeepEqual(paragraphs, want) {
 		t.Fatalf("got %q", paragraphs)
+	}
+}
+
+func TestVnkingsShortStoryNeedsNumericPostID(t *testing.T) {
+	source := NewVnkingsSource()
+	for _, id := range []string{"", "abc", "12/../users", "-5", "1e3"} {
+		row := &ChapterRow{StorySource: constants.StorySourceVnkings, StoryKind: constants.StoryKindShort, StorySourceID: id}
+		if _, err := source.ChapterContent(context.Background(), row); !errors.Is(err, errUnsupportedSource) {
+			t.Fatalf("post id %q: got %v", id, err)
+		}
 	}
 }

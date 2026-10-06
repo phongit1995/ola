@@ -1,7 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { sharedPersistStorage } from '../../platform/persistStorage';
-import { clampStoryFontSize, STORY_READER_DEFAULTS, STORY_RECENT_LIMIT } from '../../lib/story';
+import {
+  clampStoryFontSize,
+  isStoryId,
+  STORY_READER_DEFAULTS,
+  STORY_RECENT_LIMIT,
+} from '../../lib/story';
 import type {
   PersistedStoryPrefs,
   StoryPrefsState,
@@ -35,7 +40,15 @@ export const useStoryPrefsStore = create<StoryPrefsState>()(
     }),
     {
       name: 'ola.story.prefs',
+      version: 1,
       storage: sharedPersistStorage<PersistedStoryPrefs>(),
+      migrate: (persisted) => {
+        const saved = persisted as Partial<PersistedStoryPrefs> | undefined;
+        const progress = Object.fromEntries(
+          Object.entries(saved?.progress ?? {}).filter(([storyId]) => isStoryId(storyId))
+        );
+        return { reader: { ...STORY_READER_DEFAULTS, ...saved?.reader }, progress };
+      },
       partialize: (state) => ({ reader: state.reader, progress: state.progress }),
       merge: (persisted, current) => {
         const saved = persisted as Partial<PersistedStoryPrefs> | undefined;
