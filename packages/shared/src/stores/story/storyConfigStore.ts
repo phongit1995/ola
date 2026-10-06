@@ -11,6 +11,6 @@ export const useStoryConfigStore = create<StoryConfigState>((set, get) => ({
       set({ enabled: config.enabled });
       return;
     }
-    if (get().enabled == null) set({ enabled: true });
+    if (get().enabled == null) set({ enabled: false });
   },
 }));

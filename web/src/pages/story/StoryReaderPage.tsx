@@ -19,13 +19,25 @@ type ReaderSheetKind = 'settings' | 'toc';
 interface StoryReaderPageProps {
   storyId: string;
   position: number;
+  active: boolean;
   onBack: () => void;
   onChangeChapter: (position: number) => void;
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement)
+  );
 }
 
 export function StoryReaderPage({
   storyId,
   position,
+  active,
   onBack,
   onChangeChapter,
 }: StoryReaderPageProps) {
@@ -71,8 +83,9 @@ export function StoryReaderPage({
   const nextPosition = chapter?.nextPosition ?? null;
 
   useEffect(() => {
+    if (!active) return;
     function onKeyDown(event: KeyboardEvent) {
-      if (sheet != null) return;
+      if (sheet != null || isTypingTarget(event.target)) return;
       if (event.key === 'ArrowLeft' && prevPosition != null) {
         onChangeChapter(prevPosition);
       }
@@ -82,7 +95,7 @@ export function StoryReaderPage({
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [sheet, prevPosition, nextPosition, onChangeChapter]);
+  }, [active, sheet, prevPosition, nextPosition, onChangeChapter]);
 
   function pickChapter(next: number) {
     setSheet(null);

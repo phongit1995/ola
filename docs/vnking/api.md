@@ -163,17 +163,18 @@ Setting `story` trong bảng `app_settings`, admin sửa ở menu **Truyện →
 | Endpoint | Việc |
 |---|---|
 | `GET /settings/story` | Cần đăng nhập. Server đọc header `X-Platform` (`web`/`android`/`ios`) và `X-App-Version`, chỉ trả `{"enabled": true}` hoặc `{"enabled": false}` |
-| `PUT /admin/settings/story` | Body `{"value": {...}}`. Bắt buộc đủ `web`, `android`, `ios`; `disableVersions` mỗi bản dạng `1.0.0` (1–4 số), không trùng, tối đa 50; web không có danh sách bản bị tắt. Sai thì `400` |
+| `PUT /admin/settings/story` | Body `{"value": {...}}`. Bắt buộc đủ `web`, `android`, `ios`, mỗi nền tảng phải có `enabled`; `disableVersions` mỗi bản dạng `1.0.0` (1–4 số), không trùng, tối đa 50; web không có danh sách bản bị tắt. Sai thì `400` |
 
 Cách server tính (`StoryConfig.EnabledFor` trong `server/internal/modules/setting/setting.story.go`):
 
 - `X-Platform` là `android` hoặc `ios` thì dùng cấu hình nền tảng đó; thiếu header hoặc giá trị khác (web, desktop) tính là `web`.
 - Nền tảng đang tắt thì trả `false`. Đang bật thì trả `false` nếu tên bản của app nằm trong `disableVersions`, ngược lại `true`.
-- Tên bản lấy phần đầu của `X-App-Version` (`1.0.0` trong `1.0.0 (45)`), không tính số build; `1.2` và `1.2.0` coi là một. Không đọc được phiên bản thì bỏ qua danh sách, chỉ xét bật/tắt.
+- Tên bản lấy phần đầu của `X-App-Version` (`1.0.0` trong `1.0.0 (45)`), không tính số build; `1.2` và `1.2.0` coi là một. Tên bản phải đứng riêng (theo sau là hết chuỗi, dấu cách hoặc `(`), nên `1.0.0.0.1` hay `1.0.0-beta` coi như không đọc được.
+- Không đọc được phiên bản mà nền tảng có danh sách bản bị tắt thì trả `false`; danh sách rỗng thì chỉ xét bật/tắt.
 
 Phía app:
 
-- Mọi request qua `http` của `@ola/shared` đều tự gửi `X-Platform` và `X-App-Version` lấy từ `getDeviceInfo()` (`deviceInfoInterceptor`).
-- Store `useStoryConfigStore` gọi `GET /settings/story` mỗi lần mở trang chính, nên đổi cấu hình có hiệu lực ở lần mở sau. Lỗi mạng thì giữ kết quả cũ, chưa có thì coi như bật.
+- Mọi request qua `http` của `@ola/shared` đều tự gửi `X-Platform` và `X-App-Version` lấy từ `configureDeviceInfo` lúc bootstrap (`deviceInfoInterceptor`).
+- Store `useStoryConfigStore` gọi `GET /settings/story` mỗi lần mở trang chính, nên đổi cấu hình có hiệu lực ở lần mở sau. Lỗi mạng thì giữ kết quả cũ; ngay lần đầu đã lỗi thì coi là tắt. Chưa có kết quả thì web chưa hiện tab RSS (đang ở tab RSS thì để trống, không tải truyện).
 - Chỉ ẩn ở app, server không chặn API truyện.
 - Web: tắt thì ẩn tab RSS; đang ở tab RSS thì về tab Chat. Mobile chưa có màn Truyện (tab RSS đang tắt trong `RootNavigator`), khi làm thì hiện tab khi `useStoryConfigStore` trả `enabled === true`.

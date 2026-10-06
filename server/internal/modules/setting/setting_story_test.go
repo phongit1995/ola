@@ -37,13 +37,19 @@ func TestStoryEnabledFor(t *testing.T) {
 		{"Android", "1.0.1", false},
 		{"android", "1.2.0 (60)", false},
 		{"android", "1.2.1 (61)", true},
-		{"android", "", true},
+		{"android", "", false},
+		{"android", "v1.0.0", false},
+		{"android", "1.0.0.0.1 (7)", false},
 		{"ios", "1.0.0 (12)", false},
 	}
 	for _, tc := range cases {
 		if got := cfg.EnabledFor(tc.platform, tc.version); got != tc.want {
 			t.Fatalf("EnabledFor(%q, %q) = %v, want %v", tc.platform, tc.version, got, tc.want)
 		}
+	}
+	cfg.IOS = PlatformRule{Enabled: true, DisableVersions: []string{}}
+	if !cfg.EnabledFor("ios", "") {
+		t.Fatal("unknown version must not matter when no version is disabled")
 	}
 	cfg.Web.Enabled = false
 	if cfg.EnabledFor("", "") || cfg.EnabledFor("web", "") {
@@ -53,11 +59,15 @@ func TestStoryEnabledFor(t *testing.T) {
 
 func TestAppVersionName(t *testing.T) {
 	cases := map[string]string{
-		"1.0.0 (45)": "1.0.0",
-		"2.1":        "2.1",
-		" 1.0.3":     "1.0.3",
-		"v1.0.0":     "",
-		"":           "",
+		"1.0.0 (45)":    "1.0.0",
+		"1.0.0(45)":     "1.0.0",
+		"2.1":           "2.1",
+		" 1.0.3":        "1.0.3",
+		"1.0.0.0.1 (7)": "",
+		"1.0.1234567":   "",
+		"1.0.0-beta":    "",
+		"v1.0.0":        "",
+		"":              "",
 	}
 	for in, want := range cases {
 		if got := appVersionName(in); got != want {
@@ -82,6 +92,7 @@ func TestValidateStoryValue(t *testing.T) {
 	missingIOS := storyValue(rule(true), rule(true))
 	delete(missingIOS, "ios")
 	oldShape := storyValue(rule(true), map[string]interface{}{"enabled": true, "minVersion": "1.0.0"})
+	missingEnabled := storyValue(rule(true), map[string]interface{}{"disableVersions": []string{}})
 	tooMany := make([]string, disableVersionsMax+1)
 	for i := range tooMany {
 		tooMany[i] = "1.0." + strconv.Itoa(i)
@@ -98,6 +109,7 @@ func TestValidateStoryValue(t *testing.T) {
 		{"web versions", webWithVersions, "web"},
 		{"missing platform", missingIOS, "android và ios"},
 		{"old min/max fields", oldShape, "unknown field"},
+		{"missing enabled", missingEnabled, "enabled"},
 	}
 	for _, tc := range invalid {
 		err := ValidateStoryValue(tc.value)

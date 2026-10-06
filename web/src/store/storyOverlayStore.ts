@@ -10,6 +10,7 @@ interface StoryOverlayState {
   openReader: (storyId: string, position: number) => void;
   goToChapter: (position: number) => void;
   back: () => void;
+  reset: () => void;
 }
 
 export const useStoryOverlayStore = create<StoryOverlayState>((set) => ({
@@ -27,4 +28,5 @@ export const useStoryOverlayStore = create<StoryOverlayState>((set) => ({
       return { stack: [...state.stack.slice(0, -1), { ...top, position }] };
     }),
   back: () => set((state) => ({ stack: state.stack.slice(0, -1) })),
+  reset: () => set({ stack: [] }),
 }));

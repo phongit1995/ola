@@ -47,14 +47,16 @@ function rollDownloadFabVisible(): boolean {
 
 export function HomePage() {
   const [tab, setTab] = useState<TabKey>(readStoredTab);
-  const storyHidden = useStoryConfigStore((state) => state.enabled === false);
-  const activeTab: TabKey = storyHidden && tab === 'rss' ? 'chat' : tab;
+  const storyEnabled = useStoryConfigStore((state) => state.enabled);
+  const activeTab: TabKey =
+    storyEnabled === false && tab === 'rss' ? 'chat' : tab;
+  const storyPending = activeTab === 'rss' && storyEnabled == null;
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
   const chatUnread = useChatStore((state) =>
     totalUnreadOf(state.conversations)
   );
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
-  const ActivePanel = PANELS[activeTab];
+  const ActivePanel = storyPending ? null : PANELS[activeTab];
   const authReady = useAuthStore((state) => state.authReady);
   const ken = useAuthStore((state) => state.user?.ken);
   const gameActive = useGameOverlayStore((state) => state.active != null);
@@ -86,6 +88,10 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
+    if (storyEnabled === false) useStoryOverlayStore.getState().reset();
+  }, [storyEnabled]);
+
+  useEffect(() => {
     if (!authReady) return;
     SocketService.connect();
     return () => SocketService.disconnect();
@@ -97,11 +103,13 @@ export function HomePage() {
         <AnnouncementBanner />
         {!hideKenBadge && <KenBalanceBadge ken={ken} />}
         <Suspense fallback={<div className="flex-1" />}>
-          <ActivePanel />
+          {ActivePanel ? <ActivePanel /> : <div className="flex-1" />}
         </Suspense>
         <RoomChatOverlay visible={activeTab === 'room'} />
         <WordChainOverlay visible={activeTab === 'room'} />
-        <StoryOverlay visible={activeTab === 'rss'} />
+        {storyEnabled === true && (
+          <StoryOverlay visible={activeTab === 'rss'} />
+        )}
         {downloadFabMounted && (
           <DownloadFab
             hidden={hideKenBadge || guideOpen}
@@ -116,7 +124,7 @@ export function HomePage() {
         onChange={changeTab}
         badges={{ chat: chatUnread, personal: notifUnread }}
         dots={{ room: roomUnread && activeTab !== 'room' }}
-        hidden={{ rss: storyHidden }}
+        hidden={{ rss: storyEnabled !== true }}
       />
 
       <ActiveConversationOverlay />
