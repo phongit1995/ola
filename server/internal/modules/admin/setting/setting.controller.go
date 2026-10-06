@@ -2,6 +2,7 @@ package adminsetting
 
 import (
 	"strings"
+	"time"
 
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/models"
@@ -23,7 +24,8 @@ func NewController(service *setting.Service, cfg *config.Config, logger *zap.Sug
 }
 
 type PutSettingRequest struct {
-	Value models.JSONB `json:"value" binding:"required"`
+	Value             models.JSONB `json:"value" binding:"required"`
+	ExpectedUpdatedAt *time.Time   `json:"expectedUpdatedAt"`
 }
 
 type SettingEntry struct {
@@ -97,7 +99,12 @@ func (ctrl *Controller) Put(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	item, err := ctrl.service.Put(key, value)
+	var item *models.AppSetting
+	if req.ExpectedUpdatedAt != nil {
+		item, err = ctrl.service.PutIfUnchanged(key, value, *req.ExpectedUpdatedAt)
+	} else {
+		item, err = ctrl.service.Put(key, value)
+	}
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

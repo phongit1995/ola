@@ -145,7 +145,7 @@ Trang admin: menu **Truyện** (`/stories`), code ở `admin/src/pages/StoriesPa
 | `DELETE /admin/stories/{id}` | Xoá truyện và mọi chương. Nếu truyện còn trong file dữ liệu thì lần nạp sau sẽ thêm lại; muốn gỡ hẳn thì ẩn |
 | `GET /admin/stories/{id}/chapters` | Mọi chương kèm `sourceUrl`, `hasContent`, `crawledAt` |
 | `GET /admin/stories/{id}/chapters/{position}` | Xem nội dung đang lưu, **không** tự lấy từ nguồn |
-| `POST /admin/stories/{id}/chapters/{position}/refetch` | Lấy lại từ nguồn và ghi đè nội dung cũ (kể cả khi đã có). Lỗi nguồn: `502 STORY_CONTENT_UNAVAILABLE`, nội dung cũ giữ nguyên |
+| `POST /admin/stories/{id}/chapters/{position}/refetch` | Lấy lại từ nguồn và ghi đè nội dung cũ (kể cả khi đã có). Lỗi nguồn: `502 STORY_CONTENT_UNAVAILABLE`, nội dung cũ giữ nguyên. Lấy được nhưng lưu DB lỗi: `500 STORY_CONTENT_NOT_SAVED` |
 | `POST /admin/stories/{id}/fetch-content` | Lấy nội dung mọi chương còn thiếu, chạy nền, trả `{"queued": n}`. Lấy lần lượt, cách nhau 0,5 giây, tối đa 30 phút; truyện đang chạy thì trả `409`. Trang admin tự tải lại danh sách chương mỗi 3 giây cho tới khi đủ |
 
 ## 5. Bật/tắt Truyện theo nền tảng
@@ -201,8 +201,8 @@ Setting `story_crawler` trong bảng `app_settings`, admin sửa ở menu **Truy
 
 | Endpoint | Việc |
 |---|---|
-| `PUT /admin/settings/story_crawler` | Body `{"value": {...}}`. Bắt buộc đủ 6 field (`cookies` có thể là `[]`); `intervalHours` là 1, 2, 3, 6, 12 hoặc 24. Mỗi cookie bắt buộc có `cookie` (không rỗng, không xuống dòng, tối đa 8192 ký tự, không trùng nhau) và `status`; `name` tối đa 100 ký tự; tối đa 50 cookie. Sai thì `400`. Có hiệu lực trong vòng 1 phút |
-| `GET /admin/stories/crawler` | `{config, userAgents, running, progress, lastRunAt, nextRunAt, nextSince, logs}`. `config` gồm cả danh sách cookie. `userAgents` là số User-Agent trong danh sách ngẫu nhiên. `progress` là log của lượt đang chạy (có khi `running`), `nextRunAt` là `null` khi đang tắt, `logs` là tối đa 50 lượt gần nhất, mới nhất trước |
+| `PUT /admin/settings/story_crawler` | Body `{"value": {...}}`. Bắt buộc đủ 6 field (`cookies` có thể là `[]`); `intervalHours` là 1, 2, 3, 6, 12 hoặc 24. Mỗi cookie bắt buộc có `cookie` (không rỗng, không xuống dòng, tối đa 8192 ký tự, không trùng nhau) và `status`; `name` tối đa 100 ký tự; tối đa 50 cookie. Sai thì `400`. Có thể gửi thêm `expectedUpdatedAt` (lấy từ `configUpdatedAt`): cấu hình đã đổi kể từ lúc đó (VD crawler vừa chuyển cookie sang die) thì trả `409 SETTING_CHANGED` thay vì ghi đè; trang admin luôn gửi trường này. Có hiệu lực trong vòng 1 phút |
+| `GET /admin/stories/crawler` | `{config, configUpdatedAt, userAgents, running, progress, lastRunAt, nextRunAt, nextSince, retryPending, logs}`. `config` gồm cả danh sách cookie, `configUpdatedAt` là lúc cấu hình đổi lần cuối. `retryPending` là số truyện lỗi đang chờ thử lại. `userAgents` là số User-Agent trong danh sách ngẫu nhiên. `progress` là log của lượt đang chạy (có khi `running`), `nextRunAt` là `null` khi đang tắt, `logs` là tối đa 50 lượt gần nhất, mới nhất trước |
 | `POST /admin/stories/crawler/run` | Chạy ngay một lượt ở nền, kể cả khi đang tắt tự động. Trả `{"started": true}`; đang có lượt chạy thì `409 STORY_CRAWL_RUNNING` |
 
 Mỗi log gồm:
@@ -210,7 +210,7 @@ Mỗi log gồm:
 - `trigger` (`schedule`/`manual`), `status` (`running`, `success`, `partial` có truyện lỗi, `blocked` bị nguồn chặn, `failed` lỗi cả lượt), `message`.
 - `since`, `startedAt`, `finishedAt`, `durationMs`, `requests`, `truncated` (quá 300 bài, lượt sau chạy tiếp), `userAgent` (User-Agent lượt đó dùng).
 - `useCookies`, `cookie` (tên cookie đang dùng; cookie không đặt tên thì là `Cookie <số thứ tự>`; không có nghĩa là chạy không đăng nhập), `cookiesDied` (tên các cookie bị chuyển sang die trong lượt). Log không bao giờ chứa giá trị cookie.
-- `postsFound`, `postsProcessed`.
+- `postsFound`, `postsProcessed`, `retried` (số truyện lỗi lượt trước được thử lại), `retryPending` (số truyện còn chờ thử lại sau lượt này).
 - `storiesChecked`, `storiesUpdated` (có chương thêm/sửa/xoá), `storiesCreated`, `storiesSkippedNew` (truyện mới bị bỏ qua vì tắt `importNewStories`), `storiesEmpty` (truyện mới chưa có chương), `storiesFailed`.
 - `chaptersAdded`, `chaptersUpdated`, `chaptersRemoved`.
-- `errors`: tối đa 20 mục `{sourceStoryId, title, message}`.
+- `errors`: tối đa 20 mục `{sourceStoryId, title, message, attempts, willRetry}`. `attempts` là số lần đã thử, `willRetry` cho biết lượt sau còn thử lại không (tối đa 5 lần).

@@ -65,6 +65,13 @@ func (r *Repository) Upsert(key string, value models.JSONB) (*models.AppSetting,
 	return r.Get(key)
 }
 
+func (r *Repository) UpdateIfUnchanged(key string, value models.JSONB, expected time.Time) (bool, error) {
+	result := r.db.Model(&models.AppSetting{}).
+		Where("key = ? AND updated_at = ?", key, expected).
+		Updates(map[string]interface{}{"value": value, "updated_at": gorm.Expr("CURRENT_TIMESTAMP")})
+	return result.RowsAffected > 0, result.Error
+}
+
 const markCookieDeadSQL = `
 UPDATE app_settings
 SET value = jsonb_set(value, '{cookies}', (

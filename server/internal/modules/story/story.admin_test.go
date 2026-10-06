@@ -260,6 +260,15 @@ func TestAdminChapterDoesNotFetch(t *testing.T) {
 	}
 }
 
+func TestRefetchChapterReportsSaveFailure(t *testing.T) {
+	store := newEmptyChapterStore()
+	store.saveErr = errors.New("db down")
+	_, err := newTestService(store, &fakeSource{content: "bản mới"}).RefetchChapter(context.Background(), sid(1), "2")
+	if !errors.Is(err, ErrChapterContentNotSaved) {
+		t.Fatalf("admin must see the save failure, got %v", err)
+	}
+}
+
 func TestRefetchChapterReplacesContent(t *testing.T) {
 	store := newEmptyChapterStore()
 	service := newTestService(store, &fakeSource{content: "bản mới tải lại"})

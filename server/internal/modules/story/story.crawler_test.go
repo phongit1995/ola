@@ -22,12 +22,17 @@ import (
 )
 
 type fakeCrawlerSettings struct {
-	cfg  setting.StoryCrawlerConfig
-	dead []string
+	cfg       setting.StoryCrawlerConfig
+	updatedAt *time.Time
+	dead      []string
 }
 
 func (f *fakeCrawlerSettings) GetStoryCrawler() (setting.StoryCrawlerConfig, error) {
 	return f.cfg, nil
+}
+
+func (f *fakeCrawlerSettings) GetStoryCrawlerVersion() (setting.StoryCrawlerConfig, *time.Time, error) {
+	return f.cfg, f.updatedAt, nil
 }
 
 func (f *fakeCrawlerSettings) MarkStoryCookieDead(cookie string, at time.Time) (bool, error) {
@@ -52,6 +57,7 @@ type fakeCatalog struct {
 	requests    int64
 	sinceAsked  []time.Time
 	storyPages  []string
+	retryAsked  [][]int64
 	userAgent   string
 	cookie      string
 	liveCookies map[string]bool
@@ -65,17 +71,35 @@ func (f *fakeCatalog) count() { f.requests++ }
 func (f *fakeCatalog) ModifiedPosts(_ context.Context, since time.Time, page int) (PostPage, error) {
 	f.count()
 	f.sinceAsked = append(f.sinceAsked, since)
+	var matched []SourcePost
+	for _, item := range f.posts {
+		if modified, err := gmtTime(item.ModifiedGMT); err == nil && modified.After(since) {
+			matched = append(matched, item)
+		}
+	}
 	perPage := f.perPage
 	if perPage == 0 {
 		perPage = constants.StoryVnkingsPerPage
 	}
-	totalPages := (len(f.posts) + perPage - 1) / perPage
+	totalPages := (len(matched) + perPage - 1) / perPage
 	start := (page - 1) * perPage
-	end := min(start+perPage, len(f.posts))
-	if start >= len(f.posts) {
-		return PostPage{Total: len(f.posts), TotalPages: totalPages}, nil
+	end := min(start+perPage, len(matched))
+	if start >= len(matched) {
+		return PostPage{Total: len(matched), TotalPages: totalPages}, nil
 	}
-	return PostPage{Posts: f.posts[start:end], Total: len(f.posts), TotalPages: totalPages}, nil
+	return PostPage{Posts: matched[start:end], Total: len(matched), TotalPages: totalPages}, nil
+}
+
+func (f *fakeCatalog) PostsByID(_ context.Context, ids []int64) ([]SourcePost, error) {
+	f.count()
+	f.retryAsked = append(f.retryAsked, ids)
+	var found []SourcePost
+	for _, item := range f.posts {
+		if slices.Contains(ids, item.ID) {
+			found = append(found, item)
+		}
+	}
+	return found, nil
 }
 
 func (f *fakeCatalog) Categories(context.Context) (map[int64]string, error) {
@@ -137,8 +161,11 @@ type fakeCrawlStore struct {
 	stories  map[string]StoryImport
 }
 
+var fakeLatestUpdate = time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+
 func newFakeCrawlStore(known ...KnownStory) *fakeCrawlStore {
-	store := &fakeCrawlStore{known: map[string]KnownStory{}, imported: map[string][]ChapterImport{}, stories: map[string]StoryImport{}}
+	latest := fakeLatestUpdate
+	store := &fakeCrawlStore{known: map[string]KnownStory{}, latest: &latest, imported: map[string][]ChapterImport{}, stories: map[string]StoryImport{}}
 	for _, item := range known {
 		store.known[item.SourceStoryID] = item
 	}
@@ -310,7 +337,7 @@ func TestCrawlerImportsNewStoriesWhenEnabled(t *testing.T) {
 	}
 }
 
-func TestCrawlerKeepsWatermarkWhenAStoryFails(t *testing.T) {
+func TestCrawlerQueuesFailedStoriesForRetry(t *testing.T) {
 	store := newFakeCrawlStore(
 		KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong},
 		KnownStory{SourceStoryID: "11", Kind: constants.StoryKindLong},
@@ -324,17 +351,91 @@ func TestCrawlerKeepsWatermarkWhenAStoryFails(t *testing.T) {
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
 	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if entry.Status != constants.StoryCrawlStatusPartial || entry.StoriesFailed != 2 || len(entry.Errors) != 2 {
+	if entry.Status != constants.StoryCrawlStatusPartial || entry.StoriesFailed != 2 || len(entry.Errors) != 2 || entry.RetryPending != 2 {
 		t.Fatalf("unexpected result %+v", entry)
 	}
 	if entry.Errors[0].Message != "Truyện không còn trên nguồn" || entry.Errors[1].Message != "Không lấy được danh sách chương" {
 		t.Fatalf("unexpected errors %+v", entry.Errors)
 	}
+	if !entry.Errors[0].WillRetry || entry.Errors[0].Attempts != 1 {
+		t.Fatalf("failed story must be queued for retry, got %+v", entry.Errors[0])
+	}
 	if _, ok := store.imported["12"]; ok {
 		t.Fatal("known long story without chapter list must not be imported")
 	}
-	if state := crawler.loadState(context.Background()); state.NextSince != nil || state.LastRunAt == nil {
-		t.Fatalf("watermark must not advance after a failure, got %+v", state)
+	state := crawler.loadState(context.Background())
+	if state.NextSince == nil || !state.NextSince.Equal(entry.StartedAt.Add(-constants.StoryCrawlWatermarkMargin)) {
+		t.Fatalf("watermark must advance past failed stories, got %+v", state)
+	}
+	if len(state.Retry) != 2 || state.Retry[0].PostID != 11 || state.Retry[1].PostID != 12 {
+		t.Fatalf("failed stories must be kept for retry, got %+v", state.Retry)
+	}
+
+	delete(catalog.pageErrors, "https://vnkings.com/truyen-11.html")
+	catalog.links[11] = chapterLinks(1)
+	catalog.links[12] = chapterLinks(3)
+	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	if entry.Status != constants.StoryCrawlStatusSuccess || entry.Retried != 2 || entry.RetryPending != 0 {
+		t.Fatalf("retry must import the stories once the source recovers, got %+v", entry)
+	}
+	if len(store.imported["11"]) != 1 || len(store.imported["12"]) != 3 {
+		t.Fatalf("retried stories not imported: %v", store.imported)
+	}
+	if !slices.Equal(catalog.retryAsked[0], []int64{11, 12}) {
+		t.Fatalf("retry must fetch the queued posts by id, got %v", catalog.retryAsked)
+	}
+}
+
+func TestCrawlerGivesUpRetryAfterLimit(t *testing.T) {
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong})
+	catalog := &fakeCatalog{posts: []SourcePost{post(10, "2026-10-05T13:00:00", 126)}}
+	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
+
+	var entry *CrawlLog
+	for attempt := 1; attempt <= constants.StoryCrawlRetryAttempts; attempt++ {
+		entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+		if entry.StoriesFailed != 1 || entry.Errors[0].Attempts != attempt {
+			t.Fatalf("attempt %d: unexpected %+v", attempt, entry.Errors)
+		}
+	}
+	if entry.Errors[0].WillRetry || entry.RetryPending != 0 {
+		t.Fatalf("story must be dropped after %d attempts, got %+v", constants.StoryCrawlRetryAttempts, entry)
+	}
+	before := len(catalog.storyPages)
+	if entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual); entry.Retried != 0 || len(catalog.storyPages) != before {
+		t.Fatalf("dropped story must not be retried again, got %+v", entry)
+	}
+}
+
+func TestCrawlerDropsRetryWhenPostIsGone(t *testing.T) {
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong})
+	catalog := &fakeCatalog{posts: []SourcePost{post(10, "2026-10-05T13:00:00", 126)}}
+	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
+
+	if entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual); entry.RetryPending != 1 {
+		t.Fatalf("story must be queued, got %+v", entry)
+	}
+	catalog.posts = nil
+	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	if entry.RetryPending != 0 || entry.Retried != 0 {
+		t.Fatalf("post missing at source must leave the retry queue, got %+v", entry)
+	}
+}
+
+func TestCrawlerRefusesIncompleteChapterList(t *testing.T) {
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong, ChapterCount: 25})
+	catalog := &fakeCatalog{
+		posts:      []SourcePost{post(10, "2026-10-05T13:00:00", 126)},
+		linkErrors: map[int64]error{10: fmt.Errorf("%w: story 10 page 2 failed", errIncompleteChapters)},
+	}
+	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
+
+	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	if entry.StoriesFailed != 1 || len(store.imported) != 0 || entry.RetryPending != 1 {
+		t.Fatalf("incomplete chapter list must not be imported, got %+v", entry)
+	}
+	if entry.Errors[0].Message != "Danh sách chương tải dở dang, bỏ qua để không xoá nhầm chương" {
+		t.Fatalf("unexpected message %q", entry.Errors[0].Message)
 	}
 }
 
@@ -369,16 +470,20 @@ func TestCrawlerRefusesLongStoryTurningShort(t *testing.T) {
 	}
 }
 
-func TestCrawlerTruncatesAndResumesFromLastPost(t *testing.T) {
-	total := constants.StoryCrawlMaxPosts + 5
+func shortPosts(total int, modified func(i int) time.Time) ([]SourcePost, []KnownStory) {
 	posts := make([]SourcePost, 0, total)
 	known := make([]KnownStory, 0, total)
-	base := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
 	for i := 0; i < total; i++ {
 		id := int64(100 + i)
-		posts = append(posts, post(id, base.Add(time.Duration(i)*time.Minute).Format("2006-01-02T15:04:05"), 3))
+		posts = append(posts, post(id, modified(i).Format("2006-01-02T15:04:05"), 3))
 		known = append(known, KnownStory{SourceStoryID: strconv.FormatInt(id, 10), Kind: constants.StoryKindShort})
 	}
+	return posts, known
+}
+
+func TestCrawlerTruncatesAndResumesFromLastPost(t *testing.T) {
+	base := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
+	posts, known := shortPosts(constants.StoryCrawlMaxPosts+5, func(i int) time.Time { return base.Add(time.Duration(i) * time.Minute) })
 	catalog := &fakeCatalog{posts: posts}
 	crawler := newTestCrawler(t, newFakeCrawlStore(known...), catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
@@ -390,6 +495,80 @@ func TestCrawlerTruncatesAndResumesFromLastPost(t *testing.T) {
 	want := base.Add(time.Duration(constants.StoryCrawlMaxPosts-1) * time.Minute)
 	if state.NextSince == nil || !state.NextSince.Equal(want) {
 		t.Fatalf("watermark must stop at the last processed post, got %v want %v", state.NextSince, want)
+	}
+	before := len(catalog.storyPages)
+	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	if entry.Truncated || entry.PostsProcessed != 5 || len(catalog.storyPages)-before != 5 {
+		t.Fatalf("second run must only process the rest, got %+v (%d pages)", entry, len(catalog.storyPages)-before)
+	}
+}
+
+func TestCrawlerResumesPostsSharingTheBoundaryTimestamp(t *testing.T) {
+	same := time.Date(2026, 10, 5, 8, 0, 0, 0, time.UTC)
+	posts, known := shortPosts(constants.StoryCrawlMaxPosts+2, func(int) time.Time { return same })
+	catalog := &fakeCatalog{posts: posts}
+	crawler := newTestCrawler(t, newFakeCrawlStore(known...), catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
+
+	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	if !entry.Truncated || entry.PostsProcessed != constants.StoryCrawlMaxPosts {
+		t.Fatalf("unexpected first run %+v", entry)
+	}
+	state := crawler.loadState(context.Background())
+	if state.NextSince == nil || !state.NextSince.Equal(same) || len(state.SeenAtSince) != constants.StoryCrawlMaxPosts {
+		t.Fatalf("cursor must remember posts already handled at the boundary, got %v %d", state.NextSince, len(state.SeenAtSince))
+	}
+	before := len(catalog.storyPages)
+	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	got := catalog.storyPages[before:]
+	want := []string{posts[len(posts)-2].Link, posts[len(posts)-1].Link}
+	if entry.Truncated || entry.PostsProcessed != 2 || !slices.Equal(got, want) {
+		t.Fatalf("second run must pick up the 2 posts left at the same timestamp, got %v (%+v)", got, entry)
+	}
+}
+
+func TestCrawlerFailingStoryDoesNotBlockLaterPosts(t *testing.T) {
+	base := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
+	posts, known := shortPosts(constants.StoryCrawlMaxPosts+5, func(i int) time.Time { return base.Add(time.Duration(i) * time.Minute) })
+	catalog := &fakeCatalog{posts: posts, pageErrors: map[string]error{posts[0].Link: errors.New("timeout")}}
+	crawler := newTestCrawler(t, newFakeCrawlStore(known...), catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
+
+	for range 3 {
+		if _, err := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual); err != nil {
+			t.Fatal(err)
+		}
+	}
+	last := posts[len(posts)-1].Link
+	if !slices.Contains(catalog.storyPages, last) {
+		t.Fatal("posts after the 300 limit must be reached even while an earlier story keeps failing")
+	}
+	if retry := crawler.loadState(context.Background()).Retry; len(retry) != 1 || retry[0].PostID != posts[0].ID || retry[0].Attempts != 3 {
+		t.Fatalf("failing story must stay queued with its attempts, got %+v", retry)
+	}
+}
+
+func TestCrawlerKeepsCursorAfterAFailedFirstRun(t *testing.T) {
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong}, KnownStory{SourceStoryID: "11", Kind: constants.StoryKindLong})
+	catalog := &fakeCatalog{
+		posts:      []SourcePost{post(10, "2026-10-05T13:00:00", 126), post(11, "2026-10-05T14:00:00", 126)},
+		links:      map[int64][]ChapterLink{10: chapterLinks(2), 11: chapterLinks(2)},
+		linkErrors: map[int64]error{11: fmt.Errorf("%w: status 429", errSourceBlocked)},
+	}
+	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
+
+	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	if entry.Status != constants.StoryCrawlStatusBlocked {
+		t.Fatalf("unexpected %+v", entry)
+	}
+	state := crawler.loadState(context.Background())
+	if state.NextSince == nil || !state.NextSince.Equal(time.Date(2026, 10, 5, 13, 0, 0, 0, time.UTC)) {
+		t.Fatalf("cursor must stop before the story that was interrupted, got %v", state.NextSince)
+	}
+	latest := time.Date(2026, 10, 5, 14, 0, 0, 0, time.UTC)
+	store.latest = &latest
+	delete(catalog.linkErrors, 11)
+	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	if _, ok := store.imported["11"]; !ok || entry.Status != constants.StoryCrawlStatusSuccess {
+		t.Fatalf("next run must resume from the saved cursor, not the newest story in the DB, got %+v", entry)
 	}
 }
 

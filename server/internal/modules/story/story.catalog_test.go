@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -183,5 +184,38 @@ func TestCatalogSendsCookieAndChecksLogin(t *testing.T) {
 	}
 	if !parseStoryPage(`<div class="story"></div>`).LoggedIn {
 		t.Fatal("page without the guest link must not kill a cookie")
+	}
+}
+
+func TestCatalogRejectsIncompleteChapterList(t *testing.T) {
+	item := `<a href="https://vnkings.com/truyen-x-p101.html">Chương 1</a> <i class="pull-right">01/10/2026</i>`
+	pages := map[string]map[string]string{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(pages[r.Form.Get("story_id")][r.Form.Get("page")]))
+	}))
+	defer server.Close()
+	catalog := testCatalog()
+	catalog.ajaxURL = server.URL
+	firstPage := `{"success":true,"data":{"items":` + strconv.Quote(item) + `,"totalPages":2}}`
+	pages["1"] = map[string]string{"1": firstPage, "2": `{"success":false,"data":"Có lỗi"}`}
+	pages["2"] = map[string]string{"1": firstPage, "2": `{"success":true,"data":{"items":"","totalPages":2}}`}
+	pages["3"] = map[string]string{"1": `{"success":false,"data":"Không có chương"}`}
+	secondItem := `<a href="https://vnkings.com/truyen-x-p102.html">Chương 2</a> <i class="pull-right">02/10/2026</i>`
+	pages["4"] = map[string]string{"1": firstPage, "2": `{"success":true,"data":{"items":` + strconv.Quote(secondItem) + `,"totalPages":2}}`}
+	pages["5"] = map[string]string{"1": firstPage, "2": firstPage}
+	ctx := context.Background()
+
+	for _, storyID := range []int64{1, 2, 5} {
+		if links, err := catalog.ChapterLinks(ctx, storyID, "n"); !errors.Is(err, errIncompleteChapters) || links != nil {
+			t.Fatalf("story %d: a failed later page must not return a partial list, got %d links, %v", storyID, len(links), err)
+		}
+	}
+	if links, err := catalog.ChapterLinks(ctx, 3, "n"); err != nil || links != nil {
+		t.Fatalf("story without chapter list must return nothing, got %v %v", links, err)
+	}
+	if links, err := catalog.ChapterLinks(ctx, 4, "n"); err != nil || len(links) != 2 {
+		t.Fatalf("complete list must be returned, got %d %v", len(links), err)
 	}
 }

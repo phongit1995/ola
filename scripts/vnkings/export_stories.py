@@ -178,17 +178,24 @@ def parse_story_page(page: str) -> dict:
     }
 
 
+class IncompleteChapters(Exception):
+    pass
+
+
 def chapter_links(client: Client, story_id: int, nonce: str) -> list[dict] | None:
     chapters: list[dict] = []
     page = 1
     while True:
         result = client.json(AJAX, {"action": "vnk_single_chapters", "story_id": story_id, "page": page, "chapter_nonce": nonce})
         if not result.get("success"):
-            return None if page == 1 else chapters
+            if page == 1:
+                return None
+            raise IncompleteChapters(f"trang {page} danh sách chương lỗi")
         items = result["data"]["items"]
-        for href, title, date_label in re.findall(
-            r'<a href="([^"]+)">(.*?)</a>\s*<i class="pull-right">(.*?)</i>', items, re.S
-        ):
+        found = re.findall(r'<a href="([^"]+)">(.*?)</a>\s*<i class="pull-right">(.*?)</i>', items, re.S)
+        if not found and page > 1:
+            raise IncompleteChapters(f"trang {page} danh sách chương rỗng")
+        for href, title, date_label in found:
             chapter_id = re.search(r"-p(\d+)\.html", href)
             chapters.append({
                 "sourceId": chapter_id.group(1) if chapter_id else href,
@@ -262,7 +269,11 @@ def main():
             seen.add(str(story_id))
             title = plain(post["title"]["rendered"])
             info = parse_story_page(client.text(post["link"]))
-            links = chapter_links(client, story_id, info["nonce"]) if info["nonce"] else None
+            try:
+                links = chapter_links(client, story_id, info["nonce"]) if info["nonce"] else None
+            except IncompleteChapters as err:
+                print(f"  bỏ qua {story_id} {title}: {err}, để không xoá nhầm chương", flush=True)
+                continue
             post_paragraphs = html_paragraphs(post["content"]["rendered"])
             is_short_category = SHORT_STORY_CATEGORY_ID in post["categories"]
 
@@ -284,7 +295,7 @@ def main():
                     if args.content:
                         page = client.text(link["url"])
                         paragraphs = drop_repeated_title(html_paragraphs(element_inner(page, 'id="content"')), link["title"])
-                        contents[str(position)] = "\n\n".join(paragraphs)
+                        contents[link["sourceId"]] = "\n\n".join(paragraphs)
                         summary["wordCount"] = word_count(paragraphs)
                         summary["publishedAt"] = meta_time(page, "article:published_time") or summary["publishedAt"]
                     summaries.append(summary)
@@ -292,7 +303,7 @@ def main():
             elif is_short_category or sum(len(p) for p in post_paragraphs) >= MIN_SHORT_STORY_CHARS:
                 kind = "short"
                 story_paragraphs = drop_repeated_title(post_paragraphs, title)
-                contents = {"1": "\n\n".join(story_paragraphs)} if args.content else {}
+                contents = {str(story_id): "\n\n".join(story_paragraphs)} if args.content else {}
                 summaries = [{
                     "id": str(story_id),
                     "storyId": str(story_id),
@@ -332,8 +343,11 @@ def main():
                 "lastChapterAt": max((s["publishedAt"] for s in summaries if s["publishedAt"]), default=None),
             })
             chapter_index[str(story_id)] = summaries
+            content_path = out / "chapters" / f"{story_id}.json"
             if contents:
-                (out / "chapters" / f"{story_id}.json").write_text(json.dumps(contents, ensure_ascii=False), encoding="utf-8")
+                content_path.write_text(json.dumps(contents, ensure_ascii=False), encoding="utf-8")
+            else:
+                content_path.unlink(missing_ok=True)
             print(f"{len(stories):>3}/{args.limit} {kind:5} {len(summaries):>4} chương  {title}  (đã gọi {client.count} request)", flush=True)
 
     tag_ids = sorted({tag for story in stories for tag in story.get("tagIds", [])})

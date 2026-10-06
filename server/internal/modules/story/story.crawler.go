@@ -40,6 +40,7 @@ type CrawlStore interface {
 
 type CrawlerSettings interface {
 	GetStoryCrawler() (setting.StoryCrawlerConfig, error)
+	GetStoryCrawlerVersion() (setting.StoryCrawlerConfig, *time.Time, error)
 	MarkStoryCookieDead(cookie string, at time.Time) (bool, error)
 }
 
@@ -51,11 +52,6 @@ type crawlCookie struct {
 type cookieSession struct {
 	candidates []crawlCookie
 	current    *crawlCookie
-}
-
-type crawlState struct {
-	LastRunAt *time.Time `json:"lastRunAt"`
-	NextSince *time.Time `json:"nextSince"`
 }
 
 type Crawler struct {
@@ -195,7 +191,7 @@ func (c *Crawler) execute(parent context.Context, trigger string) *CrawlLog {
 	state.LastRunAt = &startedAt
 	c.saveState(ctx, state)
 
-	nextSince, err := c.crawlWithConfig(ctx, entry, state, requestsBefore)
+	run, err := c.crawlWithConfig(ctx, entry, state, requestsBefore)
 
 	finishedAt := time.Now().UTC()
 	entry.FinishedAt = &finishedAt
@@ -212,7 +208,13 @@ func (c *Crawler) execute(parent context.Context, trigger string) *CrawlLog {
 		entry.Status = constants.StoryCrawlStatusPartial
 	default:
 		entry.Status = constants.StoryCrawlStatusSuccess
-		state.NextSince = &nextSince
+	}
+	if run != nil {
+		since := run.cursor.since
+		state.NextSince = &since
+		state.SeenAtSince = run.cursor.seen
+		state.Retry = run.retryList()
+		entry.RetryPending = len(state.Retry)
 	}
 
 	writeCtx, cancelWrite := context.WithTimeout(context.WithoutCancel(parent), crawlStateWriteTimeout)
@@ -224,17 +226,18 @@ func (c *Crawler) execute(parent context.Context, trigger string) *CrawlLog {
 	}
 	c.logger.Infow("Story crawl finished",
 		"trigger", trigger, "status", entry.Status, "since", entry.Since,
-		"posts", entry.PostsProcessed, "created", entry.StoriesCreated, "updated", entry.StoriesUpdated,
+		"posts", entry.PostsProcessed, "retried", entry.Retried, "retryPending", entry.RetryPending,
+		"created", entry.StoriesCreated, "updated", entry.StoriesUpdated,
 		"chaptersAdded", entry.ChaptersAdded, "failed", entry.StoriesFailed, "requests", entry.Requests,
 		"cookie", entry.Cookie, "cookiesDied", len(entry.CookiesDied),
 		"durationMs", entry.DurationMs, "error", entry.Message)
 	return entry
 }
 
-func (c *Crawler) crawlWithConfig(ctx context.Context, entry *CrawlLog, state crawlState, requestsBefore int64) (time.Time, error) {
+func (c *Crawler) crawlWithConfig(ctx context.Context, entry *CrawlLog, state crawlState, requestsBefore int64) (*crawlRun, error) {
 	cfg, err := c.settings.GetStoryCrawler()
 	if err != nil {
-		return time.Time{}, err
+		return nil, err
 	}
 	entry.ImportNewStories = cfg.ImportNewStories
 	entry.UserAgent = pickUserAgent(cfg.RandomUserAgent)
@@ -242,15 +245,15 @@ func (c *Crawler) crawlWithConfig(ctx context.Context, entry *CrawlLog, state cr
 	c.catalog.SetCookie("")
 	entry.Since = c.since(ctx, state, entry.StartedAt)
 	entry.UseCookies = cfg.UseCookies
-	session := &cookieSession{}
+	run := newCrawlRun(entry, state, requestsBefore)
 	if cfg.UseCookies {
-		session.candidates = activeCookies(cfg.Cookies)
-		if err := c.nextCookie(ctx, entry, session); err != nil {
-			return time.Time{}, err
+		run.session.candidates = activeCookies(cfg.Cookies)
+		if err := c.nextCookie(ctx, entry, run.session); err != nil {
+			return run, err
 		}
 	}
 	c.saveProgress(ctx, entry)
-	return c.crawl(ctx, entry, session, requestsBefore)
+	return run, c.crawl(ctx, run)
 }
 
 func activeCookies(cookies []setting.StoryCookie) []crawlCookie {
@@ -326,81 +329,150 @@ func (c *Crawler) since(ctx context.Context, state crawlState, startedAt time.Ti
 	return startedAt.Add(-constants.StoryCrawlInitialLookback)
 }
 
-func (c *Crawler) crawl(ctx context.Context, entry *CrawlLog, session *cookieSession, requestsBefore int64) (time.Time, error) {
+func (c *Crawler) crawl(ctx context.Context, run *crawlRun) error {
+	entry := run.entry
 	categories, err := c.catalog.Categories(ctx)
 	if err != nil {
-		return time.Time{}, err
+		return err
 	}
-	var lastModified time.Time
+	run.categories = categories
+	if err := c.retryFailed(ctx, run); err != nil {
+		return err
+	}
 	for page := 1; ; page++ {
-		result, err := c.catalog.ModifiedPosts(ctx, entry.Since, page)
+		result, err := c.catalog.ModifiedPosts(ctx, run.querySince(), page)
 		if err != nil {
-			return time.Time{}, err
+			return err
 		}
 		if page == 1 {
 			entry.PostsFound = result.Total
 		}
-		known, err := c.store.KnownStories(ctx, constants.StorySourceVnkings, postSourceIDs(result.Posts))
-		if err != nil {
-			return time.Time{}, err
-		}
-		tags, err := c.catalog.TagNames(ctx, wantedTagIDs(result.Posts, known, entry.ImportNewStories))
-		if err != nil {
-			return time.Time{}, err
-		}
+		posts := make([]SourcePost, 0, len(result.Posts))
 		for _, post := range result.Posts {
+			if run.fresh(post) {
+				posts = append(posts, post)
+			}
+		}
+		known, tags, err := c.lookup(ctx, run, posts)
+		if err != nil {
+			return err
+		}
+		for _, post := range posts {
 			if entry.PostsProcessed >= constants.StoryCrawlMaxPosts {
 				entry.Truncated = true
-				return lastModified, nil
+				return nil
 			}
-			if err := c.processPost(ctx, entry, session, post, known, categories, tags); err != nil {
-				return time.Time{}, err
+			if err := c.handlePost(ctx, run, post, known, tags); err != nil {
+				return err
 			}
 			entry.PostsProcessed++
-			if modified, err := gmtTime(post.ModifiedGMT); err == nil {
-				lastModified = modified
-			}
-			entry.Requests = c.catalog.Requests() - requestsBefore
-			c.saveProgress(ctx, entry)
+			run.advance(post)
+			c.reportProgress(ctx, run)
 		}
 		if len(result.Posts) == 0 || page >= result.TotalPages {
-			return entry.StartedAt.Add(-constants.StoryCrawlWatermarkMargin), nil
+			run.cursor = crawlCursor{since: entry.StartedAt.Add(-constants.StoryCrawlWatermarkMargin)}
+			return nil
 		}
 	}
 }
 
-func (c *Crawler) processPost(ctx context.Context, entry *CrawlLog, session *cookieSession, post SourcePost, known map[string]KnownStory, categories, tags map[int64]string) error {
-	sourceID := strconv.FormatInt(post.ID, 10)
-	existing, isKnown := known[sourceID]
+func (c *Crawler) retryFailed(ctx context.Context, run *crawlRun) error {
+	ids := run.retryBatch()
+	if len(ids) == 0 {
+		return nil
+	}
+	posts, err := c.catalog.PostsByID(ctx, ids)
+	if err != nil {
+		return err
+	}
+	found := make(map[int64]bool, len(posts))
+	for _, post := range posts {
+		found[post.ID] = true
+	}
+	for _, id := range ids {
+		if !found[id] {
+			delete(run.retry, id)
+		}
+	}
+	known, tags, err := c.lookup(ctx, run, posts)
+	if err != nil {
+		return err
+	}
+	for _, post := range posts {
+		if _, queued := run.retry[post.ID]; !queued || run.handled[post.ID] {
+			continue
+		}
+		run.entry.Retried++
+		if err := c.handlePost(ctx, run, post, known, tags); err != nil {
+			return err
+		}
+		c.reportProgress(ctx, run)
+	}
+	return nil
+}
+
+func (c *Crawler) lookup(ctx context.Context, run *crawlRun, posts []SourcePost) (map[string]KnownStory, map[int64]string, error) {
+	known, err := c.store.KnownStories(ctx, constants.StorySourceVnkings, postSourceIDs(posts))
+	if err != nil {
+		return nil, nil, err
+	}
+	tags, err := c.catalog.TagNames(ctx, wantedTagIDs(posts, known, run.entry.ImportNewStories))
+	if err != nil {
+		return nil, nil, err
+	}
+	return known, tags, nil
+}
+
+func (c *Crawler) reportProgress(ctx context.Context, run *crawlRun) {
+	run.entry.Requests = c.catalog.Requests() - run.requestsBefore
+	c.saveProgress(ctx, run.entry)
+}
+
+func (c *Crawler) handlePost(ctx context.Context, run *crawlRun, post SourcePost, known map[string]KnownStory, tags map[int64]string) error {
+	run.handled[post.ID] = true
+	err := c.processPost(ctx, run, post, known, tags)
+	switch {
+	case err == nil:
+		delete(run.retry, post.ID)
+		return nil
+	case errors.Is(err, errSourceBlocked) || ctx.Err() != nil:
+		return err
+	}
+	c.storyFailed(run, post, err)
+	return nil
+}
+
+func (c *Crawler) processPost(ctx context.Context, run *crawlRun, post SourcePost, known map[string]KnownStory, tags map[int64]string) error {
+	entry := run.entry
+	existing, isKnown := known[strconv.FormatInt(post.ID, 10)]
 	if !isKnown && !entry.ImportNewStories {
 		entry.StoriesSkippedNew++
 		return nil
 	}
 	entry.StoriesChecked++
-	title := plainText(post.Title.Rendered)
-	info, err := c.storyPage(ctx, entry, session, post.Link)
+	info, err := c.storyPage(ctx, entry, run.session, post.Link)
 	if err != nil {
-		return c.storyFailed(ctx, entry, sourceID, title, err)
+		return err
 	}
 	var links []ChapterLink
 	if info.Nonce != "" {
 		if links, err = c.catalog.ChapterLinks(ctx, post.ID, info.Nonce); err != nil {
-			return c.storyFailed(ctx, entry, sourceID, title, err)
+			return err
 		}
 	}
-	item, chapters, ok := buildImport(post, info, links, categories, tags)
+	item, chapters, ok := buildImport(post, info, links, run.categories, tags, time.Now())
 	switch {
 	case !ok && isKnown:
-		return c.storyFailed(ctx, entry, sourceID, title, errNoChapters)
+		return errNoChapters
 	case !ok:
 		entry.StoriesEmpty++
 		return nil
 	case isKnown && existing.Kind == constants.StoryKindLong && item.Kind != constants.StoryKindLong:
-		return c.storyFailed(ctx, entry, sourceID, title, errKindChanged)
+		return errKindChanged
 	}
 	result, err := c.store.ImportStory(ctx, constants.StorySourceVnkings, entry.StartedAt, item, chapters)
 	if err != nil {
-		return c.storyFailed(ctx, entry, sourceID, title, err)
+		return err
 	}
 	switch {
 	case result.StoryInserted:
@@ -414,16 +486,22 @@ func (c *Crawler) processPost(ctx context.Context, entry *CrawlLog, session *coo
 	return nil
 }
 
-func (c *Crawler) storyFailed(ctx context.Context, entry *CrawlLog, sourceID, title string, err error) error {
-	if errors.Is(err, errSourceBlocked) || ctx.Err() != nil {
-		return err
-	}
+func (c *Crawler) storyFailed(run *crawlRun, post SourcePost, err error) {
+	entry := run.entry
+	sourceID := strconv.FormatInt(post.ID, 10)
+	title := plainText(post.Title.Rendered)
 	entry.StoriesFailed++
+	attempts, willRetry := run.queueRetry(post.ID, title)
 	if len(entry.Errors) < constants.StoryCrawlErrorLimit {
-		entry.Errors = append(entry.Errors, CrawlError{SourceStoryID: sourceID, Title: title, Message: crawlErrorMessage(err)})
+		entry.Errors = append(entry.Errors, CrawlError{
+			SourceStoryID: sourceID,
+			Title:         title,
+			Message:       crawlErrorMessage(err),
+			Attempts:      attempts,
+			WillRetry:     willRetry,
+		})
 	}
-	c.logger.Warnw("Story crawl skipped a story", "sourceStoryId", sourceID, "title", title, "error", err)
-	return nil
+	c.logger.Warnw("Story crawl skipped a story", "sourceStoryId", sourceID, "title", title, "attempts", attempts, "willRetry", willRetry, "error", err)
 }
 
 func crawlErrorMessage(err error) string {
@@ -434,6 +512,8 @@ func crawlErrorMessage(err error) string {
 		return "Không lấy được danh sách chương"
 	case errors.Is(err, errKindChanged):
 		return "Nguồn trả về truyện ngắn cho truyện dài, bỏ qua để không mất chương"
+	case errors.Is(err, errIncompleteChapters):
+		return "Danh sách chương tải dở dang, bỏ qua để không xoá nhầm chương"
 	default:
 		return err.Error()
 	}
@@ -483,7 +563,7 @@ func charCount(paragraphs []string) int {
 	return total
 }
 
-func buildImport(post SourcePost, info StoryPageInfo, links []ChapterLink, categories, tags map[int64]string) (StoryImport, []ChapterImport, bool) {
+func buildImport(post SourcePost, info StoryPageInfo, links []ChapterLink, categories, tags map[int64]string, now time.Time) (StoryImport, []ChapterImport, bool) {
 	sourceID := strconv.FormatInt(post.ID, 10)
 	title := plainText(post.Title.Rendered)
 	publishedAt, err := gmtTime(post.DateGMT)
@@ -521,6 +601,11 @@ func buildImport(post SourcePost, info StoryPageInfo, links []ChapterLink, categ
 	case len(links) > 0:
 		item.Kind = constants.StoryKindLong
 		item.Intro = strings.Join(paragraphs, "\n\n")
+		labels := make([]string, 0, len(links))
+		for _, link := range links {
+			labels = append(labels, link.DateLabel)
+		}
+		times := chapterTimes(labels, now, publishedAt, updatedAt)
 		chapters := make([]ChapterImport, 0, len(links))
 		for index, link := range links {
 			chapters = append(chapters, ChapterImport{
@@ -528,7 +613,7 @@ func buildImport(post SourcePost, info StoryPageInfo, links []ChapterLink, categ
 				Position:        index + 1,
 				Title:           link.Title,
 				URL:             link.URL,
-				PublishedAt:     chapterDate(link.DateLabel),
+				PublishedAt:     times[index],
 			})
 		}
 		return item, chapters, true
@@ -627,7 +712,7 @@ func (c *Crawler) progress(ctx context.Context) *CrawlLog {
 }
 
 func (c *Crawler) Status(ctx context.Context) (*CrawlerStatusResponse, error) {
-	cfg, err := c.settings.GetStoryCrawler()
+	cfg, updatedAt, err := c.settings.GetStoryCrawlerVersion()
 	if err != nil {
 		return nil, err
 	}
@@ -649,11 +734,13 @@ func (c *Crawler) Status(ctx context.Context) (*CrawlerStatusResponse, error) {
 			UseCookies:       cfg.UseCookies,
 			Cookies:          cfg.Cookies,
 		},
-		UserAgents: len(userAgents),
-		Running:    running > 0,
-		LastRunAt:  state.LastRunAt,
-		NextSince:  state.NextSince,
-		Logs:       logs,
+		ConfigUpdatedAt: updatedAt,
+		UserAgents:      len(userAgents),
+		Running:         running > 0,
+		LastRunAt:       state.LastRunAt,
+		NextSince:       state.NextSince,
+		RetryPending:    len(state.Retry),
+		Logs:            logs,
 	}
 	if resp.Running {
 		resp.Progress = c.progress(ctx)

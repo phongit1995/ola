@@ -7,8 +7,15 @@ export const AdminSettingsService = {
     return data.data.items
   },
 
-  async put(key: string, value: Record<string, unknown>): Promise<AppSetting> {
-    const { data } = await http.put<ApiResponse<AppSetting>>(`/admin/settings/${key}`, { value })
+  async put(
+    key: string,
+    value: Record<string, unknown>,
+    expectedUpdatedAt?: string | null,
+  ): Promise<AppSetting> {
+    const { data } = await http.put<ApiResponse<AppSetting>>(`/admin/settings/${key}`, {
+      value,
+      expectedUpdatedAt: expectedUpdatedAt ?? undefined,
+    })
     return data.data
   },
 

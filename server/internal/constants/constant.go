@@ -288,6 +288,7 @@ const (
 	StoryVnkingsPerPage          = 100
 	StoryVnkingsUTCOffsetSeconds = 7 * 60 * 60
 	StoryShortMinChars           = 1500
+	StoryChapterAnchorTolerance  = 5 * time.Minute
 
 	StoryCrawlGap             = time.Second
 	StoryCrawlRetries         = 2
@@ -297,6 +298,9 @@ const (
 	StoryCrawlMaxPosts        = 300
 	StoryCrawlLogLimit        = 50
 	StoryCrawlErrorLimit      = 20
+	StoryCrawlRetryAttempts   = 5
+	StoryCrawlRetryBatch      = 100
+	StoryCrawlRetryMax        = 500
 	StoryCrawlMaxSleep        = time.Minute
 	StoryCrawlWatermarkMargin = time.Hour
 	StoryCrawlInitialLookback = 24 * time.Hour
@@ -322,7 +326,9 @@ const (
 	CacheKeyStoryCrawlProgress = "STORY_CRAWL:PROGRESS"
 
 	ErrorCodeStoryContentUnavailable = "STORY_CONTENT_UNAVAILABLE"
+	ErrorCodeStoryContentNotSaved    = "STORY_CONTENT_NOT_SAVED"
 	ErrorCodeStoryCrawlRunning       = "STORY_CRAWL_RUNNING"
+	ErrorCodeSettingChanged          = "SETTING_CHANGED"
 )
 
 const (

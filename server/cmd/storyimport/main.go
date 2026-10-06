@@ -211,7 +211,7 @@ func toChapterImports(chapters []exportChapter, contents map[string]string) []st
 			WordCount:       chapter.WordCount,
 			PublishedAt:     chapter.PublishedAt,
 		}
-		if content, ok := contents[strconv.Itoa(chapter.Position)]; ok {
+		if content, ok := contents[strings.TrimSpace(chapter.ID)]; ok {
 			item.Content = &content
 		}
 		out = append(out, item)

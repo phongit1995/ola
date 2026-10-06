@@ -55,15 +55,20 @@ func validCrawlerInterval(hours int) bool {
 }
 
 func (s *Service) GetStoryCrawler() (StoryCrawlerConfig, error) {
+	cfg, _, err := s.GetStoryCrawlerVersion()
+	return cfg, err
+}
+
+func (s *Service) GetStoryCrawlerVersion() (StoryCrawlerConfig, *time.Time, error) {
 	cfg := DefaultStoryCrawlerConfig()
-	err := s.getInto(KeyStoryCrawler, &cfg)
+	updatedAt, err := s.getVersioned(KeyStoryCrawler, &cfg)
 	if !validCrawlerInterval(cfg.IntervalHours) {
 		cfg.IntervalHours = DefaultStoryCrawlerConfig().IntervalHours
 	}
 	if cfg.Cookies == nil {
 		cfg.Cookies = []StoryCookie{}
 	}
-	return cfg, err
+	return cfg, updatedAt, err
 }
 
 func (s *Service) MarkStoryCookieDead(cookie string, at time.Time) (bool, error) {

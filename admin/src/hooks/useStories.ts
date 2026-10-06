@@ -12,6 +12,7 @@ const STORIES_KEY = 'admin-stories'
 const FILTER_OPTIONS_STALE_MS = 5 * 60 * 1000
 const BULK_FETCH_POLL_MS = 3000
 const CRAWLER_POLL_MS = 3000
+const CRAWLER_IDLE_POLL_MS = 30000
 const STORY_CRAWLER_SETTING_KEY = 'story_crawler'
 
 export function useStories(params: AdminStoryListParams) {
@@ -131,7 +132,8 @@ export function useStoryCrawler() {
   return useQuery({
     queryKey: [STORIES_KEY, 'crawler'],
     queryFn: () => AdminStoryService.crawler(),
-    refetchInterval: (query) => (query.state.data?.running ? CRAWLER_POLL_MS : false),
+    refetchInterval: (query) =>
+      query.state.data?.running ? CRAWLER_POLL_MS : CRAWLER_IDLE_POLL_MS,
   })
 }
 
@@ -148,19 +150,30 @@ export function useRunStoryCrawler() {
 export function useSaveStoryCrawlerSetting() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (value: StoryCrawlerSetting) =>
-      AdminSettingsService.put(STORY_CRAWLER_SETTING_KEY, { ...value }),
-    onSuccess: () => {
+    mutationFn: ({
+      value,
+      expectedUpdatedAt,
+    }: {
+      value: StoryCrawlerSetting
+      expectedUpdatedAt: string | null
+    }) => AdminSettingsService.put(STORY_CRAWLER_SETTING_KEY, { ...value }, expectedUpdatedAt),
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'crawler'] })
     },
   })
 }
 
-export function useRefreshStoriesAfterCrawl(running: boolean | undefined) {
+export function useRefreshStoriesAfterCrawl(latestRunId: string | undefined) {
   const refresh = useRefreshStoryLists()
-  const previous = useRef(running)
+  const previous = useRef(latestRunId)
   useEffect(() => {
-    if (previous.current && running === false) refresh()
-    previous.current = running
-  }, [running, refresh])
+    if (
+      previous.current !== undefined &&
+      latestRunId !== undefined &&
+      latestRunId !== previous.current
+    ) {
+      refresh()
+    }
+    previous.current = latestRunId
+  }, [latestRunId, refresh])
 }

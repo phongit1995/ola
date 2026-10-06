@@ -157,6 +157,10 @@ export function StoriesPage() {
   const deleteStory = useDeleteStory()
 
   const total = data?.total ?? 0
+  const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  if (data && !isPlaceholderData && page > lastPage) {
+    setPage(lastPage)
+  }
   const filterParts = describeFilter(filter)
   const filterSettled = !isPlaceholderData && q === search.trim()
   const hasFilter = search.trim() !== '' || filterParts.length > 0

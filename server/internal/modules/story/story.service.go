@@ -3,6 +3,7 @@ package story
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,7 +22,13 @@ var (
 	ErrStoryNotFound             = utils.NewHTTPError(http.StatusNotFound, "story not found")
 	ErrChapterNotFound           = utils.NewHTTPError(http.StatusNotFound, "chapter not found")
 	ErrChapterContentUnavailable = utils.NewHTTPErrorWithCode(http.StatusBadGateway, "chapter content unavailable", constants.ErrorCodeStoryContentUnavailable)
+	ErrChapterContentNotSaved    = utils.NewHTTPErrorWithCode(http.StatusInternalServerError, "Đã lấy được nội dung nhưng lưu vào DB thất bại", constants.ErrorCodeStoryContentNotSaved)
 )
+
+type fetchedContent struct {
+	text    string
+	saveErr error
+}
 
 var storyStatuses = map[string]bool{
 	constants.StoryStatusOngoing:   true,
@@ -206,7 +213,7 @@ func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*Chap
 		return nil, ErrChapterNotFound
 	}
 	if row.ContentText == "" {
-		if err := s.loadContent(ctx, row, false); err != nil {
+		if err := s.loadContent(ctx, row, false); err != nil && !errors.Is(err, ErrChapterContentNotSaved) {
 			return nil, err
 		}
 	}
@@ -228,16 +235,21 @@ func (s *Service) loadContent(ctx context.Context, row *ChapterRow, replace bool
 			return nil, err
 		}
 		hash := sha256.Sum256([]byte(content))
-		if err := s.store.SaveChapterContent(fetchCtx, row.ID, row.StoryID, content, len(strings.Fields(content)), hash[:], replace); err != nil {
-			s.logger.Errorw("save chapter content failed", "chapterId", row.ID, "error", err)
+		saveErr := s.store.SaveChapterContent(fetchCtx, row.ID, row.StoryID, content, len(strings.Fields(content)), hash[:], replace)
+		if saveErr != nil {
+			s.logger.Errorw("save chapter content failed", "chapterId", row.ID, "error", saveErr)
 		}
-		return content, nil
+		return fetchedContent{text: content, saveErr: saveErr}, nil
 	})
 	if err != nil {
 		s.logger.Warnw("fetch chapter content failed", "chapterId", row.ID, "url", row.SourceURL, "error", err)
 		return ErrChapterContentUnavailable
 	}
-	row.ContentText = value.(string)
+	fetched := value.(fetchedContent)
+	row.ContentText = fetched.text
 	row.WordCount = len(strings.Fields(row.ContentText))
+	if fetched.saveErr != nil {
+		return ErrChapterContentNotSaved
+	}
 	return nil
 }

@@ -118,6 +118,8 @@ UPDATE story_chapters
 SET content_text = ?, word_count = ?, content_hash = ?, crawled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
 WHERE id = ? AND (? OR content_text = '')`
 
+const lockStoryQuery = `SELECT 1 FROM stories WHERE id = ? FOR UPDATE`
+
 const refreshStoryWordCountQuery = `
 UPDATE stories
 SET word_count = (SELECT COALESCE(SUM(word_count), 0) FROM story_chapters WHERE story_id = ?)
@@ -256,6 +258,9 @@ func (r *Repository) AnyChapter(ctx context.Context, storyID uuid.UUID, position
 
 func (r *Repository) SaveChapterContent(ctx context.Context, chapterID, storyID uuid.UUID, content string, wordCount int, hash []byte, replace bool) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec(lockStoryQuery, storyID).Error; err != nil {
+			return err
+		}
 		saved := tx.Exec(saveChapterContentQuery, content, wordCount, hash, chapterID, replace)
 		if saved.Error != nil || saved.RowsAffected == 0 {
 			return saved.Error

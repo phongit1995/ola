@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  Alert,
   App,
   Button,
   Drawer,
@@ -41,6 +42,10 @@ function contentParagraphs(content: string): string[] {
     .filter((paragraph) => paragraph.length > 0)
 }
 
+function errorText(error: unknown): string {
+  return error instanceof ApiError ? error.message : 'Lỗi không xác định, thử lại sau'
+}
+
 export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalProps) {
   const { message } = App.useApp()
   const storyId = open && story ? story.id : null
@@ -48,14 +53,28 @@ export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalP
   const [previewPosition, setPreviewPosition] = useState<number | null>(null)
   const [refetchingPosition, setRefetchingPosition] = useState<number | null>(null)
 
-  const { data: chapters, isLoading, isFetching, refetch } = useStoryChapters(storyId, pollUntil)
-  const { data: preview, isFetching: previewLoading } = useStoryChapter(storyId, previewPosition)
+  const {
+    data: chapters,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useStoryChapters(storyId, pollUntil)
+  const {
+    data: preview,
+    isFetching: previewLoading,
+    isError: previewFailed,
+    error: previewError,
+    refetch: refetchPreview,
+  } = useStoryChapter(storyId, previewPosition)
   const fetchMissing = useFetchMissingStoryContent()
   const refetchChapter = useRefetchStoryChapter(storyId)
   const refreshLists = useRefreshStoryLists()
 
   const items = chapters ?? []
   const missing = items.filter((chapter) => !chapter.hasContent).length
+  const loadFailed = isError && chapters === undefined
 
   function close() {
     setPreviewPosition(null)
@@ -178,15 +197,16 @@ export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalP
         }}
       >
         <Typography.Text type="secondary">
-          {items.length - missing}/{items.length} chương đã có nội dung. Chương chưa có nội dung
-          sẽ được lấy khi người dùng mở.
+          {loadFailed
+            ? 'Chưa tải được danh sách chương.'
+            : `${items.length - missing}/${items.length} chương đã có nội dung. Chương chưa có nội dung sẽ được lấy khi người dùng mở.`}
         </Typography.Text>
         <Space>
           <Button icon={<ReloadOutlined />} loading={isFetching} onClick={() => void refetch()} />
           <Button
             type="primary"
             icon={<CloudDownloadOutlined />}
-            disabled={missing === 0}
+            disabled={loadFailed || missing === 0}
             loading={fetchMissing.isPending}
             onClick={() => void startFetchMissing()}
           >
@@ -194,15 +214,35 @@ export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalP
           </Button>
         </Space>
       </div>
-      <Table<AdminStoryChapter>
-        rowKey="id"
-        size="small"
-        columns={columns}
-        dataSource={items}
-        loading={isLoading}
-        scroll={{ x: 820 }}
-        pagination={{ pageSize: CHAPTER_PAGE_SIZE, showSizeChanger: false }}
-      />
+      {isError && (
+        <Alert
+          type={loadFailed ? 'error' : 'warning'}
+          showIcon
+          style={{ marginBottom: 12 }}
+          title={
+            loadFailed
+              ? 'Không tải được danh sách chương'
+              : 'Không tải lại được danh sách chương, đang hiện dữ liệu lần trước'
+          }
+          description={errorText(error)}
+          action={
+            <Button size="small" loading={isFetching} onClick={() => void refetch()}>
+              Thử lại
+            </Button>
+          }
+        />
+      )}
+      {!loadFailed && (
+        <Table<AdminStoryChapter>
+          rowKey="id"
+          size="small"
+          columns={columns}
+          dataSource={items}
+          loading={isLoading}
+          scroll={{ x: 820 }}
+          pagination={{ pageSize: CHAPTER_PAGE_SIZE, showSizeChanger: false }}
+        />
+      )}
       <Drawer
         open={previewPosition != null}
         onClose={() => setPreviewPosition(null)}
@@ -222,6 +262,18 @@ export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalP
       >
         {previewLoading && !preview ? (
           <Skeleton active paragraph={{ rows: 8 }} />
+        ) : previewFailed && !preview ? (
+          <Alert
+            type="error"
+            showIcon
+            title="Không tải được chương"
+            description={errorText(previewError)}
+            action={
+              <Button size="small" onClick={() => void refetchPreview()}>
+                Thử lại
+              </Button>
+            }
+          />
         ) : preview?.hasContent ? (
           <div style={{ fontSize: 15, lineHeight: 1.7 }}>
             {contentParagraphs(preview.content).map((paragraph, index) => (
