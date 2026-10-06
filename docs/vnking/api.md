@@ -178,3 +178,39 @@ Phía app:
 - Store `useStoryConfigStore` gọi `GET /settings/story` mỗi lần mở trang chính, nên đổi cấu hình có hiệu lực ở lần mở sau. Lỗi mạng thì giữ kết quả cũ; ngay lần đầu đã lỗi thì coi là tắt. Chưa có kết quả thì web chưa hiện tab RSS (đang ở tab RSS thì để trống, không tải truyện).
 - Chỉ ẩn ở app, server không chặn API truyện.
 - Web: tắt thì ẩn tab RSS; đang ở tab RSS thì về tab Chat. Mobile chưa có màn Truyện (tab RSS đang tắt trong `RootNavigator`), khi làm thì hiện tab khi `useStoryConfigStore` trả `enabled === true`.
+
+## 6. Tự động cập nhật truyện
+
+Setting `story_crawler` trong bảng `app_settings`, admin sửa ở menu **Truyện → Cài đặt**, tab **Cập nhật tự động** (`/stories/settings?tab=crawler`). Chưa lưu lần nào thì đang tắt. Log các lượt chạy xem ở nút **Xem log** trong khung Trạng thái của tab đó (bấm từng dòng để xem lỗi, User-Agent, cookie). Cách chạy xem mục 7 của [database.md](database.md).
+
+```json
+{
+  "enabled": true,
+  "intervalHours": 1,
+  "importNewStories": false,
+  "randomUserAgent": true,
+  "useCookies": true,
+  "cookies": [
+    { "name": "acc1", "cookie": "wordpress_logged_in_…=…", "status": "active", "deadAt": null },
+    { "name": "", "cookie": "wordpress_logged_in_…=…", "status": "dead", "deadAt": "2026-10-06T13:25:48Z" }
+  ]
+}
+```
+
+`cookies` là cookie đăng nhập vnkings do admin tự đăng nhập rồi dán vào (nguyên chuỗi header `Cookie`). Server chỉ lưu lại để gửi kèm, không tự đăng nhập. `status` là `active` (sống) hoặc `dead` (die). Crawler tự chuyển `active` → `dead` và ghi `deadAt` khi cookie bị đăng xuất; muốn dùng lại thì dán cookie mới và đặt lại `active`. Cookie lưu dạng chữ thường trong DB, giống secret webhook nạp tiền.
+
+| Endpoint | Việc |
+|---|---|
+| `PUT /admin/settings/story_crawler` | Body `{"value": {...}}`. Bắt buộc đủ 6 field (`cookies` có thể là `[]`); `intervalHours` là 1, 2, 3, 6, 12 hoặc 24. Mỗi cookie bắt buộc có `cookie` (không rỗng, không xuống dòng, tối đa 8192 ký tự, không trùng nhau) và `status`; `name` tối đa 100 ký tự; tối đa 50 cookie. Sai thì `400`. Có hiệu lực trong vòng 1 phút |
+| `GET /admin/stories/crawler` | `{config, userAgents, running, progress, lastRunAt, nextRunAt, nextSince, logs}`. `config` gồm cả danh sách cookie. `userAgents` là số User-Agent trong danh sách ngẫu nhiên. `progress` là log của lượt đang chạy (có khi `running`), `nextRunAt` là `null` khi đang tắt, `logs` là tối đa 50 lượt gần nhất, mới nhất trước |
+| `POST /admin/stories/crawler/run` | Chạy ngay một lượt ở nền, kể cả khi đang tắt tự động. Trả `{"started": true}`; đang có lượt chạy thì `409 STORY_CRAWL_RUNNING` |
+
+Mỗi log gồm:
+
+- `trigger` (`schedule`/`manual`), `status` (`running`, `success`, `partial` có truyện lỗi, `blocked` bị nguồn chặn, `failed` lỗi cả lượt), `message`.
+- `since`, `startedAt`, `finishedAt`, `durationMs`, `requests`, `truncated` (quá 300 bài, lượt sau chạy tiếp), `userAgent` (User-Agent lượt đó dùng).
+- `useCookies`, `cookie` (tên cookie đang dùng; cookie không đặt tên thì là `Cookie <số thứ tự>`; không có nghĩa là chạy không đăng nhập), `cookiesDied` (tên các cookie bị chuyển sang die trong lượt). Log không bao giờ chứa giá trị cookie.
+- `postsFound`, `postsProcessed`.
+- `storiesChecked`, `storiesUpdated` (có chương thêm/sửa/xoá), `storiesCreated`, `storiesSkippedNew` (truyện mới bị bỏ qua vì tắt `importNewStories`), `storiesEmpty` (truyện mới chưa có chương), `storiesFailed`.
+- `chaptersAdded`, `chaptersUpdated`, `chaptersRemoved`.
+- `errors`: tối đa 20 mục `{sourceStoryId, title, message}`.

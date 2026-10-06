@@ -184,25 +184,35 @@ cd server && go run ./cmd/storyimport -dir /đường/dẫn/khác
 
 Chạy lại nhiều lần không sinh dữ liệu trùng. Cuối mỗi lần chạy, lệnh in số truyện mới, số chương thêm, sửa, giữ nguyên và xoá. Ví dụ trên local, lần đầu: `stories: 100 (100 new); chapters: 700 added`, lần sau: `0 added, 0 updated, 700 unchanged`.
 
-## 7. Đồng bộ truyện mới cập nhật
+## 7. Tự động cập nhật truyện
 
-Phần này chưa làm. Hiện muốn cập nhật thì chạy lại 2 bước ở mục 6; lệnh nạp tự bỏ qua chương không đổi.
+API server tự hỏi vnkings định kỳ và kéo chương mới về, không cần chạy lại 2 bước ở mục 6. Admin cấu hình ở menu **Truyện → Cài đặt**, tab **Cập nhật tự động** (`/stories/settings?tab=crawler`), log xem ở nút **Xem log**; API xem ở mục 6 của [api.md](api.md). Code: `server/internal/modules/story/story.crawler.go` (lịch chạy, log), `story.catalog.go` (gọi vnkings, port từ `export_stories.py`), `story.import.go` (ghi DB, dùng chung với `cmd/storyimport`).
 
-Cách lấy truyện và chương mới xem mục 9 của [vnkings-data-access.md](../vnkings-data-access.md). Khi làm đồng bộ tăng dần, ghi vào 2 bảng như sau:
+Mỗi lượt chạy:
 
-1. Lấy mốc quét lần trước, ví dụ `max(source_updated_at)` của `stories` hoặc thời điểm lần quét trước. Gọi REST với `modified_after` = mốc đó lùi khoảng 1 giờ.
-2. Upsert từng truyện trả về theo `(source, source_story_id)`: cập nhật `title`, `genres`, `tags`, `source_updated_at`…, và đặt `crawled_at = now()`.
-3. Lấy ID chương lớn nhất đã lưu của truyện:
+1. Giữ khoá Redis `LOCK:STORY_CRAWL` (TTL 30 phút, mỗi lượt tối đa 25 phút) để nhiều instance API không chạy chồng.
+2. Lấy mốc quét `nextSince` trong Redis `STORY_CRAWL:STATE`. Chưa có thì lấy `max(source_updated_at)` của truyện vnkings lùi 1 giờ; chưa có truyện nào thì lùi 24 giờ.
+3. Gọi REST `wp/v2/posts` lọc theo các danh mục truyện, `modified_after=<mốc theo UTC, có Z>`, `orderby=modified&order=asc`, 100 bài mỗi trang, dừng theo header `X-WP-TotalPages`.
+4. Với từng bài:
+   - Chưa có trong DB mà tắt "Lấy cả truyện mới" thì bỏ qua (đếm `storiesSkippedNew`), không tải gì thêm.
+   - Còn lại thì tải trang truyện (tác giả, tình trạng, rating, lượt thích, ảnh bìa, nonce) và **đủ** danh sách chương qua AJAX `vnk_single_chapters`, rồi ghi như lệnh nạp: upsert truyện, thêm chương mới, cập nhật chương đổi vị trí/tên, xoá chương không còn. Không tải nội dung chương; nội dung vẫn tải khi người đọc mở lần đầu.
+   - Truyện mới được thêm ở trạng thái hiện (`is_hidden = false`). Cột `is_hidden`, `view_count`, `comment_count` và nội dung chương đã có không bị đụng tới.
+5. Ghi log vào Redis `STORY_CRAWL:LOGS` (giữ 50 lượt gần nhất), tiến độ lượt đang chạy ở `STORY_CRAWL:PROGRESS`.
+6. Cập nhật mốc: thành công thì `nextSince = giờ bắt đầu − 1 giờ`. Nếu lượt bị cắt vì quá 300 bài thì `nextSince` = giờ sửa của bài cuối đã xử lý, lượt sau chạy tiếp. Có truyện lỗi, bị chặn hay lỗi giữa chừng thì giữ mốc cũ để lượt sau quét lại; ghi lại không hại gì vì lệnh ghi chỉ đổi khi dữ liệu khác.
 
-   ```sql
-   SELECT coalesce(max(source_chapter_id::bigint), 0) FROM story_chapters WHERE story_id = $1;
-   ```
+Lịch chạy: vòng lặp trong API kiểm tra mỗi tối đa 1 phút, đọc lại cấu hình từ DB mỗi lần nên lưu cấu hình xong không cần khởi động lại. Đến hạn khi `lastRunAt + chu kỳ ≤ bây giờ`; `lastRunAt` ghi ngay lúc bắt đầu chạy, nên lượt lỗi cũng phải đợi hết chu kỳ mới chạy lại.
 
-4. Đọc danh sách chương qua AJAX từ trang cuối lùi về, cho tới khi gặp chương có ID nhỏ hơn hoặc bằng số trên. Mỗi chương có ID lớn hơn là chương mới: insert vào `story_chapters` với `position` nối tiếp, rồi lấy nội dung từ HTML trang chương.
-5. Cập nhật lại `stories.chapter_count`, `word_count`, `last_chapter_at` theo các chương vừa thêm.
-6. Định kỳ (ví dụ mỗi tuần) so `chapter_count` với số chương tính từ AJAX (`(totalPages - 1) × 10 + số chương ở trang cuối`). Lệch thì quét lại toàn bộ danh sách chương của truyện đó, để bắt được chương bị xoá hoặc chèn giữa.
+Lịch sự với nguồn:
 
-`source_updated_at` đổi cả khi tác giả chỉ sửa giới thiệu, nên truyện có `source_updated_at` mới chưa chắc có chương mới. Muốn hiện danh sách "truyện có chương mới" thì sắp theo `last_chapter_at` thay vì `source_updated_at`.
+- Request cách nhau 1 giây. User-Agent mặc định cố định một bản Chrome; bật "User-Agent ngẫu nhiên" (`randomUserAgent`) thì mỗi lượt chọn ngẫu nhiên một dòng trong `server/internal/modules/story/user-agents.json` (105 dòng, nhúng vào server, sửa file rồi build lại; lấy từ API useragents.me tuần 27/09–04/10/2026, bỏ bot, UA cụt và trình duyệt cũ, bổ sung các bản Chrome 146–154, Firefox 150–157, Safari 26–27, Samsung, Cốc Cốc) và dùng chung cho cả lượt, không đổi theo từng request. Vnkings trả cùng cấu trúc HTML cho trình duyệt máy tính và điện thoại nên danh sách có cả hai. Lỗi mạng hoặc 5xx thử lại tối đa 2 lần.
+- Cookie đăng nhập (`useCookies`): admin tự đăng nhập vnkings rồi dán cookie vào danh sách. Đầu mỗi lượt crawler xáo các cookie `active`, lấy lần lượt từng cái tải trang chủ để kiểm tra, rồi dùng cookie sống đầu tiên cho cả lượt (gửi ở mọi request, cả REST và AJAX). Trang trả về có link "Đăng nhập" (`class="login_plus"`) mà không có link `logout` thì coi là cookie đã bị đăng xuất: đổi sang `dead` kèm `deadAt` ngay trong `app_settings` bằng một câu `UPDATE` JSONB (chỉ sửa đúng cookie đó, không ghi đè phần cấu hình khác), rồi chuyển sang cookie kế tiếp. Trang truyện cũng được kiểm tra như vậy; cookie chết giữa lượt thì đổi cookie và tải lại trang truyện đó. Hết cookie sống thì lượt vẫn chạy tiếp như khách. Bị `403/429/503` vẫn dừng cả lượt chứ không đổi sang tài khoản khác để thử tiếp.
+- Gặp `403`, `429`, `503` thì dừng cả lượt, trạng thái `blocked`, không cố thử tiếp.
+- `404` hoặc AJAX `success:false` chỉ tính lỗi cho truyện đó.
+- Truyện dài đã có mà không lấy được danh sách chương, hoặc nguồn trả về dạng truyện ngắn, thì báo lỗi và **không** ghi, để không xoá mất chương.
+
+Đo trên local (khoảng 21 truyện đổi trong 3 ngày): mỗi lượt khoảng 62 request, chạy 1 phút.
+
+`source_updated_at` đổi cả khi tác giả chỉ sửa giới thiệu hoặc site sửa hàng loạt, nên nhiều truyện được "kiểm tra" nhưng không có chương mới. Muốn hiện danh sách "truyện có chương mới" thì sắp theo `last_chapter_at` thay vì `source_updated_at`.
 
 ## 8. Giới hạn của thiết kế 2 bảng
 

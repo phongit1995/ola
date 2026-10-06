@@ -1,4 +1,5 @@
-import { App, Button, Card, Form, Select, Spin, Switch, Table, Typography } from 'antd'
+import { useSearchParams } from 'react-router-dom'
+import { App, Button, Card, Form, Select, Spin, Switch, Table, Tabs, Typography } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
 import { ApiError } from '@/lib/apiError'
@@ -10,6 +11,7 @@ import {
   STORY_VERSION_PATTERN,
   storySetting,
 } from './storyMeta'
+import { StoryCrawlerTab } from './StoryCrawlerTab'
 
 type PlatformRow = (typeof STORY_PLATFORMS)[number]
 
@@ -98,7 +100,32 @@ const COLUMNS = [
   },
 ]
 
+const TAB_KEYS = ['display', 'crawler'] as const
+type TabKey = (typeof TAB_KEYS)[number]
+
 export function StorySettingsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeKey: TabKey = TAB_KEYS.includes(tabParam as TabKey) ? (tabParam as TabKey) : 'display'
+
+  function changeTab(key: string) {
+    setSearchParams(key === 'display' ? {} : { tab: key }, { replace: true })
+  }
+
+  return (
+    <Tabs
+      activeKey={activeKey}
+      onChange={changeTab}
+      destroyOnHidden
+      items={[
+        { key: 'display', label: 'Hiển thị trên app', children: <StoryDisplaySettings /> },
+        { key: 'crawler', label: 'Cập nhật tự động', children: <StoryCrawlerTab /> },
+      ]}
+    />
+  )
+}
+
+function StoryDisplaySettings() {
   const { message, modal } = App.useApp()
   const { data: settings, isLoading, isError } = useAppSettings()
   const putSetting = usePutAppSetting()

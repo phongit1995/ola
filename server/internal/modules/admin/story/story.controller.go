@@ -10,10 +10,11 @@ import (
 
 type Controller struct {
 	service *story.Service
+	crawler *story.Crawler
 }
 
-func NewController(service *story.Service) *Controller {
-	return &Controller{service: service}
+func NewController(service *story.Service, crawler *story.Crawler) *Controller {
+	return &Controller{service: service, crawler: crawler}
 }
 
 // List godoc
@@ -236,4 +237,34 @@ func (ctrl *Controller) Refetch(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
+}
+
+// Crawler godoc
+// @Summary      Cấu hình, trạng thái và log của tự động cập nhật truyện (admin)
+// @Tags         admin-story
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.BaseResponse[story.CrawlerStatusResponse]
+// @Router       /admin/stories/crawler [get]
+func (ctrl *Controller) Crawler(c *gin.Context) (interface{}, error) {
+	resp, err := ctrl.crawler.Status(c.Request.Context())
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// RunCrawler godoc
+// @Summary      Chạy ngay một lượt cập nhật truyện ở nền (admin)
+// @Tags         admin-story
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.BaseResponse[story.CrawlRunResponse]
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/stories/crawler/run [post]
+func (ctrl *Controller) RunCrawler(c *gin.Context) (interface{}, error) {
+	if err := ctrl.crawler.RunNow(); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return story.CrawlRunResponse{Started: true}, nil
 }

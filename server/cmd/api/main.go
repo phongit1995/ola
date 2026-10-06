@@ -4,6 +4,7 @@ import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/kenchest"
+	"ola-chat-server/internal/modules/story"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"context"
@@ -69,6 +70,11 @@ func main() {
 		scheduler.Start(rootCtx)
 	}); err != nil {
 		log.Fatalf("❌ Failed to start ken chest scheduler: %v", err)
+	}
+	if err := c.Invoke(func(crawler *story.Crawler) {
+		crawler.Start(rootCtx)
+	}); err != nil {
+		log.Fatalf("❌ Failed to start story crawler: %v", err)
 	}
 
 	quit := make(chan os.Signal, 1)

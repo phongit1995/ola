@@ -1,10 +1,18 @@
+import { useEffect, useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminStoryService } from '@/services/adminStory.service'
-import type { AdminStoryBulkVisibilityInput, AdminStoryListParams } from '@/types'
+import { AdminSettingsService } from '@/services/adminSettings.service'
+import type {
+  AdminStoryBulkVisibilityInput,
+  AdminStoryListParams,
+  StoryCrawlerSetting,
+} from '@/types'
 
 const STORIES_KEY = 'admin-stories'
 const FILTER_OPTIONS_STALE_MS = 5 * 60 * 1000
 const BULK_FETCH_POLL_MS = 3000
+const CRAWLER_POLL_MS = 3000
+const STORY_CRAWLER_SETTING_KEY = 'story_crawler'
 
 export function useStories(params: AdminStoryListParams) {
   return useQuery({
@@ -117,4 +125,42 @@ export function useFetchMissingStoryContent() {
       void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'chapters', id] })
     },
   })
+}
+
+export function useStoryCrawler() {
+  return useQuery({
+    queryKey: [STORIES_KEY, 'crawler'],
+    queryFn: () => AdminStoryService.crawler(),
+    refetchInterval: (query) => (query.state.data?.running ? CRAWLER_POLL_MS : false),
+  })
+}
+
+export function useRunStoryCrawler() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => AdminStoryService.runCrawler(),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'crawler'] })
+    },
+  })
+}
+
+export function useSaveStoryCrawlerSetting() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (value: StoryCrawlerSetting) =>
+      AdminSettingsService.put(STORY_CRAWLER_SETTING_KEY, { ...value }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'crawler'] })
+    },
+  })
+}
+
+export function useRefreshStoriesAfterCrawl(running: boolean | undefined) {
+  const refresh = useRefreshStoryLists()
+  const previous = useRef(running)
+  useEffect(() => {
+    if (previous.current && running === false) refresh()
+    previous.current = running
+  }, [running, refresh])
 }

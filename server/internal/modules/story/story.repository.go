@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
@@ -338,4 +339,46 @@ func (r *Repository) MissingContentChapters(ctx context.Context, storyID uuid.UU
 		return nil, err
 	}
 	return rows, nil
+}
+
+type KnownStory struct {
+	SourceStoryID string
+	Kind          string
+	ChapterCount  int
+}
+
+func (r *Repository) KnownStories(ctx context.Context, source string, sourceIDs []string) (map[string]KnownStory, error) {
+	known := make(map[string]KnownStory, len(sourceIDs))
+	if len(sourceIDs) == 0 {
+		return known, nil
+	}
+	var rows []KnownStory
+	err := r.db.WithContext(ctx).Model(&models.Story{}).
+		Select("source_story_id, kind, chapter_count").
+		Where("source = ? AND source_story_id IN ?", source, sourceIDs).
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		known[row.SourceStoryID] = row
+	}
+	return known, nil
+}
+
+func (r *Repository) LatestSourceUpdate(ctx context.Context, source string) (*time.Time, error) {
+	var latest *time.Time
+	err := r.db.WithContext(ctx).Model(&models.Story{}).
+		Where("source = ?", source).
+		Select("MAX(source_updated_at)").
+		Scan(&latest).Error
+	return latest, err
+}
+
+func (r *Repository) ImportStory(ctx context.Context, source string, crawledAt time.Time, item StoryImport, chapters []ChapterImport) (ImportResult, error) {
+	db, err := r.db.DB()
+	if err != nil {
+		return ImportResult{}, err
+	}
+	return ImportStory(ctx, db, source, crawledAt, item, chapters)
 }
