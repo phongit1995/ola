@@ -21,8 +21,9 @@ import (
 )
 
 var (
-	errSourceBlocked = errors.New("source blocked the crawler")
-	errStoryGone     = errors.New("story no longer available at source")
+	errSourceBlocked      = errors.New("source blocked the crawler")
+	errStoryGone          = errors.New("story no longer available at source")
+	errIncompleteChapters = errors.New("chapter list incomplete")
 )
 
 var (
@@ -87,6 +88,7 @@ type ChapterLink struct {
 
 type Catalog interface {
 	ModifiedPosts(ctx context.Context, since time.Time, page int) (PostPage, error)
+	PostsByID(ctx context.Context, ids []int64) ([]SourcePost, error)
 	Categories(ctx context.Context) (map[int64]string, error)
 	TagNames(ctx context.Context, ids []int64) (map[int64]string, error)
 	StoryPage(ctx context.Context, link string) (StoryPageInfo, error)
@@ -100,6 +102,7 @@ type Catalog interface {
 type VnkingsCatalog struct {
 	client    *http.Client
 	homeURL   string
+	ajaxURL   string
 	gap       time.Duration
 	retryWait time.Duration
 	mu        sync.Mutex
@@ -113,6 +116,7 @@ func NewVnkingsCatalog() *VnkingsCatalog {
 	return &VnkingsCatalog{
 		client:    &http.Client{Timeout: constants.StoryFetchTimeout},
 		homeURL:   constants.StoryVnkingsHomeURL,
+		ajaxURL:   constants.StoryVnkingsAjaxURL,
 		gap:       constants.StoryCrawlGap,
 		retryWait: constants.StoryCrawlRetryWait,
 	}
@@ -154,6 +158,8 @@ func restURL(route string, query url.Values) string {
 	return constants.StoryVnkingsRESTURL + route + "&" + query.Encode()
 }
 
+const postFields = "id,slug,link,title,content,excerpt,date_gmt,modified_gmt,categories,tags,author"
+
 func (c *VnkingsCatalog) ModifiedPosts(ctx context.Context, since time.Time, page int) (PostPage, error) {
 	query := url.Values{
 		"categories":     {constants.StoryVnkingsCategoryIDs},
@@ -162,7 +168,7 @@ func (c *VnkingsCatalog) ModifiedPosts(ctx context.Context, since time.Time, pag
 		"order":          {"asc"},
 		"per_page":       {strconv.Itoa(constants.StoryVnkingsPerPage)},
 		"page":           {strconv.Itoa(page)},
-		"_fields":        {"id,slug,link,title,content,excerpt,date_gmt,modified_gmt,categories,tags,author"},
+		"_fields":        {postFields},
 	}
 	var posts []SourcePost
 	header, err := c.getJSON(ctx, restURL("/wp/v2/posts", query), &posts)
@@ -174,6 +180,28 @@ func (c *VnkingsCatalog) ModifiedPosts(ctx context.Context, since time.Time, pag
 		Total:      headerInt(header, "X-WP-Total"),
 		TotalPages: headerInt(header, "X-WP-TotalPages"),
 	}, nil
+}
+
+func (c *VnkingsCatalog) PostsByID(ctx context.Context, ids []int64) ([]SourcePost, error) {
+	var posts []SourcePost
+	for start := 0; start < len(ids); start += constants.StoryVnkingsPerPage {
+		end := min(start+constants.StoryVnkingsPerPage, len(ids))
+		include := make([]string, 0, end-start)
+		for _, id := range ids[start:end] {
+			include = append(include, strconv.FormatInt(id, 10))
+		}
+		query := url.Values{
+			"include":  {strings.Join(include, ",")},
+			"per_page": {strconv.Itoa(constants.StoryVnkingsPerPage)},
+			"_fields":  {postFields},
+		}
+		var batch []SourcePost
+		if _, err := c.getJSON(ctx, restURL("/wp/v2/posts", query), &batch); err != nil {
+			return nil, err
+		}
+		posts = append(posts, batch...)
+	}
+	return posts, nil
 }
 
 func (c *VnkingsCatalog) Categories(ctx context.Context) (map[int64]string, error) {
@@ -249,7 +277,7 @@ func (c *VnkingsCatalog) ChapterLinks(ctx context.Context, storyID int64, nonce 
 			"page":          {strconv.Itoa(page)},
 			"chapter_nonce": {nonce},
 		}
-		body, header, err := c.do(ctx, http.MethodPost, constants.StoryVnkingsAjaxURL, form)
+		body, header, err := c.do(ctx, http.MethodPost, c.ajaxURL, form)
 		if err != nil {
 			return nil, err
 		}
@@ -264,9 +292,13 @@ func (c *VnkingsCatalog) ChapterLinks(ctx context.Context, storyID int64, nonce 
 			if page == 1 {
 				return nil, nil
 			}
-			return links, nil
+			return nil, fmt.Errorf("%w: story %d page %d failed", errIncompleteChapters, storyID, page)
 		}
-		links = append(links, parseChapterLinks(result.Data.Items)...)
+		pageLinks := parseChapterLinks(result.Data.Items)
+		if len(pageLinks) == 0 && page > 1 {
+			return nil, fmt.Errorf("%w: story %d page %d is empty", errIncompleteChapters, storyID, page)
+		}
+		links = append(links, pageLinks...)
 		if page >= max(int(result.Data.TotalPages), 1) {
 			return links, nil
 		}

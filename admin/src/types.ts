@@ -2017,6 +2017,8 @@ export interface StoryCrawlError {
   sourceStoryId: string
   title: string
   message: string
+  attempts: number
+  willRetry: boolean
 }
 
 export interface StoryCrawlLog {
@@ -2036,6 +2038,8 @@ export interface StoryCrawlLog {
   truncated: boolean
   postsFound: number
   postsProcessed: number
+  retried: number
+  retryPending: number
   storiesChecked: number
   storiesUpdated: number
   storiesCreated: number
@@ -2051,12 +2055,14 @@ export interface StoryCrawlLog {
 
 export interface StoryCrawlerStatus {
   config: StoryCrawlerSetting
+  configUpdatedAt: string | null
   userAgents: number
   running: boolean
   progress: StoryCrawlLog | null
   lastRunAt: string | null
   nextRunAt: string | null
   nextSince: string | null
+  retryPending: number
   logs: StoryCrawlLog[]
 }
 

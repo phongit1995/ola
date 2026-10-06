@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import {
+  Alert,
   App,
   Badge,
   Button,
@@ -38,6 +39,7 @@ import {
 import { ApiError } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import type {
+  StoryCrawlError,
   StoryCookie,
   StoryCookieStatus,
   StoryCrawlLog,
@@ -219,6 +221,12 @@ const COLUMNS: TableColumnsType<StoryCrawlLog> = [
   },
 ]
 
+function retryNote(error: StoryCrawlError): string {
+  return error.willRetry
+    ? `sẽ thử lại ở lượt sau (đã thử ${error.attempts} lần)`
+    : `đã thử ${error.attempts} lần, bỏ qua đến khi truyện được sửa lại`
+}
+
 function LogDetail({ log }: { log: StoryCrawlLog }) {
   const hiddenErrors = log.storiesFailed - log.errors.length
   return (
@@ -226,6 +234,7 @@ function LogDetail({ log }: { log: StoryCrawlLog }) {
       <Typography.Text type="secondary">
         Quét bài sửa sau {formatDateTime(log.since)} · tìm thấy {formatCount(log.postsFound)} bài,
         đã xử lý {formatCount(log.postsProcessed)}
+        {log.retried > 0 ? ` · thử lại ${formatCount(log.retried)} truyện lỗi lượt trước` : ''}
         {log.truncated ? ' (phần còn lại chạy tiếp ở lượt sau)' : ''} ·{' '}
         {log.importNewStories ? 'có lấy truyện mới' : 'chỉ cập nhật truyện đã có'}
         {log.storiesEmpty > 0
@@ -257,6 +266,9 @@ function LogDetail({ log }: { log: StoryCrawlLog }) {
         <Typography.Text key={error.sourceStoryId}>
           <Typography.Text type="secondary">#{error.sourceStoryId}</Typography.Text> {error.title}:{' '}
           <Typography.Text type="danger">{error.message}</Typography.Text>
+          {error.attempts > 0 && (
+            <Typography.Text type="secondary"> · {retryNote(error)}</Typography.Text>
+          )}
         </Typography.Text>
       ))}
       {hiddenErrors > 0 && (
@@ -415,37 +427,59 @@ function CookieList({ cookies }: { cookies: StoryCookie[] }) {
   )
 }
 
+interface ConfigSnapshot {
+  config: StoryCrawlerSetting
+  updatedAt: string | null
+}
+
+function sameSnapshot(a: ConfigSnapshot, b: ConfigSnapshot): boolean {
+  return a.updatedAt === b.updatedAt && settingKey(a.config) === settingKey(b.config)
+}
+
 function SettingsCard({ status }: { status: StoryCrawlerStatus }) {
   const { message } = App.useApp()
   const [form] = Form.useForm<StoryCrawlerSetting>()
   const values = Form.useWatch([], form)
   const saveSetting = useSaveStoryCrawlerSetting()
-  const { config } = status
+  const latest: ConfigSnapshot = { config: status.config, updatedAt: status.configUpdatedAt }
+  const [base, setBase] = useState<ConfigSnapshot>(latest)
+  const { config } = base
   const dirty = values !== undefined && settingKey(config) !== settingKey(values)
+  const changed = !sameSnapshot(base, latest)
+  if (changed && (!dirty || settingKey(values) === settingKey(latest.config))) {
+    setBase(latest)
+  }
 
   async function save(next: StoryCrawlerSetting) {
     const deadAt = deadAtByCookie(config.cookies)
     const savedAt = new Date().toISOString()
     try {
       await saveSetting.mutateAsync({
-        enabled: next.enabled === true,
-        intervalHours: next.intervalHours,
-        importNewStories: next.importNewStories === true,
-        randomUserAgent: next.randomUserAgent === true,
-        useCookies: next.useCookies === true,
-        cookies: (next.cookies ?? []).map((item) => {
-          const cookie = cleanCookie(item.cookie)
-          const status: StoryCookieStatus = item.status === 'dead' ? 'dead' : 'active'
-          return {
-            name: (item.name ?? '').trim(),
-            cookie,
-            status,
-            deadAt: status === 'dead' ? deadAt.get(cookie) ?? savedAt : null,
-          }
-        }),
+        expectedUpdatedAt: base.updatedAt,
+        value: {
+          enabled: next.enabled === true,
+          intervalHours: next.intervalHours,
+          importNewStories: next.importNewStories === true,
+          randomUserAgent: next.randomUserAgent === true,
+          useCookies: next.useCookies === true,
+          cookies: (next.cookies ?? []).map((item) => {
+            const cookie = cleanCookie(item.cookie)
+            const status: StoryCookieStatus = item.status === 'dead' ? 'dead' : 'active'
+            return {
+              name: (item.name ?? '').trim(),
+              cookie,
+              status,
+              deadAt: status === 'dead' ? deadAt.get(cookie) ?? savedAt : null,
+            }
+          }),
+        },
       })
       message.success('Đã lưu, có hiệu lực trong vòng 1 phút')
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        message.warning(err.message)
+        return
+      }
       message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
     }
   }
@@ -466,8 +500,22 @@ function SettingsCard({ status }: { status: StoryCrawlerStatus }) {
       }
       styles={{ body: { paddingTop: 0, paddingBottom: 0 } }}
     >
+      {changed && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginTop: 16 }}
+          title="Cấu hình trên server vừa thay đổi, ví dụ có cookie vừa bị chuyển sang Die."
+          description="Lưu bây giờ sẽ bị từ chối để không ghi đè. Lấy bản mới thì các thay đổi chưa lưu sẽ mất."
+          action={
+            <Button size="small" onClick={() => setBase(latest)}>
+              Lấy bản mới
+            </Button>
+          }
+        />
+      )}
       <Form<StoryCrawlerSetting>
-        key={JSON.stringify(config)}
+        key={`${base.updatedAt ?? ''}:${settingKey(config)}`}
         form={form}
         initialValues={config}
         onFinish={save}
@@ -587,6 +635,13 @@ function StatusCard({
         {config.enabled ? formatDateTime(status.nextRunAt) : 'Không có lịch'}
       </InfoRow>
       <InfoRow label="Lượt sau quét từ">{formatDateTime(status.nextSince)}</InfoRow>
+      {status.retryPending > 0 && (
+        <InfoRow label="Chờ thử lại">
+          <Typography.Text type="warning">
+            {formatCount(status.retryPending)} truyện lỗi
+          </Typography.Text>
+        </InfoRow>
+      )}
       {config.useCookies && <CookieSummary cookies={config.cookies} />}
       {lastRun && !status.running && (
         <InfoRow label="Kết quả gần nhất">
@@ -616,7 +671,7 @@ function StatusCard({
 export function StoryCrawlerTab() {
   const { data: status, isLoading, isError, isFetching, refetch } = useStoryCrawler()
   const [historyOpen, setHistoryOpen] = useState(false)
-  useRefreshStoriesAfterCrawl(status?.running)
+  useRefreshStoriesAfterCrawl(status ? status.logs[0]?.id ?? '' : undefined)
 
   if (isLoading) {
     return (

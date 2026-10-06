@@ -7,10 +7,13 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
@@ -207,24 +210,47 @@ func (s *Service) PutMany(items []models.AppSetting) ([]models.AppSetting, error
 	return saved, nil
 }
 
+var ErrSettingChanged = utils.NewHTTPErrorWithCode(http.StatusConflict, "Cấu hình vừa được thay đổi ở nơi khác, tải lại trang rồi lưu lại", constants.ErrorCodeSettingChanged)
+
+func (s *Service) PutIfUnchanged(key string, value models.JSONB, expected time.Time) (*models.AppSetting, error) {
+	key = strings.TrimSpace(key)
+	updated, err := s.repo.UpdateIfUnchanged(key, value, expected)
+	if err != nil {
+		return nil, err
+	}
+	if !updated {
+		return nil, ErrSettingChanged
+	}
+	return s.repo.Get(key)
+}
+
 func (s *Service) getInto(key string, out interface{}) error {
+	_, err := s.getVersioned(key, out)
+	return err
+}
+
+func (s *Service) getVersioned(key string, out interface{}) (*time.Time, error) {
 	item, err := s.repo.Get(key)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if item == nil || item.Value == nil {
-		return nil
+	if item == nil {
+		return nil, nil
+	}
+	updatedAt := item.UpdatedAt
+	if item.Value == nil {
+		return &updatedAt, nil
 	}
 	raw, err := json.Marshal(item.Value)
 	if err != nil {
 		s.logger.Warnw("Failed to encode app setting, using defaults", "key", key, "error", err.Error())
-		return nil
+		return &updatedAt, nil
 	}
 	if err := json.Unmarshal(raw, out); err != nil {
 		s.logger.Warnw("Failed to decode app setting, using defaults", "key", key, "error", err.Error())
-		return nil
+		return &updatedAt, nil
 	}
-	return nil
+	return &updatedAt, nil
 }
 
 func (s *Service) GetTopupBank() (TopupBankConfig, error) {

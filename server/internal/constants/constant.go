@@ -297,6 +297,9 @@ const (
 	StoryCrawlMaxPosts        = 300
 	StoryCrawlLogLimit        = 50
 	StoryCrawlErrorLimit      = 20
+	StoryCrawlRetryAttempts   = 5
+	StoryCrawlRetryBatch      = 100
+	StoryCrawlRetryMax        = 500
 	StoryCrawlMaxSleep        = time.Minute
 	StoryCrawlWatermarkMargin = time.Hour
 	StoryCrawlInitialLookback = 24 * time.Hour
@@ -322,7 +325,9 @@ const (
 	CacheKeyStoryCrawlProgress = "STORY_CRAWL:PROGRESS"
 
 	ErrorCodeStoryContentUnavailable = "STORY_CONTENT_UNAVAILABLE"
+	ErrorCodeStoryContentNotSaved    = "STORY_CONTENT_NOT_SAVED"
 	ErrorCodeStoryCrawlRunning       = "STORY_CRAWL_RUNNING"
+	ErrorCodeSettingChanged          = "SETTING_CHANGED"
 )
 
 const (

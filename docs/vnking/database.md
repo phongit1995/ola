@@ -178,7 +178,7 @@ cd server && go run ./cmd/storyimport -dir /đường/dẫn/khác
 `cmd/storyimport` đọc thông tin DB từ `server/.env` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL_MODE`) như lệnh migration. Mỗi truyện ghi trong một transaction:
 
 1. Upsert `stories` theo `(source, source_story_id)`, cập nhật mọi cột lấy từ nguồn. `is_hidden` giữ nguyên.
-2. Upsert từng chương theo `(story_id, source_chapter_id)`. Chương có `content_hash`, `title`, `position`, `source_url`, `published_at` không đổi thì không ghi lại. Chương không có nội dung trong file (xuất bằng `--no-content`) chỉ ghi tên, vị trí, link, ngày đăng; nội dung đã có trong DB được giữ nguyên, chương mới thì `content_text` để trống. Nội dung các chương này do API tự lấy khi có người đọc (xem `GET /stories/{id}/chapters/{position}` trong [api.md](api.md)); muốn lấy hết một lần thì xuất lại không có `--no-content` rồi nạp lại.
+2. Upsert từng chương theo `(story_id, source_chapter_id)`. Chương có `content_hash`, `title`, `position`, `source_url`, `published_at` không đổi thì không ghi lại. Nội dung trong `chapters/<id truyện>.json` ghép với chương theo id chương nguồn (truyện ngắn dùng id truyện), không theo số thứ tự, nên nguồn chèn hay đổi thứ tự chương cũng không ghép nhầm; xuất bằng `--no-content` thì script xoá file nội dung cũ của truyện đó. File xuất bằng bản script cũ (ghép theo số thứ tự) sẽ không khớp id nào nên bị bỏ qua, không ghi nhầm. Chương không có nội dung trong file (xuất bằng `--no-content`) chỉ ghi tên, vị trí, link, ngày đăng; nội dung đã có trong DB được giữ nguyên, chương mới thì `content_text` để trống. Nội dung các chương này do API tự lấy khi có người đọc (xem `GET /stories/{id}/chapters/{position}` trong [api.md](api.md)); muốn lấy hết một lần thì xuất lại không có `--no-content` rồi nạp lại.
 3. Xoá chương của truyện đó không còn trong file (chương bị gỡ trên nguồn).
 4. Tính lại `chapter_count`, `word_count`, `last_chapter_at` từ `story_chapters`.
 
@@ -191,14 +191,16 @@ API server tự hỏi vnkings định kỳ và kéo chương mới về, không 
 Mỗi lượt chạy:
 
 1. Giữ khoá Redis `LOCK:STORY_CRAWL` (TTL 30 phút, mỗi lượt tối đa 25 phút) để nhiều instance API không chạy chồng.
-2. Lấy mốc quét `nextSince` trong Redis `STORY_CRAWL:STATE`. Chưa có thì lấy `max(source_updated_at)` của truyện vnkings lùi 1 giờ; chưa có truyện nào thì lùi 24 giờ.
-3. Gọi REST `wp/v2/posts` lọc theo các danh mục truyện, `modified_after=<mốc theo UTC, có Z>`, `orderby=modified&order=asc`, 100 bài mỗi trang, dừng theo header `X-WP-TotalPages`.
-4. Với từng bài:
+2. Lấy mốc quét trong Redis `STORY_CRAWL:STATE`: `nextSince` và `seenAtSince` (id các bài có đúng giờ sửa `nextSince` đã xử lý). Chưa có thì lấy `max(source_updated_at)` của truyện vnkings lùi 1 giờ; chưa có truyện nào thì lùi 24 giờ. Mốc được lưu sau mọi lượt chạy, kể cả lượt lỗi, nên chỉ rơi về cách tính này khi mất key Redis.
+3. Thử lại trước tối đa 100 truyện trong hàng chờ `retry` (cùng key `STORY_CRAWL:STATE`): lấy lại bài theo id (`wp/v2/posts&include=...`) rồi xử lý như bước 5. Thành công thì ra khỏi hàng chờ; bài không còn trên nguồn cũng bỏ khỏi hàng chờ.
+4. Gọi REST `wp/v2/posts` lọc theo các danh mục truyện, `modified_after=<mốc theo UTC, có Z>`, `orderby=modified&order=asc`, 100 bài mỗi trang, dừng theo header `X-WP-TotalPages`. Có `seenAtSince` thì hỏi lùi 1 giây để lấy cả các bài trùng giờ sửa với mốc, rồi bỏ qua các bài đã có trong `seenAtSince`.
+5. Với từng bài:
    - Chưa có trong DB mà tắt "Lấy cả truyện mới" thì bỏ qua (đếm `storiesSkippedNew`), không tải gì thêm.
-   - Còn lại thì tải trang truyện (tác giả, tình trạng, rating, lượt thích, ảnh bìa, nonce) và **đủ** danh sách chương qua AJAX `vnk_single_chapters`, rồi ghi như lệnh nạp: upsert truyện, thêm chương mới, cập nhật chương đổi vị trí/tên, xoá chương không còn. Không tải nội dung chương; nội dung vẫn tải khi người đọc mở lần đầu.
+   - Còn lại thì tải trang truyện (tác giả, tình trạng, rating, lượt thích, ảnh bìa, nonce) và **đủ** danh sách chương qua AJAX `vnk_single_chapters`, rồi ghi như lệnh nạp: upsert truyện, thêm chương mới, cập nhật chương đổi vị trí/tên, xoá chương không còn. Trang thứ 2 trở đi của danh sách chương mà lỗi hoặc rỗng thì cả truyện tính là lỗi và **không** ghi, để không xoá nhầm các chương chưa tải được. Không tải nội dung chương; nội dung vẫn tải khi người đọc mở lần đầu.
    - Truyện mới được thêm ở trạng thái hiện (`is_hidden = false`). Cột `is_hidden`, `view_count`, `comment_count` và nội dung chương đã có không bị đụng tới.
-5. Ghi log vào Redis `STORY_CRAWL:LOGS` (giữ 50 lượt gần nhất), tiến độ lượt đang chạy ở `STORY_CRAWL:PROGRESS`.
-6. Cập nhật mốc: thành công thì `nextSince = giờ bắt đầu − 1 giờ`. Nếu lượt bị cắt vì quá 300 bài thì `nextSince` = giờ sửa của bài cuối đã xử lý, lượt sau chạy tiếp. Có truyện lỗi, bị chặn hay lỗi giữa chừng thì giữ mốc cũ để lượt sau quét lại; ghi lại không hại gì vì lệnh ghi chỉ đổi khi dữ liệu khác.
+   - Truyện lỗi (mạng, `404`, danh sách chương dở dang, nguồn đổi truyện dài thành truyện ngắn…) vào hàng chờ `retry` để các lượt sau thử lại, tối đa 5 lần; quá 5 lần thì bỏ khỏi hàng chờ, chờ đến khi truyện được sửa lại trên nguồn. Hàng chờ giữ tối đa 500 truyện.
+6. Ghi log vào Redis `STORY_CRAWL:LOGS` (giữ 50 lượt gần nhất), tiến độ lượt đang chạy ở `STORY_CRAWL:PROGRESS`.
+7. Cập nhật mốc: quét hết các trang thì `nextSince = giờ bắt đầu − 1 giờ`. Lượt bị cắt vì quá 300 bài, bị chặn hay lỗi giữa chừng thì mốc dừng ở bài cuối đã xử lý (kèm `seenAtSince`), lượt sau chạy tiếp từ đó. Truyện lỗi không giữ mốc lại nữa mà nằm trong hàng chờ `retry`, nên một truyện lỗi mãi không làm kẹt các bài phía sau. Ghi lại không hại gì vì lệnh ghi chỉ đổi khi dữ liệu khác.
 
 Lịch chạy: vòng lặp trong API kiểm tra mỗi tối đa 1 phút, đọc lại cấu hình từ DB mỗi lần nên lưu cấu hình xong không cần khởi động lại. Đến hạn khi `lastRunAt + chu kỳ ≤ bây giờ`; `lastRunAt` ghi ngay lúc bắt đầu chạy, nên lượt lỗi cũng phải đợi hết chu kỳ mới chạy lại.
 

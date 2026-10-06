@@ -159,6 +159,8 @@ type CrawlError struct {
 	SourceStoryID string `json:"sourceStoryId"`
 	Title         string `json:"title"`
 	Message       string `json:"message"`
+	Attempts      int    `json:"attempts"`
+	WillRetry     bool   `json:"willRetry"`
 }
 
 type CrawlLog struct {
@@ -178,6 +180,8 @@ type CrawlLog struct {
 	Truncated         bool         `json:"truncated"`
 	PostsFound        int          `json:"postsFound"`
 	PostsProcessed    int          `json:"postsProcessed"`
+	Retried           int          `json:"retried"`
+	RetryPending      int          `json:"retryPending"`
 	StoriesChecked    int          `json:"storiesChecked"`
 	StoriesUpdated    int          `json:"storiesUpdated"`
 	StoriesCreated    int          `json:"storiesCreated"`
@@ -201,14 +205,16 @@ type CrawlerConfigResponse struct {
 }
 
 type CrawlerStatusResponse struct {
-	Config     CrawlerConfigResponse `json:"config"`
-	UserAgents int                   `json:"userAgents"`
-	Running    bool                  `json:"running"`
-	Progress   *CrawlLog             `json:"progress"`
-	LastRunAt  *time.Time            `json:"lastRunAt"`
-	NextRunAt  *time.Time            `json:"nextRunAt"`
-	NextSince  *time.Time            `json:"nextSince"`
-	Logs       []CrawlLog            `json:"logs"`
+	Config          CrawlerConfigResponse `json:"config"`
+	ConfigUpdatedAt *time.Time            `json:"configUpdatedAt"`
+	UserAgents      int                   `json:"userAgents"`
+	Running         bool                  `json:"running"`
+	Progress        *CrawlLog             `json:"progress"`
+	LastRunAt       *time.Time            `json:"lastRunAt"`
+	NextRunAt       *time.Time            `json:"nextRunAt"`
+	NextSince       *time.Time            `json:"nextSince"`
+	RetryPending    int                   `json:"retryPending"`
+	Logs            []CrawlLog            `json:"logs"`
 }
 
 type CrawlRunResponse struct {
