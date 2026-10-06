@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"net"
 	"net/url"
@@ -18,9 +16,9 @@ import (
 	"time"
 
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/modules/story"
 
 	"github.com/caarlos0/env/v11"
-	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 )
@@ -84,95 +82,6 @@ type exportChapter struct {
 	PublishedAt *time.Time `json:"publishedAt"`
 }
 
-type importResult struct {
-	storyInserted  bool
-	added          int
-	updated        int
-	unchanged      int
-	withoutContent int
-	removed        int64
-}
-
-const upsertStorySQL = `
-INSERT INTO stories (
-	source, source_story_id, slug, source_url, title, author_name, source_author_id, kind, genres, tags,
-	intro, cover_url, status, age_rating, like_count,
-	published_at, source_updated_at, crawled_at, content_hash
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
-ON CONFLICT (source, source_story_id) DO UPDATE SET
-	slug = EXCLUDED.slug,
-	source_url = EXCLUDED.source_url,
-	title = EXCLUDED.title,
-	author_name = EXCLUDED.author_name,
-	source_author_id = COALESCE(EXCLUDED.source_author_id, stories.source_author_id),
-	kind = EXCLUDED.kind,
-	genres = EXCLUDED.genres,
-	tags = EXCLUDED.tags,
-	intro = EXCLUDED.intro,
-	cover_url = EXCLUDED.cover_url,
-	status = EXCLUDED.status,
-	age_rating = EXCLUDED.age_rating,
-	like_count = EXCLUDED.like_count,
-	published_at = EXCLUDED.published_at,
-	source_updated_at = EXCLUDED.source_updated_at,
-	crawled_at = EXCLUDED.crawled_at,
-	content_hash = EXCLUDED.content_hash,
-	updated_at = CURRENT_TIMESTAMP
-RETURNING id, (xmax = 0) AS inserted`
-
-const upsertChapterSQL = `
-INSERT INTO story_chapters (
-	story_id, source_chapter_id, position, title, source_url, content_text, word_count, published_at, crawled_at, content_hash
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-ON CONFLICT (story_id, source_chapter_id) DO UPDATE SET
-	position = EXCLUDED.position,
-	title = EXCLUDED.title,
-	source_url = EXCLUDED.source_url,
-	content_text = EXCLUDED.content_text,
-	word_count = EXCLUDED.word_count,
-	published_at = EXCLUDED.published_at,
-	crawled_at = EXCLUDED.crawled_at,
-	content_hash = EXCLUDED.content_hash,
-	updated_at = CURRENT_TIMESTAMP
-WHERE story_chapters.content_hash IS DISTINCT FROM EXCLUDED.content_hash
-	OR story_chapters.position <> EXCLUDED.position
-	OR story_chapters.title <> EXCLUDED.title
-	OR story_chapters.source_url <> EXCLUDED.source_url
-	OR story_chapters.published_at IS DISTINCT FROM EXCLUDED.published_at
-RETURNING (xmax = 0) AS inserted`
-
-const upsertChapterInfoSQL = `
-INSERT INTO story_chapters (
-	story_id, source_chapter_id, position, title, source_url, word_count, published_at, crawled_at
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-ON CONFLICT (story_id, source_chapter_id) DO UPDATE SET
-	position = EXCLUDED.position,
-	title = EXCLUDED.title,
-	source_url = EXCLUDED.source_url,
-	published_at = EXCLUDED.published_at,
-	crawled_at = EXCLUDED.crawled_at,
-	updated_at = CURRENT_TIMESTAMP
-WHERE story_chapters.position <> EXCLUDED.position
-	OR story_chapters.title <> EXCLUDED.title
-	OR story_chapters.source_url <> EXCLUDED.source_url
-	OR story_chapters.published_at IS DISTINCT FROM EXCLUDED.published_at
-RETURNING (xmax = 0) AS inserted`
-
-const removeStaleChaptersSQL = `
-DELETE FROM story_chapters WHERE story_id = $1 AND NOT (source_chapter_id = ANY($2))`
-
-const refreshStorySQL = `
-UPDATE stories SET
-	chapter_count = agg.chapters,
-	word_count = agg.words,
-	last_chapter_at = agg.last_at
-FROM (
-	SELECT COUNT(*) AS chapters, COALESCE(SUM(word_count), 0) AS words, MAX(published_at) AS last_at
-	FROM story_chapters
-	WHERE story_id = $1
-) agg
-WHERE stories.id = $1`
-
 func main() {
 	dir := flag.String("dir", "../scripts/vnkings/data", "directory written by scripts/vnkings/export_stories.py")
 	source := flag.String("source", constants.StorySourceVnkings, "value stored in stories.source")
@@ -214,14 +123,14 @@ func main() {
 			log.Fatalf("import %s %q: %v", item.ID, item.Title, err)
 		}
 		stories++
-		if result.storyInserted {
+		if result.StoryInserted {
 			newStories++
 		}
-		added += result.added
-		updated += result.updated
-		unchanged += result.unchanged
-		withoutContent += result.withoutContent
-		removed += result.removed
+		added += result.Added
+		updated += result.Updated
+		unchanged += result.Unchanged
+		withoutContent += result.WithoutContent
+		removed += result.Removed
 	}
 	log.Printf("stories: %d (%d new); chapters: %d added, %d updated, %d unchanged, %d removed; %d chapters imported without content",
 		stories, newStories, added, updated, unchanged, removed, withoutContent)
@@ -265,90 +174,55 @@ func readContents(dir, storyID string) (map[string]string, error) {
 	return contents, nil
 }
 
-func hash(text string) []byte {
-	sum := sha256.Sum256([]byte(text))
-	return sum[:]
+func toImport(item exportStory) story.StoryImport {
+	var sourceAuthorID *string
+	if item.SourceAuthorID != nil {
+		value := string(*item.SourceAuthorID)
+		sourceAuthorID = &value
+	}
+	return story.StoryImport{
+		SourceStoryID:  item.ID,
+		Slug:           item.Slug,
+		Title:          item.Title,
+		AuthorName:     item.AuthorName,
+		SourceAuthorID: sourceAuthorID,
+		Kind:           item.Kind,
+		Genres:         item.Genres,
+		Tags:           item.Tags,
+		Intro:          item.Intro,
+		CoverURL:       item.CoverURL,
+		Status:         item.Status,
+		AgeRating:      item.AgeRating,
+		LikeCount:      item.LikeCount,
+		SourceURL:      item.SourceURL,
+		PublishedAt:    item.PublishedAt,
+		UpdatedAt:      item.UpdatedAt,
+	}
 }
 
-func nonNil(values []string) []string {
-	if values == nil {
-		return []string{}
-	}
-	return values
-}
-
-func importStory(ctx context.Context, db *sql.DB, source, dir string, crawledAt time.Time, item exportStory, chapters []exportChapter) (importResult, error) {
-	var result importResult
-	sourceStoryID := strings.TrimSpace(item.ID)
-	if sourceStoryID == "" {
-		return result, errors.New("story id is empty")
-	}
-	contents, err := readContents(dir, item.ID)
-	if err != nil {
-		return result, err
-	}
-
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return result, err
-	}
-	defer tx.Rollback()
-
-	var storyID uuid.UUID
-	err = tx.QueryRowContext(ctx, upsertStorySQL,
-		source, sourceStoryID, item.Slug, item.SourceURL, item.Title, item.AuthorName, item.SourceAuthorID,
-		item.Kind, nonNil(item.Genres), nonNil(item.Tags), item.Intro, item.CoverURL, item.Status, item.AgeRating,
-		item.LikeCount, item.PublishedAt, item.UpdatedAt, crawledAt, hash(item.Intro),
-	).Scan(&storyID, &result.storyInserted)
-	if err != nil {
-		return result, fmt.Errorf("upsert story: %w", err)
-	}
-
-	keep := make([]string, 0, len(chapters))
+func toChapterImports(chapters []exportChapter, contents map[string]string) []story.ChapterImport {
+	out := make([]story.ChapterImport, 0, len(chapters))
 	for _, chapter := range chapters {
-		chapterID := strings.TrimSpace(chapter.ID)
-		if chapterID == "" {
-			return result, fmt.Errorf("story %s has a chapter without id", sourceStoryID)
+		item := story.ChapterImport{
+			SourceChapterID: chapter.ID,
+			Position:        chapter.Position,
+			Title:           chapter.Title,
+			URL:             chapter.URL,
+			WordCount:       chapter.WordCount,
+			PublishedAt:     chapter.PublishedAt,
 		}
-		sourceURL := chapter.URL
-		if sourceURL == "" {
-			sourceURL = item.SourceURL
-		}
-		var inserted bool
 		if content, ok := contents[strconv.Itoa(chapter.Position)]; ok {
-			err = tx.QueryRowContext(ctx, upsertChapterSQL,
-				storyID, chapterID, chapter.Position, chapter.Title, sourceURL, content,
-				len(strings.Fields(content)), chapter.PublishedAt, crawledAt, hash(content),
-			).Scan(&inserted)
-		} else {
-			result.withoutContent++
-			err = tx.QueryRowContext(ctx, upsertChapterInfoSQL,
-				storyID, chapterID, chapter.Position, chapter.Title, sourceURL,
-				chapter.WordCount, chapter.PublishedAt, crawledAt,
-			).Scan(&inserted)
+			item.Content = &content
 		}
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			result.unchanged++
-		case err != nil:
-			return result, fmt.Errorf("upsert chapter %d: %w", chapter.Position, err)
-		case inserted:
-			result.added++
-		default:
-			result.updated++
-		}
-		keep = append(keep, chapterID)
+		out = append(out, item)
 	}
+	return out
+}
 
-	removed, err := tx.ExecContext(ctx, removeStaleChaptersSQL, storyID, keep)
+func importStory(ctx context.Context, db *sql.DB, source, dir string, crawledAt time.Time, item exportStory, chapters []exportChapter) (story.ImportResult, error) {
+	contents, err := readContents(dir, strings.TrimSpace(item.ID))
 	if err != nil {
-		return result, fmt.Errorf("remove stale chapters: %w", err)
+		return story.ImportResult{}, err
 	}
-	if result.removed, err = removed.RowsAffected(); err != nil {
-		return result, err
-	}
-	if _, err := tx.ExecContext(ctx, refreshStorySQL, storyID); err != nil {
-		return result, fmt.Errorf("refresh counters: %w", err)
-	}
-	return result, tx.Commit()
+	return story.ImportStory(ctx, db, source, crawledAt, toImport(item), toChapterImports(chapters, contents))
 }

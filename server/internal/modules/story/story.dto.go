@@ -1,6 +1,10 @@
 package story
 
-import "time"
+import (
+	"time"
+
+	"ola-chat-server/internal/modules/setting"
+)
 
 type ListQuery struct {
 	Sort       string
@@ -149,4 +153,64 @@ type BulkVisibilityRequest struct {
 
 type BulkVisibilityResponse struct {
 	Updated int64 `json:"updated"`
+}
+
+type CrawlError struct {
+	SourceStoryID string `json:"sourceStoryId"`
+	Title         string `json:"title"`
+	Message       string `json:"message"`
+}
+
+type CrawlLog struct {
+	ID                string       `json:"id"`
+	Trigger           string       `json:"trigger"`
+	Status            string       `json:"status"`
+	Message           string       `json:"message,omitempty"`
+	ImportNewStories  bool         `json:"importNewStories"`
+	UserAgent         string       `json:"userAgent"`
+	UseCookies        bool         `json:"useCookies"`
+	Cookie            string       `json:"cookie,omitempty"`
+	CookiesDied       []string     `json:"cookiesDied,omitempty"`
+	Since             time.Time    `json:"since"`
+	StartedAt         time.Time    `json:"startedAt"`
+	FinishedAt        *time.Time   `json:"finishedAt"`
+	DurationMs        int64        `json:"durationMs"`
+	Truncated         bool         `json:"truncated"`
+	PostsFound        int          `json:"postsFound"`
+	PostsProcessed    int          `json:"postsProcessed"`
+	StoriesChecked    int          `json:"storiesChecked"`
+	StoriesUpdated    int          `json:"storiesUpdated"`
+	StoriesCreated    int          `json:"storiesCreated"`
+	StoriesSkippedNew int          `json:"storiesSkippedNew"`
+	StoriesEmpty      int          `json:"storiesEmpty"`
+	StoriesFailed     int          `json:"storiesFailed"`
+	ChaptersAdded     int          `json:"chaptersAdded"`
+	ChaptersUpdated   int          `json:"chaptersUpdated"`
+	ChaptersRemoved   int64        `json:"chaptersRemoved"`
+	Requests          int64        `json:"requests"`
+	Errors            []CrawlError `json:"errors"`
+}
+
+type CrawlerConfigResponse struct {
+	Enabled          bool                  `json:"enabled"`
+	IntervalHours    int                   `json:"intervalHours"`
+	ImportNewStories bool                  `json:"importNewStories"`
+	RandomUserAgent  bool                  `json:"randomUserAgent"`
+	UseCookies       bool                  `json:"useCookies"`
+	Cookies          []setting.StoryCookie `json:"cookies"`
+}
+
+type CrawlerStatusResponse struct {
+	Config     CrawlerConfigResponse `json:"config"`
+	UserAgents int                   `json:"userAgents"`
+	Running    bool                  `json:"running"`
+	Progress   *CrawlLog             `json:"progress"`
+	LastRunAt  *time.Time            `json:"lastRunAt"`
+	NextRunAt  *time.Time            `json:"nextRunAt"`
+	NextSince  *time.Time            `json:"nextSince"`
+	Logs       []CrawlLog            `json:"logs"`
+}
+
+type CrawlRunResponse struct {
+	Started bool `json:"started"`
 }

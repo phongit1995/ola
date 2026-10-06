@@ -7,6 +7,7 @@ func Provider(c *dig.Container) error {
 		NewRepository,
 		NewVnkingsSource,
 		NewService,
+		NewCrawler,
 		NewController,
 		NewRouter,
 	}

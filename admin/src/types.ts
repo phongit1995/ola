@@ -1990,3 +1990,76 @@ export interface AdminStoryChapterDetail extends AdminStoryChapter {
 export interface AdminStoryFetchResult {
   queued: number
 }
+
+export type StoryCookieStatus = 'active' | 'dead'
+
+export interface StoryCookie {
+  name: string
+  cookie: string
+  status: StoryCookieStatus
+  deadAt: string | null
+}
+
+export interface StoryCrawlerSetting {
+  enabled: boolean
+  intervalHours: number
+  importNewStories: boolean
+  randomUserAgent: boolean
+  useCookies: boolean
+  cookies: StoryCookie[]
+}
+
+export type StoryCrawlTrigger = 'schedule' | 'manual'
+
+export type StoryCrawlStatus = 'running' | 'success' | 'partial' | 'blocked' | 'failed'
+
+export interface StoryCrawlError {
+  sourceStoryId: string
+  title: string
+  message: string
+}
+
+export interface StoryCrawlLog {
+  id: string
+  trigger: StoryCrawlTrigger
+  status: StoryCrawlStatus
+  message?: string
+  importNewStories: boolean
+  userAgent: string
+  useCookies: boolean
+  cookie?: string
+  cookiesDied?: string[]
+  since: string
+  startedAt: string
+  finishedAt: string | null
+  durationMs: number
+  truncated: boolean
+  postsFound: number
+  postsProcessed: number
+  storiesChecked: number
+  storiesUpdated: number
+  storiesCreated: number
+  storiesSkippedNew: number
+  storiesEmpty: number
+  storiesFailed: number
+  chaptersAdded: number
+  chaptersUpdated: number
+  chaptersRemoved: number
+  requests: number
+  errors: StoryCrawlError[]
+}
+
+export interface StoryCrawlerStatus {
+  config: StoryCrawlerSetting
+  userAgents: number
+  running: boolean
+  progress: StoryCrawlLog | null
+  lastRunAt: string | null
+  nextRunAt: string | null
+  nextSince: string | null
+  logs: StoryCrawlLog[]
+}
+
+export interface StoryCrawlRunResult {
+  started: boolean
+}

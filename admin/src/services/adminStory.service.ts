@@ -13,6 +13,8 @@ import type {
   ApiResponse,
   ListResult,
   MessageResult,
+  StoryCrawlerStatus,
+  StoryCrawlRunResult,
 } from '@/types'
 
 export const AdminStoryService = {
@@ -89,6 +91,16 @@ export const AdminStoryService = {
     const { data } = await http.post<ApiResponse<AdminStoryFetchResult>>(
       `/admin/stories/${id}/fetch-content`,
     )
+    return data.data
+  },
+
+  async crawler(): Promise<StoryCrawlerStatus> {
+    const { data } = await http.get<ApiResponse<StoryCrawlerStatus>>('/admin/stories/crawler')
+    return data.data
+  },
+
+  async runCrawler(): Promise<StoryCrawlRunResult> {
+    const { data } = await http.post<ApiResponse<StoryCrawlRunResult>>('/admin/stories/crawler/run')
     return data.data
   },
 }
