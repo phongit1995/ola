@@ -177,7 +177,19 @@ python3 scripts/vnkings/export_stories.py --limit 100      # ghi ra scripts/vnki
 cd server && go run ./cmd/migrations up postgres            # tạo 2 bảng nếu chưa có
 cd server && go run ./cmd/storyimport                       # mặc định đọc ../scripts/vnkings/data
 cd server && go run ./cmd/storyimport -dir /đường/dẫn/khác
+cd server && go run ./cmd/storyimport -reset               # xoá hết truyện vnkings rồi mới nạp
 ```
+
+`-reset` xoá mọi dòng `stories` có `source` bằng `-source` (mặc định `vnkings`); chương bị xoá theo `ON DELETE CASCADE`. Trước khi xoá, lệnh in số truyện và DB đích (`host:port/tên`) rồi bắt **gõ đúng tên database** để xác nhận; gõ sai thì dừng, không xoá gì. File xuất không có truyện nào thì lệnh từ chối reset. Xoá xong mới nạp; nạp lỗi giữa chừng thì chạy lại lệnh (không cần `-reset`) để nạp tiếp.
+
+Thường **không cần** `-reset`: lệnh nạp đã cập nhật truyện có sẵn và xoá chương không còn trên nguồn. Chỉ dùng khi muốn bỏ cả các truyện đã bị gỡ khỏi vnkings (lệnh nạp chỉ xử lý truyện có trong file). Reset làm mất:
+
+- `is_hidden`: truyện admin đã ẩn sẽ hiện lại;
+- `view_count`, `comment_count`;
+- nội dung chương đã được API tải khi có người đọc (xuất bằng `--no-content` thì phải tải lại);
+- id truyện: id là UUID sinh mới khi thêm, nên "Đọc tiếp" và tiến độ đọc lưu trên máy người dùng (`ola.story.prefs`, theo id truyện) trỏ vào truyện không còn.
+
+Không chạy `-reset` trên prod nếu chưa sao lưu.
 
 `cmd/storyimport` đọc thông tin DB từ `server/.env` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL_MODE`) như lệnh migration. Mỗi truyện ghi trong một transaction:
 
