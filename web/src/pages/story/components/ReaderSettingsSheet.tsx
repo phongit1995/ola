@@ -2,30 +2,37 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn, STORY_FONT_SIZE, STORY_LINE_HEIGHTS } from '@lib';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
-import type { StoryReaderFont } from '@app-types';
+import type { StoryIconName, StoryReaderFont } from '@app-types';
 import {
   READER_FONTS,
   READER_PALETTES,
+  READER_THEME_ICON,
   READER_THEME_ORDER,
 } from '../constants';
 import type { ReaderPalette } from '../interface';
 import { ReaderSheet } from './ReaderSheet';
+import { StoryIcon } from './StoryIcons';
 
 const FONT_ORDER: StoryReaderFont[] = ['serif', 'sans'];
 
 interface SettingRowProps {
+  icon: StoryIconName;
   label: string;
   palette: ReaderPalette;
   children: ReactNode;
 }
 
-function SettingRow({ label, palette, children }: SettingRowProps) {
+function SettingRow({ icon, label, palette, children }: SettingRowProps) {
   return (
     <div
       className="flex flex-col gap-2 border-t py-3 first:border-t-0"
       style={{ borderColor: palette.border }}
     >
-      <span className="text-[13px]" style={{ color: palette.muted }}>
+      <span
+        className="flex items-center gap-1.5 text-[13px]"
+        style={{ color: palette.muted }}
+      >
+        <StoryIcon name={icon} className="h-4 w-4 shrink-0" />
         {label}
       </span>
       {children}
@@ -88,10 +95,11 @@ export function ReaderSettingsSheet({
       onClose={onClose}
     >
       <div className="overflow-y-auto px-4 pb-5">
-        <SettingRow label={t('story.theme')} palette={palette}>
+        <SettingRow icon="palette" label={t('story.theme')} palette={palette}>
           <div className="flex gap-3">
             {READER_THEME_ORDER.map((theme) => {
               const swatch = READER_PALETTES[theme];
+              const themeIcon = READER_THEME_ICON[theme];
               const active = reader.theme === theme;
               return (
                 <button
@@ -103,21 +111,26 @@ export function ReaderSettingsSheet({
                 >
                   <span
                     className={cn(
-                      'h-9 w-9 rounded-full border',
+                      'flex h-9 w-9 items-center justify-center rounded-full border',
                       active && 'ring-2 ring-ola-primary ring-offset-2'
                     )}
                     style={{
                       backgroundColor: swatch.background,
                       borderColor: swatch.border,
+                      color: swatch.muted,
                     }}
-                  />
+                  >
+                    {themeIcon && (
+                      <StoryIcon name={themeIcon} className="h-5 w-5" />
+                    )}
+                  </span>
                   {t(swatch.labelKey)}
                 </button>
               );
             })}
           </div>
         </SettingRow>
-        <SettingRow label={t('story.font')} palette={palette}>
+        <SettingRow icon="textFields" label={t('story.font')} palette={palette}>
           <div className="flex gap-2">
             {FONT_ORDER.map((font) => (
               <Segment
@@ -132,7 +145,11 @@ export function ReaderSettingsSheet({
             ))}
           </div>
         </SettingRow>
-        <SettingRow label={t('story.fontSize')} palette={palette}>
+        <SettingRow
+          icon="formatSize"
+          label={t('story.fontSize')}
+          palette={palette}
+        >
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -169,7 +186,11 @@ export function ReaderSettingsSheet({
             </button>
           </div>
         </SettingRow>
-        <SettingRow label={t('story.lineHeight')} palette={palette}>
+        <SettingRow
+          icon="formatLineSpacing"
+          label={t('story.lineHeight')}
+          palette={palette}
+        >
           <div className="flex gap-2">
             {STORY_LINE_HEIGHTS.map((lineHeight) => (
               <Segment

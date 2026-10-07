@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { StoryChapterItem } from '@app-types';
 import type { ReaderPalette } from '../interface';
 import { ReaderSheet } from './ReaderSheet';
+import { StoryIcon } from './StoryIcons';
 
 interface ChapterPickerSheetProps {
   chapters: StoryChapterItem[];
@@ -42,6 +43,12 @@ export function ChapterPickerSheet({
                   borderTop: `1px solid ${palette.border}`,
                 }}
               >
+                {current && (
+                  <StoryIcon
+                    name="bookmark"
+                    className="h-4 w-4 shrink-0 text-ola-primary"
+                  />
+                )}
                 <span
                   className={
                     current

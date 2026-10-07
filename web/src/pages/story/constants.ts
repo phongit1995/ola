@@ -1,6 +1,7 @@
 import type { ParseKeys } from 'i18next';
 import { STORY_SORT, STORY_STATUS, STORY_STATUS_FILTER } from '@constants';
 import type {
+  StoryIconName,
   StoryReaderFont,
   StoryReaderTheme,
   StorySort,
@@ -11,10 +12,18 @@ import type { ReaderPalette } from './interface';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 
-export const SORT_OPTIONS: { value: StorySort; labelKey: ParseKeys }[] = [
-  { value: STORY_SORT.updated, labelKey: 'story.sortUpdated' },
-  { value: STORY_SORT.views, labelKey: 'story.sortViews' },
-  { value: STORY_SORT.new, labelKey: 'story.sortNew' },
+export const SORT_OPTIONS: {
+  value: StorySort;
+  labelKey: ParseKeys;
+  icon: StoryIconName;
+}[] = [
+  {
+    value: STORY_SORT.updated,
+    labelKey: 'story.sortUpdated',
+    icon: 'schedule',
+  },
+  { value: STORY_SORT.views, labelKey: 'story.sortViews', icon: 'visibility' },
+  { value: STORY_SORT.new, labelKey: 'story.sortNew', icon: 'autoAwesome' },
 ];
 
 export const STATUS_FILTER_OPTIONS: {
@@ -30,6 +39,11 @@ export const STATUS_LABEL: Record<StoryStatus, ParseKeys> = {
   [STORY_STATUS.ongoing]: 'story.statusOngoing',
   [STORY_STATUS.completed]: 'story.statusCompleted',
   [STORY_STATUS.unknown]: 'story.statusUnknown',
+};
+
+export const STATUS_ICON: Partial<Record<StoryStatus, StoryIconName>> = {
+  [STORY_STATUS.ongoing]: 'inkPen',
+  [STORY_STATUS.completed]: 'done',
 };
 
 export const READER_PALETTES: Record<StoryReaderTheme, ReaderPalette> = {
@@ -73,6 +87,13 @@ export const READER_PALETTES: Record<StoryReaderTheme, ReaderPalette> = {
     muted: 'rgba(200,201,204,.55)',
     border: 'rgba(255,255,255,.1)',
   },
+};
+
+export const READER_THEME_ICON: Partial<
+  Record<StoryReaderTheme, StoryIconName>
+> = {
+  light: 'lightMode',
+  dark: 'darkMode',
 };
 
 export const READER_THEME_ORDER: StoryReaderTheme[] = [

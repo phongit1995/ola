@@ -3,8 +3,7 @@ import { formatCompactCount, formatDateSlashDMY } from '@lib';
 import { STORY_KIND } from '@constants';
 import type { Story } from '@app-types';
 import { StoryCover } from './StoryCover';
-import { EyeIcon } from './StoryIcons';
-import { StoryStatusBadge, StoryTag } from './StoryTags';
+import { StoryMeta, StoryStatusBadge, StoryTag } from './StoryTags';
 
 const ROW_GENRE_LIMIT = 2;
 
@@ -40,19 +39,18 @@ export function StoryRow({ story, onOpen }: StoryRowProps) {
               <StoryTag key={genre}>{genre}</StoryTag>
             ))}
           </span>
-          <span className="mt-1.5 flex items-center gap-2 text-xs text-black/54">
-            <span>
+          <span className="mt-1.5 flex items-center gap-3 text-xs text-black/54">
+            <StoryMeta icon={isShort ? 'article' : 'menuBook'}>
               {isShort
                 ? t('story.kindShort')
                 : t('story.chapterCount', { count: story.chapterCount })}
-            </span>
-            <span className="inline-flex items-center gap-0.5">
-              <EyeIcon />
+            </StoryMeta>
+            <StoryMeta icon="visibility">
               {formatCompactCount(story.viewCount, i18n.language)}
-            </span>
-            <span className="ml-auto shrink-0">
+            </StoryMeta>
+            <StoryMeta icon="schedule" className="ml-auto shrink-0">
               {formatDateSlashDMY(story.lastChapterAt ?? story.updatedAt)}
-            </span>
+            </StoryMeta>
           </span>
         </span>
       </button>

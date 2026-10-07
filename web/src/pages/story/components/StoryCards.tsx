@@ -2,23 +2,41 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHorizontalDragScroll } from '@hooks';
 import { cn, formatCompactCount } from '@lib';
-import type { Story, StoryProgress } from '@app-types';
+import type { Story, StoryIconName, StoryProgress } from '@app-types';
 import { StoryCover } from './StoryCover';
-import { EyeIcon } from './StoryIcons';
+import { StoryIcon } from './StoryIcons';
+import { StoryMeta } from './StoryTags';
 
 const PODIUM_SIZE = 3;
 
-interface StoryShelfProps {
-  title: string;
+interface StorySectionTitleProps {
+  icon: StoryIconName;
   children: ReactNode;
 }
 
-export function StoryShelf({ title, children }: StoryShelfProps) {
+export function StorySectionTitle({ icon, children }: StorySectionTitleProps) {
+  return (
+    <h2 className="flex items-center gap-1.5 text-[15px] font-bold text-black/87">
+      <StoryIcon name={icon} className="h-5 w-5 shrink-0" />
+      {children}
+    </h2>
+  );
+}
+
+interface StoryShelfProps {
+  title: string;
+  icon: StoryIconName;
+  children: ReactNode;
+}
+
+export function StoryShelf({ title, icon, children }: StoryShelfProps) {
   const scrollRef = useHorizontalDragScroll();
 
   return (
     <section className="bg-white py-3">
-      <h2 className="px-3 text-[15px] font-bold text-black/87">{title}</h2>
+      <div className="px-3">
+        <StorySectionTitle icon={icon}>{title}</StorySectionTitle>
+      </div>
       <ul
         ref={scrollRef}
         className="mt-2 flex gap-3 overflow-x-auto px-3 pb-1 select-none [scrollbar-width:none]"
@@ -57,10 +75,12 @@ export function TopStoryCard({ story, rank, onOpen }: TopStoryCardProps) {
         <span className="mt-1.5 line-clamp-2 text-[13px] leading-4 font-medium text-black/87">
           {story.title}
         </span>
-        <span className="mt-0.5 inline-flex items-center gap-0.5 text-[11px] text-black/54">
-          <EyeIcon className="h-3 w-3" />
+        <StoryMeta
+          icon="visibility"
+          className="mt-0.5 text-[11px] text-black/54"
+        >
           {formatCompactCount(story.viewCount, i18n.language)}
-        </span>
+        </StoryMeta>
       </button>
     </li>
   );
@@ -94,12 +114,16 @@ export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
         <span className="mt-1.5 line-clamp-2 text-[13px] leading-4 font-medium text-black/87">
           {progress.storyTitle}
         </span>
-        <span className="mt-0.5 block text-[11px] text-black/54">
+        <StoryMeta
+          icon="bookmark"
+          className="mt-0.5 text-[11px] text-black/54"
+          iconClassName="h-3.5 w-3.5 text-black/70"
+        >
           {t('story.chapterProgress', {
             position: progress.position,
             count: progress.chapterCount,
           })}
-        </span>
+        </StoryMeta>
       </button>
     </li>
   );

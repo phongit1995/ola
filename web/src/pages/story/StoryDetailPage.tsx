@@ -10,22 +10,27 @@ import {
 import { STORY_KIND } from '@constants';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
-import type { StoryChapterItem } from '@app-types';
+import type { StoryChapterItem, StoryIconName } from '@app-types';
 import { StoryCover } from './components/StoryCover';
-import { SortIcon } from './components/StoryIcons';
+import { StoryIcon } from './components/StoryIcons';
+import { StoryStateMessage } from './components/StoryStateMessage';
 import { StoryStatusBadge, StoryTag } from './components/StoryTags';
 
 const INTRO_PREVIEW_LINES = 'line-clamp-4';
 
 interface StatProps {
+  icon: StoryIconName;
   label: string;
   value: string;
 }
 
-function Stat({ label, value }: StatProps) {
+function Stat({ icon, label, value }: StatProps) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="text-base font-bold text-black/87">{value}</span>
+      <span className="flex items-center gap-1 text-base font-bold text-black/87">
+        <StoryIcon name={icon} className="h-4 w-4 shrink-0 text-black/70" />
+        {value}
+      </span>
       <span className="text-[11px] text-black/54">{label}</span>
     </div>
   );
@@ -60,7 +65,8 @@ function ChapterRow({ chapter, current, onOpen }: ChapterRowProps) {
           </span>
         )}
         {current && (
-          <span className="shrink-0 text-[11px] text-ola-primary-ink">
+          <span className="flex shrink-0 items-center gap-0.5 text-[11px] text-ola-primary-ink">
+            <StoryIcon name="bookmark" className="h-3.5 w-3.5" />
             {t('story.reading')}
           </span>
         )}
@@ -105,18 +111,13 @@ export function StoryDetailPage({
     return (
       <FullScreenOverlay position="absolute" className="bg-ola-surface">
         <ScreenHeader title="" onBack={onBack} />
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-black/54">
+        <div className="flex flex-1 flex-col items-center justify-center">
           {status === 'error' ? (
-            <>
-              {t('story.loadError')}
-              <button
-                type="button"
-                onClick={() => void loadStory(storyId)}
-                className="rounded-full bg-ola-button px-4 py-1.5 text-ola-on-primary"
-              >
-                {t('story.retry')}
-              </button>
-            </>
+            <StoryStateMessage
+              kind="error"
+              text={t('story.loadError')}
+              onRetry={() => void loadStory(storyId)}
+            />
           ) : (
             <Spinner />
           )}
@@ -158,18 +159,22 @@ export function StoryDetailPage({
           </div>
           <div className="mt-4 grid grid-cols-4 rounded-lg bg-ola-surface py-2">
             <Stat
+              icon="menuBook"
               label={t('story.statChapters')}
               value={story.chapterCount.toLocaleString(locale)}
             />
             <Stat
+              icon="visibility"
               label={t('story.statViews')}
               value={formatCompactCount(story.viewCount, locale)}
             />
             <Stat
+              icon="article"
               label={t('story.statWords')}
               value={formatCompactCount(story.wordCount, locale)}
             />
             <Stat
+              icon="chatBubble"
               label={t('story.statComments')}
               value={formatCompactCount(story.commentCount, locale)}
             />
@@ -241,24 +246,17 @@ export function StoryDetailPage({
                 onClick={() => setNewestFirst((value) => !value)}
                 className="flex items-center gap-1 text-[13px] text-black/60"
               >
-                <SortIcon className="h-4 w-4" />
+                <StoryIcon name="importExport" className="h-4 w-4" />
                 {t(newestFirst ? 'story.orderNewest' : 'story.orderOldest')}
               </button>
             </div>
             {status === 'error' && (
-              <div
-                className="flex flex-col items-center gap-3 py-6 text-sm text-black/54"
-                role="alert"
-              >
-                {t('story.loadError')}
-                <button
-                  type="button"
-                  onClick={() => void loadStory(storyId)}
-                  className="rounded-full bg-ola-button px-4 py-1.5 text-ola-on-primary"
-                >
-                  {t('story.retry')}
-                </button>
-              </div>
+              <StoryStateMessage
+                kind="error"
+                text={t('story.loadError')}
+                onRetry={() => void loadStory(storyId)}
+                className="py-6"
+              />
             )}
             {chapters ? (
               <ul className="divide-y divide-black/6">

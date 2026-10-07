@@ -7,12 +7,8 @@ import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
 import { READER_FONTS, READER_PALETTES } from './constants';
 import { ChapterPickerSheet } from './components/ChapterPickerSheet';
 import { ReaderSettingsSheet } from './components/ReaderSettingsSheet';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ListIcon,
-  TextSizeIcon,
-} from './components/StoryIcons';
+import { StoryIcon } from './components/StoryIcons';
+import { StoryStateMessage } from './components/StoryStateMessage';
 
 type ReaderSheetKind = 'settings' | 'toc';
 
@@ -111,18 +107,14 @@ export function StoryReaderPage({
   function renderBody() {
     if (!chapter) {
       return (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 py-20 text-sm">
+        <div className="flex flex-1 flex-col items-center justify-center py-20">
           {chapterStatus === 'error' ? (
-            <>
-              {t('story.loadError')}
-              <button
-                type="button"
-                onClick={() => void loadChapter(storyId, position)}
-                className="rounded-full bg-ola-button px-4 py-1.5 text-ola-on-primary"
-              >
-                {t('story.retry')}
-              </button>
-            </>
+            <StoryStateMessage
+              kind="error"
+              text={t('story.loadError')}
+              onRetry={() => void loadChapter(storyId, position)}
+              style={{ color: palette.muted }}
+            />
           ) : (
             <Spinner tone="muted" />
           )}
@@ -160,7 +152,7 @@ export function StoryReaderPage({
               className="flex h-11 w-full max-w-xs items-center justify-center gap-1 rounded-full bg-ola-button font-semibold text-ola-on-primary"
             >
               {t('story.nextChapter')}
-              <ChevronRightIcon className="h-5 w-5" />
+              <StoryIcon name="chevronRight" className="h-5 w-5" monochrome />
             </button>
           ) : (
             <>
@@ -196,7 +188,7 @@ export function StoryReaderPage({
           onClick={onBack}
           className="flex h-10 w-10 items-center justify-center rounded-full"
         >
-          <ChevronLeftIcon />
+          <StoryIcon name="chevronLeft" />
         </button>
         <div className="flex min-w-0 flex-1 flex-col">
           <span
@@ -216,7 +208,7 @@ export function StoryReaderPage({
           onClick={() => setSheet('toc')}
           className="flex h-10 w-10 items-center justify-center rounded-full disabled:opacity-40"
         >
-          <ListIcon />
+          <StoryIcon name="list" />
         </button>
         <button
           type="button"
@@ -224,7 +216,7 @@ export function StoryReaderPage({
           onClick={() => setSheet('settings')}
           className="flex h-10 w-10 items-center justify-center rounded-full"
         >
-          <TextSizeIcon />
+          <StoryIcon name="formatSize" />
         </button>
       </header>
 
@@ -242,7 +234,7 @@ export function StoryReaderPage({
           onClick={() => prevPosition != null && onChangeChapter(prevPosition)}
           className="flex h-full flex-1 items-center justify-center gap-1 disabled:opacity-35"
         >
-          <ChevronLeftIcon className="h-5 w-5" />
+          <StoryIcon name="chevronLeft" className="h-5 w-5" />
           {t('story.prevChapter')}
         </button>
         <span
@@ -258,7 +250,7 @@ export function StoryReaderPage({
           className="flex h-full flex-1 items-center justify-center gap-1 disabled:opacity-35"
         >
           {t('story.nextChapter')}
-          <ChevronRightIcon className="h-5 w-5" />
+          <StoryIcon name="chevronRight" className="h-5 w-5" />
         </button>
       </nav>
 

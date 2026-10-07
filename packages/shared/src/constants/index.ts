@@ -22,4 +22,5 @@ export * from './theme';
 export * from './toast';
 export * from './upload';
 export * from './story';
+export * from './storyIcons';
 export * from './wordChain';
