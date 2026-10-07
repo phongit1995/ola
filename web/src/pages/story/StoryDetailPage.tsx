@@ -257,6 +257,21 @@ export function StoryDetailPage({
                 {t(newestFirst ? 'story.orderNewest' : 'story.orderOldest')}
               </button>
             </div>
+            {status === 'error' && (
+              <div
+                className="flex flex-col items-center gap-3 py-6 text-sm text-black/54"
+                role="alert"
+              >
+                {t('story.loadError')}
+                <button
+                  type="button"
+                  onClick={() => void loadStory(storyId)}
+                  className="rounded-full bg-ola-button px-4 py-1.5 text-ola-on-primary"
+                >
+                  {t('story.retry')}
+                </button>
+              </div>
+            )}
             {chapters ? (
               <ul className="divide-y divide-black/6">
                 {orderedChapters.map((chapter) => (
@@ -268,11 +283,11 @@ export function StoryDetailPage({
                   />
                 ))}
               </ul>
-            ) : (
+            ) : status !== 'error' ? (
               <div className="flex justify-center py-6">
                 <Spinner />
               </div>
-            )}
+            ) : null}
           </section>
         )}
       </main>

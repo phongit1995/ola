@@ -96,7 +96,7 @@ export function StoryPanel() {
           {t('story.loadError')}
           <button
             type="button"
-            onClick={() => void setFilter({})}
+            onClick={() => void setFilter(filter)}
             className="rounded-full bg-ola-button px-4 py-1.5 text-ola-on-primary"
           >
             {t('story.retry')}

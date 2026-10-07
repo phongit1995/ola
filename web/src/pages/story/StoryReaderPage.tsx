@@ -56,8 +56,8 @@ export function StoryReaderPage({
   const palette = READER_PALETTES[reader.theme];
 
   useEffect(() => {
-    if (!useStoryStore.getState().chapters[storyId]) void loadStory(storyId);
-  }, [storyId, loadStory]);
+    if (active) void loadStory(storyId);
+  }, [active, storyId, loadStory]);
 
   useEffect(() => {
     void loadChapter(storyId, position);

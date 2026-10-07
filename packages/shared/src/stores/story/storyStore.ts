@@ -7,7 +7,7 @@ import {
   STORY_TOP_LIMIT,
   storyChapterKey,
 } from '../../lib/story';
-import type { Story, StoryChapterSummary } from '../../types/api/story.type';
+import type { Story, StoryChapter, StoryChapterSummary } from '../../types/api/story.type';
 import type {
   StoryChapterItem,
   StoryListFilter,
@@ -36,11 +36,34 @@ function toChapterItems(chapters: StoryChapterSummary[], nowMs: number): StoryCh
   }));
 }
 
+function refreshChapterNavigation(
+  contents: Record<string, StoryChapter>,
+  chapters: StoryChapterSummary[]
+): Record<string, StoryChapter> {
+  const updated = { ...contents };
+  chapters.forEach((summary, index) => {
+    const key = storyChapterKey(summary.storyId, summary.position);
+    const cached = updated[key];
+    if (!cached || cached.id !== summary.id) return;
+    const prevPosition = chapters[index - 1]?.position ?? null;
+    const nextPosition = chapters[index + 1]?.position ?? null;
+    if (cached.prevPosition === prevPosition && cached.nextPosition === nextPosition) return;
+    updated[key] = { ...cached, prevPosition, nextPosition };
+  });
+  return updated;
+}
+
 export const useStoryStore = create<StoryStoreState>((set, get) => {
   async function fetchPage(filter: StoryListFilter, append: boolean) {
     const request = ++listRequest;
     const offset = append ? get().list.items.length : 0;
-    set((state) => ({ list: { ...state.list, filter, status: 'loading' } }));
+    set((state) => ({
+      list: {
+        ...(append ? state.list : { items: [], total: 0, hasMore: false }),
+        filter,
+        status: 'loading',
+      },
+    }));
     try {
       const result = await StoryService.list({
         sort: filter.sort,
@@ -101,33 +124,49 @@ export const useStoryStore = create<StoryStoreState>((set, get) => {
     loadStory: async (storyId) => {
       if (get().storyStatus[storyId] === 'loading') return;
       set((state) => ({ storyStatus: { ...state.storyStatus, [storyId]: 'loading' } }));
-      try {
-        const [story, chapters] = await Promise.all([
-          StoryService.detail(storyId),
-          StoryService.chapters(storyId),
-        ]);
-        const nowMs = Date.now();
-        set((state) => ({
-          stories: { ...state.stories, [storyId]: story },
-          chapters: { ...state.chapters, [storyId]: toChapterItems(chapters, nowMs) },
-          storyStatus: { ...state.storyStatus, [storyId]: 'ready' },
-        }));
-      } catch {
-        set((state) => ({ storyStatus: { ...state.storyStatus, [storyId]: 'error' } }));
-      }
+      const [storyResult, chaptersResult] = await Promise.allSettled([
+        StoryService.detail(storyId),
+        StoryService.chapters(storyId),
+      ]);
+      const storyLoaded = storyResult.status === 'fulfilled';
+      const chaptersLoaded = chaptersResult.status === 'fulfilled';
+      const nowMs = Date.now();
+      set((state) => ({
+        ...(storyLoaded && {
+          stories: { ...state.stories, [storyId]: storyResult.value },
+        }),
+        ...(chaptersLoaded && {
+          chapters: {
+            ...state.chapters,
+            [storyId]: toChapterItems(chaptersResult.value, nowMs),
+          },
+          chapterContents: refreshChapterNavigation(state.chapterContents, chaptersResult.value),
+        }),
+        storyStatus: {
+          ...state.storyStatus,
+          [storyId]: storyLoaded && chaptersLoaded ? 'ready' : 'error',
+        },
+      }));
     },
 
     loadChapter: async (storyId, position) => {
       const key = storyChapterKey(storyId, position);
-      const { chapterContents, chapterStatus } = get();
+      const { chapterContents, chapterStatus, chapters } = get();
       if (chapterContents[key] || chapterStatus[key] === 'loading') return;
       set((state) => ({ chapterStatus: { ...state.chapterStatus, [key]: 'loading' } }));
       try {
         const chapter = await StoryService.chapter(storyId, position);
-        set((state) => ({
-          chapterContents: { ...state.chapterContents, [key]: chapter },
-          chapterStatus: { ...state.chapterStatus, [key]: 'ready' },
-        }));
+        set((state) => {
+          const contents = { ...state.chapterContents, [key]: chapter };
+          const latestChapters = state.chapters[storyId];
+          return {
+            chapterContents:
+              latestChapters && latestChapters !== chapters[storyId]
+                ? refreshChapterNavigation(contents, latestChapters)
+                : contents,
+            chapterStatus: { ...state.chapterStatus, [key]: 'ready' },
+          };
+        });
       } catch {
         set((state) => ({ chapterStatus: { ...state.chapterStatus, [key]: 'error' } }));
       }
