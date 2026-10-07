@@ -4,6 +4,7 @@ import {
   CHAT_ROUTES,
   ROOM_ROUTES,
   ROOT_ROUTES,
+  STORY_ROUTES,
   TAB_ROUTES,
 } from './routes';
 
@@ -50,6 +51,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.ClanBans]: { clanId: string };
   [ROOT_ROUTES.FriendRequests]: undefined;
   [ROOT_ROUTES.SuggestedFriends]: undefined;
+  [ROOT_ROUTES.StoryReader]: { storyId: string; position: number };
   [ROOT_ROUTES.Terms]: undefined;
   [ROOT_ROUTES.PrivacyPolicy]: undefined;
 };
@@ -63,4 +65,9 @@ export type RoomStackParamList = {
   [ROOM_ROUTES.RoomList]: undefined;
   [ROOM_ROUTES.RoomChat]: { roomId: string; roomName: string };
   [ROOM_ROUTES.WordChain]: undefined;
+};
+
+export type StoryStackParamList = {
+  [STORY_ROUTES.StoryList]: undefined;
+  [STORY_ROUTES.StoryDetail]: { storyId: string };
 };

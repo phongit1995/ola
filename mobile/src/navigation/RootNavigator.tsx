@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,6 +8,7 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
+import { useStoryConfigStore } from '@ola/shared/stores/story/storyConfigStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
 import { themeOptionOf } from '@ola/shared/constants';
 import type {
@@ -16,12 +17,14 @@ import type {
   MainTabParamList,
   RoomStackParamList,
   RootStackParamList,
+  StoryStackParamList,
 } from './types';
 import {
   AUTH_ROUTES,
   CHAT_ROUTES,
   ROOM_ROUTES,
   ROOT_ROUTES,
+  STORY_ROUTES,
   TAB_ROUTES,
 } from './routes';
 import { LoginScreen } from '@screens/auth/LoginScreen';
@@ -36,6 +39,9 @@ import { RoomListScreen } from '@screens/room/RoomListScreen';
 import { RoomChatScreen } from '@screens/room/RoomChatScreen';
 import { WordChainScreen } from '@screens/room/word-chain/WordChainScreen';
 import { MeFeedScreen } from '@screens/me/MeFeedScreen';
+import { StoryListScreen } from '@screens/story/StoryListScreen';
+import { StoryDetailScreen } from '@screens/story/StoryDetailScreen';
+import { StoryReaderScreen } from '@screens/story/StoryReaderScreen';
 import { GamesScreen } from '@screens/games/GamesScreen';
 import { PersonalScreen } from '@screens/personal/PersonalScreen';
 import { ProfileViewScreen } from '@screens/profile/ProfileViewScreen';
@@ -76,6 +82,7 @@ const Tabs = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const RoomStack = createNativeStackNavigator<RoomStackParamList>();
 const ChatStack = createNativeStackNavigator<ChatStackParamList>();
+const StoryStack = createNativeStackNavigator<StoryStackParamList>();
 
 function ChatNavigator() {
   return (
@@ -97,6 +104,15 @@ function RoomNavigator() {
       />
       <RoomStack.Screen name={ROOM_ROUTES.WordChain} component={WordChainScreen} />
     </RoomStack.Navigator>
+  );
+}
+
+function StoryNavigator() {
+  return (
+    <StoryStack.Navigator screenOptions={{ headerShown: false }}>
+      <StoryStack.Screen name={STORY_ROUTES.StoryList} component={StoryListScreen} />
+      <StoryStack.Screen name={STORY_ROUTES.StoryDetail} component={StoryDetailScreen} />
+    </StoryStack.Navigator>
   );
 }
 
@@ -148,6 +164,13 @@ function MainTabs() {
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
   const theme = useThemeStore((state) => state.theme);
+  const storyEnabled = useStoryConfigStore((state) => state.enabled);
+  const loadStoryConfig = useStoryConfigStore((state) => state.load);
+
+  useEffect(() => {
+    void loadStoryConfig();
+  }, [loadStoryConfig]);
+
   return (
     <View style={{ flex: 1 }}>
       <Tabs.Navigator
@@ -215,12 +238,13 @@ function MainTabs() {
           component={MeFeedScreen}
           options={{ title: t('home.tabMe'), tabBarIcon: tabIcon('me') }}
         />
-        {/* TODO: mở lại tab RSS khi có tính năng thật
-        <Tabs.Screen
-          name={TAB_ROUTES.Rss}
-          component={RssTabScreen}
-          options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
-        /> */}
+        {storyEnabled === true && (
+          <Tabs.Screen
+            name={TAB_ROUTES.Rss}
+            component={StoryNavigator}
+            options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
+          />
+        )}
         <Tabs.Screen
           name={TAB_ROUTES.Game}
           component={GamesScreen}
@@ -292,6 +316,7 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.ClanBans} component={ClanBansRouteScreen} />
       <RootStack.Screen name={ROOT_ROUTES.FriendRequests} component={FriendRequestsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.SuggestedFriends} component={SuggestedFriendsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.StoryReader} component={StoryReaderScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Terms} component={TermsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.PrivacyPolicy} component={PrivacyPolicyScreen} />
     </RootStack.Navigator>
