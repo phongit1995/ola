@@ -880,6 +880,7 @@
     "sortUpdated": "Recently updated",
     "sortViews": "Most viewed",
     "sortNew": "Newest",
+    "statusFilter": "Status",
     "statusAll": "Any status",
     "statusOngoing": "Ongoing",
     "statusCompleted": "Completed",
