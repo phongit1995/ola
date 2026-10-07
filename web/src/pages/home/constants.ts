@@ -25,7 +25,7 @@ const PersonalPanel = lazy(() =>
 export const PANELS: Record<TabKey, LazyExoticComponent<ComponentType>> = {
   chat: ChatPanel,
   room: RoomPanel,
-  rss: StoryPanel,
+  story: StoryPanel,
   me: MePanel,
   game: GamesPanel,
   personal: PersonalPanel,

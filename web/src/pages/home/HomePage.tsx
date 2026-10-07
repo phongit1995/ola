@@ -49,8 +49,8 @@ export function HomePage() {
   const [tab, setTab] = useState<TabKey>(readStoredTab);
   const storyEnabled = useStoryConfigStore((state) => state.enabled);
   const activeTab: TabKey =
-    storyEnabled === false && tab === 'rss' ? 'chat' : tab;
-  const storyPending = activeTab === 'rss' && storyEnabled == null;
+    storyEnabled === false && tab === 'story' ? 'chat' : tab;
+  const storyPending = activeTab === 'story' && storyEnabled == null;
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
   const chatUnread = useChatStore((state) =>
     totalUnreadOf(state.conversations)
@@ -64,7 +64,7 @@ export function HomePage() {
   const clanActive = useClanOverlayStore((state) => state.stack.length > 0);
   const storyActive = useStoryOverlayStore((state) => state.stack.length > 0);
   const hideKenBadge =
-    gameActive || appActive || clanActive || (storyActive && activeTab === 'rss');
+    gameActive || appActive || clanActive || (storyActive && activeTab === 'story');
   const { isStandalone } = useDevicePlatform();
   const guideOpen = useDownloadGuideStore((state) => state.visible);
   const openGuide = useDownloadGuideStore((state) => state.open);
@@ -108,7 +108,7 @@ export function HomePage() {
         <RoomChatOverlay visible={activeTab === 'room'} />
         <WordChainOverlay visible={activeTab === 'room'} />
         {storyEnabled === true && (
-          <StoryOverlay visible={activeTab === 'rss'} />
+          <StoryOverlay visible={activeTab === 'story'} />
         )}
         {downloadFabMounted && (
           <DownloadFab
@@ -124,7 +124,7 @@ export function HomePage() {
         onChange={changeTab}
         badges={{ chat: chatUnread, personal: notifUnread }}
         dots={{ room: roomUnread && activeTab !== 'room' }}
-        hidden={{ rss: storyEnabled !== true }}
+        hidden={{ story: storyEnabled !== true }}
       />
 
       <ActiveConversationOverlay />

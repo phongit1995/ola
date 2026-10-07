@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Linking, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type {
@@ -29,13 +29,8 @@ import { useStoryTextSize } from './typography';
 const INTRO_PREVIEW_LINES = 4;
 const DETAIL_COVER_WIDTH = 112;
 const MUTED = 'rgba(0,0,0,0.54)';
-const HOST_PATTERN = /^[a-z]+:\/\/([^/?#]+)/i;
 
 type Props = NativeStackScreenProps<StoryStackParamList, typeof STORY_ROUTES.StoryDetail>;
-
-function hostOf(url: string): string {
-  return HOST_PATTERN.exec(url)?.[1] ?? url;
-}
 
 function Stat({ label, value }: { label: string; value: string }) {
   const textSize = useStoryTextSize();
@@ -222,16 +217,6 @@ export function StoryDetailScreen({ route, navigation }: Props) {
             {t(introExpanded ? 'story.showLess' : 'story.showMore')}
           </Text>
         </Pressable>
-        {story.sourceUrl !== '' && (
-          <Pressable
-            onPress={() => void Linking.openURL(story.sourceUrl).catch(() => undefined)}
-            className="mt-2 self-start"
-          >
-            <Text className="underline" style={[textSize(12, 16), { color: 'rgba(0,0,0,0.45)' }]}>
-              {t('story.sourceFrom', { host: hostOf(story.sourceUrl) })}
-            </Text>
-          </Pressable>
-        )}
       </View>
 
       {!isShort && (

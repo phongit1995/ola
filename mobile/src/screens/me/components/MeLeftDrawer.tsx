@@ -17,7 +17,6 @@ const clanIcon = require('@assets/icons/me/header/ic_header_clan.png');
 // const olaIcon = require('@assets/icons/me/ic_indicate_me.png');
 // const funnyIcon = require('@assets/icons/me/ic_indicate_funny.png');
 // const publicIcon = require('@assets/icons/me/ic_indicate_public.png');
-// const rssIcon = require('@assets/icons/me/ic_indicate_rss.png');
 
 const WIDTH = 240;
 
@@ -72,7 +71,6 @@ export function MeLeftDrawer({
     // { key: 'ola', icon: olaIcon, label: '#Ola' },
     // { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny') },
     // { key: 'public', icon: publicIcon, label: t('me.drawerPublic') },
-    // { key: 'rss', icon: rssIcon, label: 'RSS' },
   ];
 
   return (

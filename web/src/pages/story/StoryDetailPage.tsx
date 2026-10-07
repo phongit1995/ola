@@ -225,18 +225,6 @@ export function StoryDetailPage({
           >
             {t(introExpanded ? 'story.showLess' : 'story.showMore')}
           </button>
-          {story.sourceUrl && (
-            <a
-              href={story.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 block text-xs text-black/45 underline"
-            >
-              {t('story.sourceFrom', {
-                host: new URL(story.sourceUrl).hostname,
-              })}
-            </a>
-          )}
         </section>
 
         {!isShort && (

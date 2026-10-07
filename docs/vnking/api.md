@@ -1,6 +1,6 @@
 # Đọc truyện: REST API
 
-Hợp đồng API cho tab RSS (đọc truyện) trên web và mobile. Dữ liệu lấy từ 2 bảng `stories`, `story_chapters` mô tả ở [database.md](database.md).
+Hợp đồng API cho tab Truyện trên web và mobile. Dữ liệu lấy từ 2 bảng `stories`, `story_chapters` mô tả ở [database.md](database.md).
 
 Mọi endpoint đều cần `Authorization: Bearer <token>` và nằm dưới `/api/v1/stories`. Response theo envelope chung của server:
 
@@ -175,9 +175,9 @@ Cách server tính (`StoryConfig.EnabledFor` trong `server/internal/modules/sett
 Phía app:
 
 - Mọi request qua `http` của `@ola/shared` đều tự gửi `X-Platform` và `X-App-Version` lấy từ `configureDeviceInfo` lúc bootstrap (`deviceInfoInterceptor`).
-- Store `useStoryConfigStore` gọi `GET /settings/story` mỗi lần mở trang chính, nên đổi cấu hình có hiệu lực ở lần mở sau. Lỗi mạng thì giữ kết quả cũ; ngay lần đầu đã lỗi thì coi là tắt. Chưa có kết quả thì web chưa hiện tab RSS (đang ở tab RSS thì để trống, không tải truyện).
+- Store `useStoryConfigStore` gọi `GET /settings/story` mỗi lần mở trang chính, nên đổi cấu hình có hiệu lực ở lần mở sau. Lỗi mạng thì giữ kết quả cũ; ngay lần đầu đã lỗi thì coi là tắt. Chưa có kết quả thì web chưa hiện tab Truyện (đang ở tab Truyện thì để trống, không tải truyện).
 - Chỉ ẩn ở app, server không chặn API truyện.
-- Web: tắt thì ẩn tab RSS; đang ở tab RSS thì về tab Chat. Mobile chưa có màn Truyện (tab RSS đang tắt trong `RootNavigator`), khi làm thì hiện tab khi `useStoryConfigStore` trả `enabled === true`.
+- Web: tắt thì ẩn tab Truyện; đang ở tab Truyện thì về tab Chat. Mobile hiển thị tab Truyện trong `RootNavigator` khi `useStoryConfigStore` trả `enabled === true`.
 
 ## 6. Tự động cập nhật truyện
 

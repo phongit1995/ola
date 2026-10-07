@@ -166,7 +166,7 @@ function StoryDisplaySettings() {
     if (current.web.enabled && !value.web.enabled) {
       modal.confirm({
         title: 'Tắt Truyện trên web?',
-        content: 'Tab RSS (Truyện) sẽ biến mất khỏi web và bản desktop ở lần mở app tiếp theo.',
+        content: 'Tab Truyện sẽ biến mất khỏi web và bản desktop ở lần mở app tiếp theo.',
         okText: 'Tắt trên web',
         okButtonProps: { danger: true },
         cancelText: 'Huỷ',

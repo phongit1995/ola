@@ -4,8 +4,8 @@ import iconRoom from '@/assets/icons/room.svg';
 import iconRoomActive from '@/assets/icons/room-active.svg';
 import iconMe from '@/assets/icons/me.svg';
 import iconMeActive from '@/assets/icons/me-active.svg';
-import iconRss from '@/assets/icons/rss.svg';
-import iconRssActive from '@/assets/icons/rss-active.svg';
+import iconStory from '@/assets/icons/story.svg';
+import iconStoryActive from '@/assets/icons/story-active.svg';
 import iconGame from '@/assets/icons/game.svg';
 import iconGameActive from '@/assets/icons/game-active.svg';
 import iconPersonal from '@/assets/icons/personal.svg';
@@ -13,7 +13,7 @@ import iconPersonalActive from '@/assets/icons/personal-active.svg';
 import { useTranslation } from 'react-i18next';
 import type { ParseKeys } from 'i18next';
 
-export type TabKey = 'chat' | 'room' | 'me' | 'rss' | 'game' | 'personal';
+export type TabKey = 'chat' | 'room' | 'me' | 'story' | 'game' | 'personal';
 
 interface TabDef {
   key: TabKey;
@@ -37,10 +37,10 @@ const TABS: TabDef[] = [
   },
   { key: 'me', labelKey: 'home.tabMe', icon: iconMe, iconActive: iconMeActive },
   {
-    key: 'rss',
-    labelKey: 'home.tabRss',
-    icon: iconRss,
-    iconActive: iconRssActive,
+    key: 'story',
+    labelKey: 'home.tabStory',
+    icon: iconStory,
+    iconActive: iconStoryActive,
   },
   {
     key: 'game',

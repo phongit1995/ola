@@ -162,7 +162,7 @@
     "tabChat": "Chat",
     "tabRoom": "Phòng chat",
     "tabMe": "Me",
-    "tabRss": "RSS",
+    "tabStory": "Truyện",
     "tabApps": "Ứng dụng",
     "tabGame": "Game",
     "tabPersonal": "Cá nhân",
@@ -249,7 +249,6 @@
       "general": "Tổng quát",
       "display": "Hiển thị",
       "chat": "Cửa sổ Chat",
-      "rss": "RSS",
       "about": "Thông tin Ola"
     },
     "values": {
@@ -318,12 +317,9 @@
       "effect": {
         "title": "Hiệu ứng tin nhắn"
       },
-      "rssHistory": {
-        "title": "Ghi nhớ trang đã xem"
-      },
       "fontSize": {
         "title": "Cỡ chữ",
-        "subtitle": "Cỡ chữ khi đọc RSS"
+        "subtitle": "Cỡ chữ khi đọc truyện"
       },
       "rating": {
         "title": "Đánh giá",

@@ -83,6 +83,8 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 const RoomStack = createNativeStackNavigator<RoomStackParamList>();
 const ChatStack = createNativeStackNavigator<ChatStackParamList>();
 const StoryStack = createNativeStackNavigator<StoryStackParamList>();
+const TAB_ICON_HEIGHT = 24;
+const STORY_ICON_INACTIVE_COLOR = 'rgba(0,0,0,0.26)';
 
 function ChatNavigator() {
   return (
@@ -131,7 +133,18 @@ function AuthNavigator() {
 function tabIcon(key: keyof typeof TAB_ICONS) {
   return function TabIcon({ focused }: { focused: boolean }) {
     const source = focused ? TAB_ICONS[key].active : TAB_ICONS[key].normal;
-    return <Image source={source} style={{ width: 24, height: 24 }} resizeMode="contain" />;
+    const { width, height } = Image.resolveAssetSource(source);
+    return (
+      <Image
+        source={source}
+        style={{
+          width: TAB_ICON_HEIGHT * (width / height),
+          height: TAB_ICON_HEIGHT,
+          tintColor: key === 'story' && !focused ? STORY_ICON_INACTIVE_COLOR : undefined,
+        }}
+        resizeMode="contain"
+      />
+    );
   };
 }
 
@@ -240,9 +253,9 @@ function MainTabs() {
         />
         {storyEnabled === true && (
           <Tabs.Screen
-            name={TAB_ROUTES.Rss}
+            name={TAB_ROUTES.Story}
             component={StoryNavigator}
-            options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
+            options={{ title: t('home.tabStory'), tabBarIcon: tabIcon('story') }}
           />
         )}
         <Tabs.Screen

@@ -10,7 +10,7 @@ export const TAB_ROUTES = {
   Chat: 'ChatTab',
   Room: 'RoomTab',
   Me: 'MeTab',
-  Rss: 'RssTab',
+  Story: 'StoryTab',
   Game: 'GameTab',
   Personal: 'PersonalTab',
 } as const;

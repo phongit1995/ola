@@ -162,7 +162,7 @@
     "tabChat": "Chat",
     "tabRoom": "Chat room",
     "tabMe": "Me",
-    "tabRss": "RSS",
+    "tabStory": "Stories",
     "tabApps": "Apps",
     "tabGame": "Game",
     "tabPersonal": "Personal",
@@ -249,7 +249,6 @@
       "general": "General",
       "display": "Display",
       "chat": "Chat window",
-      "rss": "RSS",
       "about": "About Ola"
     },
     "values": {
@@ -318,12 +317,9 @@
       "effect": {
         "title": "Message effect"
       },
-      "rssHistory": {
-        "title": "Remember RSS history"
-      },
       "fontSize": {
         "title": "Font size",
-        "subtitle": "RSS reading font size"
+        "subtitle": "Story reading font size"
       },
       "rating": {
         "title": "Rating",
