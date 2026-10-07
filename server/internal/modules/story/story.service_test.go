@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -134,7 +133,7 @@ func newFakeStore(count int) *fakeStore {
 }
 
 func TestNormalizeListQuery(t *testing.T) {
-	long := strings.Repeat("ạ", constants.StoryQueryMaxRunes+20)
+	long := strings.Repeat("ạ", StoryQueryMaxRunes+20)
 	cases := []struct {
 		name string
 		in   ListQuery
@@ -143,22 +142,22 @@ func TestNormalizeListQuery(t *testing.T) {
 		{
 			name: "defaults",
 			in:   ListQuery{},
-			want: ListQuery{Sort: constants.StorySortUpdated, Limit: constants.StoryPageSize},
+			want: ListQuery{Sort: StorySortUpdated, Limit: StoryPageSize},
 		},
 		{
 			name: "keeps valid values",
-			in:   ListQuery{Sort: constants.StorySortViews, Status: constants.StoryStatusCompleted, Genre: " Tiểu Thuyết ", Query: "  oan gia ", Offset: 20, Limit: 30},
-			want: ListQuery{Sort: constants.StorySortViews, Status: constants.StoryStatusCompleted, Genre: "Tiểu Thuyết", Query: "oan gia", Offset: 20, Limit: 30},
+			in:   ListQuery{Sort: StorySortViews, Status: StoryStatusCompleted, Genre: " Tiểu Thuyết ", Query: "  oan gia ", Offset: 20, Limit: 30},
+			want: ListQuery{Sort: StorySortViews, Status: StoryStatusCompleted, Genre: "Tiểu Thuyết", Query: "oan gia", Offset: 20, Limit: 30},
 		},
 		{
 			name: "drops unknown sort and status",
-			in:   ListQuery{Sort: "random", Status: constants.StoryStatusAll, Offset: -5, Limit: constants.StoryPageMax + 1},
-			want: ListQuery{Sort: constants.StorySortUpdated, Limit: constants.StoryPageMax},
+			in:   ListQuery{Sort: "random", Status: StoryStatusAll, Offset: -5, Limit: StoryPageMax + 1},
+			want: ListQuery{Sort: StorySortUpdated, Limit: StoryPageMax},
 		},
 		{
 			name: "truncates long query by runes",
 			in:   ListQuery{Query: long},
-			want: ListQuery{Sort: constants.StorySortUpdated, Query: strings.Repeat("ạ", constants.StoryQueryMaxRunes), Limit: constants.StoryPageSize},
+			want: ListQuery{Sort: StorySortUpdated, Query: strings.Repeat("ạ", StoryQueryMaxRunes), Limit: StoryPageSize},
 		},
 	}
 	for _, tc := range cases {
@@ -192,7 +191,7 @@ func TestListHasMore(t *testing.T) {
 			t.Fatalf("offset %d: got %d items hasMore=%v total=%d", tc.offset, len(resp.Items), resp.HasMore, resp.Total)
 		}
 	}
-	if store.lastQuery.Sort != constants.StorySortUpdated {
+	if store.lastQuery.Sort != StorySortUpdated {
 		t.Fatalf("store got sort %q", store.lastQuery.Sort)
 	}
 }

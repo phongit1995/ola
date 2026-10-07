@@ -2043,6 +2043,7 @@ export interface StoryCrawlLog {
   storiesChecked: number
   storiesUpdated: number
   storiesCreated: number
+  storiesUnchanged: number
   storiesSkippedNew: number
   storiesEmpty: number
   storiesFailed: number
@@ -2061,7 +2062,8 @@ export interface StoryCrawlerStatus {
   progress: StoryCrawlLog | null
   lastRunAt: string | null
   nextRunAt: string | null
-  nextSince: string | null
+  scanDays: number
+  scanLimit: number
   retryPending: number
   logs: StoryCrawlLog[]
 }

@@ -10,8 +10,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-
-	"ola-chat-server/internal/constants"
 )
 
 var (
@@ -30,18 +28,18 @@ type VnkingsSource struct {
 
 func NewVnkingsSource() *VnkingsSource {
 	return &VnkingsSource{
-		client: &http.Client{Timeout: constants.StoryFetchTimeout},
-		slots:  make(chan struct{}, constants.StoryFetchConcurrency),
+		client: &http.Client{Timeout: StoryFetchTimeout},
+		slots:  make(chan struct{}, StoryFetchConcurrency),
 	}
 }
 
 func (v *VnkingsSource) ChapterContent(ctx context.Context, chapter *ChapterRow) (string, error) {
-	if chapter.StorySource != constants.StorySourceVnkings {
+	if chapter.StorySource != StorySourceVnkings {
 		return "", fmt.Errorf("%w: %s", errUnsupportedSource, chapter.StorySource)
 	}
 	var paragraphs []string
 	var err error
-	if chapter.StoryKind == constants.StoryKindShort {
+	if chapter.StoryKind == StoryKindShort {
 		paragraphs, err = v.postParagraphs(ctx, chapter.StorySourceID)
 	} else {
 		paragraphs, err = v.chapterParagraphs(ctx, chapter.SourceURL)
@@ -58,14 +56,14 @@ func (v *VnkingsSource) ChapterContent(ctx context.Context, chapter *ChapterRow)
 
 func (v *VnkingsSource) chapterParagraphs(ctx context.Context, rawURL string) ([]string, error) {
 	target, err := url.Parse(rawURL)
-	if err != nil || target.Scheme != "https" || target.Host != constants.StoryVnkingsHost {
+	if err != nil || target.Scheme != "https" || target.Host != StoryVnkingsHost {
 		return nil, fmt.Errorf("%w: %s", errUnsupportedSource, rawURL)
 	}
 	page, err := v.get(ctx, target.String())
 	if err != nil {
 		return nil, err
 	}
-	return pageParagraphs(page, constants.StoryVnkingsContentID)
+	return pageParagraphs(page, StoryVnkingsContentID)
 }
 
 func (v *VnkingsSource) postParagraphs(ctx context.Context, rawPostID string) ([]string, error) {
@@ -73,7 +71,7 @@ func (v *VnkingsSource) postParagraphs(ctx context.Context, rawPostID string) ([
 	if err != nil {
 		return nil, fmt.Errorf("%w: post %q", errUnsupportedSource, rawPostID)
 	}
-	body, err := v.get(ctx, fmt.Sprintf(constants.StoryVnkingsPostURL, postID))
+	body, err := v.get(ctx, fmt.Sprintf(StoryVnkingsPostURL, postID))
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +97,7 @@ func (v *VnkingsSource) get(ctx context.Context, target string) ([]byte, error) 
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", constants.StoryFetchUserAgent)
+	req.Header.Set("User-Agent", StoryFetchUserAgent)
 	resp, err := v.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -108,11 +106,11 @@ func (v *VnkingsSource) get(ctx context.Context, target string) ([]byte, error) 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%s: status %d", target, resp.StatusCode)
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, constants.StoryFetchMaxBytes+1))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, StoryFetchMaxBytes+1))
 	if err != nil {
 		return nil, err
 	}
-	if len(body) > constants.StoryFetchMaxBytes {
+	if len(body) > StoryFetchMaxBytes {
 		return nil, fmt.Errorf("%s: response too large", target)
 	}
 	return body, nil

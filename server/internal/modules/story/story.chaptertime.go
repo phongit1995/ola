@@ -5,13 +5,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"ola-chat-server/internal/constants"
 )
 
 var chapterStampPattern = regexp.MustCompile(`^(\d{1,2})/(\d{1,2})/(\d{4})(?:\s+lúc\s+(\d{1,2}):(\d{2}))?`)
 
-var sourceZone = time.FixedZone("ICT", constants.StoryVnkingsUTCOffsetSeconds)
+var sourceZone = time.FixedZone("ICT", StoryVnkingsUTCOffsetSeconds)
 
 type chapterStamp struct {
 	day    time.Time
@@ -70,7 +68,7 @@ func chapterTimes(labels []string, now time.Time, anchors ...time.Time) []*time.
 				continue
 			}
 			for _, anchor := range anchors {
-				if !anchor.IsZero() && candidate.Sub(anchor).Abs() <= constants.StoryChapterAnchorTolerance {
+				if !anchor.IsZero() && candidate.Sub(anchor).Abs() <= StoryChapterAnchorTolerance {
 					matches = append(matches, candidate)
 					break
 				}

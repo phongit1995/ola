@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
@@ -21,20 +20,20 @@ var (
 )
 
 var storyVisibilities = map[string]bool{
-	constants.StoryVisibilityAll:     true,
-	constants.StoryVisibilityVisible: true,
-	constants.StoryVisibilityHidden:  true,
+	StoryVisibilityAll:     true,
+	StoryVisibilityVisible: true,
+	StoryVisibilityHidden:  true,
 }
 
 var storyKinds = map[string]bool{
-	constants.StoryKindShort: true,
-	constants.StoryKindLong:  true,
+	StoryKindShort: true,
+	StoryKindLong:  true,
 }
 
 func normalizeAdminListQuery(query ListQuery) ListQuery {
-	query = normalizePaging(query, constants.StoryAdminPageSize, constants.StoryAdminPageMax)
+	query = normalizePaging(query, StoryAdminPageSize, StoryAdminPageMax)
 	if !storyVisibilities[query.Visibility] {
-		query.Visibility = constants.StoryVisibilityAll
+		query.Visibility = StoryVisibilityAll
 	}
 	if !storyKinds[query.Kind] {
 		query.Kind = ""
@@ -55,7 +54,7 @@ func filterQuery(filter StoryFilter) ListQuery {
 }
 
 func parseIDs(raw []string) ([]uuid.UUID, bool) {
-	if len(raw) > constants.StoryBulkIDsMax {
+	if len(raw) > StoryBulkIDsMax {
 		return nil, false
 	}
 	ids := make([]uuid.UUID, 0, len(raw))
@@ -311,14 +310,14 @@ func (s *Service) FetchMissingContent(ctx context.Context, rawID string) (*Fetch
 
 func (s *Service) fetchChapters(storyID uuid.UUID, rows []ChapterRow) {
 	defer s.bulkFetches.Delete(storyID)
-	ctx, cancel := context.WithTimeout(context.Background(), constants.StoryBulkFetchTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), StoryBulkFetchTimeout)
 	defer cancel()
 	failed := 0
 	for i := range rows {
 		if i > 0 {
 			select {
 			case <-ctx.Done():
-			case <-time.After(constants.StoryBulkFetchGap):
+			case <-time.After(StoryBulkFetchGap):
 			}
 		}
 		if ctx.Err() != nil {

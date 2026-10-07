@@ -16,8 +16,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"ola-chat-server/internal/constants"
 )
 
 var (
@@ -86,7 +84,7 @@ type ChapterLink struct {
 }
 
 type Catalog interface {
-	ModifiedPosts(ctx context.Context, since time.Time, page int) (PostPage, error)
+	RecentPosts(ctx context.Context, since time.Time, limit int) (PostPage, error)
 	PostsByID(ctx context.Context, ids []int64) ([]SourcePost, error)
 	Categories(ctx context.Context) (map[int64]string, error)
 	TagNames(ctx context.Context, ids []int64) (map[int64]string, error)
@@ -113,11 +111,11 @@ type VnkingsCatalog struct {
 
 func NewVnkingsCatalog() *VnkingsCatalog {
 	return &VnkingsCatalog{
-		client:    &http.Client{Timeout: constants.StoryFetchTimeout},
-		homeURL:   constants.StoryVnkingsHomeURL,
-		ajaxURL:   constants.StoryVnkingsAjaxURL,
-		gap:       constants.StoryCrawlGap,
-		retryWait: constants.StoryCrawlRetryWait,
+		client:    &http.Client{Timeout: StoryFetchTimeout},
+		homeURL:   StoryVnkingsHomeURL,
+		ajaxURL:   StoryVnkingsAjaxURL,
+		gap:       StoryCrawlGap,
+		retryWait: StoryCrawlRetryWait,
 	}
 }
 
@@ -129,7 +127,7 @@ func (c *VnkingsCatalog) currentUserAgent() string {
 	if value, ok := c.userAgent.Load().(string); ok && value != "" {
 		return value
 	}
-	return constants.StoryFetchUserAgent
+	return StoryFetchUserAgent
 }
 
 func (c *VnkingsCatalog) SetCookie(cookie string) {
@@ -154,19 +152,18 @@ func (c *VnkingsCatalog) Requests() int64 {
 }
 
 func restURL(route string, query url.Values) string {
-	return constants.StoryVnkingsRESTURL + route + "&" + query.Encode()
+	return StoryVnkingsRESTURL + route + "&" + query.Encode()
 }
 
 const postFields = "id,slug,link,title,content,excerpt,date_gmt,modified_gmt,categories,tags,author"
 
-func (c *VnkingsCatalog) ModifiedPosts(ctx context.Context, since time.Time, page int) (PostPage, error) {
+func (c *VnkingsCatalog) RecentPosts(ctx context.Context, since time.Time, limit int) (PostPage, error) {
 	query := url.Values{
-		"categories":     {constants.StoryVnkingsCategoryIDs},
+		"categories":     {StoryVnkingsCategoryIDs},
 		"modified_after": {since.UTC().Format("2006-01-02T15:04:05Z")},
 		"orderby":        {"modified"},
-		"order":          {"asc"},
-		"per_page":       {strconv.Itoa(constants.StoryVnkingsPerPage)},
-		"page":           {strconv.Itoa(page)},
+		"order":          {"desc"},
+		"per_page":       {strconv.Itoa(limit)},
 		"_fields":        {postFields},
 	}
 	var posts []SourcePost
@@ -183,15 +180,15 @@ func (c *VnkingsCatalog) ModifiedPosts(ctx context.Context, since time.Time, pag
 
 func (c *VnkingsCatalog) PostsByID(ctx context.Context, ids []int64) ([]SourcePost, error) {
 	var posts []SourcePost
-	for start := 0; start < len(ids); start += constants.StoryVnkingsPerPage {
-		end := min(start+constants.StoryVnkingsPerPage, len(ids))
+	for start := 0; start < len(ids); start += StoryVnkingsPerPage {
+		end := min(start+StoryVnkingsPerPage, len(ids))
 		include := make([]string, 0, end-start)
 		for _, id := range ids[start:end] {
 			include = append(include, strconv.FormatInt(id, 10))
 		}
 		query := url.Values{
 			"include":  {strings.Join(include, ",")},
-			"per_page": {strconv.Itoa(constants.StoryVnkingsPerPage)},
+			"per_page": {strconv.Itoa(StoryVnkingsPerPage)},
 			"_fields":  {postFields},
 		}
 		var batch []SourcePost
@@ -207,7 +204,7 @@ func (c *VnkingsCatalog) Categories(ctx context.Context) (map[int64]string, erro
 	names := map[int64]string{}
 	for page := 1; ; page++ {
 		query := url.Values{
-			"per_page": {strconv.Itoa(constants.StoryVnkingsPerPage)},
+			"per_page": {strconv.Itoa(StoryVnkingsPerPage)},
 			"page":     {strconv.Itoa(page)},
 			"_fields":  {"id,name"},
 		}
@@ -230,15 +227,15 @@ func (c *VnkingsCatalog) Categories(ctx context.Context) (map[int64]string, erro
 
 func (c *VnkingsCatalog) TagNames(ctx context.Context, ids []int64) (map[int64]string, error) {
 	names := map[int64]string{}
-	for start := 0; start < len(ids); start += constants.StoryVnkingsPerPage {
-		end := min(start+constants.StoryVnkingsPerPage, len(ids))
+	for start := 0; start < len(ids); start += StoryVnkingsPerPage {
+		end := min(start+StoryVnkingsPerPage, len(ids))
 		include := make([]string, 0, end-start)
 		for _, id := range ids[start:end] {
 			include = append(include, strconv.FormatInt(id, 10))
 		}
 		query := url.Values{
 			"include":  {strings.Join(include, ",")},
-			"per_page": {strconv.Itoa(constants.StoryVnkingsPerPage)},
+			"per_page": {strconv.Itoa(StoryVnkingsPerPage)},
 			"_fields":  {"id,name"},
 		}
 		var items []struct {
@@ -257,7 +254,7 @@ func (c *VnkingsCatalog) TagNames(ctx context.Context, ids []int64) (map[int64]s
 
 func (c *VnkingsCatalog) StoryPage(ctx context.Context, link string) (StoryPageInfo, error) {
 	target, err := url.Parse(link)
-	if err != nil || target.Scheme != "https" || target.Host != constants.StoryVnkingsHost {
+	if err != nil || target.Scheme != "https" || target.Host != StoryVnkingsHost {
 		return StoryPageInfo{}, fmt.Errorf("%w: %s", errUnsupportedSource, link)
 	}
 	body, _, err := c.do(ctx, http.MethodGet, target.String(), nil)
@@ -272,7 +269,7 @@ func (c *VnkingsCatalog) ChapterLinks(ctx context.Context, storyID int64, nonce 
 	seen := map[string]bool{}
 	for page := 1; ; page++ {
 		form := url.Values{
-			"action":        {constants.StoryVnkingsChaptersAction},
+			"action":        {StoryVnkingsChaptersAction},
 			"story_id":      {strconv.FormatInt(storyID, 10)},
 			"page":          {strconv.Itoa(page)},
 			"chapter_nonce": {nonce},
@@ -362,7 +359,7 @@ func (c *VnkingsCatalog) wait(ctx context.Context) error {
 
 func (c *VnkingsCatalog) do(ctx context.Context, method, target string, form url.Values) ([]byte, http.Header, error) {
 	var lastErr error
-	for attempt := 0; attempt <= constants.StoryCrawlRetries; attempt++ {
+	for attempt := 0; attempt <= StoryCrawlRetries; attempt++ {
 		if attempt > 0 {
 			select {
 			case <-ctx.Done():
@@ -417,11 +414,11 @@ func (c *VnkingsCatalog) once(ctx context.Context, method, target string, form u
 	case resp.StatusCode != http.StatusOK:
 		return nil, nil, false, fmt.Errorf("status %d at %s", resp.StatusCode, target)
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, constants.StoryFetchMaxBytes+1))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, StoryFetchMaxBytes+1))
 	if err != nil {
 		return nil, nil, true, err
 	}
-	if len(body) > constants.StoryFetchMaxBytes {
+	if len(body) > StoryFetchMaxBytes {
 		return nil, nil, false, fmt.Errorf("%s: response too large", target)
 	}
 	return body, resp.Header, false, nil
@@ -503,11 +500,11 @@ func storyStatus(text string) string {
 	lower := strings.ToLower(text)
 	switch {
 	case strings.Contains(lower, "chưa"):
-		return constants.StoryStatusOngoing
+		return StoryStatusOngoing
 	case strings.Contains(lower, "hoàn thành"), strings.Contains(lower, "full"):
-		return constants.StoryStatusCompleted
+		return StoryStatusCompleted
 	default:
-		return constants.StoryStatusUnknown
+		return StoryStatusUnknown
 	}
 }
 
@@ -539,7 +536,7 @@ func parseStoryPage(page string) StoryPageInfo {
 }
 
 func loggedIn(page string) bool {
-	return !strings.Contains(page, constants.StoryVnkingsGuestMarker) || strings.Contains(strings.ToLower(page), constants.StoryVnkingsLogoutMarker)
+	return !strings.Contains(page, StoryVnkingsGuestMarker) || strings.Contains(strings.ToLower(page), StoryVnkingsLogoutMarker)
 }
 
 func parseChapterLinks(items string) []ChapterLink {

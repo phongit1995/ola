@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
@@ -21,8 +20,8 @@ import (
 var (
 	ErrStoryNotFound             = utils.NewHTTPError(http.StatusNotFound, "story not found")
 	ErrChapterNotFound           = utils.NewHTTPError(http.StatusNotFound, "chapter not found")
-	ErrChapterContentUnavailable = utils.NewHTTPErrorWithCode(http.StatusBadGateway, "chapter content unavailable", constants.ErrorCodeStoryContentUnavailable)
-	ErrChapterContentNotSaved    = utils.NewHTTPErrorWithCode(http.StatusInternalServerError, "Đã lấy được nội dung nhưng lưu vào DB thất bại", constants.ErrorCodeStoryContentNotSaved)
+	ErrChapterContentUnavailable = utils.NewHTTPErrorWithCode(http.StatusBadGateway, "chapter content unavailable", ErrorCodeStoryContentUnavailable)
+	ErrChapterContentNotSaved    = utils.NewHTTPErrorWithCode(http.StatusInternalServerError, "Đã lấy được nội dung nhưng lưu vào DB thất bại", ErrorCodeStoryContentNotSaved)
 )
 
 type fetchedContent struct {
@@ -31,8 +30,8 @@ type fetchedContent struct {
 }
 
 var storyStatuses = map[string]bool{
-	constants.StoryStatusOngoing:   true,
-	constants.StoryStatusCompleted: true,
+	StoryStatusOngoing:   true,
+	StoryStatusCompleted: true,
 }
 
 type Service struct {
@@ -49,7 +48,7 @@ func NewService(repo *Repository, source *VnkingsSource, logger *zap.SugaredLogg
 }
 
 func normalizeListQuery(query ListQuery) ListQuery {
-	query = normalizePaging(query, constants.StoryPageSize, constants.StoryPageMax)
+	query = normalizePaging(query, StoryPageSize, StoryPageMax)
 	query.Kind = ""
 	query.Visibility = ""
 	query.Source = ""
@@ -58,15 +57,15 @@ func normalizeListQuery(query ListQuery) ListQuery {
 
 func normalizePaging(query ListQuery, pageSize, pageMax int) ListQuery {
 	if _, ok := storyOrders[query.Sort]; !ok {
-		query.Sort = constants.StorySortUpdated
+		query.Sort = StorySortUpdated
 	}
 	if !storyStatuses[query.Status] {
 		query.Status = ""
 	}
 	query.Genre = strings.TrimSpace(query.Genre)
 	query.Query = strings.TrimSpace(query.Query)
-	if runes := []rune(query.Query); len(runes) > constants.StoryQueryMaxRunes {
-		query.Query = string(runes[:constants.StoryQueryMaxRunes])
+	if runes := []rune(query.Query); len(runes) > StoryQueryMaxRunes {
+		query.Query = string(runes[:StoryQueryMaxRunes])
 	}
 	if query.Offset < 0 {
 		query.Offset = 0
@@ -228,7 +227,7 @@ func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*Chap
 func (s *Service) loadContent(ctx context.Context, row *ChapterRow, replace bool) error {
 	key := row.ID.String() + ":" + strconv.FormatBool(replace)
 	value, err, _ := s.fetches.Do(key, func() (interface{}, error) {
-		fetchCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), constants.StoryFetchTimeout)
+		fetchCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), StoryFetchTimeout)
 		defer cancel()
 		content, err := s.source.ChapterContent(fetchCtx, row)
 		if err != nil {

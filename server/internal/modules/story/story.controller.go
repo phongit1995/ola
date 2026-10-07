@@ -1,7 +1,6 @@
 package story
 
 import (
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +34,7 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 		Status: c.Query("status"),
 		Query:  c.Query("q"),
 		Offset: utils.ParseOffset(c),
-		Limit:  utils.ParseLimit(c, constants.StoryPageSize, constants.StoryPageMax),
+		Limit:  utils.ParseLimit(c, StoryPageSize, StoryPageMax),
 	})
 	if err != nil {
 		return nil, utils.ServiceError(err)

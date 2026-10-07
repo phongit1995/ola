@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -136,18 +135,18 @@ func (f *fakeAdminStore) MissingContentChapters(_ context.Context, storyID uuid.
 
 func TestNormalizeAdminListQuery(t *testing.T) {
 	got := normalizeAdminListQuery(ListQuery{Visibility: "bogus", Kind: "poem", Limit: 0})
-	want := ListQuery{Sort: constants.StorySortUpdated, Visibility: constants.StoryVisibilityAll, Limit: constants.StoryAdminPageSize}
+	want := ListQuery{Sort: StorySortUpdated, Visibility: StoryVisibilityAll, Limit: StoryAdminPageSize}
 	if got != want {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
-	got = normalizeAdminListQuery(ListQuery{Visibility: constants.StoryVisibilityHidden, Kind: constants.StoryKindShort, Limit: 1000})
-	if got.Visibility != constants.StoryVisibilityHidden || got.Kind != constants.StoryKindShort || got.Limit != constants.StoryAdminPageMax {
+	got = normalizeAdminListQuery(ListQuery{Visibility: StoryVisibilityHidden, Kind: StoryKindShort, Limit: 1000})
+	if got.Visibility != StoryVisibilityHidden || got.Kind != StoryKindShort || got.Limit != StoryAdminPageMax {
 		t.Fatalf("got %+v", got)
 	}
-	if got := normalizeAdminListQuery(ListQuery{Source: "  vnkings "}); got.Source != constants.StorySourceVnkings {
+	if got := normalizeAdminListQuery(ListQuery{Source: "  vnkings "}); got.Source != StorySourceVnkings {
 		t.Fatalf("source not trimmed: %+v", got)
 	}
-	public := normalizeListQuery(ListQuery{Visibility: constants.StoryVisibilityHidden, Kind: constants.StoryKindShort, Source: constants.StorySourceVnkings})
+	public := normalizeListQuery(ListQuery{Visibility: StoryVisibilityHidden, Kind: StoryKindShort, Source: StorySourceVnkings})
 	if public.Visibility != "" || public.Kind != "" || public.Source != "" {
 		t.Fatalf("public query must not use admin filters: %+v", public)
 	}
@@ -157,10 +156,10 @@ func TestSetHiddenMany(t *testing.T) {
 	store := newFakeStore(5)
 	for n := 1; n <= 5; n++ {
 		item := store.stories[testID(n)]
-		item.Source = constants.StorySourceVnkings
+		item.Source = StorySourceVnkings
 		if n > 3 {
 			item.Source = "other"
-			item.Kind = constants.StoryKindShort
+			item.Kind = StoryKindShort
 		}
 		store.stories[testID(n)] = item
 	}
@@ -177,7 +176,7 @@ func TestSetHiddenMany(t *testing.T) {
 	if err != nil || resp.Updated != 1 {
 		t.Fatalf("hide by filter counts only changed stories: %+v, %v", resp, err)
 	}
-	if admin.bulkQuery.Source != constants.StorySourceVnkings || admin.bulkQuery.Visibility != constants.StoryVisibilityAll {
+	if admin.bulkQuery.Source != StorySourceVnkings || admin.bulkQuery.Visibility != StoryVisibilityAll {
 		t.Fatalf("filter not normalized: %+v", admin.bulkQuery)
 	}
 	for n := 1; n <= 5; n++ {
@@ -190,7 +189,7 @@ func TestSetHiddenMany(t *testing.T) {
 		t.Fatalf("show all: %+v, %v", resp, err)
 	}
 
-	tooMany := make([]string, constants.StoryBulkIDsMax+1)
+	tooMany := make([]string, StoryBulkIDsMax+1)
 	for i := range tooMany {
 		tooMany[i] = sid(1)
 	}

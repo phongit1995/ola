@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"math/rand/v2"
 	"strings"
-
-	"ola-chat-server/internal/constants"
 )
 
 //go:embed user-agents.json
@@ -30,7 +28,7 @@ func loadUserAgents(raw []byte) []string {
 
 func pickUserAgent(random bool) string {
 	if !random || len(userAgents) == 0 {
-		return constants.StoryFetchUserAgent
+		return StoryFetchUserAgent
 	}
 	return userAgents[rand.IntN(len(userAgents))]
 }

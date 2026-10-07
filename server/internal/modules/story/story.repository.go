@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -53,9 +52,9 @@ type AdminStore interface {
 }
 
 var storyOrders = map[string]string{
-	constants.StorySortUpdated: "COALESCE(last_chapter_at, source_updated_at) DESC, id DESC",
-	constants.StorySortViews:   "view_count DESC, COALESCE(last_chapter_at, source_updated_at) DESC, id DESC",
-	constants.StorySortNew:     "published_at DESC, id DESC",
+	StorySortUpdated: "COALESCE(last_chapter_at, source_updated_at) DESC, id DESC",
+	StorySortViews:   "view_count DESC, COALESCE(last_chapter_at, source_updated_at) DESC, id DESC",
+	StorySortNew:     "published_at DESC, id DESC",
 }
 
 const genresQuery = `
@@ -138,8 +137,8 @@ func NewRepository(db *gorm.DB) *Repository {
 func listFilter(query ListQuery) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		switch query.Visibility {
-		case constants.StoryVisibilityAll:
-		case constants.StoryVisibilityHidden:
+		case StoryVisibilityAll:
+		case StoryVisibilityHidden:
 			db = db.Where("is_hidden")
 		default:
 			db = db.Where("NOT is_hidden")
@@ -271,7 +270,7 @@ func (r *Repository) SaveChapterContent(ctx context.Context, chapterID, storyID 
 
 func (r *Repository) Summary(ctx context.Context) (*AdminSummaryResponse, error) {
 	var summary AdminSummaryResponse
-	err := r.db.WithContext(ctx).Raw(summaryQuery, constants.StoryKindLong, constants.StoryKindShort).Scan(&summary).Error
+	err := r.db.WithContext(ctx).Raw(summaryQuery, StoryKindLong, StoryKindShort).Scan(&summary).Error
 	if err != nil {
 		return nil, err
 	}
@@ -347,9 +346,15 @@ func (r *Repository) MissingContentChapters(ctx context.Context, storyID uuid.UU
 }
 
 type KnownStory struct {
-	SourceStoryID string
-	Kind          string
-	ChapterCount  int
+	SourceStoryID   string
+	Kind            string
+	ChapterCount    int
+	SourceUpdatedAt *time.Time
+}
+
+func (k KnownStory) UpToDate(post SourcePost) bool {
+	modified, err := gmtTime(post.ModifiedGMT)
+	return err == nil && k.SourceUpdatedAt != nil && !modified.After(*k.SourceUpdatedAt)
 }
 
 func (r *Repository) KnownStories(ctx context.Context, source string, sourceIDs []string) (map[string]KnownStory, error) {
@@ -359,7 +364,7 @@ func (r *Repository) KnownStories(ctx context.Context, source string, sourceIDs 
 	}
 	var rows []KnownStory
 	err := r.db.WithContext(ctx).Model(&models.Story{}).
-		Select("source_story_id, kind, chapter_count").
+		Select("source_story_id, kind, chapter_count, source_updated_at").
 		Where("source = ? AND source_story_id IN ?", source, sourceIDs).
 		Scan(&rows).Error
 	if err != nil {
@@ -369,15 +374,6 @@ func (r *Repository) KnownStories(ctx context.Context, source string, sourceIDs 
 		known[row.SourceStoryID] = row
 	}
 	return known, nil
-}
-
-func (r *Repository) LatestSourceUpdate(ctx context.Context, source string) (*time.Time, error) {
-	var latest *time.Time
-	err := r.db.WithContext(ctx).Model(&models.Story{}).
-		Where("source = ?", source).
-		Select("MAX(source_updated_at)").
-		Scan(&latest).Error
-	return latest, err
 }
 
 func (r *Repository) ImportStory(ctx context.Context, source string, crawledAt time.Time, item StoryImport, chapters []ChapterImport) (ImportResult, error) {

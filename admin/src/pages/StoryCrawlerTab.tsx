@@ -153,6 +153,12 @@ const COLUMNS: TableColumnsType<StoryCrawlLog> = [
         render: (value: number) => <Count value={value} />,
       },
       {
+        title: 'Không đổi',
+        dataIndex: 'storiesUnchanged',
+        align: 'right',
+        render: (value: number) => <Count value={value} />,
+      },
+      {
         title: 'Cập nhật',
         dataIndex: 'storiesUpdated',
         align: 'right',
@@ -232,10 +238,11 @@ function LogDetail({ log }: { log: StoryCrawlLog }) {
   return (
     <Space orientation="vertical" size={4}>
       <Typography.Text type="secondary">
-        Quét bài sửa sau {formatDateTime(log.since)} · tìm thấy {formatCount(log.postsFound)} bài,
-        đã xử lý {formatCount(log.postsProcessed)}
-        {log.retried > 0 ? ` · thử lại ${formatCount(log.retried)} truyện lỗi lượt trước` : ''}
-        {log.truncated ? ' (phần còn lại chạy tiếp ở lượt sau)' : ''} ·{' '}
+        Lấy {formatCount(log.postsFound)} bài sửa gần nhất sau {formatDateTime(log.since)}, đã
+        xử lý {formatCount(log.postsProcessed)}
+        {log.truncated ? ' (khoảng này còn bài sửa cũ hơn, không lấy)' : ''}
+        {log.storiesUnchanged > 0 ? ` · ${formatCount(log.storiesUnchanged)} truyện không đổi` : ''}
+        {log.retried > 0 ? ` · thử lại ${formatCount(log.retried)} truyện lỗi lượt trước` : ''} ·{' '}
         {log.importNewStories ? 'có lấy truyện mới' : 'chỉ cập nhật truyện đã có'}
         {log.storiesEmpty > 0
           ? ` · ${formatCount(log.storiesEmpty)} truyện mới chưa có chương`
@@ -522,7 +529,7 @@ function SettingsCard({ status }: { status: StoryCrawlerStatus }) {
       >
         <SettingRow
           title="Tự động cập nhật"
-          description="Server tự hỏi vnkings theo chu kỳ, lấy chương mới của truyện vừa sửa."
+          description={`Mỗi lượt lấy ${status.scanLimit} truyện sửa gần nhất trong ${status.scanDays} ngày trên vnkings, chỉ tải lại truyện có giờ sửa mới hơn bản đã lưu để thêm chương mới.`}
         >
           <Form.Item name="enabled" valuePropName="checked" noStyle>
             <Switch />
@@ -535,7 +542,7 @@ function SettingsCard({ status }: { status: StoryCrawlerStatus }) {
         </SettingRow>
         <SettingRow
           title="Lấy cả truyện mới"
-          description="Tắt: chỉ thêm chương cho truyện đã có. Bật: truyện mới trên nguồn được thêm và hiện ngay trong app."
+          description={`Tắt: chỉ thêm chương cho truyện đã có. Bật: truyện mới nằm trong ${status.scanLimit} truyện sửa gần nhất (${status.scanDays} ngày) được thêm và hiện ngay trong app.`}
         >
           <Form.Item name="importNewStories" valuePropName="checked" noStyle>
             <Switch />
@@ -634,7 +641,9 @@ function StatusCard({
       <InfoRow label="Lần chạy kế">
         {config.enabled ? formatDateTime(status.nextRunAt) : 'Không có lịch'}
       </InfoRow>
-      <InfoRow label="Lượt sau quét từ">{formatDateTime(status.nextSince)}</InfoRow>
+      <InfoRow label="Phạm vi quét">
+        {status.scanLimit} truyện sửa gần nhất trong {status.scanDays} ngày
+      </InfoRow>
       {status.retryPending > 0 && (
         <InfoRow label="Chờ thử lại">
           <Typography.Text type="warning">

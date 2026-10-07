@@ -5,8 +5,6 @@ import (
 	"errors"
 	"reflect"
 	"testing"
-
-	"ola-chat-server/internal/constants"
 )
 
 func TestPageParagraphs(t *testing.T) {
@@ -64,7 +62,7 @@ func TestFragmentParagraphs(t *testing.T) {
 func TestVnkingsShortStoryNeedsNumericPostID(t *testing.T) {
 	source := NewVnkingsSource()
 	for _, id := range []string{"", "abc", "12/../users", "-5", "1e3"} {
-		row := &ChapterRow{StorySource: constants.StorySourceVnkings, StoryKind: constants.StoryKindShort, StorySourceID: id}
+		row := &ChapterRow{StorySource: StorySourceVnkings, StoryKind: StoryKindShort, StorySourceID: id}
 		if _, err := source.ChapterContent(context.Background(), row); !errors.Is(err, errUnsupportedSource) {
 			t.Fatalf("post id %q: got %v", id, err)
 		}

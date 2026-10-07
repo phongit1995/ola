@@ -185,6 +185,7 @@ type CrawlLog struct {
 	StoriesChecked    int          `json:"storiesChecked"`
 	StoriesUpdated    int          `json:"storiesUpdated"`
 	StoriesCreated    int          `json:"storiesCreated"`
+	StoriesUnchanged  int          `json:"storiesUnchanged"`
 	StoriesSkippedNew int          `json:"storiesSkippedNew"`
 	StoriesEmpty      int          `json:"storiesEmpty"`
 	StoriesFailed     int          `json:"storiesFailed"`
@@ -212,7 +213,8 @@ type CrawlerStatusResponse struct {
 	Progress        *CrawlLog             `json:"progress"`
 	LastRunAt       *time.Time            `json:"lastRunAt"`
 	NextRunAt       *time.Time            `json:"nextRunAt"`
-	NextSince       *time.Time            `json:"nextSince"`
+	ScanDays        int                   `json:"scanDays"`
+	ScanLimit       int                   `json:"scanLimit"`
 	RetryPending    int                   `json:"retryPending"`
 	Logs            []CrawlLog            `json:"logs"`
 }

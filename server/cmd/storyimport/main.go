@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/story"
 
 	"github.com/caarlos0/env/v11"
@@ -84,7 +83,7 @@ type exportChapter struct {
 
 func main() {
 	dir := flag.String("dir", "../scripts/vnkings/data", "directory written by scripts/vnkings/export_stories.py")
-	source := flag.String("source", constants.StorySourceVnkings, "value stored in stories.source")
+	source := flag.String("source", story.StorySourceVnkings, "value stored in stories.source")
 	flag.Parse()
 
 	if err := godotenv.Load(); err != nil {

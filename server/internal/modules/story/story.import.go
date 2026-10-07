@@ -10,8 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
-
 	"github.com/google/uuid"
 )
 
@@ -106,7 +104,7 @@ WHERE story_chapters.content_hash IS DISTINCT FROM EXCLUDED.content_hash
 RETURNING (xmax = 0) AS inserted`
 
 func sourceClock(column string) string {
-	return "((" + column + " AT TIME ZONE 'UTC') + interval '" + strconv.Itoa(constants.StoryVnkingsUTCOffsetSeconds) + " seconds')"
+	return "((" + column + " AT TIME ZONE 'UTC') + interval '" + strconv.Itoa(StoryVnkingsUTCOffsetSeconds) + " seconds')"
 }
 
 var keepPreciseTimeSQL = "COALESCE(story_chapters.published_at IS NOT NULL AND " +

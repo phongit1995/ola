@@ -10,8 +10,6 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
-
-	"ola-chat-server/internal/constants"
 )
 
 const storyPageFixture = `<html><head>
@@ -29,17 +27,17 @@ const storyPageFixture = `<html><head>
 
 func TestParseStoryPage(t *testing.T) {
 	info := parseStoryPage(storyPageFixture)
-	if info.AuthorName != "Dori & Meui" || info.Status != constants.StoryStatusOngoing || info.AgeRating != "[T] Không dành cho trẻ dưới 13 tuổi" {
+	if info.AuthorName != "Dori & Meui" || info.Status != StoryStatusOngoing || info.AgeRating != "[T] Không dành cho trẻ dưới 13 tuổi" {
 		t.Fatalf("unexpected info %+v", info)
 	}
 	if info.LikeCount != 1234 || info.Nonce != "ebbc4c4173" || info.CoverURL == nil || *info.CoverURL != "https://vnkings.com/cover.jpg" {
 		t.Fatalf("unexpected info %+v", info)
 	}
 	bare := parseStoryPage(`<meta property="og:image" content="https://vnkings.com/og.jpg" /><li><span>Tình trạng</span>: Full</li>`)
-	if bare.CoverURL == nil || *bare.CoverURL != "https://vnkings.com/og.jpg" || bare.Status != constants.StoryStatusCompleted || bare.Nonce != "" {
+	if bare.CoverURL == nil || *bare.CoverURL != "https://vnkings.com/og.jpg" || bare.Status != StoryStatusCompleted || bare.Nonce != "" {
 		t.Fatalf("unexpected fallback info %+v", bare)
 	}
-	if parseStoryPage("").Status != constants.StoryStatusUnknown {
+	if parseStoryPage("").Status != StoryStatusUnknown {
 		t.Fatal("missing status must be unknown")
 	}
 }
@@ -119,7 +117,7 @@ func TestCatalogStatusHandling(t *testing.T) {
 	if _, _, err := catalog.do(ctx, http.MethodGet, server.URL+"/flaky", nil); err == nil {
 		t.Fatal("502 must fail after retries")
 	}
-	if got := hits.Load(); got != int32(constants.StoryCrawlRetries+1) {
+	if got := hits.Load(); got != int32(StoryCrawlRetries+1) {
 		t.Fatalf("502 must be retried, got %d attempts", got)
 	}
 	var out []int

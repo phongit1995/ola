@@ -1,7 +1,6 @@
 package adminstory
 
 import (
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/story"
 	"ola-chat-server/internal/utils"
 
@@ -43,7 +42,7 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 		Source:     c.Query("source"),
 		Query:      c.Query("q"),
 		Offset:     utils.ParseOffset(c),
-		Limit:      utils.ParseLimit(c, constants.StoryAdminPageSize, constants.StoryAdminPageMax),
+		Limit:      utils.ParseLimit(c, story.StoryAdminPageSize, story.StoryAdminPageMax),
 	})
 	if err != nil {
 		return nil, utils.ServiceError(err)

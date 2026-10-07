@@ -53,9 +53,9 @@ type fakeCatalog struct {
 	links       map[int64][]ChapterLink
 	pageErrors  map[string]error
 	linkErrors  map[int64]error
-	perPage     int
 	requests    int64
 	sinceAsked  []time.Time
+	limitAsked  []int
 	storyPages  []string
 	retryAsked  [][]int64
 	userAgent   string
@@ -68,26 +68,18 @@ type fakeCatalog struct {
 
 func (f *fakeCatalog) count() { f.requests++ }
 
-func (f *fakeCatalog) ModifiedPosts(_ context.Context, since time.Time, page int) (PostPage, error) {
+func (f *fakeCatalog) RecentPosts(_ context.Context, since time.Time, limit int) (PostPage, error) {
 	f.count()
 	f.sinceAsked = append(f.sinceAsked, since)
+	f.limitAsked = append(f.limitAsked, limit)
 	var matched []SourcePost
 	for _, item := range f.posts {
 		if modified, err := gmtTime(item.ModifiedGMT); err == nil && modified.After(since) {
 			matched = append(matched, item)
 		}
 	}
-	perPage := f.perPage
-	if perPage == 0 {
-		perPage = constants.StoryVnkingsPerPage
-	}
-	totalPages := (len(matched) + perPage - 1) / perPage
-	start := (page - 1) * perPage
-	end := min(start+perPage, len(matched))
-	if start >= len(matched) {
-		return PostPage{Total: len(matched), TotalPages: totalPages}, nil
-	}
-	return PostPage{Posts: matched[start:end], Total: len(matched), TotalPages: totalPages}, nil
+	slices.SortStableFunc(matched, func(a, b SourcePost) int { return strings.Compare(b.ModifiedGMT, a.ModifiedGMT) })
+	return PostPage{Posts: matched[:min(limit, len(matched))], Total: len(matched), TotalPages: 1}, nil
 }
 
 func (f *fakeCatalog) PostsByID(_ context.Context, ids []int64) ([]SourcePost, error) {
@@ -127,7 +119,7 @@ func (f *fakeCatalog) StoryPage(_ context.Context, link string) (StoryPageInfo, 
 	}
 	info, ok := f.pages[link]
 	if !ok {
-		info = StoryPageInfo{AuthorName: "Tác giả", Status: constants.StoryStatusOngoing, Nonce: "abc"}
+		info = StoryPageInfo{AuthorName: "Tác giả", Status: StoryStatusOngoing, Nonce: "abc"}
 	}
 	info.LoggedIn = f.liveCookies[f.cookie] && !f.pageLogout[f.cookie]
 	return info, nil
@@ -156,16 +148,14 @@ func (f *fakeCatalog) Requests() int64 { return f.requests }
 type fakeCrawlStore struct {
 	mu       sync.Mutex
 	known    map[string]KnownStory
-	latest   *time.Time
 	imported map[string][]ChapterImport
 	stories  map[string]StoryImport
 }
 
-var fakeLatestUpdate = time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+var testNow = time.Date(2026, 10, 5, 18, 0, 0, 0, time.UTC)
 
 func newFakeCrawlStore(known ...KnownStory) *fakeCrawlStore {
-	latest := fakeLatestUpdate
-	store := &fakeCrawlStore{known: map[string]KnownStory{}, latest: &latest, imported: map[string][]ChapterImport{}, stories: map[string]StoryImport{}}
+	store := &fakeCrawlStore{known: map[string]KnownStory{}, imported: map[string][]ChapterImport{}, stories: map[string]StoryImport{}}
 	for _, item := range known {
 		store.known[item.SourceStoryID] = item
 	}
@@ -182,21 +172,20 @@ func (f *fakeCrawlStore) KnownStories(_ context.Context, _ string, ids []string)
 	return out, nil
 }
 
-func (f *fakeCrawlStore) LatestSourceUpdate(context.Context, string) (*time.Time, error) {
-	return f.latest, nil
-}
-
 func (f *fakeCrawlStore) ImportStory(_ context.Context, _ string, _ time.Time, item StoryImport, chapters []ChapterImport) (ImportResult, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	previous, existed := f.imported[item.SourceStoryID]
+	before, wasKnown := f.known[item.SourceStoryID]
 	f.imported[item.SourceStoryID] = chapters
 	f.stories[item.SourceStoryID] = item
+	updatedAt := item.UpdatedAt
+	f.known[item.SourceStoryID] = KnownStory{SourceStoryID: item.SourceStoryID, Kind: item.Kind, ChapterCount: len(chapters), SourceUpdatedAt: &updatedAt}
 	if !existed {
-		if _, ok := f.known[item.SourceStoryID]; !ok {
+		if !wasKnown {
 			return ImportResult{StoryInserted: true, Added: len(chapters)}, nil
 		}
-		previous = make([]ChapterImport, f.known[item.SourceStoryID].ChapterCount)
+		previous = make([]ChapterImport, before.ChapterCount)
 	}
 	added := max(len(chapters)-len(previous), 0)
 	return ImportResult{Added: added, Unchanged: len(chapters) - added}, nil
@@ -248,9 +237,14 @@ func chapterLinks(count int) []ChapterLink {
 	return links
 }
 
+func withTestClock(crawler *Crawler) *Crawler {
+	crawler.now = func() time.Time { return testNow }
+	return crawler
+}
+
 func newTestCrawler(t *testing.T, store *fakeCrawlStore, catalog *fakeCatalog, cfg setting.StoryCrawlerConfig) *Crawler {
 	cache, _ := newTestCache(t)
-	return newCrawler(store, catalog, &fakeCrawlerSettings{cfg: cfg}, cache, zap.NewNop().Sugar())
+	return withTestClock(newCrawler(store, catalog, &fakeCrawlerSettings{cfg: cfg}, cache, zap.NewNop().Sugar()))
 }
 
 func lastLog(t *testing.T, crawler *Crawler) CrawlLog {
@@ -263,20 +257,18 @@ func lastLog(t *testing.T, crawler *Crawler) CrawlLog {
 }
 
 func TestCrawlerUpdatesKnownStoriesOnly(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong, ChapterCount: 2})
-	latest := time.Date(2026, 10, 5, 12, 0, 0, 0, time.UTC)
-	store.latest = &latest
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong, ChapterCount: 2})
 	catalog := &fakeCatalog{
 		posts: []SourcePost{post(10, "2026-10-05T13:00:00", 126), post(20, "2026-10-05T14:00:00", 126)},
 		links: map[int64][]ChapterLink{10: chapterLinks(5), 20: chapterLinks(3)},
 	}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{Enabled: true, IntervalHours: 1})
 
-	entry, err := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	entry, err := crawler.Run(context.Background(), StoryCrawlTriggerManual)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if entry.Status != constants.StoryCrawlStatusSuccess {
+	if entry.Status != StoryCrawlStatusSuccess {
 		t.Fatalf("status %s: %s", entry.Status, entry.Message)
 	}
 	if entry.StoriesChecked != 1 || entry.StoriesUpdated != 1 || entry.StoriesCreated != 0 || entry.StoriesSkippedNew != 1 || entry.ChaptersAdded != 3 {
@@ -288,29 +280,27 @@ func TestCrawlerUpdatesKnownStoriesOnly(t *testing.T) {
 	if len(catalog.storyPages) != 1 {
 		t.Fatalf("skipped story must not be fetched, fetched %v", catalog.storyPages)
 	}
-	if want := latest.Add(-constants.StoryCrawlWatermarkMargin); !catalog.sinceAsked[0].Equal(want) {
-		t.Fatalf("first run must start from latest update minus margin, got %v want %v", catalog.sinceAsked[0], want)
+	if want := testNow.Add(-StoryCrawlWindow); !catalog.sinceAsked[0].Equal(want) || catalog.limitAsked[0] != StoryCrawlBatch {
+		t.Fatalf("run must ask for the latest %d posts since %v, got %v %v", StoryCrawlBatch, want, catalog.sinceAsked, catalog.limitAsked)
 	}
 	stored := store.stories["10"]
-	if stored.Kind != constants.StoryKindLong || len(stored.Genres) != 1 || stored.Genres[0] != "Tiểu Thuyết" || len(stored.Tags) != 1 || stored.SourceAuthorID == nil {
+	if stored.Kind != StoryKindLong || len(stored.Genres) != 1 || stored.Genres[0] != "Tiểu Thuyết" || len(stored.Tags) != 1 || stored.SourceAuthorID == nil {
 		t.Fatalf("unexpected import %+v", stored)
 	}
 	if entry.Requests != catalog.requests {
 		t.Fatalf("requests %d, want %d", entry.Requests, catalog.requests)
 	}
 
-	state := crawler.loadState(context.Background())
-	if state.NextSince == nil || !state.NextSince.Equal(entry.StartedAt.Add(-constants.StoryCrawlWatermarkMargin)) {
-		t.Fatalf("watermark must advance to start minus margin, got %+v", state)
-	}
-	if _, err := crawler.Run(context.Background(), constants.StoryCrawlTriggerSchedule); err != nil {
+	pagesBefore := len(catalog.storyPages)
+	second, err := crawler.Run(context.Background(), StoryCrawlTriggerSchedule)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if got := catalog.sinceAsked[len(catalog.sinceAsked)-1]; !got.Equal(*state.NextSince) {
-		t.Fatalf("second run must use saved watermark, got %v", got)
+	if second.StoriesUnchanged != 1 || second.ChaptersAdded != 0 || len(catalog.storyPages) != pagesBefore {
+		t.Fatalf("second run must skip the story already synced, got %+v", second)
 	}
-	if lastLog(t, crawler).ChaptersAdded != 0 {
-		t.Fatal("second run must not add chapters again")
+	if lastLog(t, crawler).ID != second.ID {
+		t.Fatal("latest log must be the second run")
 	}
 }
 
@@ -319,29 +309,29 @@ func TestCrawlerImportsNewStoriesWhenEnabled(t *testing.T) {
 	catalog := &fakeCatalog{
 		posts: []SourcePost{post(20, "2026-10-05T14:00:00", 126), post(30, "2026-10-05T15:00:00", 3), post(40, "2026-10-05T16:00:00", 126)},
 		links: map[int64][]ChapterLink{20: chapterLinks(3)},
-		pages: map[string]StoryPageInfo{"https://vnkings.com/truyen-30.html": {Status: constants.StoryStatusCompleted}},
+		pages: map[string]StoryPageInfo{"https://vnkings.com/truyen-30.html": {Status: StoryStatusCompleted}},
 	}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1, ImportNewStories: true})
 
-	entry, err := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	entry, err := crawler.Run(context.Background(), StoryCrawlTriggerManual)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if entry.StoriesCreated != 2 || entry.StoriesEmpty != 1 || entry.ChaptersAdded != 4 || entry.Status != constants.StoryCrawlStatusSuccess {
+	if entry.StoriesCreated != 2 || entry.StoriesEmpty != 1 || entry.ChaptersAdded != 4 || entry.Status != StoryCrawlStatusSuccess {
 		t.Fatalf("unexpected counters %+v", entry)
 	}
 	short := store.stories["30"]
 	chapters := store.imported["30"]
-	if short.Kind != constants.StoryKindShort || len(chapters) != 1 || chapters[0].SourceChapterID != "30" || chapters[0].PublishedAt == nil {
+	if short.Kind != StoryKindShort || len(chapters) != 1 || chapters[0].SourceChapterID != "30" || chapters[0].PublishedAt == nil {
 		t.Fatalf("short story must become one chapter keyed by post id, got %+v %+v", short, chapters)
 	}
 }
 
 func TestCrawlerQueuesFailedStoriesForRetry(t *testing.T) {
 	store := newFakeCrawlStore(
-		KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong},
-		KnownStory{SourceStoryID: "11", Kind: constants.StoryKindLong},
-		KnownStory{SourceStoryID: "12", Kind: constants.StoryKindLong},
+		KnownStory{SourceStoryID: "10", Kind: StoryKindLong},
+		KnownStory{SourceStoryID: "11", Kind: StoryKindLong},
+		KnownStory{SourceStoryID: "12", Kind: StoryKindLong},
 	)
 	catalog := &fakeCatalog{
 		posts:      []SourcePost{post(10, "2026-10-05T13:00:00", 126), post(11, "2026-10-05T13:30:00", 126), post(12, "2026-10-05T14:00:00", 126)},
@@ -350,11 +340,11 @@ func TestCrawlerQueuesFailedStoriesForRetry(t *testing.T) {
 	}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if entry.Status != constants.StoryCrawlStatusPartial || entry.StoriesFailed != 2 || len(entry.Errors) != 2 || entry.RetryPending != 2 {
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if entry.Status != StoryCrawlStatusPartial || entry.StoriesFailed != 2 || len(entry.Errors) != 2 || entry.RetryPending != 2 {
 		t.Fatalf("unexpected result %+v", entry)
 	}
-	if entry.Errors[0].Message != "Truyện không còn trên nguồn" || entry.Errors[1].Message != "Không lấy được danh sách chương" {
+	if entry.Errors[0].Message != "Không lấy được danh sách chương" || entry.Errors[1].Message != "Truyện không còn trên nguồn" {
 		t.Fatalf("unexpected errors %+v", entry.Errors)
 	}
 	if !entry.Errors[0].WillRetry || entry.Errors[0].Attempts != 1 {
@@ -364,9 +354,6 @@ func TestCrawlerQueuesFailedStoriesForRetry(t *testing.T) {
 		t.Fatal("known long story without chapter list must not be imported")
 	}
 	state := crawler.loadState(context.Background())
-	if state.NextSince == nil || !state.NextSince.Equal(entry.StartedAt.Add(-constants.StoryCrawlWatermarkMargin)) {
-		t.Fatalf("watermark must advance past failed stories, got %+v", state)
-	}
 	if len(state.Retry) != 2 || state.Retry[0].PostID != 11 || state.Retry[1].PostID != 12 {
 		t.Fatalf("failed stories must be kept for retry, got %+v", state.Retry)
 	}
@@ -374,8 +361,8 @@ func TestCrawlerQueuesFailedStoriesForRetry(t *testing.T) {
 	delete(catalog.pageErrors, "https://vnkings.com/truyen-11.html")
 	catalog.links[11] = chapterLinks(1)
 	catalog.links[12] = chapterLinks(3)
-	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if entry.Status != constants.StoryCrawlStatusSuccess || entry.Retried != 2 || entry.RetryPending != 0 {
+	entry, _ = crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if entry.Status != StoryCrawlStatusSuccess || entry.Retried != 2 || entry.RetryPending != 0 {
 		t.Fatalf("retry must import the stories once the source recovers, got %+v", entry)
 	}
 	if len(store.imported["11"]) != 1 || len(store.imported["12"]) != 3 {
@@ -387,50 +374,55 @@ func TestCrawlerQueuesFailedStoriesForRetry(t *testing.T) {
 }
 
 func TestCrawlerGivesUpRetryAfterLimit(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong})
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong})
 	catalog := &fakeCatalog{posts: []SourcePost{post(10, "2026-10-05T13:00:00", 126)}}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
 	var entry *CrawlLog
-	for attempt := 1; attempt <= constants.StoryCrawlRetryAttempts; attempt++ {
-		entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	for attempt := 1; attempt <= StoryCrawlRetryAttempts; attempt++ {
+		entry, _ = crawler.Run(context.Background(), StoryCrawlTriggerManual)
 		if entry.StoriesFailed != 1 || entry.Errors[0].Attempts != attempt {
 			t.Fatalf("attempt %d: unexpected %+v", attempt, entry.Errors)
 		}
 	}
 	if entry.Errors[0].WillRetry || entry.RetryPending != 0 {
-		t.Fatalf("story must be dropped after %d attempts, got %+v", constants.StoryCrawlRetryAttempts, entry)
+		t.Fatalf("story must be dropped after %d attempts, got %+v", StoryCrawlRetryAttempts, entry)
 	}
 	before := len(catalog.storyPages)
-	if entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual); entry.Retried != 0 || len(catalog.storyPages) != before {
+	if entry, _ = crawler.Run(context.Background(), StoryCrawlTriggerManual); entry.Retried != 0 || len(catalog.storyPages) != before {
 		t.Fatalf("dropped story must not be retried again, got %+v", entry)
+	}
+	catalog.posts[0].ModifiedGMT = "2026-10-05T17:00:00"
+	entry, _ = crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if len(catalog.storyPages) != before+1 || entry.StoriesFailed != 1 || entry.Errors[0].Attempts != 1 {
+		t.Fatalf("story edited at the source must be tried again from attempt 1, got %+v", entry)
 	}
 }
 
 func TestCrawlerDropsRetryWhenPostIsGone(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong})
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong})
 	catalog := &fakeCatalog{posts: []SourcePost{post(10, "2026-10-05T13:00:00", 126)}}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
-	if entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual); entry.RetryPending != 1 {
+	if entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual); entry.RetryPending != 1 {
 		t.Fatalf("story must be queued, got %+v", entry)
 	}
 	catalog.posts = nil
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
 	if entry.RetryPending != 0 || entry.Retried != 0 {
 		t.Fatalf("post missing at source must leave the retry queue, got %+v", entry)
 	}
 }
 
 func TestCrawlerRefusesIncompleteChapterList(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong, ChapterCount: 25})
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong, ChapterCount: 25})
 	catalog := &fakeCatalog{
 		posts:      []SourcePost{post(10, "2026-10-05T13:00:00", 126)},
 		linkErrors: map[int64]error{10: fmt.Errorf("%w: story 10 page 2 failed", errIncompleteChapters)},
 	}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
 	if entry.StoriesFailed != 1 || len(store.imported) != 0 || entry.RetryPending != 1 {
 		t.Fatalf("incomplete chapter list must not be imported, got %+v", entry)
 	}
@@ -440,31 +432,31 @@ func TestCrawlerRefusesIncompleteChapterList(t *testing.T) {
 }
 
 func TestCrawlerStopsWhenBlocked(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong}, KnownStory{SourceStoryID: "11", Kind: constants.StoryKindLong})
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong}, KnownStory{SourceStoryID: "11", Kind: StoryKindLong})
 	catalog := &fakeCatalog{
 		posts:      []SourcePost{post(10, "2026-10-05T13:00:00", 126), post(11, "2026-10-05T14:00:00", 126)},
-		linkErrors: map[int64]error{10: fmt.Errorf("%w: status 429", errSourceBlocked)},
+		linkErrors: map[int64]error{11: fmt.Errorf("%w: status 429", errSourceBlocked)},
 	}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if entry.Status != constants.StoryCrawlStatusBlocked || entry.Message == "" {
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if entry.Status != StoryCrawlStatusBlocked || entry.Message == "" {
 		t.Fatalf("unexpected result %+v", entry)
 	}
 	if len(catalog.storyPages) != 1 {
 		t.Fatalf("crawl must stop at the first block, fetched %v", catalog.storyPages)
 	}
-	if exists, _ := crawler.redis.Exists(context.Background(), constants.CacheKeyStoryCrawlProgress).Result(); exists != 0 {
+	if exists, _ := crawler.redis.Exists(context.Background(), CacheKeyStoryCrawlProgress).Result(); exists != 0 {
 		t.Fatal("progress must be cleared after the run")
 	}
 }
 
 func TestCrawlerRefusesLongStoryTurningShort(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong, ChapterCount: 40})
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong, ChapterCount: 40})
 	catalog := &fakeCatalog{posts: []SourcePost{post(10, "2026-10-05T13:00:00", 3)}}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
 	if entry.StoriesFailed != 1 || len(store.imported) != 0 {
 		t.Fatalf("long story must not be replaced by a single short chapter, got %+v", entry)
 	}
@@ -476,78 +468,76 @@ func shortPosts(total int, modified func(i int) time.Time) ([]SourcePost, []Know
 	for i := 0; i < total; i++ {
 		id := int64(100 + i)
 		posts = append(posts, post(id, modified(i).Format("2006-01-02T15:04:05"), 3))
-		known = append(known, KnownStory{SourceStoryID: strconv.FormatInt(id, 10), Kind: constants.StoryKindShort})
+		known = append(known, KnownStory{SourceStoryID: strconv.FormatInt(id, 10), Kind: StoryKindShort})
 	}
 	return posts, known
 }
 
-func TestCrawlerTruncatesAndResumesFromLastPost(t *testing.T) {
-	base := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
-	posts, known := shortPosts(constants.StoryCrawlMaxPosts+5, func(i int) time.Time { return base.Add(time.Duration(i) * time.Minute) })
-	catalog := &fakeCatalog{posts: posts}
+func TestCrawlerTakesOnlyTheLatestBatchWithinTheWindow(t *testing.T) {
+	posts, known := shortPosts(StoryCrawlBatch+5, func(i int) time.Time { return testNow.Add(-time.Duration(i+1) * time.Minute) })
+	old := post(999, testNow.Add(-StoryCrawlWindow-time.Minute).Format("2006-01-02T15:04:05"), 3)
+	catalog := &fakeCatalog{posts: append(posts, old)}
 	crawler := newTestCrawler(t, newFakeCrawlStore(known...), catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if !entry.Truncated || entry.PostsProcessed != constants.StoryCrawlMaxPosts || entry.Status != constants.StoryCrawlStatusSuccess {
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if !entry.Truncated || entry.PostsFound != StoryCrawlBatch || entry.PostsProcessed != StoryCrawlBatch {
 		t.Fatalf("unexpected result %+v", entry)
 	}
-	state := crawler.loadState(context.Background())
-	want := base.Add(time.Duration(constants.StoryCrawlMaxPosts-1) * time.Minute)
-	if state.NextSince == nil || !state.NextSince.Equal(want) {
-		t.Fatalf("watermark must stop at the last processed post, got %v want %v", state.NextSince, want)
+	want := make([]string, 0, StoryCrawlBatch)
+	for _, item := range posts[:StoryCrawlBatch] {
+		want = append(want, item.Link)
 	}
-	before := len(catalog.storyPages)
-	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if entry.Truncated || entry.PostsProcessed != 5 || len(catalog.storyPages)-before != 5 {
-		t.Fatalf("second run must only process the rest, got %+v (%d pages)", entry, len(catalog.storyPages)-before)
+	if !slices.Equal(catalog.storyPages, want) {
+		t.Fatalf("only the %d most recently edited posts must be fetched, got %v", StoryCrawlBatch, catalog.storyPages)
 	}
-}
-
-func TestCrawlerResumesPostsSharingTheBoundaryTimestamp(t *testing.T) {
-	same := time.Date(2026, 10, 5, 8, 0, 0, 0, time.UTC)
-	posts, known := shortPosts(constants.StoryCrawlMaxPosts+2, func(int) time.Time { return same })
-	catalog := &fakeCatalog{posts: posts}
-	crawler := newTestCrawler(t, newFakeCrawlStore(known...), catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
-
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if !entry.Truncated || entry.PostsProcessed != constants.StoryCrawlMaxPosts {
-		t.Fatalf("unexpected first run %+v", entry)
-	}
-	state := crawler.loadState(context.Background())
-	if state.NextSince == nil || !state.NextSince.Equal(same) || len(state.SeenAtSince) != constants.StoryCrawlMaxPosts {
-		t.Fatalf("cursor must remember posts already handled at the boundary, got %v %d", state.NextSince, len(state.SeenAtSince))
-	}
-	before := len(catalog.storyPages)
-	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	got := catalog.storyPages[before:]
-	want := []string{posts[len(posts)-2].Link, posts[len(posts)-1].Link}
-	if entry.Truncated || entry.PostsProcessed != 2 || !slices.Equal(got, want) {
-		t.Fatalf("second run must pick up the 2 posts left at the same timestamp, got %v (%+v)", got, entry)
+	if !entry.Since.Equal(testNow.Add(-StoryCrawlWindow)) {
+		t.Fatalf("scan must start %v before the run, got %v", StoryCrawlWindow, entry.Since)
 	}
 }
 
-func TestCrawlerFailingStoryDoesNotBlockLaterPosts(t *testing.T) {
-	base := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
-	posts, known := shortPosts(constants.StoryCrawlMaxPosts+5, func(i int) time.Time { return base.Add(time.Duration(i) * time.Minute) })
-	catalog := &fakeCatalog{posts: posts, pageErrors: map[string]error{posts[0].Link: errors.New("timeout")}}
-	crawler := newTestCrawler(t, newFakeCrawlStore(known...), catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
+func TestCrawlerSkipsStoriesAlreadySynced(t *testing.T) {
+	synced := time.Date(2026, 10, 5, 13, 0, 0, 0, time.UTC)
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong, ChapterCount: 2, SourceUpdatedAt: &synced})
+	catalog := &fakeCatalog{
+		posts: []SourcePost{post(10, "2026-10-05T13:00:00", 126)},
+		links: map[int64][]ChapterLink{10: chapterLinks(3)},
+	}
+	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
-	for range 3 {
-		if _, err := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual); err != nil {
-			t.Fatal(err)
-		}
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if entry.StoriesUnchanged != 1 || entry.StoriesChecked != 0 || len(catalog.storyPages) != 0 {
+		t.Fatalf("story with the same edit time must not be fetched, got %+v", entry)
 	}
-	last := posts[len(posts)-1].Link
-	if !slices.Contains(catalog.storyPages, last) {
-		t.Fatal("posts after the 300 limit must be reached even while an earlier story keeps failing")
-	}
-	if retry := crawler.loadState(context.Background()).Retry; len(retry) != 1 || retry[0].PostID != posts[0].ID || retry[0].Attempts != 3 {
-		t.Fatalf("failing story must stay queued with its attempts, got %+v", retry)
+	catalog.posts[0].ModifiedGMT = "2026-10-05T15:00:00"
+	entry, _ = crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if entry.StoriesUpdated != 1 || entry.ChaptersAdded != 1 || len(catalog.storyPages) != 1 {
+		t.Fatalf("story edited after the last sync must be fetched, got %+v", entry)
 	}
 }
 
-func TestCrawlerKeepsCursorAfterAFailedFirstRun(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong}, KnownStory{SourceStoryID: "11", Kind: constants.StoryKindLong})
+func TestCrawlerImportsNewStoriesSkippedWhileDisabled(t *testing.T) {
+	store := newFakeCrawlStore()
+	catalog := &fakeCatalog{
+		posts: []SourcePost{post(20, "2026-10-04T09:00:00", 126)},
+		links: map[int64][]ChapterLink{20: chapterLinks(2)},
+	}
+	settings := &fakeCrawlerSettings{cfg: setting.StoryCrawlerConfig{IntervalHours: 1}}
+	cache, _ := newTestCache(t)
+	crawler := withTestClock(newCrawler(store, catalog, settings, cache, zap.NewNop().Sugar()))
+
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if entry.StoriesSkippedNew != 1 || entry.StoriesCreated != 0 {
+		t.Fatalf("new story must be skipped while disabled, got %+v", entry)
+	}
+	settings.cfg.ImportNewStories = true
+	entry, _ = crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if entry.StoriesCreated != 1 || len(store.imported["20"]) != 2 {
+		t.Fatalf("story skipped earlier must be imported once enabled, got %+v", entry)
+	}
+}
+
+func TestCrawlerPicksUpPostsLeftByABlockedRun(t *testing.T) {
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong}, KnownStory{SourceStoryID: "11", Kind: StoryKindLong})
 	catalog := &fakeCatalog{
 		posts:      []SourcePost{post(10, "2026-10-05T13:00:00", 126), post(11, "2026-10-05T14:00:00", 126)},
 		links:      map[int64][]ChapterLink{10: chapterLinks(2), 11: chapterLinks(2)},
@@ -555,20 +545,13 @@ func TestCrawlerKeepsCursorAfterAFailedFirstRun(t *testing.T) {
 	}
 	crawler := newTestCrawler(t, store, catalog, setting.StoryCrawlerConfig{IntervalHours: 1})
 
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if entry.Status != constants.StoryCrawlStatusBlocked {
+	if entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual); entry.Status != StoryCrawlStatusBlocked {
 		t.Fatalf("unexpected %+v", entry)
 	}
-	state := crawler.loadState(context.Background())
-	if state.NextSince == nil || !state.NextSince.Equal(time.Date(2026, 10, 5, 13, 0, 0, 0, time.UTC)) {
-		t.Fatalf("cursor must stop before the story that was interrupted, got %v", state.NextSince)
-	}
-	latest := time.Date(2026, 10, 5, 14, 0, 0, 0, time.UTC)
-	store.latest = &latest
 	delete(catalog.linkErrors, 11)
-	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if _, ok := store.imported["11"]; !ok || entry.Status != constants.StoryCrawlStatusSuccess {
-		t.Fatalf("next run must resume from the saved cursor, not the newest story in the DB, got %+v", entry)
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if _, ok := store.imported["10"]; !ok || entry.Status != StoryCrawlStatusSuccess || entry.StoriesUpdated != 2 {
+		t.Fatalf("next run must process the stories left by the blocked run, got %+v", entry)
 	}
 }
 
@@ -578,7 +561,7 @@ func TestCrawlerLockAndLogLimit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := crawler.Run(context.Background(), constants.StoryCrawlTriggerSchedule); !errors.Is(err, ErrCrawlRunning) {
+	if _, err := crawler.Run(context.Background(), StoryCrawlTriggerSchedule); !errors.Is(err, ErrCrawlRunning) {
 		t.Fatalf("second run must be refused while locked, got %v", err)
 	}
 	if err := crawler.RunNow(); !errors.Is(err, ErrCrawlRunning) {
@@ -590,14 +573,14 @@ func TestCrawlerLockAndLogLimit(t *testing.T) {
 	}
 	crawler.release(token)
 
-	for i := 0; i < constants.StoryCrawlLogLimit+5; i++ {
-		if _, err := crawler.Run(context.Background(), constants.StoryCrawlTriggerSchedule); err != nil {
+	for i := 0; i < StoryCrawlLogLimit+5; i++ {
+		if _, err := crawler.Run(context.Background(), StoryCrawlTriggerSchedule); err != nil {
 			t.Fatal(err)
 		}
 	}
 	logs, err := crawler.logs(context.Background())
-	if err != nil || len(logs) != constants.StoryCrawlLogLimit {
-		t.Fatalf("logs must be capped at %d, got %d %v", constants.StoryCrawlLogLimit, len(logs), err)
+	if err != nil || len(logs) != StoryCrawlLogLimit {
+		t.Fatalf("logs must be capped at %d, got %d %v", StoryCrawlLogLimit, len(logs), err)
 	}
 }
 
@@ -607,7 +590,7 @@ func TestCrawlerSchedule(t *testing.T) {
 	crawler := newCrawler(newFakeCrawlStore(), &fakeCatalog{}, settings, cache, zap.NewNop().Sugar())
 	ctx := context.Background()
 
-	if wait := crawler.untilDue(ctx); wait != constants.StoryCrawlMaxSleep {
+	if wait := crawler.untilDue(ctx); wait != StoryCrawlMaxSleep {
 		t.Fatalf("disabled crawler must only poll, got %v", wait)
 	}
 	settings.cfg.Enabled = true
@@ -639,7 +622,7 @@ func TestUserAgentsFile(t *testing.T) {
 		}
 		seen[value] = true
 	}
-	if pickUserAgent(false) != constants.StoryFetchUserAgent {
+	if pickUserAgent(false) != StoryFetchUserAgent {
 		t.Fatal("fixed mode must use the default user agent")
 	}
 	if loadUserAgents([]byte("not json")) != nil {
@@ -651,16 +634,16 @@ func TestCrawlerRandomUserAgentPerRun(t *testing.T) {
 	catalog := &fakeCatalog{}
 	settings := &fakeCrawlerSettings{cfg: setting.StoryCrawlerConfig{IntervalHours: 1}}
 	cache, _ := newTestCache(t)
-	crawler := newCrawler(newFakeCrawlStore(), catalog, settings, cache, zap.NewNop().Sugar())
+	crawler := withTestClock(newCrawler(newFakeCrawlStore(), catalog, settings, cache, zap.NewNop().Sugar()))
 
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
-	if entry.UserAgent != constants.StoryFetchUserAgent || catalog.userAgent != entry.UserAgent {
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
+	if entry.UserAgent != StoryFetchUserAgent || catalog.userAgent != entry.UserAgent {
 		t.Fatalf("fixed mode used %q / %q", entry.UserAgent, catalog.userAgent)
 	}
 	settings.cfg.RandomUserAgent = true
 	used := map[string]bool{}
 	for range 30 {
-		entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+		entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
 		if !slices.Contains(userAgents, entry.UserAgent) || catalog.userAgent != entry.UserAgent {
 			t.Fatalf("random mode used %q / %q", entry.UserAgent, catalog.userAgent)
 		}
@@ -676,7 +659,7 @@ func storyCookie(name, value, status string) setting.StoryCookie {
 }
 
 func TestCrawlerMarksLoggedOutCookiesAndFallsBackToGuest(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong})
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong})
 	catalog := &fakeCatalog{
 		posts: []SourcePost{post(10, "2026-10-05T13:00:00", 126)},
 		links: map[int64][]ChapterLink{10: chapterLinks(2)},
@@ -687,13 +670,13 @@ func TestCrawlerMarksLoggedOutCookiesAndFallsBackToGuest(t *testing.T) {
 		storyCookie("old", "c=3", constants.StoryCookieStatusDead),
 	}}}
 	cache, _ := newTestCache(t)
-	crawler := newCrawler(store, catalog, settings, cache, zap.NewNop().Sugar())
+	crawler := withTestClock(newCrawler(store, catalog, settings, cache, zap.NewNop().Sugar()))
 
-	entry, err := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	entry, err := crawler.Run(context.Background(), StoryCrawlTriggerManual)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if entry.Status != constants.StoryCrawlStatusSuccess || entry.ChaptersAdded != 2 {
+	if entry.Status != StoryCrawlStatusSuccess || entry.ChaptersAdded != 2 {
 		t.Fatalf("run must go on as a guest, got %+v", entry)
 	}
 	if !entry.UseCookies || entry.Cookie != "" {
@@ -726,7 +709,7 @@ func TestCrawlerSwitchesCookieWhenItDiesMidRun(t *testing.T) {
 		storyCookie("acc2", "b=2", constants.StoryCookieStatusActive),
 	}}}
 	cache, _ := newTestCache(t)
-	crawler := newCrawler(newFakeCrawlStore(), catalog, settings, cache, zap.NewNop().Sugar())
+	crawler := withTestClock(newCrawler(newFakeCrawlStore(), catalog, settings, cache, zap.NewNop().Sugar()))
 	entry := &CrawlLog{}
 	session := &cookieSession{candidates: []crawlCookie{{label: "acc1", value: "a=1"}, {label: "acc2", value: "b=2"}}}
 	ctx := context.Background()
@@ -747,7 +730,7 @@ func TestCrawlerSwitchesCookieWhenItDiesMidRun(t *testing.T) {
 }
 
 func TestCrawlerUsesLiveCookieAndResetsWhenDisabled(t *testing.T) {
-	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: constants.StoryKindLong})
+	store := newFakeCrawlStore(KnownStory{SourceStoryID: "10", Kind: StoryKindLong})
 	catalog := &fakeCatalog{
 		posts:       []SourcePost{post(10, "2026-10-05T13:00:00", 126)},
 		links:       map[int64][]ChapterLink{10: chapterLinks(1)},
@@ -757,9 +740,9 @@ func TestCrawlerUsesLiveCookieAndResetsWhenDisabled(t *testing.T) {
 		storyCookie("acc1", "a=1", constants.StoryCookieStatusActive),
 	}}}
 	cache, _ := newTestCache(t)
-	crawler := newCrawler(store, catalog, settings, cache, zap.NewNop().Sugar())
+	crawler := withTestClock(newCrawler(store, catalog, settings, cache, zap.NewNop().Sugar()))
 
-	entry, _ := crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	entry, _ := crawler.Run(context.Background(), StoryCrawlTriggerManual)
 	if entry.Cookie != "acc1" || len(entry.CookiesDied) != 0 || !slices.Equal(catalog.pageCookies, []string{"a=1"}) {
 		t.Fatalf("live cookie must be used for the whole run, got %+v pages %v", entry, catalog.pageCookies)
 	}
@@ -770,7 +753,7 @@ func TestCrawlerUsesLiveCookieAndResetsWhenDisabled(t *testing.T) {
 
 	settings.cfg.UseCookies = false
 	checks := len(catalog.loginChecks)
-	entry, _ = crawler.Run(context.Background(), constants.StoryCrawlTriggerManual)
+	entry, _ = crawler.Run(context.Background(), StoryCrawlTriggerManual)
 	if entry.UseCookies || entry.Cookie != "" || catalog.cookie != "" || len(catalog.loginChecks) != checks {
 		t.Fatalf("disabled cookies must not be sent or checked, got %+v cookie=%q", entry, catalog.cookie)
 	}
