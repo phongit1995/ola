@@ -45,6 +45,8 @@ Với dạng `?rest_route=...`, nối tham số bằng `&`. Với dạng `/api/.
 
 Đường dẫn `/wp-json/` đã thử trả `200` nhưng body là HTML trang chủ. Vì vậy phải kiểm tra cả `Content-Type` và cấu trúc response, không chỉ HTTP status.
 
+Ngày 07/10/2026: `/wp-json/…` (kể cả `/wp-json/wp/v2/posts`) đổi sang trả `301` về trang chủ. Dạng `?rest_route=…` vẫn trả JSON, AJAX `vnk_single_chapters` vẫn chạy. Crawler và script xuất đều dùng `?rest_route=` nên không bị ảnh hưởng.
+
 Trong các request đối chiếu, User-Agent `argent` và `Mozilla/5.0` trả cùng nội dung. `argent` không phải token xác thực và không mở thêm quyền. Tuy nhiên kết quả có thể khác giữa các HTTP client: một request bằng Python `urllib` mặc định trả `403`, trong khi Chrome và PowerShell tải được trang. Chưa kiểm chứng mọi thư viện/client.
 
 ## 3. Danh sách post và phân trang
