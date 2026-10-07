@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ola · Story icon options</title>
+    <style>
+      :root{--green:#7cb342;--dark:#558b2f;--ink:#263238;--muted:#68747a;--surface:#f3f3f3}
+      *{box-sizing:border-box}body{margin:0;padding:24px;color:var(--ink);background:var(--surface);font-family:Roboto,Arial,sans-serif}main{max-width:2200px;margin:auto}
+      h1{margin:0 0 6px;color:var(--dark);font-size:28px}p{color:var(--muted)}.note{display:inline-block;margin:4px 8px 14px 0;padding:7px 11px;border-radius:8px;background:#f1f8e9;color:#33691e;font-size:13px}
+      .chooser{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 18px;padding:12px;border:1px solid #d5d5d5;border-radius:10px;background:#fff}.chooser label{color:var(--dark);font-size:13px;font-weight:700}.chooser select{margin-left:4px;padding:6px 28px 6px 8px;border:1px solid #d5d5d5;border-radius:7px;color:var(--ink);background:#fff}.chosen{font-weight:700;color:var(--dark)}button{padding:7px 11px;border:0;border-radius:8px;background:var(--green);color:#fff;cursor:pointer;font:inherit;font-size:13px}
+      img{display:block;width:100%;height:auto;border:1px solid #d5d5d5;border-radius:10px;background:#fff}
+    </style>
+  </head>
+  <body><main>
+    <h1>Icon ngoài màn Truyện · 50 phương án</h1>
+    <p>Phong cách Ola: nét tròn, outline 5.5px, xanh #7CB342 và hồng #FF4081.</p>
+    <span class="note">Chọn một mã ở mỗi nhóm để tạo bộ icon trước khi thay vào app.</span>
+    <div class="chooser" id="chooser">
+      <label>A <select data-group="A"></select></label><label>B <select data-group="B"></select></label><label>C <select data-group="C"></select></label><label>D <select data-group="D"></select></label><label>E <select data-group="E"></select></label>
+      <span class="chosen" id="chosen">Đã chọn: A1, B5, C1, D1, E3</span><button id="copy" type="button">Sao chép mã</button>
+    </div>
+    <img src="story-icon-options.png" alt="Bảng 50 phương án icon ngoài màn Truyện, mã A1 đến E10" />
+  </main>
+  <script>
+    const defaults={A:'A1',B:'B5',C:'C1',D:'D1',E:'E3'};
+    const values={A:'Thư viện',B:'Đọc tiếp',C:'Nổi bật',D:'Tìm kiếm',E:'Bộ lọc / sắp xếp'};
+    const selects=[...document.querySelectorAll('select')];
+    selects.forEach((select)=>{for(let i=1;i<=10;i++){const option=document.createElement('option');option.value=select.dataset.group+i;option.textContent=select.dataset.group+i;select.append(option)}select.value=defaults[select.dataset.group];select.addEventListener('change',update)});
+    function update(){document.querySelector('#chosen').textContent=`Đã chọn: ${selects.map((select)=>select.value).join(', ')}`}
+    document.querySelector('#copy').addEventListener('click',async()=>{const codes=selects.map((select)=>select.value).join(', ');try{await navigator.clipboard.writeText(codes);document.querySelector('#copy').textContent='Đã sao chép';setTimeout(()=>document.querySelector('#copy').textContent='Sao chép mã',1200)}catch{update()}});
+  </script>
+  </body>
+</html>
