@@ -4,6 +4,7 @@ import { HomeHeader } from '@components/HomeHeader';
 import { Placeholder } from '@components/Placeholder';
 import { SearchIcon, Spinner } from '@components';
 import { cn } from '@lib';
+import { useHorizontalDragScroll } from '@hooks';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
 import type { StoryProgress, StoryStatusFilter } from '@app-types';
@@ -45,6 +46,7 @@ function Chip({ active, onClick, children }: ChipProps) {
 
 export function StoryPanel() {
   const { t } = useTranslation();
+  const genresRef = useHorizontalDragScroll();
   const genres = useStoryStore((state) => state.genres);
   const topViewed = useStoryStore((state) => state.topViewed);
   const list = useStoryStore((state) => state.list);
@@ -196,7 +198,10 @@ export function StoryPanel() {
               <Spinner size={16} />
             )}
           </div>
-          <div className="mt-2 flex gap-2 overflow-x-auto px-3 [scrollbar-width:none]">
+          <div
+            ref={genresRef}
+            className="mt-2 flex gap-2 overflow-x-auto px-3 select-none [scrollbar-width:none]"
+          >
             <Chip
               active={filter.genre === ''}
               onClick={() => void setFilter({ genre: '' })}

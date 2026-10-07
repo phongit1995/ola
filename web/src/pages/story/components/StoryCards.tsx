@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useHorizontalDragScroll } from '@hooks';
 import { cn, formatCompactCount } from '@lib';
 import type { Story, StoryProgress } from '@app-types';
 import { StoryCover } from './StoryCover';
@@ -13,10 +14,15 @@ interface StoryShelfProps {
 }
 
 export function StoryShelf({ title, children }: StoryShelfProps) {
+  const scrollRef = useHorizontalDragScroll();
+
   return (
     <section className="bg-white py-3">
       <h2 className="px-3 text-[15px] font-bold text-black/87">{title}</h2>
-      <ul className="mt-2 flex gap-3 overflow-x-auto px-3 pb-1 [scrollbar-width:none]">
+      <ul
+        ref={scrollRef}
+        className="mt-2 flex gap-3 overflow-x-auto px-3 pb-1 select-none [scrollbar-width:none]"
+      >
         {children}
       </ul>
     </section>

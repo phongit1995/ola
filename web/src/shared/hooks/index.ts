@@ -3,6 +3,7 @@ export * from './useCaretInsert';
 export * from './useLongPress';
 export * from './useOutsideClick';
 export * from './useHorizontalSwipe';
+export * from './useHorizontalDragScroll';
 export * from './useVoiceRecorder';
 export * from './useConnectionStatus';
 export * from './useSoundUnlock';
