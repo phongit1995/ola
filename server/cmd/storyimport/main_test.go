@@ -1,6 +1,29 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
+
+func TestResetNeedsExactDatabaseName(t *testing.T) {
+	cases := []struct {
+		input    string
+		expected string
+		want     bool
+	}{
+		{"ola_chat_server_dev\n", "ola_chat_server_dev", true},
+		{"  ola_chat_server_dev  \n", "ola_chat_server_dev", true},
+		{"ola_chat_server_dev", "ola_chat_server_dev", true},
+		{"yes\n", "ola_chat_server_dev", false},
+		{"\n", "ola_chat_server_dev", false},
+		{"", "", false},
+	}
+	for _, c := range cases {
+		if got := confirmed(strings.NewReader(c.input), c.expected); got != c.want {
+			t.Errorf("confirmed(%q, %q) = %v, want %v", c.input, c.expected, got, c.want)
+		}
+	}
+}
 
 func TestChapterContentMatchedByID(t *testing.T) {
 	chapters := []exportChapter{

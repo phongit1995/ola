@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/url"
@@ -84,6 +87,7 @@ type exportChapter struct {
 func main() {
 	dir := flag.String("dir", "../scripts/vnkings/data", "directory written by scripts/vnkings/export_stories.py")
 	source := flag.String("source", story.StorySourceVnkings, "value stored in stories.source")
+	reset := flag.Bool("reset", false, "delete every story of -source and its chapters before importing")
 	flag.Parse()
 
 	if err := godotenv.Load(); err != nil {
@@ -98,6 +102,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("read %s: %v", *dir, err)
 	}
+	if *reset && len(index.Stories) == 0 {
+		log.Fatalf("refusing to reset: %s has no stories", *dir)
+	}
 
 	db, err := sql.Open("pgx", dsn(cfg))
 	if err != nil {
@@ -107,6 +114,13 @@ func main() {
 	ctx := context.Background()
 	if err := db.PingContext(ctx); err != nil {
 		log.Fatalf("ping database: %v", err)
+	}
+	if *reset {
+		deleted, err := resetSource(ctx, db, *source, cfg, os.Stdin)
+		if err != nil {
+			log.Fatalf("reset %s: %v", *source, err)
+		}
+		log.Printf("reset: deleted %d %s stories", deleted, *source)
 	}
 
 	var stories, newStories, added, updated, unchanged, withoutContent int
@@ -133,6 +147,34 @@ func main() {
 	}
 	log.Printf("stories: %d (%d new); chapters: %d added, %d updated, %d unchanged, %d removed; %d chapters imported without content",
 		stories, newStories, added, updated, unchanged, removed, withoutContent)
+}
+
+const (
+	countSourceStoriesSQL  = `SELECT count(*) FROM stories WHERE source = $1`
+	deleteSourceStoriesSQL = `DELETE FROM stories WHERE source = $1`
+)
+
+var errResetCancelled = errors.New("cancelled: database name did not match")
+
+func resetSource(ctx context.Context, db *sql.DB, source string, cfg dbConfig, input io.Reader) (int64, error) {
+	var count int64
+	if err := db.QueryRowContext(ctx, countSourceStoriesSQL, source).Scan(&count); err != nil {
+		return 0, err
+	}
+	fmt.Printf("Delete %d %s stories and their chapters from %s:%d/%s? Type the database name to confirm: ", count, source, cfg.Host, cfg.Port, cfg.Name)
+	if !confirmed(input, cfg.Name) {
+		return 0, errResetCancelled
+	}
+	result, err := db.ExecContext(ctx, deleteSourceStoriesSQL, source)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+func confirmed(input io.Reader, expected string) bool {
+	answer, _ := bufio.NewReader(input).ReadString('\n')
+	return expected != "" && strings.TrimSpace(answer) == expected
 }
 
 func dsn(cfg dbConfig) string {
