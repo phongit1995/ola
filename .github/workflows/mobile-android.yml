@@ -23,6 +23,10 @@ on:
         description: 'versionCode nộp Play (phải LỚN HƠN mọi bản đã upload ở mọi track; bỏ trống = lấy mặc định trong build.gradle)'
         required: false
         type: string
+      version_name:
+        description: 'versionName hiển thị cho người dùng, vd 1.2.0 (bỏ trống = 1.0.0)'
+        required: false
+        type: string
 
 concurrency:
   group: mobile-android-${{ inputs.ref || github.ref }}-${{ inputs.environment }}-${{ inputs.output }}
@@ -35,15 +39,23 @@ jobs:
       BUILD_APK: ${{ inputs.output == 'apk' || inputs.output == 'both' }}
       BUILD_AAB: ${{ inputs.output == 'aab' || inputs.output == 'both' }}
       VERSION_CODE_ARG: ${{ inputs.version_code && format('-PversionCodeOverride={0}', inputs.version_code) || '' }}
+      VERSION_NAME_ARG: ${{ inputs.version_name && format('-PversionNameOverride={0}', inputs.version_name) || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref || github.ref }}
 
       - name: Ghi nhận commit được build
+        env:
+          VERSION_NAME: ${{ inputs.version_name }}
         run: |
+          if [ -n "$VERSION_NAME" ] && ! printf '%s' "$VERSION_NAME" | grep -Eq '^[0-9A-Za-z._-]+$'; then
+            echo "version_name không hợp lệ: '$VERSION_NAME' (chỉ gồm chữ, số, dấu chấm, gạch ngang, gạch dưới)"
+            exit 1
+          fi
           echo "ref=${{ inputs.ref || github.ref_name }}" >> "$GITHUB_STEP_SUMMARY"
           echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          echo "versionName=${VERSION_NAME:-1.0.0}" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: pnpm/action-setup@v4
 
@@ -83,14 +95,14 @@ jobs:
         working-directory: mobile/android
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a $VERSION_CODE_ARG
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a $VERSION_CODE_ARG $VERSION_NAME_ARG
 
       - name: Build release AAB (arm64 + armv7 cho Play)
         if: env.BUILD_AAB == 'true'
         working-directory: mobile/android
         run: |
           chmod +x ./gradlew
-          ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a $VERSION_CODE_ARG
+          ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a $VERSION_CODE_ARG $VERSION_NAME_ARG
 
       - name: Gom artifact + kiểm tra chữ ký
         run: |
