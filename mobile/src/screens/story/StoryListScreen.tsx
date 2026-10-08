@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   Text,
@@ -13,9 +12,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { STORY_STATUS_FILTER } from '@ola/shared/constants';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
-import type { Story, StoryProgress } from '@ola/shared/types';
+import type { Story, StoryProgress, StoryStatusFilter } from '@ola/shared/types';
 import type { RootStackParamList, StoryStackParamList } from '@navigation/types';
 import { ROOT_ROUTES, STORY_ROUTES } from '@navigation/routes';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
@@ -26,15 +26,21 @@ import {
   SORT_OPTIONS,
   STATUS_FILTER_OPTIONS,
 } from './constants';
-import { ContinueCard, StoryShelf, TopStoryCard } from './components/StoryCards';
-import { CaretDownIcon } from './components/StoryIcons';
+import {
+  ContinueCard,
+  StorySectionTitle,
+  StoryShelf,
+  TopStoryCard,
+} from './components/StoryCards';
+import { StoryIcon } from './components/StoryIcons';
 import { StoryRow } from './components/StoryRow';
+import { StoryStateMessage } from './components/StoryStateMessage';
 import { useStoryTextSize } from './typography';
-
-const searchIcon = require('@assets/icons/me/header/ic_header_search.png');
 
 const CHIP_BORDER = '#d5d5d5';
 const MUTED = 'rgba(0,0,0,0.54)';
+const FILTER_ICON_MUTED = 'rgba(0,0,0,0.45)';
+const SMALL_ICON_SIZE = 16;
 
 type StoryListNavigation = CompositeNavigationProp<
   NativeStackNavigationProp<StoryStackParamList, typeof STORY_ROUTES.StoryList>,
@@ -63,6 +69,42 @@ function Chip({ active, onPress, children }: ChipProps) {
       <Text style={[textSize(13, 18), { color: active ? colors.onPrimary : 'rgba(0,0,0,0.7)' }]}>
         {children}
       </Text>
+    </Pressable>
+  );
+}
+
+interface StatusFilterProps {
+  value: StoryStatusFilter;
+  onPress: () => void;
+}
+
+function StatusFilter({ value, onPress }: StatusFilterProps) {
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const textSize = useStoryTextSize();
+  const filtered = value !== STORY_STATUS_FILTER.all;
+  const labelKey =
+    STATUS_FILTER_OPTIONS.find((option) => option.value === value)?.labelKey ??
+    'story.statusAll';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t('story.statusFilter')}
+      onPress={onPress}
+      className="flex-row items-center gap-1 rounded-full py-1 pl-2.5 pr-1.5 active:opacity-80"
+      style={{ borderWidth: 1, borderColor: filtered ? colors.primary : CHIP_BORDER }}
+    >
+      <StoryIcon
+        name="filterAlt"
+        size={SMALL_ICON_SIZE}
+        color={filtered ? colors.primary : FILTER_ICON_MUTED}
+      />
+      <Text
+        style={[textSize(13, 18), { color: filtered ? colors.primaryInk : 'rgba(0,0,0,0.7)' }]}
+      >
+        {t(labelKey)}
+      </Text>
+      <StoryIcon name="arrowDropDown" size={SMALL_ICON_SIZE} color={FILTER_ICON_MUTED} />
     </Pressable>
   );
 }
@@ -120,10 +162,6 @@ export function StoryListScreen() {
     [navigation]
   );
 
-  const statusLabel =
-    STATUS_FILTER_OPTIONS.find((option) => option.value === filter.status)?.labelKey ??
-    STATUS_FILTER_OPTIONS[0]!.labelKey;
-
   function renderEmpty() {
     if (firstLoad) {
       return (
@@ -134,22 +172,21 @@ export function StoryListScreen() {
     }
     if (list.status === 'error') {
       return (
-        <View className="items-center gap-3 bg-white py-10">
-          <Text style={[textSize(14, 20), { color: MUTED }]}>{t('story.loadError')}</Text>
-          <Pressable
-            onPress={() => void setFilter({})}
-            className="rounded-full bg-ola-button px-4 py-1.5"
-          >
-            <Text style={[textSize(14, 20), { color: colors.onPrimary }]}>{t('story.retry')}</Text>
-          </Pressable>
+        <View className="bg-white">
+          <StoryStateMessage
+            kind="error"
+            text={t('story.loadError')}
+            onRetry={() => void setFilter({})}
+          />
         </View>
       );
     }
     return (
-      <View className="items-center bg-white py-10">
-        <Text className="text-neutral-400" style={textSize(14, 20)}>
-          {t(searching ? 'story.searchEmpty' : 'story.empty')}
-        </Text>
+      <View className="bg-white">
+        <StoryStateMessage
+          kind="empty"
+          text={t(searching ? 'story.searchEmpty' : 'story.empty')}
+        />
       </View>
     );
   }
@@ -180,7 +217,7 @@ export function StoryListScreen() {
   const header = (
     <View>
       {!searching && recent.length > 0 && (
-        <StoryShelf title={t('story.continueReading')}>
+        <StoryShelf title={t('story.continueReading')} icon="book">
           {recent.map((item) => (
             <ContinueCard key={item.storyId} progress={item} onOpen={continueReading} />
           ))}
@@ -188,7 +225,7 @@ export function StoryListScreen() {
       )}
       {!searching && topViewed.length > 0 && (
         <View className={recent.length > 0 ? 'mt-2' : ''}>
-          <StoryShelf title={t('story.topViewed')}>
+          <StoryShelf title={t('story.topViewed')} icon="emojiEvents">
             {topViewed.map((story, index) => (
               <TopStoryCard key={story.id} story={story} rank={index + 1} onOpen={openStory} />
             ))}
@@ -196,13 +233,16 @@ export function StoryListScreen() {
         </View>
       )}
       <View className={`bg-white ${searching ? '' : 'mt-2'}`}>
-        <View className="flex-row items-center justify-between px-3 pt-3">
-          <Text className="font-bold text-ola-ink" style={textSize(15, 20)}>
-            {t(searching ? 'story.searchResults' : 'story.allStories')}
-          </Text>
+        <View className="flex-row items-center gap-2 px-3 pt-3">
+          <View className="min-w-0 flex-1">
+            <StorySectionTitle icon={searching ? 'search' : 'libraryBooks'}>
+              {t(searching ? 'story.searchResults' : 'story.allStories')}
+            </StorySectionTitle>
+          </View>
           {list.status === 'loading' && list.items.length > 0 && (
             <ActivityIndicator size="small" color={colors.primary} />
           )}
+          <StatusFilter value={filter.status} onPress={() => setStatusOpen(true)} />
         </View>
         <ScrollView
           horizontal
@@ -225,47 +265,35 @@ export function StoryListScreen() {
           ))}
         </ScrollView>
         <View
-          className="mt-2 flex-row items-center gap-1 px-3"
+          className="mt-2 flex-row gap-5 px-3"
           style={{ borderBottomWidth: 1, borderBottomColor: ROW_SEPARATOR }}
         >
-          <View className="min-w-0 flex-1 flex-row gap-4">
-            {SORT_OPTIONS.map((option) => {
-              const active = filter.sort === option.value;
-              return (
-                <Pressable
-                  key={option.value}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => void setFilter({ sort: option.value })}
-                  className="py-2"
-                  style={{
-                    marginBottom: -1,
-                    borderBottomWidth: 2,
-                    borderBottomColor: active ? colors.primary : 'transparent',
-                  }}
+          {SORT_OPTIONS.map((option) => {
+            const active = filter.sort === option.value;
+            const color = active ? colors.primaryInk : MUTED;
+            return (
+              <Pressable
+                key={option.value}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                onPress={() => void setFilter({ sort: option.value })}
+                className="flex-row items-center gap-1 py-2"
+                style={{
+                  marginBottom: -1,
+                  borderBottomWidth: 2,
+                  borderBottomColor: active ? colors.primary : 'transparent',
+                }}
+              >
+                <StoryIcon name={option.icon} size={SMALL_ICON_SIZE} color={color} />
+                <Text
+                  className={active ? 'font-semibold' : ''}
+                  style={[textSize(13, 18), { color }]}
                 >
-                  <Text
-                    className={active ? 'font-semibold' : ''}
-                    style={[textSize(13, 18), { color: active ? colors.primaryInk : MUTED }]}
-                  >
-                    {t(option.labelKey)}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('story.statusFilter')}
-            onPress={() => setStatusOpen(true)}
-            className="flex-row items-center rounded bg-white py-1 pl-2 pr-1"
-            style={{ borderWidth: 1, borderColor: CHIP_BORDER }}
-          >
-            <Text style={[textSize(13, 18), { color: 'rgba(0,0,0,0.7)' }]}>
-              {t(statusLabel)}
-            </Text>
-            <CaretDownIcon size={16} color="rgba(0,0,0,0.5)" />
-          </Pressable>
+                  {t(option.labelKey)}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
     </View>
@@ -279,11 +307,7 @@ export function StoryListScreen() {
             className="h-9 flex-row items-center gap-2 rounded-full px-3"
             style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
           >
-            <Image
-              source={searchIcon}
-              style={{ width: 20, height: 20, tintColor: 'rgba(255,255,255,0.8)' }}
-              resizeMode="contain"
-            />
+            <StoryIcon name="search" size={20} color="rgba(255,255,255,0.8)" />
             <TextInput
               value={query}
               onChangeText={setQuery}

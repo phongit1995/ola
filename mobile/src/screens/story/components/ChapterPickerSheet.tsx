@@ -6,9 +6,11 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import type { ReaderPalette } from '../interface';
 import { useStoryTextSize } from '../typography';
 import { ReaderSheet } from './ReaderSheet';
+import { StoryIcon } from './StoryIcons';
 import { NewBadge } from './StoryTags';
 
 const ROW_HEIGHT = 44;
+const CURRENT_ICON_SIZE = 16;
 const LIST_MAX_RATIO = 0.6;
 
 interface ChapterPickerSheetProps {
@@ -56,6 +58,9 @@ export function ChapterPickerSheet({
                   backgroundColor: current ? palette.background : undefined,
                 }}
               >
+                {current && (
+                  <StoryIcon name="bookmark" size={CURRENT_ICON_SIZE} color={colors.primary} />
+                )}
                 <Text
                   numberOfLines={1}
                   className={`min-w-0 flex-1 ${current ? 'font-semibold' : ''}`}

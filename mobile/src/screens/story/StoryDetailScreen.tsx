@@ -15,30 +15,44 @@ import {
 } from '@ola/shared/lib';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
-import type { StoryChapterItem } from '@ola/shared/types';
+import type { StoryChapterItem, StoryIconName } from '@ola/shared/types';
 import type { RootStackParamList, StoryStackParamList } from '@navigation/types';
 import { ROOT_ROUTES, STORY_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { ROW_SEPARATOR } from './constants';
 import { StoryCover } from './components/StoryCover';
-import { SortIcon } from './components/StoryIcons';
+import { StoryIcon } from './components/StoryIcons';
+import { StoryStateMessage } from './components/StoryStateMessage';
 import { NewBadge, StoryStatusBadge, StoryTag } from './components/StoryTags';
 import { useStoryTextSize } from './typography';
 
 const INTRO_PREVIEW_LINES = 4;
 const DETAIL_COVER_WIDTH = 112;
 const MUTED = 'rgba(0,0,0,0.54)';
+const STAT_ICON_COLOR = 'rgba(0,0,0,0.7)';
+const ORDER_COLOR = 'rgba(0,0,0,0.6)';
+const SMALL_ICON_SIZE = 16;
+const READING_ICON_SIZE = 14;
 
 type Props = NativeStackScreenProps<StoryStackParamList, typeof STORY_ROUTES.StoryDetail>;
 
-function Stat({ label, value }: { label: string; value: string }) {
+interface StatProps {
+  icon: StoryIconName;
+  label: string;
+  value: string;
+}
+
+function Stat({ icon, label, value }: StatProps) {
   const textSize = useStoryTextSize();
   return (
     <View className="flex-1 items-center gap-0.5">
-      <Text className="font-bold text-ola-ink" style={textSize(16, 24)}>
-        {value}
-      </Text>
+      <View className="flex-row items-center gap-1">
+        <StoryIcon name={icon} size={SMALL_ICON_SIZE} color={STAT_ICON_COLOR} />
+        <Text className="font-bold text-ola-ink" style={textSize(16, 24)}>
+          {value}
+        </Text>
+      </View>
       <Text style={[textSize(11, 16), { color: MUTED }]}>{label}</Text>
     </View>
   );
@@ -69,9 +83,12 @@ function ChapterRow({ chapter, current, onOpen }: ChapterRowProps) {
       </Text>
       {chapter.isNew && <NewBadge label={t('story.newBadge')} />}
       {current && (
-        <Text style={[textSize(11, 16), { color: colors.primaryInk }]}>
-          {t('story.reading')}
-        </Text>
+        <View className="flex-row items-center gap-0.5">
+          <StoryIcon name="bookmark" size={READING_ICON_SIZE} color={colors.primaryInk} />
+          <Text style={[textSize(11, 16), { color: colors.primaryInk }]}>
+            {t('story.reading')}
+          </Text>
+        </View>
       )}
       <Text style={[textSize(12, 16), { color: 'rgba(0,0,0,0.4)' }]}>
         {formatDateSlashDMY(chapter.publishedAt ?? '')}
@@ -113,19 +130,13 @@ export function StoryDetailScreen({ route, navigation }: Props) {
     return (
       <View className="flex-1 bg-ola-surface">
         <ScreenHeader title="" onBack={navigation.goBack} />
-        <View className="flex-1 items-center justify-center gap-3">
+        <View className="flex-1 items-center justify-center">
           {status === 'error' ? (
-            <>
-              <Text style={[textSize(14, 20), { color: MUTED }]}>{t('story.loadError')}</Text>
-              <Pressable
-                onPress={() => void loadStory(storyId)}
-                className="rounded-full bg-ola-button px-4 py-1.5"
-              >
-                <Text style={[textSize(14, 20), { color: colors.onPrimary }]}>
-                  {t('story.retry')}
-                </Text>
-              </Pressable>
-            </>
+            <StoryStateMessage
+              kind="error"
+              text={t('story.loadError')}
+              onRetry={() => void loadStory(storyId)}
+            />
           ) : (
             <ActivityIndicator color={colors.primary} />
           )}
@@ -165,10 +176,23 @@ export function StoryDetailScreen({ route, navigation }: Props) {
           </View>
         </View>
         <View className="mt-4 flex-row rounded-lg bg-ola-surface py-2">
-          <Stat label={t('story.statChapters')} value={story.chapterCount.toLocaleString(locale)} />
-          <Stat label={t('story.statViews')} value={formatCompactCount(story.viewCount, locale)} />
-          <Stat label={t('story.statWords')} value={formatCompactCount(story.wordCount, locale)} />
           <Stat
+            icon="menuBook"
+            label={t('story.statChapters')}
+            value={story.chapterCount.toLocaleString(locale)}
+          />
+          <Stat
+            icon="visibility"
+            label={t('story.statViews')}
+            value={formatCompactCount(story.viewCount, locale)}
+          />
+          <Stat
+            icon="article"
+            label={t('story.statWords')}
+            value={formatCompactCount(story.wordCount, locale)}
+          />
+          <Stat
+            icon="chatBubble"
             label={t('story.statComments')}
             value={formatCompactCount(story.commentCount, locale)}
           />
@@ -220,28 +244,38 @@ export function StoryDetailScreen({ route, navigation }: Props) {
       </View>
 
       {!isShort && (
-        <View className="mt-2 flex-row items-center justify-between bg-white px-4 pb-1 pt-3">
-          <Text className="font-bold text-ola-ink" style={textSize(15, 20)}>
-            {t('story.chapterList')}
-            <Text className="font-normal" style={{ color: MUTED }}>
-              {` (${story.chapterCount})`}
+        <View className="mt-2 bg-white">
+          <View className="flex-row items-center justify-between px-4 pb-1 pt-3">
+            <Text className="font-bold text-ola-ink" style={textSize(15, 20)}>
+              {t('story.chapterList')}
+              <Text className="font-normal" style={{ color: MUTED }}>
+                {` (${story.chapterCount})`}
+              </Text>
             </Text>
-          </Text>
-          <Pressable
-            onPress={() => setNewestFirst((value) => !value)}
-            className="flex-row items-center gap-1"
-          >
-            <SortIcon size={16} color="rgba(0,0,0,0.6)" />
-            <Text style={[textSize(13, 18), { color: 'rgba(0,0,0,0.6)' }]}>
-              {t(newestFirst ? 'story.orderNewest' : 'story.orderOldest')}
-            </Text>
-          </Pressable>
+            <Pressable
+              onPress={() => setNewestFirst((value) => !value)}
+              className="flex-row items-center gap-1"
+            >
+              <StoryIcon name="importExport" size={SMALL_ICON_SIZE} color={ORDER_COLOR} />
+              <Text style={[textSize(13, 18), { color: ORDER_COLOR }]}>
+                {t(newestFirst ? 'story.orderNewest' : 'story.orderOldest')}
+              </Text>
+            </Pressable>
+          </View>
+          {status === 'error' && (
+            <StoryStateMessage
+              kind="error"
+              text={t('story.loadError')}
+              onRetry={() => void loadStory(storyId)}
+              className="py-6"
+            />
+          )}
         </View>
       )}
     </View>
   );
 
-  const footer = isShort ? null : chapters ? (
+  const footer = isShort ? null : chapters || status === 'error' ? (
     <View className="bg-white" style={{ height: 16 }} />
   ) : (
     <View className="items-center bg-white py-6">

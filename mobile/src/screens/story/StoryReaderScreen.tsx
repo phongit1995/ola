@@ -21,12 +21,7 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { READER_FONTS, READER_PALETTES } from './constants';
 import { ChapterPickerSheet } from './components/ChapterPickerSheet';
 import { ReaderSettingsSheet } from './components/ReaderSettingsSheet';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ListIcon,
-  TextSizeIcon,
-} from './components/StoryIcons';
+import { StoryIcon } from './components/StoryIcons';
 import { useStoryTextSize } from './typography';
 
 type ReaderSheetKind = 'settings' | 'toc';
@@ -37,6 +32,7 @@ const ARTICLE_MAX_WIDTH = 672;
 const TITLE_SCALE = 1.25;
 const PARAGRAPH_GAP = 0.9;
 const BAR_HEIGHT = 48;
+const NAV_ICON_SIZE = 20;
 
 interface HeaderButtonProps {
   accessibilityLabel: string;
@@ -200,7 +196,7 @@ export function StoryReaderScreen({ route, navigation }: Props) {
               <Text className="font-semibold" style={[textSize(14, 20), { color: colors.onPrimary }]}>
                 {t('story.nextChapter')}
               </Text>
-              <ChevronRightIcon size={20} color={colors.onPrimary} />
+              <StoryIcon name="chevronRight" size={NAV_ICON_SIZE} color={colors.onPrimary} />
             </Pressable>
           ) : (
             <>
@@ -236,7 +232,7 @@ export function StoryReaderScreen({ route, navigation }: Props) {
       >
         <View className="h-12 flex-1 flex-row items-center gap-1">
           <HeaderButton accessibilityLabel={t('chat.back')} onPress={onBack}>
-            <ChevronLeftIcon color={palette.text} />
+            <StoryIcon name="chevronLeft" color={palette.text} />
           </HeaderButton>
           <View className="min-w-0 flex-1">
             <Text numberOfLines={1} style={[textSize(11, 16), { color: palette.muted }]}>
@@ -255,13 +251,13 @@ export function StoryReaderScreen({ route, navigation }: Props) {
             disabled={!chapters}
             onPress={() => setSheet('toc')}
           >
-            <ListIcon color={palette.text} />
+            <StoryIcon name="list" color={palette.text} />
           </HeaderButton>
           <HeaderButton
             accessibilityLabel={t('story.displayOptions')}
             onPress={() => setSheet('settings')}
           >
-            <TextSizeIcon color={palette.text} />
+            <StoryIcon name="formatSize" color={palette.text} />
           </HeaderButton>
         </View>
       </View>
@@ -285,7 +281,7 @@ export function StoryReaderScreen({ route, navigation }: Props) {
           className="h-full flex-1 flex-row items-center justify-center gap-1"
           style={{ opacity: prevPosition == null ? 0.35 : 1 }}
         >
-          <ChevronLeftIcon size={20} color={palette.text} />
+          <StoryIcon name="chevronLeft" size={NAV_ICON_SIZE} color={palette.text} />
           <Text style={[textSize(14, 20), { color: palette.text }]}>
             {t('story.prevChapter')}
           </Text>
@@ -305,7 +301,7 @@ export function StoryReaderScreen({ route, navigation }: Props) {
           <Text style={[textSize(14, 20), { color: palette.text }]}>
             {t('story.nextChapter')}
           </Text>
-          <ChevronRightIcon size={20} color={palette.text} />
+          <StoryIcon name="chevronRight" size={NAV_ICON_SIZE} color={palette.text} />
         </Pressable>
       </View>
 

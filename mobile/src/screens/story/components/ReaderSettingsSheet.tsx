@@ -3,33 +3,45 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { STORY_FONT_SIZE, STORY_LINE_HEIGHTS } from '@ola/shared/lib';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
-import type { StoryReaderFont } from '@ola/shared/types';
+import type { StoryIconName, StoryReaderFont } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { READER_FONTS, READER_PALETTES, READER_THEME_ORDER } from '../constants';
+import {
+  READER_FONTS,
+  READER_PALETTES,
+  READER_THEME_ICON,
+  READER_THEME_ORDER,
+} from '../constants';
 import type { ReaderPalette } from '../interface';
 import { useStoryTextSize } from '../typography';
 import { ReaderSheet } from './ReaderSheet';
+import { StoryIcon } from './StoryIcons';
 
 const FONT_ORDER: StoryReaderFont[] = ['serif', 'sans'];
 const SWATCH_SIZE = 36;
 const SWATCH_RING = 2;
 const SWATCH_GAP = 2;
+const ROW_ICON_SIZE = 16;
+const SWATCH_ICON_SIZE = 20;
 
 interface SettingRowProps {
+  icon: StoryIconName;
   label: string;
   palette: ReaderPalette;
   first?: boolean;
   children: ReactNode;
 }
 
-function SettingRow({ label, palette, first = false, children }: SettingRowProps) {
+function SettingRow({ icon, label, palette, first = false, children }: SettingRowProps) {
   const textSize = useStoryTextSize();
   return (
     <View
       className="gap-2 py-3"
       style={first ? undefined : { borderTopWidth: 1, borderTopColor: palette.border }}
     >
-      <Text style={[textSize(13, 18), { color: palette.muted }]}>{label}</Text>
+      <View className="flex-row items-center gap-1.5">
+        <StoryIcon name={icon} size={ROW_ICON_SIZE} color={palette.muted} />
+        <Text style={[textSize(13, 18), { color: palette.muted }]}>{label}</Text>
+      </View>
       {children}
     </View>
   );
@@ -112,10 +124,11 @@ export function ReaderSettingsSheet({ palette, onClose }: ReaderSettingsSheetPro
   return (
     <ReaderSheet title={t('story.displayOptions')} palette={palette} onClose={onClose}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}>
-        <SettingRow label={t('story.theme')} palette={palette} first>
+        <SettingRow icon="palette" label={t('story.theme')} palette={palette} first>
           <View className="flex-row gap-3">
             {READER_THEME_ORDER.map((theme) => {
               const swatch = READER_PALETTES[theme];
+              const themeIcon = READER_THEME_ICON[theme];
               const active = reader.theme === theme;
               return (
                 <Pressable
@@ -134,6 +147,7 @@ export function ReaderSettingsSheet({ palette, onClose }: ReaderSettingsSheetPro
                     }}
                   >
                     <View
+                      className="items-center justify-center"
                       style={{
                         width: SWATCH_SIZE,
                         height: SWATCH_SIZE,
@@ -142,7 +156,11 @@ export function ReaderSettingsSheet({ palette, onClose }: ReaderSettingsSheetPro
                         backgroundColor: swatch.background,
                         borderColor: swatch.border,
                       }}
-                    />
+                    >
+                      {themeIcon && (
+                        <StoryIcon name={themeIcon} size={SWATCH_ICON_SIZE} color={swatch.muted} />
+                      )}
+                    </View>
                   </View>
                   <Text style={[textSize(11, 16), { color: palette.text }]}>
                     {t(swatch.labelKey)}
@@ -152,7 +170,7 @@ export function ReaderSettingsSheet({ palette, onClose }: ReaderSettingsSheetPro
             })}
           </View>
         </SettingRow>
-        <SettingRow label={t('story.font')} palette={palette}>
+        <SettingRow icon="textFields" label={t('story.font')} palette={palette}>
           <View className="flex-row gap-2">
             {FONT_ORDER.map((font) => (
               <Segment
@@ -167,7 +185,7 @@ export function ReaderSettingsSheet({ palette, onClose }: ReaderSettingsSheetPro
             ))}
           </View>
         </SettingRow>
-        <SettingRow label={t('story.fontSize')} palette={palette}>
+        <SettingRow icon="formatSize" label={t('story.fontSize')} palette={palette}>
           <View className="flex-row items-center gap-3">
             <StepButton
               label="A−"
@@ -191,7 +209,7 @@ export function ReaderSettingsSheet({ palette, onClose }: ReaderSettingsSheetPro
             />
           </View>
         </SettingRow>
-        <SettingRow label={t('story.lineHeight')} palette={palette}>
+        <SettingRow icon="formatLineSpacing" label={t('story.lineHeight')} palette={palette}>
           <View className="flex-row gap-2">
             {STORY_LINE_HEIGHTS.map((lineHeight) => (
               <Segment
