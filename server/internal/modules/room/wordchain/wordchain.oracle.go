@@ -30,13 +30,14 @@ func unusedCandidates(used map[string]struct{}, groups ...[]string) []string {
 	candidates := make([]string, 0)
 	for _, group := range groups {
 		for _, word := range group {
-			if _, ok := used[word]; ok {
+			key := wordKey(word)
+			if _, ok := used[key]; ok {
 				continue
 			}
-			if _, ok := seen[word]; ok {
+			if _, ok := seen[key]; ok {
 				continue
 			}
-			seen[word] = struct{}{}
+			seen[key] = struct{}{}
 			candidates = append(candidates, word)
 		}
 	}
@@ -72,7 +73,17 @@ func (s *Service) pickStartWord(ctx context.Context) (string, error) {
 		if word == "" {
 			break
 		}
-		ok, err := s.hasContinuation(ctx, lastWord(word), map[string]struct{}{word: {}})
+		if misspelledY(word) {
+			continue
+		}
+		exists, err := s.verifier.Exists(ctx, word)
+		if err != nil {
+			return "", err
+		}
+		if !exists {
+			continue
+		}
+		ok, err := s.hasContinuation(ctx, lastWord(word), map[string]struct{}{wordKey(word): {}})
 		if err != nil {
 			return "", err
 		}

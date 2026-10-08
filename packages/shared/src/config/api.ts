@@ -1,3 +1,8 @@
+export const API_HEADER = {
+  platform: 'X-Platform',
+  appVersion: 'X-App-Version',
+} as const;
+
 export const API_PATH = {
   auth: {
     login: '/auth/login',
@@ -49,9 +54,17 @@ export const API_PATH = {
     topup: '/settings/topup',
     usernameChange: '/settings/username-change',
     wordChain: '/settings/word-chain',
+    story: '/settings/story',
   },
   announcements: {
     latest: '/announcements/latest',
+  },
+  stories: {
+    list: '/stories',
+    genres: '/stories/genres',
+    detail: (id: string) => `/stories/${id}`,
+    chapters: (id: string) => `/stories/${id}/chapters`,
+    chapter: (id: string, position: number) => `/stories/${id}/chapters/${position}`,
   },
   user: {
     me: '/user/me',

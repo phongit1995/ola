@@ -25,3 +25,9 @@ type TopupConfigSuccessResponse = utils.BaseResponse[TopupConfigResponse]
 type UsernameChangeConfigSuccessResponse = utils.BaseResponse[UsernameChangeConfig]
 
 type WordChainConfigSuccessResponse = utils.BaseResponse[WordChainConfig]
+
+type FeatureEnabledResponse struct {
+	Enabled bool `json:"enabled" example:"true"`
+}
+
+type FeatureEnabledSuccessResponse = utils.BaseResponse[FeatureEnabledResponse]

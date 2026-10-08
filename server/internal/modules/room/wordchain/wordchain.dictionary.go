@@ -37,26 +37,30 @@ func NewDictionary() (*Dictionary, error) {
 
 func newDictionaryFromSources(rng *rand.Rand, sources ...map[string][]string) *Dictionary {
 	d := &Dictionary{pairs: map[string][]string{}, rng: rng}
+	seen := map[string]struct{}{}
 	for _, source := range sources {
-		d.mergePairs(source)
+		d.mergePairs(source, seen)
 	}
 	d.rebuildList()
 	return d
 }
 
-func (d *Dictionary) mergePairs(source map[string][]string) {
+func (d *Dictionary) mergePairs(source map[string][]string, seen map[string]struct{}) {
 	keys := make([]string, 0, len(source))
 	for k := range source {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		nk := normalizeVietnamese(k)
+		first := normalizeVietnamese(k)
+		key := syllableKey(first)
 		for _, v := range source[k] {
-			nv := normalizeVietnamese(v)
-			if !containsString(d.pairs[nk], nv) {
-				d.pairs[nk] = append(d.pairs[nk], nv)
+			word := first + " " + normalizeVietnamese(v)
+			if _, ok := seen[word]; ok {
+				continue
 			}
+			seen[word] = struct{}{}
+			d.pairs[key] = append(d.pairs[key], word)
 		}
 	}
 }
@@ -69,23 +73,22 @@ func (d *Dictionary) rebuildList() {
 	sort.Strings(keys)
 	d.list = d.list[:0]
 	for _, first := range keys {
-		for _, second := range d.pairs[first] {
-			d.list = append(d.list, first+" "+second)
-		}
+		d.list = append(d.list, d.pairs[first]...)
 	}
 }
 
 func (d *Dictionary) Continuations(start string, used map[string]struct{}) []string {
 	var playable, repeating, deadEnds []string
-	for _, second := range d.pairs[start] {
-		word := start + " " + second
-		if _, ok := used[word]; ok {
+	key := syllableKey(start)
+	for _, word := range d.pairs[key] {
+		if _, ok := used[wordKey(word)]; ok {
 			continue
 		}
+		next := syllableKey(lastWord(word))
 		switch {
-		case len(d.pairs[second]) == 0:
+		case len(d.pairs[next]) == 0:
 			deadEnds = append(deadEnds, word)
-		case second == start:
+		case next == key:
 			repeating = append(repeating, word)
 		default:
 			playable = append(playable, word)
@@ -95,15 +98,10 @@ func (d *Dictionary) Continuations(start string, used map[string]struct{}) []str
 }
 
 func (d *Dictionary) uniqueWord(start string) bool {
-	possible := d.pairs[start]
-	if len(possible) == 0 {
-		return true
-	}
-	for _, word := range possible {
-		if word == start {
-			continue
-		}
-		if len(d.pairs[word]) > 0 {
+	key := syllableKey(start)
+	for _, word := range d.pairs[key] {
+		next := syllableKey(lastWord(word))
+		if next != key && len(d.pairs[next]) > 0 {
 			return false
 		}
 	}
@@ -125,13 +123,4 @@ func (d *Dictionary) intN(n int) int {
 	d.rngMu.Lock()
 	defer d.rngMu.Unlock()
 	return d.rng.IntN(n)
-}
-
-func containsString(items []string, target string) bool {
-	for _, item := range items {
-		if item == target {
-			return true
-		}
-	}
-	return false
 }

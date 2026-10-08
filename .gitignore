@@ -39,3 +39,6 @@ __pycache__/
 node_modules/
 .DS_Store
 game/war-god/screenshots/
+
+# Dữ liệu truyện Vnkings xuất bằng scripts/vnkings/export_stories.py — không commit
+scripts/vnkings/data/

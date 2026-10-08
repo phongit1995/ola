@@ -52,6 +52,10 @@ export interface WordChainConfigResult {
   hintPrice: number;
 }
 
+export interface StoryConfigResult {
+  enabled: boolean;
+}
+
 export interface UsernameChangeConfigResult {
   enabled: boolean;
   enabledMobile?: boolean;

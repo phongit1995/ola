@@ -1,3 +1,11 @@
+import type {
+  Story,
+  StoryChapterSummary,
+  StoryKind,
+  StorySort,
+  StoryStatus,
+} from '@ola/shared/types'
+
 export interface ApiResponse<T> {
   success: boolean
   status: number
@@ -1911,4 +1919,155 @@ export interface WordChainCursorParams {
 
 export interface WordChainWinsParams extends WordChainCursorParams {
   userId?: string
+}
+
+export type AdminStoryVisibility = 'all' | 'visible' | 'hidden'
+
+export interface AdminStory extends Story {
+  source: string
+  sourceStoryId: string
+  isHidden: boolean
+  contentChapters: number
+  crawledAt: string | null
+  createdAt: string
+}
+
+export interface AdminStoryFilter {
+  q?: string
+  genre?: string
+  status?: Exclude<StoryStatus, 'unknown'>
+  kind?: StoryKind
+  visibility?: AdminStoryVisibility
+  source?: string
+}
+
+export interface AdminStoryListParams extends ListParams, AdminStoryFilter {
+  sort?: StorySort
+}
+
+export interface AdminStorySource {
+  name: string
+  count: number
+}
+
+export type AdminStoryBulkVisibilityInput =
+  | { isHidden: boolean; ids: string[] }
+  | { isHidden: boolean; filter: AdminStoryFilter }
+
+export interface AdminStoryBulkVisibilityResult {
+  updated: number
+}
+
+export type StoryPlatform = 'web' | 'android' | 'ios'
+
+export interface StoryPlatformRule {
+  enabled: boolean
+  disableVersions: string[]
+}
+
+export type StorySetting = Record<StoryPlatform, StoryPlatformRule>
+
+export interface AdminStorySummary {
+  stories: number
+  hiddenStories: number
+  longStories: number
+  shortStories: number
+  chapters: number
+  contentChapters: number
+  lastCrawledAt: string | null
+}
+
+export interface AdminStoryChapter extends StoryChapterSummary {
+  sourceUrl: string
+  hasContent: boolean
+  crawledAt: string | null
+}
+
+export interface AdminStoryChapterDetail extends AdminStoryChapter {
+  content: string
+}
+
+export interface AdminStoryFetchResult {
+  queued: number
+}
+
+export type StoryCookieStatus = 'active' | 'dead'
+
+export interface StoryCookie {
+  name: string
+  cookie: string
+  status: StoryCookieStatus
+  deadAt: string | null
+}
+
+export interface StoryCrawlerSetting {
+  enabled: boolean
+  intervalHours: number
+  importNewStories: boolean
+  randomUserAgent: boolean
+  useCookies: boolean
+  cookies: StoryCookie[]
+}
+
+export type StoryCrawlTrigger = 'schedule' | 'manual'
+
+export type StoryCrawlStatus = 'running' | 'success' | 'partial' | 'blocked' | 'failed'
+
+export interface StoryCrawlError {
+  sourceStoryId: string
+  title: string
+  message: string
+  attempts: number
+  willRetry: boolean
+}
+
+export interface StoryCrawlLog {
+  id: string
+  trigger: StoryCrawlTrigger
+  status: StoryCrawlStatus
+  message?: string
+  importNewStories: boolean
+  userAgent: string
+  useCookies: boolean
+  cookie?: string
+  cookiesDied?: string[]
+  since: string
+  startedAt: string
+  finishedAt: string | null
+  durationMs: number
+  truncated: boolean
+  postsFound: number
+  postsProcessed: number
+  retried: number
+  retryPending: number
+  storiesChecked: number
+  storiesUpdated: number
+  storiesCreated: number
+  storiesUnchanged: number
+  storiesSkippedNew: number
+  storiesEmpty: number
+  storiesFailed: number
+  chaptersAdded: number
+  chaptersUpdated: number
+  chaptersRemoved: number
+  requests: number
+  errors: StoryCrawlError[]
+}
+
+export interface StoryCrawlerStatus {
+  config: StoryCrawlerSetting
+  configUpdatedAt: string | null
+  userAgents: number
+  running: boolean
+  progress: StoryCrawlLog | null
+  lastRunAt: string | null
+  nextRunAt: string | null
+  scanDays: number
+  scanLimit: number
+  retryPending: number
+  logs: StoryCrawlLog[]
+}
+
+export interface StoryCrawlRunResult {
+  started: boolean
 }

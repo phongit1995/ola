@@ -36,3 +36,4 @@ export * from './mePost';
 export * from './callFormat';
 export * from './callStatus';
 export * from './color';
+export * from './story';

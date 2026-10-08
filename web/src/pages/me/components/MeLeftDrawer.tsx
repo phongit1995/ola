@@ -13,7 +13,6 @@ import clanIcon from '@/assets/icons/me/header/ic_header_clan.png';
 // import olaIcon from '@/assets/icons/me/ic_indicate_me.png';
 // import funnyIcon from '@/assets/icons/me/ic_indicate_funny.png';
 // import publicIcon from '@/assets/icons/me/ic_indicate_public.png';
-// import rssIcon from '@/assets/icons/me/ic_indicate_rss.png';
 import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeLeftDrawerProps {
@@ -89,7 +88,6 @@ export function MeLeftDrawer({
     // { key: 'ola', icon: olaIcon, label: '#Ola' },
     // { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny') },
     // { key: 'public', icon: publicIcon, label: t('me.drawerPublic') },
-    // { key: 'rss', icon: rssIcon, label: 'RSS' },
   ];
 
   function pick(key: string) {

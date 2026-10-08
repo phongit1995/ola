@@ -10,7 +10,7 @@ export const TAB_ROUTES = {
   Chat: 'ChatTab',
   Room: 'RoomTab',
   Me: 'MeTab',
-  Rss: 'RssTab',
+  Story: 'StoryTab',
   Game: 'GameTab',
   Personal: 'PersonalTab',
 } as const;
@@ -46,6 +46,7 @@ export const ROOT_ROUTES = {
   ClanBans: 'ClanBans',
   FriendRequests: 'FriendRequests',
   SuggestedFriends: 'SuggestedFriends',
+  StoryReader: 'StoryReader',
   Terms: 'RootTerms',
   PrivacyPolicy: 'RootPrivacyPolicy',
 } as const;
@@ -54,4 +55,9 @@ export const ROOM_ROUTES = {
   RoomList: 'RoomList',
   RoomChat: 'RoomChat',
   WordChain: 'WordChain',
+} as const;
+
+export const STORY_ROUTES = {
+  StoryList: 'StoryList',
+  StoryDetail: 'StoryDetail',
 } as const;

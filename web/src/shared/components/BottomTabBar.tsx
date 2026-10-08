@@ -4,8 +4,8 @@ import iconRoom from '@/assets/icons/room.svg';
 import iconRoomActive from '@/assets/icons/room-active.svg';
 import iconMe from '@/assets/icons/me.svg';
 import iconMeActive from '@/assets/icons/me-active.svg';
-// import iconRss from '@/assets/icons/rss.png';
-// import iconRssActive from '@/assets/icons/rss-active.png';
+import iconStory from '@/assets/icons/story.svg';
+import iconStoryActive from '@/assets/icons/story-active.svg';
 import iconGame from '@/assets/icons/game.svg';
 import iconGameActive from '@/assets/icons/game-active.svg';
 import iconPersonal from '@/assets/icons/personal.svg';
@@ -13,7 +13,7 @@ import iconPersonalActive from '@/assets/icons/personal-active.svg';
 import { useTranslation } from 'react-i18next';
 import type { ParseKeys } from 'i18next';
 
-export type TabKey = 'chat' | 'room' | 'me' | 'rss' | 'game' | 'personal';
+export type TabKey = 'chat' | 'room' | 'me' | 'story' | 'game' | 'personal';
 
 interface TabDef {
   key: TabKey;
@@ -36,7 +36,12 @@ const TABS: TabDef[] = [
     iconActive: iconRoomActive,
   },
   { key: 'me', labelKey: 'home.tabMe', icon: iconMe, iconActive: iconMeActive },
-  // { key: 'rss', labelKey: 'home.tabRss', icon: iconRss, iconActive: iconRssActive },
+  {
+    key: 'story',
+    labelKey: 'home.tabStory',
+    icon: iconStory,
+    iconActive: iconStoryActive,
+  },
   {
     key: 'game',
     labelKey: 'home.tabGame',
@@ -56,6 +61,7 @@ interface BottomTabBarProps {
   onChange: (key: TabKey) => void;
   badges?: Partial<Record<TabKey, number>>;
   dots?: Partial<Record<TabKey, boolean>>;
+  hidden?: Partial<Record<TabKey, boolean>>;
 }
 
 export function BottomTabBar({
@@ -63,11 +69,12 @@ export function BottomTabBar({
   onChange,
   badges,
   dots,
+  hidden,
 }: BottomTabBarProps) {
   const { t } = useTranslation();
   return (
     <nav className="flex border-t border-[#a0a0a0] bg-white bg-linear-to-t from-ola-primary/45 to-ola-primary/25">
-      {TABS.map((tab) => {
+      {TABS.filter((tab) => !hidden?.[tab.key]).map((tab) => {
         const isActive = tab.key === active;
         const badge = badges?.[tab.key];
         const dot = dots?.[tab.key];

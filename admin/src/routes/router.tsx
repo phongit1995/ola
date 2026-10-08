@@ -28,6 +28,8 @@ import { UsernameChangesPage } from '@/pages/UsernameChangesPage'
 import { AnnouncementPage } from '@/pages/AnnouncementPage'
 import { NotificationSettingsPage } from '@/pages/NotificationSettingsPage'
 import { AuditLogsPage } from '@/pages/AuditLogsPage'
+import { StoriesPage } from '@/pages/StoriesPage'
+import { StorySettingsPage } from '@/pages/StorySettingsPage'
 import { AdminLayout } from '@/layout/AdminLayout'
 import { RedirectIfAuthed, RequireAuth } from './RequireAuth'
 
@@ -73,6 +75,8 @@ export const router = createBrowserRouter([
       { path: 'users/username-changes', element: <UsernameChangesPage /> },
       { path: 'ken-transfers', element: <Navigate to="/users/ken-transfers" replace /> },
       { path: 'me', element: <MePage /> },
+      { path: 'stories', element: <StoriesPage /> },
+      { path: 'stories/settings', element: <StorySettingsPage /> },
       { path: 'settings/topup', element: <TopupSettingsPage /> },
       { path: 'settings/username-change', element: <UsernameChangeSettingsPage /> },
       { path: 'settings/announcements', element: <AnnouncementPage /> },

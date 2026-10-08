@@ -173,7 +173,7 @@ const (
 	WordChainMaxHistory              = 100
 	WordChainMaxWrongGuesses         = 3
 	WordChainNewWordMaxAttempts      = 100000
-	WordChainStartWordMaxAttempts    = 10
+	WordChainStartWordMaxAttempts    = 20
 	WordChainContinuationConcurrency = 10
 	WordChainMoveMaxAttempts         = 3
 	WordChainBotWordTimeout          = 12 * time.Hour
@@ -199,6 +199,7 @@ const (
 	WordChainLookupMaxWordRunes    = 80
 	WordChainLookupCooldownSeconds = 5
 	WordChainLookupLangVietnamese  = "vi"
+	WordChainSpellingVariantsMax   = 4
 
 	WordChainCodeOK            = "ok"
 	WordChainCodeWin           = "win"
@@ -238,6 +239,16 @@ const (
 	ErrorCodeWordChainUnavailable  = "WORD_CHAIN_UNAVAILABLE"
 	ErrorCodeWordChainWordChanged  = "WORD_CHAIN_WORD_CHANGED"
 	ErrorCodeWordChainBadCursor    = "WORD_CHAIN_INVALID_CURSOR"
+)
+
+const (
+	StoryCookieStatusActive = "active"
+	StoryCookieStatusDead   = "dead"
+	StoryCookieMaxCount     = 50
+	StoryCookieMaxLength    = 8192
+	StoryCookieNameMaxRunes = 100
+
+	ErrorCodeSettingChanged = "SETTING_CHANGED"
 )
 
 const (
@@ -423,6 +434,15 @@ const (
 	ContextKeyUserID    = "USER_ID"
 	ContextKeyTraceID   = "TRACE_ID"
 	ContextKeyRequestID = "REQUEST_ID"
+)
+
+const (
+	HeaderPlatform   = "X-Platform"
+	HeaderAppVersion = "X-App-Version"
+
+	PlatformWeb     = "web"
+	PlatformAndroid = "android"
+	PlatformIOS     = "ios"
 )
 
 const (
