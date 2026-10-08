@@ -5,12 +5,11 @@ import { formatCompactCount, formatDateSlashDMY } from '@ola/shared/lib';
 import type { Story } from '@ola/shared/types';
 import { useStoryTextSize } from '../typography';
 import { StoryCover } from './StoryCover';
-import { EyeIcon } from './StoryIcons';
-import { StoryStatusBadge, StoryTag } from './StoryTags';
+import { StoryMeta, StoryStatusBadge, StoryTag } from './StoryTags';
 
 const ROW_GENRE_LIMIT = 2;
 const ROW_COVER_WIDTH = 64;
-const META_COLOR = 'rgba(0,0,0,0.54)';
+const META_FONT = 12;
 
 interface StoryRowProps {
   story: Story;
@@ -21,7 +20,6 @@ export function StoryRow({ story, onOpen }: StoryRowProps) {
   const { t, i18n } = useTranslation();
   const textSize = useStoryTextSize();
   const isShort = story.kind === STORY_KIND.short;
-  const meta = [textSize(12, 16), { color: META_COLOR }];
 
   return (
     <Pressable
@@ -39,19 +37,18 @@ export function StoryRow({ story, onOpen }: StoryRowProps) {
             <StoryTag key={genre}>{genre}</StoryTag>
           ))}
         </View>
-        <View className="mt-1.5 flex-row items-center gap-2">
-          <Text style={meta}>
+        <View className="mt-1.5 flex-row items-center gap-3">
+          <StoryMeta icon={isShort ? 'article' : 'menuBook'} fontSize={META_FONT}>
             {isShort
               ? t('story.kindShort')
               : t('story.chapterCount', { count: story.chapterCount })}
-          </Text>
-          <View className="flex-row items-center gap-0.5">
-            <EyeIcon size={14} color={META_COLOR} />
-            <Text style={meta}>{formatCompactCount(story.viewCount, i18n.language)}</Text>
-          </View>
-          <Text className="ml-auto" style={meta}>
+          </StoryMeta>
+          <StoryMeta icon="visibility" fontSize={META_FONT}>
+            {formatCompactCount(story.viewCount, i18n.language)}
+          </StoryMeta>
+          <StoryMeta icon="schedule" fontSize={META_FONT} className="ml-auto shrink-0">
             {formatDateSlashDMY(story.lastChapterAt ?? story.updatedAt)}
-          </Text>
+          </StoryMeta>
         </View>
       </View>
     </Pressable>

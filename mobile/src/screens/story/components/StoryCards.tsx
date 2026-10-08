@@ -2,28 +2,52 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { formatCompactCount } from '@ola/shared/lib';
-import type { Story, StoryProgress } from '@ola/shared/types';
+import type { Story, StoryIconName, StoryProgress } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useStoryTextSize } from '../typography';
 import { StoryCover } from './StoryCover';
-import { EyeIcon } from './StoryIcons';
+import { StoryIcon } from './StoryIcons';
+import { StoryMeta } from './StoryTags';
 
 const PODIUM_SIZE = 3;
 const CARD_WIDTH = 104;
-const META_COLOR = 'rgba(0,0,0,0.54)';
+const CARD_META_FONT = 11;
+const SECTION_ICON_SIZE = 20;
+const SECTION_TITLE_COLOR = 'rgba(0,0,0,0.87)';
+
+interface StorySectionTitleProps {
+  icon: StoryIconName;
+  children: string;
+}
+
+export function StorySectionTitle({ icon, children }: StorySectionTitleProps) {
+  const textSize = useStoryTextSize();
+  return (
+    <View className="flex-row items-center gap-1.5">
+      <StoryIcon name={icon} size={SECTION_ICON_SIZE} color={SECTION_TITLE_COLOR} />
+      <Text
+        numberOfLines={1}
+        className="min-w-0 flex-shrink font-bold text-ola-ink"
+        style={textSize(15, 20)}
+      >
+        {children}
+      </Text>
+    </View>
+  );
+}
 
 interface StoryShelfProps {
   title: string;
+  icon: StoryIconName;
   children: ReactNode;
 }
 
-export function StoryShelf({ title, children }: StoryShelfProps) {
-  const textSize = useStoryTextSize();
+export function StoryShelf({ title, icon, children }: StoryShelfProps) {
   return (
     <View className="bg-white py-3">
-      <Text className="px-3 font-bold text-ola-ink" style={textSize(15, 20)}>
-        {title}
-      </Text>
+      <View className="px-3">
+        <StorySectionTitle icon={icon}>{title}</StorySectionTitle>
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -72,12 +96,9 @@ export function TopStoryCard({ story, rank, onOpen }: TopStoryCardProps) {
         </View>
       </StoryCover>
       <CardTitle>{story.title}</CardTitle>
-      <View className="mt-0.5 flex-row items-center gap-0.5">
-        <EyeIcon size={12} color={META_COLOR} />
-        <Text style={[textSize(11, 16), { color: META_COLOR }]}>
-          {formatCompactCount(story.viewCount, i18n.language)}
-        </Text>
-      </View>
+      <StoryMeta icon="visibility" fontSize={CARD_META_FONT} className="mt-0.5">
+        {formatCompactCount(story.viewCount, i18n.language)}
+      </StoryMeta>
     </Pressable>
   );
 }
@@ -90,7 +111,6 @@ interface ContinueCardProps {
 export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const textSize = useStoryTextSize();
   const percent = Math.round(
     (progress.position / Math.max(progress.chapterCount, 1)) * 100
   );
@@ -115,12 +135,12 @@ export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
         </View>
       </StoryCover>
       <CardTitle>{progress.storyTitle}</CardTitle>
-      <Text className="mt-0.5" style={[textSize(11, 16), { color: META_COLOR }]}>
+      <StoryMeta icon="bookmark" fontSize={CARD_META_FONT} className="mt-0.5">
         {t('story.chapterProgress', {
           position: progress.position,
           count: progress.chapterCount,
         })}
-      </Text>
+      </StoryMeta>
     </Pressable>
   );
 }
