@@ -89,12 +89,16 @@ def hasReleaseKeystore = keystoreProperties.containsKey("storeFile")
 
 /**
  * versionCode nộp lên Play phải luôn tăng và không bao giờ được dùng lại, kể cả
- * khi bản phát hành cũ đã bị xoá. CI truyền -PversionCodeOverride=<số> để khỏi
- * phải sửa file này mỗi lần phát hành; build local không truyền thì lấy mặc định.
+ * khi bản phát hành cũ đã bị xoá. CI truyền -PversionCodeOverride=<số> và
+ * -PversionNameOverride=<x.y.z> để khỏi phải sửa file này mỗi lần phát hành;
+ * build local không truyền thì lấy mặc định.
  */
 def defaultVersionCode = 3
 def versionCodeOverride = project.findProperty("versionCodeOverride")
 def resolvedVersionCode = versionCodeOverride ? versionCodeOverride.toString().toInteger() : defaultVersionCode
+def defaultVersionName = "1.0.0"
+def versionNameOverride = project.findProperty("versionNameOverride")
+def resolvedVersionName = versionNameOverride ? versionNameOverride.toString() : defaultVersionName
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -107,7 +111,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode resolvedVersionCode
-        versionName "1.0.0"
+        versionName resolvedVersionName
     }
     signingConfigs {
         debug {
