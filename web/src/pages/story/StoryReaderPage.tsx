@@ -152,7 +152,7 @@ export function StoryReaderPage({
               className="flex h-11 w-full max-w-xs items-center justify-center gap-1 rounded-full bg-ola-button font-semibold text-ola-on-primary"
             >
               {t('story.nextChapter')}
-              <StoryIcon name="chevronRight" className="h-5 w-5" monochrome />
+              <StoryIcon name="chevronRight" className="h-5 w-5" />
             </button>
           ) : (
             <>

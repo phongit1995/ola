@@ -22,7 +22,7 @@ export function StoryStatusBadge({ status }: { status: StoryStatus }) {
         STATUS_CLASS[status]
       )}
     >
-      {icon && <StoryIcon name={icon} className="h-3 w-3" monochrome />}
+      {icon && <StoryIcon name={icon} className="h-3 w-3" />}
       {t(STATUS_LABEL[status])}
     </span>
   );

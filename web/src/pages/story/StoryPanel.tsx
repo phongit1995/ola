@@ -191,7 +191,6 @@ export function StoryPanel() {
           <StoryIcon
             name="search"
             className="h-5 w-5 shrink-0 text-white/80"
-            monochrome
           />
           <input
             value={query}

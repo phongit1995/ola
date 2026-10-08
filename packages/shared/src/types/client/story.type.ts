@@ -7,7 +7,7 @@ import type {
   StoryStatusFilter,
 } from '../api/story.type';
 
-export type { StoryIconGlyph, StoryIconName } from '../../constants/storyIcons';
+export type { StoryIconName } from '../../constants/storyIcons';
 
 export type StoryLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 

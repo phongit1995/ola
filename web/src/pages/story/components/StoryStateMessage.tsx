@@ -47,7 +47,7 @@ export function StoryStateMessage({
             BADGE[kind].className
           )}
         >
-          <StoryIcon name={BADGE[kind].icon} className="h-4 w-4" monochrome />
+          <StoryIcon name={BADGE[kind].icon} className="h-4 w-4" />
         </span>
       </span>
       {text}
