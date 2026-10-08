@@ -99,38 +99,12 @@ export const STORY_ICON_GLYPHS = {
     accent: 'M10 8.8h4v4l-2-1.2-2 1.2z',
     tint: 'M7.1 4.2h9.8v13.7l-4.9-2.6-4.9 2.6z',
   },
-  book: {
-    viewBox: MATERIAL_VIEW_BOX,
-    outline:
-      'M3.3 5.2c2.9-.8 5.8-.1 8.7 1.8v12.2c-2.9-1.9-5.8-2.6-8.7-1.8V5.2ZM20.7 5.2c-2.9-.8-5.8-.1-8.7 1.8v12.2c2.9-1.9 5.8-2.6 8.7-1.8V5.2ZM12 7v12.2',
-    detail:
-      'M5.3 8.3c1.7-.2 3.4.1 5.1 1M5.3 11c1.7-.2 3.4.1 5.1 1M18.7 8.3c-1.7-.2-3.4.1-5.1 1M18.7 11c-1.7-.2-3.4.1-5.1 1',
-    accent: 'M5.3 14c1.7-.2 3.4.1 5.1 1M18.7 14c-1.7-.2-3.4.1-5.1 1',
-  },
-  emojiEvents: {
-    viewBox: MATERIAL_VIEW_BOX,
-    outline:
-      'M7 4.5h10v6.1a5 5 0 0 1-10 0V4.5ZM7 6H4.2v2.1a3 3 0 0 0 3 3M17 6h2.8v2.1a3 3 0 0 1-3 3M12 15.6v3.1M8.4 20.1h7.2',
-    accentFill: 'M12 5.9 12.7 8l2.2.1-1.7 1.3.6 2.1-1.8-1.2-1.8 1.2.6-2.1-1.7-1.3 2.2-.1z',
-  },
-  libraryBooks: {
-    viewBox: MATERIAL_VIEW_BOX,
-    outline: 'M7 3h14v15H7zM4 6v15h14',
-    detail: 'M10 10h8M10 13h6',
-    accent: 'M10 3v4.5l2-1 2 1V3',
-  },
   autoAwesome: {
     viewBox: MATERIAL_VIEW_BOX,
     outline:
       'm8.5 3.4 1.1 3.1 3.1 1.1-3.1 1.1-1.1 3.1-1.1-3.1-3.1-1.1 3.1-1.1zM17.4 12.1l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8zM5 14.1l.6 1.6 1.6.6-1.6.6L5 18.5l-.6-1.6-1.6-.6 1.6-.6z',
     accentFill:
       'M8.5 5.2 9 6.7l1.5.5-1.5.5-.5 1.5L8 7.7l-1.5-.5L8 6.7zM17.4 13.8l.4 1.1 1.1.4-1.1.4-.4 1.1-.4-1.1-1.1-.4 1.1-.4z',
-  },
-  filterAlt: {
-    viewBox: MATERIAL_VIEW_BOX,
-    outline: 'M3.5 5h17L14 12.9v5.8l-4 1.8v-7.6z',
-    detail: 'M6.3 8.1h11.4M8.2 10.5h7.6M10.2 13h3.6',
-    accent: 'M6.3 8.1h11.4',
   },
   lightMode: {
     viewBox: MATERIAL_VIEW_BOX,
@@ -166,12 +140,6 @@ export const STORY_ICON_GLYPHS = {
     detail: 'M11.8 4.1v2.2M11.8 10.7v2.2M11.8 17.3v2.2',
     accent: 'M9.5 11.8h11',
   },
-  search: {
-    viewBox: MATERIAL_VIEW_BOX,
-    outline: 'M10.2 4a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4ZM14.7 14.7 20.2 20.2',
-    detail: 'M8.1 7.3a3.7 3.7 0 0 0-1.8 3.2',
-    accent: 'M14.7 14.7 20.2 20.2',
-  },
   priorityHigh: {
     viewBox: MATERIAL_VIEW_BOX,
     outline: 'M10.8 4h2.4l-.4 9h-1.6Z',
@@ -186,4 +154,14 @@ export const STORY_ICON_GLYPHS = {
   },
 } as const satisfies Record<string, StoryIconGlyph>;
 
-export type StoryIconName = keyof typeof STORY_ICON_GLYPHS;
+export const STORY_ICON_ASSET_NAMES = [
+  'book',
+  'emojiEvents',
+  'libraryBooks',
+  'filterAlt',
+  'search',
+] as const;
+
+export type StoryIconName =
+  | keyof typeof STORY_ICON_GLYPHS
+  | (typeof STORY_ICON_ASSET_NAMES)[number];
