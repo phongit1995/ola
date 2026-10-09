@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { buildVietQrImageUrl, fillMemoTemplate, quoteTopupKen } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
+import { selectTopupVisibleOnMobile, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { TopupBonusTier } from '@ola/shared/types';
 import { MIN_AMOUNT, PRESET_AMOUNTS, STEP_AMOUNT } from './constants';
 
@@ -10,6 +10,7 @@ const NO_BONUS_TIERS: TopupBonusTier[] = [];
 export function useBuyKen() {
   const user = useAuthStore((s) => s.user);
   const config = useTopupConfigStore((s) => s.config);
+  const visible = useTopupConfigStore(selectTopupVisibleOnMobile);
   const loadConfig = useTopupConfigStore((s) => s.load);
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [customText, setCustomText] = useState<string | null>(null);
@@ -62,6 +63,7 @@ export function useBuyKen() {
 
   return {
     config,
+    visible,
     bank,
     minAmount,
     stepAmount,

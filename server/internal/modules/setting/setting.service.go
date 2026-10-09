@@ -64,6 +64,7 @@ type TopupBonusTier struct {
 type TopupConfig struct {
 	Enabled       bool             `json:"enabled"`
 	EnabledMobile bool             `json:"enabledMobile"`
+	Platforms     *PlatformRules   `json:"platforms,omitempty"`
 	MinAmount     int              `json:"minAmount"`
 	StepAmount    int              `json:"stepAmount"`
 	PresetAmounts []int            `json:"presetAmounts"`
@@ -86,6 +87,40 @@ func DefaultTopupConfig() TopupConfig {
 		PresetAmounts: []int{10_000, 20_000, 50_000, 100_000, 200_000, 500_000},
 		BonusTiers:    []TopupBonusTier{},
 	}
+}
+
+type TopupAccess struct {
+	Enabled       bool
+	EnabledMobile bool
+	ShowBank      bool
+}
+
+func legacyTopupPlatforms(enabledMobile bool) PlatformRules {
+	rules := OpenPlatformRules()
+	rules.Android.Enabled = enabledMobile
+	rules.IOS.Enabled = enabledMobile
+	return rules
+}
+
+func (c TopupConfig) platformRules() PlatformRules {
+	if c.Platforms != nil {
+		return *c.Platforms
+	}
+	return legacyTopupPlatforms(c.EnabledMobile)
+}
+
+// Builds released before the X-Platform header only understand enabled/enabledMobile,
+// so requests without it get the legacy answer untouched.
+func (c TopupConfig) AccessFor(platform, appVersion, userAgent string) TopupAccess {
+	if strings.TrimSpace(platform) == "" {
+		return TopupAccess{
+			Enabled:       c.Enabled,
+			EnabledMobile: c.EnabledMobile,
+			ShowBank:      c.EnabledMobile || !utils.IsNativeAppUserAgent(userAgent),
+		}
+	}
+	visible := c.Enabled && c.platformRules().EnabledFor(platform, appVersion)
+	return TopupAccess{Enabled: visible, EnabledMobile: visible, ShowBank: visible}
 }
 
 func (c TopupConfig) BonusPercentFor(amountVnd int64) int {
@@ -285,7 +320,34 @@ func (s *Service) GetTopup() (TopupConfig, error) {
 		presets = []int{cfg.MinAmount, cfg.MinAmount * 2, cfg.MinAmount * 5}
 	}
 	cfg.PresetAmounts = presets
+	if cfg.Platforms != nil {
+		platforms := cfg.Platforms.normalized()
+		cfg.Platforms = &platforms
+	}
 	return cfg, err
+}
+
+func (s *Service) KeepStoredTopupPlatforms(value models.JSONB) (models.JSONB, error) {
+	if _, ok := value["platforms"]; ok {
+		return value, nil
+	}
+	current, err := s.repo.Get(KeyTopup)
+	if err != nil {
+		return nil, err
+	}
+	if current == nil {
+		return value, nil
+	}
+	platforms, ok := current.Value["platforms"]
+	if !ok {
+		return value, nil
+	}
+	merged := make(models.JSONB, len(value)+1)
+	for key, item := range value {
+		merged[key] = item
+	}
+	merged["platforms"] = platforms
+	return merged, nil
 }
 
 func (s *Service) GetUsernameChange() (UsernameChangeConfig, error) {
@@ -432,6 +494,15 @@ func ValidateTopupValue(value models.JSONB) error {
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&cfg); err != nil {
 		return errors.New("invalid topup config: " + err.Error())
+	}
+	if raw, ok := value["platforms"]; ok {
+		platforms, err := decodePlatformRules(raw)
+		if err != nil {
+			return errors.New("invalid topup platforms: " + err.Error())
+		}
+		if err := platforms.validate(); err != nil {
+			return err
+		}
 	}
 	if cfg.MinAmount <= 0 {
 		return errors.New("số tiền tối thiểu phải lớn hơn 0")

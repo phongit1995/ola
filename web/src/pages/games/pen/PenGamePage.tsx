@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
+import { selectTopupEnabled, useTopupConfigStore } from '@/store/topupConfigStore';
 import { AnimatedKen, FullScreenOverlay } from '@components';
 import { formatKen, playKenShotFailSound, toApiError, toast } from '@lib';
 import { PenService, SocketService } from '@services';
@@ -38,6 +39,8 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const ken = user?.ken ?? PEN_START_KEN;
+  const topupEnabled = useTopupConfigStore(selectTopupEnabled);
+  const loadTopupConfig = useTopupConfigStore((s) => s.load);
 
   const shots = usePenStore((s) => s.shots);
   const loadingShots = usePenStore((s) => s.loading);
@@ -63,6 +66,10 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
     null
   );
   const winFxTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    void loadTopupConfig();
+  }, [loadTopupConfig]);
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 448px)');
@@ -181,10 +188,12 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
     toast.info(t('penGame.refreshed'));
   };
 
-  const handleTopUp = () => {
-    onClose();
-    openBuyKen('kenBuy');
-  };
+  const handleTopUp = topupEnabled
+    ? () => {
+        onClose();
+        openBuyKen('kenBuy');
+      }
+    : undefined;
 
   return (
     <FullScreenOverlay z={60} className="pen-screen bg-[#011d42]">
@@ -230,14 +239,16 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
                   numberClassName="leading-none"
                 />
               </span>
-              <PenButton
-                bg={penAssets.plusBtn}
-                icon={penAssets.plusIcon}
-                ariaLabel={t('penGame.topUp')}
-                onClick={handleTopUp}
-                className="h-8 w-8 shrink-0 @md:h-11 @md:w-11"
-                iconClassName="h-4 w-4 @md:h-5 @md:w-5"
-              />
+              {handleTopUp != null && (
+                <PenButton
+                  bg={penAssets.plusBtn}
+                  icon={penAssets.plusIcon}
+                  ariaLabel={t('penGame.topUp')}
+                  onClick={handleTopUp}
+                  className="h-8 w-8 shrink-0 @md:h-11 @md:w-11"
+                  iconClassName="h-4 w-4 @md:h-5 @md:w-5"
+                />
+              )}
               <PenButton
                 bg={penAssets.helpBtn}
                 icon={penAssets.helpIcon}

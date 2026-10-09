@@ -33,6 +33,11 @@ func ParsePlatform(userAgent string) string {
 	}
 }
 
+func IsNativeAppUserAgent(userAgent string) bool {
+	lower := strings.ToLower(userAgent)
+	return !strings.Contains(lower, "mozilla") && containsAny(lower, "okhttp", "cfnetwork", "darwin")
+}
+
 func containsAny(value string, tokens ...string) bool {
 	for _, token := range tokens {
 		if strings.Contains(value, token) {

@@ -16,6 +16,7 @@ import { formatKen, toApiError } from '@ola/shared/lib';
 import { PenService, SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { selectTopupVisibleOnMobile, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import {
   PEN_SHOTS_PAGE,
   PEN_SHOTS_PAGE_MOBILE,
@@ -139,6 +140,8 @@ export function PenGameScreen({ navigation }: Props) {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const ken = user?.ken ?? PEN_START_KEN;
+  const topupEnabled = useTopupConfigStore(selectTopupVisibleOnMobile);
+  const loadTopupConfig = useTopupConfigStore((s) => s.load);
   const containerWidth = Math.min(windowWidth, 645);
 
   const shots = usePenStore((s) => s.shots);
@@ -164,6 +167,10 @@ export function PenGameScreen({ navigation }: Props) {
   useEffect(() => {
     setPageSize(windowWidth >= 448 ? PEN_SHOTS_PAGE : PEN_SHOTS_PAGE_MOBILE);
   }, [windowWidth, setPageSize]);
+
+  useEffect(() => {
+    void loadTopupConfig();
+  }, [loadTopupConfig]);
 
   const closeCatch = useCallback(() => setCatchShot(null), []);
 
@@ -284,11 +291,13 @@ export function PenGameScreen({ navigation }: Props) {
     push('info', t('penGame.refreshed'));
   };
 
-  const handleTopUp = () => {
-    setShootOpen(false);
-    setCatchShot(null);
-    navigation.navigate(ROOT_ROUTES.BuyKen);
-  };
+  const handleTopUp = topupEnabled
+    ? () => {
+        setShootOpen(false);
+        setCatchShot(null);
+        navigation.navigate(ROOT_ROUTES.BuyKen);
+      }
+    : undefined;
 
   return (
     <View style={{ flex: 1, backgroundColor: PEN_COLORS.screenBg, paddingTop: insets.top }}>
@@ -386,13 +395,15 @@ export function PenGameScreen({ navigation }: Props) {
                 textStyle={{ fontSize: 12, fontWeight: '700', color: '#ffffff' }}
               />
             </View>
-            <PenButton
-              bg={penAssets.plusBtn}
-              icon={penAssets.plusIcon}
-              iconSize={16}
-              onPress={handleTopUp}
-              style={{ width: 32, height: 32 }}
-            />
+            {handleTopUp != null && (
+              <PenButton
+                bg={penAssets.plusBtn}
+                icon={penAssets.plusIcon}
+                iconSize={16}
+                onPress={handleTopUp}
+                style={{ width: 32, height: 32 }}
+              />
+            )}
             <PenButton
               bg={penAssets.helpBtn}
               icon={penAssets.helpIcon}

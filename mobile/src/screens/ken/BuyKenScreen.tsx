@@ -65,7 +65,7 @@ export function BuyKenScreen({ navigation }: Props) {
               {t('common.loading')}
             </Text>
           </View>
-        ) : !vm.config.enabled ? (
+        ) : !vm.visible ? (
           <View
             className="mx-2 rounded-sm bg-white p-4"
             style={{ borderWidth: 1, borderColor: DIVIDER }}

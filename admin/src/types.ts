@@ -1488,6 +1488,7 @@ export interface TopupBonusTierSetting {
 export interface TopupSetting {
   enabled: boolean
   enabledMobile: boolean
+  platforms?: PlatformRules
   minAmount: number
   stepAmount: number
   presetAmounts: number[]
@@ -1959,14 +1960,16 @@ export interface AdminStoryBulkVisibilityResult {
   updated: number
 }
 
-export type StoryPlatform = 'web' | 'android' | 'ios'
+export type AppPlatform = 'web' | 'android' | 'ios'
 
-export interface StoryPlatformRule {
+export interface PlatformRule {
   enabled: boolean
   disableVersions: string[]
 }
 
-export type StorySetting = Record<StoryPlatform, StoryPlatformRule>
+export type PlatformRules = Record<AppPlatform, PlatformRule>
+
+export type StorySetting = PlatformRules
 
 export interface AdminStorySummary {
   stories: number
