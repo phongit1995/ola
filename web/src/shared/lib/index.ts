@@ -14,3 +14,4 @@ export * from './compressImage';
 export * from './reactions';
 export * from './hiddenPeerCards';
 export * from './sound';
+export * from './dragOffset';

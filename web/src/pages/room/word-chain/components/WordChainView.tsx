@@ -16,8 +16,9 @@ import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore'
 import { WordChainMessageRow } from './WordChainMessageRow';
 import { WordChainRoomIcon } from './WordChainRoomIcon';
 import { WordChainComposer } from './WordChainComposer';
+import { WordChainGuessDialog } from './WordChainGuessDialog';
 import { WordChainHintDialog } from './WordChainHintDialog';
-import { HelpIcon, TrophyIcon } from './WordChainIcons';
+import { HelpIcon, MinimizeIcon, TrophyIcon } from './WordChainIcons';
 import { WordChainLeaderboardDialog } from './WordChainLeaderboardDialog';
 import { WordChainLookupDialog } from './WordChainLookupDialog';
 import { WordChainRulesDialog } from './WordChainRulesDialog';
@@ -30,7 +31,12 @@ const CURRENT_WORD_COMPONENTS = {
   word: <strong className="text-base font-semibold text-black/87" />,
 };
 
-type WordChainDialog = 'hint' | 'leaderboard' | 'lookup' | 'rules';
+const LOCKED_HINT_KEYS = {
+  ...WORD_CHAIN_INPUT_LOCK_HINT_KEYS,
+  noGuesses: 'wordChain.inputHintOutOfGuesses',
+} as const;
+
+type WordChainDialog = 'hint' | 'guesses' | 'leaderboard' | 'lookup' | 'rules';
 
 interface WordChainViewProps {
   visible: boolean;
@@ -72,6 +78,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   const lookup = useWordChainStore((store) => store.lookup);
   const clearLookup = useWordChainStore((store) => store.clearLookup);
   const celebration = useWordChainStore((store) => store.celebration);
+  const minimize = useWordChainStore((store) => store.minimize);
   const currentUserId = useAuthStore((store) => store.user?.id) ?? '';
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
   const [lookupWord, setLookupWord] = useState('');
@@ -126,7 +133,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
       <ScreenHeader
         title={t('wordChain.title')}
         onBack={onClose}
-        align="center"
+        align="start"
         left={<WordChainRoomIcon className="h-8 w-8" />}
       >
         <HeaderButton
@@ -140,6 +147,9 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
           onClick={() => setDialog('rules')}
         >
           <HelpIcon className="h-9 w-9" />
+        </HeaderButton>
+        <HeaderButton label={t('wordChain.minimize')} onClick={minimize}>
+          <MinimizeIcon className="h-8.5 w-8.5" />
         </HeaderButton>
       </ScreenHeader>
 
@@ -199,12 +209,13 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
 
       <WordChainComposer
         syllable={state?.requiredSyllable}
-        lockedHint={
-          lock != null ? t(WORD_CHAIN_INPUT_LOCK_HINT_KEYS[lock]) : undefined
-        }
+        lockedHint={lock != null ? t(LOCKED_HINT_KEYS[lock]) : undefined}
         onSend={send}
         onHint={() => setDialog('hint')}
         onLookup={() => openLookup('')}
+        onBuyGuesses={
+          lock === 'noGuesses' ? () => setDialog('guesses') : undefined
+        }
       />
 
       {celebration != null && (
@@ -218,6 +229,7 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
       {dialog === 'hint' && (
         <WordChainHintDialog onClose={closeDialog} onSend={send} />
       )}
+      {dialog === 'guesses' && <WordChainGuessDialog onClose={closeDialog} />}
       <WordChainLeaderboardDialog
         open={dialog === 'leaderboard'}
         onClose={closeDialog}

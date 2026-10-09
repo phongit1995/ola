@@ -19,9 +19,12 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 
 // TopupConfig godoc
 // @Summary      Cấu hình nạp KEN (bank nhận tiền VietQR + mệnh giá) cho app
+// @Description  Có X-Platform thì enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi, bị ẩn thì không trả bank. Thiếu X-Platform (bản app cũ) thì trả enabled và enabledMobile như cấu hình gốc
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth
+// @Param        X-Platform header string false "web | android | ios"
+// @Param        X-App-Version header string false "Phiên bản app, ví dụ 1.0.0 (45)"
 // @Success      200  {object}  TopupConfigSuccessResponse
 // @Failure      401  {object}  utils.APIError
 // @Router       /settings/topup [get]
@@ -39,15 +42,20 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 
+	access := topup.AccessFor(
+		c.GetHeader(constants.HeaderPlatform),
+		c.GetHeader(constants.HeaderAppVersion),
+		c.GetHeader("User-Agent"),
+	)
 	resp := TopupConfigResponse{
-		Enabled:       topup.Enabled,
-		EnabledMobile: topup.EnabledMobile,
+		Enabled:       access.Enabled,
+		EnabledMobile: access.EnabledMobile,
 		MinAmount:     topup.MinAmount,
 		StepAmount:    topup.StepAmount,
 		PresetAmounts: topup.PresetAmounts,
 		BonusTiers:    topup.BonusTiers,
 	}
-	if bank.AccountNumber != "" {
+	if access.ShowBank && bank.AccountNumber != "" {
 		resp.Bank = &TopupBankInfo{
 			BankName:      bank.BankName,
 			BankBin:       bank.BankBin,
@@ -80,7 +88,7 @@ func (ctrl *Controller) UsernameChangeConfig(c *gin.Context) (interface{}, error
 }
 
 // WordChainConfig godoc
-// @Summary      Cấu hình phòng nối từ (bật/tắt, giá gợi ý tính bằng KEN)
+// @Summary      Cấu hình phòng nối từ (bật/tắt, giá gợi ý và giá mua thêm lượt tính bằng KEN)
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth

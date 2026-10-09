@@ -35,7 +35,7 @@ interface PenShootModalProps {
   ken: number;
   amount: number;
   submitting?: boolean;
-  onTopUp: () => void;
+  onTopUp?: () => void;
   onConfirm: (payload: { side: PenSide; betAmount: number }) => void;
   onClose: () => void;
 }

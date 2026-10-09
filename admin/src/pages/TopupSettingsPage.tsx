@@ -1,12 +1,14 @@
 import { App, Button, Card, Col, Collapse, Form, Input, InputNumber, Row, Select, Spin, Switch } from 'antd'
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { Typography } from 'antd'
+import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { useAppSettings, usePutAppSettings } from '@/hooks/useAppSettings'
 import { env } from '@/config/env'
 import { ApiError } from '@/lib/apiError'
 import { VIETQR_BANKS, findBankByBin } from '@/lib/banks'
 import { settingValue } from '@/lib/appSetting'
-import type { TopupBankSetting, TopupBonusTierSetting, TopupSetting } from '@/types'
+import { OPEN_PLATFORM_RULES, cleanPlatformRules, normalizePlatformRules } from '@/lib/platformRules'
+import type { PlatformRules, TopupBankSetting, TopupBonusTierSetting, TopupSetting } from '@/types'
 
 const BONUS_PERCENT_MAX = 500
 const NEW_TIER: TopupBonusTierSetting = { minAmount: 100_000, percent: 10 }
@@ -38,9 +40,16 @@ const DEFAULT_TOPUP: TopupSetting = {
   bonusTiers: [],
 }
 
+function topupPlatforms(topup: TopupSetting): PlatformRules {
+  if (topup.platforms) return normalizePlatformRules(topup.platforms)
+  const mobile = { enabled: topup.enabledMobile, disableVersions: [] }
+  return { ...OPEN_PLATFORM_RULES, android: mobile, ios: mobile }
+}
+
 interface TopupSettingsFormValues {
   enabled: boolean
   enabledMobile: boolean
+  platforms: PlatformRules
   bankBin?: string
   accountNumber: string
   accountName?: string
@@ -101,6 +110,7 @@ export function TopupSettingsPage() {
     const topupPayload: TopupSetting = {
       enabled: values.enabled,
       enabledMobile: values.enabledMobile,
+      platforms: cleanPlatformRules(values.platforms),
       minAmount: values.minAmount,
       stepAmount: values.stepAmount,
       bonusTiers,
@@ -124,6 +134,7 @@ export function TopupSettingsPage() {
         initialValues={{
           enabled: topup.enabled,
           enabledMobile: topup.enabledMobile,
+          platforms: topupPlatforms(topup),
           bankBin: bank.bankBin || undefined,
           accountNumber: bank.accountNumber,
           accountName: bank.accountName,
@@ -141,16 +152,23 @@ export function TopupSettingsPage() {
           name="enabled"
           label="Cho phép nạp KEN"
           valuePropName="checked"
-          extra="Tắt thì app ẩn menu Nạp KEN và khoá màn nạp."
+          extra="Công tắc tổng: tắt thì mọi nền tảng ẩn Nạp KEN và tiền chuyển khoản tới sẽ không được tự cộng KEN."
         >
           <Switch />
         </Form.Item>
 
         <Form.Item
+          label="Hiển thị theo nền tảng"
+          extra="Áp cho web và app từ bản build 05/10/2026 trở đi. So theo tên bản (1.0.0), không tính build. Chỉ ẩn nút và màn nạp, không ảnh hưởng việc cộng KEN. Có hiệu lực ở lần mở màn nạp sau."
+        >
+          <PlatformRulesTable name={['platforms']} />
+        </Form.Item>
+
+        <Form.Item
           name="enabledMobile"
-          label="Hiển thị trên mobile"
+          label="Bản app cũ (build trước 05/10/2026)"
           valuePropName="checked"
-          extra="Tắt thì chỉ app mobile ẩn nút Nạp KEN, web vẫn hiển thị bình thường."
+          extra="Bản cũ không gửi thông tin nền tảng nên không tách được Android/iOS. Tắt thì các bản này ẩn nút Nạp KEN và màn nạp không hiện tài khoản ngân hàng."
         >
           <Switch />
         </Form.Item>

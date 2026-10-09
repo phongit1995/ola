@@ -100,6 +100,34 @@ func (ctrl *Controller) Hint(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// BuyGuesses godoc
+// @Summary      Buy more guesses for the current word after running out (costs KEN each time)
+// @Description  Only allowed with no guesses left; the bought guesses are valid for this word only and reset when the word changes. price must equal the configured price the user confirmed. 409 WORD_CHAIN_WORD_CHANGED when sessionId/turn no longer match, 409 WORD_CHAIN_GUESSES_LEFT while guesses remain, 409 WORD_CHAIN_PRICE_CHANGED when the price differs, 400 WORD_CHAIN_INSUFFICIENT_KEN when the balance is too low
+// @Tags         word-chain
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body GuessPurchaseRequest true "Word being answered"
+// @Success      200  {object}  utils.BaseResponse[GuessPurchaseResponse]
+// @Failure      400  {object}  utils.APIError
+// @Failure      409  {object}  utils.APIError
+// @Router       /rooms/word-chain/guesses [post]
+func (ctrl *Controller) BuyGuesses(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[GuessPurchaseRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.BuyGuesses(c.Request.Context(), userID, req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // Leaderboard godoc
 // @Summary      Word chain leaderboard (top 10 by points or wins, all time or current day/week/month in GMT+7)
 // @Tags         word-chain

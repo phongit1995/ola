@@ -60,21 +60,33 @@ function applyOffset(element: HTMLElement | null, offset: DragOffset) {
   element.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0)`;
 }
 
+function paintedRect(element: HTMLElement) {
+  const rect = element.getBoundingClientRect();
+  let { left, top, right, bottom } = rect;
+  for (const child of element.querySelectorAll('*')) {
+    const box = child.getBoundingClientRect();
+    if (box.width === 0 && box.height === 0) continue;
+    left = Math.min(left, box.left);
+    top = Math.min(top, box.top);
+    right = Math.max(right, box.right);
+    bottom = Math.max(bottom, box.bottom);
+  }
+  return { left, top, right, bottom };
+}
+
 function boundsFor(element: HTMLElement): DragBounds {
   const container = element.offsetParent as HTMLElement | null;
-  const rect = element.getBoundingClientRect();
+  const painted = paintedRect(element);
   const area = container?.getBoundingClientRect();
   const left = area?.left ?? 0;
   const top = area?.top ?? 0;
-  const width = area?.width ?? window.innerWidth;
-  const height = area?.height ?? window.innerHeight;
-  const startLeft = rect.left - left;
-  const startTop = rect.top - top;
+  const right = area?.right ?? window.innerWidth;
+  const bottom = area?.bottom ?? window.innerHeight;
   return {
-    minX: -startLeft,
-    maxX: width - rect.width - startLeft,
-    minY: -startTop,
-    maxY: height - rect.height - startTop,
+    minX: left - painted.left,
+    maxX: right - painted.right,
+    minY: top - painted.top,
+    maxY: bottom - painted.bottom,
   };
 }
 

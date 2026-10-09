@@ -864,7 +864,24 @@
     "inputLabel": "Từ nối tiếp",
     "retry": "Thử lại",
     "hintListHelpFree": "Bạn đã mua gợi ý cho từ này, không bị trừ thêm KEN. Chọn một từ để gửi.",
-    "unavailable": "Phòng nối từ tạm thời không khả dụng, thử lại sau nhé"
+    "unavailable": "Phòng nối từ tạm thời không khả dụng, thử lại sau nhé",
+    "minimize": "Thu nhỏ",
+    "restore": "Mở lại phòng nối từ",
+    "hasNotification": "Có từ mới trong phòng nối từ",
+    "dragToLeave": "Kéo vào thùng rác hoặc nhấn Delete để rời phòng",
+    "buyGuesses": "Mua lượt",
+    "guessTitle": "Mua thêm lượt đoán",
+    "guessIntro": "Bạn đã hết lượt cho từ “{{word}}”. Mua thêm {{count}} lượt với giá <ken>{{price}}</ken>.",
+    "guessOnlyThisWord": "Lượt mua thêm chỉ dùng cho từ này. Từ đổi thì lượt chưa dùng sẽ mất.",
+    "guessBuy": "Mua {{count}} lượt · <ken>{{price}}</ken>",
+    "guessBought": "Đã mua thêm {{count}} lượt cho từ “{{word}}”",
+    "guessKenShort": "Bạn không đủ KEN để mua thêm lượt.",
+    "guessStillLeft": "Bạn vẫn còn lượt đoán cho từ này.",
+    "guessPriceChanged": "Giá mua thêm lượt đã thay đổi, vui lòng tải lại trang.",
+    "guessStale": "Từ hiện tại đã đổi, bạn có lại lượt đoán miễn phí rồi.",
+    "guessBuyError": "Không mua được lượt lúc này",
+    "guessGotIt": "Đã hiểu",
+    "inputHintOutOfGuesses": "Hết lượt"
   },
   "story": {
     "searchPlaceholder": "Tìm truyện",
@@ -1741,6 +1758,7 @@
         "KEN_CHEST": "Rương KEN",
         "CLAN_CREATE": "Tạo Clan",
         "WORD_CHAIN_HINT": "Gợi ý nối từ",
+        "WORD_CHAIN_GUESS": "Mua lượt nối từ",
         "UNKNOWN": "Giao dịch KEN"
       }
     },

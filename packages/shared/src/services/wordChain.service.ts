@@ -1,6 +1,8 @@
 import { http } from '../api/http';
 import { API_PATH } from '../config/api';
 import type {
+  WordChainGuessPurchase,
+  WordChainGuessPurchaseRequest,
   WordChainHint,
   WordChainLeaderboard,
   WordChainLeaderboardQuery,
@@ -29,6 +31,10 @@ export class WordChainService {
 
   static hint(): Promise<WordChainHint> {
     return http.post<WordChainHint>(API_PATH.wordChain.hints);
+  }
+
+  static buyGuesses(payload: WordChainGuessPurchaseRequest): Promise<WordChainGuessPurchase> {
+    return http.post<WordChainGuessPurchase>(API_PATH.wordChain.guesses, payload);
   }
 
   static leaderboard(query: WordChainLeaderboardQuery): Promise<WordChainLeaderboard> {

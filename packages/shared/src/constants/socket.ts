@@ -42,6 +42,7 @@ export const WORD_CHAIN_SOCKET_EVENTS = {
   leave: 'WORD_CHAIN:LEAVE',
   newMessage: 'WORD_CHAIN_NEW_MESSAGE',
   stateUpdated: 'WORD_CHAIN_STATE_UPDATED',
+  guessesUpdated: 'WORD_CHAIN_GUESSES_UPDATED',
 } as const;
 
 export const CALL_SOCKET_EVENTS = {

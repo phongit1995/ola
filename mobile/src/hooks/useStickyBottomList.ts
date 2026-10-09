@@ -7,12 +7,13 @@ const VIEWPORT_RESIZE_EPSILON = 0.5;
 const SETTLE_STEPS = [60, 150, 300, 500, 800, 1200];
 
 interface UseStickyBottomListOptions {
+  initialStuck?: boolean;
   onStickChange?: (stuck: boolean) => void;
 }
 
 export function useStickyBottomList<T>(options?: UseStickyBottomListOptions) {
   const listRef = useRef<FlashListRef<T>>(null);
-  const stickRef = useRef(true);
+  const stickRef = useRef(options?.initialStuck ?? true);
   const onStickChangeRef = useRef(options?.onStickChange);
   const suspendRef = useRef(false);
   const draggingRef = useRef(false);

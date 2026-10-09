@@ -19,3 +19,4 @@ export * from './useUploadPreviewLease';
 export * from './useChatWallpaperStyle';
 export * from './useUnreadTitle';
 export * from './useLobbyWallpaperStyle';
+export * from './useDraggableOffset';

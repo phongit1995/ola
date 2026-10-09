@@ -31,7 +31,8 @@ export type KenTxType =
   | 'PEN_REFUND'
   | 'KEN_CHEST'
   | 'CLAN_CREATE'
-  | 'WORD_CHAIN_HINT';
+  | 'WORD_CHAIN_HINT'
+  | 'WORD_CHAIN_GUESS';
 
 export interface KenTransaction {
   id: string;

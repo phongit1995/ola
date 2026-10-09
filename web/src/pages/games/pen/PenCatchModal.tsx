@@ -25,7 +25,7 @@ interface PenCatchModalProps {
   ken: number;
   betAmount: number;
   submitting?: boolean;
-  onTopUp: () => void;
+  onTopUp?: () => void;
   onConfirm: (side: PenSide) => void;
   onClose: () => void;
 }

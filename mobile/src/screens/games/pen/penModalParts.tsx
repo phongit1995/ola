@@ -128,7 +128,7 @@ export function PenModalShell({
 
 interface PenKenRowProps {
   ken: number;
-  onTopUp: () => void;
+  onTopUp?: () => void;
 }
 
 export function PenKenRow({ ken, onTopUp }: PenKenRowProps) {
@@ -158,19 +158,21 @@ export function PenKenRow({ ken, onTopUp }: PenKenRowProps) {
       >
         {formatVnd(ken)}
       </Text>
-      <Pressable
-        accessibilityLabel={t('penGame.topUp')}
-        onPress={onTopUp}
-        style={{
-          width: 32,
-          height: 32,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <PenBg source={penAssets.plusBtn} />
-        <Image source={penAssets.plusIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
-      </Pressable>
+      {onTopUp != null && (
+        <Pressable
+          accessibilityLabel={t('penGame.topUp')}
+          onPress={onTopUp}
+          style={{
+            width: 32,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <PenBg source={penAssets.plusBtn} />
+          <Image source={penAssets.plusIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
+        </Pressable>
+      )}
     </View>
   );
 }

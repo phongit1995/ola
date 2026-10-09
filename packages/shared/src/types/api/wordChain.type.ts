@@ -56,6 +56,24 @@ export interface WordChainOverview {
   points: number;
   remainingGuesses: number;
   hintPrice: number;
+  guessPrice: number;
+  guessPackSize: number;
+}
+
+export interface WordChainGuessPurchaseRequest {
+  sessionId: string;
+  turn: number;
+  price: number;
+}
+
+export interface WordChainGuessPurchase {
+  sessionId: string;
+  turn: number;
+  guesses: number;
+  remainingGuesses: number;
+  price: number;
+  kenBalance: number;
+  state: WordChainState;
 }
 
 export interface WordChainHint {

@@ -36,6 +36,8 @@ export const WORD_CHAIN_ERROR_CODE = {
   verifyFailed: 'WORD_CHAIN_VERIFY_FAILED',
   cooldown: 'WORD_CHAIN_COOLDOWN',
   noGuesses: 'WORD_CHAIN_NO_GUESSES',
+  guessesLeft: 'WORD_CHAIN_GUESSES_LEFT',
+  priceChanged: 'WORD_CHAIN_PRICE_CHANGED',
   waitTurn: 'WORD_CHAIN_WAIT_TURN',
   noHint: 'WORD_CHAIN_NO_HINT',
   kenShort: 'WORD_CHAIN_INSUFFICIENT_KEN',

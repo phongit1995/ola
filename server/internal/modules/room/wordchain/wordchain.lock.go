@@ -28,6 +28,17 @@ func (b *eventBatch) state(state GameState) {
 	})
 }
 
+func (b *eventBatch) guesses(userID string, state GameState) {
+	b.events = append(b.events, &roomEvents.WordChainEvent{
+		Event:  constants.WebSocketEventWordChainGuessesUpdated,
+		UserID: userID,
+		Data: map[string]any{
+			"state":            utils.MustToJSONMap(toStateView(state)),
+			"remainingGuesses": state.RemainingGuesses(userID),
+		},
+	})
+}
+
 func (s *Service) withLock(ctx context.Context, fn func(ctx context.Context, batch *eventBatch) error) error {
 	unlock, err := s.lock(ctx)
 	if err != nil {

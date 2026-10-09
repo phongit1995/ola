@@ -49,6 +49,7 @@ var visibleKenTxTypes = []models.KenTxType{
 	models.KenTxTypeClanCreate,
 	models.KenTxTypeTopup,
 	models.KenTxTypeWordChainHint,
+	models.KenTxTypeWordChainGuess,
 }
 
 func (r *Repository) ListTransactions(userID uuid.UUID, direction string, limit, offset int) ([]models.KenTransaction, int64, error) {

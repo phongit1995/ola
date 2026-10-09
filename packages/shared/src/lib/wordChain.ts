@@ -179,6 +179,18 @@ export function wordChainHintErrorText(t: TFunction, error: unknown): string {
   return t('wordChain.hintError');
 }
 
+export function wordChainGuessErrorText(t: TFunction, error: unknown): string {
+  const apiError = toApiError(error);
+  if (apiError.code === WORD_CHAIN_ERROR_CODE.kenShort) return t('wordChain.guessKenShort');
+  if (apiError.code === WORD_CHAIN_ERROR_CODE.guessesLeft) return t('wordChain.guessStillLeft');
+  if (apiError.code === WORD_CHAIN_ERROR_CODE.priceChanged) return t('wordChain.guessPriceChanged');
+  const common = wordChainCommonErrorText(t, apiError.code);
+  if (common != null) return common;
+  if (apiError.status === HTTP_CONFLICT) return t('wordChain.busy');
+  if (apiError.status === HTTP_TOO_MANY_REQUESTS) return t('wordChain.tooFast');
+  return t('wordChain.guessBuyError');
+}
+
 export function wordChainLookupErrorText(t: TFunction, error: unknown): string {
   const apiError = toApiError(error);
   if (apiError.code === WORD_CHAIN_ERROR_CODE.cooldown) return t('wordChain.lookupCooldown');

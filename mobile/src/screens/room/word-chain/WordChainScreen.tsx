@@ -37,8 +37,10 @@ import { ChatWallpaper } from '@components/ChatWallpaper';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { CHAT_BG } from '@screens/chat/constants';
+import { useWordChainViewStore, type WordChainScrollAnchor } from '@store/wordChainViewStore';
 import { DIVIDER } from '@constants';
 import { WordChainComposer } from './WordChainComposer';
+import { WordChainGuessDialog } from './WordChainGuessDialog';
 import { WordChainHintDialog } from './WordChainHintDialog';
 import { WordChainImage } from './WordChainIcons';
 import { WordChainLeaderboardDialog } from './WordChainLeaderboardDialog';
@@ -56,12 +58,25 @@ type Props = CompositeScreenProps<
   >
 >;
 
-type WordChainDialog = 'hint' | 'leaderboard' | 'lookup' | 'rules';
+type WordChainDialog = 'hint' | 'guesses' | 'leaderboard' | 'lookup' | 'rules';
+
+const LOCKED_HINT_KEYS = {
+  ...WORD_CHAIN_INPUT_LOCK_HINT_KEYS,
+  noGuesses: 'wordChain.inputHintOutOfGuesses',
+} as const;
 
 const backIcon = require('@assets/icons/ic_back.png');
 
 const LOAD_MORE_AT_TOP_PX = 80;
 const ERROR_COLOR = '#e34545';
+
+function findScrollRestore(feed: WordChainFeedItem[]) {
+  const anchor = useWordChainViewStore.getState().anchor;
+  if (anchor == null) return null;
+  const index = feed.findIndex((item) => item.key === anchor.key);
+  if (index < 0) return null;
+  return { key: anchor.key, index, params: { viewOffset: anchor.offset } };
+}
 
 function HeaderButton({
   label,
@@ -102,10 +117,18 @@ export function WordChainScreen({ navigation }: Props) {
   const celebration = useWordChainStore((store) => store.celebration);
   const open = useWordChainStore((store) => store.open);
   const close = useWordChainStore((store) => store.close);
+  const minimize = useWordChainStore((store) => store.minimize);
+  const dismissCelebration = useWordChainStore((store) => store.dismissCelebration);
   const currentUserId = useAuthStore((store) => store.user?.id) ?? '';
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
   const [lookupWord, setLookupWord] = useState('');
   const wasOpenedRef = useRef(false);
+  const messages = useMemo(
+    () => sessionMessages(allMessages, state?.sessionId),
+    [allMessages, state?.sessionId]
+  );
+  const feed = useMemo(() => buildWordChainFeed(messages), [messages]);
+  const [scrollRestore] = useState(() => findScrollRestore(feed));
   const {
     listRef,
     onListLayout,
@@ -118,12 +141,20 @@ export function WordChainScreen({ navigation }: Props) {
     pinOnNextContent,
     unstick,
     isUserInteracting,
-  } = useStickyBottomList<WordChainFeedItem>();
+    isStuckToBottom,
+  } = useStickyBottomList<WordChainFeedItem>({
+    initialStuck: scrollRestore == null,
+  });
 
   useEffect(() => {
     open();
-    return () => close();
-  }, [open, close]);
+    useWordChainViewStore.setState({ anchor: null });
+    const missedCelebration = useWordChainStore.getState().celebration;
+    if (missedCelebration != null) dismissCelebration(missedCelebration.id);
+    return () => {
+      if (!useWordChainStore.getState().minimized) close();
+    };
+  }, [open, close, dismissCelebration]);
 
   useEffect(() => {
     if (opened) {
@@ -152,11 +183,6 @@ export function WordChainScreen({ navigation }: Props) {
     [clearLookup, lookup]
   );
 
-  const messages = useMemo(
-    () => sessionMessages(allMessages, state?.sessionId),
-    [allMessages, state?.sessionId]
-  );
-  const feed = useMemo(() => buildWordChainFeed(messages), [messages]);
   const dateFormatter = useMemo(
     () => createDateSeparatorFormatter(i18n.language),
     [i18n.language]
@@ -164,6 +190,10 @@ export function WordChainScreen({ navigation }: Props) {
   const remaining = remainingGuesses(state, guesses);
   const lock = wordChainInputLock(state, guesses, currentUserId);
   const celebrationId = celebration?.id ?? null;
+  const initialScroll =
+    scrollRestore != null && feed[scrollRestore.index]?.key === scrollRestore.key
+      ? scrollRestore
+      : undefined;
 
   const send = useCallback(
     (content: string) => {
@@ -214,26 +244,45 @@ export function WordChainScreen({ navigation }: Props) {
 
   const closeDialog = () => setDialog(null);
 
+  function scrollAnchor(): WordChainScrollAnchor | null {
+    const list = listRef.current;
+    if (list == null || isStuckToBottom()) return null;
+    const index = list.getFirstVisibleIndex();
+    const item = feed[index];
+    const layout = list.getLayout(index);
+    if (item == null || layout == null) return null;
+    return {
+      key: item.key,
+      offset: list.getAbsoluteLastScrollOffset() - layout.y - list.getFirstItemOffset(),
+    };
+  }
+
+  function minimizeRoom() {
+    useWordChainViewStore.setState({ anchor: scrollAnchor() });
+    minimize();
+    navigation.goBack();
+  }
+
   return (
     <View className="flex-1 bg-white">
       <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
-        <View className="h-12 flex-row items-center justify-center px-2">
+        <View className="h-12 flex-row items-center px-2">
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('chat.back')}
             hitSlop={6}
             onPress={() => navigation.goBack()}
-            className="absolute left-2 h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
+            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
           >
             <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
-          <View className="flex-row items-center gap-2 px-24">
+          <View className="min-w-0 flex-1 flex-row items-center gap-2 pl-1">
             <WordChainImage source={WORD_CHAIN_ICONS.room} size={32} />
-            <Text numberOfLines={1} className="text-lg font-medium text-white">
+            <Text numberOfLines={1} className="shrink text-lg font-medium text-white">
               {t('wordChain.title')}
             </Text>
           </View>
-          <View className="absolute right-2 flex-row items-center">
+          <View className="flex-row items-center">
             <HeaderButton
               label={t('wordChain.leaderboardTitle')}
               onPress={() => setDialog('leaderboard')}
@@ -243,6 +292,11 @@ export function WordChainScreen({ navigation }: Props) {
             <HeaderButton label={t('wordChain.rulesTitle')} onPress={() => setDialog('rules')}>
               <WordChainImage source={WORD_CHAIN_ICONS.rules} size={36} />
             </HeaderButton>
+            {status === 'joined' && (
+              <HeaderButton label={t('wordChain.minimize')} onPress={minimizeRoom}>
+                <WordChainImage source={WORD_CHAIN_ICONS.minimize} size={34} />
+              </HeaderButton>
+            )}
           </View>
         </View>
       </View>
@@ -284,6 +338,8 @@ export function WordChainScreen({ navigation }: Props) {
                 getItemType={(item) => item.kind}
                 drawDistance={1500}
                 maintainVisibleContentPosition={{ startRenderingFromBottom: true }}
+                initialScrollIndex={initialScroll?.index}
+                initialScrollIndexParams={initialScroll?.params}
                 onScroll={handleScroll}
                 onScrollBeginDrag={onScrollBeginDrag}
                 onScrollEndDrag={onScrollEndDrag}
@@ -333,10 +389,11 @@ export function WordChainScreen({ navigation }: Props) {
 
           <WordChainComposer
             syllable={state?.requiredSyllable}
-            lockedHint={lock != null ? t(WORD_CHAIN_INPUT_LOCK_HINT_KEYS[lock]) : undefined}
+            lockedHint={lock != null ? t(LOCKED_HINT_KEYS[lock]) : undefined}
             onSend={send}
             onHint={() => setDialog('hint')}
             onLookup={() => openLookup('')}
+            onBuyGuesses={lock === 'noGuesses' ? () => setDialog('guesses') : undefined}
           />
         </ChatKeyboardArea>
       )}
@@ -350,6 +407,7 @@ export function WordChainScreen({ navigation }: Props) {
       )}
 
       {dialog === 'hint' && <WordChainHintDialog onClose={closeDialog} onSend={send} />}
+      {dialog === 'guesses' && <WordChainGuessDialog onClose={closeDialog} />}
       <WordChainLeaderboardDialog visible={dialog === 'leaderboard'} onClose={closeDialog} />
       {dialog === 'lookup' && (
         <WordChainLookupDialog initialWord={lookupWord} onClose={closeDialog} />

@@ -6,15 +6,18 @@ import { WordChainView } from './components/WordChainView';
 export function WordChainOverlay({ visible }: { visible: boolean }) {
   const { t } = useTranslation();
   const opened = useWordChainStore((store) => store.opened);
+  const minimized = useWordChainStore((store) => store.minimized);
   const status = useWordChainStore((store) => store.status);
   const close = useWordChainStore((store) => store.close);
 
   if (!opened) return null;
 
+  const shown = visible && !minimized;
+
   return (
-    <div className={visible ? '' : 'hidden'}>
+    <div className={shown ? '' : 'hidden'}>
       {status === 'joined' ? (
-        <WordChainView visible={visible} onClose={close} />
+        <WordChainView visible={shown} onClose={close} />
       ) : (
         <RoomJoiningOverlay
           status={status}

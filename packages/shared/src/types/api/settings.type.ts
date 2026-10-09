@@ -50,6 +50,7 @@ export interface UsernameChangeTier {
 export interface WordChainConfigResult {
   enabled: boolean;
   hintPrice: number;
+  guessPrice: number;
 }
 
 export interface StoryConfigResult {

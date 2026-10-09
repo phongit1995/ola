@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import lookupIcon from '@/assets/icons/word-chain/lookup.webp';
 import leaderboardIcon from '@/assets/icons/word-chain/leaderboard.webp';
 import rulesIcon from '@/assets/icons/word-chain/rules.webp';
+import minimizeIcon from '@/assets/icons/word-chain/minimize.webp';
 
 function AssetIcon({
   src,
@@ -54,6 +55,14 @@ export function TrophyIcon({ className = 'h-7 w-7' }: { className?: string }) {
 
 export function HelpIcon({ className = 'h-7 w-7' }: { className?: string }) {
   return <AssetIcon src={rulesIcon} className={className} />;
+}
+
+export function MinimizeIcon({
+  className = 'h-8.5 w-8.5',
+}: {
+  className?: string;
+}) {
+  return <AssetIcon src={minimizeIcon} className={className} />;
 }
 
 export function InfoIcon({ className = 'h-5 w-5' }: { className?: string }) {

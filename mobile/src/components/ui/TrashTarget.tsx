@@ -25,17 +25,17 @@ const ACTIVE_STROKE = '#ffffff';
 const HUNGER_SCALE = 0.06;
 const HIT_SCALE = 0.1;
 
-interface ArcadeTrashTargetProps {
+interface TrashTargetProps {
   visible: boolean;
   active: boolean;
   bottom: number;
 }
 
-export function ArcadeTrashTarget({
+export function TrashTarget({
   visible,
   active,
   bottom,
-}: ArcadeTrashTargetProps) {
+}: TrashTargetProps) {
   const appear = useSharedValue(0);
   const hit = useSharedValue(0);
   const lidAngle = useSharedValue(0);

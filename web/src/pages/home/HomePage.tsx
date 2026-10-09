@@ -14,6 +14,7 @@ import { AnnouncementBanner } from './AnnouncementBanner';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { GameOverlay } from '../games/GameOverlay';
 import { RoomChatOverlay } from '../room/RoomChatOverlay';
+import { WordChainBubble } from '../room/word-chain/WordChainBubble';
 import { WordChainOverlay } from '../room/word-chain/WordChainOverlay';
 import { StoryOverlay } from '../story/StoryOverlay';
 import { useStoryOverlayStore } from '@/store/storyOverlayStore';
@@ -77,6 +78,15 @@ export function HomePage() {
     setTab(next);
   }
 
+  function showWordChain() {
+    useChatStore.getState().closeConversation();
+    useGameOverlayStore.getState().close();
+    useAppOverlayStore.getState().reset();
+    useClanOverlayStore.getState().reset();
+    closeGuide();
+    changeTab('room');
+  }
+
   function dismissFab() {
     localStorage.setItem(DOWNLOAD_FAB_DISMISSED_KEY, '1');
     setFabVisible(false);
@@ -107,6 +117,7 @@ export function HomePage() {
         </Suspense>
         <RoomChatOverlay visible={activeTab === 'room'} />
         <WordChainOverlay visible={activeTab === 'room'} />
+        <WordChainBubble onRestore={showWordChain} />
         {storyEnabled === true && (
           <StoryOverlay visible={activeTab === 'story'} />
         )}

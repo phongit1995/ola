@@ -8,6 +8,8 @@ export const WORD_CHAIN_ICONS = {
   leaderboard: require('@assets/icons/word-chain/leaderboard.webp'),
   rules: require('@assets/icons/word-chain/rules.webp'),
   hint: require('@assets/icons/word-chain/hint-star.webp'),
+  minimize: require('@assets/icons/word-chain/minimize.webp'),
+  buyGuesses: require('@assets/icons/word-chain/buy-guesses.webp'),
   ken: require('@assets/icons/apps/ken.png'),
 } as const satisfies Record<string, ImageSourcePropType>;
 

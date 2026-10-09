@@ -96,10 +96,11 @@ Server không gửi id, tên hay avatar của bot. Client tự hiển thị tin 
 Lấy state phiên hiện tại và điểm của mình. Nếu chưa có phiên thì server tạo luôn. Nếu từ của bot đã quá 12 giờ chưa ai nối thì server thay từ trước khi trả.
 
 ```json
-{ "state": { "…": "State" }, "points": 12, "remainingGuesses": 3, "hintPrice": 500 }
+{ "state": { "…": "State" }, "points": 12, "remainingGuesses": 3, "hintPrice": 500, "guessPrice": 500, "guessPackSize": 3 }
 ```
 
-`hintPrice` là giá một lần gợi ý (KEN) theo cấu hình admin (mặc định 500), client dùng để hiện trên bảng gợi ý.
+- `hintPrice` là giá một lần gợi ý (KEN) theo cấu hình admin (mặc định 500), client dùng để hiện trên bảng gợi ý.
+- `guessPrice` là giá một lần mua thêm lượt (KEN, mặc định 500), `guessPackSize` là số lượt nhận được mỗi lần mua (3). Client dùng để hiện trên hộp xác nhận mua lượt.
 
 Admin tắt phòng thì trả `403 WORD_CHAIN_DISABLED`. Server không đọc được cấu hình thì trả `503 WORD_CHAIN_UNAVAILABLE`.
 
@@ -123,7 +124,7 @@ Tin nhắn của phiên hiện tại, **mới nhất trước**.
 
 ### `POST /rooms/word-chain/moves`
 
-Gửi một từ. Rate limit 3 lần / 2 giây / người. Bucket này (`rl:room_message:<userId>`) **dùng chung** với `POST /hints` và gửi tin ở phòng chat thường.
+Gửi một từ. Rate limit 3 lần / 2 giây / người. Bucket này (`rl:room_message:<userId>`) **dùng chung** với `POST /hints`, `POST /guesses` và gửi tin ở phòng chat thường.
 
 ```json
 { "content": "chân trời", "sessionId": "5f1e…", "turn": 5 }
@@ -157,7 +158,7 @@ Lỗi:
 | 409 | `WORD_CHAIN_WORD_CHANGED` | Từ hiện tại đã đổi so với `sessionId`/`turn` client gửi (có người nối trước, thắng ván, bot thay từ) | Toast, giữ nội dung trong ô nhập, tải lại state. **Không trừ lượt**, server không lưu gì |
 | 409 | | Server đang bận: chờ lock quá 10 giây, hoặc state đổi liên tục 3 lần mà từ vẫn vậy | Toast "Phòng nối từ đang xử lý, vui lòng thử lại." |
 | 429 | | Vượt rate limit | Toast, cho gửi lại sau |
-| 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã sai đủ 3 lần với từ hiện tại | Toast, khoá ô nhập tới khi `turn` đổi. Server không lưu gì |
+| 403 | `WORD_CHAIN_NO_GUESSES` | Người gửi đã hết lượt với từ hiện tại (3 lượt miễn phí cộng lượt đã mua) | Toast, khoá ô nhập tới khi `turn` đổi, hiện nút Mua lượt (`POST /guesses`). Server không lưu gì |
 | 403 | `WORD_CHAIN_WAIT_TURN` | Từ hiện tại do chính người gửi nối ra (`wordOwnerId`) | Toast, khoá ô nhập tới khi có người khác nối. Không trừ lượt, server không lưu gì |
 | 403 | `WORD_CHAIN_DISABLED` | Admin đã tắt phòng nối từ | Toast "Phòng nối từ đang tạm đóng", đóng phòng, ẩn mục khỏi danh sách phòng |
 | 503 | `WORD_CHAIN_VERIFY_FAILED` | Không gọi được API từ điển | Toast, giữ nội dung trong ô nhập để gửi lại. Server không lưu gì |
@@ -198,6 +199,53 @@ Lỗi:
 | 409 | | Server đang bận (chờ lock quá 10 giây). Phân biệt với 2 dòng trên bằng `code` |
 | 429 | | Vượt rate limit (bucket chung với `POST /moves`) |
 | 503 | `WORD_CHAIN_VERIFY_FAILED` | API từ điển lỗi: `suggest` lỗi, hoặc `lookup` lỗi khi chưa đủ 5 từ hợp lệ. Không trừ KEN |
+| 503 | `WORD_CHAIN_UNAVAILABLE` | Server không đọc được cấu hình phòng. Không trừ KEN |
+
+### `POST /rooms/word-chain/guesses`
+
+Mua thêm lượt đoán cho từ đang trả lời, chỉ khi đã hết lượt. Mỗi lần mua được `guessPackSize` lượt (3) với giá `guessPrice`, mua bao nhiêu lần cũng được. Lượt mua chỉ dùng cho đúng từ này, từ đổi thì mất.
+
+Body là từ mà người chơi đang nhìn thấy và giá người chơi đã xác nhận:
+
+```json
+{ "sessionId": "5f1e…", "turn": 5, "price": 500 }
+```
+
+`price` phải bằng `guessPrice` đang cấu hình. Admin đổi giá trong lúc người chơi mở hộp xác nhận thì server trả `409 WORD_CHAIN_PRICE_CHANGED`, không trừ KEN. Client chỉ báo lỗi, người chơi tự tải lại trang để thấy giá mới.
+
+Response:
+
+```json
+{
+  "sessionId": "5f1e…",
+  "turn": 5,
+  "guesses": 3,
+  "remainingGuesses": 3,
+  "price": 500,
+  "kenBalance": 11500,
+  "state": { "…": "State" }
+}
+```
+
+- `remainingGuesses`: số lượt còn lại sau khi mua. Client ghi đè như `remainingGuesses` của `POST /moves` (theo `state.revision`).
+- `price`: giá đã trừ. `kenBalance`: số dư sau khi trừ, client ghi vào `user.ken`; server cũng bắn `KEN_UPDATED` tới mọi socket của user.
+- Lượt đã mua chỉ lưu ở Postgres: mỗi lần mua là 1 dòng `ken_transactions` loại `WORD_CHAIN_GUESS`, `ref_id` là `sessionId`, metadata có `sessionId`, `turn`, `word`, `guesses`. Trừ KEN và ghi dòng này nằm trong cùng 1 transaction, nên không có chuyện mất tiền mà không có lượt hay ngược lại. Redis không lưu lượt mua, state không đổi, không có tin bot.
+- Giao dịch hiện trong lịch sử KEN (`GET /ken/transactions`) với tên "Mua lượt nối từ".
+- Mua xong server bắn `WORD_CHAIN_GUESSES_UPDATED` tới mọi socket của người mua (xem mục 3), để tab/thiết bị khác mở khoá ô nhập.
+
+Lỗi:
+
+| HTTP | `code` | Khi nào |
+|---|---|---|
+| 400 | | Thiếu `sessionId`, `turn` hoặc `price` |
+| 400 | `WORD_CHAIN_INSUFFICIENT_KEN` | Không đủ KEN. Câu `error` ghi giá hiện tại. Không trừ KEN, không cấp lượt |
+| 403 | `WORD_CHAIN_DISABLED` | Admin đã tắt phòng nối từ |
+| 403 | `WORD_CHAIN_WAIT_TURN` | Từ hiện tại do chính người gửi nối ra |
+| 409 | `WORD_CHAIN_GUESSES_LEFT` | Vẫn còn lượt cho từ này (kể cả khi vừa mua xong rồi bấm lại). Không trừ KEN, client tải lại state |
+| 409 | `WORD_CHAIN_WORD_CHANGED` | Từ đã đổi so với `sessionId`/`turn` gửi lên. Không trừ KEN, client tải lại state |
+| 409 | `WORD_CHAIN_PRICE_CHANGED` | `price` khác giá đang cấu hình. Không trừ KEN, client báo "Giá mua thêm lượt đã thay đổi, vui lòng tải lại trang" |
+| 409 | | Server đang bận (chờ lock quá 10 giây) |
+| 429 | | Vượt rate limit (bucket chung với `POST /moves`) |
 | 503 | `WORD_CHAIN_UNAVAILABLE` | Server không đọc được cấu hình phòng. Không trừ KEN |
 
 ### `GET /rooms/word-chain/leaderboard?sort=points&period=all`
@@ -290,7 +338,7 @@ Client dùng endpoint này cho cả hộp **Tra từ** lẫn nút ⓘ nhỏ nằ
 Nằm ngoài `/rooms/word-chain`, cần đăng nhập. Client đọc để biết có hiện mục **Phòng nối từ** trong danh sách phòng hay không.
 
 ```json
-{ "enabled": true, "hintPrice": 500 }
+{ "enabled": true, "hintPrice": 500, "guessPrice": 500 }
 ```
 
 Chưa cấu hình thì trả mặc định như trên. Client ẩn mục cho tới khi đọc xong cấu hình; gọi lỗi thì client coi như đang bật (server vẫn tự chặn nếu phòng tắt).
@@ -320,10 +368,12 @@ socket.on('message', ({ type, data }) => { … })
 |---|---|
 | `WORD_CHAIN_NEW_MESSAGE` | `{ "message": Message }` |
 | `WORD_CHAIN_STATE_UPDATED` | `{ "state": State }` |
+| `WORD_CHAIN_GUESSES_UPDATED` | `{ "state": State, "remainingGuesses": 3 }`, chỉ gửi tới các socket của người vừa mua thêm lượt |
 
 - Người gửi cũng nhận lại event cho chính tin của mình.
 - Khi thắng ván, client nhận lần lượt 3 tin (`move`, `win`, `game_started`) rồi 1 state.
 - Khi sai, client nhận 2 tin (`move`, `wrong_answer`) rồi 1 state (revision tăng vì số lượt sai thay đổi, từ hiện tại giữ nguyên).
+- Khi mua thêm lượt, chỉ người mua nhận `WORD_CHAIN_GUESSES_UPDATED` (trên mọi tab/thiết bị). State không đổi, không có tin. Client ghi `remainingGuesses` như response của `POST /guesses`.
 - Khi từ của bot hết hạn, client nhận 1 state (`turn` tăng, từ mới) và 1 tin `game_started` trùng `id` với tin bot cũ. Gộp theo `id` là tin cũ tự được thay.
 - Chỉ khi chưa có state nào server mới tạo phiên, client nhận state có `sessionId` mới và tin `session_started`.
 
