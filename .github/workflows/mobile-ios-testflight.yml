@@ -7,6 +7,10 @@ on:
         description: 'Build number, phải lớn hơn build đã upload (bỏ trống = GitHub run number)'
         required: false
         type: string
+      version_name:
+        description: 'Version hiển thị cho người dùng, vd 1.2.0 (1 đến 3 số cách nhau dấu chấm; bỏ trống = MARKETING_VERSION trong Xcode, hiện là 1.0.0)'
+        required: false
+        type: string
       upload_to_testflight:
         description: 'Upload lên TestFlight sau khi build (tắt = chỉ build IPA làm artifact)'
         required: false
@@ -27,6 +31,7 @@ jobs:
       BUNDLE_GEMFILE: ${{ github.workspace }}/mobile/Gemfile
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       BUILD_NUMBER: ${{ inputs.build_number || github.run_number }}
+      VERSION_NAME: ${{ inputs.version_name }}
 
     steps:
       - name: Checkout
@@ -86,6 +91,10 @@ jobs:
             ''|*[!0-9]*) echo "BUILD_NUMBER must be a positive integer" >&2; exit 1 ;;
           esac
           test "$BUILD_NUMBER" -gt 0
+          if [ -n "$VERSION_NAME" ] && ! printf '%s' "$VERSION_NAME" | grep -Eq '^[0-9]+(\.[0-9]+){0,2}$'; then
+            echo "version_name không hợp lệ: '$VERSION_NAME' (Apple chỉ nhận 1 đến 3 số cách nhau dấu chấm, vd 1.2.0)" >&2
+            exit 1
+          fi
 
       - name: Import Apple signing certificate and provisioning profile
         id: signing
@@ -164,10 +173,23 @@ jobs:
             -archivePath "$RUNNER_TEMP/OlaMobile.xcarchive" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            ${VERSION_NAME:+MARKETING_VERSION="$VERSION_NAME"} \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY='Apple Distribution' \
             OLA_PROVISIONING_PROFILE='${{ steps.signing.outputs.PROFILE_NAME }}' \
             | tee "$RUNNER_TEMP/xcodebuild-archive.log"
+          ARCHIVE_PLIST="$RUNNER_TEMP/OlaMobile.xcarchive/Info.plist"
+          ARCHIVED_VERSION=$(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleShortVersionString' "$ARCHIVE_PLIST")
+          ARCHIVED_BUILD=$(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCHIVE_PLIST")
+          if [ -n "$VERSION_NAME" ] && [ "$ARCHIVED_VERSION" != "$VERSION_NAME" ]; then
+            echo "Archive version $ARCHIVED_VERSION khác version_name $VERSION_NAME" >&2
+            exit 1
+          fi
+          {
+            echo "sha=$(git rev-parse --short HEAD)"
+            echo "version=$ARCHIVED_VERSION"
+            echo "build=$ARCHIVED_BUILD"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Export IPA
         run: |
