@@ -161,9 +161,14 @@ func (ctrl *Controller) PutMany(c *gin.Context) (interface{}, error) {
 func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSONB, error) {
 	switch key {
 	case setting.KeyTopup:
-		if err := setting.ValidateTopupValue(value); err != nil {
+		kept, err := ctrl.service.KeepStoredTopupPlatforms(value)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		if err := setting.ValidateTopupValue(kept); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+		return kept, nil
 	case setting.KeyUsernameChange:
 		if err := setting.ValidateUsernameChangeValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

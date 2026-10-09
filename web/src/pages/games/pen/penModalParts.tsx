@@ -69,7 +69,7 @@ export function PenModalShell({
 
 interface PenKenRowProps {
   ken: number;
-  onTopUp: () => void;
+  onTopUp?: () => void;
 }
 
 export function PenKenRow({ ken, onTopUp }: PenKenRowProps) {
@@ -80,19 +80,21 @@ export function PenKenRow({ ken, onTopUp }: PenKenRowProps) {
       <span className="min-w-[68px] text-center text-xl font-bold">
         {formatVnd(ken)}
       </span>
-      <button
-        type="button"
-        aria-label={t('penGame.topUp')}
-        onClick={onTopUp}
-        style={bgImage(penAssets.plusBtn)}
-        className="flex h-8 w-8 items-center justify-center bg-no-repeat transition active:scale-95"
-      >
-        <img
-          src={penAssets.plusIcon}
-          alt=""
-          className="h-3.5 w-3.5 object-contain"
-        />
-      </button>
+      {onTopUp != null && (
+        <button
+          type="button"
+          aria-label={t('penGame.topUp')}
+          onClick={onTopUp}
+          style={bgImage(penAssets.plusBtn)}
+          className="flex h-8 w-8 items-center justify-center bg-no-repeat transition active:scale-95"
+        >
+          <img
+            src={penAssets.plusIcon}
+            alt=""
+            className="h-3.5 w-3.5 object-contain"
+          />
+        </button>
+      )}
     </div>
   );
 }
