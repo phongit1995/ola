@@ -42,3 +42,6 @@ game/war-god/screenshots/
 
 # Dữ liệu truyện Vnkings xuất bằng scripts/vnkings/export_stories.py — không commit
 scripts/vnkings/data/
+
+# Dữ liệu truyện Dembuon xuất bằng scripts/dembuon/export_stories.py — không commit
+scripts/dembuon/data/
