@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>OlaKa</string>
+	<string>Ola</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -34,15 +34,17 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>OlaKa cần truy cập máy ảnh để bạn chụp ảnh gửi trong chat và thực hiện cuộc gọi video.</string>
+	<string>Ola Me cần truy cập máy ảnh để bạn chụp ảnh gửi trong chat và thực hiện cuộc gọi video.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Ola Me dùng Face ID để mở khoá ứng dụng khi bạn bật tính năng khoá ứng dụng.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>OlaKa cần vị trí của bạn để gợi ý địa điểm check-in gần đây khi đăng bài.</string>
+	<string>Ola Me cần vị trí của bạn để gợi ý địa điểm check-in gần đây khi đăng bài.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>OlaKa cần truy cập micro để bạn ghi tin nhắn thoại và thực hiện cuộc gọi.</string>
+	<string>Ola Me cần truy cập micro để bạn ghi tin nhắn thoại và thực hiện cuộc gọi.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>OlaKa cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
+	<string>Ola Me cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>OlaKa cần quyền lưu ảnh để bạn tải ảnh về thư viện ảnh.</string>
+	<string>Ola Me cần quyền lưu ảnh để bạn tải ảnh về thư viện ảnh.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
