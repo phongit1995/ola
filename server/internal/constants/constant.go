@@ -172,6 +172,7 @@ const (
 	WordChainWordLength              = 2
 	WordChainMaxHistory              = 100
 	WordChainMaxWrongGuesses         = 3
+	WordChainGuessPackSize           = 3
 	WordChainNewWordMaxAttempts      = 100000
 	WordChainStartWordMaxAttempts    = 20
 	WordChainContinuationConcurrency = 10
@@ -232,6 +233,8 @@ const (
 	ErrorCodeWordChainVerifyFailed = "WORD_CHAIN_VERIFY_FAILED"
 	ErrorCodeWordChainCooldown     = "WORD_CHAIN_COOLDOWN"
 	ErrorCodeWordChainNoGuesses    = "WORD_CHAIN_NO_GUESSES"
+	ErrorCodeWordChainGuessesLeft  = "WORD_CHAIN_GUESSES_LEFT"
+	ErrorCodeWordChainPriceChanged = "WORD_CHAIN_PRICE_CHANGED"
 	ErrorCodeWordChainWaitTurn     = "WORD_CHAIN_WAIT_TURN"
 	ErrorCodeWordChainNoHint       = "WORD_CHAIN_NO_HINT"
 	ErrorCodeWordChainKenShort     = "WORD_CHAIN_INSUFFICIENT_KEN"
@@ -284,6 +287,7 @@ const (
 	WebSocketEventRoomBlockListChanged       = "ROOM_BLOCK_LIST_CHANGED"
 	WebSocketEventWordChainNewMessage        = "WORD_CHAIN_NEW_MESSAGE"
 	WebSocketEventWordChainStateUpdated      = "WORD_CHAIN_STATE_UPDATED"
+	WebSocketEventWordChainGuessesUpdated    = "WORD_CHAIN_GUESSES_UPDATED"
 	WebSocketEventSessionReplaced            = "SESSION_REPLACED"
 	WebSocketEventKenUpdated                 = "KEN_UPDATED"
 	WebSocketEventPenSettled                 = "PEN_SETTLED"

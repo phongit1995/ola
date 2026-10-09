@@ -1,6 +1,8 @@
 import type { StoreApi } from 'zustand';
 import type { RoomChatStatus } from './roomChat.type';
 import type {
+  WordChainGuessPurchase,
+  WordChainGuessPurchaseRequest,
   WordChainHint,
   WordChainLeaderboard,
   WordChainLeaderboardPeriod,
@@ -55,9 +57,13 @@ export interface WordChainFetchWinsOptions {
 
 export interface WordChainStoreState {
   opened: boolean;
+  minimized: boolean;
+  notify: boolean;
   status: RoomChatStatus;
   state: WordChainState | null;
   hintPrice: number;
+  guessPrice: number;
+  guessPackSize: number;
   hint: WordChainHint | null;
   guesses: WordChainGuesses | null;
   messages: WordChainMessage[];
@@ -77,11 +83,14 @@ export interface WordChainStoreState {
   celebration: WordChainMessage | null;
   open: () => void;
   close: () => void;
+  minimize: () => void;
+  restore: () => void;
   loadMoreMessages: () => Promise<void>;
   sendMove: (content: string) => Promise<WordChainMoveResult>;
   fetchLeaderboard: (query: WordChainLeaderboardQuery) => Promise<void>;
   fetchWins: (options: WordChainFetchWinsOptions) => Promise<void>;
   buyHint: () => Promise<WordChainHint>;
+  buyGuesses: (request: WordChainGuessPurchaseRequest) => Promise<WordChainGuessPurchase>;
   lookup: (word: string) => Promise<void>;
   clearLookup: () => void;
   dismissCelebration: (id: string) => void;
@@ -92,11 +101,14 @@ export type WordChainStoreData = Omit<
   WordChainStoreState,
   | 'open'
   | 'close'
+  | 'minimize'
+  | 'restore'
   | 'loadMoreMessages'
   | 'sendMove'
   | 'fetchLeaderboard'
   | 'fetchWins'
   | 'buyHint'
+  | 'buyGuesses'
   | 'lookup'
   | 'clearLookup'
   | 'dismissCelebration'

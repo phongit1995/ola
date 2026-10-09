@@ -1831,6 +1831,7 @@ export interface RelationshipUserStatsParams {
 export interface WordChainSetting {
   enabled: boolean
   hintPrice: number
+  guessPrice: number
 }
 
 export type WordChainMessageType =

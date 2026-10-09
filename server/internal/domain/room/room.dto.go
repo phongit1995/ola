@@ -63,6 +63,7 @@ type RoomMessageReactionUpdatedEvent struct {
 }
 
 type WordChainEvent struct {
-	Event string         `json:"event"`
-	Data  map[string]any `json:"data"`
+	Event  string         `json:"event"`
+	UserID string         `json:"userId,omitempty"`
+	Data   map[string]any `json:"data"`
 }

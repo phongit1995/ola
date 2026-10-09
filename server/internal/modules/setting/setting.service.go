@@ -28,11 +28,12 @@ const (
 	KeyPushNotification = "push_notification"
 	KeyWordChain        = "word_chain"
 
-	usernameChangeMinLength   = 2
-	usernameChangeMaxLength   = 20
-	topupBonusPercentMax      = 500
-	wordChainDefaultHintPrice = 500
-	wordChainHintPriceMax     = 10_000_000
+	usernameChangeMinLength    = 2
+	usernameChangeMaxLength    = 20
+	topupBonusPercentMax       = 500
+	wordChainDefaultHintPrice  = 500
+	wordChainDefaultGuessPrice = 500
+	wordChainPriceMax          = 10_000_000
 )
 
 type PushNotificationConfig struct {
@@ -161,16 +162,17 @@ func (c UsernameChangeConfig) CostFor(length int) int {
 }
 
 type WordChainConfig struct {
-	Enabled   bool `json:"enabled"`
-	HintPrice int  `json:"hintPrice"`
+	Enabled    bool `json:"enabled"`
+	HintPrice  int  `json:"hintPrice"`
+	GuessPrice int  `json:"guessPrice"`
 }
 
 func DefaultWordChainConfig() WordChainConfig {
-	return WordChainConfig{Enabled: true, HintPrice: wordChainDefaultHintPrice}
+	return WordChainConfig{Enabled: true, HintPrice: wordChainDefaultHintPrice, GuessPrice: wordChainDefaultGuessPrice}
 }
 
-func validWordChainHintPrice(price int) bool {
-	return price >= 1 && price <= wordChainHintPriceMax
+func validWordChainPrice(price int) bool {
+	return price >= 1 && price <= wordChainPriceMax
 }
 
 type Service struct {
@@ -308,9 +310,13 @@ func (s *Service) GetUsernameChange() (UsernameChangeConfig, error) {
 func (s *Service) GetWordChain() (WordChainConfig, error) {
 	cfg := DefaultWordChainConfig()
 	err := s.getInto(KeyWordChain, &cfg)
-	if !validWordChainHintPrice(cfg.HintPrice) {
+	if !validWordChainPrice(cfg.HintPrice) {
 		s.logger.Warnw("Invalid word_chain hintPrice in app_settings, using default", "hintPrice", cfg.HintPrice)
 		cfg.HintPrice = wordChainDefaultHintPrice
+	}
+	if !validWordChainPrice(cfg.GuessPrice) {
+		s.logger.Warnw("Invalid word_chain guessPrice in app_settings, using default", "guessPrice", cfg.GuessPrice)
+		cfg.GuessPrice = wordChainDefaultGuessPrice
 	}
 	return cfg, err
 }
@@ -503,8 +509,9 @@ func ValidateWordChainValue(value models.JSONB) error {
 		return errors.New("invalid word_chain config")
 	}
 	var cfg struct {
-		Enabled   *bool `json:"enabled"`
-		HintPrice *int  `json:"hintPrice"`
+		Enabled    *bool `json:"enabled"`
+		HintPrice  *int  `json:"hintPrice"`
+		GuessPrice *int  `json:"guessPrice"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()
@@ -514,8 +521,11 @@ func ValidateWordChainValue(value models.JSONB) error {
 	if cfg.Enabled == nil || cfg.HintPrice == nil {
 		return errors.New("cấu hình nối từ cần đủ enabled và hintPrice")
 	}
-	if !validWordChainHintPrice(*cfg.HintPrice) {
-		return fmt.Errorf("giá gợi ý phải từ 1 đến %d KEN", wordChainHintPriceMax)
+	if !validWordChainPrice(*cfg.HintPrice) {
+		return fmt.Errorf("giá gợi ý phải từ 1 đến %d KEN", wordChainPriceMax)
+	}
+	if cfg.GuessPrice != nil && !validWordChainPrice(*cfg.GuessPrice) {
+		return fmt.Errorf("giá mua thêm lượt phải từ 1 đến %d KEN", wordChainPriceMax)
 	}
 	return nil
 }

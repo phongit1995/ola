@@ -75,6 +75,24 @@ type OverviewResponse struct {
 	Points           int64          `json:"points"`
 	RemainingGuesses int            `json:"remainingGuesses"`
 	HintPrice        int            `json:"hintPrice"`
+	GuessPrice       int            `json:"guessPrice"`
+	GuessPackSize    int            `json:"guessPackSize"`
+}
+
+type GuessPurchaseRequest struct {
+	SessionID string `json:"sessionId" binding:"required" example:"7b0c8f3e-2a51-4c1e-9d2f-5a6b7c8d9e0f"`
+	Turn      *int64 `json:"turn" binding:"required,min=0" example:"3"`
+	Price     *int   `json:"price" binding:"required,min=1" example:"500"`
+}
+
+type GuessPurchaseResponse struct {
+	SessionID        string         `json:"sessionId"`
+	Turn             int64          `json:"turn"`
+	Guesses          int            `json:"guesses"`
+	RemainingGuesses int            `json:"remainingGuesses"`
+	Price            int            `json:"price"`
+	KenBalance       int            `json:"kenBalance"`
+	State            *StateResponse `json:"state"`
 }
 
 type HintResponse struct {

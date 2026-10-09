@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +15,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-var errKenShort = errors.New("insufficient ken balance for word chain hint")
+var (
+	errKenShort      = errors.New("insufficient ken balance for word chain purchase")
+	errGuessesBought = errors.New("word chain guesses were already bought for this word")
+)
 
 type LeaderboardRow struct {
 	UserID uuid.UUID `gorm:"column:user_id"`
@@ -50,6 +54,16 @@ type HintChargeResult struct {
 	Purchase models.WordChainHintPurchase
 	Balance  int
 	Charged  bool
+}
+
+type GuessCharge struct {
+	UserID    uuid.UUID
+	SessionID uuid.UUID
+	Turn      int64
+	Price     int
+	Word      string
+	Bought    int
+	Guesses   int
 }
 
 type leaderboardOrder struct {
@@ -221,4 +235,66 @@ func (r *Repository) ChargeHint(ctx context.Context, charge HintCharge) (HintCha
 		return HintChargeResult{}, err
 	}
 	return result, nil
+}
+
+func guessesBought(db *gorm.DB, userID, sessionID uuid.UUID, turn int64) (int, error) {
+	var bought int
+	err := db.Model(&models.KenTransaction{}).
+		Select("COALESCE(SUM((metadata->>'guesses')::int), 0)").
+		Where("user_id = ? AND type = ? AND ref_id = ? AND metadata->>'turn' = ?", userID, models.KenTxTypeWordChainGuess, sessionID, strconv.FormatInt(turn, 10)).
+		Scan(&bought).Error
+	return bought, err
+}
+
+func (r *Repository) GuessesBought(ctx context.Context, userID, sessionID uuid.UUID, turn int64) (int, error) {
+	return guessesBought(r.db.WithContext(ctx), userID, sessionID, turn)
+}
+
+func (r *Repository) ChargeGuesses(ctx context.Context, charge GuessCharge) (int, error) {
+	var balance int
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var user models.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Select("id", "ken").First(&user, "id = ?", charge.UserID).Error; err != nil {
+			return err
+		}
+		bought, err := guessesBought(tx, charge.UserID, charge.SessionID, charge.Turn)
+		if err != nil {
+			return err
+		}
+		if bought != charge.Bought {
+			return errGuessesBought
+		}
+		if user.Ken < charge.Price {
+			return errKenShort
+		}
+		balance = user.Ken - charge.Price
+		if err := tx.Model(&models.User{}).Where("id = ?", charge.UserID).Update("ken", balance).Error; err != nil {
+			return err
+		}
+		actorID := charge.UserID
+		sessionID := charge.SessionID
+		return tx.Create(&models.KenTransaction{
+			UserID:        charge.UserID,
+			Direction:     models.KenDirectionDebit,
+			Type:          models.KenTxTypeWordChainGuess,
+			Amount:        charge.Price,
+			BalanceBefore: user.Ken,
+			BalanceAfter:  balance,
+			Description:   fmt.Sprintf("word chain +%d guesses for %s", charge.Guesses, charge.Word),
+			RefType:       "word_chain",
+			RefID:         &sessionID,
+			ActorType:     models.KenActorUser,
+			ActorID:       &actorID,
+			Metadata: models.JSONB{
+				"sessionId": charge.SessionID.String(),
+				"word":      charge.Word,
+				"turn":      charge.Turn,
+				"guesses":   charge.Guesses,
+			},
+		}).Error
+	})
+	if err != nil {
+		return 0, err
+	}
+	return balance, nil
 }

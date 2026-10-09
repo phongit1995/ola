@@ -12,8 +12,10 @@ import (
 	"go.uber.org/zap"
 )
 
-type HintWallet interface {
+type KenWallet interface {
 	ChargeHint(ctx context.Context, charge HintCharge) (HintChargeResult, error)
+	ChargeGuesses(ctx context.Context, charge GuessCharge) (int, error)
+	GuessesBought(ctx context.Context, userID, sessionID uuid.UUID, turn int64) (int, error)
 	Purchase(ctx context.Context, userID, sessionID uuid.UUID, turn int64) (*models.WordChainHintPurchase, error)
 	Balance(ctx context.Context, userID uuid.UUID) (int, error)
 }
@@ -42,11 +44,28 @@ func (w *Wallet) ChargeHint(ctx context.Context, charge HintCharge) (HintChargeR
 	if err != nil || !result.Charged {
 		return result, err
 	}
-	if err := w.userCache.InvalidateUser(charge.UserID); err != nil {
-		w.logger.Warnw("Failed to invalidate user cache after word chain hint", "user_id", charge.UserID, "error", err)
-	}
-	w.emitKenUpdate(charge.UserID, result.Balance)
+	w.afterCharge(charge.UserID, result.Balance)
 	return result, nil
+}
+
+func (w *Wallet) GuessesBought(ctx context.Context, userID, sessionID uuid.UUID, turn int64) (int, error) {
+	return w.repo.GuessesBought(ctx, userID, sessionID, turn)
+}
+
+func (w *Wallet) ChargeGuesses(ctx context.Context, charge GuessCharge) (int, error) {
+	balance, err := w.repo.ChargeGuesses(ctx, charge)
+	if err != nil {
+		return 0, err
+	}
+	w.afterCharge(charge.UserID, balance)
+	return balance, nil
+}
+
+func (w *Wallet) afterCharge(userID uuid.UUID, balance int) {
+	if err := w.userCache.InvalidateUser(userID); err != nil {
+		w.logger.Warnw("Failed to invalidate user cache after word chain purchase", "user_id", userID, "error", err)
+	}
+	w.emitKenUpdate(userID, balance)
 }
 
 func (w *Wallet) emitKenUpdate(userID uuid.UUID, ken int) {

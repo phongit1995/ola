@@ -95,11 +95,16 @@ func (h *EventHandler) OnWordChainEvent(ctx context.Context, message []byte) err
 	}
 	switch event.Event {
 	case constants.WebSocketEventWordChainNewMessage, constants.WebSocketEventWordChainStateUpdated:
+		h.wsServer.EmitToWordChain(event.Event, event.Data)
+	case constants.WebSocketEventWordChainGuessesUpdated:
+		if event.UserID == "" {
+			return errors.New("word chain guesses event requires a user")
+		}
+		h.wsServer.EmitToUser(event.UserID, constants.WebSocketMessageEvent, utils.WrapWebSocketMessage(event.Event, event.Data))
 	default:
 		return errors.New("unsupported word chain event")
 	}
 
-	h.wsServer.EmitToWordChain(event.Event, event.Data)
 	h.logger.Infow("✅ WORD_CHAIN event broadcast", "event", event.Event)
 	return nil
 }

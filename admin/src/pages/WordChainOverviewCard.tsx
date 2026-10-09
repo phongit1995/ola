@@ -39,6 +39,9 @@ export function WordChainOverviewCard() {
             <Descriptions.Item label="Giá gợi ý">
               {setting == null ? settingFallback : formatKen(setting.hintPrice)}
             </Descriptions.Item>
+            <Descriptions.Item label="Giá mua thêm lượt">
+              {setting == null ? settingFallback : formatKen(setting.guessPrice)}
+            </Descriptions.Item>
             <Descriptions.Item label="Từ hiện tại">
               {state?.word ? (
                 <Space size={6}>

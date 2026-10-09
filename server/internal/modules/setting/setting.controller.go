@@ -80,7 +80,7 @@ func (ctrl *Controller) UsernameChangeConfig(c *gin.Context) (interface{}, error
 }
 
 // WordChainConfig godoc
-// @Summary      Cấu hình phòng nối từ (bật/tắt, giá gợi ý tính bằng KEN)
+// @Summary      Cấu hình phòng nối từ (bật/tắt, giá gợi ý và giá mua thêm lượt tính bằng KEN)
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth

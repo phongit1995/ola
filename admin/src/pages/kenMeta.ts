@@ -11,6 +11,7 @@ export const KEN_TX_TYPE: Record<string, string> = {
   TRANSFER_IN: 'Nhận chuyển',
   TRANSFER_OUT: 'Chuyển đi',
   WORD_CHAIN_HINT: 'Gợi ý nối từ',
+  WORD_CHAIN_GUESS: 'Mua lượt nối từ',
 }
 
 export function kenTypeLabel(type: string): string {

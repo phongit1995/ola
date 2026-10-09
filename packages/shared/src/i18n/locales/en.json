@@ -864,7 +864,24 @@
     "inputLabel": "Your word",
     "retry": "Try again",
     "hintListHelpFree": "You already bought hints for this word, no extra KEN was charged. Pick a word to send.",
-    "unavailable": "The word chain room is temporarily unavailable, please try again later"
+    "unavailable": "The word chain room is temporarily unavailable, please try again later",
+    "minimize": "Minimize",
+    "restore": "Reopen the word chain room",
+    "hasNotification": "There are new words in the word chain room",
+    "dragToLeave": "Drag to the trash or press Delete to leave the room",
+    "buyGuesses": "Buy",
+    "guessTitle": "Buy more guesses",
+    "guessIntro": "You are out of guesses for “{{word}}”. Get {{count}} more for <ken>{{price}}</ken>.",
+    "guessOnlyThisWord": "Extra guesses only count for this word. Unused ones are lost when the word changes.",
+    "guessBuy": "Buy {{count}} · <ken>{{price}}</ken>",
+    "guessBought": "Added {{count}} guesses for “{{word}}”",
+    "guessKenShort": "You don't have enough KEN to buy more guesses.",
+    "guessStillLeft": "You still have guesses left for this word.",
+    "guessPriceChanged": "The price has changed, please reload the page.",
+    "guessStale": "The word has changed, your free guesses are back.",
+    "guessBuyError": "Couldn't buy guesses right now",
+    "guessGotIt": "Got it",
+    "inputHintOutOfGuesses": "No guesses"
   },
   "story": {
     "searchPlaceholder": "Search stories",
@@ -1741,6 +1758,7 @@
         "KEN_CHEST": "KEN chest",
         "CLAN_CREATE": "Clan creation",
         "WORD_CHAIN_HINT": "Word chain hint",
+        "WORD_CHAIN_GUESS": "Word chain guesses",
         "UNKNOWN": "KEN transaction"
       }
     },

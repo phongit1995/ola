@@ -29,7 +29,7 @@ type Service struct {
 	cache     *services.CacheService
 	userCache *userModule.CacheService
 	publisher EventPublisher
-	wallet    HintWallet
+	wallet    KenWallet
 	scores    ScoreLog
 	settings  Settings
 	logger    *zap.SugaredLogger
@@ -92,6 +92,9 @@ func (s *Service) HandleMove(ctx context.Context, userID uuid.UUID, req *MoveReq
 		}
 		if !expected.matches(state) {
 			return nil, ErrWordChanged
+		}
+		if state, err = s.loadBoughtGuesses(ctx, state, userID); err != nil {
+			return nil, err
 		}
 		res, err := processMove(state, userID.String(), req.Content, oracle)
 		if errors.Is(err, errNoGuessesLeft) {
@@ -272,6 +275,9 @@ func (s *Service) Overview(ctx context.Context, userID uuid.UUID) (*OverviewResp
 	if err != nil {
 		return nil, err
 	}
+	if state, err = s.loadBoughtGuesses(ctx, state, userID); err != nil {
+		return nil, err
+	}
 	points, err := s.scores.Points(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -281,6 +287,8 @@ func (s *Service) Overview(ctx context.Context, userID uuid.UUID) (*OverviewResp
 		Points:           points,
 		RemainingGuesses: state.RemainingGuesses(userID.String()),
 		HintPrice:        cfg.HintPrice,
+		GuessPrice:       cfg.GuessPrice,
+		GuessPackSize:    constants.WordChainGuessPackSize,
 	}, nil
 }
 

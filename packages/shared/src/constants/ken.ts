@@ -37,6 +37,10 @@ export const KEN_TX_META = {
     icon: '💡',
     labelKey: 'ken.historyScreen.types.WORD_CHAIN_HINT',
   },
+  WORD_CHAIN_GUESS: {
+    icon: '🔁',
+    labelKey: 'ken.historyScreen.types.WORD_CHAIN_GUESS',
+  },
 } as const satisfies Record<KenTxType, { icon: string; labelKey: string }>;
 
 export const KEN_TX_META_FALLBACK = {

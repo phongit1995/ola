@@ -42,9 +42,13 @@ import {
 
 const initialWordChainState: WordChainStoreData = {
   opened: false,
+  minimized: false,
+  notify: false,
   status: 'connecting',
   state: null,
   hintPrice: 0,
+  guessPrice: 0,
+  guessPackSize: 0,
   hint: null,
   guesses: null,
   messages: [],
@@ -78,6 +82,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
   function addLiveMessages(items: WordChainMessage[]) {
     const winner = freshWinningMove(get().messages, items);
     addMessages(items);
+    if (get().minimized) set({ notify: true });
     const sessionId = get().state?.sessionId;
     if (winner != null && (sessionId == null || winner.sessionId === sessionId)) {
       set({ celebration: winner });
@@ -155,6 +160,8 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
       return {
         status: 'joined',
         hintPrice: overview.hintPrice,
+        guessPrice: overview.guessPrice,
+        guessPackSize: overview.guessPackSize,
         hasMore: hasMoreInSession(page, sessionId),
         messages: sessionMessages(store.messages, sessionId),
       };
@@ -178,7 +185,11 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     const code = errorCode(error);
     if (code === WORD_CHAIN_ERROR_CODE.disabled) {
       disableRoom();
-    } else if (code === WORD_CHAIN_ERROR_CODE.wordChanged && get().opened) {
+    } else if (
+      (code === WORD_CHAIN_ERROR_CODE.wordChanged ||
+        code === WORD_CHAIN_ERROR_CODE.guessesLeft) &&
+      get().opened
+    ) {
       void refreshOverview().catch(() => undefined);
     }
   }
@@ -197,6 +208,15 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
       if (!get().opened) return;
       const state = toWordChainState(toRecord(data)?.state);
       if (state != null) applyState(state);
+    });
+    SocketService.on(WORD_CHAIN_SOCKET_EVENTS.guessesUpdated, (data) => {
+      if (!get().opened) return;
+      const record = toRecord(data);
+      const state = toWordChainState(record?.state);
+      const remaining = record?.remainingGuesses;
+      if (state == null || typeof remaining !== 'number') return;
+      applyState(state);
+      setGuesses(state, remaining);
     });
     SocketService.onReconnect(() => {
       if (get().opened) rejoin();
@@ -230,7 +250,10 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
     ...initialWordChainState,
 
     open: () => {
-      if (get().opened) return;
+      if (get().opened) {
+        set({ minimized: false, notify: false });
+        return;
+      }
       SocketService.connect();
       set({ ...initialWordChainState, opened: true });
       sync.rejoin();
@@ -370,6 +393,22 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
       }
     },
 
+    buyGuesses: async (request) => {
+      try {
+        const result = await WordChainService.buyGuesses(request);
+        setAuthUserKen(result.kenBalance);
+        if (get().opened) {
+          sync.applyState(result.state);
+          sync.setGuesses(result.state, result.remainingGuesses);
+          set({ guessPrice: result.price, guessPackSize: result.guesses });
+        }
+        return result;
+      } catch (error) {
+        sync.handleActionError(error);
+        throw error;
+      }
+    },
+
     lookup: async (word) => {
       const request = ++lookupRequest;
       set({ lookupLoading: true });
@@ -387,6 +426,12 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
       lookupRequest += 1;
       set({ lookupResult: null, lookupLoading: false });
     },
+
+    minimize: () => {
+      if (get().opened) set({ minimized: true, notify: false });
+    },
+
+    restore: () => set({ minimized: false, notify: false }),
 
     dismissCelebration: (id) => {
       if (get().celebration?.id === id) set({ celebration: null });

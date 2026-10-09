@@ -42,6 +42,9 @@ func (s *Service) Hint(ctx context.Context, userID uuid.UUID) (*HintResponse, er
 		return nil, err
 	}
 	uid := userID.String()
+	if state, err = s.loadBoughtGuesses(ctx, state, userID); err != nil {
+		return nil, err
+	}
 	if err := hintAllowed(state, uid); err != nil {
 		return nil, err
 	}
@@ -63,6 +66,9 @@ func (s *Service) Hint(ctx context.Context, userID uuid.UUID) (*HintResponse, er
 		}
 		if !ref.matches(current) {
 			return ErrWordChanged
+		}
+		if current, err = s.loadBoughtGuesses(ctx, current, userID); err != nil {
+			return err
 		}
 		if err := hintAllowed(current, uid); err != nil {
 			return err

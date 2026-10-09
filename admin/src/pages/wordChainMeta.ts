@@ -6,9 +6,10 @@ export const WORD_CHAIN_SETTING_KEY = 'word_chain'
 export const DEFAULT_WORD_CHAIN_SETTING: WordChainSetting = {
   enabled: true,
   hintPrice: 500,
+  guessPrice: 500,
 }
 
-export const WORD_CHAIN_HINT_PRICE_MAX = 10_000_000
+export const WORD_CHAIN_PRICE_MAX = 10_000_000
 
 export function wordChainSetting(settings: AppSetting[] | undefined): WordChainSetting {
   return settingValue(settings, WORD_CHAIN_SETTING_KEY, DEFAULT_WORD_CHAIN_SETTING)

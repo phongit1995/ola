@@ -23,6 +23,7 @@ type GameState struct {
 	Revision         int64          `json:"revision"`
 	Turn             int64          `json:"turn"`
 	WrongCounts      map[string]int `json:"wrongCounts,omitempty"`
+	BoughtGuesses    map[string]int `json:"-"`
 	BotMessageID     string         `json:"botMessageId,omitempty"`
 	WordOwnerID      string         `json:"wordOwnerId,omitempty"`
 }
@@ -41,16 +42,31 @@ func (r wordRef) matches(state GameState) bool {
 }
 
 func (s GameState) RemainingGuesses(userID string) int {
-	return max(constants.WordChainMaxWrongGuesses-s.WrongCounts[userID], 0)
+	return max(constants.WordChainMaxWrongGuesses+s.BoughtGuesses[userID]-s.WrongCounts[userID], 0)
+}
+
+func addCount(counts map[string]int, userID string, delta int) map[string]int {
+	next := make(map[string]int, len(counts)+1)
+	for id, count := range counts {
+		next[id] = count
+	}
+	next[userID] += delta
+	return next
 }
 
 func (s GameState) withWrongGuess(userID string) GameState {
-	counts := make(map[string]int, len(s.WrongCounts)+1)
-	for id, count := range s.WrongCounts {
-		counts[id] = count
-	}
-	counts[userID]++
-	s.WrongCounts = counts
+	s.WrongCounts = addCount(s.WrongCounts, userID, 1)
+	return s
+}
+
+func (s GameState) withBoughtGuesses(userID string, guesses int) GameState {
+	s.BoughtGuesses = addCount(s.BoughtGuesses, userID, guesses)
+	return s
+}
+
+func (s GameState) withFreshGuesses() GameState {
+	s.WrongCounts = nil
+	s.BoughtGuesses = nil
 	return s
 }
 
@@ -83,10 +99,10 @@ func (s GameState) Expired(now time.Time) bool {
 }
 
 func (s GameState) withBotWord(word string, now time.Time) GameState {
+	s = s.withFreshGuesses()
 	s.Word = word
 	s.History = []string{word}
 	s.Turn++
-	s.WrongCounts = nil
 	s.WordOwnerID = ""
 	s.LastProgressAt = now
 	return s
@@ -178,9 +194,8 @@ func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveRe
 		return MoveResult{}, err
 	}
 
-	next := state
+	next := state.withFreshGuesses()
 	next.Turn = state.Turn + 1
-	next.WrongCounts = nil
 	if !hasNext {
 		word, err := oracle.StartWord()
 		if err != nil {
