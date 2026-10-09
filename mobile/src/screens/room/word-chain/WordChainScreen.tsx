@@ -70,6 +70,14 @@ const backIcon = require('@assets/icons/ic_back.png');
 const LOAD_MORE_AT_TOP_PX = 80;
 const ERROR_COLOR = '#e34545';
 
+function findScrollRestore(feed: WordChainFeedItem[]) {
+  const anchor = useWordChainViewStore.getState().anchor;
+  if (anchor == null) return null;
+  const index = feed.findIndex((item) => item.key === anchor.key);
+  if (index < 0) return null;
+  return { key: anchor.key, index, params: { viewOffset: anchor.offset } };
+}
+
 function HeaderButton({
   label,
   onPress,
@@ -115,7 +123,12 @@ export function WordChainScreen({ navigation }: Props) {
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
   const [lookupWord, setLookupWord] = useState('');
   const wasOpenedRef = useRef(false);
-  const restoreAnchorRef = useRef(useWordChainViewStore.getState().anchor);
+  const messages = useMemo(
+    () => sessionMessages(allMessages, state?.sessionId),
+    [allMessages, state?.sessionId]
+  );
+  const feed = useMemo(() => buildWordChainFeed(messages), [messages]);
+  const [scrollRestore] = useState(() => findScrollRestore(feed));
   const {
     listRef,
     onListLayout,
@@ -129,13 +142,13 @@ export function WordChainScreen({ navigation }: Props) {
     unstick,
     isUserInteracting,
     isStuckToBottom,
-    requestScrollToBottom,
   } = useStickyBottomList<WordChainFeedItem>({
-    initialStuck: restoreAnchorRef.current == null,
+    initialStuck: scrollRestore == null,
   });
 
   useEffect(() => {
     open();
+    useWordChainViewStore.setState({ anchor: null });
     const missedCelebration = useWordChainStore.getState().celebration;
     if (missedCelebration != null) dismissCelebration(missedCelebration.id);
     return () => {
@@ -170,11 +183,6 @@ export function WordChainScreen({ navigation }: Props) {
     [clearLookup, lookup]
   );
 
-  const messages = useMemo(
-    () => sessionMessages(allMessages, state?.sessionId),
-    [allMessages, state?.sessionId]
-  );
-  const feed = useMemo(() => buildWordChainFeed(messages), [messages]);
   const dateFormatter = useMemo(
     () => createDateSeparatorFormatter(i18n.language),
     [i18n.language]
@@ -182,6 +190,10 @@ export function WordChainScreen({ navigation }: Props) {
   const remaining = remainingGuesses(state, guesses);
   const lock = wordChainInputLock(state, guesses, currentUserId);
   const celebrationId = celebration?.id ?? null;
+  const initialScroll =
+    scrollRestore != null && feed[scrollRestore.index]?.key === scrollRestore.key
+      ? scrollRestore
+      : undefined;
 
   const send = useCallback(
     (content: string) => {
@@ -231,25 +243,6 @@ export function WordChainScreen({ navigation }: Props) {
   );
 
   const closeDialog = () => setDialog(null);
-
-  function handleContentSizeChange(width: number, height: number) {
-    onContentSizeChange(width, height);
-    const anchor = restoreAnchorRef.current;
-    if (anchor == null || height <= 0) return;
-    restoreAnchorRef.current = null;
-    useWordChainViewStore.setState({ anchor: null });
-    const index = feed.findIndex((item) => item.key === anchor.key);
-    if (index < 0) {
-      requestScrollToBottom();
-      return;
-    }
-    void listRef.current?.scrollToIndex({
-      index,
-      viewPosition: 0,
-      viewOffset: anchor.offset,
-      animated: false,
-    });
-  }
 
   function scrollAnchor(): WordChainScrollAnchor | null {
     const list = listRef.current;
@@ -345,6 +338,8 @@ export function WordChainScreen({ navigation }: Props) {
                 getItemType={(item) => item.kind}
                 drawDistance={1500}
                 maintainVisibleContentPosition={{ startRenderingFromBottom: true }}
+                initialScrollIndex={initialScroll?.index}
+                initialScrollIndexParams={initialScroll?.params}
                 onScroll={handleScroll}
                 onScrollBeginDrag={onScrollBeginDrag}
                 onScrollEndDrag={onScrollEndDrag}
@@ -352,7 +347,7 @@ export function WordChainScreen({ navigation }: Props) {
                 onMomentumScrollEnd={onMomentumScrollEnd}
                 scrollEventThrottle={16}
                 contentContainerClassName="p-3"
-                onContentSizeChange={handleContentSizeChange}
+                onContentSizeChange={onContentSizeChange}
                 onLayout={onListLayout}
                 keyboardShouldPersistTaps="handled"
                 ListHeaderComponent={

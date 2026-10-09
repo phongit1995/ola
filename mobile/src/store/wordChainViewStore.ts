@@ -8,15 +8,37 @@ export interface WordChainScrollAnchor {
 
 interface WordChainViewState {
   draft: string;
+  sending: boolean;
   anchor: WordChainScrollAnchor | null;
+  setDraft: (draft: string) => void;
+  sendDraft: (send: (content: string) => Promise<unknown>) => Promise<void>;
   reset: () => void;
 }
 
-const initialWordChainView = { draft: '', anchor: null };
+const initialWordChainView = { draft: '', sending: false, anchor: null };
 
-export const useWordChainViewStore = create<WordChainViewState>((set) => ({
+let viewGeneration = 0;
+
+export const useWordChainViewStore = create<WordChainViewState>((set, get) => ({
   ...initialWordChainView,
-  reset: () => set(initialWordChainView),
+  setDraft: (draft) => set({ draft }),
+  sendDraft: async (send) => {
+    const { draft, sending } = get();
+    const content = draft.trim();
+    if (content === '' || sending) return;
+    const generation = viewGeneration;
+    set({ sending: true });
+    try {
+      await send(content);
+      if (generation === viewGeneration && get().draft.trim() === content) set({ draft: '' });
+    } finally {
+      if (generation === viewGeneration) set({ sending: false });
+    }
+  },
+  reset: () => {
+    viewGeneration += 1;
+    set(initialWordChainView);
+  },
 }));
 
 useWordChainStore.subscribe((state, previous) => {

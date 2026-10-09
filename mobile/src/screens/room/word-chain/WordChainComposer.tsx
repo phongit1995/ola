@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { WORD_CHAIN_MOVE_MAX_LENGTH } from '@ola/shared/constants';
@@ -37,26 +37,21 @@ export function WordChainComposer({
   const colors = useThemeColors();
   const pushToast = useToastStore((state) => state.push);
   const inputRef = useRef<TextInput>(null);
-  const [text, setText] = useState(() => useWordChainViewStore.getState().draft);
-  const [sending, setSending] = useState(false);
+  const text = useWordChainViewStore((state) => state.draft);
+  const setText = useWordChainViewStore((state) => state.setDraft);
+  const sending = useWordChainViewStore((state) => state.sending);
+  const sendDraft = useWordChainViewStore((state) => state.sendDraft);
   const content = text.trim();
   const locked = lockedHint != null;
   const canSend = content !== '' && !sending && !locked;
 
-  useEffect(() => {
-    useWordChainViewStore.setState({ draft: text });
-  }, [text]);
-
   async function submit() {
     if (!canSend) return;
-    setSending(true);
     try {
-      await onSend(content);
-      setText((current) => (current.trim() === content ? '' : current));
+      await sendDraft(onSend);
     } catch (error) {
       pushToast('error', wordChainMoveErrorText(t, error));
     } finally {
-      setSending(false);
       inputRef.current?.focus();
     }
   }
