@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- TẮT TẠM: hai quyền này khiến Play Console bắt khai báo "Quyền cho dịch vụ
          trên nền trước" kèm video minh hoạ. Bỏ comment lại cùng lúc với khối

@@ -18,6 +18,7 @@ class MainApplication : Application(), ReactApplication {
         PackageList(this).packages.apply {
           add(com.ola.me.net.org.vn.richtext.OlaRichTextPackage())
           add(com.ola.me.net.org.vn.call.OlaCallPackage())
+          add(com.ola.me.net.org.vn.applock.OlaAppLockPackage())
         },
     )
   }

@@ -32,6 +32,7 @@ export const ROOT_ROUTES = {
   MediaStore: 'MediaStore',
   Notifications: 'Notifications',
   Settings: 'Settings',
+  AppLock: 'AppLock',
   PenGame: 'PenGame',
   SpinWheel: 'SpinWheel',
   EggGame: 'EggGame',
