@@ -1,5 +1,5 @@
 import '../global.css';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { AppState, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -17,6 +17,7 @@ import { resyncKenBalance } from '@ola/shared/stores/ken/kenRealtime';
 import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { RootNavigator } from './navigation/RootNavigator';
+import { ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './navigation/routes';
 import { AppFontProvider } from './components/AppFontProvider';
 import { StatusBarBackground } from './components/ui/StatusBarBackground';
 import { ReconnectingBanner } from './components/ui/ReconnectingBanner';
@@ -27,6 +28,7 @@ import { useAppNotificationRealtime } from './hooks/useAppNotificationRealtime';
 import { useKenRealtime } from './hooks/useKenRealtime';
 import { KenTreasureOverlay } from './screens/games/ken-treasure/KenTreasureOverlay';
 import { ArcadeOverlay } from './screens/apps/ArcadeOverlay';
+import { WordChainBubble } from './screens/room/word-chain/WordChainBubble';
 import { CallOverlay } from './screens/call/CallOverlay';
 import { checkForOtaUpdate } from './services/otaUpdate';
 import { initTelemetry, setTelemetryUser, trackScreen } from './lib/telemetry';
@@ -58,6 +60,14 @@ export default function App() {
   const { t } = useTranslation();
   const navigationRef = useNavigationContainerRef<ParamListBase>();
   const routeNameRef = useRef<string | null>(null);
+  const showWordChain = useCallback(() => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate(
+      ROOT_ROUTES.MainTabs,
+      { screen: TAB_ROUTES.Room, params: { screen: ROOM_ROUTES.WordChain } },
+      { pop: true }
+    );
+  }, [navigationRef]);
   useEffect(() => {
     if (userId != null) void useSettingsStore.getState().hydrate();
     setTelemetryUser(userId ?? null);
@@ -162,6 +172,7 @@ export default function App() {
             <StatusBarBackground />
             <ReconnectingBanner />
             <KenTreasureOverlay />
+            <WordChainBubble onRestore={showWordChain} />
             <ArcadeOverlay />
             <CallOverlay />
             <ToastHost />

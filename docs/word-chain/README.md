@@ -292,9 +292,12 @@ Cấu hình lưu ở `app_settings`, key `word_chain`:
 Màn nối từ trên mobile nằm ở `mobile/src/screens/room/word-chain/`, dùng chung toàn bộ logic với web qua `@ola/shared` (`wordChainStore`, `wordChainConfigStore`, `wordChainPrefsStore`, `lib/wordChain`, chuỗi dịch). Mobile chỉ viết lại tầng giao diện.
 
 - Route `WordChain` nằm trong stack của tab Phòng chat, nên tab bar vẫn hiện như phòng chat thường. Vào màn thì mở phòng, thoát thì đóng; admin tắt phòng thì tự quay về danh sách. Đăng xuất reset store.
+- Nút **Thu nhỏ** trên header (cạnh Luật chơi, chỉ hiện khi đã vào phòng) quay về màn trước nhưng vẫn ở trong phòng. `WordChainBubble` gắn ở `App.tsx` hiện bong bóng nổi trên mọi màn: âm tiết cần nối, viền và chấm cam khi có từ mới. Bấm bong bóng thì mở lại màn `WordChain` (điều hướng qua `navigationRef` với `pop: true` để quay về `MainTabs` đang có, không tạo thêm bộ tab), kéo vào thùng rác (hoặc xuống dải đáy dưới thùng rác) thì rời phòng. Vị trí lưu ở MMKV, key `ola.word-chain.bubble-position`. Game Arcade đang mở toàn màn thì bong bóng tạm ẩn.
+- Thu nhỏ tháo màn `WordChain` khỏi stack, nên bản nháp trong ô nhập và vị trí đọc được lưu ở store `wordChainViewStore` (mobile, không persist) rồi khôi phục khi mở lại: đang bám đáy thì cuộn tới tin mới, đang đọc dở thì về đúng tin đầu màn hình và độ lệch trong tin đó, giống web. Rời phòng thì store tự xoá.
+- Bong bóng dùng chung `components/ui/FloatingBubble.tsx` với Arcade (kéo, chạm, thùng rác `TrashTarget`, lưu vị trí), giống `FloatingBubble` của web.
 - Danh sách phòng có dòng **Phòng nối từ** ngay dưới **Chọn phòng nhanh**, ẩn khi admin tắt. Cấu hình đọc lại mỗi lần mở tab và khi kéo làm mới.
 - Feed dùng `FlashList` + `useStickyBottomList` (bám đáy, tải thêm tin cũ khi cuộn lên đầu), bàn phím qua `ChatKeyboardArea` như phòng chat.
-- Hộp thoại dùng `Dialog` chuẩn của mobile: Gợi ý, Tra từ / nghĩa từ, Bảng xếp hạng (Thắng / Điểm / Lịch sử + lọc kỳ), Luật chơi.
+- Hộp thoại dùng `Dialog` chuẩn của mobile: Gợi ý, Mua thêm lượt, Tra từ / nghĩa từ, Bảng xếp hạng (Thắng / Điểm / Lịch sử + lọc kỳ), Luật chơi. Hết lượt thì nút Gửi đổi thành **Mua lượt** (icon `buy-guesses.webp`) như web.
 - Hiệu ứng thắng dùng Reanimated: pháo giấy tính quỹ đạo trên UI thread, thẻ cúp có tia sáng SVG xoay, viền vàng quanh bubble từ thắng. Máy bật giảm chuyển động thì bỏ pháo giấy và hiệu ứng nảy. Khác web: chữ từ thắng màu vàng đặc (RN không có chữ gradient) và dùng font hệ thống đậm thay cho Baloo 2.
 - Icon nối từ (`.webp`) copy từ web vào `mobile/src/assets/icons/word-chain/`, gom trong `wordChainAssets.ts`.
 
