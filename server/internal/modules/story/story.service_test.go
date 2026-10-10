@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -12,6 +13,7 @@ import (
 
 	"ola-chat-server/internal/models"
 
+	miniredis "github.com/alicebob/miniredis/v2"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -114,6 +116,8 @@ func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID uui
 	}
 	return nil
 }
+
+var testReader = testID(900)
 
 func testID(n int) uuid.UUID {
 	return uuid.MustParse(fmt.Sprintf("00000000-0000-4000-8000-%012d", n))
@@ -228,14 +232,14 @@ func TestChapterNavigation(t *testing.T) {
 	}
 	service := newTestService(store, &fakeSource{})
 
-	first, err := service.Chapter(context.Background(), sid(1), "1")
+	first, err := service.Chapter(context.Background(), testReader, sid(1), "1")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if first.PrevPosition != nil || first.NextPosition == nil || *first.NextPosition != 2 || first.Content != "một" || first.ID != sid(10) {
 		t.Fatalf("first chapter: %+v", first)
 	}
-	last, err := service.Chapter(context.Background(), sid(1), "3")
+	last, err := service.Chapter(context.Background(), testReader, sid(1), "3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -243,11 +247,11 @@ func TestChapterNavigation(t *testing.T) {
 		t.Fatalf("last chapter: %+v", last)
 	}
 	for _, position := range []string{"0", "-1", "x", "4"} {
-		if _, err := service.Chapter(context.Background(), sid(1), position); !errors.Is(err, ErrChapterNotFound) {
+		if _, err := service.Chapter(context.Background(), testReader, sid(1), position); !errors.Is(err, ErrChapterNotFound) {
 			t.Fatalf("position %q: got %v", position, err)
 		}
 	}
-	if _, err := service.Chapter(context.Background(), "x", "1"); !errors.Is(err, ErrStoryNotFound) {
+	if _, err := service.Chapter(context.Background(), testReader, "x", "1"); !errors.Is(err, ErrStoryNotFound) {
 		t.Fatalf("bad story id: got %v", err)
 	}
 }
@@ -267,7 +271,7 @@ func TestChapterLoadsMissingContentOnce(t *testing.T) {
 	service := newTestService(store, source)
 
 	for range 2 {
-		chapter, err := service.Chapter(context.Background(), sid(1), "1")
+		chapter, err := service.Chapter(context.Background(), testReader, sid(1), "1")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -278,7 +282,7 @@ func TestChapterLoadsMissingContentOnce(t *testing.T) {
 	if source.calls.Load() != 1 || store.saves != 1 {
 		t.Fatalf("source calls %d, saves %d", source.calls.Load(), store.saves)
 	}
-	if _, err := service.Chapter(context.Background(), sid(1), "2"); err != nil || source.calls.Load() != 1 {
+	if _, err := service.Chapter(context.Background(), testReader, sid(1), "2"); err != nil || source.calls.Load() != 1 {
 		t.Fatalf("stored chapter should not be fetched: err %v calls %d", err, source.calls.Load())
 	}
 }
@@ -294,7 +298,7 @@ func TestChapterConcurrentReadsShareOneFetch(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			chapter, err := service.Chapter(context.Background(), sid(1), "1")
+			chapter, err := service.Chapter(context.Background(), testReader, sid(1), "1")
 			if err == nil && chapter.Content != "nội dung" {
 				err = errors.New("wrong content " + chapter.Content)
 			}
@@ -318,7 +322,7 @@ func TestChapterConcurrentReadsShareOneFetch(t *testing.T) {
 func TestChapterContentUnavailable(t *testing.T) {
 	store := newEmptyChapterStore()
 	service := newTestService(store, &fakeSource{err: errEmptyContent})
-	if _, err := service.Chapter(context.Background(), sid(1), "1"); !errors.Is(err, ErrChapterContentUnavailable) {
+	if _, err := service.Chapter(context.Background(), testReader, sid(1), "1"); !errors.Is(err, ErrChapterContentUnavailable) {
 		t.Fatalf("got %v", err)
 	}
 	if store.saves != 0 {
@@ -326,11 +330,108 @@ func TestChapterContentUnavailable(t *testing.T) {
 	}
 }
 
+func newTestViewCounter(t *testing.T) (*ViewCounter, *fakeViewStore, *miniredis.Miniredis) {
+	t.Helper()
+	cache, server := newTestCache(t)
+	store := &fakeViewStore{views: map[uuid.UUID]int64{}}
+	return newViewCounter(store, cache, zap.NewNop().Sugar()), store, server
+}
+
+func TestChapterTracksViewInBackground(t *testing.T) {
+	store := newFakeStore(1)
+	store.chapters[testID(1)] = []models.StoryChapter{
+		{ID: testID(10), StoryID: testID(1), Position: 1, ContentText: "một"},
+	}
+	service := newTestService(store, &fakeSource{})
+	views, _, server := newTestViewCounter(t)
+	service.views = views
+
+	if _, err := service.Chapter(context.Background(), testReader, sid(1), "1"); err != nil {
+		t.Fatal(err)
+	}
+	deadline := time.Now().Add(time.Second)
+	for server.HGet(CacheKeyStoryViewsPending, sid(1)) != "1" {
+		if time.Now().After(deadline) {
+			t.Fatalf("pending views: %q", server.HGet(CacheKeyStoryViewsPending, sid(1)))
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+}
+
+func TestChapterFailuresDoNotCountViews(t *testing.T) {
+	store := newEmptyChapterStore()
+	service := newTestService(store, &fakeSource{err: errEmptyContent})
+	views, viewStore, server := newTestViewCounter(t)
+	service.views = views
+
+	if _, err := service.Chapter(context.Background(), testReader, sid(1), "1"); !errors.Is(err, ErrChapterContentUnavailable) {
+		t.Fatalf("got %v", err)
+	}
+	if _, err := service.Chapter(context.Background(), testReader, sid(1), "9"); !errors.Is(err, ErrChapterNotFound) {
+		t.Fatalf("got %v", err)
+	}
+	time.Sleep(20 * time.Millisecond)
+	if keys := server.Keys(); len(keys) != 0 || viewStore.callCount() != 0 {
+		t.Fatalf("view tracked on failure: keys %v, saves %d", keys, viewStore.callCount())
+	}
+}
+
+func hangRedis(t *testing.T, server *miniredis.Miniredis) {
+	t.Helper()
+	addr := server.Addr()
+	server.Close()
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var mu sync.Mutex
+	var conns []net.Conn
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			mu.Lock()
+			conns = append(conns, conn)
+			mu.Unlock()
+		}
+	}()
+	t.Cleanup(func() {
+		_ = listener.Close()
+		mu.Lock()
+		defer mu.Unlock()
+		for _, conn := range conns {
+			_ = conn.Close()
+		}
+	})
+}
+
+func TestChapterDoesNotWaitForViewTracking(t *testing.T) {
+	store := newFakeStore(1)
+	store.chapters[testID(1)] = []models.StoryChapter{
+		{ID: testID(10), StoryID: testID(1), Position: 1, ContentText: "một"},
+	}
+	service := newTestService(store, &fakeSource{})
+	views, _, server := newTestViewCounter(t)
+	service.views = views
+	hangRedis(t, server)
+
+	started := time.Now()
+	chapter, err := service.Chapter(context.Background(), testReader, sid(1), "1")
+	if err != nil || chapter.Content != "một" {
+		t.Fatalf("got %+v, %v", chapter, err)
+	}
+	if elapsed := time.Since(started); elapsed > 200*time.Millisecond {
+		t.Fatalf("chapter waited %v for view tracking", elapsed)
+	}
+}
+
 func TestChapterSaveFailureStillReturnsContent(t *testing.T) {
 	store := newEmptyChapterStore()
 	store.saveErr = errors.New("db down")
 	service := newTestService(store, &fakeSource{content: "nội dung"})
-	chapter, err := service.Chapter(context.Background(), sid(1), "1")
+	chapter, err := service.Chapter(context.Background(), testReader, sid(1), "1")
 	if err != nil || chapter.Content != "nội dung" {
 		t.Fatalf("got %+v, %v", chapter, err)
 	}

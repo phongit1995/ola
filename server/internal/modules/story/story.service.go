@@ -38,13 +38,14 @@ type Service struct {
 	store       Store
 	admin       AdminStore
 	source      ContentSource
+	views       *ViewCounter
 	logger      *zap.SugaredLogger
 	fetches     singleflight.Group
 	bulkFetches sync.Map
 }
 
-func NewService(repo *Repository, source *VnkingsSource, logger *zap.SugaredLogger) *Service {
-	return &Service{store: repo, admin: repo, source: source, logger: logger.Named("[story_service]")}
+func NewService(repo *Repository, source *VnkingsSource, views *ViewCounter, logger *zap.SugaredLogger) *Service {
+	return &Service{store: repo, admin: repo, source: source, views: views, logger: logger.Named("[story_service]")}
 }
 
 func normalizeListQuery(query ListQuery) ListQuery {
@@ -195,7 +196,7 @@ func (s *Service) Chapters(ctx context.Context, rawID string) (*ChapterListRespo
 	return &ChapterListResponse{Items: items}, nil
 }
 
-func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*ChapterResponse, error) {
+func (s *Service) Chapter(ctx context.Context, viewerID uuid.UUID, rawID, rawPosition string) (*ChapterResponse, error) {
 	id, ok := parseID(rawID)
 	if !ok {
 		return nil, ErrStoryNotFound
@@ -216,6 +217,7 @@ func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*Chap
 			return nil, err
 		}
 	}
+	s.views.Track(viewerID, row.StoryID)
 	return &ChapterResponse{
 		ChapterSummaryResponse: toChapterSummary(row.StoryChapter),
 		Content:                row.ContentText,

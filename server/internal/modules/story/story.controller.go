@@ -99,7 +99,11 @@ func (ctrl *Controller) Chapters(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[ChapterResponse]
 // @Router       /stories/{id}/chapters/{position} [get]
 func (ctrl *Controller) Chapter(c *gin.Context) (interface{}, error) {
-	resp, err := ctrl.service.Chapter(c.Request.Context(), c.Param("id"), c.Param("position"))
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Chapter(c.Request.Context(), userID, c.Param("id"), c.Param("position"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

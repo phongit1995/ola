@@ -36,6 +36,10 @@ const (
 	StoryVnkingsContentID = "content"
 	StoryBulkFetchTimeout = 30 * time.Minute
 	StoryBulkFetchGap     = 500 * time.Millisecond
+	StoryViewGuardTTL     = 6 * time.Hour
+	StoryViewTrackTimeout = 3 * time.Second
+	StoryViewFlushMin     = 5
+	StoryViewFlushMax     = 10
 
 	StoryVnkingsHomeURL          = "https://vnkings.com/"
 	StoryVnkingsRESTURL          = "https://vnkings.com/?rest_route="
@@ -79,6 +83,8 @@ const (
 	CacheKeyStoryCrawlState    = "STORY_CRAWL:STATE"
 	CacheKeyStoryCrawlLogs     = "STORY_CRAWL:LOGS"
 	CacheKeyStoryCrawlProgress = "STORY_CRAWL:PROGRESS"
+	CacheKeyStoryViewGuard     = "STORY:%s:VIEW:%s"
+	CacheKeyStoryViewsPending  = "STORY_VIEWS:PENDING"
 
 	ErrorCodeStoryContentUnavailable = "STORY_CONTENT_UNAVAILABLE"
 	ErrorCodeStoryContentNotSaved    = "STORY_CONTENT_NOT_SAVED"
