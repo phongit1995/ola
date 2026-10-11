@@ -1,7 +1,10 @@
 import type {
+  CreateStoryCommentResult,
   Story,
+  StoryAccess,
   StoryChapter,
   StoryChapterSummary,
+  StoryComment,
   StoryGenreItem,
   StorySort,
   StoryStatusFilter,
@@ -9,7 +12,7 @@ import type {
 
 export type { StoryIconName } from '../../constants/storyIcons';
 
-export type StoryLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
+export type StoryLoadStatus = 'idle' | 'loading' | 'ready' | 'error' | 'locked';
 
 export type StoryReaderTheme = 'light' | 'sepia' | 'green' | 'gray' | 'dark';
 
@@ -43,11 +46,35 @@ export interface StoryStoreState {
   chapters: Record<string, StoryChapterItem[]>;
   chapterContents: Record<string, StoryChapter>;
   chapterStatus: Record<string, StoryLoadStatus>;
+  chapterLocks: Record<string, StoryChapter>;
+  storyAccess: Record<string, StoryAccess>;
   loadHome: () => Promise<void>;
   setFilter: (patch: Partial<StoryListFilter>) => Promise<void>;
   loadMore: () => Promise<void>;
   loadStory: (storyId: string) => Promise<void>;
   loadChapter: (storyId: string, position: number) => Promise<void>;
+  prefetchChapter: (storyId: string, position: number) => Promise<void>;
+  markUnlocked: (storyId: string) => void;
+  reloadLocked: () => void;
+  setCommentCount: (storyId: string, count: number) => void;
+  reset: () => void;
+}
+
+export interface StoryCommentThread {
+  items: StoryComment[];
+  nextCursor: string | null;
+  status: StoryLoadStatus;
+  loadingMore: boolean;
+}
+
+export interface StoryCommentState {
+  threads: Record<string, StoryCommentThread>;
+  load: (storyId: string) => Promise<void>;
+  loadMore: (storyId: string) => Promise<void>;
+  send: (storyId: string, content: string, parentId?: string) => Promise<CreateStoryCommentResult>;
+  remove: (storyId: string, commentId: string) => Promise<void>;
+  toggleLike: (storyId: string, commentId: string) => Promise<void>;
+  reset: () => void;
 }
 
 export interface StoryProgress {

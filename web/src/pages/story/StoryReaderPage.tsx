@@ -1,16 +1,23 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from '@components';
-import { splitStoryParagraphs, storyChapterKey } from '@lib';
+import {
+  formatCompactCount,
+  splitStoryParagraphs,
+  storyChapterKey,
+} from '@lib';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { READER_FONTS, READER_PALETTES } from './constants';
 import { ChapterPickerSheet } from './components/ChapterPickerSheet';
 import { ReaderSettingsSheet } from './components/ReaderSettingsSheet';
+import { StoryCommentSheet } from './components/StoryCommentSheet';
 import { StoryIcon } from './components/StoryIcons';
+import { StoryLockedPanel } from './components/StoryLockedPanel';
 import { StoryStateMessage } from './components/StoryStateMessage';
 
-type ReaderSheetKind = 'settings' | 'toc';
+type ReaderSheetKind = 'settings' | 'toc' | 'comments';
 
 interface StoryReaderPageProps {
   storyId: string;
@@ -37,14 +44,17 @@ export function StoryReaderPage({
   onBack,
   onChangeChapter,
 }: StoryReaderPageProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const key = storyChapterKey(storyId, position);
   const story = useStoryStore((state) => state.stories[storyId]);
   const chapters = useStoryStore((state) => state.chapters[storyId]);
   const chapter = useStoryStore((state) => state.chapterContents[key]);
   const chapterStatus = useStoryStore((state) => state.chapterStatus[key]);
+  const chapterLock = useStoryStore((state) => state.chapterLocks[key]);
   const loadStory = useStoryStore((state) => state.loadStory);
   const loadChapter = useStoryStore((state) => state.loadChapter);
+  const prefetchChapter = useStoryStore((state) => state.prefetchChapter);
+  const pushOverlay = useAppOverlayStore((state) => state.push);
   const reader = useStoryPrefsStore((state) => state.reader);
   const saveProgress = useStoryPrefsStore((state) => state.saveProgress);
   const [sheet, setSheet] = useState<ReaderSheetKind | null>(null);
@@ -71,12 +81,14 @@ export function StoryReaderPage({
       chapterCount: story.chapterCount,
     });
     if (chapter.nextPosition != null) {
-      void loadChapter(storyId, chapter.nextPosition);
+      void prefetchChapter(storyId, chapter.nextPosition);
     }
-  }, [chapter, story, storyId, saveProgress, loadChapter]);
+  }, [chapter, story, storyId, saveProgress, prefetchChapter]);
 
-  const prevPosition = chapter?.prevPosition ?? null;
-  const nextPosition = chapter?.nextPosition ?? null;
+  const lockedChapter = chapterStatus === 'locked' ? chapterLock : undefined;
+  const shownChapter = chapter ?? chapterLock;
+  const prevPosition = shownChapter?.prevPosition ?? null;
+  const nextPosition = shownChapter?.nextPosition ?? null;
 
   useEffect(() => {
     if (!active) return;
@@ -105,6 +117,17 @@ export function StoryReaderPage({
   };
 
   function renderBody() {
+    if (lockedChapter) {
+      return (
+        <StoryLockedPanel
+          chapterTitle={lockedChapter.title}
+          access={lockedChapter.access}
+          palette={palette}
+          onBuyVip={() => pushOverlay('vipBuy')}
+          onComment={() => setSheet('comments')}
+        />
+      );
+    }
     if (!chapter) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center py-20">
@@ -168,6 +191,20 @@ export function StoryReaderPage({
               </button>
             </>
           )}
+          <button
+            type="button"
+            onClick={() => setSheet('comments')}
+            className="flex h-10 items-center gap-1.5 rounded-full border px-5"
+            style={{ borderColor: palette.border }}
+          >
+            <StoryIcon name="chatBubble" className="h-4 w-4" />
+            {t('story.comments')}
+            {story != null && story.commentCount > 0 && (
+              <span style={{ color: palette.muted }}>
+                ({formatCompactCount(story.commentCount, i18n.language)})
+              </span>
+            )}
+          </button>
         </div>
       </article>
     );
@@ -198,7 +235,7 @@ export function StoryReaderPage({
             {story?.title}
           </span>
           <span className="truncate text-sm leading-5 font-semibold">
-            {chapter?.title ?? story?.title}
+            {shownChapter?.title ?? story?.title}
           </span>
         </div>
         <button
@@ -263,6 +300,13 @@ export function StoryReaderPage({
           currentPosition={position}
           palette={palette}
           onPick={pickChapter}
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {sheet === 'comments' && (
+        <StoryCommentSheet
+          storyId={storyId}
+          palette={palette}
           onClose={() => setSheet(null)}
         />
       )}

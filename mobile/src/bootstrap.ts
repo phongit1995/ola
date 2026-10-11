@@ -8,6 +8,8 @@ import { registerOnLogout } from '@ola/shared/stores/auth/authStore';
 import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
+import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
+import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useArcadeOverlayStore } from './store/arcadeOverlayStore';
@@ -42,5 +44,7 @@ registerOnLogout(() => {
   useMediaViewerStore.getState().close();
   useSettingsStore.getState().reset();
   useAnnouncementStore.getState().reset();
+  useStoryStore.getState().reset();
+  useStoryCommentStore.getState().reset();
   void clearAllPushNotifications();
 });

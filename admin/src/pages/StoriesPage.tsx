@@ -21,6 +21,7 @@ import {
   DeleteOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
+  MessageOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
 import type { StoryKind, StorySort, StoryStatus } from '@ola/shared/types'
@@ -37,6 +38,7 @@ import {
 import { formatDate, formatDateTime } from '@/lib/format'
 import { ApiError } from '@/lib/apiError'
 import { StoryChaptersModal } from './StoryChaptersModal'
+import { StoryCommentsModal } from './StoryCommentsModal'
 import type {
   AdminStory,
   AdminStoryBulkVisibilityInput,
@@ -132,6 +134,7 @@ export function StoriesPage() {
   const [page, setPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [chaptersStory, setChaptersStory] = useState<AdminStory | null>(null)
+  const [commentsStory, setCommentsStory] = useState<AdminStory | null>(null)
   const q = useDebounce(search.trim())
 
   const filter: AdminStoryFilter = {
@@ -369,7 +372,7 @@ export function StoriesPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 140,
+      width: 250,
       render: (_, story) => (
         <Space>
           <Button
@@ -378,6 +381,13 @@ export function StoriesPage() {
             onClick={() => setChaptersStory(story)}
           >
             Chương
+          </Button>
+          <Button
+            size="small"
+            icon={<MessageOutlined />}
+            onClick={() => setCommentsStory(story)}
+          >
+            Bình luận ({formatCount(story.commentCount ?? 0)})
           </Button>
           <Button
             size="small"
@@ -565,7 +575,7 @@ export function StoriesPage() {
           columns={columns}
           dataSource={data?.items ?? []}
           loading={isFetching}
-          scroll={{ x: 1080 }}
+          scroll={{ x: 1190 }}
           rowSelection={{
             selectedRowKeys: selectedIds,
             preserveSelectedRowKeys: true,
@@ -585,6 +595,11 @@ export function StoriesPage() {
         story={chaptersStory}
         open={chaptersStory != null}
         onClose={() => setChaptersStory(null)}
+      />
+      <StoryCommentsModal
+        story={commentsStory}
+        open={commentsStory != null}
+        onClose={() => setCommentsStory(null)}
       />
     </Space>
   )

@@ -66,6 +66,9 @@ export const API_PATH = {
     detail: (id: string) => `/stories/${id}`,
     chapters: (id: string) => `/stories/${id}/chapters`,
     chapter: (id: string, position: number) => `/stories/${id}/chapters/${position}`,
+    comments: (id: string) => `/stories/${id}/comments`,
+    comment: (id: string, commentId: string) => `/stories/${id}/comments/${commentId}`,
+    commentLike: (id: string, commentId: string) => `/stories/${id}/comments/${commentId}/like`,
   },
   user: {
     me: '/user/me',

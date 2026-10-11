@@ -224,7 +224,7 @@ func TestAdminHideShowAndDelete(t *testing.T) {
 	if err != nil || !hidden.IsHidden || hidden.ContentChapters != 1 {
 		t.Fatalf("hide: %+v, %v", hidden, err)
 	}
-	if _, err := service.Detail(ctx, sid(1)); !errors.Is(err, ErrStoryNotFound) {
+	if _, err := service.Detail(ctx, testReader, sid(1)); !errors.Is(err, ErrStoryNotFound) {
 		t.Fatalf("hidden story visible to users: %v", err)
 	}
 	if detail, err := service.AdminDetail(ctx, sid(1)); err != nil || !detail.IsHidden {

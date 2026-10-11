@@ -19,12 +19,15 @@ import type { StoryChapterItem, StoryIconName } from '@ola/shared/types';
 import type { RootStackParamList, StoryStackParamList } from '@navigation/types';
 import { ROOT_ROUTES, STORY_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { ERROR } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { ROW_SEPARATOR } from './constants';
+import { StoryCommentSheet } from './components/StoryCommentSheet';
 import { StoryCover } from './components/StoryCover';
 import { StoryIcon } from './components/StoryIcons';
 import { StoryStateMessage } from './components/StoryStateMessage';
 import { NewBadge, StoryStatusBadge, StoryTag } from './components/StoryTags';
+import { storyAccessLine, useStoryAccess, type StoryAccessTone } from './storyAccess';
 import { useStoryTextSize } from './typography';
 
 const INTRO_PREVIEW_LINES = 4;
@@ -34,6 +37,8 @@ const STAT_ICON_COLOR = 'rgba(0,0,0,0.7)';
 const ORDER_COLOR = 'rgba(0,0,0,0.6)';
 const SMALL_ICON_SIZE = 16;
 const READING_ICON_SIZE = 14;
+const SECTION_ICON_SIZE = 20;
+const CHEVRON_COLOR = 'rgba(0,0,0,0.4)';
 
 type Props = NativeStackScreenProps<StoryStackParamList, typeof STORY_ROUTES.StoryDetail>;
 
@@ -41,12 +46,13 @@ interface StatProps {
   icon: StoryIconName;
   label: string;
   value: string;
+  onPress?: () => void;
 }
 
-function Stat({ icon, label, value }: StatProps) {
+function Stat({ icon, label, value, onPress }: StatProps) {
   const textSize = useStoryTextSize();
-  return (
-    <View className="flex-1 items-center gap-0.5">
+  const content = (
+    <>
       <View className="flex-row items-center gap-1">
         <StoryIcon name={icon} size={SMALL_ICON_SIZE} color={STAT_ICON_COLOR} />
         <Text className="font-bold text-ola-ink" style={textSize(16, 24)}>
@@ -54,8 +60,20 @@ function Stat({ icon, label, value }: StatProps) {
         </Text>
       </View>
       <Text style={[textSize(11, 16), { color: MUTED }]}>{label}</Text>
-    </View>
+    </>
   );
+  if (onPress) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress}
+        className="flex-1 items-center gap-0.5 rounded-lg active:bg-black/5"
+      >
+        {content}
+      </Pressable>
+    );
+  }
+  return <View className="flex-1 items-center gap-0.5">{content}</View>;
 }
 
 interface ChapterRowProps {
@@ -108,8 +126,10 @@ export function StoryDetailScreen({ route, navigation }: Props) {
   const chapters = useStoryStore((state) => state.chapters[storyId]);
   const loadStory = useStoryStore((state) => state.loadStory);
   const progress = useStoryPrefsStore((state) => state.progress[storyId]);
+  const access = useStoryAccess(storyId);
   const [introExpanded, setIntroExpanded] = useState(false);
   const [newestFirst, setNewestFirst] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   useEffect(() => {
     void loadStory(storyId);
@@ -125,6 +145,7 @@ export function StoryDetailScreen({ route, navigation }: Props) {
       rootNavigation.navigate(ROOT_ROUTES.StoryReader, { storyId, position }),
     [rootNavigation, storyId]
   );
+  const openComments = useCallback(() => setCommentsOpen(true), []);
 
   if (!story) {
     return (
@@ -149,6 +170,13 @@ export function StoryDetailScreen({ route, navigation }: Props) {
   const intro = splitStoryParagraphs(story.intro).join('\n\n');
   const locale = i18n.language;
   const primaryButton = 'h-10 flex-1 items-center justify-center rounded-full bg-ola-button active:opacity-90';
+  const commentCount = formatCompactCount(story.commentCount, locale);
+  const accessLine = storyAccessLine(t, access);
+  const accessColor: Record<StoryAccessTone, string> = {
+    positive: colors.primaryInk,
+    neutral: MUTED,
+    warning: ERROR,
+  };
 
   const header = (
     <View>
@@ -194,7 +222,8 @@ export function StoryDetailScreen({ route, navigation }: Props) {
           <Stat
             icon="chatBubble"
             label={t('story.statComments')}
-            value={formatCompactCount(story.commentCount, locale)}
+            value={commentCount}
+            onPress={openComments}
           />
         </View>
         <View className="mt-4 flex-row gap-2">
@@ -223,6 +252,14 @@ export function StoryDetailScreen({ route, navigation }: Props) {
             </Pressable>
           )}
         </View>
+        {accessLine && (
+          <Text
+            className="mt-2 text-center"
+            style={[textSize(12, 16), { color: accessColor[accessLine.tone] }]}
+          >
+            {accessLine.label}
+          </Text>
+        )}
       </View>
 
       <View className="mt-2 bg-white px-4 py-3">
@@ -242,6 +279,21 @@ export function StoryDetailScreen({ route, navigation }: Props) {
           </Text>
         </Pressable>
       </View>
+
+      <Pressable
+        accessibilityRole="button"
+        onPress={openComments}
+        className="mt-2 flex-row items-center gap-2 bg-white px-4 py-3 active:bg-black/5"
+      >
+        <StoryIcon name="chatBubble" size={SECTION_ICON_SIZE} color={ORDER_COLOR} />
+        <Text className="min-w-0 flex-1 font-bold text-ola-ink" style={textSize(15, 20)}>
+          {t('story.comments')}
+          <Text className="font-normal" style={{ color: MUTED }}>
+            {` (${commentCount})`}
+          </Text>
+        </Text>
+        <StoryIcon name="chevronRight" size={SECTION_ICON_SIZE} color={CHEVRON_COLOR} />
+      </Pressable>
 
       {!isShort && (
         <View className="mt-2 bg-white">
@@ -300,6 +352,9 @@ export function StoryDetailScreen({ route, navigation }: Props) {
         ListHeaderComponent={header}
         ListFooterComponent={footer}
       />
+      {commentsOpen && (
+        <StoryCommentSheet storyId={storyId} onClose={() => setCommentsOpen(false)} />
+      )}
     </View>
   );
 }

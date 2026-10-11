@@ -267,3 +267,38 @@ func (ctrl *Controller) RunCrawler(c *gin.Context) (interface{}, error) {
 	}
 	return story.CrawlRunResponse{Started: true}, nil
 }
+
+// Comments godoc
+// @Summary      Bình luận của truyện, gồm cả bình luận đã xoá (admin)
+// @Tags         admin-story
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "ID truyện"
+// @Param        offset query int false "Vị trí bắt đầu"
+// @Param        limit query int false "Số bình luận mỗi trang"
+// @Success      200  {object}  utils.BaseResponse[story.AdminStoryCommentListResponse]
+// @Router       /admin/stories/{id}/comments [get]
+func (ctrl *Controller) Comments(c *gin.Context) (interface{}, error) {
+	resp, err := ctrl.service.AdminComments(c.Request.Context(), c.Param("id"), utils.ParseOffset(c), utils.ParseLimit(c, story.StoryAdminPageSize, story.StoryAdminPageMax))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// DeleteComment godoc
+// @Summary      Xoá bình luận của truyện (admin)
+// @Tags         admin-story
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "ID truyện"
+// @Param        commentId path string true "ID bình luận"
+// @Success      200  {object}  utils.BaseResponse[story.DeleteStoryCommentResponse]
+// @Router       /admin/stories/{id}/comments/{commentId} [delete]
+func (ctrl *Controller) DeleteComment(c *gin.Context) (interface{}, error) {
+	resp, err := ctrl.service.AdminDeleteComment(c.Request.Context(), c.Param("id"), c.Param("commentId"))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}

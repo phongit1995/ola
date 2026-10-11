@@ -41,6 +41,16 @@ const (
 	StoryViewFlushMin     = 5
 	StoryViewFlushMax     = 10
 
+	StoryCommentPageSize       = 20
+	StoryCommentPageMax        = 50
+	StoryCommentMaxRunes       = 1000
+	StoryCommentExcerptRunes   = 120
+	StoryUnlockSourceComment   = "comment"
+	StoryFreeReadsTTL          = 48 * time.Hour
+	StoryReadingUTCOffset      = 7 * 60 * 60
+	StoryReadingConfigTTL      = time.Minute
+	StoryFreeReadRefundTimeout = 3 * time.Second
+
 	StoryVnkingsHomeURL          = "https://vnkings.com/"
 	StoryVnkingsRESTURL          = "https://vnkings.com/?rest_route="
 	StoryVnkingsAjaxURL          = "https://vnkings.com/wp-admin/admin-ajax.php"
@@ -85,6 +95,7 @@ const (
 	CacheKeyStoryCrawlProgress = "STORY_CRAWL:PROGRESS"
 	CacheKeyStoryViewGuard     = "STORY:%s:VIEW:%s"
 	CacheKeyStoryViewsPending  = "STORY_VIEWS:PENDING"
+	CacheKeyStoryFreeReads     = "STORY_FREE:%s:%s"
 
 	ErrorCodeStoryContentUnavailable = "STORY_CONTENT_UNAVAILABLE"
 	ErrorCodeStoryContentNotSaved    = "STORY_CONTENT_NOT_SAVED"

@@ -23,5 +23,9 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		stories.GET("/:id", r.controller.Detail)
 		stories.GET("/:id/chapters", r.controller.Chapters)
 		stories.GET("/:id/chapters/:position", r.rateLimit.LimitPolicy(middleware.PolicyStoryChapter), r.controller.Chapter)
+		stories.GET("/:id/comments", r.controller.Comments)
+		stories.POST("/:id/comments", r.rateLimit.LimitPolicy(middleware.PolicyStoryComment), r.controller.CreateComment)
+		stories.DELETE("/:id/comments/:commentId", r.controller.DeleteComment)
+		stories.POST("/:id/comments/:commentId/like", r.rateLimit.LimitPolicy(middleware.PolicyStoryCommentLike), r.controller.LikeComment)
 	}
 }

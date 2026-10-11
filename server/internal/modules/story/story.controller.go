@@ -66,7 +66,11 @@ func (ctrl *Controller) Genres(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[StoryResponse]
 // @Router       /stories/{id} [get]
 func (ctrl *Controller) Detail(c *gin.Context) (interface{}, error) {
-	resp, err := ctrl.service.Detail(c.Request.Context(), c.Param("id"))
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Detail(c.Request.Context(), userID, c.Param("id"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -96,6 +100,7 @@ func (ctrl *Controller) Chapters(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        id path string true "ID truyện"
 // @Param        position path int true "Thứ tự chương, bắt đầu từ 1"
+// @Param        prefetch query int false "1 = tải trước: không trừ lượt đọc miễn phí, chưa có quyền thì trả locked"
 // @Success      200  {object}  utils.BaseResponse[ChapterResponse]
 // @Router       /stories/{id}/chapters/{position} [get]
 func (ctrl *Controller) Chapter(c *gin.Context) (interface{}, error) {
@@ -103,7 +108,98 @@ func (ctrl *Controller) Chapter(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.Chapter(c.Request.Context(), userID, c.Param("id"), c.Param("position"))
+	resp, err := ctrl.service.Chapter(c.Request.Context(), userID, c.Param("id"), c.Param("position"), c.Query("prefetch") == "1")
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// Comments godoc
+// @Summary      Bình luận của truyện, mới nhất trước
+// @Tags         story
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "ID truyện"
+// @Param        cursor query string false "nextCursor của trang trước"
+// @Param        limit query int false "Số bình luận mỗi trang"
+// @Success      200  {object}  utils.BaseResponse[StoryCommentListResponse]
+// @Router       /stories/{id}/comments [get]
+func (ctrl *Controller) Comments(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, StoryCommentPageSize, StoryCommentPageMax)
+	resp, err := ctrl.service.Comments(c.Request.Context(), userID, c.Param("id"), c.Query("cursor"), limit)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// CreateComment godoc
+// @Summary      Bình luận vào truyện; đủ số ký tự tối thiểu thì mở khoá đọc miễn phí truyện đó
+// @Tags         story
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "ID truyện"
+// @Param        request body CreateStoryCommentRequest true "Nội dung bình luận"
+// @Success      200  {object}  utils.BaseResponse[CreateStoryCommentResponse]
+// @Router       /stories/{id}/comments [post]
+func (ctrl *Controller) CreateComment(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[CreateStoryCommentRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.CreateComment(c.Request.Context(), userID, c.Param("id"), *req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// DeleteComment godoc
+// @Summary      Xoá bình luận của mình
+// @Tags         story
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "ID truyện"
+// @Param        commentId path string true "ID bình luận"
+// @Success      200  {object}  utils.BaseResponse[DeleteStoryCommentResponse]
+// @Router       /stories/{id}/comments/{commentId} [delete]
+func (ctrl *Controller) DeleteComment(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.DeleteComment(c.Request.Context(), userID, c.Param("id"), c.Param("commentId"))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// LikeComment godoc
+// @Summary      Thích hoặc bỏ thích bình luận
+// @Tags         story
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "ID truyện"
+// @Param        commentId path string true "ID bình luận"
+// @Success      200  {object}  utils.BaseResponse[StoryCommentLikeResponse]
+// @Router       /stories/{id}/comments/{commentId}/like [post]
+func (ctrl *Controller) LikeComment(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.LikeComment(c.Request.Context(), userID, c.Param("id"), c.Param("commentId"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

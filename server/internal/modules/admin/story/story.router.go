@@ -31,5 +31,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		stories.POST("/:id/fetch-content", r.controller.FetchContent)
 		stories.GET("/:id/chapters/:position", r.controller.Chapter)
 		stories.POST("/:id/chapters/:position/refetch", r.controller.Refetch)
+		stories.GET("/:id/comments", r.controller.Comments)
+		stories.DELETE("/:id/comments/:commentId", r.controller.DeleteComment)
 	}
 }

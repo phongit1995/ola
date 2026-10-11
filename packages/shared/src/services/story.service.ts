@@ -1,10 +1,16 @@
 import { http } from '../api/http';
 import { API_PATH } from '../config/api';
 import type {
+  CreateStoryCommentRequest,
+  CreateStoryCommentResult,
+  DeleteStoryCommentResult,
   Story,
   StoryChapter,
   StoryChapterListResult,
   StoryChapterSummary,
+  StoryCommentLikeResult,
+  StoryCommentListQuery,
+  StoryCommentListResult,
   StoryGenreItem,
   StoryGenreListResult,
   StoryListQuery,
@@ -30,7 +36,25 @@ export class StoryService {
     return items;
   }
 
-  static chapter(storyId: string, position: number): Promise<StoryChapter> {
-    return http.get<StoryChapter>(API_PATH.stories.chapter(storyId, position));
+  static chapter(storyId: string, position: number, prefetch = false): Promise<StoryChapter> {
+    return http.get<StoryChapter>(API_PATH.stories.chapter(storyId, position), {
+      params: prefetch ? { prefetch: 1 } : undefined,
+    });
+  }
+
+  static comments(storyId: string, query: StoryCommentListQuery = {}): Promise<StoryCommentListResult> {
+    return http.get<StoryCommentListResult>(API_PATH.stories.comments(storyId), { params: query });
+  }
+
+  static addComment(storyId: string, body: CreateStoryCommentRequest): Promise<CreateStoryCommentResult> {
+    return http.post<CreateStoryCommentResult>(API_PATH.stories.comments(storyId), body);
+  }
+
+  static deleteComment(storyId: string, commentId: string): Promise<DeleteStoryCommentResult> {
+    return http.del<DeleteStoryCommentResult>(API_PATH.stories.comment(storyId, commentId));
+  }
+
+  static likeComment(storyId: string, commentId: string): Promise<StoryCommentLikeResult> {
+    return http.post<StoryCommentLikeResult>(API_PATH.stories.commentLike(storyId, commentId));
   }
 }
