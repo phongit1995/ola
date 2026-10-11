@@ -10,70 +10,32 @@ import {
 import { STORY_KIND } from '@constants';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
-import type { StoryAccess, StoryChapterItem, StoryIconName } from '@app-types';
+import type { StoryChapterItem, StoryIconName } from '@app-types';
 import { READER_PALETTES } from './constants';
 import { StoryCommentSheet } from './components/StoryCommentSheet';
 import { StoryCover } from './components/StoryCover';
+import { StoryFreeReadsBadge } from './components/StoryFreeReadsBadge';
 import { StoryIcon } from './components/StoryIcons';
 import { StoryStateMessage } from './components/StoryStateMessage';
 import { StoryStatusBadge, StoryTag } from './components/StoryTags';
 
 const INTRO_PREVIEW_LINES = 'line-clamp-4';
 
-const ACCESS_NOTE_CLASS = 'mt-2 text-center text-xs';
-
 interface StatProps {
   icon: StoryIconName;
   label: string;
   value: string;
-  onClick?: () => void;
 }
 
-function Stat({ icon, label, value, onClick }: StatProps) {
-  const content = (
-    <>
+function Stat({ icon, label, value }: StatProps) {
+  return (
+    <div className="flex flex-col items-center gap-0.5">
       <span className="flex items-center gap-1 text-base font-bold text-black/87">
         <StoryIcon name={icon} className="h-4 w-4 shrink-0 text-black/70" />
         {value}
       </span>
       <span className="text-[11px] text-black/54">{label}</span>
-    </>
-  );
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className="flex flex-col items-center gap-0.5 rounded-lg active:bg-black/5"
-      >
-        {content}
-      </button>
-    );
-  }
-  return <div className="flex flex-col items-center gap-0.5">{content}</div>;
-}
-
-function StoryAccessNote({ access }: { access: StoryAccess }) {
-  const { t } = useTranslation();
-  const left = Math.max(0, access.freeLimit - access.freeUsed);
-  if (access.vip || access.unlocked) {
-    return (
-      <p className={cn(ACCESS_NOTE_CLASS, 'text-ola-primary-ink')}>
-        {t(access.vip ? 'story.accessVip' : 'story.accessUnlocked')}
-      </p>
-    );
-  }
-  return (
-    <p
-      className={cn(
-        ACCESS_NOTE_CLASS,
-        left > 0 ? 'text-black/54' : 'text-ola-error'
-      )}
-    >
-      {left > 0
-        ? t('story.accessFree', { left, limit: access.freeLimit })
-        : t('story.accessNoneLeft', { limit: access.freeLimit })}
-    </p>
+    </div>
   );
 }
 
@@ -173,12 +135,14 @@ export function StoryDetailPage({
   const introParagraphs = splitStoryParagraphs(story.intro);
   const locale = i18n.language;
   const access = storyAccess ?? story.access;
-  const commentCount = formatCompactCount(story.commentCount, locale);
-  const openComments = () => setCommentsOpen(true);
+  const showFreeReads = access?.enabled && !access.vip && !access.unlocked;
+  const readPosition = progress && !isShort ? progress.position : null;
 
   return (
     <FullScreenOverlay position="absolute" className="bg-ola-surface">
-      <ScreenHeader title={story.title} onBack={onBack} />
+      <ScreenHeader title={story.title} onBack={onBack}>
+        {showFreeReads && <StoryFreeReadsBadge access={access} />}
+      </ScreenHeader>
       <main className="flex-1 overflow-y-auto">
         <section className="bg-white px-4 pt-4 pb-3">
           <div className="flex gap-4">
@@ -203,7 +167,7 @@ export function StoryDetailPage({
               </div>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-4 rounded-lg bg-ola-surface py-2">
+          <div className="mt-4 grid grid-cols-3 rounded-lg bg-ola-surface py-2">
             <Stat
               icon="menuBook"
               label={t('story.statChapters')}
@@ -219,42 +183,27 @@ export function StoryDetailPage({
               label={t('story.statWords')}
               value={formatCompactCount(story.wordCount, locale)}
             />
-            <Stat
-              icon="chatBubble"
-              label={t('story.statComments')}
-              value={commentCount}
-              onClick={openComments}
-            />
           </div>
           <div className="mt-4 flex gap-2">
-            {progress && !isShort ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onRead(progress.position)}
-                  className="h-10 flex-1 rounded-full bg-ola-button text-sm font-semibold text-ola-on-primary active:opacity-90"
-                >
-                  {t('story.readContinue', { position: progress.position })}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onRead(1)}
-                  className="h-10 rounded-full border border-ola-primary px-4 text-sm text-ola-primary-ink active:bg-ola-primary/10"
-                >
-                  {t('story.readFromStart')}
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onRead(1)}
-                className="h-10 flex-1 rounded-full bg-ola-button text-sm font-semibold text-ola-on-primary active:opacity-90"
-              >
-                {t(isShort ? 'story.readShort' : 'story.readFromStart')}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => onRead(readPosition ?? 1)}
+              className="h-10 flex-1 rounded-full bg-ola-button text-sm font-semibold text-ola-on-primary active:opacity-90"
+            >
+              {readPosition != null
+                ? t('story.readContinue', { position: readPosition })
+                : t(isShort ? 'story.readShort' : 'story.readFromStart')}
+            </button>
+            <button
+              type="button"
+              aria-label={t('story.comments')}
+              onClick={() => setCommentsOpen(true)}
+              className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-ola-primary px-4 text-sm font-semibold text-ola-primary-ink active:bg-ola-primary/10"
+            >
+              <StoryIcon name="chatBubble" className="h-4 w-4" />
+              {formatCompactCount(story.commentCount, locale)}
+            </button>
           </div>
-          {access?.enabled && <StoryAccessNote access={access} />}
         </section>
 
         <section className="mt-2 bg-white px-4 py-3">
@@ -277,29 +226,6 @@ export function StoryDetailPage({
             className="mt-1 text-sm text-ola-primary-ink"
           >
             {t(introExpanded ? 'story.showLess' : 'story.showMore')}
-          </button>
-        </section>
-
-        <section className="mt-2 bg-white">
-          <button
-            type="button"
-            onClick={openComments}
-            className="flex w-full items-center gap-2 px-4 py-3 text-left active:bg-black/5"
-          >
-            <StoryIcon
-              name="chatBubble"
-              className="h-5 w-5 shrink-0 text-black/60"
-            />
-            <span className="min-w-0 flex-1 text-[15px] font-bold text-black/87">
-              {t('story.comments')}
-              <span className="ml-1 font-normal text-black/54">
-                ({commentCount})
-              </span>
-            </span>
-            <StoryIcon
-              name="chevronRight"
-              className="h-5 w-5 shrink-0 text-black/40"
-            />
           </button>
         </section>
 
