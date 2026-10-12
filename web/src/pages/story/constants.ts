@@ -110,7 +110,7 @@ export const READER_FONTS: Record<
 > = {
   serif: {
     labelKey: 'story.fontSerif',
-    family: "'Noto Serif', Georgia, 'Times New Roman', serif",
+    family: 'var(--font-reader-serif)',
   },
   sans: {
     labelKey: 'story.fontSans',

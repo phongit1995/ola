@@ -911,6 +911,7 @@
     "readFromStart": "Đọc từ đầu",
     "readContinue": "Đọc tiếp chương {{position}}",
     "readShort": "Đọc truyện",
+    "readPercent": "Đã đọc {{percent}}%",
     "intro": "Giới thiệu",
     "sourceFrom": "Nguồn: {{host}}",
     "showMore": "Xem thêm",

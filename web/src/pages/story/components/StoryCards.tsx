@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHorizontalDragScroll } from '@hooks';
-import { cn, formatCompactCount } from '@lib';
+import { cn, formatCompactCount, storyReadPercent } from '@lib';
 import type { Story, StoryIconName, StoryProgress } from '@app-types';
 import { StoryCover } from './StoryCover';
 import { StoryIcon } from './StoryIcons';
@@ -93,9 +93,7 @@ interface ContinueCardProps {
 
 export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
   const { t } = useTranslation();
-  const percent = Math.round(
-    (progress.position / Math.max(progress.chapterCount, 1)) * 100
-  );
+  const percent = storyReadPercent(progress.position, progress.chapterCount);
   return (
     <li className="w-[104px] shrink-0">
       <button

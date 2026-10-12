@@ -911,6 +911,7 @@
     "readFromStart": "Start reading",
     "readContinue": "Continue chapter {{position}}",
     "readShort": "Read story",
+    "readPercent": "{{percent}}% read",
     "intro": "Synopsis",
     "sourceFrom": "Source: {{host}}",
     "showMore": "Show more",

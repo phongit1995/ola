@@ -36,6 +36,10 @@ export function splitStoryParagraphs(content: string): string[] {
     .filter((paragraph) => paragraph.length > 0);
 }
 
+export function storyReadPercent(position: number, chapterCount: number): number {
+  return Math.round((Math.max(position - 1, 0) / Math.max(chapterCount, 1)) * 100);
+}
+
 export function formatCompactCount(value: number, locale: string): string {
   const format = (scaled: number, suffix: string) =>
     `${scaled.toLocaleString(locale, { maximumFractionDigits: 1 })}${suffix}`;
