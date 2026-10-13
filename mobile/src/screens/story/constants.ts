@@ -18,6 +18,7 @@ export const STORY_SECTION_ART = {
   topViewed: require('@assets/icons/story/illustrated/top-viewed.webp'),
   allStories: require('@assets/icons/story/illustrated/all-stories.webp'),
   searchResults: require('@assets/icons/story/illustrated/search-results.webp'),
+  latestComments: require('@assets/icons/story/illustrated/latest-comments.webp'),
 };
 
 export type StorySectionArt = keyof typeof STORY_SECTION_ART;

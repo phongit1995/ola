@@ -10,6 +10,7 @@ import type {
 } from '@app-types';
 import allStoriesArt from '@/assets/icons/story/illustrated/all-stories.webp';
 import continueReadingArt from '@/assets/icons/story/illustrated/continue-reading.webp';
+import latestCommentsArt from '@/assets/icons/story/illustrated/latest-comments.webp';
 import searchResultsArt from '@/assets/icons/story/illustrated/search-results.webp';
 import stateEmptyArt from '@/assets/icons/story/illustrated/state-empty.webp';
 import stateErrorArt from '@/assets/icons/story/illustrated/state-error.webp';
@@ -26,6 +27,7 @@ export const STORY_SECTION_ART = {
   topViewed: topViewedArt,
   allStories: allStoriesArt,
   searchResults: searchResultsArt,
+  latestComments: latestCommentsArt,
 };
 
 export type StorySectionArt = keyof typeof STORY_SECTION_ART;

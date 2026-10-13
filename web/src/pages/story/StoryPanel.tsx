@@ -13,6 +13,7 @@ import {
   SEARCH_DEBOUNCE_MS,
   SORT_OPTIONS,
   STATUS_FILTER_OPTIONS,
+  STORY_SECTION_ART,
 } from './constants';
 import {
   ContinueCard,
@@ -217,7 +218,12 @@ export function StoryPanel() {
           onClick={openLatestComments}
           className="ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/15 active:bg-white/25 motion-reduce:transition-none"
         >
-          <StoryIcon name="chatBubble" className="h-6 w-6" />
+          <img
+            src={STORY_SECTION_ART.latestComments}
+            alt=""
+            className="h-8 w-8 select-none"
+            draggable={false}
+          />
         </button>
       </HomeHeader>
       <main className="relative flex-1 overflow-y-auto bg-ola-surface">

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -25,6 +26,7 @@ import {
   SEARCH_DEBOUNCE_MS,
   SORT_OPTIONS,
   STATUS_FILTER_OPTIONS,
+  STORY_SECTION_ART,
 } from './constants';
 import {
   ContinueCard,
@@ -41,7 +43,7 @@ const CHIP_BORDER = '#d5d5d5';
 const MUTED = 'rgba(0,0,0,0.54)';
 const FILTER_ICON_MUTED = 'rgba(0,0,0,0.45)';
 const SMALL_ICON_SIZE = 16;
-const HEADER_ICON_SIZE = 24;
+const HEADER_ART_SIZE = 32;
 
 type StoryListNavigation = CompositeNavigationProp<
   NativeStackNavigationProp<StoryStackParamList, typeof STORY_ROUTES.StoryList>,
@@ -345,7 +347,11 @@ export function StoryListScreen() {
             hitSlop={4}
             className="h-10 w-10 items-center justify-center rounded-full active:bg-white/25"
           >
-            <StoryIcon name="chatBubble" size={HEADER_ICON_SIZE} color={colors.onPrimary} />
+            <Image
+              source={STORY_SECTION_ART.latestComments}
+              style={{ width: HEADER_ART_SIZE, height: HEADER_ART_SIZE }}
+              resizeMode="contain"
+            />
           </Pressable>
         </View>
       </View>
