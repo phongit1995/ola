@@ -17,6 +17,8 @@ export const STORY_SORT = {
   new: 'new',
 } as const satisfies Record<string, StorySort>;
 
+export const STORY_LATEST_COMMENTS_THREAD = 'latest';
+
 export const STORY_STATUS_FILTER = {
   all: 'all',
   ongoing: 'ongoing',

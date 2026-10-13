@@ -5,7 +5,7 @@ import { cn, splitStoryParagraphs } from '@lib';
 import { STORY_KIND } from '@constants';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
-import { READER_PALETTES } from './constants';
+import { READER_PALETTES, STORY_SCREEN_CLASS } from './constants';
 import { StoryChapterList } from './components/StoryChapterList';
 import { StoryCommentSheet } from './components/StoryCommentSheet';
 import { StoryDetailHeading } from './components/StoryDetailHeading';
@@ -14,9 +14,6 @@ import { StoryDetailSkeleton } from './components/StoryDetailSkeleton';
 import { StoryFreeReadsBadge } from './components/StoryFreeReadsBadge';
 import { StoryIcon } from './components/StoryIcons';
 import { StoryStateMessage } from './components/StoryStateMessage';
-
-const SCREEN_CLASS =
-  'animate-ola-screen-in bg-ola-surface motion-reduce:animate-none';
 
 interface StoryDetailPageProps {
   storyId: string;
@@ -45,7 +42,7 @@ export function StoryDetailPage({
 
   if (!story) {
     return (
-      <FullScreenOverlay position="absolute" className={SCREEN_CLASS}>
+      <FullScreenOverlay position="absolute" className={STORY_SCREEN_CLASS}>
         <ScreenHeader title="" onBack={onBack} />
         {status === 'error' ? (
           <div className="flex flex-1 flex-col items-center justify-center">
@@ -70,7 +67,7 @@ export function StoryDetailPage({
   const readPosition = readingProgress?.position ?? null;
 
   return (
-    <FullScreenOverlay position="absolute" className={SCREEN_CLASS}>
+    <FullScreenOverlay position="absolute" className={STORY_SCREEN_CLASS}>
       <ScreenHeader title={story.title} onBack={onBack}>
         {showFreeReads && <StoryFreeReadsBadge access={access} />}
       </ScreenHeader>

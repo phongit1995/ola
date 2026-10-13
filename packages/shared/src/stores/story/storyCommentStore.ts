@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import { STORY_LATEST_COMMENTS_THREAD } from '../../constants/story';
 import { StoryService } from '../../services/story.service';
-import type { StoryComment } from '../../types/api/story.type';
+import type { StoryComment, StoryCommentListQuery } from '../../types/api/story.type';
 import type { StoryCommentState, StoryCommentThread } from '../../types/client/story.type';
 import { useStoryStore } from './storyStore';
 
@@ -11,16 +12,26 @@ const EMPTY_THREAD: StoryCommentThread = {
   loadingMore: false,
 };
 
-interface PendingChanges {
-  sent: StoryComment[];
-  removed: Set<string>;
+interface LikeChange {
+  seq: number;
+  liked: boolean;
+  likeCount: number;
 }
 
 let session = 0;
 let requestSeq = 0;
+let changeSeq = 0;
 let requests: Record<string, number> = {};
-let pendingChanges: Record<string, PendingChanges> = {};
+let pendingSent: Record<string, StoryComment[]> = {};
 const pendingLikes = new Set<string>();
+const likeChanges = new Map<string, LikeChange>();
+const removedIds = new Set<string>();
+
+function fetchComments(threadId: string, query: StoryCommentListQuery = {}) {
+  return threadId === STORY_LATEST_COMMENTS_THREAD
+    ? StoryService.latestComments(query)
+    : StoryService.comments(threadId, query);
+}
 
 function withoutComment(items: StoryComment[], commentId: string): StoryComment[] {
   return items
@@ -28,79 +39,103 @@ function withoutComment(items: StoryComment[], commentId: string): StoryComment[
     .map((item) => (item.replyTo?.commentId === commentId ? { ...item, replyTo: undefined } : item));
 }
 
-function mergePending(items: StoryComment[], changes: PendingChanges | undefined): StoryComment[] {
-  if (!changes) return items;
+function withSent(items: StoryComment[], sent: StoryComment[] = []): StoryComment[] {
   const known = new Set(items.map((item) => item.id));
-  let merged = [...changes.sent.filter((item) => !known.has(item.id)), ...items];
-  changes.removed.forEach((commentId) => {
-    merged = withoutComment(merged, commentId);
+  return [...sent.filter((item) => !known.has(item.id)), ...items];
+}
+
+function withLocalChanges(items: StoryComment[], since: number): StoryComment[] {
+  let result = items;
+  removedIds.forEach((commentId) => {
+    result = withoutComment(result, commentId);
   });
-  return merged;
+  return result.map((item) => {
+    const like = likeChanges.get(item.id);
+    if (!like || (like.seq <= since && !pendingLikes.has(item.id))) return item;
+    return { ...item, liked: like.liked, likeCount: like.likeCount };
+  });
 }
 
 export const useStoryCommentStore = create<StoryCommentState>((set, get) => {
-  function thread(storyId: string): StoryCommentThread {
-    return get().threads[storyId] ?? EMPTY_THREAD;
+  function thread(threadId: string): StoryCommentThread {
+    return get().threads[threadId] ?? EMPTY_THREAD;
   }
 
-  function patchThread(storyId: string, patch: (current: StoryCommentThread) => Partial<StoryCommentThread>) {
+  function patchThread(threadId: string, patch: (current: StoryCommentThread) => Partial<StoryCommentThread>) {
     set((state) => {
-      const current = state.threads[storyId] ?? EMPTY_THREAD;
-      return { threads: { ...state.threads, [storyId]: { ...current, ...patch(current) } } };
+      const current = state.threads[threadId] ?? EMPTY_THREAD;
+      return { threads: { ...state.threads, [threadId]: { ...current, ...patch(current) } } };
     });
   }
 
-  function patchComment(storyId: string, commentId: string, patch: Partial<StoryComment>) {
-    patchThread(storyId, (current) => ({
-      items: current.items.map((item) => (item.id === commentId ? { ...item, ...patch } : item)),
+  function patchEveryThread(update: (items: StoryComment[]) => StoryComment[]) {
+    set((state) => ({
+      threads: Object.fromEntries(
+        Object.entries(state.threads).map(([threadId, current]) => [threadId, { ...current, items: update(current.items) }])
+      ),
+    }));
+  }
+
+  function setLike(commentId: string, liked: boolean, likeCount: number) {
+    likeChanges.set(commentId, { seq: ++changeSeq, liked, likeCount });
+    patchEveryThread((items) => items.map((item) => (item.id === commentId ? { ...item, liked, likeCount } : item)));
+  }
+
+  function prependSent(threadId: string, comment: StoryComment) {
+    pendingSent[threadId]?.push(comment);
+    patchThread(threadId, (latest) => ({
+      items: [comment, ...latest.items.filter((item) => item.id !== comment.id)],
     }));
   }
 
   return {
     threads: {},
 
-    load: async (storyId) => {
+    load: async (threadId) => {
       const request = ++requestSeq;
-      requests[storyId] = request;
-      pendingChanges[storyId] = { sent: [], removed: new Set() };
-      patchThread(storyId, () => ({ status: 'loading' }));
+      const since = changeSeq;
+      requests[threadId] = request;
+      pendingSent[threadId] = [];
+      patchThread(threadId, () => ({ status: 'loading' }));
       try {
-        const page = await StoryService.comments(storyId);
-        if (requests[storyId] !== request) return;
-        const changes = pendingChanges[storyId];
-        delete pendingChanges[storyId];
-        patchThread(storyId, () => ({
-          items: mergePending(page.items, changes),
+        const page = await fetchComments(threadId);
+        if (requests[threadId] !== request) return;
+        const sent = pendingSent[threadId];
+        delete pendingSent[threadId];
+        patchThread(threadId, () => ({
+          items: withLocalChanges(withSent(page.items, sent), since),
           nextCursor: page.nextCursor ?? null,
           status: 'ready',
           loadingMore: false,
         }));
       } catch {
-        if (requests[storyId] !== request) return;
-        delete pendingChanges[storyId];
-        patchThread(storyId, () => ({ status: 'error' }));
+        if (requests[threadId] !== request) return;
+        delete pendingSent[threadId];
+        patchThread(threadId, () => ({ status: 'error' }));
       }
     },
 
-    loadMore: async (storyId) => {
-      const current = thread(storyId);
+    loadMore: async (threadId) => {
+      const current = thread(threadId);
       if (current.loadingMore || current.nextCursor == null || current.status !== 'ready') return;
-      const request = requests[storyId];
-      patchThread(storyId, () => ({ loadingMore: true }));
+      const request = requests[threadId];
+      const since = changeSeq;
+      patchThread(threadId, () => ({ loadingMore: true }));
       try {
-        const page = await StoryService.comments(storyId, { cursor: current.nextCursor });
-        if (requests[storyId] !== request) return;
-        patchThread(storyId, (latest) => {
+        const page = await fetchComments(threadId, { cursor: current.nextCursor });
+        if (requests[threadId] !== request) return;
+        patchThread(threadId, (latest) => {
           const known = new Set(latest.items.map((item) => item.id));
+          const fresh = page.items.filter((item) => !known.has(item.id));
           return {
-            items: [...latest.items, ...page.items.filter((item) => !known.has(item.id))],
+            items: [...latest.items, ...withLocalChanges(fresh, since)],
             nextCursor: page.nextCursor ?? null,
             loadingMore: false,
           };
         });
       } catch {
-        if (requests[storyId] !== request) return;
-        patchThread(storyId, () => ({ loadingMore: false }));
+        if (requests[threadId] !== request) return;
+        patchThread(threadId, () => ({ loadingMore: false }));
       }
     },
 
@@ -108,10 +143,8 @@ export const useStoryCommentStore = create<StoryCommentState>((set, get) => {
       const current = session;
       const result = await StoryService.addComment(storyId, { content, parentId });
       if (current !== session) return result;
-      pendingChanges[storyId]?.sent.push(result.comment);
-      patchThread(storyId, (latest) => ({
-        items: [result.comment, ...latest.items.filter((item) => item.id !== result.comment.id)],
-      }));
+      prependSent(storyId, result.comment);
+      if (get().threads[STORY_LATEST_COMMENTS_THREAD]) prependSent(STORY_LATEST_COMMENTS_THREAD, result.comment);
       const stories = useStoryStore.getState();
       stories.setCommentCount(storyId, result.commentCount);
       if (result.unlocked) stories.markUnlocked(storyId);
@@ -122,40 +155,38 @@ export const useStoryCommentStore = create<StoryCommentState>((set, get) => {
       const current = session;
       const result = await StoryService.deleteComment(storyId, commentId);
       if (current !== session) return;
-      pendingChanges[storyId]?.removed.add(commentId);
-      patchThread(storyId, (latest) => ({ items: withoutComment(latest.items, commentId) }));
+      removedIds.add(commentId);
+      patchEveryThread((items) => withoutComment(items, commentId));
       useStoryStore.getState().setCommentCount(storyId, result.commentCount);
     },
 
-    toggleLike: async (storyId, commentId) => {
-      const likeKey = `${storyId}:${commentId}`;
-      const comment = thread(storyId).items.find((item) => item.id === commentId);
-      if (!comment || pendingLikes.has(likeKey)) return;
+    toggleLike: async (threadId, commentId) => {
+      const comment = thread(threadId).items.find((item) => item.id === commentId);
+      if (!comment || pendingLikes.has(commentId)) return;
       const current = session;
       const liked = !comment.liked;
-      pendingLikes.add(likeKey);
-      patchComment(storyId, commentId, {
-        liked,
-        likeCount: Math.max(0, comment.likeCount + (liked ? 1 : -1)),
-      });
+      pendingLikes.add(commentId);
+      setLike(commentId, liked, Math.max(0, comment.likeCount + (liked ? 1 : -1)));
       try {
-        const result = await StoryService.likeComment(storyId, commentId);
+        const result = await StoryService.likeComment(comment.storyId, commentId);
         if (current !== session) return;
-        patchComment(storyId, commentId, { liked: result.liked, likeCount: result.likeCount });
+        setLike(commentId, result.liked, result.likeCount);
       } catch (error) {
         if (current !== session) return;
-        patchComment(storyId, commentId, { liked: comment.liked, likeCount: comment.likeCount });
+        setLike(commentId, comment.liked, comment.likeCount);
         throw error;
       } finally {
-        pendingLikes.delete(likeKey);
+        pendingLikes.delete(commentId);
       }
     },
 
     reset: () => {
       session += 1;
       requests = {};
-      pendingChanges = {};
+      pendingSent = {};
       pendingLikes.clear();
+      likeChanges.clear();
+      removedIds.clear();
       set({ threads: {} });
     },
   };

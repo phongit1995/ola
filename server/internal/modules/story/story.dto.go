@@ -103,6 +103,12 @@ type StoryCommentReply struct {
 	Excerpt    string `json:"excerpt"`
 }
 
+type StoryCommentStory struct {
+	ID       string  `json:"id"`
+	Title    string  `json:"title"`
+	CoverURL *string `json:"coverUrl,omitempty"`
+}
+
 type StoryCommentResponse struct {
 	ID        string              `json:"id"`
 	StoryID   string              `json:"storyId"`
@@ -110,6 +116,7 @@ type StoryCommentResponse struct {
 	Content   string              `json:"content"`
 	Author    *StoryCommentAuthor `json:"author,omitempty"`
 	ReplyTo   *StoryCommentReply  `json:"replyTo,omitempty"`
+	Story     *StoryCommentStory  `json:"story,omitempty"`
 	LikeCount int                 `json:"likeCount"`
 	Liked     bool                `json:"liked"`
 	Mine      bool                `json:"mine"`

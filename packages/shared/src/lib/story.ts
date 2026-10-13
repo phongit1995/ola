@@ -1,3 +1,4 @@
+import type { StoryComment } from '../types/api/story.type';
 import type { StoryReaderPrefs } from '../types/client/story.type';
 
 export const STORY_PAGE_SIZE = 10;
@@ -34,6 +35,10 @@ export function splitStoryParagraphs(content: string): string[] {
     .split(/\n\s*\n/)
     .map((paragraph) => paragraph.trim())
     .filter((paragraph) => paragraph.length > 0);
+}
+
+export function storyCommentAuthorName(comment: StoryComment): string {
+  return comment.author?.username ?? '';
 }
 
 export function storyReadPercent(position: number, chapterCount: number): number {

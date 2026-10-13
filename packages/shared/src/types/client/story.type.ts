@@ -69,11 +69,11 @@ export interface StoryCommentThread {
 
 export interface StoryCommentState {
   threads: Record<string, StoryCommentThread>;
-  load: (storyId: string) => Promise<void>;
-  loadMore: (storyId: string) => Promise<void>;
+  load: (threadId: string) => Promise<void>;
+  loadMore: (threadId: string) => Promise<void>;
   send: (storyId: string, content: string, parentId?: string) => Promise<CreateStoryCommentResult>;
   remove: (storyId: string, commentId: string) => Promise<void>;
-  toggleLike: (storyId: string, commentId: string) => Promise<void>;
+  toggleLike: (threadId: string, commentId: string) => Promise<void>;
   reset: () => void;
 }
 

@@ -104,6 +104,7 @@ export function StoryPanel() {
   const progress = useStoryPrefsStore((state) => state.progress);
   const openStory = useStoryOverlayStore((state) => state.openStory);
   const openReader = useStoryOverlayStore((state) => state.openReader);
+  const openLatestComments = useStoryOverlayStore((state) => state.openLatestComments);
   const [query, setQuery] = useState(list.filter.q);
   const { filter } = list;
   const searching = filter.q !== '';
@@ -187,7 +188,7 @@ export function StoryPanel() {
   return (
     <>
       <HomeHeader>
-        <label className="flex h-9 w-full items-center gap-2 rounded-full bg-white/20 px-3">
+        <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-full bg-white/20 px-3">
           <StoryIcon
             name="search"
             className="h-5 w-5 shrink-0 text-white/80"
@@ -209,6 +210,15 @@ export function StoryPanel() {
             </button>
           )}
         </label>
+        <button
+          type="button"
+          aria-label={t('story.latestComments')}
+          title={t('story.latestComments')}
+          onClick={openLatestComments}
+          className="ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/15 active:bg-white/25 motion-reduce:transition-none"
+        >
+          <StoryIcon name="chatBubble" className="h-6 w-6" />
+        </button>
       </HomeHeader>
       <main className="relative flex-1 overflow-y-auto bg-ola-surface">
         {!searching && recent.length > 0 && (

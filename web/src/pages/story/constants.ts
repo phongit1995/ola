@@ -18,6 +18,9 @@ import type { ReaderPalette } from './interface';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 
+export const STORY_SCREEN_CLASS =
+  'animate-ola-screen-in bg-ola-surface motion-reduce:animate-none';
+
 export const STORY_SECTION_ART = {
   continueReading: continueReadingArt,
   topViewed: topViewedArt,

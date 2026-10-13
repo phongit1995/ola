@@ -20,6 +20,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	{
 		stories.GET("", r.controller.List)
 		stories.GET("/genres", r.controller.Genres)
+		stories.GET("/comments", r.controller.RecentComments)
 		stories.GET("/:id", r.controller.Detail)
 		stories.GET("/:id/chapters", r.controller.Chapters)
 		stories.GET("/:id/chapters/:position", r.rateLimit.LimitPolicy(middleware.PolicyStoryChapter), r.controller.Chapter)

@@ -54,6 +54,7 @@ func (f *fakeUsers) GetUsersBatch(userIDs []uuid.UUID, _ bool) map[uuid.UUID]*mo
 
 type fakeCommentStore struct {
 	mu       sync.Mutex
+	stories  map[uuid.UUID]models.Story
 	comments []models.StoryComment
 	likes    map[[2]uuid.UUID]bool
 	unlocks  map[[2]uuid.UUID]bool
@@ -138,6 +139,27 @@ func (f *fakeCommentStore) ListComments(_ context.Context, storyID uuid.UUID, af
 	return items, nil
 }
 
+func (f *fakeCommentStore) RecentComments(_ context.Context, after *commentCursor, limit int) ([]RecentCommentRow, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var rows []RecentCommentRow
+	for _, comment := range f.comments {
+		story, ok := f.stories[comment.StoryID]
+		if !ok || story.IsHidden || comment.DeletedAt.Valid {
+			continue
+		}
+		if after != nil && !comment.CreatedAt.Before(after.CreatedAt) {
+			continue
+		}
+		rows = append(rows, RecentCommentRow{StoryComment: comment, StoryTitle: story.Title, StoryCoverURL: story.CoverURL})
+	}
+	sort.Slice(rows, func(i, j int) bool { return rows[i].CreatedAt.After(rows[j].CreatedAt) })
+	if len(rows) > limit {
+		rows = rows[:limit]
+	}
+	return rows, nil
+}
+
 func (f *fakeCommentStore) CommentsByIDs(_ context.Context, ids []uuid.UUID) ([]models.StoryComment, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -211,6 +233,7 @@ func newCommentService(t *testing.T, minChars int) (*Service, *fakeCommentStore)
 	store.stories[testID(2)] = hidden
 	service := newTestService(store, &fakeSource{})
 	comments := newFakeCommentStore()
+	comments.stories = store.stories
 	service.comments = comments
 	service.users = &fakeUsers{users: map[uuid.UUID]*models.User{
 		testReader: testUser(testReader, "Người Đọc", nil),
@@ -339,7 +362,7 @@ func TestCommentsPageWithCursorAndReplies(t *testing.T) {
 		t.Fatalf("first page: %+v", first)
 	}
 	reply := first.Items[0]
-	if reply.ParentID != root.Comment.ID || reply.ReplyTo == nil || reply.ReplyTo.AuthorName != "Người Đọc" || reply.ReplyTo.Excerpt != "bình luận gốc" {
+	if reply.ParentID != root.Comment.ID || reply.ReplyTo == nil || reply.ReplyTo.AuthorName != root.Comment.Author.Username || reply.ReplyTo.Excerpt != "bình luận gốc" {
 		t.Fatalf("reply snapshot: %+v", reply.ReplyTo)
 	}
 	second, err := service.Comments(ctx, testReader, sid(1), first.NextCursor, 3)
@@ -350,6 +373,49 @@ func TestCommentsPageWithCursorAndReplies(t *testing.T) {
 		t.Fatalf("second page: %+v", second)
 	}
 	if _, err := service.Comments(ctx, testReader, sid(1), "%%%", 3); !errors.Is(err, ErrCommentCursor) {
+		t.Fatalf("bad cursor: got %v", err)
+	}
+}
+
+func TestRecentCommentsAcrossVisibleStories(t *testing.T) {
+	service, comments := newCommentService(t, 1)
+	ctx := context.Background()
+	cover := "https://example.com/ba.jpg"
+	comments.stories[testID(3)] = models.Story{ID: testID(3), Title: "Truyện Ba", Kind: "long", CoverURL: &cover}
+
+	created, err := service.CreateComment(ctx, testReader, sid(1), CreateStoryCommentRequest{Content: "truyện một"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if created.Comment.Story == nil || created.Comment.Story.ID != sid(1) || created.Comment.Story.Title != "Truyện" {
+		t.Fatalf("created story snapshot: %+v", created.Comment.Story)
+	}
+	if _, err := comments.CreateComment(ctx, &models.StoryComment{StoryID: testID(2), AuthorID: testID(952), Content: "truyện ẩn"}, false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.CreateComment(ctx, testID(952), sid(3), CreateStoryCommentRequest{Content: "truyện ba"}); err != nil {
+		t.Fatal(err)
+	}
+
+	first, err := service.RecentComments(ctx, testReader, "", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(first.Items) != 1 || first.NextCursor == "" || first.Items[0].Content != "truyện ba" {
+		t.Fatalf("first page: %+v", first)
+	}
+	story := first.Items[0].Story
+	if story == nil || story.ID != sid(3) || story.Title != "Truyện Ba" || story.CoverURL == nil || *story.CoverURL != cover {
+		t.Fatalf("story snapshot: %+v", story)
+	}
+	second, err := service.RecentComments(ctx, testReader, first.NextCursor, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(second.Items) != 1 || second.NextCursor != "" || second.Items[0].Content != "truyện một" || !second.Items[0].Mine {
+		t.Fatalf("second page skips hidden story: %+v", second)
+	}
+	if _, err := service.RecentComments(ctx, testReader, "%%%", 5); !errors.Is(err, ErrCommentCursor) {
 		t.Fatalf("bad cursor: got %v", err)
 	}
 }

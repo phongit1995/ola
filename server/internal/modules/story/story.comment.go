@@ -81,9 +81,6 @@ func commentAuthorName(user *models.User) string {
 	if user == nil {
 		return ""
 	}
-	if user.FullName != "" {
-		return user.FullName
-	}
 	return user.Username
 }
 
@@ -152,6 +149,17 @@ func (s *Service) commentResponses(ctx context.Context, viewerID uuid.UUID, rows
 	return items, nil
 }
 
+func toCommentStory(id uuid.UUID, title string, coverURL *string) *StoryCommentStory {
+	return &StoryCommentStory{ID: id.String(), Title: title, CoverURL: coverURL}
+}
+
+func commentPageLimit(limit int) int {
+	if limit <= 0 {
+		return StoryCommentPageSize
+	}
+	return min(limit, StoryCommentPageMax)
+}
+
 func (s *Service) Comments(ctx context.Context, viewerID uuid.UUID, rawID, cursor string, limit int) (*StoryCommentListResponse, error) {
 	item, err := s.findStory(ctx, rawID)
 	if err != nil {
@@ -161,12 +169,7 @@ func (s *Service) Comments(ctx context.Context, viewerID uuid.UUID, rawID, curso
 	if err != nil {
 		return nil, err
 	}
-	if limit <= 0 {
-		limit = StoryCommentPageSize
-	}
-	if limit > StoryCommentPageMax {
-		limit = StoryCommentPageMax
-	}
+	limit = commentPageLimit(limit)
 	rows, err := s.comments.ListComments(ctx, item.ID, after, limit+1)
 	if err != nil {
 		return nil, err
@@ -179,6 +182,35 @@ func (s *Service) Comments(ctx context.Context, viewerID uuid.UUID, rawID, curso
 	resp.Items, err = s.commentResponses(ctx, viewerID, rows)
 	if err != nil {
 		return nil, err
+	}
+	return resp, nil
+}
+
+func (s *Service) RecentComments(ctx context.Context, viewerID uuid.UUID, cursor string, limit int) (*StoryCommentListResponse, error) {
+	after, err := decodeCommentCursor(cursor)
+	if err != nil {
+		return nil, err
+	}
+	limit = commentPageLimit(limit)
+	rows, err := s.comments.RecentComments(ctx, after, limit+1)
+	if err != nil {
+		return nil, err
+	}
+	resp := &StoryCommentListResponse{}
+	if len(rows) > limit {
+		rows = rows[:limit]
+		resp.NextCursor = encodeCommentCursor(rows[len(rows)-1].StoryComment)
+	}
+	comments := make([]models.StoryComment, len(rows))
+	for i, row := range rows {
+		comments[i] = row.StoryComment
+	}
+	resp.Items, err = s.commentResponses(ctx, viewerID, comments)
+	if err != nil {
+		return nil, err
+	}
+	for i, row := range rows {
+		resp.Items[i].Story = toCommentStory(row.StoryID, row.StoryTitle, row.StoryCoverURL)
 	}
 	return resp, nil
 }
@@ -220,6 +252,7 @@ func (s *Service) CreateComment(ctx context.Context, viewerID uuid.UUID, rawID s
 	if err != nil {
 		return nil, err
 	}
+	items[0].Story = toCommentStory(item.ID, item.Title, item.CoverURL)
 	return &CreateStoryCommentResponse{Comment: items[0], CommentCount: written.CommentCount, Unlocked: written.Unlocked}, nil
 }
 

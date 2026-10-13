@@ -17,6 +17,7 @@ type CommentStore interface {
 	FindComment(ctx context.Context, storyID, commentID uuid.UUID) (*models.StoryComment, error)
 	DeleteComment(ctx context.Context, storyID, commentID uuid.UUID) (int, bool, error)
 	ListComments(ctx context.Context, storyID uuid.UUID, after *commentCursor, limit int) ([]models.StoryComment, error)
+	RecentComments(ctx context.Context, after *commentCursor, limit int) ([]RecentCommentRow, error)
 	CommentsByIDs(ctx context.Context, ids []uuid.UUID) ([]models.StoryComment, error)
 	LikedComments(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) (map[uuid.UUID]bool, error)
 	ToggleCommentLike(ctx context.Context, commentID, userID uuid.UUID) (bool, int, error)
@@ -32,6 +33,12 @@ type CommentWrite struct {
 type commentCursor struct {
 	CreatedAt time.Time
 	ID        uuid.UUID
+}
+
+type RecentCommentRow struct {
+	models.StoryComment
+	StoryTitle    string
+	StoryCoverURL *string
 }
 
 const incrementCommentCountQuery = `UPDATE stories SET comment_count = comment_count + 1 WHERE id = ? RETURNING comment_count`
@@ -101,6 +108,21 @@ func (r *Repository) ListComments(ctx context.Context, storyID uuid.UUID, after 
 		return nil, err
 	}
 	return items, nil
+}
+
+func (r *Repository) RecentComments(ctx context.Context, after *commentCursor, limit int) ([]RecentCommentRow, error) {
+	query := r.db.WithContext(ctx).Table("story_comments AS c").
+		Select("c.*, s.title AS story_title, s.cover_url AS story_cover_url").
+		Joins("JOIN stories s ON s.id = c.story_id AND NOT s.is_hidden").
+		Where("c.deleted_at IS NULL")
+	if after != nil {
+		query = query.Where("(c.created_at, c.id) < (?, ?)", after.CreatedAt, after.ID)
+	}
+	var rows []RecentCommentRow
+	if err := query.Order("c.created_at DESC, c.id DESC").Limit(limit).Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
 }
 
 func (r *Repository) CommentsByIDs(ctx context.Context, ids []uuid.UUID) ([]models.StoryComment, error) {

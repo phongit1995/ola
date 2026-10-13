@@ -84,6 +84,12 @@ export interface StoryCommentReply {
   excerpt: string;
 }
 
+export interface StoryCommentStory {
+  id: string;
+  title: string;
+  coverUrl?: string | null;
+}
+
 export interface StoryComment {
   id: string;
   storyId: string;
@@ -91,6 +97,7 @@ export interface StoryComment {
   content: string;
   author?: StoryCommentAuthor;
   replyTo?: StoryCommentReply;
+  story?: StoryCommentStory;
   likeCount: number;
   liked: boolean;
   mine: boolean;

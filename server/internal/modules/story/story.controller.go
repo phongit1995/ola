@@ -115,6 +115,28 @@ func (ctrl *Controller) Chapter(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// RecentComments godoc
+// @Summary      Bình luận mới nhất của mọi truyện đang hiển thị, kèm tên và bìa truyện
+// @Tags         story
+// @Produce      json
+// @Security     BearerAuth
+// @Param        cursor query string false "nextCursor của trang trước"
+// @Param        limit query int false "Số bình luận mỗi trang"
+// @Success      200  {object}  utils.BaseResponse[StoryCommentListResponse]
+// @Router       /stories/comments [get]
+func (ctrl *Controller) RecentComments(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, StoryCommentPageSize, StoryCommentPageMax)
+	resp, err := ctrl.service.RecentComments(c.Request.Context(), userID, c.Query("cursor"), limit)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // Comments godoc
 // @Summary      Bình luận của truyện, mới nhất trước
 // @Tags         story

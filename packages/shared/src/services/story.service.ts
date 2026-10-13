@@ -46,6 +46,10 @@ export class StoryService {
     return http.get<StoryCommentListResult>(API_PATH.stories.comments(storyId), { params: query });
   }
 
+  static latestComments(query: StoryCommentListQuery = {}): Promise<StoryCommentListResult> {
+    return http.get<StoryCommentListResult>(API_PATH.stories.latestComments, { params: query });
+  }
+
   static addComment(storyId: string, body: CreateStoryCommentRequest): Promise<CreateStoryCommentResult> {
     return http.post<CreateStoryCommentResult>(API_PATH.stories.comments(storyId), body);
   }

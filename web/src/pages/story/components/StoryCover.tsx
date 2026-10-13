@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import { cn, colorForName } from '@lib';
 import { READER_FONTS } from '../constants';
 
-type CoverSize = 'sm' | 'md' | 'lg';
+type CoverSize = 'xs' | 'sm' | 'md' | 'lg';
 
 const TITLE_CLASS: Record<CoverSize, string> = {
+  xs: 'hidden',
   sm: 'line-clamp-4 text-[9px] leading-[11px]',
   md: 'line-clamp-4 text-xs leading-4',
   lg: 'line-clamp-5 text-base leading-5',

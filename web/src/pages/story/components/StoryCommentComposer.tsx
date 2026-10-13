@@ -7,7 +7,7 @@ import {
   type SmileyInputHandle,
 } from '@components';
 import { useOutsideClick } from '@hooks';
-import { cn, toApiError, toast } from '@lib';
+import { cn, storyCommentAuthorName, toApiError, toast } from '@lib';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
 import type { StoryComment } from '@app-types';
@@ -88,10 +88,7 @@ export function StoryCommentComposer({
         >
           <span className="min-w-0 flex-1 truncate">
             {t('story.commentReplyingTo', {
-              name:
-                replyTarget.author?.fullName ||
-                replyTarget.author?.username ||
-                '',
+              name: storyCommentAuthorName(replyTarget),
             })}
           </span>
           <button

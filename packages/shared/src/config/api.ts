@@ -63,6 +63,7 @@ export const API_PATH = {
   stories: {
     list: '/stories',
     genres: '/stories/genres',
+    latestComments: '/stories/comments',
     detail: (id: string) => `/stories/${id}`,
     chapters: (id: string) => `/stories/${id}/chapters`,
     chapter: (id: string, position: number) => `/stories/${id}/chapters/${position}`,
