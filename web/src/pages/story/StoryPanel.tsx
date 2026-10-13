@@ -212,7 +212,7 @@ export function StoryPanel() {
       </HomeHeader>
       <main className="relative flex-1 overflow-y-auto bg-ola-surface">
         {!searching && recent.length > 0 && (
-          <StoryShelf title={t('story.continueReading')} icon="book">
+          <StoryShelf title={t('story.continueReading')} art="continueReading">
             {recent.map((item) => (
               <ContinueCard
                 key={item.storyId}
@@ -224,7 +224,7 @@ export function StoryPanel() {
         )}
         {!searching && topViewed.length > 0 && (
           <div className={cn(recent.length > 0 && 'mt-2')}>
-            <StoryShelf title={t('story.topViewed')} icon="emojiEvents">
+            <StoryShelf title={t('story.topViewed')} art="topViewed">
               {topViewed.map((story, index) => (
                 <TopStoryCard
                   key={story.id}
@@ -239,7 +239,9 @@ export function StoryPanel() {
         <section className={cn('bg-white', !searching && 'mt-2')}>
           <div className="flex items-center gap-2 px-3 pt-3">
             <div className="min-w-0 flex-1">
-              <StorySectionTitle icon={searching ? 'search' : 'libraryBooks'}>
+              <StorySectionTitle
+                art={searching ? 'searchResults' : 'allStories'}
+              >
                 {t(searching ? 'story.searchResults' : 'story.allStories')}
               </StorySectionTitle>
             </div>

@@ -8,9 +8,31 @@ import type {
   StoryStatus,
   StoryStatusFilter,
 } from '@app-types';
+import allStoriesArt from '@/assets/icons/story/illustrated/all-stories.webp';
+import continueReadingArt from '@/assets/icons/story/illustrated/continue-reading.webp';
+import searchResultsArt from '@/assets/icons/story/illustrated/search-results.webp';
+import stateEmptyArt from '@/assets/icons/story/illustrated/state-empty.webp';
+import stateErrorArt from '@/assets/icons/story/illustrated/state-error.webp';
+import topViewedArt from '@/assets/icons/story/illustrated/top-viewed.webp';
 import type { ReaderPalette } from './interface';
 
 export const SEARCH_DEBOUNCE_MS = 300;
+
+export const STORY_SECTION_ART = {
+  continueReading: continueReadingArt,
+  topViewed: topViewedArt,
+  allStories: allStoriesArt,
+  searchResults: searchResultsArt,
+};
+
+export type StorySectionArt = keyof typeof STORY_SECTION_ART;
+
+export const STORY_STATE_ART = {
+  empty: stateEmptyArt,
+  error: stateErrorArt,
+};
+
+export type StoryStateKind = keyof typeof STORY_STATE_ART;
 
 export const SORT_OPTIONS: {
   value: StorySort;
