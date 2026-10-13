@@ -19,26 +19,36 @@ type ListQuery struct {
 }
 
 type StoryResponse struct {
-	ID            string     `json:"id"`
-	Slug          string     `json:"slug"`
-	Title         string     `json:"title"`
-	AuthorName    string     `json:"authorName"`
-	Kind          string     `json:"kind"`
-	Genres        []string   `json:"genres"`
-	Tags          []string   `json:"tags"`
-	Intro         string     `json:"intro"`
-	CoverURL      *string    `json:"coverUrl"`
-	Status        string     `json:"status"`
-	AgeRating     string     `json:"ageRating"`
-	ChapterCount  int        `json:"chapterCount"`
-	WordCount     int        `json:"wordCount"`
-	ViewCount     int64      `json:"viewCount"`
-	CommentCount  int        `json:"commentCount"`
-	LikeCount     int        `json:"likeCount"`
-	SourceURL     string     `json:"sourceUrl"`
-	PublishedAt   time.Time  `json:"publishedAt"`
-	UpdatedAt     time.Time  `json:"updatedAt"`
-	LastChapterAt *time.Time `json:"lastChapterAt"`
+	ID            string               `json:"id"`
+	Slug          string               `json:"slug"`
+	Title         string               `json:"title"`
+	AuthorName    string               `json:"authorName"`
+	Kind          string               `json:"kind"`
+	Genres        []string             `json:"genres"`
+	Tags          []string             `json:"tags"`
+	Intro         string               `json:"intro"`
+	CoverURL      *string              `json:"coverUrl"`
+	Status        string               `json:"status"`
+	AgeRating     string               `json:"ageRating"`
+	ChapterCount  int                  `json:"chapterCount"`
+	WordCount     int                  `json:"wordCount"`
+	ViewCount     int64                `json:"viewCount"`
+	CommentCount  int                  `json:"commentCount"`
+	LikeCount     int                  `json:"likeCount"`
+	SourceURL     string               `json:"sourceUrl"`
+	PublishedAt   time.Time            `json:"publishedAt"`
+	UpdatedAt     time.Time            `json:"updatedAt"`
+	LastChapterAt *time.Time           `json:"lastChapterAt"`
+	Access        *StoryAccessResponse `json:"access,omitempty"`
+}
+
+type StoryAccessResponse struct {
+	Enabled         bool `json:"enabled"`
+	Vip             bool `json:"vip"`
+	Unlocked        bool `json:"unlocked"`
+	FreeLimit       int  `json:"freeLimit"`
+	FreeUsed        int  `json:"freeUsed"`
+	CommentMinChars int  `json:"commentMinChars"`
 }
 
 type StoryListResponse struct {
@@ -71,9 +81,83 @@ type ChapterListResponse struct {
 
 type ChapterResponse struct {
 	ChapterSummaryResponse
-	Content      string `json:"content"`
-	PrevPosition *int   `json:"prevPosition"`
-	NextPosition *int   `json:"nextPosition"`
+	Content      string              `json:"content"`
+	PrevPosition *int                `json:"prevPosition"`
+	NextPosition *int                `json:"nextPosition"`
+	Locked       bool                `json:"locked"`
+	Access       StoryAccessResponse `json:"access"`
+}
+
+type StoryCommentAuthor struct {
+	ID         string  `json:"id"`
+	Username   string  `json:"username"`
+	FullName   string  `json:"fullName,omitempty"`
+	Avatar     string  `json:"avatar,omitempty"`
+	VipUsed    *string `json:"vipUsed,omitempty"`
+	VipEndTime *string `json:"vipEndTime,omitempty"`
+}
+
+type StoryCommentReply struct {
+	CommentID  string `json:"commentId"`
+	AuthorName string `json:"authorName"`
+	Excerpt    string `json:"excerpt"`
+}
+
+type StoryCommentStory struct {
+	ID       string  `json:"id"`
+	Title    string  `json:"title"`
+	CoverURL *string `json:"coverUrl,omitempty"`
+}
+
+type StoryCommentResponse struct {
+	ID        string              `json:"id"`
+	StoryID   string              `json:"storyId"`
+	ParentID  string              `json:"parentId,omitempty"`
+	Content   string              `json:"content"`
+	Author    *StoryCommentAuthor `json:"author,omitempty"`
+	ReplyTo   *StoryCommentReply  `json:"replyTo,omitempty"`
+	Story     *StoryCommentStory  `json:"story,omitempty"`
+	LikeCount int                 `json:"likeCount"`
+	Liked     bool                `json:"liked"`
+	Mine      bool                `json:"mine"`
+	CreatedAt time.Time           `json:"createdAt"`
+}
+
+type StoryCommentListResponse struct {
+	Items      []StoryCommentResponse `json:"items"`
+	NextCursor string                 `json:"nextCursor,omitempty"`
+}
+
+type CreateStoryCommentRequest struct {
+	Content  string `json:"content" binding:"required"`
+	ParentID string `json:"parentId"`
+}
+
+type CreateStoryCommentResponse struct {
+	Comment      StoryCommentResponse `json:"comment"`
+	CommentCount int                  `json:"commentCount"`
+	Unlocked     bool                 `json:"unlocked"`
+}
+
+type DeleteStoryCommentResponse struct {
+	CommentCount int `json:"commentCount"`
+}
+
+type StoryCommentLikeResponse struct {
+	Liked     bool `json:"liked"`
+	LikeCount int  `json:"likeCount"`
+}
+
+type AdminStoryCommentResponse struct {
+	StoryCommentResponse
+	DeletedAt *time.Time `json:"deletedAt"`
+}
+
+type AdminStoryCommentListResponse struct {
+	Items  []AdminStoryCommentResponse `json:"items"`
+	Total  int64                       `json:"total"`
+	Limit  int                         `json:"limit"`
+	Offset int                         `json:"offset"`
 }
 
 type AdminStoryResponse struct {

@@ -24,10 +24,13 @@ export function PlatformTabs({
     { key: 'android', label: t('download.android.name'), icon: AndroidIcon },
     { key: 'ios', label: t('download.ios.name'), icon: AppleIcon },
   ];
+  const orderedTabs = [...tabs].sort(
+    (a, b) => Number(b.key === detected) - Number(a.key === detected)
+  );
 
   return (
     <div className="flex border-b border-black/8">
-      {tabs.map(({ key, label, icon: Icon }) => {
+      {orderedTabs.map(({ key, label, icon: Icon }) => {
         const selected = active === key;
         return (
           <button

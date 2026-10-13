@@ -8,8 +8,9 @@ import { cleanPlatformRules } from '@/lib/platformRules'
 import type { StorySetting } from '@/types'
 import { STORY_SETTING_KEY, storySetting } from './storyMeta'
 import { StoryCrawlerTab } from './StoryCrawlerTab'
+import { StoryReadingSettingsTab } from './StoryReadingSettingsTab'
 
-const TAB_KEYS = ['display', 'crawler'] as const
+const TAB_KEYS = ['display', 'reading', 'crawler'] as const
 type TabKey = (typeof TAB_KEYS)[number]
 
 export function StorySettingsPage() {
@@ -28,6 +29,7 @@ export function StorySettingsPage() {
       destroyOnHidden
       items={[
         { key: 'display', label: 'Hiển thị trên app', children: <StoryDisplaySettings /> },
+        { key: 'reading', label: 'Giới hạn đọc', children: <StoryReadingSettingsTab /> },
         { key: 'crawler', label: 'Cập nhật tự động', children: <StoryCrawlerTab /> },
       ]}
     />

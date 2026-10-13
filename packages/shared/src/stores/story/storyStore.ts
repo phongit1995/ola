@@ -22,6 +22,22 @@ const DEFAULT_FILTER: StoryListFilter = {
 };
 
 let listRequest = 0;
+let session = 0;
+
+function initialState() {
+  return {
+    genres: [],
+    topViewed: [],
+    list: { filter: DEFAULT_FILTER, items: [], total: 0, hasMore: false, status: 'idle' as const },
+    stories: {},
+    storyStatus: {},
+    chapters: {},
+    chapterContents: {},
+    chapterStatus: {},
+    chapterLocks: {},
+    storyAccess: {},
+  };
+}
 
 function storiesById(stories: Story[]): Record<string, Story> {
   return Object.fromEntries(stories.map((story) => [story.id, story]));
@@ -34,6 +50,12 @@ function toChapterItems(chapters: StoryChapterSummary[], nowMs: number): StoryCh
       chapter.publishedAt !== null &&
       nowMs - new Date(chapter.publishedAt).getTime() < STORY_NEW_CHAPTER_MS,
   }));
+}
+
+function withoutKeys<T>(record: Record<string, T>, keys: string[]): Record<string, T> {
+  const next = { ...record };
+  keys.forEach((key) => delete next[key]);
+  return next;
 }
 
 function refreshChapterNavigation(
@@ -54,6 +76,16 @@ function refreshChapterNavigation(
 }
 
 export const useStoryStore = create<StoryStoreState>((set, get) => {
+  function reloadLocks(matches: (chapter: StoryChapter) => boolean) {
+    const locked = Object.entries(get().chapterLocks).filter(([, chapter]) => matches(chapter));
+    const keys = locked.map(([key]) => key);
+    set((state) => ({
+      chapterLocks: withoutKeys(state.chapterLocks, keys),
+      chapterStatus: withoutKeys(state.chapterStatus, keys),
+    }));
+    locked.forEach(([, chapter]) => void get().loadChapter(chapter.storyId, chapter.position));
+  }
+
   async function fetchPage(filter: StoryListFilter, append: boolean) {
     const request = ++listRequest;
     const offset = append ? get().list.items.length : 0;
@@ -91,21 +123,16 @@ export const useStoryStore = create<StoryStoreState>((set, get) => {
   }
 
   return {
-    genres: [],
-    topViewed: [],
-    list: { filter: DEFAULT_FILTER, items: [], total: 0, hasMore: false, status: 'idle' },
-    stories: {},
-    storyStatus: {},
-    chapters: {},
-    chapterContents: {},
-    chapterStatus: {},
+    ...initialState(),
 
     loadHome: async () => {
+      const current = session;
       const [genres, top] = await Promise.all([
         StoryService.genres().catch(() => null),
         StoryService.list({ sort: STORY_SORT.views, limit: STORY_TOP_LIMIT }).catch(() => null),
         fetchPage(get().list.filter, false),
       ]);
+      if (current !== session) return;
       set((state) => ({
         genres: genres ?? state.genres,
         topViewed: top?.items ?? state.topViewed,
@@ -123,11 +150,13 @@ export const useStoryStore = create<StoryStoreState>((set, get) => {
 
     loadStory: async (storyId) => {
       if (get().storyStatus[storyId] === 'loading') return;
+      const current = session;
       set((state) => ({ storyStatus: { ...state.storyStatus, [storyId]: 'loading' } }));
       const [storyResult, chaptersResult] = await Promise.allSettled([
         StoryService.detail(storyId),
         StoryService.chapters(storyId),
       ]);
+      if (current !== session) return;
       const storyLoaded = storyResult.status === 'fulfilled';
       const chaptersLoaded = chaptersResult.status === 'fulfilled';
       const nowMs = Date.now();
@@ -135,6 +164,10 @@ export const useStoryStore = create<StoryStoreState>((set, get) => {
         ...(storyLoaded && {
           stories: { ...state.stories, [storyId]: storyResult.value },
         }),
+        ...(storyLoaded &&
+          storyResult.value.access && {
+            storyAccess: { ...state.storyAccess, [storyId]: storyResult.value.access },
+          }),
         ...(chaptersLoaded && {
           chapters: {
             ...state.chapters,
@@ -153,9 +186,19 @@ export const useStoryStore = create<StoryStoreState>((set, get) => {
       const key = storyChapterKey(storyId, position);
       const { chapterContents, chapterStatus, chapters } = get();
       if (chapterContents[key] || chapterStatus[key] === 'loading') return;
+      const current = session;
       set((state) => ({ chapterStatus: { ...state.chapterStatus, [key]: 'loading' } }));
       try {
         const chapter = await StoryService.chapter(storyId, position);
+        if (current !== session) return;
+        if (chapter.locked) {
+          set((state) => ({
+            chapterLocks: { ...state.chapterLocks, [key]: chapter },
+            chapterStatus: { ...state.chapterStatus, [key]: 'locked' },
+            storyAccess: { ...state.storyAccess, [storyId]: chapter.access },
+          }));
+          return;
+        }
         set((state) => {
           const contents = { ...state.chapterContents, [key]: chapter };
           const latestChapters = state.chapters[storyId];
@@ -165,11 +208,57 @@ export const useStoryStore = create<StoryStoreState>((set, get) => {
                 ? refreshChapterNavigation(contents, latestChapters)
                 : contents,
             chapterStatus: { ...state.chapterStatus, [key]: 'ready' },
+            chapterLocks: withoutKeys(state.chapterLocks, [key]),
+            storyAccess: { ...state.storyAccess, [storyId]: chapter.access },
           };
         });
       } catch {
+        if (current !== session) return;
         set((state) => ({ chapterStatus: { ...state.chapterStatus, [key]: 'error' } }));
       }
+    },
+
+    prefetchChapter: async (storyId, position) => {
+      const key = storyChapterKey(storyId, position);
+      const { chapterContents, chapterStatus } = get();
+      if (chapterContents[key] || chapterStatus[key]) return;
+      const current = session;
+      try {
+        const chapter = await StoryService.chapter(storyId, position, true);
+        if (current !== session || chapter.locked || get().chapterContents[key] || get().chapterStatus[key]) {
+          return;
+        }
+        set((state) => ({
+          chapterContents: { ...state.chapterContents, [key]: chapter },
+          chapterStatus: { ...state.chapterStatus, [key]: 'ready' },
+        }));
+      } catch {
+        return;
+      }
+    },
+
+    markUnlocked: (storyId) => {
+      set((state) => {
+        const current = state.storyAccess[storyId];
+        return current
+          ? { storyAccess: { ...state.storyAccess, [storyId]: { ...current, unlocked: true } } }
+          : {};
+      });
+      reloadLocks((chapter) => chapter.storyId === storyId);
+    },
+
+    reloadLocked: () => reloadLocks(() => true),
+
+    setCommentCount: (storyId, count) =>
+      set((state) => {
+        const story = state.stories[storyId];
+        return story ? { stories: { ...state.stories, [storyId]: { ...story, commentCount: count } } } : {};
+      }),
+
+    reset: () => {
+      session += 1;
+      listRequest += 1;
+      set(initialState());
     },
   };
 });

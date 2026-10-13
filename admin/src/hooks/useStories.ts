@@ -128,6 +128,27 @@ export function useFetchMissingStoryContent() {
   })
 }
 
+export function useStoryComments(id: string | null, params: { limit: number; offset: number }) {
+  return useQuery({
+    queryKey: [STORIES_KEY, 'comments', id, params],
+    queryFn: () => AdminStoryService.comments(id as string, params),
+    enabled: id != null,
+    placeholderData: (prev, prevQuery) => (prevQuery?.queryKey[2] === id ? prev : undefined),
+  })
+}
+
+export function useDeleteStoryComment() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, commentId }: { id: string; commentId: string }) =>
+      AdminStoryService.removeComment(id, commentId),
+    onSuccess: (_data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'comments', variables.id] })
+      void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'list'] })
+    },
+  })
+}
+
 export function useStoryCrawler() {
   return useQuery({
     queryKey: [STORIES_KEY, 'crawler'],

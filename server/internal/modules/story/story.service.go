@@ -8,8 +8,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/setting"
+	userModule "ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
@@ -37,14 +41,40 @@ var storyStatuses = map[string]bool{
 type Service struct {
 	store       Store
 	admin       AdminStore
+	comments    CommentStore
 	source      ContentSource
+	views       *ViewCounter
+	settings    readingSettings
+	users       userLookup
+	cache       *services.CacheService
 	logger      *zap.SugaredLogger
 	fetches     singleflight.Group
 	bulkFetches sync.Map
+	readingMu   sync.Mutex
+	reading     setting.StoryReadingConfig
+	readingAt   time.Time
 }
 
-func NewService(repo *Repository, source *VnkingsSource, logger *zap.SugaredLogger) *Service {
-	return &Service{store: repo, admin: repo, source: source, logger: logger.Named("[story_service]")}
+func NewService(
+	repo *Repository,
+	source *VnkingsSource,
+	views *ViewCounter,
+	settings *setting.Service,
+	users *userModule.CacheService,
+	cache *services.CacheService,
+	logger *zap.SugaredLogger,
+) *Service {
+	return &Service{
+		store:    repo,
+		admin:    repo,
+		comments: repo,
+		source:   source,
+		views:    views,
+		settings: settings,
+		users:    users,
+		cache:    cache,
+		logger:   logger.Named("[story_service]"),
+	}
 }
 
 func normalizeListQuery(query ListQuery) ListQuery {
@@ -170,12 +200,14 @@ func (s *Service) findStory(ctx context.Context, rawID string) (*models.Story, e
 	return item, nil
 }
 
-func (s *Service) Detail(ctx context.Context, rawID string) (*StoryResponse, error) {
+func (s *Service) Detail(ctx context.Context, viewerID uuid.UUID, rawID string) (*StoryResponse, error) {
 	item, err := s.findStory(ctx, rawID)
 	if err != nil {
 		return nil, err
 	}
 	resp := toStoryResponse(*item)
+	grant := s.access(ctx, viewerID, item.ID, nil, false)
+	resp.Access = &grant.access
 	return &resp, nil
 }
 
@@ -195,7 +227,7 @@ func (s *Service) Chapters(ctx context.Context, rawID string) (*ChapterListRespo
 	return &ChapterListResponse{Items: items}, nil
 }
 
-func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*ChapterResponse, error) {
+func (s *Service) Chapter(ctx context.Context, viewerID uuid.UUID, rawID, rawPosition string, prefetch bool) (*ChapterResponse, error) {
 	id, ok := parseID(rawID)
 	if !ok {
 		return nil, ErrStoryNotFound
@@ -211,16 +243,29 @@ func (s *Service) Chapter(ctx context.Context, rawID, rawPosition string) (*Chap
 	if row == nil {
 		return nil, ErrChapterNotFound
 	}
+	grant := s.access(ctx, viewerID, row.StoryID, &row.ID, !prefetch)
+	if !grant.allowed {
+		return &ChapterResponse{
+			ChapterSummaryResponse: toChapterSummary(row.StoryChapter),
+			PrevPosition:           row.PrevPosition,
+			NextPosition:           row.NextPosition,
+			Locked:                 true,
+			Access:                 grant.access,
+		}, nil
+	}
 	if row.ContentText == "" {
 		if err := s.loadContent(ctx, row, false); err != nil && !errors.Is(err, ErrChapterContentNotSaved) {
+			s.refundFreeRead(ctx, grant, row.ID)
 			return nil, err
 		}
 	}
+	s.views.Track(viewerID, row.StoryID)
 	return &ChapterResponse{
 		ChapterSummaryResponse: toChapterSummary(row.StoryChapter),
 		Content:                row.ContentText,
 		PrevPosition:           row.PrevPosition,
 		NextPosition:           row.NextPosition,
+		Access:                 grant.access,
 	}, nil
 }
 

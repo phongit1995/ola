@@ -7,6 +7,8 @@ import { registerOnLogout } from '@ola/shared/stores/auth/authStore';
 import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
+import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
+import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { webEnv, initAnalytics } from '@config';
 import {
@@ -21,6 +23,7 @@ import { useGameOverlayStore } from './store/gameOverlayStore';
 import { useAppOverlayStore } from './store/appOverlayStore';
 import { useSettingsStore } from './store/settingsStore';
 import { useAnnouncementStore } from './store/announcementStore';
+import { useStoryOverlayStore } from './store/storyOverlayStore';
 
 configureEnv(webEnv);
 configureDeviceInfo({ platform: 'web', appVersion: APP_VERSION });
@@ -41,4 +44,7 @@ registerOnLogout(() => {
   useAppOverlayStore.getState().reset();
   useSettingsStore.getState().reset();
   useAnnouncementStore.getState().reset();
+  useStoryOverlayStore.getState().reset();
+  useStoryStore.getState().reset();
+  useStoryCommentStore.getState().reset();
 });

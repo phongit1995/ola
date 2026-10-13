@@ -911,6 +911,7 @@
     "readFromStart": "Đọc từ đầu",
     "readContinue": "Đọc tiếp chương {{position}}",
     "readShort": "Đọc truyện",
+    "readPercent": "Đã đọc {{percent}}%",
     "intro": "Giới thiệu",
     "sourceFrom": "Nguồn: {{host}}",
     "showMore": "Xem thêm",
@@ -944,7 +945,38 @@
     "decreaseFont": "Giảm cỡ chữ",
     "increaseFont": "Tăng cỡ chữ",
     "lineHeight": "Giãn dòng",
-    "close": "Đóng"
+    "close": "Đóng",
+    "comments": "Bình luận",
+    "commentPlaceholder": "Viết bình luận...",
+    "commentUnlockHint": "Bình luận từ {{count}} ký tự để đọc miễn phí truyện này",
+    "commentSend": "Gửi",
+    "commentEmpty": "Chưa có bình luận nào. Hãy là người đầu tiên!",
+    "commentLoadError": "Không tải được bình luận",
+    "commentSendError": "Gửi bình luận thất bại",
+    "commentDeleteError": "Xoá bình luận thất bại",
+    "commentLikeError": "Không thích được bình luận",
+    "commentRateLimited": "Bạn bình luận quá nhanh, thử lại sau ít phút",
+    "commentDelete": "Xoá",
+    "commentDeleteOption": "Xoá bình luận",
+    "commentMenu": "Tuỳ chọn bình luận",
+    "commentDeleteConfirm": "Xoá bình luận này?",
+    "commentDeleted": "Đã xoá bình luận",
+    "commentReply": "Trả lời",
+    "commentReplyingTo": "Đang trả lời {{name}}",
+    "commentCancelReply": "Huỷ",
+    "commentLike": "Thích",
+    "commentLoadMore": "Xem thêm bình luận",
+    "commentUnlocked": "Đã mở khoá, bạn có thể đọc miễn phí truyện này",
+    "latestComments": "Bình luận mới nhất",
+    "latestCommentsEmpty": "Chưa có bình luận nào. Hãy vào một truyện và bình luận đầu tiên!",
+    "lockedTitle": "Hết lượt đọc miễn phí hôm nay",
+    "lockedMessage": "Mỗi ngày bạn được đọc miễn phí {{count}} chương. Nâng VIP hoặc bình luận vào truyện này để đọc tiếp.",
+    "lockedVip": "Nâng VIP để đọc không giới hạn",
+    "lockedComment": "Bình luận để đọc miễn phí truyện này",
+    "accessVip": "VIP: đọc không giới hạn",
+    "accessUnlocked": "Đã mở khoá truyện này",
+    "accessFree": "Hôm nay còn {{left}}/{{limit}} chương miễn phí",
+    "accessNoneLeft": "Đã hết {{limit}} chương miễn phí hôm nay"
   },
   "me": {
     "tabFeed": "Bảng tin",
@@ -1128,6 +1160,7 @@
   "report": {
     "title": "Báo cáo",
     "post": "Báo cáo bài viết",
+    "comment": "Báo cáo bình luận",
     "action": "Báo cáo",
     "reasonSpam": "Spam / quảng cáo",
     "reasonSensitive": "Nội dung nhạy cảm",
@@ -1651,21 +1684,15 @@
     },
     "ios": {
       "name": "iPhone / iPad",
-      "channel": "Cài qua TestFlight",
-      "action": "Mở lời mời TestFlight",
-      "installTestflight": "Cài TestFlight từ App Store",
+      "channel": "Cài từ App Store",
+      "action": "Tải trên App Store",
+      "requirement": "Yêu cầu iOS {{version}} trở lên",
       "steps": [
-        "Cài ứng dụng TestFlight của Apple từ App Store (miễn phí). TestFlight là app của Apple dành cho việc thử app trước khi lên App Store; nếu bị hỏi đăng nhập thì dùng luôn tài khoản iCloud của bạn.",
-        "Mở TestFlight lần đầu, ở màn “Chào mừng đến TestFlight” nhấn “Tiếp tục”.",
-        "Quay lại trang này, nhấn “Mở lời mời TestFlight”, rồi nhấn “Cài đặt” ở trang Ola - Chat trong TestFlight.",
-        "Ở màn “Từ nhà phát triển”, nhấn “Tiếp”.",
-        "Ở màn “Chia sẻ phản hồi”, nhấn “Bắt đầu kiểm tra”.",
-        "Ola mở lên, bạn đăng nhập bằng tài khoản của mình là xong."
+        "Nhấn “Tải trên App Store” để mở trang Ola Me trên App Store.",
+        "Nhấn “Nhận”, xác nhận bằng Face ID, Touch ID hoặc mật khẩu Apple ID rồi chờ tải xong.",
+        "Mở Ola và đăng nhập bằng tài khoản của bạn."
       ],
-      "note": "Mỗi bản TestFlight có hiệu lực 90 ngày. Khi hết hạn, bạn mở TestFlight và cập nhật lại bản mới nhất.",
-      "codeLabel": "Mã lời mời TestFlight",
-      "codeHint": "Mở TestFlight → Redeem (Sử dụng mã) → dán mã này nếu link lời mời không mở được.",
-      "linkLabel": "Link lời mời TestFlight"
+      "storeLinkLabel": "Link App Store"
     },
     "faqTitle": "Xử lý sự cố",
     "faq": [
@@ -1678,12 +1705,16 @@
         "answer": "Một số máy không có Google Play Services, hoặc tài khoản Google đang ở quốc gia khác. Bạn thử sao chép link Google Play ở trang này dán vào trình duyệt, đổi tài khoản Google trong app Play, hoặc dùng bản web trong lúc chờ."
       },
       {
-        "question": "TestFlight báo lời mời hết chỗ hoặc đã hết hạn?",
-        "answer": "Số lượng người thử nghiệm có giới hạn. Bạn thử lại sau hoặc dùng bản web trong lúc chờ."
+        "question": "Không tìm thấy hoặc không cài được Ola trên App Store?",
+        "answer": "Ola Me cần iOS mới, bạn kiểm tra ở Cài đặt → Cài đặt chung → Cập nhật phần mềm. Bạn cũng có thể sao chép link App Store ở trang này rồi dán vào Safari để mở thẳng trang Ola Me."
+      },
+      {
+        "question": "Đang dùng bản TestFlight thì làm sao?",
+        "answer": "Bản TestFlight chỉ dùng để thử nghiệm và hết hạn sau 90 ngày. Bạn mở trang Ola Me trên App Store và nhấn tải để chuyển sang bản chính thức; tài khoản và tin nhắn vẫn còn nguyên vì được lưu trên hệ thống Ola."
       },
       {
         "question": "Cập nhật app thế nào?",
-        "answer": "Android: Google Play tự cập nhật, hoặc bạn mở trang Ola Me trên Play rồi nhấn Cập nhật. iPhone: mở TestFlight và nhấn Update."
+        "answer": "Android: Google Play tự cập nhật, hoặc bạn mở trang Ola Me trên Play rồi nhấn Cập nhật. iPhone: App Store tự cập nhật, hoặc bạn mở trang Ola Me trên App Store rồi nhấn Cập nhật."
       },
       {
         "question": "Cài app có mất dữ liệu tài khoản không?",
@@ -1691,11 +1722,8 @@
       }
     ],
     "safetyTitle": "Chỉ tải Ola từ nguồn chính thức",
-    "safety": "Ola chỉ phát hành qua Google Play (Android) và TestFlight (iPhone). Chúng tôi không bao giờ nhờ bạn cài file APK nhận từ tin nhắn lạ, nhóm Zalo hay Facebook — file từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
+    "safety": "Ola chỉ phát hành qua Google Play (Android) và App Store (iPhone). Chúng tôi không bao giờ nhờ bạn cài file APK nhận từ tin nhắn lạ, nhóm Zalo hay Facebook — file từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
     "useWeb": "Tiếp tục dùng bản web",
-    "stepLabel": "Bước {{index}}",
-    "screenshotsTitle": "Ảnh minh hoạ các bước",
-    "closePreview": "Đóng ảnh",
     "copiedToClipboard": "Đã sao chép"
   },
   "announcement": {

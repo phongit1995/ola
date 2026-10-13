@@ -6,11 +6,14 @@ import type {
   AdminStoryBulkVisibilityResult,
   AdminStoryChapter,
   AdminStoryChapterDetail,
+  AdminStoryComment,
+  AdminStoryCommentDeleteResult,
   AdminStoryFetchResult,
   AdminStoryListParams,
   AdminStorySource,
   AdminStorySummary,
   ApiResponse,
+  ListParams,
   ListResult,
   MessageResult,
   StoryCrawlerStatus,
@@ -90,6 +93,21 @@ export const AdminStoryService = {
   async fetchMissing(id: string): Promise<AdminStoryFetchResult> {
     const { data } = await http.post<ApiResponse<AdminStoryFetchResult>>(
       `/admin/stories/${id}/fetch-content`,
+    )
+    return data.data
+  },
+
+  async comments(id: string, params: ListParams = {}): Promise<ListResult<AdminStoryComment>> {
+    const { data } = await http.get<ApiResponse<ListResult<AdminStoryComment>>>(
+      `/admin/stories/${id}/comments`,
+      { params },
+    )
+    return data.data
+  },
+
+  async removeComment(id: string, commentId: string): Promise<AdminStoryCommentDeleteResult> {
+    const { data } = await http.delete<ApiResponse<AdminStoryCommentDeleteResult>>(
+      `/admin/stories/${id}/comments/${commentId}`,
     )
     return data.data
   },

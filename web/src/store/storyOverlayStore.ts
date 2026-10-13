@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 
 export type StoryScreen =
+  | { kind: 'latestComments' }
   | { kind: 'detail'; storyId: string }
   | { kind: 'reader'; storyId: string; position: number };
 
 interface StoryOverlayState {
   stack: StoryScreen[];
+  openLatestComments: () => void;
   openStory: (storyId: string) => void;
   openReader: (storyId: string, position: number) => void;
   goToChapter: (position: number) => void;
@@ -15,6 +17,8 @@ interface StoryOverlayState {
 
 export const useStoryOverlayStore = create<StoryOverlayState>((set) => ({
   stack: [],
+  openLatestComments: () =>
+    set((state) => ({ stack: [...state.stack, { kind: 'latestComments' }] })),
   openStory: (storyId) =>
     set((state) => ({ stack: [...state.stack, { kind: 'detail', storyId }] })),
   openReader: (storyId, position) =>

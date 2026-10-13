@@ -911,6 +911,7 @@
     "readFromStart": "Start reading",
     "readContinue": "Continue chapter {{position}}",
     "readShort": "Read story",
+    "readPercent": "{{percent}}% read",
     "intro": "Synopsis",
     "sourceFrom": "Source: {{host}}",
     "showMore": "Show more",
@@ -944,7 +945,38 @@
     "decreaseFont": "Decrease font size",
     "increaseFont": "Increase font size",
     "lineHeight": "Line spacing",
-    "close": "Close"
+    "close": "Close",
+    "comments": "Comments",
+    "commentPlaceholder": "Write a comment...",
+    "commentUnlockHint": "Comment with at least {{count}} characters to read this story for free",
+    "commentSend": "Send",
+    "commentEmpty": "No comments yet. Be the first!",
+    "commentLoadError": "Couldn't load comments",
+    "commentSendError": "Couldn't send comment",
+    "commentDeleteError": "Couldn't delete comment",
+    "commentLikeError": "Couldn't like comment",
+    "commentRateLimited": "You're commenting too fast, try again in a few minutes",
+    "commentDelete": "Delete",
+    "commentDeleteOption": "Delete comment",
+    "commentMenu": "Comment options",
+    "commentDeleteConfirm": "Delete this comment?",
+    "commentDeleted": "Comment deleted",
+    "commentReply": "Reply",
+    "commentReplyingTo": "Replying to {{name}}",
+    "commentCancelReply": "Cancel",
+    "commentLike": "Like",
+    "commentLoadMore": "Load more comments",
+    "commentUnlocked": "Unlocked, you can now read this story for free",
+    "latestComments": "Latest comments",
+    "latestCommentsEmpty": "No comments yet. Open a story and be the first to comment!",
+    "lockedTitle": "Out of free chapters for today",
+    "lockedMessage": "You can read {{count}} chapters for free each day. Upgrade to VIP or comment on this story to keep reading.",
+    "lockedVip": "Upgrade to VIP for unlimited reading",
+    "lockedComment": "Comment to read this story for free",
+    "accessVip": "VIP: unlimited reading",
+    "accessUnlocked": "You've unlocked this story",
+    "accessFree": "{{left}}/{{limit}} free chapters left today",
+    "accessNoneLeft": "You've used all {{limit}} free chapters today"
   },
   "me": {
     "tabFeed": "Newsfeed",
@@ -1128,6 +1160,7 @@
   "report": {
     "title": "Report",
     "post": "Report post",
+    "comment": "Report comment",
     "action": "Report",
     "reasonSpam": "Spam / advertising",
     "reasonSensitive": "Sensitive content",
@@ -1651,21 +1684,15 @@
     },
     "ios": {
       "name": "iPhone / iPad",
-      "channel": "Install via TestFlight",
-      "action": "Open TestFlight invite",
-      "installTestflight": "Install TestFlight from the App Store",
+      "channel": "Install from the App Store",
+      "action": "Download on the App Store",
+      "requirement": "Requires iOS {{version}} or later",
       "steps": [
-        "Install Apple TestFlight from the App Store (free). TestFlight is Apple own app for trying builds before they reach the App Store; if it asks you to sign in, use your iCloud account.",
-        "Open TestFlight for the first time and tap “Continue” on the “Welcome to TestFlight” screen.",
-        "Come back to this page, tap “Open TestFlight invite”, then tap “Install” on the Ola - Chat page inside TestFlight.",
-        "On the “From the developer” screen, tap “Next”.",
-        "On the “Share feedback” screen, tap “Start Testing”.",
-        "Ola opens up — sign in with your account and you are done."
+        "Tap “Download on the App Store” to open the Ola Me listing on the App Store.",
+        "Tap “Get”, confirm with Face ID, Touch ID or your Apple ID password, and wait for the download to finish.",
+        "Open Ola and sign in with your account."
       ],
-      "note": "Each TestFlight build stays valid for 90 days. When it expires, open TestFlight and update to the latest build.",
-      "codeLabel": "TestFlight invite code",
-      "codeHint": "Open TestFlight → Redeem → paste this code if the invite link will not open.",
-      "linkLabel": "TestFlight invite link"
+      "storeLinkLabel": "App Store link"
     },
     "faqTitle": "Troubleshooting",
     "faq": [
@@ -1678,12 +1705,16 @@
         "answer": "Some phones ship without Google Play Services, or your Google account is set to another country. Copy the Google Play link on this page into your browser, switch the Google account inside the Play app, or use the web version while you wait."
       },
       {
-        "question": "TestFlight says the invite is full or expired?",
-        "answer": "Tester slots are limited. Try again later, or use the web version while you wait."
+        "question": "I cannot find or install Ola on the App Store?",
+        "answer": "Ola Me needs a recent iOS version; check Settings → General → Software Update. You can also copy the App Store link on this page and paste it into Safari to open the Ola Me listing directly."
+      },
+      {
+        "question": "I am using the TestFlight build — what now?",
+        "answer": "TestFlight builds are for testing only and expire after 90 days. Open the Ola Me listing on the App Store and download it to switch to the official app; your account and messages stay intact because they are stored on Ola servers."
       },
       {
         "question": "How do I update the app?",
-        "answer": "Android: Google Play updates it for you, or open the Ola Me listing on Play and tap Update. iPhone: open TestFlight and tap Update."
+        "answer": "Android: Google Play updates it for you, or open the Ola Me listing on Play and tap Update. iPhone: the App Store updates it for you, or open the Ola Me listing on the App Store and tap Update."
       },
       {
         "question": "Will installing the app lose my account data?",
@@ -1691,11 +1722,8 @@
       }
     ],
     "safetyTitle": "Only get Ola from official sources",
-    "safety": "Ola ships only through Google Play (Android) and TestFlight (iPhone). We will never ask you to install an APK sent in a stranger message, a Zalo group or on Facebook — files from other sources can be repackaged with malware to take over your account.",
+    "safety": "Ola ships only through Google Play (Android) and the App Store (iPhone). We will never ask you to install an APK sent in a stranger message, a Zalo group or on Facebook — files from other sources can be repackaged with malware to take over your account.",
     "useWeb": "Keep using the web version",
-    "stepLabel": "Step {{index}}",
-    "screenshotsTitle": "Step-by-step screenshots",
-    "closePreview": "Close image",
     "copiedToClipboard": "Copied"
   },
   "announcement": {

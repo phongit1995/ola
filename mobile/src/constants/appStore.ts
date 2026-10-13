@@ -1,6 +1,4 @@
-// iOS chưa lên App Store (mới chỉ TestFlight) nên chưa có numeric app id.
-// Điền vào đây ngay khi app được duyệt để nút "Đánh giá" mở thẳng trang rating.
-export const IOS_APP_STORE_ID: string = '';
+export const IOS_APP_STORE_ID: string = '6812642941';
 
 export function playStoreAppUrl(packageId: string): string {
   return `market://details?id=${packageId}`;

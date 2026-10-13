@@ -1,30 +1,33 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import { formatCompactCount } from '@ola/shared/lib';
-import type { Story, StoryIconName, StoryProgress } from '@ola/shared/types';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { formatCompactCount, storyReadPercent } from '@ola/shared/lib';
+import type { Story, StoryProgress } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
+import { STORY_SECTION_ART, type StorySectionArt } from '../constants';
 import { useStoryTextSize } from '../typography';
 import { StoryCover } from './StoryCover';
-import { StoryIcon } from './StoryIcons';
 import { StoryMeta } from './StoryTags';
 
 const PODIUM_SIZE = 3;
 const CARD_WIDTH = 104;
 const CARD_META_FONT = 11;
-const SECTION_ICON_SIZE = 20;
-const SECTION_TITLE_COLOR = 'rgba(0,0,0,0.87)';
+const SECTION_ART_SIZE = 28;
 
 interface StorySectionTitleProps {
-  icon: StoryIconName;
+  art: StorySectionArt;
   children: string;
 }
 
-export function StorySectionTitle({ icon, children }: StorySectionTitleProps) {
+export function StorySectionTitle({ art, children }: StorySectionTitleProps) {
   const textSize = useStoryTextSize();
   return (
-    <View className="flex-row items-center gap-1.5">
-      <StoryIcon name={icon} size={SECTION_ICON_SIZE} color={SECTION_TITLE_COLOR} />
+    <View className="flex-row items-center gap-2">
+      <Image
+        source={STORY_SECTION_ART[art]}
+        style={{ width: SECTION_ART_SIZE, height: SECTION_ART_SIZE }}
+        resizeMode="contain"
+      />
       <Text
         numberOfLines={1}
         className="min-w-0 flex-shrink font-bold text-ola-ink"
@@ -38,15 +41,15 @@ export function StorySectionTitle({ icon, children }: StorySectionTitleProps) {
 
 interface StoryShelfProps {
   title: string;
-  icon: StoryIconName;
+  art: StorySectionArt;
   children: ReactNode;
 }
 
-export function StoryShelf({ title, icon, children }: StoryShelfProps) {
+export function StoryShelf({ title, art, children }: StoryShelfProps) {
   return (
     <View className="bg-white py-3">
       <View className="px-3">
-        <StorySectionTitle icon={icon}>{title}</StorySectionTitle>
+        <StorySectionTitle art={art}>{title}</StorySectionTitle>
       </View>
       <ScrollView
         horizontal
@@ -111,9 +114,7 @@ interface ContinueCardProps {
 export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const percent = Math.round(
-    (progress.position / Math.max(progress.chapterCount, 1)) * 100
-  );
+  const percent = storyReadPercent(progress.position, progress.chapterCount);
   return (
     <Pressable
       onPress={() => onOpen(progress)}

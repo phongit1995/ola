@@ -1,6 +1,7 @@
 import type {
   Story,
   StoryChapterSummary,
+  StoryComment,
   StoryKind,
   StorySort,
   StoryStatus,
@@ -1971,6 +1972,12 @@ export type PlatformRules = Record<AppPlatform, PlatformRule>
 
 export type StorySetting = PlatformRules
 
+export interface StoryReadingSetting {
+  enabled: boolean
+  freeChaptersPerDay: number
+  commentUnlockMinChars: number
+}
+
 export interface AdminStorySummary {
   stories: number
   hiddenStories: number
@@ -1993,6 +2000,14 @@ export interface AdminStoryChapterDetail extends AdminStoryChapter {
 
 export interface AdminStoryFetchResult {
   queued: number
+}
+
+export interface AdminStoryComment extends StoryComment {
+  deletedAt: string | null
+}
+
+export interface AdminStoryCommentDeleteResult {
+  commentCount: number
 }
 
 export type StoryCookieStatus = 'active' | 'dead'

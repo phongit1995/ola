@@ -1,23 +1,28 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHorizontalDragScroll } from '@hooks';
-import { cn, formatCompactCount } from '@lib';
-import type { Story, StoryIconName, StoryProgress } from '@app-types';
+import { cn, formatCompactCount, storyReadPercent } from '@lib';
+import type { Story, StoryProgress } from '@app-types';
+import { STORY_SECTION_ART, type StorySectionArt } from '../constants';
 import { StoryCover } from './StoryCover';
-import { StoryIcon } from './StoryIcons';
 import { StoryMeta } from './StoryTags';
 
 const PODIUM_SIZE = 3;
 
 interface StorySectionTitleProps {
-  icon: StoryIconName;
+  art: StorySectionArt;
   children: ReactNode;
 }
 
-export function StorySectionTitle({ icon, children }: StorySectionTitleProps) {
+export function StorySectionTitle({ art, children }: StorySectionTitleProps) {
   return (
-    <h2 className="flex items-center gap-1.5 text-[15px] font-bold text-black/87">
-      <StoryIcon name={icon} className="h-5 w-5 shrink-0" />
+    <h2 className="flex items-center gap-2 text-[15px] font-bold text-black/87">
+      <img
+        src={STORY_SECTION_ART[art]}
+        alt=""
+        className="h-7 w-7 shrink-0 select-none"
+        draggable={false}
+      />
       {children}
     </h2>
   );
@@ -25,17 +30,17 @@ export function StorySectionTitle({ icon, children }: StorySectionTitleProps) {
 
 interface StoryShelfProps {
   title: string;
-  icon: StoryIconName;
+  art: StorySectionArt;
   children: ReactNode;
 }
 
-export function StoryShelf({ title, icon, children }: StoryShelfProps) {
+export function StoryShelf({ title, art, children }: StoryShelfProps) {
   const scrollRef = useHorizontalDragScroll();
 
   return (
     <section className="bg-white py-3">
       <div className="px-3">
-        <StorySectionTitle icon={icon}>{title}</StorySectionTitle>
+        <StorySectionTitle art={art}>{title}</StorySectionTitle>
       </div>
       <ul
         ref={scrollRef}
@@ -93,9 +98,7 @@ interface ContinueCardProps {
 
 export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
   const { t } = useTranslation();
-  const percent = Math.round(
-    (progress.position / Math.max(progress.chapterCount, 1)) * 100
-  );
+  const percent = storyReadPercent(progress.position, progress.chapterCount);
   return (
     <li className="w-[104px] shrink-0">
       <button

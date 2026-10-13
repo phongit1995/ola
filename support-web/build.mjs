@@ -70,8 +70,8 @@ const renderChannels = () =>
       )}</a></li>`
   ).join('')}<li><a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a></li></ul>`;
 
-const renderDownloads = (code) => {
-  const ios = code === 'vi' ? 'iOS — TestFlight' : 'iOS — TestFlight';
+const renderDownloads = () => {
+  const ios = 'iOS — App Store';
   const android = 'Android — Google Play';
   return `<ul class="links">
 <li><a href="${DOWNLOADS.ios}" target="_blank" rel="noopener">${escapeHtml(ios)}</a></li>
@@ -126,7 +126,7 @@ const renderBlock = (block, code) => {
     return `<p class="note">${linkify(block.text)}</p>`;
   }
   if (block.type === 'channels') return renderChannels();
-  if (block.type === 'downloads') return renderDownloads(code);
+  if (block.type === 'downloads') return renderDownloads();
   return `<p>${linkify(block.text)}</p>`;
 };
 
@@ -442,7 +442,7 @@ ${topbar(code, 'home')}
 </div>
 </header>
 <main>
-<section class="card"><p class="lead">${escapeHtml(intro.lead)}</p>${renderDownloads(code)}</section>
+<section class="card"><p class="lead">${escapeHtml(intro.lead)}</p>${renderDownloads()}</section>
 
 <section class="card"><h2>${escapeHtml(intro.aboutTitle)}</h2>${intro.about
       .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
@@ -458,7 +458,7 @@ ${topbar(code, 'home')}
 
 <section class="card"><h2>${escapeHtml(intro.downloadTitle)}</h2><p>${escapeHtml(
       intro.downloadDesc
-    )}</p>${renderDownloads(code)}</section>
+    )}</p>${renderDownloads()}</section>
 
 <h2 class="group-title">${escapeHtml(intro.linksTitle)}</h2>
 ${navCards}

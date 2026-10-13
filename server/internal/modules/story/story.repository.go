@@ -268,6 +268,11 @@ func (r *Repository) SaveChapterContent(ctx context.Context, chapterID, storyID 
 	})
 }
 
+func (r *Repository) AddViews(ctx context.Context, storyID uuid.UUID, views int64) error {
+	return r.db.WithContext(ctx).Model(&models.Story{}).Where("id = ?", storyID).
+		UpdateColumn("view_count", gorm.Expr("view_count + ?", views)).Error
+}
+
 func (r *Repository) Summary(ctx context.Context) (*AdminSummaryResponse, error) {
 	var summary AdminSummaryResponse
 	err := r.db.WithContext(ctx).Raw(summaryQuery, StoryKindLong, StoryKindShort).Scan(&summary).Error

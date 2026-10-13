@@ -5,9 +5,10 @@ import { colorForName } from '@ola/shared/lib';
 import { CachedImage } from '@components/ui/CachedImage';
 import { READER_FONTS } from '../constants';
 
-type CoverSize = 'sm' | 'md' | 'lg';
+type CoverSize = 'xs' | 'sm' | 'md' | 'lg';
 
-const TITLE_STYLE: Record<CoverSize, { lines: number; fontSize: number; lineHeight: number }> = {
+const TITLE_STYLE: Record<CoverSize, { lines: number; fontSize: number; lineHeight: number } | null> = {
+  xs: null,
   sm: { lines: 4, fontSize: 9, lineHeight: 11 },
   md: { lines: 4, fontSize: 12, lineHeight: 16 },
   lg: { lines: 5, fontSize: 16, lineHeight: 20 },
@@ -81,26 +82,28 @@ export function StoryCover({ title, coverUrl, width, size = 'md', children }: St
                 backgroundColor: 'rgba(255,255,255,0.3)',
               }}
             />
-            <Text
-              numberOfLines={titleStyle.lines}
-              style={{
-                position: 'absolute',
-                top: height * TITLE_TOP,
-                left: width * TITLE_SIDE,
-                right: width * TITLE_SIDE,
-                textAlign: 'center',
-                fontWeight: 'bold',
-                color: '#ffffff',
-                fontFamily: READER_FONTS.serif.family,
-                fontSize: titleStyle.fontSize,
-                lineHeight: titleStyle.lineHeight,
-                textShadowColor: 'rgba(0,0,0,0.35)',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 2,
-              }}
-            >
-              {title}
-            </Text>
+            {titleStyle && (
+              <Text
+                numberOfLines={titleStyle.lines}
+                style={{
+                  position: 'absolute',
+                  top: height * TITLE_TOP,
+                  left: width * TITLE_SIDE,
+                  right: width * TITLE_SIDE,
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  color: '#ffffff',
+                  fontFamily: READER_FONTS.serif.family,
+                  fontSize: titleStyle.fontSize,
+                  lineHeight: titleStyle.lineHeight,
+                  textShadowColor: 'rgba(0,0,0,0.35)',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2,
+                }}
+              >
+                {title}
+              </Text>
+            )}
           </>
         )}
         {children}

@@ -41,6 +41,7 @@ import { WordChainScreen } from '@screens/room/word-chain/WordChainScreen';
 import { MeFeedScreen } from '@screens/me/MeFeedScreen';
 import { StoryListScreen } from '@screens/story/StoryListScreen';
 import { StoryDetailScreen } from '@screens/story/StoryDetailScreen';
+import { StoryLatestCommentsScreen } from '@screens/story/StoryLatestCommentsScreen';
 import { StoryReaderScreen } from '@screens/story/StoryReaderScreen';
 import { GamesScreen } from '@screens/games/GamesScreen';
 import { PersonalScreen } from '@screens/personal/PersonalScreen';
@@ -115,6 +116,10 @@ function StoryNavigator() {
     <StoryStack.Navigator screenOptions={{ headerShown: false }}>
       <StoryStack.Screen name={STORY_ROUTES.StoryList} component={StoryListScreen} />
       <StoryStack.Screen name={STORY_ROUTES.StoryDetail} component={StoryDetailScreen} />
+      <StoryStack.Screen
+        name={STORY_ROUTES.StoryLatestComments}
+        component={StoryLatestCommentsScreen}
+      />
     </StoryStack.Navigator>
   );
 }

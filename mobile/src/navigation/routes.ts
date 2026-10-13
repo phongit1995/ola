@@ -61,4 +61,5 @@ export const ROOM_ROUTES = {
 export const STORY_ROUTES = {
   StoryList: 'StoryList',
   StoryDetail: 'StoryDetail',
+  StoryLatestComments: 'StoryLatestComments',
 } as const;

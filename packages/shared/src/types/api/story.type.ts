@@ -6,6 +6,15 @@ export type StorySort = 'updated' | 'views' | 'new';
 
 export type StoryStatusFilter = 'all' | 'ongoing' | 'completed';
 
+export interface StoryAccess {
+  enabled: boolean;
+  vip: boolean;
+  unlocked: boolean;
+  freeLimit: number;
+  freeUsed: number;
+  commentMinChars: number;
+}
+
 export interface Story {
   id: string;
   slug: string;
@@ -27,6 +36,7 @@ export interface Story {
   likeCount: number;
   ageRating: string;
   sourceUrl: string;
+  access?: StoryAccess;
 }
 
 export interface StoryGenreItem {
@@ -55,6 +65,73 @@ export interface StoryChapter extends StoryChapterSummary {
   content: string;
   prevPosition: number | null;
   nextPosition: number | null;
+  locked: boolean;
+  access: StoryAccess;
+}
+
+export interface StoryCommentAuthor {
+  id: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+  vipUsed?: string | null;
+  vipEndTime?: string | null;
+}
+
+export interface StoryCommentReply {
+  commentId: string;
+  authorName: string;
+  excerpt: string;
+}
+
+export interface StoryCommentStory {
+  id: string;
+  title: string;
+  coverUrl?: string | null;
+}
+
+export interface StoryComment {
+  id: string;
+  storyId: string;
+  parentId?: string;
+  content: string;
+  author?: StoryCommentAuthor;
+  replyTo?: StoryCommentReply;
+  story?: StoryCommentStory;
+  likeCount: number;
+  liked: boolean;
+  mine: boolean;
+  createdAt: string;
+}
+
+export interface StoryCommentListQuery {
+  cursor?: string;
+  limit?: number;
+}
+
+export interface StoryCommentListResult {
+  items: StoryComment[];
+  nextCursor?: string;
+}
+
+export interface CreateStoryCommentRequest {
+  content: string;
+  parentId?: string;
+}
+
+export interface CreateStoryCommentResult {
+  comment: StoryComment;
+  commentCount: number;
+  unlocked: boolean;
+}
+
+export interface DeleteStoryCommentResult {
+  commentCount: number;
+}
+
+export interface StoryCommentLikeResult {
+  liked: boolean;
+  likeCount: number;
 }
 
 export interface StoryListQuery {

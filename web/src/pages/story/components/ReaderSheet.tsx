@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@lib';
 import type { ReaderPalette } from '../interface';
 
 interface ReaderSheetProps {
@@ -7,6 +8,7 @@ interface ReaderSheetProps {
   palette: ReaderPalette;
   onClose: () => void;
   children: ReactNode;
+  className?: string;
 }
 
 export function ReaderSheet({
@@ -14,6 +16,7 @@ export function ReaderSheet({
   palette,
   onClose,
   children,
+  className = 'max-h-[75%]',
 }: ReaderSheetProps) {
   const { t } = useTranslation();
   return (
@@ -27,7 +30,10 @@ export function ReaderSheet({
       <div
         role="dialog"
         aria-label={title}
-        className="relative mx-auto flex max-h-[75%] w-full max-w-2xl flex-col rounded-t-2xl shadow-[0_-4px_16px_rgba(0,0,0,.2)]"
+        className={cn(
+          'relative mx-auto flex w-full max-w-2xl flex-col rounded-t-2xl shadow-[0_-4px_16px_rgba(0,0,0,.2)]',
+          className
+        )}
         style={{ backgroundColor: palette.panel, color: palette.text }}
       >
         <div className="flex items-center justify-between px-4 pt-3 pb-2">

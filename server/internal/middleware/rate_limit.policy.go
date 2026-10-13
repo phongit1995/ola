@@ -25,6 +25,11 @@ var (
 	PolicyCallStart   = RateLimitPolicy{Name: "call_start", Limit: perWindow(1, 3*time.Second)}
 	PolicyChatBot     = RateLimitPolicy{Name: "chat_bot", Limit: perWindow(10, time.Minute)}
 
+	PolicyStoryChapter = RateLimitPolicy{Name: "story_chapter", Limit: perWindow(60, time.Minute)}
+
+	PolicyStoryComment     = RateLimitPolicy{Name: "story_comment", Limit: perWindow(6, time.Minute)}
+	PolicyStoryCommentLike = RateLimitPolicy{Name: "story_comment_like", Limit: perWindow(30, time.Minute)}
+
 	PolicyEmailVerifySend = RateLimitPolicy{Name: "email_verify_send", Limit: perWindow(5, time.Hour)}
 
 	PolicyForgotPasswordSend    = RateLimitPolicy{Name: "forgot_password_send", Limit: perWindow(5, time.Hour)}

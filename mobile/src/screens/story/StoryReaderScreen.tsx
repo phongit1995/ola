@@ -10,21 +10,24 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { splitStoryParagraphs, storyChapterKey } from '@ola/shared/lib';
+import { formatCompactCount, splitStoryParagraphs, storyChapterKey } from '@ola/shared/lib';
 import { useStoryConfigStore } from '@ola/shared/stores/story/storyConfigStore';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
 import type { RootStackParamList } from '@navigation/types';
-import type { ROOT_ROUTES } from '@navigation/routes';
+import { ROOT_ROUTES } from '@navigation/routes';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { READER_FONTS, READER_PALETTES } from './constants';
 import { ChapterPickerSheet } from './components/ChapterPickerSheet';
 import { ReaderSettingsSheet } from './components/ReaderSettingsSheet';
+import { StoryCommentSheet } from './components/StoryCommentSheet';
 import { StoryIcon } from './components/StoryIcons';
+import { StoryLockedPanel } from './components/StoryLockedPanel';
 import { useStoryTextSize } from './typography';
 
-type ReaderSheetKind = 'settings' | 'toc';
+type ReaderSheetKind = 'settings' | 'toc' | 'comments';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.StoryReader>;
 
@@ -33,6 +36,7 @@ const TITLE_SCALE = 1.25;
 const PARAGRAPH_GAP = 0.9;
 const BAR_HEIGHT = 48;
 const NAV_ICON_SIZE = 20;
+const COMMENT_ICON_SIZE = 16;
 
 interface HeaderButtonProps {
   accessibilityLabel: string;
@@ -58,7 +62,7 @@ function HeaderButton({ accessibilityLabel, disabled = false, onPress, children 
 
 export function StoryReaderScreen({ route, navigation }: Props) {
   const { storyId, position } = route.params;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const textSize = useStoryTextSize();
@@ -68,16 +72,21 @@ export function StoryReaderScreen({ route, navigation }: Props) {
   const chapters = useStoryStore((state) => state.chapters[storyId]);
   const chapter = useStoryStore((state) => state.chapterContents[key]);
   const chapterStatus = useStoryStore((state) => state.chapterStatus[key]);
+  const chapterLock = useStoryStore((state) => state.chapterLocks[key]);
   const loadStory = useStoryStore((state) => state.loadStory);
   const loadChapter = useStoryStore((state) => state.loadChapter);
+  const prefetchChapter = useStoryStore((state) => state.prefetchChapter);
   const reader = useStoryPrefsStore((state) => state.reader);
   const saveProgress = useStoryPrefsStore((state) => state.saveProgress);
   const [sheet, setSheet] = useState<ReaderSheetKind | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const focusedOnce = useRef(false);
   const palette = READER_PALETTES[reader.theme];
   const lightStatusIcons = Platform.OS === 'android' || reader.theme === 'dark';
 
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
+  const onBuyVip = useCallback(() => navigation.navigate(ROOT_ROUTES.BuyVip), [navigation]);
+  const openComments = useCallback(() => setSheet('comments'), []);
   const onChangeChapter = useCallback(
     (next: number) => navigation.setParams({ position: next }),
     [navigation]
@@ -95,11 +104,23 @@ export function StoryReaderScreen({ route, navigation }: Props) {
     void loadChapter(storyId, position);
   }, [storyId, position, loadChapter]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (!focusedOnce.current) {
+        focusedOnce.current = true;
+        return;
+      }
+      const { chapterLocks, reloadLocked } = useStoryStore.getState();
+      if (Object.keys(chapterLocks).length > 0) reloadLocked();
+    }, [])
+  );
+
   const chapterReady = chapter != null;
+  const locked = chapterStatus === 'locked';
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
-  }, [storyId, position, chapterReady]);
+  }, [storyId, position, chapterReady, locked]);
 
   useEffect(() => {
     if (!chapter || !story) return;
@@ -111,13 +132,18 @@ export function StoryReaderScreen({ route, navigation }: Props) {
       chapterTitle: chapter.title,
       chapterCount: story.chapterCount,
     });
-    if (chapter.nextPosition != null) {
-      void loadChapter(storyId, chapter.nextPosition);
-    }
-  }, [chapter, story, storyId, saveProgress, loadChapter]);
+  }, [chapter, story, storyId, saveProgress]);
 
-  const prevPosition = chapter?.prevPosition ?? null;
-  const nextPosition = chapter?.nextPosition ?? null;
+  const upcomingPosition = chapter?.nextPosition ?? null;
+
+  useEffect(() => {
+    if (upcomingPosition != null) void prefetchChapter(storyId, upcomingPosition);
+  }, [storyId, upcomingPosition, prefetchChapter]);
+
+  const navigationSource = chapter ?? (locked ? chapterLock : undefined);
+  const prevPosition = navigationSource?.prevPosition ?? null;
+  const nextPosition = navigationSource?.nextPosition ?? null;
+  const commentCount = story?.commentCount ?? 0;
 
   function pickChapter(next: number) {
     setSheet(null);
@@ -132,6 +158,17 @@ export function StoryReaderScreen({ route, navigation }: Props) {
   };
 
   function renderBody() {
+    if (!chapter && locked) {
+      return (
+        <StoryLockedPanel
+          chapterTitle={chapterLock?.title ?? ''}
+          freeLimit={chapterLock?.access.freeLimit ?? 0}
+          palette={palette}
+          onBuyVip={onBuyVip}
+          onComment={openComments}
+        />
+      );
+    }
     if (!chapter) {
       return (
         <View className="flex-1 items-center justify-center gap-3 py-20">
@@ -214,6 +251,22 @@ export function StoryReaderScreen({ route, navigation }: Props) {
               </Pressable>
             </>
           )}
+          <Pressable
+            accessibilityRole="button"
+            onPress={openComments}
+            className="h-10 flex-row items-center justify-center gap-1.5 rounded-full px-5"
+            style={{ borderWidth: 1, borderColor: palette.border }}
+          >
+            <StoryIcon name="chatBubble" size={COMMENT_ICON_SIZE} color={palette.text} />
+            <Text style={[textSize(14, 20), { color: palette.text }]}>
+              {t('story.comments')}
+              {commentCount > 0 && (
+                <Text style={{ color: palette.muted }}>
+                  {` (${formatCompactCount(commentCount, i18n.language)})`}
+                </Text>
+              )}
+            </Text>
+          </Pressable>
         </View>
       </View>
     );
@@ -243,7 +296,7 @@ export function StoryReaderScreen({ route, navigation }: Props) {
               className="font-semibold"
               style={[textSize(14, 20), { color: palette.text }]}
             >
-              {chapter?.title ?? story?.title}
+              {navigationSource?.title ?? story?.title}
             </Text>
           </View>
           <HeaderButton
@@ -307,6 +360,9 @@ export function StoryReaderScreen({ route, navigation }: Props) {
 
       {sheet === 'settings' && (
         <ReaderSettingsSheet palette={palette} onClose={() => setSheet(null)} />
+      )}
+      {sheet === 'comments' && (
+        <StoryCommentSheet storyId={storyId} onClose={() => setSheet(null)} />
       )}
       {sheet === 'toc' && chapters && (
         <ChapterPickerSheet
