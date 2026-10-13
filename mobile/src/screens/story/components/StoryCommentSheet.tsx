@@ -1,31 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StatusBar, Text, View } from 'react-native';
-import { FlashList, type FlashListRef } from '@shopify/flash-list';
-import { createTimeFormatter, formatCompactCount, storyCommentAuthorName } from '@ola/shared/lib';
-import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
+import { StatusBar, View } from 'react-native';
+import type { FlashListRef } from '@shopify/flash-list';
+import { formatCompactCount, storyCommentAuthorName } from '@ola/shared/lib';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import type { StoryComment } from '@ola/shared/types';
 import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
-import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { ToastHost } from '@components/ui/ToastHost';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
-import { useThemeColors } from '@hooks/useThemeColors';
 import { commentUnlockMinChars, useStoryAccess } from '../storyAccess';
-import { useStoryTextSize } from '../typography';
 import { useStoryCommentActions } from '../useStoryCommentActions';
 import { StoryCommentComposer, type StoryCommentComposerHandle } from './StoryCommentComposer';
-import { StoryCommentItem } from './StoryCommentItem';
-import { StoryStateMessage } from './StoryStateMessage';
-
-const EMPTY_COMMENTS: StoryComment[] = [];
-const MUTED = 'rgba(0,0,0,0.54)';
-const LOAD_MORE_MIN_WIDTH = 144;
+import { StoryCommentList } from './StoryCommentList';
 
 interface StoryCommentSheetProps {
   storyId: string;
+  initialReplyTarget?: StoryComment;
   onClose: () => void;
 }
 
@@ -45,38 +37,33 @@ export function StoryCommentSheet(props: StoryCommentSheetProps) {
   );
 }
 
-function StoryCommentSheetBody({ storyId, onClose }: StoryCommentSheetProps) {
+function StoryCommentSheetBody({ storyId, initialReplyTarget, onClose }: StoryCommentSheetProps) {
   const { t, i18n } = useTranslation();
-  const colors = useThemeColors();
-  const textSize = useStoryTextSize();
   const bottomBarInset = useBottomBarInset();
-  const thread = useStoryCommentStore((state) => state.threads[storyId]);
-  const load = useStoryCommentStore((state) => state.load);
-  const loadMore = useStoryCommentStore((state) => state.loadMore);
   const commentCount = useStoryStore((state) => state.stories[storyId]?.commentCount ?? 0);
   const access = useStoryAccess(storyId);
-  const { sending, send, remove, toggleLike } = useStoryCommentActions(storyId);
-  const [replyTarget, setReplyTarget] = useState<StoryComment | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { sending, send } = useStoryCommentActions(storyId);
+  const [replyTarget, setReplyTarget] = useState<StoryComment | null>(initialReplyTarget ?? null);
   const listRef = useRef<FlashListRef<StoryComment>>(null);
   const composerRef = useRef<StoryCommentComposerHandle>(null);
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-  const items = thread?.items ?? EMPTY_COMMENTS;
-  const status = thread?.status ?? 'loading';
 
   useEffect(() => {
-    void load(storyId);
-  }, [storyId, load]);
+    if (initialReplyTarget) requestAnimationFrame(() => composerRef.current?.focus());
+  }, [initialReplyTarget]);
 
   const onReply = useCallback((comment: StoryComment) => {
     setReplyTarget(comment);
     requestAnimationFrame(() => composerRef.current?.focus());
   }, []);
 
-  function closeSmileyPanel() {
+  const clearDeletedReply = useCallback((commentId: string) => {
+    setReplyTarget((target) => (target?.id === commentId ? null : target));
+  }, []);
+
+  const closeSmileyPanel = useCallback(() => {
     composerRef.current?.closePanel();
     return false;
-  }
+  }, []);
 
   async function submit(text: string): Promise<boolean> {
     const ok = await send(text, replyTarget?.id);
@@ -85,61 +72,6 @@ function StoryCommentSheetBody({ storyId, onClose }: StoryCommentSheetProps) {
       listRef.current?.scrollToOffset({ offset: 0, animated: true });
     }
     return ok;
-  }
-
-  function confirmDelete() {
-    if (deleteId == null) return;
-    if (replyTarget?.id === deleteId) setReplyTarget(null);
-    void remove(deleteId);
-    setDeleteId(null);
-  }
-
-  function renderEmpty() {
-    if (status === 'error') {
-      return (
-        <StoryStateMessage
-          kind="error"
-          text={t('story.commentLoadError')}
-          onRetry={() => void load(storyId)}
-        />
-      );
-    }
-    if (status === 'ready') {
-      return (
-        <Text className="px-6 py-10 text-center" style={[textSize(14, 20), { color: MUTED }]}>
-          {t('story.commentEmpty')}
-        </Text>
-      );
-    }
-    return <ActivityIndicator className="py-10" color={colors.primary} />;
-  }
-
-  function renderFooter() {
-    if (items.length === 0 || thread?.nextCursor == null) return null;
-    return (
-      <View className="items-center py-3">
-        <Pressable
-          accessibilityRole="button"
-          disabled={thread.loadingMore}
-          onPress={() => void loadMore(storyId)}
-          className="h-9 items-center justify-center rounded-full px-4"
-          style={{
-            minWidth: LOAD_MORE_MIN_WIDTH,
-            borderWidth: 1,
-            borderColor: colors.primary,
-            opacity: thread.loadingMore ? 0.6 : 1,
-          }}
-        >
-          {thread.loadingMore ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : (
-            <Text style={[textSize(14, 20), { color: colors.primaryInk }]}>
-              {t('story.commentLoadMore')}
-            </Text>
-          )}
-        </Pressable>
-      </View>
-    );
   }
 
   return (
@@ -155,24 +87,13 @@ function StoryCommentSheetBody({ storyId, onClose }: StoryCommentSheetProps) {
             }
             onBack={onClose}
           />
-          <FlashList<StoryComment>
-            ref={listRef}
-            data={items}
-            keyExtractor={(comment) => comment.id}
-            keyboardShouldPersistTaps="handled"
-            maintainVisibleContentPosition={{ disabled: true }}
+          <StoryCommentList
+            threadId={storyId}
+            emptyText={t('story.commentEmpty')}
+            onReply={onReply}
+            onDeleted={clearDeletedReply}
+            listRef={listRef}
             onStartShouldSetResponderCapture={closeSmileyPanel}
-            renderItem={({ item }) => (
-              <StoryCommentItem
-                comment={item}
-                time={formatTime(item.createdAt)}
-                onReply={onReply}
-                onDelete={setDeleteId}
-                onToggleLike={toggleLike}
-              />
-            )}
-            ListEmptyComponent={renderEmpty()}
-            ListFooterComponent={renderFooter()}
           />
           <View style={{ paddingBottom: bottomBarInset }}>
             <StoryCommentComposer
@@ -186,17 +107,6 @@ function StoryCommentSheetBody({ storyId, onClose }: StoryCommentSheetProps) {
           </View>
         </View>
       </ChatKeyboardArea>
-
-      <ConfirmDialog
-        visible={deleteId != null}
-        danger
-        title={t('story.commentDelete')}
-        message={t('story.commentDeleteConfirm')}
-        confirmLabel={t('dialog.yes')}
-        cancelLabel={t('dialog.no')}
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteId(null)}
-      />
     </>
   );
 }

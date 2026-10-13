@@ -10,8 +10,10 @@ import { ReportDialog } from '@components/ui/ReportDialog';
 import { VipBadge } from '@components/ui/VipBadge';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { ROW_SEPARATOR } from '../constants';
+import { READER_PALETTES, ROW_SEPARATOR } from '../constants';
 import { useStoryTextSize } from '../typography';
+import { StoryCover } from './StoryCover';
+import { StoryIcon } from './StoryIcons';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -24,6 +26,9 @@ const ACTION_ICON_SIZE = 20;
 const MORE_ICON_STYLE = { width: 16, height: 16 };
 const CONTENT_FONT_SIZE = 14;
 const MUTED = 'rgba(0,0,0,0.54)';
+const STORY_CHIP_BACKGROUND = READER_PALETTES.light.panel;
+const STORY_CHIP_COVER_WIDTH = 24;
+const STORY_CHIP_ICON_SIZE = 16;
 
 function ignoreMention() {}
 
@@ -31,8 +36,9 @@ interface StoryCommentItemProps {
   comment: StoryComment;
   time: string;
   onReply: (comment: StoryComment) => void;
-  onDelete: (commentId: string) => void;
+  onDelete: (comment: StoryComment) => void;
   onToggleLike: (commentId: string) => void;
+  onOpenStory?: (storyId: string) => void;
 }
 
 function StoryCommentItemComponent({
@@ -41,6 +47,7 @@ function StoryCommentItemComponent({
   onReply,
   onDelete,
   onToggleLike,
+  onOpenStory,
 }: StoryCommentItemProps) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -48,7 +55,7 @@ function StoryCommentItemComponent({
   const colors = useThemeColors();
   const textSize = useStoryTextSize();
   const { multiplier, systemFontScale } = useAppTypography();
-  const { author, replyTo } = comment;
+  const { author, replyTo, story } = comment;
   const name = storyCommentAuthorName(comment);
   const fullName = author?.fullName ?? '';
   const vipTypeId = activeVipTypeId(author?.vipUsed, author?.vipEndTime);
@@ -58,7 +65,7 @@ function StoryCommentItemComponent({
           key: 'delete',
           label: t('story.commentDeleteOption'),
           danger: true,
-          onSelect: () => onDelete(comment.id),
+          onSelect: () => onDelete(comment),
         },
       ]
     : [{ key: 'report', label: t('report.comment'), onSelect: () => setReportOpen(true) }];
@@ -119,6 +126,29 @@ function StoryCommentItemComponent({
             onMention: ignoreMention,
           })}
         </Text>
+        {onOpenStory && story && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => onOpenStory(story.id)}
+            className="mt-2 flex-row items-center gap-2 self-start rounded-lg py-1.5 pl-1.5 pr-2 active:opacity-80"
+            style={{ maxWidth: '100%', backgroundColor: STORY_CHIP_BACKGROUND }}
+          >
+            <StoryCover
+              title={story.title}
+              coverUrl={story.coverUrl}
+              size="xs"
+              width={STORY_CHIP_COVER_WIDTH}
+            />
+            <Text
+              numberOfLines={1}
+              className="min-w-0 shrink font-medium text-ola-ink"
+              style={textSize(12, 16)}
+            >
+              {story.title}
+            </Text>
+            <StoryIcon name="chevronRight" size={STORY_CHIP_ICON_SIZE} color={MUTED} />
+          </Pressable>
+        )}
         <View className="mt-1.5 flex-row items-center gap-4">
           <Pressable
             accessibilityRole="button"

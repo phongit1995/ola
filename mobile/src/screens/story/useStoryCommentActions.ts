@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toApiError } from '@ola/shared/lib';
 import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import type { StoryComment } from '@ola/shared/types';
 import { RATE_LIMITED_STATUS } from './constants';
 import { commentUnlockMinChars, currentStoryAccess } from './storyAccess';
 
@@ -10,8 +11,6 @@ export function useStoryCommentActions(storyId: string) {
   const { t } = useTranslation();
   const push = useToastStore((state) => state.push);
   const sendComment = useStoryCommentStore((state) => state.send);
-  const removeComment = useStoryCommentStore((state) => state.remove);
-  const toggleCommentLike = useStoryCommentStore((state) => state.toggleLike);
   const [sending, setSending] = useState(false);
   const sendingRef = useRef(false);
 
@@ -42,28 +41,37 @@ export function useStoryCommentActions(storyId: string) {
     [storyId, sendComment, push, t]
   );
 
+  return { sending, send };
+}
+
+export function useStoryCommentListActions(threadId: string) {
+  const { t } = useTranslation();
+  const push = useToastStore((state) => state.push);
+  const removeComment = useStoryCommentStore((state) => state.remove);
+  const toggleCommentLike = useStoryCommentStore((state) => state.toggleLike);
+
   const remove = useCallback(
-    async (commentId: string) => {
+    async (comment: StoryComment) => {
       try {
-        await removeComment(storyId, commentId);
+        await removeComment(comment.storyId, comment.id);
         push('success', t('story.commentDeleted'));
       } catch {
         push('error', t('story.commentDeleteError'));
       }
     },
-    [storyId, removeComment, push, t]
+    [removeComment, push, t]
   );
 
   const toggleLike = useCallback(
     async (commentId: string) => {
       try {
-        await toggleCommentLike(storyId, commentId);
+        await toggleCommentLike(threadId, commentId);
       } catch {
         push('error', t('story.commentLikeError'));
       }
     },
-    [storyId, toggleCommentLike, push, t]
+    [threadId, toggleCommentLike, push, t]
   );
 
-  return { sending, send, remove, toggleLike };
+  return { remove, toggleLike };
 }

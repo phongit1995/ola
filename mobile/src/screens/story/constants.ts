@@ -13,6 +13,22 @@ import type { ReaderPalette } from './interface';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 
+export const STORY_SECTION_ART = {
+  continueReading: require('@assets/icons/story/illustrated/continue-reading.webp'),
+  topViewed: require('@assets/icons/story/illustrated/top-viewed.webp'),
+  allStories: require('@assets/icons/story/illustrated/all-stories.webp'),
+  searchResults: require('@assets/icons/story/illustrated/search-results.webp'),
+};
+
+export type StorySectionArt = keyof typeof STORY_SECTION_ART;
+
+export const STORY_STATE_ART = {
+  empty: require('@assets/icons/story/illustrated/state-empty.webp'),
+  error: require('@assets/icons/story/illustrated/state-error.webp'),
+};
+
+export type StoryStateKind = keyof typeof STORY_STATE_ART;
+
 export const SORT_OPTIONS: {
   value: StorySort;
   labelKey: ParseKeys;

@@ -41,6 +41,7 @@ const CHIP_BORDER = '#d5d5d5';
 const MUTED = 'rgba(0,0,0,0.54)';
 const FILTER_ICON_MUTED = 'rgba(0,0,0,0.45)';
 const SMALL_ICON_SIZE = 16;
+const HEADER_ICON_SIZE = 24;
 
 type StoryListNavigation = CompositeNavigationProp<
   NativeStackNavigationProp<StoryStackParamList, typeof STORY_ROUTES.StoryList>,
@@ -153,6 +154,11 @@ export function StoryListScreen() {
     [navigation]
   );
 
+  const openLatestComments = useCallback(
+    () => navigation.navigate(STORY_ROUTES.StoryLatestComments),
+    [navigation]
+  );
+
   const continueReading = useCallback(
     (item: StoryProgress) =>
       navigation.navigate(ROOT_ROUTES.StoryReader, {
@@ -176,7 +182,7 @@ export function StoryListScreen() {
           <StoryStateMessage
             kind="error"
             text={t('story.loadError')}
-            onRetry={() => void setFilter({})}
+            onRetry={() => void setFilter(filter)}
           />
         </View>
       );
@@ -217,7 +223,7 @@ export function StoryListScreen() {
   const header = (
     <View>
       {!searching && recent.length > 0 && (
-        <StoryShelf title={t('story.continueReading')} icon="book">
+        <StoryShelf title={t('story.continueReading')} art="continueReading">
           {recent.map((item) => (
             <ContinueCard key={item.storyId} progress={item} onOpen={continueReading} />
           ))}
@@ -225,7 +231,7 @@ export function StoryListScreen() {
       )}
       {!searching && topViewed.length > 0 && (
         <View className={recent.length > 0 ? 'mt-2' : ''}>
-          <StoryShelf title={t('story.topViewed')} icon="emojiEvents">
+          <StoryShelf title={t('story.topViewed')} art="topViewed">
             {topViewed.map((story, index) => (
               <TopStoryCard key={story.id} story={story} rank={index + 1} onOpen={openStory} />
             ))}
@@ -235,7 +241,7 @@ export function StoryListScreen() {
       <View className={`bg-white ${searching ? '' : 'mt-2'}`}>
         <View className="flex-row items-center gap-2 px-3 pt-3">
           <View className="min-w-0 flex-1">
-            <StorySectionTitle icon={searching ? 'search' : 'libraryBooks'}>
+            <StorySectionTitle art={searching ? 'searchResults' : 'allStories'}>
               {t(searching ? 'story.searchResults' : 'story.allStories')}
             </StorySectionTitle>
           </View>
@@ -302,9 +308,9 @@ export function StoryListScreen() {
   return (
     <View className="flex-1 bg-ola-surface">
       <View className="bg-ola-primary px-2" style={{ paddingTop: insets.top }}>
-        <View className="h-12 justify-center">
+        <View className="h-12 flex-row items-center gap-1">
           <View
-            className="h-9 flex-row items-center gap-2 rounded-full px-3"
+            className="h-9 min-w-0 flex-1 flex-row items-center gap-2 rounded-full px-3"
             style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
           >
             <StoryIcon name="search" size={20} color="rgba(255,255,255,0.8)" />
@@ -332,6 +338,15 @@ export function StoryListScreen() {
               </Pressable>
             )}
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('story.latestComments')}
+            onPress={openLatestComments}
+            hitSlop={4}
+            className="h-10 w-10 items-center justify-center rounded-full active:bg-white/25"
+          >
+            <StoryIcon name="chatBubble" size={HEADER_ICON_SIZE} color={colors.onPrimary} />
+          </Pressable>
         </View>
       </View>
       <FlashList<Story>

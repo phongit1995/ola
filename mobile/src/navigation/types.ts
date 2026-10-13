@@ -71,4 +71,5 @@ export type RoomStackParamList = {
 export type StoryStackParamList = {
   [STORY_ROUTES.StoryList]: undefined;
   [STORY_ROUTES.StoryDetail]: { storyId: string };
+  [STORY_ROUTES.StoryLatestComments]: undefined;
 };
