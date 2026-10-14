@@ -5,7 +5,7 @@ import "go.uber.org/dig"
 func Provider(c *dig.Container) error {
 	providers := []interface{}{
 		NewRepository,
-		NewVnkingsSource,
+		NewVnkingsService,
 		NewViewCounter,
 		NewService,
 		NewCrawler,

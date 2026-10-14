@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,6 +29,12 @@ var (
 	ErrChapterContentNotSaved    = utils.NewHTTPErrorWithCode(http.StatusInternalServerError, "Đã lấy được nội dung nhưng lưu vào DB thất bại", ErrorCodeStoryContentNotSaved)
 )
 
+var (
+	errUnsupportedSource = errors.New("unsupported story source")
+	errEmptyContent      = errors.New("chapter content is empty")
+	errChapterLocked     = errors.New("chapter is locked at source")
+)
+
 type fetchedContent struct {
 	text    string
 	saveErr error
@@ -38,11 +45,16 @@ var storyStatuses = map[string]bool{
 	StoryStatusCompleted: true,
 }
 
+type ContentSource interface {
+	ShortStoryContent(ctx context.Context, chapter *ChapterRow) (string, error)
+	ChapterContent(ctx context.Context, chapter *ChapterRow) (string, error)
+}
+
 type Service struct {
 	store       Store
 	admin       AdminStore
 	comments    CommentStore
-	source      ContentSource
+	sources     map[string]ContentSource
 	views       *ViewCounter
 	settings    readingSettings
 	users       userLookup
@@ -57,7 +69,7 @@ type Service struct {
 
 func NewService(
 	repo *Repository,
-	source *VnkingsSource,
+	vnkings *VnkingsService,
 	views *ViewCounter,
 	settings *setting.Service,
 	users *userModule.CacheService,
@@ -68,13 +80,24 @@ func NewService(
 		store:    repo,
 		admin:    repo,
 		comments: repo,
-		source:   source,
+		sources:  map[string]ContentSource{StorySourceVnkings: vnkings},
 		views:    views,
 		settings: settings,
 		users:    users,
 		cache:    cache,
 		logger:   logger.Named("[story_service]"),
 	}
+}
+
+func (s *Service) fetchContent(ctx context.Context, row *ChapterRow) (string, error) {
+	source, ok := s.sources[row.StorySource]
+	if !ok {
+		return "", fmt.Errorf("%w: %s", errUnsupportedSource, row.StorySource)
+	}
+	if row.StoryKind == StoryKindShort {
+		return source.ShortStoryContent(ctx, row)
+	}
+	return source.ChapterContent(ctx, row)
 }
 
 func normalizeListQuery(query ListQuery) ListQuery {
@@ -274,7 +297,7 @@ func (s *Service) loadContent(ctx context.Context, row *ChapterRow, replace bool
 	value, err, _ := s.fetches.Do(key, func() (interface{}, error) {
 		fetchCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), StoryFetchTimeout)
 		defer cancel()
-		content, err := s.source.ChapterContent(fetchCtx, row)
+		content, err := s.fetchContent(fetchCtx, row)
 		if err != nil {
 			return nil, err
 		}

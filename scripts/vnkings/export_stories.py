@@ -29,6 +29,7 @@ CHECKPOINT_EVERY = 20
 DEFAULT_LIMIT = 100
 VIETNAM_TZ = timezone(timedelta(hours=7))
 DECORATION = re.compile(r"^[\s_\-–—=*.~•·]+$")
+LOCKED_NOTICE = re.compile(r"bạn cần .{1,40} để đọc (truyện|chương) này!", re.I)
 
 
 class Client:
@@ -236,6 +237,10 @@ def drop_repeated_title(paragraphs: list[str], title: str) -> list[str]:
     return paragraphs
 
 
+def locked_at_source(paragraphs: list[str]) -> bool:
+    return any(LOCKED_NOTICE.search(paragraph) for paragraph in paragraphs)
+
+
 def export_post(client: Client, post: dict, categories: dict[int, str], args, out: Path) -> tuple[dict, list[dict]] | None:
     story_id = post["id"]
     title = plain(post["title"]["rendered"])
@@ -253,6 +258,7 @@ def export_post(client: Client, post: dict, categories: dict[int, str], args, ou
         selected = links[: args.max_chapters] if args.max_chapters else links
         contents: dict[str, str] = {}
         summaries: list[dict] = []
+        locked = 0
         for position, link in enumerate(selected, start=1):
             summary = {
                 "id": link["sourceId"],
@@ -266,15 +272,23 @@ def export_post(client: Client, post: dict, categories: dict[int, str], args, ou
             if args.content:
                 page = client.text(link["url"])
                 paragraphs = drop_repeated_title(html_paragraphs(element_inner(page, 'id="content"')), link["title"])
-                contents[link["sourceId"]] = "\n\n".join(paragraphs)
-                summary["wordCount"] = word_count(paragraphs)
+                if locked_at_source(paragraphs):
+                    locked += 1
+                else:
+                    contents[link["sourceId"]] = "\n\n".join(paragraphs)
+                    summary["wordCount"] = word_count(paragraphs)
                 summary["publishedAt"] = meta_time(page, "article:published_time") or summary["publishedAt"]
             summaries.append(summary)
+        if locked:
+            print(f"  {story_id} {title}: {locked} chương bị khoá trên nguồn, không lưu nội dung", flush=True)
         intro = "\n\n".join(post_paragraphs)
     elif is_short_category or sum(len(p) for p in post_paragraphs) >= MIN_SHORT_STORY_CHARS:
         kind = "short"
         story_paragraphs = drop_repeated_title(post_paragraphs, title)
-        contents = {str(story_id): "\n\n".join(story_paragraphs)} if args.content else {}
+        if locked_at_source(story_paragraphs):
+            print(f"  {story_id} {title}: truyện ngắn bị khoá trên nguồn, không lưu nội dung", flush=True)
+            story_paragraphs = []
+        contents = {str(story_id): "\n\n".join(story_paragraphs)} if args.content and story_paragraphs else {}
         summaries = [{
             "id": str(story_id),
             "storyId": str(story_id),
@@ -354,7 +368,7 @@ def main():
     parser.add_argument("--gap", type=float, default=0.5, help="giây giữa 2 request")
     parser.add_argument("--out", default="scripts/vnkings/data")
     parser.add_argument("--resume", action="store_true", help="giữ truyện đã có trong index.json, chỉ lấy thêm cho đủ --limit")
-    parser.add_argument("--content", action=argparse.BooleanOptionalAction, default=True, help="--no-content: chỉ lấy danh sách chương, không tải nội dung")
+    parser.add_argument("--content", action=argparse.BooleanOptionalAction, default=False, help="tải cả nội dung từng chương (1 request mỗi chương); mặc định chỉ lấy thông tin truyện và danh sách chương")
     args = parser.parse_args()
 
     out = Path(args.out)

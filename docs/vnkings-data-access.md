@@ -278,6 +278,15 @@ def get_chapter_content(chapter_url):
 
 Selector có thể chứa thành phần trang trí; kiểm tra và loại bỏ thành phần không phải nội dung nếu cần text sạch. Với chương có yêu cầu đăng nhập/mua quyền đọc, phải kiểm tra trang thực tế và quyền truy cập; không coi việc tìm thấy selector là bằng chứng đã nhận toàn bộ chương.
 
+**Chương trả phí** (kiểm tra 14/10/2026): tác giả có thể khoá từng chương, mỗi chương 10 Xu. `#content` khi đó chỉ có đoạn trích kết thúc bằng `[…]` rồi tới một câu thông báo:
+
+- Khách: `Bạn cần <a href="https://vnkings.com/dang-nhap.html?postref=<id chương>"><b>đăng nhập</b></a> để đọc truyện này!`
+- Đã đăng nhập mà chưa mua: `Bạn cần 10 Xu để đọc chương này! Hiện tại bạn không đủ xu! Xu của bạn: 0 Nạp Xu`
+
+Danh sách chương AJAX trả HTML giống hệt nhau cho chương miễn phí và chương trả phí, nên chỉ nhận ra được khi tải trang chương. Trong 100 truyện sửa gần nhất có 6 truyện dài với 124/906 chương bị khoá; nặng nhất là 2 truyện của cùng một tác giả (69/83 và 48/65 chương). Server (`ChapterContent`) và script xuất (`--content`) nhận ra câu thông báo và không lưu đoạn trích. Không lấy nội dung các chương này bằng tài khoản đã mua: đó là nội dung trả phí của tác giả.
+
+Cookie đăng nhập phải có cả `_lscache_vary` bên cạnh `wordpress_logged_in_…`. Chỉ gửi `wordpress_logged_in_…` thì LiteSpeed vẫn trả trang cache của khách (có `class="login_plus"`, không có `logout`), crawler sẽ coi cookie đã bị đăng xuất.
+
 REST `/wp/v2/tap-truyen` đã trả `404 rest_no_route`. Thử ID chương cũ `230` qua `/wp/v2/posts/230` trả `404 rest_post_invalid_id`; lọc `posts&include=230` trả mảng rỗng. Chưa tìm thấy REST JSON công khai trả nội dung post type chương.
 
 ## 8. Sitemap và phạm vi danh sách
@@ -347,7 +356,7 @@ Script [`scripts/vnkings/export_stories.py`](../scripts/vnkings/export_stories.p
 ```bash
 python3 scripts/vnkings/export_stories.py --limit 100
 python3 scripts/vnkings/export_stories.py --limit 150 --resume
-python3 scripts/vnkings/export_stories.py --limit 200 --no-content
+python3 scripts/vnkings/export_stories.py --limit 100 --content
 cd server && go run ./cmd/storyimport
 ```
 
@@ -355,8 +364,8 @@ cd server && go run ./cmd/storyimport
 - Thông tin tác giả, tình trạng, lượt thích, độ tuổi, nguồn, ảnh bìa lấy từ HTML trang truyện. Lượt xem và số bình luận của nguồn không lấy; trong app hai số này bắt đầu từ 0. ID tác giả lấy từ REST `author`. Nội dung chương lấy từ `#content.vnkings-editor`, đổi thành chữ theo đoạn, bỏ dòng gạch trang trí và bỏ đoạn đầu nếu trùng tên chương (truyện ngắn: trùng tên truyện). Mỗi chương giữ link gốc (`url`).
 - Mặc định cách nhau 0,5 giây mỗi request (`--gap`). Gặp 403/429/503 thì chờ rồi thử lại, bị chặn liên tục thì dừng.
 - `--resume` giữ truyện đã có trong `index.json`, bỏ truyện trùng, chỉ lấy thêm cho đủ `--limit`.
-- `--no-content` chỉ lấy thông tin truyện và danh sách chương (tên, link, ngày đăng theo danh sách AJAX), không tải trang chương. Mỗi truyện chỉ tốn khoảng 3 request thay vì 1 request mỗi chương. Truyện ngắn không lưu nội dung nhưng vẫn đếm số chữ từ nội dung post có sẵn trong REST; truyện dài có số chữ bằng 0. Không ghi file `chapters/<id>.json`. Nội dung từng chương được API lấy khi có người mở chương đó. Lần chạy ngày 05/10/2026: 200 truyện (82 dài, 118 ngắn), 1.274 chương, 370 request, khoảng 3 phút.
-- Kết quả ghi vào `scripts/vnkings/data/` (`--out` để đổi): `index.json` (danh sách truyện và danh sách chương) và `chapters/<id truyện>.json` (nội dung từng chương theo vị trí). Thư mục này không commit.
-- Lần chạy ngày 05/10/2026: 100 truyện (53 truyện dài, 47 truyện ngắn), 700 chương, khoảng 11 MB, 851 request, mất khoảng 10 phút.
+- Mặc định chỉ lấy thông tin truyện và danh sách chương (tên, link, ngày đăng theo danh sách AJAX), không tải trang chương. Mỗi truyện chỉ tốn khoảng 3 request thay vì 1 request mỗi chương. Truyện ngắn không lưu nội dung nhưng vẫn đếm số chữ từ nội dung post có sẵn trong REST; truyện dài có số chữ bằng 0. Không ghi file `chapters/<id>.json`, file cũ của truyện đó bị xoá. Nội dung từng chương được API lấy khi có người mở chương đó. Lần chạy ngày 05/10/2026: 200 truyện (82 dài, 118 ngắn), 1.274 chương, 370 request, khoảng 3 phút.
+- `--content` tải thêm nội dung từng chương (1 request mỗi chương). Lần chạy ngày 05/10/2026: 100 truyện (53 truyện dài, 47 truyện ngắn), 700 chương, khoảng 11 MB, 851 request, mất khoảng 10 phút.
+- Kết quả ghi vào `scripts/vnkings/data/` (`--out` để đổi): `index.json` (danh sách truyện và danh sách chương) và, khi có `--content`, `chapters/<id truyện>.json` (nội dung từng chương theo id chương). Thư mục này không commit.
 
 Web và mobile đọc truyện qua API `/api/v1/stories` ([vnking/api.md](vnking/api.md)), không đọc file JSON nữa.

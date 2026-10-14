@@ -186,7 +186,7 @@ Thường **không cần** `-reset`: lệnh nạp đã cập nhật truyện có
 
 - `is_hidden`: truyện admin đã ẩn sẽ hiện lại;
 - `view_count`, `comment_count`;
-- nội dung chương đã được API tải khi có người đọc (xuất bằng `--no-content` thì phải tải lại);
+- nội dung chương đã được API tải khi có người đọc (xuất không có `--content` thì phải tải lại);
 - id truyện: id là UUID sinh mới khi thêm, nên "Đọc tiếp" và tiến độ đọc lưu trên máy người dùng (`ola.story.prefs`, theo id truyện) trỏ vào truyện không còn.
 
 Không chạy `-reset` trên prod nếu chưa sao lưu.
@@ -194,7 +194,7 @@ Không chạy `-reset` trên prod nếu chưa sao lưu.
 `cmd/storyimport` đọc thông tin DB từ `server/.env` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL_MODE`) như lệnh migration. Mỗi truyện ghi trong một transaction:
 
 1. Upsert `stories` theo `(source, source_story_id)`, cập nhật mọi cột lấy từ nguồn. `is_hidden` giữ nguyên.
-2. Upsert từng chương theo `(story_id, source_chapter_id)`. Chương có `content_hash`, `title`, `position`, `source_url`, `published_at` không đổi thì không ghi lại. Nội dung trong `chapters/<id truyện>.json` ghép với chương theo id chương nguồn (truyện ngắn dùng id truyện), không theo số thứ tự, nên nguồn chèn hay đổi thứ tự chương cũng không ghép nhầm; xuất bằng `--no-content` thì script xoá file nội dung cũ của truyện đó. File xuất bằng bản script cũ (ghép theo số thứ tự) sẽ không khớp id nào nên bị bỏ qua, không ghi nhầm. Chương không có nội dung trong file (xuất bằng `--no-content`) chỉ ghi tên, vị trí, link, ngày đăng; nội dung đã có trong DB được giữ nguyên, chương mới thì `content_text` để trống. Nội dung các chương này do API tự lấy khi có người đọc (xem `GET /stories/{id}/chapters/{position}` trong [api.md](api.md)); muốn lấy hết một lần thì xuất lại không có `--no-content` rồi nạp lại.
+2. Upsert từng chương theo `(story_id, source_chapter_id)`. Chương có `content_hash`, `title`, `position`, `source_url`, `published_at` không đổi thì không ghi lại. Nội dung trong `chapters/<id truyện>.json` ghép với chương theo id chương nguồn (truyện ngắn dùng id truyện), không theo số thứ tự, nên nguồn chèn hay đổi thứ tự chương cũng không ghép nhầm; script mặc định không tải nội dung và xoá file nội dung cũ của truyện đó, chỉ ghi file này khi chạy với `--content`. File xuất bằng bản script cũ (ghép theo số thứ tự) sẽ không khớp id nào nên bị bỏ qua, không ghi nhầm. Chương không có nội dung trong file (xuất mặc định, không có `--content`) chỉ ghi tên, vị trí, link, ngày đăng; nội dung đã có trong DB được giữ nguyên, chương mới thì `content_text` để trống. Nội dung các chương này do API tự lấy khi có người đọc (xem `GET /stories/{id}/chapters/{position}` trong [api.md](api.md)); muốn lấy hết một lần thì xuất lại với `--content` rồi nạp lại.
 3. Xoá chương của truyện đó không còn trong file (chương bị gỡ trên nguồn).
 4. Tính lại `chapter_count`, `word_count`, `last_chapter_at` từ `story_chapters`.
 
