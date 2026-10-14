@@ -54,6 +54,7 @@ const ALL = 'all'
 
 const SOURCE_LABEL: Record<string, string> = {
   vnkings: 'Vnkings',
+  rookies: 'Rookies',
 }
 
 const KIND_LABEL: Record<StoryKind, string> = {

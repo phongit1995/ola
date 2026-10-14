@@ -313,19 +313,34 @@ func (s *Service) fetchChapters(storyID uuid.UUID, rows []ChapterRow) {
 	ctx, cancel := context.WithTimeout(context.Background(), StoryBulkFetchTimeout)
 	defer cancel()
 	failed := 0
+	fetched := 0
+	// Chương đã được lưu kèm khi tải chương trước (nguồn trả nội dung cả truyện) thì bỏ qua.
+	filled := map[uuid.UUID]bool{}
 	for i := range rows {
-		if i > 0 {
+		if filled[rows[i].ID] {
+			continue
+		}
+		if fetched > 0 {
 			select {
 			case <-ctx.Done():
 			case <-time.After(StoryBulkFetchGap):
 			}
 		}
 		if ctx.Err() != nil {
-			failed += len(rows) - i
+			for _, row := range rows[i:] {
+				if !filled[row.ID] {
+					failed++
+				}
+			}
 			break
 		}
-		if err := s.loadContent(ctx, &rows[i], false); err != nil {
+		fetched++
+		ids, err := s.loadChapterContent(ctx, &rows[i], false)
+		if err != nil {
 			failed++
+		}
+		for _, id := range ids {
+			filled[id] = true
 		}
 	}
 	s.logger.Infow("bulk chapter fetch finished", "storyId", storyID, "chapters", len(rows), "failed", failed)

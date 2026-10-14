@@ -6,9 +6,11 @@ func Provider(c *dig.Container) error {
 	providers := []interface{}{
 		NewRepository,
 		NewVnkingsService,
+		NewRookiesService,
 		NewViewCounter,
 		NewService,
 		NewCrawler,
+		NewRookiesCrawler,
 		NewController,
 		NewRouter,
 	}

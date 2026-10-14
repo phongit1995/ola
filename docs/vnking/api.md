@@ -182,7 +182,7 @@ Phía app:
 
 ## 6. Tự động cập nhật truyện
 
-Setting `story_crawler` trong bảng `app_settings`, admin sửa ở menu **Truyện → Cài đặt**, tab **Cập nhật tự động** (`/stories/settings?tab=crawler`). Chưa lưu lần nào thì đang tắt. Log các lượt chạy xem ở nút **Xem log** trong khung Trạng thái của tab đó (bấm từng dòng để xem lỗi, User-Agent, cookie). Cách chạy xem mục 7 của [database.md](database.md).
+Setting `story_crawler` trong bảng `app_settings`, admin sửa ở menu **Truyện → Cài đặt**, tab **Cập nhật Vnkings** (`/stories/settings?tab=crawler`). Rookies có setting và tab riêng, **Cập nhật Rookies** (`?tab=crawler-rookies`). Endpoint của rookies là `GET /admin/stories/crawler/rookies` và `POST /admin/stories/crawler/rookies/run`, xem mục 4.7 của [story-sources.md](../story-sources.md). Chưa lưu lần nào thì đang tắt. Log các lượt chạy xem ở nút **Xem log** trong khung Trạng thái của tab đó (bấm từng dòng để xem lỗi, User-Agent, cookie). Cách chạy xem mục 7 của [database.md](database.md).
 
 ```json
 {

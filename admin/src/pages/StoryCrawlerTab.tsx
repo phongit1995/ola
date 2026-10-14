@@ -46,6 +46,7 @@ import type {
   StoryCrawlStatus,
   StoryCrawlTrigger,
   StoryCrawlerSetting,
+  StoryCrawlerSource,
   StoryCrawlerStatus,
 } from '@/types'
 
@@ -86,6 +87,57 @@ function formatDuration(ms: number): string {
   const minutes = Math.floor(seconds / 60)
   const rest = seconds % 60
   return rest === 0 ? `${minutes} phút` : `${minutes} phút ${rest} giây`
+}
+
+interface CrawlerSourceInfo {
+  label: string
+  cookiePlaceholder: string
+  cookieHelp: string
+  unit: string
+  emptyNote: string
+  truncatedWarning?: string
+  scope: (status: StoryCrawlerStatus) => string
+  enabledHint: (status: StoryCrawlerStatus) => string
+  newStoriesHint: (status: StoryCrawlerStatus) => string
+  logScope: (log: StoryCrawlLog) => string
+}
+
+const CRAWLER_SOURCES: Record<StoryCrawlerSource, CrawlerSourceInfo> = {
+  vnkings: {
+    label: 'Vnkings',
+    cookiePlaceholder: 'wordpress_logged_in_…=…',
+    cookieHelp:
+      'Đăng nhập vnkings.com trên trình duyệt, mở F12 → Network, chọn một request tới vnkings.com và copy nguyên giá trị header Cookie.',
+    unit: 'bài',
+    emptyNote: 'truyện mới chưa có chương',
+    scope: (status) => `${status.scanLimit} truyện sửa gần nhất trong ${status.scanDays} ngày`,
+    enabledHint: (status) =>
+      `Mỗi lượt lấy ${status.scanLimit} truyện sửa gần nhất trong ${status.scanDays} ngày trên vnkings, chỉ tải lại truyện có giờ sửa mới hơn bản đã lưu để thêm chương mới.`,
+    newStoriesHint: (status) =>
+      `Tắt: chỉ thêm chương cho truyện đã có. Bật: truyện mới nằm trong ${status.scanLimit} truyện sửa gần nhất (${status.scanDays} ngày) được thêm và hiện ngay trong app.`,
+    logScope: (log) =>
+      `Lấy ${formatCount(log.postsFound)} bài sửa gần nhất sau ${formatDateTime(log.since)}, đã xử lý ${formatCount(log.postsProcessed)}${log.truncated ? ' (khoảng này còn bài sửa cũ hơn, không lấy)' : ''}`,
+  },
+  rookies: {
+    label: 'Rookies',
+    cookiePlaceholder: 'rookies_session=…; XSRF-TOKEN=…',
+    cookieHelp:
+      'Đăng nhập rookies.vn trên trình duyệt, mở F12 → Network, chọn một request tới rookies.vn và copy nguyên giá trị header Cookie (có rookies_session).',
+    unit: 'truyện',
+    emptyNote: 'truyện chưa có chương đọc miễn phí',
+    truncatedWarning:
+      'Trang 1 đã đầy truyện ra chương sau lượt trước nên có thể sót truyện, nên giảm chu kỳ.',
+    scope: (status) =>
+      (status.scanPages ?? 1) > 1
+        ? `${status.scanPages} trang đầu danh sách truyện mới ra chương`
+        : 'Trang 1 danh sách truyện mới ra chương',
+    enabledHint: () =>
+      'Mỗi lượt đọc trang 1 danh sách truyện mới ra chương trên rookies, chỉ mở truyện có thay đổi để thêm chương mới. Không lấy chương VIP và truyện dịch.',
+    newStoriesHint: () =>
+      'Tắt: chỉ thêm chương cho truyện đã có. Bật: truyện mới trên trang 1 được thêm và hiện ngay trong app.',
+    logScope: (log) =>
+      `Đọc ${formatCount(log.postsFound)} truyện ra chương từ ${formatDateTime(log.since)}, đã xử lý ${formatCount(log.postsProcessed)}`,
+  },
 }
 
 function changeParts(log: StoryCrawlLog): string[] {
@@ -233,21 +285,20 @@ function retryNote(error: StoryCrawlError): string {
     : `đã thử ${error.attempts} lần, bỏ qua đến khi truyện được sửa lại`
 }
 
-function LogDetail({ log }: { log: StoryCrawlLog }) {
+function LogDetail({ log, source }: { log: StoryCrawlLog; source: CrawlerSourceInfo }) {
   const hiddenErrors = log.storiesFailed - log.errors.length
   return (
     <Space orientation="vertical" size={4}>
       <Typography.Text type="secondary">
-        Lấy {formatCount(log.postsFound)} bài sửa gần nhất sau {formatDateTime(log.since)}, đã
-        xử lý {formatCount(log.postsProcessed)}
-        {log.truncated ? ' (khoảng này còn bài sửa cũ hơn, không lấy)' : ''}
+        {source.logScope(log)}
         {log.storiesUnchanged > 0 ? ` · ${formatCount(log.storiesUnchanged)} truyện không đổi` : ''}
         {log.retried > 0 ? ` · thử lại ${formatCount(log.retried)} truyện lỗi lượt trước` : ''} ·{' '}
         {log.importNewStories ? 'có lấy truyện mới' : 'chỉ cập nhật truyện đã có'}
-        {log.storiesEmpty > 0
-          ? ` · ${formatCount(log.storiesEmpty)} truyện mới chưa có chương`
-          : ''}
+        {log.storiesEmpty > 0 ? ` · ${formatCount(log.storiesEmpty)} ${source.emptyNote}` : ''}
       </Typography.Text>
+      {log.truncated && source.truncatedWarning && (
+        <Typography.Text type="warning">{source.truncatedWarning}</Typography.Text>
+      )}
       {log.userAgent && (
         <Typography.Text type="secondary" style={{ fontSize: 12 }}>
           User-Agent: <Typography.Text code>{log.userAgent}</Typography.Text>
@@ -358,10 +409,12 @@ function deadAtByCookie(cookies: StoryCookie[]): Map<string, string> {
 function CookieRow({
   index,
   deadAt,
+  placeholder,
   onRemove,
 }: {
   index: number
   deadAt: Map<string, string>
+  placeholder: string
   onRemove: () => void
 }) {
   const form = Form.useFormInstance<StoryCrawlerSetting>()
@@ -386,7 +439,7 @@ function CookieRow({
           style={{ marginBottom: 0, flex: '1 1 240px', minWidth: 0 }}
         >
           <Input.Password
-            placeholder="wordpress_logged_in_…=…"
+            placeholder={placeholder}
             autoComplete="new-password"
             onChange={reviveIfDead}
           />
@@ -405,7 +458,7 @@ function CookieRow({
   )
 }
 
-function CookieList({ cookies }: { cookies: StoryCookie[] }) {
+function CookieList({ cookies, source }: { cookies: StoryCookie[]; source: CrawlerSourceInfo }) {
   const deadAt = deadAtByCookie(cookies)
   return (
     <div style={{ paddingBottom: 16 }}>
@@ -417,6 +470,7 @@ function CookieList({ cookies }: { cookies: StoryCookie[] }) {
                 key={field.key}
                 index={field.name}
                 deadAt={deadAt}
+                placeholder={source.cookiePlaceholder}
                 onRemove={() => remove(field.name)}
               />
             ))}
@@ -424,8 +478,7 @@ function CookieList({ cookies }: { cookies: StoryCookie[] }) {
               Thêm cookie
             </Button>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              Đăng nhập vnkings.com trên trình duyệt, mở F12 → Network, chọn một request tới
-              vnkings.com và copy nguyên giá trị header Cookie.
+              {source.cookieHelp}
             </Typography.Text>
           </Space>
         )}
@@ -443,11 +496,18 @@ function sameSnapshot(a: ConfigSnapshot, b: ConfigSnapshot): boolean {
   return a.updatedAt === b.updatedAt && settingKey(a.config) === settingKey(b.config)
 }
 
-function SettingsCard({ status }: { status: StoryCrawlerStatus }) {
+function SettingsCard({
+  status,
+  source,
+}: {
+  status: StoryCrawlerStatus
+  source: StoryCrawlerSource
+}) {
   const { message } = App.useApp()
   const [form] = Form.useForm<StoryCrawlerSetting>()
   const values = Form.useWatch([], form)
-  const saveSetting = useSaveStoryCrawlerSetting()
+  const saveSetting = useSaveStoryCrawlerSetting(source)
+  const info = CRAWLER_SOURCES[source]
   const latest: ConfigSnapshot = { config: status.config, updatedAt: status.configUpdatedAt }
   const [base, setBase] = useState<ConfigSnapshot>(latest)
   const { config } = base
@@ -527,10 +587,7 @@ function SettingsCard({ status }: { status: StoryCrawlerStatus }) {
         initialValues={config}
         onFinish={save}
       >
-        <SettingRow
-          title="Tự động cập nhật"
-          description={`Mỗi lượt lấy ${status.scanLimit} truyện sửa gần nhất trong ${status.scanDays} ngày trên vnkings, chỉ tải lại truyện có giờ sửa mới hơn bản đã lưu để thêm chương mới.`}
-        >
+        <SettingRow title="Tự động cập nhật" description={info.enabledHint(status)}>
           <Form.Item name="enabled" valuePropName="checked" noStyle>
             <Switch />
           </Form.Item>
@@ -540,10 +597,7 @@ function SettingsCard({ status }: { status: StoryCrawlerStatus }) {
             <Segmented options={INTERVAL_OPTIONS} disabled={values?.enabled === false} />
           </Form.Item>
         </SettingRow>
-        <SettingRow
-          title="Lấy cả truyện mới"
-          description={`Tắt: chỉ thêm chương cho truyện đã có. Bật: truyện mới nằm trong ${status.scanLimit} truyện sửa gần nhất (${status.scanDays} ngày) được thêm và hiện ngay trong app.`}
-        >
+        <SettingRow title="Lấy cả truyện mới" description={info.newStoriesHint(status)}>
           <Form.Item name="importNewStories" valuePropName="checked" noStyle>
             <Switch />
           </Form.Item>
@@ -567,7 +621,7 @@ function SettingsCard({ status }: { status: StoryCrawlerStatus }) {
             <Switch />
           </Form.Item>
         </SettingRow>
-        <CookieList cookies={config.cookies} />
+        <CookieList cookies={config.cookies} source={info} />
       </Form>
     </Card>
   )
@@ -592,13 +646,16 @@ function CookieSummary({ cookies }: { cookies: StoryCookie[] }) {
 
 function StatusCard({
   status,
+  source,
   onOpenHistory,
 }: {
   status: StoryCrawlerStatus
+  source: StoryCrawlerSource
   onOpenHistory: () => void
 }) {
   const { message } = App.useApp()
-  const run = useRunStoryCrawler()
+  const run = useRunStoryCrawler(source)
+  const info = CRAWLER_SOURCES[source]
   const { config, progress } = status
   const lastRun = status.logs[0]
   const percent =
@@ -631,7 +688,7 @@ function StatusCard({
           <Progress percent={percent} size="small" status="active" />
           <Typography.Text type="secondary" style={{ fontSize: 13 }}>
             {[
-              `${formatCount(progress.postsProcessed)}/${formatCount(progress.postsFound)} bài`,
+              `${formatCount(progress.postsProcessed)}/${formatCount(progress.postsFound)} ${info.unit}`,
               ...changeParts(progress),
             ].join(' · ')}
           </Typography.Text>
@@ -641,9 +698,7 @@ function StatusCard({
       <InfoRow label="Lần chạy kế">
         {config.enabled ? formatDateTime(status.nextRunAt) : 'Không có lịch'}
       </InfoRow>
-      <InfoRow label="Phạm vi quét">
-        {status.scanLimit} truyện sửa gần nhất trong {status.scanDays} ngày
-      </InfoRow>
+      <InfoRow label="Phạm vi quét">{info.scope(status)}</InfoRow>
       {status.retryPending > 0 && (
         <InfoRow label="Chờ thử lại">
           <Typography.Text type="warning">
@@ -657,6 +712,9 @@ function StatusCard({
           <StatusTag status={lastRun.status} />
           {runSummary(lastRun)}
         </InfoRow>
+      )}
+      {lastRun && !status.running && lastRun.truncated && info.truncatedWarning && (
+        <Alert type="warning" showIcon style={{ marginTop: 8 }} title={info.truncatedWarning} />
       )}
       <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
         <Button
@@ -677,8 +735,9 @@ function StatusCard({
   )
 }
 
-export function StoryCrawlerTab() {
-  const { data: status, isLoading, isError, isFetching, refetch } = useStoryCrawler()
+export function StoryCrawlerTab({ source }: { source: StoryCrawlerSource }) {
+  const { data: status, isLoading, isError, isFetching, refetch } = useStoryCrawler(source)
+  const info = CRAWLER_SOURCES[source]
   const [historyOpen, setHistoryOpen] = useState(false)
   useRefreshStoriesAfterCrawl(status ? status.logs[0]?.id ?? '' : undefined)
 
@@ -704,17 +763,17 @@ export function StoryCrawlerTab() {
     <>
       <Row gutter={[16, 16]} align="top">
         <Col xs={24} xl={15}>
-          <SettingsCard status={status} />
+          <SettingsCard status={status} source={source} />
         </Col>
         <Col xs={24} xl={9}>
-          <StatusCard status={status} onOpenHistory={() => setHistoryOpen(true)} />
+          <StatusCard status={status} source={source} onOpenHistory={() => setHistoryOpen(true)} />
         </Col>
       </Row>
       <Drawer
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
         size={HISTORY_DRAWER_WIDTH}
-        title="Log các lượt cập nhật"
+        title={`Log các lượt cập nhật ${info.label}`}
         extra={
           <Button icon={<ReloadOutlined />} loading={isFetching} onClick={() => void refetch()}>
             Tải lại
@@ -728,7 +787,7 @@ export function StoryCrawlerTab() {
           dataSource={rows}
           pagination={false}
           scroll={{ x: 960 }}
-          expandable={{ expandedRowRender: (log) => <LogDetail log={log} /> }}
+          expandable={{ expandedRowRender: (log) => <LogDetail log={log} source={info} /> }}
           locale={{ emptyText: 'Chưa có lượt cập nhật nào' }}
         />
       </Drawer>

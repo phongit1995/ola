@@ -24,6 +24,8 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		stories.GET("/sources", r.controller.Sources)
 		stories.GET("/crawler", r.controller.Crawler)
 		stories.POST("/crawler/run", r.controller.RunCrawler)
+		stories.GET("/crawler/rookies", r.controller.RookiesCrawler)
+		stories.POST("/crawler/rookies/run", r.controller.RunRookiesCrawler)
 		stories.GET("/:id", r.controller.Detail)
 		stories.PATCH("/:id", r.controller.Update)
 		stories.DELETE("/:id", r.controller.Delete)

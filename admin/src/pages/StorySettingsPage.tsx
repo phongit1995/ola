@@ -10,7 +10,7 @@ import { STORY_SETTING_KEY, storySetting } from './storyMeta'
 import { StoryCrawlerTab } from './StoryCrawlerTab'
 import { StoryReadingSettingsTab } from './StoryReadingSettingsTab'
 
-const TAB_KEYS = ['display', 'reading', 'crawler'] as const
+const TAB_KEYS = ['display', 'reading', 'crawler', 'crawler-rookies'] as const
 type TabKey = (typeof TAB_KEYS)[number]
 
 export function StorySettingsPage() {
@@ -30,7 +30,16 @@ export function StorySettingsPage() {
       items={[
         { key: 'display', label: 'Hiển thị trên app', children: <StoryDisplaySettings /> },
         { key: 'reading', label: 'Giới hạn đọc', children: <StoryReadingSettingsTab /> },
-        { key: 'crawler', label: 'Cập nhật tự động', children: <StoryCrawlerTab /> },
+        {
+          key: 'crawler',
+          label: 'Cập nhật Vnkings',
+          children: <StoryCrawlerTab source="vnkings" />,
+        },
+        {
+          key: 'crawler-rookies',
+          label: 'Cập nhật Rookies',
+          children: <StoryCrawlerTab source="rookies" />,
+        },
       ]}
     />
   )

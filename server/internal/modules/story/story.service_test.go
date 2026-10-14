@@ -58,14 +58,14 @@ func TestFetchContentPicksSourceAndKind(t *testing.T) {
 	source := &fakeSource{content: "nội dung"}
 	service := newTestService(newFakeStore(1), source)
 	for _, kind := range []string{StoryKindShort, StoryKindLong, StoryKindShort} {
-		if _, err := service.fetchContent(context.Background(), &ChapterRow{StorySource: StorySourceVnkings, StoryKind: kind}); err != nil {
+		if _, _, err := service.fetchChapter(context.Background(), &ChapterRow{StorySource: StorySourceVnkings, StoryKind: kind}); err != nil {
 			t.Fatal(err)
 		}
 	}
 	if source.calls.Load() != 3 || source.shortCalls.Load() != 2 {
 		t.Fatalf("calls %d, short %d", source.calls.Load(), source.shortCalls.Load())
 	}
-	if _, err := service.fetchContent(context.Background(), &ChapterRow{StorySource: "dembuon", StoryKind: StoryKindLong}); !errors.Is(err, errUnsupportedSource) {
+	if _, _, err := service.fetchChapter(context.Background(), &ChapterRow{StorySource: "dembuon", StoryKind: StoryKindLong}); !errors.Is(err, errUnsupportedSource) {
 		t.Fatalf("unknown source: got %v", err)
 	}
 	if source.calls.Load() != 3 {
@@ -140,6 +140,21 @@ func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID uui
 		}
 	}
 	return nil
+}
+
+func (f *fakeStore) SaveMissingChapterContents(_ context.Context, storyID uuid.UUID, contents map[string]string) ([]uuid.UUID, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var filled []uuid.UUID
+	for i := range f.chapters[storyID] {
+		chapter := &f.chapters[storyID][i]
+		if content, ok := contents[chapter.SourceChapterID]; ok && chapter.ContentText == "" {
+			chapter.ContentText = content
+			chapter.WordCount = len(strings.Fields(content))
+			filled = append(filled, chapter.ID)
+		}
+	}
+	return filled, nil
 }
 
 var testReader = testID(900)

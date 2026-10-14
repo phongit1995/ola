@@ -10,6 +10,7 @@ const (
 	StoryBulkIDsMax    = 500
 	StoryQueryMaxRunes = 100
 	StorySourceVnkings = "vnkings"
+	StorySourceRookies = "rookies"
 
 	StorySortUpdated = "updated"
 	StorySortViews   = "views"
@@ -65,6 +66,31 @@ const (
 	StoryShortMinChars           = 1500
 	StoryChapterAnchorTolerance  = 5 * time.Minute
 
+	StoryContentSaveTimeout = 30 * time.Second
+
+	StoryRookiesSite             = "https://rookies.vn"
+	StoryRookiesHost             = "rookies.vn"
+	StoryRookiesCoverBase        = "https://rookies.vn/uploads/"
+	StoryRookiesLatestPath       = "/truyen/hot?orderby%5Bpublished_at%5D=desc"
+	StoryRookiesListComponent    = "Filter/Hot_Full_Free_Paid"
+	StoryRookiesStoryComponent   = "Novels/IP_info"
+	StoryRookiesReadingComponent = "Novels/Reading_Full_view"
+	StoryRookiesPartialData      = "novels"
+	StoryRookiesHomeComponent    = "Home/Home"
+	StoryRookiesAuthData         = "auth"
+	StoryRookiesScanPages        = 1
+	StoryRookiesGroupKind        = 1
+	StoryRookiesGroupForm        = 2
+	StoryRookiesGroupGenre       = 3
+	StoryRookiesTranslatedLabel  = "Truyện dịch"
+	StoryRookiesMatureRating     = "18+"
+	StoryRookiesTitleMaxRunes    = 500
+	StoryRookiesAuthorMaxRunes   = 200
+	StoryRookiesPageMaxBytes     = 8 << 20
+	StoryRookiesContentMaxBytes  = 32 << 20
+	StoryRookiesFetchTimeout     = 45 * time.Second
+	StoryRookiesMaxRetryAfter    = time.Minute
+
 	StoryCrawlGap           = time.Second
 	StoryCrawlRetries       = 2
 	StoryCrawlRetryWait     = 3 * time.Second
@@ -96,6 +122,12 @@ const (
 	CacheKeyStoryViewGuard     = "STORY:%s:VIEW:%s"
 	CacheKeyStoryViewsPending  = "STORY_VIEWS:PENDING"
 	CacheKeyStoryFreeReads     = "STORY_FREE:%s:%s"
+
+	CacheKeyRookiesCrawlLock     = "LOCK:STORY_CRAWL_ROOKIES"
+	CacheKeyRookiesCrawlState    = "STORY_CRAWL_ROOKIES:STATE"
+	CacheKeyRookiesCrawlLogs     = "STORY_CRAWL_ROOKIES:LOGS"
+	CacheKeyRookiesCrawlProgress = "STORY_CRAWL_ROOKIES:PROGRESS"
+	CacheKeyRookiesCrawlSeen     = "STORY_CRAWL_ROOKIES:SEEN"
 
 	ErrorCodeStoryContentUnavailable = "STORY_CONTENT_UNAVAILABLE"
 	ErrorCodeStoryContentNotSaved    = "STORY_CONTENT_NOT_SAVED"

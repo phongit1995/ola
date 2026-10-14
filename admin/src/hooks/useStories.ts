@@ -6,6 +6,7 @@ import type {
   AdminStoryBulkVisibilityInput,
   AdminStoryListParams,
   StoryCrawlerSetting,
+  StoryCrawlerSource,
 } from '@/types'
 
 const STORIES_KEY = 'admin-stories'
@@ -13,7 +14,10 @@ const FILTER_OPTIONS_STALE_MS = 5 * 60 * 1000
 const BULK_FETCH_POLL_MS = 3000
 const CRAWLER_POLL_MS = 3000
 const CRAWLER_IDLE_POLL_MS = 30000
-const STORY_CRAWLER_SETTING_KEY = 'story_crawler'
+const CRAWLER_SETTING_KEYS: Record<StoryCrawlerSource, string> = {
+  vnkings: 'story_crawler',
+  rookies: 'story_crawler_rookies',
+}
 
 export function useStories(params: AdminStoryListParams) {
   return useQuery({
@@ -149,26 +153,26 @@ export function useDeleteStoryComment() {
   })
 }
 
-export function useStoryCrawler() {
+export function useStoryCrawler(source: StoryCrawlerSource) {
   return useQuery({
-    queryKey: [STORIES_KEY, 'crawler'],
-    queryFn: () => AdminStoryService.crawler(),
+    queryKey: [STORIES_KEY, 'crawler', source],
+    queryFn: () => AdminStoryService.crawler(source),
     refetchInterval: (query) =>
       query.state.data?.running ? CRAWLER_POLL_MS : CRAWLER_IDLE_POLL_MS,
   })
 }
 
-export function useRunStoryCrawler() {
+export function useRunStoryCrawler(source: StoryCrawlerSource) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => AdminStoryService.runCrawler(),
+    mutationFn: () => AdminStoryService.runCrawler(source),
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'crawler'] })
+      void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'crawler', source] })
     },
   })
 }
 
-export function useSaveStoryCrawlerSetting() {
+export function useSaveStoryCrawlerSetting(source: StoryCrawlerSource) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({
@@ -177,9 +181,9 @@ export function useSaveStoryCrawlerSetting() {
     }: {
       value: StoryCrawlerSetting
       expectedUpdatedAt: string | null
-    }) => AdminSettingsService.put(STORY_CRAWLER_SETTING_KEY, { ...value }, expectedUpdatedAt),
+    }) => AdminSettingsService.put(CRAWLER_SETTING_KEYS[source], { ...value }, expectedUpdatedAt),
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'crawler'] })
+      void queryClient.invalidateQueries({ queryKey: [STORIES_KEY, 'crawler', source] })
     },
   })
 }
