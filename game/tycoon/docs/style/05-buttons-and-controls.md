@@ -1,0 +1,78 @@
+# 05 — Button và control
+
+## 1. `.ty-btn` base
+
+- Cao `--ty-btn-h` 52 (`-big` 64, `-small` 40), padding ngang 20, radius 16, chữ 17/700 (small 15/700), viền 2, shadow md, gap icon-chữ 8, icon 20 (big 24).
+- Full-width trong modal/sheet/action bar; trong lobby 320 px.
+- Mọi state theo `01-foundations.md` §9. Loading: spinner thay icon, giữ chiều rộng.
+
+| Biến thể | Nền | Chữ | Viền | Dùng |
+|---|---|---|---|---|
+| `.ty-btn-gold` | gradient `#FFD34D → #F2B807` | navy | gold-deep | hành động chính duy nhất của pha/màn |
+| `.ty-btn-paper` | paper | navy | navy | hành động phụ |
+| `.ty-btn-jade` | jade | cream | navy | Sẵn sàng |
+| `.ty-btn-danger` | danger | cream | navy | Phá sản, xác nhận Bỏ cuộc |
+| `.ty-btn-text` | trong suốt | cream (trên navy) / navy (trên paper) | — | Hủy, Luật chơi |
+
+Quy tắc: tối đa **1** nút gold hiển thị cùng lúc trên màn (CTA của pha). Nếu action bar có gold thì sheet đang mở không có gold thứ hai — sheet dùng paper/jade.
+
+## 2. Action bar theo pha — màu nút
+
+| Pha | Nút | Biến thể |
+|---|---|---|
+| roll | Gieo xúc xắc | gold + `ic-dice` |
+| jail | Gieo / Nộp 50 tr / Dùng thẻ | paper / paper / paper; nút khuyến nghị (Gieo) viền gold-deep 2 px thay navy |
+| decide | Mua {giá} | gold (chữ giá tabular); không đủ tiền → disabled + giá coral |
+| decide | Bỏ qua | paper |
+| manage | Xây / bán | paper + `ic-house` jade |
+| manage | Kết thúc lượt / Gieo tiếp | gold |
+| debt | Bán nhà / Trả {x} tr / Phá sản | paper + `ic-minus` coral / gold + `ic-coins` / danger |
+| chờ người khác | nhãn | text cream 70% + Mèo Đậu bust |
+
+## 3. `.ty-icon-btn`
+
+- 44 × 44, radius pill, viền navy 1.5 (trên paper) hoặc cream 30% (trên navy, `.ty-icon-btn-dark`), icon 24.
+- Có badge: chấm coral 8 px góc trên-phải, viền nền 1.5 px.
+- Toggle (âm thanh): `aria-pressed`; trạng thái off icon 70%.
+
+## 4. Chip-btn (chọn số người, tab BXH)
+
+- 40 cao, padding 16, radius pill, viền navy 1.5, chữ 15/600; active: nền gold, viền gold-deep, chữ navy; `role="radio"`.
+
+## 5. Nút +/− trong S8 và O3
+
+- 36 × 36, radius 12, viền navy 1.5, nền paper; `+` icon jade, `−` icon coral; giá 13.5/800 tabular bên cạnh (`150 tr` / `+75 tr`).
+- Disabled: icon navy 45%, giá navy 45%, tooltip lý do (long-press/hover) 12.5 coral.
+- Pending (đã gửi, chờ STATE): spinner 14 thay icon, cả hàng 60%.
+
+## 6. Input
+
+- Cao 48, radius 12, viền navy 1.5, nền paper, chữ 15/600, placeholder navy 45%; focus viền gold 2; lỗi viền coral 2 + text lỗi 12.5 coral dưới + shake 2 px 240 ms.
+- Mật khẩu bàn: hiện dạng text thường, không có toggle ẩn/hiện (mật khẩu bàn chơi không phải thông tin bảo mật; inventory icon không có `ic-eye`).
+
+## 7. Sheet handle và nút dính đáy
+
+- Handle 36 × 4 navy 30%, vùng kéo 44 cao.
+- Nút dính đáy: nền paper, border-top line 1 px, padding 12 + safe-area, 1–2 nút theo §1.
+
+## 8. Chip trạng thái
+
+| Chip | Nền | Chữ/icon | Dùng |
+|---|---|---|---|
+| `.ty-chip` | paper, viền navy 1.5 | navy | mặc định, số đất |
+| `.ty-chip-gold` | gold-soft `#FBE9A6`, viền gold-deep | navy | Chủ bàn, Đôi!, có thẻ ra tù |
+| `.ty-chip-jade` | jade | cream | Sẵn sàng, Đã mua |
+| `.ty-chip-coral` | coral | cream | Phá sản, Vòng 18–19 |
+| `.ty-chip-danger` | danger | cream | Vòng cuối |
+| `.ty-chip-seat[data-seat]` | seat-n-soft, viền seat-n 1.5 | navy | tên trong chat/log |
+| `.ty-chip-group[data-group]` | paper, ô màu 12 px | navy | nhóm đất |
+
+## 9. Topbar S6
+
+- Trái: `.ty-round-chip`; giữa: TurnClock; phải: `.ty-icon-btn-dark` `ic-more` mở popover paper (radius 16, shadow lg) gồm `Thoát bàn` (navy, `ic-exit-door`) và `Bỏ cuộc` (coral, `ic-flag`).
+
+## 10. Accessibility control
+
+- Tất cả control có accessible name tiếng Việt; nút icon-only `aria-label`.
+- Focus order trong S6: topbar → bàn (ô là button, duyệt theo idx) → pod → action bar → footer.
+- `Escape` đóng sheet/popover/modal thường; không đóng S9/O3.
