@@ -36,14 +36,25 @@ DoD: screenshot 3 màn ở 360/390/520 không tràn; typecheck + lint xanh.
 
 DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 390 đối chiếu concept.
 
-## Giai đoạn 3 — Tương tác và replay
+## Giai đoạn 3 — Tương tác và replay (tier Lite trước)
 
 - [ ] Sheet S7/S8, action bar theo pha, TurnClock, RoundChip, log line.
-- [ ] `replay.ts`: roll → O1, move hop từng ô, pay đếm số + chip bay, card flip, build/sell pop, jail-in, bankrupt, round.
-- [ ] Reduced-motion path.
-- [ ] Âm thanh WebAudio theo `../01-art-direction.md` §9.
+- [ ] `fx/tween.ts` + `fx/anchors.ts`; `replay.ts` gọi `effects/*` theo `../08-fx-and-animation.md` §4.
+- [ ] Toàn bộ effect ở cột **Lite** (không hạt): roll, move hop, pay đếm + chip, card flip, build/sell, jail, bankrupt, turn, round, result.
+- [ ] Tier `off` (reduced-motion) cho mọi effect.
+- [ ] Âm thanh WebAudio theo `../08-fx-and-animation.md` §7.
 
-DoD: chạy fixture steps dài 40 bước không lỗi, không rò replayEpoch; `charsEnabled=false` vẫn đủ UI.
+DoD: fixture 40 step chạy tier lite/off đúng state cuối, không rò replayEpoch; `charsEnabled=false` vẫn đủ UI.
+
+## Giai đoạn 3b — FX layer (tier Full)
+
+- [ ] `fx/FxLayer.ts` Pixi: 1 app, canvas phủ bàn, pool 150, texture sinh bằng Graphics, ticker dừng khi rỗng.
+- [ ] 6 kind hạt: coins, dust, confetti, spark, shard, trail.
+- [ ] Nâng 22 effect L2 lên bản Full theo §3 của 08; vignette, rung bàn, idle thở, CTA shine.
+- [ ] Tự hạ tier theo frame time (08 §5) + cài đặt Hiệu ứng trong lobby.
+- [ ] `tycoon-shots.mjs --audit-motion`: p95 frame ≤ 24 ms ở Full trên máy tham chiếu.
+
+DoD: cùng fixture 40 step chạy Full không lỗi JS, canvas rỗng sau 2 s cuối, không sprite rò sau 1000 emit.
 
 ## Giai đoạn 4 — Nhân vật và raster
 
@@ -79,4 +90,6 @@ DoD: mọi vị trí nhân vật có fallback; tắt nhân vật không đổi l
 | Nhân vật sinh ra không đồng bộ phong cách | sinh theo 1 prompt base chung, duyệt pose `idle` của cả 6 trước rồi mới sinh pose còn lại |
 | Gold ghế 0 nhầm với CTA | pod luôn có avatar+tên; CTA không bao giờ nằm trong pod row |
 | Budget asset vượt 800 KB | bỏ bust pose `sad` của ty/ngan, bỏ fx-result, giảm quân xuống 4 |
-| Máy yếu lag khi 4 quân animate | hop dùng `transform` + `will-change`, không reflow; reduced-motion tự bật khi `deviceMemory < 2` |
+| Máy yếu lag khi 4 quân animate + hạt | hop dùng `transform` + `will-change`, không reflow; tier tự hạ Lite theo frame time, `off` khi reduced-motion (08 §5–6) |
+| Hiệu ứng nhiều làm ván chậm | ngân sách thời gian từng đoạn (08 §2), replay không chặn tap bàn/sheet, chỉ chặn action bar |
+| Nhìn như "casino" khi thêm hạt (rủi ro Apple 4.1) | hạt chỉ gold/màu ghế/paper, không neon/đèn nhấp nháy/ký hiệu tiền; không flash trắng |

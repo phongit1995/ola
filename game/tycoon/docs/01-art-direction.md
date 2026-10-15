@@ -163,6 +163,8 @@ Stroke 2 px, cap tròn, grid 24 cho icon điều khiển; glyph ô bàn cờ là
 
 ## 8. Motion
 
+> Bảng dưới là nhịp cơ bản. Danh mục đầy đủ ≈ 60 hiệu ứng (kể cả hạt trên lớp canvas Pixi), bậc Full/Lite/Off và ngân sách hiệu năng nằm ở [08-fx-and-animation.md](./08-fx-and-animation.md) — khi khác nhau, 08 được ưu tiên.
+
 | Chuyển động | Thông số |
 |---|---|
 | Xúc xắc lăn (O1) | 2 viên xoay 3D giả bằng đổi mặt mỗi 80 ms trong 720 ms, dừng lệch nhau 120 ms, tổng hiện 200 ms sau |

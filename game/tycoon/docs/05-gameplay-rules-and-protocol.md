@@ -1,6 +1,6 @@
 # 05 — Gameplay: luật v1, bàn 40 ô, thẻ bài, state, protocol
 
-Server (`server/internal/game/games/tycoon/`) là nguồn chân lý. Client **không mirror luật** (khác cờ tướng): không có gợi ý nước đi, mọi số tiền/kết quả đều từ `STATE`. Client chỉ cần bảng dữ liệu tĩnh (giá, tiền thuê, tên ô, nội dung thẻ) để render sheet — sinh từ Go bằng codegen `constants.gen.ts` + `board.gen.json` (pattern `thirteengen`), parity test so khớp dữ liệu, không so khớp logic.
+Server (`server/internal/game/games/tycoon/`) là nguồn chân lý. Client **không mirror luật diễn tiến** (khác cờ tướng): không tự tính ô đích, tiền thuê, thẻ hay kết quả — mọi số đều từ `STATE`. Client chỉ có hai thứ: (1) bảng dữ liệu tĩnh (giá, tiền thuê, tên ô, nội dung thẻ) sinh từ Go bằng codegen `constants.gen.ts` + `board.gen.json` (pattern `thirteengen`); (2) `rules-hint.ts` — hàm `canBuild/canSell(view, seat, tile)` trả `{ok, reason}` chỉ để **enable/disable nút và hiện lý do** trong S7/S8; server validate lại y hệt, parity test so khớp cả dữ liệu tĩnh lẫn `canBuild/canSell` trên fixture.
 
 ---
 

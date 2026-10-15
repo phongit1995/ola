@@ -21,6 +21,19 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 - **30 giây** cho mỗi hành động; hết giờ server tự làm thay (gieo, bỏ mua, kết thúc lượt, tự bán nhà để trả nợ). 3 lần hết giờ liên tiếp hoặc thoát giữa ván = phá sản kỹ thuật, ván tiếp tục với người còn lại.
 - Bỏ cuộc (FORFEIT), reconnect/resume, chat phòng + trong ván, reaction, lịch sử, bảng xếp hạng — dùng hạ tầng engine + SDK sẵn có.
 
+## Công nghệ (đã chốt)
+
+Game 2D, góc nhìn từ trên xuống, không camera, không vật lý. Ba lựa chọn có sẵn trong repo:
+
+| Stack | Game đang dùng | Hợp với tỷ phú? |
+|---|---|---|
+| **React 19 + zustand + SVG/DOM** (Vite entry trong `game/`) | caro, thirteen, xiangqi | **Chọn làm nền.** Bàn 40 ô tĩnh, UI chủ yếu là sheet/modal/bảng số/live text — đúng thế mạnh DOM; quân nhảy, đếm tiền, lật thẻ, nhân vật bằng CSS transform + WAAPI. Tái dùng nguyên lobby/room/pregame/chat/history của xiangqi. |
+| **Pixi.js — chỉ 1 lớp canvas hạt** phủ bàn | war-god (toàn bộ) | **Chọn kèm (hybrid).** Xu bay, bụi, pháo giấy, tia, mảnh vỡ vẽ trên canvas trong suốt `pointer-events: none`; không chữ, không nút, không state. Xoá canvas game vẫn chạy đúng. Xem [08-fx-and-animation.md](./08-fx-and-animation.md). |
+| Pixi.js toàn bộ | war-god | Không. Nhiều chữ sống/sheet/accessibility trong canvas tốn gấp đôi công, mất tái dùng UI xiangqi. |
+| Cocos Creator | ola-farm | Không. Build tay, không CI, asset pipeline nặng. |
+
+Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (05 §7), không thêm service. Codegen dữ liệu tĩnh Go → TS như thirteen/xiangqi.
+
 ## Danh sách màn hình và tính năng
 
 11 màn/khối UI + 7 lớp overlay, chi tiết trong [02-screen-specs.md](./02-screen-specs.md):
@@ -57,8 +70,9 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 5. [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md) — luật v1 đầy đủ, bảng 40 ô + giá + tiền thuê, 24 thẻ bài, state JSON, lệnh MOVE, steps replay, mapping interface engine, timeout, kết thúc ván.
 6. [06-icon-system.md](./06-icon-system.md) — hệ icon: 4 họ icon, số lượng, grid, công thức hình học từng icon, quy trình tạo icon mới.
 7. [07-screen-to-feature-map.md](./07-screen-to-feature-map.md) — mapping màn → store state → SDK event → component.
-8. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 40 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
-9. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
+8. [08-fx-and-animation.md](./08-fx-and-animation.md) — kiến trúc 4 lớp (SVG / DOM / canvas Pixi hạt / overlay), ≈ 60 hiệu ứng theo sự kiện với bản Lite, API `FxLayer`, ngân sách hiệu năng, tier Full/Lite/Off.
+9. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 40 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
+10. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
 
 ## Nguyên tắc bắt buộc
 

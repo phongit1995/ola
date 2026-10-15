@@ -33,9 +33,10 @@ Bảng tra nhanh khi implement. Store chính `useTycoon` (pattern `useThirteen` 
 | `server-types.ts` | `decodeView` (RangeError nếu sai shape) | wireSession |
 | `money.ts` | `formatMoney`, `worthOf(view, seat)` (chỉ để hiện tổng tài sản live trong S8; S9 dùng số server) | pod, sheet |
 | `replay.ts` | tuần tự steps → hành động UI theo 01 §8, `replayEpoch` | S6 |
+| `rules-hint.ts` | `canBuild/canSell(view, seat, tile)` → `{ok, reason}` — chỉ để enable/disable nút + lý do; không authoritative | S7, S8, O3 |
 | `errorText.ts` | map mã lỗi `tycoon:*` + GAME_ERROR_CODE → tiếng Việt | toast, lý do disabled |
 
-Không có `moves.ts`/`bot.ts`: client không mirror luật, không có chế độ chơi với máy ở v1.
+Không có `moves.ts`/`bot.ts`: client không mirror luật diễn tiến (gieo/đi/thuê/thẻ), không có chế độ chơi với máy ở v1.
 
 ## Bridge host (mọi màn)
 
