@@ -87,6 +87,26 @@ func (ctrl *Controller) Mine(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// Top godoc
+// @Summary      Top clans by member count, optionally filtered by handle substring
+// @Tags         clan
+// @Produce      json
+// @Security     BearerAuth
+// @Param        q query string false "Handle substring (lowercase letters and digits, optional # prefix)"
+// @Param        limit query int false "Max items (default 20, max 50)"
+// @Success      200  {object}  utils.BaseResponse[[]ClanResponse]
+// @Router       /clans/top [get]
+func (ctrl *Controller) Top(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Top(c.Query("q"), utils.ParseLimit(c, 20, 50))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // GetByID godoc
 // @Summary      Get clan info by id (increments visit count once per viewer per 6h)
 // @Tags         clan

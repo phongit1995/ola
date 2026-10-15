@@ -30,6 +30,10 @@ export class ClanService {
     return http.get<Clan[]>(API_PATH.clans.mine);
   }
 
+  static top(params: { q?: string; limit?: number } = {}): Promise<Clan[]> {
+    return http.get<Clan[]>(API_PATH.clans.top, { params });
+  }
+
   static byHandle(handle: string): Promise<Clan> {
     return http.get<Clan>(API_PATH.clans.byHandle(handle));
   }

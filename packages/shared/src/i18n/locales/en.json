@@ -2163,7 +2163,12 @@
       "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Clan name must be 5-32 lowercase letters or digits, no spaces or accents",
       "you have reached the maximum number of clans you can own": "You have reached the limit of clans you can create"
     },
-    "createShort": "Create"
+    "createShort": "Create",
+    "findPlaceholder": "Search clans by name",
+    "topClans": "Top Clans",
+    "searchResults": "Search results",
+    "searchEmpty": "No clans found",
+    "topEmpty": "No clans yet"
   },
   "changeNickname": {
     "title": "Change nickname",

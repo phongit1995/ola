@@ -42,7 +42,10 @@ var (
 	errClanImageMissing = errors.New("image file is required")
 )
 
-var handlePattern = regexp.MustCompile(`^[a-z0-9]{5,32}$`)
+var (
+	handlePattern      = regexp.MustCompile(`^[a-z0-9]{5,32}$`)
+	searchQueryPattern = regexp.MustCompile(`^[a-z0-9]{0,32}$`)
+)
 
 type Service struct {
 	repo            *Repository
@@ -175,6 +178,27 @@ func (s *Service) Mine(userID uuid.UUID) ([]ClanResponse, error) {
 			return nil, err
 		}
 		items = append(items, *resp)
+	}
+	return items, nil
+}
+
+func normalizeSearchQuery(query string) (string, bool) {
+	normalized := strings.TrimPrefix(strings.ToLower(strings.TrimSpace(query)), "#")
+	return normalized, searchQueryPattern.MatchString(normalized)
+}
+
+func (s *Service) Top(query string, limit int) ([]ClanResponse, error) {
+	normalized, ok := normalizeSearchQuery(query)
+	if !ok {
+		return []ClanResponse{}, nil
+	}
+	clans, err := s.repo.ListTop(normalized, limit)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]ClanResponse, 0, len(clans))
+	for i := range clans {
+		items = append(items, *toClanResponse(&clans[i]))
 	}
 	return items, nil
 }
@@ -643,7 +667,7 @@ func (s *Service) requireStaff(userID, clanID uuid.UUID) (*models.Clan, error) {
 	return clan, nil
 }
 
-func (s *Service) buildClanResponse(viewerID uuid.UUID, clan *models.Clan) (*ClanResponse, error) {
+func toClanResponse(clan *models.Clan) *ClanResponse {
 	resp := &ClanResponse{
 		ID:               clan.ID.String(),
 		Handle:           clan.Handle,
@@ -659,7 +683,11 @@ func (s *Service) buildClanResponse(viewerID uuid.UUID, clan *models.Clan) (*Cla
 	if clan.MeTopPostID != nil {
 		resp.MeTopPostID = clan.MeTopPostID.String()
 	}
+	return resp
+}
 
+func (s *Service) buildClanResponse(viewerID uuid.UUID, clan *models.Clan) (*ClanResponse, error) {
+	resp := toClanResponse(clan)
 	staff, err := s.repo.GetStaff(clan.ID)
 	if err != nil {
 		return nil, err

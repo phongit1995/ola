@@ -226,6 +226,20 @@ func (r *Repository) ListByUser(userID uuid.UUID) ([]models.Clan, error) {
 	return clans, err
 }
 
+func (r *Repository) ListTop(query string, limit int) ([]models.Clan, error) {
+	db := r.db.Model(&models.Clan{})
+	if query != "" {
+		db = db.Where("handle LIKE ?", "%"+query+"%")
+	}
+	var clans []models.Clan
+	err := db.Order("member_count DESC").
+		Order("visit_count DESC").
+		Order("created_at ASC").
+		Limit(limit).
+		Find(&clans).Error
+	return clans, err
+}
+
 func (r *Repository) IsBanned(clanID, userID uuid.UUID) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.ClanBan{}).

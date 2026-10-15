@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
-import type { ClanCheckNameResult } from '@ola/shared/types';
+import type { Clan, ClanCheckNameResult } from '@ola/shared/types';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Avatar } from '@components/ui/Avatar';
@@ -36,6 +36,74 @@ import {
 const addIcon = require('@assets/icons/clan/ic_action_add.png');
 const memberIcon = require('@assets/icons/clan/ic_clan_member.png');
 const visitIcon = require('@assets/icons/clan/ic_clan_visit.png');
+const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+interface TopResult {
+  q: string;
+  items: Clan[];
+  error: string | null;
+}
+
+function ClanList({
+  clans,
+  ranked = false,
+  subtitle,
+  onOpen,
+}: {
+  clans: Clan[];
+  ranked?: boolean;
+  subtitle: (clan: Clan) => string;
+  onOpen: (handle: string) => void;
+}) {
+  return (
+    <View
+      className="mt-2 overflow-hidden rounded-md bg-white"
+      style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
+    >
+      {clans.map((clan, index) => (
+        <Pressable
+          key={clan.id}
+          onPress={() => onOpen(clan.handle)}
+          className="flex-row items-center gap-3 px-4 py-3 active:bg-black/5"
+          style={
+            index > 0 ? { borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' } : undefined
+          }
+        >
+          {ranked && (
+            <Text
+              className="w-5 text-center text-sm font-bold"
+              style={{ color: 'rgba(0,0,0,0.54)' }}
+            >
+              {index + 1}
+            </Text>
+          )}
+          <Avatar
+            name={clan.handle}
+            uri={clan.avatar !== '' ? clan.avatar : undefined}
+            color={colorForName(clan.handle)}
+            size={40}
+            rounded={false}
+          />
+          <View className="min-w-0 flex-1">
+            <Text numberOfLines={1} className="text-base text-ola-ink">
+              #{clan.handle}
+            </Text>
+            {clan.description != null && clan.description !== '' && (
+              <Text numberOfLines={1} className="text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>
+                {clan.description}
+              </Text>
+            )}
+            <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
+              {subtitle(clan)}
+            </Text>
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
 
 interface ClanHomeScreenProps {
   onClose: () => void;
@@ -79,11 +147,39 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
   const refreshMine = useClanStore((s) => s.refreshMine);
   const pushToast = useToastStore((s) => s.push);
   const [refreshing, setRefreshing] = useState(false);
+  const [query, setQuery] = useState('');
+  const [top, setTop] = useState<TopResult | null>(null);
+  const [topReload, setTopReload] = useState(0);
+
+  const searchText = query.trim();
+  const searching = searchText !== '';
+  const topResult = top?.q === searchText ? top : null;
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+    setTopReload((n) => n + 1);
     void refreshMine().finally(() => setRefreshing(false));
   }, [refreshMine]);
+
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(
+      () => {
+        ClanService.top({ q: searchText })
+          .then((items) => {
+            if (active) setTop({ q: searchText, items, error: null });
+          })
+          .catch((error) => {
+            if (active) setTop({ q: searchText, items: [], error: clanErrorText(error) });
+          });
+      },
+      searching ? SEARCH_DEBOUNCE_MS : 0,
+    );
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [searchText, searching, topReload]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
@@ -177,50 +273,71 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
 
       <ScrollView
         className="flex-1 p-2"
+        keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <Text className="px-1 text-base text-ola-ink">
-          {t('clan.myClans')}
+        <View
+          className="h-10 flex-row items-center gap-2 rounded bg-white px-3"
+          style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
+        >
+          <Image source={searchIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder={t('clan.findPlaceholder')}
+            placeholderTextColor="rgba(0,0,0,0.26)"
+            autoCapitalize="none"
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+            returnKeyType="search"
+            className="flex-1 text-base"
+            style={{ color: 'rgba(0,0,0,0.87)', paddingVertical: 0 }}
+          />
+        </View>
+
+        {!searching && (
+          <>
+            <Text className="mt-4 px-1 text-base text-ola-ink">{t('clan.myClans')}</Text>
+            {mineLoading && myClans.length === 0 ? (
+              <ActivityIndicator className="py-6" color={colors.primary} />
+            ) : myClans.length === 0 ? (
+              <Text className="px-1 py-4 text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
+                {t('clan.noClans')}
+              </Text>
+            ) : (
+              <ClanList
+                clans={myClans}
+                subtitle={(clan) =>
+                  `${clanRoleLabel(clan.myRole ?? 'member')} · ${t('clan.membersCount', {
+                    count: clan.memberCount,
+                  })}`
+                }
+                onOpen={onOpenClan}
+              />
+            )}
+          </>
+        )}
+
+        <Text className="mt-4 px-1 text-base text-ola-ink">
+          {t(searching ? 'clan.searchResults' : 'clan.topClans')}
         </Text>
-        {mineLoading && myClans.length === 0 ? (
+        {topResult == null ? (
           <ActivityIndicator className="py-6" color={colors.primary} />
-        ) : myClans.length === 0 ? (
+        ) : topResult.error != null ? (
           <Text className="px-1 py-4 text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
-            {t('clan.noClans')}
+            {topResult.error}
+          </Text>
+        ) : topResult.items.length === 0 ? (
+          <Text className="px-1 py-4 text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
+            {t(searching ? 'clan.searchEmpty' : 'clan.topEmpty')}
           </Text>
         ) : (
-          <View
-            className="mt-2 overflow-hidden rounded-md bg-white"
-            style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
-          >
-            {myClans.map((clan, index) => (
-              <Pressable
-                key={clan.id}
-                onPress={() => onOpenClan(clan.handle)}
-                className="flex-row items-center gap-3 px-4 py-3 active:bg-black/5"
-                style={
-                  index > 0 ? { borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' } : undefined
-                }
-              >
-                <Avatar
-                  name={clan.handle}
-                  uri={clan.avatar !== '' ? clan.avatar : undefined}
-                  color={colorForName(clan.handle)}
-                  size={40}
-                  rounded={false}
-                />
-                <View className="min-w-0 flex-1">
-                  <Text numberOfLines={1} className="text-base text-ola-ink">
-                    #{clan.handle}
-                  </Text>
-                  <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
-                    {clanRoleLabel(clan.myRole ?? 'member')} ·{' '}
-                    {t('clan.membersCount', { count: clan.memberCount })}
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
+          <ClanList
+            clans={topResult.items}
+            ranked={!searching}
+            subtitle={(clan) => t('clan.membersCount', { count: clan.memberCount })}
+            onOpen={onOpenClan}
+          />
         )}
       </ScrollView>
 
