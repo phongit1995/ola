@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
-import type { Clan, ClanCheckNameResult } from '@ola/shared/types';
+import type { ClanCheckNameResult, ClanSummary } from '@ola/shared/types';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Avatar } from '@components/ui/Avatar';
@@ -21,7 +21,7 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -42,19 +42,19 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 interface TopResult {
   q: string;
-  items: Clan[];
+  items: ClanSummary[];
   error: string | null;
 }
 
-function ClanList({
+function ClanList<T extends ClanSummary>({
   clans,
   ranked = false,
   subtitle,
   onOpen,
 }: {
-  clans: Clan[];
+  clans: T[];
   ranked?: boolean;
-  subtitle: (clan: Clan) => string;
+  subtitle: (clan: T) => string;
   onOpen: (handle: string) => void;
 }) {
   return (
@@ -150,6 +150,7 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
   const [query, setQuery] = useState('');
   const [top, setTop] = useState<TopResult | null>(null);
   const [topReload, setTopReload] = useState(0);
+  const focusedOnce = useRef(false);
 
   const searchText = query.trim();
   const searching = searchText !== '';
@@ -160,6 +161,16 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
     setTopReload((n) => n + 1);
     void refreshMine().finally(() => setRefreshing(false));
   }, [refreshMine]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!focusedOnce.current) {
+        focusedOnce.current = true;
+        return;
+      }
+      setTopReload((n) => n + 1);
+    }, []),
+  );
 
   useEffect(() => {
     let active = true;

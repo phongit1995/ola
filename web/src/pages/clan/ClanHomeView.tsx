@@ -12,7 +12,7 @@ import {
 } from '@components';
 import { colorForName, toast } from '@lib';
 import { ClanService } from '@services';
-import type { Clan, ClanCheckNameResult } from '@app-types';
+import type { ClanCheckNameResult, ClanSummary } from '@app-types';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { UserProfileView } from '../profile/UserProfileView';
 import {
@@ -30,18 +30,23 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 interface TopResult {
   q: string;
-  items: Clan[];
+  items: ClanSummary[];
   error: string | null;
 }
 
-interface ClanListProps {
-  clans: Clan[];
+interface ClanListProps<T extends ClanSummary> {
+  clans: T[];
   ranked?: boolean;
-  subtitle: (clan: Clan) => string;
+  subtitle: (clan: T) => string;
   onOpen: (handle: string) => void;
 }
 
-function ClanList({ clans, ranked = false, subtitle, onOpen }: ClanListProps) {
+function ClanList<T extends ClanSummary>({
+  clans,
+  ranked = false,
+  subtitle,
+  onOpen,
+}: ClanListProps<T>) {
   return (
     <div className="mt-2 overflow-hidden rounded-md border border-black/12 bg-white">
       {clans.map((clan, index) => (

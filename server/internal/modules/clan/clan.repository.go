@@ -226,6 +226,7 @@ func (r *Repository) ListByUser(userID uuid.UUID) ([]models.Clan, error) {
 	return clans, err
 }
 
+// shortcut: LIKE '%q%' and the member_count sort scan the whole clans table; add a pg_trgm index on handle and a (member_count, visit_count) index once clans reach tens of thousands
 func (r *Repository) ListTop(query string, limit int) ([]models.Clan, error) {
 	db := r.db.Model(&models.Clan{})
 	if query != "" {

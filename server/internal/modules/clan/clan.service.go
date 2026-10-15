@@ -187,18 +187,25 @@ func normalizeSearchQuery(query string) (string, bool) {
 	return normalized, searchQueryPattern.MatchString(normalized)
 }
 
-func (s *Service) Top(query string, limit int) ([]ClanResponse, error) {
+func (s *Service) Top(query string, limit int) ([]ClanSummaryResponse, error) {
 	normalized, ok := normalizeSearchQuery(query)
 	if !ok {
-		return []ClanResponse{}, nil
+		return []ClanSummaryResponse{}, nil
 	}
 	clans, err := s.repo.ListTop(normalized, limit)
 	if err != nil {
 		return nil, err
 	}
-	items := make([]ClanResponse, 0, len(clans))
-	for i := range clans {
-		items = append(items, *toClanResponse(&clans[i]))
+	items := make([]ClanSummaryResponse, 0, len(clans))
+	for _, clan := range clans {
+		items = append(items, ClanSummaryResponse{
+			ID:          clan.ID.String(),
+			Handle:      clan.Handle,
+			Description: clan.Description,
+			Avatar:      clan.Avatar,
+			MemberCount: clan.MemberCount,
+			VisitCount:  clan.VisitCount,
+		})
 	}
 	return items, nil
 }
@@ -667,7 +674,7 @@ func (s *Service) requireStaff(userID, clanID uuid.UUID) (*models.Clan, error) {
 	return clan, nil
 }
 
-func toClanResponse(clan *models.Clan) *ClanResponse {
+func (s *Service) buildClanResponse(viewerID uuid.UUID, clan *models.Clan) (*ClanResponse, error) {
 	resp := &ClanResponse{
 		ID:               clan.ID.String(),
 		Handle:           clan.Handle,
@@ -683,11 +690,7 @@ func toClanResponse(clan *models.Clan) *ClanResponse {
 	if clan.MeTopPostID != nil {
 		resp.MeTopPostID = clan.MeTopPostID.String()
 	}
-	return resp
-}
 
-func (s *Service) buildClanResponse(viewerID uuid.UUID, clan *models.Clan) (*ClanResponse, error) {
-	resp := toClanResponse(clan)
 	staff, err := s.repo.GetStaff(clan.ID)
 	if err != nil {
 		return nil, err

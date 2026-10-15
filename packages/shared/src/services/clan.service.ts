@@ -11,6 +11,7 @@ import type {
   ClanMemberListResult,
   ClanPostsResult,
   ClanRole,
+  ClanSummary,
   ClanUploadImageResult,
   CreateClanRequest,
   UpdateClanRequest,
@@ -30,8 +31,8 @@ export class ClanService {
     return http.get<Clan[]>(API_PATH.clans.mine);
   }
 
-  static top(params: { q?: string; limit?: number } = {}): Promise<Clan[]> {
-    return http.get<Clan[]>(API_PATH.clans.top, { params });
+  static top(params: { q?: string; limit?: number } = {}): Promise<ClanSummary[]> {
+    return http.get<ClanSummary[]>(API_PATH.clans.top, { params });
   }
 
   static byHandle(handle: string): Promise<Clan> {
