@@ -2,7 +2,11 @@
 
 ## Trạng thái
 
-Tài liệu thiết kế cho mini-game **Cờ Tỷ Phú** (gameId `tycoon`). Game **chưa có code**; bộ docs này là bước đầu để chốt phạm vi, luật, protocol, art direction và hệ icon trước khi triển khai. Khi code, server `server/internal/game/games/tycoon/` là nguồn chân lý về luật; client `game/tycoon/` chỉ render state và gửi lệnh.
+Tài liệu thiết kế cho mini-game **Cờ Tỷ Phú** (gameId `tycoon`).
+
+**Đang có (15/10/2026): bản client-only chơi với máy** ở `game/tycoon/` — luật v1 đầy đủ chạy trong `logic/engine.ts` (port 1:1 từ thiết kế server ở 05), bot ở `logic/bot.ts`, store local `store/useTycoon.ts`, hiệu ứng bậc Lite (chưa có lớp hạt Pixi, chưa có nhân vật/raster, quân cờ là hình học). Chạy `pnpm --filter @ola/game dev` rồi mở `http://localhost:5174/tycoon/`.
+
+**Chưa làm:** server Go + protocol (05 §5–§9), danh sách bàn/phòng chờ/chat/lịch sử/BXH online. Khi làm server, `logic/engine.ts` là bản tham chiếu để port sang Go; lúc đó server là nguồn chân lý và client chỉ render view + gửi lệnh như docs mô tả. Bảng dữ liệu tĩnh hiện nằm ở `logic/board.json`, `logic/cards.json`, `logic/constants.ts` (sau này sinh từ Go bằng codegen).
 
 Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Không dùng tên "Monopoly", tên phố/nhân vật/hình ảnh của Hasbro — cơ chế chơi không được bảo hộ, nhưng tên và mỹ thuật thì có.
 
