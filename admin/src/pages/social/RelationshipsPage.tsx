@@ -34,23 +34,8 @@ import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
 import { UserBriefCell } from '@/components/UserBriefCell'
-
-const PAGE_SIZE = 20
-const USER_STATS_SORTS: RelationshipUserStatsSortBy[] = [
-  'friends',
-  'blocked',
-  'followers',
-  'following',
-]
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-const STATUS_META: Record<RelationshipStatus, { label: string; color: string }> = {
-  pending: { label: 'Đang chờ', color: 'gold' },
-  accepted: { label: 'Bạn bè', color: 'green' },
-  rejected: { label: 'Từ chối', color: 'default' },
-  blocked: { label: 'Chặn', color: 'red' },
-}
+import { PAGE_SIZE } from '@/lib/constants'
+import { RELATIONSHIP_STATUS_META, USER_STATS_SORTS, UUID_RE } from './constants'
 
 const relationshipColumns: ColumnsType<RelationshipItem> = [
   {
@@ -75,7 +60,7 @@ const relationshipColumns: ColumnsType<RelationshipItem> = [
     dataIndex: 'status',
     width: 120,
     render: (value: RelationshipStatus) => {
-      const meta = STATUS_META[value] ?? { label: value, color: 'default' }
+      const meta = RELATIONSHIP_STATUS_META[value] ?? { label: value, color: 'default' }
       return <Tag color={meta.color}>{meta.label}</Tag>
     },
   },
@@ -330,8 +315,8 @@ export function RelationshipsPage() {
                         setRelStatus(value)
                         setRelPage(1)
                       }}
-                      options={(Object.keys(STATUS_META) as RelationshipStatus[]).map(
-                        (key) => ({ value: key, label: STATUS_META[key].label }),
+                      options={(Object.keys(RELATIONSHIP_STATUS_META) as RelationshipStatus[]).map(
+                        (key) => ({ value: key, label: RELATIONSHIP_STATUS_META[key].label }),
                       )}
                       style={{ width: 160 }}
                     />

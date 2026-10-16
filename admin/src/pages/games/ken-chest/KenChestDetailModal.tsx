@@ -15,8 +15,7 @@ import { formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'
 import { UserCell } from '@/components/UserCell'
 import type { KenChest, KenChestClaim } from '@/types'
-
-const PAGE_SIZE = 20
+import { PAGE_SIZE } from '@/lib/constants'
 
 interface KenChestDetailModalProps {
   chest: KenChest | null

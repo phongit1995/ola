@@ -4,11 +4,10 @@ import type { ColumnsType } from 'antd/es/table'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useGameLevels } from './useGameMatchQueries'
 import type { AdminGameLevel } from '@/types'
-import { gameLabel } from './gameMatchMeta'
+import { gameLabel } from './utils'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { useGameOptions } from './useGameOptions'
-
-const PAGE_SIZE = 20
+import { PAGE_SIZE } from '@/lib/constants'
 
 export function GameLevelsTab() {
   const [gameId, setGameId] = useState<string | undefined>(undefined)

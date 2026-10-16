@@ -3,10 +3,9 @@ import { Avatar, Modal, Table, type TableColumnsType } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 import { useKenTransactions } from '@/hooks/useKenQueries'
 import { formatDateTime } from '@/lib/format'
-import { kenTypeLabel } from './kenMeta'
+import { kenTypeLabel } from './utils'
 import type { KenTransaction } from '@/types'
-
-const PAGE_SIZE = 10
+import { MODAL_PAGE_SIZE } from './constants'
 
 interface KenHistoryModalProps {
   open: boolean
@@ -18,8 +17,8 @@ interface KenHistoryModalProps {
 export function KenHistoryModal({ open, userId, username, onClose }: KenHistoryModalProps) {
   const [page, setPage] = useState(1)
   const { data, isFetching } = useKenTransactions(open ? userId : null, {
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
+    limit: MODAL_PAGE_SIZE,
+    offset: (page - 1) * MODAL_PAGE_SIZE,
   })
 
   const columns: TableColumnsType<KenTransaction> = [
@@ -98,7 +97,7 @@ export function KenHistoryModal({ open, userId, username, onClose }: KenHistoryM
         loading={isFetching}
         pagination={{
           current: page,
-          pageSize: PAGE_SIZE,
+          pageSize: MODAL_PAGE_SIZE,
           total: data?.total ?? 0,
           showTotal: (total) => `${total} giao dịch`,
           onChange: setPage,

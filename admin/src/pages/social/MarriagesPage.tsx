@@ -26,33 +26,9 @@ import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
 import { UserBriefCell } from '@/components/UserBriefCell'
-
-const PAGE_SIZE = 20
-
-const MARRIAGE_STATUS_META: Record<MarriageStatus, { label: string; color: string }> = {
-  active: { label: 'Đang bên nhau', color: 'green' },
-  divorced: { label: 'Đã ly hôn', color: 'red' },
-}
-
-const PROPOSAL_STATUS_META: Record<MarriageProposalStatus, { label: string; color: string }> = {
-  pending: { label: 'Đang chờ', color: 'gold' },
-  accepted: { label: 'Được nhận', color: 'green' },
-  rejected: { label: 'Từ chối', color: 'red' },
-  cancelled: { label: 'Đã hủy', color: 'default' },
-}
-
-function daysBetween(fromIso: string, toIso?: string) {
-  const from = new Date(fromIso).getTime()
-  const to = toIso ? new Date(toIso).getTime() : Date.now()
-  return Math.max(0, Math.floor((to - from) / 86_400_000))
-}
-
-function divorcedByName(row: MarriageItem) {
-  if (!row.divorcedBy) return null
-  if (row.divorcedBy === row.userA.id) return row.userA.fullName || row.userA.username
-  if (row.divorcedBy === row.userB.id) return row.userB.fullName || row.userB.username
-  return row.divorcedBy.slice(0, 8)
-}
+import { PAGE_SIZE } from '@/lib/constants'
+import { MARRIAGE_STATUS_META, PROPOSAL_STATUS_META } from './constants'
+import { daysBetween, divorcedByName } from './utils'
 
 const marriageColumns: ColumnsType<MarriageItem> = [
   {

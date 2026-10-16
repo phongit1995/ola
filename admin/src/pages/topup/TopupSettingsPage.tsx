@@ -7,44 +7,10 @@ import { env } from '@/config/env'
 import { errorMessage } from '@/lib/apiError'
 import { VIETQR_BANKS, findBankByBin } from '@/lib/banks'
 import { settingValue } from '@/lib/appSetting'
-import { OPEN_PLATFORM_RULES, cleanPlatformRules, normalizePlatformRules } from '@/lib/platformRules'
+import { cleanPlatformRules } from '@/lib/platformRules'
 import type { PlatformRules, TopupBankSetting, TopupBonusTierSetting, TopupSetting } from '@/types'
-
-const BONUS_PERCENT_MAX = 500
-const NEW_TIER: TopupBonusTierSetting = { minAmount: 100_000, percent: 10 }
-
-function formatThousands(value: number | string | undefined) {
-  return `${value ?? ''}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-}
-
-function parseThousands(value: string | undefined) {
-  return Number((value ?? '').replace(/\D/g, ''))
-}
-
-const DEFAULT_BANK: TopupBankSetting = {
-  bankName: '',
-  bankBin: '',
-  accountNumber: '',
-  accountName: '',
-  memoTemplate: '@{username}',
-  sieuthicodeSecret: '',
-  discordWebhookUrl: '',
-}
-
-const DEFAULT_TOPUP: TopupSetting = {
-  enabled: true,
-  enabledMobile: true,
-  minAmount: 10_000,
-  stepAmount: 1_000,
-  presetAmounts: [10_000, 20_000, 50_000, 100_000, 200_000, 500_000],
-  bonusTiers: [],
-}
-
-function topupPlatforms(topup: TopupSetting): PlatformRules {
-  if (topup.platforms) return normalizePlatformRules(topup.platforms)
-  const mobile = { enabled: topup.enabledMobile, disableVersions: [] }
-  return { ...OPEN_PLATFORM_RULES, android: mobile, ios: mobile }
-}
+import { BONUS_PERCENT_MAX, DEFAULT_BANK, DEFAULT_TOPUP, NEW_TIER } from './constants'
+import { formatThousands, parsePresetAmounts, parseThousands, topupPlatforms } from './utils'
 
 interface TopupSettingsFormValues {
   enabled: boolean
@@ -60,13 +26,6 @@ interface TopupSettingsFormValues {
   stepAmount: number
   bonusTiers?: TopupBonusTierSetting[]
   presetAmounts: string[]
-}
-
-function parsePresetAmounts(raw: string[]): number[] {
-  const amounts = raw
-    .map((item) => Number(String(item).replace(/\D/g, '')))
-    .filter((value) => Number.isFinite(value) && value > 0)
-  return [...new Set(amounts)].sort((a, b) => a - b)
 }
 
 export function TopupSettingsPage() {

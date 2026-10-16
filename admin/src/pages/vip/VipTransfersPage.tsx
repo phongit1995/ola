@@ -5,8 +5,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { AdminVipTransfer } from '@/types'
 import { formatDateTime } from '@/lib/format'
-
-const PAGE_SIZE = 20
+import { PAGE_SIZE } from '@/lib/constants'
 
 function UserCell({ fullName, username }: { fullName: string; username: string }) {
   return (

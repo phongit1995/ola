@@ -2,11 +2,10 @@ import { useState } from 'react'
 import { Image, Modal, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
 import { useUserPosts } from '@/hooks/useMeQueries'
 import { formatDateTime } from '@/lib/format'
-import { VISIBILITY } from '../me/meVisibility'
+import { VISIBILITY } from '../me/constants'
 import { MeDetailModal } from '../me/MeDetailModal'
 import type { MeListItem } from '@/types'
-
-const PAGE_SIZE = 10
+import { MODAL_PAGE_SIZE } from './constants'
 
 interface UserMeModalProps {
   open: boolean
@@ -21,8 +20,8 @@ export function UserMeModal({ open, userId, username, onClose }: UserMeModalProp
   const [detailOpen, setDetailOpen] = useState(false)
 
   const { data, isFetching } = useUserPosts(open ? userId : null, {
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
+    limit: MODAL_PAGE_SIZE,
+    offset: (page - 1) * MODAL_PAGE_SIZE,
   })
 
   function openDetail(id: string) {
@@ -118,7 +117,7 @@ export function UserMeModal({ open, userId, username, onClose }: UserMeModalProp
           })}
           pagination={{
             current: page,
-            pageSize: PAGE_SIZE,
+            pageSize: MODAL_PAGE_SIZE,
             total: data?.total ?? 0,
             showTotal: (total) => `${total} bài đăng`,
             onChange: setPage,

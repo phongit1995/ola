@@ -1,5 +1,6 @@
 import { OddsSunburst } from '../OddsSunburst'
-import { CATEGORY_COLORS, type EggCategory, type EggReward } from './eggHelpers'
+import { CATEGORY_COLORS } from './constants'
+import type { EggCategory, EggReward } from './types'
 
 interface EggOddsSunburstProps {
   categories: EggCategory[]

@@ -1,7 +1,7 @@
 import type { WheelSegment } from '@/types'
 import { vipName } from '@/lib/vipCatalog'
 import { OddsSunburst } from '../OddsSunburst'
-import { kindMeta } from './wheelHelpers'
+import { kindMeta } from './utils'
 
 interface WheelOddsSunburstProps {
   segments: WheelSegment[]

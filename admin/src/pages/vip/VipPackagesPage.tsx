@@ -15,8 +15,7 @@ import { useDeleteVipPackage, useUpdateVipPackage, useVipPackages } from './useV
 import { errorMessage } from '@/lib/apiError'
 import { VipPackageFormModal } from './VipPackageFormModal'
 import type { VipPackage } from '@/types'
-
-const PAGE_SIZE = 50
+import { PACKAGE_PAGE_SIZE } from './constants'
 
 export function VipPackagesPage() {
   const { message, modal } = App.useApp()
@@ -26,8 +25,8 @@ export function VipPackagesPage() {
   const [editing, setEditing] = useState<VipPackage | null>(null)
 
   const { data, isFetching } = useVipPackages({
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
+    limit: PACKAGE_PAGE_SIZE,
+    offset: (page - 1) * PACKAGE_PAGE_SIZE,
   })
   const updatePackage = useUpdateVipPackage()
   const deletePackage = useDeleteVipPackage()
@@ -165,7 +164,7 @@ export function VipPackagesPage() {
         scroll={{ x: 720 }}
         pagination={{
           current: page,
-          pageSize: PAGE_SIZE,
+          pageSize: PACKAGE_PAGE_SIZE,
           total: data?.total ?? 0,
           showTotal: (total) => `${total} gói`,
           onChange: setPage,

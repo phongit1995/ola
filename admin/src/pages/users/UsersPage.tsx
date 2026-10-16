@@ -24,20 +24,9 @@ import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUserQue
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { UserDetailModal } from './UserDetailModal'
-import { GENDER } from './userMeta'
+import { GENDER, SORT_OPTIONS } from './constants'
 import type { AdminUserListItem } from '@/types'
-
-const PAGE_SIZE = 20
-
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Mới nhất', params: {} as { sortBy?: string; sortDir?: string } },
-  { value: 'oldest', label: 'Cũ nhất', params: { sortBy: 'createdAt', sortDir: 'asc' } },
-  { value: 'recent_login', label: 'Đăng nhập gần đây', params: { sortBy: 'lastLoginAt', sortDir: 'desc' } },
-  { value: 'followers', label: 'Nhiều follower', params: { sortBy: 'followerCount', sortDir: 'desc' } },
-  { value: 'ken_desc', label: 'Ken cao nhất', params: { sortBy: 'ken', sortDir: 'desc' } },
-  { value: 'ken_asc', label: 'Ken thấp nhất', params: { sortBy: 'ken', sortDir: 'asc' } },
-  { value: 'name', label: 'Tên A–Z', params: { sortBy: 'username', sortDir: 'asc' } },
-]
+import { PAGE_SIZE } from '@/lib/constants'
 
 export function UsersPage() {
   const { message, modal } = App.useApp()

@@ -4,7 +4,7 @@ import { UserCell } from '@/components/UserCell'
 import { useAppSettings } from '@/hooks/useAppSettingQueries'
 import { useWordChainOverview } from './useWordChainQueries'
 import { formatDateTime, formatKen } from '@/lib/format'
-import { wordChainSetting } from './wordChainMeta'
+import { wordChainSetting } from './utils'
 
 export function WordChainOverviewCard() {
   const { data, isLoading, isFetching, refetch } = useWordChainOverview()

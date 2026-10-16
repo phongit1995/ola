@@ -5,12 +5,9 @@ import type { Dayjs } from 'dayjs'
 import { kenNumberInputProps } from '@/lib/format'
 import { useCreateKenAutoJob, useUpdateKenAutoJob } from './useKenChestQueries'
 import { errorMessage } from '@/lib/apiError'
-import type {
-  KenChestAutoJob,
-  KenChestAutoJobRequest,
-  KenChestRewardMode,
-  KenChestScheduleType,
-} from '@/types'
+import type { KenChestAutoJob, KenChestAutoJobRequest } from '@/types'
+import type { AutoJobFormValues } from './types'
+import { DEFAULT_AUTO_JOB_VALUES, TIME_PATTERN } from './constants'
 
 const revealBoxStyle: CSSProperties = {
   marginBottom: 24,
@@ -80,39 +77,9 @@ interface KenChestAutoJobModalProps {
   onClose: () => void
 }
 
-interface FormValues {
-  name: string
-  enabled: boolean
-  scheduleType: KenChestScheduleType
-  intervalMinMinutes?: number
-  intervalMaxMinutes?: number
-  dailyTimes?: string[]
-  rewardMode: KenChestRewardMode
-  kenAmount?: number
-  kenMin?: number
-  kenMax?: number
-  maxRecipients: number
-  durationSeconds: number
-  remainingRuns?: number
-}
-
-const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/
-
-const DEFAULT_VALUES: FormValues = {
-  name: '',
-  enabled: true,
-  scheduleType: 'interval',
-  intervalMinMinutes: 60,
-  intervalMaxMinutes: 90,
-  dailyTimes: [],
-  rewardMode: 'fixed',
-  maxRecipients: 100,
-  durationSeconds: 90,
-}
-
 export function KenChestAutoJobModal({ open, job, onClose }: KenChestAutoJobModalProps) {
   const { message } = App.useApp()
-  const [form] = Form.useForm<FormValues>()
+  const [form] = Form.useForm<AutoJobFormValues>()
   const createJob = useCreateKenAutoJob()
   const updateJob = useUpdateKenAutoJob()
   const scheduleType = Form.useWatch('scheduleType', form) ?? 'interval'
@@ -182,7 +149,7 @@ export function KenChestAutoJobModal({ open, job, onClose }: KenChestAutoJobModa
       confirmLoading={createJob.isPending || updateJob.isPending}
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" requiredMark={false} initialValues={DEFAULT_VALUES}>
+      <Form form={form} layout="vertical" requiredMark={false} initialValues={DEFAULT_AUTO_JOB_VALUES}>
         <Form.Item
           name="name"
           label="Tên lịch"

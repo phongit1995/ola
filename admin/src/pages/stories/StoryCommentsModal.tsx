@@ -18,17 +18,13 @@ import { useDeleteStoryComment, useStoryComments } from './useStoryQueries'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import type { AdminStory, AdminStoryComment } from '@/types'
-
-const COMMENT_PAGE_SIZE = 20
+import { COMMENT_PAGE_SIZE } from './constants'
+import { authorName } from './utils'
 
 interface StoryCommentsModalProps {
   story: AdminStory | null
   open: boolean
   onClose: () => void
-}
-
-function authorName(comment: AdminStoryComment) {
-  return comment.author?.fullName || comment.author?.username || '—'
 }
 
 export function StoryCommentsModal({ story, open, onClose }: StoryCommentsModalProps) {

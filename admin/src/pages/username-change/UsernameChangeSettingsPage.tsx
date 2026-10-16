@@ -4,17 +4,7 @@ import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import { settingValue } from '@/lib/appSetting'
 import type { UsernameChangeSetting, UsernameChangeTierSetting } from '@/types'
-
-const DEFAULT_USERNAME_CHANGE: UsernameChangeSetting = {
-  enabled: true,
-  enabledMobile: true,
-  tiers: [
-    { minLength: 2, cost: 2_000_000 },
-    { minLength: 3, cost: 1_000_000 },
-    { minLength: 4, cost: 500_000 },
-    { minLength: 6, cost: 100_000 },
-  ],
-}
+import { DEFAULT_USERNAME_CHANGE } from './constants'
 
 interface UsernameChangeFormValues {
   enabled: boolean

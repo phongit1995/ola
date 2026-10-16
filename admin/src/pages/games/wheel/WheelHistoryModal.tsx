@@ -4,27 +4,14 @@ import type { ColumnsType } from 'antd/es/table'
 import { useWheelSpins } from './useWheelQueries'
 import { useDebounce } from '@/hooks/useDebounce'
 import type { AdminWheelSpin, WheelSegmentKind } from '@/types'
-import { WHEEL_KINDS, kindMeta } from './wheelHelpers'
+import { OUTCOME_OPTIONS, WHEEL_KINDS } from './constants'
+import { kindMeta, rewardText } from './utils'
 import { formatDateTime } from '@/lib/format'
-
-const PAGE_SIZE = 20
+import { PAGE_SIZE } from '@/lib/constants'
 
 interface WheelHistoryModalProps {
   open: boolean
   onClose: () => void
-}
-
-const OUTCOME_OPTIONS = [
-  { value: '', label: 'Tất cả' },
-  { value: 'win', label: 'Trúng' },
-  { value: 'miss', label: 'Trượt' },
-]
-
-function rewardText(spin: AdminWheelSpin): string {
-  if (spin.segmentKind === 'miss') return 'Trượt'
-  if (spin.kenAmount) return `+${spin.kenAmount.toLocaleString('vi-VN')} Ken`
-  if (spin.vipDays) return `${spin.vipDays} ngày VIP`
-  return spin.rewardLabel ?? 'Trúng'
 }
 
 export function WheelHistoryModal({ open, onClose }: WheelHistoryModalProps) {

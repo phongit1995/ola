@@ -3,14 +3,8 @@ import { kenNumberInputProps } from '@/lib/format'
 import { DeleteOutlined, DownOutlined, PlusOutlined } from '@ant-design/icons'
 import type { WheelSegment, WheelSegmentKind, WheelSegmentOption } from '@/types'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
-import {
-  WHEEL_KINDS,
-  formatPercent,
-  kindMeta,
-  optionStats,
-  percent,
-  segmentPercent,
-} from './wheelHelpers'
+import { WHEEL_KINDS } from './constants'
+import { formatPercent, kindMeta, optionStats, percent, segmentPercent } from './utils'
 
 const vipOptions = VIP_CATALOG.map((entry) => ({
   value: entry.id,

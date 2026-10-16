@@ -39,120 +39,41 @@ import {
 import { ApiError, errorMessage } from '@/lib/apiError'
 import { formatCount, formatDateTime } from '@/lib/format'
 import type {
-  StoryCrawlError,
   StoryCookie,
   StoryCookieStatus,
-  StoryCrawlLog,
-  StoryCrawlStatus,
-  StoryCrawlTrigger,
   StoryCrawlerSetting,
   StoryCrawlerSource,
   StoryCrawlerStatus,
+  StoryCrawlLog,
+  StoryCrawlStatus,
 } from '@/types'
-
-const INTERVAL_OPTIONS = [1, 2, 3, 6, 12, 24].map((hours) => ({
-  value: hours,
-  label: `${hours} giờ`,
-}))
-
-const HISTORY_DRAWER_WIDTH = 1100
-
-const STATUS_TAG: Record<StoryCrawlStatus, { label: string; color: string }> = {
-  running: { label: 'Đang chạy', color: 'processing' },
-  success: { label: 'Thành công', color: 'success' },
-  partial: { label: 'Có lỗi', color: 'warning' },
-  blocked: { label: 'Bị chặn', color: 'error' },
-  failed: { label: 'Thất bại', color: 'error' },
-}
-
-const TRIGGER_LABEL: Record<StoryCrawlTrigger, string> = {
-  schedule: 'Tự động',
-  manual: 'Thủ công',
-}
+import {
+  CRAWL_STATUS_TAG,
+  CRAWLER_SOURCES,
+  HISTORY_DRAWER_WIDTH,
+  INTERVAL_OPTIONS,
+  NEW_COOKIE,
+  TRIGGER_LABEL,
+} from './constants'
+import {
+  changeParts,
+  cleanCookie,
+  deadAtByCookie,
+  formatDuration,
+  retryNote,
+  runSummary,
+  sameSnapshot,
+  settingKey,
+} from './utils'
+import type { ConfigSnapshot, CrawlerSourceInfo } from './types'
 
 const COOKIE_STATUS_OPTIONS: { value: StoryCookieStatus; label: ReactNode }[] = [
   { value: 'active', label: <Badge status="success" text="Sống" /> },
   { value: 'dead', label: <Badge status="error" text="Die" /> },
 ]
 
-const NEW_COOKIE: StoryCookie = { name: '', cookie: '', status: 'active', deadAt: null }
-
-const cleanCookie = (value: string | undefined) => (value ?? '').trim().replace(/^cookie:\s*/i, '')
-
-function formatDuration(ms: number): string {
-  const seconds = Math.round(ms / 1000)
-  if (seconds < 60) return `${seconds} giây`
-  const minutes = Math.floor(seconds / 60)
-  const rest = seconds % 60
-  return rest === 0 ? `${minutes} phút` : `${minutes} phút ${rest} giây`
-}
-
-interface CrawlerSourceInfo {
-  label: string
-  cookiePlaceholder: string
-  cookieHelp: string
-  unit: string
-  emptyNote: string
-  truncatedWarning?: string
-  scope: (status: StoryCrawlerStatus) => string
-  enabledHint: (status: StoryCrawlerStatus) => string
-  newStoriesHint: (status: StoryCrawlerStatus) => string
-  logScope: (log: StoryCrawlLog) => string
-}
-
-const CRAWLER_SOURCES: Record<StoryCrawlerSource, CrawlerSourceInfo> = {
-  vnkings: {
-    label: 'Vnkings',
-    cookiePlaceholder: 'wordpress_logged_in_…=…',
-    cookieHelp:
-      'Đăng nhập vnkings.com trên trình duyệt, mở F12 → Network, chọn một request tới vnkings.com và copy nguyên giá trị header Cookie.',
-    unit: 'bài',
-    emptyNote: 'truyện mới chưa có chương',
-    scope: (status) => `${status.scanLimit} truyện sửa gần nhất trong ${status.scanDays} ngày`,
-    enabledHint: (status) =>
-      `Mỗi lượt lấy ${status.scanLimit} truyện sửa gần nhất trong ${status.scanDays} ngày trên vnkings, chỉ tải lại truyện có giờ sửa mới hơn bản đã lưu để thêm chương mới.`,
-    newStoriesHint: (status) =>
-      `Tắt: chỉ thêm chương cho truyện đã có. Bật: truyện mới nằm trong ${status.scanLimit} truyện sửa gần nhất (${status.scanDays} ngày) được thêm và hiện ngay trong app.`,
-    logScope: (log) =>
-      `Lấy ${formatCount(log.postsFound)} bài sửa gần nhất sau ${formatDateTime(log.since)}, đã xử lý ${formatCount(log.postsProcessed)}${log.truncated ? ' (khoảng này còn bài sửa cũ hơn, không lấy)' : ''}`,
-  },
-  rookies: {
-    label: 'Rookies',
-    cookiePlaceholder: 'rookies_session=…; XSRF-TOKEN=…',
-    cookieHelp:
-      'Đăng nhập rookies.vn trên trình duyệt, mở F12 → Network, chọn một request tới rookies.vn và copy nguyên giá trị header Cookie (có rookies_session).',
-    unit: 'truyện',
-    emptyNote: 'truyện chưa có chương đọc miễn phí',
-    truncatedWarning:
-      'Trang 1 đã đầy truyện ra chương sau lượt trước nên có thể sót truyện, nên giảm chu kỳ.',
-    scope: (status) =>
-      (status.scanPages ?? 1) > 1
-        ? `${status.scanPages} trang đầu danh sách truyện mới ra chương`
-        : 'Trang 1 danh sách truyện mới ra chương',
-    enabledHint: () =>
-      'Mỗi lượt đọc trang 1 danh sách truyện mới ra chương trên rookies, chỉ mở truyện có thay đổi để thêm chương mới. Không lấy chương VIP và truyện dịch.',
-    newStoriesHint: () =>
-      'Tắt: chỉ thêm chương cho truyện đã có. Bật: truyện mới trên trang 1 được thêm và hiện ngay trong app.',
-    logScope: (log) =>
-      `Đọc ${formatCount(log.postsFound)} truyện ra chương từ ${formatDateTime(log.since)}, đã xử lý ${formatCount(log.postsProcessed)}`,
-  },
-}
-
-function changeParts(log: StoryCrawlLog): string[] {
-  const parts = log.chaptersAdded > 0 ? [`+${formatCount(log.chaptersAdded)} chương`] : []
-  if (log.storiesUpdated > 0) parts.push(`${formatCount(log.storiesUpdated)} truyện cập nhật`)
-  if (log.storiesCreated > 0) parts.push(`${formatCount(log.storiesCreated)} truyện mới`)
-  if (log.storiesFailed > 0) parts.push(`${formatCount(log.storiesFailed)} lỗi`)
-  return parts
-}
-
-function runSummary(log: StoryCrawlLog): string {
-  const parts = changeParts(log)
-  return parts.length > 0 ? parts.join(' · ') : 'Không có gì mới'
-}
-
 function StatusTag({ status }: { status: StoryCrawlStatus }) {
-  return <Tag color={STATUS_TAG[status].color}>{STATUS_TAG[status].label}</Tag>
+  return <Tag color={CRAWL_STATUS_TAG[status].color}>{CRAWL_STATUS_TAG[status].label}</Tag>
 }
 
 function Count({ value, strong }: { value: number; strong?: boolean }) {
@@ -277,12 +198,6 @@ const COLUMNS: TableColumnsType<StoryCrawlLog> = [
   },
 ]
 
-function retryNote(error: StoryCrawlError): string {
-  return error.willRetry
-    ? `sẽ thử lại ở lượt sau (đã thử ${error.attempts} lần)`
-    : `đã thử ${error.attempts} lần, bỏ qua đến khi truyện được sửa lại`
-}
-
 function LogDetail({ log, source }: { log: StoryCrawlLog; source: CrawlerSourceInfo }) {
   const hiddenErrors = log.storiesFailed - log.errors.length
   return (
@@ -381,29 +296,6 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function settingKey(value: Partial<StoryCrawlerSetting>): string {
-  return JSON.stringify([
-    value.enabled === true,
-    value.intervalHours,
-    value.importNewStories === true,
-    value.randomUserAgent === true,
-    value.useCookies === true,
-    (value.cookies ?? []).map((item) => [
-      (item?.name ?? '').trim(),
-      cleanCookie(item?.cookie),
-      item?.status ?? 'active',
-    ]),
-  ])
-}
-
-function deadAtByCookie(cookies: StoryCookie[]): Map<string, string> {
-  const result = new Map<string, string>()
-  for (const item of cookies) {
-    if (item.status === 'dead' && item.deadAt) result.set(cleanCookie(item.cookie), item.deadAt)
-  }
-  return result
-}
-
 function CookieRow({
   index,
   deadAt,
@@ -483,15 +375,6 @@ function CookieList({ cookies, source }: { cookies: StoryCookie[]; source: Crawl
       </Form.List>
     </div>
   )
-}
-
-interface ConfigSnapshot {
-  config: StoryCrawlerSetting
-  updatedAt: string | null
-}
-
-function sameSnapshot(a: ConfigSnapshot, b: ConfigSnapshot): boolean {
-  return a.updatedAt === b.updatedAt && settingKey(a.config) === settingKey(b.config)
 }
 
 function SettingsCard({

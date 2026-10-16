@@ -4,11 +4,8 @@ import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { WordChainSetting } from '@/types'
-import {
-  WORD_CHAIN_PRICE_MAX,
-  WORD_CHAIN_SETTING_KEY,
-  wordChainSetting,
-} from './wordChainMeta'
+import { WORD_CHAIN_PRICE_MAX, WORD_CHAIN_SETTING_KEY } from './constants'
+import { wordChainSetting } from './utils'
 
 export function WordChainSettingsTab() {
   const { message, modal } = App.useApp()

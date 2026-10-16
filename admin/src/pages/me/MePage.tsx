@@ -27,26 +27,11 @@ import { useMeList, useUpdateMeStatus } from '@/hooks/useMeQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { MeDetailModal } from './MeDetailModal'
-import { VISIBILITY } from './meVisibility'
+import { SORT_OPTIONS, VISIBILITY } from './constants'
 import type { MeListItem } from '@/types'
-
-const PAGE_SIZE = 20
-
-type TriState = 'all' | 'yes' | 'no'
-
-const triToBool = (v: TriState): boolean | undefined =>
-  v === 'all' ? undefined : v === 'yes'
-
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Mới nhất', params: {} as { sortBy?: string; sortDir?: string } },
-  { value: 'oldest', label: 'Cũ nhất', params: { sortBy: 'createdAt', sortDir: 'asc' } },
-  { value: 'most_liked', label: 'Nhiều thích nhất', params: { sortBy: 'likeCount', sortDir: 'desc' } },
-  {
-    value: 'most_commented',
-    label: 'Nhiều bình luận nhất',
-    params: { sortBy: 'commentCount', sortDir: 'desc' },
-  },
-]
+import { PAGE_SIZE } from '@/lib/constants'
+import type { TriState } from './types'
+import { triToBool } from './utils'
 
 export function MePage() {
   const { message, modal } = App.useApp()

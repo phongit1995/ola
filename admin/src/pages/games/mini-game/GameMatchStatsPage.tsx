@@ -37,30 +37,13 @@ import type {
   GameMatchSuspectPair,
   GameMatchUserBrief,
 } from '@/types'
-import {
-  GAME_MATCH_MODE_LABEL,
-  GAME_MATCH_REASON_META,
-  gameLabel,
-} from './gameMatchMeta'
+import { GAME_MATCH_REASON_META, MODE_OPTIONS, REASON_COLOR } from './constants'
+import { gameLabel } from './utils'
 import { formatCount } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
 import { NetText } from '@/components/NetText'
 import { useGameOptions } from './useGameOptions'
-
-const REASON_COLOR: Record<string, string> = {
-  win: '#52c41a',
-  forfeit: '#fa8c16',
-  timeout: '#fa541c',
-  draw: '#2f54eb',
-  disconnect: '#f5222d',
-  void: '#8c8c8c',
-}
-
-const MODE_OPTIONS = (Object.keys(GAME_MATCH_MODE_LABEL) as GameMatchMode[]).map((mode) => ({
-  value: mode,
-  label: GAME_MATCH_MODE_LABEL[mode],
-}))
 
 function UserCell({ user }: { user: GameMatchUserBrief }) {
   return (

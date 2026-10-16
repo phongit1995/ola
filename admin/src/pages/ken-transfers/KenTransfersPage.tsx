@@ -22,15 +22,8 @@ import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
 import { NetText } from '@/components/NetText'
 import { UserBriefCell } from '@/components/UserBriefCell'
-
-const PAGE_SIZE = 20
-const USER_STATS_SORTS: KenTransferUserStatsSortBy[] = [
-  'sentTotal',
-  'receivedTotal',
-  'netKen',
-  'transfers',
-]
-const USER_PAGE_SIZE = 10
+import { PAGE_SIZE } from '@/lib/constants'
+import { USER_PAGE_SIZE, USER_STATS_SORTS } from './constants'
 
 const transferColumns: ColumnsType<KenTransferItem> = [
   {

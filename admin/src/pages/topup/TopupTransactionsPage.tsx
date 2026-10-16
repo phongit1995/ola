@@ -35,26 +35,8 @@ import type { TopupTransaction, TopupTxStatus } from '@/types'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
-
-const PAGE_SIZE = 20
-
-const STATUS_META: Record<TopupTxStatus, { label: string; color: string }> = {
-  PROCESSING: { label: 'Đang xử lý', color: 'blue' },
-  CREDITED: { label: 'Đã cộng', color: 'green' },
-  NO_MATCH: { label: 'Sai nội dung', color: 'orange' },
-  BELOW_MIN: { label: 'Dưới mức tối thiểu', color: 'orange' },
-  SKIPPED_OUT: { label: 'Tiền ra', color: 'default' },
-  SKIPPED_DISABLED: { label: 'Đang tắt nạp', color: 'default' },
-  FAILED: { label: 'Lỗi', color: 'red' },
-}
-
-const CREDITABLE_STATUSES: TopupTxStatus[] = [
-  'PROCESSING',
-  'NO_MATCH',
-  'BELOW_MIN',
-  'SKIPPED_DISABLED',
-  'FAILED',
-]
+import { PAGE_SIZE } from '@/lib/constants'
+import { CREDITABLE_STATUSES, STATUS_META } from './constants'
 
 export function TopupTransactionsPage() {
   const { message } = App.useApp()

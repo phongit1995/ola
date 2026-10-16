@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { App, Form, Modal, Select } from 'antd'
 import { useGrantVip } from '@/hooks/useUserQueries'
 import { errorMessage } from '@/lib/apiError'
-import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
+import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { GrantVipRequest } from '@/types'
+import { VIP_OPTIONS } from './constants'
 
 interface GrantVipModalProps {
   open: boolean
@@ -11,8 +12,6 @@ interface GrantVipModalProps {
   username?: string
   onClose: () => void
 }
-
-const VIP_OPTIONS = VIP_CATALOG.map((v) => ({ value: v.id, label: `${v.name} (#${v.id})` }))
 
 export function GrantVipModal({ open, userId, username, onClose }: GrantVipModalProps) {
   const { message, modal } = App.useApp()

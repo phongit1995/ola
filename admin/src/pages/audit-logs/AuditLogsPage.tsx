@@ -5,75 +5,9 @@ import { formatDateTime } from '@/lib/format'
 import type { AdminAuditLog } from '@/types'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
-
-const PAGE_SIZE = 20
-
-const METHOD_META: Record<string, { label: string; color: string }> = {
-  POST: { label: 'Tạo', color: 'green' },
-  PUT: { label: 'Cập nhật', color: 'blue' },
-  PATCH: { label: 'Cập nhật', color: 'blue' },
-  DELETE: { label: 'Xoá', color: 'red' },
-}
-
-const RESOURCE_LABELS: Record<string, string> = {
-  users: 'Người dùng',
-  rooms: 'Phòng chat',
-  vip: 'VIP',
-  egg: 'Đập trứng',
-  wheel: 'Vòng quay',
-  pen: 'Sút Pen',
-  ken: 'Ken / Rương',
-  me: 'Me',
-  settings: 'Cài đặt',
-  upload: 'Tải lên',
-}
-
-const RESOURCE_OPTIONS = Object.entries(RESOURCE_LABELS).map(([value, label]) => ({ value, label }))
-const METHOD_OPTIONS = [
-  { value: 'POST', label: 'Tạo' },
-  { value: 'PATCH', label: 'Cập nhật' },
-  { value: 'DELETE', label: 'Xoá' },
-]
-
-const KEN_ADJUST_ROUTE = '/ken/users/:userId/adjust'
-
-const ACTION_OPTIONS = [
-  { value: KEN_ADJUST_ROUTE, label: 'Tặng / Trừ Ken' },
-  { value: '/users/:id/vips', label: 'Tặng VIP' },
-  { value: '/users/:id/username', label: 'Đổi username' },
-  { value: '/users/:id/password', label: 'Reset mật khẩu' },
-  { value: '/users/:id/status', label: 'Đổi trạng thái tài khoản' },
-  { value: '/users/:id', label: 'Xoá người dùng' },
-]
-
-function resourceLabel(resource: string) {
-  return RESOURCE_LABELS[resource] ?? resource
-}
-
-function detailBody(log: AdminAuditLog): Record<string, unknown> | undefined {
-  const body = log.detail?.body
-  return typeof body === 'object' && body != null ? (body as Record<string, unknown>) : undefined
-}
-
-function actionLabel(log: AdminAuditLog): string | undefined {
-  const route = log.route ?? ''
-  if (route.endsWith(KEN_ADJUST_ROUTE)) {
-    const body = detailBody(log)
-    const verb = body?.action === 'deduct' ? 'Trừ Ken' : 'Tặng Ken'
-    const amount = body?.amount
-    return typeof amount === 'number' ? `${verb} (${amount.toLocaleString('vi-VN')})` : verb
-  }
-  if (route.endsWith('/users/:id/vips')) return 'Tặng VIP'
-  if (route.endsWith('/users/:id/username')) return 'Đổi username'
-  if (route.endsWith('/users/:id/password')) return 'Reset mật khẩu'
-  if (route.endsWith('/users/:id/status')) return 'Đổi trạng thái tài khoản'
-  if (log.method === 'DELETE' && route.endsWith('/users/:id')) return 'Xoá người dùng'
-  return undefined
-}
-
-function hasDetail(detail?: Record<string, unknown>) {
-  return detail != null && Object.keys(detail).length > 0
-}
+import { PAGE_SIZE } from '@/lib/constants'
+import { ACTION_OPTIONS, METHOD_META, METHOD_OPTIONS, RESOURCE_OPTIONS } from './constants'
+import { actionLabel, hasDetail, resourceLabel } from './utils'
 
 export function AuditLogsPage() {
   const [page, setPage] = useState(1)

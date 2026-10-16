@@ -5,29 +5,13 @@ import { useDeleteRoomMessage, useRoomMessages } from './useRoomQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import type { RoomMessage } from '@/types'
+import { isImageMessage, reactionLabel } from './utils'
 
 interface RoomMessagesModalProps {
   roomId: string | null
   roomName?: string
   open: boolean
   onClose: () => void
-}
-
-const REACTION_EMOJI: Record<string, string> = {
-  like: '👍',
-  love: '❤️',
-  haha: '😆',
-  wow: '😮',
-  sad: '😢',
-  angry: '😡',
-}
-
-function reactionLabel(type: string) {
-  return REACTION_EMOJI[type] ?? type
-}
-
-function isImageMessage(m: RoomMessage) {
-  return m.type === 'image' || (m.imageUrl != null && m.imageUrl !== '')
 }
 
 export function RoomMessagesModal({ roomId, roomName, open, onClose }: RoomMessagesModalProps) {

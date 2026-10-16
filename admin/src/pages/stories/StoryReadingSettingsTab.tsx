@@ -9,8 +9,8 @@ import {
   STORY_READING_SETTING_KEY,
   STORY_UNLOCK_CHARS_MAX,
   STORY_UNLOCK_CHARS_MIN,
-  storyReadingSetting,
-} from './storyReadingMeta'
+} from './constants'
+import { storyReadingSetting } from './utils'
 
 export function StoryReadingSettingsTab() {
   const { message, modal } = App.useApp()

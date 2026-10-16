@@ -28,19 +28,13 @@ import {
   YAxis,
 } from 'recharts'
 import { usePenSideStats, usePenStats, usePenUserStats } from './usePenQueries'
-import type { PenResult, PenUserStatsItem, PenUserStatsSortBy } from '@/types'
+import type { PenUserStatsItem } from '@/types'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
 import { NetText } from '@/components/NetText'
 import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '../useUserStatsTable'
-
-const USER_STATS_SORTS: PenUserStatsSortBy[] = ['staked', 'netKen', 'shots', 'catches']
-
-const RESULT_COLOR: Record<PenResult, { label: string; color: string }> = {
-  saved: { label: 'Cản phá (thủ môn thắng)', color: '#fa541c' },
-  goal: { label: 'Vào gôn (người sút thắng)', color: '#52c41a' },
-}
+import { RESULT_COLOR, USER_STATS_SORTS } from './constants'
 
 export function PenStatsPage() {
   const [from, setFrom] = useState(() => isoDaysAgo(29))

@@ -3,8 +3,7 @@ import { Modal, Table, Tag, Typography, type TableColumnsType } from 'antd'
 import { useUserSessions } from '@/hooks/useUserQueries'
 import { formatDateTime } from '@/lib/format'
 import type { AdminUserSession } from '@/types'
-
-const PAGE_SIZE = 10
+import { MODAL_PAGE_SIZE, PLATFORM_LABEL } from './constants'
 
 interface UserSessionsModalProps {
   open: boolean
@@ -13,17 +12,11 @@ interface UserSessionsModalProps {
   onClose: () => void
 }
 
-const PLATFORM_LABEL: Record<string, string> = {
-  web: 'Web',
-  ios: 'iOS',
-  android: 'Android',
-}
-
 export function UserSessionsModal({ open, userId, username, onClose }: UserSessionsModalProps) {
   const [page, setPage] = useState(1)
   const { data, isFetching } = useUserSessions(open ? userId : null, {
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
+    limit: MODAL_PAGE_SIZE,
+    offset: (page - 1) * MODAL_PAGE_SIZE,
   })
 
   const columns: TableColumnsType<AdminUserSession> = [
@@ -108,7 +101,7 @@ export function UserSessionsModal({ open, userId, username, onClose }: UserSessi
         scroll={{ x: 'max-content' }}
         pagination={{
           current: page,
-          pageSize: PAGE_SIZE,
+          pageSize: MODAL_PAGE_SIZE,
           total: data?.total ?? 0,
           showTotal: (total) => `${total} phiên`,
           onChange: setPage,

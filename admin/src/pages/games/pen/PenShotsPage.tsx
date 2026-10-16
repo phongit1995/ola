@@ -15,24 +15,18 @@ import type { ColumnsType } from 'antd/es/table'
 import { BarChartOutlined, ReloadOutlined } from '@ant-design/icons'
 import { usePenShots } from './usePenQueries'
 import type { AdminPenShot, PenResult, PenSide, PenStatus } from '@/types'
-import { PEN_RESULT_META, PEN_SIDE_LABEL, PEN_STATUS_META } from './penMeta'
+import {
+  PEN_RESULT_META,
+  PEN_SIDE_LABEL,
+  PEN_STATUS_META,
+  RESULT_OPTIONS,
+  STATUS_OPTIONS,
+} from './constants'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
 import { UserBriefCell } from '@/components/UserBriefCell'
-
-const PAGE_SIZE = 20
-
-const STATUS_OPTIONS = [
-  { value: 'open' as const, label: 'Đang chờ' },
-  { value: 'settled' as const, label: 'Đã xử lý' },
-  { value: 'cancelled' as const, label: 'Đã huỷ' },
-]
-
-const RESULT_OPTIONS = [
-  { value: 'saved' as const, label: 'Cản phá' },
-  { value: 'goal' as const, label: 'Vào gôn' },
-]
+import { PAGE_SIZE } from '@/lib/constants'
 
 function sideTag(side?: PenSide) {
   if (!side) return null

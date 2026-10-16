@@ -6,11 +6,10 @@ import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import { cleanPlatformRules } from '@/lib/platformRules'
 import type { StorySetting } from '@/types'
-import { STORY_SETTING_KEY, storySetting } from './storyMeta'
+import { STORY_SETTING_KEY, TAB_KEYS } from './constants'
+import { storySetting } from './utils'
 import { StoryCrawlerTab } from './StoryCrawlerTab'
 import { StoryReadingSettingsTab } from './StoryReadingSettingsTab'
-
-const TAB_KEYS = ['display', 'reading', 'crawler', 'crawler-rookies'] as const
 type TabKey = (typeof TAB_KEYS)[number]
 
 export function StorySettingsPage() {

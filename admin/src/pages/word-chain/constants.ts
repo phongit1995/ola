@@ -1,5 +1,4 @@
-import { settingValue } from '@/lib/appSetting'
-import type { AppSetting, WordChainCode, WordChainMessageType, WordChainSetting } from '@/types'
+import type { WordChainCode, WordChainMessageType, WordChainSetting } from '@/types'
 
 export const WORD_CHAIN_SETTING_KEY = 'word_chain'
 
@@ -10,10 +9,6 @@ export const DEFAULT_WORD_CHAIN_SETTING: WordChainSetting = {
 }
 
 export const WORD_CHAIN_PRICE_MAX = 10_000_000
-
-export function wordChainSetting(settings: AppSetting[] | undefined): WordChainSetting {
-  return settingValue(settings, WORD_CHAIN_SETTING_KEY, DEFAULT_WORD_CHAIN_SETTING)
-}
 
 export const CODE_META: Record<WordChainCode, { label: string; color: string }> = {
   ok: { label: 'Đúng', color: 'green' },
@@ -31,3 +26,5 @@ export const BOT_TYPE_LABEL: Record<WordChainMessageType, string> = {
   session_started: 'Mở phiên',
   wrong_answer: 'Báo sai',
 }
+
+export const TAB_KEYS = ['history', 'wins', 'settings'] as const

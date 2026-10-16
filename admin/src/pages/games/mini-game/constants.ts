@@ -26,6 +26,27 @@ export const GAME_ID_LABEL: Record<string, string> = {
   'xiangqi': 'Cờ Tướng',
 }
 
-export function gameLabel(gameId: string, names?: Record<string, string>) {
-  return names?.[gameId] ?? GAME_ID_LABEL[gameId] ?? gameId
+export const STATUS_OPTIONS = [
+  { value: 'playing' as const, label: 'Đang chơi' },
+  { value: 'finished' as const, label: 'Đã kết thúc' },
+]
+
+export const REASON_OPTIONS = (
+  Object.keys(GAME_MATCH_REASON_META) as GameMatchReason[]
+).map((reason) => ({ value: reason, label: GAME_MATCH_REASON_META[reason].label }))
+
+export const MODE_OPTIONS = (Object.keys(GAME_MATCH_MODE_LABEL) as GameMatchMode[]).map((mode) => ({
+  value: mode,
+  label: GAME_MATCH_MODE_LABEL[mode],
+}))
+
+export const REASON_COLOR: Record<string, string> = {
+  win: '#52c41a',
+  forfeit: '#fa8c16',
+  timeout: '#fa541c',
+  draw: '#2f54eb',
+  disconnect: '#f5222d',
+  void: '#8c8c8c',
 }
+
+export const TAB_KEYS = ['list', 'history', 'levels'] as const

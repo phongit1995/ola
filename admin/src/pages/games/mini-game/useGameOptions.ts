@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useMiniGames } from './useMiniGameQueries'
-import { GAME_ID_LABEL, gameLabel } from './gameMatchMeta'
+import { GAME_ID_LABEL } from './constants'
+import { gameLabel } from './utils'
 
 export function useGameOptions() {
   const { data: games } = useMiniGames()

@@ -6,36 +6,13 @@ import { formatDateTime } from '@/lib/format'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { GrantVipModal } from './GrantVipModal'
 import type { AdminUserVipIcon } from '@/types'
+import { deleteWarning, vipIconSourceLabel } from './utils'
 
 interface UserVipIconsModalProps {
   open: boolean
   userId: string | null
   username?: string
   onClose: () => void
-}
-
-const SOURCE_LABEL: Record<string, string> = {
-  purchase: 'Mua',
-  icon: 'Mua',
-  transfer: 'Nhận chuyển',
-  gift: 'Tặng',
-  admin: 'Admin',
-}
-
-function sourceLabel(source?: string): string {
-  if (!source) return ''
-  return SOURCE_LABEL[source] ?? source
-}
-
-function deleteWarning(item: AdminUserVipIcon): string {
-  const notes: string[] = []
-  if (item.isUsing) notes.push('user đang đeo icon này, xoá xong sẽ thành chưa dùng VIP')
-  if (item.isLocked) notes.push('user đã khoá icon này')
-  if (item.source === 'purchase' || item.source === 'icon') {
-    notes.push('icon này do user bỏ Ken ra mua, hệ thống không hoàn Ken')
-  }
-  if (notes.length === 0) return 'Thao tác này không thể hoàn tác từ trang quản trị.'
-  return `Lưu ý: ${notes.join('; ')}.`
 }
 
 interface VipCardProps {
@@ -96,7 +73,7 @@ function VipCard({ item, onDelete, deleting }: VipCardProps) {
       </div>
       <div style={{ fontSize: 11, color: '#8c98a4', marginTop: 2 }}>#{item.typeId}</div>
       <div style={{ marginTop: 8, display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
-        {item.source && <Tag style={{ margin: 0 }}>{sourceLabel(item.source)}</Tag>}
+        {item.source && <Tag style={{ margin: 0 }}>{vipIconSourceLabel(item.source)}</Tag>}
         {item.isLocked && (
           <Tag icon={<LockFilled />} style={{ margin: 0 }}>
             Đã khoá

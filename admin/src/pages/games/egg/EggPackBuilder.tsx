@@ -21,17 +21,9 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { EggOddsSunburst } from './EggOddsSunburst'
-import {
-  CATEGORY_COLORS,
-  CATEGORY_TEMPLATES,
-  categoryTemplate,
-  formatPercent,
-  percent,
-  sumActiveWeight,
-  type EggCategory,
-  type EggCategoryType,
-  type EggReward,
-} from './eggHelpers'
+import { CATEGORY_COLORS, CATEGORY_TEMPLATES } from './constants'
+import { categoryTemplate, formatPercent, percent, sumActiveWeight } from './utils'
+import type { EggCategory, EggCategoryType, EggReward } from './types'
 
 interface EggPackBuilderProps {
   categories: EggCategory[]

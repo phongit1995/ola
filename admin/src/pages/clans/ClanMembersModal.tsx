@@ -4,15 +4,8 @@ import { UserOutlined } from '@ant-design/icons'
 import { useClanMembers } from './useClanQueries'
 import { formatDateTime } from '@/lib/format'
 import type { ClanMember } from '@/types'
-
-const PAGE_SIZE = 20
-
-const ROLE_LABELS: Record<ClanMember['role'], { label: string; color?: string }> = {
-  owner: { label: 'Bang chủ', color: 'gold' },
-  deputy: { label: 'Phó bang chủ', color: 'blue' },
-  ambassador: { label: 'Đại sứ', color: 'purple' },
-  member: { label: 'Thành viên' },
-}
+import { PAGE_SIZE } from '@/lib/constants'
+import { ROLE_LABELS } from './constants'
 
 interface ClanMembersModalProps {
   clanId: string | null

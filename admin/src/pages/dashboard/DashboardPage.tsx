@@ -33,32 +33,7 @@ import type { DashboardSpendByType } from '@/types'
 import { formatCount } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
-
-const KEN_TYPE_LABEL: Record<string, string> = {
-  VIP_PACKAGE: 'Mua gói VIP',
-  VIP_ICON: 'Mua VIP icon',
-  ADMIN_DEDUCT: 'Admin trừ',
-  ADMIN_GRANT: 'Admin cộng',
-  REWARD: 'Thưởng',
-  EGG_OPEN: 'Đập trứng',
-  TOPUP: 'Nạp KEN',
-  REFUND: 'Hoàn tiền',
-  GIFT_SENT: 'Tặng quà',
-  GIFT_RECEIVED: 'Nhận quà',
-  TRANSFER_IN: 'Chuyển đến',
-  TRANSFER_OUT: 'Chuyển đi',
-  PEN_SHOOT: 'Sút penalty',
-  PEN_CATCH: 'Bắt penalty',
-  PEN_WIN: 'Thắng penalty',
-  PEN_REFUND: 'Hoàn penalty',
-  KEN_CHEST: 'Rương KEN',
-  WORD_CHAIN_HINT: 'Gợi ý nối từ',
-  WORD_CHAIN_GUESS: 'Mua lượt nối từ',
-}
-
-function kenTypeLabel(type: string) {
-  return KEN_TYPE_LABEL[type] ?? type
-}
+import { kenTypeLabel } from './utils'
 
 const spendColumns: ColumnsType<DashboardSpendByType> = [
   {

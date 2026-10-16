@@ -27,28 +27,12 @@ import {
   YAxis,
 } from 'recharts'
 import { useKenChestStats, useKenChestUserStats } from './useKenChestQueries'
-import type {
-  KenChestSource,
-  KenChestStatsSourceRow,
-  KenChestUserStatsItem,
-  KenChestUserStatsSortBy,
-} from '@/types'
+import type { KenChestSource, KenChestStatsSourceRow, KenChestUserStatsItem } from '@/types'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
 import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '../useUserStatsTable'
-
-const SOURCE_META: Record<KenChestSource, { label: string; color: string }> = {
-  manual: { label: 'Thủ công', color: 'blue' },
-  auto: { label: 'Tự động', color: 'purple' },
-}
-
-const SOURCE_OPTIONS = (Object.keys(SOURCE_META) as KenChestSource[]).map((source) => ({
-  value: source,
-  label: SOURCE_META[source].label,
-}))
-
-const USER_STATS_SORTS: KenChestUserStatsSortBy[] = ['kenTotal', 'claims', 'empty']
+import { SOURCE_META, SOURCE_OPTIONS, USER_STATS_SORTS } from './constants'
 
 const sourceColumns: ColumnsType<KenChestStatsSourceRow> = [
   {

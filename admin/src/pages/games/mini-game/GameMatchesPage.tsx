@@ -24,31 +24,19 @@ import {
   GAME_MATCH_MODE_LABEL,
   GAME_MATCH_REASON_META,
   GAME_MATCH_STATUS_META,
-  gameLabel,
-} from './gameMatchMeta'
+  MODE_OPTIONS,
+  REASON_OPTIONS,
+  STATUS_OPTIONS,
+} from './constants'
+import { gameLabel } from './utils'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
 import { UserBriefCell } from '@/components/UserBriefCell'
 import { useGameOptions } from './useGameOptions'
-
-const PAGE_SIZE = 20
+import { PAGE_SIZE } from '@/lib/constants'
 
 const WINNER_BADGE = <TrophyFilled style={{ color: '#faad14' }} />
-
-const STATUS_OPTIONS = [
-  { value: 'playing' as const, label: 'Đang chơi' },
-  { value: 'finished' as const, label: 'Đã kết thúc' },
-]
-
-const REASON_OPTIONS = (
-  Object.keys(GAME_MATCH_REASON_META) as GameMatchReason[]
-).map((reason) => ({ value: reason, label: GAME_MATCH_REASON_META[reason].label }))
-
-const MODE_OPTIONS = (Object.keys(GAME_MATCH_MODE_LABEL) as GameMatchMode[]).map((mode) => ({
-  value: mode,
-  label: GAME_MATCH_MODE_LABEL[mode],
-}))
 
 export function GameMatchesPage() {
   const navigate = useNavigate()

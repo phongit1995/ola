@@ -12,8 +12,7 @@ import { KenClaimsHistory } from './KenClaimsHistoryPage'
 import { KenChestStatsTab } from './KenChestStatsTab'
 import { KenSourceTag } from '@/components/KenSourceTag'
 import type { KenChest } from '@/types'
-
-const PAGE_SIZE = 20
+import { PAGE_SIZE } from '@/lib/constants'
 
 function StatusTag({ chest, now }: { chest: KenChest; now: number }) {
   const active = chest.status === 'active' && new Date(chest.expiresAt).getTime() > now

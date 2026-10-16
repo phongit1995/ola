@@ -7,25 +7,8 @@ import type { AdminEggDraw, EggCategoryType } from '@/types'
 import { formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
-
-const PAGE_SIZE = 20
-
-const CATEGORY_LABEL: Record<EggCategoryType, string> = {
-  nothing: 'Không trúng',
-  vip_icon: 'VIP Icon',
-  ken: 'Ken',
-  vip_days: 'Ngày VIP',
-}
-
-const CATEGORY_OPTIONS = (Object.keys(CATEGORY_LABEL) as EggCategoryType[]).map((type) => ({
-  value: type,
-  label: CATEGORY_LABEL[type],
-}))
-
-const OUTCOME_OPTIONS = [
-  { value: 'win' as const, label: 'Trúng' },
-  { value: 'miss' as const, label: 'Trượt' },
-]
+import { PAGE_SIZE } from '@/lib/constants'
+import { CATEGORY_LABEL, CATEGORY_OPTIONS, OUTCOME_OPTIONS } from './constants'
 
 interface EggHistoryModalProps {
   open: boolean

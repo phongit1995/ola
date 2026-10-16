@@ -23,7 +23,7 @@ import {
 } from '@/hooks/useMeQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
-import { VISIBILITY } from './meVisibility'
+import { VISIBILITY } from './constants'
 
 interface MeDetailModalProps {
   postId: string | null

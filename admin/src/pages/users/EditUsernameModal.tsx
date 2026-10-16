@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { App, Form, Input, Modal } from 'antd'
 import { useUpdateUsername } from '@/hooks/useUserQueries'
 import { errorMessage } from '@/lib/apiError'
+import { USERNAME_PATTERN } from './constants'
 
 interface EditUsernameFormValues {
   username: string
@@ -13,8 +14,6 @@ interface EditUsernameModalProps {
   currentUsername?: string
   onClose: () => void
 }
-
-const USERNAME_PATTERN = /^[a-z][a-z0-9]*$/
 
 export function EditUsernameModal({ open, userId, currentUsername, onClose }: EditUsernameModalProps) {
   const { message } = App.useApp()

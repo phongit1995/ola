@@ -13,7 +13,7 @@ import {
 import { useUserDetail } from '@/hooks/useUserQueries'
 import { formatDateTime } from '@/lib/format'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
-import { GENDER } from './userMeta'
+import { GENDER } from './constants'
 import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
@@ -23,6 +23,7 @@ import { UserSessionsModal } from './UserSessionsModal'
 import { EditUsernameModal } from './EditUsernameModal'
 import { ResetPasswordModal } from './ResetPasswordModal'
 import { AddVipDaysModal } from './AddVipDaysModal'
+import { vipDaysLeft } from './utils'
 
 interface UserDetailModalProps {
   userId: string | null
@@ -72,14 +73,6 @@ function Row({ label, value }: { label: string; value?: ReactNode }) {
       <span style={{ textAlign: 'right', wordBreak: 'break-word' }}>{value || '—'}</span>
     </div>
   )
-}
-
-function vipDaysLeft(vipEndTime?: string): number | null {
-  if (!vipEndTime) return null
-  const end = new Date(vipEndTime).getTime()
-  if (Number.isNaN(end)) return null
-  const diff = end - Date.now()
-  return diff <= 0 ? 0 : Math.ceil(diff / 86_400_000)
 }
 
 export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps) {

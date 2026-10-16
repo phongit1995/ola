@@ -24,7 +24,7 @@ import {
   MessageOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
-import type { StoryKind, StorySort, StoryStatus } from '@ola/shared/types'
+import type { StoryKind, StorySort } from '@ola/shared/types'
 import { useDebounce } from '@/hooks/useDebounce'
 import {
   useDeleteStory,
@@ -46,78 +46,19 @@ import type {
   AdminStoryListParams,
   AdminStoryVisibility,
 } from '@/types'
-
-const PAGE_SIZE = 20
-const COVER_WIDTH = 44
-const COVER_HEIGHT = 58
-const ALL = 'all'
-
-const SOURCE_LABEL: Record<string, string> = {
-  vnkings: 'Vnkings',
-  rookies: 'Rookies',
-}
-
-const KIND_LABEL: Record<StoryKind, string> = {
-  long: 'Truyện dài',
-  short: 'Truyện ngắn',
-}
-
-const STATUS_TAG: Record<StoryStatus, { label: string; color?: string }> = {
-  ongoing: { label: 'Đang ra', color: 'orange' },
-  completed: { label: 'Hoàn thành', color: 'green' },
-  unknown: { label: 'Không rõ' },
-}
-
-const VISIBILITY_LABEL: Record<AdminStoryVisibility, string> = {
-  all: 'Cả ẩn và hiện',
-  visible: 'Đang hiện',
-  hidden: 'Đang ẩn',
-}
-
-const KIND_OPTIONS = [
-  { value: ALL, label: 'Mọi loại' },
-  { value: 'long', label: KIND_LABEL.long },
-  { value: 'short', label: KIND_LABEL.short },
-]
-
-const STATUS_OPTIONS = [
-  { value: ALL, label: 'Mọi tình trạng' },
-  { value: 'ongoing', label: STATUS_TAG.ongoing.label },
-  { value: 'completed', label: STATUS_TAG.completed.label },
-]
-
-const VISIBILITY_OPTIONS: { value: AdminStoryVisibility; label: string }[] = [
-  { value: 'all', label: VISIBILITY_LABEL.all },
-  { value: 'visible', label: VISIBILITY_LABEL.visible },
-  { value: 'hidden', label: VISIBILITY_LABEL.hidden },
-]
-
-const SORT_OPTIONS: { value: StorySort; label: string }[] = [
-  { value: 'updated', label: 'Mới cập nhật' },
-  { value: 'views', label: 'Xem nhiều' },
-  { value: 'new', label: 'Mới đăng' },
-]
-
-function percent(part: number, total: number) {
-  return total > 0 ? Math.round((part / total) * 1000) / 10 : 0
-}
-
-function sourceLabel(source: string) {
-  return SOURCE_LABEL[source] ?? source
-}
-
-function describeFilter(filter: AdminStoryFilter): string[] {
-  const parts: string[] = []
-  if (filter.source) parts.push(`nguồn ${sourceLabel(filter.source)}`)
-  if (filter.genre) parts.push(`thể loại ${filter.genre}`)
-  if (filter.kind) parts.push(KIND_LABEL[filter.kind].toLowerCase())
-  if (filter.status) parts.push(STATUS_TAG[filter.status].label.toLowerCase())
-  if (filter.visibility && filter.visibility !== 'all') {
-    parts.push(VISIBILITY_LABEL[filter.visibility].toLowerCase())
-  }
-  if (filter.q) parts.push(`tìm “${filter.q}”`)
-  return parts
-}
+import { PAGE_SIZE } from '@/lib/constants'
+import {
+  ALL,
+  COVER_HEIGHT,
+  COVER_WIDTH,
+  KIND_LABEL,
+  KIND_OPTIONS,
+  SORT_OPTIONS,
+  STATUS_OPTIONS,
+  STORY_STATUS_TAG,
+  VISIBILITY_OPTIONS,
+} from './constants'
+import { describeFilter, percent, sourceLabel } from './utils'
 
 export function StoriesPage() {
   const { message, modal } = App.useApp()
@@ -325,7 +266,7 @@ export function StoriesPage() {
       render: (value: StoryKind, story) => (
         <Space orientation="vertical" size={4}>
           <Tag color={value === 'long' ? 'blue' : 'purple'}>{KIND_LABEL[value]}</Tag>
-          <Tag color={STATUS_TAG[story.status].color}>{STATUS_TAG[story.status].label}</Tag>
+          <Tag color={STORY_STATUS_TAG[story.status].color}>{STORY_STATUS_TAG[story.status].label}</Tag>
         </Space>
       ),
     },

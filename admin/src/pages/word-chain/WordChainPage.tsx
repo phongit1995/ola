@@ -4,8 +4,7 @@ import { WordChainMessagesTab } from './WordChainMessagesTab'
 import { WordChainOverviewCard } from './WordChainOverviewCard'
 import { WordChainSettingsTab } from './WordChainSettingsTab'
 import { WordChainWinsTab } from './WordChainWinsTab'
-
-const TAB_KEYS = ['history', 'wins', 'settings'] as const
+import { TAB_KEYS } from './constants'
 type TabKey = (typeof TAB_KEYS)[number]
 
 export function WordChainPage() {

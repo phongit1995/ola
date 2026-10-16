@@ -26,8 +26,7 @@ import { MiniGameFormModal } from './MiniGameFormModal'
 import { GameMatchesPage } from './GameMatchesPage'
 import { GameLevelsTab } from './GameLevelsTab'
 import type { MiniGame } from '@/types'
-
-const TAB_KEYS = ['list', 'history', 'levels'] as const
+import { TAB_KEYS } from './constants'
 type TabKey = (typeof TAB_KEYS)[number]
 
 function MiniGameListTab() {

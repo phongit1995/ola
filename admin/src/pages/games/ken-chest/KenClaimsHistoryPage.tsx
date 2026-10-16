@@ -6,8 +6,7 @@ import { formatDateTime } from '@/lib/format'
 import { UserCell } from '@/components/UserCell'
 import { KenSourceTag } from '@/components/KenSourceTag'
 import type { KenClaimHistoryItem } from '@/types'
-
-const PAGE_SIZE = 20
+import { PAGE_SIZE } from '@/lib/constants'
 
 export function KenClaimsHistory() {
   const [page, setPage] = useState(1)

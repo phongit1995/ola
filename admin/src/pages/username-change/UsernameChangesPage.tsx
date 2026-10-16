@@ -8,13 +8,8 @@ import { formatCount, formatDateTime } from '@/lib/format'
 import type { UsernameChangeItem } from '@/types'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
-
-const PAGE_SIZE = 20
-
-const ACTOR_OPTIONS = [
-  { value: 'user', label: 'User tự đổi' },
-  { value: 'admin', label: 'Admin đổi hộ' },
-]
+import { PAGE_SIZE } from '@/lib/constants'
+import { ACTOR_OPTIONS } from './constants'
 
 function ActorCell({ row }: { row: UsernameChangeItem }) {
   if (row.actorType === 'admin') {

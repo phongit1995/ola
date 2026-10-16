@@ -18,16 +18,8 @@ import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { ClanMembersModal } from './ClanMembersModal'
 import type { Clan } from '@/types'
-
-const PAGE_SIZE = 20
-
-const POLICY_LABELS: Record<number, string> = {
-  0: 'Tự do post Me',
-  1: 'Tự do gia nhập',
-  2: 'Chứng thực để post Me',
-  3: 'Đóng cửa',
-  4: 'Chứng thực mới xem và post',
-}
+import { PAGE_SIZE } from '@/lib/constants'
+import { POLICY_LABELS } from './constants'
 
 export function ClansPage() {
   const { message, modal } = App.useApp()

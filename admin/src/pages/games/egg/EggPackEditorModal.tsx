@@ -7,109 +7,27 @@ import {
 } from './useEggQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
-import type { EggPack as ApiEggPack, SaveEggConfigRequest } from '@/types'
+import type { EggPack as ApiEggPack } from '@/types'
 import { EggPackBuilder } from './EggPackBuilder'
 import { EggRewardFormModal, type EggItemFormValues } from './EggRewardFormModal'
 import {
   categoryTemplate,
+  loadPack,
   newId,
   percent,
   rebalanceWeights,
   sumActiveWeight,
-  type EggCategory,
-  type EggCategoryType,
-  type EggReward,
-} from './eggHelpers'
-
-const EDITOR_PACK_ID = 'editor'
+  toConfigRequest,
+  validateConfig,
+} from './utils'
+import type { EggCategory, EggCategoryType, EggReward } from './types'
+import { EDITOR_PACK_ID } from './constants'
 
 interface EggPackEditorModalProps {
   open: boolean
   pack: ApiEggPack | null
   nextSortOrder: number
   onClose: () => void
-}
-
-function loadPack(pack: ApiEggPack | null): {
-  name: string
-  kenCost: number
-  isEnabled: boolean
-  categories: EggCategory[]
-  rewards: EggReward[]
-} {
-  if (!pack) {
-    return { name: 'Gói mới', kenCost: 100, isEnabled: true, categories: [], rewards: [] }
-  }
-  const categories: EggCategory[] = []
-  const rewards: EggReward[] = []
-  for (const c of pack.categories ?? []) {
-    categories.push({
-      id: c.id,
-      packId: EDITOR_PACK_ID,
-      type: c.type,
-      label: c.label,
-      weight: c.weight,
-      isActive: c.isActive,
-    })
-    for (const r of c.rewards ?? []) {
-      rewards.push({
-        id: r.id,
-        categoryId: c.id,
-        label: r.label,
-        weight: r.weight,
-        vipTypeId: r.vipTypeId,
-        kenAmount: r.kenAmount,
-        vipDays: r.vipDays,
-        isSuperLucky: r.isSuperLucky,
-        isActive: r.isActive,
-        sortOrder: r.sortOrder,
-      })
-    }
-  }
-  return { name: pack.name, kenCost: pack.kenCost, isEnabled: pack.isEnabled, categories, rewards }
-}
-
-function validateConfig(name: string, categories: EggCategory[], rewards: EggReward[]): string | null {
-  if (!name.trim()) return 'Vui lòng nhập tên gói.'
-  const active = categories.filter((c) => c.isActive)
-  if (active.length === 0) return 'Gói phải có ít nhất 1 nhóm đang bật.'
-  if (active.reduce((sum, c) => sum + c.weight, 0) <= 0) return 'Hãy phân bổ % cho các nhóm.'
-  for (const c of active) {
-    if (c.type === 'nothing') continue
-    const items = rewards.filter((r) => r.categoryId === c.id && r.isActive)
-    if (items.length === 0) return `Nhóm "${c.label}" đang bật nhưng chưa có phần thưởng.`
-    if (items.reduce((s, r) => s + r.weight, 0) <= 0) return `Hãy phân bổ % cho phần thưởng trong nhóm "${c.label}".`
-  }
-  return null
-}
-
-const round4 = (n: number) => Math.round(n * 10000) / 10000
-
-function toConfigRequest(categories: EggCategory[], rewards: EggReward[]): SaveEggConfigRequest {
-  const activeCatTotal = categories.filter((c) => c.isActive).reduce((s, c) => s + c.weight, 0) || 1
-  return {
-    categories: categories.map((c, index) => {
-      const groupRewards = rewards.filter((r) => r.categoryId === c.id).sort((a, b) => a.sortOrder - b.sortOrder)
-      const activeRewardTotal = groupRewards.filter((r) => r.isActive).reduce((s, r) => s + r.weight, 0) || 1
-      return {
-        type: c.type,
-        label: c.label,
-        weight: c.isActive ? round4((c.weight / activeCatTotal) * 100) : 0,
-        isActive: c.isActive,
-        sortOrder: index,
-        rewards: groupRewards.map((r, ri) => ({
-          label: r.label,
-          weight: r.isActive ? round4((r.weight / activeRewardTotal) * 100) : 0,
-          vipTypeId: r.vipTypeId,
-          kenAmount: r.kenAmount,
-          vipDays: r.vipDays,
-          isSuperLucky: r.isSuperLucky,
-          isActive: r.isActive,
-          sortOrder: ri,
-        })),
-      }
-    }),
-  }
 }
 
 export function EggPackEditorModal({ open, pack, nextSortOrder, onClose }: EggPackEditorModalProps) {

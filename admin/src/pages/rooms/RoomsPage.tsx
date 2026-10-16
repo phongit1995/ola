@@ -25,8 +25,7 @@ import { errorMessage } from '@/lib/apiError'
 import { RoomFormModal } from './RoomFormModal'
 import { RoomMessagesModal } from './RoomMessagesModal'
 import type { Room } from '@/types'
-
-const PAGE_SIZE = 20
+import { PAGE_SIZE } from '@/lib/constants'
 
 export function RoomsPage() {
   const { message, modal } = App.useApp()

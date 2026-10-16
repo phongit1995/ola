@@ -3,14 +3,7 @@ import { Modal, Table, Tag, type TableColumnsType } from 'antd'
 import { useVipHistory } from '@/hooks/useVipTransferQueries'
 import { formatDateTime } from '@/lib/format'
 import type { VipPurchaseHistory } from '@/types'
-
-const PAGE_SIZE = 10
-
-const SOURCE_META: Record<string, { label: string; color: string }> = {
-  package: { label: 'Mua gói', color: 'blue' },
-  admin: { label: 'Admin cấp', color: 'gold' },
-  gift: { label: 'Được tặng', color: 'green' },
-}
+import { MODAL_PAGE_SIZE, VIP_HISTORY_SOURCE_META } from './constants'
 
 interface UserVipHistoryModalProps {
   open: boolean
@@ -22,8 +15,8 @@ interface UserVipHistoryModalProps {
 export function UserVipHistoryModal({ open, userId, username, onClose }: UserVipHistoryModalProps) {
   const [page, setPage] = useState(1)
   const { data, isFetching } = useVipHistory(open ? userId : null, {
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
+    limit: MODAL_PAGE_SIZE,
+    offset: (page - 1) * MODAL_PAGE_SIZE,
   })
 
   const columns: TableColumnsType<VipPurchaseHistory> = [
@@ -57,7 +50,7 @@ export function UserVipHistoryModal({ open, userId, username, onClose }: UserVip
       dataIndex: 'source',
       width: 110,
       render: (v: string) => {
-        const meta = SOURCE_META[v]
+        const meta = VIP_HISTORY_SOURCE_META[v]
         return <Tag color={meta?.color}>{meta?.label ?? v}</Tag>
       },
     },
@@ -87,7 +80,7 @@ export function UserVipHistoryModal({ open, userId, username, onClose }: UserVip
         locale={{ emptyText: 'Chưa có lịch sử mua/cấp VIP' }}
         pagination={{
           current: page,
-          pageSize: PAGE_SIZE,
+          pageSize: MODAL_PAGE_SIZE,
           total: data?.total ?? 0,
           showTotal: (total) => `${total} lượt`,
           onChange: setPage,

@@ -24,26 +24,13 @@ import {
 import { formatDate, formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import type { AdminStory, AdminStoryChapter } from '@/types'
-
-const CHAPTER_PAGE_SIZE = 20
-const POLL_MS_PER_CHAPTER = 2000
-const POLL_GRACE_MS = 30000
+import { CHAPTER_PAGE_SIZE, POLL_GRACE_MS, POLL_MS_PER_CHAPTER } from './constants'
+import { contentParagraphs, errorText } from './utils'
 
 interface StoryChaptersModalProps {
   story: AdminStory | null
   open: boolean
   onClose: () => void
-}
-
-function contentParagraphs(content: string): string[] {
-  return content
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter((paragraph) => paragraph.length > 0)
-}
-
-function errorText(error: unknown): string {
-  return errorMessage(error, 'Lỗi không xác định, thử lại sau')
 }
 
 export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalProps) {

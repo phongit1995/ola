@@ -25,15 +25,13 @@ import type {
   WheelStatsReward,
   WheelStatsWheel,
   WheelUserStatsItem,
-  WheelUserStatsSortBy,
   WheelVipStatsRow,
 } from '@/types'
-import { kindMeta } from './wheelHelpers'
+import { kindMeta } from './utils'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { NetText } from '@/components/NetText'
 import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '../useUserStatsTable'
-
-const USER_STATS_SORTS: WheelUserStatsSortBy[] = ['kenSpent', 'kenWon', 'netKen', 'spins', 'vipDays']
+import { USER_STATS_SORTS } from './constants'
 
 const vipColumns: ColumnsType<WheelVipStatsRow> = [
   {

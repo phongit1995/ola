@@ -36,7 +36,6 @@ import type {
   EggStatsPack,
   EggStatsReward,
   EggUserStatsItem,
-  EggUserStatsSortBy,
   EggVipStatsRow,
 } from '@/types'
 import { formatCount, formatDateTime } from '@/lib/format'
@@ -44,13 +43,7 @@ import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
 import { NetText } from '@/components/NetText'
 import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '../useUserStatsTable'
-
-const CATEGORY_META: Record<EggCategoryType, { label: string; color: string }> = {
-  nothing: { label: 'Không trúng', color: '#94a3b8' },
-  vip_icon: { label: 'VIP icon', color: '#faad14' },
-  ken: { label: 'Ken', color: '#2563eb' },
-  vip_days: { label: 'Ngày VIP', color: '#5b8c2a' },
-}
+import { CATEGORY_META, USER_STATS_SORTS } from './constants'
 
 const rewardColumns: ColumnsType<EggStatsReward> = [
   {
@@ -88,8 +81,6 @@ const packColumns: ColumnsType<EggStatsPack> = [
     ),
   },
 ]
-
-const USER_STATS_SORTS: EggUserStatsSortBy[] = ['kenSpent', 'kenWon', 'netKen', 'draws', 'vipDays']
 
 const vipColumns: ColumnsType<EggVipStatsRow> = [
   {
