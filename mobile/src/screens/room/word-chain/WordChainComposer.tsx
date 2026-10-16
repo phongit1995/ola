@@ -23,6 +23,7 @@ interface WordChainComposerProps {
   onHint: () => void;
   onLookup: () => void;
   onBuyGuesses?: () => void;
+  onBuyVip?: () => void;
 }
 
 export function WordChainComposer({
@@ -32,6 +33,7 @@ export function WordChainComposer({
   onHint,
   onLookup,
   onBuyGuesses,
+  onBuyVip,
 }: WordChainComposerProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -110,7 +112,18 @@ export function WordChainComposer({
       >
         <WordChainImage source={WORD_CHAIN_ICONS.hint} size={HINT_ICON_SIZE} />
       </Pressable>
-      {onBuyGuesses != null ? (
+      {onBuyVip != null ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onBuyVip}
+          className="items-center justify-center rounded-full px-4 active:opacity-90"
+          style={{ height: BUTTON_SIZE, minWidth: 64, backgroundColor: colors.primary }}
+        >
+          <Text className="text-sm font-medium" style={{ color: colors.onPrimary }}>
+            {t('room.buyVip')}
+          </Text>
+        </Pressable>
+      ) : onBuyGuesses != null ? (
         <Pressable
           accessibilityRole="button"
           onPress={onBuyGuesses}

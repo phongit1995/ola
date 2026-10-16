@@ -2,21 +2,29 @@ import { useTranslation } from 'react-i18next';
 import type { RoomChatStatus } from '@ola/shared/types';
 import { Spinner } from '@components';
 
+const PRIMARY_BUTTON_CLASS =
+  'rounded-full bg-ola-primary px-6 py-2 text-sm font-medium text-ola-on-primary';
+
 interface RoomJoiningOverlayProps {
   status: RoomChatStatus;
   joiningText?: string;
   errorText?: string;
+  vipRequiredText?: string;
   onClose: () => void;
+  onBuyVip: () => void;
 }
 
 export function RoomJoiningOverlay({
   status,
   joiningText,
   errorText,
+  vipRequiredText,
   onClose,
+  onBuyVip,
 }: RoomJoiningOverlayProps) {
   const { t } = useTranslation();
-  const isError = status === 'error';
+  const vipRequired = status === 'vipRequired';
+  const isError = status === 'error' || vipRequired;
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/25 px-6">
@@ -24,12 +32,27 @@ export function RoomJoiningOverlay({
         {isError ? (
           <>
             <p className="text-base text-black/70">
-              {errorText ?? t('room.joinError')}
+              {vipRequired
+                ? (vipRequiredText ?? t('room.vipRequired'))
+                : (errorText ?? t('room.joinError'))}
             </p>
+            {vipRequired && (
+              <button
+                type="button"
+                onClick={onBuyVip}
+                className={PRIMARY_BUTTON_CLASS}
+              >
+                {t('room.buyVip')}
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full bg-ola-primary px-6 py-2 text-sm font-medium text-ola-on-primary"
+              className={
+                vipRequired
+                  ? 'px-6 py-1 text-sm font-medium text-black/54'
+                  : PRIMARY_BUTTON_CLASS
+              }
             >
               {t('chat.back')}
             </button>

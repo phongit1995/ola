@@ -77,6 +77,7 @@ type OverviewResponse struct {
 	HintPrice        int            `json:"hintPrice"`
 	GuessPrice       int            `json:"guessPrice"`
 	GuessPackSize    int            `json:"guessPackSize"`
+	NeedsVipToPlay   bool           `json:"needsVipToPlay"`
 }
 
 type GuessPurchaseRequest struct {

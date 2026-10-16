@@ -521,6 +521,8 @@ export interface Room {
   index: number
   memberCount: number
   enabled: boolean
+  vipRequired: boolean
+  vipMinMembers: number
   createdBy: string
   createdAt: string
 }
@@ -531,6 +533,8 @@ export interface CreateRoomRequest {
   imageUrl?: string
   maxMembers?: number
   index?: number
+  vipRequired?: boolean
+  vipMinMembers?: number
 }
 
 export interface UpdateRoomRequest {
@@ -540,6 +544,8 @@ export interface UpdateRoomRequest {
   maxMembers?: number
   index?: number
   enabled?: boolean
+  vipRequired?: boolean
+  vipMinMembers?: number
 }
 
 export interface RoomReplySnapshot {
@@ -1834,6 +1840,8 @@ export interface WordChainSetting {
   enabled: boolean
   hintPrice: number
   guessPrice: number
+  vipRequiredToView: boolean
+  vipRequiredToPlay: boolean
 }
 
 export type WordChainMessageType =

@@ -13,9 +13,10 @@ import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type {
-  CompositeScreenProps,
-  NavigationAction,
+import {
+  useFocusEffect,
+  type CompositeScreenProps,
+  type NavigationAction,
 } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
@@ -182,9 +183,21 @@ export function RoomChatScreen({ navigation, route }: Props) {
     [members, filters],
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      if (useRoomChatStore.getState().status === 'vipRequired') {
+        void open({ id: roomId, name: roomName });
+      }
+    }, [open, roomId, roomName]),
+  );
+
   useEffect(() => {
     const current = useRoomChatStore.getState();
-    if (current.activeRoom?.id !== roomId || current.status === 'error') {
+    if (
+      current.activeRoom?.id !== roomId ||
+      current.status === 'error' ||
+      current.status === 'vipRequired'
+    ) {
       void open({ id: roomId, name: roomName });
     }
     return () => {
@@ -348,14 +361,24 @@ export function RoomChatScreen({ navigation, route }: Props) {
       </View>
 
       <ChatKeyboardArea>
-        {status === 'error' ? (
+        {status === 'error' || status === 'vipRequired' ? (
           <View className="flex-1 items-center justify-center gap-4 px-8">
             <Text
               className="text-center text-base"
               style={{ color: 'rgba(0,0,0,0.7)' }}
             >
-              {t('room.joinError')}
+              {t(status === 'vipRequired' ? 'room.vipRequired' : 'room.joinError')}
             </Text>
+            {status === 'vipRequired' && (
+              <Pressable
+                onPress={() => navigation.navigate(ROOT_ROUTES.BuyVip, { mode: 'extend' })}
+                className="rounded-full bg-ola-button px-6 py-2 active:opacity-90"
+              >
+                <Text className="text-sm font-medium text-white">
+                  {t('room.buyVip')}
+                </Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={() => navigation.goBack()}
               className="rounded-full bg-ola-primary px-6 py-2 active:opacity-90"

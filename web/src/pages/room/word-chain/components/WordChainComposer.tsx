@@ -17,6 +17,7 @@ interface WordChainComposerProps {
   onHint: () => void;
   onLookup: () => void;
   onBuyGuesses?: () => void;
+  onBuyVip?: () => void;
 }
 
 export function WordChainComposer({
@@ -26,6 +27,7 @@ export function WordChainComposer({
   onHint,
   onLookup,
   onBuyGuesses,
+  onBuyVip,
 }: WordChainComposerProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -92,7 +94,15 @@ export function WordChainComposer({
       >
         <WordChainHintIcon className="h-10 w-10" />
       </button>
-      {onBuyGuesses != null ? (
+      {onBuyVip != null ? (
+        <button
+          type="button"
+          onClick={onBuyVip}
+          className={`${PRIMARY_BUTTON_CLASS} px-4`}
+        >
+          {t('room.buyVip')}
+        </button>
+      ) : onBuyGuesses != null ? (
         <button
           type="button"
           onClick={onBuyGuesses}

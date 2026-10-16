@@ -197,9 +197,11 @@ func (c UsernameChangeConfig) CostFor(length int) int {
 }
 
 type WordChainConfig struct {
-	Enabled    bool `json:"enabled"`
-	HintPrice  int  `json:"hintPrice"`
-	GuessPrice int  `json:"guessPrice"`
+	Enabled           bool `json:"enabled"`
+	HintPrice         int  `json:"hintPrice"`
+	GuessPrice        int  `json:"guessPrice"`
+	VipRequiredToView bool `json:"vipRequiredToView"`
+	VipRequiredToPlay bool `json:"vipRequiredToPlay"`
 }
 
 func DefaultWordChainConfig() WordChainConfig {
@@ -580,9 +582,11 @@ func ValidateWordChainValue(value models.JSONB) error {
 		return errors.New("invalid word_chain config")
 	}
 	var cfg struct {
-		Enabled    *bool `json:"enabled"`
-		HintPrice  *int  `json:"hintPrice"`
-		GuessPrice *int  `json:"guessPrice"`
+		Enabled           *bool `json:"enabled"`
+		HintPrice         *int  `json:"hintPrice"`
+		GuessPrice        *int  `json:"guessPrice"`
+		VipRequiredToView *bool `json:"vipRequiredToView"`
+		VipRequiredToPlay *bool `json:"vipRequiredToPlay"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()

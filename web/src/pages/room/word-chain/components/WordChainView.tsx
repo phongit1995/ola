@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { DateSeparator, FullScreenOverlay, ScreenHeader } from '@components';
 import { WORD_CHAIN_INPUT_LOCK_HINT_KEYS } from '@constants';
@@ -12,6 +12,7 @@ import {
   wordChainInputLock,
 } from '@lib';
 import { useAuthStore } from '@/store/authStore';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { WordChainMessageRow } from './WordChainMessageRow';
 import { WordChainRoomIcon } from './WordChainRoomIcon';
@@ -79,6 +80,9 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   const clearLookup = useWordChainStore((store) => store.clearLookup);
   const celebration = useWordChainStore((store) => store.celebration);
   const minimize = useWordChainStore((store) => store.minimize);
+  const needsVipToPlay = useWordChainStore((store) => store.needsVipToPlay);
+  const refreshAccess = useWordChainStore((store) => store.refreshAccess);
+  const pushOverlay = useAppOverlayStore((store) => store.push);
   const currentUserId = useAuthStore((store) => store.user?.id) ?? '';
   const [dialog, setDialog] = useState<WordChainDialog | null>(null);
   const [lookupWord, setLookupWord] = useState('');
@@ -107,7 +111,12 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
   );
   const feed = useMemo(() => buildWordChainFeed(messages), [messages]);
   const remaining = remainingGuesses(state, guesses);
-  const lock = wordChainInputLock(state, guesses, currentUserId);
+  const lock = wordChainInputLock(
+    state,
+    guesses,
+    currentUserId,
+    needsVipToPlay
+  );
   const { scrollRef, handleScroll, pin } = useStickyScroll({
     count: messages.length,
     lastId: messages.at(-1)?.id ?? null,
@@ -117,6 +126,10 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
     enabled: visible,
     loadMoreAtTop: LOAD_MORE_AT_TOP_PX,
   });
+
+  useEffect(() => {
+    if (visible && needsVipToPlay) refreshAccess();
+  }, [visible, needsVipToPlay, refreshAccess]);
 
   const send = useCallback(
     (content: string) => {
@@ -215,6 +228,9 @@ export function WordChainView({ visible, onClose }: WordChainViewProps) {
         onLookup={() => openLookup('')}
         onBuyGuesses={
           lock === 'noGuesses' ? () => setDialog('guesses') : undefined
+        }
+        onBuyVip={
+          lock === 'vipToPlay' ? () => pushOverlay('vipBuy', 'extend') : undefined
         }
       />
 

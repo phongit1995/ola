@@ -18,6 +18,7 @@ func Provider(c *dig.Container) error {
 		NewRepository,
 		NewWallet,
 		provideEventPublisher,
+		NewAccess,
 		NewService,
 		NewController,
 		NewRouter,

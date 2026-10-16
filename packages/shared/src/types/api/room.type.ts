@@ -6,6 +6,8 @@ export interface Room {
   maxMembers: number;
   memberCount: number;
   enabled: boolean;
+  vipRequired: boolean;
+  vipMinMembers: number;
   createdBy: string;
   createdAt: string;
 }

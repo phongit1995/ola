@@ -6,6 +6,8 @@ export const DEFAULT_WORD_CHAIN_SETTING: WordChainSetting = {
   enabled: true,
   hintPrice: 500,
   guessPrice: 500,
+  vipRequiredToView: false,
+  vipRequiredToPlay: false,
 }
 
 export const WORD_CHAIN_PRICE_MAX = 10_000_000

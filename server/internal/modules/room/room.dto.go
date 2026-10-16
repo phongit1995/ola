@@ -1,33 +1,39 @@
 package room
 
 type CreateRoomRequest struct {
-	Name        string `json:"name" binding:"required,min=1,max=150" example:"Phòng Tán Gẫu"`
-	Description string `json:"description" binding:"omitempty,max=2000" example:"Nơi chém gió"`
-	ImageURL    string `json:"imageUrl" binding:"omitempty,url" example:"https://example.com/room.jpg"`
-	MaxMembers  int    `json:"maxMembers" binding:"omitempty,min=0" example:"100"`
-	Index       int    `json:"index" binding:"omitempty,min=0" example:"0"`
+	Name          string `json:"name" binding:"required,min=1,max=150" example:"Phòng Tán Gẫu"`
+	Description   string `json:"description" binding:"omitempty,max=2000" example:"Nơi chém gió"`
+	ImageURL      string `json:"imageUrl" binding:"omitempty,url" example:"https://example.com/room.jpg"`
+	MaxMembers    int    `json:"maxMembers" binding:"omitempty,min=0" example:"100"`
+	Index         int    `json:"index" binding:"omitempty,min=0" example:"0"`
+	VipRequired   bool   `json:"vipRequired" example:"false"`
+	VipMinMembers int    `json:"vipMinMembers" binding:"omitempty,min=0" example:"50"`
 }
 
 type UpdateRoomRequest struct {
-	Name        *string `json:"name" binding:"omitempty,min=1,max=150"`
-	Description *string `json:"description" binding:"omitempty,max=2000"`
-	ImageURL    *string `json:"imageUrl" binding:"omitempty,url"`
-	MaxMembers  *int    `json:"maxMembers" binding:"omitempty,min=0"`
-	Index       *int    `json:"index" binding:"omitempty,min=0"`
-	Enabled     *bool   `json:"enabled"`
+	Name          *string `json:"name" binding:"omitempty,min=1,max=150"`
+	Description   *string `json:"description" binding:"omitempty,max=2000"`
+	ImageURL      *string `json:"imageUrl" binding:"omitempty,url"`
+	MaxMembers    *int    `json:"maxMembers" binding:"omitempty,min=0"`
+	Index         *int    `json:"index" binding:"omitempty,min=0"`
+	Enabled       *bool   `json:"enabled"`
+	VipRequired   *bool   `json:"vipRequired"`
+	VipMinMembers *int    `json:"vipMinMembers" binding:"omitempty,min=0"`
 }
 
 type RoomResponse struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	ImageURL    string `json:"imageUrl,omitempty"`
-	MaxMembers  int    `json:"maxMembers"`
-	Index       int    `json:"index"`
-	MemberCount int    `json:"memberCount"`
-	Enabled     bool   `json:"enabled"`
-	CreatedBy   string `json:"createdBy"`
-	CreatedAt   string `json:"createdAt"`
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Description   string `json:"description,omitempty"`
+	ImageURL      string `json:"imageUrl,omitempty"`
+	MaxMembers    int    `json:"maxMembers"`
+	Index         int    `json:"index"`
+	MemberCount   int    `json:"memberCount"`
+	Enabled       bool   `json:"enabled"`
+	VipRequired   bool   `json:"vipRequired"`
+	VipMinMembers int    `json:"vipMinMembers"`
+	CreatedBy     string `json:"createdBy"`
+	CreatedAt     string `json:"createdAt"`
 }
 
 type RoomBrief struct {

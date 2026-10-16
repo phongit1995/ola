@@ -63,3 +63,7 @@ type User struct {
 
 	Spouse *User `gorm:"foreignKey:SpouseID;references:ID"`
 }
+
+func (u *User) HasActiveVip(now time.Time) bool {
+	return u != nil && u.VipEndTime != nil && u.VipEndTime.After(now)
+}

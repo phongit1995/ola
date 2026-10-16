@@ -44,8 +44,12 @@ func (ctrl *Controller) Overview(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[MessageListResponse]
 // @Router       /rooms/word-chain/messages [get]
 func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
 	limit := utils.ParseLimit(c, constants.WordChainMessagePageSize, constants.WordChainMessagePageMax)
-	resp, err := ctrl.service.Messages(c.Request.Context(), limit, c.Query("before"))
+	resp, err := ctrl.service.Messages(c.Request.Context(), userID, limit, c.Query("before"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

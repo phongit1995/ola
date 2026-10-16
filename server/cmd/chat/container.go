@@ -4,6 +4,9 @@ import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/db"
 	"ola-chat-server/internal/logger"
+	"ola-chat-server/internal/modules/room/wordchain"
+	"ola-chat-server/internal/modules/setting"
+	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
@@ -27,6 +30,10 @@ func NewContainer() (*dig.Container, error) {
 		db.NewPostgresDB,
 		push.NewFCMClient,
 		push.NewSender,
+		setting.NewRepository,
+		setting.NewService,
+		userModule.NewCacheService,
+		wordchain.NewAccess,
 	}
 
 	for _, p := range providers {

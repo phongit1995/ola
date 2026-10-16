@@ -17,6 +17,8 @@ var (
 	ErrNoHint        = utils.NewHTTPErrorWithCode(http.StatusConflict, "Chưa tìm được gợi ý cho từ này, bạn chưa bị trừ KEN.", constants.ErrorCodeWordChainNoHint)
 	ErrDisabled      = utils.NewHTTPErrorWithCode(http.StatusForbidden, "Phòng nối từ đang tạm đóng.", constants.ErrorCodeWordChainDisabled)
 	ErrUnavailable   = utils.NewHTTPErrorWithCode(http.StatusServiceUnavailable, "Phòng nối từ tạm thời không khả dụng, vui lòng thử lại sau.", constants.ErrorCodeWordChainUnavailable)
+	ErrVipToView     = utils.NewHTTPErrorWithCode(http.StatusForbidden, "Phòng nối từ chỉ dành cho thành viên VIP.", constants.ErrorCodeWordChainVipToView)
+	ErrVipToPlay     = utils.NewHTTPErrorWithCode(http.StatusForbidden, "Cần VIP để chơi nối từ.", constants.ErrorCodeWordChainVipToPlay)
 	ErrWordChanged   = utils.NewHTTPErrorWithCode(http.StatusConflict, "Từ hiện tại vừa đổi, bạn chưa bị trừ lượt. Xem từ mới rồi thử lại nhé.", constants.ErrorCodeWordChainWordChanged)
 	ErrBadCursor     = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "Mốc phân trang không hợp lệ.", constants.ErrorCodeWordChainBadCursor)
 	ErrLookupEmpty   = utils.NewHTTPError(http.StatusBadRequest, "Từ không được để trống")
