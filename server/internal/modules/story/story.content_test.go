@@ -5,6 +5,8 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+
+	"ola-chat-server/internal/models"
 )
 
 func TestPageParagraphs(t *testing.T) {
@@ -59,12 +61,40 @@ func TestFragmentParagraphs(t *testing.T) {
 	}
 }
 
+func TestLockedAtSource(t *testing.T) {
+	guest := []byte(`<div class="vnkings-editor" id="content"><div class="vnktop_border"></div>
+	Ở Nam Định có một làng nghề rèn đúc khá nổi tiếng là làng Kim Yên. [&hellip;]<br/><p style="text-align:center;color:red">Bạn cần <a target="_blank" href="https://vnkings.com/dang-nhap.html?postref=255747"><b>đăng nhập</b></a> để đọc truyện này!</p><div class="vnkbot_border"></div></div>`)
+	paragraphs, err := pageParagraphs(guest, "content")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !lockedAtSource(paragraphs) {
+		t.Fatalf("guest notice not detected: %q", paragraphs)
+	}
+	if !lockedAtSource([]string{"Jack cũng […]", "Bạn cần 10 Xu để đọc chương này! Hiện tại bạn không đủ xu! Xu của bạn: 0 Nạp Xu"}) {
+		t.Fatal("paid notice not detected")
+	}
+	if lockedAtSource([]string{"Cô ấy bảo bạn cần đăng nhập vào máy tính trước.", "Bạn cần đọc truyện này!"}) {
+		t.Fatal("normal text detected as locked")
+	}
+}
+
 func TestVnkingsShortStoryNeedsNumericPostID(t *testing.T) {
-	source := NewVnkingsSource()
+	source := NewVnkingsService()
 	for _, id := range []string{"", "abc", "12/../users", "-5", "1e3"} {
 		row := &ChapterRow{StorySource: StorySourceVnkings, StoryKind: StoryKindShort, StorySourceID: id}
-		if _, err := source.ChapterContent(context.Background(), row); !errors.Is(err, errUnsupportedSource) {
+		if _, err := source.ShortStoryContent(context.Background(), row); !errors.Is(err, errUnsupportedSource) {
 			t.Fatalf("post id %q: got %v", id, err)
+		}
+	}
+}
+
+func TestVnkingsChapterNeedsVnkingsURL(t *testing.T) {
+	source := NewVnkingsService()
+	for _, link := range []string{"", "http://vnkings.com/a-p1.html", "https://evil.example/a-p1.html", "https://vnkings.com.evil.example/a-p1.html"} {
+		row := &ChapterRow{StoryChapter: models.StoryChapter{SourceURL: link}, StorySource: StorySourceVnkings, StoryKind: StoryKindLong}
+		if _, err := source.ChapterContent(context.Background(), row); !errors.Is(err, errUnsupportedSource) {
+			t.Fatalf("url %q: got %v", link, err)
 		}
 	}
 }

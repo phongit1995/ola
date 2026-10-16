@@ -33,6 +33,15 @@ export interface Clan {
   createdAt: string;
 }
 
+export interface ClanSummary {
+  id: string;
+  handle: string;
+  description?: string;
+  avatar?: string;
+  memberCount: number;
+  visitCount: number;
+}
+
 export interface ClanPreview {
   handle: string;
   owner?: string;

@@ -71,8 +71,9 @@ func main() {
 	}); err != nil {
 		log.Fatalf("❌ Failed to start ken chest scheduler: %v", err)
 	}
-	if err := c.Invoke(func(crawler *story.Crawler) {
+	if err := c.Invoke(func(crawler *story.Crawler, rookies *story.RookiesCrawler) {
 		crawler.Start(rootCtx)
+		rookies.Start(rootCtx)
 	}); err != nil {
 		log.Fatalf("❌ Failed to start story crawler: %v", err)
 	}

@@ -13,6 +13,10 @@ export class ApiError extends Error {
   }
 }
 
+export function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof ApiError ? error.message : fallback
+}
+
 export function toApiError(error: unknown): ApiError {
   if (error instanceof ApiError) {
     return error

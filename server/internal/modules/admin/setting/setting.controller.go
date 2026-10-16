@@ -181,7 +181,7 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateStoryValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
-	case setting.KeyStoryCrawler:
+	case setting.KeyStoryCrawler, setting.KeyStoryCrawlerRookies:
 		if err := setting.ValidateStoryCrawlerValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}

@@ -2019,6 +2019,8 @@ export interface StoryCookie {
   deadAt: string | null
 }
 
+export type StoryCrawlerSource = 'vnkings' | 'rookies'
+
 export interface StoryCrawlerSetting {
   enabled: boolean
   intervalHours: number
@@ -2081,8 +2083,11 @@ export interface StoryCrawlerStatus {
   progress: StoryCrawlLog | null
   lastRunAt: string | null
   nextRunAt: string | null
-  scanDays: number
-  scanLimit: number
+  // vnkings: số truyện sửa gần nhất trong số ngày gần nhất
+  scanDays?: number
+  scanLimit?: number
+  // rookies: số trang truyện mới ra chương
+  scanPages?: number
   retryPending: number
   logs: StoryCrawlLog[]
 }

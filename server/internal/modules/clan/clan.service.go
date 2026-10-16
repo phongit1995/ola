@@ -42,7 +42,10 @@ var (
 	errClanImageMissing = errors.New("image file is required")
 )
 
-var handlePattern = regexp.MustCompile(`^[a-z0-9]{5,32}$`)
+var (
+	handlePattern      = regexp.MustCompile(`^[a-z0-9]{5,32}$`)
+	searchQueryPattern = regexp.MustCompile(`^[a-z0-9]{0,32}$`)
+)
 
 type Service struct {
 	repo            *Repository
@@ -175,6 +178,34 @@ func (s *Service) Mine(userID uuid.UUID) ([]ClanResponse, error) {
 			return nil, err
 		}
 		items = append(items, *resp)
+	}
+	return items, nil
+}
+
+func normalizeSearchQuery(query string) (string, bool) {
+	normalized := strings.TrimPrefix(strings.ToLower(strings.TrimSpace(query)), "#")
+	return normalized, searchQueryPattern.MatchString(normalized)
+}
+
+func (s *Service) Top(query string, limit int) ([]ClanSummaryResponse, error) {
+	normalized, ok := normalizeSearchQuery(query)
+	if !ok {
+		return []ClanSummaryResponse{}, nil
+	}
+	clans, err := s.repo.ListTop(normalized, limit)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]ClanSummaryResponse, 0, len(clans))
+	for _, clan := range clans {
+		items = append(items, ClanSummaryResponse{
+			ID:          clan.ID.String(),
+			Handle:      clan.Handle,
+			Description: clan.Description,
+			Avatar:      clan.Avatar,
+			MemberCount: clan.MemberCount,
+			VisitCount:  clan.VisitCount,
+		})
 	}
 	return items, nil
 }

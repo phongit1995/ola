@@ -45,3 +45,6 @@ scripts/vnkings/data/
 
 # Dữ liệu truyện Dembuon xuất bằng scripts/dembuon/export_stories.py — không commit
 scripts/dembuon/data/
+
+# Dữ liệu truyện Rookies xuất bằng scripts/rookies/export_stories.py — không commit
+scripts/rookies/data/

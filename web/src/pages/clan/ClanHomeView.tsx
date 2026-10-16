@@ -7,11 +7,12 @@ import {
   DialogButton,
   FullScreenOverlay,
   ScreenHeader,
+  SearchIcon,
   Spinner,
 } from '@components';
 import { colorForName, toast } from '@lib';
 import { ClanService } from '@services';
-import type { ClanCheckNameResult } from '@app-types';
+import type { ClanCheckNameResult, ClanSummary } from '@app-types';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { UserProfileView } from '../profile/UserProfileView';
 import {
@@ -24,6 +25,69 @@ import {
 import addIcon from '@/assets/icons/clan/ic_action_add.png';
 import memberIcon from '@/assets/icons/clan/ic_clan_member.png';
 import visitIcon from '@/assets/icons/clan/ic_clan_visit.png';
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+interface TopResult {
+  q: string;
+  items: ClanSummary[];
+  error: string | null;
+}
+
+interface ClanListProps<T extends ClanSummary> {
+  clans: T[];
+  ranked?: boolean;
+  subtitle: (clan: T) => string;
+  onOpen: (handle: string) => void;
+}
+
+function ClanList<T extends ClanSummary>({
+  clans,
+  ranked = false,
+  subtitle,
+  onOpen,
+}: ClanListProps<T>) {
+  return (
+    <div className="mt-2 overflow-hidden rounded-md border border-black/12 bg-white">
+      {clans.map((clan, index) => (
+        <button
+          key={clan.id}
+          type="button"
+          onClick={() => onOpen(clan.handle)}
+          className={`flex w-full items-center gap-3 px-4 py-3 text-left active:bg-black/5 ${
+            index > 0 ? 'border-t border-black/12' : ''
+          }`}
+        >
+          {ranked && (
+            <span className="w-5 shrink-0 text-center text-sm font-bold text-black/54">
+              {index + 1}
+            </span>
+          )}
+          <Avatar
+            name={clan.handle}
+            src={clan.avatar !== '' ? clan.avatar : undefined}
+            color={colorForName(clan.handle)}
+            size={40}
+            rounded={false}
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-base text-black/87">
+              #{clan.handle}
+            </span>
+            {clan.description != null && clan.description !== '' && (
+              <span className="block truncate text-sm text-black/70">
+                {clan.description}
+              </span>
+            )}
+            <span className="block text-xs text-black/54">
+              {subtitle(clan)}
+            </span>
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 interface ClanHomeViewProps {
   onClose: () => void;
@@ -75,10 +139,38 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [profileTarget, setProfileTarget] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [top, setTop] = useState<TopResult | null>(null);
+
+  const searchText = query.trim();
+  const searching = searchText !== '';
+  const topResult = top?.q === searchText ? top : null;
 
   useEffect(() => {
     void ensureMine();
   }, [ensureMine]);
+
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(
+      () => {
+        ClanService.top({ q: searchText })
+          .then((items) => {
+            if (active) setTop({ q: searchText, items, error: null });
+          })
+          .catch((error) => {
+            if (active) {
+              setTop({ q: searchText, items: [], error: clanErrorText(error) });
+            }
+          });
+      },
+      searching ? SEARCH_DEBOUNCE_MS : 0
+    );
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [searchText, searching]);
 
   function resetCreateState() {
     setName('');
@@ -158,43 +250,68 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
       </ScreenHeader>
 
       <div className="flex-1 overflow-y-auto p-2">
-        <h2 className="px-1 text-base text-black/87">{t('clan.myClans')}</h2>
-        {mineLoading && myClans.length === 0 ? (
+        <div className="flex h-10 items-center gap-1 rounded-[5px] border border-black/12 bg-white px-2">
+          <SearchIcon className="h-4 w-4 shrink-0 text-black/38" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t('clan.findPlaceholder')}
+            aria-label={t('clan.findPlaceholder')}
+            className="w-full bg-transparent text-base text-black/87 outline-none placeholder:text-black/26"
+          />
+        </div>
+
+        {!searching && (
+          <>
+            <h2 className="mt-4 px-1 text-base text-black/87">
+              {t('clan.myClans')}
+            </h2>
+            {mineLoading && myClans.length === 0 ? (
+              <div className="flex justify-center py-6">
+                <Spinner size={24} />
+              </div>
+            ) : myClans.length === 0 ? (
+              <p className="px-1 py-4 text-sm text-black/45">
+                {t('clan.noClans')}
+              </p>
+            ) : (
+              <ClanList
+                clans={myClans}
+                subtitle={(clan) =>
+                  `${clanRoleLabel(clan.myRole ?? 'member')} · ${t(
+                    'clan.membersCount',
+                    { count: clan.memberCount }
+                  )}`
+                }
+                onOpen={onOpenClan}
+              />
+            )}
+          </>
+        )}
+
+        <h2 className="mt-4 px-1 text-base text-black/87">
+          {t(searching ? 'clan.searchResults' : 'clan.topClans')}
+        </h2>
+        {topResult == null ? (
           <div className="flex justify-center py-6">
             <Spinner size={24} />
           </div>
-        ) : myClans.length === 0 ? (
-          <p className="px-1 py-4 text-sm text-black/45">{t('clan.noClans')}</p>
+        ) : topResult.error != null ? (
+          <p className="px-1 py-4 text-sm text-black/45">{topResult.error}</p>
+        ) : topResult.items.length === 0 ? (
+          <p className="px-1 py-4 text-sm text-black/45">
+            {t(searching ? 'clan.searchEmpty' : 'clan.topEmpty')}
+          </p>
         ) : (
-          <div className="mt-2 overflow-hidden rounded-md border border-black/12 bg-white">
-            {myClans.map((clan, index) => (
-              <button
-                key={clan.id}
-                type="button"
-                onClick={() => onOpenClan(clan.handle)}
-                className={`flex w-full items-center gap-3 px-4 py-3 text-left active:bg-black/5 ${
-                  index > 0 ? 'border-t border-black/12' : ''
-                }`}
-              >
-                <Avatar
-                  name={clan.handle}
-                  src={clan.avatar !== '' ? clan.avatar : undefined}
-                  color={colorForName(clan.handle)}
-                  size={40}
-                  rounded={false}
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-base text-black/87">
-                    #{clan.handle}
-                  </span>
-                  <span className="block text-xs text-black/54">
-                    {clanRoleLabel(clan.myRole ?? 'member')} ·{' '}
-                    {t('clan.membersCount', { count: clan.memberCount })}
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
+          <ClanList
+            clans={topResult.items}
+            ranked={!searching}
+            subtitle={(clan) =>
+              t('clan.membersCount', { count: clan.memberCount })
+            }
+            onOpen={onOpenClan}
+          />
         )}
       </div>
 

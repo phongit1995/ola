@@ -33,6 +33,7 @@ type Store interface {
 	Chapters(ctx context.Context, storyID uuid.UUID) ([]models.StoryChapter, error)
 	Chapter(ctx context.Context, storyID uuid.UUID, position int) (*ChapterRow, error)
 	SaveChapterContent(ctx context.Context, chapterID, storyID uuid.UUID, content string, wordCount int, hash []byte, replace bool) error
+	SaveMissingChapterContents(ctx context.Context, storyID uuid.UUID, contents map[string]string) ([]uuid.UUID, error)
 }
 
 type AdminStore interface {
@@ -71,7 +72,7 @@ GROUP BY source
 ORDER BY count DESC, source`
 
 const chapterRowColumns = `
-	c.id, c.story_id, c.position, c.title, c.source_url, c.word_count, c.published_at, c.content_text,
+	c.id, c.story_id, c.source_chapter_id, c.position, c.title, c.source_url, c.word_count, c.published_at, c.content_text,
 	s.source AS story_source, s.kind AS story_kind, s.source_story_id AS story_source_id`
 
 const chapterQuery = `
@@ -116,6 +117,15 @@ const saveChapterContentQuery = `
 UPDATE story_chapters
 SET content_text = ?, word_count = ?, content_hash = ?, crawled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
 WHERE id = ? AND (? OR content_text = '')`
+
+// Chỉ điền chương đã có trong DB và đang trống, nên không bao giờ thêm chương mà crawler đã bỏ (ví dụ chương VIP).
+const saveMissingContentQuery = `
+UPDATE story_chapters
+SET content_text = ?, word_count = ?, content_hash = ?, crawled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+WHERE story_id = ? AND source_chapter_id = ? AND content_text = ''
+RETURNING id`
+
+const emptyChapterSourceIDsQuery = `SELECT source_chapter_id FROM story_chapters WHERE story_id = ? AND content_text = ''`
 
 const lockStoryQuery = `SELECT 1 FROM stories WHERE id = ? FOR UPDATE`
 
@@ -266,6 +276,47 @@ func (r *Repository) SaveChapterContent(ctx context.Context, chapterID, storyID 
 		}
 		return tx.Exec(refreshStoryWordCountQuery, storyID, storyID).Error
 	})
+}
+
+func (r *Repository) SaveMissingChapterContents(ctx context.Context, storyID uuid.UUID, contents map[string]string) ([]uuid.UUID, error) {
+	if len(contents) == 0 {
+		return nil, nil
+	}
+	var empty []string
+	if err := r.db.WithContext(ctx).Raw(emptyChapterSourceIDsQuery, storyID).Scan(&empty).Error; err != nil {
+		return nil, err
+	}
+	pending := make(map[string]string, len(empty))
+	for _, sourceChapterID := range empty {
+		if content, ok := contents[sourceChapterID]; ok {
+			pending[sourceChapterID] = content
+		}
+	}
+	if len(pending) == 0 {
+		return nil, nil
+	}
+	var filled []uuid.UUID
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec(lockStoryQuery, storyID).Error; err != nil {
+			return err
+		}
+		for sourceChapterID, content := range pending {
+			var ids []uuid.UUID
+			err := tx.Raw(saveMissingContentQuery, content, len(strings.Fields(content)), contentHash(content), storyID, sourceChapterID).Scan(&ids).Error
+			if err != nil {
+				return err
+			}
+			filled = append(filled, ids...)
+		}
+		if len(filled) == 0 {
+			return nil
+		}
+		return tx.Exec(refreshStoryWordCountQuery, storyID, storyID).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+	return filled, nil
 }
 
 func (r *Repository) AddViews(ctx context.Context, storyID uuid.UUID, views int64) error {

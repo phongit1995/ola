@@ -55,6 +55,15 @@ type ClanResponse struct {
 	CreatedAt        string            `json:"createdAt"`
 }
 
+type ClanSummaryResponse struct {
+	ID          string `json:"id"`
+	Handle      string `json:"handle"`
+	Description string `json:"description,omitempty"`
+	Avatar      string `json:"avatar,omitempty"`
+	MemberCount int    `json:"memberCount"`
+	VisitCount  int64  `json:"visitCount"`
+}
+
 type ClanPreviewResponse struct {
 	Handle      string `json:"handle"`
 	Owner       string `json:"owner,omitempty"`

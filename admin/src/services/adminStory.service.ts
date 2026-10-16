@@ -16,9 +16,15 @@ import type {
   ListParams,
   ListResult,
   MessageResult,
+  StoryCrawlerSource,
   StoryCrawlerStatus,
   StoryCrawlRunResult,
 } from '@/types'
+
+// Crawler vnkings có trước nên giữ đường dẫn cũ, nguồn khác nằm dưới /crawler/{nguồn}
+function crawlerPath(source: StoryCrawlerSource): string {
+  return source === 'vnkings' ? '/admin/stories/crawler' : `/admin/stories/crawler/${source}`
+}
 
 export const AdminStoryService = {
   async list(params: AdminStoryListParams = {}): Promise<ListResult<AdminStory>> {
@@ -112,13 +118,15 @@ export const AdminStoryService = {
     return data.data
   },
 
-  async crawler(): Promise<StoryCrawlerStatus> {
-    const { data } = await http.get<ApiResponse<StoryCrawlerStatus>>('/admin/stories/crawler')
+  async crawler(source: StoryCrawlerSource): Promise<StoryCrawlerStatus> {
+    const { data } = await http.get<ApiResponse<StoryCrawlerStatus>>(crawlerPath(source))
     return data.data
   },
 
-  async runCrawler(): Promise<StoryCrawlRunResult> {
-    const { data } = await http.post<ApiResponse<StoryCrawlRunResult>>('/admin/stories/crawler/run')
+  async runCrawler(source: StoryCrawlerSource): Promise<StoryCrawlRunResult> {
+    const { data } = await http.post<ApiResponse<StoryCrawlRunResult>>(
+      `${crawlerPath(source)}/run`,
+    )
     return data.data
   },
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,9 +29,16 @@ var (
 	ErrChapterContentNotSaved    = utils.NewHTTPErrorWithCode(http.StatusInternalServerError, "Đã lấy được nội dung nhưng lưu vào DB thất bại", ErrorCodeStoryContentNotSaved)
 )
 
+var (
+	errUnsupportedSource = errors.New("unsupported story source")
+	errEmptyContent      = errors.New("chapter content is empty")
+	errChapterLocked     = errors.New("chapter is locked at source")
+)
+
 type fetchedContent struct {
 	text    string
 	saveErr error
+	filled  []uuid.UUID
 }
 
 var storyStatuses = map[string]bool{
@@ -38,11 +46,20 @@ var storyStatuses = map[string]bool{
 	StoryStatusCompleted: true,
 }
 
+type ContentSource interface {
+	ShortStoryContent(ctx context.Context, chapter *ChapterRow) (string, error)
+	ChapterContent(ctx context.Context, chapter *ChapterRow) (string, error)
+}
+
+type siblingContentSource interface {
+	ChapterWithSiblings(ctx context.Context, chapter *ChapterRow) (string, map[string]string, error)
+}
+
 type Service struct {
 	store       Store
 	admin       AdminStore
 	comments    CommentStore
-	source      ContentSource
+	sources     map[string]ContentSource
 	views       *ViewCounter
 	settings    readingSettings
 	users       userLookup
@@ -57,7 +74,8 @@ type Service struct {
 
 func NewService(
 	repo *Repository,
-	source *VnkingsSource,
+	vnkings *VnkingsService,
+	rookies *RookiesService,
 	views *ViewCounter,
 	settings *setting.Service,
 	users *userModule.CacheService,
@@ -68,13 +86,39 @@ func NewService(
 		store:    repo,
 		admin:    repo,
 		comments: repo,
-		source:   source,
+		sources:  map[string]ContentSource{StorySourceVnkings: vnkings, StorySourceRookies: rookies},
 		views:    views,
 		settings: settings,
 		users:    users,
 		cache:    cache,
 		logger:   logger.Named("[story_service]"),
 	}
+}
+
+func (s *Service) fetchChapter(ctx context.Context, row *ChapterRow) (string, map[string]string, error) {
+	source, ok := s.sources[row.StorySource]
+	if !ok {
+		return "", nil, fmt.Errorf("%w: %s", errUnsupportedSource, row.StorySource)
+	}
+	if batch, ok := source.(siblingContentSource); ok {
+		return batch.ChapterWithSiblings(ctx, row)
+	}
+	var text string
+	var err error
+	if row.StoryKind == StoryKindShort {
+		text, err = source.ShortStoryContent(ctx, row)
+	} else {
+		text, err = source.ChapterContent(ctx, row)
+	}
+	return text, nil, err
+}
+
+// Trang đọc của rookies nặng vài MB nên được chờ lâu hơn vnkings.
+func fetchTimeout(source string) time.Duration {
+	if source == StorySourceRookies {
+		return StoryRookiesFetchTimeout
+	}
+	return StoryFetchTimeout
 }
 
 func normalizeListQuery(query ListQuery) ListQuery {
@@ -270,30 +314,47 @@ func (s *Service) Chapter(ctx context.Context, viewerID uuid.UUID, rawID, rawPos
 }
 
 func (s *Service) loadContent(ctx context.Context, row *ChapterRow, replace bool) error {
+	_, err := s.loadChapterContent(ctx, row, replace)
+	return err
+}
+
+func (s *Service) loadChapterContent(ctx context.Context, row *ChapterRow, replace bool) ([]uuid.UUID, error) {
 	key := row.ID.String() + ":" + strconv.FormatBool(replace)
 	value, err, _ := s.fetches.Do(key, func() (interface{}, error) {
-		fetchCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), StoryFetchTimeout)
+		fetchCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), fetchTimeout(row.StorySource))
 		defer cancel()
-		content, err := s.source.ChapterContent(fetchCtx, row)
+		content, siblings, err := s.fetchChapter(fetchCtx, row)
 		if err != nil {
 			return nil, err
 		}
+		// Tải trang có thể dùng gần hết thời gian chờ, nên lưu bằng context riêng.
+		saveCtx, cancelSave := context.WithTimeout(context.WithoutCancel(ctx), StoryContentSaveTimeout)
+		defer cancelSave()
 		hash := sha256.Sum256([]byte(content))
-		saveErr := s.store.SaveChapterContent(fetchCtx, row.ID, row.StoryID, content, len(strings.Fields(content)), hash[:], replace)
+		saveErr := s.store.SaveChapterContent(saveCtx, row.ID, row.StoryID, content, len(strings.Fields(content)), hash[:], replace)
 		if saveErr != nil {
 			s.logger.Errorw("save chapter content failed", "chapterId", row.ID, "error", saveErr)
+			return fetchedContent{text: content, saveErr: saveErr}, nil
 		}
-		return fetchedContent{text: content, saveErr: saveErr}, nil
+		delete(siblings, row.SourceChapterID)
+		if len(siblings) == 0 {
+			return fetchedContent{text: content}, nil
+		}
+		filled, err := s.store.SaveMissingChapterContents(saveCtx, row.StoryID, siblings)
+		if err != nil {
+			s.logger.Warnw("save sibling chapter contents failed", "storyId", row.StoryID, "error", err)
+		}
+		return fetchedContent{text: content, filled: filled}, nil
 	})
 	if err != nil {
 		s.logger.Warnw("fetch chapter content failed", "chapterId", row.ID, "url", row.SourceURL, "error", err)
-		return ErrChapterContentUnavailable
+		return nil, ErrChapterContentUnavailable
 	}
 	fetched := value.(fetchedContent)
 	row.ContentText = fetched.text
 	row.WordCount = len(strings.Fields(row.ContentText))
 	if fetched.saveErr != nil {
-		return ErrChapterContentNotSaved
+		return nil, ErrChapterContentNotSaved
 	}
-	return nil
+	return fetched.filled, nil
 }

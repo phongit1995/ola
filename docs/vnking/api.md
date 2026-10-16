@@ -113,12 +113,13 @@ Mọi chương của truyện theo thứ tự, không kèm nội dung.
 
 Một `Chapter`. Truyện không có: `404 story not found`. Không có chương ở vị trí đó: `404 chapter not found`.
 
-**Chương chưa có nội dung** (`content_text` rỗng, ví dụ nạp bằng `--no-content`): server lấy nội dung từ nguồn ngay trong request này, lưu vào `story_chapters` (kèm `word_count`, `content_hash`, cộng lại `stories.word_count`) rồi mới trả về. Các lần sau đọc thẳng từ DB.
+**Chương chưa có nội dung** (`content_text` rỗng, ví dụ nạp từ file xuất không có `--content`): server lấy nội dung từ nguồn ngay trong request này, lưu vào `story_chapters` (kèm `word_count`, `content_hash`, cộng lại `stories.word_count`) rồi mới trả về. Các lần sau đọc thẳng từ DB.
 
 - Chương của truyện dài: tải `source_url` (chỉ chấp nhận `https://vnkings.com/…`), lấy phần tử `#content`. Truyện ngắn: gọi REST `/wp/v2/posts/{source_story_id}` lấy `content.rendered`. Tách đoạn, bỏ dòng trang trí và đoạn đầu trùng tên chương giống hệt script `export_stories.py`.
 - Nhiều request cùng chương trên một server chỉ gọi nguồn một lần (`singleflight`); mỗi server gọi nguồn tối đa 4 request song song, mỗi lần tối đa 15 giây. Request bị huỷ giữa chừng (người dùng thoát) thì lần lấy vẫn chạy tiếp và vẫn lưu.
 - Lần đầu mất khoảng 0,6–2 giây, lần sau vài ms. Trang đọc trên web tải trước chương kế tiếp, nên bấm "Chương sau" thường không phải chờ.
-- Lấy lỗi (nguồn lỗi, trang không có nội dung, link không phải Vnkings): trả `502` mã `STORY_CONTENT_UNAVAILABLE`, không ghi gì vào DB, lần gọi sau thử lại.
+- Lấy lỗi (nguồn lỗi, trang không có nội dung, link không phải Vnkings, chương bị khoá trên nguồn): trả `502` mã `STORY_CONTENT_UNAVAILABLE`, không ghi gì vào DB, lần gọi sau thử lại.
+- Chương bị khoá: vnkings chỉ trả đoạn trích kèm câu "Bạn cần đăng nhập để đọc truyện này!" (khách) hoặc "Bạn cần 10 Xu để đọc chương này!" (đã đăng nhập, chương trả phí). Server nhận ra câu này và báo lỗi thay vì lưu đoạn trích làm nội dung. Danh sách chương AJAX không đánh dấu chương trả phí nên chỉ biết khi tải nội dung.
 
 ## 3. Lỗi
 
@@ -127,11 +128,11 @@ Một `Chapter`. Truyện không có: `404 story not found`. Không có chương
 | 401 | `authorization header required` | Thiếu token |
 | 404 | `story not found` | `id` không phải UUID hợp lệ, không có truyện, hoặc truyện đã ẩn |
 | 404 | `chapter not found` | `position` không phải số ≥ 1 hoặc vượt số chương |
-| 502 | `chapter content unavailable` (`code: STORY_CONTENT_UNAVAILABLE`) | Chương chưa có nội dung và lấy từ nguồn thất bại |
+| 502 | `chapter content unavailable` (`code: STORY_CONTENT_UNAVAILABLE`) | Chương chưa có nội dung và lấy từ nguồn thất bại, kể cả chương bị khoá trên nguồn |
 
 ## 4. API cho admin
 
-Trang admin: menu **Truyện** (`/stories`), code ở `admin/src/pages/StoriesPage.tsx` và `StoryChaptersModal.tsx`. Mọi endpoint nằm dưới `/api/v1/admin/stories`, cần token admin (`RequireAdmin`), được ghi vào nhật ký admin như các module khác. Server: `server/internal/modules/admin/story/`, logic dùng chung `story.Service` (`story.admin.go`).
+Trang admin: menu **Truyện** (`/stories`), code ở `admin/src/pages/stories/` (`StoriesPage.tsx`, `StoryChaptersModal.tsx`). Mọi endpoint nằm dưới `/api/v1/admin/stories`, cần token admin (`RequireAdmin`), được ghi vào nhật ký admin như các module khác. Server: `server/internal/modules/admin/story/`, logic dùng chung `story.Service` (`story.admin.go`).
 
 | Endpoint | Việc |
 |---|---|
@@ -181,7 +182,7 @@ Phía app:
 
 ## 6. Tự động cập nhật truyện
 
-Setting `story_crawler` trong bảng `app_settings`, admin sửa ở menu **Truyện → Cài đặt**, tab **Cập nhật tự động** (`/stories/settings?tab=crawler`). Chưa lưu lần nào thì đang tắt. Log các lượt chạy xem ở nút **Xem log** trong khung Trạng thái của tab đó (bấm từng dòng để xem lỗi, User-Agent, cookie). Cách chạy xem mục 7 của [database.md](database.md).
+Setting `story_crawler` trong bảng `app_settings`, admin sửa ở menu **Truyện → Cài đặt**, tab **Cập nhật Vnkings** (`/stories/settings?tab=crawler`). Rookies có setting và tab riêng, **Cập nhật Rookies** (`?tab=crawler-rookies`). Endpoint của rookies là `GET /admin/stories/crawler/rookies` và `POST /admin/stories/crawler/rookies/run`, xem mục 4.7 của [story-sources.md](../story-sources.md). Chưa lưu lần nào thì đang tắt. Log các lượt chạy xem ở nút **Xem log** trong khung Trạng thái của tab đó (bấm từng dòng để xem lỗi, User-Agent, cookie). Cách chạy xem mục 7 của [database.md](database.md).
 
 ```json
 {

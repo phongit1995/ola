@@ -297,10 +297,22 @@ type CrawlerStatusResponse struct {
 	Progress        *CrawlLog             `json:"progress"`
 	LastRunAt       *time.Time            `json:"lastRunAt"`
 	NextRunAt       *time.Time            `json:"nextRunAt"`
-	ScanDays        int                   `json:"scanDays"`
-	ScanLimit       int                   `json:"scanLimit"`
+	ScanDays        int                   `json:"scanDays,omitempty"`
+	ScanLimit       int                   `json:"scanLimit,omitempty"`
+	ScanPages       int                   `json:"scanPages,omitempty"`
 	RetryPending    int                   `json:"retryPending"`
 	Logs            []CrawlLog            `json:"logs"`
+}
+
+func crawlerConfigResponse(cfg setting.StoryCrawlerConfig) CrawlerConfigResponse {
+	return CrawlerConfigResponse{
+		Enabled:          cfg.Enabled,
+		IntervalHours:    cfg.IntervalHours,
+		ImportNewStories: cfg.ImportNewStories,
+		RandomUserAgent:  cfg.RandomUserAgent,
+		UseCookies:       cfg.UseCookies,
+		Cookies:          cfg.Cookies,
+	}
 }
 
 type CrawlRunResponse struct {

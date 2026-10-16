@@ -11,7 +11,7 @@ Tài liệu ghi lại kết quả request HTTP vào trang công khai, không đ�
 | Nguồn | Đánh giá | Quy mô | Lý do chính |
 | --- | --- | --- | --- |
 | [TacGiaViet.com](https://tacgiaviet.com/) | **Nên làm trước** | ~567 truyện, 16.556 chương | Chỉ nhận truyện tự sáng tác, đang hoạt động mạnh, HTML có JSON-LD, sitemap có `lastmod` cho từng chương |
-| [rookies.vn](https://rookies.vn/) | **Làm được** | 7.320 truyện miễn phí, ước ~50.000 chương | Mọi trang trả JSON, nhưng ít cập nhật và không có cách phát hiện cập nhật gọn |
+| [rookies.vn](https://rookies.vn/) | **Đã làm** (mục 4.7) | 7.320 truyện miễn phí, ước ~50.000 chương | Mọi trang trả JSON; `/truyen/hot?orderby[published_at]=desc` sắp đúng theo giờ ra chương nên cập nhật tự động chỉ cần đọc trang 1 |
 | Hako, mục Sáng tác | Khó | ~470 truyện đã duyệt, ước ~10.000 chương | Bị chặn ở Việt Nam, nội dung chương bị mã hoá |
 | Kênh Sinh Viên | Khó, giá trị thấp | 3.300 thread truyện dài | Mỗi chương một thread, lẫn truyện sưu tầm |
 | Wattpad, Waka, NovelToon, Blogradio… | Không dùng được | | Bị chặn, cần đăng nhập, chỉ đọc trong app hoặc đã chết (mục 6) |
@@ -200,15 +200,72 @@ Kho lớn nhưng phần lớn là truyện cũ, ít chương. Trang `/the-loai/t
 
 ### 4.5. Theo dõi cập nhật
 
-Không có cách gọn:
+Cách dùng được: **`/truyen/hot?orderby[published_at]=desc`** (danh sách "Truyện hot" gồm cả truyện miễn phí và trả phí, 7.421 truyện). Danh sách này sắp giảm dần theo `published_at` của truyện, tức giờ ra chương mới nhất. Lượt xem không làm truyện nhảy lên. Kiểm tra 3 trang đầu ngày 14/10/2026: thứ tự giảm liên tục, không có giờ tương lai, mỗi trang 10 truyện (khoảng 316 KB với partial `novels`). Một trang phủ được:
+
+| Khung giờ | 1 trang phủ khoảng |
+| --- | --- |
+| Trưa (09:04–14:54) | 6 giờ |
+| Đêm (23:21–08:52) | 9,5 giờ |
+| Tối cao điểm (21:09–23:02) | 2 giờ |
+
+Những cách khác không dùng được:
 - không có RSS;
 - `lastmod` trong sitemap bị đổi mỗi khi có lượt xem (6.775/7.381 truyện có `lastmod` trong 30 ngày, kể cả truyện có chương cuối từ 2023);
-- sắp xếp `orderby[published_at]` không trả đúng thứ tự cập nhật.
+- cùng tham số `orderby[published_at]=desc` trên `/truyen/mien-phi` lại sắp theo `updated_at`, mà trường này đổi theo lượt xem: 1 trang chỉ phủ khoảng 6 phút;
+- quét lại cả kho (so `chapter_at`, `novels_chapters_count`) tốn khoảng 7.400 request mỗi vòng, khoảng 1,5 giờ với giới hạn 80 request/phút.
 
-Cách làm được:
-1. Lấy danh sách truyện từ sitemap (7.381 URL truyện; 212.753 URL còn lại là trang cá nhân người dùng).
-2. Định kỳ quét lại từng truyện, so `chapter_at` và `novels_chapters_count`. Một vòng quét khoảng 7.400 request; với giới hạn 80 request/phút là khoảng 1,5 giờ.
-3. Bổ sung các danh sách ở trang chủ (`novels_rising`, `novels_trending`, `list_novels_reading`) để bắt truyện đang hot nhanh hơn.
+### 4.6. Script xuất thông tin truyện và danh sách chương
+
+Script [`scripts/rookies/export_stories.py`](../scripts/rookies/export_stories.py) chỉ lấy thông tin truyện và danh sách chương, **không tải nội dung chương**, rồi ghi `index.json` cùng định dạng với script vnkings/Dembuon để nạp bằng `storyimport`:
+
+```bash
+python3 scripts/rookies/export_stories.py --limit 100      # ghi ra scripts/rookies/data/
+python3 scripts/rookies/export_stories.py --all --resume   # hết danh sách truyện miễn phí, chạy tiếp được
+python3 scripts/rookies/export_stories.py --new            # chỉ lấy khối "Truyện mới đăng" ở trang chủ, gộp vào index.json
+cd server && go run ./cmd/storyimport -source rookies -dir ../scripts/rookies/data
+```
+
+`--new` dùng để cập nhật định kỳ: đọc khối **"Truyện mới đăng"** trên trang chủ (`props.home.list_novels_reading`, tên khoá lệch nghĩa: nhãn hiển thị là `home_lang.top_views` = "Truyện mới đăng"), chỉ xin phần `home` bằng header `X-Inertia-Partial-Data: home` (khoảng 630 KB), rồi tải trang chi tiết từng truyện. Truyện chưa có trong `index.json` thì thêm, đã có thì làm mới danh sách chương. Khối chỉ có **3 truyện mới nhất** và không có trang "Xem thêm" đầy đủ (nút dẫn tới `/truyen/hot`), nên phải chạy đủ dày: ngày 14/10/2026 có 3 truyện mới trong khoảng 4 giờ, chạy mỗi 30 phút là đủ. Mỗi lượt khoảng 5 request.
+
+Trên `/truyen/mien-phi`, nút "Mới nhất" (`orderby[published_at]=desc`) thực tế sắp theo `updated_at`, mặc định thì theo lượt xem. Khối "Truyện mới cập nhật" (`list_novels_like`, nhãn `top_likes`) cũng chỉ có 3 truyện. Muốn bắt chương mới thì dùng crawler trong server (mục 4.7).
+
+- Duyệt `/truyen/mien-phi?page=N` (10 truyện mỗi trang), mỗi truyện gọi thêm 1 request `/truyen/{friendly_link}`: trang này trả **đủ** danh sách chương (đã thử truyện 274 chương). Kiểm tra ngày 14/10/2026: 7.358 truyện miễn phí; 20 truyện đầu có 1.907 chương, tốn 24 request. Lấy hết khoảng 8.100 request, mặc định cách nhau 1 giây (dưới giới hạn 80 request/phút), khoảng 2,3 giờ.
+- Header Inertia lấy `version` từ `data-page` của trang chủ; gặp `409` (rookies vừa deploy) thì đọc lại version rồi gọi lại. `429` thì chờ theo `Retry-After`.
+- Object `user` chỉ đọc tên hiển thị (`full_name`, không có thì `username`) cho `author_name`; `source_author_id` lấy `user_id` của truyện. Không lưu, không in phần còn lại của `user` (mục 4.3).
+- Bỏ truyện dịch (nhãn nhóm 1 "Truyện dịch"), thêm `--include-translated` để lấy cả. Bỏ truyện và chương bị cấm (`is_ban`), chương có giờ đăng trong tương lai.
+- Chương trả phí (`is_vip`, `is_preview` hoặc giá > 0): mặc định `--paid stop` chỉ lấy tới trước chương trả phí đầu tiên; `--paid skip` bỏ cả truyện.
+- `genres`: nhãn nhóm 2 "Hình thức" và nhóm 3 "Thể loại"; `tags`: các nhóm còn lại (Đề tài, "Truyện Đã xuất bản"…), trừ nhóm 1. `kind` là `short` khi truyện có đúng 1 chương và mang nhãn hình thức "Truyện ngắn" hoặc "Oneshot"; truyện "Tiểu thuyết" mới ra chương 1 vẫn là `long`. `age_rating` là `18+` khi `is_mature`. Ảnh bìa: `https://rookies.vn/uploads/` + `picture`.
+- **Giờ ghi theo giờ Việt Nam** (`+07:00`): chuỗi không có múi giờ của rookies (`published_at`, `counted_at`) là giờ Việt Nam, chuỗi có `Z` (`created_at`, `updated_at`) là UTC; ví dụ `counted_at` `12:51:22` khớp `updated_at` `05:51:22Z`.
+- `publishedAt` lấy giờ chương đầu (không có thì `created_at`), `updatedAt` lấy giờ chương miễn phí mới nhất. Không dùng `published_at` của truyện cho `publishedAt` vì đó là giờ ra chương mới nhất, và không dùng `updated_at` vì nó đổi theo lượt xem.
+- Chương 1 có thể mang ngày đăng lại truyện (ví dụ "Quá Đỗi Dịu Dàng": chương 1 ngày 26/12/2025, chương 76 ngày 31/10/2024), nên `last_chapter_at` có thể không phải ngày của chương cuối.
+- Cần xin phép rookies trước khi nạp lên môi trường thật.
+
+### 4.7. Cập nhật tự động và nội dung chương trong server
+
+**Crawler** (`server/internal/modules/story/rookies.crawler.go`, admin: Cài đặt truyện → tab "Cập nhật Rookies"):
+- **Setting:** `story_crawler_rookies` có cùng dạng với `story_crawler` của vnkings và dùng chung validator: `enabled`, `intervalHours` (1/2/3/6/12/24), `importNewStories`, `randomUserAgent`, `useCookies`, `cookies`. Lock, state và log nằm ở key Redis riêng (`STORY_CRAWL_ROOKIES:*`), nên chạy song song được với vnkings.
+- **Cookie** (không bắt buộc, đọc truyện miễn phí không cần đăng nhập):
+  - Admin dán nguyên header `Cookie` sau khi đăng nhập rookies.vn. Cookie phiên gồm `rookies_session`, `XSRF-TOKEN` và một cookie tên ngẫu nhiên.
+  - Mỗi lượt chọn ngẫu nhiên 1 cookie còn sống, rồi kiểm tra bằng partial `auth` của trang chủ (169 byte): `auth.user` là `null` nghĩa là chưa đăng nhập. Server chỉ xét `user` có hay không, không đọc thông tin tài khoản.
+  - Trang chi tiết truyện cũng lấy kèm `auth`. Cookie bị đăng xuất giữa lượt thì chuyển sang Die và lượt chạy đổi sang cookie khác; hết cookie thì chạy tiếp không đăng nhập.
+  - Phiên Laravel có thể hết hạn sau một thời gian không dùng, khi đó cookie tự sang Die và cần dán cookie mới.
+  - Lấy nội dung chương (RookiesService) không dùng cookie.
+- **Mỗi lượt** đọc **1 trang** `/truyen/hot?orderby[published_at]=desc`:
+  - Bỏ ngay truyện bị cấm, bị ẩn và truyện dịch.
+  - So dấu vân tay của từng truyện trên trang danh sách với lần trước (HASH `STORY_CRAWL_ROOKIES:SEEN`). Dấu vân tay gồm số chương, `published_at`, `chapter_at`, tên, ảnh, giới thiệu, nhãn… và bỏ lượt xem, lượt thích, `updated_at`.
+  - Chỉ truyện có thay đổi mới tải trang chi tiết (partial `novels` của component `Novels/IP_info`, khoảng 365 KB), rồi nạp bằng `ImportStory` theo đúng quy tắc của script ở mục 4.6.
+  - Một lượt bình thường tốn 1 request, cộng 1 request cho mỗi truyện có chương mới.
+- **Cảnh báo sót:** trang 1 đã đầy mà truyện cũ nhất trên trang vẫn ra chương sau lượt trước, tức có thể có truyện bị đẩy sang trang 2. Log khi đó có `truncated` và admin hiện cảnh báo nên giảm chu kỳ.
+- **Thử lại:** truyện lỗi được thử lại ở các lượt sau (tối đa 5 lần), kể cả khi đã rời trang 1.
+- **Chương hẹn giờ:** truyện có chương hẹn giờ được mở lại khi tới giờ.
+
+**Nội dung chương** (`server/internal/modules/story/rookies.service.go`):
+- Lấy từ trang đọc `/truyen/{friendly_link}/{id chương}` (partial `novels` của component `Novels/Reading_Full_view`). `chapter_detail.content` là HTML bị escape (`&lt;p&gt;`).
+- **Trang đọc nhúng nội dung của mọi chương trong truyện, kể cả chương VIP với khách chưa đăng nhập.** Ví dụ truyện 91 chương có 71 chương VIP: trang nặng 6,8 MB và cả 71 chương VIP đều có nội dung. Đây là lỗ hổng phía rookies, nên báo cho họ khi liên hệ. Server chặn chương trả phí theo hai lớp:
+  - chương trả phí, đọc trước, có giá hoặc bị cấm trả `502` và không được lưu;
+  - nội dung chương VIP đi kèm bị bỏ ngay lúc đọc.
+- Mỗi lần tải lưu luôn nội dung các chương miễn phí khác của truyện, nhưng chỉ vào dòng đã có trong DB và đang trống. DB chỉ có chương trước chương trả phí đầu tiên, nên không thể có chương VIP. Đọc lần lượt cả truyện nhờ vậy chỉ tốn 1 lần tải, thay vì mỗi chương tải lại vài MB.
+- Giới hạn 32 MB cho mỗi trang và chờ tối đa 45 giây.
 
 ## 5. Nguồn khó
 
@@ -253,12 +310,12 @@ Cách làm được:
    - JSON-LD có đủ thông tin truyện và giờ đăng chương chính xác;
    - sitemap đủ để đánh dấu và cập nhật;
    - không bị chặn.
-2. **rookies.vn làm sau:**
-   - kho lớn nhưng ít cập nhật;
-   - phải quét định kỳ cả kho;
+2. **rookies.vn đã có trong server** (mục 4.7):
+   - nạp kho cũ bằng script (mục 4.6);
+   - cập nhật tự động chỉ đọc trang 1 danh sách "Truyện hot" sắp theo giờ ra chương;
    - phải cẩn thận với chương VIP và dữ liệu người dùng (mục 4.3).
 
-Việc cần làm trên server giống Dembuon:
-- tách `Catalog` của crawler theo nguồn;
-- dùng lại `ImportStory`;
-- thêm `tacgiaviet` / `rookies` vào bộ lọc nguồn trong admin.
+Việc cần làm trên server cho nguồn mới (TacGiaViet, Dembuon), theo cách đã làm với rookies:
+- viết crawler riêng dùng `crawlBase` (lock, state, log trên Redis) và `ImportStory`;
+- viết service lấy nội dung chương, đăng ký vào map `sources` của `story.Service`;
+- thêm tên nguồn vào bộ lọc nguồn trong admin.

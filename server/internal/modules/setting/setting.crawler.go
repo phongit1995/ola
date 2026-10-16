@@ -60,8 +60,12 @@ func (s *Service) GetStoryCrawler() (StoryCrawlerConfig, error) {
 }
 
 func (s *Service) GetStoryCrawlerVersion() (StoryCrawlerConfig, *time.Time, error) {
+	return s.crawlerConfigVersion(KeyStoryCrawler)
+}
+
+func (s *Service) crawlerConfigVersion(key string) (StoryCrawlerConfig, *time.Time, error) {
 	cfg := DefaultStoryCrawlerConfig()
-	updatedAt, err := s.getVersioned(KeyStoryCrawler, &cfg)
+	updatedAt, err := s.getVersioned(key, &cfg)
 	if !validCrawlerInterval(cfg.IntervalHours) {
 		cfg.IntervalHours = DefaultStoryCrawlerConfig().IntervalHours
 	}

@@ -19,6 +19,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	{
 		clans.GET("/check-name", r.controller.CheckName)
 		clans.GET("/mine", r.controller.Mine)
+		clans.GET("/top", r.controller.Top)
 		clans.POST("", r.controller.Create)
 		clans.GET("/by-handle/:handle", r.controller.GetByHandle)
 		clans.GET("/:id", r.controller.GetByID)

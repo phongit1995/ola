@@ -127,7 +127,7 @@ func (f *fakeAdminStore) MissingContentChapters(_ context.Context, storyID uuid.
 	var rows []ChapterRow
 	for _, chapter := range f.chapters[storyID] {
 		if chapter.ContentText == "" {
-			rows = append(rows, ChapterRow{StoryChapter: chapter})
+			rows = append(rows, ChapterRow{StoryChapter: chapter, StorySource: StorySourceVnkings})
 		}
 	}
 	return rows, f.err

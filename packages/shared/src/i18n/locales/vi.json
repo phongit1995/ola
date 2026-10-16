@@ -2163,7 +2163,12 @@
       "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Tên Clan phải viết liền 5-32 ký tự thường/số, không dấu",
       "you have reached the maximum number of clans you can own": "Bạn đã đạt giới hạn số Clan được tạo"
     },
-    "createShort": "Tạo"
+    "createShort": "Tạo",
+    "findPlaceholder": "Tìm clan theo tên",
+    "topClans": "Top Clan",
+    "searchResults": "Kết quả tìm kiếm",
+    "searchEmpty": "Không tìm thấy clan nào",
+    "topEmpty": "Chưa có clan nào"
   },
   "changeNickname": {
     "title": "Đổi nickname",

@@ -30,10 +30,16 @@ type fakeStore struct {
 }
 
 type fakeSource struct {
-	content string
-	err     error
-	calls   atomic.Int32
-	release chan struct{}
+	content    string
+	err        error
+	calls      atomic.Int32
+	shortCalls atomic.Int32
+	release    chan struct{}
+}
+
+func (f *fakeSource) ShortStoryContent(ctx context.Context, chapter *ChapterRow) (string, error) {
+	f.shortCalls.Add(1)
+	return f.ChapterContent(ctx, chapter)
 }
 
 func (f *fakeSource) ChapterContent(context.Context, *ChapterRow) (string, error) {
@@ -44,8 +50,27 @@ func (f *fakeSource) ChapterContent(context.Context, *ChapterRow) (string, error
 	return f.content, f.err
 }
 
-func newTestService(store *fakeStore, source ContentSource) *Service {
-	return &Service{store: store, admin: &fakeAdminStore{fakeStore: store}, source: source, logger: zap.NewNop().Sugar()}
+func newTestService(store *fakeStore, source *fakeSource) *Service {
+	return &Service{store: store, admin: &fakeAdminStore{fakeStore: store}, sources: map[string]ContentSource{StorySourceVnkings: source}, logger: zap.NewNop().Sugar()}
+}
+
+func TestFetchContentPicksSourceAndKind(t *testing.T) {
+	source := &fakeSource{content: "nội dung"}
+	service := newTestService(newFakeStore(1), source)
+	for _, kind := range []string{StoryKindShort, StoryKindLong, StoryKindShort} {
+		if _, _, err := service.fetchChapter(context.Background(), &ChapterRow{StorySource: StorySourceVnkings, StoryKind: kind}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if source.calls.Load() != 3 || source.shortCalls.Load() != 2 {
+		t.Fatalf("calls %d, short %d", source.calls.Load(), source.shortCalls.Load())
+	}
+	if _, _, err := service.fetchChapter(context.Background(), &ChapterRow{StorySource: "dembuon", StoryKind: StoryKindLong}); !errors.Is(err, errUnsupportedSource) {
+		t.Fatalf("unknown source: got %v", err)
+	}
+	if source.calls.Load() != 3 {
+		t.Fatalf("unknown source must not reach a fetcher, calls %d", source.calls.Load())
+	}
 }
 
 func (f *fakeStore) List(_ context.Context, query ListQuery) ([]models.Story, int64, error) {
@@ -88,7 +113,7 @@ func (f *fakeStore) Chapter(_ context.Context, storyID uuid.UUID, position int) 
 		if chapter.Position != position {
 			continue
 		}
-		row := &ChapterRow{StoryChapter: chapter}
+		row := &ChapterRow{StoryChapter: chapter, StorySource: StorySourceVnkings}
 		if i > 0 {
 			row.PrevPosition = &chapters[i-1].Position
 		}
@@ -115,6 +140,21 @@ func (f *fakeStore) SaveChapterContent(_ context.Context, chapterID, storyID uui
 		}
 	}
 	return nil
+}
+
+func (f *fakeStore) SaveMissingChapterContents(_ context.Context, storyID uuid.UUID, contents map[string]string) ([]uuid.UUID, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var filled []uuid.UUID
+	for i := range f.chapters[storyID] {
+		chapter := &f.chapters[storyID][i]
+		if content, ok := contents[chapter.SourceChapterID]; ok && chapter.ContentText == "" {
+			chapter.ContentText = content
+			chapter.WordCount = len(strings.Fields(content))
+			filled = append(filled, chapter.ID)
+		}
+	}
+	return filled, nil
 }
 
 var testReader = testID(900)

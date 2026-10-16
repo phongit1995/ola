@@ -131,6 +131,7 @@ export const API_PATH = {
     base: '/clans',
     checkName: '/clans/check-name',
     mine: '/clans/mine',
+    top: '/clans/top',
     byHandle: (handle: string) => `/clans/by-handle/${handle}`,
     detail: (id: string) => `/clans/${id}`,
     avatar: (id: string) => `/clans/${id}/avatar`,

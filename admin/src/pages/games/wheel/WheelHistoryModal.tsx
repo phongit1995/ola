@@ -1,0 +1,145 @@
+import { useMemo, useState } from 'react'
+import { Input, Modal, Select, Space, Table, Tag, Typography } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
+import { useWheelSpins } from './useWheelQueries'
+import { useDebounce } from '@/hooks/useDebounce'
+import type { AdminWheelSpin, WheelSegmentKind } from '@/types'
+import { OUTCOME_OPTIONS, WHEEL_KINDS } from './constants'
+import { kindMeta, rewardText } from './utils'
+import { formatDateTime } from '@/lib/format'
+import { PAGE_SIZE } from '@/lib/constants'
+
+interface WheelHistoryModalProps {
+  open: boolean
+  onClose: () => void
+}
+
+export function WheelHistoryModal({ open, onClose }: WheelHistoryModalProps) {
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [kind, setKind] = useState<WheelSegmentKind | ''>('')
+  const [outcome, setOutcome] = useState<'' | 'win' | 'miss'>('')
+  const q = useDebounce(search.trim())
+
+  const params = useMemo(
+    () => ({
+      limit: PAGE_SIZE,
+      offset: (page - 1) * PAGE_SIZE,
+      ...(q ? { q } : {}),
+      ...(kind ? { segmentKind: kind } : {}),
+      ...(outcome ? { outcome } : {}),
+    }),
+    [page, q, kind, outcome]
+  )
+
+  const { data, isFetching } = useWheelSpins(params, open)
+  const spins = data?.items ?? []
+  const total = data?.total ?? 0
+
+  const columns: ColumnsType<AdminWheelSpin> = [
+    {
+      title: 'Thời gian',
+      dataIndex: 'createdAt',
+      width: 160,
+      render: (value: string) => formatDateTime(value),
+    },
+    {
+      title: 'Người chơi',
+      key: 'user',
+      render: (_, spin) =>
+        spin.user ? (
+          <Space direction="vertical" size={0}>
+            {spin.user.fullName && <Typography.Text>{spin.user.fullName}</Typography.Text>}
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              @{spin.user.username}
+            </Typography.Text>
+          </Space>
+        ) : (
+          '—'
+        ),
+    },
+    {
+      title: 'Ô',
+      dataIndex: 'segmentKind',
+      width: 140,
+      render: (value: WheelSegmentKind) => {
+        const meta = kindMeta(value)
+        return <Tag color={meta.color}>{meta.label}</Tag>
+      },
+    },
+    {
+      title: 'Kết quả',
+      key: 'reward',
+      render: (_, spin) => (
+        <Space>
+          <span style={{ color: spin.segmentKind === 'miss' ? '#999' : '#1f8a3b' }}>
+            {rewardText(spin)}
+          </span>
+          {spin.isSuperLucky && <Tag color="magenta">⭐</Tag>}
+        </Space>
+      ),
+    },
+    {
+      title: 'Chi phí',
+      dataIndex: 'kenCost',
+      width: 110,
+      align: 'right',
+      render: (value: number, spin) =>
+        spin.isFree ? <Tag color="blue">Miễn phí</Tag> : `${value.toLocaleString('vi-VN')} Ken`,
+    },
+  ]
+
+  return (
+    <Modal title="Lịch sử quay" open={open} onCancel={onClose} footer={null} width={860} destroyOnHidden>
+      <Space style={{ marginBottom: 12 }} wrap>
+        <Input.Search
+          allowClear
+          size="small"
+          style={{ width: 220 }}
+          placeholder="Tìm theo tên / @username"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            setPage(1)
+          }}
+        />
+        <Typography.Text type="secondary">Loại ô</Typography.Text>
+        <Select
+          size="small"
+          style={{ width: 160 }}
+          value={kind}
+          onChange={(v) => {
+            setKind(v)
+            setPage(1)
+          }}
+          options={[{ value: '', label: 'Tất cả' }, ...WHEEL_KINDS.map((k) => ({ value: k.kind, label: k.label }))]}
+        />
+        <Typography.Text type="secondary">Kết quả</Typography.Text>
+        <Select
+          size="small"
+          style={{ width: 120 }}
+          value={outcome}
+          onChange={(v) => {
+            setOutcome(v)
+            setPage(1)
+          }}
+          options={OUTCOME_OPTIONS}
+        />
+      </Space>
+      <Table<AdminWheelSpin>
+        rowKey="id"
+        size="small"
+        loading={isFetching}
+        columns={columns}
+        dataSource={spins}
+        pagination={{
+          current: page,
+          pageSize: PAGE_SIZE,
+          total,
+          onChange: setPage,
+          showSizeChanger: false,
+        }}
+      />
+    </Modal>
+  )
+}
