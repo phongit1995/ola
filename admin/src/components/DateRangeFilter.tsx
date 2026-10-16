@@ -1,3 +1,5 @@
+import { Space } from 'antd'
+
 const DATE_INPUT_STYLE = {
   height: 32,
   border: '1px solid #d9d9d9',
@@ -14,7 +16,7 @@ interface DateRangeFilterProps {
 
 export function DateRangeFilter({ from, to, onFromChange, onToChange }: DateRangeFilterProps) {
   return (
-    <>
+    <Space>
       <input
         type="date"
         aria-label="Từ ngày"
@@ -32,6 +34,6 @@ export function DateRangeFilter({ from, to, onFromChange, onToChange }: DateRang
         onChange={(e) => onToChange(e.target.value)}
         style={DATE_INPUT_STYLE}
       />
-    </>
+    </Space>
   )
 }
