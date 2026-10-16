@@ -25,8 +25,8 @@ import { StoryDetailSkeleton } from './components/StoryDetailSkeleton';
 import { StoryFreeReadsBadge } from './components/StoryFreeReadsBadge';
 import { StoryIcon } from './components/StoryIcons';
 import { StoryStateMessage } from './components/StoryStateMessage';
-import { commentUnlockMinChars, useStoryAccess } from './storyAccess';
-import { useStoryTextSize } from './typography';
+import { commentUnlockMinChars, useStoryAccess } from './useStoryAccess';
+import { useStoryTextSize } from './useStoryTextSize';
 
 const INTRO_COLLAPSED_HEIGHT = 104;
 const INTRO_FADE_HEIGHT = 40;

@@ -4,7 +4,7 @@ import type { Message } from '@ola/shared/types';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { DIVIDER } from '@constants';
-import { replyExcerpt } from '../chatMessageView';
+import { replyExcerpt } from '../utils';
 
 interface ReplyPreviewBarProps {
   replyTarget: Message;

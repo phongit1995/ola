@@ -28,9 +28,10 @@ import { MessageActionSheet, type MessageSheetAction } from '@screens/room/compo
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
 import { StatusEditDialog } from './StatusEditDialog';
-import { mapFriendsToContacts, type Contact } from '../contacts';
+import { mapFriendsToContacts } from '../utils';
+import type { Contact } from '../types';
 import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
-import { useFriendsWithPresence } from '@hooks/usePresence';
+import { useFriendsWithPresence } from '../usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
 import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';

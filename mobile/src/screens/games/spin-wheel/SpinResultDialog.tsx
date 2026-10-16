@@ -14,7 +14,7 @@ import type { WheelSpinResult } from '@ola/shared/types';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets } from './spinWheelAssets';
-import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';
+import { formatRewardKen, isKenKind, isVipDaysKind } from './utils';
 
 const REWARD_ICON_SIZE = 96;
 

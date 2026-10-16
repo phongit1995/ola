@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useThemeColors } from '@hooks/useThemeColors';
-import type { ReaderPalette } from '../interface';
-import { useStoryTextSize } from '../typography';
+import type { ReaderPalette } from '../types';
+import { useStoryTextSize } from '../useStoryTextSize';
 
 const vipCrownIcon = require('@assets/icons/apps/vip-crown.webp');
 

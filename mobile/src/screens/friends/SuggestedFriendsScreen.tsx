@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { SUGGESTED_FRIENDS } from './constants';
-import type { SuggestedFriend } from './interface';
+import type { SuggestedFriend } from './types';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 export function SuggestedFriendsScreen() {

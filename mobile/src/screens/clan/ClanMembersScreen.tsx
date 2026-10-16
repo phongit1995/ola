@@ -2,7 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, RefreshControl, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { colorForName } from '@ola/shared/lib';
+import {
+  clanErrorText,
+  clanRoleLabel,
+  colorForName,
+  isClanStaff,
+} from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { Clan, ClanMember } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -15,8 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { CLAN_ROLE_ICONS, clanErrorText, clanRoleLabel, isClanStaff } from '@lib/clanHelpers';
-import { MEMBERS_PAGE_SIZE } from './constants';
+import { CLAN_ROLE_ICONS, MEMBERS_PAGE_SIZE } from './constants';
 import { CLAN_ROLE } from '@ola/shared/constants';
 
 interface ClanMembersScreenProps {

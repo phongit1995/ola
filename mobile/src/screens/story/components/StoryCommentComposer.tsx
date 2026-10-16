@@ -9,7 +9,7 @@ import {
   SMILEY_PANEL_MIN_CONTENT_HEIGHT,
   SmileyKulPanel,
 } from '@screens/room/components/SmileyKulPanel';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 
 const smileyIcon = require('@assets/icons/chat/ic_smiley.png');
 const smileyIconActive = require('@assets/icons/chat/ic_smiley_selected.png');

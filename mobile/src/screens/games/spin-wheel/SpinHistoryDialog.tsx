@@ -16,7 +16,7 @@ import type { WheelSpinHistoryFilter, WheelSpinHistoryItem } from '@ola/shared/t
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { VerticalGradient, assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets, wheelHistoryAssets } from './spinWheelAssets';
-import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';
+import { formatRewardKen, isKenKind, isVipDaysKind } from './utils';
 import { HISTORY_PAGE_SIZE } from './constants';
 import {
   HISTORY_LABEL_STYLE,

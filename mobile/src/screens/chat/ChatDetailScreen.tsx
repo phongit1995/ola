@@ -56,7 +56,7 @@ import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 import { DIVIDER } from '@constants';
 import { useChatDetail } from './useChatDetail';
 import { usePeerCard } from './usePeerCard';
-import { chatMessageAbilities } from './chatMessageView';
+import { chatMessageAbilities } from './utils';
 import { CHAT_BG } from './constants';
 import { ChatInputBar, type ChatInputBarHandle } from './components/ChatInputBar';
 import { ChatBubble, ChatMessageRow } from './components/ChatMessageRow';

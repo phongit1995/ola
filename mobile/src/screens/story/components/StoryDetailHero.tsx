@@ -5,7 +5,7 @@ import { formatCompactCount, formatDateSlashDMY, withAlpha } from '@ola/shared/l
 import type { Story, StoryIconName } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { READER_FONTS } from '../constants';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryCover } from './StoryCover';
 import { StoryIcon } from './StoryIcons';
 import { StoryMeta, StoryStatusBadge, StoryTag } from './StoryTags';

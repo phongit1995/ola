@@ -19,7 +19,7 @@ import {
   RECEIVER_SEARCH_DEBOUNCE_MS,
   RECEIVER_SEARCH_LIMIT,
 } from './constants';
-import type { PickerItem } from './interface';
+import type { PickerItem } from './types';
 
 export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => void) {
   const { t } = useTranslation();

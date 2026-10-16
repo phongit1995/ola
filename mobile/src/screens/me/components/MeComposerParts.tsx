@@ -19,8 +19,7 @@ import { DIVIDER, ERROR, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import type { ComposedCheckIn } from './MeComposerCheckInPanel';
 import { COMPOSER_MAX_IMAGES } from '../constants';
-import type { PickedPhoto } from '../interface';
-import type { ComposerAttachKey, ComposerPanel } from '../types';
+import type { ComposerAttachKey, ComposerPanel, PickedPhoto } from '../types';
 
 const checkInCardIcon = require('@assets/icons/me/ic_check_in.png');
 const kulTabIcon = require('@assets/icons/chat/ic_tab_kul.png');

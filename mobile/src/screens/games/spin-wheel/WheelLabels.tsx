@@ -2,7 +2,7 @@ import { Image, Text, View } from 'react-native';
 import { WHEEL_LABEL_RADIUS, segmentTheme, wheelPolar } from '@ola/shared/lib';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { assetRatio } from '@screens/games/pen/penUi';
-import { rewardVisual } from './spinWheelReward';
+import { rewardVisual } from './utils';
 import { segmentLabelTextStyle } from './spinWheelStyles';
 import type { WheelLayerProps } from './types';
 

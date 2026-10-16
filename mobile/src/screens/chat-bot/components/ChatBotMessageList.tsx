@@ -2,15 +2,18 @@ import { Fragment, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { createDateSeparatorFormatter, isSameDay } from '@ola/shared/lib';
+import {
+  chatBotIso,
+  createDateSeparatorFormatter,
+  isSameDay,
+} from '@ola/shared/lib';
 import type {
   ChatBotErrorCode,
   ChatBotMessage,
   ChatBotType,
+  ChatBotViewer,
 } from '@ola/shared/types';
 import type { useStickyBottomList } from '@hooks/useStickyBottomList';
-import { isoOf } from '../chatBotView';
-import type { ChatBotViewer } from '../interface';
 import { BotMessageRow } from './BotMessageRow';
 import { BotTypingRow } from './BotTypingRow';
 import { ChatBotEmptyState } from './ChatBotEmptyState';
@@ -65,8 +68,8 @@ export function ChatBotMessageList({
       renderItem={({ item, index }) => {
         const prev = messages[index - 1];
         const showDate = !isSameDay(
-          isoOf(prev?.createdAt ?? 0),
-          isoOf(item.createdAt)
+          chatBotIso(prev?.createdAt ?? 0),
+          chatBotIso(item.createdAt)
         );
         return (
           <Fragment>
@@ -76,7 +79,7 @@ export function ChatBotMessageList({
                   className="overflow-hidden rounded-full px-3 py-0.5 text-xs text-white"
                   style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
                 >
-                  {dateFormatter(isoOf(item.createdAt))}
+                  {dateFormatter(chatBotIso(item.createdAt))}
                 </Text>
               </View>
             )}

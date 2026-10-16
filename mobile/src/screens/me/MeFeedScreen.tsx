@@ -14,7 +14,7 @@ import type { Post, PostReaction } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
-import { useHorizontalSwipe } from '@hooks/useHorizontalSwipe';
+import { useHorizontalSwipe } from './useHorizontalSwipe';
 import { isPostEditExpired } from '@lib/post';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { MePostCard } from './components/MePostCard';

@@ -5,7 +5,7 @@ import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { StoryComment } from '@ola/shared/types';
 import { RATE_LIMITED_STATUS } from './constants';
-import { commentUnlockMinChars, currentStoryAccess } from './storyAccess';
+import { commentUnlockMinChars, currentStoryAccess } from './useStoryAccess';
 
 export function useStoryCommentActions(storyId: string) {
   const { t } = useTranslation();

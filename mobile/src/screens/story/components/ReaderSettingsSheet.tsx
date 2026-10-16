@@ -11,8 +11,8 @@ import {
   READER_THEME_ICON,
   READER_THEME_ORDER,
 } from '../constants';
-import type { ReaderPalette } from '../interface';
-import { useStoryTextSize } from '../typography';
+import type { ReaderPalette } from '../types';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { ReaderSheet } from './ReaderSheet';
 import { StoryIcon } from './StoryIcons';
 

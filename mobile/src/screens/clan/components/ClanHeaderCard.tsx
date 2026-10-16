@@ -8,12 +8,12 @@ import {
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
-import { formatDateSlashDMY } from '@ola/shared/lib';
+import { clanPolicyLabel, formatDateSlashDMY } from '@ola/shared/lib';
 import type { Clan } from '@ola/shared/types';
 import { DIVIDER } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { CLAN_ROLE_ICONS, clanPolicyLabel } from '@lib/clanHelpers';
+import { CLAN_ROLE_ICONS } from '../constants';
 
 const manageIcon = require('@assets/icons/clan/ic_manage_clan.png');
 const followIcon = require('@assets/icons/clan/ic_follow_black_disable.png');

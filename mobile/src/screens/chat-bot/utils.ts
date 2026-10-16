@@ -1,9 +1,7 @@
 import { chatBotGrouping } from '@ola/shared/lib';
 import type { ChatBotMessage, ChatBotSurfaceKind } from '@ola/shared/types';
 import { BOT_SURFACE_FAILED, BOT_SURFACE_IN } from './constants';
-import type { MessageGrouping } from './interface';
-
-export { chatBotIso as isoOf } from '@ola/shared/lib';
+import type { MessageGrouping } from './types';
 
 export function groupingOf(
   message: ChatBotMessage,

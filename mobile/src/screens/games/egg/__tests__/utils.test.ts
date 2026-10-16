@@ -1,4 +1,4 @@
-import { eggGiftScrollHeight, eggHistoryScrollHeight } from '../dialogLayout';
+import { eggGiftScrollHeight, eggHistoryScrollHeight } from '../utils';
 
 describe('egg dialog scroll height', () => {
   it.each([320, 480, 568, 844])('keeps scroll regions inside a %ipx viewport', (windowHeight) => {

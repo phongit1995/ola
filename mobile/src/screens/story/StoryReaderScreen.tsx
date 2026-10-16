@@ -25,7 +25,7 @@ import { ReaderSettingsSheet } from './components/ReaderSettingsSheet';
 import { StoryCommentSheet } from './components/StoryCommentSheet';
 import { StoryIcon } from './components/StoryIcons';
 import { StoryLockedPanel } from './components/StoryLockedPanel';
-import { useStoryTextSize } from './typography';
+import { useStoryTextSize } from './useStoryTextSize';
 
 type ReaderSheetKind = 'settings' | 'toc' | 'comments';
 

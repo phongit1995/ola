@@ -11,7 +11,7 @@ import { VipBadge } from '@components/ui/VipBadge';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { READER_PALETTES, ROW_SEPARATOR } from '../constants';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryCover } from './StoryCover';
 import { StoryIcon } from './StoryIcons';
 

@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text } from 'react-native';
 import { DIVIDER } from '@constants';
-import type { SuggestionKey } from '../types';
+import type { ChatBotSuggestionKey } from '@ola/shared/lib';
 
 interface ChatBotSuggestionsProps {
-  keys: SuggestionKey[];
+  keys: ChatBotSuggestionKey[];
   onPick: (prompt: string) => void;
 }
 

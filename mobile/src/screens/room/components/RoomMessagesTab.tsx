@@ -12,9 +12,20 @@ import {
 import Clipboard from '@react-native-clipboard/clipboard';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
-import type { ReactionType, RoomMessage } from '@ola/shared/types';
-import type { NativeUploadFile } from '@ola/shared/types';
-import { createDateSeparatorFormatter, filterVisibleRoomMessages } from '@ola/shared/lib';
+import type {
+  GroupedMessage,
+  NativeUploadFile,
+  ReactionType,
+  RoomAudioSendResult,
+  RoomChatStatus,
+  RoomFeedItem,
+  RoomMessage,
+} from '@ola/shared/types';
+import {
+  buildRoomFeed,
+  createDateSeparatorFormatter,
+  filterVisibleRoomMessages,
+} from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   RoomBlockLimitError,
@@ -27,12 +38,7 @@ import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ReportDialog } from '@components/ui/ReportDialog';
-import {
-  buildRoomFeed,
-  type GroupedMessage,
-  type RoomFeedItem,
-} from '../messageGroups';
-import { replyExcerpt, roomMessageAbilities } from '../roomMessageView';
+import { replyExcerpt, roomMessageAbilities } from '../utils';
 import { RoomBubbleBody, RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionNotice } from './RoomReactionNotice';
@@ -43,7 +49,6 @@ import {
   type MessageSheetAction,
 } from './MessageActionSheet';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
-import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
 
 interface RoomMessagesTabProps {
   currentUserId: string;

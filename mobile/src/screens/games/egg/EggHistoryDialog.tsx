@@ -16,7 +16,7 @@ import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
 import { DRAWS_PAGE_SIZE } from './constants';
-import { eggHistoryScrollHeight } from './dialogLayout';
+import { eggHistoryScrollHeight } from './utils';
 const FILTERS: EggDrawHistoryFilter[] = ['all', 'win', 'miss'];
 
 interface EggHistoryDialogProps {

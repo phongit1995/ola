@@ -37,7 +37,7 @@ import {
 import { StoryIcon } from './components/StoryIcons';
 import { StoryRow } from './components/StoryRow';
 import { StoryStateMessage } from './components/StoryStateMessage';
-import { useStoryTextSize } from './typography';
+import { useStoryTextSize } from './useStoryTextSize';
 
 const CHIP_BORDER = '#d5d5d5';
 const MUTED = 'rgba(0,0,0,0.54)';

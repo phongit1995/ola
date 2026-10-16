@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
-import { formatVnd, toApiError } from '@ola/shared/lib';
+import { formatVnd, toApiError, toHistoryRow } from '@ola/shared/lib';
 import { PenService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@ola/shared/stores/pen/penHistoryStore';
-import type { PenHistorySection as SectionRole, PenSide } from '@ola/shared/types';
+import type {
+  PenHistoryRowView,
+  PenHistorySection as SectionRole,
+  PenRowOutcome,
+  PenSide,
+} from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { VipBadge } from '@components/ui/VipBadge';
 import { penAssets, penHistoryAssets } from './penAssets';
 import { PenHistoryTable, PenColHeader } from './PenHistoryTable';
-import { toHistoryRow, type PenHistoryOutcome, type PenHistoryRowView } from './penHistory';
 import { PEN_COLORS } from './penUi';
 
 const COLS = { opponent: 1.6, bet: 1, time: 0.8, result: 1.7 };
@@ -45,7 +49,7 @@ function ResultCell({
   amount,
   onCancel,
 }: {
-  outcome: PenHistoryOutcome;
+  outcome: PenRowOutcome;
   amount: number;
   onCancel?: () => void;
 }) {
