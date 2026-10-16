@@ -33,6 +33,7 @@ src/
 └─ assets/              ảnh, icon
 ```
 
+- **File trong `pages/<màn>/`**: theo bảng ở `README.md` mục "Quy ước trong màn" (giống admin) — `types.ts` (không tách `interface.ts`), `constants.ts`, `utils.ts` (hàm thuần), `useXxx.ts`; hook/helper chỉ một màn dùng thì để trong màn đó, không tạo file re-export từ `@ola/shared`.
 - **Routing**: khai báo trong `src/routes/AppRouter.tsx`; mọi path lấy từ `ROUTES` (`@constants`), **không hardcode** chuỗi `'/login'`... trong page.
 - **Config/env**: chỉ đọc `import.meta.env.VITE_*` trong `src/shared/config`; nơi khác import từ `@config`.
 

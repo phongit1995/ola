@@ -101,7 +101,7 @@ NativeWind cho dùng `className` nhưng **KHÔNG phải class Tailwind nào cũn
 
 ## 5. Quy trình QUÉT DIFF + PORT một màn
 1. **Định vị cặp file**: web `web/src/pages/<feature>/` ↔ mobile `mobile/src/screens/<feature>/`. Liệt kê component 2 bên.
-2. **Đọc song song** file view tương ứng + `messageGroups.ts`/view-mapper + constants 2 bên. So: JSX vs RN, class vs style, asset, LOGIC hiển thị (điều kiện hiện/ẩn), action gọi store.
+2. **Đọc song song** file view tương ứng + `utils.ts` (view-mapper) + `constants.ts` 2 bên. So: JSX vs RN, class vs style, asset, LOGIC hiển thị (điều kiện hiện/ẩn), action gọi store.
 3. **Lập bảng diff** theo 3 nhóm: (A) tính năng web có mobile thiếu; (B) khác style/vị trí/logic; (C) giống. (Xem output mẫu ở lần review phòng chat.)
 4. **Đối chiếu store shared**: tính năng "thiếu" thường **đã có action trong `@ola/shared`** (vd `sendImage`) — chỉ thiếu UI mobile. Grep store trước khi kết luận phải viết logic.
 5. **Port view**: dịch primitive (mục 2) + class→style (mục 3); tái dùng component mobile sẵn có (`VipAvatar`, `Avatar`, `ConfirmDialog`, `MessageActionSheet`, `ToastHost`, `richText`); asset `.svg`→`.png`.
@@ -132,7 +132,7 @@ Khi port một panel liệt kê ảnh (emoji/smiley/sticker), mobile có thể *
 4. Trên mobile, wrapper thường dịch thành: **back handler** (`navigation.addListener('beforeRemove')` + `preventDefault` + `ConfirmDialog`, kèm `gestureEnabled:false` để vuốt không bỏ qua) + các `ConfirmDialog`/overlay đặt trong `*Screen` + **vị trí trong navigator** (nested stack trong tab để giữ tab bar).
 
 ## 6. Thêm tính năng ẢNH cho mobile (khi port chat/room images)
-- **Type**: mở rộng `GroupedMessage` trong `mobile/src/screens/<f>/messageGroups.ts` thêm `type?`,`imageUrl?`,`status?` (copy từ web `messageGroups.ts`) — nếu không, ảnh người khác gửi cũng không hiện.
+- **Type**: `GroupedMessage` nằm ở `@ola/shared/types` (dựng feed bằng `buildRoomFeed` trong `@ola/shared/lib`), cần có `type?`,`imageUrl?`,`status?` — nếu không, ảnh người khác gửi cũng không hiện.
 - **Hiển thị**: trong `RoomBubble`/`ChatMessageRow` mobile, xử lý `message.type==='image'` → `<Image source={{uri}}>`, `status==='uploading'` → overlay spinner, `'failed'` → nút resend gọi `resendRoomImage`. Bấm ảnh → mở viewer.
 - **Chọn ảnh**: chưa có lib native. Thêm `react-native-image-picker` (bare RN CLI) → `launchImageLibrary` trả `{uri,fileName,type}` → map thành `NativeUploadFile{uri,name,type}` → gọi `sendImage`/`sendMessage(image)`. **Thêm native dep = phải `pod install` + rebuild** (xem lịch sử: thiếu link native gây redbox `NativeModule ... is null`).
 - ⚠️ **Preview ảnh TRƯỚC khi gửi (state `pendingImages` của composer) — RẤT DỄ BỎ SÓT.** Web (`RoomComposerBar`) **KHÔNG gửi ngay** khi chọn ảnh: nạp vào mảng `pendingImages[]`, **thay ô nhập** bằng dải preview ngang (thumbnail ~44px bo góc, nút **×** xoá từng ảnh, nút **Cancel** xoá hết, hỗ trợ **nhiều ảnh**), bấm **Send** mới loop `onSendImage`. Nếu mobile chỉ làm `pickAndSendImage` (chọn xong gửi luôn) là **thiếu nguyên tính năng này** — đúng kiểu bẫy 5b (chỉ port hành vi trong cùng, bỏ **state của composer**). *Cách khớp*: `launchImageLibrary({ selectionLimit: 0 })` cho nhiều ảnh → `setPendingImages` → khi `pendingImages.length>0` thì render `<ScrollView horizontal>` các thumbnail `<Image source={{uri}}>` + nút ×/Cancel thay cho `TextInput`, và nút phải đổi thành **Send** (`pendingImages.length>0 ? Send : isTyping ? Send : Like`) gọi `sendPendingImages()` loop từng `onSendImage(file)`. Không có `URL.createObjectURL`/revoke như web — RN dùng thẳng `asset.uri`.

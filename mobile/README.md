@@ -1,3 +1,74 @@
+# Ola Mobile
+
+App React Native (bare CLI) dùng chung store / service / type / i18n với web qua `@ola/shared` (`packages/shared`).
+
+## Scripts
+
+| Lệnh | Tác dụng |
+|------|----------|
+| `pnpm start` | Metro |
+| `pnpm ios` / `pnpm android` | Build và chạy app |
+| `pnpm typecheck` | Type-check (`tsc --noEmit`) |
+| `pnpm lint` | ESLint |
+| `pnpm test` | Jest |
+
+## Cấu trúc
+
+```
+mobile/src/
+├── App.tsx / bootstrap.ts   # entry, provider gốc
+├── navigation/              # RootNavigator, routes, type param
+├── screens/                 # mỗi màn / nghiệp vụ một thư mục (xem "Quy ước trong màn")
+├── components/              # component dùng chung nhiều màn (ui/, form/, chat/, user/…)
+├── hooks/                   # hook dùng chung nhiều màn
+├── lib/                     # tiện ích dùng chung nhiều màn (asset require(), richText, sound…)
+├── constants/               # theme, màu, typography
+├── store/                   # zustand store chỉ của mobile (store chung nằm ở @ola/shared/stores)
+├── services/                # dịch vụ riêng mobile (OTA…)
+├── platform/                # storage, env
+├── i18n/                    # cấu hình i18next (locale nằm ở @ola/shared)
+└── assets/                  # ảnh, icon
+```
+
+Import qua alias `@components/…`, `@screens/…`, `@hooks/…`, `@lib/…`, `@store/…`, `@constants`, `@assets/…` (khai báo ở `tsconfig.json` và `babel.config.js`).
+
+## Quy ước trong màn
+
+Giống quy ước của admin (`admin/README.md`) và web (`web/README.md`). Mỗi thư mục `screens/<màn>/` gồm:
+
+| File | Chứa gì | Ví dụ |
+|------|---------|-------|
+| `XxxScreen.tsx`, `components/` | Component: state, xử lý sự kiện, JSX | `chat/ChatListScreen.tsx` |
+| `useXxx.ts` | Hook của màn: state, gọi store/service | `chat/useChatDetail.ts`, `story/useStoryAccess.ts` |
+| `constants.ts` | Hằng số `UPPER_CASE`: page size, màu riêng của màn, dữ liệu tĩnh | `room/constants.ts` (`ROOM_BROWSE_LIMIT`) |
+| `utils.ts` | Hàm thuần không có JSX: đổi dữ liệu API → dữ liệu hiển thị, format, tính toán layout | `chat/utils.ts` (`mapFriendsToContacts`), `room/utils.ts` (`roomBubbleTextMaxWidth`) |
+| `types.ts` | Type / interface dùng cho nhiều file trong màn. Không tách riêng `interface.ts` | `me/types.ts` (`PickedPhoto`, `MeTab`) |
+| `xxxAssets.ts` | Bảng `require()` ảnh / âm thanh của màn, đổi asset chỉ sửa ở đây | `games/pen/penAssets.ts` |
+
+Chỉ tạo `constants.ts` / `utils.ts` / `types.ts` khi màn có nội dung cho file đó. Test của màn đặt trong `__tests__/` cạnh file được test (`games/egg/__tests__/utils.test.ts`).
+
+Module có tác dụng phụ (phát âm thanh, quyền thiết bị, PiP, foreground service) không đưa vào `utils.ts`. Giữ file riêng, đặt tên theo việc nó làm (`spin-wheel/spinWheelSound.ts`), màn lớn thì gom vào `lib/` của màn (`call/lib/`). Style object dùng chung cho nhiều component của một màn để ở `xxxStyles.ts` (`spin-wheel/spinWheelStyles.ts`).
+
+**Đặt code ở đâu**
+
+- Chỉ một màn dùng → để trong thư mục của màn đó, kể cả hook (`chat/usePresence.ts`, `me/useHorizontalSwipe.ts`).
+- Nhiều màn con cùng một nhóm dùng → để ở thư mục cha của nhóm (`screens/games/`).
+- Nhiều nhóm màn dùng → đưa lên `src/hooks`, `src/lib` hoặc `src/components`.
+- Logic thuần dùng được cho cả web lẫn mobile → `packages/shared` (`@ola/shared`).
+- Thứ đã có ở `@ola/shared` thì import thẳng (`@ola/shared/lib`, `@ola/shared/types`, `@ola/shared/stores/...`). Không tạo file trung gian chỉ để re-export.
+- Import trong cùng màn dùng đường dẫn tương đối (`./utils`, `../types`); import từ ngoài màn dùng alias (`@lib/…`, `@screens/…`).
+
+**Đặt tên**
+
+- Hook đặt tên `useXxx.ts`. Hậu tố `Store` để dành cho zustand.
+- Tên trong `constants.ts` / `utils.ts` dùng chung cho cả thư mục, nên phải rõ nghĩa ngoài file gốc (`ROOM_BROWSE_LIMIT`, `roomMessageAbilities`).
+
+**Giữ lại trong component**
+
+- `XxxProps` không export, hằng số có JSX, style object chỉ một component dùng.
+
+---
+
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
 # Getting Started
