@@ -7,7 +7,7 @@ import {
   WORD_CHAIN_MESSAGE_PAGE_SIZE,
   WORD_CHAIN_WIN_PAGE_SIZE,
 } from '../../constants/wordChain';
-import { toApiError } from '../../lib/apiError';
+import { ApiError, toApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
 import { toRecord } from '../../lib/utils';
 import {
@@ -49,6 +49,7 @@ const initialWordChainState: WordChainStoreData = {
   hintPrice: 0,
   guessPrice: 0,
   guessPackSize: 0,
+  needsVipToPlay: false,
   hint: null,
   guesses: null,
   messages: [],
@@ -130,6 +131,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     if (!get().opened) return;
     applyState(overview.state);
     setGuesses(overview.state, overview.remainingGuesses);
+    set({ needsVipToPlay: overview.needsVipToPlay });
   }
 
   async function join(attempt: number) {
@@ -143,8 +145,8 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     );
     if (!live()) return;
     if (ack?.ok !== true) {
-      set({ status: 'error' });
-      return;
+      const code = typeof ack?.code === 'string' ? ack.code : undefined;
+      throw new ApiError(0, String(ack?.error ?? 'word chain join failed'), { code });
     }
 
     const [overview, page] = await Promise.all([
@@ -162,6 +164,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
         hintPrice: overview.hintPrice,
         guessPrice: overview.guessPrice,
         guessPackSize: overview.guessPackSize,
+        needsVipToPlay: overview.needsVipToPlay,
         hasMore: hasMoreInSession(page, sessionId),
         messages: sessionMessages(store.messages, sessionId),
       };
@@ -172,9 +175,15 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     const attempt = ++joinAttempt;
     join(attempt).catch((error: unknown) => {
       if (attempt !== joinAttempt || !get().opened) return;
-      if (errorCode(error) === WORD_CHAIN_ERROR_CODE.disabled) {
+      const code = errorCode(error);
+      if (code === WORD_CHAIN_ERROR_CODE.disabled) {
         toast.error(i18n.t('wordChain.disabled'));
         disableRoom();
+        return;
+      }
+      if (code === WORD_CHAIN_ERROR_CODE.vipToView) {
+        SocketService.connect().emit(WORD_CHAIN_SOCKET_EVENTS.leave);
+        set({ status: 'vipRequired' });
         return;
       }
       set({ status: 'error' });
@@ -185,6 +194,13 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     const code = errorCode(error);
     if (code === WORD_CHAIN_ERROR_CODE.disabled) {
       disableRoom();
+    } else if (code === WORD_CHAIN_ERROR_CODE.vipToPlay) {
+      if (get().opened) set({ needsVipToPlay: true });
+    } else if (code === WORD_CHAIN_ERROR_CODE.vipToView) {
+      if (get().opened) {
+        SocketService.connect().emit(WORD_CHAIN_SOCKET_EVENTS.leave);
+        set({ status: 'vipRequired' });
+      }
     } else if (
       (code === WORD_CHAIN_ERROR_CODE.wordChanged ||
         code === WORD_CHAIN_ERROR_CODE.guessesLeft) &&
@@ -228,6 +244,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     addLiveMessages,
     applyState,
     setGuesses,
+    refreshOverview,
     rejoin,
     cancelJoin,
     handleActionError,
@@ -435,6 +452,17 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
 
     dismissCelebration: (id) => {
       if (get().celebration?.id === id) set({ celebration: null });
+    },
+
+    refreshAccess: () => {
+      const { opened, status, needsVipToPlay } = get();
+      if (!opened) return;
+      if (status === 'vipRequired') {
+        set({ status: 'connecting' });
+        sync.rejoin();
+      } else if (status === 'joined' && needsVipToPlay) {
+        void sync.refreshOverview().catch(() => undefined);
+      }
     },
 
     reset: clear,

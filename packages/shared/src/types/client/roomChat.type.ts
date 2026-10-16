@@ -7,7 +7,7 @@ import type {
   RoomReactionNotice,
 } from '../api/room.type';
 
-export type RoomChatStatus = 'connecting' | 'joined' | 'error';
+export type RoomChatStatus = 'connecting' | 'joined' | 'error' | 'vipRequired';
 export type RoomTab = 'members' | 'messages';
 export type RoomAudioSendResult = 'sent' | 'failed' | 'aborted';
 

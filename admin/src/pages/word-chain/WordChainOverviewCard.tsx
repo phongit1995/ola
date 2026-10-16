@@ -36,6 +36,17 @@ export function WordChainOverviewCard() {
                 <Tag color="red">Đang ẩn</Tag>
               )}
             </Descriptions.Item>
+            <Descriptions.Item label="Yêu cầu VIP">
+              {setting == null ? (
+                settingFallback
+              ) : setting.vipRequiredToView ? (
+                <Tag color="gold">Cần VIP để xem</Tag>
+              ) : setting.vipRequiredToPlay ? (
+                <Tag color="gold">Cần VIP để chơi</Tag>
+              ) : (
+                'Không cần'
+              )}
+            </Descriptions.Item>
             <Descriptions.Item label="Giá gợi ý">
               {setting == null ? settingFallback : formatKen(setting.hintPrice)}
             </Descriptions.Item>

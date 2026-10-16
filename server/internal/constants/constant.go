@@ -242,6 +242,10 @@ const (
 	ErrorCodeWordChainUnavailable  = "WORD_CHAIN_UNAVAILABLE"
 	ErrorCodeWordChainWordChanged  = "WORD_CHAIN_WORD_CHANGED"
 	ErrorCodeWordChainBadCursor    = "WORD_CHAIN_INVALID_CURSOR"
+	ErrorCodeWordChainVipToView    = "WORD_CHAIN_VIP_REQUIRED_VIEW"
+	ErrorCodeWordChainVipToPlay    = "WORD_CHAIN_VIP_REQUIRED_PLAY"
+
+	ErrorCodeRoomVipRequired = "ROOM_VIP_REQUIRED"
 )
 
 const (

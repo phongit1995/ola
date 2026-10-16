@@ -44,6 +44,8 @@ export const WORD_CHAIN_ERROR_CODE = {
   disabled: 'WORD_CHAIN_DISABLED',
   wordChanged: 'WORD_CHAIN_WORD_CHANGED',
   unavailable: 'WORD_CHAIN_UNAVAILABLE',
+  vipToView: 'WORD_CHAIN_VIP_REQUIRED_VIEW',
+  vipToPlay: 'WORD_CHAIN_VIP_REQUIRED_PLAY',
 } as const;
 
 export const WORD_CHAIN_MESSAGE_PAGE_SIZE = 50;
@@ -77,6 +79,7 @@ export const WORD_CHAIN_LEADERBOARD_TABS = [
 export const WORD_CHAIN_INPUT_LOCK_HINT_KEYS = {
   waitTurn: 'wordChain.inputHintWaitTurn',
   noGuesses: 'wordChain.inputHintLocked',
+  vipToPlay: 'wordChain.vipToPlay',
 } as const satisfies Record<WordChainInputLock, string>;
 
 export const WORD_CHAIN_JOIN_ACK_TIMEOUT_MS = 10_000;

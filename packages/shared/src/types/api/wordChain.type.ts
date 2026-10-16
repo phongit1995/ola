@@ -58,6 +58,7 @@ export interface WordChainOverview {
   hintPrice: number;
   guessPrice: number;
   guessPackSize: number;
+  needsVipToPlay: boolean;
 }
 
 export interface WordChainGuessPurchaseRequest {

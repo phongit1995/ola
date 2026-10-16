@@ -38,7 +38,7 @@ Trên WordPress, mỗi truyện là một **post**: với truyện ngắn post l
 
 ## 3. Schema
 
-Migration: [`server/cmd/migrations/postgres/20261005000001_create_stories.up.sql`](../../server/cmd/migrations/postgres/20261005000001_create_stories.up.sql). Bản rút gọn:
+Migration: bảng `stories` nằm trong baseline [`server/cmd/migrations/postgres/20261011000001_baseline_schema.up.sql`](../../server/cmd/migrations/postgres/20261011000001_baseline_schema.up.sql). Bản rút gọn:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_trgm;

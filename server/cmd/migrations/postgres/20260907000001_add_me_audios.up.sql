@@ -1,1 +1,0 @@
-ALTER TABLE me ADD COLUMN IF NOT EXISTS audios jsonb;

@@ -1,5 +1,7 @@
+import { toApiError } from '../../lib/apiError';
 import { toRecord } from '../../lib/utils';
 import {
+  ROOM_ERROR_CODE,
   ROOM_JOIN_ACK_TIMEOUT_MS,
   ROOM_MESSAGE_CACHE_LIMIT,
   ROOM_MESSAGE_PAGE_SIZE,
@@ -7,7 +9,7 @@ import {
 import { ROOM_SOCKET_EVENTS } from '../../constants/socket';
 import { RoomService } from '../../services/room.service';
 import { SocketService } from '../../services/socket.service';
-import type { RoomLifecycleActions } from '../../types/client/roomChat.type';
+import type { RoomChatStatus, RoomLifecycleActions } from '../../types/client/roomChat.type';
 import {
   capPinnedRoomMessages,
   mergeRoomMessageSnapshot,
@@ -19,6 +21,10 @@ import {
   type RoomChatGet,
   type RoomChatSet,
 } from './roomChatState';
+
+function joinErrorStatus(error: unknown): RoomChatStatus {
+  return toApiError(error).code === ROOM_ERROR_CODE.vipRequired ? 'vipRequired' : 'error';
+}
 
 export function createRoomLifecycleActions(
   set: RoomChatSet,
@@ -64,8 +70,8 @@ export function createRoomLifecycleActions(
   SocketService.onReconnect(() => {
     const room = get().activeRoom;
     if (!room) return;
-    joinRoom(room.id).catch(() => {
-      if (get().activeRoom?.id === room.id) set({ status: 'error' });
+    joinRoom(room.id).catch((error: unknown) => {
+      if (get().activeRoom?.id === room.id) set({ status: joinErrorStatus(error) });
     });
   });
 
@@ -75,8 +81,8 @@ export function createRoomLifecycleActions(
       set({ ...initialRoomChatState, activeRoom: room });
       try {
         await joinRoom(room.id);
-      } catch {
-        if (get().activeRoom?.id === room.id) set({ status: 'error' });
+      } catch (error) {
+        if (get().activeRoom?.id === room.id) set({ status: joinErrorStatus(error) });
       }
     },
 

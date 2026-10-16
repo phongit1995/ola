@@ -38,6 +38,8 @@ export function WordChainSettingsTab() {
           enabled: values.enabled,
           hintPrice: values.hintPrice,
           guessPrice: values.guessPrice,
+          vipRequiredToView: values.vipRequiredToView,
+          vipRequiredToPlay: values.vipRequiredToPlay,
         },
       })
       message.success('Đã lưu cấu hình phòng nối từ')
@@ -65,8 +67,8 @@ export function WordChainSettingsTab() {
   return (
     <div style={{ maxWidth: 560 }}>
       <Typography.Paragraph type="secondary">
-        Chưa lưu lần nào thì hệ thống dùng giá trị mặc định: hiển thị phòng, gợi ý 500 KEN mỗi lần
-        và mua thêm lượt 500 KEN mỗi lần.
+        Chưa lưu lần nào thì hệ thống dùng giá trị mặc định: hiển thị phòng, không cần VIP, gợi ý
+        500 KEN mỗi lần và mua thêm lượt 500 KEN mỗi lần.
       </Typography.Paragraph>
       <Form<WordChainSetting> layout="vertical" initialValues={current} onFinish={save}>
         <Form.Item
@@ -76,6 +78,37 @@ export function WordChainSettingsTab() {
           extra="Tắt thì ẩn mục Phòng nối từ khỏi danh sách phòng, server từ chối vào phòng, nối từ, mua gợi ý và mua thêm lượt. Lịch sử, điểm và trận thắng vẫn giữ nguyên."
         >
           <Switch />
+        </Form.Item>
+        <Form.Item
+          name="vipRequiredToView"
+          label="Cần VIP để vào xem phòng"
+          valuePropName="checked"
+          extra="Bật thì người không có VIP không mở hay xem được phòng nối từ."
+        >
+          <Switch />
+        </Form.Item>
+        <Form.Item
+          noStyle
+          shouldUpdate={(prev, cur) => prev.vipRequiredToView !== cur.vipRequiredToView}
+        >
+          {({ getFieldValue }) => {
+            const implied = getFieldValue('vipRequiredToView') === true
+            return (
+              <Form.Item
+                name="vipRequiredToPlay"
+                label="Cần VIP để chơi"
+                valuePropName="checked"
+                getValueProps={(value) => ({ checked: implied || value })}
+                extra={
+                  implied
+                    ? 'Đã cần VIP để vào xem nên chơi cũng cần VIP.'
+                    : 'Bật thì người không có VIP chỉ xem được, không nối từ, mua gợi ý hay mua thêm lượt được.'
+                }
+              >
+                <Switch disabled={implied} />
+              </Form.Item>
+            )
+          }}
         </Form.Item>
         <Form.Item
           name="hintPrice"

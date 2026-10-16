@@ -33,7 +33,7 @@ func hintResponse(ref wordRef, purchase models.WordChainHintPurchase, balance in
 }
 
 func (s *Service) Hint(ctx context.Context, userID uuid.UUID) (*HintResponse, error) {
-	cfg, err := s.enabledConfig()
+	cfg, err := s.playConfig(userID)
 	if err != nil {
 		return nil, err
 	}

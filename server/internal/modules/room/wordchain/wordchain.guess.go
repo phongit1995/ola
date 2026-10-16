@@ -31,7 +31,7 @@ func (s *Service) loadBoughtGuesses(ctx context.Context, state GameState, userID
 }
 
 func (s *Service) BuyGuesses(ctx context.Context, userID uuid.UUID, req *GuessPurchaseRequest) (*GuessPurchaseResponse, error) {
-	cfg, err := s.enabledConfig()
+	cfg, err := s.playConfig(userID)
 	if err != nil {
 		return nil, err
 	}

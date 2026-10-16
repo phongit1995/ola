@@ -51,6 +51,8 @@ export interface WordChainConfigResult {
   enabled: boolean;
   hintPrice: number;
   guessPrice: number;
+  vipRequiredToView: boolean;
+  vipRequiredToPlay: boolean;
 }
 
 export interface StoryConfigResult {

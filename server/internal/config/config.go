@@ -77,7 +77,7 @@ type Config struct {
 	ResendAPIKey string `env:"RESEND_API_KEY" envDefault:"re_Qrsr5SLt_HR2pmoKUyENNmsMWjjMzyE6o"`
 	MailFrom     string `env:"MAIL_FROM" envDefault:"Ola Chat <noreply@olachat.net>"`
 
-	EmailVerifyVipRewardDays int `env:"EMAIL_VERIFY_VIP_REWARD_DAYS" envDefault:"30" validate:"min=0"`
+	EmailVerifyVipRewardDays int `env:"EMAIL_VERIFY_VIP_REWARD_DAYS" envDefault:"0" validate:"min=0"`
 
 	ClanCreateCost int `env:"CLAN_CREATE_COST" envDefault:"20000" validate:"min=0"`
 	ClanMaxOwned   int `env:"CLAN_MAX_OWNED" envDefault:"1" validate:"min=1"`

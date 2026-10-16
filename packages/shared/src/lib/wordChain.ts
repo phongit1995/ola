@@ -80,8 +80,10 @@ export function remainingGuesses(
 export function wordChainInputLock(
   state: WordChainState | null,
   guesses: WordChainGuesses | null,
-  userId: string | undefined
+  userId: string | undefined,
+  needsVipToPlay = false
 ): WordChainInputLock | null {
+  if (needsVipToPlay) return 'vipToPlay';
   if (userId != null && userId !== '' && state?.wordOwnerId === userId) {
     return 'waitTurn';
   }
@@ -154,6 +156,10 @@ function wordChainCommonErrorText(t: TFunction, code: string | undefined): strin
       return t('wordChain.wordChanged');
     case WORD_CHAIN_ERROR_CODE.unavailable:
       return t('wordChain.unavailable');
+    case WORD_CHAIN_ERROR_CODE.vipToPlay:
+      return t('wordChain.vipToPlay');
+    case WORD_CHAIN_ERROR_CODE.vipToView:
+      return t('wordChain.vipToView');
     default:
       return null;
   }

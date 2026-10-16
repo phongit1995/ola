@@ -1,8 +1,10 @@
 package websocket
 
 import (
-	"ola-chat-server/internal/constants"
 	"context"
+	"errors"
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/utils"
 
 	socket "github.com/zishang520/socket.io/servers/socket/v3"
 )
@@ -105,12 +107,18 @@ func (h *EventHandler) registerClientEvents(client *socket.Socket, userID string
 	if h.server.roomPresence != nil {
 		h.registerRoomEvents(client, userID)
 	}
-	h.registerWordChainEvents(client)
+	h.registerWordChainEvents(client, userID)
 }
 
-func (h *EventHandler) registerWordChainEvents(client *socket.Socket) {
+func (h *EventHandler) registerWordChainEvents(client *socket.Socket, userID string) {
 	client.On(constants.SocketEventWordChainJoin, func(args ...any) {
 		ack, _ := extractAck(args)
+		if access := h.server.wordChainAccess; access != nil {
+			if err := access.CanViewWordChain(userID); err != nil {
+				replyAckError(ack, err)
+				return
+			}
+		}
 		client.Join(wordChainChannel)
 		replyAck(ack, map[string]any{"joined": true}, "")
 	})
@@ -251,6 +259,18 @@ func replyAck(ack socket.Ack, data any, errMsg string) {
 	}
 	if data != nil {
 		resp["data"] = data
+	}
+	ack([]any{resp}, nil)
+}
+
+func replyAckError(ack socket.Ack, err error) {
+	if ack == nil {
+		return
+	}
+	resp := map[string]any{"ok": false, "error": err.Error()}
+	var httpErr *utils.HTTPError
+	if errors.As(err, &httpErr) && httpErr.Code != "" {
+		resp["code"] = httpErr.Code
 	}
 	ack([]any{resp}, nil)
 }

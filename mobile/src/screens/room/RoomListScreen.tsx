@@ -3,14 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, RefreshControl, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  type CompositeNavigationProp,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import { useWordChainConfigStore } from '@ola/shared/stores/word-chain/wordChainConfigStore';
 import type { Room } from '@ola/shared/types';
-import type { RoomStackParamList } from '@navigation/types';
-import { ROOM_ROUTES } from '@navigation/routes';
+import type { RoomStackParamList, RootStackParamList } from '@navigation/types';
+import { ROOM_ROUTES, ROOT_ROUTES } from '@navigation/routes';
 import { DIVIDER } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
@@ -166,7 +170,13 @@ function SectionHeader({ label }: { label: string }) {
 export function RoomListScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const navigation = useNavigation<NativeStackNavigationProp<RoomStackParamList>>();
+  const navigation =
+    useNavigation<
+      CompositeNavigationProp<
+        NativeStackNavigationProp<RoomStackParamList>,
+        NativeStackNavigationProp<RootStackParamList>
+      >
+    >();
   const insets = useSafeAreaInsets();
   const rooms = useRoomListStore((s) => s.rooms);
   const loading = useRoomListStore((s) => s.loading);
@@ -227,6 +237,11 @@ export function RoomListScreen() {
     closeRoom();
     setJoiningRoom(null);
   }, [closeRoom]);
+
+  const buyVip = useCallback(() => {
+    cancelJoin();
+    navigation.navigate(ROOT_ROUTES.BuyVip, { mode: 'extend' });
+  }, [cancelJoin, navigation]);
 
   const quickJoin = useCallback(() => {
     const available = [...rooms]
@@ -325,11 +340,19 @@ export function RoomListScreen() {
               elevation: 8,
             }}
           >
-            {joinStatus === 'error' ? (
+            {joinStatus === 'error' || joinStatus === 'vipRequired' ? (
               <>
                 <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
-                  {t('room.joinError')}
+                  {t(joinStatus === 'vipRequired' ? 'room.vipRequired' : 'room.joinError')}
                 </Text>
+                {joinStatus === 'vipRequired' && (
+                  <Pressable
+                    onPress={buyVip}
+                    className="rounded-full bg-ola-button px-6 py-2 active:opacity-90"
+                  >
+                    <Text className="text-sm font-medium text-white">{t('room.buyVip')}</Text>
+                  </Pressable>
+                )}
                 <Pressable
                   onPress={cancelJoin}
                   className="rounded-full bg-ola-primary px-6 py-2 active:opacity-90"

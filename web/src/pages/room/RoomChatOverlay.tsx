@@ -5,6 +5,7 @@ import { toast } from '@lib';
 import { RoomChatView } from './components/RoomChatView';
 import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
 import { useRoomChatStore } from '@/store/roomChatStore';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import type { ActiveRoom } from '@ola/shared/types';
 
@@ -14,6 +15,7 @@ export function RoomChatOverlay({ visible }: { visible: boolean }) {
   const joinStatus = useRoomChatStore((state) => state.status);
   const closeRoom = useRoomChatStore((state) => state.close);
   const fetchRooms = useRoomListStore((state) => state.fetchRooms);
+  const pushOverlay = useAppOverlayStore((state) => state.push);
   const [pendingQuit, setPendingQuit] = useState<ActiveRoom | null>(null);
 
   if (activeRoom == null) return null;
@@ -21,6 +23,11 @@ export function RoomChatOverlay({ visible }: { visible: boolean }) {
   function exitRoom() {
     closeRoom();
     fetchRooms();
+  }
+
+  function buyVip() {
+    exitRoom();
+    pushOverlay('vipBuy', 'extend');
   }
 
   function confirmQuit() {
@@ -39,7 +46,11 @@ export function RoomChatOverlay({ visible }: { visible: boolean }) {
           onClose={() => setPendingQuit(activeRoom)}
         />
       ) : (
-        <RoomJoiningOverlay status={joinStatus} onClose={exitRoom} />
+        <RoomJoiningOverlay
+          status={joinStatus}
+          onClose={exitRoom}
+          onBuyVip={buyVip}
+        />
       )}
 
       <ConfirmDialog

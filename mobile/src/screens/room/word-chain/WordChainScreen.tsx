@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { CompositeScreenProps } from '@react-navigation/native';
+import { useFocusEffect, type CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { WORD_CHAIN_INPUT_LOCK_HINT_KEYS } from '@ola/shared/constants';
 import {
@@ -107,6 +107,8 @@ export function WordChainScreen({ navigation }: Props) {
   const status = useWordChainStore((store) => store.status);
   const state = useWordChainStore((store) => store.state);
   const guesses = useWordChainStore((store) => store.guesses);
+  const needsVipToPlay = useWordChainStore((store) => store.needsVipToPlay);
+  const refreshAccess = useWordChainStore((store) => store.refreshAccess);
   const allMessages = useWordChainStore((store) => store.messages);
   const hasMore = useWordChainStore((store) => store.hasMore);
   const loadingMore = useWordChainStore((store) => store.loadingMore);
@@ -188,7 +190,8 @@ export function WordChainScreen({ navigation }: Props) {
     [i18n.language]
   );
   const remaining = remainingGuesses(state, guesses);
-  const lock = wordChainInputLock(state, guesses, currentUserId);
+  const lock = wordChainInputLock(state, guesses, currentUserId, needsVipToPlay);
+  const vipLocked = lock === 'vipToPlay';
   const celebrationId = celebration?.id ?? null;
   const initialScroll =
     scrollRestore != null && feed[scrollRestore.index]?.key === scrollRestore.key
@@ -243,6 +246,13 @@ export function WordChainScreen({ navigation }: Props) {
   );
 
   const closeDialog = () => setDialog(null);
+  const openBuyVip = () => navigation.navigate(ROOT_ROUTES.BuyVip, { mode: 'extend' });
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshAccess();
+    }, [refreshAccess])
+  );
 
   function scrollAnchor(): WordChainScrollAnchor | null {
     const list = listRef.current;
@@ -301,11 +311,19 @@ export function WordChainScreen({ navigation }: Props) {
         </View>
       </View>
 
-      {status === 'error' ? (
+      {status === 'error' || status === 'vipRequired' ? (
         <View className="flex-1 items-center justify-center gap-4 px-8">
           <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
-            {t('wordChain.joinError')}
+            {t(status === 'vipRequired' ? 'wordChain.vipToView' : 'wordChain.joinError')}
           </Text>
+          {status === 'vipRequired' && (
+            <Pressable
+              onPress={openBuyVip}
+              className="rounded-full bg-ola-button px-6 py-2 active:opacity-90"
+            >
+              <Text className="text-sm font-medium text-white">{t('room.buyVip')}</Text>
+            </Pressable>
+          )}
           <Pressable
             onPress={() => navigation.goBack()}
             className="rounded-full bg-ola-primary px-6 py-2 active:opacity-90"
@@ -394,6 +412,7 @@ export function WordChainScreen({ navigation }: Props) {
             onHint={() => setDialog('hint')}
             onLookup={() => openLookup('')}
             onBuyGuesses={lock === 'noGuesses' ? () => setDialog('guesses') : undefined}
+            onBuyVip={vipLocked ? openBuyVip : undefined}
           />
         </ChatKeyboardArea>
       )}
@@ -406,8 +425,10 @@ export function WordChainScreen({ navigation }: Props) {
         />
       )}
 
-      {dialog === 'hint' && <WordChainHintDialog onClose={closeDialog} onSend={send} />}
-      {dialog === 'guesses' && <WordChainGuessDialog onClose={closeDialog} />}
+      {dialog === 'hint' && !vipLocked && (
+        <WordChainHintDialog onClose={closeDialog} onSend={send} />
+      )}
+      {dialog === 'guesses' && !vipLocked && <WordChainGuessDialog onClose={closeDialog} />}
       <WordChainLeaderboardDialog visible={dialog === 'leaderboard'} onClose={closeDialog} />
       {dialog === 'lookup' && (
         <WordChainLookupDialog initialWord={lookupWord} onClose={closeDialog} />

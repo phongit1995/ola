@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Upload } from 'antd'
+import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Switch, Upload } from 'antd'
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { useCreateRoom, useUpdateRoom } from './useRoomQueries'
 import { AdminUploadService } from '@/services/adminUpload.service'
@@ -20,6 +20,7 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
   const [uploading, setUploading] = useState(false)
   const isEdit = room != null
   const imageUrl = Form.useWatch('imageUrl', form)
+  const vipRequired = Form.useWatch('vipRequired', form)
 
   useEffect(() => {
     if (open) {
@@ -29,6 +30,8 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
         imageUrl: room?.imageUrl ?? '',
         maxMembers: room?.maxMembers ?? undefined,
         index: room?.index ?? 0,
+        vipRequired: room?.vipRequired ?? false,
+        vipMinMembers: room?.vipMinMembers ?? 0,
       })
     }
   }, [open, room, form])
@@ -47,7 +50,8 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
   }
 
   async function onOk() {
-    const values = await form.validateFields()
+    const fields = await form.validateFields()
+    const values = { ...fields, vipMinMembers: fields.vipMinMembers ?? 0 }
     try {
       if (isEdit && room) {
         await updateRoom.mutateAsync({ id: room.id, payload: values })
@@ -137,6 +141,22 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
         </Form.Item>
         <Form.Item name="index" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
           <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+        </Form.Item>
+        <Form.Item name="vipRequired" label="Yêu cầu VIP" valuePropName="checked">
+          <Switch />
+        </Form.Item>
+        <Form.Item
+          name="vipMinMembers"
+          label="Cần VIP khi phòng có từ (người online)"
+          extra="0 = luôn cần VIP; người đang ở trong phòng không bị ảnh hưởng"
+        >
+          <InputNumber<number>
+            min={0}
+            precision={0}
+            disabled={!vipRequired}
+            style={{ width: '100%' }}
+            placeholder="0"
+          />
         </Form.Item>
       </Form>
     </Modal>

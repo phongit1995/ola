@@ -24,6 +24,7 @@ import (
 	"ola-chat-server/internal/modules/push"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
+	"ola-chat-server/internal/modules/room/wordchain"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/story"
@@ -59,6 +60,7 @@ func CreateServer(
 	callRouter *call.Router,
 	roomRouter *room.Router,
 	roomService *room.Service,
+	wordChainAccess *wordchain.Access,
 	settingRouter *setting.Router,
 	meRouter *me.Router,
 	clanRouter *clan.Router,
@@ -83,6 +85,7 @@ func CreateServer(
 	cfg *config.Config,
 ) *Server {
 	wsServer.SetRoomHandler(roomService)
+	wsServer.SetWordChainAccess(wordChainAccess)
 
 	r := gin.Default()
 

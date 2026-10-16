@@ -24,6 +24,10 @@ type RoomSocketService interface {
 	RoomEnabled(roomID string) (bool, error)
 }
 
+type WordChainSocketAccess interface {
+	CanViewWordChain(userID string) error
+}
+
 type Server struct {
 	io              *socket.Server
 	jwtService      *services.JWTService
@@ -31,6 +35,7 @@ type Server struct {
 	presenceService *PresenceService
 	roomPresence    *RoomPresenceService
 	roomSvc         RoomSocketService
+	wordChainAccess WordChainSocketAccess
 	cache           *services.CacheService
 	logger          *zap.SugaredLogger
 	redisClient     *redis.Client
@@ -227,6 +232,10 @@ func (s *Server) GetRoomPresence() *RoomPresenceService {
 
 func (s *Server) SetRoomHandler(svc RoomSocketService) {
 	s.roomSvc = svc
+}
+
+func (s *Server) SetWordChainAccess(access WordChainSocketAccess) {
+	s.wordChainAccess = access
 }
 
 const broadcastRoom = socket.Room("broadcast:online")

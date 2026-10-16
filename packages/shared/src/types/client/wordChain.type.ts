@@ -17,7 +17,7 @@ import type {
 
 export type WordChainMoveStatus = 'correct' | 'win' | 'warning' | 'error';
 
-export type WordChainInputLock = 'waitTurn' | 'noGuesses';
+export type WordChainInputLock = 'waitTurn' | 'noGuesses' | 'vipToPlay';
 
 export type WordChainLeaderboardTab = WordChainLeaderboardSort | 'history';
 
@@ -64,6 +64,7 @@ export interface WordChainStoreState {
   hintPrice: number;
   guessPrice: number;
   guessPackSize: number;
+  needsVipToPlay: boolean;
   hint: WordChainHint | null;
   guesses: WordChainGuesses | null;
   messages: WordChainMessage[];
@@ -94,6 +95,7 @@ export interface WordChainStoreState {
   lookup: (word: string) => Promise<void>;
   clearLookup: () => void;
   dismissCelebration: (id: string) => void;
+  refreshAccess: () => void;
   reset: () => void;
 }
 
@@ -112,6 +114,7 @@ export type WordChainStoreData = Omit<
   | 'lookup'
   | 'clearLookup'
   | 'dismissCelebration'
+  | 'refreshAccess'
   | 'reset'
 >;
 

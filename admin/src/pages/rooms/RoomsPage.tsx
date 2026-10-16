@@ -8,6 +8,7 @@ import {
   Space,
   Switch,
   Table,
+  Tag,
   Typography,
   type TableColumnsType,
 } from 'antd'
@@ -131,6 +132,19 @@ export function RoomsPage() {
         `${room.memberCount}${room.maxMembers > 0 ? ` / ${room.maxMembers}` : ''}`,
     },
     {
+      title: 'VIP',
+      dataIndex: 'vipRequired',
+      width: 130,
+      render: (_, room) =>
+        room.vipRequired ? (
+          <Tag color="gold">
+            {room.vipMinMembers > 0 ? `VIP từ ${room.vipMinMembers} người` : 'VIP'}
+          </Tag>
+        ) : (
+          '—'
+        ),
+    },
+    {
       title: 'Bật',
       dataIndex: 'enabled',
       width: 90,
@@ -205,7 +219,7 @@ export function RoomsPage() {
         columns={columns}
         dataSource={data?.items ?? []}
         loading={isFetching}
-        scroll={{ x: 880 }}
+        scroll={{ x: 1010 }}
         pagination={{
           current: page,
           pageSize: PAGE_SIZE,

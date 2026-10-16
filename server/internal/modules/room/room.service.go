@@ -43,6 +43,7 @@ var (
 	ErrRoomBlockSelf         = errors.New("cannot block yourself")
 	ErrRoomBlockUserNotFound = errors.New("user not found")
 	ErrRoomBlockLimit        = errors.New("room block limit reached")
+	ErrRoomVipRequired       = utils.NewHTTPErrorWithCode(http.StatusForbidden, "Phòng này chỉ dành cho thành viên VIP.", constants.ErrorCodeRoomVipRequired)
 )
 
 type Service struct {
@@ -126,13 +127,15 @@ func (s *Service) acquireRoomMediaUpload(ctx context.Context, userID, roomID uui
 
 func (s *Service) Create(adminID uuid.UUID, req *CreateRoomRequest) (*RoomResponse, error) {
 	room := &models.Room{
-		Name:        req.Name,
-		Description: req.Description,
-		ImageURL:    req.ImageURL,
-		MaxMembers:  req.MaxMembers,
-		Index:       req.Index,
-		Enabled:     true,
-		CreatedBy:   adminID,
+		Name:          req.Name,
+		Description:   req.Description,
+		ImageURL:      req.ImageURL,
+		MaxMembers:    req.MaxMembers,
+		Index:         req.Index,
+		Enabled:       true,
+		VipRequired:   req.VipRequired,
+		VipMinMembers: req.VipMinMembers,
+		CreatedBy:     adminID,
 	}
 	if err := s.repo.Create(room); err != nil {
 		return nil, err
@@ -163,6 +166,12 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, req *UpdateRoomReque
 	}
 	if req.Enabled != nil {
 		room.Enabled = *req.Enabled
+	}
+	if req.VipRequired != nil {
+		room.VipRequired = *req.VipRequired
+	}
+	if req.VipMinMembers != nil {
+		room.VipMinMembers = *req.VipMinMembers
 	}
 	if err := s.repo.Save(room); err != nil {
 		return nil, err
@@ -261,7 +270,7 @@ func (s *Service) RequestJoin(ctx context.Context, userID, roomID uuid.UUID) (*J
 	}
 
 	presence := s.wsServer.GetRoomPresence()
-	if room.MaxMembers > 0 {
+	if room.MaxMembers > 0 || room.VipRequired {
 		isMember, err := presence.IsMember(ctx, roomID.String(), userID.String())
 		if err != nil {
 			return nil, err
@@ -271,8 +280,12 @@ func (s *Service) RequestJoin(ctx context.Context, userID, roomID uuid.UUID) (*J
 			if err != nil {
 				return nil, err
 			}
-			if count >= room.MaxMembers {
+			if room.MaxMembers > 0 && count >= room.MaxMembers {
 				return nil, errors.New("room is full")
+			}
+			// shortcut: the VIP threshold is checked when the ticket is issued, so concurrent joins can pass it by a few; enforce it in presence.Join if it must be exact
+			if room.VipRequired && count >= room.VipMinMembers && !s.hasActiveVip(userID) {
+				return nil, ErrRoomVipRequired
 			}
 		}
 	}
@@ -1139,18 +1152,25 @@ func (s *Service) buildList(ctx context.Context, rooms []*models.Room, total int
 	return &RoomListResponse{Items: items, Total: total, Limit: limit, Offset: offset}
 }
 
+func (s *Service) hasActiveVip(userID uuid.UUID) bool {
+	u, err := s.userCache.GetUserCache(userID, true)
+	return err == nil && u.HasActiveVip(time.Now())
+}
+
 func toRoomResponse(room *models.Room, memberCount int) *RoomResponse {
 	return &RoomResponse{
-		ID:          room.ID.String(),
-		Name:        room.Name,
-		Description: room.Description,
-		ImageURL:    room.ImageURL,
-		MaxMembers:  room.MaxMembers,
-		Index:       room.Index,
-		MemberCount: memberCount,
-		Enabled:     room.Enabled,
-		CreatedBy:   room.CreatedBy.String(),
-		CreatedAt:   room.CreatedAt.UTC().Format(time.RFC3339),
+		ID:            room.ID.String(),
+		Name:          room.Name,
+		Description:   room.Description,
+		ImageURL:      room.ImageURL,
+		MaxMembers:    room.MaxMembers,
+		Index:         room.Index,
+		MemberCount:   memberCount,
+		Enabled:       room.Enabled,
+		VipRequired:   room.VipRequired,
+		VipMinMembers: room.VipMinMembers,
+		CreatedBy:     room.CreatedBy.String(),
+		CreatedAt:     room.CreatedAt.UTC().Format(time.RFC3339),
 	}
 }
 
