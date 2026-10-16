@@ -2,7 +2,7 @@ import { App, Button, Card, Col, Collapse, Form, Input, InputNumber, Row, Select
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { Typography } from 'antd'
 import { PlatformRulesTable } from '@/components/PlatformRulesTable'
-import { useAppSettings, usePutAppSettings } from '@/hooks/useAppSettings'
+import { useAppSettings, usePutAppSettings } from '@/hooks/useAppSettingQueries'
 import { env } from '@/config/env'
 import { errorMessage } from '@/lib/apiError'
 import { VIETQR_BANKS, findBankByBin } from '@/lib/banks'

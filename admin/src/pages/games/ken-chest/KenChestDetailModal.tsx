@@ -9,7 +9,7 @@ import {
   Typography,
   type TableColumnsType,
 } from 'antd'
-import { useKenChestClaims } from '@/hooks/useKenChests'
+import { useKenChestClaims } from './useKenChestQueries'
 import { useDebounce } from '@/hooks/useDebounce'
 import { formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'

@@ -1,8 +1,8 @@
 import { Button, Card, Descriptions, Skeleton, Space, Tag, Typography } from 'antd'
 import { ReloadOutlined, RobotOutlined } from '@ant-design/icons'
 import { UserCell } from '@/components/UserCell'
-import { useAppSettings } from '@/hooks/useAppSettings'
-import { useWordChainOverview } from '@/hooks/useWordChain'
+import { useAppSettings } from '@/hooks/useAppSettingQueries'
+import { useWordChainOverview } from './useWordChainQueries'
 import { formatDateTime, formatKen } from '@/lib/format'
 import { wordChainSetting } from './wordChainMeta'
 

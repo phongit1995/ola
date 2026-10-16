@@ -16,7 +16,7 @@ import {
   useKenAutoSettings,
   useUpdateKenAutoJob,
   useUpdateKenAutoSettings,
-} from '@/hooks/useKenChests'
+} from './useKenChestQueries'
 import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import { KenChestAutoJobModal } from './KenChestAutoJobModal'

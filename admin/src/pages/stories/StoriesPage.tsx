@@ -34,7 +34,7 @@ import {
   useStoryGenres,
   useStorySources,
   useStorySummary,
-} from '@/hooks/useStories'
+} from './useStoryQueries'
 import { formatCount, formatDate, formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { StoryChaptersModal } from './StoryChaptersModal'

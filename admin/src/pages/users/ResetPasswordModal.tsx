@@ -1,5 +1,5 @@
 import { App, Form, Input, Modal } from 'antd'
-import { useResetPassword } from '@/hooks/useUsers'
+import { useResetPassword } from '@/hooks/useUserQueries'
 import { errorMessage } from '@/lib/apiError'
 
 interface ResetPasswordFormValues {

@@ -1,7 +1,7 @@
 import { Avatar, Button, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
 import { ReloadOutlined, RobotOutlined } from '@ant-design/icons'
 import { UserCell } from '@/components/UserCell'
-import { useWordChainMessages } from '@/hooks/useWordChain'
+import { useWordChainMessages } from './useWordChainQueries'
 import { formatDateTime } from '@/lib/format'
 import type { WordChainMessage } from '@/types'
 import { BOT_TYPE_LABEL, CODE_META } from './wordChainMeta'

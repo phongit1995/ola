@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button, Table, Tag, Typography, type TableColumnsType } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import { UserCell } from '@/components/UserCell'
-import { useWordChainWins } from '@/hooks/useWordChain'
+import { useWordChainWins } from './useWordChainQueries'
 import { formatDateTime } from '@/lib/format'
 import type { WordChainWin } from '@/types'
 

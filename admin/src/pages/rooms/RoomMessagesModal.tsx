@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { App, Avatar, Button, Empty, Image, Modal, Skeleton, Tag, Typography } from 'antd'
 import { DeleteOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons'
-import { useDeleteRoomMessage, useRoomMessages } from '@/hooks/useRooms'
+import { useDeleteRoomMessage, useRoomMessages } from './useRoomQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import type { RoomMessage } from '@/types'

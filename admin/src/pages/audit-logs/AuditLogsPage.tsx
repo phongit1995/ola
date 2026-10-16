@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Card, Select, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
-import { useAuditLogs } from '@/hooks/useAuditLogs'
+import { useAuditLogs } from './useAuditLogQueries'
 import { formatDateTime } from '@/lib/format'
 import type { AdminAuditLog } from '@/types'
 import { DateRangeFilter } from '@/components/DateRangeFilter'

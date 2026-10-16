@@ -27,13 +27,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { usePenSideStats, usePenStats, usePenUserStats } from '@/hooks/usePen'
+import { usePenSideStats, usePenStats, usePenUserStats } from './usePenQueries'
 import type { PenResult, PenUserStatsItem, PenUserStatsSortBy } from '@/types'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
 import { NetText } from '@/components/NetText'
-import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '@/hooks/useUserStatsTable'
+import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '../useUserStatsTable'
 
 const USER_STATS_SORTS: PenUserStatsSortBy[] = ['staked', 'netKen', 'shots', 'catches']
 

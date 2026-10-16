@@ -19,7 +19,7 @@ import {
   PlusOutlined,
 } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useDeleteRoom, useRooms, useUpdateRoom } from '@/hooks/useRooms'
+import { useDeleteRoom, useRooms, useUpdateRoom } from './useRoomQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { RoomFormModal } from './RoomFormModal'

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { App, Divider, Input, InputNumber, Modal, Switch, Typography } from 'antd'
-import { useCreateWheel, useSaveWheelConfig, useUpdateWheel } from '@/hooks/useWheel'
+import { useCreateWheel, useSaveWheelConfig, useUpdateWheel } from './useWheelQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { SaveWheelConfigRequest, Wheel, WheelSegment } from '@/types'

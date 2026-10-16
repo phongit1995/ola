@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Modal, Table, Tag, type TableColumnsType } from 'antd'
-import { useVipHistory } from '@/hooks/useVipTransfers'
+import { useVipHistory } from '@/hooks/useVipTransferQueries'
 import { formatDateTime } from '@/lib/format'
 import type { VipPurchaseHistory } from '@/types'
 

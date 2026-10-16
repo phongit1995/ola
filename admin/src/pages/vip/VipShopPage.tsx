@@ -20,7 +20,7 @@ import {
   useDeleteVipShopItem,
   useUpdateVipShopItem,
   useVipShopItems,
-} from '@/hooks/useVipShop'
+} from './useVipShopQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'

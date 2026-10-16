@@ -9,7 +9,7 @@ import {
   HistoryOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
-import { useDeleteWheel, useWheels } from '@/hooks/useWheel'
+import { useDeleteWheel, useWheels } from './useWheelQueries'
 import { errorMessage } from '@/lib/apiError'
 import type { Wheel } from '@/types'
 import { WheelEditorModal } from './WheelEditorModal'

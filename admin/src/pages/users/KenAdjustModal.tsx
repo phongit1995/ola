@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { App, Form, Input, InputNumber, Modal, Segmented } from 'antd'
-import { useAdjustKen } from '@/hooks/useKen'
+import { useAdjustKen } from '@/hooks/useKenQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { KenAdjustRequest } from '@/types'

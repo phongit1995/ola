@@ -1,5 +1,5 @@
 import { App, Form, InputNumber, Modal, Radio } from 'antd'
-import { useCreateKenChest } from '@/hooks/useKenChests'
+import { useCreateKenChest } from './useKenChestQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { CreateKenChestRequest, KenChestRewardMode } from '@/types'

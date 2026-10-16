@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Image, Modal, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
-import { useUserPosts } from '@/hooks/useMe'
+import { useUserPosts } from '@/hooks/useMeQueries'
 import { formatDateTime } from '@/lib/format'
 import { VISIBILITY } from '../me/meVisibility'
 import { MeDetailModal } from '../me/MeDetailModal'

@@ -4,7 +4,7 @@ import {
   useCreateEggPack,
   useSaveEggConfig,
   useUpdateEggPack,
-} from '@/hooks/useEgg'
+} from './useEggQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { EggPack as ApiEggPack, SaveEggConfigRequest } from '@/types'

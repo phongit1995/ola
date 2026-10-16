@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Switch, Upload } from 'antd'
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
-import { useCreateMiniGame, useUpdateMiniGame } from '@/hooks/useMiniGames'
+import { useCreateMiniGame, useUpdateMiniGame } from './useMiniGameQueries'
 import { AdminUploadService } from '@/services/adminUpload.service'
 import { errorMessage } from '@/lib/apiError'
 import type { CreateMiniGameRequest, MiniGame } from '@/types'

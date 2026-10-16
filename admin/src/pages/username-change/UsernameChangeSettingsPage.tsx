@@ -1,6 +1,6 @@
 import { App, Button, Card, Col, Form, InputNumber, Row, Spin, Switch, Typography } from 'antd'
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
-import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
+import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import { settingValue } from '@/lib/appSetting'
 import type { UsernameChangeSetting, UsernameChangeTierSetting } from '@/types'

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Modal, Table, Tag, Typography, type TableColumnsType } from 'antd'
-import { useUserSessions } from '@/hooks/useUsers'
+import { useUserSessions } from '@/hooks/useUserQueries'
 import { formatDateTime } from '@/lib/format'
 import type { AdminUserSession } from '@/types'
 

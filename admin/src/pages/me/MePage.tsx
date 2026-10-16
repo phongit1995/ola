@@ -23,7 +23,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useMeList, useUpdateMeStatus } from '@/hooks/useMe'
+import { useMeList, useUpdateMeStatus } from '@/hooks/useMeQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { MeDetailModal } from './MeDetailModal'

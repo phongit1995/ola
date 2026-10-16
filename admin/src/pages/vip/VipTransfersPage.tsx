@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Card, Input, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
-import { useVipTransfers } from '@/hooks/useVipTransfers'
+import { useVipTransfers } from '@/hooks/useVipTransferQueries'
 import { useDebounce } from '@/hooks/useDebounce'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { AdminVipTransfer } from '@/types'

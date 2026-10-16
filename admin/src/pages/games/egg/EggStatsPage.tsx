@@ -29,7 +29,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { useEggPacks, useEggStats, useEggUserStats, useEggVipStats } from '@/hooks/useEgg'
+import { useEggPacks, useEggStats, useEggUserStats, useEggVipStats } from './useEggQueries'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type {
   EggCategoryType,
@@ -43,7 +43,7 @@ import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
 import { NetText } from '@/components/NetText'
-import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '@/hooks/useUserStatsTable'
+import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '../useUserStatsTable'
 
 const CATEGORY_META: Record<EggCategoryType, { label: string; color: string }> = {
   nothing: { label: 'Không trúng', color: '#94a3b8' },

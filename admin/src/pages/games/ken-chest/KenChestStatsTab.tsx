@@ -26,7 +26,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { useKenChestStats, useKenChestUserStats } from '@/hooks/useKenChests'
+import { useKenChestStats, useKenChestUserStats } from './useKenChestQueries'
 import type {
   KenChestSource,
   KenChestStatsSourceRow,
@@ -36,7 +36,7 @@ import type {
 import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
-import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '@/hooks/useUserStatsTable'
+import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '../useUserStatsTable'
 
 const SOURCE_META: Record<KenChestSource, { label: string; color: string }> = {
   manual: { label: 'Thủ công', color: 'blue' },

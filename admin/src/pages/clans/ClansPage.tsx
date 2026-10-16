@@ -13,7 +13,7 @@ import {
 } from 'antd'
 import { DeleteOutlined, FlagOutlined, TeamOutlined } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useClans, useDeleteClan } from '@/hooks/useClans'
+import { useClans, useDeleteClan } from './useClanQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { ClanMembersModal } from './ClanMembersModal'

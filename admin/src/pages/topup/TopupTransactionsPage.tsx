@@ -29,7 +29,7 @@ import {
   YAxis,
 } from 'recharts'
 import { UserCell } from '@/components/UserCell'
-import { useManualCreditTopup, useTopupStats, useTopupTransactions } from '@/hooks/useTopup'
+import { useManualCreditTopup, useTopupStats, useTopupTransactions } from './useTopupQueries'
 import { errorMessage } from '@/lib/apiError'
 import type { TopupTransaction, TopupTxStatus } from '@/types'
 import { formatCount, formatDateTime } from '@/lib/format'

@@ -20,7 +20,7 @@ import {
   PlayCircleOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
-import { useDeleteMiniGame, useMiniGames, useUpdateMiniGame } from '@/hooks/useMiniGames'
+import { useDeleteMiniGame, useMiniGames, useUpdateMiniGame } from './useMiniGameQueries'
 import { errorMessage } from '@/lib/apiError'
 import { MiniGameFormModal } from './MiniGameFormModal'
 import { GameMatchesPage } from './GameMatchesPage'

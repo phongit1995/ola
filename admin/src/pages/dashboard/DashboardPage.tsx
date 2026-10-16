@@ -28,7 +28,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { useDashboardOverview } from '@/hooks/useDashboard'
+import { useDashboardOverview } from './useDashboardQueries'
 import type { DashboardSpendByType } from '@/types'
 import { formatCount } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'

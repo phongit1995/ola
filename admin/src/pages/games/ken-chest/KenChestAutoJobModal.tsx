@@ -3,7 +3,7 @@ import { App, Button, Form, Input, InputNumber, Modal, Segmented, Space, Switch,
 import { PlusOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import { kenNumberInputProps } from '@/lib/format'
-import { useCreateKenAutoJob, useUpdateKenAutoJob } from '@/hooks/useKenChests'
+import { useCreateKenAutoJob, useUpdateKenAutoJob } from './useKenChestQueries'
 import { errorMessage } from '@/lib/apiError'
 import type {
   KenChestAutoJob,

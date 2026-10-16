@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Input, Modal, Select, Space, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { useWheelSpins } from '@/hooks/useWheel'
+import { useWheelSpins } from './useWheelQueries'
 import { useDebounce } from '@/hooks/useDebounce'
 import type { AdminWheelSpin, WheelSegmentKind } from '@/types'
 import { WHEEL_KINDS, kindMeta } from './wheelHelpers'

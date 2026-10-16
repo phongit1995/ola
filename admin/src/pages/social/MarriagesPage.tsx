@@ -15,7 +15,7 @@ import {
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { HeartFilled, ReloadOutlined } from '@ant-design/icons'
-import { useMarriageProposals, useMarriages, useMarriageStats } from '@/hooks/useMarriage'
+import { useMarriageProposals, useMarriages, useMarriageStats } from './useMarriageQueries'
 import type {
   MarriageItem,
   MarriageProposalItem,

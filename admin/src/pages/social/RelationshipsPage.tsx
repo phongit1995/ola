@@ -22,7 +22,7 @@ import {
   useRelationships,
   useRelationshipStats,
   useRelationshipUserStats,
-} from '@/hooks/useRelationship'
+} from './useRelationshipQueries'
 import type {
   FollowItem,
   RelationshipItem,

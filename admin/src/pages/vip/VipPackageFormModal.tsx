@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { App, Form, Input, InputNumber, Modal, Switch } from 'antd'
-import { useCreateVipPackage, useUpdateVipPackage } from '@/hooks/useVipPackages'
+import { useCreateVipPackage, useUpdateVipPackage } from './useVipPackageQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { CreateVipPackageRequest, VipPackage } from '@/types'

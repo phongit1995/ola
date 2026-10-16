@@ -35,7 +35,7 @@ import {
   useRunStoryCrawler,
   useSaveStoryCrawlerSetting,
   useStoryCrawler,
-} from '@/hooks/useStories'
+} from './useStoryQueries'
 import { ApiError, errorMessage } from '@/lib/apiError'
 import { formatCount, formatDateTime } from '@/lib/format'
 import type {

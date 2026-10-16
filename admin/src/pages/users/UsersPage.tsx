@@ -20,7 +20,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUsers'
+import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUserQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { UserDetailModal } from './UserDetailModal'

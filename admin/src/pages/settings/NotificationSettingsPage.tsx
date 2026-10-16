@@ -12,7 +12,7 @@ import {
   Upload,
 } from 'antd'
 import { InboxOutlined, SaveOutlined } from '@ant-design/icons'
-import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
+import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import type { PushFirebaseSettingStatus, PushNotificationSetting } from '@/types'
 import { formatDateTime } from '@/lib/format'

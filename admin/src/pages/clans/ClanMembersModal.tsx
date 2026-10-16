@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Avatar, Modal, Table, Tag, type TableColumnsType } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
-import { useClanMembers } from '@/hooks/useClans'
+import { useClanMembers } from './useClanQueries'
 import { formatDateTime } from '@/lib/format'
 import type { ClanMember } from '@/types'
 

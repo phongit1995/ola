@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Input, Table, Tag, Typography, type TableColumnsType } from 'antd'
-import { useKenAllClaims } from '@/hooks/useKenChests'
+import { useKenAllClaims } from './useKenChestQueries'
 import { useDebounce } from '@/hooks/useDebounce'
 import { formatDateTime } from '@/lib/format'
 import { UserCell } from '@/components/UserCell'

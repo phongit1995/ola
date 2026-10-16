@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Avatar, Modal, Table, type TableColumnsType } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
-import { useKenTransactions } from '@/hooks/useKen'
+import { useKenTransactions } from '@/hooks/useKenQueries'
 import { formatDateTime } from '@/lib/format'
 import { kenTypeLabel } from './kenMeta'
 import type { KenTransaction } from '@/types'

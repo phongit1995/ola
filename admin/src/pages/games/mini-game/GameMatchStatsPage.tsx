@@ -29,7 +29,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { useGameMatchStats, useGameMatchSuspects } from '@/hooks/useGameMatches'
+import { useGameMatchStats, useGameMatchSuspects } from './useGameMatchQueries'
 import type {
   GameMatchMode,
   GameMatchStatsGameRow,

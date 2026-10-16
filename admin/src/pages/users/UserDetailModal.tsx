@@ -10,7 +10,7 @@ import {
   UserOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
-import { useUserDetail } from '@/hooks/useUsers'
+import { useUserDetail } from '@/hooks/useUserQueries'
 import { formatDateTime } from '@/lib/format'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { GENDER } from './userMeta'

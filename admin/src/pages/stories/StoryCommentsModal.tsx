@@ -14,7 +14,7 @@ import {
   theme,
 } from 'antd'
 import { DeleteOutlined, LikeOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons'
-import { useDeleteStoryComment, useStoryComments } from '@/hooks/useStories'
+import { useDeleteStoryComment, useStoryComments } from './useStoryQueries'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import type { AdminStory, AdminStoryComment } from '@/types'

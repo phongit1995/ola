@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { App, Button, Card, Space, Table, Tabs, Tag, Typography, type TableColumnsType } from 'antd'
 import { DeleteOutlined, EyeOutlined, GiftOutlined, PlusOutlined } from '@ant-design/icons'
-import { useDeleteKenChest, useKenChests } from '@/hooks/useKenChests'
+import { useDeleteKenChest, useKenChests } from './useKenChestQueries'
 import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'

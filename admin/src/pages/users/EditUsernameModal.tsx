@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { App, Form, Input, Modal } from 'antd'
-import { useUpdateUsername } from '@/hooks/useUsers'
+import { useUpdateUsername } from '@/hooks/useUserQueries'
 import { errorMessage } from '@/lib/apiError'
 
 interface EditUsernameFormValues {

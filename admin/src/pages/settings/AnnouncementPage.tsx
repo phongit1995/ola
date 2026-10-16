@@ -15,7 +15,7 @@ import {
   useAnnouncements,
   useDeleteAnnouncement,
   useUpdateAnnouncement,
-} from '@/hooks/useAnnouncements'
+} from './useAnnouncementQueries'
 import { errorMessage } from '@/lib/apiError'
 import { AnnouncementFormModal } from './AnnouncementFormModal'
 import type { Announcement } from '@/types'

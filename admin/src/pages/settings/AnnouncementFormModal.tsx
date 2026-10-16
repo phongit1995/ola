@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { App, DatePicker, Form, Input, Modal, Switch } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
-import { useCreateAnnouncement, useUpdateAnnouncement } from '@/hooks/useAnnouncements'
+import { useCreateAnnouncement, useUpdateAnnouncement } from './useAnnouncementQueries'
 import { errorMessage } from '@/lib/apiError'
 import type { Announcement } from '@/types'
 

@@ -18,7 +18,7 @@ import {
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import type { Dayjs } from 'dayjs'
-import { useWheelStats, useWheelUserStats, useWheelVipStats, useWheels } from '@/hooks/useWheel'
+import { useWheelStats, useWheelUserStats, useWheelVipStats, useWheels } from './useWheelQueries'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type {
   WheelStatsKind,
@@ -31,7 +31,7 @@ import type {
 import { kindMeta } from './wheelHelpers'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { NetText } from '@/components/NetText'
-import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '@/hooks/useUserStatsTable'
+import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '../useUserStatsTable'
 
 const USER_STATS_SORTS: WheelUserStatsSortBy[] = ['kenSpent', 'kenWon', 'netKen', 'spins', 'vipDays']
 

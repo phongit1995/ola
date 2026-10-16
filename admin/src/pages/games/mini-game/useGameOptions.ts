@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useMiniGames } from '@/hooks/useMiniGames'
+import { useMiniGames } from './useMiniGameQueries'
 import { GAME_ID_LABEL, gameLabel } from './gameMatchMeta'
 
 export function useGameOptions() {

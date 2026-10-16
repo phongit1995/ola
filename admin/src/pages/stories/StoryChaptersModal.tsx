@@ -20,7 +20,7 @@ import {
   useRefreshStoryLists,
   useStoryChapter,
   useStoryChapters,
-} from '@/hooks/useStories'
+} from './useStoryQueries'
 import { formatDate, formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import type { AdminStory, AdminStoryChapter } from '@/types'

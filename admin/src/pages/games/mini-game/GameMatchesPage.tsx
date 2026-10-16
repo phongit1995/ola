@@ -13,7 +13,7 @@ import {
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { BarChartOutlined, ReloadOutlined, TrophyFilled } from '@ant-design/icons'
-import { useGameMatches } from '@/hooks/useGameMatches'
+import { useGameMatches } from './useGameMatchQueries'
 import type {
   AdminGameMatch,
   GameMatchMode,

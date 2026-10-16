@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Upload } from 'antd'
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
-import { useCreateRoom, useUpdateRoom } from '@/hooks/useRooms'
+import { useCreateRoom, useUpdateRoom } from './useRoomQueries'
 import { AdminUploadService } from '@/services/adminUpload.service'
 import { errorMessage } from '@/lib/apiError'
 import type { CreateRoomRequest, Room } from '@/types'

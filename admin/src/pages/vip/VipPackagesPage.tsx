@@ -11,7 +11,7 @@ import {
   type TableColumnsType,
 } from 'antd'
 import { CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
-import { useDeleteVipPackage, useUpdateVipPackage, useVipPackages } from '@/hooks/useVipPackages'
+import { useDeleteVipPackage, useUpdateVipPackage, useVipPackages } from './useVipPackageQueries'
 import { errorMessage } from '@/lib/apiError'
 import { VipPackageFormModal } from './VipPackageFormModal'
 import type { VipPackage } from '@/types'

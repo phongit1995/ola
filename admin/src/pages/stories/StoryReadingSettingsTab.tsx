@@ -1,6 +1,6 @@
 import { App, Button, Card, Form, InputNumber, Spin, Switch, Typography } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
-import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
+import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import type { StoryReadingSetting } from '@/types'
 import {

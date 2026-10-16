@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { App, Form, Modal, Select } from 'antd'
-import { useGrantVip } from '@/hooks/useUsers'
+import { useGrantVip } from '@/hooks/useUserQueries'
 import { errorMessage } from '@/lib/apiError'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { GrantVipRequest } from '@/types'

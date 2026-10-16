@@ -11,7 +11,7 @@ import {
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import type { SorterResult } from 'antd/es/table/interface'
 import { ArrowRightOutlined, ReloadOutlined } from '@ant-design/icons'
-import { useKenTransfers, useKenTransferUserStats } from '@/hooks/useKen'
+import { useKenTransfers, useKenTransferUserStats } from '@/hooks/useKenQueries'
 import type {
   KenTransferItem,
   KenTransferUserStatsItem,

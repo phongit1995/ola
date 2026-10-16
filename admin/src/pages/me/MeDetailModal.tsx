@@ -20,7 +20,7 @@ import {
   useMeComments,
   useMeDetail,
   useUpdateMeStatus,
-} from '@/hooks/useMe'
+} from '@/hooks/useMeQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { VISIBILITY } from './meVisibility'

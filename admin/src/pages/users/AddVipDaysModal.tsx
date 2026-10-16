@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { App, Form, InputNumber, Modal, Segmented } from 'antd'
-import { useAddVipDays } from '@/hooks/useUsers'
+import { useAddVipDays } from '@/hooks/useUserQueries'
 import { errorMessage } from '@/lib/apiError'
 import type { AddVipDaysRequest } from '@/types'
 

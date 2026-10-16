@@ -13,7 +13,7 @@ import {
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { BarChartOutlined, ReloadOutlined } from '@ant-design/icons'
-import { usePenShots } from '@/hooks/usePen'
+import { usePenShots } from './usePenQueries'
 import type { AdminPenShot, PenResult, PenSide, PenStatus } from '@/types'
 import { PEN_RESULT_META, PEN_SIDE_LABEL, PEN_STATUS_META } from './penMeta'
 import { formatCount, formatDateTime } from '@/lib/format'

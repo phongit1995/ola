@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { App, Button, Empty, Modal, Popconfirm, Skeleton, Tag, Tooltip } from 'antd'
 import { CloseOutlined, CrownFilled, GiftOutlined, LockFilled } from '@ant-design/icons'
-import { useDeleteUserVip, useUserVips } from '@/hooks/useUsers'
+import { useDeleteUserVip, useUserVips } from '@/hooks/useUserQueries'
 import { formatDateTime } from '@/lib/format'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { GrantVipModal } from './GrantVipModal'

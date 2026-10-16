@@ -9,7 +9,7 @@ import {
   HistoryOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
-import { useDeleteEggPack, useEggPacks } from '@/hooks/useEgg'
+import { useDeleteEggPack, useEggPacks } from './useEggQueries'
 import { errorMessage } from '@/lib/apiError'
 import type { EggPack } from '@/types'
 import { EggPackEditorModal } from './EggPackEditorModal'
