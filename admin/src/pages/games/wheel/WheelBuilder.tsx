@@ -5,7 +5,7 @@ import type { WheelSegment, WheelSegmentKind, WheelSegmentOption } from '@/types
 import { VIP_CATALOG } from '@/lib/vipCatalog'
 import { WheelSummaryPanel } from './WheelSummaryPanel'
 import { WheelSegmentCard } from './WheelSegmentCard'
-import { WHEEL_KINDS, kindMeta, newId, rebalanceWeights, sumActiveWeight } from './wheel/wheelHelpers'
+import { WHEEL_KINDS, kindMeta, newId, rebalanceWeights, sumActiveWeight } from './wheelHelpers'
 
 interface WheelBuilderProps {
   segments: WheelSegment[]

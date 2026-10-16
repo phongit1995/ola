@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { useWheelSpins } from '@/hooks/useWheel'
 import { useDebounce } from '@/hooks/useDebounce'
 import type { AdminWheelSpin, WheelSegmentKind } from '@/types'
-import { WHEEL_KINDS, kindMeta } from './wheel/wheelHelpers'
+import { WHEEL_KINDS, kindMeta } from './wheelHelpers'
 
 const PAGE_SIZE = 20
 

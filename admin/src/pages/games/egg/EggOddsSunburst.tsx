@@ -7,7 +7,7 @@ import {
   sumActiveWeight,
   type EggCategory,
   type EggReward,
-} from './egg/eggHelpers'
+} from './eggHelpers'
 
 interface EggOddsSunburstProps {
   categories: EggCategory[]

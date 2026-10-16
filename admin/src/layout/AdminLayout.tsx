@@ -31,7 +31,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons'
 import { AdminAuthService } from '@/services/adminAuth.service'
-import { ChangePasswordModal } from '@/pages/ChangePasswordModal'
+import { ChangePasswordModal } from '@/pages/auth/ChangePasswordModal'
 import { useAuthStore } from '@/store/authStore'
 import { ApiError } from '@/lib/apiError'
 

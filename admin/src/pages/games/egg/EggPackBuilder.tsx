@@ -31,7 +31,7 @@ import {
   type EggCategory,
   type EggCategoryType,
   type EggReward,
-} from './egg/eggHelpers'
+} from './eggHelpers'
 
 interface EggPackBuilderProps {
   categories: EggCategory[]

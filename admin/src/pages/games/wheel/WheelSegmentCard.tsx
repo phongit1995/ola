@@ -10,7 +10,7 @@ import {
   optionStats,
   percent,
   segmentPercent,
-} from './wheel/wheelHelpers'
+} from './wheelHelpers'
 
 const vipOptions = VIP_CATALOG.map((entry) => ({
   value: entry.id,

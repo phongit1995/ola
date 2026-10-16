@@ -5,7 +5,7 @@ import { ApiError } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { SaveWheelConfigRequest, Wheel, WheelSegment } from '@/types'
 import { WheelBuilder } from './WheelBuilder'
-import { newId } from './wheel/wheelHelpers'
+import { newId } from './wheelHelpers'
 
 interface WheelEditorModalProps {
   open: boolean

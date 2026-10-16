@@ -19,7 +19,7 @@ import {
   type EggCategory,
   type EggCategoryType,
   type EggReward,
-} from './egg/eggHelpers'
+} from './eggHelpers'
 
 const EDITOR_PACK_ID = 'editor'
 

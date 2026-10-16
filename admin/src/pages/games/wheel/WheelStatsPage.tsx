@@ -29,7 +29,7 @@ import type {
   WheelUserStatsSortBy,
   WheelVipStatsRow,
 } from '@/types'
-import { kindMeta } from './wheel/wheelHelpers'
+import { kindMeta } from './wheelHelpers'
 
 const USER_STATS_SORTS: WheelUserStatsSortBy[] = ['kenSpent', 'kenWon', 'netKen', 'spins', 'vipDays']
 const USER_PAGE_SIZE = 10

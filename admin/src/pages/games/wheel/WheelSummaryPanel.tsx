@@ -1,7 +1,7 @@
 import { Space, Tag, Typography } from 'antd'
 import type { WheelSegment } from '@/types'
 import { WheelOddsSunburst } from './WheelOddsSunburst'
-import { formatPercent, kindBreakdown } from './wheel/wheelHelpers'
+import { formatPercent, kindBreakdown } from './wheelHelpers'
 
 interface WheelSummaryPanelProps {
   segments: WheelSegment[]

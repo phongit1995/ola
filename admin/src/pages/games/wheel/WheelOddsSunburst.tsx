@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Typography } from 'antd'
 import type { WheelSegment } from '@/types'
 import { vipName } from '@/lib/vipCatalog'
-import { formatPercent, kindMeta, percent, sumActiveWeight } from './wheel/wheelHelpers'
+import { formatPercent, kindMeta, percent, sumActiveWeight } from './wheelHelpers'
 
 interface WheelOddsSunburstProps {
   segments: WheelSegment[]
