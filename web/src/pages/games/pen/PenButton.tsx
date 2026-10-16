@@ -1,4 +1,4 @@
-import { bgImage } from './penUi';
+import { bgImage } from './utils';
 
 interface PenButtonProps {
   bg: string;

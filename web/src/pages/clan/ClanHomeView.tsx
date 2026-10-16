@@ -10,18 +10,19 @@ import {
   SearchIcon,
   Spinner,
 } from '@components';
-import { colorForName, toast } from '@lib';
+import {
+  CLAN_HANDLE_PATTERN,
+  clanErrorText,
+  clanRoleLabel,
+  colorForName,
+  normalizeClanHandle,
+  toast,
+} from '@lib';
 import { ClanService } from '@services';
 import type { ClanCheckNameResult, ClanSummary } from '@app-types';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { UserProfileView } from '../profile/UserProfileView';
-import {
-  CLAN_HANDLE_PATTERN,
-  CLAN_ROLE_ICONS,
-  clanErrorText,
-  clanRoleLabel,
-  normalizeClanHandle,
-} from './clanHelpers';
+import { CLAN_ROLE_ICONS } from './constants';
 import addIcon from '@/assets/icons/clan/ic_action_add.png';
 import memberIcon from '@/assets/icons/clan/ic_clan_member.png';
 import visitIcon from '@/assets/icons/clan/ic_clan_visit.png';

@@ -16,12 +16,17 @@ import {
 import type { ListOption } from '@components';
 import { CLAN_ROLE } from '@constants';
 import {
+  canPostPublicInClan,
+  clanErrorText,
+  clanFeedErrorText,
+  clanPolicyLabel,
   colorForName,
   compressImagesForUpload,
   createTimeFormatter,
   filterVisiblePosts,
   formatDateSlashDMY,
   imageUploadErrorText,
+  isClanStaff,
   isPostVisible,
   toast,
 } from '@lib';
@@ -52,16 +57,9 @@ import {
   composedToPayload,
   composedToUpdatePayload,
 } from '../me/composer';
-import { toMePost } from '../me/mappers';
+import { toMePost } from '../me/utils';
 import type { MePost } from '../me/types';
-import {
-  CLAN_ROLE_ICONS,
-  canPostPublicInClan,
-  clanErrorText,
-  clanFeedErrorText,
-  clanPolicyLabel,
-  isClanStaff,
-} from './clanHelpers';
+import { CLAN_ROLE_ICONS } from './constants';
 import cameraIcon from '@/assets/icons/me/ic_action_edit.png';
 import manageIcon from '@/assets/icons/clan/ic_manage_clan.png';
 import followIcon from '@/assets/icons/clan/ic_follow_black_disable.png';

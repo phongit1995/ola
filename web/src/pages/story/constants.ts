@@ -15,7 +15,7 @@ import searchResultsArt from '@/assets/icons/story/illustrated/search-results.we
 import stateEmptyArt from '@/assets/icons/story/illustrated/state-empty.webp';
 import stateErrorArt from '@/assets/icons/story/illustrated/state-error.webp';
 import topViewedArt from '@/assets/icons/story/illustrated/top-viewed.webp';
-import type { ReaderPalette } from './interface';
+import type { ReaderPalette } from './types';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 

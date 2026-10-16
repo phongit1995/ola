@@ -20,7 +20,7 @@ import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
 import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import type { StoryComment } from '@app-types';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 import { StoryCover } from './StoryCover';
 import { StoryIcon } from './StoryIcons';
 

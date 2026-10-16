@@ -42,8 +42,8 @@ import reportActionIcon from '@/assets/icons/chat/ic_menu_report.svg';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
-import type { ChatMessage } from '../interface';
-import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../chatView';
+import type { ChatMessage } from '../types';
+import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../utils';
 import { usePeerCard } from '../usePeerCard';
 import {
   useChatWallpaperStyle,

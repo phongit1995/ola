@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import { MePostCard } from './components/MePostCard';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
-import { toMePost } from './mappers';
+import { toMePost } from './utils';
 import { useEditMePost } from './useEditMePost';
 import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
 

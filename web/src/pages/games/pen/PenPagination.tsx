@@ -1,5 +1,5 @@
 import { penHistoryAssets } from './penAssets';
-import { bgImage } from './penUi';
+import { bgImage } from './utils';
 
 function PageNav({
   dir,

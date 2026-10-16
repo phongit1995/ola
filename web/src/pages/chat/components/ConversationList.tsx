@@ -7,8 +7,8 @@ import { createTimeFormatter, SmileyText } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import { EmptyMessages } from './EmptyMessages';
-import { toConversationView } from '../chatView';
-import type { ConversationView } from '../interface';
+import { toConversationView } from '../utils';
+import type { ConversationView } from '../types';
 import { SWIPE_MAX, SWIPE_TRIGGER } from '../constants';
 
 interface ConversationListProps {

@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@lib';
+import { SPIN_START_KEN, toast } from '@lib';
 import { AnimatedKen, FullScreenOverlay, Spinner } from '@components';
 import { SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
-import { useSpinWheelStore } from './spinWheelStore';
+import { useSpinWheelStore } from '@ola/shared/stores/spinWheelStore';
 import { SpinWheel } from './SpinWheel';
 import { SpinResultDialog } from './SpinResultDialog';
 import { SpinHistoryDialog } from './SpinHistoryDialog';
 import { GiftListDialog } from './GiftListDialog';
 import { WheelActionButton } from './WheelActionButton';
 import { playSpinSound, stopSpinSound } from './spinWheelSound';
-import { SPIN_START_KEN } from './spinWheel.constants';
 import {
   CHIP_TEXT_STYLE,
   SPIN_TEXT_STYLE,

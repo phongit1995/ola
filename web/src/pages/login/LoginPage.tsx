@@ -11,7 +11,7 @@ import { AppDownloadBar, Spinner } from '@components';
 import { AuthService } from '@services';
 import { ApiError, USERNAME_MAX, decodeSecret, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-import { useSavedAccountsStore } from './savedAccountsStore';
+import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import type { SavedAccount } from '@ola/shared/types';
 import { SavedAccountGallery } from './SavedAccountGallery';
 import { APP_VERSION, USERNAME_MIN } from './constants';

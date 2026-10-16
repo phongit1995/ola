@@ -4,7 +4,7 @@ import { Spinner } from '@components';
 import { createTimeFormatter, toast } from '@lib';
 import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
 import type { StoryComment } from '@app-types';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 import { StoryCommentItem } from './StoryCommentItem';
 import { StoryStateMessage } from './StoryStateMessage';
 

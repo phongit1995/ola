@@ -1,5 +1,6 @@
+import type { CSSProperties } from 'react';
 import type { TFunction } from 'i18next';
-import { formatKen, vipName } from '@lib';
+import { formatKen, vipName, WHEEL_LABEL_RADIUS, wheelPolar } from '@lib';
 import type {
   WheelPlayerOption,
   WheelPlayerSegment,
@@ -104,5 +105,14 @@ export function rewardVisual(segment: WheelPlayerSegment): RewardVisual {
     icon: rewardKindIcon(segment.kind),
     vipTypeId: null,
     iconClass: rewardIconClass(segment.kind),
+  };
+}
+
+export function labelStyle(index: number, angle: number): CSSProperties {
+  const point = wheelPolar(index * angle, WHEEL_LABEL_RADIUS);
+  return {
+    left: `${point.x}%`,
+    top: `${point.y}%`,
+    transform: 'translate(-50%, -50%)',
   };
 }

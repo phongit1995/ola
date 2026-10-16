@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHorizontalDragScroll } from '@hooks';
+import { useHorizontalDragScroll } from '../useHorizontalDragScroll';
 import { cn, formatCompactCount, storyReadPercent } from '@lib';
 import type { Story, StoryProgress } from '@app-types';
 import { STORY_SECTION_ART, type StorySectionArt } from '../constants';

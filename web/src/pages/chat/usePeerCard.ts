@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { hidePeerCard, isPeerCardHidden } from '@lib';
+import { hidePeerCard, isPeerCardHidden } from './hiddenPeerCards';
 import type { RelationshipStatus } from '@app-types';
 
 const STRANGER_STATUSES: RelationshipStatus[] = [

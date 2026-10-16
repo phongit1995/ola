@@ -4,7 +4,7 @@ import { HomeHeader } from '@components/HomeHeader';
 import { Spinner } from '@components';
 import { cn } from '@lib';
 import { STORY_STATUS_FILTER } from '@constants';
-import { useHorizontalDragScroll } from '@hooks';
+import { useHorizontalDragScroll } from './useHorizontalDragScroll';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
 import type { StoryProgress, StoryStatusFilter } from '@app-types';

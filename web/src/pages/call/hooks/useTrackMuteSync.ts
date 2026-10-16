@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocalParticipant } from '@livekit/components-react';
 import { ParticipantEvent } from 'livekit-client';
-import type { MediaSource } from '../interfaces';
+import type { MediaSource } from '../types';
 
 export function useTrackMuteSync(source: MediaSource, muted: boolean) {
   const { localParticipant } = useLocalParticipant();

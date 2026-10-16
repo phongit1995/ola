@@ -11,7 +11,7 @@ import { cn, storyCommentAuthorName, toApiError, toast } from '@lib';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
 import type { StoryComment } from '@app-types';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 
 const HTTP_TOO_MANY_REQUESTS = 429;
 

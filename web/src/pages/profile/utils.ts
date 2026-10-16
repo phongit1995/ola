@@ -1,6 +1,6 @@
 import { activeVipTypeId, colorForName, formatDateSlashDMY } from '@lib';
 import type { FollowUser, Post, PublicProfile } from '@app-types';
-import { toMePost } from '../me/mappers';
+import { toMePost } from '../me/utils';
 import type { MePost } from '../me/types';
 import type { ProfileFriend, UserProfile } from './types';
 import { DEFAULT_COVER_COLOR } from './constants';

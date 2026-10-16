@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@lib';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 
 interface ReaderSheetProps {
   title: string;

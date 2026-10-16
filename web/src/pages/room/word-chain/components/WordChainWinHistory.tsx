@@ -8,7 +8,7 @@ import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore'
 import { WordChainListStatus, WordChainUserRow } from './WordChainList';
 import { WordChainStatusIcon } from './WordChainStatusIcon';
 import { WordChainTabs } from './WordChainTabs';
-import { WORD_CHAIN_PANEL_HEIGHT } from './wordChainLayout';
+import { WORD_CHAIN_PANEL_HEIGHT } from '../constants';
 
 type WinFilter = 'all' | 'mine';
 

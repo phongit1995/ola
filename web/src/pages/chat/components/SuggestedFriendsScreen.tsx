@@ -7,8 +7,8 @@ import {
   ScreenHeader,
 } from '@components';
 import { toast } from '@lib';
-import { SUGGESTED_FRIENDS } from '../data';
-import type { SuggestedFriend } from '../interface';
+import { SUGGESTED_FRIENDS } from '../constants';
+import type { SuggestedFriend } from '../types';
 import { CloseIcon } from './Icons';
 
 interface SuggestedFriendsScreenProps {

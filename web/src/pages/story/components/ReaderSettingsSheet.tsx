@@ -9,7 +9,7 @@ import {
   READER_THEME_ICON,
   READER_THEME_ORDER,
 } from '../constants';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 import { ReaderSheet } from './ReaderSheet';
 import { StoryIcon } from './StoryIcons';
 

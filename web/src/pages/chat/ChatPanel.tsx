@@ -28,7 +28,7 @@ import { ChatBotScreen } from '@/pages/chat-bot/ChatBotScreen';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useLobbyWallpaperStyle } from '@hooks';
-import { mapFriendsToContacts } from './friends';
+import { mapFriendsToContacts } from './utils';
 import {
   useConversationsWithPresence,
   useFriendsWithPresence,

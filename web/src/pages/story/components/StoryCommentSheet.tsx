@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { formatCompactCount } from '@lib';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import type { StoryComment } from '@app-types';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 import { ReaderSheet } from './ReaderSheet';
 import { StoryCommentComposer } from './StoryCommentComposer';
 import { StoryCommentList } from './StoryCommentList';

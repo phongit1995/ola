@@ -11,16 +11,17 @@ import {
   type ListOption,
 } from '@components';
 import { CLAN_ROLE } from '@constants';
-import { colorForName, toast } from '@lib';
+import {
+  clanErrorText,
+  clanRoleLabel,
+  colorForName,
+  isClanStaff,
+  toast,
+} from '@lib';
 import { ClanService } from '@services';
 import type { Clan, ClanMember } from '@app-types';
 import { UserProfileView } from '../profile/UserProfileView';
-import {
-  CLAN_ROLE_ICONS,
-  clanErrorText,
-  clanRoleLabel,
-  isClanStaff,
-} from './clanHelpers';
+import { CLAN_ROLE_ICONS } from './constants';
 
 interface ClanMembersViewProps {
   clanId: string;

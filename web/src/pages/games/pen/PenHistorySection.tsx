@@ -1,19 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, VipBadge } from '@components';
-import { formatVnd, toApiError, toast } from '@lib';
+import { formatVnd, toApiError, toast, toHistoryRow } from '@lib';
 import { PenService } from '@services';
-import type { PenSide } from '@app-types';
+import type { PenHistoryRowView, PenRowOutcome, PenSide } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@/store/penHistoryStore';
 import type { PenHistorySection as SectionRole } from '@ola/shared/types';
 import { penAssets, penHistoryAssets } from './penAssets';
 import { PenHistoryTable } from './PenHistoryTable';
-import {
-  toHistoryRow,
-  type PenHistoryOutcome,
-  type PenHistoryRowView,
-} from './penHistory';
 
 const ROW_GRID = 'grid items-center gap-1';
 const GRID_COLS = '1.6fr 1fr 0.8fr 1.7fr';
@@ -68,7 +63,7 @@ function ResultCell({
   amount,
   onCancel,
 }: {
-  outcome: PenHistoryOutcome;
+  outcome: PenRowOutcome;
   amount: number;
   onCancel?: () => void;
 }) {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DEVICE_KIND } from '../constants';
-import type { DeviceList } from '../interfaces';
+import type { DeviceList } from '../types';
 
 const EMPTY_DEVICES: DeviceList = {
   audioinput: [],

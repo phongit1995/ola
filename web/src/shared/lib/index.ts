@@ -1,6 +1,5 @@
 export * from '@ola/shared/lib';
 export * from './bubbleGrouping';
-export * from './textInsert';
 export * from './chatSmiley';
 export * from './kul';
 export * from './emoji';
@@ -12,6 +11,5 @@ export * from './cropImage';
 export * from './imageSize';
 export * from './compressImage';
 export * from './reactions';
-export * from './hiddenPeerCards';
 export * from './sound';
 export * from './dragOffset';

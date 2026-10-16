@@ -19,7 +19,7 @@ import {
   rewardVipDaysUrl,
   spinCoinUrl,
 } from './spinWheelAssets';
-import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';
+import { formatRewardKen, isKenKind, isVipDaysKind } from './utils';
 import {
   HISTORY_LABEL_STYLE,
   HISTORY_TAB_INACTIVE_STYLE,

@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import type { SuggestionKey } from '../types';
+import type { ChatBotSuggestionKey } from '@lib';
 
 interface ChatBotSuggestionsProps {
-  keys: SuggestionKey[];
+  keys: ChatBotSuggestionKey[];
   onPick: (prompt: string) => void;
 }
 

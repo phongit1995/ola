@@ -1,4 +1,4 @@
-import type { BubblePosition } from './messageGroups';
+import type { BubblePosition } from '@app-types';
 import type { RoomFilters } from './types';
 
 export const ROOM_CAPACITY = 200;

@@ -9,7 +9,7 @@ import {
   spinCoinUrl,
   wheelIconUrl,
 } from './spinWheelAssets';
-import { giftOptionVisual } from './spinWheelReward';
+import { giftOptionVisual } from './utils';
 import {
   GIFT_AMOUNT_STYLE,
   GIFT_SUBTITLE_STYLE,

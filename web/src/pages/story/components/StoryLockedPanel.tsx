@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import vipCrownIcon from '@/assets/icons/apps/vip-crown.webp';
 import type { StoryAccess } from '@app-types';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 
 interface StoryLockedPanelProps {
   chapterTitle: string;

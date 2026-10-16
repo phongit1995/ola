@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { usePenHistoryStore } from '@/store/penHistoryStore';
 import type { PenHistorySection as SectionRole } from '@ola/shared/types';
 import { penHistoryAssets, penShootAssets } from './penAssets';
-import { bgImage } from './penUi';
+import { bgImage } from './utils';
 import { PenHistorySection } from './PenHistorySection';
 import { PenAllHistorySection } from './PenAllHistorySection';
 

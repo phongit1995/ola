@@ -1,19 +1,30 @@
 import type { TFunction } from 'i18next';
-import type { ChatReplySnapshot, Conversation, Message } from '@app-types';
-import { MESSAGE_TYPE } from '@constants';
+import type {
+  ChatReplySnapshot,
+  Conversation,
+  Friend,
+  Message,
+} from '@app-types';
+import { MESSAGE_TYPE, normalizeDevice } from '@constants';
 import {
+  activeVipTypeId,
   colorForName,
   DEFAULT_AVATAR_COLOR,
   formatClockHM,
   formatDuration,
+  formatLastActive,
+  isBirthdayToday,
+  isVipActive,
   kulImageForText,
   parseMessageMetadata,
 } from '@lib';
 import type {
   ChatMessage,
   ChatMessageAbilities,
+  Contact,
+  ContactGroup,
   ConversationView,
-} from './interface';
+} from './types';
 import { STATUS_MAP } from './constants';
 
 export function conversationDisplayName(conversation: Conversation): string {
@@ -118,4 +129,35 @@ export function toBubble(message: Message, myId: string): ChatMessage {
     reactions: message.reactions,
     replyTo: message.replyTo,
   };
+}
+
+function groupOf(friend: Friend, now: Date): ContactGroup {
+  return isBirthdayToday(friend.dateOfBirth, now) ? 'birthday' : 'friend';
+}
+
+export function mapFriendsToContacts(
+  friends: Friend[],
+  locale: string,
+  now: number
+): Contact[] {
+  const today = new Date(now);
+  return friends.map((friend) => {
+    return {
+      id: friend.id,
+      name: friend.username,
+      fullName: friend.fullName,
+      status: friend.bio,
+      color: colorForName(friend.id),
+      avatar: friend.avatar,
+      vip: isVipActive(friend.vipEndTime),
+      vipTypeId: activeVipTypeId(friend.vipUsed, friend.vipEndTime),
+      online: friend.isOnline,
+      deviceType: normalizeDevice(friend.deviceType),
+      lastActive: friend.isOnline
+        ? undefined
+        : formatLastActive(locale, friend.lastActiveAt, now),
+      statusImage: friend.bioImage ?? undefined,
+      group: groupOf(friend, today),
+    };
+  });
 }
