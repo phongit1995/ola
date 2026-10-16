@@ -132,7 +132,7 @@ Một `Chapter`. Truyện không có: `404 story not found`. Không có chương
 
 ## 4. API cho admin
 
-Trang admin: menu **Truyện** (`/stories`), code ở `admin/src/pages/StoriesPage.tsx` và `StoryChaptersModal.tsx`. Mọi endpoint nằm dưới `/api/v1/admin/stories`, cần token admin (`RequireAdmin`), được ghi vào nhật ký admin như các module khác. Server: `server/internal/modules/admin/story/`, logic dùng chung `story.Service` (`story.admin.go`).
+Trang admin: menu **Truyện** (`/stories`), code ở `admin/src/pages/stories/` (`StoriesPage.tsx`, `StoryChaptersModal.tsx`). Mọi endpoint nằm dưới `/api/v1/admin/stories`, cần token admin (`RequireAdmin`), được ghi vào nhật ký admin như các module khác. Server: `server/internal/modules/admin/story/`, logic dùng chung `story.Service` (`story.admin.go`).
 
 | Endpoint | Việc |
 |---|---|
