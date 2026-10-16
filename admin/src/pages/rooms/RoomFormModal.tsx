@@ -3,7 +3,7 @@ import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Upload } fr
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { useCreateRoom, useUpdateRoom } from '@/hooks/useRooms'
 import { AdminUploadService } from '@/services/adminUpload.service'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { CreateRoomRequest, Room } from '@/types'
 
 interface RoomFormModalProps {
@@ -40,7 +40,7 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
       form.setFieldValue('imageUrl', url)
       message.success('Đã tải ảnh lên')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Tải ảnh thất bại')
+      message.error(errorMessage(err, 'Tải ảnh thất bại'))
     } finally {
       setUploading(false)
     }
@@ -58,7 +58,7 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
       }
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu phòng thất bại')
+      message.error(errorMessage(err, 'Lưu phòng thất bại'))
     }
   }
 

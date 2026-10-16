@@ -21,7 +21,7 @@ import {
   useUpdateVipShopItem,
   useVipShopItems,
 } from '@/hooks/useVipShop'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { VipShopItem } from '@/types'
@@ -75,7 +75,7 @@ export function VipShopPage() {
       {
         onSuccess: () => message.success(isActive ? 'Đã bật bán' : 'Đã tắt bán'),
         onError: (err) =>
-          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại'),
+          message.error(errorMessage(err, 'Thao tác thất bại')),
       },
     )
   }
@@ -92,7 +92,7 @@ export function VipShopPage() {
           await deleteItem.mutateAsync(item.id)
           message.success('Đã gỡ khỏi shop')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Gỡ thất bại')
+          message.error(errorMessage(err, 'Gỡ thất bại'))
         }
       },
     })
@@ -122,7 +122,7 @@ export function VipShopPage() {
       }
       setFormOpen(false)
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 

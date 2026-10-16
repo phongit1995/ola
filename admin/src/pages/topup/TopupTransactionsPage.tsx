@@ -30,17 +30,13 @@ import {
 } from 'recharts'
 import { UserCell } from '@/components/UserCell'
 import { useManualCreditTopup, useTopupStats, useTopupTransactions } from '@/hooks/useTopup'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { TopupTransaction, TopupTxStatus } from '@/types'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { toIsoRange } from '@/lib/dateRange'
 
 const PAGE_SIZE = 20
-
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
 
 const STATUS_META: Record<TopupTxStatus, { label: string; color: string }> = {
   PROCESSING: { label: 'Đang xử lý', color: 'blue' },
@@ -60,14 +56,6 @@ const CREDITABLE_STATUSES: TopupTxStatus[] = [
   'FAILED',
 ]
 
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN')
-}
-
 export function TopupTransactionsPage() {
   const { message } = App.useApp()
   const [status, setStatus] = useState<string>('')
@@ -80,13 +68,7 @@ export function TopupTransactionsPage() {
 
   const manualCredit = useManualCreditTopup()
 
-  const range = useMemo(
-    () => ({
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
-    }),
-    [from, to],
-  )
+  const range = useMemo(() => toIsoRange(from, to), [from, to])
 
   const params = useMemo(
     () => ({
@@ -124,14 +106,14 @@ export function TopupTransactionsPage() {
       const result = await manualCredit.mutateAsync({ id: creditTarget.id, username })
       const bonusNote =
         result.bonusKen > 0
-          ? ` (gồm ${vn(result.bonusKen)} thưởng +${result.bonusPercent}%)`
+          ? ` (gồm ${formatCount(result.bonusKen)} thưởng +${result.bonusPercent}%)`
           : ''
       message.success(
-        `Đã cộng ${vn(result.kenAmount)} KEN${bonusNote} cho @${result.user.username}`,
+        `Đã cộng ${formatCount(result.kenAmount)} KEN${bonusNote} cho @${result.user.username}`,
       )
       setCreditTarget(null)
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Cộng KEN thất bại')
+      message.error(errorMessage(err, 'Cộng KEN thất bại'))
     }
   }
 
@@ -140,7 +122,7 @@ export function TopupTransactionsPage() {
       title: 'Thời gian',
       dataIndex: 'createdAt',
       width: 150,
-      render: (value: string) => formatTime(value),
+      render: (value: string) => formatDateTime(value),
     },
     {
       title: 'Mã giao dịch',
@@ -172,7 +154,7 @@ export function TopupTransactionsPage() {
       render: (value: number, row) => (
         <Typography.Text strong type={row.type === 'IN' ? 'success' : 'secondary'}>
           {row.type === 'IN' ? '+' : '-'}
-          {vn(value)}
+          {formatCount(value)}
         </Typography.Text>
       ),
     },
@@ -206,7 +188,7 @@ export function TopupTransactionsPage() {
       align: 'right',
       render: (value: number) =>
         value > 0 ? (
-          <Typography.Text strong>{vn(value)}</Typography.Text>
+          <Typography.Text strong>{formatCount(value)}</Typography.Text>
         ) : (
           <Typography.Text type="secondary">—</Typography.Text>
         ),
@@ -218,7 +200,7 @@ export function TopupTransactionsPage() {
       align: 'right',
       render: (_, row) =>
         row.status === 'CREDITED' && row.bonusKen > 0 ? (
-          <Typography.Text type="success">+{vn(row.bonusKen)}</Typography.Text>
+          <Typography.Text type="success">+{formatCount(row.bonusKen)}</Typography.Text>
         ) : (
           <Typography.Text type="secondary">—</Typography.Text>
         ),
@@ -251,7 +233,7 @@ export function TopupTransactionsPage() {
               valueStyle={{ color: '#3f8600' }}
             />
             <Typography.Text type="secondary">
-              {vn(stats?.today.count ?? 0)} giao dịch
+              {formatCount(stats?.today.count ?? 0)} giao dịch
             </Typography.Text>
           </Card>
         </Col>
@@ -265,7 +247,7 @@ export function TopupTransactionsPage() {
               valueStyle={{ color: '#3f8600' }}
             />
             <Typography.Text type="secondary">
-              {vn(stats?.thisMonth.count ?? 0)} giao dịch
+              {formatCount(stats?.thisMonth.count ?? 0)} giao dịch
             </Typography.Text>
           </Card>
         </Col>
@@ -278,7 +260,7 @@ export function TopupTransactionsPage() {
               suffix="đ"
             />
             <Typography.Text type="secondary">
-              {vn(stats?.range.count ?? 0)} giao dịch · {vn(stats?.range.ken ?? 0)} KEN
+              {formatCount(stats?.range.count ?? 0)} giao dịch · {formatCount(stats?.range.ken ?? 0)} KEN
             </Typography.Text>
           </Card>
         </Col>
@@ -291,7 +273,7 @@ export function TopupTransactionsPage() {
               valueStyle={{ color: (stats?.pending.count ?? 0) > 0 ? '#d46b08' : undefined }}
             />
             <Typography.Text type="secondary">
-              {vn(stats?.pending.amount ?? 0)}đ chưa cộng
+              {formatCount(stats?.pending.amount ?? 0)}đ chưa cộng
             </Typography.Text>
           </Card>
         </Col>
@@ -316,22 +298,11 @@ export function TopupTransactionsPage() {
             onSearch={(value) => resetPage(setSearch)(value.trim())}
             style={{ width: 260 }}
           />
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => resetPage(setFrom)(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => resetPage(setTo)(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={resetPage(setFrom)}
+            onToChange={resetPage(setTo)}
           />
           <Button
             icon={<ReloadOutlined />}
@@ -354,7 +325,7 @@ export function TopupTransactionsPage() {
             <YAxis yAxisId="right" orientation="right" fontSize={12} allowDecimals={false} />
             <RTooltip
               formatter={(value, name) =>
-                name === 'Lượt nạp' ? [vn(Number(value)), name] : [`${vn(Number(value))}đ`, name]
+                name === 'Lượt nạp' ? [formatCount(Number(value)), name] : [`${formatCount(Number(value))}đ`, name]
               }
             />
             <Legend />
@@ -375,7 +346,7 @@ export function TopupTransactionsPage() {
           pageSize: PAGE_SIZE,
           total: data?.total ?? 0,
           showSizeChanger: false,
-          showTotal: (total) => `${vn(total)} giao dịch`,
+          showTotal: (total) => `${formatCount(total)} giao dịch`,
           onChange: setPage,
         }}
         locale={{ emptyText: 'Chưa có giao dịch nạp nào' }}
@@ -395,12 +366,12 @@ export function TopupTransactionsPage() {
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
             <Typography.Text>
               Giao dịch <Typography.Text code>{creditTarget.providerTxId}</Typography.Text> số tiền{' '}
-              <Typography.Text strong>{vn(creditTarget.amount)} VNĐ</Typography.Text> sẽ cộng{' '}
+              <Typography.Text strong>{formatCount(creditTarget.amount)} VNĐ</Typography.Text> sẽ cộng{' '}
               <Typography.Text strong>
-                {vn(creditTarget.amount + creditTarget.bonusKen)} KEN
+                {formatCount(creditTarget.amount + creditTarget.bonusKen)} KEN
               </Typography.Text>
               {creditTarget.bonusKen > 0
-                ? ` (gồm ${vn(creditTarget.bonusKen)} KEN thưởng +${creditTarget.bonusPercent}%, theo mốc lúc nhận giao dịch)`
+                ? ` (gồm ${formatCount(creditTarget.bonusKen)} KEN thưởng +${creditTarget.bonusPercent}%, theo mốc lúc nhận giao dịch)`
                 : ''}
               .
             </Typography.Text>

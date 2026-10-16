@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
   App,
-  Avatar,
   Button,
   Card,
   Col,
@@ -28,10 +27,13 @@ import type {
   FollowItem,
   RelationshipItem,
   RelationshipStatus,
-  RelationshipUser,
   RelationshipUserStatsItem,
   RelationshipUserStatsSortBy,
 } from '@/types'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { toIsoRange } from '@/lib/dateRange'
+import { UserBriefCell } from '@/components/UserBriefCell'
 
 const PAGE_SIZE = 20
 const USER_STATS_SORTS: RelationshipUserStatsSortBy[] = [
@@ -40,13 +42,6 @@ const USER_STATS_SORTS: RelationshipUserStatsSortBy[] = [
   'followers',
   'following',
 ]
-
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -57,36 +52,11 @@ const STATUS_META: Record<RelationshipStatus, { label: string; color: string }> 
   blocked: { label: 'Chặn', color: 'red' },
 }
 
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN')
-}
-
-function UserCell({ user }: { user?: RelationshipUser }) {
-  if (!user) return <Typography.Text type="secondary">—</Typography.Text>
-  return (
-    <Space>
-      <Avatar size="small" src={user.avatar || undefined}>
-        {user.fullName?.[0] ?? user.username?.[0] ?? '?'}
-      </Avatar>
-      <div>
-        <Typography.Text strong>{user.fullName || user.username}</Typography.Text>
-        <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-          @{user.username}
-        </Typography.Text>
-      </div>
-    </Space>
-  )
-}
-
 const relationshipColumns: ColumnsType<RelationshipItem> = [
   {
     title: 'Người gửi',
     key: 'requester',
-    render: (_, row) => <UserCell user={row.requester} />,
+    render: (_, row) => <UserBriefCell user={row.requester} />,
   },
   {
     title: '',
@@ -98,7 +68,7 @@ const relationshipColumns: ColumnsType<RelationshipItem> = [
   {
     title: 'Người nhận',
     key: 'addressee',
-    render: (_, row) => <UserCell user={row.addressee} />,
+    render: (_, row) => <UserBriefCell user={row.addressee} />,
   },
   {
     title: 'Trạng thái',
@@ -113,14 +83,14 @@ const relationshipColumns: ColumnsType<RelationshipItem> = [
     title: 'Gửi lúc',
     dataIndex: 'createdAt',
     width: 160,
-    render: (value: string) => formatTime(value),
+    render: (value: string) => formatDateTime(value),
   },
   {
     title: 'Phản hồi lúc',
     dataIndex: 'actionedAt',
     width: 160,
     render: (value?: string) =>
-      value ? formatTime(value) : <Typography.Text type="secondary">—</Typography.Text>,
+      value ? formatDateTime(value) : <Typography.Text type="secondary">—</Typography.Text>,
   },
 ]
 
@@ -128,7 +98,7 @@ const followColumns: ColumnsType<FollowItem> = [
   {
     title: 'Người theo dõi',
     key: 'follower',
-    render: (_, row) => <UserCell user={row.follower} />,
+    render: (_, row) => <UserBriefCell user={row.follower} />,
   },
   {
     title: '',
@@ -140,13 +110,13 @@ const followColumns: ColumnsType<FollowItem> = [
   {
     title: 'Được theo dõi',
     key: 'followee',
-    render: (_, row) => <UserCell user={row.followee} />,
+    render: (_, row) => <UserBriefCell user={row.followee} />,
   },
   {
     title: 'Theo dõi lúc',
     dataIndex: 'createdAt',
     width: 170,
-    render: (value: string) => formatTime(value),
+    render: (value: string) => formatDateTime(value),
   },
 ]
 
@@ -166,13 +136,7 @@ export function RelationshipsPage() {
   const [userSearch, setUserSearch] = useState('')
   const [userPage, setUserPage] = useState(1)
 
-  const range = useMemo(
-    () => ({
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
-    }),
-    [from, to],
-  )
+  const range = useMemo(() => toIsoRange(from, to), [from, to])
 
   const { data: stats, isFetching: statsFetching, refetch } = useRelationshipStats(range)
 
@@ -253,7 +217,7 @@ export function RelationshipsPage() {
     {
       title: 'Người chơi',
       key: 'user',
-      render: (_, row) => <UserCell user={row.user} />,
+      render: (_, row) => <UserBriefCell user={row.user} />,
     },
     {
       title: 'Bạn bè',
@@ -263,7 +227,7 @@ export function RelationshipsPage() {
       sorter: true,
       sortOrder: userSort === 'friends' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Đã chặn',
@@ -273,7 +237,7 @@ export function RelationshipsPage() {
       sorter: true,
       sortOrder: userSort === 'blocked' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Được theo dõi',
@@ -283,7 +247,7 @@ export function RelationshipsPage() {
       sorter: true,
       sortOrder: userSort === 'followers' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Đang theo dõi',
@@ -293,7 +257,7 @@ export function RelationshipsPage() {
       sorter: true,
       sortOrder: userSort === 'following' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
   ]
 
@@ -301,22 +265,11 @@ export function RelationshipsPage() {
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Card>
         <Space wrap>
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => changeRange(setFrom)(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => changeRange(setTo)(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={changeRange(setFrom)}
+            onToChange={changeRange(setTo)}
           />
           <Button icon={<ReloadOutlined />} onClick={() => void refetch()}>
             Tải lại
@@ -400,7 +353,7 @@ export function RelationshipsPage() {
                       pageSize: PAGE_SIZE,
                       total: relationships?.total ?? 0,
                       showSizeChanger: false,
-                      showTotal: (total) => `${vn(total)} lời mời`,
+                      showTotal: (total) => `${formatCount(total)} lời mời`,
                       onChange: setRelPage,
                     }}
                     locale={{ emptyText: 'Chưa có quan hệ nào' }}
@@ -430,7 +383,7 @@ export function RelationshipsPage() {
                       pageSize: PAGE_SIZE,
                       total: follows?.total ?? 0,
                       showSizeChanger: false,
-                      showTotal: (total) => `${vn(total)} lượt theo dõi`,
+                      showTotal: (total) => `${formatCount(total)} lượt theo dõi`,
                       onChange: setFollowPage,
                     }}
                     locale={{ emptyText: 'Chưa có lượt theo dõi nào' }}
@@ -461,7 +414,7 @@ export function RelationshipsPage() {
                       pageSize: PAGE_SIZE,
                       total: userStats?.total ?? 0,
                       showSizeChanger: false,
-                      showTotal: (total) => `${vn(total)} user`,
+                      showTotal: (total) => `${formatCount(total)} user`,
                       onChange: setUserPage,
                     }}
                     locale={{ emptyText: 'Chưa có dữ liệu' }}

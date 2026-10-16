@@ -22,7 +22,7 @@ import {
   useStoryChapters,
 } from '@/hooks/useStories'
 import { formatDate, formatDateTime } from '@/lib/format'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { AdminStory, AdminStoryChapter } from '@/types'
 
 const CHAPTER_PAGE_SIZE = 20
@@ -43,7 +43,7 @@ function contentParagraphs(content: string): string[] {
 }
 
 function errorText(error: unknown): string {
-  return error instanceof ApiError ? error.message : 'Lỗi không xác định, thử lại sau'
+  return errorMessage(error, 'Lỗi không xác định, thử lại sau')
 }
 
 export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalProps) {
@@ -94,7 +94,7 @@ export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalP
       setPollUntil(Date.now() + result.queued * POLL_MS_PER_CHAPTER + POLL_GRACE_MS)
       message.success(`Đang lấy ${result.queued} chương ở nền, danh sách tự cập nhật`)
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Không bắt đầu được')
+      message.error(errorMessage(err, 'Không bắt đầu được'))
     }
   }
 
@@ -104,7 +104,7 @@ export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalP
       await refetchChapter.mutateAsync(position)
       message.success(`Đã lấy lại nội dung chương ${position}`)
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lấy nội dung thất bại')
+      message.error(errorMessage(err, 'Lấy nội dung thất bại'))
     } finally {
       setRefetchingPosition(null)
     }

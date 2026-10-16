@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { App, Divider, Input, InputNumber, Modal, Switch, Typography } from 'antd'
 import { useCreateWheel, useSaveWheelConfig, useUpdateWheel } from '@/hooks/useWheel'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { SaveWheelConfigRequest, Wheel, WheelSegment } from '@/types'
 import { WheelBuilder } from './WheelBuilder'
@@ -163,7 +163,7 @@ export function WheelEditorModal({ open, wheel, nextSortOrder, onClose }: WheelE
       }
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 

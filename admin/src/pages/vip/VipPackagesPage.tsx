@@ -12,7 +12,7 @@ import {
 } from 'antd'
 import { CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { useDeleteVipPackage, useUpdateVipPackage, useVipPackages } from '@/hooks/useVipPackages'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { VipPackageFormModal } from './VipPackageFormModal'
 import type { VipPackage } from '@/types'
 
@@ -56,7 +56,7 @@ export function VipPackagesPage() {
           await updatePackage.mutateAsync({ id: pkg.id, payload: { isActive } })
           message.success(isActive ? 'Đã bật gói' : 'Đã tắt gói')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+          message.error(errorMessage(err, 'Thao tác thất bại'))
         }
       },
     })
@@ -74,7 +74,7 @@ export function VipPackagesPage() {
           await deletePackage.mutateAsync(pkg.id)
           message.success('Đã xoá gói VIP')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

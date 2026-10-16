@@ -4,6 +4,9 @@ import type { ColumnsType } from 'antd/es/table'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useEggDraws } from '@/hooks/useEgg'
 import type { AdminEggDraw, EggCategoryType } from '@/types'
+import { formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { toIsoRange } from '@/lib/dateRange'
 
 const PAGE_SIZE = 20
 
@@ -24,20 +27,9 @@ const OUTCOME_OPTIONS = [
   { value: 'miss' as const, label: 'Trượt' },
 ]
 
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
-
 interface EggHistoryModalProps {
   open: boolean
   onClose: () => void
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN')
 }
 
 export function EggHistoryModal({ open, onClose }: EggHistoryModalProps) {
@@ -53,8 +45,7 @@ export function EggHistoryModal({ open, onClose }: EggHistoryModalProps) {
       userId: userId || undefined,
       categoryType,
       outcome,
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+      ...toIsoRange(from, to),
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
     }),
@@ -92,7 +83,7 @@ export function EggHistoryModal({ open, onClose }: EggHistoryModalProps) {
       title: 'Thời gian',
       dataIndex: 'createdAt',
       width: 170,
-      render: (value: string) => formatTime(value),
+      render: (value: string) => formatDateTime(value),
     },
     {
       title: 'Người chơi',
@@ -171,22 +162,11 @@ export function EggHistoryModal({ open, onClose }: EggHistoryModalProps) {
           options={OUTCOME_OPTIONS}
           style={{ width: 120 }}
         />
-        <input
-          type="date"
-          aria-label="Từ ngày"
-          value={from}
-          max={to || undefined}
-          onChange={(e) => changeFrom(e.target.value)}
-          style={DATE_INPUT_STYLE}
-        />
-        <span style={{ color: '#8c8c8c' }}>→</span>
-        <input
-          type="date"
-          aria-label="Đến ngày"
-          value={to}
-          min={from || undefined}
-          onChange={(e) => changeTo(e.target.value)}
-          style={DATE_INPUT_STYLE}
+        <DateRangeFilter
+          from={from}
+          to={to}
+          onFromChange={changeFrom}
+          onToChange={changeTo}
         />
         <Button icon={<ReloadOutlined />} onClick={() => void refetch()}>
           Tải lại

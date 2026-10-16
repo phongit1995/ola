@@ -15,7 +15,7 @@ import { DeleteOutlined, FlagOutlined, TeamOutlined } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useClans, useDeleteClan } from '@/hooks/useClans'
 import { formatDateTime } from '@/lib/format'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { ClanMembersModal } from './ClanMembersModal'
 import type { Clan } from '@/types'
 
@@ -62,7 +62,7 @@ export function ClansPage() {
           await deleteClan.mutateAsync(clan.id)
           message.success('Đã xoá clan')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

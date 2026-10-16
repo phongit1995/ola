@@ -16,9 +16,10 @@ import {
   useDeleteAnnouncement,
   useUpdateAnnouncement,
 } from '@/hooks/useAnnouncements'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { AnnouncementFormModal } from './AnnouncementFormModal'
 import type { Announcement } from '@/types'
+import { formatDateTime } from '@/lib/format'
 
 export function AnnouncementPage() {
   const { message, modal } = App.useApp()
@@ -54,7 +55,7 @@ export function AnnouncementPage() {
           await updateAnnouncement.mutateAsync({ id: item.id, payload: { isActive } })
           message.success(isActive ? 'Đã bật thông báo' : 'Đã tắt thông báo')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+          message.error(errorMessage(err, 'Thao tác thất bại'))
         }
       },
     })
@@ -72,7 +73,7 @@ export function AnnouncementPage() {
           await deleteAnnouncement.mutateAsync(item.id)
           message.success('Đã xoá thông báo')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })
@@ -113,10 +114,10 @@ export function AnnouncementPage() {
         item.startsAt || item.endsAt ? (
           <Space direction="vertical" size={0}>
             <Typography.Text>
-              Từ: {item.startsAt ? new Date(item.startsAt).toLocaleString('vi-VN') : '—'}
+              Từ: {formatDateTime(item.startsAt)}
             </Typography.Text>
             <Typography.Text>
-              Đến: {item.endsAt ? new Date(item.endsAt).toLocaleString('vi-VN') : '—'}
+              Đến: {formatDateTime(item.endsAt)}
             </Typography.Text>
           </Space>
         ) : (
@@ -127,7 +128,7 @@ export function AnnouncementPage() {
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       width: 160,
-      render: (v: string) => new Date(v).toLocaleString('vi-VN'),
+      render: (v: string) => formatDateTime(v),
     },
     {
       title: 'Trạng thái',

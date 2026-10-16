@@ -10,7 +10,7 @@ import {
   PlusOutlined,
 } from '@ant-design/icons'
 import { useDeleteWheel, useWheels } from '@/hooks/useWheel'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { Wheel } from '@/types'
 import { WheelEditorModal } from './WheelEditorModal'
 import { WheelHistoryModal } from './WheelHistoryModal'
@@ -49,7 +49,7 @@ export function WheelRewardsPage() {
           await deleteWheel.mutateAsync(wheel.id)
           message.success('Đã xoá vòng quay')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

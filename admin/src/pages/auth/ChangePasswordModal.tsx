@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { App, Form, Input, Modal } from 'antd'
 import { AdminAuthService } from '@/services/adminAuth.service'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 
 interface ChangePasswordFormValues {
   currentPassword: string
@@ -33,7 +33,7 @@ export function ChangePasswordModal({ open, onClose, onChanged }: ChangePassword
       onClose()
       onChanged()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Đổi mật khẩu thất bại')
+      message.error(errorMessage(err, 'Đổi mật khẩu thất bại'))
     } finally {
       setSubmitting(false)
     }

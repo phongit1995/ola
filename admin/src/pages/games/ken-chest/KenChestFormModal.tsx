@@ -1,6 +1,6 @@
 import { App, Form, InputNumber, Modal, Radio } from 'antd'
 import { useCreateKenChest } from '@/hooks/useKenChests'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { CreateKenChestRequest, KenChestRewardMode } from '@/types'
 
@@ -39,7 +39,7 @@ export function KenChestFormModal({ open, onClose }: KenChestFormModalProps) {
       message.success('Đã tạo & phát rương Ken')
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Tạo rương thất bại')
+      message.error(errorMessage(err, 'Tạo rương thất bại'))
     }
   }
 

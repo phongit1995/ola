@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { App, Form, Input, Modal } from 'antd'
 import { useUpdateUsername } from '@/hooks/useUsers'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 
 interface EditUsernameFormValues {
   username: string
@@ -40,7 +40,7 @@ export function EditUsernameModal({ open, userId, currentUsername, onClose }: Ed
       message.success('Cập nhật username thành công')
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Cập nhật username thất bại')
+      message.error(errorMessage(err, 'Cập nhật username thất bại'))
     }
   }
 

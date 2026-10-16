@@ -4,7 +4,7 @@ import { Typography } from 'antd'
 import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { useAppSettings, usePutAppSettings } from '@/hooks/useAppSettings'
 import { env } from '@/config/env'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { VIETQR_BANKS, findBankByBin } from '@/lib/banks'
 import { settingValue } from '@/lib/appSetting'
 import { OPEN_PLATFORM_RULES, cleanPlatformRules, normalizePlatformRules } from '@/lib/platformRules'
@@ -123,7 +123,7 @@ export function TopupSettingsPage() {
       ])
       message.success('Đã lưu cấu hình nạp KEN')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 

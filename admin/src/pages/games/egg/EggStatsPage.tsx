@@ -14,8 +14,7 @@ import {
   Tag,
   Typography,
 } from 'antd'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
-import type { SorterResult } from 'antd/es/table/interface'
+import type { ColumnsType } from 'antd/es/table'
 import {
   Bar,
   CartesianGrid,
@@ -40,27 +39,17 @@ import type {
   EggUserStatsSortBy,
   EggVipStatsRow,
 } from '@/types'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
+import { NetText } from '@/components/NetText'
+import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '@/hooks/useUserStatsTable'
 
 const CATEGORY_META: Record<EggCategoryType, { label: string; color: string }> = {
   nothing: { label: 'Không trúng', color: '#94a3b8' },
   vip_icon: { label: 'VIP icon', color: '#faad14' },
   ken: { label: 'Ken', color: '#2563eb' },
   vip_days: { label: 'Ngày VIP', color: '#5b8c2a' },
-}
-
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
-
-function isoDate(d: Date) {
-  return d.toISOString().slice(0, 10)
-}
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
 }
 
 const rewardColumns: ColumnsType<EggStatsReward> = [
@@ -78,15 +67,15 @@ const rewardColumns: ColumnsType<EggStatsReward> = [
     dataIndex: 'count',
     width: 120,
     align: 'right',
-    render: (value: number) => vn(value),
+    render: (value: number) => formatCount(value),
   },
 ]
 
 const packColumns: ColumnsType<EggStatsPack> = [
   { title: 'Gói', dataIndex: 'packName' },
-  { title: 'Lượt', dataIndex: 'draws', width: 90, align: 'right', render: (v: number) => vn(v) },
-  { title: 'Ken thu', dataIndex: 'kenIn', width: 120, align: 'right', render: (v: number) => vn(v) },
-  { title: 'Ken trả', dataIndex: 'kenOut', width: 120, align: 'right', render: (v: number) => vn(v) },
+  { title: 'Lượt', dataIndex: 'draws', width: 90, align: 'right', render: (v: number) => formatCount(v) },
+  { title: 'Ken thu', dataIndex: 'kenIn', width: 120, align: 'right', render: (v: number) => formatCount(v) },
+  { title: 'Ken trả', dataIndex: 'kenOut', width: 120, align: 'right', render: (v: number) => formatCount(v) },
   {
     title: 'RTP',
     dataIndex: 'rtp',
@@ -100,14 +89,7 @@ const packColumns: ColumnsType<EggStatsPack> = [
   },
 ]
 
-function NetText({ value }: { value: number }) {
-  if (value > 0) return <Typography.Text type="success">+{vn(value)}</Typography.Text>
-  if (value < 0) return <Typography.Text type="danger">{vn(value)}</Typography.Text>
-  return <Typography.Text>0</Typography.Text>
-}
-
 const USER_STATS_SORTS: EggUserStatsSortBy[] = ['kenSpent', 'kenWon', 'netKen', 'draws', 'vipDays']
-const USER_PAGE_SIZE = 10
 
 const vipColumns: ColumnsType<EggVipStatsRow> = [
   {
@@ -129,69 +111,44 @@ const vipColumns: ColumnsType<EggVipStatsRow> = [
     dataIndex: 'iconWins',
     width: 110,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
   {
     title: 'Lượt trúng ngày VIP',
     dataIndex: 'dayWins',
     width: 150,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
   {
     title: 'Tổng ngày VIP',
     dataIndex: 'vipDays',
     width: 130,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
 ]
 
 export function EggStatsPage() {
-  const [from, setFrom] = useState(() => isoDate(new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)))
-  const [to, setTo] = useState(() => isoDate(new Date()))
+  const [from, setFrom] = useState(() => isoDaysAgo(29))
+  const [to, setTo] = useState(() => isoDaysAgo(0))
   const [packId, setPackId] = useState<string | undefined>(undefined)
-  const [userSort, setUserSort] = useState<EggUserStatsSortBy>('kenSpent')
-  const [userPage, setUserPage] = useState(1)
-  const [userSearch, setUserSearch] = useState('')
+  const { userSort, userPage, setUserPage, setUserSearch, userQuery, onUserTableChange } =
+    useUserStatsTable(USER_STATS_SORTS, 'kenSpent')
 
   const { data: packs } = useEggPacks()
   const params = useMemo(
     () => ({
       packId,
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+      ...toIsoRange(from, to),
     }),
     [packId, from, to],
   )
   const { data, isFetching } = useEggStats(params)
 
-  const userStatsParams = useMemo(
-    () => ({
-      ...params,
-      userId: userSearch || undefined,
-      sortBy: userSort,
-      limit: USER_PAGE_SIZE,
-      offset: (userPage - 1) * USER_PAGE_SIZE,
-    }),
-    [params, userSearch, userSort, userPage],
-  )
+  const userStatsParams = useMemo(() => ({ ...params, ...userQuery }), [params, userQuery])
   const { data: userStats, isFetching: userStatsFetching } = useEggUserStats(userStatsParams)
   const { data: vipStats, isFetching: vipStatsFetching } = useEggVipStats(params)
-
-  function onUserTableChange(
-    _pagination: TablePaginationConfig,
-    _filters: unknown,
-    sorter: SorterResult<EggUserStatsItem> | SorterResult<EggUserStatsItem>[],
-  ) {
-    const single = Array.isArray(sorter) ? sorter[0] : sorter
-    const field = single?.order ? String(single.field) : 'kenSpent'
-    const next = USER_STATS_SORTS.find((key) => key === field) ?? 'kenSpent'
-    if (next !== userSort) {
-      setUserSort(next)
-      setUserPage(1)
-    }
-  }
 
   const userColumns: ColumnsType<EggUserStatsItem> = [
     {
@@ -214,14 +171,14 @@ export function EggStatsPage() {
       sorter: true,
       sortOrder: userSort === 'draws' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Trúng',
       key: 'winRate',
       width: 130,
       align: 'right',
-      render: (_, row) => `${vn(row.winDraws)} (${row.winRate.toFixed(1)}%)`,
+      render: (_, row) => `${formatCount(row.winDraws)} (${row.winRate.toFixed(1)}%)`,
     },
     {
       title: 'Ken chi',
@@ -231,7 +188,7 @@ export function EggStatsPage() {
       sorter: true,
       sortOrder: userSort === 'kenSpent' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Ken trúng',
@@ -241,7 +198,7 @@ export function EggStatsPage() {
       sorter: true,
       sortOrder: userSort === 'kenWon' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Ròng (user)',
@@ -261,20 +218,20 @@ export function EggStatsPage() {
       sorter: true,
       sortOrder: userSort === 'vipDays' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Icon',
       dataIndex: 'vipIcons',
       width: 80,
       align: 'right',
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Đập gần nhất',
       dataIndex: 'lastDrawAt',
       width: 150,
-      render: (v: string) => new Date(v).toLocaleString('vi-VN'),
+      render: (v: string) => formatDateTime(v),
     },
   ]
 
@@ -291,22 +248,11 @@ export function EggStatsPage() {
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Card>
         <Space wrap>
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => setFrom(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => setTo(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={setFrom}
+            onToChange={setTo}
           />
           <Select
             allowClear
@@ -385,7 +331,7 @@ export function EggStatsPage() {
                 <XAxis dataKey="date" fontSize={12} />
                 <YAxis yAxisId="left" fontSize={12} />
                 <YAxis yAxisId="right" orientation="right" fontSize={12} />
-                <RTooltip formatter={(value) => vn(Number(value))} />
+                <RTooltip formatter={(value) => formatCount(Number(value))} />
                 <Legend />
                 <Bar yAxisId="left" dataKey="kenIn" name="Ken thu" fill="#2563eb" radius={[4, 4, 0, 0]} />
                 <Bar yAxisId="left" dataKey="kenOut" name="Ken trả" fill="#faad14" radius={[4, 4, 0, 0]} />
@@ -411,7 +357,7 @@ export function EggStatsPage() {
                         <Cell key={entry.name} fill={entry.color} />
                       ))}
                     </Pie>
-                    <RTooltip formatter={(value, name) => [`${vn(Number(value))} lượt`, name]} />
+                    <RTooltip formatter={(value, name) => [`${formatCount(Number(value))} lượt`, name]} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -476,7 +422,7 @@ export function EggStatsPage() {
               onChange={onUserTableChange}
               pagination={{
                 current: userPage,
-                pageSize: USER_PAGE_SIZE,
+                pageSize: USER_STATS_PAGE_SIZE,
                 total: userStats?.total ?? 0,
                 showSizeChanger: false,
                 onChange: setUserPage,

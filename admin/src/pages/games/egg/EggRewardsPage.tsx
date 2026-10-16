@@ -10,7 +10,7 @@ import {
   PlusOutlined,
 } from '@ant-design/icons'
 import { useDeleteEggPack, useEggPacks } from '@/hooks/useEgg'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { EggPack } from '@/types'
 import { EggPackEditorModal } from './EggPackEditorModal'
 import { EggHistoryModal } from './EggHistoryModal'
@@ -49,7 +49,7 @@ export function EggRewardsPage() {
           await deletePack.mutateAsync(pack.id)
           message.success('Đã xoá gói')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

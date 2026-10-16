@@ -4,7 +4,7 @@ import { App, Button, Form, Grid, Input, Typography } from 'antd'
 import { LockOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons'
 import { AdminAuthService } from '@/services/adminAuth.service'
 import { useAuthStore } from '@/store/authStore'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { BRAND } from '@/theme'
 import type { AdminLoginRequest } from '@/types'
 
@@ -23,7 +23,7 @@ export function LoginPage() {
       navigate('/', { replace: true })
     } catch (err) {
       const text =
-        err instanceof ApiError ? err.message : 'Đăng nhập thất bại, vui lòng thử lại.'
+        errorMessage(err, 'Đăng nhập thất bại, vui lòng thử lại.')
       message.error(text)
     } finally {
       setLoading(false)

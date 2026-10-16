@@ -13,8 +13,9 @@ import {
 } from 'antd'
 import { InboxOutlined, SaveOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { PushFirebaseSettingStatus, PushNotificationSetting } from '@/types'
+import { formatDateTime } from '@/lib/format'
 
 const CREDENTIAL_KEY = 'push_firebase'
 const TOGGLE_KEY = 'push_notification'
@@ -73,7 +74,7 @@ export function NotificationSettingsPage() {
       await putSetting.mutateAsync({ key: TOGGLE_KEY, value: { enabled: next } })
       message.success(next ? 'Đã bật gửi thông báo đẩy' : 'Đã tắt gửi thông báo đẩy')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 
@@ -90,7 +91,7 @@ export function NotificationSettingsPage() {
       setPasted('')
       message.success('Đã lưu Firebase service account. Server áp dụng trong tối đa 1 phút.')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 
@@ -119,7 +120,7 @@ export function NotificationSettingsPage() {
             <Descriptions.Item label="Email">{status.clientEmail || '—'}</Descriptions.Item>
             <Descriptions.Item label="Cập nhật lần cuối">
               {credential?.updatedAt
-                ? new Date(credential.updatedAt).toLocaleString('vi-VN')
+                ? formatDateTime(credential.updatedAt)
                 : '—'}
             </Descriptions.Item>
           </>

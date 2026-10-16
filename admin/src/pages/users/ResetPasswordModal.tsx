@@ -1,6 +1,6 @@
 import { App, Form, Input, Modal } from 'antd'
 import { useResetPassword } from '@/hooks/useUsers'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 
 interface ResetPasswordFormValues {
   password: string
@@ -28,7 +28,7 @@ export function ResetPasswordModal({ open, userId, username, onClose }: ResetPas
       form.resetFields()
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Đặt lại mật khẩu thất bại')
+      message.error(errorMessage(err, 'Đặt lại mật khẩu thất bại'))
     }
   }
 

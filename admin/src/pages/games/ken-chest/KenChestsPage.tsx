@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { App, Button, Card, Space, Table, Tabs, Tag, Typography, type TableColumnsType } from 'antd'
 import { DeleteOutlined, EyeOutlined, GiftOutlined, PlusOutlined } from '@ant-design/icons'
 import { useDeleteKenChest, useKenChests } from '@/hooks/useKenChests'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'
 import { KenChestFormModal } from './KenChestFormModal'
@@ -54,7 +54,7 @@ export function KenChestsPage() {
           await deleteChest.mutateAsync(chest.id)
           message.success('Đã huỷ rương Ken')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Huỷ thất bại')
+          message.error(errorMessage(err, 'Huỷ thất bại'))
         }
       },
     })

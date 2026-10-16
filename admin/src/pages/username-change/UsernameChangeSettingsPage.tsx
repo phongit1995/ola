@@ -1,7 +1,7 @@
 import { App, Button, Card, Col, Form, InputNumber, Row, Spin, Switch, Typography } from 'antd'
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { settingValue } from '@/lib/appSetting'
 import type { UsernameChangeSetting, UsernameChangeTierSetting } from '@/types'
 
@@ -67,7 +67,7 @@ export function UsernameChangeSettingsPage() {
       await putSetting.mutateAsync({ key: 'username_change', value: { ...payload } })
       message.success('Đã lưu cấu hình đổi nickname')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 

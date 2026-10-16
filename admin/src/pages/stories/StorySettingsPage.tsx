@@ -3,7 +3,7 @@ import { App, Button, Card, Form, Spin, Tabs, Typography } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
 import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { cleanPlatformRules } from '@/lib/platformRules'
 import type { StorySetting } from '@/types'
 import { STORY_SETTING_KEY, storySetting } from './storyMeta'
@@ -73,7 +73,7 @@ function StoryDisplaySettings() {
       await putSetting.mutateAsync({ key: STORY_SETTING_KEY, value: { ...value } })
       message.success('Đã lưu cài đặt truyện')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 

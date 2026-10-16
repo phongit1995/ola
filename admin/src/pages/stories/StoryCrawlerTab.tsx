@@ -36,8 +36,8 @@ import {
   useSaveStoryCrawlerSetting,
   useStoryCrawler,
 } from '@/hooks/useStories'
-import { ApiError } from '@/lib/apiError'
-import { formatDateTime } from '@/lib/format'
+import { ApiError, errorMessage } from '@/lib/apiError'
+import { formatCount, formatDateTime } from '@/lib/format'
 import type {
   StoryCrawlError,
   StoryCookie,
@@ -76,8 +76,6 @@ const COOKIE_STATUS_OPTIONS: { value: StoryCookieStatus; label: ReactNode }[] = 
 ]
 
 const NEW_COOKIE: StoryCookie = { name: '', cookie: '', status: 'active', deadAt: null }
-
-const formatCount = (value: number) => value.toLocaleString('vi-VN')
 
 const cleanCookie = (value: string | undefined) => (value ?? '').trim().replace(/^cookie:\s*/i, '')
 
@@ -547,7 +545,7 @@ function SettingsCard({
         message.warning(err.message)
         return
       }
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 
@@ -672,7 +670,7 @@ function StatusCard({
         message.warning('Đang có một lượt cập nhật chạy')
         return
       }
-      message.error(err instanceof ApiError ? err.message : 'Không chạy được')
+      message.error(errorMessage(err, 'Không chạy được'))
     }
   }
 

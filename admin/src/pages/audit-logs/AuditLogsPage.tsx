@@ -3,6 +3,8 @@ import { Card, Select, Space, Table, Tag, Typography, type TableColumnsType } fr
 import { useAuditLogs } from '@/hooks/useAuditLogs'
 import { formatDateTime } from '@/lib/format'
 import type { AdminAuditLog } from '@/types'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { toIsoRange } from '@/lib/dateRange'
 
 const PAGE_SIZE = 20
 
@@ -24,13 +26,6 @@ const RESOURCE_LABELS: Record<string, string> = {
   me: 'Me',
   settings: 'Cài đặt',
   upload: 'Tải lên',
-}
-
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
 }
 
 const RESOURCE_OPTIONS = Object.entries(RESOURCE_LABELS).map(([value, label]) => ({ value, label }))
@@ -93,8 +88,7 @@ export function AuditLogsPage() {
       resource,
       method,
       route,
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+      ...toIsoRange(from, to),
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
     }),
@@ -161,28 +155,17 @@ export function AuditLogsPage() {
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Card>
         <Space wrap>
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => {
-              setFrom(e.target.value)
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={(value) => {
+              setFrom(value)
               setPage(1)
             }}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => {
-              setTo(e.target.value)
+            onToChange={(value) => {
+              setTo(value)
               setPage(1)
             }}
-            style={DATE_INPUT_STYLE}
           />
           <Select
             allowClear

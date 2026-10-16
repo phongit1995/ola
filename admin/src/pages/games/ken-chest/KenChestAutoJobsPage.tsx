@@ -17,7 +17,7 @@ import {
   useUpdateKenAutoJob,
   useUpdateKenAutoSettings,
 } from '@/hooks/useKenChests'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import { KenChestAutoJobModal } from './KenChestAutoJobModal'
 import type { KenChestAutoJob, KenChestAutoJobRequest } from '@/types'
@@ -82,7 +82,7 @@ export function KenChestAutoJobs() {
       await updateSettings.mutateAsync(enabled)
       message.success(enabled ? 'Đã bật tất cả lịch tự động' : 'Đã tắt tất cả lịch tự động')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Cập nhật thất bại')
+      message.error(errorMessage(err, 'Cập nhật thất bại'))
     }
   }
 
@@ -90,7 +90,7 @@ export function KenChestAutoJobs() {
     try {
       await updateJob.mutateAsync({ id: job.id, payload: { ...jobToRequest(job), enabled } })
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Cập nhật thất bại')
+      message.error(errorMessage(err, 'Cập nhật thất bại'))
     }
   }
 
@@ -106,7 +106,7 @@ export function KenChestAutoJobs() {
           await deleteJob.mutateAsync(job.id)
           message.success('Đã xoá lịch')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import {
-  Avatar,
   Button,
   Card,
   Input,
@@ -14,11 +13,15 @@ import type { SorterResult } from 'antd/es/table/interface'
 import { ArrowRightOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useKenTransfers, useKenTransferUserStats } from '@/hooks/useKen'
 import type {
-  KenCounterparty,
   KenTransferItem,
   KenTransferUserStatsItem,
   KenTransferUserStatsSortBy,
 } from '@/types'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { toIsoRange } from '@/lib/dateRange'
+import { NetText } from '@/components/NetText'
+import { UserBriefCell } from '@/components/UserBriefCell'
 
 const PAGE_SIZE = 20
 const USER_STATS_SORTS: KenTransferUserStatsSortBy[] = [
@@ -29,55 +32,17 @@ const USER_STATS_SORTS: KenTransferUserStatsSortBy[] = [
 ]
 const USER_PAGE_SIZE = 10
 
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN')
-}
-
-function NetText({ value }: { value: number }) {
-  if (value > 0) return <Typography.Text type="success">+{vn(value)}</Typography.Text>
-  if (value < 0) return <Typography.Text type="danger">{vn(value)}</Typography.Text>
-  return <Typography.Text>0</Typography.Text>
-}
-
-function UserCell({ user }: { user?: KenCounterparty }) {
-  if (!user) return <Typography.Text type="secondary">—</Typography.Text>
-  return (
-    <Space>
-      <Avatar size="small" src={user.avatar || undefined}>
-        {user.fullName?.[0] ?? user.username?.[0] ?? '?'}
-      </Avatar>
-      <div>
-        <Typography.Text strong>{user.fullName || user.username}</Typography.Text>
-        <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-          @{user.username}
-        </Typography.Text>
-      </div>
-    </Space>
-  )
-}
-
 const transferColumns: ColumnsType<KenTransferItem> = [
   {
     title: 'Thời gian',
     dataIndex: 'createdAt',
     width: 160,
-    render: (value: string) => formatTime(value),
+    render: (value: string) => formatDateTime(value),
   },
   {
     title: 'Người gửi',
     key: 'from',
-    render: (_, row) => <UserCell user={row.from} />,
+    render: (_, row) => <UserBriefCell user={row.from} />,
   },
   {
     title: '',
@@ -89,14 +54,14 @@ const transferColumns: ColumnsType<KenTransferItem> = [
   {
     title: 'Người nhận',
     key: 'to',
-    render: (_, row) => <UserCell user={row.to} />,
+    render: (_, row) => <UserBriefCell user={row.to} />,
   },
   {
     title: 'Số Ken',
     dataIndex: 'amount',
     width: 130,
     align: 'right',
-    render: (value: number) => <Typography.Text strong>{vn(value)}</Typography.Text>,
+    render: (value: number) => <Typography.Text strong>{formatCount(value)}</Typography.Text>,
   },
   {
     title: 'Lời nhắn',
@@ -120,13 +85,7 @@ export function KenTransfersPage() {
   const [userPage, setUserPage] = useState(1)
   const [userSearch, setUserSearch] = useState('')
 
-  const range = useMemo(
-    () => ({
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
-    }),
-    [from, to],
-  )
+  const range = useMemo(() => toIsoRange(from, to), [from, to])
 
   const params = useMemo(
     () => ({
@@ -183,7 +142,7 @@ export function KenTransfersPage() {
     {
       title: 'Người chơi',
       key: 'user',
-      render: (_, row) => <UserCell user={row.user} />,
+      render: (_, row) => <UserBriefCell user={row.user} />,
     },
     {
       title: 'Đã chuyển',
@@ -193,7 +152,7 @@ export function KenTransfersPage() {
       sorter: true,
       sortOrder: userSort === 'sentTotal' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (_: number, row) => `${vn(row.sentTotal)} (${vn(row.sentCount)} lần)`,
+      render: (_: number, row) => `${formatCount(row.sentTotal)} (${formatCount(row.sentCount)} lần)`,
     },
     {
       title: 'Đã nhận',
@@ -203,7 +162,7 @@ export function KenTransfersPage() {
       sorter: true,
       sortOrder: userSort === 'receivedTotal' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (_: number, row) => `${vn(row.receivedTotal)} (${vn(row.receivedCount)} lần)`,
+      render: (_: number, row) => `${formatCount(row.receivedTotal)} (${formatCount(row.receivedCount)} lần)`,
     },
     {
       title: 'Ròng',
@@ -220,13 +179,13 @@ export function KenTransfersPage() {
       dataIndex: 'partners',
       width: 110,
       align: 'right',
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Gần nhất',
       dataIndex: 'lastTransferAt',
       width: 150,
-      render: (v: string) => formatTime(v),
+      render: (v: string) => formatDateTime(v),
     },
   ]
 
@@ -262,22 +221,11 @@ export function KenTransfersPage() {
             onChange={resetPage(setMaxAmount)}
             style={{ width: 110 }}
           />
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => resetPage(setFrom)(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => resetPage(setTo)(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={resetPage(setFrom)}
+            onToChange={resetPage(setTo)}
           />
           <Button icon={<ReloadOutlined />} onClick={() => void refetch()}>
             Tải lại
@@ -296,7 +244,7 @@ export function KenTransfersPage() {
           pageSize: PAGE_SIZE,
           total: data?.total ?? 0,
           showSizeChanger: false,
-          showTotal: (total) => `${vn(total)} giao dịch`,
+          showTotal: (total) => `${formatCount(total)} giao dịch`,
           onChange: setPage,
         }}
         locale={{ emptyText: 'Chưa có giao dịch chuyển Ken nào' }}

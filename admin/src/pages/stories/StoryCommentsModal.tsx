@@ -15,8 +15,8 @@ import {
 } from 'antd'
 import { DeleteOutlined, LikeOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons'
 import { useDeleteStoryComment, useStoryComments } from '@/hooks/useStories'
-import { formatDateTime } from '@/lib/format'
-import { ApiError } from '@/lib/apiError'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { errorMessage } from '@/lib/apiError'
 import type { AdminStory, AdminStoryComment } from '@/types'
 
 const COMMENT_PAGE_SIZE = 20
@@ -25,10 +25,6 @@ interface StoryCommentsModalProps {
   story: AdminStory | null
   open: boolean
   onClose: () => void
-}
-
-function formatCount(value: number) {
-  return value.toLocaleString('vi-VN')
 }
 
 function authorName(comment: AdminStoryComment) {
@@ -65,7 +61,7 @@ export function StoryCommentsModal({ story, open, onClose }: StoryCommentsModalP
       setVisibleCount(result.commentCount)
       message.success('Đã xoá bình luận')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+      message.error(errorMessage(err, 'Xoá thất bại'))
       void refetch()
     }
   }
@@ -108,7 +104,7 @@ export function StoryCommentsModal({ story, open, onClose }: StoryCommentsModalP
               ? 'Không tải được bình luận'
               : 'Không tải lại được bình luận, đang hiện dữ liệu lần trước'
           }
-          description={error instanceof ApiError ? error.message : 'Lỗi không xác định, thử lại sau'}
+          description={errorMessage(error, 'Lỗi không xác định, thử lại sau')}
           action={
             <Button size="small" loading={isFetching} onClick={() => void refetch()}>
               Thử lại

@@ -22,7 +22,7 @@ import {
 import { useDebounce } from '@/hooks/useDebounce'
 import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { UserDetailModal } from './UserDetailModal'
 import { GENDER } from './userMeta'
 import type { AdminUserListItem } from '@/types'
@@ -118,7 +118,7 @@ export function UsersPage() {
           await updateStatus.mutateAsync({ id: user.id, isActive: next })
           message.success(next ? 'Đã mở khoá' : 'Đã khoá người dùng')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+          message.error(errorMessage(err, 'Thao tác thất bại'))
         }
       },
     })
@@ -136,7 +136,7 @@ export function UsersPage() {
           await deleteUser.mutateAsync(user.id)
           message.success('Đã xoá người dùng')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

@@ -3,7 +3,7 @@ import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Switch, Upl
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { useCreateMiniGame, useUpdateMiniGame } from '@/hooks/useMiniGames'
 import { AdminUploadService } from '@/services/adminUpload.service'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { CreateMiniGameRequest, MiniGame } from '@/types'
 
 interface MiniGameFormModalProps {
@@ -42,7 +42,7 @@ export function MiniGameFormModal({ open, game, onClose }: MiniGameFormModalProp
       form.setFieldValue('iconUrl', url)
       message.success('Đã tải icon lên')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Tải icon thất bại')
+      message.error(errorMessage(err, 'Tải icon thất bại'))
     } finally {
       setUploading(false)
     }
@@ -61,7 +61,7 @@ export function MiniGameFormModal({ open, game, onClose }: MiniGameFormModalProp
       }
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu mini game thất bại')
+      message.error(errorMessage(err, 'Lưu mini game thất bại'))
     }
   }
 

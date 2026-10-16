@@ -21,7 +21,7 @@ import {
   PlusOutlined,
 } from '@ant-design/icons'
 import { useDeleteMiniGame, useMiniGames, useUpdateMiniGame } from '@/hooks/useMiniGames'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { MiniGameFormModal } from './MiniGameFormModal'
 import { GameMatchesPage } from './GameMatchesPage'
 import { GameLevelsTab } from './GameLevelsTab'
@@ -64,7 +64,7 @@ function MiniGameListTab() {
           await updateGame.mutateAsync({ id: game.id, payload: { isEnabled } })
           message.success(isEnabled ? 'Đã bật game' : 'Đã tắt game')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+          message.error(errorMessage(err, 'Thao tác thất bại'))
         }
       },
     })
@@ -82,7 +82,7 @@ function MiniGameListTab() {
           await deleteGame.mutateAsync(game.id)
           message.success('Đã xoá mini game')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

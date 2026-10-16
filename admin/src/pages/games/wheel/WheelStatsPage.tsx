@@ -16,8 +16,7 @@ import {
   Typography,
 } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
-import type { SorterResult } from 'antd/es/table/interface'
+import type { ColumnsType } from 'antd/es/table'
 import type { Dayjs } from 'dayjs'
 import { useWheelStats, useWheelUserStats, useWheelVipStats, useWheels } from '@/hooks/useWheel'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
@@ -30,19 +29,11 @@ import type {
   WheelVipStatsRow,
 } from '@/types'
 import { kindMeta } from './wheelHelpers'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { NetText } from '@/components/NetText'
+import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '@/hooks/useUserStatsTable'
 
 const USER_STATS_SORTS: WheelUserStatsSortBy[] = ['kenSpent', 'kenWon', 'netKen', 'spins', 'vipDays']
-const USER_PAGE_SIZE = 10
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
-function NetText({ value }: { value: number }) {
-  if (value > 0) return <Typography.Text type="success">+{vn(value)}</Typography.Text>
-  if (value < 0) return <Typography.Text type="danger">{vn(value)}</Typography.Text>
-  return <Typography.Text>0</Typography.Text>
-}
 
 const vipColumns: ColumnsType<WheelVipStatsRow> = [
   {
@@ -64,21 +55,21 @@ const vipColumns: ColumnsType<WheelVipStatsRow> = [
     dataIndex: 'itemWins',
     width: 110,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
   {
     title: 'Lượt trúng ngày VIP',
     dataIndex: 'dayWins',
     width: 150,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
   {
     title: 'Tổng ngày VIP',
     dataIndex: 'vipDays',
     width: 130,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
 ]
 
@@ -99,36 +90,12 @@ export function WheelStatsPage() {
   const { data, isFetching } = useWheelStats(params)
   const overview = data?.overview
 
-  const [userSort, setUserSort] = useState<WheelUserStatsSortBy>('kenSpent')
-  const [userPage, setUserPage] = useState(1)
-  const [userSearch, setUserSearch] = useState('')
+  const { userSort, userPage, setUserPage, setUserSearch, userQuery, onUserTableChange } =
+    useUserStatsTable(USER_STATS_SORTS, 'kenSpent')
 
-  const userStatsParams = useMemo(
-    () => ({
-      ...params,
-      userId: userSearch || undefined,
-      sortBy: userSort,
-      limit: USER_PAGE_SIZE,
-      offset: (userPage - 1) * USER_PAGE_SIZE,
-    }),
-    [params, userSearch, userSort, userPage],
-  )
+  const userStatsParams = useMemo(() => ({ ...params, ...userQuery }), [params, userQuery])
   const { data: userStats, isFetching: userStatsFetching } = useWheelUserStats(userStatsParams)
   const { data: vipStats, isFetching: vipStatsFetching } = useWheelVipStats(params)
-
-  function onUserTableChange(
-    _pagination: TablePaginationConfig,
-    _filters: unknown,
-    sorter: SorterResult<WheelUserStatsItem> | SorterResult<WheelUserStatsItem>[],
-  ) {
-    const single = Array.isArray(sorter) ? sorter[0] : sorter
-    const field = single?.order ? String(single.field) : 'kenSpent'
-    const next = USER_STATS_SORTS.find((key) => key === field) ?? 'kenSpent'
-    if (next !== userSort) {
-      setUserSort(next)
-      setUserPage(1)
-    }
-  }
 
   const userColumns: ColumnsType<WheelUserStatsItem> = [
     {
@@ -151,21 +118,21 @@ export function WheelStatsPage() {
       sorter: true,
       sortOrder: userSort === 'spins' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Trúng',
       key: 'winRate',
       width: 130,
       align: 'right',
-      render: (_, row) => `${vn(row.winSpins)} (${row.winRate.toFixed(1)}%)`,
+      render: (_, row) => `${formatCount(row.winSpins)} (${row.winRate.toFixed(1)}%)`,
     },
     {
       title: 'Lượt free',
       dataIndex: 'freeSpins',
       width: 100,
       align: 'right',
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Ken chi',
@@ -175,7 +142,7 @@ export function WheelStatsPage() {
       sorter: true,
       sortOrder: userSort === 'kenSpent' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Ken trúng',
@@ -185,7 +152,7 @@ export function WheelStatsPage() {
       sorter: true,
       sortOrder: userSort === 'kenWon' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Ròng (user)',
@@ -205,20 +172,20 @@ export function WheelStatsPage() {
       sorter: true,
       sortOrder: userSort === 'vipDays' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Item VIP',
       dataIndex: 'vipItems',
       width: 90,
       align: 'right',
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Quay gần nhất',
       dataIndex: 'lastSpinAt',
       width: 150,
-      render: (v: string) => new Date(v).toLocaleString('vi-VN'),
+      render: (v: string) => formatDateTime(v),
     },
   ]
 
@@ -392,7 +359,7 @@ export function WheelStatsPage() {
           onChange={onUserTableChange}
           pagination={{
             current: userPage,
-            pageSize: USER_PAGE_SIZE,
+            pageSize: USER_STATS_PAGE_SIZE,
             total: userStats?.total ?? 0,
             showSizeChanger: false,
             onChange: setUserPage,

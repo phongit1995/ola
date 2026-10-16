@@ -3,7 +3,7 @@ import { App, Avatar, Button, Empty, Image, Modal, Skeleton, Tag, Typography } f
 import { DeleteOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons'
 import { useDeleteRoomMessage, useRoomMessages } from '@/hooks/useRooms'
 import { formatDateTime } from '@/lib/format'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { RoomMessage } from '@/types'
 
 interface RoomMessagesModalProps {
@@ -55,7 +55,7 @@ export function RoomMessagesModal({ roomId, roomName, open, onClose }: RoomMessa
           await deleteMessage.mutateAsync(m.id)
           toast.success('Đã xoá tin nhắn')
         } catch (err) {
-          toast.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          toast.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

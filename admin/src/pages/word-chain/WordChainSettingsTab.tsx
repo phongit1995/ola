@@ -1,7 +1,7 @@
 import { App, Button, Form, InputNumber, Spin, Switch, Typography } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { WordChainSetting } from '@/types'
 import {
@@ -45,7 +45,7 @@ export function WordChainSettingsTab() {
       })
       message.success('Đã lưu cấu hình phòng nối từ')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 

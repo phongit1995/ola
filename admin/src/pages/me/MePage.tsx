@@ -25,7 +25,7 @@ import {
 import { useDebounce } from '@/hooks/useDebounce'
 import { useMeList, useUpdateMeStatus } from '@/hooks/useMe'
 import { formatDateTime } from '@/lib/format'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { MeDetailModal } from './MeDetailModal'
 import { VISIBILITY } from './meVisibility'
 import type { MeListItem } from '@/types'
@@ -121,7 +121,7 @@ export function MePage() {
           await updateStatus.mutateAsync({ id: post.id, enabled })
           message.success(enabled ? 'Đã hiện bài' : 'Đã ẩn bài')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+          message.error(errorMessage(err, 'Thao tác thất bại'))
         }
       },
     })

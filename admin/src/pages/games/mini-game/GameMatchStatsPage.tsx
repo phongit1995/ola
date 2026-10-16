@@ -30,7 +30,6 @@ import {
   YAxis,
 } from 'recharts'
 import { useGameMatchStats, useGameMatchSuspects } from '@/hooks/useGameMatches'
-import { useMiniGames } from '@/hooks/useMiniGames'
 import type {
   GameMatchMode,
   GameMatchStatsGameRow,
@@ -39,11 +38,15 @@ import type {
   GameMatchUserBrief,
 } from '@/types'
 import {
-  GAME_ID_LABEL,
   GAME_MATCH_MODE_LABEL,
   GAME_MATCH_REASON_META,
   gameLabel,
 } from './gameMatchMeta'
+import { formatCount } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
+import { NetText } from '@/components/NetText'
+import { useGameOptions } from './useGameOptions'
 
 const REASON_COLOR: Record<string, string> = {
   win: '#52c41a',
@@ -59,21 +62,6 @@ const MODE_OPTIONS = (Object.keys(GAME_MATCH_MODE_LABEL) as GameMatchMode[]).map
   label: GAME_MATCH_MODE_LABEL[mode],
 }))
 
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
-
-function isoDate(d: Date) {
-  return d.toISOString().slice(0, 10)
-}
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
 function UserCell({ user }: { user: GameMatchUserBrief }) {
   return (
     <Space>
@@ -85,20 +73,14 @@ function UserCell({ user }: { user: GameMatchUserBrief }) {
   )
 }
 
-function NetKenText({ value }: { value: number }) {
-  if (value > 0) return <Typography.Text type="success">+{vn(value)}</Typography.Text>
-  if (value < 0) return <Typography.Text type="danger">{vn(value)}</Typography.Text>
-  return <Typography.Text>0</Typography.Text>
-}
-
 const playerColumns: ColumnsType<GameMatchStatsPlayer> = [
   {
     title: 'Người chơi',
     key: 'user',
     render: (_, row) => <UserCell user={row.user} />,
   },
-  { title: 'Trận', dataIndex: 'matches', width: 80, align: 'right', render: (v: number) => vn(v) },
-  { title: 'Thắng', dataIndex: 'wins', width: 80, align: 'right', render: (v: number) => vn(v) },
+  { title: 'Trận', dataIndex: 'matches', width: 80, align: 'right', render: (v: number) => formatCount(v) },
+  { title: 'Thắng', dataIndex: 'wins', width: 80, align: 'right', render: (v: number) => formatCount(v) },
   {
     title: 'Tỉ lệ thắng',
     dataIndex: 'winRate',
@@ -111,14 +93,14 @@ const playerColumns: ColumnsType<GameMatchStatsPlayer> = [
     dataIndex: 'staked',
     width: 120,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
   {
     title: 'Ken ròng',
     dataIndex: 'netKen',
     width: 120,
     align: 'right',
-    render: (v: number) => <NetKenText value={v} />,
+    render: (v: number) => <NetText value={v} />,
   },
 ]
 
@@ -133,13 +115,13 @@ const pairColumns: ColumnsType<GameMatchSuspectPair> = [
       </Space>
     ),
   },
-  { title: 'Trận', dataIndex: 'matches', width: 80, align: 'right', render: (v: number) => vn(v) },
+  { title: 'Trận', dataIndex: 'matches', width: 80, align: 'right', render: (v: number) => formatCount(v) },
   {
     title: 'Thắng A - B',
     key: 'wins',
     width: 110,
     align: 'right',
-    render: (_, row) => `${vn(row.aWins)} - ${vn(row.bWins)}`,
+    render: (_, row) => `${formatCount(row.aWins)} - ${formatCount(row.bWins)}`,
   },
   {
     title: 'Độ một chiều',
@@ -158,50 +140,28 @@ const pairColumns: ColumnsType<GameMatchSuspectPair> = [
     dataIndex: 'totalBet',
     width: 110,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
   {
     title: 'Ken ròng về A',
     dataIndex: 'netA',
     width: 120,
     align: 'right',
-    render: (v: number) => <NetKenText value={v} />,
+    render: (v: number) => <NetText value={v} />,
   },
 ]
 
 export function GameMatchStatsPage() {
   const [gameId, setGameId] = useState<string | undefined>(undefined)
   const [mode, setMode] = useState<GameMatchMode | undefined>(undefined)
-  const [from, setFrom] = useState(() => isoDate(new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)))
-  const [to, setTo] = useState(() => isoDate(new Date()))
+  const [from, setFrom] = useState(() => isoDaysAgo(29))
+  const [to, setTo] = useState(() => isoDaysAgo(0))
   const [minMatches, setMinMatches] = useState(10)
   const [minPairMatches, setMinPairMatches] = useState(5)
 
-  const { data: games } = useMiniGames()
+  const { gameNames, gameOptions } = useGameOptions()
 
-  const gameNames = useMemo(() => {
-    const names: Record<string, string> = {}
-    for (const game of games?.items ?? []) {
-      names[game.slug] = game.name
-    }
-    return names
-  }, [games])
-
-  const gameOptions = useMemo(() => {
-    const slugs = new Set([
-      ...Object.keys(GAME_ID_LABEL),
-      ...(games?.items ?? []).map((game) => game.slug),
-    ])
-    return [...slugs].map((slug) => ({ value: slug, label: gameLabel(slug, gameNames) }))
-  }, [games, gameNames])
-
-  const range = useMemo(
-    () => ({
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
-    }),
-    [from, to],
-  )
+  const range = useMemo(() => toIsoRange(from, to), [from, to])
 
   const statsParams = useMemo(() => ({ gameId, mode, ...range }), [gameId, mode, range])
   const suspectsParams = useMemo(
@@ -226,14 +186,14 @@ export function GameMatchStatsPage() {
       dataIndex: 'gameId',
       render: (value: string) => <Tag color="purple">{gameLabel(value, gameNames)}</Tag>,
     },
-    { title: 'Trận', dataIndex: 'matches', align: 'right', render: (v: number) => vn(v) },
-    { title: 'Đã xong', dataIndex: 'finished', align: 'right', render: (v: number) => vn(v) },
-    { title: 'Ken qua kèo', dataIndex: 'volume', align: 'right', render: (v: number) => vn(v) },
+    { title: 'Trận', dataIndex: 'matches', align: 'right', render: (v: number) => formatCount(v) },
+    { title: 'Đã xong', dataIndex: 'finished', align: 'right', render: (v: number) => formatCount(v) },
+    { title: 'Ken qua kèo', dataIndex: 'volume', align: 'right', render: (v: number) => formatCount(v) },
     {
       title: 'Hoa hồng',
       dataIndex: 'houseTake',
       align: 'right',
-      render: (v: number) => <Typography.Text type="success">{vn(v)}</Typography.Text>,
+      render: (v: number) => <Typography.Text type="success">{formatCount(v)}</Typography.Text>,
     },
   ]
 
@@ -257,22 +217,11 @@ export function GameMatchStatsPage() {
             options={MODE_OPTIONS}
             style={{ width: 150 }}
           />
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => setFrom(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => setTo(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={setFrom}
+            onToChange={setTo}
           />
         </Space>
       </Card>
@@ -343,7 +292,7 @@ export function GameMatchStatsPage() {
                 <XAxis dataKey="date" fontSize={12} />
                 <YAxis yAxisId="left" fontSize={12} />
                 <YAxis yAxisId="right" orientation="right" fontSize={12} />
-                <RTooltip formatter={(value) => vn(Number(value))} />
+                <RTooltip formatter={(value) => formatCount(Number(value))} />
                 <Legend />
                 <Bar yAxisId="left" dataKey="volume" name="Ken qua kèo" fill="#2563eb" radius={[4, 4, 0, 0]} />
                 <Bar yAxisId="left" dataKey="houseTake" name="Hoa hồng" fill="#52c41a" radius={[4, 4, 0, 0]} />
@@ -369,7 +318,7 @@ export function GameMatchStatsPage() {
                         <Cell key={entry.name} fill={entry.color} />
                       ))}
                     </Pie>
-                    <RTooltip formatter={(value, name) => [`${vn(Number(value))} trận`, name]} />
+                    <RTooltip formatter={(value, name) => [`${formatCount(Number(value))} trận`, name]} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>

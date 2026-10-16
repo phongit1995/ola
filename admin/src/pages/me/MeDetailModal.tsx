@@ -22,7 +22,7 @@ import {
   useUpdateMeStatus,
 } from '@/hooks/useMe'
 import { formatDateTime } from '@/lib/format'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { VISIBILITY } from './meVisibility'
 
 interface MeDetailModalProps {
@@ -89,7 +89,7 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
           await updateStatus.mutateAsync({ id: postId, enabled })
           message.success(enabled ? 'Đã hiện bài' : 'Đã ẩn bài')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+          message.error(errorMessage(err, 'Thao tác thất bại'))
         }
       },
     })
@@ -107,7 +107,7 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
           await deleteComment.mutateAsync({ id: postId, commentId })
           message.success('Đã xoá bình luận')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

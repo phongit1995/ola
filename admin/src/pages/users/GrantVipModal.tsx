@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { App, Form, Modal, Select } from 'antd'
 import { useGrantVip } from '@/hooks/useUsers'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { GrantVipRequest } from '@/types'
 
@@ -37,7 +37,7 @@ export function GrantVipModal({ open, userId, username, onClose }: GrantVipModal
           message.success(`Đã tặng VIP "${vipName(values.vipTypeId)}"`)
           onClose()
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Tặng VIP thất bại')
+          message.error(errorMessage(err, 'Tặng VIP thất bại'))
           throw err
         }
       },

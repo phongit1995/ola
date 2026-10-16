@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Avatar,
   Button,
   Card,
   Input,
@@ -15,8 +14,12 @@ import {
 import type { ColumnsType } from 'antd/es/table'
 import { BarChartOutlined, ReloadOutlined } from '@ant-design/icons'
 import { usePenShots } from '@/hooks/usePen'
-import type { AdminPenShot, PenResult, PenSide, PenStatus, PenUserBrief } from '@/types'
+import type { AdminPenShot, PenResult, PenSide, PenStatus } from '@/types'
 import { PEN_RESULT_META, PEN_SIDE_LABEL, PEN_STATUS_META } from './penMeta'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { toIsoRange } from '@/lib/dateRange'
+import { UserBriefCell } from '@/components/UserBriefCell'
 
 const PAGE_SIZE = 20
 
@@ -31,41 +34,9 @@ const RESULT_OPTIONS = [
   { value: 'goal' as const, label: 'Vào gôn' },
 ]
 
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN')
-}
-
 function sideTag(side?: PenSide) {
   if (!side) return null
   return <Tag style={{ margin: 0 }}>{PEN_SIDE_LABEL[side]}</Tag>
-}
-
-function UserCell({ user }: { user?: PenUserBrief }) {
-  if (!user) return <Typography.Text type="secondary">—</Typography.Text>
-  return (
-    <Space>
-      <Avatar size="small" src={user.avatar || undefined}>
-        {user.fullName?.[0] ?? user.username?.[0] ?? '?'}
-      </Avatar>
-      <div>
-        <Typography.Text strong>{user.fullName || user.username}</Typography.Text>
-        <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-          @{user.username}
-        </Typography.Text>
-      </div>
-    </Space>
-  )
 }
 
 export function PenShotsPage() {
@@ -86,8 +57,7 @@ export function PenShotsPage() {
       shooterId: shooterId || undefined,
       minBet: minBet ?? undefined,
       maxBet: maxBet ?? undefined,
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+      ...toIsoRange(from, to),
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
     }),
@@ -108,14 +78,14 @@ export function PenShotsPage() {
       title: 'Thời gian',
       dataIndex: 'createdAt',
       width: 160,
-      render: (value: string) => formatTime(value),
+      render: (value: string) => formatDateTime(value),
     },
     {
       title: 'Người sút',
       key: 'shooter',
       render: (_, row) => (
         <Space size={6}>
-          <UserCell user={row.shooter} />
+          <UserBriefCell user={row.shooter} />
           {sideTag(row.shooterSide)}
         </Space>
       ),
@@ -125,7 +95,7 @@ export function PenShotsPage() {
       key: 'keeper',
       render: (_, row) => (
         <Space size={6}>
-          <UserCell user={row.keeper} />
+          <UserBriefCell user={row.keeper} />
           {sideTag(row.keeperSide)}
         </Space>
       ),
@@ -135,7 +105,7 @@ export function PenShotsPage() {
       dataIndex: 'betAmount',
       width: 110,
       align: 'right',
-      render: (value: number) => `${vn(value)} Ken`,
+      render: (value: number) => `${formatCount(value)} Ken`,
     },
     {
       title: 'Trạng thái',
@@ -162,8 +132,8 @@ export function PenShotsPage() {
       render: (_, row) =>
         row.status === 'settled' ? (
           <Typography.Text>
-            {vn(row.pot ?? 0)} / {vn(row.payout ?? 0)} /{' '}
-            <Typography.Text type="success">{vn(row.commission ?? 0)}</Typography.Text>
+            {formatCount(row.pot ?? 0)} / {formatCount(row.payout ?? 0)} /{' '}
+            <Typography.Text type="success">{formatCount(row.commission ?? 0)}</Typography.Text>
           </Typography.Text>
         ) : (
           <Typography.Text type="secondary">—</Typography.Text>
@@ -212,22 +182,11 @@ export function PenShotsPage() {
             onChange={resetPage(setMaxBet)}
             style={{ width: 120 }}
           />
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => resetPage(setFrom)(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => resetPage(setTo)(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={resetPage(setFrom)}
+            onToChange={resetPage(setTo)}
           />
           <Button icon={<ReloadOutlined />} onClick={() => void refetch()}>
             Tải lại

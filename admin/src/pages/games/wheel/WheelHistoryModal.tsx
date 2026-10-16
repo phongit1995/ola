@@ -5,6 +5,7 @@ import { useWheelSpins } from '@/hooks/useWheel'
 import { useDebounce } from '@/hooks/useDebounce'
 import type { AdminWheelSpin, WheelSegmentKind } from '@/types'
 import { WHEEL_KINDS, kindMeta } from './wheelHelpers'
+import { formatDateTime } from '@/lib/format'
 
 const PAGE_SIZE = 20
 
@@ -53,7 +54,7 @@ export function WheelHistoryModal({ open, onClose }: WheelHistoryModalProps) {
       title: 'Thời gian',
       dataIndex: 'createdAt',
       width: 160,
-      render: (value: string) => new Date(value).toLocaleString('vi-VN'),
+      render: (value: string) => formatDateTime(value),
     },
     {
       title: 'Người chơi',

@@ -26,8 +26,12 @@ export function formatDateTime(value?: string | null): string {
   return dateTimeFormatter.format(date)
 }
 
+export function formatCount(value: number): string {
+  return value.toLocaleString('vi-VN')
+}
+
 export function formatKen(value: number): string {
-  return `${value.toLocaleString('vi-VN')} KEN`
+  return `${formatCount(value)} KEN`
 }
 
 export const kenNumberInputProps = {

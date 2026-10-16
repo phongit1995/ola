@@ -3,42 +3,19 @@ import { Avatar, Button, Card, Input, Select, Space, Table, Tag, Typography } fr
 import type { ColumnsType } from 'antd/es/table'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useGameLevels } from '@/hooks/useGameMatches'
-import { useMiniGames } from '@/hooks/useMiniGames'
 import type { AdminGameLevel } from '@/types'
-import { GAME_ID_LABEL, gameLabel } from './gameMatchMeta'
+import { gameLabel } from './gameMatchMeta'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { useGameOptions } from './useGameOptions'
 
 const PAGE_SIZE = 20
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN')
-}
 
 export function GameLevelsTab() {
   const [gameId, setGameId] = useState<string | undefined>(undefined)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
-  const { data: games } = useMiniGames()
-
-  const gameNames = useMemo(() => {
-    const names: Record<string, string> = {}
-    for (const game of games?.items ?? []) {
-      names[game.slug] = game.name
-    }
-    return names
-  }, [games])
-
-  const gameOptions = useMemo(() => {
-    const slugs = new Set([
-      ...Object.keys(GAME_ID_LABEL),
-      ...(games?.items ?? []).map((game) => game.slug),
-    ])
-    return [...slugs].map((slug) => ({ value: slug, label: gameLabel(slug, gameNames) }))
-  }, [games, gameNames])
+  const { gameNames, gameOptions } = useGameOptions()
 
   const params = useMemo(
     () => ({
@@ -102,13 +79,13 @@ export function GameLevelsTab() {
       dataIndex: 'exp',
       width: 120,
       align: 'right',
-      render: (value: number) => vn(value),
+      render: (value: number) => formatCount(value),
     },
     {
       title: 'Cập nhật',
       dataIndex: 'updatedAt',
       width: 150,
-      render: (value: string) => formatTime(value),
+      render: (value: string) => formatDateTime(value),
     },
   ]
 

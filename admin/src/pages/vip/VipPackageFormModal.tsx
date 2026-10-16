@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { App, Form, Input, InputNumber, Modal, Switch } from 'antd'
 import { useCreateVipPackage, useUpdateVipPackage } from '@/hooks/useVipPackages'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { CreateVipPackageRequest, VipPackage } from '@/types'
 
@@ -42,7 +42,7 @@ export function VipPackageFormModal({ open, pkg, onClose }: VipPackageFormModalP
       }
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu gói VIP thất bại')
+      message.error(errorMessage(err, 'Lưu gói VIP thất bại'))
     }
   }
 

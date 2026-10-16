@@ -12,8 +12,7 @@ import {
   Table,
   Typography,
 } from 'antd'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
-import type { SorterResult } from 'antd/es/table/interface'
+import type { ColumnsType } from 'antd/es/table'
 import {
   Bar,
   CartesianGrid,
@@ -30,78 +29,31 @@ import {
 } from 'recharts'
 import { usePenSideStats, usePenStats, usePenUserStats } from '@/hooks/usePen'
 import type { PenResult, PenUserStatsItem, PenUserStatsSortBy } from '@/types'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
+import { NetText } from '@/components/NetText'
+import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '@/hooks/useUserStatsTable'
 
 const USER_STATS_SORTS: PenUserStatsSortBy[] = ['staked', 'netKen', 'shots', 'catches']
-const USER_PAGE_SIZE = 10
-
-function NetText({ value }: { value: number }) {
-  if (value > 0) return <Typography.Text type="success">+{value.toLocaleString('vi-VN')}</Typography.Text>
-  if (value < 0) return <Typography.Text type="danger">{value.toLocaleString('vi-VN')}</Typography.Text>
-  return <Typography.Text>0</Typography.Text>
-}
 
 const RESULT_COLOR: Record<PenResult, { label: string; color: string }> = {
   saved: { label: 'Cản phá (thủ môn thắng)', color: '#fa541c' },
   goal: { label: 'Vào gôn (người sút thắng)', color: '#52c41a' },
 }
 
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
-
-function isoDate(d: Date) {
-  return d.toISOString().slice(0, 10)
-}
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
 export function PenStatsPage() {
-  const [from, setFrom] = useState(() => isoDate(new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)))
-  const [to, setTo] = useState(() => isoDate(new Date()))
-  const [userSort, setUserSort] = useState<PenUserStatsSortBy>('staked')
-  const [userPage, setUserPage] = useState(1)
-  const [userSearch, setUserSearch] = useState('')
+  const [from, setFrom] = useState(() => isoDaysAgo(29))
+  const [to, setTo] = useState(() => isoDaysAgo(0))
+  const { userSort, userPage, setUserPage, setUserSearch, userQuery, onUserTableChange } =
+    useUserStatsTable(USER_STATS_SORTS, 'staked')
 
-  const params = useMemo(
-    () => ({
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
-    }),
-    [from, to],
-  )
+  const params = useMemo(() => toIsoRange(from, to), [from, to])
   const { data, isFetching } = usePenStats(params)
 
-  const userStatsParams = useMemo(
-    () => ({
-      ...params,
-      userId: userSearch || undefined,
-      sortBy: userSort,
-      limit: USER_PAGE_SIZE,
-      offset: (userPage - 1) * USER_PAGE_SIZE,
-    }),
-    [params, userSearch, userSort, userPage],
-  )
+  const userStatsParams = useMemo(() => ({ ...params, ...userQuery }), [params, userQuery])
   const { data: userStats, isFetching: userStatsFetching } = usePenUserStats(userStatsParams)
   const { data: sideStats, isFetching: sideStatsFetching } = usePenSideStats(params)
-
-  function onUserTableChange(
-    _pagination: TablePaginationConfig,
-    _filters: unknown,
-    sorter: SorterResult<PenUserStatsItem> | SorterResult<PenUserStatsItem>[],
-  ) {
-    const single = Array.isArray(sorter) ? sorter[0] : sorter
-    const field = single?.order ? String(single.field) : 'staked'
-    const next = USER_STATS_SORTS.find((key) => key === field) ?? 'staked'
-    if (next !== userSort) {
-      setUserSort(next)
-      setUserPage(1)
-    }
-  }
 
   const userColumns: ColumnsType<PenUserStatsItem> = [
     {
@@ -124,7 +76,7 @@ export function PenStatsPage() {
       sorter: true,
       sortOrder: userSort === 'shots' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Thắng sút',
@@ -133,7 +85,7 @@ export function PenStatsPage() {
       align: 'right',
       render: (_, row) =>
         row.shooterSettled > 0
-          ? `${vn(row.shooterWins)} (${row.shooterWinRate.toFixed(1)}%)`
+          ? `${formatCount(row.shooterWins)} (${row.shooterWinRate.toFixed(1)}%)`
           : '—',
     },
     {
@@ -144,7 +96,7 @@ export function PenStatsPage() {
       sorter: true,
       sortOrder: userSort === 'catches' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Cản phá',
@@ -152,7 +104,7 @@ export function PenStatsPage() {
       width: 120,
       align: 'right',
       render: (_, row) =>
-        row.catches > 0 ? `${vn(row.keeperWins)} (${row.keeperSaveRate.toFixed(1)}%)` : '—',
+        row.catches > 0 ? `${formatCount(row.keeperWins)} (${row.keeperSaveRate.toFixed(1)}%)` : '—',
     },
     {
       title: 'Hủy kèo',
@@ -160,7 +112,7 @@ export function PenStatsPage() {
       width: 110,
       align: 'right',
       render: (_, row) =>
-        row.cancelled > 0 ? `${vn(row.cancelled)} (${row.cancelRate.toFixed(1)}%)` : '0',
+        row.cancelled > 0 ? `${formatCount(row.cancelled)} (${row.cancelRate.toFixed(1)}%)` : '0',
     },
     {
       title: 'Tổng cược',
@@ -170,7 +122,7 @@ export function PenStatsPage() {
       sorter: true,
       sortOrder: userSort === 'staked' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Ròng (user)',
@@ -186,7 +138,7 @@ export function PenStatsPage() {
       title: 'Chơi gần nhất',
       dataIndex: 'lastPlayAt',
       width: 150,
-      render: (v: string) => new Date(v).toLocaleString('vi-VN'),
+      render: (v: string) => formatDateTime(v),
     },
   ]
 
@@ -213,7 +165,7 @@ export function PenStatsPage() {
       align: 'right',
       render: (_, row) => {
         const total = row.left + row.right
-        return total > 0 ? `${vn(row.left)} (${((row.left / total) * 100).toFixed(1)}%)` : '—'
+        return total > 0 ? `${formatCount(row.left)} (${((row.left / total) * 100).toFixed(1)}%)` : '—'
       },
     },
     {
@@ -222,7 +174,7 @@ export function PenStatsPage() {
       align: 'right',
       render: (_, row) => {
         const total = row.left + row.right
-        return total > 0 ? `${vn(row.right)} (${((row.right / total) * 100).toFixed(1)}%)` : '—'
+        return total > 0 ? `${formatCount(row.right)} (${((row.right / total) * 100).toFixed(1)}%)` : '—'
       },
     },
   ]
@@ -239,22 +191,11 @@ export function PenStatsPage() {
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Card>
         <Space wrap>
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => setFrom(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => setTo(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={setFrom}
+            onToChange={setTo}
           />
         </Space>
       </Card>
@@ -330,7 +271,7 @@ export function PenStatsPage() {
                 <XAxis dataKey="date" fontSize={12} />
                 <YAxis yAxisId="left" fontSize={12} />
                 <YAxis yAxisId="right" orientation="right" fontSize={12} />
-                <RTooltip formatter={(value) => vn(Number(value))} />
+                <RTooltip formatter={(value) => formatCount(Number(value))} />
                 <Legend />
                 <Bar yAxisId="left" dataKey="volume" name="Tổng cược" fill="#2563eb" radius={[4, 4, 0, 0]} />
                 <Bar yAxisId="left" dataKey="houseTake" name="Doanh thu" fill="#52c41a" radius={[4, 4, 0, 0]} />
@@ -356,7 +297,7 @@ export function PenStatsPage() {
                         <Cell key={entry.name} fill={entry.color} />
                       ))}
                     </Pie>
-                    <RTooltip formatter={(value, name) => [`${vn(Number(value))} lượt`, name]} />
+                    <RTooltip formatter={(value, name) => [`${formatCount(Number(value))} lượt`, name]} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -400,7 +341,7 @@ export function PenStatsPage() {
               onChange={onUserTableChange}
               pagination={{
                 current: userPage,
-                pageSize: USER_PAGE_SIZE,
+                pageSize: USER_STATS_PAGE_SIZE,
                 total: userStats?.total ?? 0,
                 showSizeChanger: false,
                 onChange: setUserPage,

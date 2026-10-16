@@ -30,13 +30,9 @@ import {
 } from 'recharts'
 import { useDashboardOverview } from '@/hooks/useDashboard'
 import type { DashboardSpendByType } from '@/types'
-
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
+import { formatCount } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
 
 const KEN_TYPE_LABEL: Record<string, string> = {
   VIP_PACKAGE: 'Mua gói VIP',
@@ -60,14 +56,6 @@ const KEN_TYPE_LABEL: Record<string, string> = {
   WORD_CHAIN_GUESS: 'Mua lượt nối từ',
 }
 
-function isoDate(d: Date) {
-  return d.toISOString().slice(0, 10)
-}
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
 function kenTypeLabel(type: string) {
   return KEN_TYPE_LABEL[type] ?? type
 }
@@ -83,29 +71,23 @@ const spendColumns: ColumnsType<DashboardSpendByType> = [
     dataIndex: 'amount',
     width: 130,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
   {
     title: 'Lượt',
     dataIndex: 'count',
     width: 100,
     align: 'right',
-    render: (v: number) => vn(v),
+    render: (v: number) => formatCount(v),
   },
 ]
 
 export function DashboardPage() {
   const navigate = useNavigate()
-  const [from, setFrom] = useState(() => isoDate(new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)))
-  const [to, setTo] = useState(() => isoDate(new Date()))
+  const [from, setFrom] = useState(() => isoDaysAgo(29))
+  const [to, setTo] = useState(() => isoDaysAgo(0))
 
-  const params = useMemo(
-    () => ({
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
-    }),
-    [from, to],
-  )
+  const params = useMemo(() => toIsoRange(from, to), [from, to])
   const { data, isFetching } = useDashboardOverview(params)
 
   const genderPie = useMemo(
@@ -125,22 +107,11 @@ export function DashboardPage() {
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Card>
         <Space wrap>
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => setFrom(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => setTo(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={setFrom}
+            onToChange={setTo}
           />
           {isFetching && <Spin size="small" />}
         </Space>
@@ -267,7 +238,7 @@ export function DashboardPage() {
                 <XAxis dataKey="date" fontSize={12} />
                 <YAxis yAxisId="left" fontSize={12} />
                 <YAxis yAxisId="right" orientation="right" fontSize={12} />
-                <RTooltip formatter={(value) => vn(Number(value))} />
+                <RTooltip formatter={(value) => formatCount(Number(value))} />
                 <Legend />
                 <Bar yAxisId="left" dataKey="topupKen" name="Nạp KEN" fill="#2563eb" radius={[4, 4, 0, 0]} />
                 <Bar yAxisId="left" dataKey="revenueKen" name="Doanh thu VIP" fill="#faad14" radius={[4, 4, 0, 0]} />
@@ -290,13 +261,13 @@ export function DashboardPage() {
                           <Cell key={entry.name} fill={entry.color} />
                         ))}
                       </Pie>
-                      <RTooltip formatter={(value, name) => [`${vn(Number(value))} người`, name]} />
+                      <RTooltip formatter={(value, name) => [`${formatCount(Number(value))} người`, name]} />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
                 )}
                 <Typography.Paragraph type="secondary" style={{ marginTop: 8, marginBottom: 0 }}>
-                  Đã xác thực: {vn(data.users.verified)} người
+                  Đã xác thực: {formatCount(data.users.verified)} người
                 </Typography.Paragraph>
               </Card>
             </Col>

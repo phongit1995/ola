@@ -35,8 +35,8 @@ import {
   useStorySources,
   useStorySummary,
 } from '@/hooks/useStories'
-import { formatDate, formatDateTime } from '@/lib/format'
-import { ApiError } from '@/lib/apiError'
+import { formatCount, formatDate, formatDateTime } from '@/lib/format'
+import { errorMessage } from '@/lib/apiError'
 import { StoryChaptersModal } from './StoryChaptersModal'
 import { StoryCommentsModal } from './StoryCommentsModal'
 import type {
@@ -97,10 +97,6 @@ const SORT_OPTIONS: { value: StorySort; label: string }[] = [
   { value: 'views', label: 'Xem nhiều' },
   { value: 'new', label: 'Mới đăng' },
 ]
-
-function formatCount(value: number) {
-  return value.toLocaleString('vi-VN')
-}
 
 function percent(part: number, total: number) {
   return total > 0 ? Math.round((part / total) * 1000) / 10 : 0
@@ -205,7 +201,7 @@ export function StoriesPage() {
           await setHidden.mutateAsync({ id: story.id, isHidden: !visible })
           message.success(visible ? 'Đã hiện truyện' : 'Đã ẩn truyện')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+          message.error(errorMessage(err, 'Thao tác thất bại'))
         }
       },
     })
@@ -222,7 +218,7 @@ export function StoriesPage() {
       }
       if ('ids' in input) setSelectedIds([])
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+      message.error(errorMessage(err, 'Thao tác thất bại'))
     }
   }
 
@@ -268,7 +264,7 @@ export function StoriesPage() {
           setSelectedIds((ids) => ids.filter((id) => id !== story.id))
           message.success('Đã xoá truyện')
         } catch (err) {
-          message.error(err instanceof ApiError ? err.message : 'Xoá thất bại')
+          message.error(errorMessage(err, 'Xoá thất bại'))
         }
       },
     })

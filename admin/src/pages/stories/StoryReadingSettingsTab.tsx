@@ -1,7 +1,7 @@
 import { App, Button, Card, Form, InputNumber, Spin, Switch, Typography } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettings'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { StoryReadingSetting } from '@/types'
 import {
   DEFAULT_STORY_READING_SETTING,
@@ -47,7 +47,7 @@ export function StoryReadingSettingsTab() {
       })
       message.success('Đã lưu giới hạn đọc truyện')
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 

@@ -5,7 +5,7 @@ import {
   useSaveEggConfig,
   useUpdateEggPack,
 } from '@/hooks/useEgg'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { EggPack as ApiEggPack, SaveEggConfigRequest } from '@/types'
 import { EggPackBuilder } from './EggPackBuilder'
@@ -261,7 +261,7 @@ export function EggPackEditorModal({ open, pack, nextSortOrder, onClose }: EggPa
       }
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thất bại')
+      message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 

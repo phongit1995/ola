@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { App, Form, InputNumber, Modal, Segmented } from 'antd'
 import { useAddVipDays } from '@/hooks/useUsers'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { AddVipDaysRequest } from '@/types'
 
 interface AddVipDaysModalProps {
@@ -30,7 +30,7 @@ export function AddVipDaysModal({ open, userId, username, onClose }: AddVipDaysM
       )
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+      message.error(errorMessage(err, 'Thao tác thất bại'))
     }
   }
 

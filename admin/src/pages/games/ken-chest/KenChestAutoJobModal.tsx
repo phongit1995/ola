@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import { kenNumberInputProps } from '@/lib/format'
 import { useCreateKenAutoJob, useUpdateKenAutoJob } from '@/hooks/useKenChests'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type {
   KenChestAutoJob,
   KenChestAutoJobRequest,
@@ -167,7 +167,7 @@ export function KenChestAutoJobModal({ open, job, onClose }: KenChestAutoJobModa
       }
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu lịch thất bại')
+      message.error(errorMessage(err, 'Lưu lịch thất bại'))
     }
   }
 

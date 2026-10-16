@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { App, Form, Input, InputNumber, Modal, Segmented } from 'antd'
 import { useAdjustKen } from '@/hooks/useKen'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { KenAdjustRequest } from '@/types'
 
@@ -40,7 +40,7 @@ export function KenAdjustModal({
       )
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+      message.error(errorMessage(err, 'Thao tác thất bại'))
     }
   }
 

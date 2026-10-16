@@ -14,8 +14,7 @@ import {
   Tag,
   Typography,
 } from 'antd'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
-import type { SorterResult } from 'antd/es/table/interface'
+import type { ColumnsType } from 'antd/es/table'
 import {
   Bar,
   CartesianGrid,
@@ -34,6 +33,10 @@ import type {
   KenChestUserStatsItem,
   KenChestUserStatsSortBy,
 } from '@/types'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
+import { USER_STATS_PAGE_SIZE, useUserStatsTable } from '@/hooks/useUserStatsTable'
 
 const SOURCE_META: Record<KenChestSource, { label: string; color: string }> = {
   manual: { label: 'Thủ công', color: 'blue' },
@@ -46,22 +49,6 @@ const SOURCE_OPTIONS = (Object.keys(SOURCE_META) as KenChestSource[]).map((sourc
 }))
 
 const USER_STATS_SORTS: KenChestUserStatsSortBy[] = ['kenTotal', 'claims', 'empty']
-const USER_PAGE_SIZE = 10
-
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
-
-function isoDate(d: Date) {
-  return d.toISOString().slice(0, 10)
-}
-
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
 
 const sourceColumns: ColumnsType<KenChestStatsSourceRow> = [
   {
@@ -71,61 +58,34 @@ const sourceColumns: ColumnsType<KenChestStatsSourceRow> = [
       <Tag color={SOURCE_META[value]?.color}>{SOURCE_META[value]?.label ?? value}</Tag>
     ),
   },
-  { title: 'Rương', dataIndex: 'chests', align: 'right', render: (v: number) => vn(v) },
-  { title: 'Lượt nhặt', dataIndex: 'claims', align: 'right', render: (v: number) => vn(v) },
+  { title: 'Rương', dataIndex: 'chests', align: 'right', render: (v: number) => formatCount(v) },
+  { title: 'Lượt nhặt', dataIndex: 'claims', align: 'right', render: (v: number) => formatCount(v) },
   {
     title: 'Ken đã phát',
     dataIndex: 'kenGiven',
     align: 'right',
-    render: (v: number) => <Typography.Text strong>{vn(v)}</Typography.Text>,
+    render: (v: number) => <Typography.Text strong>{formatCount(v)}</Typography.Text>,
   },
 ]
 
 export function KenChestStatsTab() {
-  const [from, setFrom] = useState(() => isoDate(new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)))
-  const [to, setTo] = useState(() => isoDate(new Date()))
+  const [from, setFrom] = useState(() => isoDaysAgo(29))
+  const [to, setTo] = useState(() => isoDaysAgo(0))
   const [source, setSource] = useState<KenChestSource | undefined>(undefined)
-  const [userSort, setUserSort] = useState<KenChestUserStatsSortBy>('kenTotal')
-  const [userPage, setUserPage] = useState(1)
-  const [userSearch, setUserSearch] = useState('')
+  const { userSort, userPage, setUserPage, setUserSearch, userQuery, onUserTableChange } =
+    useUserStatsTable(USER_STATS_SORTS, 'kenTotal', (field) => (field === 'emptyClaims' ? 'empty' : field))
 
   const params = useMemo(
     () => ({
       source,
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+      ...toIsoRange(from, to),
     }),
     [source, from, to],
   )
   const { data, isFetching } = useKenChestStats(params)
 
-  const userStatsParams = useMemo(
-    () => ({
-      ...params,
-      userId: userSearch || undefined,
-      sortBy: userSort,
-      limit: USER_PAGE_SIZE,
-      offset: (userPage - 1) * USER_PAGE_SIZE,
-    }),
-    [params, userSearch, userSort, userPage],
-  )
+  const userStatsParams = useMemo(() => ({ ...params, ...userQuery }), [params, userQuery])
   const { data: userStats, isFetching: userStatsFetching } = useKenChestUserStats(userStatsParams)
-
-  function onUserTableChange(
-    _pagination: TablePaginationConfig,
-    _filters: unknown,
-    sorter: SorterResult<KenChestUserStatsItem> | SorterResult<KenChestUserStatsItem>[],
-  ) {
-    const single = Array.isArray(sorter) ? sorter[0] : sorter
-    const fallback: KenChestUserStatsSortBy = 'kenTotal'
-    const field = single?.order ? String(single.field) : fallback
-    const mapped = field === 'emptyClaims' ? 'empty' : field
-    const next = USER_STATS_SORTS.find((key) => key === mapped) ?? fallback
-    if (next !== userSort) {
-      setUserSort(next)
-      setUserPage(1)
-    }
-  }
 
   const userColumns: ColumnsType<KenChestUserStatsItem> = [
     {
@@ -148,14 +108,14 @@ export function KenChestStatsTab() {
       sorter: true,
       sortOrder: userSort === 'claims' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Số rương',
       dataIndex: 'chests',
       width: 100,
       align: 'right',
-      render: (v: number) => vn(v),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Nhặt rỗng',
@@ -166,7 +126,7 @@ export function KenChestStatsTab() {
       sortOrder: userSort === 'empty' ? 'descend' : null,
       sortDirections: ['descend'],
       render: (_: number, row) =>
-        row.claims > 0 ? `${vn(row.emptyClaims)} (${row.emptyRate.toFixed(1)}%)` : '—',
+        row.claims > 0 ? `${formatCount(row.emptyClaims)} (${row.emptyRate.toFixed(1)}%)` : '—',
     },
     {
       title: 'Ken nhận',
@@ -176,13 +136,13 @@ export function KenChestStatsTab() {
       sorter: true,
       sortOrder: userSort === 'kenTotal' ? 'descend' : null,
       sortDirections: ['descend'],
-      render: (v: number) => <Typography.Text strong>{vn(v)}</Typography.Text>,
+      render: (v: number) => <Typography.Text strong>{formatCount(v)}</Typography.Text>,
     },
     {
       title: 'Nhặt gần nhất',
       dataIndex: 'lastClaimAt',
       width: 150,
-      render: (v: string) => new Date(v).toLocaleString('vi-VN'),
+      render: (v: string) => formatDateTime(v),
     },
   ]
 
@@ -202,22 +162,11 @@ export function KenChestStatsTab() {
           options={SOURCE_OPTIONS}
           style={{ width: 140 }}
         />
-        <input
-          type="date"
-          aria-label="Từ ngày"
-          value={from}
-          max={to || undefined}
-          onChange={(e) => setFrom(e.target.value)}
-          style={DATE_INPUT_STYLE}
-        />
-        <span style={{ color: '#8c8c8c' }}>→</span>
-        <input
-          type="date"
-          aria-label="Đến ngày"
-          value={to}
-          min={from || undefined}
-          onChange={(e) => setTo(e.target.value)}
-          style={DATE_INPUT_STYLE}
+        <DateRangeFilter
+          from={from}
+          to={to}
+          onFromChange={setFrom}
+          onToChange={setTo}
         />
       </Space>
 
@@ -239,7 +188,7 @@ export function KenChestStatsTab() {
               <Card size="small">
                 <Statistic groupSeparator="."
                   title="Thủ công / Tự động"
-                  value={`${vn(data.overview.manualChests)} / ${vn(data.overview.autoChests)}`}
+                  value={`${formatCount(data.overview.manualChests)} / ${formatCount(data.overview.autoChests)}`}
                 />
               </Card>
             </Col>
@@ -294,7 +243,7 @@ export function KenChestStatsTab() {
                 <XAxis dataKey="date" fontSize={12} />
                 <YAxis yAxisId="left" fontSize={12} />
                 <YAxis yAxisId="right" orientation="right" fontSize={12} />
-                <RTooltip formatter={(value) => vn(Number(value))} />
+                <RTooltip formatter={(value) => formatCount(Number(value))} />
                 <Legend />
                 <Bar yAxisId="left" dataKey="kenGiven" name="Ken phát" fill="#2563eb" radius={[4, 4, 0, 0]} />
                 <Line yAxisId="right" type="monotone" dataKey="claims" name="Lượt nhặt" stroke="#fa541c" strokeWidth={2} />
@@ -336,7 +285,7 @@ export function KenChestStatsTab() {
               onChange={onUserTableChange}
               pagination={{
                 current: userPage,
-                pageSize: USER_PAGE_SIZE,
+                pageSize: USER_STATS_PAGE_SIZE,
                 total: userStats?.total ?? 0,
                 showSizeChanger: false,
                 onChange: setUserPage,

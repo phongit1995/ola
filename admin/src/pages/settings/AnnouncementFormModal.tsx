@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { App, DatePicker, Form, Input, Modal, Switch } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useCreateAnnouncement, useUpdateAnnouncement } from '@/hooks/useAnnouncements'
-import { ApiError } from '@/lib/apiError'
+import { errorMessage } from '@/lib/apiError'
 import type { Announcement } from '@/types'
 
 interface AnnouncementFormModalProps {
@@ -60,7 +60,7 @@ export function AnnouncementFormModal({ open, announcement, onClose }: Announcem
       }
       onClose()
     } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Lưu thông báo thất bại')
+      message.error(errorMessage(err, 'Lưu thông báo thất bại'))
     }
   }
 

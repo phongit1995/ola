@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import {
-  Avatar,
   Button,
   Card,
   Col,
@@ -22,17 +21,13 @@ import type {
   MarriageProposalItem,
   MarriageProposalStatus,
   MarriageStatus,
-  MarriageUser,
 } from '@/types'
+import { formatCount, formatDateTime } from '@/lib/format'
+import { DateRangeFilter } from '@/components/DateRangeFilter'
+import { toIsoRange } from '@/lib/dateRange'
+import { UserBriefCell } from '@/components/UserBriefCell'
 
 const PAGE_SIZE = 20
-
-const DATE_INPUT_STYLE = {
-  height: 32,
-  border: '1px solid #d9d9d9',
-  borderRadius: 6,
-  padding: '0 8px',
-}
 
 const MARRIAGE_STATUS_META: Record<MarriageStatus, { label: string; color: string }> = {
   active: { label: 'Đang bên nhau', color: 'green' },
@@ -46,35 +41,10 @@ const PROPOSAL_STATUS_META: Record<MarriageProposalStatus, { label: string; colo
   cancelled: { label: 'Đã hủy', color: 'default' },
 }
 
-function vn(n: number) {
-  return n.toLocaleString('vi-VN')
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN')
-}
-
 function daysBetween(fromIso: string, toIso?: string) {
   const from = new Date(fromIso).getTime()
   const to = toIso ? new Date(toIso).getTime() : Date.now()
   return Math.max(0, Math.floor((to - from) / 86_400_000))
-}
-
-function UserCell({ user }: { user?: MarriageUser }) {
-  if (!user) return <Typography.Text type="secondary">—</Typography.Text>
-  return (
-    <Space>
-      <Avatar size="small" src={user.avatar || undefined}>
-        {user.fullName?.[0] ?? user.username?.[0] ?? '?'}
-      </Avatar>
-      <div>
-        <Typography.Text strong>{user.fullName || user.username}</Typography.Text>
-        <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-          @{user.username}
-        </Typography.Text>
-      </div>
-    </Space>
-  )
 }
 
 function divorcedByName(row: MarriageItem) {
@@ -90,9 +60,9 @@ const marriageColumns: ColumnsType<MarriageItem> = [
     key: 'couple',
     render: (_, row) => (
       <Space size={16}>
-        <UserCell user={row.userA} />
+        <UserBriefCell user={row.userA} />
         <HeartFilled style={{ color: row.status === 'active' ? '#eb2f96' : '#bfbfbf' }} />
-        <UserCell user={row.userB} />
+        <UserBriefCell user={row.userB} />
       </Space>
     ),
   },
@@ -119,21 +89,21 @@ const marriageColumns: ColumnsType<MarriageItem> = [
     title: 'Ngày cưới',
     dataIndex: 'marriedAt',
     width: 160,
-    render: (value: string) => formatTime(value),
+    render: (value: string) => formatDateTime(value),
   },
   {
     title: 'Ngày ly hôn',
     dataIndex: 'divorcedAt',
     width: 160,
     render: (value?: string) =>
-      value ? formatTime(value) : <Typography.Text type="secondary">—</Typography.Text>,
+      value ? formatDateTime(value) : <Typography.Text type="secondary">—</Typography.Text>,
   },
   {
     title: 'Bên nhau',
     key: 'duration',
     width: 110,
     align: 'right',
-    render: (_, row) => `${vn(daysBetween(row.marriedAt, row.divorcedAt))} ngày`,
+    render: (_, row) => `${formatCount(daysBetween(row.marriedAt, row.divorcedAt))} ngày`,
   },
 ]
 
@@ -141,12 +111,12 @@ const proposalColumns: ColumnsType<MarriageProposalItem> = [
   {
     title: 'Người cầu hôn',
     key: 'proposer',
-    render: (_, row) => <UserCell user={row.proposer} />,
+    render: (_, row) => <UserBriefCell user={row.proposer} />,
   },
   {
     title: 'Người được cầu hôn',
     key: 'addressee',
-    render: (_, row) => <UserCell user={row.addressee} />,
+    render: (_, row) => <UserBriefCell user={row.addressee} />,
   },
   {
     title: 'Lời nhắn',
@@ -168,14 +138,14 @@ const proposalColumns: ColumnsType<MarriageProposalItem> = [
     title: 'Cầu hôn lúc',
     dataIndex: 'createdAt',
     width: 160,
-    render: (value: string) => formatTime(value),
+    render: (value: string) => formatDateTime(value),
   },
   {
     title: 'Trả lời lúc',
     dataIndex: 'respondedAt',
     width: 160,
     render: (value?: string) =>
-      value ? formatTime(value) : <Typography.Text type="secondary">—</Typography.Text>,
+      value ? formatDateTime(value) : <Typography.Text type="secondary">—</Typography.Text>,
   },
 ]
 
@@ -191,13 +161,7 @@ export function MarriagesPage() {
   const [proposalUser, setProposalUser] = useState('')
   const [proposalPage, setProposalPage] = useState(1)
 
-  const range = useMemo(
-    () => ({
-      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
-      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
-    }),
-    [from, to],
-  )
+  const range = useMemo(() => toIsoRange(from, to), [from, to])
 
   const { data: stats, isFetching: statsFetching, refetch } = useMarriageStats(range)
 
@@ -240,22 +204,11 @@ export function MarriagesPage() {
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Card>
         <Space wrap>
-          <input
-            type="date"
-            aria-label="Từ ngày"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => changeRange(setFrom)(e.target.value)}
-            style={DATE_INPUT_STYLE}
-          />
-          <span style={{ color: '#8c8c8c' }}>→</span>
-          <input
-            type="date"
-            aria-label="Đến ngày"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => changeRange(setTo)(e.target.value)}
-            style={DATE_INPUT_STYLE}
+          <DateRangeFilter
+            from={from}
+            to={to}
+            onFromChange={changeRange(setFrom)}
+            onToChange={changeRange(setTo)}
           />
           <Button icon={<ReloadOutlined />} onClick={() => void refetch()}>
             Tải lại
@@ -309,7 +262,7 @@ export function MarriagesPage() {
                 />
               </Col>
               <Col span={5}>
-                <Statistic title="Chờ / hủy" value={`${vn(stats?.proposals.pending ?? 0)} / ${vn(stats?.proposals.cancelled ?? 0)}`} />
+                <Statistic title="Chờ / hủy" value={`${formatCount(stats?.proposals.pending ?? 0)} / ${formatCount(stats?.proposals.cancelled ?? 0)}`} />
               </Col>
               <Col span={5}>
                 <Statistic title="Tỉ lệ đồng ý" value={acceptRate} precision={1} suffix="%" />
@@ -362,7 +315,7 @@ export function MarriagesPage() {
                       pageSize: PAGE_SIZE,
                       total: marriages?.total ?? 0,
                       showSizeChanger: false,
-                      showTotal: (total) => `${vn(total)} cặp đôi`,
+                      showTotal: (total) => `${formatCount(total)} cặp đôi`,
                       onChange: setMarriagePage,
                     }}
                     locale={{ emptyText: 'Chưa có cặp đôi nào' }}
@@ -410,7 +363,7 @@ export function MarriagesPage() {
                       pageSize: PAGE_SIZE,
                       total: proposals?.total ?? 0,
                       showSizeChanger: false,
-                      showTotal: (total) => `${vn(total)} lời cầu hôn`,
+                      showTotal: (total) => `${formatCount(total)} lời cầu hôn`,
                       onChange: setProposalPage,
                     }}
                     locale={{ emptyText: 'Chưa có lời cầu hôn nào' }}

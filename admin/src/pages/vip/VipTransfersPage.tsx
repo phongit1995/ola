@@ -4,6 +4,7 @@ import { useVipTransfers } from '@/hooks/useVipTransfers'
 import { useDebounce } from '@/hooks/useDebounce'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { AdminVipTransfer } from '@/types'
+import { formatDateTime } from '@/lib/format'
 
 const PAGE_SIZE = 20
 
@@ -41,7 +42,7 @@ export function VipTransfersPage() {
       title: 'Thời gian',
       dataIndex: 'createdAt',
       width: 170,
-      render: (value: string) => new Date(value).toLocaleString('vi-VN'),
+      render: (value: string) => formatDateTime(value),
     },
     {
       title: 'Người chuyển',
