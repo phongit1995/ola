@@ -150,7 +150,7 @@ export default function App() {
             để content.height của RNKC dùng cùng gốc y = 0 trên Android. */}
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <SafeAreaProvider>
-            <StatusBar translucent barStyle="light-content" />
+            <StatusBar barStyle="light-content" />
             <NavigationContainer
               ref={navigationRef}
               onReady={() => {
