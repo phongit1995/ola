@@ -10,6 +10,7 @@ import { TyIcon } from './TyIcon';
 import { useTycoon } from '../store/useTycoon';
 
 const HOUSE_LABELS = ['Đất trống', '1 nhà', '2 nhà', '3 nhà', '4 nhà', 'Khách sạn'];
+const DARK_GROUPS = new Set(['brown', 'red', 'green', 'blue']);
 
 function specialDescription(idx: number): string {
   switch (BOARD[idx].kind) {
@@ -63,17 +64,12 @@ export function TileSheet({ idx }: { idx: number }) {
 
   return (
     <BottomSheet onClose={closeSheet} title={tile.name}>
-      <div className={`ty-sheet-band ${tile.group ? `ty-band-${tile.group}` : 'ty-sheet-band-dim'}`}>
-        {glyph ? <TileGlyph name={glyph} size={40} /> : null}
-      </div>
-      <div className="ty-sheet-head">
-        <h2 className="ty-sheet-title">{tile.name}</h2>
-        {tile.group ? (
-          <span className="ty-chip ty-chip-group">
-            <i className={`ty-group-swatch ty-band-${tile.group}`} />
-            {GROUP_LABEL[tile.group]}
-          </span>
-        ) : null}
+      <div className={`ty-sheet-band ${tile.kind === 'street' && tile.group ? `ty-band-${tile.group} ty-sheet-band-${DARK_GROUPS.has(tile.group) ? 'dark' : 'light'}` : 'ty-sheet-band-dim'}`}>
+        {glyph ? <TileGlyph name={glyph} size={34} /> : null}
+        <span className="ty-sheet-band-copy">
+          <small>{tile.kind === 'street' ? `Sổ đỏ · ${GROUP_LABEL[tile.group ?? 'brown']}` : isProperty ? GROUP_LABEL[tile.group ?? 'station'] : 'Ô đặc biệt'}</small>
+          <h2 className="ty-sheet-title">{tile.name}</h2>
+        </span>
       </div>
 
       {isProperty ? (
@@ -120,7 +116,7 @@ export function TileSheet({ idx }: { idx: number }) {
                 <span>Nhà hiện có</span>
                 <span className="ty-sheet-houses" aria-label={HOUSE_LABELS[state.houses]}>
                   {state.houses >= MAX_HOUSES ? <i className="ty-hotel ty-hotel-lg" /> : Array.from({ length: state.houses }, (_, i) => <i key={i} className="ty-house ty-house-lg" />)}
-                  {state.houses === 0 ? <small>Chưa xây</small> : null}
+                  <small>{state.houses === 0 ? 'Chưa xây' : HOUSE_LABELS[state.houses]}</small>
                 </span>
               </div>
             </>

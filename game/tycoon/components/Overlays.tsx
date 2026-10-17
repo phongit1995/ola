@@ -72,7 +72,7 @@ export function DiceOverlay() {
   if (!visible || diceFx.seq === 0) return null;
   const tone = diceFx.double ? 'double' : 'normal';
   return (
-    <div className="ty-dice-overlay" aria-live="polite" aria-label={`Xúc xắc ${diceFx.values[0]} và ${diceFx.values[1]}`}>
+    <div className={`ty-dice-overlay ${diceFx.rolling ? 'ty-dice-rolling' : ''}`} aria-live="polite" aria-label={`Xúc xắc ${diceFx.values[0]} và ${diceFx.values[1]}`}>
       <div className="ty-dice-pair">
         <Die3D key={`${diceFx.seq}-0`} value={diceFx.values[0]} index={0} tone={tone} />
         <Die3D key={`${diceFx.seq}-1`} value={diceFx.values[1]} index={1} tone={tone} />
@@ -88,8 +88,8 @@ export function DiceOverlay() {
 }
 
 export function CardOverlay() {
-  const { cardFx, view, you, myTurn, sendMove, movePending, replaying } = useTycoon(
-    useShallow((s) => ({ cardFx: s.cardFx, view: s.view, you: s.you, myTurn: s.myTurn, sendMove: s.sendMove, movePending: s.movePending, replaying: s.replaying })),
+  const { cardFx, view, you, players, myTurn, sendMove, movePending, replaying } = useTycoon(
+    useShallow((s) => ({ cardFx: s.cardFx, view: s.view, you: s.you, players: s.players, myTurn: s.myTurn, sendMove: s.sendMove, movePending: s.movePending, replaying: s.replaying })),
   );
   const [flipped, setFlipped] = useState(false);
   useEffect(() => {
@@ -102,20 +102,28 @@ export function CardOverlay() {
   const card = cardById(cardFx.id);
   const chance = cardFx.deck === 'chance';
   const canAck = myTurn && view?.phase === 'card' && view.turn === you && !replaying;
+  const drawer = view ? (view.turn === you ? 'Bạn' : players[view.turn]?.name ?? '') : '';
   return (
-    <div className={`ty-card-overlay ${flipped ? 'ty-card-flipped' : ''}`} role="status" aria-live="polite">
+    <div
+      className={`ty-card-overlay ${flipped ? 'ty-card-flipped' : ''} ${canAck ? 'ty-card-actionable' : ''}`}
+      role="status"
+      aria-live="polite"
+      onClick={canAck && !movePending ? () => sendMove({ type: 'CARD_ACK' }) : undefined}
+    >
       <div className={`ty-card ${chance ? 'ty-card-chance' : 'ty-card-chest'}`}>
         <div className="ty-card-face ty-card-back">
           <TileGlyph name={chance ? 'chance' : 'chest'} size={48} color="var(--ty-navy)" />
+          <span className="ty-card-deck">{chance ? 'CƠ HỘI' : 'KHÍ VẬN'}</span>
         </div>
         <div className="ty-card-face ty-card-front">
-          <span className="ty-card-deck">{chance ? 'CƠ HỘI' : 'KHÍ VẬN'}</span>
+          <span className="ty-card-head">
+            <span className="ty-card-emblem">
+              <TileGlyph name={chance ? 'chance' : 'chest'} size={18} color="var(--ty-navy)" />
+            </span>
+            <span className="ty-card-deck">{chance ? 'CƠ HỘI' : 'KHÍ VẬN'}</span>
+          </span>
           <p className="ty-card-text">{card?.text ?? ''}</p>
-          {canAck ? (
-            <button type="button" className="ty-btn ty-btn-gold ty-btn-small" disabled={movePending} onClick={() => sendMove({ type: 'CARD_ACK' })}>
-              Tiếp tục
-            </button>
-          ) : null}
+          <span className="ty-card-foot">{canAck ? 'Chạm để làm theo thẻ' : `${drawer} rút thẻ`}</span>
         </div>
       </div>
     </div>

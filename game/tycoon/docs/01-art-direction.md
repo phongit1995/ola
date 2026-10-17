@@ -7,7 +7,8 @@
 - Không khí: thành phố Việt buổi sáng, phẳng, tươi, sạch — board game bày trên bàn gỗ sáng, không "casino", không neon, không 3D.
 - Ba chất liệu chủ đạo: **giấy kem** (mặt bàn cờ, thẻ bài), **dải màu nhóm đất** (8 màu bão hòa vừa), **navy** (outline, chữ).
 - Kế thừa DNA mini-game Ola: outline navy đồng nhất, hình học phẳng, CTA vàng nắng, text live. Người chơi đã quen Tiến Lên và Cờ Tướng phải thấy đây là "cùng một nhà".
-- Bàn cờ là ngôi sao, nhưng ở 390 px mỗi ô chỉ ~32 px: bàn phải đọc được bằng **màu và glyph**, không bằng chữ. Chi tiết dồn vào sheet.
+- Bàn cờ là ngôi sao, nhưng ở 390 px mỗi ô chỉ ~30 px: bàn đọc bằng **màu và glyph** trước, kèm **tên ngắn + giá** cỡ ~6.7 px (`helpers/tiles.ts` → `TILE_SHORT_NAME`), ô có chủ đổi giá thành **viên tiền thuê** viền màu ghế. Bảng tiền thuê đầy đủ vẫn dồn vào sheet.
+- UI v2 (17/10/2026, bản chơi với máy): font Nunito (dùng chung file với caro); ô có chủ tô nền `SEAT_SOFT_COLORS` + vạch 3 px màu ghế ở mép ngoài thay cho chấm 8 px; nhà nằm trên dải màu nhóm; giữa bàn có logo bảng navy, 2 chồng thẻ Cơ hội/Khí vận và dãy phố nhà ống (`components/Skyline.tsx`, dùng lại bản đêm ở sảnh); quân là ghim bản đồ có avatar, đứng ở mép trong của ô để không che chữ; nút/thẻ có bóng đặc 4 px `--ty-ink` kiểu board game.
 - Tiền là cảm xúc chính của game: số tiền đổi màu, bay lên/xuống, pod người chơi luôn hiện tiền mặt.
 
 ## 2. Palette chuẩn

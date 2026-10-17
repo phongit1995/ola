@@ -93,29 +93,30 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 ### 6.1 Cấu trúc dọc tại 390
 | Vùng | y | Nội dung |
 |---|---|---|
-| Topbar | 0–52 | chip vòng `Vòng 7/20` (trái), đồng hồ lượt 22/800 (giữa), nút ic-exit-door + ic-flag (phải, trong menu ⋯ 44×44) |
+| Topbar | 0–52 | chip vòng `Vòng 7/20` + thanh tiến độ vòng (trái), nút âm thanh + menu ⋯ (Về sảnh, Bỏ cuộc) (phải) |
 | Bàn | 60–426 | bàn 366 × 366 (03 §1) |
-| Pod row | 438–534 | 2–4 pod người chơi ngang, scroll không cần (4 × 86 + 3 × 8 = 368) |
-| Action bar | 546–618 | thanh hành động theo pha (6.3) |
-| Log | 630–700 | 2 dòng log gần nhất (`@an trả @binh 90 tr tiền thuê Đà Lạt`), 12.5/500 cream 80% |
-| Footer | đáy − 24 | ic-chat, ic-reaction, ic-deed (mở S8) 44×44 |
+| Pod row | 438–534 | 2–4 pod: avatar, tên, tiền mặt, số ô/nhà/thẻ ra tù/đang ở tù, thanh tổng tài sản so với người dẫn đầu, vương miện cho người giàu nhất, nhãn `Lượt bạn`/`Đang đi` |
+| Panel lượt | 546– | `TurnPanel`: avatar + `Lượt của …` + mô tả pha + đồng hồ vòng tròn (chỉ lượt mình); nút theo pha (6.3). Lượt máy: panel trong suốt + 3 chấm |
+| Log | phần còn lại | `GameLog` lấp hết chiều cao còn lại, 8 dòng mới nhất (mới ở trên, chấm xanh/đỏ theo tiền vào/ra), chạm mở sheet log |
+
+> UI v2 (17/10/2026) thay Action bar + đồng hồ topbar bằng `TurnPanel`; footer chat/reaction chưa có trong bản chơi với máy.
 
 Ở width 360 bàn 336, pod 4 × 78. Ở 480+ bàn 456, giữa bàn rộng hơn cho pod trong bàn — v1 vẫn giữ pod row dưới bàn để một layout.
 
 ### 6.2 Bàn
 - 40 ô theo 03 §1–2; tap ô bất kỳ mở S7 (sheet chi tiết) — kể cả ô đặc biệt (hiện mô tả).
-- Quân 18 px của mọi người; quân tới lượt có vòng gold pulse.
-- Giữa bàn: watermark logo; khi `roll` → O1 xúc xắc ở giữa; khi `card` → O2 thẻ ở giữa (đè bàn, không đè pod).
-- Chấm chủ sở hữu 8 px màu ghế ở góc trong mỗi ô có chủ; nhà/khách sạn theo 03 §2.3.
+- Quân là ghim bản đồ ~24 px màu ghế có avatar, mũi ghim đặt ở mép trong của ô (ô góc/ô cạnh), Nhà tù chia vùng trong phòng giam / Thăm tù; quân tới lượt nhún + vòng gold.
+- Giữa bàn: logo bảng navy, chồng thẻ Cơ hội/Khí vận, dãy phố nhà ống; khi `roll` → O1 xúc xắc trong khay giấy ở giữa; khi `card` → O2 thẻ ở giữa (đè bàn, không đè pod).
+- Ô có chủ: nền màu nhạt của ghế + vạch 3 px mép ngoài + giá đổi thành viên tiền thuê hiện tại; nhà/khách sạn nằm trên dải màu nhóm.
 
 ### 6.3 Action bar theo pha (chỉ khi `myTurn`)
 | phase | Nút (trái → phải) |
 |---|---|
 | `roll` | `Gieo xúc xắc` CTA vàng 100% (ic-dice) |
 | `jail` | `Gieo` paper · `Nộp 50 tr` paper · `Dùng thẻ` paper (disabled nếu không có) — 3 nút đều |
-| `decide` | `Mua {price} tr` CTA vàng 60% · `Bỏ qua` paper 40%; sheet S7 tự mở kèm |
-| `card` | `Tiếp tục` CTA vàng (trong O2) |
-| `manage` | `Xây / bán` paper (mở S8, ẩn nếu không sở hữu trọn nhóm nào) · `Kết thúc lượt` CTA vàng; nếu vừa gieo đôi, nhãn `Gieo tiếp` thay `Kết thúc lượt` (vẫn gửi END_TURN) |
+| `decide` | thẻ sổ đỏ thu gọn ngay trong panel (tên, giá, thuê đất trống, `x/y của bạn` trong nhóm; chạm mở S7) · `Bỏ qua` paper 40% · `Mua {price} tr` CTA vàng 60% kèm dòng `còn lại …` |
+| `card` | `Làm theo thẻ` CTA vàng trong panel; chạm vào thẻ O2 cũng được |
+| `manage` | `Xây nhà` paper (mở S8, ẩn nếu không sở hữu trọn nhóm nào) · `Kết thúc lượt` CTA vàng; nếu vừa gieo đôi, nhãn `Gieo tiếp` thay `Kết thúc lượt` (vẫn gửi END_TURN) |
 | `debt` | O3 chiếm bar: `Bán nhà` · `Trả {amount} tr` · `Phá sản` |
 
 Không tới lượt: bar hiện `Lượt của @ten` + mini-avatar + pha đang làm (`đang gieo…`, `đang nghĩ mua…`), 15/600 cream 70%.

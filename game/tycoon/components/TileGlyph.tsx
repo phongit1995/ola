@@ -13,7 +13,9 @@ export type GlyphName =
   | 'water'
   | 'jail'
   | 'parking'
-  | 'gotojail';
+  | 'gotojail'
+  | 'arrow'
+  | 'crown';
 
 const GLYPH_PATHS: Record<GlyphName, string> = {
   go: 'M16 5a11 11 0 1 0 11 11h-4a7 7 0 1 1-7-7v4l7-6-7-6z',
@@ -29,6 +31,8 @@ const GLYPH_PATHS: Record<GlyphName, string> = {
   jail: 'M5 5h22v3H5zm0 19h22v3H5zM9 8h3v16H9zm5.5 0h3v16h-3zM20 8h3v16h-3z',
   parking: 'M5 19l3-7a3 3 0 0 1 3-2h10a3 3 0 0 1 3 2l3 7v6h-3a2 2 0 1 1-4 0h-8a2 2 0 1 1-4 0H5zm5-7l-2 5h16l-2-5z',
   gotojail: 'M16 4a9 9 0 0 1 9 9v8H7v-8a9 9 0 0 1 9-9zm0 3a6 6 0 0 0-6 6v5h12v-5a6 6 0 0 0-6-6zM5 23h22v4H5z',
+  arrow: 'M14 6L4 16l10 10v-6h14v-8H14z',
+  crown: 'M3 11l7 5 6-10 6 10 7-5-3 14H6zm3 16h20v3H6z',
 };
 
 export const GLYPH_BY_KIND: Partial<Record<TileKind, GlyphName>> = {
@@ -64,6 +68,8 @@ export const GLYPH_COLOR: Record<GlyphName, string> = {
   jail: 'var(--ty-navy)',
   parking: 'var(--ty-navy)',
   gotojail: 'var(--ty-coral)',
+  arrow: 'var(--ty-jade)',
+  crown: 'var(--ty-gold)',
 };
 
 export function TileGlyph({ name, size = 18, color }: { name: GlyphName; size?: number; color?: string }) {
