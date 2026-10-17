@@ -1,10 +1,12 @@
 package com.ola.me.net.org.vn
 
 import android.app.PictureInPictureParams
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Rational
+import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.Lifecycle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -32,7 +34,23 @@ class MainActivity : ReactActivity() {
   // background) thì constructor mặc định của ScreenStackFragment ném và activity
   // không start được. State màn hình do JS giữ nên không mất gì.
   override fun onCreate(savedInstanceState: Bundle?) {
+    enableEdgeToEdge()
+    lockPortraitOnPhones(resources.configuration)
     super.onCreate(null)
+  }
+
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    if (!isInPictureInPictureMode) lockPortraitOnPhones(newConfig)
+  }
+
+  private fun lockPortraitOnPhones(config: Configuration) {
+    requestedOrientation =
+        if (config.smallestScreenWidthDp < LARGE_SCREEN_MIN_WIDTH_DP) {
+          ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+          ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
   }
 
   override fun onUserLeaveHint() {
@@ -63,5 +81,9 @@ class MainActivity : ReactActivity() {
     if (!isInPictureInPictureMode && lifecycle.currentState == Lifecycle.State.CREATED) {
       PipModule.notifyPipClosed()
     }
+  }
+
+  private companion object {
+    const val LARGE_SCREEN_MIN_WIDTH_DP = 600
   }
 }

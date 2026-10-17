@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import com.facebook.react.bridge.ReadableMap
+import com.ola.me.net.org.vn.BuildConfig
 import java.net.URL
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.Executors
@@ -112,7 +113,7 @@ object OlaRichTextConfig {
 
   private fun decodeUri(uri: String, context: Context): Bitmap? = runCatching {
     when {
-      uri.startsWith("http://") || uri.startsWith("https://") ->
+      BuildConfig.DEBUG && (uri.startsWith("http://") || uri.startsWith("https://")) ->
         URL(uri).openStream().use { BitmapFactory.decodeStream(it) }
       uri.startsWith("file://") ->
         BitmapFactory.decodeFile(Uri.parse(uri).path)
