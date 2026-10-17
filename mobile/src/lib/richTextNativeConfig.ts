@@ -2,15 +2,12 @@ import { Image } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import NativeOlaRichText from '../components/specs/NativeOlaRichText';
 import { EMOJI_IMAGES } from './emojiImages';
-import { SMILEY_ALIASES, SMILEY_IMAGES } from './chatSmiley';
+import { SMILEY_ALIASES, SMILEY_IMAGES, imageAspectRatio } from './chatSmiley';
 
 export const richTextNativeAvailable = NativeOlaRichText != null;
 
 function resolvedEntry(src: ImageSourcePropType): { uri: string; aspect: number } {
-  const resolved = Image.resolveAssetSource(src);
-  const aspect =
-    resolved != null && resolved.height > 0 ? resolved.width / resolved.height : 1;
-  return { uri: resolved?.uri ?? '', aspect };
+  return { uri: Image.resolveAssetSource(src)?.uri ?? '', aspect: imageAspectRatio(src) };
 }
 
 let configured = false;

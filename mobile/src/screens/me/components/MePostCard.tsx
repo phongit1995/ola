@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Linking, Pressable, Text, View, type TextLayoutEventData, type NativeSyntheticEvent } from 'react-native';
+import { Image, Linking, Pressable, Text, View, type TextLayoutEvent } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -294,7 +294,7 @@ function MePostCardComponent({
     ],
   }));
 
-  function onTextLayout(event: NativeSyntheticEvent<TextLayoutEventData>) {
+  function onTextLayout(event: TextLayoutEvent) {
     if (event.nativeEvent.lines.length > 5) setClamped(true);
     setMeasured(true);
   }

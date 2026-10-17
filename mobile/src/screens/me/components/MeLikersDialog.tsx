@@ -114,7 +114,7 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
               style={{ maxHeight: 320 }}
               onEndReached={() => void loadMore()}
               onEndReachedThreshold={0.3}
-              ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color={colors.primary} /> : null}
+              ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color={colors.primary} /> : undefined}
               renderItem={({ item, index }) => {
                 const isSelf = item.isSelf === true || item.relationship?.status === RELATIONSHIP_STATUS.self;
                 const isFriend = item.isFriend === true || item.relationship?.status === RELATIONSHIP_STATUS.friend;

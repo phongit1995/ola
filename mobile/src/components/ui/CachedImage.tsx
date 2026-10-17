@@ -1,13 +1,19 @@
 import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { ImageStyle, StyleProp, ViewStyle } from 'react-native';
 import FastImage, {
-  type ImageStyle,
+  type FastImageProps,
   type OnLoadEvent,
   type Priority,
   type ResizeMode,
 } from '@d11/react-native-fast-image';
 import { useThemeColors } from '@hooks/useThemeColors';
+
+type FastImageStyle = FastImageProps['style'];
+
+function fastImageStyle(style: StyleProp<ImageStyle>): FastImageStyle {
+  return style as FastImageStyle;
+}
 
 interface CachedImageProps {
   uri?: string | null;
@@ -58,7 +64,7 @@ export function CachedImage({
         return (
           <FastImage
             source={placeholder}
-            style={style}
+            style={fastImageStyle(style)}
             resizeMode={placeholderResizeMode ?? resizeMode}
             tintColor={tintColor}
           />
@@ -71,7 +77,7 @@ export function CachedImage({
       <FastImage
         source={{ uri, priority }}
         defaultSource={placeholder}
-        style={[status === 'loading' && styles.loadingSurface, style]}
+        style={fastImageStyle([status === 'loading' && styles.loadingSurface, style])}
         resizeMode={
           status === 'loading' && placeholder != null
             ? (placeholderResizeMode ?? resizeMode)
@@ -97,7 +103,7 @@ export function CachedImage({
     return (
       <FastImage
         source={placeholder}
-        style={style}
+        style={fastImageStyle(style)}
         resizeMode={placeholderResizeMode ?? resizeMode}
         tintColor={tintColor}
       />
@@ -137,7 +143,7 @@ export function CachedImageBackground({
         return (
           <FastImage
             source={placeholder}
-            style={style}
+            style={fastImageStyle(style)}
             resizeMode={placeholderResizeMode ?? resizeMode}
           >
             {children}
@@ -153,7 +159,7 @@ export function CachedImageBackground({
       <FastImage
         source={{ uri, priority: FastImage.priority.normal }}
         defaultSource={placeholder}
-        style={[status === 'loading' && styles.loadingSurface, style]}
+        style={fastImageStyle([status === 'loading' && styles.loadingSurface, style])}
         resizeMode={
           status === 'loading' && placeholder != null
             ? (placeholderResizeMode ?? resizeMode)
@@ -176,7 +182,7 @@ export function CachedImageBackground({
     return (
       <FastImage
         source={placeholder}
-        style={style}
+        style={fastImageStyle(style)}
         resizeMode={placeholderResizeMode ?? resizeMode}
       >
         {children}

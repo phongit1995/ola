@@ -220,7 +220,7 @@ export function RegisterScreen({ navigation }: Props) {
         <Pressable
           className="mb-3 mt-3 h-12 w-full max-w-md items-center justify-center rounded-sm border border-ola-primary-dark bg-ola-button active:opacity-80"
           disabled={loading}
-          onPress={handleSubmit(onSubmit)}
+          onPress={() => void handleSubmit(onSubmit)()}
         >
           <Text className="text-2xl text-white">{t('register.submit')}</Text>
         </Pressable>

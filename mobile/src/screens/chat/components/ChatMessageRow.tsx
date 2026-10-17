@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, useWindowDimensions, View, type ViewInstance } from 'react-native';
 import { callMessageView, formatDuration, parseMessageMetadata, withAlpha } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import type { MessageMetadata } from '@ola/shared/lib';
@@ -351,8 +351,8 @@ export function ChatMessageRow({
   onOpenProfile,
 }: ChatMessageRowProps) {
   const colors = useThemeColors();
-  const bubbleRef = useRef<View>(null);
-  const chipsRef = useRef<View>(null);
+  const bubbleRef = useRef<ViewInstance>(null);
+  const chipsRef = useRef<ViewInstance>(null);
   const showAvatar = !fromMe && firstInGroup;
   const pending = message.status === MESSAGE_STATUS.sending || message.status === MESSAGE_STATUS.uploading;
   const failed = message.status === MESSAGE_STATUS.failed;

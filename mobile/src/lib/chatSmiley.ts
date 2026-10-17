@@ -10,8 +10,8 @@ const aspectRatioCache = new Map<ImageSourcePropType, number>();
 export function imageAspectRatio(src: ImageSourcePropType): number {
   const cached = aspectRatioCache.get(src);
   if (cached != null) return cached;
-  const resolved = Image.resolveAssetSource(src);
-  const aspect = resolved != null && resolved.height > 0 ? resolved.width / resolved.height : 1;
+  const { width = 0, height = 0 } = Image.resolveAssetSource(src) ?? {};
+  const aspect = height > 0 ? width / height : 1;
   aspectRatioCache.set(src, aspect);
   return aspect;
 }
