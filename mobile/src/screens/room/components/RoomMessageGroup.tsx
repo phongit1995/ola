@@ -7,6 +7,7 @@ import {
   Pressable,
   useWindowDimensions,
   View,
+  type ViewInstance,
 } from 'react-native';
 import { colorForName, formatClockHM, formatDuration, withAlpha } from '@ola/shared/lib';
 import type {
@@ -382,7 +383,7 @@ function RoomBubble({
 }) {
   const uploading = message.status === MESSAGE_STATUS.uploading;
   const failed = message.status === MESSAGE_STATUS.failed;
-  const bubbleRef = useRef<View>(null);
+  const bubbleRef = useRef<ViewInstance>(null);
 
   function handleLongPress() {
     if (uploading || failed) return;

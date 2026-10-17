@@ -76,7 +76,7 @@ function StoryCommentSheetBody({ storyId, initialReplyTarget, onClose }: StoryCo
 
   return (
     <>
-      <StatusBar translucent barStyle="light-content" />
+      <StatusBar barStyle="light-content" />
       <ChatKeyboardArea>
         <View className="flex-1 bg-white">
           <ScreenHeader

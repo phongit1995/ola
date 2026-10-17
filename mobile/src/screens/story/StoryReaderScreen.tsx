@@ -5,6 +5,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  type ScrollViewInstance,
   StatusBar,
   Text,
   View,
@@ -79,7 +80,7 @@ export function StoryReaderScreen({ route, navigation }: Props) {
   const reader = useStoryPrefsStore((state) => state.reader);
   const saveProgress = useStoryPrefsStore((state) => state.saveProgress);
   const [sheet, setSheet] = useState<ReaderSheetKind | null>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const focusedOnce = useRef(false);
   const palette = READER_PALETTES[reader.theme];
   const lightStatusIcons = Platform.OS === 'android' || reader.theme === 'dark';
@@ -274,7 +275,7 @@ export function StoryReaderScreen({ route, navigation }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: palette.background }}>
-      <StatusBar translucent barStyle={lightStatusIcons ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={lightStatusIcons ? 'light-content' : 'dark-content'} />
       <View
         className="flex-row items-center gap-1 px-1"
         style={{

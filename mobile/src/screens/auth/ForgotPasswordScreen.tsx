@@ -171,9 +171,11 @@ export function ForgotPasswordScreen({ navigation }: Props) {
           <Pressable
             className="h-12 items-center justify-center rounded-sm bg-ola-button active:opacity-80"
             disabled={sending}
-            onPress={usernameForm.handleSubmit((values) =>
-              sendCode(values.username.trim().toLowerCase())
-            )}
+            onPress={() =>
+              void usernameForm.handleSubmit((values) =>
+                sendCode(values.username.trim().toLowerCase())
+              )()
+            }
           >
             {sending ? (
               <ActivityIndicator color="#ffffff" />
@@ -278,7 +280,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
           <Pressable
             className="h-12 items-center justify-center rounded-sm bg-ola-button active:opacity-80"
             disabled={resetting}
-            onPress={resetForm.handleSubmit(confirmReset)}
+            onPress={() => void resetForm.handleSubmit(confirmReset)()}
           >
             {resetting ? (
               <ActivityIndicator color="#ffffff" />

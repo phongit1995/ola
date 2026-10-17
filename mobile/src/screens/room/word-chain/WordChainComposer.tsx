@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, TextInput, View, type TextInputInstance } from 'react-native';
 import { WORD_CHAIN_MOVE_MAX_LENGTH } from '@ola/shared/constants';
 import { wordChainMoveErrorText } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -38,7 +38,7 @@ export function WordChainComposer({
   const { t } = useTranslation();
   const colors = useThemeColors();
   const pushToast = useToastStore((state) => state.push);
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const text = useWordChainViewStore((state) => state.draft);
   const setText = useWordChainViewStore((state) => state.setDraft);
   const sending = useWordChainViewStore((state) => state.sending);
