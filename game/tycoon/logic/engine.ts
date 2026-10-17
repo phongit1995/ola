@@ -223,7 +223,7 @@ function pay(s: GameState, from: number, to: number, amount: number, reason: Pay
 
 function enterDebt(s: GameState, d: Debt): void {
   if (s.phase === 'debt' && s.debt) {
-    s.pendingDebts.push(d);
+    s.pendingDebts.push({ ...d, returnTo: s.debt.returnTo });
     return;
   }
   s.debt = d;

@@ -176,6 +176,32 @@ describe('tycoon engine', () => {
     expect(paid.players[0].cash).toBe(START_CASH + 20);
   });
 
+  it('returns the turn to the card drawer after queued birthday debts', () => {
+    const s = withPhase(newGame(1, 4), 'card');
+    s.card = { deck: 'chest', id: 'cm07' };
+    s.players[0].doubles = 1;
+    s.players[1].cash = 0;
+    s.players[2].cash = 0;
+    for (const idx of [1, 3]) {
+      s.tiles[idx].owner = 1;
+      s.tiles[idx].houses = 1;
+    }
+    for (const idx of [6, 8, 9]) {
+      s.tiles[idx].owner = 2;
+      s.tiles[idx].houses = 1;
+    }
+    const first = play(s, 0, { type: 'CARD_ACK' });
+    expect(first.turn).toBe(1);
+    expect(first.pendingDebts.map((d) => d.returnTo)).toEqual([0]);
+    const second = play(first, 1, { type: 'SETTLE_DEBT' });
+    expect(second.turn).toBe(2);
+    expect(second.phase).toBe('debt');
+    const back = play(second, 2, { type: 'SETTLE_DEBT' });
+    expect(back.turn).toBe(0);
+    expect(back.phase).toBe('manage');
+    expect(play(back, 0, { type: 'END_TURN' }).phase).toBe('roll');
+  });
+
   it('runs the jail flow', () => {
     const s = withPhase(newGame(1, 2), 'jail');
     s.players[0].inJail = true;
