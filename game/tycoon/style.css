@@ -826,9 +826,11 @@ button:focus-visible,
 }
 
 .ty-exit-link {
-  background: none;
+  background: rgba(14, 22, 34, 0.55);
   border: none;
-  color: rgba(255, 248, 234, 0.7);
+  border-radius: 999px;
+  padding: 0 18px;
+  color: rgba(255, 248, 234, 0.85);
   font-size: 13px;
   font-weight: 700;
   min-height: 44px;
@@ -1710,6 +1712,25 @@ button:focus-visible,
   50% {
     transform: scale(0.8);
     opacity: 0.6;
+  }
+}
+
+.ty-token-flip .ty-token-pin {
+  top: calc(var(--pin) * 0.21);
+  transform: rotate(135deg);
+}
+
+.ty-token-flip .ty-token-face {
+  transform: rotate(-135deg);
+}
+
+.ty-token-flip.ty-token-active .ty-token-pin {
+  animation-name: ty-pin-bob-flip;
+}
+
+@keyframes ty-pin-bob-flip {
+  50% {
+    transform: rotate(135deg) translate(2.5px, -2.5px);
   }
 }
 

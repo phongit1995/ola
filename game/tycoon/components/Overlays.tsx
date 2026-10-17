@@ -62,6 +62,7 @@ function Die3D({ value, index, tone }: { value: number; index: number; tone: 'no
 
 export function DiceOverlay() {
   const diceFx = useTycoon((s) => s.diceFx);
+  const cardOpen = useTycoon((s) => s.cardFx !== null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     if (diceFx.seq === 0) return;
@@ -69,7 +70,11 @@ export function DiceOverlay() {
     const timer = setTimeout(() => setVisible(false), diceFx.rolling ? 4000 : 1600);
     return () => clearTimeout(timer);
   }, [diceFx.seq, diceFx.rolling]);
-  if (!visible || diceFx.seq === 0) return null;
+  // Thẻ Cơ hội/Khí vận lật ra thì xúc xắc nhường chỗ, không chồng lên nhau.
+  useEffect(() => {
+    if (cardOpen) setVisible(false);
+  }, [cardOpen]);
+  if (!visible || diceFx.seq === 0 || cardOpen) return null;
   const tone = diceFx.double ? 'double' : 'normal';
   return (
     <div className={`ty-dice-overlay ${diceFx.rolling ? 'ty-dice-rolling' : ''}`} aria-live="polite" aria-label={`Xúc xắc ${diceFx.values[0]} và ${diceFx.values[1]}`}>

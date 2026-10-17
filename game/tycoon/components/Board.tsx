@@ -34,14 +34,14 @@ export function tileRect(idx: number): TileRect {
   return { x: 100 - CORNER, y: CORNER + (idx - 31) * EDGE, w: CORNER, h: EDGE, side: 'right' };
 }
 
-function tokenAnchor(idx: number, inJail: boolean): { x: number; y: number } {
+function tokenAnchor(idx: number, inJail: boolean): { x: number; y: number; flip?: boolean } {
   const r = tileRect(idx);
   if (idx === JAIL_TILE) return inJail ? { x: r.x + r.w * 0.66, y: r.y + r.h * 0.52 } : { x: r.x + r.w * 0.28, y: r.y + r.h * 0.94 };
   switch (r.side) {
     case 'bottom':
       return { x: r.x + r.w / 2, y: r.y + 1 };
     case 'top':
-      return { x: r.x + r.w / 2, y: r.y + r.h + 2.2 };
+      return { x: r.x + r.w / 2, y: r.y + r.h - 0.8, flip: true };
     case 'left':
       return { x: r.x + r.w + 1.6, y: r.y + r.h * 0.8 };
     case 'right':
@@ -227,6 +227,7 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
             active={turnSeat === seat && !replaying}
             inJail={inJail}
             mine={seat === you}
+            flip={anchor.flip}
             avatar={players[seat]?.avatar}
           />
         );

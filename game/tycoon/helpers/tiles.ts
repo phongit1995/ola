@@ -41,7 +41,7 @@ export const TILE_SHORT_NAME: Record<number, string> = {
   35: 'Bến xe',
   36: 'Cơ hội',
   37: 'Hồ Gươm',
-  38: 'Thuế xa xỉ',
+  38: 'Thuế xa xỉ',
   39: 'Hồ Tây',
 };
 
