@@ -367,6 +367,18 @@ const (
 	PushChannelMessages  = "messages"
 	PushChannelSocial    = "social"
 	PushChannelSystem    = "system"
+	PushPlatformAndroid  = "android"
+	PushPlatformIOS      = "ios"
+)
+
+const (
+	APNSHeaderPushType   = "apns-push-type"
+	APNSHeaderPriority   = "apns-priority"
+	APNSHeaderExpiration = "apns-expiration"
+	APNSHeaderCollapseID = "apns-collapse-id"
+	APNSPushTypeAlert    = "alert"
+	APNSPriorityHigh     = "10"
+	APNSSoundDefault     = "default"
 )
 
 const (

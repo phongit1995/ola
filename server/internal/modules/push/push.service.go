@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
@@ -37,7 +38,7 @@ func (s *Service) Register(userID, sessionID uuid.UUID, token string) error {
 	}
 	platform := sess.Platform
 	if platform == "" {
-		platform = "android"
+		platform = constants.PushPlatformAndroid
 	}
 	return s.repo.RegisterToken(&models.DeviceToken{
 		ID:        uuid.New(),

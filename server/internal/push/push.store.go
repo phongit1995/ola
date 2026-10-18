@@ -3,6 +3,7 @@ package push
 import (
 	"errors"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/setting"
 
@@ -24,7 +25,7 @@ func (s *gormStore) ActiveTokens(userID string) ([]models.DeviceToken, error) {
 	var tokens []models.DeviceToken
 	err := s.db.
 		Joins("JOIN user_sessions ON user_sessions.id = device_tokens.session_id").
-		Where("device_tokens.user_id = ? AND device_tokens.platform = ? AND user_sessions.revoked_at IS NULL", userID, "android").
+		Where("device_tokens.user_id = ? AND device_tokens.platform IN ? AND user_sessions.revoked_at IS NULL", userID, []string{constants.PushPlatformAndroid, constants.PushPlatformIOS}).
 		Find(&tokens).Error
 	return tokens, err
 }

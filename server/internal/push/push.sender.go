@@ -3,6 +3,7 @@ package push
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -264,6 +265,7 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 		"channel": content.Channel,
 		"title":   content.Title,
 		"body":    content.Body,
+		"ownerId": recipientID,
 	}
 	for k, v := range content.Data {
 		data[k] = v
@@ -272,15 +274,7 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 	ttl := constants.PushTTLHours * time.Hour
 	msgs := make([]*messaging.Message, 0, len(tokens))
 	for _, t := range tokens {
-		msgs = append(msgs, &messaging.Message{
-			Token: t.Token,
-			Data:  data,
-			Android: &messaging.AndroidConfig{
-				Priority:    "high",
-				CollapseKey: content.Collapse,
-				TTL:         &ttl,
-			},
-		})
+		msgs = append(msgs, buildMessage(t, content, data, ttl))
 	}
 
 	successCount, failureCount, sendErr := s.sendInChunks(recipientID, source, tokens, msgs)
@@ -297,6 +291,41 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 		if throttleKey != "" {
 			s.scheduleTrailing(recipientID, source)
 		}
+	}
+}
+
+func buildMessage(token models.DeviceToken, content Content, data map[string]string, ttl time.Duration) *messaging.Message {
+	msg := &messaging.Message{Token: token.Token, Data: data}
+	if token.Platform == constants.PushPlatformIOS {
+		msg.APNS = apnsConfig(content, ttl)
+		return msg
+	}
+	msg.Android = &messaging.AndroidConfig{
+		Priority:    "high",
+		CollapseKey: content.Collapse,
+		TTL:         &ttl,
+	}
+	return msg
+}
+
+func apnsConfig(content Content, ttl time.Duration) *messaging.APNSConfig {
+	headers := map[string]string{
+		constants.APNSHeaderPushType:   constants.APNSPushTypeAlert,
+		constants.APNSHeaderPriority:   constants.APNSPriorityHigh,
+		constants.APNSHeaderExpiration: strconv.FormatInt(time.Now().Add(ttl).Unix(), 10),
+	}
+	if content.NotifID != "" {
+		headers[constants.APNSHeaderCollapseID] = content.NotifID
+	}
+	return &messaging.APNSConfig{
+		Headers: headers,
+		Payload: &messaging.APNSPayload{
+			Aps: &messaging.Aps{
+				Alert:    &messaging.ApsAlert{Title: content.Title, Body: content.Body},
+				Sound:    constants.APNSSoundDefault,
+				ThreadID: content.NotifID,
+			},
+		},
 	}
 }
 
