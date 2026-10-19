@@ -1,7 +1,9 @@
 package adminvip
 
 import (
+	"net/http"
 	"strings"
+	"time"
 
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/utils"
@@ -12,12 +14,99 @@ import (
 )
 
 type Controller struct {
-	service *vip.Service
-	logger  *zap.SugaredLogger
+	service      *vip.Service
+	adminService *Service
+	logger       *zap.SugaredLogger
 }
 
-func NewController(service *vip.Service, logger *zap.SugaredLogger) *Controller {
-	return &Controller{service: service, logger: logger.Named("[admin_vip_controller]")}
+func NewController(service *vip.Service, adminService *Service, logger *zap.SugaredLogger) *Controller {
+	return &Controller{service: service, adminService: adminService, logger: logger.Named("[admin_vip_controller]")}
+}
+
+func parseTimeQuery(c *gin.Context, key string) (*time.Time, error) {
+	raw := c.Query(key)
+	if raw == "" {
+		return nil, nil
+	}
+	t, err := time.Parse(time.RFC3339, raw)
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key+" time")
+	}
+	return &t, nil
+}
+
+// ListPurchases godoc
+// @Summary      Lịch sử mua gói ngày VIP + icon VIP toàn hệ thống, gồm cả quà tặng (admin)
+// @Tags         admin-vip
+// @Produce      json
+// @Security     BearerAuth
+// @Param        kind query string false "package|icon"
+// @Param        mode query string false "self|gift"
+// @Param        search query string false "Tìm theo username / tên người nhận, username người tặng"
+// @Param        from query string false "Từ thời gian (RFC3339)"
+// @Param        to query string false "Đến thời gian (RFC3339)"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  PurchaseListSuccessResponse
+// @Router       /admin/vip/purchases [get]
+func (ctrl *Controller) ListPurchases(c *gin.Context) (interface{}, error) {
+	from, err := parseTimeQuery(c, "from")
+	if err != nil {
+		return nil, err
+	}
+	to, err := parseTimeQuery(c, "to")
+	if err != nil {
+		return nil, err
+	}
+	f := PurchaseFilter{
+		Kind:   c.Query("kind"),
+		Mode:   c.Query("mode"),
+		Search: strings.TrimSpace(c.Query("search")),
+		From:   from,
+		To:     to,
+	}
+	limit := utils.ParseLimit(c, 20, 100)
+	offset := utils.ParseOffset(c)
+
+	resp, err := ctrl.adminService.ListPurchases(f, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// PurchaseStats godoc
+// @Summary      Thống kê doanh thu mua VIP (gói ngày + icon) theo ngày/tháng (admin)
+// @Tags         admin-vip
+// @Produce      json
+// @Security     BearerAuth
+// @Param        from query string false "Từ thời gian (RFC3339, mặc định 30 ngày trước)"
+// @Param        to query string false "Đến thời gian (RFC3339, mặc định hiện tại)"
+// @Success      200  {object}  PurchaseStatsSuccessResponse
+// @Router       /admin/vip/purchases/stats [get]
+func (ctrl *Controller) PurchaseStats(c *gin.Context) (interface{}, error) {
+	now := time.Now()
+	from := now.AddDate(0, 0, -29).Truncate(24 * time.Hour)
+	to := now
+	if t, err := parseTimeQuery(c, "from"); err != nil {
+		return nil, err
+	} else if t != nil {
+		from = *t
+	}
+	if t, err := parseTimeQuery(c, "to"); err != nil {
+		return nil, err
+	} else if t != nil {
+		to = *t
+	}
+	if to.Before(from) {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "to must be after from")
+	}
+
+	resp, err := ctrl.adminService.PurchaseStats(from, to)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
 }
 
 // CreatePackage godoc

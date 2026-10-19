@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/vip"
 
 	"gorm.io/gorm"
 )
@@ -106,15 +107,15 @@ func (r *Repository) Revenue(q OverviewQuery) (RevenueSection, error) {
 	s.TopupKen = topup.Sum
 	s.TopupCount = topup.Count
 
-	var vip sumCount
-	if err := r.db.Model(&models.VipPurchase{}).
-		Scopes(inRange(q, "created_at")).
-		Select("coalesce(sum(ken_price),0) as sum, count(*) as count").
-		Scan(&vip).Error; err != nil {
+	var vipRevenue sumCount
+	if err := vip.BoughtPurchases(r.db).
+		Scopes(inRange(q, "vp.created_at")).
+		Select(fmt.Sprintf("coalesce(sum(%s),0) as sum, count(*) as count", vip.PurchasePaidExpr)).
+		Scan(&vipRevenue).Error; err != nil {
 		return s, err
 	}
-	s.VipRevenueKen = vip.Sum
-	s.VipPurchases = vip.Count
+	s.VipRevenueKen = vipRevenue.Sum
+	s.VipPurchases = vipRevenue.Count
 
 	if err := r.db.Model(&models.KenTransaction{}).
 		Scopes(inRange(q, "created_at")).
@@ -189,38 +190,34 @@ type seriesRow struct {
 	Value int64
 }
 
-func (r *Repository) series(q OverviewQuery, bucket string, model interface{}, dateColumn, valueExpr string, where func(*gorm.DB) *gorm.DB) ([]seriesRow, error) {
+func series(q OverviewQuery, bucket string, base *gorm.DB, dateColumn, valueExpr string) ([]seriesRow, error) {
 	trunc, format := "day", "YYYY-MM-DD"
 	if bucket == "month" {
 		trunc, format = "month", "YYYY-MM"
 	}
-	query := r.db.Model(model).
+	var rows []seriesRow
+	err := base.
 		Where(fmt.Sprintf("%s >= ? AND %s <= ?", dateColumn, dateColumn), q.From, q.To).
 		Select(fmt.Sprintf("to_char(date_trunc('%s', %s), '%s') as date, %s as value", trunc, dateColumn, format, valueExpr)).
 		Group(fmt.Sprintf("date_trunc('%s', %s)", trunc, dateColumn)).
-		Order(fmt.Sprintf("date_trunc('%s', %s) ASC", trunc, dateColumn))
-	if where != nil {
-		query = where(query)
-	}
-	var rows []seriesRow
-	err := query.Scan(&rows).Error
+		Order(fmt.Sprintf("date_trunc('%s', %s) ASC", trunc, dateColumn)).
+		Scan(&rows).Error
 	return rows, err
 }
 
 func (r *Repository) SignupSeries(q OverviewQuery, bucket string) ([]seriesRow, error) {
-	return r.series(q, bucket, &models.User{}, "created_at", "count(*)", nil)
+	return series(q, bucket, r.db.Model(&models.User{}), "created_at", "count(*)")
 }
 
 func (r *Repository) PostSeries(q OverviewQuery, bucket string) ([]seriesRow, error) {
-	return r.series(q, bucket, &models.Me{}, "created_at", "count(*)", nil)
+	return series(q, bucket, r.db.Model(&models.Me{}), "created_at", "count(*)")
 }
 
 func (r *Repository) TopupSeries(q OverviewQuery, bucket string) ([]seriesRow, error) {
-	return r.series(q, bucket, &models.KenTransaction{}, "created_at", "coalesce(sum(amount),0)", func(db *gorm.DB) *gorm.DB {
-		return db.Where("type = ?", models.KenTxTypeTopup)
-	})
+	base := r.db.Model(&models.KenTransaction{}).Where("type = ?", models.KenTxTypeTopup)
+	return series(q, bucket, base, "created_at", "coalesce(sum(amount),0)")
 }
 
 func (r *Repository) VipRevenueSeries(q OverviewQuery, bucket string) ([]seriesRow, error) {
-	return r.series(q, bucket, &models.VipPurchase{}, "created_at", "coalesce(sum(ken_price),0)", nil)
+	return series(q, bucket, vip.BoughtPurchases(r.db), "vp.created_at", fmt.Sprintf("coalesce(sum(%s),0)", vip.PurchasePaidExpr))
 }
