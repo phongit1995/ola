@@ -23,7 +23,7 @@ Tọa độ: `boardRef` cung cấp `tileCenter(idx)`, `podAnchor(seat)`, `bankAn
 
 ## 2. Nhịp một lượt (ngân sách thời gian)
 
-Replay không được làm người chơi chờ: tổng replay một lượt thường ≤ 4 s, tệ nhất (đi 12 ô + thẻ chuyển ô + trả tiền) ≤ 7 s. Lượt của chính mình replay cùng tốc độ (không skip) để cảm nhận nhất quán; nhưng người chơi bấm vào bàn/sheet trong lúc replay thì **không bị chặn** — chỉ action bar chờ replay xong.
+Replay không được làm người chơi chờ: tổng replay một lượt thường ≤ 4 s, tệ nhất (đi 12 ô + thẻ chuyển ô + trả tiền) ≤ 7 s. Lượt của chính mình replay cùng tốc độ (không skip) để cảm nhận nhất quán; nhưng người chơi bấm vào bàn/sheet trong lúc replay thì **không bị chặn** — chỉ nút của cụm lượt giữa bàn chờ replay xong.
 
 | Đoạn | Ngân sách |
 |---|---|
@@ -125,7 +125,7 @@ Cột **Lite** = bậc rút gọn cho máy yếu; **Off** = `prefers-reduced-mot
 | # | Hiệu ứng | Lớp | Chi tiết | Lite |
 |---|---|---|---|---|
 | T1 | Đến lượt bạn | L3 + L1 | announce scale-in 300 ms giữ 900, viền pod sweep gold 360°, quân mình bounce 2 lần, bust Bác Tỷ point | announce |
-| T2 | Lượt người khác | L1 | pod họ viền sáng 300 ms, label bar đổi | giữ |
+| T2 | Lượt người khác | L1 | pod họ viền sáng 300 ms, chip lượt giữa bàn đổi tên + màu ghế | giữ |
 | T3 | Đổi vòng | L3 | chip vòng flip dọc 240 ms số mới | đổi số |
 | T4 | Vòng 18–19 | L3 | chip chuyển coral + nhịp 1 lần | đổi màu |
 | T5 | Vòng cuối | L3 + L0 | banner slide, viền bàn pulse gold 3 lần | banner |

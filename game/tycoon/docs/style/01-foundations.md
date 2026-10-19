@@ -157,7 +157,7 @@ Bàn: `--ty-board: min(100vw - 2 * var(--ty-gutter), 480px)`; `--ty-corner: calc
 | Surface | Nền | Chữ | Viền | Icon |
 |---|---|---|---|---|
 | màn (navy) | gradient bg-700→900 | cream | — | cream |
-| action bar | bg-500 20% trên màn | cream | — | cream |
+| cụm lượt (giữa bàn, UI v3) | trong suốt trên paper vùng trong | navy | — | navy |
 | paper (sheet/modal/pod/bàn) | paper | navy | navy 2 | navy |
 | paper-dim (ô đặc biệt, row chẵn) | paper-dim | navy | line 1 | theo 02 |
 | gold (CTA) | gradient gold-light→gold | navy | gold-deep 2 | navy |

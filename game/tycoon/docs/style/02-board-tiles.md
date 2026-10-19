@@ -8,14 +8,16 @@ Mỗi ô là `<g class="ty-tile" data-idx data-kind data-group>`. Màu lấy t�
 |---|---|---|---|---|
 | Kích thước (390) | 30.4 × 46 | 30.4 × 46 | 30.4 × 46 | 46 × 46 |
 | Nền | paper `#FBF3E0` | paper-dim `#F0E4C8` | paper-dim | paper-dim (ô 10 chia chéo: nửa paper + nửa dim) |
-| Dải màu | 30.4 × 15 phía trong bàn, màu nhóm, viền navy 1 px cạnh trong | không | không | không |
-| Glyph | không | 18 px, tâm thân ô | 18 px | bust nhân vật 30 px (03-characters) — fallback glyph 26 px |
-| Nhà | hàng ngang sát dải, jade `#1F8A5B` | — | — | — |
-| Chấm chủ | 8 px màu ghế, góc ngoài-phải | 8 px | — | — |
-| Quân | 18 px, tâm thân ô | như trái | như trái | tâm ô (ô 10: vùng theo trạng thái tù) |
+| Dải màu | 7–9 px ở mép phía trong bàn, màu nhóm, viền navy 1 px cạnh giáp thân ô | không | không | không |
+| Tên (trên) | tên ngắn 800, `board × 0.0182`, ≤ 2 dòng | như trái | như trái (`Cơ hội`, `Khí vận`, `Thuế`) | chữ góc 2 dòng (`BÃI / ĐỖ XE`, `VÀO / TÙ`, `NHÀ TÙ`, `XUẤT / PHÁT`) |
+| Tranh / glyph (giữa) | tranh phong cảnh địa danh (concept UI v3); bàn < 456 có thể ẩn tranh | glyph 18 px | glyph 18 px | bust nhân vật 30 px (03-characters) — fallback glyph 26 px |
+| Giá (dưới) | `220 tr` tabular; có chủ → tiền thuê hiện tại | `200 tr` / `150 tr` | thuế: số phải trả coral; thẻ: không có | Xuất phát: `+200 tr` jade |
+| Nhà | hàng ngang trên dải, jade `#1F8A5B` | — | — | — |
+| Có chủ | nền seat-soft + vạch 3 px màu ghế ở mép **ngoài** | như trái | — | — |
+| Quân | ghim ~24 px, mũi chạm mép trong ô, thân trong vùng trong | như trái | như trái | ô 10: vùng theo trạng thái tù |
 | Lưới | line `#8C7B5E` 1 px | | | |
 
-Xoay: cạnh dưới 0°, cạnh trái 90°, cạnh trên 180°, cạnh phải 270° cho **khung + dải**; glyph, nhà, chấm, quân **không xoay** (luôn đứng thẳng, dễ đọc).
+Xoay: cạnh dưới 0°, cạnh trái 90°, cạnh trên 180°, cạnh phải 270° cho **khung + dải**. Tên, tranh/glyph, giá, nhà, quân **không xoay**: luôn đứng thẳng, đọc từ trên xuống (tên → tranh → giá) ở cả 4 cạnh.
 
 ## 2. Bảng 40 ô
 

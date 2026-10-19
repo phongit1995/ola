@@ -7,7 +7,7 @@ Icon điều khiển (`ic-*`) không có màu riêng: màu đến từ `color` c
 | Surface | `color` | Hex | Disabled |
 |---|---|---|---|
 | màn navy / topbar / footer | cream | `#FFF8EA` | cream 45% |
-| action bar | cream | `#FFF8EA` | cream 45% |
+| cụm lượt giữa bàn (trên paper) | navy | `#1F2A44` | navy 45% |
 | paper (sheet, modal, pod, row) | navy | `#1F2A44` | navy 45% |
 | CTA gold | navy | `#1F2A44` | navy 45% |
 | jade (Sẵn sàng) | cream | | |

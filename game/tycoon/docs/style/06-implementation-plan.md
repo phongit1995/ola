@@ -38,7 +38,7 @@ DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 39
 
 ## Giai đoạn 3 — Tương tác và replay (tier Lite trước)
 
-- [ ] Sheet S7/S8, action bar theo pha, TurnClock, RoundChip, log line.
+- [ ] Sheet S7/S8, cụm lượt giữa bàn theo pha (02 §6.3), TurnClock, RoundChip, FooterBar + dòng sự kiện.
 - [ ] `fx/tween.ts` + `fx/anchors.ts`; `replay.ts` gọi `effects/*` theo `../08-fx-and-animation.md` §4.
 - [ ] Toàn bộ effect ở cột **Lite** (không hạt): roll, move hop, pay đếm + chip, card flip, build/sell, jail, bankrupt, turn, round, result.
 - [ ] Tier `off` (reduced-motion) cho mọi effect.
@@ -72,7 +72,7 @@ DoD: mọi vị trí nhân vật có fallback; tắt nhân vật không đổi l
 - [ ] `scripts/tycoon-shots.mjs` chụp toàn bộ màn/state; baseline visual regression.
 - [ ] Checklist icon `../06-icon-system.md` §8 cho 8 icon mới + 13 glyph.
 - [ ] Accessibility: focus order S6, aria-live thẻ/announce, contrast AA toàn bộ chữ (kiểm bằng tool, không ước lượng).
-- [ ] Review bởi người không làm game: hiểu được pha hiện tại trong 3 giây nhìn action bar.
+- [ ] Review bởi người không làm game: hiểu được pha hiện tại trong 3 giây nhìn cụm lượt giữa bàn.
 
 ## Definition of Done toàn bộ UI
 
@@ -91,5 +91,5 @@ DoD: mọi vị trí nhân vật có fallback; tắt nhân vật không đổi l
 | Gold ghế 0 nhầm với CTA | pod luôn có avatar+tên; CTA không bao giờ nằm trong pod row |
 | Budget asset vượt 800 KB | bỏ bust pose `sad` của ty/ngan, bỏ fx-result, giảm quân xuống 4 |
 | Máy yếu lag khi 4 quân animate + hạt | hop dùng `transform` + `will-change`, không reflow; tier tự hạ Lite theo frame time, `off` khi reduced-motion (08 §5–6) |
-| Hiệu ứng nhiều làm ván chậm | ngân sách thời gian từng đoạn (08 §2), replay không chặn tap bàn/sheet, chỉ chặn action bar |
+| Hiệu ứng nhiều làm ván chậm | ngân sách thời gian từng đoạn (08 §2), replay không chặn tap bàn/sheet, chỉ chặn nút cụm lượt |
 | Nhìn như "casino" khi thêm hạt (rủi ro Apple 4.1) | hạt chỉ gold/màu ghế/paper, không neon/đèn nhấp nháy/ký hiệu tiền; không flash trắng |

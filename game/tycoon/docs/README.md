@@ -49,7 +49,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 | S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, Tạo bàn, Làm mới, phân trang 9 hàng |
 | S4 | Modal Tạo bàn / Vào bàn khóa | chọn số người 2/3/4, mật khẩu |
 | S5 | Phòng chờ | 4 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |
-| S6 | Bàn chơi | bàn 11×11, quân di chuyển, pod 2–4 người, xúc xắc, thanh hành động theo pha, đồng hồ 30 s, đếm vòng |
+| S6 | Bàn chơi | header (logo, vòng, âm thanh, menu); bàn 11×11 có tên + giá trên ô; cụm lượt **giữa bàn** (chip lượt, đồng hồ 30 s, xúc xắc, nút theo pha); hàng pod 2–4 người **dưới bàn**; footer Tài sản / Diễn biến / sự kiện mới nhất |
 | S7 | Sheet chi tiết ô | giá, bảng tiền thuê, chủ sở hữu, nhà đang có; từ đây Mua / Xây / Bán |
 | S8 | Sheet quản lý tài sản | danh sách đất của mình theo nhóm, nút xây/bán từng ô, tổng tài sản |
 | S9 | Kết quả | hạng 1–4, tổng tài sản từng người, lý do kết thúc, XP, Chơi lại, Đóng |
@@ -85,7 +85,8 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 - nhân vật (6 mascot, [style/03-characters.md](./style/03-characters.md)) chỉ ở 4 ô góc, sheet, thẻ, modal, lobby, kết quả — không bao giờ sau chữ, và luôn có fallback glyph khi tắt;
 - border navy thống nhất 1.5–2 px, radius chỉ dùng scale 8/12/16/20/28/999;
 - tên ô, số tiền, tiền thuê, tên người chơi, đồng hồ, số vòng luôn là live text — không bake chữ vào ảnh;
-- ô bàn cờ không chứa tên ô (quá nhỏ ở 390 px) — chỉ dải màu + glyph + nhà + quân; tên và giá ở sheet S7;
+- ô bàn cờ hiện tên ngắn (trên) + tranh/glyph (giữa) + giá hoặc tiền thuê (dưới), dải màu nhóm ở mép trong (03 §2.1); bảng thuê, chủ sở hữu và nút mua/xây ở sheet S7;
+- bố cục S6 theo concept UI v3 (02 §6): mọi nút hành động nằm ở cụm lượt giữa bàn, thông tin người chơi ở hàng pod dưới bàn, không có panel hay nút nào phía trên bàn ngoài header;
 - mọi state có focus, disabled, loading, reduced-motion khi phù hợp;
 - chữ đạt WCAG AA, touch target tối thiểu 44 × 44 px (ô bàn cờ 32 px dùng vùng chạm mở rộng);
 - client không tự tính tiền, không tự quyết kết quả — mọi số đến từ `STATE`, mọi kết thúc ván đến từ `MATCH_OVER`;

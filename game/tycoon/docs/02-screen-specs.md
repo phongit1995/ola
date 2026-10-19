@@ -90,44 +90,148 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 ## S6. Bàn chơi (BoardScreen, `boardMode='playing'`)
 
-### 6.1 Cấu trúc dọc tại 390
-| Vùng | y | Nội dung |
+> **UI v3 (concept 19/10/2026).** Bố cục lấy theo bộ ảnh mới nhất [`assets/pixel-options-2026-10-19/`](../assets/pixel-options-2026-10-19/README.md): cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh tham chiếu phong cách đã duyệt [`exec-f7dbd796…png`](../assets/exec-f7dbd796-8a5f-46af-af8a-2b6d1d3780c2.png) chia 2 thẻ trên / 2 thẻ dưới — **không dùng bố cục đó nữa**, chỉ giữ phong cách. Ba bản pixel (8-bit, 16-bit, isometric) chỉ khác tranh trong ô; vị trí mọi nút và ô thông tin giống hệt nhau. Ảnh chỉ để lấy bố cục: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`.
+>
+> Thay thế UI v2 (17/10): `TurnPanel` và `GameLog` dưới hàng pod được bỏ; nội dung `TurnPanel` chuyển vào giữa bàn (6.3), `GameLog` thu thành dòng sự kiện ở footer (6.5).
+
+### 6.1 Sơ đồ dọc
+
+```text
+┌──────────────────────────────────────────┐
+│ [CỜ TỶ PHÚ]   ( Vòng 7/20 )   (♪)  (≡)   │ header
+├──────────────────────────────────────────┤
+│ ┌──────────────────────────────────────┐ │
+│ │  BÃI ĐỖ XE · 9 ô hàng trên · VÀO TÙ  │ │
+│ │  ·   ┌────────────────────────┐  ·   │ │
+│ │  ·   │ [CƠ HỘI]    [KHÍ VẬN]  │  ·   │ │
+│ │  9   │                        │  9   │ │
+│ │  ô   │ (Lượt của bạn) (0:28)  │  ô   │ │  bàn 40 ô
+│ │  ·   │       [3]   [5]        │  ·   │ │  + cụm lượt
+│ │  ·   │   [  Gieo xúc xắc  ]   │  ·   │ │
+│ │  ·   └────────────────────────┘  ·   │ │
+│ │  NHÀ TÙ · 9 ô hàng dưới · XUẤT PHÁT  │ │
+│ └──────────────────────────────────────┘ │
+├──────────────────────────────────────────┤
+│ [o Bạn  ] [o Linh ] [o Khoa ] [o Mai  ]  │ hàng pod
+│ [ 1.240 ] [  980  ] [  760  ] [ 1.100 ]  │
+├──────────────────────────────────────────┤
+│ [Tài sản] [Diễn biến] │ Linh vừa qua …   │ footer
+└──────────────────────────────────────────┘
+```
+
+| Vùng | Khung concept 3:4 (% cao) | Tại 390 × 844 (y, px) | Nội dung |
+|---|---|---|---|
+| Header | 0–5% | 0–52 (+ safe-area trên) | logo trái, chip vòng giữa, âm thanh + menu phải (6.4) |
+| Bàn | 5–87% | 56–422 | bàn vuông `min(100vw − 24, 480)` = 366; 40 ô + vùng trong (6.2, 6.3) |
+| Hàng pod | 88–95% | 430–494 (compact) | 2–4 pod chia đều 1 hàng (6.5, 03 §5) |
+| Footer | 96–100% | đáy − 52 → đáy (+ safe-area dưới) | `Tài sản`, `Diễn biến`, dòng sự kiện mới nhất (6.5) |
+
+Lề ngang 12 cho mọi khối; bàn, hàng pod và footer cùng chiều rộng `var(--ty-board)` để các mép thẳng hàng.
+
+**Co giãn theo chiều cao.** Concept là khung 3:4, gần như không dư chỗ. Điện thoại 390 × 844 dư khoảng 290 px giữa hàng pod và footer. Thứ tự lấp chỗ dư:
+1. Dư ≥ 32 px: pod sang biến thể **mở rộng** (03 §5), thêm hàng chip đất/nhà/thẻ tù và thanh tổng tài sản. Pod cao 64 → 96.
+2. Còn dư ≥ 72 px: dòng sự kiện của footer mở lên thành **thẻ Diễn biến** đặt ngay trên thanh nút footer. Thẻ hiện 2–6 dòng gần nhất (mới ở trên) và lấp hết phần còn lại, giống `GameLog` v2.
+3. Khung không dư (3:4, tablet, màn ngắn < 700): giữ đúng concept — pod compact, footer 1 dòng.
+
+Không kéo giãn bàn theo chiều dọc. Bàn luôn vuông (ảnh concept hơi cao hơn rộng, ≈ 1 : 1.12, nhưng spec giữ vuông).
+
+Width 360: bàn 336, pod 4 × 79. Width ≥ 480: bàn 456–480, pod đủ rộng cho bố cục ngang như concept (03 §5).
+
+### 6.2 Bàn — vị trí ô và thông tin trên ô
+
+- Góc cố định (không xoay bàn, mọi người thấy cùng hướng): **dưới-phải** `XUẤT PHÁT` (mũi tên chỉ sang trái + `+200 tr` jade dưới chữ), **dưới-trái** `NHÀ TÙ` (song sắt, vùng Thăm tù), **trên-trái** `BÃI ĐỖ XE` (biển P + 2 xe), **trên-phải** `VÀO TÙ` (song sắt). Đi theo chiều kim đồng hồ từ Xuất phát: cạnh dưới phải → trái, cạnh trái dưới → trên, cạnh trên trái → phải, cạnh phải trên → dưới.
+- Mỗi ô cạnh, mọi phía, chữ luôn đứng thẳng, đọc từ trên xuống:
+  1. **tên ô** (ngắn, `shortName`) sát mép trên ô;
+  2. **tranh/glyph** ở giữa: phong cảnh địa danh cho ô đất, glyph cho bến/tiện ích/thẻ/thuế;
+  3. **giá** sát mép dưới ô (`220 tr`); ô thuế hiện số phải trả màu coral; ô Cơ hội/Khí vận không có dòng giá.
+- **Dải màu nhóm** luôn nằm ở mép **phía trong** bàn: hàng trên → dải ở đáy ô; hàng dưới → dải ở đỉnh ô; cột trái → dải ở mép phải ô; cột phải → dải ở mép trái ô. Nhà/khách sạn đặt trên dải. Ô không phải đất không có dải.
+- Ô có chủ: nền nhạt màu ghế + vạch 3 px màu ghế ở mép **ngoài**, để không lẫn với dải nhóm ở mép trong. Dòng giá đổi thành viên tiền thuê hiện tại (nền paper sáng, viền màu chủ).
+- Quân: ghim bản đồ màu ghế có avatar. Mũi ghim chạm mép **trong** của ô; thân ghim nằm trong vùng trong bàn, không che tên/giá. Ô 10: quân trong tù đứng vùng phòng giam, quân thăm tù đứng dải Thăm tù.
+- Tap ô bất kỳ (kể cả ô góc, ô đặc biệt) → S7. Vùng chạm mở rộng 4 px mỗi phía.
+
+### 6.3 Vùng trong bàn — chồng thẻ và cụm lượt
+
+Vùng trong = phần bàn trừ 4 cạnh ô (72.8% cạnh bàn, 266 × 266 tại 390). Nền paper trơn; không logo/watermark và không cảnh lớn phía sau nút. Logo đã chuyển lên header.
+
+| Phần tử | Vị trí trong vùng trong (% theo cạnh vùng trong) | Kích thước tại 390 | Ghi chú |
+|---|---|---|---|
+| Chồng `CƠ HỘI` | góc **trên-trái**, cách mép trên 4%, mép trái 6% | 58 × 41 (22% rộng) | cam, glyph `?`; chỉ trang trí, không bấm |
+| Chồng `KHÍ VẬN` | góc **trên-phải**, đối xứng | 58 × 41 | xanh trời, glyph gió |
+| Cụm lượt | căn giữa ngang; tâm dọc ở 53% (thấp hơn tâm một chút để chừa chỗ hai chồng thẻ) | rộng tối đa 246, cao 140–170 | 3 hàng, xem dưới |
+
+Cụm lượt (`TurnCluster`, 03 §6), từ trên xuống:
+
+| Hàng | Trái → phải | Kích thước tại 390 |
 |---|---|---|
-| Topbar | 0–52 | chip vòng `Vòng 7/20` + thanh tiến độ vòng (trái), nút âm thanh + menu ⋯ (Về sảnh, Bỏ cuộc) (phải) |
-| Bàn | 60–426 | bàn 366 × 366 (03 §1) |
-| Pod row | 438–534 | 2–4 pod: avatar, tên, tiền mặt, số ô/nhà/thẻ ra tù/đang ở tù, thanh tổng tài sản so với người dẫn đầu, vương miện cho người giàu nhất, nhãn `Lượt bạn`/`Đang đi` |
-| Panel lượt | 546– | `TurnPanel`: avatar + `Lượt của …` + mô tả pha + đồng hồ vòng tròn (chỉ lượt mình); nút theo pha (6.3). Lượt máy: panel trong suốt + 3 chấm |
-| Log | phần còn lại | `GameLog` lấp hết chiều cao còn lại, 8 dòng mới nhất (mới ở trên, chấm xanh/đỏ theo tiền vào/ra), chạm mở sheet log |
+| 1. Chip lượt + đồng hồ | chip pill gold `(avatar) Lượt của bạn` · khoảng 8 · vòng đồng hồ `0:28` bên phải chip; cả hàng căn giữa | chip cao 34, đồng hồ ⌀ 40 |
+| 2. Xúc xắc | hai viên cạnh nhau, khoảng 16 | 40 × 40 mỗi viên |
+| 3. Nút theo pha | xem bảng pha | cao 48; CTA đơn rộng 196 (≈ 74% vùng trong) |
 
-> UI v2 (17/10/2026) thay Action bar + đồng hồ topbar bằng `TurnPanel`; footer chat/reaction chưa có trong bản chơi với máy.
+Khoảng cách giữa các hàng 10. Concept (khung 3:4) đặt chip ở 31–39%, xúc xắc 43–56%, CTA 60–70% chiều cao vùng trong.
 
-Ở width 360 bàn 336, pod 4 × 78. Ở 480+ bàn 456, giữa bàn rộng hơn cho pod trong bàn — v1 vẫn giữ pod row dưới bàn để một layout.
+**Nút theo pha** (chỉ khi `myTurn`). Hàng 2 đổi nội dung tùy pha; hàng 1 luôn giữ nguyên:
 
-### 6.2 Bàn
-- 40 ô theo 03 §1–2; tap ô bất kỳ mở S7 (sheet chi tiết) — kể cả ô đặc biệt (hiện mô tả).
-- Quân là ghim bản đồ ~24 px màu ghế có avatar, mũi ghim đặt ở mép trong của ô (ô góc/ô cạnh), Nhà tù chia vùng trong phòng giam / Thăm tù; quân tới lượt nhún + vòng gold.
-- Giữa bàn: logo bảng navy, chồng thẻ Cơ hội/Khí vận, dãy phố nhà ống; khi `roll` → O1 xúc xắc trong khay giấy ở giữa; khi `card` → O2 thẻ ở giữa (đè bàn, không đè pod).
-- Ô có chủ: nền màu nhạt của ghế + vạch 3 px mép ngoài + giá đổi thành viên tiền thuê hiện tại; nhà/khách sạn nằm trên dải màu nhóm.
+| phase | Hàng 2 | Hàng 3 (trái → phải) |
+|---|---|---|
+| `roll` | 2 xúc xắc (mặt lần gieo trước, hoặc 1–1 lúc đầu ván) | `Gieo xúc xắc` CTA vàng 196 (ic-dice); đang có đôi: `Gieo thêm lượt (đôi!)` |
+| `jail` | 2 xúc xắc | 3 nút đứng đều 74 × 56: `Gieo đôi` (gold, dòng phụ `lần n/3`) · `Nộp phạt` paper (`50 tr`) · `Dùng thẻ` paper (`còn n`, disabled khi 0) |
+| `decide` | thẻ sổ đỏ thu gọn 246 × 52 thay xúc xắc: dải nhóm trái, tên + glyph, `Giá`, `Thuê`, `x/y của bạn`; chạm mở S7 | `Bỏ qua` paper 40% · `Mua {giá} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (không đủ tiền → disabled, `cần …`) |
+| `card` | O2 thay **cả** hàng 2 và 3 (xem O2) | `Làm theo thẻ` nằm trong thẻ |
+| `manage` | 2 xúc xắc (mặt vừa gieo) | `Xây nhà` paper 40% (mở S8; ẩn nếu chưa trọn nhóm nào, khi đó CTA rộng 196) · `Kết thúc lượt ›` CTA vàng 60%; vừa gieo đôi → `Gieo tiếp (đôi!)` (vẫn gửi END_TURN) |
+| `debt` | dòng cảnh báo coral `Bạn đang nợ {x} tr` | không nút; O3 mở giữa màn |
 
-### 6.3 Action bar theo pha (chỉ khi `myTurn`)
-| phase | Nút (trái → phải) |
+Hết giờ local (deadline qua): hàng 3 thay bằng dòng `Hết giờ, hệ thống đang đi thay bạn…`, mọi nút disabled cho đến STATE mới. Khi `movePending`: nút vừa bấm hiện spinner, cả hàng 3 disabled.
+
+**Không tới lượt mình:** hàng 1 là chip paper `(avatar) Lượt của @ten` viền màu ghế người đó, đồng hồ thay bằng 3 chấm "đang nghĩ". Dưới chip là dòng phụ 12.5 navy 70% (`đang gieo xúc xắc…`, `đang cân nhắc mua đất…`; lúc replay: `đang di chuyển…`). Hàng 2 chỉ hiện xúc xắc khi người đó gieo (O1). Hàng 3 trống. Cụm co lại nhưng vẫn giữ tâm ở 53%.
+
+Chỉ có **một** nút gold trên màn tại mọi thời điểm, và nó luôn nằm ở hàng 3 của cụm lượt (style/05 §1).
+
+### 6.4 Header
+
+| Vị trí | Phần tử | Kích thước tại 390 | Hành vi |
+|---|---|---|---|
+| Trái, lề 12 | logo chữ `CỜ TỶ PHÚ` + xúc xắc nhỏ (raster `lobby/logo.webp` hoặc live text) | cao 32, rộng ≤ 120 | không bấm |
+| Giữa (căn theo màn, không theo phần còn trống) | `RoundChip` `Vòng 7/20` pill paper viền navy | 108 × 32 | không bấm; đổi màu từ vòng 18 (O7) |
+| Phải, cách mép 12 | nút âm thanh tròn | 44 × 44 | bật/tắt âm, `aria-pressed` |
+| Phải cùng | nút menu tròn (☰ trong concept) | 44 × 44 | popover paper: `Về sảnh` · `Luật chơi` · `Bỏ cuộc` (coral) |
+
+Width < 370: ẩn chữ logo, chỉ giữ biểu tượng xúc xắc để chip vòng không bị đẩy lệch.
+
+### 6.5 Hàng pod và footer
+
+**Hàng pod.** Ngay dưới bàn, cách 8. 2–4 pod chia đều một hàng; thứ tự trái → phải theo seat (seat 0 gold, 1 xanh, 2 san hô, 3 tím), không đổi theo lượt. Có thể là `Bạn` ở bất kỳ vị trí nào; tên pod của mình ghi `Bạn`. Bố cục bên trong pod ở 03 §5. Tap pod → S8 xem tài sản người đó (của mình thì có nút xây/bán).
+
+**Footer.** Một hàng cao 44, đáy màn + safe-area:
+
+| Vị trí | Phần tử | Hành vi |
+|---|---|---|
+| Trái | nút pill `Tài sản` (icon danh sách/sổ) | mở S8 của mình |
+| Kế bên | nút pill `Diễn biến` (icon cột) | mở sheet diễn biến đầy đủ |
+| Vạch ngăn dọc | — | — |
+| Phần còn lại | dòng sự kiện mới nhất: icon xúc xắc + câu log, tên tô màu ghế, số tiền jade/coral (`Linh vừa qua Xuất phát +200 tr`), cắt `…` nếu dài | chạm mở sheet diễn biến |
+| Phải cùng (bản online) | nút `ic-chat` 44 có chấm đỏ khi có tin mới | mở ChatDrawer; bản chơi với máy không có |
+
+Khi màn dư chỗ (6.1 mục 2), dòng sự kiện thành thẻ Diễn biến nhiều dòng, đặt trên thanh nút. Lúc đó thanh footer chỉ còn hai nút + chat.
+
+### 6.6 Lớp phủ trong S6 — vị trí
+
+| Lớp | Vị trí |
 |---|---|
-| `roll` | `Gieo xúc xắc` CTA vàng 100% (ic-dice) |
-| `jail` | `Gieo` paper · `Nộp 50 tr` paper · `Dùng thẻ` paper (disabled nếu không có) — 3 nút đều |
-| `decide` | thẻ sổ đỏ thu gọn ngay trong panel (tên, giá, thuê đất trống, `x/y của bạn` trong nhóm; chạm mở S7) · `Bỏ qua` paper 40% · `Mua {price} tr` CTA vàng 60% kèm dòng `còn lại …` |
-| `card` | `Làm theo thẻ` CTA vàng trong panel; chạm vào thẻ O2 cũng được |
-| `manage` | `Xây nhà` paper (mở S8, ẩn nếu không sở hữu trọn nhóm nào) · `Kết thúc lượt` CTA vàng; nếu vừa gieo đôi, nhãn `Gieo tiếp` thay `Kết thúc lượt` (vẫn gửi END_TURN) |
-| `debt` | O3 chiếm bar: `Bán nhà` · `Trả {amount} tr` · `Phá sản` |
+| O1 xúc xắc | đúng ô xúc xắc của hàng 2 cụm lượt — không có khay riêng |
+| O2 thẻ bài | giữa vùng trong, thay cụm lượt (che cả 3 hàng), không đè pod |
+| Turn announce `ĐẾN LƯỢT BẠN` | giữa vùng trong, đè lên cụm lượt 1.2 s |
+| O7 `Vòng cuối!` | giữa vùng trong, 2.5 s |
+| O6 toast | mép trên vùng trong, đè lên hai chồng thẻ (z trên), rộng tối đa 240, tự ẩn 2.5 s |
+| O4 mất kết nối | dải 100% × 36 dính ngay dưới header, đè lên hàng ô trên; không đẩy layout |
+| Tiền bay `+200` / `−120` | bay lên từ dòng tiền của pod tương ứng |
+| S7, S8, sheet diễn biến | bottom sheet đè toàn màn |
+| O3, O5, S9 | modal giữa màn |
 
-Không tới lượt: bar hiện `Lượt của @ten` + mini-avatar + pha đang làm (`đang gieo…`, `đang nghĩ mua…`), 15/600 cream 70%.
-
-Hết giờ local (deadline qua): disable toàn bar, chữ `Hết giờ, hệ thống đang xử lý…` cho đến STATE mới.
-
-### 6.4 Sự kiện trong S6
-- `STATE` → replay steps (01 §8) → cập nhật pod/bàn/bar.
+### 6.7 Sự kiện trong S6
+- `STATE` → replay steps (01 §8) → cập nhật pod/bàn/cụm lượt.
 - `turnAnnounce` khi `turn` đổi sang mình: `ĐẾN LƯỢT BẠN` + `bridge.attention(YourTurn)`.
 - `OPPONENT_DISCONNECTED` → O4 với tên người rớt; nếu người rớt đang tới lượt, đồng hồ dừng (engine pause).
-- Bỏ cuộc: ic-flag → O5 `Bỏ cuộc? Bạn sẽ bị tính phá sản và xếp cuối.` → `FORFEIT`.
+- Bỏ cuộc: menu header → `Bỏ cuộc` (ic-flag) → O5 `Bỏ cuộc? Bạn sẽ bị tính phá sản và xếp cuối.` → `FORFEIT`.
 
 ---
 
@@ -184,11 +288,16 @@ Giống xiangqi S9: tab Hôm nay/Tuần này, cột thắng (hạng 1) – trậ
 
 ## O1. Xúc xắc
 
-Hai ô 44×44 radius 12 paper viền navy 2, dot navy; lăn theo 01 §8; dừng → text tổng `7` 24/800 dưới; badge `Đôi!` gold nếu double; tự ẩn sau khi quân bắt đầu di chuyển 200 ms.
+Hai viên 40 × 40 tại 390 (44 khi bàn ≥ 456) radius 12 paper viền navy 2, dot navy, nằm ở hàng 2 của cụm lượt (6.3). Lăn theo 01 §8. Dừng → chip tổng `= 7` 15/800 ngay bên phải viên thứ hai; double → chip `Đôi!` gold thay chip tổng. Chip tự ẩn khi quân bắt đầu di chuyển 200 ms, xúc xắc ở lại hiện mặt vừa gieo.
 
 ## O2. Thẻ bài
 
-Thẻ 280 × 180 giữa bàn; mặt sau = dải màu loại + glyph (ic-chance `?` / ic-chest); lật → mặt trước: dải đầu 28 px tên loại `CƠ HỘI`/`KHÍ VẬN`, nội dung 16/600 tối đa 3 dòng, số tiền hiển thị màu jade/coral. Nút `Tiếp tục` (chỉ người rút); người khác thấy thẻ không nút, tự ẩn khi STATE kế tiếp.
+Thẻ 236 × 168 tại 390 (tối đa 280 × 180 khi bàn ≥ 456), đặt giữa vùng trong và thay cả cụm lượt (6.6). Mặt sau = dải màu loại + glyph (ic-chance `?` / ic-chest). Lật → mặt trước:
+- dải đầu 28 px ghi tên loại `CƠ HỘI`/`KHÍ VẬN`;
+- nội dung 15/600, tối đa 3 dòng; số tiền màu jade/coral;
+- nút `Làm theo thẻ` CTA vàng 100% × 44 dính đáy thẻ, chỉ người rút thấy.
+
+Người khác thấy thẻ không có nút; thẻ tự ẩn khi có STATE kế tiếp. Thẻ bay ra từ chồng tương ứng ở góc trên vùng trong (08).
 
 ## O3. Trả nợ
 
@@ -204,8 +313,8 @@ Bỏ cuộc, thoát bàn, mời ra, phá sản, bán nhà (chỉ khi bán khách
 
 ## O6. Toast + turn announce
 
-Lỗi server (map `errorText`), `ĐẾN LƯỢT BẠN`, `+200 tr qua Xuất phát` (toast nhỏ jade).
+Lỗi server (map `errorText`) là toast ở mép trên vùng trong bàn (6.6). `ĐẾN LƯỢT BẠN` đè giữa cụm lượt. `+200 tr qua Xuất phát` không cần toast riêng: nó đã hiện ở dòng sự kiện footer và tiền bay ở pod.
 
 ## O7. Banner vòng
 
-Chip vòng ở topbar; vòng 18–19 coral; vòng 20 hiện banner 1 lần `Vòng cuối! Xếp hạng theo tổng tài sản` 2.5 s.
+Chip vòng ở giữa header; vòng 18–19 coral; vòng 20 hiện banner 1 lần `Vòng cuối! Xếp hạng theo tổng tài sản` 2.5 s ở giữa vùng trong bàn.

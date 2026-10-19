@@ -112,7 +112,7 @@ Stroke 2 px, cap tròn, grid 24 cho icon điều khiển; glyph ô bàn cờ là
 - Bàn vuông 11 × 11 ô lưới: 4 ô góc + 36 ô cạnh (9 mỗi cạnh) = 40 ô, đi theo chiều kim đồng hồ từ Xuất phát ở góc **dưới-phải** (giống cảm giác board thật).
 - Tại viewport 390: bàn `366 × 366` (lề 12). Ô góc `46 × 46`; ô cạnh `30.4 × 46` (dọc cạnh dưới/trên) hoặc `46 × 30.4` (cạnh trái/phải). Công thức: `corner = round(board × 0.126)`, `edge = (board − 2 × corner) / 9`.
 - Ở width 480 (max): bàn 456, góc 57, cạnh 38 — glyph vẫn cùng tỷ lệ, không thêm chữ.
-- Vùng giữa bàn `274 × 274` tại 390: chứa logo mờ (watermark 12% opacity), xúc xắc khi lăn, thẻ bài khi lật, 4 pod người chơi gọn ở 4 góc trong (03 §6).
+- Vùng trong bàn `266 × 266` tại 390 (72.8% cạnh bàn): nền paper trơn, chồng thẻ Cơ hội/Khí vận ở 2 góc trên, cụm lượt (chip lượt + đồng hồ, xúc xắc, nút theo pha) ở giữa, thẻ bài lật thay cụm lượt. Không logo/watermark — logo ở header. Pod người chơi nằm ngoài bàn, một hàng phía dưới (02 §6).
 - Ô đất: dải màu nhóm chiếm 1/3 chiều sâu ô (phía trong bàn), phần còn lại nền paper hiện nhà (chấm 6 px xếp hàng) hoặc khách sạn (hình chữ nhật 14 × 8) và quân.
 - Quân cờ 18 px trên ô; nhiều quân cùng ô xếp 2 × 2 so le 4 px, tối đa 4.
 - Vùng chạm ô: ô cạnh chỉ 30 px — chấp nhận, vì tap ô chỉ để mở sheet (không phải thao tác tốc độ); mở rộng hit 4 px mỗi phía, ưu tiên ô gần tâm chạm.
