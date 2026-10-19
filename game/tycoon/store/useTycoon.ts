@@ -9,6 +9,7 @@ import { applyMove, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth 
 import { RuleError, type GameState, type Move, type Step, type TileState } from '../logic/types';
 import { formatMoney } from '../helpers/format';
 import { avatarIconUrl } from '../helpers/player';
+import { levelLabel } from '../helpers/tiles';
 import { playSound, setSoundEnabled } from '../audio';
 
 export type BoardMode = 'idle' | 'playing';
@@ -167,11 +168,11 @@ const RULE_TEXT: Record<string, string> = {
   no_jail_card: 'Bạn không có thẻ ra tù',
   not_street: 'Chỉ xây được trên ô đất',
   not_owner: 'Ô này không phải của bạn',
-  not_group_owner: 'Cần sở hữu trọn nhóm mới được xây',
-  max_houses: 'Đã có khách sạn',
-  build_uneven: 'Phải xây đều các ô trong nhóm',
-  no_houses: 'Chưa có nhà để bán',
-  sell_uneven: 'Phải bán đều các ô trong nhóm',
+  not_group_owner: 'Cần sở hữu trọn nhóm mới được nâng cấp',
+  max_houses: 'Đã đạt cấp tối đa',
+  build_uneven: 'Phải nâng đều các ô trong nhóm',
+  no_houses: 'Ô này đang là đất trống',
+  sell_uneven: 'Phải hạ đều các ô trong nhóm',
   invalid_tile: 'Ô không hợp lệ',
   unknown_move: 'Thao tác không hợp lệ',
 };
@@ -201,9 +202,9 @@ function reasonLabel(reason: string | undefined, amount: number, tile?: number):
     case 'buy':
       return `mua ${name}`;
     case 'build':
-      return `xây ở ${name}`;
+      return `nâng cấp ${name}`;
     case 'sell':
-      return `bán nhà ở ${name}`;
+      return `hạ cấp ${name}`;
     case 'salary':
       return 'qua Xuất phát';
     default:
@@ -468,7 +469,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
             return { tiles };
           });
           if (step.kind === 'build') playSound('build');
-          pushLog(`${seatName(step.by)} ${step.kind === 'build' ? 'xây' : 'bán nhà'} ở ${BOARD[tile].name}`);
+          pushLog(`${seatName(step.by)} ${step.kind === 'build' ? 'nâng' : 'hạ'} ${BOARD[tile].name} lên ${levelLabel(step.houses ?? 0)}`.replace(' lên Đất trống', ' về đất trống'));
         }
         await sleep(fast ? 60 : STEP_MS.build);
         return;

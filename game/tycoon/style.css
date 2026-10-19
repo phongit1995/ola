@@ -1197,17 +1197,17 @@ button:focus-visible,
   flex-direction: row;
 }
 
-.ty-tile-c0 {
-  border-bottom-right-radius: 9px;
-}
-.ty-tile-c10 {
+.ty-tile-corner-bl {
   border-bottom-left-radius: 9px;
 }
-.ty-tile-c20 {
+.ty-tile-corner-tl {
   border-top-left-radius: 9px;
 }
-.ty-tile-c30 {
+.ty-tile-corner-tr {
   border-top-right-radius: 9px;
+}
+.ty-tile-corner-br {
+  border-bottom-right-radius: 9px;
 }
 
 .ty-tile-band {
@@ -1469,6 +1469,7 @@ button:focus-visible,
 .ty-corner-go .ty-tile-glyph {
   width: calc(var(--ty-board) * 0.05);
   height: calc(var(--ty-board) * 0.034);
+  transform: rotate(90deg);
 }
 
 .ty-corner-pill {
@@ -1501,7 +1502,7 @@ button:focus-visible,
 .ty-jail-cell {
   position: absolute;
   right: 0;
-  top: 0;
+  bottom: 0;
   width: 68%;
   height: 68%;
   display: flex;
@@ -1511,7 +1512,7 @@ button:focus-visible,
   gap: 1px;
   background: #c9533b;
   border-left: 1px solid var(--ty-navy);
-  border-bottom: 1px solid var(--ty-navy);
+  border-top: 1px solid var(--ty-navy);
   color: var(--ty-cream);
   font-size: calc(var(--ty-tf) * 0.95);
   font-weight: 800;
@@ -1527,7 +1528,7 @@ button:focus-visible,
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 1px;
+  top: 1px;
   font-size: calc(var(--ty-tf) * 0.95);
   font-weight: 800;
   text-align: center;

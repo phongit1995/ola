@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { GO_SALARY, JAIL_FINE, MAX_ROUNDS, START_CASH, TURN_SECONDS } from '../logic/constants';
+import { GO_SALARY, JAIL_FINE, LEVEL_NAMES, MAX_HOUSES, MAX_ROUNDS, START_CASH, TURN_SECONDS } from '../logic/constants';
 import { ModalHeading } from './ModalHeading';
 import { TyIcon, type TyIconName } from './TyIcon';
 import { useDialogFocus } from './useDialogFocus';
@@ -7,12 +7,12 @@ import { useTycoon } from '../store/useTycoon';
 
 const RULES: Array<[TyIconName, string, string]> = [
   ['dice', 'Gieo xúc xắc', `Mỗi lượt gieo 2 xúc xắc và đi theo tổng. Gieo đôi được gieo tiếp; đôi 3 lần liên tiếp thì vào tù. Mỗi hành động có ${TURN_SECONDS} giây.`],
-  ['deed', 'Mua đất', `Mỗi người bắt đầu với ${START_CASH} tr. Đáp vào ô đất chưa có chủ thì được mua theo giá ghi trên ô. Qua Xuất phát nhận ${GO_SALARY} tr.`],
+  ['deed', 'Mua đất', `Mỗi người bắt đầu với ${START_CASH} tr. Đáp vào ô thành phố chưa có chủ thì được mua theo giá ghi trên ô. Qua Xuất phát nhận ${GO_SALARY} tr.`],
   ['coins', 'Tiền thuê', 'Đáp vào đất của người khác thì trả tiền thuê (số trong viên tròn trên ô). Sở hữu trọn nhóm màu thì thuê đất trống gấp đôi. Bến tính theo số bến sở hữu, tiện ích tính theo xúc xắc.'],
-  ['house', 'Xây nhà', 'Sở hữu trọn nhóm màu mới được xây, phải xây đều giữa các ô. Nhà thứ 5 là khách sạn. Bán nhà được nửa giá.'],
+  ['house', 'Nâng cấp', `Sở hữu trọn nhóm màu (2 thành phố) mới được nâng cấp, tối đa ${MAX_HOUSES} cấp: ${LEVEL_NAMES.slice(1).join(' → ')}. Phải nâng đều giữa các ô. Hạ cấp được hoàn nửa giá.`],
   ['jail-bars', 'Nhà tù', `Vào tù thì mỗi lượt được gieo: ra đôi thì ra tù. Có thể nộp ${JAIL_FINE} tr hoặc dùng thẻ ra tù. Đến lượt thứ 3 bắt buộc nộp phạt.`],
-  ['warning', 'Nợ và phá sản', 'Không đủ tiền trả thì phải bán nhà. Bán hết vẫn không đủ là phá sản: tài sản chuyển cho chủ nợ hoặc về ngân hàng.'],
-  ['flag', 'Kết thúc', `Ván kết thúc khi chỉ còn một người hoặc hết ${MAX_ROUNDS} vòng. Xếp hạng theo tổng tài sản: tiền mặt + giá đất + nhà.`],
+  ['warning', 'Nợ và phá sản', 'Không đủ tiền trả thì phải hạ cấp nhà. Hạ hết vẫn không đủ là phá sản: tài sản chuyển cho chủ nợ hoặc về ngân hàng.'],
+  ['flag', 'Kết thúc', `Ván kết thúc khi chỉ còn một người hoặc hết ${MAX_ROUNDS} vòng. Xếp hạng theo tổng tài sản: tiền mặt + giá đất + tiền nâng cấp.`],
 ];
 
 export function RulesModal() {

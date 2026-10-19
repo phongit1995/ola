@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BOARD } from './board';
 import { botMove } from './bot';
-import { GO_SALARY, JAIL_FINE, JAIL_TILE, MAX_ROUNDS, START_CASH } from './constants';
+import { BOARD_SIZE, GO_SALARY, JAIL_FINE, JAIL_TILE, MAX_HOUSES, MAX_ROUNDS, START_CASH } from './constants';
 import { applyMove, computeRent, isOver, moveOnTimeout, newGame, quitPlayer, rankings } from './engine';
 import type { GameState, Move } from './types';
 
@@ -36,7 +36,7 @@ describe('tycoon engine', () => {
   it('rolls, moves and offers purchase or resolves the tile', () => {
     const s = play(newGame(3, 2), 0, { type: 'ROLL' });
     const sum = s.dice[0] + s.dice[1];
-    expect(s.players[0].pos).toBe(sum % 40);
+    expect(s.players[0].pos).toBe(sum % BOARD_SIZE);
     expect(s.steps.map((st) => st.kind)).toEqual(expect.arrayContaining(['roll', 'move', 'land']));
     const kind = BOARD[s.players[0].pos].kind;
     if (kind === 'street' || kind === 'station' || kind === 'utility') expect(s.phase).toBe('decide');
@@ -71,28 +71,42 @@ describe('tycoon engine', () => {
     expect(jailed.steps.some((st) => st.kind === 'jail-in')).toBe(true);
   });
 
-  it('computes rent with group bonus, houses, stations and utilities', () => {
+  it('lays out 32 tiles with corners every 8 and 16 two-city groups', () => {
+    expect(BOARD).toHaveLength(BOARD_SIZE);
+    expect([0, 8, 16, 24].map((idx) => BOARD[idx].kind)).toEqual(['go', 'jail', 'parking', 'gotojail']);
+    const streets = BOARD.filter((t) => t.kind === 'street');
+    expect(streets).toHaveLength(16);
+    for (const tile of streets) {
+      expect(tile.rent).toHaveLength(MAX_HOUSES + 1);
+      expect(streets.filter((t) => t.group === tile.group)).toHaveLength(2);
+    }
+    const prices = streets.map((t) => t.price ?? 0);
+    expect([...prices].sort((a, b) => a - b)).toEqual(prices);
+  });
+
+  it('computes rent with group bonus, levels, stations and utilities', () => {
     const s = newGame(1, 4);
-    s.tiles[21].owner = 0;
-    expect(computeRent(s, 21, 0, 7)).toBe(18);
-    s.tiles[23].owner = 0;
-    s.tiles[24].owner = 0;
-    expect(computeRent(s, 21, 0, 7)).toBe(36);
-    s.tiles[21].houses = 5;
-    expect(computeRent(s, 21, 0, 7)).toBe(1050);
-    s.tiles[5].owner = 1;
-    s.tiles[15].owner = 1;
-    expect(computeRent(s, 5, 1, 7)).toBe(50);
-    s.tiles[12].owner = 2;
-    expect(computeRent(s, 12, 2, 9)).toBe(36);
-    s.tiles[28].owner = 2;
-    expect(computeRent(s, 12, 2, 9)).toBe(90);
+    s.tiles[17].owner = 0;
+    expect(computeRent(s, 17, 0, 7)).toBe(22);
+    s.tiles[19].owner = 0;
+    expect(computeRent(s, 17, 0, 7)).toBe(44);
+    s.tiles[17].houses = 1;
+    expect(computeRent(s, 17, 0, 7)).toBe(130);
+    s.tiles[17].houses = 3;
+    expect(computeRent(s, 17, 0, 7)).toBe(1000);
+    s.tiles[4].owner = 1;
+    s.tiles[12].owner = 1;
+    expect(computeRent(s, 4, 1, 7)).toBe(50);
+    s.tiles[10].owner = 2;
+    expect(computeRent(s, 10, 2, 9)).toBe(36);
+    s.tiles[22].owner = 2;
+    expect(computeRent(s, 10, 2, 9)).toBe(90);
   });
 
   it('pays salary when passing or landing on go', () => {
     const seed = findSeed(false);
     const s = newGame(seed, 2);
-    s.players[0].pos = 38;
+    s.players[0].pos = BOARD_SIZE - 2;
     const next = play(s, 0, { type: 'ROLL' });
     expect(next.players[0].cash).toBeGreaterThanOrEqual(START_CASH + GO_SALARY - 400);
     expect(next.steps.some((st) => st.kind === 'pay' && st.reason === 'salary')).toBe(true);
@@ -100,56 +114,61 @@ describe('tycoon engine', () => {
 
   it('enforces even building and selling', () => {
     let s = withPhase(newGame(1, 2), 'manage');
-    for (const idx of [21, 23, 24]) s.tiles[idx].owner = 0;
-    s = play(s, 0, { type: 'BUILD', tile: 21 });
-    expect(() => play(s, 0, { type: 'BUILD', tile: 21 })).toThrow('build_uneven');
-    s = play(s, 0, { type: 'BUILD', tile: 23 });
-    s = play(s, 0, { type: 'BUILD', tile: 24 });
-    s = play(s, 0, { type: 'BUILD', tile: 21 });
-    expect(s.tiles[21].houses).toBe(2);
-    expect(s.players[0].cash).toBe(START_CASH - 4 * 150);
-    expect(() => play(s, 0, { type: 'SELL_HOUSE', tile: 23 })).toThrow('sell_uneven');
-    s = play(s, 0, { type: 'SELL_HOUSE', tile: 21 });
-    expect(s.players[0].cash).toBe(START_CASH - 4 * 150 + 75);
+    for (const idx of [17, 19]) s.tiles[idx].owner = 0;
+    s = play(s, 0, { type: 'BUILD', tile: 17 });
+    expect(() => play(s, 0, { type: 'BUILD', tile: 17 })).toThrow('build_uneven');
+    s = play(s, 0, { type: 'BUILD', tile: 19 });
+    s = play(s, 0, { type: 'BUILD', tile: 17 });
+    expect(s.tiles[17].houses).toBe(2);
+    expect(s.players[0].cash).toBe(START_CASH - 3 * 150);
+    expect(() => play(s, 0, { type: 'SELL_HOUSE', tile: 19 })).toThrow('sell_uneven');
+    s = play(s, 0, { type: 'SELL_HOUSE', tile: 17 });
+    expect(s.players[0].cash).toBe(START_CASH - 3 * 150 + 75);
+    s = play(s, 0, { type: 'BUILD', tile: 17 });
+    s = play(s, 0, { type: 'BUILD', tile: 19 });
+    s = play(s, 0, { type: 'BUILD', tile: 17 });
+    s = play(s, 0, { type: 'BUILD', tile: 19 });
+    expect(s.tiles[17].houses).toBe(MAX_HOUSES);
+    expect(() => play(s, 0, { type: 'BUILD', tile: 17 })).toThrow('max_houses');
     s.tiles[1].owner = 0;
     expect(() => play(s, 0, { type: 'BUILD', tile: 1 })).toThrow('not_group_owner');
-    expect(() => play(s, 0, { type: 'BUILD', tile: 5 })).toThrow('not_street');
+    expect(() => play(s, 0, { type: 'BUILD', tile: 4 })).toThrow('not_street');
   });
 
   it('enters debt, settles by selling houses, or goes bankrupt', () => {
     const s = withPhase(newGame(1, 2), 'card');
     s.card = { deck: 'chance', id: 'ch02' };
-    s.tiles[39].owner = 1;
-    s.tiles[39].houses = 5;
-    s.tiles[37].owner = 1;
-    s.tiles[37].houses = 4;
-    for (const idx of [21, 23, 24]) {
-      s.tiles[idx].owner = 0;
-      s.tiles[idx].houses = 4;
+    for (const idx of [30, 31]) {
+      s.tiles[idx].owner = 1;
+      s.tiles[idx].houses = 3;
     }
-    s.players[0].cash = 1200;
-    s.players[0].pos = 7;
+    for (const idx of [17, 19]) {
+      s.tiles[idx].owner = 0;
+      s.tiles[idx].houses = 3;
+    }
+    s.players[0].cash = 1210;
+    s.players[0].pos = 29;
     const indebted = play(s, 0, { type: 'CARD_ACK' });
     expect(indebted.phase).toBe('debt');
-    expect(indebted.debt?.amount).toBe(2000);
+    expect(indebted.debt?.amount).toBe(1500);
     expect(() => play(indebted, 0, { type: 'PAY_DEBT' })).toThrow('no_cash');
     const settled = play(indebted, 0, { type: 'SETTLE_DEBT' });
     expect(settled.phase).toBe('manage');
-    expect(settled.players[1].cash).toBe(START_CASH + 2000);
-    expect(settled.players[0].cash).toBe(25);
+    expect(settled.players[1].cash).toBe(START_CASH + 1500);
+    expect(settled.players[0].cash).toBe(10);
 
     const poor = withPhase(newGame(1, 3), 'card');
     poor.card = { deck: 'chance', id: 'ch02' };
-    poor.tiles[39].owner = 1;
-    poor.tiles[39].houses = 5;
-    poor.tiles[37].owner = 1;
-    poor.tiles[37].houses = 4;
-    poor.tiles[5].owner = 0;
+    for (const idx of [30, 31]) {
+      poor.tiles[idx].owner = 1;
+      poor.tiles[idx].houses = 3;
+    }
+    poor.tiles[4].owner = 0;
     poor.players[0].cash = 100;
-    poor.players[0].pos = 7;
+    poor.players[0].pos = 29;
     const broke = play(poor, 0, { type: 'CARD_ACK' });
     expect(broke.players[0].bankrupt).toBe(true);
-    expect(broke.tiles[5].owner).toBe(1);
+    expect(broke.tiles[4].owner).toBe(1);
     expect(broke.players[1].cash).toBe(START_CASH + 100);
     expect(broke.turn).toBe(1);
     expect(broke.finished).toBe(false);
@@ -160,7 +179,7 @@ describe('tycoon engine', () => {
     const s = withPhase(newGame(1, 3), 'card');
     s.card = { deck: 'chest', id: 'cm07' };
     s.players[1].cash = 5;
-    for (const idx of [21, 23, 24]) {
+    for (const idx of [17, 19]) {
       s.tiles[idx].owner = 1;
       s.tiles[idx].houses = 1;
     }
@@ -169,7 +188,7 @@ describe('tycoon engine', () => {
     expect(indebted.phase).toBe('debt');
     expect(indebted.turn).toBe(1);
     expect(() => play(indebted, 0, { type: 'END_TURN' })).toThrow('not_your_turn');
-    const sold = play(indebted, 1, { type: 'SELL_HOUSE', tile: 21 });
+    const sold = play(indebted, 1, { type: 'SELL_HOUSE', tile: 17 });
     const paid = play(sold, 1, { type: 'PAY_DEBT' });
     expect(paid.turn).toBe(0);
     expect(paid.phase).toBe('manage');
@@ -186,7 +205,7 @@ describe('tycoon engine', () => {
       s.tiles[idx].owner = 1;
       s.tiles[idx].houses = 1;
     }
-    for (const idx of [6, 8, 9]) {
+    for (const idx of [5, 7]) {
       s.tiles[idx].owner = 2;
       s.tiles[idx].houses = 1;
     }
@@ -231,7 +250,7 @@ describe('tycoon engine', () => {
 
   it('applies move cards, repair and jail cards', () => {
     const s = withPhase(newGame(1, 2), 'card');
-    s.players[0].pos = 36;
+    s.players[0].pos = 29;
     s.card = { deck: 'chance', id: 'ch01' };
     const atGo = play(s, 0, { type: 'CARD_ACK' });
     expect(atGo.players[0].pos).toBe(0);
@@ -239,13 +258,13 @@ describe('tycoon engine', () => {
 
     const repair = withPhase(newGame(1, 2), 'card');
     repair.card = { deck: 'chance', id: 'ch10' };
-    for (const idx of [21, 23, 24]) {
+    for (const idx of [17, 19]) {
       repair.tiles[idx].owner = 0;
       repair.tiles[idx].houses = 2;
     }
-    repair.tiles[21].houses = 5;
+    repair.tiles[17].houses = 3;
     const repaired = play(repair, 0, { type: 'CARD_ACK' });
-    expect(repaired.players[0].cash).toBe(START_CASH - (100 + 50 + 50));
+    expect(repaired.players[0].cash).toBe(START_CASH - 25 * 5);
 
     const jail = withPhase(newGame(1, 2), 'card');
     jail.card = { deck: 'chance', id: 'ch08' };
@@ -268,11 +287,11 @@ describe('tycoon engine', () => {
   it('turns a quitter into a bank bankruptcy', () => {
     const s = withPhase(newGame(1, 3), 'decide');
     s.turn = 1;
-    s.tiles[21].owner = 1;
-    s.tiles[21].houses = 2;
+    s.tiles[17].owner = 1;
+    s.tiles[17].houses = 2;
     const left = quitPlayer(s, 1);
     expect(left.players[1].bankrupt).toBe(true);
-    expect(left.tiles[21].owner).toBe(-1);
+    expect(left.tiles[17].owner).toBe(-1);
     expect(left.turn).toBe(2);
     const alone = quitPlayer(left, 2);
     expect(isOver(alone)).toBe(true);

@@ -2,600 +2,316 @@
   {
     "idx": 0,
     "name": "Xuất phát",
-    "kind": "go",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+    "kind": "go"
   },
   {
     "idx": 1,
-    "name": "Phố Hiến",
+    "name": "Thanh Hóa",
     "kind": "street",
     "group": "brown",
     "price": 60,
     "rent": [
-      2,
-      10,
-      30,
-      90,
-      160,
-      250
+      6,
+      40,
+      145,
+      320
     ],
     "houseCost": 50
   },
   {
     "idx": 2,
     "name": "Khí vận",
-    "kind": "chest",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+    "kind": "chest"
   },
   {
     "idx": 3,
-    "name": "Phố cổ Hội An",
+    "name": "Vinh",
     "kind": "street",
     "group": "brown",
-    "price": 60,
+    "price": 80,
     "rent": [
-      4,
-      20,
-      60,
-      180,
-      320,
-      450
+      8,
+      45,
+      160,
+      340
     ],
     "houseCost": 50
   },
   {
     "idx": 4,
-    "name": "Thuế thu nhập",
-    "kind": "tax",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    "tax": 200
-  },
-  {
-    "idx": 5,
     "name": "Ga Hà Nội",
     "kind": "station",
     "group": "station",
-    "price": 200,
+    "price": 200
+  },
+  {
+    "idx": 5,
+    "name": "Buôn Ma Thuột",
+    "kind": "street",
+    "group": "sky",
+    "price": 100,
     "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+      10,
+      50,
+      180,
+      380
+    ],
+    "houseCost": 50
   },
   {
     "idx": 6,
-    "name": "Sa Pa",
-    "kind": "street",
-    "group": "sky",
-    "price": 100,
-    "rent": [
-      6,
-      30,
-      90,
-      270,
-      400,
-      550
-    ],
-    "houseCost": 50
+    "name": "Cơ hội",
+    "kind": "chance"
   },
   {
     "idx": 7,
-    "name": "Cơ hội",
-    "kind": "chance",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "idx": 8,
-    "name": "Mộc Châu",
-    "kind": "street",
-    "group": "sky",
-    "price": 100,
-    "rent": [
-      6,
-      30,
-      90,
-      270,
-      400,
-      550
-    ],
-    "houseCost": 50
-  },
-  {
-    "idx": 9,
-    "name": "Ninh Bình",
+    "name": "Đà Lạt",
     "kind": "street",
     "group": "sky",
     "price": 120,
     "rent": [
-      8,
-      40,
-      100,
-      300,
-      450,
-      600
+      12,
+      60,
+      200,
+      400
     ],
     "houseCost": 50
   },
   {
-    "idx": 10,
+    "idx": 8,
     "name": "Nhà tù",
-    "kind": "jail",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+    "kind": "jail"
   },
   {
-    "idx": 11,
+    "idx": 9,
     "name": "Cần Thơ",
     "kind": "street",
     "group": "pink",
     "price": 140,
     "rent": [
-      10,
-      50,
-      150,
-      450,
-      625,
-      750
+      14,
+      85,
+      310,
+      660
+    ],
+    "houseCost": 100
+  },
+  {
+    "idx": 10,
+    "name": "Nhà máy điện",
+    "kind": "utility",
+    "group": "utility",
+    "price": 150
+  },
+  {
+    "idx": 11,
+    "name": "Phú Quốc",
+    "kind": "street",
+    "group": "pink",
+    "price": 160,
+    "rent": [
+      16,
+      90,
+      320,
+      690
     ],
     "houseCost": 100
   },
   {
     "idx": 12,
-    "name": "Nhà máy điện",
-    "kind": "utility",
-    "group": "utility",
-    "price": 150,
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+    "name": "Sân bay Tân Sơn Nhất",
+    "kind": "station",
+    "group": "station",
+    "price": 200
   },
   {
     "idx": 13,
-    "name": "Phú Quốc",
+    "name": "Quy Nhơn",
     "kind": "street",
-    "group": "pink",
-    "price": 140,
+    "group": "orange",
+    "price": 180,
     "rent": [
-      10,
-      50,
-      150,
-      450,
-      625,
-      750
+      18,
+      100,
+      340,
+      720
     ],
     "houseCost": 100
   },
   {
     "idx": 14,
-    "name": "Hạ Long",
-    "kind": "street",
-    "group": "pink",
-    "price": 160,
-    "rent": [
-      12,
-      60,
-      180,
-      500,
-      700,
-      900
-    ],
-    "houseCost": 100
+    "name": "Khí vận",
+    "kind": "chest"
   },
   {
     "idx": 15,
-    "name": "Sân bay Tân Sơn Nhất",
-    "kind": "station",
-    "group": "station",
-    "price": 200,
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "idx": 16,
-    "name": "Hải Phòng",
-    "kind": "street",
-    "group": "orange",
-    "price": 180,
-    "rent": [
-      14,
-      70,
-      200,
-      550,
-      750,
-      950
-    ],
-    "houseCost": 100
-  },
-  {
-    "idx": 17,
-    "name": "Khí vận",
-    "kind": "chest",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "idx": 18,
-    "name": "Huế",
-    "kind": "street",
-    "group": "orange",
-    "price": 180,
-    "rent": [
-      14,
-      70,
-      200,
-      550,
-      750,
-      950
-    ],
-    "houseCost": 100
-  },
-  {
-    "idx": 19,
     "name": "Nha Trang",
     "kind": "street",
     "group": "orange",
     "price": 200,
     "rent": [
-      16,
-      80,
-      220,
-      600,
-      800,
-      1000
+      20,
+      105,
+      360,
+      750
     ],
     "houseCost": 100
   },
   {
-    "idx": 20,
+    "idx": 16,
     "name": "Bãi đỗ xe",
-    "kind": "parking",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+    "kind": "parking"
   },
   {
-    "idx": 21,
-    "name": "Đà Lạt",
+    "idx": 17,
+    "name": "Hội An",
     "kind": "street",
     "group": "red",
     "price": 220,
     "rent": [
-      18,
-      90,
-      250,
-      700,
-      875,
-      1050
+      22,
+      130,
+      470,
+      1000
+    ],
+    "houseCost": 150
+  },
+  {
+    "idx": 18,
+    "name": "Cơ hội",
+    "kind": "chance"
+  },
+  {
+    "idx": 19,
+    "name": "Huế",
+    "kind": "street",
+    "group": "red",
+    "price": 240,
+    "rent": [
+      24,
+      135,
+      490,
+      1040
+    ],
+    "houseCost": 150
+  },
+  {
+    "idx": 20,
+    "name": "Cảng Hải Phòng",
+    "kind": "station",
+    "group": "station",
+    "price": 200
+  },
+  {
+    "idx": 21,
+    "name": "Hạ Long",
+    "kind": "street",
+    "group": "yellow",
+    "price": 260,
+    "rent": [
+      26,
+      145,
+      500,
+      1060
     ],
     "houseCost": 150
   },
   {
     "idx": 22,
-    "name": "Cơ hội",
-    "kind": "chance",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+    "name": "Nhà máy nước",
+    "kind": "utility",
+    "group": "utility",
+    "price": 150
   },
   {
     "idx": 23,
-    "name": "Đà Nẵng",
+    "name": "Hải Phòng",
     "kind": "street",
-    "group": "red",
-    "price": 220,
+    "group": "yellow",
+    "price": 280,
     "rent": [
-      18,
-      90,
-      250,
-      700,
-      875,
-      1050
-    ],
-    "houseCost": 150
-  },
-  {
-    "idx": 24,
-    "name": "Quy Nhơn",
-    "kind": "street",
-    "group": "red",
-    "price": 240,
-    "rent": [
-      20,
-      100,
-      300,
-      750,
-      925,
+      28,
+      150,
+      520,
       1100
     ],
     "houseCost": 150
   },
   {
+    "idx": 24,
+    "name": "Vào tù",
+    "kind": "gotojail"
+  },
+  {
     "idx": 25,
-    "name": "Cảng Hải Phòng",
-    "kind": "station",
-    "group": "station",
-    "price": 200,
+    "name": "Vũng Tàu",
+    "kind": "street",
+    "group": "green",
+    "price": 300,
     "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+      30,
+      175,
+      630,
+      1350
+    ],
+    "houseCost": 200
   },
   {
     "idx": 26,
-    "name": "Biên Hòa",
-    "kind": "street",
-    "group": "yellow",
-    "price": 260,
-    "rent": [
-      22,
-      110,
-      330,
-      800,
-      975,
-      1150
-    ],
-    "houseCost": 150
+    "name": "Khí vận",
+    "kind": "chest"
   },
   {
     "idx": 27,
-    "name": "Thủ Dầu Một",
-    "kind": "street",
-    "group": "yellow",
-    "price": 260,
-    "rent": [
-      22,
-      110,
-      330,
-      800,
-      975,
-      1150
-    ],
-    "houseCost": 150
-  },
-  {
-    "idx": 28,
-    "name": "Nhà máy nước",
-    "kind": "utility",
-    "group": "utility",
-    "price": 150,
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "idx": 29,
-    "name": "Vũng Tàu",
-    "kind": "street",
-    "group": "yellow",
-    "price": 280,
-    "rent": [
-      24,
-      120,
-      360,
-      850,
-      1025,
-      1200
-    ],
-    "houseCost": 150
-  },
-  {
-    "idx": 30,
-    "name": "Vào tù",
-    "kind": "gotojail",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "idx": 31,
-    "name": "Đồng Khởi",
-    "kind": "street",
-    "group": "green",
-    "price": 300,
-    "rent": [
-      26,
-      130,
-      390,
-      900,
-      1100,
-      1275
-    ],
-    "houseCost": 200
-  },
-  {
-    "idx": 32,
-    "name": "Nguyễn Huệ",
-    "kind": "street",
-    "group": "green",
-    "price": 300,
-    "rent": [
-      26,
-      130,
-      390,
-      900,
-      1100,
-      1275
-    ],
-    "houseCost": 200
-  },
-  {
-    "idx": 33,
-    "name": "Khí vận",
-    "kind": "chest",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "idx": 34,
-    "name": "Thủ Thiêm",
+    "name": "Đà Nẵng",
     "kind": "street",
     "group": "green",
     "price": 320,
     "rent": [
-      28,
-      150,
-      450,
-      1000,
-      1200,
-      1400
+      32,
+      180,
+      650,
+      1380
     ],
     "houseCost": 200
   },
   {
-    "idx": 35,
+    "idx": 28,
     "name": "Bến xe Miền Đông",
     "kind": "station",
     "group": "station",
-    "price": 200,
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+    "price": 200
   },
   {
-    "idx": 36,
+    "idx": 29,
     "name": "Cơ hội",
-    "kind": "chance",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
+    "kind": "chance"
   },
   {
-    "idx": 37,
-    "name": "Hồ Gươm",
+    "idx": 30,
+    "name": "Hà Nội",
     "kind": "street",
     "group": "blue",
     "price": 350,
     "rent": [
       35,
-      175,
-      500,
-      1100,
-      1300,
-      1500
+      190,
+      680,
+      1420
     ],
     "houseCost": 200
   },
   {
-    "idx": 38,
-    "name": "Thuế xa xỉ",
-    "kind": "tax",
-    "rent": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    "tax": 100
-  },
-  {
-    "idx": 39,
-    "name": "Hồ Tây",
+    "idx": 31,
+    "name": "TP. Hồ Chí Minh",
     "kind": "street",
     "group": "blue",
     "price": 400,
     "rent": [
-      50,
-      200,
-      600,
-      1400,
-      1700,
-      2000
+      40,
+      210,
+      720,
+      1500
     ],
     "houseCost": 200
   }

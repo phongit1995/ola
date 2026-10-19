@@ -21,21 +21,20 @@ export interface CardData {
   tile?: number;
   kind?: string;
   amount?: number;
-  hotel?: number;
 }
 
 export const BOARD: TileData[] = boardJson as TileData[];
 export const CARDS: CardData[] = cardsJson as CardData[];
 
 export const GROUP_LABEL: Record<Group, string> = {
-  brown: 'Phố cổ',
-  sky: 'Cao nguyên',
-  pink: 'Biển đảo Nam',
-  orange: 'Duyên hải',
-  red: 'Miền Trung',
-  yellow: 'Đông Nam Bộ',
-  green: 'Sài Gòn',
-  blue: 'Hà Nội',
+  brown: 'Bắc Trung Bộ',
+  sky: 'Tây Nguyên',
+  pink: 'Miền Tây',
+  orange: 'Nam Trung Bộ',
+  red: 'Di sản miền Trung',
+  yellow: 'Duyên hải Bắc Bộ',
+  green: 'Thành phố biển',
+  blue: 'Đô thị đặc biệt',
   station: 'Bến',
   utility: 'Tiện ích',
 };

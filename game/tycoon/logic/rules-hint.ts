@@ -16,7 +16,7 @@ function ownedCount(view: GameState, seat: number, group: string): number {
 export function canBuild(view: GameState, seat: number, idx: number): RuleHint {
   const tile = BOARD[idx];
   const state = view.tiles[idx];
-  if (tile.kind !== 'street' || !tile.group) return { ok: false, reason: 'Chỉ xây được trên ô đất' };
+  if (tile.kind !== 'street' || !tile.group) return { ok: false, reason: 'Chỉ nâng cấp được ô thành phố' };
   if (state.owner !== seat) return { ok: false, reason: 'Ô này không phải của bạn' };
   if (!ownsGroup(view, seat, tile.group)) {
     const missing = tilesOfGroup(tile.group)
@@ -24,11 +24,11 @@ export function canBuild(view: GameState, seat: number, idx: number): RuleHint {
       .map((g) => BOARD[g].name);
     return { ok: false, reason: `Cần sở hữu trọn nhóm — thiếu ${missing.join(', ')}` };
   }
-  if (state.houses >= MAX_HOUSES) return { ok: false, reason: 'Đã có khách sạn' };
-  if (view.players[seat].cash < (tile.houseCost ?? 0)) return { ok: false, reason: 'Không đủ tiền xây' };
+  if (state.houses >= MAX_HOUSES) return { ok: false, reason: `Đã đạt cấp tối đa (cấp ${MAX_HOUSES})` };
+  if (view.players[seat].cash < (tile.houseCost ?? 0)) return { ok: false, reason: 'Không đủ tiền nâng cấp' };
   for (const g of tilesOfGroup(tile.group)) {
     if (state.houses > view.tiles[g].houses) {
-      return { ok: false, reason: `Xây đều: ${BOARD[g].name} mới có ${view.tiles[g].houses} nhà` };
+      return { ok: false, reason: `Nâng đều: ${BOARD[g].name} mới ở cấp ${view.tiles[g].houses}` };
     }
   }
   return { ok: true };
@@ -39,10 +39,10 @@ export function canSell(view: GameState, seat: number, idx: number): RuleHint {
   const state = view.tiles[idx];
   if (tile.kind !== 'street' || !tile.group) return { ok: false, reason: 'Ô này không có nhà' };
   if (state.owner !== seat) return { ok: false, reason: 'Ô này không phải của bạn' };
-  if (state.houses <= 0) return { ok: false, reason: 'Chưa có nhà để bán' };
+  if (state.houses <= 0) return { ok: false, reason: 'Ô này đang là đất trống' };
   for (const g of tilesOfGroup(tile.group)) {
     if (state.houses < view.tiles[g].houses) {
-      return { ok: false, reason: `Bán đều: ${BOARD[g].name} đang có ${view.tiles[g].houses} nhà` };
+      return { ok: false, reason: `Hạ đều: ${BOARD[g].name} đang ở cấp ${view.tiles[g].houses}` };
     }
   }
   return { ok: true };

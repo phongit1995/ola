@@ -355,11 +355,8 @@ function applyCard(s: GameState, seat: number, card: CardData | undefined): void
       sendToJail(s, seat, 'card');
       return;
     case 'repair': {
-      const total = s.tiles.reduce((sum, t) => {
-        if (t.owner !== seat || t.houses === 0) return sum;
-        return sum + (t.houses >= MAX_HOUSES ? card.hotel ?? 0 : t.houses * (card.amount ?? 0));
-      }, 0);
-      pay(s, seat, -1, total, 'repair');
+      const levels = s.tiles.reduce((sum, t) => (t.owner === seat ? sum + t.houses : sum), 0);
+      pay(s, seat, -1, levels * (card.amount ?? 0), 'repair');
       return;
     }
     case 'collectEach':

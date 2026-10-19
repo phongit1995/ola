@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
 import { canSell } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
+import { levelLabel } from '../helpers/tiles';
 import { ModalHeading } from './ModalHeading';
 import { TyIcon } from './TyIcon';
 import { useDialogFocus } from './useDialogFocus';
@@ -42,11 +43,11 @@ export function DebtModal() {
       <div ref={ref} className="ty-modal ty-debt-modal" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
         <ModalHeading eyebrow="Thiếu tiền" title={`Cần trả ${formatMoney(debt.amount)}`} icon="coins" titleId={titleId} />
         <p className="ty-modal-body">
-          Trả cho <strong>{creditor}</strong>. Tiền mặt của bạn: <strong>{formatMoney(myCash)}</strong>. Bán nhà có thể thu thêm tối đa{' '}
+          Trả cho <strong>{creditor}</strong>. Tiền mặt của bạn: <strong>{formatMoney(myCash)}</strong>. Hạ cấp nhà có thể thu thêm tối đa{' '}
           <strong>{formatMoney(liquidation)}</strong>.
         </p>
         <div className="ty-debt-timer" aria-live="polite">
-          Còn {seconds}s · hết giờ hệ thống tự bán nhà
+          Còn {seconds}s · hết giờ hệ thống tự hạ cấp nhà
         </div>
         {houses.length > 0 ? (
           <div className="ty-debt-list">
@@ -56,7 +57,7 @@ export function DebtModal() {
                 <div key={t.idx} className="ty-assets-row">
                   <span className="ty-assets-name">
                     <span>{BOARD[t.idx].name}</span>
-                    <small>{t.houses >= 5 ? 'Khách sạn' : `${t.houses} nhà`}</small>
+                    <small>{levelLabel(t.houses)}</small>
                   </span>
                   <button type="button" className="ty-btn ty-btn-small ty-btn-paper" disabled={busy || !hint.ok} title={hint.ok ? undefined : hint.reason} onClick={() => sendMove({ type: 'SELL_HOUSE', tile: t.idx })}>
                     <TyIcon name="minus" size={16} className="ty-icon-coral" />
@@ -98,7 +99,7 @@ export function DebtModal() {
             </button>
           )}
         </div>
-        {hopeless ? <p className="ty-sheet-reason">Bán hết nhà vẫn không đủ — chỉ còn cách phá sản.</p> : null}
+        {hopeless ? <p className="ty-sheet-reason">Hạ hết cấp nhà vẫn không đủ — chỉ còn cách phá sản.</p> : null}
       </div>
     </div>
   );

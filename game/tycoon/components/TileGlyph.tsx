@@ -46,11 +46,11 @@ export const GLYPH_BY_KIND: Partial<Record<TileKind, GlyphName>> = {
   gotojail: 'gotojail',
 };
 
-const STATION_GLYPH: Record<number, GlyphName> = { 5: 'train', 15: 'plane', 25: 'ship', 35: 'bus' };
+const STATION_GLYPH: Record<number, GlyphName> = { 4: 'train', 12: 'plane', 20: 'ship', 28: 'bus' };
 
 export function glyphForTile(idx: number, kind: TileKind): GlyphName | null {
   if (kind === 'station') return STATION_GLYPH[idx] ?? 'train';
-  if (kind === 'utility') return idx === 28 ? 'water' : 'electric';
+  if (kind === 'utility') return idx === 22 ? 'water' : 'electric';
   return GLYPH_BY_KIND[kind] ?? null;
 }
 

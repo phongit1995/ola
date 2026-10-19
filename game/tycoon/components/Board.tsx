@@ -1,19 +1,20 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
-import { BOARD_SIZE, GO_SALARY, JAIL_TILE, MAX_HOUSES } from '../logic/constants';
+import { BOARD_SIZE, GO_SALARY, JAIL_TILE, MAX_HOUSES, SIDE_TILES } from '../logic/constants';
 import { SEAT_SOFT_COLORS, seatColor } from '../helpers/player';
-import { rentLabel, shortName } from '../helpers/tiles';
+import { levelLabel, rentLabel, shortName } from '../helpers/tiles';
 import { useTycoon } from '../store/useTycoon';
 import { Skyline } from './Skyline';
 import { glyphForTile, TileGlyph } from './TileGlyph';
 import { Token } from './Token';
 
 const CORNER = 13.6;
-const EDGE = (100 - 2 * CORNER) / 9;
+const EDGE = (100 - 2 * CORNER) / (SIDE_TILES - 1);
 const TOKEN_SPREAD = 2.6;
 
 export type Side = 'bottom' | 'left' | 'top' | 'right' | 'corner';
+export type CornerPos = 'bl' | 'tl' | 'tr' | 'br';
 
 export interface TileRect {
   x: number;
@@ -21,22 +22,48 @@ export interface TileRect {
   w: number;
   h: number;
   side: Side;
+  corner?: CornerPos;
 }
 
+// Xuất phát ở góc dưới-trái, đi thuận kim đồng hồ: lên cột trái → hàng trên → xuống cột phải → về hàng dưới.
 export function tileRect(idx: number): TileRect {
-  if (idx === 0) return { x: 100 - CORNER, y: 100 - CORNER, w: CORNER, h: CORNER, side: 'corner' };
-  if (idx < 10) return { x: 100 - CORNER - idx * EDGE, y: 100 - CORNER, w: EDGE, h: CORNER, side: 'bottom' };
-  if (idx === 10) return { x: 0, y: 100 - CORNER, w: CORNER, h: CORNER, side: 'corner' };
-  if (idx < 20) return { x: 0, y: 100 - CORNER - (idx - 10) * EDGE, w: CORNER, h: EDGE, side: 'left' };
-  if (idx === 20) return { x: 0, y: 0, w: CORNER, h: CORNER, side: 'corner' };
-  if (idx < 30) return { x: CORNER + (idx - 21) * EDGE, y: 0, w: EDGE, h: CORNER, side: 'top' };
-  if (idx === 30) return { x: 100 - CORNER, y: 0, w: CORNER, h: CORNER, side: 'corner' };
-  return { x: 100 - CORNER, y: CORNER + (idx - 31) * EDGE, w: CORNER, h: EDGE, side: 'right' };
+  const leg = Math.floor(idx / SIDE_TILES);
+  const step = idx % SIDE_TILES;
+  if (step === 0) {
+    const corner = (['bl', 'tl', 'tr', 'br'] as const)[leg];
+    return { x: corner === 'bl' || corner === 'tl' ? 0 : 100 - CORNER, y: corner === 'tl' || corner === 'tr' ? 0 : 100 - CORNER, w: CORNER, h: CORNER, side: 'corner', corner };
+  }
+  const along = CORNER + (step - 1) * EDGE;
+  switch (leg) {
+    case 0:
+      return { x: 0, y: 100 - along - EDGE, w: CORNER, h: EDGE, side: 'left' };
+    case 1:
+      return { x: along, y: 0, w: EDGE, h: CORNER, side: 'top' };
+    case 2:
+      return { x: 100 - CORNER, y: along, w: CORNER, h: EDGE, side: 'right' };
+    default:
+      return { x: 100 - along - EDGE, y: 100 - CORNER, w: EDGE, h: CORNER, side: 'bottom' };
+  }
+}
+
+const CORNER_TOKEN_INSET = 6;
+
+function cornerAnchor(r: TileRect): { x: number; y: number; flip?: boolean } {
+  switch (r.corner) {
+    case 'bl':
+      return { x: r.x + r.w + CORNER_TOKEN_INSET, y: r.y - 0.6 };
+    case 'br':
+      return { x: r.x - CORNER_TOKEN_INSET, y: r.y - 0.6 };
+    case 'tr':
+      return { x: r.x - CORNER_TOKEN_INSET, y: r.y + r.h + 0.6, flip: true };
+    default:
+      return { x: r.x + r.w + CORNER_TOKEN_INSET, y: r.y + r.h + 0.6, flip: true };
+  }
 }
 
 function tokenAnchor(idx: number, inJail: boolean): { x: number; y: number; flip?: boolean } {
   const r = tileRect(idx);
-  if (idx === JAIL_TILE) return inJail ? { x: r.x + r.w * 0.66, y: r.y + r.h * 0.52 } : { x: r.x + r.w * 0.28, y: r.y + r.h * 0.94 };
+  if (idx === JAIL_TILE && inJail) return { x: r.x + r.w * 0.66, y: r.y + r.h * 0.84 };
   switch (r.side) {
     case 'bottom':
       return { x: r.x + r.w / 2, y: r.y + 1 };
@@ -47,7 +74,7 @@ function tokenAnchor(idx: number, inJail: boolean): { x: number; y: number; flip
     case 'right':
       return { x: r.x - 1.6, y: r.y + r.h * 0.8 };
     default:
-      return idx === 0 ? { x: r.x + r.w / 2, y: r.y + 1 } : { x: r.x + r.w / 2, y: r.y + r.h + 2.2 };
+      return cornerAnchor(r);
   }
 }
 
@@ -64,8 +91,8 @@ function TileHouses({ houses }: { houses: number }) {
 }
 
 function CornerContent({ idx }: { idx: number }) {
-  switch (idx) {
-    case 0:
+  switch (BOARD[idx].kind) {
+    case 'go':
       return (
         <span className="ty-corner ty-corner-go">
           <span className="ty-corner-title">
@@ -77,7 +104,7 @@ function CornerContent({ idx }: { idx: number }) {
           <TileGlyph name="arrow" size={20} />
         </span>
       );
-    case 10:
+    case 'jail':
       return (
         <>
           <span className="ty-jail-cell">
@@ -87,7 +114,7 @@ function CornerContent({ idx }: { idx: number }) {
           <span className="ty-jail-visit">Thăm tù</span>
         </>
       );
-    case 20:
+    case 'parking':
       return (
         <span className="ty-corner ty-corner-parking">
           <TileGlyph name="parking" size={22} />
@@ -159,7 +186,7 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
         const glyph = corner ? null : glyphForTile(tile.idx, tile.kind);
         const owned = owner >= 0;
         const priceText = owned ? rentLabel(tiles, tile.idx) : tile.price ? String(tile.price) : tile.tax ? `−${tile.tax}` : '';
-        const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${houses >= MAX_HOUSES ? 'khách sạn' : `${houses} nhà`}` : ''}`;
+        const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}`;
         const style = {
           left: `${rect.x}%`,
           top: `${rect.y}%`,
@@ -175,7 +202,7 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
               'ty-tile',
               `ty-tile-${rect.side}`,
               `ty-tile-kind-${tile.kind}`,
-              corner ? `ty-tile-c${tile.idx}` : '',
+              rect.corner ? `ty-tile-corner-${rect.corner}` : '',
               glyph ? 'ty-tile-special' : '',
               owned ? 'ty-tile-owned' : '',
               landingTile === tile.idx ? 'ty-tile-landing' : '',

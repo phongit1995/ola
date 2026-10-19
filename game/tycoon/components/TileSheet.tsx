@@ -4,12 +4,13 @@ import { GO_SALARY, JAIL_FINE, MAX_HOUSES, STATION_RENT, UTILITY_MULTIPLIER } fr
 import { canBuild, canSell, currentRent } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { seatColor } from '../helpers/player';
+import { levelLabel } from '../helpers/tiles';
 import { BottomSheet } from './BottomSheet';
 import { glyphForTile, TileGlyph } from './TileGlyph';
 import { TyIcon } from './TyIcon';
 import { useTycoon } from '../store/useTycoon';
 
-const HOUSE_LABELS = ['Đất trống', '1 nhà', '2 nhà', '3 nhà', '4 nhà', 'Khách sạn'];
+const HOUSE_LABELS = Array.from({ length: MAX_HOUSES + 1 }, (_, level) => levelLabel(level));
 const DARK_GROUPS = new Set(['brown', 'red', 'green', 'blue']);
 
 function specialDescription(idx: number): string {
@@ -92,7 +93,7 @@ export function TileSheet({ idx }: { idx: number }) {
           {tile.kind === 'street' ? (
             <>
               <div className="ty-sheet-row">
-                <span>Giá xây nhà</span>
+                <span>Giá nâng mỗi cấp</span>
                 <strong>{formatMoney(tile.houseCost ?? 0)}</strong>
               </div>
               <table className="ty-rent-table">
@@ -113,10 +114,10 @@ export function TileSheet({ idx }: { idx: number }) {
                 </tbody>
               </table>
               <div className="ty-sheet-row">
-                <span>Nhà hiện có</span>
+                <span>Cấp hiện tại</span>
                 <span className="ty-sheet-houses" aria-label={HOUSE_LABELS[state.houses]}>
                   {state.houses >= MAX_HOUSES ? <i className="ty-hotel ty-hotel-lg" /> : Array.from({ length: state.houses }, (_, i) => <i key={i} className="ty-house ty-house-lg" />)}
-                  <small>{state.houses === 0 ? 'Chưa xây' : HOUSE_LABELS[state.houses]}</small>
+                  <small>{HOUSE_LABELS[state.houses]}</small>
                 </span>
               </div>
             </>
@@ -176,11 +177,11 @@ export function TileSheet({ idx }: { idx: number }) {
             <div className="ty-sheet-manage">
               <button type="button" className="ty-btn ty-btn-paper" disabled={busy || !sellHint?.ok || view.phase !== 'debt' && view.phase !== 'manage'} onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}>
                 <TyIcon name="minus" size={18} className="ty-icon-coral" />
-                Bán nhà (+{formatMoney((tile.houseCost ?? 0) / 2)})
+                Hạ cấp (+{formatMoney((tile.houseCost ?? 0) / 2)})
               </button>
               <button type="button" className="ty-btn ty-btn-paper" disabled={busy || !buildHint?.ok || view.phase !== 'manage'} onClick={() => sendMove({ type: 'BUILD', tile: idx })}>
                 <TyIcon name="plus" size={18} className="ty-icon-jade" />
-                Xây ({formatMoney(tile.houseCost ?? 0)})
+                Nâng cấp ({formatMoney(tile.houseCost ?? 0)})
               </button>
             </div>
             {buildHint && !buildHint.ok && view.phase === 'manage' ? (

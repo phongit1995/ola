@@ -4,6 +4,7 @@ import { GROUPS, MAX_HOUSES } from '../logic/constants';
 import { canBuild, canSell, worthOf } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { seatColor } from '../helpers/player';
+import { levelLabel } from '../helpers/tiles';
 import { BottomSheet } from './BottomSheet';
 import { TyIcon } from './TyIcon';
 import { useTycoon } from '../store/useTycoon';
@@ -37,7 +38,7 @@ export function AssetsSheet({ seat }: { seat: number }) {
         <div>
           <span className="ty-assets-kicker">{name}</span>
           <strong className="ty-assets-total">{formatMoney(worthOf(view, seat))}</strong>
-          <small>tiền mặt + giá đất + nhà</small>
+          <small>tiền mặt + giá đất + tiền nâng cấp</small>
         </div>
         <div className="ty-assets-cash">
           <span>Tiền mặt</span>
@@ -71,7 +72,7 @@ export function AssetsSheet({ seat }: { seat: number }) {
                   <button type="button" className="ty-assets-name" onClick={() => openSheet({ kind: 'tile', idx })}>
                     <span>{tile.name}</span>
                     {tile.kind === 'street' ? (
-                      <span className="ty-assets-houses" aria-label={state.houses >= MAX_HOUSES ? 'Khách sạn' : `${state.houses} nhà`}>
+                      <span className="ty-assets-houses" aria-label={levelLabel(state.houses)}>
                         {state.houses >= MAX_HOUSES ? <i className="ty-hotel" /> : Array.from({ length: state.houses }, (_, i) => <i key={i} className="ty-house" />)}
                       </span>
                     ) : null}
@@ -82,8 +83,8 @@ export function AssetsSheet({ seat }: { seat: number }) {
                         type="button"
                         className="ty-mini-btn"
                         disabled={busy || !sellHint?.ok}
-                        title={sellHint && !sellHint.ok ? sellHint.reason : `Bán nhà +${formatMoney((tile.houseCost ?? 0) / 2)}`}
-                        aria-label={`Bán nhà ở ${tile.name}`}
+                        title={sellHint && !sellHint.ok ? sellHint.reason : `Hạ cấp +${formatMoney((tile.houseCost ?? 0) / 2)}`}
+                        aria-label={`Hạ cấp ${tile.name}`}
                         onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}
                       >
                         <TyIcon name="minus" size={16} className="ty-icon-coral" />
@@ -93,8 +94,8 @@ export function AssetsSheet({ seat }: { seat: number }) {
                         type="button"
                         className="ty-mini-btn"
                         disabled={busy || view.phase !== 'manage' || !buildHint?.ok}
-                        title={buildHint && !buildHint.ok ? buildHint.reason : `Xây ${formatMoney(tile.houseCost ?? 0)}`}
-                        aria-label={`Xây nhà ở ${tile.name}`}
+                        title={buildHint && !buildHint.ok ? buildHint.reason : `Nâng cấp ${formatMoney(tile.houseCost ?? 0)}`}
+                        aria-label={`Nâng cấp ${tile.name}`}
                         onClick={() => sendMove({ type: 'BUILD', tile: idx })}
                       >
                         <TyIcon name="plus" size={16} className="ty-icon-jade" />

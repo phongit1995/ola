@@ -149,7 +149,7 @@ function MyActions() {
           {canManage ? (
             <button type="button" className="ty-btn ty-btn-paper" disabled={busy} onClick={() => openSheet({ kind: 'assets', seat: you })}>
               <TyIcon name="house" size={18} />
-              Xây nhà
+              Nâng cấp
             </button>
           ) : null}
           <button type="button" className={`ty-btn ty-btn-gold ty-btn-cta ${canManage ? '' : 'ty-btn-wide'}`} disabled={busy} onClick={() => sendMove({ type: 'END_TURN' })}>

@@ -1,52 +1,23 @@
 import { BOARD, tilesOfGroup } from '../logic/board';
-import { STATION_RENT, UTILITY_MULTIPLIER } from '../logic/constants';
+import { LEVEL_NAMES, STATION_RENT, UTILITY_MULTIPLIER } from '../logic/constants';
 import type { TileState } from '../logic/types';
 
 export const TILE_SHORT_NAME: Record<number, string> = {
-  0: 'Xuất phát',
-  1: 'Phố Hiến',
-  2: 'Khí vận',
-  3: 'Hội An',
-  4: 'Thuế',
-  5: 'Ga Hà Nội',
-  6: 'Sa Pa',
-  7: 'Cơ hội',
-  8: 'Mộc Châu',
-  9: 'Ninh Bình',
-  10: 'Nhà tù',
-  11: 'Cần Thơ',
-  12: 'Điện lực',
-  13: 'Phú Quốc',
-  14: 'Hạ Long',
-  15: 'Sân bay',
-  16: 'Hải Phòng',
-  17: 'Khí vận',
-  18: 'Huế',
-  19: 'Nha Trang',
-  20: 'Bãi đỗ xe',
-  21: 'Đà Lạt',
-  22: 'Cơ hội',
-  23: 'Đà Nẵng',
-  24: 'Quy Nhơn',
-  25: 'Cảng biển',
-  26: 'Biên Hòa',
-  27: 'Thủ Dầu Một',
-  28: 'Cấp nước',
-  29: 'Vũng Tàu',
-  30: 'Vào tù',
-  31: 'Đồng Khởi',
-  32: 'Nguyễn Huệ',
-  33: 'Khí vận',
-  34: 'Thủ Thiêm',
-  35: 'Bến xe',
-  36: 'Cơ hội',
-  37: 'Hồ Gươm',
-  38: 'Thuế xa xỉ',
-  39: 'Hồ Tây',
+  4: 'Ga Hà Nội',
+  10: 'Điện lực',
+  12: 'Sân bay',
+  20: 'Cảng biển',
+  22: 'Cấp nước',
+  28: 'Bến xe',
+  31: 'TP. HCM',
 };
 
 export function shortName(idx: number): string {
   return TILE_SHORT_NAME[idx] ?? BOARD[idx]?.name ?? '';
+}
+
+export function levelLabel(level: number): string {
+  return level <= 0 ? LEVEL_NAMES[0] : `Cấp ${level} · ${LEVEL_NAMES[level] ?? ''}`;
 }
 
 function ownedInGroup(tiles: TileState[], seat: number, group: string): number {
