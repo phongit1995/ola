@@ -3,6 +3,8 @@ import type { RoomFilters } from './types';
 
 export const ROOM_CAPACITY = 200;
 
+export const ROOM_BROWSE_LIMIT = 50;
+
 export const ROOM_COLORS = [
   '#ef5350',
   '#ec407a',
