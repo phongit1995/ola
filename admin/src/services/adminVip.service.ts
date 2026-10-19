@@ -1,5 +1,6 @@
 import http from '@/api/http'
 import type {
+  AdminVipPurchase,
   AdminVipTransfer,
   ApiResponse,
   CreateVipPackageRequest,
@@ -11,6 +12,9 @@ import type {
   UpdateVipShopItemRequest,
   VipPackage,
   VipPurchaseHistory,
+  VipPurchaseListParams,
+  VipPurchaseStatsParams,
+  VipPurchaseStatsResult,
   VipShopItem,
   VipTransferListParams,
 } from '@/types'
@@ -81,6 +85,24 @@ export const AdminVipService = {
     const { data } = await http.get<ApiResponse<ListResult<VipPurchaseHistory>>>(
       '/admin/vip/history',
       { params: { ...params, userId } },
+    )
+    return data.data
+  },
+
+  async listPurchases(
+    params: VipPurchaseListParams = {},
+  ): Promise<ListResult<AdminVipPurchase>> {
+    const { data } = await http.get<ApiResponse<ListResult<AdminVipPurchase>>>(
+      '/admin/vip/purchases',
+      { params },
+    )
+    return data.data
+  },
+
+  async getPurchaseStats(params: VipPurchaseStatsParams = {}): Promise<VipPurchaseStatsResult> {
+    const { data } = await http.get<ApiResponse<VipPurchaseStatsResult>>(
+      '/admin/vip/purchases/stats',
+      { params },
     )
     return data.data
   },

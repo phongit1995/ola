@@ -20,6 +20,7 @@ import {
   PlayCircleOutlined,
   RocketOutlined,
   SettingOutlined,
+  ShoppingCartOutlined,
   SmileOutlined,
   SwapOutlined,
   PictureOutlined,
@@ -69,6 +70,7 @@ const MENU_ITEMS = [
     children: [
       { key: '/vip-packages', icon: <CrownOutlined />, label: 'Gói ngày VIP' },
       { key: '/vip-shop', icon: <SmileOutlined />, label: 'Shop VIP' },
+      { key: '/vip-purchases', icon: <ShoppingCartOutlined />, label: 'Lịch sử mua VIP' },
       { key: '/vip-transfers', icon: <SwapOutlined />, label: 'Lịch sử chuyển VIP' },
     ],
   },
@@ -113,7 +115,7 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
   return children ? children.map((child) => child.key) : [item.key]
 })
 
-const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-transfers']
+const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-purchases', '/vip-transfers']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/games/matches': '/games/mini-game',
@@ -129,6 +131,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/clans': 'Quản lý clan',
   '/vip-packages': 'Quản lý gói VIP',
   '/vip-shop': 'Shop VIP',
+  '/vip-purchases': 'Lịch sử mua VIP',
   '/vip-transfers': 'Lịch sử chuyển VIP',
   '/games/egg': 'Đập trứng',
   '/games/egg/stats': 'Thống kê trứng',

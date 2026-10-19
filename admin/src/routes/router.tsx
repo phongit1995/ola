@@ -9,6 +9,7 @@ import { WordChainPage } from '@/pages/word-chain/WordChainPage'
 import { ClansPage } from '@/pages/clans/ClansPage'
 import { VipPackagesPage } from '@/pages/vip/VipPackagesPage'
 import { VipShopPage } from '@/pages/vip/VipShopPage'
+import { VipPurchasesPage } from '@/pages/vip/VipPurchasesPage'
 import { VipTransfersPage } from '@/pages/vip/VipTransfersPage'
 import { EggRewardsPage } from '@/pages/games/egg/EggRewardsPage'
 import { EggStatsPage } from '@/pages/games/egg/EggStatsPage'
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
       { path: 'clans', element: <ClansPage /> },
       { path: 'vip-packages', element: <VipPackagesPage /> },
       { path: 'vip-shop', element: <VipShopPage /> },
+      { path: 'vip-purchases', element: <VipPurchasesPage /> },
       { path: 'vip-transfers', element: <VipTransfersPage /> },
       { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'games/egg/stats', element: <EggStatsPage /> },
