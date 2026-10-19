@@ -5,15 +5,15 @@ Mọi số đo tại viewport 390; bàn 366. Class prefix `ty-`.
 ## 1. BoardSurface (SVG code-native)
 
 - `<svg viewBox="0 0 366 366">` (số thực theo width), nền `--ty-paper`, viền ngoài navy 3 px, radius 8.
-- Lưới 40 ô vẽ bằng `<rect>` + `<line>` `--ty-line` 1 px; ô góc 46, ô cạnh 30.4 × 46.
+- Lưới 32 ô vẽ bằng `<rect>` + `<line>` `--ty-line` 1 px; ô góc 49.8, ô cạnh 38.1 × 49.8. Vị trí ô theo `tileRect(idx)`: góc ở `idx % 8 == 0`, Xuất phát dưới-trái, thuận kim đồng hồ.
 - Vùng trong (72.8% cạnh bàn): nền paper trơn, không watermark/logo. Chứa 2 chồng thẻ ở 2 góc trên và `TurnCluster` (§6) ở giữa — vị trí chi tiết ở 02 §6.3. Cụm lượt, thẻ O2, turn announce là DOM tuyệt đối đè lên bàn.
 - Thứ tự layer: nền → dải màu → nhà → chấm chủ sở hữu → glyph ô → highlight landing/path → quân (DOM, không SVG, để animate dễ) → overlay.
 - Mỗi ô là `<g data-tile={idx}>` có `role="button"` + `aria-label="Đà Lạt, nhóm Đỏ, của @an, 2 nhà"`; hit rect mở rộng 4 px.
 
 ## 2. Tile
 
-### 2.1 Anatomy ô đất (cạnh dưới, 30.4 × 46)
-- Dải màu nhóm: rect 30.4 × 7–9 ở mép phía **trong** bàn (mép giáp vùng trong), viền navy 1 px ở cạnh giáp thân ô; nhà/khách sạn nằm trên dải.
+### 2.1 Anatomy ô đất (cạnh dưới, 38.1 × 49.8)
+- Dải màu nhóm: rect 38.1 × 7–9 ở mép phía **trong** bàn (mép giáp vùng trong), viền navy 1 px ở cạnh giáp thân ô; nhà/khách sạn nằm trên dải.
 - Thân ô, chữ luôn đứng thẳng, ba tầng từ trên xuống:
   1. **tên ngắn** (`shortName`) 800, cỡ `board × 0.0182` (6.7 px tại 366), tối đa 2 dòng, sát mép trên thân;
   2. **tranh** địa danh (ô đất) hoặc glyph (ô đặc biệt) ở giữa — tại 390 chỉ còn ≈ 26 × 16 px, tranh rõ từ bàn ≥ 456;
@@ -23,11 +23,13 @@ Mọi số đo tại viewport 390; bàn 366. Class prefix `ty-`.
 
 ### 2.2 Ô đặc biệt
 - Nền `--ty-paper-dim`, glyph 18 px (grid 32 scale 0.56) màu theo 01 §2.2, không dải.
-- Ô góc 46 × 46: bust nhân vật 30 px (`style/02-board-tiles.md` §3) + glyph nhỏ 12 px ở góc; khi `charsEnabled=false` thay bằng glyph 26 px. Ô 10 chia chéo: vùng "Thăm tù" paper + vùng "Nhà tù" dim có song sắt; quân trong tù đứng vùng dim, quân thăm đứng vùng paper.
+- Ô góc 49.8 × 49.8 (class `ty-tile-corner-bl|tl|tr|br` theo vị trí): bust nhân vật 30 px (`style/02-board-tiles.md` §3) + glyph nhỏ 12 px ở góc; khi `charsEnabled=false` thay bằng glyph 26 px. Ô 8 (Nhà tù, góc trên-trái): phòng giam 68% × 68% ở góc dưới-phải của ô (phía vùng trong) có song sắt; dải "Thăm tù" paper dọc mép trên + mép trái. Quân trong tù đứng trong phòng giam, quân thăm đứng ở dải trái.
 
-### 2.3 Nhà và khách sạn
-- Nhà: `tg-house` fill jade 6 × 6 (nóc tam giác + thân), xếp hàng ngang sát dải màu, gap 1 px, tối đa 4.
-- Khách sạn: `tg-hotel` fill coral 14 × 8 với nóc, thay thế 4 nhà.
+### 2.3 Cấp nhà (3 cấp)
+- Cấp 1 · Nhà: 1 `tg-house` fill jade 6 × 6 (nóc tam giác + thân) trên dải màu.
+- Cấp 2 · Biệt thự: 2 `tg-house` xếp ngang, gap 1 px.
+- Cấp 3 · Khách sạn: 1 `tg-hotel` fill coral 14 × 8 với nóc, thay 2 nhà.
+- Tên cấp lấy từ `LEVEL_NAMES` (`constants.ts`), nhãn đầy đủ `Cấp n · Tên` từ `levelLabel()` (`helpers/tiles.ts`).
 - Ở size này không có outline navy (quá nhỏ); chỉ fill.
 
 ### 2.4 State
@@ -73,7 +75,7 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 └───────────────┘
 ```
 
-**Mở rộng (khi màn dư chỗ, 02 §6.1; cao 96):** compact + hàng chip 11 px (số đất `ic-deed`, nhà/khách sạn `ic-house` jade, thẻ ra tù `ic-key` gold, đang ở tù `ic-jail-bars`) + thanh tổng tài sản 4 px (so với người dẫn đầu) sát đáy pod.
+**Mở rộng (khi màn dư chỗ, 02 §6.1; cao 96):** compact + hàng chip 11 px (số đất `ic-deed`, tổng cấp nhà `ic-house` jade, thẻ ra tù `ic-key` gold, đang ở tù `ic-jail-bars`) + thanh tổng tài sản 4 px (so với người dẫn đầu) sát đáy pod.
 
 Ở compact/ngang (không có hàng chip), trạng thái thu thành badge 12 px trên avatar: vương miện (giàu nhất) góc trên-trái, song sắt (đang ở tù) góc dưới-phải, chìa khóa (có thẻ ra tù) góc dưới-trái.
 
@@ -108,7 +110,7 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 ## 9. DeedCard (trong S7) và GroupChip
 
 - GroupChip: rect 12 × 12 màu nhóm viền navy 1 + tên nhóm 12.5/500.
-- RentTable: 6 hàng `label | số`, hàng áp dụng nền gold 30%; số tabular 13.5/800.
+- RentTable: 4 hàng `label | số` (Đất trống, Cấp 1–3), hàng áp dụng nền gold 30%; số tabular 13.5/800.
 - OwnerChip: avatar 20 + `@ten` + chấm màu ghế.
 
 ## 10. Card (O2)

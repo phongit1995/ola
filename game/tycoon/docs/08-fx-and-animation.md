@@ -58,7 +58,7 @@ Cột **Lite** = bậc rút gọn cho máy yếu; **Off** = `prefers-reduced-mot
 | M3 | Vệt đường | L0 | ô vừa qua fill `--ty-path` fade 600 ms, nối tiếp thành vệt | giữ |
 | M4 | Nhân vật ô góc phản ứng | L1 | quân đi qua ô góc: bust đổi pose 400 ms (Bé Lộc happy, Mèo happy, Tèo sad, Cảnh point) | giữ |
 | M5 | Teleport (thẻ/vào tù) | L1 + L2 | quân bay cung parabol cao 60 px 420 ms + xoay 360°, vệt 6 hạt gold (thẻ) / coral (tù) | cung không hạt |
-| M6 | Qua Xuất phát | L2 + L3 | 10 xu phun từ ô 0 lên 40 px rồi bay về pod, ô 0 nháy gold, float `+200 tr`, Bé Lộc nhảy | float + nháy |
+| M6 | Qua Xuất phát | L2 + L3 | 10 xu phun từ ô 0 lên 40 px rồi bay về pod, ô 0 nháy gold, float `+160 tr`, Bé Lộc nhảy | float + nháy |
 | M7 | Đáp ô | L0 + L1 | vòng sóng (ring) từ tâm ô mở 1.6× fade 300 ms; ô fill `--ty-landing` | fill |
 | M8 | Đáp ô chưa chủ | L0 | dải màu ô nhấp nháy 2 lần + badge "Mua?" wobble trên ô | badge |
 | M9 | Đáp ô có chủ khác | L1 | chấm chủ ô scale 1.6 pulse, pod chủ bật sáng viền | pulse |
@@ -87,7 +87,7 @@ Cột **Lite** = bậc rút gọn cho máy yếu; **Off** = `prefers-reduced-mot
 |---|---|---|---|---|
 | H1 | Nhà mọc | L0 | scaleY 0 → 1.2 → 1 từ đáy, 260 ms | pop |
 | H2 | Bụi xây | L2 | 6 hạt bụi + 2 tia jade | bỏ |
-| H3 | Khách sạn | L0 + L2 | 4 nhà gộp vào tâm 200 ms → khách sạn pop 1.3 → 1, 8 tia coral | pop |
+| H3 | Khách sạn (cấp 3) | L0 + L2 | 2 nhà gộp vào tâm 200 ms → khách sạn pop 1.3 → 1, 8 tia coral | pop |
 | H4 | Bán nhà | L0 + L2 | nhà vỡ thành 5 mảnh jade rơi 300 ms → 3 xu bay về pod | fade + chip |
 | H5 | Trong S8 | L3 | hàng vừa thao tác nháy nền gold 30% 400 ms; số tổng tài sản đếm | nháy |
 
@@ -104,7 +104,7 @@ Cột **Lite** = bậc rút gọn cho máy yếu; **Off** = `prefers-reduced-mot
 ### 3.7 Nhà tù (`jail-in`, `jail-out`)
 | # | Hiệu ứng | Lớp | Chi tiết | Lite |
 |---|---|---|---|---|
-| J1 | Còi | L1 + L3 | bust Chú Cảnh point pop ở ô 30, còi nháy coral 2 lần, vignette coral 8% 300 ms (không flash trắng) | bust |
+| J1 | Còi | L1 + L3 | bust Chú Cảnh point pop ở ô 24, còi nháy coral 2 lần, vignette coral 8% 300 ms (không flash trắng) | bust |
 | J2 | Bay vào tù | L1 + L2 | quân cung parabol xoay, 6 hạt coral | cung |
 | J3 | Sập song | L0 | 3 song `tg-jail` scaleY 0 → 1 từ trên 220 ms, bàn rung 2 px | song hiện |
 | J4 | Tèo buồn | L1 | bust Anh Tèo sad + giọt mồ hôi rơi (1 hạt) | pose |

@@ -1,4 +1,4 @@
-# 02 — Bảng màu 40 ô bàn cờ
+# 02 — Bảng màu 32 ô bàn cờ
 
 Mỗi ô là `<g class="ty-tile" data-idx data-kind data-group>`. Màu lấy từ token `01-foundations.md`; cột hex ghi lại để người vẽ concept không phải tra.
 
@@ -6,76 +6,70 @@ Mỗi ô là `<g class="ty-tile" data-idx data-kind data-group>`. Màu lấy t�
 
 | Phần | Ô đất (`street`) | Ô bến/tiện ích | Ô thẻ/thuế | Ô góc |
 |---|---|---|---|---|
-| Kích thước (390) | 30.4 × 46 | 30.4 × 46 | 30.4 × 46 | 46 × 46 |
-| Nền | paper `#FBF3E0` | paper-dim `#F0E4C8` | paper-dim | paper-dim (ô 10 chia chéo: nửa paper + nửa dim) |
+| Kích thước (390) | 38.1 × 49.8 | 38.1 × 49.8 | 38.1 × 49.8 | 49.8 × 49.8 |
+| Nền | paper `#FBF3E0` | paper-dim `#F0E4C8` | paper-dim | paper-dim (ô 8 Nhà tù: dải Thăm tù paper ở mép trên + mép trái, phòng giam dim ở góc dưới-phải) |
 | Dải màu | 7–9 px ở mép phía trong bàn, màu nhóm, viền navy 1 px cạnh giáp thân ô | không | không | không |
 | Tên (trên) | tên ngắn 800, `board × 0.0182`, ≤ 2 dòng | như trái | như trái (`Cơ hội`, `Khí vận`, `Thuế`) | chữ góc 2 dòng (`BÃI / ĐỖ XE`, `VÀO / TÙ`, `NHÀ TÙ`, `XUẤT / PHÁT`) |
 | Tranh / glyph (giữa) | tranh phong cảnh địa danh (concept UI v3); bàn < 456 có thể ẩn tranh | glyph 18 px | glyph 18 px | bust nhân vật 30 px (03-characters) — fallback glyph 26 px |
-| Giá (dưới) | `220 tr` tabular; có chủ → tiền thuê hiện tại | `200 tr` / `150 tr` | thuế: số phải trả coral; thẻ: không có | Xuất phát: `+200 tr` jade |
-| Nhà | hàng ngang trên dải, jade `#1F8A5B` | — | — | — |
+| Giá (dưới) | `220 tr` tabular; có chủ → tiền thuê hiện tại | `200 tr` / `150 tr` | thẻ: không có | Xuất phát: `+160 tr` jade |
+| Cấp nhà | trên dải: cấp 1 = 1 nhà jade `#1F8A5B`, cấp 2 = 2 nhà, cấp 3 = 1 khách sạn coral | — | — | — |
 | Có chủ | nền seat-soft + vạch 3 px màu ghế ở mép **ngoài** | như trái | — | — |
-| Quân | ghim ~24 px, mũi chạm mép trong ô, thân trong vùng trong | như trái | như trái | ô 10: vùng theo trạng thái tù |
+| Quân | ghim ~24 px, mũi chạm mép trong ô, thân trong vùng trong | như trái | như trái | ô 8: vùng theo trạng thái tù |
 | Lưới | line `#8C7B5E` 1 px | | | |
 
 Xoay: cạnh dưới 0°, cạnh trái 90°, cạnh trên 180°, cạnh phải 270° cho **khung + dải**. Tên, tranh/glyph, giá, nhà, quân **không xoay**: luôn đứng thẳng, đọc từ trên xuống (tên → tranh → giá) ở cả 4 cạnh.
 
-## 2. Bảng 40 ô
+## 2. Bảng 32 ô
+
+Xuất phát ở góc dưới-trái, đi thuận kim đồng hồ (05 §1). 16 ô đất là 16 thành phố; giá và tiền thuê ở [09-economy.md](../09-economy.md).
 
 Cột "Glyph màu" là `fill` của `tg-*`. Cột "Nhân vật" chỉ ô góc có bust; nhân vật của ô khác xuất hiện ở sheet/thẻ (03-characters §4).
 
-| Idx | Tên (live text) | kind | Dải (hex) | Nền | Glyph | Glyph màu | Nhân vật trên ô |
-|---|---|---|---|---|---|---|---|
-| 0 | Xuất phát | go | — | dim | `tg-go` (fallback) | navy `#1F2A44` | Bé Lộc (bust) |
-| 1 | Phố Hiến | street | brown `#8D5B3C` | paper | — | — | — |
-| 2 | Khí vận | chest | — | dim | `tg-chest` | sky-deep `#3C9BBF` | — |
-| 3 | Phố cổ Hội An | street | brown | paper | — | — | — |
-| 4 | Thuế thu nhập | tax | — | dim | `tg-tax` | coral `#E4573D` | — |
-| 5 | Ga Hà Nội | station | — | dim | `tg-train` | navy | — |
-| 6 | Sa Pa | street | sky `#7EC8E3` | paper | — | — | — |
-| 7 | Cơ hội | chance | — | dim | `tg-chance` | gold-deep `#B98700` | — |
-| 8 | Mộc Châu | street | sky | paper | — | — | — |
-| 9 | Ninh Bình | street | sky | paper | — | — | — |
-| 10 | Nhà tù / Thăm tù | jail | — | paper ∕ dim | `tg-jail` (fallback) | navy | Anh Tèo (bust, vùng dim) |
-| 11 | Cần Thơ | street | pink `#E58FB5` | paper | — | — | — |
-| 12 | Nhà máy điện | utility | — | dim | `tg-electric` | jade `#1F8A5B` | — |
-| 13 | Phú Quốc | street | pink | paper | — | — | — |
-| 14 | Hạ Long | street | pink | paper | — | — | — |
-| 15 | Sân bay Tân Sơn Nhất | station | — | dim | `tg-plane` | navy | — |
-| 16 | Hải Phòng | street | orange `#F2994A` | paper | — | — | — |
-| 17 | Khí vận | chest | — | dim | `tg-chest` | sky-deep | — |
-| 18 | Huế | street | orange | paper | — | — | — |
-| 19 | Nha Trang | street | orange | paper | — | — | — |
-| 20 | Bãi đỗ xe | parking | — | dim | `tg-parking` (fallback) | navy | Mèo Đậu (bust) |
-| 21 | Đà Lạt | street | red `#D64545` | paper | — | — | — |
-| 22 | Cơ hội | chance | — | dim | `tg-chance` | gold-deep | — |
-| 23 | Đà Nẵng | street | red | paper | — | — | — |
-| 24 | Quy Nhơn | street | red | paper | — | — | — |
-| 25 | Cảng Hải Phòng | station | — | dim | `tg-ship` | navy | — |
-| 26 | Biên Hòa | street | yellow `#F2D04E` | paper | — | — | — |
-| 27 | Thủ Dầu Một | street | yellow | paper | — | — | — |
-| 28 | Nhà máy nước | utility | — | dim | `tg-water` | jade | — |
-| 29 | Vũng Tàu | street | yellow | paper | — | — | — |
-| 30 | Vào tù | gotojail | — | dim | `tg-gotojail` (fallback) | coral | Chú Cảnh (bust) |
-| 31 | Đồng Khởi | street | green `#3BA776` | paper | — | — | — |
-| 32 | Nguyễn Huệ | street | green | paper | — | — | — |
-| 33 | Khí vận | chest | — | dim | `tg-chest` | sky-deep | — |
-| 34 | Thủ Thiêm | street | green | paper | — | — | — |
-| 35 | Bến xe Miền Đông | station | — | dim | `tg-bus` | navy | — |
-| 36 | Cơ hội | chance | — | dim | `tg-chance` | gold-deep | — |
-| 37 | Hồ Gươm | street | blue `#2F5FD0` | paper | — | — | — |
-| 38 | Thuế xa xỉ | tax | — | dim | `tg-tax` | coral | — |
-| 39 | Hồ Tây | street | blue | paper | — | — | — |
+| Idx | Vị trí | Tên (live text) | kind | Dải (hex) | Nền | Glyph | Glyph màu | Nhân vật trên ô |
+|---|---|---|---|---|---|---|---|---|
+| 0 | góc dưới-trái | Xuất phát | go | — | dim | `tg-go` (fallback) | navy `#1F2A44` | Bé Lộc (bust) |
+| 1 | cột trái ↑ | Thanh Hóa | street | brown `#8D5B3C` | paper | — | — | — |
+| 2 | cột trái ↑ | Khí vận | chest | — | dim | `tg-chest` | sky-deep `#3C9BBF` | — |
+| 3 | cột trái ↑ | Vinh | street | brown | paper | — | — | — |
+| 4 | cột trái ↑ | Ga Hà Nội | station | — | dim | `tg-train` | navy | — |
+| 5 | cột trái ↑ | Buôn Ma Thuột | street | sky `#7EC8E3` | paper | — | — | — |
+| 6 | cột trái ↑ | Cơ hội | chance | — | dim | `tg-chance` | gold-deep `#B98700` | — |
+| 7 | cột trái ↑ | Đà Lạt | street | sky | paper | — | — | — |
+| 8 | góc trên-trái | Nhà tù / Thăm tù | jail | — | paper ∕ dim | `tg-jail` (fallback) | navy | Anh Tèo (bust, vùng dim) |
+| 9 | hàng trên → | Cần Thơ | street | pink `#E58FB5` | paper | — | — | — |
+| 10 | hàng trên → | Nhà máy điện | utility | — | dim | `tg-electric` | jade `#1F8A5B` | — |
+| 11 | hàng trên → | Phú Quốc | street | pink | paper | — | — | — |
+| 12 | hàng trên → | Sân bay Tân Sơn Nhất | station | — | dim | `tg-plane` | navy | — |
+| 13 | hàng trên → | Quy Nhơn | street | orange `#F2994A` | paper | — | — | — |
+| 14 | hàng trên → | Khí vận | chest | — | dim | `tg-chest` | sky-deep `#3C9BBF` | — |
+| 15 | hàng trên → | Nha Trang | street | orange | paper | — | — | — |
+| 16 | góc trên-phải | Bãi đỗ xe | parking | — | dim | `tg-parking` (fallback) | navy | Mèo Đậu (bust) |
+| 17 | cột phải ↓ | Hội An | street | red `#D64545` | paper | — | — | — |
+| 18 | cột phải ↓ | Cơ hội | chance | — | dim | `tg-chance` | gold-deep `#B98700` | — |
+| 19 | cột phải ↓ | Huế | street | red | paper | — | — | — |
+| 20 | cột phải ↓ | Cảng Hải Phòng | station | — | dim | `tg-ship` | navy | — |
+| 21 | cột phải ↓ | Hạ Long | street | yellow `#F2D04E` | paper | — | — | — |
+| 22 | cột phải ↓ | Nhà máy nước | utility | — | dim | `tg-water` | jade | — |
+| 23 | cột phải ↓ | Hải Phòng | street | yellow | paper | — | — | — |
+| 24 | góc dưới-phải | Vào tù | gotojail | — | dim | `tg-gotojail` (fallback) | coral | Chú Cảnh (bust) |
+| 25 | hàng dưới ← | Vũng Tàu | street | green `#3BA776` | paper | — | — | — |
+| 26 | hàng dưới ← | Khí vận | chest | — | dim | `tg-chest` | sky-deep `#3C9BBF` | — |
+| 27 | hàng dưới ← | Đà Nẵng | street | green | paper | — | — | — |
+| 28 | hàng dưới ← | Bến xe Miền Đông | station | — | dim | `tg-bus` | navy | — |
+| 29 | hàng dưới ← | Cơ hội | chance | — | dim | `tg-chance` | gold-deep `#B98700` | — |
+| 30 | hàng dưới ← | Hà Nội | street | blue `#2F5FD0` | paper | — | — | — |
+| 31 | hàng dưới ← | TP. Hồ Chí Minh | street | blue | paper | — | — | — |
 
 Ghi chú màu glyph: Cơ hội dùng `gold-deep` thay vì `gold` vì `gold #F2B807` trên `paper-dim` chỉ đạt ~1.9:1 — không đủ cho hình 18 px. Khí vận dùng `sky-deep` cùng lý do. Trên thẻ bài (nền dải gold/sky đậm hơn) glyph dùng navy.
 
-## 3. Ô góc chi tiết (46 × 46)
+## 3. Ô góc chi tiết (49.8 × 49.8)
 
 | Ô | Bố cục | Trạng thái động |
 |---|---|---|
-| 0 Xuất phát | bust Bé Lộc 30 px lệch trái-trên; mũi tên `tg-go` 12 px navy góc dưới-phải chỉ hướng đi | khi ai qua: nền nháy `--ty-landing` 300 ms, Bé Lộc đổi pose `happy` 600 ms |
-| 10 Nhà tù | chia chéo từ góc trên-trái → dưới-phải: tam giác trong (dim) = Nhà tù có 3 song `tg-jail` 10 px + bust Anh Tèo 22 px; tam giác ngoài (paper) = Thăm tù, quân thăm đứng đây | có người trong tù: Anh Tèo pose `sad`; quân trong tù đứng sau song (z thấp hơn song) |
-| 20 Bãi đỗ xe | bust Mèo Đậu 30 px giữa, `tg-parking` 12 px navy góc | quân đáp: Mèo pose `happy` (vẫy đuôi) 600 ms |
-| 30 Vào tù | bust Chú Cảnh 30 px, nền dim pha coral 10% (`color-mix(in srgb, var(--ty-paper-dim), var(--ty-coral) 10%)`), `tg-gotojail` 12 px coral góc | quân đáp: Chú Cảnh pose `point`, còi nháy coral 2 lần |
+| 0 Xuất phát (dưới-trái) | bust Bé Lộc 30 px; mũi tên `tg-go` xoay 90° **chỉ lên** (hướng đi lên cột trái) + chip `+160` jade | khi ai qua: nền nháy `--ty-landing` 300 ms, Bé Lộc đổi pose `happy` 600 ms |
+| 8 Nhà tù (trên-trái) | phòng giam 68% × 68% ở góc dưới-phải (phía vùng trong, dim/đỏ) có song `tg-jail` + bust Anh Tèo 22 px; dải Thăm tù (paper) chạy dọc mép trên + mép trái, chữ `Thăm tù` ở mép trên, quân thăm đứng ở dải trái | có người trong tù: Anh Tèo pose `sad`; quân trong tù đứng sau song (z thấp hơn song) |
+| 16 Bãi đỗ xe (trên-phải) | bust Mèo Đậu 30 px giữa, `tg-parking` 12 px navy góc | quân đáp: Mèo pose `happy` (vẫy đuôi) 600 ms |
+| 24 Vào tù (dưới-phải) | bust Chú Cảnh 30 px, nền dim pha coral 10% (`color-mix(in srgb, var(--ty-paper-dim), var(--ty-coral) 10%)`), `tg-gotojail` 12 px coral góc | quân đáp: Chú Cảnh pose `point`, còi nháy coral 2 lần |
 
 Fallback khi tắt nhân vật (`data-chars="off"` cho máy yếu hoặc asset lỗi): glyph 26 px màu theo bảng §2 thay bust.
 
@@ -100,7 +94,7 @@ Fallback khi tắt nhân vật (`data-chars="off"` cho máy yếu hoặc asset l
 
 | kind | Dải header 44 px | Icon/nhân vật trong header (64 px, bên phải) |
 |---|---|---|
-| street | màu nhóm, không chữ; tên ô + chip nhóm ở dưới trên paper | — (hiện 0–4 `ic-house` / khách sạn, màu jade/coral) |
+| street | màu nhóm, không chữ; tên ô + chip nhóm ở dưới trên paper | — (hiện cấp: 1–2 `ic-house` jade hoặc khách sạn coral) |
 | station | paper-dim | `tg-*` 40 px navy |
 | utility | paper-dim | `tg-*` 40 px jade |
 | chance | gold | Bác Tỷ pose `idle` 64 px |

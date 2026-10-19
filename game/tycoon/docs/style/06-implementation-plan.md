@@ -6,7 +6,7 @@ Kế hoạch này chỉ cho phần UI/asset; server và protocol theo `../07-scr
 
 Mục tiêu: có 5 ảnh concept để duyệt art direction, tránh code rồi mới đổi.
 
-- [ ] Concept bàn chơi S6 ở 390 × 844: đủ 40 ô theo `02-board-tiles.md`, 4 bust ô góc, 4 pod, action bar pha `decide`.
+- [ ] Concept bàn chơi S6 ở 390 × 844: đủ 32 ô theo `02-board-tiles.md`, 4 bust ô góc, 4 pod, action bar pha `decide`.
 - [ ] Concept lobby S2 với Bác Tỷ + logo.
 - [ ] Concept sheet S7 ô đất nhóm Đỏ có 2 nhà.
 - [ ] Concept thẻ Cơ hội O2 với Bác Tỷ `happy`.
@@ -27,11 +27,11 @@ DoD: screenshot 3 màn ở 360/390/520 không tràn; typecheck + lint xanh.
 
 ## Giai đoạn 2 — Bàn cờ tĩnh
 
-- [ ] `BoardSurface` SVG: lưới 40 ô, công thức corner/edge, xoay khung + dải theo cạnh.
+- [ ] `BoardSurface` SVG: lưới 32 ô, công thức corner/edge, xoay khung + dải theo cạnh.
 - [ ] 13 `tg-*` theo `../06-icon-system.md` §3, màu theo `04-icon-colors.md` §3.
-- [ ] Nhà/khách sạn inline, chấm chủ, ô 10 chia chéo.
+- [ ] Cấp nhà inline (1–2 nhà, khách sạn), vạch chủ, ô 8 Nhà tù.
 - [ ] Token DOM với ring 2 lớp; fallback `tk-seat-*` SVG trước, raster sau.
-- [ ] Fixture: ván giữa chừng (4 người, 15 ô có chủ, 3 nhóm trọn, 1 khách sạn, 1 người trong tù, 1 phá sản).
+- [ ] Fixture: ván giữa chừng (4 người, 15 ô có chủ, 3 nhóm trọn, 1 ô cấp 3, 1 người trong tù, 1 phá sản).
 - [ ] Visual check mù màu (simulate deuteranopia) — 8 dải vẫn phân biệt nhờ vị trí + tên trong sheet.
 
 DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 390 đối chiếu concept.

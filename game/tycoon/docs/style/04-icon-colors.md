@@ -42,7 +42,7 @@ Icon điều khiển (`ic-*`) không có màu riêng: màu đến từ `color` c
 | `ic-minus` | S8/O3 nút bán | coral | disabled navy 45% |
 | `ic-dice` | CTA gieo (gold) | navy | S2 nút Vào bàn: navy |
 | `ic-deed` | footer S6 | cream | pod chip (paper): navy |
-| `ic-house` | S8 chip, log | jade | khách sạn: coral (cùng icon, đổi màu + số "KS") |
+| `ic-house` | S8 chip, log | jade | cấp 3 khách sạn: coral (cùng icon, đổi màu + số "KS") |
 | `ic-key` | pod chip (nền gold-soft `#FBE9A6`) | navy | không fill gold — chip nền đã mang nghĩa "thẻ quý" |
 | `ic-jail-bars` | pod chip | navy trên chip paper-deep | nút Nộp phạt: navy |
 | `ic-coins` | S8/S9 tổng tài sản, nút Trả nợ (gold) | navy | S9 hạng 1: gold-deep trên paper |

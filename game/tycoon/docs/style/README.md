@@ -10,7 +10,7 @@ Thư mục này là đặc tả triển khai chi tiết cho hướng mỹ thuậ
 ## Thứ tự đọc
 
 1. [01-foundations.md](./01-foundations.md) — toàn bộ CSS token (màu, chữ, spacing, radius, shadow, z-index, motion) dạng copy được vào `tokens.css`.
-2. [02-board-tiles.md](./02-board-tiles.md) — bảng 40 ô: màu dải, nền, glyph, màu glyph, nhân vật, cách xoay, text trong sheet.
+2. [02-board-tiles.md](./02-board-tiles.md) — bảng 32 ô: màu dải, nền, glyph, màu glyph, nhân vật, cách xoay, text trong sheet.
 3. [03-characters.md](./03-characters.md) — dàn 6 nhân vật: vai trò, palette riêng, pose, nơi xuất hiện, kích thước, prompt sinh.
 4. [04-icon-colors.md](./04-icon-colors.md) — ma trận màu của 30 `ic-`, 13 `tg-`, xúc xắc, quân theo từng nền và trạng thái.
 5. [05-buttons-and-controls.md](./05-buttons-and-controls.md) — từng loại button/control và toàn bộ trạng thái.

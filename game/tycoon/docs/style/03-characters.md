@@ -48,7 +48,7 @@ Pose `point` luôn chỉ **sang phải**; đặt nhân vật bên trái nội du
 | O2 thẻ Khí vận | Cô Ngân | như trên | full | 72 |
 | O3 trả nợ | Cô Ngân (nợ ngân hàng) / avatar chủ nợ (nợ người) | point | full | 64 |
 | Step `pay` reason tax/fine/repair | Cô Ngân | point | bust | 24, bay cùng chip tiền |
-| Step `jail-in` | Chú Cảnh | point | bust | 32, hiện 800 ms cạnh ô 10 |
+| Step `jail-in` | Chú Cảnh | point | bust | 32, hiện 800 ms cạnh ô 8 |
 | Pod badge trong tù | Anh Tèo | sad | bust | 14 (thay `ic-jail-bars` khi nhân vật bật) |
 | Turn announce ĐẾN LƯỢT BẠN | Bác Tỷ | point | bust | 40 |
 | Chờ người khác (bar) | Mèo Đậu | idle | bust | 24 |

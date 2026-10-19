@@ -78,5 +78,5 @@ Vị trí nút từng pha ở 02 §6.3; bảng dưới chỉ quy định biến 
 ## 10. Accessibility control
 
 - Tất cả control có accessible name tiếng Việt; nút icon-only `aria-label`.
-- Focus order trong S6: header → cụm lượt (nút chính trước) → hàng pod → footer → bàn. Bàn là **một** tab stop, dùng phím mũi tên duyệt 40 ô theo idx (roving tabindex), để không phải tab qua 40 ô mới tới nút.
+- Focus order trong S6: header → cụm lượt (nút chính trước) → hàng pod → footer → bàn. Bàn là **một** tab stop, dùng phím mũi tên duyệt 32 ô theo idx (roving tabindex), để không phải tab qua 32 ô mới tới nút.
 - `Escape` đóng sheet/popover/modal thường; không đóng S9/O3.

@@ -49,7 +49,7 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 19 | `ic-history` | xiangqi | 20 | lobby | Xem lịch sử |
 | 20 | `ic-leaderboard` | xiangqi | 20 | lobby | Xem bảng xếp hạng |
 | 21 | `ic-user-minus` | thirteen | 20 | S5 mời ra | Mời ra khỏi bàn |
-| 22 | `ic-plus` | thirteen | 20 | S4 ghế trống, S8 xây | Thêm / Xây nhà |
+| 22 | `ic-plus` | thirteen | 20 | S4 ghế trống, S8 nâng cấp | Thêm / Nâng cấp |
 | 23 | `ic-minus` | **mới** | 20 | S8 bán, O3 bán | Bán nhà |
 | 24 | `ic-dice` | **mới** | 20/24 | CTA gieo, S2 Vào bàn | Gieo xúc xắc |
 | 25 | `ic-deed` | **mới** | 20/24 | footer S6 (mở S8), chip số đất trong pod (16) | Xem tài sản |
@@ -145,7 +145,7 @@ Union là nguồn duy nhất; không nhận tên icon từ server.
 
 4 bến dùng 4 glyph khác nhau (tàu, máy bay, tàu thủy, xe buýt) để người chơi nhớ vị trí; cùng màu navy để đọc là "cùng nhóm Bến".
 
-### 3.3 Nhà và khách sạn trên bàn (thuộc họ B, không đếm vào 13)
+### 3.3 Cấp nhà trên bàn (cấp 1–2 nhà, cấp 3 khách sạn) (thuộc họ B, không đếm vào 13)
 - `tg-house` 6 × 6: tam giác nóc trên rect thân, fill jade. 
 - `tg-hotel` 14 × 8: rect thân + nóc thấp, fill coral.
 - Hai hình này inline trong BoardSurface (không file riêng), kích thước cố định theo ô.

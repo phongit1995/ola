@@ -1,6 +1,6 @@
 # 01 — Art direction: Phố Thị Rực Rỡ
 
-> Đây là art direction tổng quan. Token đầy đủ, bảng màu 40 ô, nhân vật và ma trận màu icon nằm trong [`style/`](./style/README.md).
+> Đây là art direction tổng quan. Token đầy đủ, bảng màu 32 ô, nhân vật và ma trận màu icon nằm trong [`style/`](./style/README.md).
 
 ## 1. DNA hình ảnh
 
@@ -109,14 +109,14 @@ Stroke 2 px, cap tròn, grid 24 cho icon điều khiển; glyph ô bàn cờ là
 
 ## 4. Bàn cờ — tỷ lệ thị giác
 
-- Bàn vuông 11 × 11 ô lưới: 4 ô góc + 36 ô cạnh (9 mỗi cạnh) = 40 ô, đi theo chiều kim đồng hồ từ Xuất phát ở góc **dưới-phải** (giống cảm giác board thật).
-- Tại viewport 390: bàn `366 × 366` (lề 12). Ô góc `46 × 46`; ô cạnh `30.4 × 46` (dọc cạnh dưới/trên) hoặc `46 × 30.4` (cạnh trái/phải). Công thức: `corner = round(board × 0.126)`, `edge = (board − 2 × corner) / 9`.
+- Bàn vuông 9 × 9 ô lưới: 4 ô góc + 28 ô cạnh (7 mỗi cạnh) = 32 ô, đi **thuận kim đồng hồ** từ Xuất phát ở góc **dưới-trái**: lên cột trái trước (05 §1).
+- Tại viewport 390: bàn `366 × 366` (lề 12). Ô góc `49.8 × 49.8`; ô cạnh `38.1 × 49.8` (cạnh dưới/trên) hoặc `49.8 × 38.1` (cạnh trái/phải). Công thức: `corner = board × 0.136`, `edge = (board − 2 × corner) / 7` (`components/Board.tsx`).
 - Ở width 480 (max): bàn 456, góc 57, cạnh 38 — glyph vẫn cùng tỷ lệ, không thêm chữ.
 - Vùng trong bàn `266 × 266` tại 390 (72.8% cạnh bàn): nền paper trơn, chồng thẻ Cơ hội/Khí vận ở 2 góc trên, cụm lượt (chip lượt + đồng hồ, xúc xắc, nút theo pha) ở giữa, thẻ bài lật thay cụm lượt. Không logo/watermark — logo ở header. Pod người chơi nằm ngoài bàn, một hàng phía dưới (02 §6).
-- Ô đất: dải màu nhóm chiếm 1/3 chiều sâu ô (phía trong bàn), phần còn lại nền paper hiện nhà (chấm 6 px xếp hàng) hoặc khách sạn (hình chữ nhật 14 × 8) và quân.
+- Ô đất: dải màu nhóm chiếm 1/3 chiều sâu ô (phía trong bàn), phần còn lại nền paper hiện cấp nhà (cấp 1–2: 1–2 nhà nhỏ; cấp 3: khách sạn) và quân.
 - Quân cờ 18 px trên ô; nhiều quân cùng ô xếp 2 × 2 so le 4 px, tối đa 4.
 - Vùng chạm ô: ô cạnh chỉ 30 px — chấp nhận, vì tap ô chỉ để mở sheet (không phải thao tác tốc độ); mở rộng hit 4 px mỗi phía, ưu tiên ô gần tâm chạm.
-- Người chơi không xoay bàn; mọi người thấy cùng hướng. Xuất phát luôn ở góc dưới-phải.
+- Người chơi không xoay bàn; mọi người thấy cùng hướng. Xuất phát luôn ở góc dưới-trái.
 
 ## 5. Typography
 
@@ -170,13 +170,13 @@ Stroke 2 px, cap tròn, grid 24 cho icon điều khiển; glyph ô bàn cờ là
 |---|---|
 | Xúc xắc lăn (O1) | 2 viên xoay 3D giả bằng đổi mặt mỗi 80 ms trong 720 ms, dừng lệch nhau 120 ms, tổng hiện 200 ms sau |
 | Quân nhảy từng ô | 140 ms/ô, cubic-bezier(.3,.9,.4,1), scale 1.15 ở đỉnh; 12 ô ≈ 1.7 s; quân của mình cùng tốc độ (không skip) |
-| Qua Xuất phát | ô 0 nháy gold 300 ms + float `+200 tr` lên 24 px 900 ms |
+| Qua Xuất phát | ô 0 nháy gold 300 ms + float `+160 tr` lên 24 px 900 ms |
 | Đáp ô | ô fill `--ty-landing` 240 ms rồi giữ đến hết lượt |
 | Trả tiền (step `pay`) | số tiền pod người trả giảm đếm 500 ms coral; pod người nhận tăng đếm jade; chip "tiền thuê" bay từ pod này sang pod kia 400 ms |
 | Lật thẻ (O2) | flip 3D 360 ms, giữ tới khi bấm Tiếp tục hoặc 6 s |
-| Xây nhà | chấm nhà pop scale 0→1 160 ms; khách sạn thay 4 chấm bằng 1 khối 220 ms |
+| Nâng cấp | nhà pop scale 0→1 160 ms; lên cấp 3 thì 2 nhà gộp thành 1 khách sạn 220 ms |
 | Bán nhà | chấm fade 160 ms + float `+x tr` |
-| Vào tù | quân bay cung 420 ms sang ô 10, song sắt (glyph) nháy 2 lần |
+| Vào tù | quân bay cung 420 ms sang ô 8, song sắt (glyph) nháy 2 lần |
 | Phá sản | pod chuyển `--ty-bankrupt` 400 ms, quân fade, các ô thuộc người đó mất chấm chủ sở hữu stagger 30 ms |
 | Turn announce | fade-scale 300 ms, giữ 900 ms |
 | Timer ≤10 s | pulse màu `--ty-danger` mỗi 1 s |

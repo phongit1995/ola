@@ -18,9 +18,9 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 
 - PvP **2–4 người**, chơi theo bàn (room) như Tiến Lên; không có hàng đợi ghép nhanh.
 - **Cược KEN = 0** trong v1 (giống Tiến Lên v1): engine hiện mới chia tiền cho 2 người (`Player0ID/Player1ID`); chia pot theo `Rankings` là việc của v2. Thắng/thua vẫn ghi lịch sử, bảng xếp hạng và cộng XP.
-- Bàn **40 ô** địa danh Việt Nam; tiền trong ván tính bằng **triệu** (`tr`), vốn khởi đầu `1.500 tr`.
+- Bàn **32 ô** (16 thành phố Việt Nam, 8 nhóm × 2), Xuất phát ở góc dưới-trái, đi thuận kim đồng hồ; tiền trong ván tính bằng **triệu** (`tr`), vốn khởi đầu `1.500 tr`.
 - **Giới hạn ván**: `MAX_ROUNDS = 20` vòng (mỗi vòng = mọi người còn chơi đã kết thúc lượt một lần). Hết vòng → xếp hạng theo **tổng tài sản**. Chỉ còn 1 người chưa phá sản → kết thúc sớm.
-- Có: gieo xúc xắc (đôi được gieo lại, 3 đôi liên tiếp vào tù), mua đất, thu tiền thuê tự động, xây nhà/khách sạn đều tay, bán nhà nửa giá, nhà tù (nộp phạt / thẻ ra tù / gieo đôi), thẻ Cơ hội và Khí vận, thuế, phá sản.
+- Có: gieo xúc xắc (đôi được gieo lại, 3 đôi liên tiếp vào tù), mua đất, thu tiền thuê tự động, nâng 3 cấp nhà (Nhà → Biệt thự → Khách sạn) đều tay, hạ cấp hoàn nửa giá, nhà tù (nộp phạt / thẻ ra tù / gieo đôi), thẻ Cơ hội và Khí vận, phá sản. Giá và cân bằng: [09-economy.md](./09-economy.md).
 - Không có (v2): đấu giá khi bỏ mua, trao đổi đất, thế chấp, cược KEN, xem trận (bị engine chặn vì game dùng `StateViewer` — xem 05 §9).
 - **30 giây** cho mỗi hành động; hết giờ server tự làm thay (gieo, bỏ mua, kết thúc lượt, tự bán nhà để trả nợ). 3 lần hết giờ liên tiếp hoặc thoát giữa ván = phá sản kỹ thuật, ván tiếp tục với người còn lại.
 - Bỏ cuộc (FORFEIT), reconnect/resume, chat phòng + trong ván, reaction, lịch sử, bảng xếp hạng — dùng hạ tầng engine + SDK sẵn có.
@@ -31,7 +31,7 @@ Game 2D, góc nhìn từ trên xuống, không camera, không vật lý. Ba lự
 
 | Stack | Game đang dùng | Hợp với tỷ phú? |
 |---|---|---|
-| **React 19 + zustand + SVG/DOM** (Vite entry trong `game/`) | caro, thirteen, xiangqi | **Chọn làm nền.** Bàn 40 ô tĩnh, UI chủ yếu là sheet/modal/bảng số/live text — đúng thế mạnh DOM; quân nhảy, đếm tiền, lật thẻ, nhân vật bằng CSS transform + WAAPI. Tái dùng nguyên lobby/room/pregame/chat/history của xiangqi. |
+| **React 19 + zustand + SVG/DOM** (Vite entry trong `game/`) | caro, thirteen, xiangqi | **Chọn làm nền.** Bàn 32 ô tĩnh, UI chủ yếu là sheet/modal/bảng số/live text — đúng thế mạnh DOM; quân nhảy, đếm tiền, lật thẻ, nhân vật bằng CSS transform + WAAPI. Tái dùng nguyên lobby/room/pregame/chat/history của xiangqi. |
 | **Pixi.js — chỉ 1 lớp canvas hạt** phủ bàn | war-god (toàn bộ) | **Chọn kèm (hybrid).** Xu bay, bụi, pháo giấy, tia, mảnh vỡ vẽ trên canvas trong suốt `pointer-events: none`; không chữ, không nút, không state. Xoá canvas game vẫn chạy đúng. Xem [08-fx-and-animation.md](./08-fx-and-animation.md). |
 | Pixi.js toàn bộ | war-god | Không. Nhiều chữ sống/sheet/accessibility trong canvas tốn gấp đôi công, mất tái dùng UI xiangqi. |
 | Cocos Creator | ola-farm | Không. Build tay, không CI, asset pipeline nặng. |
@@ -49,7 +49,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 | S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, Tạo bàn, Làm mới, phân trang 9 hàng |
 | S4 | Modal Tạo bàn / Vào bàn khóa | chọn số người 2/3/4, mật khẩu |
 | S5 | Phòng chờ | 4 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |
-| S6 | Bàn chơi | header (logo, vòng, âm thanh, menu); bàn 11×11 có tên + giá trên ô; cụm lượt **giữa bàn** (chip lượt, đồng hồ 30 s, xúc xắc, nút theo pha); hàng pod 2–4 người **dưới bàn**; footer Tài sản / Diễn biến / sự kiện mới nhất |
+| S6 | Bàn chơi | header (logo, vòng, âm thanh, menu); bàn 9×9 (32 ô) có tên + giá trên ô; cụm lượt **giữa bàn** (chip lượt, đồng hồ 30 s, xúc xắc, nút theo pha); hàng pod 2–4 người **dưới bàn**; footer Tài sản / Diễn biến / sự kiện mới nhất |
 | S7 | Sheet chi tiết ô | giá, bảng tiền thuê, chủ sở hữu, nhà đang có; từ đây Mua / Xây / Bán |
 | S8 | Sheet quản lý tài sản | danh sách đất của mình theo nhóm, nút xây/bán từng ô, tổng tài sản |
 | S9 | Kết quả | hạng 1–4, tổng tài sản từng người, lý do kết thúc, XP, Chơi lại, Đóng |
@@ -71,12 +71,13 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 2. [02-screen-specs.md](./02-screen-specs.md) — spec từng màn: bố cục, kích thước, state.
 3. [03-component-specs.md](./03-component-specs.md) — bàn cờ SVG, ô, quân, nhà, xúc xắc, pod người chơi, thẻ bài, sheet, nút, modal.
 4. [04-asset-manifest-and-prompts.md](./04-asset-manifest-and-prompts.md) — manifest CSS/SVG/raster, số lượng từng loại asset, naming, prompt sinh raster.
-5. [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md) — luật v1 đầy đủ, bảng 40 ô + giá + tiền thuê, 24 thẻ bài, state JSON, lệnh MOVE, steps replay, mapping interface engine, timeout, kết thúc ván.
+5. [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md) — luật v1 đầy đủ, bảng 32 ô + giá + tiền thuê 3 cấp, 24 thẻ bài, state JSON, lệnh MOVE, steps replay, mapping interface engine, timeout, kết thúc ván.
 6. [06-icon-system.md](./06-icon-system.md) — hệ icon: 4 họ icon, số lượng, grid, công thức hình học từng icon, quy trình tạo icon mới.
 7. [07-screen-to-feature-map.md](./07-screen-to-feature-map.md) — mapping màn → store state → SDK event → component.
 8. [08-fx-and-animation.md](./08-fx-and-animation.md) — kiến trúc 4 lớp (SVG / DOM / canvas Pixi hạt / overlay), ≈ 60 hiệu ứng theo sự kiện với bản Lite, API `FxLayer`, ngân sách hiệu năng, tier Full/Lite/Off.
-9. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 40 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
-10. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
+9. [09-economy.md](./09-economy.md) — kinh tế bàn 32 ô: bảng giá 16 thành phố, 3 cấp nhà, công thức, dòng tiền, thời gian một ván, kết quả mô phỏng và dải kiểm tra tự động.
+10. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
+11. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
 
 ## Nguyên tắc bắt buộc
 
