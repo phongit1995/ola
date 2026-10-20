@@ -58,7 +58,7 @@ Giá tăng dần theo chiều đi. Thuê đất trống ×2 khi sở hữu trọ
 
 Tổng giá 16 thành phố 3.410 tr; cả bàn (thêm 4 sân bay × 200) 4.210 tr — gần gấp 3 vốn một người.
 
-Ô còn lại: sân bay 4, 12, 20, 28 (Nội Bài, Tân Sơn Nhất, Cam Ranh, Long Thành) giá 200, thuê 25 / 50 / 100 / 200 theo số sân bay sở hữu. Thuế (ô 10) = 10% tổng tài sản, làm tròn. Lễ hội nhân đôi thuê một thành phố (cộng dồn với ×2 trọn nhóm: đất trống trọn nhóm có Lễ hội = ×4 giá thuê gốc).
+Ô còn lại: 4 ô Sân bay 6, 10, 22, 26 (mỗi cạnh một ô, lệch khỏi giữa cạnh — đổi chỗ 20/10/2026) giá 200, thuê 25 / 50 / 100 / 200 theo số sân bay sở hữu. Thuế (ô 12) = 10% tổng tài sản, làm tròn. Lễ hội nhân đôi thuê một thành phố (cộng dồn với ×2 trọn nhóm: đất trống trọn nhóm có Lễ hội = ×4 giá thuê gốc).
 
 ## 4. Công thức
 
@@ -77,7 +77,7 @@ Hiển thị cấp trên ô: cấp 1 = 1 nhà xanh ngọc, cấp 2 = 2 nhà, c�
 
 ## 5. Kết quả mô phỏng — luật hiện tại (mua lại ×2, thắng ngay, Lễ hội / Du lịch / Thuế, 30 vòng / 25 phút)
 
-1.000 ván bot mỗi cấu hình, chốt 20/10/2026 sau khi đổi 4 ô (Lễ hội, Du lịch, Thuế, thêm Cơ hội). Thời gian theo giả định ở cuối §5b. Cột "trước" là bàn ngay trước đó (Bãi đỗ xe, Vào tù, 2 tiện ích) cùng luật mua lại / thắng ngay / 4 sân bay.
+1.000 ván bot mỗi cấu hình, chốt 20/10/2026 sau khi đổi 4 ô (Lễ hội, Du lịch, Thuế, thêm Cơ hội). Thời gian theo giả định ở cuối §5b. Cột "trước" là bàn ngay trước đó (Bãi đỗ xe, Vào tù, 2 tiện ích) cùng luật mua lại / thắng ngay / 4 sân bay. Sau khi dời 4 sân bay khỏi giữa cạnh (6, 10, 22, 26) chạy lại 1.000 ván: số vòng 18 / 16 / 15, online nhanh 6,6 / 8,9 / 10,9 phút, tỉ lệ các cách kết thúc lệch ≤ 2 điểm % — coi như không đổi.
 
 | | 2 người | 3 người | 4 người |
 |---|---|---|---|

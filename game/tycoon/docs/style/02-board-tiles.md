@@ -31,15 +31,15 @@ Cột "Glyph màu" là `fill` của `tg-*`. Cột "Nhân vật" chỉ ô góc c�
 | 1 | cột trái ↑ | Thanh Hóa | street | brown `#8D5B3C` | paper | — | — | — |
 | 2 | cột trái ↑ | Khí vận | chest | — | sky-soft | `tg-chest` | sky-deep `#3C9BBF` | — |
 | 3 | cột trái ↑ | Vinh | street | brown | paper | — | — | — |
-| 4 | cột trái ↑ | Sân bay Nội Bài | station | — | dim | `tg-plane` | navy | — |
+| 4 | cột trái ↑ | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
 | 5 | cột trái ↑ | Buôn Ma Thuột | street | sky `#7EC8E3` | paper | — | — | — |
-| 6 | cột trái ↑ | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
+| 6 | cột trái ↑ | Sân bay | station | — | dim | `tg-plane` | navy | — |
 | 7 | cột trái ↑ | Đà Lạt | street | sky | paper | — | — | — |
 | 8 | góc trên-trái | Nhà tù / Thăm tù | jail | — | paper ∕ dim | `tg-jail` (fallback) | navy | Anh Tèo (bust, vùng dim) |
 | 9 | hàng trên → | Cần Thơ | street | pink `#E58FB5` | paper | — | — | — |
-| 10 | hàng trên → | Thuế thu nhập | tax | — | coral-soft | `tg-tax` | coral `#E4573D` | — |
+| 10 | hàng trên → | Sân bay | station | — | dim | `tg-plane` | navy | — |
 | 11 | hàng trên → | Phú Quốc | street | pink | paper | — | — | — |
-| 12 | hàng trên → | Sân bay Tân Sơn Nhất | station | — | dim | `tg-plane` | navy | — |
+| 12 | hàng trên → | Thuế thu nhập | tax | — | coral-soft | `tg-tax` | coral `#E4573D` | — |
 | 13 | hàng trên → | Quy Nhơn | street | orange `#F2994A` | paper | — | — | — |
 | 14 | hàng trên → | Khí vận | chest | — | sky-soft | `tg-chest` | sky-deep `#3C9BBF` | — |
 | 15 | hàng trên → | Nha Trang | street | orange | paper | — | — | — |
@@ -47,15 +47,15 @@ Cột "Glyph màu" là `fill` của `tg-*`. Cột "Nhân vật" chỉ ô góc c�
 | 17 | cột phải ↓ | Hội An | street | red `#D64545` | paper | — | — | — |
 | 18 | cột phải ↓ | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
 | 19 | cột phải ↓ | Huế | street | red | paper | — | — | — |
-| 20 | cột phải ↓ | Sân bay Cam Ranh | station | — | dim | `tg-plane` | navy | — |
+| 20 | cột phải ↓ | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
 | 21 | cột phải ↓ | Hạ Long | street | yellow `#F2D04E` | paper | — | — | — |
-| 22 | cột phải ↓ | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
+| 22 | cột phải ↓ | Sân bay | station | — | dim | `tg-plane` | navy | — |
 | 23 | cột phải ↓ | Hải Phòng | street | yellow | paper | — | — | — |
 | 24 | góc dưới-phải | Du lịch | travel | — | sky-soft | `tg-travel` | sky-deep `#3C9BBF` | — |
 | 25 | hàng dưới ← | Vũng Tàu | street | green `#3BA776` | paper | — | — | — |
-| 26 | hàng dưới ← | Khí vận | chest | — | sky-soft | `tg-chest` | sky-deep `#3C9BBF` | — |
+| 26 | hàng dưới ← | Sân bay | station | — | dim | `tg-plane` | navy | — |
 | 27 | hàng dưới ← | Đà Nẵng | street | green | paper | — | — | — |
-| 28 | hàng dưới ← | Sân bay Long Thành | station | — | dim | `tg-plane` | navy | — |
+| 28 | hàng dưới ← | Khí vận | chest | — | sky-soft | `tg-chest` | sky-deep `#3C9BBF` | — |
 | 29 | hàng dưới ← | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
 | 30 | hàng dưới ← | Hà Nội | street | blue `#2F5FD0` | paper | — | — | — |
 | 31 | hàng dưới ← | TP. Hồ Chí Minh | street | blue | paper | — | — | — |

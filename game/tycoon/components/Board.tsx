@@ -184,7 +184,7 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
         const owner = state?.owner ?? -1;
         const houses = state?.houses ?? 0;
         const corner = rect.side === 'corner';
-        const glyph = corner ? null : glyphForTile(tile.idx, tile.kind);
+        const glyph = corner ? null : glyphForTile(tile.kind);
         const owned = owner >= 0;
         const priceText = owned ? rentLabel(tiles, tile.idx, festival) : tile.price ? String(tile.price) : tile.kind === 'tax' ? `−${TAX_RATE * 100}%` : '';
         const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}`;

@@ -55,7 +55,7 @@ export function TileSheet({ idx }: { idx: number }) {
   const me = view.players[you];
   const myCash = cash[you] ?? me?.cash ?? 0;
   const busy = movePending || replaying;
-  const glyph = glyphForTile(idx, tile.kind);
+  const glyph = glyphForTile(tile.kind);
   const isProperty = tile.kind === 'street' || tile.kind === 'station';
   const canBuyHere = myTurn && view.phase === 'decide' && me?.pos === idx && owner < 0;
   const buildHint = owner === you && tile.kind === 'street' ? canBuild(view, you, idx) : null;

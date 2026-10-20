@@ -39,10 +39,8 @@
   },
   {
     "idx": 4,
-    "name": "Sân bay Nội Bài",
-    "kind": "station",
-    "group": "station",
-    "price": 200
+    "name": "Cơ hội",
+    "kind": "chance"
   },
   {
     "idx": 5,
@@ -60,8 +58,10 @@
   },
   {
     "idx": 6,
-    "name": "Cơ hội",
-    "kind": "chance"
+    "name": "Sân bay",
+    "kind": "station",
+    "group": "station",
+    "price": 200
   },
   {
     "idx": 7,
@@ -98,8 +98,10 @@
   },
   {
     "idx": 10,
-    "name": "Thuế thu nhập",
-    "kind": "tax"
+    "name": "Sân bay",
+    "kind": "station",
+    "group": "station",
+    "price": 200
   },
   {
     "idx": 11,
@@ -117,10 +119,8 @@
   },
   {
     "idx": 12,
-    "name": "Sân bay Tân Sơn Nhất",
-    "kind": "station",
-    "group": "station",
-    "price": 200
+    "name": "Thuế thu nhập",
+    "kind": "tax"
   },
   {
     "idx": 13,
@@ -195,10 +195,8 @@
   },
   {
     "idx": 20,
-    "name": "Sân bay Cam Ranh",
-    "kind": "station",
-    "group": "station",
-    "price": 200
+    "name": "Cơ hội",
+    "kind": "chance"
   },
   {
     "idx": 21,
@@ -216,8 +214,10 @@
   },
   {
     "idx": 22,
-    "name": "Cơ hội",
-    "kind": "chance"
+    "name": "Sân bay",
+    "kind": "station",
+    "group": "station",
+    "price": 200
   },
   {
     "idx": 23,
@@ -254,8 +254,10 @@
   },
   {
     "idx": 26,
-    "name": "Khí vận",
-    "kind": "chest"
+    "name": "Sân bay",
+    "kind": "station",
+    "group": "station",
+    "price": 200
   },
   {
     "idx": 27,
@@ -273,10 +275,8 @@
   },
   {
     "idx": 28,
-    "name": "Sân bay Long Thành",
-    "kind": "station",
-    "group": "station",
-    "price": 200
+    "name": "Khí vận",
+    "kind": "chest"
   },
   {
     "idx": 29,

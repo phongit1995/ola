@@ -43,7 +43,7 @@ function DeedPreview({ idx, onOpen }: { idx: number; onOpen: () => void }) {
   const { tiles, you } = useTycoon(useShallow((s) => ({ tiles: s.tiles, you: s.you })));
   const tile = BOARD[idx];
   const progress = groupProgress(tiles, you, idx);
-  const glyph = glyphForTile(idx, tile.kind);
+  const glyph = glyphForTile(tile.kind);
   return (
     <button type="button" className="ty-deed" onClick={onOpen} aria-label={`Xem chi tiết ${tile.name}`}>
       <span className={`ty-deed-stripe ${tile.kind === 'street' && tile.group ? `ty-band-${tile.group}` : 'ty-deed-stripe-dim'}`} aria-hidden="true" />

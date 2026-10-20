@@ -20,15 +20,15 @@ Loại ô (`kind`): `go`, `street`, `station`, `chance`, `chest`, `tax`, `jail`,
 | 1 | cột trái ↑ | Thanh Hóa | street | Nâu | 60 | 6 / 40 / 145 / 320 | 50 |
 | 2 | cột trái ↑ | Khí vận | chest | — | — | — | — |
 | 3 | cột trái ↑ | Vinh | street | Nâu | 80 | 8 / 45 / 160 / 340 | 50 |
-| 4 | cột trái ↑ | Sân bay Nội Bài | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
+| 4 | cột trái ↑ | Cơ hội | chance | — | — | — | — |
 | 5 | cột trái ↑ | Buôn Ma Thuột | street | Xanh trời | 100 | 10 / 50 / 180 / 380 | 50 |
-| 6 | cột trái ↑ | Cơ hội | chance | — | — | — | — |
+| 6 | cột trái ↑ | Sân bay | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
 | 7 | cột trái ↑ | Đà Lạt | street | Xanh trời | 120 | 12 / 60 / 200 / 400 | 50 |
 | 8 | góc trên-trái | Nhà tù / Thăm tù | jail | — | — | — | — |
 | 9 | hàng trên → | Cần Thơ | street | Hồng | 140 | 14 / 85 / 310 / 660 | 100 |
-| 10 | hàng trên → | Thuế thu nhập | tax | — | — | đóng 10% tổng tài sản | — |
+| 10 | hàng trên → | Sân bay | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
 | 11 | hàng trên → | Phú Quốc | street | Hồng | 160 | 16 / 90 / 320 / 690 | 100 |
-| 12 | hàng trên → | Sân bay Tân Sơn Nhất | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
+| 12 | hàng trên → | Thuế thu nhập | tax | — | — | đóng 10% tổng tài sản | — |
 | 13 | hàng trên → | Quy Nhơn | street | Cam | 180 | 18 / 100 / 340 / 720 | 100 |
 | 14 | hàng trên → | Khí vận | chest | — | — | — | — |
 | 15 | hàng trên → | Nha Trang | street | Cam | 200 | 20 / 105 / 360 / 750 | 100 |
@@ -36,15 +36,15 @@ Loại ô (`kind`): `go`, `street`, `station`, `chance`, `chest`, `tax`, `jail`,
 | 17 | cột phải ↓ | Hội An | street | Đỏ | 220 | 22 / 130 / 470 / 1.000 | 150 |
 | 18 | cột phải ↓ | Cơ hội | chance | — | — | — | — |
 | 19 | cột phải ↓ | Huế | street | Đỏ | 240 | 24 / 135 / 490 / 1.040 | 150 |
-| 20 | cột phải ↓ | Sân bay Cam Ranh | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
+| 20 | cột phải ↓ | Cơ hội | chance | — | — | — | — |
 | 21 | cột phải ↓ | Hạ Long | street | Vàng | 260 | 26 / 145 / 500 / 1.060 | 150 |
-| 22 | cột phải ↓ | Cơ hội | chance | — | — | — | — |
+| 22 | cột phải ↓ | Sân bay | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
 | 23 | cột phải ↓ | Hải Phòng | street | Vàng | 280 | 28 / 150 / 520 / 1.100 | 150 |
 | 24 | góc dưới-phải | Du lịch | travel | — | — | lượt sau bay tới ô bất kỳ | — |
 | 25 | hàng dưới ← | Vũng Tàu | street | Xanh lá | 300 | 30 / 175 / 630 / 1.350 | 200 |
-| 26 | hàng dưới ← | Khí vận | chest | — | — | — | — |
+| 26 | hàng dưới ← | Sân bay | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
 | 27 | hàng dưới ← | Đà Nẵng | street | Xanh lá | 320 | 32 / 180 / 650 / 1.380 | 200 |
-| 28 | hàng dưới ← | Sân bay Long Thành | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
+| 28 | hàng dưới ← | Khí vận | chest | — | — | — | — |
 | 29 | hàng dưới ← | Cơ hội | chance | — | — | — | — |
 | 30 | hàng dưới ← | Hà Nội | street | Xanh đậm | 350 | 35 / 190 / 680 / 1.420 | 200 |
 | 31 | hàng dưới ← | TP. Hồ Chí Minh | street | Xanh đậm | 400 | 40 / 210 / 720 / 1.500 | 200 |
@@ -141,7 +141,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 ### 4.3d Ô đặc biệt: Lễ hội, Du lịch, Thuế
 - **Lễ hội (ô 16):** đáp vào mà có ít nhất 1 thành phố → pha `festival`. `FESTIVAL {tile}` chọn một thành phố của mình (`not_street` / `not_owner` nếu sai) → `state.festival = tile`, step `festival`. Cả bàn chỉ có **một** Lễ hội: người sau tổ chức thì Lễ hội chuyển sang ô mới. Thuê ô đang có Lễ hội ×`FESTIVAL_MULTIPLIER` (×2). Lễ hội đi theo ô khi ô đổi chủ (mua lại, nhận từ người phá sản); ô về ngân hàng thì Lễ hội mất. `DECLINE` bỏ qua; hết giờ = tự chọn thành phố có tiền thuê cao nhất (`festivalPick`). Bot chọn như hết giờ, bỏ qua nếu Lễ hội đã ở đúng ô đó.
 - **Du lịch (ô 24):** đáp vào → `player.travel = true`, xoá đôi (hết lượt), step `travel`. Lượt sau bắt đầu ở pha `travel` thay cho `roll`: `TRAVEL {tile}` bay tới ô bất kỳ trừ ô đang đứng (`invalid_tile`), đi qua Xuất phát vẫn nhận 160, rồi xử lý ô đáp như thường (mua, trả thuê, mua lại, thẻ, Lễ hội…). `ROLL` = không bay, gieo bình thường. Hết giờ = `ROLL`. Bị đưa vào tù trước lượt đó thì mất quyền Du lịch. Bot chấm điểm từng ô: ô giúp nó thắng ngay > ô chặn đối thủ thắng ngay > ô gom trọn nhóm > ô trống mua được > Lễ hội > ô an toàn; tránh ô có chủ (điểm = −tiền thuê) và ô Thuế.
-- **Thuế (ô 10):** trả ngân hàng `round(10% × tổng tài sản)` (tiền mặt + giá đất + tiền nâng cấp, §4.7). Thiếu tiền → `debt` với chủ nợ ngân hàng.
+- **Thuế (ô 12):** trả ngân hàng `round(10% × tổng tài sản)` (tiền mặt + giá đất + tiền nâng cấp, §4.7). Thiếu tiền → `debt` với chủ nợ ngân hàng.
 
 ### 4.4 Nâng cấp và hạ cấp
 - Mỗi ô đất có cấp `houses` 0–3: 0 = đất trống, 1 = Nhà, 2 = Biệt thự, 3 = Khách sạn. Tên cấp: `LEVEL_NAMES` trong `constants.ts`.

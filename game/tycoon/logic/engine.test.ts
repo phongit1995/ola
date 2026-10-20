@@ -75,7 +75,8 @@ describe('tycoon engine', () => {
     expect(BOARD).toHaveLength(BOARD_SIZE);
     expect([0, 8, 16, 24].map((idx) => BOARD[idx].kind)).toEqual(['go', 'jail', 'festival', 'travel']);
     expect(BOARD.filter((t) => t.kind === 'chance')).toHaveLength(4);
-    expect(BOARD.filter((t) => t.kind === 'tax').map((t) => t.idx)).toEqual([10]);
+    expect(BOARD.filter((t) => t.kind === 'tax').map((t) => t.idx)).toEqual([12]);
+    expect(BOARD.filter((t) => t.kind === 'station').map((t) => t.idx)).toEqual([6, 10, 22, 26]);
     const streets = BOARD.filter((t) => t.kind === 'street');
     expect(streets).toHaveLength(16);
     for (const tile of streets) {
@@ -96,9 +97,9 @@ describe('tycoon engine', () => {
     expect(computeRent(s, 17, 0)).toBe(130);
     s.tiles[17].houses = 3;
     expect(computeRent(s, 17, 0)).toBe(1000);
-    s.tiles[4].owner = 1;
-    s.tiles[12].owner = 1;
-    expect(computeRent(s, 4, 1)).toBe(50);
+    s.tiles[6].owner = 1;
+    s.tiles[10].owner = 1;
+    expect(computeRent(s, 6, 1)).toBe(50);
     s.festival = 17;
     expect(computeRent(s, 17, 0)).toBe(1000 * FESTIVAL_MULTIPLIER);
     s.tiles[19].houses = 0;
@@ -166,12 +167,12 @@ describe('tycoon engine', () => {
       poor.tiles[idx].owner = 1;
       poor.tiles[idx].houses = 3;
     }
-    poor.tiles[4].owner = 0;
+    poor.tiles[6].owner = 0;
     poor.players[0].cash = 100;
     poor.players[0].pos = 29;
     const broke = play(poor, 0, { type: 'CARD_ACK' });
     expect(broke.players[0].bankrupt).toBe(true);
-    expect(broke.tiles[4].owner).toBe(1);
+    expect(broke.tiles[6].owner).toBe(1);
     expect(broke.players[1].cash).toBe(START_CASH + 100);
     expect(broke.turn).toBe(1);
     expect(broke.finished).toBe(false);
@@ -377,8 +378,8 @@ describe('tycoon takeover and instant win', () => {
   });
 
   it('wins instantly with all four airports', () => {
-    const s = own(newGame(5, 3), 1, [4, 12, 20]);
-    s.players[1].pos = 28;
+    const s = own(newGame(5, 3), 1, [6, 10, 22]);
+    s.players[1].pos = 26;
     s.turn = 1;
     const next = play(withPhase(s, 'decide'), 1, { type: 'BUY' });
     expect(next.endReason).toBe('airports');
@@ -386,11 +387,11 @@ describe('tycoon takeover and instant win', () => {
   });
 
   it('bot buys to block a rival from an instant win even when short of its buffer', () => {
-    const s = own(newGame(5, 2), 1, [4, 12, 20]);
-    s.players[0].pos = 28;
+    const s = own(newGame(5, 2), 1, [6, 10, 22]);
+    s.players[0].pos = 26;
     s.players[0].cash = 210;
     expect(botMove(withPhase(s, 'decide'), 0)).toEqual({ type: 'BUY' });
-    s.tiles[20].owner = -1;
+    s.tiles[22].owner = -1;
     expect(botMove(withPhase(s, 'decide'), 0)).toEqual({ type: 'DECLINE' });
   });
 
@@ -462,7 +463,7 @@ describe('tycoon festival, travel and tax', () => {
     s.tiles[30].owner = 0;
     s.tiles[31].houses = 2;
     expect(taxAmount(s, 0)).toBe(Math.round(worth(s, 0) * 0.1));
-    const at = landOn(s, 0, 10);
+    const at = landOn(s, 0, 12);
     const tax = at.steps.find((st) => st.kind === 'pay' && st.reason === 'tax');
     const paid = tax?.amount ?? 0;
     expect(paid).toBeGreaterThan(0);
@@ -474,10 +475,10 @@ describe('tycoon festival, travel and tax', () => {
     s.tiles[1].owner = 0;
     s.tiles[31].owner = 0;
     expect(botMove(withPhase(s, 'festival'), 0)).toEqual({ type: 'FESTIVAL', tile: 31 });
-    s.tiles[4].owner = 0;
-    s.tiles[12].owner = 0;
-    s.tiles[20].owner = 0;
+    s.tiles[6].owner = 0;
+    s.tiles[10].owner = 0;
+    s.tiles[22].owner = 0;
     s.players[0].pos = 24;
-    expect(botMove(withPhase(s, 'travel'), 0)).toEqual({ type: 'TRAVEL', tile: 28 });
+    expect(botMove(withPhase(s, 'travel'), 0)).toEqual({ type: 'TRAVEL', tile: 26 });
   });
 });

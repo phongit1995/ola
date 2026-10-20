@@ -130,13 +130,13 @@ Union là nguồn duy nhất; không nhận tên icon từ server.
 | # | File | Ô | Màu (01 §2.2) | Mô tả hình |
 |---|---|---|---|---|
 | 1 | `tg-go` | 0 | navy | mũi tên cong 270° đầu nhọn, nghĩa "vòng lại" |
-| 2 | `tg-chest` | 2, 14, 26 | sky | rương nắp cong, khóa tròn giữa (màu phụ 0.45 cho thân) |
-| 3 | `tg-tax` | 10 | coral | tờ hóa đơn góc gập + 2 vạch ngang |
+| 2 | `tg-chest` | 2, 14, 28 | sky | rương nắp cong, khóa tròn giữa (màu phụ 0.45 cho thân) |
+| 3 | `tg-tax` | 12 | coral | tờ hóa đơn góc gập + 2 vạch ngang |
 | 4 | `tg-train` | — (không dùng) | navy | đầu tàu nhìn trước: hộp + 2 bánh + đèn tròn |
-| 5 | `tg-plane` | 4, 12, 20, 28 | navy | máy bay nhìn trên, cánh thẳng |
+| 5 | `tg-plane` | 6, 10, 22, 26 | navy | máy bay nhìn trên, cánh thẳng |
 | 6 | `tg-ship` | — (không dùng) | navy | thân tàu + 1 ống khói + 2 sóng |
 | 7 | `tg-bus` | — (không dùng) | navy | xe buýt nhìn trước: hộp bo + 2 đèn + kính |
-| 8 | `tg-chance` | 6, 18, 22, 29 | gold | dấu hỏi đậm vẽ bằng path (không text) |
+| 8 | `tg-chance` | 4, 18, 20, 29 | gold | dấu hỏi đậm vẽ bằng path (không text) |
 | 9 | `tg-festival` | 16 | gold-deep | ngôi sao 5 cánh đặc (Lễ hội); cũng dùng làm huy hiệu trên ô đang có Lễ hội |
 | 10 | `tg-travel` | 24 | sky-deep | vali: thân chữ nhật + quai chữ U phía trên (Du lịch) |
 | 11 | `tg-jail` | 8 | navy | 3 song dọc + 2 thanh ngang (bản fill) |

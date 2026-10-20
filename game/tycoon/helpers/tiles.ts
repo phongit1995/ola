@@ -3,11 +3,7 @@ import { FESTIVAL_MULTIPLIER, LEVEL_NAMES, STATION_RENT } from '../logic/constan
 import type { TileState } from '../logic/types';
 
 export const TILE_SHORT_NAME: Record<number, string> = {
-  4: 'Nội Bài',
-  10: 'Thuế',
-  12: 'Tân Sơn Nhất',
-  20: 'Cam Ranh',
-  28: 'Long Thành',
+  12: 'Thuế',
   31: 'TP. HCM',
 };
 
