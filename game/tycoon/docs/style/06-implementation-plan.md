@@ -6,7 +6,7 @@ Kế hoạch này chỉ cho phần UI/asset; server và protocol theo `../07-scr
 
 Mục tiêu: có 5 ảnh concept để duyệt art direction, tránh code rồi mới đổi.
 
-- [ ] Concept bàn chơi S6 ở 390 × 844: đủ 32 ô theo `02-board-tiles.md`, 4 bust ô góc, 4 pod, action bar pha `decide`.
+- [x] Concept bàn chơi S6 (20/10/2026, pha `roll`): [`../screenshots/concept-board-pixel-16bit.png`](../screenshots/concept-board-pixel-16bit.png) — ảnh mẫu chuẩn UI v3, pixel 16-bit.
 - [ ] Concept lobby S2 với Bác Tỷ + logo.
 - [ ] Concept sheet S7 ô đất nhóm Đỏ có 2 nhà.
 - [ ] Concept thẻ Cơ hội O2 với Bác Tỷ `happy`.
@@ -27,18 +27,19 @@ DoD: screenshot 3 màn ở 360/390/520 không tràn; typecheck + lint xanh.
 
 ## Giai đoạn 2 — Bàn cờ tĩnh
 
-- [ ] `BoardSurface` SVG: lưới 32 ô, công thức corner/edge, xoay khung + dải theo cạnh.
-- [ ] 13 `tg-*` theo `../06-icon-system.md` §3, màu theo `04-icon-colors.md` §3.
-- [ ] Cấp nhà inline (1–2 nhà, khách sạn), vạch chủ, ô 8 Nhà tù.
-- [ ] Token DOM với ring 2 lớp; fallback `tk-seat-*` SVG trước, raster sau.
+- [ ] `BoardSurface` SVG: lưới 32 ô, công thức corner `.136` / edge chia 7 (`01-foundations.md` §3), xoay khung + dải theo cạnh.
+- [ ] `tg-*` theo `../06-icon-system.md` §3, màu theo `04-icon-colors.md` §3.
+- [ ] 19 tranh pixel `tiles/art/*` (16 thành phố + sân bay + Nhà tù + Lễ hội) và nền `bg-board-pixel` theo `../04-asset-manifest-and-prompts.md` §6.5; tạm dùng ô trống khi chưa có tranh.
+- [ ] Cấp nhà inline trên dải (1–2 nhà, khách sạn, viền cream), vạch chủ mép ngoài, ô 8 Nhà tù.
+- [ ] Quân `tk-pawn.svg` (con tốt) tô màu ghế, DOM tuyệt đối, đế trên mép trong ô (`../03-component-specs.md` §3).
 - [ ] Fixture: ván giữa chừng (4 người, 15 ô có chủ, 3 nhóm trọn, 1 ô cấp 3, 1 người trong tù, 1 phá sản).
 - [ ] Visual check mù màu (simulate deuteranopia) — 8 dải vẫn phân biệt nhờ vị trí + tên trong sheet.
 
-DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 390 đối chiếu concept.
+DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 390 đối chiếu [ảnh mẫu](../screenshots/concept-board-pixel-16bit.png) (trừ 3 chỗ docs giữ, `README.md`).
 
 ## Giai đoạn 3 — Tương tác và replay (tier Lite trước)
 
-- [ ] Sheet S7/S8, cụm lượt giữa bàn theo pha (02 §6.3), TurnClock, RoundChip, FooterBar + dòng sự kiện.
+- [ ] Sheet S7/S8, cụm lượt giữa bàn đủ 9 pha (02 §6.3, gồm `takeover`/`festival`/`travel`), TurnClock, RoundChip, FooterBar + dòng sự kiện.
 - [ ] `fx/tween.ts` + `fx/anchors.ts`; `replay.ts` gọi `effects/*` theo `../08-fx-and-animation.md` §4.
 - [ ] Toàn bộ effect ở cột **Lite** (không hạt): roll, move hop, pay đếm + chip, card flip, build/sell, jail, bankrupt, turn, round, result.
 - [ ] Tier `off` (reduced-motion) cho mọi effect.
@@ -59,8 +60,8 @@ DoD: cùng fixture 40 step chạy Full không lỗi JS, canvas rỗng sau 2 s cu
 ## Giai đoạn 4 — Nhân vật và raster
 
 - [ ] Sinh 6 nhân vật × 4 pose × 2 crop theo `03-characters.md` §5, log từng file.
-- [ ] Sinh 8 quân, bg-lobby, logo theo `../04-asset-manifest-and-prompts.md`.
-- [ ] Gắn nhân vật vào 16 vị trí trong `03-characters.md` §4; preload groups cập nhật.
+- [ ] Logo theo `../04-asset-manifest-and-prompts.md` §6.2. Nền sảnh dùng chung `bg-board-pixel` (không có `bg-lobby`). 8 quân raster để v2.
+- [ ] Gắn nhân vật vào các vị trí trong `03-characters.md` §4 (UI v3 không có bust trên ô góc); preload groups cập nhật.
 - [ ] QA grayscale 6 nhân vật ở 30 px; budget ≤ 800 KB toàn bộ assets.
 - [ ] App icon SVG + PNG 1024.
 

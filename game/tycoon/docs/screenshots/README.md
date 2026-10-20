@@ -2,30 +2,26 @@
 
 ![Ảnh mẫu bàn chơi](./concept-board-pixel-16bit.png)
 
-[`concept-board-pixel-16bit.png`](./concept-board-pixel-16bit.png) là **ảnh mẫu duy nhất** cho giao diện bàn chơi, phong cách **pixel 16-bit**, chốt ngày 20/10/2026. Ảnh được tạo bằng AI (built-in imagegen) để tham khảo. Đây không phải asset của game: code không import ảnh này, và không được cắt ảnh này ra để dùng trong game.
+[`concept-board-pixel-16bit.png`](./concept-board-pixel-16bit.png) là **ảnh mẫu chuẩn** cho giao diện Cờ Tỷ Phú (UI v3, phong cách **pixel 16-bit**, chốt ngày 20/10/2026). Ảnh tạo bằng AI (built-in imagegen) để tham khảo. Đây không phải asset của game: code không import ảnh này, và không cắt ảnh ra để dùng.
 
-## Lấy gì từ ảnh mẫu
+Docs đã được sửa theo ảnh này: [art direction](../01-art-direction.md), [hệ style](../style/README.md), [bảng 32 ô](../style/02-board-tiles.md), [component](../03-component-specs.md), [màn bàn chơi](../02-screen-specs.md), [asset](../04-asset-manifest-and-prompts.md), [icon](../06-icon-system.md).
 
-- **Phong cách:** cảnh địa danh Việt Nam vẽ pixel 16-bit nhiều lớp, nền trời sáng, nét viền navy, nút chính màu vàng, chữ hiện đại và sắc nét.
-- **Bố cục:** bàn vuông nhìn thẳng từ trên xuống, gồm 32 ô (4 góc và 7 ô giữa hai góc trên mỗi cạnh). Cụm lượt (đồng hồ, xúc xắc, nút "Gieo xúc xắc") nằm giữa bàn. Bốn thẻ người chơi xếp một hàng dưới bàn. Footer là thanh tiện ích.
-- **Quân cờ:** 4 màu là vàng, xanh, san hô, tím; mỗi người chơi đúng một quân.
+## Ảnh mẫu là chuẩn cho
 
-## Không lấy từ ảnh mẫu
+- **Nền màn:** trời xanh, mây và cây pixel ở viền.
+- **Ô bàn:** mỗi thành phố một tranh pixel 16-bit; sân bay chung một tranh máy bay; Cơ hội `?` cam, Khí vận gió xanh, Thuế túi tiền `%`; nền ô sáng.
+- **Ô góc:** `XUẤT PHÁT` mũi tên xanh lá; `NHÀ TÙ` tranh phòng giam có `Thăm tù`; `LỄ HỘI` nền navy đèn lồng, `Thuê x2`; `DU LỊCH` vali cam, `Bay lượt sau`.
+- **Giữa bàn:** chồng thẻ `CƠ HỘI` cam và `KHÍ VẬN` xanh; chip `Lượt của bạn` + đồng hồ; 2 xúc xắc trắng nổi khối; nút vàng `Gieo xúc xắc` hình viên thuốc nổi khối; dòng gợi ý `Thắng ngay`.
+- **Quân:** con tốt màu ghế (vàng, xanh, san hô, tím), đứng ở mép trong ô.
+- **Header, pod, footer:** logo vàng nổi khối, chip vòng, nút tròn trắng; 4 pod một hàng dưới bàn; pill `Tài sản`, `Diễn biến`.
 
-- Tên ô, thứ tự, giá, tiền thuê, màu nhóm, chủ sở hữu và trạng thái luôn lấy từ [`logic/board.json`](../../logic/board.json) và dữ liệu ván chơi. Chữ dựng bằng DOM, không cắt từ ảnh.
-- Tiền trên các thẻ người chơi trong ảnh chỉ là số minh họa giữa ván.
+## Docs vẫn thắng ảnh ở
 
-## Chỗ ảnh chưa đúng — khi dựng UI phải sửa
-
-- Bàn trong ảnh hơi cao hơn rộng. Khi dựng phải khóa tỷ lệ **1:1**.
-- Một số dải màu nhóm bị lặp ở mép ngoài. Dải màu nhóm **chỉ nằm ở mép trong** và chỉ có trên ô thành phố.
-- Dòng sự kiện xuất hiện ở cả vùng log lẫn footer. Chỉ dùng **một vùng log** theo đặc tả.
+- **Dữ liệu:** tên ô, thứ tự, giá, tiền thuê, chủ sở hữu, trạng thái lấy từ [`logic/board.json`](../../logic/board.json) và ván chơi; chữ dựng bằng DOM. Tiền trên pod trong ảnh chỉ là số minh họa.
+- **Mã màu nhóm đất và màu ghế:** dùng token trong [`style/01-foundations.md`](../style/01-foundations.md); ảnh vẽ đậm hơn (ví dụ hồng gần magenta).
+- **Ba chỗ ảnh tự mâu thuẫn:**
+  - bàn hơi cao hơn rộng → khi dựng khóa **1:1**;
+  - dải màu hàng trên nằm ở mép ngoài và tên đè lên dải → đặt dải ở **mép trong** như 3 cạnh còn lại, không có chữ trên dải;
+  - log xuất hiện ở cả thẻ Diễn biến lẫn footer → chỉ **một vùng log** tại một thời điểm.
 
 Ảnh mẫu chỉ có pha gieo xúc xắc. Các pha mua, mua lại, lễ hội, du lịch, quản lý và nợ dùng chung bố cục này; nội dung giữa bàn theo [đặc tả màn hình](../02-screen-specs.md).
-
-## Tài liệu liên quan
-
-- [Đặc tả màn hình](../02-screen-specs.md)
-- [Luật chơi](../05-gameplay-rules-and-protocol.md)
-- [Danh sách ô](../10-board-tiles.md)
-- [Hệ style](../style/README.md)

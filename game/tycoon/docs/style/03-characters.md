@@ -42,7 +42,7 @@ Pose `point` luôn chỉ **sang phải**; đặt nhân vật bên trái nội du
 |---|---|---|---|---|
 | S2 lobby, cạnh logo | Bác Tỷ | idle | full | 120 |
 | S2 lobby, lỗi kết nối | Bác Tỷ | sad | full | 96 |
-| Ô 0 / 10 / 20 / 30 | Bé Lộc / Anh Tèo / Mèo Đậu / Chú Cảnh | idle (đổi tạm theo 02 §3) | bust | 30 (22 cho Tèo) |
+| Ô 8 Nhà tù (UI v3) | Anh Tèo | vẽ pixel sẵn trong tranh `art/nha-tu` | — | theo tranh |
 | S7 header | theo kind (02 §5) | idle/point | full | 64 |
 | O2 thẻ Cơ hội | Bác Tỷ | happy nếu +tiền/di chuyển, sad nếu −tiền, point nếu vào tù | full | 72, góc trái dưới thẻ |
 | O2 thẻ Khí vận | Cô Ngân | như trên | full | 72 |
@@ -57,7 +57,7 @@ Pose `point` luôn chỉ **sang phải**; đặt nhân vật bên trái nội du
 | Empty state lịch sử | Mèo Đậu | idle | full | 96 |
 | Toast lỗi | Chú Cảnh | point | bust | 20 |
 
-Tổng file: 6 nhân vật × 4 pose × 2 crop = **48 webp**. Ước lượng 4–8 KB/full, 2–3 KB/bust → ≈ 260 KB. Preload: 4 bust `idle` của ô góc trong nhóm BOARD; các pose khác idle batch; lobby chỉ cần `ty-idle-full`.
+Tổng file: 6 nhân vật × 4 pose × 2 crop = **48 webp**. Ước lượng 4–8 KB/full, 2–3 KB/bust → ≈ 260 KB. Preload: UI v3 không còn bust trên ô góc; các pose khác idle batch; lobby chỉ cần `ty-idle-full`.
 
 Cắt giảm nếu budget căng: bỏ crop `bust` của Bác Tỷ/Cô Ngân pose sad (không dùng), còn 44 file.
 

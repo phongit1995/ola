@@ -12,14 +12,14 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 
 ## Hướng duy nhất
 
-**Phố Thị Rực Rỡ** là design system duy nhất cho UI Cờ Tỷ Phú. Ngôn ngữ hình ảnh: bàn cờ giấy kem, 8 dải màu nhóm đất rõ ràng, phố Việt phẳng và tươi, outline navy đồng nhất với hệ mini-game Ola, CTA vàng nắng, tiền xanh ngọc, nguy hiểm san hô. Production ưu tiên CSS/SVG code-native (bàn cờ, ô, nhà, xúc xắc, thẻ đều là SVG/DOM); raster chỉ dùng cho quân cờ, nền lobby và logo.
+**Phố Thị Rực Rỡ** là design system duy nhất cho UI Cờ Tỷ Phú. **UI v3 (20/10/2026) theo ảnh mẫu pixel 16-bit** [`screenshots/concept-board-pixel-16bit.png`](./screenshots/concept-board-pixel-16bit.png): nền trời pixel, mỗi thành phố một tranh phong cảnh pixel trong ô, 8 dải màu nhóm đất, UI mượt viền navy, CTA vàng nổi khối, quân con tốt màu ghế, tiền xanh ngọc, nguy hiểm san hô. Production: bàn, ô, nhà, xúc xắc, thẻ, quân là SVG/DOM; raster cho tranh pixel ô, nền trời, logo và nhân vật.
 
 ## Phạm vi v1 (đề xuất chốt)
 
 - PvP **2–4 người**, chơi theo bàn (room) như Tiến Lên; không có hàng đợi ghép nhanh.
 - **Cược KEN = 0** trong v1 (giống Tiến Lên v1): engine hiện mới chia tiền cho 2 người (`Player0ID/Player1ID`); chia pot theo `Rankings` là việc của v2. Thắng/thua vẫn ghi lịch sử, bảng xếp hạng và cộng XP.
 - Bàn **32 ô** (16 thành phố Việt Nam, 8 nhóm × 2), Xuất phát ở góc dưới-trái, đi thuận kim đồng hồ; tiền trong ván tính bằng **triệu** (`tr`), vốn khởi đầu `1.500 tr`.
-- **Giới hạn ván**: `MAX_ROUNDS = 20` vòng (mỗi vòng = mọi người còn chơi đã kết thúc lượt một lần). Hết vòng → xếp hạng theo **tổng tài sản**. Chỉ còn 1 người chưa phá sản → kết thúc sớm.
+- **Giới hạn ván**: `MAX_ROUNDS = 30` vòng hoặc 25 phút (mỗi vòng = mọi người còn chơi đã kết thúc lượt một lần). Hết vòng → xếp hạng theo **tổng tài sản**. Chỉ còn 1 người chưa phá sản → kết thúc sớm.
 - Có: gieo xúc xắc (đôi được gieo lại, 3 đôi liên tiếp vào tù), mua đất, thu tiền thuê tự động, nâng 3 cấp nhà (Nhà → Biệt thự → Khách sạn) đều tay, hạ cấp hoàn nửa giá, nhà tù (nộp phạt / thẻ ra tù / gieo đôi), thẻ Cơ hội và Khí vận, phá sản. Giá và cân bằng: [09-economy.md](./09-economy.md).
 - Không có (v2): đấu giá khi bỏ mua, trao đổi đất, thế chấp, cược KEN, xem trận (bị engine chặn vì game dùng `StateViewer` — xem 05 §9).
 - **30 giây** cho mỗi hành động; hết giờ server tự làm thay (gieo, bỏ mua, kết thúc lượt, tự bán nhà để trả nợ). 3 lần hết giờ liên tiếp hoặc thoát giữa ván = phá sản kỹ thuật, ván tiếp tục với người còn lại.
@@ -99,12 +99,13 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 ```text
 game/tycoon/assets/
   app-icons/        # app icon: SVG nguồn + PNG bo góc 1024 px (convention thirteen)
-  tokens/           # 8 quân cờ webp (raster, 96 px) — xem 04 §3
+  tokens/           # tk-pawn.svg (UI v3); 8 quân webp 96 px cho v2 — xem 04 §3
   chars/            # 6 nhân vật × 4 pose × 2 crop webp — xem style/03-characters.md
   icons/            # ic-* SVG điều khiển (grid 24) — xem 06
-  tiles/            # tg-* SVG glyph ô bàn cờ (grid 32) — xem 06 §4
+  tiles/            # tg-* SVG glyph ô bàn cờ (grid 32) — xem 06 §3
+  tiles/art/        # 19 tranh pixel 16-bit trong ô — xem 04 §6.5
   dice/             # 6 mặt xúc xắc SVG — xem 06 §6
-  lobby/            # bg-lobby.webp, logo.webp
+  lobby/            # bg-board-pixel.webp (nền trời dùng chung mọi màn), logo.webp
   fx/               # fx-result-*.webp nếu CSS không đủ
 ```
 
