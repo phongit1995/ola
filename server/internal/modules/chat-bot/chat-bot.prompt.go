@@ -13,7 +13,7 @@ const (
 	promptUserLabel      = "[User]: %s"
 )
 
-func buildPrompt(req *CompletionRequest) (string, error) {
+func buildPrompt(req *CompletionRequest, bot persona) (string, error) {
 	var sections []string
 	for _, msg := range req.Messages {
 		text := strings.TrimSpace(msg.Content)
@@ -36,7 +36,6 @@ func buildPrompt(req *CompletionRequest) (string, error) {
 		return "", errEmptyPrompt
 	}
 
-	bot := personaOf(req.Type)
 	head := fmt.Sprintf(promptSystemLabel, bot.systemPrompt)
 	// Model bám chỉ dẫn ở cuối prompt mạnh hơn ở đầu, nhắc lại để nó không rơi về giọng mặc định.
 	reminder := fmt.Sprintf(promptSystemLabel, bot.identityReminder)

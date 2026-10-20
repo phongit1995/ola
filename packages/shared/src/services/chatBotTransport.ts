@@ -11,9 +11,23 @@ export class ChatBotStreamError extends Error {
   }
 }
 
+export interface ChatBotErrorBody {
+  message: string;
+  code?: string;
+}
+
+export function parseChatBotErrorBody(body: string, fallback: string): ChatBotErrorBody {
+  try {
+    const parsed = JSON.parse(body) as { error?: string; code?: string };
+    return { message: parsed.error ?? fallback, code: parsed.code };
+  } catch {
+    return { message: fallback };
+  }
+}
+
 export interface ChatBotStreamResponse {
   status: number;
-  readErrorMessage: () => Promise<string>;
+  readError: () => Promise<ChatBotErrorBody>;
   readStream: (onChunk: (text: string) => boolean) => Promise<void>;
 }
 

@@ -1,4 +1,4 @@
-import type { PushAudience, PushCampaignStatus } from '@/types'
+import type { ChatBotType, PushAudience, PushCampaignStatus } from '@/types'
 
 export const CREDENTIAL_KEY = 'push_firebase'
 
@@ -21,4 +21,19 @@ export const PUSH_CAMPAIGN_STATUS_TAG: Record<PushCampaignStatus, { label: strin
   sending: { label: 'Đang gửi', color: 'processing' },
   done: { label: 'Đã gửi', color: 'green' },
   failed: { label: 'Thất bại', color: 'red' },
+}
+
+export const CHAT_BOT_SETTING_KEY = 'chat_bot'
+
+export const CHAT_BOT_DAILY_LIMIT_MAX = 100_000
+
+export const CHAT_BOT_PROMPT_MAX = 20_000
+
+export const CHAT_BOT_REMINDER_MAX = 5_000
+
+export const CHAT_BOT_TYPES: ChatBotType[] = ['OLALA', 'OLAVI']
+
+export const CHAT_BOT_LABEL: Record<ChatBotType, string> = {
+  OLALA: 'Olala (trợ lý trò chuyện)',
+  OLAVI: 'Olavi (thầy tử vi)',
 }

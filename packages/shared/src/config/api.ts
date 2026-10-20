@@ -56,6 +56,7 @@ export const API_PATH = {
     usernameChange: '/settings/username-change',
     wordChain: '/settings/word-chain',
     story: '/settings/story',
+    chatBot: '/settings/chat-bot',
   },
   announcements: {
     latest: '/announcements/latest',

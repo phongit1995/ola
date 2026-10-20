@@ -29,7 +29,15 @@ export type ChatBotErrorCode =
   | 'rateLimited'
   | 'upstream'
   | 'network'
-  | 'emptyPrompt';
+  | 'emptyPrompt'
+  | 'disabled'
+  | 'dailyLimit';
+
+export interface ChatBotConfigState {
+  enabledBots: ChatBotType[];
+  dailyLimit: number;
+  load: () => Promise<void>;
+}
 
 export type ChatBotSurfaceKind = 'out' | 'in' | 'failed';
 

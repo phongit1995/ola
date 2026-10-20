@@ -330,6 +330,19 @@ func RespondError(c *gin.Context, status int, message string) {
 	})
 }
 
+func RespondErrorWithCode(c *gin.Context, status int, message, code string) {
+	traceID := getOrCreateTraceID(c)
+	c.JSON(status, ApiResponse{
+		Success:   false,
+		Status:    status,
+		TraceID:   traceID,
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Path:      c.Request.URL.Path,
+		Error:     message,
+		Code:      code,
+	})
+}
+
 // RespondSuccess dùng cho handler RawPOST tự ghi response nhưng vẫn cần đúng envelope.
 func RespondSuccess(c *gin.Context, status int, data any) {
 	traceID := getOrCreateTraceID(c)

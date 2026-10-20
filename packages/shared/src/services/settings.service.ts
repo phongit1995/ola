@@ -1,6 +1,7 @@
 import { http } from '../api/http';
 import { API_PATH } from '../config/api';
 import type {
+  ChatBotConfigResult,
   StoryConfigResult,
   TopupConfigResult,
   UpdateSettingsRequest,
@@ -28,6 +29,10 @@ export class SettingsService {
 
   static wordChainConfig(): Promise<WordChainConfigResult> {
     return http.get<WordChainConfigResult>(API_PATH.appSettings.wordChain);
+  }
+
+  static chatBotConfig(): Promise<ChatBotConfigResult> {
+    return http.get<ChatBotConfigResult>(API_PATH.appSettings.chatBot);
   }
 
   static storyConfig(): Promise<StoryConfigResult> {

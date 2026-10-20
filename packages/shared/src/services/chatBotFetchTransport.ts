@@ -1,15 +1,19 @@
-import { ChatBotStreamError, type ChatBotTransport } from './chatBotTransport';
+import {
+  ChatBotStreamError,
+  parseChatBotErrorBody,
+  type ChatBotErrorBody,
+  type ChatBotTransport,
+} from './chatBotTransport';
 
 function isAbort(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
 }
 
-async function errorMessageOf(response: Response): Promise<string> {
+async function errorOf(response: Response): Promise<ChatBotErrorBody> {
   try {
-    const body = (await response.json()) as { error?: string };
-    return body.error ?? response.statusText;
+    return parseChatBotErrorBody(await response.text(), response.statusText);
   } catch {
-    return response.statusText;
+    return { message: response.statusText };
   }
 }
 
@@ -27,7 +31,7 @@ export const fetchChatBotTransport: ChatBotTransport = async (
 
   return {
     status: response.status,
-    readErrorMessage: () => errorMessageOf(response),
+    readError: () => errorOf(response),
     readStream: async (onChunk) => {
       if (response.body == null) throw new ChatBotStreamError('upstream');
 

@@ -107,6 +107,30 @@ func (ctrl *Controller) WordChainConfig(c *gin.Context) (interface{}, error) {
 	return cfg, nil
 }
 
+// ChatBotConfig godoc
+// @Summary      Bot nào đang bật và giới hạn lượt chat mỗi ngày (0 = không giới hạn)
+// @Tags         settings
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  ChatBotPublicConfigSuccessResponse
+// @Failure      401  {object}  utils.APIError
+// @Router       /settings/chat-bot [get]
+func (ctrl *Controller) ChatBotConfig(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+
+	cfg, err := ctrl.service.GetChatBot()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	bots := make([]ChatBotAvailability, 0, len(ChatBotTypes()))
+	for _, botType := range ChatBotTypes() {
+		bots = append(bots, ChatBotAvailability{Type: botType, Enabled: cfg.Bot(botType).Enabled})
+	}
+	return ChatBotPublicConfig{DailyLimit: cfg.DailyLimit, Bots: bots}, nil
+}
+
 // StoryConfig godoc
 // @Summary      Truyện có đang bật cho app đang gọi không
 // @Description  Server đọc nền tảng (web | android | ios) và phiên bản app từ header, so với cấu hình bật/tắt và danh sách bản bị tắt của nền tảng đó. Thiếu X-Platform thì tính là web

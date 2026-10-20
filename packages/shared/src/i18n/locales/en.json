@@ -431,6 +431,8 @@
     "chatBotErrorRateLimited": "You are sending too fast, try again in a few minutes.",
     "chatBotErrorUpstream": "Olala is not responding, please try again.",
     "chatBotErrorNetwork": "Cannot connect, please check your network.",
+    "chatBotErrorDisabled": "This bot is taking a break, please come back later.",
+    "chatBotErrorDailyLimit": "You have used all of today's chats, come back tomorrow.",
     "fortuneBot": "Olavi",
     "fortuneBotSub": "Fortune readings for love, luck and life",
     "fortuneBotThinking": "casting a reading...",

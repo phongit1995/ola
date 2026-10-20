@@ -10,6 +10,13 @@ export const CHAT_BOT_TYPE = {
 
 export const CHAT_BOT_DEFAULT_TYPE = CHAT_BOT_TYPE.olala;
 
+export const CHAT_BOT_API_ERROR_CODE = {
+  disabled: 'CHAT_BOT_DISABLED',
+  dailyLimit: 'CHAT_BOT_DAILY_LIMIT',
+} as const;
+
+export const CHAT_BOT_FINAL_ERRORS: readonly ChatBotErrorCode[] = ['disabled', 'dailyLimit'];
+
 export const CHAT_BOT_VISIBLE_SUGGESTIONS = 3;
 
 export interface ChatBotI18n {
@@ -28,6 +35,8 @@ const SHARED_ERROR_KEYS = {
   auth: 'chat.chatBotErrorAuth',
   rateLimited: 'chat.chatBotErrorRateLimited',
   network: 'chat.chatBotErrorNetwork',
+  disabled: 'chat.chatBotErrorDisabled',
+  dailyLimit: 'chat.chatBotErrorDailyLimit',
 } as const;
 
 export const CHAT_BOT_I18N = {

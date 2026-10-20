@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { App, Avatar, Badge, Dropdown, Layout, Menu, Space, Typography } from 'antd'
 import {
   AimOutlined,
+  RobotOutlined,
   BellOutlined,
   AppstoreOutlined,
   CommentOutlined,
@@ -114,6 +115,7 @@ const MENU_ITEMS = [
       { key: '/settings/announcements', icon: <NotificationOutlined />, label: 'Thông báo banner' },
       { key: '/settings/notification', icon: <BellOutlined />, label: 'Thông báo đẩy' },
       { key: '/settings/push-campaigns', icon: <SendOutlined />, label: 'Gửi push' },
+      { key: '/settings/chat-bot', icon: <RobotOutlined />, label: 'Chat-bot' },
     ],
   },
 ]
@@ -162,6 +164,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/settings/announcements': 'Thông báo banner',
   '/settings/notification': 'Cài đặt thông báo đẩy',
   '/settings/push-campaigns': 'Gửi push thông báo',
+  '/settings/chat-bot': 'Cài đặt chat-bot',
   [REPORTS_PATH]: REPORTS_LABEL,
 }
 

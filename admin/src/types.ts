@@ -1,4 +1,5 @@
 import type {
+  ChatBotType,
   ReportReason,
   ReportTargetType,
   Story,
@@ -2286,4 +2287,20 @@ export interface CreatePushCampaignRequest {
 export interface PushAudienceCount {
   users: number
   devices: number
+}
+
+export type { ChatBotType }
+
+export interface ChatBotPrompt {
+  systemPrompt: string
+  identityReminder: string
+}
+
+export interface ChatBotBotSetting extends ChatBotPrompt {
+  enabled: boolean
+}
+
+export interface ChatBotSetting {
+  dailyLimit: number
+  bots: Record<ChatBotType, ChatBotBotSetting>
 }

@@ -189,7 +189,7 @@ describe('xhrChatBotTransport', () => {
     expect(xhr.aborted).toBe(true);
   });
 
-  it('readErrorMessage đợi body xong rồi lấy field error', async () => {
+  it('readError đợi body xong rồi lấy field error và code', async () => {
     const controller = new AbortController();
     const pending = xhrChatBotTransport(request, controller.signal);
     await flush();
@@ -200,11 +200,14 @@ describe('xhrChatBotTransport', () => {
     if (response == null) throw new Error('response is null');
     expect(response.status).toBe(502);
 
-    const message = response.readErrorMessage();
-    xhr.pushText('{"error":"chat bot upstream rejected request"}');
+    const error = response.readError();
+    xhr.pushText('{"error":"chat bot daily limit reached","code":"CHAT_BOT_DAILY_LIMIT"}');
     xhr.finish();
 
-    await expect(message).resolves.toBe('chat bot upstream rejected request');
+    await expect(error).resolves.toEqual({
+      message: 'chat bot daily limit reached',
+      code: 'CHAT_BOT_DAILY_LIMIT',
+    });
   });
 
   it('trả null khi signal đã abort từ trước', async () => {

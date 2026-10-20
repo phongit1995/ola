@@ -26,6 +26,18 @@ type UsernameChangeConfigSuccessResponse = utils.BaseResponse[UsernameChangeConf
 
 type WordChainConfigSuccessResponse = utils.BaseResponse[WordChainConfig]
 
+type ChatBotAvailability struct {
+	Type    string `json:"type" example:"OLALA"`
+	Enabled bool   `json:"enabled" example:"true"`
+}
+
+type ChatBotPublicConfig struct {
+	DailyLimit int                   `json:"dailyLimit" example:"50"`
+	Bots       []ChatBotAvailability `json:"bots"`
+}
+
+type ChatBotPublicConfigSuccessResponse = utils.BaseResponse[ChatBotPublicConfig]
+
 type FeatureEnabledResponse struct {
 	Enabled bool `json:"enabled" example:"true"`
 }

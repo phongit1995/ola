@@ -426,6 +426,13 @@ const (
 )
 
 const (
+	CacheKeyChatBotDaily       = "CHAT_BOT:DAILY:%s:%s"
+	ChatBotDailyResetTZ        = "Asia/Ho_Chi_Minh"
+	ErrorCodeChatBotDisabled   = "CHAT_BOT_DISABLED"
+	ErrorCodeChatBotDailyLimit = "CHAT_BOT_DAILY_LIMIT"
+)
+
+const (
 	CacheTTLUserProfile         = 3600
 	CacheTTLUserSession         = 86400
 	CacheTTLConversation        = 1800

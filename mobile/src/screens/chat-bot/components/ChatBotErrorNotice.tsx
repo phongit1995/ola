@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
-import { CHAT_BOT_I18N } from '@ola/shared/constants';
+import { CHAT_BOT_FINAL_ERRORS, CHAT_BOT_I18N } from '@ola/shared/constants';
 import type { ChatBotErrorCode, ChatBotType } from '@ola/shared/types';
 
 interface ChatBotErrorNoticeProps {
@@ -26,21 +26,23 @@ export function ChatBotErrorNotice({
           {t(CHAT_BOT_I18N[bot].errors[code])}
         </Text>
       </View>
-      <Pressable
-        onPress={onRetry}
-        className="rounded-full bg-white px-4 py-1.5 active:opacity-80"
-        style={{
-          shadowColor: '#000',
-          shadowOpacity: 0.08,
-          shadowRadius: 2,
-          shadowOffset: { width: 0, height: 1 },
-          elevation: 1,
-        }}
-      >
-        <Text className="text-xs font-bold text-ola-primary">
-          {t('chat.chatBotRetry')}
-        </Text>
-      </Pressable>
+      {!CHAT_BOT_FINAL_ERRORS.includes(code) && (
+        <Pressable
+          onPress={onRetry}
+          className="rounded-full bg-white px-4 py-1.5 active:opacity-80"
+          style={{
+            shadowColor: '#000',
+            shadowOpacity: 0.08,
+            shadowRadius: 2,
+            shadowOffset: { width: 0, height: 1 },
+            elevation: 1,
+          }}
+        >
+          <Text className="text-xs font-bold text-ola-primary">
+            {t('chat.chatBotRetry')}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }

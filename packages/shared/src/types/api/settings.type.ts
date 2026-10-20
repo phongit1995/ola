@@ -1,3 +1,5 @@
+import type { ChatBotType } from '../client/chatBot.type';
+
 export type MessagePrivacy = 'all' | 'friends';
 export type MeVisibility = 'all' | 'friends';
 export type CommentPrivacy = 'all' | 'friends';
@@ -45,6 +47,11 @@ export interface TopupConfigResult {
 export interface UsernameChangeTier {
   minLength: number;
   cost: number;
+}
+
+export interface ChatBotConfigResult {
+  dailyLimit: number;
+  bots: { type: ChatBotType; enabled: boolean }[];
 }
 
 export interface WordChainConfigResult {

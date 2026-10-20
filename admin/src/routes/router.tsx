@@ -24,6 +24,7 @@ import { MiniGamePage } from '@/pages/games/mini-game/MiniGamePage'
 import { MePage } from '@/pages/me/MePage'
 import { ReportsPage } from '@/pages/reports/ReportsPage'
 import { PushCampaignPage } from '@/pages/settings/PushCampaignPage'
+import { ChatBotSettingsPage } from '@/pages/settings/ChatBotSettingsPage'
 import { TopupSettingsPage } from '@/pages/topup/TopupSettingsPage'
 import { TopupTransactionsPage } from '@/pages/topup/TopupTransactionsPage'
 import { UsernameChangeSettingsPage } from '@/pages/username-change/UsernameChangeSettingsPage'
@@ -87,6 +88,7 @@ export const router = createBrowserRouter([
       { path: 'settings/announcements', element: <AnnouncementPage /> },
       { path: 'settings/notification', element: <NotificationSettingsPage /> },
       { path: 'settings/push-campaigns', element: <PushCampaignPage /> },
+      { path: 'settings/chat-bot', element: <ChatBotSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },
     ],
   },
