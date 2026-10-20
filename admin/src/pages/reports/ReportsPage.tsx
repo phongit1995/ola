@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Button, Card, Input, Select, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
+import { Badge, Button, Card, Input, Select, Space, Table, Tag, type TableColumnsType } from 'antd'
 import { EyeOutlined } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
 import { UserBriefCell } from '@/components/UserBriefCell'
@@ -75,11 +75,8 @@ export function ReportsPage() {
     {
       title: 'Nội dung',
       key: 'content',
-      render: (_, report) => (
-        <Typography.Text ellipsis style={{ maxWidth: 280 }}>
-          {reportExcerpt(report)}
-        </Typography.Text>
-      ),
+      ellipsis: true,
+      render: (_, report) => reportExcerpt(report),
     },
     {
       title: 'Người bị báo cáo',
@@ -147,7 +144,7 @@ export function ReportsPage() {
         columns={columns}
         dataSource={data?.items ?? []}
         loading={isFetching}
-        scroll={{ x: 1200 }}
+        scroll={{ x: 1360 }}
         onRow={(report) => ({ onDoubleClick: () => setSelected(report) })}
         pagination={{
           current: page,

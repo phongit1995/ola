@@ -94,7 +94,6 @@ const MENU_ITEMS = [
     ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
-  { key: REPORTS_PATH, icon: <WarningOutlined />, label: REPORTS_LABEL },
   {
     key: 'stories',
     icon: <ReadOutlined />,
@@ -118,6 +117,7 @@ const MENU_ITEMS = [
       { key: '/settings/chat-bot', icon: <RobotOutlined />, label: 'Chat-bot' },
     ],
   },
+  { key: REPORTS_PATH, icon: <WarningOutlined />, label: REPORTS_LABEL },
 ]
 
 const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
