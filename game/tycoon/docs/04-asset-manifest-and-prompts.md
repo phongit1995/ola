@@ -88,7 +88,7 @@ Hạng 1: pháo giấy + xu gold; hạng 2–3: huy hiệu; phá sản: ví rỗ
 
 ### 6.5 Tranh pixel 16-bit (UI v3)
 
-Nguồn phong cách: [ảnh mẫu](./screenshots/concept-board-pixel-16bit.png). Không dùng base flat-vector ở trên; prompt riêng:
+Nguồn phong cách: [ảnh mẫu](./screenshots/concept-s6-board-pixel-16bit.png). Không dùng base flat-vector ở trên; prompt riêng:
 
 Base: "16-bit pixel art, SNES era, limited palette, crisp hard pixel edges, no anti-aliasing, no dithering noise, bright daytime sky, side view landscape, no text, no letters, no logos". Negative: "no smooth vector, no photorealism, no 3d render, no blur, no watermark".
 

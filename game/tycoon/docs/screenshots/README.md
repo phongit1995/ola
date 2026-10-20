@@ -1,8 +1,10 @@
 # Ảnh mẫu UI — Cờ Tỷ Phú
 
-![Ảnh mẫu bàn chơi](./concept-board-pixel-16bit.png)
+![Ảnh mẫu bàn chơi](./concept-s6-board-pixel-16bit.png)
 
-[`concept-board-pixel-16bit.png`](./concept-board-pixel-16bit.png) là **ảnh mẫu chuẩn** cho giao diện Cờ Tỷ Phú (UI v3, phong cách **pixel 16-bit**, chốt ngày 20/10/2026). Ảnh tạo bằng AI (built-in imagegen) để tham khảo. Đây không phải asset của game: code không import ảnh này, và không cắt ảnh ra để dùng.
+[`concept-s6-board-pixel-16bit.png`](./concept-s6-board-pixel-16bit.png) là **ảnh mẫu chuẩn** cho giao diện Cờ Tỷ Phú (UI v3, phong cách **pixel 16-bit**, chốt ngày 20/10/2026). Ảnh tạo bằng AI (built-in imagegen) để tham khảo. Đây không phải asset của game: code không import ảnh này, và không cắt ảnh ra để dùng.
+
+Ảnh thuộc màn **S6. Bàn chơi** (`BoardScreen`, [02 §S6](../02-screen-specs.md)), pha `roll`. Quy ước tên: `concept-s{số màn}-{tên màn}-{style}.png`, ví dụ màn S7 vẽ sau sẽ là `concept-s7-tile-sheet-pixel-16bit.png`.
 
 Docs đã được sửa theo ảnh này: [art direction](../01-art-direction.md), [hệ style](../style/README.md), [bảng 32 ô](../style/02-board-tiles.md), [component](../03-component-specs.md), [màn bàn chơi](../02-screen-specs.md), [asset](../04-asset-manifest-and-prompts.md), [icon](../06-icon-system.md).
 

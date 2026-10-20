@@ -6,7 +6,7 @@ Kế hoạch này chỉ cho phần UI/asset; server và protocol theo `../07-scr
 
 Mục tiêu: có 5 ảnh concept để duyệt art direction, tránh code rồi mới đổi.
 
-- [x] Concept bàn chơi S6 (20/10/2026, pha `roll`): [`../screenshots/concept-board-pixel-16bit.png`](../screenshots/concept-board-pixel-16bit.png) — ảnh mẫu chuẩn UI v3, pixel 16-bit.
+- [x] Concept bàn chơi S6 (20/10/2026, pha `roll`): [`../screenshots/concept-s6-board-pixel-16bit.png`](../screenshots/concept-s6-board-pixel-16bit.png) — ảnh mẫu chuẩn UI v3, pixel 16-bit.
 - [ ] Concept lobby S2 với Bác Tỷ + logo.
 - [ ] Concept sheet S7 ô đất nhóm Đỏ có 2 nhà.
 - [ ] Concept thẻ Cơ hội O2 với Bác Tỷ `happy`.
@@ -35,7 +35,7 @@ DoD: screenshot 3 màn ở 360/390/520 không tràn; typecheck + lint xanh.
 - [ ] Fixture: ván giữa chừng (4 người, 15 ô có chủ, 3 nhóm trọn, 1 ô cấp 3, 1 người trong tù, 1 phá sản).
 - [ ] Visual check mù màu (simulate deuteranopia) — 8 dải vẫn phân biệt nhờ vị trí + tên trong sheet.
 
-DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 390 đối chiếu [ảnh mẫu](../screenshots/concept-board-pixel-16bit.png) (trừ 3 chỗ docs giữ, `README.md`).
+DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 390 đối chiếu [ảnh mẫu](../screenshots/concept-s6-board-pixel-16bit.png) (trừ 3 chỗ docs giữ, `README.md`).
 
 ## Giai đoạn 3 — Tương tác và replay (tier Lite trước)
 

@@ -5,7 +5,7 @@ Thư mục này là đặc tả triển khai chi tiết cho hướng mỹ thuậ
 - Tên hiển thị: **Phố Thị Rực Rỡ**.
 - ID dùng trong ticket/design review: `tycoon-city-v1`.
 - Viewport thiết kế gốc: `390 × 844 CSS px`, responsive `360–520 px`, có safe-area.
-- **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`../screenshots/concept-board-pixel-16bit.png`](../screenshots/concept-board-pixel-16bit.png) (xem [README ảnh mẫu](../screenshots/README.md)).
+- **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`../screenshots/concept-s6-board-pixel-16bit.png`](../screenshots/concept-s6-board-pixel-16bit.png) (xem [README ảnh mẫu](../screenshots/README.md)).
 
 ## Ảnh mẫu và docs — cái nào thắng
 

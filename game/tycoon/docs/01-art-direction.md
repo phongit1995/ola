@@ -2,7 +2,7 @@
 
 > Đây là art direction tổng quan. Token đầy đủ, bảng màu 32 ô, nhân vật và ma trận màu icon nằm trong [`style/`](./style/README.md).
 >
-> **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`screenshots/concept-board-pixel-16bit.png`](./screenshots/concept-board-pixel-16bit.png). Ảnh thắng về mỹ thuật; docs thắng về dữ liệu, mã màu nhóm/ghế và 3 chỗ ảnh tự mâu thuẫn ([style/README.md](./style/README.md#ảnh-mẫu-và-docs--cái-nào-thắng)).
+> **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`screenshots/concept-s6-board-pixel-16bit.png`](./screenshots/concept-s6-board-pixel-16bit.png). Ảnh thắng về mỹ thuật; docs thắng về dữ liệu, mã màu nhóm/ghế và 3 chỗ ảnh tự mâu thuẫn ([style/README.md](./style/README.md#ảnh-mẫu-và-docs--cái-nào-thắng)).
 
 ## 1. DNA hình ảnh
 
