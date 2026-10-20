@@ -40,9 +40,17 @@ func ChatBotTypes() []string {
 }
 
 type ChatBotBotConfig struct {
-	Enabled          bool   `json:"enabled"`
-	SystemPrompt     string `json:"systemPrompt"`
-	IdentityReminder string `json:"identityReminder"`
+	Enabled          bool           `json:"enabled"`
+	Platforms        *PlatformRules `json:"platforms,omitempty"`
+	SystemPrompt     string         `json:"systemPrompt"`
+	IdentityReminder string         `json:"identityReminder"`
+}
+
+func (b ChatBotBotConfig) EnabledFor(client Client) bool {
+	if !b.Enabled {
+		return false
+	}
+	return b.Platforms == nil || b.Platforms.EnabledForClient(client)
 }
 
 type ChatBotConfig struct {
@@ -72,6 +80,13 @@ func (s *Service) GetChatBot() (ChatBotConfig, error) {
 		s.logger.Warnw("Invalid chat_bot dailyLimit, falling back to unlimited", "dailyLimit", cfg.DailyLimit)
 		cfg.DailyLimit = 0
 	}
+	for botType, bot := range cfg.Bots {
+		if bot.Platforms != nil {
+			platforms := bot.Platforms.normalized()
+			bot.Platforms = &platforms
+			cfg.Bots[botType] = bot
+		}
+	}
 	return cfg, err
 }
 
@@ -83,9 +98,10 @@ func ValidateChatBotValue(value models.JSONB) error {
 	var cfg struct {
 		DailyLimit *int `json:"dailyLimit"`
 		Bots       map[string]struct {
-			Enabled          *bool   `json:"enabled"`
-			SystemPrompt     *string `json:"systemPrompt"`
-			IdentityReminder *string `json:"identityReminder"`
+			Enabled          *bool       `json:"enabled"`
+			Platforms        interface{} `json:"platforms"`
+			SystemPrompt     *string     `json:"systemPrompt"`
+			IdentityReminder *string     `json:"identityReminder"`
 		} `json:"bots"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
@@ -105,6 +121,15 @@ func ValidateChatBotValue(value models.JSONB) error {
 		}
 		if bot.Enabled == nil {
 			return fmt.Errorf("bot %s cần enabled", botType)
+		}
+		if bot.Platforms != nil {
+			platforms, err := decodePlatformRules(bot.Platforms)
+			if err != nil {
+				return fmt.Errorf("nền tảng của bot %s không hợp lệ: %s", botType, err.Error())
+			}
+			if err := platforms.validate(); err != nil {
+				return fmt.Errorf("bot %s: %w", botType, err)
+			}
 		}
 		if bot.SystemPrompt != nil && utf8.RuneCountInString(*bot.SystemPrompt) > chatBotPromptMaxRunes {
 			return fmt.Errorf("câu lệnh hướng dẫn của %s tối đa %d ký tự", botType, chatBotPromptMaxRunes)

@@ -1,6 +1,7 @@
 import { App, Button, Card, Form, Input, InputNumber, Space, Spin, Switch, Tabs, Tag, Typography } from 'antd'
 import { SaveOutlined, UndoOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
+import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { errorMessage } from '@/lib/apiError'
 import type { ChatBotPrompt, ChatBotSetting, ChatBotType } from '@/types'
 import { useChatBotDefaults } from './useChatBotSettingQueries'
@@ -64,7 +65,7 @@ export function ChatBotSettingsPage() {
     if (turnedOff.length > 0) {
       modal.confirm({
         title: 'Tắt chat-bot?',
-        content: `${turnedOff.map((type) => CHAT_BOT_LABEL[type]).join(', ')} sẽ biến mất khỏi danh bạ, người đang chat sẽ nhận thông báo bot đang tạm nghỉ.`,
+        content: `${turnedOff.map((type) => CHAT_BOT_LABEL[type]).join(', ')} sẽ biến mất khỏi danh bạ trên các nền tảng bị tắt, người đang chat ở đó sẽ nhận thông báo bot đang tạm nghỉ.`,
         okText: 'Tắt bot',
         okButtonProps: { danger: true },
         cancelText: 'Huỷ',
@@ -91,9 +92,15 @@ export function ChatBotSettingsPage() {
             name={['bots', type, 'enabled']}
             label="Bật bot"
             valuePropName="checked"
-            extra="Tắt thì bot ẩn khỏi danh bạ trên web và app, server từ chối mọi tin nhắn gửi tới bot."
+            extra="Công tắc tổng: tắt thì bot ẩn khỏi danh bạ trên mọi nền tảng, server từ chối mọi tin nhắn gửi tới bot."
           >
             <Switch />
+          </Form.Item>
+          <Form.Item
+            label="Theo nền tảng"
+            extra="Tắt nền tảng nào thì bot ẩn khỏi danh bạ trên nền tảng đó và server từ chối tin nhắn từ đó. So theo tên bản (1.0.0), không tính build. Bản app cũ chưa gửi thông tin nền tảng chỉ theo công tắc Android/iOS, không áp dụng danh sách bản bị tắt."
+          >
+            <PlatformRulesTable name={['bots', type, 'platforms']} />
           </Form.Item>
           <Form.Item
             label={

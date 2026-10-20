@@ -1,3 +1,4 @@
+import { APP_PLATFORMS, cleanPlatformRules, normalizePlatformRules } from '@/lib/platformRules'
 import type { AppSetting, ChatBotBotSetting, ChatBotPrompt, ChatBotSetting, ChatBotType } from '@/types'
 import { CHAT_BOT_SETTING_KEY, CHAT_BOT_TYPES } from './constants'
 
@@ -36,6 +37,7 @@ export function chatBotFormValues(
     const bot = stored.bots?.[type]
     bots[type] = {
       enabled: bot?.enabled ?? true,
+      platforms: normalizePlatformRules(bot?.platforms),
       systemPrompt: bot?.systemPrompt?.trim() ? bot.systemPrompt : defaults[type].systemPrompt,
       identityReminder: bot?.identityReminder?.trim()
         ? bot.identityReminder
@@ -58,6 +60,7 @@ export function chatBotSettingValue(
     const bot = values.bots[type]
     bots[type] = {
       enabled: bot.enabled,
+      platforms: cleanPlatformRules(bot.platforms),
       systemPrompt: overrideOrBlank(bot.systemPrompt, defaults[type].systemPrompt),
       identityReminder: overrideOrBlank(bot.identityReminder, defaults[type].identityReminder),
     }
@@ -66,5 +69,11 @@ export function chatBotSettingValue(
 }
 
 export function disabledChatBots(before: ChatBotSetting, after: ChatBotSetting): ChatBotType[] {
-  return CHAT_BOT_TYPES.filter((type) => before.bots[type].enabled && !after.bots[type].enabled)
+  return CHAT_BOT_TYPES.filter((type) => {
+    const was = before.bots[type]
+    const now = after.bots[type]
+    if (!was.enabled) return false
+    if (!now.enabled) return true
+    return APP_PLATFORMS.some(({ key }) => was.platforms?.[key]?.enabled !== false && now.platforms?.[key]?.enabled === false)
+  })
 }

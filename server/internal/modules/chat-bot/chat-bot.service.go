@@ -43,7 +43,7 @@ func NewService(gemini *GeminiClient, settings *setting.Service, cache *services
 	return &Service{gemini: gemini, settings: settings, cache: cache, location: location, logger: logger.Named("[chat_bot_service]")}
 }
 
-func (s *Service) Admit(userID uuid.UUID, botType string) (*Admission, error) {
+func (s *Service) Admit(userID uuid.UUID, botType string, client setting.Client) (*Admission, error) {
 	cfg, err := s.settings.GetChatBot()
 	if err != nil {
 		s.logger.Warnw("Failed to load chat_bot config, using defaults", "error", err)
@@ -51,7 +51,7 @@ func (s *Service) Admit(userID uuid.UUID, botType string) (*Admission, error) {
 	}
 	botType = normalizeBotType(botType)
 	botCfg := cfg.Bot(botType)
-	if !botCfg.Enabled {
+	if !botCfg.EnabledFor(client) {
 		return nil, ErrBotDisabled
 	}
 

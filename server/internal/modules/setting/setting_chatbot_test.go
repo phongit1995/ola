@@ -76,3 +76,64 @@ func TestChatBotConfigBotDefaultsToEnabled(t *testing.T) {
 		t.Fatal("explicitly disabled bot should stay disabled")
 	}
 }
+
+func TestChatBotEnabledForPlatforms(t *testing.T) {
+	bot := ChatBotBotConfig{
+		Enabled: true,
+		Platforms: &PlatformRules{
+			Web:     PlatformRule{Enabled: true},
+			Android: PlatformRule{Enabled: true, DisableVersions: []string{"1.0.5"}},
+			IOS:     PlatformRule{Enabled: false},
+		},
+	}
+	cases := []struct {
+		name   string
+		client Client
+		want   bool
+	}{
+		{"web", Client{Platform: "web", UserAgent: browserUA}, true},
+		{"android", Client{Platform: "android", AppVersion: "1.0.4 (40)", UserAgent: androidAppUA}, true},
+		{"android blocked version", Client{Platform: "android", AppVersion: "1.0.5 (41)", UserAgent: androidAppUA}, false},
+		{"ios off", Client{Platform: "ios", AppVersion: "1.0.4 (40)", UserAgent: iosAppUA}, false},
+		{"old android build without header", Client{UserAgent: androidAppUA}, true},
+		{"old ios build without header", Client{UserAgent: iosAppUA}, false},
+		{"browser without header", Client{UserAgent: browserUA}, true},
+	}
+	for _, tc := range cases {
+		if got := bot.EnabledFor(tc.client); got != tc.want {
+			t.Fatalf("%s: EnabledFor = %v, want %v", tc.name, got, tc.want)
+		}
+	}
+
+	if (ChatBotBotConfig{Enabled: false, Platforms: bot.Platforms}).EnabledFor(Client{Platform: "web"}) {
+		t.Fatal("master switch off must win over platform rules")
+	}
+	if !(ChatBotBotConfig{Enabled: true}).EnabledFor(Client{Platform: "ios", AppVersion: "1.0.0"}) {
+		t.Fatal("bot without platform rules stays on everywhere")
+	}
+}
+
+func TestValidateChatBotPlatforms(t *testing.T) {
+	withPlatforms := func(platforms interface{}) models.JSONB {
+		return models.JSONB{
+			"dailyLimit": 0,
+			"bots": map[string]interface{}{
+				constants.ChatBotTypeOlala: map[string]interface{}{"enabled": true, "platforms": platforms},
+			},
+		}
+	}
+	valid := map[string]interface{}{
+		"web":     map[string]interface{}{"enabled": true, "disableVersions": []string{}},
+		"android": map[string]interface{}{"enabled": true, "disableVersions": []string{"1.0.5"}},
+		"ios":     map[string]interface{}{"enabled": false, "disableVersions": []string{}},
+	}
+	if err := ValidateChatBotValue(withPlatforms(valid)); err != nil {
+		t.Fatalf("valid platforms rejected: %v", err)
+	}
+	if err := ValidateChatBotValue(withPlatforms(map[string]interface{}{"web": valid["web"]})); err == nil {
+		t.Fatal("platforms missing android and ios must be rejected")
+	}
+	if err := ValidateChatBotValue(withPlatforms(map[string]interface{}{"web": valid["web"], "android": valid["android"], "ios": valid["ios"], "tv": valid["web"]})); err == nil {
+		t.Fatal("unknown platform must be rejected")
+	}
+}

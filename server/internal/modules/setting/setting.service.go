@@ -95,7 +95,7 @@ type TopupAccess struct {
 	ShowBank      bool
 }
 
-func legacyTopupPlatforms(enabledMobile bool) PlatformRules {
+func legacyMobilePlatforms(enabledMobile bool) PlatformRules {
 	rules := OpenPlatformRules()
 	rules.Android.Enabled = enabledMobile
 	rules.IOS.Enabled = enabledMobile
@@ -106,7 +106,7 @@ func (c TopupConfig) platformRules() PlatformRules {
 	if c.Platforms != nil {
 		return *c.Platforms
 	}
-	return legacyTopupPlatforms(c.EnabledMobile)
+	return legacyMobilePlatforms(c.EnabledMobile)
 }
 
 // Builds released before the X-Platform header only understand enabled/enabledMobile,
@@ -168,6 +168,7 @@ type UsernameChangeTier struct {
 type UsernameChangeConfig struct {
 	Enabled       bool                 `json:"enabled"`
 	EnabledMobile bool                 `json:"enabledMobile"`
+	Platforms     *PlatformRules       `json:"platforms,omitempty"`
 	Tiers         []UsernameChangeTier `json:"tiers"`
 }
 
@@ -182,6 +183,21 @@ func DefaultUsernameChangeConfig() UsernameChangeConfig {
 			{MinLength: 6, Cost: 100_000},
 		},
 	}
+}
+
+// Builds released before the X-Platform header only know enabledMobile, so they are told apart by User-Agent.
+func (c UsernameChangeConfig) EnabledFor(client Client) bool {
+	if !c.Enabled {
+		return false
+	}
+	if strings.TrimSpace(client.Platform) == "" && utils.IsNativeAppUserAgent(client.UserAgent) {
+		return c.EnabledMobile
+	}
+	rules := legacyMobilePlatforms(c.EnabledMobile)
+	if c.Platforms != nil {
+		rules = *c.Platforms
+	}
+	return rules.EnabledFor(client.Platform, client.AppVersion)
 }
 
 func (c UsernameChangeConfig) CostFor(length int) int {
@@ -368,6 +384,10 @@ func (s *Service) GetUsernameChange() (UsernameChangeConfig, error) {
 		tiers = DefaultUsernameChangeConfig().Tiers
 	}
 	cfg.Tiers = tiers
+	if cfg.Platforms != nil {
+		platforms := cfg.Platforms.normalized()
+		cfg.Platforms = &platforms
+	}
 	return cfg, err
 }
 
@@ -549,6 +569,15 @@ func ValidateUsernameChangeValue(value models.JSONB) error {
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&cfg); err != nil {
 		return errors.New("invalid username_change config: " + err.Error())
+	}
+	if raw, ok := value["platforms"]; ok {
+		platforms, err := decodePlatformRules(raw)
+		if err != nil {
+			return errors.New("invalid username_change platforms: " + err.Error())
+		}
+		if err := platforms.validate(); err != nil {
+			return err
+		}
 	}
 	if len(cfg.Tiers) == 0 {
 		return errors.New("username_change config needs at least one tier")

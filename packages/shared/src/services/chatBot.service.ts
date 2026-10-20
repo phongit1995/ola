@@ -1,5 +1,7 @@
 import { apiPathOf, signApiGuard } from '../api/apiGuardSigner';
+import { API_HEADER } from '../config/api';
 import { env } from '../config/env';
+import { getCurrentDeviceInfo } from '../platform/platformRuntime.state';
 import { CHAT_BOT_API_ERROR_CODE } from '../constants/chatBot';
 import { authTokens } from '../lib/tokenStorage';
 import type {
@@ -42,6 +44,10 @@ export function buildChatBotRequest(
   if (language != null && language !== '') {
     headers['Accept-Language'] = language;
   }
+
+  const device = getCurrentDeviceInfo();
+  if (device?.platform) headers[API_HEADER.platform] = device.platform;
+  if (device?.appVersion) headers[API_HEADER.appVersion] = device.appVersion;
 
   const signed = signApiGuard('POST', apiPathOf(CHAT_BOT_PATH));
   if (signed != null) {

@@ -69,9 +69,12 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 
 // UsernameChangeConfig godoc
 // @Summary      Cấu hình phí đổi username theo độ dài (tính bằng KEN)
+// @Description  Có X-Platform thì enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi. Thiếu X-Platform (bản app cũ) thì trả enabled và enabledMobile như cấu hình gốc
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth
+// @Param        X-Platform header string false "web | android | ios"
+// @Param        X-App-Version header string false "Phiên bản app, ví dụ 1.0.0 (45)"
 // @Success      200  {object}  UsernameChangeConfigSuccessResponse
 // @Failure      401  {object}  utils.APIError
 // @Router       /settings/username-change [get]
@@ -84,7 +87,12 @@ func (ctrl *Controller) UsernameChangeConfig(c *gin.Context) (interface{}, error
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
-	return cfg, nil
+	resp := UsernameChangeConfigResponse{Enabled: cfg.Enabled, EnabledMobile: cfg.EnabledMobile, Tiers: cfg.Tiers}
+	if client := ClientFrom(c); client.Platform != "" {
+		enabled := cfg.EnabledFor(client)
+		resp.Enabled, resp.EnabledMobile = enabled, enabled
+	}
+	return resp, nil
 }
 
 // WordChainConfig godoc
@@ -109,9 +117,12 @@ func (ctrl *Controller) WordChainConfig(c *gin.Context) (interface{}, error) {
 
 // ChatBotConfig godoc
 // @Summary      Bot nào đang bật và giới hạn lượt chat mỗi ngày (0 = không giới hạn)
+// @Description  enabled của từng bot đã tính theo nền tảng và phiên bản app đang gọi (X-Platform, X-App-Version)
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth
+// @Param        X-Platform header string false "web | android | ios"
+// @Param        X-App-Version header string false "Phiên bản app, ví dụ 1.0.0 (45)"
 // @Success      200  {object}  ChatBotPublicConfigSuccessResponse
 // @Failure      401  {object}  utils.APIError
 // @Router       /settings/chat-bot [get]
@@ -124,9 +135,10 @@ func (ctrl *Controller) ChatBotConfig(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
+	client := ClientFrom(c)
 	bots := make([]ChatBotAvailability, 0, len(ChatBotTypes()))
 	for _, botType := range ChatBotTypes() {
-		bots = append(bots, ChatBotAvailability{Type: botType, Enabled: cfg.Bot(botType).Enabled})
+		bots = append(bots, ChatBotAvailability{Type: botType, Enabled: cfg.Bot(botType).EnabledFor(client)})
 	}
 	return ChatBotPublicConfig{DailyLimit: cfg.DailyLimit, Bots: bots}, nil
 }

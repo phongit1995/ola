@@ -22,7 +22,13 @@ type TopupConfigResponse struct {
 
 type TopupConfigSuccessResponse = utils.BaseResponse[TopupConfigResponse]
 
-type UsernameChangeConfigSuccessResponse = utils.BaseResponse[UsernameChangeConfig]
+type UsernameChangeConfigResponse struct {
+	Enabled       bool                 `json:"enabled" example:"true"`
+	EnabledMobile bool                 `json:"enabledMobile" example:"true"`
+	Tiers         []UsernameChangeTier `json:"tiers"`
+}
+
+type UsernameChangeConfigSuccessResponse = utils.BaseResponse[UsernameChangeConfigResponse]
 
 type WordChainConfigSuccessResponse = utils.BaseResponse[WordChainConfig]
 

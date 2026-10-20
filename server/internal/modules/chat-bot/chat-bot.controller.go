@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -102,7 +103,7 @@ func (ctrl *Controller) Chat(c *gin.Context) {
 		utils.RespondError(c, http.StatusUnauthorized, "user not authenticated")
 		return
 	}
-	admission, err := ctrl.service.Admit(userID, req.Type)
+	admission, err := ctrl.service.Admit(userID, req.Type, setting.ClientFrom(c))
 	if err != nil {
 		respondAdmissionError(c, err)
 		return

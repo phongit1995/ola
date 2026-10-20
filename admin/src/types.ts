@@ -1590,6 +1590,7 @@ export interface UsernameChangeTierSetting {
 export interface UsernameChangeSetting {
   enabled: boolean
   enabledMobile: boolean
+  platforms?: PlatformRules
   tiers: UsernameChangeTierSetting[]
 }
 
@@ -2298,6 +2299,7 @@ export interface ChatBotPrompt {
 
 export interface ChatBotBotSetting extends ChatBotPrompt {
   enabled: boolean
+  platforms?: PlatformRules
 }
 
 export interface ChatBotSetting {
