@@ -4,12 +4,12 @@ Mỗi ô là `<g class="ty-tile" data-idx data-kind data-group>`. Màu lấy t�
 
 ## 1. Anatomy chung
 
-| Phần | Ô đất (`street`) | Ô bến/tiện ích | Ô thẻ/thuế | Ô góc |
+| Phần | Ô đất (`street`) | Ô sân bay | Ô thẻ/thuế | Ô góc |
 |---|---|---|---|---|
 | Kích thước (390) | 38.1 × 49.8 | 38.1 × 49.8 | 38.1 × 49.8 | 49.8 × 49.8 |
-| Nền | paper `#FBF3E0` | paper-dim `#F0E4C8` | paper-dim | paper-dim (ô 8 Nhà tù: dải Thăm tù paper ở mép trên + mép trái, phòng giam dim ở góc dưới-phải) |
+| Nền | paper `#FBF3E0` | paper-dim `#F0E4C8` | Cơ hội gold-soft, Khí vận sky-soft, Thuế coral-soft | Xuất phát gradient vàng; Lễ hội gold-soft; Du lịch sky-soft; ô 8 Nhà tù: dải Thăm tù paper ở mép trên + mép trái, phòng giam dim ở góc dưới-phải |
 | Dải màu | 7–9 px ở mép phía trong bàn, màu nhóm, viền navy 1 px cạnh giáp thân ô | không | không | không |
-| Tên (trên) | tên ngắn 800, `board × 0.0182`, ≤ 2 dòng | như trái | như trái (`Cơ hội`, `Khí vận`, `Thuế`) | chữ góc 2 dòng (`BÃI / ĐỖ XE`, `VÀO / TÙ`, `NHÀ TÙ`, `XUẤT / PHÁT`) |
+| Tên (trên) | tên ngắn 800, `board × 0.0182`, ≤ 2 dòng | như trái | như trái (`Cơ hội`, `Khí vận`, `Thuế`) | chữ góc 2 dòng (`LỄ / HỘI`, `DU / LỊCH`, `NHÀ TÙ`, `XUẤT / PHÁT`) |
 | Tranh / glyph (giữa) | tranh phong cảnh địa danh (concept UI v3); bàn < 456 có thể ẩn tranh | glyph 18 px | glyph 18 px | bust nhân vật 30 px (03-characters) — fallback glyph 26 px |
 | Giá (dưới) | `220 tr` tabular; có chủ → tiền thuê hiện tại | `200 tr` / `150 tr` | thẻ: không có | Xuất phát: `+160 tr` jade |
 | Cấp nhà | trên dải: cấp 1 = 1 nhà jade `#1F8A5B`, cấp 2 = 2 nhà, cấp 3 = 1 khách sạn coral | — | — | — |
@@ -29,34 +29,34 @@ Cột "Glyph màu" là `fill` của `tg-*`. Cột "Nhân vật" chỉ ô góc c�
 |---|---|---|---|---|---|---|---|---|
 | 0 | góc dưới-trái | Xuất phát | go | — | dim | `tg-go` (fallback) | navy `#1F2A44` | Bé Lộc (bust) |
 | 1 | cột trái ↑ | Thanh Hóa | street | brown `#8D5B3C` | paper | — | — | — |
-| 2 | cột trái ↑ | Khí vận | chest | — | dim | `tg-chest` | sky-deep `#3C9BBF` | — |
+| 2 | cột trái ↑ | Khí vận | chest | — | sky-soft | `tg-chest` | sky-deep `#3C9BBF` | — |
 | 3 | cột trái ↑ | Vinh | street | brown | paper | — | — | — |
-| 4 | cột trái ↑ | Ga Hà Nội | station | — | dim | `tg-train` | navy | — |
+| 4 | cột trái ↑ | Sân bay Nội Bài | station | — | dim | `tg-plane` | navy | — |
 | 5 | cột trái ↑ | Buôn Ma Thuột | street | sky `#7EC8E3` | paper | — | — | — |
-| 6 | cột trái ↑ | Cơ hội | chance | — | dim | `tg-chance` | gold-deep `#B98700` | — |
+| 6 | cột trái ↑ | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
 | 7 | cột trái ↑ | Đà Lạt | street | sky | paper | — | — | — |
 | 8 | góc trên-trái | Nhà tù / Thăm tù | jail | — | paper ∕ dim | `tg-jail` (fallback) | navy | Anh Tèo (bust, vùng dim) |
 | 9 | hàng trên → | Cần Thơ | street | pink `#E58FB5` | paper | — | — | — |
-| 10 | hàng trên → | Nhà máy điện | utility | — | dim | `tg-electric` | jade `#1F8A5B` | — |
+| 10 | hàng trên → | Thuế thu nhập | tax | — | coral-soft | `tg-tax` | coral `#E4573D` | — |
 | 11 | hàng trên → | Phú Quốc | street | pink | paper | — | — | — |
 | 12 | hàng trên → | Sân bay Tân Sơn Nhất | station | — | dim | `tg-plane` | navy | — |
 | 13 | hàng trên → | Quy Nhơn | street | orange `#F2994A` | paper | — | — | — |
-| 14 | hàng trên → | Khí vận | chest | — | dim | `tg-chest` | sky-deep `#3C9BBF` | — |
+| 14 | hàng trên → | Khí vận | chest | — | sky-soft | `tg-chest` | sky-deep `#3C9BBF` | — |
 | 15 | hàng trên → | Nha Trang | street | orange | paper | — | — | — |
-| 16 | góc trên-phải | Bãi đỗ xe | parking | — | dim | `tg-parking` (fallback) | navy | Mèo Đậu (bust) |
+| 16 | góc trên-phải | Lễ hội | festival | — | gold-soft | `tg-festival` | gold-deep `#B98700` | Mèo Đậu (bust) |
 | 17 | cột phải ↓ | Hội An | street | red `#D64545` | paper | — | — | — |
-| 18 | cột phải ↓ | Cơ hội | chance | — | dim | `tg-chance` | gold-deep `#B98700` | — |
+| 18 | cột phải ↓ | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
 | 19 | cột phải ↓ | Huế | street | red | paper | — | — | — |
-| 20 | cột phải ↓ | Cảng Hải Phòng | station | — | dim | `tg-ship` | navy | — |
+| 20 | cột phải ↓ | Sân bay Cam Ranh | station | — | dim | `tg-plane` | navy | — |
 | 21 | cột phải ↓ | Hạ Long | street | yellow `#F2D04E` | paper | — | — | — |
-| 22 | cột phải ↓ | Nhà máy nước | utility | — | dim | `tg-water` | jade | — |
+| 22 | cột phải ↓ | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
 | 23 | cột phải ↓ | Hải Phòng | street | yellow | paper | — | — | — |
-| 24 | góc dưới-phải | Vào tù | gotojail | — | dim | `tg-gotojail` (fallback) | coral | Chú Cảnh (bust) |
+| 24 | góc dưới-phải | Du lịch | travel | — | sky-soft | `tg-travel` | sky-deep `#3C9BBF` | — |
 | 25 | hàng dưới ← | Vũng Tàu | street | green `#3BA776` | paper | — | — | — |
-| 26 | hàng dưới ← | Khí vận | chest | — | dim | `tg-chest` | sky-deep `#3C9BBF` | — |
+| 26 | hàng dưới ← | Khí vận | chest | — | sky-soft | `tg-chest` | sky-deep `#3C9BBF` | — |
 | 27 | hàng dưới ← | Đà Nẵng | street | green | paper | — | — | — |
-| 28 | hàng dưới ← | Bến xe Miền Đông | station | — | dim | `tg-bus` | navy | — |
-| 29 | hàng dưới ← | Cơ hội | chance | — | dim | `tg-chance` | gold-deep `#B98700` | — |
+| 28 | hàng dưới ← | Sân bay Long Thành | station | — | dim | `tg-plane` | navy | — |
+| 29 | hàng dưới ← | Cơ hội | chance | — | gold-soft | `tg-chance` | gold-deep `#B98700` | — |
 | 30 | hàng dưới ← | Hà Nội | street | blue `#2F5FD0` | paper | — | — | — |
 | 31 | hàng dưới ← | TP. Hồ Chí Minh | street | blue | paper | — | — | — |
 
@@ -68,8 +68,8 @@ Ghi chú màu glyph: Cơ hội dùng `gold-deep` thay vì `gold` vì `gold #F2B8
 |---|---|---|
 | 0 Xuất phát (dưới-trái) | bust Bé Lộc 30 px; mũi tên `tg-go` xoay 90° **chỉ lên** (hướng đi lên cột trái) + chip `+160` jade | khi ai qua: nền nháy `--ty-landing` 300 ms, Bé Lộc đổi pose `happy` 600 ms |
 | 8 Nhà tù (trên-trái) | phòng giam 68% × 68% ở góc dưới-phải (phía vùng trong, dim/đỏ) có song `tg-jail` + bust Anh Tèo 22 px; dải Thăm tù (paper) chạy dọc mép trên + mép trái, chữ `Thăm tù` ở mép trên, quân thăm đứng ở dải trái | có người trong tù: Anh Tèo pose `sad`; quân trong tù đứng sau song (z thấp hơn song) |
-| 16 Bãi đỗ xe (trên-phải) | bust Mèo Đậu 30 px giữa, `tg-parking` 12 px navy góc | quân đáp: Mèo pose `happy` (vẫy đuôi) 600 ms |
-| 24 Vào tù (dưới-phải) | bust Chú Cảnh 30 px, nền dim pha coral 10% (`color-mix(in srgb, var(--ty-paper-dim), var(--ty-coral) 10%)`), `tg-gotojail` 12 px coral góc | quân đáp: Chú Cảnh pose `point`, còi nháy coral 2 lần |
+| 16 Lễ hội (trên-phải) | nền gold-soft, `tg-festival` (ngôi sao) 22 px gold-deep + chữ `LỄ / HỘI` gold-deep; bản có nhân vật: bust Mèo Đậu 30 px | quân đáp: Mèo pose `happy` 600 ms. Ô thành phố đang có Lễ hội: viền trong 2 px gold + huy hiệu tròn gold-deep có ngôi sao cream ở góc trên-phải |
+| 24 Du lịch (dưới-phải) | nền sky-soft, `tg-travel` (vali) 22 px sky-deep + chữ `DU / LỊCH` sky-deep | lượt sau của người đáp: chạm ô bất kỳ → sheet có nút `Bay tới đây`; quân bay cung (`teleport`) |
 
 Fallback khi tắt nhân vật (`data-chars="off"` cho máy yếu hoặc asset lỗi): glyph 26 px màu theo bảng §2 thay bust.
 
@@ -79,16 +79,15 @@ Fallback khi tắt nhân vật (`data-chars="off"` cho máy yếu hoặc asset l
 
 | data-group | Tên hiển thị |
 |---|---|
-| brown | Phố cổ |
-| sky | Cao nguyên |
-| pink | Biển đảo Nam |
-| orange | Duyên hải |
-| red | Miền Trung |
-| yellow | Đông Nam Bộ |
-| green | Sài Gòn |
-| blue | Hà Nội |
-| station | Bến |
-| utility | Tiện ích |
+| brown | Bắc Trung Bộ |
+| sky | Tây Nguyên |
+| pink | Miền Tây |
+| orange | Nam Trung Bộ |
+| red | Di sản miền Trung |
+| yellow | Duyên hải Bắc Bộ |
+| green | Thành phố biển |
+| blue | Đô thị đặc biệt |
+| station | Sân bay |
 
 ## 5. Header sheet S7 theo loại ô
 
@@ -96,14 +95,13 @@ Fallback khi tắt nhân vật (`data-chars="off"` cho máy yếu hoặc asset l
 |---|---|---|
 | street | màu nhóm, không chữ; tên ô + chip nhóm ở dưới trên paper | — (hiện cấp: 1–2 `ic-house` jade hoặc khách sạn coral) |
 | station | paper-dim | `tg-*` 40 px navy |
-| utility | paper-dim | `tg-*` 40 px jade |
 | chance | gold | Bác Tỷ pose `idle` 64 px |
 | chest | sky | Cô Ngân pose `idle` 64 px |
 | tax | paper-dim pha coral 10% | Cô Ngân pose `point` 64 px |
 | go | paper-dim | Bé Lộc `happy` |
 | jail | paper-dim | Anh Tèo `idle` |
-| parking | paper-dim | Mèo Đậu `idle` |
-| gotojail | paper-dim pha coral 10% | Chú Cảnh `point` |
+| festival | gold-soft | Mèo Đậu `happy` (fallback `tg-festival` 40 px gold-deep) |
+| travel | sky-soft | `tg-travel` 40 px sky-deep |
 
 ## 6. Màu nhà/khách sạn và chấm chủ trên nền
 

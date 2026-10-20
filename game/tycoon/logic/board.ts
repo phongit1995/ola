@@ -10,7 +10,6 @@ export interface TileData {
   price?: number;
   rent?: number[];
   houseCost?: number;
-  tax?: number;
 }
 
 export interface CardData {
@@ -35,8 +34,7 @@ export const GROUP_LABEL: Record<Group, string> = {
   yellow: 'Duyên hải Bắc Bộ',
   green: 'Thành phố biển',
   blue: 'Đô thị đặc biệt',
-  station: 'Bến',
-  utility: 'Tiện ích',
+  station: 'Sân bay',
 };
 
 const groupTiles = new Map<string, number[]>();
@@ -54,5 +52,5 @@ export function cardById(id: string): CardData | undefined {
 }
 
 export function isProperty(kind: TileKind): boolean {
-  return kind === 'street' || kind === 'station' || kind === 'utility';
+  return kind === 'street' || kind === 'station';
 }

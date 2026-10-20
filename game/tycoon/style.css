@@ -404,8 +404,7 @@ button:focus-visible,
 .ty-band-blue {
   background: var(--ty-g-blue);
 }
-.ty-band-station,
-.ty-band-utility {
+.ty-band-station {
   background: var(--ty-paper-dim);
 }
 
@@ -1085,6 +1084,10 @@ button:focus-visible,
   box-shadow: none;
 }
 
+.ty-clock-late {
+  color: var(--ty-danger);
+}
+
 .ty-board-menu {
   position: relative;
 }
@@ -1338,8 +1341,29 @@ button:focus-visible,
   background: var(--ty-paper-dim);
 }
 
-.ty-tile-kind-utility {
-  background: var(--ty-jade-soft);
+.ty-tile-festival {
+  box-shadow: inset 0 0 0 2px var(--ty-gold), inset 0 0 0 0.5px var(--ty-line);
+}
+
+.ty-festival-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: calc(var(--ty-board) * 0.03);
+  height: calc(var(--ty-board) * 0.03);
+  min-width: 12px;
+  min-height: 12px;
+  border-radius: 999px;
+  background: var(--ty-gold-deep);
+  pointer-events: none;
+}
+
+.ty-festival-badge .ty-tile-glyph {
+  width: 75%;
+  height: 75%;
 }
 
 .ty-tile-owned .ty-tile-body {
@@ -1482,16 +1506,20 @@ button:focus-visible,
   color: var(--ty-cream);
 }
 
-.ty-tile-kind-parking {
-  background: #e4eef6;
+.ty-tile-kind-festival {
+  background: var(--ty-gold-soft);
 }
 
-.ty-tile-kind-gotojail {
-  background: var(--ty-coral-soft);
+.ty-corner-festival .ty-corner-title {
+  color: var(--ty-gold-deep);
 }
 
-.ty-corner-gotojail .ty-corner-title {
-  color: var(--ty-danger);
+.ty-tile-kind-travel {
+  background: var(--ty-sky-soft);
+}
+
+.ty-corner-travel .ty-corner-title {
+  color: var(--ty-sky-deep);
 }
 
 .ty-tile-kind-jail {
@@ -2453,6 +2481,23 @@ button:focus-visible,
   font-size: 11.5px;
   font-weight: 700;
   opacity: 0.7;
+}
+
+.ty-festival-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+  max-height: 148px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+.ty-festival-picks .ty-btn-stack {
+  min-height: 50px;
+}
+
+.ty-festival-current {
+  box-shadow: inset 0 0 0 2px var(--ty-gold);
 }
 
 .ty-btn-lines {

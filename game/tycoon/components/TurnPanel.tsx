@@ -1,10 +1,11 @@
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, cardById, GROUP_LABEL } from '../logic/board';
-import { JAIL_FINE, JAIL_MAX_TURNS, TURN_SECONDS } from '../logic/constants';
+import { FESTIVAL_MULTIPLIER, JAIL_FINE, JAIL_MAX_TURNS, TAKEOVER_MULTIPLIER, TURN_SECONDS } from '../logic/constants';
+import { computeRent, takeoverPrice } from '../logic/engine';
 import { hasAnyFullGroup } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { SEAT_SOFT_COLORS, seatColor } from '../helpers/player';
-import { baseRentText, groupProgress } from '../helpers/tiles';
+import { baseRentText, groupProgress, shortName } from '../helpers/tiles';
 import { PodAvatar } from './PodAvatar';
 import { glyphForTile, TileGlyph } from './TileGlyph';
 import { TyIcon } from './TyIcon';
@@ -14,6 +15,9 @@ const OTHER_PHASE: Record<string, string> = {
   roll: 'đang gieo xúc xắc',
   jail: 'đang tìm cách ra tù',
   decide: 'đang cân nhắc mua đất',
+  takeover: 'đang cân nhắc mua lại đất',
+  festival: 'đang chọn nơi tổ chức Lễ hội',
+  travel: 'đang chọn điểm du lịch',
   card: 'đang đọc thẻ',
   manage: 'đang tính nước đi',
   debt: 'đang xoay tiền trả nợ',
@@ -133,6 +137,62 @@ function MyActions() {
         </>
       );
     }
+    case 'takeover': {
+      const price = takeoverPrice(view, me.pos);
+      const affordable = myCash >= price;
+      return (
+        <>
+          <DeedPreview idx={me.pos} onOpen={() => openSheet({ kind: 'tile', idx: me.pos })} />
+          <div className="ty-actions ty-actions-decide">
+            <button type="button" className="ty-btn ty-btn-paper" disabled={busy} onClick={() => sendMove({ type: 'DECLINE' })}>
+              Bỏ qua
+            </button>
+            <button type="button" className="ty-btn ty-btn-gold ty-btn-cta" disabled={busy || !affordable} onClick={() => sendMove({ type: 'TAKEOVER' })}>
+              <TyIcon name="deed" size={20} />
+              <span className="ty-btn-lines">
+                <span>{affordable ? `Mua lại ${formatMoney(price)}` : 'Không đủ tiền'}</span>
+                <small>{affordable ? `còn lại ${formatMoney(myCash - price)}` : `cần ${formatMoney(price)}`}</small>
+              </span>
+            </button>
+          </div>
+        </>
+      );
+    }
+    case 'festival': {
+      const mine = BOARD.filter((tile) => tile.kind === 'street' && view.tiles[tile.idx].owner === you);
+      return (
+        <>
+          <div className="ty-festival-picks">
+            {mine.map((tile) => (
+              <button
+                key={tile.idx}
+                type="button"
+                className={`ty-btn ty-btn-paper ty-btn-stack ${view.festival === tile.idx ? 'ty-festival-current' : ''}`}
+                disabled={busy}
+                onClick={() => sendMove({ type: 'FESTIVAL', tile: tile.idx })}
+              >
+                <span>{shortName(tile.idx)}</span>
+                <small>thuê {formatMoney(computeRent({ ...view, festival: -1 }, tile.idx, you) * FESTIVAL_MULTIPLIER)}</small>
+              </button>
+            ))}
+          </div>
+          <div className="ty-actions">
+            <button type="button" className="ty-btn ty-btn-paper ty-btn-wide" disabled={busy} onClick={() => sendMove({ type: 'DECLINE' })}>
+              Bỏ qua
+            </button>
+          </div>
+        </>
+      );
+    }
+    case 'travel':
+      return (
+        <div className="ty-actions">
+          <button type="button" className="ty-btn ty-btn-paper ty-btn-wide" disabled={busy} onClick={() => sendMove({ type: 'ROLL' })}>
+            <TyIcon name="dice" size={20} />
+            Không bay, gieo xúc xắc
+          </button>
+        </div>
+      );
     case 'card':
       return (
         <div className="ty-actions">
@@ -188,6 +248,12 @@ function myPrompt(phase: string, pos: number, jailTurns: number, cardId: string 
       return `Bạn đang ngồi tù · lượt ${jailTurns + 1}/${JAIL_MAX_TURNS}`;
     case 'decide':
       return `Đáp vào ${BOARD[pos].name} — chưa có chủ`;
+    case 'takeover':
+      return `Đã trả thuê — có thể mua lại ${BOARD[pos].name} với giá ×${TAKEOVER_MULTIPLIER}`;
+    case 'festival':
+      return `Chọn thành phố tổ chức Lễ hội — thuê ×${FESTIVAL_MULTIPLIER}`;
+    case 'travel':
+      return 'Du lịch — chạm vào ô bất kỳ trên bàn để bay tới';
     case 'card':
       return cardId ? cardById(cardId)?.text ?? 'Bạn rút được một thẻ' : 'Bạn rút được một thẻ';
     case 'manage':

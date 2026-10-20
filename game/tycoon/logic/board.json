@@ -39,7 +39,7 @@
   },
   {
     "idx": 4,
-    "name": "Ga Hà Nội",
+    "name": "Sân bay Nội Bài",
     "kind": "station",
     "group": "station",
     "price": 200
@@ -98,10 +98,8 @@
   },
   {
     "idx": 10,
-    "name": "Nhà máy điện",
-    "kind": "utility",
-    "group": "utility",
-    "price": 150
+    "name": "Thuế thu nhập",
+    "kind": "tax"
   },
   {
     "idx": 11,
@@ -159,8 +157,8 @@
   },
   {
     "idx": 16,
-    "name": "Bãi đỗ xe",
-    "kind": "parking"
+    "name": "Lễ hội",
+    "kind": "festival"
   },
   {
     "idx": 17,
@@ -197,7 +195,7 @@
   },
   {
     "idx": 20,
-    "name": "Cảng Hải Phòng",
+    "name": "Sân bay Cam Ranh",
     "kind": "station",
     "group": "station",
     "price": 200
@@ -218,10 +216,8 @@
   },
   {
     "idx": 22,
-    "name": "Nhà máy nước",
-    "kind": "utility",
-    "group": "utility",
-    "price": 150
+    "name": "Cơ hội",
+    "kind": "chance"
   },
   {
     "idx": 23,
@@ -239,8 +235,8 @@
   },
   {
     "idx": 24,
-    "name": "Vào tù",
-    "kind": "gotojail"
+    "name": "Du lịch",
+    "kind": "travel"
   },
   {
     "idx": 25,
@@ -277,7 +273,7 @@
   },
   {
     "idx": 28,
-    "name": "Bến xe Miền Đông",
+    "name": "Sân bay Long Thành",
     "kind": "station",
     "group": "station",
     "price": 200

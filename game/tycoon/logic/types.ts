@@ -1,4 +1,4 @@
-import type { MoveType, PayReason, Phase, StepKind } from './constants';
+import type { EndReason, MoveType, PayReason, Phase, StepKind } from './constants';
 
 export interface PlayerState {
   cash: number;
@@ -9,6 +9,7 @@ export interface PlayerState {
   bankrupt: boolean;
   doubles: number;
   quit: boolean;
+  travel: boolean;
 }
 
 export interface TileState {
@@ -51,6 +52,7 @@ export interface Step {
   round?: number;
   rankings?: number[];
   worth?: number[];
+  end?: EndReason;
 }
 
 export interface GameState {
@@ -62,12 +64,15 @@ export interface GameState {
   debt: Debt | null;
   pendingDebts: Debt[];
   card: CardRef | null;
+  festival: number;
   chanceDeck: number[];
   chestDeck: number[];
   rng: bigint;
   round: number;
   bankruptOrder: number[];
   finished: boolean;
+  winner: number;
+  endReason: EndReason | null;
   moveCount: number;
   steps: Step[];
 }

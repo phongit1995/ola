@@ -4,8 +4,8 @@ import { vipIconUrl } from '@ola/shared/lib/vip';
 import { bridge, type GameReactionType } from '../../src/sdk';
 import { BOARD, cardById } from '../logic/board';
 import { botMove } from '../logic/bot';
-import { BOARD_SIZE, JAIL_TILE, MAX_ROUNDS, TURN_SECONDS } from '../logic/constants';
-import { applyMove, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
+import { applyMove, endByTime, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
 import { RuleError, type GameState, type Move, type Step, type TileState } from '../logic/types';
 import { formatMoney } from '../helpers/format';
 import { avatarIconUrl } from '../helpers/player';
@@ -97,6 +97,7 @@ interface TycoonState {
   movePending: boolean;
   replaying: boolean;
   matchSeq: number;
+  startedAt: number;
   log: LogLine[];
 
   diceFx: DiceFx;
@@ -165,6 +166,8 @@ const RULE_TEXT: Record<string, string> = {
   not_active: 'Bạn không còn trong ván',
   finished: 'Ván đã kết thúc',
   no_cash: 'Không đủ tiền',
+  not_takeover: 'Không mua lại được ô này',
+  takeover_hotel: 'Ô đã lên Khách sạn, không mua lại được',
   no_jail_card: 'Bạn không có thẻ ra tù',
   not_street: 'Chỉ xây được trên ô đất',
   not_owner: 'Ô này không phải của bạn',
@@ -190,7 +193,7 @@ function reasonLabel(reason: string | undefined, amount: number, tile?: number):
     case 'rent':
       return `tiền thuê ${name || ''}`.trim();
     case 'tax':
-      return 'thuế';
+      return `thuế ${TAX_RATE * 100}% tài sản`;
     case 'card':
       return 'theo thẻ';
     case 'fine':
@@ -207,6 +210,8 @@ function reasonLabel(reason: string | undefined, amount: number, tile?: number):
       return `hạ cấp ${name}`;
     case 'salary':
       return 'qua Xuất phát';
+    case 'takeover':
+      return `mua lại ${name}`;
     default:
       return formatMoney(amount);
   }
@@ -474,6 +479,35 @@ export const useTycoon = create<TycoonState>((set, get) => {
         await sleep(fast ? 60 : STEP_MS.build);
         return;
       }
+      case 'takeover': {
+        const tile = step.tile ?? -1;
+        if (tile >= 0) {
+          set((state) => {
+            const tiles = [...state.tiles];
+            tiles[tile] = { ...tiles[tile], owner: step.by };
+            return { tiles };
+          });
+          playSound('build');
+          pushLog(`${seatName(step.by)} mua lại ${BOARD[tile].name} của ${seatName(step.target ?? -1)}`, step.by === you ? 'up' : step.target === you ? 'down' : 'neutral');
+        }
+        await sleep(fast ? 60 : STEP_MS.build);
+        return;
+      }
+      case 'festival': {
+        const tile = step.tile ?? -1;
+        if (tile >= 0) {
+          set((state) => (state.view ? { view: { ...state.view, festival: tile } } : {}));
+          playSound('build');
+          pushLog(`${seatName(step.by)} tổ chức Lễ hội ở ${BOARD[tile].name} — thuê ×${FESTIVAL_MULTIPLIER}`, step.by === you ? 'up' : 'neutral');
+        }
+        await sleep(fast ? 60 : STEP_MS.build);
+        return;
+      }
+      case 'travel': {
+        pushLog(`${seatName(step.by)} được đi Du lịch — lượt sau bay tới ô bất kỳ`, step.by === you ? 'up' : 'neutral');
+        await sleep(fast ? 60 : STEP_MS.land);
+        return;
+      }
       case 'debt': {
         pushLog(`${seatName(step.by)} nợ ${formatMoney(step.amount ?? 0)} ${seatName(step.creditor ?? -1)}`, step.by === you ? 'down' : 'neutral');
         await sleep(fast ? 60 : STEP_MS.debt);
@@ -526,13 +560,22 @@ export const useTycoon = create<TycoonState>((set, get) => {
     }));
     const myPlace = rows.find((row) => row.seat === you)?.place ?? rows.length;
     const human = state.players[you];
+    const winnerName = state.winner === you ? 'Bạn' : players[state.winner]?.name ?? '';
     const reasonText = human.quit
       ? 'Bạn đã bỏ cuộc'
-      : human.bankrupt
-        ? 'Bạn đã phá sản'
-        : state.round > MAX_ROUNDS
-          ? `Hết ${MAX_ROUNDS} vòng — xếp hạng theo tổng tài sản`
-          : 'Chỉ còn một tỷ phú trụ lại';
+      : state.endReason === 'groups'
+        ? `${winnerName} sở hữu trọn ${WIN_GROUPS} nhóm màu — thắng ngay`
+        : state.endReason === 'line'
+          ? `${winnerName} sở hữu trọn thành phố một cạnh bàn — thắng ngay`
+          : state.endReason === 'airports'
+            ? `${winnerName} sở hữu cả 4 sân bay — thắng ngay`
+          : human.bankrupt
+            ? 'Bạn đã phá sản'
+            : state.endReason === 'time'
+              ? `Hết ${TIME_LIMIT_MS / 60000} phút — xếp hạng theo tổng tài sản`
+              : state.endReason === 'rounds'
+                ? `Hết ${MAX_ROUNDS} vòng — xếp hạng theo tổng tài sản`
+                : 'Chỉ còn một tỷ phú trụ lại';
     const matchSeq = get().matchSeq;
     queueReplay(async () => {
       await sleep(RESULT_REVEAL_MS);
@@ -548,6 +591,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
     cancelBot();
     if (isOver(state)) {
       finishGame(state);
+      return;
+    }
+    const turnStart = state.phase === 'roll' || state.phase === 'jail' || state.phase === 'travel';
+    if (turnStart && state.moveCount > 0 && Date.now() - get().startedAt >= TIME_LIMIT_MS) {
+      const ended = endByTime(state);
+      refs.state = ended;
+      snapState(ended, true);
+      finishGame(ended);
       return;
     }
     const seat = state.turn;
@@ -635,6 +686,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       players,
       you: 0,
       matchSeq: get().matchSeq + 1,
+      startedAt: Date.now(),
       log: [],
     });
     snapState(state, true);
@@ -666,6 +718,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     movePending: false,
     replaying: false,
     matchSeq: 0,
+    startedAt: 0,
     log: [],
 
     diceFx: emptyDice(),

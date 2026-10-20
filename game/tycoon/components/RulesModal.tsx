@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { GO_SALARY, JAIL_FINE, LEVEL_NAMES, MAX_HOUSES, MAX_ROUNDS, START_CASH, TURN_SECONDS } from '../logic/constants';
+import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, LEVEL_NAMES, MAX_HOUSES, MAX_ROUNDS, START_CASH, TAKEOVER_MULTIPLIER, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
 import { ModalHeading } from './ModalHeading';
 import { TyIcon, type TyIconName } from './TyIcon';
 import { useDialogFocus } from './useDialogFocus';
@@ -8,11 +8,14 @@ import { useTycoon } from '../store/useTycoon';
 const RULES: Array<[TyIconName, string, string]> = [
   ['dice', 'Gieo xúc xắc', `Mỗi lượt gieo 2 xúc xắc và đi theo tổng. Gieo đôi được gieo tiếp; đôi 3 lần liên tiếp thì vào tù. Mỗi hành động có ${TURN_SECONDS} giây.`],
   ['deed', 'Mua đất', `Mỗi người bắt đầu với ${START_CASH} tr. Đáp vào ô thành phố chưa có chủ thì được mua theo giá ghi trên ô. Qua Xuất phát nhận ${GO_SALARY} tr.`],
-  ['coins', 'Tiền thuê', 'Đáp vào đất của người khác thì trả tiền thuê (số trong viên tròn trên ô). Sở hữu trọn nhóm màu thì thuê đất trống gấp đôi. Bến tính theo số bến sở hữu, tiện ích tính theo xúc xắc.'],
+  ['coins', 'Tiền thuê', 'Đáp vào đất của người khác thì trả tiền thuê (số trong viên tròn trên ô). Sở hữu trọn nhóm màu thì thuê đất trống gấp đôi. Sân bay tính theo số sân bay sở hữu.'],
+  ['coins', 'Mua lại đất', `Trả thuê xong ở ô thành phố của người khác thì được mua lại ô đó với giá ×${TAKEOVER_MULTIPLIER} (giá đất + tiền nâng cấp), tiền trả cho chủ cũ. Ô đã lên ${LEVEL_NAMES[MAX_HOUSES]}, và sân bay thì không mua lại được.`],
   ['house', 'Nâng cấp', `Sở hữu trọn nhóm màu (2 thành phố) mới được nâng cấp, tối đa ${MAX_HOUSES} cấp: ${LEVEL_NAMES.slice(1).join(' → ')}. Phải nâng đều giữa các ô. Hạ cấp được hoàn nửa giá.`],
-  ['jail-bars', 'Nhà tù', `Vào tù thì mỗi lượt được gieo: ra đôi thì ra tù. Có thể nộp ${JAIL_FINE} tr hoặc dùng thẻ ra tù. Đến lượt thứ 3 bắt buộc nộp phạt.`],
+  ['flag', 'Ô đặc biệt', `Lễ hội: chọn một thành phố của mình, thuê ô đó ×${FESTIVAL_MULTIPLIER} (cả bàn chỉ một Lễ hội). Du lịch: lượt sau bay tới ô bất kỳ. Thuế: đóng ${TAX_RATE * 100}% tổng tài sản. Cơ hội, Khí vận: rút thẻ.`],
+  ['jail-bars', 'Nhà tù', `Bị bắt vào tù (thẻ Vào tù hoặc gieo đôi 3 lần) thì mỗi lượt được gieo: ra đôi thì ra tù. Có thể nộp ${JAIL_FINE} tr hoặc dùng thẻ ra tù. Đến lượt thứ 3 bắt buộc nộp phạt.`],
   ['warning', 'Nợ và phá sản', 'Không đủ tiền trả thì phải hạ cấp nhà. Hạ hết vẫn không đủ là phá sản: tài sản chuyển cho chủ nợ hoặc về ngân hàng.'],
-  ['flag', 'Kết thúc', `Ván kết thúc khi chỉ còn một người hoặc hết ${MAX_ROUNDS} vòng. Xếp hạng theo tổng tài sản: tiền mặt + giá đất + tiền nâng cấp.`],
+  ['flag', 'Thắng ngay', `Sở hữu trọn ${WIN_GROUPS} nhóm màu, toàn bộ thành phố trên một cạnh bàn, hoặc cả 4 sân bay là thắng ngay.`],
+  ['flag', 'Kết thúc', `Nếu chưa ai thắng ngay, ván kết thúc khi chỉ còn một người, hết ${MAX_ROUNDS} vòng hoặc hết ${TIME_LIMIT_MS / 60000} phút. Xếp hạng theo tổng tài sản: tiền mặt + giá đất + tiền nâng cấp.`],
 ];
 
 export function RulesModal() {

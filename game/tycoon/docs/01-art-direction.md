@@ -37,16 +37,16 @@ Dải màu trên ô (`tile-band`) và chip nhóm trong sheet. Chọn để 8 mà
 
 | Token | Hex | Nhóm | Ô |
 |---|---|---|---|
-| `--ty-g-brown` | `#8D5B3C` | Nâu — Phố cổ | 1, 3 |
-| `--ty-g-sky` | `#7EC8E3` | Xanh trời — Cao nguyên | 6, 8, 9 |
-| `--ty-g-pink` | `#E58FB5` | Hồng — Biển đảo Nam | 11, 13, 14 |
-| `--ty-g-orange` | `#F2994A` | Cam — Duyên hải | 16, 18, 19 |
-| `--ty-g-red` | `#D64545` | Đỏ — Miền Trung | 21, 23, 24 |
-| `--ty-g-yellow` | `#F2D04E` | Vàng — Đông Nam Bộ | 26, 27, 29 |
-| `--ty-g-green` | `#3BA776` | Xanh lá — Sài Gòn | 31, 32, 34 |
-| `--ty-g-blue` | `#2F5FD0` | Xanh đậm — Hà Nội | 37, 39 |
+| `--ty-g-brown` | `#8D5B3C` | Nâu — Bắc Trung Bộ | 1, 3 |
+| `--ty-g-sky` | `#7EC8E3` | Xanh trời — Tây Nguyên | 5, 7 |
+| `--ty-g-pink` | `#E58FB5` | Hồng — Miền Tây | 9, 11 |
+| `--ty-g-orange` | `#F2994A` | Cam — Nam Trung Bộ | 13, 15 |
+| `--ty-g-red` | `#D64545` | Đỏ — Di sản miền Trung | 17, 19 |
+| `--ty-g-yellow` | `#F2D04E` | Vàng — Duyên hải Bắc Bộ | 21, 23 |
+| `--ty-g-green` | `#3BA776` | Xanh lá — Thành phố biển | 25, 27 |
+| `--ty-g-blue` | `#2F5FD0` | Xanh đậm — Đô thị đặc biệt | 30, 31 |
 
-Ô đặc biệt không có dải màu nhóm; dùng `--ty-paper-dim` làm nền và glyph màu navy (bến/ga: `--ty-navy`; tiện ích: `--ty-jade`; Cơ hội: `--ty-gold`; Khí vận: `--ty-sky`; thuế: `--ty-coral`).
+Ô đặc biệt không có dải màu nhóm; dùng `--ty-paper-dim` làm nền và glyph màu navy (sân bay: `--ty-navy`; Cơ hội: `--ty-gold`; Khí vận: `--ty-sky`; Thuế: `--ty-coral`). Góc Lễ hội nền `--ty-gold-soft`, glyph `--ty-gold-deep`; góc Du lịch nền `--ty-sky-soft`, glyph `--ty-sky-deep`.
 
 ### 2.3 Màu quân cờ (4 ghế)
 

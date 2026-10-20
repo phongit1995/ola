@@ -1,5 +1,5 @@
 import { BOARD, tilesOfGroup } from './board';
-import { MAX_HOUSES, STATION_RENT, UTILITY_MULTIPLIER } from './constants';
+import { FESTIVAL_MULTIPLIER, MAX_HOUSES, STATION_RENT } from './constants';
 import type { GameState } from './types';
 
 export type RuleHint = { ok: true } | { ok: false; reason: string };
@@ -48,19 +48,18 @@ export function canSell(view: GameState, seat: number, idx: number): RuleHint {
   return { ok: true };
 }
 
-export function currentRent(view: GameState, idx: number, diceSum: number): number {
+export function currentRent(view: GameState, idx: number): number {
   const tile = BOARD[idx];
   const state = view.tiles[idx];
   if (state.owner < 0) return 0;
   switch (tile.kind) {
     case 'street': {
       const rent = tile.rent?.[state.houses] ?? 0;
-      return state.houses === 0 && tile.group && ownsGroup(view, state.owner, tile.group) ? rent * 2 : rent;
+      const base = state.houses === 0 && tile.group && ownsGroup(view, state.owner, tile.group) ? rent * 2 : rent;
+      return view.festival === idx ? base * FESTIVAL_MULTIPLIER : base;
     }
     case 'station':
       return STATION_RENT[ownedCount(view, state.owner, 'station')] ?? 0;
-    case 'utility':
-      return diceSum * (UTILITY_MULTIPLIER[ownedCount(view, state.owner, 'utility')] ?? 0);
     default:
       return 0;
   }

@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { GO_SALARY, JAIL_FINE, MAX_HOUSES, STATION_RENT, UTILITY_MULTIPLIER } from '../logic/constants';
+import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, MAX_HOUSES, STATION_RENT, TAX_RATE } from '../logic/constants';
 import { canBuild, canSell, currentRent } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { seatColor } from '../helpers/player';
@@ -19,16 +19,16 @@ function specialDescription(idx: number): string {
       return `Nhận ${GO_SALARY} tr mỗi lần đi qua hoặc đáp vào.`;
     case 'jail':
       return `Đáp vào chỉ là ghé thăm. Bị bắt vào tù thì gieo đôi, nộp ${JAIL_FINE} tr hoặc dùng thẻ để ra.`;
-    case 'parking':
-      return 'Bãi đỗ xe — nghỉ một lượt, không có gì xảy ra.';
-    case 'gotojail':
-      return 'Vào tù ngay, không qua Xuất phát, không nhận lương.';
+    case 'festival':
+      return `Chọn một thành phố của bạn để tổ chức Lễ hội: tiền thuê ô đó ×${FESTIVAL_MULTIPLIER}. Cả bàn chỉ có một Lễ hội, người sau tổ chức thì Lễ hội chuyển đi.`;
+    case 'travel':
+      return 'Lượt sau được bay tới bất kỳ ô nào thay vì gieo xúc xắc. Bay qua Xuất phát vẫn nhận lương.';
     case 'chance':
       return 'Rút một thẻ Cơ hội: có thể được tiền, mất tiền hoặc phải di chuyển.';
     case 'chest':
       return 'Rút một thẻ Khí vận: thường là tiền vào, đôi khi mất tiền.';
     case 'tax':
-      return `Trả ${BOARD[idx].tax} tr cho ngân hàng.`;
+      return `Đóng ${TAX_RATE * 100}% tổng tài sản (tiền mặt + giá đất + tiền nâng cấp) cho ngân hàng.`;
     default:
       return '';
   }
@@ -56,12 +56,13 @@ export function TileSheet({ idx }: { idx: number }) {
   const myCash = cash[you] ?? me?.cash ?? 0;
   const busy = movePending || replaying;
   const glyph = glyphForTile(idx, tile.kind);
-  const isProperty = tile.kind === 'street' || tile.kind === 'station' || tile.kind === 'utility';
+  const isProperty = tile.kind === 'street' || tile.kind === 'station';
   const canBuyHere = myTurn && view.phase === 'decide' && me?.pos === idx && owner < 0;
   const buildHint = owner === you && tile.kind === 'street' ? canBuild(view, you, idx) : null;
   const sellHint = owner === you && tile.kind === 'street' ? canSell(view, you, idx) : null;
   const manageAllowed = myTurn && (view.phase === 'manage' || (view.phase === 'debt' && view.debt?.by === you));
-  const diceSum = view.dice[0] + view.dice[1] || 7;
+  const canFestivalHere = myTurn && view.phase === 'festival' && owner === you && tile.kind === 'street';
+  const canTravelHere = myTurn && view.phase === 'travel' && me?.pos !== idx;
 
   return (
     <BottomSheet onClose={closeSheet} title={tile.name}>
@@ -128,32 +129,24 @@ export function TileSheet({ idx }: { idx: number }) {
                   const ownedCount = owner >= 0 ? tilesOfGroup('station').filter((g) => view.tiles[g].owner === owner).length : 0;
                   return (
                     <tr key={count} className={ownedCount === count ? 'ty-rent-active' : ''}>
-                      <td>Sở hữu {count} bến</td>
+                      <td>Sở hữu {count} sân bay</td>
                       <td>{formatMoney(STATION_RENT[count])}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
-          ) : (
-            <table className="ty-rent-table">
-              <tbody>
-                {[1, 2].map((count) => {
-                  const ownedCount = owner >= 0 ? tilesOfGroup('utility').filter((g) => view.tiles[g].owner === owner).length : 0;
-                  return (
-                    <tr key={count} className={ownedCount === count ? 'ty-rent-active' : ''}>
-                      <td>Sở hữu {count} tiện ích</td>
-                      <td>{UTILITY_MULTIPLIER[count]} × xúc xắc</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+          ) : null}
+          {view.festival === idx ? (
+            <div className="ty-sheet-row ty-sheet-row-note">
+              <span>Đang có Lễ hội</span>
+              <strong>Thuê ×{FESTIVAL_MULTIPLIER}</strong>
+            </div>
+          ) : null}
           {owner >= 0 && owner !== you ? (
             <div className="ty-sheet-row ty-sheet-row-note">
               <span>Đáp vào lúc này phải trả</span>
-              <strong className="ty-neg">{formatMoney(currentRent(view, idx, diceSum))}</strong>
+              <strong className="ty-neg">{formatMoney(currentRent(view, idx))}</strong>
             </div>
           ) : null}
         </>
@@ -171,6 +164,18 @@ export function TileSheet({ idx }: { idx: number }) {
               {myCash < (tile.price ?? 0) ? 'Thiếu tiền' : `Mua ${formatMoney(tile.price ?? 0)}`}
             </button>
           </>
+        ) : null}
+        {canFestivalHere ? (
+          <button type="button" className="ty-btn ty-btn-gold ty-btn-wide" disabled={busy} onClick={() => { sendMove({ type: 'FESTIVAL', tile: idx }); closeSheet(); }}>
+            <TileGlyph name="festival" size={18} color="currentColor" />
+            Tổ chức Lễ hội ở đây
+          </button>
+        ) : null}
+        {canTravelHere ? (
+          <button type="button" className="ty-btn ty-btn-gold ty-btn-wide" disabled={busy} onClick={() => { sendMove({ type: 'TRAVEL', tile: idx }); closeSheet(); }}>
+            <TileGlyph name="travel" size={18} color="currentColor" />
+            Bay tới đây
+          </button>
         ) : null}
         {owner === you && tile.kind === 'street' && manageAllowed ? (
           <>

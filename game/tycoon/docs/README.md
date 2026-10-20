@@ -61,7 +61,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 | O4 | Banner mất kết nối | người chơi X mất kết nối, đếm ngược grace 30 s |
 | O5 | ConfirmModal | bỏ cuộc, thoát bàn, mời ra, bán nhà |
 | O6 | Toast + turn announce | lỗi server, ĐẾN LƯỢT BẠN, "+200 qua Xuất phát" |
-| O7 | Banner vòng cuối | "Vòng 18/20" đổi màu từ vòng 18, "Vòng cuối!" ở vòng 20 |
+| O7 | Banner vòng cuối | "Vòng 28/30" đổi màu từ vòng 28, "Vòng cuối!" ở vòng 30 |
 
 ## Cấu trúc tài liệu
 
@@ -75,9 +75,10 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 6. [06-icon-system.md](./06-icon-system.md) — hệ icon: 4 họ icon, số lượng, grid, công thức hình học từng icon, quy trình tạo icon mới.
 7. [07-screen-to-feature-map.md](./07-screen-to-feature-map.md) — mapping màn → store state → SDK event → component.
 8. [08-fx-and-animation.md](./08-fx-and-animation.md) — kiến trúc 4 lớp (SVG / DOM / canvas Pixi hạt / overlay), ≈ 60 hiệu ứng theo sự kiện với bản Lite, API `FxLayer`, ngân sách hiệu năng, tier Full/Lite/Off.
-9. [09-economy.md](./09-economy.md) — kinh tế bàn 32 ô: bảng giá 16 thành phố, 3 cấp nhà, công thức, dòng tiền, thời gian một ván, kết quả mô phỏng và dải kiểm tra tự động.
-10. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
-11. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
+9. [09-economy.md](./09-economy.md) — kinh tế bàn 32 ô: bảng giá 16 thành phố, 3 cấp nhà, công thức, dòng tiền, thời gian một ván, thời gian chờ khi chơi với người thật, kết quả mô phỏng và dải kiểm tra tự động.
+10. [10-board-tiles.md](./10-board-tiles.md) — ghi chú nhanh 32 ô: loại ô, vị trí, giá, tiền thuê, ô nào mua / mua lại được, điều kiện thắng ngay theo ô.
+11. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
+12. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
 
 ## Nguyên tắc bắt buộc
 

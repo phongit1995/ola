@@ -9,11 +9,9 @@ export type GlyphName =
   | 'plane'
   | 'ship'
   | 'bus'
-  | 'electric'
-  | 'water'
   | 'jail'
-  | 'parking'
-  | 'gotojail'
+  | 'festival'
+  | 'travel'
   | 'arrow'
   | 'crown';
 
@@ -26,11 +24,9 @@ const GLYPH_PATHS: Record<GlyphName, string> = {
   plane: 'M15 3h2l1 9 9 5v3l-9-2v5l3 2v2l-5-1-5 1v-2l3-2v-5l-9 2v-3l9-5z',
   ship: 'M6 20l2 7h16l2-7zM9 19V9h6V5h2v4h6v10zm2-2h12V11H11z',
   bus: 'M8 5h16a3 3 0 0 1 3 3v15a2 2 0 0 1-2 2h-1a2 2 0 1 1-4 0h-8a2 2 0 1 1-4 0H7a2 2 0 0 1-2-2V8a3 3 0 0 1 3-3zm0 5v7h16v-7z',
-  electric: 'M18 3L7 18h7l-2 11 11-15h-7z',
-  water: 'M16 3c5 7 9 11 9 17a9 9 0 0 1-18 0c0-6 4-10 9-17zm-4 17a4 4 0 0 0 4 4v-2a2 2 0 0 1-2-2z',
   jail: 'M5 5h22v3H5zm0 19h22v3H5zM9 8h3v16H9zm5.5 0h3v16h-3zM20 8h3v16h-3z',
-  parking: 'M5 19l3-7a3 3 0 0 1 3-2h10a3 3 0 0 1 3 2l3 7v6h-3a2 2 0 1 1-4 0h-8a2 2 0 1 1-4 0H5zm5-7l-2 5h16l-2-5z',
-  gotojail: 'M16 4a9 9 0 0 1 9 9v8H7v-8a9 9 0 0 1 9-9zm0 3a6 6 0 0 0-6 6v5h12v-5a6 6 0 0 0-6-6zM5 23h22v4H5z',
+  festival: 'M16 2l3.5 8.5L28 11l-6.5 6 2 9-7.5-4.5L8.5 26l2-9L4 11l8.5-.5z',
+  travel: 'M5 11h22v15H5zM12 5h8v6h-2V7h-4v4h-2z',
   arrow: 'M14 6L4 16l10 10v-6h14v-8H14z',
   crown: 'M3 11l7 5 6-10 6 10 7-5-3 14H6zm3 16h20v3H6z',
 };
@@ -40,17 +36,15 @@ export const GLYPH_BY_KIND: Partial<Record<TileKind, GlyphName>> = {
   chest: 'chest',
   chance: 'chance',
   tax: 'tax',
-  utility: 'electric',
   jail: 'jail',
-  parking: 'parking',
-  gotojail: 'gotojail',
+  festival: 'festival',
+  travel: 'travel',
 };
 
-const STATION_GLYPH: Record<number, GlyphName> = { 4: 'train', 12: 'plane', 20: 'ship', 28: 'bus' };
+const STATION_GLYPH: Record<number, GlyphName> = { 4: 'plane', 12: 'plane', 20: 'plane', 28: 'plane' };
 
 export function glyphForTile(idx: number, kind: TileKind): GlyphName | null {
   if (kind === 'station') return STATION_GLYPH[idx] ?? 'train';
-  if (kind === 'utility') return idx === 22 ? 'water' : 'electric';
   return GLYPH_BY_KIND[kind] ?? null;
 }
 
@@ -63,11 +57,9 @@ export const GLYPH_COLOR: Record<GlyphName, string> = {
   plane: 'var(--ty-navy)',
   ship: 'var(--ty-navy)',
   bus: 'var(--ty-navy)',
-  electric: 'var(--ty-jade)',
-  water: 'var(--ty-jade)',
   jail: 'var(--ty-navy)',
-  parking: 'var(--ty-navy)',
-  gotojail: 'var(--ty-coral)',
+  festival: 'var(--ty-gold-deep)',
+  travel: 'var(--ty-sky-deep)',
   arrow: 'var(--ty-jade)',
   crown: 'var(--ty-gold)',
 };

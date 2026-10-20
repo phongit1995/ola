@@ -105,7 +105,7 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 
 ## 8. RoundChip
 
-- Giữa header S6 (căn theo màn), pill paper viền navy 1.5, 108 × 32, `Vòng 7/20` 15/800; 18–19 coral, 20 danger + chữ `Vòng cuối`. Có thể kèm thanh tiến độ 3 px dưới chữ.
+- Giữa header S6 (căn theo màn), pill paper viền navy 1.5, 108 × 32, `Vòng 7/30 · 18:20` 15/800 (giờ còn lại của 25 phút, đỏ khi ≤ 3 phút); 28–29 coral, 30 danger + chữ `Vòng cuối`. Có thể kèm thanh tiến độ 3 px dưới chữ.
 
 ## 9. DeedCard (trong S7) và GroupChip
 

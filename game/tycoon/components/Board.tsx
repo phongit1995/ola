@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
-import { BOARD_SIZE, GO_SALARY, JAIL_TILE, MAX_HOUSES, SIDE_TILES } from '../logic/constants';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_TILE, MAX_HOUSES, SIDE_TILES, TAX_RATE } from '../logic/constants';
 import { SEAT_SOFT_COLORS, seatColor } from '../helpers/player';
 import { levelLabel, rentLabel, shortName } from '../helpers/tiles';
 import { useTycoon } from '../store/useTycoon';
@@ -114,25 +114,25 @@ function CornerContent({ idx }: { idx: number }) {
           <span className="ty-jail-visit">Thăm tù</span>
         </>
       );
-    case 'parking':
+    case 'festival':
       return (
-        <span className="ty-corner ty-corner-parking">
-          <TileGlyph name="parking" size={22} />
+        <span className="ty-corner ty-corner-festival">
+          <TileGlyph name="festival" size={22} />
           <span className="ty-corner-title">
-            BÃI
+            LỄ
             <br />
-            ĐỖ XE
+            HỘI
           </span>
         </span>
       );
     default:
       return (
-        <span className="ty-corner ty-corner-gotojail">
-          <TileGlyph name="gotojail" size={22} />
+        <span className="ty-corner ty-corner-travel">
+          <TileGlyph name="travel" size={22} />
           <span className="ty-corner-title">
-            VÀO
+            DU
             <br />
-            TÙ
+            LỊCH
           </span>
         </span>
       );
@@ -173,6 +173,7 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
     })),
   );
   const turnSeat = view?.turn ?? -1;
+  const festival = view?.festival ?? -1;
 
   return (
     <div className="ty-board" role="group" aria-label="Bàn cờ tỷ phú">
@@ -185,8 +186,8 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
         const corner = rect.side === 'corner';
         const glyph = corner ? null : glyphForTile(tile.idx, tile.kind);
         const owned = owner >= 0;
-        const priceText = owned ? rentLabel(tiles, tile.idx) : tile.price ? String(tile.price) : tile.tax ? `−${tile.tax}` : '';
-        const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}`;
+        const priceText = owned ? rentLabel(tiles, tile.idx, festival) : tile.price ? String(tile.price) : tile.kind === 'tax' ? `−${TAX_RATE * 100}%` : '';
+        const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}`;
         const style = {
           left: `${rect.x}%`,
           top: `${rect.y}%`,
@@ -205,6 +206,7 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
               rect.corner ? `ty-tile-corner-${rect.corner}` : '',
               glyph ? 'ty-tile-special' : '',
               owned ? 'ty-tile-owned' : '',
+              festival === tile.idx ? 'ty-tile-festival' : '',
               landingTile === tile.idx ? 'ty-tile-landing' : '',
               pathTiles.includes(tile.idx) ? 'ty-tile-path' : '',
             ].join(' ')}
@@ -216,6 +218,11 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
             {tile.kind === 'street' && tile.group ? (
               <span className={`ty-tile-band ty-band-${tile.group}`}>
                 <TileHouses houses={houses} />
+              </span>
+            ) : null}
+            {festival === tile.idx ? (
+              <span className="ty-festival-badge" aria-hidden="true">
+                <TileGlyph name="festival" size={12} color="var(--ty-cream)" />
               </span>
             ) : null}
             {corner ? (

@@ -9,7 +9,7 @@ import { PlayerPods } from '../components/PlayerPods';
 import { TileSheet } from '../components/TileSheet';
 import { GameLog, TurnPanel } from '../components/TurnPanel';
 import { TyIcon } from '../components/TyIcon';
-import { MAX_ROUNDS } from '../logic/constants';
+import { MAX_ROUNDS, TIME_LIMIT_MS } from '../logic/constants';
 import { useTycoon } from '../store/useTycoon';
 
 function LogSheet() {
@@ -26,6 +26,24 @@ function LogSheet() {
         ))}
       </div>
     </BottomSheet>
+  );
+}
+
+function GameClock() {
+  const startedAt = useTycoon((s) => s.startedAt);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const left = Math.max(0, TIME_LIMIT_MS - (now - startedAt));
+  const minutes = Math.floor(left / 60000);
+  const seconds = Math.floor((left % 60000) / 1000);
+  return (
+    <span className={left <= 3 * 60000 ? 'ty-clock-late' : undefined} aria-label={`Còn ${minutes} phút`}>
+      {' · '}
+      {minutes}:{String(seconds).padStart(2, '0')}
+    </span>
   );
 }
 
@@ -57,6 +75,7 @@ export function BoardScreen() {
         <span className={`ty-round-chip ${roundTone}`} aria-label={`Vòng ${round} trên ${MAX_ROUNDS}`}>
           <span className="ty-round-label">
             {round >= MAX_ROUNDS ? 'Vòng cuối' : 'Vòng'} <b>{round}</b>/{MAX_ROUNDS}
+            {state.result ? null : <GameClock />}
           </span>
           <span className="ty-round-track" aria-hidden="true">
             <i style={{ width: `${(round / MAX_ROUNDS) * 100}%` }} />

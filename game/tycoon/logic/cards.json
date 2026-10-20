@@ -30,7 +30,7 @@
   {
     "id": "ch05",
     "deck": "chance",
-    "text": "Đi đến bến gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.",
+    "text": "Bay đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.",
     "effect": "moveToNearest",
     "kind": "station",
     "amount": 2
@@ -38,10 +38,9 @@
   {
     "id": "ch06",
     "deck": "chance",
-    "text": "Đi đến tiện ích gần nhất. Nếu có chủ, trả 10 lần xúc xắc.",
-    "effect": "moveToNearest",
-    "kind": "utility",
-    "amount": 10
+    "text": "Đi dự Lễ hội. Qua Xuất phát nhận 160 tr.",
+    "effect": "moveTo",
+    "tile": 16
   },
   {
     "id": "ch07",

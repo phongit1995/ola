@@ -18,10 +18,10 @@ Sáu nhân vật mascot, sáng tác riêng, không mô phỏng người thật h
 |---|---|---|---|---|---|---|
 | `ty` | Bác Tỷ | mascot chính, "chủ trò" — lobby, thẻ Cơ hội, hạng 1 | áo bà ba gold `#F2B807` | quần navy, da `#F3C9A0` | kính tròn cream | bụng tròn, kính tròn, quạt giấy gập |
 | `ngan` | Cô Ngân | ngân hàng — thu thuế, trả lương, Khí vận, modal trả nợ | áo dài jade `#1F8A5B` | tóc navy, da `#F3C9A0` | nơ cream | tóc búi, cầm sổ cái |
-| `canh` | Chú Cảnh | cảnh sát — ô Vào tù, step jail-in | áo cream `#FFF8EA` | mũ navy, còi coral `#E4573D` | — | mũ kê-pi, tay cầm còi |
+| `canh` | Chú Cảnh | cảnh sát — step jail-in (thẻ Vào tù, đôi 3 lần) | áo cream `#FFF8EA` | mũ navy, còi coral `#E4573D` | — | mũ kê-pi, tay cầm còi |
 | `teo` | Anh Tèo | tù nhân hài — ô Nhà tù, pod badge trong tù | áo sọc cream/navy | tóc nâu `#8D5B3C` | — | sọc ngang, cổ áo tròn, mặt méo |
 | `loc` | Bé Lộc | may mắn — ô Xuất phát, +200, thẻ tiền vào | áo đỏ `#D64545` | lì xì gold | má hồng `#E58FB5` | nhỏ nhất dàn, tay giơ lì xì |
-| `dau` | Mèo Đậu | nghỉ — ô Bãi đỗ xe, trạng thái chờ người khác | lông cam `#F2994A` | sọc nâu `#8D5B3C` | mũi hồng | tai tròn, đuôi cong, mắt híp |
+| `dau` | Mèo Đậu | vui — ô Lễ hội, trạng thái chờ người khác | lông cam `#F2994A` | sọc nâu `#8D5B3C` | mũi hồng | tai tròn, đuôi cong, mắt híp |
 
 Màu chính của nhân vật trùng accent/nhóm đất là cố ý (6 nhân vật = 6 họ màu, không thêm họ mới); contour navy giữ họ nhất quán. Không nhân vật nào dùng sky (dành riêng cho dải Khí vận để thẻ không bị "đồng màu").
 

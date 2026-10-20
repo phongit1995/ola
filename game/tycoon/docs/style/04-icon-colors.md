@@ -57,10 +57,9 @@ Icon điều khiển (`ic-*`) không có màu riêng: màu đến từ `color` c
 | `tg-chance` | gold-deep `#B98700` | navy (trên gold) | navy trên dải gold | gold-deep |
 | `tg-tax` | coral `#E4573D` | — | coral | coral |
 | `tg-train/plane/ship/bus` | navy | — | navy | navy |
-| `tg-electric/water` | jade `#1F8A5B` | — | jade | jade |
+| `tg-festival` | gold-deep `#B98700` | cream (huy hiệu trên ô) | gold-deep | gold-deep |
+| `tg-travel` | sky-deep `#3C9BBF` | — | sky-deep | sky-deep |
 | `tg-jail` | navy | — | navy | navy |
-| `tg-parking` | navy | — | navy | navy |
-| `tg-gotojail` | coral | — | coral | coral |
 | `tg-house` | jade | — | jade | — |
 | `tg-hotel` | coral | — | coral | — |
 

@@ -7,11 +7,11 @@ Cờ Tỷ Phú có **4 họ icon** khác nhau về vai trò, grid và cách tô.
 | Họ | Prefix | Grid | Kiểu | Số lượng v1 | Thư mục |
 |---|---|---|---|---|---|
 | A. Icon điều khiển | `ic-` | 24 | stroke 2, `currentColor` | **30** | `assets/icons/` |
-| B. Glyph ô bàn cờ | `tg-` | 32 | fill phẳng 1 màu (+ 1 màu phụ tối đa) | **13** | `assets/tiles/` |
+| B. Glyph ô bàn cờ | `tg-` | 32 | fill phẳng 1 màu (+ 1 màu phụ tối đa) | **11** | `assets/tiles/` |
 | C. Quân cờ | `tk-` | 96 (raster) | fill phẳng nhiều màu, outline navy | **8** (v1 dùng 4) | `assets/tokens/` |
 | D. Mặt xúc xắc | `d1`–`d6` | 44 | fill dot navy | **6** | `assets/dice/` |
 
-Tổng **57 asset icon**, trong đó 49 là SVG code-native, 8 raster. Ngoài ra: 6 reaction tái dùng từ caro, VIP icon shared, `ic-ken` tái dùng từ xiangqi (cùng grid 24).
+Tổng **55 asset icon**, trong đó 47 là SVG code-native, 8 raster. Ngoài ra: 6 reaction tái dùng từ caro, VIP icon shared, `ic-ken` tái dùng từ xiangqi (cùng grid 24).
 
 Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plus` của thirteen, cùng spec) — chỉ copy file sang `tycoon/assets/icons/` để mỗi game tự chứa asset (quy ước repo hiện tại; nếu sau này gom icon shared thì các game chuyển cùng lúc). 8 icon mới là riêng cho tỷ phú.
 
@@ -117,7 +117,7 @@ type TyIconName =
 
 Union là nguồn duy nhất; không nhận tên icon từ server.
 
-## 3. Họ B — Glyph ô bàn cờ (13)
+## 3. Họ B — Glyph ô bàn cờ (11)
 
 ### 3.1 Spec
 - viewBox `0 0 32 32`, safe area 3–29. **Fill phẳng**, không stroke (ở 18 px stroke 2 trên grid 32 sẽ nhòe). Mỗi glyph 1 màu `currentColor`; tối đa 1 màu phụ bằng `fill-opacity` 0.45 cùng màu (ví dụ đất dưới nhà), không hex thứ hai.
@@ -130,22 +130,20 @@ Union là nguồn duy nhất; không nhận tên icon từ server.
 | # | File | Ô | Màu (01 §2.2) | Mô tả hình |
 |---|---|---|---|---|
 | 1 | `tg-go` | 0 | navy | mũi tên cong 270° đầu nhọn, nghĩa "vòng lại" |
-| 2 | `tg-chest` | 2, 17, 33 | sky | rương nắp cong, khóa tròn giữa (màu phụ 0.45 cho thân) |
-| 3 | `tg-tax` | 4, 38 | coral | tờ hóa đơn góc gập + 2 vạch ngang |
-| 4 | `tg-train` | 5 | navy | đầu tàu nhìn trước: hộp + 2 bánh + đèn tròn |
-| 5 | `tg-plane` | 15 | navy | máy bay nhìn trên, cánh thẳng |
-| 6 | `tg-ship` | 25 | navy | thân tàu + 1 ống khói + 2 sóng |
-| 7 | `tg-bus` | 35 | navy | xe buýt nhìn trước: hộp bo + 2 đèn + kính |
-| 8 | `tg-chance` | 7, 22, 36 | gold | dấu hỏi đậm vẽ bằng path (không text) |
-| 9 | `tg-electric` | 12 | jade | tia sét 2 khúc |
-| 10 | `tg-water` | 28 | jade | giọt nước + 1 highlight 0.45 |
-| 11 | `tg-jail` | 10 | navy | 3 song dọc + 2 thanh ngang (bản fill) |
-| 12 | `tg-parking` | 20 | navy | xe hơi nhìn ngang đơn giản (nóc + 2 bánh) |
-| 13 | `tg-gotojail` | 30 | coral | bàn tay chỉ / còi cảnh sát — chọn **còi**: vòm còi + đế, ít bị hiểu nhầm hơn bàn tay ở 26 px |
+| 2 | `tg-chest` | 2, 14, 26 | sky | rương nắp cong, khóa tròn giữa (màu phụ 0.45 cho thân) |
+| 3 | `tg-tax` | 10 | coral | tờ hóa đơn góc gập + 2 vạch ngang |
+| 4 | `tg-train` | — (không dùng) | navy | đầu tàu nhìn trước: hộp + 2 bánh + đèn tròn |
+| 5 | `tg-plane` | 4, 12, 20, 28 | navy | máy bay nhìn trên, cánh thẳng |
+| 6 | `tg-ship` | — (không dùng) | navy | thân tàu + 1 ống khói + 2 sóng |
+| 7 | `tg-bus` | — (không dùng) | navy | xe buýt nhìn trước: hộp bo + 2 đèn + kính |
+| 8 | `tg-chance` | 6, 18, 22, 29 | gold | dấu hỏi đậm vẽ bằng path (không text) |
+| 9 | `tg-festival` | 16 | gold-deep | ngôi sao 5 cánh đặc (Lễ hội); cũng dùng làm huy hiệu trên ô đang có Lễ hội |
+| 10 | `tg-travel` | 24 | sky-deep | vali: thân chữ nhật + quai chữ U phía trên (Du lịch) |
+| 11 | `tg-jail` | 8 | navy | 3 song dọc + 2 thanh ngang (bản fill) |
 
-4 bến dùng 4 glyph khác nhau (tàu, máy bay, tàu thủy, xe buýt) để người chơi nhớ vị trí; cùng màu navy để đọc là "cùng nhóm Bến".
+4 sân bay cùng dùng glyph máy bay (`tg-plane`) màu navy để đọc là cùng nhóm — đủ 4 là thắng ngay. `tg-train`, `tg-ship`, `tg-bus` hiện không dùng trên bàn.
 
-### 3.3 Cấp nhà trên bàn (cấp 1–2 nhà, cấp 3 khách sạn) (thuộc họ B, không đếm vào 13)
+### 3.3 Cấp nhà trên bàn (cấp 1–2 nhà, cấp 3 khách sạn) (thuộc họ B, không đếm vào 11)
 - `tg-house` 6 × 6: tam giác nóc trên rect thân, fill jade. 
 - `tg-hotel` 14 × 8: rect thân + nóc thấp, fill coral.
 - Hai hình này inline trong BoardSurface (không file riêng), kích thước cố định theo ô.

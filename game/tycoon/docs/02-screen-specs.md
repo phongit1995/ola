@@ -98,7 +98,7 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 ```text
 ┌──────────────────────────────────────────┐
-│ [CỜ TỶ PHÚ]   ( Vòng 7/20 )   (♪)  (≡)   │ header
+│ [CỜ TỶ PHÚ]   ( Vòng 7/30 · 18:20 )   (♪)  (≡)   │ header
 ├──────────────────────────────────────────┤
 │ ┌──────────────────────────────────────┐ │
 │ │  NHÀ TÙ · 7 ô hàng trên · BÃI ĐỖ XE  │ │
@@ -139,11 +139,11 @@ Width 360: bàn 336, pod 4 × 79. Width ≥ 480: bàn 456–480, pod đủ rộn
 
 ### 6.2 Bàn — vị trí ô và thông tin trên ô
 
-- Góc cố định (không xoay bàn, mọi người thấy cùng hướng): **dưới-trái** `XUẤT PHÁT` (mũi tên chỉ lên + `+160` jade), **trên-trái** `NHÀ TÙ` (phòng giam ở góc dưới-phải của ô, dải Thăm tù dọc mép trên + mép trái), **trên-phải** `BÃI ĐỖ XE` (biển P + 2 xe), **dưới-phải** `VÀO TÙ` (song sắt). Đi **thuận kim đồng hồ** từ Xuất phát: cột trái dưới → trên, hàng trên trái → phải, cột phải trên → dưới, hàng dưới phải → trái. Thứ tự 32 ô ở 05 §1.
+- Góc cố định (không xoay bàn, mọi người thấy cùng hướng): **dưới-trái** `XUẤT PHÁT` (mũi tên chỉ lên + `+160` jade), **trên-trái** `NHÀ TÙ` (phòng giam ở góc dưới-phải của ô, dải Thăm tù dọc mép trên + mép trái), **trên-phải** `LỄ HỘI` (ngôi sao vàng, nền gold-soft), **dưới-phải** `DU LỊCH` (vali, nền sky-soft). Đi **thuận kim đồng hồ** từ Xuất phát: cột trái dưới → trên, hàng trên trái → phải, cột phải trên → dưới, hàng dưới phải → trái. Thứ tự 32 ô ở 05 §1.
 - Mỗi ô cạnh, mọi phía, chữ luôn đứng thẳng, đọc từ trên xuống:
   1. **tên ô** (ngắn, `shortName`) sát mép trên ô;
-  2. **tranh/glyph** ở giữa: phong cảnh địa danh cho ô đất, glyph cho bến/tiện ích/thẻ/thuế;
-  3. **giá** sát mép dưới ô (`220 tr`); ô thuế hiện số phải trả màu coral; ô Cơ hội/Khí vận không có dòng giá.
+  2. **tranh/glyph** ở giữa: phong cảnh địa danh cho ô đất, glyph cho sân bay/thẻ/thuế;
+  3. **giá** sát mép dưới ô (`220 tr`); ô Thuế hiện `−10%` màu coral; ô Cơ hội/Khí vận không có dòng giá.
 - **Dải màu nhóm** luôn nằm ở mép **phía trong** bàn: hàng trên → dải ở đáy ô; hàng dưới → dải ở đỉnh ô; cột trái → dải ở mép phải ô; cột phải → dải ở mép trái ô. Cấp nhà (1–2 nhà hoặc khách sạn) đặt trên dải. Ô không phải đất không có dải.
 - Ô có chủ: nền nhạt màu ghế + vạch 3 px màu ghế ở mép **ngoài**, để không lẫn với dải nhóm ở mép trong. Dòng giá đổi thành viên tiền thuê hiện tại (nền paper sáng, viền màu chủ).
 - Quân: ghim bản đồ màu ghế có avatar. Mũi ghim chạm mép **trong** của ô; thân ghim nằm trong vùng trong bàn, không che tên/giá. Ô 10: quân trong tù đứng vùng phòng giam, quân thăm tù đứng dải Thăm tù.
@@ -191,7 +191,7 @@ Chỉ có **một** nút gold trên màn tại mọi thời điểm, và nó lu�
 | Vị trí | Phần tử | Kích thước tại 390 | Hành vi |
 |---|---|---|---|
 | Trái, lề 12 | logo chữ `CỜ TỶ PHÚ` + xúc xắc nhỏ (raster `lobby/logo.webp` hoặc live text) | cao 32, rộng ≤ 120 | không bấm |
-| Giữa (căn theo màn, không theo phần còn trống) | `RoundChip` `Vòng 7/20` pill paper viền navy | 108 × 32 | không bấm; đổi màu từ vòng 18 (O7) |
+| Giữa (căn theo màn, không theo phần còn trống) | `RoundChip` `Vòng 7/30 · 18:20` (vòng / 30 + giờ còn lại của 25 phút) pill paper viền navy | 108 × 32 | không bấm; đổi màu từ vòng 28 (O7); giờ đổi đỏ khi còn ≤ 3 phút |
 | Phải, cách mép 12 | nút âm thanh tròn | 44 × 44 | bật/tắt âm, `aria-pressed` |
 | Phải cùng | nút menu tròn (☰ trong concept) | 44 × 44 | popover paper: `Về sảnh` · `Luật chơi` · `Bỏ cuộc` (coral) |
 
@@ -248,11 +248,16 @@ Bottom sheet 100% × auto (max 62% chiều cao), paper, radius 28 trên, handle 
 - Hàng `Cấp hiện tại`: 1–2 glyph nhà hoặc 1 khách sạn + tên cấp.
 - Nút theo ngữ cảnh: `Mua 220 tr` (khi `decide` và là ô đang đứng), `Nâng cấp (150 tr)` / `Hạ cấp (+75 tr)` (khi của mình + pha manage/debt + hợp lệ), disabled kèm lý do 12.5 coral (`Cần sở hữu trọn nhóm — thiếu Huế`, `Nâng đều: Huế mới ở cấp 1`, `Đã đạt cấp tối đa (cấp 3)`).
 
-### 7.2 Bến / tiện ích
-- Bảng 4 hàng số bến ↔ tiền thuê, hoặc 2 hàng tiện ích ↔ hệ số; highlight hàng hiện tại.
+### 7.2 Sân bay
+- Bảng 4 hàng số sân bay ↔ tiền thuê; highlight hàng hiện tại.
 
 ### 7.3 Ô đặc biệt
-- Mô tả 1–2 dòng (`Nhận 160 tr mỗi lần đi qua`, `Vào tù, đi thẳng không qua Xuất phát`), không nút.
+- Mô tả 1–2 dòng (`Nhận 160 tr mỗi lần đi qua`, `Lượt sau được bay tới bất kỳ ô nào…`, `Đóng 10% tổng tài sản…`), không nút.
+
+### 7.4 Nút theo pha Lễ hội / Du lịch
+- Pha `festival` của mình: sheet ô thành phố của mình có nút gold `Tổ chức Lễ hội ở đây`. Panel lượt (S6) cũng hiện lưới nút các thành phố của mình (tên ngắn + `thuê …` sau khi ×2, ô đang có Lễ hội viền gold) + `Bỏ qua`.
+- Pha `travel` của mình: chạm ô bất kỳ trên bàn (trừ ô đang đứng) → sheet có nút gold `Bay tới đây`. Panel lượt hiện `Du lịch — chạm vào ô bất kỳ trên bàn để bay tới` + nút `Không bay, gieo xúc xắc`.
+- Ô đang có Lễ hội: sheet thêm hàng `Đang có Lễ hội · Thuê ×2`; số thuê trên bàn đã gồm ×2.
 
 ---
 
@@ -262,7 +267,7 @@ Bottom sheet max 70%.
 - Header: `Tài sản của bạn` + tổng `2.340 tr` 22/800 (tiền mặt + đất + nhà) + dòng `Tiền mặt 820 tr`.
 - Danh sách theo nhóm: header nhóm = chip màu + tên + `3/3` (sở hữu/tổng); hàng ô: tên, nhà hiện có, nút `+` (xây) / `−` (bán) 36×36 với giá bên cạnh; disabled kèm tooltip lý do.
 - Nhóm chưa trọn: hiện mờ, chú thích `Thiếu Đà Nẵng`.
-- Bến/tiện ích liệt kê cuối, không nút.
+- Sân bay liệt kê cuối, không nút.
 - Mọi `BUILD/SELL_HOUSE` gửi ngay, sheet không đóng; số cập nhật khi STATE về (có `movePending` theo ô).
 
 ---
@@ -270,7 +275,7 @@ Bottom sheet max 70%.
 ## S9. Kết quả
 
 Modal 340 × auto, radius 28, không đóng khi tap backdrop.
-- Title theo hạng của mình: `Tỷ phú số 1!` gold / `Hạng 2` / `Hạng 3` / `Phá sản` coral; dòng lý do (`Hết 20 vòng` / `Chỉ còn một người` / `Bạn đã bỏ cuộc`).
+- Title theo hạng của mình: `Tỷ phú số 1!` gold / `Hạng 2` / `Hạng 3` / `Phá sản` coral; dòng lý do (`X sở hữu trọn 3 nhóm màu — thắng ngay` / `… trọn thành phố một cạnh bàn — thắng ngay` / `… cả 4 sân bay — thắng ngay` / `Bạn đã phá sản` / `Hết 30 vòng — xếp hạng theo tổng tài sản` / `Hết 25 phút — xếp hạng theo tổng tài sản` / `Chỉ còn một tỷ phú trụ lại` / `Bạn đã bỏ cuộc`).
 - Bảng 2–4 hàng: hạng, avatar + tên, tổng tài sản 15/800, chip XP `+50` (từ `expGains`). Hàng mình viền màu ghế.
 - v1 không hiện KEN (bet 0). Layout chừa dòng `±KEN` cho v2.
 - Nút `Chơi lại` CTA vàng (→ `ROOM_READY`, về S5 nếu phòng còn) + `Đóng` (→ S3).
@@ -318,4 +323,4 @@ Lỗi server (map `errorText`) là toast ở mép trên vùng trong bàn (6.6). 
 
 ## O7. Banner vòng
 
-Chip vòng ở giữa header; vòng 18–19 coral; vòng 20 hiện banner 1 lần `Vòng cuối! Xếp hạng theo tổng tài sản` 2.5 s ở giữa vùng trong bàn.
+Chip vòng ở giữa header kèm giờ còn lại; vòng 28–29 coral; vòng 30 hiện banner 1 lần `Vòng cuối! Xếp hạng theo tổng tài sản` 2.5 s ở giữa vùng trong bàn.
