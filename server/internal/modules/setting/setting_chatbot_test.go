@@ -77,6 +77,12 @@ func TestChatBotConfigBotDefaultsToEnabled(t *testing.T) {
 	}
 }
 
+const (
+	androidAppUA = "okhttp/4.12.0"
+	iosAppUA     = "OlaMobile/1 CFNetwork/1494.0.7 Darwin/23.4.0"
+	browserUA    = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"
+)
+
 func TestChatBotEnabledForPlatforms(t *testing.T) {
 	bot := ChatBotBotConfig{
 		Enabled: true,

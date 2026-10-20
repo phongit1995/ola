@@ -19,7 +19,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 
 // TopupConfig godoc
 // @Summary      Cấu hình nạp KEN (bank nhận tiền VietQR + mệnh giá) cho app
-// @Description  Có X-Platform thì enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi, bị ẩn thì không trả bank. Thiếu X-Platform (bản app cũ) thì trả enabled và enabledMobile như cấu hình gốc
+// @Description  enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi, bị ẩn thì không trả bank. Thiếu X-Platform thì tính là web
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth
@@ -42,20 +42,16 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 
-	access := topup.AccessFor(
-		c.GetHeader(constants.HeaderPlatform),
-		c.GetHeader(constants.HeaderAppVersion),
-		c.GetHeader("User-Agent"),
-	)
+	enabled := topup.EnabledFor(c.GetHeader(constants.HeaderPlatform), c.GetHeader(constants.HeaderAppVersion))
 	resp := TopupConfigResponse{
-		Enabled:       access.Enabled,
-		EnabledMobile: access.EnabledMobile,
+		Enabled:       enabled,
+		EnabledMobile: enabled,
 		MinAmount:     topup.MinAmount,
 		StepAmount:    topup.StepAmount,
 		PresetAmounts: topup.PresetAmounts,
 		BonusTiers:    topup.BonusTiers,
 	}
-	if access.ShowBank && bank.AccountNumber != "" {
+	if enabled && bank.AccountNumber != "" {
 		resp.Bank = &TopupBankInfo{
 			BankName:      bank.BankName,
 			BankBin:       bank.BankBin,
@@ -69,7 +65,7 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 
 // UsernameChangeConfig godoc
 // @Summary      Cấu hình phí đổi username theo độ dài (tính bằng KEN)
-// @Description  Có X-Platform thì enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi. Thiếu X-Platform (bản app cũ) thì trả enabled và enabledMobile như cấu hình gốc
+// @Description  enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi. Thiếu X-Platform thì tính là web
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth
@@ -87,12 +83,8 @@ func (ctrl *Controller) UsernameChangeConfig(c *gin.Context) (interface{}, error
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
-	resp := UsernameChangeConfigResponse{Enabled: cfg.Enabled, EnabledMobile: cfg.EnabledMobile, Tiers: cfg.Tiers}
-	if client := ClientFrom(c); client.Platform != "" {
-		enabled := cfg.EnabledFor(client)
-		resp.Enabled, resp.EnabledMobile = enabled, enabled
-	}
-	return resp, nil
+	enabled := cfg.EnabledFor(c.GetHeader(constants.HeaderPlatform), c.GetHeader(constants.HeaderAppVersion))
+	return UsernameChangeConfigResponse{Enabled: enabled, EnabledMobile: enabled, Tiers: cfg.Tiers}, nil
 }
 
 // WordChainConfig godoc

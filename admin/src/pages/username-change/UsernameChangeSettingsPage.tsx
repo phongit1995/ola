@@ -10,7 +10,6 @@ import { DEFAULT_USERNAME_CHANGE } from './constants'
 
 interface UsernameChangeFormValues {
   enabled: boolean
-  enabledMobile: boolean
   platforms: PlatformRules
   tiers: UsernameChangeTierSetting[]
 }
@@ -53,7 +52,6 @@ export function UsernameChangeSettingsPage() {
     }
     const payload: UsernameChangeSetting = {
       enabled: values.enabled,
-      enabledMobile: values.enabledMobile,
       platforms: cleanPlatformRules(values.platforms),
       tiers,
     }
@@ -76,7 +74,6 @@ export function UsernameChangeSettingsPage() {
         layout="vertical"
         initialValues={{
           enabled: current.enabled,
-          enabledMobile: current.enabledMobile,
           platforms: platformRulesOrMobile(current.platforms, current.enabledMobile),
           tiers: current.tiers,
         }}
@@ -86,7 +83,7 @@ export function UsernameChangeSettingsPage() {
           name="enabled"
           label="Cho phép đổi nickname"
           valuePropName="checked"
-          extra="Tắt thì cả web lẫn mobile ẩn mục Đổi nickname và server từ chối đổi."
+          extra="Công tắc tổng: tắt thì mọi nền tảng ẩn mục Đổi nickname và server từ chối đổi."
         >
           <Switch />
         </Form.Item>
@@ -96,15 +93,6 @@ export function UsernameChangeSettingsPage() {
           extra="Tắt nền tảng nào thì nền tảng đó ẩn mục Đổi nickname và server từ chối đổi. So theo tên bản (1.0.0), không tính build."
         >
           <PlatformRulesTable name={['platforms']} />
-        </Form.Item>
-
-        <Form.Item
-          name="enabledMobile"
-          label="Bản app cũ (chưa gửi thông tin nền tảng)"
-          valuePropName="checked"
-          extra="Bản cũ chỉ đọc công tắc này để ẩn/hiện mục Đổi nickname, không theo bảng nền tảng. Tắt thì các bản này ẩn mục và server từ chối đổi."
-        >
-          <Switch />
         </Form.Item>
 
         <Form.List

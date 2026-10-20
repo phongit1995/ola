@@ -16,7 +16,6 @@ export const DEFAULT_BANK: TopupBankSetting = {
 
 export const DEFAULT_TOPUP: TopupSetting = {
   enabled: true,
-  enabledMobile: true,
   minAmount: 10_000,
   stepAmount: 1_000,
   presetAmounts: [10_000, 20_000, 50_000, 100_000, 200_000, 500_000],

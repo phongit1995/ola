@@ -89,12 +89,7 @@ func DefaultTopupConfig() TopupConfig {
 	}
 }
 
-type TopupAccess struct {
-	Enabled       bool
-	EnabledMobile bool
-	ShowBank      bool
-}
-
+// Configs saved before platforms existed only stored enabledMobile.
 func legacyMobilePlatforms(enabledMobile bool) PlatformRules {
 	rules := OpenPlatformRules()
 	rules.Android.Enabled = enabledMobile
@@ -109,18 +104,8 @@ func (c TopupConfig) platformRules() PlatformRules {
 	return legacyMobilePlatforms(c.EnabledMobile)
 }
 
-// Builds released before the X-Platform header only understand enabled/enabledMobile,
-// so requests without it get the legacy answer untouched.
-func (c TopupConfig) AccessFor(platform, appVersion, userAgent string) TopupAccess {
-	if strings.TrimSpace(platform) == "" {
-		return TopupAccess{
-			Enabled:       c.Enabled,
-			EnabledMobile: c.EnabledMobile,
-			ShowBank:      c.EnabledMobile || !utils.IsNativeAppUserAgent(userAgent),
-		}
-	}
-	visible := c.Enabled && c.platformRules().EnabledFor(platform, appVersion)
-	return TopupAccess{Enabled: visible, EnabledMobile: visible, ShowBank: visible}
+func (c TopupConfig) EnabledFor(platform, appVersion string) bool {
+	return c.Enabled && c.platformRules().EnabledFor(platform, appVersion)
 }
 
 func (c TopupConfig) BonusPercentFor(amountVnd int64) int {
@@ -185,19 +170,15 @@ func DefaultUsernameChangeConfig() UsernameChangeConfig {
 	}
 }
 
-// Builds released before the X-Platform header only know enabledMobile, so they are told apart by User-Agent.
-func (c UsernameChangeConfig) EnabledFor(client Client) bool {
+func (c UsernameChangeConfig) EnabledFor(platform, appVersion string) bool {
 	if !c.Enabled {
 		return false
-	}
-	if strings.TrimSpace(client.Platform) == "" && utils.IsNativeAppUserAgent(client.UserAgent) {
-		return c.EnabledMobile
 	}
 	rules := legacyMobilePlatforms(c.EnabledMobile)
 	if c.Platforms != nil {
 		rules = *c.Platforms
 	}
-	return rules.EnabledFor(client.Platform, client.AppVersion)
+	return rules.EnabledFor(platform, appVersion)
 }
 
 func (c UsernameChangeConfig) CostFor(length int) int {

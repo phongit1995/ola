@@ -1574,7 +1574,7 @@ export interface TopupBonusTierSetting {
 
 export interface TopupSetting {
   enabled: boolean
-  enabledMobile: boolean
+  enabledMobile?: boolean
   platforms?: PlatformRules
   minAmount: number
   stepAmount: number
@@ -1589,7 +1589,7 @@ export interface UsernameChangeTierSetting {
 
 export interface UsernameChangeSetting {
   enabled: boolean
-  enabledMobile: boolean
+  enabledMobile?: boolean
   platforms?: PlatformRules
   tiers: UsernameChangeTierSetting[]
 }

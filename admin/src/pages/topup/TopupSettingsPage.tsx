@@ -1,5 +1,6 @@
-import { App, Button, Card, Col, Collapse, Form, Input, InputNumber, Row, Select, Spin, Switch } from 'antd'
+import { App, Button, Card, Col, Form, Input, InputNumber, Row, Select, Spin, Switch, Tabs } from 'antd'
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
+import { useState } from 'react'
 import { Typography } from 'antd'
 import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { useAppSettings, usePutAppSettings } from '@/hooks/useAppSettingQueries'
@@ -14,7 +15,6 @@ import { formatThousands, parsePresetAmounts, parseThousands, topupPlatforms } f
 
 interface TopupSettingsFormValues {
   enabled: boolean
-  enabledMobile: boolean
   platforms: PlatformRules
   bankBin?: string
   accountNumber: string
@@ -28,10 +28,15 @@ interface TopupSettingsFormValues {
   presetAmounts: string[]
 }
 
+type TopupTab = 'general' | 'amounts'
+
+const AMOUNT_FIELDS = new Set<unknown>(['minAmount', 'stepAmount', 'presetAmounts', 'bonusTiers'])
+
 export function TopupSettingsPage() {
   const { message } = App.useApp()
   const { data: settings, isLoading } = useAppSettings()
   const putSettings = usePutAppSettings()
+  const [tab, setTab] = useState<TopupTab>('general')
 
   if (isLoading) {
     return (
@@ -47,12 +52,14 @@ export function TopupSettingsPage() {
   async function save(values: TopupSettingsFormValues) {
     const presetAmounts = parsePresetAmounts(values.presetAmounts)
     if (presetAmounts.length === 0) {
+      setTab('amounts')
       message.error('Cần ít nhất một mệnh giá gợi ý')
       return
     }
     const bonusTiers = [...(values.bonusTiers ?? [])].sort((a, b) => a.minAmount - b.minAmount)
     const tierMins = bonusTiers.map((tier) => tier.minAmount)
     if (new Set(tierMins).size !== tierMins.length) {
+      setTab('amounts')
       message.error('Mỗi mốc thưởng chỉ được khai báo một lần')
       return
     }
@@ -68,7 +75,6 @@ export function TopupSettingsPage() {
     }
     const topupPayload: TopupSetting = {
       enabled: values.enabled,
-      enabledMobile: values.enabledMobile,
       platforms: cleanPlatformRules(values.platforms),
       minAmount: values.minAmount,
       stepAmount: values.stepAmount,
@@ -92,7 +98,6 @@ export function TopupSettingsPage() {
         layout="vertical"
         initialValues={{
           enabled: topup.enabled,
-          enabledMobile: topup.enabledMobile,
           platforms: topupPlatforms(topup),
           bankBin: bank.bankBin || undefined,
           accountNumber: bank.accountNumber,
@@ -106,114 +111,114 @@ export function TopupSettingsPage() {
           presetAmounts: topup.presetAmounts.map(String),
         }}
         onFinish={save}
+        onFinishFailed={({ errorFields }) => setTab(AMOUNT_FIELDS.has(errorFields[0]?.name[0]) ? 'amounts' : 'general')}
       >
-        <Form.Item
-          name="enabled"
-          label="Cho phép nạp KEN"
-          valuePropName="checked"
-          extra="Công tắc tổng: tắt thì mọi nền tảng ẩn Nạp KEN và tiền chuyển khoản tới sẽ không được tự cộng KEN."
-        >
-          <Switch />
-        </Form.Item>
-
-        <Form.Item
-          label="Hiển thị theo nền tảng"
-          extra="Áp cho web và app từ bản build 05/10/2026 trở đi. So theo tên bản (1.0.0), không tính build. Chỉ ẩn nút và màn nạp, không ảnh hưởng việc cộng KEN. Có hiệu lực ở lần mở màn nạp sau."
-        >
-          <PlatformRulesTable name={['platforms']} />
-        </Form.Item>
-
-        <Form.Item
-          name="enabledMobile"
-          label="Bản app cũ (build trước 05/10/2026)"
-          valuePropName="checked"
-          extra="Bản cũ không gửi thông tin nền tảng nên không tách được Android/iOS. Tắt thì các bản này ẩn nút Nạp KEN và màn nạp không hiện tài khoản ngân hàng."
-        >
-          <Switch />
-        </Form.Item>
-
-        <Form.Item
-          name="bankBin"
-          label="Ngân hàng nhận tiền (VietQR)"
-          extra="Chọn ngân hàng để app hiển thị được mã VietQR. Chưa chọn thì app chỉ hiện số tài khoản."
-        >
-          <Select
-            allowClear
-            showSearch
-            placeholder="Chọn ngân hàng"
-            optionFilterProp="label"
-            options={VIETQR_BANKS.map((item) => ({
-              value: item.bin,
-              label: `${item.name} (${item.code})`,
-            }))}
-          />
-        </Form.Item>
-        <Form.Item
-          name="accountNumber"
-          label="Số tài khoản"
-          rules={[
-            { required: true, message: 'Nhập số tài khoản' },
-            { pattern: /^[A-Za-z0-9]+$/, message: 'Chỉ gồm chữ và số, không khoảng trắng' },
-          ]}
-        >
-          <Input placeholder="0123456789" maxLength={30} />
-        </Form.Item>
-        <Form.Item name="accountName" label="Chủ tài khoản">
-          <Input placeholder="NGUYEN VAN A" maxLength={100} />
-        </Form.Item>
-        <Form.Item
-          name="memoTemplate"
-          label="Nội dung chuyển khoản"
-          extra={
-            <Typography.Text type="secondary">
-              {'{username}'} sẽ được thay bằng username của người nạp, ví dụ @minhanh. Nên đặt dấu
-              @ ngay trước {'{username}'} (vd DONATE @{'{username}'}): nếu người nạp gõ thừa chữ,
-              hệ thống sẽ báo cần duyệt tay thay vì cộng nhầm cho user khác.
-            </Typography.Text>
-          }
-        >
-          <Input placeholder="@{username}" maxLength={50} />
-        </Form.Item>
-
-        <Form.Item
-          name="sieuthicodeSecret"
-          label="SieuThiCode webhook secret (tự động cộng KEN)"
-          extra={
-            <Typography.Text type="secondary">
-              Dán secret (Api Key) của SieuThiCode vào đây. Bên SieuThiCode cấu hình webhook gọi{' '}
-              <Typography.Text code copyable>
-                {`${env.apiUrl}/topup/webhook/sieuthicode`}
-              </Typography.Text>{' '}
-              kèm header <Typography.Text code>signature</Typography.Text>. Để trống thì webhook bị
-              khoá.
-            </Typography.Text>
-          }
-        >
-          <Input.Password placeholder="Secret bí mật" maxLength={120} autoComplete="new-password" />
-        </Form.Item>
-
-        <Form.Item
-          name="discordWebhookUrl"
-          label="Discord webhook thông báo nạp KEN"
-          rules={[{ type: 'url', message: 'URL không hợp lệ' }]}
-          extra={
-            <Typography.Text type="secondary">
-              Bắn thông báo vào kênh Discord khi có giao dịch nạp: ai nạp, số tiền, KEN trước → sau,
-              và cả các giao dịch không khớp user / dưới mức tối thiểu cần xử lý tay. Để trống thì
-              tắt thông báo.
-            </Typography.Text>
-          }
-        >
-          <Input placeholder="https://discord.com/api/webhooks/..." maxLength={300} />
-        </Form.Item>
-
-        <Collapse
-          ghost
-          style={{ marginBottom: 16 }}
+        <Tabs
+          activeKey={tab}
+          onChange={(key) => setTab(key as TopupTab)}
           items={[
             {
-              key: 'topup-detail',
-              label: 'Cấu hình nạp KEN (số tiền tối thiểu, mệnh giá, thưởng %)',
+              key: 'general',
+              label: 'Cài đặt chung',
+              forceRender: true,
+              children: (
+                <>
+                  <Form.Item
+                    name="enabled"
+                    label="Cho phép nạp KEN"
+                    valuePropName="checked"
+                    extra="Công tắc tổng: tắt thì mọi nền tảng ẩn Nạp KEN và tiền chuyển khoản tới sẽ không được tự cộng KEN."
+                  >
+                    <Switch />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Hiển thị theo nền tảng"
+                    extra="Tắt nền tảng nào thì nền tảng đó ẩn nút và màn Nạp KEN, không ảnh hưởng việc cộng KEN. So theo tên bản (1.0.0), không tính build. Có hiệu lực ở lần mở màn nạp sau."
+                  >
+                    <PlatformRulesTable name={['platforms']} />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="bankBin"
+                    label="Ngân hàng nhận tiền (VietQR)"
+                    extra="Chọn ngân hàng để app hiển thị được mã VietQR. Chưa chọn thì app chỉ hiện số tài khoản."
+                  >
+                    <Select
+                      allowClear
+                      showSearch
+                      placeholder="Chọn ngân hàng"
+                      optionFilterProp="label"
+                      options={VIETQR_BANKS.map((item) => ({
+                        value: item.bin,
+                        label: `${item.name} (${item.code})`,
+                      }))}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name="accountNumber"
+                    label="Số tài khoản"
+                    rules={[
+                      { required: true, message: 'Nhập số tài khoản' },
+                      { pattern: /^[A-Za-z0-9]+$/, message: 'Chỉ gồm chữ và số, không khoảng trắng' },
+                    ]}
+                  >
+                    <Input placeholder="0123456789" maxLength={30} />
+                  </Form.Item>
+                  <Form.Item name="accountName" label="Chủ tài khoản">
+                    <Input placeholder="NGUYEN VAN A" maxLength={100} />
+                  </Form.Item>
+                  <Form.Item
+                    name="memoTemplate"
+                    label="Nội dung chuyển khoản"
+                    extra={
+                      <Typography.Text type="secondary">
+                        {'{username}'} sẽ được thay bằng username của người nạp, ví dụ @minhanh. Nên đặt dấu
+                        @ ngay trước {'{username}'} (vd DONATE @{'{username}'}): nếu người nạp gõ thừa chữ,
+                        hệ thống sẽ báo cần duyệt tay thay vì cộng nhầm cho user khác.
+                      </Typography.Text>
+                    }
+                  >
+                    <Input placeholder="@{username}" maxLength={50} />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="sieuthicodeSecret"
+                    label="SieuThiCode webhook secret (tự động cộng KEN)"
+                    extra={
+                      <Typography.Text type="secondary">
+                        Dán secret (Api Key) của SieuThiCode vào đây. Bên SieuThiCode cấu hình webhook gọi{' '}
+                        <Typography.Text code copyable>
+                          {`${env.apiUrl}/topup/webhook/sieuthicode`}
+                        </Typography.Text>{' '}
+                        kèm header <Typography.Text code>signature</Typography.Text>. Để trống thì webhook bị
+                        khoá.
+                      </Typography.Text>
+                    }
+                  >
+                    <Input.Password placeholder="Secret bí mật" maxLength={120} autoComplete="new-password" />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="discordWebhookUrl"
+                    label="Discord webhook thông báo nạp KEN"
+                    rules={[{ type: 'url', message: 'URL không hợp lệ' }]}
+                    extra={
+                      <Typography.Text type="secondary">
+                        Bắn thông báo vào kênh Discord khi có giao dịch nạp: ai nạp, số tiền, KEN trước → sau,
+                        và cả các giao dịch không khớp user / dưới mức tối thiểu cần xử lý tay. Để trống thì
+                        tắt thông báo.
+                      </Typography.Text>
+                    }
+                  >
+                    <Input placeholder="https://discord.com/api/webhooks/..." maxLength={300} />
+                  </Form.Item>
+                </>
+              ),
+            },
+            {
+              key: 'amounts',
+              label: 'Mệnh giá & thưởng',
               forceRender: true,
               children: (
                 <>

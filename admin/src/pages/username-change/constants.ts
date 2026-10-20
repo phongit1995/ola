@@ -2,7 +2,6 @@ import type { UsernameChangeSetting } from '@/types'
 
 export const DEFAULT_USERNAME_CHANGE: UsernameChangeSetting = {
   enabled: true,
-  enabledMobile: true,
   tiers: [
     { minLength: 2, cost: 2_000_000 },
     { minLength: 3, cost: 1_000_000 },

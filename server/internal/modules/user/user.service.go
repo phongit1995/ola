@@ -890,7 +890,7 @@ func (s *Service) resolveUsernameChangeCost(username string, client setting.Clie
 	if err != nil {
 		return 0, err
 	}
-	if !cfg.EnabledFor(client) {
+	if !cfg.EnabledFor(client.Platform, client.AppVersion) {
 		return 0, ErrUsernameChangeDisabled
 	}
 	cost := cfg.CostFor(len(username))

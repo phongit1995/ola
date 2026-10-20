@@ -17,45 +17,36 @@ func TestUsernameChangeEnabledForPlatformRules(t *testing.T) {
 		want              bool
 	}{
 		{"web", "", true},
+		{"", "", true},
 		{"android", "1.0.0 (45)", false},
 		{"ios", "1.0.2 (12)", true},
 		{"ios", "1.0.3 (13)", false},
 	}
 	for _, tc := range cases {
-		if got := cfg.EnabledFor(Client{Platform: tc.platform, AppVersion: tc.version, UserAgent: iosAppUA}); got != tc.want {
+		if got := cfg.EnabledFor(tc.platform, tc.version); got != tc.want {
 			t.Fatalf("EnabledFor(%q, %q) = %v, want %v", tc.platform, tc.version, got, tc.want)
 		}
 	}
 
+	cfg.Platforms.Web.Enabled = false
+	if cfg.EnabledFor("", "") {
+		t.Fatal("request without X-Platform must follow the web rule")
+	}
+
 	cfg.Enabled = false
-	if cfg.EnabledFor(Client{Platform: "web", UserAgent: browserUA}) {
+	if cfg.EnabledFor("ios", "1.0.2") {
 		t.Fatal("master switch off must block username change everywhere")
 	}
 }
 
-func TestUsernameChangeEnabledForLegacyClients(t *testing.T) {
+func TestUsernameChangeEnabledForStoredWithoutPlatforms(t *testing.T) {
 	cfg := UsernameChangeConfig{Enabled: true, EnabledMobile: false}
-	if cfg.EnabledFor(Client{UserAgent: androidAppUA}) {
-		t.Fatal("old android build must follow the mobile switch")
-	}
-	if cfg.EnabledFor(Client{UserAgent: iosAppUA}) {
-		t.Fatal("old ios build must follow the mobile switch")
-	}
-	if !cfg.EnabledFor(Client{UserAgent: browserUA}) {
-		t.Fatal("browser without X-Platform stays on when only mobile is off")
-	}
-	webOff := cfg
-	webOff.EnabledMobile = true
-	webOff.Platforms = &PlatformRules{Web: PlatformRule{Enabled: false}, Android: PlatformRule{Enabled: true}, IOS: PlatformRule{Enabled: true}}
-	if webOff.EnabledFor(Client{UserAgent: browserUA}) {
-		t.Fatal("request without X-Platform from a non-app client must follow the web rule")
-	}
-	if !webOff.EnabledFor(Client{UserAgent: androidAppUA}) {
-		t.Fatal("old app build must follow the legacy switch, not the web rule")
+	if !cfg.EnabledFor("web", "") {
+		t.Fatal("web must stay on when only mobile was off")
 	}
 	for _, platform := range []string{"android", "ios"} {
-		if cfg.EnabledFor(Client{Platform: platform, AppVersion: "1.0.0 (1)", UserAgent: androidAppUA}) {
-			t.Fatalf("%s without stored platforms must follow the mobile switch", platform)
+		if cfg.EnabledFor(platform, "1.0.0 (1)") {
+			t.Fatalf("%s must follow the stored mobile switch", platform)
 		}
 	}
 }
@@ -63,9 +54,8 @@ func TestUsernameChangeEnabledForLegacyClients(t *testing.T) {
 func TestValidateUsernameChangePlatforms(t *testing.T) {
 	base := func(platforms interface{}) map[string]interface{} {
 		value := map[string]interface{}{
-			"enabled":       true,
-			"enabledMobile": true,
-			"tiers":         []interface{}{map[string]interface{}{"minLength": 2, "cost": 100}},
+			"enabled": true,
+			"tiers":   []interface{}{map[string]interface{}{"minLength": 2, "cost": 100}},
 		}
 		if platforms != nil {
 			value["platforms"] = platforms
