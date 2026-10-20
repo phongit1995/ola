@@ -1,5 +1,5 @@
 import type { PlatformRules, TopupSetting } from '@/types'
-import { normalizePlatformRules, OPEN_PLATFORM_RULES } from '@/lib/platformRules'
+import { platformRulesOrMobile } from '@/lib/platformRules'
 
 export function formatThousands(value: number | string | undefined) {
   return `${value ?? ''}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
@@ -10,9 +10,7 @@ export function parseThousands(value: string | undefined) {
 }
 
 export function topupPlatforms(topup: TopupSetting): PlatformRules {
-  if (topup.platforms) return normalizePlatformRules(topup.platforms)
-  const mobile = { enabled: topup.enabledMobile, disableVersions: [] }
-  return { ...OPEN_PLATFORM_RULES, android: mobile, ios: mobile }
+  return platformRulesOrMobile(topup.platforms, topup.enabledMobile)
 }
 
 export function parsePresetAmounts(raw: string[]): number[] {

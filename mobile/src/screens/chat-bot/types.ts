@@ -1,1 +1,3 @@
-export type { ChatBotSuggestionKey as SuggestionKey } from '@ola/shared/lib';
+import type { ChatBotGrouping } from '@ola/shared/types';
+
+export type MessageGrouping = ChatBotGrouping & { surface: string };

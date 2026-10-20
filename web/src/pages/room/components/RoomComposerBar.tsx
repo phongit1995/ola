@@ -13,7 +13,8 @@ import {
   kulToken,
   toast,
 } from '@lib';
-import { useAttachPanel, useLongPress } from '@hooks';
+import { useLongPress } from '@hooks';
+import { useAttachPanel } from '../useAttachPanel';
 import {
   SmileyGroupPanel,
   SmileyInput,

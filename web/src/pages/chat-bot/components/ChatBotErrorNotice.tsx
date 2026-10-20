@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CHAT_BOT_I18N } from '@ola/shared/constants';
+import { CHAT_BOT_FINAL_ERRORS, CHAT_BOT_I18N } from '@ola/shared/constants';
 import type { ChatBotErrorCode, ChatBotType } from '@app-types';
 
 interface ChatBotErrorNoticeProps {
@@ -20,13 +20,15 @@ export function ChatBotErrorNotice({
       <span className="rounded-full bg-black/45 px-3 py-1 text-[11px] text-white">
         {t(CHAT_BOT_I18N[bot].errors[code])}
       </span>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-ola-primary-ink shadow-sm active:scale-95"
-      >
-        {t('chat.chatBotRetry')}
-      </button>
+      {!CHAT_BOT_FINAL_ERRORS.includes(code) && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-ola-primary-ink shadow-sm active:scale-95"
+        >
+          {t('chat.chatBotRetry')}
+        </button>
+      )}
     </div>
   );
 }

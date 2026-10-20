@@ -13,7 +13,7 @@ import { AppRouter } from '@/routes';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 import { useCallStore } from '@/store/callStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
-import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
+import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
 import { useMeNotificationRealtime } from '@/pages/me/useMeNotificationRealtime';
 import { useAppNotificationRealtime } from '@/pages/apps/useAppNotificationRealtime';

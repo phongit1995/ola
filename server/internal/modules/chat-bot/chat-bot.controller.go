@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -74,6 +75,8 @@ func httpStatusForError(err error) (int, string) {
 // @Success      200      {object}  utils.BaseResponse[CompletionResponse]
 // @Failure      400      {object}  utils.APIError
 // @Failure      401      {object}  utils.APIError
+// @Failure      403      {object}  utils.APIError  "code CHAT_BOT_DISABLED: bot đang tắt"
+// @Failure      429      {object}  utils.APIError  "code CHAT_BOT_DAILY_LIMIT: hết lượt chat hôm nay"
 // @Failure      502      {object}  utils.APIError
 // @Router       /chat-bot [post]
 func (ctrl *Controller) Chat(c *gin.Context) {
@@ -95,13 +98,25 @@ func (ctrl *Controller) Chat(c *gin.Context) {
 		return
 	}
 
-	if req.Stream {
-		ctrl.stream(c, &req)
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		utils.RespondError(c, http.StatusUnauthorized, "user not authenticated")
+		return
+	}
+	admission, err := ctrl.service.Admit(userID, req.Type, setting.ClientFrom(c))
+	if err != nil {
+		respondAdmissionError(c, err)
 		return
 	}
 
-	result, prompt, err := ctrl.service.Complete(c.Request.Context(), &req)
+	if req.Stream {
+		ctrl.stream(c, &req, admission)
+		return
+	}
+
+	result, prompt, err := ctrl.service.Complete(c.Request.Context(), &req, admission)
 	if err != nil {
+		ctrl.service.Refund(admission)
 		ctrl.logger.Errorw("chat bot completion failed", "promptLen", len(prompt), "error", err)
 		status, msg := httpStatusForError(err)
 		utils.RespondError(c, status, msg)
@@ -112,9 +127,21 @@ func (ctrl *Controller) Chat(c *gin.Context) {
 	utils.RespondSuccess(c, http.StatusOK, result)
 }
 
-func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
+func respondAdmissionError(c *gin.Context, err error) {
+	switch {
+	case errors.Is(err, ErrBotDisabled):
+		utils.RespondErrorWithCode(c, http.StatusForbidden, err.Error(), constants.ErrorCodeChatBotDisabled)
+	case errors.Is(err, ErrDailyLimit):
+		utils.RespondErrorWithCode(c, http.StatusTooManyRequests, err.Error(), constants.ErrorCodeChatBotDailyLimit)
+	default:
+		utils.RespondError(c, http.StatusInternalServerError, "internal server error")
+	}
+}
+
+func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest, admission *Admission) {
 	session, ok := newSSESession(c)
 	if !ok {
+		ctrl.service.Refund(admission)
 		utils.RespondError(c, http.StatusInternalServerError, "streaming is not supported by this connection")
 		return
 	}
@@ -124,7 +151,7 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 	stopHeartbeat := session.startHeartbeat(c.Request.Context())
 	defer stopHeartbeat()
 
-	prompt, full, err := ctrl.service.Stream(c.Request.Context(), req, func(delta string) error {
+	prompt, full, err := ctrl.service.Stream(c.Request.Context(), req, admission, func(delta string) error {
 		return session.writeChunk(StreamChunk{ID: completionID, Delta: delta})
 	})
 
@@ -132,6 +159,7 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, errEmitAborted) {
 			return
 		}
+		ctrl.service.Refund(admission)
 		ctrl.logger.Errorw("chat bot stream failed", "promptLen", len(prompt), "streamed", len(full), "error", err)
 		_, message := httpStatusForError(err)
 		session.fail(completionID, message)
@@ -141,6 +169,7 @@ func (ctrl *Controller) stream(c *gin.Context, req *CompletionRequest) {
 	// Header SSE đã gửi từ đầu nên không còn trả 502 được; upstream im lặng phải
 	// thành error frame, nếu không client nhận "stop" với nội dung rỗng và mất nút thử lại.
 	if strings.TrimSpace(full) == "" {
+		ctrl.service.Refund(admission)
 		ctrl.logger.Errorw("chat bot stream returned empty content", "promptLen", len(prompt))
 		_, message := httpStatusForError(ErrEmptyResponse)
 		session.fail(completionID, message)

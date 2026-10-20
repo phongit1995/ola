@@ -2,9 +2,8 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CheckInAction, GeoVenue } from '@ola/shared/types';
 import { GeoService } from '@services';
-import { toast } from '@lib';
+import { CHECK_IN_ACTIONS, toast } from '@lib';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
-import { CHECK_IN_ACTIONS } from '../checkInActions';
 
 export type ComposedCheckIn = GeoVenue & {
   action?: string;

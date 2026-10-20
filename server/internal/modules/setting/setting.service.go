@@ -89,13 +89,8 @@ func DefaultTopupConfig() TopupConfig {
 	}
 }
 
-type TopupAccess struct {
-	Enabled       bool
-	EnabledMobile bool
-	ShowBank      bool
-}
-
-func legacyTopupPlatforms(enabledMobile bool) PlatformRules {
+// Configs saved before platforms existed only stored enabledMobile.
+func legacyMobilePlatforms(enabledMobile bool) PlatformRules {
 	rules := OpenPlatformRules()
 	rules.Android.Enabled = enabledMobile
 	rules.IOS.Enabled = enabledMobile
@@ -106,21 +101,11 @@ func (c TopupConfig) platformRules() PlatformRules {
 	if c.Platforms != nil {
 		return *c.Platforms
 	}
-	return legacyTopupPlatforms(c.EnabledMobile)
+	return legacyMobilePlatforms(c.EnabledMobile)
 }
 
-// Builds released before the X-Platform header only understand enabled/enabledMobile,
-// so requests without it get the legacy answer untouched.
-func (c TopupConfig) AccessFor(platform, appVersion, userAgent string) TopupAccess {
-	if strings.TrimSpace(platform) == "" {
-		return TopupAccess{
-			Enabled:       c.Enabled,
-			EnabledMobile: c.EnabledMobile,
-			ShowBank:      c.EnabledMobile || !utils.IsNativeAppUserAgent(userAgent),
-		}
-	}
-	visible := c.Enabled && c.platformRules().EnabledFor(platform, appVersion)
-	return TopupAccess{Enabled: visible, EnabledMobile: visible, ShowBank: visible}
+func (c TopupConfig) EnabledFor(platform, appVersion string) bool {
+	return c.Enabled && c.platformRules().EnabledFor(platform, appVersion)
 }
 
 func (c TopupConfig) BonusPercentFor(amountVnd int64) int {
@@ -168,6 +153,7 @@ type UsernameChangeTier struct {
 type UsernameChangeConfig struct {
 	Enabled       bool                 `json:"enabled"`
 	EnabledMobile bool                 `json:"enabledMobile"`
+	Platforms     *PlatformRules       `json:"platforms,omitempty"`
 	Tiers         []UsernameChangeTier `json:"tiers"`
 }
 
@@ -182,6 +168,17 @@ func DefaultUsernameChangeConfig() UsernameChangeConfig {
 			{MinLength: 6, Cost: 100_000},
 		},
 	}
+}
+
+func (c UsernameChangeConfig) EnabledFor(platform, appVersion string) bool {
+	if !c.Enabled {
+		return false
+	}
+	rules := legacyMobilePlatforms(c.EnabledMobile)
+	if c.Platforms != nil {
+		rules = *c.Platforms
+	}
+	return rules.EnabledFor(platform, appVersion)
 }
 
 func (c UsernameChangeConfig) CostFor(length int) int {
@@ -368,6 +365,10 @@ func (s *Service) GetUsernameChange() (UsernameChangeConfig, error) {
 		tiers = DefaultUsernameChangeConfig().Tiers
 	}
 	cfg.Tiers = tiers
+	if cfg.Platforms != nil {
+		platforms := cfg.Platforms.normalized()
+		cfg.Platforms = &platforms
+	}
 	return cfg, err
 }
 
@@ -549,6 +550,15 @@ func ValidateUsernameChangeValue(value models.JSONB) error {
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&cfg); err != nil {
 		return errors.New("invalid username_change config: " + err.Error())
+	}
+	if raw, ok := value["platforms"]; ok {
+		platforms, err := decodePlatformRules(raw)
+		if err != nil {
+			return errors.New("invalid username_change platforms: " + err.Error())
+		}
+		if err := platforms.validate(); err != nil {
+			return err
+		}
 	}
 	if len(cfg.Tiers) == 0 {
 		return errors.New("username_change config needs at least one tier")

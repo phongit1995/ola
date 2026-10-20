@@ -17,7 +17,7 @@ import {
   meSelfLiker,
   reconcileMeLikers,
   toMePost,
-} from '../me/mappers';
+} from '../me/utils';
 import type { MePost } from '../me/types';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
 import {
@@ -25,13 +25,13 @@ import {
   composedToPayload,
   composedToUpdatePayload,
 } from '../me/composer';
-import { useMeFeedStore } from '../me/meFeedStore';
+import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import {
   mapFollowing,
   mapPosts,
   mapPublicProfile,
   type ProfileMapDeps,
-} from './mappers';
+} from './utils';
 import { useProfileActions } from './useProfileActions';
 import type {
   ProfileController,

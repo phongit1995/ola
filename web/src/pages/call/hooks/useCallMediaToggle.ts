@@ -4,7 +4,7 @@ import { Track } from 'livekit-client';
 import { toast } from '@lib';
 import { useCallStore } from '@/store/callStore';
 import { PERM_NAME, PERM_STATE, REQUEST_RESULT } from '../constants';
-import type { MediaSource, PermState } from '../interfaces';
+import type { MediaSource, PermState } from '../types';
 import { requestAndPublish } from '../lib/callMedia';
 import { usePermissionStatus } from './usePermissionStatus';
 

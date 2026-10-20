@@ -2,10 +2,13 @@ import { Fragment } from 'react';
 import type { RefObject, UIEvent } from 'react';
 import { DateSeparator } from '@components';
 import { useChatWallpaperStyle } from '@hooks';
-import { BUBBLE_WALLPAPER, isSameDay } from '@lib';
-import type { ChatBotErrorCode, ChatBotMessage, ChatBotType } from '@app-types';
-import { isoOf } from '../chatBotView';
-import type { ChatBotViewer } from '../interface';
+import { BUBBLE_WALLPAPER, chatBotIso, isSameDay } from '@lib';
+import type {
+  ChatBotErrorCode,
+  ChatBotMessage,
+  ChatBotType,
+  ChatBotViewer,
+} from '@app-types';
 import { BotMessageRow } from './BotMessageRow';
 import { BotTypingRow } from './BotTypingRow';
 import { ChatBotEmptyState } from './ChatBotEmptyState';
@@ -51,12 +54,12 @@ export function ChatBotMessageList({
           {messages.map((message, index) => {
             const prev = messages[index - 1];
             const showDate = !isSameDay(
-              isoOf(prev?.createdAt ?? 0),
-              isoOf(message.createdAt)
+              chatBotIso(prev?.createdAt ?? 0),
+              chatBotIso(message.createdAt)
             );
             return (
               <Fragment key={message.id}>
-                {showDate && <DateSeparator iso={isoOf(message.createdAt)} />}
+                {showDate && <DateSeparator iso={chatBotIso(message.createdAt)} />}
                 <BotMessageRow
                   message={message}
                   prev={prev}

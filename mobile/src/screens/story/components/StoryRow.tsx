@@ -3,7 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { STORY_KIND } from '@ola/shared/constants';
 import { formatCompactCount, formatDateSlashDMY } from '@ola/shared/lib';
 import type { Story } from '@ola/shared/types';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryCover } from './StoryCover';
 import { StoryMeta, StoryStatusBadge, StoryTag } from './StoryTags';
 

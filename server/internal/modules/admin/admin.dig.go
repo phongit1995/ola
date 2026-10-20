@@ -5,6 +5,7 @@ import (
 	adminaudit "ola-chat-server/internal/modules/admin/audit"
 	adminauth "ola-chat-server/internal/modules/admin/auth"
 	adminclan "ola-chat-server/internal/modules/admin/clan"
+	adminconversation "ola-chat-server/internal/modules/admin/conversation"
 	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	admingamematch "ola-chat-server/internal/modules/admin/game-match"
@@ -14,7 +15,9 @@ import (
 	adminme "ola-chat-server/internal/modules/admin/me"
 	adminminigame "ola-chat-server/internal/modules/admin/mini-game"
 	adminpen "ola-chat-server/internal/modules/admin/pen"
+	adminpushcampaign "ola-chat-server/internal/modules/admin/push-campaign"
 	adminrelationship "ola-chat-server/internal/modules/admin/relationship"
+	adminreport "ola-chat-server/internal/modules/admin/report"
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminsetting "ola-chat-server/internal/modules/admin/setting"
 	adminstory "ola-chat-server/internal/modules/admin/story"
@@ -53,6 +56,9 @@ func Provider(c *dig.Container) error {
 		admintopup.Provider,
 		adminwordchain.Provider,
 		adminstory.Provider,
+		adminreport.Provider,
+		adminpushcampaign.Provider,
+		adminconversation.Provider,
 	}
 
 	for _, module := range modules {

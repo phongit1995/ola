@@ -12,6 +12,42 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+const (
+	PurchaseSourcePackage = "package"
+	PurchaseSourceIcon    = "icon"
+	PurchaseSourceGift    = "gift"
+
+	iconPurchaseNameFormat = "VIP #%d"
+
+	PurchasePaidExpr     = "COALESCE(kt.amount, vp.ken_price)"
+	PurchasePayerExpr    = "CASE WHEN vp.source = 'gift' THEN kt.user_id ELSE vp.user_id END"
+	PurchaseIsPackageSQL = "vp.package_id IS NOT NULL"
+
+	purchasePaymentJoin = "LEFT JOIN ken_transactions kt ON kt.ref_type = 'vip_purchase' AND kt.ref_id = vp.id AND kt.direction = 'debit' AND kt.deleted_at IS NULL"
+)
+
+var PurchaseBuySources = []string{PurchaseSourcePackage, PurchaseSourceIcon, PurchaseSourceGift}
+
+func IconPurchaseName(vipTypeID int16) string {
+	return fmt.Sprintf(iconPurchaseNameFormat, vipTypeID)
+}
+
+func IconIDFromPurchaseName(name string) int {
+	var id int
+	if _, err := fmt.Sscanf(name, iconPurchaseNameFormat, &id); err != nil {
+		return 0
+	}
+	return id
+}
+
+// BoughtPurchases selects vip_purchases rows paid with KEN (own purchase or gift), aliased vp,
+// joined with the payer's debit transaction as kt: gift rows store ken_price 0 on the receiver.
+func BoughtPurchases(db *gorm.DB) *gorm.DB {
+	return db.Table("vip_purchases vp").
+		Joins(purchasePaymentJoin).
+		Where("vp.deleted_at IS NULL AND vp.source IN ?", PurchaseBuySources)
+}
+
 type Repository struct {
 	db *gorm.DB
 }
@@ -372,12 +408,12 @@ func (r *Repository) PurchaseShopItem(userID uuid.UUID, item *models.VipShopItem
 		}
 		purchase := models.VipPurchase{
 			UserID:          userID,
-			PackageName:     fmt.Sprintf("VIP #%d", item.VipTypeID),
+			PackageName:     IconPurchaseName(item.VipTypeID),
 			Days:            0,
 			KenPrice:        item.KenPrice,
 			KenBalanceAfter: newKen,
 			VipEndTimeAfter: endAfter,
-			Source:          "icon",
+			Source:          PurchaseSourceIcon,
 		}
 		if err := tx.Create(&purchase).Error; err != nil {
 			return err
@@ -457,12 +493,12 @@ func (r *Repository) GiftShopItem(fromID uuid.UUID, receiver *models.User, item 
 		}
 		purchase := models.VipPurchase{
 			UserID:          to.ID,
-			PackageName:     fmt.Sprintf("VIP #%d", item.VipTypeID),
+			PackageName:     IconPurchaseName(item.VipTypeID),
 			Days:            0,
 			KenPrice:        0,
 			KenBalanceAfter: to.Ken,
 			VipEndTimeAfter: endAfter,
-			Source:          "gift",
+			Source:          PurchaseSourceGift,
 		}
 		if err := tx.Create(&purchase).Error; err != nil {
 			return err
@@ -552,7 +588,7 @@ func (r *Repository) GiftPackage(fromID uuid.UUID, receiver *models.User, pkg *m
 			KenPrice:        0,
 			KenBalanceAfter: to.Ken,
 			VipEndTimeAfter: newEnd,
-			Source:          "gift",
+			Source:          PurchaseSourceGift,
 		}
 		if err := tx.Create(&purchase).Error; err != nil {
 			return err
@@ -623,7 +659,7 @@ func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models
 			KenPrice:        pkg.KenPrice,
 			KenBalanceAfter: newKen,
 			VipEndTimeAfter: newEnd,
-			Source:          "package",
+			Source:          PurchaseSourcePackage,
 		}
 		if err := tx.Create(&purchase).Error; err != nil {
 			return err

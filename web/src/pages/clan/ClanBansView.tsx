@@ -7,10 +7,9 @@ import {
   Spinner,
   UserName,
 } from '@components';
-import { colorForName, toast } from '@lib';
+import { clanErrorText, colorForName, toast } from '@lib';
 import { ClanService } from '@services';
 import type { ClanBan } from '@app-types';
-import { clanErrorText } from './clanHelpers';
 
 const BANS_PAGE_SIZE = 100;
 

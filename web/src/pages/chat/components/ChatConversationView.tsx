@@ -18,7 +18,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { MESSAGE_TYPE } from '@constants';
+import { MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
 import {
   BUBBLE_WALLPAPER,
   chatFriendActionLabel,
@@ -42,8 +42,8 @@ import reportActionIcon from '@/assets/icons/chat/ic_menu_report.svg';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
-import type { ChatMessage } from '../interface';
-import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../chatView';
+import type { ChatMessage } from '../types';
+import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../utils';
 import { usePeerCard } from '../usePeerCard';
 import {
   useChatWallpaperStyle,
@@ -917,9 +917,13 @@ export function ChatConversationView({
         onConfirm={() => void handleBlock()}
         onCancel={() => setBlockOpen(false)}
       />
-      {reportTarget != null && (
+      {reportTarget != null && currentConversationId != null && (
         <ReportDialog
-          target={{ type: 'message', id: reportTarget.id }}
+          target={{
+            type: REPORT_TARGET_TYPE.message,
+            id: reportTarget.id,
+            contextId: currentConversationId,
+          }}
           onClose={() => setReportTarget(null)}
         />
       )}

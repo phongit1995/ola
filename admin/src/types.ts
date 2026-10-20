@@ -1,4 +1,7 @@
 import type {
+  ChatBotType,
+  ReportReason,
+  ReportTargetType,
   Story,
   StoryChapterSummary,
   StoryComment,
@@ -510,6 +513,83 @@ export interface VipTransferListParams {
   userId?: string
   limit?: number
   offset?: number
+}
+
+export type VipPurchaseKind = 'package' | 'icon'
+
+export type VipPurchaseMode = 'self' | 'gift'
+
+export interface VipPurchaseUser {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+}
+
+export interface AdminVipPurchase {
+  id: string
+  kind: VipPurchaseKind
+  source: string
+  name: string
+  vipIconId?: number
+  days: number
+  kenPaid: number
+  vipEndTime?: string
+  user?: VipPurchaseUser
+  giver?: VipPurchaseUser
+  createdAt: string
+}
+
+export interface VipPurchaseListParams {
+  kind?: VipPurchaseKind
+  mode?: VipPurchaseMode
+  search?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export interface VipPurchaseTotals {
+  count: number
+  ken: number
+  packageCount: number
+  packageKen: number
+  iconCount: number
+  iconKen: number
+  giftCount: number
+  buyers: number
+}
+
+export interface VipPurchaseSeriesItem {
+  date: string
+  packageKen: number
+  iconKen: number
+  count: number
+}
+
+export interface VipPurchaseBreakdownItem {
+  kind: VipPurchaseKind
+  name: string
+  vipIconId?: number
+  count: number
+  giftCount: number
+  ken: number
+}
+
+export interface VipPurchaseStatsResult {
+  bucket: 'day' | 'month'
+  today: VipPurchaseTotals
+  thisMonth: VipPurchaseTotals
+  range: VipPurchaseTotals
+  activeVipUsers: number
+  series: VipPurchaseSeriesItem[]
+  breakdown: VipPurchaseBreakdownItem[]
+}
+
+export interface VipPurchaseStatsParams {
+  from?: string
+  to?: string
 }
 
 export interface Room {
@@ -1494,7 +1574,7 @@ export interface TopupBonusTierSetting {
 
 export interface TopupSetting {
   enabled: boolean
-  enabledMobile: boolean
+  enabledMobile?: boolean
   platforms?: PlatformRules
   minAmount: number
   stepAmount: number
@@ -1509,7 +1589,8 @@ export interface UsernameChangeTierSetting {
 
 export interface UsernameChangeSetting {
   enabled: boolean
-  enabledMobile: boolean
+  enabledMobile?: boolean
+  platforms?: PlatformRules
   tiers: UsernameChangeTierSetting[]
 }
 
@@ -2102,4 +2183,197 @@ export interface StoryCrawlerStatus {
 
 export interface StoryCrawlRunResult {
   started: boolean
+}
+
+export type { ReportReason, ReportTargetType }
+
+export type ReportStatus = 'pending' | 'resolved' | 'dismissed'
+
+export interface ReportUserBrief {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+  isActive: boolean
+}
+
+export interface ReportAdminBrief {
+  id: string
+  username: string
+  fullName?: string
+}
+
+export interface ReportSnapshot {
+  username?: string
+  fullName?: string
+  avatar?: string
+  text?: string
+  imageUrls?: string[]
+  audioUrl?: string
+  fileUrl?: string
+  sticker?: string
+  messageType?: string
+  sentAt?: string
+}
+
+export interface AdminReport {
+  id: string
+  targetType: ReportTargetType
+  targetId: string
+  contextId?: string
+  reason: ReportReason
+  note?: string
+  snapshot?: ReportSnapshot
+  status: ReportStatus
+  reporter?: ReportUserBrief
+  reportedUser?: ReportUserBrief
+  handledBy?: ReportAdminBrief
+  handledAt?: string
+  handlerNote?: string
+  sameTargetPending: number
+  createdAt: string
+}
+
+export interface ReportListParams {
+  status?: ReportStatus
+  targetType?: ReportTargetType
+  reportedUserId?: string
+  q?: string
+  limit?: number
+  offset?: number
+}
+
+export interface ReportSummary {
+  pending: number
+}
+
+export interface UpdateReportStatusRequest {
+  status: Exclude<ReportStatus, 'pending'>
+  note?: string
+}
+
+export interface UpdateReportStatusResult {
+  report: AdminReport
+  affected: number
+}
+
+export type PushAudience = 'all' | 'vip' | 'user'
+
+export type PushCampaignStatus = 'queued' | 'sending' | 'done' | 'failed'
+
+export interface PushCampaign {
+  id: string
+  audience: PushAudience
+  targetUser?: { id: string; username: string; fullName?: string; avatar?: string }
+  title: string
+  body: string
+  status: PushCampaignStatus
+  totalDevices: number
+  successCount: number
+  failureCount: number
+  error?: string
+  createdBy?: ReportAdminBrief
+  startedAt?: string
+  finishedAt?: string
+  createdAt: string
+}
+
+export interface CreatePushCampaignRequest {
+  audience: PushAudience
+  username?: string
+  title: string
+  body: string
+}
+
+export interface PushAudienceCount {
+  users: number
+  devices: number
+}
+
+export type { ChatBotType }
+
+export interface ChatBotPrompt {
+  systemPrompt: string
+  identityReminder: string
+}
+
+export interface ChatBotBotSetting extends ChatBotPrompt {
+  enabled: boolean
+  platforms?: PlatformRules
+}
+
+export interface ChatBotSetting {
+  dailyLimit: number
+  bots: Record<ChatBotType, ChatBotBotSetting>
+}
+
+export interface ConversationUserBrief {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+}
+
+export interface AdminConversationItem {
+  id: string
+  type: string
+  name?: string
+  avatar?: string
+  otherUser?: ConversationUserBrief
+  lastMessageAt?: string
+  lastMessagePreview?: string
+  hidden: boolean
+  hiddenAt?: string
+  missing?: boolean
+}
+
+export interface AdminConversationList {
+  items: AdminConversationItem[]
+  total: number
+  hasMore: boolean
+  snapshot?: string
+}
+
+export interface AdminConversationMember {
+  user: ConversationUserBrief
+  role?: string
+  isActive: boolean
+  joinedAt?: string
+  leftAt?: string
+}
+
+export interface AdminConversationDetail {
+  id: string
+  type: string
+  name?: string
+  avatar?: string
+  createdAt?: string
+  members: AdminConversationMember[]
+}
+
+export interface AdminConversationMessage {
+  id: string
+  sender: ConversationUserBrief
+  type: string
+  content: string
+  metadata?: string
+  createdAt: string
+  editedAt?: string
+  deletedAt?: string
+  replyTo?: {
+    messageId: string
+    senderId: string
+    senderName?: string
+    excerpt: string
+    type?: string
+    imageUrl?: string
+  }
+  reactions?: Record<string, string[]>
+}
+
+export interface AdminConversationMessages {
+  messages: AdminConversationMessage[]
+  hasMore: boolean
+  nextBefore?: string
+  hasNewer: boolean
 }

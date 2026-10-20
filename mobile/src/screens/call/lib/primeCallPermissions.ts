@@ -1,4 +1,4 @@
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform, type Permission } from 'react-native';
 import { mediaDevices } from '@livekit/react-native-webrtc';
 import type { CallType } from '@ola/shared/types';
 import { CALL_TYPE } from '@ola/shared/constants';
@@ -12,10 +12,10 @@ const ANDROID_NOTIFICATION_SDK = 33;
 // bluetooth không xuất hiện trong danh sách audio output. Thiếu nó vẫn gọi được
 // bằng loa/tai nghe trong nên không đưa vào điều kiện bắt buộc.
 async function requestAndroidPermissions(callType: CallType): Promise<boolean> {
-  const required = [PermissionsAndroid.PERMISSIONS.RECORD_AUDIO];
+  const required: Permission[] = [PermissionsAndroid.PERMISSIONS.RECORD_AUDIO];
   if (callType === CALL_TYPE.video) required.push(PermissionsAndroid.PERMISSIONS.CAMERA);
 
-  const wanted = [...required];
+  const wanted: Permission[] = [...required];
   if (Number(Platform.Version) >= ANDROID_BLUETOOTH_SDK) {
     wanted.push(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
   }

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { WheelPlayerSegment } from '@app-types';
-import { SPIN_DURATION_MS, segmentAngle } from './spinWheel.constants';
+import { SPIN_DURATION_MS, segmentAngle } from '@lib';
 import {
   pointerUrl,
   wheelCenterUrl,

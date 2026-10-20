@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react';
 import { Image, Pressable, Text, View, type ImageSourcePropType } from 'react-native';
 import { withAlpha } from '@ola/shared/lib';
+import { imageAspectRatio } from '@lib/chatSmiley';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
 
 export const ROW_BORDER = 'rgba(0,0,0,0.06)';
 
 export function SectionIcon({ src }: { src: ImageSourcePropType }) {
-  const resolved = Image.resolveAssetSource(src);
-  const ratio = resolved != null && resolved.height > 0 ? resolved.width / resolved.height : 1;
+  const ratio = imageAspectRatio(src);
   return <Image source={src} style={{ height: 16, width: 16 * ratio }} resizeMode="contain" />;
 }
 

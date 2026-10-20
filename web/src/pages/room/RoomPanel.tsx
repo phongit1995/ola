@@ -8,7 +8,7 @@ import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { useWordChainConfigStore } from '@ola/shared/stores/word-chain/wordChainConfigStore';
-import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
+import { ROOM_BROWSE_LIMIT, ROOM_CAPACITY, ROOM_COLORS } from './constants';
 import { useLobbyWallpaperStyle } from '@hooks';
 
 export function RoomPanel() {
@@ -26,7 +26,10 @@ export function RoomPanel() {
   const [fullRoom, setFullRoom] = useState<RoomListItem | null>(null);
 
   useEffect(() => {
-    void fetchRooms(undefined, { silent: useRoomListStore.getState().loaded });
+    void fetchRooms(
+      { limit: ROOM_BROWSE_LIMIT },
+      { silent: useRoomListStore.getState().loaded }
+    );
     void loadWordChainConfig();
   }, [fetchRooms, loadWordChainConfig]);
 
@@ -53,7 +56,7 @@ export function RoomPanel() {
 
   function refresh() {
     void loadWordChainConfig();
-    return fetchRooms();
+    return fetchRooms({ limit: ROOM_BROWSE_LIMIT });
   }
 
   function quickJoin() {

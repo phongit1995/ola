@@ -6,7 +6,7 @@ import { GeoService } from '@ola/shared/services';
 import type { CheckInAction, GeoVenue } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { CHECK_IN_ACTIONS } from '@lib/checkInActions';
+import { CHECK_IN_ACTIONS } from '@ola/shared/lib';
 
 const checkInIcon = require('@assets/icons/me/ic_check_in.png');
 

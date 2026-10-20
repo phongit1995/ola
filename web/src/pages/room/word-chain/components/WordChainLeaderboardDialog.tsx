@@ -18,7 +18,7 @@ import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore'
 import { WordChainListStatus, WordChainUserRow } from './WordChainList';
 import { WordChainTabs } from './WordChainTabs';
 import { WordChainWinHistory } from './WordChainWinHistory';
-import { WORD_CHAIN_PANEL_HEIGHT } from './wordChainLayout';
+import { WORD_CHAIN_PANEL_HEIGHT } from '../constants';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 

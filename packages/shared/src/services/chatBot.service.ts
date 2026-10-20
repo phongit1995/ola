@@ -1,5 +1,8 @@
 import { apiPathOf, signApiGuard } from '../api/apiGuardSigner';
+import { API_HEADER } from '../config/api';
 import { env } from '../config/env';
+import { getCurrentDeviceInfo } from '../platform/platformRuntime.state';
+import { CHAT_BOT_API_ERROR_CODE } from '../constants/chatBot';
 import { authTokens } from '../lib/tokenStorage';
 import type {
   ChatBotErrorCode,
@@ -41,6 +44,10 @@ export function buildChatBotRequest(
   if (language != null && language !== '') {
     headers['Accept-Language'] = language;
   }
+
+  const device = getCurrentDeviceInfo();
+  if (device?.platform) headers[API_HEADER.platform] = device.platform;
+  if (device?.appVersion) headers[API_HEADER.appVersion] = device.appVersion;
 
   const signed = signApiGuard('POST', apiPathOf(CHAT_BOT_PATH));
   if (signed != null) {
@@ -94,7 +101,9 @@ export function parseChatBotFrames(buffer: string): ParsedChatBotFrames {
   return { frames, done, rest };
 }
 
-export function chatBotErrorForStatus(status: number): ChatBotErrorCode {
+export function chatBotErrorForStatus(status: number, code?: string): ChatBotErrorCode {
+  if (code === CHAT_BOT_API_ERROR_CODE.disabled) return 'disabled';
+  if (code === CHAT_BOT_API_ERROR_CODE.dailyLimit) return 'dailyLimit';
   if (status === 401 || status === 403 || status === 423) return 'auth';
   if (status === 429) return 'rateLimited';
   return 'upstream';

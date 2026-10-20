@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { AnimatedKen, FullScreenOverlay } from '@components';
 import { SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
-import { useEggGameStore } from './eggGameStore';
+import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import { useEggGame } from './useEggGame';
 import { EggStage } from './EggStage';
 import { EggHistoryDialog } from './EggHistoryDialog';
 import { EggGiftDialog } from './EggGiftDialog';
 import { giftIconUrl, historyIconUrl } from './eggAssets';
-import { EGG_START_KEN } from './eggGame.constants';
+import { EGG_START_KEN } from '@lib';
 
 function BackIcon() {
   return (

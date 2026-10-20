@@ -18,7 +18,7 @@ import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { clanErrorText, clanPolicyLabel } from '@lib/clanHelpers';
+import { clanErrorText, clanPolicyLabel } from '@ola/shared/lib';
 import { CLAN_ROLE } from '@ola/shared/constants';
 
 const editIcon = require('@assets/icons/me/ic_action_edit.png');

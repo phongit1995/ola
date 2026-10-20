@@ -1,0 +1,81 @@
+import { BOARD, tilesOfGroup } from './board';
+import { FESTIVAL_MULTIPLIER, MAX_HOUSES, STATION_RENT } from './constants';
+import type { GameState } from './types';
+
+export type RuleHint = { ok: true } | { ok: false; reason: string };
+
+function ownsGroup(view: GameState, seat: number, group: string): boolean {
+  const tiles = tilesOfGroup(group);
+  return tiles.length > 0 && tiles.every((idx) => view.tiles[idx].owner === seat);
+}
+
+function ownedCount(view: GameState, seat: number, group: string): number {
+  return tilesOfGroup(group).filter((idx) => view.tiles[idx].owner === seat).length;
+}
+
+export function canBuild(view: GameState, seat: number, idx: number): RuleHint {
+  const tile = BOARD[idx];
+  const state = view.tiles[idx];
+  if (tile.kind !== 'street' || !tile.group) return { ok: false, reason: 'Chỉ nâng cấp được ô thành phố' };
+  if (state.owner !== seat) return { ok: false, reason: 'Ô này không phải của bạn' };
+  if (!ownsGroup(view, seat, tile.group)) {
+    const missing = tilesOfGroup(tile.group)
+      .filter((g) => view.tiles[g].owner !== seat)
+      .map((g) => BOARD[g].name);
+    return { ok: false, reason: `Cần sở hữu trọn nhóm — thiếu ${missing.join(', ')}` };
+  }
+  if (state.houses >= MAX_HOUSES) return { ok: false, reason: `Đã đạt cấp tối đa (cấp ${MAX_HOUSES})` };
+  if (view.players[seat].cash < (tile.houseCost ?? 0)) return { ok: false, reason: 'Không đủ tiền nâng cấp' };
+  for (const g of tilesOfGroup(tile.group)) {
+    if (state.houses > view.tiles[g].houses) {
+      return { ok: false, reason: `Nâng đều: ${BOARD[g].name} mới ở cấp ${view.tiles[g].houses}` };
+    }
+  }
+  return { ok: true };
+}
+
+export function canSell(view: GameState, seat: number, idx: number): RuleHint {
+  const tile = BOARD[idx];
+  const state = view.tiles[idx];
+  if (tile.kind !== 'street' || !tile.group) return { ok: false, reason: 'Ô này không có nhà' };
+  if (state.owner !== seat) return { ok: false, reason: 'Ô này không phải của bạn' };
+  if (state.houses <= 0) return { ok: false, reason: 'Ô này đang là đất trống' };
+  for (const g of tilesOfGroup(tile.group)) {
+    if (state.houses < view.tiles[g].houses) {
+      return { ok: false, reason: `Hạ đều: ${BOARD[g].name} đang ở cấp ${view.tiles[g].houses}` };
+    }
+  }
+  return { ok: true };
+}
+
+export function currentRent(view: GameState, idx: number): number {
+  const tile = BOARD[idx];
+  const state = view.tiles[idx];
+  if (state.owner < 0) return 0;
+  switch (tile.kind) {
+    case 'street': {
+      const rent = tile.rent?.[state.houses] ?? 0;
+      const base = state.houses === 0 && tile.group && ownsGroup(view, state.owner, tile.group) ? rent * 2 : rent;
+      return view.festival === idx ? base * FESTIVAL_MULTIPLIER : base;
+    }
+    case 'station':
+      return STATION_RENT[ownedCount(view, state.owner, 'station')] ?? 0;
+    default:
+      return 0;
+  }
+}
+
+export function worthOf(view: GameState, seat: number): number {
+  const player = view.players[seat];
+  if (!player || player.bankrupt) return 0;
+  let total = player.cash;
+  view.tiles.forEach((state, idx) => {
+    if (state.owner !== seat) return;
+    total += (BOARD[idx].price ?? 0) + state.houses * (BOARD[idx].houseCost ?? 0);
+  });
+  return total;
+}
+
+export function hasAnyFullGroup(view: GameState, seat: number): boolean {
+  return BOARD.some((tile) => tile.kind === 'street' && tile.group && view.tiles[tile.idx].owner === seat && ownsGroup(view, seat, tile.group));
+}

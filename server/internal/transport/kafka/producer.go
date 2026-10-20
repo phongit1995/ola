@@ -13,6 +13,7 @@ import (
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
+	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	userBanEvents "ola-chat-server/internal/domain/user-ban"
 	"time"
 
@@ -128,6 +129,10 @@ func (p *Producer) PublishAppNotification(ctx context.Context, event *appNotific
 
 func (p *Producer) PublishUserBanned(ctx context.Context, event *userBanEvents.Event) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicUserBanned, event.UserID, event)
+}
+
+func (p *Producer) PublishPushBroadcast(ctx context.Context, event *pushBroadcastEvents.Event) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicPushBroadcast, event.CampaignID, event)
 }
 
 func (p *Producer) PublishToDLQ(ctx context.Context, originalTopic string, key string, payload []byte, reason string) error {

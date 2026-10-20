@@ -53,6 +53,12 @@ function cleanRule(rule: Partial<PlatformRule> | undefined, versioned: boolean):
   }
 }
 
+export function platformRulesOrMobile(platforms: StoredPlatformRules | undefined, enabledMobile: boolean | undefined): PlatformRules {
+  if (platforms) return normalizePlatformRules(platforms)
+  const mobile = { enabled: enabledMobile !== false, disableVersions: [] }
+  return { ...OPEN_PLATFORM_RULES, android: mobile, ios: mobile }
+}
+
 export function cleanPlatformRules(values: StoredPlatformRules | undefined): PlatformRules {
   return {
     web: cleanRule(values?.web, false),

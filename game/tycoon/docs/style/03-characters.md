@@ -18,10 +18,10 @@ Sáu nhân vật mascot, sáng tác riêng, không mô phỏng người thật h
 |---|---|---|---|---|---|---|
 | `ty` | Bác Tỷ | mascot chính, "chủ trò" — lobby, thẻ Cơ hội, hạng 1 | áo bà ba gold `#F2B807` | quần navy, da `#F3C9A0` | kính tròn cream | bụng tròn, kính tròn, quạt giấy gập |
 | `ngan` | Cô Ngân | ngân hàng — thu thuế, trả lương, Khí vận, modal trả nợ | áo dài jade `#1F8A5B` | tóc navy, da `#F3C9A0` | nơ cream | tóc búi, cầm sổ cái |
-| `canh` | Chú Cảnh | cảnh sát — ô Vào tù, step jail-in | áo cream `#FFF8EA` | mũ navy, còi coral `#E4573D` | — | mũ kê-pi, tay cầm còi |
+| `canh` | Chú Cảnh | cảnh sát — step jail-in (thẻ Vào tù, đôi 3 lần) | áo cream `#FFF8EA` | mũ navy, còi coral `#E4573D` | — | mũ kê-pi, tay cầm còi |
 | `teo` | Anh Tèo | tù nhân hài — ô Nhà tù, pod badge trong tù | áo sọc cream/navy | tóc nâu `#8D5B3C` | — | sọc ngang, cổ áo tròn, mặt méo |
 | `loc` | Bé Lộc | may mắn — ô Xuất phát, +200, thẻ tiền vào | áo đỏ `#D64545` | lì xì gold | má hồng `#E58FB5` | nhỏ nhất dàn, tay giơ lì xì |
-| `dau` | Mèo Đậu | nghỉ — ô Bãi đỗ xe, trạng thái chờ người khác | lông cam `#F2994A` | sọc nâu `#8D5B3C` | mũi hồng | tai tròn, đuôi cong, mắt híp |
+| `dau` | Mèo Đậu | vui — ô Lễ hội, trạng thái chờ người khác | lông cam `#F2994A` | sọc nâu `#8D5B3C` | mũi hồng | tai tròn, đuôi cong, mắt híp |
 
 Màu chính của nhân vật trùng accent/nhóm đất là cố ý (6 nhân vật = 6 họ màu, không thêm họ mới); contour navy giữ họ nhất quán. Không nhân vật nào dùng sky (dành riêng cho dải Khí vận để thẻ không bị "đồng màu").
 
@@ -42,13 +42,13 @@ Pose `point` luôn chỉ **sang phải**; đặt nhân vật bên trái nội du
 |---|---|---|---|---|
 | S2 lobby, cạnh logo | Bác Tỷ | idle | full | 120 |
 | S2 lobby, lỗi kết nối | Bác Tỷ | sad | full | 96 |
-| Ô 0 / 10 / 20 / 30 | Bé Lộc / Anh Tèo / Mèo Đậu / Chú Cảnh | idle (đổi tạm theo 02 §3) | bust | 30 (22 cho Tèo) |
+| Ô 8 Nhà tù (UI v3) | Anh Tèo | vẽ pixel sẵn trong tranh `art/nha-tu` | — | theo tranh |
 | S7 header | theo kind (02 §5) | idle/point | full | 64 |
 | O2 thẻ Cơ hội | Bác Tỷ | happy nếu +tiền/di chuyển, sad nếu −tiền, point nếu vào tù | full | 72, góc trái dưới thẻ |
 | O2 thẻ Khí vận | Cô Ngân | như trên | full | 72 |
 | O3 trả nợ | Cô Ngân (nợ ngân hàng) / avatar chủ nợ (nợ người) | point | full | 64 |
 | Step `pay` reason tax/fine/repair | Cô Ngân | point | bust | 24, bay cùng chip tiền |
-| Step `jail-in` | Chú Cảnh | point | bust | 32, hiện 800 ms cạnh ô 10 |
+| Step `jail-in` | Chú Cảnh | point | bust | 32, hiện 800 ms cạnh ô 8 |
 | Pod badge trong tù | Anh Tèo | sad | bust | 14 (thay `ic-jail-bars` khi nhân vật bật) |
 | Turn announce ĐẾN LƯỢT BẠN | Bác Tỷ | point | bust | 40 |
 | Chờ người khác (bar) | Mèo Đậu | idle | bust | 24 |
@@ -57,7 +57,7 @@ Pose `point` luôn chỉ **sang phải**; đặt nhân vật bên trái nội du
 | Empty state lịch sử | Mèo Đậu | idle | full | 96 |
 | Toast lỗi | Chú Cảnh | point | bust | 20 |
 
-Tổng file: 6 nhân vật × 4 pose × 2 crop = **48 webp**. Ước lượng 4–8 KB/full, 2–3 KB/bust → ≈ 260 KB. Preload: 4 bust `idle` của ô góc trong nhóm BOARD; các pose khác idle batch; lobby chỉ cần `ty-idle-full`.
+Tổng file: 6 nhân vật × 4 pose × 2 crop = **48 webp**. Ước lượng 4–8 KB/full, 2–3 KB/bust → ≈ 260 KB. Preload: UI v3 không còn bust trên ô góc; các pose khác idle batch; lobby chỉ cần `ty-idle-full`.
 
 Cắt giảm nếu budget căng: bỏ crop `bust` của Bác Tỷ/Cô Ngân pose sad (không dùng), còn 44 file.
 

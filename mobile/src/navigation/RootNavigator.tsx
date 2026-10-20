@@ -11,6 +11,7 @@ import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useStoryConfigStore } from '@ola/shared/stores/story/storyConfigStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
 import { themeOptionOf } from '@ola/shared/constants';
+import { imageSizeForHeight } from '@lib/chatSmiley';
 import type {
   AuthStackParamList,
   ChatStackParamList,
@@ -139,13 +140,11 @@ function AuthNavigator() {
 function tabIcon(key: keyof typeof TAB_ICONS) {
   return function TabIcon({ focused }: { focused: boolean }) {
     const source = focused ? TAB_ICONS[key].active : TAB_ICONS[key].normal;
-    const { width, height } = Image.resolveAssetSource(source);
     return (
       <Image
         source={source}
         style={{
-          width: TAB_ICON_HEIGHT * (width / height),
-          height: TAB_ICON_HEIGHT,
+          ...imageSizeForHeight(source, TAB_ICON_HEIGHT),
           tintColor: key === 'story' && !focused ? STORY_ICON_INACTIVE_COLOR : undefined,
         }}
         resizeMode="contain"

@@ -43,6 +43,19 @@ func validSettingKey(key string) bool {
 	return key != "" && len(key) <= maxSettingKeyLength
 }
 
+type ChatBotDefaultsSuccessResponse = utils.BaseResponse[map[string]setting.ChatBotPrompt]
+
+// ChatBotDefaults godoc
+// @Summary      Câu lệnh hướng dẫn mặc định (trong code) của từng chat-bot (admin)
+// @Tags         admin-settings
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  ChatBotDefaultsSuccessResponse
+// @Router       /admin/settings/chat-bot/defaults [get]
+func (ctrl *Controller) ChatBotDefaults(c *gin.Context) (interface{}, error) {
+	return setting.ChatBotDefaultPrompts, nil
+}
+
 type SettingListResponse struct {
 	Items []models.AppSetting `json:"items"`
 }
@@ -175,6 +188,10 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		}
 	case setting.KeyWordChain:
 		if err := setting.ValidateWordChainValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	case setting.KeyChatBot:
+		if err := setting.ValidateChatBotValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
 	case setting.KeyStory:

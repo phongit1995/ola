@@ -1,8 +1,7 @@
 import { VipIcon } from '@components';
 import type { WheelPlayerSegment } from '@app-types';
-import { segmentTheme } from './spinWheel.constants';
-import { labelStyle } from './wheelGeometry';
-import { rewardVisual } from './spinWheelReward';
+import { segmentTheme } from '@lib';
+import { labelStyle, rewardVisual } from './utils';
 import { segmentLabelStyle } from './spinWheelStyles';
 
 interface WheelLabelsProps {

@@ -2,14 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, RefreshControl, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { colorForName } from '@ola/shared/lib';
+import { clanErrorText, colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { ClanBan } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Avatar } from '@components/ui/Avatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { clanErrorText } from '@lib/clanHelpers';
 import { BANS_PAGE_SIZE } from './constants';
 
 interface ClanBansScreenProps {

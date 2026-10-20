@@ -46,8 +46,10 @@ export const SORT_OPTIONS = [
 
 export const VIP_HISTORY_SOURCE_META: Record<string, { label: string; color: string }> = {
   package: { label: 'Mua gói', color: 'blue' },
+  icon: { label: 'Mua icon', color: 'purple' },
   admin: { label: 'Admin cấp', color: 'gold' },
   gift: { label: 'Được tặng', color: 'green' },
+  email_verify: { label: 'Xác thực email', color: 'cyan' },
 }
 
 export const VIP_ICON_SOURCE_LABEL: Record<string, string> = {

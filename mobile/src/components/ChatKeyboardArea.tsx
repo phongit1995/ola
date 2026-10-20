@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type ReactNode } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, View, type ViewInstance } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 interface ChatKeyboardAreaProps {
@@ -32,7 +32,7 @@ export function ChatKeyboardArea({
   children,
   bottomInset = 0,
 }: ChatKeyboardAreaProps) {
-  const contentRef = useRef<View>(null);
+  const contentRef = useRef<ViewInstance>(null);
   const [iosOffsetY, setIosOffsetY] = useState(0);
 
   const measureIos = useCallback(() => {

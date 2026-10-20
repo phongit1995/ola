@@ -885,12 +885,12 @@ func normalizeUsername(username string) (string, error) {
 	return name, nil
 }
 
-func (s *Service) resolveUsernameChangeCost(username string) (int, error) {
+func (s *Service) resolveUsernameChangeCost(username string, client setting.Client) (int, error) {
 	cfg, err := s.settingSvc.GetUsernameChange()
 	if err != nil {
 		return 0, err
 	}
-	if !cfg.Enabled {
+	if !cfg.EnabledFor(client.Platform, client.AppVersion) {
 		return 0, ErrUsernameChangeDisabled
 	}
 	cost := cfg.CostFor(len(username))
@@ -900,12 +900,12 @@ func (s *Service) resolveUsernameChangeCost(username string) (int, error) {
 	return cost, nil
 }
 
-func (s *Service) CheckUsername(userID uuid.UUID, username string) (*CheckUsernameResponse, error) {
+func (s *Service) CheckUsername(userID uuid.UUID, username string, client setting.Client) (*CheckUsernameResponse, error) {
 	name, err := normalizeUsername(username)
 	if err != nil {
 		return nil, err
 	}
-	cost, err := s.resolveUsernameChangeCost(name)
+	cost, err := s.resolveUsernameChangeCost(name, client)
 	if err != nil {
 		return nil, err
 	}
@@ -920,12 +920,12 @@ func (s *Service) CheckUsername(userID uuid.UUID, username string) (*CheckUserna
 	}, nil
 }
 
-func (s *Service) ChangeUsername(userID uuid.UUID, username string, expectedCost int) (*ChangeUsernameResponse, error) {
+func (s *Service) ChangeUsername(userID uuid.UUID, username string, expectedCost int, client setting.Client) (*ChangeUsernameResponse, error) {
 	name, err := normalizeUsername(username)
 	if err != nil {
 		return nil, err
 	}
-	cost, err := s.resolveUsernameChangeCost(name)
+	cost, err := s.resolveUsernameChangeCost(name, client)
 	if err != nil {
 		return nil, err
 	}

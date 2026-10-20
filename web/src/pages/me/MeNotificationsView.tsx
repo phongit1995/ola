@@ -18,7 +18,7 @@ import {
   applyMeReaction,
   meSelfLiker,
   reconcileMeLikers,
-} from './mappers';
+} from './utils';
 import type { MePost } from './types';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { UserProfileView } from '../profile/UserProfileView';

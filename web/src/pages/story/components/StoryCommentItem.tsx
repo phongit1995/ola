@@ -15,12 +15,13 @@ import {
   renderRichText,
   storyCommentAuthorName,
 } from '@lib';
+import { REPORT_TARGET_TYPE } from '@constants';
 import moreIcon from '@/assets/icons/me/ic_more.png';
 import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
 import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import type { StoryComment } from '@app-types';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 import { StoryCover } from './StoryCover';
 import { StoryIcon } from './StoryIcons';
 
@@ -177,7 +178,7 @@ function StoryCommentItemComponent({
       />
       {reportOpen && (
         <ReportDialog
-          target={{ type: 'comment', id: comment.id }}
+          target={{ type: REPORT_TARGET_TYPE.storyComment, id: comment.id }}
           onClose={() => setReportOpen(false)}
         />
       )}

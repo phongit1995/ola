@@ -1,12 +1,12 @@
 import type { WheelPlayerSegment } from '@app-types';
-import { segmentTheme } from './spinWheel.constants';
 import {
-  CENTER,
-  SLICE_RADIUS,
-  VIEWBOX,
-  dividerLine,
-  slicePath,
-} from './wheelGeometry';
+  segmentTheme,
+  WHEEL_CENTER,
+  WHEEL_SLICE_RADIUS,
+  WHEEL_VIEWBOX,
+  wheelDividerLine,
+  wheelSlicePath,
+} from '@lib';
 
 interface WheelFaceProps {
   segments: WheelPlayerSegment[];
@@ -16,7 +16,7 @@ interface WheelFaceProps {
 export function WheelFace({ segments, angle }: WheelFaceProps) {
   return (
     <svg
-      viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
+      viewBox={`0 0 ${WHEEL_VIEWBOX} ${WHEEL_VIEWBOX}`}
       className="absolute inset-0 h-full w-full"
     >
       <defs>
@@ -26,9 +26,9 @@ export function WheelFace({ segments, angle }: WheelFaceProps) {
             <radialGradient
               key={segment.id}
               id={`wheel-grad-${index}`}
-              cx={CENTER}
-              cy={CENTER}
-              r={SLICE_RADIUS}
+              cx={WHEEL_CENTER}
+              cy={WHEEL_CENTER}
+              r={WHEEL_SLICE_RADIUS}
               gradientUnits="userSpaceOnUse"
             >
               <stop offset="0.15" stopColor={theme.dark} />
@@ -38,9 +38,9 @@ export function WheelFace({ segments, angle }: WheelFaceProps) {
         })}
         <radialGradient
           id="wheel-shade"
-          cx={CENTER}
-          cy={CENTER}
-          r={SLICE_RADIUS}
+          cx={WHEEL_CENTER}
+          cy={WHEEL_CENTER}
+          r={WHEEL_SLICE_RADIUS}
           gradientUnits="userSpaceOnUse"
         >
           <stop offset="0" stopColor="#000000" stopOpacity="0.32" />
@@ -56,24 +56,24 @@ export function WheelFace({ segments, angle }: WheelFaceProps) {
       {segments.map((segment, index) => (
         <path
           key={segment.id}
-          d={slicePath(index, angle)}
+          d={wheelSlicePath(index, angle)}
           fill={`url(#wheel-grad-${index})`}
         />
       ))}
       <circle
-        cx={CENTER}
-        cy={CENTER}
-        r={SLICE_RADIUS}
+        cx={WHEEL_CENTER}
+        cy={WHEEL_CENTER}
+        r={WHEEL_SLICE_RADIUS}
         fill="url(#wheel-shade)"
       />
       <circle
-        cx={CENTER}
-        cy={CENTER}
-        r={SLICE_RADIUS}
+        cx={WHEEL_CENTER}
+        cy={WHEEL_CENTER}
+        r={WHEEL_SLICE_RADIUS}
         fill="url(#wheel-gloss)"
       />
       {segments.map((segment, index) => {
-        const line = dividerLine(index, angle);
+        const line = wheelDividerLine(index, angle);
         return (
           <line
             key={segment.id}
@@ -89,7 +89,7 @@ export function WheelFace({ segments, angle }: WheelFaceProps) {
         );
       })}
       {segments.map((segment, index) => {
-        const line = dividerLine(index, angle);
+        const line = wheelDividerLine(index, angle);
         return (
           <line
             key={segment.id}

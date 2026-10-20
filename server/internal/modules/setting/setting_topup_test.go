@@ -152,16 +152,10 @@ func TestValidateTopupValue(t *testing.T) {
 	}
 }
 
-const (
-	androidAppUA = "okhttp/4.12.0"
-	iosAppUA     = "OlaMobile/1 CFNetwork/1494.0.7 Darwin/23.4.0"
-	browserUA    = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"
-)
-
-func TestTopupAccessForPlatformRules(t *testing.T) {
+func TestTopupEnabledForPlatformRules(t *testing.T) {
 	cfg := TopupConfig{
 		Enabled:       true,
-		EnabledMobile: false,
+		EnabledMobile: true,
 		Platforms: &PlatformRules{
 			Web:     PlatformRule{Enabled: true},
 			Android: PlatformRule{Enabled: false, DisableVersions: []string{"1.0.1"}},
@@ -173,6 +167,7 @@ func TestTopupAccessForPlatformRules(t *testing.T) {
 		want              bool
 	}{
 		{"web", "15240093", true},
+		{"", "", true},
 		{"android", "1.0.0 (45)", false},
 		{"ios", "1.0.2 (12)", true},
 		{"ios", "1.0.3 (13)", false},
@@ -180,56 +175,34 @@ func TestTopupAccessForPlatformRules(t *testing.T) {
 		{"ios", "", false},
 	}
 	for _, tc := range cases {
-		got := cfg.AccessFor(tc.platform, tc.version, iosAppUA)
-		want := TopupAccess{Enabled: tc.want, EnabledMobile: tc.want, ShowBank: tc.want}
-		if got != want {
-			t.Fatalf("AccessFor(%q, %q) = %+v, want %+v", tc.platform, tc.version, got, want)
+		if got := cfg.EnabledFor(tc.platform, tc.version); got != tc.want {
+			t.Fatalf("EnabledFor(%q, %q) = %v, want %v", tc.platform, tc.version, got, tc.want)
 		}
+	}
+
+	cfg.Platforms.Web.Enabled = false
+	if cfg.EnabledFor("", "") {
+		t.Fatal("request without X-Platform must follow the web rule")
 	}
 
 	cfg.Enabled = false
-	if got := cfg.AccessFor("web", "", browserUA); got != (TopupAccess{}) {
-		t.Fatalf("master switch off must hide topup everywhere, got %+v", got)
+	if cfg.EnabledFor("ios", "1.0.2") {
+		t.Fatal("master switch off must hide topup everywhere")
 	}
 }
 
-func TestTopupAccessForLegacyClients(t *testing.T) {
-	cfg := TopupConfig{
-		Enabled:       true,
-		EnabledMobile: false,
-		Platforms:     &PlatformRules{Web: PlatformRule{Enabled: false}, Android: PlatformRule{Enabled: true}, IOS: PlatformRule{Enabled: true}},
-	}
-	cases := []struct {
-		name      string
-		mobile    bool
-		userAgent string
-		want      TopupAccess
-	}{
-		{"android app, mobile off", false, androidAppUA, TopupAccess{Enabled: true, EnabledMobile: false, ShowBank: false}},
-		{"ios app, mobile off", false, iosAppUA, TopupAccess{Enabled: true, EnabledMobile: false, ShowBank: false}},
-		{"browser, mobile off", false, browserUA, TopupAccess{Enabled: true, EnabledMobile: false, ShowBank: true}},
-		{"android app, mobile on", true, androidAppUA, TopupAccess{Enabled: true, EnabledMobile: true, ShowBank: true}},
-	}
-	for _, tc := range cases {
-		cfg.EnabledMobile = tc.mobile
-		if got := cfg.AccessFor("", "", tc.userAgent); got != tc.want {
-			t.Fatalf("%s: got %+v, want %+v", tc.name, got, tc.want)
-		}
-	}
-}
-
-func TestTopupAccessForStoredWithoutPlatforms(t *testing.T) {
+func TestTopupEnabledForStoredWithoutPlatforms(t *testing.T) {
 	cfg := TopupConfig{Enabled: true, EnabledMobile: false}
-	if got := cfg.AccessFor("web", "", browserUA); !got.Enabled || !got.ShowBank {
-		t.Fatalf("web must stay visible when only mobile was off, got %+v", got)
+	if !cfg.EnabledFor("web", "") {
+		t.Fatal("web must stay visible when only mobile was off")
 	}
 	for _, platform := range []string{"android", "ios"} {
-		if got := cfg.AccessFor(platform, "1.0.0 (1)", androidAppUA); got.Enabled || got.ShowBank {
-			t.Fatalf("%s must follow the old mobile switch, got %+v", platform, got)
+		if cfg.EnabledFor(platform, "1.0.0 (1)") {
+			t.Fatalf("%s must follow the stored mobile switch", platform)
 		}
 	}
 	cfg.EnabledMobile = true
-	if got := cfg.AccessFor("ios", "1.0.0 (1)", iosAppUA); !got.Enabled {
-		t.Fatalf("ios must be visible when the old mobile switch is on, got %+v", got)
+	if !cfg.EnabledFor("ios", "1.0.0 (1)") {
+		t.Fatal("ios must be visible when the stored mobile switch is on")
 	}
 }

@@ -1,6 +1,6 @@
 import { Track, type LocalParticipant } from 'livekit-client';
 import { REQUEST_RESULT } from '../constants';
-import type { MediaSource, RequestResult } from '../interfaces';
+import type { MediaSource, RequestResult } from '../types';
 
 const NOT_ALLOWED_ERROR = 'NotAllowedError';
 

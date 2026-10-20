@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { PERM_NAME, PERM_STATE } from './constants';
-import type { PermState } from './interfaces';
+import type { PermState } from './types';
 import { CloseIcon } from './icons';
 import { useDeviceSync } from './hooks/useDeviceSync';
 import { usePermissionStatus } from './hooks/usePermissionStatus';

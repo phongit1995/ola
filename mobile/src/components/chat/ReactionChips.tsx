@@ -1,11 +1,11 @@
 import type { RefObject } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View, type ViewInstance } from 'react-native';
 import { reactionChips } from '@lib/reactions';
 
 interface ReactionChipsProps {
   reactions?: Record<string, readonly unknown[]>;
   isOwn: boolean;
-  anchorRef?: RefObject<View | null>;
+  anchorRef?: RefObject<ViewInstance | null>;
   onPress?: () => void;
   onLongPress?: () => void;
   textMaxFontSizeMultiplier?: number;

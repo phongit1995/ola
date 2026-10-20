@@ -1,4 +1,4 @@
-import type { SuggestedFriend } from './interface';
+import type { SuggestedFriend } from './types';
 
 export const SUGGESTED_FRIENDS: SuggestedFriend[] = [
   { name: 'anhthu', color: '#ec407a' },

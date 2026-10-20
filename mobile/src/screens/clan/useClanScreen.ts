@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClanService, MeService } from '@ola/shared/services';
-import { imageUploadErrorText } from '@ola/shared/lib';
+import { clanErrorText, imageUploadErrorText } from '@ola/shared/lib';
 import type { Clan, Post } from '@ola/shared/types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { pickCroppedImage } from '@lib/imagePicker';
-import { clanErrorText } from '@lib/clanHelpers';
 import { CLAN_AVATAR_OUTPUT, CLAN_COVER_OUTPUT } from './constants';
 import type { StaffConfirm } from './types';
 

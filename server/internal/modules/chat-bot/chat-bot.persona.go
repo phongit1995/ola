@@ -1,20 +1,32 @@
 package chatbot
 
-import "ola-chat-server/internal/constants"
+import (
+	"strings"
+
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/modules/setting"
+)
 
 type persona struct {
 	systemPrompt     string
 	identityReminder string
 }
 
-var personas = map[string]persona{
-	constants.ChatBotTypeOlala: {constants.ChatBotSystemPrompt, constants.ChatBotIdentityReminder},
-	constants.ChatBotTypeOlavi: {constants.ChatBotOlaviSystemPrompt, constants.ChatBotOlaviIdentityReminder},
+func normalizeBotType(botType string) string {
+	if _, ok := setting.ChatBotDefaultPrompts[botType]; ok {
+		return botType
+	}
+	return constants.ChatBotTypeOlala
 }
 
-func personaOf(botType string) persona {
-	if found, ok := personas[botType]; ok {
-		return found
+func personaOf(botType string, override setting.ChatBotBotConfig) persona {
+	defaults := setting.ChatBotDefaultPrompts[normalizeBotType(botType)]
+	result := persona{systemPrompt: defaults.SystemPrompt, identityReminder: defaults.IdentityReminder}
+	if strings.TrimSpace(override.SystemPrompt) != "" {
+		result.systemPrompt = override.SystemPrompt
 	}
-	return personas[constants.ChatBotTypeOlala]
+	if strings.TrimSpace(override.IdentityReminder) != "" {
+		result.identityReminder = override.IdentityReminder
+	}
+	return result
 }

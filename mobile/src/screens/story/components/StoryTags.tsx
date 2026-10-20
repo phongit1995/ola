@@ -6,7 +6,7 @@ import type { StoryIconName, StoryStatus, ThemeColors } from '@ola/shared/types'
 import { WARNING } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { STATUS_ICON, STATUS_LABEL } from '../constants';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryIcon } from './StoryIcons';
 
 const TAG_FONT = 11;

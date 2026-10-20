@@ -11,7 +11,13 @@ import {
   View,
   type ImageSourcePropType,
 } from 'react-native';
-import { colorForName } from '@ola/shared/lib';
+import {
+  CLAN_HANDLE_PATTERN,
+  clanErrorText,
+  clanRoleLabel,
+  colorForName,
+  normalizeClanHandle,
+} from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { ClanCheckNameResult, ClanSummary } from '@ola/shared/types';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
@@ -25,13 +31,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import {
-  CLAN_HANDLE_PATTERN,
-  CLAN_ROLE_ICONS,
-  clanErrorText,
-  clanRoleLabel,
-  normalizeClanHandle,
-} from '@lib/clanHelpers';
+import { CLAN_ROLE_ICONS } from './constants';
 
 const addIcon = require('@assets/icons/clan/ic_action_add.png');
 const memberIcon = require('@assets/icons/clan/ic_clan_member.png');

@@ -22,9 +22,27 @@ type TopupConfigResponse struct {
 
 type TopupConfigSuccessResponse = utils.BaseResponse[TopupConfigResponse]
 
-type UsernameChangeConfigSuccessResponse = utils.BaseResponse[UsernameChangeConfig]
+type UsernameChangeConfigResponse struct {
+	Enabled       bool                 `json:"enabled" example:"true"`
+	EnabledMobile bool                 `json:"enabledMobile" example:"true"`
+	Tiers         []UsernameChangeTier `json:"tiers"`
+}
+
+type UsernameChangeConfigSuccessResponse = utils.BaseResponse[UsernameChangeConfigResponse]
 
 type WordChainConfigSuccessResponse = utils.BaseResponse[WordChainConfig]
+
+type ChatBotAvailability struct {
+	Type    string `json:"type" example:"OLALA"`
+	Enabled bool   `json:"enabled" example:"true"`
+}
+
+type ChatBotPublicConfig struct {
+	DailyLimit int                   `json:"dailyLimit" example:"50"`
+	Bots       []ChatBotAvailability `json:"bots"`
+}
+
+type ChatBotPublicConfigSuccessResponse = utils.BaseResponse[ChatBotPublicConfig]
 
 type FeatureEnabledResponse struct {
 	Enabled bool `json:"enabled" example:"true"`

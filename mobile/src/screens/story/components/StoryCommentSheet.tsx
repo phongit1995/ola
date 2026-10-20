@@ -10,7 +10,7 @@ import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { ToastHost } from '@components/ui/ToastHost';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
-import { commentUnlockMinChars, useStoryAccess } from '../storyAccess';
+import { commentUnlockMinChars, useStoryAccess } from '../useStoryAccess';
 import { useStoryCommentActions } from '../useStoryCommentActions';
 import { StoryCommentComposer, type StoryCommentComposerHandle } from './StoryCommentComposer';
 import { StoryCommentList } from './StoryCommentList';
@@ -76,7 +76,7 @@ function StoryCommentSheetBody({ storyId, initialReplyTarget, onClose }: StoryCo
 
   return (
     <>
-      <StatusBar translucent barStyle="light-content" />
+      <StatusBar barStyle="light-content" />
       <ChatKeyboardArea>
         <View className="flex-1 bg-white">
           <ScreenHeader

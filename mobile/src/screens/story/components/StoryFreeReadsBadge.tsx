@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { StoryAccess } from '@ola/shared/types';
 import { OlaModal } from '@components/ui/OlaModal';
 import { ERROR } from '@constants';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryIcon } from './StoryIcons';
 
 const HEADER_HEIGHT = 48;

@@ -1,7 +1,9 @@
-import type { BubblePosition } from './messageGroups';
+import type { BubblePosition } from '@app-types';
 import type { RoomFilters } from './types';
 
 export const ROOM_CAPACITY = 200;
+
+export const ROOM_BROWSE_LIMIT = 50;
 
 export const ROOM_COLORS = [
   '#ef5350',

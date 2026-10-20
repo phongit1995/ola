@@ -14,7 +14,7 @@ import type { WheelPlayerOption, WheelPlayerSegment } from '@ola/shared/types';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets, wheelGiftListAssets } from './spinWheelAssets';
-import { giftOptionVisual } from './spinWheelReward';
+import { giftOptionVisual } from './utils';
 import {
   GIFT_AMOUNT_STYLE,
   GIFT_SUBTITLE_STYLE,

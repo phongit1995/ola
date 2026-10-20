@@ -41,7 +41,7 @@ import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarDialog } from './components/ChangeAvatarDialog';
 import { ChangeCoverDialog } from './components/ChangeCoverDialog';
 import { ContactsPane } from './components/ContactsPane';
-import { useConversationsWithPresence, usePresenceListPolling } from '@hooks/usePresence';
+import { useConversationsWithPresence, usePresenceListPolling } from './usePresence';
 import { DIVIDER } from '@constants';
 import { SWIPE_MAX, SWIPE_TRIGGER } from './constants';
 

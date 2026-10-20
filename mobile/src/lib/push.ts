@@ -1,8 +1,11 @@
 import { Platform } from 'react-native';
 import {
+  getInitialNotification,
   getMessaging,
   getToken,
   onTokenRefresh,
+  onNotificationOpenedApp,
+  registerDeviceForRemoteMessages,
   setBackgroundMessageHandler,
 } from '@react-native-firebase/messaging';
 import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
@@ -24,6 +27,7 @@ import type { ParamListBase } from '@react-navigation/native';
 import { PushService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
+import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { androidNotificationBase } from '@lib/notificationAndroid';
@@ -55,16 +59,17 @@ export function dmNotifId(conversationId: string): string {
   return DM_NOTIF_PREFIX + conversationId;
 }
 
-function extractData(
-  message: FirebaseMessagingTypes.RemoteMessage,
-): PushData | null {
-  const raw = message.data;
+function toPushData(raw: Record<string, unknown> | undefined): PushData | null {
   if (raw == null) return null;
   const data: PushData = {};
   for (const [key, value] of Object.entries(raw)) {
     if (typeof value === 'string') data[key] = value;
   }
   return data;
+}
+
+function extractData(message: FirebaseMessagingTypes.RemoteMessage): PushData | null {
+  return toPushData(message.data);
 }
 
 function sentAtMs(value: string | undefined): number {
@@ -195,18 +200,24 @@ async function displayPush(data: PushData): Promise<void> {
 }
 
 export async function clearPushNotification(id: string): Promise<void> {
-  if (!isAndroid) return;
   try {
     await notifee.cancelDisplayedNotification(id);
+    if (isAndroid) return;
+    const displayed = await notifee.getDisplayedNotifications();
+    const sameNotif = displayed
+      .filter((item) => item.id !== id && notifIdOf(item) === id)
+      .map((item) => item.id)
+      .filter((value): value is string => value != null);
+    if (sameNotif.length > 0) await notifee.cancelDisplayedNotifications(sameNotif);
   } catch {
     return;
   }
 }
 
 export async function clearAllPushNotifications(): Promise<void> {
-  if (!isAndroid) return;
   try {
     await notifee.cancelDisplayedNotifications();
+    if (!isAndroid) await notifee.setBadgeCount(0);
   } catch {
     return;
   }
@@ -215,6 +226,10 @@ export async function clearAllPushNotifications(): Promise<void> {
 function stringField(data: Record<string, unknown> | undefined, key: string): string {
   const value = data?.[key];
   return typeof value === 'string' ? value : '';
+}
+
+function notifIdOf(item: DisplayedNotification): string {
+  return stringField(item.notification.data, 'notifId') || (item.id ?? '');
 }
 
 const TRAY_STORES = {
@@ -227,9 +242,9 @@ function trayStoreOf(id: string) {
 }
 
 function isReadInStore(item: DisplayedNotification, ownerId: string): boolean {
-  const id = item.id;
+  const id = notifIdOf(item);
   const data = item.notification.data;
-  if (id == null || !ownedBy(data, ownerId)) return false;
+  if (!id || !ownedBy(data, ownerId)) return false;
   const store = trayStoreOf(id);
   if (store != null) {
     const itemId = stringField(data, 'itemId');
@@ -246,7 +261,6 @@ function isReadInStore(item: DisplayedNotification, ownerId: string): boolean {
 }
 
 async function syncPushTray(): Promise<void> {
-  if (!isAndroid) return;
   const ownerId = useAuthStore.getState().user?.id ?? '';
   if (!ownerId) return;
   try {
@@ -293,6 +307,33 @@ function watchPushTray(): () => void {
   };
 }
 
+function appUnreadTotal(): number {
+  return (
+    totalUnreadOf(useChatStore.getState().conversations) +
+    useMeNotificationStore.getState().unreadCount +
+    useAppNotificationStore.getState().unreadCount
+  );
+}
+
+function watchBadge(): () => void {
+  if (isAndroid) return () => undefined;
+  let shown = -1;
+  const update = () => {
+    const total = useAuthStore.getState().user == null ? 0 : appUnreadTotal();
+    if (total === shown) return;
+    shown = total;
+    notifee.setBadgeCount(total).catch(() => undefined);
+  };
+  update();
+  const unsubscribes = [
+    useAuthStore.subscribe(update),
+    useChatStore.subscribe(update),
+    useMeNotificationStore.subscribe(update),
+    useAppNotificationStore.subscribe(update),
+  ];
+  return () => unsubscribes.forEach((fn) => fn());
+}
+
 function routeFromData(data: PushData): { name: string; params?: object } | null {
   switch (data.type) {
     case 'dm':
@@ -329,21 +370,24 @@ function queueNavigation(data: PushData | null | undefined): void {
 
 function notificationEventData(event: Event): PushData | null {
   if (event.type !== EventType.PRESS) return null;
-  const data = event.detail.notification?.data;
-  if (data == null) return null;
-  const result: PushData = {};
-  for (const [key, value] of Object.entries(data)) {
-    if (typeof value === 'string') result[key] = value;
-  }
-  return result;
+  return toPushData(event.detail.notification?.data);
+}
+
+async function initialPushData(): Promise<PushData | null> {
+  const initial = await notifee.getInitialNotification();
+  const data = toPushData(initial?.notification.data);
+  if (data != null) return data;
+  const remote = await getInitialNotification(getMessaging());
+  return remote == null ? null : extractData(remote);
 }
 
 export function registerPushBackgroundHandler(): void {
-  if (!isAndroid) return;
-  setBackgroundMessageHandler(getMessaging(), async (message) => {
-    const data = extractData(message);
-    if (data != null) await displayPush(data);
-  });
+  if (isAndroid) {
+    setBackgroundMessageHandler(getMessaging(), async (message) => {
+      const data = extractData(message);
+      if (data != null) await displayPush(data);
+    });
+  }
   notifee.onBackgroundEvent(async (event) => {
     const data = notificationEventData(event);
     if (data != null) queueNavigation(data);
@@ -351,36 +395,32 @@ export function registerPushBackgroundHandler(): void {
 }
 
 export function initPush(ref: NavRef): () => void {
-  if (!isAndroid) return () => undefined;
   navRef = ref;
 
   void (async () => {
     try {
       await notifee.requestPermission();
-      await Promise.all(
-        CHANNELS.map((id) =>
-          notifee.createChannel({
-            id,
-            name: i18n.t(CHANNEL_NAME_KEYS[id]),
-            importance: AndroidImportance.HIGH,
-            badge: true,
-          }),
-        ),
-      );
-      const initial = await notifee.getInitialNotification();
-      const data = initial?.notification.data;
-      if (data != null) {
-        const parsed: PushData = {};
-        for (const [key, value] of Object.entries(data)) {
-          if (typeof value === 'string') parsed[key] = value;
-        }
-        queueNavigation(parsed);
+      if (isAndroid) {
+        await Promise.all(
+          CHANNELS.map((id) =>
+            notifee.createChannel({
+              id,
+              name: i18n.t(CHANNEL_NAME_KEYS[id]),
+              importance: AndroidImportance.HIGH,
+              badge: true,
+            }),
+          ),
+        );
       }
+      queueNavigation(await initialPushData());
     } catch {
       return;
     }
   })();
 
+  const unsubscribeOpened = onNotificationOpenedApp(getMessaging(), (message) =>
+    queueNavigation(extractData(message)),
+  );
   const unsubscribeForeground = notifee.onForegroundEvent((event) => {
     const data = notificationEventData(event);
     if (data != null) queueNavigation(data);
@@ -389,11 +429,14 @@ export function initPush(ref: NavRef): () => void {
     if (pendingData != null) tryNavigate();
   });
   const unsubscribeTray = watchPushTray();
+  const unsubscribeBadge = watchBadge();
 
   return () => {
+    unsubscribeOpened();
     unsubscribeForeground();
     unsubscribeAuth();
     unsubscribeTray();
+    unsubscribeBadge();
     navRef = null;
   };
 }
@@ -403,9 +446,10 @@ export function notifyPushNavReady(): void {
 }
 
 export async function registerPushToken(): Promise<void> {
-  if (!isAndroid) return;
   try {
-    const token = await getToken(getMessaging());
+    const messaging = getMessaging();
+    if (!isAndroid) await registerDeviceForRemoteMessages(messaging);
+    const token = await getToken(messaging);
     if (token) await PushService.registerToken(token);
   } catch {
     return;
@@ -413,7 +457,6 @@ export async function registerPushToken(): Promise<void> {
 }
 
 export function watchPushTokenRefresh(): () => void {
-  if (!isAndroid) return () => undefined;
   return onTokenRefresh(getMessaging(), (token) => {
     if (useAuthStore.getState().user == null) return;
     void PushService.registerToken(token).catch(() => undefined);

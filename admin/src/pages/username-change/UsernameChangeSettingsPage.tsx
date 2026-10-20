@@ -1,14 +1,16 @@
 import { App, Button, Card, Col, Form, InputNumber, Row, Spin, Switch, Typography } from 'antd'
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
+import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { errorMessage } from '@/lib/apiError'
 import { settingValue } from '@/lib/appSetting'
-import type { UsernameChangeSetting, UsernameChangeTierSetting } from '@/types'
+import { cleanPlatformRules, platformRulesOrMobile } from '@/lib/platformRules'
+import type { PlatformRules, UsernameChangeSetting, UsernameChangeTierSetting } from '@/types'
 import { DEFAULT_USERNAME_CHANGE } from './constants'
 
 interface UsernameChangeFormValues {
   enabled: boolean
-  enabledMobile: boolean
+  platforms: PlatformRules
   tiers: UsernameChangeTierSetting[]
 }
 
@@ -50,7 +52,7 @@ export function UsernameChangeSettingsPage() {
     }
     const payload: UsernameChangeSetting = {
       enabled: values.enabled,
-      enabledMobile: values.enabledMobile,
+      platforms: cleanPlatformRules(values.platforms),
       tiers,
     }
     try {
@@ -72,7 +74,7 @@ export function UsernameChangeSettingsPage() {
         layout="vertical"
         initialValues={{
           enabled: current.enabled,
-          enabledMobile: current.enabledMobile,
+          platforms: platformRulesOrMobile(current.platforms, current.enabledMobile),
           tiers: current.tiers,
         }}
         onFinish={save}
@@ -81,18 +83,16 @@ export function UsernameChangeSettingsPage() {
           name="enabled"
           label="Cho phép đổi nickname"
           valuePropName="checked"
-          extra="Tắt thì cả web lẫn mobile ẩn mục Đổi nickname và server từ chối đổi."
+          extra="Công tắc tổng: tắt thì mọi nền tảng ẩn mục Đổi nickname và server từ chối đổi."
         >
           <Switch />
         </Form.Item>
 
         <Form.Item
-          name="enabledMobile"
-          label="Hiển thị trên mobile"
-          valuePropName="checked"
-          extra="Tắt thì chỉ app mobile ẩn mục Đổi nickname, web vẫn hiển thị bình thường."
+          label="Theo nền tảng"
+          extra="Tắt nền tảng nào thì nền tảng đó ẩn mục Đổi nickname và server từ chối đổi. So theo tên bản (1.0.0), không tính build."
         >
-          <Switch />
+          <PlatformRulesTable name={['platforms']} />
         </Form.Item>
 
         <Form.List

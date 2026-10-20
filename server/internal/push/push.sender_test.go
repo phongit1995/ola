@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -573,6 +574,56 @@ func TestSendDMPayload(t *testing.T) {
 	}
 	if data["senderId"] != "sender" || data["senderAvatar"] != "https://cdn/avatar.png" || data["sentAt"] != "2026-09-16T10:00:00Z" {
 		t.Fatalf("unexpected sender fields: %v", data)
+	}
+}
+
+func TestSendDMPayloadIOS(t *testing.T) {
+	fcm := &fakeFCM{}
+	s := newTestSender(fcm, newFakeCache(), &fakeConns{}, &fakeStore{
+		tokens: []models.DeviceToken{
+			{Token: "tok-android", Platform: constants.PushPlatformAndroid},
+			{Token: "tok-ios", Platform: constants.PushPlatformIOS},
+		},
+		notifMessage: true,
+	})
+	s.SendDM([]string{"receiver"}, DMPush{
+		ConversationID:   "c1",
+		ConversationType: "direct",
+		SenderID:         "sender",
+		SenderName:       "Hoa",
+		Preview:          "xin chào",
+		MessageID:        "m1",
+	})
+	drainJobs(s)
+	if len(fcm.sent) != 1 || len(fcm.sent[0]) != 2 {
+		t.Fatalf("expected one batch with 2 messages, got %v", fcm.sent)
+	}
+	android, ios := fcm.sent[0][0], fcm.sent[0][1]
+	if android.APNS != nil || android.Android == nil {
+		t.Fatal("expected android token to get android config only")
+	}
+	if ios.Android != nil || ios.APNS == nil || ios.APNS.Payload == nil || ios.APNS.Payload.Aps == nil {
+		t.Fatal("expected ios token to get apns config only")
+	}
+	aps := ios.APNS.Payload.Aps
+	if aps.Alert == nil || aps.Alert.Title != "Hoa" || aps.Alert.Body != "xin chào" {
+		t.Fatalf("unexpected apns alert: %+v", aps.Alert)
+	}
+	if aps.ThreadID != "dm:c1" || aps.Sound != constants.APNSSoundDefault {
+		t.Fatalf("unexpected aps fields: %+v", aps)
+	}
+	headers := ios.APNS.Headers
+	if headers[constants.APNSHeaderCollapseID] != "dm:c1" ||
+		headers[constants.APNSHeaderPushType] != constants.APNSPushTypeAlert ||
+		headers[constants.APNSHeaderPriority] != constants.APNSPriorityHigh {
+		t.Fatalf("unexpected apns headers: %v", headers)
+	}
+	expiration, err := strconv.ParseInt(headers[constants.APNSHeaderExpiration], 10, 64)
+	if err != nil || expiration <= time.Now().Unix() {
+		t.Fatalf("expected future apns expiration, got %q", headers[constants.APNSHeaderExpiration])
+	}
+	if ios.Data["ownerId"] != "receiver" || ios.Data["conversationId"] != "c1" || ios.Data["notifId"] != "dm:c1" {
+		t.Fatalf("unexpected ios data: %v", ios.Data)
 	}
 }
 

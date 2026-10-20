@@ -35,7 +35,7 @@ async function openStream(
   try {
     refreshed = await refreshAccessToken();
   } catch {
-    throw new ChatBotStreamError('auth', await response.readErrorMessage());
+    throw new ChatBotStreamError('auth', (await response.readError()).message);
   }
 
   return transport(buildChatBotRequest(messages, bot, language, refreshed), signal);
@@ -59,9 +59,9 @@ export async function streamChatBot({
   if (response == null) return false;
 
   if (response.status < 200 || response.status >= 300) {
-    const message = await response.readErrorMessage();
+    const { message, code } = await response.readError();
     throw new ChatBotStreamError(
-      chatBotErrorForStatus(response.status),
+      chatBotErrorForStatus(response.status, code),
       message
     );
   }

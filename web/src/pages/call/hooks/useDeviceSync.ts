@@ -4,7 +4,7 @@ import { useRoomContext } from '@livekit/components-react';
 import { toast } from '@lib';
 import { useCallStore } from '@/store/callStore';
 import { DEVICE_KIND } from '../constants';
-import type { DeviceKind } from '../interfaces';
+import type { DeviceKind } from '../types';
 import { useMediaDevices } from './useMediaDevices';
 
 export function useDeviceSync() {

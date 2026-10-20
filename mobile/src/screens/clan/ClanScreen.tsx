@@ -3,9 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import {
-  filterVisiblePosts,
-  isPostVisible,
+  canPostPublicInClan,
+  clanFeedErrorText,
   createTimeFormatter,
+  filterVisiblePosts,
+  isClanStaff,
+  isPostVisible,
 } from '@ola/shared/lib';
 import type { Post, PostReaction, PostVisibility } from '@ola/shared/types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
@@ -29,7 +32,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { canPostPublicInClan, clanFeedErrorText, isClanStaff } from '@lib/clanHelpers';
 import { useClanScreen } from './useClanScreen';
 import { ClanHeaderCard } from './components/ClanHeaderCard';
 import { CLAN_ROLE } from '@ola/shared/constants';

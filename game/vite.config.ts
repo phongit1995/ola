@@ -28,7 +28,8 @@ export default defineConfig({
       const normalized = normalizePath(filePath);
       return normalized.includes('/game/caro/assets/') ||
         normalized.includes('/game/thirteen/assets/') ||
-        normalized.includes('/game/xiangqi/assets/')
+        normalized.includes('/game/xiangqi/assets/') ||
+        normalized.includes('/game/tycoon/assets/')
         ? false
         : undefined;
     },
@@ -39,6 +40,7 @@ export default defineConfig({
         wargod: resolve(__dirname, 'war-god/index.html'),
         thirteen: resolve(__dirname, 'thirteen/index.html'),
         xiangqi: resolve(__dirname, 'xiangqi/index.html'),
+        tycoon: resolve(__dirname, 'tycoon/index.html'),
       },
     },
   },

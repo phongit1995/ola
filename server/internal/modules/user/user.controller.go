@@ -2,6 +2,7 @@ package user
 
 import (
 	"net/http"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -430,7 +431,7 @@ func (ctrl *Controller) CheckUsername(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	resp, err := ctrl.service.CheckUsername(userID, query.Username)
+	resp, err := ctrl.service.CheckUsername(userID, query.Username, setting.ClientFrom(c))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -460,7 +461,7 @@ func (ctrl *Controller) ChangeUsername(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	resp, err := ctrl.service.ChangeUsername(userID, req.Username, *req.ExpectedCost)
+	resp, err := ctrl.service.ChangeUsername(userID, req.Username, *req.ExpectedCost, setting.ClientFrom(c))
 	if err != nil {
 		ctrl.logger.Warnw("Failed to change username",
 			"user_id", userID,

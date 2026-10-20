@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { StoryChapterItem } from '@app-types';
-import type { ReaderPalette } from '../interface';
+import type { ReaderPalette } from '../types';
 import { ReaderSheet } from './ReaderSheet';
 import { StoryIcon } from './StoryIcons';
 

@@ -25,6 +25,7 @@ import (
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/pen"
 	"ola-chat-server/internal/modules/push"
+	"ola-chat-server/internal/modules/report"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
@@ -102,6 +103,7 @@ func NewContainer() (*dig.Container, error) {
 		topup.Provider,
 		push.Provider,
 		story.Provider,
+		report.Provider,
 	}
 
 	for _, module := range modules {

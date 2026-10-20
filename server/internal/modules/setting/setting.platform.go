@@ -10,9 +10,35 @@ import (
 	"strings"
 
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/utils"
+
+	"github.com/gin-gonic/gin"
 )
 
 const disableVersionsMax = 50
+
+type Client struct {
+	Platform   string
+	AppVersion string
+	UserAgent  string
+}
+
+// Builds released before the X-Platform header send no version either, so only the platform switch applies to them.
+func (r PlatformRules) EnabledForClient(client Client) bool {
+	if strings.TrimSpace(client.Platform) == "" && utils.IsNativeAppUserAgent(client.UserAgent) {
+		rule, _ := r.ruleFor(utils.ParsePlatform(client.UserAgent))
+		return rule.Enabled
+	}
+	return r.EnabledFor(client.Platform, client.AppVersion)
+}
+
+func ClientFrom(c *gin.Context) Client {
+	return Client{
+		Platform:   c.GetHeader(constants.HeaderPlatform),
+		AppVersion: c.GetHeader(constants.HeaderAppVersion),
+		UserAgent:  c.GetHeader("User-Agent"),
+	}
+}
 
 var (
 	versionPattern        = regexp.MustCompile(`^\d{1,6}(\.\d{1,6}){0,3}$`)

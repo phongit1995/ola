@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { formatVnd } from '@lib';
 import type { PenSide } from '@app-types';
 import { penAssets } from './penAssets';
-import { bgImage } from './penUi';
+import { bgImage } from './utils';
 
 const DIRECTIONS: PenSide[] = ['left', 'right'];
 

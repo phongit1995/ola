@@ -3,7 +3,7 @@ import { withAlpha } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
-import type { Contact } from '../contacts';
+import type { Contact } from '../types';
 import { DEVICE_ICONS } from '@lib/deviceIcons';
 import { DIVIDER } from '@constants';
 

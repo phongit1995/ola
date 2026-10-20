@@ -14,6 +14,7 @@ import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
+import { useChatBotConfigStore } from '@ola/shared/stores/chat-bot/chatBotConfigStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
@@ -28,9 +29,10 @@ import { MessageActionSheet, type MessageSheetAction } from '@screens/room/compo
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
 import { StatusEditDialog } from './StatusEditDialog';
-import { mapFriendsToContacts, type Contact } from '../contacts';
+import { mapFriendsToContacts } from '../utils';
+import type { Contact } from '../types';
 import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
-import { useFriendsWithPresence } from '@hooks/usePresence';
+import { useFriendsWithPresence } from '../usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
 import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';
@@ -93,7 +95,12 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
   const me = useAuthStore((s) => s.user);
   const startDirect = useChatStore((s) => s.startDirect);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const enabledBots = useChatBotConfigStore((s) => s.enabledBots);
   const push = useToastStore((s) => s.push);
+
+  useEffect(() => {
+    void useChatBotConfigStore.getState().load();
+  }, []);
 
   const friends = useFriendsWithPresence();
   const requests = useFriendsStore((s) => s.requests);
@@ -315,25 +322,29 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
         </Pressable>
         */}
 
-        <SectionHeader label={t('chat.sectionApps')} />
-        <ActionRow
-          badge={<BotAvatar size={48} radius={8} />}
-          title={t('chat.chatBot')}
-          subtitle={t('chat.chatBotSub')}
-          showChevron
-          onPress={() => navigation.navigate(CHAT_ROUTES.ChatBot)}
-        />
-        <ActionRow
-          badge={<BotAvatar bot={CHAT_BOT_TYPE.olavi} size={48} radius={8} />}
-          title={t('chat.fortuneBot')}
-          subtitle={t('chat.fortuneBotSub')}
-          showChevron
-          onPress={() =>
-            navigation.navigate(CHAT_ROUTES.ChatBot, {
-              bot: CHAT_BOT_TYPE.olavi,
-            })
-          }
-        />
+        {enabledBots.length > 0 && <SectionHeader label={t('chat.sectionApps')} />}
+        {enabledBots.includes(CHAT_BOT_TYPE.olala) && (
+          <ActionRow
+            badge={<BotAvatar size={48} radius={8} />}
+            title={t('chat.chatBot')}
+            subtitle={t('chat.chatBotSub')}
+            showChevron
+            onPress={() => navigation.navigate(CHAT_ROUTES.ChatBot)}
+          />
+        )}
+        {enabledBots.includes(CHAT_BOT_TYPE.olavi) && (
+          <ActionRow
+            badge={<BotAvatar bot={CHAT_BOT_TYPE.olavi} size={48} radius={8} />}
+            title={t('chat.fortuneBot')}
+            subtitle={t('chat.fortuneBotSub')}
+            showChevron
+            onPress={() =>
+              navigation.navigate(CHAT_ROUTES.ChatBot, {
+                bot: CHAT_BOT_TYPE.olavi,
+              })
+            }
+          />
+        )}
 
         {friendsLoading && !friendsLoaded ? (
           <View className="items-center py-8">

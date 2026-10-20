@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PERM_STATE } from '../constants';
-import type { PermName, PermState } from '../interfaces';
+import type { PermName, PermState } from '../types';
 
 export function usePermissionStatus(name: PermName): PermState {
   const [state, setState] = useState<PermState>(() =>

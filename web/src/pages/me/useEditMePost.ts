@@ -4,7 +4,7 @@ import { imageUploadErrorText, toast } from '@lib';
 import { MeService } from '@services';
 import type { Post, PostUploadRef } from '@app-types';
 import { composedToAttachments, composedToUpdatePayload } from './composer';
-import { useMeFeedStore } from './meFeedStore';
+import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import type { ComposedPost } from './components/MeComposerDialog';
 
 type PostsUpdater = (updater: (current: Post[]) => Post[]) => void;

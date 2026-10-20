@@ -17,8 +17,8 @@ import {
 } from '@lib';
 import { ChatPhoneIcon, ChatVideoIcon } from '../../call/icons';
 import type { ChatReplySnapshot } from '@app-types';
-import type { ChatMessage } from '../interface';
-import { chatQuoteExcerpt } from '../chatView';
+import type { ChatMessage } from '../types';
+import { chatQuoteExcerpt } from '../utils';
 import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
 import { useUploadPreviewLease } from '@hooks';
 

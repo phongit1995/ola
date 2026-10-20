@@ -39,7 +39,7 @@ mobile/src                      ← UI React Native; import thẳng @ola/shared/
 ## 2. Quy tắc chọn nơi đặt khi tách
 
 1. **PURE + không phụ thuộc per-platform** (chỉ cần `t`, formatter, type shared) → `packages/shared/src/lib/<tên>.ts` + append barrel. Vd: `relationshipLabels.ts`, `vipPurchase.ts`, `presence.ts`.
-2. **PURE nhưng phụ thuộc per-platform** (vd `kulImageForText` — web trả string, mobile trả ImageSourcePropType) → helper **cạnh page/screen, cùng tên 2 bên** để dễ đối chiếu: `web/src/pages/room/roomMessageView.ts` ↔ `mobile/src/screens/room/roomMessageView.ts`. ĐỪNG cố tham số hoá dependency để ép lên shared nếu làm call-site rườm hơn.
+2. **PURE nhưng phụ thuộc per-platform** (vd `kulImageForText` — web trả string, mobile trả ImageSourcePropType) → helper **cạnh page/screen, cùng tên 2 bên** để dễ đối chiếu: `web/src/pages/room/utils.ts` ↔ `mobile/src/screens/room/utils.ts`. ĐỪNG cố tham số hoá dependency để ép lên shared nếu làm call-site rườm hơn.
 3. **STATE/STORE dùng ở ≥2 màn** → hook trong shared nếu chỉ đụng service/store/toast shared (vd `usePostListActions`); hook per-platform nếu đụng composer/picker/navigation (vd web `useEditMePost.ts` vì `ComposedPost` + upload File).
 4. **STATE phức tạp cả một feed** → cân nhắc đưa hẳn vào zustand store shared theo mẫu `meFeedStore`/`clanFeedStore` (optimistic + rollback + guard) thay vì hook.
 
@@ -61,7 +61,7 @@ mobile/src                      ← UI React Native; import thẳng @ola/shared/
 
 - **KHÔNG đổi hành vi**: nếu 2 bản khác nhau có chủ đích (vd web room check `type !== 'image'` còn mobile chat check `type === 'text'`; canReply web có `!blocked` mobile không) → GIỮ NGUYÊN từng biến thể, đừng "chuẩn hoá chéo". Chỉ được nâng cấp lên bản chuẩn (guard, reconcile) khi bản chuẩn đã tồn tại trong store shared và khác biệt chỉ là thiếu sót.
 - Hàm nhận `t: TFunction` (import type từ `i18next`) làm tham số ĐẦU, theo mẫu `chatQuoteExcerpt(t, ...)`.
-- `interface.ts` / `types.ts` per-folder (chuẩn mới, `web/pages/chat` đã theo): `interface.ts` = interface export, `types.ts` = type alias, file view-mapper chỉ chứa HÀM, `XxxProps` không export để tại component.
+- File per-folder theo quy ước admin (`admin/README.md`), web + mobile đã theo: `types.ts` = mọi type/interface export dùng ở nhiều file trong folder (KHÔNG tách `interface.ts`), `constants.ts` = hằng số, `utils.ts` = hàm thuần (view-mapper, format, tính toán), `useXxx.ts` = hook. `XxxProps` không export để tại component. Chi tiết ở `web/README.md` / `mobile/README.md` mục "Quy ước trong màn".
 - **Icon SVG inline** (`function CameraIcon() { <svg>... }` trong component): gom về `components/Icons.tsx` cùng folder, mỗi icon nhận `className` (+ `strokeWidth` nếu stroke) với default đúng chỗ dùng phổ biến — KHÔNG để icon trùng 2 file (vd CheckIcon từng lặp ở ChangeAvatar + ChangeCover). Mẫu: `web/pages/chat/components/Icons.tsx`.
 - **Magic constant** module-level trong component (`const MAX_BALLOONS = 12`, min/max, duration...): dời về `constants.ts` cùng cấp folder page/screen và import vào.
 - **KHÔNG hardcode string literal của union domain** trong so sánh (`status === 'pending_incoming'`): dùng const map trong `@ola/shared/constants` — đã có `RELATIONSHIP_STATUS`, `GENDER` (auth.ts), `CALL_TYPE`/`CALL_MODE` (call.ts), `MESSAGE_TYPE`/`MESSAGE_STATUS` (chat.ts), `CLAN_ROLE` (clan.ts), `APP_NOTIFICATION_TYPE` (notification.ts) — đều `as const satisfies Record<string, T>`; union mới thì tạo const map tương tự cạnh đó. Union UI cục bộ 1 file (tab/step/tone) so literal được.

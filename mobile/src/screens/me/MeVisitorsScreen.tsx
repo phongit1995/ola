@@ -89,7 +89,7 @@ export function MeVisitorsScreen() {
             keyExtractor={(item) => item.id}
             onEndReached={() => void loadMore()}
             onEndReachedThreshold={0.4}
-            ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color={colors.primary} /> : null}
+            ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color={colors.primary} /> : undefined}
             renderItem={({ item }) => {
               const status = item.relationship?.status ?? 'none';
               const sent = status === RELATIONSHIP_STATUS.pendingOutgoing || requested[item.id] === true;

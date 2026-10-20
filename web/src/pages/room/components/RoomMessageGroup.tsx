@@ -18,12 +18,12 @@ import {
 } from '@lib';
 import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
-import type { RoomReplySnapshot } from '@app-types';
 import type {
   BubblePosition,
   GroupedMessage,
   MessageGroup,
-} from '../messageGroups';
+  RoomReplySnapshot,
+} from '@app-types';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
 
 interface RoomMessageGroupProps {

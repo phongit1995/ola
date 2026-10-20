@@ -5,27 +5,33 @@ Mọi số đo tại viewport 390; bàn 366. Class prefix `ty-`.
 ## 1. BoardSurface (SVG code-native)
 
 - `<svg viewBox="0 0 366 366">` (số thực theo width), nền `--ty-paper`, viền ngoài navy 3 px, radius 8.
-- Lưới 40 ô vẽ bằng `<rect>` + `<line>` `--ty-line` 1 px; ô góc 46, ô cạnh 30.4 × 46.
-- Vùng giữa: `<image>` watermark logo 12% opacity, hoặc `<g>` trống để React portal xúc xắc/thẻ đè lên bằng DOM tuyệt đối.
-- Thứ tự layer: nền → dải màu → nhà → chấm chủ sở hữu → glyph ô → highlight landing/path → quân (DOM, không SVG, để animate dễ) → overlay.
+- Lưới 32 ô vẽ bằng `<rect>` + `<line>` `--ty-line` 1 px; ô góc 49.8, ô cạnh 38.1 × 49.8. Vị trí ô theo `tileRect(idx)`: góc ở `idx % 8 == 0`, Xuất phát dưới-trái, thuận kim đồng hồ.
+- Vùng trong (72.8% cạnh bàn): nền paper trơn, không watermark/logo. Chứa 2 chồng thẻ ở 2 góc trên và `TurnCluster` (§6) ở giữa — vị trí chi tiết ở 02 §6.3. Cụm lượt, thẻ O2, turn announce là DOM tuyệt đối đè lên bàn.
+- Thứ tự layer: nền → tranh pixel ô (`<image>` webp, `image-rendering: pixelated`) → dải màu → nhà → chấm chủ sở hữu → glyph ô → highlight landing/path → quân (DOM, không SVG, để animate dễ) → overlay.
+- Màn S6 nằm trên nền trời pixel (01 §7); bàn có viền ngoài navy 3 px để tách khỏi nền.
 - Mỗi ô là `<g data-tile={idx}>` có `role="button"` + `aria-label="Đà Lạt, nhóm Đỏ, của @an, 2 nhà"`; hit rect mở rộng 4 px.
 
 ## 2. Tile
 
-### 2.1 Anatomy ô đất (cạnh dưới, 30.4 × 46)
-- Dải màu nhóm: rect 30.4 × 15 phía **trong** bàn (phía vùng giữa), viền navy 1 px bên dưới dải.
-- Thân ô: 30.4 × 31 paper; chứa nhà (2.3) và quân.
-- Chấm chủ sở hữu: circle r 4 màu ghế, góc ngoài-phải ô, viền paper 1 px.
-- Ô cạnh trái/phải xoay 90°: dải màu nằm phía trong theo trục ngang; glyph không xoay (luôn đứng thẳng).
+### 2.1 Anatomy ô đất (cạnh dưới, 38.1 × 49.8)
+- Dải màu nhóm: rect 38.1 × 7–9 ở mép phía **trong** bàn (mép giáp vùng trong), viền navy 1 px ở cạnh giáp thân ô; nhà/khách sạn nằm trên dải.
+- Thân ô, chữ luôn đứng thẳng, ba tầng từ trên xuống:
+  1. **tên ngắn** (`shortName`) 800, cỡ `board × 0.0182` (6.7 px tại 366), tối đa 2 dòng, sát mép trên thân;
+  2. **tranh pixel 16-bit** địa danh (ô đất, ô sân bay) hoặc glyph (Cơ hội, Khí vận, Thuế) ở giữa, phủ hết chiều rộng thân ô — tại 390 chỉ còn ≈ 36 × 22 px, tranh rõ từ bàn ≥ 456;
+  3. **giá** `220 tr` tabular sát mép dưới thân; ô có chủ đổi thành viên tiền thuê.
+- Ô có chủ: nền `SEAT_SOFT_COLORS` + vạch 3 px màu ghế ở mép **ngoài** ô (đối diện dải nhóm), thay chấm chủ.
+- Cột trái/phải: khung và dải xoay theo cạnh (dải ở mép trong theo trục ngang); ba tầng chữ/tranh/giá **không xoay**, vẫn đọc từ trên xuống. Hàng trên: dải ở đáy ô, tên vẫn ở đỉnh.
 
 ### 2.2 Ô đặc biệt
-- Nền `--ty-paper-dim`, glyph 18 px (grid 32 scale 0.56) màu theo 01 §2.2, không dải.
-- Ô góc 46 × 46: bust nhân vật 30 px (`style/02-board-tiles.md` §3) + glyph nhỏ 12 px ở góc; khi `charsEnabled=false` thay bằng glyph 26 px. Ô 10 chia chéo: vùng "Thăm tù" paper + vùng "Nhà tù" dim có song sắt; quân trong tù đứng vùng dim, quân thăm đứng vùng paper.
+- Nền `--ty-paper`, không dải. Sân bay: tranh pixel `art/san-bay`. Cơ hội, Khí vận, Thuế: glyph 18 px (grid 32 scale 0.56) màu theo `style/02-board-tiles.md` §2.
+- Ô góc 49.8 × 49.8 (class `ty-tile-corner-bl|tl|tr|br` theo vị trí): chữ in hoa 1 dòng trên, hình giữa, dòng phụ dưới (`style/02-board-tiles.md` §3). Không bust nhân vật. Ô 8 (Nhà tù, góc trên-trái): tranh pixel phòng giam có Anh Tèo ở giữa, dải `Thăm tù` ở đáy ô. Quân trong tù đứng trong tranh sau song, quân thăm đứng ở dải `Thăm tù`.
 
-### 2.3 Nhà và khách sạn
-- Nhà: `tg-house` fill jade 6 × 6 (nóc tam giác + thân), xếp hàng ngang sát dải màu, gap 1 px, tối đa 4.
-- Khách sạn: `tg-hotel` fill coral 14 × 8 với nóc, thay thế 4 nhà.
-- Ở size này không có outline navy (quá nhỏ); chỉ fill.
+### 2.3 Cấp nhà (3 cấp)
+- Cấp 1 · Nhà: 1 `tg-house` fill jade 6 × 6 (nóc tam giác + thân) trên dải màu.
+- Cấp 2 · Biệt thự: 2 `tg-house` xếp ngang, gap 1 px.
+- Cấp 3 · Khách sạn: 1 `tg-hotel` fill coral 14 × 8 với nóc, thay 2 nhà.
+- Tên cấp lấy từ `LEVEL_NAMES` (`constants.ts`), nhãn đầy đủ `Cấp n · Tên` từ `levelLabel()` (`helpers/tiles.ts`).
+- Ở size này không có outline navy (quá nhỏ); fill + viền cream 1 px để nổi trên mọi dải màu (kể cả jade trên dải xanh lá, coral trên dải đỏ).
 
 ### 2.4 State
 | State | Hiển thị |
@@ -37,61 +43,83 @@ Mọi số đo tại viewport 390; bàn 366. Class prefix `ty-`.
 
 ## 3. Token (quân cờ)
 
-- `<img>` webp 96 px hiển thị 18 px trong vòng tròn paper 22 px viền navy 1.5 + vòng màu ghế 2 px bên trong (DOM div, `border` 2 lớp bằng `box-shadow`).
-- Vị trí absolute theo tâm ô, nhiều quân cùng ô: offset `(±5, ±5)` theo thứ tự seat.
+- Con tốt board game 16 × 24 tại 390 (đầu tròn, cổ thắt, đế loe), fill màu ghế, viền navy 1.5, vùng sáng ở đầu và mép tối ở đế (như ảnh mẫu). SVG inline đổi màu theo `--ty-seat-n`; không có avatar trên quân — danh tính đọc bằng màu ghế khớp pod.
+- Vị trí: đế quân đứng trên mép **trong** của ô (hàng dưới: mép trên ô; hàng trên: mép dưới; cột trái/phải: mép trong, ở 80% chiều dài ô). Quân luôn đứng thẳng, thân nhô vào vùng trong để không che tên/giá. Nhiều quân cùng ô: dàn ngang theo thứ tự seat, mỗi quân lệch 2.6% cạnh bàn.
 - Quân tới lượt: vòng gold blur 6 pulse 1.2 s.
 - Quân phá sản: unmount sau step `bankrupt`.
 - Người chơi chọn quân ở S5? **Không** — v1 gán quân theo seat (tokens/tk-{seat}) để không cần protocol chọn quân; 8 quân trong manifest dùng cho v2 chọn quân.
 
 ## 4. Dice
 
-- Hai ô 44 × 44 radius 12 paper viền navy 2 shadow md, dot r 4 navy; 6 mặt SVG `dice/d1..d6.svg` (06 §6).
+- Hai viên 40 × 40 tại 390 (44 khi bàn ≥ 456), radius 12, mặt trắng, viền navy 2, nổi khối (mép dưới `--ty-sh-raise` + bóng mềm dưới viên), hai viên nghiêng nhẹ ngược chiều nhau (±8°) như ảnh mẫu; dot r 4 navy; 6 mặt SVG `dice/d1..d6.svg` (06 §6). Luôn nằm ở hàng 2 của `TurnCluster` (§6), khoảng giữa hai viên 16.
 - Component `DiceRoll {dice:[a,b], rolling}`: khi rolling đổi mặt ngẫu nhiên mỗi 80 ms (client-only, không ảnh hưởng kết quả), kết thúc đúng mặt server.
 - Reduced-motion: hiện mặt cuối ngay.
 
-## 5. PlayerPod (86 × 88)
+## 5. PlayerPod (1 hàng dưới bàn)
 
+Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-board)`, gap 6, theo thứ tự seat. Nền `--seat-soft`, viền 2 px `--seat`, radius 16. Có 3 bố cục theo chiều rộng pod và chỗ dư:
+
+**Ngang (như concept; pod ≥ 128 px — 2 người ở mọi width, 3 người khi bàn ≥ 400; cao 64):**
 ```
-┌────────────────┐
-│ ◯ avatar 32    │  viền pod màu ghế 2 px; nền paper; radius 16
-│ @ten 12.5/600  │
-│ 1.260 tr 15/800│  tabular, đổi màu 500 ms khi tăng/giảm
-│ ▪▪▪ 🔒 ⛓       │  hàng chip 12 px: số đất (ic-deed + n), thẻ tù (ic-key), đang trong tù (ic-jail-bars)
-└────────────────┘
+┌──────────────────────────┐
+│ ╭────╮  Bạn              │  avatar ⌀ 34 viền seat 2.5 px, sát trái, căn giữa dọc
+│ │ ◕‿◕│  🪙 1.240 tr       │  tên 13.5/800 trên; xu 12 + tiền 14/800 tabular dưới
+│ ╰────╯                   │
+└──────────────────────────┘
 ```
 
-- Tới lượt: viền gold + glow; pod của mình có nhãn `Bạn` góc trên.
+**Compact (pod < 128 px — 4 người ở mọi width, 3 người ở 390; cao 64):**
+```
+┌───────────────┐
+│ ◯ Bạn         │  hàng 1: avatar ⌀ 24 + tên 12.5/800 (ellipsis)
+│ 🪙 1.240 tr   │  hàng 2: xu 12 + tiền 13.5/800 tabular, căn trái
+└───────────────┘
+```
+
+**Mở rộng (khi màn dư chỗ, 02 §6.1; cao 96):** compact + hàng chip 11 px (số đất `ic-deed`, tổng cấp nhà `ic-house` jade, thẻ ra tù `ic-key` gold, đang ở tù `ic-jail-bars`) + thanh tổng tài sản 4 px (so với người dẫn đầu) sát đáy pod.
+
+Ở compact/ngang (không có hàng chip), trạng thái thu thành badge 12 px trên avatar: vương miện (giàu nhất) góc trên-trái, song sắt (đang ở tù) góc dưới-phải, chìa khóa (có thẻ ra tù) góc dưới-trái.
+
+- Tiền mặt luôn hiện, đổi màu 500 ms khi tăng/giảm; tiền bay `+/−` xuất phát từ dòng tiền.
+- Tới lượt: nền `--seat-soft` đậm (≈ 60%) + viền 3 px + glow màu ghế; nhãn nhỏ `Lượt bạn` / `Đang nghĩ` / `Đang đi` dạng tab trên mép trên pod.
 - Mất kết nối: ic-wifi-off đè góc avatar, pod 70% opacity.
 - Phá sản: pod `--ty-bankrupt`, text `Phá sản`, giữ vị trí để pod row không nhảy.
 - Sắp phá sản (pha debt của người đó): viền coral pulse.
 - Tap pod → S8 ở chế độ xem (read-only) tài sản người đó.
 
-## 6. ActionBar
+## 6. TurnCluster (thay ActionBar, nằm giữa bàn)
 
-- Chiều cao 72, nền navy 20% trên nền màn, nút cao 52.
-- Layout theo pha (02 §6.3); mọi nút `≥ 44` cao, khoảng cách 8.
-- Khi `movePending`: nút vừa bấm hiện spinner 16, cả bar disabled.
-- Đồng hồ không nằm trong bar — ở topbar, để bar không đổi chiều cao.
+- Vị trí: giữa vùng trong bàn, căn giữa ngang, tâm dọc ở 53%; rộng tối đa 246 tại 390 (vùng trong 266 trừ lề 10). Bảng vị trí và nội dung từng pha ở 02 §6.3.
+- 3 hàng chính + 1 dòng gợi ý, cách nhau 10:
+  1. chip lượt (pill cao 34: avatar 24 + `Lượt của bạn` 15/800; lượt mình nền gold, lượt người khác nền paper viền màu ghế) + `TurnClock` ⌀ 40 bên phải chip;
+  2. xúc xắc (§4), hoặc thẻ sổ đỏ thu gọn 246 × 52 ở pha `decide`;
+  3. nút theo pha, cao 48 (jail: 3 nút đứng 74 × 56). CTA đơn rộng 196; hai nút chia 40/60, nút gold bên phải;
+  4. dòng gợi ý `Thắng ngay: 3 nhóm · 1 cạnh · 4 sân bay` — pill paper-dim, chữ 12.5/600 navy 70%, chỉ hiện ở pha `roll` của mình; pha khác ẩn để không chật.
+- Không đổi vị trí giữa các pha: hàng 1 luôn ở chỗ cũ, chỉ hàng 2–3 thay nội dung, để mắt người chơi không phải dò lại.
+- Khi `movePending`: nút vừa bấm hiện spinner 16, cả hàng 3 disabled. Thẻ O2 che cả cụm khi `card`.
+- Nền cụm trong suốt, đặt trên paper vùng trong: chữ và icon navy, không dùng cream.
 
 ## 7. TurnClock
 
-- 22/800 tabular, `0:28`; ≤ 10 s đổi `--ty-danger` + pulse + âm tick.
+- Vòng tròn ⌀ 40 nằm bên phải chip lượt (hàng 1 TurnCluster). Cung gold chạy ngược theo thời gian còn, số `0:28` 15/800 tabular ở giữa; ≤ 10 s cung + số đổi `--ty-danger` + pulse + âm tick.
+- Chỉ hiện khi tới lượt mình; lượt người khác thay bằng 3 chấm "đang nghĩ".
 - Nguồn: `deadline` từ STATE/MATCH_FOUND, tick rAF; dừng khi `oppAway` của người tới lượt.
 
 ## 8. RoundChip
 
-- Chip paper viền navy 1.5, radius 8, `Vòng 7/20` 13/700; 18–19 coral, 20 danger.
+- Giữa header S6 (căn theo màn), pill paper viền navy 1.5, 108 × 32, `Vòng 7/30 · 18:20` 15/800 (giờ còn lại của 25 phút, đỏ khi ≤ 3 phút); 28–29 coral, 30 danger + chữ `Vòng cuối`. Có thể kèm thanh tiến độ 3 px dưới chữ.
 
 ## 9. DeedCard (trong S7) và GroupChip
 
 - GroupChip: rect 12 × 12 màu nhóm viền navy 1 + tên nhóm 12.5/500.
-- RentTable: 6 hàng `label | số`, hàng áp dụng nền gold 30%; số tabular 13.5/800.
+- RentTable: 4 hàng `label | số` (Đất trống, Cấp 1–3), hàng áp dụng nền gold 30%; số tabular 13.5/800.
 - OwnerChip: avatar 20 + `@ten` + chấm màu ghế.
 
 ## 10. Card (O2)
 
-- 280 × 180, radius 16, viền navy 2, dải đầu 28 màu loại; `aria-live="polite"` đọc nội dung.
-- Mặt sau: dải + glyph 48 (tg-chance / tg-chest) giữa.
+- 236 × 168 tại 390 (280 × 180 khi bàn ≥ 456), giữa vùng trong bàn, thay TurnCluster. Radius 16, viền navy 2, dải đầu 28 màu loại; nút `Làm theo thẻ` dính đáy thẻ (chỉ người rút); `aria-live="polite"` đọc nội dung.
+- Mặt sau: nền `--ty-chance` (Cơ hội) hoặc `--ty-chest` (Khí vận), chữ `CƠ HỘI` / `KHÍ VẬN` navy 800 ở trên, glyph 48 giữa (`?` cream viền navy / gió `--ty-chest-deep`) — giống chồng thẻ giữa bàn.
+- Chồng thẻ giữa bàn (trang trí): 3 lớp lệch nhau 3 px, radius 12, viền navy 2, mép dưới `--ty-sh-raise`, mặt trên như mặt sau thẻ.
 - Flip bằng `rotateY` 2 mặt `backface-visibility: hidden`.
 
 ## 11. BottomSheet (S7, S8)
@@ -109,12 +137,14 @@ Mọi số đo tại viewport 390; bàn 366. Class prefix `ty-`.
 
 | Class | Nền | Chữ | Viền | Dùng |
 |---|---|---|---|---|
-| `.ty-btn-gold` | gradient gold | navy 17/700 | gold-deep 2 | hành động chính của pha |
+| `.ty-btn-gold` | gradient gold + mép dưới 4 px gold-deep | navy 17/800 | gold-deep 2 | hành động chính của pha |
 | `.ty-btn-paper` | paper | navy 15/600 | navy 2 | phụ |
 | `.ty-btn-jade` | jade | cream 16/700 | navy 2 | Sẵn sàng, Mua (biến thể khi muốn nhấn "được tiền") — v1 chỉ dùng cho Sẵn sàng |
 | `.ty-btn-danger` | danger | cream 15/700 | navy 2 | Phá sản, Bỏ cuộc trong confirm |
 | `.ty-btn-text` | — | cream 15/600 | — | Hủy, Luật chơi |
-| `.ty-icon-btn` | paper 0/100% | navy/cream | navy 1.5 | 44 × 44 |
+| `.ty-icon-btn` | paper | navy | navy 1.5 | 44 × 44 tròn (header S6 trên nền trời) |
+
+Mọi `.ty-btn` radius pill (ảnh mẫu); riêng nút đứng pha jail radius 16.
 
 State: hover viền 2 + translateY(−1); active translateY(0) shadow sm; disabled opacity 45% không shadow; focus-visible ring gold 3 px offset 2; loading spinner thay icon.
 
@@ -128,9 +158,17 @@ State: hover viền 2 + translateY(−1); active translateY(0) shadow sm; disabl
 
 Dùng lại cấu trúc xiangqi (`03-component-specs` §chat/reaction/toast), đổi token `--xq-*` → `--ty-*`. Chat trong ván: tin nhắn kèm chấm màu ghế trước tên. Reaction bay từ pod người gửi.
 
-## 16. Log line
+## 16. FooterBar và dòng sự kiện
 
-- 2 dòng gần nhất dưới action bar, mỗi dòng 12.5/500 cream 80%, tên có màu ghế, số tiền jade/coral; sinh từ steps (`pay`, `buy`, `build`, `jail-in`, `bankrupt`, `card`). Tap → mở drawer log đầy đủ (50 dòng, cùng ChatDrawer tab thứ 2).
+- Thanh cao 44 ở đáy màn (+ safe-area), rộng `var(--ty-board)`. Trái → phải:
+  - pill `Tài sản` (icon sổ/danh sách) — mở S8 của mình;
+  - pill `Diễn biến` (icon cột) — mở sheet diễn biến;
+  - vạch ngăn dọc;
+  - dòng sự kiện;
+  - (bản online) `ic-chat` 44 ở phải cùng.
+- Dòng sự kiện: icon xúc xắc 16 + câu log mới nhất 13/600, tên có màu ghế, số tiền jade/coral, 1 dòng cắt `…`. Sinh từ steps (`pay`, `buy`, `build`, `jail-in`, `bankrupt`, `card`, qua Xuất phát). Tap → sheet diễn biến đầy đủ (50 dòng; bản online là tab thứ 2 của ChatDrawer).
+- Khi màn dư chỗ (02 §6.1): dòng sự kiện thành thẻ Diễn biến 2–6 dòng (mới ở trên, mỗi dòng giờ `18:20` + chấm màu ghế + câu) ngay trên thanh nút, lấp phần cao còn lại. Lúc đó footer **bỏ** dòng sự kiện, chỉ còn các nút — chỉ một vùng log tại một thời điểm (ảnh mẫu vẽ cả hai, không làm theo).
+- Footer nằm trên nền trời: pill nền paper viền navy 1.5, chữ/icon navy.
 
 ## 17. Accessibility
 

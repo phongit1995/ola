@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Sprite, type Texture } from 'pixi.js';
 import { useApplication, useTick } from '@pixi/react';
-import { useEggGameStore } from './eggGameStore';
+import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import { EggSprite } from './EggSprite';
 import { Fireworks } from './Fireworks';
 import { EggWinPanel } from './EggWinPanel';
-import { BG_H, BG_W, NESTS } from './eggGame.constants';
+import { BG_H, BG_W, NESTS } from '@lib';
 import { EGG_BACKGROUND_KEY, EGG_RELOAD_KEY, EGG_REST_KEY } from './eggAssets';
 import type { SmashStarter } from './useEggGame';
 

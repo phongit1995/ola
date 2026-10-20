@@ -12,7 +12,7 @@ import { MediaViewerModal } from '@components/ui/MediaViewer';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
-import type { ProfileViewerState } from './interface';
+import type { ProfileViewerState } from './types';
 import { useProfileActions } from './useProfileActions';
 import { MeComposerModal } from '@screens/me/components/MeComposerModal';
 import { ProfileCard } from './components/ProfileCard';

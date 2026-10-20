@@ -5,7 +5,7 @@ import { formatDateSlashDMY, withAlpha } from '@ola/shared/lib';
 import type { StoryChapterItem } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { ROW_SEPARATOR } from '../constants';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryIcon } from './StoryIcons';
 
 const READ_TITLE_COLOR = '#7c3aed';

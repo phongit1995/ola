@@ -173,7 +173,7 @@ export function VipStoreScreen({ navigation }: Props) {
                 {t('common.loading')}
               </Text>
             </View>
-          ) : null
+          ) : undefined
         }
         onEndReachedThreshold={0.4}
         onEndReached={vm.loadMore}

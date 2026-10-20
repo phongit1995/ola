@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { REPORT_REASONS, type ReportReason } from '@constants';
+import {
+  REPORT_NOTE_MAX_LENGTH,
+  REPORT_REASONS,
+  type ReportReason,
+} from '@constants';
 import type { ReportTarget } from '@app-types';
-import { toast } from '@lib';
+import { useReportSubmit } from '@ola/shared/stores/report/useReportSubmit';
 import { Dialog, DialogButton } from './Dialog';
 
 interface ReportDialogProps {
@@ -10,15 +14,14 @@ interface ReportDialogProps {
   onClose: () => void;
 }
 
-export function ReportDialog({ onClose }: ReportDialogProps) {
+export function ReportDialog({ target, onClose }: ReportDialogProps) {
   const { t } = useTranslation();
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [note, setNote] = useState('');
+  const { submitting, submit } = useReportSubmit(target, onClose);
 
-  function submit() {
-    if (reason == null) return;
-    toast.success(t('report.sent'));
-    onClose();
+  function handleSubmit() {
+    if (reason != null) void submit(reason, note);
   }
 
   return (
@@ -31,8 +34,8 @@ export function ReportDialog({ onClose }: ReportDialogProps) {
           <DialogButton onClick={onClose}>{t('dialog.cancel')}</DialogButton>
           <DialogButton
             variant="green"
-            disabled={reason == null}
-            onClick={submit}
+            disabled={reason == null || submitting}
+            onClick={handleSubmit}
           >
             {t('report.send')}
           </DialogButton>
@@ -70,7 +73,7 @@ export function ReportDialog({ onClose }: ReportDialogProps) {
           onChange={(event) => setNote(event.target.value)}
           placeholder={t('report.notePlaceholder')}
           rows={3}
-          maxLength={500}
+          maxLength={REPORT_NOTE_MAX_LENGTH}
           className="mt-2 w-full resize-none rounded-sm border border-black/12 bg-white p-2 text-sm text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary"
         />
       </div>

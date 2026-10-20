@@ -2,6 +2,7 @@ import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { activeVipTypeId, colorForName, storyCommentAuthorName } from '@ola/shared/lib';
+import { REPORT_TARGET_TYPE } from '@ola/shared/constants';
 import type { StoryComment } from '@ola/shared/types';
 import { renderRichText } from '@lib/richText';
 import { Avatar } from '@components/ui/Avatar';
@@ -11,7 +12,7 @@ import { VipBadge } from '@components/ui/VipBadge';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { READER_PALETTES, ROW_SEPARATOR } from '../constants';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryCover } from './StoryCover';
 import { StoryIcon } from './StoryIcons';
 
@@ -192,7 +193,10 @@ function StoryCommentItemComponent({
         onClose={() => setMenuOpen(false)}
       />
       {reportOpen && (
-        <ReportDialog target={{ type: 'comment', id: comment.id }} onClose={() => setReportOpen(false)} />
+        <ReportDialog
+          target={{ type: REPORT_TARGET_TYPE.storyComment, id: comment.id }}
+          onClose={() => setReportOpen(false)}
+        />
       )}
     </View>
   );

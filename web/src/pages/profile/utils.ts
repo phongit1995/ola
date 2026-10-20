@@ -1,0 +1,63 @@
+import { activeVipTypeId, colorForName, formatDateSlashDMY } from '@lib';
+import type { FollowUser, Post, PublicProfile } from '@app-types';
+import { toMePost } from '../me/utils';
+import type { MePost } from '../me/types';
+import type { ProfileFriend, UserProfile } from './types';
+import { DEFAULT_COVER_COLOR } from './constants';
+
+export interface ProfileMapDeps {
+  seedColor: string;
+  marriedWith: (nick: string) => string;
+  singleLabel: string;
+  joinedLabel: string;
+  formatDate: (iso: string) => string;
+}
+
+export function mapPublicProfile(
+  data: PublicProfile,
+  deps: ProfileMapDeps
+): UserProfile {
+  const nick =
+    data.fullName && data.fullName !== '' ? data.fullName : data.username;
+  return {
+    nick,
+    username: data.username,
+    fullName: data.fullName ?? '',
+    color: deps.seedColor !== '' ? deps.seedColor : colorForName(data.username),
+    coverColor: DEFAULT_COVER_COLOR,
+    avatar: data.avatar,
+    coverPhoto: data.coverPhoto,
+    verified: data.verified,
+    vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
+    fans: data.followerCount,
+    kisses: data.kisses,
+    bio: data.bio ?? '',
+    gender: data.gender,
+    marriage: data.spouse
+      ? deps.marriedWith(data.spouse.username)
+      : deps.singleLabel,
+    spouse: data.spouse
+      ? { nick: data.spouse.username, avatar: data.spouse.avatar }
+      : null,
+    birthday: data.dateOfBirth ? formatDateSlashDMY(data.dateOfBirth) : '',
+    joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
+    isSelf: data.relationship?.status === 'self',
+    canViewVipStore: data.canViewVipStore !== false,
+  };
+}
+
+export function mapFollowing(users: FollowUser[]): ProfileFriend[] {
+  return users.map((user) => ({
+    name: user.username,
+    fullName: user.fullName,
+    avatar: user.avatar,
+    color: colorForName(user.username),
+  }));
+}
+
+export function mapPosts(
+  posts: Post[],
+  formatTime: (iso: string) => string
+): MePost[] {
+  return posts.map((post) => toMePost(post, formatTime));
+}

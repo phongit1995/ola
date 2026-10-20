@@ -110,7 +110,7 @@ function FollowingListBody({
           ListFooterComponent={
             loadingMore ? (
               <ActivityIndicator className="py-3" color={colors.primary} />
-            ) : null
+            ) : undefined
           }
           renderItem={({ item }) => (
             <Pressable

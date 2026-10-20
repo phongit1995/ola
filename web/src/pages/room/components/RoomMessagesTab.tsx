@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { MESSAGE_TYPE } from '@constants';
+import { MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
 import {
   BUBBLE_WALLPAPER,
+  buildRoomFeed,
   filterVisibleRoomMessages,
   SmileyText,
   toast,
@@ -21,8 +22,7 @@ import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete_outline.svg';
 import blockActionIcon from '@/assets/icons/chat/ic_menu_block.svg';
 import reportActionIcon from '@/assets/icons/chat/ic_menu_report.svg';
-import { buildRoomFeed } from '../messageGroups';
-import { replyExcerpt, roomMessageAbilities } from '../roomMessageView';
+import { replyExcerpt, roomMessageAbilities } from '../utils';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
@@ -390,7 +390,11 @@ export function RoomMessagesTab({
       />
       {reportTarget != null && (
         <ReportDialog
-          target={{ type: 'message', id: reportTarget.id }}
+          target={{
+            type: REPORT_TARGET_TYPE.roomMessage,
+            id: reportTarget.id,
+            contextId: reportTarget.roomId,
+          }}
           onClose={() => setReportTarget(null)}
         />
       )}

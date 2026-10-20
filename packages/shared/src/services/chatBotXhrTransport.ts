@@ -1,15 +1,10 @@
-import { ChatBotStreamError, type ChatBotTransport } from './chatBotTransport';
+import {
+  ChatBotStreamError,
+  parseChatBotErrorBody,
+  type ChatBotTransport,
+} from './chatBotTransport';
 
 const HEADERS_RECEIVED = 2;
-
-function parseErrorMessage(body: string, statusText: string): string {
-  try {
-    const parsed = JSON.parse(body) as { error?: string };
-    return parsed.error ?? statusText;
-  } catch {
-    return statusText;
-  }
-}
 
 export const xhrChatBotTransport: ChatBotTransport = (request, signal) =>
   new Promise((resolveResponse, rejectResponse) => {
@@ -78,11 +73,11 @@ export const xhrChatBotTransport: ChatBotTransport = (request, signal) =>
         headersSettled = true;
         resolveResponse({
           status: xhr.status,
-          readErrorMessage: async () => {
+          readError: async () => {
             if (!finished) {
               await new Promise<void>((resolve) => finishWaiters.push(resolve));
             }
-            return parseErrorMessage(currentText(), xhr.statusText);
+            return parseChatBotErrorBody(currentText(), xhr.statusText);
           },
           readStream: (onChunk) =>
             new Promise<void>((resolve, reject) => {

@@ -7,7 +7,7 @@ import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore
 import type { StoryComment } from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { useStoryCommentListActions } from '../useStoryCommentActions';
 import { StoryCommentItem } from './StoryCommentItem';
 import { StoryStateMessage } from './StoryStateMessage';

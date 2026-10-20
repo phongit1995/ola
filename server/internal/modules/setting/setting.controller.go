@@ -19,7 +19,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 
 // TopupConfig godoc
 // @Summary      Cấu hình nạp KEN (bank nhận tiền VietQR + mệnh giá) cho app
-// @Description  Có X-Platform thì enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi, bị ẩn thì không trả bank. Thiếu X-Platform (bản app cũ) thì trả enabled và enabledMobile như cấu hình gốc
+// @Description  enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi, bị ẩn thì không trả bank. Thiếu X-Platform thì tính là web
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth
@@ -42,20 +42,16 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 
-	access := topup.AccessFor(
-		c.GetHeader(constants.HeaderPlatform),
-		c.GetHeader(constants.HeaderAppVersion),
-		c.GetHeader("User-Agent"),
-	)
+	enabled := topup.EnabledFor(c.GetHeader(constants.HeaderPlatform), c.GetHeader(constants.HeaderAppVersion))
 	resp := TopupConfigResponse{
-		Enabled:       access.Enabled,
-		EnabledMobile: access.EnabledMobile,
+		Enabled:       enabled,
+		EnabledMobile: enabled,
 		MinAmount:     topup.MinAmount,
 		StepAmount:    topup.StepAmount,
 		PresetAmounts: topup.PresetAmounts,
 		BonusTiers:    topup.BonusTiers,
 	}
-	if access.ShowBank && bank.AccountNumber != "" {
+	if enabled && bank.AccountNumber != "" {
 		resp.Bank = &TopupBankInfo{
 			BankName:      bank.BankName,
 			BankBin:       bank.BankBin,
@@ -69,9 +65,12 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 
 // UsernameChangeConfig godoc
 // @Summary      Cấu hình phí đổi username theo độ dài (tính bằng KEN)
+// @Description  enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi. Thiếu X-Platform thì tính là web
 // @Tags         settings
 // @Produce      json
 // @Security     BearerAuth
+// @Param        X-Platform header string false "web | android | ios"
+// @Param        X-App-Version header string false "Phiên bản app, ví dụ 1.0.0 (45)"
 // @Success      200  {object}  UsernameChangeConfigSuccessResponse
 // @Failure      401  {object}  utils.APIError
 // @Router       /settings/username-change [get]
@@ -84,7 +83,8 @@ func (ctrl *Controller) UsernameChangeConfig(c *gin.Context) (interface{}, error
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
-	return cfg, nil
+	enabled := cfg.EnabledFor(c.GetHeader(constants.HeaderPlatform), c.GetHeader(constants.HeaderAppVersion))
+	return UsernameChangeConfigResponse{Enabled: enabled, EnabledMobile: enabled, Tiers: cfg.Tiers}, nil
 }
 
 // WordChainConfig godoc
@@ -105,6 +105,34 @@ func (ctrl *Controller) WordChainConfig(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 	return cfg, nil
+}
+
+// ChatBotConfig godoc
+// @Summary      Bot nào đang bật và giới hạn lượt chat mỗi ngày (0 = không giới hạn)
+// @Description  enabled của từng bot đã tính theo nền tảng và phiên bản app đang gọi (X-Platform, X-App-Version)
+// @Tags         settings
+// @Produce      json
+// @Security     BearerAuth
+// @Param        X-Platform header string false "web | android | ios"
+// @Param        X-App-Version header string false "Phiên bản app, ví dụ 1.0.0 (45)"
+// @Success      200  {object}  ChatBotPublicConfigSuccessResponse
+// @Failure      401  {object}  utils.APIError
+// @Router       /settings/chat-bot [get]
+func (ctrl *Controller) ChatBotConfig(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+
+	cfg, err := ctrl.service.GetChatBot()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	client := ClientFrom(c)
+	bots := make([]ChatBotAvailability, 0, len(ChatBotTypes()))
+	for _, botType := range ChatBotTypes() {
+		bots = append(bots, ChatBotAvailability{Type: botType, Enabled: cfg.Bot(botType).EnabledFor(client)})
+	}
+	return ChatBotPublicConfig{DailyLimit: cfg.DailyLimit, Bots: bots}, nil
 }
 
 // StoryConfig godoc

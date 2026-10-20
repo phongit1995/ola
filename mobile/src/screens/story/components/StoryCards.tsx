@@ -5,7 +5,7 @@ import { formatCompactCount, storyReadPercent } from '@ola/shared/lib';
 import type { Story, StoryProgress } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { STORY_SECTION_ART, type StorySectionArt } from '../constants';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryCover } from './StoryCover';
 import { StoryMeta } from './StoryTags';
 

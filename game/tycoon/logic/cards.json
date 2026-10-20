@@ -1,0 +1,167 @@
+[
+  {
+    "id": "ch01",
+    "deck": "chance",
+    "text": "Tiến đến Xuất phát. Nhận 160 tr.",
+    "effect": "moveTo",
+    "tile": 0
+  },
+  {
+    "id": "ch02",
+    "deck": "chance",
+    "text": "Đi đến TP. Hồ Chí Minh. Qua Xuất phát nhận 160 tr.",
+    "effect": "moveTo",
+    "tile": 31
+  },
+  {
+    "id": "ch03",
+    "deck": "chance",
+    "text": "Đi đến Huế. Qua Xuất phát nhận 160 tr.",
+    "effect": "moveTo",
+    "tile": 19
+  },
+  {
+    "id": "ch04",
+    "deck": "chance",
+    "text": "Đi đến Cần Thơ. Qua Xuất phát nhận 160 tr.",
+    "effect": "moveTo",
+    "tile": 9
+  },
+  {
+    "id": "ch05",
+    "deck": "chance",
+    "text": "Bay đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.",
+    "effect": "moveToNearest",
+    "kind": "station",
+    "amount": 2
+  },
+  {
+    "id": "ch06",
+    "deck": "chance",
+    "text": "Đi dự Lễ hội. Qua Xuất phát nhận 160 tr.",
+    "effect": "moveTo",
+    "tile": 16
+  },
+  {
+    "id": "ch07",
+    "deck": "chance",
+    "text": "Ngân hàng trả cổ tức 50 tr.",
+    "effect": "cash",
+    "amount": 50
+  },
+  {
+    "id": "ch08",
+    "deck": "chance",
+    "text": "Thẻ ra tù miễn phí. Giữ đến khi dùng.",
+    "effect": "jailCard"
+  },
+  {
+    "id": "ch09",
+    "deck": "chance",
+    "text": "Vào tù. Đi thẳng, không qua Xuất phát.",
+    "effect": "goToJail"
+  },
+  {
+    "id": "ch10",
+    "deck": "chance",
+    "text": "Bảo trì nhà cửa: 25 tr cho mỗi cấp nhà bạn đang có.",
+    "effect": "repair",
+    "amount": 25
+  },
+  {
+    "id": "ch11",
+    "deck": "chance",
+    "text": "Phạt vượt tốc độ 15 tr.",
+    "effect": "cash",
+    "amount": -15
+  },
+  {
+    "id": "ch12",
+    "deck": "chance",
+    "text": "Bạn trúng giải xổ số 150 tr.",
+    "effect": "cash",
+    "amount": 150
+  },
+  {
+    "id": "cm01",
+    "deck": "chest",
+    "text": "Tiến đến Xuất phát. Nhận 160 tr.",
+    "effect": "moveTo",
+    "tile": 0
+  },
+  {
+    "id": "cm02",
+    "deck": "chest",
+    "text": "Ngân hàng tính nhầm, bạn nhận 200 tr.",
+    "effect": "cash",
+    "amount": 200
+  },
+  {
+    "id": "cm03",
+    "deck": "chest",
+    "text": "Viện phí 100 tr.",
+    "effect": "cash",
+    "amount": -100
+  },
+  {
+    "id": "cm04",
+    "deck": "chest",
+    "text": "Hoàn thuế 20 tr.",
+    "effect": "cash",
+    "amount": 20
+  },
+  {
+    "id": "cm05",
+    "deck": "chest",
+    "text": "Thẻ ra tù miễn phí. Giữ đến khi dùng.",
+    "effect": "jailCard"
+  },
+  {
+    "id": "cm06",
+    "deck": "chest",
+    "text": "Vào tù. Đi thẳng, không qua Xuất phát.",
+    "effect": "goToJail"
+  },
+  {
+    "id": "cm07",
+    "deck": "chest",
+    "text": "Sinh nhật bạn! Mỗi người chơi mừng 10 tr.",
+    "effect": "collectEach",
+    "amount": 10
+  },
+  {
+    "id": "cm08",
+    "deck": "chest",
+    "text": "Hoàn tiền bảo hiểm 100 tr.",
+    "effect": "cash",
+    "amount": 100
+  },
+  {
+    "id": "cm09",
+    "deck": "chest",
+    "text": "Học phí 50 tr.",
+    "effect": "cash",
+    "amount": -50
+  },
+  {
+    "id": "cm10",
+    "deck": "chest",
+    "text": "Nhận thừa kế 100 tr.",
+    "effect": "cash",
+    "amount": 100
+  },
+  {
+    "id": "cm11",
+    "deck": "chest",
+    "text": "Bán hàng được 50 tr.",
+    "effect": "cash",
+    "amount": 50
+  },
+  {
+    "id": "cm12",
+    "deck": "chest",
+    "text": "Sửa đường: 40 tr cho mỗi cấp nhà bạn đang có.",
+    "effect": "repair",
+    "amount": 40
+  }
+]

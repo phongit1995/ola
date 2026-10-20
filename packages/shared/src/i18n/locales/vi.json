@@ -431,6 +431,8 @@
     "chatBotErrorRateLimited": "Bạn đang gửi quá nhanh, thử lại sau ít phút nhé.",
     "chatBotErrorUpstream": "Olala đang không phản hồi, thử lại nhé.",
     "chatBotErrorNetwork": "Không kết nối được, kiểm tra lại mạng nhé.",
+    "chatBotErrorDisabled": "Bot này đang tạm nghỉ, quay lại sau nhé.",
+    "chatBotErrorDailyLimit": "Bạn đã dùng hết lượt chat hôm nay, mai quay lại nhé.",
     "fortuneBot": "Olavi",
     "fortuneBotSub": "Tử vi, gieo quẻ, luận vận đường đời",
     "fortuneBotThinking": "đang gieo quẻ...",
@@ -1172,7 +1174,10 @@
     "reasonOther": "Khác",
     "notePlaceholder": "Mô tả thêm (không bắt buộc)",
     "send": "Gửi",
-    "sent": "Cảm ơn bạn đã gửi báo cáo đến Ola"
+    "sent": "Cảm ơn bạn đã gửi báo cáo đến Ola",
+    "already": "Bạn đã báo cáo nội dung này, Ola đang xem xét",
+    "notFound": "Nội dung này không còn tồn tại",
+    "error": "Gửi báo cáo thất bại, vui lòng thử lại"
   },
   "profileEdit": {
     "title": "Thông tin cá nhân",

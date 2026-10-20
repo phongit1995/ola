@@ -6,7 +6,7 @@ import {
   useState,
   type ElementRef,
 } from 'react';
-import { TextInput } from 'react-native';
+import { TextInput, type TextInputInstance } from 'react-native';
 // eslint-disable-next-line @react-native/no-deep-imports -- TextInput.State không có registerInput; cần đăng ký composer native vào registry để tap-ra-ngoài/Keyboard.dismiss ẩn được bàn phím
 import TextInputState from 'react-native/Libraries/Components/TextInput/TextInputState';
 import OlaChatComposerNative, {
@@ -174,7 +174,7 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
 ) {
   const colors = useThemeColors();
   const effectiveSelectionColor = selectionColor ?? colors.primary;
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const valueRef = useRef(value);
   valueRef.current = value;
 

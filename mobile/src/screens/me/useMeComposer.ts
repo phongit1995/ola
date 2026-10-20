@@ -5,6 +5,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
+  findActionIcon,
   hasMePostBody,
   imageUploadErrorText,
   meAudioDraftFromPost,
@@ -19,7 +20,6 @@ import type {
 import type { ChatComposerHandle } from '@components/ChatComposer';
 import type { VoiceRecorderControlHandle } from '@components/chat/voice/VoiceRecorderControl';
 import type { VoiceRecording } from '@hooks/useVoiceRecorder';
-import { findActionIcon } from '@lib/checkInActions';
 import { compressImagesForUpload } from '@lib/compressImage';
 import { uploadFileFromAsset } from '@lib/imagePicker';
 import { isPostEditExpired } from '@lib/post';
@@ -29,8 +29,12 @@ import {
 } from '@lib/temporaryVoiceFile';
 import type { ComposedCheckIn } from './components/MeComposerCheckInPanel';
 import { COMPOSER_MAX_IMAGES, COMPOSER_PRIVACY_OPTIONS } from './constants';
-import type { PickedAudio, PickedPhoto } from './interface';
-import type { ComposerAttachKey, ComposerPanel } from './types';
+import type {
+  ComposerAttachKey,
+  ComposerPanel,
+  PickedAudio,
+  PickedPhoto,
+} from './types';
 
 export type SubmitMePost = (
   payload: CreatePostRequest,

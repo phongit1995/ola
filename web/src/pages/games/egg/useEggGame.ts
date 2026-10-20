@@ -1,9 +1,8 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@lib';
+import { EGG_COST, toast } from '@lib';
 import { useSettingsStore } from '@/store/settingsStore';
-import { useEggGameStore } from './eggGameStore';
-import { EGG_COST } from './eggGame.constants';
+import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import { smashSoundUrl } from './eggAssets';
 
 const smashAudio = new Audio(smashSoundUrl);

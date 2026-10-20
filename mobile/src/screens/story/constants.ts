@@ -9,7 +9,7 @@ import type {
   StoryStatus,
   StoryStatusFilter,
 } from '@ola/shared/types';
-import type { ReaderPalette } from './interface';
+import type { ReaderPalette } from './types';
 
 export const SEARCH_DEBOUNCE_MS = 300;
 

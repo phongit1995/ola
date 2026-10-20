@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 
 const ACCENT_WIDTH = 4;
 const ACCENT_HEIGHT = 16;

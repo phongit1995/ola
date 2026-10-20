@@ -1,8 +1,7 @@
 import { memo } from 'react';
 import { Avatar } from '@components';
-import type { ChatBotMessage, ChatBotType } from '@app-types';
-import { groupingOf } from '../chatBotView';
-import type { ChatBotViewer } from '../interface';
+import type { ChatBotMessage, ChatBotType, ChatBotViewer } from '@app-types';
+import { groupingOf } from '../utils';
 import { BotAvatar } from './BotAvatar';
 import { BotMarkdown } from './BotMarkdown';
 

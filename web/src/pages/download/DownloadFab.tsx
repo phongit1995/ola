@@ -1,6 +1,6 @@
 import type { MouseEvent, PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDraggable } from '@hooks';
+import { useDraggable } from './useDraggable';
 import { CloseIcon, DownloadIcon } from './platformIcons';
 
 interface DownloadFabProps {

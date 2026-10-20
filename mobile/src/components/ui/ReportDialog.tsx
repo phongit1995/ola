@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import { REPORT_REASONS, type ReportReason } from '@ola/shared/constants';
+import {
+  REPORT_NOTE_MAX_LENGTH,
+  REPORT_REASONS,
+  type ReportReason,
+} from '@ola/shared/constants';
 import type { ReportTarget } from '@ola/shared/types';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { useReportSubmit } from '@ola/shared/stores/report/useReportSubmit';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { Dialog, DialogButton } from './Dialog';
 
@@ -12,17 +16,15 @@ interface ReportDialogProps {
   onClose: () => void;
 }
 
-export function ReportDialog({ onClose }: ReportDialogProps) {
+export function ReportDialog({ target, onClose }: ReportDialogProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const push = useToastStore((s) => s.push);
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [note, setNote] = useState('');
+  const { submitting, submit } = useReportSubmit(target, onClose);
 
-  function submit() {
-    if (reason == null) return;
-    push('success', t('report.sent'));
-    onClose();
+  function handleSubmit() {
+    if (reason != null) void submit(reason, note);
   }
 
   return (
@@ -33,7 +35,7 @@ export function ReportDialog({ onClose }: ReportDialogProps) {
       footer={
         <>
           <DialogButton onPress={onClose}>{t('dialog.cancel')}</DialogButton>
-          <DialogButton variant="green" disabled={reason == null} onPress={submit}>
+          <DialogButton variant="green" disabled={reason == null || submitting} onPress={handleSubmit}>
             {t('report.send')}
           </DialogButton>
         </>
@@ -81,7 +83,7 @@ export function ReportDialog({ onClose }: ReportDialogProps) {
           onChangeText={setNote}
           placeholder={t('report.notePlaceholder')}
           placeholderTextColor="rgba(0,0,0,0.38)"
-          maxLength={500}
+          maxLength={REPORT_NOTE_MAX_LENGTH}
           className="mt-2 rounded-sm bg-white p-2 text-sm"
           style={{
             minHeight: 72,

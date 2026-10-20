@@ -20,7 +20,7 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { ROOM_BROWSE_LIMIT } from './roomConstants';
+import { ROOM_BROWSE_LIMIT } from './constants';
 import { WORD_CHAIN_ICONS } from './word-chain/wordChainAssets';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');

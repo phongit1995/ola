@@ -20,8 +20,8 @@ import { PenHistoryModal } from './PenHistoryModal';
 import { PenLeaderboardModal } from './PenLeaderboardModal';
 import { PenWinBurst } from './PenWinBurst';
 import { penAssets, penLeaderboardAssets } from './penAssets';
-import { bgImage } from './penUi';
-import { PEN_START_KEN } from './penConstants';
+import { bgImage } from './utils';
+import { PEN_START_KEN } from './constants';
 
 const DEFAULT_BET = 1000;
 import './pen.css';

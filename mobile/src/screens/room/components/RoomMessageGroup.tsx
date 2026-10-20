@@ -7,9 +7,15 @@ import {
   Pressable,
   useWindowDimensions,
   View,
+  type ViewInstance,
 } from 'react-native';
 import { colorForName, formatClockHM, formatDuration, withAlpha } from '@ola/shared/lib';
-import type { RoomReplySnapshot } from '@ola/shared/types';
+import type {
+  BubblePosition,
+  GroupedMessage,
+  MessageGroup,
+  RoomReplySnapshot,
+} from '@ola/shared/types';
 import { kulImageForText } from '@lib/kul';
 import { ReactionChips } from '@components/chat/ReactionChips';
 import { imageSizeForHeight } from '@lib/chatSmiley';
@@ -21,16 +27,8 @@ import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { useThemeColors } from '@hooks/useThemeColors';
 import type { AnchorRect } from './MessageActionSheet';
-import type {
-  BubblePosition,
-  GroupedMessage,
-  MessageGroup,
-} from '../messageGroups';
-import {
-  OTHER_CORNERS,
-  OWN_CORNERS,
-  roomBubbleTextMaxWidth,
-} from '../roomConstants';
+import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
+import { roomBubbleTextMaxWidth } from '../utils';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
 import { BUBBLE_IN_BG, BUBBLE_IN_SHADOW } from '@constants';
 
@@ -385,7 +383,7 @@ function RoomBubble({
 }) {
   const uploading = message.status === MESSAGE_STATUS.uploading;
   const failed = message.status === MESSAGE_STATUS.failed;
-  const bubbleRef = useRef<View>(null);
+  const bubbleRef = useRef<ViewInstance>(null);
 
   function handleLongPress() {
     if (uploading || failed) return;

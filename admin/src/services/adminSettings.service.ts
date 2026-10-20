@@ -1,5 +1,5 @@
 import http from '@/api/http'
-import type { ApiResponse, AppSetting } from '@/types'
+import type { ApiResponse, AppSetting, ChatBotPrompt, ChatBotType } from '@/types'
 
 export const AdminSettingsService = {
   async list(): Promise<AppSetting[]> {
@@ -16,6 +16,13 @@ export const AdminSettingsService = {
       value,
       expectedUpdatedAt: expectedUpdatedAt ?? undefined,
     })
+    return data.data
+  },
+
+  async chatBotDefaults(): Promise<Record<ChatBotType, ChatBotPrompt>> {
+    const { data } = await http.get<ApiResponse<Record<ChatBotType, ChatBotPrompt>>>(
+      '/admin/settings/chat-bot/defaults',
+    )
     return data.data
   },
 

@@ -7,11 +7,11 @@ Cờ Tỷ Phú có **4 họ icon** khác nhau về vai trò, grid và cách tô.
 | Họ | Prefix | Grid | Kiểu | Số lượng v1 | Thư mục |
 |---|---|---|---|---|---|
 | A. Icon điều khiển | `ic-` | 24 | stroke 2, `currentColor` | **30** | `assets/icons/` |
-| B. Glyph ô bàn cờ | `tg-` | 32 | fill phẳng 1 màu (+ 1 màu phụ tối đa) | **13** | `assets/tiles/` |
-| C. Quân cờ | `tk-` | 96 (raster) | fill phẳng nhiều màu, outline navy | **8** (v1 dùng 4) | `assets/tokens/` |
+| B. Glyph ô bàn cờ | `tg-` | 32 | fill phẳng 1 màu (+ 1 màu phụ tối đa) | **11** | `assets/tiles/` |
+| C. Quân cờ | `tk-` | UI v3: `tk-pawn.svg` 16 × 24 tô màu ghế; v2: 8 raster 96 | con tốt fill màu ghế + vùng sáng, outline navy | **1** SVG (+ 8 raster cho v2 chọn quân) | `assets/tokens/` |
 | D. Mặt xúc xắc | `d1`–`d6` | 44 | fill dot navy | **6** | `assets/dice/` |
 
-Tổng **57 asset icon**, trong đó 49 là SVG code-native, 8 raster. Ngoài ra: 6 reaction tái dùng từ caro, VIP icon shared, `ic-ken` tái dùng từ xiangqi (cùng grid 24).
+Tổng **55 asset icon**, trong đó 47 là SVG code-native, 8 raster. Ngoài ra: 6 reaction tái dùng từ caro, VIP icon shared, `ic-ken` tái dùng từ xiangqi (cùng grid 24).
 
 Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plus` của thirteen, cùng spec) — chỉ copy file sang `tycoon/assets/icons/` để mỗi game tự chứa asset (quy ước repo hiện tại; nếu sau này gom icon shared thì các game chuyển cùng lúc). 8 icon mới là riêng cho tỷ phú.
 
@@ -49,7 +49,7 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 19 | `ic-history` | xiangqi | 20 | lobby | Xem lịch sử |
 | 20 | `ic-leaderboard` | xiangqi | 20 | lobby | Xem bảng xếp hạng |
 | 21 | `ic-user-minus` | thirteen | 20 | S5 mời ra | Mời ra khỏi bàn |
-| 22 | `ic-plus` | thirteen | 20 | S4 ghế trống, S8 xây | Thêm / Xây nhà |
+| 22 | `ic-plus` | thirteen | 20 | S4 ghế trống, S8 nâng cấp | Thêm / Nâng cấp |
 | 23 | `ic-minus` | **mới** | 20 | S8 bán, O3 bán | Bán nhà |
 | 24 | `ic-dice` | **mới** | 20/24 | CTA gieo, S2 Vào bàn | Gieo xúc xắc |
 | 25 | `ic-deed` | **mới** | 20/24 | footer S6 (mở S8), chip số đất trong pod (16) | Xem tài sản |
@@ -117,44 +117,45 @@ type TyIconName =
 
 Union là nguồn duy nhất; không nhận tên icon từ server.
 
-## 3. Họ B — Glyph ô bàn cờ (13)
+## 3. Họ B — Glyph ô bàn cờ (11)
 
 ### 3.1 Spec
 - viewBox `0 0 32 32`, safe area 3–29. **Fill phẳng**, không stroke (ở 18 px stroke 2 trên grid 32 sẽ nhòe). Mỗi glyph 1 màu `currentColor`; tối đa 1 màu phụ bằng `fill-opacity` 0.45 cùng màu (ví dụ đất dưới nhà), không hex thứ hai.
 - Render: 18 px ở ô cạnh, 26 px ở ô góc, 48 px ở mặt sau thẻ (O2), 20 px trong sheet S7 header.
-- Silhouette phải nhận ra ở 18 px trên nền `--ty-paper-dim`; test mù màu: glyph + vị trí ô là đủ, màu chỉ bổ trợ.
+- Silhouette phải nhận ra ở 18 px trên nền `--ty-paper`; test mù màu: glyph + vị trí ô là đủ, màu chỉ bổ trợ.
+- Ngoại lệ 2 màu (theo ảnh mẫu): `tg-tax` (túi gold + `%` coral, viền navy), `tg-travel` (vali cam + máy bay sky-deep). Các glyph này không dùng `currentColor`.
 - Không chữ/số trong glyph (kể cả "?" — dùng path vẽ tay dấu hỏi như một hình, không `<text>`).
 
 ### 3.2 Inventory
 
 | # | File | Ô | Màu (01 §2.2) | Mô tả hình |
 |---|---|---|---|---|
-| 1 | `tg-go` | 0 | navy | mũi tên cong 270° đầu nhọn, nghĩa "vòng lại" |
-| 2 | `tg-chest` | 2, 17, 33 | sky | rương nắp cong, khóa tròn giữa (màu phụ 0.45 cho thân) |
-| 3 | `tg-tax` | 4, 38 | coral | tờ hóa đơn góc gập + 2 vạch ngang |
-| 4 | `tg-train` | 5 | navy | đầu tàu nhìn trước: hộp + 2 bánh + đèn tròn |
-| 5 | `tg-plane` | 15 | navy | máy bay nhìn trên, cánh thẳng |
-| 6 | `tg-ship` | 25 | navy | thân tàu + 1 ống khói + 2 sóng |
-| 7 | `tg-bus` | 35 | navy | xe buýt nhìn trước: hộp bo + 2 đèn + kính |
-| 8 | `tg-chance` | 7, 22, 36 | gold | dấu hỏi đậm vẽ bằng path (không text) |
-| 9 | `tg-electric` | 12 | jade | tia sét 2 khúc |
-| 10 | `tg-water` | 28 | jade | giọt nước + 1 highlight 0.45 |
-| 11 | `tg-jail` | 10 | navy | 3 song dọc + 2 thanh ngang (bản fill) |
-| 12 | `tg-parking` | 20 | navy | xe hơi nhìn ngang đơn giản (nóc + 2 bánh) |
-| 13 | `tg-gotojail` | 30 | coral | bàn tay chỉ / còi cảnh sát — chọn **còi**: vòm còi + đế, ít bị hiểu nhầm hơn bàn tay ở 26 px |
+| 1 | `tg-go` | 0 | jade | mũi tên thẳng chỉ lên, thân to đầu nhọn (ô Xuất phát) |
+| 2 | `tg-chest` | 2, 14, 28 | chest-deep | gió: 3 nét cong xoắn đầu (Khí vận) |
+| 3 | `tg-tax` | 12 | gold + coral | túi tiền thắt miệng, mặt túi có dấu `%` (vẽ bằng path) |
+| 4 | `tg-train` | — (không dùng) | navy | đầu tàu nhìn trước: hộp + 2 bánh + đèn tròn |
+| 5 | `tg-plane` | chip/log sân bay (trên bàn dùng tranh pixel) | navy | máy bay nhìn trên, cánh thẳng |
+| 6 | `tg-ship` | — (không dùng) | navy | thân tàu + 1 ống khói + 2 sóng |
+| 7 | `tg-bus` | — (không dùng) | navy | xe buýt nhìn trước: hộp bo + 2 đèn + kính |
+| 8 | `tg-chance` | 4, 18, 20, 29 | chance-deep | dấu hỏi đậm vẽ bằng path (không text) |
+| 9 | `tg-festival` | 16 (fallback khi tắt tranh) | gold | ngôi sao 5 cánh đặc (Lễ hội); cũng dùng làm huy hiệu trên ô đang có Lễ hội |
+| 10 | `tg-travel` | 24 | cam + sky-deep | vali cam (thân chữ nhật + quai chữ U) có máy bay nhỏ bay chéo phía trước |
+| 11 | `tg-jail` | 8 (fallback khi tắt tranh), chip pod | navy | 3 song dọc + 2 thanh ngang (bản fill) |
 
-4 bến dùng 4 glyph khác nhau (tàu, máy bay, tàu thủy, xe buýt) để người chơi nhớ vị trí; cùng màu navy để đọc là "cùng nhóm Bến".
+4 sân bay trên bàn cùng dùng một tranh pixel máy bay + tháp chỉ huy để đọc là cùng nhóm — đủ 4 là thắng ngay; `tg-plane` dùng ở chip và log. `tg-train`, `tg-ship`, `tg-bus` hiện không dùng trên bàn.
 
-### 3.3 Nhà và khách sạn trên bàn (thuộc họ B, không đếm vào 13)
+### 3.3 Cấp nhà trên bàn (cấp 1–2 nhà, cấp 3 khách sạn) (thuộc họ B, không đếm vào 11)
 - `tg-house` 6 × 6: tam giác nóc trên rect thân, fill jade. 
 - `tg-hotel` 14 × 8: rect thân + nóc thấp, fill coral.
 - Hai hình này inline trong BoardSurface (không file riêng), kích thước cố định theo ô.
 
-## 4. Họ C — Quân cờ (8, raster)
+## 4. Họ C — Quân cờ
+
+**UI v3 (ảnh mẫu):** mọi người dùng chung `tk-pawn.svg` — con tốt board game (đầu tròn, cổ thắt, đế loe) 16 × 24, fill `--ty-seat-n`, outline navy 1.5, một vùng sáng ở đầu. Danh tính đọc bằng màu ghế khớp pod. 8 quân raster dưới đây để dành cho v2 (chọn quân trong S5).
 
 - Raster webp 96 × 96 (hiển thị 18 px trong vòng 22 px — cần 96 để sắc ở 3×), nền trong suốt, fill phẳng 2–3 màu + outline navy 3 px (ở 96) để khớp hệ.
 - Silhouette phải khác nhau ở 18 px và không phụ thuộc màu (đặt trong vòng màu ghế). Không chữ.
-- v1: seat 0–3 gán cố định 4 quân đầu; v2 chọn quân trong S5.
+- v2: chọn quân trong S5; quân raster đặt trong vòng màu ghế.
 
 | # | File | Hình | Gợi ý màu chính |
 |---|---|---|---|
@@ -184,7 +185,7 @@ Pipeline sinh ở 04 §3. Nếu sinh raster chưa đạt, fallback v1 là 4 SVG 
 Theo 8 bước của xiangqi `style/04-icon-system.md` §11 (semantic → metaphor → phác 16 px → chuẩn nét → export sạch → typed manifest → QA ma trận size × surface → screenshot thật). Bổ sung cho tỷ phú:
 
 - Bước 1 ghi rõ icon thuộc **họ nào** (A/B/C/D); họ quyết định grid và fill/stroke, không chọn theo sở thích.
-- Họ B phải test trên `--ty-paper-dim` ở 18 px cạnh 3 glyph láng giềng trên bàn thật.
+- Họ B phải test trên `--ty-paper` ở 18 px cạnh 3 ô láng giềng (có tranh pixel) trên bàn thật.
 - Icon liên quan tiền phải phân biệt được với `ic-ken` ở 16 px (KEN thật ≠ tiền ván).
 
 ## 8. Checklist duyệt
@@ -193,7 +194,7 @@ Theo 8 bước của xiangqi `style/04-icon-system.md` §11 (semantic → metaph
 - [ ] Họ A: stroke 2, currentColor, không fill trừ ngoại lệ ghi rõ (`dice`, `more`).
 - [ ] Họ B: fill 1 màu + tối đa 1 `fill-opacity`, không stroke, không text.
 - [ ] Rõ ở size nhỏ nhất của nơi dùng (16 cho A, 18 cho B).
-- [ ] Không emoji, không ảnh địa danh, không ký hiệu tiền tệ.
+- [ ] Không emoji, không ảnh chụp địa danh, không ký hiệu tiền tệ.
 - [ ] Toggle pair / cặp +− cùng bounding box.
 - [ ] Có accessible name trong bảng inventory.
 - [ ] Đã chụp màn thật 390 × 844 và so với icon lân cận.

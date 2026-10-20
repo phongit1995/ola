@@ -1,4 +1,3 @@
-import { InteractionManager } from 'react-native';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { recordAppError } from './telemetry';
 
@@ -29,7 +28,7 @@ async function unlinkTemporaryVoiceFile(uri: string): Promise<void> {
 
 function scheduleTemporaryVoiceFileDeletion(uri: string): void {
   requestAnimationFrame(() => {
-    InteractionManager.runAfterInteractions(() => {
+    requestIdleCallback(() => {
       void deleteTemporaryVoiceFile(uri);
     });
   });

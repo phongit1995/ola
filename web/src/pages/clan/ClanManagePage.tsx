@@ -10,10 +10,9 @@ import {
   Spinner,
   type ListOption,
 } from '@components';
-import { toast } from '@lib';
+import { clanErrorText, clanPolicyLabel, toast } from '@lib';
 import { ClanService } from '@services';
 import type { Clan, ClanPolicy } from '@app-types';
-import { clanErrorText, clanPolicyLabel } from './clanHelpers';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 
 interface ClanManagePageProps {

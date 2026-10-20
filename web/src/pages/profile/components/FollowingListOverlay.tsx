@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader, Spinner, UserRow } from '@components';
 import { UserService } from '@services';
-import { mapFollowing } from '../mappers';
+import { mapFollowing } from '../utils';
 import type { ProfileFriend } from '../types';
 
 const FOLLOW_PAGE_SIZE = 10;

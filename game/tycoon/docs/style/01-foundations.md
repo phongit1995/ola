@@ -7,10 +7,12 @@ File này là nguồn để tạo `game/tycoon/styles/tokens.css`. Mọi giá tr
 ### 1.1 Nền và bề mặt
 
 ```css
---ty-bg-900: #1E2A3A;      /* đáy gradient màn */
---ty-bg-700: #2C3E55;      /* đỉnh gradient màn, khung bàn */
---ty-bg-500: #3C5070;      /* hover trên nền navy, action bar */
---ty-paper: #FBF3E0;       /* bàn, sheet, thẻ, modal */
+--ty-sky-top: #35C1FC;     /* nền màn UI v3: đỉnh gradient trời */
+--ty-sky-bottom: #7FE3F7;  /* nền màn UI v3: chân trời, sau đó là cảnh pixel */
+--ty-bg-900: #1E2A3A;      /* backdrop tối, toast danger */
+--ty-bg-700: #2C3E55;      /* khung bàn */
+--ty-bg-500: #3C5070;      /* hover trên nền navy */
+--ty-paper: #FCFDF0;       /* bàn, ô, sheet, thẻ, modal, pod (lấy từ ảnh mẫu) */
 --ty-paper-dim: #F0E4C8;   /* ô đặc biệt, hàng chẵn, panel phụ */
 --ty-paper-deep: #E3D3AF;  /* pressed trên paper, divider đậm */
 --ty-cream: #FFF8EA;       /* chữ trên navy */
@@ -29,7 +31,12 @@ File này là nguồn để tạo `game/tycoon/styles/tokens.css`. Mọi giá tr
 --ty-coral: #E4573D; --ty-coral-light: #F07A63; --ty-coral-deep: #B8382A;
 --ty-sky: #7EC8E3;   --ty-sky-deep: #3C9BBF;
 --ty-danger: #B3261E;
+--ty-chance: #F9863B; --ty-chance-deep: #E0560E;   /* Cơ hội: chồng thẻ, dấu ? */
+--ty-chest: #6DD9FD;  --ty-chest-deep: #0D95EE;    /* Khí vận: chồng thẻ, glyph gió */
+--ty-festival-bg: #0B1F66;                         /* nền ô Lễ hội */
 ```
+
+Mã màu Cơ hội, Khí vận, Lễ hội đo từ ảnh mẫu. Cơ hội đổi từ gold sang cam để không lẫn với CTA gold.
 
 ### 1.3 Nhóm đất (8)
 
@@ -69,8 +76,8 @@ File này là nguồn để tạo `game/tycoon/styles/tokens.css`. Mọi giá tr
 --ty-bankrupt: rgba(31,42,68,.35);
 --ty-focus: var(--ty-gold);
 --ty-disabled-opacity: .45;
---ty-deck-chance: var(--ty-gold);
---ty-deck-chest: var(--ty-sky);
+--ty-deck-chance: var(--ty-chance);
+--ty-deck-chest: var(--ty-chest);
 ```
 
 ## 2. Chữ
@@ -102,15 +109,16 @@ Số tiền: `font-variant-numeric: tabular-nums`. Tên người: cắt ellipsis
 --ty-touch: 44px;
 --ty-btn-h: 52px; --ty-btn-h-big: 64px; --ty-btn-h-small: 40px;
 --ty-pod-w: 86px; --ty-pod-h: 88px;
---ty-token: 18px; --ty-token-ring: 22px;
+--ty-pawn-w: 16px; --ty-pawn-h: 24px;   /* quân hình con tốt */
 --ty-house: 6px; --ty-hotel-w: 14px; --ty-hotel-h: 8px;
 --ty-owner-dot: 8px;
 --ty-dice: 44px;
---ty-card-w: 280px; --ty-card-h: 180px;
+--ty-card-w: 236px; --ty-card-h: 168px;       /* thẻ O2 tại 390 (vùng trong 266) */
+--ty-card-w-lg: 280px; --ty-card-h-lg: 180px; /* khi bàn ≥ 456 */
 --ty-sheet-handle-w: 36px;
 ```
 
-Bàn: `--ty-board: min(100vw - 2 * var(--ty-gutter), 480px)`; `--ty-corner: calc(var(--ty-board) * .126)`; `--ty-edge: calc((var(--ty-board) - 2 * var(--ty-corner)) / 9)`.
+Bàn: `--ty-board: min(100vw - 2 * var(--ty-gutter), 480px)`; `--ty-corner: calc(var(--ty-board) * .136)`; `--ty-edge: calc((var(--ty-board) - 2 * var(--ty-corner)) / 7)` (bàn 32 ô: mỗi cạnh 2 góc + 7 ô; khớp `CORNER = 13.6` trong `components/Board.tsx`). Tại 390: bàn 366, góc 49.8, cạnh 38.1.
 
 ## 4. Radius
 
@@ -118,7 +126,7 @@ Bàn: `--ty-board: min(100vw - 2 * var(--ty-gutter), 480px)`; `--ty-corner: calc
 --ty-r-8: 8px; --ty-r-12: 12px; --ty-r-16: 16px; --ty-r-20: 20px; --ty-r-28: 28px; --ty-r-pill: 999px;
 ```
 
-Ánh xạ: ô bàn 0 · chip/nhà/tooltip 8 · input/xúc xắc/badge 12 · thẻ/CTA/row 16 · modal 20 · sheet/result 28 · quân/avatar/dot pill.
+Ánh xạ: ô bàn 0 · chip nhóm/nhà/tooltip 8 · input/xúc xắc/badge/chồng thẻ 12 · thẻ/row/nút đứng pha jail 16 · modal 20 · sheet/result 28 · nút `.ty-btn`/chip lượt/chip vòng/pill footer/avatar/dot pill.
 
 ## 5. Viền và shadow
 
@@ -127,6 +135,8 @@ Bàn: `--ty-board: min(100vw - 2 * var(--ty-gutter), 480px)`; `--ty-corner: calc
 --ty-sh-sm: 0 1px 2px rgba(31,42,68,.25);
 --ty-sh-md: 0 3px 8px rgba(31,42,68,.30);
 --ty-sh-lg: 0 10px 28px rgba(31,42,68,.38);
+--ty-sh-raise-gold: 0 4px 0 var(--ty-gold-deep);   /* mép dưới nổi khối của nút gold */
+--ty-sh-raise: 0 3px 0 rgba(31,42,68,.35);         /* mép dưới chồng thẻ, xúc xắc */
 --ty-glow-turn: 0 0 6px 2px rgba(242,184,7,.7);
 --ty-glow-debt: 0 0 6px 2px rgba(228,87,61,.7);
 ```
@@ -156,16 +166,17 @@ Bàn: `--ty-board: min(100vw - 2 * var(--ty-gutter), 480px)`; `--ty-corner: calc
 
 | Surface | Nền | Chữ | Viền | Icon |
 |---|---|---|---|---|
-| màn (navy) | gradient bg-700→900 | cream | — | cream |
-| action bar | bg-500 20% trên màn | cream | — | cream |
+| màn (UI v3) | gradient sky-top→sky-bottom + `bg-board-pixel.webp` (mây, cây, mái nhà pixel ở viền) | navy, chỉ đặt trên surface paper | — | navy trên nút paper |
+| cụm lượt (giữa bàn, UI v3) | trong suốt trên paper vùng trong | navy | — | navy |
 | paper (sheet/modal/pod/bàn) | paper | navy | navy 2 | navy |
 | paper-dim (ô đặc biệt, row chẵn) | paper-dim | navy | line 1 | theo 02 |
-| gold (CTA) | gradient gold-light→gold | navy | gold-deep 2 | navy |
+| gold (CTA) | gradient gold-light→gold + `--ty-sh-raise-gold` | navy | gold-deep 2 | navy |
 | jade (Sẵn sàng) | jade | cream | navy 2 | cream |
 | danger | danger | cream | navy 2 | cream |
 | seat-soft (chip tên) | seat-n-soft | navy | seat-n 1.5 | navy |
-| deck chance (dải thẻ) | gold | navy | — | navy |
-| deck chest (dải thẻ) | sky | navy | — | navy |
+| deck chance (chồng thẻ, dải thẻ) | chance | navy | navy 2 | cream `?` viền navy |
+| deck chest (chồng thẻ, dải thẻ) | chest | navy | navy 2 | chest-deep |
+| ô Lễ hội | festival-bg + tranh pixel đèn lồng | cream | line 1 | gold |
 
 ## 9. Trạng thái chung
 

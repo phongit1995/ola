@@ -2,8 +2,8 @@ import { useRef } from 'react';
 import {
   TextInput,
   View,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
+  type TextInputInstance,
+  type TextInputKeyPressEvent,
 } from 'react-native';
 
 interface OtpInputProps {
@@ -21,7 +21,7 @@ function padTo(value: string, length: number): string[] {
 }
 
 export function OtpInput({ value, onChange, length = 6, disabled = false, autoFocus = false }: OtpInputProps) {
-  const inputs = useRef<Array<TextInput | null>>([]);
+  const inputs = useRef<Array<TextInputInstance | null>>([]);
 
   function focusAt(index: number) {
     inputs.current[Math.max(0, Math.min(index, length - 1))]?.focus();
@@ -47,7 +47,7 @@ export function OtpInput({ value, onChange, length = 6, disabled = false, autoFo
     if (index < length - 1) focusAt(index + 1);
   }
 
-  function handleKeyPress(index: number, event: NativeSyntheticEvent<TextInputKeyPressEventData>) {
+  function handleKeyPress(index: number, event: TextInputKeyPressEvent) {
     if (event.nativeEvent.key === 'Backspace' && !value[index] && index > 0) {
       const chars = padTo(value, length);
       chars[index - 1] = '';

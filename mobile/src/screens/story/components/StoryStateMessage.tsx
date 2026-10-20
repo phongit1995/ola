@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { STORY_STATE_ART, type StoryStateKind } from '../constants';
-import { useStoryTextSize } from '../typography';
+import { useStoryTextSize } from '../useStoryTextSize';
 
 const MUTED = 'rgba(0,0,0,0.54)';
 const ART_SIZE = 96;

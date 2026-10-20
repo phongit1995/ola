@@ -32,6 +32,7 @@ import {
   MESSAGE_STATUS,
   MESSAGE_TYPE,
   RELATIONSHIP_STATUS,
+  REPORT_TARGET_TYPE,
 } from '@ola/shared/constants';
 import type { Message, NativeUploadFile, ReactionType } from '@ola/shared/types';
 import { ChatCallButtons } from '@screens/call/ChatCallButtons';
@@ -56,7 +57,7 @@ import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 import { DIVIDER } from '@constants';
 import { useChatDetail } from './useChatDetail';
 import { usePeerCard } from './usePeerCard';
-import { chatMessageAbilities } from './chatMessageView';
+import { chatMessageAbilities } from './utils';
 import { CHAT_BG } from './constants';
 import { ChatInputBar, type ChatInputBarHandle } from './components/ChatInputBar';
 import { ChatBubble, ChatMessageRow } from './components/ChatMessageRow';
@@ -875,7 +876,11 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
       {reportTarget != null && (
         <ReportDialog
-          target={{ type: 'message', id: reportTarget.id }}
+          target={{
+            type: REPORT_TARGET_TYPE.message,
+            id: reportTarget.id,
+            contextId: reportTarget.conversationId,
+          }}
           onClose={() => setReportTarget(null)}
         />
       )}

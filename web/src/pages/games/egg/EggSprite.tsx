@@ -13,7 +13,7 @@ import {
   SMASH_TAIL_HIT,
   SMASH_TAIL_MISS,
   TICK_MS,
-} from './eggGame.constants';
+} from '@lib';
 import type { Nest } from '@ola/shared/types';
 import type { SmashOutcome, SmashStarter } from './useEggGame';
 

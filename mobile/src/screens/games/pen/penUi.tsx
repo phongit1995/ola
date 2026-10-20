@@ -1,5 +1,6 @@
 import { Image, StyleSheet, View, type ImageSourcePropType, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
+import { imageAspectRatio } from '@lib/chatSmiley';
 
 export const PEN_COLORS = {
   screenBg: '#011d42',
@@ -17,8 +18,7 @@ export const penTextShadow: TextStyle = {
 };
 
 export function assetRatio(source: ImageSourcePropType): number {
-  const resolved = Image.resolveAssetSource(source);
-  return resolved != null && resolved.height > 0 ? resolved.width / resolved.height : 1;
+  return imageAspectRatio(source);
 }
 
 export function sizeByHeight(source: ImageSourcePropType, height: number): { width: number; height: number } {

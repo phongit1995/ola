@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OlaModal } from '@components/ui/OlaModal';
-import type { ReaderPalette } from '../interface';
-import { useStoryTextSize } from '../typography';
+import type { ReaderPalette } from '../types';
+import { useStoryTextSize } from '../useStoryTextSize';
 
 const SHEET_MAX_HEIGHT = '75%';
 

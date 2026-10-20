@@ -1,4 +1,6 @@
-# 05 — Gameplay: luật v1, bàn 40 ô, thẻ bài, state, protocol
+# 05 — Gameplay: luật v1, bàn 32 ô, thẻ bài, state, protocol
+
+> **Hiện trạng (20/10/2026):** bản đang chạy là **chơi với máy, toàn bộ luật chạy ở client** (`game/tycoon/logic/engine.ts`, bot ở `logic/bot.ts`); chưa có package server. Các mục server / protocol / MOVE / steps bên dưới là thiết kế cho bản online — engine client đã viết theo đúng các pha, nước đi và step đó để port sang Go 1-1.
 
 Server (`server/internal/game/games/tycoon/`) là nguồn chân lý. Client **không mirror luật diễn tiến** (khác cờ tướng): không tự tính ô đích, tiền thuê, thẻ hay kết quả — mọi số đều từ `STATE`. Client chỉ có hai thứ: (1) bảng dữ liệu tĩnh (giá, tiền thuê, tên ô, nội dung thẻ) sinh từ Go bằng codegen `constants.gen.ts` + `board.gen.json` (pattern `thirteengen`); (2) `rules-hint.ts` — hàm `canBuild/canSell(view, seat, tile)` trả `{ok, reason}` chỉ để **enable/disable nút và hiện lý do** trong S7/S8; server validate lại y hệt, parity test so khớp cả dữ liệu tĩnh lẫn `canBuild/canSell` trên fixture.
 
@@ -6,58 +8,50 @@ Server (`server/internal/game/games/tycoon/`) là nguồn chân lý. Client **kh
 
 ## 1. Bàn cờ
 
-40 ô, index `0..39` theo chiều kim đồng hồ, ô 0 ở góc dưới-phải. Cạnh dưới đi từ phải sang trái (0→10), cạnh trái đi lên (10→20), cạnh trên sang phải (20→30), cạnh phải đi xuống (30→39).
+32 ô (lưới 9 × 9: 4 góc + 7 ô mỗi cạnh), index `0..31` **thuận chiều kim đồng hồ**, ô 0 (Xuất phát) ở **góc dưới-trái**. Từ Xuất phát đi **lên cột trái** (1→7), góc trên-trái là Nhà tù (8), sang phải theo hàng trên (9→15), góc trên-phải Lễ hội (16), xuống cột phải (17→23), góc dưới-phải Du lịch (24), rồi đi từ phải sang trái theo hàng dưới (25→31) về Xuất phát. Góc luôn ở `idx % 8 == 0`.
 
-Loại ô (`kind`): `go`, `street`, `station`, `utility`, `chance`, `chest`, `tax`, `jail`, `parking`, `gotojail`.
+Loại ô (`kind`): `go`, `street`, `station`, `chance`, `chest`, `tax`, `jail`, `festival`, `travel`. Bàn 32 ô không còn tiện ích, Bãi đỗ xe và ô Vào tù (thay bằng Thuế, Lễ hội, Du lịch, thêm 1 Cơ hội — 20/10/2026). Ghi chú nhanh từng ô: [10-board-tiles.md](./10-board-tiles.md).
 
-Đơn vị tiền: triệu (`tr`). Giá trị dùng thang chuẩn board game cổ điển ×1 để cân bằng đã được kiểm chứng; chỉ đổi tên.
+Đơn vị tiền: triệu (`tr`). 16 ô đất là **16 thành phố Việt Nam**, chia 8 nhóm × 2 thành phố, giá tăng dần theo chiều đi. Mỗi ô đất có **3 cấp nâng**: Cấp 1 Nhà → Cấp 2 Biệt thự → Cấp 3 Khách sạn. Cách tính giá và kết quả mô phỏng ở [09-economy.md](./09-economy.md).
 
-| Idx | Tên | kind | Nhóm | Giá | Tiền thuê 0/1/2/3/4 nhà/KS | Giá nhà |
-|---|---|---|---|---|---|---|
-| 0 | Xuất phát | go | — | — | nhận 200 khi đi qua/đáp | — |
-| 1 | Phố Hiến | street | Nâu | 60 | 2 / 10 / 30 / 90 / 160 / 250 | 50 |
-| 2 | Khí vận | chest | — | — | — | — |
-| 3 | Phố cổ Hội An | street | Nâu | 60 | 4 / 20 / 60 / 180 / 320 / 450 | 50 |
-| 4 | Thuế thu nhập | tax | — | — | trả 200 | — |
-| 5 | Ga Hà Nội | station | Bến | 200 | 25 / 50 / 100 / 200 (theo số bến sở hữu) | — |
-| 6 | Sa Pa | street | Xanh trời | 100 | 6 / 30 / 90 / 270 / 400 / 550 | 50 |
-| 7 | Cơ hội | chance | — | — | — | — |
-| 8 | Mộc Châu | street | Xanh trời | 100 | 6 / 30 / 90 / 270 / 400 / 550 | 50 |
-| 9 | Ninh Bình | street | Xanh trời | 120 | 8 / 40 / 100 / 300 / 450 / 600 | 50 |
-| 10 | Nhà tù / Thăm tù | jail | — | — | — | — |
-| 11 | Cần Thơ | street | Hồng | 140 | 10 / 50 / 150 / 450 / 625 / 750 | 100 |
-| 12 | Nhà máy điện | utility | Tiện ích | 150 | 4× / 10× tổng xúc xắc | — |
-| 13 | Phú Quốc | street | Hồng | 140 | 10 / 50 / 150 / 450 / 625 / 750 | 100 |
-| 14 | Hạ Long | street | Hồng | 160 | 12 / 60 / 180 / 500 / 700 / 900 | 100 |
-| 15 | Sân bay Tân Sơn Nhất | station | Bến | 200 | 25 / 50 / 100 / 200 | — |
-| 16 | Hải Phòng | street | Cam | 180 | 14 / 70 / 200 / 550 / 750 / 950 | 100 |
-| 17 | Khí vận | chest | — | — | — | — |
-| 18 | Huế | street | Cam | 180 | 14 / 70 / 200 / 550 / 750 / 950 | 100 |
-| 19 | Nha Trang | street | Cam | 200 | 16 / 80 / 220 / 600 / 800 / 1000 | 100 |
-| 20 | Bãi đỗ xe | parking | — | — | không có gì xảy ra | — |
-| 21 | Đà Lạt | street | Đỏ | 220 | 18 / 90 / 250 / 700 / 875 / 1050 | 150 |
-| 22 | Cơ hội | chance | — | — | — | — |
-| 23 | Đà Nẵng | street | Đỏ | 220 | 18 / 90 / 250 / 700 / 875 / 1050 | 150 |
-| 24 | Quy Nhơn | street | Đỏ | 240 | 20 / 100 / 300 / 750 / 925 / 1100 | 150 |
-| 25 | Cảng Hải Phòng | station | Bến | 200 | 25 / 50 / 100 / 200 | — |
-| 26 | Biên Hòa | street | Vàng | 260 | 22 / 110 / 330 / 800 / 975 / 1150 | 150 |
-| 27 | Thủ Dầu Một | street | Vàng | 260 | 22 / 110 / 330 / 800 / 975 / 1150 | 150 |
-| 28 | Nhà máy nước | utility | Tiện ích | 150 | 4× / 10× tổng xúc xắc | — |
-| 29 | Vũng Tàu | street | Vàng | 280 | 24 / 120 / 360 / 850 / 1025 / 1200 | 150 |
-| 30 | Vào tù | gotojail | — | — | đi thẳng ô 10 | — |
-| 31 | Đồng Khởi | street | Xanh lá | 300 | 26 / 130 / 390 / 900 / 1100 / 1275 | 200 |
-| 32 | Nguyễn Huệ | street | Xanh lá | 300 | 26 / 130 / 390 / 900 / 1100 / 1275 | 200 |
-| 33 | Khí vận | chest | — | — | — | — |
-| 34 | Thủ Thiêm | street | Xanh lá | 320 | 28 / 150 / 450 / 1000 / 1200 / 1400 | 200 |
-| 35 | Bến xe Miền Đông | station | Bến | 200 | 25 / 50 / 100 / 200 | — |
-| 36 | Cơ hội | chance | — | — | — | — |
-| 37 | Hồ Gươm | street | Xanh đậm | 350 | 35 / 175 / 500 / 1100 / 1300 / 1500 | 200 |
-| 38 | Thuế xa xỉ | tax | — | — | trả 100 | — |
-| 39 | Hồ Tây | street | Xanh đậm | 400 | 50 / 200 / 600 / 1400 / 1700 / 2000 | 200 |
+| Idx | Vị trí | Tên | kind | Nhóm | Giá | Thuê đất trống / C1 / C2 / C3 | Giá mỗi cấp |
+|---|---|---|---|---|---|---|---|
+| 0 | góc dưới-trái | Xuất phát | go | — | — | nhận 160 khi đi qua/đáp | — |
+| 1 | cột trái ↑ | Thanh Hóa | street | Nâu | 60 | 6 / 40 / 145 / 320 | 50 |
+| 2 | cột trái ↑ | Khí vận | chest | — | — | — | — |
+| 3 | cột trái ↑ | Vinh | street | Nâu | 80 | 8 / 45 / 160 / 340 | 50 |
+| 4 | cột trái ↑ | Cơ hội | chance | — | — | — | — |
+| 5 | cột trái ↑ | Buôn Ma Thuột | street | Xanh trời | 100 | 10 / 50 / 180 / 380 | 50 |
+| 6 | cột trái ↑ | Sân bay | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
+| 7 | cột trái ↑ | Đà Lạt | street | Xanh trời | 120 | 12 / 60 / 200 / 400 | 50 |
+| 8 | góc trên-trái | Nhà tù / Thăm tù | jail | — | — | — | — |
+| 9 | hàng trên → | Cần Thơ | street | Hồng | 140 | 14 / 85 / 310 / 660 | 100 |
+| 10 | hàng trên → | Sân bay | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
+| 11 | hàng trên → | Phú Quốc | street | Hồng | 160 | 16 / 90 / 320 / 690 | 100 |
+| 12 | hàng trên → | Thuế thu nhập | tax | — | — | đóng 10% tổng tài sản | — |
+| 13 | hàng trên → | Quy Nhơn | street | Cam | 180 | 18 / 100 / 340 / 720 | 100 |
+| 14 | hàng trên → | Khí vận | chest | — | — | — | — |
+| 15 | hàng trên → | Nha Trang | street | Cam | 200 | 20 / 105 / 360 / 750 | 100 |
+| 16 | góc trên-phải | Lễ hội | festival | — | — | chọn 1 thành phố của mình, thuê ô đó ×2 | — |
+| 17 | cột phải ↓ | Hội An | street | Đỏ | 220 | 22 / 130 / 470 / 1.000 | 150 |
+| 18 | cột phải ↓ | Cơ hội | chance | — | — | — | — |
+| 19 | cột phải ↓ | Huế | street | Đỏ | 240 | 24 / 135 / 490 / 1.040 | 150 |
+| 20 | cột phải ↓ | Cơ hội | chance | — | — | — | — |
+| 21 | cột phải ↓ | Hạ Long | street | Vàng | 260 | 26 / 145 / 500 / 1.060 | 150 |
+| 22 | cột phải ↓ | Sân bay | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
+| 23 | cột phải ↓ | Hải Phòng | street | Vàng | 280 | 28 / 150 / 520 / 1.100 | 150 |
+| 24 | góc dưới-phải | Du lịch | travel | — | — | lượt sau bay tới ô bất kỳ | — |
+| 25 | hàng dưới ← | Vũng Tàu | street | Xanh lá | 300 | 30 / 175 / 630 / 1.350 | 200 |
+| 26 | hàng dưới ← | Sân bay | station | Sân bay | 200 | 25 / 50 / 100 / 200 (theo số sân bay sở hữu) | — |
+| 27 | hàng dưới ← | Đà Nẵng | street | Xanh lá | 320 | 32 / 180 / 650 / 1.380 | 200 |
+| 28 | hàng dưới ← | Khí vận | chest | — | — | — | — |
+| 29 | hàng dưới ← | Cơ hội | chance | — | — | — | — |
+| 30 | hàng dưới ← | Hà Nội | street | Xanh đậm | 350 | 35 / 190 / 680 / 1.420 | 200 |
+| 31 | hàng dưới ← | TP. Hồ Chí Minh | street | Xanh đậm | 400 | 40 / 210 / 720 / 1.500 | 200 |
 
-Hằng số: `START_CASH 1500`, `GO_SALARY 200`, `JAIL_FINE 50`, `MAX_HOUSES 4` (+1 = khách sạn), `HOUSE_SELL_RATIO 0.5`, `MAX_ROUNDS 20`, `TURN_SECONDS 30`, `MAX_DOUBLES 3`, `JAIL_MAX_TURNS 3`.
+Hằng số: `BOARD_SIZE 32`, `START_CASH 1500`, `GO_SALARY 160`, `JAIL_FINE 50`, `JAIL_TILE 8`, `MAX_HOUSES 3` (cấp tối đa), `HOUSE_SELL_RATIO 0.5`, `MAX_ROUNDS 30`, `TIME_LIMIT_MS 25 phút`, `TAKEOVER_MULTIPLIER 2`, `WIN_GROUPS 3`, `FESTIVAL_MULTIPLIER 2`, `TAX_RATE 0.1`, `TURN_SECONDS 30`, `MAX_DOUBLES 3`, `JAIL_MAX_TURNS 3`.
 
-Tiền thuê đất **chưa xây** khi sở hữu **trọn nhóm** = ×2. Bến: tiền thuê theo số bến người chủ sở hữu (1→25, 2→50, 3→100, 4→200). Tiện ích: 1 tiện ích → 4 × tổng xúc xắc, cả 2 → 10 ×.
+Tiền thuê đất **chưa nâng cấp** khi sở hữu **trọn nhóm** (cả 2 thành phố) = ×2. Sân bay: tiền thuê theo số sân bay người chủ sở hữu (1→25, 2→50, 3→100, 4→200). Thành phố đang có Lễ hội: thuê (sau khi đã tính ×2 trọn nhóm hoặc theo cấp) ×2 nữa.
 
 ## 2. Thẻ bài
 
@@ -67,16 +61,16 @@ Hai bộ, mỗi bộ 12 thẻ (rút gọn từ 16 để ván ngắn và không c
 
 | id | Nội dung (live text) | Hiệu ứng |
 |---|---|---|
-| ch01 | Tiến đến Xuất phát. Nhận 200 tr. | `moveTo 0`, salary |
-| ch02 | Đi đến Hồ Tây. Qua Xuất phát nhận 200 tr. | `moveTo 39` |
-| ch03 | Đi đến Đà Lạt. Qua Xuất phát nhận 200 tr. | `moveTo 21` |
-| ch04 | Đi đến Cần Thơ. Qua Xuất phát nhận 200 tr. | `moveTo 11` |
-| ch05 | Đi đến bến gần nhất. Nếu có chủ, trả gấp đôi tiền thuê. | `moveToNearest station`, rentMul 2 |
-| ch06 | Đi đến tiện ích gần nhất. Nếu có chủ, trả 10 × xúc xắc. | `moveToNearest utility`, rent 10× |
+| ch01 | Tiến đến Xuất phát. Nhận 160 tr. | `moveTo 0`, salary |
+| ch02 | Đi đến TP. Hồ Chí Minh. Qua Xuất phát nhận 160 tr. | `moveTo 31` |
+| ch03 | Đi đến Huế. Qua Xuất phát nhận 160 tr. | `moveTo 19` |
+| ch04 | Đi đến Cần Thơ. Qua Xuất phát nhận 160 tr. | `moveTo 9` |
+| ch05 | Bay đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê. | `moveToNearest station`, rentMul 2 |
+| ch06 | Đi dự Lễ hội. Qua Xuất phát nhận 160 tr. | `moveTo 16` (đáp Lễ hội như bình thường) |
 | ch07 | Ngân hàng trả cổ tức 50 tr. | `cash +50` |
 | ch08 | Thẻ ra tù miễn phí. Giữ đến khi dùng. | `keepJailCard` |
 | ch09 | Vào tù. Đi thẳng, không qua Xuất phát. | `goToJail` |
-| ch10 | Sửa chữa toàn bộ nhà: 25 tr/nhà, 100 tr/khách sạn. | `repair 25/100` |
+| ch10 | Bảo trì nhà cửa: 25 tr cho mỗi cấp nhà bạn đang có. | `repair 25` × tổng cấp |
 | ch11 | Phạt vượt tốc độ 15 tr. | `cash −15` |
 | ch12 | Bạn trúng giải xổ số 150 tr. | `cash +150` |
 
@@ -84,7 +78,7 @@ Hai bộ, mỗi bộ 12 thẻ (rút gọn từ 16 để ván ngắn và không c
 
 | id | Nội dung | Hiệu ứng |
 |---|---|---|
-| cm01 | Tiến đến Xuất phát. Nhận 200 tr. | `moveTo 0` |
+| cm01 | Tiến đến Xuất phát. Nhận 160 tr. | `moveTo 0` |
 | cm02 | Ngân hàng tính nhầm, bạn nhận 200 tr. | `cash +200` |
 | cm03 | Viện phí 100 tr. | `cash −100` |
 | cm04 | Hoàn thuế 20 tr. | `cash +20` |
@@ -95,7 +89,7 @@ Hai bộ, mỗi bộ 12 thẻ (rút gọn từ 16 để ván ngắn và không c
 | cm09 | Học phí 50 tr. | `cash −50` |
 | cm10 | Nhận thừa kế 100 tr. | `cash +100` |
 | cm11 | Bán hàng được 50 tr. | `cash +50` |
-| cm12 | Sửa đường: 40 tr/nhà, 115 tr/khách sạn. | `repair 40/115` |
+| cm12 | Sửa đường: 40 tr cho mỗi cấp nhà bạn đang có. | `repair 40` × tổng cấp |
 
 `collectEach`: trừ từng người chơi còn hoạt động; ai thiếu tiền thì vào pha `debt` với chủ nợ là người rút thẻ (xử lý lần lượt theo seat, xem §4.5).
 
@@ -106,13 +100,14 @@ Lượt là một chuỗi pha; engine giữ lượt (`KeepTurn` = true) cho đ�
 ```
 roll ──(gieo)──► moving ──(server tính ô đích)──► landed
 landed:
-  street/station/utility chưa chủ  → decide   (BUY | DECLINE)
-  có chủ (không phải mình)         → pay tự động → manage   (hoặc debt nếu thiếu)
-  của mình / parking / jail-visit  → manage
-  go                               → +200 → manage
-  tax                              → trả → manage (hoặc debt)
+  street/station chưa chủ          → decide   (BUY | DECLINE)
+  có chủ (không phải mình)         → pay tự động → takeover nếu là thành phố mua lại được (TAKEOVER | DECLINE), không thì manage (hoặc debt nếu thiếu)
+  của mình / jail-visit            → manage
+  festival                         → festival (FESTIVAL {tile} | DECLINE) nếu có ít nhất 1 thành phố, không thì manage
+  travel                           → travel = true, xoá đôi → manage; lượt sau bắt đầu ở pha travel (TRAVEL {tile} | ROLL)
+  go                               → +160 → manage
+  tax                              → trả 10% tổng tài sản → manage (hoặc debt)
   chance/chest                     → card (hiện thẻ, áp hiệu ứng; nếu moveTo → quay lại landed ở ô mới)
-  gotojail                         → vào tù → end (mất quyền gieo lại kể cả đôi)
 manage: BUILD / SELL_HOUSE bất kỳ số lần → END_TURN
 END_TURN: nếu lượt vừa rồi gieo đôi và chưa vào tù → quay lại roll (lần 2, 3); đôi lần 3 → vào tù, hết lượt.
 ```
@@ -125,24 +120,39 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 
 ### 4.1 Gieo và di chuyển
 - Hai xúc xắc 1–6 từ rng server. Đôi → sau END_TURN được gieo lần nữa; đôi lần 3 liên tiếp trong cùng lượt → vào tù ngay (không đi).
-- Đi `sum` ô theo chiều tăng index, mod 40. Đi qua hoặc đáp ô 0 → +200 (không cộng khi bị đưa vào tù bằng thẻ/ô 30).
+- Đi `sum` ô theo chiều tăng index (thuận kim đồng hồ), mod 32. Đi qua hoặc đáp ô 0 → +160 (không cộng khi bị đưa vào tù bằng thẻ). Vào tù chỉ còn qua thẻ Vào tù (ch09, cm06) và gieo đôi 3 lần.
 
 ### 4.2 Mua đất
-- Đáp ô `street/station/utility` chưa chủ: `BUY` nếu `cash ≥ price`; `DECLINE` thì ô vẫn vô chủ (v1 không đấu giá). Hết giờ = DECLINE.
+- Đáp ô `street/station` chưa chủ: `BUY` nếu `cash ≥ price`; `DECLINE` thì ô vẫn vô chủ (v1 không đấu giá). Hết giờ = DECLINE.
 
 ### 4.3 Tiền thuê
 - Đáp ô có chủ khác, chủ không phá sản: trả tự động theo bảng §1. Chủ đang **trong tù vẫn thu tiền**.
 - Người đáp vào ô của mình: không trả.
 
-### 4.4 Xây và bán
-- `BUILD {tile}`: phải sở hữu **trọn nhóm**, ô là `street`, tiền ≥ giá nhà, và **xây đều**: số nhà ô này sau khi xây ≤ min(nhà các ô cùng nhóm) + 1. Nhà thứ 5 = khách sạn (hiện `houses = 5`). Chỉ xây trong pha `manage` của lượt mình. Không giới hạn số nhà ngân hàng (bỏ luật 32 nhà/12 khách sạn cho đơn giản).
-- `SELL_HOUSE {tile}`: bán 1 nhà (khách sạn → 4 nhà) nhận `houseCost × 0.5`, phải **bán đều** (ô này sau khi bán ≥ max(nhóm) − 1). Được bán trong pha `manage` và pha `debt` (kể cả ngoài lượt khi bị đòi nợ bởi `collectEach`).
+### 4.3b Mua lại đất
+- Trả thuê xong (không rơi vào nợ) ở ô **thành phố** (`street`) của người chơi khác còn hoạt động, ô **chưa lên Khách sạn** (cấp < 3) và `cash ≥ giá mua lại` → pha `takeover`.
+- Giá mua lại = `TAKEOVER_MULTIPLIER × (giá đất + cấp × houseCost)` = ×2. Tiền trả **cho chủ cũ**; ô đổi chủ, giữ nguyên cấp nhà.
+- `TAKEOVER` mua lại, `DECLINE` bỏ qua; hết giờ = `DECLINE`. Sân bay và ô Khách sạn không mua lại được. Sau đó sang `manage`.
+- Bot mua lại khi việc đó giúp nó gom trọn nhóm (còn ≥ 120 tr sau khi trả), hoặc phá nhóm trọn của chủ cũ (còn ≥ 360 tr).
+
+### 4.3c Thắng ngay
+- Sau mỗi lần đổi chủ đất (`BUY`, `TAKEOVER`, nhận đất từ người phá sản) engine kiểm người vừa nhận đất: sở hữu **trọn 3 nhóm màu** (`endReason = groups`) hoặc **toàn bộ thành phố trên một cạnh bàn** (`line`; mỗi cạnh có 4 thành phố = 2 nhóm) hoặc **cả 4 sân bay** (`airports`) → thắng ngay, ván kết thúc. Bot mua ô để chặn (không cần giữ tiền dự phòng) nếu đối thủ có ô đó là thắng ngay, và mua lại ô nếu việc đó giúp chính nó thắng ngay.
+
+### 4.3d Ô đặc biệt: Lễ hội, Du lịch, Thuế
+- **Lễ hội (ô 16):** đáp vào mà có ít nhất 1 thành phố → pha `festival`. `FESTIVAL {tile}` chọn một thành phố của mình (`not_street` / `not_owner` nếu sai) → `state.festival = tile`, step `festival`. Cả bàn chỉ có **một** Lễ hội: người sau tổ chức thì Lễ hội chuyển sang ô mới. Thuê ô đang có Lễ hội ×`FESTIVAL_MULTIPLIER` (×2). Lễ hội đi theo ô khi ô đổi chủ (mua lại, nhận từ người phá sản); ô về ngân hàng thì Lễ hội mất. `DECLINE` bỏ qua; hết giờ = tự chọn thành phố có tiền thuê cao nhất (`festivalPick`). Bot chọn như hết giờ, bỏ qua nếu Lễ hội đã ở đúng ô đó.
+- **Du lịch (ô 24):** đáp vào → `player.travel = true`, xoá đôi (hết lượt), step `travel`. Lượt sau bắt đầu ở pha `travel` thay cho `roll`: `TRAVEL {tile}` bay tới ô bất kỳ trừ ô đang đứng (`invalid_tile`), đi qua Xuất phát vẫn nhận 160, rồi xử lý ô đáp như thường (mua, trả thuê, mua lại, thẻ, Lễ hội…). `ROLL` = không bay, gieo bình thường. Hết giờ = `ROLL`. Bị đưa vào tù trước lượt đó thì mất quyền Du lịch. Bot chấm điểm từng ô: ô giúp nó thắng ngay > ô chặn đối thủ thắng ngay > ô gom trọn nhóm > ô trống mua được > Lễ hội > ô an toàn; tránh ô có chủ (điểm = −tiền thuê) và ô Thuế.
+- **Thuế (ô 12):** trả ngân hàng `round(10% × tổng tài sản)` (tiền mặt + giá đất + tiền nâng cấp, §4.7). Thiếu tiền → `debt` với chủ nợ ngân hàng.
+
+### 4.4 Nâng cấp và hạ cấp
+- Mỗi ô đất có cấp `houses` 0–3: 0 = đất trống, 1 = Nhà, 2 = Biệt thự, 3 = Khách sạn. Tên cấp: `LEVEL_NAMES` trong `constants.ts`.
+- `BUILD {tile}` = nâng 1 cấp: phải sở hữu **trọn nhóm** (cả 2 thành phố), ô là `street`, tiền ≥ giá mỗi cấp (`houseCost`), chưa ở cấp 3, và **nâng đều**: cấp ô này sau khi nâng ≤ min(cấp các ô cùng nhóm) + 1. Chỉ nâng trong pha `manage` của lượt mình. Không giới hạn số nhà của ngân hàng.
+- `SELL_HOUSE {tile}` = hạ 1 cấp, nhận `houseCost × 0.5`, phải **hạ đều** (ô này sau khi hạ ≥ max(nhóm) − 1). Được hạ trong pha `manage` và pha `debt` (kể cả ngoài lượt khi bị đòi nợ bởi `collectEach`).
 
 ### 4.5 Nợ và phá sản
 - Khi phải trả `amount` mà `cash < amount`: state vào `phase: debt {creditor: seat|-1, amount}`. Người nợ có 30 s để `SELL_HOUSE` nhiều lần rồi `PAY_DEBT`, hoặc `DECLARE_BANKRUPT`.
 - Hết giờ: server tự bán nhà theo thứ tự giá trị giảm dần đến khi đủ; vẫn không đủ → phá sản.
 - Nếu `cash + 0.5 × tổng nhà < amount` ngay từ đầu → phá sản ngay (không chờ).
-- Phá sản: `bankrupt[seat] = true`, `bankruptOrder` nối thêm seat. Tiền mặt còn lại + toàn bộ đất (nhà bị bán hết trước, tiền bán gộp vào) chuyển cho **chủ nợ** nếu là người chơi; nếu chủ nợ là ngân hàng (thuế, thẻ, sửa chữa) thì đất về **vô chủ** (không đấu giá). Quân rời bàn.
+- Phá sản: `bankrupt[seat] = true`, `bankruptOrder` nối thêm seat. Tiền mặt còn lại + toàn bộ đất (nhà bị bán hết trước, tiền bán gộp vào) chuyển cho **chủ nợ** nếu là người chơi; nếu chủ nợ là ngân hàng (Thuế, thẻ, sửa chữa) thì đất về **vô chủ** (không đấu giá). Quân rời bàn.
 - Người phá sản không còn lượt; nếu đang là lượt của họ, chuyển lượt luôn.
 
 ### 4.6 Người chơi rời ván / hết giờ liên tiếp
@@ -152,16 +162,18 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 ### 4.7 Kết thúc ván
 | Tình huống | Kết quả | `MATCH_OVER.reason` | `rankings` |
 |---|---|---|---|
-| Chỉ còn 1 người chưa phá sản | người đó thắng | `win` | người thắng, rồi `bankruptOrder` đảo ngược |
-| Hết `MAX_ROUNDS` (kiểm tra ở END_TURN của người cuối cùng trong vòng) | xếp theo **tổng tài sản** giảm dần | `win` | tài sản giảm dần, hòa tài sản → ít phá sản hơn, rồi seat thấp hơn; người phá sản xếp cuối theo thứ tự phá sản đảo |
+| Thắng ngay (§4.3c) | người đó thắng (`winner`, `endReason = groups \| line \| airports`) | `win` | người thắng, rồi người còn lại theo tài sản, rồi `bankruptOrder` đảo ngược |
+| Chỉ còn 1 người chưa phá sản (`last`) | người đó thắng | `win` | người thắng, rồi `bankruptOrder` đảo ngược |
+| Hết `MAX_ROUNDS` = 30 vòng (`rounds`, kiểm tra ở END_TURN của người cuối cùng trong vòng) | xếp theo **tổng tài sản** giảm dần | `win` | tài sản giảm dần, hòa tài sản → ít phá sản hơn, rồi seat thấp hơn; người phá sản xếp cuối theo thứ tự phá sản đảo |
+| Hết 25 phút tính từ đầu ván (`time`) | như hết vòng | `win` | như hết vòng. Kết thúc ở **đầu lượt kế tiếp** sau khi hết giờ (không cắt giữa lượt). Bản chơi với máy đếm giờ ở client (`endByTime`); bản online server đếm |
 | 2 người, 1 người quit/forfeit | người còn lại thắng | `forfeit`/`timeout`/`disconnect` | engine quyết |
 
-`Tổng tài sản = cash + Σ price(đất sở hữu) + Σ houses × houseCost`. Khách sạn tính 5 × houseCost.
+`Tổng tài sản = cash + Σ price(đất sở hữu) + Σ cấp × houseCost`. Khách sạn (cấp 3) tính 3 × houseCost.
 
 `winnerIdx` trả về trong `Result` = `rankings[0]`. Không có hòa.
 
 ### 4.8 Vòng
-`round` tăng khi END_TURN của người chơi có seat lớn nhất còn hoạt động (sau khi engine chuyển lượt về seat nhỏ nhất). Vòng bắt đầu từ 1. Client hiện `Vòng r/20`; từ vòng 18 chip đổi coral; vòng 20 hiện banner "Vòng cuối!".
+`round` tăng khi END_TURN của người chơi có seat lớn nhất còn hoạt động (sau khi engine chuyển lượt về seat nhỏ nhất). Vòng bắt đầu từ 1. Client hiện `Vòng r/30 · mm:ss` (giờ còn lại của 25 phút, đổi đỏ khi còn ≤ 3 phút); từ vòng 28 chip đổi coral; vòng 30 hiện banner "Vòng cuối!".
 
 ## 5. State server (JSON — snapshot Redis, full state không bao giờ gửi client)
 
@@ -169,14 +181,15 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 {
   "players": [
     { "cash": 1500, "pos": 0, "inJail": false, "jailTurns": 0, "jailCards": 0,
-      "bankrupt": false, "doubles": 0, "quit": false }
+      "bankrupt": false, "doubles": 0, "quit": false, "travel": false }
   ],                                   // dài = playerCount (2..4)
-  "tiles": [ { "owner": -1, "houses": 0 } ],   // 40 phần tử; owner = seat | -1
+  "tiles": [ { "owner": -1, "houses": 0 } ],   // 32 phần tử; owner = seat | -1; houses = cấp 0–3
   "turn": 0,                           // seat tới lượt
-  "phase": "roll",                     // roll|jail|decide|manage|debt|card
+  "phase": "roll",                     // roll|jail|decide|takeover|festival|travel|manage|debt|card
   "dice": [0, 0],                      // lần gieo gần nhất của lượt
   "debt": null,                        // {creditor, amount, by} khi phase=debt
   "card": null,                        // {deck, id} khi phase=card (chờ ACK)
+  "festival": -1,                      // idx thành phố đang có Lễ hội, -1 = chưa có
   "chanceDeck": [3, 7, 0, ...],        // id còn lại theo thứ tự rút — ẨN
   "chestDeck": [...],                  // ẨN
   "rng": "<uint64 splitmix64>",        // ẨN
@@ -187,7 +200,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 }
 ```
 
-`StateVersion()` = 1. `DecodeState` phải reject: số người ngoài 2..4, `tiles` ≠ 40, `owner` ngoài −1..n−1, `houses` > 5, `phase` lạ, state đã kết thúc.
+`StateVersion()` = 1. `DecodeState` phải reject: số người ngoài 2..4, `tiles` ≠ 32, `owner` ngoài −1..n−1, `houses` > 3, `phase` lạ, state đã kết thúc.
 
 ### 5.1 View gửi client (`ViewFor`)
 
@@ -199,9 +212,12 @@ Giống state nhưng **bỏ** `rng`, `chanceDeck`, `chestDeck`; thêm `you`, `ch
 
 | type | Pha hợp lệ | tile | Ghi chú |
 |---|---|---|---|
-| `ROLL` | roll | — | |
+| `ROLL` | roll, travel | — | ở pha travel = bỏ quyền bay, gieo bình thường |
 | `JAIL_PAY` / `JAIL_CARD` / `JAIL_ROLL` | jail | — | CARD cần `jailCards > 0` |
 | `BUY` / `DECLINE` | decide | — | |
+| `TAKEOVER` / `DECLINE` | takeover | — | luật §4.3b; lỗi `tycoon:takeover_hotel` / `tycoon:not_takeover` / `tycoon:no_cash` |
+| `FESTIVAL` / `DECLINE` | festival | idx (FESTIVAL) | luật §4.3d; lỗi `tycoon:not_street` / `tycoon:not_owner` |
+| `TRAVEL` | travel | idx | luật §4.3d; lỗi `tycoon:invalid_tile` nếu là ô đang đứng |
 | `CARD_ACK` | card | — | đóng thẻ; hết 6 s client tự gửi |
 | `BUILD` | manage | idx | luật §4.4 |
 | `SELL_HOUSE` | manage, debt | idx | |
@@ -225,7 +241,7 @@ Thẻ "Sinh nhật" có thể khiến người **không tới lượt** thiếu 
 | `TurnKeeper` | `KeepTurn` = `turn` chưa đổi sau Apply | giữ lượt cả chuỗi pha; đôi → giữ tiếp |
 | `TurnOrder` | `NextTurn` = `state.turn` (game tự tính seat kế tiếp, bỏ qua phá sản/quit; dùng cho §6.1) | như thirteen |
 | `TurnTimer` | 30 s | mỗi MOVE hợp lệ cấp lại 30 s vì engine reset deadline sau Apply |
-| `TimeoutMover` | `MoveOnTimeout`: roll→`ROLL`, jail→`JAIL_ROLL` (lượt 3: `JAIL_PAY`), decide→`DECLINE`, card→`CARD_ACK`, manage→`END_TURN`, debt→tự bán nhà rồi `PAY_DEBT` hoặc `DECLARE_BANKRUPT` | engine vẫn đếm 3 lần liên tiếp → quit |
+| `TimeoutMover` | `MoveOnTimeout`: roll→`ROLL`, jail→`JAIL_ROLL` (lượt 3: `JAIL_PAY`), decide→`DECLINE`, takeover→`DECLINE`, festival→`FESTIVAL` ô thuê cao nhất, travel→`ROLL`, card→`CARD_ACK`, manage→`END_TURN`, debt→tự hạ cấp nhà rồi `PAY_DEBT` hoặc `DECLARE_BANKRUPT` | engine vẫn đếm 3 lần liên tiếp → quit |
 | `TimeoutSkipper` | **không implement** (skip lượt làm hỏng chuỗi pha) | |
 | `TurnSkipHandler` | không cần | |
 | `StateViewer` | `ViewFor` §5.1 | kéo theo chặn spectate (§9) |
@@ -242,14 +258,17 @@ Server nối `steps` cho mỗi Apply (kể cả `MoveOnTimeout`); client replay 
 | kind | fields | Client render |
 |---|---|---|
 | `roll` | by, dice[2], double | O1 lăn xúc xắc, badge Đôi |
-| `move` | by, from, to, passedGo | quân nhảy từng ô; passedGo → nháy ô 0 + float +200 |
+| `move` | by, from, to, passedGo | quân nhảy từng ô; passedGo → nháy ô 0 + float +160 |
 | `teleport` | by, from, to | quân bay cung (thẻ moveTo, vào tù) |
 | `land` | by, tile | fill `--ty-landing`, mở sheet nếu decide |
-| `pay` | from (seat\|-1), to (seat\|-1), amount, reason: rent\|tax\|card\|fine\|repair\|birthday\|buy\|build\|sell | đếm số pod, chip bay giữa pod; −1 = ngân hàng (bay từ/đến giữa bàn) |
+| `pay` | from (seat\|-1), to (seat\|-1), amount, reason: rent\|tax\|card\|fine\|repair\|birthday\|buy\|build\|sell\|salary\|takeover | đếm số pod, chip bay giữa pod; −1 = ngân hàng (bay từ/đến giữa bàn) |
 | `buy` | by, tile | chấm chủ sở hữu pop |
+| `takeover` | by, tile, target (chủ cũ), houses | chấm chủ đổi màu, log "X mua lại ô của Y" |
+| `festival` | by, tile | viền vàng + huy hiệu ngôi sao trên ô, log "X tổ chức Lễ hội ở …" |
+| `travel` | by, tile (24) | log "X được đi Du lịch" |
 | `card` | by, deck, id | O2 lật thẻ (text từ bảng gen) |
-| `jail-in` / `jail-out` | by, how: dice3\|card\|tile \| pay\|card\|double\|forced | quân vào/ra ô 10, badge song sắt trên pod |
-| `build` / `sell` | by, tile, houses (sau) | chấm nhà pop/fade |
+| `jail-in` / `jail-out` | by, how: dice3\|card \| pay\|card\|double\|forced | quân vào/ra ô 8, badge song sắt trên pod |
+| `build` / `sell` | by, tile, houses (cấp sau khi nâng/hạ) | chấm nhà pop/fade |
 | `debt` | by, creditor, amount | O3 cho con nợ; pod pulse coral cho người khác |
 | `bankrupt` | by, creditor, tilesTransferred[] | pod mờ, chấm chủ đổi màu/mất |
 | `round` | round | chip vòng đổi số; banner vòng cuối |
@@ -288,7 +307,7 @@ Bất biến:
 
 ## 11. Kiểm thử
 
-- Go table-driven: gieo đôi ×3 vào tù, qua Xuất phát (kể cả đáp đúng ô 0, teleport không cộng), tiền thuê từng loại (nhóm trọn ×2, bến 1–4, tiện ích 4×/10×), xây/bán đều, nợ → bán tự động → phá sản, chuyển đất cho chủ nợ/ngân hàng, `collectEach` với con nợ ngoài lượt (NextTurn tạm), MAX_ROUNDS xếp hạng tài sản + tie-break, DecodeState reject, `MoveOnTimeout` mọi pha, `OnPlayerQuit` giữa pha debt.
+- Go table-driven: gieo đôi ×3 vào tù, qua Xuất phát (kể cả đáp đúng ô 0; thẻ di chuyển và Du lịch bay qua ô 0 cũng cộng, bị đưa vào tù thì không), tiền thuê từng loại (nhóm trọn ×2, sân bay 1–4, Lễ hội ×2), Thuế 10% tài sản, Du lịch (bay qua Xuất phát nhận lương, ROLL bỏ quyền bay, vào tù mất quyền), xây/bán đều, nợ → bán tự động → phá sản, chuyển đất cho chủ nợ/ngân hàng, `collectEach` với con nợ ngoài lượt (NextTurn tạm), MAX_ROUNDS xếp hạng tài sản + tie-break, DecodeState reject, `MoveOnTimeout` mọi pha, `OnPlayerQuit` giữa pha debt.
 - Codegen: `go generate ./internal/game/games/tycoon` → `game/tycoon/logic/constants.gen.ts` + `board.gen.json` + `cards.gen.json` + `testdata/parity.json` (vitest chỉ kiểm dữ liệu tĩnh khớp Go).
-- E2E: `game/scripts/tycoon-e2e-bots.mjs` — 4 bot (mua nếu đủ tiền, xây khi trọn nhóm, END_TURN) chạy trọn 20 vòng, assert MATCH_OVER có 4 rankings, tổng tiền hệ thống hợp lý; cần `JWT_SECRET` + `TL_USERS` như thirteen.
+- E2E: `game/scripts/tycoon-e2e-bots.mjs` — 4 bot (mua nếu đủ tiền, xây khi trọn nhóm, END_TURN) chạy tới khi ván kết thúc (thắng ngay / phá sản / 30 vòng), assert MATCH_OVER có 4 rankings, tổng tiền hệ thống hợp lý; cần `JWT_SECRET` + `TL_USERS` như thirteen.
 - UI: harness `tycoon/mock-ui.html?screen=<tên>&state=<fixture>` + `scripts/tycoon-shots.mjs` (pattern xiangqi).

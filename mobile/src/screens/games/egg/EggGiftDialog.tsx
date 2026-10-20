@@ -16,7 +16,7 @@ import type { EggCategoryKind, EggGiftReward, EggGiftSection } from '@ola/shared
 import { Dialog } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
-import { eggGiftScrollHeight } from './dialogLayout';
+import { eggGiftScrollHeight } from './utils';
 
 interface EggGiftDialogProps {
   packId: string | null;

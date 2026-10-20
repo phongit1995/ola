@@ -7,7 +7,7 @@ Bản này **thay thế** bảng motion rút gọn ở `01-art-direction.md` §8
 | Lớp | Công nghệ | Nội dung | Ai điều khiển |
 |---|---|---|---|
 | L0 Bàn | SVG tĩnh | lưới, dải màu, glyph, nhà, chấm chủ | React render từ `view` |
-| L1 Quân + chip | DOM, CSS transform + Web Animations API (WAAPI) | 4 quân, chip tiền bay, bust nhân vật trên ô góc, highlight ô | `replay.ts` |
+| L1 Quân + chip | DOM, CSS transform + Web Animations API (WAAPI) | 4 quân, chip tiền bay, highlight ô | `replay.ts` |
 | L2 FX canvas | **Pixi.js** (đã có trong `game/package.json`), 1 `<canvas>` trong suốt phủ đúng vùng bàn, `pointer-events: none` | hạt: xu, bụi, pháo giấy, tia, mảnh vỡ, vệt sáng | `fx/FxLayer.ts` qua API `emit(kind, opts)` |
 | L3 Overlay | DOM + WAAPI | xúc xắc, thẻ bài, turn announce, banner, modal, kết quả | `replay.ts` + store |
 
@@ -23,7 +23,7 @@ Tọa độ: `boardRef` cung cấp `tileCenter(idx)`, `podAnchor(seat)`, `bankAn
 
 ## 2. Nhịp một lượt (ngân sách thời gian)
 
-Replay không được làm người chơi chờ: tổng replay một lượt thường ≤ 4 s, tệ nhất (đi 12 ô + thẻ chuyển ô + trả tiền) ≤ 7 s. Lượt của chính mình replay cùng tốc độ (không skip) để cảm nhận nhất quán; nhưng người chơi bấm vào bàn/sheet trong lúc replay thì **không bị chặn** — chỉ action bar chờ replay xong.
+Replay không được làm người chơi chờ: tổng replay một lượt thường ≤ 4 s, tệ nhất (đi 12 ô + thẻ chuyển ô + trả tiền) ≤ 7 s. Lượt của chính mình replay cùng tốc độ (không skip) để cảm nhận nhất quán; nhưng người chơi bấm vào bàn/sheet trong lúc replay thì **không bị chặn** — chỉ nút của cụm lượt giữa bàn chờ replay xong.
 
 | Đoạn | Ngân sách |
 |---|---|
@@ -56,9 +56,9 @@ Cột **Lite** = bậc rút gọn cho máy yếu; **Off** = `prefers-reduced-mot
 | M1 | Nhảy ô | L1 | mỗi ô: translate theo cung cao 10 px, scale 1.15 ở đỉnh, squash 0.9 khi chạm | translate thẳng |
 | M2 | Bụi khi chạm | L2 | 4 hạt bụi paper-deep toả 8 px, 200 ms, mỗi ô | bỏ |
 | M3 | Vệt đường | L0 | ô vừa qua fill `--ty-path` fade 600 ms, nối tiếp thành vệt | giữ |
-| M4 | Nhân vật ô góc phản ứng | L1 | quân đi qua ô góc: bust đổi pose 400 ms (Bé Lộc happy, Mèo happy, Tèo sad, Cảnh point) | giữ |
+| M4 | Ô góc phản ứng | L1 | quân đi qua ô góc: hình giữa ô nảy 1 lần 400 ms (mũi tên Xuất phát, đèn lồng Lễ hội, vali Du lịch); UI v3 không còn bust trên ô góc | giữ |
 | M5 | Teleport (thẻ/vào tù) | L1 + L2 | quân bay cung parabol cao 60 px 420 ms + xoay 360°, vệt 6 hạt gold (thẻ) / coral (tù) | cung không hạt |
-| M6 | Qua Xuất phát | L2 + L3 | 10 xu phun từ ô 0 lên 40 px rồi bay về pod, ô 0 nháy gold, float `+200 tr`, Bé Lộc nhảy | float + nháy |
+| M6 | Qua Xuất phát | L2 + L3 | 10 xu phun từ ô 0 lên 40 px rồi bay về pod, ô 0 nháy gold, float `+160 tr`, Bé Lộc nhảy | float + nháy |
 | M7 | Đáp ô | L0 + L1 | vòng sóng (ring) từ tâm ô mở 1.6× fade 300 ms; ô fill `--ty-landing` | fill |
 | M8 | Đáp ô chưa chủ | L0 | dải màu ô nhấp nháy 2 lần + badge "Mua?" wobble trên ô | badge |
 | M9 | Đáp ô có chủ khác | L1 | chấm chủ ô scale 1.6 pulse, pod chủ bật sáng viền | pulse |
@@ -87,7 +87,7 @@ Cột **Lite** = bậc rút gọn cho máy yếu; **Off** = `prefers-reduced-mot
 |---|---|---|---|---|
 | H1 | Nhà mọc | L0 | scaleY 0 → 1.2 → 1 từ đáy, 260 ms | pop |
 | H2 | Bụi xây | L2 | 6 hạt bụi + 2 tia jade | bỏ |
-| H3 | Khách sạn | L0 + L2 | 4 nhà gộp vào tâm 200 ms → khách sạn pop 1.3 → 1, 8 tia coral | pop |
+| H3 | Khách sạn (cấp 3) | L0 + L2 | 2 nhà gộp vào tâm 200 ms → khách sạn pop 1.3 → 1, 8 tia coral | pop |
 | H4 | Bán nhà | L0 + L2 | nhà vỡ thành 5 mảnh jade rơi 300 ms → 3 xu bay về pod | fade + chip |
 | H5 | Trong S8 | L3 | hàng vừa thao tác nháy nền gold 30% 400 ms; số tổng tài sản đếm | nháy |
 
@@ -104,7 +104,7 @@ Cột **Lite** = bậc rút gọn cho máy yếu; **Off** = `prefers-reduced-mot
 ### 3.7 Nhà tù (`jail-in`, `jail-out`)
 | # | Hiệu ứng | Lớp | Chi tiết | Lite |
 |---|---|---|---|---|
-| J1 | Còi | L1 + L3 | bust Chú Cảnh point pop ở ô 30, còi nháy coral 2 lần, vignette coral 8% 300 ms (không flash trắng) | bust |
+| J1 | Còi | L1 + L3 | bust Chú Cảnh point pop cạnh pod người vào tù (vào tù chỉ qua thẻ hoặc 3 lần đôi; ô 24 giờ là Du lịch), còi nháy coral 2 lần, vignette coral 8% 300 ms (không flash trắng) | bust |
 | J2 | Bay vào tù | L1 + L2 | quân cung parabol xoay, 6 hạt coral | cung |
 | J3 | Sập song | L0 | 3 song `tg-jail` scaleY 0 → 1 từ trên 220 ms, bàn rung 2 px | song hiện |
 | J4 | Tèo buồn | L1 | bust Anh Tèo sad + giọt mồ hôi rơi (1 hạt) | pose |
@@ -125,9 +125,9 @@ Cột **Lite** = bậc rút gọn cho máy yếu; **Off** = `prefers-reduced-mot
 | # | Hiệu ứng | Lớp | Chi tiết | Lite |
 |---|---|---|---|---|
 | T1 | Đến lượt bạn | L3 + L1 | announce scale-in 300 ms giữ 900, viền pod sweep gold 360°, quân mình bounce 2 lần, bust Bác Tỷ point | announce |
-| T2 | Lượt người khác | L1 | pod họ viền sáng 300 ms, label bar đổi | giữ |
+| T2 | Lượt người khác | L1 | pod họ viền sáng 300 ms, chip lượt giữa bàn đổi tên + màu ghế | giữ |
 | T3 | Đổi vòng | L3 | chip vòng flip dọc 240 ms số mới | đổi số |
-| T4 | Vòng 18–19 | L3 | chip chuyển coral + nhịp 1 lần | đổi màu |
+| T4 | Vòng 28–29 | L3 | chip chuyển coral + nhịp 1 lần | đổi màu |
 | T5 | Vòng cuối | L3 + L0 | banner slide, viền bàn pulse gold 3 lần | banner |
 | T6 | Chờ | L1 | Mèo Đậu bust vẫy đuôi loop (2 frame crossfade 1.2 s) | tĩnh |
 | T7 | Timer ≤ 10 s | L3 | số pulse danger mỗi giây + tick; ≤ 3 s scale 1.2 | đổi màu |

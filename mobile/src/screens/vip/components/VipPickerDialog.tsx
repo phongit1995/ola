@@ -4,7 +4,7 @@ import { formatKen, withAlpha } from '@ola/shared/lib';
 import { Dialog } from '@components/ui/Dialog';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { TEXT_SECONDARY } from '@constants';
-import type { PickerItem } from '../interface';
+import type { PickerItem } from '../types';
 import { VipIconImage } from './VipIconImage';
 
 interface VipPickerDialogProps {

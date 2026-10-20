@@ -1,11 +1,10 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VipBadge } from '@components';
-import { formatVnd } from '@lib';
+import { formatVnd, toAllHistoryRow } from '@lib';
 import type { PenUserBrief } from '@app-types';
 import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@/store/penHistoryStore';
 import { penAssets } from './penAssets';
-import { toAllHistoryRow } from './penHistory';
 import { PenHistoryTable } from './PenHistoryTable';
 
 const ROW_GRID = 'grid items-center gap-1';

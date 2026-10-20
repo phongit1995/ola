@@ -18,6 +18,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	settings := admin.Group("/settings", r.authMiddleware.RequireAdmin())
 	{
 		settings.GET("", r.controller.List)
+		settings.GET("/chat-bot/defaults", r.controller.ChatBotDefaults)
 		settings.PUT("", r.controller.PutMany)
 		settings.PUT("/:key", r.controller.Put)
 	}

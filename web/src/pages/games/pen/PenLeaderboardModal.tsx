@@ -7,7 +7,7 @@ import {
   usePenLeaderboardStore,
 } from '@/store/penLeaderboardStore';
 import { penLeaderboardAssets, penShootAssets } from './penAssets';
-import { bgImage } from './penUi';
+import { bgImage } from './utils';
 import { PenPagination } from './PenPagination';
 import { PenLeaderboardRow } from './PenLeaderboardRow';
 

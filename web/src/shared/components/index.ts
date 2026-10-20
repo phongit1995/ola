@@ -1,7 +1,6 @@
 export * from './ui/AnimatedKen';
 export * from './ui/KenBalanceBadge';
 export * from './ui/Avatar';
-export * from './ui/Button';
 export * from './ui/ScreenHeader';
 export * from './ui/Spinner';
 export * from './ui/SearchIcon';
@@ -40,7 +39,6 @@ export * from './form/TextField';
 export * from './LanguageSwitcher';
 export * from './ReconnectingBanner';
 export * from './HomeHeader';
-export * from './Placeholder';
 export * from './BottomTabBar';
 export * from './PanelRow';
 export * from './ui/FloatingBubble';

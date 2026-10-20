@@ -1,0 +1,35 @@
+import { seatColor } from '../helpers/player';
+
+export function Token({
+  seat,
+  x,
+  y,
+  active,
+  inJail,
+  mine,
+  flip,
+  avatar,
+}: {
+  seat: number;
+  x: number;
+  y: number;
+  active: boolean;
+  inJail: boolean;
+  mine: boolean;
+  /** Ghim chúc mũi lên (ô hàng trên) để thân ghim nằm trong lòng bàn, không che giá ô. */
+  flip?: boolean;
+  avatar?: string;
+}) {
+  return (
+    <div
+      className={['ty-token', active ? 'ty-token-active' : '', inJail ? 'ty-token-jail' : '', mine ? 'ty-token-mine' : '', flip ? 'ty-token-flip' : ''].join(' ')}
+      style={{ left: `${x}%`, top: `${y}%`, '--seat': seatColor(seat) } as React.CSSProperties}
+      aria-hidden="true"
+    >
+      <span className="ty-token-shadow" />
+      <span className="ty-token-pin">
+        <span className="ty-token-face">{avatar ? <img src={avatar} alt="" draggable={false} /> : null}</span>
+      </span>
+    </div>
+  );
+}

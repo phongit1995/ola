@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
@@ -10,8 +10,9 @@ import {
 } from '@components';
 import { isVipActive, activeVipTypeId, colorForName } from '@lib';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
+import { useChatBotConfigStore } from '@ola/shared/stores/chat-bot/chatBotConfigStore';
 import type { AuthUser, ChatBotType, Relationship } from '@app-types';
-import type { Contact } from '../interface';
+import type { Contact } from '../types';
 
 const REQUEST_PREVIEW_COUNT = 3;
 import { BuddyRow } from './BuddyRow';
@@ -89,6 +90,11 @@ export function ContactList({
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [menuContact, setMenuContact] = useState<Contact | null>(null);
+  const enabledBots = useChatBotConfigStore((state) => state.enabledBots);
+
+  useEffect(() => {
+    void useChatBotConfigStore.getState().load();
+  }, []);
   const hasStatus = me?.bio != null && me.bio !== '';
   const hasVip = isVipActive(me?.vipEndTime);
   const meVipTypeId = activeVipTypeId(me?.vipUsed, me?.vipEndTime);
@@ -357,29 +363,35 @@ export function ContactList({
       />
       */}
 
-      <SectionHeader label={t('chat.sectionApps')} />
-      <ActionRow
-        badge={
-          <BotAvatar name={t('chat.chatBot')} className="h-12 w-12 rounded-lg" />
-        }
-        title={t('chat.chatBot')}
-        subtitle={t('chat.chatBotSub')}
-        showChevron
-        onClick={() => onOpenChatBot?.(CHAT_BOT_TYPE.olala)}
-      />
-      <ActionRow
-        badge={
-          <BotAvatar
-            bot={CHAT_BOT_TYPE.olavi}
-            name={t('chat.fortuneBot')}
-            className="h-12 w-12 rounded-lg"
-          />
-        }
-        title={t('chat.fortuneBot')}
-        subtitle={t('chat.fortuneBotSub')}
-        showChevron
-        onClick={() => onOpenChatBot?.(CHAT_BOT_TYPE.olavi)}
-      />
+      {enabledBots.length > 0 && (
+        <SectionHeader label={t('chat.sectionApps')} />
+      )}
+      {enabledBots.includes(CHAT_BOT_TYPE.olala) && (
+        <ActionRow
+          badge={
+            <BotAvatar name={t('chat.chatBot')} className="h-12 w-12 rounded-lg" />
+          }
+          title={t('chat.chatBot')}
+          subtitle={t('chat.chatBotSub')}
+          showChevron
+          onClick={() => onOpenChatBot?.(CHAT_BOT_TYPE.olala)}
+        />
+      )}
+      {enabledBots.includes(CHAT_BOT_TYPE.olavi) && (
+        <ActionRow
+          badge={
+            <BotAvatar
+              bot={CHAT_BOT_TYPE.olavi}
+              name={t('chat.fortuneBot')}
+              className="h-12 w-12 rounded-lg"
+            />
+          }
+          title={t('chat.fortuneBot')}
+          subtitle={t('chat.fortuneBotSub')}
+          showChevron
+          onClick={() => onOpenChatBot?.(CHAT_BOT_TYPE.olavi)}
+        />
+      )}
 
       {sections.map((section) => (
         <div key={section.key}>
