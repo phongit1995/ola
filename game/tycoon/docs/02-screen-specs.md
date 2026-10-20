@@ -90,7 +90,7 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 ## S6. Bàn chơi (BoardScreen, `boardMode='playing'`)
 
-> **UI v3 (concept 19/10/2026).** Bố cục lấy theo bộ ảnh mới nhất [`assets/pixel-options-2026-10-19/`](../assets/pixel-options-2026-10-19/README.md): cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh tham chiếu phong cách đã duyệt [`exec-f7dbd796…png`](../assets/exec-f7dbd796-8a5f-46af-af8a-2b6d1d3780c2.png) chia 2 thẻ trên / 2 thẻ dưới — **không dùng bố cục đó nữa**, chỉ giữ phong cách. Ba bản pixel (8-bit, 16-bit, isometric) chỉ khác tranh trong ô; vị trí mọi nút và ô thông tin giống hệt nhau. Ảnh chỉ để lấy bố cục: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`.
+> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-board-pixel-16bit.png`](./screenshots/concept-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`; bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./screenshots/README.md)).
 >
 > Thay thế UI v2 (17/10): `TurnPanel` và `GameLog` dưới hàng pod được bỏ; nội dung `TurnPanel` chuyển vào giữa bàn (6.3), `GameLog` thu thành dòng sự kiện ở footer (6.5).
 
