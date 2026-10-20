@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Avatar, Button, Modal, Skeleton, Tag, Typography } from 'antd'
 import {
+  CommentOutlined,
   CrownOutlined,
   EditOutlined,
   FileTextOutlined,
@@ -23,6 +24,7 @@ import { UserSessionsModal } from './UserSessionsModal'
 import { EditUsernameModal } from './EditUsernameModal'
 import { ResetPasswordModal } from './ResetPasswordModal'
 import { AddVipDaysModal } from './AddVipDaysModal'
+import { UserConversationsModal } from '@/pages/conversations/UserConversationsModal'
 import { vipDaysLeft } from './utils'
 
 interface UserDetailModalProps {
@@ -87,6 +89,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [usernameOpen, setUsernameOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [vipDaysOpen, setVipDaysOpen] = useState(false)
+  const [conversationsOpen, setConversationsOpen] = useState(false)
 
   return (
     <>
@@ -146,7 +149,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
             }}
           >
             <Avatar src={data.avatar} icon={<UserOutlined />} size={72} />
-            <div style={{ minWidth: 0 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>
                 {data.fullName || data.username}
                 {data.isVip && <CrownOutlined style={{ color: '#faad14', marginLeft: 8 }} />}
@@ -170,6 +173,9 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
                 {data.isVip && <Tag color="gold">VIP</Tag>}
               </div>
             </div>
+            <Button icon={<CommentOutlined />} onClick={() => setConversationsOpen(true)} style={{ flexShrink: 0 }}>
+              Hội thoại
+            </Button>
           </div>
 
           <Section title="Thống kê">
@@ -345,6 +351,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setVipDaysOpen(false)}
+    />
+    <UserConversationsModal
+      open={conversationsOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setConversationsOpen(false)}
     />
     </>
   )

@@ -5,6 +5,7 @@ import (
 	adminaudit "ola-chat-server/internal/modules/admin/audit"
 	adminauth "ola-chat-server/internal/modules/admin/auth"
 	adminclan "ola-chat-server/internal/modules/admin/clan"
+	adminconversation "ola-chat-server/internal/modules/admin/conversation"
 	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	admingamematch "ola-chat-server/internal/modules/admin/game-match"
@@ -57,6 +58,7 @@ func Provider(c *dig.Container) error {
 		adminstory.Provider,
 		adminreport.Provider,
 		adminpushcampaign.Provider,
+		adminconversation.Provider,
 	}
 
 	for _, module := range modules {

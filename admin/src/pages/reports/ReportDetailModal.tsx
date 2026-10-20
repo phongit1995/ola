@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { App, Button, Descriptions, Image, Input, Modal, Space, Tag, Typography } from 'antd'
+import { CommentOutlined } from '@ant-design/icons'
 import { UserBriefCell } from '@/components/UserBriefCell'
+import { ConversationMessagesModal } from '@/pages/conversations/ConversationMessagesModal'
 import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import type { AdminReport } from '@/types'
@@ -22,6 +24,8 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
   const { message, modal } = App.useApp()
   const handleReport = useHandleReport()
   const [note, setNote] = useState(report.handlerNote ?? '')
+  const [conversationOpen, setConversationOpen] = useState(false)
+  const conversationId = report.targetType === 'message' ? report.contextId : undefined
 
   const snapshot = report.snapshot ?? {}
   const statusMeta = REPORT_STATUS_TAG[report.status]
@@ -169,6 +173,11 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
                 Mở tệp đính kèm
               </Typography.Link>
             )}
+            {conversationId && (
+              <Button size="small" icon={<CommentOutlined />} onClick={() => setConversationOpen(true)}>
+                Xem hội thoại
+              </Button>
+            )}
           </Space>
         </Descriptions.Item>
         {report.handledBy && (
@@ -187,6 +196,13 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
         onChange={(event) => setNote(event.target.value)}
         placeholder="Ghi chú nội bộ (không gửi cho người dùng)"
       />
+      {conversationOpen && conversationId && (
+        <ConversationMessagesModal
+          conversationId={conversationId}
+          around={report.targetId}
+          onClose={() => setConversationOpen(false)}
+        />
+      )}
     </Modal>
   )
 }
