@@ -45,7 +45,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 | # | Màn | Tính năng chính |
 |---|---|---|
 | S1 | Loading / Connecting | preload asset, tiến trình %, lỗi kết nối + thử lại |
-| S2 | Lobby | logo, KEN + avatar, CTA Vào bàn, Lịch sử, Bảng xếp hạng, Luật chơi, bật/tắt âm, thoát game |
+| S2 | Lobby | logo, KEN + avatar VIP + `@username`, CTA Vào bàn, Lịch sử, Bảng xếp hạng, Luật chơi, bật/tắt âm, thoát game |
 | S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, Tạo bàn, Làm mới, phân trang 9 hàng |
 | S4 | Modal Tạo bàn / Vào bàn khóa | chọn số người 2/3/4, mật khẩu |
 | S5 | Phòng chờ | 4 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |
@@ -58,7 +58,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 | O1 | Xúc xắc | hai viên lăn, hiện tổng, badge "Đôi!" |
 | O2 | Thẻ bài | lật thẻ Cơ hội / Khí vận, nội dung live text, nút Tiếp tục |
 | O3 | Trả nợ | khi tiền < số phải trả: chọn nhà để bán, hoặc tuyên bố phá sản |
-| O4 | Banner mất kết nối | người chơi X mất kết nối, đếm ngược grace 30 s |
+| O4 | Banner mất kết nối | icon VIP + `@username` mất kết nối, đếm ngược grace 30 s |
 | O5 | ConfirmModal | bỏ cuộc, thoát bàn, mời ra, bán nhà |
 | O6 | Toast + turn announce | lỗi server, ĐẾN LƯỢT BẠN, "+200 qua Xuất phát" |
 | O7 | Banner vòng cuối | "Vòng 28/30" đổi màu từ vòng 28, "Vòng cuối!" ở vòng 30 |

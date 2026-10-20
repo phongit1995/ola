@@ -98,7 +98,7 @@ Mã màu Cơ hội, Khí vận, Lễ hội đo từ ảnh mẫu. Cơ hội đổ
 --ty-lh-tight: 1.15; --ty-lh-body: 1.35;
 ```
 
-Số tiền: `font-variant-numeric: tabular-nums`. Tên người: cắt ellipsis 12 ký tự trong pod, 16 trong list.
+Số tiền: `font-variant-numeric: tabular-nums`. Tên người: luôn `@username` kèm icon VIP (`../03-component-specs.md` §18); cắt ellipsis 12 ký tự trong pod, 16 trong list (không tính `@`).
 
 ## 3. Spacing và kích thước
 

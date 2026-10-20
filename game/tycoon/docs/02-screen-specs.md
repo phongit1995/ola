@@ -4,6 +4,8 @@ Mọi số đo tại viewport logic `390 × 844`. Width hỗ trợ 360–520 px:
 
 Điều hướng không dùng router: mỗi màn là boolean/enum trên store `useTycoon` (pattern caro `App.tsx`). Sheet (S7, S8, O3) là lớp trượt lên đè S6, không phải màn riêng.
 
+**Tên người chơi:** mọi chỗ hiện người chơi dùng `@username` kèm icon VIP; avatar là icon VIP; chính mình ghi `Bạn` ở pod, chip lượt và câu log. Quy tắc đầy đủ ở [03 §18](./03-component-specs.md).
+
 ---
 
 ## S1. Loading / Connecting
@@ -22,7 +24,7 @@ Hiện khi `lobbyPhase = 'loading' | 'connecting' | 'error'`, nằm trong LobbyS
 ### 2.1 Cấu trúc dọc
 | Vùng | y | Nội dung |
 |---|---|---|
-| Topbar | 0–64 | avatar + tên (trái), badge KEN (phải), nút âm thanh |
+| Topbar | 0–64 | avatar VIP + `@username` (trái, 03 §18), badge KEN (phải), nút âm thanh |
 | Logo | 96–300 | logo "CỜ TỶ PHÚ" + minh họa 2 quân cờ trên 3 ô bàn |
 | CTA stack | 330–580 | 4 nút dọc, cách 16 px |
 | Footer | đáy − 32 | nút Thoát game (`bridge.exit()`), version nhỏ |
@@ -46,7 +48,7 @@ Copy hành vi caro/xiangqi `RankedScreen.tsx`.
 - Header 56: back, title `Bàn tỷ phú` 20/800, nút Làm mới.
 - Cột: `Chủ bàn | Chỗ | Tham gia`. Không có cột cược ở v1 (bet luôn 0); giữ chỗ trong layout để v2 thêm cột `KEN`.
 - 9 hàng/trang cố định, hàng cao 8.85% vùng list, absolute theo %.
-- Hàng: avatar chủ bàn 32 + VIP, `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa 16 khi `locked`, chip `Đang chơi` khi `status = 'playing'`.
+- Hàng: avatar VIP chủ bàn 32 (03 §18), `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa 16 khi `locked`, chip `Đang chơi` khi `status = 'playing'`.
 - Footer: `Tạo bàn` (CTA vàng) giữa, phân trang ‹ › hai bên.
 - `ROOM_LIST` khi mở + Làm mới; `ROOM_UPSERT/REMOVED` realtime; auto re-sync 90–120 s jitter.
 
@@ -73,7 +75,7 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 ### 5.1 Panel ghế (340 × auto, paper, radius 28)
 - Title `Bàn của @owner` + badge chỗ `3/4` + icon khóa.
-- Lưới ghế 2 × 2 (hoặc 1 × 2, 1 × 3 theo `maxPlayers`): mỗi ghế 150 × 88: avatar 40 viền màu ghế, tên 15/600, chip `Chủ bàn` (ic-owner) hoặc `Sẵn sàng` jade / `Chưa sẵn sàng` mờ; ghế trống hiện dấu `+` nét đứt `Đang chờ...`.
+- Lưới ghế 2 × 2 (hoặc 1 × 2, 1 × 3 theo `maxPlayers`): mỗi ghế 150 × 88: avatar VIP 40 viền màu ghế, `@username` 15/600 (ghế của mình cũng ghi `@username`), chip `Chủ bàn` (ic-owner) hoặc `Sẵn sàng` jade / `Chưa sẵn sàng` mờ; ghế trống hiện dấu `+` nét đứt `Đang chờ...`.
 - Màu ghế theo seat index (01 §2.3) — cho người chơi biết trước mình màu gì.
 
 ### 5.2 Hành động
@@ -112,10 +114,10 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 │ │  XUẤT PHÁT · 7 ô hàng dưới · DU LỊCH │ │
 │ └──────────────────────────────────────┘ │
 ├──────────────────────────────────────────┤
-│ [o Bạn  ] [o Linh ] [o Khoa ] [o Mai  ]  │ hàng pod
+│ [o Bạn  ] [o @linh] [o @khoa] [o @mai ]  │ hàng pod
 │ [ 1.240 ] [  980  ] [  760  ] [ 1.100 ]  │
 ├──────────────────────────────────────────┤
-│ [Tài sản] [Diễn biến] │ Linh vừa qua …   │ footer
+│ [Tài sản] [Diễn biến] │ @linh vừa qua …  │ footer
 └──────────────────────────────────────────┘
 ```
 
@@ -177,7 +179,7 @@ Khoảng cách giữa các hàng 10. Ảnh mẫu đặt chip ở 31–40%, xúc 
 | `roll` | 2 xúc xắc (mặt lần gieo trước, hoặc 1–1 lúc đầu ván) | `Gieo xúc xắc` CTA vàng 196 (ic-dice); đang có đôi: `Gieo thêm lượt (đôi!)`. Dòng gợi ý `Thắng ngay` bên dưới | gieo | `đang gieo xúc xắc…` |
 | `jail` | 2 xúc xắc | 3 nút đứng đều 74 × 56: `Gieo đôi` gold (dòng phụ `lần n/3`) · `Nộp phạt` paper (`50 tr`) · `Dùng thẻ` paper (`còn n`, disabled khi 0) | gieo; lượt 3 thì nộp phạt | `đang ở tù, chọn cách ra…` |
 | `decide` | thẻ sổ đỏ thu gọn 246 × 52 thay xúc xắc: dải nhóm trái, tên + tranh nhỏ, `Giá`, `Thuê`, `x/y của bạn`; chạm mở S7 | `Bỏ qua` paper 40% · `Mua {giá} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (không đủ tiền → disabled, `cần …`) | bỏ qua | `đang cân nhắc mua {ô}…` |
-| `takeover` | thẻ sổ đỏ thu gọn 246 × 52: dải nhóm, tên ô, chip chủ cũ (avatar + màu ghế), `Cấp n`, `Giá mua lại {x} tr` (= 2 × (giá đất + chi phí các cấp)); chạm mở S7 | `Bỏ qua` paper 40% · `Mua lại {x} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (pha chỉ mở khi đủ tiền, nên không có trạng thái thiếu tiền) | bỏ qua | `đang cân nhắc mua lại {ô} của @chủ…` |
+| `takeover` | thẻ sổ đỏ thu gọn 246 × 52: dải nhóm, tên ô, chip chủ cũ (avatar VIP + `@username` + màu ghế), `Cấp n`, `Giá mua lại {x} tr` (= 2 × (giá đất + chi phí các cấp)); chạm mở S7 | `Bỏ qua` paper 40% · `Mua lại {x} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (pha chỉ mở khi đủ tiền, nên không có trạng thái thiếu tiền) | bỏ qua | `đang cân nhắc mua lại {ô} của @username…` |
 | `festival` | dòng `Chọn thành phố của bạn để tổ chức Lễ hội · thuê ×2` + hàng chip thành phố của mình cuộn ngang (tên ngắn + `thuê …` sau ×2; ô đang có Lễ hội viền gold). Trên bàn: thành phố của mình sáng, ô khác mờ 45% | `Bỏ qua` paper 196. **Không có nút vàng ở cụm lượt:** chạm chip hoặc ô → S7 với nút vàng `Tổ chức Lễ hội ở đây` (7.4) | chọn thành phố có tiền thuê cao nhất | `đang chọn nơi tổ chức Lễ hội…` |
 | `travel` | `tg-travel` + dòng `Du lịch — chạm ô bất kỳ để bay tới`. Trên bàn: ô đang đứng mờ 45% | `Không bay, gieo xúc xắc` paper 196. **Không có nút vàng ở cụm lượt:** chạm ô → S7 với nút vàng `Bay tới đây` (7.4) | gieo bình thường | `đang chọn nơi bay tới…` |
 | `card` | O2 thay **cả** hàng 2 và 3 (xem O2) | `Làm theo thẻ` nằm trong thẻ | làm theo thẻ | thẻ O2 hiện cho mọi người, không có nút; dòng phụ `đang đọc thẻ…` |
@@ -186,7 +188,7 @@ Khoảng cách giữa các hàng 10. Ảnh mẫu đặt chip ở 31–40%, xúc 
 
 Hết giờ local (deadline qua): hàng 3 thay bằng dòng `Hết giờ, hệ thống đang đi thay bạn…`, mọi nút disabled cho đến STATE mới. Khi `movePending`: nút vừa bấm hiện spinner, cả hàng 3 disabled.
 
-**Không tới lượt mình:** hàng 1 là chip paper `(avatar) Lượt của @ten` viền màu ghế người đó, đồng hồ thay bằng 3 chấm "đang nghĩ". Dưới chip là dòng phụ 12.5 navy 70% theo cột cuối bảng trên (lúc replay: `đang di chuyển…`). Hàng 2 chỉ hiện xúc xắc khi người đó gieo (O1). Hàng 3 trống, không có dòng gợi ý. Cụm co lại nhưng vẫn giữ tâm ở 53%.
+**Không tới lượt mình:** hàng 1 là chip paper `(avatar VIP) Lượt của @username` viền màu ghế người đó, đồng hồ thay bằng 3 chấm "đang nghĩ". Dưới chip là dòng phụ 12.5 navy 70% theo cột cuối bảng trên (lúc replay: `đang di chuyển…`). Hàng 2 chỉ hiện xúc xắc khi người đó gieo (O1). Hàng 3 trống, không có dòng gợi ý. Cụm co lại nhưng vẫn giữ tâm ở 53%.
 
 **Nút vàng:** mỗi lúc chỉ có **một** nút gold trên màn (style/05 §1). Mặc định nó ở hàng 3 cụm lượt. Ngoại lệ: pha `festival`/`travel` nút gold nằm trong S7 (cụm lượt chỉ có nút paper); pha `debt` nút gold nằm trong O3. Sheet mở ở pha có gold trong cụm lượt (ví dụ S7 lúc `decide`) không có nút gold thứ hai.
 
@@ -203,7 +205,7 @@ Width < 370: ẩn chữ logo, chỉ giữ biểu tượng xúc xắc để chip 
 
 ### 6.5 Hàng pod và footer
 
-**Hàng pod.** Ngay dưới bàn, cách 8. 2–4 pod chia đều một hàng; thứ tự trái → phải theo seat (seat 0 gold, 1 xanh, 2 san hô, 3 tím), không đổi theo lượt. Có thể là `Bạn` ở bất kỳ vị trí nào; tên pod của mình ghi `Bạn`. Bố cục bên trong pod ở 03 §5. Tap pod → S8 xem tài sản người đó (của mình thì có nút xây/bán).
+**Hàng pod.** Ngay dưới bàn, cách 8. 2–4 pod chia đều một hàng; thứ tự trái → phải theo seat (seat 0 gold, 1 xanh, 2 san hô, 3 tím), không đổi theo lượt. Có thể là `Bạn` ở bất kỳ vị trí nào; pod của mình ghi `Bạn`, pod người khác ghi `@username`; avatar mọi pod là icon VIP (03 §18). Bố cục bên trong pod ở 03 §5. Tap pod → S8 xem tài sản người đó (của mình thì có nút xây/bán).
 
 **Footer.** Một hàng cao 44, đáy màn + safe-area:
 
@@ -212,7 +214,7 @@ Width < 370: ẩn chữ logo, chỉ giữ biểu tượng xúc xắc để chip 
 | Trái | nút pill `Tài sản` (icon danh sách/sổ) | mở S8 của mình |
 | Kế bên | nút pill `Diễn biến` (icon cột) | mở sheet diễn biến đầy đủ |
 | Vạch ngăn dọc | — | — |
-| Phần còn lại | dòng sự kiện mới nhất: icon xúc xắc + câu log, tên tô màu ghế, số tiền jade/coral (`Linh vừa qua Xuất phát +160 tr`), cắt `…` nếu dài | chạm mở sheet diễn biến |
+| Phần còn lại | dòng sự kiện mới nhất: icon xúc xắc + câu log, người chơi hiện icon VIP 14 + `@username` tô màu ghế (03 §18), số tiền jade/coral (`@linh vừa qua Xuất phát +160 tr`), cắt `…` nếu dài | chạm mở sheet diễn biến |
 | Phải cùng (bản online) | nút `ic-chat` 44 có chấm đỏ khi có tin mới | mở ChatDrawer; bản chơi với máy không có |
 
 Khi màn dư chỗ (6.1 mục 2), dòng sự kiện thành thẻ Diễn biến nhiều dòng, đặt trên thanh nút. Lúc đó thanh footer chỉ còn hai nút + chat.
@@ -234,7 +236,7 @@ Khi màn dư chỗ (6.1 mục 2), dòng sự kiện thành thẻ Diễn biến n
 ### 6.7 Sự kiện trong S6
 - `STATE` → replay steps (01 §8) → cập nhật pod/bàn/cụm lượt.
 - `turnAnnounce` khi `turn` đổi sang mình: `ĐẾN LƯỢT BẠN` + `bridge.attention(YourTurn)`.
-- `OPPONENT_DISCONNECTED` → O4 với tên người rớt; nếu người rớt đang tới lượt, đồng hồ dừng (engine pause).
+- `OPPONENT_DISCONNECTED` → O4 với icon VIP + `@username` người rớt; nếu người rớt đang tới lượt, đồng hồ dừng (engine pause).
 - Bỏ cuộc: menu header → `Bỏ cuộc` (ic-flag) → O5 `Bỏ cuộc? Bạn sẽ bị tính phá sản và xếp cuối.` → `FORFEIT`.
 
 ---
@@ -245,7 +247,7 @@ Bottom sheet 100% × auto (max 62% chiều cao), paper, radius 28 trên, handle 
 
 ### 7.1 Ô đất (`street`)
 - Dải màu nhóm cao 44 trên cùng, tên nhóm 12.5/500 navy trên dải màu sáng hoặc cream trên dải tối.
-- Tên ô 20/800, chip chủ sở hữu (avatar 20 + tên) hoặc `Chưa có chủ`.
+- Tên ô 20/800, chip chủ sở hữu (avatar VIP 20 + `@username`; của mình ghi `Bạn`) hoặc `Chưa có chủ`.
 - Dòng giá `Giá 220 tr` · `Nhà 150 tr`.
 - Dòng `Giá nâng mỗi cấp 150 tr`.
 - Bảng tiền thuê 4 hàng: `Đất trống` (ghi `×2 khi trọn nhóm`), `Cấp 1 · Nhà`, `Cấp 2 · Biệt thự`, `Cấp 3 · Khách sạn`; hàng đang áp dụng (theo cấp hiện tại và chủ) highlight gold 30%.
@@ -280,8 +282,8 @@ Bottom sheet max 70%.
 ## S9. Kết quả
 
 Modal 340 × auto, radius 28, không đóng khi tap backdrop.
-- Title theo hạng của mình: `Tỷ phú số 1!` gold / `Hạng 2` / `Hạng 3` / `Phá sản` coral; dòng lý do (`X sở hữu trọn 3 nhóm màu — thắng ngay` / `… trọn thành phố một cạnh bàn — thắng ngay` / `… cả 4 sân bay — thắng ngay` / `Bạn đã phá sản` / `Hết 30 vòng — xếp hạng theo tổng tài sản` / `Hết 25 phút — xếp hạng theo tổng tài sản` / `Chỉ còn một tỷ phú trụ lại` / `Bạn đã bỏ cuộc`).
-- Bảng 2–4 hàng: hạng, avatar + tên, tổng tài sản 15/800, chip XP `+50` (từ `expGains`). Hàng mình viền màu ghế.
+- Title theo hạng của mình: `Tỷ phú số 1!` gold / `Hạng 2` / `Hạng 3` / `Phá sản` coral; dòng lý do (`@username sở hữu trọn 3 nhóm màu — thắng ngay` / `… trọn thành phố một cạnh bàn — thắng ngay` / `… cả 4 sân bay — thắng ngay` / `Bạn đã phá sản` / `Hết 30 vòng — xếp hạng theo tổng tài sản` / `Hết 25 phút — xếp hạng theo tổng tài sản` / `Chỉ còn một tỷ phú trụ lại` / `Bạn đã bỏ cuộc`).
+- Bảng 2–4 hàng: hạng, avatar VIP + `@username` (cả hàng của mình), tổng tài sản 15/800, chip XP `+50` (từ `expGains`). Hàng mình viền màu ghế.
 - v1 không hiện KEN (bet 0). Layout chừa dòng `±KEN` cho v2.
 - Nút `Chơi lại` CTA vàng (→ `ROOM_READY`, về S5 nếu phòng còn) + `Đóng` (→ S3).
 
@@ -293,7 +295,7 @@ Giống xiangqi S8: 100 trận gần nhất; mỗi hàng: hạng của mình (`#
 
 ## S11. Bảng xếp hạng
 
-Giống xiangqi S9: tab Hôm nay/Tuần này, cột thắng (hạng 1) – trận. Không có cột KEN ở v1.
+Giống xiangqi S9: tab Hôm nay/Tuần này, mỗi hàng hạng + avatar VIP + `@username` (03 §18), cột thắng (hạng 1) – trận. Không có cột KEN ở v1.
 
 ---
 
@@ -312,11 +314,11 @@ Người khác thấy thẻ không có nút; thẻ tự ẩn khi có STATE kế 
 
 ## O3. Trả nợ
 
-Modal 340: `Bạn cần trả {amount} tr cho @ten/ngân hàng`, dòng `Tiền mặt {cash} tr`, dòng `Bán nhà có thể thu tối đa {x} tr`. Danh sách ô có nhà với nút `Bán −` (+ giá). Nút `Trả nợ` CTA vàng enabled khi `cash ≥ amount`; `Phá sản` danger (O5 confirm). Đồng hồ 30 s hiện trong modal. Khi tổng khả năng < amount: chỉ hiện `Phá sản` + giải thích.
+Modal 340: `Bạn cần trả {amount} tr cho @username/ngân hàng` (có icon VIP trước `@username`), dòng `Tiền mặt {cash} tr`, dòng `Bán nhà có thể thu tối đa {x} tr`. Danh sách ô có nhà với nút `Bán −` (+ giá). Nút `Trả nợ` CTA vàng enabled khi `cash ≥ amount`; `Phá sản` danger (O5 confirm). Đồng hồ 30 s hiện trong modal. Khi tổng khả năng < amount: chỉ hiện `Phá sản` + giải thích.
 
 ## O4. Banner mất kết nối
 
-Top banner 100% × 44: ic-wifi-off + `@ten mất kết nối · 23s`; nhiều người rớt → gộp `2 người mất kết nối`. Tắt khi `OPPONENT_RECONNECTED` hoặc người đó bị quit (step `bankrupt`).
+Top banner 100% × 44: ic-wifi-off + icon VIP + `@username mất kết nối · 23s`; nhiều người rớt → gộp `2 người mất kết nối`. Tắt khi `OPPONENT_RECONNECTED` hoặc người đó bị quit (step `bankrupt`).
 
 ## O5. ConfirmModal
 

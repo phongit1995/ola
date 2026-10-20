@@ -263,9 +263,9 @@ Server nối `steps` cho mỗi Apply (kể cả `MoveOnTimeout`); client replay 
 | `land` | by, tile | fill `--ty-landing`, mở sheet nếu decide |
 | `pay` | from (seat\|-1), to (seat\|-1), amount, reason: rent\|tax\|card\|fine\|repair\|birthday\|buy\|build\|sell\|salary\|takeover | đếm số pod, chip bay giữa pod; −1 = ngân hàng (bay từ/đến giữa bàn) |
 | `buy` | by, tile | chấm chủ sở hữu pop |
-| `takeover` | by, tile, target (chủ cũ), houses | chấm chủ đổi màu, log "X mua lại ô của Y" |
-| `festival` | by, tile | viền vàng + huy hiệu ngôi sao trên ô, log "X tổ chức Lễ hội ở …" |
-| `travel` | by, tile (24) | log "X được đi Du lịch" |
+| `takeover` | by, tile, target (chủ cũ), houses | chấm chủ đổi màu, log "@username mua lại ô của @username" (icon VIP trước mỗi tên, 03 §18) |
+| `festival` | by, tile | viền vàng + huy hiệu ngôi sao trên ô, log "@username tổ chức Lễ hội ở …" |
+| `travel` | by, tile (24) | log "@username được đi Du lịch" |
 | `card` | by, deck, id | O2 lật thẻ (text từ bảng gen) |
 | `jail-in` / `jail-out` | by, how: dice3\|card \| pay\|card\|double\|forced | quân vào/ra ô 8, badge song sắt trên pod |
 | `build` / `sell` | by, tile, houses (cấp sau khi nâng/hạ) | chấm nhà pop/fade |

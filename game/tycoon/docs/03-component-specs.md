@@ -62,7 +62,7 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 **Ngang (như concept; pod ≥ 128 px — 2 người ở mọi width, 3 người khi bàn ≥ 400; cao 64):**
 ```
 ┌──────────────────────────┐
-│ ╭────╮  Bạn              │  avatar ⌀ 34 viền seat 2.5 px, sát trái, căn giữa dọc
+│ ╭────╮  Bạn / @username  │  avatar VIP ⌀ 34 viền seat 2.5 px, sát trái, căn giữa dọc (§18)
 │ │ ◕‿◕│  🪙 1.240 tr       │  tên 13.5/800 trên; xu 12 + tiền 14/800 tabular dưới
 │ ╰────╯                   │
 └──────────────────────────┘
@@ -71,7 +71,7 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 **Compact (pod < 128 px — 4 người ở mọi width, 3 người ở 390; cao 64):**
 ```
 ┌───────────────┐
-│ ◯ Bạn         │  hàng 1: avatar ⌀ 24 + tên 12.5/800 (ellipsis)
+│ ◯ @username   │  hàng 1: avatar VIP ⌀ 24 + `Bạn`/`@username` 12.5/800 (ellipsis, §18)
 │ 🪙 1.240 tr   │  hàng 2: xu 12 + tiền 13.5/800 tabular, căn trái
 └───────────────┘
 ```
@@ -91,7 +91,7 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 
 - Vị trí: giữa vùng trong bàn, căn giữa ngang, tâm dọc ở 53%; rộng tối đa 246 tại 390 (vùng trong 266 trừ lề 10). Bảng vị trí và nội dung từng pha ở 02 §6.3.
 - 3 hàng chính + 1 dòng gợi ý, cách nhau 10:
-  1. chip lượt (pill cao 34: avatar 24 + `Lượt của bạn` 15/800; lượt mình nền gold, lượt người khác nền paper viền màu ghế) + `TurnClock` ⌀ 40 bên phải chip;
+  1. chip lượt (pill cao 34: avatar VIP 24 + `Lượt của bạn` / `Lượt của @username` 15/800; lượt mình nền gold, lượt người khác nền paper viền màu ghế) + `TurnClock` ⌀ 40 bên phải chip;
   2. xúc xắc (§4), hoặc thẻ sổ đỏ thu gọn 246 × 52 ở pha `decide`;
   3. nút theo pha, cao 48 (jail: 3 nút đứng 74 × 56). CTA đơn rộng 196; hai nút chia 40/60, nút gold bên phải;
   4. dòng gợi ý `Thắng ngay: 3 nhóm · 1 cạnh · 4 sân bay` — pill paper-dim, chữ 12.5/600 navy 70%, chỉ hiện ở pha `roll` của mình; pha khác ẩn để không chật.
@@ -113,7 +113,7 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 
 - GroupChip: rect 12 × 12 màu nhóm viền navy 1 + tên nhóm 12.5/500.
 - RentTable: 4 hàng `label | số` (Đất trống, Cấp 1–3), hàng áp dụng nền gold 30%; số tabular 13.5/800.
-- OwnerChip: avatar 20 + `@ten` + chấm màu ghế.
+- OwnerChip: avatar VIP 20 + `@username` (của mình: `Bạn`) + chấm màu ghế (§18).
 
 ## 10. Card (O2)
 
@@ -156,7 +156,7 @@ State: hover viền 2 + translateY(−1); active translateY(0) shadow sm; disabl
 
 ## 15. ChatDrawer, ReactionPicker, Toast, OppAwayBanner, ConfirmModal
 
-Dùng lại cấu trúc xiangqi (`03-component-specs` §chat/reaction/toast), đổi token `--xq-*` → `--ty-*`. Chat trong ván: tin nhắn kèm chấm màu ghế trước tên. Reaction bay từ pod người gửi.
+Dùng lại cấu trúc xiangqi (`03-component-specs` §chat/reaction/toast), đổi token `--xq-*` → `--ty-*`. Chat trong ván: mỗi tin bắt đầu bằng chấm màu ghế + icon VIP 14 + `@username` (§18). Reaction bay từ pod người gửi.
 
 ## 16. FooterBar và dòng sự kiện
 
@@ -166,7 +166,7 @@ Dùng lại cấu trúc xiangqi (`03-component-specs` §chat/reaction/toast), đ
   - vạch ngăn dọc;
   - dòng sự kiện;
   - (bản online) `ic-chat` 44 ở phải cùng.
-- Dòng sự kiện: icon xúc xắc 16 + câu log mới nhất 13/600, tên có màu ghế, số tiền jade/coral, 1 dòng cắt `…`. Sinh từ steps (`pay`, `buy`, `build`, `jail-in`, `bankrupt`, `card`, qua Xuất phát). Tap → sheet diễn biến đầy đủ (50 dòng; bản online là tab thứ 2 của ChatDrawer).
+- Dòng sự kiện: icon xúc xắc 16 + câu log mới nhất 13/600, người chơi hiện bằng `PlayerName` (icon VIP + `@username` màu ghế, §18), số tiền jade/coral, 1 dòng cắt `…`. Sinh từ steps (`pay`, `buy`, `build`, `jail-in`, `bankrupt`, `card`, qua Xuất phát). Tap → sheet diễn biến đầy đủ (50 dòng; bản online là tab thứ 2 của ChatDrawer).
 - Khi màn dư chỗ (02 §6.1): dòng sự kiện thành thẻ Diễn biến 2–6 dòng (mới ở trên, mỗi dòng giờ `18:20` + chấm màu ghế + câu) ngay trên thanh nút, lấp phần cao còn lại. Lúc đó footer **bỏ** dòng sự kiện, chỉ còn các nút — chỉ một vùng log tại một thời điểm (ảnh mẫu vẽ cả hai, không làm theo).
 - Footer nằm trên nền trời: pill nền paper viền navy 1.5, chữ/icon navy.
 
@@ -176,3 +176,14 @@ Dùng lại cấu trúc xiangqi (`03-component-specs` §chat/reaction/toast), đ
 - Màu ghế luôn kèm tên/avatar; màu nhóm đất luôn kèm tên nhóm trong sheet.
 - Touch ≥ 44 trừ ô bàn cờ (đã nêu lý do ở 01 §4) và chấm nhà (không tương tác).
 - Reduced-motion theo 01 §8; không âm thanh tự phát khi tắt loa.
+
+## 18. Tên người chơi và icon VIP (`PlayerName`, `PlayerAvatar`)
+
+Áp dụng cho **mọi** chỗ hiện người chơi: S2 topbar, S3 hàng bàn, S5 ghế, S6 pod/chip lượt/dòng chờ/footer log, S7 chủ sở hữu, S8, S9, S11, O3, O4, chat, toast.
+
+- **Tên:** luôn là `@username` (`PlayerInfo.name` / `UserInfoData.username` / `LeaderboardEntry.username`), live text, không dịch, không viết hoa. Ellipsis đếm phần sau `@`: 12 ký tự trong pod/chip, 16 trong list; `aria-label` đọc đủ tên.
+- **Chính mình:** ở pod, chip lượt và câu log có chủ ngữ là mình thì ghi `Bạn` (`Lượt của bạn`, `Bạn vừa qua Xuất phát`). Ở danh sách có nhiều người (ghế S5, bảng S9, BXH S11, chủ sở hữu S7 khi xem của người khác) vẫn ghi `@username` của mình.
+- **Avatar = icon VIP:** game không có ảnh đại diện; vòng avatar hiện ảnh VIP `avatarIconUrl(vipType)` (`game/src/sdk/avatar.ts`, catalog `@ola/shared/lib/vip`), chưa có VIP thì `ola_smiley_online.png`. Chỗ đã có avatar thì **không** chồng thêm badge VIP thứ hai (như thirteen).
+- **Chỗ chỉ có chữ** (footer log, thẻ Diễn biến, dòng chờ dưới chip lượt, banner O4, popup O3, chat, toast): `PlayerName` = icon VIP 14 px (`vipIconUrl`) + khoảng 4 + `@username` tô màu ghế (navy nếu không có ghế). User không có VIP thì bỏ icon, không chèn mặt cười.
+- **Bot** (bản chơi với máy): tên bot không có `@` vì không phải tài khoản; avatar theo VIP gán cho bot như xiangqi (`BOT_VIP_ID`), chỗ chỉ có chữ không có icon VIP.
+- Thứ tự trong `PlayerName`: [chấm màu ghế nếu là chat] → icon VIP → `@username`. Không đặt icon VIP sau tên.

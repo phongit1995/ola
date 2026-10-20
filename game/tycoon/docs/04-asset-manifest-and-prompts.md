@@ -45,7 +45,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 | `logo.webp` | raster sinh | 1 | §6.2 | S1, S2, header S6 |
 | `fx-result-1/2/3/4.webp` | raster sinh (tùy chọn — thử CSS trước) | 4 | §6.4 | S9 |
 | `reactions/*` | reuse caro | 6 | — | S6 |
-| vip-icons | shared static copy | — | vite | pod, row |
+| vip-icons | shared static copy | — | vite | mọi avatar người chơi + icon 14 px trước `@username` (03 §18) |
 | `app-icons/` | SVG nguồn + PNG 1024 | 1 | 06 §6 | admin upload `mini_games` |
 | dữ liệu bàn/thẻ | `board.gen.json`, `cards.gen.json` | 2 | codegen Go (05) | S7, O2, S8 |
 

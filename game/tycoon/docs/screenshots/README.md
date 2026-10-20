@@ -20,6 +20,7 @@ Docs đã được sửa theo ảnh này: [art direction](../01-art-direction.md
 ## Docs vẫn thắng ảnh ở
 
 - **Dữ liệu:** tên ô, thứ tự, giá, tiền thuê, chủ sở hữu, trạng thái lấy từ [`logic/board.json`](../../logic/board.json) và ván chơi; chữ dựng bằng DOM. Tiền trên pod trong ảnh chỉ là số minh họa.
+- **Tên và avatar người chơi:** ảnh vẽ tên mẫu (`Linh`, `Khoa`, `Mai`) và mặt người; khi dựng pod người khác ghi `@username`, avatar là icon VIP của user ([03 §18](../03-component-specs.md)).
 - **Mã màu nhóm đất và màu ghế:** dùng token trong [`style/01-foundations.md`](../style/01-foundations.md); ảnh vẽ đậm hơn (ví dụ hồng gần magenta).
 - **Ba chỗ ảnh tự mâu thuẫn:**
   - bàn hơi cao hơn rộng → khi dựng khóa **1:1**;

@@ -33,7 +33,7 @@ Vị trí nút từng pha ở 02 §6.3; bảng dưới chỉ quy định biến 
 | manage | Xây / bán | paper + `ic-house` jade |
 | manage | Kết thúc lượt / Gieo tiếp | gold |
 | debt | Bán nhà / Trả {x} tr / Phá sản | paper + `ic-minus` coral / gold + `ic-coins` / danger |
-| chờ người khác | chip `Lượt của @ten` + dòng pha | chip paper viền màu ghế, chữ navy; 3 chấm thay đồng hồ; không nút |
+| chờ người khác | chip `(avatar VIP) Lượt của @username` + dòng pha | chip paper viền màu ghế, chữ navy; 3 chấm thay đồng hồ; không nút |
 
 ## 3. `.ty-icon-btn`
 
