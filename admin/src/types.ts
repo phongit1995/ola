@@ -2377,3 +2377,31 @@ export interface AdminConversationMessages {
   nextBefore?: string
   hasNewer: boolean
 }
+
+export type WordChainPurchaseType = 'hint' | 'guess'
+
+export interface WordChainPurchase {
+  id: string
+  type: WordChainPurchaseType
+  user: { id: string; username: string; fullName?: string; avatar?: string }
+  word?: string
+  hints?: string[]
+  guesses?: number
+  amount: number
+  createdAt: string
+}
+
+export interface WordChainPurchaseList {
+  items: WordChainPurchase[]
+  total: number
+  summary: { hintCount: number; hintKen: number; guessCount: number; guessKen: number }
+}
+
+export interface WordChainPurchaseParams {
+  type?: WordChainPurchaseType
+  search?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}

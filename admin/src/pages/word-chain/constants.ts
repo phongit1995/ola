@@ -29,4 +29,4 @@ export const BOT_TYPE_LABEL: Record<WordChainMessageType, string> = {
   wrong_answer: 'Báo sai',
 }
 
-export const TAB_KEYS = ['history', 'wins', 'settings'] as const
+export const TAB_KEYS = ['history', 'wins', 'purchases', 'settings'] as const

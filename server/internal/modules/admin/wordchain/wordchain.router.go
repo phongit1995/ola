@@ -20,5 +20,6 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		wordChain.GET("", r.controller.Overview)
 		wordChain.GET("/messages", r.controller.Messages)
 		wordChain.GET("/wins", r.controller.Wins)
+		wordChain.GET("/purchases", r.controller.Purchases)
 	}
 }

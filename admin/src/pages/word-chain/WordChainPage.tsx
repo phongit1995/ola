@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Card, Space, Tabs } from 'antd'
 import { WordChainMessagesTab } from './WordChainMessagesTab'
 import { WordChainOverviewCard } from './WordChainOverviewCard'
+import { WordChainPurchasesTab } from './WordChainPurchasesTab'
 import { WordChainSettingsTab } from './WordChainSettingsTab'
 import { WordChainWinsTab } from './WordChainWinsTab'
 import { TAB_KEYS } from './constants'
@@ -27,6 +28,7 @@ export function WordChainPage() {
           items={[
             { key: 'history', label: 'Lịch sử nối từ', children: <WordChainMessagesTab /> },
             { key: 'wins', label: 'Trận thắng', children: <WordChainWinsTab /> },
+            { key: 'purchases', label: 'Lịch sử mua', children: <WordChainPurchasesTab /> },
             { key: 'settings', label: 'Cấu hình', children: <WordChainSettingsTab /> },
           ]}
         />

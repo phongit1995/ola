@@ -1,6 +1,6 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { AdminWordChainService } from '@/services/adminWordChain.service'
-import type { WordChainCursorPage, WordChainWinsParams } from '@/types'
+import type { WordChainCursorPage, WordChainPurchaseParams, WordChainWinsParams } from '@/types'
 
 const WORD_CHAIN_KEY = 'admin-word-chain'
 const MESSAGE_PAGE_SIZE = 50
@@ -34,5 +34,13 @@ export function useWordChainWins(params: WordChainWinsParams) {
       AdminWordChainService.wins({ ...params, limit: WIN_PAGE_SIZE, before: pageParam }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: nextCursor,
+  })
+}
+
+export function useWordChainPurchases(params: WordChainPurchaseParams) {
+  return useQuery({
+    queryKey: [WORD_CHAIN_KEY, 'purchases', params],
+    queryFn: () => AdminWordChainService.purchases(params),
+    placeholderData: keepPreviousData,
   })
 }
