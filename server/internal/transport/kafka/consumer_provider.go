@@ -8,6 +8,7 @@ import (
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
+	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	userBanEvents "ola-chat-server/internal/domain/user-ban"
 
 	"go.uber.org/dig"
@@ -35,6 +36,7 @@ func ProvideConsumer(c *dig.Container) error {
 		meNotificationEvents.Provider,
 		appNotificationEvents.Provider,
 		userBanEvents.Provider,
+		pushBroadcastEvents.Provider,
 	}
 
 	for _, module := range modules {

@@ -1172,7 +1172,10 @@
     "reasonOther": "Khác",
     "notePlaceholder": "Mô tả thêm (không bắt buộc)",
     "send": "Gửi",
-    "sent": "Cảm ơn bạn đã gửi báo cáo đến Ola"
+    "sent": "Cảm ơn bạn đã gửi báo cáo đến Ola",
+    "already": "Bạn đã báo cáo nội dung này, Ola đang xem xét",
+    "notFound": "Nội dung này không còn tồn tại",
+    "error": "Gửi báo cáo thất bại, vui lòng thử lại"
   },
   "profileEdit": {
     "title": "Thông tin cá nhân",

@@ -24,6 +24,7 @@ var (
 	PolicyWheelSpin   = RateLimitPolicy{Name: "wheel_spin", Limit: perWindow(1, 3*time.Second)}
 	PolicyCallStart   = RateLimitPolicy{Name: "call_start", Limit: perWindow(1, 3*time.Second)}
 	PolicyChatBot     = RateLimitPolicy{Name: "chat_bot", Limit: perWindow(10, time.Minute)}
+	PolicyReport      = RateLimitPolicy{Name: "report", Limit: perWindow(20, time.Hour)}
 
 	PolicyStoryChapter = RateLimitPolicy{Name: "story_chapter", Limit: perWindow(60, time.Minute)}
 

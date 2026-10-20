@@ -10,6 +10,7 @@ import (
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
+	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	userBanEvents "ola-chat-server/internal/domain/user-ban"
 )
 
@@ -22,6 +23,7 @@ type KafkaEventAdapter struct {
 	meNotificationHandler  *meNotificationEvents.EventHandler
 	appNotificationHandler *appNotificationEvents.EventHandler
 	userBanHandler         *userBanEvents.EventHandler
+	pushBroadcastHandler   *pushBroadcastEvents.EventHandler
 }
 
 func NewKafkaEventAdapter(
@@ -33,6 +35,7 @@ func NewKafkaEventAdapter(
 	meNotificationHandler *meNotificationEvents.EventHandler,
 	appNotificationHandler *appNotificationEvents.EventHandler,
 	userBanHandler *userBanEvents.EventHandler,
+	pushBroadcastHandler *pushBroadcastEvents.EventHandler,
 ) *KafkaEventAdapter {
 	return &KafkaEventAdapter{
 		messageHandler:         messageHandler,
@@ -43,6 +46,7 @@ func NewKafkaEventAdapter(
 		meNotificationHandler:  meNotificationHandler,
 		appNotificationHandler: appNotificationHandler,
 		userBanHandler:         userBanHandler,
+		pushBroadcastHandler:   pushBroadcastHandler,
 	}
 }
 
@@ -130,6 +134,10 @@ func (a *KafkaEventAdapter) HandleUserBanned(ctx context.Context, message []byte
 	return a.userBanHandler.OnBanned(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandlePushBroadcast(ctx context.Context, message []byte) error {
+	return a.pushBroadcastHandler.OnRequested(ctx, message)
+}
+
 func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicMessageCreated, adapter.HandleMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicMessageDeleted, adapter.HandleMessageDeleted)
@@ -152,4 +160,5 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicMeNotification, adapter.HandleMeNotification)
 	consumer.RegisterHandler(constants.KafkaTopicAppNotification, adapter.HandleAppNotification)
 	consumer.RegisterHandler(constants.KafkaTopicUserBanned, adapter.HandleUserBanned)
+	consumer.RegisterHandler(constants.KafkaTopicPushBroadcast, adapter.HandlePushBroadcast)
 }

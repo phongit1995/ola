@@ -22,6 +22,8 @@ import { KenChestsPage } from '@/pages/games/ken-chest/KenChestsPage'
 import { KenTransfersPage } from '@/pages/ken-transfers/KenTransfersPage'
 import { MiniGamePage } from '@/pages/games/mini-game/MiniGamePage'
 import { MePage } from '@/pages/me/MePage'
+import { ReportsPage } from '@/pages/reports/ReportsPage'
+import { PushCampaignPage } from '@/pages/settings/PushCampaignPage'
 import { TopupSettingsPage } from '@/pages/topup/TopupSettingsPage'
 import { TopupTransactionsPage } from '@/pages/topup/TopupTransactionsPage'
 import { UsernameChangeSettingsPage } from '@/pages/username-change/UsernameChangeSettingsPage'
@@ -77,12 +79,14 @@ export const router = createBrowserRouter([
       { path: 'users/username-changes', element: <UsernameChangesPage /> },
       { path: 'ken-transfers', element: <Navigate to="/users/ken-transfers" replace /> },
       { path: 'me', element: <MePage /> },
+      { path: 'reports', element: <ReportsPage /> },
       { path: 'stories', element: <StoriesPage /> },
       { path: 'stories/settings', element: <StorySettingsPage /> },
       { path: 'settings/topup', element: <TopupSettingsPage /> },
       { path: 'settings/username-change', element: <UsernameChangeSettingsPage /> },
       { path: 'settings/announcements', element: <AnnouncementPage /> },
       { path: 'settings/notification', element: <NotificationSettingsPage /> },
+      { path: 'settings/push-campaigns', element: <PushCampaignPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },
     ],
   },

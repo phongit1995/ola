@@ -1172,7 +1172,10 @@
     "reasonOther": "Other",
     "notePlaceholder": "Additional details (optional)",
     "send": "Send",
-    "sent": "Thank you for sending a report to Ola"
+    "sent": "Thank you for sending a report to Ola",
+    "already": "You already reported this. Ola is reviewing it",
+    "notFound": "This content no longer exists",
+    "error": "Could not send the report, please try again"
   },
   "profileEdit": {
     "title": "Profile",

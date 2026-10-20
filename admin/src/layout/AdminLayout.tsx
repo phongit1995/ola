@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { App, Avatar, Dropdown, Layout, Menu, Typography } from 'antd'
+import { App, Avatar, Badge, Dropdown, Layout, Menu, Space, Typography } from 'antd'
 import {
   AimOutlined,
   BellOutlined,
@@ -19,6 +19,7 @@ import {
   NotificationOutlined,
   PlayCircleOutlined,
   RocketOutlined,
+  SendOutlined,
   SettingOutlined,
   ShoppingCartOutlined,
   SmileOutlined,
@@ -30,13 +31,18 @@ import {
   UnorderedListOutlined,
   UsergroupAddOutlined,
   UserOutlined,
+  WarningOutlined,
 } from '@ant-design/icons'
 import { AdminAuthService } from '@/services/adminAuth.service'
 import { ChangePasswordModal } from '@/pages/auth/ChangePasswordModal'
 import { useAuthStore } from '@/store/authStore'
 import { ApiError } from '@/lib/apiError'
+import { useReportSummary } from '@/hooks/useReportSummary'
 
 const { Sider, Header, Content } = Layout
+
+const REPORTS_PATH = '/reports'
+const REPORTS_LABEL = 'Báo cáo vi phạm'
 
 const MENU_ITEMS = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Tổng quan' },
@@ -87,6 +93,7 @@ const MENU_ITEMS = [
     ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
+  { key: REPORTS_PATH, icon: <WarningOutlined />, label: REPORTS_LABEL },
   {
     key: 'stories',
     icon: <ReadOutlined />,
@@ -106,6 +113,7 @@ const MENU_ITEMS = [
       { key: '/settings/username-change', icon: <EditOutlined />, label: 'Đổi nickname' },
       { key: '/settings/announcements', icon: <NotificationOutlined />, label: 'Thông báo banner' },
       { key: '/settings/notification', icon: <BellOutlined />, label: 'Thông báo đẩy' },
+      { key: '/settings/push-campaigns', icon: <SendOutlined />, label: 'Gửi push' },
     ],
   },
 ]
@@ -153,6 +161,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/settings/username-change': 'Cài đặt đổi nickname',
   '/settings/announcements': 'Thông báo banner',
   '/settings/notification': 'Cài đặt thông báo đẩy',
+  '/settings/push-campaigns': 'Gửi push thông báo',
+  [REPORTS_PATH]: REPORTS_LABEL,
 }
 
 export function AdminLayout() {
@@ -163,6 +173,20 @@ export function AdminLayout() {
   const [passwordOpen, setPasswordOpen] = useState(false)
   const admin = useAuthStore((s) => s.admin)
   const clear = useAuthStore((s) => s.clear)
+  const pendingReports = useReportSummary().data?.pending ?? 0
+  const menuItems = MENU_ITEMS.map((item) =>
+    item.key === REPORTS_PATH
+      ? {
+          ...item,
+          label: (
+            <Space size={6}>
+              {REPORTS_LABEL}
+              <Badge count={pendingReports} size="small" />
+            </Space>
+          ),
+        }
+      : item,
+  )
 
   const menuPath =
     Object.entries(MENU_PATH_ALIASES).find(([prefix]) =>
@@ -229,7 +253,7 @@ export function AdminLayout() {
           mode="inline"
           selectedKeys={[selectedKey]}
           defaultOpenKeys={openKeys}
-          items={MENU_ITEMS}
+          items={menuItems}
           onClick={({ key }) => navigate(key)}
         />
       </Sider>

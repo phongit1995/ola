@@ -1,4 +1,6 @@
 import type {
+  ReportReason,
+  ReportTargetType,
   Story,
   StoryChapterSummary,
   StoryComment,
@@ -2179,4 +2181,109 @@ export interface StoryCrawlerStatus {
 
 export interface StoryCrawlRunResult {
   started: boolean
+}
+
+export type { ReportReason, ReportTargetType }
+
+export type ReportStatus = 'pending' | 'resolved' | 'dismissed'
+
+export interface ReportUserBrief {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+  isActive: boolean
+}
+
+export interface ReportAdminBrief {
+  id: string
+  username: string
+  fullName?: string
+}
+
+export interface ReportSnapshot {
+  username?: string
+  fullName?: string
+  avatar?: string
+  text?: string
+  imageUrls?: string[]
+  audioUrl?: string
+  fileUrl?: string
+  sticker?: string
+  messageType?: string
+  sentAt?: string
+}
+
+export interface AdminReport {
+  id: string
+  targetType: ReportTargetType
+  targetId: string
+  contextId?: string
+  reason: ReportReason
+  note?: string
+  snapshot?: ReportSnapshot
+  status: ReportStatus
+  reporter?: ReportUserBrief
+  reportedUser?: ReportUserBrief
+  handledBy?: ReportAdminBrief
+  handledAt?: string
+  handlerNote?: string
+  sameTargetPending: number
+  createdAt: string
+}
+
+export interface ReportListParams {
+  status?: ReportStatus
+  targetType?: ReportTargetType
+  reportedUserId?: string
+  q?: string
+  limit?: number
+  offset?: number
+}
+
+export interface ReportSummary {
+  pending: number
+}
+
+export interface UpdateReportStatusRequest {
+  status: Exclude<ReportStatus, 'pending'>
+  note?: string
+}
+
+export interface UpdateReportStatusResult {
+  report: AdminReport
+  affected: number
+}
+
+export type PushAudience = 'all' | 'vip' | 'user'
+
+export type PushCampaignStatus = 'queued' | 'sending' | 'done' | 'failed'
+
+export interface PushCampaign {
+  id: string
+  audience: PushAudience
+  targetUser?: { id: string; username: string; fullName?: string; avatar?: string }
+  title: string
+  body: string
+  status: PushCampaignStatus
+  totalDevices: number
+  successCount: number
+  failureCount: number
+  error?: string
+  createdBy?: ReportAdminBrief
+  startedAt?: string
+  finishedAt?: string
+  createdAt: string
+}
+
+export interface CreatePushCampaignRequest {
+  audience: PushAudience
+  username?: string
+  title: string
+  body: string
+}
+
+export interface PushAudienceCount {
+  users: number
+  devices: number
 }

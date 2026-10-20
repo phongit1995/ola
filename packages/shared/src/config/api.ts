@@ -94,6 +94,9 @@ export const API_PATH = {
   push: {
     token: '/push/token',
   },
+  reports: {
+    base: '/reports',
+  },
   relationships: {
     request: '/relationships/request',
     respond: (id: string) => `/relationships/${id}/respond`,

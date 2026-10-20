@@ -26,6 +26,7 @@ import {
   createDateSeparatorFormatter,
   filterVisibleRoomMessages,
 } from '@ola/shared/lib';
+import { REPORT_TARGET_TYPE } from '@ola/shared/constants';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   RoomBlockLimitError,
@@ -507,7 +508,11 @@ export function RoomMessagesTab({
 
       {reportTarget != null && (
         <ReportDialog
-          target={{ type: 'message', id: reportTarget.id }}
+          target={{
+            type: REPORT_TARGET_TYPE.roomMessage,
+            id: reportTarget.id,
+            contextId: reportTarget.roomId,
+          }}
           onClose={() => setReportTarget(null)}
         />
       )}

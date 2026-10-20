@@ -62,6 +62,7 @@ type Sender struct {
 	cache         cacheStore
 	conns         ConnectionCounter
 	store         tokenStore
+	db            *gorm.DB
 	logger        *zap.SugaredLogger
 	jobs          chan func()
 	trailingDelay time.Duration
@@ -84,6 +85,7 @@ func NewSender(fcm *FCMClient, cache *services.CacheService, presence *websocket
 		cache:         cache,
 		conns:         presence,
 		store:         newGormStore(db, log),
+		db:            db,
 		logger:        log,
 		jobs:          make(chan func(), constants.PushDispatchQueueSize),
 		trailingDelay: time.Duration(constants.PushThrottleTTLSeconds)*time.Second + trailingGrace,

@@ -27,6 +27,7 @@ const (
 	KafkaTopicMeNotification             = "CHAT.ME.NOTIFICATION"
 	KafkaTopicAppNotification            = "CHAT.APP.NOTIFICATION"
 	KafkaTopicUserBanned                 = "CHAT.USER.BANNED"
+	KafkaTopicPushBroadcast              = "CHAT.PUSH.BROADCAST"
 )
 
 func AllKafkaTopics() []string {
@@ -52,6 +53,7 @@ func AllKafkaTopics() []string {
 		KafkaTopicMeNotification,
 		KafkaTopicAppNotification,
 		KafkaTopicUserBanned,
+		KafkaTopicPushBroadcast,
 	}
 }
 
@@ -379,6 +381,48 @@ const (
 	APNSPushTypeAlert    = "alert"
 	APNSPriorityHigh     = "10"
 	APNSSoundDefault     = "default"
+)
+
+const (
+	PushSourceBroadcast       = "broadcast"
+	PushDataTypeBroadcast     = "broadcast"
+	PushCollapseBroadcast     = "broadcast"
+	PushBroadcastNotifPrefix  = "broadcast:"
+	PushAudienceAll           = "all"
+	PushAudienceVIP           = "vip"
+	PushAudienceUser          = "user"
+	PushCampaignStatusQueued  = "queued"
+	PushCampaignStatusSending = "sending"
+	PushCampaignStatusDone    = "done"
+	PushCampaignStatusFailed  = "failed"
+)
+
+func PushBroadcastNotifID(campaignID string) string {
+	return PushBroadcastNotifPrefix + campaignID
+}
+
+const (
+	ReportTargetAccount      = "account"
+	ReportTargetPost         = "post"
+	ReportTargetComment      = "comment"
+	ReportTargetStoryComment = "story_comment"
+	ReportTargetMessage      = "message"
+	ReportTargetRoomMessage  = "room_message"
+
+	ReportReasonSpam       = "spam"
+	ReportReasonSensitive  = "sensitive"
+	ReportReasonScam       = "scam"
+	ReportReasonHarassment = "harassment"
+	ReportReasonOther      = "other"
+
+	ReportStatusPending   = "pending"
+	ReportStatusResolved  = "resolved"
+	ReportStatusDismissed = "dismissed"
+
+	ReportNoteMaxRunes    = 500
+	ReportTargetIDMaxLen  = 64
+	ReportHandlerNoteMax  = 1000
+	ErrorCodeReportExists = "REPORT_ALREADY_SUBMITTED"
 )
 
 const (

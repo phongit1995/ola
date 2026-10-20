@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { MESSAGE_TYPE } from '@constants';
+import { MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
 import {
   BUBBLE_WALLPAPER,
   buildRoomFeed,
@@ -390,7 +390,11 @@ export function RoomMessagesTab({
       />
       {reportTarget != null && (
         <ReportDialog
-          target={{ type: 'message', id: reportTarget.id }}
+          target={{
+            type: REPORT_TARGET_TYPE.roomMessage,
+            id: reportTarget.id,
+            contextId: reportTarget.roomId,
+          }}
           onClose={() => setReportTarget(null)}
         />
       )}
