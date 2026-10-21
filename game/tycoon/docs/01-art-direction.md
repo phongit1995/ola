@@ -2,7 +2,9 @@
 
 > Đây là art direction tổng quan. Token đầy đủ, bảng màu 32 ô, nhân vật và ma trận màu icon nằm trong [`style/`](./style/README.md).
 >
-> **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`screenshots/concept-s6-board-pixel-16bit.png`](./screenshots/concept-s6-board-pixel-16bit.png). Ảnh thắng về mỹ thuật; docs thắng về dữ liệu, mã màu nhóm/ghế và 3 chỗ ảnh tự mâu thuẫn ([style/README.md](./style/README.md#ảnh-mẫu-và-docs--cái-nào-thắng)).
+> **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`style/screens/s6-board/concept-s6-board-pixel-16bit.png`](./style/screens/s6-board/concept-s6-board-pixel-16bit.png). Ảnh thắng về mỹ thuật; docs thắng về dữ liệu, mã màu nhóm/ghế và 3 chỗ ảnh tự mâu thuẫn ([style/README.md](./style/README.md#ảnh-mẫu-và-docs--cái-nào-thắng)).
+>
+> **Lobby S2:** người dùng đã chọn [phương án 1 — Nền trời thoáng](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png). [Style S2](./style/screens/s2-lobby/README.md) quy định hero Bác Tỷ + ba thẻ/hai quân, menu vàng/kem, Nunito và responsive. Ảnh S6 vẫn là chuẩn cho bàn chơi.
 
 ## 1. DNA hình ảnh
 
@@ -127,7 +129,7 @@ Stroke 2 px, cap tròn, grid 24 cho icon điều khiển; glyph ô bàn cờ là
 
 ### 5.1 Font
 
-- UI: giữ hệ font của game Ola hiện có (sans đậm cho số/nút, xem caro) — không thêm font mới.
+- UI: **Nunito 400–800**, dùng lại file local Latin + Vietnamese của Caro đang khai báo ở `game/tycoon/style.css`; không thêm font mới. S2 có scale chữ riêng theo [S2 lobby §3](./style/screens/s2-lobby/README.md#3-chữ-và-màu).
 - Số tiền dùng `font-variant-numeric: tabular-nums` ở mọi nơi để pod không nhảy chiều rộng.
 - Không có chữ trong ảnh (trừ logo `CỜ TỶ PHÚ`). Tên ô trên thẻ sở hữu và tên thẻ bài đều live text.
 

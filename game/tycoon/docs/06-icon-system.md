@@ -33,10 +33,10 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 3 | `ic-chevron-right` | xiangqi | 20 | phân trang | Trang sau |
 | 4 | `ic-close` | xiangqi | 20 | sheet/modal/chat | Đóng |
 | 5 | `ic-refresh` | xiangqi | 20 | S3 | Làm mới danh sách |
-| 6 | `ic-volume-on` | xiangqi | 22 | lobby | Tắt âm |
-| 7 | `ic-volume-off` | xiangqi | 22 | lobby | Bật âm |
+| 6 | `ic-volume-on` | xiangqi | 24 | lobby | Tắt âm |
+| 7 | `ic-volume-off` | xiangqi | 24 | lobby | Bật âm |
 | 8 | `ic-lock` | xiangqi | 16 | room row, S5 | Có mật khẩu |
-| 9 | `ic-ken` | xiangqi | 16 | badge KEN lobby | — (số trong text) |
+| 9 | `ic-ken` | xiangqi | 24 | badge KEN lobby | — (số trong text) |
 | 10 | `ic-chat` | xiangqi | 24 | footer S5/S6 | Mở trò chuyện |
 | 11 | `ic-reaction` | xiangqi | 24 | footer S6 | Mở bảng cảm xúc |
 | 12 | `ic-flag` | xiangqi | 24 | menu S6 | Bỏ cuộc |
@@ -46,12 +46,12 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 16 | `ic-warning` | xiangqi | 16/20 | lỗi, lý do disabled | — |
 | 17 | `ic-check` | xiangqi | 16/20 | sẵn sàng, mua xong | — |
 | 18 | `ic-owner` | xiangqi | 16 | ghế chủ bàn | Chủ bàn |
-| 19 | `ic-history` | xiangqi | 20 | lobby | Xem lịch sử |
-| 20 | `ic-leaderboard` | xiangqi | 20 | lobby | Xem bảng xếp hạng |
+| 19 | `ic-history` | xiangqi | 20 | lobby fallback cho minh họa | Xem lịch sử |
+| 20 | `ic-leaderboard` | xiangqi | 20 | lobby fallback cho minh họa | Xem bảng xếp hạng |
 | 21 | `ic-user-minus` | thirteen | 20 | S5 mời ra | Mời ra khỏi bàn |
 | 22 | `ic-plus` | thirteen | 20 | S4 ghế trống, S8 nâng cấp | Thêm / Nâng cấp |
 | 23 | `ic-minus` | **mới** | 20 | S8 bán, O3 bán | Bán nhà |
-| 24 | `ic-dice` | **mới** | 20/24 | CTA gieo, S2 Vào bàn | Gieo xúc xắc |
+| 24 | `ic-dice` | **mới** | 20/24 | CTA gieo, S2 Vào bàn fallback cho minh họa | lấy nhãn của nút: Gieo xúc xắc / Vào bàn |
 | 25 | `ic-deed` | **mới** | 20/24 | footer S6 (mở S8), chip số đất trong pod (16) | Xem tài sản |
 | 26 | `ic-house` | **mới** | 16/20 | chip nhà trong S8, log | — |
 | 27 | `ic-key` | **mới** | 16 | pod: có thẻ ra tù | Có thẻ ra tù |
@@ -59,7 +59,7 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 29 | `ic-coins` | **mới** | 16/20 | tổng tài sản S8/S9, nút Trả nợ | — |
 | 30 | `ic-more` | **mới** | 24 | menu ⋯ topbar S6 | Thêm tùy chọn |
 
-Không có `ic-rules`: nút Luật chơi ở lobby là nút text, không icon.
+Không có `ic-rules` trong họ A. Lobby S2 đã chốt có sách `ill-rules.svg` bên cạnh chữ Luật chơi; đây là một trong **5 minh họa SVG trang trí riêng S2** (`lobby/ill-{dice,history,leaderboard,rules,exit}.svg`), không nằm trong inventory 30 `ic-*`. Hình, màu, kích thước và fallback theo [S2 lobby §6](./style/screens/s2-lobby/README.md#6-nút-và-minh-họa). Chúng có contour navy + fill màu, `aria-hidden`; accessible name lấy từ nhãn action, không áp quy tắc icon stroke đơn sắc cho các minh họa này.
 
 ### 2.3 Công thức hình học 8 icon mới
 

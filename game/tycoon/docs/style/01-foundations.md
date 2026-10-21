@@ -74,7 +74,7 @@ Mã màu Cơ hội, Khí vận, Lễ hội đo từ ảnh mẫu. Cơ hội đổ
 --ty-landing: rgba(242,184,7,.45);
 --ty-path: rgba(242,184,7,.25);
 --ty-bankrupt: rgba(31,42,68,.35);
---ty-focus: var(--ty-gold);
+--ty-focus: var(--ty-navy);   /* ring navy để thấy được cả trên nút gold */
 --ty-disabled-opacity: .45;
 --ty-deck-chance: var(--ty-chance);
 --ty-deck-chest: var(--ty-chest);
@@ -83,7 +83,7 @@ Mã màu Cơ hội, Khí vận, Lễ hội đo từ ảnh mẫu. Cơ hội đổ
 ## 2. Chữ
 
 ```css
---ty-font: inherit;            /* hệ font game Ola hiện có */
+--ty-font: 'Nunito', ui-sans-serif, system-ui, sans-serif; /* dùng font local hiện có của Caro */
 --ty-fs-title: 24px;  --ty-fw-title: 800;
 --ty-fs-announce: 20px; --ty-ls-announce: .04em;
 --ty-fs-cta: 17px;    --ty-fw-cta: 700;
@@ -99,6 +99,8 @@ Mã màu Cơ hội, Khí vận, Lễ hội đo từ ảnh mẫu. Cơ hội đổ
 ```
 
 Số tiền: `font-variant-numeric: tabular-nums`. Tên người: luôn `@username` kèm icon VIP (`../03-component-specs.md` §18); cắt ellipsis 12 ký tự trong pod, 16 trong list (không tính `@`).
+
+Nunito có weight 400–800 và đủ glyph tiếng Việt, đã khai báo tại `game/tycoon/style.css`. Kích thước chữ riêng lobby S2 theo [S2 lobby §3](./screens/s2-lobby/README.md#3-chữ-và-màu), không thay scale control S6 ở trên.
 
 ## 3. Spacing và kích thước
 
@@ -184,7 +186,7 @@ Bàn: `--ty-board: min(100vw - 2 * var(--ty-gutter), 480px)`; `--ty-corner: calc
 |---|---|
 | hover (pointer) | viền 2 px + `translateY(-1px)`; không đổi màu nền |
 | active/pressed | `translateY(0)`, shadow sm, nền paper → paper-deep |
-| focus-visible | ring `--ty-focus` 3 px, offset 2 px, không bỏ outline |
+| focus-visible | ring `--ty-focus` 2 px, offset 3 px (khe offset là nền paper để tách khỏi nút), không bỏ outline; dùng chung mọi màn, kể cả S2 |
 | disabled | opacity `--ty-disabled-opacity`, không shadow, `cursor: not-allowed`, kèm lý do text nếu là hành động trong ván |
 | loading | spinner 16 px thay icon, chữ giữ nguyên, bar disabled |
 | selected (ô) | viền navy 2 px bên trong ô |

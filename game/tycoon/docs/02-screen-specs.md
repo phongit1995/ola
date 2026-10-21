@@ -10,7 +10,7 @@ Mọi số đo tại viewport logic `390 × 844`. Width hỗ trợ 360–520 px:
 
 ## S1. Loading / Connecting
 
-Hiện khi `lobbyPhase = 'loading' | 'connecting' | 'error'`, nằm trong LobbyScreen.
+Hiện khi `lobbyPhase = 'loading' | 'connecting' | 'error'` trong lần vào sảnh ban đầu, nằm trong LobbyScreen. Nếu đã hiện S2 rồi mới mất kết nối, giữ layout S2 và báo lỗi theo [S2 lobby §8](./style/screens/s2-lobby/README.md#8-loading-offline-và-responsive), không dựng thêm logo/menu S1 bên trên.
 
 - Nền trời pixel như S6 (01 §7) + logo giữa màn (y 38%).
 - Dưới logo 24 px: `Đang tải... {n}%` hoặc `Đang kết nối...`.
@@ -21,23 +21,26 @@ Hiện khi `lobbyPhase = 'loading' | 'connecting' | 'error'`, nằm trong LobbyS
 
 ## S2. Lobby
 
+**Ảnh đã chốt: phương án 1 — Nền trời thoáng.** Xem [concept S2](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) và [style lobby](./style/screens/s2-lobby/README.md) cho font, màu, hero, asset, trạng thái và responsive. Các mốc dưới đây ở vùng khả dụng 390 × 844 sau safe-area; bố cục dùng luồng dọc, không khóa toàn màn bằng tọa độ tuyệt đối.
+
 ### 2.1 Cấu trúc dọc
 | Vùng | y | Nội dung |
 |---|---|---|
-| Topbar | 0–64 | avatar VIP + `@username` (trái, 03 §18), badge KEN (phải), nút âm thanh |
-| Logo | 96–300 | logo "CỜ TỶ PHÚ" + minh họa 2 quân cờ trên 3 ô bàn |
-| CTA stack | 330–580 | 4 nút dọc, cách 16 px |
-| Footer | đáy − 32 | nút Thoát game (`bridge.exit()`), version nhỏ |
+| Topbar | 28–80 | avatar VIP + `@username` (trái, 03 §18), badge KEN (phải), nút âm thanh; KEN dài được xuống hàng |
+| Logo | 100–180 | logo "CỜ TỶ PHÚ", khung tối đa 320 × 80 |
+| Hero | 188–364 | Bác Tỷ trái, 3 thẻ đất có tranh pixel và 2 quân con tốt vàng/xanh bên phải |
+| CTA stack | 376–648 | 4 action dọc, rộng 280, cách 12 px |
+| Footer | đáy − 64 đến đáy − 20 | nút Thoát game (`bridge.exit()`) cao 44, version nhỏ; cách menu ít nhất 24 |
 
 ### 2.2 CTA stack
 | Nút | Style | Hành vi |
 |---|---|---|
-| `Vào bàn` | CTA vàng 320×64, chữ navy 17/700 | `openRanked()` → S3, preload nhóm RANKED |
-| `Lịch sử` | nút giấy kem viền navy 320×52 | S10 |
-| `Bảng xếp hạng` | nút giấy kem viền navy 320×52 | S11 |
-| `Luật chơi` | nút text 320×44, chữ navy 15/600 gạch chân | mở modal luật: 6 mục ngắn (gieo, mua, thuê, xây, tù, kết thúc), scroll, nút Đóng |
+| `Vào bàn` | CTA vàng 280×80, Nunito navy 32/800, minh họa xúc xắc | `openRanked()` → S3, preload nhóm RANKED |
+| `Lịch sử` | giấy kem viền navy 280×56, Nunito 24/800, minh họa đồng hồ blue | S10 |
+| `Bảng xếp hạng` | giấy kem viền navy 280×56, Nunito 24/800, minh họa bục/crown | S11 |
+| `Luật chơi` | nút text 280×44, Nunito navy 22/800 gạch chân, minh họa sách | mở modal luật: 6 mục ngắn (gieo, mua, thuê, xây, tù, kết thúc), scroll, nút Đóng |
 
-CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi dùng được offline.
+CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi, âm thanh và thoát dùng được offline. Kích thước/font riêng S2 không đổi control S6; co giãn và màn thấp theo [S2 lobby §8](./style/screens/s2-lobby/README.md#8-loading-offline-và-responsive).
 
 ---
 
@@ -92,7 +95,7 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 ## S6. Bàn chơi (BoardScreen, `boardMode='playing'`)
 
-> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-s6-board-pixel-16bit.png`](./screenshots/concept-s6-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`; bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./screenshots/README.md)).
+> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-s6-board-pixel-16bit.png`](./style/screens/s6-board/concept-s6-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`; bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./style/screens/s6-board/README.md)).
 >
 > Thay thế UI v2 (17/10): `TurnPanel` và `GameLog` dưới hàng pod được bỏ; nội dung `TurnPanel` chuyển vào giữa bàn (6.3), `GameLog` thu thành dòng sự kiện ở footer (6.5).
 
@@ -199,7 +202,7 @@ Hết giờ local (deadline qua): hàng 3 thay bằng dòng `Hết giờ, hệ t
 | Trái, lề 12 | logo chữ `CỜ TỶ PHÚ` + xúc xắc nhỏ (raster `lobby/logo.webp` hoặc live text) | cao 32, rộng ≤ 120 | không bấm |
 | Giữa (căn theo màn, không theo phần còn trống) | `RoundChip` `Vòng 7/30 · 18:20` (vòng / 30 + giờ còn lại của 25 phút) pill paper viền navy | 108 × 32 | không bấm; đổi màu từ vòng 28 (O7); giờ đổi đỏ khi còn ≤ 3 phút |
 | Phải, cách mép 12 | nút âm thanh tròn | 44 × 44 | bật/tắt âm, `aria-pressed` |
-| Phải cùng | nút menu tròn (☰ trong concept) | 44 × 44 | popover paper: `Về sảnh` · `Luật chơi` · `Bỏ cuộc` (coral) |
+| Phải cùng | nút menu tròn (☰ trong concept) | 44 × 44 | popover paper: `Về sảnh` · `Luật chơi` · `Hiệu ứng: Đầy đủ / Nhẹ / Tắt` (radio, 08 §5) · `Bỏ cuộc` (coral) |
 
 Width < 370: ẩn chữ logo, chỉ giữ biểu tượng xúc xắc để chip vòng không bị đẩy lệch.
 

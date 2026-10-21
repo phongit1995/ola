@@ -5,11 +5,12 @@ Thư mục này là đặc tả triển khai chi tiết cho hướng mỹ thuậ
 - Tên hiển thị: **Phố Thị Rực Rỡ**.
 - ID dùng trong ticket/design review: `tycoon-city-v1`.
 - Viewport thiết kế gốc: `390 × 844 CSS px`, responsive `360–520 px`, có safe-area.
-- **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`../screenshots/concept-s6-board-pixel-16bit.png`](../screenshots/concept-s6-board-pixel-16bit.png) (xem [README ảnh mẫu](../screenshots/README.md)).
+- **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu: [S6 — bàn chơi](./screens/s6-board/concept-s6-board-pixel-16bit.png) và [S2 — lobby phương án 1, Nền trời thoáng](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) (xem [README ảnh mẫu](./screens/s6-board/README.md)).
 
 ## Ảnh mẫu và docs — cái nào thắng
 
 - **Ảnh mẫu thắng** về mỹ thuật: nền màn, cách vẽ tranh ô, hình glyph, hình quân, xúc xắc, nút, chồng thẻ, ô góc, bố cục S6.
+- **S2 dùng ảnh lobby riêng:** hero Bác Tỷ + ba thẻ/hai quân, menu trên nền trời mở, minh họa màu trong nút. Kích thước/font riêng màn, responsive và trạng thái theo [screens/s2-lobby](./screens/s2-lobby/README.md); không áp kích thước nút lobby sang bàn chơi.
 - **Docs thắng** về dữ liệu và con số: tên/thứ tự/giá ô lấy từ `logic/board.json`; hex màu nhóm đất và màu ghế giữ token `01-foundations.md` (ảnh AI vẽ đậm hơn, không lấy mã màu từ ảnh); kích thước theo px tại 390.
 - **Ba chỗ ảnh tự mâu thuẫn, docs giữ:** bàn vuông 1:1 (ảnh hơi cao); dải nhóm hàng trên nằm ở mép **trong** (đáy ô) như 3 cạnh còn lại, không có chữ trên dải; chỉ **một** vùng log (ảnh vẽ cả thẻ log lẫn dòng sự kiện ở footer).
 
@@ -21,6 +22,7 @@ Thư mục này là đặc tả triển khai chi tiết cho hướng mỹ thuậ
 4. [04-icon-colors.md](./04-icon-colors.md) — ma trận màu của 30 `ic-`, 13 `tg-`, xúc xắc, quân theo từng nền và trạng thái.
 5. [05-buttons-and-controls.md](./05-buttons-and-controls.md) — từng loại button/control và toàn bộ trạng thái.
 6. [06-implementation-plan.md](./06-implementation-plan.md) — kế hoạch triển khai UI theo giai đoạn, checklist và Definition of Done.
+7. [screens/](./screens/README.md) — mỗi màn một folder gồm style riêng + ảnh mẫu: [S2 lobby](./screens/s2-lobby/README.md) (phương án 1 — Nền trời thoáng), [S6 bàn chơi](./screens/s6-board/README.md) (ảnh chuẩn pixel 16-bit).
 
 ## Quyền quyết định
 

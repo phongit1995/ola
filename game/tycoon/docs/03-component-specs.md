@@ -146,7 +146,7 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 
 Mọi `.ty-btn` radius pill (ảnh mẫu); riêng nút đứng pha jail radius 16.
 
-State: hover viền 2 + translateY(−1); active translateY(0) shadow sm; disabled opacity 45% không shadow; focus-visible ring gold 3 px offset 2; loading spinner thay icon.
+State: hover viền 2 + translateY(−1); active translateY(0) shadow sm; disabled opacity 45% không shadow; focus-visible ring navy 2 px offset 3 (01-foundations §9); loading spinner thay icon.
 
 ## 14. Chip / Badge
 

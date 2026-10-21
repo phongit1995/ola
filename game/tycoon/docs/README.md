@@ -12,7 +12,9 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 
 ## Hướng duy nhất
 
-**Phố Thị Rực Rỡ** là design system duy nhất cho UI Cờ Tỷ Phú. **UI v3 (20/10/2026) theo ảnh mẫu pixel 16-bit** [`screenshots/concept-s6-board-pixel-16bit.png`](./screenshots/concept-s6-board-pixel-16bit.png): nền trời pixel, mỗi thành phố một tranh phong cảnh pixel trong ô, 8 dải màu nhóm đất, UI mượt viền navy, CTA vàng nổi khối, quân con tốt màu ghế, tiền xanh ngọc, nguy hiểm san hô. Production: bàn, ô, nhà, xúc xắc, thẻ, quân là SVG/DOM; raster cho tranh pixel ô, nền trời, logo và nhân vật.
+**Phố Thị Rực Rỡ** là design system duy nhất cho UI Cờ Tỷ Phú. **UI v3 (20/10/2026) theo ảnh mẫu pixel 16-bit** [`style/screens/s6-board/concept-s6-board-pixel-16bit.png`](./style/screens/s6-board/concept-s6-board-pixel-16bit.png): nền trời pixel, mỗi thành phố một tranh phong cảnh pixel trong ô, 8 dải màu nhóm đất, UI mượt viền navy, CTA vàng nổi khối, quân con tốt màu ghế, tiền xanh ngọc, nguy hiểm san hô. Production: bàn, ô, nhà, xúc xắc, thẻ, quân là SVG/DOM; raster cho tranh pixel ô, nền trời, logo và nhân vật.
+
+**Lobby S2 đã chốt phương án 1 — Nền trời thoáng:** [ảnh tham chiếu](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png), [đặc tả style lobby](./style/screens/s2-lobby/README.md). Nền trời mở, Bác Tỷ bên trái, ba thẻ đất + hai quân bên phải, menu vàng/kem với font Nunito. Đây là concept và đặc tả để triển khai; code UI hiện tại chưa được đổi sang mẫu này.
 
 ## Phạm vi v1 (đề xuất chốt)
 
@@ -77,8 +79,9 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 8. [08-fx-and-animation.md](./08-fx-and-animation.md) — kiến trúc 4 lớp (SVG / DOM / canvas Pixi hạt / overlay), ≈ 60 hiệu ứng theo sự kiện với bản Lite, API `FxLayer`, ngân sách hiệu năng, tier Full/Lite/Off.
 9. [09-economy.md](./09-economy.md) — kinh tế bàn 32 ô: bảng giá 16 thành phố, 3 cấp nhà, công thức, dòng tiền, thời gian một ván, thời gian chờ khi chơi với người thật, kết quả mô phỏng và dải kiểm tra tự động.
 10. [10-board-tiles.md](./10-board-tiles.md) — ghi chú nhanh 32 ô: loại ô, vị trí, giá, tiền thuê, ô nào mua / mua lại được, điều kiện thắng ngay theo ô.
-11. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
+11. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, [style lobby S2](./style/screens/s2-lobby/README.md), kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
 12. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
+13. [asset-generation-log.md](./asset-generation-log.md) — nguồn, prompt và lựa chọn concept lobby S2.
 
 ## Nguyên tắc bắt buộc
 
@@ -105,7 +108,7 @@ game/tycoon/assets/
   tiles/            # tg-* SVG glyph ô bàn cờ (grid 32) — xem 06 §3
   tiles/art/        # 19 tranh pixel 16-bit trong ô — xem 04 §6.5
   dice/             # 6 mặt xúc xắc SVG — xem 06 §6
-  lobby/            # bg-board-pixel.webp (nền trời dùng chung mọi màn), logo.webp
+  lobby/            # bg-board-pixel.webp, logo.webp; 5 ill-*.svg trang trí nút S2 (dự kiến)
   fx/               # fx-result-*.webp nếu CSS không đủ
 ```
 
