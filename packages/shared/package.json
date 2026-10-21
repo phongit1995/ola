@@ -11,6 +11,7 @@
     "./constants": "./src/constants/index.ts",
     "./lib": "./src/lib/index.ts",
     "./lib/vip": "./src/lib/vip.ts",
+    "./lib/vietqr": "./src/lib/vietqr.ts",
     "./types": "./src/types/index.ts",
     "./services": "./src/services/index.ts",
     "./services/*": "./src/services/*.ts",
