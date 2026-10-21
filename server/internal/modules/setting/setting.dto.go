@@ -1,6 +1,10 @@
 package setting
 
-import "ola-chat-server/internal/utils"
+import (
+	"encoding/json"
+
+	"ola-chat-server/internal/utils"
+)
 
 type TopupBankInfo struct {
 	BankName      string `json:"bankName" example:"Vietcombank"`
@@ -49,3 +53,11 @@ type FeatureEnabledResponse struct {
 }
 
 type FeatureEnabledSuccessResponse = utils.BaseResponse[FeatureEnabledResponse]
+
+type AppConfigResponse struct {
+	Version     string                     `json:"version" example:"9f86d081884c7d65"`
+	NotModified bool                       `json:"notModified,omitempty"`
+	Configs     map[string]json.RawMessage `json:"configs,omitempty" swaggertype:"object"`
+}
+
+type AppConfigSuccessResponse = utils.BaseResponse[AppConfigResponse]

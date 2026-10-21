@@ -1,7 +1,6 @@
 package setting
 
 import (
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -33,16 +32,24 @@ func (ctrl *Controller) TopupConfig(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	topup, err := ctrl.service.GetTopup()
+	resp, err := ctrl.topupConfigFor(ClientFrom(c))
 	if err != nil {
 		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+func (ctrl *Controller) topupConfigFor(client Client) (TopupConfigResponse, error) {
+	topup, err := ctrl.service.GetTopup()
+	if err != nil {
+		return TopupConfigResponse{}, err
 	}
 	bank, err := ctrl.service.GetTopupBank()
 	if err != nil {
-		return nil, utils.ServiceError(err)
+		return TopupConfigResponse{}, err
 	}
 
-	enabled := topup.EnabledFor(c.GetHeader(constants.HeaderPlatform), c.GetHeader(constants.HeaderAppVersion))
+	enabled := topup.EnabledFor(client.Platform, client.AppVersion)
 	resp := TopupConfigResponse{
 		Enabled:       enabled,
 		EnabledMobile: enabled,
@@ -79,11 +86,19 @@ func (ctrl *Controller) UsernameChangeConfig(c *gin.Context) (interface{}, error
 		return nil, err
 	}
 
-	cfg, err := ctrl.service.GetUsernameChange()
+	resp, err := ctrl.usernameChangeConfigFor(ClientFrom(c))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
-	enabled := cfg.EnabledFor(c.GetHeader(constants.HeaderPlatform), c.GetHeader(constants.HeaderAppVersion))
+	return resp, nil
+}
+
+func (ctrl *Controller) usernameChangeConfigFor(client Client) (UsernameChangeConfigResponse, error) {
+	cfg, err := ctrl.service.GetUsernameChange()
+	if err != nil {
+		return UsernameChangeConfigResponse{}, err
+	}
+	enabled := cfg.EnabledFor(client.Platform, client.AppVersion)
 	return UsernameChangeConfigResponse{Enabled: enabled, EnabledMobile: enabled, Tiers: cfg.Tiers}, nil
 }
 
@@ -123,11 +138,18 @@ func (ctrl *Controller) ChatBotConfig(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	cfg, err := ctrl.service.GetChatBot()
+	resp, err := ctrl.chatBotConfigFor(ClientFrom(c))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
-	client := ClientFrom(c)
+	return resp, nil
+}
+
+func (ctrl *Controller) chatBotConfigFor(client Client) (ChatBotPublicConfig, error) {
+	cfg, err := ctrl.service.GetChatBot()
+	if err != nil {
+		return ChatBotPublicConfig{}, err
+	}
 	bots := make([]ChatBotAvailability, 0, len(ChatBotTypes()))
 	for _, botType := range ChatBotTypes() {
 		bots = append(bots, ChatBotAvailability{Type: botType, Enabled: cfg.Bot(botType).EnabledFor(client)})
@@ -151,10 +173,38 @@ func (ctrl *Controller) StoryConfig(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	cfg, err := ctrl.service.GetStory()
+	resp, err := ctrl.storyConfigFor(ClientFrom(c))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
-	enabled := cfg.EnabledFor(c.GetHeader(constants.HeaderPlatform), c.GetHeader(constants.HeaderAppVersion))
-	return FeatureEnabledResponse{Enabled: enabled}, nil
+	return resp, nil
+}
+
+func (ctrl *Controller) storyConfigFor(client Client) (FeatureEnabledResponse, error) {
+	cfg, err := ctrl.service.GetStory()
+	if err != nil {
+		return FeatureEnabledResponse{}, err
+	}
+	return FeatureEnabledResponse{Enabled: cfg.EnabledFor(client.Platform, client.AppVersion)}, nil
+}
+
+// AppConfig godoc
+// @Summary      Gộp config hệ thống cho app trong một request
+// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
+// @Description  Gửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.
+// @Tags         settings
+// @Produce      json
+// @Security     BearerAuth
+// @Param        X-Platform header string false "web | android | ios"
+// @Param        X-App-Version header string false "Phiên bản app, ví dụ 1.0.0 (45)"
+// @Param        keys query string false "Chỉ lấy các key này, cách nhau bởi dấu phẩy; bỏ trống là tất cả"
+// @Param        version query string false "version của lần lấy trước"
+// @Success      200  {object}  AppConfigSuccessResponse
+// @Failure      401  {object}  utils.APIError
+// @Router       /settings/app [get]
+func (ctrl *Controller) AppConfig(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+	return collectAppConfig(ctrl.appConfigSources(), ClientFrom(c), parseAppConfigKeys(c.Query("keys")), c.Query("version"), ctrl.logger), nil
 }

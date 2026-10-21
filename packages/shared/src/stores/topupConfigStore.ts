@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { toApiError } from '../lib/apiError';
 import { toast } from '../lib/toast';
-import { SettingsService } from '../services/settings.service';
 import type { TopupConfigState } from '../types/client/settings.type';
+import { loadAppConfig, useAppConfigStore } from './appConfigStore';
 
 export const useTopupConfigStore = create<TopupConfigState>((set, get) => ({
   config: null,
@@ -11,13 +11,13 @@ export const useTopupConfigStore = create<TopupConfigState>((set, get) => ({
   load: async () => {
     if (get().loading) return;
     set({ loading: true });
-    try {
-      const config = await SettingsService.topupConfig();
+    const config = await loadAppConfig('topup');
+    if (config != null) {
       set({ config, loading: false });
-    } catch (error) {
-      set({ loading: false });
-      if (get().config == null) toast.error(toApiError(error).message);
+      return;
     }
+    set({ loading: false });
+    if (get().config == null) toast.error(toApiError(useAppConfigStore.getState().error).message);
   },
 }));
 

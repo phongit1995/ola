@@ -51,13 +51,7 @@ export const API_PATH = {
     end: (id: string) => `/calls/${id}/end`,
   },
   userSettings: '/user-settings',
-  appSettings: {
-    topup: '/settings/topup',
-    usernameChange: '/settings/username-change',
-    wordChain: '/settings/word-chain',
-    story: '/settings/story',
-    chatBot: '/settings/chat-bot',
-  },
+  appSettings: '/settings/app',
   announcements: {
     latest: '/announcements/latest',
   },
