@@ -21,7 +21,7 @@
 
 ## 2. Bố cục tại 390 × 844
 
-Tọa độ dưới đây tính trong vùng nội dung **sau khi đã trừ safe-area**, với vùng khả dụng 390 × 844. Đây là mốc kiểm bố cục, không dùng `position: absolute` cho cả màn. Dùng luồng dọc để tên dài, thông báo và màn thấp có thể tăng chiều cao mà không đè nhau.
+Tọa độ dưới đây tính trong vùng nội dung **sau khi đã trừ safe-area**, với vùng khả dụng 390 × 844. Đây là mốc kiểm bố cục, không dùng `position: absolute` cho cả màn. Dùng luồng dọc; khung lobby cao đúng một màn như caro (`height: 100dvh`, không cuộn), màn thấp thu hero trước.
 
 | Vùng | Vị trí và kích thước CSS px | Nội dung |
 |---|---|---|
@@ -102,7 +102,7 @@ Tia CTA là lớp SVG code-native `lobby/decor-cta-rays.svg`: cụm 2 tia vàng 
 
 Hai PNG `button-gold`/`button-paper` chỉ là mẫu surface; runtime hiện dựng nút CSS. CSS/SVG phải tái hiện các lớp trên. Nếu chuyển sang skin raster, kiểm tỷ lệ phần nhìn thấy và co giãn trước: gold v1 khoảng 4,13:1; bản v2 đã sửa về **3,50:1**, khớp khung 3,5:1. Không chồng thêm viền CSS lên contour đã có trong artwork.
 
-Ở màn thấp, giữ khoảng trời sau action Luật chơi bằng bố cục/crop nền hoặc cho cuộn; không tự thêm lại pill để che cảnh phố.
+Khi Luật chơi nằm trên cảnh phố (màn thấp, desktop), chữ và sách có viền sáng màu paper (`text-shadow`/`drop-shadow`) để đọc được; không thêm lại pill để che cảnh phố.
 
 Các hình trong nút là **5 minh họa trang trí** `lobby/ill-{dice,history,leaderboard,rules,exit}`. Nguồn hiện tại là PNG cắt từ concept (`icon-*.png`, §10); khi code xuất WebP, hoặc vẽ lại SVG viewBox 48 × 48 nếu cần nét sắc. Contour navy, hình khối đơn giản, 2–3 màu và highlight nhỏ; không chữ, emoji. Chúng không thay hệ 30 icon `ic-*` dùng cho điều khiển chung. Màu và hình cần giữ cùng nét với ảnh mẫu.
 
@@ -136,10 +136,10 @@ Khi mất kết nối trong S2, giữ các khối đã hiển thị; ba action o
 | Rộng 360 | Menu 256; secondary text có thể giảm xuống 22; logo tối đa `W − 48`; hero giảm đều theo chiều rộng. Topbar dùng quy tắc xuống hàng §4 nếu cần. Không cắt `Bảng xếp hạng`. |
 | Rộng 520 | Menu tối đa 320; logo tối đa 320; hero tối đa 400, căn giữa. Thêm khoảng trời hai bên, không phóng font theo viewport. |
 | Cao < 760 | Lề trên 16, logo cao 72, hero cao tối đa 144, CTA chính 64 / chữ 28, secondary 52 / chữ 22; gap menu giữ 12. Footer vẫn cao 44, có thể nằm dưới fold. |
-| Cao < 680 hoặc font phóng lớn | Cho toàn màn cuộn dọc; giảm decor trước, không ép text, ẩn action hoặc đặt footer đè nội dung. Nút có `min-height`, cho tăng chiều cao theo chữ. |
+| Cao < 760 hoặc font phóng lớn | Giống caro: khung cố định đúng một màn, không cuộn. Hero (mascot + cụm thẻ) co lại trước, có thể về 0; topbar, logo, menu và footer giữ cỡ. Không ép text, ẩn action hoặc đặt footer đè nội dung. |
 | Cao > 900 | Giữ kích thước control, thêm khoảng trời giữa menu và footer; cảnh phố neo đáy |
 
-Safe-area: dùng cùng cơ chế host của game (`data-ola-native-safe-area`); WebView đã inset thì không cộng `env(safe-area-inset-*)` lần hai. Trong browser tự inset, trừ inset trước khi tính W/H. Màn thấp phải scroll tới nút thoát bằng touch và bàn phím; tránh `overflow: hidden` trên vùng chứa toàn menu.
+Safe-area: như caro, dùng biến `--ty-safe-top`/`--ty-safe-bottom` (lấy từ `env(safe-area-inset-*)`, về 0 khi `data-ola-native-safe-area="handled"`), không gọi `env()` trực tiếp để WebView đã inset không bị cộng lần hai. Viewport meta giống caro, không chặn phóng to.
 
 ## 9. Checklist triển khai và kiểm ảnh
 
