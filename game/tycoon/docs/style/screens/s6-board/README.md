@@ -2,7 +2,7 @@
 
 ![Ảnh mẫu bàn chơi](./concept-s6-board-pixel-16bit.png)
 
-[`concept-s6-board-pixel-16bit.png`](./concept-s6-board-pixel-16bit.png) là **ảnh mẫu chuẩn cho bàn chơi S6** và nền mỹ thuật chung (UI v3, phong cách **pixel 16-bit**, chốt ngày 20/10/2026). Ảnh tạo bằng AI (built-in imagegen) để tham khảo. Đây không phải asset của game: code không import ảnh này, và không cắt ảnh ra để dùng.
+[`concept-s6-board-pixel-16bit.png`](./concept-s6-board-pixel-16bit.png) là **ảnh mẫu chuẩn cho bàn chơi S6** và nền mỹ thuật chung (UI v3, phong cách **pixel 16-bit**, chốt ngày 20/10/2026). Ảnh tạo bằng AI (built-in imagegen) để tham khảo. Code không import trực tiếp ảnh này; asset của S6 được cắt từ concept theo [quy trình asset theo màn](../README.md#quy-trình-asset-theo-màn), PNG gốc đặt ở `assets/screens/board/`, khi code mới xuất WebP/SVG.
 
 Ảnh thuộc màn **S6. Bàn chơi** (`BoardScreen`, [02 §S6](../../../02-screen-specs.md)), pha `roll`. Quy ước folder và tên ảnh xem [style/screens](../README.md).
 

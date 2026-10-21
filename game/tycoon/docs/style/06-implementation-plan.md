@@ -27,7 +27,7 @@ Lưu tại `screens/s{n}-{tên}/concept-s{n}-{tên}-{style}.png` (cùng folder v
 - [ ] `TyIcon` wrapper + union 30 tên; copy 22 svg từ xiangqi/thirteen; vẽ 8 icon mới theo `../06-icon-system.md` §2.3.
 - [ ] Harness `tycoon/mock-ui.html?screen=` với fixture 4 người, pattern xiangqi.
 - [ ] Màn lobby/ranked/pregame copy từ xiangqi, đổi token, thêm chọn số người.
-- [ ] Dựng riêng S2 theo [style S2 lobby](./screens/s2-lobby/README.md), gồm hero, 5 minh họa SVG của nút và các ca responsive/loading/offline; giữ các checklist triển khai chưa xong cho đến khi có UI được kiểm chứng.
+- [ ] Dựng riêng S2 theo [style S2 lobby](./screens/s2-lobby/README.md), gồm hero, 5 minh họa của nút (xuất từ PNG gốc sang WebP/SVG) và các ca responsive/loading/offline; giữ các checklist triển khai chưa xong cho đến khi có UI được kiểm chứng.
 
 DoD: screenshot 3 màn ở 360/390/520 không tràn; typecheck + lint xanh.
 

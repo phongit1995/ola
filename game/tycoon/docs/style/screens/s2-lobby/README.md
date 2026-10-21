@@ -4,7 +4,9 @@
 
 ![Lobby S2 đã chọn: nền trời pixel, Bác Tỷ, ba thẻ đất và menu vàng/kem](./concept-s2-lobby-pixel-16bit.png)
 
-Ảnh gốc **853 × 1844 px**, giữ nguyên bản được chọn. [Log nguồn và prompt](../../../asset-generation-log.md). Ảnh là tài liệu tham chiếu, không import vào game, không cắt nút/chữ/mascot từ ảnh để làm asset production.
+Ảnh gốc **853 × 1844 px**, giữ nguyên bản được chọn. [Log nguồn và prompt](../../../asset-generation-log.md). Ảnh concept không import trực tiếp vào game; asset được **cắt từ concept** theo [quy trình asset theo màn](../README.md#quy-trình-asset-theo-màn), PNG gốc ở [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md), khi code mới xuất WebP/SVG. Chữ (nhãn nút, tên, số KEN, version) không cắt từ ảnh, luôn là DOM text.
+
+**Bộ tách thử đã có theo yêu cầu người dùng:** 13 PNG được lưu theo màn tại [assets/screens/lobby](../../../../assets/screens/lobby/README.md), gồm logo, Bác Tỷ, cụm thẻ/quân, nền, icon và nền nút. Đây là bản tách/inpaint bằng AI để tham khảo, chưa tối ưu hoặc tích hợp runtime; bảng asset production bên dưới vẫn là kế hoạch SVG/WebP.
 
 ## 1. Hướng hình ảnh và thứ tự ưu tiên
 
@@ -90,7 +92,7 @@ Kích thước/font ở đây là biến thể **riêng S2**, không đổi nút
 | `Luật chơi` | trong suốt, cao 44, chữ navy gạch chân | sách paper/navy, 32 | modal luật có thể cuộn, nút Đóng; dùng offline |
 | `Thoát game` | paper, cao 44, pill; rộng theo nội dung, padding ngang 18 | cửa/mũi tên coral, 24 | `bridge.exit()` |
 
-Các hình trong nút là **5 minh họa SVG trang trí** `lobby/ill-dice.svg`, `ill-history.svg`, `ill-leaderboard.svg`, `ill-rules.svg`, `ill-exit.svg`. Đây là asset cần dựng khi triển khai, không phải file đã có. Dùng viewBox 48 × 48, contour navy 2, hình khối đơn giản, 2–3 màu và highlight nhỏ; không chữ, emoji, bitmap nhúng hoặc filter bóng mờ. Chúng không thay hệ 30 icon `ic-*` dùng cho điều khiển chung. Màu và hình cần giữ cùng nét với ảnh mẫu.
+Các hình trong nút là **5 minh họa trang trí** `lobby/ill-{dice,history,leaderboard,rules,exit}`. Nguồn hiện tại là PNG cắt từ concept (`icon-*.png`, §10); khi code xuất WebP, hoặc vẽ lại SVG viewBox 48 × 48 nếu cần nét sắc. Contour navy, hình khối đơn giản, 2–3 màu và highlight nhỏ; không chữ, emoji. Chúng không thay hệ 30 icon `ic-*` dùng cho điều khiển chung. Màu và hình cần giữ cùng nét với ảnh mẫu.
 
 Minh họa có `aria-hidden`, tên action chỉ đọc nhãn nút. Khi chưa có minh họa: dùng `ic-dice/history/leaderboard/exit-door`; `Luật chơi` có thể tạm chỉ có chữ, giữ slot và khoảng cách ổn định. Fallback này không phải trạng thái đạt visual QA cuối.
 
@@ -132,10 +134,25 @@ Safe-area: dùng cùng cơ chế host của game (`data-ola-native-safe-area`); 
 Các mục dưới đây là **việc triển khai tiếp theo**, không đánh dấu hoàn thành chỉ vì đã có concept/docs.
 
 - [ ] Dựng DOM/CSS theo vùng §2, font Nunito với glyph tiếng Việt; dùng `PlayerAvatar`/`PlayerName` theo quy tắc danh tính.
-- [ ] Có asset rời cho nền/logo/mascot, ba tranh tái dùng, hai quân và 5 minh họa SVG; không import/cắt concept.
+- [ ] PNG gốc cắt từ concept đã qua QA (§10); khi code xuất WebP/SVG theo tên production ở §10, đạt budget; không import trực tiếp concept hoặc PNG gốc.
 - [ ] Nối action vào luồng được triển khai; phân biệt S1, S2 ready, pending, lỗi và offline.
 - [ ] Chụp 390 × 844 đối chiếu concept: nền mở, logo, mascot trái, 3 thẻ/2 quân phải, menu vàng–kem–kem–text, footer; không mất hoặc thêm action.
 - [ ] Chụp 360 × 640, 390 × 844 có safe-area, 520 × 900; thử username dài 24 ký tự, KEN 19 chữ số, user không VIP, zoom text 200%, reduced-motion, asset lỗi.
 - [ ] Kiểm tên/VIP/số KEN/version đều là dữ liệu thật, không có placeholder ảnh lọt vào trạng thái ready.
 - [ ] Tab theo thứ tự âm thanh → Vào bàn → Lịch sử → Bảng xếp hạng → Luật chơi → Thoát; modal quản lý focus và trả focus về nút mở.
 - [ ] Nút không dưới vùng chạm 44 × 44; kiểm contrast và overflow, budget tải lobby ≤ 180 KB gzip; typecheck và kiểm tương tác sau khi có code UI.
+
+## 10. Asset cắt từ concept → file production
+
+PNG gốc nằm ở [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md). Khi code S2 mới xuất sang file runtime dưới đây; trước đó giữ PNG.
+
+| PNG gốc | File runtime khi code | Ghi chú QA trước khi xuất |
+|---|---|---|
+| `background.png` | `lobby/bg-board-pixel.webp` (nền trời dùng chung) | pixel đang mờ/nhòe: dọn lại trên lưới pixel, phóng nearest-neighbor theo bội số nguyên |
+| `logo.png` | `lobby/logo.webp` | — |
+| `mascot.png` | `chars/ty-idle-full.webp` | áo có hoa văn và đổ chuyển màu: làm phẳng 2–3 màu theo [03-characters](../../03-characters.md) |
+| `hero-properties.png` | `lobby/hero-properties.webp` | 3 thẻ + 2 quân đang gộp một lớp; tách riêng nếu cần animate quân |
+| `icon-dice.png`, `icon-history.png`, `icon-leaderboard.png`, `icon-rules.png`, `icon-exit.png` | `lobby/ill-{dice,history,leaderboard,rules,exit}.webp` (hoặc `.svg` nếu vẽ lại vector) | `icon-exit`: mũi tên đang chỉ vào cửa, nên đổi chỉ ra ngoài |
+| `icon-ken.png` | `lobby/ill-ken.webp` | chỉ dùng trong pill KEN của S2; `ic-ken` vẫn dùng ở chỗ khác |
+| `icon-sound.png` | `lobby/ill-sound-on.webp` | thiếu trạng thái tắt: cắt/vẽ thêm `icon-sound-off.png` trước khi code |
+| `button-gold.png`, `button-paper.png` | không xuất | nút vẫn dựng bằng CSS (§6) để co giãn và có đủ trạng thái; PNG chỉ để so màu/khối khi QA |

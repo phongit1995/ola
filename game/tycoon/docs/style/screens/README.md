@@ -16,5 +16,14 @@ Các màn khác chưa có ảnh mẫu. Điều kiện bắt đầu dựng theo [
 - Folder: `s{số màn}-{tên màn}` theo mã màn trong 02 (ví dụ `s7-tile-sheet`, `s9-result`). Lớp phủ dùng `o{số}-{tên}` (ví dụ `o2-card`).
 - Trong folder: `README.md` (style riêng của màn, ảnh mẫu nhúng ở đầu) và ảnh `concept-s{số màn}-{tên màn}-{style}.png`.
 - Chỉ đưa ảnh đã duyệt vào; ảnh nháp, ảnh verify không commit. Nguồn và prompt ghi ở [asset-generation-log.md](../../asset-generation-log.md).
-- Ảnh mẫu là tài liệu tham chiếu: code không import, không cắt ảnh làm asset game.
+- Ảnh concept là nguồn để cắt asset theo quy trình dưới; bản thân ảnh concept không import vào game.
 - Khi README của màn khác style chung, README màn thắng **chỉ trong phạm vi màn đó** và phải ghi rõ đó là ngoại lệ (ví dụ cỡ nút S2).
+
+## Quy trình asset theo màn
+
+1. **Vẽ chung cả màn** thành một ảnh concept, duyệt, lưu vào folder màn ở đây.
+2. **Cắt/tách asset từ concept** (crop + vẽ bù vùng bị che bằng AI được phép), mỗi phần một file, lưu **PNG gốc** tại `game/tycoon/assets/screens/<màn>/` (tên tiếng Anh kebab-case theo vai trò, ví dụ `logo.png`, `icon-history.png`) kèm `manifest.json` và prompt.
+3. **QA trên PNG gốc** theo style chung và README của màn (palette, contour, pixel sắc với tranh pixel, không chữ giả); file chưa đạt ghi vào `knownLimitations` của manifest và sửa trước khi code.
+4. **Khi code màn đó** mới xuất PNG sang định dạng runtime (WebP, hoặc SVG nếu vẽ lại vector) theo tên production ở [04 §2](../../04-asset-manifest-and-prompts.md), áp budget tải và optimize. PNG gốc không import vào runtime và không tính vào budget.
+
+Code không import trực tiếp ảnh concept; mọi thứ hiển thị trong game phải là asset đã cắt và xuất theo bước 4.

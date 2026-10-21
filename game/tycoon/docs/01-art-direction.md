@@ -209,5 +209,5 @@ Theo pattern `war-god/audio.ts`: `click`, `dice` (tiếng lắc 3 nốt noise ng
 - Không trộn pixel và vẽ mượt trong cùng một tranh; không pixel hoá nút, chữ, icon.
 - Không ký hiệu tiền tệ thật ($, ₫) trong ván.
 - Không đổ bóng chữ, không outline chữ (logo là ngoại lệ).
-- Không dùng ảnh AI nguyên khối làm màn: ảnh mẫu chỉ để tham khảo, mỗi tranh/asset vẽ riêng và qua QA (04 §7).
+- Không dùng ảnh AI nguyên khối làm màn: vẽ chung cả màn thành concept, rồi cắt từng asset (PNG gốc ở `assets/screens/<màn>/`), mỗi asset qua QA (04 §7) và khi code mới xuất WebP/SVG ([quy trình](./style/screens/README.md#quy-trình-asset-theo-màn)).
 - Nhân vật là mascot sáng tác riêng với contour navy cùng hệ; không chibi kiểu anime, không người thật, không nhân vật thương mại.

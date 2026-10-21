@@ -59,7 +59,7 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 29 | `ic-coins` | **mới** | 16/20 | tổng tài sản S8/S9, nút Trả nợ | — |
 | 30 | `ic-more` | **mới** | 24 | menu ⋯ topbar S6 | Thêm tùy chọn |
 
-Không có `ic-rules` trong họ A. Lobby S2 đã chốt có sách `ill-rules.svg` bên cạnh chữ Luật chơi; đây là một trong **5 minh họa SVG trang trí riêng S2** (`lobby/ill-{dice,history,leaderboard,rules,exit}.svg`), không nằm trong inventory 30 `ic-*`. Hình, màu, kích thước và fallback theo [S2 lobby §6](./style/screens/s2-lobby/README.md#6-nút-và-minh-họa). Chúng có contour navy + fill màu, `aria-hidden`; accessible name lấy từ nhãn action, không áp quy tắc icon stroke đơn sắc cho các minh họa này.
+Không có `ic-rules` trong họ A. Lobby S2 đã chốt có sách `ill-rules.svg` bên cạnh chữ Luật chơi; đây là một trong **5 minh họa trang trí riêng S2** (`lobby/ill-{dice,history,leaderboard,rules,exit}`, PNG gốc cắt từ concept, khi code xuất WebP hoặc SVG), không nằm trong inventory 30 `ic-*`. Hình, màu, kích thước và fallback theo [S2 lobby §6](./style/screens/s2-lobby/README.md#6-nút-và-minh-họa). Chúng có contour navy + fill màu, `aria-hidden`; accessible name lấy từ nhãn action, không áp quy tắc icon stroke đơn sắc cho các minh họa này.
 
 ### 2.3 Công thức hình học 8 icon mới
 

@@ -1,0 +1,298 @@
+{
+  "status": "trial-not-production",
+  "method": "built-in image_gen edits",
+  "assets": [
+    {
+      "id": "background",
+      "label": "Nền trời / phố",
+      "file": "background.png",
+      "width": 853,
+      "height": 1844,
+      "bytes": 1745758,
+      "hasAlpha": false,
+      "alphaRange": null,
+      "transparentPercent": 0,
+      "contentBounds": [
+        0,
+        0,
+        853,
+        1844
+      ],
+      "sha256": "950c134f9453e18ed3171df3d5cd81d9831e0ee429e578855a85c91349e5e2bf",
+      "generatedSource": "exec-44e10531-68ca-4a28-860e-5cd1e3fb2a9c.png"
+    },
+    {
+      "id": "logo",
+      "label": "Logo Cờ Tỷ Phú",
+      "file": "logo.png",
+      "width": 2172,
+      "height": 724,
+      "bytes": 1216883,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 42.92,
+      "contentBounds": [
+        30,
+        59,
+        2136,
+        677
+      ],
+      "sha256": "cd2122db915c97fdf97f0681e92db22eb8dbbe02143c3615932d8e65fb7f178e",
+      "generatedSource": "exec-0fe9a8ab-75cc-4246-85a0-d2608c4415e4.png"
+    },
+    {
+      "id": "mascot",
+      "label": "Bác Tỷ",
+      "file": "mascot.png",
+      "width": 1234,
+      "height": 1274,
+      "bytes": 1136008,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 50.83,
+      "contentBounds": [
+        186,
+        25,
+        1178,
+        1228
+      ],
+      "sha256": "8c3de696fbca165af427e11a3f1bcd9e107e188b2a0e9a2a081f5a2b1bff9d22",
+      "generatedSource": "exec-5e2ad933-8639-4bbe-8460-653343296d51.png"
+    },
+    {
+      "id": "hero-properties",
+      "label": "Ba thẻ đất + hai quân",
+      "file": "hero-properties.png",
+      "width": 1774,
+      "height": 887,
+      "bytes": 1196238,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 55.0,
+      "contentBounds": [
+        155,
+        79,
+        1653,
+        867
+      ],
+      "sha256": "c01314ef96478bad868c5b0c98055467e79bbcde0faa7a90f86f2db9c246cbab",
+      "generatedSource": "exec-321e0d51-a41f-4e4c-b145-03529dfbd097.png"
+    },
+    {
+      "id": "icon-dice",
+      "label": "Xúc xắc",
+      "file": "icon-dice.png",
+      "width": 1312,
+      "height": 1199,
+      "bytes": 780489,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 56.73,
+      "contentBounds": [
+        182,
+        126,
+        1129,
+        1103
+      ],
+      "sha256": "3f0a0a7cb0401d8766e4019f81057b40f66a2e7781b5ea370c1bafe615c23f81",
+      "generatedSource": "exec-b9dab18a-c435-43e1-9f58-17055308d706.png"
+    },
+    {
+      "id": "icon-history",
+      "label": "Lịch sử",
+      "file": "icon-history.png",
+      "width": 1315,
+      "height": 1196,
+      "bytes": 901982,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 55.26,
+      "contentBounds": [
+        139,
+        147,
+        1178,
+        1092
+      ],
+      "sha256": "55216faf3d6b2f5d5d29297154184a31b0bfd5bf0f416f54d9d8e382a45beae4",
+      "generatedSource": "exec-9049090d-bddf-4737-9bf6-81f777c571ab.png"
+    },
+    {
+      "id": "icon-leaderboard",
+      "label": "Bảng xếp hạng",
+      "file": "icon-leaderboard.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1065211,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "transparentPercent": 66.02,
+      "contentBounds": [
+        261,
+        84,
+        1275,
+        937
+      ],
+      "sha256": "33db44b9c712acc71a6ccdfdbab922496e457dc95f6d54d3f9b5333789ff818c",
+      "generatedSource": "exec-f1fbbd93-b98b-444f-9129-852637ad96d7.png"
+    },
+    {
+      "id": "icon-rules",
+      "label": "Luật chơi",
+      "file": "icon-rules.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1103430,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "transparentPercent": 49.7,
+      "contentBounds": [
+        174,
+        154,
+        1363,
+        893
+      ],
+      "sha256": "a63787d867c00f11ddefa53a2b1a752035815efc04a0ff7a88007056f3e6a459",
+      "generatedSource": "exec-f3aaa0a5-39a2-42c2-a38a-623be4f4ae3d.png"
+    },
+    {
+      "id": "icon-exit",
+      "label": "Thoát game",
+      "file": "icon-exit.png",
+      "width": 1321,
+      "height": 1191,
+      "bytes": 692320,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 61.48,
+      "contentBounds": [
+        209,
+        171,
+        1111,
+        1014
+      ],
+      "sha256": "2aa761e62a51fb835762c2a39c86d378db89431ff803afef2ccc9a5b09f1c698",
+      "generatedSource": "exec-cd224fd7-0792-4c66-81be-9d9dedf96a06.png"
+    },
+    {
+      "id": "icon-ken",
+      "label": "Xu KEN",
+      "file": "icon-ken.png",
+      "width": 1305,
+      "height": 1206,
+      "bytes": 1078471,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 46.95,
+      "contentBounds": [
+        139,
+        82,
+        1164,
+        1114
+      ],
+      "sha256": "1e3d364c53588a36ba7312c6cff0679276f522e2a6acf86378276e4c6f472542",
+      "generatedSource": "exec-ca0570ab-d516-4eca-a20f-9ca12a1589c2.png"
+    },
+    {
+      "id": "icon-sound",
+      "label": "Âm thanh",
+      "file": "icon-sound.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 461801,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 74.04,
+      "contentBounds": [
+        140,
+        259,
+        1142,
+        1047
+      ],
+      "sha256": "1631e0768b71530422f81120f374233b3b29d54f6384af7798310dbfdce637f2",
+      "generatedSource": "exec-6c6bb4df-62d5-4739-bf8b-78c479f80414.png"
+    },
+    {
+      "id": "button-gold",
+      "label": "Nền nút vàng",
+      "file": "button-gold.png",
+      "width": 2172,
+      "height": 724,
+      "bytes": 1023430,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 38.71,
+      "contentBounds": [
+        64,
+        111,
+        2109,
+        609
+      ],
+      "sha256": "3bb8fdad460225dbaa084b2403bf91eb57ac7b1a34ef6cf01631daf32a8ac1a0",
+      "generatedSource": "exec-f7b3f46d-a006-4e8e-ae44-7a490be714ad.png"
+    },
+    {
+      "id": "button-paper",
+      "label": "Nền nút kem",
+      "file": "button-paper.png",
+      "width": 2172,
+      "height": 724,
+      "bytes": 694339,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 48.45,
+      "contentBounds": [
+        88,
+        151,
+        2085,
+        557
+      ],
+      "sha256": "b8e8be1ddb45f3e77e6ad91694fd15af2e430c8c317c1540a79da37355f4202f",
+      "generatedSource": "exec-83aa0a8f-c839-43ef-adf5-fa7787989bba.png"
+    }
+  ],
+  "totalBytes": 13096360,
+  "knownLimitations": [
+    "AI reconstructed some details; not a pixel-identical crop.",
+    "Leaderboard and rules icons retain a soft blue outer fringe.",
+    "Three cards and two pawns remain one overlapping vignette.",
+    "Full-size PNG files have not been optimized for runtime."
+  ],
+  "screen": "lobby",
+  "sourceConcept": "../../../docs/style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png"
+}

@@ -2,7 +2,7 @@
 
 Icon điều khiển (`ic-*`) không có màu riêng: màu đến từ `color` của surface chứa nó (`currentColor`). Glyph ô (`tg-*`) có màu theo loại ô. Bảng này là nguồn khi review: "icon X ở chỗ Y màu gì".
 
-**Riêng menu S2 đã chốt:** dùng 5 minh họa SVG `lobby/ill-*` theo [S2 lobby §6](./screens/s2-lobby/README.md#6-nút-và-minh-họa): xúc xắc paper/navy, đồng hồ blue, bục gold/blue/coral, sách paper/navy, cửa coral. Đây là hình trang trí có fill màu, không phải `ic-*` đơn sắc; các dòng `ic-history/leaderboard/dice/exit-door` bên dưới chỉ làm fallback khi chưa có minh họa S2. Nút âm thanh và badge KEN vẫn dùng `ic-*`.
+**Riêng menu S2 đã chốt:** dùng 5 minh họa `lobby/ill-*` (PNG gốc cắt từ concept, khi code xuất WebP/SVG) theo [S2 lobby §6](./screens/s2-lobby/README.md#6-nút-và-minh-họa): xúc xắc paper/navy, đồng hồ blue, bục gold/blue/coral, sách paper/navy, cửa coral. Đây là hình trang trí có fill màu, không phải `ic-*` đơn sắc; các dòng `ic-history/leaderboard/dice/exit-door` bên dưới chỉ làm fallback khi chưa có minh họa S2. Nút âm thanh và badge KEN vẫn dùng `ic-*`.
 
 ## 1. Icon điều khiển theo surface
 

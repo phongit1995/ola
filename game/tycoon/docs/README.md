@@ -101,6 +101,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 
 ```text
 game/tycoon/assets/
+  screens/lobby/    # 13 PNG tách thử S2 + manifest/prompt, chưa tích hợp runtime
   app-icons/        # app icon: SVG nguồn + PNG bo góc 1024 px (convention thirteen)
   tokens/           # tk-pawn.svg (UI v3); 8 quân webp 96 px cho v2 — xem 04 §3
   chars/            # 6 nhân vật × 4 pose × 2 crop webp — xem style/03-characters.md
@@ -108,7 +109,7 @@ game/tycoon/assets/
   tiles/            # tg-* SVG glyph ô bàn cờ (grid 32) — xem 06 §3
   tiles/art/        # 19 tranh pixel 16-bit trong ô — xem 04 §6.5
   dice/             # 6 mặt xúc xắc SVG — xem 06 §6
-  lobby/            # bg-board-pixel.webp, logo.webp; 5 ill-*.svg trang trí nút S2 (dự kiến)
+  lobby/            # bg-board-pixel.webp, logo.webp; ill-*.webp/svg trang trí nút S2 (xuất khi code)
   fx/               # fx-result-*.webp nếu CSS không đủ
 ```
 

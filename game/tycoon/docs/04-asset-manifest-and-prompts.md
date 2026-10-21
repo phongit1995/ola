@@ -15,8 +15,9 @@ Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; to�
 
 - `ic-{tên}.svg` icon điều khiển; `tg-{tên}.svg` glyph ô; `tk-{tên}.webp` quân; `d{1..6}.svg` xúc xắc; `bg-{màn}.webp` nền; `fx-{tên}.webp` hiệu ứng.
 - Kebab-case tiếng Anh cho ic/tg, tiếng Việt không dấu cho quân (`tk-non-la`) vì quân là nội dung văn hóa, tên hiển thị live text `Nón lá`.
-- Không viết hoa, không space; webp cho raster, svg cho vector.
-- `lobby/ill-{dice|history|leaderboard|rules|exit}.svg`: minh họa trang trí nút S2, viewBox 48, không chữ; tách khỏi `ic-*` điều khiển chung. Chưa có file production, manifest là kế hoạch dựng asset.
+- Không viết hoa, không space; webp cho raster runtime, svg cho vector.
+- **PNG gốc theo màn:** asset cắt từ concept lưu tạm dạng PNG tại `assets/screens/<màn>/` (tên theo vai trò: `logo.png`, `icon-history.png`…) + `manifest.json`. Khi code màn đó mới xuất sang tên runtime ở trên (bảng đối chiếu trong README của màn, ví dụ [S2 §10](./style/screens/s2-lobby/README.md#10-asset-cắt-từ-concept--file-production)). Quy trình: [style/screens](./style/screens/README.md#quy-trình-asset-theo-màn).
+- `lobby/ill-{dice|history|leaderboard|rules|exit}.webp` (hoặc `.svg` nếu vẽ lại vector): minh họa trang trí nút S2, không chữ; tách khỏi `ic-*` điều khiển chung. Nguồn là PNG `icon-*.png` trong `assets/screens/lobby/`; chưa có file runtime.
 
 ## 3. Quân cờ — sinh và hậu kỳ
 
@@ -30,6 +31,8 @@ Hậu kỳ (script `game/scripts/optimize_tycoon_tokens.sh`, pattern `optimize_c
 UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, nên không cần fallback hình học `tk-seat-*`. Pipeline trên chỉ áp dụng khi làm 8 quân raster cho v2.
 
 ## 4. Manifest tổng
+
+**Asset tách thử S2 hiện có:** [13 PNG trong `assets/screens/lobby/`](../assets/screens/lobby/README.md), metadata và hash tại [manifest.json](../assets/screens/lobby/manifest.json). Các file này chưa import vào runtime, chưa tối ưu và không thay bảng kế hoạch production dưới đây.
 
 | ID | Loại | Số lượng | Nguồn | Dùng ở |
 |---|---|---|---|---|
@@ -103,6 +106,6 @@ Base: "16-bit pixel art, SNES era, limited palette, crisp hard pixel edges, no a
 Các budget/runtime export dưới đây áp dụng cho asset production. [PNG concept S2 đã chọn](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) giữ nguyên trong docs để đối chiếu, không tải trong game; [log nguồn](./asset-generation-log.md) ghi kích thước/hash. Concept được duyệt là tài liệu, không phải ảnh nháp hoặc screenshot verify.
 
 - SVG: `svgo` preset default, giữ viewBox; kiểm render 1×/2×/3×.
-- Raster: webp q 80–85, kiểm size budget bằng `ls -l` trước commit; ảnh > 100 KB phải qua optimize.
+- Raster runtime: webp q 80–85, kiểm size budget bằng `ls -l` trước commit; ảnh > 100 KB phải qua optimize. PNG gốc trong `assets/screens/<màn>/` chưa import nên chưa áp budget; tối ưu khi xuất lúc code.
 - QA từng asset: đúng palette 01, không dấu vết AI (chữ giả, chi tiết thừa), đọc được ở kích thước thật trên viewport 360, 8 quân phân biệt được khi xếp cạnh nhau ở 18 px.
 - Không commit ảnh nháp hay screenshot verify (quy ước repo).
