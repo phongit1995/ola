@@ -207,6 +207,7 @@ interface MePostCardProps {
   onOpenLikers?: (id: string) => void;
   onOpenPhotos?: (photos: string[], index: number) => void;
   onOpenClan?: (handle: string) => void;
+  showPinned?: boolean;
 }
 
 function MePostCardComponent({
@@ -221,6 +222,7 @@ function MePostCardComponent({
   onOpenLikers,
   onOpenPhotos,
   onOpenClan,
+  showPinned = false,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -314,7 +316,7 @@ function MePostCardComponent({
                   <Text className="text-ola-ink-soft"> · {fullName}</Text>
                 )}
               </Text>
-              {post.isPinned && (
+              {showPinned && post.isPinned && (
                 <Image source={pinIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
               )}
               {post.clanHandle != null && post.clanHandle !== '' && (

@@ -53,7 +53,6 @@ export function MeFeedScreen() {
   const toggleReaction = useMeFeedStore((s) => s.toggleReaction);
   const adjustCommentCount = useMeFeedStore((s) => s.adjustCommentCount);
   const removePost = useMeFeedStore((s) => s.removePost);
-  const togglePin = useMeFeedStore((s) => s.togglePin);
   const unreadCount = useMeNotificationStore((s) => s.unreadCount);
   const refreshUnread = useMeNotificationStore((s) => s.refreshUnread);
   const meId = useAuthStore((s) => s.user?.id ?? null);
@@ -146,11 +145,6 @@ export function MeFeedScreen() {
     if (mine) {
       return [
         { key: 'edit', label: t('me.menuEdit'), onSelect: () => requestEdit(post) },
-        {
-          key: 'pin',
-          label: post.isPinned ? t('me.menuUnpin') : t('me.menuPin'),
-          onSelect: () => void togglePin(post.id, !post.isPinned),
-        },
         {
           key: 'delete',
           label: t('me.menuDelete'),

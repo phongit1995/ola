@@ -125,6 +125,7 @@ export function ProfilePage({
                   onQuickComment={handlers.onQuickComment}
                   onOpenMenu={handlers.onOpenMenu}
                   onOpenLikers={handlers.onOpenLikers}
+                  showPinned
                 />
               ))
             )

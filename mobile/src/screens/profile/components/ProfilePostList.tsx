@@ -173,6 +173,7 @@ export function ProfilePostList({
             onOpenMenu={id => setMenuPostId(id)}
             onOpenLikers={id => setLikersPostId(id)}
             onOpenPhotos={(photos, index) => openViewer(photos, index)}
+            showPinned
           />
         ))
       )}

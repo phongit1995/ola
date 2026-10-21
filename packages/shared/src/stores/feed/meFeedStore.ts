@@ -16,19 +16,6 @@ function replacePost(posts: Post[], updated: Post): Post[] {
   return posts.map((post) => (post.id === updated.id ? updated : post));
 }
 
-function applyPin(posts: Post[], updated: Post): Post[] {
-  if (!updated.isPinned) {
-    return posts.map((post) => (post.id === updated.id ? updated : post));
-  }
-  const authorId = updated.author?.id;
-  const others = posts
-    .filter((post) => post.id !== updated.id)
-    .map((post) =>
-      authorId != null && post.author?.id === authorId ? { ...post, isPinned: false } : post
-    );
-  return [updated, ...others];
-}
-
 export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   posts: [],
   loading: true,
@@ -194,16 +181,6 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       console.error('delete post failed', error);
       toast.error(i18n.t('me.deleteError'));
       return false;
-    }
-  },
-  togglePin: async (id, pinned) => {
-    try {
-      const updated = pinned ? await MeService.pin(id) : await MeService.unpin(id);
-      set((state) => ({ posts: applyPin(state.posts, updated) }));
-      toast.success(i18n.t(pinned ? 'me.pinSuccess' : 'me.unpinSuccess'));
-    } catch (error) {
-      console.error('toggle pin failed', error);
-      toast.error(i18n.t('me.pinError'));
     }
   },
   adjustCommentCount: (id, delta) => {

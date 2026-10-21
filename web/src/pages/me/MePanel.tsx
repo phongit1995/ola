@@ -45,7 +45,6 @@ export function MePanel() {
     addPost,
     editPost,
     deletePost,
-    togglePin,
     hidePost,
     blockAuthor,
     adjustCommentCount,
@@ -94,7 +93,6 @@ export function MePanel() {
     blockAuthor,
     editPost,
     deletePost,
-    togglePin,
   };
 
   const emptyText = t('me.empty');

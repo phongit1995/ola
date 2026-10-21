@@ -70,11 +70,10 @@ export function MeLikedPostsScreen() {
     return posts.filter((p) => !hidden.has(p.id));
   }, [posts, hiddenPostIds]);
 
-  const { toggleReaction, adjustCommentCount, deletePost, togglePin } = usePostListActions({
+  const { toggleReaction, adjustCommentCount, deletePost } = usePostListActions({
     posts,
     setPosts,
     keepOnlyLiked: true,
-    reloadAfterPin: loadPosts,
   });
 
   const {
@@ -98,11 +97,6 @@ export function MeLikedPostsScreen() {
     if (mine) {
       return [
         { key: 'edit', label: t('me.menuEdit'), onSelect: () => requestEdit(post) },
-        {
-          key: 'pin',
-          label: post.isPinned ? t('me.menuUnpin') : t('me.menuPin'),
-          onSelect: () => void togglePin(post.id, !post.isPinned),
-        },
         {
           key: 'delete',
           label: t('me.menuDelete'),
