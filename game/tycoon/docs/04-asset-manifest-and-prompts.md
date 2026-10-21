@@ -11,6 +11,8 @@ Thứ tự ưu tiên (kế thừa policy thirteen/xiangqi):
 
 Ngoại lệ riêng S2 theo concept đã duyệt: hiện có raster `hero-properties` (3 thẻ + 2 quân), 5 minh họa action và xu KEN tách từ concept. Không tự thay bằng hình có dáng khác để khớp danh sách loại asset chung. Review chi tiết tại [S2 asset audit](./style/screens/s2-lobby/asset-audit.md); WebP hiện có vẫn chưa đạt visual QA.
 
+Ngoại lệ S1: xúc xắc bo góc là mesh/shader WebGL theo [style đã duyệt](./style/screens/s1-loading/README.md), không sinh sprite mới. `lobby/loading-ring-enamel.svg` là **Cung men nổi đã chốt**, xuất trực tiếp từ mẫu được chọn; quay luân phiên với mỗi lần lật 90° của xúc xắc, không có đĩa kem phía sau. Nền/logo/Bác Tỷ và fallback `lobby/ill-dice.webp` dùng lại asset hiện có. Các mẫu viền khác và trang so sánh đã được dọn khỏi source.
+
 Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; toàn bộ assets tycoon ≤ 800 KB (nhân vật ≈ 260 KB; cắt giảm theo `style/06-implementation-plan.md` nếu vượt). Thêm `/game/tycoon/assets/` vào `assetsInlineLimit` của `game/vite.config.ts` cùng dòng với thirteen/xiangqi, và entry `tycoon: resolve(__dirname, 'tycoon/index.html')`.
 
 ## 2. Quy tắc đặt tên
@@ -46,6 +48,8 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 | `lobby/ill-*` | WebP đã có, SVG nếu vẽ lại | 6 | style/screens/s2-lobby §6, §10 | 5 minh họa action + xu KEN S2; chưa đạt visual QA |
 | `lobby/hero-properties.webp` | WebP đã có | 1 | PNG tách từ concept S2 | 3 thẻ + 2 quân, chung một lớp trang trí |
 | `lobby/decor-*` | SVG code-native, **đã tạo** | 2 | concept S2, asset-audit §2 | 4 tia vàng quanh CTA; 2 cụm tia trắng quanh hero (3 + 3 tia) |
+| `lobby/loading-ring-enamel.svg` | SVG code-native trong suốt | 1 | Cung men nổi đã chọn; style/screens/s1-loading | bốn cung xanh–vàng, quay luân phiên với mỗi lần xúc xắc lật một mặt |
+| `roundedDieRenderer` | WebGL mesh/shader, không có texture mới | 1 | components/loading, style/screens/s1-loading | xúc xắc bo góc 1–6 của S1; fallback tái dùng `lobby/ill-dice.webp` |
 | `d1..d6` | SVG 44 | 6 | 06 §5 | O1 |
 | `tiles/art/{slug}.webp` | raster pixel 16-bit, gốc 64 × 40, export ×3 nearest-neighbor | 19 | §6.5 | ô bàn, header sheet S7; S2 hiện dùng tranh trong hero từ concept |
 | `bg-board-pixel.webp` | raster pixel 16-bit | 1 | §6.5 | nền màn S1–S6 |
@@ -65,7 +69,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 
 | Group | Nội dung | Khi nào |
 |---|---|---|
-| `LOBBY_CRITICAL` | bg-board-pixel, logo, `ty-idle-full`, `hero-properties`, 6 `lobby/ill-*`, cặp icon âm thanh và 2 SVG `lobby/decor-*` đã có | kế hoạch preload trước first paint; vẫn giữ tổng ≤ 180 KB gzip, chưa xác nhận đạt |
+| `LOBBY_CRITICAL` | bg-board-pixel, logo, `ty-idle-full`, `hero-properties`, 6 `lobby/ill-*`, cặp icon âm thanh, 2 SVG `lobby/decor-*` và `lobby/loading-ring-enamel.svg` | kế hoạch preload trước first paint; vẫn giữ tổng ≤ 180 KB gzip, chưa xác nhận đạt |
 | `RANKED` | icon list | `openRanked()` |
 | `BOARD` | 13 tg, 6 dice, `tk-pawn`, 19 tranh `tiles/art`, `bg-board-pixel`, board.gen.json, cards.gen.json | khi vào phòng chờ (bắt buộc xong trước MATCH_FOUND) |
 | `CHARS` | 44 file nhân vật còn lại | sau MATCH_FOUND, idle batches; thiếu thì fallback glyph |

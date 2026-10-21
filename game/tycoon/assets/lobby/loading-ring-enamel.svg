@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke-linecap="round" aria-hidden="true"><defs>
+    <linearGradient id="enamel-gold" x1="0" y1="0" x2=".4" y2="1"><stop stop-color="#ffe5a1"/><stop offset=".38" stop-color="#ffcc4f"/><stop offset="1" stop-color="#efa120"/></linearGradient>
+    <linearGradient id="enamel-blue" x1="0" y1="0" x2=".5" y2="1"><stop stop-color="#89dafa"/><stop offset=".4" stop-color="#429de7"/><stop offset="1" stop-color="#2569bc"/></linearGradient>
+  </defs><g><path d="M56.41381306664947 9.504778035599351A41 41 0 0 1 89.60295887785179 39.38841915079665" stroke="#102b58" stroke-width="10.2"/>
+        <path d="M56.41381306664947 9.504778035599351A41 41 0 0 1 89.60295887785179 39.38841915079665" stroke="url(#enamel-blue)" stroke-width="7.5"/>
+        <path d="M61.57676894431397 9.627008770590606A42 42 0 0 1 88.0649270555393 32.250033006890625" stroke="#b4eaff" stroke-width="1.1" opacity=".85"/><path d="M90.49522196440066 56.41381306664947A41 41 0 0 1 60.61158084920335 89.60295887785179" stroke="#102b58" stroke-width="10.2"/>
+        <path d="M90.49522196440066 56.41381306664947A41 41 0 0 1 60.61158084920335 89.60295887785179" stroke="url(#enamel-gold)" stroke-width="7.5"/>
+        <path d="M90.3729912294094 61.57676894431397A42 42 0 0 1 67.74996699310938 88.0649270555393" stroke="#fff0bf" stroke-width="1.1" opacity=".85"/><path d="M43.586186933350525 90.49522196440064A41 41 0 0 1 10.397041122148202 60.611580849203364" stroke="#102b58" stroke-width="10.2"/>
+        <path d="M43.586186933350525 90.49522196440064A41 41 0 0 1 10.397041122148202 60.611580849203364" stroke="url(#enamel-blue)" stroke-width="7.5"/>
+        <path d="M38.42323105568604 90.3729912294094A42 42 0 0 1 11.9350729444607 67.74996699310938" stroke="#b4eaff" stroke-width="1.1" opacity=".85"/><path d="M9.504778035599351 43.58618693335054A41 41 0 0 1 39.38841915079665 10.397041122148202" stroke="#102b58" stroke-width="10.2"/>
+        <path d="M9.504778035599351 43.58618693335054A41 41 0 0 1 39.38841915079665 10.397041122148202" stroke="url(#enamel-gold)" stroke-width="7.5"/>
+        <path d="M9.627008770590606 38.423231055686045A42 42 0 0 1 32.250033006890604 11.935072944460714" stroke="#fff0bf" stroke-width="1.1" opacity=".85"/></g></svg>

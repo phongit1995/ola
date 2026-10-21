@@ -1,6 +1,6 @@
 # S2. Lobby — Nền trời thoáng
 
-**Đã chốt phương án 1 — Nền trời thoáng.** Đây là đặc tả style để dựng lại màn lobby theo ảnh bên dưới. Phạm vi của tài liệu là S2; hành vi online theo [02 §S2](../../../02-screen-specs.md#s2-lobby), luật chơi theo [05](../../../05-gameplay-rules-and-protocol.md). **Đã dựng với dữ liệu mock** (`tycoon/screens/LobbyScreen.tsx`, mock `@minhanh` / VIP 3 / 12.500 KEN ở `tycoon/helpers/profile.ts`): `Vào bàn` tạm mở chơi với máy, `Lịch sử` và `Bảng xếp hạng` báo tính năng online đang làm. Chưa có S1 loading/lỗi và offline.
+**Đã chốt phương án 1 — Nền trời thoáng.** Đây là đặc tả style để dựng lại màn lobby theo ảnh bên dưới. Phạm vi của tài liệu là S2; hành vi online theo [02 §S2](../../../02-screen-specs.md#s2-lobby), luật chơi theo [05](../../../05-gameplay-rules-and-protocol.md). **Đã dựng với dữ liệu mock** (`tycoon/screens/LobbyScreen.tsx`, mock `@minhanh` / VIP 3 / 12.500 KEN ở `tycoon/helpers/profile.ts`): `Vào bàn` tạm mở chơi với máy, `Lịch sử` và `Bảng xếp hạng` báo tính năng online đang làm. Đã có [S1 loading](../s1-loading/README.md) khi thiếu hồ sơ; API hồ sơ, lỗi và offline chưa triển khai.
 
 ![Lobby S2 đã chọn: nền trời pixel, Bác Tỷ, ba thẻ đất và menu vàng/kem](./concept-s2-lobby-pixel-16bit.png)
 
@@ -125,9 +125,9 @@ Menu vào màn: fade + translateY 6 px, 180–220 ms, stagger tối đa 30 ms. K
 
 ## 8. Loading, offline và responsive
 
-S1 là trạng thái của cùng `LobbyScreen`, không dựng đồng thời hai logo hoặc hai menu. Loading/connecting dùng bố cục S1; sau `ready` chuyển sang S2. `LOBBY_CRITICAL` và budget theo [04 §5](../../../04-asset-manifest-and-prompts.md#5-preload-groups-assetsts); PNG concept 2 MB trong docs không tham gia tải game.
+S1 là trạng thái của cùng `LobbyScreen`, không dựng đồng thời hai logo hoặc hai menu. Code hiện dùng `profile === null` để hiện [bố cục S1](../s1-loading/README.md): logo + Bác Tỷ + Cung men nổi quay luân phiên với xúc xắc 3D lật một mặt mỗi lượt; giữ âm thanh/thoát, ẩn profile/KEN/menu/cụm thẻ. Có hồ sơ thì gỡ renderer và khôi phục S2 cùng phép đo topbar. Bản chơi máy khởi tạo `MOCK_PROFILE`; dev `/tycoon/?preview=loading` dùng để xem S1. `LOBBY_CRITICAL` và budget theo [04 §5](../../../04-asset-manifest-and-prompts.md#5-preload-groups-assetsts); PNG concept 2 MB trong docs không tham gia tải game.
 
-Khi mất kết nối trong S2, giữ các khối đã hiển thị; ba action online (`Vào bàn`, `Lịch sử`, `Bảng xếp hạng`) disabled, thêm dòng lý do và action `Thử lại` paper trong luồng. `Luật chơi`, âm thanh và thoát vẫn dùng được. S1 error dùng CTA thử lại theo 02; không hiển thị đồng thời CTA thử lại S1 và menu S2. Bản client-only hiện có giữ luồng chơi máy cho đến khi triển khai online; nhãn `Vào bàn` trong đặc tả không có nghĩa S3 đã tồn tại.
+**Kế hoạch online:** khi mất kết nối trong S2, giữ các khối và hồ sơ đã hiển thị; ba action online (`Vào bàn`, `Lịch sử`, `Bảng xếp hạng`) disabled, thêm dòng lý do và action `Thử lại` paper trong luồng. `Luật chơi`, âm thanh và thoát vẫn dùng được. S1 error dùng CTA thử lại theo 02; không hiển thị đồng thời CTA thử lại S1 và menu S2. Bản client-only hiện có giữ luồng chơi máy cho đến khi triển khai online; nhãn `Vào bàn` trong đặc tả không có nghĩa S3 đã tồn tại.
 
 | Vùng khả dụng | Quy tắc |
 |---|---|

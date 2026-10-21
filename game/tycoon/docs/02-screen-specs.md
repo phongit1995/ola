@@ -10,12 +10,14 @@ Mọi số đo tại viewport logic `390 × 844`. Width hỗ trợ 360–520 px:
 
 ## S1. Loading / Connecting
 
-Hiện khi `lobbyPhase = 'loading' | 'connecting' | 'error'` trong lần vào sảnh ban đầu, nằm trong LobbyScreen. Nếu đã hiện S2 rồi mới mất kết nối, giữ layout S2 và báo lỗi theo [S2 lobby §8](./style/screens/s2-lobby/README.md#8-loading-offline-và-responsive), không dựng thêm logo/menu S1 bên trên.
+UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và renderer đã chốt tại [S1 loading](./style/screens/s1-loading/README.md). Store hiện vẫn dùng `MOCK_PROFILE`, nên game chơi máy vào S2 như trước; xem S1 trong dev bằng `/tycoon/?preview=loading`.
 
-- Nền trời pixel như S6 (01 §7) + logo giữa màn (y 38%).
-- Dưới logo 24 px: `Đang tải... {n}%` hoặc `Đang kết nối...`.
-- Preload chỉ nhóm LOBBY_CRITICAL trước first paint (04 §5).
-- `lobbyPhase='error'`: text lỗi map tiếng Việt, nút `Thử lại` (CTA vàng 240×52) gọi lại `init()`.
+- Giữ nền trời pixel, logo, Bác Tỷ đứng yên, nút âm thanh và Thoát game. Ẩn tên/avatar, KEN, menu và cụm thẻ/quân trong lúc chờ hồ sơ.
+- Logo ở y 18,8%; nhân vật ở x 11%, y 34,8%; tâm loader x 50%, y 67% trong vùng sau safe-area. Khung loader `min(33cqw, 15cqh, 144px)`.
+- Xúc xắc WebGL bo góc, phía sau trong suốt, không đĩa trắng/kem. Dùng viền **Cung men nổi đã chốt** tại [style S1](./style/screens/s1-loading/README.md). Mỗi lượt 2,8 giây: viền quay 1,4 giây → nghỉ 0,2 giây → xúc xắc lật đúng một mặt (90°) trong 0,7 giây → giữ mặt mới 0,5 giây rồi đến lượt viền tiếp theo. Hai lớp không quay cùng lúc; không reset mặt sau mỗi lượt. Không có phần trăm giả hoặc chữ loading hiển thị; screen reader đọc “Đang tải hồ sơ”.
+- Reduced motion giữ tư thế đầu và dừng viền; tab ẩn dừng animation; thiếu WebGL/context bị mất dùng minh họa xúc xắc tĩnh. Có hồ sơ thì gỡ loader và hiện S2.
+
+**Phần online chưa triển khai:** `lobbyPhase = 'loading' | 'connecting' | 'ready' | 'error'`, preload nhóm LOBBY_CRITICAL trước first paint (04 §5), timeout/error/retry/auth. Khi có `error`, map lỗi sang tiếng Việt và hiện `Thử lại` (CTA vàng 240×52) gọi lại `init()`. Nếu đã hiện S2 rồi mới mất kết nối, giữ hồ sơ/layout S2 và báo lỗi theo [S2 lobby §8](./style/screens/s2-lobby/README.md#8-loading-offline-và-responsive), không reset hồ sơ về null để hiện lại S1.
 
 ---
 

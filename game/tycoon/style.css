@@ -592,17 +592,6 @@ button:focus-visible,
   opacity: 0.7;
 }
 
-.ty-lb-skeleton,
-.ty-lb-skeleton-text {
-  background: var(--ty-lb-paper-dim);
-}
-
-.ty-lb-skeleton-text {
-  width: 96px;
-  height: 14px;
-  border-radius: 8px;
-}
-
 .ty-lb-logo {
   margin: 20px 0 0;
   width: min(320px, calc(100% - 36px));
@@ -898,6 +887,52 @@ button:focus-visible,
     min-height: 52px;
     font-size: 22px;
   }
+}
+
+.ty-lobby-loading .ty-lb-top {
+  grid-template-columns: minmax(0, 1fr) 44px;
+  grid-template-areas: '. sound';
+  z-index: 1;
+}
+
+.ty-lb-loading-stage {
+  position: absolute;
+  inset: var(--ty-safe-top) 0 var(--ty-safe-bottom);
+  container-type: size;
+  pointer-events: none;
+}
+
+.ty-lb-loading-stage .ty-lb-logo {
+  position: absolute;
+  top: 18.8%;
+  left: 5%;
+  width: 90%;
+  height: 13%;
+  margin: 0;
+}
+
+.ty-lb-loading-stage .ty-lb-hero {
+  position: absolute;
+  top: 34.8%;
+  left: 11%;
+  width: 78%;
+  height: 24%;
+  max-height: none;
+  margin: 0;
+}
+
+.ty-lb-loading-stage .ty-lb-mascot {
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left bottom;
+}
+
+.ty-lb-loading-indicator {
+  position: absolute;
+  top: 67%;
+  left: 50%;
+  width: min(33cqw, 15cqh, 144px);
+  transform: translate(-50%, -50%);
 }
 
 /* ---------- Modal ---------- */

@@ -1,0 +1,14 @@
+.ty-dice-loader { position: relative; width: 100%; aspect-ratio: 1; pointer-events: none; }
+.ty-dice-loader-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(var(--ty-loading-ring-angle, 0deg)); }
+.ty-dice-loader-canvas, .ty-dice-loader-fallback { position: absolute; inset: 19%; width: 62%; height: 62%; }
+.ty-dice-loader-canvas { display: block; }
+.ty-dice-loader-fallback { display: none; object-fit: contain; }
+.ty-dice-loader[data-renderer='fallback'] .ty-dice-loader-canvas { display: none; }
+.ty-dice-loader[data-renderer='fallback'] .ty-dice-loader-fallback { display: block; }
+.ty-dice-loader[data-renderer='fallback'] .ty-dice-loader-ring { animation: ty-loading-orbit 2.8s linear infinite; }
+.ty-dice-loader[data-paused='true'] .ty-dice-loader-ring { animation-play-state: paused; }
+@keyframes ty-loading-orbit {
+  0% { transform: rotate(0deg); animation-timing-function: ease-in-out; }
+  50%, 100% { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) { .ty-dice-loader-ring { animation: none !important; transform: none; } }

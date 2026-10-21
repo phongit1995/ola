@@ -46,7 +46,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 
 | # | Màn | Tính năng chính |
 |---|---|---|
-| S1 | Loading / Connecting | preload asset, tiến trình %, lỗi kết nối + thử lại |
+| S1 | Loading / Connecting | đã có [UI chờ hồ sơ + xúc xắc 3D](./style/screens/s1-loading/README.md), Cung men nổi quay rồi xúc xắc lật một mặt; preload/API/lỗi + thử lại còn trong kế hoạch |
 | S2 | Lobby | logo, KEN + avatar VIP + `@username`, CTA Vào bàn, Lịch sử, Bảng xếp hạng, Luật chơi, bật/tắt âm, thoát game |
 | S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, Tạo bàn, Làm mới, phân trang 9 hàng |
 | S4 | Modal Tạo bàn / Vào bàn khóa | chọn số người 2/3/4, mật khẩu |

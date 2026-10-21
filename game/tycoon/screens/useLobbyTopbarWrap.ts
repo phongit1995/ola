@@ -10,7 +10,7 @@ function horizontalChrome(el: Element) {
   );
 }
 
-export function useLobbyTopbarWrap() {
+export function useLobbyTopbarWrap(enabled = true) {
   const topRef = useRef<HTMLElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const kenBodyRef = useRef<HTMLSpanElement>(null);
@@ -18,6 +18,10 @@ export function useLobbyTopbarWrap() {
   const [wrap, setWrap] = useState(false);
 
   useLayoutEffect(() => {
+    if (!enabled) {
+      setWrap(false);
+      return;
+    }
     const top = topRef.current;
     const profile = profileRef.current;
     const kenBody = kenBodyRef.current;
@@ -38,7 +42,7 @@ export function useLobbyTopbarWrap() {
     observer.observe(top);
     observer.observe(kenBody);
     return () => observer.disconnect();
-  }, []);
+  }, [enabled]);
 
   return { topRef, profileRef, kenBodyRef, soundRef, wrap };
 }

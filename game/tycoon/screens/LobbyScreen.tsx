@@ -14,6 +14,7 @@ import ctaRaysUrl from '../assets/lobby/decor-cta-rays.svg';
 import heroRaysUrl from '../assets/lobby/decor-hero-rays.svg';
 import mascotUrl from '../assets/chars/ty-idle-full.webp';
 import { TyIcon } from '../components/TyIcon';
+import { DiceLoader } from '../components/loading/DiceLoader';
 import { formatKen } from '../helpers/format';
 import { avatarIconUrl } from '../helpers/player';
 import type { LobbyProfile } from '../helpers/profile';
@@ -22,15 +23,7 @@ import { useLobbyTopbarWrap } from './useLobbyTopbarWrap';
 
 const ONLINE_SOON = 'Tính năng online đang được làm, tạm thời chơi với máy';
 
-function ProfilePill({ profile, ref }: { profile: LobbyProfile | null; ref: Ref<HTMLDivElement> }) {
-  if (!profile) {
-    return (
-      <div ref={ref} className="ty-lb-pill ty-lb-profile" aria-busy="true">
-        <span className="ty-lb-avatar ty-lb-skeleton" />
-        <span className="ty-lb-name ty-lb-skeleton-text" />
-      </div>
-    );
-  }
+function ProfilePill({ profile, ref }: { profile: LobbyProfile; ref: Ref<HTMLDivElement> }) {
   const name = `@${profile.username}`;
   return (
     <div ref={ref} className="ty-lb-pill ty-lb-profile" aria-label={name}>
@@ -42,8 +35,8 @@ function ProfilePill({ profile, ref }: { profile: LobbyProfile | null; ref: Ref<
   );
 }
 
-function KenPill({ ken, bodyRef }: { ken: number | null; bodyRef: Ref<HTMLSpanElement> }) {
-  const amount = ken == null ? '—' : formatKen(ken);
+function KenPill({ ken, bodyRef }: { ken: number; bodyRef: Ref<HTMLSpanElement> }) {
+  const amount = formatKen(ken);
   return (
     <div className="ty-lb-pill ty-lb-ken" aria-label={`Số dư ${amount} KEN`}>
       <span ref={bodyRef} className="ty-lb-ken-body" aria-hidden="true">
@@ -67,13 +60,30 @@ export function LobbyScreen() {
       showToast: s.showToast,
     })),
   );
-  const { topRef, profileRef, kenBodyRef, soundRef, wrap } = useLobbyTopbarWrap();
+  const loading = profile === null;
+  const { topRef, profileRef, kenBodyRef, soundRef, wrap } = useLobbyTopbarWrap(!loading);
+  const art = (
+    <>
+      <h1 className="ty-lb-logo">
+        <img src={logoUrl} alt="Cờ Tỷ Phú" draggable={false} />
+      </h1>
+      <div className="ty-lb-hero" aria-hidden="true">
+        {!loading && (
+          <div className="ty-lb-props">
+            <img src={heroRaysUrl} alt="" draggable={false} />
+            <img src={heroUrl} alt="" draggable={false} />
+          </div>
+        )}
+        <img className="ty-lb-mascot" src={mascotUrl} alt="" draggable={false} />
+      </div>
+    </>
+  );
 
   return (
-    <div className="ty-lobby" style={{ '--ty-lb-bg': `url(${bgUrl})` } as React.CSSProperties}>
+    <div className={`ty-lobby${loading ? ' ty-lobby-loading' : ''}`} style={{ '--ty-lb-bg': `url(${bgUrl})` } as React.CSSProperties}>
       <header ref={topRef} className={wrap ? 'ty-lb-top ty-lb-top-wrap' : 'ty-lb-top'}>
-        <ProfilePill profile={profile} ref={profileRef} />
-        <KenPill ken={profile?.ken ?? null} bodyRef={kenBodyRef} />
+        {profile && <ProfilePill profile={profile} ref={profileRef} />}
+        {profile && <KenPill ken={profile.ken} bodyRef={kenBodyRef} />}
         <button
           ref={soundRef}
           type="button"
@@ -86,40 +96,39 @@ export function LobbyScreen() {
         </button>
       </header>
 
-      <h1 className="ty-lb-logo">
-        <img src={logoUrl} alt="Cờ Tỷ Phú" draggable={false} />
-      </h1>
-
-      <div className="ty-lb-hero" aria-hidden="true">
-        <div className="ty-lb-props">
-          <img src={heroRaysUrl} alt="" draggable={false} />
-          <img src={heroUrl} alt="" draggable={false} />
+      {loading ? (
+        <div className="ty-lb-loading-stage">
+          {art}
+          <div className="ty-lb-loading-indicator">
+            <DiceLoader />
+          </div>
         </div>
-        <img className="ty-lb-mascot" src={mascotUrl} alt="" draggable={false} />
-      </div>
+      ) : art}
 
-      <nav className="ty-lb-menu" aria-label="Menu sảnh">
-        <div className="ty-lb-cta">
-          <img className="ty-lb-cta-rays" src={ctaRaysUrl} alt="" draggable={false} />
-          <button type="button" className="ty-lb-btn ty-lb-btn-gold" onClick={() => setSetupOpen(true)}>
-            <img src={diceUrl} alt="" draggable={false} />
-            <span>Vào bàn</span>
+      {!loading && (
+        <nav className="ty-lb-menu" aria-label="Menu sảnh">
+          <div className="ty-lb-cta">
+            <img className="ty-lb-cta-rays" src={ctaRaysUrl} alt="" draggable={false} />
+            <button type="button" className="ty-lb-btn ty-lb-btn-gold" onClick={() => setSetupOpen(true)}>
+              <img src={diceUrl} alt="" draggable={false} />
+              <span>Vào bàn</span>
+            </button>
+            <img className="ty-lb-cta-rays" src={ctaRaysUrl} alt="" draggable={false} />
+          </div>
+          <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
+            <img src={historyUrl} alt="" draggable={false} />
+            <span>Lịch sử</span>
           </button>
-          <img className="ty-lb-cta-rays" src={ctaRaysUrl} alt="" draggable={false} />
-        </div>
-        <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
-          <img src={historyUrl} alt="" draggable={false} />
-          <span>Lịch sử</span>
-        </button>
-        <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
-          <img src={leaderboardUrl} alt="" draggable={false} />
-          <span>Bảng xếp hạng</span>
-        </button>
-        <button type="button" className="ty-lb-btn ty-lb-btn-text" onClick={() => setRulesOpen(true)}>
-          <img src={rulesUrl} alt="" draggable={false} />
-          <span>Luật chơi</span>
-        </button>
-      </nav>
+          <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
+            <img src={leaderboardUrl} alt="" draggable={false} />
+            <span>Bảng xếp hạng</span>
+          </button>
+          <button type="button" className="ty-lb-btn ty-lb-btn-text" onClick={() => setRulesOpen(true)}>
+            <img src={rulesUrl} alt="" draggable={false} />
+            <span>Luật chơi</span>
+          </button>
+        </nav>
+      )}
 
       <footer className="ty-lb-footer">
         <button type="button" className="ty-lb-exit" onClick={exitGame}>

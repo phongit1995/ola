@@ -4,12 +4,13 @@ Mỗi màn có ảnh mẫu đã duyệt thì có **một folder riêng** ở đ�
 
 | Màn | Folder | Ảnh mẫu | Trạng thái |
 |---|---|---|---|
+| S1. Loading | [s1-loading](./s1-loading/README.md) | Cung men nổi và xúc xắc 3D đã chốt | đã tích hợp UI `profile === null`; viền quay luân phiên với xúc xắc lật một mặt mỗi lượt; đã dọn các mẫu thử; chưa nối API hồ sơ |
 | S2. Lobby | [s2-lobby](./s2-lobby/README.md) | `concept-s2-lobby-pixel-16bit.png` | concept đã chốt; UI mock và 11 WebP đã có (nguồn PNG: 8 bản v2 đã chọn + 5 v1 + 2 lớp thoát tách từ v1); **chưa đạt visual QA runtime** — [audit](./s2-lobby/asset-audit.md) |
 | S6. Bàn chơi | [s6-board](./s6-board/README.md) | `concept-s6-board-pixel-16bit.png` | ảnh chuẩn pixel 16-bit, nền mỹ thuật chung; chưa dựng UI |
 
 Các màn khác chưa có ảnh mẫu. Điều kiện bắt đầu dựng theo [kế hoạch triển khai, giai đoạn 0](../06-implementation-plan.md) — **duyệt theo từng màn**:
 - S7, O2, S9 đã lên kế hoạch vẽ concept: chờ concept của chính màn đó được duyệt rồi mới dựng.
-- S1, S3–S5, S8, S10, S11, O1, O3–O7: dựng theo [02-screen-specs.md](../../02-screen-specs.md) + style chung, duyệt bằng ảnh chụp thật.
+- S3–S5, S8, S10, S11, O1, O3–O7: dựng theo [02-screen-specs.md](../../02-screen-specs.md) + style chung, duyệt bằng ảnh chụp thật.
 
 ## Quy ước
 
