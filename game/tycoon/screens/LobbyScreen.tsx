@@ -16,7 +16,7 @@ import mascotUrl from '../assets/chars/ty-idle-full.webp';
 import { TyIcon } from '../components/TyIcon';
 import { formatKen } from '../helpers/format';
 import { avatarIconUrl } from '../helpers/player';
-import { GAME_VERSION, type LobbyProfile } from '../helpers/profile';
+import type { LobbyProfile } from '../helpers/profile';
 import { useTycoon } from '../store/useTycoon';
 import { useLobbyTopbarWrap } from './useLobbyTopbarWrap';
 
@@ -129,7 +129,6 @@ export function LobbyScreen() {
           </span>
           <span>Thoát game</span>
         </button>
-        <span className="ty-lb-version">{GAME_VERSION}</span>
       </footer>
     </div>
   );

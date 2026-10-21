@@ -46,7 +46,7 @@ Hai nhóm trên là nét hình học đơn giản: dựng SVG code-native theo c
 
 **Cập nhật 2026-10-21 (sau audit):** đã dựng bước 1 trong code: 2 SVG tia, mặt CTA (mặt vàng hai tông, highlight trắng hở theo cung trên, điểm sáng hai đầu, cạnh cam trong, viền nâu), nút kem một contour navy + cạnh beige trong + bóng xanh, Luật chơi không nền. Khung lobby sau đó được chỉnh cao đúng một màn như caro (không cuộn, hero co lại trên màn thấp); Luật chơi có viền sáng paper để đọc trên cảnh phố. Focus chỉ dùng outline navy. Chưa qua visual QA; mục logo/cụm thẻ và bước 2–3 vẫn mở.
 
-Avatar VIP, `@username`, số dư, version thật, font Nunito và việc bỏ bóng elip của mascot là các khác biệt chủ động đã ghi trong [README S2](./README.md). Version paper nhỏ cũng là ngoại lệ để đọc rõ. Chúng không cho phép tự bỏ tia, làm phẳng mặt nút hoặc thêm viền kép. Riêng họa tiết/shading trên áo S2 giữ theo concept, là ngoại lệ trong màn này so với style nhân vật phẳng dùng chung.
+Avatar VIP, `@username`, số dư thật, font Nunito, bỏ version ở footer và việc bỏ bóng elip của mascot là các khác biệt chủ động đã ghi trong [README S2](./README.md). Chúng không cho phép tự bỏ tia, làm phẳng mặt nút hoặc thêm viền kép. Riêng họa tiết/shading trên áo S2 giữ theo concept, là ngoại lệ trong màn này so với style nhân vật phẳng dùng chung.
 
 ## 4. Thứ tự sửa và tiêu chí kết thúc
 

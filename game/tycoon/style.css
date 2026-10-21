@@ -794,8 +794,7 @@ button:focus-visible,
   margin-top: auto;
   padding-top: 24px;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  justify-content: center;
 }
 
 .ty-lb-exit {
@@ -838,15 +837,6 @@ button:focus-visible,
   height: 16.5px;
   left: -2px;
   top: 3.75px;
-}
-
-.ty-lb-version {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--ty-lb-paper);
-  font-size: 12.5px;
-  font-weight: 700;
-  line-height: 1.35;
 }
 
 @media (hover: hover) {

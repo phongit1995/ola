@@ -1,5 +1,3 @@
-import { version } from '../../package.json';
-
 export interface LobbyProfile {
   username: string;
   vipType: string | null;
@@ -11,5 +9,3 @@ export const MOCK_PROFILE: LobbyProfile = {
   vipType: '3',
   ken: 12_500,
 };
-
-export const GAME_VERSION = `v${version}`;

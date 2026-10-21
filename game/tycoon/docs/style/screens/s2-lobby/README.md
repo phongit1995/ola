@@ -4,7 +4,7 @@
 
 ![Lobby S2 đã chọn: nền trời pixel, Bác Tỷ, ba thẻ đất và menu vàng/kem](./concept-s2-lobby-pixel-16bit.png)
 
-Ảnh gốc **853 × 1844 px**, giữ nguyên bản được chọn. [Log nguồn và prompt](../../../asset-generation-log.md). Ảnh concept không import trực tiếp vào game; asset được **cắt từ concept** theo [quy trình asset theo màn](../README.md#quy-trình-asset-theo-màn), PNG gốc ở [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md), khi code mới xuất WebP/SVG. Chữ (nhãn nút, tên, số KEN, version) không cắt từ ảnh, luôn là DOM text.
+Ảnh gốc **853 × 1844 px**, giữ nguyên bản được chọn. [Log nguồn và prompt](../../../asset-generation-log.md). Ảnh concept không import trực tiếp vào game; asset được **cắt từ concept** theo [quy trình asset theo màn](../README.md#quy-trình-asset-theo-màn), PNG gốc ở [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md), khi code mới xuất WebP/SVG. Chữ (nhãn nút, tên, số KEN) không cắt từ ảnh, luôn là DOM text.
 
 **Trạng thái sau review 2026-10-21:** có 13 PNG nguồn tại [assets/screens/lobby](../../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn sau khi so với concept + 5 v1); 10 bản WebP đã được xuất và import vào Lobby mock. **Chưa đạt visual QA.** Ảnh AI đã tái dựng một số chi tiết; tia vàng CTA, tia trắng hero, mặt CTA, contour nút kem và Luật chơi không pill đã dựng bằng SVG/CSS, chờ visual QA. Xem [audit từng ảnh, nguyên nhân từ prompt và việc cần sửa](./asset-audit.md). Có file runtime không có nghĩa artwork đã được duyệt.
 
@@ -12,12 +12,12 @@
 
 - Nền trời cyan thoáng, mây pixel ở viền; phố Việt Nam, cây, núi và sông ở phần dưới. Không đặt một panel lớn sau toàn bộ menu.
 - Logo vàng viền navy nằm trên hero. Bác Tỷ bên trái; ba thẻ đất giấy kem có tranh pixel, hai quân con tốt vàng/xanh ở bên phải. Hero và logo tách khỏi vùng nút.
-- Một nút chính vàng `Vào bàn`, hai nút kem `Lịch sử`, `Bảng xếp hạng`, rồi action chữ có sách `Luật chơi`. Footer có pill `Thoát game` và version.
+- Một nút chính vàng `Vào bàn`, hai nút kem `Lịch sử`, `Bảng xếp hạng`, rồi action chữ có sách `Luật chơi`. Footer chỉ có pill `Thoát game`, căn giữa thẳng hàng menu; không hiển thị version (`v1.0` trong ảnh bỏ đi).
 - Bóng elip dưới chân Bác Tỷ trong ảnh không lấy: nhân vật không đổ bóng ngoài theo [03-characters](../../03-characters.md).
 - Riêng S2, giữ họa tiết áo và shading gần concept; đây là ngoại lệ của màn so với nhân vật phẳng dùng chung. Không làm phẳng áo hoặc đảo hướng icon thoát dưới danh nghĩa “sửa QA” khi ảnh mẫu không yêu cầu.
 - Pixel chỉ dùng cho phong cảnh. Mascot, quân cờ, thẻ, icon, nút và chữ mượt, contour navy. Ánh sáng nhẹ và mép dưới tạo độ nổi; không thêm glow, glass hay hạt liên tục.
 - **Ảnh quyết định mỹ thuật và tương quan bố cục; tài liệu này quyết định kích thước triển khai, responsive và trạng thái.** Dùng [01-foundations](../../01-foundations.md) cho token UI chung; lớp phản sáng/cạnh CTA và họa tiết nhân vật S2 là ngoại lệ theo concept đã duyệt, chỉ áp dụng trong màn này như §3 và §6.
-- Chữ `Minh Anh`, chân dung người, `12.500 KEN`, `v1.0` trong ảnh là dữ liệu mẫu. Production dùng avatar VIP + `@username` theo [03 §18](../../../03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar), số KEN thật và version của build. Không bake các dữ liệu này vào ảnh.
+- Chữ `Minh Anh`, chân dung người, `12.500 KEN` trong ảnh là dữ liệu mẫu. Production dùng avatar VIP + `@username` theo [03 §18](../../../03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar) và số KEN thật. Không bake các dữ liệu này vào ảnh.
 
 ## 2. Bố cục tại 390 × 844
 
@@ -30,7 +30,7 @@ Tọa độ dưới đây tính trong vùng nội dung **sau khi đã trừ safe
 | Hero | x 12, y 188, rộng 366, cao 176 | Bác Tỷ trái; ba thẻ + hai quân bên phải |
 | Menu | giữa ngang, y 376–648, rộng 280 | cao lần lượt 80 / 56 / 56 / 44; gap 12 |
 | Cảnh phố dưới | chủ yếu từ y 648 đến đáy | trang trí, không nhận pointer events |
-| Footer | giữa ngang, y 780–824; cách đáy 20 | nút thoát cao 44 + version, gap 10 |
+| Footer | giữa ngang, y 780–824; cách đáy 20 | nút thoát cao 44, căn giữa |
 
 Các khoảng dọc chuẩn: topbar → logo 20; logo → hero 8; hero → menu 12. Footer dùng `margin-block-start: auto`, cách menu ít nhất 24. Tránh neo footer bằng `position: fixed` khiến nó che menu trên điện thoại thấp.
 
@@ -48,12 +48,11 @@ Font production là **Nunito**, tái dùng hai file đang được khai báo tro
 | `Lịch sử`, `Bảng xếp hạng` | 24 / 800 / 1.2 |
 | `Luật chơi` | 22 / 800 / 1.2, underline offset 4 |
 | `Thoát game` | 16 / 800 / 1.2 |
-| Version | 12.5 / 700 / 1.35 |
 | Trợ giúp/lỗi | 13.5 / 600 / 1.35 |
 
 Chữ và contour dùng navy `#1F2A44`; paper `#FCFDF0`, mép paper `#F0E4C8`. Các token gold chung là điểm bắt đầu, không đủ để mô tả mặt CTA đã duyệt: S2 cần mặt vàng sáng, highlight trắng, cạnh cam và đáy nâu tách biệt theo §6; không dùng một màu `#B98700` cho mọi lớp rồi coi là đã khớp. Nền trời `#35C1FC → #7FE3F7`; màu tiền/trạng thái hợp lệ jade `#1F8A5B`, lỗi/thoát coral `#E4573D`. Không đổi toàn bộ KEN thành gold: số dư vẫn navy để đọc rõ trên nền kem. Màu/chuyển sáng bổ sung cho artwork CTA chỉ áp dụng S2, không đổi token nút toàn game.
 
-Version dùng chữ navy trên nền paper nhỏ, không dùng chữ trắng trực tiếp trên cảnh phố nhiều chi tiết như ảnh. Các nhãn phải giữ đủ dấu tiếng Việt và đọc được tại 360 px.
+Các nhãn phải giữ đủ dấu tiếng Việt và đọc được tại 360 px.
 
 ## 4. Topbar và dữ liệu
 
@@ -152,7 +151,7 @@ Các mục dưới đây là **việc triển khai tiếp theo**, không đánh 
 - [ ] Nối action vào luồng được triển khai; phân biệt S1, S2 ready, pending, lỗi và offline.
 - [ ] Chụp 390 × 844 đối chiếu concept: nền mở, logo, mascot trái, 3 thẻ/2 quân phải, menu vàng–kem–kem–text, footer; không mất hoặc thêm action.
 - [ ] Chụp 360 × 640, 390 × 844 có safe-area, 520 × 900; thử username dài 24 ký tự, KEN 19 chữ số, user không VIP, zoom text 200%, reduced-motion, asset lỗi.
-- [ ] Kiểm tên/VIP/số KEN/version đều là dữ liệu thật, không có placeholder ảnh lọt vào trạng thái ready.
+- [ ] Kiểm tên/VIP/số KEN đều là dữ liệu thật, không có placeholder ảnh lọt vào trạng thái ready.
 - [ ] Tab theo thứ tự âm thanh → Vào bàn → Lịch sử → Bảng xếp hạng → Luật chơi → Thoát; modal quản lý focus và trả focus về nút mở.
 - [ ] Nút không dưới vùng chạm 44 × 44; kiểm contrast và overflow, budget tải lobby ≤ 180 KB gzip; typecheck và kiểm tương tác sau khi có code UI.
 
