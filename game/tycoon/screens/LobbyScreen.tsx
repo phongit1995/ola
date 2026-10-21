@@ -7,7 +7,8 @@ import diceUrl from '../assets/lobby/ill-dice.webp';
 import historyUrl from '../assets/lobby/ill-history.webp';
 import leaderboardUrl from '../assets/lobby/ill-leaderboard.webp';
 import rulesUrl from '../assets/lobby/ill-rules.webp';
-import exitUrl from '../assets/lobby/ill-exit.webp';
+import exitDoorUrl from '../assets/lobby/ill-exit-door.webp';
+import exitArrowUrl from '../assets/lobby/ill-exit-arrow.webp';
 import kenUrl from '../assets/lobby/ill-ken.webp';
 import ctaRaysUrl from '../assets/lobby/decor-cta-rays.svg';
 import heroRaysUrl from '../assets/lobby/decor-hero-rays.svg';
@@ -122,7 +123,10 @@ export function LobbyScreen() {
 
       <footer className="ty-lb-footer">
         <button type="button" className="ty-lb-exit" onClick={exitGame}>
-          <img src={exitUrl} alt="" draggable={false} />
+          <span className="ty-lb-exit-icon" aria-hidden="true">
+            <img className="ty-lb-exit-door" src={exitDoorUrl} alt="" draggable={false} />
+            <img className="ty-lb-exit-arrow" src={exitArrowUrl} alt="" draggable={false} />
+          </span>
           <span>Thoát game</span>
         </button>
         <span className="ty-lb-version">{GAME_VERSION}</span>

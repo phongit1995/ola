@@ -4,7 +4,7 @@ Mỗi màn có ảnh mẫu đã duyệt thì có **một folder riêng** ở đ�
 
 | Màn | Folder | Ảnh mẫu | Trạng thái |
 |---|---|---|---|
-| S2. Lobby | [s2-lobby](./s2-lobby/README.md) | `concept-s2-lobby-pixel-16bit.png` | concept đã chốt; UI mock và 10 WebP đã có (nguồn PNG: 8 bản v2 đã chọn + 5 v1); **chưa đạt visual QA runtime** — [audit](./s2-lobby/asset-audit.md) |
+| S2. Lobby | [s2-lobby](./s2-lobby/README.md) | `concept-s2-lobby-pixel-16bit.png` | concept đã chốt; UI mock và 11 WebP đã có (nguồn PNG: 8 bản v2 đã chọn + 5 v1 + 2 lớp thoát tách từ v1); **chưa đạt visual QA runtime** — [audit](./s2-lobby/asset-audit.md) |
 | S6. Bàn chơi | [s6-board](./s6-board/README.md) | `concept-s6-board-pixel-16bit.png` | ảnh chuẩn pixel 16-bit, nền mỹ thuật chung; chưa dựng UI |
 
 Các màn khác chưa có ảnh mẫu. Điều kiện bắt đầu dựng theo [kế hoạch triển khai, giai đoạn 0](../06-implementation-plan.md) — **duyệt theo từng màn**:

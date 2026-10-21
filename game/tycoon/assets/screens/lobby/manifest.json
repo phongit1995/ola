@@ -204,7 +204,8 @@
       ],
       "sha256": "2aa761e62a51fb835762c2a39c86d378db89431ff803afef2ccc9a5b09f1c698",
       "generatedSource": "exec-cd224fd7-0792-4c66-81be-9d9dedf96a06.png",
-      "version": "v1"
+      "version": "v1",
+      "usage": "Reference only; runtime uses icon-exit-door and icon-exit-arrow."
     },
     {
       "id": "icon-ken",
@@ -297,9 +298,73 @@
       "sha256": "d21d3720c0e02cd7559f89dea46e86974b22bed7126816d58c092c6a297c1c2a",
       "generatedSource": "exec-26338ce5-0650-4d30-ad70-3a395b1574d6.png",
       "version": "v2"
+    },
+    {
+      "id": "icon-exit-door",
+      "label": "Cửa thoát tách từ v1",
+      "file": "icon-exit-door.png",
+      "width": 1320,
+      "height": 1192,
+      "bytes": 742900,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 57.27,
+      "contentBounds": [
+        310,
+        123,
+        1030,
+        1063
+      ],
+      "sha256": "c5bad48ad0576fd23b4608ca76677b08e0e77118821e407f1912dd27d41b45fc",
+      "generatedSource": "exec-75807626-0a0a-44df-b1b9-8f2a2c995db4.png",
+      "version": "v1-split",
+      "reference": "icon-exit.png",
+      "prompt": "exit-split-prompts.md",
+      "runtime": {
+        "file": "../../lobby/ill-exit-door.webp",
+        "width": 45,
+        "height": 56,
+        "bytes": 1024,
+        "sha256": "77bb7151f48d44ee211b4b227ae147cea2152c765487df9b6f2ba75ddc2da018"
+      }
+    },
+    {
+      "id": "icon-exit-arrow",
+      "label": "Mũi tên thoát tách từ v1",
+      "file": "icon-exit-arrow.png",
+      "width": 1510,
+      "height": 1042,
+      "bytes": 457062,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 76.43,
+      "contentBounds": [
+        302,
+        185,
+        1233,
+        848
+      ],
+      "sha256": "be5b279fb1d8eda983f36f9e36c953a563d9581ce36db7feba52ff5a99ed40b1",
+      "generatedSource": "exec-c71fb112-c6a1-4071-a72c-f0949c3b58d4.png",
+      "version": "v1-split",
+      "reference": "icon-exit.png",
+      "prompt": "exit-split-prompts.md",
+      "runtime": {
+        "file": "../../lobby/ill-exit-arrow.webp",
+        "width": 44,
+        "height": 34,
+        "bytes": 850,
+        "sha256": "cfc91d86b175756ac1823dac40ee24178709b37d9169a2e1ae4f8f4a552052fb"
+      }
     }
   ],
-  "totalBytes": 12690811,
+  "totalBytes": 13890773,
   "knownLimitations": [
     "AI reconstructed some details; not a pixel-identical crop.",
     "Hidden RGB under alpha zero is not visible glow; judge edges on alpha-composited previews.",
@@ -307,7 +372,8 @@
     "Eight v2 assets replaced v1 after side-by-side comparison with the concept on 2026-10-21; background, logo, icon-exit, icon-ken and icon-sound stay v1.",
     "Four yellow CTA rays and two white hero ray clusters are separate code-native SVG layers (CTA 2+2, hero 3+3), not part of these PNGs.",
     "Full v2 prompts are not stored; prompts.md summarizes the v2 requests and input crops.",
-    "The PNG sound artwork has no off variant; runtime uses the existing on/off SVG pair."
+    "The PNG sound artwork has no off variant; runtime uses the existing on/off SVG pair.",
+    "Exit now uses two new imagegen layers derived from the selected v1 design; original combined v1 remains a reference. Full split prompts and export settings are in exit-split-prompts.md."
   ],
   "visualReview": {
     "date": "2026-10-21",
@@ -318,6 +384,7 @@
   "screen": "lobby",
   "sourceConcept": "../../../docs/style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
   "prompts": [
-    "prompts.md"
+    "prompts.md",
+    "exit-split-prompts.md"
   ]
 }

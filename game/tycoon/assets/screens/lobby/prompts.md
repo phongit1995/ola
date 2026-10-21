@@ -113,3 +113,7 @@ Prompt đầy đủ của lượt v2 không lưu trong repo. Input của icon l�
 - Màu RGB dưới alpha = 0 không phải glow nhìn thấy; kiểm viền trên ảnh đã ghép nền.
 
 Tia vàng CTA và tia trắng hero không nằm trong PNG; chúng là hai SVG riêng theo README S2.
+
+## Tách lại cửa và mũi tên từ v1 (2026-10-21)
+
+Theo yêu cầu tiếp tục dùng imagegen, đã tách lại đúng thiết kế thoát v1 thành `icon-exit-door.png` và `icon-exit-arrow.png`. Giữ cửa cam, mũi tên kem viền đỏ nâu hướng phải. Hai output này khác cặp v2 bị loại ở trên. [Toàn bộ prompt, output ID, lượt sửa tỷ lệ và thông số export](./exit-split-prompts.md). PNG nguồn giữ nguyên output imagegen, không script mask/recolor.

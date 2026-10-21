@@ -94,7 +94,7 @@ Kích thước/font ở đây là biến thể **riêng S2**, không đổi nút
 | `Luật chơi` | **không nền pill, không border/shadow**; vùng chạm cao ít nhất 44, chữ navy gạch chân trên nền trời | sách paper/navy, 32 | modal luật có thể cuộn, nút Đóng; dùng offline |
 | `Thoát game` | paper, cao 44, pill; rộng theo nội dung, padding ngang 18 | cửa/mũi tên coral, 24 | `bridge.exit()` |
 
-Artwork kiểm lại từ nguồn: xúc xắc CTA có các mặt **3–2–1** (mặt lớn phía trên / trái / phải), đồng hồ không có chấm tâm. Icon thoát giữ bản v1 (cửa và mũi tên hướng phải trong một ảnh).
+Artwork kiểm lại từ nguồn: xúc xắc CTA có các mặt **3–2–1** (mặt lớn phía trên / trái / phải), đồng hồ không có chấm tâm. Icon thoát giữ thiết kế v1, tách thành 2 lớp cửa + mũi tên hướng phải, chồng trong một ô 24 px của nút Thoát game.
 
 Mặt CTA có dải highlight trắng hở chạy theo cung trên và điểm sáng gần hai đầu; đó là phản sáng, **không phải outline trắng thứ hai chạy kín nút**. Cạnh cam nằm trong hình nút và kết thúc ở đáy nâu. Với nút kem, không kết hợp `border` với một outer spread-shadow navy tạo hai đường bao song song; đặt cạnh beige ở trong contour, chỉ bóng đổ nằm ngoài. Quy tắc một contour áp dụng default/hover/pressed; focus ring truy cập bàn phím vẫn hiện riêng khi `:focus-visible`.
 
@@ -158,7 +158,7 @@ Các mục dưới đây là **việc triển khai tiếp theo**, không đánh 
 
 ## 10. Asset cắt từ concept → file production
 
-PNG nguồn nằm ở [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn + 5 giữ v1). Đã có 10 WebP (cắt theo alpha (> 8) + đệm trong suốt 4 px, thu LANCZOS về ~2× cỡ hiển thị, WebP q80/alpha q90; nền kín 780 px rộng, q68; script xuất không lưu trong repo). Tổng 182.326 byte (~178 KiB) chỉ là các WebP, không phải chứng nhận toàn bộ initial load ≤180 KB gzip. Loa dùng `ic-volume-on/off` có sẵn nên `icon-sound.png` chưa xuất. Hai SVG decor ở bảng dưới **đã có**.
+PNG nguồn nằm ở [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn + 5 giữ v1). Đã có 11 WebP (cắt theo alpha (> 8) + đệm trong suốt 4 px, thu LANCZOS về ~2× cỡ hiển thị, WebP q80/alpha q90; nền kín 780 px rộng, q68; script xuất không lưu trong repo). Tổng 182.316 byte (~178 KiB) chỉ là các WebP, không phải chứng nhận toàn bộ initial load ≤180 KB gzip. Loa dùng `ic-volume-on/off` có sẵn nên `icon-sound.png` chưa xuất. Hai SVG decor ở bảng dưới **đã có**.
 
 | PNG gốc | File runtime khi code | Ghi chú QA trước khi xuất |
 |---|---|---|
@@ -167,7 +167,7 @@ PNG nguồn nằm ở [`assets/screens/lobby/`](../../../../assets/screens/lobby
 | `mascot.png` (v2) | `chars/ty-idle-full.webp` | họa tiết áo dạng đồng xu gần concept; mặt/tóc/khuy vẫn tái dựng; bỏ bóng elip theo ngoại lệ đã ghi |
 | `hero-properties.png` (v2) | `lobby/hero-properties.webp` | 3 thẻ + 2 quân chung một lớp; tia trắng là SVG riêng; tách lớp chỉ khi cần animate |
 | `icon-dice.png`, `icon-history.png`, `icon-leaderboard.png`, `icon-rules.png` (v2) | `lobby/ill-{dice,history,leaderboard,rules}.webp` (hoặc `.svg` nếu vẽ lại vector) | xúc xắc 3–2–1, đồng hồ không chấm tâm, crown BXH viền nâu, sách gọn ~1,37:1 |
-| `icon-exit.png` (v1) | `lobby/ill-exit.webp` | giữ mũi tên hướng phải như concept |
+| `icon-exit-door.png` + `icon-exit-arrow.png` (tách từ v1) | `lobby/ill-exit-door.webp` + `lobby/ill-exit-arrow.webp` | chồng trong ô 24 px; giữ mũi tên hướng phải như concept; `icon-exit.png` chỉ còn làm đối chiếu |
 | `icon-ken.png` | `lobby/ill-ken.webp` | chỉ dùng trong pill KEN của S2; `ic-ken` vẫn dùng ở chỗ khác |
 | `icon-sound.png` | chưa xuất; runtime dùng `ic-volume-on/off` | chỉ cần bổ sung artwork off nếu thay cặp SVG đang dùng; không chặn luồng âm thanh hiện tại |
 | `button-gold.png`, `button-paper.png` (v2) | không xuất | mẫu surface cho CSS/SVG §6; gold visible 3,50:1, paper 4,87:1; không được lược highlight/cạnh hoặc thêm viền kép |
