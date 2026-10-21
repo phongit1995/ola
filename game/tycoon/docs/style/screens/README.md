@@ -4,7 +4,7 @@ Mỗi màn có ảnh mẫu đã duyệt thì có **một folder riêng** ở đ�
 
 | Màn | Folder | Ảnh mẫu | Trạng thái |
 |---|---|---|---|
-| S2. Lobby | [s2-lobby](./s2-lobby/README.md) | `concept-s2-lobby-pixel-16bit.png` | phương án 1 — Nền trời thoáng, đã chốt; chưa dựng UI |
+| S2. Lobby | [s2-lobby](./s2-lobby/README.md) | `concept-s2-lobby-pixel-16bit.png` | concept đã chốt; UI mock và 10 WebP đã có (nguồn PNG: 8 bản v2 đã chọn + 5 v1); **chưa đạt visual QA runtime** — [audit](./s2-lobby/asset-audit.md) |
 | S6. Bàn chơi | [s6-board](./s6-board/README.md) | `concept-s6-board-pixel-16bit.png` | ảnh chuẩn pixel 16-bit, nền mỹ thuật chung; chưa dựng UI |
 
 Các màn khác chưa có ảnh mẫu. Điều kiện bắt đầu dựng theo [kế hoạch triển khai, giai đoạn 0](../06-implementation-plan.md) — **duyệt theo từng màn**:
@@ -23,7 +23,7 @@ Các màn khác chưa có ảnh mẫu. Điều kiện bắt đầu dựng theo [
 
 1. **Vẽ chung cả màn** thành một ảnh concept, duyệt, lưu vào folder màn ở đây.
 2. **Cắt/tách asset từ concept** (crop + vẽ bù vùng bị che bằng AI được phép), mỗi phần một file, lưu **PNG gốc** tại `game/tycoon/assets/screens/<màn>/` (tên tiếng Anh kebab-case theo vai trò, ví dụ `logo.png`, `icon-history.png`) kèm `manifest.json` và prompt.
-3. **QA trên PNG gốc** theo style chung và README của màn (palette, contour, pixel sắc với tranh pixel, không chữ giả); file chưa đạt ghi vào `knownLimitations` của manifest và sửa trước khi code.
+3. **QA trên PNG gốc** bằng đối chiếu từng phần với concept (silhouette, tỷ lệ hình nhìn thấy, hướng, chi tiết, contour/alpha) và style chung/ngoại lệ của màn. Lập danh sách cả phần decor bị bỏ khỏi prompt và nơi dựng lại chúng; không coi “đủ các PNG đã liệt kê” là đủ chi tiết của ảnh. File chưa đạt ghi vào `knownLimitations` và audit; không đánh dấu đạt QA chỉ vì đã xuất WebP hoặc UI chạy được.
 4. **Khi code màn đó** mới xuất PNG sang định dạng runtime (WebP, hoặc SVG nếu vẽ lại vector) theo tên production ở [04 §2](../../04-asset-manifest-and-prompts.md), áp budget tải và optimize. PNG gốc không import vào runtime và không tính vào budget.
 
-Code không import trực tiếp ảnh concept; mọi thứ hiển thị trong game phải là asset đã cắt và xuất theo bước 4.
+Code không import trực tiếp ảnh concept. Raster dùng trong game phải xuất từ nguồn theo bước 4; chữ là DOM text, surface co giãn bằng CSS/SVG, decor hình học đơn giản có thể dựng SVG code-native theo concept. Mỗi chi tiết nhìn thấy phải được giao cho một lớp rõ ràng; không vừa bỏ khỏi ảnh vừa bỏ khỏi code. Prompt lịch sử giữ nguyên, brief sửa mới ghi riêng và chỉ ghi “đã chạy” khi có output thật.

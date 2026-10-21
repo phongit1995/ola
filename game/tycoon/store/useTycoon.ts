@@ -9,6 +9,7 @@ import { applyMove, endByTime, isOver, moveOnTimeout, newGame, quitPlayer, ranki
 import { RuleError, type GameState, type Move, type Step, type TileState } from '../logic/types';
 import { formatMoney } from '../helpers/format';
 import { avatarIconUrl } from '../helpers/player';
+import { MOCK_PROFILE, type LobbyProfile } from '../helpers/profile';
 import { levelLabel } from '../helpers/tiles';
 import { playSound, setSoundEnabled } from '../audio';
 
@@ -77,6 +78,7 @@ export interface NoticeState {
 }
 
 interface TycoonState {
+  profile: LobbyProfile | null;
   soundOn: boolean;
   rulesOpen: boolean;
   setupOpen: boolean;
@@ -698,6 +700,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
   };
 
   return {
+    profile: MOCK_PROFILE,
     soundOn: localStorage.getItem(SOUND_KEY) !== '0',
     rulesOpen: false,
     setupOpen: false,

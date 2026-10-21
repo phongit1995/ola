@@ -5,9 +5,11 @@
 Thứ tự ưu tiên (kế thừa policy thirteen/xiangqi):
 
 1. **CSS token / component thuần CSS** — nút, panel, chip, input, toast, sheet, pod, nhà/khách sạn trên bàn.
-2. **SVG code-native trong repo** — bàn cờ (BoardSurface), 30 `ic-*`, 13 `tg-*`, 6 mặt xúc xắc, app icon nguồn; thêm 5 minh họa `lobby/ill-*` dự kiến cho S2 theo [style S2 lobby](./style/screens/s2-lobby/README.md).
+2. **SVG code-native trong repo** — bàn cờ (BoardSurface), 30 `ic-*`, 13 `tg-*`, 6 mặt xúc xắc, app icon nguồn. S2 đã có 2 nhóm tia `lobby/decor-*` theo [style S2 lobby](./style/screens/s2-lobby/README.md); các minh họa `lobby/ill-*` hiện có bản WebP từ PNG concept, có thể vẽ lại vector khi sửa QA.
 3. **Raster tái dùng** — reaction (`../caro/assets/reactions/*.webp`), VIP icons (shared), `ola_smiley_online.png`.
 4. **Raster sinh mới** — CHỈ: 19 tranh pixel ô (16 thành phố + sân bay + Nhà tù + Lễ hội) và nền trời pixel `bg-board-pixel` theo ảnh mẫu UI v3, 8 quân cờ (v2), 48 file nhân vật (6 × 4 pose × 2 crop, [style/03-characters.md](./style/03-characters.md)), logo, minh họa result (tùy chọn). Lobby dùng chung nền trời, không sinh nền riêng. Mỗi asset sinh có dòng log theo [asset-generation-log.template.md](./asset-generation-log.template.md).
+
+Ngoại lệ riêng S2 theo concept đã duyệt: hiện có raster `hero-properties` (3 thẻ + 2 quân), 5 minh họa action và xu KEN tách từ concept. Không tự thay bằng hình có dáng khác để khớp danh sách loại asset chung. Review chi tiết tại [S2 asset audit](./style/screens/s2-lobby/asset-audit.md); WebP hiện có vẫn chưa đạt visual QA.
 
 Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; toàn bộ assets tycoon ≤ 800 KB (nhân vật ≈ 260 KB; cắt giảm theo `style/06-implementation-plan.md` nếu vượt). Thêm `/game/tycoon/assets/` vào `assetsInlineLimit` của `game/vite.config.ts` cùng dòng với thirteen/xiangqi, và entry `tycoon: resolve(__dirname, 'tycoon/index.html')`.
 
@@ -17,7 +19,8 @@ Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; to�
 - Kebab-case tiếng Anh cho ic/tg, tiếng Việt không dấu cho quân (`tk-non-la`) vì quân là nội dung văn hóa, tên hiển thị live text `Nón lá`.
 - Không viết hoa, không space; webp cho raster runtime, svg cho vector.
 - **PNG gốc theo màn:** asset cắt từ concept lưu tạm dạng PNG tại `assets/screens/<màn>/` (tên theo vai trò: `logo.png`, `icon-history.png`…) + `manifest.json`. Khi code màn đó mới xuất sang tên runtime ở trên (bảng đối chiếu trong README của màn, ví dụ [S2 §10](./style/screens/s2-lobby/README.md#10-asset-cắt-từ-concept--file-production)). Quy trình: [style/screens](./style/screens/README.md#quy-trình-asset-theo-màn).
-- `lobby/ill-{dice|history|leaderboard|rules|exit}.webp` (hoặc `.svg` nếu vẽ lại vector): minh họa trang trí nút S2, không chữ; tách khỏi `ic-*` điều khiển chung. Nguồn là PNG `icon-*.png` trong `assets/screens/lobby/`; chưa có file runtime.
+- `lobby/ill-{dice|history|leaderboard|rules|exit}.webp` (hoặc `.svg` nếu vẽ lại vector): 5 minh họa trang trí nút S2, không chữ; tách khỏi `ic-*` điều khiển chung. Nguồn là PNG `icon-*.png` trong `assets/screens/lobby/`; đã có file runtime, còn lỗi visual QA. `lobby/ill-ken.webp` là minh họa thứ 6 dùng riêng trong pill số dư.
+- `lobby/decor-cta-rays.svg`, `lobby/decor-hero-rays.svg`: 2 nhóm decor SVG code-native **đã tạo** (chưa qua visual QA). Tia vàng nằm ngoài CTA và tia trắng nằm cạnh quân trong hero; SVG code-native theo concept, không phải PNG đã có sẵn.
 
 ## 3. Quân cờ — sinh và hậu kỳ
 
@@ -32,7 +35,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 
 ## 4. Manifest tổng
 
-**Asset tách thử S2 hiện có:** [13 PNG trong `assets/screens/lobby/`](../assets/screens/lobby/README.md), metadata và hash tại [manifest.json](../assets/screens/lobby/manifest.json). Các file này chưa import vào runtime, chưa tối ưu và không thay bảng kế hoạch production dưới đây.
+**Asset tách S2 hiện có:** [13 PNG trong `assets/screens/lobby/`](../assets/screens/lobby/README.md) (8 bản v2 đã chọn sau khi so với concept + 5 giữ v1), metadata/hash tại [manifest.json](../assets/screens/lobby/manifest.json). PNG không import trực tiếp; 10 WebP đã xuất và dùng trong Lobby mock, tổng 182.326 byte (~178 KiB). Con số này chỉ là WebP, chưa chứng minh budget toàn bộ initial load. Bộ ảnh vẫn `trial-not-production`; xem [audit 13 ảnh và các lớp thiếu](./style/screens/s2-lobby/asset-audit.md).
 
 | ID | Loại | Số lượng | Nguồn | Dùng ở |
 |---|---|---|---|---|
@@ -40,11 +43,13 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 | `tg-*` | SVG code-native 32 | 13 | vẽ tay theo 06 §3 | bàn, O2, S7 |
 | `tg-house`/`tg-hotel` | inline SVG | 2 | BoardSurface | bàn |
 | `ic-*` | SVG code-native 24 | 30 (22 copy từ xiangqi/thirteen + 8 mới) | 06 §2 | toàn app |
-| `lobby/ill-*` | SVG code-native 48, dự kiến | 5 | style/screens/s2-lobby §6 | minh họa trong menu và nút thoát S2 |
+| `lobby/ill-*` | WebP đã có, SVG nếu vẽ lại | 6 | style/screens/s2-lobby §6, §10 | 5 minh họa action + xu KEN S2; chưa đạt visual QA |
+| `lobby/hero-properties.webp` | WebP đã có | 1 | PNG tách từ concept S2 | 3 thẻ + 2 quân, chung một lớp trang trí |
+| `lobby/decor-*` | SVG code-native, **đã tạo** | 2 | concept S2, asset-audit §2 | 4 tia vàng quanh CTA; 2 cụm tia trắng quanh hero (3 + 3 tia) |
 | `d1..d6` | SVG 44 | 6 | 06 §5 | O1 |
-| `tiles/art/{slug}.webp` | raster pixel 16-bit, gốc 64 × 40, export ×3 nearest-neighbor | 19 | §6.5 | ô bàn, header sheet S7; S2 tái dùng 3 tranh Hội An, TP. Hồ Chí Minh, Đà Nẵng |
+| `tiles/art/{slug}.webp` | raster pixel 16-bit, gốc 64 × 40, export ×3 nearest-neighbor | 19 | §6.5 | ô bàn, header sheet S7; S2 hiện dùng tranh trong hero từ concept |
 | `bg-board-pixel.webp` | raster pixel 16-bit | 1 | §6.5 | nền màn S1–S6 |
-| `tk-pawn.svg` | SVG code-native | 1 | 06 §4 | quân trên bàn (UI v3), 2 quân trong hero S2 |
+| `tk-pawn.svg` | SVG code-native | 1 | 06 §4 | quân trên bàn (UI v3); hero S2 hiện dùng artwork chung với thẻ |
 | `tk-*` | raster webp 96 | 8 (v2) | §3 | chọn quân v2 |
 | `chars/{char}-{pose}-{crop}.webp` | raster sinh 256/128 | 48 | style/03 §5 | ô góc, sheet, thẻ, modal, lobby, S9 |
 | `logo.webp` | raster sinh | 1 | §6.2 | S1, S2, header S6 |
@@ -60,7 +65,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 
 | Group | Nội dung | Khi nào |
 |---|---|---|
-| `LOBBY_CRITICAL` | bg-board-pixel, logo, ic-ken, `ty-idle-full`; 3 tranh Hội An/TP. Hồ Chí Minh/Đà Nẵng, `tk-pawn`, 5 `lobby/ill-*`, icon âm thanh | trước first paint (progress %); vẫn giữ tổng ≤ 180 KB gzip |
+| `LOBBY_CRITICAL` | bg-board-pixel, logo, `ty-idle-full`, `hero-properties`, 6 `lobby/ill-*`, cặp icon âm thanh và 2 SVG `lobby/decor-*` đã có | kế hoạch preload trước first paint; vẫn giữ tổng ≤ 180 KB gzip, chưa xác nhận đạt |
 | `RANKED` | icon list | `openRanked()` |
 | `BOARD` | 13 tg, 6 dice, `tk-pawn`, 19 tranh `tiles/art`, `bg-board-pixel`, board.gen.json, cards.gen.json | khi vào phòng chờ (bắt buộc xong trước MATCH_FOUND) |
 | `CHARS` | 44 file nhân vật còn lại | sau MATCH_FOUND, idle batches; thiếu thì fallback glyph |

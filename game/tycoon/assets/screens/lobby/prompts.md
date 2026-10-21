@@ -94,6 +94,22 @@ Use case: precise-object-edit. Input image 1 is the EDIT TARGET. Produce a clean
 
 ## Cleanup attempts
 
-Full prompts: `logo-clean-prompt.txt`, `icon-rules-clean-prompt.txt`, `icon-leaderboard-clean-prompt.txt`. Each used its already-extracted image as edit target, with transparent_background=true. Logo correction selected. Rules output `exec-dd895c3e-0ec7-47e5-909a-b113e3923af8.png` and leaderboard output `exec-0a8b2c3f-ae22-4181-b4dd-090b59b9533c.png` rejected because they retained/increased outer glow; originals selected for the trial.
+Full prompt: `logo-clean-prompt.txt`, using the already-extracted logo as edit target, transparent_background=true; selected. The rules/leaderboard cleanup outputs were rejected at the time; both icons are now replaced by v2 below.
 
-No script recolored, rematted, cropped or recompressed image files. Alpha bounds in the preview affect CSS framing only.
+For the original extraction trial, no script recolored, rematted, cropped or recompressed the source PNG files. Runtime WebP files are separate crop/resize/compress copies; the source PNGs remain unchanged.
+
+## Lượt v2 (2026-10-21) — đã chọn
+
+Sau [audit](../../../docs/style/screens/s2-lobby/asset-audit.md), 10 asset được gen lại bằng built-in `image_gen`, mỗi lần một asset, `transparent_background: true`, không script cắt/mask/recolor. So cạnh concept trên nền trời, chọn v2 cho 8 asset và **thay v1**: `mascot`, `hero-properties`, `icon-dice`, `icon-history`, `icon-leaderboard`, `icon-rules`, `button-gold`, `button-paper`. Cặp cửa/mũi tên thoát v2 bị loại theo quyết định người dùng; `icon-exit.png` giữ v1 cùng `background`, `logo`, `icon-ken`, `icon-sound`.
+
+Prompt đầy đủ của lượt v2 không lưu trong repo. Input của icon là crop phóng lớn nearest-neighbor từ chính concept (`x,y,w,h`): xúc xắc `190,840,125,130`, đồng hồ `238,1025,105,105`, BXH `210,1158,120,108`, sách `284,1312,102,80`, nút vàng `120,817,614,181`; mascot, hero và nút kem dùng cả concept. Bốn icon còn qua thêm một lượt sửa nét (v1 mượt làm edit target, v2 làm hướng dẫn chi tiết).
+
+Điểm đã xác nhận từ crop nguồn và các lần bị loại:
+
+- Xúc xắc CTA là **3–2–1** (mặt lớn trên / trái / phải); không dùng viên trong logo.
+- Đồng hồ không có chấm tâm, kim gấp khúc.
+- Sách/BXH lấy crop trực tiếp làm input để giữ dáng gọn; crown BXH viền nâu, không navy.
+- Skin vàng visible 3,50:1 (lần đầu 3,96:1); không kéo dãn PNG để sửa tỷ lệ.
+- Màu RGB dưới alpha = 0 không phải glow nhìn thấy; kiểm viền trên ảnh đã ghép nền.
+
+Tia vàng CTA và tia trắng hero không nằm trong PNG; chúng là hai SVG riêng theo README S2.

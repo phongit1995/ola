@@ -1,154 +1,132 @@
+import type { Ref } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { vipIconUrl } from '@ola/shared/lib/vip';
-import { Skyline } from '../components/Skyline';
-import { TyIcon, type TyIconName } from '../components/TyIcon';
-import { MAX_ROUNDS } from '../logic/constants';
-import { avatarIconUrl, seatColor } from '../helpers/player';
+import bgUrl from '../assets/lobby/bg-board-pixel.webp';
+import logoUrl from '../assets/lobby/logo.webp';
+import heroUrl from '../assets/lobby/hero-properties.webp';
+import diceUrl from '../assets/lobby/ill-dice.webp';
+import historyUrl from '../assets/lobby/ill-history.webp';
+import leaderboardUrl from '../assets/lobby/ill-leaderboard.webp';
+import rulesUrl from '../assets/lobby/ill-rules.webp';
+import exitUrl from '../assets/lobby/ill-exit.webp';
+import kenUrl from '../assets/lobby/ill-ken.webp';
+import ctaRaysUrl from '../assets/lobby/decor-cta-rays.svg';
+import heroRaysUrl from '../assets/lobby/decor-hero-rays.svg';
+import mascotUrl from '../assets/chars/ty-idle-full.webp';
+import { TyIcon } from '../components/TyIcon';
+import { formatKen } from '../helpers/format';
+import { avatarIconUrl } from '../helpers/player';
+import { GAME_VERSION, type LobbyProfile } from '../helpers/profile';
 import { useTycoon } from '../store/useTycoon';
+import { useLobbyTopbarWrap } from './useLobbyTopbarWrap';
 
-const RING: Array<string | null> = [
-  null, 'red', 'chance', 'red', null,
-  'orange', '', '', '', 'yellow',
-  'station', '', '', '', 'chest',
-  'orange', '', '', '', 'green',
-  null, 'sky', 'tax', 'blue', null,
-];
+const ONLINE_SOON = 'Tính năng online đang được làm, tạm thời chơi với máy';
 
-const STEPS: Array<{ icon: TyIconName; title: string; body: string }> = [
-  { icon: 'dice', title: 'Gieo xúc xắc', body: 'Đi theo tổng 2 viên' },
-  { icon: 'deed', title: 'Mua đất', body: 'Gom trọn nhóm màu' },
-  { icon: 'house', title: 'Xây nhà', body: 'Thu tiền thuê đậm' },
-];
-
-function IsoBoard() {
-  return (
-    <div className="ty-iso" aria-hidden="true">
-      <div className="ty-iso-board">
-        {RING.map((cell, i) => {
-          const row = Math.floor(i / 5);
-          const col = i % 5;
-          const inner = row > 0 && row < 4 && col > 0 && col < 4;
-          if (inner) return null;
-          const side = row === 0 ? 'top' : row === 4 ? 'bottom' : col === 0 ? 'left' : 'right';
-          return (
-            <span key={i} className={`ty-iso-cell ty-iso-${side} ${cell === null ? 'ty-iso-corner' : ''}`} style={{ gridRow: row + 1, gridColumn: col + 1 }}>
-              {cell && !['chance', 'chest', 'station', 'tax'].includes(cell) ? <i className={`ty-band-${cell}`} /> : null}
-              {cell === 'chance' ? <b>?</b> : null}
-            </span>
-          );
-        })}
-        <span className="ty-iso-center">
-          <span className="ty-iso-card ty-iso-card-a" />
-          <span className="ty-iso-card ty-iso-card-b" />
-        </span>
+function ProfilePill({ profile, ref }: { profile: LobbyProfile | null; ref: Ref<HTMLDivElement> }) {
+  if (!profile) {
+    return (
+      <div ref={ref} className="ty-lb-pill ty-lb-profile" aria-busy="true">
+        <span className="ty-lb-avatar ty-lb-skeleton" />
+        <span className="ty-lb-name ty-lb-skeleton-text" />
       </div>
+    );
+  }
+  const name = `@${profile.username}`;
+  return (
+    <div ref={ref} className="ty-lb-pill ty-lb-profile" aria-label={name}>
+      <img className="ty-lb-avatar" src={avatarIconUrl(profile.vipType)} alt="" draggable={false} />
+      <span className="ty-lb-name" aria-hidden="true">
+        {name}
+      </span>
     </div>
   );
 }
 
-function LobbyPin({ seat, className }: { seat: number; className: string }) {
+function KenPill({ ken, bodyRef }: { ken: number | null; bodyRef: Ref<HTMLSpanElement> }) {
+  const amount = ken == null ? '—' : formatKen(ken);
   return (
-    <span className={`ty-token ty-lobby-pin ${className}`} style={{ '--seat': seatColor(seat) } as React.CSSProperties} aria-hidden="true">
-      <span className="ty-token-shadow" />
-      <span className="ty-token-pin">
-        <span className="ty-token-face">
-          <img src={seat === 0 ? avatarIconUrl(null) : vipIconUrl(seat)} alt="" draggable={false} />
-        </span>
+    <div className="ty-lb-pill ty-lb-ken" aria-label={`Số dư ${amount} KEN`}>
+      <span ref={bodyRef} className="ty-lb-ken-body" aria-hidden="true">
+        <img src={kenUrl} alt="" draggable={false} />
+        <b>{amount}</b>
+        <span>KEN</span>
       </span>
-    </span>
+    </div>
   );
 }
 
 export function LobbyScreen() {
-  const { soundOn, toggleSound, setSetupOpen, setRulesOpen, exitGame } = useTycoon(
+  const { profile, soundOn, toggleSound, setSetupOpen, setRulesOpen, exitGame, showToast } = useTycoon(
     useShallow((s) => ({
+      profile: s.profile,
       soundOn: s.soundOn,
       toggleSound: s.toggleSound,
       setSetupOpen: s.setSetupOpen,
       setRulesOpen: s.setRulesOpen,
       exitGame: s.exitGame,
+      showToast: s.showToast,
     })),
   );
+  const { topRef, profileRef, kenBodyRef, soundRef, wrap } = useLobbyTopbarWrap();
 
   return (
-    <div className="ty-screen ty-lobby">
-      <Skyline night className="ty-lobby-skyline" />
-      <div className="ty-topbar">
-        <span className="ty-chip ty-chip-paper">Bản thử · chơi với máy</span>
-        <div className="ty-topbar-right">
-          <button type="button" className="ty-icon-btn ty-icon-btn-dark" onClick={toggleSound} aria-label={soundOn ? 'Tắt âm' : 'Bật âm'} aria-pressed={soundOn}>
-            <TyIcon name={soundOn ? 'volume-on' : 'volume-off'} size={22} />
-          </button>
-        </div>
-      </div>
-
-      <div className="ty-lobby-hero">
-        <IsoBoard />
-        <LobbyPin seat={0} className="ty-lobby-pin-a" />
-        <LobbyPin seat={2} className="ty-lobby-pin-b" />
-        <span className="ty-logo-die" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-          <i />
-          <i />
-        </span>
-      </div>
-
-      <div className="ty-logo">
-        <h1 className="ty-logo-title">
-          CỜ <span>TỶ</span> PHÚ
-        </h1>
-        <p className="ty-logo-sub">Mua đất, xây nhà, thu tiền thuê — trở thành tỷ phú phố thị!</p>
-      </div>
-
-      <ul className="ty-lobby-facts" aria-label="Thông tin ván chơi">
-        <li>
-          <TyIcon name="dice" size={16} />
-          2–4 người
-        </li>
-        <li>
-          <TyIcon name="history" size={16} />
-          {MAX_ROUNDS} vòng
-        </li>
-        <li>
-          <TyIcon name="house" size={16} />
-          22 ô đất
-        </li>
-      </ul>
-
-      <ol className="ty-lobby-steps" aria-label="Chơi thế nào">
-        {STEPS.map((step, i) => (
-          <li key={step.title}>
-            <span className="ty-step-icon">
-              <TyIcon name={step.icon} size={20} />
-              <i>{i + 1}</i>
-            </span>
-            <b>{step.title}</b>
-            <small>{step.body}</small>
-          </li>
-        ))}
-      </ol>
-
-      <div className="ty-cta-stack">
-        <button type="button" className="ty-btn ty-btn-gold ty-btn-big ty-lobby-action" onClick={() => setSetupOpen(true)}>
-          <span className="ty-lobby-action-icon">
-            <TyIcon name="dice" size={23} />
-          </span>
-          <span className="ty-lobby-action-copy">
-            <strong>Chơi với máy</strong>
-            <small>Chọn 2–4 người, máy đi tự động</small>
-          </span>
-          <TyIcon name="chevron-right" size={19} className="ty-lobby-action-arrow" />
+    <div className="ty-lobby" style={{ '--ty-lb-bg': `url(${bgUrl})` } as React.CSSProperties}>
+      <header ref={topRef} className={wrap ? 'ty-lb-top ty-lb-top-wrap' : 'ty-lb-top'}>
+        <ProfilePill profile={profile} ref={profileRef} />
+        <KenPill ken={profile?.ken ?? null} bodyRef={kenBodyRef} />
+        <button
+          ref={soundRef}
+          type="button"
+          className="ty-lb-sound"
+          onClick={toggleSound}
+          aria-label={soundOn ? 'Tắt âm' : 'Bật âm'}
+          aria-pressed={soundOn}
+        >
+          <TyIcon name={soundOn ? 'volume-on' : 'volume-off'} size={24} />
         </button>
-        <button type="button" className="ty-btn ty-btn-paper ty-lobby-shortcut" onClick={() => setRulesOpen(true)}>
-          <TyIcon name="deed" size={20} />
+      </header>
+
+      <h1 className="ty-lb-logo">
+        <img src={logoUrl} alt="Cờ Tỷ Phú" draggable={false} />
+      </h1>
+
+      <div className="ty-lb-hero" aria-hidden="true">
+        <div className="ty-lb-props">
+          <img src={heroRaysUrl} alt="" draggable={false} />
+          <img src={heroUrl} alt="" draggable={false} />
+        </div>
+        <img className="ty-lb-mascot" src={mascotUrl} alt="" draggable={false} />
+      </div>
+
+      <nav className="ty-lb-menu" aria-label="Menu sảnh">
+        <div className="ty-lb-cta">
+          <img className="ty-lb-cta-rays" src={ctaRaysUrl} alt="" draggable={false} />
+          <button type="button" className="ty-lb-btn ty-lb-btn-gold" onClick={() => setSetupOpen(true)}>
+            <img src={diceUrl} alt="" draggable={false} />
+            <span>Vào bàn</span>
+          </button>
+          <img className="ty-lb-cta-rays" src={ctaRaysUrl} alt="" draggable={false} />
+        </div>
+        <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
+          <img src={historyUrl} alt="" draggable={false} />
+          <span>Lịch sử</span>
+        </button>
+        <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
+          <img src={leaderboardUrl} alt="" draggable={false} />
+          <span>Bảng xếp hạng</span>
+        </button>
+        <button type="button" className="ty-lb-btn ty-lb-btn-text" onClick={() => setRulesOpen(true)}>
+          <img src={rulesUrl} alt="" draggable={false} />
           <span>Luật chơi</span>
         </button>
-        <button type="button" className="ty-exit-link" onClick={exitGame}>
-          Thoát game
+      </nav>
+
+      <footer className="ty-lb-footer">
+        <button type="button" className="ty-lb-exit" onClick={exitGame}>
+          <img src={exitUrl} alt="" draggable={false} />
+          <span>Thoát game</span>
         </button>
-      </div>
+        <span className="ty-lb-version">{GAME_VERSION}</span>
+      </footer>
     </div>
   );
 }
