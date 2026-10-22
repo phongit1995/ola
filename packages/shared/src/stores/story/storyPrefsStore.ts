@@ -37,6 +37,14 @@ export const useStoryPrefsStore = create<StoryPrefsState>()(
             [progress.storyId]: { ...progress, updatedAt: Date.now() },
           }),
         })),
+      removeProgress: (storyId) =>
+        set((state) => {
+          if (!(storyId in state.progress)) return state;
+          const progress = { ...state.progress };
+          delete progress[storyId];
+          return { progress };
+        }),
+      clearProgress: () => set({ progress: {} }),
     }),
     {
       name: 'ola.story.prefs',

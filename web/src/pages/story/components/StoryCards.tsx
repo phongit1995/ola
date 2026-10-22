@@ -5,6 +5,7 @@ import { cn, formatCompactCount, storyReadPercent } from '@lib';
 import type { Story, StoryProgress } from '@app-types';
 import { STORY_SECTION_ART, type StorySectionArt } from '../constants';
 import { StoryCover } from './StoryCover';
+import { StoryIcon } from './StoryIcons';
 import { StoryMeta } from './StoryTags';
 
 const PODIUM_SIZE = 3;
@@ -31,16 +32,20 @@ export function StorySectionTitle({ art, children }: StorySectionTitleProps) {
 interface StoryShelfProps {
   title: string;
   art: StorySectionArt;
+  action?: ReactNode;
   children: ReactNode;
 }
 
-export function StoryShelf({ title, art, children }: StoryShelfProps) {
+export function StoryShelf({ title, art, action, children }: StoryShelfProps) {
   const scrollRef = useHorizontalDragScroll();
 
   return (
     <section className="bg-white py-3">
-      <div className="px-3">
-        <StorySectionTitle art={art}>{title}</StorySectionTitle>
+      <div className="flex items-center gap-2 px-3">
+        <div className="min-w-0 flex-1">
+          <StorySectionTitle art={art}>{title}</StorySectionTitle>
+        </div>
+        {action}
       </div>
       <ul
         ref={scrollRef}
@@ -94,13 +99,14 @@ export function TopStoryCard({ story, rank, onOpen }: TopStoryCardProps) {
 interface ContinueCardProps {
   progress: StoryProgress;
   onOpen: (progress: StoryProgress) => void;
+  onRemove: (storyId: string) => void;
 }
 
-export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
+export function ContinueCard({ progress, onOpen, onRemove }: ContinueCardProps) {
   const { t } = useTranslation();
   const percent = storyReadPercent(progress.position, progress.chapterCount);
   return (
-    <li className="w-[104px] shrink-0">
+    <li className="relative w-[104px] shrink-0">
       <button
         type="button"
         onClick={() => onOpen(progress)}
@@ -127,6 +133,15 @@ export function ContinueCard({ progress, onOpen }: ContinueCardProps) {
             count: progress.chapterCount,
           })}
         </StoryMeta>
+      </button>
+      <button
+        type="button"
+        aria-label={t('story.removeRecent')}
+        title={t('story.removeRecent')}
+        onClick={() => onRemove(progress.storyId)}
+        className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-white hover:bg-black/70 active:bg-black/80"
+      >
+        <StoryIcon name="close" className="h-3.5 w-3.5" />
       </button>
     </li>
   );

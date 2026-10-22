@@ -892,6 +892,10 @@
   "story": {
     "searchPlaceholder": "Tìm truyện",
     "continueReading": "Đọc tiếp",
+    "removeRecent": "Xoá khỏi Đọc tiếp",
+    "clearRecent": "Xoá tất cả",
+    "clearRecentTitle": "Xoá lịch sử đọc",
+    "clearRecentConfirm": "Xoá tất cả truyện khỏi mục Đọc tiếp?",
     "topViewed": "Xem nhiều",
     "allStories": "Tất cả truyện",
     "searchResults": "Kết quả tìm kiếm",

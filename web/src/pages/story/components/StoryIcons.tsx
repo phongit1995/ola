@@ -26,6 +26,7 @@ import textFieldsIcon from '@/assets/icons/story/text-fields.svg';
 import formatLineSpacingIcon from '@/assets/icons/story/format-line-spacing.svg';
 import priorityHighIcon from '@/assets/icons/story/priority-high.svg';
 import arrowDropDownIcon from '@/assets/icons/story/arrow-drop-down.svg';
+import closeIcon from '@/assets/icons/story/close.svg';
 
 interface StoryIconProps {
   name: StoryIconName;
@@ -59,6 +60,7 @@ const STORY_ICON_ASSETS: Record<StoryIconName, string> = {
   libraryBooks: libraryBooksIcon,
   search: searchIcon,
   filterAlt: filterAltIcon,
+  close: closeIcon,
 };
 
 export function StoryIcon({

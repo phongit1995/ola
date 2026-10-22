@@ -892,6 +892,10 @@
   "story": {
     "searchPlaceholder": "Search stories",
     "continueReading": "Continue reading",
+    "removeRecent": "Remove from Continue reading",
+    "clearRecent": "Clear all",
+    "clearRecentTitle": "Clear reading history",
+    "clearRecentConfirm": "Remove all stories from Continue reading?",
     "topViewed": "Most viewed",
     "allStories": "All stories",
     "searchResults": "Search results",

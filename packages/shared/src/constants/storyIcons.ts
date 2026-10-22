@@ -25,6 +25,7 @@ export const STORY_ICON_ASSET_NAMES = [
   'libraryBooks',
   'filterAlt',
   'search',
+  'close',
 ] as const;
 
 export type StoryIconName = (typeof STORY_ICON_ASSET_NAMES)[number];

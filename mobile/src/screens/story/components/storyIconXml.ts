@@ -53,4 +53,6 @@ export const STORY_ICON_XML: Record<StoryIconName, string> = {
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 4h15a1 1 0 0 1 .8 1.6l-5.55 7.2a2 2 0 0 0-.4 1.2v4.5a1 1 0 0 1-.65.94L10 20.5V14a2 2 0 0 0-.4-1.2L3.7 5.6A1 1 0 0 1 4.5 4Z"/><path d="M7.5 7h9" stroke-width="1.125"/></g></svg>',
   search:
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M16.25 10a6.25 6.25 0 1 1-12.5 0 6.25 6.25 0 0 1 12.5 0ZM14.45 14.45l1.25 1.25M17.2 15.6l3.65 3.65a1.13 1.13 0 0 1-1.6 1.6L15.6 17.2a1.13 1.13 0 0 1 1.6-1.6Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
 };

@@ -102,6 +102,8 @@ export interface PersistedStoryPrefs {
 export interface StoryPrefsState extends PersistedStoryPrefs {
   setReader: (patch: Partial<StoryReaderPrefs>) => void;
   saveProgress: (progress: Omit<StoryProgress, 'updatedAt'>) => void;
+  removeProgress: (storyId: string) => void;
+  clearProgress: () => void;
 }
 
 export interface StoryConfigState {

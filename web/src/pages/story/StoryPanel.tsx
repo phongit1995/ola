@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
-import { Spinner } from '@components';
+import { ConfirmDialog, Spinner } from '@components';
 import { cn } from '@lib';
 import { STORY_STATUS_FILTER } from '@constants';
 import { useHorizontalDragScroll } from './useHorizontalDragScroll';
@@ -103,6 +103,9 @@ export function StoryPanel() {
   const setFilter = useStoryStore((state) => state.setFilter);
   const loadMore = useStoryStore((state) => state.loadMore);
   const progress = useStoryPrefsStore((state) => state.progress);
+  const removeProgress = useStoryPrefsStore((state) => state.removeProgress);
+  const clearProgress = useStoryPrefsStore((state) => state.clearProgress);
+  const [clearRecentOpen, setClearRecentOpen] = useState(false);
   const openStory = useStoryOverlayStore((state) => state.openStory);
   const openReader = useStoryOverlayStore((state) => state.openReader);
   const openLatestComments = useStoryOverlayStore((state) => state.openLatestComments);
@@ -228,12 +231,25 @@ export function StoryPanel() {
       </HomeHeader>
       <main className="relative flex-1 overflow-y-auto bg-ola-surface">
         {!searching && recent.length > 0 && (
-          <StoryShelf title={t('story.continueReading')} art="continueReading">
+          <StoryShelf
+            title={t('story.continueReading')}
+            art="continueReading"
+            action={
+              <button
+                type="button"
+                onClick={() => setClearRecentOpen(true)}
+                className="shrink-0 rounded-full px-2 py-1 text-[13px] text-black/54 hover:bg-black/5 active:bg-black/10"
+              >
+                {t('story.clearRecent')}
+              </button>
+            }
+          >
             {recent.map((item) => (
               <ContinueCard
                 key={item.storyId}
                 progress={item}
                 onOpen={continueReading}
+                onRemove={removeProgress}
               />
             ))}
           </StoryShelf>
@@ -315,6 +331,19 @@ export function StoryPanel() {
           {renderList()}
         </section>
       </main>
+      <ConfirmDialog
+        open={clearRecentOpen}
+        danger
+        title={t('story.clearRecentTitle')}
+        message={t('story.clearRecentConfirm')}
+        confirmLabel={t('dialog.yes')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={() => {
+          setClearRecentOpen(false);
+          clearProgress();
+        }}
+        onCancel={() => setClearRecentOpen(false)}
+      />
     </>
   );
 }
