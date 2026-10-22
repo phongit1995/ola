@@ -102,10 +102,10 @@ Hạ tầng hiện có đã kiểm `bet` (`INVALID_BET`, `INSUFFICIENT_KEN`, `BE
 
 ## 5. Checklist
 
-- [ ] S4: ô cược mặc định 0 + kiểm tra; công tắc cho xem mặc định tắt.
+- [x] S4: ô cược mặc định 0 + kiểm tra; công tắc cho xem mặc định tắt (UI trên dữ liệu giả, [S3 §10](./screens/s3-room-list/README.md#10-bản-dựng-dữ-liệu-giả)).
 - [ ] S3, S5, S6, S9, S10 hiển thị cược theo §1.3.
-- [ ] O5 `Chưa đủ KEN` khi vào bàn thiếu tiền.
+- [x] O5 `Chưa đủ KEN` khi vào bàn thiếu tiền (kiểm phía client trên dữ liệu giả).
 - [ ] Server: settlement 2–4 người, `allowSpectators`, xem trận cho `StateViewer`, config phí.
-- [ ] Nút `Xem` ở hàng bàn S3 theo §2.4.
+- [x] Nút `Xem` ở hàng bàn S3 theo §2.4 (UI trên dữ liệu giả).
 - [ ] Chế độ chỉ xem ở S6 theo §2.3.
 - [ ] Test: bàn 0 không trừ KEN; bàn có cược 2/3/4 người, hạng 1 nhận đúng pot trừ phí; bỏ cuộc vẫn mất cược; bàn tắt xem không vào được.

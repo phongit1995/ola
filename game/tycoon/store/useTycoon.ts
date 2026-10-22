@@ -92,6 +92,7 @@ interface TycoonState {
   soundOn: boolean;
   rulesOpen: boolean;
   setupOpen: boolean;
+  roomsOpen: boolean;
   playerCount: number;
 
   boardMode: BoardMode;
@@ -132,6 +133,7 @@ interface TycoonState {
   exitGame(): void;
   setRulesOpen(open: boolean): void;
   setSetupOpen(open: boolean): void;
+  setRoomsOpen(open: boolean): void;
   startGame(playerCount: number): void;
 
   sendMove(move: Move): void;
@@ -718,6 +720,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     soundOn: localStorage.getItem(SOUND_KEY) !== '0',
     rulesOpen: false,
     setupOpen: false,
+    roomsOpen: false,
     playerCount: readPlayerCount(),
 
     boardMode: 'idle',
@@ -763,7 +766,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       if (refs.toastTimer) clearTimeout(refs.toastTimer);
       refs.announceTimer = 0;
       refs.toastTimer = 0;
-      set({ toast: null, rulesOpen: false, setupOpen: false });
+      set({ toast: null, rulesOpen: false, setupOpen: false, roomsOpen: false });
     },
 
     toggleSound() {
@@ -785,6 +788,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
     setSetupOpen(open: boolean) {
       if (open) playSound('click');
       set({ setupOpen: open });
+    },
+
+    setRoomsOpen(open: boolean) {
+      if (open) playSound('click');
+      set({ roomsOpen: open });
     },
 
     startGame(playerCount: number) {

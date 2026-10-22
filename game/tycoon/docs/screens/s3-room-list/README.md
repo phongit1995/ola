@@ -1,6 +1,6 @@
 # S3. Danh sách bàn — Bảng giấy kem
 
-**Đã chọn mẫu 01 — Bảng giấy kem** (22/10/2026). Đây là đặc tả style để dựng màn danh sách bàn online theo ảnh bên dưới. Hành vi và dữ liệu theo [02 §S3](../../02-screen-specs.md#s3-danh-sách-bàn-rankedscreen); cột KEN và nút `Xem` theo [11 §1.3](../../11-room-settings.md#13-hiển-thị) và [11 §2.4](../../11-room-settings.md#24-nút-vào-xem-ở-s3). Màn **chưa dựng** trong code.
+**Đã chọn mẫu 01 — Bảng giấy kem** (22/10/2026). Đây là đặc tả style để dựng màn danh sách bàn online theo ảnh bên dưới. Hành vi và dữ liệu theo [02 §S3](../../02-screen-specs.md#s3-danh-sách-bàn-rankedscreen); cột KEN và nút `Xem` theo [11 §1.3](../../11-room-settings.md#13-hiển-thị) và [11 §2.4](../../11-room-settings.md#24-nút-vào-xem-ở-s3). UI đã dựng với **dữ liệu giả** ngày 22/10/2026, chưa nối server; cách xem và kịch bản giả ở [§10](#10-bản-dựng-dữ-liệu-giả).
 
 ![Danh sách bàn S3: bảng giấy kem chín hàng trên nền trời và phố pixel](./concept-s3-room-list-pixel-16bit.png)
 
@@ -43,7 +43,7 @@ Tọa độ tính trong vùng sau safe-area, quy đổi từ ảnh 853 px theo t
 
 Cột trong bảng (rộng 366): `Chủ bàn` 112 · `KEN` 80 · `Chỗ` 62 · cột cuối 88; lề trong 8.
 
-Màn 360: bảng 336, giảm cột `Chủ bàn` trước; tên dài cắt `…`. Màn thấp (< 700): hàng giữ 55, dải phố co lại trước, footer luôn hiện; không bớt hàng. Khung tối đa 520, nền trời phủ ngoài khung như lobby.
+Màn 360 (≤ 370): bảng 336, cột `72 · 54 · 82`, avatar 28, đồng KEN 20, ổ khóa 14, chữ tên và số 14; tên dài cắt `…`. Màn thấp: dải phố co lại trước; hết chỗ thì hàng co đều (360 × 640 còn khoảng 47), không bớt hàng, footer luôn hiện. Màn rộng hơn 390: các cột giãn theo tỷ lệ, không dưới số đo trên. Khung tối đa 520, nền trời phủ ngoài khung như lobby.
 
 ## 5. Hàng và trạng thái
 
@@ -119,6 +119,7 @@ Khi dựng:
 - Ô mật khẩu có nút mắt; sai mật khẩu giữ chữ đã nhập, viền coral, lỗi ngay dưới ô. Nút `Xem` ở bàn khóa không mở modal mật khẩu.
 - Tạo bàn: tiêu đề căn giữa, không có ô biểu tượng. Vào bàn khóa: ô biểu tượng ổ khóa, tiêu đề căn trái. Hai kiểu này giữ như ảnh.
 - Thân modal, ô, nút dựng bằng CSS, chữ DOM, icon và avatar dùng asset thật. Rộng 340, radius 22 và cỡ chữ theo 02/03, không lấy số đo từ ảnh.
+- Mọi modal mở trên S3 (S4 và O5) dùng kiểu giấy của S3 như sáu ảnh: nền `--ty-lb-paper`, mép chân `--ty-lb-paper-edge` thay bóng đen, nút có vệt sáng và cạnh nổi như nút sảnh, nút tắt màu xám. Kiểu này gắn theo class `ty-app-rooms` khi màn S3 mở; modal ở các màn khác giữ kiểu O5 chung.
 
 **Docs thắng ảnh ở các điểm sau; dựng theo docs, không cần vẽ lại ảnh:**
 
@@ -143,9 +144,41 @@ Chỉ vẽ ảnh mới khi đổi giao diện so với sáu ảnh trên. Ảnh t
 
 ## 9. Checklist triển khai
 
-- [ ] Màn S3 với dữ liệu mock: 9 hàng đủ bốn trạng thái ở §5, khóa, bàn 0 và bàn có cược.
-- [ ] Header, bảng, footer đúng §4 ở 390 × 844, 360 × 640, 520 × 900; không cuộn.
-- [ ] Trạng thái tải, trống, lỗi, làm mới, trang đầu/cuối (§6).
-- [ ] Nút `Xem` và các lỗi khi vào xem theo 11 §2.4.
-- [ ] Chụp so với concept; chữ đạt AA; vùng chạm ≥ 44.
-- [ ] Modal S4 và thông báo O5 theo §8, so với sáu ảnh ví dụ.
+- [x] Màn S3 với dữ liệu mock: 9 hàng đủ bốn trạng thái ở §5, khóa, bàn 0 và bàn có cược.
+- [x] Header, bảng, footer đúng §4 ở 390 × 844 (đo: bảng y 98–638, hàng 55, cột 114 · 82 · 62 · 88, `Tạo bàn` y 761), 360 × 640, 520 × 900; không cuộn.
+- [x] Trạng thái tải, trống, lỗi, làm mới, trang đầu/cuối (§6).
+- [x] Nút `Xem` và các lỗi khi vào xem theo 11 §2.4, trên dữ liệu giả.
+- [ ] Chữ đạt AA: chữ lỗi `--ty-coral` 13/700 trên nền giấy chỉ khoảng 3,3 : 1, cần chốt màu chữ lỗi đậm hơn hoặc giữ theo docs. Vùng chạm ≥ 44 đã có.
+- [x] Modal S4 và thông báo O5 theo §8, so với sáu ảnh ví dụ.
+- [ ] Nối server thật: `ROOM_LIST`, `ROOM_UPSERT/REMOVED`, `ROOM_CREATE`, `ROOM_JOIN`, `SPECTATE_JOIN`, timeout 10 s; sang S5 và S6 chế độ xem khi có màn.
+
+## 10. Bản dựng dữ liệu giả
+
+Mở `/tycoon/?preview=rooms` khi chạy dev. Thêm `&rooms=empty` để xem bảng trống, `&rooms=error` để lần tải đầu lỗi (bấm `Thử lại` thì tải được). Nút `Vào bàn` ở sảnh vẫn mở chơi với máy cho tới khi có S5 và server.
+
+| File | Vai trò |
+|---|---|
+| [RoomListScreen](../../../screens/RoomListScreen.tsx) | màn S3 |
+| [RoomRow](../../../components/RoomRow.tsx) | một hàng bàn và cột cuối theo trạng thái |
+| [CreateRoomModal](../../../components/CreateRoomModal.tsx), [JoinLockedModal](../../../components/JoinLockedModal.tsx), [RoomFields](../../../components/RoomFields.tsx) | S4a, S4b, ô mật khẩu, công tắc, lỗi dưới ô |
+| [useRoomList](../../../store/useRoomList.ts) | trạng thái danh sách, đang gửi, lỗi, O5 và toast |
+| [room](../../../helpers/room.ts) | logic thuần: trạng thái hàng, kiểm tra tạo bàn, câu lỗi; có test |
+| [roomMock](../../../helpers/roomMock.ts) | server giả, trễ 650 ms; thay bằng socket khi nối thật |
+
+Server giả có 25 bàn (3 trang), trang 1 giống concept. Mỗi bàn cho ra một tình huống để thử:
+
+| Bàn | Bấm | Kết quả |
+|---|---|---|
+| `@minhanh` | `Tham gia` | trùng tên người chơi mock → toast `Đây là bàn của bạn` |
+| `@linh`, `@quan`, `@kim` | `Tham gia` | modal bàn khóa; mật khẩu đúng là `1234`, sai thì `Sai mật khẩu` |
+| `@khoa` và các bàn còn chỗ khác | `Tham gia` | vào được → toast tạm, vì chưa có S5 |
+| `@ha` | `Tham gia` | lần đầu mất kết nối → O5 `Mất kết nối`; `Thử lại` thì vào được |
+| `@tuan` | `Tham gia` + `1234` | `Bàn đã đủ người`, đóng modal, làm mới |
+| `@long` | `Tham gia` | `Bàn không còn nữa`, làm mới, bàn biến mất |
+| `@son` | `Tham gia` | `Bàn đang được cập nhật, vui lòng thử lại` |
+| `@baongoc` (20.000, trang 2) | `Tham gia` | cược lớn hơn 12.500 KEN đang có → O5 `Chưa đủ KEN` |
+| `@nam`, `@duc` | `Xem` | xem được → toast tạm, vì chưa có S6 chế độ xem |
+| `@mai` | `Xem` | `Ván đã kết thúc`, làm mới |
+| `@yen` | `Xem` | `Bàn đã đủ người xem` |
+
+Tạo bàn luôn thành công nếu qua kiểm tra §4a; bàn mới hiện đầu danh sách. Lỗi `BET_NOT_ALLOWED` khi tạo bàn hiện dưới ô cược với câu `Tài khoản chưa thể tạo bàn có cược KEN`.
