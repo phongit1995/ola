@@ -178,7 +178,14 @@ Pipeline sinh ở 04 §3. Nếu sinh raster chưa đạt, fallback v1 là 4 SVG 
 
 ## 6. App icon
 
-`assets/app-icons/app-icon-01-city-dice.svg` + PNG 1024: bàn cờ góc Xuất phát (3 ô, 1 dải màu đỏ, 1 dải xanh lá) + 1 viên xúc xắc nghiêng mặt 5 + 1 quân nón lá; palette 01, fill phẳng, outline navy; cắt bo góc inset 16 / radius 208 theo convention thirteen; đọc được ở 48 px (xúc xắc là hình chủ đạo).
+PNG master 1024 × 1024 trong `assets/app-icons/`, cắt bo góc inset 16 / radius 208 theo convention thirteen, ngoài viền là alpha trong suốt:
+
+| File | Vai trò | Nội dung |
+|---|---|---|
+| `app-icon.png` | **icon chính** | bàn cờ thu nhỏ, xúc xắc và quân vàng |
+| `app-icon-sub.png` | icon phụ | quân cờ vàng + xúc xắc trên ô đất |
+
+Artwork sinh bằng imagegen nên không có SVG nguồn; size launcher nhỏ hơn resize từ PNG master.
 
 ## 7. Quy trình tạo icon mới
 

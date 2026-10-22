@@ -61,3 +61,10 @@ Negative constraints nằm trong prompt trên; không có negative prompt riêng
 - [Audit](./style/screens/o5-modal/css-preview/fidelity-audit.md) lưu số đo trước/sau và các phần còn khác. Đã xác nhận Nunito local được sử dụng; không biết metadata font của chữ AI. Chưa giống hoàn toàn và chưa đạt duyệt mỹ thuật.
 - Kiểm bốn mẫu ở ba chiều rộng, overlay, pending, focus, reduced motion và forced colors; không JavaScript exception. Ảnh chụp và số đo chỉ chạy local.
 - Cập nhật [danh sách màn còn thiếu mẫu](./style/screens/README.md): tám nhóm S3–S5/S7–S11, lớp phủ và trạng thái trong ván. Chưa import vào game.
+
+## App icon
+
+- Ngày **22/10/2026**. Công cụ: **built-in imagegen**, tham chiếu [concept S2](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) và mascot hiện tại; palette xanh trời/vàng/kem, contour navy. Sinh 10 hướng, chọn 2, các phương án còn lại đã bỏ.
+- `assets/app-icons/app-icon.png` (icon chính): bàn cờ kem góc nghiêng với vài ô đỏ/xanh/lục, một quân vàng và một xúc xắc lớn; nền cyan, không chữ. Đã bỏ mascot AI tự thêm và sửa chấm xúc xắc bằng imagegen.
+- `assets/app-icons/app-icon-sub.png` (icon phụ): một quân cờ vàng bóng lớn, viên xúc xắc kem tựa chân đế, đứng trên ô đất xanh ngọc nhỏ; nền cyan, không chữ.
+- Hậu kỳ: output gốc 1254 × 1254 RGB, resize Lanczos về 1024, cắt bo góc inset 16 / radius 208 có alpha; không chỉnh nội dung artwork. Chưa xuất bộ kích thước store.

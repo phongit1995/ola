@@ -5,7 +5,7 @@
 Thứ tự ưu tiên (kế thừa policy thirteen/xiangqi):
 
 1. **CSS token / component thuần CSS** — nút, panel, chip, input, toast, sheet, pod, nhà/khách sạn trên bàn.
-2. **SVG code-native trong repo** — bàn cờ (BoardSurface), 30 `ic-*`, 13 `tg-*`, 6 mặt xúc xắc, app icon nguồn. S2 đã có 2 nhóm tia `lobby/decor-*` theo [style S2 lobby](./style/screens/s2-lobby/README.md); các minh họa `lobby/ill-*` hiện có bản WebP từ PNG concept, có thể vẽ lại vector khi sửa QA.
+2. **SVG code-native trong repo** — bàn cờ (BoardSurface), 30 `ic-*`, 13 `tg-*`, 6 mặt xúc xắc. S2 đã có 2 nhóm tia `lobby/decor-*` theo [style S2 lobby](./style/screens/s2-lobby/README.md); các minh họa `lobby/ill-*` hiện có bản WebP từ PNG concept, có thể vẽ lại vector khi sửa QA.
 3. **Raster tái dùng** — reaction (`../caro/assets/reactions/*.webp`), VIP icons (shared), `ola_smiley_online.png`.
 4. **Raster sinh mới** — CHỈ: 19 tranh pixel ô (16 thành phố + sân bay + Nhà tù + Lễ hội) và nền trời pixel `bg-board-pixel` theo ảnh mẫu UI v3, 8 quân cờ (v2), 48 file nhân vật (6 × 4 pose × 2 crop, [style/03-characters.md](./style/03-characters.md)), logo, minh họa result (tùy chọn). Lobby dùng chung nền trời, không sinh nền riêng. Mỗi asset sinh có dòng log theo [asset-generation-log.template.md](./asset-generation-log.template.md).
 
@@ -60,7 +60,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 | `fx-result-1/2/3/4.webp` | raster sinh (tùy chọn — thử CSS trước) | 4 | §6.4 | S9 |
 | `reactions/*` | reuse caro | 6 | — | S6 |
 | vip-icons | shared static copy | — | vite | mọi avatar người chơi + icon 14 px trước `@username` (03 §18) |
-| `app-icons/` | SVG nguồn + PNG 1024 | 1 | 06 §6 | admin upload `mini_games` |
+| `app-icons/app-icon{,-sub}.png` | raster sinh, PNG 1024 bo góc, **đã tạo** | 2 | 06 §6 | admin upload `mini_games`; `app-icon.png` là icon chính |
 | dữ liệu bàn/thẻ | `board.gen.json`, `cards.gen.json` | 2 | codegen Go (05) | S7, O2, S8 |
 
 Âm thanh: KHÔNG có file — WebAudio tổng hợp (01 §9).

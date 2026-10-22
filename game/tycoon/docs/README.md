@@ -102,7 +102,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 ```text
 game/tycoon/assets/
   screens/lobby/    # 13 PNG tách từ concept S2 + manifest/prompt; script xuất WebP runtime
-  app-icons/        # app icon: SVG nguồn + PNG bo góc 1024 px (convention thirteen)
+  app-icons/        # app icon: PNG bo góc 1024 px (convention thirteen); app-icon chính, app-icon-sub phụ
   tokens/           # tk-pawn.svg (UI v3); 8 quân webp 96 px cho v2 — xem 04 §3
   chars/            # 6 nhân vật × 4 pose × 2 crop webp — xem style/03-characters.md
   icons/            # ic-* SVG điều khiển (grid 24) — xem 06

@@ -69,7 +69,7 @@ DoD: cùng fixture 40 step chạy Full không lỗi JS, canvas rỗng sau 2 s cu
 - [ ] Logo theo `../04-asset-manifest-and-prompts.md` §6.2. Nền sảnh dùng chung `bg-board-pixel` (không có `bg-lobby`). 8 quân raster để v2.
 - [ ] Gắn nhân vật vào các vị trí trong `03-characters.md` §4 (UI v3 không có bust trên ô góc); preload groups cập nhật.
 - [ ] QA grayscale 6 nhân vật ở 30 px; budget ≤ 800 KB toàn bộ assets.
-- [ ] App icon SVG + PNG 1024.
+- [x] App icon PNG 1024 (`app-icon.png` chính, `app-icon-sub.png` phụ).
 
 DoD: mọi vị trí nhân vật có fallback; tắt nhân vật không đổi layout (chừa chỗ cố định).
 
