@@ -327,7 +327,7 @@ Top banner 100% × 44: ic-wifi-off + icon VIP + `@username mất kết nối · 
 
 ## O5. ConfirmModal
 
-Bỏ cuộc, thoát bàn, mời ra, phá sản, hạ cấp (chỉ khi hạ từ Khách sạn xuống Biệt thự).
+Bỏ cuộc, thoát bàn, mời ra, phá sản, hạ cấp (chỉ khi hạ từ Khách sạn xuống Biệt thự). Cùng khung có thêm loại **thông báo** (một hoặc hai nút) cho tin người chơi phải đọc. Loại, tông, kích thước, hành vi và chữ theo [style O5 modal](./style/screens/o5-modal/README.md).
 
 ## O6. Toast + turn announce
 

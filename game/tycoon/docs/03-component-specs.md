@@ -130,7 +130,8 @@ Hàng pod nằm ngay dưới bàn (02 §6.5): 2–4 pod chia đều `var(--ty-bo
 
 ## 12. Modal (S4, S9, O3, O5)
 
-- 340 × auto, radius 20, paper, viền navy 2, shadow lg; title 20/800; nút hàng ngang 2 (CTA phải, text trái).
+- 340 × auto, radius 22, paper, viền navy 2, bóng `0 6px 0 ink` + shadow lg; title 21/800; nút hàng ngang 2 (CTA phải, nút phụ trái).
+- Modal xác nhận/thông báo O5: [style O5](./style/screens/o5-modal/README.md).
 - Focus trap, `Escape` đóng (trừ S9, O3).
 
 ## 13. Buttons
