@@ -1,5 +1,7 @@
 # S3/S4 — đối chiếu icon với ảnh đã chốt
 
+**Đây là audit trước khi xuất.** Sau audit đã bổ sung [bộ icon riêng](../../../assets/room-list/README.md); trạng thái và sai lệch hiện tại ở [audit lần xuất](./icon-export-audit.md). Các nhận xét bên dưới mô tả bộ `ic-*` cũ, không phải kết luận bộ mới vẫn thiếu file.
+
 **Kết luận: chưa đủ asset đúng hình thức của ảnh đã chốt.** Lần kiểm trước xác nhận 33 file SVG/import có tồn tại và typecheck qua; những bằng chứng đó không chứng minh icon giống mẫu. Đặc biệt, chưa có artwork ổ khóa vàng của hàng bàn; `ic-lock.svg` hiện tại cũng không phải khóa navy đặc trong modal.
 
 [Spec và 6 ảnh đã chốt](./README.md#8-modal-trên-danh-sách-bàn-s4-o5)

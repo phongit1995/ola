@@ -26,7 +26,7 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 
 File runtime hiện dùng `stroke="#000"` làm CSS mask; `TyIcon` lấy màu từ `currentColor` qua `.ty-icon`, nên icon vẫn đổi màu theo ngữ cảnh. Cặp mắt dùng cùng cách này, không chứa nền hoặc màu trang trí.
 
-**S3/S4 chưa đạt đối chiếu artwork:** các SVG họ A chỉ bảo đảm glyph chức năng. Ảnh đã chốt có khóa vàng, khóa navy đặc, reload hai mũi tên, dấu cộng nhiều lớp màu, mắt đặc và cảnh báo fill; các bản hiện tại chưa khớp. [Audit S3/S4](./screens/s3-room-list/asset-audit.md) ghi phần cần bổ sung/biến thể riêng. Không dùng số lượng 33 file hoặc typecheck để đánh dấu đủ mỹ thuật, không tự áp outline chung thay hình đã chốt.
+**Ngoại lệ artwork S3/S4:** các SVG họ A chỉ bảo đảm glyph chức năng. Sau [audit ban đầu](./screens/s3-room-list/asset-audit.md), đã xuất [11 asset riêng](../assets/room-list/README.md): 2 WebP và 9 SVG nhiều màu theo ảnh đã chốt, render bằng `RoomIcon`/img; quy tắc outline/mask của họ A không áp vào bộ này. Mắt mật khẩu vẫn thuộc họ A: `ic-eye` / `ic-eye-off` đổi sang mắt đặc theo ảnh S4, dùng mask qua TyIcon. [Audit sau xuất](./screens/s3-room-list/icon-export-audit.md) ghi sai lệch còn lại; trạng thái đã xuất để review, chưa duyệt mỹ thuật/runtime. Không dùng số lượng file hoặc typecheck để khẳng định giống mẫu.
 
 ### 2.2 Inventory
 
@@ -63,8 +63,8 @@ File runtime hiện dùng `stroke="#000"` làm CSS mask; `TyIcon` lấy màu t�
 | 29 | `ic-coins` | **mới** | 16/20 | tổng tài sản S8/S9, nút Trả nợ | — |
 | 30 | `ic-more` | **mới** | 24 | menu ⋯ topbar S6 | Thêm tùy chọn |
 | 31 | `ic-info` | **mới** | 22 | ô biểu tượng modal thông báo O5 | — |
-| 32 | `ic-eye` | SVG cùng họ, tham chiếu hình học visibility của web | 20/24 | mật khẩu S4 đang che | Hiện mật khẩu |
-| 33 | `ic-eye-off` | cùng hình `ic-eye` + nét chéo | 20/24 | mật khẩu S4 đang hiện | Ẩn mật khẩu |
+| 32 | `ic-eye` | **mới**, mắt đặc có vòng trong suốt theo ảnh S4 (ngoại lệ fill của họ A) | 20/24 | mật khẩu S4 đang che | Hiện mật khẩu |
+| 33 | `ic-eye-off` | cùng hình `ic-eye` + nét chéo có khe | 20/24 | mật khẩu S4 đang hiện | Ẩn mật khẩu |
 
 Không có `ic-rules` trong họ A. Lobby S2 đã chốt có sách `ill-rules.svg` bên cạnh chữ Luật chơi; đây là một trong **5 minh họa trang trí riêng S2** (`lobby/ill-{dice,history,leaderboard,rules,exit}`, PNG gốc cắt từ concept, khi code xuất WebP hoặc SVG), không nằm trong inventory 33 `ic-*`. Hình, màu, kích thước và fallback theo [S2 lobby §6](./screens/s2-lobby/README.md#6-nút-và-minh-họa). Chúng có contour navy + fill màu, `aria-hidden`; accessible name lấy từ nhãn action, không áp quy tắc icon stroke đơn sắc cho các minh họa này.
 

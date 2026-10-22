@@ -131,3 +131,12 @@ Variant-specific invariants: Keep single cream paper table with subtle dividers,
 - **Chưa đủ artwork đúng mẫu:** khóa vàng hàng bàn chưa có; khóa modal là thân navy đặc khác `ic-lock` outline; reload, back/phân trang, dấu cộng, X theo ngữ cảnh, mắt và cảnh báo có chênh lệch hình/nét/fill. Cặp mắt mới ở trên chưa phải bản giống ảnh.
 - Ngoại lệ KEN/wifi O5 và VIP theo docs được giữ nguyên. Lần kiểm file/typecheck trước chỉ chứng minh khả dụng kỹ thuật, không phải duyệt mỹ thuật.
 - [Audit đầy đủ](./screens/s3-room-list/asset-audit.md). Không tạo file crop hoặc thay asset production.
+
+## S3/S4 — xuất bộ icon riêng sau audit
+
+- Ngày **22/10/2026**, ảnh tham chiếu là danh sách bàn S3 và modal S4/O5.
+- Built-in imagegen, mỗi icon ba vòng: khóa vàng, dấu cộng cam (giữ) và reload (bỏ). [PNG nguồn](../assets/screens/room-list/README.md). Bản chọn giữ nguyên byte; chỉ trim lề trong suốt, resize và xuất WebP lossless.
+- Reload imagegen có viền xanh dương chói, đầu mũi tên tù và hai cung gần khép kín, nên vẽ lại bằng SVG: hai cung có khoảng hở, đầu nhọn, viền navy.
+- SVG riêng: reload, khóa đặc, cảnh báo, hai chevron × hai trạng thái, X đậm/mảnh; màu theo token navy `#1f2a44`, coral `#e4573d`, kem `#fff8ea`. Mắt mật khẩu không tách bộ riêng: `ic-eye` / `ic-eye-off` đổi sang mắt đặc. Tổng [11 file runtime](../assets/room-list/README.md), dùng `RoomIcon`.
+- Đã so từng icon với chi tiết ảnh mẫu phóng lớn và cỡ thật; [audit](./screens/s3-room-list/icon-export-audit.md). Khóa vàng và dấu cộng còn lệch nhỏ; mắt gạch và trang sau disabled không có ảnh mẫu riêng.
+- Trạng thái: đã xuất để review, chưa duyệt asset và chưa lắp màn online.

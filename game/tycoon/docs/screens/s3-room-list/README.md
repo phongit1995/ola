@@ -80,25 +80,25 @@ Lỗi khi bấm `Tham gia` / `Xem` báo bằng toast theo [11 §2.4](../../11-ro
 
 ## 7. Asset
 
-**Đính chính sau đối chiếu trực tiếp 22/10/2026: chưa đủ asset đúng hình thức của ảnh đã chốt.** File SVG có tồn tại không có nghĩa giống mẫu. Xem [audit từng chi tiết](./asset-audit.md), đặc biệt hai loại ổ khóa, reload, dấu cộng và mắt mật khẩu.
+**Đã xuất bộ riêng ngày 22/10/2026: 2 WebP + 9 SVG**, gồm hai loại khóa, reload, dấu cộng, cảnh báo, chevron và hai nét X; mắt mật khẩu dùng `ic-eye` / `ic-eye-off` đã đổi sang mắt đặc. [File và cách dùng](../../../assets/room-list/README.md) · [audit sau xuất](./icon-export-audit.md). Khóa vàng và dấu cộng còn lệch nhỏ so với ảnh mẫu. Chưa lắp online hoặc được duyệt asset.
 
 | Chi tiết | Lớp | Ghi chú |
 |---|---|---|
 | Nền trời, mây, dải phố | dùng lại `lobby/bg-board-pixel.webp` | có file cùng cảnh; vị trí/tỷ lệ phố cần canh lúc dựng, chưa khớp layout bằng chứng runtime |
 | Đồng KEN | dùng lại `lobby/ill-ken.webp` | đúng nhóm đồng vàng/vương miện; chi tiết crown/highlight khác ảnh AI, dùng lại theo spec |
-| Khóa vàng ở hàng bàn | **chưa có bản theo artwork**; `ic-lock` chỉ là glyph chức năng | SVG outline không có thân vàng/cam, quai sáng, lỗ khóa và cạnh nổi của ảnh |
-| Khóa navy ở modal 03/04 | `ic-lock` hiện có **khác fill** | ảnh là thân navy đặc/lỗ khóa khoét; file là outline. Badge vàng bên ngoài là CSS riêng |
-| Icon reload, back, phân trang | có `ic-refresh`, `ic-chevron-left/right`, `ic-arrow-left` | reload thiếu hai đầu mũi tên và nét màu; back trong ảnh là chevron không cán; chevron hiện có mảnh hơn mẫu |
-| Dấu `+` trong `Tạo bàn` | `ic-plus` là hai nét đơn sắc | chưa có bản cam/vàng viền nâu/cạnh nổi như ảnh |
-| Đóng modal S4 | `ic-close` qua `TyIcon` | có cấu trúc X; cần nét đậm cho 01/02 và nét mảnh cho 03/04, vùng chạm 44 |
-| Hiện / ẩn mật khẩu S4 | `ic-eye` / `ic-eye-off` qua `TyIcon` | cặp SVG mới đủ nghĩa hiện/ẩn nhưng **chưa đúng mắt đặc trong ảnh**; cần hoàn thiện nét/fill, giữ nhãn và `aria-pressed` |
-| Lỗi dưới ô | `ic-warning` 16 | file hiện tại outline một màu; ảnh 04 là tam giác coral đặc với dấu ! trắng, chưa có biến thể đúng mẫu |
+| Khóa vàng ở hàng bàn | `room-list/lock-gold.webp` | vàng/cam, quai sáng, keyhole; hộp 18 × 24 giữ tỷ lệ; quai/highlight còn lệch demo |
+| Khóa navy ở modal 03/04 | `room-list/lock-solid.svg` | thân đặc, keyhole khoét trong suốt; badge vàng bên ngoài là CSS riêng |
+| Icon reload, back, phân trang | `room-list/refresh-blue.svg`, `chevron-left/right{,-disabled}.svg` | reload hai cung có khoảng hở, đầu nhọn, viền navy; back không cán, nét đậm; disabled xám hai hướng |
+| Dấu `+` trong `Tạo bàn` | `room-list/plus-gold.webp` | mặt cam, viền nâu/cạnh nổi; highlight và tỷ lệ còn lệch nhẹ |
+| Đóng modal S4 | `room-list/close-bold.svg`, `close-thin.svg` | đậm cho 01/02, mảnh cho 03/04; nút chứa có vùng chạm 44 |
+| Hiện / ẩn mật khẩu S4 | `ic-eye` / `ic-eye-off` qua `TyIcon` | mắt đặc, vòng trong suốt; bản gạch suy ra cùng nét, không có demo riêng; giữ nhãn và `aria-pressed` |
+| Lỗi dưới ô | `room-list/warning-coral.svg` 16 | tam giác `--ty-coral` đặc, dấu ! kem; dùng img để giữ hai màu |
 | Thông báo thiếu KEN / mất mạng | `ic-ken` / `ic-wifi-off` 22 | SVG có sẵn, màu navy trong ô biểu tượng O5; khác với đồng KEN vàng trong ô cược |
 | Đang gửi | `.ty-btn[aria-busy='true']::before` | spinner CSS đang dùng trong `NoticeModal`; không cần thêm SVG/PNG |
 | Bảng, hàng, nút, badge, chip | CSS | theo token style chung |
 | Avatar | icon VIP của user | không lấy mặt cười trong ảnh |
 
-**Chuẩn bị asset ngày 22/10/2026:** lần kiểm file/import và đăng ký cặp mắt mới trong [TyIcon](../../../components/TyIcon.tsx) chỉ xác nhận khả dụng về kỹ thuật. Audit trực quan bổ sung xác nhận các phần thiếu/khác ở bảng trên; chưa thể coi bộ icon đã đủ để dựng giống mẫu. Nguồn dùng lại: [SVG điều khiển](../../../assets/icons/), [nền](../../../assets/lobby/bg-board-pixel.webp), [đồng KEN](../../../assets/lobby/ill-ken.webp), [helper avatar](../../../helpers/player.ts). Avatar ở S3 theo §5, trong S4b 32 px. Công tắc, nền badge, khung và viền là CSS; toast dùng code có sẵn. Hoàn thiện asset/biến thể thiếu trước khi xác nhận visual QA, giữ nguyên sáu ảnh và các ngoại lệ ở §8.
+**Cách lắp:** dùng [RoomIcon](../../../components/RoomIcon.tsx) cho bộ `room-list` để giữ màu nhiều lớp; icon đơn sắc như mắt, KEN, wifi đi qua `TyIcon`. [PNG nguồn](../../../assets/screens/room-list/README.md) và [audit trước khi xuất](./asset-audit.md) được giữ để truy nguyên. Avatar S3 theo §5, S4b 32 px; công tắc, badge, khung/viền là CSS; toast dùng code có sẵn. Giữ nguyên sáu ảnh và các ngoại lệ §8; xác nhận toàn màn sau khi lắp.
 
 ## 8. Modal trên danh sách bàn (S4, O5)
 
