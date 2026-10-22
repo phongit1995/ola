@@ -68,3 +68,44 @@ Negative constraints nằm trong prompt trên; không có negative prompt riêng
 - `assets/app-icons/app-icon.png` (icon chính): bàn cờ kem góc nghiêng với vài ô đỏ/xanh/lục, một quân vàng và một xúc xắc lớn; nền cyan, không chữ. Đã bỏ mascot AI tự thêm và sửa chấm xúc xắc bằng imagegen.
 - `assets/app-icons/app-icon-sub.png` (icon phụ): một quân cờ vàng bóng lớn, viên xúc xắc kem tựa chân đế, đứng trên ô đất xanh ngọc nhỏ; nền cyan, không chữ.
 - Hậu kỳ: output gốc 1254 × 1254 RGB, resize Lanczos về 1024, cắt bo góc inset 16 / radius 208 có alpha; không chỉnh nội dung artwork. Chưa xuất bộ kích thước store.
+
+## S3 danh sách bàn — Bảng giấy kem
+
+- File: [`screens/s3-room-list/concept-s3-room-list-pixel-16bit.png`](./screens/s3-room-list/concept-s3-room-list-pixel-16bit.png). Concept màn S3, không phải asset runtime.
+- Ngày sinh: **2026-10-22**. Công cụ: **built-in imagegen**; không dùng CLI/API fallback.
+- Cách sinh: vòng 1 sinh ba hướng (Bảng giấy kem / Thẻ bàn nổi / Khung bàn cờ) theo 02 §S3 cũ. Vòng 2 sửa trực tiếp trên output vòng 1 để thêm cột `KEN` và nút `Xem` theo 11 §1.3, §2.4; đổi nút vào bàn sang vàng `Tham gia`. Vòng 3 sửa riêng header của mẫu 01: `Làm mới` thành nút tròn chỉ có icon, tách khỏi thanh tiêu đề, đối xứng với nút `‹`; phần còn lại giữ nguyên.
+- Tham chiếu: lobby S2, bàn chơi S6, icon VIP `vip_003.png`.
+- Lựa chọn: người dùng chọn **mẫu 01 — Bảng giấy kem**; docs dùng bản sau vòng 3.
+- File nguồn local: vòng 3 ở `C:/Users/phong.nguyen2/.codex/generated_images/01a157a1-ee0d-75d0-ba29-2121c932e7a4/exec-3318e641-da41-485a-83e1-20851736ae47.png`; vòng 2 ở `game/dist/s3-room-list-preview-v2/01-paper-table.png` (prompt đầy đủ của cả ba mẫu ở `prompts.json` cùng thư mục). Các đường dẫn này là nguồn nháp local, không phải dependency của docs.
+- Hậu kỳ: copy nguyên byte, đổi tên theo quy ước màn; không crop, resize hay nén lại.
+- Kích thước: **853 × 1844 px**, **2.009.419 byte**. SHA-256: `6fafe59a0ccb70279bd27dda3e09254764d0aa42cec6f11565f9e9e0bbc82c82`, trùng output vòng 3.
+- Ngoại lệ production: avatar mặt cười, tên, số KEN và số chỗ là mẫu; dùng icon VIP, dữ liệu `ROOM_LIST` và chữ DOM theo [style S3](./screens/s3-room-list/README.md).
+- Trạng thái: **đã chọn concept, đã viết đặc tả**; chưa dựng UI.
+
+### Prompt vòng 2 của mẫu 01
+
+Prompt vòng 3 chỉ sửa header như mô tả ở trên; không có file prompt riêng trong workspace.
+
+```text
+Use case: precise-object-edit. Asset: high fidelity Vietnamese Cờ Tỷ Phú mobile room-list concept.
+Input image is the edit target. Preserve its portrait aspect ratio, sky and pixel city, header/title/back/refresh, footer/create/pagination, decorative framing, nine-row layout, four-column layout, all owners, VIP smiley avatars and all KEN values. Update only the action column and the state styling of the affected rows according to the newly edited spec.
+COLUMN HEADINGS verbatim: "Chủ bàn" | "KEN" | "Chỗ" | "Tham gia / Xem". The last heading may use two lines ("Tham gia" above "/ Xem") to fit its existing width, and the header band may grow minimally if needed; do not make illegible tiny type.
+ACTION RULES:
+- Waiting room with free seats: active gold enamel button labeled exactly "Tham gia". Replace all previous "Vào bàn" labels with "Tham gia".
+- Waiting full room: same sized disabled gray button labeled exactly "Tham gia", NOT "Đã đầy".
+- Playing room that allows spectators: ACTIVE cream-paper button labeled exactly "Xem", navy outline and text, same size as Tham gia. It must NOT look disabled even though player seats are full.
+- Playing room that forbids spectators: a smaller flat pale-blue state chip labeled exactly "Đang chơi" in the LAST COLUMN, no action button, no raised button border.
+Render exactly these nine rows:
+1 @minhanh | Giao lưu | 2/4 jade | active gold Tham gia
+2 @linh with lock | gold crown coin 500 | 1/2 jade | active gold Tham gia
+3 @khoa | coin 1.000 | 3/4 jade | active gold Tham gia
+4 @trang | coin 2.000 | 4/4 gray | disabled gray Tham gia [waiting full]
+5 @nam | coin 5.000 | 4/4 neutral | ACTIVE CREAM Xem [playing, spectators allowed]
+6 @ha | Giao lưu | 2/3 jade | active gold Tham gia
+7 @tuan with lock | coin 10.000 | 1/4 jade | active gold Tham gia
+8 @vy | coin 500 | 3/3 neutral | flat pale-blue Đang chơi CHIP [playing, spectators forbidden]
+9 @long | Giao lưu | 2/4 jade | active gold Tham gia
+Remove the old blue Đang chơi chip from below @nam; the new Xem action conveys that state. @nam row is normal cream with normal navy name and colored avatar, not dimmed. @vy also has normal navy name and colored avatar, with the noninteractive Đang chơi chip at far right. Only @trang is the full waiting disabled row. Keep all KEN amounts and exact dot separators. Three Giao lưu rows have no coin. Keep avatar style exactly: green Ola smiley wearing crown and red round glasses.
+Keep bottom "Tạo bàn" gold with plus, pagination "1 / 3", LEFT pagination arrow disabled light gray and RIGHT arrow active navy. Do not introduce a spectator tab, extra column, eye icon, toggle, new rows, player balances, human avatars, explanatory captions, watermark or phone frame. No old "Vào bàn" or "Đã đầy" labels should remain. Preserve the hybrid art direction: smooth navy-outlined cream/gold UI and pixel Vietnamese background. Exact Vietnamese spelling, clean alignment and spacing, readable rounded bold type.
+Variant-specific invariants: Keep single cream paper table with subtle dividers, compact cream title bar and pixel city strip above bottom footer. CHANGE its previous cream join buttons to GOLD Tham gia as required by the new spec; Xem alone remains cream.
+```

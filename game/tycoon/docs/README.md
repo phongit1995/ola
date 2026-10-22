@@ -81,7 +81,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 10. [10-board-tiles.md](./10-board-tiles.md) — ghi chú nhanh 32 ô: loại ô, vị trí, giá, tiền thuê, ô nào mua / mua lại được, điều kiện thắng ngay theo ô.
 11. [11-room-settings.md](./11-room-settings.md) — thiết lập bàn: cược KEN (mặc định 0) và cho người khác xem (mặc định tắt); hiển thị ở từng màn, thanh toán, protocol, việc server.
 12. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
-13. [screens/](./screens/README.md) — mỗi màn một folder gồm ảnh mẫu và style riêng: [S1 loading](./screens/s1-loading/README.md), [S2 lobby](./screens/s2-lobby/README.md), [S6 bàn chơi](./screens/s6-board/README.md), [O5 modal](./screens/o5-modal/README.md).
+13. [screens/](./screens/README.md) — mỗi màn một folder gồm ảnh mẫu và style riêng: [S1 loading](./screens/s1-loading/README.md), [S2 lobby](./screens/s2-lobby/README.md), [S3 danh sách bàn](./screens/s3-room-list/README.md), [S6 bàn chơi](./screens/s6-board/README.md), [O5 modal](./screens/o5-modal/README.md).
 14. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
 15. [asset-generation-log.md](./asset-generation-log.md) — nguồn, prompt và lựa chọn concept lobby S2.
 

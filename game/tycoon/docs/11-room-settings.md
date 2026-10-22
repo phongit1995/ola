@@ -60,7 +60,23 @@ Chơi với máy (`BotSetupModal`) không có hai tùy chọn này: không cư�
 
 ### 2.3 Khi bật
 
-- Ván xuất hiện trong `SPECTATE_LIST` khi đang chơi; tối đa `MaxSpectators` (20) người xem, đầy thì `SPECTATE_FULL`.
+- Ván xuất hiện trong `SPECTATE_LIST` khi đang chơi; tối đa `MaxSpectators` (20) người xem, đầy thì `SPECTATE_FULL` → toast `Bàn đã đủ người xem`.
+- Bàn khóa có bật cho xem thì vào xem không cần mật khẩu; mật khẩu chỉ để vào chơi.
+
+### 2.4 Nút vào xem ở S3
+
+Vào xem từ chính hàng bàn trong danh sách, không có màn danh sách xem riêng. Cột cuối của hàng đổi theo trạng thái bàn:
+
+| Trạng thái bàn | `allowSpectators` | Cột cuối | Bấm |
+|---|---|---|---|
+| đang chờ, còn chỗ | bất kỳ | `Tham gia` gold | `ROOM_JOIN` (bàn khóa hỏi mật khẩu, S4b) |
+| đang chờ, đủ người | bất kỳ | `Tham gia` disabled | — |
+| đang chơi | bật | `Xem` paper | `SPECTATE_JOIN {matchId}` (lấy `matchId` của hàng) → S6 chế độ chỉ xem |
+| đang chơi | tắt | chip `Đang chơi`, không nút | — |
+
+- Nút `Xem` cùng kích thước nút `Tham gia`; nhãn chữ, không cần icon mới. Đang gửi thì nút hiện spinner, khóa bấm lại.
+- Người đang chơi một ván khác bấm `Xem` → server trả `SPECTATE_OWN_MATCH`, client báo toast `Bạn đang trong một ván khác`.
+- Ván kết thúc trong lúc gửi → `MATCH_NOT_FOUND`, toast `Ván đã kết thúc` và làm mới danh sách.
 - Người xem nhận cùng view như người chơi nhưng `you = -1`; game không có thông tin riêng ngoài bộ thẻ nên không lộ gì thêm (05 §5.1).
 - Màn của người xem dùng S6 ở chế độ chỉ xem: không có nút ở cụm lượt, chỉ chip `Lượt của @username`; không mở O3; sheet S7/S8 chỉ xem; menu ☰ chỉ còn `Rời xem` và `Luật chơi`; không gửi chat và cảm xúc.
 - S5 và S6 hiện số người xem ở dòng thông tin menu ☰: `{n} người đang xem`.
@@ -71,7 +87,7 @@ Chơi với máy (`BotSetupModal`) không có hai tùy chọn này: không cư�
 | Message | Thay đổi |
 |---|---|
 | `ROOM_CREATE` | `{bet, password, maxPlayers, allowSpectators}`; thiếu `allowSpectators` = `false` |
-| `ROOM_LIST`, `ROOM_UPSERT`, `ROOM_WAITING`, `ROOM_STATE` | thêm `allowSpectators` (đã có `bet`) |
+| `ROOM_LIST`, `ROOM_UPSERT`, `ROOM_WAITING`, `ROOM_STATE` | thêm `allowSpectators` (đã có `bet`, `status`, `matchId`); S3 dùng để hiện nút `Xem` (§2.4) |
 | `SPECTATE_LIST` | chỉ trả ván có `allowSpectators = true` |
 | `SPECTATE_JOIN` | lỗi mới `SPECTATE_NOT_ALLOWED` khi bàn tắt cho xem |
 
@@ -90,5 +106,6 @@ Hạ tầng hiện có đã kiểm `bet` (`INVALID_BET`, `INSUFFICIENT_KEN`, `BE
 - [ ] S3, S5, S6, S9, S10 hiển thị cược theo §1.3.
 - [ ] O5 `Chưa đủ KEN` khi vào bàn thiếu tiền.
 - [ ] Server: settlement 2–4 người, `allowSpectators`, xem trận cho `StateViewer`, config phí.
+- [ ] Nút `Xem` ở hàng bàn S3 theo §2.4.
 - [ ] Chế độ chỉ xem ở S6 theo §2.3.
 - [ ] Test: bàn 0 không trừ KEN; bàn có cược 2/3/4 người, hạng 1 nhận đúng pot trừ phí; bỏ cuộc vẫn mất cược; bàn tắt xem không vào được.

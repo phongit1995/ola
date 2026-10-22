@@ -48,12 +48,12 @@ CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi, âm thanh và th
 
 ## S3. Danh sách bàn (RankedScreen)
 
-Copy hành vi caro/xiangqi `RankedScreen.tsx`.
+Copy hành vi caro/xiangqi `RankedScreen.tsx`. Ảnh mẫu, số đo và trạng thái hàng: [style S3](./screens/s3-room-list/README.md).
 
 - Header 56: back, title `Bàn tỷ phú` 20/800, nút Làm mới.
-- Cột: `Chủ bàn | KEN | Chỗ | Tham gia`. Cột `KEN` hiện mức cược, bàn 0 ghi `Giao lưu` ([11 §1.3](./11-room-settings.md#13-hiển-thị)).
+- Cột: `Chủ bàn | KEN | Chỗ | Tham gia / Xem`. Cột `KEN` hiện mức cược, bàn 0 ghi `Giao lưu` ([11 §1.3](./11-room-settings.md#13-hiển-thị)).
 - 9 hàng/trang cố định, hàng cao 8.85% vùng list, absolute theo %.
-- Hàng: avatar VIP chủ bàn 32 (03 §18), `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa 16 khi `locked`, chip `Đang chơi` khi `status = 'playing'`.
+- Hàng: avatar VIP chủ bàn 32 (03 §18), `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa 16 khi `locked`. Bàn `status = 'playing'`: có bật cho xem thì cột cuối là nút `Xem` paper (`SPECTATE_JOIN {matchId}`), không thì chip `Đang chơi` ([11 §2.4](./11-room-settings.md#24-nút-vào-xem-ở-s3)).
 - Footer: `Tạo bàn` (CTA vàng) giữa, phân trang ‹ › hai bên.
 - `ROOM_LIST` khi mở + Làm mới; `ROOM_UPSERT/REMOVED` realtime; auto re-sync 90–120 s jitter.
 
@@ -61,17 +61,81 @@ Copy hành vi caro/xiangqi `RankedScreen.tsx`.
 
 ## S4. Modal Tạo bàn / Vào bàn khóa
 
-### 4a Tạo bàn (modal 340 × auto, radius 20)
-- Title `Tạo bàn` 20/800.
-- Nhóm `Số người`: 3 chip-btn `2 · 3 · 4`, mặc định 4, chip active gold.
-- Nhóm `Số KEN cược`: ô nhập số, mặc định `0` = bàn giao lưu; kiểm `maxBet` và số dư ([11 §1.1](./11-room-settings.md#11-chọn-ở-s4-tạo-bàn)).
-- Toggle `Khóa bàn` + input mật khẩu 4–8 ký tự (hiện khi bật).
-- Toggle `Cho người khác xem`, mặc định tắt ([11 §2.1](./11-room-settings.md#21-chọn-ở-s4-tạo-bàn)).
-- Nút `Tạo bàn` CTA vàng 100% × 52; `Hủy` text.
-- Gửi `ROOM_CREATE {bet, password, maxPlayers, allowSpectators}` → `ROOM_WAITING` → S5. Lỗi `ROOM_CREATE_FAILED/INVALID_PASSWORD` → toast; lỗi cược hiện dưới ô cược.
+Hai modal mở từ S3, cùng khung modal chung (03 §12): rộng `min(100% − 32, 340)`, radius 22, nền paper, viền navy 2, giữ focus trong modal, trả focus về nút đã mở khi đóng. Chưa có ảnh mẫu; bố cục dưới đây là thứ tự và nội dung bắt buộc để vẽ concept.
+
+### 4a Tạo bàn
+
+Mở bằng nút `Tạo bàn` ở footer S3. Từ trên xuống:
+
+| # | Phần | Nội dung | Mặc định |
+|---|---|---|---|
+| 1 | Header | tiêu đề `Tạo bàn` 21/800; nút đóng `ic-close` 44 góc phải | — |
+| 2 | `Số người` | 3 chip `2 · 3 · 4`, chọn một; chip đang chọn nền gold | **4** |
+| 3 | `Số KEN cược` | ô nhập số có đồng KEN trước số, dấu chấm hàng nghìn; dòng phụ `0 = bàn giao lưu, không mất KEN` hoặc `Bạn có {ken} KEN` ([11 §1.1](./11-room-settings.md#11-chọn-ở-s4-tạo-bàn)) | **0** |
+| 4 | `Khóa bàn` | công tắc; dòng phụ `Người vào chơi phải nhập mật khẩu`. Bật thì hiện ô mật khẩu ngay bên dưới (4a.1) | **tắt** |
+| 5 | `Cho người khác xem` | công tắc; dòng phụ `Người ngoài bàn xem được ván, không thao tác được` ([11 §2.1](./11-room-settings.md#21-chọn-ở-s4-tạo-bàn)) | **tắt** |
+| 6 | Hàng nút | `Hủy` paper trái · `Tạo bàn` gold phải, chia đều, cao 52 | — |
+
+Mỗi nhóm có nhãn 14/800 navy phía trên; khoảng cách giữa các nhóm 14. Lỗi của nhóm nào hiện ngay dưới nhóm đó: chữ 13/700 `--ty-coral` + `ic-warning` 16, ô viền coral. Modal cao quá màn thì cuộn bên trong, hàng nút luôn nằm cuối modal.
+
+**4a.1 Ô mật khẩu khi bật Khóa bàn.** Hiện bằng mở rộng xuống 150 ms (reduced motion: hiện ngay), focus vào ô ngay khi bật. Ô kiểu mật khẩu, placeholder `Nhập mật khẩu`, tối đa **64 ký tự** như server, không có độ dài tối thiểu; nút mắt bên phải để hiện/ẩn chữ (`aria-pressed`). Tắt công tắc thì ẩn ô và bỏ mật khẩu đã nhập.
+
+**Kiểm tra trước khi gửi**, theo thứ tự, dừng ở lỗi đầu tiên:
+
+| Điều kiện | Câu lỗi | Ở đâu |
+|---|---|---|
+| cược không phải số nguyên ≥ 0 hoặc > `maxBet` | `Số KEN cược không hợp lệ` | dưới ô cược |
+| cược > số KEN đang có | `Bạn không đủ KEN để tạo bàn` | dưới ô cược |
+| bật Khóa bàn mà để trống | `Nhập mật khẩu hoặc tắt Khóa bàn` | dưới ô mật khẩu |
+| mật khẩu > 64 ký tự | `Mật khẩu tối đa 64 ký tự` | dưới ô mật khẩu |
+
+Sửa ô nào thì xoá lỗi của ô đó. Có lỗi thì focus vào ô lỗi đầu tiên.
+
+**Gửi.** `ROOM_CREATE {bet, password, maxPlayers, allowSpectators}`; `password` rỗng khi tắt Khóa bàn. Đang gửi: nút `Tạo bàn` có spinner, khóa mọi ô và nút `Hủy`; `Escape` và bấm nền không đóng. Thành công (`ROOM_WAITING`) → đóng modal, sang S5. Lỗi từ server theo bảng 4c; modal giữ nguyên các lựa chọn đã nhập.
+
+**Đóng.** `Hủy`, nút đóng, `Escape`, bấm nền: đóng và bỏ thay đổi. Mở lại thì về mặc định, riêng `Số người` nhớ lần chọn gần nhất.
+
+**Bàn phím.** Ô cược dùng bàn phím số; `Enter` trong ô cược hoặc ô mật khẩu = bấm `Tạo bàn`.
 
 ### 4b Vào bàn khóa
-- Input mật khẩu, nút `Vào bàn`; `WRONG_PASSWORD` → shake input + text lỗi đỏ.
+
+Mở khi bấm `Tham gia` ở hàng có ổ khóa trong S3. Không áp dụng cho nút `Xem`: xem bàn khóa không cần mật khẩu ([11 §2.3](./11-room-settings.md#23-khi-bật)).
+
+| # | Phần | Nội dung |
+|---|---|---|
+| 1 | Header | `ic-lock` trong ô biểu tượng (như O5) + tiêu đề `Vào bàn khóa` 21/800 + nút đóng `ic-close` 44 |
+| 2 | Thông tin bàn | avatar VIP 32 + `Bàn của @owner`; dưới là chip cược (`{bet} KEN` hoặc `Giao lưu`) và chip chỗ `2/4` |
+| 3 | Ô mật khẩu | nhãn `Mật khẩu` 14/800; ô kiểu mật khẩu, placeholder `Nhập mật khẩu`, tối đa 64 ký tự, nút mắt hiện/ẩn; focus ngay khi mở |
+| 4 | Hàng nút | `Hủy` paper · `Vào bàn` gold; `Vào bàn` disabled khi ô trống |
+
+- **Trước khi mở modal**, client kiểm số KEN theo cược của bàn. Thiếu thì hiện O5 `Chưa đủ KEN` ([11 §1.2](./11-room-settings.md#12-vào-bàn-có-cược)), không mở modal mật khẩu.
+- Gửi `ROOM_JOIN {roomId, password}`; `Enter` trong ô = bấm `Vào bàn`. Đang gửi: spinner ở `Vào bàn`, khóa ô và `Hủy`.
+- `WRONG_PASSWORD`: ô rung ngang 300 ms (reduced motion: không rung), viền coral, chữ lỗi `Sai mật khẩu` dưới ô; giữ chữ đã nhập, bôi đen toàn bộ để gõ lại. Gõ lại thì xoá lỗi.
+- Lỗi khác theo bảng 4c; lỗi làm bàn không còn vào được (`ROOM_FULL`, `ROOM_NOT_FOUND`) thì đóng modal rồi báo.
+
+### 4c Thông báo khi tạo bàn và vào bàn
+
+Luồng vào bàn không khóa: bấm `Tham gia` → kiểm KEN như 4b → `ROOM_JOIN {roomId}`, nút `Tham gia` của hàng đó có spinner, khóa các nút khác trong bảng → `ROOM_WAITING` → S5. Không có phản hồi sau 10 s thì coi như lỗi mạng.
+
+Câu chữ theo caro (`caro/helpers/errorText.ts`), đổi `Ken` thành `KEN`.
+
+| Mã lỗi | Câu | Hiển thị | Sau đó |
+|---|---|---|---|
+| `WRONG_PASSWORD` | `Sai mật khẩu` | dưới ô mật khẩu 4b | giữ modal |
+| `INVALID_PASSWORD` | `Mật khẩu tối đa 64 ký tự` | dưới ô mật khẩu 4a | giữ modal |
+| `INVALID_BET` | `Số KEN cược không hợp lệ` | dưới ô cược 4a | giữ modal |
+| `INSUFFICIENT_KEN` | O5 cảnh báo, icon `ken`: `Chưa đủ KEN` · `Bàn này cược {bet} KEN. Bạn đang có {ken} KEN.` · `Đã hiểu` | modal O5 | đóng modal 4a/4b nếu đang mở |
+| `BET_NOT_ALLOWED` | O5 cảnh báo, icon `ken`: `Chưa thể chơi bàn cược` · `Tài khoản của bạn chưa thể chơi bàn có cược KEN. Hãy chọn bàn Giao lưu.` · `Đã hiểu` | modal O5 | khi tạo bàn: chữ lỗi dưới ô cược thay cho O5 |
+| `ROOM_FULL` | `Bàn đã đủ người` | toast | đóng modal, làm mới danh sách |
+| `ROOM_NOT_FOUND` | `Bàn không còn nữa` | toast | đóng modal, làm mới danh sách |
+| `ROOM_BUSY` | `Bàn đang được cập nhật, vui lòng thử lại` | toast | giữ nguyên |
+| `ALREADY_IN_ROOM`, `IN_ROOM` | `Bạn đang ở trong một bàn khác` | toast | giữ nguyên |
+| `OWN_ROOM` | `Đây là bàn của bạn` | toast | giữ nguyên |
+| `ROOM_JOIN_FAILED` | `Không thể vào bàn, vui lòng thử lại` | toast | giữ nguyên |
+| `ROOM_CREATE_FAILED` | `Không thể tạo bàn, vui lòng thử lại` | toast | giữ modal 4a |
+| không phản hồi 10 s / mất mạng | O5 lỗi, icon `wifi-off`: `Mất kết nối` · `Chưa thể kết nối vào bàn. Kiểm tra mạng rồi thử lại nhé.` · `Để sau` / `Thử lại` | modal O5 | `Thử lại` gửi lại đúng yêu cầu vừa rồi |
+
+Toast theo O6: một dòng, tự ẩn 2,5 s. Các lỗi khi bấm `Xem` ở [11 §2.4](./11-room-settings.md#24-nút-vào-xem-ở-s3).
 
 ---
 
@@ -92,7 +156,7 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 - `ROOM_START` → `MATCH_FOUND` → `boardMode='playing'`. Lỗi `ROOM_NOT_READY`/`ROOM_NOT_FULL` → toast. Bàn 3–4 chỗ được bắt đầu khi có từ 2 người: engine chỉ kiểm `playerCount ≥ MinPlayers` (`engine.go` `startRoom`), không bắt buộc đầy.
 - Chat phòng: nút ic-chat góc dưới phải mở ChatDrawer (`CHAT_SEND {roomId}`).
-- `ROOM_CLOSED`/`ROOM_KICKED` → toast + về S3.
+- `ROOM_KICKED` → O5 thông tin `Bạn đã rời bàn` · `Chủ bàn đã mời bạn ra khỏi bàn. Bạn có thể chọn bàn khác.` · `Về danh sách` → S3. `ROOM_CLOSED` → toast `Bàn đã đóng` → S3.
 
 ---
 
