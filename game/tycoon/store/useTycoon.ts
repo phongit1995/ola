@@ -6,7 +6,7 @@ import { bridge, type GameReactionType } from '../../src/sdk';
 import { BOARD, cardById } from '../logic/board';
 import { botMove } from '../logic/bot';
 import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
-import { applyMove, endByTime, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
+import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
 import { RuleError, type GameState, type Move, type Step, type TileState } from '../logic/types';
 import { formatMoney } from '../helpers/format';
 import { avatarIconUrl } from '../helpers/player';
@@ -604,14 +604,13 @@ export const useTycoon = create<TycoonState>((set, get) => {
     });
   };
 
-  const scheduleNext = (state: GameState) => {
+  const scheduleNext = (state: GameState, newTurn = false) => {
     cancelBot();
     if (isOver(state)) {
       finishGame(state);
       return;
     }
-    const turnStart = state.phase === 'roll' || state.phase === 'jail' || state.phase === 'travel';
-    if (turnStart && state.moveCount > 0 && Date.now() - get().startedAt >= TIME_LIMIT_MS) {
+    if (newTurn && Date.now() - get().startedAt >= TIME_LIMIT_MS) {
       const ended = endByTime(state);
       refs.state = ended;
       snapState(ended, true);
@@ -644,13 +643,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
     refs.replayEpoch += 1;
     const epoch = refs.replayEpoch;
     const run = refs.gameRun;
+    const newTurn = isNewTurn(current, next);
     set({ deadline: 0, timerLeftMs: 0, turnExpired: false, ...(mv.type === 'CARD_ACK' ? { cardFx: null } : {}) });
     queueReplay(async () => {
       if (refs.replayEpoch !== epoch || run !== refs.gameRun) return;
       await replaySteps(next.steps, epoch);
       if (refs.replayEpoch !== epoch || run !== refs.gameRun) return;
       snapState(next);
-      scheduleNext(next);
+      scheduleNext(next, newTurn);
     });
   }
 
@@ -819,8 +819,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     forfeitMatch() {
-      const state = refs.state;
-      if (!state || get().result) return;
+      if (!refs.state || get().result) return;
       get().showNotice({
         kind: 'confirm',
         tone: 'danger',
@@ -828,6 +827,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
         body: 'Bạn sẽ bị tính phá sản và xếp cuối. Kết thúc ván ngay?',
         okLabel: 'Bỏ cuộc',
         onOk: () => {
+          const state = refs.state;
+          if (!state || isOver(state) || get().result) return;
           cancelBot();
           refs.replayEpoch += 1;
           const next = quitPlayer(state, get().you);

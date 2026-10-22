@@ -42,7 +42,7 @@ export function botMove(s: GameState, seat: number): Move | null {
     case 'roll':
       return { type: 'ROLL' };
     case 'jail':
-      if (p.jailCards > 0) return { type: 'JAIL_CARD' };
+      if (p.jailCards.length > 0) return { type: 'JAIL_CARD' };
       if (p.cash >= JAIL_FINE + 400 && p.jailTurns < 2) return { type: 'JAIL_PAY' };
       return { type: 'JAIL_ROLL' };
     case 'decide': {

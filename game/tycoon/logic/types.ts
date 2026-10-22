@@ -5,7 +5,7 @@ export interface PlayerState {
   pos: number;
   inJail: boolean;
   jailTurns: number;
-  jailCards: number;
+  jailCards: CardRef[];
   bankrupt: boolean;
   doubles: number;
   quit: boolean;

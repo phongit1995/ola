@@ -146,7 +146,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 ### 4.4 Nâng cấp và hạ cấp
 - Mỗi ô đất có cấp `houses` 0–3: 0 = đất trống, 1 = Nhà, 2 = Biệt thự, 3 = Khách sạn. Tên cấp: `LEVEL_NAMES` trong `constants.ts`.
 - `BUILD {tile}` = nâng 1 cấp: phải sở hữu **trọn nhóm** (cả 2 thành phố), ô là `street`, tiền ≥ giá mỗi cấp (`houseCost`), chưa ở cấp 3, và **nâng đều**: cấp ô này sau khi nâng ≤ min(cấp các ô cùng nhóm) + 1. Chỉ nâng trong pha `manage` của lượt mình. Không giới hạn số nhà của ngân hàng.
-- `SELL_HOUSE {tile}` = hạ 1 cấp, nhận `houseCost × 0.5`, phải **hạ đều** (ô này sau khi hạ ≥ max(nhóm) − 1). Được hạ trong pha `manage` và pha `debt` (kể cả ngoài lượt khi bị đòi nợ bởi `collectEach`).
+- `SELL_HOUSE {tile}` = hạ 1 cấp, nhận `houseCost × 0.5`, phải **hạ đều** (ô này sau khi hạ ≥ max(các ô cùng nhóm **mình đang giữ**) − 1; ô cùng nhóm đối thủ đã mua lại không tính, nếu không nhà trên ô còn lại sẽ kẹt không bán được). Được hạ trong pha `manage` và pha `debt` (kể cả ngoài lượt khi bị đòi nợ bởi `collectEach`).
 
 ### 4.5 Nợ và phá sản
 - Khi phải trả `amount` mà `cash < amount`: state vào `phase: debt {creditor: seat|-1, amount}`. Người nợ có 30 s để `SELL_HOUSE` nhiều lần rồi `PAY_DEBT`, hoặc `DECLARE_BANKRUPT`.
@@ -165,7 +165,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 | Thắng ngay (§4.3c) | người đó thắng (`winner`, `endReason = groups \| line \| airports`) | `win` | người thắng, rồi người còn lại theo tài sản, rồi `bankruptOrder` đảo ngược |
 | Chỉ còn 1 người chưa phá sản (`last`) | người đó thắng | `win` | người thắng, rồi `bankruptOrder` đảo ngược |
 | Hết `MAX_ROUNDS` = 30 vòng (`rounds`, kiểm tra ở END_TURN của người cuối cùng trong vòng) | xếp theo **tổng tài sản** giảm dần | `win` | tài sản giảm dần, hòa tài sản → ít phá sản hơn, rồi seat thấp hơn; người phá sản xếp cuối theo thứ tự phá sản đảo |
-| Hết 25 phút tính từ đầu ván (`time`) | như hết vòng | `win` | như hết vòng. Kết thúc ở **đầu lượt kế tiếp** sau khi hết giờ (không cắt giữa lượt). Bản chơi với máy đếm giờ ở client (`endByTime`); bản online server đếm |
+| Hết 25 phút tính từ đầu ván (`time`) | như hết vòng | `win` | như hết vòng. Kết thúc ở **đầu lượt kế tiếp** sau khi hết giờ (không cắt giữa lượt): chỉ tính khi lượt đã chuyển sang seat khác (`isNewTurn`); nộp phạt / dùng thẻ ra tù rồi gieo, hay gieo lại khi ra đôi vẫn là lượt cũ. Bản chơi với máy đếm giờ ở client (`endByTime`); bản online server đếm |
 | 2 người, 1 người quit/forfeit | người còn lại thắng | `forfeit`/`timeout`/`disconnect` | engine quyết |
 
 `Tổng tài sản = cash + Σ price(đất sở hữu) + Σ cấp × houseCost`. Khách sạn (cấp 3) tính 3 × houseCost.
@@ -180,7 +180,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 ```jsonc
 {
   "players": [
-    { "cash": 1500, "pos": 0, "inJail": false, "jailTurns": 0, "jailCards": 0,
+    { "cash": 1500, "pos": 0, "inJail": false, "jailTurns": 0, "jailCards": [],   // [{deck, id}] thẻ ra tù đang giữ
       "bankrupt": false, "doubles": 0, "quit": false, "travel": false }
   ],                                   // dài = playerCount (2..4)
   "tiles": [ { "owner": -1, "houses": 0 } ],   // 32 phần tử; owner = seat | -1; houses = cấp 0–3
@@ -213,7 +213,7 @@ Giống state nhưng **bỏ** `rng`, `chanceDeck`, `chestDeck`; thêm `you`, `ch
 | type | Pha hợp lệ | tile | Ghi chú |
 |---|---|---|---|
 | `ROLL` | roll, travel | — | ở pha travel = bỏ quyền bay, gieo bình thường |
-| `JAIL_PAY` / `JAIL_CARD` / `JAIL_ROLL` | jail | — | CARD cần `jailCards > 0` |
+| `JAIL_PAY` / `JAIL_CARD` / `JAIL_ROLL` | jail | — | CARD cần `jailCards` không rỗng; thẻ dùng xong (hoặc người giữ phá sản/thoát) về **đáy đúng bộ** đã rút ra |
 | `BUY` / `DECLINE` | decide | — | |
 | `TAKEOVER` / `DECLINE` | takeover | — | luật §4.3b; lỗi `tycoon:takeover_hotel` / `tycoon:not_takeover` / `tycoon:no_cash` |
 | `FESTIVAL` / `DECLINE` | festival | idx (FESTIVAL) | luật §4.3d; lỗi `tycoon:not_street` / `tycoon:not_owner` |

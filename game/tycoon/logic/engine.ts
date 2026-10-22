@@ -55,7 +55,7 @@ function deckCards(deck: 'chance' | 'chest'): CardData[] {
 export function newGame(seed: number, playerCount: number): GameState {
   const count = Math.min(4, Math.max(2, playerCount));
   const state: GameState = {
-    players: Array.from({ length: count }, () => ({ cash: START_CASH, pos: 0, inJail: false, jailTurns: 0, jailCards: 0, bankrupt: false, doubles: 0, quit: false, travel: false })),
+    players: Array.from({ length: count }, () => ({ cash: START_CASH, pos: 0, inJail: false, jailTurns: 0, jailCards: [], bankrupt: false, doubles: 0, quit: false, travel: false })),
     tiles: Array.from({ length: BOARD_SIZE }, () => ({ owner: -1, houses: 0 })),
     turn: 0,
     phase: 'roll',
@@ -83,7 +83,7 @@ export function newGame(seed: number, playerCount: number): GameState {
 export function cloneState(s: GameState): GameState {
   return {
     ...s,
-    players: s.players.map((p) => ({ ...p })),
+    players: s.players.map((p) => ({ ...p, jailCards: [...p.jailCards] })),
     tiles: s.tiles.map((t) => ({ ...t })),
     dice: [s.dice[0], s.dice[1]],
     debt: s.debt ? { ...s.debt } : null,
@@ -175,7 +175,7 @@ export function canSellError(s: GameState, seat: number, idx: number): string | 
   if (tile.kind !== 'street' || !tile.group) return 'not_street';
   if (t.owner !== seat) return 'not_owner';
   if (t.houses <= 0) return 'no_houses';
-  for (const g of tilesOfGroup(tile.group)) if (t.houses < s.tiles[g].houses) return 'sell_uneven';
+  for (const g of tilesOfGroup(tile.group)) if (s.tiles[g].owner === seat && t.houses < s.tiles[g].houses) return 'sell_uneven';
   return null;
 }
 
@@ -370,6 +370,12 @@ function removeFromDeck(s: GameState, deck: 'chance' | 'chest', cardId: string):
   if (at >= 0) pile.splice(at, 1);
 }
 
+function returnToDeck(s: GameState, ref: CardRef): void {
+  const pile = ref.deck === 'chance' ? s.chanceDeck : s.chestDeck;
+  const id = deckCards(ref.deck).findIndex((c) => c.id === ref.id);
+  if (id >= 0 && !pile.includes(id)) pile.push(id);
+}
+
 function nearestTile(from: number, kind: string): number {
   for (let step = 1; step <= BOARD_SIZE; step++) {
     const idx = (from + step) % BOARD_SIZE;
@@ -401,7 +407,7 @@ function applyCard(s: GameState, seat: number, card: CardData | undefined): void
       return;
     }
     case 'jailCard':
-      p.jailCards++;
+      p.jailCards.push({ deck: card.deck, id: card.id });
       removeFromDeck(s, card.deck, card.id);
       return;
     case 'goToJail':
@@ -536,6 +542,8 @@ export function bankrupt(s: GameState, seat: number, creditor: number): void {
   for (const idx of tiles) s.tiles[idx].owner = toCreditor ? creditor : -1;
   if (!toCreditor && tiles.includes(s.festival)) s.festival = -1;
   if (toCreditor) s.players[creditor].cash += p.cash;
+  for (const card of p.jailCards) returnToDeck(s, card);
+  p.jailCards = [];
   p.cash = 0;
   p.bankrupt = true;
   p.inJail = false;
@@ -630,8 +638,8 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       break;
     case 'JAIL_CARD':
       needPhase('jail');
-      if (p.jailCards <= 0) throw new RuleError('no_jail_card');
-      p.jailCards--;
+      if (p.jailCards.length === 0) throw new RuleError('no_jail_card');
+      returnToDeck(s, p.jailCards.shift()!);
       leaveJail(s, seat, 'card');
       s.phase = 'roll';
       break;
@@ -773,6 +781,10 @@ export function quitPlayer(input: GameState, seat: number): GameState {
   s.players[seat].quit = true;
   bankrupt(s, seat, -1);
   return s;
+}
+
+export function isNewTurn(prev: GameState, next: GameState): boolean {
+  return next.turn !== prev.turn && (next.phase === 'roll' || next.phase === 'jail' || next.phase === 'travel');
 }
 
 export function isOver(s: GameState): boolean {
