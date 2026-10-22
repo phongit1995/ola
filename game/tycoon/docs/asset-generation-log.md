@@ -47,7 +47,7 @@ Negative constraints nằm trong prompt trên; không có negative prompt riêng
 - Người dùng yêu cầu copy cả bốn example vào docs; trạng thái **tham khảo**, chưa xác nhận concept chuẩn hoặc UI đã hoàn tất.
 - File nguồn local: `game/dist/o5-modal-preview/01-confirm.png`, `02-danger.png`, `03-notice.png`, `04-error.png`. Các file trong docs độc lập với dist.
 - File đích: [xác nhận thường](./screens/o5-modal/examples/01-confirm.webp), [xác nhận nguy hiểm](./screens/o5-modal/examples/02-danger.webp), [thông báo một nút](./screens/o5-modal/examples/03-notice.webp), [lỗi kết nối](./screens/o5-modal/examples/04-error.webp).
-- [Prompt đầy đủ](./screens/o5-modal/examples/prompts.json) giữ nguyên nội dung đã chạy; ảnh hiển thị trong [đặc tả O5](./screens/o5-modal/README.md#ảnh-ví-dụ).
+- Ảnh hiển thị trong [đặc tả O5](./screens/o5-modal/README.md#ảnh-ví-dụ).
 - Mỗi ảnh **853 × 1844 px**. Hậu kỳ: chuyển PNG gốc sang WebP chất lượng 85 (mỗi ảnh ~140 KB thay ~1,75 MB), giữ nguyên kích thước, không crop/chỉnh nội dung.
 - Đã kiểm trực quan chữ tiếng Việt, icon, số nút và màu theo vai trò. Giới hạn: kích thước khung/badge, sắc độ chưa khớp tuyệt đối token; nền lobby chỉ để so sánh hình thức, không đại diện luồng Bỏ cuộc trong ván.
 - Không dùng ảnh làm asset runtime, không đánh dấu đạt QA runtime. Khi dựng dùng chữ DOM, hệ icon và số đo/token trong docs.
@@ -57,9 +57,7 @@ Negative constraints nằm trong prompt trên; không có negative prompt riêng
 - Ngày **21–22/10/2026**. Không gọi imagegen, không trace bitmap hoặc nhúng raster.
 - Thân nút, focus và khung modal dùng CSS; SVG chỉ dành cho icon. [button.css](./screens/o5-modal/svg/button.css): state chung, focus một vòng navy 2px cách 3px, pending, reduced motion, forced colors. Bản nút SVG trước đó bị chồng nhiều viền khi focus nên đã bỏ.
 - [9 icon SVG](./screens/o5-modal/svg/icons/): check/warning/wifi-off/lock/ken/coins/flag giữ nguyên path từ `assets/icons`; bổ sung info và spinner. Không thay icon runtime.
-- [Trang đối chiếu bốn mẫu](./screens/o5-modal/css-preview/index.html): khung, badge, icon và nút dựng bằng CSS/HTML; concept S2 chỉ làm phông tham chiếu. [modal.css](./screens/o5-modal/css-preview/modal.css) canh riêng theo từng ảnh mẫu, không phải token production.
-- [Audit](./screens/o5-modal/css-preview/fidelity-audit.md) lưu số đo trước/sau và các phần còn khác. Đã xác nhận Nunito local được sử dụng; không biết metadata font của chữ AI. Chưa giống hoàn toàn và chưa đạt duyệt mỹ thuật.
-- Kiểm bốn mẫu ở ba chiều rộng, overlay, pending, focus, reduced motion và forced colors; không JavaScript exception. Ảnh chụp và số đo chỉ chạy local.
+- Trang đối chiếu CSS bốn mẫu chỉ dùng local, không lưu trong repo. Chưa giống hoàn toàn và chưa đạt duyệt mỹ thuật.
 - Cập nhật [danh sách màn còn thiếu mẫu](./screens/README.md): tám nhóm S3–S5/S7–S11, lớp phủ và trạng thái trong ván. Chưa import vào game.
 
 ## App icon

@@ -9,9 +9,9 @@ Mỗi màn có ảnh mẫu đã duyệt thì có **một folder riêng** ở đ�
 | S3. Danh sách bàn | [s3-room-list](./s3-room-list/README.md) | `concept-s3-room-list-pixel-16bit.png` (mẫu 01 Bảng giấy kem) | concept đã chọn, đã viết đặc tả; chưa dựng UI |
 | S4. Tạo bàn / Vào bàn khóa | chung folder [s3-room-list](./s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5) | 6 ảnh `modal-*.webp` (S4 + O5) | người dùng đã chốt UI sáu case ngày 22/10; chưa dựng modal online |
 | S6. Bàn chơi | [s6-board](./s6-board/README.md) | `concept-s6-board-pixel-16bit.png` | ảnh chuẩn pixel 16-bit, nền mỹ thuật chung; chưa dựng UI |
-| O5. Modal xác nhận / thông báo | [o5-modal](./o5-modal/README.md) | [4 example](./o5-modal/README.md#ảnh-ví-dụ) + [preview CSS](./o5-modal/css-preview/README.md) | khung NoticeModal đã tích hợp; preview CSS là bản đối chiếu, chưa xác nhận giống hoàn toàn ảnh mẫu |
+| O5. Modal xác nhận / thông báo | [o5-modal](./o5-modal/README.md) | [4 example](./o5-modal/README.md#ảnh-ví-dụ) | khung NoticeModal đã tích hợp; chưa xác nhận giống hoàn toàn ảnh mẫu |
 
-Các màn khác chưa có ảnh mẫu riêng. **Kiểm kê 22/10/2026:** có thiết kế/preview cho S1, S2, S3, S4, S6 và O5; không đồng nghĩa đã hoàn tất UI hoặc đạt độ giống ảnh mẫu. Sáu case S4/O5 trên nền S3 đã được chốt theo các ngoại lệ docs thắng ảnh. Bản dựng CSS O5 vẫn cần kiểm độ giống sau [đối chiếu viền và chữ](./o5-modal/css-preview/fidelity-audit.md).
+Các màn khác chưa có ảnh mẫu riêng. **Kiểm kê 22/10/2026:** có thiết kế/preview cho S1, S2, S3, S4, S6 và O5; không đồng nghĩa đã hoàn tất UI hoặc đạt độ giống ảnh mẫu. Sáu case S4/O5 trên nền S3 đã được chốt theo các ngoại lệ docs thắng ảnh. Bản dựng CSS O5 vẫn cần kiểm độ giống viền và chữ.
 
 | Chưa có ảnh mẫu riêng | Nội dung cần thể hiện |
 |---|---|

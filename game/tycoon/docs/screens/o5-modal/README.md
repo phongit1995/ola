@@ -4,7 +4,7 @@
 
 ## Ảnh ví dụ
 
-Lưu theo yêu cầu người dùng ngày **21/10/2026**. [Prompt gốc của từng mẫu](./examples/prompts.json). Công cụ: built-in imagegen; ảnh gốc PNG 853 × 1844 được chuyển sang WebP chất lượng 85, giữ nguyên kích thước, không chỉnh sửa nội dung. Nguồn và trạng thái ghi tại [asset generation log](../../asset-generation-log.md#o5-modal--bốn-ảnh-ví-dụ).
+Lưu theo yêu cầu người dùng ngày **21/10/2026**. Công cụ: built-in imagegen; ảnh gốc PNG 853 × 1844 được chuyển sang WebP chất lượng 85, giữ nguyên kích thước, không chỉnh sửa nội dung. Nguồn và trạng thái ghi tại [asset generation log](../../asset-generation-log.md#o5-modal--bốn-ảnh-ví-dụ).
 
 | Xác nhận thường — Thoát game | Xác nhận nguy hiểm — Bỏ cuộc |
 |---|---|
@@ -15,8 +15,6 @@ Lưu theo yêu cầu người dùng ngày **21/10/2026**. [Prompt gốc của t�
 Các ảnh dùng chung nền lobby để so sánh khung; tình huống Bỏ cuộc thực tế nằm trên bàn chơi. Đây là **example tham khảo**, chưa phải concept chuẩn đã duyệt. Kích thước khung, badge và sắc độ trong ảnh AI còn sai khác; khi dựng dùng token và số đo trong docs, chữ DOM và hệ icon của game. Không import nguyên ảnh vào runtime. Việc lưu ảnh không đánh dấu hoàn thành checklist triển khai.
 
 ## Bản dựng CSS
-
-**Xem trực tiếp:** [4 modal dựng bằng CSS cạnh ảnh gốc, có chế độ chồng ảnh](./css-preview/index.html). Hộp, badge, icon, nút và chữ là CSS/HTML; ảnh lobby chỉ làm nền tham chiếu. [Ghi chú về độ giống và phạm vi](./css-preview/README.md). Sau phản hồi về viền/font, đã đo và sửa preview; [audit trước/sau](./css-preview/fidelity-audit.md) ghi rõ sai lệch còn lại, chưa xác nhận giống hoàn toàn.
 
 **Thân nút, focus và khung modal dựng bằng CSS; SVG chỉ dành cho icon.** [button.css](./svg/button.css) chứa state chung của nút (hover, bấm, disabled, pending, `:focus-visible` một vòng navy 2px cách 3px, reduced motion, forced colors). [9 icon SVG](./svg/icons/) giữ nguyên nét từ `assets/icons`, bổ sung `ic-info` và `ic-spinner`. Bộ này **chưa import vào game**; checklist runtime bên dưới vẫn giữ trạng thái thực tế.
 
