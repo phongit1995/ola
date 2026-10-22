@@ -9,6 +9,7 @@ import { TyIcon } from '../components/TyIcon';
 import { ROOM_PAGE_SIZE, ROOM_RESYNC_JITTER_MS, ROOM_RESYNC_MIN_MS, pageCount } from '../helpers/room';
 import { useRoomList } from '../store/useRoomList';
 import { useTycoon } from '../store/useTycoon';
+import { LobbyTopbar } from './LobbyTopbar';
 
 const SKELETON_ROWS = Array.from({ length: ROOM_PAGE_SIZE }, (_, index) => index);
 
@@ -116,6 +117,7 @@ export function RoomListScreen() {
 
   return (
     <div className="ty-lobby ty-rooms" style={{ '--ty-lb-bg': `url(${bgUrl})` } as CSSProperties}>
+      <LobbyTopbar />
       <header className="ty-rooms-top">
         <button type="button" className="ty-rooms-round" aria-label="Quay lại" onClick={() => setRoomsOpen(false)}>
           <RoomIcon name="chevron-left" />

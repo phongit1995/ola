@@ -33,7 +33,7 @@ Chơi với máy (`BotSetupModal`) không có hai tùy chọn này: không cư�
 
 | Màn | Hiển thị |
 |---|---|
-| S3 Danh sách bàn | cột `KEN`: `{bet}` kèm icon `ken`; bàn 0 ghi `Giao lưu` |
+| S3 Danh sách bàn | cột `KEN`: `{bet}` rồi đồng KEN bên phải, căn phải; bàn 0 ghi `0` + đồng KEN (không ghi `Giao lưu`, đổi 22/10/2026) |
 | S5 Phòng chờ | chip dưới tiêu đề panel: `Cược {bet} KEN` hoặc `Giao lưu` |
 | S6 Bàn chơi | dòng thông tin đầu menu ☰: `Cược {bet} KEN` hoặc `Giao lưu`; lúc bắt đầu ván, pod mỗi người hiện `−{bet} KEN` 1,2 s như caro |
 | S9 Kết quả | mỗi hàng thêm `±KEN`: hạng 1 `+{nhận} KEN` jade, các hạng khác `−{bet} KEN` coral; bàn 0 không hiện |

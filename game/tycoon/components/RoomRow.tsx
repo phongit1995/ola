@@ -1,4 +1,4 @@
-import kenUrl from '../assets/lobby/ill-ken.webp';
+import kenUrl from '../assets/lobby/ken.png';
 import { formatKen } from '../helpers/format';
 import { avatarIconUrl } from '../helpers/player';
 import { roomAction, roomSeatsLabel, type TycoonRoom } from '../helpers/room';
@@ -30,15 +30,9 @@ export function RoomRow({ room, pendingId, onJoin, onWatch }: RoomRowProps) {
         ) : null}
       </span>
       <span className="ty-room-bet">
-        {room.bet > 0 ? (
-          <>
-            <img src={kenUrl} alt="" draggable={false} />
-            <b>{formatKen(room.bet)}</b>
-            <span className="ty-visually-hidden"> KEN</span>
-          </>
-        ) : (
-          <span className="ty-room-free">Giao lưu</span>
-        )}
+        <b>{formatKen(room.bet)}</b>
+        <span className="ty-visually-hidden"> KEN</span>
+        <img src={kenUrl} alt="" draggable={false} />
       </span>
       <span className={action === 'join' ? 'ty-room-seats' : 'ty-room-seats ty-room-seats-off'}>
         {roomSeatsLabel(room)}

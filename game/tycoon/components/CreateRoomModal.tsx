@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import kenUrl from '../assets/lobby/ill-ken.webp';
+import kenUrl from '../assets/lobby/ken.png';
 import { formatKen } from '../helpers/format';
 import { ROOM_PASSWORD_MAX_LENGTH, ROOM_PLAYER_OPTIONS, createRoomError, formatBetInput, parseBetInput } from '../helpers/room';
 import { useRoomList } from '../store/useRoomList';

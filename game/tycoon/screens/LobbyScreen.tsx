@@ -1,4 +1,3 @@
-import type { Ref } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
 import logoUrl from '../assets/lobby/logo.webp';
@@ -9,59 +8,26 @@ import leaderboardUrl from '../assets/lobby/ill-leaderboard.webp';
 import rulesUrl from '../assets/lobby/ill-rules.webp';
 import exitDoorUrl from '../assets/lobby/ill-exit-door.webp';
 import exitArrowUrl from '../assets/lobby/ill-exit-arrow.webp';
-import kenUrl from '../assets/lobby/ill-ken.webp';
 import ctaRaysUrl from '../assets/lobby/decor-cta-rays.svg';
 import heroRaysUrl from '../assets/lobby/decor-hero-rays.svg';
 import mascotUrl from '../assets/chars/ty-idle-full.webp';
-import { TyIcon } from '../components/TyIcon';
 import { DiceLoader } from '../components/loading/DiceLoader';
-import { formatKen } from '../helpers/format';
-import { avatarIconUrl } from '../helpers/player';
-import type { LobbyProfile } from '../helpers/profile';
 import { useTycoon } from '../store/useTycoon';
-import { useLobbyTopbarWrap } from './useLobbyTopbarWrap';
+import { LobbyTopbar } from './LobbyTopbar';
 
-const ONLINE_SOON = 'Tính năng online đang được làm, tạm thời chơi với máy';
-
-function ProfilePill({ profile, ref }: { profile: LobbyProfile; ref: Ref<HTMLDivElement> }) {
-  const name = `@${profile.username}`;
-  return (
-    <div ref={ref} className="ty-lb-pill ty-lb-profile" aria-label={name}>
-      <img className="ty-lb-avatar" src={avatarIconUrl(profile.vipType)} alt="" draggable={false} />
-      <span className="ty-lb-name" aria-hidden="true">
-        {name}
-      </span>
-    </div>
-  );
-}
-
-function KenPill({ ken, bodyRef }: { ken: number; bodyRef: Ref<HTMLSpanElement> }) {
-  const amount = formatKen(ken);
-  return (
-    <div className="ty-lb-pill ty-lb-ken" aria-label={`Số dư ${amount} KEN`}>
-      <span ref={bodyRef} className="ty-lb-ken-body" aria-hidden="true">
-        <img src={kenUrl} alt="" draggable={false} />
-        <b>{amount}</b>
-        <span>KEN</span>
-      </span>
-    </div>
-  );
-}
+const ONLINE_SOON = 'Tính năng online đang được làm';
 
 export function LobbyScreen() {
-  const { profile, soundOn, toggleSound, setSetupOpen, setRulesOpen, exitGame, showToast } = useTycoon(
+  const { profile, setRoomsOpen, setRulesOpen, exitGame, showToast } = useTycoon(
     useShallow((s) => ({
       profile: s.profile,
-      soundOn: s.soundOn,
-      toggleSound: s.toggleSound,
-      setSetupOpen: s.setSetupOpen,
+      setRoomsOpen: s.setRoomsOpen,
       setRulesOpen: s.setRulesOpen,
       exitGame: s.exitGame,
       showToast: s.showToast,
     })),
   );
   const loading = profile === null;
-  const { topRef, profileRef, kenBodyRef, soundRef, wrap } = useLobbyTopbarWrap(!loading);
   const art = (
     <>
       <h1 className="ty-lb-logo">
@@ -81,20 +47,7 @@ export function LobbyScreen() {
 
   return (
     <div className={`ty-lobby${loading ? ' ty-lobby-loading' : ''}`} style={{ '--ty-lb-bg': `url(${bgUrl})` } as React.CSSProperties}>
-      <header ref={topRef} className={wrap ? 'ty-lb-top ty-lb-top-wrap' : 'ty-lb-top'}>
-        {profile && <ProfilePill profile={profile} ref={profileRef} />}
-        {profile && <KenPill ken={profile.ken} bodyRef={kenBodyRef} />}
-        <button
-          ref={soundRef}
-          type="button"
-          className="ty-lb-sound"
-          onClick={toggleSound}
-          aria-label={soundOn ? 'Tắt âm' : 'Bật âm'}
-          aria-pressed={soundOn}
-        >
-          <TyIcon name={soundOn ? 'volume-on' : 'volume-off'} size={24} />
-        </button>
-      </header>
+      <LobbyTopbar />
 
       {loading ? (
         <div className="ty-lb-loading-stage">
@@ -109,7 +62,7 @@ export function LobbyScreen() {
         <nav className="ty-lb-menu" aria-label="Menu sảnh">
           <div className="ty-lb-cta">
             <img className="ty-lb-cta-rays" src={ctaRaysUrl} alt="" draggable={false} />
-            <button type="button" className="ty-lb-btn ty-lb-btn-gold" onClick={() => setSetupOpen(true)}>
+            <button type="button" className="ty-lb-btn ty-lb-btn-gold" onClick={() => setRoomsOpen(true)}>
               <img src={diceUrl} alt="" draggable={false} />
               <span>Vào bàn</span>
             </button>

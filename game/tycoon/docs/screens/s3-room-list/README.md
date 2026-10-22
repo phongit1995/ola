@@ -20,13 +20,13 @@
 - Bốn cột `Chủ bàn | KEN | Chỗ | Tham gia / Xem`; tiêu đề cột cuối xuống hai dòng.
 - Hình thức từng trạng thái hàng (§5): nút vàng, nút mờ, nút kem `Xem`, chip xanh nhạt `Đang chơi`.
 - Badge chỗ dạng pill viền xanh ngọc khi còn chỗ, viền xám khi đầy hoặc đang chơi.
-- Đồng KEN vàng có vương miện trước số cược; bàn 0 ghi `Giao lưu`, không có đồng.
+- Ảnh vẽ đồng KEN vương miện trước số cược và bàn 0 ghi `Giao lưu`. Bản dựng (22/10/2026) đổi theo user: số trước, đồng KEN chữ K của app sau, căn phải cột; bàn 0 ghi `0` kèm đồng.
 
 ## 3. Docs thắng ảnh ở
 
 - **Avatar:** ảnh vẽ mặt cười xanh đội vương miện cho mọi chủ bàn. Production dùng icon VIP của từng user ([03 §18](../../03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar)).
 - **Dữ liệu:** tên, số KEN, số chỗ, số trang là dữ liệu mẫu; luôn lấy từ `ROOM_LIST`.
-- **Chip `Đang chơi`:** ảnh vẽ chữ xanh dương trên nền xanh nhạt, độ tương phản không đạt AA. Dùng chữ `--ty-navy` trên nền `--ty-sky-soft`.
+- **Chip `Đang chơi`:** giữ màu theo ảnh, chữ xanh dương `#154CC7` trên nền xanh sáng `#C6EAFE` (5,74:1, đạt AA). Ảnh gốc đo được khoảng `#023AF9` trên `#C7EAFD` (≈ 5,6:1), cũng đạt AA; bản trước đổi sang chữ navy trên `--ty-sky-soft` vì tưởng ảnh không đạt, làm nhãn chìm, đã bỏ (22/10/2026). Không dùng token `--ty-sky-soft` vì bàn chơi S6 còn dùng.
 - **Tên cho trình đọc màn hình:** nút `‹` và nút `Làm mới` chỉ có icon; đặt `aria-label` `Quay lại` và `Làm mới danh sách bàn`.
 
 ## 4. Bố cục tại 390 × 844
@@ -41,26 +41,33 @@ Tọa độ tính trong vùng sau safe-area, quy đổi từ ảnh 853 px theo t
 | Footer | y 760–812 | `Tạo bàn` 188 × 46 ở giữa; nút trang tròn 48 ở x 43 và x 297 |
 | Số trang | y 814–830 | `1 / 3` căn giữa |
 
-Cột trong bảng (rộng 366): `Chủ bàn` 112 · `KEN` 80 · `Chỗ` 62 · cột cuối 88; lề trong 8.
+Cột trong bảng (rộng 366, bản dựng 22/10/2026): `Chủ bàn` ~113 · `KEN` 78+ · `Chỗ` 60+ · cột cuối 92; lề trong 8.
 
-Màn 360 (≤ 370): bảng 336, cột `72 · 54 · 82`, avatar 28, đồng KEN 20, ổ khóa 14, chữ tên và số 14; tên dài cắt `…`. Màn thấp: dải phố co lại trước; hết chỗ thì hàng co đều (360 × 640 còn khoảng 47), không bớt hàng, footer luôn hiện. Màn rộng hơn 390: các cột giãn theo tỷ lệ, không dưới số đo trên. Khung tối đa 520, nền trời phủ ngoài khung như lobby.
+Màn 360 (≤ 370): bảng 336, cột `72 · 54 · 88`, avatar 28, đồng KEN 20, ổ khóa 14, chữ tên và số 14; tên dài cắt `…`. Màn thấp: dải phố co lại trước; hết chỗ thì hàng co đều (360 × 640 còn khoảng 47), không bớt hàng, footer luôn hiện. Màn rộng hơn 390: các cột giãn theo tỷ lệ, không dưới số đo trên. Khung tối đa 520, nền trời phủ ngoài khung như lobby.
 
 ## 5. Hàng và trạng thái
 
 | Phần | Thông số |
 |---|---|
 | Avatar | icon VIP 34, tròn |
-| Tên | `@username` 15/700 navy, cắt `…`; bàn khóa có ổ khóa 18 ngay sau tên |
-| KEN | đồng KEN 24 + số 15/800 có dấu chấm hàng nghìn; bàn 0 chỉ có chữ `Giao lưu` 14/700 |
-| Badge chỗ | pill 58 × 27, chữ 15/800; còn chỗ: viền `--ty-jade` 2, chữ jade; đầy hoặc đang chơi: viền và chữ xám |
-| Nút cột cuối | pill 82 × 34, chữ 16/800 |
+| Tên | `@username` 15/700 navy, cắt `…`; bàn khóa có ổ khóa 18 nằm sát mép phải ô chủ bàn (`margin-left: auto`, trước lề 6), ổ khóa các hàng thẳng một cột dọc. Ảnh mẫu đặt ngay sau tên; đổi theo user 22/10/2026 |
+| Cột | `minmax(0, 1.4fr) minmax(78px, 1fr) minmax(60px, 0.7fr) 92px`; màn ≤ 370: `1fr 72 54 88`. Cột chủ bàn chừa lề phải 6 để ổ khóa không chạm số KEN |
+| KEN | số 15/800 có dấu chấm hàng nghìn, gap 3, đồng KEN 22 bên phải, căn phải cột (lề phải 2); bàn 0 ghi `0` + đồng. Nội dung phải lọt cột: căn phải mà tràn thì tràn sang trái đè cột chủ bàn |
+| Badge chỗ | pill tối thiểu 54 × 27 (≤ 370: 50), chữ 15/800, hở cột bên cạnh ≥ 2; còn chỗ: viền `--ty-jade` 2, chữ jade; đầy hoặc đang chơi: viền và chữ xám |
+| Nút cột cuối | pill rộng hết cột (92, ≤ 370: 88) × 34, chữ 15/800, chữ cách mép trong ~10 (≤ 370: ~8,5); chip `Đang chơi` cùng rộng |
 
 | Trạng thái bàn | Nền hàng | Cột cuối |
 |---|---|---|
-| chờ, còn chỗ | giấy kem | `Tham gia` vàng `.ty-btn-gold` |
+| chờ, còn chỗ | giấy kem | `Tham gia` vàng mặt CTA S3 (xem dưới bảng) |
 | chờ, đủ người | xám nhạt, avatar và tên mờ 50% | `Tham gia` xám, disabled |
-| đang chơi, cho xem | giấy kem, không mờ | `Xem` kem `.ty-btn-paper` viền navy, hoạt động |
-| đang chơi, không cho xem | giấy kem, không mờ | chip `Đang chơi` 13/800, nền `--ty-sky-soft`, không viền, không bấm |
+| đang chơi, cho xem | giấy kem, không mờ | `Xem` mặt kem S3 viền navy, hoạt động |
+| đang chơi, không cho xem | giấy kem, không mờ | chip `Đang chơi` 13/800, chữ `#154CC7` trên nền `#C6EAFE`, không viền, không bóng, không bấm |
+
+Nút hàng dùng cùng mặt nút với `Tạo bàn` và nút trong modal S4/O5, thu nhỏ cho cao 34 (sửa 22/10/2026). **Không** dùng nguyên `.ty-btn-gold` / `.ty-btn-paper` chung: đó là style bàn chơi S6 (vàng đậm, bóng đặc navy/đen) và ra viền kép khi đặt trên bảng giấy.
+
+- `Tham gia`: mặt `--ty-lb-cta-face` → `--ty-lb-cta-low`, cạnh cam trong `inset 0 -3px 0 --ty-lb-cta-edge`, bóng nhẹ `0 2px 0 rgba(31,42,68,.3)`.
+- `Xem`: mặt `--ty-lb-paper`, cạnh beige trong `inset 0 -3px 0 --ty-lb-paper-edge`, cùng bóng nhẹ.
+- Cả hai có một viền navy 2 và vệt sáng trắng 1.5 ở cung trên (`::before`, ẩn khi `aria-busy` vì `::before` là spinner; `::after` đã dùng để nới vùng chạm). Bấm: dịch xuống 2, cạnh trong còn 2, bỏ bóng ngoài.
 
 Hàng không bấm được cả hàng; chỉ nút cột cuối nhận thao tác. Nút đang gửi (`ROOM_JOIN` hoặc `SPECTATE_JOIN`) hiện spinner và khóa các nút khác trong bảng.
 
@@ -85,7 +92,7 @@ Lỗi khi bấm `Tham gia` / `Xem` báo bằng toast theo [11 §2.4](../../11-ro
 | Chi tiết | Lớp | Ghi chú |
 |---|---|---|
 | Nền trời, mây, dải phố | dùng lại `lobby/bg-board-pixel.webp` | có file cùng cảnh; vị trí/tỷ lệ phố cần canh lúc dựng, chưa khớp layout bằng chứng runtime |
-| Đồng KEN | dùng lại `lobby/ill-ken.webp` | đúng nhóm đồng vàng/vương miện; chi tiết crown/highlight khác ảnh AI, dùng lại theo spec |
+| Đồng KEN | `lobby/ken.png`, đồng chữ K chung của app (như game sút pen, đập trứng) | đổi từ đồng vương miện `ill-ken.webp` ngày 22/10/2026 để KEN trong game giống phần còn lại của app; ảnh concept vẫn vẽ vương miện |
 | Khóa vàng ở hàng bàn | `room-list/lock-gold.webp` | vàng/cam, quai sáng, keyhole; hộp 18 × 24 giữ tỷ lệ; quai/highlight còn lệch demo |
 | Khóa navy ở modal 03/04 | `room-list/lock-solid.svg` | thân đặc, keyhole khoét trong suốt; badge vàng bên ngoài là CSS riêng |
 | Icon reload, back, phân trang | `room-list/refresh-blue.svg`, `chevron-left/right{,-disabled}.svg` | reload hai cung có khoảng hở, đầu nhọn, viền navy; back không cán, nét đậm; disabled xám hai hướng |
@@ -154,7 +161,7 @@ Chỉ vẽ ảnh mới khi đổi giao diện so với sáu ảnh trên. Ảnh t
 
 ## 10. Bản dựng dữ liệu giả
 
-Mở `/tycoon/?preview=rooms` khi chạy dev. Thêm `&rooms=empty` để xem bảng trống, `&rooms=error` để lần tải đầu lỗi (bấm `Thử lại` thì tải được). Nút `Vào bàn` ở sảnh vẫn mở chơi với máy cho tới khi có S5 và server.
+Nút `Vào bàn` ở sảnh mở S3 (từ 22/10/2026; chơi với máy tạm không có lối vào, code `BotSetupModal` vẫn giữ). Khi chạy dev, `/tycoon/?preview=rooms` mở thẳng S3; thêm `&rooms=empty` để xem bảng trống, `&rooms=error` để lần tải đầu lỗi (bấm `Thử lại` thì tải được).
 
 | File | Vai trò |
 |---|---|

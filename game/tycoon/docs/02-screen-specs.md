@@ -28,7 +28,7 @@ UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và render
 ### 2.1 Cấu trúc dọc
 | Vùng | y | Nội dung |
 |---|---|---|
-| Topbar | 28–80 | avatar VIP + `@username` (trái, 03 §18), badge KEN (phải), nút âm thanh; KEN dài được xuống hàng |
+| Topbar | 28–80 | avatar VIP + `@username` (trái, 03 §18), badge KEN (phải), nút âm thanh; KEN dài được xuống hàng. Component `LobbyTopbar` dùng chung với S3, cùng vị trí, không animate khi chuyển màn |
 | Logo | 100–180 | logo "CỜ TỶ PHÚ", khung tối đa 320 × 80 |
 | Hero | 188–364 | Bác Tỷ trái, 3 thẻ đất có tranh pixel và 2 quân con tốt vàng/xanh bên phải |
 | CTA stack | 376–648 | 4 action dọc, rộng 280, cách 12 px |
@@ -50,10 +50,11 @@ CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi, âm thanh và th
 
 Copy hành vi caro/xiangqi `RankedScreen.tsx`. Ảnh mẫu, số đo và trạng thái hàng: [style S3](./screens/s3-room-list/README.md).
 
-- Header 56: back, pill tiêu đề `Bàn tỷ phú` 20/800, nút reload tròn riêng chỉ có `ic-refresh`, tách khỏi nền pill bằng khoảng trống. Không hiện chữ `Làm mới`; giữ `aria-label="Làm mới danh sách bàn"`. Số đo theo [style S3](./screens/s3-room-list/README.md).
-- Cột: `Chủ bàn | KEN | Chỗ | Tham gia / Xem`. Cột `KEN` hiện mức cược, bàn 0 ghi `Giao lưu` ([11 §1.3](./11-room-settings.md#13-hiển-thị)).
+- Trên cùng là topbar của S2 (`LobbyTopbar`: avatar + `@username`, KEN, âm thanh), cùng vị trí với S2 và không chạy hiệu ứng vào màn, nên đứng yên khi chuyển S2 ↔ S3. Thêm 22/10/2026.
+- Header 56 (cách topbar 12): back, pill tiêu đề `Bàn tỷ phú` 20/800, nút reload tròn riêng chỉ có `ic-refresh`, tách khỏi nền pill bằng khoảng trống. Không hiện chữ `Làm mới`; giữ `aria-label="Làm mới danh sách bàn"`. Số đo theo [style S3](./screens/s3-room-list/README.md).
+- Cột: `Chủ bàn | KEN | Chỗ | Tham gia / Xem`. Cột `KEN` hiện mức cược với đồng KEN bên phải, bàn 0 ghi `0` ([11 §1.3](./11-room-settings.md#13-hiển-thị)).
 - 9 hàng/trang cố định, hàng cao 8.85% vùng list, absolute theo %.
-- Hàng: avatar VIP chủ bàn 32 (03 §18), `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa 16 khi `locked`. Bàn `status = 'playing'`: có bật cho xem thì cột cuối là nút `Xem` paper (`SPECTATE_JOIN {matchId}`), không thì chip `Đang chơi` ([11 §2.4](./11-room-settings.md#24-nút-vào-xem-ở-s3)).
+- Hàng: avatar VIP chủ bàn 32 (03 §18), `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa khi `locked`, nằm cuối ô chủ bàn (sát phải). Bàn `status = 'playing'`: có bật cho xem thì cột cuối là nút `Xem` paper (`SPECTATE_JOIN {matchId}`), không thì chip `Đang chơi` ([11 §2.4](./11-room-settings.md#24-nút-vào-xem-ở-s3)).
 - Footer: `Tạo bàn` (CTA vàng) giữa, phân trang ‹ › hai bên.
 - `ROOM_LIST` khi mở + Làm mới; `ROOM_UPSERT/REMOVED` realtime; auto re-sync 90–120 s jitter.
 

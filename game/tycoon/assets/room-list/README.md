@@ -35,7 +35,7 @@ Bộ icon riêng cho danh sách bàn S3 và các modal S4/O5 mở trên màn đ�
 ## Dùng lại, không nằm trong bộ này
 
 - Mắt hiện/ẩn mật khẩu: `ic-eye` / `ic-eye-off` qua `TyIcon` (mắt đặc, đổi màu theo `currentColor`).
-- KEN trong bảng và ô cược: `../lobby/ill-ken.webp`. Ô biểu tượng O5: `ic-ken`, `ic-wifi-off` navy qua `TyIcon`. Avatar: `avatarIconUrl`.
+- KEN trong bảng và ô cược: `../lobby/ken.png` (đồng chữ K chung của app). Ô biểu tượng O5: `ic-ken`, `ic-wifi-off` navy qua `TyIcon`. Avatar: `avatarIconUrl`.
 - Nền nút, badge, khung, ô nhập, công tắc, chip và spinner là CSS; chữ và số là DOM.
 
 ## Nguồn
