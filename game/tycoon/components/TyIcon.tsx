@@ -9,6 +9,8 @@ import coins from '../assets/icons/ic-coins.svg';
 import deed from '../assets/icons/ic-deed.svg';
 import dice from '../assets/icons/ic-dice.svg';
 import exitDoor from '../assets/icons/ic-exit-door.svg';
+import eye from '../assets/icons/ic-eye.svg';
+import eyeOff from '../assets/icons/ic-eye-off.svg';
 import flag from '../assets/icons/ic-flag.svg';
 import history from '../assets/icons/ic-history.svg';
 import house from '../assets/icons/ic-house.svg';
@@ -42,6 +44,8 @@ export type TyIconName =
   | 'deed'
   | 'dice'
   | 'exit-door'
+  | 'eye'
+  | 'eye-off'
   | 'flag'
   | 'history'
   | 'house'
@@ -75,6 +79,8 @@ const ICONS: Record<TyIconName, string> = {
   deed,
   dice,
   'exit-door': exitDoor,
+  eye,
+  'eye-off': eyeOff,
   flag,
   history,
   house,

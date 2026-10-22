@@ -5,7 +5,7 @@
 Thứ tự ưu tiên (kế thừa policy thirteen/xiangqi):
 
 1. **CSS token / component thuần CSS** — nút, panel, chip, input, toast, sheet, pod, nhà/khách sạn trên bàn.
-2. **SVG code-native trong repo** — bàn cờ (BoardSurface), 31 `ic-*`, 13 `tg-*`, 6 mặt xúc xắc. S2 đã có 2 nhóm tia `lobby/decor-*` theo [style S2 lobby](./screens/s2-lobby/README.md); các minh họa `lobby/ill-*` hiện có bản WebP từ PNG concept, có thể vẽ lại vector khi sửa QA.
+2. **SVG code-native trong repo** — bàn cờ (BoardSurface), 33 `ic-*` (gồm cặp mắt mật khẩu S4), 13 `tg-*`, 6 mặt xúc xắc. S2 đã có 2 nhóm tia `lobby/decor-*` theo [style S2 lobby](./screens/s2-lobby/README.md); các minh họa `lobby/ill-*` hiện có bản WebP từ PNG concept, có thể vẽ lại vector khi sửa QA.
 3. **Raster tái dùng** — reaction (`../caro/assets/reactions/*.webp`), VIP icons (shared), `ola_smiley_online.png`.
 4. **Raster sinh mới** — CHỈ: 19 tranh pixel ô (16 thành phố + sân bay + Nhà tù + Lễ hội) và nền trời pixel `bg-board-pixel` theo ảnh mẫu UI v3, 8 quân cờ (v2), 48 file nhân vật (6 × 4 pose × 2 crop, [style/03-characters.md](./style/03-characters.md)), logo, minh họa result (tùy chọn). Lobby dùng chung nền trời, không sinh nền riêng. Mỗi asset sinh có dòng log theo [asset-generation-log.template.md](./asset-generation-log.template.md).
 

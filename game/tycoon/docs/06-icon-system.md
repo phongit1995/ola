@@ -6,16 +6,16 @@ Cờ Tỷ Phú có **4 họ icon** khác nhau về vai trò, grid và cách tô.
 
 | Họ | Prefix | Grid | Kiểu | Số lượng v1 | Thư mục |
 |---|---|---|---|---|---|
-| A. Icon điều khiển | `ic-` | 24 | stroke 2, `currentColor` | **30** | `assets/icons/` |
+| A. Icon điều khiển | `ic-` | 24 | stroke 2, màu từ `TyIcon` | **33** | `assets/icons/` |
 | B. Glyph ô bàn cờ | `tg-` | 32 | fill phẳng 1 màu (+ 1 màu phụ tối đa) | **11** | `assets/tiles/` |
 | C. Quân cờ | `tk-` | UI v3: `tk-pawn.svg` 16 × 24 tô màu ghế; v2: 8 raster 96 | con tốt fill màu ghế + vùng sáng, outline navy | **1** SVG (+ 8 raster cho v2 chọn quân) | `assets/tokens/` |
 | D. Mặt xúc xắc | `d1`–`d6` | 44 | fill dot navy | **6** | `assets/dice/` |
 
-Tổng **55 asset icon**, trong đó 47 là SVG code-native, 8 raster. Ngoài ra: 6 reaction tái dùng từ caro, VIP icon shared, `ic-ken` tái dùng từ xiangqi (cùng grid 24).
+Họ A hiện có **33 SVG** trong `assets/icons/`, gồm `ic-info` cho O5 và cặp `ic-eye`/`ic-eye-off` cho mật khẩu S4. Ngoài ra có các họ B–D ở bảng trên, 6 reaction tái dùng từ caro và VIP icon shared; `ic-ken` tái dùng từ xiangqi (cùng grid 24).
 
-Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plus` của thirteen, cùng spec) — chỉ copy file sang `tycoon/assets/icons/` để mỗi game tự chứa asset (quy ước repo hiện tại; nếu sau này gom icon shared thì các game chuyển cùng lúc). 8 icon mới là riêng cho tỷ phú.
+Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plus` của thirteen, cùng spec) — chỉ copy file sang `tycoon/assets/icons/` để mỗi game tự chứa asset (quy ước repo hiện tại; nếu sau này gom icon shared thì các game chuyển cùng lúc). Bổ sung 8 icon riêng cho tỷ phú, `ic-info` cho O5 và cặp mắt S4.
 
-## 2. Họ A — Icon điều khiển (30)
+## 2. Họ A — Icon điều khiển (33)
 
 ### 2.1 Spec chung (giống xiangqi `style/04-icon-system.md`)
 - viewBox `0 0 24 24`, safe area 2–22, stroke 2, `round` cap/join, `fill="none"`, `stroke="currentColor"`, `aria-hidden="true" focusable="false"`.
@@ -23,6 +23,10 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 - Tối đa 6 path, ~1.5 KB. Không gradient/filter/bitmap/`<text>`.
 - Màu: trên navy → cream; trên paper → navy; trên gold → navy; danger → cream.
 - Fill nhỏ ≤ 20% diện tích chỉ cho trạng thái active/notification.
+
+File runtime hiện dùng `stroke="#000"` làm CSS mask; `TyIcon` lấy màu từ `currentColor` qua `.ty-icon`, nên icon vẫn đổi màu theo ngữ cảnh. Cặp mắt dùng cùng cách này, không chứa nền hoặc màu trang trí.
+
+**S3/S4 chưa đạt đối chiếu artwork:** các SVG họ A chỉ bảo đảm glyph chức năng. Ảnh đã chốt có khóa vàng, khóa navy đặc, reload hai mũi tên, dấu cộng nhiều lớp màu, mắt đặc và cảnh báo fill; các bản hiện tại chưa khớp. [Audit S3/S4](./screens/s3-room-list/asset-audit.md) ghi phần cần bổ sung/biến thể riêng. Không dùng số lượng 33 file hoặc typecheck để đánh dấu đủ mỹ thuật, không tự áp outline chung thay hình đã chốt.
 
 ### 2.2 Inventory
 
@@ -59,8 +63,10 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 29 | `ic-coins` | **mới** | 16/20 | tổng tài sản S8/S9, nút Trả nợ | — |
 | 30 | `ic-more` | **mới** | 24 | menu ⋯ topbar S6 | Thêm tùy chọn |
 | 31 | `ic-info` | **mới** | 22 | ô biểu tượng modal thông báo O5 | — |
+| 32 | `ic-eye` | SVG cùng họ, tham chiếu hình học visibility của web | 20/24 | mật khẩu S4 đang che | Hiện mật khẩu |
+| 33 | `ic-eye-off` | cùng hình `ic-eye` + nét chéo | 20/24 | mật khẩu S4 đang hiện | Ẩn mật khẩu |
 
-Không có `ic-rules` trong họ A. Lobby S2 đã chốt có sách `ill-rules.svg` bên cạnh chữ Luật chơi; đây là một trong **5 minh họa trang trí riêng S2** (`lobby/ill-{dice,history,leaderboard,rules,exit}`, PNG gốc cắt từ concept, khi code xuất WebP hoặc SVG), không nằm trong inventory 31 `ic-*`. Hình, màu, kích thước và fallback theo [S2 lobby §6](./screens/s2-lobby/README.md#6-nút-và-minh-họa). Chúng có contour navy + fill màu, `aria-hidden`; accessible name lấy từ nhãn action, không áp quy tắc icon stroke đơn sắc cho các minh họa này.
+Không có `ic-rules` trong họ A. Lobby S2 đã chốt có sách `ill-rules.svg` bên cạnh chữ Luật chơi; đây là một trong **5 minh họa trang trí riêng S2** (`lobby/ill-{dice,history,leaderboard,rules,exit}`, PNG gốc cắt từ concept, khi code xuất WebP hoặc SVG), không nằm trong inventory 33 `ic-*`. Hình, màu, kích thước và fallback theo [S2 lobby §6](./screens/s2-lobby/README.md#6-nút-và-minh-họa). Chúng có contour navy + fill màu, `aria-hidden`; accessible name lấy từ nhãn action, không áp quy tắc icon stroke đơn sắc cho các minh họa này.
 
 ### 2.3 Công thức hình học 8 icon mới
 
@@ -111,7 +117,8 @@ type TyIconName =
   | 'volume-on' | 'volume-off' | 'lock' | 'ken' | 'chat' | 'reaction'
   | 'flag' | 'exit-door' | 'send' | 'wifi-off' | 'warning' | 'check'
   | 'owner' | 'history' | 'leaderboard' | 'user-minus' | 'plus' | 'minus'
-  | 'dice' | 'deed' | 'house' | 'key' | 'jail-bars' | 'coins' | 'more' | 'info';
+  | 'dice' | 'deed' | 'house' | 'key' | 'jail-bars' | 'coins' | 'more' | 'info'
+  | 'eye' | 'eye-off';
 
 <TyIcon name="dice" size={24} aria-hidden="true" />
 ```

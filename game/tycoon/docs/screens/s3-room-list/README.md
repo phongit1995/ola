@@ -4,7 +4,7 @@
 
 ![Danh sách bàn S3: bảng giấy kem chín hàng trên nền trời và phố pixel](./concept-s3-room-list-pixel-16bit.png)
 
-Ảnh gốc **853 × 1844 px**, giữ nguyên bản được chọn. [Log nguồn và prompt](../../asset-generation-log.md#s3-danh-sách-bàn--bảng-giấy-kem). Ảnh concept không import vào game; chữ, số và avatar luôn là DOM hoặc asset gốc.
+Ảnh **853 × 1844 px**, giữ style mẫu 01; header đã sửa theo yêu cầu ngày 22/10: reload chỉ có icon và tách khỏi pill tiêu đề. [Log nguồn và prompt](../../asset-generation-log.md#s3-danh-sách-bàn--bảng-giấy-kem). Ảnh concept không import vào game; chữ, số và avatar luôn là DOM hoặc asset gốc.
 
 ## 1. Hướng hình ảnh
 
@@ -76,24 +76,76 @@ Hàng không bấm được cả hàng; chỉ nút cột cuối nhận thao tác
 | Làm mới | icon trong nút `Làm mới` xoay, bảng giữ dữ liệu cũ |
 | Trang đầu / cuối | nút trang tương ứng xám, disabled |
 
-Lỗi khi bấm `Tham gia` / `Xem` báo bằng toast theo [11 §2.4](../../11-room-settings.md#24-nút-vào-xem-ở-s3); thiếu KEN báo bằng O5 `Chưa đủ KEN` ([11 §1.2](../../11-room-settings.md#12-vào-bàn-có-cược)).
+Lỗi khi bấm `Tham gia` / `Xem` báo bằng toast theo [11 §2.4](../../11-room-settings.md#24-nút-vào-xem-ở-s3); thiếu KEN báo bằng O5 `Chưa đủ KEN` ([11 §1.2](../../11-room-settings.md#12-vào-bàn-có-cược)). Sáu ảnh modal mở trên màn này ở [§8](#8-modal-trên-danh-sách-bàn-s4-o5).
 
 ## 7. Asset
 
+**Đính chính sau đối chiếu trực tiếp 22/10/2026: chưa đủ asset đúng hình thức của ảnh đã chốt.** File SVG có tồn tại không có nghĩa giống mẫu. Xem [audit từng chi tiết](./asset-audit.md), đặc biệt hai loại ổ khóa, reload, dấu cộng và mắt mật khẩu.
+
 | Chi tiết | Lớp | Ghi chú |
 |---|---|---|
-| Nền trời, mây, dải phố | dùng lại `lobby/bg-board-pixel.webp` | cùng cảnh với concept; không cắt asset mới |
-| Đồng KEN | dùng lại `lobby/ill-ken.webp` | cùng đồng vàng vương miện |
-| Ổ khóa | `ic-lock` 18 | ảnh vẽ ổ khóa vàng; cắt từ concept nếu cần giống hơn |
-| Icon `Làm mới`, mũi tên | `ic-refresh`, `ic-chevron-left/right`, `ic-arrow-left` | SVG có sẵn |
-| Dấu `+` trong `Tạo bàn` | `ic-plus` | SVG có sẵn |
+| Nền trời, mây, dải phố | dùng lại `lobby/bg-board-pixel.webp` | có file cùng cảnh; vị trí/tỷ lệ phố cần canh lúc dựng, chưa khớp layout bằng chứng runtime |
+| Đồng KEN | dùng lại `lobby/ill-ken.webp` | đúng nhóm đồng vàng/vương miện; chi tiết crown/highlight khác ảnh AI, dùng lại theo spec |
+| Khóa vàng ở hàng bàn | **chưa có bản theo artwork**; `ic-lock` chỉ là glyph chức năng | SVG outline không có thân vàng/cam, quai sáng, lỗ khóa và cạnh nổi của ảnh |
+| Khóa navy ở modal 03/04 | `ic-lock` hiện có **khác fill** | ảnh là thân navy đặc/lỗ khóa khoét; file là outline. Badge vàng bên ngoài là CSS riêng |
+| Icon reload, back, phân trang | có `ic-refresh`, `ic-chevron-left/right`, `ic-arrow-left` | reload thiếu hai đầu mũi tên và nét màu; back trong ảnh là chevron không cán; chevron hiện có mảnh hơn mẫu |
+| Dấu `+` trong `Tạo bàn` | `ic-plus` là hai nét đơn sắc | chưa có bản cam/vàng viền nâu/cạnh nổi như ảnh |
+| Đóng modal S4 | `ic-close` qua `TyIcon` | có cấu trúc X; cần nét đậm cho 01/02 và nét mảnh cho 03/04, vùng chạm 44 |
+| Hiện / ẩn mật khẩu S4 | `ic-eye` / `ic-eye-off` qua `TyIcon` | cặp SVG mới đủ nghĩa hiện/ẩn nhưng **chưa đúng mắt đặc trong ảnh**; cần hoàn thiện nét/fill, giữ nhãn và `aria-pressed` |
+| Lỗi dưới ô | `ic-warning` 16 | file hiện tại outline một màu; ảnh 04 là tam giác coral đặc với dấu ! trắng, chưa có biến thể đúng mẫu |
+| Thông báo thiếu KEN / mất mạng | `ic-ken` / `ic-wifi-off` 22 | SVG có sẵn, màu navy trong ô biểu tượng O5; khác với đồng KEN vàng trong ô cược |
+| Đang gửi | `.ty-btn[aria-busy='true']::before` | spinner CSS đang dùng trong `NoticeModal`; không cần thêm SVG/PNG |
 | Bảng, hàng, nút, badge, chip | CSS | theo token style chung |
 | Avatar | icon VIP của user | không lấy mặt cười trong ảnh |
 
-## 8. Checklist triển khai
+**Chuẩn bị asset ngày 22/10/2026:** lần kiểm file/import và đăng ký cặp mắt mới trong [TyIcon](../../../components/TyIcon.tsx) chỉ xác nhận khả dụng về kỹ thuật. Audit trực quan bổ sung xác nhận các phần thiếu/khác ở bảng trên; chưa thể coi bộ icon đã đủ để dựng giống mẫu. Nguồn dùng lại: [SVG điều khiển](../../../assets/icons/), [nền](../../../assets/lobby/bg-board-pixel.webp), [đồng KEN](../../../assets/lobby/ill-ken.webp), [helper avatar](../../../helpers/player.ts). Avatar ở S3 theo §5, trong S4b 32 px. Công tắc, nền badge, khung và viền là CSS; toast dùng code có sẵn. Hoàn thiện asset/biến thể thiếu trước khi xác nhận visual QA, giữ nguyên sáu ảnh và các ngoại lệ ở §8.
+
+## 8. Modal trên danh sách bàn (S4, O5)
+
+Các modal mở từ màn này dùng chung folder S3: hai modal S4 (Tạo bàn, Vào bàn khóa) và thông báo O5 khi vào bàn. Nội dung và hành vi theo [02 §S4](../../02-screen-specs.md#s4-modal-tạo-bàn--vào-bàn-khóa) và [11](../../11-room-settings.md); khung theo [O5](../o5-modal/README.md). Ảnh vẽ ngày 22/10/2026 bằng built-in imagegen trên nền concept S3 ở trên; **người dùng đã chốt UI cả sáu case ngày 22/10/2026**, với các điểm docs thắng ảnh bên dưới. Chưa dựng S4 online hoặc kiểm runtime. Nguồn và cách sinh ảnh ghi ở [asset generation log](../../asset-generation-log.md).
+
+| Ảnh | Nội dung |
+|---|---|
+| ![Tạo bàn mặc định](./modal-01-create-default.webp) | **01 · Tạo bàn mặc định.** 4 người, cược 0, Khóa bàn và Cho người khác xem đều tắt. |
+| ![Tạo bàn có cược, khóa và cho xem](./modal-02-create-configured.webp) | **02 · Tạo bàn đã chọn.** Cược 1.000 KEN, mật khẩu đã nhập, hai công tắc bật. |
+| ![Vào bàn khóa](./modal-03-join-locked.webp) | **03 · Vào bàn khóa.** Bàn @linh, 500 KEN, 1/2 chỗ; ô mật khẩu trống nên `Vào bàn` mờ. |
+| ![Sai mật khẩu](./modal-04-join-wrong-password.webp) | **04 · Sai mật khẩu.** Giữ chữ đã nhập, viền coral, lỗi `Sai mật khẩu` dưới ô. |
+| ![Chưa đủ KEN](./modal-05-insufficient-ken.webp) | **05 · Chưa đủ KEN.** O5 cảnh báo, một nút `Đã hiểu`. |
+| ![Mất kết nối](./modal-06-network-error.webp) | **06 · Mất kết nối.** O5 lỗi, `Để sau` kem và `Thử lại` vàng. |
+
+Khi dựng:
+- `Hủy` bên trái nền kem, hành động chính bên phải màu vàng. Modal S4 có nút đóng; O5 không có nút đóng ở góc.
+- Tạo bàn theo thứ tự số người → cược KEN → Khóa bàn và ô mật khẩu nếu bật → Cho người khác xem → hàng nút.
+- Ô mật khẩu có nút mắt; sai mật khẩu giữ chữ đã nhập, viền coral, lỗi ngay dưới ô. Nút `Xem` ở bàn khóa không mở modal mật khẩu.
+- Tạo bàn: tiêu đề căn giữa, không có ô biểu tượng. Vào bàn khóa: ô biểu tượng ổ khóa, tiêu đề căn trái. Hai kiểu này giữ như ảnh.
+- Thân modal, ô, nút dựng bằng CSS, chữ DOM, icon và avatar dùng asset thật. Rộng 340, radius 22 và cỡ chữ theo 02/03, không lấy số đo từ ảnh.
+
+**Docs thắng ảnh ở các điểm sau; dựng theo docs, không cần vẽ lại ảnh:**
+
+| Ảnh | Ảnh vẽ | Khi dựng |
+|---|---|---|
+| 05 | chồng xu vàng trong ô biểu tượng | icon `ken` navy, như mọi icon O5 ([O5 §4](../o5-modal/README.md#4-loại-và-tông)) |
+| 06 | wifi có gạch đỏ | icon `wifi-off` navy |
+| 03, 04 | mặt cười lớn khoảng 45 px | icon VIP của chủ bàn, 32 px |
+| 02, 05 | số dư 12.500 và 500 KEN | dữ liệu mẫu cho từng tình huống; số thật lấy từ `USER_INFO` |
+
+**Trạng thái không có ảnh và không cần vẽ thêm**, vì cùng kiểu với một ảnh đã có:
+
+| Trạng thái | Dựng theo |
+|---|---|
+| Lỗi dưới ô cược `Số KEN cược không hợp lệ`, `Bạn không đủ KEN để tạo bàn` | kiểu lỗi dưới ô của ảnh 04, đặt dưới ô cược |
+| `Nhập mật khẩu hoặc tắt Khóa bàn`, `Mật khẩu tối đa 64 ký tự` | kiểu lỗi dưới ô của ảnh 04, đặt dưới ô mật khẩu ở ảnh 02 |
+| `Chưa thể chơi bàn cược` (`BET_NOT_ALLOWED`) | O5 cảnh báo như ảnh 05, đổi tiêu đề và nội dung theo [02 §4c](../../02-screen-specs.md#4c-thông-báo-khi-tạo-bàn-và-vào-bàn) |
+| Đang gửi | spinner trong nút chính như `NoticeModal`, các ô và nút còn lại mờ |
+| Toast `Bàn đã đủ người`, `Bàn không còn nữa`… | toast O6 có sẵn |
+
+Chỉ vẽ ảnh mới khi đổi giao diện so với sáu ảnh trên. Ảnh tĩnh không kiểm được focus, bàn phím, hiện/ẩn mật khẩu và cuộn trên màn thấp; các phần này kiểm trên bản dựng.
+
+## 9. Checklist triển khai
 
 - [ ] Màn S3 với dữ liệu mock: 9 hàng đủ bốn trạng thái ở §5, khóa, bàn 0 và bàn có cược.
 - [ ] Header, bảng, footer đúng §4 ở 390 × 844, 360 × 640, 520 × 900; không cuộn.
 - [ ] Trạng thái tải, trống, lỗi, làm mới, trang đầu/cuối (§6).
 - [ ] Nút `Xem` và các lỗi khi vào xem theo 11 §2.4.
 - [ ] Chụp so với concept; chữ đạt AA; vùng chạm ≥ 44.
+- [ ] Modal S4 và thông báo O5 theo §8, so với sáu ảnh ví dụ.

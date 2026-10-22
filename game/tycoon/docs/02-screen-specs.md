@@ -50,7 +50,7 @@ CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi, âm thanh và th
 
 Copy hành vi caro/xiangqi `RankedScreen.tsx`. Ảnh mẫu, số đo và trạng thái hàng: [style S3](./screens/s3-room-list/README.md).
 
-- Header 56: back, title `Bàn tỷ phú` 20/800, nút Làm mới.
+- Header 56: back, pill tiêu đề `Bàn tỷ phú` 20/800, nút reload tròn riêng chỉ có `ic-refresh`, tách khỏi nền pill bằng khoảng trống. Không hiện chữ `Làm mới`; giữ `aria-label="Làm mới danh sách bàn"`. Số đo theo [style S3](./screens/s3-room-list/README.md).
 - Cột: `Chủ bàn | KEN | Chỗ | Tham gia / Xem`. Cột `KEN` hiện mức cược, bàn 0 ghi `Giao lưu` ([11 §1.3](./11-room-settings.md#13-hiển-thị)).
 - 9 hàng/trang cố định, hàng cao 8.85% vùng list, absolute theo %.
 - Hàng: avatar VIP chủ bàn 32 (03 §18), `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa 16 khi `locked`. Bàn `status = 'playing'`: có bật cho xem thì cột cuối là nút `Xem` paper (`SPECTATE_JOIN {matchId}`), không thì chip `Đang chơi` ([11 §2.4](./11-room-settings.md#24-nút-vào-xem-ở-s3)).
@@ -61,7 +61,7 @@ Copy hành vi caro/xiangqi `RankedScreen.tsx`. Ảnh mẫu, số đo và trạng
 
 ## S4. Modal Tạo bàn / Vào bàn khóa
 
-Hai modal mở từ S3, cùng khung modal chung (03 §12): rộng `min(100% − 32, 340)`, radius 22, nền paper, viền navy 2, giữ focus trong modal, trả focus về nút đã mở khi đóng. Chưa có ảnh mẫu; bố cục dưới đây là thứ tự và nội dung bắt buộc để vẽ concept.
+Hai modal mở từ S3, cùng khung modal chung (03 §12): rộng `min(100% − 32, 340)`, radius 22, nền paper, viền navy 2, giữ focus trong modal, trả focus về nút đã mở khi đóng. Người dùng đã chốt [sáu ảnh S4/O5](./screens/s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5) theo style S3 ngày 22/10/2026; bố cục dưới đây vẫn là thứ tự và nội dung bắt buộc, không lấy kích thước AI thay số đo. Dùng các ngoại lệ docs thắng ảnh ở README S3, không cần sinh thêm concept cho trạng thái cùng kiểu.
 
 ### 4a Tạo bàn
 
@@ -69,16 +69,16 @@ Mở bằng nút `Tạo bàn` ở footer S3. Từ trên xuống:
 
 | # | Phần | Nội dung | Mặc định |
 |---|---|---|---|
-| 1 | Header | tiêu đề `Tạo bàn` 21/800; nút đóng `ic-close` 44 góc phải | — |
+| 1 | Header | tiêu đề `Tạo bàn` 21/800 **căn giữa**, không có ô biểu tượng; nút đóng `ic-close` 44 góc phải | — |
 | 2 | `Số người` | 3 chip `2 · 3 · 4`, chọn một; chip đang chọn nền gold | **4** |
 | 3 | `Số KEN cược` | ô nhập số có đồng KEN trước số, dấu chấm hàng nghìn; dòng phụ `0 = bàn giao lưu, không mất KEN` hoặc `Bạn có {ken} KEN` ([11 §1.1](./11-room-settings.md#11-chọn-ở-s4-tạo-bàn)) | **0** |
 | 4 | `Khóa bàn` | công tắc; dòng phụ `Người vào chơi phải nhập mật khẩu`. Bật thì hiện ô mật khẩu ngay bên dưới (4a.1) | **tắt** |
 | 5 | `Cho người khác xem` | công tắc; dòng phụ `Người ngoài bàn xem được ván, không thao tác được` ([11 §2.1](./11-room-settings.md#21-chọn-ở-s4-tạo-bàn)) | **tắt** |
 | 6 | Hàng nút | `Hủy` paper trái · `Tạo bàn` gold phải, chia đều, cao 52 | — |
 
-Mỗi nhóm có nhãn 14/800 navy phía trên; khoảng cách giữa các nhóm 14. Lỗi của nhóm nào hiện ngay dưới nhóm đó: chữ 13/700 `--ty-coral` + `ic-warning` 16, ô viền coral. Modal cao quá màn thì cuộn bên trong, hàng nút luôn nằm cuối modal.
+Mỗi nhóm có nhãn 14/800 navy phía trên; khoảng cách giữa các nhóm 14. Công tắc nằm bên phải nhãn, trong công tắc có chữ `Tắt` (nền xám, núm trái) hoặc `Bật` (nền `--ty-jade`, núm phải); dòng phụ 13 navy 70% dưới nhãn. Lỗi của nhóm nào hiện ngay dưới nhóm đó: chữ 13/700 `--ty-coral` + `ic-warning` 16, ô viền coral. Modal cao quá màn thì cuộn bên trong, hàng nút luôn nằm cuối modal.
 
-**4a.1 Ô mật khẩu khi bật Khóa bàn.** Hiện bằng mở rộng xuống 150 ms (reduced motion: hiện ngay), focus vào ô ngay khi bật. Ô kiểu mật khẩu, placeholder `Nhập mật khẩu`, tối đa **64 ký tự** như server, không có độ dài tối thiểu; nút mắt bên phải để hiện/ẩn chữ (`aria-pressed`). Tắt công tắc thì ẩn ô và bỏ mật khẩu đã nhập.
+**4a.1 Ô mật khẩu khi bật Khóa bàn.** Hiện bằng mở rộng xuống 150 ms (reduced motion: hiện ngay), focus vào ô ngay khi bật. Có nhãn `Mật khẩu` 14/800 phía trên như các nhóm khác. Ô kiểu mật khẩu, placeholder `Nhập mật khẩu`, tối đa **64 ký tự** như server, không có độ dài tối thiểu; nút mắt bên phải để hiện/ẩn chữ (`aria-pressed`). Tắt công tắc thì ẩn ô và bỏ mật khẩu đã nhập.
 
 **Kiểm tra trước khi gửi**, theo thứ tự, dừng ở lỗi đầu tiên:
 
@@ -103,7 +103,7 @@ Mở khi bấm `Tham gia` ở hàng có ổ khóa trong S3. Không áp dụng ch
 
 | # | Phần | Nội dung |
 |---|---|---|
-| 1 | Header | `ic-lock` trong ô biểu tượng (như O5) + tiêu đề `Vào bàn khóa` 21/800 + nút đóng `ic-close` 44 |
+| 1 | Header | `ic-lock` trong ô biểu tượng (như O5) + tiêu đề `Vào bàn khóa` 21/800 **căn trái** cạnh ô biểu tượng + nút đóng `ic-close` 44; đường kẻ mảnh dưới header |
 | 2 | Thông tin bàn | avatar VIP 32 + `Bàn của @owner`; dưới là chip cược (`{bet} KEN` hoặc `Giao lưu`) và chip chỗ `2/4` |
 | 3 | Ô mật khẩu | nhãn `Mật khẩu` 14/800; ô kiểu mật khẩu, placeholder `Nhập mật khẩu`, tối đa 64 ký tự, nút mắt hiện/ẩn; focus ngay khi mở |
 | 4 | Hàng nút | `Hủy` paper · `Vào bàn` gold; `Vào bàn` disabled khi ô trống |

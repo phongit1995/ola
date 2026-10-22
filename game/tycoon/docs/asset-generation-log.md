@@ -84,7 +84,7 @@ Negative constraints nằm trong prompt trên; không có negative prompt riêng
 
 ### Prompt vòng 2 của mẫu 01
 
-Prompt vòng 3 chỉ sửa header như mô tả ở trên; không có file prompt riêng trong workspace.
+Prompt vòng 3 chỉ sửa header như mô tả ở trên.
 
 ```text
 Use case: precise-object-edit. Asset: high fidelity Vietnamese Cờ Tỷ Phú mobile room-list concept.
@@ -109,3 +109,27 @@ Remove the old blue Đang chơi chip from below @nam; the new Xem action conveys
 Keep bottom "Tạo bàn" gold with plus, pagination "1 / 3", LEFT pagination arrow disabled light gray and RIGHT arrow active navy. Do not introduce a spectator tab, extra column, eye icon, toggle, new rows, player balances, human avatars, explanatory captions, watermark or phone frame. No old "Vào bàn" or "Đã đầy" labels should remain. Preserve the hybrid art direction: smooth navy-outlined cream/gold UI and pixel Vietnamese background. Exact Vietnamese spelling, clean alignment and spacing, readable rounded bold type.
 Variant-specific invariants: Keep single cream paper table with subtle dividers, compact cream title bar and pixel city strip above bottom footer. CHANGE its previous cream join buttons to GOLD Tham gia as required by the new spec; Xem alone remains cream.
 ```
+
+## S4 và O5 — modal trên nền danh sách bàn
+
+- Ngày **22/10/2026**, công cụ **built-in imagegen**. Theo yêu cầu vẽ modal liên quan sau khi chọn style S3 và sửa reload thành nút icon riêng.
+- Đọc code `tycoon/App.tsx`, `NoticeModal`, `ModalHeading`; hai form tạo/vào bàn trong Caro và Xiangqi. Cờ Tỷ Phú chưa có S3/S4 online, nên nội dung bắt buộc theo **02 §S4** và **11**, khung theo O5.
+- Sáu output: Tạo bàn mặc định; Tạo bàn có cược + khóa + cho xem; Vào bàn khóa mật khẩu trống; Sai mật khẩu; Chưa đủ KEN; Mất kết nối. [Xem trong style S3](./screens/s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5).
+- Tham chiếu: S3 mẫu 01 sau sửa header làm nền; example xác nhận O5 chỉ làm tham chiếu chất liệu và nút. Hai trạng thái có mật khẩu/lỗi được sửa trực tiếp từ bản form tương ứng để giữ style.
+- Lưu cùng folder S3 dưới tên `screens/s3-room-list/modal-0{1..6}-*.webp`. Hậu kỳ: PNG gốc 853 × 1844 chuyển sang WebP chất lượng 85 (tổng 10,1 MB → 764 KB), giữ kích thước, không crop hay chỉnh nội dung.
+- Đã xem trực tiếp đủ trường/nút, trạng thái toggle, lỗi, nhãn tiếng Việt và nền S3. Icon/font/avatar là minh họa AI; khi dựng dùng asset gốc, DOM và số đo spec. Không coi ảnh tĩnh là kiểm thử focus, responsive hoặc protocol.
+- Trạng thái **đã được người dùng chốt UI cả sáu case ngày 22/10/2026**, theo các điểm docs thắng ảnh ở README S3 §8; chưa tích hợp S4 online. Giữ nguyên sáu ảnh, không sinh thêm concept cho trạng thái cùng kiểu.
+
+## S3/S4 — chuẩn bị icon sau khi chốt UI
+
+- Ngày **22/10/2026**. Không gọi imagegen, không thay đổi sáu ảnh đã duyệt.
+- Kiểm file dùng lại: nền `lobby/bg-board-pixel.webp`, đồng KEN `lobby/ill-ken.webp`, icon điều khiển và VIP shared. Bảng đối chiếu ở [S3 §7](./screens/s3-room-list/README.md#7-asset).
+- Bổ sung SVG code-native `ic-eye.svg` và `ic-eye-off.svg`, đăng ký trong `TyIcon`. Hình học tham chiếu `web/src/assets/icons/story/visibility.svg`, chuẩn hóa cùng grid 24/stroke 2 của game; bản ẩn dùng thêm nét chéo. Không copy raster mắt từ ảnh AI hoặc Caro.
+- Spinner dùng CSS của `NoticeModal`; công tắc, nút, khung và nền biểu tượng dựng bằng CSS, không cần asset raster mới.
+
+### Đính chính sau kiểm trực quan S3/S4
+
+- Ngày **22/10/2026**, theo yêu cầu kiểm kỹ icon với ảnh đã chốt. Mở concept S3 và đủ sáu modal, đối chiếu SVG/path/CSS mask, KEN/VIP và các khóa có sẵn ở Caro/War God. Không gọi imagegen, không sửa ảnh.
+- **Chưa đủ artwork đúng mẫu:** khóa vàng hàng bàn chưa có; khóa modal là thân navy đặc khác `ic-lock` outline; reload, back/phân trang, dấu cộng, X theo ngữ cảnh, mắt và cảnh báo có chênh lệch hình/nét/fill. Cặp mắt mới ở trên chưa phải bản giống ảnh.
+- Ngoại lệ KEN/wifi O5 và VIP theo docs được giữ nguyên. Lần kiểm file/typecheck trước chỉ chứng minh khả dụng kỹ thuật, không phải duyệt mỹ thuật.
+- [Audit đầy đủ](./screens/s3-room-list/asset-audit.md). Không tạo file crop hoặc thay asset production.

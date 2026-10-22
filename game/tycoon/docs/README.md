@@ -48,8 +48,8 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 |---|---|---|
 | S1 | Loading / Connecting | đã có [UI chờ hồ sơ + xúc xắc 3D](./screens/s1-loading/README.md), Cung men nổi quay rồi xúc xắc lật một mặt; preload/API/lỗi + thử lại còn trong kế hoạch |
 | S2 | Lobby | logo, KEN + avatar VIP + `@username`, CTA Vào bàn, Lịch sử, Bảng xếp hạng, Luật chơi, bật/tắt âm, thoát game |
-| S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, Tạo bàn, Làm mới, phân trang 9 hàng |
-| S4 | Modal Tạo bàn / Vào bàn khóa | chọn số người 2/3/4, mật khẩu |
+| S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, KEN, Tham gia/Xem, Tạo bàn, reload chỉ icon tách khỏi tiêu đề, phân trang 9 hàng |
+| S4 | Modal Tạo bàn / Vào bàn khóa | số người 2/3/4, cược KEN, mật khẩu, cho xem; [6 ảnh S4/O5 đã chốt UI](./screens/s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5), chưa dựng online |
 | S5 | Phòng chờ | 4 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |
 | S6 | Bàn chơi | header (logo, vòng, âm thanh, menu); bàn 9×9 (32 ô) có tên + giá trên ô; cụm lượt **giữa bàn** (chip lượt, đồng hồ 30 s, xúc xắc, nút theo pha); hàng pod 2–4 người **dưới bàn**; footer Tài sản / Diễn biến / sự kiện mới nhất |
 | S7 | Sheet chi tiết ô | giá, bảng tiền thuê, chủ sở hữu, nhà đang có; từ đây Mua / Xây / Bán |
