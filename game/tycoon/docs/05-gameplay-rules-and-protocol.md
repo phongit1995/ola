@@ -311,3 +311,47 @@ Bất biến:
 - Codegen: `go generate ./internal/game/games/tycoon` → `game/tycoon/logic/constants.gen.ts` + `board.gen.json` + `cards.gen.json` + `testdata/parity.json` (vitest chỉ kiểm dữ liệu tĩnh khớp Go).
 - E2E: `game/scripts/tycoon-e2e-bots.mjs` — 4 bot (mua nếu đủ tiền, xây khi trọn nhóm, END_TURN) chạy tới khi ván kết thúc (thắng ngay / phá sản / 30 vòng), assert MATCH_OVER có 4 rankings, tổng tiền hệ thống hợp lý; cần `JWT_SECRET` + `TL_USERS` như thirteen.
 - UI: harness `tycoon/mock-ui.html?screen=<tên>&state=<fixture>` + `scripts/tycoon-shots.mjs` (pattern xiangqi).
+
+## 12. Máy chơi và mức độ (bản chơi với máy)
+
+**Trạng thái (22/10/2026): đặc tả, chưa code.** Hiện chỉ có một cách chơi, chính là mức `Thường` dưới đây. Người chơi chọn mức cho từng máy ở [02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal).
+
+### 12.1 Nguyên tắc
+
+- **Mức độ chỉ đổi cách quyết định.** Xúc xắc, thẻ, giá, luật và thời gian như nhau cho mọi ghế. Không chỉnh xúc xắc hay bộ thẻ cho máy, kể cả để máy Dễ thua.
+- **Máy chỉ dùng thông tin người chơi nhìn thấy:** vị trí, tiền, đất, nhà, vòng, lễ hội, thẻ ra tù đang giữ. Không đọc `state.rng`, thứ tự `chanceDeck`/`chestDeck` hoặc mô phỏng trước kết quả xúc xắc thật.
+- Phần ngẫu nhiên của máy (máy Dễ, mô phỏng của máy Khó) dùng RNG riêng, **không rút từ `state.rng`**: chuỗi xúc xắc của ván không đổi theo mức độ và test lặp lại được. `GameState` không giữ seed ban đầu, nên store lưu seed khi `beginGame` rồi tạo RNG từ seed + ghế + số nước máy đó đã đi.
+- Mọi mức nghĩ `BOT_THINK_MS` (650 ms) trước mỗi nước; máy Khó tính thêm tối đa 50 ms mỗi quyết định trên máy tầm trung. `botMove` trả `null` thì dùng `moveOnTimeout` như hiện tại.
+- Code: `logic/bot.ts` đổi thành `botMove(s, seat, level = 'normal')`, `level: 'easy' | 'normal' | 'hard'`. Nhánh `normal` giữ nguyên logic hiện có để không đổi cân bằng đã đo ở [09](./09-economy.md). Các câu "Bot …" ở §4 là cách chơi mức Thường.
+
+### 12.2 Quyết định theo mức
+
+| Pha | Dễ | Thường (code hiện tại) | Khó |
+|---|---|---|---|
+| Mua đất (`decide`) | đủ tiền thì mua với xác suất 60%, giữ dự phòng 60; không để ý đối thủ sắp thắng | mua nếu còn ≥ 120 sau khi mua; còn 0 cũng mua nếu ô này giúp trọn nhóm hoặc chặn đối thủ thắng ngay | như Thường, thêm: ưu tiên nhóm đối thủ đang gom; dự phòng = 120 + tiền thuê kỳ vọng ở lượt tới = Σ (xác suất tổng hai xúc xắc bằng k × tiền thuê ô cách k bước), k = 2–12 |
+| Chặn thắng ngay | không chặn | chặn khi ô này cho đối thủ thắng ngay | chặn cả khi đối thủ còn thiếu 2 ô cho một điều kiện thắng ngay (3 nhóm, một cạnh, 4 sân bay; §4.3c) |
+| Mua lại (`takeover`) | không mua lại | mua nếu thắng ngay; hoặc trọn nhóm còn ≥ 120; hoặc phá nhóm đối thủ còn ≥ 360 | so lợi: tiền thuê kỳ vọng thu thêm + thiệt hại của đối thủ khi mất nhóm − giá mua lại; làm khi lợi > 0 và còn dự phòng |
+| Nâng cấp (`manage`) | tối đa 1 cấp mỗi lượt, xác suất 50%, giữ dự phòng 240 | xây ô có tiền thuê cấp sau cao nhất, giữ dự phòng 240 | xây ô có (xác suất đối thủ dừng trong lượt tới × tiền thuê tăng thêm) cao nhất, dự phòng như dòng Mua đất |
+| Ở tù (`jail`) | có tiền là trả phạt ngay | dùng thẻ nếu có; trả phạt nếu tiền ≥ `JAIL_FINE` + 400 và mới ở tù dưới 2 lượt; còn lại gieo | đầu ván ra tù sớm để mua đất; từ khi phần lớn đất đã có chủ hoặc đối thủ có nhà thì ở tù gieo để tránh trả thuê, chỉ dùng thẻ hoặc tiền khi có lợi |
+| Lễ hội | chọn ngẫu nhiên một ô của mình | `festivalPick` | ô của mình có (xác suất đối thủ dừng × tiền thuê) cao nhất |
+| Du lịch | ngẫu nhiên trong 5 ô điểm cao nhất của Thường | chấm điểm từng ô (`travelScore`) | điểm như Thường, trừ thêm rủi ro phải trả thuê ở lượt sau |
+| Thẻ, gieo, trả nợ | như Thường | `CARD_ACK`, `ROLL`, `SETTLE_DEBT` | như Thường |
+
+Máy Dễ phải thua vì quyết định kém, không vì hành động vô lý: không bay Du lịch vào ô đối thủ có khách sạn khi còn ô an toàn, không cố ý phá sản.
+
+Nếu máy Khó theo bảng trên vẫn chưa đạt tỷ lệ ở 12.3 thì thêm bước mô phỏng: với mỗi lựa chọn, chạy 50–100 ván giả 10–15 lượt bằng `cloneState` + RNG riêng, các ghế khác đi theo mức Thường, chọn nước có tổng tài sản trung bình cao nhất. Vẫn giữ giới hạn 50 ms; quá thì giảm số ván giả hoặc chạy trong Web Worker.
+
+### 12.3 Kiểm thử và cân bằng
+
+`logic/bot.test.ts` (vitest, seed cố định), mỗi cặp mức đấu 1v1 ít nhất 1.000 ván, luân phiên ai đi trước:
+
+| Cặp | Tỷ lệ thắng của mức cao hơn |
+|---|---|
+| Khó – Thường | ≥ 60% |
+| Thường – Dễ | ≥ 70% |
+| Khó – Dễ | ≥ 80% |
+
+- Mọi ván kết thúc bằng thắng ngay, phá sản hoặc hết vòng (mô phỏng không có đồng hồ); không `RuleError`, không treo.
+- 200 ván 4 người trộn mức (Dễ, Thường, Khó, Khó) chạy hết, mỗi mức có ván thắng.
+- Bản luật chơi (12.2) đủ nhanh để 3.000 ván chạy trong vitest. Nếu máy Khó dùng bước mô phỏng thì mỗi ván tốn hàng giây: vitest chỉ giữ 100 ván mỗi cặp với seed cố định, còn đo 1.000 ván chạy bằng script riêng trước khi merge.
+- Test đỏ thì chỉnh tham số trong `bot.ts` và chạy lại mô phỏng; không hạ ngưỡng và không động vào giá ở [09](./09-economy.md).

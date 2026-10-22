@@ -89,7 +89,7 @@ Kích thước/font ở đây là biến thể **riêng S2**, không đổi nút
 | Action | Surface và kích thước | Minh họa | Hành vi |
 |---|---|---|---|
 | `Vào bàn` | mặt vàng sáng, cao 80, pill, highlight trắng ở cung trên, cạnh cam và đáy nâu; một đường bao ngoài | xúc xắc trắng/navy 48; **2 tia vàng mỗi bên ngoài nút** | `openRanked()` → S3; preload RANKED. Hiện: `setRoomsOpen(true)` mở S3 dữ liệu giả, chưa preload |
-| `Chơi với máy` | xanh ngọc, cao 56, pill cùng rộng menu; mặt `#A4F4CF` → `#51D9A3`, cạnh `#299B79`, một contour navy, highlight nhỏ trên trái | robot xanh–trắng 40, `lobby/ill-bot.webp`; mặt nút CSS `.ty-lb-btn-mint`, `button-mint.png` chỉ tham chiếu | `setSetupOpen(true)` → `BotSetupModal`, chọn 1–3 máy rồi vào ván; dùng được offline |
+| `Chơi với máy` | xanh ngọc, cao 56, pill cùng rộng menu; mặt `#A4F4CF` → `#51D9A3`, cạnh `#299B79`, một contour navy, highlight nhỏ trên trái | robot xanh–trắng 40, `lobby/ill-bot.webp`; mặt nút CSS `.ty-lb-btn-mint`, `button-mint.png` chỉ tham chiếu | `setSetupOpen(true)` → `BotSetupModal`, chọn 1–3 máy và mức độ từng máy ([02 §2.3](../../02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal)) rồi vào ván; dùng được offline |
 | `Lịch sử` | paper, cao 56, pill, **một contour navy 1.5**, cạnh beige bên trong và bóng xanh nhẹ xuống dưới | đồng hồ/mũi tên blue 40 | mở S10 |
 | `Bảng xếp hạng` | paper, cao 56, pill như trên | bục gold, blue, coral + crown, 40 | mở S11 |
 | `Luật chơi` | **không nền pill, không border/shadow**; vùng chạm cao ít nhất 44, chữ navy gạch chân trên nền trời | sách paper/navy, 32 | modal luật có thể cuộn, nút Đóng; dùng offline |

@@ -38,12 +38,48 @@ UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và render
 | Nút | Style | Hành vi |
 |---|---|---|
 | `Vào bàn` | CTA vàng 280×80, Nunito navy 32/800, minh họa xúc xắc | `openRanked()` → S3, preload nhóm RANKED |
-| `Chơi với máy` | xanh ngọc 280×56, Nunito navy 24/800, robot xanh–trắng 40 | `setSetupOpen(true)` → BotSetupModal, chọn 1–3 máy rồi vào ván |
+| `Chơi với máy` | xanh ngọc 280×56, Nunito navy 24/800, robot xanh–trắng 40 | `setSetupOpen(true)` → BotSetupModal, chọn 1–3 máy và mức độ từng máy (§2.3) rồi vào ván |
 | `Lịch sử` | giấy kem viền navy 280×56, Nunito 24/800, minh họa đồng hồ blue | S10 |
 | `Bảng xếp hạng` | giấy kem viền navy 280×56, Nunito 24/800, minh họa bục/crown | S11 |
 | `Luật chơi` | nút text 280×44, Nunito navy 22/800 gạch chân, minh họa sách | mở modal luật: 6 mục ngắn (gieo, mua, thuê, xây, tù, kết thúc), scroll, nút Đóng |
 
 CTA online disabled khi `lobbyPhase !== 'ready'`. Chơi với máy, Luật chơi, âm thanh và thoát dùng được offline. Kích thước/font riêng S2 không đổi control S6; co giãn và màn thấp theo [S2 lobby §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive).
+
+### 2.3 Modal Chơi với máy (`BotSetupModal`)
+
+**Trạng thái (22/10/2026): đặc tả, chưa code.** Modal hiện tại chỉ chọn `2 · 3 · 4 người`, mọi máy cùng một cách chơi. Chưa có ảnh concept riêng.
+
+Mở bằng nút `Chơi với máy` ở S2. Cùng khung và style nhóm/chip/nút với [S4 4a](#4a-tạo-bàn): rộng `min(100% − 32, 340)`, radius 22, nền paper, viền navy 2, giữ focus trong modal, trả focus về nút `Chơi với máy` khi đóng. Chạy hoàn toàn trên máy, dùng được offline; không cược, không người xem ([11](./11-room-settings.md)). Từ trên xuống:
+
+| # | Phần | Nội dung | Mặc định |
+|---|---|---|---|
+| 1 | Header | tiêu đề `Chơi với máy` 21/800 **căn giữa**; nút đóng `ic-close` 44 góc phải | — |
+| 2 | `Số máy` | 3 chip `1 · 2 · 3`, chọn một, chip đang chọn nền gold; dòng phụ `Ván {n + 1} người: bạn và {n} máy` | lần chọn gần nhất, lần đầu **3** |
+| 3 | `Mức độ` | mỗi máy một hàng theo thứ tự ghế (2.3.1) | mức đã chọn ở lần chơi trước, lần đầu **Thường** |
+| 4 | Gợi ý | `Tối đa {MAX_ROUNDS} vòng hoặc {phút} phút, mỗi hành động {TURN_SECONDS} giây. Máy đi tự động.` 13 navy 70%; số đọc từ `logic/constants.ts`, không viết cứng | — |
+| 5 | Hàng nút | `Hủy` paper trái · `Bắt đầu` gold phải, chia đều, cao 52 | — |
+
+Nhãn nhóm 14/800 navy, khoảng cách giữa các nhóm 14 như S4. Modal cao quá màn thì phần giữa cuộn, header và hàng nút luôn nhìn thấy.
+
+**2.3.1 Hàng mức độ.** Một hàng cho mỗi máy, theo ghế 2, 3, 4:
+
+- Cao 52: avatar máy 32 (cùng ảnh với pod S6, [03 §18](./03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar)) · khoảng 8 · tên máy 15/800 navy, không có `@`, quá dài thì ellipsis (`Bác Tỷ`, `Cô Ngân`, `Anh Tèo`) · nhóm mức độ sát phải.
+- Nhóm mức độ là 3 ô liền trong một pill viền navy 1.5: `Dễ · Thường · Khó`, cao 40 (vùng chạm 44), mỗi ô rộng ít nhất 48, đệm ngang 8. Ở màn 360 (nội dung modal 288) tên còn ~74 px, đủ cho `Cô Ngân` (~61 px ở 15/800). Ô đang chọn nền gold, chữ navy 14/800; ô khác nền paper, chữ navy 70%. Không tô màu riêng cho từng mức để khỏi lẫn với màu ghế.
+- Các hàng cách nhau bằng đường kẻ beige mảnh, không có khung riêng cho từng hàng.
+- Đổi `Số máy`: giảm thì ẩn các hàng cuối, tăng thì hiện lại với đúng mức đã chọn trước đó (modal giữ mức của cả 3 ghế).
+- Viewport hẹp hơn 360: nhóm mức độ xuống dòng dưới tên, rộng hết hàng; hàng cao theo nội dung.
+
+**Bắt đầu.** Lưu lựa chọn rồi tạo ván ngay, không có trạng thái chờ:
+
+- `ola:tycoon:players` = số máy + 1 (giữ key và ý nghĩa đang dùng); `ola:tycoon:bot-levels` = mảng 3 mức `easy | normal | hard` theo ghế 2–4, gồm cả ghế đang ẩn. Đọc/ghi trong `try/catch`; thiếu hoặc giá trị lạ thì về mặc định.
+- `SeatInfo` của máy thêm `level`; mỗi lượt store gọi `botMove(state, seat, level)` theo [05 §12](./05-gameplay-rules-and-protocol.md#12-máy-chơi-và-mức-độ-bản-chơi-với-máy).
+- `Chơi lại` ở S9 giữ nguyên số máy và mức độ của ván vừa xong.
+
+**Đóng.** `Hủy`, nút đóng, `Escape`, bấm nền: đóng, không lưu thay đổi.
+
+**Bàn phím và trợ năng.** `Số máy` và mỗi nhóm mức độ là một `radiogroup` (`aria-label`: `Số máy`, `Mức độ của Bác Tỷ`…); mũi tên trái/phải đổi lựa chọn trong nhóm, `Tab` sang nhóm kế. Mở modal thì focus vào chip `Số máy` đang chọn.
+
+**Trong ván.** Pod S6 và bảng S9 hiện nhãn mức độ cạnh tên máy: pill paper viền beige, chữ 11/800 navy 70% (`Dễ` / `Thường` / `Khó`); người chơi không có nhãn. Pod đọc `Bác Tỷ, máy mức Khó`.
 
 ---
 

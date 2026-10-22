@@ -7,7 +7,7 @@ Hai tùy chọn chủ bàn chọn khi tạo bàn online. Áp dụng cho mọi ph
 | Cược KEN | số nguyên ≥ 0 | **0** (bàn giao lưu) | chủ bàn, ở S4 | không |
 | Cho người khác xem | bật / tắt | **tắt** | chủ bàn, ở S4 | không |
 
-Chơi với máy (`BotSetupModal`) không có hai tùy chọn này: không cược, không ai xem.
+Chơi với máy (`BotSetupModal`) không có hai tùy chọn này: không cược, không ai xem. Modal đó chỉ chọn số máy và mức độ từng máy ([02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal)).
 
 ## 1. Cược KEN
 
