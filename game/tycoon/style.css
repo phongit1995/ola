@@ -996,6 +996,18 @@ button:focus-visible,
   justify-content: center;
 }
 
+.ty-modal-emblem-info {
+  background: var(--ty-sky);
+}
+
+.ty-modal-emblem-success {
+  background: var(--ty-jade-light);
+}
+
+.ty-modal-emblem-error {
+  background: var(--ty-coral-light);
+}
+
 .ty-modal-heading-copy {
   display: flex;
   flex-direction: column;
@@ -1038,6 +1050,35 @@ button:focus-visible,
 
 .ty-modal-actions .ty-btn {
   flex: 1;
+  min-height: 48px;
+  overflow-wrap: anywhere;
+}
+
+.ty-modal .ty-btn:focus-visible {
+  outline: 2px solid var(--ty-navy);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
+.ty-btn[aria-busy='true'] {
+  cursor: progress;
+}
+
+.ty-btn[aria-busy='true']::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ty-spin 800ms linear infinite;
+}
+
+@keyframes ty-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ty-field {

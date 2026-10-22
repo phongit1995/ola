@@ -1,6 +1,6 @@
 # Prompt set — lobby asset extraction trial
 
-Tool: built-in `image_gen`, edit mode. Input image 1 for the initial extraction calls: [the selected S2 concept](../../../docs/style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png); the original preview/ZIP includes a copy as `reference.png`. `transparent_background=true` for every cutout/button, `false` for background. These are extraction/reconstruction trials, not exact pixel-preserving crops. Selected files now live in `game/tycoon/assets/screens/lobby/`; the selected `logo-clean.png` was renamed to `logo.png` without changing its pixels.
+Tool: built-in `image_gen`, edit mode. Input image 1 for the initial extraction calls: [the selected S2 concept](../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png); the original preview/ZIP includes a copy as `reference.png`. `transparent_background=true` for every cutout/button, `false` for background. These are extraction/reconstruction trials, not exact pixel-preserving crops. Selected files now live in `game/tycoon/assets/screens/lobby/`; the selected `logo-clean.png` was renamed to `logo.png` without changing its pixels.
 
 ## Logo — initial
 
@@ -100,7 +100,7 @@ For the original extraction trial, no script recolored, rematted, cropped or rec
 
 ## Lượt v2 (2026-10-21) — đã chọn
 
-Sau [audit](../../../docs/style/screens/s2-lobby/asset-audit.md), 10 asset được gen lại bằng built-in `image_gen`, mỗi lần một asset, `transparent_background: true`, không script cắt/mask/recolor. So cạnh concept trên nền trời, chọn v2 cho 8 asset và **thay v1**: `mascot`, `hero-properties`, `icon-dice`, `icon-history`, `icon-leaderboard`, `icon-rules`, `button-gold`, `button-paper`. Cặp cửa/mũi tên thoát v2 bị loại theo quyết định người dùng; `icon-exit.png` giữ v1 cùng `background`, `logo`, `icon-ken`, `icon-sound`.
+Sau [audit](../../../docs/screens/s2-lobby/asset-audit.md), 10 asset được gen lại bằng built-in `image_gen`, mỗi lần một asset, `transparent_background: true`, không script cắt/mask/recolor. So cạnh concept trên nền trời, chọn v2 cho 8 asset và **thay v1**: `mascot`, `hero-properties`, `icon-dice`, `icon-history`, `icon-leaderboard`, `icon-rules`, `button-gold`, `button-paper`. Cặp cửa/mũi tên thoát v2 bị loại theo quyết định người dùng; `icon-exit.png` giữ v1 cùng `background`, `logo`, `icon-ken`, `icon-sound`.
 
 Prompt đầy đủ của lượt v2 không lưu trong repo. Input của icon là crop phóng lớn nearest-neighbor từ chính concept (`x,y,w,h`): xúc xắc `190,840,125,130`, đồng hồ `238,1025,105,105`, BXH `210,1158,120,108`, sách `284,1312,102,80`, nút vàng `120,817,614,181`; mascot, hero và nút kem dùng cả concept. Bốn icon còn qua thêm một lượt sửa nét (v1 mượt làm edit target, v2 làm hướng dẫn chi tiết).
 

@@ -5,13 +5,13 @@
 Thứ tự ưu tiên (kế thừa policy thirteen/xiangqi):
 
 1. **CSS token / component thuần CSS** — nút, panel, chip, input, toast, sheet, pod, nhà/khách sạn trên bàn.
-2. **SVG code-native trong repo** — bàn cờ (BoardSurface), 30 `ic-*`, 13 `tg-*`, 6 mặt xúc xắc. S2 đã có 2 nhóm tia `lobby/decor-*` theo [style S2 lobby](./style/screens/s2-lobby/README.md); các minh họa `lobby/ill-*` hiện có bản WebP từ PNG concept, có thể vẽ lại vector khi sửa QA.
+2. **SVG code-native trong repo** — bàn cờ (BoardSurface), 31 `ic-*`, 13 `tg-*`, 6 mặt xúc xắc. S2 đã có 2 nhóm tia `lobby/decor-*` theo [style S2 lobby](./screens/s2-lobby/README.md); các minh họa `lobby/ill-*` hiện có bản WebP từ PNG concept, có thể vẽ lại vector khi sửa QA.
 3. **Raster tái dùng** — reaction (`../caro/assets/reactions/*.webp`), VIP icons (shared), `ola_smiley_online.png`.
 4. **Raster sinh mới** — CHỈ: 19 tranh pixel ô (16 thành phố + sân bay + Nhà tù + Lễ hội) và nền trời pixel `bg-board-pixel` theo ảnh mẫu UI v3, 8 quân cờ (v2), 48 file nhân vật (6 × 4 pose × 2 crop, [style/03-characters.md](./style/03-characters.md)), logo, minh họa result (tùy chọn). Lobby dùng chung nền trời, không sinh nền riêng. Mỗi asset sinh có dòng log theo [asset-generation-log.template.md](./asset-generation-log.template.md).
 
-Ngoại lệ riêng S2 theo concept đã duyệt: hiện có raster `hero-properties` (3 thẻ + 2 quân), 5 minh họa action và xu KEN tách từ concept. Không tự thay bằng hình có dáng khác để khớp danh sách loại asset chung. Review chi tiết tại [S2 asset audit](./style/screens/s2-lobby/asset-audit.md); WebP hiện có vẫn chưa đạt visual QA.
+Ngoại lệ riêng S2 theo concept đã duyệt: hiện có raster `hero-properties` (3 thẻ + 2 quân), 5 minh họa action và xu KEN tách từ concept. Không tự thay bằng hình có dáng khác để khớp danh sách loại asset chung. Review chi tiết tại [S2 asset audit](./screens/s2-lobby/asset-audit.md); WebP hiện có vẫn chưa đạt visual QA.
 
-Ngoại lệ S1: xúc xắc bo góc là mesh/shader WebGL theo [style đã duyệt](./style/screens/s1-loading/README.md), không sinh sprite mới. `lobby/loading-ring-enamel.svg` là **Cung men nổi đã chốt**, xuất trực tiếp từ mẫu được chọn; quay luân phiên với mỗi lần lật 90° của xúc xắc, không có đĩa kem phía sau. Nền/logo/Bác Tỷ và fallback `lobby/ill-dice.webp` dùng lại asset hiện có. Các mẫu viền khác và trang so sánh đã được dọn khỏi source.
+Ngoại lệ S1: xúc xắc bo góc là mesh/shader WebGL theo [style đã duyệt](./screens/s1-loading/README.md), không sinh sprite mới. `lobby/loading-ring-enamel.svg` là **Cung men nổi đã chốt**, xuất trực tiếp từ mẫu được chọn; quay luân phiên với mỗi lần lật 90° của xúc xắc, không có đĩa kem phía sau. Nền/logo/Bác Tỷ và fallback `lobby/ill-dice.webp` dùng lại asset hiện có. Các mẫu viền khác và trang so sánh đã được dọn khỏi source.
 
 Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; toàn bộ assets tycoon ≤ 800 KB (nhân vật ≈ 260 KB; cắt giảm theo `style/06-implementation-plan.md` nếu vượt). Thêm `/game/tycoon/assets/` vào `assetsInlineLimit` của `game/vite.config.ts` cùng dòng với thirteen/xiangqi, và entry `tycoon: resolve(__dirname, 'tycoon/index.html')`.
 
@@ -20,7 +20,7 @@ Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; to�
 - `ic-{tên}.svg` icon điều khiển; `tg-{tên}.svg` glyph ô; `tk-{tên}.webp` quân; `d{1..6}.svg` xúc xắc; `bg-{màn}.webp` nền; `fx-{tên}.webp` hiệu ứng.
 - Kebab-case tiếng Anh cho ic/tg, tiếng Việt không dấu cho quân (`tk-non-la`) vì quân là nội dung văn hóa, tên hiển thị live text `Nón lá`.
 - Không viết hoa, không space; webp cho raster runtime, svg cho vector.
-- **PNG gốc theo màn:** asset cắt từ concept lưu tạm dạng PNG tại `assets/screens/<màn>/` (tên theo vai trò: `logo.png`, `icon-history.png`…) + `manifest.json`. Khi code màn đó mới xuất sang tên runtime ở trên (bảng đối chiếu trong README của màn, ví dụ [S2 §10](./style/screens/s2-lobby/README.md#10-asset-cắt-từ-concept--file-production)). Quy trình: [style/screens](./style/screens/README.md#quy-trình-asset-theo-màn).
+- **PNG gốc theo màn:** asset cắt từ concept lưu tạm dạng PNG tại `assets/screens/<màn>/` (tên theo vai trò: `logo.png`, `icon-history.png`…) + `manifest.json`. Khi code màn đó mới xuất sang tên runtime ở trên (bảng đối chiếu trong README của màn, ví dụ [S2 §10](./screens/s2-lobby/README.md#10-asset-cắt-từ-concept--file-production)). Quy trình: [screens](./screens/README.md#quy-trình-asset-theo-màn).
 - `lobby/ill-{dice|history|leaderboard|rules|exit}.webp` (hoặc `.svg` nếu vẽ lại vector): 5 minh họa trang trí nút S2, không chữ; tách khỏi `ic-*` điều khiển chung. Nguồn là PNG `icon-*.png` trong `assets/screens/lobby/`; đã có file runtime, còn lỗi visual QA. `lobby/ill-ken.webp` là minh họa thứ 6 dùng riêng trong pill số dư.
 - `lobby/decor-cta-rays.svg`, `lobby/decor-hero-rays.svg`: 2 nhóm decor SVG code-native **đã tạo** (chưa qua visual QA). Tia vàng nằm ngoài CTA và tia trắng nằm cạnh quân trong hero; SVG code-native theo concept, không phải PNG đã có sẵn.
 
@@ -37,7 +37,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 
 ## 4. Manifest tổng
 
-**Asset tách S2 hiện có:** [13 PNG trong `assets/screens/lobby/`](../assets/screens/lobby/README.md) (8 bản v2 đã chọn sau khi so với concept + 5 giữ v1), metadata/hash tại [manifest.json](../assets/screens/lobby/manifest.json). PNG không import trực tiếp; 10 WebP đã xuất và dùng trong Lobby mock, tổng 182.326 byte (~178 KiB). Con số này chỉ là WebP, chưa chứng minh budget toàn bộ initial load. Bộ ảnh vẫn `trial-not-production`; xem [audit 13 ảnh và các lớp thiếu](./style/screens/s2-lobby/asset-audit.md).
+**Asset tách S2 hiện có:** [13 PNG trong `assets/screens/lobby/`](../assets/screens/lobby/README.md) (8 bản v2 đã chọn sau khi so với concept + 5 giữ v1), metadata/hash tại [manifest.json](../assets/screens/lobby/manifest.json). PNG không import trực tiếp; 10 WebP đã xuất và dùng trong Lobby mock, tổng 182.326 byte (~178 KiB). Con số này chỉ là WebP, chưa chứng minh budget toàn bộ initial load. Bộ ảnh vẫn `trial-not-production`; xem [audit 13 ảnh và các lớp thiếu](./screens/s2-lobby/asset-audit.md).
 
 | ID | Loại | Số lượng | Nguồn | Dùng ở |
 |---|---|---|---|---|
@@ -45,11 +45,11 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 | `tg-*` | SVG code-native 32 | 13 | vẽ tay theo 06 §3 | bàn, O2, S7 |
 | `tg-house`/`tg-hotel` | inline SVG | 2 | BoardSurface | bàn |
 | `ic-*` | SVG code-native 24 | 30 (22 copy từ xiangqi/thirteen + 8 mới) | 06 §2 | toàn app |
-| `lobby/ill-*` | WebP đã có, SVG nếu vẽ lại | 6 | style/screens/s2-lobby §6, §10 | 5 minh họa action + xu KEN S2; chưa đạt visual QA |
+| `lobby/ill-*` | WebP đã có, SVG nếu vẽ lại | 6 | screens/s2-lobby §6, §10 | 5 minh họa action + xu KEN S2; chưa đạt visual QA |
 | `lobby/hero-properties.webp` | WebP đã có | 1 | PNG tách từ concept S2 | 3 thẻ + 2 quân, chung một lớp trang trí |
 | `lobby/decor-*` | SVG code-native, **đã tạo** | 2 | concept S2, asset-audit §2 | 4 tia vàng quanh CTA; 2 cụm tia trắng quanh hero (3 + 3 tia) |
-| `lobby/loading-ring-enamel.svg` | SVG code-native trong suốt | 1 | Cung men nổi đã chọn; style/screens/s1-loading | bốn cung xanh–vàng, quay luân phiên với mỗi lần xúc xắc lật một mặt |
-| `roundedDieRenderer` | WebGL mesh/shader, không có texture mới | 1 | components/loading, style/screens/s1-loading | xúc xắc bo góc 1–6 của S1; fallback tái dùng `lobby/ill-dice.webp` |
+| `lobby/loading-ring-enamel.svg` | SVG code-native trong suốt | 1 | Cung men nổi đã chọn; screens/s1-loading | bốn cung xanh–vàng, quay luân phiên với mỗi lần xúc xắc lật một mặt |
+| `roundedDieRenderer` | WebGL mesh/shader, không có texture mới | 1 | components/loading, screens/s1-loading | xúc xắc bo góc 1–6 của S1; fallback tái dùng `lobby/ill-dice.webp` |
 | `d1..d6` | SVG 44 | 6 | 06 §5 | O1 |
 | `tiles/art/{slug}.webp` | raster pixel 16-bit, gốc 64 × 40, export ×3 nearest-neighbor | 19 | §6.5 | ô bàn, header sheet S7; S2 hiện dùng tranh trong hero từ concept |
 | `bg-board-pixel.webp` | raster pixel 16-bit | 1 | §6.5 | nền màn S1–S6 |
@@ -102,7 +102,7 @@ Hạng 1: pháo giấy + xu gold; hạng 2–3: huy hiệu; phá sản: ví rỗ
 
 ### 6.5 Tranh pixel 16-bit (UI v3)
 
-Nguồn phong cách: [ảnh mẫu](./style/screens/s6-board/concept-s6-board-pixel-16bit.png). Không dùng base flat-vector ở trên; prompt riêng:
+Nguồn phong cách: [ảnh mẫu](./screens/s6-board/concept-s6-board-pixel-16bit.png). Không dùng base flat-vector ở trên; prompt riêng:
 
 Base: "16-bit pixel art, SNES era, limited palette, crisp hard pixel edges, no anti-aliasing, no dithering noise, bright daytime sky, side view landscape, no text, no letters, no logos". Negative: "no smooth vector, no photorealism, no 3d render, no blur, no watermark".
 
@@ -112,7 +112,7 @@ Base: "16-bit pixel art, SNES era, limited palette, crisp hard pixel edges, no a
 
 ## 7. Export & QA
 
-Các budget/runtime export dưới đây áp dụng cho asset production. [PNG concept S2 đã chọn](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) giữ nguyên trong docs để đối chiếu, không tải trong game; [log nguồn](./asset-generation-log.md) ghi kích thước/hash. Concept được duyệt là tài liệu, không phải ảnh nháp hoặc screenshot verify.
+Các budget/runtime export dưới đây áp dụng cho asset production. [PNG concept S2 đã chọn](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) giữ nguyên trong docs để đối chiếu, không tải trong game; [log nguồn](./asset-generation-log.md) ghi kích thước/hash. Concept được duyệt là tài liệu, không phải ảnh nháp hoặc screenshot verify.
 
 - SVG: `svgo` preset default, giữ viewBox; kiểm render 1×/2×/3×.
 - Raster runtime: webp q 80–85, kiểm size budget bằng `ls -l` trước commit; ảnh > 100 KB phải qua optimize. PNG gốc trong `assets/screens/<màn>/` chưa import nên chưa áp budget; tối ưu khi xuất lúc code.

@@ -1,6 +1,6 @@
 # S2 — kiểm ảnh nguồn và phần còn thiếu
 
-Kiểm ngày **2026-10-21**, đối chiếu trực tiếp [concept đã duyệt](./concept-s2-lobby-pixel-16bit.png), toàn bộ [13 PNG nguồn v1](../../../../assets/screens/lobby/README.md), [prompt đã chạy](../../../../assets/screens/lobby/prompts.md) và UI hiện tại. Hash của 13 PNG khớp [manifest](../../../../assets/screens/lobby/manifest.json). §1–4 ghi audit v1 và các bước sửa UI sau đó. **Đợt tách lại v2 và đính chính mới nhất ở §5**; chưa phải duyệt visual QA runtime.
+Kiểm ngày **2026-10-21**, đối chiếu trực tiếp [concept đã duyệt](./concept-s2-lobby-pixel-16bit.png), toàn bộ [13 PNG nguồn v1](../../../assets/screens/lobby/README.md), [prompt đã chạy](../../../assets/screens/lobby/prompts.md) và UI hiện tại. Hash của 13 PNG khớp [manifest](../../../assets/screens/lobby/manifest.json). §1–4 ghi audit v1 và các bước sửa UI sau đó. **Đợt tách lại v2 và đính chính mới nhất ở §5**; chưa phải duyệt visual QA runtime.
 
 **Kết luận:** bộ gen giữ được chủ đề và các vật thể chính, nhưng là ảnh AI tái dựng, không phải cắt giữ nguyên pixel. Có chi tiết bị đổi ngay trong PNG; có chi tiết đã bị prompt loại bỏ mà chưa có lớp thay thế; còn viền kép và nút phẳng là lỗi dựng CSS. Không dùng kết quả typecheck hoặc số lượng file để kết luận giống concept.
 
@@ -62,7 +62,7 @@ Avatar VIP, `@username`, số dư thật, font Nunito, bỏ version ở footer v
 
 ## 5. Tách lại v2 và lựa chọn cuối
 
-Sau audit, 10 asset được gen lại bằng built-in imagegen (các icon thêm một lượt sửa nét). Ngày **2026-10-21** đã so từng file v1/v2 cạnh crop concept trên nền trời; **chọn v2 cho 8 file và thay v1** trong [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md). Nền, logo, thoát, KEN, loa giữ v1. Thư mục tách lại tạm và các trang preview đã bỏ; tóm tắt lượt v2 ở [prompts.md](../../../../assets/screens/lobby/prompts.md#lượt-v2-2026-10-21--đã-chọn).
+Sau audit, 10 asset được gen lại bằng built-in imagegen (các icon thêm một lượt sửa nét). Ngày **2026-10-21** đã so từng file v1/v2 cạnh crop concept trên nền trời; **chọn v2 cho 8 file và thay v1** trong [`assets/screens/lobby/`](../../../assets/screens/lobby/README.md). Nền, logo, thoát, KEN, loa giữ v1. Thư mục tách lại tạm và các trang preview đã bỏ; tóm tắt lượt v2 ở [prompts.md](../../../assets/screens/lobby/prompts.md#lượt-v2-2026-10-21--đã-chọn).
 
 | Asset | Lý do chọn v2 |
 |---|---|

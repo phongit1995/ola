@@ -1,6 +1,6 @@
 # Lobby — asset tách từ concept S2
 
-15 PNG nguồn của lobby S2, tách từ [concept S2](../../../docs/style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) bằng built-in image_gen. Ngày 2026-10-21 đã so từng file v1/v2 cạnh concept; **8 file dùng bản v2** (gần mẫu hơn), 5 file giữ v1; icon thoát giữ thiết kế v1 và được tách thành 2 lớp cửa + mũi tên bằng imagegen ([exit-split-prompts.md](./exit-split-prompts.md)). Lý do chọn từng file ở [audit S2 §5](../../../docs/style/screens/s2-lobby/asset-audit.md#5-tách-lại-v2-và-lựa-chọn-cuối).
+15 PNG nguồn của lobby S2, tách từ [concept S2](../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) bằng built-in image_gen. Ngày 2026-10-21 đã so từng file v1/v2 cạnh concept; **8 file dùng bản v2** (gần mẫu hơn), 5 file giữ v1; icon thoát giữ thiết kế v1 và được tách thành 2 lớp cửa + mũi tên bằng imagegen ([exit-split-prompts.md](./exit-split-prompts.md)). Lý do chọn từng file ở [audit S2 §5](../../../docs/screens/s2-lobby/asset-audit.md#5-tách-lại-v2-và-lựa-chọn-cuối).
 
 | File | Bản | Nội dung |
 |---|---|---|
@@ -24,7 +24,7 @@
 
 ## Xuất runtime
 
-Đã xuất 11 WebP vào `assets/lobby/` và `assets/chars/`: cắt theo alpha (> 8) + đệm trong suốt 4 px, thu LANCZOS về ~2× cỡ hiển thị, WebP q80/alpha q90; nền kín 780 px rộng, q68. Script xuất không lưu trong repo (bảng đối chiếu ở [style S2 §10](../../../docs/style/screens/s2-lobby/README.md#10-asset-cắt-từ-concept--file-production)). Hai skin nút và loa không xuất: nút dựng bằng CSS, loa dùng cặp `ic-volume-on/off`. Thoát dùng `ill-exit-door.webp` + `ill-exit-arrow.webp` chồng trong một ô 24 px; thông số ở [exit-split-prompts.md](./exit-split-prompts.md#export-và-ghép). Sửa PNG nào thì xuất lại file WebP tương ứng theo thông số trên; nếu khung `hero-properties.webp` đổi, chỉnh tọa độ trong `lobby/decor-hero-rays.svg`.
+Đã xuất 11 WebP vào `assets/lobby/` và `assets/chars/`: cắt theo alpha (> 8) + đệm trong suốt 4 px, thu LANCZOS về ~2× cỡ hiển thị, WebP q80/alpha q90; nền kín 780 px rộng, q68. Script xuất không lưu trong repo (bảng đối chiếu ở [style S2 §10](../../../docs/screens/s2-lobby/README.md#10-asset-cắt-từ-concept--file-production)). Hai skin nút và loa không xuất: nút dựng bằng CSS, loa dùng cặp `ic-volume-on/off`. Thoát dùng `ill-exit-door.webp` + `ill-exit-arrow.webp` chồng trong một ô 24 px; thông số ở [exit-split-prompts.md](./exit-split-prompts.md#export-và-ghép). Sửa PNG nào thì xuất lại file WebP tương ứng theo thông số trên; nếu khung `hero-properties.webp` đổi, chỉnh tọa độ trong `lobby/decor-hero-rays.svg`.
 
 Tia vàng CTA (2 + 2) và tia trắng hero (3 + 3) không nằm trong PNG; chúng là SVG riêng `lobby/decor-cta-rays.svg`, `lobby/decor-hero-rays.svg`.
 
@@ -32,4 +32,4 @@ Tia vàng CTA (2 + 2) và tia trắng hero (3 + 3) không nằm trong PNG; chún
 
 [prompts.md](./prompts.md) giữ prompt v1 và tóm tắt lượt v2 (yêu cầu chính, vùng crop đầu vào); prompt đầy đủ của v2 không lưu. [exit-split-prompts.md](./exit-split-prompts.md) giữ đủ prompt tách cửa và mũi tên. `logo-clean-prompt.txt`, `sound-retry-prompt.txt` là prompt đầy đủ của hai file v1 còn dùng.
 
-Đây là ảnh AI tái dựng, không phải cắt trùng pixel. Bộ ảnh vẫn `trial-not-production` cho tới khi qua visual QA runtime theo [audit S2](../../../docs/style/screens/s2-lobby/asset-audit.md).
+Đây là ảnh AI tái dựng, không phải cắt trùng pixel. Bộ ảnh vẫn `trial-not-production` cho tới khi qua visual QA runtime theo [audit S2](../../../docs/screens/s2-lobby/asset-audit.md).

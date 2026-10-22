@@ -2,9 +2,9 @@
 
 > Đây là art direction tổng quan. Token đầy đủ, bảng màu 32 ô, nhân vật và ma trận màu icon nằm trong [`style/`](./style/README.md).
 >
-> **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`style/screens/s6-board/concept-s6-board-pixel-16bit.png`](./style/screens/s6-board/concept-s6-board-pixel-16bit.png). Ảnh thắng về mỹ thuật; docs thắng về dữ liệu, mã màu nhóm/ghế và 3 chỗ ảnh tự mâu thuẫn ([style/README.md](./style/README.md#ảnh-mẫu-và-docs--cái-nào-thắng)).
+> **UI v3 (20/10/2026): phong cảnh pixel 16-bit.** Ảnh mẫu chuẩn: [`screens/s6-board/concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png). Ảnh thắng về mỹ thuật; docs thắng về dữ liệu, mã màu nhóm/ghế và 3 chỗ ảnh tự mâu thuẫn ([style/README.md](./style/README.md#ảnh-mẫu-và-docs--cái-nào-thắng)).
 >
-> **Lobby S2:** người dùng đã chọn [phương án 1 — Nền trời thoáng](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png). [Style S2](./style/screens/s2-lobby/README.md) quy định hero Bác Tỷ + ba thẻ/hai quân, menu vàng/kem, Nunito và responsive. Ảnh S6 vẫn là chuẩn cho bàn chơi.
+> **Lobby S2:** người dùng đã chọn [phương án 1 — Nền trời thoáng](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png). [Style S2](./screens/s2-lobby/README.md) quy định hero Bác Tỷ + ba thẻ/hai quân, menu vàng/kem, Nunito và responsive. Ảnh S6 vẫn là chuẩn cho bàn chơi.
 
 ## 1. DNA hình ảnh
 
@@ -129,7 +129,7 @@ Stroke 2 px, cap tròn, grid 24 cho icon điều khiển; glyph ô bàn cờ là
 
 ### 5.1 Font
 
-- UI: **Nunito 400–800**, dùng lại file local Latin + Vietnamese của Caro đang khai báo ở `game/tycoon/style.css`; không thêm font mới. S2 có scale chữ riêng theo [S2 lobby §3](./style/screens/s2-lobby/README.md#3-chữ-và-màu).
+- UI: **Nunito 400–800**, dùng lại file local Latin + Vietnamese của Caro đang khai báo ở `game/tycoon/style.css`; không thêm font mới. S2 có scale chữ riêng theo [S2 lobby §3](./screens/s2-lobby/README.md#3-chữ-và-màu).
 - Số tiền dùng `font-variant-numeric: tabular-nums` ở mọi nơi để pod không nhảy chiều rộng.
 - Không có chữ trong ảnh (trừ logo `CỜ TỶ PHÚ`). Tên ô trên thẻ sở hữu và tên thẻ bài đều live text.
 
@@ -209,5 +209,5 @@ Theo pattern `war-god/audio.ts`: `click`, `dice` (tiếng lắc 3 nốt noise ng
 - Không trộn pixel và vẽ mượt trong cùng một tranh; không pixel hoá nút, chữ, icon.
 - Không ký hiệu tiền tệ thật ($, ₫) trong ván.
 - Không đổ bóng chữ, không outline chữ (logo là ngoại lệ).
-- Không dùng ảnh AI nguyên khối làm màn: vẽ chung cả màn thành concept, rồi cắt từng asset (PNG gốc ở `assets/screens/<màn>/`), mỗi asset qua QA (04 §7) và khi code mới xuất WebP/SVG ([quy trình](./style/screens/README.md#quy-trình-asset-theo-màn)).
+- Không dùng ảnh AI nguyên khối làm màn: vẽ chung cả màn thành concept, rồi cắt từng asset (PNG gốc ở `assets/screens/<màn>/`), mỗi asset qua QA (04 §7) và khi code mới xuất WebP/SVG ([quy trình](./screens/README.md#quy-trình-asset-theo-màn)).
 - Nhân vật là mascot sáng tác riêng với contour navy cùng hệ; không chibi kiểu anime, không người thật, không nhân vật thương mại.

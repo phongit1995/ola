@@ -378,11 +378,11 @@
   "visualReview": {
     "date": "2026-10-21",
     "status": "reviewed-needs-revision",
-    "report": "../../../docs/style/screens/s2-lobby/asset-audit.md",
+    "report": "../../../docs/screens/s2-lobby/asset-audit.md",
     "sourcePixelsChanged": true
   },
   "screen": "lobby",
-  "sourceConcept": "../../../docs/style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
+  "sourceConcept": "../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
   "prompts": [
     "prompts.md",
     "exit-split-prompts.md"

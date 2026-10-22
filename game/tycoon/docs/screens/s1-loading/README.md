@@ -4,11 +4,11 @@
 
 ## Code và asset
 
-- [`DiceLoader.tsx`](../../../../components/loading/DiceLoader.tsx): lắp viền, canvas, trạng thái truy cập và fallback.
-- [`DiceLoader.css`](../../../../components/loading/DiceLoader.css): kích thước, xoay viền và reduced motion.
-- [`roundedDieRenderer.ts`](../../../../components/loading/roundedDieRenderer.ts): mesh/shader, đồng hồ render và cleanup; API chỉ tạo renderer + `dispose()`.
-- [`loadingMotion.ts`](../../../../components/loading/loadingMotion.ts): cùng một đồng hồ cho viền và góc xúc xắc.
-- [`loading-ring-enamel.svg`](../../../../assets/lobby/loading-ring-enamel.svg): xuất trực tiếp từ mẫu Cung men nổi được chọn. Bốn cung bán kính 41, dài 66°; contour navy `#102b58` rộng 10,2; lớp màu 7,5; highlight 1,1. Giữ nguyên tọa độ và gradient của mẫu.
+- [`DiceLoader.tsx`](../../../components/loading/DiceLoader.tsx): lắp viền, canvas, trạng thái truy cập và fallback.
+- [`DiceLoader.css`](../../../components/loading/DiceLoader.css): kích thước, xoay viền và reduced motion.
+- [`roundedDieRenderer.ts`](../../../components/loading/roundedDieRenderer.ts): mesh/shader, đồng hồ render và cleanup; API chỉ tạo renderer + `dispose()`.
+- [`loadingMotion.ts`](../../../components/loading/loadingMotion.ts): cùng một đồng hồ cho viền và góc xúc xắc.
+- [`loading-ring-enamel.svg`](../../../assets/lobby/loading-ring-enamel.svg): xuất trực tiếp từ mẫu Cung men nổi được chọn. Bốn cung bán kính 41, dài 66°; contour navy `#102b58` rộng 10,2; lớp màu 7,5; highlight 1,1. Giữ nguyên tọa độ và gradient của mẫu.
 
 Đã bỏ các phương án không chọn, viền original, trang gallery/iframe, script kiểm gallery, renderer tham chiếu trùng lặp, đường xoay sáu mặt cũ và API debug `seek/play/getState`. Không còn listener điều khiển bằng `postMessage` trong loader. Giữ một lệnh QA dùng chính component thật.
 
@@ -31,7 +31,7 @@ Bốn lượt riêng mới về hướng ban đầu. Reduced motion giữ tư th
 
 ## Xem và kiểm tra
 
-Chạy `pnpm -C game dev`, mở `/tycoon/?preview=loading` trên dev server. Query chỉ hoạt động trong dev; đây là điểm xem duy nhất còn giữ sau khi dọn preview. Store hiện khởi tạo `MOCK_PROFILE`, nên bỏ query sẽ vào sảnh chơi máy bình thường. API hồ sơ, timeout/error/retry/auth vẫn theo kế hoạch [02 S1](../../../02-screen-specs.md#s1-loading--connecting).
+Chạy `pnpm -C game dev`, mở `/tycoon/?preview=loading` trên dev server. Query chỉ hoạt động trong dev; đây là điểm xem duy nhất còn giữ sau khi dọn preview. Store hiện khởi tạo `MOCK_PROFILE`, nên bỏ query sẽ vào sảnh chơi máy bình thường. API hồ sơ, timeout/error/retry/auth vẫn theo kế hoạch [02 S1](../../02-screen-specs.md#s1-loading--connecting).
 
 Kiểm khi đổi loader: viền đúng asset, alpha trong suốt, viền/xúc xắc thay phiên, lật đúng 90° và giữ mặt mới, reduced motion, ẩn/hiện trang, gỡ/dựng component, fallback WebGL, âm thanh/thoát/chơi máy ở 390×844, 360×640, 360×568, 520×900 và safe-area 44/34. Script kiểm tự động không lưu trong repo.
 

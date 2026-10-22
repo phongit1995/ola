@@ -1,10 +1,10 @@
 # O5. Modal xác nhận và thông báo
 
-Đặc tả lớp phủ **O5** của Cờ Tỷ Phú: một khung modal dùng chung cho hai loại, **xác nhận** (hỏi trước khi làm) và **thông báo** (báo tin cần người chơi đọc). Hành vi tổng quát theo [02 §O5](../../../02-screen-specs.md#o5-confirmmodal), cấu trúc chung theo [03 §12](../../../03-component-specs.md#12-modal-s4-s9-o3-o5), token theo [01-foundations](../../01-foundations.md). Style dưới đây theo code đang chạy và tông màu lobby S2; bốn ảnh ví dụ được lưu bên dưới để tham khảo, chưa thay thế đặc tả hoặc xác nhận hoàn tất UI.
+Đặc tả lớp phủ **O5** của Cờ Tỷ Phú: một khung modal dùng chung cho hai loại, **xác nhận** (hỏi trước khi làm) và **thông báo** (báo tin cần người chơi đọc). Hành vi tổng quát theo [02 §O5](../../02-screen-specs.md#o5-confirmmodal), cấu trúc chung theo [03 §12](../../03-component-specs.md#12-modal-s4-s9-o3-o5), token theo [01-foundations](../../style/01-foundations.md). Style dưới đây theo code đang chạy và tông màu lobby S2; bốn ảnh ví dụ được lưu bên dưới để tham khảo, chưa thay thế đặc tả hoặc xác nhận hoàn tất UI.
 
 ## Ảnh ví dụ
 
-Lưu theo yêu cầu người dùng ngày **21/10/2026**. [Prompt gốc của từng mẫu](./examples/prompts.json). Công cụ: built-in imagegen; ảnh gốc PNG 853 × 1844 được chuyển sang WebP chất lượng 85, giữ nguyên kích thước, không chỉnh sửa nội dung. Nguồn và trạng thái ghi tại [asset generation log](../../../asset-generation-log.md#o5-modal--bốn-ảnh-ví-dụ).
+Lưu theo yêu cầu người dùng ngày **21/10/2026**. [Prompt gốc của từng mẫu](./examples/prompts.json). Công cụ: built-in imagegen; ảnh gốc PNG 853 × 1844 được chuyển sang WebP chất lượng 85, giữ nguyên kích thước, không chỉnh sửa nội dung. Nguồn và trạng thái ghi tại [asset generation log](../../asset-generation-log.md#o5-modal--bốn-ảnh-ví-dụ).
 
 | Xác nhận thường — Thoát game | Xác nhận nguy hiểm — Bỏ cuộc |
 |---|---|
@@ -34,9 +34,9 @@ Không dùng modal cho tin mà người chơi không cần phản hồi. Mỗi t
 
 ## 2. Hiện trạng code
 
-- [`ConfirmModal.tsx`](../../../../components/ConfirmModal.tsx) dựng modal xác nhận, mở bằng `showNotice({ title, body, okLabel, danger, onOk })` trong store, render tại `App.tsx`. Đang dùng cho `Về sảnh`, `Bỏ cuộc` (bàn chơi) và xác nhận phá sản (`DebtModal`).
-- Khung chung: [`ModalHeading.tsx`](../../../../components/ModalHeading.tsx) (ô biểu tượng + dòng nhỏ + tiêu đề), [`useDialogFocus.ts`](../../../../components/useDialogFocus.ts) (giữ focus, `Escape`, trả focus), CSS `.ty-backdrop`, `.ty-modal*`, `.ty-btn*` trong `style.css`. `BotSetupModal`, `RulesModal`, `DebtModal` dùng lại khung này.
-- **Chưa có:** modal thông báo một nút, các tông thông tin/thành công/lỗi, hàng đợi, icon `ic-info`. `Thoát game` ở sảnh đang thoát ngay, không hỏi lại.
+- [`NoticeModal.tsx`](../../../components/NoticeModal.tsx) là component O5 chung, render theo `kind`/`tone` (§8), mở bằng `showNotice(...)` trong store, render tại `App.tsx`. Đang dùng cho `Về sảnh`, `Bỏ cuộc` (bàn chơi) và xác nhận phá sản (`DebtModal`).
+- Khung chung: [`ModalHeading.tsx`](../../../components/ModalHeading.tsx) (ô biểu tượng + dòng nhỏ + tiêu đề), [`useDialogFocus.ts`](../../../components/useDialogFocus.ts) (giữ focus, `Escape`, trả focus), CSS `.ty-backdrop`, `.ty-modal*`, `.ty-btn*` trong `style.css`. `BotSetupModal`, `RulesModal`, `DebtModal` dùng lại khung này.
+- **Chưa có:** `Thoát game` ở sảnh đang thoát ngay, không hỏi lại; chưa đóng modal xác nhận khi hết giờ lượt.
 
 ## 3. Cấu trúc
 
@@ -102,7 +102,7 @@ Màn 360 px: hộp vẫn rộng tối đa trừ padding 16 hai bên; nhãn nút 
 - Tiêu đề ngắn, nói việc sắp xảy ra hoặc tin chính: `Bỏ cuộc`, `Về sảnh`, `Mất kết nối`. Không dùng `Thông báo` làm tiêu đề (đã có ở dòng nhỏ).
 - Nội dung tối đa 3 dòng ở 360 px; nói hậu quả cụ thể: `Bạn sẽ bị tính phá sản và xếp cuối. Kết thúc ván ngay?`
 - Nhãn nút là động từ trùng tiêu đề (`Bỏ cuộc`, `Về sảnh`, `Thử lại`, `Đã hiểu`); không dùng `OK`, `Có`, `Không`. Nút hủy là `Hủy`.
-- Nhắc người chơi khác thì ghi `@username` kèm icon VIP theo [03 §18](../../../03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar).
+- Nhắc người chơi khác thì ghi `@username` kèm icon VIP theo [03 §18](../../03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar).
 - Tiền ghi theo `formatMoney`/`formatKen` như phần còn lại của game.
 
 ## 7. Truy cập
@@ -111,14 +111,14 @@ Màn 360 px: hộp vẫn rộng tối đa trừ padding 16 hai bên; nhãn nút 
 - `aria-labelledby` trỏ tiêu đề, `aria-describedby` trỏ nội dung.
 - Focus ring navy 2 px như toàn game; chữ trên nền paper đạt tương phản AA.
 
-## 8. API đề xuất
+## 8. API
 
-Mở rộng `NoticeState` thay vì thêm hệ modal thứ hai:
+`NoticeState` trong [`store/useTycoon.ts`](../../../store/useTycoon.ts):
 
 ```ts
 interface NoticeState {
   kind: 'confirm' | 'notice';
-  tone: 'default' | 'danger' | 'info' | 'success' | 'warning' | 'error';
+  tone?: 'default' | 'danger' | 'info' | 'success' | 'warning' | 'error';
   title: string;
   body: string;
   hint?: string;
@@ -126,12 +126,19 @@ interface NoticeState {
   okLabel: string;
   cancelLabel?: string;
   dismissible?: boolean;
-  onOk: () => void | Promise<void>;
+  onOk?: () => void | Promise<void>;
   onCancel?: () => void;
 }
 ```
 
-`ConfirmModal` đổi thành một component O5 render theo `kind`/`tone`; `danger: true` hiện có tương ứng `kind: 'confirm', tone: 'danger'`. Store giữ hàng đợi `notice[]`, `showNotice` thêm vào cuối, đóng hộp thì lấy tin tiếp theo.
+- `showNotice(notice)` mở ngay nếu chưa có modal, nếu đang có thì xếp vào `noticeQueue`. `closeNotice(notice)` chỉ đóng đúng tin đang hiện rồi lấy tin tiếp theo.
+- Mặc định: `tone` là `default` với xác nhận, `info` với thông báo; `cancelLabel` là `Hủy` với xác nhận, không có với thông báo; dòng nhỏ và icon theo bảng §4, `icon` để đổi icon theo ngữ cảnh.
+- Modal tự đóng sau `onOk`/`onCancel`, caller không cần tự đóng. `onOk` trả Promise thì nút chính `aria-busy` có spinner, khóa nút phụ, `Escape` và bấm nền; Promise lỗi thì mở khóa và giữ hộp để thử lại.
+
+```ts
+showNotice({ kind: 'confirm', tone: 'danger', title: 'Bỏ cuộc', body: '…', okLabel: 'Bỏ cuộc', onOk: forfeit });
+showNotice({ kind: 'notice', tone: 'error', icon: 'wifi-off', title: 'Mất kết nối', body: '…', okLabel: 'Thử lại', cancelLabel: 'Để sau', onOk: reconnect });
+```
 
 ## 9. Tình huống dùng
 
@@ -148,10 +155,13 @@ interface NoticeState {
 
 ## 10. Checklist triển khai
 
-- [x] Modal xác nhận thường và nguy hiểm (`ConfirmModal`), giữ focus, `Escape`, bấm nền để hủy.
-- [ ] Modal thông báo một nút và hai nút; tông thông tin/thành công/cảnh báo/lỗi.
-- [ ] Thêm `ic-info` vào hệ icon ([06](../../../06-icon-system.md)).
-- [ ] `role="alertdialog"` cho tông nguy hiểm/lỗi; tùy chọn `dismissible: false`.
-- [ ] Hàng đợi thông báo; nút chính có trạng thái đang xử lý cho hành động bất đồng bộ.
+- [x] Modal xác nhận thường và nguy hiểm, giữ focus, `Escape`, bấm nền để hủy.
+- [x] Modal thông báo một nút và hai nút; tông thông tin/thành công/cảnh báo/lỗi.
+- [x] Thêm `ic-info` vào hệ icon ([06](../../06-icon-system.md)).
+- [x] `role="alertdialog"` cho tông nguy hiểm/lỗi; tùy chọn `dismissible: false`.
+- [x] Hàng đợi thông báo; nút chính có trạng thái đang xử lý cho hành động bất đồng bộ.
+- [x] Focus trong modal: một vòng navy 2 px cách 3 px, bỏ bóng nổi của nút khi focus.
 - [ ] Xác nhận `Thoát game` ở sảnh.
-- [ ] Chụp 390 × 844 và 360 × 640 cho từng loại/tông; kiểm phóng chữ 200% và reduced motion.
+- [ ] Đóng modal xác nhận khi hết giờ lượt (§5).
+- [x] Chụp 390 × 844 và 360 × 640 cho từng loại/tông.
+- [ ] Kiểm phóng chữ 200%.

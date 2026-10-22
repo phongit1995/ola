@@ -6,17 +6,17 @@ Kế hoạch này chỉ cho phần UI/asset; server và protocol theo `../07-scr
 
 Mục tiêu: duyệt art direction bằng concept cho các màn có nhiều mỹ thuật riêng, tránh code rồi mới đổi. Không chặn cả dự án chờ đủ mọi concept.
 
-- [x] Concept bàn chơi S6 (20/10/2026, pha `roll`): [`screens/s6-board/concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png) — ảnh mẫu chuẩn UI v3, pixel 16-bit.
-- [x] Concept lobby S2 với Bác Tỷ + logo: người dùng chọn [phương án 1 — Nền trời thoáng](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png); đã có [style lobby](./screens/s2-lobby/README.md). Đây là duyệt concept, chưa phải hoàn tất code UI.
+- [x] Concept bàn chơi S6 (20/10/2026, pha `roll`): [`screens/s6-board/concept-s6-board-pixel-16bit.png`](../screens/s6-board/concept-s6-board-pixel-16bit.png) — ảnh mẫu chuẩn UI v3, pixel 16-bit.
+- [x] Concept lobby S2 với Bác Tỷ + logo: người dùng chọn [phương án 1 — Nền trời thoáng](../screens/s2-lobby/concept-s2-lobby-pixel-16bit.png); đã có [style lobby](../screens/s2-lobby/README.md). Đây là duyệt concept, chưa phải hoàn tất code UI.
 - [ ] Concept sheet S7 ô đất nhóm Đỏ có 2 nhà.
 - [ ] Concept thẻ Cơ hội O2 với Bác Tỷ `happy`.
 - [ ] Concept kết quả S9 4 người.
 - [ ] Bảng 6 nhân vật × 4 pose dạng sheet (chỉ để duyệt; asset production sinh riêng từng cái).
 
-Lưu tại `screens/s{n}-{tên}/concept-s{n}-{tên}-{style}.png` (cùng folder với style của màn, xem [screens](./screens/README.md)) sau khi duyệt (ảnh concept được commit như thirteen; ảnh verify/nháp thì không).
+Lưu tại `screens/s{n}-{tên}/concept-s{n}-{tên}-{style}.png` (cùng folder với style của màn, xem [screens](../screens/README.md)) sau khi duyệt (ảnh concept được commit như thirteen; ảnh verify/nháp thì không).
 
 **Điều kiện bắt đầu dựng — duyệt theo từng màn:**
-- Màn có trong danh sách trên (S2, S6, S7, O2, S9) chỉ dựng UI sau khi concept **của chính màn đó** được duyệt và có folder trong [screens](./screens/README.md).
+- Màn có trong danh sách trên (S2, S6, S7, O2, S9) chỉ dựng UI sau khi concept **của chính màn đó** được duyệt và có folder trong [screens](../screens/README.md).
 - Màn không có trong danh sách (S1, S3–S5, S8, S10, S11, O1, O3–O7) dựng theo [02-screen-specs](../02-screen-specs.md) + style chung, duyệt bằng ảnh chụp thật ở bước DoD; nếu sau này quyết định vẽ concept cho màn nào thì thêm vào danh sách trên và màn đó chờ concept.
 - Giai đoạn 1 (token, khung) bắt đầu được ngay vì S6 — nền mỹ thuật chung — đã duyệt; không cần chờ đủ mọi concept.
 
@@ -27,7 +27,7 @@ Lưu tại `screens/s{n}-{tên}/concept-s{n}-{tên}-{style}.png` (cùng folder v
 - [ ] `TyIcon` wrapper + union 30 tên; copy 22 svg từ xiangqi/thirteen; vẽ 8 icon mới theo `../06-icon-system.md` §2.3.
 - [ ] Harness `tycoon/mock-ui.html?screen=` với fixture 4 người, pattern xiangqi.
 - [ ] Màn lobby/ranked/pregame copy từ xiangqi, đổi token, thêm chọn số người.
-- [ ] Dựng riêng S2 theo [style S2 lobby](./screens/s2-lobby/README.md), gồm hero, 5 minh họa của nút (xuất từ PNG gốc sang WebP/SVG) và các ca responsive/loading/offline; giữ các checklist triển khai chưa xong cho đến khi có UI được kiểm chứng.
+- [ ] Dựng riêng S2 theo [style S2 lobby](../screens/s2-lobby/README.md), gồm hero, 5 minh họa của nút (xuất từ PNG gốc sang WebP/SVG) và các ca responsive/loading/offline; giữ các checklist triển khai chưa xong cho đến khi có UI được kiểm chứng.
 
 DoD: screenshot 3 màn ở 360/390/520 không tràn; typecheck + lint xanh.
 
@@ -41,7 +41,7 @@ DoD: screenshot 3 màn ở 360/390/520 không tràn; typecheck + lint xanh.
 - [ ] Fixture: ván giữa chừng (4 người, 15 ô có chủ, 3 nhóm trọn, 1 ô cấp 3, 1 người trong tù, 1 phá sản).
 - [ ] Visual check mù màu (simulate deuteranopia) — 8 dải vẫn phân biệt nhờ vị trí + tên trong sheet.
 
-DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 390 đối chiếu [ảnh mẫu](./screens/s6-board/concept-s6-board-pixel-16bit.png) (trừ 3 chỗ docs giữ, `README.md`).
+DoD: bàn render từ fixture khớp bảng `02-board-tiles.md`; ảnh chụp 390 đối chiếu [ảnh mẫu](../screens/s6-board/concept-s6-board-pixel-16bit.png) (trừ 3 chỗ docs giữ, `README.md`).
 
 ## Giai đoạn 3 — Tương tác và replay (tier Lite trước)
 

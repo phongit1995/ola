@@ -249,7 +249,7 @@ Thẻ "Sinh nhật" có thể khiến người **không tới lượt** thiếu 
 | `Ranker` | `Rankings` §4.7 | `MATCH_OVER.rankings` cho màn kết quả |
 | `TurnStartDelayer` | 0 cho pha trong cùng lượt; 600 ms khi đổi người (turn announce) | |
 
-Commission: `TYCOON_COMMISSION_PERCENT` (default 5) khai báo sẵn trong settlement map dù v1 bet = 0, để v2 không đụng config.
+Commission: `TYCOON_COMMISSION_PERCENT` (default 5). Cược và thanh toán 2–4 người theo [11 §1.4](./11-room-settings.md#14-thanh-toán).
 
 ## 8. steps[] — animation script
 
@@ -278,12 +278,12 @@ Resume (`MATCH_FOUND.resumed`): `steps` null, dựng bàn từ view, không anim
 
 ## 9. Socket protocol (SDK `game/src/sdk` — dùng nguyên)
 
-Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* → MATCH_FOUND → MOVE/STATE → MATCH_OVER → ROOM_WAITING/ROOM_STATE afterMatchId), với `maxPlayers` 2–4 (`ROOM_CREATE {bet: 0, password, maxPlayers}`), `MATCH_FOUND.players` dài 2–4, `you` = seat.
+Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* → MATCH_FOUND → MOVE/STATE → MATCH_OVER → ROOM_WAITING/ROOM_STATE afterMatchId), với `maxPlayers` 2–4 (`ROOM_CREATE {bet, password, maxPlayers, allowSpectators}`, xem [11 §3](./11-room-settings.md#3-protocol)), `MATCH_FOUND.players` dài 2–4, `you` = seat.
 
 - `STATE.turn` = seat tới lượt; `deadline` cấp lại sau mỗi MOVE hợp lệ (vì KeepTurn vẫn qua `applyTurn`). Client khóa thao tác khi hết giờ local.
 - `OPPONENT_DISCONNECTED.userId` xác định ai rớt (nhiều người) → O4 ghi tên; `OPPONENT_RECONNECTED {turn, deadline}` đồng bộ lại đồng hồ.
-- `MATCH_OVER.rankings[]` + `expGains[]` dùng cho S9; `kenDelta` = 0 ở v1; `winnerId` = hạng 1.
-- **Spectate**: engine trả `SPECTATE_NOT_SUPPORTED` cho game có `StateViewer` (`engine.go:237`). v2 muốn xem trận thì sửa engine: cho `StateViewer` nhận `playerIdx = -1` nghĩa là khán giả, và bỏ guard trong `spectate.go`. Không làm trong v1.
+- `MATCH_OVER.rankings[]` + `expGains[]` dùng cho S9; `kenDelta` theo 11 §1.4 (bàn giao lưu = 0); `winnerId` = hạng 1.
+- **Spectate**: chỉ bàn bật `allowSpectators` ([11 §2](./11-room-settings.md#2-cho-người-khác-xem)). Hiện engine trả `SPECTATE_NOT_SUPPORTED` cho game có `StateViewer` (`spectatable()` trong `engine.go`); cần cho `ViewFor` nhận `playerIdx = -1` là người xem rồi bỏ guard.
 
 ## 10. State machine client (store `useTycoon`)
 

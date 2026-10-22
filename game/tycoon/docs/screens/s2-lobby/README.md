@@ -1,23 +1,23 @@
 # S2. Lobby — Nền trời thoáng
 
-**Đã chốt phương án 1 — Nền trời thoáng.** Đây là đặc tả style để dựng lại màn lobby theo ảnh bên dưới. Phạm vi của tài liệu là S2; hành vi online theo [02 §S2](../../../02-screen-specs.md#s2-lobby), luật chơi theo [05](../../../05-gameplay-rules-and-protocol.md). **Đã dựng với dữ liệu mock** (`tycoon/screens/LobbyScreen.tsx`, mock `@minhanh` / VIP 3 / 12.500 KEN ở `tycoon/helpers/profile.ts`): `Vào bàn` tạm mở chơi với máy, `Lịch sử` và `Bảng xếp hạng` báo tính năng online đang làm. Đã có [S1 loading](../s1-loading/README.md) khi thiếu hồ sơ; API hồ sơ, lỗi và offline chưa triển khai.
+**Đã chốt phương án 1 — Nền trời thoáng.** Đây là đặc tả style để dựng lại màn lobby theo ảnh bên dưới. Phạm vi của tài liệu là S2; hành vi online theo [02 §S2](../../02-screen-specs.md#s2-lobby), luật chơi theo [05](../../05-gameplay-rules-and-protocol.md). **Đã dựng với dữ liệu mock** (`tycoon/screens/LobbyScreen.tsx`, mock `@minhanh` / VIP 3 / 12.500 KEN ở `tycoon/helpers/profile.ts`): `Vào bàn` tạm mở chơi với máy, `Lịch sử` và `Bảng xếp hạng` báo tính năng online đang làm. Đã có [S1 loading](../s1-loading/README.md) khi thiếu hồ sơ; API hồ sơ, lỗi và offline chưa triển khai.
 
 ![Lobby S2 đã chọn: nền trời pixel, Bác Tỷ, ba thẻ đất và menu vàng/kem](./concept-s2-lobby-pixel-16bit.png)
 
-Ảnh gốc **853 × 1844 px**, giữ nguyên bản được chọn. [Log nguồn và prompt](../../../asset-generation-log.md). Ảnh concept không import trực tiếp vào game; asset được **cắt từ concept** theo [quy trình asset theo màn](../README.md#quy-trình-asset-theo-màn), PNG gốc ở [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md), khi code mới xuất WebP/SVG. Chữ (nhãn nút, tên, số KEN) không cắt từ ảnh, luôn là DOM text.
+Ảnh gốc **853 × 1844 px**, giữ nguyên bản được chọn. [Log nguồn và prompt](../../asset-generation-log.md). Ảnh concept không import trực tiếp vào game; asset được **cắt từ concept** theo [quy trình asset theo màn](../README.md#quy-trình-asset-theo-màn), PNG gốc ở [`assets/screens/lobby/`](../../../assets/screens/lobby/README.md), khi code mới xuất WebP/SVG. Chữ (nhãn nút, tên, số KEN) không cắt từ ảnh, luôn là DOM text.
 
-**Trạng thái sau review 2026-10-21:** có 13 PNG nguồn tại [assets/screens/lobby](../../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn sau khi so với concept + 5 v1); 10 bản WebP đã được xuất và import vào Lobby mock. **Chưa đạt visual QA.** Ảnh AI đã tái dựng một số chi tiết; tia vàng CTA, tia trắng hero, mặt CTA, contour nút kem và Luật chơi không pill đã dựng bằng SVG/CSS, chờ visual QA. Xem [audit từng ảnh, nguyên nhân từ prompt và việc cần sửa](./asset-audit.md). Có file runtime không có nghĩa artwork đã được duyệt.
+**Trạng thái sau review 2026-10-21:** có 13 PNG nguồn tại [assets/screens/lobby](../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn sau khi so với concept + 5 v1); 10 bản WebP đã được xuất và import vào Lobby mock. **Chưa đạt visual QA.** Ảnh AI đã tái dựng một số chi tiết; tia vàng CTA, tia trắng hero, mặt CTA, contour nút kem và Luật chơi không pill đã dựng bằng SVG/CSS, chờ visual QA. Xem [audit từng ảnh, nguyên nhân từ prompt và việc cần sửa](./asset-audit.md). Có file runtime không có nghĩa artwork đã được duyệt.
 
 ## 1. Hướng hình ảnh và thứ tự ưu tiên
 
 - Nền trời cyan thoáng, mây pixel ở viền; phố Việt Nam, cây, núi và sông ở phần dưới. Không đặt một panel lớn sau toàn bộ menu.
 - Logo vàng viền navy nằm trên hero. Bác Tỷ bên trái; ba thẻ đất giấy kem có tranh pixel, hai quân con tốt vàng/xanh ở bên phải. Hero và logo tách khỏi vùng nút.
 - Một nút chính vàng `Vào bàn`, hai nút kem `Lịch sử`, `Bảng xếp hạng`, rồi action chữ có sách `Luật chơi`. Footer chỉ có pill `Thoát game`, căn giữa thẳng hàng menu; không hiển thị version (`v1.0` trong ảnh bỏ đi).
-- Bóng elip dưới chân Bác Tỷ trong ảnh không lấy: nhân vật không đổ bóng ngoài theo [03-characters](../../03-characters.md).
+- Bóng elip dưới chân Bác Tỷ trong ảnh không lấy: nhân vật không đổ bóng ngoài theo [03-characters](../../style/03-characters.md).
 - Riêng S2, giữ họa tiết áo và shading gần concept; đây là ngoại lệ của màn so với nhân vật phẳng dùng chung. Không làm phẳng áo hoặc đảo hướng icon thoát dưới danh nghĩa “sửa QA” khi ảnh mẫu không yêu cầu.
 - Pixel chỉ dùng cho phong cảnh. Mascot, quân cờ, thẻ, icon, nút và chữ mượt, contour navy. Ánh sáng nhẹ và mép dưới tạo độ nổi; không thêm glow, glass hay hạt liên tục.
-- **Ảnh quyết định mỹ thuật và tương quan bố cục; tài liệu này quyết định kích thước triển khai, responsive và trạng thái.** Dùng [01-foundations](../../01-foundations.md) cho token UI chung; lớp phản sáng/cạnh CTA và họa tiết nhân vật S2 là ngoại lệ theo concept đã duyệt, chỉ áp dụng trong màn này như §3 và §6.
-- Chữ `Minh Anh`, chân dung người, `12.500 KEN` trong ảnh là dữ liệu mẫu. Production dùng avatar VIP + `@username` theo [03 §18](../../../03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar) và số KEN thật. Không bake các dữ liệu này vào ảnh.
+- **Ảnh quyết định mỹ thuật và tương quan bố cục; tài liệu này quyết định kích thước triển khai, responsive và trạng thái.** Dùng [01-foundations](../../style/01-foundations.md) cho token UI chung; lớp phản sáng/cạnh CTA và họa tiết nhân vật S2 là ngoại lệ theo concept đã duyệt, chỉ áp dụng trong màn này như §3 và §6.
+- Chữ `Minh Anh`, chân dung người, `12.500 KEN` trong ảnh là dữ liệu mẫu. Production dùng avatar VIP + `@username` theo [03 §18](../../03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar) và số KEN thật. Không bake các dữ liệu này vào ảnh.
 
 ## 2. Bố cục tại 390 × 844
 
@@ -38,7 +38,7 @@ Khung lobby tối đa 520 px, căn giữa màn; nền trời tiếp tục phủ 
 
 ## 3. Chữ và màu
 
-Font production là **Nunito**, tái dùng hai file đang được khai báo trong [style.css](../../../../style.css): `Nunito-400-800-latin.woff2` và `Nunito-400-800-vietnamese.woff2` từ Caro. Chữ trong ảnh AI chỉ gần với Nunito, không phải mẫu font để trích xuất. Không tải thêm font từ CDN; logo là artwork riêng, không dựng bằng font nội dung.
+Font production là **Nunito**, tái dùng hai file đang được khai báo trong [style.css](../../../style.css): `Nunito-400-800-latin.woff2` và `Nunito-400-800-vietnamese.woff2` từ Caro. Chữ trong ảnh AI chỉ gần với Nunito, không phải mẫu font để trích xuất. Không tải thêm font từ CDN; logo là artwork riêng, không dựng bằng font nội dung.
 
 | Thành phần | Font size / weight / line-height |
 |---|---|
@@ -121,11 +121,11 @@ Minh họa có `aria-hidden`, tên action chỉ đọc nhãn nút. Khi chưa có
 | Pending | Spinner thay hình trong slot cũ, giữ nhãn/chiều rộng, `aria-busy`; chặn gửi lặp action |
 | Lỗi action | Toast tiếng Việt có thể đọc bằng `aria-live`, phục hồi nút khi kết thúc request; không thay label thành mã lỗi |
 
-Menu vào màn: fade + translateY 6 px, 180–220 ms, stagger tối đa 30 ms. Không lắc/nhấp nháy CTA lặp vô hạn; mây/phố mặc định đứng yên. Bác Tỷ chỉ bob nhẹ ở tier Full theo [08 §U2](../../../08-fx-and-animation.md), tier Lite/Off đứng yên. Chọn tier trong menu tùy chọn S6, không thêm control cạnh loa trong S2. `prefers-reduced-motion` tắt translate/stagger và decor motion; focus, pending và error vẫn rõ bằng trạng thái tĩnh.
+Menu vào màn: fade + translateY 6 px, 180–220 ms, stagger tối đa 30 ms. Không lắc/nhấp nháy CTA lặp vô hạn; mây/phố mặc định đứng yên. Bác Tỷ chỉ bob nhẹ ở tier Full theo [08 §U2](../../08-fx-and-animation.md), tier Lite/Off đứng yên. Chọn tier trong menu tùy chọn S6, không thêm control cạnh loa trong S2. `prefers-reduced-motion` tắt translate/stagger và decor motion; focus, pending và error vẫn rõ bằng trạng thái tĩnh.
 
 ## 8. Loading, offline và responsive
 
-S1 là trạng thái của cùng `LobbyScreen`, không dựng đồng thời hai logo hoặc hai menu. Code hiện dùng `profile === null` để hiện [bố cục S1](../s1-loading/README.md): logo + Bác Tỷ + Cung men nổi quay luân phiên với xúc xắc 3D lật một mặt mỗi lượt; giữ âm thanh/thoát, ẩn profile/KEN/menu/cụm thẻ. Có hồ sơ thì gỡ renderer và khôi phục S2 cùng phép đo topbar. Bản chơi máy khởi tạo `MOCK_PROFILE`; dev `/tycoon/?preview=loading` dùng để xem S1. `LOBBY_CRITICAL` và budget theo [04 §5](../../../04-asset-manifest-and-prompts.md#5-preload-groups-assetsts); PNG concept 2 MB trong docs không tham gia tải game.
+S1 là trạng thái của cùng `LobbyScreen`, không dựng đồng thời hai logo hoặc hai menu. Code hiện dùng `profile === null` để hiện [bố cục S1](../s1-loading/README.md): logo + Bác Tỷ + Cung men nổi quay luân phiên với xúc xắc 3D lật một mặt mỗi lượt; giữ âm thanh/thoát, ẩn profile/KEN/menu/cụm thẻ. Có hồ sơ thì gỡ renderer và khôi phục S2 cùng phép đo topbar. Bản chơi máy khởi tạo `MOCK_PROFILE`; dev `/tycoon/?preview=loading` dùng để xem S1. `LOBBY_CRITICAL` và budget theo [04 §5](../../04-asset-manifest-and-prompts.md#5-preload-groups-assetsts); PNG concept 2 MB trong docs không tham gia tải game.
 
 **Kế hoạch online:** khi mất kết nối trong S2, giữ các khối và hồ sơ đã hiển thị; ba action online (`Vào bàn`, `Lịch sử`, `Bảng xếp hạng`) disabled, thêm dòng lý do và action `Thử lại` paper trong luồng. `Luật chơi`, âm thanh và thoát vẫn dùng được. S1 error dùng CTA thử lại theo 02; không hiển thị đồng thời CTA thử lại S1 và menu S2. Bản client-only hiện có giữ luồng chơi máy cho đến khi triển khai online; nhãn `Vào bàn` trong đặc tả không có nghĩa S3 đã tồn tại.
 
@@ -157,7 +157,7 @@ Các mục dưới đây là **việc triển khai tiếp theo**, không đánh 
 
 ## 10. Asset cắt từ concept → file production
 
-PNG nguồn nằm ở [`assets/screens/lobby/`](../../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn + 5 giữ v1). Đã có 11 WebP (cắt theo alpha (> 8) + đệm trong suốt 4 px, thu LANCZOS về ~2× cỡ hiển thị, WebP q80/alpha q90; nền kín 780 px rộng, q68; script xuất không lưu trong repo). Tổng 182.316 byte (~178 KiB) chỉ là các WebP, không phải chứng nhận toàn bộ initial load ≤180 KB gzip. Loa dùng `ic-volume-on/off` có sẵn nên `icon-sound.png` chưa xuất. Hai SVG decor ở bảng dưới **đã có**.
+PNG nguồn nằm ở [`assets/screens/lobby/`](../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn + 5 giữ v1). Đã có 11 WebP (cắt theo alpha (> 8) + đệm trong suốt 4 px, thu LANCZOS về ~2× cỡ hiển thị, WebP q80/alpha q90; nền kín 780 px rộng, q68; script xuất không lưu trong repo). Tổng 182.316 byte (~178 KiB) chỉ là các WebP, không phải chứng nhận toàn bộ initial load ≤180 KB gzip. Loa dùng `ic-volume-on/off` có sẵn nên `icon-sound.png` chưa xuất. Hai SVG decor ở bảng dưới **đã có**.
 
 | PNG gốc | File runtime khi code | Ghi chú QA trước khi xuất |
 |---|---|---|

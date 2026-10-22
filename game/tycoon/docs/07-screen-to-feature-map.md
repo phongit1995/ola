@@ -7,8 +7,8 @@ Bảng tra nhanh khi implement. Store chính `useTycoon` (pattern `useThirteen` 
 | S1 Loading | `lobbyPhase`, `lobbyError`, progress local | — (connect) | `USER_INFO` | CTA vàng (Thử lại) |
 | S2 Lobby | `lobbyVisible`, `userInfo`, `ken`, `soundOn`, `rulesOpen` | — | `USER_INFO` (bridge `KenUpdated`) | PlayerPod rút gọn, badge KEN, Buttons, RulesModal |
 | S3 Danh sách bàn | `rankedVisible`, `rooms`, `roomActionPending` | `ROOM_LIST`, `ROOM_JOIN`, `ROOM_CREATE` | `ROOM_LIST/UPSERT/REMOVED`, `ERROR` | RoomRow, Modal S4, Toast |
-| S4 Modal tạo/vào | `roomActionPending('creating'\|'joining')` | `ROOM_CREATE{bet:0,password,maxPlayers}`, `ROOM_JOIN` | `ROOM_WAITING`, `ERROR` | Modal, chip 2/3/4, Input |
-| S5 Phòng chờ | `boardMode='pregame'`, `roomWaiting{roomId,ownerId,maxPlayers,members[]}`, `messages` | `ROOM_READY/START/LEAVE/KICK`, `CHAT_SEND(room)` | `ROOM_STATE/CLOSED/KICKED/SYNC`, `CHAT_MESSAGE` | BoardSurface (dim), SeatGrid, ActionBar pregame, ConfirmModal |
+| S4 Modal tạo/vào | `roomActionPending('creating'\|'joining')` | `ROOM_CREATE{bet,password,maxPlayers,allowSpectators}` (11), `ROOM_JOIN` | `ROOM_WAITING`, `ERROR` | Modal, chip 2/3/4, Input |
+| S5 Phòng chờ | `boardMode='pregame'`, `roomWaiting{roomId,ownerId,maxPlayers,members[]}`, `messages` | `ROOM_READY/START/LEAVE/KICK`, `CHAT_SEND(room)` | `ROOM_STATE/CLOSED/KICKED/SYNC`, `CHAT_MESSAGE` | BoardSurface (dim), SeatGrid, ActionBar pregame, NoticeModal |
 | S6 Bàn chơi | `boardMode='playing'`, `match{id,you,players[]}`, `view` (05 §5.1), `phase`, `myTurn`, `deadline`, `movePending`, `landingTile`, `pathTiles`, `log[]`, `oppAway{userId→graceDeadline}`, `messages` | `MOVE{type,tile?}`, `FORFEIT`, `CHAT_SEND`, `REACTION_SEND` | `STATE`, `MATCH_FOUND(resumed)`, `OPPONENT_DIS/RECONNECTED`, `CHAT_MESSAGE`, `REACTION`, `ERROR` | Header (logo, RoundChip, âm thanh, menu), BoardSurface, Tile, Token, TurnCluster (chip lượt, TurnClock, DiceRoll, nút theo pha), PlayerPod×n, FooterBar (Tài sản, Diễn biến, dòng sự kiện), ChatDrawer, ReactionPicker, OppAwayBanner |
 | S7 Sheet ô | `sheet={kind:'tile', idx}` | `MOVE BUY/DECLINE/BUILD/SELL_HOUSE` | `STATE` | BottomSheet, DeedCard, GroupChip, RentTable, OwnerChip |
 | S8 Sheet tài sản | `sheet={kind:'assets', seat}` | `MOVE BUILD/SELL_HOUSE` | `STATE` | BottomSheet, group list, +/− buttons |
@@ -19,7 +19,7 @@ Bảng tra nhanh khi implement. Store chính `useTycoon` (pattern `useThirteen` 
 | O2 Thẻ | `card{deck,id}` (từ step `card` / view.card) | `MOVE CARD_ACK` | `STATE` | Card |
 | O3 Trả nợ | `debt{creditor,amount}` khi `view.phase='debt' && view.debt.by===you` | `MOVE SELL_HOUSE/PAY_DEBT/DECLARE_BANKRUPT` | `STATE` | Modal debt |
 | O4 Banner | `oppAway` | — | `OPPONENT_*` | OppAwayBanner |
-| O5 Confirm | `notice{title,body,onOk}` | tùy hành động | — | ConfirmModal |
+| O5 Xác nhận / thông báo | `notice`, `noticeQueue` (`showNotice`/`closeNotice`) | tùy hành động | — | NoticeModal |
 | O6 Toast | `toast`, `turnAnnounce` | — | `ERROR` | Toast, TurnAnnounce |
 | O7 Vòng | `view.round` (step `round`) | — | — | RoundChip, banner |
 

@@ -10,20 +10,20 @@ Mọi số đo tại viewport logic `390 × 844`. Width hỗ trợ 360–520 px:
 
 ## S1. Loading / Connecting
 
-UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và renderer đã chốt tại [S1 loading](./style/screens/s1-loading/README.md). Store hiện vẫn dùng `MOCK_PROFILE`, nên game chơi máy vào S2 như trước; xem S1 trong dev bằng `/tycoon/?preview=loading`.
+UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và renderer đã chốt tại [S1 loading](./screens/s1-loading/README.md). Store hiện vẫn dùng `MOCK_PROFILE`, nên game chơi máy vào S2 như trước; xem S1 trong dev bằng `/tycoon/?preview=loading`.
 
 - Giữ nền trời pixel, logo, Bác Tỷ đứng yên, nút âm thanh và Thoát game. Ẩn tên/avatar, KEN, menu và cụm thẻ/quân trong lúc chờ hồ sơ.
 - Logo ở y 18,8%; nhân vật ở x 11%, y 34,8%; tâm loader x 50%, y 67% trong vùng sau safe-area. Khung loader `min(33cqw, 15cqh, 144px)`.
-- Xúc xắc WebGL bo góc, phía sau trong suốt, không đĩa trắng/kem. Dùng viền **Cung men nổi đã chốt** tại [style S1](./style/screens/s1-loading/README.md). Mỗi lượt 2,8 giây: viền quay 1,4 giây → nghỉ 0,2 giây → xúc xắc lật đúng một mặt (90°) trong 0,7 giây → giữ mặt mới 0,5 giây rồi đến lượt viền tiếp theo. Hai lớp không quay cùng lúc; không reset mặt sau mỗi lượt. Không có phần trăm giả hoặc chữ loading hiển thị; screen reader đọc “Đang tải hồ sơ”.
+- Xúc xắc WebGL bo góc, phía sau trong suốt, không đĩa trắng/kem. Dùng viền **Cung men nổi đã chốt** tại [style S1](./screens/s1-loading/README.md). Mỗi lượt 2,8 giây: viền quay 1,4 giây → nghỉ 0,2 giây → xúc xắc lật đúng một mặt (90°) trong 0,7 giây → giữ mặt mới 0,5 giây rồi đến lượt viền tiếp theo. Hai lớp không quay cùng lúc; không reset mặt sau mỗi lượt. Không có phần trăm giả hoặc chữ loading hiển thị; screen reader đọc “Đang tải hồ sơ”.
 - Reduced motion giữ tư thế đầu và dừng viền; tab ẩn dừng animation; thiếu WebGL/context bị mất dùng minh họa xúc xắc tĩnh. Có hồ sơ thì gỡ loader và hiện S2.
 
-**Phần online chưa triển khai:** `lobbyPhase = 'loading' | 'connecting' | 'ready' | 'error'`, preload nhóm LOBBY_CRITICAL trước first paint (04 §5), timeout/error/retry/auth. Khi có `error`, map lỗi sang tiếng Việt và hiện `Thử lại` (CTA vàng 240×52) gọi lại `init()`. Nếu đã hiện S2 rồi mới mất kết nối, giữ hồ sơ/layout S2 và báo lỗi theo [S2 lobby §8](./style/screens/s2-lobby/README.md#8-loading-offline-và-responsive), không reset hồ sơ về null để hiện lại S1.
+**Phần online chưa triển khai:** `lobbyPhase = 'loading' | 'connecting' | 'ready' | 'error'`, preload nhóm LOBBY_CRITICAL trước first paint (04 §5), timeout/error/retry/auth. Khi có `error`, map lỗi sang tiếng Việt và hiện `Thử lại` (CTA vàng 240×52) gọi lại `init()`. Nếu đã hiện S2 rồi mới mất kết nối, giữ hồ sơ/layout S2 và báo lỗi theo [S2 lobby §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive), không reset hồ sơ về null để hiện lại S1.
 
 ---
 
 ## S2. Lobby
 
-**Ảnh đã chốt: phương án 1 — Nền trời thoáng.** Xem [concept S2](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) và [style lobby](./style/screens/s2-lobby/README.md) cho font, màu, hero, asset, trạng thái và responsive. Các mốc dưới đây ở vùng khả dụng 390 × 844 sau safe-area; bố cục dùng luồng dọc, không khóa toàn màn bằng tọa độ tuyệt đối.
+**Ảnh đã chốt: phương án 1 — Nền trời thoáng.** Xem [concept S2](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) và [style lobby](./screens/s2-lobby/README.md) cho font, màu, hero, asset, trạng thái và responsive. Các mốc dưới đây ở vùng khả dụng 390 × 844 sau safe-area; bố cục dùng luồng dọc, không khóa toàn màn bằng tọa độ tuyệt đối.
 
 ### 2.1 Cấu trúc dọc
 | Vùng | y | Nội dung |
@@ -42,7 +42,7 @@ UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và render
 | `Bảng xếp hạng` | giấy kem viền navy 280×56, Nunito 24/800, minh họa bục/crown | S11 |
 | `Luật chơi` | nút text 280×44, Nunito navy 22/800 gạch chân, minh họa sách | mở modal luật: 6 mục ngắn (gieo, mua, thuê, xây, tù, kết thúc), scroll, nút Đóng |
 
-CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi, âm thanh và thoát dùng được offline. Kích thước/font riêng S2 không đổi control S6; co giãn và màn thấp theo [S2 lobby §8](./style/screens/s2-lobby/README.md#8-loading-offline-và-responsive).
+CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi, âm thanh và thoát dùng được offline. Kích thước/font riêng S2 không đổi control S6; co giãn và màn thấp theo [S2 lobby §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive).
 
 ---
 
@@ -51,7 +51,7 @@ CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi, âm thanh và th
 Copy hành vi caro/xiangqi `RankedScreen.tsx`.
 
 - Header 56: back, title `Bàn tỷ phú` 20/800, nút Làm mới.
-- Cột: `Chủ bàn | Chỗ | Tham gia`. Không có cột cược ở v1 (bet luôn 0); giữ chỗ trong layout để v2 thêm cột `KEN`.
+- Cột: `Chủ bàn | KEN | Chỗ | Tham gia`. Cột `KEN` hiện mức cược, bàn 0 ghi `Giao lưu` ([11 §1.3](./11-room-settings.md#13-hiển-thị)).
 - 9 hàng/trang cố định, hàng cao 8.85% vùng list, absolute theo %.
 - Hàng: avatar VIP chủ bàn 32 (03 §18), `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa 16 khi `locked`, chip `Đang chơi` khi `status = 'playing'`.
 - Footer: `Tạo bàn` (CTA vàng) giữa, phân trang ‹ › hai bên.
@@ -64,10 +64,11 @@ Copy hành vi caro/xiangqi `RankedScreen.tsx`.
 ### 4a Tạo bàn (modal 340 × auto, radius 20)
 - Title `Tạo bàn` 20/800.
 - Nhóm `Số người`: 3 chip-btn `2 · 3 · 4`, mặc định 4, chip active gold.
+- Nhóm `Số KEN cược`: ô nhập số, mặc định `0` = bàn giao lưu; kiểm `maxBet` và số dư ([11 §1.1](./11-room-settings.md#11-chọn-ở-s4-tạo-bàn)).
 - Toggle `Khóa bàn` + input mật khẩu 4–8 ký tự (hiện khi bật).
+- Toggle `Cho người khác xem`, mặc định tắt ([11 §2.1](./11-room-settings.md#21-chọn-ở-s4-tạo-bàn)).
 - Nút `Tạo bàn` CTA vàng 100% × 52; `Hủy` text.
-- Gửi `ROOM_CREATE {bet: 0, password, maxPlayers}` → `ROOM_WAITING` → S5. Lỗi `ROOM_CREATE_FAILED/INVALID_PASSWORD` → toast.
-- v2: thêm ô nhập cược + validate `maxBet`.
+- Gửi `ROOM_CREATE {bet, password, maxPlayers, allowSpectators}` → `ROOM_WAITING` → S5. Lỗi `ROOM_CREATE_FAILED/INVALID_PASSWORD` → toast; lỗi cược hiện dưới ô cược.
 
 ### 4b Vào bàn khóa
 - Input mật khẩu, nút `Vào bàn`; `WRONG_PASSWORD` → shake input + text lỗi đỏ.
@@ -79,7 +80,7 @@ Copy hành vi caro/xiangqi `RankedScreen.tsx`.
 Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40% phía dưới, panel ghế đè giữa.
 
 ### 5.1 Panel ghế (340 × auto, paper, radius 28)
-- Title `Bàn của @owner` + badge chỗ `3/4` + icon khóa.
+- Title `Bàn của @owner` + badge chỗ `3/4` + icon khóa; chip `Cược {bet} KEN` hoặc `Giao lưu` (11 §1.3).
 - Lưới ghế 2 × 2 (hoặc 1 × 2, 1 × 3 theo `maxPlayers`): mỗi ghế 150 × 88: avatar VIP 40 viền màu ghế, `@username` 15/600 (ghế của mình cũng ghi `@username`), chip `Chủ bàn` (ic-owner) hoặc `Sẵn sàng` jade / `Chưa sẵn sàng` mờ; ghế trống hiện dấu `+` nét đứt `Đang chờ...`.
 - Màu ghế theo seat index (01 §2.3) — cho người chơi biết trước mình màu gì.
 
@@ -97,7 +98,7 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 ## S6. Bàn chơi (BoardScreen, `boardMode='playing'`)
 
-> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-s6-board-pixel-16bit.png`](./style/screens/s6-board/concept-s6-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`; bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./style/screens/s6-board/README.md)).
+> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`; bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./screens/s6-board/README.md)).
 >
 > Thay thế UI v2 (17/10): `TurnPanel` và `GameLog` dưới hàng pod được bỏ; nội dung `TurnPanel` chuyển vào giữa bàn (6.3), `GameLog` thu thành dòng sự kiện ở footer (6.5).
 
@@ -289,14 +290,14 @@ Bottom sheet max 70%.
 Modal 340 × auto, radius 28, không đóng khi tap backdrop.
 - Title theo hạng của mình: `Tỷ phú số 1!` gold / `Hạng 2` / `Hạng 3` / `Phá sản` coral; dòng lý do (`@username sở hữu trọn 3 nhóm màu — thắng ngay` / `… trọn thành phố một cạnh bàn — thắng ngay` / `… cả 4 sân bay — thắng ngay` / `Bạn đã phá sản` / `Hết 30 vòng — xếp hạng theo tổng tài sản` / `Hết 25 phút — xếp hạng theo tổng tài sản` / `Chỉ còn một tỷ phú trụ lại` / `Bạn đã bỏ cuộc`).
 - Bảng 2–4 hàng: hạng, avatar VIP + `@username` (cả hàng của mình), tổng tài sản 15/800, chip XP `+50` (từ `expGains`). Hàng mình viền màu ghế.
-- v1 không hiện KEN (bet 0). Layout chừa dòng `±KEN` cho v2.
+- Bàn có cược: mỗi hàng thêm `±KEN` (hạng 1 jade, còn lại coral); bàn 0 không hiện (11 §1.3).
 - Nút `Chơi lại` CTA vàng (→ `ROOM_READY`, về S5 nếu phòng còn) + `Đóng` (→ S3).
 
 ---
 
 ## S10. Lịch sử
 
-Giống xiangqi S8: 100 trận gần nhất; mỗi hàng: hạng của mình (`#1`…`#4`, màu gold cho #1), số người, thời gian, chip `Bỏ cuộc` nếu `reason` tương ứng. Không có cột KEN v1 (`kenDelta` luôn 0).
+Giống xiangqi S8: 100 trận gần nhất; mỗi hàng: hạng của mình (`#1`…`#4`, màu gold cho #1), số người, thời gian, chip `Bỏ cuộc` nếu `reason` tương ứng. Cột `KEN` theo `kenDelta` của mình; bàn giao lưu ghi `—`.
 
 ## S11. Bảng xếp hạng
 
@@ -325,9 +326,9 @@ Modal 340: `Bạn cần trả {amount} tr cho @username/ngân hàng` (có icon V
 
 Top banner 100% × 44: ic-wifi-off + icon VIP + `@username mất kết nối · 23s`; nhiều người rớt → gộp `2 người mất kết nối`. Tắt khi `OPPONENT_RECONNECTED` hoặc người đó bị quit (step `bankrupt`).
 
-## O5. ConfirmModal
+## O5. NoticeModal
 
-Bỏ cuộc, thoát bàn, mời ra, phá sản, hạ cấp (chỉ khi hạ từ Khách sạn xuống Biệt thự). Cùng khung có thêm loại **thông báo** (một hoặc hai nút) cho tin người chơi phải đọc. Loại, tông, kích thước, hành vi và chữ theo [style O5 modal](./style/screens/o5-modal/README.md).
+Bỏ cuộc, thoát bàn, mời ra, phá sản, hạ cấp (chỉ khi hạ từ Khách sạn xuống Biệt thự). Cùng khung có thêm loại **thông báo** (một hoặc hai nút) cho tin người chơi phải đọc. Loại, tông, kích thước, hành vi và chữ theo [style O5 modal](./screens/o5-modal/README.md).
 
 ## O6. Toast + turn announce
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { TyIconName } from '../components/TyIcon';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import { vipIconUrl } from '@ola/shared/lib/vip';
 import { bridge, type GameReactionType } from '../../src/sdk';
@@ -69,12 +70,21 @@ export interface MatchResultState {
   reasonText: string;
 }
 
+export type NoticeKind = 'confirm' | 'notice';
+export type NoticeTone = 'default' | 'danger' | 'info' | 'success' | 'warning' | 'error';
+
 export interface NoticeState {
+  kind: NoticeKind;
+  tone?: NoticeTone;
   title: string;
   body: string;
+  hint?: string;
+  icon?: TyIconName;
   okLabel: string;
-  danger?: boolean;
-  onOk: () => void;
+  cancelLabel?: string;
+  dismissible?: boolean;
+  onOk?: () => void | Promise<void>;
+  onCancel?: () => void;
 }
 
 interface TycoonState {
@@ -113,6 +123,8 @@ interface TycoonState {
   result: MatchResultState | null;
   toast: string | null;
   notice: NoticeState | null;
+  noticeId: number;
+  noticeQueue: NoticeState[];
 
   init(): void;
   dispose(): void;
@@ -133,7 +145,8 @@ interface TycoonState {
 
   showToast(text: string): void;
   clearToast(): void;
-  showNotice(notice: NoticeState | null): void;
+  showNotice(notice: NoticeState): void;
+  closeNotice(notice: NoticeState): void;
 }
 
 const SOUND_KEY = 'ola:tycoon:sound';
@@ -669,6 +682,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       sheet: null,
       result: null,
       notice: null,
+      noticeQueue: [],
     });
   };
 
@@ -735,6 +749,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
     result: null,
     toast: null,
     notice: null,
+    noticeId: 0,
+    noticeQueue: [],
 
     init() {
       setSoundEnabled(get().soundOn);
@@ -798,12 +814,12 @@ export const useTycoon = create<TycoonState>((set, get) => {
       const state = refs.state;
       if (!state || get().result) return;
       get().showNotice({
+        kind: 'confirm',
+        tone: 'danger',
         title: 'Bỏ cuộc',
         body: 'Bạn sẽ bị tính phá sản và xếp cuối. Kết thúc ván ngay?',
         okLabel: 'Bỏ cuộc',
-        danger: true,
         onOk: () => {
-          get().showNotice(null);
           cancelBot();
           refs.replayEpoch += 1;
           const next = quitPlayer(state, get().you);
@@ -821,10 +837,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
         return;
       }
       get().showNotice({
+        kind: 'confirm',
+        tone: 'danger',
         title: 'Về sảnh',
         body: 'Ván đang chơi sẽ bị huỷ. Về sảnh chứ?',
         okLabel: 'Về sảnh',
-        danger: true,
         onOk: leaveToLobby,
       });
     },
@@ -849,8 +866,18 @@ export const useTycoon = create<TycoonState>((set, get) => {
       set({ toast: null });
     },
 
-    showNotice(notice: NoticeState | null) {
-      set({ notice });
+    showNotice(notice: NoticeState) {
+      if (get().notice) {
+        set({ noticeQueue: [...get().noticeQueue, notice] });
+        return;
+      }
+      set({ notice, noticeId: get().noticeId + 1 });
+    },
+
+    closeNotice(notice: NoticeState) {
+      if (get().notice !== notice) return;
+      const [next = null, ...rest] = get().noticeQueue;
+      set({ notice: next, noticeId: get().noticeId + 1, noticeQueue: rest });
     },
   };
 });

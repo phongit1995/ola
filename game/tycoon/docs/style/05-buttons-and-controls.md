@@ -3,7 +3,7 @@
 ## 1. `.ty-btn` base
 
 - Cao `--ty-btn-h` 52 (`-big` 64, `-small` 40), padding ngang 20, radius pill (ảnh mẫu; nút đứng pha jail radius 16), chữ 17/700 (small 15/700), viền 2, shadow md, gap icon-chữ 8, icon 20 (big 24).
-- Full-width trong modal/sheet; trong cụm lượt giữa bàn CTA đơn rộng 196 (390), hai nút chia 40/60. Lobby S2 có biến thể riêng theo [S2 lobby §6](./screens/s2-lobby/README.md#6-nút-và-minh-họa): rộng 280 tại 390 (responsive 256–320), cao 80/56/56/44, font 32/24/24/22, minh họa màu `lobby/ill-*`. Không áp size/icon base của nút thường vào S2.
+- Full-width trong modal/sheet; trong cụm lượt giữa bàn CTA đơn rộng 196 (390), hai nút chia 40/60. Lobby S2 có biến thể riêng theo [S2 lobby §6](../screens/s2-lobby/README.md#6-nút-và-minh-họa): rộng 280 tại 390 (responsive 256–320), cao 80/56/56/44, font 32/24/24/22, minh họa màu `lobby/ill-*`. Không áp size/icon base của nút thường vào S2.
 - Mọi state theo `01-foundations.md` §9. Loading: spinner thay icon, giữ chiều rộng.
 
 | Biến thể | Nền | Chữ | Viền | Dùng |

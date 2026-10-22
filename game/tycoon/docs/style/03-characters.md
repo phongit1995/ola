@@ -40,7 +40,7 @@ Pose `point` luôn chỉ **sang phải**; đặt nhân vật bên trái nội du
 
 | Nơi | Nhân vật | Pose | Crop | Size (390) |
 |---|---|---|---|---|
-| S2 lobby, trái cụm thẻ dưới logo | Bác Tỷ | idle | full | hình nhìn thấy cao 176; màn thấp 144, theo [style S2 lobby](./screens/s2-lobby/README.md) |
+| S2 lobby, trái cụm thẻ dưới logo | Bác Tỷ | idle | full | hình nhìn thấy cao 176; màn thấp 144, theo [style S2 lobby](../screens/s2-lobby/README.md) |
 | S2 lobby, lỗi kết nối | Bác Tỷ | sad | full | 96 |
 | Ô 8 Nhà tù (UI v3) | Anh Tèo | vẽ pixel sẵn trong tranh `art/nha-tu` | — | theo tranh |
 | S7 header | theo kind (02 §5) | idle/point | full | 64 |
@@ -76,7 +76,7 @@ Base (nối với prompt base ở `../04-asset-manifest-and-prompts.md` §6): "O
 
 Pose thêm vào cuối: `idle` "standing straight, slight smile"; `happy` "both arms raised, eyes curved, open smile"; `sad` "slumped shoulders, downturned mouth, one sweat drop"; `point` "pointing to the right with one arm, serious face". Bust sinh riêng với "head and shoulders only, filling 90% of canvas" — không crop từ full để contour không bị cắt.
 
-Riêng `ty-idle-full` dùng ở S2: thêm "paper fan partly open, matching the selected lobby mascot silhouette" và tham chiếu [concept lobby đã chọn](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png); giữ nguyên palette/contour, không lấy chữ hoặc hoa văn ký hiệu tiền trên áo trong ảnh AI.
+Riêng `ty-idle-full` dùng ở S2: thêm "paper fan partly open, matching the selected lobby mascot silhouette" và tham chiếu [concept lobby đã chọn](../screens/s2-lobby/concept-s2-lobby-pixel-16bit.png); giữ nguyên palette/contour, không lấy chữ hoặc hoa văn ký hiệu tiền trên áo trong ảnh AI.
 
 Mỗi lần sinh ghi log theo `../asset-generation-log.template.md`; QA: 6 nhân vật xếp cạnh nhau ở 30 px phải phân biệt được bằng silhouette khi chuyển grayscale.
 

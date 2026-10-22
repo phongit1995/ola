@@ -100,7 +100,7 @@ Mã màu Cơ hội, Khí vận, Lễ hội đo từ ảnh mẫu. Cơ hội đổ
 
 Số tiền: `font-variant-numeric: tabular-nums`. Tên người: luôn `@username` kèm icon VIP (`../03-component-specs.md` §18); cắt ellipsis 12 ký tự trong pod, 16 trong list (không tính `@`).
 
-Nunito có weight 400–800 và đủ glyph tiếng Việt, đã khai báo tại `game/tycoon/style.css`. Kích thước chữ riêng lobby S2 theo [S2 lobby §3](./screens/s2-lobby/README.md#3-chữ-và-màu), không thay scale control S6 ở trên.
+Nunito có weight 400–800 và đủ glyph tiếng Việt, đã khai báo tại `game/tycoon/style.css`. Kích thước chữ riêng lobby S2 theo [S2 lobby §3](../screens/s2-lobby/README.md#3-chữ-và-màu), không thay scale control S6 ở trên.
 
 ## 3. Spacing và kích thước
 

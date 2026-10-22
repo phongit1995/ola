@@ -1,7 +1,7 @@
 {
   "tool": "built-in imagegen",
   "status": "preview-only; not approved, not imported by game",
-  "reference": "game/tycoon/docs/style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
+  "reference": "game/tycoon/docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
   "variants": [
     {
       "id": "01-confirm",

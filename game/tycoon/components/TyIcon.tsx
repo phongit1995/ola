@@ -12,6 +12,7 @@ import exitDoor from '../assets/icons/ic-exit-door.svg';
 import flag from '../assets/icons/ic-flag.svg';
 import history from '../assets/icons/ic-history.svg';
 import house from '../assets/icons/ic-house.svg';
+import info from '../assets/icons/ic-info.svg';
 import jailBars from '../assets/icons/ic-jail-bars.svg';
 import ken from '../assets/icons/ic-ken.svg';
 import key from '../assets/icons/ic-key.svg';
@@ -44,6 +45,7 @@ export type TyIconName =
   | 'flag'
   | 'history'
   | 'house'
+  | 'info'
   | 'jail-bars'
   | 'ken'
   | 'key'
@@ -76,6 +78,7 @@ const ICONS: Record<TyIconName, string> = {
   flag,
   history,
   house,
+  info,
   'jail-bars': jailBars,
   ken,
   key,

@@ -12,18 +12,18 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 
 ## Hướng duy nhất
 
-**Phố Thị Rực Rỡ** là design system duy nhất cho UI Cờ Tỷ Phú. **UI v3 (20/10/2026) theo ảnh mẫu pixel 16-bit** [`style/screens/s6-board/concept-s6-board-pixel-16bit.png`](./style/screens/s6-board/concept-s6-board-pixel-16bit.png): nền trời pixel, mỗi thành phố một tranh phong cảnh pixel trong ô, 8 dải màu nhóm đất, UI mượt viền navy, CTA vàng nổi khối, quân con tốt màu ghế, tiền xanh ngọc, nguy hiểm san hô. Production: bàn, ô, nhà, xúc xắc, thẻ, quân là SVG/DOM; raster cho tranh pixel ô, nền trời, logo và nhân vật.
+**Phố Thị Rực Rỡ** là design system duy nhất cho UI Cờ Tỷ Phú. **UI v3 (20/10/2026) theo ảnh mẫu pixel 16-bit** [`screens/s6-board/concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png): nền trời pixel, mỗi thành phố một tranh phong cảnh pixel trong ô, 8 dải màu nhóm đất, UI mượt viền navy, CTA vàng nổi khối, quân con tốt màu ghế, tiền xanh ngọc, nguy hiểm san hô. Production: bàn, ô, nhà, xúc xắc, thẻ, quân là SVG/DOM; raster cho tranh pixel ô, nền trời, logo và nhân vật.
 
-**Lobby S2 đã chốt phương án 1 — Nền trời thoáng:** [ảnh tham chiếu](./style/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png), [đặc tả style lobby](./style/screens/s2-lobby/README.md). Nền trời mở, Bác Tỷ bên trái, ba thẻ đất + hai quân bên phải, menu vàng/kem với font Nunito. Đây là concept và đặc tả để triển khai; code UI hiện tại chưa được đổi sang mẫu này.
+**Lobby S2 đã chốt phương án 1 — Nền trời thoáng:** [ảnh tham chiếu](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png), [đặc tả style lobby](./screens/s2-lobby/README.md). Nền trời mở, Bác Tỷ bên trái, ba thẻ đất + hai quân bên phải, menu vàng/kem với font Nunito. Đây là concept và đặc tả để triển khai; code UI hiện tại chưa được đổi sang mẫu này.
 
 ## Phạm vi v1 (đề xuất chốt)
 
 - PvP **2–4 người**, chơi theo bàn (room) như Tiến Lên; không có hàng đợi ghép nhanh.
-- **Cược KEN = 0** trong v1 (giống Tiến Lên v1): engine hiện mới chia tiền cho 2 người (`Player0ID/Player1ID`); chia pot theo `Rankings` là việc của v2. Thắng/thua vẫn ghi lịch sử, bảng xếp hạng và cộng XP.
+- **Cược KEN do chủ bàn chọn, mặc định 0** (bàn giao lưu); hạng 1 nhận pot trừ phí. **Cho người khác xem: mặc định tắt**, chủ bàn bật khi tạo bàn. Chi tiết và việc server còn thiếu: [11-room-settings.md](./11-room-settings.md). Thắng/thua vẫn ghi lịch sử, bảng xếp hạng và cộng XP.
 - Bàn **32 ô** (16 thành phố Việt Nam, 8 nhóm × 2), Xuất phát ở góc dưới-trái, đi thuận kim đồng hồ; tiền trong ván tính bằng **triệu** (`tr`), vốn khởi đầu `1.500 tr`.
 - **Giới hạn ván**: `MAX_ROUNDS = 30` vòng hoặc 25 phút (mỗi vòng = mọi người còn chơi đã kết thúc lượt một lần). Hết vòng → xếp hạng theo **tổng tài sản**. Chỉ còn 1 người chưa phá sản → kết thúc sớm.
 - Có: gieo xúc xắc (đôi được gieo lại, 3 đôi liên tiếp vào tù), mua đất, thu tiền thuê tự động, nâng 3 cấp nhà (Nhà → Biệt thự → Khách sạn) đều tay, hạ cấp hoàn nửa giá, nhà tù (nộp phạt / thẻ ra tù / gieo đôi), thẻ Cơ hội và Khí vận, phá sản. Giá và cân bằng: [09-economy.md](./09-economy.md).
-- Không có (v2): đấu giá khi bỏ mua, trao đổi đất, thế chấp, cược KEN, xem trận (bị engine chặn vì game dùng `StateViewer` — xem 05 §9).
+- Không có (v2): đấu giá khi bỏ mua, trao đổi đất, thế chấp.
 - **30 giây** cho mỗi hành động; hết giờ server tự làm thay (gieo, bỏ mua, kết thúc lượt, tự bán nhà để trả nợ). 3 lần hết giờ liên tiếp hoặc thoát giữa ván = phá sản kỹ thuật, ván tiếp tục với người còn lại.
 - Bỏ cuộc (FORFEIT), reconnect/resume, chat phòng + trong ván, reaction, lịch sử, bảng xếp hạng — dùng hạ tầng engine + SDK sẵn có.
 
@@ -46,7 +46,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 
 | # | Màn | Tính năng chính |
 |---|---|---|
-| S1 | Loading / Connecting | đã có [UI chờ hồ sơ + xúc xắc 3D](./style/screens/s1-loading/README.md), Cung men nổi quay rồi xúc xắc lật một mặt; preload/API/lỗi + thử lại còn trong kế hoạch |
+| S1 | Loading / Connecting | đã có [UI chờ hồ sơ + xúc xắc 3D](./screens/s1-loading/README.md), Cung men nổi quay rồi xúc xắc lật một mặt; preload/API/lỗi + thử lại còn trong kế hoạch |
 | S2 | Lobby | logo, KEN + avatar VIP + `@username`, CTA Vào bàn, Lịch sử, Bảng xếp hạng, Luật chơi, bật/tắt âm, thoát game |
 | S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, Tạo bàn, Làm mới, phân trang 9 hàng |
 | S4 | Modal Tạo bàn / Vào bàn khóa | chọn số người 2/3/4, mật khẩu |
@@ -61,7 +61,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 | O2 | Thẻ bài | lật thẻ Cơ hội / Khí vận, nội dung live text, nút Tiếp tục |
 | O3 | Trả nợ | khi tiền < số phải trả: chọn nhà để bán, hoặc tuyên bố phá sản |
 | O4 | Banner mất kết nối | icon VIP + `@username` mất kết nối, đếm ngược grace 30 s |
-| O5 | ConfirmModal | bỏ cuộc, thoát bàn, mời ra, bán nhà |
+| O5 | NoticeModal | xác nhận (bỏ cuộc, thoát bàn, phá sản, hạ cấp) và thông báo (mời ra, lỗi, thiếu KEN) |
 | O6 | Toast + turn announce | lỗi server, ĐẾN LƯỢT BẠN, "+200 qua Xuất phát" |
 | O7 | Banner vòng cuối | "Vòng 28/30" đổi màu từ vòng 28, "Vòng cuối!" ở vòng 30 |
 
@@ -79,9 +79,11 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 8. [08-fx-and-animation.md](./08-fx-and-animation.md) — kiến trúc 4 lớp (SVG / DOM / canvas Pixi hạt / overlay), ≈ 60 hiệu ứng theo sự kiện với bản Lite, API `FxLayer`, ngân sách hiệu năng, tier Full/Lite/Off.
 9. [09-economy.md](./09-economy.md) — kinh tế bàn 32 ô: bảng giá 16 thành phố, 3 cấp nhà, công thức, dòng tiền, thời gian một ván, thời gian chờ khi chơi với người thật, kết quả mô phỏng và dải kiểm tra tự động.
 10. [10-board-tiles.md](./10-board-tiles.md) — ghi chú nhanh 32 ô: loại ô, vị trí, giá, tiền thuê, ô nào mua / mua lại được, điều kiện thắng ngay theo ô.
-11. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, [style lobby S2](./style/screens/s2-lobby/README.md), kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
-12. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
-13. [asset-generation-log.md](./asset-generation-log.md) — nguồn, prompt và lựa chọn concept lobby S2.
+11. [11-room-settings.md](./11-room-settings.md) — thiết lập bàn: cược KEN (mặc định 0) và cho người khác xem (mặc định tắt); hiển thị ở từng màn, thanh toán, protocol, việc server.
+12. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
+13. [screens/](./screens/README.md) — mỗi màn một folder gồm ảnh mẫu và style riêng: [S1 loading](./screens/s1-loading/README.md), [S2 lobby](./screens/s2-lobby/README.md), [S6 bàn chơi](./screens/s6-board/README.md), [O5 modal](./screens/o5-modal/README.md).
+14. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.
+15. [asset-generation-log.md](./asset-generation-log.md) — nguồn, prompt và lựa chọn concept lobby S2.
 
 ## Nguyên tắc bắt buộc
 
