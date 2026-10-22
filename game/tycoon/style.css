@@ -441,6 +441,9 @@ button:focus-visible,
   --ty-lb-cta-base: #542507;
   --ty-lb-paper-edge: #e9d6b0;
   --ty-lb-paper-shadow: rgba(32, 114, 171, 0.6);
+  --ty-lb-mint-face: #a4f4cf;
+  --ty-lb-mint-low: #51d9a3;
+  --ty-lb-mint-edge: #299b79;
   --ty-lb-menu-w: clamp(256px, calc((100% + 24px) * 0.8 - 32px), 320px);
 }
 
@@ -764,6 +767,36 @@ button:focus-visible,
   height: 40px;
 }
 
+.ty-lb-btn-mint {
+  position: relative;
+  min-height: 56px;
+  font-size: 24px;
+  border: 1.5px solid var(--ty-lb-navy);
+  background: linear-gradient(180deg, var(--ty-lb-mint-face) 0%, var(--ty-lb-mint-face) 20%, var(--ty-lb-mint-low) 100%);
+  box-shadow: inset 0 -4px 0 var(--ty-lb-mint-edge), 0 2px 0 var(--ty-lb-paper-shadow);
+}
+
+.ty-lb-btn-mint > * {
+  position: relative;
+}
+
+.ty-lb-btn-mint::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  width: 30px;
+  height: 14px;
+  border-top: 2.5px solid rgba(255, 255, 255, 0.9);
+  border-radius: 100% 0 0 0 / 100% 0 0 0;
+  pointer-events: none;
+}
+
+.ty-lb-btn-mint img {
+  width: 40px;
+  height: 40px;
+}
+
 .ty-lb-btn-text {
   width: auto;
   align-self: center;
@@ -860,8 +893,13 @@ button:focus-visible,
   box-shadow: inset 0 -2px 0 var(--ty-lb-paper-edge);
 }
 
+.ty-lb-btn-mint:active:not(:disabled) {
+  box-shadow: inset 0 -2px 0 var(--ty-lb-mint-edge);
+}
+
 @media (max-width: 370px) {
-  .ty-lb-btn-paper {
+  .ty-lb-btn-paper,
+  .ty-lb-btn-mint {
     font-size: 22px;
   }
 
@@ -892,7 +930,8 @@ button:focus-visible,
     font-size: 28px;
   }
 
-  .ty-lb-btn-paper {
+  .ty-lb-btn-paper,
+  .ty-lb-btn-mint {
     min-height: 52px;
     font-size: 22px;
   }

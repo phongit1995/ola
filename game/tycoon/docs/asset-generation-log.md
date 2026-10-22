@@ -11,6 +11,7 @@
 - Hậu kỳ khi đưa vào docs: copy nguyên byte và đổi tên theo quy ước màn; không crop, resize, nén lại hoặc chỉnh ảnh.
 - Kích thước cuối: **853 × 1844 px**, **2.136.952 byte** (khoảng 2,04 MiB).
 - SHA-256: `75dfca89db6812190fb228b0041703b6f687610917a3cbdcc3d5d3e07517cd78`.
+- **Ngày 22/10/2026 đã thay file cùng tên bằng bản có nút Chơi với máy** (2.041.789 byte, SHA-256 `18067e0d21367405c1f094db50a99e77b7e87fff8da6d3b89843a9e452049d31`), xem [mục S2 chơi máy](#s2--chốt-nút-chơi-với-máy-và-tách-asset). Các dòng trên và prompt dưới là của bản 20/10, bản đó còn trong commit `9be6d970b`.
 - Người duyệt: người dùng, chọn ảnh thứ nhất trong cuộc hội thoại.
 - Kiểm tra docs: ảnh đích có cùng hash với nguồn; đủ topbar/logo/mascot/3 thẻ/2 quân/4 action/footer, đã xem ảnh trực tiếp.
 - Ngoại lệ production: tên, avatar, số dư, version là mẫu; chữ bằng DOM với Nunito, avatar VIP + `@username`; palette, kích thước và trạng thái theo [style lobby](./screens/s2-lobby/README.md). Concept không yêu cầu alpha và không được tính vào budget asset tải game.
@@ -140,3 +141,24 @@ Variant-specific invariants: Keep single cream paper table with subtle dividers,
 - SVG riêng: reload, khóa đặc, cảnh báo, hai chevron × hai trạng thái, X đậm/mảnh; màu theo token navy `#1f2a44`, coral `#e4573d`, kem `#fff8ea`. Mắt mật khẩu không tách bộ riêng: `ic-eye` / `ic-eye-off` đổi sang mắt đặc. Tổng [11 file runtime](../assets/room-list/README.md), dùng `RoomIcon`.
 - Đã so từng icon với chi tiết ảnh mẫu phóng lớn và cỡ thật; [audit](./screens/s3-room-list/icon-export-audit.md). Khóa vàng và dấu cộng còn lệch nhỏ; mắt gạch và trang sau disabled không có ảnh mẫu riêng.
 - Trạng thái: đã xuất để review, chưa duyệt asset và chưa lắp màn online.
+
+## S2 — chốt nút Chơi với máy và tách asset
+
+- Ngày **22/10/2026**, người dùng chốt bản xanh ngọc v4, giữ topbar đúng docs: VIP + @username; số dư rồi đồng K bên phải, bỏ chữ KEN. Ảnh này **thay** [concept S2](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) cùng tên.
+- Built-in imagegen sinh v4: đầu vào là bản v3 sửa topbar (theo screenshot runtime: VIP 3, @minhanh, 12.500 rồi đồng K) và bản v2 chỉ làm tham chiếu màu mint/robot. Output `exec-307eb17f-982d-4cdd-839d-c0b0695c0935.png`, giữ nguyên byte 853 × 1844. Các bản thử đã dọn, không dùng làm chuẩn.
+- Tách hai PNG alpha `icon-bot.png` và `button-mint.png`; người dùng xác nhận cần nền nút không chữ, không phải ô nhập liệu. [Prompt, kiểm alpha, giới hạn và cách dùng](../assets/screens/lobby/prompts.md#chơi-với-máy-2026-10-22); metadata/hash trong manifest.
+- Đã xuất `lobby/ill-bot.webp` (104 × 90, 3.642 byte, cùng thông số các `ill-*`) và gắn nút vào sảnh. Nền nút dựng bằng CSS theo `button-mint.png`, chữ là DOM. Các phần khác dùng lại asset đang có.
+
+### Prompt concept v4
+
+```text
+Use case: precise-object-edit.
+Two inputs:
+IMAGE 1 is the EDIT TARGET and authoritative entire screen: current-style Cờ Tỷ Phú lobby with correct VIP/@username/K balance topbar and a lavender robot button.
+IMAGE 2 is ONLY a COLOR AND ROBOT REFERENCE for its mint-green "Chơi với máy" button. Absolutely do not use image 2's outdated topbar, font, hero or other layout.
+
+Edit IMAGE 1: replace its lavender "Chơi với máy" button with the mint jade-green button style from IMAGE 2. Match that appealing mint face: pale mint #A4F4CF at top to jade #51D9A3 lower face, deeper jade #299B79 bottom bevel, single navy outline #1F2A44, one small upper-left highlight. Remove lavender completely from this button. Replace the white/gold robot with the blue/white friendly robot head from IMAGE 2: blue antenna and earpieces, rounded blue outer case, white face, two navy eyes and smile, small highlights. Keep robot inside button with sufficient padding. Restore the prior mint-button look, not a new design.
+Button is directly below Vào bàn, above Lịch sử. Keep image 1's current rounded Nunito typography, navy exact text "Chơi với máy". Center icon and label as one group. Match width of other buttons and match secondary button height (Lịch sử), about 56 CSS pixels; robot ~40 CSS pixels, no protruding antenna. Keep the same upper edge position and comfortable gap below it, don't move other actions. Avoid two bright blobs at either end or large white highlight strips; use the quieter highlight from image 2.
+
+CRITICAL KEEP FROM IMAGE 1: topbar left green Ola VIP face with crown and red glasses, exact lowercase "@minhanh"; balance exact "12.500" THEN gold coin with white letter K on the RIGHT, no "KEN" suffix, no coin before amount, no crown coin, no human portrait, no "Minh Anh". Preserve image 1 font, cream pills, navy outlines, sound icon and all topbar alignment. Keep ALL other pixels/content as closely unchanged as possible: logo, character, property cards and pawns, golden Vào bàn, cream Lịch sử and Bảng xếp hạng, underlined Luật chơi, footer Thoát game, sky and city. Gold Vào bàn remains the large primary action. Output one full portrait screen matching image 1 dimensions/aspect. No annotations, extra buttons, badges, version or frame.
+```

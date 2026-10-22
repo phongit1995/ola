@@ -14,7 +14,7 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 
 **Phố Thị Rực Rỡ** là design system duy nhất cho UI Cờ Tỷ Phú. **UI v3 (20/10/2026) theo ảnh mẫu pixel 16-bit** [`screens/s6-board/concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png): nền trời pixel, mỗi thành phố một tranh phong cảnh pixel trong ô, 8 dải màu nhóm đất, UI mượt viền navy, CTA vàng nổi khối, quân con tốt màu ghế, tiền xanh ngọc, nguy hiểm san hô. Production: bàn, ô, nhà, xúc xắc, thẻ, quân là SVG/DOM; raster cho tranh pixel ô, nền trời, logo và nhân vật.
 
-**Lobby S2 đã chốt phương án 1 — Nền trời thoáng:** [ảnh tham chiếu](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png), [đặc tả style lobby](./screens/s2-lobby/README.md). Nền trời mở, Bác Tỷ bên trái, ba thẻ đất + hai quân bên phải, menu vàng/kem với font Nunito. Đây là concept và đặc tả để triển khai; code UI hiện tại chưa được đổi sang mẫu này.
+**Lobby S2 đã chốt phương án 1 — Nền trời thoáng:** [ảnh tham chiếu](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) (bản 22/10/2026 có nút chơi máy xanh ngọc), [đặc tả style lobby](./screens/s2-lobby/README.md). Nền trời mở, Bác Tỷ bên trái, ba thẻ đất + hai quân bên phải, menu vàng/kem với font Nunito. Lobby mock đã dựng; nút Chơi với máy mở chọn số người rồi vào ván với máy. Topbar dùng avatar VIP, @username và số dư rồi đồng K bên phải.
 
 ## Phạm vi v1 (đề xuất chốt)
 
@@ -47,7 +47,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 | # | Màn | Tính năng chính |
 |---|---|---|
 | S1 | Loading / Connecting | đã có [UI chờ hồ sơ + xúc xắc 3D](./screens/s1-loading/README.md), Cung men nổi quay rồi xúc xắc lật một mặt; preload/API/lỗi + thử lại còn trong kế hoạch |
-| S2 | Lobby | logo, KEN + avatar VIP + `@username`, CTA Vào bàn, Lịch sử, Bảng xếp hạng, Luật chơi, bật/tắt âm, thoát game |
+| S2 | Lobby | logo, KEN + avatar VIP + `@username`, CTA Vào bàn, Chơi với máy, Lịch sử, Bảng xếp hạng, Luật chơi, bật/tắt âm, thoát game |
 | S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, KEN, Tham gia/Xem, Tạo bàn, reload chỉ icon tách khỏi tiêu đề, phân trang 9 hàng |
 | S4 | Modal Tạo bàn / Vào bàn khóa | số người 2/3/4, cược KEN, mật khẩu, cho xem; [6 ảnh S4/O5 đã chốt UI](./screens/s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5), chưa dựng online |
 | S5 | Phòng chờ | 4 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |

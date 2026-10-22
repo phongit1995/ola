@@ -228,7 +228,8 @@
       ],
       "sha256": "1e3d364c53588a36ba7312c6cff0679276f522e2a6acf86378276e4c6f472542",
       "generatedSource": "exec-ca0570ab-d516-4eca-a20f-9ca12a1589c2.png",
-      "version": "v1"
+      "version": "v1",
+      "usage": "Historical crown-coin reference only; current KEN uses ../../lobby/ken.png (letter K)."
     },
     {
       "id": "icon-sound",
@@ -362,9 +363,70 @@
         "bytes": 850,
         "sha256": "cfc91d86b175756ac1823dac40ee24178709b37d9169a2e1ae4f8f4a552052fb"
       }
+    },
+    {
+      "id": "icon-bot",
+      "file": "icon-bot.png",
+      "width": 1358,
+      "height": 1159,
+      "bytes": 907706,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 52.54,
+      "contentBounds": [
+        90,
+        85,
+        1268,
+        1089
+      ],
+      "visibleRatio": 1.173,
+      "sha256": "16e7660fee89cfc2f1692308784d67795ab5e2f83cfcf53beb52ad62a0769842",
+      "version": "bot-v1",
+      "sourceConcept": "../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
+      "prompt": "prompts.md",
+      "status": "integrated",
+      "generatedSource": "exec-626e5852-b27c-46ed-ade1-86a31b6d7fd0.png",
+      "contentBoundsAlphaThreshold": 128,
+      "runtime": {
+        "file": "../../lobby/ill-bot.webp",
+        "width": 104,
+        "height": 90,
+        "bytes": 3642,
+        "sha256": "a4d9fdc22561bbd111b882d94bd84ce3c2a5f0c7681924861aeee9033e936b8e"
+      }
+    },
+    {
+      "id": "button-mint",
+      "file": "button-mint.png",
+      "width": 2073,
+      "height": 758,
+      "bytes": 751869,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 59.53,
+      "contentBounds": [
+        137,
+        197,
+        1937,
+        561
+      ],
+      "visibleRatio": 4.945,
+      "sha256": "c6c891fc4963d0305332fc2b0ad0091355ca60ad5d4c96f06fe84f6f151df9b2",
+      "version": "bot-v1",
+      "sourceConcept": "../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
+      "prompt": "prompts.md",
+      "status": "css-reference",
+      "generatedSource": "exec-5e5b58f5-032f-4f01-9ad7-9a82175d1f55.png",
+      "contentBoundsAlphaThreshold": 128
     }
   ],
-  "totalBytes": 13890773,
+  "totalBytes": 15550348,
   "knownLimitations": [
     "AI reconstructed some details; not a pixel-identical crop.",
     "Hidden RGB under alpha zero is not visible glow; judge edges on alpha-composited previews.",
@@ -373,7 +435,8 @@
     "Four yellow CTA rays and two white hero ray clusters are separate code-native SVG layers (CTA 2+2, hero 3+3), not part of these PNGs.",
     "Full v2 prompts are not stored; prompts.md summarizes the v2 requests and input crops.",
     "The PNG sound artwork has no off variant; runtime uses the existing on/off SVG pair.",
-    "Exit now uses two new imagegen layers derived from the selected v1 design; original combined v1 remains a reference. Full split prompts and export settings are in exit-split-prompts.md."
+    "Exit now uses two new imagegen layers derived from the selected v1 design; original combined v1 remains a reference. Full split prompts and export settings are in exit-split-prompts.md.",
+    "Bot concept approved 2026-10-22; icon-bot and button-mint extracted with true alpha; icon-bot exported to ill-bot.webp and the button is live with a CSS surface (button-mint is reference only), not visual-QA approved. See prompts.md. The bot concept replaced concept-s2-lobby-pixel-16bit.png in place; the 15 earlier assets came from the previous version (git 9be6d970b)."
   ],
   "visualReview": {
     "date": "2026-10-21",

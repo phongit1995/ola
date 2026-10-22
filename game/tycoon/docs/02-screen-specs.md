@@ -23,7 +23,7 @@ UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và render
 
 ## S2. Lobby
 
-**Ảnh đã chốt: phương án 1 — Nền trời thoáng.** Xem [concept S2](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) và [style lobby](./screens/s2-lobby/README.md) cho font, màu, hero, asset, trạng thái và responsive. Các mốc dưới đây ở vùng khả dụng 390 × 844 sau safe-area; bố cục dùng luồng dọc, không khóa toàn màn bằng tọa độ tuyệt đối.
+**Ảnh đã chốt: phương án 1 — Nền trời thoáng.** Xem [concept S2](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) (bản 22/10/2026 có nút chơi máy) và [style lobby](./screens/s2-lobby/README.md) cho font, màu, hero, asset, trạng thái và responsive. Các mốc dưới đây ở vùng khả dụng 390 × 844 sau safe-area; bố cục dùng luồng dọc, không khóa toàn màn bằng tọa độ tuyệt đối.
 
 ### 2.1 Cấu trúc dọc
 | Vùng | y | Nội dung |
@@ -31,18 +31,19 @@ UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và render
 | Topbar | 28–80 | avatar VIP + `@username` (trái, 03 §18), badge KEN (phải), nút âm thanh; KEN dài được xuống hàng. Component `LobbyTopbar` dùng chung với S3, cùng vị trí, không animate khi chuyển màn |
 | Logo | 100–180 | logo "CỜ TỶ PHÚ", khung tối đa 320 × 80 |
 | Hero | 188–364 | Bác Tỷ trái, 3 thẻ đất có tranh pixel và 2 quân con tốt vàng/xanh bên phải |
-| CTA stack | 376–648 | 4 action dọc, rộng 280, cách 12 px |
-| Footer | đáy − 64 đến đáy − 20 | nút Thoát game (`bridge.exit()`) cao 44, version nhỏ; cách menu ít nhất 24 |
+| CTA stack | 376–716 | 5 action dọc, rộng 280, cách 12 px |
+| Footer | đáy − 64 đến đáy − 20 | nút Thoát game (`bridge.exit()`) cao 44, không version; cách menu ít nhất 24 |
 
 ### 2.2 CTA stack
 | Nút | Style | Hành vi |
 |---|---|---|
 | `Vào bàn` | CTA vàng 280×80, Nunito navy 32/800, minh họa xúc xắc | `openRanked()` → S3, preload nhóm RANKED |
+| `Chơi với máy` | xanh ngọc 280×56, Nunito navy 24/800, robot xanh–trắng 40 | `setSetupOpen(true)` → BotSetupModal, chọn 1–3 máy rồi vào ván |
 | `Lịch sử` | giấy kem viền navy 280×56, Nunito 24/800, minh họa đồng hồ blue | S10 |
 | `Bảng xếp hạng` | giấy kem viền navy 280×56, Nunito 24/800, minh họa bục/crown | S11 |
 | `Luật chơi` | nút text 280×44, Nunito navy 22/800 gạch chân, minh họa sách | mở modal luật: 6 mục ngắn (gieo, mua, thuê, xây, tù, kết thúc), scroll, nút Đóng |
 
-CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi, âm thanh và thoát dùng được offline. Kích thước/font riêng S2 không đổi control S6; co giãn và màn thấp theo [S2 lobby §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive).
+CTA online disabled khi `lobbyPhase !== 'ready'`. Chơi với máy, Luật chơi, âm thanh và thoát dùng được offline. Kích thước/font riêng S2 không đổi control S6; co giãn và màn thấp theo [S2 lobby §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive).
 
 ---
 

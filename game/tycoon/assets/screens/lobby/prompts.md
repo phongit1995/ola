@@ -117,3 +117,28 @@ Tia vàng CTA và tia trắng hero không nằm trong PNG; chúng là hai SVG ri
 ## Tách lại cửa và mũi tên từ v1 (2026-10-21)
 
 Theo yêu cầu tiếp tục dùng imagegen, đã tách lại đúng thiết kế thoát v1 thành `icon-exit-door.png` và `icon-exit-arrow.png`. Giữ cửa cam, mũi tên kem viền đỏ nâu hướng phải. Hai output này khác cặp v2 bị loại ở trên. [Toàn bộ prompt, output ID, lượt sửa tỷ lệ và thông số export](./exit-split-prompts.md). PNG nguồn giữ nguyên output imagegen, không script mask/recolor.
+
+## Chơi với máy (2026-10-22)
+
+Tách từ [concept S2](../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) bản có nút xanh ngọc, hai lượt built-in imagegen riêng, `transparent_background=true`; giữ nguyên PNG công cụ trả về, không chỉnh pixel hoặc kéo giãn.
+
+| File | Vai trò | Runtime |
+|---|---|---|
+| `icon-bot.png` | Robot xanh–trắng, 52,54% trong suốt | `lobby/ill-bot.webp` 104 × 90, slot 40 × 40, alt rỗng |
+| `button-mint.png` | Mặt nút xanh ngọc không chữ/icon, 59,53% trong suốt; visible (alpha ≥ 128) 1800 × 364, tỷ lệ 4,945:1 | Không xuất; mẫu cho CSS `.ty-lb-btn-mint`, nút 280 × 56 ở viewport 390 |
+
+Đã kiểm trực quan: đủ đầu/ăng-ten/tai robot, không còn chữ hay UI khác; nền nút chỉ còn mặt mint, viền navy, cạnh jade và highlight trên trái. Giới hạn: imagegen tái dựng chi tiết, không phải crop trùng pixel (robot có shading mắt/miệng rõ hơn ảnh nhỏ, highlight nút liền mạch hơn concept); đã xem ở cỡ thật trong sảnh 390/375/360, chưa qua visual QA. Các phần khác của concept dùng lại asset đang có, không tách lại.
+
+```text
+Use case: background-extraction.
+Input image is the approved Cờ Tỷ Phú lobby. Extract ONLY the blue/white ROBOT HEAD icon from the mint-green "Chơi với máy" button beneath the gold Vào bàn button. Return a single isolated PNG with genuine transparent alpha background.
+Preserve the exact selected robot design: near-square rounded BLUE outer head case, white/light lavender face inset, two tall oval navy eyes with tiny white catchlights, small curved navy smile, blue rectangular rounded earpieces on both sides, one centered short blue antenna with round blue tip, dark navy contour and restrained white/cyan highlights. Front-facing, no perspective, no body, arms, legs, gold, crown or redesign.
+Faithfully isolate and upscale this specific icon, not invent a different robot. Preserve antenna/head/ear proportions and original outline weight, about square overall silhouette. Center the complete icon with approximately 8% transparent margin; keep the antenna and both ears intact. Suitable to display at 40 px. No floor shadow, no glow or halo outside contour, no checkerboard painted into pixels, no button, text, mint surface, sky, scenery or other UI. Keep only the robot and true transparent surrounding pixels.
+```
+
+```text
+Use case: background-extraction.
+Extract the EMPTY MINT JADE-GREEN BUTTON SURFACE from the supplied approved Cờ Tỷ Phú lobby image: the "Chơi với máy" pill directly below gold Vào bàn. Output only this ONE empty button, isolated on genuine transparent alpha background.
+Remove the robot and ALL text completely and cleanly reconstruct continuous mint surface underneath them. Preserve shape, palette and finish of that exact green button: full capsule/pill ends, single dark navy exterior contour, pale mint #A4F4CF upper face graduating to jade #51D9A3 lower face, darker jade #299B79 raised lower bevel INSIDE the contour, small soft white curved highlight near upper LEFT edge. No white highlight on the right, no full white inner ring, no extra thick navy shadow/second outline, no lavender. No symbols, label, robot, empty icon badge, rays or glowing halo.
+Use visible button width-to-height ratio EXACTLY 5:1 (production target 280 x 56 CSS pixels), including its bottom bevel. Long horizontal pill, not a fat 3:1 capsule. Fit the complete shape, not clipped, in a landscape transparent canvas with minimal 4–6% margins around the whole visible button. The canvas can be 3:1 or wider, but the VISIBLE BUTTON must be 5:1, centered vertically. This is a reusable texture reference/skin, so the whole center is uninterrupted mint. Preserve clean smooth edges and original visual style. No floor, background, sky, checkerboard baked in, scene, additional shapes or watermarks.
+```

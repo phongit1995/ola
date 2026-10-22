@@ -23,7 +23,7 @@ Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; to�
 - Kebab-case tiếng Anh cho ic/tg, tiếng Việt không dấu cho quân (`tk-non-la`) vì quân là nội dung văn hóa, tên hiển thị live text `Nón lá`.
 - Không viết hoa, không space; webp cho raster runtime, svg cho vector.
 - **PNG gốc theo màn:** asset cắt từ concept lưu tạm dạng PNG tại `assets/screens/<màn>/` (tên theo vai trò: `logo.png`, `icon-history.png`…) + `manifest.json`. Khi code màn đó mới xuất sang tên runtime ở trên (bảng đối chiếu trong README của màn, ví dụ [S2 §10](./screens/s2-lobby/README.md#10-asset-cắt-từ-concept--file-production)). Quy trình: [screens](./screens/README.md#quy-trình-asset-theo-màn).
-- `lobby/ill-{dice|history|leaderboard|rules|exit}.webp` (hoặc `.svg` nếu vẽ lại vector): 5 minh họa trang trí nút S2, không chữ; tách khỏi `ic-*` điều khiển chung. Nguồn là PNG `icon-*.png` trong `assets/screens/lobby/`; đã có file runtime, còn lỗi visual QA. Đồng KEN (pill số dư S2, cột KEN và ô cược S3/S4) dùng `lobby/ken.png`, chép nguyên đồng chữ K của app (`web/src/assets/icons/apps/ken.png`, cùng file game sút pen, đập trứng và Tiến Lên) từ 22/10/2026; `lobby/ill-ken.webp` (đồng vương miện cắt từ concept) không còn dùng ở runtime.
+- `lobby/ill-{dice|bot|history|leaderboard|rules|exit}.webp` (hoặc `.svg` nếu vẽ lại vector): 6 minh họa trang trí nút S2, không chữ; tách khỏi `ic-*` điều khiển chung. Nguồn là PNG `icon-*.png` trong `assets/screens/lobby/`; đã có file runtime, còn lỗi visual QA. Đồng KEN (pill số dư S2, cột KEN và ô cược S3/S4) dùng `lobby/ken.png`, chép nguyên đồng chữ K của app (`web/src/assets/icons/apps/ken.png`, cùng file game sút pen, đập trứng và Tiến Lên) từ 22/10/2026; `lobby/ill-ken.webp` (đồng vương miện cắt từ concept) không còn dùng ở runtime.
 - `lobby/decor-cta-rays.svg`, `lobby/decor-hero-rays.svg`: 2 nhóm decor SVG code-native **đã tạo** (chưa qua visual QA). Tia vàng nằm ngoài CTA và tia trắng nằm cạnh quân trong hero; SVG code-native theo concept, không phải PNG đã có sẵn.
 
 ## 3. Quân cờ — sinh và hậu kỳ
@@ -47,7 +47,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 | `tg-*` | SVG code-native 32 | 13 | vẽ tay theo 06 §3 | bàn, O2, S7 |
 | `tg-house`/`tg-hotel` | inline SVG | 2 | BoardSurface | bàn |
 | `ic-*` | SVG code-native 24 | 30 (22 copy từ xiangqi/thirteen + 8 mới) | 06 §2 | toàn app |
-| `lobby/ill-*` | WebP đã có, SVG nếu vẽ lại | 6 | screens/s2-lobby §6, §10 | 5 minh họa action + xu KEN S2; chưa đạt visual QA |
+| `lobby/ill-*` | WebP đã có, SVG nếu vẽ lại | 7 | screens/s2-lobby §6, §10 | 6 minh họa action + xu KEN S2; chưa đạt visual QA |
 | `lobby/hero-properties.webp` | WebP đã có | 1 | PNG tách từ concept S2 | 3 thẻ + 2 quân, chung một lớp trang trí |
 | `lobby/decor-*` | SVG code-native, **đã tạo** | 2 | concept S2, asset-audit §2 | 4 tia vàng quanh CTA; 2 cụm tia trắng quanh hero (3 + 3 tia) |
 | `lobby/loading-ring-enamel.svg` | SVG code-native trong suốt | 1 | Cung men nổi đã chọn; screens/s1-loading | bốn cung xanh–vàng, quay luân phiên với mỗi lần xúc xắc lật một mặt |
@@ -72,7 +72,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 
 | Group | Nội dung | Khi nào |
 |---|---|---|
-| `LOBBY_CRITICAL` | bg-board-pixel, logo, `ty-idle-full`, `hero-properties`, 6 `lobby/ill-*`, cặp icon âm thanh, 2 SVG `lobby/decor-*` và `lobby/loading-ring-enamel.svg` | kế hoạch preload trước first paint; vẫn giữ tổng ≤ 180 KB gzip, chưa xác nhận đạt |
+| `LOBBY_CRITICAL` | bg-board-pixel, logo, `ty-idle-full`, `hero-properties`, 7 `lobby/ill-*`, cặp icon âm thanh, 2 SVG `lobby/decor-*` và `lobby/loading-ring-enamel.svg` | kế hoạch preload trước first paint; vẫn giữ tổng ≤ 180 KB gzip, chưa xác nhận đạt |
 | `RANKED` | icon list | `openRanked()` |
 | `BOARD` | 13 tg, 6 dice, `tk-pawn`, 19 tranh `tiles/art`, `bg-board-pixel`, board.gen.json, cards.gen.json | khi vào phòng chờ (bắt buộc xong trước MATCH_FOUND) |
 | `CHARS` | 44 file nhân vật còn lại | sau MATCH_FOUND, idle batches; thiếu thì fallback glyph |

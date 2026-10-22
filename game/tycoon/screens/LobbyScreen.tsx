@@ -3,6 +3,7 @@ import bgUrl from '../assets/lobby/bg-board-pixel.webp';
 import logoUrl from '../assets/lobby/logo.webp';
 import heroUrl from '../assets/lobby/hero-properties.webp';
 import diceUrl from '../assets/lobby/ill-dice.webp';
+import botUrl from '../assets/lobby/ill-bot.webp';
 import historyUrl from '../assets/lobby/ill-history.webp';
 import leaderboardUrl from '../assets/lobby/ill-leaderboard.webp';
 import rulesUrl from '../assets/lobby/ill-rules.webp';
@@ -18,10 +19,11 @@ import { LobbyTopbar } from './LobbyTopbar';
 const ONLINE_SOON = 'Tính năng online đang được làm';
 
 export function LobbyScreen() {
-  const { profile, setRoomsOpen, setRulesOpen, exitGame, showToast } = useTycoon(
+  const { profile, setRoomsOpen, setSetupOpen, setRulesOpen, exitGame, showToast } = useTycoon(
     useShallow((s) => ({
       profile: s.profile,
       setRoomsOpen: s.setRoomsOpen,
+      setSetupOpen: s.setSetupOpen,
       setRulesOpen: s.setRulesOpen,
       exitGame: s.exitGame,
       showToast: s.showToast,
@@ -68,6 +70,10 @@ export function LobbyScreen() {
             </button>
             <img className="ty-lb-cta-rays" src={ctaRaysUrl} alt="" draggable={false} />
           </div>
+          <button type="button" className="ty-lb-btn ty-lb-btn-mint" onClick={() => setSetupOpen(true)}>
+            <img src={botUrl} alt="" draggable={false} />
+            <span>Chơi với máy</span>
+          </button>
           <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
             <img src={historyUrl} alt="" draggable={false} />
             <span>Lịch sử</span>

@@ -5,7 +5,7 @@ Mỗi màn có ảnh mẫu đã duyệt thì có **một folder riêng** ở đ�
 | Màn | Folder | Ảnh mẫu | Trạng thái |
 |---|---|---|---|
 | S1. Loading | [s1-loading](./s1-loading/README.md) | Cung men nổi và xúc xắc 3D đã chốt | đã tích hợp UI `profile === null`; viền quay luân phiên với xúc xắc lật một mặt mỗi lượt; đã dọn các mẫu thử; chưa nối API hồ sơ |
-| S2. Lobby | [s2-lobby](./s2-lobby/README.md) | `concept-s2-lobby-pixel-16bit.png` | concept đã chốt; UI mock và 11 WebP đã có (nguồn PNG: 8 bản v2 đã chọn + 5 v1 + 2 lớp thoát tách từ v1); **chưa đạt visual QA runtime** — [audit](./s2-lobby/asset-audit.md) |
+| S2. Lobby | [s2-lobby](./s2-lobby/README.md) | `concept-s2-lobby-pixel-16bit.png` | nút chơi máy xanh ngọc chốt và tích hợp 22/10; UI mock và 12 WebP đã có (nguồn PNG: 8 bản v2 đã chọn + 5 v1 + 2 lớp thoát tách từ v1 + robot); **chưa đạt visual QA runtime** — [audit](./s2-lobby/asset-audit.md) |
 | S3. Danh sách bàn | [s3-room-list](./s3-room-list/README.md) | `concept-s3-room-list-pixel-16bit.png` (mẫu 01 Bảng giấy kem) | concept đã chọn, đã viết đặc tả; chưa dựng UI |
 | S4. Tạo bàn / Vào bàn khóa | chung folder [s3-room-list](./s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5) | 6 ảnh `modal-*.webp` (S4 + O5) | người dùng đã chốt UI sáu case ngày 22/10; chưa dựng modal online |
 | S6. Bàn chơi | [s6-board](./s6-board/README.md) | `concept-s6-board-pixel-16bit.png` | ảnh chuẩn pixel 16-bit, nền mỹ thuật chung; chưa dựng UI |
