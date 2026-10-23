@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
 import leaderboardUrl from '../assets/lobby/ill-leaderboard.webp';
-import medalBronzeUrl from '../assets/leaderboard/medal-bronze.webp';
-import medalGoldUrl from '../assets/leaderboard/medal-gold.webp';
-import medalSilverUrl from '../assets/leaderboard/medal-silver.webp';
+import { MEDAL_RANKS, RankMedal } from '../components/RankMedal';
 import { RoomIcon } from '../components/RoomIcon';
+import { ScrollRows } from '../components/ScrollRows';
 import { TyIcon } from '../components/TyIcon';
 import {
   LEADERBOARD_ERROR_TEXT,
   LEADERBOARD_LIMIT,
-  LEADERBOARD_MEDAL_RANKS,
   LEADERBOARD_TABS,
   lvLabel,
   pinnedMe,
@@ -23,28 +21,15 @@ import { avatarIconUrl } from '../helpers/player';
 import { useLeaderboard } from '../store/useLeaderboard';
 import { useTycoon } from '../store/useTycoon';
 
-const MEDALS = [medalGoldUrl, medalSilverUrl, medalBronzeUrl];
 const SKELETON_ROWS = Array.from({ length: 6 }, (_, index) => index);
-const THUMB_INSET = 6;
-const THUMB_MIN = 28;
-
-function Rank({ rank }: { rank: number }) {
-  if (rank > LEADERBOARD_MEDAL_RANKS) return <span className="ty-lboard-rank">{rank}</span>;
-  return (
-    <span className="ty-lboard-medal" data-rank={rank} role="img" aria-label={`Hạng ${rank}`}>
-      <img src={MEDALS[rank - 1]} alt="" draggable={false} />
-      <b aria-hidden="true">{rank}</b>
-    </span>
-  );
-}
 
 function Row({ row, config, mine }: { row: LeaderboardRow; config: LeaderboardTabConfig; mine: boolean }) {
   const level = config.id === 'level';
   return (
     <li className={mine ? 'ty-lboard-row ty-lboard-row-me' : 'ty-lboard-row'}>
       <span className="ty-lboard-cell-rank">
-        {row.rank > LEADERBOARD_MEDAL_RANKS ? <span className="ty-visually-hidden">Hạng </span> : null}
-        <Rank rank={row.rank} />
+        {row.rank > MEDAL_RANKS ? <span className="ty-visually-hidden">Hạng </span> : null}
+        <RankMedal rank={row.rank} className="ty-lboard-rank" />
       </span>
       <span className="ty-lboard-player">
         <img className="ty-lboard-avatar" src={avatarIconUrl(row.vipType)} alt="" draggable={false} />
@@ -62,43 +47,6 @@ function Row({ row, config, mine }: { row: LeaderboardRow; config: LeaderboardTa
         {level ? (row.exp?.toLocaleString('vi-VN') ?? '—') : (row.matches ?? '—')}
       </span>
     </li>
-  );
-}
-
-function ScrollRows({ label, count, children }: { label: string; count: number; children: ReactNode }) {
-  const listRef = useRef<HTMLUListElement>(null);
-  const thumbRef = useRef<HTMLSpanElement>(null);
-
-  const sync = useCallback(() => {
-    const list = listRef.current;
-    const thumb = thumbRef.current;
-    if (!list || !thumb) return;
-    const { scrollTop, scrollHeight, clientHeight } = list;
-    const overflow = scrollHeight - clientHeight;
-    thumb.hidden = overflow <= 1;
-    if (thumb.hidden) return;
-    const track = clientHeight - THUMB_INSET * 2;
-    const size = Math.max(THUMB_MIN, (clientHeight / scrollHeight) * track);
-    thumb.style.height = `${size}px`;
-    thumb.style.transform = `translateY(${THUMB_INSET + (scrollTop / overflow) * (track - size)}px)`;
-  }, []);
-
-  useLayoutEffect(() => {
-    sync();
-    const list = listRef.current;
-    if (!list) return;
-    const observer = new ResizeObserver(sync);
-    observer.observe(list);
-    return () => observer.disconnect();
-  }, [sync, count]);
-
-  return (
-    <div className="ty-lboard-scroll">
-      <ul ref={listRef} className="ty-lboard-rows" aria-label={label} onScroll={sync}>
-        {children}
-      </ul>
-      <span ref={thumbRef} className="ty-lboard-thumb" aria-hidden="true" hidden />
-    </div>
   );
 }
 
@@ -174,7 +122,7 @@ function Body({ config }: { config: LeaderboardTabConfig }) {
   return (
     <>
       <Sheet config={config}>
-        <ScrollRows label={`Top ${Math.min(data.items.length, LEADERBOARD_LIMIT)}`} count={data.items.length}>
+        <ScrollRows className="ty-lboard-rows" label={`Top ${Math.min(data.items.length, LEADERBOARD_LIMIT)}`} count={data.items.length}>
           {data.items.map((row) => (
             <Row key={row.userId} row={row} config={config} mine={row.userId === myId} />
           ))}

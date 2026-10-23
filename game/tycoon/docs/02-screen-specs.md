@@ -418,7 +418,57 @@ Modal 340 × auto, radius 28, không đóng khi tap backdrop.
 
 ## S10. Lịch sử
 
-Giống xiangqi S8: 100 trận gần nhất; mỗi hàng: hạng của mình (`#1`…`#4`, màu gold cho #1), số người, thời gian, chip `Bỏ cuộc` nếu `reason` tương ứng. Cột `KEN` theo `kenDelta` của mình; bàn giao lưu ghi `—`.
+Mở từ nút `Lịch sử` ở S2 (hiện nút chỉ báo toast `Tính năng online đang được làm`). **Trạng thái 23/10/2026: đã chốt [mẫu 02 — Mint tối giản](./screens/s10-history/README.md) và dựng UI (`screens/HistoryScreen.tsx`): ván online chạy bằng dữ liệu giả `helpers/historyMock.ts` như S3/S11, ván với máy lưu thật; server chưa trả đúng lịch sử ván 3–4 người** ([05 §9.2](./05-gameplay-rules-and-protocol.md#92-lịch-sử-ván)). Dùng lại icon đồng hồ, huy chương, nền và avatar hiện có; không cần cắt thêm ảnh. Đã chụp đối chiếu 390 × 844 và 360 × 640.
+
+### Nội dung
+
+- **100 ván gần nhất**, mới nhất trên cùng: ván online lấy từ server, gộp với ván **chơi với máy** lưu trên thiết bị (như Caro), sắp theo thời gian rồi cắt còn 100. Ván máy không gửi server, không tính BXH, không cộng EXP.
+- Dòng phụ dưới header: `100 ván gần nhất`; nếu có ván máy thêm `· ván với máy chỉ lưu trên máy này`.
+- Dải tóm tắt 3 ô, tính từ danh sách đang có: `Đã chơi` (số ván) · `Hạng 1` (số lần về nhất) · `KEN` (tổng `kenDelta` ván online, `+` jade / `−` coral, `0` nếu toàn bàn giao lưu). Không phải thống kê trọn đời.
+- Không có tab, bộ lọc hay phân trang ở v1.
+
+### Bố cục tại 390 × 844
+
+Số đo lấy theo ảnh đã chốt (đo trên ảnh và đặt chồng ảnh chụp runtime). Cùng khung S11: nền trời/phố, header cách đỉnh 50 + safe-area gồm nút quay lại tròn 46 và pill `lobby/ill-history.webp` + `Lịch sử` 24/800; panel kem `#fdf9ec` viền navy 1,5, radius 26, cao tối đa **584**, padding 11 / 8. Trong panel:
+
+- Dòng phụ 12,5/600 `#465a93`.
+- Dải tóm tắt 3 ô paper `#fefaf1` viền `#edd8bf` radius 14, **cao 72**: số 29/800 (26 ở màn ≤ 370), nhãn 13/700 dưới số; KEN dương jade `#12803a`, âm coral `#e2412a`.
+- Khung danh sách giấy kem `#fefbf1` viền `#efdabf` radius 16, cuộn trong khung với thanh cuộn mảnh như S11. Ở 390 × 844 vừa đúng 5 ván với ván đầu đang mở, như ảnh.
+
+Mỗi hàng **cao 56**, hai dòng:
+
+| Vùng | Dòng 1 | Dòng 2 |
+|---|---|---|
+| Trái 40 | Hạng của mình: huy chương 1–3 dùng lại `assets/leaderboard/medal-*.webp` (rộng 34, số 19/800), hạng 4 là số navy 22/800 | — |
+| Giữa | Kết quả 15/800: `Tỷ phú số 1` / `Hạng 2` / `Hạng 3` / `Hạng cuối` (`placeLabel`); `Phá sản` hoặc `Bỏ cuộc` coral nếu mình ra khỏi ván | Lý do kết thúc + số người 12/600 `#51638f`: `Thắng ngay · 3 nhóm màu` / `Thắng ngay · một cạnh bàn` / `Thắng ngay · 4 sân bay` / `Còn 1 người` / `Hết 30 vòng` / `Hết 25 phút`, rồi `· 4 người`; ván máy có chip `Máy` mint `#d7fae0` |
+| Phải, căn phải | KEN 15/800 `tabular-nums`: `+1.400` jade, `−500` coral, bàn giao lưu và ván máy `—` | Thời gian 12/600 theo `formatHistoryTime`: `14:32` nếu hôm nay, `21/10 14:32` ngày khác |
+
+- Hàng hạng 1 nền vàng nhạt `#fdf5dc`; các hàng khác nền giấy, kẻ beige `#f2dfc4`.
+- **Bấm hàng mở chi tiết ngay dưới hàng** (một hàng mở mỗi lúc, `aria-expanded`). Mở màn thì ván mới nhất đã mở sẵn như ảnh; bấm lại để thu. Hàng đang mở có mũi tên lên ở mép phải (`chevron-left.svg` xoay 90°), hàng thu không có mũi tên.
+- Chi tiết là khung ngà `#fffdf6` lồng trong danh sách (cách mép 8), 2–4 dòng **cao 38**: hạng 14/800 · avatar VIP **28** · `@username` 14/800 (hàng mình nền mint `#e8fef2` + vạch jade, vẫn ghi `@username`) · `±KEN` 14/800, bàn không cược ghi `—`. Bot ghi `Bot 1`… kèm chip mức `Dễ/Thường/Khó`, avatar VIP của bot. Người phá sản/bỏ cuộc có **chip coral** `Phá sản` / `Bỏ cuộc` cạnh tên. Không có nút xem lại ván.
+- 360 × 640: panel co theo màn, danh sách cuộn; lý do dài ellipsis một dòng, giữ cỡ chữ và vùng chạm.
+
+### Trạng thái
+
+| Trạng thái | Trình bày |
+|---|---|
+| Đang tải | Giữ header, dòng phụ; dải tóm tắt và 6 hàng skeleton, `role=status` `Đang tải lịch sử…`. Ván máy (đọc local, tức thì) hiện ngay, skeleton chỉ cho phần online |
+| Trống | Icon lịch sử, `Chưa có ván nào`, dòng phụ `Chơi một ván online hoặc với máy để xem lại ở đây.`, nút mint `Chơi với máy` (về S2 và mở BotSetupModal) |
+| Lỗi server | Vẫn hiện ván máy; trên danh sách có dải coral nhạt `Không tải được ván online` + nút `Thử lại`. Không có ván máy thì hiện trạng thái lỗi đầy đủ như S11 |
+| Offline | Như lỗi server, dòng dải đổi thành `Đang offline — chỉ hiện ván với máy` |
+
+- Mỗi lần mở màn tải lại phần online; không cache giữa các lần mở. Quay lại / Escape về S2 và trả focus về nút `Lịch sử`.
+- Danh sách là `ul`; mỗi hàng là nút có tên đọc đủ, ví dụ `Hạng 2 trên 4 người, hết 30 vòng, trừ 500 KEN, 21/10 14:32`.
+
+### Lưu ván chơi với máy
+
+- Khi ván với máy có kết quả (`finishGame`, trước khi mở S9), lưu một mục vào `localStorage` khóa `ola:tycoon:bot-history:v1:<userId>`, tối đa 50 mục (giống `caro/helpers/history.ts`). Dữ liệu hỏng hoặc trình duyệt chặn storage thì bỏ qua, không báo lỗi.
+- Mục gồm: `id` (`bot-` + thời điểm), `playedAt`, `source: 'bot'`, `place`, `playerCount`, `endReason` (`EndReason` của engine), `exitReason` của mình (`bankrupt` / `forfeit` / null), `bet = 0`, `kenDelta = 0`, `players[]` (Bạn + từng bot: tên, VIP, mức, hạng).
+- Bấm `Chơi lại` tạo ván mới và mục mới; thoát giữa ván không tạo mục.
+
+### Dữ liệu
+
+Client dùng một kiểu chung cho cả hai nguồn: `{id, playedAt, source: 'online' | 'bot', place, playerCount, endReason, exitReason, bet, kenDelta, players: [{userId, username, vipType, place, kenDelta, exitReason, level?}]}`. Ván online lấy từ `HISTORY` mở rộng theo [05 §9.2](./05-gameplay-rules-and-protocol.md#92-lịch-sử-ván). Khi server chưa sửa, UI vẫn dựng được với dữ liệu giả như S3/S11.
 
 ## S11. Bảng xếp hạng
 

@@ -10,6 +10,7 @@ import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPl
 import { RuleError, type BotLevel, type GameState, type Move, type Step, type TileState } from '../logic/types';
 import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
 import { formatMoney } from '../helpers/format';
+import { botHistoryEntry, saveBotHistory } from '../helpers/history';
 import { avatarIconUrl } from '../helpers/player';
 import { MOCK_PROFILE, type LobbyProfile } from '../helpers/profile';
 import { levelLabel } from '../helpers/tiles';
@@ -96,6 +97,7 @@ interface TycoonState {
   setupOpen: boolean;
   roomsOpen: boolean;
   leaderboardOpen: boolean;
+  historyOpen: boolean;
   lobbyFocus: string | null;
   lastBots: BotSetupItem[];
 
@@ -139,6 +141,7 @@ interface TycoonState {
   setSetupOpen(open: boolean): void;
   setRoomsOpen(open: boolean): void;
   setLeaderboardOpen(open: boolean): void;
+  setHistoryOpen(open: boolean): void;
   clearLobbyFocus(): void;
   startGame(bots: BotSetupItem[]): void;
 
@@ -592,6 +595,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
                 ? `Hết ${MAX_ROUNDS} vòng — xếp hạng theo tổng tài sản`
                 : 'Chỉ còn một tỷ phú trụ lại';
     const matchSeq = get().matchSeq;
+    const profile = get().profile;
+    if (profile) saveBotHistory(profile.id, botHistoryEntry(state, ranked, you, profile, get().lastBots, Date.now()));
     queueReplay(async () => {
       await sleep(RESULT_REVEAL_MS);
       if (get().matchSeq !== matchSeq || get().boardMode !== 'playing') return;
@@ -723,6 +728,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     setupOpen: false,
     roomsOpen: false,
     leaderboardOpen: false,
+    historyOpen: false,
     lobbyFocus: null,
     lastBots: [],
 
@@ -769,7 +775,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       if (refs.toastTimer) clearTimeout(refs.toastTimer);
       refs.announceTimer = 0;
       refs.toastTimer = 0;
-      set({ toast: null, rulesOpen: false, setupOpen: false, roomsOpen: false, leaderboardOpen: false, lobbyFocus: null });
+      set({ toast: null, rulesOpen: false, setupOpen: false, roomsOpen: false, leaderboardOpen: false, historyOpen: false, lobbyFocus: null });
     },
 
     toggleSound() {
@@ -801,6 +807,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
     setLeaderboardOpen(open: boolean) {
       if (open) playSound('click');
       set({ leaderboardOpen: open, lobbyFocus: open ? null : 'leaderboard' });
+    },
+
+    setHistoryOpen(open: boolean) {
+      if (open) playSound('click');
+      set({ historyOpen: open, lobbyFocus: open ? null : 'history' });
     },
 
     clearLobbyFocus() {

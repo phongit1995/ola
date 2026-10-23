@@ -28,7 +28,6 @@ export interface LeaderboardTabConfig {
 
 export const LEADERBOARD_LIMIT = 100;
 export const LEADERBOARD_CACHE_MS = 60_000;
-export const LEADERBOARD_MEDAL_RANKS = 3;
 export const LEADERBOARD_ERROR_TEXT = 'Không tải được bảng xếp hạng';
 
 export const LEADERBOARD_TABS: LeaderboardTabConfig[] = [

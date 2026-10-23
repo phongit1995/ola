@@ -13,7 +13,7 @@ Bảng tra nhanh khi implement. Store chính `useTycoon` (pattern `useThirteen` 
 | S7 Sheet ô | `sheet={kind:'tile', idx}` | `MOVE BUY/DECLINE/BUILD/SELL_HOUSE` | `STATE` | BottomSheet, DeedCard, GroupChip, RentTable, OwnerChip |
 | S8 Sheet tài sản | `sheet={kind:'assets', seat}` | `MOVE BUILD/SELL_HOUSE` | `STATE` | BottomSheet, group list, +/− buttons |
 | S9 Kết quả | `result{rankings[],worth[],reason,expGains}`, `matchSeq` | — (`again()` → ROOM_READY) | `MATCH_OVER`, `ROOM_WAITING/STATE` (afterMatchId) | Modal result, RankRow |
-| S10 Lịch sử | `historyData/loading/error` | `HISTORY` | `HISTORY` | HistoryRow, skeleton |
+| S10 Lịch sử | `history{online, bot, status}` (ván máy đọc `localStorage`) | `HISTORY` (05 §9.2) | `HISTORY{items[place, playerCount, endReason, players]}` | HistoryRow mở rộng, dải tóm tắt, skeleton |
 | S11 BXH | `leaderboard{day,week,level}` (cache 60 giây mỗi tab) | `LEADERBOARD{period, board}` (05 §9.1) | `LEADERBOARD{board, items, me}` | LeaderboardRow, tabs |
 | O1 Xúc xắc | `dice{values,rolling}` (từ step `roll`) | — | — | DiceRoll |
 | O2 Thẻ | `card{deck,id}` (từ step `card` / view.card) | `MOVE CARD_ACK` | `STATE` | Card |

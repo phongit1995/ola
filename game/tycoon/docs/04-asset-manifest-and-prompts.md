@@ -17,6 +17,8 @@ Ngoại lệ Hướng dẫn chơi S2 đã chốt ngày 23/10: 18 minh họa `rul
 
 Ngoại lệ S11 đã chốt mẫu 02 Mint tối giản ngày 23/10: [3 huy chương WebP mặt trống](../assets/leaderboard/README.md), tổng 11.880 byte; số 1/2/3 ghép DOM. [PNG nguồn và manifest](../assets/screens/leaderboard/manifest.json) giữ prompt, hash và thông số xuất. Tái dùng icon header/quay lại/nền/avatar; các surface là CSS theo [docs màn](./screens/s11-leaderboard/README.md). Đã đối chiếu asset ở cỡ thật, có sai lệch tái dựng được ghi rõ; chưa dựng S11 runtime.
 
+S10 đã chốt [mẫu 02 Mint](./screens/s10-history/README.md) ngày 23/10: **không cần cắt asset mới**. Dùng lại `lobby/ill-history.webp`, nền phố, ba huy chương S11, avatar shared và `room-list/chevron-left.svg` (xoay cho mở/thu). Panel, thống kê, chip, hàng mình, divider và scrollbar là CSS/DOM. [Manifest S10](./screens/s10-history/manifest.json) giữ nguồn concept và hash asset dùng lại; đã dọn các mẫu không chọn, chưa dựng UI.
+
 Ngoại lệ S1: xúc xắc bo góc là mesh/shader WebGL theo [style đã duyệt](./screens/s1-loading/README.md), không sinh sprite mới. `lobby/loading-ring-enamel.svg` là **Cung men nổi đã chốt**, xuất trực tiếp từ mẫu được chọn; quay luân phiên với mỗi lần lật 90° của xúc xắc, không có đĩa kem phía sau. Nền/logo/Bác Tỷ và fallback `lobby/ill-dice.webp` dùng lại asset hiện có. Các mẫu viền khác và trang so sánh đã được dọn khỏi source.
 
 Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; toàn bộ assets tycoon ≤ 800 KB (nhân vật ≈ 260 KB; cắt giảm theo `style/06-implementation-plan.md` nếu vượt). Thêm `/game/tycoon/assets/` vào `assetsInlineLimit` của `game/vite.config.ts` cùng dòng với thirteen/xiangqi, và entry `tycoon: resolve(__dirname, 'tycoon/index.html')`.

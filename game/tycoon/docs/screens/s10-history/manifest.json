@@ -1,0 +1,222 @@
+{
+  "screen": "S10 — Lịch sử",
+  "date": "2026-10-23",
+  "status": "approved-concept-reusing-existing-assets",
+  "conceptTool": "built-in image_gen",
+  "assetExtraction": "No new image generation or extraction; all illustration assets reused from the existing library.",
+  "concept": {
+    "id": "02-mint-minimal",
+    "label": "Mint tối giản",
+    "prompt": "Use case: ui-mockup\nAsset type: one complete full-screen portrait UI concept for Cờ Tỷ Phú S10 History. Canvas 853 x 1844, same portrait ratio as the reference.\nInput image 1: approved S11 Mint Minimal leaderboard, reference for sunny Vietnamese pixel city/sky, cream/navy game UI, font, green Ola VIP avatars and three medal styles. Adapt the shared visual family into a HISTORY screen with the different content specified below. Do NOT keep leaderboard tabs or EXP columns.\nInput image 2: existing blue history clock illustration. Use this small clock icon in the header instead of the leaderboard crown/bars.\n\nPrimary request: draw ONE attractive, polished HISTORY screen in the specified style. Show five recent matches with the FIRST row expanded inline to show all four players. All three style options use these SAME exact data and state so the user can compare styles fairly.\n\nRequired layout/content:\n1. Header at roughly 50 logical pixels below top: separate cream circular back-chevron button on left; cream title pill/plaque containing a small blue history clock from image 2 and exact title \"Lịch sử\". One line title. No refresh button, user balance bar or game logo.\n2. One main cream panel almost full screen width, below header. First a quiet explanatory subtitle, exact \"100 ván gần nhất · ván với máy chỉ lưu trên máy này\". May wrap naturally to two compact centered lines; all words present.\n3. Three summary tiles side-by-side, paper surfaces, NON-INTERACTIVE statistics (not tabs). Large number above small label. EXACT left to right: \"5\" above \"Đã chơi\"; \"2\" above \"Hạng 1\"; \"+700\" in jade above \"KEN\". The summary counts exactly the five matches below. No other summary metrics, no filters, no period tabs.\n4. Below summaries, a continuous scrolling cream list with fine warm dividers and subtle narrow scrollbar. It contains the following FIVE match rows, newest first. Each compact match row has exactly two lines with three aligned zones: LEFT small medal for place 1/2/3 or plain numeral 4; MIDDLE main outcome title and smaller reason/number of players; RIGHT KEN delta above time. Right-align delta and time consistently. All rows readable; long middle copy must never collide with right amounts. Two winning rows have very pale gold fill; others paper.\n\nROW 1, expanded online win:\n  Left: GOLD medal bearing number \"1\".\n  Middle first line: \"Tỷ phú số 1\" (bold navy).\n  Middle second line: \"Thắng ngay · 3 nhóm màu · 4 người\".\n  Right first line: \"+1.400\" in jade.\n  Right second line: \"14:32\" muted navy.\n  This is the only expanded match. Immediately below its row, INSIDE the same list, draw a compact inset detail panel with exactly FOUR player lines, no redundant title, no replay button. Each line has plain rank number, a small green Ola VIP avatar, lowercase username, and KEN delta right-aligned:\n    \"1\" | VIP avatar | \"@minhanh\" | \"+1.400\" jade\n    \"2\" | VIP avatar | \"@linh\"    | \"−500\" coral\n    \"3\" | VIP avatar | \"@khoa\"   | \"−500\" coral\n    \"4\" | VIP avatar | \"@trang\"  | \"−500\" coral\n  For @trang include a small coral \"Phá sản\" label adjacent to/under the name, inside that same player line. Highlight ONLY the @minhanh player-detail line with pale mint fill and a thin jade left stripe. Never rename it Bạn. Avatars are the friendly green Ola VIP smiley in image 1, no photos, no extra VIP badges. A subtle upward chevron can indicate row1 expanded, but do not invent action buttons.\n\nROW 2, collapsed local bot win:\n  Left: GOLD medal \"1\".\n  Middle first line: \"Tỷ phú số 1\".\n  Middle second line: \"Hết 30 vòng · 3 người\", plus a SMALL pale mint status chip \"Máy\" in the middle text area. The chip is not a tab or button and must fit without crowding the amount.\n  Right first line: \"—\" (em dash), NOT zero, NOT a KEN reward.\n  Right second line: \"13:10\".\n\nROW 3, collapsed online second place:\n  Left: SILVER medal \"2\".\n  Middle first line: \"Hạng 2\".\n  Middle second line: \"Hết 30 vòng · 4 người\".\n  Right first line: \"−500\" coral.\n  Right second line: \"12:45\".\n\nROW 4, collapsed bankrupt:\n  Left: plain navy number \"4\", no medal.\n  Middle first line: \"Phá sản\" coral bold.\n  Middle second line: \"Còn 1 người · 4 người\".\n  Right first line: \"−200\" coral.\n  Right second line: \"22/10 20:18\".\n\nROW 5, collapsed forfeit in no-stakes social match:\n  Left: BRONZE medal \"3\".\n  Middle first line: \"Bỏ cuộc\" coral bold.\n  Middle second line: \"Hết 25 phút · 3 người\".\n  Right first line: \"—\" (em dash).\n  Right second line: \"21/10 09:05\".\n\n5. Keep all five rows and all four expanded players inside the panel. Plan the height carefully: subtitle, summary tiles, then a list about 430 logical px tall, including the expanded detail. Main panel target height around 562 logical px. Header/control safe margins like the reference. Below the main panel a visible strip of the sunny pixel Vietnamese landscape: temple, dragon bridge, cyan river, modern buildings, blossom trees. Do not add footer actions.\n\nTypography and content constraints: smooth bold rounded Vietnamese Nunito-like type, precise diacritics. Navy main text, muted blue secondary text, jade positive amounts, coral losses and exit labels. Match titles around 16 CSS px, secondary/reasons/time around 13, readable on a real phone. No raster pixel letters. Number values and signs exactly as specified. Place medals match reference's gold/red ribbon, silver/blue ribbon and bronze/orange ribbon. Keep amounts right-aligned. The first win is a four-player 500-KEN match: net +1400 after 5 percent fee, and each loser -500. Summary is +1400 -500 -200 = +700; two wins including the local bot win. These are fixed fixture values, never change them.\n\nNEVER include: period tabs, Online/Máy filter, EXP, levels, leaderboard rank list, pagination, KEN coin icons inside the amount column, replay/watch/reward/share buttons, large trophy, extra stats, avatar thumbnails on collapsed match rows, separate modal, dimmed backdrop, device frame, variant labels or watermarks. This is a HISTORY page with inline match details, not a leaderboard and not a result modal. Bot matches have no KEN rewards. Only the first match is expanded.\n\nSTYLE FOR THIS OPTION:\nA light modern MINT MINIMAL design, closest to the approved S11 Mint reference. Bright cream #fdf9ec, thin 1.5px navy edge, radius 26 main panel, soft beige lower edge, restrained depth. Summary tiles are very clean light paper with slender borders, generous padding, large neat numbers, small labels. The list is one continuous lightly outlined rounded cream surface with delicate beige dividers. Avoid thick bevels or dark frames. Subtle mint is used ONLY for the Máy status chip and own player-detail row; warm pale gold only for the two winning matches. The expanded four-player list uses a flat very pale ivory inset and neat compact avatar alignment, one mint self strip. Background sunny cyan pixel city remains vivid but quiet around the data. Smooth simple surfaces, precise typography, breathable layout, no glass effects, no dark mode.\n",
+    "status": "approved-by-user",
+    "file": "concept-s10-history-mint.png",
+    "generatedSource": "exec-01cd1f43-b92c-45ef-8e0c-c748aa54bcd8.png",
+    "width": 853,
+    "height": 1844,
+    "bytes": 1798532,
+    "sha256": "7ec405203388b8716f05289508c0a2e75d08bb9e7504a3355328fb373f0abb5a",
+    "visualReview": {
+      "status": "reviewed-approved-concept",
+      "content": "Five matches, first expanded with four players; summary 5 / 2 / +700, online net +1400, bot dash, bankruptcy and forfeit labels verified visually.",
+      "runtimeQA": false
+    },
+    "approvedAt": "2026-10-23"
+  },
+  "references": [
+    "../s11-leaderboard/concept-s11-leaderboard-mint.png",
+    "../../../assets/lobby/ill-history.webp"
+  ],
+  "docsReadSha256BeforeConceptGeneration": {
+    "game/tycoon/docs/02-screen-specs.md": "df7f90007ff45d72c5b027458bc3fa269f00f38c1d9c0770b8638b2b651bd807",
+    "game/tycoon/docs/05-gameplay-rules-and-protocol.md": "3d39d71445cc07dc2c901003e45accae097ced2717be500b20815180542bcf82"
+  },
+  "fixture": [
+    {
+      "place": 1,
+      "source": "online",
+      "bet": 500,
+      "kenDelta": 1400,
+      "time": "14:32",
+      "expanded": true
+    },
+    {
+      "place": 1,
+      "source": "bot",
+      "bet": 0,
+      "kenDelta": 0,
+      "time": "13:10"
+    },
+    {
+      "place": 2,
+      "source": "online",
+      "bet": 500,
+      "kenDelta": -500,
+      "time": "12:45"
+    },
+    {
+      "place": 4,
+      "source": "online",
+      "bet": 200,
+      "kenDelta": -200,
+      "time": "22/10 20:18",
+      "exitReason": "bankrupt"
+    },
+    {
+      "place": 3,
+      "source": "online",
+      "bet": 0,
+      "kenDelta": 0,
+      "time": "21/10 09:05",
+      "exitReason": "forfeit"
+    }
+  ],
+  "summary": {
+    "played": 5,
+    "firstPlaces": 2,
+    "kenDelta": 700
+  },
+  "generatedAssets": [],
+  "reused": [
+    {
+      "id": "history-icon",
+      "file": "../../../assets/lobby/ill-history.webp",
+      "role": "Header and empty-state illustration",
+      "bytes": 3466,
+      "sha256": "be8cd21ac830885d62d584038cd9be8b9673efb978401efc2c601de29a173cb0",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "background",
+      "file": "../../../assets/lobby/bg-board-pixel.webp",
+      "role": "Shared sky/city background",
+      "bytes": 89714,
+      "sha256": "9197216c550ce340dd235104cc33e14670d27cdd2f912c6d0a7a89a94bdf7dfa",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "medal-gold",
+      "file": "../../../assets/leaderboard/medal-gold.webp",
+      "role": "Rank 1; blank face with DOM numeral",
+      "bytes": 4074,
+      "sha256": "709b6154cf6cfbd0ce2a9aff7081011e85a3eca035aca2d1471922c19f7c4d97",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "medal-silver",
+      "file": "../../../assets/leaderboard/medal-silver.webp",
+      "role": "Rank 2; blank face with DOM numeral",
+      "bytes": 3664,
+      "sha256": "b547b17437dc8c414aba8e8f7bc6b31f2577d7723c5014126a14319ef9b1b8f4",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "medal-bronze",
+      "file": "../../../assets/leaderboard/medal-bronze.webp",
+      "role": "Rank 3; blank face with DOM numeral",
+      "bytes": 4142,
+      "sha256": "65e5bc573a65c2af092fac1c1872a80c04ad76a231e5c0502b32a618313d4011",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "chevron",
+      "file": "../../../assets/room-list/chevron-left.svg",
+      "role": "Back; rotate +90deg for up or -90deg for down",
+      "bytes": 185,
+      "sha256": "7b892a8e91e871ac0c0c8042ef7f1de01958a0b55ff5749404ece04f8b7b0aa4",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "avatar-example",
+      "file": "../../../../../packages/shared/assets/vip-icons/vip_003.png",
+      "role": "Example only; select actual avatar via avatarIconUrl(vipType)",
+      "bytes": 5405,
+      "sha256": "b6c850182c0f9a7b7468004f9572152eb1aefb18f504b34d422bdcb7dfbf6120",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "avatar-fallback",
+      "file": "../../../../../packages/shared/assets/ola_smiley_online.png",
+      "role": "Default avatar",
+      "bytes": 5362,
+      "sha256": "67f2e14e17f5bf895082d7748b4cbbcb8eeceb84a126a0ba704957295712062c",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "bot-icon",
+      "file": "../../../assets/lobby/ill-bot.webp",
+      "role": "Empty-state play-with-bot action",
+      "bytes": 3642,
+      "sha256": "a4d9fdc22561bbd111b882d94bd84ce3c2a5f0c7681924861aeee9033e936b8e",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "refresh",
+      "file": "../../../assets/icons/ic-refresh.svg",
+      "role": "TyIcon refresh for retry",
+      "bytes": 222,
+      "sha256": "139219c5d4c9896bd57d6180220a7e66478d357563ee8d9a5cf8404812f262eb",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "warning",
+      "file": "../../../assets/icons/ic-warning.svg",
+      "role": "TyIcon warning for online error",
+      "bytes": 277,
+      "sha256": "b30392e84d45a6e831afb2022c8bd3fddec69d7f770b9d2adf64b10466fdbbc6",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "wifi-off",
+      "file": "../../../assets/icons/ic-wifi-off.svg",
+      "role": "TyIcon wifi-off for offline state",
+      "bytes": 247,
+      "sha256": "f7b0a0e56d4c873f1fb352ca416f14646f2847832095ab3dfe0b7c3cea08c838",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "font-latin",
+      "file": "../../../../caro/assets/fonts/Nunito-400-800-latin.woff2",
+      "role": "DOM text font",
+      "bytes": 39128,
+      "sha256": "ba344451eab25b217a165363b1982048a5e5830a0daf36577973955a04cac793",
+      "status": "reuse-existing-no-copy"
+    },
+    {
+      "id": "font-vietnamese",
+      "file": "../../../../caro/assets/fonts/Nunito-400-800-vietnamese.woff2",
+      "role": "Vietnamese glyphs for DOM text",
+      "bytes": 13096,
+      "sha256": "61e5958cf3c731423456b31739aa454317ea3bdcb205dd87090e94f632c3642b",
+      "status": "reuse-existing-no-copy"
+    }
+  ],
+  "surfaceLayers": [
+    "header paper pill and back circle",
+    "main cream panel with navy border and beige lower edge",
+    "three summary paper tiles",
+    "scrolling paper list and beige row dividers",
+    "pale gold first-place rows",
+    "inset four-player detail panel",
+    "mint own-player row and jade stripe",
+    "mint bot chip and coral exit labels",
+    "scroll track and thumb",
+    "loading skeletons, error/offline banners and empty-state action"
+  ],
+  "surfaceImplementation": "CSS; text, usernames, ranks, statistics, KEN amounts and times are DOM. Existing chevron SVG rotated for expanded/collapsed indicator.",
+  "cleanup": {
+    "discardedStyles": [
+      "01-cream-journal",
+      "03-navy-logbook"
+    ],
+    "draftComparisonAndDuplicateSelectedCopyRemoved": true,
+    "removedDraftFileCount": 6,
+    "removedDraftBytes": 5482333
+  },
+  "runtimeImplemented": true,
+  "runtimeVisualQA": "compared at 390x844 (overlay) and 360x640 on 2026-10-23",
+  "knownLimitations": [
+    "Shared artwork preserves the established game identity; it is not a pixel-identical cutout from the S10 AI concept.",
+    "Loading, empty, error and offline states remain specified in docs, not illustrated in the concept.",
+    "Runtime follows the concept measurements (tiles 72, rows 56, detail lines 38, avatar 28)."
+  ]
+}

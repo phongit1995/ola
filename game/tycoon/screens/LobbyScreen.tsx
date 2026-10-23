@@ -17,10 +17,8 @@ import { DiceLoader } from '../components/loading/DiceLoader';
 import { useTycoon } from '../store/useTycoon';
 import { LobbyTopbar } from './LobbyTopbar';
 
-const ONLINE_SOON = 'Tính năng online đang được làm';
-
 export function LobbyScreen() {
-  const { profile, lobbyFocus, setRoomsOpen, setSetupOpen, setRulesOpen, setLeaderboardOpen, clearLobbyFocus, exitGame, showToast } = useTycoon(
+  const { profile, lobbyFocus, setRoomsOpen, setSetupOpen, setRulesOpen, setLeaderboardOpen, setHistoryOpen, clearLobbyFocus, exitGame } = useTycoon(
     useShallow((s) => ({
       profile: s.profile,
       lobbyFocus: s.lobbyFocus,
@@ -28,17 +26,18 @@ export function LobbyScreen() {
       setSetupOpen: s.setSetupOpen,
       setRulesOpen: s.setRulesOpen,
       setLeaderboardOpen: s.setLeaderboardOpen,
+      setHistoryOpen: s.setHistoryOpen,
       clearLobbyFocus: s.clearLobbyFocus,
       exitGame: s.exitGame,
-      showToast: s.showToast,
     })),
   );
+  const historyRef = useRef<HTMLButtonElement>(null);
   const leaderboardRef = useRef<HTMLButtonElement>(null);
   const loading = profile === null;
 
   useEffect(() => {
-    if (lobbyFocus !== 'leaderboard') return;
-    leaderboardRef.current?.focus();
+    if (!lobbyFocus) return;
+    (lobbyFocus === 'history' ? historyRef : leaderboardRef).current?.focus();
     clearLobbyFocus();
   }, [lobbyFocus, clearLobbyFocus]);
   const art = (
@@ -85,7 +84,7 @@ export function LobbyScreen() {
             <img src={botUrl} alt="" draggable={false} />
             <span>Chơi với máy</span>
           </button>
-          <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
+          <button ref={historyRef} type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => setHistoryOpen(true)}>
             <img src={historyUrl} alt="" draggable={false} />
             <span>Lịch sử</span>
           </button>

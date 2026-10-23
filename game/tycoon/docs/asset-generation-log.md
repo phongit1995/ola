@@ -235,3 +235,11 @@ Footer retains cream "Hủy" left and GOLD "Bắt đầu" right, equal width. Sh
 - Huy chương được tách riêng bằng built-in `image_gen` với alpha thật; mặt trống để ghép số DOM. Icon header/quay lại/nền/avatar dùng lại, các surface co giãn bằng CSS. Chi tiết file, nguồn và kiểm tra ở [bộ asset](../assets/leaderboard/README.md).
 
 - Đã xuất 3 WebP cao 96 px, q90/alpha100, tổng **11.880 byte**. Kiểm PNG nguyên byte, alpha thật, crop/export và ghép số DOM ở rộng 36 px trên kem/mint/navy; highlight/viền có khác biệt tái dựng nhỏ ghi trong README asset. PNG nguồn 1254 × 1254; metadata và output ID của ba lượt tách trong manifest.
+
+## S10 — Mint tối giản đã chốt (23/10/2026)
+
+- Đọc docs S10 mới và protocol lịch sử, dùng built-in `image_gen` vẽ ba phương án dựa trên S11 Mint và icon `lobby/ill-history.webp`. Người dùng chọn **mẫu 02 — Mint tối giản**; ảnh chuẩn ở [S10](./screens/s10-history/README.md), chưa dựng UI.
+- Mẫu được chọn: `exec-01cd1f43-b92c-45ef-8e0c-c748aa54bcd8.png`, 853 × 1844, giữ nguyên byte PNG. [Manifest](./screens/s10-history/manifest.json) giữ prompt đầy đủ, hash và nguồn tham chiếu. Đã dọn Giấy kem (`exec-9534a09f-13dc-48a6-90bb-beeccd88c961.png`), Nhật ký navy (`exec-5d97aef6-1534-48b1-817d-7c84594a2c1f.png`), trang so sánh và bộ nháp trong output.
+- Cùng năm ván online/máy, tóm tắt 5 / 2 / +700, ván đầu mở bốn người. Đã kiểm nội dung, dấu tiền và nhãn Máy/Phá sản/Bỏ cuộc. Thắng bàn bốn người cược 500 có net +1.400 sau phí; ván máy hiển thị `—`. Các khối trong ảnh cao hơn số đo docs; khi dựng theo kích thước S10 và cuộn danh sách, dùng asset avatar/huy chương hiện có.
+- Đối chiếu thư viện: đồng hồ, ba huy chương, nền, avatar, icon quay lại/mở/thu và các trạng thái đều dùng lại được. **Không sinh hoặc cắt thêm ảnh, không tạo bản sao asset.** Khung/nền/chip dựng CSS, chữ/số là DOM; bảng phân lớp và giới hạn khác biệt ảnh AI ở README S10.
+- Dựng UI cùng ngày theo số đo ảnh (ô tóm tắt 72, hàng 56, chi tiết 38, avatar 28); không sinh thêm ảnh.

@@ -23,5 +23,5 @@ export function formatHistoryTime(playedAt: number): string {
   const sameDay = date.toDateString() === now.toDateString();
   const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   if (sameDay) return time;
-  return `${date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} ${time}`;
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')} ${time}`;
 }

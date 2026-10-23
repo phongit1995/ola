@@ -284,7 +284,7 @@ Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* →
 - `OPPONENT_DISCONNECTED.userId` xác định ai rớt (nhiều người) → O4 ghi tên; `OPPONENT_RECONNECTED {turn, deadline}` đồng bộ lại đồng hồ.
 - `MATCH_OVER.rankings[]` + `expGains[]` dùng cho S9; `kenDelta` theo 11 §1.4 (bàn giao lưu = 0); `winnerId` = hạng 1.
 - **Spectate**: chỉ bàn bật `allowSpectators` ([11 §2](./11-room-settings.md#2-cho-người-khác-xem)). Hiện engine trả `SPECTATE_NOT_SUPPORTED` cho game có `StateViewer` (`spectatable()` trong `engine.go`); cần cho `ViewFor` nhận `playerIdx = -1` là người xem rồi bỏ guard.
-- **BXH S11**: `LEADERBOARD`, xem §9.1.
+- **BXH S11**: `LEADERBOARD`, xem §9.1. **Lịch sử S10**: `HISTORY`, xem §9.2.
 
 ### 9.1 Bảng xếp hạng và cấp độ
 
@@ -309,6 +309,29 @@ Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* →
 **EXP của Tycoon.** Đang dùng công thức chung `MatchExp`: hạng 1 +50, mọi hạng khác +15, cộng `min(moveCount, 40) / 2`. Ván 3–4 người thì hạng 2 và hạng 4 nhận như nhau. Muốn bảng cấp độ phản ánh thứ hạng hơn thì cần quyết định thêm EXP theo hạng; chưa đổi.
 
 **Hướng sau (chưa làm).** `EXP tuần này` cần lưu EXP từng ván (cột `exp_gain` ở `game_match_players` hoặc bảng sự kiện EXP); hiện chỉ có tổng nên không tính theo kỳ được. Bàn giao lưu cho phép cày thắng/EXP với người quen; v1 chấp nhận, nếu cần thì chỉ tính ván đủ số vòng tối thiểu.
+
+### 9.2 Lịch sử ván
+
+**Trạng thái 23/10/2026: đặc tả, server chưa sửa.** UI ở [02 §S10](./02-screen-specs.md#s10-lịch-sử).
+
+**Hiện có.** `Repository.MatchHistory` (`server/internal/game/game.repository.go`) trả 100 ván `finished` gần nhất, bỏ `void`, nhưng theo mô hình **2 người**: chỉ tìm ván có mình ở `player0_id`/`player1_id`, mỗi mục một đối thủ, `outcome` thắng/thua/hòa, `kenDelta` = `game_matches.ken_delta` nếu thắng, `−bet` nếu thua. Với Tycoon:
+
+- Ván 3–4 người: người ngồi ghế thứ 3–4 chỉ có trong `game_match_players`, nên **không thấy ván đó** trong lịch sử.
+- Không có hạng của mình, số người, danh sách người chơi.
+- `game_matches.reason` chỉ lưu lý do của engine (`win`, `forfeit`, `timeout`, `disconnect`), không lưu `endReason` của Tycoon (`groups`, `line`, `airports`, `last`, `rounds`, `time`). Không lưu ai phá sản hay bỏ cuộc.
+- `game_match_players.ken_delta` chưa bao giờ được ghi (luôn 0); KEN từng người phải suy ra: hạng 1 = `game_matches.ken_delta`, các hạng khác = `−bet` (11 §1.4).
+
+**Cần thêm cho Tycoon.**
+
+1. Migration: `game_matches.end_reason varchar(16)` (null với game khác) và `game_match_players.exit_reason varchar(16)` (`bankrupt` / `forfeit` / `timeout` / `disconnect`, null nếu còn trong ván tới cuối). Settle ghi hai cột này từ `Result` của Tycoon. Ván 2 người cũng tạo `game_match_players` cho Tycoon để một truy vấn dùng chung được.
+2. Nhánh lịch sử cho `tycoon`: tìm ván qua `game_match_players.user_id` (và `player0/1` cho ván cũ), cùng điều kiện `finished`, bỏ `void`, `finished_at DESC, id DESC`, tối đa 100. Mỗi mục kèm toàn bộ người chơi của ván.
+3. Hợp đồng (Go `protocol.go` và SDK `protocol.ts` sửa cùng lúc), các field mới đều optional để Caro/Cờ tướng không đổi:
+   - `MatchHistoryEntry` thêm `place`, `playerCount`, `endReason`, `exitReason`, `players?: MatchHistoryPlayer[]`.
+   - `MatchHistoryPlayer {userId, username, vipType, place, kenDelta, exitReason?}`, sắp theo `place`. `kenDelta` theo quy tắc trên.
+   - Giữ `opponentId/opponentName` (đối thủ hạng cao nhất khác mình) và `outcome` (`win` nếu hạng 1, còn lại `lose`) cho client cũ.
+4. Test repository: ván 2 và 4 người, người ghế 3–4 thấy ván, bàn cược 0, `void` bị bỏ, `kenDelta` từng người, `exitReason`.
+
+Ván chơi với máy không qua server; client tự lưu theo 02 §S10.
 
 ## 10. State machine client (store `useTycoon`)
 

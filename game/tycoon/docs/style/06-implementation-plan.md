@@ -11,14 +11,15 @@ Mục tiêu: duyệt art direction bằng concept cho các màn có nhiều mỹ
 - [ ] Concept sheet S7 ô đất nhóm Đỏ có 2 nhà.
 - [ ] Concept thẻ Cơ hội O2 với Bác Tỷ `happy`.
 - [ ] Concept kết quả S9 4 người.
+- [x] Concept S10 Lịch sử: người dùng chọn [mẫu 02 — Mint tối giản](../screens/s10-history/README.md) ngày 23/10/2026; dùng lại toàn bộ minh họa, không cần cắt asset mới; đã dựng UI.
 - [x] Concept S11 Bảng xếp hạng: [mẫu 02 — Mint tối giản](../screens/s11-leaderboard/README.md), người dùng chốt 23/10/2026; đủ 3 tab và hàng ghim, đã dựng UI với dữ liệu giả.
 - [ ] Bảng 6 nhân vật × 4 pose dạng sheet (chỉ để duyệt; asset production sinh riêng từng cái).
 
 Lưu tại `screens/s{n}-{tên}/concept-s{n}-{tên}-{style}.png` (cùng folder với style của màn, xem [screens](../screens/README.md)) sau khi duyệt (ảnh concept được commit như thirteen; ảnh verify/nháp thì không).
 
 **Điều kiện bắt đầu dựng — duyệt theo từng màn:**
-- Màn có trong danh sách trên (S2, S6, S7, O2, S9, S11) chỉ dựng UI sau khi concept **của chính màn đó** được duyệt và có folder trong [screens](../screens/README.md).
-- Màn không có trong danh sách (S1, S3–S5, S8, S10, O1, O3–O7) dựng theo [02-screen-specs](../02-screen-specs.md) + style chung, duyệt bằng ảnh chụp thật ở bước DoD; nếu sau này quyết định vẽ concept cho màn nào thì thêm vào danh sách trên và màn đó chờ concept.
+- Màn có trong danh sách trên (S2, S6, S7, O2, S9, S10, S11) chỉ dựng UI sau khi concept **của chính màn đó** được duyệt và có folder trong [screens](../screens/README.md).
+- Màn không có trong danh sách (S1, S3–S5, S8, O1, O3–O7) dựng theo [02-screen-specs](../02-screen-specs.md) + style chung, duyệt bằng ảnh chụp thật ở bước DoD; nếu sau này quyết định vẽ concept cho màn nào thì thêm vào danh sách trên và màn đó chờ concept.
 - Giai đoạn 1 (token, khung) bắt đầu được ngay vì S6 — nền mỹ thuật chung — đã duyệt; không cần chờ đủ mọi concept.
 
 ## Giai đoạn 1 — Token và khung
