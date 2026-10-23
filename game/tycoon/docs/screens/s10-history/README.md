@@ -10,7 +10,7 @@
 
 - Cùng họ với [S11 Mint](../s11-leaderboard/README.md): trời/phố pixel, UI và chữ mượt, header pill kem và nút quay lại tròn.
 - Panel kem sáng, viền navy mảnh, cạnh beige nhẹ. Ba ô thống kê là số liệu, không phải tab.
-- Một danh sách chung ván online/máy, mỗi hàng hai dòng; kết quả/lý do ở giữa, KEN và thời gian căn phải. Hạng 1 nền vàng nhạt; chip Máy mint.
+- Một danh sách chung ván online/máy, mỗi hàng hai dòng; kết quả/lý do ở giữa, KEN và thời gian căn phải. Hạng 1 nền vàng nhạt; chip Máy mint có icon robot.
 - Bấm hàng mở chi tiết ngay bên dưới, mỗi lúc một ván. Hàng của mình mint với vạch jade, vẫn ghi `@username`; Phá sản/Bỏ cuộc coral.
 
 ## Phân lớp asset — không cần cắt thêm ảnh
@@ -23,7 +23,8 @@
 | Nền trời/phố | [bg-board-pixel.webp](../../../assets/lobby/bg-board-pixel.webp), cùng S11; canh cảnh theo viewport bằng CSS |
 | Huy chương hạng 1–3 | [Bộ S11](../../../assets/leaderboard/README.md): [vàng](../../../assets/leaderboard/medal-gold.webp), [bạc](../../../assets/leaderboard/medal-silver.webp), [đồng](../../../assets/leaderboard/medal-bronze.webp); mặt trống, số DOM; S10 rộng 32 |
 | Quay lại và mũi tên mở/thu chi tiết | [chevron-left.svg](../../../assets/room-list/chevron-left.svg); quay lại giữ nguyên, xoay +90° thành lên / −90° thành xuống; không cần thêm SVG |
-| Avatar người chơi/bot | `avatarIconUrl(vipType)` từ [helper hiện có](../../../helpers/player.ts); lấy VIP thật và fallback Ola, không cắt avatar AI |
+| Avatar người chơi | `avatarIconUrl(vipType)` từ [helper hiện có](../../../helpers/player.ts); lấy VIP thật và fallback Ola, không cắt avatar AI |
+| Avatar bot, icon chip Máy | [ill-bot.webp](../../../assets/lobby/ill-bot.webp); avatar trên nền tròn `#e4f3fd` |
 | Nút quay lại và header pill | CSS paper, viền navy, cạnh beige nhẹ |
 | Panel chính và ba ô tóm tắt | CSS cream/paper, bo góc và viền mảnh; chữ/số ghép DOM |
 | Khung danh sách, hàng thắng, chi tiết mở | CSS giấy kem, vàng nhạt `#fff6dc`, divider beige; không chụp cả bảng thành ảnh |
@@ -39,8 +40,8 @@
 
 Mốc 390 × 844 đo theo ảnh này (chi tiết ở 02 §S10): header cách đỉnh 50 + safe-area, quay lại 46, tiêu đề 24/800; panel radius 26, viền 1,5, cao tối đa 584. Ba ô tóm tắt cao 72, số 29/800; mỗi hàng ván 56; dòng chi tiết 38, avatar 28. Danh sách cuộn; màn 360 × 640 giữ cỡ chữ, lý do dài ellipsis.
 
-Runtime dựng theo đúng số đo ảnh; đặt chồng ảnh chụp 390 × 844 lên concept thì khung, ô tóm tắt, hàng và phần chi tiết trùng vị trí, 5 ván vừa khít như ảnh. Khác ảnh: avatar là VIP thật của từng người, ngày giờ dạng `22/10 20:18` theo đồng hồ máy.
+Runtime dựng theo đúng số đo ảnh; đặt chồng ảnh chụp 390 × 844 lên concept thì khung, ô tóm tắt, hàng và phần chi tiết trùng vị trí, 5 ván vừa khít như ảnh. Khác ảnh: avatar là VIP thật của từng người, ngày giờ dạng `22/10 20:18` theo đồng hồ máy. Để nhận ra ván máy với ván người (người dùng duyệt 23/10/2026): chip `Máy` thêm icon robot, bot trong chi tiết dùng avatar robot, bàn giao lưu online ghi `Giao lưu` ở cột KEN thay cho `—` (chỉ ván máy còn `—`).
 
-Ảnh dùng dữ liệu giả: 5 ván, 2 lần hạng 1, tổng **+700 KEN**. Ván đầu bốn người cược 500 có trả thưởng 1.900 sau phí, nên net **+1.400**; ba người còn lại mỗi người −500. Các ván khác −500, −200 hoặc `—`; tổng online là 1.400 − 500 − 200 = +700. Ván máy tính vào số ván/hạng 1, không cộng KEN/EXP/BXH. “100 ván gần nhất” là giới hạn danh sách, không phải số ván hiện có.
+Ảnh dùng dữ liệu giả: 5 ván, 2 lần hạng 1, tổng **+700 KEN**. Ván đầu bốn người cược 500 có trả thưởng 1.900 sau phí, nên net **+1.400**; ba người còn lại mỗi người −500. Các ván khác −500, −200 hoặc `—` (runtime ghi `Giao lưu` cho bàn không cược); tổng online là 1.400 − 500 − 200 = +700. Ván máy tính vào số ván/hạng 1, không cộng KEN/EXP/BXH. “100 ván gần nhất” là giới hạn danh sách, không phải số ván hiện có.
 
 Tải/trống/lỗi/offline, lưu lịch sử máy, bàn phím và trợ năng giữ theo 02 §S10. Chữ, tên, số hạng, tiền và thời gian luôn là dữ liệu DOM.

@@ -2426,6 +2426,17 @@ button:focus-visible,
   color: #d63a22;
 }
 
+.ty-hist-chip-bot {
+  gap: 4px;
+  padding-left: 5px;
+}
+
+.ty-hist-chip-bot img {
+  width: 16px;
+  height: 14px;
+  object-fit: contain;
+}
+
 .ty-hist-side {
   flex: none;
   display: flex;
@@ -2447,6 +2458,12 @@ button:focus-visible,
 
 .ty-hist-ken-minus {
   color: var(--ty-hist-minus);
+}
+
+.ty-hist-ken-free {
+  color: var(--ty-hist-muted);
+  font-size: 13px;
+  line-height: 19px;
 }
 
 .ty-hist-time {
@@ -2505,6 +2522,12 @@ button:focus-visible,
   height: 28px;
   border-radius: 999px;
   object-fit: cover;
+}
+
+.ty-hist-player-avatar-bot {
+  padding: 4px 3px;
+  background: #e4f3fd;
+  object-fit: contain;
 }
 
 .ty-hist-player-who {

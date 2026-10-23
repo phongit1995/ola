@@ -83,6 +83,11 @@ export function kenTone(value: number, bet: number): 'plus' | 'minus' | 'none' {
   return value > 0 ? 'plus' : 'minus';
 }
 
+export function entryKen(entry: HistoryEntry): { text: string; tone: 'plus' | 'minus' | 'none' | 'free' } {
+  if (entry.source === 'online' && entry.bet <= 0) return { text: 'Giao lưu', tone: 'free' };
+  return { text: formatKenDelta(entry.kenDelta, entry.bet), tone: kenTone(entry.kenDelta, entry.bet) };
+}
+
 export function summarize(entries: readonly HistoryEntry[]): HistorySummary {
   return entries.reduce<HistorySummary>(
     (sum, entry) => ({

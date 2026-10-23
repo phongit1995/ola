@@ -217,6 +217,7 @@
   "knownLimitations": [
     "Shared artwork preserves the established game identity; it is not a pixel-identical cutout from the S10 AI concept.",
     "Loading, empty, error and offline states remain specified in docs, not illustrated in the concept.",
-    "Runtime follows the concept measurements (tiles 72, rows 56, detail lines 38, avatar 28)."
+    "Runtime follows the concept measurements (tiles 72, rows 56, detail lines 38, avatar 28).",
+    "Approved deviation 2026-10-23: the Máy chip carries the ill-bot robot icon, bots use the robot avatar in details, and no-stake online rows show 'Giao lưu' instead of the em dash so only bot rows keep '—'."
   ]
 }

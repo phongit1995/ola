@@ -440,12 +440,12 @@ Mỗi hàng **cao 56**, hai dòng:
 | Vùng | Dòng 1 | Dòng 2 |
 |---|---|---|
 | Trái 40 | Hạng của mình: huy chương 1–3 dùng lại `assets/leaderboard/medal-*.webp` (rộng 34, số 19/800), hạng 4 là số navy 22/800 | — |
-| Giữa | Kết quả 15/800: `Tỷ phú số 1` / `Hạng 2` / `Hạng 3` / `Hạng cuối` (`placeLabel`); `Phá sản` hoặc `Bỏ cuộc` coral nếu mình ra khỏi ván | Lý do kết thúc + số người 12/600 `#51638f`: `Thắng ngay · 3 nhóm màu` / `Thắng ngay · một cạnh bàn` / `Thắng ngay · 4 sân bay` / `Còn 1 người` / `Hết 30 vòng` / `Hết 25 phút`, rồi `· 4 người`; ván máy có chip `Máy` mint `#d7fae0` |
-| Phải, căn phải | KEN 15/800 `tabular-nums`: `+1.400` jade, `−500` coral, bàn giao lưu và ván máy `—` | Thời gian 12/600 theo `formatHistoryTime`: `14:32` nếu hôm nay, `21/10 14:32` ngày khác |
+| Giữa | Kết quả 15/800: `Tỷ phú số 1` / `Hạng 2` / `Hạng 3` / `Hạng cuối` (`placeLabel`); `Phá sản` hoặc `Bỏ cuộc` coral nếu mình ra khỏi ván | Lý do kết thúc + số người 12/600 `#51638f`: `Thắng ngay · 3 nhóm màu` / `Thắng ngay · một cạnh bàn` / `Thắng ngay · 4 sân bay` / `Còn 1 người` / `Hết 30 vòng` / `Hết 25 phút`, rồi `· 4 người`; ván máy có chip `Máy` mint `#d7fae0` kèm icon robot `assets/lobby/ill-bot.webp` 16 × 14, ván online không có chip |
+| Phải, căn phải | KEN 15/800 `tabular-nums`: `+1.400` jade, `−500` coral; ván máy `—`; bàn giao lưu online (cược 0) ghi chữ `Giao lưu` 13/800 `#51638f` để không nhầm với ván máy | Thời gian 12/600 theo `formatHistoryTime`: `14:32` nếu hôm nay, `21/10 14:32` ngày khác |
 
 - Hàng hạng 1 nền vàng nhạt `#fdf5dc`; các hàng khác nền giấy, kẻ beige `#f2dfc4`.
 - **Bấm hàng mở chi tiết ngay dưới hàng** (một hàng mở mỗi lúc, `aria-expanded`). Mở màn thì ván mới nhất đã mở sẵn như ảnh; bấm lại để thu. Hàng đang mở có mũi tên lên ở mép phải (`chevron-left.svg` xoay 90°), hàng thu không có mũi tên.
-- Chi tiết là khung ngà `#fffdf6` lồng trong danh sách (cách mép 8), 2–4 dòng **cao 38**: hạng 14/800 · avatar VIP **28** · `@username` 14/800 (hàng mình nền mint `#e8fef2` + vạch jade, vẫn ghi `@username`) · `±KEN` 14/800, bàn không cược ghi `—`. Bot ghi `Bot 1`… kèm chip mức `Dễ/Thường/Khó`, avatar VIP của bot. Người phá sản/bỏ cuộc có **chip coral** `Phá sản` / `Bỏ cuộc` cạnh tên. Không có nút xem lại ván.
+- Chi tiết là khung ngà `#fffdf6` lồng trong danh sách (cách mép 8), 2–4 dòng **cao 38**: hạng 14/800 · avatar VIP **28** · `@username` 14/800 (hàng mình nền mint `#e8fef2` + vạch jade, vẫn ghi `@username`) · `±KEN` 14/800, bàn không cược ghi `—`. Bot ghi `Bot 1`… kèm chip mức `Dễ/Thường/Khó`, avatar là robot `ill-bot.webp` trên nền tròn `#e4f3fd` (không dùng avatar VIP để khỏi giống người thật). Người phá sản/bỏ cuộc có **chip coral** `Phá sản` / `Bỏ cuộc` cạnh tên. Không có nút xem lại ván.
 - 360 × 640: panel co theo màn, danh sách cuộn; lý do dài ellipsis một dòng, giữ cỡ chữ và vùng chạm.
 
 ### Trạng thái

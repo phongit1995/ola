@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { newGame } from '../logic/engine';
 import {
   botHistoryEntry,
+  entryKen,
   formatKenDelta,
   historyReason,
   historyTitle,
@@ -63,6 +64,12 @@ describe('history helpers', () => {
     expect(formatKenDelta(1400, 500)).toBe('+1.400');
     expect(formatKenDelta(-500, 500)).toBe('−500');
     expect(formatKenDelta(0, 0)).toBe('—');
+  });
+
+  it('labels no-stake online games apart from bot games', () => {
+    expect(entryKen(entry({ bet: 0, kenDelta: 0 }))).toEqual({ text: 'Giao lưu', tone: 'free' });
+    expect(entryKen(entry({ source: 'bot', bet: 0, kenDelta: 0 }))).toEqual({ text: '—', tone: 'none' });
+    expect(entryKen(entry({ kenDelta: -500 }))).toEqual({ text: '−500', tone: 'minus' });
   });
 
   it('summarizes online KEN only and counts bot wins', () => {

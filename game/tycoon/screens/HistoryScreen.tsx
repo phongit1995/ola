@@ -14,6 +14,7 @@ import {
   HISTORY_LIMIT,
   HISTORY_OFFLINE,
   HISTORY_ONLINE_ERROR,
+  entryKen,
   exitLabel,
   formatKenDelta,
   formatSummaryKen,
@@ -46,7 +47,12 @@ function Detail({ entry, id, myId }: { entry: HistoryEntry; id: string; myId: st
         return (
           <li key={player.userId} className={player.userId === myId ? 'ty-hist-player ty-hist-player-me' : 'ty-hist-player'}>
             <span className="ty-hist-player-rank">{player.place}</span>
-            <img className="ty-hist-player-avatar" src={avatarIconUrl(player.vipType)} alt="" draggable={false} />
+            <img
+              className={player.bot ? 'ty-hist-player-avatar ty-hist-player-avatar-bot' : 'ty-hist-player-avatar'}
+              src={player.bot ? botUrl : avatarIconUrl(player.vipType)}
+              alt=""
+              draggable={false}
+            />
             <span className="ty-hist-player-who">
               <span className="ty-hist-player-name">{player.bot ? player.username : `@${player.username}`}</span>
               {player.bot && player.level ? <span className="ty-hist-chip">{botLevelLabel(player.level)}</span> : null}
@@ -64,6 +70,7 @@ function MatchRow({ entry, expanded, baseId, myId, onToggle }: { entry: HistoryE
   const title = historyTitle(entry);
   const reason = historyReason(entry);
   const time = formatHistoryTime(entry.playedAt);
+  const ken = entryKen(entry);
   const detailId = `${baseId}-${entry.id}`;
   return (
     <li className={entry.place === 1 ? 'ty-hist-item ty-hist-item-win' : 'ty-hist-item'}>
@@ -82,11 +89,16 @@ function MatchRow({ entry, expanded, baseId, myId, onToggle }: { entry: HistoryE
           <span className={entry.exitReason ? 'ty-hist-title ty-hist-title-out' : 'ty-hist-title'}>{title}</span>
           <span className="ty-hist-sub">
             <span className="ty-hist-reason">{reason}</span>
-            {entry.source === 'bot' ? <span className="ty-hist-chip">Máy</span> : null}
+            {entry.source === 'bot' ? (
+              <span className="ty-hist-chip ty-hist-chip-bot">
+                <img src={botUrl} alt="" draggable={false} />
+                Máy
+              </span>
+            ) : null}
           </span>
         </span>
         <span className="ty-hist-side" aria-hidden="true">
-          <span className={`ty-hist-ken ty-hist-ken-${kenTone(entry.kenDelta, entry.bet)}`}>{formatKenDelta(entry.kenDelta, entry.bet)}</span>
+          <span className={`ty-hist-ken ty-hist-ken-${ken.tone}`}>{ken.text}</span>
           <span className="ty-hist-time">{time}</span>
         </span>
         {expanded ? <img className="ty-hist-chevron" src={chevronUrl} alt="" aria-hidden="true" draggable={false} /> : null}
