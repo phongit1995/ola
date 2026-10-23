@@ -16,6 +16,8 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 
 **Lobby S2 đã chốt phương án 1 — Nền trời thoáng:** [ảnh tham chiếu](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) (bản 22/10/2026 có nút chơi máy xanh ngọc), [đặc tả style lobby](./screens/s2-lobby/README.md). Nền trời mở, Bác Tỷ bên trái, ba thẻ đất + hai quân bên phải, menu vàng/kem với font Nunito. Lobby mock đã dựng; nút Chơi với máy mở modal [02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal): Bot 1 mặc định, thêm/xóa tối đa 3 bot và chọn mức độ riêng (máy chưa chơi khác nhau theo mức, 05 §12). Topbar dùng avatar VIP, @username và số dư rồi đồng K bên phải.
 
+**Hướng dẫn chơi đã chốt và dựng 23/10/2026:** [bốn tab, nội dung và asset](./screens/s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab); `RulesModal` dùng 18 minh họa `assets/rules/`.
+
 ## Phạm vi v1 (đề xuất chốt)
 
 - PvP **2–4 người**, chơi theo bàn (room) như Tiến Lên; không có hàng đợi ghép nhanh.

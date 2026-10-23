@@ -41,7 +41,7 @@ UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và render
 | `Chơi với máy` | xanh ngọc 280×56, Nunito navy 24/800, robot xanh–trắng 40 | `setSetupOpen(true)` → BotSetupModal, mặc định Bot 1; thêm/xóa tối đa 3 bot và chọn mức độ từng bot (§2.3) rồi vào ván |
 | `Lịch sử` | giấy kem viền navy 280×56, Nunito 24/800, minh họa đồng hồ blue | S10 |
 | `Bảng xếp hạng` | giấy kem viền navy 280×56, Nunito 24/800, minh họa bục/crown | S11 |
-| `Luật chơi` | nút text 280×44, Nunito navy 22/800 gạch chân, minh họa sách | mở modal luật: 6 mục ngắn (gieo, mua, thuê, xây, tù, kết thúc), scroll, nút Đóng |
+| `Luật chơi` | nút text 280×44, Nunito navy 22/800 gạch chân, minh họa sách | mở RulesModal 4 tab Cơ bản/Tài sản/Ô đặc biệt/Kết thúc, thân cuộn, nút `Đã hiểu` gold (§2.4) |
 
 CTA online disabled khi `lobbyPhase !== 'ready'`. Chơi với máy, Luật chơi, âm thanh và thoát dùng được offline. Kích thước/font riêng S2 không đổi control S6; co giãn và màn thấp theo [S2 lobby §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive).
 
@@ -89,6 +89,16 @@ Khung paper rộng `min(100% − 32, 340)`, radius 22, viền navy 2, padding 18
 **Trong ván.** Pod S6 và bảng S9 hiện tên Bot 1/2/3, thêm pill paper viền beige với mức Dễ/Thường/Khó 11/800 navy 70%; người chơi không có pill mức. Ví dụ tên truy cập `Bot 2, máy mức Khó`.
 
 **Các trạng thái phải kiểm khi dựng:** mở mới 1 bot; thêm bot thứ 2 và 3; đủ 3 không thêm được; xóa bot giữa giữ mức của bot còn lại; còn 1 không xóa được; Hủy rồi mở lại về một bot; Chơi lại giữ cấu hình ván; màn thấp cuộn thân, header/footer không bị che.
+
+---
+
+### 2.4 Hướng dẫn chơi (`RulesModal`)
+
+Người dùng chốt **4 tab ngày 23/10/2026**, đã dựng UI cùng ngày. Ảnh mẫu, số đo, nội dung từng tab và asset: [S2 §12](./screens/s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab).
+
+Khung paper cùng họ modal chơi máy: sách + `Hướng dẫn chơi`, X tròn, vạch mint; bốn tab `Cơ bản · Tài sản · Ô đặc biệt · Kết thúc`, tab chọn gold. Mỗi mục là card có minh họa trong ô pastel, tiêu đề và các ý ngắn căn trái. Giữ đủ 10 nhóm luật cũ, kể cả các ngoại lệ ảnh viết rút gọn.
+
+Header/tab và nút `Đã hiểu` gold luôn nhìn thấy, thân cuộn khi thiếu cao. Mở mới chọn Cơ bản (focus ở tab), phím trái/phải/Home/End đổi tab; đóng bằng Đã hiểu/X/Escape/backdrop và trả focus. Chữ/số là DOM, số luật đọc từ constants. Nút này chỉ đóng hướng dẫn, không mở ván; mở từ menu trong ván dùng cùng modal.
 
 ---
 

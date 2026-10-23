@@ -92,7 +92,7 @@ Kích thước/font ở đây là biến thể **riêng S2**, không đổi nút
 | `Chơi với máy` | xanh ngọc, cao 56, pill cùng rộng menu; mặt `#A4F4CF` → `#51D9A3`, cạnh `#299B79`, một contour navy, highlight nhỏ trên trái | robot xanh–trắng 40, `lobby/ill-bot.webp`; mặt nút CSS `.ty-lb-btn-mint`, `button-mint.png` chỉ tham chiếu | `setSetupOpen(true)` → `BotSetupModal`, mặc định Bot 1; thêm/xóa tối đa 3 bot và chọn mức độ riêng, header có icon robot ([02 §2.3](../../02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal)) rồi vào ván; dùng được offline |
 | `Lịch sử` | paper, cao 56, pill, **một contour navy 1.5**, cạnh beige bên trong và bóng xanh nhẹ xuống dưới | đồng hồ/mũi tên blue 40 | mở S10 |
 | `Bảng xếp hạng` | paper, cao 56, pill như trên | bục gold, blue, coral + crown, 40 | mở S11 |
-| `Luật chơi` | **không nền pill, không border/shadow**; vùng chạm cao ít nhất 44, chữ navy gạch chân trên nền trời | sách paper/navy, 32 | modal luật có thể cuộn, nút Đóng; dùng offline |
+| `Luật chơi` | **không nền pill, không border/shadow**; vùng chạm cao ít nhất 44, chữ navy gạch chân trên nền trời | sách paper/navy, 32 | modal [Hướng dẫn chơi 4 tab](#12-hướng-dẫn-chơi--đã-chốt-4-tab), nút Đã hiểu; dùng offline |
 | `Thoát game` | paper, cao 44, pill; rộng theo nội dung, padding ngang 18 | cửa/mũi tên coral, 24 | `bridge.exit()` |
 
 Artwork kiểm lại từ nguồn: xúc xắc CTA có các mặt **3–2–1** (mặt lớn phía trên / trái / phải), đồng hồ không có chấm tâm. Icon thoát giữ thiết kế v1, tách thành 2 lớp cửa + mũi tên hướng phải, chồng trong một ô 24 px của nút Thoát game.
@@ -109,7 +109,7 @@ Các hình trong nút là **6 minh họa trang trí** `lobby/ill-{dice,bot,histo
 
 Minh họa có `aria-hidden`, tên action chỉ đọc nhãn nút. Khi chưa có minh họa: dùng `ic-dice/history/leaderboard/exit-door`; `Luật chơi` có thể tạm chỉ có chữ, giữ slot và khoảng cách ổn định. Fallback này không phải trạng thái đạt visual QA cuối.
 
-`Vào bàn` là nút gold duy nhất của S2. `Luật chơi` mở modal trên backdrop và khóa tương tác nền; nút Đóng dùng paper. Nút xanh ngọc `Chơi với máy` là bổ sung đã chốt ngày 22/10/2026. Không gắn thêm badge, đếm người online, quảng cáo, hàng tab hay action ngoài bố cục đã chọn.
+`Vào bàn` là nút gold duy nhất trong menu sảnh S2. `Luật chơi` mở modal trên backdrop và khóa tương tác nền; modal 4 tab §12 đóng bằng nút `Đã hiểu` gold. Nút xanh ngọc `Chơi với máy` là bổ sung đã chốt ngày 22/10/2026. Không gắn thêm badge, đếm người online, quảng cáo, hàng tab hay action ngoài bố cục menu sảnh đã chọn.
 
 ## 7. Trạng thái và chuyển động
 
@@ -255,3 +255,72 @@ Màu v2 là **ngoại lệ artwork riêng của modal S2**, lấy từ ảnh m�
 - Không dùng thùng rác, bộ chọn số lượng, icon mức độ/play/tiền cược cho modal này.
 
 Đã đối chiếu v2 cạnh hai concept, xem icon ở cỡ thật và phóng 2×, kiểm màu trên vùng không chứa nét trắng. Mẫu màu của 6 vùng icon lệch tối đa 1 đơn vị mỗi kênh RGB so với vùng mẫu đã đo. Chỉ số này hỗ trợ kiểm màu, không chứng minh toàn ảnh trùng pixel. Cần kiểm bố cục và tương tác khi triển khai modal mới.
+
+## 12. Hướng dẫn chơi — đã chốt 4 tab
+
+Người dùng chốt bốn ảnh ngày 23/10/2026, theo [02 §2.4](../../02-screen-specs.md#24-hướng-dẫn-chơi-rulesmodal). **Đã dựng UI cùng ngày** (`components/RulesModal.tsx`), chụp đối chiếu ở 390 × 844 và 360 × 640. Mở từ nút `Luật chơi` ở sảnh và từ menu trong ván; không đổi trạng thái ván. [Nguồn và prompt](../../asset-generation-log.md#s2--thiết-kế-lại-hướng-dẫn-chơi-23102026).
+
+| Cơ bản | Tài sản |
+|---|---|
+| ![Hướng dẫn chơi, tab Cơ bản](./rules-01-basic.webp) | ![Hướng dẫn chơi, tab Tài sản](./rules-02-assets.webp) |
+
+| Ô đặc biệt | Kết thúc |
+|---|---|
+| ![Hướng dẫn chơi, tab Ô đặc biệt](./rules-03-special.webp) | ![Hướng dẫn chơi, tab Kết thúc](./rules-04-ending.webp) |
+
+Ảnh 853 × 1844, WebP q85 đổi từ PNG output (hash PNG gốc trong [manifest](../../../assets/screens/rules-guide/manifest.json)). Ảnh là concept mỹ thuật; chữ trong ảnh rút gọn, **nội dung trong code thắng ảnh**.
+
+### Bố cục và hành vi
+
+- Khung, header, X và nút vàng dùng chung CSS với modal Chơi với máy (§11): paper, vạch mint dưới header, sách `lobby/ill-rules.webp` hộp 32 cạnh tiêu đề `Hướng dẫn chơi` 21/800, X `bot-setup/close-navy.svg` vùng chạm 44.
+- Rộng `min(100%, 420)` trong backdrop lề 16 (390 → 358, 430 → 398): ảnh rộng khoảng 352 ở 390, rộng hơn mức 340 của modal Chơi với máy nên không dùng chung giới hạn đó. Cao tối đa `100dvh − 48` trừ safe-area, padding 12 / 16 / 16. **Chiều cao cố định khi đổi tab**: bằng tab dài nhất, tối đa chiều cao màn (bốn panel xếp chồng một ô grid, panel ẩn `visibility: hidden` + `inert`), để header và thanh tab không nhảy. Ảnh vẽ mỗi tab một chiều cao; runtime cố ý khác ảnh ở điểm này. Tab ngắn để trống phía dưới; tab dài chỉ panel cuộn, header, thanh tab và nút `Đã hiểu` luôn nhìn thấy.
+- **4 tab** `Cơ bản · Tài sản · Ô đặc biệt · Kết thúc`: pill paper viền `#b59f86`, tab chọn gold như pill mức độ bot; 13/800, cao 44, rộng theo nhãn. Mở mới chọn Cơ bản, focus ở tab Cơ bản. `tablist`/`tab`/`tabpanel`, phím trái/phải (vòng), Home/End; đổi tab đưa thân về đầu.
+- Mỗi mục là một card paper `#fffdf7` viền `#efe4d2`, radius 16: ô pastel 64 (minh họa 54) bên trái, tiêu đề 16/800, mỗi ý một dòng 14/400 line-height 1.5 màu `#34507f`, `text-wrap: pretty` để không rơi một chữ xuống dòng cuối.
+- Pastel theo vị trí trong ảnh: mục 1 gold `#fff0c6`, mục 2 sky `#ddf2ff`, mục 3 mint `#dcfbe9`, mục 4 coral `#ffe0d4`. Riêng tab Kết thúc: card `Thắng ngay` gold nhạt `#fff6dc` có cúp và 3 hàng điều kiện (minh họa 64 × 40), `Khi nào kết thúc?` card paper ô sky, `Cách xếp hạng` card sky `#ebf6fe`.
+- Tab Cơ bản có dải `Mỗi hành động có 30 giây.` nền `#e4f3fd` + đồng hồ 32; không đổi thành 30 giây mỗi lượt.
+- Footer: divider beige rồi `Đã hiểu` gold cao 52, rộng `min(100%, 248)`; chỉ đóng hướng dẫn. X/Escape/backdrop cũng đóng, focus trả về nút đã mở. Không có nút tiếp/trước, page dots hay chức năng chơi mới.
+
+### Nội dung
+
+Giữ đủ 10 mục luật cũ, chia lại theo tab; số đọc từ `logic/constants.ts` (vốn, lương Xuất phát, phạt tù, số đôi, số lượt tù, ×mua lại, ×lễ hội, thuế, số vòng, phút, số nhóm thắng, số sân bay từ `STATION_RENT`).
+
+| Tab | Mục | Ý phải giữ (ảnh có thể rút gọn) |
+|---|---|---|
+| Cơ bản | Chuẩn bị | 1.500 tr; `tr` là tiền triệu trong ván, không phải KEN |
+| | Gieo & di chuyển | Qua hoặc đáp Xuất phát nhận 160 tr; đi thẳng vào tù không nhận |
+| | Gieo đôi | Đôi 3 lần liên tiếp vào tù ngay; ngoại lệ ra tù ở tab Ô đặc biệt |
+| Tài sản | Mua & thuê đất | Thuê trong viên tròn trên ô; trọn nhóm màu thuê đất trống ×2; sân bay theo số sân bay sở hữu |
+| | Mua lại đất | Sau khi trả thuê và không nợ; ×2 (giá đất + tiền nâng cấp) trả chủ cũ, giữ cấp nhà; không mua lại sân bay hoặc Khách sạn |
+| | Nâng cấp | Đủ 2 thành phố cùng nhóm; Nhà → Biệt thự → Khách sạn, nâng đều trong lượt mình; hạ cấp hoàn 50%, hạ đều |
+| | Nợ & phá sản | Hạ cấp để trả; phá sản thì tài sản về chủ nợ là người chơi, nợ ngân hàng thì đất về ngân hàng |
+| Ô đặc biệt | Lễ hội | Thuê ×2; cả bàn một Lễ hội, người sau tổ chức thì chuyển ô |
+| | Du lịch | Lượt sau bay tới ô bất kỳ trừ ô đang đứng, hoặc gieo thường; qua Xuất phát vẫn nhận lương |
+| | Thuế & thẻ bài | Thuế 10% tổng tài sản; Cơ hội/Khí vận rút thẻ |
+| | Nhà tù | Nộp 50 tr / thẻ ra tù / gieo đôi; ra bằng đôi đi theo số vừa gieo, không gieo tiếp; lượt thứ 3 chưa đôi bắt buộc nộp rồi đi |
+| Kết thúc | Thắng ngay | Đạt 1 trong 3: trọn 3 nhóm màu, toàn bộ thành phố một cạnh bàn, cả 4 sân bay |
+| | Khi nào kết thúc? | Còn 1 người, đủ 30 vòng hoặc hết 25 phút, điều kiện nào đến trước |
+| | Cách xếp hạng | Tổng tài sản = tiền mặt + giá đất + tiền nâng cấp; không tính KEN hay chỉ tiền mặt |
+
+### Asset hướng dẫn chơi
+
+18 minh họa runtime ở [`assets/rules/`](../../../assets/rules/) (`ill-*.webp`, tổng khoảng 72 KB), xuất từ 18 PNG nguồn trong suốt ở [`assets/screens/rules-guide/`](../../../assets/screens/rules-guide/manifest.json): cắt theo alpha > 8, Lanczos, đệm 4 px; 96 px cạnh dài cho ô 54, 128 px cho ba hình điều kiện thắng (hiển thị 64 × 40); WebP q80 / alpha q90. Prompt, output ID, hash, crop đối chiếu và khác biệt từng ảnh nằm trong manifest. Sửa PNG nào thì xuất lại WebP tương ứng theo thông số này.
+
+| Tab | Minh họa (`assets/rules/`) |
+|---|---|
+| Cơ bản | `ill-start-coins`, `ill-roll-dice`, `ill-double-dice`, `ill-action-timer` (dải 30 giây) |
+| Tài sản | `ill-buy-rent`, `ill-takeover`, `ill-upgrade`, `ill-debt-warning` |
+| Ô đặc biệt | `ill-festival`, `ill-travel`, `ill-tax-cards`, `ill-jail` |
+| Kết thúc | `ill-win-trophy`, `ill-win-groups`, `ill-win-line`, `ill-win-airports`, `ill-finish-clock`, `ill-total-assets` |
+
+Minh họa do AI tái dựng theo crop concept, không trùng pixel: đúng chủ thể, cặp gieo đôi 3–3, đúng 3 deed nhóm màu, 4 marker sân bay, dấu `?`/`%`/`!`; nét bóng và góc nhìn khác nhẹ (ghi trong `visualReview` từng ảnh). Tiền trong hướng dẫn không dùng đồng K. Icon xúc xắc chỉ minh họa luật, không thay bộ mặt xúc xắc gameplay.
+
+| Chi tiết trong concept | Cách dựng |
+|---|---|
+| Sảnh tối phía sau | Lobby S2 thật + `.ty-backdrop`; không dùng nền ảnh AI |
+| Khung, viền, cạnh, vạch mint, X tròn, nút Đã hiểu | CSS chung với §11 (`.ty-bot-modal` / `.ty-rules-modal`) |
+| Thanh tab, card, ô pastel, dải 30 giây, card Thắng ngay, divider | CSS `.ty-rules-*` |
+| Sách header | `lobby/ill-rules.webp` có sẵn |
+| Minh họa từng mục | 18 WebP `assets/rules/`, không bake nền pastel |
+| Chữ và số | DOM, Nunito; số từ constants |
+
+Ảnh AI phóng minh họa lớn hơn (ô khoảng 84); runtime thu minh họa về ô 64 trước khi thu chữ, nên card dài hơn ảnh và tab Tài sản/Ô đặc biệt cuộn ở 390 × 844.

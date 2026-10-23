@@ -208,3 +208,22 @@ Change the add control to ACTIVE mint-green full-width "+ Thêm bot" immediately
 Change summary to exactly "Ván 2 người: bạn và 1 bot". Keep hint exactly "Tối đa 30 vòng hoặc 25 phút, mỗi hành động 30 giây. Máy đi tự động."
 Footer retains cream "Hủy" left and GOLD "Bắt đầu" right, equal width. Shorten and vertically center modal to content naturally, do not leave empty space where deleted bots were. Keep all controls inside and comfortably spaced. Preserve same portrait canvas/aspect, visual finish, font and icon details. No quantity picker, no extra features, no English.
 ```
+
+## S2 — thiết kế lại Hướng dẫn chơi (23/10/2026)
+
+- Theo yêu cầu làm lại UI, dùng skill imagegen và công cụ built-in `image_gen`. Nguồn tham chiếu: concept lobby S2, modal chơi máy 1 bot và `lobby/ill-rules.webp`. Đọc RulesModal, constants và 05 để giữ đúng luật.
+- Output Cơ bản đầu `exec-c803b2d4-0acc-4c5c-90ff-7e4d4ac2a53d.png` (không dùng làm chuẩn); Tài sản `exec-71e8e0c6-0876-4dca-80d0-d3c0517e7a10.png` sửa từ Cơ bản đầu; Cơ bản sửa gieo đôi thành 3–3 `exec-f4f89f9e-6386-45cc-89b3-20221f554d67.png`; Ô đặc biệt `exec-8e20ead8-81d3-4496-9cbe-e784a310ad88.png` sửa từ Tài sản; Kết thúc `exec-b6eb3989-26bb-4aca-b980-0da1e93345d1.png` sửa từ Cơ bản bản cuối.
+- Prompt đầy đủ của 4 ảnh chuẩn (`concepts[].prompt`) và bản Cơ bản đầu (`conceptHistory`) lưu trong [manifest](../assets/screens/rules-guide/manifest.json).
+- Đã kiểm chữ/số chính, nhãn và trạng thái tab, topbar VIP/@username/số rồi đồng K, X/Đã hiểu và minh họa gieo đôi. Ảnh chỉ minh họa copy rút gọn; nội dung đầy đủ ở [S2 §12](./screens/s2-lobby/README.md#nội-dung).
+
+### Chốt concept và tách 18 minh họa (23/10/2026)
+
+- Người dùng chốt cả bốn ảnh và yêu cầu lấy từng asset. Bốn ảnh chuẩn lưu tại `screens/s2-lobby/rules-0{1..4}-*.webp`, WebP q85 đổi từ PNG output nguyên byte (hash PNG gốc ở `concepts[].sourcePng`).
+- Dùng skill imagegen, **built-in `image_gen`**, một lần cho từng minh họa, tham chiếu đúng ảnh tab và `transparent_background=true`. 18 PNG nguồn ở `assets/screens/rules-guide/`; [manifest](../assets/screens/rules-guide/manifest.json) ghi prompt đầy đủ, output ID, kích thước, SHA-256, alpha, nguồn concept, crop đối chiếu và khác biệt từng ảnh.
+- 17 ảnh 1254 × 1254, một ảnh cạnh bàn 1536 × 1024. Chép nguyên byte output, không chỉnh bitmap; 18/18 có alpha thật. Đã kiểm đủ chủ thể/ký hiệu và xem ở 136/48 px trên kem, navy, ô caro. Một số nét, góc nhìn và highlight khác concept; không phải crop trùng pixel.
+- Sách header dùng lại `lobby/ill-rules.webp`; X dùng `bot-setup/close-navy.svg`. Nền modal/tab/card/pastel, divider và nút thuộc CSS; chữ/số thuộc DOM.
+
+### Xuất runtime và dựng RulesModal (23/10/2026)
+
+- Xuất 18 `assets/rules/ill-*.webp`: cắt theo alpha > 8, Lanczos, đệm trong suốt 4 px, 96 px cạnh dài (ba hình điều kiện thắng 128 px), `cwebp -q 80 -alpha_q 90 -m 6`; tổng khoảng 72 KB. Thông số ghi ở `runtimeExport` và `assets[].runtime` trong manifest.
+- Dựng `RulesModal` 4 tab theo [S2 §12](./screens/s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab); chụp đối chiếu cả 4 tab ở 390 × 844 và 360 × 640, kiểm phím tab, Escape/Đã hiểu trả focus về nút Luật chơi.

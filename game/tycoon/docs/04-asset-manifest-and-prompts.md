@@ -13,6 +13,8 @@ Ngoại lệ riêng S2 theo concept đã duyệt: hiện có raster `hero-proper
 
 Ngoại lệ S3/S4 theo yêu cầu xuất icon ngày 22/10: [bộ `room-list/`](../assets/room-list/README.md) gồm 2 WebP (khóa vàng, dấu cộng cam) và 9 SVG riêng (reload, khóa đặc, cảnh báo, chevron active/disabled, hai nét X). PNG nguồn ở [screens/room-list](../assets/screens/room-list/README.md). Render bằng `RoomIcon`/`img` để giữ màu nhiều lớp; mắt mật khẩu dùng `ic-eye` / `ic-eye-off` qua TyIcon. Đã xuất để review, còn sai lệch nhỏ so với ảnh mẫu và chưa lắp online; xem [audit](./screens/s3-room-list/icon-export-audit.md).
 
+Ngoại lệ Hướng dẫn chơi S2 đã chốt ngày 23/10: 18 minh họa `rules/ill-*.webp` (khoảng 72 KB) xuất từ 18 PNG nguồn trong suốt tách từ [4 tab](./screens/s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab); prompt, hash, thông số xuất và khác biệt tái dựng trong [manifest](../assets/screens/rules-guide/manifest.json). Tái dùng sách/X; khung, tab, card và nền pastel dựng CSS.
+
 Ngoại lệ S1: xúc xắc bo góc là mesh/shader WebGL theo [style đã duyệt](./screens/s1-loading/README.md), không sinh sprite mới. `lobby/loading-ring-enamel.svg` là **Cung men nổi đã chốt**, xuất trực tiếp từ mẫu được chọn; quay luân phiên với mỗi lần lật 90° của xúc xắc, không có đĩa kem phía sau. Nền/logo/Bác Tỷ và fallback `lobby/ill-dice.webp` dùng lại asset hiện có. Các mẫu viền khác và trang so sánh đã được dọn khỏi source.
 
 Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; toàn bộ assets tycoon ≤ 800 KB (nhân vật ≈ 260 KB; cắt giảm theo `style/06-implementation-plan.md` nếu vượt). Thêm `/game/tycoon/assets/` vào `assetsInlineLimit` của `game/vite.config.ts` cùng dòng với thirteen/xiangqi, và entry `tycoon: resolve(__dirname, 'tycoon/index.html')`.
@@ -51,6 +53,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 | `lobby/hero-properties.webp` | WebP đã có | 1 | PNG tách từ concept S2 | 3 thẻ + 2 quân, chung một lớp trang trí |
 | `lobby/decor-*` | SVG code-native, **đã tạo** | 2 | concept S2, asset-audit §2 | 4 tia vàng quanh CTA; 2 cụm tia trắng quanh hero (3 + 3 tia) |
 | `lobby/loading-ring-enamel.svg` | SVG code-native trong suốt | 1 | Cung men nổi đã chọn; screens/s1-loading | bốn cung xanh–vàng, quay luân phiên với mỗi lần xúc xắc lật một mặt |
+| `rules/ill-*.webp` | WebP alpha, 96 px (3 hình điều kiện thắng 128 px) | 18 | PNG `screens/rules-guide/icon-*`, 4 concept Hướng dẫn chơi đã chốt | minh họa card RulesModal, ô 54 / hàng thắng 64 × 40 |
 | `room-list/*` | 2 WebP lossless + 9 SVG riêng | 11 | 2 PNG imagegen và hình học theo S3/S4 | danh sách bàn/modal; đã xuất để review, chưa lắp online |
 | `roundedDieRenderer` | WebGL mesh/shader, không có texture mới | 1 | components/loading, screens/s1-loading | xúc xắc bo góc 1–6 của S1; fallback tái dùng `lobby/ill-dice.webp` |
 | `d1..d6` | SVG 44 | 6 | 06 §5 | O1 |

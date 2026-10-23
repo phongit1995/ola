@@ -6,12 +6,13 @@ Mỗi màn có ảnh mẫu đã duyệt thì có **một folder riêng** ở đ�
 |---|---|---|---|
 | S1. Loading | [s1-loading](./s1-loading/README.md) | Cung men nổi và xúc xắc 3D đã chốt | đã tích hợp UI `profile === null`; viền quay luân phiên với xúc xắc lật một mặt mỗi lượt; đã dọn các mẫu thử; chưa nối API hồ sơ |
 | S2. Lobby | [s2-lobby](./s2-lobby/README.md) | `concept-s2-lobby-pixel-16bit.png` | nút chơi máy xanh ngọc chốt và tích hợp 22/10; UI mock và 12 WebP đã có (nguồn PNG: 8 bản v2 đã chọn + 5 v1 + 2 lớp thoát tách từ v1 + robot); **chưa đạt visual QA runtime** — [audit](./s2-lobby/asset-audit.md) |
+| S2. Hướng dẫn chơi | chung folder [s2-lobby §12](./s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab) | 4 ảnh `rules-*.webp` Cơ bản/Tài sản/Ô đặc biệt/Kết thúc | đã chốt và dựng UI 23/10; 18 minh họa WebP, có ghi chú khác biệt AI tái dựng |
 | S3. Danh sách bàn | [s3-room-list](./s3-room-list/README.md) | `concept-s3-room-list-pixel-16bit.png` (mẫu 01 Bảng giấy kem) | concept đã chọn, đã viết đặc tả; chưa dựng UI |
 | S4. Tạo bàn / Vào bàn khóa | chung folder [s3-room-list](./s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5) | 6 ảnh `modal-*.webp` (S4 + O5) | người dùng đã chốt UI sáu case ngày 22/10; chưa dựng modal online |
 | S6. Bàn chơi | [s6-board](./s6-board/README.md) | `concept-s6-board-pixel-16bit.png` | ảnh chuẩn pixel 16-bit, nền mỹ thuật chung; chưa dựng UI |
 | O5. Modal xác nhận / thông báo | [o5-modal](./o5-modal/README.md) | [4 example](./o5-modal/README.md#ảnh-ví-dụ) | khung NoticeModal đã tích hợp; chưa xác nhận giống hoàn toàn ảnh mẫu |
 
-Các màn khác chưa có ảnh mẫu riêng. **Kiểm kê 22/10/2026:** có thiết kế/preview cho S1, S2, S3, S4, S6 và O5; không đồng nghĩa đã hoàn tất UI hoặc đạt độ giống ảnh mẫu. Sáu case S4/O5 trên nền S3 đã được chốt theo các ngoại lệ docs thắng ảnh. Bản dựng CSS O5 vẫn cần kiểm độ giống viền và chữ.
+Các màn khác chưa có ảnh mẫu riêng. **Kiểm kê 23/10/2026:** có thiết kế/preview cho S1, S2, S3, S4, S6 và O5; không đồng nghĩa đã hoàn tất UI hoặc đạt độ giống ảnh mẫu. Sáu case S4/O5 trên nền S3 đã được chốt theo các ngoại lệ docs thắng ảnh. Bản dựng CSS O5 vẫn cần kiểm độ giống viền và chữ.
 
 | Chưa có ảnh mẫu riêng | Nội dung cần thể hiện |
 |---|---|
@@ -24,7 +25,7 @@ Các màn khác chưa có ảnh mẫu riêng. **Kiểm kê 22/10/2026:** có thi
 
 Các lớp phủ cần mẫu bổ sung: **O2 thẻ Cơ hội/Khí vận**, **O3 trả nợ**, O4 banner mất kết nối, O6 toast/đến lượt, O7 vòng cuối. O1 xúc xắc đã xuất hiện trong concept S6 nhưng chưa có mẫu chuỗi trạng thái riêng cho gieo/dừng/tổng/đôi; xúc xắc loading S1 không thay thế mẫu này.
 
-Modal **Chơi với máy** (`BotSetupModal`) có ảnh mẫu ở [S2 §11](./s2-lobby/README.md#11-modal-chơi-với-máy) (23/10/2026), đã dựng UI. Ngoài mã màn: popup **Luật chơi** (`RulesModal` đang có trong code), menu bàn, chat/cảm xúc và sheet diễn biến chưa có concept riêng. Concept S6 mới minh họa pha `roll`; cần preview các pha mua đất, mua lại, quản lý tài sản, lễ hội, du lịch, tù và chờ người khác theo [02 §6.3](../02-screen-specs.md#63-vùng-trong-bàn--chồng-thẻ-và-cụm-lượt).
+Modal **Chơi với máy** (`BotSetupModal`) có ảnh mẫu ở [S2 §11](./s2-lobby/README.md#11-modal-chơi-với-máy) (23/10/2026), đã dựng UI. Popup **Luật chơi** (`RulesModal`) đã dựng theo [4 tab Hướng dẫn chơi](./s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab) ngày 23/10/2026. Ngoài mã màn: menu bàn, chat/cảm xúc và sheet diễn biến chưa có concept riêng. Concept S6 mới minh họa pha `roll`; cần preview các pha mua đất, mua lại, quản lý tài sản, lễ hội, du lịch, tù và chờ người khác theo [02 §6.3](../02-screen-specs.md#63-vùng-trong-bàn--chồng-thẻ-và-cụm-lượt).
 
 Điều kiện bắt đầu dựng theo [kế hoạch triển khai, giai đoạn 0](../style/06-implementation-plan.md) — **duyệt theo từng màn**:
 - S7, O2, S9 đã lên kế hoạch vẽ concept: chờ concept của chính màn đó được duyệt rồi mới dựng.
