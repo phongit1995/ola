@@ -58,7 +58,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 | S8 | Sheet quản lý tài sản | danh sách đất của mình theo nhóm, nút xây/bán từng ô, tổng tài sản |
 | S9 | Kết quả | hạng 1–4, tổng tài sản từng người, lý do kết thúc, XP, Chơi lại, Đóng |
 | S10 | Lịch sử | 100 trận gần nhất: hạng, số người, thời gian |
-| S11 | Bảng xếp hạng | hôm nay / tuần này |
+| S11 | Bảng xếp hạng | hôm nay / tuần này (số ván về hạng 1) / cấp độ (EXP tích lũy) |
 | O1 | Xúc xắc | hai viên lăn, hiện tổng, badge "Đôi!" |
 | O2 | Thẻ bài | lật thẻ Cơ hội / Khí vận, nội dung live text, nút Tiếp tục |
 | O3 | Trả nợ | khi tiền < số phải trả: chọn nhà để bán, hoặc tuyên bố phá sản |

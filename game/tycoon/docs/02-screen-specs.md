@@ -422,7 +422,51 @@ Giống xiangqi S8: 100 trận gần nhất; mỗi hàng: hạng của mình (`#
 
 ## S11. Bảng xếp hạng
 
-Giống xiangqi S9: tab Hôm nay/Tuần này, mỗi hàng hạng + avatar VIP + `@username` (03 §18), cột thắng (hạng 1) – trận. Không có cột KEN ở v1.
+Mở từ nút `Bảng xếp hạng` ở S2, cần online (S2 khóa nút khi offline). **Trạng thái 23/10/2026: đã dựng UI (`screens/LeaderboardScreen.tsx`) chạy bằng dữ liệu giả `helpers/leaderboardMock.ts` như S3; server chưa trả dữ liệu đúng cho Tycoon** ([05 §9.1](./05-gameplay-rules-and-protocol.md#91-bảng-xếp-hạng-và-cấp-độ)). Ván chơi với máy chạy ở client nên không vào BXH và không cộng EXP.
+
+**Đã chốt mẫu 02 — Mint tối giản ngày 23/10/2026.** [Ảnh chuẩn, bố cục và phân lớp asset](./screens/s11-leaderboard/README.md): một panel kem chứa ba tab, bảng, chip cấp mint và hàng mình ghim. Các bản nháp/so sánh đã dọn. [Bộ huy chương và cách dùng](../assets/leaderboard/README.md). Đã chụp đối chiếu cả 3 tab ở 390 × 844 và 360 × 640.
+
+### Hai bảng, ba tab
+
+Có **hai bảng riêng**: **Top chiến thắng** chia theo kỳ `Hôm nay` / `Tuần này`, reset đầu mỗi kỳ; **Top cấp độ** không chia kỳ, tính EXP từ trước đến nay. Hiện trên một thanh 3 tab ngang hàng (chạm một lần là tới); dòng phụ dưới tab Cấp độ nói rõ là EXP tích lũy. Phương án hai tầng (`Top thắng` / `Top cấp độ`, rồi mới chọn kỳ) đã cân nhắc nhưng không chọn vì tốn thêm một hàng control.
+
+| Tab | Xếp theo | Cột | Dòng dưới tab |
+|---|---|---|---|
+| `Hôm nay` (mặc định) | số ván về hạng 1 từ 00:00 hôm nay (GMT+7) | Hạng · Người chơi · Thắng · Trận | `Thắng = về hạng 1` |
+| `Tuần này` | như trên, từ 00:00 thứ Hai | như trên | `Thắng = về hạng 1 · từ thứ Hai` |
+| `Cấp độ` | tổng EXP Cờ Tỷ Phú tích lũy, không reset | Hạng · Người chơi · Cấp · EXP | `Cấp theo EXP tích lũy của Cờ Tỷ Phú` |
+
+- Thắng là số ván về hạng 1, Trận là số ván đã tham gia trong kỳ (cả ván thua, phá sản, bỏ cuộc; không tính ván bị hủy). Không có cột KEN, không dùng tổng tài sản trong ván.
+- Cấp hiện `Lv 12`, EXP là số tổng theo `vi-VN` (`12.450`). Cấp tính lại từ EXP bằng công thức chung (`game/src/sdk/progression.ts`), tối đa 99.
+- Hai tab thắng vẫn hiện chip `Lv n` nhỏ (cao 18, 11/800) **dưới tên** (đã có `level` trong dữ liệu), để người chơi thấy cấp ở cả ba tab mà tên không bị chip chiếm chỗ.
+- Thứ tự và `rank` lấy từ server, client không tự sắp. Luật phá hòa ở 05 §9.1.
+
+### Bố cục tại 390 × 844
+
+- Nền trời/phố pixel của sảnh (`lobby/bg-board-pixel.webp`), không có topbar hồ sơ/KEN. Header cao 46 cách đỉnh 50 + safe-area: nút quay lại tròn 46 bên trái (`room-list/chevron-left.svg`, về S2), pill tiêu đề rộng theo chữ có `lobby/ill-leaderboard.webp` 40 × 32 + `Bảng xếp hạng` 24/800 (22 ở màn ≤ 370).
+- Một panel kem `#fdf9ec` viền navy 1,5, radius 26, cạnh beige, cao tối đa 562 (co lại ở màn thấp), chiều cao **không đổi khi đổi tab**; cảnh phố hiện bên dưới. Trong panel: thanh 3 tab segmented paper, tab chọn gold, cao 44, nhãn 17/800 (15 ở màn ≤ 370); dòng phụ 14/700 `#2f4f8a`.
+- Bảng giấy kem viền beige radius 16: dòng nhãn cột nền cát `#f7ebd3` cao 36 luôn nhìn thấy, thân cuộn, đường kẻ beige mảnh. Cột tab thắng `48 / 1fr / 52 / 48`, tab Cấp độ `50 / 1fr / 78 / 66` (đo theo ảnh); ở màn ≤ 370 là `42 / 1fr / 48 / 44` và `42 / 1fr / 58 / 60`. Cột cuối căn phải, số `tabular-nums` 16/800. Ở 390 × 844 thân bảng vừa đúng 6 hàng như ảnh. Thanh cuộn mảnh 4 px `#cbc8c4` luôn hiện ở mép phải thân bảng khi danh sách dài hơn khung (dựng bằng DOM, ẩn thanh cuộn hệ thống), để báo còn hàng phía dưới như ảnh.
+- Hàng cao 59 (hàng ghim 52): hạng 1–3 dùng nền huy chương gold/silver/bronze của mẫu đã chốt và số DOM (bộ asset ở README màn), hạng khác số navy; avatar VIP 38 (`avatarIconUrl(vipType)`, fallback mặt Ola); `@username` 16/800 (15 ở màn ≤ 370), ellipsis theo bề rộng cột, accessible name đọc đủ. Chip `Lv n` cột Cấp mint `#d9f8e5` chữ `#146c43`, cao 28.
+- **Hàng của mình**: nền mint nhạt + vạch jade bên trái, tên vẫn là `@username` (03 §18). Nhận biết bằng `userId`, không so tên.
+- **Mình ngoài top 100**: một hàng ghim tách khỏi bảng, ở đáy panel, cùng kiểu hàng mình, lấy từ `me` của server. Server không trả `me` thì cả 3 tab ghi `Bạn chưa có trong top 100`.
+- Danh sách tối đa 100 hàng, không phân trang, không CTA nhận thưởng.
+
+### Trạng thái
+
+| Trạng thái | Trình bày trong cùng khung |
+|---|---|
+| Tải lần đầu / đổi tab chưa có cache | Giữ header, tab và nhãn cột; 6 hàng skeleton, `role=status` `Đang tải bảng xếp hạng…`; không để dữ liệu tab cũ dưới nhãn tab mới |
+| Trống | Icon BXH nhỏ, `Chưa có ai thắng hôm nay` / `Chưa có ai thắng tuần này` / `Chưa có ai lên cấp`; vẫn đổi tab và quay lại được |
+| Lỗi | Icon cảnh báo, `Không tải được bảng xếp hạng`, nút paper refresh `Thử lại`, `role=alert` |
+| Server chưa hỗ trợ tab Cấp độ | Phản hồi không có `board: 'level'` → hiện như lỗi, ghi `Bảng cấp độ chưa mở`, không hiện dữ liệu thắng dưới nhãn Cấp độ |
+| Mất kết nối khi đang xem | Giữ danh sách đã có, banner O4; `Thử lại` khi có mạng |
+
+- Mỗi tab giữ cache 60 giây: đổi tab qua lại trong 60 giây không gửi lại; mở lại màn thì gửi lại. Đổi tab cuộn thân bảng về đầu.
+- `tablist`/`tab`/`tabpanel`, phím trái/phải/Home/End; Escape hoặc quay lại về S2 và trả focus về nút mở. Icon trang trí `aria-hidden`; số hạng và tên cột là text. Reduced motion tắt shimmer skeleton.
+
+### Dữ liệu
+
+`LEADERBOARD {period, board}` → `LeaderboardData {period, board, from, to, items[], me?}`; item `{rank, userId, username, vipType, level, wins, matches, exp}`. Chi tiết và việc server còn thiếu: [05 §9.1](./05-gameplay-rules-and-protocol.md#91-bảng-xếp-hạng-và-cấp-độ).
 
 ---
 

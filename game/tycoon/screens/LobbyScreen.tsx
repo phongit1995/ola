@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
 import logoUrl from '../assets/lobby/logo.webp';
@@ -19,17 +20,27 @@ import { LobbyTopbar } from './LobbyTopbar';
 const ONLINE_SOON = 'Tính năng online đang được làm';
 
 export function LobbyScreen() {
-  const { profile, setRoomsOpen, setSetupOpen, setRulesOpen, exitGame, showToast } = useTycoon(
+  const { profile, lobbyFocus, setRoomsOpen, setSetupOpen, setRulesOpen, setLeaderboardOpen, clearLobbyFocus, exitGame, showToast } = useTycoon(
     useShallow((s) => ({
       profile: s.profile,
+      lobbyFocus: s.lobbyFocus,
       setRoomsOpen: s.setRoomsOpen,
       setSetupOpen: s.setSetupOpen,
       setRulesOpen: s.setRulesOpen,
+      setLeaderboardOpen: s.setLeaderboardOpen,
+      clearLobbyFocus: s.clearLobbyFocus,
       exitGame: s.exitGame,
       showToast: s.showToast,
     })),
   );
+  const leaderboardRef = useRef<HTMLButtonElement>(null);
   const loading = profile === null;
+
+  useEffect(() => {
+    if (lobbyFocus !== 'leaderboard') return;
+    leaderboardRef.current?.focus();
+    clearLobbyFocus();
+  }, [lobbyFocus, clearLobbyFocus]);
   const art = (
     <>
       <h1 className="ty-lb-logo">
@@ -78,7 +89,7 @@ export function LobbyScreen() {
             <img src={historyUrl} alt="" draggable={false} />
             <span>Lịch sử</span>
           </button>
-          <button type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => showToast(ONLINE_SOON)}>
+          <button ref={leaderboardRef} type="button" className="ty-lb-btn ty-lb-btn-paper" onClick={() => setLeaderboardOpen(true)}>
             <img src={leaderboardUrl} alt="" draggable={false} />
             <span>Bảng xếp hạng</span>
           </button>

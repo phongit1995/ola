@@ -284,6 +284,31 @@ Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* →
 - `OPPONENT_DISCONNECTED.userId` xác định ai rớt (nhiều người) → O4 ghi tên; `OPPONENT_RECONNECTED {turn, deadline}` đồng bộ lại đồng hồ.
 - `MATCH_OVER.rankings[]` + `expGains[]` dùng cho S9; `kenDelta` theo 11 §1.4 (bàn giao lưu = 0); `winnerId` = hạng 1.
 - **Spectate**: chỉ bàn bật `allowSpectators` ([11 §2](./11-room-settings.md#2-cho-người-khác-xem)). Hiện engine trả `SPECTATE_NOT_SUPPORTED` cho game có `StateViewer` (`spectatable()` trong `engine.go`); cần cho `ViewFor` nhận `playerIdx = -1` là người xem rồi bỏ guard.
+- **BXH S11**: `LEADERBOARD`, xem §9.1.
+
+### 9.1 Bảng xếp hạng và cấp độ
+
+**Trạng thái 23/10/2026: đặc tả, server chưa sửa.** UI ở [02 §S11](./02-screen-specs.md#s11-bảng-xếp-hạng).
+
+**Hiện có.** `Repository.Leaderboard` (`server/internal/game/game.repository.go`) trả top 100 theo kỳ `day`/`week` (GMT+7). Caro, War God, Tiến Lên, Cờ tướng đếm thắng/thua theo `winner_id`/`loser_id`; mọi game khác, gồm `tycoon`, rơi vào nhánh xếp theo **tổng KEN thắng > 0**. Bàn Tycoon mặc định cược 0 (11 §1.4) nên với nhánh này **bàn giao lưu không bao giờ lên BXH**. EXP lưu ở `user_game_levels(user_id, game_id, exp, level)`, cộng trong `settleFinish` (một lần mỗi ván); item BXH đã có `level` nhưng chưa có bảng xếp theo EXP.
+
+**Cần thêm cho Tycoon.**
+
+1. Nhánh thắng riêng cho `tycoon`:
+   - Người tham gia: ván 2 người lấy `player0_id`/`player1_id`; ván 3–4 người lấy `game_match_players` (có `place`).
+   - `wins` = số ván có `winner_id` = người đó; `matches` = số ván tham gia. Chỉ ván `finished`, bỏ `reason = void`, `finished_at` trong kỳ.
+   - Chỉ liệt kê người có `wins ≥ 1`. Thứ tự `wins DESC, matches ASC, username ASC, user_id ASC` (thắng bằng nhau thì ít trận hơn đứng trên).
+2. Bảng cấp độ, `board = 'level'`, bỏ qua `period`: `user_game_levels` với `game_id = 'tycoon'`, `exp > 0`, user chưa xóa; thứ tự `exp DESC, username ASC, user_id ASC`; `level = LevelFromExp(exp)`. Bảng có sẵn, không cần migration; nên thêm index `(game_id, exp DESC)`.
+3. `me`: hàng của người gọi với `rank` thật (ROW_NUMBER trên cùng truy vấn trước khi cắt 100); không có dữ liệu thì bỏ trống.
+4. Hợp đồng (Go `protocol.go` và SDK `protocol.ts` sửa cùng lúc):
+   - Request `{period: 'day' | 'week', board?: 'wins' | 'level'}`, thiếu `board` = `wins`, giữ tương thích các game cũ.
+   - `LeaderboardData` thêm `board` (server luôn trả lại) và `me?: LeaderboardEntry`.
+   - `LeaderboardEntry` thêm `matches?` và `exp?`. Server cũ bỏ qua `board` và trả dữ liệu thắng, nên client kiểm `board` trong phản hồi trước khi hiện.
+5. Test repository: ván 2 và 4 người, ván void, cược 0 vẫn tính, thứ tự phá hòa, `me` ngoài top 100, bảng level.
+
+**EXP của Tycoon.** Đang dùng công thức chung `MatchExp`: hạng 1 +50, mọi hạng khác +15, cộng `min(moveCount, 40) / 2`. Ván 3–4 người thì hạng 2 và hạng 4 nhận như nhau. Muốn bảng cấp độ phản ánh thứ hạng hơn thì cần quyết định thêm EXP theo hạng; chưa đổi.
+
+**Hướng sau (chưa làm).** `EXP tuần này` cần lưu EXP từng ván (cột `exp_gain` ở `game_match_players` hoặc bảng sự kiện EXP); hiện chỉ có tổng nên không tính theo kỳ được. Bàn giao lưu cho phép cày thắng/EXP với người quen; v1 chấp nhận, nếu cần thì chỉ tính ván đủ số vòng tối thiểu.
 
 ## 10. State machine client (store `useTycoon`)
 

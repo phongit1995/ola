@@ -227,3 +227,11 @@ Footer retains cream "Hủy" left and GOLD "Bắt đầu" right, equal width. Sh
 
 - Xuất 18 `assets/rules/ill-*.webp`: cắt theo alpha > 8, Lanczos, đệm trong suốt 4 px, 96 px cạnh dài (ba hình điều kiện thắng 128 px), `cwebp -q 80 -alpha_q 90 -m 6`; tổng khoảng 72 KB. Thông số ghi ở `runtimeExport` và `assets[].runtime` trong manifest.
 - Dựng `RulesModal` 4 tab theo [S2 §12](./screens/s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab); chụp đối chiếu cả 4 tab ở 390 × 844 và 360 × 640, kiểm phím tab, Escape/Đã hiểu trả focus về nút Luật chơi.
+
+## S11 — Mint tối giản đã chốt (23/10/2026)
+
+- Người dùng chọn **mẫu 02**; ảnh chuẩn ở [S11](./screens/s11-leaderboard/README.md). Concept built-in `image_gen`, output `exec-c81e15cd-9aba-4df8-91a9-7882f397730a.png`, 853 × 1844, giữ nguyên byte PNG. Prompt và hash lưu trong [manifest nguồn](../assets/screens/leaderboard/manifest.json).
+- Đã dọn hai style không chọn, bản hai tab cũ, trang so sánh và các script/brief nháp trong output. Giữ docs hành vi mới gồm 3 tab, thắng/trận, EXP tích lũy, chip Lv và hàng me ghim; chưa dựng runtime hoặc sửa server.
+- Huy chương được tách riêng bằng built-in `image_gen` với alpha thật; mặt trống để ghép số DOM. Icon header/quay lại/nền/avatar dùng lại, các surface co giãn bằng CSS. Chi tiết file, nguồn và kiểm tra ở [bộ asset](../assets/leaderboard/README.md).
+
+- Đã xuất 3 WebP cao 96 px, q90/alpha100, tổng **11.880 byte**. Kiểm PNG nguyên byte, alpha thật, crop/export và ghép số DOM ở rộng 36 px trên kem/mint/navy; highlight/viền có khác biệt tái dựng nhỏ ghi trong README asset. PNG nguồn 1254 × 1254; metadata và output ID của ba lượt tách trong manifest.

@@ -15,6 +15,8 @@ Ngoại lệ S3/S4 theo yêu cầu xuất icon ngày 22/10: [bộ `room-list/`](
 
 Ngoại lệ Hướng dẫn chơi S2 đã chốt ngày 23/10: 18 minh họa `rules/ill-*.webp` (khoảng 72 KB) xuất từ 18 PNG nguồn trong suốt tách từ [4 tab](./screens/s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab); prompt, hash, thông số xuất và khác biệt tái dựng trong [manifest](../assets/screens/rules-guide/manifest.json). Tái dùng sách/X; khung, tab, card và nền pastel dựng CSS.
 
+Ngoại lệ S11 đã chốt mẫu 02 Mint tối giản ngày 23/10: [3 huy chương WebP mặt trống](../assets/leaderboard/README.md), tổng 11.880 byte; số 1/2/3 ghép DOM. [PNG nguồn và manifest](../assets/screens/leaderboard/manifest.json) giữ prompt, hash và thông số xuất. Tái dùng icon header/quay lại/nền/avatar; các surface là CSS theo [docs màn](./screens/s11-leaderboard/README.md). Đã đối chiếu asset ở cỡ thật, có sai lệch tái dựng được ghi rõ; chưa dựng S11 runtime.
+
 Ngoại lệ S1: xúc xắc bo góc là mesh/shader WebGL theo [style đã duyệt](./screens/s1-loading/README.md), không sinh sprite mới. `lobby/loading-ring-enamel.svg` là **Cung men nổi đã chốt**, xuất trực tiếp từ mẫu được chọn; quay luân phiên với mỗi lần lật 90° của xúc xắc, không có đĩa kem phía sau. Nền/logo/Bác Tỷ và fallback `lobby/ill-dice.webp` dùng lại asset hiện có. Các mẫu viền khác và trang so sánh đã được dọn khỏi source.
 
 Budget: initial load (lobby critical, gồm `ty-idle-full`) ≤ 180 KB gzip; toàn bộ assets tycoon ≤ 800 KB (nhân vật ≈ 260 KB; cắt giảm theo `style/06-implementation-plan.md` nếu vượt). Thêm `/game/tycoon/assets/` vào `assetsInlineLimit` của `game/vite.config.ts` cùng dòng với thirteen/xiangqi, và entry `tycoon: resolve(__dirname, 'tycoon/index.html')`.
@@ -55,6 +57,7 @@ UI v3 dùng `tk-pawn.svg` (con tốt tô màu ghế) cho mọi người chơi, n
 | `lobby/loading-ring-enamel.svg` | SVG code-native trong suốt | 1 | Cung men nổi đã chọn; screens/s1-loading | bốn cung xanh–vàng, quay luân phiên với mỗi lần xúc xắc lật một mặt |
 | `rules/ill-*.webp` | WebP alpha, 96 px (3 hình điều kiện thắng 128 px) | 18 | PNG `screens/rules-guide/icon-*`, 4 concept Hướng dẫn chơi đã chốt | minh họa card RulesModal, ô 54 / hàng thắng 64 × 40 |
 | `room-list/*` | 2 WebP lossless + 9 SVG riêng | 11 | 2 PNG imagegen và hình học theo S3/S4 | danh sách bàn/modal; đã xuất để review, chưa lắp online |
+| `leaderboard/medal-*` | WebP alpha, mặt trống | 3 | PNG tách từ S11 mẫu 02 đã chốt | hạng 1–3, số DOM; 11.880 byte, dùng trong LeaderboardScreen |
 | `roundedDieRenderer` | WebGL mesh/shader, không có texture mới | 1 | components/loading, screens/s1-loading | xúc xắc bo góc 1–6 của S1; fallback tái dùng `lobby/ill-dice.webp` |
 | `d1..d6` | SVG 44 | 6 | 06 §5 | O1 |
 | `tiles/art/{slug}.webp` | raster pixel 16-bit, gốc 64 × 40, export ×3 nearest-neighbor | 19 | §6.5 | ô bàn, header sheet S7; S2 hiện dùng tranh trong hero từ concept |

@@ -95,6 +95,8 @@ interface TycoonState {
   rulesOpen: boolean;
   setupOpen: boolean;
   roomsOpen: boolean;
+  leaderboardOpen: boolean;
+  lobbyFocus: string | null;
   lastBots: BotSetupItem[];
 
   boardMode: BoardMode;
@@ -136,6 +138,8 @@ interface TycoonState {
   setRulesOpen(open: boolean): void;
   setSetupOpen(open: boolean): void;
   setRoomsOpen(open: boolean): void;
+  setLeaderboardOpen(open: boolean): void;
+  clearLobbyFocus(): void;
   startGame(bots: BotSetupItem[]): void;
 
   sendMove(move: Move): void;
@@ -718,6 +722,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
     rulesOpen: false,
     setupOpen: false,
     roomsOpen: false,
+    leaderboardOpen: false,
+    lobbyFocus: null,
     lastBots: [],
 
     boardMode: 'idle',
@@ -763,7 +769,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       if (refs.toastTimer) clearTimeout(refs.toastTimer);
       refs.announceTimer = 0;
       refs.toastTimer = 0;
-      set({ toast: null, rulesOpen: false, setupOpen: false, roomsOpen: false });
+      set({ toast: null, rulesOpen: false, setupOpen: false, roomsOpen: false, leaderboardOpen: false, lobbyFocus: null });
     },
 
     toggleSound() {
@@ -790,6 +796,15 @@ export const useTycoon = create<TycoonState>((set, get) => {
     setRoomsOpen(open: boolean) {
       if (open) playSound('click');
       set({ roomsOpen: open });
+    },
+
+    setLeaderboardOpen(open: boolean) {
+      if (open) playSound('click');
+      set({ leaderboardOpen: open, lobbyFocus: open ? null : 'leaderboard' });
+    },
+
+    clearLobbyFocus() {
+      set({ lobbyFocus: null });
     },
 
     startGame(bots: BotSetupItem[]) {

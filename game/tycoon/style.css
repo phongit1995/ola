@@ -1791,6 +1791,462 @@ button:focus-visible,
   object-fit: contain;
 }
 
+/* ---------- Leaderboard S11 ---------- */
+
+.ty-lboard {
+  --ty-lboard-cols: 48px minmax(0, 1fr) 52px 48px;
+  --ty-lboard-line: #f0dfc4;
+  --ty-lboard-mint: #e6fcef;
+  --ty-lboard-jade: #04b26a;
+  align-items: stretch;
+  padding: calc(50px + var(--ty-safe-top)) 12px calc(14px + var(--ty-safe-bottom));
+}
+
+.ty-lboard-top {
+  display: grid;
+  grid-template-columns: 46px minmax(0, max-content);
+  align-items: center;
+  gap: 10px;
+}
+
+.ty-lboard-title {
+  margin: 0;
+  min-width: 0;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 22px 0 16px;
+  border-radius: 999px;
+  border: 2px solid var(--ty-lb-navy);
+  background: var(--ty-lb-paper);
+  box-shadow: 0 3px 0 rgba(31, 42, 68, 0.35);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ty-lboard-title img {
+  flex: none;
+  width: 40px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.ty-lboard-title span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ty-lboard-panel {
+  flex: 0 1 562px;
+  min-height: 0;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  padding: 15px 8px 11px;
+  border: 1.5px solid var(--ty-lb-navy);
+  border-radius: 26px;
+  background: #fdf9ec;
+  box-shadow: inset 0 -4px 0 #f3e5cb, 0 4px 0 rgba(31, 42, 68, 0.28);
+}
+
+.ty-lobby > .ty-lboard-panel {
+  flex-shrink: 1;
+}
+
+.ty-lboard-tabs {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1.5px solid #e0caad;
+  border-radius: 999px;
+  background: #fdfbf2;
+  box-shadow: inset 0 -3px 0 #f1e6d4;
+}
+
+.ty-lboard-tab {
+  position: relative;
+  min-width: 0;
+  min-height: 44px;
+  margin: -1.5px;
+  padding: 0 6px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--ty-lb-navy);
+  font-size: 17px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ty-lboard-tab + .ty-lboard-tab::before {
+  content: '';
+  position: absolute;
+  left: -0.75px;
+  top: 12px;
+  bottom: 12px;
+  width: 1.5px;
+  background: #ead9c0;
+}
+
+.ty-lboard-tab-on::before,
+.ty-lboard-tab-on + .ty-lboard-tab::before {
+  display: none;
+}
+
+.ty-lboard-tab-on {
+  border-color: #d2770a;
+  background: linear-gradient(180deg, #fde77a 0%, #fde35f 30%, #fdd646 70%, #fbc92e 100%);
+  box-shadow: inset 0 -3px 0 #f2a20c;
+}
+
+.ty-lboard-hint {
+  flex: none;
+  margin: 9px 0;
+  text-align: center;
+  color: #2f4f8a;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ty-lboard-table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ty-lboard-table-level {
+  --ty-lboard-cols: 50px minmax(0, 1fr) 78px 66px;
+}
+
+.ty-lboard-sheet {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid var(--ty-lboard-line);
+  border-radius: 16px;
+  background: #fefbf2;
+  overflow: hidden;
+}
+
+.ty-lboard-head {
+  flex: none;
+  height: 36px;
+  display: grid;
+  grid-template-columns: var(--ty-lboard-cols);
+  padding: 0 10px 0 4px;
+  background: #f7ebd3;
+  border-bottom: 1.5px solid #eedcbf;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ty-lboard-head span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ty-lboard-head span + span {
+  border-left: 1.5px solid #ead9bd;
+}
+
+.ty-lboard-head span:last-child {
+  justify-content: flex-end;
+}
+
+.ty-lboard-rows {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.ty-lboard-rows::-webkit-scrollbar {
+  display: none;
+}
+
+.ty-lboard-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ty-lboard-thumb {
+  position: absolute;
+  top: 0;
+  right: 3px;
+  width: 4px;
+  border-radius: 999px;
+  background: #cbc8c4;
+  pointer-events: none;
+}
+
+.ty-lboard-thumb[hidden] {
+  display: none;
+}
+
+.ty-lboard-row {
+  min-height: 59px;
+  display: grid;
+  grid-template-columns: var(--ty-lboard-cols);
+  align-items: center;
+  padding: 0 10px 0 4px;
+  border-bottom: 1px solid #f2e3cd;
+  font-variant-numeric: tabular-nums;
+}
+
+.ty-lboard-row-me {
+  background: var(--ty-lboard-mint);
+  box-shadow: inset 4px 0 0 var(--ty-lboard-jade);
+}
+
+.ty-lboard-cell-rank {
+  display: flex;
+  justify-content: center;
+}
+
+.ty-lboard-rank {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ty-lboard-medal {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+}
+
+.ty-lboard-medal img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ty-lboard-medal b {
+  position: absolute;
+  left: 50%;
+  top: 41.5%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  color: #744700;
+}
+
+.ty-lboard-medal[data-rank='2'] b {
+  color: #143451;
+}
+
+.ty-lboard-medal[data-rank='3'] b {
+  color: #74320b;
+}
+
+.ty-lboard-player {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.ty-lboard-who {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.ty-lboard-avatar {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.ty-lboard-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.ty-lboard-lv {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #d9f8e5;
+  color: #146c43;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ty-lboard-lv.ty-lboard-lv-small {
+  min-width: 0;
+  height: 18px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.ty-lboard-stat {
+  display: flex;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.ty-lboard-stat:last-child {
+  justify-content: flex-end;
+}
+
+.ty-lboard-pinned {
+  flex: none;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1.5px solid #cdeedb;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ty-lboard-pinned .ty-lboard-row {
+  min-height: 52px;
+  border-bottom: 0;
+}
+
+.ty-lboard-row-note {
+  display: flex;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ty-lboard-skel i {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f3eadb 25%, #fbf5ea 50%, #f3eadb 75%) 0 0 / 200% 100%;
+  animation: ty-lboard-shimmer 1.2s linear infinite;
+}
+
+.ty-lboard-skel-dot {
+  width: 26px;
+  height: 26px;
+  justify-self: center;
+}
+
+.ty-lboard .ty-lboard-skel-avatar {
+  flex: none;
+  width: 38px;
+  height: 38px;
+}
+
+.ty-lboard-skel-bar {
+  width: 70%;
+  height: 14px;
+}
+
+.ty-lboard-skel-short {
+  width: 28px;
+  justify-self: center;
+}
+
+.ty-lboard-skel-short:last-child {
+  justify-self: end;
+}
+
+@keyframes ty-lboard-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.ty-lboard-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.ty-lboard-state-art {
+  width: 56px;
+  height: 45px;
+  object-fit: contain;
+}
+
+.ty-lboard-state-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.ty-lboard-state-hint {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(31, 42, 68, 0.7);
+}
+
+@media (max-width: 370px) {
+  .ty-lboard {
+    --ty-lboard-cols: 42px minmax(0, 1fr) 48px 44px;
+  }
+
+  .ty-lboard-table-level {
+    --ty-lboard-cols: 42px minmax(0, 1fr) 58px 60px;
+  }
+
+  .ty-lboard-title {
+    font-size: 22px;
+  }
+
+  .ty-lboard-name {
+    font-size: 15px;
+  }
+
+  .ty-lboard-tab {
+    font-size: 15px;
+  }
+
+  .ty-lboard-stat .ty-lboard-lv {
+    min-width: 52px;
+    padding: 0 8px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ty-lboard-skel i {
+    animation: none;
+  }
+}
+
 /* ---------- Modal ---------- */
 
 .ty-backdrop {

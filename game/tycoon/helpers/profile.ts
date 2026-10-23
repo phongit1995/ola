@@ -1,4 +1,5 @@
 export interface LobbyProfile {
+  id: string;
   username: string;
   vipType: string | null;
   ken: number;
@@ -6,6 +7,7 @@ export interface LobbyProfile {
 }
 
 export const MOCK_PROFILE: LobbyProfile = {
+  id: 'u-minhanh',
   username: 'minhanh',
   vipType: '3',
   ken: 12_500,

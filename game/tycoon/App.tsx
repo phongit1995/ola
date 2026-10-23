@@ -4,16 +4,18 @@ import { BotSetupModal } from './components/BotSetupModal';
 import { NoticeModal } from './components/NoticeModal';
 import { RulesModal } from './components/RulesModal';
 import { BoardScreen } from './screens/BoardScreen';
+import { LeaderboardScreen } from './screens/LeaderboardScreen';
 import { LobbyScreen } from './screens/LobbyScreen';
 import { ResultScreen } from './screens/ResultScreen';
 import { RoomListScreen } from './screens/RoomListScreen';
 import { useTycoon } from './store/useTycoon';
 
 export function App() {
-  const { boardMode, roomsOpen, rulesOpen, setupOpen, result, toast, notice, noticeId, init, dispose } = useTycoon(
+  const { boardMode, roomsOpen, leaderboardOpen, rulesOpen, setupOpen, result, toast, notice, noticeId, init, dispose } = useTycoon(
     useShallow((s) => ({
       boardMode: s.boardMode,
       roomsOpen: s.roomsOpen,
+      leaderboardOpen: s.leaderboardOpen,
       rulesOpen: s.rulesOpen,
       setupOpen: s.setupOpen,
       result: s.result,
@@ -32,7 +34,7 @@ export function App() {
 
   return (
     <div className={roomsOpen && boardMode !== 'playing' ? 'ty-app ty-app-rooms' : 'ty-app'}>
-      {boardMode === 'playing' ? <BoardScreen /> : roomsOpen ? <RoomListScreen /> : <LobbyScreen />}
+      {boardMode === 'playing' ? <BoardScreen /> : roomsOpen ? <RoomListScreen /> : leaderboardOpen ? <LeaderboardScreen /> : <LobbyScreen />}
       {setupOpen ? <BotSetupModal /> : null}
       {rulesOpen ? <RulesModal /> : null}
       {result ? <ResultScreen /> : null}
