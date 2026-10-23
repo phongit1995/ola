@@ -78,3 +78,48 @@ Sau audit, 10 asset được gen lại bằng built-in imagegen (các icon thêm
 **Đính chính quầng:** một số màu ngoài hình nằm dưới alpha = 0; viewer xem RGB riêng có thể hiện haze không tồn tại khi composite. Kết luận viền phải dựa trên ảnh đã ghép nền.
 
 **Còn khác nguồn:** nét mặt/tóc/khuy áo và một số chi tiết tranh/phối cảnh hero vẫn do AI tái dựng; không phải bản cắt trùng pixel. Prompt của lượt sửa nét các icon v2 không được lưu. Checklist §4 vẫn chờ visual QA runtime.
+
+## 6. Modal Chơi với máy — asset v2
+
+Ngày **23/10/2026**. Đối chiếu 10 SVG ở `assets/bot-setup/` ([danh sách](./README.md#asset-của-modal)) với [ảnh 1 bot](./modal-bot-01-one-bot.webp) / [3 bot](./modal-bot-02-three-bots.webp) (935 × 1683, không sửa ảnh). **Đã sửa các sai lệch của lượt v1:** màu cộng/trừ, hai bản xám, màu X, dáng và màu hai người; thêm bốn nền nút riêng. Robot và VIP giữ nguồn gốc. Đã dùng trong `BotSetupModal` (23/10/2026).
+
+Cách kiểm: render 14 cặp / 28 ảnh bằng Chrome, canh theo alpha > 8 của file và phần nhìn thấy trong concept, giữ tỷ lệ. Ảnh so sánh, HTML và số đo dựng local trong `output/tycoon-bot-modal-assets/`, không lưu trong repo.
+
+### Kết quả sau sửa
+
+| Phần | Đã sửa / giữ | Kết quả và giới hạn |
+|---|---|---|
+| Robot WebP + PNG nguồn | Giữ cùng robot nút sảnh | Đúng nguồn theo 02 §2.3; concept AI có mắt/mặt hơi khác, không đổi robot chung để chạy theo biến dạng AI |
+| VIP 001–003 | Giữ file shared | Đúng danh tính theo docs; concept vẽ lại vài chi tiết khuôn mặt/mũ |
+| X | Thêm `close-navy.svg`, màu `#010636`; giữ hình học X đậm | Màu sát mẫu, không ảnh hưởng X ở S4; nền tròn vẫn thuộc CSS |
+| Cộng active | Đổi xanh lá đậm sang xanh ngọc, nét gần trắng, shading nhẹ | Hình tròn, dấu cộng bo tròn và màu đã gần mẫu |
+| Trừ active | Đổi cam sang coral đỏ hồng, chỉnh nhẹ độ dài dấu trừ | Không còn lệch tông cam; giữ nút trừ, không dùng X/thùng rác |
+| Hai bản disabled | Tách xám cộng `#9ea0aa` và trừ `#b2b6be` | Cùng hình học với active; xám cộng đậm hơn xám trừ như hai ảnh |
+| Hai người | Vai bớt vòm, thân phải nhỏ hơn, đổi hai sắc xanh | Dáng và màu gần mẫu hơn; cạnh vector sạch, không giữ nhòe/texture AI |
+| Mint | Nền SVG riêng, mặt mint nhẹ, viền jade, cạnh dưới xanh vừa | Không còn gradient mạnh và viền navy của PNG lobby |
+| Mint disabled | Thêm nền SVG xám cùng hình học với mint | Đủ trạng thái 3 bot, không phải lấy nền active rồi làm mờ cả ảnh |
+| Paper | Nền SVG riêng, mặt kem, viền beige/nâu, cạnh kem | Đã bỏ dải xanh và viền navy của PNG lobby |
+| Gold | Nền SVG riêng, vàng trên/cam dưới, highlight nhỏ góc trái | Đã bỏ đốm sáng lớn hai đầu và dải trắng dày của PNG lobby |
+
+Bốn nền SVG không chứa nhãn hay icon. Kích thước thiết kế là 304 × 44 (mint/disabled) và 160 × 52 (paper/gold). Mẫu dùng tỷ lệ AI; khi dựng layout co giãn phải giữ kích thước theo 02 §2.3 và chuyển bề mặt sang CSS theo palette/SVG, không kéo dãn sai góc bo/viền.
+
+### Kiểm màu sau sửa
+
+Đo trung vị RGB trên ô 7 × 7 bên trong vùng màu của concept, tránh nét trắng/biên. File SVG được render bằng Chrome, lấy vùng tương ứng bên trong hình; vì có shading rất nhẹ nên màu giữa gradient và từng điểm có thể lệch 1 đơn vị. Không dùng các ô mẫu này để tuyên bố trùng toàn ảnh.
+
+| Vùng | V1 | Concept | V2 render |
+|---|---|---|---|
+| Cộng active | `#1f8a5b` | `#14a774` | `#15a875` |
+| Trừ active | `#e4573d` | `#f26b64` | `#f26c65` |
+| Cộng disabled | `#a8adb6` | `#9ea0aa` | `#9ea0aa` |
+| Trừ disabled | `#a8adb6` | `#b2b6be` | `#b2b6be` |
+| Người xanh đậm | `#395a8c` | `#3c5994` | `#3c5994` |
+| Người xanh nhạt | `#8cafcf` | `#90b0da` | `#90b0da` |
+
+V1 dùng token chung, dẫn tới lệch màu. V2 dùng palette riêng cho artwork modal: 02 §2.3 đã đổi viền Thêm bot sang jade; token game và nền/icon các màn khác không đổi.
+
+### Giới hạn của lần kiểm
+
+Các sai lệch rõ đã được xử lý ở cấp asset. SVG là bản dựng hình học, không tái tạo nhiễu, shading không đều và nét méo trong ảnh AI. Robot/VIP gốc vẫn khác nhẹ hình AI theo ngoại lệ docs. Bảng asset không chứng minh cả modal giống ảnh; modal runtime đã chụp đối chiếu riêng ở 390 × 844 và 360 × 640 (S2 §11).
+
+Khung, nền tròn X, divider, thanh mức độ, khối tóm tắt, font và các trạng thái tương tác sẽ kiểm khi dựng UI. Lần này không thêm logic game, không sửa component modal.

@@ -14,7 +14,7 @@ Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Kh�
 
 **Phố Thị Rực Rỡ** là design system duy nhất cho UI Cờ Tỷ Phú. **UI v3 (20/10/2026) theo ảnh mẫu pixel 16-bit** [`screens/s6-board/concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png): nền trời pixel, mỗi thành phố một tranh phong cảnh pixel trong ô, 8 dải màu nhóm đất, UI mượt viền navy, CTA vàng nổi khối, quân con tốt màu ghế, tiền xanh ngọc, nguy hiểm san hô. Production: bàn, ô, nhà, xúc xắc, thẻ, quân là SVG/DOM; raster cho tranh pixel ô, nền trời, logo và nhân vật.
 
-**Lobby S2 đã chốt phương án 1 — Nền trời thoáng:** [ảnh tham chiếu](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) (bản 22/10/2026 có nút chơi máy xanh ngọc), [đặc tả style lobby](./screens/s2-lobby/README.md). Nền trời mở, Bác Tỷ bên trái, ba thẻ đất + hai quân bên phải, menu vàng/kem với font Nunito. Lobby mock đã dựng; nút Chơi với máy mở chọn số người rồi vào ván với máy. Topbar dùng avatar VIP, @username và số dư rồi đồng K bên phải.
+**Lobby S2 đã chốt phương án 1 — Nền trời thoáng:** [ảnh tham chiếu](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) (bản 22/10/2026 có nút chơi máy xanh ngọc), [đặc tả style lobby](./screens/s2-lobby/README.md). Nền trời mở, Bác Tỷ bên trái, ba thẻ đất + hai quân bên phải, menu vàng/kem với font Nunito. Lobby mock đã dựng; nút Chơi với máy mở modal [02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal): Bot 1 mặc định, thêm/xóa tối đa 3 bot và chọn mức độ riêng (máy chưa chơi khác nhau theo mức, 05 §12). Topbar dùng avatar VIP, @username và số dư rồi đồng K bên phải.
 
 ## Phạm vi v1 (đề xuất chốt)
 

@@ -24,7 +24,7 @@ Các màn khác chưa có ảnh mẫu riêng. **Kiểm kê 22/10/2026:** có thi
 
 Các lớp phủ cần mẫu bổ sung: **O2 thẻ Cơ hội/Khí vận**, **O3 trả nợ**, O4 banner mất kết nối, O6 toast/đến lượt, O7 vòng cuối. O1 xúc xắc đã xuất hiện trong concept S6 nhưng chưa có mẫu chuỗi trạng thái riêng cho gieo/dừng/tổng/đôi; xúc xắc loading S1 không thay thế mẫu này.
 
-Ngoài mã màn: popup **Luật chơi**, **thiết lập chơi máy** (`RulesModal`/`BotSetupModal` đang có trong code), menu bàn, chat/cảm xúc và sheet diễn biến chưa có concept riêng. Concept S6 mới minh họa pha `roll`; cần preview các pha mua đất, mua lại, quản lý tài sản, lễ hội, du lịch, tù và chờ người khác theo [02 §6.3](../02-screen-specs.md#63-vùng-trong-bàn--chồng-thẻ-và-cụm-lượt).
+Modal **Chơi với máy** (`BotSetupModal`) có ảnh mẫu ở [S2 §11](./s2-lobby/README.md#11-modal-chơi-với-máy) (23/10/2026), đã dựng UI. Ngoài mã màn: popup **Luật chơi** (`RulesModal` đang có trong code), menu bàn, chat/cảm xúc và sheet diễn biến chưa có concept riêng. Concept S6 mới minh họa pha `roll`; cần preview các pha mua đất, mua lại, quản lý tài sản, lễ hội, du lịch, tù và chờ người khác theo [02 §6.3](../02-screen-specs.md#63-vùng-trong-bàn--chồng-thẻ-và-cụm-lượt).
 
 Điều kiện bắt đầu dựng theo [kế hoạch triển khai, giai đoạn 0](../style/06-implementation-plan.md) — **duyệt theo từng màn**:
 - S7, O2, S9 đã lên kế hoạch vẽ concept: chờ concept của chính màn đó được duyệt rồi mới dựng.

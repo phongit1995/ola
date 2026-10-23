@@ -314,7 +314,7 @@ Bất biến:
 
 ## 12. Máy chơi và mức độ (bản chơi với máy)
 
-**Trạng thái (22/10/2026): đặc tả, chưa code.** Hiện chỉ có một cách chơi, chính là mức `Thường` dưới đây. Người chơi chọn mức cho từng máy ở [02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal).
+**Trạng thái (23/10/2026): đặc tả, chưa code phần máy.** Modal đã cho chọn mức và lưu `level` vào `SeatInfo`, nhưng `botMove` chưa nhận mức: mọi máy vẫn chơi mức `Thường` dưới đây. Modal mới mặc định Bot 1, thêm/xóa từng bot tối đa 3 và chọn mức riêng cho Bot 1/2/3; không có bộ chọn số lượng. Chi tiết ở [02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal).
 
 ### 12.1 Nguyên tắc
 

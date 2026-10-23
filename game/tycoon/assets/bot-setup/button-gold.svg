@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="52" viewBox="0 0 160 52" fill="none">
+  <defs><linearGradient id="gold-face" x1="80" y1="2" x2="80" y2="47" gradientUnits="userSpaceOnUse"><stop stop-color="#fed828"/><stop offset=".49" stop-color="#ffd92b"/><stop offset=".57" stop-color="#ffc516"/><stop offset="1" stop-color="#ffbf18"/></linearGradient></defs>
+  <rect x=".75" y=".75" width="158.5" height="50.5" rx="25.25" fill="#e17a00" stroke="#864d07" stroke-width="1.5"/>
+  <rect x="1.6" y="1.6" width="156.8" height="46" rx="23" fill="url(#gold-face)"/>
+  <path d="M7 15C10 9 14 5.7 20 4.8" stroke="#fffde9" stroke-width="2.7" stroke-linecap="round"/>
+  <path d="M25 3h110c8 0 14 3 17 9" stroke="#fff6b2" stroke-width=".65" stroke-linecap="round"/>
+</svg>

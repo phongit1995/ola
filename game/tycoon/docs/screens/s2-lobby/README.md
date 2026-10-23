@@ -1,6 +1,6 @@
 # S2. Lobby — Nền trời thoáng
 
-**Đã chốt phương án 1 — Nền trời thoáng.** Đây là đặc tả style để dựng lại màn lobby theo ảnh bên dưới. Phạm vi của tài liệu là S2; hành vi online theo [02 §S2](../../02-screen-specs.md#s2-lobby), luật chơi theo [05](../../05-gameplay-rules-and-protocol.md). **Đã dựng với dữ liệu mock** (`tycoon/screens/LobbyScreen.tsx`, mock `@minhanh` / VIP 3 / 12.500 KEN ở `tycoon/helpers/profile.ts`): `Vào bàn` mở [S3 danh sách bàn](../s3-room-list/README.md) (dữ liệu giả, từ 22/10/2026), `Lịch sử` và `Bảng xếp hạng` hiện toast `Tính năng online đang được làm`. Từ 22/10/2026 có nút xanh ngọc `Chơi với máy` ngay dưới `Vào bàn` (ảnh bên dưới), mở `BotSetupModal` chọn số người rồi vào ván với máy. Đã có [S1 loading](../s1-loading/README.md) khi thiếu hồ sơ; API hồ sơ, lỗi và offline chưa triển khai.
+**Đã chốt phương án 1 — Nền trời thoáng.** Đây là đặc tả style để dựng lại màn lobby theo ảnh bên dưới. Phạm vi của tài liệu là S2; hành vi online theo [02 §S2](../../02-screen-specs.md#s2-lobby), luật chơi theo [05](../../05-gameplay-rules-and-protocol.md). **Đã dựng với dữ liệu mock** (`tycoon/screens/LobbyScreen.tsx`, mock `@minhanh` / VIP 3 / 12.500 KEN ở `tycoon/helpers/profile.ts`): `Vào bàn` mở [S3 danh sách bàn](../s3-room-list/README.md) (dữ liệu giả, từ 22/10/2026), `Lịch sử` và `Bảng xếp hạng` hiện toast `Tính năng online đang được làm`. Từ 22/10/2026 có nút xanh ngọc `Chơi với máy` ngay dưới `Vào bàn` (ảnh bên dưới), mở `BotSetupModal` (§6, [§11 ảnh mẫu](#11-modal-chơi-với-máy), 02 §2.3): Bot 1 mặc định, nút thêm/xóa tối đa 3 bot và mức độ riêng, dựng ngày 23/10/2026. Đã có [S1 loading](../s1-loading/README.md) khi thiếu hồ sơ; API hồ sơ, lỗi và offline chưa triển khai.
 
 ![Lobby S2 đã chốt ngày 22/10/2026: nút Chơi với máy xanh ngọc, avatar VIP, @username và đồng K](./concept-s2-lobby-pixel-16bit.png)
 
@@ -89,7 +89,7 @@ Kích thước/font ở đây là biến thể **riêng S2**, không đổi nút
 | Action | Surface và kích thước | Minh họa | Hành vi |
 |---|---|---|---|
 | `Vào bàn` | mặt vàng sáng, cao 80, pill, highlight trắng ở cung trên, cạnh cam và đáy nâu; một đường bao ngoài | xúc xắc trắng/navy 48; **2 tia vàng mỗi bên ngoài nút** | `openRanked()` → S3; preload RANKED. Hiện: `setRoomsOpen(true)` mở S3 dữ liệu giả, chưa preload |
-| `Chơi với máy` | xanh ngọc, cao 56, pill cùng rộng menu; mặt `#A4F4CF` → `#51D9A3`, cạnh `#299B79`, một contour navy, highlight nhỏ trên trái | robot xanh–trắng 40, `lobby/ill-bot.webp`; mặt nút CSS `.ty-lb-btn-mint`, `button-mint.png` chỉ tham chiếu | `setSetupOpen(true)` → `BotSetupModal`, chọn 1–3 máy và mức độ từng máy ([02 §2.3](../../02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal)) rồi vào ván; dùng được offline |
+| `Chơi với máy` | xanh ngọc, cao 56, pill cùng rộng menu; mặt `#A4F4CF` → `#51D9A3`, cạnh `#299B79`, một contour navy, highlight nhỏ trên trái | robot xanh–trắng 40, `lobby/ill-bot.webp`; mặt nút CSS `.ty-lb-btn-mint`, `button-mint.png` chỉ tham chiếu | `setSetupOpen(true)` → `BotSetupModal`, mặc định Bot 1; thêm/xóa tối đa 3 bot và chọn mức độ riêng, header có icon robot ([02 §2.3](../../02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal)) rồi vào ván; dùng được offline |
 | `Lịch sử` | paper, cao 56, pill, **một contour navy 1.5**, cạnh beige bên trong và bóng xanh nhẹ xuống dưới | đồng hồ/mũi tên blue 40 | mở S10 |
 | `Bảng xếp hạng` | paper, cao 56, pill như trên | bục gold, blue, coral + crown, 40 | mở S11 |
 | `Luật chơi` | **không nền pill, không border/shadow**; vùng chạm cao ít nhất 44, chữ navy gạch chân trên nền trời | sách paper/navy, 32 | modal luật có thể cuộn, nút Đóng; dùng offline |
@@ -181,3 +181,77 @@ PNG nguồn nằm ở [`assets/screens/lobby/`](../../../assets/screens/lobby/RE
 | `button-gold.png`, `button-paper.png` (v2), `button-mint.png` | không xuất | mẫu surface cho CSS/SVG §6; gold visible 3,50:1, paper 4,87:1, mint 4,945:1; không được lược highlight/cạnh hoặc thêm viền kép |
 | chưa có PNG; theo hình trong concept | `lobby/decor-cta-rays.svg` — **đã tạo** | SVG code-native, 2 tia mỗi bên CTA; không cần gen lại skin |
 | chưa có PNG; theo hình trong concept | `lobby/decor-hero-rays.svg` — **đã tạo** | SVG code-native, 2 cụm trắng (3 tia trái, 3 tia phải), tọa độ theo khung `hero-properties.webp`; không cần gen lại hero |
+
+## 11. Modal Chơi với máy
+
+Ảnh mẫu `BotSetupModal` theo [02 §2.3](../../02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal), người dùng làm ngày 23/10/2026: mỗi bot một hàng `avatar · Bot n · Dễ/Thường/Khó · −`, nút `+ Thêm bot` dưới danh sách, tối đa 3 bot. Đã dựng UI ngày 23/10/2026 (`components/BotSetupModal.tsx`), đã chụp đối chiếu ở 390 × 844 và 360 × 640. [Nguồn và prompt](../../asset-generation-log.md#s2--modal-chơi-với-máy).
+
+[Audit asset v2 ngày 23/10](./asset-audit.md#6-modal-chơi-với-máy--asset-v2): **đã sửa các sai lệch ghi nhận** ở màu cộng/trừ, hai trạng thái xám, X và hình hai người; đã có 4 nền SVG riêng cho modal mint/disabled/paper/gold. Palette riêng theo ảnh này, không thay màu game hay asset lobby. Bản vector giữ cạnh sạch; đã dùng trong modal runtime.
+
+| Mở mới: Bot 1 / Thường, nút `−` xám, Thêm bot hoạt động | Đủ 3 bot: nút `−` coral, Thêm bot xám + `Đã đủ 3 bot` |
+|---|---|
+| ![Modal Chơi với máy mở mới với Bot 1](./modal-bot-01-one-bot.webp) | ![Modal Chơi với máy đủ 3 bot](./modal-bot-02-three-bots.webp) |
+
+Ảnh quyết định mỹ thuật (khung paper, vạch mint dưới header, pill gold, nút Thêm bot mint, khối tóm tắt xanh nhạt, nút `−` tròn); 02 §2.3 quyết định kích thước và hành vi. Các điểm docs thắng ảnh:
+
+- Cỡ: ảnh phóng to avatar (~44) và nút Thêm bot (~56); dựng avatar 24, Thêm bot 44, robot header 32 theo 02. Khung ảnh 935 × 1683 khác tỷ lệ 390 × 844, nền sảnh trong ảnh là bản AI làm mờ; dùng nền S2 thật và backdrop chung.
+- Icon hai người ở `assets/bot-setup/users-blue.svg`, hiển thị 28 × 21; đây là minh họa hai màu, không thuộc bộ mask `ic-*`. [Bộ asset modal v2](#asset-của-modal) có cả cộng/trừ tròn và bản xám, X riêng `close-navy.svg`, 4 nền nút không chữ; robot và VIP dùng nguồn gốc. Viền nút Thêm bot jade theo ảnh; nền nút co giãn/khung/pill/divider dựng CSS theo SVG và palette mới, chữ là DOM.
+- Avatar trong ảnh là VIP 001–003 làm mẫu; runtime lấy theo `vipIconUrl` như pod S6.
+- Ảnh 3 bot đặt Bot 2 = Dễ, Bot 3 = Khó chỉ để minh họa chọn độc lập; bot mới thêm luôn là Thường.
+- Chữ, số bot và dòng tóm tắt là DOM, không cắt từ ảnh.
+
+### Asset của modal
+
+Thư mục [`assets/bot-setup/`](../../../assets/bot-setup/): **10 SVG riêng** (6 icon + 4 nền nút), vẽ hình học ngày 23/10/2026, đã sửa theo [audit §6](./asset-audit.md#6-modal-chơi-với-máy--asset-v2). Robot và VIP dùng lại nguồn gốc. Đã dùng trong `BotSetupModal`.
+
+**Icon và avatar**
+
+| Phần | File | Cỡ CSS | Ghi chú |
+|---|---|---|---|
+| Robot header | [ill-bot.webp](../../../assets/lobby/ill-bot.webp) | hộp 32 × 32 | Dùng nguyên robot nút sảnh; [PNG nguồn](../../../assets/screens/lobby/icon-bot.png) |
+| Avatar VIP 001 | [vip_001.png](../../../../../packages/shared/assets/vip-icons/vip_001.png) | 24 × 24 | `vipIconUrl(1)` |
+| Avatar VIP 002 | [vip_002.png](../../../../../packages/shared/assets/vip-icons/vip_002.png) | 24 × 24 | `vipIconUrl(2)` |
+| Avatar VIP 003 | [vip_003.png](../../../../../packages/shared/assets/vip-icons/vip_003.png) | 24 × 24 | `vipIconUrl(3)` |
+| X đóng | [close-navy.svg](../../../assets/bot-setup/close-navy.svg) | 16 × 16 | Navy đậm `#010636` theo mẫu; hình học từ X đậm S4, không sửa file S4 |
+| Cộng active | [plus-circle.svg](../../../assets/bot-setup/plus-circle.svg) | 24 × 24 | Xanh ngọc, shading rất nhẹ |
+| Cộng disabled | [plus-circle-disabled.svg](../../../assets/bot-setup/plus-circle-disabled.svg) | 24 × 24 | Xám đậm riêng của nút thêm |
+| Trừ active | [minus-circle.svg](../../../assets/bot-setup/minus-circle.svg) | 32 × 32 | Đỏ hồng coral, shading rất nhẹ |
+| Trừ disabled | [minus-circle-disabled.svg](../../../assets/bot-setup/minus-circle-disabled.svg) | 32 × 32 | Xám sáng riêng của nút trừ |
+| Tổng số người | [users-blue.svg](../../../assets/bot-setup/users-blue.svg) | 28 × 21 | Vai bớt vòm, thân phải nhỏ hơn; hai màu xanh theo ảnh |
+
+Avatar gắn với ID bot, giữ khi xóa bot khác và đánh lại tên; không buộc tên Bot 2 luôn phải có VIP 002. Nút X/trừ có vùng chạm 44 × 44; cộng nằm trong nút Thêm bot cao 44.
+
+**Nền nút không chữ/icon**
+
+| File SVG | Kích thước thiết kế | Mặt / viền / cạnh dưới |
+|---|---|---|
+| [button-mint.svg](../../../assets/bot-setup/button-mint.svg) | 304 × 44 | `#8aebc5` / `#299b76` / `#4bd0a3`; highlight nhỏ góc trái |
+| [button-mint-disabled.svg](../../../assets/bot-setup/button-mint-disabled.svg) | 304 × 44 | `#dddddf` / `#abb0b3` / `#c8cacc`; cùng hình học với mint |
+| [button-paper.svg](../../../assets/bot-setup/button-paper.svg) | 160 × 52 | `#fdf8ee` / `#8b7865` / `#eecca4`; bỏ viền navy và dải xanh lobby |
+| [button-gold.svg](../../../assets/bot-setup/button-gold.svg) | 160 × 52 | `#fed828 → #ffd92b → #ffbf18` / `#864d07` / `#e17a00`; highlight góc trái, viền sáng mảnh phía trên |
+
+Đây là nền riêng theo **modal**, không thay PNG của lobby. Có thể dùng SVG tại đúng tỷ lệ như asset thiết kế. Khi dựng nút co theo chiều rộng modal, chuyển các lớp mặt/viền/cạnh dưới/highlight sang CSS theo SVG và bảng màu để giữ góc bo, độ dày nét và chiều cao: Thêm bot 44, Hủy/Bắt đầu 52. Không kéo méo cả SVG hoặc dùng PNG lobby thay thế. Chữ, dấu cộng và tên action ghép riêng.
+
+**Phần dựng bằng CSS/DOM**
+
+| Phần | Cách dựng |
+|---|---|
+| Nền sảnh + backdrop | Lobby S2 thật với [bg-board-pixel.webp](../../../assets/lobby/bg-board-pixel.webp), logo/hero có sẵn và `.ty-backdrop`; không dùng screenshot AI làm nền |
+| Khung modal | Paper, rộng `min(100% - 32px, 340px)`, radius 22, navy 2, padding 18, cạnh paper-deep; chiều cao theo nội dung |
+| Nền tròn X | Paper, viền beige và cạnh dưới nhẹ; X là SVG riêng |
+| Vạch header / divider bot | Mint mảnh bo tròn / beige mảnh |
+| Nhãn đếm | DOM text, không phải nút |
+| Dễ / Thường / Khó | Pill paper, ô chọn gold theo chất liệu mới; cao 40, vùng chạm 44, ô rộng 44 / 72 / 44 cộng viền; không có icon mức độ |
+| Tóm tắt | `#e4f3fd` (đo từ ảnh), radius 16, `users-blue.svg` trước dòng tổng người; chữ DOM |
+| Font | [Nunito Latin](../../../../caro/assets/fonts/Nunito-400-800-latin.woff2) + [Nunito tiếng Việt](../../../../caro/assets/fonts/Nunito-400-800-vietnamese.woff2) đã khai báo trong `tycoon/style.css` |
+
+**Màu riêng và cách dùng**
+
+Màu v2 là **ngoại lệ artwork riêng của modal S2**, lấy từ ảnh mẫu; không thay token jade/coral/navy của game hoặc asset S4/lobby. Màu giữa gradient: cộng `#14a774`, trừ `#f26b64`, cộng disabled `#9ea0aa`, trừ disabled `#b2b6be`; hai người `#3c5994` / `#90b0da`. Dấu cộng `#fafdfc`, dấu trừ `#fcfafa`.
+
+- SVG vẽ hình học, không dùng imagegen hoặc thư viện ngoài. Không có chữ, bitmap nhúng, filter, script hay font phụ thuộc. Ngoài hình trong suốt.
+- Render bằng img với `alt=""`, `aria-hidden="true"`, không qua mask `TyIcon` để giữ màu. Icon tròn đã có vòng nền; không vẽ thêm vòng CSS bên dưới.
+- Cặp active/disabled cùng hình học, đổi màu. `disabled` thật, vùng chạm và tên truy cập thuộc button chứa; không giảm opacity thêm riêng trên bản xám đã có.
+- Không dùng thùng rác, bộ chọn số lượng, icon mức độ/play/tiền cược cho modal này.
+
+Đã đối chiếu v2 cạnh hai concept, xem icon ở cỡ thật và phóng 2×, kiểm màu trên vùng không chứa nét trắng. Mẫu màu của 6 vùng icon lệch tối đa 1 đơn vị mỗi kênh RGB so với vùng mẫu đã đo. Chỉ số này hỗ trợ kiểm màu, không chứng minh toàn ảnh trùng pixel. Cần kiểm bố cục và tương tác khi triển khai modal mới.

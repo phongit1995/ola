@@ -162,3 +162,49 @@ Button is directly below Vào bàn, above Lịch sử. Keep image 1's current ro
 
 CRITICAL KEEP FROM IMAGE 1: topbar left green Ola VIP face with crown and red glasses, exact lowercase "@minhanh"; balance exact "12.500" THEN gold coin with white letter K on the RIGHT, no "KEN" suffix, no coin before amount, no crown coin, no human portrait, no "Minh Anh". Preserve image 1 font, cream pills, navy outlines, sound icon and all topbar alignment. Keep ALL other pixels/content as closely unchanged as possible: logo, character, property cards and pawns, golden Vào bàn, cream Lịch sử and Bảng xếp hạng, underlined Luật chơi, footer Thoát game, sky and city. Gold Vào bàn remains the large primary action. Output one full portrait screen matching image 1 dimensions/aspect. No annotations, extra buttons, badges, version or frame.
 ```
+
+## S2 — modal Chơi với máy
+
+- Ngày **23/10/2026**, công cụ **built-in imagegen**, người dùng làm theo [02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal). Bản trước (mỗi bot hai dòng, nút thùng rác) đã bỏ; bản dùng là mỗi bot một hàng với nút `−`.
+- Ba bot: `exec-a2d70def-f6eb-4350-9ccd-bdcaff07e43c.png`, sửa từ bản hai dòng. Một bot: `exec-0191154b-ed25-4737-a188-e836788eb790.png`, sửa từ bản ba bot mới. Tham chiếu: concept S2, `icon-bot.png`, VIP 001/002/003.
+- File đích: [`modal-bot-01-one-bot.webp`](./screens/s2-lobby/modal-bot-01-one-bot.webp), [`modal-bot-02-three-bots.webp`](./screens/s2-lobby/modal-bot-02-three-bots.webp), hiện ở [S2 §11](./screens/s2-lobby/README.md#11-modal-chơi-với-máy). Hậu kỳ: PNG gốc 935 × 1683 (SHA-256 `af37ab07…` / `453a4f61…`) chuyển WebP chất lượng 85, giữ kích thước, không crop hay chỉnh nội dung (3,15 MB → 220 KB).
+- Đã kiểm: hàng ngang không có thùng rác, nút `−` xám khi còn 1 bot và coral khi có 3, robot ở header, `1/3 bot` / `3/3 bot`, tổng người, 30 vòng / 25 phút / 30 giây, Hủy/Bắt đầu. Chỗ docs khác ảnh ở S2 §11.
+- Trạng thái: ảnh mẫu; đã dựng UI ngày 23/10/2026 (`components/BotSetupModal.tsx`).
+
+### Asset bổ sung lần đầu — v1 (23/10/2026)
+
+- Thiếu hình hai người và các bản artwork cộng/trừ tròn có trạng thái xám. Đã vẽ **5 SVG hình học** ở [`assets/bot-setup/`](./screens/s2-lobby/README.md#asset-của-modal): `users-blue.svg`, `plus-circle.svg`, `plus-circle-disabled.svg`, `minus-circle.svg`, `minus-circle-disabled.svg`. Nguồn hình là hai concept ở trên, màu dấu cộng/trừ theo token game; không gọi imagegen cho lượt này, không tải thư viện ngoài.
+- Giữ nguyên robot `ill-bot.webp`, VIP 001–003 và `room-list/close-bold.svg`. Khung paper, divider mint/beige, pill mức độ, nền nút, nền tròn X, khối tóm tắt và backdrop dựng CSS; chữ là DOM. [Inventory](./screens/s2-lobby/README.md#asset-của-modal) ghi đủ từng phần và cách dùng.
+- SVG mới là asset riêng nhiều màu, không phải mask `TyIcon`; có khoảng trong suốt ngoài hình. Chưa tích hợp UI modal, không coi việc xuất asset là duyệt bố cục runtime.
+
+### Sửa asset theo audit — v2 (23/10/2026)
+
+- Người dùng yêu cầu sửa các sai lệch sau lượt đối chiếu. Đã sửa 5 SVG v1: cộng xanh ngọc, trừ coral đỏ hồng, hai sắc xám disabled riêng, vai/thân và cặp xanh của hai người. Bổ sung `close-navy.svg` theo màu X của modal; không thay icon X của S4.
+- Vẽ thêm 4 nền nút **SVG không chữ/icon**: `button-mint.svg`, `button-mint-disabled.svg`, `button-paper.svg`, `button-gold.svg`. Mặt mint nhẹ/viền jade, paper viền beige không dải xanh, gold phản sáng góc trái. Không sửa PNG lobby; gói v2 dùng nền modal mới.
+- Cả 10 SVG là hình học code-native, không gọi imagegen, không chỉnh bitmap. Màu đo trực tiếp từ hai concept; palette là ngoại lệ riêng modal, 02 §2.3 đã đồng bộ viền jade của Thêm bot. Robot và VIP giữ nguyên nguồn gốc.
+- [Inventory v2](./screens/s2-lobby/README.md#asset-của-modal) / [audit sau sửa](./screens/s2-lobby/asset-audit.md#6-modal-chơi-với-máy--asset-v2): đối chiếu đủ 14 cặp ảnh, màu 6 vùng icon lệch tối đa 1 đơn vị mỗi kênh RGB tại các vùng mẫu đã đo. Vector không tái tạo nhiễu/texture AI. Chưa tích hợp modal runtime.
+
+### Prompt ba bot
+
+```text
+Use case: precise-object-edit. Edit this supplied Vietnamese Cờ Tỷ Phú THREE-BOT setup screenshot. Requested changes: EACH BOT AND ITS DIFFICULTY SELECTOR MUST BE ON ONE SINGLE HORIZONTAL ROW; REPLACE ALL TRASH BUTTONS WITH ROUND MINUS BUTTONS.
+Preserve established cream paper/gold/mint visual style, exact blue robot in title "Chơi với máy", close X upper right, informational "Danh sách bot" and "3/3 bot", dimmed lobby background and correct topbar. Preserve portrait853x1844 proportions.
+Redesign the bot-list portion into EXACTLY THREE compact rows, about60 CSS pixels high each, separated by thin beige dividers. Each row's sequence left-to-right, all centered vertically:
+[small24px green VIP avatar] [Bot 1] [Dễ | Thường | Khó segmented pill] [coral circular button with white MINUS "−"].
+Rows2 and3 same geometry, names Bot 2 and Bot 3, same respective VIP avatar from the source. Shrink the previously huge avatars to fit this single line. Do NOT place level choices below name. Do NOT add separate "Mức độ" lines. Each row fits the existing panel width, not clipped, use clear rounded Nunito text; don't abbreviate "Thường". Make middle segment slightly wider if needed.
+Selections: Bot1 "Thường" gold; Bot2 "Dễ" gold; Bot3 "Khó" gold. Unselected segments cream/navy. The three minus buttons are ACTIVE CORAL circles, white horizontal dash, NOT trash, NOT X, NOT plus. The top-right modal CLOSE remains X.
+Because rows are shorter, shorten/recenter the whole dialog naturally to around500 CSS px tall, eliminate the unused vertical spaces; keep all content well spaced.
+Below the three rows keep disabled gray "+ Thêm bot", then "Đã đủ 3 bot". Preserve pale-blue summary "Ván 4 người: bạn và 3 bot" and exact hint "Tối đa 30 vòng hoặc 25 phút, mỗi hành động 30 giây. Máy đi tự động." Footer cream "Hủy" LEFT, gold "Bắt đầu" RIGHT.
+No bot-count picker, no dropdown levels, no second line per bot, no trash icons anywhere, no new features/text, no English, no watermark or frame. This is a precise compact-layout revision of the existing selected design.
+```
+
+### Prompt một bot
+
+```text
+Use case: precise-object-edit. Edit the provided UPDATED inline-row bot setup screenshot into its initial ONE-BOT state. Preserve exactly this cream/gold/mint UI design and single-line row geometry.
+Keep header BLUE ROBOT icon + Vietnamese title "Chơi với máy" + close X, all same style. Keep dimmed lobby background and topbar.
+Change count "3/3 bot" to "1/3 bot". Keep ONLY Bot 1, REMOVE rows Bot2 and Bot3 completely. Bot1 stays ONE SINGLE ROW: [small green VIP avatar] [Bot 1] [Dễ | Thường | Khó segmented pill, Thường gold] [CIRCULAR MINUS BUTTON]. The minus is now DISABLED GRAY with a white horizontal dash. Never trash-can, never X in this row. Do not put difficulty on a second line, no extra "Mức độ" label.
+Change the add control to ACTIVE mint-green full-width "+ Thêm bot" immediately below Bot1. Remove "Đã đủ 3 bot" helper entirely because there is room to add.
+Change summary to exactly "Ván 2 người: bạn và 1 bot". Keep hint exactly "Tối đa 30 vòng hoặc 25 phút, mỗi hành động 30 giây. Máy đi tự động."
+Footer retains cream "Hủy" left and GOLD "Bắt đầu" right, equal width. Shorten and vertically center modal to content naturally, do not leave empty space where deleted bots were. Keep all controls inside and comfortably spaced. Preserve same portrait canvas/aspect, visual finish, font and icon details. No quantity picker, no extra features, no English.
+```

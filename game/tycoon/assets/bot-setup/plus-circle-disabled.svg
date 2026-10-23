@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs><linearGradient id="plus-disabled" x1="16" y1="1" x2="16" y2="31" gradientUnits="userSpaceOnUse"><stop stop-color="#9fa1ab"/><stop offset=".5" stop-color="#9ea0aa"/><stop offset="1" stop-color="#9ca0a8"/></linearGradient></defs>
+  <circle cx="16" cy="16" r="15" fill="url(#plus-disabled)"/>
+  <path d="M10 16h12M16 10v12" stroke="#fafdfc" stroke-width="3.7" stroke-linecap="round"/>
+</svg>

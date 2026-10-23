@@ -2011,6 +2011,377 @@ button:focus-visible,
   line-height: 1.45;
 }
 
+/* ---------- Bot setup modal S2 ---------- */
+
+.ty-bot-modal {
+  --ty-bot-paper: #fdfaf3;
+  --ty-bot-paper-edge: #f1d8b7;
+  --ty-bot-mint-line: #adefd5;
+  --ty-bot-rule: #ece4d3;
+  --ty-bot-summary: #e4f3fd;
+  --ty-bot-pill: #fbf6ee;
+  --ty-bot-pill-line: #b59f86;
+  --ty-bot-pill-edge: #eadcc8;
+  position: relative;
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  gap: 0;
+  padding: 12px 18px 18px;
+  background: var(--ty-bot-paper);
+  box-shadow: inset 0 -5px 0 var(--ty-bot-paper-edge), 0 12px 28px rgba(14, 22, 34, 0.35);
+}
+
+.ty-bot-modal :focus-visible {
+  outline: 2px solid var(--ty-navy);
+  outline-offset: 3px;
+}
+
+.ty-bot-head {
+  position: relative;
+  flex: none;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 44px 10px;
+}
+
+.ty-bot-head::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--ty-bot-mint-line);
+}
+
+.ty-bot-head > img {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.ty-bot-close {
+  position: absolute;
+  top: -2px;
+  right: -10px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+}
+
+.ty-bot-close::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--ty-bot-paper);
+  border: 1.5px solid #e5c8ae;
+  box-shadow: inset 0 -2.5px 0 #edc69a, 0 1px 0 #8a6741;
+}
+
+.ty-bot-close img {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.ty-bot-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  margin: 0 -6px;
+  padding: 12px 6px 4px;
+}
+
+.ty-bot-list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ty-bot-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(31, 42, 68, 0.62);
+}
+
+.ty-bot-list {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ty-bot-row {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1.5px solid var(--ty-bot-rule);
+}
+
+.ty-bot-avatar {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.ty-bot-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ty-bot-levels {
+  flex: none;
+  height: 40px;
+  display: flex;
+  border: 1.5px solid var(--ty-bot-pill-line);
+  border-radius: 999px;
+  background: var(--ty-bot-pill);
+  box-shadow: inset 0 -3px 0 var(--ty-bot-pill-edge);
+}
+
+.ty-bot-level {
+  position: relative;
+  min-width: 44px;
+  padding: 0 8px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: rgba(31, 42, 68, 0.72);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ty-bot-level:nth-child(2) {
+  min-width: 72px;
+}
+
+.ty-bot-level::after {
+  content: '';
+  position: absolute;
+  inset: -3.5px 0;
+}
+
+.ty-bot-level + .ty-bot-level::before {
+  content: '';
+  position: absolute;
+  left: -2.25px;
+  top: 9px;
+  bottom: 9px;
+  width: 1.5px;
+  background: var(--ty-bot-pill-edge);
+}
+
+.ty-bot-level-on::before,
+.ty-bot-level-on + .ty-bot-level::before {
+  display: none;
+}
+
+.ty-bot-level-on {
+  border-color: #d2770a;
+  background: linear-gradient(180deg, #f9f187 0%, #ffdb2d 24%, #ffdb2d 58%, #fdc41c 100%);
+  color: var(--ty-navy);
+  box-shadow: inset 0 -3px 0 #f2a20c;
+}
+
+.ty-bot-remove {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+}
+
+.ty-bot-remove img {
+  width: 32px;
+  height: 32px;
+}
+
+.ty-bot-remove:active:not(:disabled) img {
+  transform: translateY(1px);
+}
+
+.ty-bot-add {
+  position: relative;
+  flex: none;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1.5px solid #299b76;
+  border-radius: 999px;
+  background: #8aebc5;
+  box-shadow: inset 0 -4px 0 #4bd0a3;
+  color: var(--ty-navy);
+  font-size: 17px;
+  font-weight: 800;
+  transition: transform 120ms var(--ty-ease), box-shadow 120ms var(--ty-ease);
+}
+
+.ty-bot-add::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  width: 22px;
+  height: 10px;
+  border-top: 2px solid #f1fff7;
+  border-radius: 100% 0 0 0 / 100% 0 0 0;
+  pointer-events: none;
+}
+
+.ty-bot-add > * {
+  position: relative;
+}
+
+.ty-bot-add img {
+  width: 24px;
+  height: 24px;
+}
+
+.ty-bot-add:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 -2px 0 #4bd0a3;
+}
+
+.ty-bot-add:disabled {
+  border-color: #abb0b3;
+  background: #dddddf;
+  box-shadow: inset 0 -4px 0 #c8cacc;
+  color: #8b8f97;
+}
+
+.ty-bot-add:disabled::before {
+  border-top-color: #f5f5f6;
+}
+
+.ty-bot-full {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(31, 42, 68, 0.55);
+}
+
+.ty-bot-summary {
+  flex: none;
+  margin-top: 12px;
+  padding: 10px 6px;
+  border-radius: 16px;
+  background: var(--ty-bot-summary);
+  text-align: center;
+}
+
+.ty-bot-summary-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ty-bot-summary-title img {
+  flex: none;
+  width: 28px;
+  height: 21px;
+}
+
+.ty-bot-summary-hint {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(31, 42, 68, 0.7);
+}
+
+.ty-bot-actions {
+  flex: none;
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ty-bot-btn {
+  position: relative;
+  flex: 1;
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border: 1.5px solid;
+  border-radius: 999px;
+  color: var(--ty-navy);
+  font-size: 18px;
+  font-weight: 800;
+  transition: transform 120ms var(--ty-ease), box-shadow 120ms var(--ty-ease);
+}
+
+.ty-bot-btn-paper {
+  border-color: #8b7865;
+  background: #fdf8ee;
+  box-shadow: inset 0 -5px 0 #eecca4;
+}
+
+.ty-bot-btn-gold {
+  border-color: #864d07;
+  background: linear-gradient(180deg, #fed828 0%, #ffd92b 49%, #ffc516 57%, #ffbf18 100%);
+  box-shadow: inset 0 -5px 0 #e17a00;
+}
+
+.ty-bot-btn-gold::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 14px;
+  width: 20px;
+  height: 10px;
+  border-top: 2.5px solid #fffde9;
+  border-radius: 100% 0 0 0 / 100% 0 0 0;
+  pointer-events: none;
+}
+
+.ty-bot-btn:active {
+  transform: translateY(2px);
+}
+
+.ty-bot-btn-paper:active {
+  box-shadow: inset 0 -2px 0 #eecca4;
+}
+
+.ty-bot-btn-gold:active {
+  box-shadow: inset 0 -2px 0 #e17a00;
+}
+
 /* ---------- Modal skin on room list S3 ---------- */
 
 .ty-modal-actions.ty-room-actions .ty-btn {

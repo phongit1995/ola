@@ -38,7 +38,7 @@ UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và render
 | Nút | Style | Hành vi |
 |---|---|---|
 | `Vào bàn` | CTA vàng 280×80, Nunito navy 32/800, minh họa xúc xắc | `openRanked()` → S3, preload nhóm RANKED |
-| `Chơi với máy` | xanh ngọc 280×56, Nunito navy 24/800, robot xanh–trắng 40 | `setSetupOpen(true)` → BotSetupModal, chọn 1–3 máy và mức độ từng máy (§2.3) rồi vào ván |
+| `Chơi với máy` | xanh ngọc 280×56, Nunito navy 24/800, robot xanh–trắng 40 | `setSetupOpen(true)` → BotSetupModal, mặc định Bot 1; thêm/xóa tối đa 3 bot và chọn mức độ từng bot (§2.3) rồi vào ván |
 | `Lịch sử` | giấy kem viền navy 280×56, Nunito 24/800, minh họa đồng hồ blue | S10 |
 | `Bảng xếp hạng` | giấy kem viền navy 280×56, Nunito 24/800, minh họa bục/crown | S11 |
 | `Luật chơi` | nút text 280×44, Nunito navy 22/800 gạch chân, minh họa sách | mở modal luật: 6 mục ngắn (gieo, mua, thuê, xây, tù, kết thúc), scroll, nút Đóng |
@@ -47,39 +47,48 @@ CTA online disabled khi `lobbyPhase !== 'ready'`. Chơi với máy, Luật chơi
 
 ### 2.3 Modal Chơi với máy (`BotSetupModal`)
 
-**Trạng thái (22/10/2026): đặc tả, chưa code.** Modal hiện tại chỉ chọn `2 · 3 · 4 người`, mọi máy cùng một cách chơi. Chưa có ảnh concept riêng.
+**Trạng thái: đã dựng UI ngày 23/10/2026 (`components/BotSetupModal.tsx`).** Ảnh [mở mới 1 bot](./screens/s2-lobby/modal-bot-01-one-bot.webp) và [đủ 3 bot](./screens/s2-lobby/modal-bot-02-three-bots.webp); chỗ docs khác ảnh ở [S2 §11](./screens/s2-lobby/README.md#11-modal-chơi-với-máy). Mức độ được lưu vào `SeatInfo.level` nhưng `botMove` chưa dùng: mọi máy vẫn chơi mức Thường cho tới khi làm [05 §12](./05-gameplay-rules-and-protocol.md#12-máy-chơi-và-mức-độ-bản-chơi-với-máy); nhãn mức ở pod S6/S9 cũng chưa làm. Thiết kế mới dưới đây thay hoàn toàn bộ chọn số máy `1 · 2 · 3` và danh sách Bác Tỷ/Cô Ngân/Anh Tèo của đặc tả trước.
 
-Mở bằng nút `Chơi với máy` ở S2. Cùng khung và style nhóm/chip/nút với [S4 4a](#4a-tạo-bàn): rộng `min(100% − 32, 340)`, radius 22, nền paper, viền navy 2, giữ focus trong modal, trả focus về nút `Chơi với máy` khi đóng. Chạy hoàn toàn trên máy, dùng được offline; không cược, không người xem ([11](./11-room-settings.md)). Từ trên xuống:
+Mở từ nút `Chơi với máy` ở S2. Mỗi lần mở từ sảnh luôn tạo danh sách mới gồm **1 bot, tên `Bot 1`, mức `Thường`**. Thêm từng bot bằng nút bên dưới, tối đa **3 bot** (ván 2–4 người kể cả bạn). Số lượng chỉ là thông tin đọc, **không có chip, dropdown hay ô nhập chọn số lượng**. Chơi offline, không cược, không người xem ([11](./11-room-settings.md)).
 
-| # | Phần | Nội dung | Mặc định |
-|---|---|---|---|
-| 1 | Header | tiêu đề `Chơi với máy` 21/800 **căn giữa**; nút đóng `ic-close` 44 góc phải | — |
-| 2 | `Số máy` | 3 chip `1 · 2 · 3`, chọn một, chip đang chọn nền gold; dòng phụ `Ván {n + 1} người: bạn và {n} máy` | lần chọn gần nhất, lần đầu **3** |
-| 3 | `Mức độ` | mỗi máy một hàng theo thứ tự ghế (2.3.1) | mức đã chọn ở lần chơi trước, lần đầu **Thường** |
-| 4 | Gợi ý | `Tối đa {MAX_ROUNDS} vòng hoặc {phút} phút, mỗi hành động {TURN_SECONDS} giây. Máy đi tự động.` 13 navy 70%; số đọc từ `logic/constants.ts`, không viết cứng | — |
-| 5 | Hàng nút | `Hủy` paper trái · `Bắt đầu` gold phải, chia đều, cao 52 | — |
+Khung paper rộng `min(100% − 32, 340)`, radius 22, viền navy 2, padding 18, cùng họ nút S4. Phần giữa cuộn khi thiếu cao; header và Hủy/Bắt đầu luôn nhìn thấy. Từ trên xuống:
 
-Nhãn nhóm 14/800 navy, khoảng cách giữa các nhóm 14 như S4. Modal cao quá màn thì phần giữa cuộn, header và hàng nút luôn nhìn thấy.
+| # | Phần | Nội dung |
+|---|---|---|
+| 1 | Header | icon robot xanh–trắng **cùng asset với nút sảnh** `assets/lobby/ill-bot.webp`, 32 px, cạnh trái tiêu đề `Chơi với máy` 21/800; cả nhóm icon + title căn giữa phần chừa cho X 44 góc phải; dưới header một vạch mint mảnh như ảnh. Icon trang trí, không đọc lặp tên |
+| 2 | Thông tin số bot | `Danh sách bot` 14/800 bên trái, nhãn `1/3 bot` bên phải (đổi thành 2/3 hoặc 3/3 theo danh sách). Nhãn không bấm được |
+| 3 | Danh sách bot | lần đầu chỉ **Bot 1**; sau thêm có Bot 2, Bot 3. Mỗi bot có mức độ riêng và nút `−` trên cùng một hàng với tên (§2.3.1) |
+| 4 | Thêm bot | nút `+ Thêm bot` ở **ngay dưới toàn bộ danh sách**, rộng hết nội dung, cao 44, nền mint nhạt và viền jade theo ảnh modal (ngoại lệ riêng S2, [asset v2](./screens/s2-lobby/README.md#asset-của-modal)); thêm một bot mỗi lần. Đủ 3 bot thì disabled thật, vẫn giữ nhãn, có dòng `Đã đủ 3 bot` |
+| 5 | Tóm tắt và gợi ý | khối nền `#e4f3fd` (đo từ ảnh) bo 16: `Ván {n + 1} người: bạn và {n} bot` 14/800; bên dưới `Tối đa {MAX_ROUNDS} vòng hoặc {phút} phút, mỗi hành động {TURN_SECONDS} giây. Máy đi tự động.` 13 navy 70%, căn giữa. Số giới hạn đọc từ constants: hiện 30 vòng / 25 phút / 30 giây. Icon hai người đã có: `assets/bot-setup/users-blue.svg`, 28 × 21, trang trí trước dòng tổng người, render img để giữ hai màu xanh |
+| 6 | Hàng nút | `Hủy` paper trái · `Bắt đầu` gold phải, chia đều, cao 52 |
 
-**2.3.1 Hàng mức độ.** Một hàng cho mỗi máy, theo ghế 2, 3, 4:
+**2.3.1 Một bot trong danh sách.** Theo chỉnh sửa mới, mỗi bot nằm trên **một hàng duy nhất**: avatar + tên → nhóm mức độ → nút `−`. Thay bố cục hai hàng và icon thùng rác ở bản trước.
 
-- Cao 52: avatar máy 32 (cùng ảnh với pod S6, [03 §18](./03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar)) · khoảng 8 · tên máy 15/800 navy, không có `@`, quá dài thì ellipsis (`Bác Tỷ`, `Cô Ngân`, `Anh Tèo`) · nhóm mức độ sát phải.
-- Nhóm mức độ là 3 ô liền trong một pill viền navy 1.5: `Dễ · Thường · Khó`, cao 40 (vùng chạm 44), mỗi ô rộng ít nhất 48, đệm ngang 8. Ở màn 360 (nội dung modal 288) tên còn ~74 px, đủ cho `Cô Ngân` (~61 px ở 15/800). Ô đang chọn nền gold, chữ navy 14/800; ô khác nền paper, chữ navy 70%. Không tô màu riêng cho từng mức để khỏi lẫn với màu ghế.
-- Các hàng cách nhau bằng đường kẻ beige mảnh, không có khung riêng cho từng hàng.
-- Đổi `Số máy`: giảm thì ẩn các hàng cuối, tăng thì hiện lại với đúng mức đã chọn trước đó (modal giữ mức của cả 3 ghế).
-- Viewport hẹp hơn 360: nhóm mức độ xuống dòng dưới tên, rộng hết hàng; hàng cao theo nội dung.
+- Avatar VIP 24 · gap 4 · tên `Bot 1` / `Bot 2` / `Bot 3` navy 14/800, không xuống dòng. Avatar dùng VIP như pod S6; robot ở header vẫn là `ill-bot.webp`. Giữ avatar gắn với bot khi thêm/xóa.
+- Cùng hàng với tên là pill `Dễ · Thường · Khó`, cao 40, vùng chạm cao 44. Ô `Dễ`/`Khó` rộng 44, ô `Thường` 72 (chữ ~51 px + đệm 10 mỗi bên), cộng viền là 163. Ô chọn gold, chữ navy 14/800; ô khác paper/navy 70%. Mặc định bot mới **Thường**, mỗi bot chọn độc lập. Không có nhãn Mức độ riêng phía trên hay một dòng selector bên dưới; tên truy cập radiogroup vẫn đủ.
+- Cuối hàng là nút tròn dấu **`−`**, hình nhìn thấy 30–32, vùng chạm **44 × 44**, màu coral khi hoạt động. Artwork đã có `assets/bot-setup/minus-circle.svg` và `minus-circle-disabled.svg` (đã gồm vòng tròn); `ic-minus` chỉ là glyph thay thế nếu dựng vòng tròn bằng CSS. Tên truy cập vẫn `Xóa Bot 2`… Không dùng thùng rác hoặc chữ X cho thao tác xóa bot; X ở header vẫn để đóng modal.
+- Hàng cao khoảng 60, căn giữa dọc avatar/tên/selector/nút trừ; các hàng cách nhau bằng đường beige mảnh. Thứ tự đọc và Tab: tên → mức độ → nút trừ. Cột mức độ và nút trừ thẳng nhau giữa các bot.
+- Layout: nhóm avatar + tên 64 (avatar 24 + 4 + `Bot 3` ~36 px ở 14/800), nhóm mức độ 163, nút trừ 44, gap giữa các nhóm 4 → **279 px**; nội dung modal ở màn 360 là 288 (340 − 32 lề − 36 padding − 4 viền đã kẹp về 328), còn dư 9. Đo bằng Nunito ngày 23/10/2026; nếu dùng ô Dễ/Khó 48 như bản trước thì tổng 287, chỉ dư 1 px. Giữ **một hàng ở 360–520 px**, không đẩy selector xuống dòng hoặc cắt chữ Thường; dưới 360 ngoài phạm vi S2 ([S2 §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive)), nếu cần thì giảm padding ngang modal xuống 12 trước. Khi phóng chữ cần kiểm riêng overflow/trợ năng, không thu nhỏ chữ chỉ để vừa ảnh.
+- Chỉ còn 1 bot: nút `−` của bot đó **disabled**, màu xám, tên truy cập `Không thể xóa bot cuối cùng`; có mô tả trợ năng `Cần ít nhất 1 bot để bắt đầu`. Không cho danh sách về 0.
+- Có 2 hoặc 3 bot: xóa được bất kỳ bot nào, không cần popup xác nhận. Chỉ xóa bot đó, không reset mức độ hay avatar các bot còn lại. Đánh số nhãn lại liên tục theo thứ tự: ví dụ xóa Bot 2 trong ba bot thì Bot 3 cũ thành Bot 2, giữ mức độ cũ.
+- `+ Thêm bot` thêm cuối danh sách, tên là số kế tiếp, mức Thường; không khôi phục mức của bot đã xóa. Dùng ID ổn định cho mỗi item để đổi nhãn không làm chuyển lựa chọn sang bot khác. Avatar mới dùng VIP còn trống trong bộ 1–3.
+- Đủ 3: chặn thêm cả ở handler, không chỉ làm mờ nút. Sau xóa, nút thêm hoạt động lại ngay. Thay đổi số bot cập nhật nhãn đếm và dòng tổng người ngay.
 
-**Bắt đầu.** Lưu lựa chọn rồi tạo ván ngay, không có trạng thái chờ:
+**Bộ asset v2 đã sửa/kiểm (23/10/2026):** [inventory đầy đủ](./screens/s2-lobby/README.md#asset-của-modal) gồm robot và VIP 001–003 dùng lại; 6 SVG icon riêng cho X navy đậm, hai người, cộng/trừ tròn và hai bản xám; 4 nền nút SVG không chữ cho mint/disabled/paper/gold. Màu riêng lấy từ ảnh modal, không thay token chung. Dấu cộng hiển thị 24 trong nút Thêm bot. SVG nhiều màu render img, không mask; khung, nền nút co giãn, pill mức độ, divider và khối tóm tắt dựng CSS theo ảnh/palette SVG. Đã dùng trong `BotSetupModal`; nền nút dựng CSS theo màu SVG, không kéo giãn SVG.
 
-- `ola:tycoon:players` = số máy + 1 (giữ key và ý nghĩa đang dùng); `ola:tycoon:bot-levels` = mảng 3 mức `easy | normal | hard` theo ghế 2–4, gồm cả ghế đang ẩn. Đọc/ghi trong `try/catch`; thiếu hoặc giá trị lạ thì về mặc định.
-- `SeatInfo` của máy thêm `level`; mỗi lượt store gọi `botMove(state, seat, level)` theo [05 §12](./05-gameplay-rules-and-protocol.md#12-máy-chơi-và-mức-độ-bản-chơi-với-máy).
-- `Chơi lại` ở S9 giữ nguyên số máy và mức độ của ván vừa xong.
+**Bắt đầu và lưu lựa chọn.** Validate 1–3 bot và từng mức `easy | normal | hard`, tạo ván ngay với bạn + danh sách bot, không có phòng chờ:
 
-**Đóng.** `Hủy`, nút đóng, `Escape`, bấm nền: đóng, không lưu thay đổi.
+- `SeatInfo` của máy có tên hiển thị `Bot 1`… theo thứ tự danh sách, avatar của item và `level`; store gọi `botMove(state, seat, level)` theo [05 §12](./05-gameplay-rules-and-protocol.md#12-máy-chơi-và-mức-độ-bản-chơi-với-máy). Các tên này dùng xuyên suốt modal, S6, S9 và log, không có `@`.
+- Store giữ cấu hình ván vừa bắt đầu (`lastBots`, danh sách `{ id, vip, level }`, helper ở `helpers/bot.ts`) để `Chơi lại` S9 giữ nguyên số bot, avatar và mức độ; `playAgain` dùng danh sách này thay cho `playerCount`. Không cần localStorage: mở mới luôn reset, ván cũng không sống qua lần tải lại trang. Modal mới không đọc `ola:tycoon:players` nữa; không tạo key `ola:tycoon:bot-levels`.
+- **Mở mới từ sảnh vẫn reset về Bot 1 / Thường**, không lấy cấu hình đã lưu để tự thêm 2–3 bot. Phân biệt rõ mở modal mới với Chơi lại ván vừa xong.
 
-**Bàn phím và trợ năng.** `Số máy` và mỗi nhóm mức độ là một `radiogroup` (`aria-label`: `Số máy`, `Mức độ của Bác Tỷ`…); mũi tên trái/phải đổi lựa chọn trong nhóm, `Tab` sang nhóm kế. Mở modal thì focus vào chip `Số máy` đang chọn.
+**Đóng.** Hủy, X, Escape, bấm nền: đóng và bỏ thay đổi nháp, không lưu. Mở lại từ sảnh luôn về trạng thái mặc định một bot.
 
-**Trong ván.** Pod S6 và bảng S9 hiện nhãn mức độ cạnh tên máy: pill paper viền beige, chữ 11/800 navy 70% (`Dễ` / `Thường` / `Khó`); người chơi không có nhãn. Pod đọc `Bác Tỷ, máy mức Khó`.
+**Bàn phím và trợ năng.** Mỗi nhóm mức là một `radiogroup`, nhãn `Mức độ của Bot 1`…; trái/phải đổi mức, Tab sang nhóm/nút tiếp. Mở modal focus vào mức Thường của Bot 1. Thêm bot thì focus vào nhóm mức của bot vừa thêm; xóa thì focus vào nhóm mức của bot thế chỗ (xóa bot cuối thì bot đứng trước), không đặt lên nút `−` có thể vừa bị disabled và không rơi ra backdrop. Cập nhật số bot bằng aria-live polite. Xóa/thêm disabled không nhận thao tác. Đóng trả focus về nút Chơi với máy ngoài sảnh.
+
+**Trong ván.** Pod S6 và bảng S9 hiện tên Bot 1/2/3, thêm pill paper viền beige với mức Dễ/Thường/Khó 11/800 navy 70%; người chơi không có pill mức. Ví dụ tên truy cập `Bot 2, máy mức Khó`.
+
+**Các trạng thái phải kiểm khi dựng:** mở mới 1 bot; thêm bot thứ 2 và 3; đủ 3 không thêm được; xóa bot giữa giữ mức của bot còn lại; còn 1 không xóa được; Hủy rồi mở lại về một bot; Chơi lại giữ cấu hình ván; màn thấp cuộn thân, header/footer không bị che.
 
 ---
 

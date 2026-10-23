@@ -7,7 +7,8 @@ import { BOARD, cardById } from '../logic/board';
 import { botMove } from '../logic/bot';
 import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
 import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
-import { RuleError, type GameState, type Move, type Step, type TileState } from '../logic/types';
+import { RuleError, type BotLevel, type GameState, type Move, type Step, type TileState } from '../logic/types';
+import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
 import { formatMoney } from '../helpers/format';
 import { avatarIconUrl } from '../helpers/player';
 import { MOCK_PROFILE, type LobbyProfile } from '../helpers/profile';
@@ -22,6 +23,7 @@ export interface SeatInfo {
   name: string;
   avatar: string;
   bot: boolean;
+  level?: BotLevel;
 }
 
 export interface DiceFx {
@@ -93,7 +95,7 @@ interface TycoonState {
   rulesOpen: boolean;
   setupOpen: boolean;
   roomsOpen: boolean;
-  playerCount: number;
+  lastBots: BotSetupItem[];
 
   boardMode: BoardMode;
   players: SeatInfo[];
@@ -134,7 +136,7 @@ interface TycoonState {
   setRulesOpen(open: boolean): void;
   setSetupOpen(open: boolean): void;
   setRoomsOpen(open: boolean): void;
-  startGame(playerCount: number): void;
+  startGame(bots: BotSetupItem[]): void;
 
   sendMove(move: Move): void;
   openSheet(sheet: Sheet): void;
@@ -152,7 +154,6 @@ interface TycoonState {
 }
 
 const SOUND_KEY = 'ola:tycoon:sound';
-const COUNT_KEY = 'ola:tycoon:players';
 const TURN_ANNOUNCE_MS = 1200;
 const TOAST_MS = 2400;
 const RESULT_REVEAL_MS = 900;
@@ -174,8 +175,6 @@ const STEP_MS = {
   bankrupt: 900,
   round: 240,
 };
-
-const BOT_NAMES = ['Bác Tỷ', 'Cô Ngân', 'Anh Tèo'];
 
 const RULE_TEXT: Record<string, string> = {
   wrong_phase: 'Chưa đến lúc làm việc này',
@@ -232,11 +231,6 @@ function reasonLabel(reason: string | undefined, amount: number, tile?: number):
     default:
       return formatMoney(amount);
   }
-}
-
-function readPlayerCount(): number {
-  const stored = Number(localStorage.getItem(COUNT_KEY));
-  return stored >= 2 && stored <= 4 ? stored : 4;
 }
 
 export const useTycoon = create<TycoonState>((set, get) => {
@@ -688,19 +682,22 @@ export const useTycoon = create<TycoonState>((set, get) => {
     });
   };
 
-  const beginGame = (playerCount: number) => {
+  const beginGame = (bots: BotSetupItem[]) => {
+    if (bots.length === 0) return;
     leaveToLobby();
-    const count = Math.min(4, Math.max(2, playerCount));
-    localStorage.setItem(COUNT_KEY, String(count));
-    const players: SeatInfo[] = [{ id: 'you', name: 'Bạn', avatar: avatarIconUrl(null), bot: false }];
-    for (let i = 1; i < count; i++) players.push({ id: `bot-${i}`, name: BOT_NAMES[i - 1] ?? `Máy ${i}`, avatar: vipIconUrl(i), bot: true });
+    const lineup = bots.slice(0, MAX_BOTS);
+    const players: SeatInfo[] = [
+      { id: 'you', name: 'Bạn', avatar: avatarIconUrl(null), bot: false },
+      ...lineup.map((item, index) => ({ id: item.id, name: botName(index), avatar: vipIconUrl(item.vip), bot: true, level: item.level })),
+    ];
+    const count = players.length;
     const seed = Math.floor(Math.random() * 2 ** 31) + 1;
     const state = newGame(seed, count);
     refs.state = state;
     set({
       boardMode: 'playing',
       setupOpen: false,
-      playerCount: count,
+      lastBots: lineup.map((item) => ({ ...item })),
       players,
       you: 0,
       matchSeq: get().matchSeq + 1,
@@ -721,7 +718,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     rulesOpen: false,
     setupOpen: false,
     roomsOpen: false,
-    playerCount: readPlayerCount(),
+    lastBots: [],
 
     boardMode: 'idle',
     players: [],
@@ -795,8 +792,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
       set({ roomsOpen: open });
     },
 
-    startGame(playerCount: number) {
-      beginGame(playerCount);
+    startGame(bots: BotSetupItem[]) {
+      beginGame(bots);
     },
 
     sendMove(move: Move) {
@@ -860,7 +857,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     playAgain() {
-      beginGame(get().playerCount);
+      beginGame(get().lastBots);
     },
 
     showToast(text: string) {

@@ -28,6 +28,8 @@ File runtime hiện dùng `stroke="#000"` làm CSS mask; `TyIcon` lấy màu t�
 
 **Ngoại lệ artwork S3/S4:** các SVG họ A chỉ bảo đảm glyph chức năng. Sau [audit ban đầu](./screens/s3-room-list/asset-audit.md), đã xuất [11 asset riêng](../assets/room-list/README.md): 2 WebP và 9 SVG nhiều màu theo ảnh đã chốt, render bằng `RoomIcon`/img; quy tắc outline/mask của họ A không áp vào bộ này. Mắt mật khẩu vẫn thuộc họ A: `ic-eye` / `ic-eye-off` đổi sang mắt đặc theo ảnh S4, dùng mask qua TyIcon. [Audit sau xuất](./screens/s3-room-list/icon-export-audit.md) ghi sai lệch còn lại; trạng thái đã xuất để review, chưa duyệt mỹ thuật/runtime. Không dùng số lượng file hoặc typecheck để khẳng định giống mẫu.
 
+**Artwork modal Chơi với máy S2, v2:** [6 SVG icon riêng](./screens/s2-lobby/README.md#asset-của-modal) gồm `close-navy`, `users-blue`, `plus-circle` / `minus-circle` và hai bản disabled. Cùng thư mục có 4 nền nút SVG mint/disabled/paper/gold không chữ. Đây là artwork render img, không thêm vào 33 icon mask họ A. Màu và shading nhẹ riêng theo ảnh modal, không thay token chung; dấu cộng/trừ đã gồm nền tròn. Robot dùng `lobby/ill-bot.webp`, avatar dùng VIP shared. Đã sửa theo audit ngày 23/10/2026, dùng trong `BotSetupModal`.
+
 ### 2.2 Inventory
 
 | # | File | Nguồn | Size | Nơi dùng | Accessible name |
