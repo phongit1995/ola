@@ -7,6 +7,7 @@ import marriageIcon from '@/assets/icons/me/header/ic_header_marriage.png';
 import favoriteIcon from '@/assets/icons/me/header/ic_header_favorite.png';
 import visitorsIcon from '@/assets/icons/me/header/ic_header_visitors.png';
 import clanIcon from '@/assets/icons/me/header/ic_header_clan.png';
+import reelIcon from '@/assets/icons/me/ic_drawer_reel.svg';
 // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
 // import eggIcon from '@/assets/icons/me/ic_indicate_broken_egg.png';
 // import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
@@ -22,6 +23,7 @@ interface MeLeftDrawerProps {
   onClose: () => void;
   onSelect: (key: string) => void;
   onViewProfile: () => void;
+  badges?: Partial<Record<string, number>>;
 }
 
 interface DrawerItem {
@@ -39,6 +41,7 @@ export function MeLeftDrawer({
   onClose,
   onSelect,
   onViewProfile,
+  badges,
 }: MeLeftDrawerProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState(false);
@@ -60,6 +63,7 @@ export function MeLeftDrawer({
 
   const items: DrawerItem[] = [
     { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal') },
+    { key: 'reel', icon: reelIcon, label: t('reel.trayTitle') },
     {
       key: 'marriage',
       icon: marriageIcon,
@@ -130,30 +134,38 @@ export function MeLeftDrawer({
           </span>
         </button>
         <nav className="min-h-0 flex-1 overflow-y-auto">
-          {items.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => pick(item.key)}
-              className="flex h-12 w-full items-center gap-2 px-2 text-left hover:bg-ola-primary-light"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center">
-                <img
-                  src={item.icon}
-                  alt=""
-                  style={{
-                    width: item.opticalSize ?? 24,
-                    height: item.opticalSize ?? 24,
-                    transform: `translateY(${item.opticalOffsetY ?? 0}px)`,
-                  }}
-                  className="object-contain opacity-[0.26]"
-                />
-              </span>
-              <span className="truncate text-base text-black/87">
-                {item.label}
-              </span>
-            </button>
-          ))}
+          {items.map((item) => {
+            const badge = badges?.[item.key] ?? 0;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => pick(item.key)}
+                className="flex h-12 w-full items-center gap-2 px-2 text-left hover:bg-ola-primary-light"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+                  <img
+                    src={item.icon}
+                    alt=""
+                    style={{
+                      width: item.opticalSize ?? 24,
+                      height: item.opticalSize ?? 24,
+                      transform: `translateY(${item.opticalOffsetY ?? 0}px)`,
+                    }}
+                    className="object-contain opacity-[0.26]"
+                  />
+                </span>
+                <span className="min-w-0 flex-1 truncate text-base text-black/87">
+                  {item.label}
+                </span>
+                {badge > 0 && (
+                  <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ola-accent px-1.5 text-[11px] font-bold text-white">
+                    {badge > 99 ? '99+' : badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </nav>
       </div>
     </>

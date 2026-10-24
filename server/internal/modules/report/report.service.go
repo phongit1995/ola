@@ -38,6 +38,16 @@ var validTargetTypes = map[string]bool{
 	constants.ReportTargetStoryComment: true,
 	constants.ReportTargetMessage:      true,
 	constants.ReportTargetRoomMessage:  true,
+	constants.ReportTargetReel:         true,
+}
+
+var uuidTargetTypes = map[string]bool{
+	constants.ReportTargetAccount:      true,
+	constants.ReportTargetPost:         true,
+	constants.ReportTargetComment:      true,
+	constants.ReportTargetStoryComment: true,
+	constants.ReportTargetMessage:      true,
+	constants.ReportTargetReel:         true,
 }
 
 var validReasons = map[string]bool{
@@ -73,7 +83,7 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 	if !validReasons[req.Reason] {
 		return nil, ErrInvalidReason
 	}
-	targetID := strings.TrimSpace(req.TargetID)
+	targetID := canonicalTargetID(targetType, strings.TrimSpace(req.TargetID))
 	if targetID == "" || len(targetID) > constants.ReportTargetIDMaxLen {
 		return nil, ErrInvalidTarget
 	}
@@ -105,9 +115,12 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 		Snapshot:       target.snapshot,
 		Status:         constants.ReportStatusPending,
 	}
-	if err := s.repo.Create(report); err != nil {
-		if errors.Is(err, errDuplicateReport) {
+	if err := s.save(report); err != nil {
+		switch {
+		case errors.Is(err, errDuplicateReport):
 			return nil, ErrReportExists
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			return nil, ErrTargetNotFound
 		}
 		return nil, err
 	}
@@ -118,6 +131,27 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 		Status:    report.Status,
 		CreatedAt: report.CreatedAt.UTC().Format(time.RFC3339),
 	}, nil
+}
+
+func (s *Service) save(report *models.Report) error {
+	if report.TargetType != constants.ReportTargetReel {
+		return s.repo.Create(report)
+	}
+	reelID, err := uuid.Parse(report.TargetID)
+	if err != nil {
+		return ErrInvalidTarget
+	}
+	return s.repo.CreateWhileReelKept(report, reelID)
+}
+
+func canonicalTargetID(targetType, targetID string) string {
+	if !uuidTargetTypes[targetType] {
+		return targetID
+	}
+	if id, err := uuid.Parse(targetID); err == nil {
+		return id.String()
+	}
+	return targetID
 }
 
 func (s *Service) resolve(ctx context.Context, reporterID uuid.UUID, targetType, targetID, contextID string) (*resolvedTarget, error) {
@@ -194,8 +228,41 @@ func (s *Service) resolve(ctx context.Context, reporterID uuid.UUID, targetType,
 				"sentAt": comment.CreatedAt.UTC().Format(time.RFC3339),
 			}),
 		}, nil
+	case constants.ReportTargetReel:
+		reel, err := s.repo.FindReel(id)
+		if err != nil {
+			return nil, notFoundOr(err)
+		}
+		return &resolvedTarget{
+			reportedUserID: &reel.AuthorID,
+			snapshot:       compactSnapshot(reelSnapshot(reel)),
+		}, nil
 	}
 	return nil, ErrInvalidTargetType
+}
+
+func reelSnapshot(reel *models.Reel) models.JSONB {
+	texts := make([]string, 0, len(reel.Overlays))
+	for _, overlay := range reel.Overlays {
+		texts = append(texts, overlay.Text)
+	}
+	snapshot := models.JSONB{
+		"reelType":   reel.Type,
+		"text":       strings.Join(texts, "\n"),
+		"background": reel.Background,
+		"overlays":   reel.Overlays,
+		"sentAt":     reel.CreatedAt.UTC().Format(time.RFC3339),
+	}
+	switch reel.Type {
+	case constants.ReelTypeImage:
+		snapshot["imageUrls"] = []string{reel.MediaURL}
+	case constants.ReelTypeVideo:
+		snapshot["videoUrl"] = reel.MediaURL
+		if reel.ThumbURL != "" {
+			snapshot["imageUrls"] = []string{reel.ThumbURL}
+		}
+	}
+	return snapshot
 }
 
 func (s *Service) resolveRoomMessage(ctx context.Context, messageID, contextID string) (*resolvedTarget, error) {
@@ -238,13 +305,15 @@ func (s *Service) resolveDirectMessage(reporterID uuid.UUID, messageID, contextI
 	if contextID == "" {
 		return nil, ErrContextRequired
 	}
-	if _, err := uuid.Parse(contextID); err != nil {
+	conversation, err := uuid.Parse(contextID)
+	if err != nil {
 		return nil, ErrInvalidTarget
 	}
+	conversationID := conversation.String()
 	if _, err := gocql.ParseUUID(messageID); err != nil {
 		return nil, ErrInvalidTarget
 	}
-	msg, err := s.messages.FindMessageForMember(reporterID, contextID, messageID)
+	msg, err := s.messages.FindMessageForMember(reporterID, conversationID, messageID)
 	if err != nil {
 		switch {
 		case errors.Is(err, message.ErrNotConversationMember):
@@ -270,7 +339,6 @@ func (s *Service) resolveDirectMessage(reporterID uuid.UUID, messageID, contextI
 			snapshot["fileUrl"] = url
 		}
 	}
-	conversationID := contextID
 	return &resolvedTarget{
 		reportedUserID: &msg.SenderID,
 		contextID:      &conversationID,

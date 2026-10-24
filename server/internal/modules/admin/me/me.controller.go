@@ -39,10 +39,10 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 func (ctrl *Controller) ListPosts(c *gin.Context) (interface{}, error) {
 	filter := ListFilter{
 		Query:      c.Query("q"),
-		Enabled:    parseBoolQuery(c, "enabled"),
+		Enabled:    utils.ParseOptionalBool(c, "enabled"),
 		Visibility: parseVisibilityQuery(c.Query("visibility")),
-		HasImages:  parseBoolQuery(c, "hasImages"),
-		HasCheckin: parseBoolQuery(c, "hasCheckin"),
+		HasImages:  utils.ParseOptionalBool(c, "hasImages"),
+		HasCheckin: utils.ParseOptionalBool(c, "hasCheckin"),
 		SortBy:     c.Query("sortBy"),
 		SortDir:    c.Query("sortDir"),
 		Limit:      utils.ParseLimit(c, 20, 100),
@@ -62,19 +62,6 @@ func (ctrl *Controller) ListPosts(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
-}
-
-func parseBoolQuery(c *gin.Context, key string) *bool {
-	switch c.Query(key) {
-	case "true":
-		t := true
-		return &t
-	case "false":
-		f := false
-		return &f
-	default:
-		return nil
-	}
 }
 
 func parseVisibilityQuery(v string) string {

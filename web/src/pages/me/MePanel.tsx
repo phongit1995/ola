@@ -18,6 +18,10 @@ import { MeLikedPostsView } from './MeLikedPostsView';
 import { MeVisitorsView } from './MeVisitorsView';
 import { MeNotificationsView } from './MeNotificationsView';
 import { MarriageView } from '../marriage/MarriageView';
+import { ReelTray } from '../reel/components/ReelTray';
+import { ReelGalleryView } from '../reel/ReelGalleryView';
+import { useReelAuthorCount } from '@ola/shared/stores/reel/useReelTray';
+import { useReelTraySync } from '../reel/useReelTraySync';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
 import bellIcon from '@/assets/icons/me/header/ic_header_notification.png';
@@ -57,6 +61,9 @@ export function MePanel() {
   const [likedOpen, setLikedOpen] = useState(false);
   const [visitorsOpen, setVisitorsOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [reelsOpen, setReelsOpen] = useState(false);
+  useReelTraySync();
+  const reelAuthorCount = useReelAuthorCount();
   const unreadCount = useMeNotificationStore((s) => s.unreadCount);
   const refreshUnread = useMeNotificationStore((s) => s.refreshUnread);
 
@@ -82,6 +89,10 @@ export function MePanel() {
 
   if (notifOpen) {
     return <MeNotificationsView onClose={() => setNotifOpen(false)} />;
+  }
+
+  if (reelsOpen) {
+    return <ReelGalleryView onClose={() => setReelsOpen(false)} />;
   }
 
   const source: MePostSource = {
@@ -159,6 +170,7 @@ export function MePanel() {
               onRefresh={refresh}
               className="absolute inset-0 overflow-y-auto bg-ola-surface"
             >
+              {tab !== 'clan' && <ReelTray />}
               <MeFeedList
                 posts={posts}
                 loading={loading}
@@ -199,6 +211,7 @@ export function MePanel() {
                 avatarUrl={avatarUrl ?? undefined}
                 coverUrl={coverUrl ?? undefined}
                 onClose={() => setDrawerOpen(false)}
+                badges={{ reel: reelAuthorCount }}
                 onViewProfile={() =>
                   handlers.onOpenProfile(displayName, DEFAULT_AVATAR_COLOR)
                 }
@@ -215,6 +228,9 @@ export function MePanel() {
                   } else if (key === 'visitors') {
                     setDrawerOpen(false);
                     setVisitorsOpen(true);
+                  } else if (key === 'reel') {
+                    setDrawerOpen(false);
+                    setReelsOpen(true);
                   } else if (key === 'clan') {
                     setDrawerOpen(false);
                     useClanOverlayStore.getState().open({ kind: 'home' });

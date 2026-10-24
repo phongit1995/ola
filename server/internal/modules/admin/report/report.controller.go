@@ -34,6 +34,7 @@ var reportTargetTypes = map[string]bool{
 	constants.ReportTargetStoryComment: true,
 	constants.ReportTargetMessage:      true,
 	constants.ReportTargetRoomMessage:  true,
+	constants.ReportTargetReel:         true,
 }
 
 // ListReports godoc
@@ -42,7 +43,7 @@ var reportTargetTypes = map[string]bool{
 // @Produce      json
 // @Security     BearerAuth
 // @Param        status         query string false "pending, resolved, dismissed"
-// @Param        targetType     query string false "account, post, comment, story_comment, message, room_message"
+// @Param        targetType     query string false "account, post, comment, story_comment, message, room_message, reel"
 // @Param        reportedUserId query string false "Filter by reported user id"
 // @Param        q              query string false "Search reporter/reported username"
 // @Param        limit          query int    false "Page size (default 20, max 100)"

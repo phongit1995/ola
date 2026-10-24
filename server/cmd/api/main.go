@@ -4,6 +4,7 @@ import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/kenchest"
+	"ola-chat-server/internal/modules/reel"
 	"ola-chat-server/internal/modules/story"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
@@ -77,6 +78,14 @@ func main() {
 	}); err != nil {
 		log.Fatalf("❌ Failed to start story crawler: %v", err)
 	}
+	var reelProcessor *reel.Processor
+	if err := c.Invoke(func(cleaner *reel.Cleaner, processor *reel.Processor) {
+		cleaner.Start(rootCtx)
+		processor.Start(rootCtx)
+		reelProcessor = processor
+	}); err != nil {
+		log.Fatalf("❌ Failed to start reel cleaner: %v", err)
+	}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -133,6 +142,7 @@ func main() {
 		if err := srvCtx.srv.Shutdown(ctx); err != nil {
 			log.Fatalf("❌ Server shutdown error: %v", err)
 		}
+		reelProcessor.Wait(ctx)
 
 		log.Println("✅ API Service shutdown successfully!")
 	}

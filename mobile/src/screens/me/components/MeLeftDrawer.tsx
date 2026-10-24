@@ -7,6 +7,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 
 const personalIcon = require('@assets/icons/me/ic_drawer_personal.png');
+const reelIcon = require('@assets/icons/me/ic_drawer_reel.png');
 const marriageIcon = require('@assets/icons/me/header/ic_header_marriage.png');
 const favoriteIcon = require('@assets/icons/me/header/ic_header_favorite.png');
 const visitorsIcon = require('@assets/icons/me/header/ic_header_visitors.png');
@@ -19,11 +20,13 @@ const clanIcon = require('@assets/icons/me/header/ic_header_clan.png');
 // const publicIcon = require('@assets/icons/me/ic_indicate_public.png');
 
 const WIDTH = 240;
+const BADGE_MAX = 99;
 
 interface MeLeftDrawerProps {
   displayName: string;
   avatarUrl?: string;
   coverUrl?: string;
+  badges?: Partial<Record<string, number>>;
   onClose: () => void;
   onSelect: (key: string) => void;
   onViewProfile: () => void;
@@ -34,6 +37,7 @@ export function MeLeftDrawer({
   displayName,
   avatarUrl,
   coverUrl,
+  badges,
   onClose,
   onSelect,
   onViewProfile,
@@ -61,6 +65,7 @@ export function MeLeftDrawer({
 
   const items = [
     { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal') },
+    { key: 'reel', icon: reelIcon, label: t('reel.trayTitle') },
     { key: 'marriage', icon: marriageIcon, label: t('me.drawerMarriage') },
     { key: 'likes', icon: favoriteIcon, label: t('me.drawerLikes') },
     { key: 'visitors', icon: visitorsIcon, label: t('me.tabVisitors') },
@@ -108,29 +113,42 @@ export function MeLeftDrawer({
         </Pressable>
 
         <ScrollView className="flex-1">
-          {items.map((item) => (
-            <Pressable
-              key={item.key}
-              onPress={() => onSelect(item.key)}
-              className="h-12 flex-row items-center gap-2 px-2 active:bg-ola-primary-light"
-            >
-              <View className="h-8 w-8 items-center justify-center">
-                <Image
-                  source={item.icon}
-                  style={{
-                    width: item.opticalSize ?? 24,
-                    height: item.opticalSize ?? 24,
-                    transform: [{ translateY: item.opticalOffsetY ?? 0 }],
-                    opacity: 0.26,
-                  }}
-                  resizeMode="contain"
-                />
-              </View>
-              <Text numberOfLines={1} className="flex-1 text-base text-ola-ink">
-                {item.label}
-              </Text>
-            </Pressable>
-          ))}
+          {items.map((item) => {
+            const badge = badges?.[item.key] ?? 0;
+            return (
+              <Pressable
+                key={item.key}
+                onPress={() => onSelect(item.key)}
+                className="h-12 flex-row items-center gap-2 px-2 active:bg-ola-primary-light"
+              >
+                <View className="h-8 w-8 items-center justify-center">
+                  <Image
+                    source={item.icon}
+                    style={{
+                      width: item.opticalSize ?? 24,
+                      height: item.opticalSize ?? 24,
+                      transform: [{ translateY: item.opticalOffsetY ?? 0 }],
+                      opacity: 0.26,
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+                <Text numberOfLines={1} className="flex-1 text-base text-ola-ink">
+                  {item.label}
+                </Text>
+                {badge > 0 && (
+                  <View
+                    className="h-5 items-center justify-center rounded-full bg-ola-accent px-1.5"
+                    style={{ minWidth: 20 }}
+                  >
+                    <Text className="text-xs font-semibold" style={{ color: '#ffffff' }}>
+                      {badge > BADGE_MAX ? `${BADGE_MAX}+` : badge}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
         </ScrollView>
 
         <Pressable

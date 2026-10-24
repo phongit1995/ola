@@ -1,5 +1,8 @@
 import type {
   ChatBotType,
+  ReelOverlay,
+  ReelType,
+  ReelVisibility,
   ReportReason,
   ReportTargetType,
   Story,
@@ -739,6 +742,53 @@ export interface MeListParams {
   hasCheckin?: boolean
   sortBy?: string
   sortDir?: string
+}
+
+export type AdminReelState = 'live' | 'processing' | 'failed' | 'expired' | 'deleted'
+
+export interface AdminReel {
+  id: string
+  type: ReelType
+  background?: string
+  overlays: ReelOverlay[]
+  mediaUrl?: string
+  thumbUrl?: string
+  width?: number
+  height?: number
+  duration?: number
+  size?: number
+  mimeType?: string
+  visibility: ReelVisibility
+  status: string
+  state: AdminReelState
+  enabled: boolean
+  mediaPurged: boolean
+  viewerCount: number | null
+  reportCount: number
+  pendingReportCount: number
+  author?: MeAuthor
+  createdAt: string
+  expiresAt: string
+  deletedAt?: string
+}
+
+export interface AdminReelListParams {
+  q?: string
+  authorId?: string
+  type?: ReelType
+  visibility?: ReelVisibility
+  state?: AdminReelState
+  enabled?: boolean
+  hasPendingReports?: boolean
+  sortBy?: string
+  sortDir?: string
+  limit?: number
+  offset?: number
+}
+
+export interface AdminReelViewer {
+  user: MeAuthor
+  viewedAt: string
 }
 
 export type EggCategoryType = 'nothing' | 'vip_icon' | 'ken' | 'vip_days'
@@ -2210,9 +2260,11 @@ export interface ReportSnapshot {
   text?: string
   imageUrls?: string[]
   audioUrl?: string
+  videoUrl?: string
   fileUrl?: string
   sticker?: string
   messageType?: string
+  reelType?: string
   sentAt?: string
 }
 

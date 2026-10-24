@@ -17,6 +17,7 @@ export type * from './notification.type';
 export type * from './pen.type';
 export type * from './penHistory.type';
 export type * from './presence.type';
+export type * from './reel.type';
 export type * from './room.type';
 export type * from './roomChat.type';
 export type * from './roomFeed.type';

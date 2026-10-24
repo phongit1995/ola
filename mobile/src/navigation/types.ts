@@ -43,6 +43,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.EggGame]: undefined;
   [ROOT_ROUTES.MeVisitors]: undefined;
   [ROOT_ROUTES.MeLikedPosts]: undefined;
+  [ROOT_ROUTES.ReelGallery]: undefined;
   [ROOT_ROUTES.MeNotifications]: undefined;
   [ROOT_ROUTES.Marriage]: undefined;
   [ROOT_ROUTES.ClanHome]: undefined;

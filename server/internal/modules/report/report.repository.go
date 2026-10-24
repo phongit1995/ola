@@ -61,6 +61,34 @@ func (r *Repository) FindMeComment(id uuid.UUID) (*models.MeComment, error) {
 	return &comment, nil
 }
 
+func (r *Repository) FindReel(id uuid.UUID) (*models.Reel, error) {
+	var reel models.Reel
+	if err := r.db.First(&reel, "id = ? AND enabled AND status NOT IN ?", id, constants.ReelMediaGoneStatuses).Error; err != nil {
+		return nil, err
+	}
+	return &reel, nil
+}
+
+func (r *Repository) CreateWhileReelKept(report *models.Report, reelID uuid.UUID) error {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var kept []uuid.UUID
+		if err := tx.Raw(
+			"SELECT id FROM reels WHERE id = ? AND deleted_at IS NULL AND enabled AND status NOT IN ? FOR SHARE",
+			reelID, constants.ReelMediaGoneStatuses,
+		).Scan(&kept).Error; err != nil {
+			return err
+		}
+		if len(kept) == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return tx.Create(report).Error
+	})
+	if apperr.IsUniqueViolation(err) {
+		return errDuplicateReport
+	}
+	return err
+}
+
 func (r *Repository) FindStoryComment(id uuid.UUID) (*models.StoryComment, error) {
 	var comment models.StoryComment
 	if err := r.db.First(&comment, "id = ?", id).Error; err != nil {

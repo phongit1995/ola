@@ -18,6 +18,7 @@ import {
 } from '@ola/shared/lib';
 
 const HEIC_CONVERT_QUALITY = 0.92;
+const THUMBNAIL_JPEG_QUALITY = 0.8;
 
 function loadImageFromFile(file: Blob): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file);
@@ -145,4 +146,21 @@ export async function compressImageForUpload(file: File): Promise<File> {
 
 export function compressImagesForUpload(files: File[]): Promise<File[]> {
   return Promise.all(files.map((file) => compressImageForUpload(file)));
+}
+
+export async function createJpegThumbnail(
+  file: File,
+  longest: number
+): Promise<File> {
+  const source = isHeicImage(file) ? await convertHeicToJpeg(file) : file;
+  const image = await loadImageFromFile(source);
+  const blob = await canvasToBlob(
+    drawToCanvas(image, longest),
+    'image/jpeg',
+    THUMBNAIL_JPEG_QUALITY
+  );
+  if (blob == null) throw new Error('thumbnail failed');
+  return new File([blob], withUploadExtension(source.name, 'jpg'), {
+    type: 'image/jpeg',
+  });
 }

@@ -127,7 +127,7 @@ export function DashboardPage() {
         <Col xs={12} sm={8} lg={4}>
           <Card>
             <Statistic groupSeparator="." title="Tổng bài đăng" value={data?.totals.posts ?? 0} />
-            <Button type="link" style={{ paddingLeft: 0 }} onClick={() => navigate('/me')}>
+            <Button type="link" style={{ paddingLeft: 0 }} onClick={() => navigate('/posts')}>
               Quản lý <ArrowRightOutlined />
             </Button>
           </Card>

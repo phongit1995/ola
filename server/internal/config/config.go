@@ -74,6 +74,9 @@ type Config struct {
 	S3UseSSL    bool   `env:"S3_USE_SSL" envDefault:"false"`
 	S3PublicURL string `env:"S3_PUBLIC_URL" envDefault:""`
 
+	FFmpegPath  string `env:"FFMPEG_PATH" envDefault:""`
+	FFprobePath string `env:"FFPROBE_PATH" envDefault:"ffprobe"`
+
 	ResendAPIKey string `env:"RESEND_API_KEY" envDefault:"re_Qrsr5SLt_HR2pmoKUyENNmsMWjjMzyE6o"`
 	MailFrom     string `env:"MAIL_FROM" envDefault:"Ola Chat <noreply@olachat.net>"`
 

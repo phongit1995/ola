@@ -1849,6 +1849,74 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-video (6.19.3):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - react-native-video/Video (= 6.19.3)
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-video/Fabric (6.19.3):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-video/Video (6.19.3):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - react-native-video/Fabric
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - react-native-webview (14.0.1):
     - hermes-engine
     - RCTRequired
@@ -2934,6 +3002,7 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
   - react-native-ota-hot-update (from `../../node_modules/react-native-ota-hot-update`)
   - react-native-safe-area-context (from `../../node_modules/react-native-safe-area-context`)
+  - react-native-video (from `../../node_modules/react-native-video`)
   - react-native-webview (from `../../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../../node_modules/react-native/ReactCommon/react/networking`)
@@ -3160,6 +3229,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-ota-hot-update"
   react-native-safe-area-context:
     :path: "../../node_modules/react-native-safe-area-context"
+  react-native-video:
+    :path: "../../node_modules/react-native-video"
   react-native-webview:
     :path: "../../node_modules/react-native-webview"
   React-NativeModulesApple:
@@ -3364,6 +3435,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: afde752bbbafa8accf42ec4e8c82a91f3624922f
   react-native-ota-hot-update: 2adeb559aa86d2dc0137a1a75dd6a1c8fff38f7a
   react-native-safe-area-context: caf82477cea4a21a673f089a246f35bc476d915e
+  react-native-video: 7ffb77da9c3c67f1aceec7126e9b277601a075fd
   react-native-webview: 536ae64a11703208850c306e9fa013ee87205767
   React-NativeModulesApple: adb1dd8361dff80e9f6652fb3fdbf033cfbe2a89
   React-networking: cd4507ec02cd4cbc432eed014ef5c49a874d8d43

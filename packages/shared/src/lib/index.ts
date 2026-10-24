@@ -37,3 +37,4 @@ export * from './callFormat';
 export * from './callStatus';
 export * from './color';
 export * from './story';
+export * from './reel';

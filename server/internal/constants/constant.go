@@ -408,6 +408,7 @@ const (
 	ReportTargetStoryComment = "story_comment"
 	ReportTargetMessage      = "message"
 	ReportTargetRoomMessage  = "room_message"
+	ReportTargetReel         = "reel"
 
 	ReportReasonSpam       = "spam"
 	ReportReasonSensitive  = "sensitive"
@@ -423,6 +424,123 @@ const (
 	ReportTargetIDMaxLen  = 64
 	ReportHandlerNoteMax  = 1000
 	ErrorCodeReportExists = "REPORT_ALREADY_SUBMITTED"
+)
+
+const (
+	ReelTypeImage = "image"
+	ReelTypeVideo = "video"
+	ReelTypeText  = "text"
+
+	ReelVisibilityPublic = "public"
+	ReelVisibilityFriend = "friend"
+
+	ReelOverlayStylePlain = "plain"
+	ReelOverlayStyleSolid = "solid"
+	ReelOverlayStyleSoft  = "soft"
+
+	ReelAlignLeft   = "left"
+	ReelAlignCenter = "center"
+	ReelAlignRight  = "right"
+
+	ReelStatusReady      = "ready"
+	ReelStatusProcessing = "processing"
+	ReelStatusFailed     = "failed"
+	ReelStatusPurging    = "purging"
+	ReelStatusPurged     = "purged"
+
+	ReelRemuxVideoCodec         = "h264"
+	ReelRemuxAudioCodec         = "aac"
+	ReelProbeTimeout            = 30 * time.Second
+	ReelProbeTempPattern        = "reel-probe-*"
+	ReelVideoSourceExtension    = ".source"
+	ReelVideoSourceContentType  = "application/octet-stream"
+	ReelSourceCleanupBatchSize  = 100
+	ReelTonemapFilter           = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p"
+	ReelProbeRotationQuarterDeg = 90
+
+	ReelTranscodeMaxEdge       = 1280
+	ReelTranscodeMaxBitrate    = 5_000_000
+	ReelTranscodeThreads       = 2
+	ReelTranscodePreset        = "veryfast"
+	ReelTranscodeCRF           = 23
+	ReelTranscodeAudioBitrate  = "128k"
+	ReelTranscodeTimeout       = 3 * time.Minute
+	ReelTranscodePollInterval  = 15 * time.Second
+	ReelTranscodeStaleAfter    = 10 * time.Minute
+	ReelTranscodeKillWait      = time.Second
+	ReelTranscodeMaxAttempts   = 3
+	ReelPosterMaxEdge          = 480
+	ReelPosterSeekSeconds      = "0.1"
+	ReelTranscodeTempPattern   = "reel-video-*"
+	ReelTranscodeLogTailBytes  = 2000
+	ReelTranscodeSourceName    = "source"
+	ReelTranscodeOutputName    = "output.mp4"
+	ReelTranscodePosterName    = "poster.jpg"
+	ReelPosterContentType      = "image/jpeg"
+	ReelPosterExtension        = ".jpg"
+	ReelLifetime               = 24 * time.Hour
+	MaxReelImages              = 3
+	MaxReelOverlays            = 5
+	MaxReelOverlayRunes        = 200
+	MaxReelOverlayIDLen        = 64
+	MaxReelVideoUploadSize     = 45 * 1024 * 1024
+	MaxReelThumbUploadSize     = 300 * 1024
+	MaxReelVideoSeconds        = 20
+	ReelVideoDurationTolerance = 0.5
+	MaxReelsPerDay             = 30
+	MaxReelSeenBatch           = 50
+	ReelTrayPageSize           = 20
+	ReelViewersDefaultPageSize = 50
+	ReelViewersMaxPageSize     = 100
+	ReelOverlayWidthMin        = 0.2
+	ReelOverlayWidthMax        = 1.0
+	ReelOverlayScaleMin        = 0.3
+	ReelOverlayScaleMax        = 4.0
+	ReelOverlayRotationMax     = 180.0
+	ReelQuotaUTCOffset         = 7 * time.Hour
+	ReelQuotaDayLayout         = "20060102"
+	ReelSeenTTL                = 25 * time.Hour
+	ReelQuotaTTL               = 48 * time.Hour
+	ReelCleanupInterval        = 10 * time.Minute
+	ReelCleanupStartDelay      = time.Minute
+	ReelCleanupLockTTL         = 9 * time.Minute
+	ReelCleanupBatchSize       = 200
+	ReelCleanupMaxBatches      = 10
+	ReelObjectDeleteTimeout    = 5 * time.Second
+	UploadFolderReels          = "reels"
+	ReelVideoContentType       = "video/mp4"
+	ReelVideoExtension         = ".mp4"
+	CacheKeyReelSeen           = "REEL:SEEN:%s"
+	CacheKeyReelViewers        = "REEL:VIEWERS:%s"
+	CacheKeyReelQuota          = "REEL:QUOTA:%s:%s"
+	CacheKeyReelCleanupLock    = "REEL:CLEANUP:LOCK"
+	ErrorCodeReelQuotaExceeded = "REEL_QUOTA_EXCEEDED"
+	ErrorCodeReelVideoTooLong  = "REEL_VIDEO_TOO_LONG"
+	ErrorCodeReelVideoCodec    = "REEL_VIDEO_UNSUPPORTED_CODEC"
+	ErrorCodeReelVideoTooLarge = "REEL_VIDEO_TOO_LARGE"
+	ErrorCodeReelVideoInvalid  = "REEL_VIDEO_INVALID"
+	ErrorCodeReelVideoNotMP4   = "REEL_VIDEO_NOT_MP4"
+)
+
+var AllowedReelVideoCodecs = []string{"avc1", "avc3"}
+
+var ReelTranscodeRetryDelays = []time.Duration{time.Minute, 5 * time.Minute, 15 * time.Minute}
+
+var ReelRemuxContainers = []string{"mov", "mp4"}
+
+var ReelHDRTransfers = []string{"smpte2084", "arib-std-b67"}
+
+var ReelMediaGoneStatuses = []string{ReelStatusPurging, ReelStatusPurged}
+
+const (
+	AdminReelStateLive       = "live"
+	AdminReelStateProcessing = "processing"
+	AdminReelStateFailed     = "failed"
+	AdminReelStateExpired    = "expired"
+	AdminReelStateDeleted    = "deleted"
+	AdminReelSortReportCount = "reportCount"
+	AdminReelDefaultPageSize = 20
+	AdminReelMaxPageSize     = 100
 )
 
 const (

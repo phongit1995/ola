@@ -42,7 +42,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Ola Me cần truy cập micro để bạn ghi tin nhắn thoại và thực hiện cuộc gọi.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Ola Me cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
+	<string>Ola Me cần truy cập thư viện ảnh để bạn gửi ảnh trong chat và đăng ảnh, video lên reel.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Ola Me cần quyền lưu ảnh để bạn tải ảnh về thư viện ảnh.</string>
 	<key>RCTNewArchEnabled</key>

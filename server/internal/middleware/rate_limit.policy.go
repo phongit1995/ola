@@ -31,6 +31,9 @@ var (
 	PolicyStoryComment     = RateLimitPolicy{Name: "story_comment", Limit: perWindow(6, time.Minute)}
 	PolicyStoryCommentLike = RateLimitPolicy{Name: "story_comment_like", Limit: perWindow(30, time.Minute)}
 
+	PolicyReelCreate = RateLimitPolicy{Name: "reel_create", Limit: perWindow(6, time.Minute)}
+	PolicyReelSeen   = RateLimitPolicy{Name: "reel_seen", Limit: perWindow(60, time.Minute)}
+
 	PolicyEmailVerifySend = RateLimitPolicy{Name: "email_verify_send", Limit: perWindow(5, time.Hour)}
 
 	PolicyForgotPasswordSend    = RateLimitPolicy{Name: "forgot_password_send", Limit: perWindow(5, time.Hour)}
