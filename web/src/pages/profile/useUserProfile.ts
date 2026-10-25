@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { MeService, UserService } from '@services';
 import {
   activeVipTypeId,
+  appendUniquePosts,
   compressImagesForUpload,
   createDateFormatter,
   createTimeFormatter,
+  hasMorePostPages,
   imageUploadErrorText,
   toast,
 } from '@lib';
@@ -60,6 +62,8 @@ export function useUserProfile(
   const [secondary, setSecondary] = useState<ProfileSecondary>(EMPTY_SECONDARY);
   const canViewInterestedRef = useRef(true);
   const recordedViewIdRef = useRef('');
+  const postsGenerationRef = useRef(0);
+  const loadingMorePostsRef = useRef(false);
 
   useEffect(() => {
     recordedViewIdRef.current = '';
@@ -114,6 +118,7 @@ export function useUserProfile(
 
   const loadSecondary = useCallback(
     async (id: string) => {
+      postsGenerationRef.current += 1;
       setSecondary((s) => ({ ...s, loading: true }));
       const canView = canViewInterestedRef.current;
       const [postsResult, followingResult] = await Promise.all([
@@ -129,6 +134,8 @@ export function useUserProfile(
         following: mapFollowing(followingResult?.users ?? []),
         posts: mapPosts(postsResult?.items ?? [], formatTime),
         loading: false,
+        hasMorePosts: postsResult != null && hasMorePostPages(postsResult),
+        loadingMorePosts: false,
       });
     },
     [formatTime]
@@ -142,6 +149,28 @@ export function useUserProfile(
   useEffect(() => {
     postsRef.current = secondary.posts;
   }, [secondary.posts]);
+
+  const loadMorePosts = useCallback(async () => {
+    if (userId === '' || loadingMorePostsRef.current) return;
+    loadingMorePostsRef.current = true;
+    const generation = postsGenerationRef.current;
+    setSecondary((s) => ({ ...s, loadingMorePosts: true }));
+    const result = await MeService.byUser(userId, {
+      limit: PROFILE_POSTS_LIMIT,
+      offset: postsRef.current.length,
+    }).catch(() => null);
+    loadingMorePostsRef.current = false;
+    if (generation !== postsGenerationRef.current) return;
+    setSecondary((s) => ({
+      ...s,
+      posts:
+        result == null
+          ? s.posts
+          : appendUniquePosts(s.posts, mapPosts(result.items, formatTime)),
+      hasMorePosts: result == null ? s.hasMorePosts : hasMorePostPages(result),
+      loadingMorePosts: false,
+    }));
+  }, [userId, formatTime]);
 
   const setPost = useCallback((id: string, next: (post: MePost) => MePost) => {
     setSecondary((s) => ({
@@ -279,6 +308,7 @@ export function useUserProfile(
     editPost,
     deletePost,
     togglePin,
+    loadMorePosts,
   };
 
   useEffect(() => {

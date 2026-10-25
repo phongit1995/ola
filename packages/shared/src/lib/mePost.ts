@@ -1,4 +1,4 @@
-import type { Post, PostAudio } from '../types/api/me.type';
+import type { Post, PostAudio, PostListResult } from '../types/api/me.type';
 import type { MeAudioDraft } from '../types/client/feed.type';
 
 export function hasMePostBody(
@@ -29,4 +29,13 @@ export function meAudioDraftFromPost(
 
 export function shouldCleanupRejectedPostUpload(status: number): boolean {
   return status === 0 || status >= 400;
+}
+
+export function appendUniquePosts<T extends { id: string }>(current: T[], incoming: T[]): T[] {
+  const loaded = new Set(current.map((post) => post.id));
+  return [...current, ...incoming.filter((post) => !loaded.has(post.id))];
+}
+
+export function hasMorePostPages(page: PostListResult): boolean {
+  return page.items.length > 0 && page.offset + page.items.length < page.total;
 }

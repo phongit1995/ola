@@ -4,7 +4,12 @@ import { MeService, RelationshipService, UserService } from '@ola/shared/service
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useMeLocalStore } from '@store/meLocalStore';
-import { activeVipTypeId, imageUploadErrorText } from '@ola/shared/lib';
+import {
+  activeVipTypeId,
+  appendUniquePosts,
+  hasMorePostPages,
+  imageUploadErrorText,
+} from '@ola/shared/lib';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
 import {
@@ -26,6 +31,8 @@ export function useProfileActions(username: string) {
   const [notFound, setNotFound] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [postsHasMore, setPostsHasMore] = useState(false);
+  const [loadingMorePosts, setLoadingMorePosts] = useState(false);
   const [followingUsers, setFollowingUsers] = useState<FollowUser[]>([]);
   const [following, setFollowing] = useState(false);
   const [fans, setFans] = useState(0);
@@ -34,10 +41,13 @@ export function useProfileActions(username: string) {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const recordedViewIdRef = useRef('');
+  const postsGenerationRef = useRef(0);
+  const loadingMorePostsRef = useRef(false);
 
   useEffect(() => {
     let active = true;
     recordedViewIdRef.current = '';
+    postsGenerationRef.current += 1;
     setLoading(true);
     (async () => {
       try {
@@ -75,6 +85,7 @@ export function useProfileActions(username: string) {
         ]);
         if (!active) return;
         setPosts(postsResult?.items ?? []);
+        setPostsHasMore(postsResult != null && hasMorePostPages(postsResult));
         setFollowingUsers(followingResult?.users ?? []);
         setPostsLoading(false);
       } catch {
@@ -135,11 +146,31 @@ export function useProfileActions(username: string) {
 
   const reloadPosts = useCallback(async () => {
     if (profile == null) return;
+    postsGenerationRef.current += 1;
+    const generation = postsGenerationRef.current;
     const result = await MeService.byUser(profile.id, { limit: POSTS_PAGE_SIZE }).catch(
       () => null,
     );
-    if (result != null) setPosts(result.items);
+    if (result == null || generation !== postsGenerationRef.current) return;
+    setPosts(result.items);
+    setPostsHasMore(hasMorePostPages(result));
   }, [profile]);
+
+  const loadMorePosts = useCallback(async () => {
+    if (profile == null || !postsHasMore || loadingMorePostsRef.current) return;
+    loadingMorePostsRef.current = true;
+    const generation = postsGenerationRef.current;
+    setLoadingMorePosts(true);
+    const result = await MeService.byUser(profile.id, {
+      limit: POSTS_PAGE_SIZE,
+      offset: posts.length,
+    }).catch(() => null);
+    loadingMorePostsRef.current = false;
+    setLoadingMorePosts(false);
+    if (result == null || generation !== postsGenerationRef.current) return;
+    setPosts(current => appendUniquePosts(current, result.items));
+    setPostsHasMore(hasMorePostPages(result));
+  }, [profile, postsHasMore, posts.length]);
 
   function runAndReload(op: Promise<unknown>) {
     setBusy(true);
@@ -223,6 +254,7 @@ export function useProfileActions(username: string) {
     posts,
     setPosts,
     postsLoading,
+    loadingMorePosts,
     followingUsers,
     following,
     fans,
@@ -233,6 +265,7 @@ export function useProfileActions(username: string) {
     toggleFollow,
     kiss,
     reloadPosts,
+    loadMorePosts,
     friendAction,
     blockAction,
     changeCover,

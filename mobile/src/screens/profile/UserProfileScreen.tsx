@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -12,6 +21,7 @@ import { MediaViewerModal } from '@components/ui/MediaViewer';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
+import { POSTS_END_DISTANCE_PX } from './constants';
 import type { ProfileViewerState } from './types';
 import { useProfileActions } from './useProfileActions';
 import { MeComposerModal } from '@screens/me/components/MeComposerModal';
@@ -52,6 +62,7 @@ export function UserProfileScreen({
     posts,
     setPosts,
     postsLoading,
+    loadingMorePosts,
     followingUsers,
     following,
     fans,
@@ -62,6 +73,7 @@ export function UserProfileScreen({
     toggleFollow,
     kiss,
     reloadPosts,
+    loadMorePosts,
     friendAction,
     blockAction,
     changeCover,
@@ -89,6 +101,12 @@ export function UserProfileScreen({
 
   const openFriend = (friend: FollowUser) =>
     onOpenProfile(friend.username, colorForName(friend.username));
+
+  function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceToEnd = contentSize.height - contentOffset.y - layoutMeasurement.height;
+    if (distanceToEnd < POSTS_END_DISTANCE_PX) void loadMorePosts();
+  }
 
   const profileMenuOptions: ListOption[] = isSelf
     ? [
@@ -140,7 +158,7 @@ export function UserProfileScreen({
           {t('profile.notFound')}
         </Text>
       ) : (
-        <ScrollView className="flex-1">
+        <ScrollView className="flex-1" onScroll={handleScroll} scrollEventThrottle={64}>
           <ProfileCard
             profile={profile}
             nick={nick}
@@ -175,6 +193,7 @@ export function UserProfileScreen({
             posts={posts}
             setPosts={setPosts}
             postsLoading={postsLoading}
+            loadingMore={loadingMorePosts}
             language={language}
             onOpenProfile={onOpenProfile}
             openViewer={openViewer}

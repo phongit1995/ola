@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import { colorForName } from '@lib';
@@ -25,6 +25,8 @@ import type {
   ProfileSecondary,
   UserProfile,
 } from './types';
+
+const POSTS_PREFETCH_MARGIN = '320px';
 
 interface ProfilePageProps {
   profile: UserProfile;
@@ -58,6 +60,25 @@ export function ProfilePage({
   const [composerOpen, setComposerOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const postsEndRef = useRef<HTMLDivElement>(null);
+  const { hasMorePosts, loadingMorePosts } = secondary;
+  const loadMorePosts = postActions.loadMorePosts;
+  const loadedPostCount = secondary.posts.length;
+
+  useEffect(() => {
+    const end = postsEndRef.current;
+    const root = scrollRef.current;
+    if (end == null || root == null || !hasMorePosts) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void loadMorePosts();
+      },
+      { root, rootMargin: POSTS_PREFETCH_MARGIN }
+    );
+    observer.observe(end);
+    return () => observer.disconnect();
+  }, [hasMorePosts, loadMorePosts, loadedPostCount]);
 
   const posts = secondary.posts.filter(
     (post) => !hiddenPostIds.includes(post.id)
@@ -79,7 +100,7 @@ export function ProfilePage({
     <FullScreenOverlay z={z}>
       <ScreenHeader title={profile.nick} onBack={onClose} />
 
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <ProfileCard
           userId={userId}
           profile={profile}
@@ -131,6 +152,11 @@ export function ProfilePage({
             )
           }
         </MePostInteractions>
+        {hasMorePosts && (
+          <div ref={postsEndRef} className="flex justify-center py-4">
+            {loadingMorePosts && <Spinner size={20} />}
+          </div>
+        )}
       </div>
 
       {!profile.isSelf && (
