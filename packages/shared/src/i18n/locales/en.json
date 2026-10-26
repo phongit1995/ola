@@ -375,6 +375,8 @@
     "actionReport": "Report",
     "copied": "Copied",
     "actionSelectText": "Select text",
+    "deleteErrExpired": "You can only delete messages sent within the last 2 hours",
+    "deleteErrFailed": "Couldn't delete the message, please try again",
     "copyAll": "Copy all",
     "actionSave": "Save",
     "replyingTo": "Replying to @{{name}}",

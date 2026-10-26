@@ -8,17 +8,20 @@ import (
 )
 
 var (
-	ErrFileTooLarge        = errors.New("file too large")
-	ErrRateLimit           = errors.New("upload rate limit exceeded")
-	ErrMessageInProgress   = errors.New("message upload already in progress")
-	ErrMediaRequiresUpload = errors.New("media messages must use an upload endpoint")
-	ErrNotMember           = errors.New("user is not a member of this conversation")
-	ErrUnsupportedImage    = errors.New("unsupported image type")
-	ErrDecodeImage         = errors.New("failed to decode image")
-	ErrInvalidMetadata     = errors.New("invalid message metadata")
-	ErrMaxReactions        = errors.New("max reaction types per user reached")
-	ErrReplyNotFound       = errors.New("replied message not found")
+	ErrFileTooLarge         = errors.New("file too large")
+	ErrRateLimit            = errors.New("upload rate limit exceeded")
+	ErrMessageInProgress    = errors.New("message upload already in progress")
+	ErrMediaRequiresUpload  = errors.New("media messages must use an upload endpoint")
+	ErrNotMember            = errors.New("user is not a member of this conversation")
+	ErrUnsupportedImage     = errors.New("unsupported image type")
+	ErrDecodeImage          = errors.New("failed to decode image")
+	ErrInvalidMetadata      = errors.New("invalid message metadata")
+	ErrMaxReactions         = errors.New("max reaction types per user reached")
+	ErrReplyNotFound        = errors.New("replied message not found")
+	ErrMessageDeleteExpired = errors.New("message is too old to delete")
 )
+
+const ErrorCodeMessageDeleteExpired = "MESSAGE_DELETE_EXPIRED"
 
 func httpStatusForError(err error) int {
 	switch {
@@ -28,7 +31,7 @@ func httpStatusForError(err error) int {
 		return http.StatusTooManyRequests
 	case errors.Is(err, ErrMessageInProgress):
 		return http.StatusConflict
-	case errors.Is(err, ErrNotMember), errors.Is(err, conversation.ErrBlocked), errors.Is(err, conversation.ErrNotAllowedToMessage), errors.Is(err, conversation.ErrDirectRecipientUnavailable):
+	case errors.Is(err, ErrNotMember), errors.Is(err, ErrMessageDeleteExpired), errors.Is(err, conversation.ErrBlocked), errors.Is(err, conversation.ErrNotAllowedToMessage), errors.Is(err, conversation.ErrDirectRecipientUnavailable):
 		return http.StatusForbidden
 	case errors.Is(err, ErrUnsupportedImage), errors.Is(err, media.ErrUnsupportedAudio), errors.Is(err, media.ErrInvalidAudio), errors.Is(err, ErrDecodeImage), errors.Is(err, ErrInvalidMetadata), errors.Is(err, ErrMediaRequiresUpload), errors.Is(err, ErrMaxReactions), errors.Is(err, ErrReplyNotFound):
 		return http.StatusBadRequest
@@ -44,6 +47,8 @@ func errorCodeForError(err error) string {
 		return conversation.ErrorCodeMessageFriendsOnly
 	case errors.Is(err, conversation.ErrDirectRecipientUnavailable):
 		return conversation.ErrorCodeDirectRecipientUnavailable
+	case errors.Is(err, ErrMessageDeleteExpired):
+		return ErrorCodeMessageDeleteExpired
 	default:
 		return ""
 	}

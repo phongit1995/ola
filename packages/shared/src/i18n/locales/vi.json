@@ -375,6 +375,8 @@
     "actionReport": "Báo cáo",
     "copied": "Đã sao chép",
     "actionSelectText": "Chọn văn bản",
+    "deleteErrExpired": "Chỉ xoá được tin nhắn gửi trong vòng 2 giờ",
+    "deleteErrFailed": "Không xoá được tin nhắn, vui lòng thử lại",
     "copyAll": "Sao chép tất cả",
     "actionSave": "Lưu",
     "replyingTo": "Đang trả lời @{{name}}",

@@ -15,6 +15,7 @@ import {
   formatLastActive,
   isBirthdayToday,
   isVipActive,
+  isWithinMessageDeleteWindow,
   kulImageForText,
   parseMessageMetadata,
 } from '@lib';
@@ -100,7 +101,7 @@ export function chatMessageAbilities(
     canReply: !isOwn && !blocked && message.kind !== 'call',
     canCopy: isCopyableText(message),
     canEdit: isOwn && message.kind === 'text',
-    canDelete: isOwn,
+    canDelete: isOwn && isWithinMessageDeleteWindow(message.createdAt),
     canReport: !isOwn && message.kind !== 'call',
   };
 }

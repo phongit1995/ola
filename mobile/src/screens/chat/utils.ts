@@ -12,6 +12,7 @@ import {
   formatLastActive,
   isBirthdayToday,
   isVipActive,
+  isWithinMessageDeleteWindow,
 } from '@ola/shared/lib';
 import type { Contact } from './types';
 
@@ -41,7 +42,7 @@ export function chatMessageAbilities(
     canReply: !isOwn && !blocked && message.type !== 'call',
     canCopy: isCopyableMessageText(message),
     canEdit: isOwn && message.type === MESSAGE_TYPE.text,
-    canDelete: isOwn,
+    canDelete: isOwn && isWithinMessageDeleteWindow(message.createdAt),
     canReport: !isOwn && message.type !== 'call',
   };
 }

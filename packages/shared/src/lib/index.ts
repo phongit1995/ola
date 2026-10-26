@@ -9,6 +9,7 @@ export * from './secret';
 export * from './datetime';
 export * from './vip';
 export * from './messageMetadata';
+export * from './messageDelete';
 export * from './postVisibility';
 export * from './roomVisibility';
 export * from './duration';

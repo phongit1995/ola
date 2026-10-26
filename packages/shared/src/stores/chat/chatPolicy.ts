@@ -3,6 +3,14 @@ import { CHAT_POLICY_ERROR_CODES } from '../../constants/chat';
 import { toApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
 
+export function showMessageDeleteError(error: unknown): void {
+  const expired =
+    toApiError(error).code === CHAT_POLICY_ERROR_CODES.deleteExpired;
+  toast.error(
+    i18n.t(expired ? 'chat.deleteErrExpired' : 'chat.deleteErrFailed')
+  );
+}
+
 export function showMessagingPolicyError(error: unknown): boolean {
   const apiError = toApiError(error);
   if (

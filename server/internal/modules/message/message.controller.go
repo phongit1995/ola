@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -421,6 +422,9 @@ func (ctrl *Controller) DeleteMessage(c *gin.Context) (interface{}, error) {
 
 	if err := ctrl.service.DeleteMessage(userID, conversationID, messageID); err != nil {
 		ctrl.logger.Warnw("Failed to delete message", "error", err)
+		if errors.Is(err, ErrMessageDeleteExpired) {
+			return nil, ctrl.messageHTTPError(err, "failed to delete message", "Failed to delete message")
+		}
 		return nil, utils.ServiceError(err)
 	}
 

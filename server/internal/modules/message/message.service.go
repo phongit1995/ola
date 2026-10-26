@@ -1407,7 +1407,7 @@ func (s *Service) DeleteMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 	if window := s.cfg.MessageDeleteWindowSeconds; window > 0 {
 		age := time.Since(msg.CreatedAt)
 		if age > time.Duration(window)*time.Second {
-			return fmt.Errorf("message is too old to delete")
+			return ErrMessageDeleteExpired
 		}
 	}
 
