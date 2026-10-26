@@ -22,6 +22,7 @@ export * from './ui/ConfirmDialog';
 export * from './ui/ListOptionDialog';
 export * from './ui/ReportDialog';
 export * from './ui/MessageActionSheet';
+export * from './ui/ReactionBalloons';
 export * from './ui/UserListDialog';
 export * from './ui/UserRow';
 export * from './ui/UserName';
