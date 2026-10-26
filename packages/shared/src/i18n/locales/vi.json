@@ -374,6 +374,8 @@
     "actionCopy": "Sao chép",
     "actionReport": "Báo cáo",
     "copied": "Đã sao chép",
+    "actionSelectText": "Chọn văn bản",
+    "copyAll": "Sao chép tất cả",
     "actionSave": "Lưu",
     "replyingTo": "Đang trả lời @{{name}}",
     "replySticker": "[Nhãn dán]",

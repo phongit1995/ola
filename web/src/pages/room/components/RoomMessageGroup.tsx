@@ -11,9 +11,11 @@ import {
   colorForName,
   formatClockHM,
   formatDuration,
+  hasTextSelectionIn,
   kulImageForText,
   reactionChips,
-  renderRichText,
+  SelectableRichText,
+  shouldStartMessageLongPress,
   SmileyText,
 } from '@lib';
 import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
@@ -207,7 +209,11 @@ function RoomBubble({
   ) : kul != null ? (
     <img src={kul} alt="" className="h-28 w-auto object-contain" />
   ) : (
-    renderRichText(message.content, onMention)
+    <SelectableRichText
+      content={message.content}
+      onMention={onMention}
+      onPrimary={isOwn}
+    />
   );
   const bare = (isImage || isAudio || kul != null) && message.replyTo == null;
   const body = bare ? (
@@ -231,7 +237,11 @@ function RoomBubble({
       {...longPress}
       onPointerDown={(event) => {
         suppressClick.current = false;
-        longPress.onPointerDown(event);
+        if (shouldStartMessageLongPress(event)) longPress.onPointerDown(event);
+      }}
+      onContextMenu={(event) => {
+        if (hasTextSelectionIn(event.currentTarget)) return;
+        longPress.onContextMenu(event);
       }}
       onClick={() => {
         if (suppressClick.current) {

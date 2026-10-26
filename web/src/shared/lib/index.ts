@@ -6,6 +6,8 @@ export * from './emoji';
 export * from './SmileyText';
 export * from './urlText';
 export * from './richText';
+export * from './textSelection';
+export * from './SelectableRichText';
 export * from './portal';
 export * from './cropImage';
 export * from './imageSize';

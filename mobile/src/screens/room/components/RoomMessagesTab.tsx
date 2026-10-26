@@ -39,6 +39,7 @@ import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ReportDialog } from '@components/ui/ReportDialog';
+import { SelectTextDialog } from '@components/chat/SelectTextDialog';
 import { replyExcerpt, roomMessageAbilities } from '../utils';
 import { RoomBubbleBody, RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
@@ -115,12 +116,13 @@ export function RoomMessagesTab({
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
   const [reportTarget, setReportTarget] = useState<RoomMessage | null>(null);
+  const [selectTextTarget, setSelectTextTarget] = useState<string | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(
     null,
   );
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const pendingSheetDialogRef = useRef<{
-    kind: 'delete' | 'block' | 'report';
+    kind: 'delete' | 'block' | 'report' | 'selectText';
     target: RoomMessage;
   } | null>(null);
   const pendingBlockCommitRef = useRef<RoomMessage | null>(null);
@@ -200,6 +202,7 @@ export function RoomMessagesTab({
     if (pending?.kind === 'delete') setDeleteTarget(pending.target);
     if (pending?.kind === 'block') setBlockTarget(pending.target);
     if (pending?.kind === 'report') setReportTarget(pending.target);
+    if (pending?.kind === 'selectText') setSelectTextTarget(pending.target.content);
   }, []);
 
   const commitPendingBlock = useCallback(() => {
@@ -278,6 +281,14 @@ export function RoomMessagesTab({
       icon: 'copy',
       onSelect: () => copyMessage(message.content),
     };
+    const selectTextAction: MessageSheetAction = {
+      key: 'selectText',
+      label: t('chat.actionSelectText'),
+      icon: 'selectText',
+      onSelect: () => {
+        pendingSheetDialogRef.current = { kind: 'selectText', target: message };
+      },
+    };
     if (!isOwn) {
       actions.push({
         key: 'reply',
@@ -285,7 +296,7 @@ export function RoomMessagesTab({
         icon: 'reply',
         onSelect: () => onSetReplyTarget(message),
       });
-      if (canCopy) actions.push(copyAction);
+      if (canCopy) actions.push(copyAction, selectTextAction);
       actions.push({
         key: 'report',
         label: t('room.actionReport'),
@@ -304,7 +315,7 @@ export function RoomMessagesTab({
         },
       });
     } else {
-      if (canCopy) actions.push(copyAction);
+      if (canCopy) actions.push(copyAction, selectTextAction);
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
@@ -516,6 +527,12 @@ export function RoomMessagesTab({
           onClose={() => setReportTarget(null)}
         />
       )}
+
+      <SelectTextDialog
+        text={selectTextTarget}
+        onCopyAll={copyMessage}
+        onClose={() => setSelectTextTarget(null)}
+      />
 
       <RoomReactionsDialog
         visible={reactionsTargetId != null}

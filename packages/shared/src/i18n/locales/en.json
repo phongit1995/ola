@@ -374,6 +374,8 @@
     "actionCopy": "Copy",
     "actionReport": "Report",
     "copied": "Copied",
+    "actionSelectText": "Select text",
+    "copyAll": "Copy all",
     "actionSave": "Save",
     "replyingTo": "Replying to @{{name}}",
     "replySticker": "[Sticker]",

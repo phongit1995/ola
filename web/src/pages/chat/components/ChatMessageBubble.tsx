@@ -12,7 +12,7 @@ import {
   bubbleSurface,
   callMessageView,
   kulImageForText,
-  renderRichText,
+  SelectableRichText,
   SmileyText,
 } from '@lib';
 import { ChatPhoneIcon, ChatVideoIcon } from '../../call/icons';
@@ -303,7 +303,11 @@ export function ChatMessageBubble({
               onQuoteClick={onQuoteClick}
             />
           )}
-          {renderRichText(message.text ?? '', onMention ?? noop)}
+          <SelectableRichText
+            content={message.text ?? ''}
+            onMention={onMention ?? noop}
+            onPrimary={onPrimary}
+          />
         </div>
       );
   }

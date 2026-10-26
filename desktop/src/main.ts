@@ -126,6 +126,12 @@ function createWindow() {
     event.preventDefault();
   });
 
+  // Electron không có menu chuột phải mặc định — có chữ đang bôi đen thì hiện "Copy".
+  win.webContents.on('context-menu', (_event, params) => {
+    if (params.selectionText.trim() === '') return;
+    Menu.buildFromTemplate([{ role: 'copy' }]).popup({ window: win });
+  });
+
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//.test(url)) shell.openExternal(url);
     return { action: 'deny' };
