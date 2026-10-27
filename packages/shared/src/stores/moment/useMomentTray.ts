@@ -8,7 +8,7 @@ export function useMomentTray() {
   const seenIds = useMomentStore((s) => s.seenIds);
   const clockMs = useMomentStore((s) => s.clockMs);
   return useMemo(
-    () => visibleMomentTray({ mine, groups }, seenIds, clockMs),
+    () => ({ ...visibleMomentTray({ mine, groups }, clockMs), seenIds }),
     [mine, groups, seenIds, clockMs]
   );
 }

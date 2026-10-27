@@ -1,9 +1,19 @@
 import { useEffect, useRef, useState, type TouchEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { activeMomentGroups } from '@lib';
-import type { MomentTrayGroup, MomentViewerSession } from '@app-types';
+import {
+  activeMomentGroups,
+  colorForName,
+  isMomentGroupSeen,
+  momentGroupStartIndex,
+} from '@lib';
+import type {
+  MomentAuthor,
+  MomentTrayGroup,
+  MomentViewerSession,
+} from '@app-types';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { useMomentTray } from '@ola/shared/stores/moment/useMomentTray';
+import { UserProfileView } from '../../profile/UserProfileView';
 import { useScrollEdges } from '../useScrollEdges';
 import { MomentAddCard, MomentTrayCard } from './MomentTrayCard';
 import { MomentChevronIcon } from './MomentIcons';
@@ -27,6 +37,10 @@ export function MomentTray() {
   const tray = useMomentTray();
   const [session, setSession] = useState<MomentViewerSession | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [profileTarget, setProfileTarget] = useState<{
+    username: string;
+    color: string;
+  } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLSpanElement>(null);
 
@@ -62,8 +76,15 @@ export function MomentTray() {
     const startIndex = active.findIndex(
       (group) => group.author.id === authorId
     );
+    const start = active[startIndex];
     tick();
-    if (startIndex >= 0) setSession({ groups: active, startIndex, own });
+    if (start == null) return;
+    setSession({
+      groups: active,
+      startIndex,
+      own,
+      unseenOnly: !own && !isMomentGroupSeen(start, tray.seenIds),
+    });
   }
 
   function closeViewer() {
@@ -71,6 +92,14 @@ export function MomentTray() {
     tick();
     void flushSeen();
     void flushReactions();
+  }
+
+  function openProfile(author: MomentAuthor) {
+    closeViewer();
+    setProfileTarget({
+      username: author.username,
+      color: colorForName(author.username),
+    });
   }
 
   return (
@@ -98,14 +127,15 @@ export function MomentTray() {
           />
         )}
         {tray.groups.map((group) => {
-          const first = group.moments[0];
-          if (!first) return null;
+          const cover =
+            group.moments[momentGroupStartIndex(group, tray.seenIds)];
+          if (!cover) return null;
           return (
             <MomentTrayCard
               key={group.author.id}
-              moment={first}
-              label={group.author.fullName || group.author.username}
-              ringed
+              moment={cover}
+              label={group.author.username}
+              ringed={!isMomentGroupSeen(group, tray.seenIds)}
               onClick={() => openViewer(tray.groups, group.author.id, false)}
             />
           );
@@ -134,7 +164,24 @@ export function MomentTray() {
         </button>
       )}
 
-      {session && <MomentViewer session={session} onClose={closeViewer} />}
+      {session && (
+        <MomentViewer
+          session={session}
+          onClose={closeViewer}
+          onOpenProfile={openProfile}
+        />
+      )}
+      {profileTarget != null && (
+        <UserProfileView
+          key={profileTarget.username}
+          username={profileTarget.username}
+          color={profileTarget.color}
+          onClose={() => setProfileTarget(null)}
+          onOpenFriend={(friend) =>
+            setProfileTarget({ username: friend.name, color: friend.color })
+          }
+        />
+      )}
       {composerOpen && (
         <MomentComposer onClose={() => setComposerOpen(false)} />
       )}

@@ -1,9 +1,11 @@
 package moment
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"mime/multipart"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -259,24 +261,38 @@ func TestGroupTrayRowsCutsExtraAuthorIntoCursor(t *testing.T) {
 		rows = append(rows, trayPageRow{ID: uuid.New(), AuthorID: author, Latest: base.Add(-time.Duration(i) * time.Minute)})
 	}
 
+	rows[1].AllSeen = true
+
 	groups, next := groupTrayRows(rows, 2)
 
 	if len(groups) != 2 {
 		t.Fatalf("expected 2 groups, got %d", len(groups))
 	}
-	if next == nil || next.AuthorID != authors[1] || !next.Latest.Equal(rows[1].Latest) {
+	if next == nil || next.AuthorID != authors[1] || !next.Latest.Equal(rows[1].Latest) || !next.AllSeen {
 		t.Fatalf("expected cursor at the last kept author, got %+v", next)
 	}
 }
 
 func TestTrayCursorRoundTrip(t *testing.T) {
-	cursor := &trayCursor{Latest: time.Date(2026, 10, 23, 8, 1, 2, 345678000, time.UTC), AuthorID: uuid.New()}
-	decoded, err := decodeTrayCursor(encodeTrayCursor(cursor))
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+	latest := time.Date(2026, 10, 23, 8, 1, 2, 345678000, time.UTC)
+	for _, allSeen := range []bool{false, true} {
+		cursor := &trayCursor{AllSeen: allSeen, Latest: latest, AuthorID: uuid.New()}
+		decoded, err := decodeTrayCursor(encodeTrayCursor(cursor))
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if *decoded != *cursor {
+			t.Fatalf("expected %+v, got %+v", cursor, decoded)
+		}
 	}
-	if !decoded.Latest.Equal(cursor.Latest) || decoded.AuthorID != cursor.AuthorID {
-		t.Fatalf("expected %+v, got %+v", cursor, decoded)
+	cursor := &trayCursor{Latest: latest, AuthorID: uuid.New()}
+	legacy := base64.RawURLEncoding.EncodeToString([]byte(strconv.FormatInt(latest.UnixMicro(), 10) + "_" + cursor.AuthorID.String()))
+	if decoded, err := decodeTrayCursor(legacy); err != nil || decoded.AllSeen || decoded.AuthorID != cursor.AuthorID {
+		t.Fatalf("expected a cursor without the seen part to mean unseen authors, got %+v %v", decoded, err)
+	}
+	badSeen := base64.RawURLEncoding.EncodeToString([]byte(strconv.FormatInt(latest.UnixMicro(), 10) + "_" + cursor.AuthorID.String() + "_x"))
+	if _, err := decodeTrayCursor(badSeen); err == nil {
+		t.Fatal("expected an unknown seen flag to be rejected")
 	}
 	if empty, err := decodeTrayCursor("  "); err != nil || empty != nil {
 		t.Fatalf("expected empty cursor to mean first page, got %+v %v", empty, err)

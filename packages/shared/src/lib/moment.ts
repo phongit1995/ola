@@ -200,15 +200,27 @@ export function activeMomentGroups(
     .filter((group) => group.moments.length > 0);
 }
 
-export function visibleMomentTray(
-  tray: MomentTray,
-  seenIds: ReadonlySet<string>,
-  nowMs: number
-): MomentTray {
+export function visibleMomentTray(tray: MomentTray, nowMs: number): MomentTray {
   return {
     mine: tray.mine.filter((moment) => isMomentActive(moment, nowMs) && !isMomentHidden(moment)),
-    groups: activeMomentGroups(tray.groups, nowMs, seenIds),
+    groups: activeMomentGroups(tray.groups, nowMs),
   };
+}
+
+export function isMomentSeen(moment: Moment, seenIds: ReadonlySet<string>): boolean {
+  return moment.seen === true || seenIds.has(moment.id);
+}
+
+export function isMomentGroupSeen(group: MomentTrayGroup, seenIds: ReadonlySet<string>): boolean {
+  return group.moments.every((moment) => isMomentSeen(moment, seenIds));
+}
+
+export function momentGroupStartIndex(
+  group: MomentTrayGroup | undefined,
+  seenIds: ReadonlySet<string>
+): number {
+  const index = group?.moments.findIndex((moment) => !isMomentSeen(moment, seenIds)) ?? -1;
+  return Math.max(index, 0);
 }
 
 export function appendMomentGroups(
@@ -448,16 +460,50 @@ export function momentGroupStep(
   return { groupIndex: Math.max(0, next), itemIndex: 0 };
 }
 
+export function momentGroupEntryStep(
+  groups: readonly MomentTrayGroup[],
+  groupIndex: number,
+  direction: 1 | -1,
+  seenIds: ReadonlySet<string>
+): MomentPosition | null {
+  const position = momentGroupStep(groups.length, groupIndex, direction);
+  if (position == null) return null;
+  return {
+    groupIndex: position.groupIndex,
+    itemIndex: momentGroupStartIndex(groups[position.groupIndex], seenIds),
+  };
+}
+
+export interface MomentSeenStep {
+  seenIds: ReadonlySet<string>;
+  unseenOnly: boolean;
+}
+
+function nextGroupPosition(
+  groups: readonly MomentTrayGroup[],
+  groupIndex: number,
+  seen: MomentSeenStep
+): MomentPosition | null {
+  for (let index = groupIndex + 1; index < groups.length; index += 1) {
+    const group = groups[index];
+    if (group == null || (seen.unseenOnly && isMomentGroupSeen(group, seen.seenIds))) continue;
+    return { groupIndex: index, itemIndex: momentGroupStartIndex(group, seen.seenIds) };
+  }
+  return null;
+}
+
 export function momentItemStep(
   groups: readonly MomentTrayGroup[],
   position: MomentPosition,
-  direction: 1 | -1
+  direction: 1 | -1,
+  seen?: MomentSeenStep
 ): MomentPosition | null {
   const count = groups[position.groupIndex]?.moments.length ?? 0;
   const itemIndex = position.itemIndex + direction;
   if (itemIndex >= 0 && itemIndex < count) {
     return { groupIndex: position.groupIndex, itemIndex };
   }
+  if (direction === 1 && seen != null) return nextGroupPosition(groups, position.groupIndex, seen);
   return momentGroupStep(groups.length, position.groupIndex, direction);
 }
 

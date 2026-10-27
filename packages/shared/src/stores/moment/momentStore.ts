@@ -25,6 +25,7 @@ interface MomentState {
   loaded: boolean;
   refreshing: boolean;
   loadingMore: boolean;
+  paged: boolean;
   seenIds: ReadonlySet<string>;
   clockMs: number;
   history: Moment[];
@@ -57,6 +58,7 @@ function initialState() {
     loaded: false,
     refreshing: false,
     loadingMore: false,
+    paged: false,
     seenIds: new Set<string>() as ReadonlySet<string>,
     clockMs: Date.now(),
     history: [] as Moment[],
@@ -203,6 +205,7 @@ export const useMomentStore = create<MomentState>((set, get) => {
           mine: mineChanged ? state.mine : page.mine,
           groups: page.groups,
           nextCursor: page.nextCursor ?? null,
+          paged: false,
           loaded: true,
           clockMs: Date.now(),
         }));
@@ -222,6 +225,7 @@ export const useMomentStore = create<MomentState>((set, get) => {
         set((state) => ({
           groups: appendMomentGroups(state.groups, page.groups),
           nextCursor: page.nextCursor ?? null,
+          paged: true,
           loadingMore: false,
         }));
       } catch (error) {

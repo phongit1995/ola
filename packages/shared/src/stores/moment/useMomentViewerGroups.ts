@@ -6,11 +6,10 @@ import { useMomentStore } from './momentStore';
 
 function newTrayGroups(
   storeGroups: readonly MomentTrayGroup[],
-  seenIds: ReadonlySet<string>,
   known: readonly MomentTrayGroup[]
 ): MomentTrayGroup[] {
   const knownAuthors = new Set(known.map((group) => group.author.id));
-  return activeMomentGroups(storeGroups, Date.now(), seenIds).filter(
+  return activeMomentGroups(storeGroups, Date.now()).filter(
     (group) => !knownAuthors.has(group.author.id)
   );
 }
@@ -30,7 +29,7 @@ export function useMomentViewerGroups(
     return useMomentStore.subscribe((state, previous) => {
       if (state.groups === previous.groups) return;
       setAppended((current) => {
-        const fresh = newTrayGroups(state.groups, state.seenIds, [...base, ...current]);
+        const fresh = newTrayGroups(state.groups, [...base, ...current]);
         return fresh.length > 0 ? [...current, ...fresh] : current;
       });
     });

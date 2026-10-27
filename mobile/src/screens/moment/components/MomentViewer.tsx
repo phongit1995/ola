@@ -29,7 +29,8 @@ import {
   createTimeFormatter,
   isMomentHiddenByAdmin,
   momentExpiresInMs,
-  momentGroupStep,
+  momentGroupEntryStep,
+  momentGroupStartIndex,
   momentItemStep,
   momentMedia,
   momentPreloadUrl,
@@ -38,7 +39,7 @@ import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { useMomentHiddenToggle } from '@ola/shared/stores/moment/useMomentHiddenToggle';
 import { useMomentTray } from '@ola/shared/stores/moment/useMomentTray';
 import { useMomentViewerGroups } from '@ola/shared/stores/moment/useMomentViewerGroups';
-import type { MomentPosition, MomentViewerSession, ReportTarget } from '@ola/shared/types';
+import type { MomentAuthor, MomentPosition, MomentViewerSession, ReportTarget } from '@ola/shared/types';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { OlaModal } from '@components/ui/OlaModal';
 import { ReportDialog } from '@components/ui/ReportDialog';
@@ -53,13 +54,20 @@ const AXIS_X = 1;
 const AXIS_Y = 2;
 const TURN_EASING = Easing.out(Easing.cubic);
 
-function MomentViewerContent({ session, onClose }: { session: MomentViewerSession; onClose: () => void }) {
+interface MomentViewerProps {
+  session: MomentViewerSession;
+  onClose: () => void;
+  onOpenProfile?: (author: MomentAuthor) => void;
+}
+
+function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerProps) {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const window = useWindowDimensions();
   const markSeen = useMomentStore((s) => s.markSeen);
   const react = useMomentStore((s) => s.react);
   const history = useMomentStore((s) => s.history);
+  const seenIds = useMomentStore((s) => s.seenIds);
   const ownMoments = useMomentTray().mine;
   const baseGroups = useMemo(() => {
     const ownAuthor = session.groups[0]?.author;
@@ -71,8 +79,14 @@ function MomentViewerContent({ session, onClose }: { session: MomentViewerSessio
   const [groupIndex, setGroupIndex] = useState(session.startIndex);
   const groups = useMomentViewerGroups(baseGroups, groupIndex, !session.own);
   const [itemIndex, setItemIndex] = useState(0);
-  const [anchorId, setAnchorId] = useState(
-    () => session.startMomentId ?? groups[session.startIndex]?.moments[0]?.id ?? null
+  const [anchorId, setAnchorId] = useState(() => {
+    if (session.startMomentId != null) return session.startMomentId;
+    const start = groups[session.startIndex];
+    return start?.moments[momentGroupStartIndex(start, seenIds)]?.id ?? null;
+  });
+  const seenStep = useMemo(
+    () => (session.own ? undefined : { seenIds, unseenOnly: session.unseenOnly === true }),
+    [session.own, session.unseenOnly, seenIds]
   );
   const [playId, setPlayId] = useState(0);
   const [holding, setHolding] = useState(false);
@@ -126,19 +140,19 @@ function MomentViewerContent({ session, onClose }: { session: MomentViewerSessio
   );
 
   const settleTurn = useCallback(
-    (target: number) => {
+    (target: number, targetItem: number) => {
       setTurning(false);
-      goTo(target, 0);
+      goTo(target, targetItem);
     },
     [goTo]
   );
 
   const turnTo = useCallback(
-    (target: number) => {
+    (target: number, targetItem: number) => {
       setTurning(true);
       const duration = MOMENT_TURN_MS * Math.max(Math.abs(target - position.value), MOMENT_TURN_MIN_FRACTION);
       position.value = withTiming(target, { duration, easing: TURN_EASING }, (finished) => {
-        if (finished) runOnJS(settleTurn)(target);
+        if (finished) runOnJS(settleTurn)(target, targetItem);
         else runOnJS(setTurning)(false);
       });
     },
@@ -154,7 +168,7 @@ function MomentViewerContent({ session, onClose }: { session: MomentViewerSessio
     (next: MomentPosition | null) => {
       if (turning) return;
       if (next == null) onClose();
-      else if (Math.abs(next.groupIndex - groupIndex) === 1) turnTo(next.groupIndex);
+      else if (Math.abs(next.groupIndex - groupIndex) === 1) turnTo(next.groupIndex, next.itemIndex);
       else goTo(next.groupIndex, next.itemIndex);
     },
     [turning, groupIndex, turnTo, goTo, onClose]
@@ -162,8 +176,8 @@ function MomentViewerContent({ session, onClose }: { session: MomentViewerSessio
 
   const advance = useCallback(
     (direction: 1 | -1) =>
-      moveTo(momentItemStep(groups, { groupIndex, itemIndex: currentIndex }, direction)),
-    [groups, groupIndex, currentIndex, moveTo]
+      moveTo(momentItemStep(groups, { groupIndex, itemIndex: currentIndex }, direction, seenStep)),
+    [groups, groupIndex, currentIndex, seenStep, moveTo]
   );
 
   const advanceRef = useRef(advance);
@@ -247,19 +261,19 @@ function MomentViewerContent({ session, onClose }: { session: MomentViewerSessio
       const direction = dx < 0 ? 1 : -1;
       const flung = Math.abs(velocityX) > MOMENT_TURN_FLING_VELOCITY && Math.sign(velocityX) === Math.sign(dx);
       if (Math.abs(dx) > MOMENT_SWIPE_GROUP_PX || flung) {
-        const target = momentGroupStep(groups.length, groupIndex, direction);
+        const target = momentGroupEntryStep(groups, groupIndex, direction, seenIds);
         if (target == null) {
           onClose();
           return;
         }
         if (target.groupIndex !== groupIndex) {
-          turnTo(target.groupIndex);
+          turnTo(target.groupIndex, target.itemIndex);
           return;
         }
       }
       snapBack();
     },
-    [groups.length, groupIndex, onClose, turnTo, snapBack]
+    [groups, groupIndex, seenIds, onClose, turnTo, snapBack]
   );
 
   const gesture = useMemo(() => {
@@ -383,6 +397,9 @@ function MomentViewerContent({ session, onClose }: { session: MomentViewerSessio
                 onOpenMenu={
                   session.own && isMomentHiddenByAdmin(faceMoment) ? undefined : () => setMenuOpen(true)
                 }
+                onOpenProfile={
+                  session.own || onOpenProfile == null ? undefined : () => onOpenProfile(faceGroup.author)
+                }
                 onReact={session.own ? undefined : (type) => react(faceMoment.id, type)}
                 onClose={onClose}
               />
@@ -402,12 +419,7 @@ function MomentViewerContent({ session, onClose }: { session: MomentViewerSessio
   );
 }
 
-interface MomentViewerProps {
-  session: MomentViewerSession;
-  onClose: () => void;
-}
-
-export function MomentViewer({ session, onClose }: MomentViewerProps) {
+export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerProps) {
   return (
     <OlaModal
       visible
@@ -417,7 +429,7 @@ export function MomentViewer({ session, onClose }: MomentViewerProps) {
       onRequestClose={onClose}
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <MomentViewerContent session={session} onClose={onClose} />
+        <MomentViewerContent session={session} onClose={onClose} onOpenProfile={onOpenProfile} />
       </GestureHandlerRootView>
       <ToastHost />
     </OlaModal>

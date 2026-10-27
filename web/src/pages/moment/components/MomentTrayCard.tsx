@@ -42,7 +42,7 @@ export function MomentTrayCard({
       >
         <span className="block rounded-full bg-white p-[1.5px]">
           <Avatar
-            name={author.fullName || author.username}
+            name={author.username}
             color={colorForName(author.username)}
             src={author.avatar ?? undefined}
             size={30}

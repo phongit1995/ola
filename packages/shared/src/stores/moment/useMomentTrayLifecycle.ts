@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MOMENT_CLOCK_TICK_MS, MOMENT_PROCESSING_POLL_MS, MOMENT_STATUS } from '../../constants/moment';
+import {
+  MOMENT_CLOCK_TICK_MS,
+  MOMENT_PROCESSING_POLL_MS,
+  MOMENT_STATUS,
+  MOMENT_TRAY_REFRESH_MS,
+} from '../../constants/moment';
 import { toast } from '../../lib/toast';
 import { useMomentStore } from './momentStore';
 
@@ -9,6 +14,11 @@ export type MomentVisibilityListener = (visible: boolean) => void;
 export type SubscribeMomentVisibility = (listener: MomentVisibilityListener) => () => void;
 
 function ignore() {}
+
+function canRefreshTray(): boolean {
+  const { refreshing, loadingMore, paged } = useMomentStore.getState();
+  return !refreshing && !loadingMore && !paged;
+}
 
 export function useMomentTrayLifecycle(
   subscribeVisibility: SubscribeMomentVisibility,
@@ -27,8 +37,13 @@ export function useMomentTrayLifecycle(
   useEffect(() => {
     if (!enabled) return;
     load().catch(ignore);
+    let foreground = true;
     const clock = setInterval(tick, MOMENT_CLOCK_TICK_MS);
+    const refresh = setInterval(() => {
+      if (foreground && canRefreshTray()) load().catch(ignore);
+    }, MOMENT_TRAY_REFRESH_MS);
     const unsubscribe = subscribeVisibility((visible) => {
+      foreground = visible;
       if (!visible) {
         void flushSeen();
         void flushReactions();
@@ -39,6 +54,7 @@ export function useMomentTrayLifecycle(
     });
     return () => {
       clearInterval(clock);
+      clearInterval(refresh);
       unsubscribe();
       void flushSeen();
       void flushReactions();

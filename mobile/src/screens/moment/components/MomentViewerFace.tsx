@@ -25,6 +25,7 @@ const ICON_HIT_SLOP = 8;
 const styles = StyleSheet.create({
   topShade: { position: 'absolute', left: 0, right: 0, top: 0, height: 120 },
   iconButton: { padding: 8, borderRadius: 999 },
+  author: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
   notice: {
     position: 'absolute',
     left: 24,
@@ -81,6 +82,7 @@ interface MomentViewerFaceProps {
   onToggleMute: () => void;
   onTogglePause: () => void;
   onOpenMenu?: () => void;
+  onOpenProfile?: () => void;
   onReact?: (type: ReactionType) => void;
   onClose: () => void;
 }
@@ -107,6 +109,7 @@ export function MomentViewerFace({
   onToggleMute,
   onTogglePause,
   onOpenMenu,
+  onOpenProfile,
   onReact,
   onClose,
 }: MomentViewerFaceProps) {
@@ -120,7 +123,6 @@ export function MomentViewerFace({
   }
   const previous = pages.previous;
   const media = useMemo(() => momentMedia(moment), [moment]);
-  const authorName = author.fullName || author.username;
   const isVideo = media?.type === MOMENT_TYPE.video;
   const processing = moment.status === MOMENT_STATUS.processing;
   const noticeKey = momentNoticeKey(moment, mediaStatus === 'error');
@@ -219,18 +221,26 @@ export function MomentViewerFace({
           ))}
         </View>
         <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Avatar
-            name={authorName}
-            color={colorForName(author.username)}
-            uri={author.avatar ?? undefined}
-            size={36}
-          />
-          <View pointerEvents="none" style={{ flex: 1, minWidth: 0 }}>
-            <Text numberOfLines={1} style={{ color: '#ffffff', fontSize: 14, fontWeight: '600' }}>
-              {authorName}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>{time}</Text>
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('me.viewProfile')}
+            disabled={onOpenProfile == null}
+            onPress={onOpenProfile}
+            style={styles.author}
+          >
+            <Avatar
+              name={author.username}
+              color={colorForName(author.username)}
+              uri={author.avatar ?? undefined}
+              size={36}
+            />
+            <View pointerEvents="none" style={{ flex: 1, minWidth: 0 }}>
+              <Text numberOfLines={1} style={{ color: '#ffffff', fontSize: 14, fontWeight: '600' }}>
+                {author.username}
+              </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>{time}</Text>
+            </View>
+          </Pressable>
           {isVideo && (
             <Pressable
               accessibilityRole="button"

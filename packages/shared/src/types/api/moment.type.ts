@@ -55,6 +55,7 @@ export interface Moment {
   hidden?: boolean;
   hiddenBy?: MomentHiddenBy;
   mediaPurged?: boolean;
+  seen?: boolean;
   createdAt: string;
   expiresAt: string;
 }
