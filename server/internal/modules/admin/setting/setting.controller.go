@@ -206,6 +206,18 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateStoryReadingValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyMoment:
+		if err := setting.ValidateMomentValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	case setting.KeyMomentVideo:
+		if err := setting.ValidateMomentVideoValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	case setting.KeyMomentMediaPurge:
+		if err := setting.ValidateMomentMediaPurgeValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
 	case setting.KeyPushNotification:
 		if err := setting.ValidatePushNotificationValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

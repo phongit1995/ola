@@ -8,6 +8,7 @@ import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { createTimeFormatter, filterVisiblePosts } from '@ola/shared/lib';
 import type { Post, PostReaction } from '@ola/shared/types';
@@ -29,6 +30,10 @@ import { MeLikersDialog } from './components/MeLikersDialog';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { MeFeedHeader } from './components/MeFeedHeader';
+import { MomentTray } from '@screens/moment/components/MomentTray';
+import { useMomentOverlays } from '@screens/moment/useMomentOverlays';
+import { useMomentTraySync } from '@screens/moment/useMomentTraySync';
+import { useMomentEnabled } from '@ola/shared/stores/moment/momentConfigStore';
 import { useQuickComment } from './useQuickComment';
 import { TAB_FILTER } from './constants';
 import type { MeTab } from './types';
@@ -65,6 +70,10 @@ export function MeFeedScreen() {
   const avatarUrl = useAuthStore((s) => s.user?.avatar ?? null);
   const coverUrl = useAuthStore((s) => s.user?.coverPhoto ?? null);
   const displayName = username ?? t('home.guest');
+  const reloadMoments = useMomentStore((s) => s.load);
+  const moment = useMomentOverlays();
+  const momentEnabled = useMomentEnabled();
+  useMomentTraySync(momentEnabled);
 
   const [tab, setTab] = useState<MeTab>('community');
   const [composerOpen, setComposerOpen] = useState(false);
@@ -124,6 +133,13 @@ export function MeFeedScreen() {
   }
 
   const comingSoon = () => pushToast('info', t('me.comingSoon'));
+  const momentTray =
+    momentEnabled && tab !== 'clan' ? <MomentTray onOpenViewer={moment.openViewer} onAddMoment={moment.openComposer} /> : null;
+
+  function refreshAll() {
+    void refreshFeed(TAB_FILTER[tab]);
+    reloadMoments().catch(() => undefined);
+  }
   const handleReaction = (id: string, type: PostReaction) => void toggleReaction(id, type);
   const swipeHandlers = useHorizontalSwipe({ onSwipeLeft: () => setSearchOpen(true) });
 
@@ -197,29 +213,37 @@ export function MeFeedScreen() {
         onTouchCancel={swipeHandlers.onTouchCancel}
       >
         {loading && posts.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator color={colors.primary} size="large" />
+          <View className="flex-1">
+            {momentTray}
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator color={colors.primary} size="large" />
+            </View>
           </View>
         ) : error && posts.length === 0 ? (
-          <View className="flex-1 items-center justify-center px-8">
-            <Text className="text-center text-sm" style={{ color: '#e34545' }}>
-              {t('common.error')}
-            </Text>
+          <View className="flex-1">
+            {momentTray}
+            <View className="flex-1 items-center justify-center px-8">
+              <Text className="text-center text-sm" style={{ color: '#e34545' }}>
+                {t('common.error')}
+              </Text>
+            </View>
           </View>
         ) : visiblePosts.length === 0 ? (
-          <View className="flex-1 items-center justify-center px-8">
-            <Text className="text-center text-sm text-ola-ink-soft">
-              {t('me.empty')}
-            </Text>
+          <View className="flex-1">
+            {momentTray}
+            <View className="flex-1 items-center justify-center px-8">
+              <Text className="text-center text-sm text-ola-ink-soft">
+                {t('me.empty')}
+              </Text>
+            </View>
           </View>
         ) : (
           <FlashList
             data={visiblePosts}
             keyExtractor={(item) => item.id}
-            contentContainerClassName="py-2"
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={() => void refreshFeed(TAB_FILTER[tab])} />
-            }
+            contentContainerClassName="pb-2"
+            ListHeaderComponent={momentTray ?? <View className="h-2" />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} />}
             onEndReached={() => void loadMore(TAB_FILTER[tab])}
             onEndReachedThreshold={0.4}
             ListFooterComponent={
@@ -266,6 +290,7 @@ export function MeFeedScreen() {
             displayName={displayName}
             avatarUrl={avatarUrl ?? undefined}
             coverUrl={coverUrl ?? undefined}
+            showMoment={momentEnabled}
             onClose={() => setDrawerOpen(false)}
             onViewProfile={() => {
               setDrawerOpen(false);
@@ -274,6 +299,7 @@ export function MeFeedScreen() {
             onSelect={(key) => {
               setDrawerOpen(false);
               if (key === 'personal') openProfile(displayName);
+              else if (key === 'moment') navigation.navigate(ROOT_ROUTES.MomentManage);
               else if (key === 'marriage') navigation.navigate(ROOT_ROUTES.Marriage);
               else if (key === 'likes') navigation.navigate(ROOT_ROUTES.MeLikedPosts);
               else if (key === 'visitors') navigation.navigate(ROOT_ROUTES.MeVisitors);
@@ -359,6 +385,8 @@ export function MeFeedScreen() {
           onOpenProfile={openProfile}
         />
       )}
+
+      {moment.overlays}
 
     </View>
   );

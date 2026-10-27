@@ -188,9 +188,24 @@ func (ctrl *Controller) storyConfigFor(client Client) (FeatureEnabledResponse, e
 	return FeatureEnabledResponse{Enabled: cfg.EnabledFor(client.Platform, client.AppVersion)}, nil
 }
 
+func (ctrl *Controller) momentConfigFor(client Client) (MomentConfigResponse, error) {
+	cfg, err := ctrl.service.GetMoment()
+	if err != nil {
+		return MomentConfigResponse{}, err
+	}
+	video, err := ctrl.service.GetMomentVideo()
+	if err != nil {
+		return MomentConfigResponse{}, err
+	}
+	return MomentConfigResponse{
+		Enabled:          cfg.EnabledFor(client.Platform, client.AppVersion),
+		VideoVipRequired: video.VipRequired,
+	}, nil
+}
+
 // AppConfig godoc
 // @Summary      Gộp config hệ thống cho app trong một request
-// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
+// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
 // @Description  Gửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.
 // @Tags         settings
 // @Produce      json

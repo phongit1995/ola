@@ -37,7 +37,7 @@ import {
   useStoryCrawler,
 } from './useStoryQueries'
 import { ApiError, errorMessage } from '@/lib/apiError'
-import { formatCount, formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime, formatDuration } from '@/lib/format'
 import type {
   StoryCookie,
   StoryCookieStatus,
@@ -59,7 +59,6 @@ import {
   changeParts,
   cleanCookie,
   deadAtByCookie,
-  formatDuration,
   retryNote,
   runSummary,
   sameSnapshot,

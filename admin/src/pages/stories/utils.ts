@@ -70,14 +70,6 @@ export function authorName(comment: AdminStoryComment) {
 
 export const cleanCookie = (value: string | undefined) => (value ?? '').trim().replace(/^cookie:\s*/i, '')
 
-export function formatDuration(ms: number): string {
-  const seconds = Math.round(ms / 1000)
-  if (seconds < 60) return `${seconds} giây`
-  const minutes = Math.floor(seconds / 60)
-  const rest = seconds % 60
-  return rest === 0 ? `${minutes} phút` : `${minutes} phút ${rest} giây`
-}
-
 export function changeParts(log: StoryCrawlLog): string[] {
   const parts = log.chaptersAdded > 0 ? [`+${formatCount(log.chaptersAdded)} chương`] : []
   if (log.storiesUpdated > 0) parts.push(`${formatCount(log.storiesUpdated)} truyện cập nhật`)

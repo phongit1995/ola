@@ -3,7 +3,6 @@ import {
   App,
   Avatar,
   Button,
-  Card,
   Image,
   Input,
   Select,
@@ -33,7 +32,7 @@ import { PAGE_SIZE } from '@/lib/constants'
 import type { TriState } from './types'
 import { triToBool } from './utils'
 
-export function MePage() {
+export function MePostsTab() {
   const { message, modal } = App.useApp()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -253,7 +252,7 @@ export function MePage() {
   ]
 
   return (
-    <Card>
+    <>
       <div
         style={{
           marginBottom: 16,
@@ -341,6 +340,6 @@ export function MePage() {
         }}
       />
       <MeDetailModal postId={detailId} open={modalOpen} onClose={() => setModalOpen(false)} />
-    </Card>
+    </>
   )
 }

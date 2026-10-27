@@ -100,7 +100,7 @@ export function createDateFormatter(locale: string): (iso: string) => string {
   };
 }
 
-export function formatOlaTime(iso: string, locale: string, nowMs: number = Date.now()): string {
+function formatTimeWith(iso: string, locale: string, nowMs: number, ago: boolean): string {
   const then = new Date(iso);
   if (Number.isNaN(then.getTime())) return '';
   const now = new Date(nowMs);
@@ -108,6 +108,7 @@ export function formatOlaTime(iso: string, locale: string, nowMs: number = Date.
   const labels = labelsFor(lang);
   const time = formatClockHM(iso);
   const weekday = labels.weekdays[then.getDay()] ?? '';
+  const elapsed = (value: string) => (ago ? labels.ago(value) : value);
 
   if (then.getFullYear() !== now.getFullYear()) {
     return `${time} ${weekday} ${formatSlashDate(then, true)}`;
@@ -118,9 +119,9 @@ export function formatOlaTime(iso: string, locale: string, nowMs: number = Date.
       const ageSeconds = Math.floor(Math.abs(nowMs - then.getTime()) / 1000);
       if (ageSeconds <= 60) return labels.justNow;
       const minutes = Math.floor(ageSeconds / 60);
-      if (minutes < 60) return labels.minute(minutes);
+      if (minutes < 60) return elapsed(labels.minute(minutes));
       const hours = Math.floor(minutes / 60);
-      if (hours < 7) return labels.hour(hours);
+      if (hours < 7) return elapsed(labels.hour(hours));
       return `${time} ${labels.today}`;
     }
 
@@ -140,8 +141,20 @@ export function formatOlaTime(iso: string, locale: string, nowMs: number = Date.
   return `${time} ${weekday} ${formatSlashDate(then, false)}`;
 }
 
+export function formatOlaTime(iso: string, locale: string, nowMs: number = Date.now()): string {
+  return formatTimeWith(iso, locale, nowMs, false);
+}
+
+export function formatOlaTimeAgo(iso: string, locale: string, nowMs: number = Date.now()): string {
+  return formatTimeWith(iso, locale, nowMs, true);
+}
+
 export function createTimeFormatter(locale: string): (iso: string) => string {
   return (iso: string) => formatOlaTime(iso, locale);
+}
+
+export function createTimeAgoFormatter(locale: string): (iso: string) => string {
+  return (iso: string) => formatOlaTimeAgo(iso, locale);
 }
 
 export function formatOlaDateSeparator(

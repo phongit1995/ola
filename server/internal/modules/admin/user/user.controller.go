@@ -45,10 +45,10 @@ func (ctrl *Controller) ListUsers(c *gin.Context) (interface{}, error) {
 	filter := ListFilter{
 		Query:          c.Query("q"),
 		IP:             c.Query("ip"),
-		IsActive:       parseBoolQuery(c, "isActive"),
+		IsActive:       utils.ParseOptionalBool(c, "isActive"),
 		Gender:         parseGenderQuery(c.Query("gender")),
-		Vip:            parseBoolQuery(c, "vip"),
-		EmailVerified:  parseBoolQuery(c, "emailVerified"),
+		Vip:            utils.ParseOptionalBool(c, "vip"),
+		EmailVerified:  utils.ParseOptionalBool(c, "emailVerified"),
 		IncludeDeleted: c.Query("includeDeleted") != "false",
 		SortBy:         c.Query("sortBy"),
 		SortDir:        c.Query("sortDir"),
@@ -61,19 +61,6 @@ func (ctrl *Controller) ListUsers(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
 	return resp, nil
-}
-
-func parseBoolQuery(c *gin.Context, key string) *bool {
-	switch c.Query(key) {
-	case "true":
-		t := true
-		return &t
-	case "false":
-		f := false
-		return &f
-	default:
-		return nil
-	}
 }
 
 func parseGenderQuery(v string) string {

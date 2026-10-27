@@ -66,6 +66,11 @@ export interface StoryConfigResult {
   enabled: boolean;
 }
 
+export interface MomentConfigResult {
+  enabled: boolean;
+  videoVipRequired?: boolean;
+}
+
 export interface UsernameChangeConfigResult {
   enabled: boolean;
   enabledMobile?: boolean;
@@ -78,6 +83,7 @@ export interface AppConfigs {
   wordChain: WordChainConfigResult;
   story: StoryConfigResult;
   chatBot: ChatBotConfigResult;
+  moment: MomentConfigResult;
 }
 
 export interface AppConfigResult {

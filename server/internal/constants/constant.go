@@ -408,6 +408,7 @@ const (
 	ReportTargetStoryComment = "story_comment"
 	ReportTargetMessage      = "message"
 	ReportTargetRoomMessage  = "room_message"
+	ReportTargetMoment       = "moment"
 
 	ReportReasonSpam       = "spam"
 	ReportReasonSensitive  = "sensitive"

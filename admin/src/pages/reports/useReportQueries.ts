@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminReportService } from '@/services/adminReport.service'
 import { AdminMeService } from '@/services/adminMe.service'
+import { AdminMomentService } from '@/services/adminMoment.service'
 import { AdminStoryService } from '@/services/adminStory.service'
 import { AdminRoomService } from '@/services/adminRoom.service'
 import { AdminUserService } from '@/services/adminUser.service'
 import { REPORT_SUMMARY_KEY } from '@/hooks/useReportSummary'
+import { MOMENTS_QUERY_KEY } from '@/pages/moments/useMomentQueries'
 import { toApiError } from '@/lib/apiError'
 import type { AdminReport, ReportListParams, UpdateReportStatusRequest } from '@/types'
 
@@ -32,6 +34,8 @@ async function removeReportedContent(report: AdminReport): Promise<void> {
   try {
     if (targetType === 'post') {
       await AdminMeService.setStatus(targetId, false)
+    } else if (targetType === 'moment') {
+      await AdminMomentService.setStatus(targetId, false)
     } else if (targetType === 'comment' && contextId) {
       await AdminMeService.removeComment(contextId, targetId)
     } else if (targetType === 'story_comment' && contextId) {
@@ -58,6 +62,7 @@ export function useHandleReport() {
       void queryClient.invalidateQueries({ queryKey: [REPORTS_KEY] })
       void queryClient.invalidateQueries({ queryKey: [REPORT_SUMMARY_KEY] })
       void queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY] })
     },
   })
 }

@@ -18,6 +18,7 @@ const (
 	AppConfigKeyWordChain      = "wordChain"
 	AppConfigKeyStory          = "story"
 	AppConfigKeyChatBot        = "chatBot"
+	AppConfigKeyMoment         = "moment"
 )
 
 type appConfigSource struct {
@@ -32,6 +33,7 @@ func (ctrl *Controller) appConfigSources() []appConfigSource {
 		{AppConfigKeyWordChain, func(Client) (interface{}, error) { return ctrl.service.GetWordChain() }},
 		{AppConfigKeyStory, func(client Client) (interface{}, error) { return ctrl.storyConfigFor(client) }},
 		{AppConfigKeyChatBot, func(client Client) (interface{}, error) { return ctrl.chatBotConfigFor(client) }},
+		{AppConfigKeyMoment, func(client Client) (interface{}, error) { return ctrl.momentConfigFor(client) }},
 	}
 }
 

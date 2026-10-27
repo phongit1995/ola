@@ -24,6 +24,7 @@ export interface TimeLabels {
   justNow: string;
   minute: (n: number) => string;
   hour: (n: number) => string;
+  ago: (elapsed: string) => string;
   today: string;
   yesterday: string;
   dayBefore: string;

@@ -18,7 +18,11 @@ import { MeLikedPostsView } from './MeLikedPostsView';
 import { MeVisitorsView } from './MeVisitorsView';
 import { MeNotificationsView } from './MeNotificationsView';
 import { MarriageView } from '../marriage/MarriageView';
+import { MomentTray } from '../moment/components/MomentTray';
+import { MomentManageView } from '../moment/MomentManageView';
+import { useMomentTraySync } from '../moment/useMomentTraySync';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMomentEnabled } from '@ola/shared/stores/moment/momentConfigStore';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
 import bellIcon from '@/assets/icons/me/header/ic_header_notification.png';
 import searchIcon from '@/assets/icons/me/header/ic_header_search.png';
@@ -57,6 +61,9 @@ export function MePanel() {
   const [likedOpen, setLikedOpen] = useState(false);
   const [visitorsOpen, setVisitorsOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [momentsOpen, setMomentsOpen] = useState(false);
+  const momentEnabled = useMomentEnabled();
+  useMomentTraySync(momentEnabled);
   const unreadCount = useMeNotificationStore((s) => s.unreadCount);
   const refreshUnread = useMeNotificationStore((s) => s.refreshUnread);
 
@@ -82,6 +89,10 @@ export function MePanel() {
 
   if (notifOpen) {
     return <MeNotificationsView onClose={() => setNotifOpen(false)} />;
+  }
+
+  if (momentsOpen && momentEnabled) {
+    return <MomentManageView onClose={() => setMomentsOpen(false)} />;
   }
 
   const source: MePostSource = {
@@ -159,6 +170,7 @@ export function MePanel() {
               onRefresh={refresh}
               className="absolute inset-0 overflow-y-auto bg-ola-surface"
             >
+              {momentEnabled && tab !== 'clan' && <MomentTray />}
               <MeFeedList
                 posts={posts}
                 loading={loading}
@@ -198,6 +210,7 @@ export function MePanel() {
                 displayName={displayName}
                 avatarUrl={avatarUrl ?? undefined}
                 coverUrl={coverUrl ?? undefined}
+                showMoment={momentEnabled}
                 onClose={() => setDrawerOpen(false)}
                 onViewProfile={() =>
                   handlers.onOpenProfile(displayName, DEFAULT_AVATAR_COLOR)
@@ -215,6 +228,9 @@ export function MePanel() {
                   } else if (key === 'visitors') {
                     setDrawerOpen(false);
                     setVisitorsOpen(true);
+                  } else if (key === 'moment') {
+                    setDrawerOpen(false);
+                    setMomentsOpen(true);
                   } else if (key === 'clan') {
                     setDrawerOpen(false);
                     useClanOverlayStore.getState().open({ kind: 'home' });

@@ -7,6 +7,7 @@ import marriageIcon from '@/assets/icons/me/header/ic_header_marriage.png';
 import favoriteIcon from '@/assets/icons/me/header/ic_header_favorite.png';
 import visitorsIcon from '@/assets/icons/me/header/ic_header_visitors.png';
 import clanIcon from '@/assets/icons/me/header/ic_header_clan.png';
+import momentIcon from '@/assets/icons/me/ic_drawer_moment.svg';
 // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
 // import eggIcon from '@/assets/icons/me/ic_indicate_broken_egg.png';
 // import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
@@ -19,6 +20,7 @@ interface MeLeftDrawerProps {
   displayName: string;
   avatarUrl?: string;
   coverUrl?: string;
+  showMoment: boolean;
   onClose: () => void;
   onSelect: (key: string) => void;
   onViewProfile: () => void;
@@ -36,6 +38,7 @@ export function MeLeftDrawer({
   displayName,
   avatarUrl,
   coverUrl,
+  showMoment,
   onClose,
   onSelect,
   onViewProfile,
@@ -60,6 +63,9 @@ export function MeLeftDrawer({
 
   const items: DrawerItem[] = [
     { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal') },
+    ...(showMoment
+      ? [{ key: 'moment', icon: momentIcon, label: t('moment.trayTitle') }]
+      : []),
     {
       key: 'marriage',
       icon: marriageIcon,
@@ -149,7 +155,7 @@ export function MeLeftDrawer({
                   className="object-contain opacity-[0.26]"
                 />
               </span>
-              <span className="truncate text-base text-black/87">
+              <span className="min-w-0 flex-1 truncate text-base text-black/87">
                 {item.label}
               </span>
             </button>

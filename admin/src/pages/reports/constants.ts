@@ -13,6 +13,7 @@ export const REPORT_TARGET_LABEL: Record<ReportTargetType, string> = {
   story_comment: 'Bình luận truyện',
   message: 'Tin nhắn 1-1',
   room_message: 'Tin nhắn phòng',
+  moment: 'Khoảnh khắc',
 }
 
 export const REPORT_REASON_LABEL: Record<ReportReason, string> = {
@@ -40,7 +41,10 @@ export const REPORT_CONTENT_ACTION_LABEL: Record<ReportTargetType, string | null
   story_comment: 'Xoá bình luận',
   message: null,
   room_message: 'Xoá tin nhắn',
+  moment: 'Ẩn khoảnh khắc',
 }
+
+export const REPORT_TARGETS_WITHOUT_CONTEXT: readonly ReportTargetType[] = ['post', 'moment']
 
 export const REPORT_EXCERPT_MAX = 80
 

@@ -19,6 +19,7 @@ import (
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/message"
 	minigame "ola-chat-server/internal/modules/mini-game"
+	"ola-chat-server/internal/modules/moment"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/pen"
 	"ola-chat-server/internal/modules/push"
@@ -82,6 +83,7 @@ func CreateServer(
 	pushRouter *push.Router,
 	storyRouter *story.Router,
 	reportRouter *report.Router,
+	momentRouter *moment.Router,
 	wsServer *websocket.Server,
 	apiGuard *middleware.ApiGuardMiddleware,
 	cfg *config.Config,
@@ -149,6 +151,7 @@ func CreateServer(
 		pushRouter.Setup(api)
 		storyRouter.Setup(api)
 		reportRouter.Setup(api)
+		momentRouter.Setup(api)
 	}
 
 	r.NoRoute(func(c *gin.Context) {

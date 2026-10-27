@@ -14,6 +14,11 @@
 		B08E4990669137E720227FF3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AECF94CB21126E3EB9423C4B /* LaunchScreen.storyboard */; };
 		F86D4F102B8741EEE25F07BD /* Pods_OlaMobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 872CC51844E162F01EE13C91 /* Pods_OlaMobile.framework */; };
 		FB25023A6F19AD40C8CB1E98 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FC477EAAB92E35A0B7505AA4 /* GoogleService-Info.plist */; };
+		16D6E8F02C9A4E199342B65A /* Baloo2-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E31E4CB2B6824B2A826D3684 /* Baloo2-ExtraBold.ttf */; };
+		3B242A4B2D8F4CF08D173274 /* Baloo2-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 98F0697F34AA4E9888846CE3 /* Baloo2-Regular.ttf */; };
+		B89973B4672A4E2B8F18B37A /* DancingScript-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3F2D0B62EE654462AF35C231 /* DancingScript-Bold.ttf */; };
+		3EC5E5FD1FA34ECE8DB19F67 /* DancingScript-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 56259E4CB348488EB0B5F516 /* DancingScript-Regular.ttf */; };
+		85EC0F1960954841A646346F /* Lobster-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 45A01E6CE0B34F4F824E8487 /* Lobster-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +35,11 @@
 		D41C7E2B9A5F38B06E1D4C97 /* OlaMobile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OlaMobile.entitlements; path = OlaMobile/OlaMobile.entitlements; sourceTree = "<group>"; };
 		ED4E5A19C20B7751042D77C2 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FC477EAAB92E35A0B7505AA4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "OlaMobile/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		E31E4CB2B6824B2A826D3684 /* Baloo2-ExtraBold.ttf */ = {isa = PBXFileReference; name = "Baloo2-ExtraBold.ttf"; path = "../src/assets/fonts/Baloo2-ExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		98F0697F34AA4E9888846CE3 /* Baloo2-Regular.ttf */ = {isa = PBXFileReference; name = "Baloo2-Regular.ttf"; path = "../src/assets/fonts/Baloo2-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		3F2D0B62EE654462AF35C231 /* DancingScript-Bold.ttf */ = {isa = PBXFileReference; name = "DancingScript-Bold.ttf"; path = "../src/assets/fonts/DancingScript-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		56259E4CB348488EB0B5F516 /* DancingScript-Regular.ttf */ = {isa = PBXFileReference; name = "DancingScript-Regular.ttf"; path = "../src/assets/fonts/DancingScript-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		45A01E6CE0B34F4F824E8487 /* Lobster-Regular.ttf */ = {isa = PBXFileReference; name = "Lobster-Regular.ttf"; path = "../src/assets/fonts/Lobster-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +93,7 @@
 				C31B428458CAEE2411627E6A /* Products */,
 				7E6810DDED6B16E6EFA184D1 /* Frameworks */,
 				E251798582D60005054AC06C /* Pods */,
+				FC4108DE54DD46559B8A32DA /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -105,6 +116,19 @@
 			);
 			path = Pods;
 			sourceTree = "<group>";
+		};
+		FC4108DE54DD46559B8A32DA /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				E31E4CB2B6824B2A826D3684 /* Baloo2-ExtraBold.ttf */,
+				98F0697F34AA4E9888846CE3 /* Baloo2-Regular.ttf */,
+				3F2D0B62EE654462AF35C231 /* DancingScript-Bold.ttf */,
+				56259E4CB348488EB0B5F516 /* DancingScript-Regular.ttf */,
+				45A01E6CE0B34F4F824E8487 /* Lobster-Regular.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -172,6 +196,11 @@
 				6BF852EACBEB40821E19BA82 /* Images.xcassets in Resources */,
 				AC735E1A9144E492BAFFE990 /* PrivacyInfo.xcprivacy in Resources */,
 				FB25023A6F19AD40C8CB1E98 /* GoogleService-Info.plist in Resources */,
+				16D6E8F02C9A4E199342B65A /* Baloo2-ExtraBold.ttf in Resources */,
+				3B242A4B2D8F4CF08D173274 /* Baloo2-Regular.ttf in Resources */,
+				B89973B4672A4E2B8F18B37A /* DancingScript-Bold.ttf in Resources */,
+				3EC5E5FD1FA34ECE8DB19F67 /* DancingScript-Regular.ttf in Resources */,
+				85EC0F1960954841A646346F /* Lobster-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

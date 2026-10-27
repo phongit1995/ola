@@ -54,6 +54,11 @@ type FeatureEnabledResponse struct {
 
 type FeatureEnabledSuccessResponse = utils.BaseResponse[FeatureEnabledResponse]
 
+type MomentConfigResponse struct {
+	Enabled          bool `json:"enabled" example:"true"`
+	VideoVipRequired bool `json:"videoVipRequired" example:"false"`
+}
+
 type AppConfigResponse struct {
 	Version     string                     `json:"version" example:"9f86d081884c7d65"`
 	NotModified bool                       `json:"notModified,omitempty"`
