@@ -16,7 +16,7 @@ import (
 const (
 	settingsCacheKey      = "app_settings:cache"
 	settingsGenerationKey = "app_settings:generation"
-	settingsCacheTTL      = time.Minute
+	settingsCacheTTL      = time.Hour
 	settingsLoadedField   = "_loaded"
 	settingsUncachedLoad  = "uncached"
 )
