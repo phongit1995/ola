@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isAllowedVerifyEmailDomain } from '@ola/shared/constants';
-import { ApiError, toast } from '@lib';
+import { ApiError, EMAIL_UNAVAILABLE_STATUS, toast } from '@lib';
 import { AuthService } from '@services';
 import { Dialog, DialogButton, OtpInput } from '@components';
 
@@ -23,10 +23,12 @@ type VerifyEmailErrorKey =
   | 'verifyEmail.errTaken'
   | 'verifyEmail.errTooMany'
   | 'verifyEmail.errCodeExpired'
-  | 'verifyEmail.errCodeInvalid';
+  | 'verifyEmail.errCodeInvalid'
+  | 'verifyEmail.errUnavailable';
 
 function messageKey(err: unknown): VerifyEmailErrorKey {
   if (!(err instanceof ApiError)) return 'verifyEmail.errGeneric';
+  if (err.status === EMAIL_UNAVAILABLE_STATUS) return 'verifyEmail.errUnavailable';
   const msg = err.message.toLowerCase();
   if (msg.includes('domain')) return 'verifyEmail.errDomainNotAllowed';
   if (msg.includes('daily')) return 'verifyEmail.errDailyLimit';

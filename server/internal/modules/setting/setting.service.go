@@ -428,9 +428,9 @@ func ValidatePushNotificationValue(value models.JSONB) error {
 	return nil
 }
 
-const pushCredentialEncVersion = "v1:"
+const settingSecretEncVersion = "v1:"
 
-func PushCredentialSecrets(cfg *config.Config) []string {
+func SettingSecrets(cfg *config.Config) []string {
 	secrets := make([]string, 0, 2)
 	if cfg.SettingsEncKey != "" {
 		secrets = append(secrets, cfg.SettingsEncKey)
@@ -441,32 +441,40 @@ func PushCredentialSecrets(cfg *config.Config) []string {
 	return secrets
 }
 
-func EncryptPushFirebaseValue(cfg *config.Config, value models.JSONB) (models.JSONB, error) {
-	secrets := PushCredentialSecrets(cfg)
+func encryptSettingSecret(cfg *config.Config, plain []byte) (string, error) {
+	secrets := SettingSecrets(cfg)
 	if len(secrets) == 0 {
-		return nil, errors.New("no encryption secret configured")
+		return "", errors.New("no encryption secret configured")
 	}
+	enc, err := utils.EncryptWithSecret(secrets[0], plain)
+	if err != nil {
+		return "", err
+	}
+	return settingSecretEncVersion + enc, nil
+}
+
+func EncryptPushFirebaseValue(cfg *config.Config, value models.JSONB) (models.JSONB, error) {
 	raw, err := json.Marshal(value)
 	if err != nil {
 		return nil, errors.New("invalid service account JSON")
 	}
-	enc, err := utils.EncryptWithSecret(secrets[0], raw)
+	enc, err := encryptSettingSecret(cfg, raw)
 	if err != nil {
 		return nil, err
 	}
 	projectID, _ := value["project_id"].(string)
 	clientEmail, _ := value["client_email"].(string)
 	return models.JSONB{
-		"enc":         pushCredentialEncVersion + enc,
+		"enc":         enc,
 		"projectId":   projectID,
 		"clientEmail": clientEmail,
 	}, nil
 }
 
-func DecryptPushCredential(cfg *config.Config, enc string) ([]byte, error) {
-	enc = strings.TrimPrefix(enc, pushCredentialEncVersion)
+func DecryptSettingSecret(cfg *config.Config, enc string) ([]byte, error) {
+	enc = strings.TrimPrefix(enc, settingSecretEncVersion)
 	var lastErr error
-	for _, secret := range PushCredentialSecrets(cfg) {
+	for _, secret := range SettingSecrets(cfg) {
 		plain, err := utils.DecryptWithSecret(secret, enc)
 		if err == nil {
 			return plain, nil

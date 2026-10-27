@@ -1599,6 +1599,12 @@ export interface PushNotificationSetting {
   enabled?: boolean
 }
 
+export interface MailResendSettingStatus {
+  configured?: boolean
+  keyHint?: string
+  from?: string
+}
+
 export interface TopupBankSetting {
   bankName: string
   bankBin: string

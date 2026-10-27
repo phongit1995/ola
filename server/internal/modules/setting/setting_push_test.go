@@ -90,7 +90,7 @@ func TestEncryptPushFirebaseValue(t *testing.T) {
 	if !strings.HasPrefix(enc, "v1:") || strings.Contains(enc, "PRIVATE KEY") {
 		t.Fatal("enc must be versioned ciphertext")
 	}
-	plain, err := DecryptPushCredential(cfg, enc)
+	plain, err := DecryptSettingSecret(cfg, enc)
 	if err != nil {
 		t.Fatalf("decrypt: %v", err)
 	}
@@ -99,14 +99,14 @@ func TestEncryptPushFirebaseValue(t *testing.T) {
 	}
 
 	cfgWithKey := &config.Config{SettingsEncKey: strings.Repeat("k", 32), JWTSecret: cfg.JWTSecret}
-	if _, err := DecryptPushCredential(cfgWithKey, enc); err != nil {
+	if _, err := DecryptSettingSecret(cfgWithKey, enc); err != nil {
 		t.Fatalf("decrypt must fall back to JWT secret: %v", err)
 	}
 	stored2, err := EncryptPushFirebaseValue(cfgWithKey, validServiceAccount(t))
 	if err != nil {
 		t.Fatalf("encrypt with dedicated key: %v", err)
 	}
-	if _, err := DecryptPushCredential(cfg, stored2["enc"].(string)); err == nil {
+	if _, err := DecryptSettingSecret(cfg, stored2["enc"].(string)); err == nil {
 		t.Fatal("credential encrypted with dedicated key must not decrypt with JWT-only config")
 	}
 }

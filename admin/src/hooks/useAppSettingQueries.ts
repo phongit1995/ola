@@ -21,6 +21,12 @@ export function usePutAppSettings() {
   })
 }
 
+export function useTestMail() {
+  return useMutation({
+    mutationFn: (to: string) => AdminSettingsService.testMail(to),
+  })
+}
+
 export function usePutAppSetting() {
   const queryClient = useQueryClient()
   return useMutation({

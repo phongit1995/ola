@@ -153,6 +153,7 @@
     "successTitle": "Password reset successful",
     "successDesc": "Please login with your new password.",
     "errRateLimited": "Too many requests, please try again later.",
+    "errUnavailable": "Email sending is temporarily unavailable, please try again later.",
     "errCodeExpired": "The code has expired or was not found. Please request a new one.",
     "errTooManyAttempts": "Too many wrong attempts. Please request a new code.",
     "errInvalidCode": "Invalid code, please check again.",
@@ -1270,6 +1271,7 @@
     "errCooldown": "Please wait before requesting a new code.",
     "errDailyLimit": "You have reached the daily verification limit, try again later.",
     "errTaken": "This email is already used by another account.",
+    "errUnavailable": "Email sending is temporarily unavailable, please try again later.",
     "errGeneric": "Could not send the code, please try again."
   },
   "statusDialog": {

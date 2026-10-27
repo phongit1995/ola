@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
@@ -390,8 +391,13 @@ type passwordResetEntry struct {
 
 const errPasswordResetFailed = "failed to reset password, please try again"
 
+var errEmailUnavailable = utils.NewHTTPError(http.StatusServiceUnavailable, "email service unavailable")
+
 func (s *Service) SendPasswordReset(username, clientIP string) error {
 	username = strings.ToLower(strings.TrimSpace(username))
+	if !s.mailService.Available() {
+		return errEmailUnavailable
+	}
 
 	cooldownKey := fmt.Sprintf(constants.CacheKeyPasswordResetCooldown, username)
 	if ok, err := s.cache.SetNX(cooldownKey, "1", constants.PasswordResetCooldownSeconds*time.Second); err == nil && !ok {
@@ -526,6 +532,9 @@ func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string,
 	if !isAllowedEmailDomain(email) {
 		return "", errors.New("email domain not allowed")
 	}
+	if !s.mailService.Available() {
+		return "", errEmailUnavailable
+	}
 
 	user, err := s.repo.FindByID(userID)
 	if err != nil {
@@ -564,14 +573,20 @@ func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string,
 	}
 
 	verifyID := uuid.NewString()
+	codeKey := fmt.Sprintf(constants.CacheKeyEmailVerifyCode, userID)
 	entry := emailVerifyEntry{VerifyID: verifyID, Email: email, Code: code}
-	if err := s.cache.Set(fmt.Sprintf(constants.CacheKeyEmailVerifyCode, userID), entry, constants.CacheTTLOTP*time.Second); err != nil {
+	if err := s.cache.Set(codeKey, entry, constants.CacheTTLOTP*time.Second); err != nil {
 		return "", err
 	}
 
 	if err := s.mailService.SendVerificationCode(context.Background(), email, code); err != nil {
 		s.logger.Errorw("Failed to send verification email", "user_id", userID, "error", err.Error())
+		_ = s.cache.Delete(codeKey)
 		_, _ = s.cache.Decrement(dailyKey)
+		_ = s.cache.Delete(cooldownKey)
+		if errors.Is(err, services.ErrMailNotConfigured) {
+			return "", errEmailUnavailable
+		}
 		return "", errors.New("failed to send verification email")
 	}
 

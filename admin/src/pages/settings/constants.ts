@@ -4,6 +4,14 @@ export const CREDENTIAL_KEY = 'push_firebase'
 
 export const TOGGLE_KEY = 'push_notification'
 
+export const MAIL_KEY = 'mail_resend'
+
+export const NOTIFICATION_TAB_KEYS = ['push', 'email'] as const
+
+export const NOTIFICATION_DEFAULT_TAB = 'push'
+
+export const MAIL_DEFAULT_FROM = 'Ola Chat <noreply@olachat.net>'
+
 export const PUSH_TITLE_MAX = 100
 
 export const PUSH_BODY_MAX = 500

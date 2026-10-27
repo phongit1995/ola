@@ -153,6 +153,7 @@
     "successTitle": "Đặt lại mật khẩu thành công",
     "successDesc": "Vui lòng đăng nhập bằng mật khẩu mới.",
     "errRateLimited": "Bạn thao tác quá nhiều lần, vui lòng thử lại sau.",
+    "errUnavailable": "Hệ thống gửi email đang tạm ngưng, vui lòng thử lại sau.",
     "errCodeExpired": "Mã đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới.",
     "errTooManyAttempts": "Nhập sai quá nhiều lần. Vui lòng yêu cầu mã mới.",
     "errInvalidCode": "Mã không đúng, vui lòng kiểm tra lại.",
@@ -1270,6 +1271,7 @@
     "errCooldown": "Vui lòng chờ trước khi gửi lại mã.",
     "errDailyLimit": "Bạn đã vượt số lần xác thực trong ngày, thử lại sau.",
     "errTaken": "Email này đã được tài khoản khác sử dụng.",
+    "errUnavailable": "Hệ thống gửi email đang tạm ngưng, vui lòng thử lại sau.",
     "errGeneric": "Không gửi được mã, vui lòng thử lại."
   },
   "statusDialog": {

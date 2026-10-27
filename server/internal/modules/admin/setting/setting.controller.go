@@ -1,12 +1,16 @@
 package adminsetting
 
 import (
+	"context"
+	"errors"
+	"net/http"
 	"strings"
 	"time"
 
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/setting"
+	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -15,12 +19,13 @@ import (
 
 type Controller struct {
 	service *setting.Service
+	mail    *services.MailService
 	cfg     *config.Config
 	logger  *zap.SugaredLogger
 }
 
-func NewController(service *setting.Service, cfg *config.Config, logger *zap.SugaredLogger) *Controller {
-	return &Controller{service: service, cfg: cfg, logger: logger.Named("[admin_setting_controller]")}
+func NewController(service *setting.Service, mail *services.MailService, cfg *config.Config, logger *zap.SugaredLogger) *Controller {
+	return &Controller{service: service, mail: mail, cfg: cfg, logger: logger.Named("[admin_setting_controller]")}
 }
 
 type PutSettingRequest struct {
@@ -37,7 +42,24 @@ type PutManySettingsRequest struct {
 	Items []SettingEntry `json:"items" binding:"required,min=1,max=20,dive"`
 }
 
-const maxSettingKeyLength = 100
+type TestMailRequest struct {
+	To string `json:"to" binding:"required,email,max=254"`
+}
+
+type TestMailResponse struct {
+	To string `json:"to"`
+}
+
+type TestMailSuccessResponse = utils.BaseResponse[TestMailResponse]
+
+const (
+	maxSettingKeyLength = 100
+	testMailTimeout     = 15 * time.Second
+)
+
+func isSecretSetting(key string) bool {
+	return key == setting.KeyPushFirebase || key == setting.KeyMailResend
+}
 
 func validSettingKey(key string) bool {
 	return key != "" && len(key) <= maxSettingKeyLength
@@ -82,8 +104,11 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 }
 
 func maskSensitiveSetting(item models.AppSetting) models.AppSetting {
-	if item.Key == setting.KeyPushFirebase {
+	switch item.Key {
+	case setting.KeyPushFirebase:
 		item.Value = setting.MaskPushFirebaseValue(item.Value)
+	case setting.KeyMailResend:
+		item.Value = setting.MaskMailResendValue(item.Value)
 	}
 	return item
 }
@@ -153,6 +178,9 @@ func (ctrl *Controller) PutMany(c *gin.Context) (interface{}, error) {
 		}
 		if seen[key] {
 			return nil, utils.NewHTTPError(400, "duplicate setting key: "+key)
+		}
+		if isSecretSetting(key) {
+			return nil, utils.NewHTTPError(400, "setting "+key+" must be saved on its own")
 		}
 		seen[key] = true
 		value, err := ctrl.prepareValue(key, entry.Value)
@@ -231,6 +259,42 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 			return nil, utils.ServiceError(err)
 		}
 		return encrypted, nil
+	case setting.KeyMailResend:
+		input, err := setting.ValidateMailResendValue(value)
+		if err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+		stored, err := ctrl.service.BuildMailResendValue(ctrl.cfg, input)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		return stored, nil
 	}
 	return value, nil
+}
+
+// TestMail godoc
+// @Summary      Gửi email thử bằng cấu hình email đang dùng (admin)
+// @Tags         admin-settings
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body TestMailRequest true "Địa chỉ nhận"
+// @Success      200  {object}  TestMailSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Router       /admin/settings/mail/test [post]
+func (ctrl *Controller) TestMail(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[TestMailRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), testMailTimeout)
+	defer cancel()
+	if err := ctrl.mail.SendTest(ctx, req.To); err != nil {
+		if errors.Is(err, services.ErrMailNotConfigured) {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "Chưa cấu hình API key Resend")
+		}
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "Gửi email thử thất bại: "+err.Error())
+	}
+	return TestMailResponse{To: req.To}, nil
 }

@@ -77,9 +77,6 @@ type Config struct {
 	FFmpegPath  string `env:"FFMPEG_PATH" envDefault:""`
 	FFprobePath string `env:"FFPROBE_PATH" envDefault:"ffprobe"`
 
-	ResendAPIKey string `env:"RESEND_API_KEY" envDefault:"re_Qrsr5SLt_HR2pmoKUyENNmsMWjjMzyE6o"`
-	MailFrom     string `env:"MAIL_FROM" envDefault:"Ola Chat <noreply@olachat.net>"`
-
 	EmailVerifyVipRewardDays int `env:"EMAIL_VERIFY_VIP_REWARD_DAYS" envDefault:"0" validate:"min=0"`
 
 	ClanCreateCost int `env:"CLAN_CREATE_COST" envDefault:"20000" validate:"min=0"`
