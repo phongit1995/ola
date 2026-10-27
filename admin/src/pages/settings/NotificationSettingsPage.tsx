@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   App,
   Button,
@@ -7,6 +8,7 @@ import {
   Input,
   Spin,
   Switch,
+  Tabs,
   Tag,
   Typography,
   Upload,
@@ -14,16 +16,31 @@ import {
 import { InboxOutlined, SaveOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
-import type { PushFirebaseSettingStatus, PushNotificationSetting } from '@/types'
+import type { AppSetting, PushFirebaseSettingStatus, PushNotificationSetting } from '@/types'
 import { formatDateTime } from '@/lib/format'
-import { CREDENTIAL_KEY, TOGGLE_KEY } from './constants'
+import {
+  CREDENTIAL_KEY,
+  MAIL_KEY,
+  NOTIFICATION_DEFAULT_TAB,
+  NOTIFICATION_TAB_KEYS,
+  TOGGLE_KEY,
+} from './constants'
+import { MailSettingsCard } from './MailSettingsCard'
 import { parseServiceAccount } from './utils'
 
+type TabKey = (typeof NOTIFICATION_TAB_KEYS)[number]
+
 export function NotificationSettingsPage() {
-  const { message } = App.useApp()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeKey: TabKey = NOTIFICATION_TAB_KEYS.includes(tabParam as TabKey)
+    ? (tabParam as TabKey)
+    : NOTIFICATION_DEFAULT_TAB
   const { data: settings, isLoading, isError } = useAppSettings()
-  const putSetting = usePutAppSetting()
-  const [pasted, setPasted] = useState('')
+
+  function changeTab(key: string) {
+    setSearchParams(key === NOTIFICATION_DEFAULT_TAB ? {} : { tab: key }, { replace: true })
+  }
 
   if (isLoading) {
     return (
@@ -35,13 +52,39 @@ export function NotificationSettingsPage() {
 
   if (isError) {
     return (
-      <Card title="Thông báo đẩy (FCM)" style={{ maxWidth: 680 }}>
+      <Card title="Cài đặt thông báo" style={{ maxWidth: 680 }}>
         <Typography.Text type="danger">
           Không tải được cấu hình hiện tại. Tải lại trang trước khi chỉnh sửa để tránh ghi đè nhầm.
         </Typography.Text>
       </Card>
     )
   }
+
+  return (
+    <Tabs
+      activeKey={activeKey}
+      onChange={changeTab}
+      destroyOnHidden
+      items={[
+        {
+          key: 'push',
+          label: 'Thông báo đẩy (FCM)',
+          children: <PushSettingsCard settings={settings} />,
+        },
+        {
+          key: 'email',
+          label: 'Email (Resend)',
+          children: <MailSettingsCard setting={settings?.find((item) => item.key === MAIL_KEY)} />,
+        },
+      ]}
+    />
+  )
+}
+
+function PushSettingsCard({ settings }: { settings?: AppSetting[] }) {
+  const { message } = App.useApp()
+  const putSetting = usePutAppSetting()
+  const [pasted, setPasted] = useState('')
 
   const credential = settings?.find((item) => item.key === CREDENTIAL_KEY)
   const status = (credential?.value ?? null) as PushFirebaseSettingStatus | null
@@ -75,7 +118,7 @@ export function NotificationSettingsPage() {
   }
 
   return (
-    <Card title="Thông báo đẩy (FCM)" style={{ maxWidth: 680 }}>
+    <Card style={{ maxWidth: 680 }}>
       <Typography.Paragraph type="secondary">
         Push chỉ được gửi khi công tắc bên dưới đang bật VÀ đã upload service account JSON của
         Firebase (Project settings → Service accounts → Generate new private key). Key được mã hoá

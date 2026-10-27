@@ -19,6 +19,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		settings.GET("", r.controller.List)
 		settings.GET("/chat-bot/defaults", r.controller.ChatBotDefaults)
+		settings.POST("/mail/test", r.controller.TestMail)
 		settings.PUT("", r.controller.PutMany)
 		settings.PUT("/:key", r.controller.Put)
 	}

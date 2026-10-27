@@ -50,6 +50,7 @@ type MomentResponse struct {
 	Hidden        bool                   `json:"hidden,omitempty"`
 	HiddenBy      string                 `json:"hiddenBy,omitempty"`
 	MediaPurged   bool                   `json:"mediaPurged,omitempty"`
+	Seen          bool                   `json:"seen,omitempty"`
 	CreatedAt     string                 `json:"createdAt"`
 	ExpiresAt     string                 `json:"expiresAt"`
 }

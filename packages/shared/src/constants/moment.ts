@@ -66,6 +66,7 @@ export const MOMENT_REACT_MAX_PER_TYPE = 99;
 export const MOMENT_RETRY_BASE_MS = 1500;
 export const MOMENT_RETRY_MAX_MS = 30_000;
 export const MOMENT_CLOCK_TICK_MS = 30_000;
+export const MOMENT_TRAY_REFRESH_MS = 3 * 60_000;
 export const MOMENT_PROCESSING_POLL_MS = 4000;
 export const MOMENT_UPLOAD_TIMEOUT_MS = 180_000;
 export const MOMENT_VIEWERS_PAGE_SIZE = 50;

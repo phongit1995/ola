@@ -284,6 +284,12 @@ func (s *Service) Tray(ctx context.Context, viewerID uuid.UUID, rawCursor string
 	for _, group := range groups {
 		ids = append(ids, group.momentIDs...)
 	}
+	seenByViewer := make(map[uuid.UUID]bool, len(rows))
+	for _, row := range rows {
+		if row.Seen {
+			seenByViewer[row.ID] = true
+		}
+	}
 	moments, err := s.repo.FindWithAuthors(ids)
 	if err != nil {
 		return nil, err
@@ -292,7 +298,9 @@ func (s *Service) Tray(ctx context.Context, viewerID uuid.UUID, rawCursor string
 		items := make([]MomentResponse, 0, len(group.momentIDs))
 		for _, id := range group.momentIDs {
 			if moment, ok := moments[id]; ok {
-				items = append(items, toMomentResponse(moment, authorOf(moment)))
+				item := toMomentResponse(moment, authorOf(moment))
+				item.Seen = seenByViewer[id]
+				items = append(items, item)
 			}
 		}
 		if len(items) > 0 {
@@ -382,6 +390,7 @@ func (s *Service) SetHidden(ctx context.Context, userID, momentID uuid.UUID, hid
 type trayGroup struct {
 	authorID  uuid.UUID
 	latest    time.Time
+	allSeen   bool
 	momentIDs []uuid.UUID
 }
 
@@ -389,7 +398,7 @@ func groupTrayRows(rows []trayPageRow, limit int) ([]trayGroup, *trayCursor) {
 	groups := make([]trayGroup, 0, limit+1)
 	for _, row := range rows {
 		if n := len(groups); n == 0 || groups[n-1].authorID != row.AuthorID {
-			groups = append(groups, trayGroup{authorID: row.AuthorID, latest: row.Latest})
+			groups = append(groups, trayGroup{authorID: row.AuthorID, latest: row.Latest, allSeen: row.AllSeen})
 		}
 		last := &groups[len(groups)-1]
 		last.momentIDs = append(last.momentIDs, row.ID)
@@ -399,11 +408,20 @@ func groupTrayRows(rows []trayPageRow, limit int) ([]trayGroup, *trayCursor) {
 	}
 	groups = groups[:limit]
 	last := groups[limit-1]
-	return groups, &trayCursor{Latest: last.latest, AuthorID: last.authorID}
+	return groups, &trayCursor{AllSeen: last.allSeen, Latest: last.latest, AuthorID: last.authorID}
 }
 
+const (
+	trayCursorUnseen = "0"
+	trayCursorSeen   = "1"
+)
+
 func encodeTrayCursor(cursor *trayCursor) string {
-	raw := strconv.FormatInt(cursor.Latest.UnixMicro(), 10) + "_" + cursor.AuthorID.String()
+	seen := trayCursorUnseen
+	if cursor.AllSeen {
+		seen = trayCursorSeen
+	}
+	raw := strconv.FormatInt(cursor.Latest.UnixMicro(), 10) + "_" + cursor.AuthorID.String() + "_" + seen
 	return base64.RawURLEncoding.EncodeToString([]byte(raw))
 }
 
@@ -416,19 +434,29 @@ func decodeTrayCursor(value string) (*trayCursor, error) {
 	if err != nil {
 		return nil, err
 	}
-	micros, author, ok := strings.Cut(string(raw), "_")
-	if !ok {
+	parts := strings.Split(string(raw), "_")
+	if len(parts) < 2 || len(parts) > 3 {
 		return nil, errInvalidCursor
 	}
-	at, err := strconv.ParseInt(micros, 10, 64)
+	at, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
 		return nil, err
 	}
-	authorID, err := uuid.Parse(author)
+	authorID, err := uuid.Parse(parts[1])
 	if err != nil {
 		return nil, err
 	}
-	return &trayCursor{Latest: time.UnixMicro(at).UTC(), AuthorID: authorID}, nil
+	allSeen := false
+	if len(parts) == 3 {
+		switch parts[2] {
+		case trayCursorSeen:
+			allSeen = true
+		case trayCursorUnseen:
+		default:
+			return nil, errInvalidCursor
+		}
+	}
+	return &trayCursor{AllSeen: allSeen, Latest: time.UnixMicro(at).UTC(), AuthorID: authorID}, nil
 }
 
 func (s *Service) MarkSeen(ctx context.Context, viewerID uuid.UUID, rawIDs []string) (*MarkSeenResponse, error) {

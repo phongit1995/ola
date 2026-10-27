@@ -8,6 +8,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
+import { isMomentGroupSeen, momentGroupStartIndex } from '@ola/shared/lib';
 import type { Moment, MomentTrayGroup } from '@ola/shared/types';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { useMomentTray } from '@ola/shared/stores/moment/useMomentTray';
@@ -17,7 +18,7 @@ import { MomentAddCard, MomentTrayCard } from './MomentTrayCard';
 type TrayItem =
   | { kind: 'add'; key: string }
   | { kind: 'mine'; key: string; moment: Moment }
-  | { kind: 'group'; key: string; group: MomentTrayGroup; moment: Moment };
+  | { kind: 'group'; key: string; group: MomentTrayGroup; moment: Moment; seen: boolean };
 
 const ROW_GAP = 8;
 const ROW_PADDING = 12;
@@ -61,8 +62,10 @@ export function MomentTray({ onOpenViewer, onAddMoment }: MomentTrayProps) {
     { kind: 'add', key: 'add' },
     ...(latestMine ? [{ kind: 'mine' as const, key: 'mine', moment: latestMine }] : []),
     ...tray.groups.flatMap((group) => {
-      const first = group.moments[0];
-      return first ? [{ kind: 'group' as const, key: group.author.id, group, moment: first }] : [];
+      const cover = group.moments[momentGroupStartIndex(group, tray.seenIds)];
+      if (!cover) return [];
+      const seen = isMomentGroupSeen(group, tray.seenIds);
+      return [{ kind: 'group' as const, key: group.author.id, group, moment: cover, seen }];
     }),
   ];
 
@@ -119,8 +122,8 @@ export function MomentTray({ onOpenViewer, onAddMoment }: MomentTrayProps) {
     return (
       <MomentTrayCard
         moment={item.moment}
-        label={item.group.author.fullName || item.group.author.username}
-        ringed
+        label={item.group.author.username}
+        ringed={!item.seen}
         onPress={() => onOpenViewer(tray.groups, item.group.author.id, false)}
       />
     );

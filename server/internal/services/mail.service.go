@@ -4,36 +4,52 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
 
-	"ola-chat-server/internal/config"
-
 	"go.uber.org/zap"
 )
 
-const resendEmailsEndpoint = "https://api.resend.com/emails"
+const (
+	resendEmailsEndpoint = "https://api.resend.com/emails"
+	resendErrorBodyLimit = 2048
+)
+
+var ErrMailNotConfigured = errors.New("email service is not configured")
+
+type MailCredential struct {
+	APIKey string
+	From   string
+}
+
+type MailCredentialSource interface {
+	MailCredential() (MailCredential, bool, error)
+}
 
 type MailService struct {
-	apiKey string
-	from   string
+	source MailCredentialSource
 	client *http.Client
 	logger *zap.SugaredLogger
 }
 
-func NewMailService(cfg *config.Config, logger *zap.SugaredLogger) *MailService {
-	l := logger.Named("[mail_service]")
-	if cfg.ResendAPIKey == "" {
-		l.Warn("RESEND_API_KEY is empty, email sending is disabled")
-	}
+func NewMailService(source MailCredentialSource, logger *zap.SugaredLogger) *MailService {
 	return &MailService{
-		apiKey: cfg.ResendAPIKey,
-		from:   cfg.MailFrom,
+		source: source,
 		client: &http.Client{Timeout: 10 * time.Second},
-		logger: l,
+		logger: logger.Named("[mail_service]"),
 	}
+}
+
+func (s *MailService) Available() bool {
+	cred, ok, err := s.source.MailCredential()
+	if err != nil {
+		s.logger.Warnw("Failed to load mail_resend admin setting", "error", err.Error())
+		return false
+	}
+	return ok && cred.APIKey != ""
 }
 
 type resendPayload struct {
@@ -43,13 +59,22 @@ type resendPayload struct {
 	HTML    string   `json:"html"`
 }
 
+type resendError struct {
+	Message string `json:"message"`
+}
+
 func (s *MailService) send(ctx context.Context, toEmail, subject, html string) error {
-	if s.apiKey == "" {
-		return fmt.Errorf("email service is not configured")
+	cred, ok, err := s.source.MailCredential()
+	if err != nil {
+		s.logger.Errorw("Failed to load mail_resend admin setting", "error", err.Error())
+		return fmt.Errorf("failed to load email config: %w", err)
+	}
+	if !ok || cred.APIKey == "" {
+		return ErrMailNotConfigured
 	}
 
 	body, err := json.Marshal(resendPayload{
-		From:    s.from,
+		From:    cred.From,
 		To:      []string{toEmail},
 		Subject: subject,
 		HTML:    html,
@@ -62,7 +87,7 @@ func (s *MailService) send(ctx context.Context, toEmail, subject, html string) e
 	if err != nil {
 		return fmt.Errorf("failed to build email request: %w", err)
 	}
-	req.Header.Set("Authorization", "Bearer "+s.apiKey)
+	req.Header.Set("Authorization", "Bearer "+cred.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := s.client.Do(req)
@@ -73,12 +98,16 @@ func (s *MailService) send(ctx context.Context, toEmail, subject, html string) e
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		respBody, _ := io.ReadAll(resp.Body)
+		respBody, _ := io.ReadAll(io.LimitReader(resp.Body, resendErrorBodyLimit))
 		s.logger.Errorw("Resend API returned error", "to", toEmail, "status", resp.StatusCode, "body", string(respBody))
-		return fmt.Errorf("failed to send email: status %d", resp.StatusCode)
+		var parsed resendError
+		if json.Unmarshal(respBody, &parsed) == nil && parsed.Message != "" {
+			return fmt.Errorf("resend status %d: %s", resp.StatusCode, parsed.Message)
+		}
+		return fmt.Errorf("resend status %d", resp.StatusCode)
 	}
 
-	s.logger.Infow("Verification email sent", "to", toEmail)
+	s.logger.Infow("Email sent", "to", toEmail, "subject", subject)
 	return nil
 }
 
@@ -91,6 +120,12 @@ func (s *MailService) SendVerificationCode(ctx context.Context, toEmail, code st
 func (s *MailService) SendPasswordResetCode(ctx context.Context, toEmail, code string) error {
 	subject := "Mã đặt lại mật khẩu Ola"
 	html := buildCodeEmailHTML("Đặt lại mật khẩu", "Dùng mã bên dưới để đặt lại mật khẩu tài khoản Ola của bạn. Mã có hiệu lực trong <strong>5 phút</strong>. Nếu bạn không yêu cầu đặt lại mật khẩu, tài khoản của bạn vẫn an toàn — hãy bỏ qua email này.", code)
+	return s.send(ctx, toEmail, subject, html)
+}
+
+func (s *MailService) SendTest(ctx context.Context, toEmail string) error {
+	subject := "Email thử từ Ola"
+	html := buildCodeEmailHTML("Email thử", "Cấu hình gửi email của Ola đang hoạt động. Đây là mã mẫu, không dùng được để xác thực.", "123456")
 	return s.send(ctx, toEmail, subject, html)
 }
 

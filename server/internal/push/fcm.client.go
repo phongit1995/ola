@@ -147,7 +147,7 @@ func (c *FCMClient) loadCredentials() ([]byte, time.Time) {
 		c.logger.Warnw("push_firebase app setting has no encrypted credential")
 		return nil, time.Time{}
 	}
-	creds, err := setting.DecryptPushCredential(c.cfg, stored.Enc)
+	creds, err := setting.DecryptSettingSecret(c.cfg, stored.Enc)
 	if err != nil {
 		c.logger.Errorw("Failed to decrypt push_firebase credential (encryption secret mismatch between api and chat?)", "error", err.Error())
 		return nil, time.Time{}

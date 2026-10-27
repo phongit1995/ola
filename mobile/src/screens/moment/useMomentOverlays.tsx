@@ -1,16 +1,22 @@
 import { useCallback, useState } from 'react';
-import { activeMomentGroups } from '@ola/shared/lib';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { activeMomentGroups, colorForName, isMomentGroupSeen } from '@ola/shared/lib';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
-import type { Moment, MomentTrayGroup, MomentViewerSession } from '@ola/shared/types';
+import type { Moment, MomentAuthor, MomentTrayGroup, MomentViewerSession } from '@ola/shared/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import type { RootStackParamList } from '@navigation/types';
 import { MomentComposerModal } from './components/MomentComposerModal';
 import { MomentViewer } from './components/MomentViewer';
 
 export type OpenMomentViewer = (groups: MomentTrayGroup[], authorId: string, own: boolean) => void;
 
 export function useMomentOverlays() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const tick = useMomentStore((s) => s.tick);
   const flushSeen = useMomentStore((s) => s.flushSeen);
   const flushReactions = useMomentStore((s) => s.flushReactions);
+  const seenIds = useMomentStore((s) => s.seenIds);
   const [session, setSession] = useState<MomentViewerSession | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
 
@@ -18,10 +24,12 @@ export function useMomentOverlays() {
     (groups, authorId, own) => {
       const active = activeMomentGroups(groups, Date.now());
       const startIndex = active.findIndex((group) => group.author.id === authorId);
+      const start = active[startIndex];
       tick();
-      if (startIndex >= 0) setSession({ groups: active, startIndex, own });
+      if (start == null) return;
+      setSession({ groups: active, startIndex, own, unseenOnly: !own && !isMomentGroupSeen(start, seenIds) });
     },
-    [tick]
+    [tick, seenIds]
   );
 
   const openArchive = useCallback(
@@ -45,11 +53,22 @@ export function useMomentOverlays() {
     void flushReactions();
   }, [tick, flushSeen, flushReactions]);
 
+  const openProfile = useCallback(
+    (author: MomentAuthor) => {
+      closeViewer();
+      navigation.navigate(ROOT_ROUTES.ProfileView, {
+        userId: author.username,
+        color: colorForName(author.username),
+      });
+    },
+    [closeViewer, navigation]
+  );
+
   const openComposer = useCallback(() => setComposerOpen(true), []);
 
   const overlays = (
     <>
-      {session && <MomentViewer session={session} onClose={closeViewer} />}
+      {session && <MomentViewer session={session} onClose={closeViewer} onOpenProfile={openProfile} />}
       <MomentComposerModal visible={composerOpen} onClose={() => setComposerOpen(false)} />
     </>
   );

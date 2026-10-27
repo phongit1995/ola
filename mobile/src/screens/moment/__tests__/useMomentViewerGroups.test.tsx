@@ -73,7 +73,7 @@ describe('useMomentViewerGroups', () => {
     expect(loadMore).not.toHaveBeenCalled();
   });
 
-  it('appends newly loaded authors after the session groups, skipping known and seen ones', () => {
+  it('appends newly loaded authors after the session groups, skipping known ones but keeping seen ones', () => {
     const base = [group('a'), group('b')];
     render(base, 0);
     act(() =>
@@ -82,7 +82,7 @@ describe('useMomentViewerGroups', () => {
         seenIds: new Set(['d-1']),
       })
     );
-    expect(authors(current)).toEqual(['a', 'b', 'c', 'e']);
+    expect(authors(current)).toEqual(['a', 'b', 'c', 'd', 'e']);
     expect(current[0]).toBe(base[0]);
   });
 

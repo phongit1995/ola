@@ -32,12 +32,18 @@ import {
   isMomentHiddenByAdmin,
   portalRoot,
   momentExpiresInMs,
-  momentGroupStep,
+  momentGroupEntryStep,
+  momentGroupStartIndex,
   momentItemStep,
   momentMedia,
   momentPreloadUrl,
 } from '@lib';
-import type { MomentPosition, MomentViewerSession, ReportTarget } from '@app-types';
+import type {
+  MomentAuthor,
+  MomentPosition,
+  MomentViewerSession,
+  ReportTarget,
+} from '@app-types';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { useMomentHiddenToggle } from '@ola/shared/stores/moment/useMomentHiddenToggle';
 import { useMomentTray } from '@ola/shared/stores/moment/useMomentTray';
@@ -69,13 +75,15 @@ function easeOutCubic(value: number): number {
 interface MomentViewerProps {
   session: MomentViewerSession;
   onClose: () => void;
+  onOpenProfile?: (author: MomentAuthor) => void;
 }
 
-export function MomentViewer({ session, onClose }: MomentViewerProps) {
+export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerProps) {
   const { t, i18n } = useTranslation();
   const markSeen = useMomentStore((s) => s.markSeen);
   const react = useMomentStore((s) => s.react);
   const history = useMomentStore((s) => s.history);
+  const seenIds = useMomentStore((s) => s.seenIds);
   const ownMoments = useMomentTray().mine;
   const baseGroups = useMemo(() => {
     const ownAuthor = session.groups[0]?.author;
@@ -87,8 +95,14 @@ export function MomentViewer({ session, onClose }: MomentViewerProps) {
   const [groupIndex, setGroupIndex] = useState(session.startIndex);
   const groups = useMomentViewerGroups(baseGroups, groupIndex, !session.own);
   const [itemIndex, setItemIndex] = useState(0);
-  const [anchorId, setAnchorId] = useState(
-    () => session.startMomentId ?? groups[session.startIndex]?.moments[0]?.id ?? null
+  const [anchorId, setAnchorId] = useState(() => {
+    if (session.startMomentId != null) return session.startMomentId;
+    const start = groups[session.startIndex];
+    return start?.moments[momentGroupStartIndex(start, seenIds)]?.id ?? null;
+  });
+  const seenStep = useMemo(
+    () => (session.own ? undefined : { seenIds, unseenOnly: session.unseenOnly === true }),
+    [session.own, session.unseenOnly, seenIds]
   );
   const [playId, setPlayId] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -147,7 +161,7 @@ export function MomentViewer({ session, onClose }: MomentViewerProps) {
   );
 
   const turn = useCallback(
-    (from: number, direction: 1 | -1 | 0) => {
+    (from: number, direction: 1 | -1 | 0, itemIndex = 0) => {
       const state = turnRef.current;
       cancelAnimationFrame(state.frame);
       setTurning(true);
@@ -163,7 +177,7 @@ export function MomentViewer({ session, onClose }: MomentViewerProps) {
         }
         setShift(0);
         setTurning(false);
-        if (direction !== 0) goTo(groupIndex + direction, 0);
+        if (direction !== 0) goTo(groupIndex + direction, itemIndex);
       };
       state.frame = requestAnimationFrame(step);
     },
@@ -175,21 +189,21 @@ export function MomentViewer({ session, onClose }: MomentViewerProps) {
       if (turning) return;
       if (position == null) onClose();
       else if (Math.abs(position.groupIndex - groupIndex) === 1) {
-        turn(0, position.groupIndex > groupIndex ? 1 : -1);
+        turn(0, position.groupIndex > groupIndex ? 1 : -1, position.itemIndex);
       } else goTo(position.groupIndex, position.itemIndex);
     },
     [turning, groupIndex, turn, goTo, onClose]
   );
 
   const jumpGroup = useCallback(
-    (direction: 1 | -1) => moveTo(momentGroupStep(groups.length, groupIndex, direction)),
-    [groups.length, groupIndex, moveTo]
+    (direction: 1 | -1) => moveTo(momentGroupEntryStep(groups, groupIndex, direction, seenIds)),
+    [groups, groupIndex, seenIds, moveTo]
   );
 
   const advance = useCallback(
     (direction: 1 | -1) =>
-      moveTo(momentItemStep(groups, { groupIndex, itemIndex: currentIndex }, direction)),
-    [groups, groupIndex, currentIndex, moveTo]
+      moveTo(momentItemStep(groups, { groupIndex, itemIndex: currentIndex }, direction, seenStep)),
+    [groups, groupIndex, currentIndex, seenStep, moveTo]
   );
 
   const recordMediaStatus = useCallback((momentId: string, status: MomentMediaStatus) => {
@@ -305,13 +319,13 @@ export function MomentViewer({ session, onClose }: MomentViewerProps) {
     const from = dragShift(dx, width);
     const direction = dx < 0 ? 1 : -1;
     if (Math.abs(dx) > MOMENT_SWIPE_GROUP_PX) {
-      const target = momentGroupStep(groups.length, groupIndex, direction);
+      const target = momentGroupEntryStep(groups, groupIndex, direction, seenIds);
       if (target == null) {
         onClose();
         return;
       }
       if (target.groupIndex !== groupIndex) {
-        turn(from, direction);
+        turn(from, direction, target.itemIndex);
         return;
       }
     }
@@ -440,6 +454,11 @@ export function MomentViewer({ session, onClose }: MomentViewerProps) {
                 onTogglePause={() => setUserPaused((value) => !value)}
                 onOpenMenu={
                   session.own && isMomentHiddenByAdmin(faceMoment) ? undefined : () => setMenuOpen(true)
+                }
+                onOpenProfile={
+                  session.own || onOpenProfile == null
+                    ? undefined
+                    : () => onOpenProfile(faceGroup.author)
                 }
                 onReact={session.own ? undefined : (type) => react(faceMoment.id, type)}
                 onClose={onClose}

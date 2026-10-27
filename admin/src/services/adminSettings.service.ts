@@ -26,6 +26,10 @@ export const AdminSettingsService = {
     return data.data
   },
 
+  async testMail(to: string): Promise<void> {
+    await http.post('/admin/settings/mail/test', { to })
+  },
+
   async putMany(items: { key: string; value: Record<string, unknown> }[]): Promise<AppSetting[]> {
     const { data } = await http.put<ApiResponse<{ items: AppSetting[] }>>('/admin/settings', {
       items,

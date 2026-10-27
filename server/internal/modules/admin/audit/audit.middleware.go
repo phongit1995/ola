@@ -74,7 +74,8 @@ func (m *Middleware) Record() gin.HandlerFunc {
 }
 
 func isSensitiveBodyPath(path string) bool {
-	return strings.HasSuffix(path, "/admin/settings/"+setting.KeyPushFirebase)
+	return strings.HasSuffix(path, "/admin/settings/"+setting.KeyPushFirebase) ||
+		strings.HasSuffix(path, "/admin/settings/"+setting.KeyMailResend)
 }
 
 func isMutating(method string) bool {

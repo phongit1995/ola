@@ -77,7 +77,7 @@ export function MomentTrayCard({ moment, label, ringed, onPress }: MomentTrayCar
       >
         <View style={styles.ringInner}>
           <Avatar
-            name={author.fullName || author.username}
+            name={author.username}
             color={colorForName(author.username)}
             uri={author.avatar ?? undefined}
             size={AVATAR_SIZE}

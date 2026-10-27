@@ -4,10 +4,12 @@ import { ApiError } from './apiError';
 export const FORGOT_RESEND_COOLDOWN_SECONDS = 60;
 export const FORGOT_CODE_LENGTH = 6;
 export const FORGOT_CODE_PATTERN = /^\d{6}$/;
+export const EMAIL_UNAVAILABLE_STATUS = 503;
 
 export function resolveForgotSendError(error: unknown, t: TFunction): string {
   if (error instanceof ApiError) {
     if (error.status === 0) return t('auth.errNetwork');
+    if (error.status === EMAIL_UNAVAILABLE_STATUS) return t('forgot.errUnavailable');
     if (error.status === 429 || /wait|limit/i.test(error.message)) {
       return t('forgot.errRateLimited');
     }

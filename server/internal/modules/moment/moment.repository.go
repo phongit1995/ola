@@ -36,20 +36,25 @@ const seenableMomentsQuery = audienceCTE + `
 SELECT r.* FROM moments r
 WHERE r.id IN @ids AND` + othersVisibleFilter
 
-const trayPageQuery = audienceCTE + `, unseen AS (
-	SELECT r.id, r.author_id, r.created_at, r."position" FROM moments r
-	WHERE r.id <> ALL(string_to_array(@seen, ',')::uuid[]) AND` + othersVisibleFilter + `
-), page AS (
-	SELECT author_id, max(created_at) AS latest FROM unseen
+const trayPageQuery = audienceCTE + `, visible AS (
+	SELECT r.id, r.author_id, r.created_at, r."position",
+		r.id = ANY(string_to_array(@seen, ',')::uuid[]) AS seen
+	FROM moments r
+	WHERE` + othersVisibleFilter + `
+), authors AS (
+	SELECT author_id, max(created_at) AS latest, bool_and(seen) AS all_seen FROM visible
 	GROUP BY author_id
+), page AS (
+	SELECT author_id, latest, all_seen FROM authors
 	%s
-	ORDER BY latest DESC, author_id DESC
+	ORDER BY all_seen ASC, latest DESC, author_id DESC
 	LIMIT @lim
 )
-SELECT u.id, u.author_id, p.latest FROM unseen u JOIN page p ON p.author_id = u.author_id
-ORDER BY p.latest DESC, p.author_id DESC, u.created_at ASC, u."position" ASC`
+SELECT v.id, v.author_id, v.seen, p.latest, p.all_seen FROM visible v JOIN page p ON p.author_id = v.author_id
+ORDER BY p.all_seen ASC, p.latest DESC, p.author_id DESC, v.created_at ASC, v."position" ASC`
 
-const trayPageAfterCursor = `HAVING (max(created_at), author_id) < (@cursorAt, @cursorAuthor)`
+const trayPageAfterCursor = `WHERE (all_seen AND NOT @cursorSeen)
+	OR (all_seen = @cursorSeen AND (latest, author_id) < (@cursorAt, @cursorAuthor))`
 
 const claimMediaPurgeQuery = `
 WITH target AS (
@@ -135,6 +140,7 @@ type sourceLeftover struct {
 }
 
 type trayCursor struct {
+	AllSeen  bool
 	Latest   time.Time
 	AuthorID uuid.UUID
 }
@@ -142,7 +148,9 @@ type trayCursor struct {
 type trayPageRow struct {
 	ID       uuid.UUID `gorm:"column:id"`
 	AuthorID uuid.UUID `gorm:"column:author_id"`
+	Seen     bool      `gorm:"column:seen"`
 	Latest   time.Time `gorm:"column:latest"`
+	AllSeen  bool      `gorm:"column:all_seen"`
 }
 
 type Repository struct {
@@ -200,14 +208,15 @@ func (r *Repository) TrayPage(viewerID uuid.UUID, now time.Time, seen []uuid.UUI
 	args := audienceArgs(viewerID, now)
 	args["seen"] = joinIDs(seen)
 	args["lim"] = limit
-	having := ""
+	afterCursor := ""
 	if after != nil {
-		having = trayPageAfterCursor
+		afterCursor = trayPageAfterCursor
+		args["cursorSeen"] = after.AllSeen
 		args["cursorAt"] = after.Latest
 		args["cursorAuthor"] = after.AuthorID
 	}
 	var rows []trayPageRow
-	err := r.db.Raw(fmt.Sprintf(trayPageQuery, having), args).Scan(&rows).Error
+	err := r.db.Raw(fmt.Sprintf(trayPageQuery, afterCursor), args).Scan(&rows).Error
 	return rows, err
 }
 

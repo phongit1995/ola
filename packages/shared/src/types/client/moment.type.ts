@@ -25,6 +25,7 @@ export interface MomentViewerSession {
   own: boolean;
   archive?: boolean;
   startMomentId?: string;
+  unseenOnly?: boolean;
 }
 
 export interface MomentPosition {

@@ -6,6 +6,7 @@ func Provider(c *dig.Container) error {
 	providers := []interface{}{
 		NewRepository,
 		NewService,
+		NewMailCredentialSource,
 		NewController,
 		NewRouter,
 	}

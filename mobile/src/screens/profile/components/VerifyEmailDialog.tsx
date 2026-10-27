@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { isAllowedVerifyEmailDomain } from '@ola/shared/constants';
-import { ApiError } from '@ola/shared/lib';
+import { ApiError, EMAIL_UNAVAILABLE_STATUS } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
@@ -26,10 +26,12 @@ type VerifyEmailErrorKey =
   | 'verifyEmail.errTaken'
   | 'verifyEmail.errTooMany'
   | 'verifyEmail.errCodeExpired'
-  | 'verifyEmail.errCodeInvalid';
+  | 'verifyEmail.errCodeInvalid'
+  | 'verifyEmail.errUnavailable';
 
 function messageKey(err: unknown): VerifyEmailErrorKey {
   if (!(err instanceof ApiError)) return 'verifyEmail.errGeneric';
+  if (err.status === EMAIL_UNAVAILABLE_STATUS) return 'verifyEmail.errUnavailable';
   const msg = err.message.toLowerCase();
   if (msg.includes('domain')) return 'verifyEmail.errDomainNotAllowed';
   if (msg.includes('daily')) return 'verifyEmail.errDailyLimit';

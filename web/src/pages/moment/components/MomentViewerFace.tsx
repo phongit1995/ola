@@ -41,6 +41,7 @@ interface MomentViewerFaceProps {
   onToggleMute: () => void;
   onTogglePause: () => void;
   onOpenMenu?: () => void;
+  onOpenProfile?: () => void;
   onReact?: (type: ReactionType) => void;
   onClose: () => void;
 }
@@ -63,6 +64,7 @@ export function MomentViewerFace({
   onToggleMute,
   onTogglePause,
   onOpenMenu,
+  onOpenProfile,
   onReact,
   onClose,
 }: MomentViewerFaceProps) {
@@ -75,7 +77,6 @@ export function MomentViewerFace({
     setPages({ shown: moment, previous: pages.shown });
   }
   const media = useMemo(() => momentMedia(moment), [moment]);
-  const authorName = author.fullName || author.username;
   const isVideo = media?.type === MOMENT_TYPE.video;
   const processing = moment.status === MOMENT_STATUS.processing;
   const noticeKey = momentNoticeKey(moment, mediaStatus === 'error');
@@ -141,16 +142,26 @@ export function MomentViewerFace({
           ))}
         </div>
         <div className="mt-3 flex items-center gap-2">
-          <Avatar
-            name={authorName}
-            color={colorForName(author.username)}
-            src={author.avatar ?? undefined}
-            size={36}
-          />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">{authorName}</p>
-            <p className="text-xs text-white/75">{time}</p>
-          </div>
+          <button
+            type="button"
+            aria-label={t('me.viewProfile')}
+            disabled={onOpenProfile == null}
+            onClick={onOpenProfile}
+            className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2 text-left disabled:pointer-events-none"
+          >
+            <Avatar
+              name={author.username}
+              color={colorForName(author.username)}
+              src={author.avatar ?? undefined}
+              size={36}
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold">
+                {author.username}
+              </span>
+              <span className="block text-xs text-white/75">{time}</span>
+            </span>
+          </button>
           {isVideo && (
             <button
               type="button"
