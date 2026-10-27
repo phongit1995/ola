@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { SettingsService } from '../../services/settings.service';
 import type { StoryConfigState } from '../../types/client/story.type';
+import { loadAppConfig } from '../appConfigStore';
 
 export const useStoryConfigStore = create<StoryConfigState>((set, get) => ({
   enabled: null,
 
   load: async () => {
-    const config = await SettingsService.storyConfig().catch(() => null);
+    const config = await loadAppConfig('story');
     if (config != null) {
       set({ enabled: config.enabled });
       return;

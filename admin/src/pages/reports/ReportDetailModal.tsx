@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { App, Button, Descriptions, Image, Input, Modal, Space, Tag, Typography } from 'antd'
-import { CommentOutlined } from '@ant-design/icons'
+import { CommentOutlined, PlayCircleOutlined } from '@ant-design/icons'
 import { UserBriefCell } from '@/components/UserBriefCell'
 import { ConversationMessagesModal } from '@/pages/conversations/ConversationMessagesModal'
+import { MomentDetailModal } from '@/pages/moments/MomentDetailModal'
 import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import type { AdminReport } from '@/types'
@@ -25,7 +26,9 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
   const handleReport = useHandleReport()
   const [note, setNote] = useState(report.handlerNote ?? '')
   const [conversationOpen, setConversationOpen] = useState(false)
+  const [momentOpen, setMomentOpen] = useState(false)
   const conversationId = report.targetType === 'message' ? report.contextId : undefined
+  const momentId = report.targetType === 'moment' ? report.targetId : undefined
 
   const snapshot = report.snapshot ?? {}
   const statusMeta = REPORT_STATUS_TAG[report.status]
@@ -157,7 +160,16 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
                 {snapshot.text}
               </Typography.Paragraph>
             )}
-            {(snapshot.imageUrls?.length ?? 0) > 0 && (
+            {snapshot.videoUrl && (
+              <video
+                controls
+                preload="metadata"
+                src={snapshot.videoUrl}
+                poster={snapshot.imageUrls?.[0]}
+                style={{ width: '100%', maxHeight: 420, background: '#000', borderRadius: 8 }}
+              />
+            )}
+            {!snapshot.videoUrl && (snapshot.imageUrls?.length ?? 0) > 0 && (
               <Image.PreviewGroup>
                 <Space wrap>
                   {snapshot.imageUrls?.map((url) => (
@@ -176,6 +188,11 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
             {conversationId && (
               <Button size="small" icon={<CommentOutlined />} onClick={() => setConversationOpen(true)}>
                 Xem hội thoại
+              </Button>
+            )}
+            {momentId && (
+              <Button size="small" icon={<PlayCircleOutlined />} onClick={() => setMomentOpen(true)}>
+                Xem khoảnh khắc
               </Button>
             )}
           </Space>
@@ -203,6 +220,7 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
           onClose={() => setConversationOpen(false)}
         />
       )}
+      <MomentDetailModal momentId={momentOpen && momentId ? momentId : null} onClose={() => setMomentOpen(false)} />
     </Modal>
   )
 }

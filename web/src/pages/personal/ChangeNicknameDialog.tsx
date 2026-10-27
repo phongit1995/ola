@@ -8,7 +8,8 @@ import {
   USERNAME_MAX,
   USERNAME_PATTERN,
 } from '@lib';
-import { SettingsService, UserService } from '@services';
+import { UserService } from '@services';
+import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { Dialog, DialogButton } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import type {
@@ -94,7 +95,7 @@ export function ChangeNicknameDialog({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    SettingsService.usernameChangeConfig()
+    requireAppConfig('usernameChange')
       .then((config) => {
         if (cancelled) return;
         setFeatureDisabled(!config.enabled);

@@ -24,6 +24,7 @@ interface ProfilePostListProps {
   posts: Post[];
   setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
   postsLoading: boolean;
+  loadingMore: boolean;
   language: string;
   onOpenProfile: OpenProfileHandler;
   openViewer: OpenViewerHandler;
@@ -34,6 +35,7 @@ export function ProfilePostList({
   posts,
   setPosts,
   postsLoading,
+  loadingMore,
   language,
   onOpenProfile,
   openViewer,
@@ -173,9 +175,11 @@ export function ProfilePostList({
             onOpenMenu={id => setMenuPostId(id)}
             onOpenLikers={id => setLikersPostId(id)}
             onOpenPhotos={(photos, index) => openViewer(photos, index)}
+            showPinned
           />
         ))
       )}
+      {loadingMore && <ActivityIndicator className="py-4" color={colors.primary} />}
 
       {commentPost != null && (
         <MeCommentSheet

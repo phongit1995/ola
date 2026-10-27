@@ -17,6 +17,7 @@ export const REPORT_TARGET_TYPE = {
   storyComment: 'story_comment',
   message: 'message',
   roomMessage: 'room_message',
+  moment: 'moment',
 } as const satisfies Record<string, ReportTargetType>;
 
 export const REPORT_ERROR_CODE = {

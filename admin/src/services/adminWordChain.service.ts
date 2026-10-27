@@ -3,6 +3,8 @@ import type {
   ApiResponse,
   WordChainMessage,
   WordChainOverview,
+  WordChainPurchaseList,
+  WordChainPurchaseParams,
   WordChainCursorPage,
   WordChainCursorParams,
   WordChainWin,
@@ -30,6 +32,13 @@ export const AdminWordChainService = {
       '/admin/word-chain/wins',
       { params },
     )
+    return data.data
+  },
+
+  async purchases(params: WordChainPurchaseParams = {}): Promise<WordChainPurchaseList> {
+    const { data } = await http.get<ApiResponse<WordChainPurchaseList>>('/admin/word-chain/purchases', {
+      params,
+    })
     return data.data
   },
 }

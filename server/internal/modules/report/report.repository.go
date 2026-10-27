@@ -6,6 +6,7 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	momentModule "ola-chat-server/internal/modules/moment"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -59,6 +60,34 @@ func (r *Repository) FindMeComment(id uuid.UUID) (*models.MeComment, error) {
 		return nil, err
 	}
 	return &comment, nil
+}
+
+func (r *Repository) FindMoment(id uuid.UUID) (*models.Moment, error) {
+	var moment models.Moment
+	if err := r.db.First(&moment, "id = ? AND enabled AND status NOT IN ?", id, momentModule.MomentMediaGoneStatuses).Error; err != nil {
+		return nil, err
+	}
+	return &moment, nil
+}
+
+func (r *Repository) CreateWhileMomentKept(report *models.Report, momentID uuid.UUID) error {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var kept []uuid.UUID
+		if err := tx.Raw(
+			"SELECT id FROM moments WHERE id = ? AND deleted_at IS NULL AND enabled AND status NOT IN ? FOR SHARE",
+			momentID, momentModule.MomentMediaGoneStatuses,
+		).Scan(&kept).Error; err != nil {
+			return err
+		}
+		if len(kept) == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return tx.Create(report).Error
+	})
+	if apperr.IsUniqueViolation(err) {
+		return errDuplicateReport
+	}
+	return err
 }
 
 func (r *Repository) FindStoryComment(id uuid.UUID) (*models.StoryComment, error) {

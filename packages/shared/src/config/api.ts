@@ -51,13 +51,7 @@ export const API_PATH = {
     end: (id: string) => `/calls/${id}/end`,
   },
   userSettings: '/user-settings',
-  appSettings: {
-    topup: '/settings/topup',
-    usernameChange: '/settings/username-change',
-    wordChain: '/settings/word-chain',
-    story: '/settings/story',
-    chatBot: '/settings/chat-bot',
-  },
+  appSettings: '/settings/app',
   announcements: {
     latest: '/announcements/latest',
   },
@@ -97,6 +91,16 @@ export const API_PATH = {
   },
   reports: {
     base: '/reports',
+  },
+  moments: {
+    base: '/moments',
+    tray: '/moments/tray',
+    mine: '/moments/mine',
+    history: '/moments/history',
+    seen: '/moments/seen',
+    viewers: (id: string) => `/moments/${id}/viewers`,
+    reactions: (id: string) => `/moments/${id}/reactions`,
+    hidden: (id: string) => `/moments/${id}/hidden`,
   },
   relationships: {
     request: '/relationships/request',

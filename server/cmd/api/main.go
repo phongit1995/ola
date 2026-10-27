@@ -3,8 +3,6 @@ package main
 import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
-	"ola-chat-server/internal/modules/kenchest"
-	"ola-chat-server/internal/modules/story"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"context"
@@ -66,17 +64,13 @@ func main() {
 
 	rootCtx, cancelRoot := context.WithCancel(context.Background())
 	defer cancelRoot()
-	if err := c.Invoke(func(scheduler *kenchest.Scheduler) {
-		scheduler.Start(rootCtx)
+	var schedulers Schedulers
+	if err := c.Invoke(func(s Schedulers) {
+		schedulers = s
 	}); err != nil {
-		log.Fatalf("❌ Failed to start ken chest scheduler: %v", err)
+		log.Fatalf("❌ Failed to init schedulers: %v", err)
 	}
-	if err := c.Invoke(func(crawler *story.Crawler, rookies *story.RookiesCrawler) {
-		crawler.Start(rootCtx)
-		rookies.Start(rootCtx)
-	}); err != nil {
-		log.Fatalf("❌ Failed to start story crawler: %v", err)
-	}
+	schedulers.Start(rootCtx)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -133,6 +127,7 @@ func main() {
 		if err := srvCtx.srv.Shutdown(ctx); err != nil {
 			log.Fatalf("❌ Server shutdown error: %v", err)
 		}
+		schedulers.Wait(ctx)
 
 		log.Println("✅ API Service shutdown successfully!")
 	}

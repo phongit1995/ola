@@ -14,5 +14,5 @@ func (s *Service) GetRookiesCrawlerVersion() (StoryCrawlerConfig, *time.Time, er
 }
 
 func (s *Service) MarkRookiesCookieDead(cookie string, at time.Time) (bool, error) {
-	return s.repo.MarkCookieDead(KeyStoryCrawlerRookies, cookie, at)
+	return s.markCookieDead(KeyStoryCrawlerRookies, cookie, at)
 }

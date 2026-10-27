@@ -1,14 +1,18 @@
 import { create } from 'zustand';
+import type { TyIconName } from '../components/TyIcon';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import { vipIconUrl } from '@ola/shared/lib/vip';
 import { bridge, type GameReactionType } from '../../src/sdk';
 import { BOARD, cardById } from '../logic/board';
 import { botMove } from '../logic/bot';
 import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
-import { applyMove, endByTime, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
-import { RuleError, type GameState, type Move, type Step, type TileState } from '../logic/types';
+import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
+import { RuleError, type BotLevel, type GameState, type Move, type Step, type TileState } from '../logic/types';
+import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
 import { formatMoney } from '../helpers/format';
+import { botHistoryEntry, saveBotHistory } from '../helpers/history';
 import { avatarIconUrl } from '../helpers/player';
+import { MOCK_PROFILE, type LobbyProfile } from '../helpers/profile';
 import { levelLabel } from '../helpers/tiles';
 import { playSound, setSoundEnabled } from '../audio';
 
@@ -20,6 +24,7 @@ export interface SeatInfo {
   name: string;
   avatar: string;
   bot: boolean;
+  level?: BotLevel;
 }
 
 export interface DiceFx {
@@ -68,19 +73,33 @@ export interface MatchResultState {
   reasonText: string;
 }
 
+export type NoticeKind = 'confirm' | 'notice';
+export type NoticeTone = 'default' | 'danger' | 'info' | 'success' | 'warning' | 'error';
+
 export interface NoticeState {
+  kind: NoticeKind;
+  tone?: NoticeTone;
   title: string;
   body: string;
+  hint?: string;
+  icon?: TyIconName;
   okLabel: string;
-  danger?: boolean;
-  onOk: () => void;
+  cancelLabel?: string;
+  dismissible?: boolean;
+  onOk?: () => void | Promise<void>;
+  onCancel?: () => void;
 }
 
 interface TycoonState {
+  profile: LobbyProfile | null;
   soundOn: boolean;
   rulesOpen: boolean;
   setupOpen: boolean;
-  playerCount: number;
+  roomsOpen: boolean;
+  leaderboardOpen: boolean;
+  historyOpen: boolean;
+  lobbyFocus: string | null;
+  lastBots: BotSetupItem[];
 
   boardMode: BoardMode;
   players: SeatInfo[];
@@ -111,6 +130,8 @@ interface TycoonState {
   result: MatchResultState | null;
   toast: string | null;
   notice: NoticeState | null;
+  noticeId: number;
+  noticeQueue: NoticeState[];
 
   init(): void;
   dispose(): void;
@@ -118,7 +139,11 @@ interface TycoonState {
   exitGame(): void;
   setRulesOpen(open: boolean): void;
   setSetupOpen(open: boolean): void;
-  startGame(playerCount: number): void;
+  setRoomsOpen(open: boolean): void;
+  setLeaderboardOpen(open: boolean): void;
+  setHistoryOpen(open: boolean): void;
+  clearLobbyFocus(): void;
+  startGame(bots: BotSetupItem[]): void;
 
   sendMove(move: Move): void;
   openSheet(sheet: Sheet): void;
@@ -131,11 +156,11 @@ interface TycoonState {
 
   showToast(text: string): void;
   clearToast(): void;
-  showNotice(notice: NoticeState | null): void;
+  showNotice(notice: NoticeState): void;
+  closeNotice(notice: NoticeState): void;
 }
 
 const SOUND_KEY = 'ola:tycoon:sound';
-const COUNT_KEY = 'ola:tycoon:players';
 const TURN_ANNOUNCE_MS = 1200;
 const TOAST_MS = 2400;
 const RESULT_REVEAL_MS = 900;
@@ -157,8 +182,6 @@ const STEP_MS = {
   bankrupt: 900,
   round: 240,
 };
-
-const BOT_NAMES = ['Bác Tỷ', 'Cô Ngân', 'Anh Tèo'];
 
 const RULE_TEXT: Record<string, string> = {
   wrong_phase: 'Chưa đến lúc làm việc này',
@@ -215,11 +238,6 @@ function reasonLabel(reason: string | undefined, amount: number, tile?: number):
     default:
       return formatMoney(amount);
   }
-}
-
-function readPlayerCount(): number {
-  const stored = Number(localStorage.getItem(COUNT_KEY));
-  return stored >= 2 && stored <= 4 ? stored : 4;
 }
 
 export const useTycoon = create<TycoonState>((set, get) => {
@@ -577,6 +595,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
                 ? `Hết ${MAX_ROUNDS} vòng — xếp hạng theo tổng tài sản`
                 : 'Chỉ còn một tỷ phú trụ lại';
     const matchSeq = get().matchSeq;
+    const profile = get().profile;
+    if (profile) saveBotHistory(profile.id, botHistoryEntry(state, ranked, you, profile, get().lastBots, Date.now()));
     queueReplay(async () => {
       await sleep(RESULT_REVEAL_MS);
       if (get().matchSeq !== matchSeq || get().boardMode !== 'playing') return;
@@ -587,14 +607,13 @@ export const useTycoon = create<TycoonState>((set, get) => {
     });
   };
 
-  const scheduleNext = (state: GameState) => {
+  const scheduleNext = (state: GameState, newTurn = false) => {
     cancelBot();
     if (isOver(state)) {
       finishGame(state);
       return;
     }
-    const turnStart = state.phase === 'roll' || state.phase === 'jail' || state.phase === 'travel';
-    if (turnStart && state.moveCount > 0 && Date.now() - get().startedAt >= TIME_LIMIT_MS) {
+    if (newTurn && Date.now() - get().startedAt >= TIME_LIMIT_MS) {
       const ended = endByTime(state);
       refs.state = ended;
       snapState(ended, true);
@@ -627,13 +646,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
     refs.replayEpoch += 1;
     const epoch = refs.replayEpoch;
     const run = refs.gameRun;
+    const newTurn = isNewTurn(current, next);
     set({ deadline: 0, timerLeftMs: 0, turnExpired: false, ...(mv.type === 'CARD_ACK' ? { cardFx: null } : {}) });
     queueReplay(async () => {
       if (refs.replayEpoch !== epoch || run !== refs.gameRun) return;
       await replaySteps(next.steps, epoch);
       if (refs.replayEpoch !== epoch || run !== refs.gameRun) return;
       snapState(next);
-      scheduleNext(next);
+      scheduleNext(next, newTurn);
     });
   }
 
@@ -667,22 +687,26 @@ export const useTycoon = create<TycoonState>((set, get) => {
       sheet: null,
       result: null,
       notice: null,
+      noticeQueue: [],
     });
   };
 
-  const beginGame = (playerCount: number) => {
+  const beginGame = (bots: BotSetupItem[]) => {
+    if (bots.length === 0) return;
     leaveToLobby();
-    const count = Math.min(4, Math.max(2, playerCount));
-    localStorage.setItem(COUNT_KEY, String(count));
-    const players: SeatInfo[] = [{ id: 'you', name: 'Bạn', avatar: avatarIconUrl(null), bot: false }];
-    for (let i = 1; i < count; i++) players.push({ id: `bot-${i}`, name: BOT_NAMES[i - 1] ?? `Máy ${i}`, avatar: vipIconUrl(i), bot: true });
+    const lineup = bots.slice(0, MAX_BOTS);
+    const players: SeatInfo[] = [
+      { id: 'you', name: 'Bạn', avatar: avatarIconUrl(null), bot: false },
+      ...lineup.map((item, index) => ({ id: item.id, name: botName(index), avatar: vipIconUrl(item.vip), bot: true, level: item.level })),
+    ];
+    const count = players.length;
     const seed = Math.floor(Math.random() * 2 ** 31) + 1;
     const state = newGame(seed, count);
     refs.state = state;
     set({
       boardMode: 'playing',
       setupOpen: false,
-      playerCount: count,
+      lastBots: lineup.map((item) => ({ ...item })),
       players,
       you: 0,
       matchSeq: get().matchSeq + 1,
@@ -698,10 +722,15 @@ export const useTycoon = create<TycoonState>((set, get) => {
   };
 
   return {
+    profile: MOCK_PROFILE,
     soundOn: localStorage.getItem(SOUND_KEY) !== '0',
     rulesOpen: false,
     setupOpen: false,
-    playerCount: readPlayerCount(),
+    roomsOpen: false,
+    leaderboardOpen: false,
+    historyOpen: false,
+    lobbyFocus: null,
+    lastBots: [],
 
     boardMode: 'idle',
     players: [],
@@ -732,6 +761,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
     result: null,
     toast: null,
     notice: null,
+    noticeId: 0,
+    noticeQueue: [],
 
     init() {
       setSoundEnabled(get().soundOn);
@@ -744,7 +775,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       if (refs.toastTimer) clearTimeout(refs.toastTimer);
       refs.announceTimer = 0;
       refs.toastTimer = 0;
-      set({ toast: null, rulesOpen: false, setupOpen: false });
+      set({ toast: null, rulesOpen: false, setupOpen: false, roomsOpen: false, leaderboardOpen: false, historyOpen: false, lobbyFocus: null });
     },
 
     toggleSound() {
@@ -768,8 +799,27 @@ export const useTycoon = create<TycoonState>((set, get) => {
       set({ setupOpen: open });
     },
 
-    startGame(playerCount: number) {
-      beginGame(playerCount);
+    setRoomsOpen(open: boolean) {
+      if (open) playSound('click');
+      set({ roomsOpen: open });
+    },
+
+    setLeaderboardOpen(open: boolean) {
+      if (open) playSound('click');
+      set({ leaderboardOpen: open, lobbyFocus: open ? null : 'leaderboard' });
+    },
+
+    setHistoryOpen(open: boolean) {
+      if (open) playSound('click');
+      set({ historyOpen: open, lobbyFocus: open ? null : 'history' });
+    },
+
+    clearLobbyFocus() {
+      set({ lobbyFocus: null });
+    },
+
+    startGame(bots: BotSetupItem[]) {
+      beginGame(bots);
     },
 
     sendMove(move: Move) {
@@ -792,15 +842,16 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     forfeitMatch() {
-      const state = refs.state;
-      if (!state || get().result) return;
+      if (!refs.state || get().result) return;
       get().showNotice({
+        kind: 'confirm',
+        tone: 'danger',
         title: 'Bỏ cuộc',
         body: 'Bạn sẽ bị tính phá sản và xếp cuối. Kết thúc ván ngay?',
         okLabel: 'Bỏ cuộc',
-        danger: true,
         onOk: () => {
-          get().showNotice(null);
+          const state = refs.state;
+          if (!state || isOver(state) || get().result) return;
           cancelBot();
           refs.replayEpoch += 1;
           const next = quitPlayer(state, get().you);
@@ -818,10 +869,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
         return;
       }
       get().showNotice({
+        kind: 'confirm',
+        tone: 'danger',
         title: 'Về sảnh',
         body: 'Ván đang chơi sẽ bị huỷ. Về sảnh chứ?',
         okLabel: 'Về sảnh',
-        danger: true,
         onOk: leaveToLobby,
       });
     },
@@ -831,7 +883,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     playAgain() {
-      beginGame(get().playerCount);
+      beginGame(get().lastBots);
     },
 
     showToast(text: string) {
@@ -846,8 +898,18 @@ export const useTycoon = create<TycoonState>((set, get) => {
       set({ toast: null });
     },
 
-    showNotice(notice: NoticeState | null) {
-      set({ notice });
+    showNotice(notice: NoticeState) {
+      if (get().notice) {
+        set({ noticeQueue: [...get().noticeQueue, notice] });
+        return;
+      }
+      set({ notice, noticeId: get().noticeId + 1 });
+    },
+
+    closeNotice(notice: NoticeState) {
+      if (get().notice !== notice) return;
+      const [next = null, ...rest] = get().noticeQueue;
+      set({ notice: next, noticeId: get().noticeId + 1, noticeQueue: rest });
     },
   };
 });

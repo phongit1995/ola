@@ -93,7 +93,7 @@ const MENU_ITEMS = [
       { key: '/games/mini-game', icon: <PlayCircleOutlined />, label: 'Mini game' },
     ],
   },
-  { key: '/me', icon: <PictureOutlined />, label: 'Me' },
+  { key: '/posts', icon: <PictureOutlined />, label: 'Bài đăng' },
   {
     key: 'stories',
     icon: <ReadOutlined />,
@@ -155,7 +155,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/users/ken-transfers': 'Lịch sử chuyển Ken',
   '/users/topups': 'Lịch sử nạp KEN',
   '/users/username-changes': 'Lịch sử đổi nickname',
-  '/me': 'Quản lý Me',
+  '/posts': 'Quản lý bài đăng',
   '/stories': 'Quản lý truyện',
   '/stories/settings': 'Cài đặt truyện',
   '/audit-logs': 'Nhật ký admin',

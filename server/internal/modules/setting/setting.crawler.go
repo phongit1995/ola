@@ -76,7 +76,15 @@ func (s *Service) crawlerConfigVersion(key string) (StoryCrawlerConfig, *time.Ti
 }
 
 func (s *Service) MarkStoryCookieDead(cookie string, at time.Time) (bool, error) {
-	return s.repo.MarkCookieDead(KeyStoryCrawler, cookie, at)
+	return s.markCookieDead(KeyStoryCrawler, cookie, at)
+}
+
+func (s *Service) markCookieDead(key, cookie string, at time.Time) (bool, error) {
+	marked, err := s.repo.MarkCookieDead(key, cookie, at)
+	if marked {
+		s.settingsChanged()
+	}
+	return marked, err
 }
 
 type storyCookieInput struct {

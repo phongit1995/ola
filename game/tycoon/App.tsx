@@ -1,25 +1,31 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BotSetupModal } from './components/BotSetupModal';
-import { ConfirmModal } from './components/ConfirmModal';
+import { NoticeModal } from './components/NoticeModal';
 import { RulesModal } from './components/RulesModal';
 import { BoardScreen } from './screens/BoardScreen';
+import { HistoryScreen } from './screens/HistoryScreen';
+import { LeaderboardScreen } from './screens/LeaderboardScreen';
 import { LobbyScreen } from './screens/LobbyScreen';
 import { ResultScreen } from './screens/ResultScreen';
+import { RoomListScreen } from './screens/RoomListScreen';
 import { useTycoon } from './store/useTycoon';
 
 export function App() {
-  const { boardMode, rulesOpen, setupOpen, result, toast, notice, init, dispose, showNotice } = useTycoon(
+  const { boardMode, roomsOpen, leaderboardOpen, historyOpen, rulesOpen, setupOpen, result, toast, notice, noticeId, init, dispose } = useTycoon(
     useShallow((s) => ({
       boardMode: s.boardMode,
+      roomsOpen: s.roomsOpen,
+      leaderboardOpen: s.leaderboardOpen,
+      historyOpen: s.historyOpen,
       rulesOpen: s.rulesOpen,
       setupOpen: s.setupOpen,
       result: s.result,
       toast: s.toast,
       notice: s.notice,
+      noticeId: s.noticeId,
       init: s.init,
       dispose: s.dispose,
-      showNotice: s.showNotice,
     })),
   );
 
@@ -29,14 +35,12 @@ export function App() {
   }, [dispose, init]);
 
   return (
-    <div className="ty-app">
-      {boardMode === 'playing' ? <BoardScreen /> : <LobbyScreen />}
+    <div className={roomsOpen && boardMode !== 'playing' ? 'ty-app ty-app-rooms' : 'ty-app'}>
+      {boardMode === 'playing' ? <BoardScreen /> : roomsOpen ? <RoomListScreen /> : leaderboardOpen ? <LeaderboardScreen /> : historyOpen ? <HistoryScreen /> : <LobbyScreen />}
       {setupOpen ? <BotSetupModal /> : null}
       {rulesOpen ? <RulesModal /> : null}
       {result ? <ResultScreen /> : null}
-      {notice ? (
-        <ConfirmModal title={notice.title} body={notice.body} okLabel={notice.okLabel} danger={notice.danger} onOk={notice.onOk} onCancel={() => showNotice(null)} />
-      ) : null}
+      {notice ? <NoticeModal key={noticeId} notice={notice} /> : null}
       {toast ? (
         <div className="ty-toast" role="status">
           {toast}

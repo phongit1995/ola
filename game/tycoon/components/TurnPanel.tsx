@@ -108,10 +108,10 @@ function MyActions() {
             <span>Nộp phạt</span>
             <small>{formatMoney(JAIL_FINE)}</small>
           </button>
-          <button type="button" className="ty-btn ty-btn-paper ty-btn-stack" disabled={busy || me.jailCards <= 0} onClick={() => sendMove({ type: 'JAIL_CARD' })}>
+          <button type="button" className="ty-btn ty-btn-paper ty-btn-stack" disabled={busy || me.jailCards.length === 0} onClick={() => sendMove({ type: 'JAIL_CARD' })}>
             <TyIcon name="key" size={20} />
             <span>Dùng thẻ</span>
-            <small>còn {me.jailCards}</small>
+            <small>còn {me.jailCards.length}</small>
           </button>
         </div>
       );

@@ -11,6 +11,7 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/message"
+	momentModule "ola-chat-server/internal/modules/moment"
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/utils"
 
@@ -38,6 +39,16 @@ var validTargetTypes = map[string]bool{
 	constants.ReportTargetStoryComment: true,
 	constants.ReportTargetMessage:      true,
 	constants.ReportTargetRoomMessage:  true,
+	constants.ReportTargetMoment:       true,
+}
+
+var uuidTargetTypes = map[string]bool{
+	constants.ReportTargetAccount:      true,
+	constants.ReportTargetPost:         true,
+	constants.ReportTargetComment:      true,
+	constants.ReportTargetStoryComment: true,
+	constants.ReportTargetMessage:      true,
+	constants.ReportTargetMoment:       true,
 }
 
 var validReasons = map[string]bool{
@@ -73,7 +84,7 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 	if !validReasons[req.Reason] {
 		return nil, ErrInvalidReason
 	}
-	targetID := strings.TrimSpace(req.TargetID)
+	targetID := canonicalTargetID(targetType, strings.TrimSpace(req.TargetID))
 	if targetID == "" || len(targetID) > constants.ReportTargetIDMaxLen {
 		return nil, ErrInvalidTarget
 	}
@@ -105,9 +116,12 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 		Snapshot:       target.snapshot,
 		Status:         constants.ReportStatusPending,
 	}
-	if err := s.repo.Create(report); err != nil {
-		if errors.Is(err, errDuplicateReport) {
+	if err := s.save(report); err != nil {
+		switch {
+		case errors.Is(err, errDuplicateReport):
 			return nil, ErrReportExists
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			return nil, ErrTargetNotFound
 		}
 		return nil, err
 	}
@@ -118,6 +132,27 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 		Status:    report.Status,
 		CreatedAt: report.CreatedAt.UTC().Format(time.RFC3339),
 	}, nil
+}
+
+func (s *Service) save(report *models.Report) error {
+	if report.TargetType != constants.ReportTargetMoment {
+		return s.repo.Create(report)
+	}
+	momentID, err := uuid.Parse(report.TargetID)
+	if err != nil {
+		return ErrInvalidTarget
+	}
+	return s.repo.CreateWhileMomentKept(report, momentID)
+}
+
+func canonicalTargetID(targetType, targetID string) string {
+	if !uuidTargetTypes[targetType] {
+		return targetID
+	}
+	if id, err := uuid.Parse(targetID); err == nil {
+		return id.String()
+	}
+	return targetID
 }
 
 func (s *Service) resolve(ctx context.Context, reporterID uuid.UUID, targetType, targetID, contextID string) (*resolvedTarget, error) {
@@ -194,8 +229,41 @@ func (s *Service) resolve(ctx context.Context, reporterID uuid.UUID, targetType,
 				"sentAt": comment.CreatedAt.UTC().Format(time.RFC3339),
 			}),
 		}, nil
+	case constants.ReportTargetMoment:
+		moment, err := s.repo.FindMoment(id)
+		if err != nil {
+			return nil, notFoundOr(err)
+		}
+		return &resolvedTarget{
+			reportedUserID: &moment.AuthorID,
+			snapshot:       compactSnapshot(momentSnapshot(moment)),
+		}, nil
 	}
 	return nil, ErrInvalidTargetType
+}
+
+func momentSnapshot(moment *models.Moment) models.JSONB {
+	texts := make([]string, 0, len(moment.Overlays))
+	for _, overlay := range moment.Overlays {
+		texts = append(texts, overlay.Text)
+	}
+	snapshot := models.JSONB{
+		"momentType": moment.Type,
+		"text":       strings.Join(texts, "\n"),
+		"background": moment.Background,
+		"overlays":   moment.Overlays,
+		"sentAt":     moment.CreatedAt.UTC().Format(time.RFC3339),
+	}
+	switch moment.Type {
+	case momentModule.MomentTypeImage:
+		snapshot["imageUrls"] = []string{moment.MediaURL}
+	case momentModule.MomentTypeVideo:
+		snapshot["videoUrl"] = moment.MediaURL
+		if moment.ThumbURL != "" {
+			snapshot["imageUrls"] = []string{moment.ThumbURL}
+		}
+	}
+	return snapshot
 }
 
 func (s *Service) resolveRoomMessage(ctx context.Context, messageID, contextID string) (*resolvedTarget, error) {
@@ -238,13 +306,15 @@ func (s *Service) resolveDirectMessage(reporterID uuid.UUID, messageID, contextI
 	if contextID == "" {
 		return nil, ErrContextRequired
 	}
-	if _, err := uuid.Parse(contextID); err != nil {
+	conversation, err := uuid.Parse(contextID)
+	if err != nil {
 		return nil, ErrInvalidTarget
 	}
+	conversationID := conversation.String()
 	if _, err := gocql.ParseUUID(messageID); err != nil {
 		return nil, ErrInvalidTarget
 	}
-	msg, err := s.messages.FindMessageForMember(reporterID, contextID, messageID)
+	msg, err := s.messages.FindMessageForMember(reporterID, conversationID, messageID)
 	if err != nil {
 		switch {
 		case errors.Is(err, message.ErrNotConversationMember):
@@ -270,7 +340,6 @@ func (s *Service) resolveDirectMessage(reporterID uuid.UUID, messageID, contextI
 			snapshot["fileUrl"] = url
 		}
 	}
-	conversationID := contextID
 	return &resolvedTarget{
 		reportedUserID: &msg.SenderID,
 		contextID:      &conversationID,

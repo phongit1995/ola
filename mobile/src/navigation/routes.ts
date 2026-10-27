@@ -38,6 +38,7 @@ export const ROOT_ROUTES = {
   EggGame: 'EggGame',
   MeVisitors: 'MeVisitors',
   MeLikedPosts: 'MeLikedPosts',
+  MomentManage: 'MomentManage',
   MeNotifications: 'MeNotifications',
   Marriage: 'Marriage',
   ClanHome: 'ClanHome',

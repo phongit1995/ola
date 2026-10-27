@@ -16,7 +16,7 @@ Sáu nhân vật mascot, sáng tác riêng, không mô phỏng người thật h
 
 | id | Tên | Vai trò trong game | Màu chính | Màu phụ | Highlight | Nhận diện silhouette |
 |---|---|---|---|---|---|---|
-| `ty` | Bác Tỷ | mascot chính, "chủ trò" — lobby, thẻ Cơ hội, hạng 1 | áo bà ba gold `#F2B807` | quần navy, da `#F3C9A0` | kính tròn cream | bụng tròn, kính tròn, quạt giấy gập |
+| `ty` | Bác Tỷ | mascot chính, "chủ trò" — lobby, thẻ Cơ hội, hạng 1 | áo bà ba gold `#F2B807` | quần navy, da `#F3C9A0` | kính tròn cream | bụng tròn, kính tròn, quạt giấy (mở nhẹ ở idle S2 theo ảnh đã chọn) |
 | `ngan` | Cô Ngân | ngân hàng — thu thuế, trả lương, Khí vận, modal trả nợ | áo dài jade `#1F8A5B` | tóc navy, da `#F3C9A0` | nơ cream | tóc búi, cầm sổ cái |
 | `canh` | Chú Cảnh | cảnh sát — step jail-in (thẻ Vào tù, đôi 3 lần) | áo cream `#FFF8EA` | mũ navy, còi coral `#E4573D` | — | mũ kê-pi, tay cầm còi |
 | `teo` | Anh Tèo | tù nhân hài — ô Nhà tù, pod badge trong tù | áo sọc cream/navy | tóc nâu `#8D5B3C` | — | sọc ngang, cổ áo tròn, mặt méo |
@@ -40,7 +40,7 @@ Pose `point` luôn chỉ **sang phải**; đặt nhân vật bên trái nội du
 
 | Nơi | Nhân vật | Pose | Crop | Size (390) |
 |---|---|---|---|---|
-| S2 lobby, cạnh logo | Bác Tỷ | idle | full | 120 |
+| S2 lobby, trái cụm thẻ dưới logo | Bác Tỷ | idle | full | hình nhìn thấy cao 176; màn thấp 144, theo [style S2 lobby](../screens/s2-lobby/README.md) |
 | S2 lobby, lỗi kết nối | Bác Tỷ | sad | full | 96 |
 | Ô 8 Nhà tù (UI v3) | Anh Tèo | vẽ pixel sẵn trong tranh `art/nha-tu` | — | theo tranh |
 | S7 header | theo kind (02 §5) | idle/point | full | 64 |
@@ -67,7 +67,7 @@ Base (nối với prompt base ở `../04-asset-manifest-and-prompts.md` §6): "O
 
 | id | Prompt riêng |
 |---|---|
-| ty | "a jolly round-bellied Vietnamese uncle in a golden (#F2B807) ba-ba shirt and navy trousers, round cream glasses, holding a folded paper fan" |
+| ty | "a jolly round-bellied Vietnamese uncle in a golden (#F2B807) ba-ba shirt and navy trousers, round cream glasses, holding a paper fan" |
 | ngan | "a calm young woman in a jade (#1F8A5B) ao dai, hair in a bun with a cream bow, holding a ledger book" |
 | canh | "a friendly traffic police officer in a cream shirt and navy kepi cap, holding a coral (#E4573D) whistle" |
 | teo | "a comical prisoner in cream and navy horizontal stripes, messy brown hair, round collar, lopsided grin" |
@@ -75,6 +75,8 @@ Base (nối với prompt base ở `../04-asset-manifest-and-prompts.md` §6): "O
 | dau | "a plump orange (#F2994A) tabby cat with brown stripes, round ears, squinting content eyes, curled tail" |
 
 Pose thêm vào cuối: `idle` "standing straight, slight smile"; `happy` "both arms raised, eyes curved, open smile"; `sad` "slumped shoulders, downturned mouth, one sweat drop"; `point` "pointing to the right with one arm, serious face". Bust sinh riêng với "head and shoulders only, filling 90% of canvas" — không crop từ full để contour không bị cắt.
+
+Riêng `ty-idle-full` dùng ở S2: thêm "paper fan partly open, matching the selected lobby mascot silhouette" và tham chiếu [concept lobby đã chọn](../screens/s2-lobby/concept-s2-lobby-pixel-16bit.png); giữ nguyên palette/contour, không lấy chữ hoặc hoa văn ký hiệu tiền trên áo trong ảnh AI.
 
 Mỗi lần sinh ghi log theo `../asset-generation-log.template.md`; QA: 6 nhân vật xếp cạnh nhau ở 30 px phải phân biệt được bằng silhouette khi chuyển grayscale.
 

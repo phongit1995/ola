@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { BOARD } from './board';
+import { BOARD, CARDS } from './board';
 import { botMove } from './bot';
 import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, JAIL_TILE, MAX_HOUSES, MAX_ROUNDS, START_CASH, TAKEOVER_MULTIPLIER } from './constants';
-import { applyMove, computeRent, endByTime, isOver, moveOnTimeout, newGame, quitPlayer, rankings, takeoverPrice, taxAmount, worth } from './engine';
+import { applyMove, computeRent, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings, takeoverPrice, taxAmount, worth } from './engine';
+import { canSell } from './rules-hint';
 import type { GameState, Move } from './types';
 
 function play(s: GameState, seat: number, mv: Move): GameState {
@@ -139,6 +140,20 @@ describe('tycoon engine', () => {
     expect(() => play(s, 0, { type: 'BUILD', tile: 4 })).toThrow('not_street');
   });
 
+  it('sells evenly only against own cities when a rival holds part of the group', () => {
+    const s = withPhase(newGame(1, 2), 'debt');
+    s.tiles[1] = { owner: 1, houses: 2 };
+    s.tiles[3] = { owner: 0, houses: 3 };
+    s.players[0].cash = 0;
+    s.debt = { creditor: 1, amount: 50, by: 0, returnTo: 0, reason: 'rent' };
+    const paid = play(s, 0, { type: 'SETTLE_DEBT' });
+    expect(paid.players[0].bankrupt).toBe(false);
+    expect(paid.players[1].cash).toBe(START_CASH + 50);
+    expect(paid.tiles[3].houses).toBe(1);
+    expect(canSell(paid, 0, 3)).toEqual({ ok: true });
+    expect(play(paid, 0, { type: 'SELL_HOUSE', tile: 3 }).tiles[3].houses).toBe(0);
+  });
+
   it('enters debt, settles by selling houses, or goes bankrupt', () => {
     const s = withPhase(newGame(1, 2), 'card');
     s.card = { deck: 'chance', id: 'ch02' };
@@ -236,9 +251,9 @@ describe('tycoon engine', () => {
 
     const withCard = withPhase(newGame(1, 2), 'jail');
     withCard.players[0].inJail = true;
-    withCard.players[0].jailCards = 1;
+    withCard.players[0].jailCards = [{ deck: 'chance', id: 'ch08' }];
     const freed = play(withCard, 0, { type: 'JAIL_CARD' });
-    expect(freed.players[0].jailCards).toBe(0);
+    expect(freed.players[0].jailCards).toEqual([]);
     expect(freed.phase).toBe('roll');
 
     const seed = findSeed(false);
@@ -274,8 +289,30 @@ describe('tycoon engine', () => {
     jail.card = { deck: 'chance', id: 'ch08' };
     const before = jail.chanceDeck.length;
     const keep = play(jail, 0, { type: 'CARD_ACK' });
-    expect(keep.players[0].jailCards).toBe(1);
+    expect(keep.players[0].jailCards).toEqual([{ deck: 'chance', id: 'ch08' }]);
     expect(keep.chanceDeck).toHaveLength(before - 1);
+  });
+
+  it('returns a used or forfeited jail card to the bottom of its own deck', () => {
+    const s = withPhase(newGame(1, 2), 'card');
+    s.card = { deck: 'chest', id: 'cm05' };
+    const kept = play(s, 0, { type: 'CARD_ACK' });
+    expect(kept.players[0].jailCards).toEqual([{ deck: 'chest', id: 'cm05' }]);
+    expect(kept.chestDeck).toHaveLength(s.chestDeck.length - 1);
+
+    const jailed = withPhase(kept, 'jail');
+    jailed.players[0].inJail = true;
+    jailed.players[0].pos = JAIL_TILE;
+    const freed = play(jailed, 0, { type: 'JAIL_CARD' });
+    const chest = CARDS.filter((c) => c.deck === 'chest');
+    expect(freed.players[0].jailCards).toEqual([]);
+    expect(freed.chestDeck).toHaveLength(s.chestDeck.length);
+    expect(chest[freed.chestDeck[freed.chestDeck.length - 1]].id).toBe('cm05');
+    expect(freed.chanceDeck).toEqual(s.chanceDeck);
+
+    const quit = quitPlayer(withPhase(kept, 'manage'), 0);
+    expect(quit.players[0].jailCards).toEqual([]);
+    expect(quit.chestDeck).toHaveLength(s.chestDeck.length);
   });
 
   it('finishes by round cap ranking on worth', () => {
@@ -401,6 +438,28 @@ describe('tycoon takeover and instant win', () => {
     expect(next.finished).toBe(true);
     expect(next.endReason).toBe('time');
     expect(rankings(next)[0]).toBe(1);
+  });
+
+  it('only counts a new turn when play passes to another seat', () => {
+    const jail = withPhase(newGame(1, 2), 'jail');
+    jail.players[0].inJail = true;
+    jail.players[0].pos = JAIL_TILE;
+    expect(isNewTurn(jail, play(jail, 0, { type: 'JAIL_PAY' }))).toBe(false);
+
+    const doubled = withPhase(newGame(1, 2), 'manage');
+    doubled.players[0].doubles = 1;
+    expect(isNewTurn(doubled, play(doubled, 0, { type: 'END_TURN' }))).toBe(false);
+
+    const done = withPhase(newGame(1, 2), 'manage');
+    expect(isNewTurn(done, play(done, 0, { type: 'END_TURN' }))).toBe(true);
+
+    const birthday = withPhase(newGame(1, 2), 'card');
+    birthday.card = { deck: 'chest', id: 'cm07' };
+    birthday.players[1].cash = 0;
+    birthday.tiles[1] = { owner: 1, houses: 1 };
+    const owed = play(birthday, 0, { type: 'CARD_ACK' });
+    expect(owed.phase).toBe('debt');
+    expect(isNewTurn(birthday, owed)).toBe(false);
   });
 });
 

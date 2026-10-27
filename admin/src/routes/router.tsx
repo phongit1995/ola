@@ -21,7 +21,7 @@ import { GameMatchStatsPage } from '@/pages/games/mini-game/GameMatchStatsPage'
 import { KenChestsPage } from '@/pages/games/ken-chest/KenChestsPage'
 import { KenTransfersPage } from '@/pages/ken-transfers/KenTransfersPage'
 import { MiniGamePage } from '@/pages/games/mini-game/MiniGamePage'
-import { MePage } from '@/pages/me/MePage'
+import { PostsPage } from '@/pages/posts/PostsPage'
 import { ReportsPage } from '@/pages/reports/ReportsPage'
 import { PushCampaignPage } from '@/pages/settings/PushCampaignPage'
 import { ChatBotSettingsPage } from '@/pages/settings/ChatBotSettingsPage'
@@ -79,7 +79,8 @@ export const router = createBrowserRouter([
       { path: 'users/topups', element: <TopupTransactionsPage /> },
       { path: 'users/username-changes', element: <UsernameChangesPage /> },
       { path: 'ken-transfers', element: <Navigate to="/users/ken-transfers" replace /> },
-      { path: 'me', element: <MePage /> },
+      { path: 'posts', element: <PostsPage /> },
+      { path: 'me', element: <Navigate to="/posts" replace /> },
       { path: 'reports', element: <ReportsPage /> },
       { path: 'stories', element: <StoriesPage /> },
       { path: 'stories/settings', element: <StorySettingsPage /> },

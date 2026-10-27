@@ -6,16 +6,16 @@ Cờ Tỷ Phú có **4 họ icon** khác nhau về vai trò, grid và cách tô.
 
 | Họ | Prefix | Grid | Kiểu | Số lượng v1 | Thư mục |
 |---|---|---|---|---|---|
-| A. Icon điều khiển | `ic-` | 24 | stroke 2, `currentColor` | **30** | `assets/icons/` |
+| A. Icon điều khiển | `ic-` | 24 | stroke 2, màu từ `TyIcon` | **33** | `assets/icons/` |
 | B. Glyph ô bàn cờ | `tg-` | 32 | fill phẳng 1 màu (+ 1 màu phụ tối đa) | **11** | `assets/tiles/` |
 | C. Quân cờ | `tk-` | UI v3: `tk-pawn.svg` 16 × 24 tô màu ghế; v2: 8 raster 96 | con tốt fill màu ghế + vùng sáng, outline navy | **1** SVG (+ 8 raster cho v2 chọn quân) | `assets/tokens/` |
 | D. Mặt xúc xắc | `d1`–`d6` | 44 | fill dot navy | **6** | `assets/dice/` |
 
-Tổng **55 asset icon**, trong đó 47 là SVG code-native, 8 raster. Ngoài ra: 6 reaction tái dùng từ caro, VIP icon shared, `ic-ken` tái dùng từ xiangqi (cùng grid 24).
+Họ A hiện có **33 SVG** trong `assets/icons/`, gồm `ic-info` cho O5 và cặp `ic-eye`/`ic-eye-off` cho mật khẩu S4. Ngoài ra có các họ B–D ở bảng trên, 6 reaction tái dùng từ caro và VIP icon shared; `ic-ken` tái dùng từ xiangqi (cùng grid 24).
 
-Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plus` của thirteen, cùng spec) — chỉ copy file sang `tycoon/assets/icons/` để mỗi game tự chứa asset (quy ước repo hiện tại; nếu sau này gom icon shared thì các game chuyển cùng lúc). 8 icon mới là riêng cho tỷ phú.
+Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plus` của thirteen, cùng spec) — chỉ copy file sang `tycoon/assets/icons/` để mỗi game tự chứa asset (quy ước repo hiện tại; nếu sau này gom icon shared thì các game chuyển cùng lúc). Bổ sung 8 icon riêng cho tỷ phú, `ic-info` cho O5 và cặp mắt S4.
 
-## 2. Họ A — Icon điều khiển (30)
+## 2. Họ A — Icon điều khiển (33)
 
 ### 2.1 Spec chung (giống xiangqi `style/04-icon-system.md`)
 - viewBox `0 0 24 24`, safe area 2–22, stroke 2, `round` cap/join, `fill="none"`, `stroke="currentColor"`, `aria-hidden="true" focusable="false"`.
@@ -23,6 +23,12 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 - Tối đa 6 path, ~1.5 KB. Không gradient/filter/bitmap/`<text>`.
 - Màu: trên navy → cream; trên paper → navy; trên gold → navy; danger → cream.
 - Fill nhỏ ≤ 20% diện tích chỉ cho trạng thái active/notification.
+
+File runtime hiện dùng `stroke="#000"` làm CSS mask; `TyIcon` lấy màu từ `currentColor` qua `.ty-icon`, nên icon vẫn đổi màu theo ngữ cảnh. Cặp mắt dùng cùng cách này, không chứa nền hoặc màu trang trí.
+
+**Ngoại lệ artwork S3/S4:** các SVG họ A chỉ bảo đảm glyph chức năng. Sau [audit ban đầu](./screens/s3-room-list/asset-audit.md), đã xuất [11 asset riêng](../assets/room-list/README.md): 2 WebP và 9 SVG nhiều màu theo ảnh đã chốt, render bằng `RoomIcon`/img; quy tắc outline/mask của họ A không áp vào bộ này. Mắt mật khẩu vẫn thuộc họ A: `ic-eye` / `ic-eye-off` đổi sang mắt đặc theo ảnh S4, dùng mask qua TyIcon. [Audit sau xuất](./screens/s3-room-list/icon-export-audit.md) ghi sai lệch còn lại; trạng thái đã xuất để review, chưa duyệt mỹ thuật/runtime. Không dùng số lượng file hoặc typecheck để khẳng định giống mẫu.
+
+**Artwork modal Chơi với máy S2, v2:** [6 SVG icon riêng](./screens/s2-lobby/README.md#asset-của-modal) gồm `close-navy`, `users-blue`, `plus-circle` / `minus-circle` và hai bản disabled. Cùng thư mục có 4 nền nút SVG mint/disabled/paper/gold không chữ. Đây là artwork render img, không thêm vào 33 icon mask họ A. Màu và shading nhẹ riêng theo ảnh modal, không thay token chung; dấu cộng/trừ đã gồm nền tròn. Robot dùng `lobby/ill-bot.webp`, avatar dùng VIP shared. Đã sửa theo audit ngày 23/10/2026, dùng trong `BotSetupModal`.
 
 ### 2.2 Inventory
 
@@ -33,10 +39,10 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 3 | `ic-chevron-right` | xiangqi | 20 | phân trang | Trang sau |
 | 4 | `ic-close` | xiangqi | 20 | sheet/modal/chat | Đóng |
 | 5 | `ic-refresh` | xiangqi | 20 | S3 | Làm mới danh sách |
-| 6 | `ic-volume-on` | xiangqi | 22 | lobby | Tắt âm |
-| 7 | `ic-volume-off` | xiangqi | 22 | lobby | Bật âm |
+| 6 | `ic-volume-on` | xiangqi | 24 | lobby | Tắt âm |
+| 7 | `ic-volume-off` | xiangqi | 24 | lobby | Bật âm |
 | 8 | `ic-lock` | xiangqi | 16 | room row, S5 | Có mật khẩu |
-| 9 | `ic-ken` | xiangqi | 16 | badge KEN lobby | — (số trong text) |
+| 9 | `ic-ken` | xiangqi | 24 | badge KEN lobby | — (số trong text) |
 | 10 | `ic-chat` | xiangqi | 24 | footer S5/S6 | Mở trò chuyện |
 | 11 | `ic-reaction` | xiangqi | 24 | footer S6 | Mở bảng cảm xúc |
 | 12 | `ic-flag` | xiangqi | 24 | menu S6 | Bỏ cuộc |
@@ -46,20 +52,23 @@ Họ A dùng lại 22 icon đã có (20 của xiangqi + `ic-user-minus`, `ic-plu
 | 16 | `ic-warning` | xiangqi | 16/20 | lỗi, lý do disabled | — |
 | 17 | `ic-check` | xiangqi | 16/20 | sẵn sàng, mua xong | — |
 | 18 | `ic-owner` | xiangqi | 16 | ghế chủ bàn | Chủ bàn |
-| 19 | `ic-history` | xiangqi | 20 | lobby | Xem lịch sử |
-| 20 | `ic-leaderboard` | xiangqi | 20 | lobby | Xem bảng xếp hạng |
+| 19 | `ic-history` | xiangqi | 20 | lobby fallback cho minh họa | Xem lịch sử |
+| 20 | `ic-leaderboard` | xiangqi | 20 | lobby fallback cho minh họa | Xem bảng xếp hạng |
 | 21 | `ic-user-minus` | thirteen | 20 | S5 mời ra | Mời ra khỏi bàn |
 | 22 | `ic-plus` | thirteen | 20 | S4 ghế trống, S8 nâng cấp | Thêm / Nâng cấp |
 | 23 | `ic-minus` | **mới** | 20 | S8 bán, O3 bán | Bán nhà |
-| 24 | `ic-dice` | **mới** | 20/24 | CTA gieo, S2 Vào bàn | Gieo xúc xắc |
+| 24 | `ic-dice` | **mới** | 20/24 | CTA gieo, S2 Vào bàn fallback cho minh họa | lấy nhãn của nút: Gieo xúc xắc / Vào bàn |
 | 25 | `ic-deed` | **mới** | 20/24 | footer S6 (mở S8), chip số đất trong pod (16) | Xem tài sản |
 | 26 | `ic-house` | **mới** | 16/20 | chip nhà trong S8, log | — |
 | 27 | `ic-key` | **mới** | 16 | pod: có thẻ ra tù | Có thẻ ra tù |
 | 28 | `ic-jail-bars` | **mới** | 16/20 | pod: đang trong tù; nút Nộp phạt | Đang trong tù |
 | 29 | `ic-coins` | **mới** | 16/20 | tổng tài sản S8/S9, nút Trả nợ | — |
 | 30 | `ic-more` | **mới** | 24 | menu ⋯ topbar S6 | Thêm tùy chọn |
+| 31 | `ic-info` | **mới** | 22 | ô biểu tượng modal thông báo O5 | — |
+| 32 | `ic-eye` | **mới**, mắt đặc có vòng trong suốt theo ảnh S4 (ngoại lệ fill của họ A) | 20/24 | mật khẩu S4 đang che | Hiện mật khẩu |
+| 33 | `ic-eye-off` | cùng hình `ic-eye` + nét chéo có khe | 20/24 | mật khẩu S4 đang hiện | Ẩn mật khẩu |
 
-Không có `ic-rules`: nút Luật chơi ở lobby là nút text, không icon.
+Không có `ic-rules` trong họ A. Lobby S2 đã chốt có sách `ill-rules.svg` bên cạnh chữ Luật chơi; đây là một trong **5 minh họa trang trí riêng S2** (`lobby/ill-{dice,history,leaderboard,rules,exit}`, PNG gốc cắt từ concept, khi code xuất WebP hoặc SVG), không nằm trong inventory 33 `ic-*`. Hình, màu, kích thước và fallback theo [S2 lobby §6](./screens/s2-lobby/README.md#6-nút-và-minh-họa). Chúng có contour navy + fill màu, `aria-hidden`; accessible name lấy từ nhãn action, không áp quy tắc icon stroke đơn sắc cho các minh họa này.
 
 ### 2.3 Công thức hình học 8 icon mới
 
@@ -110,7 +119,8 @@ type TyIconName =
   | 'volume-on' | 'volume-off' | 'lock' | 'ken' | 'chat' | 'reaction'
   | 'flag' | 'exit-door' | 'send' | 'wifi-off' | 'warning' | 'check'
   | 'owner' | 'history' | 'leaderboard' | 'user-minus' | 'plus' | 'minus'
-  | 'dice' | 'deed' | 'house' | 'key' | 'jail-bars' | 'coins' | 'more';
+  | 'dice' | 'deed' | 'house' | 'key' | 'jail-bars' | 'coins' | 'more' | 'info'
+  | 'eye' | 'eye-off';
 
 <TyIcon name="dice" size={24} aria-hidden="true" />
 ```
@@ -178,7 +188,14 @@ Pipeline sinh ở 04 §3. Nếu sinh raster chưa đạt, fallback v1 là 4 SVG 
 
 ## 6. App icon
 
-`assets/app-icons/app-icon-01-city-dice.svg` + PNG 1024: bàn cờ góc Xuất phát (3 ô, 1 dải màu đỏ, 1 dải xanh lá) + 1 viên xúc xắc nghiêng mặt 5 + 1 quân nón lá; palette 01, fill phẳng, outline navy; cắt bo góc inset 16 / radius 208 theo convention thirteen; đọc được ở 48 px (xúc xắc là hình chủ đạo).
+PNG master 1024 × 1024 trong `assets/app-icons/`, cắt bo góc inset 16 / radius 208 theo convention thirteen, ngoài viền là alpha trong suốt:
+
+| File | Vai trò | Nội dung |
+|---|---|---|
+| `app-icon.png` | **icon chính** | bàn cờ thu nhỏ, xúc xắc và quân vàng |
+| `app-icon-sub.png` | icon phụ | quân cờ vàng + xúc xắc trên ô đất |
+
+Artwork sinh bằng imagegen nên không có SVG nguồn; size launcher nhỏ hơn resize từ PNG master.
 
 ## 7. Quy trình tạo icon mới
 

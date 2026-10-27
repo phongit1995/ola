@@ -23,4 +23,6 @@ export const EMPTY_SECONDARY: ProfileSecondary = {
   following: [],
   posts: [],
   loading: false,
+  hasMorePosts: false,
+  loadingMorePosts: false,
 };

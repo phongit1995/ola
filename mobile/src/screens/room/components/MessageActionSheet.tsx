@@ -29,7 +29,14 @@ export interface MessageSheetAction {
   onSelect: () => void;
 }
 
-export type MessageActionIconName = 'reply' | 'copy' | 'edit' | 'block' | 'delete' | 'report';
+export type MessageActionIconName =
+  | 'reply'
+  | 'copy'
+  | 'selectText'
+  | 'edit'
+  | 'block'
+  | 'delete'
+  | 'report';
 
 export interface AnchorRect {
   x: number;
@@ -80,6 +87,13 @@ function MessageActionIcon({ name }: { name: MessageActionIconName }) {
       <>
         <Rect x="9" y="9" width="11" height="11" rx="2" />
         <Path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+      </>
+    ),
+    selectText: (
+      <>
+        <Path d="M4 7V4h16v3" />
+        <Path d="M9 20h6" />
+        <Path d="M12 4v16" />
       </>
     ),
     edit: (

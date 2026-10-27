@@ -1,0 +1,326 @@
+# S2. Lobby — Nền trời thoáng
+
+**Đã chốt phương án 1 — Nền trời thoáng.** Đây là đặc tả style để dựng lại màn lobby theo ảnh bên dưới. Phạm vi của tài liệu là S2; hành vi online theo [02 §S2](../../02-screen-specs.md#s2-lobby), luật chơi theo [05](../../05-gameplay-rules-and-protocol.md). **Đã dựng với dữ liệu mock** (`tycoon/screens/LobbyScreen.tsx`, mock `@minhanh` / VIP 3 / 12.500 KEN ở `tycoon/helpers/profile.ts`): `Vào bàn` mở [S3 danh sách bàn](../s3-room-list/README.md) (dữ liệu giả, từ 22/10/2026), `Lịch sử` và `Bảng xếp hạng` hiện toast `Tính năng online đang được làm`. Từ 22/10/2026 có nút xanh ngọc `Chơi với máy` ngay dưới `Vào bàn` (ảnh bên dưới), mở `BotSetupModal` (§6, [§11 ảnh mẫu](#11-modal-chơi-với-máy), 02 §2.3): Bot 1 mặc định, nút thêm/xóa tối đa 3 bot và mức độ riêng, dựng ngày 23/10/2026. Đã có [S1 loading](../s1-loading/README.md) khi thiếu hồ sơ; API hồ sơ, lỗi và offline chưa triển khai.
+
+![Lobby S2 đã chốt ngày 22/10/2026: nút Chơi với máy xanh ngọc, avatar VIP, @username và đồng K](./concept-s2-lobby-pixel-16bit.png)
+
+Ảnh **853 × 1844 px**, bản 22/10/2026 có nút Chơi với máy đã thay ảnh 20/10 cùng tên. Bản cũ là nguồn của 15 PNG đã tách và [audit](./asset-audit.md), xem lại bằng `git show 9be6d970b:game/tycoon/docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png`. [Icon robot và nền nút đã tách](../../../assets/screens/lobby/README.md); robot xuất `lobby/ill-bot.webp`, mặt nút dựng bằng CSS. Nút chơi máy cao 56 như các nút phụ dù trong ảnh AI hơi cao hơn. [Log nguồn và prompt](../../asset-generation-log.md). Ảnh concept không import trực tiếp vào game; asset được **cắt từ concept** theo [quy trình asset theo màn](../README.md#quy-trình-asset-theo-màn), PNG gốc ở [`assets/screens/lobby/`](../../../assets/screens/lobby/README.md), khi code mới xuất WebP/SVG. Chữ (nhãn nút, tên, số KEN) không cắt từ ảnh, luôn là DOM text.
+
+**Trạng thái sau review 2026-10-21:** có 13 PNG nguồn tại [assets/screens/lobby](../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn sau khi so với concept + 5 v1); 10 bản WebP đã được xuất và import vào Lobby mock. **Chưa đạt visual QA.** Ảnh AI đã tái dựng một số chi tiết; tia vàng CTA, tia trắng hero, mặt CTA, contour nút kem và Luật chơi không pill đã dựng bằng SVG/CSS, chờ visual QA. Xem [audit từng ảnh, nguyên nhân từ prompt và việc cần sửa](./asset-audit.md). Có file runtime không có nghĩa artwork đã được duyệt.
+
+## 1. Hướng hình ảnh và thứ tự ưu tiên
+
+- Nền trời cyan thoáng, mây pixel ở viền; phố Việt Nam, cây, núi và sông ở phần dưới. Không đặt một panel lớn sau toàn bộ menu.
+- Logo vàng viền navy nằm trên hero. Bác Tỷ bên trái; ba thẻ đất giấy kem có tranh pixel, hai quân con tốt vàng/xanh ở bên phải. Hero và logo tách khỏi vùng nút.
+- Một nút chính vàng `Vào bàn`, nút xanh ngọc `Chơi với máy` có robot xanh–trắng ngay dưới, hai nút kem `Lịch sử`, `Bảng xếp hạng`, rồi action chữ có sách `Luật chơi`. Footer chỉ có pill `Thoát game`, căn giữa thẳng hàng menu; không hiển thị version (`v1.0` trong ảnh bỏ đi).
+- Bóng elip dưới chân Bác Tỷ trong ảnh không lấy: nhân vật không đổ bóng ngoài theo [03-characters](../../style/03-characters.md).
+- Riêng S2, giữ họa tiết áo và shading gần concept; đây là ngoại lệ của màn so với nhân vật phẳng dùng chung. Không làm phẳng áo hoặc đảo hướng icon thoát dưới danh nghĩa “sửa QA” khi ảnh mẫu không yêu cầu.
+- Pixel chỉ dùng cho phong cảnh. Mascot, quân cờ, thẻ, icon, nút và chữ mượt, contour navy. Ánh sáng nhẹ và mép dưới tạo độ nổi; không thêm glow, glass hay hạt liên tục.
+- **Ảnh quyết định mỹ thuật và tương quan bố cục; tài liệu này quyết định kích thước triển khai, responsive và trạng thái.** Dùng [01-foundations](../../style/01-foundations.md) cho token UI chung; lớp phản sáng/cạnh CTA và họa tiết nhân vật S2 là ngoại lệ theo concept đã duyệt, chỉ áp dụng trong màn này như §3 và §6.
+- Ảnh mới dùng mẫu VIP 3, `@minhanh` và `12.500` rồi đồng K bên phải; tên, VIP và số dư vẫn là dữ liệu mẫu. Concept cũ có `Minh Anh`, chân dung người và `12.500 KEN`, không dùng làm chuẩn topbar. Production dùng avatar VIP + `@username` theo [03 §18](../../03-component-specs.md#18-tên-người-chơi-và-icon-vip-playername-playeravatar) và số KEN thật. Không bake các dữ liệu này vào ảnh.
+
+## 2. Bố cục tại 390 × 844
+
+Tọa độ dưới đây tính trong vùng nội dung **sau khi đã trừ safe-area**, với vùng khả dụng 390 × 844. Đây là mốc kiểm bố cục, không dùng `position: absolute` cho cả màn. Dùng luồng dọc; khung lobby cao đúng một màn như caro (`height: 100dvh`, không cuộn), màn thấp thu hero trước.
+
+| Vùng | Vị trí và kích thước CSS px | Nội dung |
+|---|---|---|
+| Topbar | x 12, y 28, rộng 366, cao 52 | profile pill, KEN pill, âm thanh |
+| Logo | giữa ngang, y 100, khung tối đa 320 × 80 | logo `CỜ TỶ PHÚ`, crown và một viên xúc xắc nằm trong logo |
+| Hero | x 12, y 188, rộng 366, cao 176 | Bác Tỷ trái; ba thẻ + hai quân bên phải |
+| Menu | giữa ngang, y 376–716, rộng 280 | 5 action: cao 80 / 56 / 56 / 56 / 44; gap 12 |
+| Cảnh phố dưới | chủ yếu từ y 648 đến đáy | trang trí, không nhận pointer events |
+| Footer | giữa ngang, y 780–824; cách đáy 20 | nút thoát cao 44, căn giữa |
+
+Các khoảng dọc chuẩn: topbar → logo 20; logo → hero 8; hero → menu 12. Footer dùng `margin-block-start: auto`, cách menu ít nhất 24. Tránh neo footer bằng `position: fixed` khiến nó che menu trên điện thoại thấp.
+
+Khung lobby tối đa 520 px, căn giữa màn; nền trời tiếp tục phủ ngoài khung ở desktop. Topbar/hero có lề ngang 12. Menu dùng `clamp(256px, 0.8 × W − 32px, 320px)` với W là chiều rộng lobby **trước padding ngang**: 280 px tại 390, 256 px tại 360, tối đa 320 px tại 520. Khi phần trăm CSS tính trên content box đã trừ 24 px padding, dùng `calc((100% + 24px) * 0.8 - 32px)`. Logo tối đa 320 px, không kéo giãn sai tỷ lệ.
+
+## 3. Chữ và màu
+
+Font production là **Nunito**, tái dùng hai file đang được khai báo trong [style.css](../../../style.css): `Nunito-400-800-latin.woff2` và `Nunito-400-800-vietnamese.woff2` từ Caro. Chữ trong ảnh AI chỉ gần với Nunito, không phải mẫu font để trích xuất. Không tải thêm font từ CDN; logo là artwork riêng, không dựng bằng font nội dung.
+
+| Thành phần | Font size / weight / line-height |
+|---|---|
+| `@username` | 16 / 800 / 1.2 |
+| Số dư KEN | 17 / 800 / 1.2, `tabular-nums` |
+| `Vào bàn` | 32 / 800 / 1.15 |
+| `Chơi với máy`, `Lịch sử`, `Bảng xếp hạng` | 24 / 800 / 1.2 |
+| `Luật chơi` | 22 / 800 / 1.2, underline offset 4 |
+| `Thoát game` | 16 / 800 / 1.2 |
+| Trợ giúp/lỗi | 13.5 / 600 / 1.35 |
+
+Chữ và contour dùng navy `#1F2A44`; paper `#FCFDF0`, mép paper `#F0E4C8`. Các token gold chung là điểm bắt đầu, không đủ để mô tả mặt CTA đã duyệt: S2 cần mặt vàng sáng, highlight trắng, cạnh cam và đáy nâu tách biệt theo §6; không dùng một màu `#B98700` cho mọi lớp rồi coi là đã khớp. Nền trời `#35C1FC → #7FE3F7`; màu tiền/trạng thái hợp lệ jade `#1F8A5B`, lỗi/thoát coral `#E4573D`. Không đổi toàn bộ KEN thành gold: số dư vẫn navy để đọc rõ trên nền kem. Màu/chuyển sáng bổ sung cho artwork CTA chỉ áp dụng S2, không đổi token nút toàn game.
+
+Các nhãn phải giữ đủ dấu tiếng Việt và đọc được tại 360 px.
+
+## 4. Topbar và dữ liệu
+
+- **Profile:** pill paper, viền navy 1.5; avatar VIP 44 × 44 bên trái, gap 6, tên `@username` ở phải. Ở lobby vẫn hiện username của chính mình, không đổi thành `Bạn`. Không gắn thêm badge VIP thứ hai, không dùng chân dung mẫu trong ảnh.
+- **Tên dài:** phần tên có `min-width: 0`, cắt ellipsis theo chiều rộng còn lại; giới hạn tối đa 16 ký tự sau `@` theo quy ước list. Accessible name giữ đầy đủ tên. Không cắt chuỗi rồi dùng chuỗi đã cắt cho dữ liệu/aria-label.
+- **KEN:** pill paper cùng cao topbar, số dư đã format rồi đồng KEN 24 (`lobby/ken.png`) bên phải; không có chữ hậu tố `KEN` (bỏ 22/10/2026), accessible name vẫn `Số dư {số} KEN`. Lề trái 14, phải 8. Không cho đổi số làm dịch nút âm thanh ra ngoài khung. Không dùng ellipsis hoặc tự làm tròn số dư thành K/M.
+- **Âm thanh:** vùng chạm 44 × 44, căn giữa dọc; hình tròn paper viền navy 1.5, `ic-volume-on/off` 24. `aria-pressed` phản ánh bật/tắt; tên truy cập là hành động `Tắt âm` hoặc `Bật âm`.
+- Hàng chuẩn dùng grid `minmax(0, 1fr) max-content 44px`, gap 8. Nếu số KEN không còn đủ chỗ cùng profile tối thiểu 108 px, chuyển KEN xuống hàng 2 hết chiều rộng, profile và loa ở hàng 1. Topbar tăng cao trong luồng; logo và menu dịch xuống theo, không chồng nhau.
+- **Dùng chung với S3:** topbar là component [`LobbyTopbar`](../../../screens/LobbyTopbar.tsx) (profile + KEN + loa, phép đo xuống hàng ở `useLobbyTopbarWrap`). S2 và S3 cùng đặt nó đầu khung với lề trên 28 (màn thấp 16), nên topbar nằm đúng một chỗ khi chuyển màn; S3 đặt header riêng (back, tiêu đề, làm mới) cách bên dưới 12. Sửa topbar ở đây là sửa cả hai màn.
+- Chưa có dữ liệu user: skeleton đúng footprint, số dư chưa biết hiện `— KEN`, không giả thành `0 KEN` và không hiển thị mẫu `Minh Anh`. Lỗi tải hiển thị thông báo và action thử lại theo §8.
+
+## 5. Hero và asset
+
+Hero là một nhóm trang trí `aria-hidden="true"`, `pointer-events: none`; không phải bàn có thể chơi hoặc chọn ô.
+
+| Lớp | Quy cách |
+|---|---|
+| Nền | Dùng chung `lobby/bg-board-pixel.webp`; mây ở rìa, trời trống sau logo/menu, phố neo đáy. Khi crop ưu tiên giữ cảnh phố và không kéo méo pixel. Không cần nền lobby mới. |
+| Logo | `lobby/logo.webp`, transparent, contain trong khung 320 × 80. Tên game được cung cấp một lần bằng heading/accessible name. |
+| Bác Tỷ | `chars/ty-idle-full.webp`, hình nhìn thấy cao 176, rộng khoảng 140; căn trái và đáy hero. Áo bà ba gold, quần navy, kính tròn, quạt giấy mở nhẹ như mẫu, nụ cười thân thiện. |
+| Ba thẻ đất | Nhóm bên phải rộng khoảng 224, cao 132; ba thẻ xếp xòe nhẹ, dải đỏ/xanh dương/xanh lá nằm dưới, contour navy và mép paper. Hiện nằm trong `lobby/hero-properties.webp` cùng hai quân; không chữ/giá/quyền sở hữu. |
+| Tranh trong thẻ | Giữ ba cảnh của concept trong artwork hero. Đây là decor, không ánh xạ giá/nhóm đất thật; không bắt buộc thay bằng `tiles/art` làm đổi hình đã duyệt. |
+| Hai quân | Gold và blue, cao khoảng 64/58, ở vị trí tương đối như mẫu; hiện chung `hero-properties.webp`. Nếu tách lớp để animate, giữ silhouette/perspective; không tự thay bằng avatar hoặc token có dáng khác. |
+| Tia trắng | `lobby/decor-hero-rays.svg`: cụm 3 tia cạnh quân vàng và cụm 3 tia (nhỏ – cao – nhỏ) phía phải quân xanh như concept. viewBox trùng khung `hero-properties.webp` (468 × 250); xuất lại hero với crop khác thì phải chỉnh tọa độ tia. Trang trí trắng đặc trên nền trời, không glow, không chớp liên tục. |
+
+Thứ tự lớp: nền → tia trắng → thẻ → quân → mascot; mascot và cụm thẻ có thể chồng mép tối đa 8 px, không che mặt, quân hoặc logo. Trim vùng trong suốt khi đặt layout để **hình nhân vật**, không phải canvas PNG, đạt chiều cao 176. Kích thước canvas nguồn xem manifest; 256 × 256 trong guideline chung không phải kích thước PNG nguồn S2 hiện tại.
+
+Nếu tắt nhân vật hoặc asset nhân vật chưa tải, giữ footprint hero và thay bằng glyph crown/coin gọn; CTA vẫn nằm đúng chỗ. Asset decor lỗi không được khóa navigation hoặc lặp tải vô hạn. Phong cảnh pixel export theo bội số nguyên, không filter làm mịn; UI và mascot vẫn mượt.
+
+## 6. Nút và minh họa
+
+Kích thước/font ở đây là biến thể **riêng S2**, không đổi nút trong bàn S6 hoặc modal. Nội dung icon + nhãn căn giữa như một nhóm, gap 10–12; không dành một cột icon riêng làm nhãn lệch tâm. Nhãn luôn là DOM text.
+
+| Action | Surface và kích thước | Minh họa | Hành vi |
+|---|---|---|---|
+| `Vào bàn` | mặt vàng sáng, cao 80, pill, highlight trắng ở cung trên, cạnh cam và đáy nâu; một đường bao ngoài | xúc xắc trắng/navy 48; **2 tia vàng mỗi bên ngoài nút** | `openRanked()` → S3; preload RANKED. Hiện: `setRoomsOpen(true)` mở S3 dữ liệu giả, chưa preload |
+| `Chơi với máy` | xanh ngọc, cao 56, pill cùng rộng menu; mặt `#A4F4CF` → `#51D9A3`, cạnh `#299B79`, một contour navy, highlight nhỏ trên trái | robot xanh–trắng 40, `lobby/ill-bot.webp`; mặt nút CSS `.ty-lb-btn-mint`, `button-mint.png` chỉ tham chiếu | `setSetupOpen(true)` → `BotSetupModal`, mặc định Bot 1; thêm/xóa tối đa 3 bot và chọn mức độ riêng, header có icon robot ([02 §2.3](../../02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal)) rồi vào ván; dùng được offline |
+| `Lịch sử` | paper, cao 56, pill, **một contour navy 1.5**, cạnh beige bên trong và bóng xanh nhẹ xuống dưới | đồng hồ/mũi tên blue 40 | mở S10 |
+| `Bảng xếp hạng` | paper, cao 56, pill như trên | bục gold, blue, coral + crown, 40 | mở S11 |
+| `Luật chơi` | **không nền pill, không border/shadow**; vùng chạm cao ít nhất 44, chữ navy gạch chân trên nền trời | sách paper/navy, 32 | modal [Hướng dẫn chơi 4 tab](#12-hướng-dẫn-chơi--đã-chốt-4-tab), nút Đã hiểu; dùng offline |
+| `Thoát game` | paper, cao 44, pill; rộng theo nội dung, padding ngang 18 | cửa/mũi tên coral, 24 | `bridge.exit()` |
+
+Artwork kiểm lại từ nguồn: xúc xắc CTA có các mặt **3–2–1** (mặt lớn phía trên / trái / phải), đồng hồ không có chấm tâm. Icon thoát giữ thiết kế v1, tách thành 2 lớp cửa + mũi tên hướng phải, chồng trong một ô 24 px của nút Thoát game.
+
+Mặt CTA có dải highlight trắng hở chạy theo cung trên và điểm sáng gần hai đầu; đó là phản sáng, **không phải outline trắng thứ hai chạy kín nút**. Cạnh cam nằm trong hình nút và kết thúc ở đáy nâu. Với nút kem, không kết hợp `border` với một outer spread-shadow navy tạo hai đường bao song song; đặt cạnh beige ở trong contour, chỉ bóng đổ nằm ngoài. Quy tắc một contour áp dụng default/hover/pressed; focus ring truy cập bàn phím vẫn hiện riêng khi `:focus-visible`.
+
+Tia CTA là lớp SVG code-native `lobby/decor-cta-rays.svg`: cụm 2 tia vàng đặc dùng bên trái và mirror bên phải, tổng 4 tia. Mốc 390 px: mỗi cụm khoảng 20 × 36, cách mép nút khoảng 10; không clip ở 360 px, không chiếm slot icon/nhãn, `aria-hidden` và `pointer-events: none`. Không được bỏ qua vì prompt tách skin đã xóa tia; xem [audit §2](./asset-audit.md#2-thiếu-lớp-nào-vì-sao-thiếu).
+
+Hai PNG `button-gold`/`button-paper` chỉ là mẫu surface; runtime hiện dựng nút CSS. CSS/SVG phải tái hiện các lớp trên. Nếu chuyển sang skin raster, kiểm tỷ lệ phần nhìn thấy và co giãn trước: gold v1 khoảng 4,13:1; bản v2 đã sửa về **3,50:1**, khớp khung 3,5:1. Không chồng thêm viền CSS lên contour đã có trong artwork.
+
+Khi Luật chơi nằm trên cảnh phố (màn thấp, desktop), chữ và sách có viền sáng màu paper (`text-shadow`/`drop-shadow`) để đọc được; không thêm lại pill để che cảnh phố.
+
+Các hình trong nút là **6 minh họa trang trí** `lobby/ill-{dice,bot,history,leaderboard,rules,exit}`. Nguồn hiện tại là PNG cắt từ concept (`icon-*.png`, §10); khi code xuất WebP, hoặc vẽ lại SVG viewBox 48 × 48 nếu cần nét sắc. Contour navy, hình khối đơn giản, 2–3 màu và highlight nhỏ; không chữ, emoji. Robot lấy từ `icon-bot.png` ([prompt](../../../assets/screens/lobby/prompts.md#chơi-với-máy-2026-10-22)). Chúng không thay hệ 30 icon `ic-*` dùng cho điều khiển chung. Màu và hình cần giữ cùng nét với ảnh mẫu.
+
+Minh họa có `aria-hidden`, tên action chỉ đọc nhãn nút. Khi chưa có minh họa: dùng `ic-dice/history/leaderboard/exit-door`; `Luật chơi` có thể tạm chỉ có chữ, giữ slot và khoảng cách ổn định. Fallback này không phải trạng thái đạt visual QA cuối.
+
+`Vào bàn` là nút gold duy nhất trong menu sảnh S2. `Luật chơi` mở modal trên backdrop và khóa tương tác nền; modal 4 tab §12 đóng bằng nút `Đã hiểu` gold. Nút xanh ngọc `Chơi với máy` là bổ sung đã chốt ngày 22/10/2026. Không gắn thêm badge, đếm người online, quảng cáo, hàng tab hay action ngoài bố cục menu sảnh đã chọn.
+
+## 7. Trạng thái và chuyển động
+
+| Trạng thái | Biểu hiện |
+|---|---|
+| Default | Theo bảng §6, label không bị che bởi highlight/mascot |
+| Hover (thiết bị có hover) | Sáng nhẹ, dịch lên 1 px; không scale làm thay đổi vùng chạm |
+| Pressed | Dịch xuống 2 px, giảm mép nổi tương ứng; không đổi kích thước layout |
+| Focus-visible | Ring navy 2 px, cách 3 px có nền paper ngăn với nút; không chỉ đổi màu vàng trên nút vàng. Rule `.ty-lobby :focus-visible` phủ cả S3/S4 vì cùng khung `.ty-lobby`; ô nhập đã có khung bo tròn tự vẽ focus (vòng vàng `:focus-within`) nên tắt outline riêng (`.ty-room-input input:focus-visible`), nếu không sẽ ra khung chữ nhật navy lồng trong ô |
+| Disabled | `disabled` thật, opacity 45%, không hover/press; có lý do trạng thái bằng text ngoài nút |
+| Pending | Spinner thay hình trong slot cũ, giữ nhãn/chiều rộng, `aria-busy`; chặn gửi lặp action |
+| Lỗi action | Toast tiếng Việt có thể đọc bằng `aria-live`, phục hồi nút khi kết thúc request; không thay label thành mã lỗi |
+
+Menu vào màn: fade + translateY 6 px, 180–220 ms, stagger tối đa 30 ms. Không lắc/nhấp nháy CTA lặp vô hạn; mây/phố mặc định đứng yên. Bác Tỷ chỉ bob nhẹ ở tier Full theo [08 §U2](../../08-fx-and-animation.md), tier Lite/Off đứng yên. Chọn tier trong menu tùy chọn S6, không thêm control cạnh loa trong S2. `prefers-reduced-motion` tắt translate/stagger và decor motion; focus, pending và error vẫn rõ bằng trạng thái tĩnh.
+
+**Đã dựng (22/10/2026):** mỗi khối con trực tiếp của `.ty-lobby` (topbar trừ ra, logo, hero, menu, footer; ở S3 là header, bảng, footer) chạy `ty-screen-in` 220 ms: fade + translateY 10 px, chưa stagger. Reduced-motion rút mọi animation về ~0 ms.
+
+- **Nền không được animate.** Trời (`.ty-lobby::before`) và ảnh phố (`::after`) là pseudo-element của chính khung `.ty-lobby`; đặt opacity/transform lên khung thì nền mờ theo, lộ `body` navy tối, thành nhấp nháy xanh → đen → xanh mỗi lần S2 ↔ S3 (hai màn mount lại khung mới). Hiệu ứng vào màn chỉ gắn trên `.ty-lobby > *`.
+- **Topbar không animate** (`.ty-lobby > .ty-lb-top { animation: none }`): S2 và S3 cùng hiện `LobbyTopbar` ở cùng chỗ nên khi chuyển màn nó đứng yên, chỉ nội dung bên dưới đổi.
+- Modal (`.ty-backdrop`) giữ hiệu ứng `ty-fade` riêng.
+
+## 8. Loading, offline và responsive
+
+S1 là trạng thái của cùng `LobbyScreen`, không dựng đồng thời hai logo hoặc hai menu. Code hiện dùng `profile === null` để hiện [bố cục S1](../s1-loading/README.md): logo + Bác Tỷ + Cung men nổi quay luân phiên với xúc xắc 3D lật một mặt mỗi lượt; giữ âm thanh/thoát, ẩn profile/KEN/menu/cụm thẻ. Có hồ sơ thì gỡ renderer và khôi phục S2 cùng phép đo topbar. Bản chơi máy khởi tạo `MOCK_PROFILE`; dev `/tycoon/?preview=loading` dùng để xem S1. `LOBBY_CRITICAL` và budget theo [04 §5](../../04-asset-manifest-and-prompts.md#5-preload-groups-assetsts); PNG concept 2 MB trong docs không tham gia tải game.
+
+**Kế hoạch online:** khi mất kết nối trong S2, giữ các khối và hồ sơ đã hiển thị; ba action online (`Vào bàn`, `Lịch sử`, `Bảng xếp hạng`) disabled, thêm dòng lý do và action `Thử lại` paper trong luồng. `Chơi với máy`, `Luật chơi`, âm thanh và thoát vẫn dùng được. S1 error dùng CTA thử lại theo 02; không hiển thị đồng thời CTA thử lại S1 và menu S2. Từ 22/10/2026 `Vào bàn` đã mở S3, nhưng S3 vẫn là dữ liệu giả (chưa nối server, chưa có S5 phòng chờ); `Chơi với máy` mở `BotSetupModal`.
+
+| Vùng khả dụng | Quy tắc |
+|---|---|
+| 390 × 844 | Bám mốc §2, tất cả control nhìn thấy, phố ở phần đáy |
+| Rộng 360 | Menu 256; secondary text có thể giảm xuống 22; logo tối đa `W − 48`; hero giảm đều theo chiều rộng. Topbar dùng quy tắc xuống hàng §4 nếu cần. Không cắt `Bảng xếp hạng`. |
+| Rộng 520 | Menu tối đa 320; logo tối đa 320; hero tối đa 400, căn giữa. Thêm khoảng trời hai bên, không phóng font theo viewport. |
+| Cao < 760 | Lề trên 16, logo cao 72, hero cao tối đa 144, CTA chính 64 / chữ 28, secondary 52 / chữ 22; gap menu giữ 12. Footer vẫn cao 44, có thể nằm dưới fold. |
+| Cao < 760 hoặc font phóng lớn | Giống caro: khung cố định đúng một màn, không cuộn. Hero (mascot + cụm thẻ) co lại trước, có thể về 0; topbar, logo, menu và footer giữ cỡ. Không ép text, ẩn action hoặc đặt footer đè nội dung. Đo 22/10 với 5 action: hero còn ~85 px ở 375 × 667, ~58 px ở 360 × 640. |
+| Cao > 900 | Giữ kích thước control, thêm khoảng trời giữa menu và footer; cảnh phố neo đáy |
+
+Safe-area: như caro, dùng biến `--ty-safe-top`/`--ty-safe-bottom` (lấy từ `env(safe-area-inset-*)`, về 0 khi `data-ola-native-safe-area="handled"`), không gọi `env()` trực tiếp để WebView đã inset không bị cộng lần hai. Viewport meta giống caro, không chặn phóng to.
+
+## 9. Checklist triển khai và kiểm ảnh
+
+Các mục dưới đây là **việc triển khai tiếp theo**, không đánh dấu hoàn thành chỉ vì đã có concept/docs.
+
+- [x] Dựng DOM/CSS theo vùng §2, font Nunito với glyph tiếng Việt; avatar VIP + `@username` (dữ liệu mock).
+- [x] Đã xuất 10 WebP theo §10, tổng ~178 KiB; không import concept hoặc PNG gốc. Mục này chỉ xác nhận export, không xác nhận visual QA hay budget toàn bộ initial load.
+- [ ] Xử lý các sai khác PNG trong [audit](./asset-audit.md), ưu tiên quầng/tỷ lệ icon sách, BXH và chi tiết xúc xắc/đồng hồ; giữ hướng icon thoát và không tự làm phẳng áo S2.
+- [ ] Đủ 4 tia vàng CTA và 2 cụm tia trắng hero; CTA có highlight/cạnh cam, nút kem một contour, Luật chơi không pill; kiểm default/pressed và focus riêng.
+- [ ] Nối action vào luồng được triển khai; phân biệt S1, S2 ready, pending, lỗi và offline. Đã nối `Vào bàn` → S3 (dữ liệu giả), `Chơi với máy` → `BotSetupModal`; `Lịch sử`, `Bảng xếp hạng` còn toast.
+- [ ] Chụp 390 × 844 đối chiếu concept: nền mở, logo, mascot trái, 3 thẻ/2 quân phải, menu vàng–xanh ngọc–kem–kem–text, footer; không mất hoặc thêm action.
+- [ ] Chụp 360 × 640, 390 × 844 có safe-area, 520 × 900; thử username dài 24 ký tự, KEN 19 chữ số, user không VIP, zoom text 200%, reduced-motion, asset lỗi.
+- [ ] Kiểm tên/VIP/số KEN đều là dữ liệu thật, không có placeholder ảnh lọt vào trạng thái ready.
+- [ ] Tab theo thứ tự âm thanh → Vào bàn → Chơi với máy → Lịch sử → Bảng xếp hạng → Luật chơi → Thoát; modal quản lý focus và trả focus về nút mở.
+- [ ] Nút không dưới vùng chạm 44 × 44; kiểm contrast và overflow, budget tải lobby ≤ 180 KB gzip; typecheck và kiểm tương tác sau khi có code UI.
+
+## 10. Asset cắt từ concept → file production
+
+PNG nguồn nằm ở [`assets/screens/lobby/`](../../../assets/screens/lobby/README.md) (8 bản v2 đã chọn + 5 giữ v1 + robot). Đã có 12 WebP (cắt theo alpha (> 8) + đệm trong suốt 4 px, thu LANCZOS về ~2× cỡ hiển thị, WebP q80/alpha q90; nền kín 780 px rộng, q68; script xuất không lưu trong repo). Tổng 185.958 byte (~182 KiB) chỉ là các WebP, không phải chứng nhận toàn bộ initial load ≤180 KB gzip. Loa dùng `ic-volume-on/off` có sẵn nên `icon-sound.png` chưa xuất. Hai SVG decor ở bảng dưới **đã có**.
+
+| PNG gốc | File runtime khi code | Ghi chú QA trước khi xuất |
+|---|---|---|
+| `background.png` | `lobby/bg-board-pixel.webp` (nền trời dùng chung) | giữ bố cục; kiểm nét pixel trên PNG và bản export, không làm mịn thêm khi phóng |
+| `logo.png` | `lobby/logo.webp` | so silhouette/dấu tiếng Việt và tỷ lệ phần nhìn thấy, không chỉ canvas |
+| `mascot.png` (v2) | `chars/ty-idle-full.webp` | họa tiết áo dạng đồng xu gần concept; mặt/tóc/khuy vẫn tái dựng; bỏ bóng elip theo ngoại lệ đã ghi |
+| `hero-properties.png` (v2) | `lobby/hero-properties.webp` | 3 thẻ + 2 quân chung một lớp; tia trắng là SVG riêng; tách lớp chỉ khi cần animate |
+| `icon-dice.png`, `icon-history.png`, `icon-leaderboard.png`, `icon-rules.png` (v2) | `lobby/ill-{dice,history,leaderboard,rules}.webp` (hoặc `.svg` nếu vẽ lại vector) | xúc xắc 3–2–1, đồng hồ không chấm tâm, crown BXH viền nâu, sách gọn ~1,37:1 |
+| `icon-bot.png` | `lobby/ill-bot.webp` (104 × 90, 3.642 byte) | robot xanh–trắng trong ô 40; ăng-ten và hai tai không bị cắt |
+| `icon-exit-door.png` + `icon-exit-arrow.png` (tách từ v1) | `lobby/ill-exit-door.webp` + `lobby/ill-exit-arrow.webp` | chồng trong ô 24 px; giữ mũi tên hướng phải như concept; `icon-exit.png` chỉ còn làm đối chiếu |
+| `icon-ken.png` | `lobby/ill-ken.webp` (không còn dùng) | từ 22/10/2026 pill KEN dùng `lobby/ken.png`, đồng chữ K chung của app (game sút pen, đập trứng); `ic-ken` vẫn là icon nét cho ô biểu tượng O5 |
+| `icon-sound.png` | chưa xuất; runtime dùng `ic-volume-on/off` | chỉ cần bổ sung artwork off nếu thay cặp SVG đang dùng; không chặn luồng âm thanh hiện tại |
+| `button-gold.png`, `button-paper.png` (v2), `button-mint.png` | không xuất | mẫu surface cho CSS/SVG §6; gold visible 3,50:1, paper 4,87:1, mint 4,945:1; không được lược highlight/cạnh hoặc thêm viền kép |
+| chưa có PNG; theo hình trong concept | `lobby/decor-cta-rays.svg` — **đã tạo** | SVG code-native, 2 tia mỗi bên CTA; không cần gen lại skin |
+| chưa có PNG; theo hình trong concept | `lobby/decor-hero-rays.svg` — **đã tạo** | SVG code-native, 2 cụm trắng (3 tia trái, 3 tia phải), tọa độ theo khung `hero-properties.webp`; không cần gen lại hero |
+
+## 11. Modal Chơi với máy
+
+Ảnh mẫu `BotSetupModal` theo [02 §2.3](../../02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal), người dùng làm ngày 23/10/2026: mỗi bot một hàng `avatar · Bot n · Dễ/Thường/Khó · −`, nút `+ Thêm bot` dưới danh sách, tối đa 3 bot. Đã dựng UI ngày 23/10/2026 (`components/BotSetupModal.tsx`), đã chụp đối chiếu ở 390 × 844 và 360 × 640. [Nguồn và prompt](../../asset-generation-log.md#s2--modal-chơi-với-máy).
+
+[Audit asset v2 ngày 23/10](./asset-audit.md#6-modal-chơi-với-máy--asset-v2): **đã sửa các sai lệch ghi nhận** ở màu cộng/trừ, hai trạng thái xám, X và hình hai người; đã có 4 nền SVG riêng cho modal mint/disabled/paper/gold. Palette riêng theo ảnh này, không thay màu game hay asset lobby. Bản vector giữ cạnh sạch; đã dùng trong modal runtime.
+
+| Mở mới: Bot 1 / Thường, nút `−` xám, Thêm bot hoạt động | Đủ 3 bot: nút `−` coral, Thêm bot xám + `Đã đủ 3 bot` |
+|---|---|
+| ![Modal Chơi với máy mở mới với Bot 1](./modal-bot-01-one-bot.webp) | ![Modal Chơi với máy đủ 3 bot](./modal-bot-02-three-bots.webp) |
+
+Ảnh quyết định mỹ thuật (khung paper, vạch mint dưới header, pill gold, nút Thêm bot mint, khối tóm tắt xanh nhạt, nút `−` tròn); 02 §2.3 quyết định kích thước và hành vi. Các điểm docs thắng ảnh:
+
+- Cỡ: ảnh phóng to avatar (~44) và nút Thêm bot (~56); dựng avatar 24, Thêm bot 44, robot header 32 theo 02. Khung ảnh 935 × 1683 khác tỷ lệ 390 × 844, nền sảnh trong ảnh là bản AI làm mờ; dùng nền S2 thật và backdrop chung.
+- Icon hai người ở `assets/bot-setup/users-blue.svg`, hiển thị 28 × 21; đây là minh họa hai màu, không thuộc bộ mask `ic-*`. [Bộ asset modal v2](#asset-của-modal) có cả cộng/trừ tròn và bản xám, X riêng `close-navy.svg`, 4 nền nút không chữ; robot và VIP dùng nguồn gốc. Viền nút Thêm bot jade theo ảnh; nền nút co giãn/khung/pill/divider dựng CSS theo SVG và palette mới, chữ là DOM.
+- Avatar trong ảnh là VIP 001–003 làm mẫu; runtime lấy theo `vipIconUrl` như pod S6.
+- Ảnh 3 bot đặt Bot 2 = Dễ, Bot 3 = Khó chỉ để minh họa chọn độc lập; bot mới thêm luôn là Thường.
+- Chữ, số bot và dòng tóm tắt là DOM, không cắt từ ảnh.
+
+### Asset của modal
+
+Thư mục [`assets/bot-setup/`](../../../assets/bot-setup/): **10 SVG riêng** (6 icon + 4 nền nút), vẽ hình học ngày 23/10/2026, đã sửa theo [audit §6](./asset-audit.md#6-modal-chơi-với-máy--asset-v2). Robot và VIP dùng lại nguồn gốc. Đã dùng trong `BotSetupModal`.
+
+**Icon và avatar**
+
+| Phần | File | Cỡ CSS | Ghi chú |
+|---|---|---|---|
+| Robot header | [ill-bot.webp](../../../assets/lobby/ill-bot.webp) | hộp 32 × 32 | Dùng nguyên robot nút sảnh; [PNG nguồn](../../../assets/screens/lobby/icon-bot.png) |
+| Avatar VIP 001 | [vip_001.png](../../../../../packages/shared/assets/vip-icons/vip_001.png) | 24 × 24 | `vipIconUrl(1)` |
+| Avatar VIP 002 | [vip_002.png](../../../../../packages/shared/assets/vip-icons/vip_002.png) | 24 × 24 | `vipIconUrl(2)` |
+| Avatar VIP 003 | [vip_003.png](../../../../../packages/shared/assets/vip-icons/vip_003.png) | 24 × 24 | `vipIconUrl(3)` |
+| X đóng | [close-navy.svg](../../../assets/bot-setup/close-navy.svg) | 16 × 16 | Navy đậm `#010636` theo mẫu; hình học từ X đậm S4, không sửa file S4 |
+| Cộng active | [plus-circle.svg](../../../assets/bot-setup/plus-circle.svg) | 24 × 24 | Xanh ngọc, shading rất nhẹ |
+| Cộng disabled | [plus-circle-disabled.svg](../../../assets/bot-setup/plus-circle-disabled.svg) | 24 × 24 | Xám đậm riêng của nút thêm |
+| Trừ active | [minus-circle.svg](../../../assets/bot-setup/minus-circle.svg) | 32 × 32 | Đỏ hồng coral, shading rất nhẹ |
+| Trừ disabled | [minus-circle-disabled.svg](../../../assets/bot-setup/minus-circle-disabled.svg) | 32 × 32 | Xám sáng riêng của nút trừ |
+| Tổng số người | [users-blue.svg](../../../assets/bot-setup/users-blue.svg) | 28 × 21 | Vai bớt vòm, thân phải nhỏ hơn; hai màu xanh theo ảnh |
+
+Avatar gắn với ID bot, giữ khi xóa bot khác và đánh lại tên; không buộc tên Bot 2 luôn phải có VIP 002. Nút X/trừ có vùng chạm 44 × 44; cộng nằm trong nút Thêm bot cao 44.
+
+**Nền nút không chữ/icon**
+
+| File SVG | Kích thước thiết kế | Mặt / viền / cạnh dưới |
+|---|---|---|
+| [button-mint.svg](../../../assets/bot-setup/button-mint.svg) | 304 × 44 | `#8aebc5` / `#299b76` / `#4bd0a3`; highlight nhỏ góc trái |
+| [button-mint-disabled.svg](../../../assets/bot-setup/button-mint-disabled.svg) | 304 × 44 | `#dddddf` / `#abb0b3` / `#c8cacc`; cùng hình học với mint |
+| [button-paper.svg](../../../assets/bot-setup/button-paper.svg) | 160 × 52 | `#fdf8ee` / `#8b7865` / `#eecca4`; bỏ viền navy và dải xanh lobby |
+| [button-gold.svg](../../../assets/bot-setup/button-gold.svg) | 160 × 52 | `#fed828 → #ffd92b → #ffbf18` / `#864d07` / `#e17a00`; highlight góc trái, viền sáng mảnh phía trên |
+
+Đây là nền riêng theo **modal**, không thay PNG của lobby. Có thể dùng SVG tại đúng tỷ lệ như asset thiết kế. Khi dựng nút co theo chiều rộng modal, chuyển các lớp mặt/viền/cạnh dưới/highlight sang CSS theo SVG và bảng màu để giữ góc bo, độ dày nét và chiều cao: Thêm bot 44, Hủy/Bắt đầu 52. Không kéo méo cả SVG hoặc dùng PNG lobby thay thế. Chữ, dấu cộng và tên action ghép riêng.
+
+**Phần dựng bằng CSS/DOM**
+
+| Phần | Cách dựng |
+|---|---|
+| Nền sảnh + backdrop | Lobby S2 thật với [bg-board-pixel.webp](../../../assets/lobby/bg-board-pixel.webp), logo/hero có sẵn và `.ty-backdrop`; không dùng screenshot AI làm nền |
+| Khung modal | Paper, rộng `min(100% - 32px, 340px)`, radius 22, navy 2, padding 18, cạnh paper-deep; chiều cao theo nội dung |
+| Nền tròn X | Paper, viền beige và cạnh dưới nhẹ; X là SVG riêng |
+| Vạch header / divider bot | Mint mảnh bo tròn / beige mảnh |
+| Nhãn đếm | DOM text, không phải nút |
+| Dễ / Thường / Khó | Pill paper, ô chọn gold theo chất liệu mới; cao 40, vùng chạm 44, ô rộng 44 / 72 / 44 cộng viền; không có icon mức độ |
+| Tóm tắt | `#e4f3fd` (đo từ ảnh), radius 16, `users-blue.svg` trước dòng tổng người; chữ DOM |
+| Font | [Nunito Latin](../../../../caro/assets/fonts/Nunito-400-800-latin.woff2) + [Nunito tiếng Việt](../../../../caro/assets/fonts/Nunito-400-800-vietnamese.woff2) đã khai báo trong `tycoon/style.css` |
+
+**Màu riêng và cách dùng**
+
+Màu v2 là **ngoại lệ artwork riêng của modal S2**, lấy từ ảnh mẫu; không thay token jade/coral/navy của game hoặc asset S4/lobby. Màu giữa gradient: cộng `#14a774`, trừ `#f26b64`, cộng disabled `#9ea0aa`, trừ disabled `#b2b6be`; hai người `#3c5994` / `#90b0da`. Dấu cộng `#fafdfc`, dấu trừ `#fcfafa`.
+
+- SVG vẽ hình học, không dùng imagegen hoặc thư viện ngoài. Không có chữ, bitmap nhúng, filter, script hay font phụ thuộc. Ngoài hình trong suốt.
+- Render bằng img với `alt=""`, `aria-hidden="true"`, không qua mask `TyIcon` để giữ màu. Icon tròn đã có vòng nền; không vẽ thêm vòng CSS bên dưới.
+- Cặp active/disabled cùng hình học, đổi màu. `disabled` thật, vùng chạm và tên truy cập thuộc button chứa; không giảm opacity thêm riêng trên bản xám đã có.
+- Không dùng thùng rác, bộ chọn số lượng, icon mức độ/play/tiền cược cho modal này.
+
+Đã đối chiếu v2 cạnh hai concept, xem icon ở cỡ thật và phóng 2×, kiểm màu trên vùng không chứa nét trắng. Mẫu màu của 6 vùng icon lệch tối đa 1 đơn vị mỗi kênh RGB so với vùng mẫu đã đo. Chỉ số này hỗ trợ kiểm màu, không chứng minh toàn ảnh trùng pixel. Cần kiểm bố cục và tương tác khi triển khai modal mới.
+
+## 12. Hướng dẫn chơi — đã chốt 4 tab
+
+Người dùng chốt bốn ảnh ngày 23/10/2026, theo [02 §2.4](../../02-screen-specs.md#24-hướng-dẫn-chơi-rulesmodal). **Đã dựng UI cùng ngày** (`components/RulesModal.tsx`), chụp đối chiếu ở 390 × 844 và 360 × 640. Mở từ nút `Luật chơi` ở sảnh và từ menu trong ván; không đổi trạng thái ván. [Nguồn và prompt](../../asset-generation-log.md#s2--thiết-kế-lại-hướng-dẫn-chơi-23102026).
+
+| Cơ bản | Tài sản |
+|---|---|
+| ![Hướng dẫn chơi, tab Cơ bản](./rules-01-basic.webp) | ![Hướng dẫn chơi, tab Tài sản](./rules-02-assets.webp) |
+
+| Ô đặc biệt | Kết thúc |
+|---|---|
+| ![Hướng dẫn chơi, tab Ô đặc biệt](./rules-03-special.webp) | ![Hướng dẫn chơi, tab Kết thúc](./rules-04-ending.webp) |
+
+Ảnh 853 × 1844, WebP q85 đổi từ PNG output (hash PNG gốc trong [manifest](../../../assets/screens/rules-guide/manifest.json)). Ảnh là concept mỹ thuật; chữ trong ảnh rút gọn, **nội dung trong code thắng ảnh**.
+
+### Bố cục và hành vi
+
+- Khung, header, X và nút vàng dùng chung CSS với modal Chơi với máy (§11): paper, vạch mint dưới header, sách `lobby/ill-rules.webp` hộp 32 cạnh tiêu đề `Hướng dẫn chơi` 21/800, X `bot-setup/close-navy.svg` vùng chạm 44.
+- Rộng `min(100%, 420)` trong backdrop lề 16 (390 → 358, 430 → 398): ảnh rộng khoảng 352 ở 390, rộng hơn mức 340 của modal Chơi với máy nên không dùng chung giới hạn đó. Cao tối đa `100dvh − 48` trừ safe-area, padding 12 / 16 / 16. **Chiều cao cố định khi đổi tab**: bằng tab dài nhất, tối đa chiều cao màn (bốn panel xếp chồng một ô grid, panel ẩn `visibility: hidden` + `inert`), để header và thanh tab không nhảy. Ảnh vẽ mỗi tab một chiều cao; runtime cố ý khác ảnh ở điểm này. Tab ngắn để trống phía dưới; tab dài chỉ panel cuộn, header, thanh tab và nút `Đã hiểu` luôn nhìn thấy.
+- **4 tab** `Cơ bản · Tài sản · Ô đặc biệt · Kết thúc`: pill paper viền `#b59f86`, tab chọn gold như pill mức độ bot; 13/800, cao 44, rộng theo nhãn. Mở mới chọn Cơ bản, focus ở tab Cơ bản. `tablist`/`tab`/`tabpanel`, phím trái/phải (vòng), Home/End; đổi tab đưa thân về đầu.
+- Mỗi mục là một card paper `#fffdf7` viền `#efe4d2`, radius 16: ô pastel 64 (minh họa 54) bên trái, tiêu đề 16/800, mỗi ý một dòng 14/400 line-height 1.5 màu `#34507f`, `text-wrap: pretty` để không rơi một chữ xuống dòng cuối.
+- Pastel theo vị trí trong ảnh: mục 1 gold `#fff0c6`, mục 2 sky `#ddf2ff`, mục 3 mint `#dcfbe9`, mục 4 coral `#ffe0d4`. Riêng tab Kết thúc: card `Thắng ngay` gold nhạt `#fff6dc` có cúp và 3 hàng điều kiện (minh họa 64 × 40), `Khi nào kết thúc?` card paper ô sky, `Cách xếp hạng` card sky `#ebf6fe`.
+- Tab Cơ bản có dải `Mỗi hành động có 30 giây.` nền `#e4f3fd` + đồng hồ 32; không đổi thành 30 giây mỗi lượt.
+- Footer: divider beige rồi `Đã hiểu` gold cao 52, rộng `min(100%, 248)`; chỉ đóng hướng dẫn. X/Escape/backdrop cũng đóng, focus trả về nút đã mở. Không có nút tiếp/trước, page dots hay chức năng chơi mới.
+
+### Nội dung
+
+Giữ đủ 10 mục luật cũ, chia lại theo tab; số đọc từ `logic/constants.ts` (vốn, lương Xuất phát, phạt tù, số đôi, số lượt tù, ×mua lại, ×lễ hội, thuế, số vòng, phút, số nhóm thắng, số sân bay từ `STATION_RENT`).
+
+| Tab | Mục | Ý phải giữ (ảnh có thể rút gọn) |
+|---|---|---|
+| Cơ bản | Chuẩn bị | 1.500 tr; `tr` là tiền triệu trong ván, không phải KEN |
+| | Gieo & di chuyển | Qua hoặc đáp Xuất phát nhận 160 tr; đi thẳng vào tù không nhận |
+| | Gieo đôi | Đôi 3 lần liên tiếp vào tù ngay; ngoại lệ ra tù ở tab Ô đặc biệt |
+| Tài sản | Mua & thuê đất | Thuê trong viên tròn trên ô; trọn nhóm màu thuê đất trống ×2; sân bay theo số sân bay sở hữu |
+| | Mua lại đất | Sau khi trả thuê và không nợ; ×2 (giá đất + tiền nâng cấp) trả chủ cũ, giữ cấp nhà; không mua lại sân bay hoặc Khách sạn |
+| | Nâng cấp | Đủ 2 thành phố cùng nhóm; Nhà → Biệt thự → Khách sạn, nâng đều trong lượt mình; hạ cấp hoàn 50%, hạ đều |
+| | Nợ & phá sản | Hạ cấp để trả; phá sản thì tài sản về chủ nợ là người chơi, nợ ngân hàng thì đất về ngân hàng |
+| Ô đặc biệt | Lễ hội | Thuê ×2; cả bàn một Lễ hội, người sau tổ chức thì chuyển ô |
+| | Du lịch | Lượt sau bay tới ô bất kỳ trừ ô đang đứng, hoặc gieo thường; qua Xuất phát vẫn nhận lương |
+| | Thuế & thẻ bài | Thuế 10% tổng tài sản; Cơ hội/Khí vận rút thẻ |
+| | Nhà tù | Nộp 50 tr / thẻ ra tù / gieo đôi; ra bằng đôi đi theo số vừa gieo, không gieo tiếp; lượt thứ 3 chưa đôi bắt buộc nộp rồi đi |
+| Kết thúc | Thắng ngay | Đạt 1 trong 3: trọn 3 nhóm màu, toàn bộ thành phố một cạnh bàn, cả 4 sân bay |
+| | Khi nào kết thúc? | Còn 1 người, đủ 30 vòng hoặc hết 25 phút, điều kiện nào đến trước |
+| | Cách xếp hạng | Tổng tài sản = tiền mặt + giá đất + tiền nâng cấp; không tính KEN hay chỉ tiền mặt |
+
+### Asset hướng dẫn chơi
+
+18 minh họa runtime ở [`assets/rules/`](../../../assets/rules/) (`ill-*.webp`, tổng khoảng 72 KB), xuất từ 18 PNG nguồn trong suốt ở [`assets/screens/rules-guide/`](../../../assets/screens/rules-guide/manifest.json): cắt theo alpha > 8, Lanczos, đệm 4 px; 96 px cạnh dài cho ô 54, 128 px cho ba hình điều kiện thắng (hiển thị 64 × 40); WebP q80 / alpha q90. Prompt, output ID, hash, crop đối chiếu và khác biệt từng ảnh nằm trong manifest. Sửa PNG nào thì xuất lại WebP tương ứng theo thông số này.
+
+| Tab | Minh họa (`assets/rules/`) |
+|---|---|
+| Cơ bản | `ill-start-coins`, `ill-roll-dice`, `ill-double-dice`, `ill-action-timer` (dải 30 giây) |
+| Tài sản | `ill-buy-rent`, `ill-takeover`, `ill-upgrade`, `ill-debt-warning` |
+| Ô đặc biệt | `ill-festival`, `ill-travel`, `ill-tax-cards`, `ill-jail` |
+| Kết thúc | `ill-win-trophy`, `ill-win-groups`, `ill-win-line`, `ill-win-airports`, `ill-finish-clock`, `ill-total-assets` |
+
+Minh họa do AI tái dựng theo crop concept, không trùng pixel: đúng chủ thể, cặp gieo đôi 3–3, đúng 3 deed nhóm màu, 4 marker sân bay, dấu `?`/`%`/`!`; nét bóng và góc nhìn khác nhẹ (ghi trong `visualReview` từng ảnh). Tiền trong hướng dẫn không dùng đồng K. Icon xúc xắc chỉ minh họa luật, không thay bộ mặt xúc xắc gameplay.
+
+| Chi tiết trong concept | Cách dựng |
+|---|---|
+| Sảnh tối phía sau | Lobby S2 thật + `.ty-backdrop`; không dùng nền ảnh AI |
+| Khung, viền, cạnh, vạch mint, X tròn, nút Đã hiểu | CSS chung với §11 (`.ty-bot-modal` / `.ty-rules-modal`) |
+| Thanh tab, card, ô pastel, dải 30 giây, card Thắng ngay, divider | CSS `.ty-rules-*` |
+| Sách header | `lobby/ill-rules.webp` có sẵn |
+| Minh họa từng mục | 18 WebP `assets/rules/`, không bake nền pastel |
+| Chữ và số | DOM, Nunito; số từ constants |
+
+Ảnh AI phóng minh họa lớn hơn (ô khoảng 84); runtime thu minh họa về ô 64 trước khi thu chữ, nên card dài hơn ảnh và tab Tài sản/Ô đặc biệt cuộn ở 390 × 844.

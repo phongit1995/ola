@@ -5,7 +5,8 @@ import { ConfirmDialog, PanelRow } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { ROUTES } from '@constants';
 import { authTokens, formatKen, toast } from '@lib';
-import { AuthService, SettingsService, SocketService } from '@services';
+import { AuthService, SocketService } from '@services';
+import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
@@ -31,7 +32,7 @@ export function PersonalPanel() {
 
   useEffect(() => {
     let cancelled = false;
-    SettingsService.usernameChangeConfig()
+    requireAppConfig('usernameChange')
       .then((config) => {
         if (!cancelled) setNicknameEnabled(config.enabled);
       })

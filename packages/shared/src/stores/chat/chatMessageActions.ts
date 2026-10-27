@@ -23,6 +23,7 @@ import {
 } from './messageHelpers';
 import {
   showDirectMessagingError,
+  showMessageDeleteError,
   showMessagingPolicyError,
 } from './chatPolicy';
 import type { ChatGet, ChatSet } from './chatState';
@@ -286,10 +287,11 @@ export function createChatMessageActions(
       }));
       try {
         await MessageService.remove(conversationId, messageId);
-      } catch {
+      } catch (error) {
         if (get().currentConversationId === conversationId) {
           set({ messages: snapshot });
         }
+        showMessageDeleteError(error);
       }
     },
 

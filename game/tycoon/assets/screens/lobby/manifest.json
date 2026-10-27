@@ -1,0 +1,453 @@
+{
+  "status": "trial-not-production",
+  "method": "built-in image_gen edits",
+  "assets": [
+    {
+      "id": "background",
+      "label": "Nền trời / phố",
+      "file": "background.png",
+      "width": 853,
+      "height": 1844,
+      "bytes": 1745758,
+      "hasAlpha": false,
+      "alphaRange": null,
+      "transparentPercent": 0,
+      "contentBounds": [
+        0,
+        0,
+        853,
+        1844
+      ],
+      "sha256": "950c134f9453e18ed3171df3d5cd81d9831e0ee429e578855a85c91349e5e2bf",
+      "generatedSource": "exec-44e10531-68ca-4a28-860e-5cd1e3fb2a9c.png",
+      "version": "v1"
+    },
+    {
+      "id": "logo",
+      "label": "Logo Cờ Tỷ Phú",
+      "file": "logo.png",
+      "width": 2172,
+      "height": 724,
+      "bytes": 1216883,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 42.92,
+      "contentBounds": [
+        30,
+        59,
+        2136,
+        677
+      ],
+      "sha256": "cd2122db915c97fdf97f0681e92db22eb8dbbe02143c3615932d8e65fb7f178e",
+      "generatedSource": "exec-0fe9a8ab-75cc-4246-85a0-d2608c4415e4.png",
+      "version": "v1"
+    },
+    {
+      "id": "mascot",
+      "label": "Bác Tỷ",
+      "file": "mascot.png",
+      "width": 1197,
+      "height": 1314,
+      "bytes": 1049069,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 54.45,
+      "contentBounds": [
+        190,
+        57,
+        1132,
+        1223
+      ],
+      "sha256": "746daf3e24bc233b44ed47345a55855a533083ee35dc0ec47e35ea9657c95d2a",
+      "generatedSource": "exec-44c50f68-0a12-41c2-84ab-87349b67508f.png",
+      "version": "v2"
+    },
+    {
+      "id": "hero-properties",
+      "label": "Ba thẻ đất + hai quân",
+      "file": "hero-properties.png",
+      "width": 1701,
+      "height": 924,
+      "bytes": 1131973,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 58.03,
+      "contentBounds": [
+        168,
+        100,
+        1597,
+        894
+      ],
+      "sha256": "a21733a870a65049848d3837b1c88ee1a271a9bd57a123d742d31298c4efe15b",
+      "generatedSource": "exec-758b99c8-422d-44a1-ae75-a755da0b5c45.png",
+      "version": "v2"
+    },
+    {
+      "id": "icon-dice",
+      "label": "Xúc xắc",
+      "file": "icon-dice.png",
+      "width": 1312,
+      "height": 1199,
+      "bytes": 834848,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 48.19,
+      "contentBounds": [
+        137,
+        76,
+        1175,
+        1150
+      ],
+      "sha256": "6548612f75fa62f0bbd23fa8a5cc9950ff7928951e423869ab1b81766793d26e",
+      "generatedSource": "exec-df4a39aa-ced3-4546-a6a1-34d689af35c6.png",
+      "version": "v2"
+    },
+    {
+      "id": "icon-history",
+      "label": "Lịch sử",
+      "file": "icon-history.png",
+      "width": 1315,
+      "height": 1197,
+      "bytes": 822410,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 54.36,
+      "contentBounds": [
+        139,
+        129,
+        1165,
+        1088
+      ],
+      "sha256": "2b12cc0f63103f66de04610bd4b78e3fae50cbfe98026e523a97004abae5c029",
+      "generatedSource": "exec-2bc33022-9c70-49e8-8ace-8b7c18df9a8c.png",
+      "version": "v2"
+    },
+    {
+      "id": "icon-leaderboard",
+      "label": "Bảng xếp hạng",
+      "file": "icon-leaderboard.png",
+      "width": 1366,
+      "height": 1152,
+      "bytes": 746397,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 58.37,
+      "contentBounds": [
+        91,
+        112,
+        1275,
+        1044
+      ],
+      "sha256": "f0e5336abb86bac1d9dbfb84c2989ebc176b35848686c9317eb280b9fced53fe",
+      "generatedSource": "exec-963697ec-b429-4afe-ac87-a865f7199c50.png",
+      "version": "v2"
+    },
+    {
+      "id": "icon-rules",
+      "label": "Luật chơi",
+      "file": "icon-rules.png",
+      "width": 1413,
+      "height": 1113,
+      "bytes": 887260,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 49.27,
+      "contentBounds": [
+        160,
+        153,
+        1254,
+        954
+      ],
+      "sha256": "5b5ef0d2087453483cdfd058fb46c96d4c84b184576ce524e2312c119101009d",
+      "generatedSource": "exec-1eea3e73-3fd7-4f72-bec8-551104540c77.png",
+      "version": "v2"
+    },
+    {
+      "id": "icon-exit",
+      "label": "Thoát game",
+      "file": "icon-exit.png",
+      "width": 1321,
+      "height": 1191,
+      "bytes": 692320,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 61.48,
+      "contentBounds": [
+        209,
+        171,
+        1111,
+        1014
+      ],
+      "sha256": "2aa761e62a51fb835762c2a39c86d378db89431ff803afef2ccc9a5b09f1c698",
+      "generatedSource": "exec-cd224fd7-0792-4c66-81be-9d9dedf96a06.png",
+      "version": "v1",
+      "usage": "Reference only; runtime uses icon-exit-door and icon-exit-arrow."
+    },
+    {
+      "id": "icon-ken",
+      "label": "Xu KEN",
+      "file": "icon-ken.png",
+      "width": 1305,
+      "height": 1206,
+      "bytes": 1078471,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 46.95,
+      "contentBounds": [
+        139,
+        82,
+        1164,
+        1114
+      ],
+      "sha256": "1e3d364c53588a36ba7312c6cff0679276f522e2a6acf86378276e4c6f472542",
+      "generatedSource": "exec-ca0570ab-d516-4eca-a20f-9ca12a1589c2.png",
+      "version": "v1",
+      "usage": "Historical crown-coin reference only; current KEN uses ../../lobby/ken.png (letter K)."
+    },
+    {
+      "id": "icon-sound",
+      "label": "Âm thanh",
+      "file": "icon-sound.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 461801,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 74.04,
+      "contentBounds": [
+        140,
+        259,
+        1142,
+        1047
+      ],
+      "sha256": "1631e0768b71530422f81120f374233b3b29d54f6384af7798310dbfdce637f2",
+      "generatedSource": "exec-6c6bb4df-62d5-4739-bf8b-78c479f80414.png",
+      "version": "v1"
+    },
+    {
+      "id": "button-gold",
+      "label": "Nền nút vàng",
+      "file": "button-gold.png",
+      "width": 2170,
+      "height": 725,
+      "bytes": 1302314,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 19.92,
+      "contentBounds": [
+        8,
+        48,
+        2162,
+        665
+      ],
+      "sha256": "6da1f492c78c96e7fe668cd98e0ac1b57fc537350381b80f39231e9512eb1bb2",
+      "generatedSource": "exec-423b06ce-1302-4066-b5e0-03e8e989aa56.png",
+      "version": "v2"
+    },
+    {
+      "id": "button-paper",
+      "label": "Nền nút kem",
+      "file": "button-paper.png",
+      "width": 2201,
+      "height": 714,
+      "bytes": 721307,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 48.74,
+      "contentBounds": [
+        97,
+        145,
+        2105,
+        559
+      ],
+      "sha256": "d21d3720c0e02cd7559f89dea46e86974b22bed7126816d58c092c6a297c1c2a",
+      "generatedSource": "exec-26338ce5-0650-4d30-ad70-3a395b1574d6.png",
+      "version": "v2"
+    },
+    {
+      "id": "icon-exit-door",
+      "label": "Cửa thoát tách từ v1",
+      "file": "icon-exit-door.png",
+      "width": 1320,
+      "height": 1192,
+      "bytes": 742900,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 57.27,
+      "contentBounds": [
+        310,
+        123,
+        1030,
+        1063
+      ],
+      "sha256": "c5bad48ad0576fd23b4608ca76677b08e0e77118821e407f1912dd27d41b45fc",
+      "generatedSource": "exec-75807626-0a0a-44df-b1b9-8f2a2c995db4.png",
+      "version": "v1-split",
+      "reference": "icon-exit.png",
+      "prompt": "exit-split-prompts.md",
+      "runtime": {
+        "file": "../../lobby/ill-exit-door.webp",
+        "width": 45,
+        "height": 56,
+        "bytes": 1024,
+        "sha256": "77bb7151f48d44ee211b4b227ae147cea2152c765487df9b6f2ba75ddc2da018"
+      }
+    },
+    {
+      "id": "icon-exit-arrow",
+      "label": "Mũi tên thoát tách từ v1",
+      "file": "icon-exit-arrow.png",
+      "width": 1510,
+      "height": 1042,
+      "bytes": 457062,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 76.43,
+      "contentBounds": [
+        302,
+        185,
+        1233,
+        848
+      ],
+      "sha256": "be5b279fb1d8eda983f36f9e36c953a563d9581ce36db7feba52ff5a99ed40b1",
+      "generatedSource": "exec-c71fb112-c6a1-4071-a72c-f0949c3b58d4.png",
+      "version": "v1-split",
+      "reference": "icon-exit.png",
+      "prompt": "exit-split-prompts.md",
+      "runtime": {
+        "file": "../../lobby/ill-exit-arrow.webp",
+        "width": 44,
+        "height": 34,
+        "bytes": 850,
+        "sha256": "cfc91d86b175756ac1823dac40ee24178709b37d9169a2e1ae4f8f4a552052fb"
+      }
+    },
+    {
+      "id": "icon-bot",
+      "file": "icon-bot.png",
+      "width": 1358,
+      "height": 1159,
+      "bytes": 907706,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 52.54,
+      "contentBounds": [
+        90,
+        85,
+        1268,
+        1089
+      ],
+      "visibleRatio": 1.173,
+      "sha256": "16e7660fee89cfc2f1692308784d67795ab5e2f83cfcf53beb52ad62a0769842",
+      "version": "bot-v1",
+      "sourceConcept": "../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
+      "prompt": "prompts.md",
+      "status": "integrated",
+      "generatedSource": "exec-626e5852-b27c-46ed-ade1-86a31b6d7fd0.png",
+      "contentBoundsAlphaThreshold": 128,
+      "runtime": {
+        "file": "../../lobby/ill-bot.webp",
+        "width": 104,
+        "height": 90,
+        "bytes": 3642,
+        "sha256": "a4d9fdc22561bbd111b882d94bd84ce3c2a5f0c7681924861aeee9033e936b8e"
+      }
+    },
+    {
+      "id": "button-mint",
+      "file": "button-mint.png",
+      "width": 2073,
+      "height": 758,
+      "bytes": 751869,
+      "hasAlpha": true,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 59.53,
+      "contentBounds": [
+        137,
+        197,
+        1937,
+        561
+      ],
+      "visibleRatio": 4.945,
+      "sha256": "c6c891fc4963d0305332fc2b0ad0091355ca60ad5d4c96f06fe84f6f151df9b2",
+      "version": "bot-v1",
+      "sourceConcept": "../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
+      "prompt": "prompts.md",
+      "status": "css-reference",
+      "generatedSource": "exec-5e5b58f5-032f-4f01-9ad7-9a82175d1f55.png",
+      "contentBoundsAlphaThreshold": 128
+    }
+  ],
+  "totalBytes": 15550348,
+  "knownLimitations": [
+    "AI reconstructed some details; not a pixel-identical crop.",
+    "Hidden RGB under alpha zero is not visible glow; judge edges on alpha-composited previews.",
+    "Three cards and two pawns remain one overlapping vignette.",
+    "Eight v2 assets replaced v1 after side-by-side comparison with the concept on 2026-10-21; background, logo, icon-exit, icon-ken and icon-sound stay v1.",
+    "Four yellow CTA rays and two white hero ray clusters are separate code-native SVG layers (CTA 2+2, hero 3+3), not part of these PNGs.",
+    "Full v2 prompts are not stored; prompts.md summarizes the v2 requests and input crops.",
+    "The PNG sound artwork has no off variant; runtime uses the existing on/off SVG pair.",
+    "Exit now uses two new imagegen layers derived from the selected v1 design; original combined v1 remains a reference. Full split prompts and export settings are in exit-split-prompts.md.",
+    "Bot concept approved 2026-10-22; icon-bot and button-mint extracted with true alpha; icon-bot exported to ill-bot.webp and the button is live with a CSS surface (button-mint is reference only), not visual-QA approved. See prompts.md. The bot concept replaced concept-s2-lobby-pixel-16bit.png in place; the 15 earlier assets came from the previous version (git 9be6d970b)."
+  ],
+  "visualReview": {
+    "date": "2026-10-21",
+    "status": "reviewed-needs-revision",
+    "report": "../../../docs/screens/s2-lobby/asset-audit.md",
+    "sourcePixelsChanged": true
+  },
+  "screen": "lobby",
+  "sourceConcept": "../../../docs/screens/s2-lobby/concept-s2-lobby-pixel-16bit.png",
+  "prompts": [
+    "prompts.md",
+    "exit-split-prompts.md"
+  ]
+}

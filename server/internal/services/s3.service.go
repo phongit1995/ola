@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"mime/multipart"
@@ -139,6 +140,31 @@ func (s *S3Service) UploadFile(ctx context.Context, file multipart.File, filenam
 	}, nil
 }
 
+func (s *S3Service) DownloadToFile(ctx context.Context, objectName, filePath string) error {
+	if err := s.client.FGetObject(ctx, s.bucket, objectName, filePath, minio.GetObjectOptions{}); err != nil {
+		return fmt.Errorf("failed to download object: %w", err)
+	}
+	return nil
+}
+
+func (s *S3Service) UploadBytes(ctx context.Context, data []byte, folder, ext, contentType string) (*UploadResult, error) {
+	objectName := fmt.Sprintf("%s/%s%s", folder, uuid.New().String(), ext)
+	_, err := s.client.PutObject(ctx, s.bucket, objectName, bytes.NewReader(data), int64(len(data)), minio.PutObjectOptions{
+		ContentType: contentType,
+	})
+	if err != nil {
+		s.logger.Errorw("Failed to upload to S3", "object", objectName, "error", err)
+		return nil, fmt.Errorf("failed to upload file: %w", err)
+	}
+	url := fmt.Sprintf("%s/%s/%s", s.publicURL, s.bucket, objectName)
+	return &UploadResult{
+		URL:       url,
+		SecureURL: url,
+		PublicID:  objectName,
+		Format:    strings.TrimPrefix(ext, "."),
+	}, nil
+}
+
 // Callers must only pass object names produced by this service.
 func (s *S3Service) DeleteFile(ctx context.Context, objectName string) error {
 	objectName = strings.TrimSpace(objectName)
@@ -149,6 +175,17 @@ func (s *S3Service) DeleteFile(ctx context.Context, objectName string) error {
 		return fmt.Errorf("failed to delete object: %w", err)
 	}
 	return nil
+}
+
+func (s *S3Service) ObjectSize(ctx context.Context, objectName string) (int64, bool, error) {
+	info, err := s.client.StatObject(ctx, s.bucket, objectName, minio.StatObjectOptions{})
+	if err != nil {
+		if minio.ToErrorResponse(err).Code == minio.NoSuchKey {
+			return 0, false, nil
+		}
+		return 0, false, fmt.Errorf("failed to stat object: %w", err)
+	}
+	return info.Size, true, nil
 }
 
 // Media message metadata must never make clients fetch an arbitrary

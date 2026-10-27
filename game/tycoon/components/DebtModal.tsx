@@ -75,14 +75,12 @@ export function DebtModal() {
             disabled={busy}
             onClick={() =>
               showNotice({
+                kind: 'confirm',
+                tone: 'danger',
                 title: 'Tuyên bố phá sản',
                 body: 'Toàn bộ tài sản sẽ chuyển cho chủ nợ và bạn rời cuộc chơi. Chắc chứ?',
                 okLabel: 'Phá sản',
-                danger: true,
-                onOk: () => {
-                  sendMove({ type: 'DECLARE_BANKRUPT' });
-                  showNotice(null);
-                },
+                onOk: () => sendMove({ type: 'DECLARE_BANKRUPT' }),
               })
             }
           >

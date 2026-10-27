@@ -7,6 +7,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 
 const personalIcon = require('@assets/icons/me/ic_drawer_personal.png');
+const momentIcon = require('@assets/icons/me/ic_drawer_moment.png');
 const marriageIcon = require('@assets/icons/me/header/ic_header_marriage.png');
 const favoriteIcon = require('@assets/icons/me/header/ic_header_favorite.png');
 const visitorsIcon = require('@assets/icons/me/header/ic_header_visitors.png');
@@ -24,6 +25,7 @@ interface MeLeftDrawerProps {
   displayName: string;
   avatarUrl?: string;
   coverUrl?: string;
+  showMoment: boolean;
   onClose: () => void;
   onSelect: (key: string) => void;
   onViewProfile: () => void;
@@ -34,6 +36,7 @@ export function MeLeftDrawer({
   displayName,
   avatarUrl,
   coverUrl,
+  showMoment,
   onClose,
   onSelect,
   onViewProfile,
@@ -61,6 +64,7 @@ export function MeLeftDrawer({
 
   const items = [
     { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal') },
+    ...(showMoment ? [{ key: 'moment', icon: momentIcon, label: t('moment.trayTitle') }] : []),
     { key: 'marriage', icon: marriageIcon, label: t('me.drawerMarriage') },
     { key: 'likes', icon: favoriteIcon, label: t('me.drawerLikes') },
     { key: 'visitors', icon: visitorsIcon, label: t('me.tabVisitors') },

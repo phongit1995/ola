@@ -19,6 +19,7 @@ import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
 import type { Story, StoryProgress, StoryStatusFilter } from '@ola/shared/types';
 import type { RootStackParamList, StoryStackParamList } from '@navigation/types';
 import { ROOT_ROUTES, STORY_ROUTES } from '@navigation/routes';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { useThemeColors } from '@hooks/useThemeColors';
 import {
@@ -129,8 +130,11 @@ export function StoryListScreen() {
   const setFilter = useStoryStore((state) => state.setFilter);
   const loadMore = useStoryStore((state) => state.loadMore);
   const progress = useStoryPrefsStore((state) => state.progress);
+  const removeProgress = useStoryPrefsStore((state) => state.removeProgress);
+  const clearProgress = useStoryPrefsStore((state) => state.clearProgress);
   const [query, setQuery] = useState(list.filter.q);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [clearRecentOpen, setClearRecentOpen] = useState(false);
   const { filter } = list;
   const searching = filter.q !== '';
   const firstLoad = list.status === 'loading' && list.items.length === 0;
@@ -225,9 +229,26 @@ export function StoryListScreen() {
   const header = (
     <View>
       {!searching && recent.length > 0 && (
-        <StoryShelf title={t('story.continueReading')} art="continueReading">
+        <StoryShelf
+          title={t('story.continueReading')}
+          art="continueReading"
+          action={
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setClearRecentOpen(true)}
+              className="rounded-full px-2 py-1 active:bg-black/5"
+            >
+              <Text style={[textSize(13, 18), { color: MUTED }]}>{t('story.clearRecent')}</Text>
+            </Pressable>
+          }
+        >
           {recent.map((item) => (
-            <ContinueCard key={item.storyId} progress={item} onOpen={continueReading} />
+            <ContinueCard
+              key={item.storyId}
+              progress={item}
+              onOpen={continueReading}
+              onRemove={removeProgress}
+            />
           ))}
         </StoryShelf>
       )}
@@ -376,6 +397,19 @@ export function StoryListScreen() {
           onSelect: () => void setFilter({ status: option.value }),
         }))}
         onClose={() => setStatusOpen(false)}
+      />
+      <ConfirmDialog
+        visible={clearRecentOpen}
+        danger
+        title={t('story.clearRecentTitle')}
+        message={t('story.clearRecentConfirm')}
+        confirmLabel={t('dialog.yes')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={() => {
+          setClearRecentOpen(false);
+          clearProgress();
+        }}
+        onCancel={() => setClearRecentOpen(false)}
       />
     </View>
   );

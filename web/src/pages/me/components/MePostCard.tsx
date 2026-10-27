@@ -79,6 +79,7 @@ interface MePostCardProps {
   onOpenMenu?: (id: string) => void;
   onOpenLikers?: (id: string) => void;
   onOpenClan?: (handle: string) => void;
+  showPinned?: boolean;
 }
 
 function MePostCardComponent({
@@ -91,6 +92,7 @@ function MePostCardComponent({
   onOpenMenu,
   onOpenLikers,
   onOpenClan,
+  showPinned = false,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -157,7 +159,7 @@ function MePostCardComponent({
                 className="min-w-0 truncate text-base text-black/87"
                 fullNameClassName="text-black/54"
               />
-              {post.pinned && (
+              {showPinned && post.pinned && (
                 <PinIcon
                   className="h-3.5 w-3.5 shrink-0 text-ola-primary-ink"
                   title={t('me.pinned')}

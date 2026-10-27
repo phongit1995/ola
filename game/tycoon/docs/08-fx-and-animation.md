@@ -200,7 +200,7 @@ game/tycoon/fx/
 | `lite` | `deviceMemory < 3`, hoặc tự hạ theo §5, hoặc người dùng chọn | cột Lite: không hạt, không rung, giữ nhảy/đếm/lật |
 | `off` | `prefers-reduced-motion` hoặc người dùng chọn | mọi thứ nhảy về cuối, fade 120 ms, số tức thời |
 
-Cài đặt trong lobby cạnh nút âm thanh: `Hiệu ứng: Đầy đủ / Nhẹ / Tắt`. Store `fxTier`, lưu localStorage.
+Cài đặt trong menu tùy chọn S6: `Hiệu ứng: Đầy đủ / Nhẹ / Tắt`. Store `fxTier`, lưu localStorage. Lobby S2 đã chốt [phương án 1](./screens/s2-lobby/README.md) giữ một nút âm thanh, không thêm control hiệu ứng vào topbar.
 
 ## 7. Âm thanh (WebAudio, không file) — mở rộng
 

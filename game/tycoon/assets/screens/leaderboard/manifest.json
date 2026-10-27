@@ -1,0 +1,234 @@
+{
+  "screen": "S11 — Bảng xếp hạng, Mint tối giản",
+  "date": "2026-10-23",
+  "concept": {
+    "id": "02-mint-minimal",
+    "label": "Mint tối giản",
+    "prompt": "Use case: ui-mockup\nAsset type: one complete portrait mobile-game leaderboard UI concept, Cờ Tỷ Phú S11, 853 x 1844 or exactly the same portrait aspect ratio.\nInput image 1: approved room-list screen. Reference ONLY for sunny cyan pixel sky, Vietnamese pixel city/river/dragon-bridge landscape, recognizable green Ola VIP avatar, navy typography and the game's visual family. Recompose as a leaderboard. None of its room controls/content belong in this screen.\nInput image 2: rules guide. Reference ONLY for the cream single-row segmented tabs with one golden selection and clear Vietnamese rounded lettering. This screen is a full page, not a modal over a dimmed lobby.\nInput image 3: existing leaderboard icon: small blue/gold/coral bars with crown. Use a faithful small version in the title.\n\nFunctional requirements, identical across all three style alternatives:\n- One portrait full-screen composition, no device bezel, no variant label inside the image, no mockup presentation background.\n- Top header: a separate circular cream back-chevron button on the left and a cream title pill/rounded plaque with small leaderboard icon and exact title \"Bảng xếp hạng\". No right-side action button. Do not put balance, account controls or game logo above this header.\n- Beneath it, ONE horizontal cream segmented control with exactly THREE equally accessible tabs, text left to right: \"Hôm nay\" | \"Tuần này\" | \"Cấp độ\". The RIGHTMOST \"Cấp độ\" is selected in GOLD with navy text. The other two tabs are cream. This is essential. All three labels readable and on one line each. Never stack period tabs under another tab tier.\n- Under the tabs, exact explanation, may wrap to two short centered lines: \"Cấp theo EXP tích lũy của Cờ Tỷ Phú\".\n- One large cream leaderboard panel with fixed header labels, exactly four columns: \"Hạng\" | \"Người chơi\" | \"Cấp\" | \"EXP\". Table must be easy to read at phone scale. Rank column narrow, player identity broad, level and EXP right-aligned. Clean straight column alignment.\n- Six fully visible ordinary rows, exactly these data in order:\n1 | @linh  | Lv 24 | 28.650\n2 | @khoa  | Lv 22 | 24.150\n3 | @trang | Lv 21 | 21.450\n4 | @nam   | Lv 19 | 18.250\n5 | @ha    | Lv 18 | 16.100\n6 | @tuan  | Lv 16 | 12.450\n- Top three rank cells show GOLD, SILVER, BRONZE numbered medal icons 1, 2, 3. Same row anatomy as all other rows. Ranks 4,5,6 plain navy. No detached winner podium or giant trophy.\n- Every row has exactly ONE small green Ola VIP avatar before the lowercase @username, based on the reference (green smiley, crown and red glasses). Avatar illustrations are mock data. No human headshots, no extra VIP badge, no VIP text beside name.\n- At the bottom INSIDE the same leaderboard panel, separated from the scroll body by a subtle divider/gap, a PINNED SELF ROW: \"128 | @minhanh | Lv 12 | 6.950\". All four values visible and aligned with table columns. Pale mint background and thin jade vertical stripe on its left. The row is the user's real rank outside top100, so preserve 128. Do not relabel as Bạn or place this row among ranks 1–6. Add a small slim scrollbar to the main list area to imply more rows; self row stays distinct at bottom.\n- Level values mean level, total EXP uses Vietnamese dot thousands separators exactly as specified. Level/EXP pairs have been calculated correctly; do not change numbers.\n- Keep the UI above a visible strip of the sunny Vietnamese pixel city scene at the bottom: red-roof temple, dragon bridge, turquoise river, modern buildings and flower trees. Soft bright sky fills the rest of background; pixel art ONLY for scene, never for letters or controls.\n- Generous readable type, rounded Vietnamese Nunito-like, dark navy on light surfaces. Native-width mobile UI with panel almost full width and safe margins. No cramped phone screenshot inset.\n\nNever include: KEN, coins, currency, wins/losses or match columns in this LEVEL view, XP progress bars, weekly EXP, reset countdown, rewards, receive button, pagination arrows, room controls, Tạo bàn, Tham gia, Xem, footer CTA, particles, watermark, explanatory annotations. Total EXP is cumulative and does not reset. Keep all controls inside frame.\n\nSTYLE DIRECTION FOR THIS IMAGE:\nA CLEAN CONTEMPORARY MINT UI within the same sunny game. The aesthetic must be visibly different from chunky board-game paper: very light warm-white/cream surfaces, slender navy boundary rather than thick outlines, flatter shapes, little to no beveled depth, wide breathing room, mint and sky accents. A low-radius rounded header title plaque, airy typography, a small simple flat leaderboard glyph. Cream segmented tabs are integrated into the top area of a single tall softly rounded cream panel; the selected Cấp độ remains a flat sun-gold rounded segment, with no thick orange extrusion. Subtitle and table header align rhythmically. The single list panel uses delicate horizontal rules and extremely subtle alternating cool-cream bands, never separate cards. Medal badges are clean flat geometric discs with tiny understated ribbon not glossy toys. Level values are neat pale-mint rounded chips in the Cấp column, EXP dark navy. The self row is a clean pale-mint inset band with a straight jade edge. Background scene matches the sunny pixel city but is visually quieter, with large areas of calm cyan sky. Emphasize precision, lightness, subtle depth and readable data. No glass transparency, no blur, no saturated neon.\n",
+    "status": "approved-by-user",
+    "file": "../../../docs/screens/s11-leaderboard/concept-s11-leaderboard-mint.png",
+    "generatedSource": "exec-c81e15cd-9aba-4df8-91a9-7882f397730a.png",
+    "width": 853,
+    "height": 1844,
+    "bytes": 1841380,
+    "sha256": "0b1e1db06305aee5ca6a66be87f457b929b701dfa6013cf9df33ff230b4297af",
+    "approvedAt": "2026-10-23",
+    "draftAlternativesRemoved": true
+  },
+  "assets": [
+    {
+      "id": "medal-gold",
+      "rank": 1,
+      "prompt": "Use case: background-extraction / precise-object-edit\nAsset type: transparent medal-base source for Cờ Tỷ Phú leaderboard, medal-gold.\nInput image: the approved FULL leaderboard screen, Mint Minimal option. It is the exact source image, not a loose style suggestion.\nPrimary request: isolate ONLY the rank 1 medal at the LEFT of the row, approximately x=70..148, y=548..641 in the 853 x 1844 source. Target: warm golden yellow circular medal with subtle amber ring, white curved upper-left highlight, and two RED ribbon tails.\nMake one compact standalone medal with a genuine transparent alpha background. Keep its exact front-facing silhouette, circular size-to-ribbon proportions, border thickness, small highlights, concentric rings, local color palette and shallow shading from this reference. This is asset extraction, not a redesign; do not add new decorations, chunky 3D extrusion, stars or extra rings. Two ribbon tails only, behind the lower edge of the medal. Preserve the slight overlap and notched ends of these tails.\nONE intentional edit: remove the numeral 1 from the center of the medal, leaving a clean continuous blank face matching its existing local shading. The number will be live DOM text in the game. No digits or lettering anywhere in the output. Do not change the medal's visible rim or ribbons while removing the number.\nRemove the table paper background completely, and exclude all avatar, title, other medals, divider, rank text, user names and surrounding interface. No external drop shadow or glow, no checkerboard baked into the picture. The medal itself must remain opaque with clean antialiased alpha edges. Outside the medal and its ribbon tails is fully transparent.\nComposition: center the single medal in a square output with about 8 percent transparent padding around its full visible bounds. No sheet, no multiple variants, no labels, no new objects. Match the source even if a glossier redesign would look prettier.\n",
+      "file": "medal-gold.png",
+      "status": "ready-for-integration-with-noted-differences",
+      "generatedSource": "exec-6ef9bf00-77e1-4301-825f-de4cf83071a8.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 928482,
+      "sha256": "a33866a750680eb62801101b9154757da974412e48739b3ebe40756ddb8964ec",
+      "alpha": {
+        "min": 0,
+        "max": 255,
+        "zeroPercent": 54.85,
+        "edgeMax": 1,
+        "boundsThreshold8": [
+          186,
+          106,
+          876,
+          1039
+        ]
+      },
+      "runtime": {
+        "file": "../../leaderboard/medal-gold.webp",
+        "width": 81,
+        "height": 96,
+        "bytes": 4074,
+        "sha256": "709b6154cf6cfbd0ce2a9aff7081011e85a3eca035aca2d1471922c19f7c4d97",
+        "crop": [
+          182,
+          102,
+          884,
+          1048
+        ],
+        "resizeHeight": 96,
+        "encoder": "cwebp -q 90 -alpha_q 100 -m 6 -metadata none",
+        "alphaMin": 0,
+        "alphaMax": 254,
+        "numberAnchorPercent": [
+          50,
+          41.5
+        ],
+        "displayMax": [
+          36,
+          44
+        ],
+        "numberColors": "#744700"
+      },
+      "visualReview": {
+        "date": "2026-10-23",
+        "comparedToConcept": true,
+        "numberRemoved": true,
+        "numberOverlayTested": true,
+        "displayWidthPx": 36,
+        "backgrounds": [
+          "cream",
+          "mint",
+          "navy"
+        ],
+        "note": "Highlight vàng dài hơn concept; vòng mặt và ruy băng được tái dựng."
+      }
+    },
+    {
+      "id": "medal-silver",
+      "rank": 2,
+      "prompt": "Use case: background-extraction / precise-object-edit\nAsset type: transparent medal-base source for Cờ Tỷ Phú leaderboard, medal-silver.\nInput image: the approved FULL leaderboard screen, Mint Minimal option. It is the exact source image, not a loose style suggestion.\nPrimary request: isolate ONLY the rank 2 medal at the LEFT of the row, approximately x=70..148, y=675..772 in the 853 x 1844 source. Target: cool silver/pale-blue circular medal with navy rim, white upper-left ring highlight, and two BLUE ribbon tails.\nMake one compact standalone medal with a genuine transparent alpha background. Keep its exact front-facing silhouette, circular size-to-ribbon proportions, border thickness, small highlights, concentric rings, local color palette and shallow shading from this reference. This is asset extraction, not a redesign; do not add new decorations, chunky 3D extrusion, stars or extra rings. Two ribbon tails only, behind the lower edge of the medal. Preserve the slight overlap and notched ends of these tails.\nONE intentional edit: remove the numeral 2 from the center of the medal, leaving a clean continuous blank face matching its existing local shading. The number will be live DOM text in the game. No digits or lettering anywhere in the output. Do not change the medal's visible rim or ribbons while removing the number.\nRemove the table paper background completely, and exclude all avatar, title, other medals, divider, rank text, user names and surrounding interface. No external drop shadow or glow, no checkerboard baked into the picture. The medal itself must remain opaque with clean antialiased alpha edges. Outside the medal and its ribbon tails is fully transparent.\nComposition: center the single medal in a square output with about 8 percent transparent padding around its full visible bounds. No sheet, no multiple variants, no labels, no new objects. Match the source even if a glossier redesign would look prettier.\n",
+      "file": "medal-silver.png",
+      "status": "ready-for-integration-with-noted-differences",
+      "generatedSource": "exec-26bcb871-1ef2-41f3-b3d2-c49c6f8f4de9.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 885342,
+      "sha256": "e7f7be47da0ef5a3bf1792377b05f9af3810837349bb584536f13c10249ad15b",
+      "alpha": {
+        "min": 0,
+        "max": 255,
+        "zeroPercent": 59.2,
+        "edgeMax": 1,
+        "boundsThreshold8": [
+          208,
+          128,
+          837,
+          1011
+        ]
+      },
+      "runtime": {
+        "file": "../../leaderboard/medal-silver.webp",
+        "width": 80,
+        "height": 96,
+        "bytes": 3664,
+        "sha256": "b547b17437dc8c414aba8e8f7bc6b31f2577d7723c5014126a14319ef9b1b8f4",
+        "crop": [
+          204,
+          124,
+          846,
+          1020
+        ],
+        "resizeHeight": 96,
+        "encoder": "cwebp -q 90 -alpha_q 100 -m 6 -metadata none",
+        "alphaMin": 0,
+        "alphaMax": 254,
+        "numberAnchorPercent": [
+          50,
+          41.5
+        ],
+        "displayMax": [
+          36,
+          44
+        ],
+        "numberColors": "#143451"
+      },
+      "visualReview": {
+        "date": "2026-10-23",
+        "comparedToConcept": true,
+        "numberRemoved": true,
+        "numberOverlayTested": true,
+        "displayWidthPx": 36,
+        "backgrounds": [
+          "cream",
+          "mint",
+          "navy"
+        ],
+        "note": "Vòng bạc đậm và đều hơn concept; hai đuôi xanh giữ đúng hướng."
+      }
+    },
+    {
+      "id": "medal-bronze",
+      "rank": 3,
+      "prompt": "Use case: background-extraction / precise-object-edit\nAsset type: transparent medal-base source for Cờ Tỷ Phú leaderboard, medal-bronze.\nInput image: the approved FULL leaderboard screen, Mint Minimal option. It is the exact source image, not a loose style suggestion.\nPrimary request: isolate ONLY the rank 3 medal at the LEFT of the row, approximately x=72..150, y=803..903 in the 853 x 1844 source. Target: copper/orange circular medal with darker burnt-orange rim, white upper-left arc highlight, and two RED-ORANGE ribbon tails.\nMake one compact standalone medal with a genuine transparent alpha background. Keep its exact front-facing silhouette, circular size-to-ribbon proportions, border thickness, small highlights, concentric rings, local color palette and shallow shading from this reference. This is asset extraction, not a redesign; do not add new decorations, chunky 3D extrusion, stars or extra rings. Two ribbon tails only, behind the lower edge of the medal. Preserve the slight overlap and notched ends of these tails.\nONE intentional edit: remove the numeral 3 from the center of the medal, leaving a clean continuous blank face matching its existing local shading. The number will be live DOM text in the game. No digits or lettering anywhere in the output. Do not change the medal's visible rim or ribbons while removing the number.\nRemove the table paper background completely, and exclude all avatar, title, other medals, divider, rank text, user names and surrounding interface. No external drop shadow or glow, no checkerboard baked into the picture. The medal itself must remain opaque with clean antialiased alpha edges. Outside the medal and its ribbon tails is fully transparent.\nComposition: center the single medal in a square output with about 8 percent transparent padding around its full visible bounds. No sheet, no multiple variants, no labels, no new objects. Match the source even if a glossier redesign would look prettier.\n",
+      "file": "medal-bronze.png",
+      "status": "ready-for-integration-with-noted-differences",
+      "generatedSource": "exec-fef72dcd-2af9-45d5-ada7-a5854a84f443.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 826326,
+      "sha256": "e3b3862cacf8892e4f90af73e11072d908ad2985f95910e980834610f6e0baf6",
+      "alpha": {
+        "min": 0,
+        "max": 255,
+        "zeroPercent": 58.64,
+        "edgeMax": 1,
+        "boundsThreshold8": [
+          214,
+          125,
+          826,
+          1004
+        ]
+      },
+      "runtime": {
+        "file": "../../leaderboard/medal-bronze.webp",
+        "width": 79,
+        "height": 96,
+        "bytes": 4142,
+        "sha256": "65e5bc573a65c2af092fac1c1872a80c04ad76a231e5c0502b32a618313d4011",
+        "crop": [
+          210,
+          120,
+          834,
+          1014
+        ],
+        "resizeHeight": 96,
+        "encoder": "cwebp -q 90 -alpha_q 100 -m 6 -metadata none",
+        "alphaMin": 0,
+        "alphaMax": 254,
+        "numberAnchorPercent": [
+          50,
+          41.5
+        ],
+        "displayMax": [
+          36,
+          44
+        ],
+        "numberColors": "#74320b"
+      },
+      "visualReview": {
+        "date": "2026-10-23",
+        "comparedToConcept": true,
+        "numberRemoved": true,
+        "numberOverlayTested": true,
+        "displayWidthPx": 36,
+        "backgrounds": [
+          "cream",
+          "mint",
+          "navy"
+        ],
+        "note": "Gradient mặt đồng mượt hơn concept; hai đuôi đỏ cam giữ đúng."
+      }
+    }
+  ],
+  "reused": [
+    "../../lobby/ill-leaderboard.webp",
+    "../../lobby/bg-board-pixel.webp",
+    "../../room-list/chevron-left.svg",
+    "avatarIconUrl(vipType)"
+  ],
+  "surfaceLayers": [
+    "header paper + back circle",
+    "single cream panel",
+    "3-segment paper/gold tab bar",
+    "column header + beige dividers",
+    "mint level chip",
+    "pinned mint row + jade stripe",
+    "scroll track/thumb"
+  ],
+  "status": "ready-for-integration-with-noted-differences",
+  "runtimeTotalBytes": 11880,
+  "sourceTotalBytes": 2640150,
+  "runtimeIntegrated": false,
+  "sourceBytesUnmodified": true,
+  "knownLimitations": [
+    "AI reconstruction, not a pixel-identical cutout; per-asset notes describe observed differences.",
+    "Numerals are intentionally absent and must be live DOM text.",
+    "Whole-screen runtime visual QA is pending."
+  ]
+}

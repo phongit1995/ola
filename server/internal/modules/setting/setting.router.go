@@ -22,5 +22,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		settings.GET("/word-chain", r.controller.WordChainConfig)
 		settings.GET("/story", r.controller.StoryConfig)
 		settings.GET("/chat-bot", r.controller.ChatBotConfig)
+		settings.GET("/app", r.controller.AppConfig)
 	}
 }

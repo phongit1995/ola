@@ -71,7 +71,7 @@ export function PlayerPods() {
                   {hotels > 0 ? `${hotels} KS${houses > 0 ? `+${houses}` : ''}` : houses}
                 </span>
               ) : null}
-              {player.jailCards > 0 ? (
+              {player.jailCards.length > 0 ? (
                 <span className="ty-pod-stat ty-pod-stat-gold">
                   <TyIcon name="key" size={11} />
                 </span>

@@ -3,7 +3,7 @@
 ## 1. `.ty-btn` base
 
 - Cao `--ty-btn-h` 52 (`-big` 64, `-small` 40), padding ngang 20, radius pill (ảnh mẫu; nút đứng pha jail radius 16), chữ 17/700 (small 15/700), viền 2, shadow md, gap icon-chữ 8, icon 20 (big 24).
-- Full-width trong modal/sheet; trong cụm lượt giữa bàn CTA đơn rộng 196 (390), hai nút chia 40/60; trong lobby 320 px.
+- Full-width trong modal/sheet; trong cụm lượt giữa bàn CTA đơn rộng 196 (390), hai nút chia 40/60. Lobby S2 có biến thể riêng theo [S2 lobby §6](../screens/s2-lobby/README.md#6-nút-và-minh-họa): rộng 280 tại 390 (responsive 256–320), cao 80/56/56/44, font 32/24/24/22, minh họa màu `lobby/ill-*`. Không áp size/icon base của nút thường vào S2.
 - Mọi state theo `01-foundations.md` §9. Loading: spinner thay icon, giữ chiều rộng.
 
 | Biến thể | Nền | Chữ | Viền | Dùng |
@@ -33,7 +33,7 @@ Vị trí nút từng pha ở 02 §6.3; bảng dưới chỉ quy định biến 
 | manage | Xây / bán | paper + `ic-house` jade |
 | manage | Kết thúc lượt / Gieo tiếp | gold |
 | debt | Bán nhà / Trả {x} tr / Phá sản | paper + `ic-minus` coral / gold + `ic-coins` / danger |
-| chờ người khác | chip `Lượt của @ten` + dòng pha | chip paper viền màu ghế, chữ navy; 3 chấm thay đồng hồ; không nút |
+| chờ người khác | chip `(avatar VIP) Lượt của @username` + dòng pha | chip paper viền màu ghế, chữ navy; 3 chấm thay đồng hồ; không nút |
 
 ## 3. `.ty-icon-btn`
 
@@ -78,6 +78,7 @@ Vị trí nút từng pha ở 02 §6.3; bảng dưới chỉ quy định biến 
 - Trái: logo `CỜ TỶ PHÚ` (cao 32). Giữa màn: `.ty-round-chip`. Phải: nút âm thanh rồi nút menu, đều `.ty-icon-btn` tròn 44.
 - TurnClock **không** nằm ở header: nó ở bên phải chip lượt, giữa bàn (03 §7).
 - Nút menu (concept vẽ ☰; inventory hiện có `ic-more`, nếu đổi sang ☰ thì thêm `ic-menu` vào 06) mở popover paper (radius 16, shadow lg), neo dưới nút, căn phải: `Về sảnh` (navy, `ic-exit-door`), `Luật chơi` (navy), `Bỏ cuộc` (coral, `ic-flag`).
+- Cài đặt `Hiệu ứng: Đầy đủ / Nhẹ / Tắt` nằm trong menu này theo [08 §5](../08-fx-and-animation.md), dùng radio có nhãn; không thêm nút vào topbar lobby S2 đã chốt.
 
 ## 10. Accessibility control
 

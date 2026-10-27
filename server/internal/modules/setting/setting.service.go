@@ -15,6 +15,7 @@ import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 
 	"go.uber.org/zap"
@@ -210,12 +211,18 @@ func validWordChainPrice(price int) bool {
 }
 
 type Service struct {
-	repo   *Repository
-	logger *zap.SugaredLogger
+	repo     *Repository
+	settings *settingsCache
+	logger   *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, logger *zap.SugaredLogger) *Service {
-	return &Service{repo: repo, logger: logger.Named("[setting_service]")}
+func NewService(repo *Repository, redis *services.CacheService, logger *zap.SugaredLogger) *Service {
+	logger = logger.Named("[setting_service]")
+	return &Service{repo: repo, settings: newSettingsCache(redis, repo.List, logger), logger: logger}
+}
+
+func (s *Service) settingsChanged() {
+	s.settings.invalidate()
 }
 
 func (s *Service) List() ([]models.AppSetting, error) {
@@ -223,10 +230,12 @@ func (s *Service) List() ([]models.AppSetting, error) {
 }
 
 func (s *Service) Put(key string, value models.JSONB) (*models.AppSetting, error) {
+	defer s.settingsChanged()
 	return s.repo.Upsert(strings.TrimSpace(key), value)
 }
 
 func (s *Service) PutMany(items []models.AppSetting) ([]models.AppSetting, error) {
+	defer s.settingsChanged()
 	for i := range items {
 		items[i].Key = strings.TrimSpace(items[i].Key)
 	}
@@ -257,6 +266,7 @@ func (s *Service) PutIfUnchanged(key string, value models.JSONB, expected time.T
 	if !updated {
 		return nil, ErrSettingChanged
 	}
+	s.settingsChanged()
 	return s.repo.Get(key)
 }
 
@@ -266,23 +276,18 @@ func (s *Service) getInto(key string, out interface{}) error {
 }
 
 func (s *Service) getVersioned(key string, out interface{}) (*time.Time, error) {
-	item, err := s.repo.Get(key)
+	item, ok, err := s.settings.get(key)
 	if err != nil {
 		return nil, err
 	}
-	if item == nil {
+	if !ok {
 		return nil, nil
 	}
 	updatedAt := item.UpdatedAt
-	if item.Value == nil {
+	if item.Raw == nil {
 		return &updatedAt, nil
 	}
-	raw, err := json.Marshal(item.Value)
-	if err != nil {
-		s.logger.Warnw("Failed to encode app setting, using defaults", "key", key, "error", err.Error())
-		return &updatedAt, nil
-	}
-	if err := json.Unmarshal(raw, out); err != nil {
+	if err := json.Unmarshal(item.Raw, out); err != nil {
 		s.logger.Warnw("Failed to decode app setting, using defaults", "key", key, "error", err.Error())
 		return &updatedAt, nil
 	}

@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import { MESSAGE_STATUS } from '@constants';
 import { useLongPress } from '@hooks';
-import { reactionChips } from '@lib';
+import {
+  hasTextSelectionIn,
+  reactionChips,
+  shouldStartMessageLongPress,
+} from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import type { ChatMessage } from '../types';
@@ -64,6 +68,7 @@ export function MessageRow({
       suppressClick.current = false;
       return;
     }
+    if (hasTextSelectionIn(event.currentTarget)) return;
     if (
       message.kind === 'image' &&
       message.image != null &&
@@ -120,7 +125,12 @@ export function MessageRow({
               {...longPress}
               onPointerDown={(event) => {
                 suppressClick.current = false;
-                longPress.onPointerDown(event);
+                if (shouldStartMessageLongPress(event))
+                  longPress.onPointerDown(event);
+              }}
+              onContextMenu={(event) => {
+                if (hasTextSelectionIn(event.currentTarget)) return;
+                longPress.onContextMenu(event);
               }}
               onClickCapture={handleBubbleClickCapture}
               onClick={handleBubbleClick}

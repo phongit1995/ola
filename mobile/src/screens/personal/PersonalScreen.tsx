@@ -5,7 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { authTokens, formatKen } from '@ola/shared/lib';
-import { SettingsService, SocketService } from '@ola/shared/services';
+import { SocketService } from '@ola/shared/services';
+import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -81,7 +82,7 @@ export function PersonalScreen() {
 
   useEffect(() => {
     let cancelled = false;
-    SettingsService.usernameChangeConfig()
+    requireAppConfig('usernameChange')
       .then(config => {
         if (!cancelled) {
           setNicknameEnabled(config.enabled && config.enabledMobile === true);

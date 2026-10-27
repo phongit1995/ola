@@ -61,6 +61,7 @@ import { SpinWheelGameScreen } from '@screens/games/spin-wheel/SpinWheelGameScre
 import { EggGameScreen } from '@screens/games/egg/EggGameScreen';
 import { MeVisitorsScreen } from '@screens/me/MeVisitorsScreen';
 import { MeLikedPostsScreen } from '@screens/me/MeLikedPostsScreen';
+import { MomentManageScreen } from '@screens/moment/MomentManageScreen';
 import { MeNotificationsScreen } from '@screens/me/MeNotificationsScreen';
 import { MarriageScreen } from '@screens/me/marriage/MarriageScreen';
 import {
@@ -326,6 +327,7 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.EggGame} component={EggGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MeVisitors} component={MeVisitorsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MeLikedPosts} component={MeLikedPostsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MomentManage} component={MomentManageScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MeNotifications} component={MeNotificationsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Marriage} component={MarriageScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ClanHome} component={ClanHomeRouteScreen} />

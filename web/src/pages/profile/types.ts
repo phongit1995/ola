@@ -9,6 +9,7 @@ export interface ProfilePostActions {
   editPost: (id: string, draft: ComposedPost) => Promise<boolean>;
   deletePost: (id: string) => void;
   togglePin: (id: string, pinned: boolean) => void;
+  loadMorePosts: () => Promise<void>;
 }
 
 export interface ProfileFriend {
@@ -55,6 +56,8 @@ export interface ProfileSecondary {
   following: ProfileFriend[];
   posts: MePost[];
   loading: boolean;
+  hasMorePosts: boolean;
+  loadingMorePosts: boolean;
 }
 
 export interface ProfileController {

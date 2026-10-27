@@ -130,3 +130,13 @@ export async function compressImagesForUpload(files: NativeUploadFile[]): Promis
   for (const file of files) prepared.push(await compressImageForUpload(file));
   return prepared;
 }
+
+const THUMBNAIL_JPEG_QUALITY = 80;
+
+export async function createJpegThumbnail(
+  file: NativeUploadFile,
+  longest: number,
+): Promise<NativeUploadFile> {
+  const encoded = await encodeAtLongestSide(file.uri, longest, 'JPEG', THUMBNAIL_JPEG_QUALITY);
+  return encodedUploadFile(file, encoded, 'jpg');
+}

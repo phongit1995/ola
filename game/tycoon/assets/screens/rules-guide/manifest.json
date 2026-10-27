@@ -1,0 +1,814 @@
+{
+  "screen": "S2 — Hướng dẫn chơi / RulesModal",
+  "date": "2026-10-23",
+  "conceptStatus": "approved-by-user",
+  "assetStatus": "extracted-and-reviewed-with-documented-differences",
+  "runtimeStatus": "integrated-2026-10-23",
+  "tool": "built-in image_gen; transparent_background=true",
+  "sourcePixelsUnmodified": "18 PNG nguồn giữ nguyên byte output; 4 concept đổi sang WebP q85 ngày 23/10/2026 (sourcePng ghi hash PNG gốc).",
+  "conceptDirectory": "../../../docs/screens/s2-lobby/",
+  "concepts": [
+    {
+      "file": "rules-01-basic.webp",
+      "width": 853,
+      "height": 1844,
+      "generatedSource": "exec-f4f89f9e-6386-45cc-89b3-20221f554d67.png",
+      "sourcePng": {
+        "file": "01-basic.png",
+        "bytes": 1702696,
+        "sha256": "9b3a2ea9035164503ada8f66ebaab18f15fab901efd121013ff4c21c92625e82"
+      },
+      "bytes": 144358,
+      "sha256": "dea579c461c88d240dbd743cff42623a5b1bca167a49601dc93b4ab8953ded03",
+      "prompt": "Use case: precise-object-edit.\nMake ONE small factual illustration correction to this provided how-to-play screenshot. In the THIRD card labelled \"Gieo đôi\", the TWO dice under the blue repeat arrow must clearly show the SAME result: each TOP face has exactly THREE navy pips in a diagonal line (3 and 3). Both top faces must be clearly visible and show identical pip patterns, communicating doubles. Preserve the cream dice, navy outlines and small blue curved arrow. Keep the dice illustration completely inside its mint icon square.\nChange ONLY this third card's dice illustration. Preserve every other part of the image as closely as possible: same portrait canvas, lobby, topbar @minhanh and 12.500 then K coin, Hướng dẫn chơi header and book, four tabs with Cơ bản selected, all card geometry and ALL Vietnamese text, timer strip \"Mỗi hành động có 30 giây.\", footer \"Đã hiểu\", colors and spacing. Do not change any wording, numbers, the other dice illustration or the coin illustration. Do not add annotations. Return the whole corrected portrait screenshot."
+    },
+    {
+      "file": "rules-02-assets.webp",
+      "width": 853,
+      "height": 1844,
+      "generatedSource": "exec-71e8e0c6-0876-4dca-80d0-d3c0517e7a10.png",
+      "sourcePng": {
+        "file": "02-assets.png",
+        "bytes": 1685952,
+        "sha256": "d8ad9eb58d1002b34f015ce9554af66fee5bdeba8f9b938098c905696abeb338"
+      },
+      "bytes": 156306,
+      "sha256": "621a0570c93b9339417591fd9d6f1f24ff6d69ee916c537f3030b5eac9bdda42",
+      "prompt": "Use case: precise-object-edit / ui-mockup.\nEdit the supplied Cờ Tỷ Phú how-to-play UI screenshot into the SECOND tab, \"Tài sản\". Preserve exactly the overall established style: portrait canvas, dim lobby, VIP avatar with @minhanh, balance 12.500 then K coin, navy/cream/gold/mint palette, open-book icon, \"Hướng dẫn chơi\" header, circular X, mint divider, and gold \"Đã hiểu\" footer.\n\nKeep all FOUR tab labels exactly: \"Cơ bản\", \"Tài sản\", \"Ô đặc biệt\", \"Kết thúc\". Only \"Tài sản\" is now selected in GOLD; Cơ bản is cream. No extra tabs, navigation arrows or page dots.\n\nReplace the three basics cards and blue timer strip with FOUR compact illustrated rules cards. All cards have left aligned title/body, a SMALL 40 CSS px game illustration in a pastel square on the left, not giant icons, comfortable line spacing and readable rounded Nunito-style text. It is fine to make the modal taller and move its top slightly upward so that all four cards and footer remain fully inside the screen. Keep topbar and a small part of the dim city visible. Do not shrink text to tiny print, cut off a card, or hide the footer. No blue timer strip on this tab.\n\nCARD 1: small property deed plus coin illustration, exact text:\n\"Mua & thuê đất\"\n\"Ô chưa có chủ: mua theo giá trên ô.\"\n\"Đất người khác: trả tiền thuê.\"\n\"Trọn nhóm màu: thuê đất trống ×2.\"\n\"Sân bay: thuê theo số sân bay sở hữu.\"\n\nCARD 2: small two property cards with exchange arrows, exact text:\n\"Mua lại đất\"\n\"Sau khi trả thuê: giá ×2 (đất + nâng cấp).\"\n\"Không mua lại sân bay hoặc Khách sạn.\"\n\nCARD 3: small green house illustration, exact text:\n\"Nâng cấp\"\n\"Cần đủ 2 thành phố cùng nhóm màu.\"\n\"Nhà → Biệt thự → Khách sạn\"\n\"Nâng đều; hạ cấp hoàn 50%.\"\n\nCARD 4: small coral warning triangle, exact text:\n\"Nợ & phá sản\"\n\"Thiếu tiền: hạ cấp nhà để trả nợ.\"\n\"Vẫn không đủ: phá sản.\"\n\nEach card is a cream surface with thin beige line, compact yet airy. No coins with letter K: these rules use in-game tiền triệu, not KEN. Keep one single wide GOLD \"Đã hiểu\" button anchored below the body. No new play action, cancel, wooden book frame, mascot, robot, extra headings, invented prose or watermark. Preserve Vietnamese accents accurately. One complete portrait mobile screenshot, matching the input dimensions/aspect."
+    },
+    {
+      "file": "rules-03-special.webp",
+      "width": 853,
+      "height": 1844,
+      "generatedSource": "exec-8e20ead8-81d3-4496-9cbe-e784a310ad88.png",
+      "sourcePng": {
+        "file": "03-special.png",
+        "bytes": 1645134,
+        "sha256": "ea9b04388818a0a530dae0cb8cef540cfbe64050843eceec7219ed7dae39e494"
+      },
+      "bytes": 147998,
+      "sha256": "ff28834703a63f6ddac21c135fa9946d19496625a316e5280613c06bb4369a29",
+      "prompt": "Use case: precise-object-edit / ui-mockup.\nEdit this supplied Vietnamese Cờ Tỷ Phú HOW TO PLAY screenshot to show the THIRD category \"Ô đặc biệt\". Preserve the full portrait 853 × 1844 composition and established cream/mint/gold UI exactly: same dim lobby, VIP green avatar + @minhanh, balance 12.500 then gold K coin on RIGHT, book icon, header \"Hướng dẫn chơi\", circular X, mint separator and wide gold footer \"Đã hiểu\".\n\nFour tab labels remain exactly \"Cơ bản\", \"Tài sản\", \"Ô đặc biệt\", \"Kết thúc\". Highlight ONLY \"Ô đặc biệt\" in gold; the other three tabs cream. No additional controls, page numbers or next/previous buttons.\n\nReplace the four body cards with FOUR special-tile rules cards. The artwork stays small on the left (around 40–48 CSS px), while text has most of the row width. Keep rounded cream cards with fine beige contour, compact spacing, navy title, muted navy body, readable rounded Nunito typography. Fit the whole dialog above the bottom safe area with all four cards and footer visible. Grow the body a little or move modal top upward if needed; do not crop the jail card, shrink text too small or cover footer. Illustrations should match the existing smooth colorful game icons, not emoji or photographs.\n\nCARD 1: a small gold star with tiny festive flags in pale yellow square.\nExact title \"Lễ hội\"\nExact body:\n\"Chọn thành phố của mình: tiền thuê ×2.\"\n\"Cả bàn chỉ có một Lễ hội.\"\n\nCARD 2: a small blue airplane and orange suitcase in pale sky square.\nExact title \"Du lịch\"\nExact body:\n\"Lượt sau bay tới ô khác hoặc gieo thường.\"\n\"Qua Xuất phát vẫn nhận 160 tr.\"\n\nCARD 3: two simple cards and a percent symbol in mint square. Never use K coins for in-game money.\nExact title \"Thuế & thẻ bài\"\nExact body:\n\"Thuế: 10% tổng tài sản.\"\n\"Cơ hội, Khí vận: rút thẻ và làm theo.\"\n\nCARD 4: small silver jail bars and a gold key in pale coral square, friendly game illustration, no person imprisoned.\nExact title \"Nhà tù\"\nExact body, give this card more height if needed:\n\"Nộp 50 tr, dùng thẻ hoặc gieo đôi để ra tù.\"\n\"Ra tù bằng đôi: đi, không gieo tiếp.\"\n\"Lượt thứ 3 chưa đôi: nộp 50 tr rồi đi.\"\n\nPreserve exact Vietnamese accents and numbers. Single wide gold footer \"Đã hiểu\" closes the guide. No timer strip, no additional rule paragraphs, no invented game mechanics, no new header, robot, mascot, wooden book frame, watermarks or annotations. One complete portrait screenshot."
+    },
+    {
+      "file": "rules-04-ending.webp",
+      "width": 853,
+      "height": 1844,
+      "generatedSource": "exec-b6eb3989-26bb-4aca-b980-0da1e93345d1.png",
+      "sourcePng": {
+        "file": "04-ending.png",
+        "bytes": 1693261,
+        "sha256": "2a30aed024cf249d5708b1058439fe455279cf9979c79d2fadbdaa6e3ac238b6"
+      },
+      "bytes": 151140,
+      "sha256": "942485b4506803e0e8ce6ba306f020318545ae72a79991ec9ae27107d18835d0",
+      "prompt": "Use case: precise-object-edit / ui-mockup.\nEdit this supplied Vietnamese Cờ Tỷ Phú HOW TO PLAY screenshot into its FOURTH tab \"Kết thúc\". Preserve exactly the portrait 853 × 1844 canvas, dim lobby background, topbar green VIP + @minhanh, balance 12.500 then K coin, book icon beside \"Hướng dẫn chơi\", circular X, cream paper dialog, thin mint divider, and bottom gold \"Đã hiểu\". The visual language is smooth illustrated family board game UI, rounded Nunito-like readable text, navy headings and muted navy body.\n\nTabs in one horizontal bar remain exactly \"Cơ bản\", \"Tài sản\", \"Ô đặc biệt\", \"Kết thúc\". Select ONLY \"Kết thúc\" with the gold pill; all others cream. No dots, next/previous or play button.\n\nReplace the body with THREE well-spaced rule panels, and naturally shorten/recenter the dialog to its content while keeping adequate margins. Panel text left aligned and icons compact, not huge. All content fully visible. Preserve the same illustration family and readable text size.\n\nPANEL 1 is a slightly warm pale-gold card with small friendly gold trophy at left of its header. Exact title \"Thắng ngay\". Below it a small introduction \"Chỉ cần đạt 1 trong 3 điều kiện:\" followed by THREE distinct stacked rows with a small simple illustration at left and these exact labels:\n\"Trọn 3 nhóm màu\"\n\"Toàn bộ thành phố trên một cạnh bàn\"\n\"Cả 4 sân bay\"\nIllustrations for those rows: three colored property-card pairs / one highlighted side of a square board / four tiny blue airport markers. Do not put a board illustration in place of the readable label. The conditions are alternatives, NOT all required together. Do not change \"thành phố\" to \"ô\". Ensure the long middle label wraps cleanly if needed.\n\nPANEL 2 is cream paper with a small clock/finish-flag icon and exact title \"Khi nào kết thúc?\". Exact body:\n\"Nếu chưa ai thắng ngay:\"\n\"Còn 1 người, đủ 30 vòng hoặc hết 25 phút.\"\n\"Điều kiện nào đến trước thì kết thúc.\"\n\nPANEL 3 is pale sky blue with small property cards and ordinary gold coins (NO K currency symbols). Exact title \"Cách xếp hạng\". Exact body arranged on TWO readable lines:\n\"Tổng tài sản = tiền mặt\"\n\"+ giá đất + tiền nâng cấp\"\n\nFOOTER: preserve one wide gold pill \"Đã hiểu\" with upper-left highlight and warm bottom edge, with beige divider above. Keep X as the other close action. No new mechanics, victory animation, confetti over text, user podium, robot, mascot, giant book, extra prose, watermark or annotations. One complete portrait mobile screenshot. Render Vietnamese diacritics and all numbers accurately."
+    }
+  ],
+  "assets": [
+    {
+      "id": "icon-start-coins",
+      "file": "icon-start-coins.png",
+      "tab": "basic",
+      "role": "Chuẩn bị",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 972091,
+      "sha256": "40214f8151988abfddd815b03521a47b9dd298ed4d02da60c8338cd66f32309e",
+      "generatedSource": "exec-09fddef7-cb83-4a03-980c-9b9aaa4ad8fc.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-01-basic.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the THREE gold coin stacks in the FIRST card Chuẩn bị. Three round coin stacks with warm orange bevels and dark brown contours, NO letter K or other symbols.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 840821,
+        "partial": 730547,
+        "opaque": 1148,
+        "zeroPercent": 53.47,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 122,
+          "y": 157,
+          "width": 1035,
+          "height": 941
+        }
+      },
+      "referenceCrop": [
+        90,
+        700,
+        175,
+        155
+      ],
+      "visualReview": "Giữ 3 chồng xu không chữ K; highlight và bề dày đồng xu khác nhẹ.",
+      "runtime": {
+        "file": "../../rules/ill-start-coins.webp",
+        "width": 96,
+        "height": 88,
+        "bytes": 4040
+      }
+    },
+    {
+      "id": "icon-roll-dice",
+      "file": "icon-roll-dice.png",
+      "tab": "basic",
+      "role": "Gieo & di chuyển",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 837469,
+      "sha256": "d93f5ca18d198eaa935e71eccbc1b161228b92d97ec6448bddd2def08805ccb7",
+      "generatedSource": "exec-aa67a523-62c2-48f6-b5ac-2a36461a47fa.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-01-basic.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the pair of white perspective dice in the SECOND card Gieo & di chuyển. Keep the orientation and navy pips of the approved reference.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 943189,
+        "partial": 627811,
+        "opaque": 1516,
+        "zeroPercent": 59.98,
+        "edgeMax": 0,
+        "boundsThreshold8": {
+          "x": 101,
+          "y": 222,
+          "width": 1066,
+          "height": 907
+        }
+      },
+      "referenceCrop": [
+        90,
+        900,
+        175,
+        165
+      ],
+      "visualReview": "Giữ 2 xúc xắc; chấm và góc mặt bên được tái dựng. Chỉ dùng minh họa luật, không thay mặt xúc xắc gameplay.",
+      "runtime": {
+        "file": "../../rules/ill-roll-dice.webp",
+        "width": 96,
+        "height": 83,
+        "bytes": 3532
+      }
+    },
+    {
+      "id": "icon-double-dice",
+      "file": "icon-double-dice.png",
+      "tab": "basic",
+      "role": "Gieo đôi",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 890510,
+      "sha256": "a732057d8b1ae33337aa3b3a992887541ee6974c8ff570549663c6eb029e05f9",
+      "generatedSource": "exec-19ca5c6c-ea88-4d39-ba05-e980e1905bcb.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-01-basic.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the TWO white dice with the BLUE curved repeat arrow above them, in the THIRD card Gieo đôi. CRITICAL: the two main visible faces each show exactly THREE navy pips in a diagonal, clearly 3 and 3. Retain the corrected reference icon, not a random dice outcome.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 889622,
+        "partial": 680721,
+        "opaque": 2173,
+        "zeroPercent": 56.57,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 90,
+          "y": 165,
+          "width": 1081,
+          "height": 989
+        }
+      },
+      "referenceCrop": [
+        90,
+        1100,
+        175,
+        160
+      ],
+      "visualReview": "Giữ mũi tên lặp và cặp 3–3; góc nhìn chuyển sang thấy rõ mặt trên, có thêm chấm mặt bên.",
+      "runtime": {
+        "file": "../../rules/ill-double-dice.webp",
+        "width": 96,
+        "height": 89,
+        "bytes": 4108
+      }
+    },
+    {
+      "id": "icon-action-timer",
+      "file": "icon-action-timer.png",
+      "tab": "basic",
+      "role": "30 giây mỗi hành động",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 961520,
+      "sha256": "bbd5631cd3797bf3a04d45dd2001ffdb772e807484f7fcaa3e519764d93e66f8",
+      "generatedSource": "exec-ef79db54-90cc-416a-bf23-e212825053e8.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-01-basic.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the small blue circular-arrow CLOCK in the pale-blue strip Mỗi hành động có 30 giây, below the third card. Keep the blue curved arrow around the round cream clock face with navy hands; no numbers.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 842073,
+        "partial": 729064,
+        "opaque": 1379,
+        "zeroPercent": 53.55,
+        "edgeMax": 0,
+        "boundsThreshold8": {
+          "x": 85,
+          "y": 161,
+          "width": 1087,
+          "height": 964
+        }
+      },
+      "referenceCrop": [
+        200,
+        1297,
+        95,
+        85
+      ],
+      "visualReview": "Giữ đồng hồ + mũi tên vòng; viền và highlight bóng hơn.",
+      "runtime": {
+        "file": "../../rules/ill-action-timer.webp",
+        "width": 96,
+        "height": 86,
+        "bytes": 3704
+      }
+    },
+    {
+      "id": "icon-buy-rent",
+      "file": "icon-buy-rent.png",
+      "tab": "assets",
+      "role": "Mua & thuê đất",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 974608,
+      "sha256": "5ae4004a9edb76e3cfa8208e9aa4d699384683cca2d2316691cd6473b7590a1d",
+      "generatedSource": "exec-9e062203-03ab-43ba-b84e-2949eb753af4.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-02-assets.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the white PROPERTY DEED with BLUE header, small RED-roof house, and gold coin stacks, in the FIRST card Mua & thuê đất. Preserve same composition and overlaps.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 857264,
+        "partial": 714106,
+        "opaque": 1146,
+        "zeroPercent": 54.52,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 165,
+          "y": 98,
+          "width": 993,
+          "height": 1000
+        }
+      },
+      "referenceCrop": [
+        90,
+        690,
+        190,
+        205
+      ],
+      "visualReview": "Giữ deed mái đỏ và 3 chồng xu; nét chữ giả trên deed là vạch trang trí.",
+      "runtime": {
+        "file": "../../rules/ill-buy-rent.webp",
+        "width": 95,
+        "height": 96,
+        "bytes": 4312
+      }
+    },
+    {
+      "id": "icon-takeover",
+      "file": "icon-takeover.png",
+      "tab": "assets",
+      "role": "Mua lại đất",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 974942,
+      "sha256": "0e17dc1499b91bf6fb06dec814414a7d844ba8f95889df5c95e7b20662b5fefc",
+      "generatedSource": "exec-d0a9bff1-a387-4e61-83df-a8a2e849791b.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-02-assets.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the TWO tilted white PROPERTY DEEDS, left blue-header blue-roof and right red-header red-roof, with TWO opposite green curved arrows around them, in the SECOND card Mua lại đất. Both arrows and both cards must remain.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 895162,
+        "partial": 675374,
+        "opaque": 1980,
+        "zeroPercent": 56.93,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 84,
+          "y": 133,
+          "width": 1102,
+          "height": 983
+        }
+      },
+      "referenceCrop": [
+        90,
+        930,
+        190,
+        200
+      ],
+      "visualReview": "Giữ 2 deed/nhà xanh–đỏ và 2 mũi tên ngược chiều; dáng nhà được tái dựng.",
+      "runtime": {
+        "file": "../../rules/ill-takeover.webp",
+        "width": 96,
+        "height": 86,
+        "bytes": 4752
+      }
+    },
+    {
+      "id": "icon-upgrade",
+      "file": "icon-upgrade.png",
+      "tab": "assets",
+      "role": "Nâng cấp",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 934700,
+      "sha256": "b51cda71ccafc4dfe63e49728caf7c79daf6f45777ccaca1f8d5dae09ec2bc4c",
+      "generatedSource": "exec-83dd313d-08a0-4042-be94-0e545cbcb6c7.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-02-assets.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the single GREEN HOUSE with green gabled roof, cream wall, green door, blue side window and gray chimney, in the THIRD card Nâng cấp. Preserve angle and green foundation.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 858395,
+        "partial": 712714,
+        "opaque": 1407,
+        "zeroPercent": 54.59,
+        "edgeMax": 0,
+        "boundsThreshold8": {
+          "x": 129,
+          "y": 140,
+          "width": 1023,
+          "height": 1028
+        }
+      },
+      "referenceCrop": [
+        100,
+        1160,
+        180,
+        195
+      ],
+      "visualReview": "Giữ nhà xanh, ống khói và cửa; cửa sổ chuyển xanh sáng, mái bóng hơn.",
+      "runtime": {
+        "file": "../../rules/ill-upgrade.webp",
+        "width": 96,
+        "height": 96,
+        "bytes": 3784
+      }
+    },
+    {
+      "id": "icon-debt-warning",
+      "file": "icon-debt-warning.png",
+      "tab": "assets",
+      "role": "Nợ & phá sản",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 773377,
+      "sha256": "d1f280ee44cd85b21aa4fdb42d9e579a7656bb533778ed09ecceee4f66c73b6c",
+      "generatedSource": "exec-3101cf22-1a03-41e5-a323-6f16ccd9a5de.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-02-assets.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the rounded CORAL warning TRIANGLE with cream exclamation mark and navy outline, in the FOURTH card Nợ & phá sản. Keep glossy light upper-left face and dark coral edge.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 925568,
+        "partial": 645754,
+        "opaque": 1194,
+        "zeroPercent": 58.86,
+        "edgeMax": 0,
+        "boundsThreshold8": {
+          "x": 87,
+          "y": 175,
+          "width": 1080,
+          "height": 901
+        }
+      },
+      "referenceCrop": [
+        105,
+        1385,
+        160,
+        145
+      ],
+      "visualReview": "Giữ tam giác coral và dấu !; highlight và contour dày hơn.",
+      "runtime": {
+        "file": "../../rules/ill-debt-warning.webp",
+        "width": 96,
+        "height": 81,
+        "bytes": 2564
+      }
+    },
+    {
+      "id": "icon-festival",
+      "file": "icon-festival.png",
+      "tab": "special",
+      "role": "Lễ hội",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 767457,
+      "sha256": "ff01e3bac670c9ee454d5a3f18b333167fb92de98d8d116bd055cf3f5ca123a8",
+      "generatedSource": "exec-12faa553-be7d-4577-a542-ae7bfe616332.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-03-special.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the GOLD five-point STAR under multicolored triangular BUNTING flags, with small gold celebration rays around it, in the FIRST card Lễ hội. Keep flags, star and rays together as one artwork.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 1066503,
+        "partial": 503982,
+        "opaque": 2031,
+        "zeroPercent": 67.82,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 139,
+          "y": 165,
+          "width": 976,
+          "height": 917
+        }
+      },
+      "referenceCrop": [
+        85,
+        685,
+        195,
+        190
+      ],
+      "visualReview": "Giữ sao, dây 4 cờ và 6 tia; một cờ xanh trong concept chuyển vàng, sao có thêm mặt sáng.",
+      "runtime": {
+        "file": "../../rules/ill-festival.webp",
+        "width": 96,
+        "height": 91,
+        "bytes": 5672
+      }
+    },
+    {
+      "id": "icon-travel",
+      "file": "icon-travel.png",
+      "tab": "special",
+      "role": "Du lịch",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 863979,
+      "sha256": "4719eb19b7301085847985bd7c8a514eb2a01c46c2a2592cd290756ed71ea8e9",
+      "generatedSource": "exec-6946183c-4e4e-4840-b367-7e34008defec.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-03-special.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the white-and-blue AIRPLANE angled up-right together with the orange rolling SUITCASE in front at lower-right, in the SECOND card Du lịch. Keep all wings, tail, cabin windows, suitcase handle and wheels.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 921105,
+        "partial": 649556,
+        "opaque": 1855,
+        "zeroPercent": 58.58,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 84,
+          "y": 206,
+          "width": 1094,
+          "height": 899
+        }
+      },
+      "referenceCrop": [
+        80,
+        910,
+        200,
+        190
+      ],
+      "visualReview": "Giữ máy bay hướng lên phải + vali cam; số/cỡ cửa sổ và highlight khác nhẹ.",
+      "runtime": {
+        "file": "../../rules/ill-travel.webp",
+        "width": 96,
+        "height": 80,
+        "bytes": 3926
+      }
+    },
+    {
+      "id": "icon-tax-cards",
+      "file": "icon-tax-cards.png",
+      "tab": "special",
+      "role": "Thuế & thẻ bài",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 968499,
+      "sha256": "3a65f5b44f129f8cf5ec0b79f443945ac57b73fcefe0a1d37adbd31f4a2d6be6",
+      "generatedSource": "exec-16459563-514b-4f2d-8315-80f886dcf0d7.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-03-special.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the two white CARDS (left red question-mark symbol, right blue clover symbol) with a GOLD coin bearing a dark percent symbol in front, in the THIRD card Thuế & thẻ bài. Preserve the percent and question/clover as artwork shapes; no extra text or letter K.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 837453,
+        "partial": 733825,
+        "opaque": 1238,
+        "zeroPercent": 53.26,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 73,
+          "y": 187,
+          "width": 1109,
+          "height": 906
+        }
+      },
+      "referenceCrop": [
+        85,
+        1135,
+        195,
+        195
+      ],
+      "visualReview": "Giữ dấu ?, cỏ bốn lá và xu %; độ nghiêng thẻ và viền bóng khác nhẹ.",
+      "runtime": {
+        "file": "../../rules/ill-tax-cards.webp",
+        "width": 96,
+        "height": 80,
+        "bytes": 3982
+      }
+    },
+    {
+      "id": "icon-jail",
+      "file": "icon-jail.png",
+      "tab": "special",
+      "role": "Nhà tù",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 933817,
+      "sha256": "1ba305f2f7500e4e00ef9ef6b8fb02c3a72197053596cca78cb9763c0b6301f5",
+      "generatedSource": "exec-548f4bcf-fbd4-4766-ac79-13d4b56f314b.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-03-special.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the silver-gray JAIL BARS with navy outline and the GOLD KEY diagonally in front at lower-right, in the FOURTH card Nhà tù. Keep the bars, upper/lower frame and key together.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 724336,
+        "partial": 847411,
+        "opaque": 769,
+        "zeroPercent": 46.06,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 125,
+          "y": 210,
+          "width": 1064,
+          "height": 937
+        }
+      },
+      "referenceCrop": [
+        90,
+        1370,
+        185,
+        180
+      ],
+      "visualReview": "Giữ song tù xám + khóa vàng; khoảng cách song và răng khóa tái dựng.",
+      "runtime": {
+        "file": "../../rules/ill-jail.webp",
+        "width": 96,
+        "height": 85,
+        "bytes": 3134
+      }
+    },
+    {
+      "id": "icon-win-trophy",
+      "file": "icon-win-trophy.png",
+      "tab": "ending",
+      "role": "Thắng ngay — cúp",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 888437,
+      "sha256": "00b49b3d1f16b2d1aaebe32b049a1248c69c179549e26dc8187cf33c09fff2cc",
+      "generatedSource": "exec-430f07ee-85bd-4342-86b6-e4ab1229cf55.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-04-ending.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the small GOLD TROPHY with two handles and a STAR on its front, beside the title Thắng ngay. Keep base, handles, star and warm shading; no text.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 888809,
+        "partial": 681816,
+        "opaque": 1891,
+        "zeroPercent": 56.52,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 72,
+          "y": 160,
+          "width": 1110,
+          "height": 962
+        }
+      },
+      "referenceCrop": [
+        95,
+        675,
+        135,
+        125
+      ],
+      "visualReview": "Giữ cúp 2 quai và sao; bóng sáng được tăng.",
+      "runtime": {
+        "file": "../../rules/ill-win-trophy.webp",
+        "width": 96,
+        "height": 84,
+        "bytes": 3772
+      }
+    },
+    {
+      "id": "icon-win-groups",
+      "file": "icon-win-groups.png",
+      "tab": "ending",
+      "role": "Thắng ngay — 3 nhóm màu",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 725636,
+      "sha256": "d7ea258b008a65b94f5b5835660dc05da5607773ee657241b466cd6e0b664c6a",
+      "generatedSource": "exec-6a060505-12a2-4387-b6aa-2d61857e4422.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-04-ending.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the THREE tilted white PROPERTY CARDS with RED, BLUE and GREEN color headers, left-to-right, in the row Trọn 3 nhóm màu. Only the three cards, no background lozenge. Preserve exact order and overlap.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 1038131,
+        "partial": 533207,
+        "opaque": 1178,
+        "zeroPercent": 66.02,
+        "edgeMax": 0,
+        "boundsThreshold8": {
+          "x": 61,
+          "y": 332,
+          "width": 1133,
+          "height": 602
+        }
+      },
+      "referenceCrop": [
+        105,
+        800,
+        190,
+        105
+      ],
+      "visualReview": "Giữ đúng 3 deed đỏ–xanh dương–xanh lá; độ nghiêng và viền tái dựng.",
+      "runtime": {
+        "file": "../../rules/ill-win-groups.webp",
+        "width": 128,
+        "height": 72,
+        "bytes": 3804
+      }
+    },
+    {
+      "id": "icon-win-line",
+      "file": "icon-win-line.png",
+      "tab": "ending",
+      "role": "Thắng ngay — một cạnh bàn",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1515492,
+      "sha256": "c7379d78200977a6de5601a29072799b1e7c5c298d224533cee68d5d1dc75056",
+      "generatedSource": "exec-310a71ab-1a1c-4dbb-8b18-d739c3ef5e8d.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-04-ending.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the tiny ISOMETRIC SQUARE BOARD with colorful building/tree miniatures, beige center and GOLD highlighted edge tiles, in the row Toàn bộ thành phố trên một cạnh bàn. Preserve the approved miniature composition and perspective; do not replace it with a generic full Monopoly board.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 948390,
+        "partial": 624474,
+        "opaque": 0,
+        "zeroPercent": 60.3,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 118,
+          "y": 141,
+          "width": 1300,
+          "height": 800
+        }
+      },
+      "referenceCrop": [
+        100,
+        900,
+        205,
+        115
+      ],
+      "visualReview": "Giữ bàn isometric, dải ô vàng, nhà/cây; chi tiết ô không mô tả chính xác bàn 32 ô. Ở 48 px chỉ đọc silhouette, nên dùng 64–80 px nếu cần thấy cạnh vàng.",
+      "runtime": {
+        "file": "../../rules/ill-win-line.webp",
+        "width": 128,
+        "height": 82,
+        "bytes": 4246
+      }
+    },
+    {
+      "id": "icon-win-airports",
+      "file": "icon-win-airports.png",
+      "tab": "ending",
+      "role": "Thắng ngay — 4 sân bay",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 679228,
+      "sha256": "0c694d804e20c7e2c3ff8259b59778176b85db1294c769659c3147789fcb6c6c",
+      "generatedSource": "exec-95cd56c2-1213-40db-959b-7fb3c99d5ee3.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-04-ending.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the group of exactly FOUR BLUE AIRPORT MAP MARKERS with WHITE PLANE silhouettes, standing on tiny gray-blue bases, in the row Cả 4 sân bay. Keep all four distinct, no fifth marker, no missing marker, no letters.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 1136573,
+        "partial": 434069,
+        "opaque": 1874,
+        "zeroPercent": 72.28,
+        "edgeMax": 0,
+        "boundsThreshold8": {
+          "x": 73,
+          "y": 356,
+          "width": 1124,
+          "height": 616
+        }
+      },
+      "referenceCrop": [
+        100,
+        1010,
+        205,
+        105
+      ],
+      "visualReview": "Giữ đúng 4 marker xanh có máy bay trắng; chân đế và highlight khác nhẹ.",
+      "runtime": {
+        "file": "../../rules/ill-win-airports.webp",
+        "width": 128,
+        "height": 74,
+        "bytes": 5376
+      }
+    },
+    {
+      "id": "icon-finish-clock",
+      "file": "icon-finish-clock.png",
+      "tab": "ending",
+      "role": "Khi nào kết thúc?",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 802283,
+      "sha256": "36ebf20b36897f238e22fbecaba3df7eba7ebfd02e9fb377be0096665ff15c03",
+      "generatedSource": "exec-330fa157-f1f6-4362-a7fc-0e22db4f836b.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-04-ending.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the BLUE STOPWATCH with cream face and dark hands, accompanied by a BLUE-and-CREAM CHECKERED FINISH FLAG behind at upper-right, in the card Khi nào kết thúc. Keep stopwatch and flag together, no numbers.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 962821,
+        "partial": 607681,
+        "opaque": 2014,
+        "zeroPercent": 61.23,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 72,
+          "y": 210,
+          "width": 1126,
+          "height": 883
+        }
+      },
+      "referenceCrop": [
+        90,
+        1160,
+        190,
+        170
+      ],
+      "visualReview": "Giữ đồng hồ + cờ caro; số ô caro, kim và vạch giờ được tái dựng.",
+      "runtime": {
+        "file": "../../rules/ill-finish-clock.webp",
+        "width": 96,
+        "height": 77,
+        "bytes": 3566
+      }
+    },
+    {
+      "id": "icon-total-assets",
+      "file": "icon-total-assets.png",
+      "tab": "ending",
+      "role": "Cách xếp hạng",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 943833,
+      "sha256": "20d4e94a1024b45916f35a2254291efe98cd48c60651433520bc2757a398bb2b",
+      "generatedSource": "exec-ee6d9ae3-e7a8-478f-9530-e7a234d2ce8f.png",
+      "sourceConcept": "../../../docs/screens/s2-lobby/rules-04-ending.webp",
+      "prompt": "Use case: background-extraction / precise-object-edit.\nExtract ONE existing game illustration from this approved Vietnamese how-to-play screenshot: the TWO PROPERTY CARDS with RED and BLUE headers behind THREE GOLD COIN STACKS, in the pale-blue card Cách xếp hạng at the bottom. Preserve composition, stacks and outlines, no K currency symbols.\nUse the supplied image as the authoritative exact artwork reference. Isolate only that illustration, enlarge it cleanly, preserving silhouette, count, arrangement, perspective, navy/brown contours, bright colors, highlights and shading. This is faithful asset extraction, not redesign. Keep the whole illustration and all small attached parts; do not cut off edges.\nRemove the pastel rounded square/lozenge behind the illustration COMPLETELY. Remove the cream card/panel, all labels, surrounding UI, page text, scenery and any cast shadow outside the illustrated objects. Background must be genuine alpha transparency, not a checkerboard painted into the image, not white, not black. Only the requested illustration should remain.\nCenter the complete icon on a compact square transparent canvas, with about 7 percent clear padding on all sides, artwork large and sharp, suitable as a source PNG for a 40–48px game UI illustration. No new objects, new symbols, additional shadows, watermark, captions, letters or decorative frame. Preserve semantic artwork symbols explicitly requested above (question mark, percent, exclamation, star) but no UI text. Match the approved smooth colorful game illustration, not pixel art, not photorealism, not flat generic line icons.",
+      "alpha": {
+        "zero": 878465,
+        "partial": 692435,
+        "opaque": 1616,
+        "zeroPercent": 55.86,
+        "edgeMax": 1,
+        "boundsThreshold8": {
+          "x": 52,
+          "y": 234,
+          "width": 1165,
+          "height": 800
+        }
+      },
+      "referenceCrop": [
+        85,
+        1350,
+        220,
+        155
+      ],
+      "visualReview": "Giữ 2 deed và 3 chồng xu; góc chồng và bề dày xu khác nhẹ.",
+      "runtime": {
+        "file": "../../rules/ill-total-assets.webp",
+        "width": 96,
+        "height": 68,
+        "bytes": 3432
+      }
+    }
+  ],
+  "reusedAssets": [
+    {
+      "role": "Sách header",
+      "source": "../lobby/icon-rules.png",
+      "runtime": "../../lobby/ill-rules.webp"
+    },
+    {
+      "role": "Dấu X, nền tròn dựng CSS",
+      "file": "../../bot-setup/close-navy.svg"
+    },
+    {
+      "role": "Mẫu chất liệu nút gold, dựng CSS co giãn khi code",
+      "file": "../../bot-setup/button-gold.svg"
+    }
+  ],
+  "knownLimitations": [
+    "AI reconstruction, not pixel-identical cropping; per-asset differences are listed below.",
+    "All 18 PNGs have real alpha. Some outermost pixels have alpha 1/255; source bytes are preserved.",
+    "Concepts shorten rule text; the screen README carries the full copy and exceptions.",
+    "Header/tab/card/pastel wells/dividers/footer/backdrop are CSS/DOM layers, not missing raster assets."
+  ],
+  "visualReview": {
+    "sizes": [
+      136,
+      54
+    ],
+    "backgrounds": [
+      "cream",
+      "navy",
+      "checkerboard"
+    ],
+    "status": "reviewed-with-differences; runtime chụp 390x844 và 360x640 ngày 23/10/2026"
+  },
+  "totalBytes": 16407878,
+  "conceptHistory": [
+    {
+      "role": "Cơ bản bản đầu, không dùng làm chuẩn",
+      "generatedSource": "exec-c803b2d4-0acc-4c5c-90ff-7e4d4ac2a53d.png",
+      "prompt": "Use case: ui-mockup / precise-object-edit.\nCreate a polished new Vietnamese mobile game HOW TO PLAY modal for Cờ Tỷ Phú.\nReference roles: IMAGE 1 is the authoritative lobby/background, portrait composition, VIP profile and game brand. IMAGE 2 is only the approved cream/mint/gold modal styling reference; remove its entire bot configuration content. IMAGE 3 is the existing open-book icon to use beside the new modal title. Keep that book design rather than introducing a robot here.\n\nOutput ONE complete portrait mobile screenshot, ideally 853 × 1844 like image 1. No phone frame, no annotations, no multiple screens. The same lobby is visible behind a dark translucent overlay: preserve the green VIP avatar, exact @minhanh, balance 12.500 followed by the gold K coin on its RIGHT, and sound control. No KEN suffix, no human profile. Muted logo/city show behind the dialog. All menu controls behind the overlay are inactive.\n\nRedesign the foreground as a comfortable rounded cream paper dialog with subtle beige bottom edge and fine navy contour, width about 346 at a 390-wide screen. Center it vertically. Spacious, easy-to-read Nunito-style Vietnamese text, navy headings and muted navy body, not dense small print. Crisp smooth controls/icons over the dim pixel-art landscape. Use the same friendly game surface treatment as image 2.\n\nHEADER: existing blue-and-cream open-book icon, exact title \"Hướng dẫn chơi\", one circular paper X button in the upper right. A thin mint divider below the header. Do not repeat another large title.\n\nBelow the header a SINGLE horizontal four-tab segmented bar with these exact labels, from left to right: \"Cơ bản\", \"Tài sản\", \"Ô đặc biệt\", \"Kết thúc\". All four fit and remain readable. Cơ bản is SELECTED, with a warm golden inset pill. The others are cream. These are category tabs, not numbered pages. Do not add tabs or arrows.\n\nBODY: three airy stacked illustrated instruction rows/cards. Small pastel icon well on LEFT, title + body LEFT ALIGNED on right. Rounded pale cream cards with a thin beige separator, not heavy borders. Distinct simple glossy game icons matching the family, not emoji. Each card has enough padding and generous line spacing. Exact text:\nCard 1, small gold coins illustration (ordinary game coins WITHOUT the K currency symbol):\n\"Chuẩn bị\"\n\"Mỗi người có 1.500 tr để bắt đầu.\"\nCard 2, two dice illustration:\n\"Gieo & di chuyển\"\n\"Gieo 2 xúc xắc, đi theo tổng số.\"\n\"Qua Xuất phát nhận 160 tr.\"\nCard 3, pair of matching dice with a small curved repeat arrow:\n\"Gieo đôi\"\n\"Gieo đôi được thêm lượt gieo.\"\n\"Đôi 3 lần liên tiếp: vào tù.\"\n\nUnder those cards, a compact pale-blue info strip with a small clock icon and exact text \"Mỗi hành động có 30 giây.\" It must say hành động, NOT lượt. Keep all three cards and this strip visible with no cut-off text.\n\nFOOTER: one wide gold pill button \"Đã hiểu\", centered and fixed to the dialog bottom, with a thin beige divider/gap above. This closes the guide; do not add a play button, cancel, next, or skip. Gold button has warm orange bottom edge and a small upper-left white highlight, not two bright end blobs. Keep footer well inside the panel and comfortable spacing.\n\nThe emphasis is a fresh readable quick guide with category navigation, concise illustrated lessons and an obvious close action. No notebook rings, parchment scroll, wooden frame, giant mascots, 3D perspective, glass effect, trophies, bot list, robot, bot count, money wager, version label, watermark, fake browser chrome, or extra invented wording. Preserve all Vietnamese diacritics and correct numerical rules. Do not fit all ten rules on one page; other categories are reached by the four tabs."
+    }
+  ],
+  "runtimeExport": "Cắt theo alpha > 8 (alpha.boundsThreshold8), Lanczos về 88 px (win-groups/line/airports 120 px) cạnh dài, đệm trong suốt 4 px, cwebp -q 80 -alpha_q 90 -m 6."
+}

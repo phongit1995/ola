@@ -27,3 +27,16 @@ func ParseOffset(c *gin.Context) int {
 	}
 	return 0
 }
+
+func ParseOptionalBool(c *gin.Context, key string) *bool {
+	switch c.Query(key) {
+	case "true":
+		t := true
+		return &t
+	case "false":
+		f := false
+		return &f
+	default:
+		return nil
+	}
+}

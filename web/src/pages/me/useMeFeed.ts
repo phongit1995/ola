@@ -32,7 +32,6 @@ export function useMeFeed() {
   const prependPost = useMeFeedStore((state) => state.prependPost);
   const updatePost = useMeFeedStore((state) => state.updatePost);
   const removePost = useMeFeedStore((state) => state.removePost);
-  const togglePin = useMeFeedStore((state) => state.togglePin);
   const adjustCommentCount = useMeFeedStore(
     (state) => state.adjustCommentCount
   );
@@ -128,7 +127,6 @@ export function useMeFeed() {
     addPost,
     editPost,
     deletePost,
-    togglePin,
     hidePost,
     blockAuthor,
     adjustCommentCount,

@@ -1,11 +1,13 @@
 import type { EndReason, MoveType, PayReason, Phase, StepKind } from './constants';
 
+export type BotLevel = 'easy' | 'normal' | 'hard';
+
 export interface PlayerState {
   cash: number;
   pos: number;
   inJail: boolean;
   jailTurns: number;
-  jailCards: number;
+  jailCards: CardRef[];
   bankrupt: boolean;
   doubles: number;
   quit: boolean;

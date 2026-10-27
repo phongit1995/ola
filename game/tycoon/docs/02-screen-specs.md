@@ -4,49 +4,113 @@ Mọi số đo tại viewport logic `390 × 844`. Width hỗ trợ 360–520 px:
 
 Điều hướng không dùng router: mỗi màn là boolean/enum trên store `useTycoon` (pattern caro `App.tsx`). Sheet (S7, S8, O3) là lớp trượt lên đè S6, không phải màn riêng.
 
+**Tên người chơi:** mọi chỗ hiện người chơi dùng `@username` kèm icon VIP; avatar là icon VIP; chính mình ghi `Bạn` ở pod, chip lượt và câu log. Quy tắc đầy đủ ở [03 §18](./03-component-specs.md).
+
 ---
 
 ## S1. Loading / Connecting
 
-Hiện khi `lobbyPhase = 'loading' | 'connecting' | 'error'`, nằm trong LobbyScreen.
+UI đã tích hợp trong `LobbyScreen` khi `profile === null`; style và renderer đã chốt tại [S1 loading](./screens/s1-loading/README.md). Store hiện vẫn dùng `MOCK_PROFILE`, nên game chơi máy vào S2 như trước; xem S1 trong dev bằng `/tycoon/?preview=loading`.
 
-- Nền trời pixel như S6 (01 §7) + logo giữa màn (y 38%).
-- Dưới logo 24 px: `Đang tải... {n}%` hoặc `Đang kết nối...`.
-- Preload chỉ nhóm LOBBY_CRITICAL trước first paint (04 §5).
-- `lobbyPhase='error'`: text lỗi map tiếng Việt, nút `Thử lại` (CTA vàng 240×52) gọi lại `init()`.
+- Giữ nền trời pixel, logo, Bác Tỷ đứng yên, nút âm thanh và Thoát game. Ẩn tên/avatar, KEN, menu và cụm thẻ/quân trong lúc chờ hồ sơ.
+- Logo ở y 18,8%; nhân vật ở x 11%, y 34,8%; tâm loader x 50%, y 67% trong vùng sau safe-area. Khung loader `min(33cqw, 15cqh, 144px)`.
+- Xúc xắc WebGL bo góc, phía sau trong suốt, không đĩa trắng/kem. Dùng viền **Cung men nổi đã chốt** tại [style S1](./screens/s1-loading/README.md). Mỗi lượt 2,8 giây: viền quay 1,4 giây → nghỉ 0,2 giây → xúc xắc lật đúng một mặt (90°) trong 0,7 giây → giữ mặt mới 0,5 giây rồi đến lượt viền tiếp theo. Hai lớp không quay cùng lúc; không reset mặt sau mỗi lượt. Không có phần trăm giả hoặc chữ loading hiển thị; screen reader đọc “Đang tải hồ sơ”.
+- Reduced motion giữ tư thế đầu và dừng viền; tab ẩn dừng animation; thiếu WebGL/context bị mất dùng minh họa xúc xắc tĩnh. Có hồ sơ thì gỡ loader và hiện S2.
+
+**Phần online chưa triển khai:** `lobbyPhase = 'loading' | 'connecting' | 'ready' | 'error'`, preload nhóm LOBBY_CRITICAL trước first paint (04 §5), timeout/error/retry/auth. Khi có `error`, map lỗi sang tiếng Việt và hiện `Thử lại` (CTA vàng 240×52) gọi lại `init()`. Nếu đã hiện S2 rồi mới mất kết nối, giữ hồ sơ/layout S2 và báo lỗi theo [S2 lobby §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive), không reset hồ sơ về null để hiện lại S1.
 
 ---
 
 ## S2. Lobby
 
+**Ảnh đã chốt: phương án 1 — Nền trời thoáng.** Xem [concept S2](./screens/s2-lobby/concept-s2-lobby-pixel-16bit.png) (bản 22/10/2026 có nút chơi máy) và [style lobby](./screens/s2-lobby/README.md) cho font, màu, hero, asset, trạng thái và responsive. Các mốc dưới đây ở vùng khả dụng 390 × 844 sau safe-area; bố cục dùng luồng dọc, không khóa toàn màn bằng tọa độ tuyệt đối.
+
 ### 2.1 Cấu trúc dọc
 | Vùng | y | Nội dung |
 |---|---|---|
-| Topbar | 0–64 | avatar + tên (trái), badge KEN (phải), nút âm thanh |
-| Logo | 96–300 | logo "CỜ TỶ PHÚ" + minh họa 2 quân cờ trên 3 ô bàn |
-| CTA stack | 330–580 | 4 nút dọc, cách 16 px |
-| Footer | đáy − 32 | nút Thoát game (`bridge.exit()`), version nhỏ |
+| Topbar | 28–80 | avatar VIP + `@username` (trái, 03 §18), badge KEN (phải), nút âm thanh; KEN dài được xuống hàng. Component `LobbyTopbar` dùng chung với S3, cùng vị trí, không animate khi chuyển màn |
+| Logo | 100–180 | logo "CỜ TỶ PHÚ", khung tối đa 320 × 80 |
+| Hero | 188–364 | Bác Tỷ trái, 3 thẻ đất có tranh pixel và 2 quân con tốt vàng/xanh bên phải |
+| CTA stack | 376–716 | 5 action dọc, rộng 280, cách 12 px |
+| Footer | đáy − 64 đến đáy − 20 | nút Thoát game (`bridge.exit()`) cao 44, không version; cách menu ít nhất 24 |
 
 ### 2.2 CTA stack
 | Nút | Style | Hành vi |
 |---|---|---|
-| `Vào bàn` | CTA vàng 320×64, chữ navy 17/700 | `openRanked()` → S3, preload nhóm RANKED |
-| `Lịch sử` | nút giấy kem viền navy 320×52 | S10 |
-| `Bảng xếp hạng` | nút giấy kem viền navy 320×52 | S11 |
-| `Luật chơi` | nút text 320×44, chữ navy 15/600 gạch chân | mở modal luật: 6 mục ngắn (gieo, mua, thuê, xây, tù, kết thúc), scroll, nút Đóng |
+| `Vào bàn` | CTA vàng 280×80, Nunito navy 32/800, minh họa xúc xắc | `openRanked()` → S3, preload nhóm RANKED |
+| `Chơi với máy` | xanh ngọc 280×56, Nunito navy 24/800, robot xanh–trắng 40 | `setSetupOpen(true)` → BotSetupModal, mặc định Bot 1; thêm/xóa tối đa 3 bot và chọn mức độ từng bot (§2.3) rồi vào ván |
+| `Lịch sử` | giấy kem viền navy 280×56, Nunito 24/800, minh họa đồng hồ blue | S10 |
+| `Bảng xếp hạng` | giấy kem viền navy 280×56, Nunito 24/800, minh họa bục/crown | S11 |
+| `Luật chơi` | nút text 280×44, Nunito navy 22/800 gạch chân, minh họa sách | mở RulesModal 4 tab Cơ bản/Tài sản/Ô đặc biệt/Kết thúc, thân cuộn, nút `Đã hiểu` gold (§2.4) |
 
-CTA online disabled khi `lobbyPhase !== 'ready'`. Luật chơi dùng được offline.
+CTA online disabled khi `lobbyPhase !== 'ready'`. Chơi với máy, Luật chơi, âm thanh và thoát dùng được offline. Kích thước/font riêng S2 không đổi control S6; co giãn và màn thấp theo [S2 lobby §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive).
+
+### 2.3 Modal Chơi với máy (`BotSetupModal`)
+
+**Trạng thái: đã dựng UI ngày 23/10/2026 (`components/BotSetupModal.tsx`).** Ảnh [mở mới 1 bot](./screens/s2-lobby/modal-bot-01-one-bot.webp) và [đủ 3 bot](./screens/s2-lobby/modal-bot-02-three-bots.webp); chỗ docs khác ảnh ở [S2 §11](./screens/s2-lobby/README.md#11-modal-chơi-với-máy). Mức độ được lưu vào `SeatInfo.level` nhưng `botMove` chưa dùng: mọi máy vẫn chơi mức Thường cho tới khi làm [05 §12](./05-gameplay-rules-and-protocol.md#12-máy-chơi-và-mức-độ-bản-chơi-với-máy); nhãn mức ở pod S6/S9 cũng chưa làm. Thiết kế mới dưới đây thay hoàn toàn bộ chọn số máy `1 · 2 · 3` và danh sách Bác Tỷ/Cô Ngân/Anh Tèo của đặc tả trước.
+
+Mở từ nút `Chơi với máy` ở S2. Mỗi lần mở từ sảnh luôn tạo danh sách mới gồm **1 bot, tên `Bot 1`, mức `Thường`**. Thêm từng bot bằng nút bên dưới, tối đa **3 bot** (ván 2–4 người kể cả bạn). Số lượng chỉ là thông tin đọc, **không có chip, dropdown hay ô nhập chọn số lượng**. Chơi offline, không cược, không người xem ([11](./11-room-settings.md)).
+
+Khung paper rộng `min(100% − 32, 340)`, radius 22, viền navy 2, padding 18, cùng họ nút S4. Phần giữa cuộn khi thiếu cao; header và Hủy/Bắt đầu luôn nhìn thấy. Từ trên xuống:
+
+| # | Phần | Nội dung |
+|---|---|---|
+| 1 | Header | icon robot xanh–trắng **cùng asset với nút sảnh** `assets/lobby/ill-bot.webp`, 32 px, cạnh trái tiêu đề `Chơi với máy` 21/800; cả nhóm icon + title căn giữa phần chừa cho X 44 góc phải; dưới header một vạch mint mảnh như ảnh. Icon trang trí, không đọc lặp tên |
+| 2 | Thông tin số bot | `Danh sách bot` 14/800 bên trái, nhãn `1/3 bot` bên phải (đổi thành 2/3 hoặc 3/3 theo danh sách). Nhãn không bấm được |
+| 3 | Danh sách bot | lần đầu chỉ **Bot 1**; sau thêm có Bot 2, Bot 3. Mỗi bot có mức độ riêng và nút `−` trên cùng một hàng với tên (§2.3.1) |
+| 4 | Thêm bot | nút `+ Thêm bot` ở **ngay dưới toàn bộ danh sách**, rộng hết nội dung, cao 44, nền mint nhạt và viền jade theo ảnh modal (ngoại lệ riêng S2, [asset v2](./screens/s2-lobby/README.md#asset-của-modal)); thêm một bot mỗi lần. Đủ 3 bot thì disabled thật, vẫn giữ nhãn, có dòng `Đã đủ 3 bot` |
+| 5 | Tóm tắt và gợi ý | khối nền `#e4f3fd` (đo từ ảnh) bo 16: `Ván {n + 1} người: bạn và {n} bot` 14/800; bên dưới `Tối đa {MAX_ROUNDS} vòng hoặc {phút} phút, mỗi hành động {TURN_SECONDS} giây. Máy đi tự động.` 13 navy 70%, căn giữa. Số giới hạn đọc từ constants: hiện 30 vòng / 25 phút / 30 giây. Icon hai người đã có: `assets/bot-setup/users-blue.svg`, 28 × 21, trang trí trước dòng tổng người, render img để giữ hai màu xanh |
+| 6 | Hàng nút | `Hủy` paper trái · `Bắt đầu` gold phải, chia đều, cao 52 |
+
+**2.3.1 Một bot trong danh sách.** Theo chỉnh sửa mới, mỗi bot nằm trên **một hàng duy nhất**: avatar + tên → nhóm mức độ → nút `−`. Thay bố cục hai hàng và icon thùng rác ở bản trước.
+
+- Avatar VIP 24 · gap 4 · tên `Bot 1` / `Bot 2` / `Bot 3` navy 14/800, không xuống dòng. Avatar dùng VIP như pod S6; robot ở header vẫn là `ill-bot.webp`. Giữ avatar gắn với bot khi thêm/xóa.
+- Cùng hàng với tên là pill `Dễ · Thường · Khó`, cao 40, vùng chạm cao 44. Ô `Dễ`/`Khó` rộng 44, ô `Thường` 72 (chữ ~51 px + đệm 10 mỗi bên), cộng viền là 163. Ô chọn gold, chữ navy 14/800; ô khác paper/navy 70%. Mặc định bot mới **Thường**, mỗi bot chọn độc lập. Không có nhãn Mức độ riêng phía trên hay một dòng selector bên dưới; tên truy cập radiogroup vẫn đủ.
+- Cuối hàng là nút tròn dấu **`−`**, hình nhìn thấy 30–32, vùng chạm **44 × 44**, màu coral khi hoạt động. Artwork đã có `assets/bot-setup/minus-circle.svg` và `minus-circle-disabled.svg` (đã gồm vòng tròn); `ic-minus` chỉ là glyph thay thế nếu dựng vòng tròn bằng CSS. Tên truy cập vẫn `Xóa Bot 2`… Không dùng thùng rác hoặc chữ X cho thao tác xóa bot; X ở header vẫn để đóng modal.
+- Hàng cao khoảng 60, căn giữa dọc avatar/tên/selector/nút trừ; các hàng cách nhau bằng đường beige mảnh. Thứ tự đọc và Tab: tên → mức độ → nút trừ. Cột mức độ và nút trừ thẳng nhau giữa các bot.
+- Layout: nhóm avatar + tên 64 (avatar 24 + 4 + `Bot 3` ~36 px ở 14/800), nhóm mức độ 163, nút trừ 44, gap giữa các nhóm 4 → **279 px**; nội dung modal ở màn 360 là 288 (340 − 32 lề − 36 padding − 4 viền đã kẹp về 328), còn dư 9. Đo bằng Nunito ngày 23/10/2026; nếu dùng ô Dễ/Khó 48 như bản trước thì tổng 287, chỉ dư 1 px. Giữ **một hàng ở 360–520 px**, không đẩy selector xuống dòng hoặc cắt chữ Thường; dưới 360 ngoài phạm vi S2 ([S2 §8](./screens/s2-lobby/README.md#8-loading-offline-và-responsive)), nếu cần thì giảm padding ngang modal xuống 12 trước. Khi phóng chữ cần kiểm riêng overflow/trợ năng, không thu nhỏ chữ chỉ để vừa ảnh.
+- Chỉ còn 1 bot: nút `−` của bot đó **disabled**, màu xám, tên truy cập `Không thể xóa bot cuối cùng`; có mô tả trợ năng `Cần ít nhất 1 bot để bắt đầu`. Không cho danh sách về 0.
+- Có 2 hoặc 3 bot: xóa được bất kỳ bot nào, không cần popup xác nhận. Chỉ xóa bot đó, không reset mức độ hay avatar các bot còn lại. Đánh số nhãn lại liên tục theo thứ tự: ví dụ xóa Bot 2 trong ba bot thì Bot 3 cũ thành Bot 2, giữ mức độ cũ.
+- `+ Thêm bot` thêm cuối danh sách, tên là số kế tiếp, mức Thường; không khôi phục mức của bot đã xóa. Dùng ID ổn định cho mỗi item để đổi nhãn không làm chuyển lựa chọn sang bot khác. Avatar mới dùng VIP còn trống trong bộ 1–3.
+- Đủ 3: chặn thêm cả ở handler, không chỉ làm mờ nút. Sau xóa, nút thêm hoạt động lại ngay. Thay đổi số bot cập nhật nhãn đếm và dòng tổng người ngay.
+
+**Bộ asset v2 đã sửa/kiểm (23/10/2026):** [inventory đầy đủ](./screens/s2-lobby/README.md#asset-của-modal) gồm robot và VIP 001–003 dùng lại; 6 SVG icon riêng cho X navy đậm, hai người, cộng/trừ tròn và hai bản xám; 4 nền nút SVG không chữ cho mint/disabled/paper/gold. Màu riêng lấy từ ảnh modal, không thay token chung. Dấu cộng hiển thị 24 trong nút Thêm bot. SVG nhiều màu render img, không mask; khung, nền nút co giãn, pill mức độ, divider và khối tóm tắt dựng CSS theo ảnh/palette SVG. Đã dùng trong `BotSetupModal`; nền nút dựng CSS theo màu SVG, không kéo giãn SVG.
+
+**Bắt đầu và lưu lựa chọn.** Validate 1–3 bot và từng mức `easy | normal | hard`, tạo ván ngay với bạn + danh sách bot, không có phòng chờ:
+
+- `SeatInfo` của máy có tên hiển thị `Bot 1`… theo thứ tự danh sách, avatar của item và `level`; store gọi `botMove(state, seat, level)` theo [05 §12](./05-gameplay-rules-and-protocol.md#12-máy-chơi-và-mức-độ-bản-chơi-với-máy). Các tên này dùng xuyên suốt modal, S6, S9 và log, không có `@`.
+- Store giữ cấu hình ván vừa bắt đầu (`lastBots`, danh sách `{ id, vip, level }`, helper ở `helpers/bot.ts`) để `Chơi lại` S9 giữ nguyên số bot, avatar và mức độ; `playAgain` dùng danh sách này thay cho `playerCount`. Không cần localStorage: mở mới luôn reset, ván cũng không sống qua lần tải lại trang. Modal mới không đọc `ola:tycoon:players` nữa; không tạo key `ola:tycoon:bot-levels`.
+- **Mở mới từ sảnh vẫn reset về Bot 1 / Thường**, không lấy cấu hình đã lưu để tự thêm 2–3 bot. Phân biệt rõ mở modal mới với Chơi lại ván vừa xong.
+
+**Đóng.** Hủy, X, Escape, bấm nền: đóng và bỏ thay đổi nháp, không lưu. Mở lại từ sảnh luôn về trạng thái mặc định một bot.
+
+**Bàn phím và trợ năng.** Mỗi nhóm mức là một `radiogroup`, nhãn `Mức độ của Bot 1`…; trái/phải đổi mức, Tab sang nhóm/nút tiếp. Mở modal focus vào mức Thường của Bot 1. Thêm bot thì focus vào nhóm mức của bot vừa thêm; xóa thì focus vào nhóm mức của bot thế chỗ (xóa bot cuối thì bot đứng trước), không đặt lên nút `−` có thể vừa bị disabled và không rơi ra backdrop. Cập nhật số bot bằng aria-live polite. Xóa/thêm disabled không nhận thao tác. Đóng trả focus về nút Chơi với máy ngoài sảnh.
+
+**Trong ván.** Pod S6 và bảng S9 hiện tên Bot 1/2/3, thêm pill paper viền beige với mức Dễ/Thường/Khó 11/800 navy 70%; người chơi không có pill mức. Ví dụ tên truy cập `Bot 2, máy mức Khó`.
+
+**Các trạng thái phải kiểm khi dựng:** mở mới 1 bot; thêm bot thứ 2 và 3; đủ 3 không thêm được; xóa bot giữa giữ mức của bot còn lại; còn 1 không xóa được; Hủy rồi mở lại về một bot; Chơi lại giữ cấu hình ván; màn thấp cuộn thân, header/footer không bị che.
+
+---
+
+### 2.4 Hướng dẫn chơi (`RulesModal`)
+
+Người dùng chốt **4 tab ngày 23/10/2026**, đã dựng UI cùng ngày. Ảnh mẫu, số đo, nội dung từng tab và asset: [S2 §12](./screens/s2-lobby/README.md#12-hướng-dẫn-chơi--đã-chốt-4-tab).
+
+Khung paper cùng họ modal chơi máy: sách + `Hướng dẫn chơi`, X tròn, vạch mint; bốn tab `Cơ bản · Tài sản · Ô đặc biệt · Kết thúc`, tab chọn gold. Mỗi mục là card có minh họa trong ô pastel, tiêu đề và các ý ngắn căn trái. Giữ đủ 10 nhóm luật cũ, kể cả các ngoại lệ ảnh viết rút gọn.
+
+Header/tab và nút `Đã hiểu` gold luôn nhìn thấy, thân cuộn khi thiếu cao. Mở mới chọn Cơ bản (focus ở tab), phím trái/phải/Home/End đổi tab; đóng bằng Đã hiểu/X/Escape/backdrop và trả focus. Chữ/số là DOM, số luật đọc từ constants. Nút này chỉ đóng hướng dẫn, không mở ván; mở từ menu trong ván dùng cùng modal.
 
 ---
 
 ## S3. Danh sách bàn (RankedScreen)
 
-Copy hành vi caro/xiangqi `RankedScreen.tsx`.
+Copy hành vi caro/xiangqi `RankedScreen.tsx`. Ảnh mẫu, số đo và trạng thái hàng: [style S3](./screens/s3-room-list/README.md).
 
-- Header 56: back, title `Bàn tỷ phú` 20/800, nút Làm mới.
-- Cột: `Chủ bàn | Chỗ | Tham gia`. Không có cột cược ở v1 (bet luôn 0); giữ chỗ trong layout để v2 thêm cột `KEN`.
+- Trên cùng là topbar của S2 (`LobbyTopbar`: avatar + `@username`, KEN, âm thanh), cùng vị trí với S2 và không chạy hiệu ứng vào màn, nên đứng yên khi chuyển S2 ↔ S3. Thêm 22/10/2026.
+- Header 56 (cách topbar 12): back, pill tiêu đề `Bàn tỷ phú` 20/800, nút reload tròn riêng chỉ có `ic-refresh`, tách khỏi nền pill bằng khoảng trống. Không hiện chữ `Làm mới`; giữ `aria-label="Làm mới danh sách bàn"`. Số đo theo [style S3](./screens/s3-room-list/README.md).
+- Cột: `Chủ bàn | KEN | Chỗ | Tham gia / Xem`. Cột `KEN` hiện mức cược với đồng KEN bên phải, bàn 0 ghi `0` ([11 §1.3](./11-room-settings.md#13-hiển-thị)).
 - 9 hàng/trang cố định, hàng cao 8.85% vùng list, absolute theo %.
-- Hàng: avatar chủ bàn 32 + VIP, `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa 16 khi `locked`, chip `Đang chơi` khi `status = 'playing'`.
+- Hàng: avatar VIP chủ bàn 32 (03 §18), `@username` 15/600, badge chỗ `2/4` (viền jade khi còn chỗ, mờ 50% + Tham gia disabled khi đầy), icon khóa khi `locked`, nằm cuối ô chủ bàn (sát phải). Bàn `status = 'playing'`: có bật cho xem thì cột cuối là nút `Xem` paper (`SPECTATE_JOIN {matchId}`), không thì chip `Đang chơi` ([11 §2.4](./11-room-settings.md#24-nút-vào-xem-ở-s3)).
 - Footer: `Tạo bàn` (CTA vàng) giữa, phân trang ‹ › hai bên.
 - `ROOM_LIST` khi mở + Làm mới; `ROOM_UPSERT/REMOVED` realtime; auto re-sync 90–120 s jitter.
 
@@ -54,16 +118,81 @@ Copy hành vi caro/xiangqi `RankedScreen.tsx`.
 
 ## S4. Modal Tạo bàn / Vào bàn khóa
 
-### 4a Tạo bàn (modal 340 × auto, radius 20)
-- Title `Tạo bàn` 20/800.
-- Nhóm `Số người`: 3 chip-btn `2 · 3 · 4`, mặc định 4, chip active gold.
-- Toggle `Khóa bàn` + input mật khẩu 4–8 ký tự (hiện khi bật).
-- Nút `Tạo bàn` CTA vàng 100% × 52; `Hủy` text.
-- Gửi `ROOM_CREATE {bet: 0, password, maxPlayers}` → `ROOM_WAITING` → S5. Lỗi `ROOM_CREATE_FAILED/INVALID_PASSWORD` → toast.
-- v2: thêm ô nhập cược + validate `maxBet`.
+Hai modal mở từ S3, cùng khung modal chung (03 §12): rộng `min(100% − 32, 340)`, radius 22, nền paper, viền navy 2, giữ focus trong modal, trả focus về nút đã mở khi đóng. Người dùng đã chốt [sáu ảnh S4/O5](./screens/s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5) theo style S3 ngày 22/10/2026; bố cục dưới đây vẫn là thứ tự và nội dung bắt buộc, không lấy kích thước AI thay số đo. Dùng các ngoại lệ docs thắng ảnh ở README S3, không cần sinh thêm concept cho trạng thái cùng kiểu.
+
+### 4a Tạo bàn
+
+Mở bằng nút `Tạo bàn` ở footer S3. Từ trên xuống:
+
+| # | Phần | Nội dung | Mặc định |
+|---|---|---|---|
+| 1 | Header | tiêu đề `Tạo bàn` 21/800 **căn giữa**, không có ô biểu tượng; nút đóng `ic-close` 44 góc phải | — |
+| 2 | `Số người` | 3 chip `2 · 3 · 4`, chọn một; chip đang chọn nền gold | **4** |
+| 3 | `Số KEN cược` | ô nhập số có đồng KEN trước số, dấu chấm hàng nghìn; dòng phụ `0 = bàn giao lưu, không mất KEN` hoặc `Bạn có {ken} KEN` ([11 §1.1](./11-room-settings.md#11-chọn-ở-s4-tạo-bàn)) | **0** |
+| 4 | `Khóa bàn` | công tắc; dòng phụ `Người vào chơi phải nhập mật khẩu`. Bật thì hiện ô mật khẩu ngay bên dưới (4a.1) | **tắt** |
+| 5 | `Cho người khác xem` | công tắc; dòng phụ `Người ngoài bàn xem được ván, không thao tác được` ([11 §2.1](./11-room-settings.md#21-chọn-ở-s4-tạo-bàn)) | **tắt** |
+| 6 | Hàng nút | `Hủy` paper trái · `Tạo bàn` gold phải, chia đều, cao 52 | — |
+
+Mỗi nhóm có nhãn 14/800 navy phía trên; khoảng cách giữa các nhóm 14. Công tắc nằm bên phải nhãn, trong công tắc có chữ `Tắt` (nền xám, núm trái) hoặc `Bật` (nền `--ty-jade`, núm phải); dòng phụ 13 navy 70% dưới nhãn. Lỗi của nhóm nào hiện ngay dưới nhóm đó: chữ 13/700 `--ty-coral` + `ic-warning` 16, ô viền coral. Modal cao quá màn thì cuộn bên trong, hàng nút luôn nằm cuối modal.
+
+**4a.1 Ô mật khẩu khi bật Khóa bàn.** Hiện bằng mở rộng xuống 150 ms (reduced motion: hiện ngay), focus vào ô ngay khi bật. Có nhãn `Mật khẩu` 14/800 phía trên như các nhóm khác. Ô kiểu mật khẩu, placeholder `Nhập mật khẩu`, tối đa **64 ký tự** như server, không có độ dài tối thiểu; nút mắt bên phải để hiện/ẩn chữ (`aria-pressed`). Tắt công tắc thì ẩn ô và bỏ mật khẩu đã nhập.
+
+**Kiểm tra trước khi gửi**, theo thứ tự, dừng ở lỗi đầu tiên:
+
+| Điều kiện | Câu lỗi | Ở đâu |
+|---|---|---|
+| cược không phải số nguyên ≥ 0 hoặc > `maxBet` | `Số KEN cược không hợp lệ` | dưới ô cược |
+| cược > số KEN đang có | `Bạn không đủ KEN để tạo bàn` | dưới ô cược |
+| bật Khóa bàn mà để trống | `Nhập mật khẩu hoặc tắt Khóa bàn` | dưới ô mật khẩu |
+| mật khẩu > 64 ký tự | `Mật khẩu tối đa 64 ký tự` | dưới ô mật khẩu |
+
+Sửa ô nào thì xoá lỗi của ô đó. Có lỗi thì focus vào ô lỗi đầu tiên.
+
+**Gửi.** `ROOM_CREATE {bet, password, maxPlayers, allowSpectators}`; `password` rỗng khi tắt Khóa bàn. Đang gửi: nút `Tạo bàn` có spinner, khóa mọi ô và nút `Hủy`; `Escape` và bấm nền không đóng. Thành công (`ROOM_WAITING`) → đóng modal, sang S5. Lỗi từ server theo bảng 4c; modal giữ nguyên các lựa chọn đã nhập.
+
+**Đóng.** `Hủy`, nút đóng, `Escape`, bấm nền: đóng và bỏ thay đổi. Mở lại thì về mặc định, riêng `Số người` nhớ lần chọn gần nhất.
+
+**Bàn phím.** Ô cược dùng bàn phím số; `Enter` trong ô cược hoặc ô mật khẩu = bấm `Tạo bàn`.
 
 ### 4b Vào bàn khóa
-- Input mật khẩu, nút `Vào bàn`; `WRONG_PASSWORD` → shake input + text lỗi đỏ.
+
+Mở khi bấm `Tham gia` ở hàng có ổ khóa trong S3. Không áp dụng cho nút `Xem`: xem bàn khóa không cần mật khẩu ([11 §2.3](./11-room-settings.md#23-khi-bật)).
+
+| # | Phần | Nội dung |
+|---|---|---|
+| 1 | Header | `ic-lock` trong ô biểu tượng (như O5) + tiêu đề `Vào bàn khóa` 21/800 **căn trái** cạnh ô biểu tượng + nút đóng `ic-close` 44; đường kẻ mảnh dưới header |
+| 2 | Thông tin bàn | avatar VIP 32 + `Bàn của @owner`; dưới là chip cược (`{bet} KEN` hoặc `Giao lưu`) và chip chỗ `2/4` |
+| 3 | Ô mật khẩu | nhãn `Mật khẩu` 14/800; ô kiểu mật khẩu, placeholder `Nhập mật khẩu`, tối đa 64 ký tự, nút mắt hiện/ẩn; focus ngay khi mở |
+| 4 | Hàng nút | `Hủy` paper · `Vào bàn` gold; `Vào bàn` disabled khi ô trống |
+
+- **Trước khi mở modal**, client kiểm số KEN theo cược của bàn. Thiếu thì hiện O5 `Chưa đủ KEN` ([11 §1.2](./11-room-settings.md#12-vào-bàn-có-cược)), không mở modal mật khẩu.
+- Gửi `ROOM_JOIN {roomId, password}`; `Enter` trong ô = bấm `Vào bàn`. Đang gửi: spinner ở `Vào bàn`, khóa ô và `Hủy`.
+- `WRONG_PASSWORD`: ô rung ngang 300 ms (reduced motion: không rung), viền coral, chữ lỗi `Sai mật khẩu` dưới ô; giữ chữ đã nhập, bôi đen toàn bộ để gõ lại. Gõ lại thì xoá lỗi.
+- Lỗi khác theo bảng 4c; lỗi làm bàn không còn vào được (`ROOM_FULL`, `ROOM_NOT_FOUND`) thì đóng modal rồi báo.
+
+### 4c Thông báo khi tạo bàn và vào bàn
+
+Luồng vào bàn không khóa: bấm `Tham gia` → kiểm KEN như 4b → `ROOM_JOIN {roomId}`, nút `Tham gia` của hàng đó có spinner, khóa các nút khác trong bảng → `ROOM_WAITING` → S5. Không có phản hồi sau 10 s thì coi như lỗi mạng.
+
+Câu chữ theo caro (`caro/helpers/errorText.ts`), đổi `Ken` thành `KEN`.
+
+| Mã lỗi | Câu | Hiển thị | Sau đó |
+|---|---|---|---|
+| `WRONG_PASSWORD` | `Sai mật khẩu` | dưới ô mật khẩu 4b | giữ modal |
+| `INVALID_PASSWORD` | `Mật khẩu tối đa 64 ký tự` | dưới ô mật khẩu 4a | giữ modal |
+| `INVALID_BET` | `Số KEN cược không hợp lệ` | dưới ô cược 4a | giữ modal |
+| `INSUFFICIENT_KEN` | O5 cảnh báo, icon `ken`: `Chưa đủ KEN` · `Bàn này cược {bet} KEN. Bạn đang có {ken} KEN.` · `Đã hiểu` | modal O5 | đóng modal 4a/4b nếu đang mở |
+| `BET_NOT_ALLOWED` | O5 cảnh báo, icon `ken`: `Chưa thể chơi bàn cược` · `Tài khoản của bạn chưa thể chơi bàn có cược KEN. Hãy chọn bàn Giao lưu.` · `Đã hiểu` | modal O5 | khi tạo bàn: chữ lỗi dưới ô cược thay cho O5 |
+| `ROOM_FULL` | `Bàn đã đủ người` | toast | đóng modal, làm mới danh sách |
+| `ROOM_NOT_FOUND` | `Bàn không còn nữa` | toast | đóng modal, làm mới danh sách |
+| `ROOM_BUSY` | `Bàn đang được cập nhật, vui lòng thử lại` | toast | giữ nguyên |
+| `ALREADY_IN_ROOM`, `IN_ROOM` | `Bạn đang ở trong một bàn khác` | toast | giữ nguyên |
+| `OWN_ROOM` | `Đây là bàn của bạn` | toast | giữ nguyên |
+| `ROOM_JOIN_FAILED` | `Không thể vào bàn, vui lòng thử lại` | toast | giữ nguyên |
+| `ROOM_CREATE_FAILED` | `Không thể tạo bàn, vui lòng thử lại` | toast | giữ modal 4a |
+| không phản hồi 10 s / mất mạng | O5 lỗi, icon `wifi-off`: `Mất kết nối` · `Chưa thể kết nối vào bàn. Kiểm tra mạng rồi thử lại nhé.` · `Để sau` / `Thử lại` | modal O5 | `Thử lại` gửi lại đúng yêu cầu vừa rồi |
+
+Toast theo O6: một dòng, tự ẩn 2,5 s. Các lỗi khi bấm `Xem` ở [11 §2.4](./11-room-settings.md#24-nút-vào-xem-ở-s3).
 
 ---
 
@@ -72,8 +201,8 @@ Copy hành vi caro/xiangqi `RankedScreen.tsx`.
 Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40% phía dưới, panel ghế đè giữa.
 
 ### 5.1 Panel ghế (340 × auto, paper, radius 28)
-- Title `Bàn của @owner` + badge chỗ `3/4` + icon khóa.
-- Lưới ghế 2 × 2 (hoặc 1 × 2, 1 × 3 theo `maxPlayers`): mỗi ghế 150 × 88: avatar 40 viền màu ghế, tên 15/600, chip `Chủ bàn` (ic-owner) hoặc `Sẵn sàng` jade / `Chưa sẵn sàng` mờ; ghế trống hiện dấu `+` nét đứt `Đang chờ...`.
+- Title `Bàn của @owner` + badge chỗ `3/4` + icon khóa; chip `Cược {bet} KEN` hoặc `Giao lưu` (11 §1.3).
+- Lưới ghế 2 × 2 (hoặc 1 × 2, 1 × 3 theo `maxPlayers`): mỗi ghế 150 × 88: avatar VIP 40 viền màu ghế, `@username` 15/600 (ghế của mình cũng ghi `@username`), chip `Chủ bàn` (ic-owner) hoặc `Sẵn sàng` jade / `Chưa sẵn sàng` mờ; ghế trống hiện dấu `+` nét đứt `Đang chờ...`.
 - Màu ghế theo seat index (01 §2.3) — cho người chơi biết trước mình màu gì.
 
 ### 5.2 Hành động
@@ -84,13 +213,13 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 - `ROOM_START` → `MATCH_FOUND` → `boardMode='playing'`. Lỗi `ROOM_NOT_READY`/`ROOM_NOT_FULL` → toast. Bàn 3–4 chỗ được bắt đầu khi có từ 2 người: engine chỉ kiểm `playerCount ≥ MinPlayers` (`engine.go` `startRoom`), không bắt buộc đầy.
 - Chat phòng: nút ic-chat góc dưới phải mở ChatDrawer (`CHAT_SEND {roomId}`).
-- `ROOM_CLOSED`/`ROOM_KICKED` → toast + về S3.
+- `ROOM_KICKED` → O5 thông tin `Bạn đã rời bàn` · `Chủ bàn đã mời bạn ra khỏi bàn. Bạn có thể chọn bàn khác.` · `Về danh sách` → S3. `ROOM_CLOSED` → toast `Bàn đã đóng` → S3.
 
 ---
 
 ## S6. Bàn chơi (BoardScreen, `boardMode='playing'`)
 
-> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-board-pixel-16bit.png`](./screenshots/concept-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`; bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./screenshots/README.md)).
+> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`; bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./screens/s6-board/README.md)).
 >
 > Thay thế UI v2 (17/10): `TurnPanel` và `GameLog` dưới hàng pod được bỏ; nội dung `TurnPanel` chuyển vào giữa bàn (6.3), `GameLog` thu thành dòng sự kiện ở footer (6.5).
 
@@ -112,10 +241,10 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 │ │  XUẤT PHÁT · 7 ô hàng dưới · DU LỊCH │ │
 │ └──────────────────────────────────────┘ │
 ├──────────────────────────────────────────┤
-│ [o Bạn  ] [o Linh ] [o Khoa ] [o Mai  ]  │ hàng pod
+│ [o Bạn  ] [o @linh] [o @khoa] [o @mai ]  │ hàng pod
 │ [ 1.240 ] [  980  ] [  760  ] [ 1.100 ]  │
 ├──────────────────────────────────────────┤
-│ [Tài sản] [Diễn biến] │ Linh vừa qua …   │ footer
+│ [Tài sản] [Diễn biến] │ @linh vừa qua …  │ footer
 └──────────────────────────────────────────┘
 ```
 
@@ -177,7 +306,7 @@ Khoảng cách giữa các hàng 10. Ảnh mẫu đặt chip ở 31–40%, xúc 
 | `roll` | 2 xúc xắc (mặt lần gieo trước, hoặc 1–1 lúc đầu ván) | `Gieo xúc xắc` CTA vàng 196 (ic-dice); đang có đôi: `Gieo thêm lượt (đôi!)`. Dòng gợi ý `Thắng ngay` bên dưới | gieo | `đang gieo xúc xắc…` |
 | `jail` | 2 xúc xắc | 3 nút đứng đều 74 × 56: `Gieo đôi` gold (dòng phụ `lần n/3`) · `Nộp phạt` paper (`50 tr`) · `Dùng thẻ` paper (`còn n`, disabled khi 0) | gieo; lượt 3 thì nộp phạt | `đang ở tù, chọn cách ra…` |
 | `decide` | thẻ sổ đỏ thu gọn 246 × 52 thay xúc xắc: dải nhóm trái, tên + tranh nhỏ, `Giá`, `Thuê`, `x/y của bạn`; chạm mở S7 | `Bỏ qua` paper 40% · `Mua {giá} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (không đủ tiền → disabled, `cần …`) | bỏ qua | `đang cân nhắc mua {ô}…` |
-| `takeover` | thẻ sổ đỏ thu gọn 246 × 52: dải nhóm, tên ô, chip chủ cũ (avatar + màu ghế), `Cấp n`, `Giá mua lại {x} tr` (= 2 × (giá đất + chi phí các cấp)); chạm mở S7 | `Bỏ qua` paper 40% · `Mua lại {x} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (pha chỉ mở khi đủ tiền, nên không có trạng thái thiếu tiền) | bỏ qua | `đang cân nhắc mua lại {ô} của @chủ…` |
+| `takeover` | thẻ sổ đỏ thu gọn 246 × 52: dải nhóm, tên ô, chip chủ cũ (avatar VIP + `@username` + màu ghế), `Cấp n`, `Giá mua lại {x} tr` (= 2 × (giá đất + chi phí các cấp)); chạm mở S7 | `Bỏ qua` paper 40% · `Mua lại {x} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (pha chỉ mở khi đủ tiền, nên không có trạng thái thiếu tiền) | bỏ qua | `đang cân nhắc mua lại {ô} của @username…` |
 | `festival` | dòng `Chọn thành phố của bạn để tổ chức Lễ hội · thuê ×2` + hàng chip thành phố của mình cuộn ngang (tên ngắn + `thuê …` sau ×2; ô đang có Lễ hội viền gold). Trên bàn: thành phố của mình sáng, ô khác mờ 45% | `Bỏ qua` paper 196. **Không có nút vàng ở cụm lượt:** chạm chip hoặc ô → S7 với nút vàng `Tổ chức Lễ hội ở đây` (7.4) | chọn thành phố có tiền thuê cao nhất | `đang chọn nơi tổ chức Lễ hội…` |
 | `travel` | `tg-travel` + dòng `Du lịch — chạm ô bất kỳ để bay tới`. Trên bàn: ô đang đứng mờ 45% | `Không bay, gieo xúc xắc` paper 196. **Không có nút vàng ở cụm lượt:** chạm ô → S7 với nút vàng `Bay tới đây` (7.4) | gieo bình thường | `đang chọn nơi bay tới…` |
 | `card` | O2 thay **cả** hàng 2 và 3 (xem O2) | `Làm theo thẻ` nằm trong thẻ | làm theo thẻ | thẻ O2 hiện cho mọi người, không có nút; dòng phụ `đang đọc thẻ…` |
@@ -186,7 +315,7 @@ Khoảng cách giữa các hàng 10. Ảnh mẫu đặt chip ở 31–40%, xúc 
 
 Hết giờ local (deadline qua): hàng 3 thay bằng dòng `Hết giờ, hệ thống đang đi thay bạn…`, mọi nút disabled cho đến STATE mới. Khi `movePending`: nút vừa bấm hiện spinner, cả hàng 3 disabled.
 
-**Không tới lượt mình:** hàng 1 là chip paper `(avatar) Lượt của @ten` viền màu ghế người đó, đồng hồ thay bằng 3 chấm "đang nghĩ". Dưới chip là dòng phụ 12.5 navy 70% theo cột cuối bảng trên (lúc replay: `đang di chuyển…`). Hàng 2 chỉ hiện xúc xắc khi người đó gieo (O1). Hàng 3 trống, không có dòng gợi ý. Cụm co lại nhưng vẫn giữ tâm ở 53%.
+**Không tới lượt mình:** hàng 1 là chip paper `(avatar VIP) Lượt của @username` viền màu ghế người đó, đồng hồ thay bằng 3 chấm "đang nghĩ". Dưới chip là dòng phụ 12.5 navy 70% theo cột cuối bảng trên (lúc replay: `đang di chuyển…`). Hàng 2 chỉ hiện xúc xắc khi người đó gieo (O1). Hàng 3 trống, không có dòng gợi ý. Cụm co lại nhưng vẫn giữ tâm ở 53%.
 
 **Nút vàng:** mỗi lúc chỉ có **một** nút gold trên màn (style/05 §1). Mặc định nó ở hàng 3 cụm lượt. Ngoại lệ: pha `festival`/`travel` nút gold nằm trong S7 (cụm lượt chỉ có nút paper); pha `debt` nút gold nằm trong O3. Sheet mở ở pha có gold trong cụm lượt (ví dụ S7 lúc `decide`) không có nút gold thứ hai.
 
@@ -197,13 +326,13 @@ Hết giờ local (deadline qua): hàng 3 thay bằng dòng `Hết giờ, hệ t
 | Trái, lề 12 | logo chữ `CỜ TỶ PHÚ` + xúc xắc nhỏ (raster `lobby/logo.webp` hoặc live text) | cao 32, rộng ≤ 120 | không bấm |
 | Giữa (căn theo màn, không theo phần còn trống) | `RoundChip` `Vòng 7/30 · 18:20` (vòng / 30 + giờ còn lại của 25 phút) pill paper viền navy | 108 × 32 | không bấm; đổi màu từ vòng 28 (O7); giờ đổi đỏ khi còn ≤ 3 phút |
 | Phải, cách mép 12 | nút âm thanh tròn | 44 × 44 | bật/tắt âm, `aria-pressed` |
-| Phải cùng | nút menu tròn (☰ trong concept) | 44 × 44 | popover paper: `Về sảnh` · `Luật chơi` · `Bỏ cuộc` (coral) |
+| Phải cùng | nút menu tròn (☰ trong concept) | 44 × 44 | popover paper: `Về sảnh` · `Luật chơi` · `Hiệu ứng: Đầy đủ / Nhẹ / Tắt` (radio, 08 §5) · `Bỏ cuộc` (coral) |
 
 Width < 370: ẩn chữ logo, chỉ giữ biểu tượng xúc xắc để chip vòng không bị đẩy lệch.
 
 ### 6.5 Hàng pod và footer
 
-**Hàng pod.** Ngay dưới bàn, cách 8. 2–4 pod chia đều một hàng; thứ tự trái → phải theo seat (seat 0 gold, 1 xanh, 2 san hô, 3 tím), không đổi theo lượt. Có thể là `Bạn` ở bất kỳ vị trí nào; tên pod của mình ghi `Bạn`. Bố cục bên trong pod ở 03 §5. Tap pod → S8 xem tài sản người đó (của mình thì có nút xây/bán).
+**Hàng pod.** Ngay dưới bàn, cách 8. 2–4 pod chia đều một hàng; thứ tự trái → phải theo seat (seat 0 gold, 1 xanh, 2 san hô, 3 tím), không đổi theo lượt. Có thể là `Bạn` ở bất kỳ vị trí nào; pod của mình ghi `Bạn`, pod người khác ghi `@username`; avatar mọi pod là icon VIP (03 §18). Bố cục bên trong pod ở 03 §5. Tap pod → S8 xem tài sản người đó (của mình thì có nút xây/bán).
 
 **Footer.** Một hàng cao 44, đáy màn + safe-area:
 
@@ -212,7 +341,7 @@ Width < 370: ẩn chữ logo, chỉ giữ biểu tượng xúc xắc để chip 
 | Trái | nút pill `Tài sản` (icon danh sách/sổ) | mở S8 của mình |
 | Kế bên | nút pill `Diễn biến` (icon cột) | mở sheet diễn biến đầy đủ |
 | Vạch ngăn dọc | — | — |
-| Phần còn lại | dòng sự kiện mới nhất: icon xúc xắc + câu log, tên tô màu ghế, số tiền jade/coral (`Linh vừa qua Xuất phát +160 tr`), cắt `…` nếu dài | chạm mở sheet diễn biến |
+| Phần còn lại | dòng sự kiện mới nhất: icon xúc xắc + câu log, người chơi hiện icon VIP 14 + `@username` tô màu ghế (03 §18), số tiền jade/coral (`@linh vừa qua Xuất phát +160 tr`), cắt `…` nếu dài | chạm mở sheet diễn biến |
 | Phải cùng (bản online) | nút `ic-chat` 44 có chấm đỏ khi có tin mới | mở ChatDrawer; bản chơi với máy không có |
 
 Khi màn dư chỗ (6.1 mục 2), dòng sự kiện thành thẻ Diễn biến nhiều dòng, đặt trên thanh nút. Lúc đó thanh footer chỉ còn hai nút + chat.
@@ -234,7 +363,7 @@ Khi màn dư chỗ (6.1 mục 2), dòng sự kiện thành thẻ Diễn biến n
 ### 6.7 Sự kiện trong S6
 - `STATE` → replay steps (01 §8) → cập nhật pod/bàn/cụm lượt.
 - `turnAnnounce` khi `turn` đổi sang mình: `ĐẾN LƯỢT BẠN` + `bridge.attention(YourTurn)`.
-- `OPPONENT_DISCONNECTED` → O4 với tên người rớt; nếu người rớt đang tới lượt, đồng hồ dừng (engine pause).
+- `OPPONENT_DISCONNECTED` → O4 với icon VIP + `@username` người rớt; nếu người rớt đang tới lượt, đồng hồ dừng (engine pause).
 - Bỏ cuộc: menu header → `Bỏ cuộc` (ic-flag) → O5 `Bỏ cuộc? Bạn sẽ bị tính phá sản và xếp cuối.` → `FORFEIT`.
 
 ---
@@ -245,7 +374,7 @@ Bottom sheet 100% × auto (max 62% chiều cao), paper, radius 28 trên, handle 
 
 ### 7.1 Ô đất (`street`)
 - Dải màu nhóm cao 44 trên cùng, tên nhóm 12.5/500 navy trên dải màu sáng hoặc cream trên dải tối.
-- Tên ô 20/800, chip chủ sở hữu (avatar 20 + tên) hoặc `Chưa có chủ`.
+- Tên ô 20/800, chip chủ sở hữu (avatar VIP 20 + `@username`; của mình ghi `Bạn`) hoặc `Chưa có chủ`.
 - Dòng giá `Giá 220 tr` · `Nhà 150 tr`.
 - Dòng `Giá nâng mỗi cấp 150 tr`.
 - Bảng tiền thuê 4 hàng: `Đất trống` (ghi `×2 khi trọn nhóm`), `Cấp 1 · Nhà`, `Cấp 2 · Biệt thự`, `Cấp 3 · Khách sạn`; hàng đang áp dụng (theo cấp hiện tại và chủ) highlight gold 30%.
@@ -280,20 +409,114 @@ Bottom sheet max 70%.
 ## S9. Kết quả
 
 Modal 340 × auto, radius 28, không đóng khi tap backdrop.
-- Title theo hạng của mình: `Tỷ phú số 1!` gold / `Hạng 2` / `Hạng 3` / `Phá sản` coral; dòng lý do (`X sở hữu trọn 3 nhóm màu — thắng ngay` / `… trọn thành phố một cạnh bàn — thắng ngay` / `… cả 4 sân bay — thắng ngay` / `Bạn đã phá sản` / `Hết 30 vòng — xếp hạng theo tổng tài sản` / `Hết 25 phút — xếp hạng theo tổng tài sản` / `Chỉ còn một tỷ phú trụ lại` / `Bạn đã bỏ cuộc`).
-- Bảng 2–4 hàng: hạng, avatar + tên, tổng tài sản 15/800, chip XP `+50` (từ `expGains`). Hàng mình viền màu ghế.
-- v1 không hiện KEN (bet 0). Layout chừa dòng `±KEN` cho v2.
+- Title theo hạng của mình: `Tỷ phú số 1!` gold / `Hạng 2` / `Hạng 3` / `Phá sản` coral; dòng lý do (`@username sở hữu trọn 3 nhóm màu — thắng ngay` / `… trọn thành phố một cạnh bàn — thắng ngay` / `… cả 4 sân bay — thắng ngay` / `Bạn đã phá sản` / `Hết 30 vòng — xếp hạng theo tổng tài sản` / `Hết 25 phút — xếp hạng theo tổng tài sản` / `Chỉ còn một tỷ phú trụ lại` / `Bạn đã bỏ cuộc`).
+- Bảng 2–4 hàng: hạng, avatar VIP + `@username` (cả hàng của mình), tổng tài sản 15/800, chip XP `+50` (từ `expGains`). Hàng mình viền màu ghế.
+- Bàn có cược: mỗi hàng thêm `±KEN` (hạng 1 jade, còn lại coral); bàn 0 không hiện (11 §1.3).
 - Nút `Chơi lại` CTA vàng (→ `ROOM_READY`, về S5 nếu phòng còn) + `Đóng` (→ S3).
 
 ---
 
 ## S10. Lịch sử
 
-Giống xiangqi S8: 100 trận gần nhất; mỗi hàng: hạng của mình (`#1`…`#4`, màu gold cho #1), số người, thời gian, chip `Bỏ cuộc` nếu `reason` tương ứng. Không có cột KEN v1 (`kenDelta` luôn 0).
+Mở từ nút `Lịch sử` ở S2 (hiện nút chỉ báo toast `Tính năng online đang được làm`). **Trạng thái 23/10/2026: đã chốt [mẫu 02 — Mint tối giản](./screens/s10-history/README.md) và dựng UI (`screens/HistoryScreen.tsx`): ván online chạy bằng dữ liệu giả `helpers/historyMock.ts` như S3/S11, ván với máy lưu thật; server chưa trả đúng lịch sử ván 3–4 người** ([05 §9.2](./05-gameplay-rules-and-protocol.md#92-lịch-sử-ván)). Dùng lại icon đồng hồ, huy chương, nền và avatar hiện có; không cần cắt thêm ảnh. Đã chụp đối chiếu 390 × 844 và 360 × 640.
+
+### Nội dung
+
+- **100 ván gần nhất**, mới nhất trên cùng: ván online lấy từ server, gộp với ván **chơi với máy** lưu trên thiết bị (như Caro), sắp theo thời gian rồi cắt còn 100. Ván máy không gửi server, không tính BXH, không cộng EXP.
+- Dòng phụ dưới header: `100 ván gần nhất`; nếu có ván máy thêm `· ván với máy chỉ lưu trên máy này`.
+- Dải tóm tắt 3 ô, tính từ danh sách đang có: `Đã chơi` (số ván) · `Hạng 1` (số lần về nhất) · `KEN` (tổng `kenDelta` ván online, `+` jade / `−` coral, `0` nếu toàn bàn giao lưu). Không phải thống kê trọn đời.
+- Không có tab, bộ lọc hay phân trang ở v1.
+
+### Bố cục tại 390 × 844
+
+Số đo lấy theo ảnh đã chốt (đo trên ảnh và đặt chồng ảnh chụp runtime). Cùng khung S11: nền trời/phố, header cách đỉnh 50 + safe-area gồm nút quay lại tròn 46 và pill `lobby/ill-history.webp` + `Lịch sử` 24/800; panel kem `#fdf9ec` viền navy 1,5, radius 26, cao tối đa **584**, padding 11 / 8. Trong panel:
+
+- Dòng phụ 12,5/600 `#465a93`.
+- Dải tóm tắt 3 ô paper `#fefaf1` viền `#edd8bf` radius 14, **cao 72**: số 29/800 (26 ở màn ≤ 370), nhãn 13/700 dưới số; KEN dương jade `#12803a`, âm coral `#e2412a`.
+- Khung danh sách giấy kem `#fefbf1` viền `#efdabf` radius 16, cuộn trong khung với thanh cuộn mảnh như S11. Ở 390 × 844 vừa đúng 5 ván với ván đầu đang mở, như ảnh.
+
+Mỗi hàng **cao 56**, hai dòng:
+
+| Vùng | Dòng 1 | Dòng 2 |
+|---|---|---|
+| Trái 40 | Hạng của mình: huy chương 1–3 dùng lại `assets/leaderboard/medal-*.webp` (rộng 34, số 19/800), hạng 4 là số navy 22/800 | — |
+| Giữa | Kết quả 15/800: `Tỷ phú số 1` / `Hạng 2` / `Hạng 3` / `Hạng cuối` (`placeLabel`); `Phá sản` hoặc `Bỏ cuộc` coral nếu mình ra khỏi ván | Lý do kết thúc + số người 12/600 `#51638f`: `Thắng ngay · 3 nhóm màu` / `Thắng ngay · một cạnh bàn` / `Thắng ngay · 4 sân bay` / `Còn 1 người` / `Hết 30 vòng` / `Hết 25 phút`, rồi `· 4 người`; ván máy có chip `Máy` mint `#d7fae0` kèm icon robot `assets/lobby/ill-bot.webp` 16 × 14, ván online không có chip |
+| Phải, căn phải | KEN 15/800 `tabular-nums`: `+1.400` jade, `−500` coral; ván máy `—`; bàn giao lưu online (cược 0) ghi chữ `Giao lưu` 13/800 `#51638f` để không nhầm với ván máy | Thời gian 12/600 theo `formatHistoryTime`: `14:32` nếu hôm nay, `21/10 14:32` ngày khác |
+
+- Hàng hạng 1 nền vàng nhạt `#fdf5dc`; các hàng khác nền giấy, kẻ beige `#f2dfc4`.
+- **Bấm hàng mở chi tiết ngay dưới hàng** (một hàng mở mỗi lúc, `aria-expanded`). Mở màn thì ván mới nhất đã mở sẵn như ảnh; bấm lại để thu. Hàng đang mở có mũi tên lên ở mép phải (`chevron-left.svg` xoay 90°), hàng thu không có mũi tên.
+- Chi tiết là khung ngà `#fffdf6` lồng trong danh sách (cách mép 8), 2–4 dòng **cao 38**: hạng 14/800 · avatar VIP **28** · `@username` 14/800 (hàng mình nền mint `#e8fef2` + vạch jade, vẫn ghi `@username`) · `±KEN` 14/800, bàn không cược ghi `—`. Bot ghi `Bot 1`… kèm chip mức `Dễ/Thường/Khó`, avatar là robot `ill-bot.webp` trên nền tròn `#e4f3fd` (không dùng avatar VIP để khỏi giống người thật). Người phá sản/bỏ cuộc có **chip coral** `Phá sản` / `Bỏ cuộc` cạnh tên. Không có nút xem lại ván.
+- 360 × 640: panel co theo màn, danh sách cuộn; lý do dài ellipsis một dòng, giữ cỡ chữ và vùng chạm.
+
+### Trạng thái
+
+| Trạng thái | Trình bày |
+|---|---|
+| Đang tải | Giữ header, dòng phụ; dải tóm tắt và 6 hàng skeleton, `role=status` `Đang tải lịch sử…`. Ván máy (đọc local, tức thì) hiện ngay, skeleton chỉ cho phần online |
+| Trống | Icon lịch sử, `Chưa có ván nào`, dòng phụ `Chơi một ván online hoặc với máy để xem lại ở đây.`, nút mint `Chơi với máy` (về S2 và mở BotSetupModal) |
+| Lỗi server | Vẫn hiện ván máy; trên danh sách có dải coral nhạt `Không tải được ván online` + nút `Thử lại`. Không có ván máy thì hiện trạng thái lỗi đầy đủ như S11 |
+| Offline | Như lỗi server, dòng dải đổi thành `Đang offline — chỉ hiện ván với máy` |
+
+- Mỗi lần mở màn tải lại phần online; không cache giữa các lần mở. Quay lại / Escape về S2 và trả focus về nút `Lịch sử`.
+- Danh sách là `ul`; mỗi hàng là nút có tên đọc đủ, ví dụ `Hạng 2 trên 4 người, hết 30 vòng, trừ 500 KEN, 21/10 14:32`.
+
+### Lưu ván chơi với máy
+
+- Khi ván với máy có kết quả (`finishGame`, trước khi mở S9), lưu một mục vào `localStorage` khóa `ola:tycoon:bot-history:v1:<userId>`, tối đa 50 mục (giống `caro/helpers/history.ts`). Dữ liệu hỏng hoặc trình duyệt chặn storage thì bỏ qua, không báo lỗi.
+- Mục gồm: `id` (`bot-` + thời điểm), `playedAt`, `source: 'bot'`, `place`, `playerCount`, `endReason` (`EndReason` của engine), `exitReason` của mình (`bankrupt` / `forfeit` / null), `bet = 0`, `kenDelta = 0`, `players[]` (Bạn + từng bot: tên, VIP, mức, hạng).
+- Bấm `Chơi lại` tạo ván mới và mục mới; thoát giữa ván không tạo mục.
+
+### Dữ liệu
+
+Client dùng một kiểu chung cho cả hai nguồn: `{id, playedAt, source: 'online' | 'bot', place, playerCount, endReason, exitReason, bet, kenDelta, players: [{userId, username, vipType, place, kenDelta, exitReason, level?}]}`. Ván online lấy từ `HISTORY` mở rộng theo [05 §9.2](./05-gameplay-rules-and-protocol.md#92-lịch-sử-ván). Khi server chưa sửa, UI vẫn dựng được với dữ liệu giả như S3/S11.
 
 ## S11. Bảng xếp hạng
 
-Giống xiangqi S9: tab Hôm nay/Tuần này, cột thắng (hạng 1) – trận. Không có cột KEN ở v1.
+Mở từ nút `Bảng xếp hạng` ở S2, cần online (S2 khóa nút khi offline). **Trạng thái 23/10/2026: đã dựng UI (`screens/LeaderboardScreen.tsx`) chạy bằng dữ liệu giả `helpers/leaderboardMock.ts` như S3; server chưa trả dữ liệu đúng cho Tycoon** ([05 §9.1](./05-gameplay-rules-and-protocol.md#91-bảng-xếp-hạng-và-cấp-độ)). Ván chơi với máy chạy ở client nên không vào BXH và không cộng EXP.
+
+**Đã chốt mẫu 02 — Mint tối giản ngày 23/10/2026.** [Ảnh chuẩn, bố cục và phân lớp asset](./screens/s11-leaderboard/README.md): một panel kem chứa ba tab, bảng, chip cấp mint và hàng mình ghim. Các bản nháp/so sánh đã dọn. [Bộ huy chương và cách dùng](../assets/leaderboard/README.md). Đã chụp đối chiếu cả 3 tab ở 390 × 844 và 360 × 640.
+
+### Hai bảng, ba tab
+
+Có **hai bảng riêng**: **Top chiến thắng** chia theo kỳ `Hôm nay` / `Tuần này`, reset đầu mỗi kỳ; **Top cấp độ** không chia kỳ, tính EXP từ trước đến nay. Hiện trên một thanh 3 tab ngang hàng (chạm một lần là tới); dòng phụ dưới tab Cấp độ nói rõ là EXP tích lũy. Phương án hai tầng (`Top thắng` / `Top cấp độ`, rồi mới chọn kỳ) đã cân nhắc nhưng không chọn vì tốn thêm một hàng control.
+
+| Tab | Xếp theo | Cột | Dòng dưới tab |
+|---|---|---|---|
+| `Hôm nay` (mặc định) | số ván về hạng 1 từ 00:00 hôm nay (GMT+7) | Hạng · Người chơi · Thắng · Trận | `Thắng = về hạng 1` |
+| `Tuần này` | như trên, từ 00:00 thứ Hai | như trên | `Thắng = về hạng 1 · từ thứ Hai` |
+| `Cấp độ` | tổng EXP Cờ Tỷ Phú tích lũy, không reset | Hạng · Người chơi · Cấp · EXP | `Cấp theo EXP tích lũy của Cờ Tỷ Phú` |
+
+- Thắng là số ván về hạng 1, Trận là số ván đã tham gia trong kỳ (cả ván thua, phá sản, bỏ cuộc; không tính ván bị hủy). Không có cột KEN, không dùng tổng tài sản trong ván.
+- Cấp hiện `Lv 12`, EXP là số tổng theo `vi-VN` (`12.450`). Cấp tính lại từ EXP bằng công thức chung (`game/src/sdk/progression.ts`), tối đa 99.
+- Hai tab thắng vẫn hiện chip `Lv n` nhỏ (cao 18, 11/800) **dưới tên** (đã có `level` trong dữ liệu), để người chơi thấy cấp ở cả ba tab mà tên không bị chip chiếm chỗ.
+- Thứ tự và `rank` lấy từ server, client không tự sắp. Luật phá hòa ở 05 §9.1.
+
+### Bố cục tại 390 × 844
+
+- Nền trời/phố pixel của sảnh (`lobby/bg-board-pixel.webp`), không có topbar hồ sơ/KEN. Header cao 46 cách đỉnh 50 + safe-area: nút quay lại tròn 46 bên trái (`room-list/chevron-left.svg`, về S2), pill tiêu đề rộng theo chữ có `lobby/ill-leaderboard.webp` 40 × 32 + `Bảng xếp hạng` 24/800 (22 ở màn ≤ 370).
+- Một panel kem `#fdf9ec` viền navy 1,5, radius 26, cạnh beige, cao tối đa 562 (co lại ở màn thấp), chiều cao **không đổi khi đổi tab**; cảnh phố hiện bên dưới. Trong panel: thanh 3 tab segmented paper, tab chọn gold, cao 44, nhãn 17/800 (15 ở màn ≤ 370); dòng phụ 14/700 `#2f4f8a`.
+- Bảng giấy kem viền beige radius 16: dòng nhãn cột nền cát `#f7ebd3` cao 36 luôn nhìn thấy, thân cuộn, đường kẻ beige mảnh. Cột tab thắng `48 / 1fr / 52 / 48`, tab Cấp độ `50 / 1fr / 78 / 66` (đo theo ảnh); ở màn ≤ 370 là `42 / 1fr / 48 / 44` và `42 / 1fr / 58 / 60`. Cột cuối căn phải, số `tabular-nums` 16/800. Ở 390 × 844 thân bảng vừa đúng 6 hàng như ảnh. Thanh cuộn mảnh 4 px `#cbc8c4` luôn hiện ở mép phải thân bảng khi danh sách dài hơn khung (dựng bằng DOM, ẩn thanh cuộn hệ thống), để báo còn hàng phía dưới như ảnh.
+- Hàng cao 59 (hàng ghim 52): hạng 1–3 dùng nền huy chương gold/silver/bronze của mẫu đã chốt và số DOM (bộ asset ở README màn), hạng khác số navy; avatar VIP 38 (`avatarIconUrl(vipType)`, fallback mặt Ola); `@username` 16/800 (15 ở màn ≤ 370), ellipsis theo bề rộng cột, accessible name đọc đủ. Chip `Lv n` cột Cấp mint `#d9f8e5` chữ `#146c43`, cao 28.
+- **Hàng của mình**: nền mint nhạt + vạch jade bên trái, tên vẫn là `@username` (03 §18). Nhận biết bằng `userId`, không so tên.
+- **Mình ngoài top 100**: một hàng ghim tách khỏi bảng, ở đáy panel, cùng kiểu hàng mình, lấy từ `me` của server. Server không trả `me` thì cả 3 tab ghi `Bạn chưa có trong top 100`.
+- Danh sách tối đa 100 hàng, không phân trang, không CTA nhận thưởng.
+
+### Trạng thái
+
+| Trạng thái | Trình bày trong cùng khung |
+|---|---|
+| Tải lần đầu / đổi tab chưa có cache | Giữ header, tab và nhãn cột; 6 hàng skeleton, `role=status` `Đang tải bảng xếp hạng…`; không để dữ liệu tab cũ dưới nhãn tab mới |
+| Trống | Icon BXH nhỏ, `Chưa có ai thắng hôm nay` / `Chưa có ai thắng tuần này` / `Chưa có ai lên cấp`; vẫn đổi tab và quay lại được |
+| Lỗi | Icon cảnh báo, `Không tải được bảng xếp hạng`, nút paper refresh `Thử lại`, `role=alert` |
+| Server chưa hỗ trợ tab Cấp độ | Phản hồi không có `board: 'level'` → hiện như lỗi, ghi `Bảng cấp độ chưa mở`, không hiện dữ liệu thắng dưới nhãn Cấp độ |
+| Mất kết nối khi đang xem | Giữ danh sách đã có, banner O4; `Thử lại` khi có mạng |
+
+- Mỗi tab giữ cache 60 giây: đổi tab qua lại trong 60 giây không gửi lại; mở lại màn thì gửi lại. Đổi tab cuộn thân bảng về đầu.
+- `tablist`/`tab`/`tabpanel`, phím trái/phải/Home/End; Escape hoặc quay lại về S2 và trả focus về nút mở. Icon trang trí `aria-hidden`; số hạng và tên cột là text. Reduced motion tắt shimmer skeleton.
+
+### Dữ liệu
+
+`LEADERBOARD {period, board}` → `LeaderboardData {period, board, from, to, items[], me?}`; item `{rank, userId, username, vipType, level, wins, matches, exp}`. Chi tiết và việc server còn thiếu: [05 §9.1](./05-gameplay-rules-and-protocol.md#91-bảng-xếp-hạng-và-cấp-độ).
 
 ---
 
@@ -312,15 +535,15 @@ Người khác thấy thẻ không có nút; thẻ tự ẩn khi có STATE kế 
 
 ## O3. Trả nợ
 
-Modal 340: `Bạn cần trả {amount} tr cho @ten/ngân hàng`, dòng `Tiền mặt {cash} tr`, dòng `Bán nhà có thể thu tối đa {x} tr`. Danh sách ô có nhà với nút `Bán −` (+ giá). Nút `Trả nợ` CTA vàng enabled khi `cash ≥ amount`; `Phá sản` danger (O5 confirm). Đồng hồ 30 s hiện trong modal. Khi tổng khả năng < amount: chỉ hiện `Phá sản` + giải thích.
+Modal 340: `Bạn cần trả {amount} tr cho @username/ngân hàng` (có icon VIP trước `@username`), dòng `Tiền mặt {cash} tr`, dòng `Bán nhà có thể thu tối đa {x} tr`. Danh sách ô có nhà với nút `Bán −` (+ giá). Nút `Trả nợ` CTA vàng enabled khi `cash ≥ amount`; `Phá sản` danger (O5 confirm). Đồng hồ 30 s hiện trong modal. Khi tổng khả năng < amount: chỉ hiện `Phá sản` + giải thích.
 
 ## O4. Banner mất kết nối
 
-Top banner 100% × 44: ic-wifi-off + `@ten mất kết nối · 23s`; nhiều người rớt → gộp `2 người mất kết nối`. Tắt khi `OPPONENT_RECONNECTED` hoặc người đó bị quit (step `bankrupt`).
+Top banner 100% × 44: ic-wifi-off + icon VIP + `@username mất kết nối · 23s`; nhiều người rớt → gộp `2 người mất kết nối`. Tắt khi `OPPONENT_RECONNECTED` hoặc người đó bị quit (step `bankrupt`).
 
-## O5. ConfirmModal
+## O5. NoticeModal
 
-Bỏ cuộc, thoát bàn, mời ra, phá sản, hạ cấp (chỉ khi hạ từ Khách sạn xuống Biệt thự).
+Bỏ cuộc, thoát bàn, mời ra, phá sản, hạ cấp (chỉ khi hạ từ Khách sạn xuống Biệt thự). Cùng khung có thêm loại **thông báo** (một hoặc hai nút) cho tin người chơi phải đọc. Loại, tông, kích thước, hành vi và chữ theo [style O5 modal](./screens/o5-modal/README.md).
 
 ## O6. Toast + turn announce
 

@@ -41,7 +41,7 @@ export function canSell(view: GameState, seat: number, idx: number): RuleHint {
   if (state.owner !== seat) return { ok: false, reason: 'Ô này không phải của bạn' };
   if (state.houses <= 0) return { ok: false, reason: 'Ô này đang là đất trống' };
   for (const g of tilesOfGroup(tile.group)) {
-    if (state.houses < view.tiles[g].houses) {
+    if (view.tiles[g].owner === seat && state.houses < view.tiles[g].houses) {
       return { ok: false, reason: `Hạ đều: ${BOARD[g].name} đang ở cấp ${view.tiles[g].houses}` };
     }
   }

@@ -41,7 +41,6 @@ export interface MeFeedState {
     audio?: MeAudioDraft | null
   ) => Promise<Post | null>;
   removePost: (id: string) => Promise<boolean>;
-  togglePin: (id: string, pinned: boolean) => Promise<void>;
   adjustCommentCount: (id: string, delta: number) => void;
   syncPost: (post: Post) => void;
 }

@@ -40,6 +40,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ReportDialog } from '@components/ui/ReportDialog';
+import { SelectTextDialog } from '@components/chat/SelectTextDialog';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulToken } from '@lib/kul';
@@ -145,6 +146,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const pendingDeleteTargetRef = useRef<Message | null>(null);
   const [reportTarget, setReportTarget] = useState<Message | null>(null);
   const pendingReportTargetRef = useRef<Message | null>(null);
+  const [selectTextTarget, setSelectTextTarget] = useState<string | null>(null);
+  const pendingSelectTextRef = useRef<string | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: Message;
     anchor: AnchorRect;
@@ -439,6 +442,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     const report = pendingReportTargetRef.current;
     pendingReportTargetRef.current = null;
     if (report != null) setReportTarget(report);
+    const selectText = pendingSelectTextRef.current;
+    pendingSelectTextRef.current = null;
+    if (selectText != null) setSelectTextTarget(selectText);
   }, []);
 
   function sheetActions(message: Message): MessageSheetAction[] {
@@ -458,6 +464,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         label: t('chat.actionCopy'),
         icon: 'copy',
         onSelect: () => copyMessage(message.content),
+      });
+      actions.push({
+        key: 'selectText',
+        label: t('chat.actionSelectText'),
+        icon: 'selectText',
+        onSelect: () => {
+          pendingSelectTextRef.current = message.content;
+        },
       });
     }
     if (abilities.canEdit) {
@@ -884,6 +898,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           onClose={() => setReportTarget(null)}
         />
       )}
+
+      <SelectTextDialog
+        text={selectTextTarget}
+        onCopyAll={copyMessage}
+        onClose={() => setSelectTextTarget(null)}
+      />
 
       <RoomReactionsDialog
         visible={reactionsTargetId != null}

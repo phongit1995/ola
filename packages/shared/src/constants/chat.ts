@@ -23,9 +23,11 @@ export const CHAT_TYPING_TTL_MS = 3_000;
 export const CHAT_TYPING_THROTTLE_MS = 2_000;
 export const CHAT_MARK_READ_DEBOUNCE_MS = 400;
 export const CHAT_MARK_READ_MAX_WAIT_MS = 1_500;
+export const CHAT_MESSAGE_DELETE_WINDOW_MS = 2 * 60 * 60 * 1_000;
 
 export const CHAT_POLICY_ERROR_CODES = {
   messageBlocked: 'MESSAGE_BLOCKED',
   friendsOnly: 'MESSAGE_FRIENDS_ONLY',
   recipientUnavailable: 'DIRECT_RECIPIENT_UNAVAILABLE',
+  deleteExpired: 'MESSAGE_DELETE_EXPIRED',
 } as const;
