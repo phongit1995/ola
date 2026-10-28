@@ -54,6 +54,11 @@ const AXIS_X = 1;
 const AXIS_Y = 2;
 const TURN_EASING = Easing.out(Easing.cubic);
 
+function dragAxis(dx: number, dy: number) {
+  'worklet';
+  return Math.abs(dx) > Math.abs(dy) ? AXIS_X : AXIS_Y;
+}
+
 interface MomentViewerProps {
   session: MomentViewerSession;
   onClose: () => void;
@@ -289,11 +294,12 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
     const swipe = Gesture.Pan()
       .enabled(!turning)
       .minDistance(SWIPE_MIN_DISTANCE_PX)
-      .onStart((event) => {
-        axis.value = Math.abs(event.translationX) > Math.abs(event.translationY) ? AXIS_X : AXIS_Y;
-        runOnJS(setHolding)(true);
-      })
+      .onStart(() => runOnJS(setHolding)(true))
       .onUpdate((event) => {
+        if (axis.value === AXIS_NONE) {
+          if (event.translationX === 0 && event.translationY === 0) return;
+          axis.value = dragAxis(event.translationX, event.translationY);
+        }
         if (axis.value === AXIS_X) {
           const raw = Math.max(-1, Math.min(1, -event.translationX / canvasWidth));
           const blocked = (raw > 0 && !hasNext) || (raw < 0 && !hasPrev);
@@ -304,7 +310,8 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
       })
       .onEnd((event, success) => {
         runOnJS(setHolding)(false);
-        if (axis.value === AXIS_X) runOnJS(releaseTurn)(success ? event.translationX : 0, event.velocityX);
+        const endAxis = axis.value === AXIS_NONE ? dragAxis(event.translationX, event.translationY) : axis.value;
+        if (endAxis === AXIS_X) runOnJS(releaseTurn)(success ? event.translationX : 0, event.velocityX);
         else if (success) runOnJS(handleClose)(event.translationX, event.translationY);
       })
       .onFinalize(() => {
