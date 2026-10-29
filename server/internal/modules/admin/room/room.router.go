@@ -19,6 +19,8 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		rooms.POST("", r.controller.CreateRoom)
 		rooms.GET("", r.controller.ListRooms)
+		rooms.GET("/images/purge-preview", r.controller.PreviewImagePurge)
+		rooms.POST("/images/purge", r.controller.PurgeImages)
 		rooms.GET("/:id/messages", r.controller.Messages)
 		rooms.DELETE("/:id/messages/:messageId", r.controller.DeleteMessage)
 		rooms.PATCH("/:id", r.controller.UpdateRoom)

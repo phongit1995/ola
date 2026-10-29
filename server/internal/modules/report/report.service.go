@@ -135,6 +135,9 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 }
 
 func (s *Service) save(report *models.Report) error {
+	if report.TargetType == constants.ReportTargetRoomMessage {
+		return s.repo.CreateWhileRoomImagesKept(report)
+	}
 	if report.TargetType != constants.ReportTargetMoment {
 		return s.repo.Create(report)
 	}

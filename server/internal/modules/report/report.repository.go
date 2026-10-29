@@ -7,6 +7,7 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	momentModule "ola-chat-server/internal/modules/moment"
+	"ola-chat-server/internal/modules/room"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -81,6 +82,22 @@ func (r *Repository) CreateWhileMomentKept(report *models.Report, momentID uuid.
 		}
 		if len(kept) == 0 {
 			return gorm.ErrRecordNotFound
+		}
+		return tx.Create(report).Error
+	})
+	if apperr.IsUniqueViolation(err) {
+		return errDuplicateReport
+	}
+	return err
+}
+
+func (r *Repository) CreateWhileRoomImagesKept(report *models.Report) error {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec(
+			"SELECT pg_advisory_xact_lock_shared(hashtextextended(?::text, 0))",
+			room.AdvisoryLockRoomImagePurge,
+		).Error; err != nil {
+			return err
 		}
 		return tx.Create(report).Error
 	})

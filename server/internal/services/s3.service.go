@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
@@ -186,6 +187,46 @@ func (s *S3Service) ObjectSize(ctx context.Context, objectName string) (int64, b
 		return 0, false, fmt.Errorf("failed to stat object: %w", err)
 	}
 	return info.Size, true, nil
+}
+
+type StoredObject struct {
+	Name         string
+	Size         int64
+	LastModified time.Time
+}
+
+func (s *S3Service) WalkObjects(ctx context.Context, prefix string, visit func(StoredObject)) error {
+	for obj := range s.client.ListObjectsIter(ctx, s.bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true}) {
+		if obj.Err != nil {
+			return fmt.Errorf("failed to list objects: %w", obj.Err)
+		}
+		visit(StoredObject{Name: obj.Key, Size: obj.Size, LastModified: obj.LastModified})
+	}
+	return ctx.Err()
+}
+
+func (s *S3Service) DeleteFiles(ctx context.Context, objectNames []string) ([]string, error) {
+	objects := func(yield func(minio.ObjectInfo) bool) {
+		for _, name := range objectNames {
+			if name == "" || path.IsAbs(name) || strings.Contains(name, "..") {
+				continue
+			}
+			if !yield(minio.ObjectInfo{Key: name}) {
+				return
+			}
+		}
+	}
+	results, err := s.client.RemoveObjectsWithIter(ctx, s.bucket, objects, minio.RemoveObjectsOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete objects: %w", err)
+	}
+	deleted := make([]string, 0, len(objectNames))
+	for result := range results {
+		if result.Err == nil && result.ObjectName != "" {
+			deleted = append(deleted, result.ObjectName)
+		}
+	}
+	return deleted, ctx.Err()
 }
 
 // Media message metadata must never make clients fetch an arbitrary

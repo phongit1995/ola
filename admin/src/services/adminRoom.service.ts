@@ -1,4 +1,5 @@
 import http from '@/api/http'
+import { ROOM_IMAGE_PURGE_TIMEOUT_MS } from '@/lib/constants'
 import type {
   ApiResponse,
   CreateRoomRequest,
@@ -6,6 +7,8 @@ import type {
   ListResult,
   MessageResult,
   Room,
+  RoomImagePurgePreview,
+  RoomImagePurgeResult,
   RoomMessagesList,
   UpdateRoomRequest,
 } from '@/types'
@@ -47,6 +50,23 @@ export const AdminRoomService = {
   async deleteMessage(roomId: string, messageId: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(
       `/admin/rooms/${roomId}/messages/${messageId}`,
+    )
+    return data.data
+  },
+
+  async previewImagePurge(olderThanDays: number): Promise<RoomImagePurgePreview> {
+    const { data } = await http.get<ApiResponse<RoomImagePurgePreview>>(
+      '/admin/rooms/images/purge-preview',
+      { params: { olderThanDays }, timeout: ROOM_IMAGE_PURGE_TIMEOUT_MS },
+    )
+    return data.data
+  },
+
+  async purgeImages(before: string): Promise<RoomImagePurgeResult> {
+    const { data } = await http.post<ApiResponse<RoomImagePurgeResult>>(
+      '/admin/rooms/images/purge',
+      { before },
+      { timeout: ROOM_IMAGE_PURGE_TIMEOUT_MS },
     )
     return data.data
   },

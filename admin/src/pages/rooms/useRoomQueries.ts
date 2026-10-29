@@ -61,3 +61,19 @@ export function useDeleteRoomMessage(roomId: string | null) {
     },
   })
 }
+
+export function usePreviewRoomImagePurge() {
+  return useMutation({
+    mutationFn: (olderThanDays: number) => AdminRoomService.previewImagePurge(olderThanDays),
+  })
+}
+
+export function usePurgeRoomImages() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (before: string) => AdminRoomService.purgeImages(before),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [ROOMS_KEY, 'messages'] })
+    },
+  })
+}

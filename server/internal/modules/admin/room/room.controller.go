@@ -156,3 +156,49 @@ func (ctrl *Controller) DeleteMessage(c *gin.Context) (interface{}, error) {
 	}
 	return map[string]string{"message": "message deleted"}, nil
 }
+
+// PreviewImagePurge godoc
+// @Summary      Tính số ảnh phòng chat sẽ xoá (admin)
+// @Description  Đếm ảnh tin nhắn phòng chat cũ hơn olderThanDays ngày và tổng dung lượng, chưa xoá gì
+// @Tags         admin-room
+// @Produce      json
+// @Security     BearerAuth
+// @Param        olderThanDays query int true "Số ngày (30-3650)"
+// @Success      200  {object}  utils.BaseResponse[room.RoomImagePurgePreview]
+// @Failure      400  {object}  utils.APIError
+// @Router       /admin/rooms/images/purge-preview [get]
+func (ctrl *Controller) PreviewImagePurge(c *gin.Context) (interface{}, error) {
+	days := utils.ParseIntQuery(c, "olderThanDays")
+	if days == nil {
+		return nil, room.ErrRoomImagePurgeDays
+	}
+	resp, err := ctrl.service.PreviewImagePurge(c.Request.Context(), *days)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// PurgeImages godoc
+// @Summary      Xoá ảnh phòng chat cũ (admin)
+// @Description  Chỉ xoá file ảnh tin nhắn phòng chat tải lên trước mốc before (lấy từ purge-preview), tin nhắn vẫn giữ nguyên
+// @Tags         admin-room
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body room.RoomImagePurgeRequest true "Mốc thời gian"
+// @Success      200  {object}  utils.BaseResponse[room.RoomImagePurgeResult]
+// @Failure      400  {object}  utils.APIError
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/rooms/images/purge [post]
+func (ctrl *Controller) PurgeImages(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[room.RoomImagePurgeRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.PurgeImages(c.Request.Context(), req.Before)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}

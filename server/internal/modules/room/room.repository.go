@@ -1,6 +1,9 @@
 package room
 
 import (
+	"context"
+
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -62,4 +65,30 @@ func (r *Repository) ListAll(query string, limit, offset int) ([]*models.Room, i
 
 func (r *Repository) SoftDelete(id uuid.UUID) error {
 	return r.db.Delete(&models.Room{}, "id = ?", id).Error
+}
+
+func (r *Repository) PendingReportImageURLs() ([]string, error) {
+	return pendingReportImageURLs(r.db)
+}
+
+func (r *Repository) WithPendingReportImagesLocked(ctx context.Context, fn func(imageURLs []string) error) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("SELECT pg_advisory_xact_lock(hashtextextended(?::text, 0))", AdvisoryLockRoomImagePurge).Error; err != nil {
+			return err
+		}
+		urls, err := pendingReportImageURLs(tx)
+		if err != nil {
+			return err
+		}
+		return fn(urls)
+	})
+}
+
+func pendingReportImageURLs(db *gorm.DB) ([]string, error) {
+	var urls []string
+	err := db.Raw(`SELECT DISTINCT jsonb_array_elements_text(snapshot->'imageUrls') FROM reports
+		WHERE target_type = ? AND status = ? AND deleted_at IS NULL
+			AND jsonb_typeof(snapshot->'imageUrls') = 'array'`,
+		constants.ReportTargetRoomMessage, constants.ReportStatusPending).Scan(&urls).Error
+	return urls, err
 }

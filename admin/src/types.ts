@@ -670,6 +670,22 @@ export interface RoomMessagesList {
   nextBefore?: string
 }
 
+export interface RoomImagePurgePreview {
+  olderThanDays: number
+  before: string
+  files: number
+  bytes: number
+  kept: number
+}
+
+export interface RoomImagePurgeResult {
+  before: string
+  files: number
+  bytes: number
+  failed: number
+  kept: number
+}
+
 export interface MeAuthor {
   id: string
   username: string

@@ -1,5 +1,7 @@
 package room
 
+import "time"
+
 type CreateRoomRequest struct {
 	Name          string `json:"name" binding:"required,min=1,max=150" example:"Phòng Tán Gẫu"`
 	Description   string `json:"description" binding:"omitempty,max=2000" example:"Nơi chém gió"`
@@ -157,4 +159,24 @@ type RoomBlockedUser struct {
 type RoomBlockedUsersResponse struct {
 	UserIDs []string          `json:"userIds"`
 	Users   []RoomBlockedUser `json:"users"`
+}
+
+type RoomImagePurgePreview struct {
+	OlderThanDays int       `json:"olderThanDays" example:"30"`
+	Before        time.Time `json:"before"`
+	Files         int       `json:"files" example:"120"`
+	Bytes         int64     `json:"bytes" example:"52428800"`
+	Kept          int       `json:"kept" example:"2"`
+}
+
+type RoomImagePurgeRequest struct {
+	Before time.Time `json:"before" binding:"required"`
+}
+
+type RoomImagePurgeResult struct {
+	Before time.Time `json:"before"`
+	Files  int       `json:"files" example:"120"`
+	Bytes  int64     `json:"bytes" example:"52428800"`
+	Failed int       `json:"failed" example:"0"`
+	Kept   int       `json:"kept" example:"2"`
 }
