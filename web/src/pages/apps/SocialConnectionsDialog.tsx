@@ -6,6 +6,7 @@ import fanpageIcon from '@/assets/icons/social/fanpage.png';
 import groupIcon from '@/assets/icons/social/group.png';
 import socialMenuIcon from '@/assets/icons/social/social-menu-light.png';
 import tiktokIcon from '@/assets/icons/social/tiktok.png';
+import { ExternalLinkIcon } from './ExternalLinkIcon';
 
 interface SocialOption {
   key: 'fanpage' | 'group' | 'tiktok';
@@ -34,23 +35,6 @@ const SOCIAL_OPTIONS: SocialOption[] = [
     url: SOCIAL_LINKS.tiktok,
   },
 ];
-
-function ExternalLinkIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M14 5h5v5M10 14 19 5M19 13v6H5V5h6" />
-    </svg>
-  );
-}
 
 export function SocialConnectionsDialog({
   open,

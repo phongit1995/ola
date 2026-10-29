@@ -192,7 +192,8 @@
       "settings": "Settings",
       "changeNickname": "Change nickname",
       "removeAccount": "Delete account",
-      "appLock": "App lock"
+      "appLock": "App lock",
+      "support": "Customer support"
     },
     "appGameSubtitle": "The BEST games for you",
     "appMallSubtitle": "Diverse video clips collected by editors"
@@ -202,6 +203,12 @@
     "fanpageTitle": "Ola Fanpage",
     "groupTitle": "Ola community group",
     "tiktokTitle": "Ola TikTok"
+  },
+  "support": {
+    "title": "Customer support",
+    "contactAccount": "Contact account",
+    "emailLabel": "Email:",
+    "emailUnavailable": "Couldn't open an email app. Please write to {{email}}."
   },
   "settings": {
     "title": "Settings",
@@ -1776,7 +1783,6 @@
     "transfer": "Transfer KEN",
     "history": "Transaction history",
     "support": "Customer support",
-    "comingSoon": "Feature coming soon",
     "historyScreen": {
       "tabAll": "All",
       "tabCredit": "Received",
@@ -1825,8 +1831,6 @@
       "qrTitle": "Scan to pay",
       "qrHint": "Open your bank/e-wallet app and scan the QR to top up {{ken}} KEN.",
       "amountLabel": "Amount to transfer",
-      "paid": "I have paid",
-      "paidPending": "Waiting for payment confirmation. Your KEN will be credited shortly.",
       "bankLabel": "Bank",
       "accountNumberLabel": "Account number",
       "accountNameLabel": "Account holder",

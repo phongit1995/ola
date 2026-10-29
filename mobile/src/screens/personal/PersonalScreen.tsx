@@ -16,6 +16,7 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { removeSavedAccountOfCurrentUser, signOut } from '@lib/session';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
+import { SupportDialog } from '../apps/SupportDialog';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
 import { ChangeNicknameDialog } from './ChangeNicknameDialog';
 
@@ -77,6 +78,7 @@ export function PersonalScreen() {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const [nicknameOpen, setNicknameOpen] = useState(false);
   const [nicknameEnabled, setNicknameEnabled] = useState(false);
 
@@ -133,6 +135,10 @@ export function PersonalScreen() {
     }
     if (item.action === 'social') {
       setSocialOpen(true);
+      return;
+    }
+    if (item.action === 'support') {
+      setSupportOpen(true);
       return;
     }
     if (item.action === 'settings') {
@@ -244,6 +250,10 @@ export function PersonalScreen() {
       <SocialConnectionsDialog
         visible={socialOpen}
         onClose={() => setSocialOpen(false)}
+      />
+      <SupportDialog
+        visible={supportOpen}
+        onClose={() => setSupportOpen(false)}
       />
       <ChangeNicknameDialog
         visible={nicknameOpen}

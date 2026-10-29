@@ -192,7 +192,8 @@
       "settings": "Cài đặt",
       "changeNickname": "Đổi nickname",
       "removeAccount": "Xóa tài khoản",
-      "appLock": "Khoá ứng dụng"
+      "appLock": "Khoá ứng dụng",
+      "support": "Hỗ trợ khách hàng"
     },
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
     "appMallSubtitle": "Kho Video vô cùng phong phú và đa dạng"
@@ -202,6 +203,12 @@
     "fanpageTitle": "Fanpage Ola",
     "groupTitle": "Nhóm cộng đồng Ola",
     "tiktokTitle": "TikTok Ola"
+  },
+  "support": {
+    "title": "Hỗ trợ khách hàng",
+    "contactAccount": "Liên hệ tài khoản",
+    "emailLabel": "Email:",
+    "emailUnavailable": "Không mở được ứng dụng email. Bạn gửi thư tới {{email}} nhé."
   },
   "settings": {
     "title": "Cài đặt",
@@ -1776,7 +1783,6 @@
     "transfer": "Chuyển KEN",
     "history": "Lịch sử giao dịch",
     "support": "Hỗ trợ khách hàng",
-    "comingSoon": "Tính năng đang được phát triển",
     "historyScreen": {
       "tabAll": "Tất cả",
       "tabCredit": "Nhận",
@@ -1825,8 +1831,6 @@
       "qrTitle": "Quét mã để thanh toán",
       "qrHint": "Mở app ngân hàng/ví và quét mã QR để nạp {{ken}} KEN.",
       "amountLabel": "Số tiền cần chuyển",
-      "paid": "Tôi đã thanh toán",
-      "paidPending": "Đang chờ xác nhận thanh toán. KEN sẽ được cộng trong giây lát.",
       "bankLabel": "Ngân hàng",
       "accountNumberLabel": "Số tài khoản",
       "accountNameLabel": "Chủ tài khoản",

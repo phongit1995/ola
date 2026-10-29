@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast, formatKen } from '@lib';
+import { formatKen } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
@@ -71,10 +71,6 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
     void loadTopupConfig();
   }, [loadTopupConfig]);
 
-  function comingSoon() {
-    toast.info(t('ken.comingSoon'));
-  }
-
   const ken = user?.ken ?? 0;
   const showLowKenWarning = ken > 0 && ken < KEN_LOW_THRESHOLD;
   const balanceText = `${formatKen(ken)} KEN`;
@@ -117,16 +113,6 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
         </div>
 
         <KenHistorySection />
-      </div>
-
-      <div className="border-t border-black/12 bg-white p-2">
-        <button
-          type="button"
-          onClick={comingSoon}
-          className="flex h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark bg-ola-button text-sm text-ola-on-primary"
-        >
-          {t('ken.support')}
-        </button>
       </div>
 
       {transferOpen && (
