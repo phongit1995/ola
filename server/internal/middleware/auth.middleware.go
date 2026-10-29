@@ -74,7 +74,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 		}
 
 		if claims.ID != "" {
-			key := fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID)
+			key := fmt.Sprintf(CacheKeyTokenBlacklist, claims.ID)
 			if exists, _ := m.cache.Exists(key); exists {
 				utils.RespondError(c, http.StatusUnauthorized, "token has been revoked")
 				c.Abort()

@@ -1,7 +1,6 @@
 package wordchain
 
 import (
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -48,7 +47,7 @@ func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	limit := utils.ParseLimit(c, constants.WordChainMessagePageSize, constants.WordChainMessagePageMax)
+	limit := utils.ParseLimit(c, WordChainMessagePageSize, WordChainMessagePageMax)
 	resp, err := ctrl.service.Messages(c.Request.Context(), userID, limit, c.Query("before"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
@@ -168,7 +167,7 @@ func (ctrl *Controller) Wins(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	limit := utils.ParseLimit(c, constants.WordChainWinPageSize, constants.WordChainWinPageMax)
+	limit := utils.ParseLimit(c, WordChainWinPageSize, WordChainWinPageMax)
 	resp, err := ctrl.service.Wins(c.Request.Context(), userID, c.Query("mine") == "true", c.Query("before"), limit)
 	if err != nil {
 		return nil, utils.ServiceError(err)

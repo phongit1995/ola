@@ -3,7 +3,7 @@ package adminpushcampaign
 import (
 	"errors"
 
-	"ola-chat-server/internal/constants"
+	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/push"
@@ -59,7 +59,7 @@ func (r *Repository) Create(campaign *models.PushCampaign) error {
 
 func (r *Repository) MarkFailed(id uuid.UUID, reason string) error {
 	return r.db.Model(&models.PushCampaign{}).Where("id = ?", id).Updates(map[string]interface{}{
-		"status": constants.PushCampaignStatusFailed,
+		"status": pushBroadcastEvents.PushCampaignStatusFailed,
 		"error":  reason,
 	}).Error
 }

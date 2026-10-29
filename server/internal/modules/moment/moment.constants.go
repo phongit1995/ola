@@ -70,6 +70,9 @@ const (
 	MaxMomentSeenBatch           = 50
 	MomentReactionMaxPerType     = 99
 	MomentReactionMaxPerRequest  = 20
+	MaxMomentCommentRunes        = 500
+	MomentCommentsDefaultPage    = 30
+	MomentCommentsMaxPage        = 100
 	MomentTrayPageSize           = 20
 	MomentHistoryDefaultPageSize = 30
 	MomentHistoryMaxPageSize     = 60
@@ -136,6 +139,7 @@ const (
 	ErrorCodeMomentVideoInvalid  = "MOMENT_VIDEO_INVALID"
 	ErrorCodeMomentVideoNotMP4   = "MOMENT_VIDEO_NOT_MP4"
 	ErrorCodeMomentVideoVipOnly  = "MOMENT_VIDEO_VIP_REQUIRED"
+	ErrorCodeMomentCommentExists = "MOMENT_COMMENT_EXISTS"
 )
 
 var AllowedMomentVideoCodecs = []string{"avc1", "avc3"}

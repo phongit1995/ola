@@ -3,7 +3,6 @@ package user
 import (
 	"encoding/json"
 	"fmt"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
@@ -99,7 +98,7 @@ func NewCacheService(cache *services.CacheService, db *gorm.DB, logger *zap.Suga
 }
 
 func (c *CacheService) GetUser(userID uuid.UUID) (*models.User, error) {
-	key := fmt.Sprintf(constants.CacheKeyUserProfile, userID.String())
+	key := fmt.Sprintf(CacheKeyUserProfile, userID.String())
 	var cu cachedUser
 	if err := c.cache.Get(key, &cu); err != nil {
 		return nil, err
@@ -112,27 +111,27 @@ func (c *CacheService) GetUser(userID uuid.UUID) (*models.User, error) {
 }
 
 func (c *CacheService) SetUser(userID uuid.UUID, user *models.User) error {
-	key := fmt.Sprintf(constants.CacheKeyUserProfile, userID.String())
-	return c.cache.Set(key, toCachedUser(user), constants.CacheTTLUserProfile*time.Second)
+	key := fmt.Sprintf(CacheKeyUserProfile, userID.String())
+	return c.cache.Set(key, toCachedUser(user), CacheTTLUserProfile*time.Second)
 }
 
 func (c *CacheService) DeleteUser(userID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyUserProfile, userID.String())
+	key := fmt.Sprintf(CacheKeyUserProfile, userID.String())
 	return c.cache.Delete(key)
 }
 
 func (c *CacheService) SetUserSession(userID uuid.UUID, token string, expiry time.Duration) error {
-	key := fmt.Sprintf(constants.CacheKeyUserSession, userID.String())
+	key := fmt.Sprintf(CacheKeyUserSession, userID.String())
 	return c.cache.Set(key, token, expiry)
 }
 
 func (c *CacheService) DeleteUserSession(userID uuid.UUID, token string) error {
-	key := fmt.Sprintf(constants.CacheKeyUserSession, userID.String())
+	key := fmt.Sprintf(CacheKeyUserSession, userID.String())
 	return c.cache.Delete(key)
 }
 
 func (c *CacheService) DeleteAllUserSessions(userID uuid.UUID) error {
-	pattern := fmt.Sprintf(constants.CacheKeyUserSession, userID.String())
+	pattern := fmt.Sprintf(CacheKeyUserSession, userID.String())
 	return c.cache.DeletePattern(pattern)
 }
 
@@ -151,7 +150,7 @@ func (c *CacheService) GetUsersBatch(userIDs []uuid.UUID, fallbackToDB bool) map
 
 	keys := make([]string, len(userIDs))
 	for i, id := range userIDs {
-		keys[i] = fmt.Sprintf(constants.CacheKeyUserProfile, id.String())
+		keys[i] = fmt.Sprintf(CacheKeyUserProfile, id.String())
 	}
 
 	var missing []uuid.UUID

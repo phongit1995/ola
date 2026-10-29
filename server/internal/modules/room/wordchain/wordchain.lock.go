@@ -44,13 +44,13 @@ func (s *Service) withLock(ctx context.Context, fn func(ctx context.Context, bat
 	if err != nil {
 		return err
 	}
-	workCtx, cancelWork := context.WithTimeout(context.WithoutCancel(ctx), constants.WordChainLockTTL)
+	workCtx, cancelWork := context.WithTimeout(context.WithoutCancel(ctx), WordChainLockTTL)
 	defer cancelWork()
 	batch := &eventBatch{}
 	err = fn(workCtx, batch)
 	unlock()
 
-	publishCtx, cancelPublish := context.WithTimeout(context.WithoutCancel(ctx), constants.WordChainBackgroundTimeout)
+	publishCtx, cancelPublish := context.WithTimeout(context.WithoutCancel(ctx), WordChainBackgroundTimeout)
 	defer cancelPublish()
 	for _, event := range batch.events {
 		if pubErr := s.publisher.PublishWordChainEvent(publishCtx, event); pubErr != nil {
@@ -62,15 +62,15 @@ func (s *Service) withLock(ctx context.Context, fn func(ctx context.Context, bat
 
 func (s *Service) lock(ctx context.Context) (func(), error) {
 	token := uuid.NewString()
-	deadline := time.Now().Add(constants.WordChainLockWait)
+	deadline := time.Now().Add(WordChainLockWait)
 	for {
-		acquired, err := s.cache.SetNX(constants.CacheKeyWordChainLock, token, constants.WordChainLockTTL)
+		acquired, err := s.cache.SetNX(CacheKeyWordChainLock, token, WordChainLockTTL)
 		if err != nil {
 			return nil, err
 		}
 		if acquired {
 			return func() {
-				if _, err := s.cache.DeleteIfValue(constants.CacheKeyWordChainLock, token); err != nil {
+				if _, err := s.cache.DeleteIfValue(CacheKeyWordChainLock, token); err != nil {
 					s.logger.Warnw("Failed to release word chain lock", "error", err)
 				}
 			}, nil
@@ -81,7 +81,7 @@ func (s *Service) lock(ctx context.Context) (func(), error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
-		case <-time.After(constants.WordChainLockRetryWait):
+		case <-time.After(WordChainLockRetryWait):
 		}
 	}
 }

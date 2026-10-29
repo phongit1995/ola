@@ -52,6 +52,8 @@ export interface Moment {
   viewerCount?: number;
   reactionCount?: number;
   reactions?: MomentReactionCount[];
+  commentCount?: number;
+  myComment?: MomentMyComment;
   hidden?: boolean;
   hiddenBy?: MomentHiddenBy;
   mediaPurged?: boolean;
@@ -126,3 +128,18 @@ export interface MomentUserPage<T> {
 export type MomentViewersPage = MomentUserPage<MomentViewer>;
 
 export type MomentReactorsPage = MomentUserPage<MomentReactor>;
+
+export interface MomentMyComment {
+  id: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface MomentComment {
+  id: string;
+  user: MomentAuthor;
+  content: string;
+  createdAt: string;
+}
+
+export type MomentCommentsPage = MomentUserPage<MomentComment>;

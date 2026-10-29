@@ -1,10 +1,9 @@
 package websocket
 
 import (
-	"ola-chat-server/internal/constants"
+	"fmt"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -49,7 +48,7 @@ func NewPresenceService(cache *services.CacheService, logger *zap.SugaredLogger)
 }
 
 func (s *PresenceService) getPresenceKey(userID string) string {
-	return fmt.Sprintf(constants.CacheKeyPresence, userID)
+	return fmt.Sprintf(CacheKeyPresence, userID)
 }
 
 func (s *PresenceService) AddConnection(userID string) (bool, error) {
@@ -57,7 +56,7 @@ func (s *PresenceService) AddConnection(userID string) (bool, error) {
 	client := s.cache.GetClient()
 	ctx := s.cache.GetContext()
 
-	count, err := addConnectionScript.Run(ctx, client, []string{key}, constants.PresenceTTLSeconds).Int()
+	count, err := addConnectionScript.Run(ctx, client, []string{key}, PresenceTTLSeconds).Int()
 	if err != nil {
 		s.logger.Errorw("Failed to add connection", "user_id", userID, "error", err)
 		return false, err
@@ -103,7 +102,7 @@ func (s *PresenceService) RemoveConnection(userID string) (bool, error) {
 }
 
 func (s *PresenceService) RefreshPresence(userID string) error {
-	ttl := time.Duration(constants.PresenceTTLSeconds) * time.Second
+	ttl := time.Duration(PresenceTTLSeconds) * time.Second
 	if err := s.cache.SetExpire(s.getDeviceKey(userID), ttl); err != nil {
 		s.logger.Debugw("Failed to refresh device ttl", "user_id", userID, "error", err)
 	}
@@ -111,7 +110,7 @@ func (s *PresenceService) RefreshPresence(userID string) error {
 }
 
 func (s *PresenceService) getDeviceKey(userID string) string {
-	return fmt.Sprintf(constants.CacheKeyPresenceDevice, userID)
+	return fmt.Sprintf(CacheKeyPresenceDevice, userID)
 }
 
 func (s *PresenceService) SetDevice(userID, deviceType string) error {
@@ -121,7 +120,7 @@ func (s *PresenceService) SetDevice(userID, deviceType string) error {
 	key := s.getDeviceKey(userID)
 	client := s.cache.GetClient()
 	ctx := s.cache.GetContext()
-	ttl := time.Duration(constants.PresenceTTLSeconds) * time.Second
+	ttl := time.Duration(PresenceTTLSeconds) * time.Second
 	if err := client.Set(ctx, key, deviceType, ttl).Err(); err != nil {
 		s.logger.Warnw("Failed to set device", "user_id", userID, "error", err)
 		return err
@@ -209,7 +208,7 @@ func (s *PresenceService) GetPresenceBatch(userIDs []string) map[string]Presence
 }
 
 func (s *PresenceService) getLastActiveKey(userID string) string {
-	return fmt.Sprintf(constants.CacheKeyLastActive, userID)
+	return fmt.Sprintf(CacheKeyLastActive, userID)
 }
 
 func (s *PresenceService) SetLastActive(userID string) error {
@@ -217,7 +216,7 @@ func (s *PresenceService) SetLastActive(userID string) error {
 	client := s.cache.GetClient()
 	ctx := s.cache.GetContext()
 	now := time.Now().UTC().Format(time.RFC3339)
-	if err := client.Set(ctx, key, now, time.Duration(constants.LastActiveTTLSeconds)*time.Second).Err(); err != nil {
+	if err := client.Set(ctx, key, now, time.Duration(LastActiveTTLSeconds)*time.Second).Err(); err != nil {
 		s.logger.Errorw("Failed to set last_active", "user_id", userID, "error", err)
 		return err
 	}
@@ -225,7 +224,7 @@ func (s *PresenceService) SetLastActive(userID string) error {
 }
 
 func (s *PresenceService) getBackgroundKey(userID string) string {
-	return fmt.Sprintf(constants.CacheKeyPresenceBackground, userID)
+	return fmt.Sprintf(CacheKeyPresenceBackground, userID)
 }
 
 func (s *PresenceService) SetBackground(userID string, background bool) error {
@@ -233,7 +232,7 @@ func (s *PresenceService) SetBackground(userID string, background bool) error {
 	client := s.cache.GetClient()
 	ctx := s.cache.GetContext()
 	if background {
-		ttl := time.Duration(constants.PresenceBackgroundTTLSeconds) * time.Second
+		ttl := time.Duration(PresenceBackgroundTTLSeconds) * time.Second
 		if err := client.Set(ctx, key, "1", ttl).Err(); err != nil {
 			s.logger.Warnw("Failed to set background state", "user_id", userID, "error", err)
 			return err
@@ -251,7 +250,7 @@ func (s *PresenceService) RefreshBackground(userID string) {
 	key := s.getBackgroundKey(userID)
 	client := s.cache.GetClient()
 	ctx := s.cache.GetContext()
-	ttl := time.Duration(constants.PresenceBackgroundTTLSeconds) * time.Second
+	ttl := time.Duration(PresenceBackgroundTTLSeconds) * time.Second
 	if err := client.Expire(ctx, key, ttl).Err(); err != nil {
 		s.logger.Debugw("Failed to refresh background ttl", "user_id", userID, "error", err)
 	}

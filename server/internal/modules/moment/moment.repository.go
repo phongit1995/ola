@@ -145,6 +145,11 @@ type trayCursor struct {
 	AuthorID uuid.UUID
 }
 
+const insertMomentCommentQuery = `
+INSERT INTO moment_comments (moment_id, author_id, content) VALUES (@moment, @author, @content)
+ON CONFLICT (moment_id, author_id) DO NOTHING
+RETURNING id, moment_id, author_id, content, created_at`
+
 type trayPageRow struct {
 	ID       uuid.UUID `gorm:"column:id"`
 	AuthorID uuid.UUID `gorm:"column:author_id"`
@@ -443,6 +448,55 @@ func (r *Repository) MarkPurged(ctx context.Context, ids []uuid.UUID, now time.T
 	return r.db.WithContext(ctx).Unscoped().Model(&models.Moment{}).
 		Where("id IN ? AND status = ?", ids, MomentStatusPurging).
 		Updates(map[string]interface{}{"status": MomentStatusPurged, "purged_at": now}).Error
+}
+
+func (r *Repository) CreateComment(momentID, authorID uuid.UUID, content string) (*models.MomentComment, error) {
+	var created []models.MomentComment
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		err := tx.Raw(insertMomentCommentQuery, map[string]interface{}{
+			"moment":  momentID,
+			"author":  authorID,
+			"content": content,
+		}).Scan(&created).Error
+		if err != nil {
+			return err
+		}
+		if len(created) == 0 {
+			return errCommentExists
+		}
+		return tx.Unscoped().Model(&models.Moment{}).Where("id = ?", momentID).
+			UpdateColumn("comment_count", gorm.Expr("comment_count + 1")).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &created[0], nil
+}
+
+func (r *Repository) ListComments(momentID uuid.UUID, limit, offset int) ([]models.MomentComment, error) {
+	var comments []models.MomentComment
+	err := withAuthor(r.db).
+		Where("moment_id = ?", momentID).
+		Order("created_at DESC").Order("id DESC").
+		Limit(limit).Offset(offset).
+		Find(&comments).Error
+	return comments, err
+}
+
+func (r *Repository) MyComments(authorID uuid.UUID, momentIDs []uuid.UUID) (map[uuid.UUID]models.MomentComment, error) {
+	byMoment := make(map[uuid.UUID]models.MomentComment, len(momentIDs))
+	if len(momentIDs) == 0 {
+		return byMoment, nil
+	}
+	var comments []models.MomentComment
+	err := r.db.Where("author_id = ? AND moment_id IN ?", authorID, momentIDs).Find(&comments).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, comment := range comments {
+		byMoment[comment.MomentID] = comment
+	}
+	return byMoment, nil
 }
 
 func (r *Repository) RaiseReactionCounts(counts map[uuid.UUID]models.MomentReactionCounts) error {

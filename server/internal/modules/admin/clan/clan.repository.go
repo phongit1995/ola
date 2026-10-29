@@ -1,15 +1,11 @@
 package adminclan
 
 import (
-	"errors"
-
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
-
-var ErrClanNotFound = errors.New("clan not found")
 
 type Repository struct {
 	db *gorm.DB
@@ -35,17 +31,6 @@ func (r *Repository) List(query string, limit, offset int) ([]models.Clan, int64
 		return nil, 0, err
 	}
 	return clans, total, nil
-}
-
-func (r *Repository) GetByID(id uuid.UUID) (*models.Clan, error) {
-	var clan models.Clan
-	if err := r.db.Preload("Owner").First(&clan, "id = ?", id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrClanNotFound
-		}
-		return nil, err
-	}
-	return &clan, nil
 }
 
 func (r *Repository) ListMembers(clanID uuid.UUID, limit, offset int) ([]models.ClanMember, int64, error) {

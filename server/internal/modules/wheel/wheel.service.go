@@ -426,7 +426,7 @@ func (s *Service) draw(active []models.WheelSegment, options []models.WheelSegme
 	for i, seg := range active {
 		weights[i] = seg.Weight
 	}
-	idx := weightedPick(weights)
+	idx := utils.WeightedPick(weights)
 	if idx < 0 {
 		return SpinOutcome{}, 0, false
 	}
@@ -465,7 +465,7 @@ func (s *Service) draw(active []models.WheelSegment, options []models.WheelSegme
 			for i, opt := range segOptions {
 				oWeights[i] = opt.Weight
 			}
-			oi := weightedPick(oWeights)
+			oi := utils.WeightedPick(oWeights)
 			if oi >= 0 {
 				opt := segOptions[oi]
 				outcome.RewardLabel = opt.Label
@@ -729,30 +729,4 @@ func randomIntInRange(lo, hi int) int {
 		v = hi
 	}
 	return v
-}
-
-func weightedPick(weights []float64) int {
-	total := 0.0
-	for _, w := range weights {
-		if w > 0 {
-			total += w
-		}
-	}
-	if total <= 0 {
-		return -1
-	}
-	target := utils.CryptoFloat() * total
-	acc := 0.0
-	last := -1
-	for i, w := range weights {
-		if w <= 0 {
-			continue
-		}
-		last = i
-		acc += w
-		if target < acc {
-			return i
-		}
-	}
-	return last
 }

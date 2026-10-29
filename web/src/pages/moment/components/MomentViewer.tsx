@@ -34,8 +34,10 @@ import {
   momentExpiresInMs,
   momentGroupEntryStep,
   momentGroupStartIndex,
+  ownSessionMoments,
   momentItemStep,
   momentMedia,
+  momentMyComment,
   momentPreloadUrl,
 } from '@lib';
 import type {
@@ -51,6 +53,7 @@ import { useMomentViewerGroups } from '@ola/shared/stores/moment/useMomentViewer
 import { MOMENT_FIT_STYLE } from '../constants';
 import type { MomentMediaStatus } from '../types';
 import { MomentStage } from './MomentCanvas';
+import { MomentCommentSheet } from './MomentCommentSheet';
 import { MomentChevronIcon } from './MomentIcons';
 import { MomentViewerFace } from './MomentViewerFace';
 
@@ -82,15 +85,17 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
   const { t, i18n } = useTranslation();
   const markSeen = useMomentStore((s) => s.markSeen);
   const react = useMomentStore((s) => s.react);
+  const myComments = useMomentStore((s) => s.myComments);
   const history = useMomentStore((s) => s.history);
+  const momentDetails = useMomentStore((s) => s.momentDetails);
   const seenIds = useMomentStore((s) => s.seenIds);
   const ownMoments = useMomentTray().mine;
   const baseGroups = useMemo(() => {
     const ownAuthor = session.groups[0]?.author;
     if (!session.own || ownAuthor == null) return session.groups;
-    const moments = session.archive ? history : ownMoments;
+    const moments = ownSessionMoments(session, ownMoments, history, momentDetails);
     return moments.length > 0 ? [{ author: ownAuthor, moments }] : [];
-  }, [session, ownMoments, history]);
+  }, [session, ownMoments, history, momentDetails]);
   const { toggleHidden } = useMomentHiddenToggle();
   const [groupIndex, setGroupIndex] = useState(session.startIndex);
   const groups = useMomentViewerGroups(baseGroups, groupIndex, !session.own);
@@ -112,6 +117,7 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
   const [userPaused, setUserPaused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const [commentMomentId, setCommentMomentId] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
   const [mediaStatuses, setMediaStatuses] = useState<Record<string, MomentMediaStatus>>({});
   const [pageHidden, setPageHidden] = useState(() => document.hidden);
@@ -140,8 +146,9 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
     media == null || moment == null ? 'ready' : (mediaStatuses[moment.id] ?? 'loading');
   const upcoming = group?.moments[currentIndex + 1];
   const preloadUrl = upcoming ? momentPreloadUrl(upcoming) : undefined;
-  const dialogOpen = menuOpen || reportTarget != null;
+  const dialogOpen = menuOpen || reportTarget != null || commentMomentId != null;
   const paused = holding || turning || userPaused || dialogOpen || pageHidden;
+  const closeCommentSheet = useCallback(() => setCommentMomentId(null), []);
   const waitingForMedia = mediaStatus === 'loading';
   const followsVideo = media?.type === MOMENT_TYPE.video && mediaStatus !== 'error';
   const hasPrev = groupIndex > 0;
@@ -460,7 +467,11 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
                     ? undefined
                     : () => onOpenProfile(faceGroup.author)
                 }
-                onReact={session.own ? undefined : (type) => react(faceMoment.id, type)}
+                onReact={
+                  session.own || commentMomentId != null ? undefined : (type) => react(faceMoment.id, type)
+                }
+                myComment={session.own ? undefined : momentMyComment(faceMoment, myComments)}
+                onComment={session.own ? undefined : () => setCommentMomentId(faceMoment.id)}
                 onClose={onClose}
               />
             );
@@ -498,6 +509,9 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
       />
       {reportTarget && (
         <ReportDialog target={reportTarget} onClose={() => setReportTarget(null)} />
+      )}
+      {commentMomentId != null && (
+        <MomentCommentSheet momentId={commentMomentId} onClose={closeCommentSheet} />
       )}
     </div>,
     portalRoot()

@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"sync"
 
@@ -61,10 +60,10 @@ type Verifier struct {
 
 func NewVerifier(cache *services.CacheService) *Verifier {
 	return &Verifier{
-		client:     &http.Client{Timeout: constants.WordChainLookupTimeout},
+		client:     &http.Client{Timeout: WordChainLookupTimeout},
 		redis:      cache.GetClient(),
-		lookupURL:  constants.WordChainLookupURL,
-		suggestURL: constants.WordChainSuggestURL,
+		lookupURL:  WordChainLookupURL,
+		suggestURL: WordChainSuggestURL,
 	}
 }
 
@@ -114,7 +113,7 @@ func hasVietnamese(result *DictLookup) bool {
 		return false
 	}
 	for _, r := range result.Results {
-		if r.LangCode == constants.WordChainLookupLangVietnamese {
+		if r.LangCode == WordChainLookupLangVietnamese {
 			return true
 		}
 	}
@@ -138,11 +137,11 @@ func (v *Verifier) cacheLookup(ctx context.Context, word string, result *DictLoo
 	if err != nil {
 		return
 	}
-	_ = v.redis.Set(ctx, lookupCacheKey(word), data, constants.WordChainLookupTTL).Err()
+	_ = v.redis.Set(ctx, lookupCacheKey(word), data, WordChainLookupTTL).Err()
 }
 
 func lookupCacheKey(word string) string {
-	return fmt.Sprintf(constants.CacheKeyWordChainLookup, normalizeVietnamese(word))
+	return fmt.Sprintf(CacheKeyWordChainLookup, normalizeVietnamese(word))
 }
 
 func (v *Verifier) Exists(ctx context.Context, word string) (bool, error) {
@@ -157,7 +156,7 @@ func (v *Verifier) Exists(ctx context.Context, word string) (bool, error) {
 	if exists {
 		value = "1"
 	}
-	_ = v.redis.Set(ctx, fmt.Sprintf(constants.CacheKeyWordChainWordExists, word), value, constants.WordChainWordExistsTTL).Err()
+	_ = v.redis.Set(ctx, fmt.Sprintf(CacheKeyWordChainWordExists, word), value, WordChainWordExistsTTL).Err()
 	return exists, nil
 }
 
@@ -168,7 +167,7 @@ func (v *Verifier) Known(ctx context.Context, words []string) map[string]bool {
 	}
 	keys := make([]string, len(words))
 	for i, word := range words {
-		keys[i] = fmt.Sprintf(constants.CacheKeyWordChainWordExists, word)
+		keys[i] = fmt.Sprintf(CacheKeyWordChainWordExists, word)
 	}
 	values, err := v.redis.MGet(ctx, keys...).Result()
 	if err != nil {
@@ -201,7 +200,7 @@ func (v *Verifier) ExistingWords(ctx context.Context, words []string, limit int)
 		settled int
 		found   int
 	)
-	slots := make(chan struct{}, constants.WordChainContinuationConcurrency)
+	slots := make(chan struct{}, WordChainContinuationConcurrency)
 launch:
 	for i, word := range words {
 		select {
@@ -270,7 +269,7 @@ func (v *Verifier) Continuations(ctx context.Context, syllable string) ([]string
 		for _, suggestion := range suggestions {
 			normalized := normalizeVietnamese(suggestion)
 			parts := splitSyllables(normalized)
-			if len(parts) == constants.WordChainWordLength && syllableKey(parts[0]) == key {
+			if len(parts) == WordChainWordLength && syllableKey(parts[0]) == key {
 				words = append(words, normalized)
 			}
 		}
@@ -279,7 +278,7 @@ func (v *Verifier) Continuations(ctx context.Context, syllable string) ([]string
 }
 
 func (v *Verifier) suggest(ctx context.Context, syllable string) ([]string, error) {
-	body, status, err := v.get(ctx, v.suggestURL, url.Values{"q": {syllable + " "}, "limit": {constants.WordChainSuggestLimit}})
+	body, status, err := v.get(ctx, v.suggestURL, url.Values{"q": {syllable + " "}, "limit": {WordChainSuggestLimit}})
 	if err != nil {
 		return nil, err
 	}
@@ -306,11 +305,11 @@ func (v *Verifier) get(ctx context.Context, endpoint string, query url.Values) (
 		return nil, 0, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, constants.WordChainLookupMaxBytes+1))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, WordChainLookupMaxBytes+1))
 	if err != nil {
 		return nil, 0, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
 	}
-	if len(body) > constants.WordChainLookupMaxBytes {
+	if len(body) > WordChainLookupMaxBytes {
 		return nil, 0, fmt.Errorf("%w: response too large", ErrDictionaryUnavailable)
 	}
 	return body, resp.StatusCode, nil

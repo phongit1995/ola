@@ -94,12 +94,14 @@ export const API_PATH = {
   },
   moments: {
     base: '/moments',
+    detail: (id: string) => `/moments/${id}`,
     tray: '/moments/tray',
     mine: '/moments/mine',
     history: '/moments/history',
     seen: '/moments/seen',
     viewers: (id: string) => `/moments/${id}/viewers`,
     reactions: (id: string) => `/moments/${id}/reactions`,
+    comments: (id: string) => `/moments/${id}/comments`,
     hidden: (id: string) => `/moments/${id}/hidden`,
   },
   relationships: {

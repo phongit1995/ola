@@ -1,12 +1,12 @@
 package kafka
 
 import (
-	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
 	"context"
 	"errors"
 	"hash/fnv"
 	"io"
+	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/constants"
 	"sync"
 	"time"
 

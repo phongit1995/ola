@@ -11,8 +11,19 @@ import { applyPostReaction, reconcileTopLikers } from '@ola/shared/stores/feed/p
 import { selfLiker } from '@ola/shared/stores/feed/selfLiker';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { MeService } from '@ola/shared/services';
-import { createTimeFormatter } from '@ola/shared/lib';
+import { ME_NOTIFICATION_LABEL_KEY } from '@ola/shared/constants';
+import {
+  createTimeFormatter,
+  isMomentNotification,
+  momentNotificationOthers,
+  momentNotificationReaction,
+  momentOpenErrorKey,
+} from '@ola/shared/lib';
+import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
+import { REACTION_IMAGE } from '@lib/reactions';
+import { SmileyText } from '@lib/richText';
+import { useMomentOverlays } from '@screens/moment/useMomentOverlays';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
@@ -31,7 +42,11 @@ const TYPE_ICON: Record<MeNotificationType, number> = {
   reply: commentIcon,
   mention: mentionIcon,
   comment_like: likeIcon,
+  moment_comment: commentIcon,
+  moment_reaction: likeIcon,
 };
+
+const PREVIEW_FONT_SIZE = 14;
 
 export function MeNotificationsScreen() {
   const { t, i18n } = useTranslation();
@@ -45,6 +60,8 @@ export function MeNotificationsScreen() {
   const load = useMeNotificationStore((s) => s.load);
   const loadMore = useMeNotificationStore((s) => s.loadMore);
   const markAllRead = useMeNotificationStore((s) => s.markAllRead);
+  const fetchMoment = useMomentStore((s) => s.fetchMoment);
+  const momentOverlays = useMomentOverlays();
 
   const [openPost, setOpenPost] = useState<Post | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
@@ -56,16 +73,23 @@ export function MeNotificationsScreen() {
     void clearPushNotification(ME_NOTIF_ID);
   }, [load, markAllRead]);
 
-  function labelFor(type: MeNotificationType): string {
-    if (type === 'comment') return t('me.notifComment');
-    if (type === 'reply') return t('me.notifReply');
-    if (type === 'mention') return t('me.notifMention');
-    if (type === 'comment_like') return t('me.notifCommentLike');
-    return t('me.notifLike');
+  async function openMoment(item: MeNotification) {
+    setOpeningId(item.id);
+    try {
+      momentOverlays.openDetail(await fetchMoment(item.postId));
+    } catch (error) {
+      push('error', t(momentOpenErrorKey(error)));
+    } finally {
+      setOpeningId(null);
+    }
   }
 
   async function openNotification(item: MeNotification) {
     if (openingId != null) return;
+    if (isMomentNotification(item)) {
+      await openMoment(item);
+      return;
+    }
     setOpeningId(item.id);
     try {
       const post = await MeService.getById(item.postId);
@@ -123,6 +147,8 @@ export function MeNotificationsScreen() {
             ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color={colors.primary} /> : null}
             renderItem={({ item }) => {
               const name = item.actor?.fullName || item.actor?.username || '';
+              const reaction = momentNotificationReaction(item);
+              const others = momentNotificationOthers(item);
               return (
                 <Pressable
                   onPress={() => openNotification(item)}
@@ -131,15 +157,26 @@ export function MeNotificationsScreen() {
                   <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={40} />
                   <View className="min-w-0 flex-1">
                     <Text className="text-sm leading-snug text-ola-ink">
-                      <Text className="font-bold">{name}</Text> {labelFor(item.type)}
+                      <Text className="font-bold">{name}</Text>{' '}
+                      {others > 0 && <Text className="font-bold">{t('me.notifOthers', { count: others })} </Text>}
+                      {t(ME_NOTIFICATION_LABEL_KEY[item.type])}
                     </Text>
+                    {item.type === 'moment_comment' && item.preview != null && item.preview !== '' && (
+                      <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
+                        <SmileyText text={item.preview} fontSize={PREVIEW_FONT_SIZE} />
+                      </Text>
+                    )}
                     {(item.type === 'comment' || item.type === 'comment_like') && item.preview != null && item.preview !== '' && (
                       <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
                         {item.preview}
                       </Text>
                     )}
                     <View className="mt-1 flex-row items-center gap-1">
-                      <Image source={TYPE_ICON[item.type]} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                      <Image
+                        source={(reaction != null ? REACTION_IMAGE[reaction] : null) ?? TYPE_ICON[item.type]}
+                        style={reaction != null ? { width: 20, height: 20 } : { width: 16, height: 16 }}
+                        resizeMode="contain"
+                      />
                       <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.45)' }}>
                         {formatTime(item.createdAt)}
                       </Text>
@@ -163,6 +200,7 @@ export function MeNotificationsScreen() {
             onCommentDelta={adjustCommentCount}
           />
         )}
+        {momentOverlays.overlays}
     </View>
   );
 }

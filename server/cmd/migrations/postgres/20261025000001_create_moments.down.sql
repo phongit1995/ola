@@ -1,3 +1,11 @@
+DELETE FROM public.me_notifications WHERE type IN ('moment_comment', 'moment_reaction');
+
+DROP INDEX IF EXISTS public.uq_me_notifications_moment_reaction;
+
+ALTER TABLE public.me_notifications DROP COLUMN IF EXISTS actor_count;
+
+DROP TABLE IF EXISTS public.moment_comments;
+
 DELETE FROM public.reports WHERE target_type = 'moment';
 
 ALTER TABLE public.reports DROP CONSTRAINT reports_target_type_check;

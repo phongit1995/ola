@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MOMENT_STATUS, MOMENT_TYPE, MOMENT_VISIBILITY, MOMENT_VISIBILITY_LABEL } from '@ola/shared/constants';
 import {
   createTimeAgoFormatter,
+  formatCompactCount,
   isMomentActive,
   isMomentHidden,
   isMomentHiddenByAdmin,
@@ -17,8 +18,10 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { MomentCanvas } from './components/MomentCanvas';
+import { MomentCommentsDialog } from './components/MomentCommentsDialog';
 import {
   MomentClockIcon,
+  MomentCommentIcon,
   MomentEyeIcon,
   MomentEyeOffIcon,
   MomentFriendsIcon,
@@ -162,6 +165,7 @@ interface MomentManageRowProps {
   onOpen: () => void;
   onViewers: () => void;
   onReactions: () => void;
+  onComments: () => void;
   onToggleHidden: () => void;
 }
 
@@ -173,13 +177,15 @@ function MomentManageRow({
   onOpen,
   onViewers,
   onReactions,
+  onComments,
   onToggleHidden,
 }: MomentManageRowProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const hidden = isMomentHidden(moment);
   const active = isMomentActive(moment, nowMs);
   const viewerLabel = t('moment.viewerCount', { count: moment.viewerCount ?? 0 });
+  const viewerCount = formatCompactCount(moment.viewerCount ?? 0, i18n.language);
   return (
     <Pressable
       accessibilityRole="button"
@@ -205,9 +211,14 @@ function MomentManageRow({
       </View>
 
       <View className="min-w-0 flex-1 py-0.5">
-        <Text numberOfLines={1} className="text-base font-semibold text-ola-ink">
-          {postedAt}
-        </Text>
+        <View className="flex-row items-start gap-2">
+          <Text numberOfLines={1} className="min-w-0 flex-1 text-base font-semibold text-ola-ink">
+            {postedAt}
+          </Text>
+          <View style={{ marginVertical: -2 }}>
+            <HiddenToggle moment={moment} busy={busy} onToggle={onToggleHidden} />
+          </View>
+        </View>
         <View className="mt-0.5 flex-row items-center gap-1">
           {moment.visibility === MOMENT_VISIBILITY.public ? (
             <MomentGlobeIcon size={14} color={MUTED_INK} />
@@ -221,37 +232,49 @@ function MomentManageRow({
         <View className="mt-1.5 flex-row">
           <MomentStatus moment={moment} nowMs={nowMs} />
         </View>
-        <View className="mt-auto flex-row items-center justify-between gap-2 pt-2">
-          <View className="min-w-0 flex-shrink flex-row items-center gap-2">
-            {active ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={onViewers}
-                className="min-w-0 flex-shrink flex-row items-center gap-1.5 rounded-full px-2.5 py-1.5 active:opacity-70"
-                style={{ backgroundColor: colors.primaryLight }}
-              >
-                <MomentEyeIcon size={14} color={colors.primaryInk} />
-                <Text numberOfLines={1} className="text-sm font-semibold" style={{ color: colors.primaryInk }}>
-                  {viewerLabel}
-                </Text>
-              </Pressable>
-            ) : (
-              <View className="min-w-0 flex-shrink flex-row items-center gap-1.5 px-1">
-                <MomentEyeIcon size={14} color={MUTED_INK} />
-                <Text numberOfLines={1} className="text-sm" style={{ color: MUTED_INK }}>
-                  {viewerLabel}
-                </Text>
-              </View>
-            )}
-            {moment.reactions != null && (moment.reactionCount ?? 0) > 0 ? (
-              <MomentReactionSummary
-                reactions={moment.reactions}
-                total={moment.reactionCount ?? 0}
-                onPress={active ? onReactions : undefined}
-              />
-            ) : null}
-          </View>
-          <HiddenToggle moment={moment} busy={busy} onToggle={onToggleHidden} />
+        <View className="mt-auto flex-row flex-wrap items-center gap-2 pt-2">
+          {active ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={viewerLabel}
+              onPress={onViewers}
+              className="flex-row items-center gap-1 rounded-full px-2.5 py-1.5 active:opacity-70"
+              style={{ backgroundColor: colors.primaryLight }}
+            >
+              <MomentEyeIcon size={14} color={colors.primaryInk} />
+              <Text className="text-sm font-semibold" style={{ color: colors.primaryInk }}>
+                {viewerCount}
+              </Text>
+            </Pressable>
+          ) : (
+            <View accessible accessibilityLabel={viewerLabel} className="flex-row items-center gap-1 px-1">
+              <MomentEyeIcon size={14} color={MUTED_INK} />
+              <Text className="text-sm" style={{ color: MUTED_INK }}>
+                {viewerCount}
+              </Text>
+            </View>
+          )}
+          {moment.reactions != null && (moment.reactionCount ?? 0) > 0 ? (
+            <MomentReactionSummary
+              reactions={moment.reactions}
+              total={moment.reactionCount ?? 0}
+              onPress={active ? onReactions : undefined}
+            />
+          ) : null}
+          {(moment.commentCount ?? 0) > 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('moment.commentCount', { count: moment.commentCount ?? 0 })}
+              onPress={onComments}
+              className="flex-row items-center gap-1 rounded-full px-2.5 py-1.5 active:opacity-70"
+              style={{ backgroundColor: colors.primaryLight }}
+            >
+              <MomentCommentIcon size={14} color={colors.primaryInk} />
+              <Text className="text-sm font-semibold" style={{ color: colors.primaryInk }}>
+                {formatCompactCount(moment.commentCount ?? 0, i18n.language)}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       </View>
     </Pressable>
@@ -287,6 +310,7 @@ export function MomentManageScreen() {
   const { moments, loaded, loading, hasMore, loadMore, clockMs, busyId, toggleHidden } = useMomentManage();
   const [viewersId, setViewersId] = useState<string | null>(null);
   const [reactionsId, setReactionsId] = useState<string | null>(null);
+  const [commentsId, setCommentsId] = useState<string | null>(null);
   const formatTime = useMemo(() => createTimeAgoFormatter(i18n.language), [i18n.language]);
 
   function renderContent() {
@@ -330,6 +354,7 @@ export function MomentManageScreen() {
               onOpen={() => overlays.openArchive(moment)}
               onViewers={() => setViewersId(moment.id)}
               onReactions={() => setReactionsId(moment.id)}
+              onComments={() => setCommentsId(moment.id)}
               onToggleHidden={() => void toggleHidden(moment)}
             />
           ))}
@@ -391,6 +416,12 @@ export function MomentManageScreen() {
         momentId={reactionsId ?? ''}
         total={moments.find(moment => moment.id === reactionsId)?.reactionCount ?? 0}
         onClose={() => setReactionsId(null)}
+      />
+      <MomentCommentsDialog
+        visible={commentsId != null}
+        momentId={commentsId ?? ''}
+        total={moments.find(moment => moment.id === commentsId)?.commentCount ?? 0}
+        onClose={() => setCommentsId(null)}
       />
       {overlays.overlays}
     </View>

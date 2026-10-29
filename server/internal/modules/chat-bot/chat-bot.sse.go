@@ -9,8 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"ola-chat-server/internal/constants"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,7 +33,7 @@ func newSSESession(c *gin.Context) (*sseSession, bool) {
 	c.Writer.WriteHeader(http.StatusOK)
 
 	session := &sseSession{writer: c.Writer, flusher: flusher}
-	_ = session.writeFrame(constants.ChatBotSSEHeartbeat)
+	_ = session.writeFrame(ChatBotSSEHeartbeat)
 	return session, true
 }
 
@@ -59,7 +57,7 @@ func (s *sseSession) writeChunk(chunk StreamChunk) error {
 }
 
 func (s *sseSession) writeDone() {
-	_ = s.writeFrame(fmt.Sprintf("data: %s\n\n", constants.ChatBotSSEDoneMarker))
+	_ = s.writeFrame(fmt.Sprintf("data: %s\n\n", ChatBotSSEDoneMarker))
 }
 
 func (s *sseSession) fail(completionID, message string) {
@@ -72,7 +70,7 @@ func (s *sseSession) fail(completionID, message string) {
 func (s *sseSession) finish(completionID string) {
 	_ = s.writeChunk(StreamChunk{
 		ID:           completionID,
-		FinishReason: constants.ChatBotFinishReasonStop,
+		FinishReason: ChatBotFinishReasonStop,
 	})
 	s.writeDone()
 }
@@ -83,7 +81,7 @@ func (s *sseSession) startHeartbeat(ctx context.Context) func() {
 
 	go func() {
 		defer close(stopped)
-		ticker := time.NewTicker(constants.ChatBotSSEHeartbeatEvery)
+		ticker := time.NewTicker(ChatBotSSEHeartbeatEvery)
 		defer ticker.Stop()
 		for {
 			select {
@@ -92,7 +90,7 @@ func (s *sseSession) startHeartbeat(ctx context.Context) func() {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if s.writeFrame(constants.ChatBotSSEHeartbeat) != nil {
+				if s.writeFrame(ChatBotSSEHeartbeat) != nil {
 					return
 				}
 			}

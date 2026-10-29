@@ -92,6 +92,7 @@ type Moment struct {
 	HiddenAt       *time.Time
 	ViewerCount    int64                `gorm:"type:integer;not null;default:0"`
 	ReactionCounts MomentReactionCounts `gorm:"type:jsonb;not null;default:'{}'"`
+	CommentCount   int64                `gorm:"type:integer;not null;default:0"`
 	Attempts       int                  `gorm:"column:processing_attempts;type:smallint;not null;default:0"`
 	Failures       int                  `gorm:"column:processing_failures;type:smallint;not null;default:0"`
 	ClaimedAt      *time.Time           `gorm:"column:processing_started_at"`

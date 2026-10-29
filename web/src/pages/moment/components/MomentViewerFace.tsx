@@ -8,10 +8,11 @@ import {
   MOMENT_TYPE,
 } from '@constants';
 import { cn, colorForName, momentMedia, momentNoticeKey } from '@lib';
-import type { Moment, MomentAuthor, ReactionType } from '@app-types';
+import type { Moment, MomentAuthor, MomentMyComment, ReactionType } from '@app-types';
 import type { MomentMediaStatus } from '../types';
 import { momentTurnStyle } from '../utils';
 import { MomentCanvas } from './MomentCanvas';
+import { MomentCommentBar } from './MomentCommentBar';
 import {
   MomentCloseIcon,
   MomentMoreIcon,
@@ -43,6 +44,8 @@ interface MomentViewerFaceProps {
   onOpenMenu?: () => void;
   onOpenProfile?: () => void;
   onReact?: (type: ReactionType) => void;
+  myComment?: MomentMyComment;
+  onComment?: () => void;
   onClose: () => void;
 }
 
@@ -66,6 +69,8 @@ export function MomentViewerFace({
   onOpenMenu,
   onOpenProfile,
   onReact,
+  myComment,
+  onComment,
   onClose,
 }: MomentViewerFaceProps) {
   const { t } = useTranslation();
@@ -200,7 +205,16 @@ export function MomentViewerFace({
           </button>
         </div>
       </div>
-      {onReact != null && <MomentReactionBar onReact={onReact} />}
+      {onReact != null && (
+        <MomentReactionBar
+          onReact={onReact}
+          leading={
+            onComment != null ? (
+              <MomentCommentBar myComment={myComment} onComment={onComment} />
+            ) : undefined
+          }
+        />
+      )}
       {active && noticeKey != null && (
         <p
           className={cn(

@@ -83,7 +83,7 @@ chat-server/
 │   └── migrations/      # Migration runner + postgres/ + scylla/
 ├── internal/
 │   ├── config/          # Shared loader
-│   ├── constants/       # SINGLE SOURCE OF TRUTH (kafka topics, cache keys, ws events…)
+│   ├── constants/       # Shared constants: kafka topics, ws events, cross-module keys/types
 │   ├── db/              # PostgreSQL (GORM) + ScyllaDB (gocql)
 │   ├── domain/          # Domain handlers (message, conversation, user)
 │   ├── logger/          # Zap setup
@@ -120,7 +120,7 @@ chat-server/
 
 #### 1. Centralized constants
 
-All Kafka topics, cache keys, and WebSocket events are defined in [internal/constants/constant.go](internal/constants/constant.go). No hard-coded strings.
+No hard-coded strings. Kafka topics live in [internal/constants/kafka.go](internal/constants/kafka.go) and WebSocket events in [internal/constants/websocket.go](internal/constants/websocket.go). Constants used by a single module live in that module's `<module>.constants.go`; only constants shared by modules that cannot import each other stay in [internal/constants](internal/constants).
 
 #### 2. Service-specific config validation
 
@@ -347,7 +347,7 @@ ScyllaDB migrations automatically replace `chat_keyspace` with the actual keyspa
 
 ## Kafka Topics
 
-Defined in [internal/constants/constant.go](internal/constants/constant.go):
+Defined in [internal/constants/kafka.go](internal/constants/kafka.go):
 
 - `CHAT.MESSAGE.CREATED` — new message
 - `CHAT.MESSAGE.UPDATED` — message edited

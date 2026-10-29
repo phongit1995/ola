@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"unicode/utf8"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 )
 
@@ -25,18 +24,18 @@ type ChatBotPrompt struct {
 }
 
 var ChatBotDefaultPrompts = map[string]ChatBotPrompt{
-	constants.ChatBotTypeOlala: {
-		SystemPrompt:     constants.ChatBotSystemPrompt,
-		IdentityReminder: constants.ChatBotIdentityReminder,
+	ChatBotTypeOlala: {
+		SystemPrompt:     ChatBotSystemPrompt,
+		IdentityReminder: ChatBotIdentityReminder,
 	},
-	constants.ChatBotTypeOlavi: {
-		SystemPrompt:     constants.ChatBotOlaviSystemPrompt,
-		IdentityReminder: constants.ChatBotOlaviIdentityReminder,
+	ChatBotTypeOlavi: {
+		SystemPrompt:     ChatBotOlaviSystemPrompt,
+		IdentityReminder: ChatBotOlaviIdentityReminder,
 	},
 }
 
 func ChatBotTypes() []string {
-	return []string{constants.ChatBotTypeOlala, constants.ChatBotTypeOlavi}
+	return []string{ChatBotTypeOlala, ChatBotTypeOlavi}
 }
 
 type ChatBotBotConfig struct {

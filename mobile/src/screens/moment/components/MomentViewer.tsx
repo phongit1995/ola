@@ -31,8 +31,10 @@ import {
   momentExpiresInMs,
   momentGroupEntryStep,
   momentGroupStartIndex,
+  ownSessionMoments,
   momentItemStep,
   momentMedia,
+  momentMyComment,
   momentPreloadUrl,
 } from '@ola/shared/lib';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
@@ -46,6 +48,7 @@ import { ReportDialog } from '@components/ui/ReportDialog';
 import { ToastHost } from '@components/ui/ToastHost';
 import { releaseVoicePlayback } from '@lib/voicePlaybackSession';
 import { MOMENT_ASPECT_RATIO, MOMENT_TURN_FLING_VELOCITY } from '../constants';
+import { MomentCommentSheet } from './MomentCommentSheet';
 import { MomentViewerFace, type MomentMediaStatus } from './MomentViewerFace';
 
 const SWIPE_MIN_DISTANCE_PX = 10;
@@ -53,6 +56,11 @@ const AXIS_NONE = 0;
 const AXIS_X = 1;
 const AXIS_Y = 2;
 const TURN_EASING = Easing.out(Easing.cubic);
+
+function dragAxis(dx: number, dy: number) {
+  'worklet';
+  return Math.abs(dx) > Math.abs(dy) ? AXIS_X : AXIS_Y;
+}
 
 interface MomentViewerProps {
   session: MomentViewerSession;
@@ -66,15 +74,17 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
   const window = useWindowDimensions();
   const markSeen = useMomentStore((s) => s.markSeen);
   const react = useMomentStore((s) => s.react);
+  const myComments = useMomentStore((s) => s.myComments);
   const history = useMomentStore((s) => s.history);
+  const momentDetails = useMomentStore((s) => s.momentDetails);
   const seenIds = useMomentStore((s) => s.seenIds);
   const ownMoments = useMomentTray().mine;
   const baseGroups = useMemo(() => {
     const ownAuthor = session.groups[0]?.author;
     if (!session.own || ownAuthor == null) return session.groups;
-    const moments = session.archive ? history : ownMoments;
+    const moments = ownSessionMoments(session, ownMoments, history, momentDetails);
     return moments.length > 0 ? [{ author: ownAuthor, moments }] : [];
-  }, [session, ownMoments, history]);
+  }, [session, ownMoments, history, momentDetails]);
   const { toggleHidden } = useMomentHiddenToggle();
   const [groupIndex, setGroupIndex] = useState(session.startIndex);
   const groups = useMomentViewerGroups(baseGroups, groupIndex, !session.own);
@@ -94,6 +104,7 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
   const [userPaused, setUserPaused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const [commentMomentId, setCommentMomentId] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
   const [mediaStatuses, setMediaStatuses] = useState<Record<string, MomentMediaStatus>>({});
   const [appActive, setAppActive] = useState(() => AppState.currentState === 'active');
@@ -115,7 +126,7 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
     media == null || moment == null ? 'ready' : (mediaStatuses[moment.id] ?? 'loading');
   const upcoming = group?.moments[currentIndex + 1];
   const preloadUrl = upcoming ? momentPreloadUrl(upcoming) : undefined;
-  const dialogOpen = menuOpen || reportTarget != null;
+  const dialogOpen = menuOpen || reportTarget != null || commentMomentId != null;
   const paused = holding || turning || userPaused || dialogOpen || !appActive;
   const waitingForMedia = mediaStatus === 'loading';
   const timedBySlide = !isVideo || mediaStatus === 'error';
@@ -289,11 +300,12 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
     const swipe = Gesture.Pan()
       .enabled(!turning)
       .minDistance(SWIPE_MIN_DISTANCE_PX)
-      .onStart((event) => {
-        axis.value = Math.abs(event.translationX) > Math.abs(event.translationY) ? AXIS_X : AXIS_Y;
-        runOnJS(setHolding)(true);
-      })
+      .onStart(() => runOnJS(setHolding)(true))
       .onUpdate((event) => {
+        if (axis.value === AXIS_NONE) {
+          if (event.translationX === 0 && event.translationY === 0) return;
+          axis.value = dragAxis(event.translationX, event.translationY);
+        }
         if (axis.value === AXIS_X) {
           const raw = Math.max(-1, Math.min(1, -event.translationX / canvasWidth));
           const blocked = (raw > 0 && !hasNext) || (raw < 0 && !hasPrev);
@@ -304,7 +316,8 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
       })
       .onEnd((event, success) => {
         runOnJS(setHolding)(false);
-        if (axis.value === AXIS_X) runOnJS(releaseTurn)(success ? event.translationX : 0, event.velocityX);
+        const endAxis = axis.value === AXIS_NONE ? dragAxis(event.translationX, event.translationY) : axis.value;
+        if (endAxis === AXIS_X) runOnJS(releaseTurn)(success ? event.translationX : 0, event.velocityX);
         else if (success) runOnJS(handleClose)(event.translationX, event.translationY);
       })
       .onFinalize(() => {
@@ -400,7 +413,11 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
                 onOpenProfile={
                   session.own || onOpenProfile == null ? undefined : () => onOpenProfile(faceGroup.author)
                 }
-                onReact={session.own ? undefined : (type) => react(faceMoment.id, type)}
+                onReact={
+                  session.own || commentMomentId != null ? undefined : (type) => react(faceMoment.id, type)
+                }
+                myComment={session.own ? undefined : momentMyComment(faceMoment, myComments)}
+                onComment={session.own ? undefined : () => setCommentMomentId(faceMoment.id)}
                 onClose={onClose}
               />
             );
@@ -415,6 +432,9 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
         onClose={() => setMenuOpen(false)}
       />
       {reportTarget && <ReportDialog target={reportTarget} onClose={() => setReportTarget(null)} />}
+      {commentMomentId != null && (
+        <MomentCommentSheet momentId={commentMomentId} onClose={() => setCommentMomentId(null)} />
+      )}
     </View>
   );
 }

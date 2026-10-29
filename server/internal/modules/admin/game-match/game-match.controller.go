@@ -1,14 +1,9 @@
 package admingamematch
 
 import (
-	"net/http"
-	"strconv"
-	"time"
-
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -19,42 +14,6 @@ type Controller struct {
 
 func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_game_match_controller]")}
-}
-
-func parseIntQuery(c *gin.Context, key string) *int {
-	s := c.Query(key)
-	if s == "" {
-		return nil
-	}
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return nil
-	}
-	return &n
-}
-
-func parseTimeQuery(c *gin.Context, key string) (*time.Time, error) {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil, nil
-	}
-	t, err := time.Parse(time.RFC3339, raw)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key+" time")
-	}
-	return &t, nil
-}
-
-func parseUUIDQuery(c *gin.Context, key string) (*uuid.UUID, error) {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil, nil
-	}
-	id, err := uuid.Parse(raw)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key)
-	}
-	return &id, nil
 }
 
 func oneOf(value string, allowed ...string) string {
@@ -72,28 +31,28 @@ func parseFilter(c *gin.Context) (AdminMatchFilter, error) {
 	f.Status = oneOf(c.Query("status"), "playing", "finished")
 	f.Reason = oneOf(c.Query("reason"), "win", "forfeit", "timeout", "draw", "disconnect", "void")
 	f.Mode = oneOf(c.Query("mode"), "queue", "room")
-	f.MinBet = parseIntQuery(c, "minBet")
-	f.MaxBet = parseIntQuery(c, "maxBet")
+	f.MinBet = utils.ParseIntQuery(c, "minBet")
+	f.MaxBet = utils.ParseIntQuery(c, "maxBet")
 
-	userID, err := parseUUIDQuery(c, "userId")
+	userID, err := utils.ParseUUIDQuery(c, "userId")
 	if err != nil {
 		return f, err
 	}
 	f.UserID = userID
 
-	winnerID, err := parseUUIDQuery(c, "winnerId")
+	winnerID, err := utils.ParseUUIDQuery(c, "winnerId")
 	if err != nil {
 		return f, err
 	}
 	f.WinnerID = winnerID
 
-	from, err := parseTimeQuery(c, "from")
+	from, err := utils.ParseTimeQuery(c, "from")
 	if err != nil {
 		return f, err
 	}
 	f.From = from
 
-	to, err := parseTimeQuery(c, "to")
+	to, err := utils.ParseTimeQuery(c, "to")
 	if err != nil {
 		return f, err
 	}
@@ -150,13 +109,13 @@ func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 	f.GameID = c.Query("gameId")
 	f.Mode = oneOf(c.Query("mode"), "queue", "room")
 
-	from, err := parseTimeQuery(c, "from")
+	from, err := utils.ParseTimeQuery(c, "from")
 	if err != nil {
 		return nil, err
 	}
 	f.From = from
 
-	to, err := parseTimeQuery(c, "to")
+	to, err := utils.ParseTimeQuery(c, "to")
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +130,7 @@ func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 
 func parseThreshold(c *gin.Context, key string, def, min int) int {
 	value := def
-	if n := parseIntQuery(c, key); n != nil && *n >= min {
+	if n := utils.ParseIntQuery(c, key); n != nil && *n >= min {
 		value = *n
 	}
 	return value
@@ -193,13 +152,13 @@ func (ctrl *Controller) GetSuspects(c *gin.Context) (interface{}, error) {
 	var f AdminMatchFilter
 	f.GameID = c.Query("gameId")
 
-	from, err := parseTimeQuery(c, "from")
+	from, err := utils.ParseTimeQuery(c, "from")
 	if err != nil {
 		return nil, err
 	}
 	f.From = from
 
-	to, err := parseTimeQuery(c, "to")
+	to, err := utils.ParseTimeQuery(c, "to")
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +191,7 @@ func (ctrl *Controller) ListLevels(c *gin.Context) (interface{}, error) {
 	f.GameID = c.Query("gameId")
 	f.Search = c.Query("search")
 
-	userID, err := parseUUIDQuery(c, "userId")
+	userID, err := utils.ParseUUIDQuery(c, "userId")
 	if err != nil {
 		return nil, err
 	}

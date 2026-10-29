@@ -90,7 +90,7 @@ socket.on('message', (frame) => {
 | `USER_TYPING`            | Client `typing` or `POST /api/conversations/typing` | Another member is typing |
 | `USER_STOP_TYPING`       | Client `stop_typing` | Another member stopped typing |
 
-See [`internal/constants/constant.go`](../internal/constants/constant.go) for the canonical names.
+See [`internal/constants/websocket.go`](../internal/constants/websocket.go) for the canonical names.
 
 ---
 

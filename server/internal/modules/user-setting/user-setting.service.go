@@ -28,7 +28,7 @@ func NewService(repo *Repository, cache *services.CacheService, logger *zap.Suga
 
 func (s *Service) cacheSettings(userID uuid.UUID, resp *UserSettingsResponse) {
 	key := fmt.Sprintf(constants.CacheKeyUserSettings, userID)
-	if err := s.cache.Set(key, resp, constants.CacheTTLUserSettings*time.Second); err != nil {
+	if err := s.cache.Set(key, resp, CacheTTLUserSettings*time.Second); err != nil {
 		s.logger.Warnw("Failed to cache user settings", "user_id", userID, "error", err.Error())
 	}
 }

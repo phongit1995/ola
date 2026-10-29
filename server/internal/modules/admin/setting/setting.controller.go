@@ -246,6 +246,12 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateMomentMediaPurgeValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyAnalytics:
+		normalized, err := setting.ValidateAnalyticsValue(value)
+		if err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+		return normalized, nil
 	case setting.KeyPushNotification:
 		if err := setting.ValidatePushNotificationValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

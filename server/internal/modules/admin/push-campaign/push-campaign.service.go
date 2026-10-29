@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/utils"
 
@@ -75,7 +75,7 @@ func (s *Service) Create(ctx context.Context, adminID uuid.UUID, req *CreateCamp
 		TargetUserID: targetUserID,
 		Title:        title,
 		Body:         body,
-		Status:       constants.PushCampaignStatusQueued,
+		Status:       pushBroadcastEvents.PushCampaignStatusQueued,
 	}
 	if err := s.repo.Create(campaign); err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (s *Service) List(limit, offset int) (*CampaignListResponse, error) {
 }
 
 func (s *Service) resolveTarget(audience, username string) (*uuid.UUID, error) {
-	if audience != constants.PushAudienceUser {
+	if audience != push.PushAudienceUser {
 		return nil, nil
 	}
 	username = strings.TrimSpace(username)

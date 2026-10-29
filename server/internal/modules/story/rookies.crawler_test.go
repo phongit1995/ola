@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/setting"
 
 	"go.uber.org/zap"
@@ -22,8 +21,8 @@ type fakeRookiesSettings struct {
 func (f *fakeRookiesSettings) MarkRookiesCookieDead(cookie string, at time.Time) (bool, error) {
 	f.dead = append(f.dead, cookie)
 	for i := range f.cfg.Cookies {
-		if f.cfg.Cookies[i].Cookie == cookie && f.cfg.Cookies[i].Status == constants.StoryCookieStatusActive {
-			f.cfg.Cookies[i].Status = constants.StoryCookieStatusDead
+		if f.cfg.Cookies[i].Cookie == cookie && f.cfg.Cookies[i].Status == setting.StoryCookieStatusActive {
+			f.cfg.Cookies[i].Status = setting.StoryCookieStatusDead
 			f.cfg.Cookies[i].DeadAt = &at
 			return true, nil
 		}
@@ -324,7 +323,7 @@ func TestRookiesCrawlerHasItsOwnLock(t *testing.T) {
 func rookiesCookies(values ...string) []setting.StoryCookie {
 	cookies := make([]setting.StoryCookie, 0, len(values))
 	for i, value := range values {
-		cookies = append(cookies, setting.StoryCookie{Name: fmt.Sprintf("acc%d", i+1), Cookie: value, Status: constants.StoryCookieStatusActive})
+		cookies = append(cookies, setting.StoryCookie{Name: fmt.Sprintf("acc%d", i+1), Cookie: value, Status: setting.StoryCookieStatusActive})
 	}
 	return cookies
 }

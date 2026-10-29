@@ -181,6 +181,13 @@ export function MomentsTab() {
       render: (value: number | null) => value ?? <Typography.Text type="secondary">—</Typography.Text>,
     },
     {
+      title: 'Bình luận',
+      dataIndex: 'commentCount',
+      width: 90,
+      align: 'center',
+      render: (value: number) => value || <Typography.Text type="secondary">—</Typography.Text>,
+    },
+    {
       title: 'Báo cáo',
       key: 'reports',
       width: 90,

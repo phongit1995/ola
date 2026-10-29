@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -49,7 +48,7 @@ func (ctrl *Controller) RegisterToken(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "token is required")
 	}
 	token := strings.TrimSpace(req.Token)
-	if len(token) < constants.PushTokenMinLength || len(token) > constants.PushTokenMaxLength {
+	if len(token) < PushTokenMinLength || len(token) > PushTokenMaxLength {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid token length")
 	}
 	if err := ctrl.service.Register(userID, sessionID, token); err != nil {

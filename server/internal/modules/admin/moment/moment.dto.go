@@ -37,6 +37,7 @@ type MomentItem struct {
 	ViewerCount        *int64                       `json:"viewerCount"`
 	ReactionCount      int64                        `json:"reactionCount"`
 	Reactions          []moment.MomentReactionCount `json:"reactions"`
+	CommentCount       int64                        `json:"commentCount"`
 	ReportCount        int64                        `json:"reportCount"`
 	PendingReportCount int64                        `json:"pendingReportCount"`
 	Author             *AuthorResponse              `json:"author,omitempty"`

@@ -12,8 +12,8 @@ import (
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	messageEvents "ola-chat-server/internal/domain/message"
-	roomEvents "ola-chat-server/internal/domain/room"
 	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
+	roomEvents "ola-chat-server/internal/domain/room"
 	userBanEvents "ola-chat-server/internal/domain/user-ban"
 	"time"
 

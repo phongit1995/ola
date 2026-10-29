@@ -1,6 +1,7 @@
 import { http } from '../api/http';
 import { API_PATH } from '../config/api';
 import {
+  MOMENT_COMMENTS_PAGE_SIZE,
   MOMENT_HISTORY_PAGE_SIZE,
   MOMENT_UPLOAD_TIMEOUT_MS,
   MOMENT_VIEWERS_PAGE_SIZE,
@@ -11,7 +12,9 @@ import type {
   CreateMomentsResult,
   MarkMomentsSeenResult,
   Moment,
+  MomentCommentsPage,
   MomentHistoryPage,
+  MomentMyComment,
   MomentReactorsPage,
   MomentReactResult,
   MyMomentsResult,
@@ -97,10 +100,28 @@ export class MomentService {
     return firstFilledPage((at) => MomentService.reactors(id, at), offset);
   }
 
+  static comment(id: string, content: string): Promise<MomentMyComment> {
+    return http.post<MomentMyComment>(API_PATH.moments.comments(id), { content });
+  }
+
+  static comments(id: string, offset = 0): Promise<MomentCommentsPage> {
+    return http.get<MomentCommentsPage>(API_PATH.moments.comments(id), {
+      params: { limit: MOMENT_COMMENTS_PAGE_SIZE, offset },
+    });
+  }
+
+  static visibleComments(id: string, offset = 0): Promise<MomentCommentsPage> {
+    return firstFilledPage((at) => MomentService.comments(id, at), offset);
+  }
+
   static history(offset = 0): Promise<MomentHistoryPage> {
     return http.get<MomentHistoryPage>(API_PATH.moments.history, {
       params: { limit: MOMENT_HISTORY_PAGE_SIZE, offset },
     });
+  }
+
+  static get(id: string): Promise<Moment> {
+    return http.get<Moment>(API_PATH.moments.detail(id));
   }
 
   static setHidden(id: string, hidden: boolean): Promise<Moment> {

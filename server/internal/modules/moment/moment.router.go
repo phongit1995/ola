@@ -25,8 +25,11 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		moments.POST("/seen", r.rateLimit.LimitPolicy(middleware.PolicyMomentSeen), r.controller.MarkSeen)
 		moments.POST("/:id/reactions", r.rateLimit.LimitPolicy(middleware.PolicyMomentReact), r.controller.React)
 		moments.GET("/:id/reactions", r.controller.Reactors)
+		moments.POST("/:id/comments", r.rateLimit.LimitPolicy(middleware.PolicyMomentComment), r.controller.Comment)
+		moments.GET("/:id/comments", r.controller.Comments)
 		moments.GET("/:id/viewers", r.controller.Viewers)
 		moments.PATCH("/:id/hidden", r.controller.SetHidden)
+		moments.GET("/:id", r.controller.Get)
 		moments.DELETE("/:id", r.controller.Delete)
 	}
 }

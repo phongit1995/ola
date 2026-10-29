@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"strconv"
 	"time"
@@ -72,8 +71,8 @@ type leaderboardOrder struct {
 }
 
 var leaderboardOrders = map[string]leaderboardOrder{
-	constants.WordChainLeaderboardSortPoints: {orderBy: "points DESC, wins DESC, user_id", filter: "points > 0"},
-	constants.WordChainLeaderboardSortWins:   {orderBy: "wins DESC, points DESC, user_id", filter: "wins > 0"},
+	WordChainLeaderboardSortPoints: {orderBy: "points DESC, wins DESC, user_id", filter: "points > 0"},
+	WordChainLeaderboardSortWins:   {orderBy: "wins DESC, points DESC, user_id", filter: "wins > 0"},
 }
 
 const leaderboardQuery = `

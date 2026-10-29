@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/services"
 
@@ -36,7 +35,7 @@ type Admission struct {
 }
 
 func NewService(gemini *GeminiClient, settings *setting.Service, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
-	location, err := time.LoadLocation(constants.ChatBotDailyResetTZ)
+	location, err := time.LoadLocation(ChatBotDailyResetTZ)
 	if err != nil {
 		location = time.FixedZone("ICT", 7*60*60)
 	}
@@ -60,7 +59,7 @@ func (s *Service) Admit(userID uuid.UUID, botType string, client setting.Client)
 		return admission, nil
 	}
 
-	key := fmt.Sprintf(constants.CacheKeyChatBotDaily, userID.String(), time.Now().In(s.location).Format("2006-01-02"))
+	key := fmt.Sprintf(CacheKeyChatBotDaily, userID.String(), time.Now().In(s.location).Format("2006-01-02"))
 	count, err := s.cache.Increment(key)
 	if err != nil {
 		s.logger.Warnw("Failed to count chat bot usage, allowing request", "user_id", userID, "error", err)
@@ -107,7 +106,7 @@ func (s *Service) Complete(ctx context.Context, req *CompletionRequest, admissio
 
 	return &CompletionResponse{
 		Content:      text,
-		FinishReason: constants.ChatBotFinishReasonStop,
+		FinishReason: ChatBotFinishReasonStop,
 	}, prompt, nil
 }
 

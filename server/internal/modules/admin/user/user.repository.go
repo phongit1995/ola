@@ -2,7 +2,6 @@ package adminuser
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"ola-chat-server/internal/apperr"
@@ -165,18 +164,6 @@ func (r *Repository) CountVipIcons(userID uuid.UUID) (int64, error) {
 	var count int64
 	err := r.db.Model(&models.UserVipIcon{}).Where("user_id = ?", userID).Count(&count).Error
 	return count, err
-}
-
-func (r *Repository) ListVipIcons(userID uuid.UUID, activeTypeID int16, limit, offset int) ([]models.UserVipIcon, error) {
-	var items []models.UserVipIcon
-	order := fmt.Sprintf("(vip_icon_id = %d) DESC, acquired_at DESC", activeTypeID)
-	err := r.db.
-		Where("user_id = ?", userID).
-		Order(order).
-		Limit(limit).
-		Offset(offset).
-		Find(&items).Error
-	return items, err
 }
 
 func (r *Repository) CreateVipIcon(icon *models.UserVipIcon) error {

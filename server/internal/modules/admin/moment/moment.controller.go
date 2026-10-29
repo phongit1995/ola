@@ -176,6 +176,29 @@ func (ctrl *Controller) ListViewers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// ListComments godoc
+// @Summary      List comments on a moment, newest first (admin)
+// @Tags         admin-moment
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id     path  string true  "Moment ID"
+// @Param        limit  query int    false "Page size (default 30, max 100)"
+// @Param        offset query int    false "Offset"
+// @Success      200  {object}  utils.BaseResponse[moment.MomentCommentsResponse]
+// @Router       /admin/moments/{id}/comments [get]
+func (ctrl *Controller) ListComments(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid moment id")
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, moment.MomentCommentsDefaultPage, moment.MomentCommentsMaxPage)
+	resp, err := ctrl.service.ListComments(id, limit, utils.ParseOffset(c))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // MediaPurgeLogs godoc
 // @Summary      Moment media auto-purge run logs of the last 30 days (admin)
 // @Tags         admin-moment

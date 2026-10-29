@@ -3,6 +3,7 @@ package adminwheel
 import (
 	"time"
 
+	admincommon "ola-chat-server/internal/modules/admin/common"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
@@ -15,12 +16,7 @@ type StatsFilter struct {
 	To      *time.Time
 }
 
-type UserBrief struct {
-	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username string `json:"username" example:"john_doe"`
-	FullName string `json:"fullName" example:"John Doe"`
-	Avatar   string `json:"avatar" example:"https://example.com/avatar.jpg"`
-}
+type UserBrief = admincommon.UserBrief
 
 type UserStatsItem struct {
 	User       UserBrief `json:"user"`

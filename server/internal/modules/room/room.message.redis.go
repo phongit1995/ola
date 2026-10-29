@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"strconv"
 	"time"
@@ -33,15 +32,15 @@ func NewRedisMessageRepository(cache *services.CacheService, cfg *config.Config,
 }
 
 func (r *RedisMessageRepository) indexKey(roomID string) string {
-	return fmt.Sprintf(constants.CacheKeyRoomMsgIndex, roomID)
+	return fmt.Sprintf(CacheKeyRoomMsgIndex, roomID)
 }
 
 func (r *RedisMessageRepository) dataKey(roomID string) string {
-	return fmt.Sprintf(constants.CacheKeyRoomMsgData, roomID)
+	return fmt.Sprintf(CacheKeyRoomMsgData, roomID)
 }
 
 func (r *RedisMessageRepository) clientMessageKey(roomID, senderID, clientMsgID string) string {
-	return fmt.Sprintf(constants.CacheKeyRoomClientMessage, roomID, senderID, clientMsgID)
+	return fmt.Sprintf(CacheKeyRoomClientMessage, roomID, senderID, clientMsgID)
 }
 
 func (r *RedisMessageRepository) ttl() time.Duration {

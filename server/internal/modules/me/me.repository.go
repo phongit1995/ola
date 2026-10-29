@@ -1,6 +1,7 @@
 package me
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"time"
@@ -774,6 +775,72 @@ func (r *Repository) DeleteMeNotificationsByComment(commentID uuid.UUID) ([]*mod
 		return rows, nil
 	}
 	if err := r.db.Unscoped().Where("comment_id = ?", commentID).Delete(&models.MeNotification{}).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+const liveMomentGuardSQL = `WHERE EXISTS (SELECT 1 FROM moments WHERE id = ? AND deleted_at IS NULL FOR SHARE)`
+
+const insertMomentCommentNotificationSQL = `
+INSERT INTO me_notifications (recipient_id, actor_id, type, post_id, preview, is_read, actor_count, created_at, updated_at)
+SELECT ?, ?, ?, ?, ?, false, 1, ?, ?
+` + liveMomentGuardSQL + `
+RETURNING id`
+
+const upsertMomentReactionNotificationSQL = `
+INSERT INTO me_notifications (recipient_id, actor_id, type, post_id, preview, is_read, actor_count, created_at, updated_at)
+SELECT ?, ?, ?, ?, ?, false, 1, ?, ?
+` + liveMomentGuardSQL + `
+ON CONFLICT (recipient_id, post_id) WHERE type = 'moment_reaction'
+DO UPDATE SET
+	actor_id = EXCLUDED.actor_id,
+	preview = EXCLUDED.preview,
+	is_read = false,
+	actor_count = me_notifications.actor_count + 1,
+	created_at = EXCLUDED.created_at,
+	updated_at = EXCLUDED.updated_at,
+	deleted_at = NULL
+RETURNING id`
+
+func (r *Repository) CreateMomentCommentNotification(recipientID, actorID, momentID uuid.UUID, preview string) (*models.MeNotification, error) {
+	return r.writeMomentNotification(insertMomentCommentNotificationSQL, recipientID, actorID, models.MeNotificationMomentComment, momentID, preview)
+}
+
+func (r *Repository) UpsertMomentReactionNotification(recipientID, actorID, momentID uuid.UUID, reaction string) (*models.MeNotification, error) {
+	return r.writeMomentNotification(upsertMomentReactionNotificationSQL, recipientID, actorID, models.MeNotificationMomentReaction, momentID, reaction)
+}
+
+func (r *Repository) writeMomentNotification(query string, recipientID, actorID uuid.UUID, ntype string, momentID uuid.UUID, preview string) (*models.MeNotification, error) {
+	now := time.Now()
+	var id uuid.UUID
+	err := r.db.Raw(query, recipientID, actorID, ntype, momentID, preview, now, now, momentID).Row().Scan(&id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var row models.MeNotification
+	if err := r.db.Preload("Actor").First(&row, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+func (r *Repository) DeleteMeNotificationsByMoment(momentID uuid.UUID) ([]*models.MeNotification, error) {
+	scope := func(db *gorm.DB) *gorm.DB {
+		return db.Where("post_id = ? AND type IN ?", momentID,
+			[]string{models.MeNotificationMomentComment, models.MeNotificationMomentReaction})
+	}
+	var rows []*models.MeNotification
+	if err := scope(r.db).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return rows, nil
+	}
+	if err := scope(r.db.Unscoped()).Delete(&models.MeNotification{}).Error; err != nil {
 		return nil, err
 	}
 	return rows, nil

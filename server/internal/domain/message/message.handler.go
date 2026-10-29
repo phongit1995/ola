@@ -1,14 +1,14 @@
 package message
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"ola-chat-server/internal/constants"
 	conversationDomain "ola-chat-server/internal/domain/conversation"
 	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
-	"context"
-	"encoding/json"
-	"errors"
 
 	"go.uber.org/zap"
 )

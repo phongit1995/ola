@@ -2,13 +2,11 @@ package user
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"mime/multipart"
 	"strings"
 
 	"ola-chat-server/internal/apperr"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/session"
@@ -16,6 +14,7 @@ import (
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -360,7 +359,7 @@ func (s *Service) RecordProfileView(viewerID, ownerID uuid.UUID) (*ProfileViewRe
 }
 
 func (s *Service) GetMyVisitors(meID uuid.UUID, cursor string, limit int) (*VisitorListResponse, error) {
-	cursorTime, cursorID, err := decodeVisitorCursor(cursor)
+	cursorTime, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -402,41 +401,13 @@ func (s *Service) GetMyVisitors(meID uuid.UUID, cursor string, limit int) (*Visi
 	var nextCursor string
 	if hasMore && len(rows) > 0 {
 		last := rows[len(rows)-1]
-		nextCursor = encodeVisitorCursor(last.ViewedAt, last.ID)
+		nextCursor = utils.EncodeTimeCursor(last.ViewedAt, last.ID)
 	}
 
 	return &VisitorListResponse{
 		Users:      items,
 		NextCursor: nextCursor,
 	}, nil
-}
-
-func encodeVisitorCursor(t time.Time, id uuid.UUID) string {
-	raw := t.UTC().Format(time.RFC3339Nano) + "|" + id.String()
-	return base64.RawURLEncoding.EncodeToString([]byte(raw))
-}
-
-func decodeVisitorCursor(cursor string) (*time.Time, *uuid.UUID, error) {
-	if cursor == "" {
-		return nil, nil, nil
-	}
-	data, err := base64.RawURLEncoding.DecodeString(cursor)
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	parts := strings.SplitN(string(data), "|", 2)
-	if len(parts) != 2 {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	t, err := time.Parse(time.RFC3339Nano, parts[0])
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	id, err := uuid.Parse(parts[1])
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	return &t, &id, nil
 }
 
 func (s *Service) ensureNotBlockedByTarget(callerID, targetID uuid.UUID) error {
@@ -835,7 +806,7 @@ func (s *Service) UploadImage(ctx context.Context, userID uuid.UUID, file multip
 		"filename", filename,
 	)
 
-	result, err := s.s3Service.UploadFile(ctx, file, filename, constants.UploadFolderAvatar)
+	result, err := s.s3Service.UploadFile(ctx, file, filename, UploadFolderAvatar)
 	if err != nil {
 		s.logger.Errorw("Failed to upload image to S3",
 			"user_id", userID,

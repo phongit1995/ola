@@ -2,7 +2,6 @@ package story
 
 import (
 	"context"
-	"encoding/base64"
 	"net/http"
 	"strings"
 	"time"
@@ -24,31 +23,18 @@ var (
 )
 
 func encodeCommentCursor(item models.StoryComment) string {
-	raw := item.CreatedAt.UTC().Format(time.RFC3339Nano) + "|" + item.ID.String()
-	return base64.RawURLEncoding.EncodeToString([]byte(raw))
+	return utils.EncodeTimeCursor(item.CreatedAt, item.ID)
 }
 
 func decodeCommentCursor(cursor string) (*commentCursor, error) {
-	if cursor == "" {
+	createdAt, id, err := utils.DecodeTimeCursor(cursor)
+	if err != nil {
+		return nil, ErrCommentCursor
+	}
+	if createdAt == nil {
 		return nil, nil
 	}
-	data, err := base64.RawURLEncoding.DecodeString(cursor)
-	if err != nil {
-		return nil, ErrCommentCursor
-	}
-	parts := strings.SplitN(string(data), "|", 2)
-	if len(parts) != 2 {
-		return nil, ErrCommentCursor
-	}
-	createdAt, err := time.Parse(time.RFC3339Nano, parts[0])
-	if err != nil {
-		return nil, ErrCommentCursor
-	}
-	id, err := uuid.Parse(parts[1])
-	if err != nil {
-		return nil, ErrCommentCursor
-	}
-	return &commentCursor{CreatedAt: createdAt, ID: id}, nil
+	return &commentCursor{CreatedAt: *createdAt, ID: *id}, nil
 }
 
 func commentExcerpt(content string) string {

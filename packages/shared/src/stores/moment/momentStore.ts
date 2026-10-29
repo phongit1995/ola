@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import {
+  MOMENT_ERROR_CODE,
   MOMENT_REACT_FLUSH_MS,
   MOMENT_REACT_MAX_PER_REQUEST,
   MOMENT_REACT_MAX_PER_TYPE,
@@ -13,7 +14,7 @@ import { toApiError } from '../../lib/apiError';
 import { appendMomentGroups, isMomentActive } from '../../lib/moment';
 import { MomentService, type CreateMomentsInput } from '../../services/moment.service';
 import type { ReactionType } from '../../types/api/chat.type';
-import type { Moment, MomentTrayGroup } from '../../types/api/moment.type';
+import type { Moment, MomentMyComment, MomentTrayGroup } from '../../types/api/moment.type';
 import { registerOnLogout, useAuthStore } from '../auth/authStore';
 
 type Timer = ReturnType<typeof setTimeout>;
@@ -27,11 +28,13 @@ interface MomentState {
   loadingMore: boolean;
   paged: boolean;
   seenIds: ReadonlySet<string>;
+  myComments: Readonly<Record<string, MomentMyComment>>;
   clockMs: number;
   history: Moment[];
   historyNextOffset: number | null;
   historyLoaded: boolean;
   historyLoading: boolean;
+  momentDetails: Readonly<Record<string, Moment>>;
   tick: () => void;
   load: () => Promise<void>;
   loadMore: () => Promise<void>;
@@ -42,13 +45,16 @@ interface MomentState {
   flushSeen: () => Promise<void>;
   react: (momentId: string, type: ReactionType) => void;
   flushReactions: () => Promise<void>;
+  comment: (momentId: string, content: string) => Promise<boolean>;
   publish: (build: () => Promise<CreateMomentsInput>) => Promise<boolean>;
   setHidden: (id: string, hidden: boolean) => Promise<void>;
+  fetchMoment: (id: string) => Promise<Moment>;
   reset: () => void;
 }
 
 const SERVER_ERROR_STATUS = 500;
 const TOO_MANY_REQUESTS_STATUS = 429;
+const EARLIER_COMMENT: MomentMyComment = { id: '', content: '', createdAt: '' };
 
 function initialState() {
   return {
@@ -60,11 +66,13 @@ function initialState() {
     loadingMore: false,
     paged: false,
     seenIds: new Set<string>() as ReadonlySet<string>,
+    myComments: {} as Readonly<Record<string, MomentMyComment>>,
     clockMs: Date.now(),
     history: [] as Moment[],
     historyNextOffset: null as number | null,
     historyLoaded: false,
     historyLoading: false,
+    momentDetails: {} as Readonly<Record<string, Moment>>,
   };
 }
 
@@ -73,6 +81,13 @@ let trayGeneration = 0;
 let mineVersion = 0;
 let historyGeneration = 0;
 let historyVersion = 0;
+let detailRequestSeq = 0;
+const detailMutations = new Map<string, number>();
+const detailAppliedRequests = new Map<string, number>();
+
+function markDetailMutation(id: string): void {
+  detailMutations.set(id, (detailMutations.get(id) ?? 0) + 1);
+}
 
 const HISTORY_STALE_RETRIES = 2;
 
@@ -368,6 +383,22 @@ export const useMomentStore = create<MomentState>((set, get) => {
         if (session === storeSession) reactionQueue.flushing = false;
       }
     },
+    comment: async (momentId, content) => {
+      const isCurrent = sessionGuard();
+      try {
+        const created = await MomentService.comment(momentId, content);
+        if (isCurrent()) set((state) => ({ myComments: { ...state.myComments, [momentId]: created } }));
+        return true;
+      } catch (error) {
+        if (toApiError(error).code !== MOMENT_ERROR_CODE.commentExists) throw error;
+        if (isCurrent()) {
+          set((state) => ({
+            myComments: { ...state.myComments, [momentId]: state.myComments[momentId] ?? EARLIER_COMMENT },
+          }));
+        }
+        return false;
+      }
+    },
     publish: async (build) => {
       const isCurrent = sessionGuard();
       const request = await build();
@@ -389,16 +420,36 @@ export const useMomentStore = create<MomentState>((set, get) => {
       if (!isCurrent()) return;
       mineVersion += 1;
       historyVersion += 1;
+      markDetailMutation(updated.id);
       set((state) => ({
         mine: patchMoments(state.mine, [updated]),
         history: patchMoments(state.history, [updated]),
+        momentDetails: { ...state.momentDetails, [updated.id]: updated },
       }));
+    },
+    fetchMoment: async (id) => {
+      const isCurrent = sessionGuard();
+      const request = ++detailRequestSeq;
+      const mutation = detailMutations.get(id) ?? 0;
+      const fetched = await MomentService.get(id);
+      if (!isCurrent()) return fetched;
+      const mutatedSince = mutation !== (detailMutations.get(id) ?? 0);
+      const newerApplied = request < (detailAppliedRequests.get(id) ?? 0);
+      if (mutatedSince || newerApplied) return get().momentDetails[id] ?? fetched;
+      detailAppliedRequests.set(id, request);
+      set((state) => ({
+        momentDetails: { ...state.momentDetails, [id]: fetched },
+        clockMs: Date.now(),
+      }));
+      return fetched;
     },
     reset: () => {
       storeSession += 1;
       trayGeneration += 1;
       mineVersion += 1;
       historyGeneration += 1;
+      detailMutations.clear();
+      detailAppliedRequests.clear();
       stopPagingRetry();
       clearTimeout(seenQueue.timer);
       seenQueue.pending = new Set();

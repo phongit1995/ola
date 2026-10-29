@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"strconv"
 
@@ -20,7 +19,7 @@ func NewStore(cache *services.CacheService) *Store {
 }
 
 func (s *Store) LoadState(ctx context.Context) (GameState, error) {
-	raw, err := s.client.Get(ctx, constants.CacheKeyWordChainState).Bytes()
+	raw, err := s.client.Get(ctx, CacheKeyWordChainState).Bytes()
 	if errors.Is(err, redis.Nil) {
 		return GameState{History: []string{}}, nil
 	}
@@ -46,10 +45,10 @@ func (s *Store) Apply(ctx context.Context, m *Mutation) error {
 	var seqCmd, revCmd *redis.IntCmd
 	if _, err := s.client.Pipelined(ctx, func(pipe redis.Pipeliner) error {
 		if len(m.Messages) > 0 {
-			seqCmd = pipe.IncrBy(ctx, constants.CacheKeyWordChainMsgSeq, int64(len(m.Messages)))
+			seqCmd = pipe.IncrBy(ctx, CacheKeyWordChainMsgSeq, int64(len(m.Messages)))
 		}
 		if m.State != nil {
-			revCmd = pipe.Incr(ctx, constants.CacheKeyWordChainStateRev)
+			revCmd = pipe.Incr(ctx, CacheKeyWordChainStateRev)
 		}
 		return nil
 	}); err != nil {
@@ -80,11 +79,11 @@ func (s *Store) Apply(ctx context.Context, m *Mutation) error {
 
 	_, err := s.client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		if stateData != nil {
-			pipe.Set(ctx, constants.CacheKeyWordChainState, stateData, 0)
+			pipe.Set(ctx, CacheKeyWordChainState, stateData, 0)
 		}
 		for i, msg := range m.Messages {
-			pipe.HSet(ctx, constants.CacheKeyWordChainMsgData, msg.ID, messageData[i])
-			pipe.ZAdd(ctx, constants.CacheKeyWordChainMsgIndex, redis.Z{Score: float64(msg.Seq), Member: msg.ID})
+			pipe.HSet(ctx, CacheKeyWordChainMsgData, msg.ID, messageData[i])
+			pipe.ZAdd(ctx, CacheKeyWordChainMsgIndex, redis.Z{Score: float64(msg.Seq), Member: msg.ID})
 		}
 		return nil
 	})
@@ -92,15 +91,15 @@ func (s *Store) Apply(ctx context.Context, m *Mutation) error {
 }
 
 func (s *Store) TrimMessages(ctx context.Context) error {
-	size, err := s.client.ZCard(ctx, constants.CacheKeyWordChainMsgIndex).Result()
+	size, err := s.client.ZCard(ctx, CacheKeyWordChainMsgIndex).Result()
 	if err != nil {
 		return err
 	}
-	overflow := size - constants.WordChainMaxStoredMessages
+	overflow := size - WordChainMaxStoredMessages
 	if overflow <= 0 {
 		return nil
 	}
-	oldest, err := s.client.ZPopMin(ctx, constants.CacheKeyWordChainMsgIndex, overflow).Result()
+	oldest, err := s.client.ZPopMin(ctx, CacheKeyWordChainMsgIndex, overflow).Result()
 	if err != nil {
 		return err
 	}
@@ -113,23 +112,23 @@ func (s *Store) TrimMessages(ctx context.Context) error {
 	if len(ids) == 0 {
 		return nil
 	}
-	return s.client.HDel(ctx, constants.CacheKeyWordChainMsgData, ids...).Err()
+	return s.client.HDel(ctx, CacheKeyWordChainMsgData, ids...).Err()
 }
 
 func (s *Store) ListMessages(ctx context.Context, limit int, beforeID string) ([]storedMessage, error) {
 	var ids []string
 	var err error
 	if beforeID == "" {
-		ids, err = s.client.ZRevRange(ctx, constants.CacheKeyWordChainMsgIndex, 0, int64(limit-1)).Result()
+		ids, err = s.client.ZRevRange(ctx, CacheKeyWordChainMsgIndex, 0, int64(limit-1)).Result()
 	} else {
-		score, scoreErr := s.client.ZScore(ctx, constants.CacheKeyWordChainMsgIndex, beforeID).Result()
+		score, scoreErr := s.client.ZScore(ctx, CacheKeyWordChainMsgIndex, beforeID).Result()
 		if errors.Is(scoreErr, redis.Nil) {
 			return []storedMessage{}, nil
 		}
 		if scoreErr != nil {
 			return nil, scoreErr
 		}
-		ids, err = s.client.ZRevRangeByScore(ctx, constants.CacheKeyWordChainMsgIndex, &redis.ZRangeBy{
+		ids, err = s.client.ZRevRangeByScore(ctx, CacheKeyWordChainMsgIndex, &redis.ZRangeBy{
 			Max:   "(" + strconv.FormatFloat(score, 'f', -1, 64),
 			Min:   "-inf",
 			Count: int64(limit),
@@ -141,7 +140,7 @@ func (s *Store) ListMessages(ctx context.Context, limit int, beforeID string) ([
 	if len(ids) == 0 {
 		return []storedMessage{}, nil
 	}
-	raws, err := s.client.HMGet(ctx, constants.CacheKeyWordChainMsgData, ids...).Result()
+	raws, err := s.client.HMGet(ctx, CacheKeyWordChainMsgData, ids...).Result()
 	if err != nil {
 		return nil, err
 	}

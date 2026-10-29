@@ -5,11 +5,9 @@ import (
 	"time"
 
 	"ola-chat-server/internal/apperr"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -35,16 +33,6 @@ func NewService(repo *Repository, userCache *user.CacheService, wsServer *websoc
 		wsServer:  wsServer,
 		logger:    logger.Named("[admin_ken_service]"),
 	}
-}
-
-func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
-	if s.wsServer == nil {
-		return
-	}
-	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-		"ken": ken,
-	})
-	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
 }
 
 func (s *Service) invalidate(userID uuid.UUID) {
@@ -77,7 +65,7 @@ func (s *Service) Adjust(targetID, adminID uuid.UUID, req AdjustRequest) (*Adjus
 	}
 
 	s.invalidate(targetID)
-	s.emitKenUpdate(targetID, updatedUser.Ken)
+	s.wsServer.EmitKenUpdate(targetID, updatedUser.Ken)
 	s.logger.Infow("Admin adjusted user ken",
 		"admin_id", adminID,
 		"user_id", targetID,

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 
 	"gorm.io/gorm"
@@ -93,8 +92,8 @@ func (r *Repository) MarkCookieDead(key, cookie string, at time.Time) (bool, err
 	result := r.db.Exec(markCookieDeadSQL, map[string]interface{}{
 		"key":    key,
 		"cookie": cookie,
-		"active": constants.StoryCookieStatusActive,
-		"dead":   constants.StoryCookieStatusDead,
+		"active": StoryCookieStatusActive,
+		"dead":   StoryCookieStatusDead,
 		"at":     at.UTC().Format(time.RFC3339),
 	})
 	return result.RowsAffected > 0, result.Error

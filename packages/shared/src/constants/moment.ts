@@ -53,6 +53,7 @@ export const MOMENT_ERROR_CODE = {
   videoNotMp4: 'MOMENT_VIDEO_NOT_MP4',
   videoVipRequired: 'MOMENT_VIDEO_VIP_REQUIRED',
   hiddenByAdmin: 'MOMENT_HIDDEN_BY_ADMIN',
+  commentExists: 'MOMENT_COMMENT_EXISTS',
 } as const;
 
 export const MOMENT_LIFETIME_MS = 24 * 60 * 60 * 1000;
@@ -63,6 +64,8 @@ export const MOMENT_SEEN_FLUSH_MS = 1500;
 export const MOMENT_REACT_FLUSH_MS = 800;
 export const MOMENT_REACT_MAX_PER_REQUEST = 20;
 export const MOMENT_REACT_MAX_PER_TYPE = 99;
+export const MOMENT_COMMENT_MAX_CHARS = 500;
+export const MOMENT_COMMENTS_PAGE_SIZE = 30;
 export const MOMENT_RETRY_BASE_MS = 1500;
 export const MOMENT_RETRY_MAX_MS = 30_000;
 export const MOMENT_CLOCK_TICK_MS = 30_000;

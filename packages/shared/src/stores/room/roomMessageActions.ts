@@ -185,8 +185,10 @@ export function createRoomMessageActions(
         ),
       }));
       await finalizeImageSend(room.id, clientMsgId, async () => {
-        const blob = await (await fetch(previewUrl)).blob();
-        return RoomService.sendImage(room.id, blob, clientMsgId, 'image');
+        const file =
+          nativeUploadFileFromUri(previewUrl, 'image.jpg', 'image/jpeg') ??
+          (await (await fetch(previewUrl)).blob());
+        return RoomService.sendImage(room.id, file, clientMsgId, 'image');
       });
     },
 

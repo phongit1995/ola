@@ -3,7 +3,6 @@ package me
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -126,10 +125,10 @@ func (s *Service) CreateClanPost(userID, clanID uuid.UUID, req *CreateMeRequest)
 }
 
 func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeRequest) (*MeResponse, error) {
-	if len(req.Images) > constants.MaxPostImages {
+	if len(req.Images) > MaxPostImages {
 		return nil, errMaxImages
 	}
-	if len(req.Audios) > constants.MaxPostAudios {
+	if len(req.Audios) > MaxPostAudios {
 		return nil, errMaxAudios
 	}
 	content := strings.TrimSpace(req.Content)
@@ -201,13 +200,13 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 		post.Mentions = s.resolveMentions(post.Content)
 	}
 	if req.Images != nil {
-		if len(*req.Images) > constants.MaxPostImages {
+		if len(*req.Images) > MaxPostImages {
 			return nil, errMaxImages
 		}
 		post.Images = toModelImages(*req.Images)
 	}
 	if req.Audios != nil {
-		if len(*req.Audios) > constants.MaxPostAudios {
+		if len(*req.Audios) > MaxPostAudios {
 			return nil, errMaxAudios
 		}
 		audios, err := toModelAudios(*req.Audios, existingAudios)
@@ -325,7 +324,7 @@ func (s *Service) GetByID(viewerID, postID uuid.UUID) (*MeResponse, error) {
 }
 
 func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*MeFeedResponse, error) {
-	cursorTime, cursorID, err := decodeFeedCursor(cursor)
+	cursorTime, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -340,13 +339,13 @@ func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*M
 	var nextCursor string
 	if hasMore && len(posts) > 0 {
 		last := posts[len(posts)-1]
-		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
+		nextCursor = utils.EncodeTimeCursor(last.CreatedAt, last.ID)
 	}
 	return &MeFeedResponse{Items: items, NextCursor: nextCursor}, nil
 }
 
 func (s *Service) ClanFeed(viewerID, clanID uuid.UUID, excludeID *uuid.UUID, cursor string, limit int) (*MeFeedResponse, error) {
-	cursorTime, cursorID, err := decodeFeedCursor(cursor)
+	cursorTime, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +360,7 @@ func (s *Service) ClanFeed(viewerID, clanID uuid.UUID, excludeID *uuid.UUID, cur
 	var nextCursor string
 	if hasMore && len(posts) > 0 {
 		last := posts[len(posts)-1]
-		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
+		nextCursor = utils.EncodeTimeCursor(last.CreatedAt, last.ID)
 	}
 	return &MeFeedResponse{Items: items, NextCursor: nextCursor}, nil
 }
@@ -480,7 +479,7 @@ func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*MeRespo
 	if err != nil {
 		return nil, err
 	}
-	s.invalidateTopLikers(constants.CacheKeyMePostTopLikers, postID)
+	s.invalidateTopLikers(CacheKeyMePostTopLikers, postID)
 	if current != nil && *current == models.MeReactionLike {
 		s.createMeNotification(post.AuthorID, userID, models.MeNotificationLike, postID, nil, "")
 	} else {
@@ -507,7 +506,7 @@ func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*MeResponse, error) 
 	if err != nil {
 		return nil, err
 	}
-	s.invalidateTopLikers(constants.CacheKeyMePostTopLikers, postID)
+	s.invalidateTopLikers(CacheKeyMePostTopLikers, postID)
 	s.removeMeNotification(post.AuthorID, userID, models.MeNotificationLike, postID, nil)
 	resp := toMeResponse(updated, nil)
 	s.attachTopLikers(&resp, postID)
@@ -515,7 +514,7 @@ func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*MeResponse, error) 
 }
 
 func (s *Service) attachTopLikers(resp *MeResponse, postID uuid.UUID) {
-	topLikers, err := s.topLikersCached(constants.CacheKeyMePostTopLikers, []uuid.UUID{postID}, func(ids []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
+	topLikers, err := s.topLikersCached(CacheKeyMePostTopLikers, []uuid.UUID{postID}, func(ids []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
 		return s.repo.TopLikerIDsByPosts(ids, 3)
 	})
 	if err != nil {
@@ -587,7 +586,7 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 }
 
 func (s *Service) ListNotifications(recipientID uuid.UUID, cursor string, limit int) (*MeNotificationListResponse, error) {
-	cursorTime, cursorID, err := decodeFeedCursor(cursor)
+	cursorTime, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -609,7 +608,7 @@ func (s *Service) ListNotifications(recipientID uuid.UUID, cursor string, limit 
 	var nextCursor string
 	if hasMore && len(items) > 0 {
 		last := items[len(items)-1]
-		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
+		nextCursor = utils.EncodeTimeCursor(last.CreatedAt, last.ID)
 	}
 
 	return &MeNotificationListResponse{
@@ -672,8 +671,8 @@ func (s *Service) allowMeNotificationPush(ntype string, actorID, postID uuid.UUI
 	if commentID != nil {
 		entityID = commentID.String()
 	}
-	key := fmt.Sprintf(constants.CacheKeyMeNotifPushGuard, ntype, actorID.String(), entityID)
-	acquired, err := s.cache.SetNX(key, "1", time.Duration(constants.MeNotifPushGuardTTLSeconds)*time.Second)
+	key := fmt.Sprintf(CacheKeyMeNotifPushGuard, ntype, actorID.String(), entityID)
+	acquired, err := s.cache.SetNX(key, "1", time.Duration(MeNotifPushGuardTTLSeconds)*time.Second)
 	if err != nil {
 		return true
 	}
@@ -730,6 +729,10 @@ func (s *Service) publishMeNotificationRemoval(recipientID, notificationID uuid.
 }
 
 func (s *Service) publishMeNotification(recipientID uuid.UUID, notif *models.MeNotification) {
+	s.publishMeNotificationEvent(recipientID, notif, false)
+}
+
+func (s *Service) publishMeNotificationEvent(recipientID uuid.UUID, notif *models.MeNotification, skipPush bool) {
 	if s.kafkaProducer == nil {
 		return
 	}
@@ -747,6 +750,7 @@ func (s *Service) publishMeNotification(recipientID uuid.UUID, notif *models.MeN
 		RecipientID:  recipientID.String(),
 		Notification: notifBytes,
 		UnreadCount:  unread,
+		SkipPush:     skipPush,
 	}
 	utils.PublishAsync(s.logger, "me notification", func(ctx context.Context) error {
 		return s.kafkaProducer.PublishMeNotification(ctx, event)
@@ -790,7 +794,7 @@ func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*
 	if err != nil {
 		return nil, err
 	}
-	topLikers, err := s.topLikersCached(constants.CacheKeyMeCommentTopLikers, likedCommentIDs, func(ids []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
+	topLikers, err := s.topLikersCached(CacheKeyMeCommentTopLikers, likedCommentIDs, func(ids []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
 		return s.repo.TopCommentLikerIDsByComments(ids, 3)
 	})
 	if err != nil {
@@ -872,7 +876,7 @@ func (s *Service) ToggleCommentLike(viewerID, postID, commentID uuid.UUID) (*Com
 	if err != nil {
 		return nil, err
 	}
-	s.invalidateTopLikers(constants.CacheKeyMeCommentTopLikers, commentID)
+	s.invalidateTopLikers(CacheKeyMeCommentTopLikers, commentID)
 	if liked {
 		s.createMeNotification(comment.AuthorID, viewerID, models.MeNotificationCommentLike, postID, &commentID, excerptText(comment.Content))
 	} else {
@@ -882,7 +886,7 @@ func (s *Service) ToggleCommentLike(viewerID, postID, commentID uuid.UUID) (*Com
 	resp := toCommentResponse(comment)
 	resp.LikeCount = likeCount
 	resp.Liked = liked
-	topLikers, err := s.topLikersCached(constants.CacheKeyMeCommentTopLikers, []uuid.UUID{commentID}, func(ids []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
+	topLikers, err := s.topLikersCached(CacheKeyMeCommentTopLikers, []uuid.UUID{commentID}, func(ids []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
 		return s.repo.TopCommentLikerIDsByComments(ids, 3)
 	})
 	if err == nil {
@@ -921,11 +925,11 @@ func (s *Service) UploadImages(ctx context.Context, userID uuid.UUID, files []*m
 	if len(files) == 0 {
 		return nil, errors.New("no images provided")
 	}
-	if len(files) > constants.MaxPostImages {
+	if len(files) > MaxPostImages {
 		return nil, errors.New("max 5 images")
 	}
 
-	folder := postUploadPrefix(userID) + time.Now().Format(constants.UploadDateLayout)
+	folder := postUploadPrefix(userID) + time.Now().Format(media.UploadDateLayout)
 	images := make([]UploadedImage, 0, len(files))
 	for _, fileHeader := range files {
 		img, err := s.uploadImage(ctx, folder, fileHeader)
@@ -955,13 +959,13 @@ func (s *Service) UploadAudio(
 	if err := media.ValidateDuration(duration); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
 	}
-	if duration > constants.MaxPostAudioDurationSeconds {
+	if duration > MaxPostAudioDurationSeconds {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too long")
 	}
-	if err := media.ValidateWaveform(waveform, constants.MaxAudioWaveformSamples); err != nil {
+	if err := media.ValidateWaveform(waveform, media.MaxAudioWaveformSamples); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 	}
-	if fileHeader.Size > constants.MaxAudioUploadSize {
+	if fileHeader.Size > media.MaxAudioUploadSize {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too large")
 	}
 
@@ -971,11 +975,11 @@ func (s *Service) UploadAudio(
 	}
 	defer file.Close()
 
-	data, err := io.ReadAll(io.LimitReader(file, constants.MaxAudioUploadSize+1))
+	data, err := io.ReadAll(io.LimitReader(file, media.MaxAudioUploadSize+1))
 	if err != nil {
 		return nil, errors.New("failed to read audio")
 	}
-	if int64(len(data)) > constants.MaxAudioUploadSize {
+	if int64(len(data)) > media.MaxAudioUploadSize {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too large")
 	}
 
@@ -986,11 +990,11 @@ func (s *Service) UploadAudio(
 	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if err := media.ValidateMeasuredDuration(data, mimeType, duration, constants.MaxPostAudioDurationSeconds); err != nil {
+	if err := media.ValidateMeasuredDuration(data, mimeType, duration, MaxPostAudioDurationSeconds); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	folder := postUploadPrefix(userID) + time.Now().Format(constants.UploadDateLayout)
+	folder := postUploadPrefix(userID) + time.Now().Format(media.UploadDateLayout)
 	safeName := "audio" + media.PickAudioExtension(mimeType, fileHeader.Filename)
 	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, safeName, folder)
 	if err != nil {
@@ -1014,7 +1018,7 @@ func (s *Service) UploadAudio(
 }
 
 func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *multipart.FileHeader) (*UploadedImage, error) {
-	if fileHeader.Size > constants.MaxImageUploadSize {
+	if fileHeader.Size > media.MaxImageUploadSize {
 		return nil, errors.New("image too large")
 	}
 
@@ -1037,7 +1041,7 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 		return nil, errors.New("failed to read image")
 	}
 	data := append(head, rest...)
-	if int64(len(data)) > constants.MaxImageUploadSize {
+	if int64(len(data)) > media.MaxImageUploadSize {
 		return nil, errors.New("image too large")
 	}
 
@@ -1046,7 +1050,7 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 		return nil, errors.New("failed to decode image")
 	}
 
-	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, "image"+extensionForMime(mimeType), folder)
+	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, "image"+media.ImageExtension(mimeType), folder)
 	if err != nil {
 		s.logger.Errorw("Failed to upload post image", "error", err)
 		return nil, errors.New("failed to upload image")
@@ -1084,7 +1088,7 @@ func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Me) ([]MeResponse, 
 		return nil, err
 	}
 
-	topLikers, err := s.topLikersCached(constants.CacheKeyMePostTopLikers, likedPostIDs, func(missIDs []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
+	topLikers, err := s.topLikersCached(CacheKeyMePostTopLikers, likedPostIDs, func(missIDs []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
 		return s.repo.TopLikerIDsByPosts(missIDs, 3)
 	})
 	if err != nil {
@@ -1183,34 +1187,6 @@ func parseVisibility(value string) models.MeVisibility {
 func (s *Service) isFriend(a, b uuid.UUID) bool {
 	friends, _ := s.relRepo.AreFriends(a, b)
 	return friends
-}
-
-func encodeFeedCursor(t time.Time, id uuid.UUID) string {
-	raw := t.UTC().Format(time.RFC3339Nano) + "|" + id.String()
-	return base64.RawURLEncoding.EncodeToString([]byte(raw))
-}
-
-func decodeFeedCursor(cursor string) (*time.Time, *uuid.UUID, error) {
-	if cursor == "" {
-		return nil, nil, nil
-	}
-	data, err := base64.RawURLEncoding.DecodeString(cursor)
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	parts := strings.SplitN(string(data), "|", 2)
-	if len(parts) != 2 {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	t, err := time.Parse(time.RFC3339Nano, parts[0])
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	id, err := uuid.Parse(parts[1])
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	return &t, &id, nil
 }
 
 func (s *Service) myReaction(userID, postID uuid.UUID) *models.MeReactionType {
@@ -1349,10 +1325,10 @@ func toModelAudios(inputs []MeAudioInput, existing models.MeAudios) (models.MeAu
 		if err := media.ValidateDuration(input.Duration); err != nil {
 			return nil, errInvalidAudio
 		}
-		if input.Duration > constants.MaxPostAudioDurationSeconds {
+		if input.Duration > MaxPostAudioDurationSeconds {
 			return nil, errInvalidAudio
 		}
-		if err := media.ValidateWaveform(input.Waveform, constants.MaxAudioWaveformSamples); err != nil {
+		if err := media.ValidateWaveform(input.Waveform, media.MaxAudioWaveformSamples); err != nil {
 			return nil, errInvalidAudio
 		}
 		audios = append(audios, models.MeAudio{
@@ -1537,7 +1513,7 @@ func (s *Service) topLikerIDs(keyFmt string, ids []uuid.UUID, compute func([]uui
 	if err != nil {
 		return nil, err
 	}
-	ttl := time.Duration(constants.MeTopLikersTTLSeconds) * time.Second
+	ttl := time.Duration(MeTopLikersTTLSeconds) * time.Second
 	for _, id := range missIDs {
 		likerIDs := computed[id]
 		byEntity[id] = likerIDs
@@ -1580,7 +1556,7 @@ func (s *Service) checkLikeRateLimit(userID string) bool {
 	if s.cache == nil {
 		return true
 	}
-	key := fmt.Sprintf(constants.CacheKeyRateLimitMeLike, userID)
+	key := fmt.Sprintf(CacheKeyRateLimitMeLike, userID)
 	count, err := s.cache.Increment(key)
 	if err != nil {
 		s.logger.Warnw("me like rate-limit redis error, allowing", "key", key, "error", err.Error())
@@ -1601,7 +1577,7 @@ func (s *Service) acquireLikeGuard(userID, entityID string) (func(), error) {
 	if !s.checkLikeRateLimit(userID) {
 		return nil, errLikeRateLimited
 	}
-	lockKey := fmt.Sprintf(constants.CacheKeyMeLikeLock, entityID)
+	lockKey := fmt.Sprintf(CacheKeyMeLikeLock, entityID)
 	ttl := time.Duration(constants.ReactionLockTTLSeconds) * time.Second
 	acquired, err := s.cache.SetNX(lockKey, "1", ttl)
 	if err != nil {
@@ -1634,6 +1610,9 @@ func toMeNotificationResponse(n *models.MeNotification) MeNotificationResponse {
 	}
 	if n.CommentID != nil {
 		resp.CommentID = n.CommentID.String()
+	}
+	if n.Type == models.MeNotificationMomentReaction {
+		resp.ActorCount = n.ActorCount
 	}
 	return resp
 }
@@ -1684,25 +1663,12 @@ func replySnapshotFrom(parent *models.MeComment) *CommentReplySnapshot {
 }
 
 func isAllowedImageMime(mime string) bool {
-	for _, m := range constants.AllowedImageMimes {
+	for _, m := range media.AllowedImageMimes {
 		if strings.EqualFold(m, mime) {
 			return true
 		}
 	}
 	return false
-}
-
-func extensionForMime(mime string) string {
-	switch mime {
-	case "image/png":
-		return ".png"
-	case "image/gif":
-		return ".gif"
-	case "image/webp":
-		return ".webp"
-	default:
-		return ".jpg"
-	}
 }
 
 type postFileReader struct {

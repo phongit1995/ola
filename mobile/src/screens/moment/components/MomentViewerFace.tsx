@@ -5,10 +5,11 @@ import Animated, { FadeIn, useAnimatedStyle, type SharedValue } from 'react-nati
 import LinearGradient from 'react-native-linear-gradient';
 import { MOMENT_FADE_MS, MOMENT_STATUS, MOMENT_TURN_SHADE, MOMENT_TYPE } from '@ola/shared/constants';
 import { colorForName, momentMedia, momentNoticeKey } from '@ola/shared/lib';
-import type { Moment, MomentAuthor, ReactionType } from '@ola/shared/types';
+import type { Moment, MomentAuthor, MomentMyComment, ReactionType } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { MOMENT_TURN_PERSPECTIVE } from '../constants';
 import { MomentCanvas } from './MomentCanvas';
+import { MomentCommentBar } from './MomentCommentBar';
 import {
   MomentCloseIcon,
   MomentMoreIcon,
@@ -84,6 +85,8 @@ interface MomentViewerFaceProps {
   onOpenMenu?: () => void;
   onOpenProfile?: () => void;
   onReact?: (type: ReactionType) => void;
+  myComment?: MomentMyComment;
+  onComment?: () => void;
   onClose: () => void;
 }
 
@@ -111,6 +114,8 @@ export function MomentViewerFace({
   onOpenMenu,
   onOpenProfile,
   onReact,
+  myComment,
+  onComment,
   onClose,
 }: MomentViewerFaceProps) {
   const { t } = useTranslation();
@@ -283,7 +288,12 @@ export function MomentViewerFace({
           </Pressable>
         </View>
       </View>
-      {onReact != null && <MomentReactionBar onReact={onReact} />}
+      {onReact != null && (
+        <MomentReactionBar
+          onReact={onReact}
+          leading={onComment != null ? <MomentCommentBar myComment={myComment} onComment={onComment} /> : undefined}
+        />
+      )}
       <Animated.View
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, { backgroundColor: '#000000' }, shadeStyle]}

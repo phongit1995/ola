@@ -63,7 +63,7 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 	h.wsServer.EmitToUser(event.RecipientID, constants.WebSocketMessageEvent, wrapped)
 	h.logger.Infow("✅ ME_NOTIFICATION emitted", "recipient_id", event.RecipientID, "unread_count", event.UnreadCount)
 
-	if h.pushSender != nil {
+	if h.pushSender != nil && !event.SkipPush {
 		h.pushSender.SendMeNotification(event.RecipientID, notification, int(event.UnreadCount))
 	}
 	return nil

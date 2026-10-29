@@ -191,6 +191,16 @@ func (s *Server) EmitToUser(userID string, event string, data any) {
 	)
 }
 
+func (s *Server) EmitKenUpdate(userID uuid.UUID, ken int) {
+	if s == nil {
+		return
+	}
+	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
+		"ken": ken,
+	})
+	s.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
+}
+
 func (s *Server) DisconnectUser(userID string) {
 	room := socket.Room("user:" + userID)
 	s.io.To(room).Emit(constants.WebSocketEventForceLogout, map[string]any{"reason": "banned"})

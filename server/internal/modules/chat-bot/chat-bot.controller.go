@@ -8,7 +8,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
@@ -32,9 +31,9 @@ func newCompletionID() string {
 
 func validateMessageLengths(messages []Message) error {
 	for index := range messages {
-		limit := constants.ChatBotMaxUserContentRunes
-		if messages[index].Role == constants.ChatBotRoleAssistant {
-			limit = constants.ChatBotMaxAssistantContentRunes
+		limit := ChatBotMaxUserContentRunes
+		if messages[index].Role == ChatBotRoleAssistant {
+			limit = ChatBotMaxAssistantContentRunes
 		}
 		if utf8.RuneCountInString(messages[index].Content) > limit {
 			return fmt.Errorf("messages[%d].content exceeds %d characters", index, limit)
@@ -80,7 +79,7 @@ func httpStatusForError(err error) (int, string) {
 // @Failure      502      {object}  utils.APIError
 // @Router       /chat-bot [post]
 func (ctrl *Controller) Chat(c *gin.Context) {
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, constants.ChatBotMaxRequestBytes)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, ChatBotMaxRequestBytes)
 
 	var req CompletionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -130,9 +129,9 @@ func (ctrl *Controller) Chat(c *gin.Context) {
 func respondAdmissionError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrBotDisabled):
-		utils.RespondErrorWithCode(c, http.StatusForbidden, err.Error(), constants.ErrorCodeChatBotDisabled)
+		utils.RespondErrorWithCode(c, http.StatusForbidden, err.Error(), ErrorCodeChatBotDisabled)
 	case errors.Is(err, ErrDailyLimit):
-		utils.RespondErrorWithCode(c, http.StatusTooManyRequests, err.Error(), constants.ErrorCodeChatBotDailyLimit)
+		utils.RespondErrorWithCode(c, http.StatusTooManyRequests, err.Error(), ErrorCodeChatBotDailyLimit)
 	default:
 		utils.RespondError(c, http.StatusInternalServerError, "internal server error")
 	}

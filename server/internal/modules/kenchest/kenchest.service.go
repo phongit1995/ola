@@ -5,7 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
@@ -192,7 +191,7 @@ func (s *Service) Open(userID, chestID uuid.UUID) (*OpenChestResult, error) {
 
 	if !outcome.IsEmpty {
 		s.invalidateUser(userID)
-		s.emitKenUpdate(userID, outcome.KenBalance)
+		s.wsServer.EmitKenUpdate(userID, outcome.KenBalance)
 	}
 
 	return &OpenChestResult{
@@ -229,16 +228,6 @@ func (s *Service) broadcastAvailable(ctx context.Context, chest *models.KenChest
 	if err := s.producer.PublishKenChestAvailable(ctx, event); err != nil {
 		s.logger.Errorw("Failed to publish ken chest available", "chest_id", chest.ID, "error", err.Error())
 	}
-}
-
-func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
-	if s.wsServer == nil {
-		return
-	}
-	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-		"ken": ken,
-	})
-	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
 }
 
 func (s *Service) invalidateUser(userID uuid.UUID) {

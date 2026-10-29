@@ -13,6 +13,7 @@ import {
   type TableColumnsType,
 } from 'antd'
 import {
+  ClearOutlined,
   CommentOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -25,6 +26,7 @@ import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { RoomFormModal } from './RoomFormModal'
 import { RoomMessagesModal } from './RoomMessagesModal'
+import { RoomImagePurgeModal } from './RoomImagePurgeModal'
 import type { Room } from '@/types'
 import { PAGE_SIZE } from '@/lib/constants'
 
@@ -38,6 +40,7 @@ export function RoomsPage() {
   const [editing, setEditing] = useState<Room | null>(null)
   const [msgOpen, setMsgOpen] = useState(false)
   const [msgRoom, setMsgRoom] = useState<Room | null>(null)
+  const [purgeOpen, setPurgeOpen] = useState(false)
 
   const { data, isFetching } = useRooms({
     q: q || undefined,
@@ -210,9 +213,14 @@ export function RoomsPage() {
           }}
           style={{ maxWidth: 360 }}
         />
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          Tạo phòng
-        </Button>
+        <Space wrap>
+          <Button icon={<ClearOutlined />} onClick={() => setPurgeOpen(true)}>
+            Xoá ảnh cũ
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            Tạo phòng
+          </Button>
+        </Space>
       </div>
       <Table<Room>
         rowKey="id"
@@ -235,6 +243,7 @@ export function RoomsPage() {
         open={msgOpen}
         onClose={() => setMsgOpen(false)}
       />
+      <RoomImagePurgeModal open={purgeOpen} onClose={() => setPurgeOpen(false)} />
     </Card>
   )
 }

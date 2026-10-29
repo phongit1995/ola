@@ -2,7 +2,6 @@ package wordchain
 
 import (
 	"context"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"time"
 
@@ -20,39 +19,39 @@ func normalizeLeaderboardSort(sort string) string {
 	if _, ok := leaderboardOrders[sort]; ok {
 		return sort
 	}
-	return constants.WordChainLeaderboardSortPoints
+	return WordChainLeaderboardSortPoints
 }
 
 func normalizeLeaderboardPeriod(period string) string {
 	switch period {
-	case constants.WordChainLeaderboardPeriodDay, constants.WordChainLeaderboardPeriodWeek, constants.WordChainLeaderboardPeriodMonth:
+	case WordChainLeaderboardPeriodDay, WordChainLeaderboardPeriodWeek, WordChainLeaderboardPeriodMonth:
 		return period
 	}
-	return constants.WordChainLeaderboardPeriodAll
+	return WordChainLeaderboardPeriodAll
 }
 
 func periodRange(now time.Time, period string) *TimeRange {
-	if period == constants.WordChainLeaderboardPeriodAll {
+	if period == WordChainLeaderboardPeriodAll {
 		return nil
 	}
 	local := now.In(gmt7)
 	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, gmt7)
 	switch period {
-	case constants.WordChainLeaderboardPeriodWeek:
+	case WordChainLeaderboardPeriodWeek:
 		start = start.AddDate(0, 0, -((int(local.Weekday()) + 6) % 7))
-	case constants.WordChainLeaderboardPeriodMonth:
+	case WordChainLeaderboardPeriodMonth:
 		start = time.Date(local.Year(), local.Month(), 1, 0, 0, 0, 0, gmt7)
 	}
 	return &TimeRange{From: start.UTC(), To: now.UTC()}
 }
 
 func (s *Service) recordScore(ctx context.Context, score *models.WordChainScore) {
-	recordCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), constants.WordChainBackgroundTimeout)
+	recordCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), WordChainBackgroundTimeout)
 	defer cancel()
 	err := s.scores.Record(recordCtx, score)
-	for attempt := 1; err != nil && attempt < constants.WordChainScoreRecordAttempts && recordCtx.Err() == nil; attempt++ {
+	for attempt := 1; err != nil && attempt < WordChainScoreRecordAttempts && recordCtx.Err() == nil; attempt++ {
 		s.logger.Warnw("Failed to record word chain score, retrying", "message_id", score.MessageID, "attempt", attempt, "error", err)
-		time.Sleep(time.Duration(attempt) * constants.WordChainScoreRecordBackoff)
+		time.Sleep(time.Duration(attempt) * WordChainScoreRecordBackoff)
 		err = s.scores.Record(recordCtx, score)
 	}
 	if err != nil {
@@ -62,7 +61,7 @@ func (s *Service) recordScore(ctx context.Context, score *models.WordChainScore)
 
 func (s *Service) Leaderboard(ctx context.Context, userID uuid.UUID, sort, period string) (*LeaderboardResponse, error) {
 	sort, period = normalizeLeaderboardSort(sort), normalizeLeaderboardPeriod(period)
-	rows, err := s.scores.Leaderboard(ctx, sort, periodRange(time.Now(), period), userID, constants.WordChainLeaderboardLimit)
+	rows, err := s.scores.Leaderboard(ctx, sort, periodRange(time.Now(), period), userID, WordChainLeaderboardLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +78,7 @@ func (s *Service) Leaderboard(ctx context.Context, userID uuid.UUID, sort, perio
 			entry.Username, entry.FullName, entry.Avatar = u.Username, u.FullName, u.Avatar
 		}
 		resp.Total = row.Total
-		if row.Rank <= constants.WordChainLeaderboardLimit {
+		if row.Rank <= WordChainLeaderboardLimit {
 			resp.Items = append(resp.Items, entry)
 		}
 		if row.UserID == userID {

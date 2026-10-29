@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
@@ -83,7 +82,7 @@ func (s *Service) HandleMove(ctx context.Context, userID uuid.UUID, req *MoveReq
 		return nil, err
 	}
 	expected := expectedWord(req, state)
-	for attempt := 0; attempt < constants.WordChainMoveMaxAttempts; attempt++ {
+	for attempt := 0; attempt < WordChainMoveMaxAttempts; attempt++ {
 		if attempt > 0 {
 			if state, err = s.activeState(ctx); err != nil {
 				return nil, err
@@ -124,7 +123,7 @@ func buildMoveCommit(current GameState, userID uuid.UUID, sender *models.User, c
 	move := moveMessage(moveID, state.SessionID, userID.String(), sender, content, res, now)
 	messages := []Message{move}
 	switch {
-	case res.Code == constants.WordChainCodeWin:
+	case res.Code == WordChainCodeWin:
 		started := gameStartedMessage(state.SessionID, state.Word, now)
 		state.BotMessageID = started.ID
 		messages = append(messages, winMessage(state.SessionID, move, now), started)
@@ -141,8 +140,8 @@ func buildMoveCommit(current GameState, userID uuid.UUID, sender *models.User, c
 		UserID:       userID,
 		Word:         move.Word,
 		PreviousWord: current.Word,
-		Points:       constants.WordChainPointsPerWord,
-		IsWin:        res.Code == constants.WordChainCodeWin,
+		Points:       WordChainPointsPerWord,
+		IsWin:        res.Code == WordChainCodeWin,
 		CreatedAt:    now.UTC(),
 	}
 }
@@ -287,7 +286,7 @@ func (s *Service) Overview(ctx context.Context, userID uuid.UUID) (*OverviewResp
 		RemainingGuesses: state.RemainingGuesses(userID.String()),
 		HintPrice:        cfg.HintPrice,
 		GuessPrice:       cfg.GuessPrice,
-		GuessPackSize:    constants.WordChainGuessPackSize,
+		GuessPackSize:    WordChainGuessPackSize,
 		NeedsVipToPlay:   !canPlay,
 	}, nil
 }

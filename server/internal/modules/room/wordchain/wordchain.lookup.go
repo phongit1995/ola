@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"ola-chat-server/internal/constants"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -17,7 +16,7 @@ func (s *Service) Lookup(ctx context.Context, userID uuid.UUID, word string) (*L
 	if trimmed == "" {
 		return nil, ErrLookupEmpty
 	}
-	if utf8.RuneCountInString(trimmed) > constants.WordChainLookupMaxWordRunes {
+	if utf8.RuneCountInString(trimmed) > WordChainLookupMaxWordRunes {
 		return nil, ErrLookupTooLong
 	}
 	result, cached := s.verifier.CachedLookup(ctx, trimmed)
@@ -31,7 +30,7 @@ func (s *Service) Lookup(ctx context.Context, userID uuid.UUID, word string) (*L
 			return nil, ErrLookupFailed
 		}
 	}
-	resp := &LookupResponse{Word: trimmed, Results: []LookupResult{}, Source: constants.WordChainLookupSource}
+	resp := &LookupResponse{Word: trimmed, Results: []LookupResult{}, Source: WordChainLookupSource}
 	if !result.Exists || len(result.Results) == 0 {
 		resp.Message = fmt.Sprintf("Không tìm thấy định nghĩa cho từ \"%s\", đây có thể là một từ ghép hán việt, vui lòng tra cứu ở các nguồn khác.", trimmed)
 		return resp, nil
@@ -63,8 +62,8 @@ func (s *Service) Lookup(ctx context.Context, userID uuid.UUID, word string) (*L
 }
 
 func (s *Service) acquireLookupCooldown(userID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyWordChainLookupCooldown, userID.String())
-	window := constants.WordChainLookupCooldownSeconds * time.Second
+	key := fmt.Sprintf(CacheKeyWordChainLookupCooldown, userID.String())
+	window := WordChainLookupCooldownSeconds * time.Second
 	acquired, err := s.cache.SetNX(key, 1, window)
 	if err != nil {
 		return err
@@ -72,7 +71,7 @@ func (s *Service) acquireLookupCooldown(userID uuid.UUID) error {
 	if acquired {
 		return nil
 	}
-	seconds := constants.WordChainLookupCooldownSeconds
+	seconds := WordChainLookupCooldownSeconds
 	if ttl, err := s.cache.GetTTL(key); err == nil && ttl > 0 {
 		seconds = int(math.Ceil(ttl.Seconds()))
 	}

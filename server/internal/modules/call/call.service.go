@@ -479,13 +479,13 @@ func exceededMaxDuration(call *models.Call) bool {
 	if call.AnsweredAt != nil {
 		start = *call.AnsweredAt
 	}
-	return time.Since(start) > constants.CallMaxDuration
+	return time.Since(start) > CallMaxDuration
 }
 
 func (s *Service) ringTimeoutSeconds() int {
 	seconds := s.cfg.CallRingTimeoutSeconds
 	if seconds <= 0 {
-		seconds = constants.CallRingTimeoutSeconds
+		seconds = CallRingTimeoutSeconds
 	}
 	return seconds
 }
@@ -495,7 +495,7 @@ func (s *Service) ringTimeout() time.Duration {
 }
 
 func (s *Service) ringingSince() time.Time {
-	return time.Now().Add(-s.ringTimeout() - constants.CallRingStaleGrace)
+	return time.Now().Add(-s.ringTimeout() - CallRingStaleGrace)
 }
 
 func (s *Service) GetOngoingCall(ctx context.Context, userID uuid.UUID) (*CallTokenResponse, error) {

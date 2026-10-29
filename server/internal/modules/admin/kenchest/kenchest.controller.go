@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/middleware"
+	admincommon "ola-chat-server/internal/modules/admin/common"
 	"ola-chat-server/internal/modules/kenchest"
 	"ola-chat-server/internal/utils"
 
@@ -51,18 +52,6 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 		f.To = &t
 	}
 	return f, nil
-}
-
-func userBriefFromRow(row userStatsRow) UserBrief {
-	if row.Username == "" {
-		return UserBrief{ID: row.UserID.String(), Username: row.UserID.String()[:8]}
-	}
-	return UserBrief{
-		ID:       row.UserID.String(),
-		Username: row.Username,
-		FullName: row.FullName,
-		Avatar:   row.Avatar,
-	}
 }
 
 // GetStats godoc
@@ -142,7 +131,7 @@ func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
 	items := make([]UserStatsItem, len(rows))
 	for i, row := range rows {
 		item := UserStatsItem{
-			User:        userBriefFromRow(row),
+			User:        admincommon.UserBriefOf(row.UserID, row.Username, row.FullName, row.Avatar),
 			Claims:      row.Claims,
 			Chests:      row.Chests,
 			EmptyClaims: row.EmptyClaims,

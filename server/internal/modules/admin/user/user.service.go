@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"ola-chat-server/internal/apperr"
-	"ola-chat-server/internal/constants"
 	userBanEvents "ola-chat-server/internal/domain/user-ban"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/session"
@@ -37,16 +36,18 @@ type Service struct {
 	sessionService *session.Service
 	producer       *kafka.Producer
 	vipService     *vip.Service
+	vipRepo        *vip.Repository
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *services.CacheService, sessionService *session.Service, producer *kafka.Producer, vipService *vip.Service, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *services.CacheService, sessionService *session.Service, producer *kafka.Producer, vipService *vip.Service, vipRepo *vip.Repository, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		cache:          cache,
 		sessionService: sessionService,
 		producer:       producer,
 		vipService:     vipService,
+		vipRepo:        vipRepo,
 		logger:         logger.Named("[admin_user_service]"),
 	}
 }
@@ -152,7 +153,7 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string, adminID uuid.UUI
 		return nil, err
 	}
 
-	if err := s.cache.Delete(fmt.Sprintf(constants.CacheKeyUserProfile, id.String())); err != nil {
+	if err := s.cache.Delete(fmt.Sprintf(user.CacheKeyUserProfile, id.String())); err != nil {
 		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
 	}
 
@@ -211,7 +212,7 @@ func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListRespons
 		}
 	}
 
-	items, err := s.repo.ListVipIcons(id, activeSort, limit, offset)
+	items, err := s.vipRepo.ListByUserPaged(id, activeSort, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +249,7 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 		return nil, err
 	}
 
-	if err := s.cache.Delete(fmt.Sprintf(constants.CacheKeyUserProfile, id.String())); err != nil {
+	if err := s.cache.Delete(fmt.Sprintf(user.CacheKeyUserProfile, id.String())); err != nil {
 		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
 	}
 
@@ -270,7 +271,7 @@ func (s *Service) DeleteVip(id, instanceID uuid.UUID) error {
 		return err
 	}
 
-	if err := s.cache.Delete(fmt.Sprintf(constants.CacheKeyUserProfile, id.String())); err != nil {
+	if err := s.cache.Delete(fmt.Sprintf(user.CacheKeyUserProfile, id.String())); err != nil {
 		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
 	}
 
@@ -298,7 +299,7 @@ func (s *Service) AddVipDays(id uuid.UUID, action string, days int) (*AddVipDays
 		return nil, err
 	}
 
-	if err := s.cache.Delete(fmt.Sprintf(constants.CacheKeyUserProfile, id.String())); err != nil {
+	if err := s.cache.Delete(fmt.Sprintf(user.CacheKeyUserProfile, id.String())); err != nil {
 		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
 	}
 

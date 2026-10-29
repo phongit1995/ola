@@ -30,6 +30,7 @@ CREATE TABLE public.moments (
     hidden_at timestamp with time zone,
     viewer_count integer DEFAULT 0 NOT NULL,
     reaction_counts jsonb DEFAULT '{}'::jsonb NOT NULL,
+    comment_count integer DEFAULT 0 NOT NULL,
     CONSTRAINT moments_hidden_by_check CHECK (((hidden_by IS NULL) OR ((hidden_by)::text = ANY ((ARRAY['owner'::character varying, 'admin'::character varying])::text[])))),
     CONSTRAINT moments_type_check CHECK (((type)::text = ANY ((ARRAY['image'::character varying, 'video'::character varying, 'text'::character varying])::text[]))),
     CONSTRAINT moments_visibility_check CHECK (((visibility)::text = ANY ((ARRAY['public'::character varying, 'friend'::character varying])::text[]))),
@@ -57,6 +58,28 @@ CREATE INDEX idx_moments_created ON public.moments USING btree (created_at DESC)
 CREATE INDEX idx_moments_author_created ON public.moments USING btree (author_id, created_at DESC) WHERE (deleted_at IS NULL);
 
 CREATE INDEX idx_moments_purge_candidates ON public.moments USING btree (created_at, id) WHERE ((status)::text IN ('ready', 'failed', 'purging')) AND ((type)::text <> 'text');
+
+CREATE TABLE public.moment_comments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    moment_id uuid NOT NULL,
+    author_id uuid NOT NULL,
+    content text NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+ALTER TABLE ONLY public.moment_comments
+    ADD CONSTRAINT moment_comments_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.moment_comments
+    ADD CONSTRAINT uq_moment_comments_author UNIQUE (moment_id, author_id);
+
+ALTER TABLE ONLY public.moment_comments
+    ADD CONSTRAINT fk_moment_comments_moment FOREIGN KEY (moment_id) REFERENCES public.moments(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.moment_comments
+    ADD CONSTRAINT fk_moment_comments_author FOREIGN KEY (author_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+CREATE INDEX idx_moment_comments_moment_created ON public.moment_comments USING btree (moment_id, created_at DESC, id DESC);
 
 ALTER TABLE public.reports DROP CONSTRAINT reports_target_type_check;
 
@@ -89,3 +112,7 @@ SET target_id = n.canonical,
 FROM normalized n
 LEFT JOIN duplicates d ON d.id = n.id
 WHERE r.id = n.id AND (n.target_id <> n.canonical OR d.id IS NOT NULL);
+
+ALTER TABLE public.me_notifications ADD COLUMN actor_count integer DEFAULT 1 NOT NULL;
+
+CREATE UNIQUE INDEX uq_me_notifications_moment_reaction ON public.me_notifications USING btree (recipient_id, post_id) WHERE ((type)::text = 'moment_reaction'::text);

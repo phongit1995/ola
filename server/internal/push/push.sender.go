@@ -87,11 +87,11 @@ func NewSender(fcm *FCMClient, cache *services.CacheService, presence *websocket
 		store:         newGormStore(db, log),
 		db:            db,
 		logger:        log,
-		jobs:          make(chan func(), constants.PushDispatchQueueSize),
-		trailingDelay: time.Duration(constants.PushThrottleTTLSeconds)*time.Second + trailingGrace,
+		jobs:          make(chan func(), PushDispatchQueueSize),
+		trailingDelay: time.Duration(PushThrottleTTLSeconds)*time.Second + trailingGrace,
 		schedule:      func(delay time.Duration, fn func()) { time.AfterFunc(delay, fn) },
 	}
-	for i := 0; i < constants.PushDispatchWorkers; i++ {
+	for i := 0; i < PushDispatchWorkers; i++ {
 		s.workers.Add(1)
 		utils.SafeGo(log, s.worker)
 	}
@@ -185,7 +185,7 @@ func (s *Sender) SendMeNotification(recipientID string, notification map[string]
 		return
 	}
 	id, ntype, actorName, preview := parseNotifFields(notification)
-	content := buildMeNotifContent(id, actorName, ntype, preview, unread)
+	content := buildMeNotifContent(id, actorName, ntype, preview, notifActorCount(notification), unread)
 	content.Seq = time.Now().UnixNano()
 	s.enqueue(func() {
 		s.process(recipientID, constants.PushSourceMeNotif, id, false, content)
@@ -202,6 +202,11 @@ func (s *Sender) SendAppNotification(recipientID string, notification map[string
 	s.enqueue(func() {
 		s.process(recipientID, constants.PushSourceAppNotif, id, false, content)
 	})
+}
+
+func notifActorCount(notification map[string]interface{}) int {
+	count, _ := notification["actorCount"].(float64)
+	return int(count)
 }
 
 func parseNotifFields(notification map[string]interface{}) (id, ntype, actorName, preview string) {
@@ -236,16 +241,16 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 	owner := uuid.NewString()
 	var eventKey string
 	if eventID != "" {
-		eventKey = fmt.Sprintf(constants.CacheKeyPushEvent, recipientID, eventID)
-		if ok, err := s.cache.SetNX(eventKey, owner, time.Duration(constants.PushEventTTLSeconds)*time.Second); err == nil && !ok {
+		eventKey = fmt.Sprintf(CacheKeyPushEvent, recipientID, eventID)
+		if ok, err := s.cache.SetNX(eventKey, owner, time.Duration(PushEventTTLSeconds)*time.Second); err == nil && !ok {
 			return
 		} else if err != nil {
 			eventKey = ""
 		}
 	}
 
-	throttleKey := fmt.Sprintf(constants.CacheKeyPushThrottle, recipientID, source)
-	acquired, err := s.cache.SetNX(throttleKey, owner, time.Duration(constants.PushThrottleTTLSeconds)*time.Second)
+	throttleKey := fmt.Sprintf(CacheKeyPushThrottle, recipientID, source)
+	acquired, err := s.cache.SetNX(throttleKey, owner, time.Duration(PushThrottleTTLSeconds)*time.Second)
 	if err == nil && !acquired {
 		s.storePending(recipientID, source, pendingPush{Content: content})
 		return
@@ -273,7 +278,7 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 		data[k] = v
 	}
 
-	ttl := constants.PushTTLHours * time.Hour
+	ttl := PushTTLHours * time.Hour
 	msgs := make([]*messaging.Message, 0, len(tokens))
 	for _, t := range tokens {
 		msgs = append(msgs, buildMessage(t, content, data, ttl))
@@ -312,19 +317,19 @@ func buildMessage(token models.DeviceToken, content Content, data map[string]str
 
 func apnsConfig(content Content, ttl time.Duration) *messaging.APNSConfig {
 	headers := map[string]string{
-		constants.APNSHeaderPushType:   constants.APNSPushTypeAlert,
-		constants.APNSHeaderPriority:   constants.APNSPriorityHigh,
-		constants.APNSHeaderExpiration: strconv.FormatInt(time.Now().Add(ttl).Unix(), 10),
+		APNSHeaderPushType:   APNSPushTypeAlert,
+		APNSHeaderPriority:   APNSPriorityHigh,
+		APNSHeaderExpiration: strconv.FormatInt(time.Now().Add(ttl).Unix(), 10),
 	}
 	if content.NotifID != "" {
-		headers[constants.APNSHeaderCollapseID] = content.NotifID
+		headers[APNSHeaderCollapseID] = content.NotifID
 	}
 	return &messaging.APNSConfig{
 		Headers: headers,
 		Payload: &messaging.APNSPayload{
 			Aps: &messaging.Aps{
 				Alert:    &messaging.ApsAlert{Title: content.Title, Body: content.Body},
-				Sound:    constants.APNSSoundDefault,
+				Sound:    APNSSoundDefault,
 				ThreadID: content.NotifID,
 			},
 		},
@@ -337,7 +342,7 @@ func (s *Sender) storePending(recipientID, source string, p pendingPush) {
 	if err := s.cache.Get(key, &existing); err == nil && existing.Content.Seq > p.Content.Seq {
 		return
 	}
-	if err := s.cache.Set(key, p, time.Duration(constants.PushPendingTTLSeconds)*time.Second); err != nil {
+	if err := s.cache.Set(key, p, time.Duration(PushPendingTTLSeconds)*time.Second); err != nil {
 		s.logger.Warnw("Failed to store pending push", "recipient_id", recipientID, "source", source, "error", err.Error())
 	}
 }
@@ -363,13 +368,13 @@ func (s *Sender) flushPending(recipientID, source string) {
 }
 
 func (s *Sender) sendInChunks(recipientID, source string, tokens []models.DeviceToken, msgs []*messaging.Message) (successCount, failureCount int, firstErr error) {
-	for start := 0; start < len(msgs); start += constants.PushSendBatchSize {
-		end := start + constants.PushSendBatchSize
+	for start := 0; start < len(msgs); start += PushSendBatchSize {
+		end := start + PushSendBatchSize
 		if end > len(msgs) {
 			end = len(msgs)
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(constants.PushSendTimeoutSeconds)*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(PushSendTimeoutSeconds)*time.Second)
 		resp, err := s.fcm.SendEach(ctx, msgs[start:end])
 		cancel()
 		if err != nil {
@@ -411,7 +416,7 @@ func (s *Sender) rollbackKey(key, owner string) {
 }
 
 func (s *Sender) isBackground(userID string) bool {
-	key := fmt.Sprintf(constants.CacheKeyPresenceBackground, userID)
+	key := fmt.Sprintf(websocket.CacheKeyPresenceBackground, userID)
 	exists, err := s.cache.Exists(key)
 	if err != nil {
 		s.logger.Warnw("Failed to check background state", "user_id", userID, "error", err.Error())

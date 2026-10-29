@@ -249,6 +249,87 @@ func (ctrl *Controller) Reactors(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// Comment godoc
+// @Summary      Comment on a moment of a friend or followee, once per moment (cannot be edited or deleted, 409 MOMENT_COMMENT_EXISTS on a second try)
+// @Tags         moment
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path string               true "Moment id"
+// @Param        request body CommentMomentRequest true "Comment text, 1-500 characters"
+// @Success      201  {object}  utils.BaseResponse[MomentMyCommentResponse]
+// @Router       /moments/{id}/comments [post]
+func (ctrl *Controller) Comment(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	momentID, err := utils.ParseUUIDParam(c, "id", "invalid moment id")
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[CommentMomentRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Comment(c.Request.Context(), userID, momentID, req.Content)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// Comments godoc
+// @Summary      Comments on my moment, newest first (author only, also after the moment expired)
+// @Tags         moment
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id     path  string true  "Moment id"
+// @Param        limit  query int    false "Page size (default 30, max 100)"
+// @Param        offset query int    false "Offset"
+// @Success      200  {object}  utils.BaseResponse[MomentCommentsResponse]
+// @Router       /moments/{id}/comments [get]
+func (ctrl *Controller) Comments(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	momentID, err := utils.ParseUUIDParam(c, "id", "invalid moment id")
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, MomentCommentsDefaultPage, MomentCommentsMaxPage)
+	resp, err := ctrl.service.Comments(userID, momentID, limit, utils.ParseOffset(c))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// Get godoc
+// @Summary      Get one of my moments with its stats (also after it expired)
+// @Tags         moment
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path  string true "Moment id"
+// @Success      200  {object}  utils.BaseResponse[MomentResponse]
+// @Router       /moments/{id} [get]
+func (ctrl *Controller) Get(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	momentID, err := utils.ParseUUIDParam(c, "id", "invalid moment id")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Get(c.Request.Context(), userID, momentID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // SetHidden godoc
 // @Summary      Hide or show my active moment (hidden moments leave friends' trays)
 // @Tags         moment

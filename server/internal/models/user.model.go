@@ -55,10 +55,10 @@ type User struct {
 	Verified          bool       `gorm:"not null;default:false"`
 	EmailVerified     bool       `gorm:"not null;default:false"`
 	EmailVerifiedAt   *time.Time
-	Kisses            int        `gorm:"not null;default:0"`
-	IsActive          bool       `gorm:"not null;default:true"`
-	RefreshToken      string     `gorm:"type:text"`
-	LastLoginIP       string     `gorm:"type:varchar(45)"`
+	Kisses            int    `gorm:"not null;default:0"`
+	IsActive          bool   `gorm:"not null;default:true"`
+	RefreshToken      string `gorm:"type:text"`
+	LastLoginIP       string `gorm:"type:varchar(45)"`
 	LastLoginAt       *time.Time
 
 	Spouse *User `gorm:"foreignKey:SpouseID;references:ID"`

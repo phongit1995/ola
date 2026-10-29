@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/utils"
 	"strconv"
@@ -259,7 +258,7 @@ func (ctrl *Controller) SendRoomAudioMessage(c *gin.Context) (interface{}, error
 		if err := json.Unmarshal([]byte(raw), &waveform); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
-		if err := media.ValidateWaveform(waveform, constants.MaxAudioWaveformSamples); err != nil {
+		if err := media.ValidateWaveform(waveform, media.MaxAudioWaveformSamples); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
 	}

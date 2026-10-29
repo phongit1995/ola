@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"ola-chat-server/internal/constants"
 	"time"
 )
 
@@ -16,7 +15,7 @@ func ApplyOnlineGrace(rawOnline bool, lastActive string) (bool, string) {
 	if err != nil {
 		return false, lastActive
 	}
-	if time.Since(t) <= time.Duration(constants.OnlineGraceWindowSecs)*time.Second {
+	if time.Since(t) <= time.Duration(OnlineGraceWindowSecs)*time.Second {
 		return true, ""
 	}
 	return false, lastActive

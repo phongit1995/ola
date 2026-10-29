@@ -2,9 +2,7 @@ package notification
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"strings"
 	"time"
 
@@ -114,7 +112,7 @@ func (s *Service) publishRemoved(recipientID, notificationID uuid.UUID) {
 }
 
 func (s *Service) List(recipientID uuid.UUID, cursor string, limit int) (*AppNotificationListResponse, error) {
-	cursorTime, cursorID, err := decodeCursor(cursor)
+	cursorTime, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +134,7 @@ func (s *Service) List(recipientID uuid.UUID, cursor string, limit int) (*AppNot
 	var nextCursor string
 	if hasMore && len(items) > 0 {
 		last := items[len(items)-1]
-		nextCursor = encodeCursor(last.CreatedAt, last.ID)
+		nextCursor = utils.EncodeTimeCursor(last.CreatedAt, last.ID)
 	}
 
 	return &AppNotificationListResponse{
@@ -189,32 +187,4 @@ func Excerpt(s string) string {
 		return s
 	}
 	return string(runes[:120]) + "…"
-}
-
-func encodeCursor(t time.Time, id uuid.UUID) string {
-	raw := t.UTC().Format(time.RFC3339Nano) + "|" + id.String()
-	return base64.RawURLEncoding.EncodeToString([]byte(raw))
-}
-
-func decodeCursor(cursor string) (*time.Time, *uuid.UUID, error) {
-	if cursor == "" {
-		return nil, nil, nil
-	}
-	data, err := base64.RawURLEncoding.DecodeString(cursor)
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	parts := strings.SplitN(string(data), "|", 2)
-	if len(parts) != 2 {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	t, err := time.Parse(time.RFC3339Nano, parts[0])
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	id, err := uuid.Parse(parts[1])
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	return &t, &id, nil
 }

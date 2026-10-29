@@ -3,9 +3,7 @@ package adminwordchain
 import (
 	"net/http"
 	"strings"
-	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/room/wordchain"
 	"ola-chat-server/internal/utils"
 
@@ -47,7 +45,7 @@ func (ctrl *Controller) Overview(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[wordchain.MessageListResponse]
 // @Router       /admin/word-chain/messages [get]
 func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
-	limit := utils.ParseLimit(c, constants.WordChainMessagePageSize, constants.WordChainMessagePageMax)
+	limit := utils.ParseLimit(c, wordchain.WordChainMessagePageSize, wordchain.WordChainMessagePageMax)
 	resp, err := ctrl.service.AdminMessages(c.Request.Context(), limit, c.Query("before"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
@@ -74,24 +72,12 @@ func (ctrl *Controller) Wins(c *gin.Context) (interface{}, error) {
 		}
 		userID = &parsed
 	}
-	limit := utils.ParseLimit(c, constants.WordChainWinPageSize, constants.WordChainWinPageMax)
+	limit := utils.ParseLimit(c, wordchain.WordChainWinPageSize, wordchain.WordChainWinPageMax)
 	resp, err := ctrl.service.AdminWins(c.Request.Context(), userID, c.Query("before"), limit)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
-}
-
-func parseTimeQuery(c *gin.Context, key string) (*time.Time, error) {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil, nil
-	}
-	t, err := time.Parse(time.RFC3339, raw)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key+" time")
-	}
-	return &t, nil
 }
 
 // Purchases godoc
@@ -117,10 +103,10 @@ func (ctrl *Controller) Purchases(c *gin.Context) (interface{}, error) {
 		}
 	}
 	var err error
-	if f.From, err = parseTimeQuery(c, "from"); err != nil {
+	if f.From, err = utils.ParseTimeQuery(c, "from"); err != nil {
 		return nil, err
 	}
-	if f.To, err = parseTimeQuery(c, "to"); err != nil {
+	if f.To, err = utils.ParseTimeQuery(c, "to"); err != nil {
 		return nil, err
 	}
 	resp, err := ctrl.purchases.List(f, utils.ParseLimit(c, 20, 100), utils.ParseOffset(c))

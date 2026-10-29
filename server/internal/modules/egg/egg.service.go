@@ -6,7 +6,6 @@ import (
 	"math"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
@@ -51,16 +50,6 @@ func NewService(repo *Repository, userCache *user.CacheService, cache *services.
 		wsServer:  wsServer,
 		logger:    logger.Named("[egg_service]"),
 	}
-}
-
-func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
-	if s.wsServer == nil {
-		return
-	}
-	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-		"ken": ken,
-	})
-	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
 }
 
 func (s *Service) invalidateUser(userID uuid.UUID) {
@@ -410,7 +399,7 @@ func (s *Service) OpenPack(userID, packID uuid.UUID, idempotencyKey string) (*Op
 	}
 
 	s.invalidateUser(userID)
-	s.emitKenUpdate(userID, updatedUser.Ken)
+	s.wsServer.EmitKenUpdate(userID, updatedUser.Ken)
 
 	return &OpenResult{
 		DrawID:       draw.ID,
@@ -442,7 +431,7 @@ func (s *Service) draw(cats []models.EggCategory, rewards []models.EggReward) (D
 	for i, c := range activeCats {
 		catWeights[i] = c.Weight
 	}
-	ci := weightedPick(catWeights)
+	ci := utils.WeightedPick(catWeights)
 	if ci < 0 {
 		return DrawOutcome{}, false
 	}
@@ -467,7 +456,7 @@ func (s *Service) draw(cats []models.EggCategory, rewards []models.EggReward) (D
 	for i, rw := range catRewards {
 		rWeights[i] = rw.Weight
 	}
-	ri := weightedPick(rWeights)
+	ri := utils.WeightedPick(rWeights)
 	if ri < 0 {
 		return outcome, true
 	}
@@ -660,30 +649,4 @@ func buildPackViews(packs []models.EggPack, cats []models.EggCategory, rewards [
 		}
 	}
 	return views
-}
-
-func weightedPick(weights []float64) int {
-	total := 0.0
-	for _, w := range weights {
-		if w > 0 {
-			total += w
-		}
-	}
-	if total <= 0 {
-		return -1
-	}
-	target := utils.CryptoFloat() * total
-	acc := 0.0
-	last := -1
-	for i, w := range weights {
-		if w <= 0 {
-			continue
-		}
-		last = i
-		acc += w
-		if target < acc {
-			return i
-		}
-	}
-	return last
 }

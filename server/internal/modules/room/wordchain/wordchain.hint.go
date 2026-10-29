@@ -3,7 +3,6 @@ package wordchain
 import (
 	"context"
 	"errors"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -117,7 +116,7 @@ func (s *Service) findHints(ctx context.Context, state GameState) ([]string, err
 		return nil, ErrVerifyFailed
 	}
 	candidates := unusedCandidates(used, s.dict.Continuations(syllable, used), suggested)
-	hints, err := s.verifier.ExistingWords(ctx, candidates, constants.WordChainHintMaxWords)
+	hints, err := s.verifier.ExistingWords(ctx, candidates, WordChainHintMaxWords)
 	if err != nil {
 		s.logger.Warnw("Word chain hint verification failed", "error", err)
 		return nil, ErrVerifyFailed

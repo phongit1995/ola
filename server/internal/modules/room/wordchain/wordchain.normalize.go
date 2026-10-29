@@ -1,7 +1,6 @@
 package wordchain
 
 import (
-	"ola-chat-server/internal/constants"
 	"slices"
 	"strings"
 	"unicode"
@@ -104,7 +103,7 @@ func spellingVariants(word string) []string {
 			continue
 		}
 		for _, parts := range variants {
-			if len(variants) >= constants.WordChainSpellingVariantsMax {
+			if len(variants) >= WordChainSpellingVariantsMax {
 				break
 			}
 			swapped := slices.Clone(parts)

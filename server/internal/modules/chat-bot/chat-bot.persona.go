@@ -3,7 +3,6 @@ package chatbot
 import (
 	"strings"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/setting"
 )
 
@@ -16,7 +15,7 @@ func normalizeBotType(botType string) string {
 	if _, ok := setting.ChatBotDefaultPrompts[botType]; ok {
 		return botType
 	}
-	return constants.ChatBotTypeOlala
+	return setting.ChatBotTypeOlala
 }
 
 func personaOf(botType string, override setting.ChatBotBotConfig) persona {

@@ -3,7 +3,6 @@ package adminupload
 import (
 	"net/http"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 
@@ -41,11 +40,11 @@ func (ctrl *Controller) Upload(c *gin.Context) (interface{}, error) {
 	}
 	defer file.Close()
 
-	if header.Size > constants.MaxAdminImageUploadSize {
+	if header.Size > MaxAdminImageUploadSize {
 		return nil, utils.NewHTTPError(http.StatusRequestEntityTooLarge, "file size must not exceed 5MB")
 	}
 
-	result, err := ctrl.s3.UploadFile(c.Request.Context(), file, header.Filename, constants.UploadFolderAdmin)
+	result, err := ctrl.s3.UploadFile(c.Request.Context(), file, header.Filename, UploadFolderAdmin)
 	if err != nil {
 		ctrl.logger.Errorw("Admin upload failed", "filename", header.Filename, "error", err)
 		return nil, utils.ServiceError(err)

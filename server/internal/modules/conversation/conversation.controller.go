@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -171,7 +170,7 @@ func (ctrl *Controller) GetUserConversations(c *gin.Context) (interface{}, error
 		return nil, err
 	}
 
-	limit := utils.ParseLimit(c, 50, constants.MaxConversationListLimit)
+	limit := utils.ParseLimit(c, 50, MaxConversationListLimit)
 
 	conversations, err := ctrl.service.GetUserConversations(userID, limit)
 	if err != nil {

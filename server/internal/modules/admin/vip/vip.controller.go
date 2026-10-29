@@ -23,18 +23,6 @@ func NewController(service *vip.Service, adminService *Service, logger *zap.Suga
 	return &Controller{service: service, adminService: adminService, logger: logger.Named("[admin_vip_controller]")}
 }
 
-func parseTimeQuery(c *gin.Context, key string) (*time.Time, error) {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil, nil
-	}
-	t, err := time.Parse(time.RFC3339, raw)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key+" time")
-	}
-	return &t, nil
-}
-
 // ListPurchases godoc
 // @Summary      Lịch sử mua gói ngày VIP + icon VIP toàn hệ thống, gồm cả quà tặng (admin)
 // @Tags         admin-vip
@@ -50,11 +38,11 @@ func parseTimeQuery(c *gin.Context, key string) (*time.Time, error) {
 // @Success      200  {object}  PurchaseListSuccessResponse
 // @Router       /admin/vip/purchases [get]
 func (ctrl *Controller) ListPurchases(c *gin.Context) (interface{}, error) {
-	from, err := parseTimeQuery(c, "from")
+	from, err := utils.ParseTimeQuery(c, "from")
 	if err != nil {
 		return nil, err
 	}
-	to, err := parseTimeQuery(c, "to")
+	to, err := utils.ParseTimeQuery(c, "to")
 	if err != nil {
 		return nil, err
 	}
@@ -88,12 +76,12 @@ func (ctrl *Controller) PurchaseStats(c *gin.Context) (interface{}, error) {
 	now := time.Now()
 	from := now.AddDate(0, 0, -29).Truncate(24 * time.Hour)
 	to := now
-	if t, err := parseTimeQuery(c, "from"); err != nil {
+	if t, err := utils.ParseTimeQuery(c, "from"); err != nil {
 		return nil, err
 	} else if t != nil {
 		from = *t
 	}
-	if t, err := parseTimeQuery(c, "to"); err != nil {
+	if t, err := utils.ParseTimeQuery(c, "to"); err != nil {
 		return nil, err
 	} else if t != nil {
 		to = *t

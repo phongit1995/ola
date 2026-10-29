@@ -3,7 +3,6 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 	"strings"
 
@@ -40,7 +39,7 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 		}
 
 		if claims.ID != "" {
-			key := fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID)
+			key := fmt.Sprintf(CacheKeyTokenBlacklist, claims.ID)
 			if exists, _ := m.cache.Exists(key); exists {
 				utils.RespondError(c, http.StatusUnauthorized, "token has been revoked")
 				c.Abort()
@@ -57,12 +56,12 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 
 		isAdmin, _ := dataMap["isAdmin"].(bool)
 		tokenType, _ := dataMap["type"].(string)
-		if !isAdmin || tokenType != constants.TokenTypeAdmin {
+		if !isAdmin || tokenType != TokenTypeAdmin {
 			utils.RespondError(c, http.StatusForbidden, "admin access required")
 			c.Abort()
 			return
 		}
-		if tokenUse, _ := dataMap["token_use"].(string); tokenUse != constants.TokenUseAccess {
+		if tokenUse, _ := dataMap["token_use"].(string); tokenUse != TokenUseAccess {
 			utils.RespondError(c, http.StatusUnauthorized, "invalid token type")
 			c.Abort()
 			return

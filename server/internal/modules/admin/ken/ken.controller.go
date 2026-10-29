@@ -2,14 +2,12 @@ package adminken
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -86,52 +84,28 @@ func (ctrl *Controller) ListTransactions(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-func parseUUIDQuery(c *gin.Context, key string) (*uuid.UUID, error) {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil, nil
-	}
-	id, err := uuid.Parse(raw)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key)
-	}
-	return &id, nil
-}
-
-func parseIntQuery(c *gin.Context, key string) *int {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil {
-		return nil
-	}
-	return &n
-}
-
 func parseTransferFilter(c *gin.Context) (TransferFilter, error) {
 	var f TransferFilter
-	senderID, err := parseUUIDQuery(c, "senderId")
+	senderID, err := utils.ParseUUIDQuery(c, "senderId")
 	if err != nil {
 		return f, err
 	}
 	f.SenderID = senderID
 
-	receiverID, err := parseUUIDQuery(c, "receiverId")
+	receiverID, err := utils.ParseUUIDQuery(c, "receiverId")
 	if err != nil {
 		return f, err
 	}
 	f.ReceiverID = receiverID
 
-	userID, err := parseUUIDQuery(c, "userId")
+	userID, err := utils.ParseUUIDQuery(c, "userId")
 	if err != nil {
 		return f, err
 	}
 	f.UserID = userID
 
-	f.MinAmount = parseIntQuery(c, "minAmount")
-	f.MaxAmount = parseIntQuery(c, "maxAmount")
+	f.MinAmount = utils.ParseIntQuery(c, "minAmount")
+	f.MaxAmount = utils.ParseIntQuery(c, "maxAmount")
 
 	if raw := c.Query("from"); raw != "" {
 		t, err := time.Parse(time.RFC3339, raw)

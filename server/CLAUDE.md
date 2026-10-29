@@ -164,8 +164,10 @@ cmd/
 
 internal/
 ├── config/           # Shared config loader
-├── constants/        # Kafka topics, cache keys, events
-│   └── constant.go   # SINGLE SOURCE OF TRUTH for constants
+├── constants/        # Shared constants only (see "Where constants live")
+│   ├── kafka.go      # Kafka topics + consumer group
+│   ├── websocket.go  # WebSocket / socket event names
+│   └── *.go          # cache, message, push, reaction, report, upload
 ├── db/               # Database connections
 │   ├── db.go         # PostgreSQL (GORM)
 │   └── scylladb.go   # ScyllaDB (gocql)
@@ -267,32 +269,35 @@ type ChatConfigValidator struct {
 
 #### 3. Constants-Based Configuration
 
-**CRITICAL**: All Kafka topics, cache keys, WebSocket events, and application constants are defined in:
-```
-internal/constants/constant.go
-```
+**Where constants live:**
+- **Used by one package** → that package's `<module>.constants.go` (e.g. `modules/auth/auth.constants.go`, `modules/room/wordchain/wordchain.constants.go`; plain `constants.go` in `transport/*`, `middleware`, `utils`, `media`). Reference it unqualified inside the package.
+- **Owned by one package, read by packages that already import it** → stays in the owner and is read as `<pkg>.Name` (e.g. `setting.ChatBotTypeOlala`, `middleware.TokenTypeAdmin`, `user.CacheKeyUserProfile`). Never add an import just to reach a constant if it could create an import cycle.
+- **Kafka topics and WebSocket event names** → always `internal/constants/kafka.go` / `internal/constants/websocket.go`, even when one package uses them: they are the contract between the API service, the Chat service and the apps.
+- **Needed by several packages that cannot import each other** → `internal/constants/<topic>.go` (`cache.go`, `message.go`, `push.go`, `reaction.go`, `report.go`, `upload.go`).
+- **Upload size limits, image/audio mime lists, upload folder date layouts** → `internal/media` (`media.MaxImageUploadSize`, `media.AllowedImageMimes`, `media.UploadDateLayout`).
 
 **Always use constants, never hardcode strings:**
 ```go
 // ✅ CORRECT
 producer.Publish(constants.KafkaTopicMessageCreated, data)
-cache.Set(fmt.Sprintf(constants.CacheKeyUserProfile, userID), data)
+cache.Set(fmt.Sprintf(CacheKeyConversationList, userID), data)
 ws.Emit(constants.WebSocketEventNewMessage, msg)
 
 // ❌ WRONG - Never do this
 producer.Publish("CHAT.MESSAGE.CREATED", data)
-cache.Set("USER:"+userID+":PROFILE", data)
+cache.Set("USER:"+userID+":CONVERSATIONS", data)
 ws.Emit("NEW_MESSAGE", msg)
 ```
 
 **Adding New Constants:**
-1. Add to appropriate section in `internal/constants/constant.go`
-2. Use uppercase with underscores (e.g., `KAFKA_TOPIC_USER_STATUS`)
-3. Group related constants together
+1. Put it in the owning package's `<module>.constants.go` (create the file if missing)
+2. Move it to `internal/constants/<topic>.go` only when another package needs it and cannot import the owner
+3. PascalCase Go names grouped by prefix (`CacheKey…`, `CacheTTL…`, `ErrorCode…`), related constants in one block
+4. Delete constants that nothing uses any more
 
 #### 4. Event-Driven Communication
 
-**Kafka Topics** (defined in `constants.go`):
+**Kafka Topics** (defined in `internal/constants/kafka.go`):
 - `CHAT.MESSAGE.CREATED`
 - `CHAT.MESSAGE.DELETED`
 - `CHAT.MESSAGE.UPDATED`
@@ -457,7 +462,7 @@ make migrate-create
 
 ### Adding New Features
 
-1. **Define Constants First**: Add to `internal/constants/constant.go`
+1. **Define Constants First**: Add to `myfeature.constants.go` (see "Where constants live")
 2. **Create Module**: Follow structure:
    ```
    internal/modules/myfeature/
@@ -466,6 +471,7 @@ make migrate-create
    ├── myfeature.service.go
    ├── myfeature.repository.go
    ├── myfeature.dto.go
+   ├── myfeature.constants.go
    └── myfeature.dig.go
    ```
 3. **Register in Container**: Add to `cmd/{service}/container.go`
@@ -473,7 +479,7 @@ make migrate-create
 
 ### Adding Kafka Events
 
-1. Define topic in `internal/constants/constant.go`:
+1. Define topic in `internal/constants/kafka.go` and add it to `AllKafkaTopics()`:
    ```go
    const KafkaTopicMyEvent = "CHAT.MY.EVENT"
    ```
@@ -488,7 +494,7 @@ make migrate-create
 
 ### Adding WebSocket Events
 
-1. Define event in `internal/constants/constant.go`:
+1. Define event in `internal/constants/websocket.go`:
    ```go
    const WebSocketEventMyEvent = "MY_EVENT"
    ```
@@ -617,14 +623,23 @@ docker-compose down -v
 - Every request gets a unique trace ID
 - Propagate through: HTTP → Kafka → WebSocket
 - Use for debugging across microservices
-- Available in context: `ctx.GetString(constants.ContextKeyTraceID)`
+- Read from / written to the `X-Trace-Id` header (`utils.getOrCreateTraceID`)
+
+### Shared Helpers (reuse, do not re-implement)
+
+- Query params: `utils.ParseLimit`, `utils.ParseOffset`, `utils.ParseOptionalBool`, `utils.ParseIntQuery`, `utils.ParseTimeQuery` (RFC3339), `utils.ParseTimeRange` (`from`/`to`), `utils.ParseUUIDQuery`, `utils.ParseUUIDParam`
+- Keyset cursors `time|uuid`: `utils.EncodeTimeCursor` / `utils.DecodeTimeCursor` (`utils.ErrInvalidCursor`)
+- Weighted random pick: `utils.WeightedPick`
+- KEN balance push to a user: `wsServer.EmitKenUpdate(userID, ken)` (safe on a nil server)
+- Image file extension from mime: `media.ImageExtension(mime)` (default `.jpg`), `media.ImageExtensionOrFile(mime, fileName)`
+- Admin: `admincommon.UserBrief` / `admincommon.UserBriefOf`, `admincommon.FindUsersByIDs` (`internal/modules/admin/common`); admin modules reuse the main module's repository (e.g. `meModule.Repository`, `clanModule.Repository`, `vip.Repository`) instead of copying its queries
 
 ### Cache Keys
 
-- Use constants from `internal/constants/constant.go`
+- Define the key next to the code that owns it (`<module>.constants.go`); shared keys go in `internal/constants/cache.go`
 - Pattern: `{ENTITY}:{ID}:{DETAIL}`
 - Example: `USER:uuid:PROFILE`, `CONVERSATION:uuid:MESSAGES`
-- Set appropriate TTLs (also in constants)
+- Set appropriate TTLs (`CacheTTL…` constants in the same file as the key)
 
 ### Consistent Naming
 

@@ -31,28 +31,30 @@ type MomentAuthorResponse struct {
 }
 
 type MomentResponse struct {
-	ID            string                 `json:"id"`
-	Author        MomentAuthorResponse   `json:"author"`
-	Type          string                 `json:"type"`
-	Status        string                 `json:"status"`
-	Position      int                    `json:"position"`
-	Background    string                 `json:"background,omitempty"`
-	Overlays      []models.MomentOverlay `json:"overlays"`
-	MediaURL      string                 `json:"mediaUrl,omitempty"`
-	ThumbURL      string                 `json:"thumbUrl,omitempty"`
-	Width         int                    `json:"width,omitempty"`
-	Height        int                    `json:"height,omitempty"`
-	Duration      float64                `json:"duration,omitempty"`
-	Visibility    string                 `json:"visibility"`
-	ViewerCount   *int64                 `json:"viewerCount,omitempty"`
-	ReactionCount *int64                 `json:"reactionCount,omitempty"`
-	Reactions     []MomentReactionCount  `json:"reactions,omitempty"`
-	Hidden        bool                   `json:"hidden,omitempty"`
-	HiddenBy      string                 `json:"hiddenBy,omitempty"`
-	MediaPurged   bool                   `json:"mediaPurged,omitempty"`
-	Seen          bool                   `json:"seen,omitempty"`
-	CreatedAt     string                 `json:"createdAt"`
-	ExpiresAt     string                 `json:"expiresAt"`
+	ID            string                   `json:"id"`
+	Author        MomentAuthorResponse     `json:"author"`
+	Type          string                   `json:"type"`
+	Status        string                   `json:"status"`
+	Position      int                      `json:"position"`
+	Background    string                   `json:"background,omitempty"`
+	Overlays      []models.MomentOverlay   `json:"overlays"`
+	MediaURL      string                   `json:"mediaUrl,omitempty"`
+	ThumbURL      string                   `json:"thumbUrl,omitempty"`
+	Width         int                      `json:"width,omitempty"`
+	Height        int                      `json:"height,omitempty"`
+	Duration      float64                  `json:"duration,omitempty"`
+	Visibility    string                   `json:"visibility"`
+	ViewerCount   *int64                   `json:"viewerCount,omitempty"`
+	ReactionCount *int64                   `json:"reactionCount,omitempty"`
+	Reactions     []MomentReactionCount    `json:"reactions,omitempty"`
+	CommentCount  *int64                   `json:"commentCount,omitempty"`
+	MyComment     *MomentMyCommentResponse `json:"myComment,omitempty"`
+	Hidden        bool                     `json:"hidden,omitempty"`
+	HiddenBy      string                   `json:"hiddenBy,omitempty"`
+	MediaPurged   bool                     `json:"mediaPurged,omitempty"`
+	Seen          bool                     `json:"seen,omitempty"`
+	CreatedAt     string                   `json:"createdAt"`
+	ExpiresAt     string                   `json:"expiresAt"`
 }
 
 type CreateMomentsResponse struct {
@@ -132,6 +134,31 @@ type MomentViewersResponse struct {
 	Limit      int                    `json:"limit"`
 	Offset     int                    `json:"offset"`
 	NextOffset *int                   `json:"nextOffset"`
+}
+
+type CommentMomentRequest struct {
+	Content string `json:"content" binding:"required" example:"Đẹp quá!"`
+}
+
+type MomentMyCommentResponse struct {
+	ID        string `json:"id"`
+	Content   string `json:"content"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type MomentCommentResponse struct {
+	ID        string               `json:"id"`
+	User      MomentAuthorResponse `json:"user"`
+	Content   string               `json:"content"`
+	CreatedAt string               `json:"createdAt"`
+}
+
+type MomentCommentsResponse struct {
+	Items      []MomentCommentResponse `json:"items"`
+	Total      int64                   `json:"total"`
+	Limit      int                     `json:"limit"`
+	Offset     int                     `json:"offset"`
+	NextOffset *int                    `json:"nextOffset"`
 }
 
 type MediaPurgeLog struct {
