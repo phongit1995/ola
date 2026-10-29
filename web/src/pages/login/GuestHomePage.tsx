@@ -4,11 +4,19 @@ import { ROUTES, STATIC_PAGES } from '@constants';
 import { LoginPage } from './LoginPage';
 
 const FEATURE_KEYS = [
-  'rooms',
   'friends',
-  'messages',
   'moments',
-  'games',
+  'feed',
+  'messages',
+  'rooms',
+] as const;
+
+const TOPIC_PAGES = [
+  { href: STATIC_PAGES.socialNetwork, labelKey: 'guestHome.socialNetwork' },
+  { href: STATIC_PAGES.findFriends, labelKey: 'guestHome.findFriends' },
+  { href: STATIC_PAGES.shareMoments, labelKey: 'guestHome.shareMoments' },
+  { href: STATIC_PAGES.chatRooms, labelKey: 'guestHome.chatRooms' },
+  { href: STATIC_PAGES.about, labelKey: 'guestHome.about' },
 ] as const;
 
 const LINK_CLASS = 'underline underline-offset-2';
@@ -40,10 +48,17 @@ export function GuestHomePage() {
             </li>
           ))}
         </ul>
-        <nav className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-          <a href={STATIC_PAGES.about} className={LINK_CLASS}>
-            {t('guestHome.about')}
-          </a>
+        <h2 className="mt-5 text-base font-semibold">
+          {t('guestHome.explore')}
+        </h2>
+        <nav className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          {TOPIC_PAGES.map((page) => (
+            <a key={page.href} href={page.href} className={LINK_CLASS}>
+              {t(page.labelKey)}
+            </a>
+          ))}
+        </nav>
+        <nav className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm opacity-90">
           <Link to={ROUTES.downloadApp} className={LINK_CLASS}>
             {t('guestHome.download')}
           </Link>

@@ -102,33 +102,38 @@
     "removeAccountConfirm": "Do you want to delete all saved data of account {{username}} on this device?"
   },
   "guestHome": {
-    "title": "Ola Chat — Free social chat to meet friends and talk online",
-    "lead": "Message instantly, join topic chat rooms, make friends everywhere and share your moments. Ola Chat is a lively, safe and completely free chat community on the web, Android and iPhone.",
-    "featuresTitle": "Everything you need to chat and make friends",
+    "title": "Ola Chat — Social network to make friends, chat and share moments",
+    "lead": "Meet new people, share moments, post to your feed and chat with friends every day. Ola Chat is a free social network for Vietnamese users, on the web and in the Ola Me app for Android and iPhone.",
+    "featuresTitle": "A social network to make friends and stay connected",
     "features": {
-      "rooms": {
-        "title": "Lively chat rooms",
-        "description": "Join rooms by topic, interest and region for group chats every day."
-      },
       "friends": {
         "title": "Friends everywhere",
-        "description": "Find and befriend people near you or all across Vietnam."
-      },
-      "messages": {
-        "title": "Real-time messaging",
-        "description": "Instant messages with photos, stickers, reactions and voice notes."
+        "description": "Meet new people through the Me community, chat rooms and moments, then add them as friends in one tap."
       },
       "moments": {
-        "title": "Share your moments",
-        "description": "Post photos and 24-hour moments and show off your own style."
+        "title": "Share moments",
+        "description": "Post photo and text moments for 24 hours, see who viewed them and get reactions and comments from friends."
       },
-      "games": {
-        "title": "Fun mini games",
-        "description": "Lucky Wheel, Egg Smash, Penalty Kick, Ken Chest — play in the app to win gifts."
+      "feed": {
+        "title": "Me feed",
+        "description": "Post with photos, choose who can see it, tag friends and see who visited your profile."
+      },
+      "messages": {
+        "title": "Messaging & video calls",
+        "description": "Instant messages with photos, stickers and voice notes, plus voice and video calls."
+      },
+      "rooms": {
+        "title": "Community chat rooms",
+        "description": "Join public rooms for group chats, reactions and word-chain games with everyone."
       }
     },
+    "explore": "Explore Ola Chat",
     "about": "About Ola Chat",
-    "download": "Download the app",
+    "socialNetwork": "Social network for friends",
+    "findFriends": "Find friends everywhere",
+    "shareMoments": "Share moments",
+    "chatRooms": "Online chat rooms",
+    "download": "Get the Ola Me app",
     "terms": "Terms of use",
     "privacy": "Privacy policy"
   },

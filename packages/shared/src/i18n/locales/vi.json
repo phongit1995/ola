@@ -102,33 +102,38 @@
     "removeAccountConfirm": "Bạn có muốn xoá toàn bộ thông tin lưu trữ của tài khoản {{username}} trên thiết bị không?"
   },
   "guestHome": {
-    "title": "Ola Chat — Mạng xã hội chat, kết bạn, trò chuyện online miễn phí",
-    "lead": "Nhắn tin nhanh, tham gia phòng chat theo chủ đề, kết bạn bốn phương và chia sẻ khoảnh khắc. Ola Chat là cộng đồng trò chuyện online sôi động, an toàn và hoàn toàn miễn phí trên web, Android và iPhone.",
-    "featuresTitle": "Mọi thứ bạn cần để trò chuyện & kết bạn",
+    "title": "Ola Chat — Mạng xã hội kết bạn, trò chuyện & chia sẻ khoảnh khắc",
+    "lead": "Làm quen bạn mới, chia sẻ khoảnh khắc, đăng bảng tin và trò chuyện với bạn bè mỗi ngày. Ola Chat là mạng xã hội kết bạn miễn phí cho người Việt, dùng trên web và app Ola Me cho Android, iPhone.",
+    "featuresTitle": "Mạng xã hội để kết bạn và kết nối",
     "features": {
-      "rooms": {
-        "title": "Phòng chat sôi động",
-        "description": "Tham gia phòng chat theo chủ đề, sở thích và khu vực để trò chuyện nhóm mỗi ngày."
-      },
       "friends": {
-        "title": "Kết bạn khắp nơi",
-        "description": "Tìm và kết bạn với người dùng ở gần bạn hoặc trên khắp Việt Nam."
-      },
-      "messages": {
-        "title": "Nhắn tin thời gian thực",
-        "description": "Tin nhắn gửi tức thì kèm hình ảnh, sticker, biểu cảm và tin nhắn thoại."
+        "title": "Kết bạn bốn phương",
+        "description": "Gặp gỡ người mới qua Me cộng đồng, phòng chat và khoảnh khắc, rồi kết bạn chỉ với một chạm."
       },
       "moments": {
         "title": "Chia sẻ khoảnh khắc",
-        "description": "Đăng ảnh, khoảnh khắc 24 giờ và thể hiện phong cách riêng của bạn."
+        "description": "Đăng khoảnh khắc ảnh & chữ trong 24 giờ, xem ai đã xem và nhận cảm xúc, bình luận từ bạn bè."
       },
-      "games": {
-        "title": "Trò chơi giải trí",
-        "description": "Vòng Quay May Mắn, Đập Trứng, Sút Penalty, Rương Ken — chơi ngay trong app để nhận quà."
+      "feed": {
+        "title": "Bảng tin Me",
+        "description": "Đăng bài kèm ảnh, chọn ai được xem, gắn tag bạn bè và xem khách ghé thăm trang cá nhân."
+      },
+      "messages": {
+        "title": "Nhắn tin & gọi video",
+        "description": "Nhắn tin tức thì kèm ảnh, sticker, tin nhắn thoại, gọi thoại và gọi video."
+      },
+      "rooms": {
+        "title": "Phòng chat cộng đồng",
+        "description": "Vào phòng công cộng để trò chuyện nhóm, thả cảm xúc và chơi nối từ cùng mọi người."
       }
     },
+    "explore": "Khám phá Ola Chat",
     "about": "Giới thiệu Ola Chat",
-    "download": "Tải ứng dụng",
+    "socialNetwork": "Mạng xã hội kết bạn",
+    "findFriends": "Tìm bạn bốn phương",
+    "shareMoments": "Chia sẻ khoảnh khắc",
+    "chatRooms": "Phòng chat online",
+    "download": "Tải app Ola Me",
     "terms": "Điều khoản sử dụng",
     "privacy": "Chính sách bảo mật"
   },
