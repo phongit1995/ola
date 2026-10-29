@@ -21,14 +21,14 @@ type RoomReactor struct {
 }
 
 type RoomMessageData struct {
-	ID           string             `json:"id"`
-	RoomID       string             `json:"roomId"`
-	SenderID     string             `json:"senderId"`
-	SenderName   string             `json:"senderName,omitempty"`
-	SenderAvatar string             `json:"senderAvatar,omitempty"`
-	SenderGender string             `json:"senderGender,omitempty"`
-	SenderVip    *string            `json:"senderVip,omitempty"`
-	SenderVipEnd *string            `json:"senderVipEnd,omitempty"`
+	ID            string             `json:"id"`
+	RoomID        string             `json:"roomId"`
+	SenderID      string             `json:"senderId"`
+	SenderName    string             `json:"senderName,omitempty"`
+	SenderAvatar  string             `json:"senderAvatar,omitempty"`
+	SenderGender  string             `json:"senderGender,omitempty"`
+	SenderVip     *string            `json:"senderVip,omitempty"`
+	SenderVipEnd  *string            `json:"senderVipEnd,omitempty"`
 	Type          string             `json:"type,omitempty"`
 	Content       string             `json:"content"`
 	ImageURL      string             `json:"imageUrl,omitempty"`

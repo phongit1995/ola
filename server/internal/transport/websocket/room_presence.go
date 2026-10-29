@@ -1,10 +1,10 @@
 package websocket
 
 import (
-	"ola-chat-server/internal/services"
 	"context"
 	"encoding/json"
 	"fmt"
+	"ola-chat-server/internal/services"
 	"time"
 
 	"github.com/google/uuid"

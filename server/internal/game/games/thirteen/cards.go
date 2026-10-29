@@ -17,6 +17,4 @@ const (
 
 func rankOf(card int) int { return card / 4 }
 
-func suitOf(card int) int { return card % 4 }
-
 func validCard(card int) bool { return card >= 0 && card < DeckSize }

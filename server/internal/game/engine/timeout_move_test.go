@@ -48,6 +48,7 @@ func (timeoutMoveTestLogic) Result(state any) (bool, int) {
 	}
 	return true, winner
 }
+
 var timeoutMoveCalls atomic.Int32
 
 func (timeoutMoveTestLogic) MoveOnTimeout(state any, playerIdx int) (json.RawMessage, bool) {

@@ -297,4 +297,3 @@ func (h *EventHandler) handleDisconnect(client *socket.Socket, userID string) {
 		"socket_id", client.Id(),
 		"is_last_connection", isLastConnection)
 }
-

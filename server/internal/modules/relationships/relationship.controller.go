@@ -1,8 +1,8 @@
 package relationships
 
 import (
-	"ola-chat-server/internal/utils"
 	"net/http"
+	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

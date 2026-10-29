@@ -41,10 +41,10 @@ const (
 	maxTimeoutMoveRetries    = 5
 
 	matchReasonAborted = "aborted"
-	maxChatRunes      = 120
-	chatCooldown      = 500 * time.Millisecond
-	reactionCooldown  = 800 * time.Millisecond
-	playingRoomGameID = "war-god"
+	maxChatRunes       = 120
+	chatCooldown       = 500 * time.Millisecond
+	reactionCooldown   = 800 * time.Millisecond
+	playingRoomGameID  = "war-god"
 )
 
 type Engine struct {
@@ -85,14 +85,14 @@ type Engine struct {
 
 type Match struct {
 	// mu protects mutable gameplay state, persistence, and both timer generations.
-	mu             sync.Mutex
-	ID             string
-	GameID         string
-	logic          logic.GameLogic
-	players        []protocol.PlayerInfo
-	state          any
-	turnIdx        int
-	timeoutRuns    []int
+	mu          sync.Mutex
+	ID          string
+	GameID      string
+	logic       logic.GameLogic
+	players     []protocol.PlayerInfo
+	state       any
+	turnIdx     int
+	timeoutRuns []int
 	// timeoutMove caches the fallback move for the expired turn so a retry
 	// after a save failure never recomputes it, and timeoutMoveFails counts
 	// those failures. Both are cleared as soon as the state advances.
@@ -100,26 +100,26 @@ type Match struct {
 	timeoutMoveFails int
 	deadline         time.Time
 	timer            *time.Timer
-	turnGen        int
-	over           bool
-	bet            int
-	graceTimer     *time.Timer
-	graceDeadline  time.Time
-	graceGen       int
-	disconnected   map[int]bool
-	disconnectedAt map[int]time.Time
-	quit           map[int]bool
-	pausedRemain   time.Duration
-	startedAt      time.Time
-	winnerID       string
-	resultReason   string
-	finishedAt     time.Time
-	lastChatAt     []time.Time
-	lastReactionAt []time.Time
-	room           *Room
-	closedRoom     *Room
-	listedRoomID   string
-	escrowVerified bool
+	turnGen          int
+	over             bool
+	bet              int
+	graceTimer       *time.Timer
+	graceDeadline    time.Time
+	graceGen         int
+	disconnected     map[int]bool
+	disconnectedAt   map[int]time.Time
+	quit             map[int]bool
+	pausedRemain     time.Duration
+	startedAt        time.Time
+	winnerID         string
+	resultReason     string
+	finishedAt       time.Time
+	lastChatAt       []time.Time
+	lastReactionAt   []time.Time
+	room             *Room
+	closedRoom       *Room
+	listedRoomID     string
+	escrowVerified   bool
 }
 
 func NewEngine(

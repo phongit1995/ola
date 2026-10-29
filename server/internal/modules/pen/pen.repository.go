@@ -291,14 +291,14 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 		now := time.Now()
 		ks := keeperSide
 		updates := map[string]interface{}{
-			"status":       models.PenStatusSettled,
-			"keeper_id":    keeper.ID,
-			"keeper_side":  ks,
-			"result":       result,
-			"winner_id":    winner.ID,
-			"pot":          pot,
-			"commission":   commission,
-			"payout":       payout,
+			"status":      models.PenStatusSettled,
+			"keeper_id":   keeper.ID,
+			"keeper_side": ks,
+			"result":      result,
+			"winner_id":   winner.ID,
+			"pot":         pot,
+			"commission":  commission,
+			"payout":      payout,
 			// "catch_tx_id":  catchTx.ID,   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
 			// "payout_tx_id": payoutTx.ID,
 			"settled_at": now,

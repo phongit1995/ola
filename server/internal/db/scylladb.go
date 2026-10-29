@@ -1,8 +1,8 @@
 package db
 
 import (
-	"ola-chat-server/internal/config"
 	"fmt"
+	"ola-chat-server/internal/config"
 	"time"
 
 	"github.com/gocql/gocql"

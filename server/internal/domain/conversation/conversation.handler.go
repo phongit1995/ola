@@ -1,12 +1,12 @@
 package conversation
 
 import (
-	"ola-chat-server/internal/constants"
-	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/utils"
 	"context"
 	"encoding/json"
 	"errors"
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 	"time"
 
 	"go.uber.org/zap"

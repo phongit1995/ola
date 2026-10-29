@@ -1,16 +1,16 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/room/wordchain"
 	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
-	"context"
-	"fmt"
-	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"

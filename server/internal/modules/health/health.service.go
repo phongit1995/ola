@@ -50,4 +50,3 @@ func (s *Service) checkDatabase() string {
 
 	return "healthy"
 }
-

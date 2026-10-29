@@ -1,8 +1,8 @@
 package health
 
 import (
-	"ola-chat-server/internal/utils"
 	"net/http"
+	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

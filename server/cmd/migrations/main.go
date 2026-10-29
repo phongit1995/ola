@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -82,34 +81,4 @@ func main() {
 	}
 
 	log.Println("🎉 All migrations completed successfully!")
-}
-
-func printUsage() {
-	fmt.Print(`
-Usage: ./migrations [action] [database]
-
-Actions:
-  up      - Apply all pending migrations (default)
-  down    - Rollback migrations (specify MIGRATION_STEPS env var)
-  version - Show current migration version
-  force   - Force set migration version (requires MIGRATION_STEPS env var)
-  seed    - Seed database with test data
-
-Database:
-  postgres - Run PostgreSQL migrations only
-  scylla   - Run ScyllaDB migrations only
-  all      - Run all migrations (default)
-
-Environment Variables:
-  MIGRATION_ACTION  - Migration action (default: up)
-  MIGRATE_DB        - Target database (default: all)
-  MIGRATION_STEPS   - Number of steps for down/force (default: 0)
-
-Examples:
-  ./migrations up all                    # Apply all migrations
-  ./migrations down postgres              # Rollback 1 step for PostgreSQL
-  MIGRATION_STEPS=2 ./migrations down all # Rollback 2 steps for all databases
-  ./migrations version all                # Show current versions
-  ./migrations seed                       # Seed 100 test users
-`)
 }

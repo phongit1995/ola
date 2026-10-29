@@ -16,17 +16,17 @@ type CreateChestRequest struct {
 }
 
 type ChestView struct {
-	ID                uuid.UUID `json:"id"`
-	RewardMode        string    `json:"rewardMode"`
-	KenAmount         *int      `json:"kenAmount,omitempty"`
-	KenMin            *int      `json:"kenMin,omitempty"`
-	KenMax            *int      `json:"kenMax,omitempty"`
-	MaxRecipients     int       `json:"maxRecipients"`
-	ClaimedRecipients int       `json:"claimedRecipients"`
-	DurationSeconds   int       `json:"durationSeconds"`
-	Status            string    `json:"status"`
-	StartedAt         time.Time `json:"startedAt"`
-	ExpiresAt         time.Time `json:"expiresAt"`
+	ID                uuid.UUID  `json:"id"`
+	RewardMode        string     `json:"rewardMode"`
+	KenAmount         *int       `json:"kenAmount,omitempty"`
+	KenMin            *int       `json:"kenMin,omitempty"`
+	KenMax            *int       `json:"kenMax,omitempty"`
+	MaxRecipients     int        `json:"maxRecipients"`
+	ClaimedRecipients int        `json:"claimedRecipients"`
+	DurationSeconds   int        `json:"durationSeconds"`
+	Status            string     `json:"status"`
+	StartedAt         time.Time  `json:"startedAt"`
+	ExpiresAt         time.Time  `json:"expiresAt"`
 	ClaimsCount       int        `json:"claimsCount"`
 	TotalKenGiven     int64      `json:"totalKenGiven"`
 	Source            string     `json:"source"`
