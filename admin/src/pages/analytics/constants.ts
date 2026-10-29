@@ -8,6 +8,9 @@ export const ANALYTICS_REALTIME_POLL_MS = 60_000
 
 export const ANALYTICS_STALE_MS = 5 * 60_000
 
+export const APPROXIMATE_RANKING_HINT =
+  'Mỗi nguồn có quá nhiều dòng nên chỉ cộng được phần đầu của từng nguồn. Thứ hạng và số liệu bảng này có thể chưa chính xác.'
+
 export const PUSH_SETTINGS_PATH = '/settings/notification'
 
 export const GA_DATA_API_URL = 'https://console.cloud.google.com/apis/library/analyticsdata.googleapis.com'
@@ -34,6 +37,7 @@ export const PLATFORM_META: Record<ChartPlatform, { label: string; color: string
 export const SOURCE_LABEL: Record<AnalyticsSource, string> = {
   mobile: 'Mobile (Android + iOS)',
   web: 'Web',
+  all: 'Mobile + Web',
 }
 
 export const EVENT_LABEL: Record<string, string> = {

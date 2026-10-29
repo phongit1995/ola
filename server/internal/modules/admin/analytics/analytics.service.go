@@ -3,6 +3,8 @@ package adminanalytics
 import (
 	"context"
 	"fmt"
+	"math"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -27,12 +29,15 @@ const (
 	eventLimit       = 20
 	versionLimit     = 15
 	dailyRowLimit    = 5000
+	mergeRowLimit    = 10000
+	mergeRowCap      = 50000
 	notSetDimension  = "(not set)"
 	engagementMetric = "userEngagementDuration"
 )
 
 const (
-	reportPlatforms = iota
+	reportTotals = iota
+	reportPlatforms
 	reportDaily
 	reportScreens
 	reportCountries
@@ -45,6 +50,11 @@ var gaPlatformNames = map[string]string{
 	PlatformIOS:     "iOS",
 	PlatformWeb:     "web",
 }
+
+var (
+	appPlatforms = []string{PlatformAndroid, PlatformIOS}
+	allPlatforms = []string{PlatformAndroid, PlatformIOS, PlatformWeb}
+)
 
 type Service struct {
 	settings *setting.Service
@@ -67,6 +77,17 @@ func NewService(settings *setting.Service, cfg *config.Config, cache *services.C
 type source struct {
 	name       string
 	propertyID string
+	platforms  []string
+}
+
+func (src source) appScope() []string {
+	out := make([]string, 0, len(appPlatforms))
+	for _, platform := range src.platforms {
+		if slices.Contains(appPlatforms, platform) {
+			out = append(out, platform)
+		}
+	}
+	return out
 }
 
 type connection struct {
@@ -93,17 +114,37 @@ func (s *Service) connect(platform string) (connection, error) {
 			WebPropertyID:        cfg.WebPropertyID,
 		},
 	}
-	if cfg.MobilePropertyID != "" && platform != PlatformWeb {
-		conn.sources = append(conn.sources, source{name: SourceMobile, propertyID: cfg.MobilePropertyID})
-	}
-	if cfg.WebPropertyID != "" && (platform == PlatformAll || platform == PlatformWeb) {
-		conn.sources = append(conn.sources, source{name: SourceWeb, propertyID: cfg.WebPropertyID})
-	}
+	conn.sources = scopedSources(cfg, platform)
 	if !configured || len(conn.sources) == 0 {
 		return conn, nil
 	}
 	conn.svc, conn.err = s.client.service(account.JSON)
 	return conn, nil
+}
+
+func scopedSources(cfg setting.AnalyticsConfig, platform string) []source {
+	var all []source
+	if cfg.MobilePropertyID != "" && cfg.MobilePropertyID == cfg.WebPropertyID {
+		all = []source{{name: SourceAll, propertyID: cfg.MobilePropertyID, platforms: allPlatforms}}
+	} else {
+		if cfg.MobilePropertyID != "" {
+			all = append(all, source{name: SourceMobile, propertyID: cfg.MobilePropertyID, platforms: appPlatforms})
+		}
+		if cfg.WebPropertyID != "" {
+			all = append(all, source{name: SourceWeb, propertyID: cfg.WebPropertyID, platforms: []string{PlatformWeb}})
+		}
+	}
+	if platform == PlatformAll {
+		return all
+	}
+	out := make([]source, 0, 1)
+	for _, src := range all {
+		if slices.Contains(src.platforms, platform) {
+			src.platforms = []string{platform}
+			out = append(out, src)
+		}
+	}
+	return out
 }
 
 func (c connection) ready() bool {
@@ -148,6 +189,16 @@ func allSucceeded(flags []bool) bool {
 	return true
 }
 
+func countSucceeded(flags []bool) int {
+	count := 0
+	for _, ok := range flags {
+		if ok {
+			count++
+		}
+	}
+	return count
+}
+
 func (s *Service) Overview(ctx context.Context, q OverviewQuery) (*OverviewResponse, error) {
 	conn, err := s.connect(q.Platform)
 	if err != nil {
@@ -169,8 +220,9 @@ func (s *Service) Overview(ctx context.Context, q OverviewQuery) (*OverviewRespo
 	}
 
 	reports := make([][]*analyticsdata.RunReportResponse, len(conn.sources))
+	merging := len(conn.sources) > 1
 	statuses, succeeded := conn.each(func(i int, src source) error {
-		result, err := fetchOverviewReports(ctx, conn.svc, src, q)
+		result, err := fetchOverviewReports(ctx, conn.svc, src, q, merging)
 		reports[i] = result
 		return err
 	})
@@ -214,26 +266,23 @@ func (s *Service) Realtime(ctx context.Context, q RealtimeQuery) (*RealtimeRespo
 	var mu sync.Mutex
 	byPlatform := map[string]int64{}
 	statuses, succeeded := conn.each(func(_ int, src source) error {
-		report, err := conn.svc.Properties.RunRealtimeReport(propertyName(src.propertyID), &analyticsdata.RunRealtimeReportRequest{
-			Dimensions:      []*analyticsdata.Dimension{{Name: "platform"}},
-			Metrics:         []*analyticsdata.Metric{{Name: "activeUsers"}},
-			DimensionFilter: platformFilter(q.Platform),
-		}).Context(ctx).Do()
+		breakdown, total, err := fetchRealtime(ctx, conn.svc, src)
 		if err != nil {
 			return err
 		}
 		mu.Lock()
 		defer mu.Unlock()
-		for _, row := range report.Rows {
-			byPlatform[normalizePlatform(dimension(row, 0))] += metric(row, 0)
+		for platform, users := range breakdown {
+			byPlatform[platform] += users
 		}
+		resp.ActiveUsers += total
 		return nil
 	})
 
 	for platform, users := range byPlatform {
-		resp.ActiveUsers += users
 		resp.Platforms = append(resp.Platforms, RealtimePlatform{Platform: platform, ActiveUsers: users})
 	}
+	resp.UsersSummed = countSucceeded(succeeded) > 1
 	sort.Slice(resp.Platforms, func(i, j int) bool { return resp.Platforms[i].ActiveUsers > resp.Platforms[j].ActiveUsers })
 	resp.Sources = statuses
 	now := time.Now()
@@ -246,8 +295,42 @@ func (s *Service) Realtime(ctx context.Context, q RealtimeQuery) (*RealtimeRespo
 	return resp, nil
 }
 
-func fetchOverviewReports(ctx context.Context, svc *analyticsdata.Service, src source, q OverviewQuery) ([]*analyticsdata.RunReportResponse, error) {
-	requests := overviewRequests(q, src.name == SourceMobile)
+func fetchRealtime(ctx context.Context, svc *analyticsdata.Service, src source) (map[string]int64, int64, error) {
+	filter := platformFilter(src.platforms)
+	report, err := svc.Properties.RunRealtimeReport(propertyName(src.propertyID), &analyticsdata.RunRealtimeReportRequest{
+		Dimensions:      []*analyticsdata.Dimension{{Name: "platform"}},
+		Metrics:         []*analyticsdata.Metric{{Name: "activeUsers"}},
+		DimensionFilter: filter,
+	}).Context(ctx).Do()
+	if err != nil {
+		return nil, 0, err
+	}
+	byPlatform := map[string]int64{}
+	var total int64
+	for _, row := range report.Rows {
+		users := metric(row, 0)
+		byPlatform[normalizePlatform(dimension(row, 0))] += users
+		total += users
+	}
+	if len(byPlatform) <= 1 {
+		return byPlatform, total, nil
+	}
+	totals, err := svc.Properties.RunRealtimeReport(propertyName(src.propertyID), &analyticsdata.RunRealtimeReportRequest{
+		Metrics:         []*analyticsdata.Metric{{Name: "activeUsers"}},
+		DimensionFilter: filter,
+	}).Context(ctx).Do()
+	if err != nil {
+		return nil, 0, err
+	}
+	total = 0
+	for _, row := range totals.Rows {
+		total += metric(row, 0)
+	}
+	return byPlatform, total, nil
+}
+
+func fetchOverviewReports(ctx context.Context, svc *analyticsdata.Service, src source, q OverviewQuery, merging bool) ([]*analyticsdata.RunReportResponse, error) {
+	requests := overviewRequests(q, src, merging)
 	out := make([]*analyticsdata.RunReportResponse, 0, len(requests))
 	for start := 0; start < len(requests); start += batchLimit {
 		end := min(start+batchLimit, len(requests))
@@ -259,16 +342,48 @@ func fetchOverviewReports(ctx context.Context, svc *analyticsdata.Service, src s
 		}
 		out = append(out, resp.Reports...)
 	}
+	if !merging {
+		return out, nil
+	}
+	for _, i := range []int{reportScreens, reportCountries, reportEvents} {
+		if i >= len(out) || out[i] == nil {
+			continue
+		}
+		if err := fetchRemainingRows(ctx, svc, src, requests[i], out[i]); err != nil {
+			return nil, err
+		}
+	}
 	return out, nil
 }
 
-func overviewRequests(q OverviewQuery, withVersions bool) []*analyticsdata.RunReportRequest {
+func fetchRemainingRows(ctx context.Context, svc *analyticsdata.Service, src source, req *analyticsdata.RunReportRequest, report *analyticsdata.RunReportResponse) error {
+	for int64(len(report.Rows)) < report.RowCount && len(report.Rows) < mergeRowCap {
+		page := *req
+		page.Offset = int64(len(report.Rows))
+		next, err := svc.Properties.RunReport(propertyName(src.propertyID), &page).Context(ctx).Do()
+		if err != nil {
+			return err
+		}
+		if len(next.Rows) == 0 {
+			return nil
+		}
+		report.Rows = append(report.Rows, next.Rows...)
+	}
+	return nil
+}
+
+func overviewRequests(q OverviewQuery, src source, merging bool) []*analyticsdata.RunReportRequest {
 	dateRanges := []*analyticsdata.DateRange{{StartDate: q.From, EndDate: q.To}}
-	filter := platformFilter(q.Platform)
-	build := func(dims []string, metrics []string, orderBy string, limit int64) *analyticsdata.RunReportRequest {
+	rankLimit := func(limit int64) int64 {
+		if merging {
+			return mergeRowLimit
+		}
+		return limit
+	}
+	build := func(platforms []string, dims []string, metrics []string, orderBy string, limit int64) *analyticsdata.RunReportRequest {
 		req := &analyticsdata.RunReportRequest{
 			DateRanges:      dateRanges,
-			DimensionFilter: filter,
+			DimensionFilter: platformFilter(platforms),
 			Limit:           limit,
 		}
 		for _, name := range dims {
@@ -282,28 +397,35 @@ func overviewRequests(q OverviewQuery, withVersions bool) []*analyticsdata.RunRe
 		}
 		return req
 	}
+	scope := src.platforms
 	requests := []*analyticsdata.RunReportRequest{
-		reportPlatforms: build([]string{"platform"}, []string{"activeUsers", "newUsers", "sessions", "screenPageViews", engagementMetric}, "", 0),
-		reportDaily:     build([]string{"date", "platform"}, []string{"activeUsers", "newUsers", "sessions"}, "", dailyRowLimit),
-		reportScreens:   build([]string{"unifiedPagePathScreen"}, []string{"screenPageViews", "activeUsers"}, "screenPageViews", screenLimit),
-		reportCountries: build([]string{"country"}, []string{"activeUsers"}, "activeUsers", countryLimit),
-		reportEvents:    build([]string{"eventName"}, []string{"eventCount", "totalUsers"}, "eventCount", eventLimit),
+		reportTotals:    build(scope, nil, []string{"activeUsers", "newUsers", "sessions", "screenPageViews", engagementMetric}, "", 0),
+		reportPlatforms: build(scope, []string{"platform"}, []string{"activeUsers", "newUsers", "sessions", "screenPageViews"}, "", 0),
+		reportDaily:     build(scope, []string{"date", "platform"}, []string{"activeUsers", "newUsers", "sessions"}, "", dailyRowLimit),
+		reportScreens:   build(scope, []string{"unifiedPagePathScreen"}, []string{"screenPageViews", "activeUsers"}, "screenPageViews", rankLimit(screenLimit)),
+		reportCountries: build(scope, []string{"country"}, []string{"activeUsers"}, "activeUsers", rankLimit(countryLimit)),
+		reportEvents:    build(scope, []string{"eventName"}, []string{"eventCount", "totalUsers"}, "eventCount", rankLimit(eventLimit)),
 	}
-	if withVersions {
-		requests = append(requests, build([]string{"platform", "appVersion"}, []string{"activeUsers"}, "activeUsers", versionLimit))
+	if apps := src.appScope(); len(apps) > 0 {
+		requests = append(requests, build(apps, []string{"platform", "appVersion"}, []string{"activeUsers"}, "activeUsers", versionLimit))
 	}
 	return requests
 }
 
-func platformFilter(platform string) *analyticsdata.FilterExpression {
-	name, ok := gaPlatformNames[platform]
-	if !ok {
+func platformFilter(platforms []string) *analyticsdata.FilterExpression {
+	names := make([]string, 0, len(platforms))
+	for _, platform := range platforms {
+		if name, ok := gaPlatformNames[platform]; ok {
+			names = append(names, name)
+		}
+	}
+	if len(names) == 0 {
 		return nil
 	}
 	return &analyticsdata.FilterExpression{
 		Filter: &analyticsdata.Filter{
 			FieldName:    "platform",
-			StringFilter: &analyticsdata.StringFilter{MatchType: "EXACT", Value: name},
+			InListFilter: &analyticsdata.InListFilter{Values: names},
 		},
 	}
 }
@@ -335,23 +457,35 @@ func metric(row *analyticsdata.Row, i int) int64 {
 }
 
 type aggregate struct {
+	totals     Totals
+	sources    int
 	platforms  map[string]*PlatformRow
 	engagement float64
 	days       map[string]*TimePoint
 	dayOrder   []string
-	screens    map[string]*NamedRow
-	countries  map[string]*NamedRow
-	events     map[string]*NamedRow
+	screens    *ranking
+	countries  *ranking
+	events     *ranking
 	versions   []VersionRow
+}
+
+type ranking struct {
+	rows    map[string]*NamedRow
+	partial []rankedPart
+}
+
+type rankedPart struct {
+	seen  map[string]bool
+	floor int64
 }
 
 func newAggregate(from, to string) *aggregate {
 	agg := &aggregate{
 		platforms: map[string]*PlatformRow{},
 		days:      map[string]*TimePoint{},
-		screens:   map[string]*NamedRow{},
-		countries: map[string]*NamedRow{},
-		events:    map[string]*NamedRow{},
+		screens:   newRanking(),
+		countries: newRanking(),
+		events:    newRanking(),
 	}
 	start, errFrom := time.Parse(dateLayout, from)
 	end, errTo := time.Parse(dateLayout, to)
@@ -366,14 +500,29 @@ func newAggregate(from, to string) *aggregate {
 	return agg
 }
 
-func reportAt(reports []*analyticsdata.RunReportResponse, i int) []*analyticsdata.Row {
-	if i >= len(reports) || reports[i] == nil {
+func reportResponse(reports []*analyticsdata.RunReportResponse, i int) *analyticsdata.RunReportResponse {
+	if i >= len(reports) {
 		return nil
 	}
-	return reports[i].Rows
+	return reports[i]
+}
+
+func reportAt(reports []*analyticsdata.RunReportResponse, i int) []*analyticsdata.Row {
+	if report := reportResponse(reports, i); report != nil {
+		return report.Rows
+	}
+	return nil
 }
 
 func (a *aggregate) add(reports []*analyticsdata.RunReportResponse) {
+	a.sources++
+	for _, row := range reportAt(reports, reportTotals) {
+		a.totals.ActiveUsers += metric(row, 0)
+		a.totals.NewUsers += metric(row, 1)
+		a.totals.Sessions += metric(row, 2)
+		a.totals.Views += metric(row, 3)
+		a.engagement += metricFloat(row, 4)
+	}
 	for _, row := range reportAt(reports, reportPlatforms) {
 		platform := normalizePlatform(dimension(row, 0))
 		item, ok := a.platforms[platform]
@@ -385,7 +534,6 @@ func (a *aggregate) add(reports []*analyticsdata.RunReportResponse) {
 		item.NewUsers += metric(row, 1)
 		item.Sessions += metric(row, 2)
 		item.Views += metric(row, 3)
-		a.engagement += metricFloat(row, 4)
 	}
 	for _, row := range reportAt(reports, reportDaily) {
 		day, err := time.Parse(gaDateLayout, dimension(row, 0))
@@ -408,15 +556,9 @@ func (a *aggregate) add(reports []*analyticsdata.RunReportResponse) {
 		point.NewUsers += metric(row, 1)
 		point.Sessions += metric(row, 2)
 	}
-	for _, row := range reportAt(reports, reportScreens) {
-		mergeNamed(a.screens, dimension(row, 0), metric(row, 0), metric(row, 1))
-	}
-	for _, row := range reportAt(reports, reportCountries) {
-		mergeNamed(a.countries, dimension(row, 0), metric(row, 0), metric(row, 0))
-	}
-	for _, row := range reportAt(reports, reportEvents) {
-		mergeNamed(a.events, dimension(row, 0), metric(row, 0), metric(row, 1))
-	}
+	a.screens.add(reportResponse(reports, reportScreens), 1)
+	a.countries.add(reportResponse(reports, reportCountries), 0)
+	a.events.add(reportResponse(reports, reportEvents), 1)
 	for _, row := range reportAt(reports, reportVersions) {
 		a.versions = append(a.versions, VersionRow{
 			Platform: normalizePlatform(dimension(row, 0)),
@@ -426,7 +568,75 @@ func (a *aggregate) add(reports []*analyticsdata.RunReportResponse) {
 	}
 }
 
-func mergeNamed(rows map[string]*NamedRow, name string, count, users int64) {
+func newRanking() *ranking {
+	return &ranking{rows: map[string]*NamedRow{}}
+}
+
+func (r *ranking) add(report *analyticsdata.RunReportResponse, usersMetric int) {
+	if report == nil {
+		return
+	}
+	part := rankedPart{seen: make(map[string]bool, len(report.Rows)), floor: math.MaxInt64}
+	for _, row := range report.Rows {
+		count := metric(row, 0)
+		name := mergeNamed(r.rows, dimension(row, 0), count, metric(row, usersMetric))
+		part.seen[name] = true
+		part.floor = min(part.floor, count)
+	}
+	if int64(len(report.Rows)) < report.RowCount {
+		r.partial = append(r.partial, part)
+	}
+}
+
+func (r *ranking) top(limit int) ([]NamedRow, bool) {
+	top := topNamed(r.rows, limit)
+	return top, r.exact(top, limit)
+}
+
+func (r *ranking) exact(top []NamedRow, limit int) bool {
+	if len(r.partial) == 0 {
+		return true
+	}
+	var unseen int64
+	for _, part := range r.partial {
+		if part.floor == math.MaxInt64 {
+			return false
+		}
+		unseen += part.floor
+	}
+	inTop := make(map[string]bool, len(top))
+	for _, item := range top {
+		if r.unknownShare(item.Name) > 0 {
+			return false
+		}
+		inTop[item.Name] = true
+	}
+	if len(top) < limit {
+		return unseen == 0
+	}
+	cutoff := top[len(top)-1].Count
+	if unseen >= cutoff {
+		return false
+	}
+	for name, item := range r.rows {
+		if !inTop[name] && item.Count+r.unknownShare(name) >= cutoff {
+			return false
+		}
+	}
+	return true
+}
+
+func (r *ranking) unknownShare(name string) int64 {
+	var bound int64
+	for _, part := range r.partial {
+		if !part.seen[name] {
+			bound += part.floor
+		}
+	}
+	return bound
+}
+
+func mergeNamed(rows map[string]*NamedRow, name string, count, users int64) string {
 	if name == "" {
 		name = notSetDimension
 	}
@@ -437,6 +647,7 @@ func mergeNamed(rows map[string]*NamedRow, name string, count, users int64) {
 	}
 	item.Count += count
 	item.Users += users
+	return name
 }
 
 func topNamed(rows map[string]*NamedRow, limit int) []NamedRow {
@@ -460,12 +671,10 @@ func (a *aggregate) fill(resp *OverviewResponse) {
 	resp.Platforms = make([]PlatformRow, 0, len(a.platforms))
 	for _, item := range a.platforms {
 		resp.Platforms = append(resp.Platforms, *item)
-		resp.Totals.ActiveUsers += item.ActiveUsers
-		resp.Totals.NewUsers += item.NewUsers
-		resp.Totals.Sessions += item.Sessions
-		resp.Totals.Views += item.Views
 	}
 	sort.Slice(resp.Platforms, func(i, j int) bool { return resp.Platforms[i].ActiveUsers > resp.Platforms[j].ActiveUsers })
+	resp.Totals = a.totals
+	resp.Totals.UsersSummed = a.sources > 1
 	if resp.Totals.ActiveUsers > 0 {
 		resp.Totals.AvgEngagementSeconds = a.engagement / float64(resp.Totals.ActiveUsers)
 	}
@@ -474,13 +683,22 @@ func (a *aggregate) fill(resp *OverviewResponse) {
 	for _, key := range a.dayOrder {
 		resp.Timeseries = append(resp.Timeseries, *a.days[key])
 	}
-	resp.Screens = topNamed(a.screens, screenLimit)
-	resp.Countries = topNamed(a.countries, countryLimit)
-	resp.Events = topNamed(a.events, eventLimit)
+	resp.ApproximateRankings = []string{}
+	resp.Screens = rankInto(resp, RankingScreens, a.screens, screenLimit)
+	resp.Countries = rankInto(resp, RankingCountries, a.countries, countryLimit)
+	resp.Events = rankInto(resp, RankingEvents, a.events, eventLimit)
 
 	sort.Slice(a.versions, func(i, j int) bool { return a.versions[i].Users > a.versions[j].Users })
 	if len(a.versions) > versionLimit {
 		a.versions = a.versions[:versionLimit]
 	}
 	resp.AppVersions = append([]VersionRow{}, a.versions...)
+}
+
+func rankInto(resp *OverviewResponse, name string, r *ranking, limit int) []NamedRow {
+	top, exact := r.top(limit)
+	if !exact {
+		resp.ApproximateRankings = append(resp.ApproximateRankings, name)
+	}
+	return top
 }

@@ -14,6 +14,11 @@ const (
 
 	SourceMobile = "mobile"
 	SourceWeb    = "web"
+	SourceAll    = "all"
+
+	RankingScreens   = "screens"
+	RankingCountries = "countries"
+	RankingEvents    = "events"
 )
 
 type OverviewQuery struct {
@@ -47,6 +52,7 @@ type Totals struct {
 	Sessions             int64   `json:"sessions"`
 	Views                int64   `json:"views"`
 	AvgEngagementSeconds float64 `json:"avgEngagementSeconds"`
+	UsersSummed          bool    `json:"usersSummed"`
 }
 
 type PlatformRow struct {
@@ -79,18 +85,19 @@ type VersionRow struct {
 }
 
 type OverviewResponse struct {
-	Setup       Setup          `json:"setup"`
-	Sources     []SourceStatus `json:"sources"`
-	From        string         `json:"from"`
-	To          string         `json:"to"`
-	FetchedAt   *time.Time     `json:"fetchedAt,omitempty"`
-	Totals      Totals         `json:"totals"`
-	Platforms   []PlatformRow  `json:"platforms"`
-	Timeseries  []TimePoint    `json:"timeseries"`
-	Screens     []NamedRow     `json:"screens"`
-	Countries   []NamedRow     `json:"countries"`
-	AppVersions []VersionRow   `json:"appVersions"`
-	Events      []NamedRow     `json:"events"`
+	Setup               Setup          `json:"setup"`
+	Sources             []SourceStatus `json:"sources"`
+	From                string         `json:"from"`
+	To                  string         `json:"to"`
+	FetchedAt           *time.Time     `json:"fetchedAt,omitempty"`
+	Totals              Totals         `json:"totals"`
+	Platforms           []PlatformRow  `json:"platforms"`
+	Timeseries          []TimePoint    `json:"timeseries"`
+	Screens             []NamedRow     `json:"screens"`
+	Countries           []NamedRow     `json:"countries"`
+	AppVersions         []VersionRow   `json:"appVersions"`
+	Events              []NamedRow     `json:"events"`
+	ApproximateRankings []string       `json:"approximateRankings"`
 }
 
 type RealtimePlatform struct {
@@ -101,6 +108,7 @@ type RealtimePlatform struct {
 type RealtimeResponse struct {
 	Sources     []SourceStatus     `json:"sources"`
 	ActiveUsers int64              `json:"activeUsers"`
+	UsersSummed bool               `json:"usersSummed"`
 	Platforms   []RealtimePlatform `json:"platforms"`
 	FetchedAt   *time.Time         `json:"fetchedAt,omitempty"`
 }

@@ -1,4 +1,4 @@
-import { Card, Col, Empty, Row, Space, Statistic, Table, Tag, Typography } from 'antd'
+import { Card, Col, Empty, Row, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
   CartesianGrid,
@@ -19,9 +19,10 @@ import type {
   AnalyticsOverview,
   AnalyticsPlatform,
   AnalyticsPlatformRow,
+  AnalyticsRanking,
   AnalyticsVersionRow,
 } from '@/types'
-import { PLATFORM_META } from './constants'
+import { APPROXIMATE_RANKING_HINT, PLATFORM_META } from './constants'
 import {
   eventLabel,
   formatChartDate,
@@ -100,6 +101,15 @@ function KpiCard({ title, value }: { title: string; value: string | number }) {
   )
 }
 
+function ApproximateTag({ data, ranking }: { data: AnalyticsOverview; ranking: AnalyticsRanking }) {
+  if (!data.approximateRankings.includes(ranking)) return null
+  return (
+    <Tooltip title={APPROXIMATE_RANKING_HINT}>
+      <Tag color="warning">Gần đúng</Tag>
+    </Tooltip>
+  )
+}
+
 interface AnalyticsReportProps {
   data: AnalyticsOverview
   platform: AnalyticsPlatform
@@ -120,6 +130,12 @@ export function AnalyticsReport({ data, platform }: AnalyticsReportProps) {
         <KpiCard title="Lượt xem màn hình / trang" value={data.totals.views} />
         <KpiCard title="Tương tác TB / người" value={formatEngagement(data.totals.avgEngagementSeconds)} />
       </Row>
+      {data.totals.usersSummed && (
+        <Typography.Text type="secondary">
+          Mobile và web là 2 property riêng nên số người dùng là cộng của 2 nguồn: ai dùng cả app lẫn web
+          được tính 2 lần, tương tác trung bình cũng chia theo số đã cộng này.
+        </Typography.Text>
+      )}
 
       <Card title="Người dùng hoạt động theo ngày">
         <ResponsiveContainer width="100%" height={320}>
@@ -183,7 +199,11 @@ export function AnalyticsReport({ data, platform }: AnalyticsReportProps) {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={14}>
-          <Card title="Màn hình / trang xem nhiều" style={{ height: '100%' }}>
+          <Card
+            title="Màn hình / trang xem nhiều"
+            extra={<ApproximateTag data={data} ranking="screens" />}
+            style={{ height: '100%' }}
+          >
             <Table<AnalyticsNamedRow>
               rowKey="name"
               size="small"
@@ -195,7 +215,7 @@ export function AnalyticsReport({ data, platform }: AnalyticsReportProps) {
           </Card>
         </Col>
         <Col xs={24} lg={10}>
-          <Card title="Quốc gia" style={{ height: '100%' }}>
+          <Card title="Quốc gia" extra={<ApproximateTag data={data} ranking="countries" />} style={{ height: '100%' }}>
             <Table<AnalyticsNamedRow>
               rowKey="name"
               size="small"
@@ -210,7 +230,7 @@ export function AnalyticsReport({ data, platform }: AnalyticsReportProps) {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={14}>
-          <Card title="Sự kiện" style={{ height: '100%' }}>
+          <Card title="Sự kiện" extra={<ApproximateTag data={data} ranking="events" />} style={{ height: '100%' }}>
             <Table<AnalyticsNamedRow>
               rowKey="name"
               size="small"

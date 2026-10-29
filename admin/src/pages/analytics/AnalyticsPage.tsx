@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { UseQueryResult } from '@tanstack/react-query'
 import { Alert, Badge, Button, Card, Modal, Segmented, Space, Spin, Tooltip, Typography } from 'antd'
 import { ReloadOutlined, SettingOutlined } from '@ant-design/icons'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
@@ -12,17 +13,52 @@ import { ANALYTICS_DEFAULT_DAYS, PLATFORM_OPTIONS, SOURCE_LABEL } from './consta
 import { useAnalyticsOverview, useAnalyticsRealtime, useRefreshAnalytics } from './useAnalyticsQueries'
 import { isAnalyticsReady, platformLabel } from './utils'
 
-function RealtimeBadge({ realtime }: { realtime?: AnalyticsRealtime }) {
-  if (!realtime) return null
-  const breakdown = realtime.platforms
+function TooltipLines({ lines }: { lines: string[] }) {
+  return lines.map((line) => <div key={line}>{line}</div>)
+}
+
+function RealtimeUnavailable({ reasons }: { reasons: string[] }) {
+  return (
+    <Tooltip title={<TooltipLines lines={reasons} />}>
+      <Space size={6}>
+        <Badge status="error" />
+        <Typography.Text type="danger">Không tải được số người đang dùng</Typography.Text>
+      </Space>
+    </Tooltip>
+  )
+}
+
+function RealtimeBadge({ realtime }: { realtime: UseQueryResult<AnalyticsRealtime> }) {
+  const { data } = realtime
+  if (!data) {
+    return realtime.isError ? (
+      <RealtimeUnavailable reasons={[errorMessage(realtime.error, 'Không gọi được server')]} />
+    ) : null
+  }
+  const failed = data.sources.filter((source) => source.error)
+  if (data.sources.length > 0 && failed.length === data.sources.length) {
+    return <RealtimeUnavailable reasons={failed.map((source) => `${SOURCE_LABEL[source.source]}: ${source.error}`)} />
+  }
+  const stale = realtime.isError
+  const breakdown = data.platforms
     .map((row) => `${platformLabel(row.platform)}: ${formatCount(row.activeUsers)}`)
     .join(' · ')
+  const notes = [
+    breakdown || 'Không có ai trong 30 phút gần nhất',
+    ...failed.map((source) => `Thiếu ${SOURCE_LABEL[source.source]}: ${source.error}`),
+    ...(data.usersSummed ? ['Cộng từ 2 property nên ai dùng cả app lẫn web được tính 2 lần'] : []),
+    ...(stale
+      ? [`Số cũ${data.fetchedAt ? ` lúc ${formatDateTime(data.fetchedAt)}` : ''}, lần tải lại gần nhất bị lỗi`]
+      : []),
+  ]
+  const complete = failed.length === 0 && !stale
   return (
-    <Tooltip title={breakdown || 'Không có ai trong 30 phút gần nhất'}>
+    <Tooltip title={<TooltipLines lines={notes} />}>
       <Space size={6}>
-        <Badge status="processing" color="#52c41a" />
-        <Typography.Text strong>{formatCount(realtime.activeUsers)}</Typography.Text>
+        {complete ? <Badge status="processing" color="#52c41a" /> : <Badge status="warning" />}
+        <Typography.Text strong>{formatCount(data.activeUsers)}</Typography.Text>
         <Typography.Text type="secondary">người dùng trong 30 phút qua</Typography.Text>
+        {!complete && <Typography.Text type="warning">{failed.length > 0 ? 'thiếu dữ liệu' : 'số cũ'}</Typography.Text>}
       </Space>
     </Tooltip>
   )
@@ -39,7 +75,7 @@ export function AnalyticsPage() {
   const data = overview.data
   const ready = isAnalyticsReady(data?.setup)
   const realtime = useAnalyticsRealtime(platform, ready)
-  const refresh = useRefreshAnalytics(params)
+  const refresh = useRefreshAnalytics()
   const failedSources = (data?.sources ?? []).filter((source) => source.error)
 
   return (
@@ -52,8 +88,8 @@ export function AnalyticsPage() {
             <Button
               icon={<ReloadOutlined />}
               loading={refresh.isPending}
-              disabled={!ready}
-              onClick={() => refresh.mutate()}
+              disabled={!data}
+              onClick={() => refresh.mutate(params)}
             >
               Làm mới
             </Button>
@@ -62,7 +98,7 @@ export function AnalyticsPage() {
             </Button>
             {overview.isFetching && <Spin size="small" />}
           </Space>
-          {ready && <RealtimeBadge realtime={realtime.data} />}
+          {ready && <RealtimeBadge realtime={realtime} />}
         </Space>
         {ready && data?.fetchedAt && (
           <Typography.Paragraph type="secondary" style={{ margin: '12px 0 0' }}>

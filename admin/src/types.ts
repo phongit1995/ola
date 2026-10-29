@@ -1808,7 +1808,9 @@ export interface DashboardOverviewParams {
 
 export type AnalyticsPlatform = 'all' | 'android' | 'ios' | 'web'
 
-export type AnalyticsSource = 'mobile' | 'web'
+export type AnalyticsSource = 'mobile' | 'web' | 'all'
+
+export type AnalyticsRanking = 'screens' | 'countries' | 'events'
 
 export interface AnalyticsSettingValue {
   mobilePropertyId: string
@@ -1832,6 +1834,7 @@ export interface AnalyticsTotals {
   sessions: number
   views: number
   avgEngagementSeconds: number
+  usersSummed: boolean
 }
 
 export interface AnalyticsPlatformRow {
@@ -1876,11 +1879,13 @@ export interface AnalyticsOverview {
   countries: AnalyticsNamedRow[]
   appVersions: AnalyticsVersionRow[]
   events: AnalyticsNamedRow[]
+  approximateRankings: AnalyticsRanking[]
 }
 
 export interface AnalyticsRealtime {
   sources: AnalyticsSourceStatus[]
   activeUsers: number
+  usersSummed: boolean
   platforms: { platform: string; activeUsers: number }[]
   fetchedAt?: string
 }

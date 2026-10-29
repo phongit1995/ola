@@ -75,7 +75,8 @@ export function AnalyticsSetupCard({ setup, onSaved }: AnalyticsSetupCardProps) 
         </li>
         <li>
           Lấy Property ID ở Admin → Property details (một dãy số, không phải mã G-XXXX) và nhập vào
-          bên dưới. Để trống nền tảng nào chưa dùng.
+          bên dưới. Để trống nền tảng nào chưa dùng. Nếu app và web chung một property thì nhập cùng
+          một ID vào cả hai ô.
         </li>
       </ol>
 

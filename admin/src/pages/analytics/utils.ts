@@ -4,6 +4,7 @@ import { CHART_PLATFORMS, EVENT_LABEL, PLATFORM_META, type ChartPlatform } from 
 const SOURCE_PLATFORMS: Record<AnalyticsSource, ChartPlatform[]> = {
   mobile: ['android', 'ios'],
   web: ['web'],
+  all: ['android', 'ios', 'web'],
 }
 
 export function isChartPlatform(platform: string): platform is ChartPlatform {
