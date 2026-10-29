@@ -15,9 +15,9 @@ const SITE_URL = 'https://olachat.net'
 const seoPages = [
   {
     path: '/tai-app',
-    title: 'Tải ứng dụng Ola Chat — Nhắn tin, nghe gọi, chơi game trên điện thoại',
+    title: 'Tải app Ola Me (Ola Chat) miễn phí cho Android và iPhone',
     description:
-      'Cài Ola trên điện thoại để nhận thông báo tin nhắn ngay lập tức, nghe gọi và chơi game mượt hơn.',
+      'Tải Ola Me, app của mạng xã hội Ola Chat, miễn phí trên Google Play và App Store: kết bạn, chia sẻ khoảnh khắc, nhắn tin, gọi video và nhận thông báo ngay trên điện thoại.',
   },
   {
     path: '/dieu-khoan',
