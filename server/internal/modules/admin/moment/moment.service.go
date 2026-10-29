@@ -123,18 +123,15 @@ func (s *Service) PurgeMedia(ctx context.Context, id uuid.UUID) (*MomentDetail, 
 }
 
 func (s *Service) ListViewers(ctx context.Context, id uuid.UUID, limit, offset int) (*moment.MomentViewersResponse, error) {
-	exists, err := s.repo.Exists(id)
+	found, err := s.getMoment(id)
 	if err != nil {
 		return nil, err
 	}
-	if !exists {
-		return nil, errMomentNotFound
-	}
-	resp, err := s.viewers.ViewersOf(ctx, id, limit, offset)
+	resp, err := s.viewers.ViewersOf(ctx, found, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	s.viewers.AttachViewerReactions(ctx, id, resp.Items)
+	s.viewers.AttachViewerReactions(ctx, found, resp.Items)
 	return resp, nil
 }
 

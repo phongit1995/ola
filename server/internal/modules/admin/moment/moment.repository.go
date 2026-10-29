@@ -81,7 +81,7 @@ func (r *Repository) List(f ListFilter, now time.Time) ([]*models.Moment, int64,
 	}
 
 	var moments []*models.Moment
-	if err := withOrder(db.Preload("Author"), f.SortBy, f.SortDir).
+	if err := withOrder(db.Preload("Author").Omit(moment.ArchivedAudienceColumns...), f.SortBy, f.SortDir).
 		Limit(f.Limit).Offset(f.Offset).Find(&moments).Error; err != nil {
 		return nil, 0, err
 	}
@@ -125,12 +125,6 @@ func (r *Repository) GetByID(id uuid.UUID) (*models.Moment, error) {
 		return nil, err
 	}
 	return &moment, nil
-}
-
-func (r *Repository) Exists(id uuid.UUID) (bool, error) {
-	var count int64
-	err := r.db.Unscoped().Model(&models.Moment{}).Where("id = ?", id).Limit(1).Count(&count).Error
-	return count > 0, err
 }
 
 func (r *Repository) SetEnabled(id uuid.UUID, enabled bool, at time.Time) (bool, error) {

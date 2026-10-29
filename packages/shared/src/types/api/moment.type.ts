@@ -53,6 +53,8 @@ export interface Moment {
   reactionCount?: number;
   reactions?: MomentReactionCount[];
   commentCount?: number;
+  viewersAvailable?: boolean;
+  reactorsAvailable?: boolean;
   myComment?: MomentMyComment;
   hidden?: boolean;
   hiddenBy?: MomentHiddenBy;

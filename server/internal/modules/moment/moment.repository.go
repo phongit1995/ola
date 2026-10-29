@@ -201,7 +201,7 @@ func (r *Repository) ListMine(authorID uuid.UUID, now time.Time) ([]*models.Mome
 
 func (r *Repository) ListHistory(authorID uuid.UUID, limit, offset int) ([]*models.Moment, error) {
 	var moments []*models.Moment
-	err := withAuthor(r.db).
+	err := withAuthor(r.db).Omit(ArchivedAudienceColumns...).
 		Where("author_id = ? AND status <> ?", authorID, MomentStatusFailed).
 		Order("created_at DESC").Order("position ASC").Order("id ASC").
 		Limit(limit).Offset(offset).
@@ -366,6 +366,29 @@ func (r *Repository) ViewerSyncCandidates(since time.Time, limit int) ([]*models
 		Order("expires_at ASC").Limit(limit).
 		Find(&moments).Error
 	return moments, err
+}
+
+func (r *Repository) AudienceArchiveCandidates(from, to time.Time, limit int) ([]*models.Moment, error) {
+	var moments []*models.Moment
+	err := r.db.Unscoped().Select("id", "viewer_count", "reaction_counts").
+		Where("expires_at > ? AND expires_at <= ? AND audience_archived_at IS NULL AND status <> ?", from, to, MomentStatusFailed).
+		Order("expires_at ASC").Limit(limit).
+		Find(&moments).Error
+	return moments, err
+}
+
+func (r *Repository) ArchiveAudience(ctx context.Context, id uuid.UUID, archive audienceArchive, at time.Time) error {
+	return r.db.WithContext(ctx).Unscoped().Model(&models.Moment{}).
+		Where("id = ? AND audience_archived_at IS NULL", id).
+		UpdateColumns(map[string]interface{}{
+			"archived_viewers":       archive.viewers,
+			"archived_reactors":      archive.reactors,
+			"archived_viewers_lost":  archive.viewersLost,
+			"archived_reactors_lost": archive.reactorsLost,
+			"viewer_count":           gorm.Expr("GREATEST(viewer_count, ?)", archive.viewerCount),
+			"reaction_counts":        archive.reactionCounts,
+			"audience_archived_at":   at,
+		}).Error
 }
 
 func (r *Repository) SoftDelete(id uuid.UUID) error {

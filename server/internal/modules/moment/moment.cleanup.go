@@ -66,6 +66,9 @@ func (c *Cleaner) RunOnce(ctx context.Context) (int, error) {
 	if err := c.syncCounts(ctx); err != nil {
 		c.logger.Warnw("Failed to sync moment viewer and reaction counts", "error", err)
 	}
+	if archived, err := c.archiveAudiences(ctx); err != nil {
+		c.logger.Warnw("Failed to archive moment viewers and reactors", "archived", archived, "error", err)
+	}
 	cleared := c.clearSourceLeftovers(ctx)
 	if cleared > 0 {
 		c.logger.Infow("Leftover moment video sources removed", "count", cleared)
@@ -277,6 +280,68 @@ func (c *Cleaner) syncCounts(ctx context.Context) error {
 		return err
 	}
 	return c.repo.RaiseReactionCounts(staleReactionCounts(moments, reactions))
+}
+
+func (c *Cleaner) archiveAudiences(ctx context.Context) (int, error) {
+	now := time.Now().UTC()
+	moments, err := c.repo.AudienceArchiveCandidates(
+		now.Add(-MomentAudienceArchiveWindow),
+		now.Add(-MomentAudienceArchiveDelay),
+		MomentAudienceArchiveLimit,
+	)
+	if err != nil {
+		return 0, err
+	}
+	for i, moment := range moments {
+		snapshot, err := c.store.AudienceSnapshot(ctx, moment.ID)
+		if err != nil {
+			return i, err
+		}
+		if err := c.repo.ArchiveAudience(ctx, moment.ID, archiveOf(moment, snapshot), now); err != nil {
+			return i, err
+		}
+	}
+	return len(moments), nil
+}
+
+type audienceArchive struct {
+	viewers        models.MomentAudience
+	reactors       models.MomentAudience
+	viewersLost    bool
+	reactorsLost   bool
+	viewerCount    int64
+	reactionCounts models.MomentReactionCounts
+}
+
+func archiveOf(moment *models.Moment, snapshot audienceSnapshot) audienceArchive {
+	archive := audienceArchive{
+		viewers:        snapshot.viewers,
+		reactors:       snapshot.reactors,
+		viewerCount:    max(moment.ViewerCount, int64(len(snapshot.viewers))),
+		reactionCounts: mergeReactionCounts(moment.ReactionCounts, snapshot.totals),
+	}
+	if len(snapshot.viewers) == 0 && moment.ViewerCount > 0 {
+		archive.viewers, archive.viewersLost = nil, true
+	}
+	if reactorsIncomplete(snapshot.reactors, archive.reactionCounts) {
+		archive.reactors, archive.reactorsLost = nil, true
+	}
+	return archive
+}
+
+func reactorsIncomplete(reactors models.MomentAudience, counts models.MomentReactionCounts) bool {
+	if sumCounts(counts) == 0 {
+		return false
+	}
+	if len(reactors) == 0 {
+		return true
+	}
+	for _, reactor := range reactors {
+		if len(reactor.Reactions) == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func staleViewerCounts(moments []*models.Moment, live map[uuid.UUID]int64) map[uuid.UUID]int64 {

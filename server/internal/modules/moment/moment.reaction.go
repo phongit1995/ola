@@ -13,6 +13,7 @@ import (
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 var errInvalidReaction = utils.NewHTTPError(http.StatusBadRequest, "invalid reaction type")
@@ -44,11 +45,7 @@ func (s *Service) React(ctx context.Context, viewerID, momentID uuid.UUID, react
 }
 
 func (s *Service) ReactionSummaries(ctx context.Context, moments []*models.Moment) map[uuid.UUID][]MomentReactionCount {
-	live, err := s.store.ReactionTotals(ctx, moments)
-	if err != nil {
-		s.logger.Warnw("Failed to read live moment reactions", "error", err)
-		live = map[uuid.UUID]map[string]int64{}
-	}
+	live := s.liveReactionTotals(ctx, moments)
 	summaries := make(map[uuid.UUID][]MomentReactionCount, len(moments))
 	for _, moment := range moments {
 		summaries[moment.ID] = reactionList(mergeReactionCounts(moment.ReactionCounts, live[moment.ID]))
@@ -56,14 +53,31 @@ func (s *Service) ReactionSummaries(ctx context.Context, moments []*models.Momen
 	return summaries
 }
 
+func (s *Service) liveReactionTotals(ctx context.Context, moments []*models.Moment) map[uuid.UUID]map[string]int64 {
+	live, err := s.store.ReactionTotals(ctx, moments)
+	if err != nil {
+		s.logger.Warnw("Failed to read live moment reactions", "error", err)
+		return map[uuid.UUID]map[string]int64{}
+	}
+	return live
+}
+
+func sumCounts[M ~map[string]int64](counts M) int64 {
+	var total int64
+	for _, count := range counts {
+		total += count
+	}
+	return total
+}
+
 func (s *Service) Reactors(ctx context.Context, userID, momentID uuid.UUID, limit, offset int) (*MomentReactorsResponse, error) {
-	if _, err := s.ownedMoment(userID, momentID); err != nil {
+	moment, err := s.ownedMoment(userID, momentID)
+	if err != nil {
 		return nil, err
 	}
-	page, total, err := s.store.ReactorPage(ctx, momentID, offset, limit)
+	page, total, err := s.reactorPage(ctx, moment, offset, limit)
 	if err != nil {
-		s.logger.Warnw("Failed to read moment reactors", "moment_id", momentID, "error", err)
-		return nil, errStateUnavailable
+		return nil, err
 	}
 	ranked, err := s.rankedUsers(page)
 	if err != nil {
@@ -73,7 +87,7 @@ func (s *Service) Reactors(ctx context.Context, userID, momentID uuid.UUID, limi
 	for i, entry := range ranked {
 		ids[i] = entry.user.ID
 	}
-	reactions := s.viewerReactions(ctx, momentID, ids)
+	reactions := s.reactionsOf(ctx, moment, ids)
 	resp := &MomentReactorsResponse{
 		Items:      make([]MomentReactorResponse, 0, len(ranked)),
 		Total:      total,
@@ -95,15 +109,41 @@ func (s *Service) Reactors(ctx context.Context, userID, momentID uuid.UUID, limi
 	return resp, nil
 }
 
-func (s *Service) AttachViewerReactions(ctx context.Context, momentID uuid.UUID, viewers []MomentViewerResponse) {
+func (s *Service) reactorPage(ctx context.Context, moment *models.Moment, offset, limit int) ([]redis.Z, int64, error) {
+	if moment.AudienceArchivedAt != nil {
+		page, total := archivedPage(moment.ArchivedReactors, offset, limit)
+		return page, total, nil
+	}
+	page, total, err := s.store.ReactorPage(ctx, moment.ID, offset, limit)
+	if err != nil {
+		s.logger.Warnw("Failed to read moment reactors", "moment_id", moment.ID, "error", err)
+		return nil, 0, errStateUnavailable
+	}
+	return page, total, nil
+}
+
+func (s *Service) AttachViewerReactions(ctx context.Context, moment *models.Moment, viewers []MomentViewerResponse) {
 	ids := make([]uuid.UUID, len(viewers))
 	for i, viewer := range viewers {
 		ids[i], _ = uuid.Parse(viewer.User.ID)
 	}
-	reactions := s.viewerReactions(ctx, momentID, ids)
+	reactions := s.reactionsOf(ctx, moment, ids)
 	for i := range viewers {
 		viewers[i].Reactions = reactions[ids[i]]
 	}
+}
+
+func (s *Service) reactionsOf(ctx context.Context, moment *models.Moment, viewerIDs []uuid.UUID) map[uuid.UUID][]MomentReactionCount {
+	if moment.AudienceArchivedAt == nil {
+		return s.viewerReactions(ctx, moment.ID, viewerIDs)
+	}
+	byViewer := make(map[uuid.UUID][]MomentReactionCount, len(moment.ArchivedReactors))
+	for _, entry := range moment.ArchivedReactors {
+		if len(entry.Reactions) > 0 {
+			byViewer[entry.UserID] = reactionList(entry.Reactions)
+		}
+	}
+	return byViewer
 }
 
 func (s *Service) viewerReactions(ctx context.Context, momentID uuid.UUID, viewerIDs []uuid.UUID) map[uuid.UUID][]MomentReactionCount {

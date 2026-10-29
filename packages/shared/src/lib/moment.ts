@@ -167,6 +167,14 @@ export function isMomentMediaPurged(moment: Moment): boolean {
   return moment.mediaPurged === true;
 }
 
+export function isMomentViewersAvailable(moment: Moment): boolean {
+  return moment.viewersAvailable !== false;
+}
+
+export function isMomentReactorsAvailable(moment: Moment): boolean {
+  return moment.reactorsAvailable !== false;
+}
+
 export type MomentNoticeKey = 'moment.processing' | 'moment.mediaError';
 
 export const MOMENT_REACTION_LABEL_KEY = {
@@ -542,9 +550,9 @@ export function ownSessionMoments(
 ): Moment[] {
   if (session.detailId != null) {
     const detail = details[session.detailId];
-    return detail != null ? [detail] : [];
+    return detail != null && !isMomentMediaPurged(detail) ? [detail] : [];
   }
-  return session.archive === true ? history : live;
+  return session.archive === true ? history.filter((moment) => !isMomentMediaPurged(moment)) : live;
 }
 
 export function isMomentNotification(notification: MeNotification): boolean {

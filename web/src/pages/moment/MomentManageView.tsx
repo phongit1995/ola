@@ -19,8 +19,12 @@ import {
   isMomentActive,
   isMomentHidden,
   isMomentHiddenByAdmin,
+  isMomentMediaPurged,
+  isMomentReactorsAvailable,
+  isMomentViewersAvailable,
   momentLifeLabel,
   momentPreviewMedia,
+  toast,
 } from '@lib';
 import type { Moment, MomentViewerSession } from '@app-types';
 import { useMomentManage } from '@ola/shared/stores/moment/useMomentManage';
@@ -56,7 +60,11 @@ function MomentStatus({ moment, nowMs }: { moment: Moment; nowMs: number }) {
   let tone = isMomentActive(moment, nowMs)
     ? 'bg-ola-primary-light text-ola-primary-ink'
     : 'bg-black/5 text-black/45';
-  if (isMomentHidden(moment)) {
+  if (isMomentMediaPurged(moment)) {
+    icon = <MomentImageIcon className={STATUS_ICON} />;
+    label = t('moment.mediaPurgedBadge');
+    tone = 'bg-black/6 text-black/60';
+  } else if (isMomentHidden(moment)) {
     icon = <MomentEyeOffIcon className={STATUS_ICON} />;
     label = t('moment.hiddenBadge');
     tone = 'bg-black/6 text-black/60';
@@ -138,6 +146,9 @@ function MomentManageRow({
   const { t, i18n } = useTranslation();
   const hidden = isMomentHidden(moment);
   const active = isMomentActive(moment, nowMs);
+  const purged = isMomentMediaPurged(moment);
+  const viewersAvailable = isMomentViewersAvailable(moment);
+  const reactorsAvailable = isMomentReactorsAvailable(moment);
   const viewerLabel = t('moment.viewerCount', {
     count: moment.viewerCount ?? 0,
   });
@@ -145,12 +156,14 @@ function MomentManageRow({
     moment.viewerCount ?? 0,
     i18n.language
   );
+  const showAudienceUnavailable = () =>
+    toast.info(t('moment.audienceUnavailable'));
   return (
     <li className="group relative flex gap-3 rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/5 transition hover:shadow-md hover:ring-black/10">
       <button
         type="button"
-        aria-label={t('moment.open')}
-        onClick={onOpen}
+        aria-label={purged ? t('moment.mediaPurged') : t('moment.open')}
+        onClick={purged ? () => toast.info(t('moment.mediaPurged')) : onOpen}
         className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-ola-primary"
       />
       <div className="pointer-events-none relative h-28 w-16 shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-black/5">
@@ -166,11 +179,19 @@ function MomentManageRow({
             overlays={moment.overlays}
           />
         </div>
-        <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white">
-            <MomentPlayIcon className="ml-0.5 h-4 w-4" />
+        {purged ? (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white">
+              <MomentImageIcon className="h-4 w-4" />
+            </span>
           </span>
-        </span>
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white">
+              <MomentPlayIcon className="ml-0.5 h-4 w-4" />
+            </span>
+          </span>
+        )}
         {moment.type === MOMENT_TYPE.video && (
           <span className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white">
             <MomentVideoIcon className="h-3 w-3" />
@@ -201,7 +222,7 @@ function MomentManageRow({
         </p>
         <MomentStatus moment={moment} nowMs={nowMs} />
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
-          {active ? (
+          {viewersAvailable ? (
             <button
               type="button"
               title={viewerLabel}
@@ -213,22 +234,38 @@ function MomentManageRow({
               {viewerCount}
             </button>
           ) : (
-            <span
-              title={viewerLabel}
+            <button
+              type="button"
+              title={t('moment.audienceUnavailable')}
               aria-label={viewerLabel}
-              className="inline-flex shrink-0 items-center gap-1 px-1 text-xs text-black/54"
+              onClick={showAudienceUnavailable}
+              className="pointer-events-auto relative inline-flex shrink-0 cursor-default items-center gap-1 px-1 text-xs text-black/54"
             >
               <MomentEyeIcon className="h-3.5 w-3.5" />
               {viewerCount}
-            </span>
+            </button>
           )}
-          {moment.reactions != null && (moment.reactionCount ?? 0) > 0 && (
-            <MomentReactionSummary
-              reactions={moment.reactions}
-              total={moment.reactionCount ?? 0}
-              onClick={active ? onReactions : undefined}
-            />
-          )}
+          {moment.reactions != null &&
+            (moment.reactionCount ?? 0) > 0 &&
+            (reactorsAvailable ? (
+              <MomentReactionSummary
+                reactions={moment.reactions}
+                total={moment.reactionCount ?? 0}
+                onClick={onReactions}
+              />
+            ) : (
+              <button
+                type="button"
+                title={t('moment.audienceUnavailable')}
+                onClick={showAudienceUnavailable}
+                className="pointer-events-auto relative cursor-default"
+              >
+                <MomentReactionSummary
+                  reactions={moment.reactions}
+                  total={moment.reactionCount ?? 0}
+                />
+              </button>
+            ))}
           {(moment.commentCount ?? 0) > 0 && (
             <button
               type="button"
