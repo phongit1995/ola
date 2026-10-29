@@ -274,6 +274,7 @@ type ChatConfigValidator struct {
 - **Owned by one package, read by packages that already import it** → stays in the owner and is read as `<pkg>.Name` (e.g. `setting.ChatBotTypeOlala`, `middleware.TokenTypeAdmin`, `user.CacheKeyUserProfile`). Never add an import just to reach a constant if it could create an import cycle.
 - **Kafka topics and WebSocket event names** → always `internal/constants/kafka.go` / `internal/constants/websocket.go`, even when one package uses them: they are the contract between the API service, the Chat service and the apps.
 - **Needed by several packages that cannot import each other** → `internal/constants/<topic>.go` (`cache.go`, `message.go`, `push.go`, `reaction.go`, `report.go`, `upload.go`).
+- **Upload size limits, image/audio mime lists, upload folder date layouts** → `internal/media` (`media.MaxImageUploadSize`, `media.AllowedImageMimes`, `media.UploadDateLayout`).
 
 **Always use constants, never hardcode strings:**
 ```go
@@ -623,6 +624,15 @@ docker-compose down -v
 - Propagate through: HTTP → Kafka → WebSocket
 - Use for debugging across microservices
 - Read from / written to the `X-Trace-Id` header (`utils.getOrCreateTraceID`)
+
+### Shared Helpers (reuse, do not re-implement)
+
+- Query params: `utils.ParseLimit`, `utils.ParseOffset`, `utils.ParseOptionalBool`, `utils.ParseIntQuery`, `utils.ParseTimeQuery` (RFC3339), `utils.ParseTimeRange` (`from`/`to`), `utils.ParseUUIDQuery`, `utils.ParseUUIDParam`
+- Keyset cursors `time|uuid`: `utils.EncodeTimeCursor` / `utils.DecodeTimeCursor` (`utils.ErrInvalidCursor`)
+- Weighted random pick: `utils.WeightedPick`
+- KEN balance push to a user: `wsServer.EmitKenUpdate(userID, ken)` (safe on a nil server)
+- Image file extension from mime: `media.ImageExtension(mime)` (default `.jpg`), `media.ImageExtensionOrFile(mime, fileName)`
+- Admin: `admincommon.UserBrief` / `admincommon.UserBriefOf`, `admincommon.FindUsersByIDs` (`internal/modules/admin/common`); admin modules reuse the main module's repository (e.g. `meModule.Repository`, `clanModule.Repository`, `vip.Repository`) instead of copying its queries
 
 ### Cache Keys
 

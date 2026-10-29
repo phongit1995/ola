@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	meModule "ola-chat-server/internal/modules/me"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -18,11 +19,12 @@ var (
 
 type Service struct {
 	repo   *Repository
+	meRepo *meModule.Repository
 	logger *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, logger *zap.SugaredLogger) *Service {
-	return &Service{repo: repo, logger: logger.Named("[admin_me_service]")}
+func NewService(repo *Repository, meRepo *meModule.Repository, logger *zap.SugaredLogger) *Service {
+	return &Service{repo: repo, meRepo: meRepo, logger: logger.Named("[admin_me_service]")}
 }
 
 type ListFilter struct {
@@ -77,7 +79,7 @@ func (s *Service) ListComments(postID uuid.UUID, limit, offset int) (*CommentLis
 	if _, err := s.getPost(postID); err != nil {
 		return nil, err
 	}
-	comments, total, err := s.repo.ListComments(postID, limit, offset)
+	comments, total, err := s.meRepo.ListComments(postID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +104,7 @@ func (s *Service) DeleteComment(postID, commentID uuid.UUID) error {
 	if comment.PostID != postID {
 		return errCommentNotFound
 	}
-	if err := s.repo.DeleteComment(postID, commentID); err != nil {
+	if err := s.meRepo.DeleteComment(postID, commentID); err != nil {
 		return err
 	}
 	s.logger.Infow("Admin deleted post comment", "post_id", postID, "comment_id", commentID)

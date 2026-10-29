@@ -48,8 +48,8 @@ func provideConfig() (*config.Config, error) {
 	return LoadAPIConfig()
 }
 
-func NewContainer() (*dig.Container, error) {
-	c := dig.New()
+func NewContainer(opts ...dig.Option) (*dig.Container, error) {
+	c := dig.New(opts...)
 	providers := []interface{}{
 		provideConfig,
 		logger.CreateLogger,

@@ -36,16 +36,18 @@ type Service struct {
 	sessionService *session.Service
 	producer       *kafka.Producer
 	vipService     *vip.Service
+	vipRepo        *vip.Repository
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *services.CacheService, sessionService *session.Service, producer *kafka.Producer, vipService *vip.Service, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *services.CacheService, sessionService *session.Service, producer *kafka.Producer, vipService *vip.Service, vipRepo *vip.Repository, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		cache:          cache,
 		sessionService: sessionService,
 		producer:       producer,
 		vipService:     vipService,
+		vipRepo:        vipRepo,
 		logger:         logger.Named("[admin_user_service]"),
 	}
 }
@@ -210,7 +212,7 @@ func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListRespons
 		}
 	}
 
-	items, err := s.repo.ListVipIcons(id, activeSort, limit, offset)
+	items, err := s.vipRepo.ListByUserPaged(id, activeSort, limit, offset)
 	if err != nil {
 		return nil, err
 	}

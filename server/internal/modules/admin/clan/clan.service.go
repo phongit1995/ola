@@ -4,18 +4,20 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	clanModule "ola-chat-server/internal/modules/clan"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	repo   *Repository
-	logger *zap.SugaredLogger
+	repo     *Repository
+	clanRepo *clanModule.Repository
+	logger   *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, logger *zap.SugaredLogger) *Service {
-	return &Service{repo: repo, logger: logger.Named("[admin_clan_service]")}
+func NewService(repo *Repository, clanRepo *clanModule.Repository, logger *zap.SugaredLogger) *Service {
+	return &Service{repo: repo, clanRepo: clanRepo, logger: logger.Named("[admin_clan_service]")}
 }
 
 func toClanUserResponse(user *models.User) *ClanUserResponse {
@@ -63,7 +65,7 @@ func (s *Service) List(query string, limit, offset int) (*ClanListResponse, erro
 }
 
 func (s *Service) Members(clanID uuid.UUID, limit, offset int) (*MemberListResponse, error) {
-	if _, err := s.repo.GetByID(clanID); err != nil {
+	if _, err := s.clanRepo.GetByID(clanID); err != nil {
 		return nil, err
 	}
 	members, total, err := s.repo.ListMembers(clanID, limit, offset)
@@ -83,7 +85,7 @@ func (s *Service) Members(clanID uuid.UUID, limit, offset int) (*MemberListRespo
 }
 
 func (s *Service) Delete(clanID uuid.UUID) error {
-	if _, err := s.repo.GetByID(clanID); err != nil {
+	if _, err := s.clanRepo.GetByID(clanID); err != nil {
 		return err
 	}
 	return s.repo.SoftDelete(clanID)
