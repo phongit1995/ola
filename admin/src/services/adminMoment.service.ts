@@ -1,6 +1,7 @@
 import http from '@/api/http'
 import type {
   AdminMoment,
+  AdminMomentComment,
   AdminMomentDetail,
   AdminMomentListParams,
   AdminMomentViewer,
@@ -52,6 +53,14 @@ export const AdminMomentService = {
   async listViewers(id: string, params: ListParams = {}): Promise<ListResult<AdminMomentViewer>> {
     const { data } = await http.get<ApiResponse<ListResult<AdminMomentViewer>>>(
       `/admin/moments/${id}/viewers`,
+      { params },
+    )
+    return data.data
+  },
+
+  async listComments(id: string, params: ListParams = {}): Promise<ListResult<AdminMomentComment>> {
+    const { data } = await http.get<ApiResponse<ListResult<AdminMomentComment>>>(
+      `/admin/moments/${id}/comments`,
       { params },
     )
     return data.data

@@ -182,7 +182,14 @@ export interface CreateCommentRequest {
   parentId?: string;
 }
 
-export type MeNotificationType = 'like' | 'comment' | 'reply' | 'mention' | 'comment_like';
+export type MeNotificationType =
+  | 'like'
+  | 'comment'
+  | 'reply'
+  | 'mention'
+  | 'comment_like'
+  | 'moment_comment'
+  | 'moment_reaction';
 
 export interface MeNotification {
   id: string;
@@ -191,6 +198,7 @@ export interface MeNotification {
   postId: string;
   commentId?: string;
   preview?: string;
+  actorCount?: number;
   isRead: boolean;
   createdAt: string;
 }

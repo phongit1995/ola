@@ -73,6 +73,35 @@ export function MomentEyeIcon({ className }: IconProps) {
   );
 }
 
+export function MomentCheckIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="m5.5 12.5 4 4L18.5 8" strokeWidth={3.2} />
+    </Svg>
+  );
+}
+
+export function MomentCommentIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M7.5 4.5h9a4 4 0 0 1 4 4v5a4 4 0 0 1-4 4H10L5.5 21v-3.8a4 4 0 0 1-2-3.5V8.5a4 4 0 0 1 4-4Z" strokeWidth={1.8} />
+      <g fill="currentColor" stroke="none">
+        <circle cx="7.8" cy="11" r="1" />
+        <circle cx="12" cy="11" r="1" />
+        <circle cx="16.2" cy="11" r="1" />
+      </g>
+    </Svg>
+  );
+}
+
+export function MomentSendIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />
+    </Svg>
+  );
+}
+
 export function MomentEyeOffIcon({ className }: IconProps) {
   return (
     <Svg className={className}>

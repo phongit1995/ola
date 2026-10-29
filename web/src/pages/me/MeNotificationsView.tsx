@@ -1,13 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader, Avatar, Spinner } from '@components';
-import { colorForName, createTimeFormatter, toast } from '@lib';
+import { ME_NOTIFICATION_LABEL_KEY } from '@constants';
+import {
+  colorForName,
+  createTimeFormatter,
+  isMomentNotification,
+  momentNotificationOthers,
+  momentNotificationReaction,
+  momentOpenErrorKey,
+  REACTION_IMAGE,
+  SmileyText,
+  toast,
+} from '@lib';
 import { MeService } from '@services';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
+import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import type {
   MeNotification,
   MeNotificationType,
+  MomentViewerSession,
   PostReaction,
 } from '@app-types';
 import likeIcon from '@/assets/icons/notify/ic_notification_like.png';
@@ -22,6 +35,7 @@ import {
 import type { MePost } from './types';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { UserProfileView } from '../profile/UserProfileView';
+import { MomentViewer } from '../moment/components/MomentViewer';
 
 const TYPE_ICON: Record<MeNotificationType, string> = {
   like: likeIcon,
@@ -29,6 +43,8 @@ const TYPE_ICON: Record<MeNotificationType, string> = {
   reply: commentIcon,
   mention: mentionIcon,
   comment_like: likeIcon,
+  moment_comment: commentIcon,
+  moment_reaction: likeIcon,
 };
 
 interface MeNotificationsViewProps {
@@ -41,9 +57,12 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
   const loading = useMeNotificationStore((s) => s.loading);
   const load = useMeNotificationStore((s) => s.load);
   const markAllRead = useMeNotificationStore((s) => s.markAllRead);
+  const fetchMoment = useMomentStore((s) => s.fetchMoment);
 
   const [openPost, setOpenPost] = useState<MePost | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [momentSession, setMomentSession] =
+    useState<MomentViewerSession | null>(null);
   const [profileTarget, setProfileTarget] = useState<{
     username: string;
     color: string;
@@ -54,20 +73,35 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
     [i18n.language]
   );
 
-  function labelFor(type: MeNotificationType): string {
-    if (type === 'comment') return t('me.notifComment');
-    if (type === 'reply') return t('me.notifReply');
-    if (type === 'mention') return t('me.notifMention');
-    if (type === 'comment_like') return t('me.notifCommentLike');
-    return t('me.notifLike');
-  }
-
   useEffect(() => {
     void load().then(() => markAllRead());
   }, [load, markAllRead]);
 
+  async function openMoment(item: MeNotification) {
+    setOpeningId(item.id);
+    try {
+      const moment = await fetchMoment(item.postId);
+      setMomentSession({
+        groups: [{ author: moment.author, moments: [] }],
+        startIndex: 0,
+        own: true,
+        archive: true,
+        startMomentId: moment.id,
+        detailId: moment.id,
+      });
+    } catch (error) {
+      toast.error(t(momentOpenErrorKey(error)));
+    } finally {
+      setOpeningId(null);
+    }
+  }
+
   async function openNotification(item: MeNotification) {
     if (openingId != null) return;
+    if (isMomentNotification(item)) {
+      await openMoment(item);
+      return;
+    }
     setOpeningId(item.id);
     try {
       const post = await MeService.getById(item.postId);
@@ -118,8 +152,13 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
         ) : (
           <ul>
             {items.map((item) => {
-              const icon = TYPE_ICON[item.type];
+              const reaction = momentNotificationReaction(item);
+              const icon =
+                reaction != null
+                  ? REACTION_IMAGE[reaction]
+                  : TYPE_ICON[item.type];
               const name = item.actor?.fullName || item.actor?.username || '';
+              const others = momentNotificationOthers(item);
               return (
                 <li key={item.id} className="bg-white/80">
                   <button
@@ -135,8 +174,20 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm leading-snug text-black/87">
                         <span className="font-bold">{name}</span>{' '}
-                        {labelFor(item.type)}
+                        {others > 0 && (
+                          <span className="font-bold">
+                            {t('me.notifOthers', { count: others })}{' '}
+                          </span>
+                        )}
+                        {t(ME_NOTIFICATION_LABEL_KEY[item.type])}
                       </p>
+                      {item.type === 'moment_comment' &&
+                        item.preview != null &&
+                        item.preview !== '' && (
+                          <p className="mt-0.5 truncate text-sm text-black/54">
+                            <SmileyText text={item.preview} />
+                          </p>
+                        )}
                       {(item.type === 'comment' ||
                         item.type === 'comment_like') &&
                         item.preview != null &&
@@ -150,7 +201,11 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
                           <img
                             src={icon}
                             alt=""
-                            className="h-4 w-4 object-contain"
+                            className={
+                              reaction != null
+                                ? 'h-5 w-5 object-contain'
+                                : 'h-4 w-4 object-contain'
+                            }
                           />
                         )}
                         <span className="text-xs text-black/45">
@@ -178,6 +233,13 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
             setProfileTarget({ username: nick, color })
           }
           onCommentDelta={adjustCommentCount}
+        />
+      )}
+
+      {momentSession != null && (
+        <MomentViewer
+          session={momentSession}
+          onClose={() => setMomentSession(null)}
         />
       )}
 

@@ -29,10 +29,13 @@ func (s *Service) React(ctx context.Context, viewerID, momentID uuid.UUID, react
 	if len(moments) == 0 {
 		return nil, errMomentNotFound
 	}
-	total, err := s.store.AddReaction(ctx, moments[0], viewerID, reaction, clampReactionCount(count), now)
+	total, first, err := s.store.AddReaction(ctx, moments[0], viewerID, reaction, clampReactionCount(count), now)
 	if err != nil {
 		s.logger.Warnw("Failed to save moment reaction", "moment_id", momentID, "viewer_id", viewerID, "error", err)
 		return nil, errStateUnavailable
+	}
+	if first && s.notifier != nil {
+		s.notifier.MomentReacted(moments[0].AuthorID, viewerID, momentID, reaction)
 	}
 	if err := s.recordViews(ctx, viewerID, moments, now); err != nil {
 		s.logger.Warnw("Moment reaction saved without a view", "moment_id", momentID, "viewer_id", viewerID, "error", err)

@@ -8,6 +8,9 @@ const (
 	MeNotificationReply       = "reply"
 	MeNotificationMention     = "mention"
 	MeNotificationCommentLike = "comment_like"
+
+	MeNotificationMomentComment  = "moment_comment"
+	MeNotificationMomentReaction = "moment_reaction"
 )
 
 type MeNotification struct {
@@ -19,6 +22,7 @@ type MeNotification struct {
 	CommentID   *uuid.UUID `gorm:"type:uuid"`
 	Preview     string     `gorm:"type:text"`
 	IsRead      bool       `gorm:"not null;default:false"`
+	ActorCount  int        `gorm:"not null;default:1"`
 	Actor       *User      `gorm:"foreignKey:ActorID;constraint:OnDelete:CASCADE"`
 }
 

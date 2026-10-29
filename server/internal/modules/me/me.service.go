@@ -730,6 +730,10 @@ func (s *Service) publishMeNotificationRemoval(recipientID, notificationID uuid.
 }
 
 func (s *Service) publishMeNotification(recipientID uuid.UUID, notif *models.MeNotification) {
+	s.publishMeNotificationEvent(recipientID, notif, false)
+}
+
+func (s *Service) publishMeNotificationEvent(recipientID uuid.UUID, notif *models.MeNotification, skipPush bool) {
 	if s.kafkaProducer == nil {
 		return
 	}
@@ -747,6 +751,7 @@ func (s *Service) publishMeNotification(recipientID uuid.UUID, notif *models.MeN
 		RecipientID:  recipientID.String(),
 		Notification: notifBytes,
 		UnreadCount:  unread,
+		SkipPush:     skipPush,
 	}
 	utils.PublishAsync(s.logger, "me notification", func(ctx context.Context) error {
 		return s.kafkaProducer.PublishMeNotification(ctx, event)
@@ -1634,6 +1639,9 @@ func toMeNotificationResponse(n *models.MeNotification) MeNotificationResponse {
 	}
 	if n.CommentID != nil {
 		resp.CommentID = n.CommentID.String()
+	}
+	if n.Type == models.MeNotificationMomentReaction {
+		resp.ActorCount = n.ActorCount
 	}
 	return resp
 }

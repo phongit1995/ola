@@ -87,12 +87,17 @@ var meNotifBodies = map[string]string{
 	models.MeNotificationReply:       "Đã trả lời bình luận của bạn",
 	models.MeNotificationMention:     "Đã nhắc đến bạn trong một trạng thái",
 	models.MeNotificationCommentLike: "Đã thích bình luận của bạn",
+
+	models.MeNotificationMomentComment:  "Đã bình luận về khoảnh khắc của bạn",
+	models.MeNotificationMomentReaction: "Đã bày tỏ cảm xúc về khoảnh khắc của bạn",
 }
 
 var meNotifPreviewTypes = map[string]bool{
 	models.MeNotificationComment: true,
 	models.MeNotificationReply:   true,
 	models.MeNotificationMention: true,
+
+	models.MeNotificationMomentComment: true,
 }
 
 func withItemID(data map[string]string, id string) {
@@ -101,7 +106,14 @@ func withItemID(data map[string]string, id string) {
 	}
 }
 
-func buildMeNotifContent(id, actorName, ntype, preview string, unread int) Content {
+func withOthers(actorName string, actorCount int) string {
+	if actorName == "" || actorCount <= 1 {
+		return actorName
+	}
+	return actorName + " và " + strconv.Itoa(actorCount-1) + " người khác"
+}
+
+func buildMeNotifContent(id, actorName, ntype, preview string, actorCount, unread int) Content {
 	body, known := meNotifBodies[ntype]
 	if !known {
 		body = "Bạn có thông báo mới"
@@ -115,7 +127,7 @@ func buildMeNotifContent(id, actorName, ntype, preview string, unread int) Conte
 	withItemID(data, id)
 	withUnread(data, unread)
 	return Content{
-		Title:    firstNonEmpty(actorName, fallbackTitle),
+		Title:    firstNonEmpty(withOthers(actorName, actorCount), fallbackTitle),
 		Body:     body,
 		NotifID:  constants.PushSourceMeNotif,
 		Channel:  constants.PushChannelSocial,

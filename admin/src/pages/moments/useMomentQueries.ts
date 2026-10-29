@@ -46,6 +46,15 @@ export function useMomentViewers(id: string | null, params: { limit: number; off
   })
 }
 
+export function useMomentComments(id: string | null, params: { limit: number; offset: number }) {
+  return useQuery({
+    queryKey: [MOMENTS_QUERY_KEY, 'comments', id, params],
+    queryFn: () => AdminMomentService.listComments(id as string, params),
+    enabled: id != null,
+    placeholderData: (prev) => prev,
+  })
+}
+
 export function useToggleMomentStatus() {
   const { message, modal } = App.useApp()
   const queryClient = useQueryClient()

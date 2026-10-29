@@ -47,7 +47,7 @@ export function MomentPlusIcon(props: IconProps) {
 export function MomentCheckIcon(props: IconProps) {
   return (
     <StrokeIcon {...props}>
-      <Path d="M5 12.5l4.5 4.5L19 7.5" />
+      <Path d="m5.5 12.5 4 4L18.5 8" strokeWidth={3.2} />
     </StrokeIcon>
   );
 }
@@ -83,6 +83,27 @@ export function MomentEyeIcon(props: IconProps) {
     <StrokeIcon {...props}>
       <Path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
       <Circle cx="12" cy="12" r="3" />
+    </StrokeIcon>
+  );
+}
+
+export function MomentCommentIcon({ color = DEFAULT_COLOR, ...props }: IconProps) {
+  return (
+    <StrokeIcon {...props} color={color}>
+      <Path d="M7.5 4.5h9a4 4 0 0 1 4 4v5a4 4 0 0 1-4 4H10L5.5 21v-3.8a4 4 0 0 1-2-3.5V8.5a4 4 0 0 1 4-4Z" strokeWidth={1.8} />
+      <G fill={color} stroke="none">
+        <Circle cx="7.8" cy="11" r="1" />
+        <Circle cx="12" cy="11" r="1" />
+        <Circle cx="16.2" cy="11" r="1" />
+      </G>
+    </StrokeIcon>
+  );
+}
+
+export function MomentSendIcon(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <Path d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />
     </StrokeIcon>
   );
 }

@@ -7,4 +7,5 @@ type Event struct {
 	Notification json.RawMessage `json:"notification,omitempty"`
 	RemovedID    string          `json:"removedId,omitempty"`
 	UnreadCount  int64           `json:"unreadCount"`
+	SkipPush     bool            `json:"skipPush,omitempty"`
 }

@@ -21,9 +21,16 @@ import { errorMessage, toApiError } from '@/lib/apiError'
 import { reactionLabel } from '@/pages/rooms/utils'
 import { formatDateTime } from '@/lib/format'
 import { BRAND } from '@/theme'
-import type { AdminMoment, AdminMomentDetail, AdminMomentViewer, MomentReactionCount } from '@/types'
+import type {
+  AdminMoment,
+  AdminMomentComment,
+  AdminMomentDetail,
+  AdminMomentViewer,
+  MomentReactionCount,
+} from '@/types'
 import { MomentPreview } from './MomentPreview'
 import {
+  useMomentComments,
   useMomentDetail,
   useMomentViewers,
   usePurgeMomentMedia,
@@ -39,6 +46,7 @@ import {
 } from './utils'
 import {
   HTTP_NOT_FOUND,
+  MOMENT_COMMENT_PAGE_SIZE,
   MOMENT_DETAIL_PREVIEW_WIDTH,
   MOMENT_PAGE_THUMB_WIDTH,
   MOMENT_STATE_TAG,
@@ -109,6 +117,53 @@ function MomentViewers({ moment }: { moment: AdminMoment }) {
           ? {
               current: page,
               pageSize: MOMENT_VIEWER_PAGE_SIZE,
+              total: data?.total ?? 0,
+              onChange: setPage,
+              size: 'small',
+            }
+          : false
+      }
+    />
+  )
+}
+
+const COMMENT_COLUMNS: TableColumnsType<AdminMomentComment> = [
+  { key: 'user', width: 220, render: (_, comment) => <UserBriefCell user={comment.user} /> },
+  {
+    key: 'content',
+    render: (_, comment) => (
+      <Typography.Paragraph style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{comment.content}</Typography.Paragraph>
+    ),
+  },
+  {
+    key: 'createdAt',
+    align: 'right',
+    width: 150,
+    render: (_, comment) => <Typography.Text type="secondary">{formatDateTime(comment.createdAt)}</Typography.Text>,
+  },
+]
+
+function MomentComments({ moment }: { moment: AdminMoment }) {
+  const [page, setPage] = useState(1)
+  const { data, isFetching } = useMomentComments(moment.id, {
+    limit: MOMENT_COMMENT_PAGE_SIZE,
+    offset: (page - 1) * MOMENT_COMMENT_PAGE_SIZE,
+  })
+
+  return (
+    <Table<AdminMomentComment>
+      size="small"
+      rowKey={(comment) => comment.id}
+      loading={isFetching}
+      dataSource={data?.items ?? []}
+      locale={{ emptyText: 'Chưa có ai bình luận' }}
+      showHeader={false}
+      columns={COMMENT_COLUMNS}
+      pagination={
+        (data?.total ?? 0) > MOMENT_COMMENT_PAGE_SIZE
+          ? {
+              current: page,
+              pageSize: MOMENT_COMMENT_PAGE_SIZE,
               total: data?.total ?? 0,
               onChange: setPage,
               size: 'small',
@@ -257,6 +312,7 @@ function MomentInfo({
               '—'
             )}
           </Descriptions.Item>
+          <Descriptions.Item label="Bình luận">{moment.commentCount || '—'}</Descriptions.Item>
           <Descriptions.Item label="Báo cáo">
             {moment.reportCount === 0
               ? 'Chưa có'
@@ -329,6 +385,8 @@ export function MomentDetailModal({ momentId, onClose }: MomentDetailModalProps)
             Người xem{data.viewerCount != null ? ` (${data.viewerCount})` : ''}
           </Divider>
           <MomentViewers key={data.id} moment={data} />
+          <Divider style={{ marginTop: 24, marginBottom: 8 }}>Bình luận ({data.commentCount})</Divider>
+          <MomentComments key={`comments-${data.id}`} moment={data} />
         </>
       )}
     </Modal>

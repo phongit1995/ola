@@ -25,6 +25,7 @@ export interface MomentViewerSession {
   own: boolean;
   archive?: boolean;
   startMomentId?: string;
+  detailId?: string;
   unseenOnly?: boolean;
 }
 

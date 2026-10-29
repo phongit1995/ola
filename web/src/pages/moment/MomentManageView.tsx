@@ -15,6 +15,7 @@ import {
 import {
   cn,
   createTimeAgoFormatter,
+  formatCompactCount,
   isMomentActive,
   isMomentHidden,
   isMomentHiddenByAdmin,
@@ -24,9 +25,11 @@ import {
 import type { Moment, MomentViewerSession } from '@app-types';
 import { useMomentManage } from '@ola/shared/stores/moment/useMomentManage';
 import { MomentCanvas } from './components/MomentCanvas';
+import { MomentCommentsDialog } from './components/MomentCommentsDialog';
 import { MomentComposer } from './components/MomentComposer';
 import {
   MomentClockIcon,
+  MomentCommentIcon,
   MomentEyeIcon,
   MomentEyeOffIcon,
   MomentFriendsIcon,
@@ -117,6 +120,7 @@ interface MomentManageRowProps {
   onOpen: () => void;
   onViewers: () => void;
   onReactions: () => void;
+  onComments: () => void;
   onToggleHidden: () => void;
 }
 
@@ -128,14 +132,19 @@ function MomentManageRow({
   onOpen,
   onViewers,
   onReactions,
+  onComments,
   onToggleHidden,
 }: MomentManageRowProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const hidden = isMomentHidden(moment);
   const active = isMomentActive(moment, nowMs);
   const viewerLabel = t('moment.viewerCount', {
     count: moment.viewerCount ?? 0,
   });
+  const viewerCount = formatCompactCount(
+    moment.viewerCount ?? 0,
+    i18n.language
+  );
   return (
     <li className="group relative flex gap-3 rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/5 transition hover:shadow-md hover:ring-black/10">
       <button
@@ -170,9 +179,18 @@ function MomentManageRow({
       </div>
 
       <div className="pointer-events-none relative flex min-w-0 flex-1 flex-col py-0.5">
-        <p className="truncate text-[15px] font-semibold text-black/87">
-          {postedAt}
-        </p>
+        <div className="flex items-start gap-2">
+          <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-black/87">
+            {postedAt}
+          </p>
+          <span className="pointer-events-auto -my-0.5 shrink-0">
+            <HiddenToggle
+              moment={moment}
+              busy={busy}
+              onToggle={onToggleHidden}
+            />
+          </span>
+        </div>
         <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-black/54">
           {moment.visibility === MOMENT_VISIBILITY.public ? (
             <MomentGlobeIcon className="h-3.5 w-3.5" />
@@ -182,38 +200,51 @@ function MomentManageRow({
           {t(MOMENT_VISIBILITY_LABEL[moment.visibility])}
         </p>
         <MomentStatus moment={moment} nowMs={nowMs} />
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          <span className="flex min-w-0 items-center gap-2">
-            {active ? (
-              <button
-                type="button"
-                onClick={onViewers}
-                className="pointer-events-auto relative inline-flex min-w-0 items-center gap-1.5 rounded-full bg-ola-primary-light px-2.5 py-1.5 text-xs font-semibold text-ola-primary-ink transition-colors hover:bg-ola-primary/15"
-              >
-                <MomentEyeIcon className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{viewerLabel}</span>
-              </button>
-            ) : (
-              <span className="inline-flex min-w-0 items-center gap-1.5 px-1 text-xs text-black/54">
-                <MomentEyeIcon className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{viewerLabel}</span>
-              </span>
-            )}
-            {moment.reactions != null && (moment.reactionCount ?? 0) > 0 && (
-              <MomentReactionSummary
-                reactions={moment.reactions}
-                total={moment.reactionCount ?? 0}
-                onClick={active ? onReactions : undefined}
-              />
-            )}
-          </span>
-          <span className="pointer-events-auto">
-            <HiddenToggle
-              moment={moment}
-              busy={busy}
-              onToggle={onToggleHidden}
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
+          {active ? (
+            <button
+              type="button"
+              title={viewerLabel}
+              aria-label={viewerLabel}
+              onClick={onViewers}
+              className="pointer-events-auto relative inline-flex shrink-0 items-center gap-1 rounded-full bg-ola-primary-light px-2.5 py-1.5 text-xs font-semibold text-ola-primary-ink transition-colors hover:bg-ola-primary/15"
+            >
+              <MomentEyeIcon className="h-3.5 w-3.5" />
+              {viewerCount}
+            </button>
+          ) : (
+            <span
+              title={viewerLabel}
+              aria-label={viewerLabel}
+              className="inline-flex shrink-0 items-center gap-1 px-1 text-xs text-black/54"
+            >
+              <MomentEyeIcon className="h-3.5 w-3.5" />
+              {viewerCount}
+            </span>
+          )}
+          {moment.reactions != null && (moment.reactionCount ?? 0) > 0 && (
+            <MomentReactionSummary
+              reactions={moment.reactions}
+              total={moment.reactionCount ?? 0}
+              onClick={active ? onReactions : undefined}
             />
-          </span>
+          )}
+          {(moment.commentCount ?? 0) > 0 && (
+            <button
+              type="button"
+              title={t('moment.commentCount', {
+                count: moment.commentCount ?? 0,
+              })}
+              aria-label={t('moment.commentCount', {
+                count: moment.commentCount ?? 0,
+              })}
+              onClick={onComments}
+              className="pointer-events-auto relative inline-flex shrink-0 items-center gap-1 rounded-full bg-ola-primary-light px-2.5 py-1.5 text-xs font-semibold text-ola-primary-ink transition-colors hover:bg-ola-primary/15"
+            >
+              <MomentCommentIcon className="h-3.5 w-3.5" />
+              {formatCompactCount(moment.commentCount ?? 0, i18n.language)}
+            </button>
+          )}
         </div>
       </div>
     </li>
@@ -257,6 +288,7 @@ export function MomentManageView({ onClose }: { onClose: () => void }) {
   } = useMomentManage();
   const [viewersId, setViewersId] = useState<string | null>(null);
   const [reactionsId, setReactionsId] = useState<string | null>(null);
+  const [commentsId, setCommentsId] = useState<string | null>(null);
   const [viewerSession, setViewerSession] =
     useState<MomentViewerSession | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -307,6 +339,7 @@ export function MomentManageView({ onClose }: { onClose: () => void }) {
               onOpen={() => openMoment(moment)}
               onViewers={() => setViewersId(moment.id)}
               onReactions={() => setReactionsId(moment.id)}
+              onComments={() => setCommentsId(moment.id)}
               onToggleHidden={() => void toggleHidden(moment)}
             />
           ))}
@@ -360,6 +393,14 @@ export function MomentManageView({ onClose }: { onClose: () => void }) {
           0
         }
         onClose={() => setReactionsId(null)}
+      />
+      <MomentCommentsDialog
+        open={commentsId != null}
+        momentId={commentsId ?? ''}
+        total={
+          moments.find((moment) => moment.id === commentsId)?.commentCount ?? 0
+        }
+        onClose={() => setCommentsId(null)}
       />
       {viewerSession && (
         <MomentViewer

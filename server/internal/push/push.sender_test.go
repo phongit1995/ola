@@ -220,7 +220,7 @@ func TestProcessNotifMessageGateBlocksDMOnly(t *testing.T) {
 		t.Fatalf("expected DM blocked by setting, got %d sends", len(fcm.sent))
 	}
 
-	s.process("u1", constants.PushSourceMeNotif, "n1", false, buildMeNotifContent("n1", "Hoa", models.MeNotificationLike, "", 0))
+	s.process("u1", constants.PushSourceMeNotif, "n1", false, buildMeNotifContent("n1", "Hoa", models.MeNotificationLike, "", 1, 0))
 	if len(fcm.sent) != 1 {
 		t.Fatalf("expected me notification to bypass setting gate, got %d sends", len(fcm.sent))
 	}
@@ -653,24 +653,34 @@ func TestBuildMeNotifContentAllTypes(t *testing.T) {
 		models.MeNotificationReply,
 		models.MeNotificationMention,
 		models.MeNotificationCommentLike,
+		models.MeNotificationMomentComment,
+		models.MeNotificationMomentReaction,
 	} {
-		c := buildMeNotifContent("n1", "Hoa", ntype, "nội dung", 0)
+		c := buildMeNotifContent("n1", "Hoa", ntype, "nội dung", 1, 0)
 		if c.Title != "Hoa" || c.Body == "" || c.Channel != constants.PushChannelSocial {
 			t.Fatalf("bad content for %s: %+v", ntype, c)
 		}
 	}
 
-	c := buildMeNotifContent("n1", "", "unknown_type", "x", 0)
+	c := buildMeNotifContent("n1", "", "unknown_type", "x", 1, 0)
 	if c.Title != fallbackTitle || c.Body != "Bạn có thông báo mới" {
 		t.Fatalf("unexpected unknown-type content: %+v", c)
 	}
-	c = buildMeNotifContent("n1", "Hoa", models.MeNotificationComment, "bình luận dài", 0)
+	c = buildMeNotifContent("n1", "Hoa", models.MeNotificationComment, "bình luận dài", 1, 0)
 	if !strings.Contains(c.Body, "bình luận dài") {
 		t.Fatalf("expected preview appended: %q", c.Body)
 	}
-	c = buildMeNotifContent("n1", "Hoa", models.MeNotificationLike, "preview", 0)
+	c = buildMeNotifContent("n1", "Hoa", models.MeNotificationLike, "preview", 1, 0)
 	if strings.Contains(c.Body, "preview") {
 		t.Fatalf("like should not include preview: %q", c.Body)
+	}
+	c = buildMeNotifContent("n1", "Hoa", models.MeNotificationMomentComment, "đẹp quá", 1, 0)
+	if !strings.Contains(c.Body, "đẹp quá") {
+		t.Fatalf("expected moment comment preview appended: %q", c.Body)
+	}
+	c = buildMeNotifContent("n1", "Hoa", models.MeNotificationMomentReaction, "LOVE", 5, 0)
+	if c.Title != "Hoa và 4 người khác" || strings.Contains(c.Body, "LOVE") {
+		t.Fatalf("unexpected moment reaction content: %+v", c)
 	}
 }
 

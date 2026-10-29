@@ -246,14 +246,15 @@ func parsePurgeTotals(fields map[string]string) MediaPurgeTotals {
 var addReactionScript = redis.NewScript(`
 local current = tonumber(redis.call('HGET', KEYS[1], ARGV[1]) or '0')
 local added = math.min(tonumber(ARGV[3]), tonumber(ARGV[4]) - current)
+local first = 0
 if added > 0 then
 	current = redis.call('HINCRBY', KEYS[1], ARGV[1], added)
 	redis.call('HINCRBY', KEYS[1], ARGV[2], added)
-	redis.call('ZADD', KEYS[2], 'NX', ARGV[6], ARGV[7])
+	first = redis.call('ZADD', KEYS[2], 'NX', ARGV[6], ARGV[7])
 end
 redis.call('EXPIREAT', KEYS[1], ARGV[5])
 redis.call('EXPIREAT', KEYS[2], ARGV[5])
-return current
+return {current, first}
 `)
 
 func reactionsKey(momentID uuid.UUID) string {
@@ -272,8 +273,8 @@ func reactionTotalField(reaction string) string {
 	return fmt.Sprintf(MomentReactionTotalField, reaction)
 }
 
-func (s *RedisStore) AddReaction(ctx context.Context, moment *models.Moment, viewerID uuid.UUID, reaction string, count int, now time.Time) (int, error) {
-	return addReactionScript.Run(ctx, s.cache.GetClient(),
+func (s *RedisStore) AddReaction(ctx context.Context, moment *models.Moment, viewerID uuid.UUID, reaction string, count int, now time.Time) (int, bool, error) {
+	result, err := addReactionScript.Run(ctx, s.cache.GetClient(),
 		[]string{reactionsKey(moment.ID), reactorsKey(moment.ID)},
 		reactionViewerField(viewerID, reaction),
 		reactionTotalField(reaction),
@@ -282,7 +283,14 @@ func (s *RedisStore) AddReaction(ctx context.Context, moment *models.Moment, vie
 		moment.ExpiresAt.Add(MomentViewerSyncGrace).Unix(),
 		now.UnixMilli(),
 		viewerID.String(),
-	).Int()
+	).Int64Slice()
+	if err != nil {
+		return 0, false, err
+	}
+	if len(result) != 2 {
+		return 0, false, fmt.Errorf("unexpected add reaction result: %v", result)
+	}
+	return int(result[0]), result[1] == 1, nil
 }
 
 func (s *RedisStore) ReactionTotals(ctx context.Context, moments []*models.Moment) (map[uuid.UUID]map[string]int64, error) {

@@ -773,6 +773,7 @@ export interface AdminMoment {
   viewerCount: number | null
   reactionCount: number
   reactions: MomentReactionCount[]
+  commentCount: number
   reportCount: number
   pendingReportCount: number
   author?: MeAuthor
@@ -853,6 +854,13 @@ export interface AdminMomentViewer {
   user: MeAuthor
   viewedAt: string
   reactions?: MomentReactionCount[]
+}
+
+export interface AdminMomentComment {
+  id: string
+  user: MeAuthor
+  content: string
+  createdAt: string
 }
 
 export type { MomentReactionCount }

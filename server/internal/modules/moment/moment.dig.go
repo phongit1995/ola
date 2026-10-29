@@ -1,6 +1,10 @@
 package moment
 
-import "go.uber.org/dig"
+import (
+	"ola-chat-server/internal/modules/me"
+
+	"go.uber.org/dig"
+)
 
 func Provider(c *dig.Container) error {
 	providers := []interface{}{
@@ -8,6 +12,7 @@ func Provider(c *dig.Container) error {
 		NewRedisStore,
 		NewTranscoder,
 		NewProcessor,
+		newNotifier,
 		NewService,
 		NewCleaner,
 		NewController,
@@ -21,4 +26,8 @@ func Provider(c *dig.Container) error {
 	}
 
 	return nil
+}
+
+func newNotifier(meService *me.Service) Notifier {
+	return meService
 }

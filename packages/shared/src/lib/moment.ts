@@ -5,6 +5,7 @@ import {
   MOMENT_ANGLE_SNAP_DEG,
   MOMENT_BACKGROUNDS,
   MOMENT_CENTER_SNAP,
+  MOMENT_COMMENT_MAX_CHARS,
   MOMENT_ERROR_CODE,
   MOMENT_FONT_CAPS,
   MOMENT_FONT_SIZE_PRESETS,
@@ -31,6 +32,7 @@ import type {
   CreateMomentItem,
   Moment,
   MomentAuthor,
+  MomentMyComment,
   MomentOverlay,
   MomentTrayGroup,
   MomentType,
@@ -40,7 +42,9 @@ import type {
   MomentDraftSlide,
   MomentMediaDraft,
   MomentPosition,
+  MomentViewerSession,
 } from '../types/client/moment.type';
+import type { MeNotification } from '../types/api/me.type';
 import { toApiError } from './apiError';
 import { ImageTooLargeError } from './imageUpload';
 import { randomUuid } from './randomUuid';
@@ -513,4 +517,50 @@ export function appendMomentUsers<T extends { user: MomentAuthor }>(
 ): T[] {
   const known = new Set(current.map((item) => item.user.id));
   return [...current, ...incoming.filter((item) => !known.has(item.user.id))];
+}
+
+export function momentMyComment(
+  moment: Moment,
+  myComments: Readonly<Record<string, MomentMyComment>>
+): MomentMyComment | undefined {
+  const local = myComments[moment.id];
+  if (local != null && local.id !== '') return local;
+  return moment.myComment ?? local;
+}
+
+export function isMomentCommentTooLong(content: string): boolean {
+  return [...content.trim()].length > MOMENT_COMMENT_MAX_CHARS;
+}
+
+const NOT_FOUND_STATUS = 404;
+
+export function ownSessionMoments(
+  session: MomentViewerSession,
+  live: Moment[],
+  history: Moment[],
+  details: Readonly<Record<string, Moment>>
+): Moment[] {
+  if (session.detailId != null) {
+    const detail = details[session.detailId];
+    return detail != null ? [detail] : [];
+  }
+  return session.archive === true ? history : live;
+}
+
+export function isMomentNotification(notification: MeNotification): boolean {
+  return notification.type === 'moment_comment' || notification.type === 'moment_reaction';
+}
+
+export function momentNotificationReaction(notification: MeNotification): ReactionType | null {
+  if (notification.type !== 'moment_reaction') return null;
+  const preview = notification.preview ?? '';
+  return Object.hasOwn(MOMENT_REACTION_LABEL_KEY, preview) ? (preview as ReactionType) : null;
+}
+
+export function momentNotificationOthers(notification: MeNotification): number {
+  return Math.max((notification.actorCount ?? 1) - 1, 0);
+}
+
+export function momentOpenErrorKey(error: unknown): 'moment.gone' | 'moment.loadFailed' {
+  return toApiError(error).status === NOT_FOUND_STATUS ? 'moment.gone' : 'moment.loadFailed';
 }

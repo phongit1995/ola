@@ -46,6 +46,21 @@ export function useMomentOverlays() {
     [tick]
   );
 
+  const openDetail = useCallback(
+    (moment: Moment) => {
+      tick();
+      setSession({
+        groups: [{ author: moment.author, moments: [] }],
+        startIndex: 0,
+        own: true,
+        archive: true,
+        startMomentId: moment.id,
+        detailId: moment.id,
+      });
+    },
+    [tick]
+  );
+
   const closeViewer = useCallback(() => {
     setSession(null);
     tick();
@@ -73,5 +88,5 @@ export function useMomentOverlays() {
     </>
   );
 
-  return { openViewer, openArchive, openComposer, overlays };
+  return { openViewer, openArchive, openDetail, openComposer, overlays };
 }

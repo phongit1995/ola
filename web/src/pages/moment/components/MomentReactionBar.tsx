@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { MouseEvent } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   cn,
@@ -12,12 +12,18 @@ import type { MomentReactionBurst, ReactionType } from '@app-types';
 import { MomentReactionFireworks } from './MomentReactionFireworks';
 
 const MAX_BURSTS = 6;
+const ENTER_DELAY_MS = 120;
+const ENTER_STAGGER_MS = 45;
 
 interface MomentReactionBarProps {
   onReact: (type: ReactionType) => void;
+  leading?: ReactNode;
 }
 
-export function MomentReactionBar({ onReact }: MomentReactionBarProps) {
+export function MomentReactionBar({
+  onReact,
+  leading,
+}: MomentReactionBarProps) {
   const { t } = useTranslation();
   const stageRef = useRef<HTMLDivElement>(null);
   const [bursts, setBursts] = useState<MomentReactionBurst[]>([]);
@@ -53,34 +59,44 @@ export function MomentReactionBar({ onReact }: MomentReactionBarProps) {
       >
         <MomentReactionFireworks bursts={bursts} onDone={finishBurst} />
       </div>
-      <div
-        role="group"
-        aria-label={t('moment.reactions')}
-        className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5 px-3"
-      >
-        {REACTION_ORDER.map((type) => {
-          const popped = pop.type === type;
-          return (
-            <button
-              key={type}
-              type="button"
-              aria-label={t(MOMENT_REACTION_LABEL_KEY[type])}
-              onClick={(event) => react(type, event)}
-              className="pointer-events-auto rounded-full p-1 transition-transform hover:scale-110 active:scale-90"
-            >
-              <img
-                key={popped ? pop.seq : 0}
-                src={REACTION_IMAGE[type]}
-                alt=""
-                draggable={false}
-                className={cn(
-                  'h-9 w-9 object-contain',
-                  popped && 'animate-ola-pop'
-                )}
-              />
-            </button>
-          );
-        })}
+      <div className="pointer-events-auto absolute inset-x-0 bottom-1 touch-pan-x overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-max min-w-full items-center justify-center gap-2 px-3 pt-4 pb-2">
+          {leading != null && (
+            <div className="w-50 shrink-0 grow">{leading}</div>
+          )}
+          <div
+            role="group"
+            aria-label={t('moment.reactions')}
+            className="flex shrink-0 gap-1"
+          >
+            {REACTION_ORDER.map((type, index) => {
+              const popped = pop.type === type;
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  aria-label={t(MOMENT_REACTION_LABEL_KEY[type])}
+                  onClick={(event) => react(type, event)}
+                  style={{
+                    animationDelay: `${ENTER_DELAY_MS + index * ENTER_STAGGER_MS}ms`,
+                  }}
+                  className="shrink-0 origin-bottom rounded-full p-1 transition-[translate,scale] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-125 active:scale-90 motion-safe:animate-moment-react-in motion-reduce:transition-none"
+                >
+                  <img
+                    key={popped ? pop.seq : 0}
+                    src={REACTION_IMAGE[type]}
+                    alt=""
+                    draggable={false}
+                    className={cn(
+                      'h-9 w-9 object-contain',
+                      popped && 'animate-ola-pop'
+                    )}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </>
   );

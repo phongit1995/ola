@@ -22,6 +22,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		moments.PATCH("/:id/status", r.controller.UpdateStatus)
 		moments.POST("/:id/purge-media", r.controller.PurgeMedia)
 		moments.GET("/:id/viewers", r.controller.ListViewers)
+		moments.GET("/:id/comments", r.controller.ListComments)
 	}
 	purge := admin.Group("/moment-media-purge", r.authMiddleware.RequireAdmin())
 	{

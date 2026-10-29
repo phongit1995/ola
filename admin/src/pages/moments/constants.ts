@@ -76,6 +76,7 @@ export const MOMENT_DETAIL_PREVIEW_WIDTH = 270
 export const MOMENT_PAGE_THUMB_WIDTH = 64
 
 export const MOMENT_VIEWER_PAGE_SIZE = 20
+export const MOMENT_COMMENT_PAGE_SIZE = 20
 
 export const HTTP_NOT_FOUND = 404
 

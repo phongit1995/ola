@@ -164,14 +164,15 @@ type CommentResponse struct {
 }
 
 type MeNotificationResponse struct {
-	ID        string          `json:"id"`
-	Type      string          `json:"type"`
-	Actor     *AuthorResponse `json:"actor,omitempty"`
-	PostID    string          `json:"postId"`
-	CommentID string          `json:"commentId,omitempty"`
-	Preview   string          `json:"preview,omitempty"`
-	IsRead    bool            `json:"isRead"`
-	CreatedAt string          `json:"createdAt"`
+	ID         string          `json:"id"`
+	Type       string          `json:"type"`
+	Actor      *AuthorResponse `json:"actor,omitempty"`
+	PostID     string          `json:"postId"`
+	CommentID  string          `json:"commentId,omitempty"`
+	Preview    string          `json:"preview,omitempty"`
+	ActorCount int             `json:"actorCount,omitempty"`
+	IsRead     bool            `json:"isRead"`
+	CreatedAt  string          `json:"createdAt"`
 }
 
 type MeNotificationListResponse struct {

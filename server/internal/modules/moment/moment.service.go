@@ -39,11 +39,18 @@ type Service struct {
 	processor *Processor
 	settings  momentVideoSettings
 	users     momentVipUsers
+	notifier  Notifier
 	logger    *zap.SugaredLogger
 	now       func() time.Time
 }
 
-func NewService(repo *Repository, store *RedisStore, s3 *services.S3Service, processor *Processor, settings *setting.Service, users *userModule.CacheService, logger *zap.SugaredLogger) *Service {
+type Notifier interface {
+	MomentCommented(ownerID, actorID, momentID uuid.UUID, content string)
+	MomentReacted(ownerID, actorID, momentID uuid.UUID, reaction string)
+	MomentDeleted(momentID uuid.UUID)
+}
+
+func NewService(repo *Repository, store *RedisStore, s3 *services.S3Service, processor *Processor, settings *setting.Service, users *userModule.CacheService, notifier Notifier, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		store:     store,
@@ -51,6 +58,7 @@ func NewService(repo *Repository, store *RedisStore, s3 *services.S3Service, pro
 		processor: processor,
 		settings:  settings,
 		users:     users,
+		notifier:  notifier,
 		logger:    logger.Named("[moment_service]"),
 		now:       func() time.Time { return time.Now().UTC() },
 	}
@@ -294,12 +302,14 @@ func (s *Service) Tray(ctx context.Context, viewerID uuid.UUID, rawCursor string
 	if err != nil {
 		return nil, err
 	}
+	myComments := s.myComments(viewerID, ids)
 	for _, group := range groups {
 		items := make([]MomentResponse, 0, len(group.momentIDs))
 		for _, id := range group.momentIDs {
 			if moment, ok := moments[id]; ok {
 				item := toMomentResponse(moment, authorOf(moment))
 				item.Seen = seenByViewer[id]
+				item.MyComment = myComments[id]
 				items = append(items, item)
 			}
 		}
@@ -344,6 +354,8 @@ func (s *Service) withOwnerStats(ctx context.Context, viewerID uuid.UUID, mine [
 		item.Reactions = reactions[moment.ID]
 		reactionCount := ReactionTotal(item.Reactions)
 		item.ReactionCount = &reactionCount
+		commentCount := moment.CommentCount
+		item.CommentCount = &commentCount
 		items = append(items, item)
 	}
 	return items
@@ -375,6 +387,17 @@ func (s *Service) SetHidden(ctx context.Context, userID, momentID uuid.UUID, hid
 	if !updated && !hidden {
 		return nil, errHiddenByAdmin
 	}
+	return s.ownerItem(ctx, userID, momentID)
+}
+
+func (s *Service) Get(ctx context.Context, userID, momentID uuid.UUID) (*MomentResponse, error) {
+	if _, err := s.ownedMoment(userID, momentID); err != nil {
+		return nil, err
+	}
+	return s.ownerItem(ctx, userID, momentID)
+}
+
+func (s *Service) ownerItem(ctx context.Context, userID, momentID uuid.UUID) (*MomentResponse, error) {
 	byID, err := s.repo.FindWithAuthors([]uuid.UUID{momentID})
 	if err != nil {
 		return nil, err
@@ -590,7 +613,13 @@ func (s *Service) Delete(userID, momentID uuid.UUID) error {
 	if _, err := s.ownedMoment(userID, momentID); err != nil {
 		return err
 	}
-	return s.repo.SoftDelete(momentID)
+	if err := s.repo.SoftDelete(momentID); err != nil {
+		return err
+	}
+	if s.notifier != nil {
+		s.notifier.MomentDeleted(momentID)
+	}
+	return nil
 }
 
 func (s *Service) ownedMoment(userID, momentID uuid.UUID) (*models.Moment, error) {

@@ -167,6 +167,14 @@ func (s *Service) StartMediaPurge() (*MediaPurgeRunResponse, error) {
 	return &MediaPurgeRunResponse{Started: started}, nil
 }
 
+func (s *Service) ListComments(id uuid.UUID, limit, offset int) (*moment.MomentCommentsResponse, error) {
+	found, err := s.getMoment(id)
+	if err != nil {
+		return nil, err
+	}
+	return s.viewers.CommentsOf(found, limit, offset)
+}
+
 func (s *Service) getMoment(id uuid.UUID) (*models.Moment, error) {
 	found, err := s.repo.GetByID(id)
 	if err != nil {
@@ -208,6 +216,7 @@ func (s *Service) toItems(ctx context.Context, moments []*models.Moment, now tim
 		item.ViewerCount = &count
 		item.Reactions = reactions[r.ID]
 		item.ReactionCount = moment.ReactionTotal(item.Reactions)
+		item.CommentCount = r.CommentCount
 		counts := reports[r.ID.String()]
 		item.ReportCount = counts.Total
 		item.PendingReportCount = counts.Pending

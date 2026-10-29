@@ -185,7 +185,7 @@ func (s *Sender) SendMeNotification(recipientID string, notification map[string]
 		return
 	}
 	id, ntype, actorName, preview := parseNotifFields(notification)
-	content := buildMeNotifContent(id, actorName, ntype, preview, unread)
+	content := buildMeNotifContent(id, actorName, ntype, preview, notifActorCount(notification), unread)
 	content.Seq = time.Now().UnixNano()
 	s.enqueue(func() {
 		s.process(recipientID, constants.PushSourceMeNotif, id, false, content)
@@ -202,6 +202,11 @@ func (s *Sender) SendAppNotification(recipientID string, notification map[string
 	s.enqueue(func() {
 		s.process(recipientID, constants.PushSourceAppNotif, id, false, content)
 	})
+}
+
+func notifActorCount(notification map[string]interface{}) int {
+	count, _ := notification["actorCount"].(float64)
+	return int(count)
 }
 
 func parseNotifFields(notification map[string]interface{}) (id, ntype, actorName, preview string) {
