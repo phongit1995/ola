@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
+import { AnalyticsPage } from '@/pages/analytics/AnalyticsPage'
 import { UsersPage } from '@/pages/users/UsersPage'
 import { MarriagesPage } from '@/pages/social/MarriagesPage'
 import { RelationshipsPage } from '@/pages/social/RelationshipsPage'
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardPage /> },
+      { path: 'analytics', element: <AnalyticsPage /> },
       { path: 'users', element: <UsersPage /> },
       { path: 'users/marriages', element: <MarriagesPage /> },
       { path: 'users/relationships', element: <RelationshipsPage /> },

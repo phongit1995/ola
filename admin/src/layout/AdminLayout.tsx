@@ -15,6 +15,7 @@ import {
   FileSearchOutlined,
   GiftOutlined,
   HeartOutlined,
+  LineChartOutlined,
   LockOutlined,
   LogoutOutlined,
   NotificationOutlined,
@@ -47,6 +48,7 @@ const REPORTS_LABEL = 'Báo cáo vi phạm'
 
 const MENU_ITEMS = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Tổng quan' },
+  { key: '/analytics', icon: <LineChartOutlined />, label: 'Analytics' },
   {
     key: 'users',
     icon: <TeamOutlined />,
@@ -133,6 +135,7 @@ const MENU_PATH_ALIASES: Record<string, string> = {
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
+  '/analytics': 'Analytics',
   '/users': 'Quản lý người dùng',
   '/users/relationships': 'Quan hệ bạn bè & theo dõi',
   '/users/marriages': 'Kết hôn & cầu hôn',

@@ -615,6 +615,11 @@ const (
 	CacheKeyMePostUpload   = "ME:UPLOAD:V2:%s:%s"
 	MePostUploadTTLSeconds = 3600
 
+	CacheKeyAdminAnalyticsOverview = "ADMIN:ANALYTICS:OVERVIEW:%s"
+	AdminAnalyticsOverviewTTL      = 15 * time.Minute
+	CacheKeyAdminAnalyticsRealtime = "ADMIN:ANALYTICS:REALTIME:%s"
+	AdminAnalyticsRealtimeTTL      = time.Minute
+
 	ReactionActionAdded   = "added"
 	ReactionActionRemoved = "removed"
 )
