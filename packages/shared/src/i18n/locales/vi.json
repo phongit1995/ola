@@ -101,6 +101,37 @@
     "removeAccountTitle": "Thông báo",
     "removeAccountConfirm": "Bạn có muốn xoá toàn bộ thông tin lưu trữ của tài khoản {{username}} trên thiết bị không?"
   },
+  "guestHome": {
+    "title": "Ola Chat — Mạng xã hội chat, kết bạn, trò chuyện online miễn phí",
+    "lead": "Nhắn tin nhanh, tham gia phòng chat theo chủ đề, kết bạn bốn phương và chia sẻ khoảnh khắc. Ola Chat là cộng đồng trò chuyện online sôi động, an toàn và hoàn toàn miễn phí trên web, Android và iPhone.",
+    "featuresTitle": "Mọi thứ bạn cần để trò chuyện & kết bạn",
+    "features": {
+      "rooms": {
+        "title": "Phòng chat sôi động",
+        "description": "Tham gia phòng chat theo chủ đề, sở thích và khu vực để trò chuyện nhóm mỗi ngày."
+      },
+      "friends": {
+        "title": "Kết bạn khắp nơi",
+        "description": "Tìm và kết bạn với người dùng ở gần bạn hoặc trên khắp Việt Nam."
+      },
+      "messages": {
+        "title": "Nhắn tin thời gian thực",
+        "description": "Tin nhắn gửi tức thì kèm hình ảnh, sticker, biểu cảm và tin nhắn thoại."
+      },
+      "moments": {
+        "title": "Chia sẻ khoảnh khắc",
+        "description": "Đăng ảnh, khoảnh khắc 24 giờ và thể hiện phong cách riêng của bạn."
+      },
+      "games": {
+        "title": "Trò chơi giải trí",
+        "description": "Vòng Quay May Mắn, Đập Trứng, Sút Penalty, Rương Ken — chơi ngay trong app để nhận quà."
+      }
+    },
+    "about": "Giới thiệu Ola Chat",
+    "download": "Tải ứng dụng",
+    "terms": "Điều khoản sử dụng",
+    "privacy": "Chính sách bảo mật"
+  },
   "register": {
     "title": "Tạo tài khoản Ola",
     "usernameLabel": "TÊN ĐĂNG NHẬP",

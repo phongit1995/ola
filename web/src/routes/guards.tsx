@@ -7,10 +7,17 @@ interface GuardProps {
   children: ReactNode;
 }
 
-export function ProtectedRoute({ children }: GuardProps) {
+interface ProtectedRouteProps extends GuardProps {
+  guestElement?: ReactNode;
+}
+
+export function ProtectedRoute({
+  children,
+  guestElement,
+}: ProtectedRouteProps) {
   const isAuthenticated = useAuthStore((s) => s.user != null);
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.login} replace />;
+    return guestElement ?? <Navigate to={ROUTES.login} replace />;
   }
   return children;
 }

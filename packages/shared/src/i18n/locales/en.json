@@ -101,6 +101,37 @@
     "removeAccountTitle": "Inform",
     "removeAccountConfirm": "Do you want to delete all saved data of account {{username}} on this device?"
   },
+  "guestHome": {
+    "title": "Ola Chat — Free social chat to meet friends and talk online",
+    "lead": "Message instantly, join topic chat rooms, make friends everywhere and share your moments. Ola Chat is a lively, safe and completely free chat community on the web, Android and iPhone.",
+    "featuresTitle": "Everything you need to chat and make friends",
+    "features": {
+      "rooms": {
+        "title": "Lively chat rooms",
+        "description": "Join rooms by topic, interest and region for group chats every day."
+      },
+      "friends": {
+        "title": "Friends everywhere",
+        "description": "Find and befriend people near you or all across Vietnam."
+      },
+      "messages": {
+        "title": "Real-time messaging",
+        "description": "Instant messages with photos, stickers, reactions and voice notes."
+      },
+      "moments": {
+        "title": "Share your moments",
+        "description": "Post photos and 24-hour moments and show off your own style."
+      },
+      "games": {
+        "title": "Fun mini games",
+        "description": "Lucky Wheel, Egg Smash, Penalty Kick, Ken Chest — play in the app to win gifts."
+      }
+    },
+    "about": "About Ola Chat",
+    "download": "Download the app",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy"
+  },
   "register": {
     "title": "Create an Ola account",
     "usernameLabel": "USERNAME",

@@ -20,3 +20,7 @@ export const ROUTES = {
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
+
+export const STATIC_PAGES = {
+  about: '/gioi-thieu/',
+} as const;

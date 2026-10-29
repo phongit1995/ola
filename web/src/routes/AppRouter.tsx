@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTES } from '@constants';
+import { GuestHomePage } from '@/pages/login/GuestHomePage';
 import { LoginPage } from '@/pages/login/LoginPage';
 import { GuestRoute, ProtectedRoute } from './guards';
 
@@ -39,7 +40,7 @@ export function AppRouter() {
           <Route
             path={ROUTES.home}
             element={
-              <ProtectedRoute>
+              <ProtectedRoute guestElement={<GuestHomePage />}>
                 <HomePage />
               </ProtectedRoute>
             }

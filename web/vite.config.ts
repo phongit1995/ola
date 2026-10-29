@@ -25,6 +25,12 @@ const seoPages = [
     description:
       'Điều khoản sử dụng mạng xã hội Ola: điều kiện tài khoản, quy tắc ứng xử, nội dung người dùng, vật phẩm ảo KEN/VIP và quyền riêng tư.',
   },
+  {
+    path: '/chinh-sach-bao-mat',
+    title: 'Chính sách bảo mật — Ola Chat',
+    description:
+      'Chính sách bảo mật của Ola Chat: thông tin được thu thập, cách sử dụng và bảo vệ dữ liệu, chia sẻ với bên thứ ba và quyền của bạn với dữ liệu cá nhân.',
+  },
 ]
 
 function escapeAttribute(value: string) {
