@@ -112,6 +112,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode resolvedVersionCode
         versionName resolvedVersionName
+        missingDimensionStrategy "react-native-capture-protection", "base"
     }
     signingConfigs {
         debug {

@@ -18,6 +18,39 @@ import { MIN_AMOUNT, STEP_AMOUNT, PRESET_AMOUNTS } from './constants';
 import { SupportDialog } from './SupportDialog';
 
 const NO_BONUS_TIERS: TopupBonusTier[] = [];
+const QR_DOWNLOAD_PX = 1080;
+
+function loadCorsImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('qr image failed to load'));
+    image.src = src;
+  });
+}
+
+async function downloadQrAsPng(url: string, fileName: string) {
+  const image = await loadCorsImage(url);
+  const canvas = document.createElement('canvas');
+  canvas.width = QR_DOWNLOAD_PX;
+  canvas.height = QR_DOWNLOAD_PX;
+  canvas
+    .getContext('2d')
+    ?.drawImage(image, 0, 0, QR_DOWNLOAD_PX, QR_DOWNLOAD_PX);
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/png')
+  );
+  if (blob == null) throw new Error('qr png encode failed');
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(objectUrl);
+}
 
 function CopyRow({ label, value }: { label: string; value: string }) {
   const { t } = useTranslation();
@@ -56,6 +89,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [customText, setCustomText] = useState<string | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [savingQr, setSavingQr] = useState(false);
 
   useEffect(() => {
     void loadConfig();
@@ -105,6 +139,17 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
 
   function changeCustom(raw: string) {
     setCustomText(raw.replace(/\D/g, ''));
+  }
+
+  async function saveQr(url: string) {
+    setSavingQr(true);
+    try {
+      await downloadQrAsPng(url, `qr-nap-ken-${amount}.png`);
+    } catch {
+      toast.error(t('ken.buy.qrSaveFailed'));
+    } finally {
+      setSavingQr(false);
+    }
   }
 
   return (
@@ -211,7 +256,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                       {t('ken.buy.qrTitle')}
                     </span>
                     {qrImageUrl != null && (
-                      <div className="mt-3 flex justify-center">
+                      <div className="mt-3 flex flex-col items-center">
                         <div className="rounded border border-black/12 bg-white p-2">
                           <img
                             src={qrImageUrl}
@@ -219,6 +264,14 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                             className="h-56 w-56 object-contain"
                           />
                         </div>
+                        <button
+                          type="button"
+                          disabled={savingQr}
+                          onClick={() => void saveQr(qrImageUrl)}
+                          className="mt-2 rounded border border-black/12 px-3 py-1.5 text-xs font-medium text-ola-primary-ink active:bg-black/5 disabled:opacity-50"
+                        >
+                          {t('ken.buy.saveQr')}
+                        </button>
                       </div>
                     )}
                     <div className="mt-3">

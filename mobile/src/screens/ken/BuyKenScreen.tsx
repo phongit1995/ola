@@ -6,13 +6,14 @@ import { formatKen, formatVnd, topupBonusPercentFor, withAlpha } from '@ola/shar
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { CachedImage } from '@components/ui/CachedImage';
+import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, ERROR, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { KEN_ACCENT, QR_SIZE } from './constants';
+import { KEN_ACCENT } from './constants';
 import { useBuyKen } from './useBuyKen';
 import { BankInfoRow } from './components/BankInfoRow';
 import { CopyRow } from './components/CopyRow';
+import { TopupQrCode } from './components/TopupQrCode';
 import { SupportDialog } from '../apps/SupportDialog';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.BuyKen>;
@@ -22,6 +23,7 @@ export function BuyKenScreen({ navigation }: Props) {
   const colors = useThemeColors();
   const vm = useBuyKen();
   const [supportOpen, setSupportOpen] = useState(false);
+  useBlockScreenCapture();
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#ececec' }}>
@@ -173,20 +175,7 @@ export function BuyKenScreen({ navigation }: Props) {
                     <Text className="text-center text-sm font-medium" style={{ color: TEXT_PRIMARY }}>
                       {t('ken.buy.qrTitle')}
                     </Text>
-                    {vm.qrImageUrl != null && (
-                      <View className="mt-3 items-center">
-                        <View
-                          className="rounded p-2"
-                          style={{ borderWidth: 1, borderColor: DIVIDER, backgroundColor: '#ffffff' }}
-                        >
-                          <CachedImage
-                            uri={vm.qrImageUrl}
-                            style={{ width: QR_SIZE, height: QR_SIZE }}
-                            resizeMode="contain"
-                          />
-                        </View>
-                      </View>
-                    )}
+                    {vm.qrImageUrl != null && <TopupQrCode uri={vm.qrImageUrl} />}
                     <View className="mt-3">
                       {vm.bank.bankName !== '' && (
                         <BankInfoRow label={t('ken.buy.bankLabel')} value={vm.bank.bankName} />
