@@ -1,68 +1,17 @@
 import { useMemo, useState } from 'react'
-import type { UseQueryResult } from '@tanstack/react-query'
-import { Alert, Badge, Button, Card, Modal, Segmented, Space, Spin, Tooltip, Typography } from 'antd'
+import { Alert, Button, Card, Modal, Segmented, Space, Spin, Typography } from 'antd'
 import { ReloadOutlined, SettingOutlined } from '@ant-design/icons'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { isoDaysAgo } from '@/lib/dateRange'
 import { errorMessage } from '@/lib/apiError'
-import { formatCount, formatDateTime } from '@/lib/format'
-import type { AnalyticsPlatform, AnalyticsRealtime } from '@/types'
+import { formatDateTime } from '@/lib/format'
+import type { AnalyticsPlatform } from '@/types'
+import { AnalyticsRealtimeCard } from './AnalyticsRealtimeCard'
 import { AnalyticsReport } from './AnalyticsReport'
 import { AnalyticsSetupCard } from './AnalyticsSetupCard'
 import { ANALYTICS_DEFAULT_DAYS, PLATFORM_OPTIONS, SOURCE_LABEL } from './constants'
 import { useAnalyticsOverview, useAnalyticsRealtime, useRefreshAnalytics } from './useAnalyticsQueries'
-import { isAnalyticsReady, platformLabel } from './utils'
-
-function TooltipLines({ lines }: { lines: string[] }) {
-  return lines.map((line) => <div key={line}>{line}</div>)
-}
-
-function RealtimeUnavailable({ reasons }: { reasons: string[] }) {
-  return (
-    <Tooltip title={<TooltipLines lines={reasons} />}>
-      <Space size={6}>
-        <Badge status="error" />
-        <Typography.Text type="danger">Không tải được số người đang dùng</Typography.Text>
-      </Space>
-    </Tooltip>
-  )
-}
-
-function RealtimeBadge({ realtime }: { realtime: UseQueryResult<AnalyticsRealtime> }) {
-  const { data } = realtime
-  if (!data) {
-    return realtime.isError ? (
-      <RealtimeUnavailable reasons={[errorMessage(realtime.error, 'Không gọi được server')]} />
-    ) : null
-  }
-  const failed = data.sources.filter((source) => source.error)
-  if (data.sources.length > 0 && failed.length === data.sources.length) {
-    return <RealtimeUnavailable reasons={failed.map((source) => `${SOURCE_LABEL[source.source]}: ${source.error}`)} />
-  }
-  const stale = realtime.isError
-  const breakdown = data.platforms
-    .map((row) => `${platformLabel(row.platform)}: ${formatCount(row.activeUsers)}`)
-    .join(' · ')
-  const notes = [
-    breakdown || 'Không có ai trong 30 phút gần nhất',
-    ...failed.map((source) => `Thiếu ${SOURCE_LABEL[source.source]}: ${source.error}`),
-    ...(data.usersSummed ? ['Cộng từ 2 property nên ai dùng cả app lẫn web được tính 2 lần'] : []),
-    ...(stale
-      ? [`Số cũ${data.fetchedAt ? ` lúc ${formatDateTime(data.fetchedAt)}` : ''}, lần tải lại gần nhất bị lỗi`]
-      : []),
-  ]
-  const complete = failed.length === 0 && !stale
-  return (
-    <Tooltip title={<TooltipLines lines={notes} />}>
-      <Space size={6}>
-        {complete ? <Badge status="processing" color="#52c41a" /> : <Badge status="warning" />}
-        <Typography.Text strong>{formatCount(data.activeUsers)}</Typography.Text>
-        <Typography.Text type="secondary">người dùng trong 30 phút qua</Typography.Text>
-        {!complete && <Typography.Text type="warning">{failed.length > 0 ? 'thiếu dữ liệu' : 'số cũ'}</Typography.Text>}
-      </Space>
-    </Tooltip>
-  )
-}
+import { isAnalyticsReady } from './utils'
 
 export function AnalyticsPage() {
   const [from, setFrom] = useState(() => isoDaysAgo(ANALYTICS_DEFAULT_DAYS))
@@ -81,24 +30,21 @@ export function AnalyticsPage() {
   return (
     <Space orientation="vertical" size={16} style={{ width: '100%' }}>
       <Card>
-        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Space wrap>
-            <DateRangeFilter from={from} to={to} onFromChange={setFrom} onToChange={setTo} />
-            <Segmented<AnalyticsPlatform> options={PLATFORM_OPTIONS} value={platform} onChange={setPlatform} />
-            <Button
-              icon={<ReloadOutlined />}
-              loading={refresh.isPending}
-              disabled={!data}
-              onClick={() => refresh.mutate(params)}
-            >
-              Làm mới
-            </Button>
-            <Button icon={<SettingOutlined />} disabled={!data} onClick={() => setSetupOpen(true)}>
-              Cấu hình
-            </Button>
-            {overview.isFetching && <Spin size="small" />}
-          </Space>
-          {ready && <RealtimeBadge realtime={realtime} />}
+        <Space wrap>
+          <DateRangeFilter from={from} to={to} onFromChange={setFrom} onToChange={setTo} />
+          <Segmented<AnalyticsPlatform> options={PLATFORM_OPTIONS} value={platform} onChange={setPlatform} />
+          <Button
+            icon={<ReloadOutlined />}
+            loading={refresh.isPending}
+            disabled={!data}
+            onClick={() => refresh.mutate(params)}
+          >
+            Làm mới
+          </Button>
+          <Button icon={<SettingOutlined />} disabled={!data} onClick={() => setSetupOpen(true)}>
+            Cấu hình
+          </Button>
+          {overview.isFetching && <Spin size="small" />}
         </Space>
         {ready && data?.fetchedAt && (
           <Typography.Paragraph type="secondary" style={{ margin: '12px 0 0' }}>
@@ -129,6 +75,7 @@ export function AnalyticsPage() {
         </Card>
       ) : (
         <Space orientation="vertical" size={16} style={{ width: '100%' }}>
+          <AnalyticsRealtimeCard realtime={realtime} />
           {failedSources.map((source) => (
             <Alert
               key={source.source}

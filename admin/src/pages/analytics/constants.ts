@@ -34,6 +34,23 @@ export const PLATFORM_META: Record<ChartPlatform, { label: string; color: string
   web: { label: 'Web', color: '#fa8c16' },
 }
 
+export const REALTIME_EVENT_ROWS = 8
+
+export const REALTIME_EVENTS_TRUNCATED_HINT =
+  'Quá nhiều loại sự kiện nên Google chỉ trả phần đầu. Tổng số sự kiện vẫn đúng, nhưng bảng theo loại và biểu đồ sự kiện mỗi phút có thể thiếu.'
+
+export type RealtimeMetric = 'activeUsers' | 'eventCount'
+
+export const REALTIME_METRIC_META: Record<RealtimeMetric, { label: string; color: string }> = {
+  activeUsers: { label: 'Người dùng', color: '#1677ff' },
+  eventCount: { label: 'Sự kiện', color: '#722ed1' },
+}
+
+export const REALTIME_METRIC_OPTIONS: { label: string; value: RealtimeMetric }[] = [
+  { label: 'Người dùng mỗi phút', value: 'activeUsers' },
+  { label: 'Sự kiện mỗi phút', value: 'eventCount' },
+]
+
 export const SOURCE_LABEL: Record<AnalyticsSource, string> = {
   mobile: 'Mobile (Android + iOS)',
   web: 'Web',

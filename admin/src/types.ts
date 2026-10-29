@@ -1898,11 +1898,22 @@ export interface AnalyticsOverview {
   approximateRankings: AnalyticsRanking[]
 }
 
+export interface AnalyticsRealtimeMinute {
+  minutesAgo: number
+  activeUsers: number
+  eventCount: number
+}
+
 export interface AnalyticsRealtime {
   sources: AnalyticsSourceStatus[]
   activeUsers: number
+  eventCount: number
+  eventsTruncated: boolean
   usersSummed: boolean
   platforms: { platform: string; activeUsers: number }[]
+  minutes: AnalyticsRealtimeMinute[]
+  events: AnalyticsNamedRow[]
+  countries: AnalyticsNamedRow[]
   fetchedAt?: string
 }
 

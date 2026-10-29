@@ -105,12 +105,23 @@ type RealtimePlatform struct {
 	ActiveUsers int64  `json:"activeUsers"`
 }
 
+type RealtimeMinute struct {
+	MinutesAgo  int   `json:"minutesAgo"`
+	ActiveUsers int64 `json:"activeUsers"`
+	EventCount  int64 `json:"eventCount"`
+}
+
 type RealtimeResponse struct {
-	Sources     []SourceStatus     `json:"sources"`
-	ActiveUsers int64              `json:"activeUsers"`
-	UsersSummed bool               `json:"usersSummed"`
-	Platforms   []RealtimePlatform `json:"platforms"`
-	FetchedAt   *time.Time         `json:"fetchedAt,omitempty"`
+	Sources         []SourceStatus     `json:"sources"`
+	ActiveUsers     int64              `json:"activeUsers"`
+	EventCount      int64              `json:"eventCount"`
+	EventsTruncated bool               `json:"eventsTruncated"`
+	UsersSummed     bool               `json:"usersSummed"`
+	Platforms       []RealtimePlatform `json:"platforms"`
+	Minutes         []RealtimeMinute   `json:"minutes"`
+	Events          []NamedRow         `json:"events"`
+	Countries       []NamedRow         `json:"countries"`
+	FetchedAt       *time.Time         `json:"fetchedAt,omitempty"`
 }
 
 type OverviewSuccessResponse = utils.BaseResponse[OverviewResponse]

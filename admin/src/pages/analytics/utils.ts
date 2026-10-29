@@ -39,6 +39,19 @@ export function formatEngagement(seconds: number): string {
   return rest === 0 ? `${minutes}p` : `${minutes}p ${rest}s`
 }
 
+export function formatShare(value: number, total: number): string {
+  if (total <= 0) return '—'
+  return `${((value / total) * 100).toLocaleString('vi-VN', { maximumFractionDigits: 1 })}%`
+}
+
+export function formatMinutesAgo(minutes: number): string {
+  return minutes === 0 ? 'Bây giờ' : `-${minutes}p`
+}
+
+export function minutesAgoLabel(minutes: number): string {
+  return minutes === 0 ? 'Phút hiện tại' : `${minutes} phút trước`
+}
+
 export function formatChartDate(date: string): string {
   const [, month, day] = date.split('-')
   return `${day}/${month}`

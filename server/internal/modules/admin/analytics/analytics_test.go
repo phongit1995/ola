@@ -209,7 +209,7 @@ func TestFetchOverviewReportsPagesRankedReportsWhenMerging(t *testing.T) {
 	}
 }
 
-func TestFetchRealtimeCountsUsersOnceAcrossPlatforms(t *testing.T) {
+func TestRealtimeCountsUsersOnceAndSplitsEventsByMinuteAndName(t *testing.T) {
 	ga := &fakeGA{}
 	ga.realtime = func(_ string, req analyticsdata.RunRealtimeReportRequest) analyticsdata.RunRealtimeReportResponse {
 		if !slices.Equal(filterValues(req.DimensionFilter), []string{"Android", "iOS", "web"}) {
@@ -218,20 +218,91 @@ func TestFetchRealtimeCountsUsersOnceAcrossPlatforms(t *testing.T) {
 		if len(req.Dimensions) == 0 {
 			return analyticsdata.RunRealtimeReportResponse{Rows: []*analyticsdata.Row{row(nil, "1")}}
 		}
-		return analyticsdata.RunRealtimeReportResponse{Rows: []*analyticsdata.Row{
-			row([]string{"Android"}, "1"),
-			row([]string{"iOS"}, "1"),
-		}}
+		var rows []*analyticsdata.Row
+		switch req.Dimensions[0].Name {
+		case "platform":
+			rows = []*analyticsdata.Row{row([]string{"Android"}, "1"), row([]string{"iOS"}, "1")}
+		case "minutesAgo":
+			rows = []*analyticsdata.Row{row([]string{"00"}, "1"), row([]string{"29"}, "1")}
+		case "eventName":
+			if len(req.Metrics) != 1 || req.Metrics[0].Name != "eventCount" {
+				t.Errorf("realtime rejects eventName with any user metric, got %+v", req.Metrics)
+			}
+			rows = []*analyticsdata.Row{
+				row([]string{"screen_view", "00"}, "3"),
+				row([]string{"screen_view", "29"}, "2"),
+				row([]string{"session_start", "00"}, "1"),
+				row([]string{"session_start", "29"}, "1"),
+			}
+		case "country":
+			rows = []*analyticsdata.Row{row([]string{"Vietnam"}, "1")}
+		}
+		return analyticsdata.RunRealtimeReportResponse{Rows: rows}
 	}
 	svc := ga.serve(t)
 
 	src := source{name: SourceAll, propertyID: "111", platforms: allPlatforms}
-	byPlatform, total, err := fetchRealtime(context.Background(), svc, src)
+	reports, err := fetchRealtime(context.Background(), svc, src)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if total != 1 || byPlatform[PlatformAndroid] != 1 || byPlatform[PlatformIOS] != 1 {
-		t.Fatalf("expected 1 user in total and 1 per platform, got %d %v", total, byPlatform)
+	agg := newRealtimeAggregate()
+	agg.add(reports)
+	resp := &RealtimeResponse{}
+	agg.fill(resp)
+	if resp.ActiveUsers != 1 || resp.EventCount != 7 || len(resp.Platforms) != 2 {
+		t.Fatalf("one person on android and ios is one user with 7 events, got %d users %d events %+v", resp.ActiveUsers, resp.EventCount, resp.Platforms)
+	}
+	if len(resp.Minutes) != realtimeWindow {
+		t.Fatalf("every minute of the window must be listed, got %d", len(resp.Minutes))
+	}
+	if first, last := resp.Minutes[0], resp.Minutes[realtimeWindow-1]; first.MinutesAgo != 29 || first.EventCount != 3 || last.MinutesAgo != 0 || last.EventCount != 4 {
+		t.Fatalf("minutes run from 29 minutes ago to now, got first %+v last %+v", first, last)
+	}
+	if resp.Minutes[1].ActiveUsers != 0 {
+		t.Fatalf("a quiet minute stays at zero, got %+v", resp.Minutes[1])
+	}
+	if len(resp.Events) != 2 || resp.Events[0].Name != "screen_view" || resp.Events[0].Count != 5 {
+		t.Fatalf("events are ranked by count, got %+v", resp.Events)
+	}
+
+	agg.add(reports)
+	agg.fill(resp)
+	if resp.Events[0].Count != 10 || resp.Minutes[realtimeWindow-1].EventCount != 8 || resp.Countries[0].Count != 2 {
+		t.Fatalf("a second property adds to the same rows, got events %+v minutes %+v countries %+v", resp.Events[0], resp.Minutes[realtimeWindow-1], resp.Countries)
+	}
+}
+
+func TestRealtimeEventTotalSurvivesCutRows(t *testing.T) {
+	ga := &fakeGA{}
+	ga.realtime = func(_ string, req analyticsdata.RunRealtimeReportRequest) analyticsdata.RunRealtimeReportResponse {
+		if len(req.Dimensions) == 0 || req.Dimensions[0].Name != "eventName" {
+			return analyticsdata.RunRealtimeReportResponse{}
+		}
+		if req.Limit != realtimeRowMax || !slices.Equal(req.MetricAggregations, []string{"TOTAL"}) {
+			t.Errorf("events must ask for every row and the full total, got limit %d aggregations %v", req.Limit, req.MetricAggregations)
+		}
+		return analyticsdata.RunRealtimeReportResponse{
+			RowCount: 3,
+			Rows:     []*analyticsdata.Row{row([]string{"screen_view", "00"}, "6"), row([]string{"screen_view", "01"}, "3")},
+			Totals:   []*analyticsdata.Row{row([]string{"RESERVED_TOTAL", "RESERVED_TOTAL"}, "10")},
+		}
+	}
+	svc := ga.serve(t)
+
+	reports, err := fetchRealtime(context.Background(), svc, source{name: SourceMobile, propertyID: "111", platforms: appPlatforms})
+	if err != nil {
+		t.Fatal(err)
+	}
+	agg := newRealtimeAggregate()
+	agg.add(reports)
+	resp := &RealtimeResponse{}
+	agg.fill(resp)
+	if resp.EventCount != 10 || !resp.EventsTruncated {
+		t.Fatalf("the total comes from GA's own sum and the cut is flagged, got %d truncated=%v", resp.EventCount, resp.EventsTruncated)
+	}
+	if resp.Events[0].Count != 9 {
+		t.Fatalf("the table only has the rows GA returned, got %+v", resp.Events)
 	}
 }
 
