@@ -2,13 +2,11 @@ package adminmarriage
 
 import (
 	"net/http"
-	"time"
 
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type Controller struct {
@@ -31,37 +29,6 @@ var proposalStatuses = map[string]bool{
 	models.MarriageProposalCancelled: true,
 }
 
-func parseUUIDQuery(c *gin.Context, key string) (*uuid.UUID, error) {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil, nil
-	}
-	id, err := uuid.Parse(raw)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key)
-	}
-	return &id, nil
-}
-
-func parseTimeRange(c *gin.Context) (*time.Time, *time.Time, error) {
-	var from, to *time.Time
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		from = &t
-	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		to = &t
-	}
-	return from, to, nil
-}
-
 func parseListFilter(c *gin.Context, statuses map[string]bool) (ListFilter, error) {
 	var f ListFilter
 	if status := c.Query("status"); status != "" {
@@ -71,13 +38,13 @@ func parseListFilter(c *gin.Context, statuses map[string]bool) (ListFilter, erro
 		f.Status = status
 	}
 
-	userID, err := parseUUIDQuery(c, "userId")
+	userID, err := utils.ParseUUIDQuery(c, "userId")
 	if err != nil {
 		return f, err
 	}
 	f.UserID = userID
 
-	f.From, f.To, err = parseTimeRange(c)
+	f.From, f.To, err = utils.ParseTimeRange(c)
 	if err != nil {
 		return f, err
 	}
@@ -95,7 +62,7 @@ func parseListFilter(c *gin.Context, statuses map[string]bool) (ListFilter, erro
 // @Failure      400  {object}  utils.APIError
 // @Router       /admin/marriages/stats [get]
 func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
-	from, to, err := parseTimeRange(c)
+	from, to, err := utils.ParseTimeRange(c)
 	if err != nil {
 		return nil, err
 	}

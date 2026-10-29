@@ -15,7 +15,6 @@ import (
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -60,16 +59,6 @@ func NewService(repo *Repository, relRepo *relationships.Repository, userCache *
 		wsServer:  wsServer,
 		logger:    logger.Named("[vip_service]"),
 	}
-}
-
-func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
-	if s.wsServer == nil {
-		return
-	}
-	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-		"ken": ken,
-	})
-	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
 }
 
 func parseTypeID(vipUsed *string) *int16 {
@@ -413,7 +402,7 @@ func (s *Service) Buy(userID, shopItemID uuid.UUID) (*BuyIconResponse, error) {
 	}
 
 	s.invalidate(userID)
-	s.emitKenUpdate(userID, updatedUser.Ken)
+	s.wsServer.EmitKenUpdate(userID, updatedUser.Ken)
 
 	out := toVipItem(icon, updatedUser.VipUsedInstanceID)
 	return &BuyIconResponse{Item: out, KenBalance: updatedUser.Ken}, nil
@@ -603,7 +592,7 @@ func (s *Service) BuyPackage(userID, packageID uuid.UUID) (*BuyPackageResponse, 
 	}
 
 	s.invalidate(userID)
-	s.emitKenUpdate(userID, updatedUser.Ken)
+	s.wsServer.EmitKenUpdate(userID, updatedUser.Ken)
 
 	return &BuyPackageResponse{
 		PurchaseID:  purchase.ID.String(),
@@ -657,7 +646,7 @@ func (s *Service) GiftPackage(fromID, packageID uuid.UUID, toUsername, password 
 
 	s.invalidate(fromID)
 	s.invalidate(receiver.ID)
-	s.emitKenUpdate(fromID, giver.Ken)
+	s.wsServer.EmitKenUpdate(fromID, giver.Ken)
 
 	return &GiftPackageResponse{
 		ReceiverUsername: receiver.Username,
@@ -710,7 +699,7 @@ func (s *Service) GiftIcon(fromID, shopItemID uuid.UUID, toUsername, password st
 
 	s.invalidate(fromID)
 	s.invalidate(receiver.ID)
-	s.emitKenUpdate(fromID, giver.Ken)
+	s.wsServer.EmitKenUpdate(fromID, giver.Ken)
 
 	return &GiftIconResponse{
 		ReceiverUsername: receiver.Username,

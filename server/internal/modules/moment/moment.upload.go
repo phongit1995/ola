@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"strings"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/utils"
 
@@ -188,7 +187,7 @@ func tooLong(duration float64) bool {
 }
 
 func allowedImageMime(mimeType string) bool {
-	for _, allowed := range constants.AllowedImageMimes {
+	for _, allowed := range media.AllowedImageMimes {
 		if strings.EqualFold(allowed, mimeType) {
 			return true
 		}

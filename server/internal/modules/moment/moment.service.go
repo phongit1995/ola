@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/setting"
 	userModule "ola-chat-server/internal/modules/user"
@@ -143,7 +143,7 @@ func uploadFolder(momentType string, now time.Time) string {
 	if momentType == MomentTypeVideo {
 		kind = MomentUploadVideosFolder
 	}
-	return fmt.Sprintf("%s/%s/%s", UploadFolderMoments, localDay(now).Format(constants.UploadDateLayoutDay), kind)
+	return fmt.Sprintf("%s/%s/%s", UploadFolderMoments, localDay(now).Format(media.UploadDateLayoutDay), kind)
 }
 
 func buildDrafts(userID uuid.UUID, momentType, visibility string, items []CreateMomentItem) ([]*models.Moment, error) {
@@ -214,7 +214,7 @@ func (s *Service) attachMedia(
 	switch momentType {
 	case MomentTypeText, MomentTypeImage:
 		for index, draft := range imageDrafts(drafts) {
-			image, err := s.uploadImage(ctx, folder, input.Images[index], constants.MaxImageUploadSize, uploads)
+			image, err := s.uploadImage(ctx, folder, input.Images[index], media.MaxImageUploadSize, uploads)
 			if err != nil {
 				return err
 			}

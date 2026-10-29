@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -54,7 +54,7 @@ func TestToModelAudiosRejectsInvalidInput(t *testing.T) {
 		"waveform > 1":   func(a *MeAudioInput) { a.Waveform = []float64{1.5} },
 		"waveform < 0":   func(a *MeAudioInput) { a.Waveform = []float64{-0.1} },
 		"too many samples": func(a *MeAudioInput) {
-			a.Waveform = make([]float64, constants.MaxAudioWaveformSamples+1)
+			a.Waveform = make([]float64, media.MaxAudioWaveformSamples+1)
 		},
 	}
 	for name, mutate := range cases {

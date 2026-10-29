@@ -19,7 +19,7 @@ import (
 	_ "golang.org/x/image/webp"
 
 	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/notification"
@@ -154,7 +154,7 @@ func (s *Service) Create(userID uuid.UUID, req *CreateClanRequest) (*ClanRespons
 	}
 
 	s.invalidateUser(userID)
-	s.emitKenUpdate(userID, result.KenBalance)
+	s.wsServer.EmitKenUpdate(userID, result.KenBalance)
 	s.logger.Infow("Clan created", "clan_id", result.Clan.ID, "handle", handle, "owner_id", userID, "cost", s.cfg.ClanCreateCost)
 
 	resp, err := s.buildClanResponse(userID, result.Clan)
@@ -602,7 +602,7 @@ func (s *Service) uploadClanImage(ctx context.Context, userID, clanID uuid.UUID,
 	if fileHeader == nil {
 		return nil, errClanImageMissing
 	}
-	if fileHeader.Size > constants.MaxImageUploadSize {
+	if fileHeader.Size > media.MaxImageUploadSize {
 		return nil, errors.New("image too large")
 	}
 
@@ -625,15 +625,15 @@ func (s *Service) uploadClanImage(ctx context.Context, userID, clanID uuid.UUID,
 		return nil, errors.New("failed to read image")
 	}
 	data := append(head, rest...)
-	if int64(len(data)) > constants.MaxImageUploadSize {
+	if int64(len(data)) > media.MaxImageUploadSize {
 		return nil, errors.New("image too large")
 	}
 	if _, _, err := image.DecodeConfig(bytes.NewReader(data)); err != nil {
 		return nil, errors.New("failed to decode image")
 	}
 
-	folder := fmt.Sprintf("%s/%s", UploadFolderClans, time.Now().Format(constants.UploadDateLayout))
-	upload, err := s.s3.UploadFile(ctx, &clanFileReader{Reader: bytes.NewReader(data)}, field+extensionForMime(mimeType), folder)
+	folder := fmt.Sprintf("%s/%s", UploadFolderClans, time.Now().Format(media.UploadDateLayout))
+	upload, err := s.s3.UploadFile(ctx, &clanFileReader{Reader: bytes.NewReader(data)}, field+media.ImageExtension(mimeType), folder)
 	if err != nil {
 		s.logger.Errorw("Failed to upload clan image", "clan_id", clan.ID, "field", field, "error", err)
 		return nil, errors.New("failed to upload image")
@@ -727,16 +727,6 @@ func (s *Service) buildClanResponse(viewerID uuid.UUID, clan *models.Clan) (*Cla
 	return resp, nil
 }
 
-func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
-	if s.wsServer == nil {
-		return
-	}
-	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-		"ken": ken,
-	})
-	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
-}
-
 func (s *Service) invalidateUser(userID uuid.UUID) {
 	if err := s.userCache.InvalidateUser(userID); err != nil {
 		s.logger.Warnw("Failed to invalidate user cache after clan create", "user_id", userID, "error", err.Error())
@@ -756,25 +746,12 @@ func toClanUserResponse(u *models.User) *ClanUserResponse {
 }
 
 func isAllowedImageMime(mime string) bool {
-	for _, m := range constants.AllowedImageMimes {
+	for _, m := range media.AllowedImageMimes {
 		if strings.EqualFold(m, mime) {
 			return true
 		}
 	}
 	return false
-}
-
-func extensionForMime(mime string) string {
-	switch mime {
-	case "image/png":
-		return ".png"
-	case "image/gif":
-		return ".gif"
-	case "image/webp":
-		return ".webp"
-	default:
-		return ".jpg"
-	}
 }
 
 type clanFileReader struct {

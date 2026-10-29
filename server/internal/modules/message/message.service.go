@@ -182,8 +182,8 @@ func (s *Service) SendImageMessage(ctx context.Context, userID, conversationID u
 }
 
 func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader) (*ImageMetadata, string, error) {
-	if fileHeader.Size > constants.MaxImageUploadSize {
-		return nil, "", fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, constants.MaxImageUploadSize)
+	if fileHeader.Size > media.MaxImageUploadSize {
+		return nil, "", fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, media.MaxImageUploadSize)
 	}
 
 	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
@@ -210,7 +210,7 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 		return nil, "", fmt.Errorf("failed to read file: %w", err)
 	}
 	fullData := append(head, rest...)
-	if int64(len(fullData)) > constants.MaxImageUploadSize {
+	if int64(len(fullData)) > media.MaxImageUploadSize {
 		return nil, "", ErrFileTooLarge
 	}
 
@@ -219,9 +219,9 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 		return nil, "", fmt.Errorf("%w: %v", ErrDecodeImage, err)
 	}
 
-	ext := pickExtension(detectedMime, fileHeader.Filename)
+	ext := media.ImageExtensionOrFile(detectedMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("image%s", ext)
-	folder := fmt.Sprintf("%s/%s/%s", UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
+	folder := fmt.Sprintf("%s/%s/%s", UploadFolderMessages, conversationID.String(), time.Now().Format(media.UploadDateLayout))
 
 	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
 	if err != nil {
@@ -239,7 +239,7 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 }
 
 func isAllowedImageMime(mime string) bool {
-	for _, m := range constants.AllowedImageMimes {
+	for _, m := range media.AllowedImageMimes {
 		if strings.EqualFold(m, mime) {
 			return true
 		}
@@ -290,8 +290,8 @@ func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID u
 }
 
 func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64) (*AudioMetadata, string, error) {
-	if fileHeader.Size > constants.MaxAudioUploadSize {
-		return nil, "", fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, constants.MaxAudioUploadSize)
+	if fileHeader.Size > media.MaxAudioUploadSize {
+		return nil, "", fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, media.MaxAudioUploadSize)
 	}
 
 	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
@@ -309,7 +309,7 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read file: %w", err)
 	}
-	if int64(len(data)) > constants.MaxAudioUploadSize {
+	if int64(len(data)) > media.MaxAudioUploadSize {
 		return nil, "", ErrFileTooLarge
 	}
 
@@ -327,7 +327,7 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 
 	ext := media.PickAudioExtension(finalMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("audio%s", ext)
-	folder := fmt.Sprintf("%s/%s/%s", UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
+	folder := fmt.Sprintf("%s/%s/%s", UploadFolderMessages, conversationID.String(), time.Now().Format(media.UploadDateLayout))
 
 	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
 	if err != nil {
@@ -370,20 +370,6 @@ func validateAudioMetadata(metadata string, isManagedURL func(string) bool) erro
 		return err
 	}
 	return nil
-}
-
-func pickExtension(mime, originalName string) string {
-	switch strings.ToLower(mime) {
-	case "image/jpeg":
-		return ".jpg"
-	case "image/png":
-		return ".png"
-	case "image/gif":
-		return ".gif"
-	case "image/webp":
-		return ".webp"
-	}
-	return strings.ToLower(filepath.Ext(originalName))
 }
 
 type multipartFileReader struct {

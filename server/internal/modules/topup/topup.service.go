@@ -7,12 +7,10 @@ import (
 	"strings"
 	"unicode"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -232,12 +230,7 @@ func (s *Service) credit(row *models.TopupTransaction, userID uuid.UUID, notifyO
 	if err := s.userCache.InvalidateUser(userID); err != nil {
 		s.logger.Warnw("Failed to invalidate user cache after topup", "user_id", userID, "error", err.Error())
 	}
-	if s.wsServer != nil {
-		payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-			"ken": updatedUser.Ken,
-		})
-		s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
-	}
+	s.wsServer.EmitKenUpdate(userID, updatedUser.Ken)
 	s.notifier.NotifyCredited(CreditedNotice{
 		ProviderTxID:  row.ProviderTxID,
 		Description:   row.Description,

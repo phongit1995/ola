@@ -2,11 +2,9 @@ package wordchain
 
 import (
 	"context"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -65,15 +63,5 @@ func (w *Wallet) afterCharge(userID uuid.UUID, balance int) {
 	if err := w.userCache.InvalidateUser(userID); err != nil {
 		w.logger.Warnw("Failed to invalidate user cache after word chain purchase", "user_id", userID, "error", err)
 	}
-	w.emitKenUpdate(userID, balance)
-}
-
-func (w *Wallet) emitKenUpdate(userID uuid.UUID, ken int) {
-	if w.wsServer == nil {
-		return
-	}
-	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-		"ken": ken,
-	})
-	w.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
+	w.wsServer.EmitKenUpdate(userID, balance)
 }

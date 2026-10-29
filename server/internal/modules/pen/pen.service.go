@@ -49,16 +49,6 @@ func (s *Service) invalidateUser(userID uuid.UUID) {
 	}
 }
 
-func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
-	if s.wsServer == nil {
-		return
-	}
-	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-		"ken": ken,
-	})
-	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
-}
-
 func (s *Service) emitPenSettled(userID uuid.UUID, data map[string]interface{}) {
 	if s.wsServer == nil {
 		return
@@ -78,7 +68,7 @@ func (s *Service) CreateShot(userID uuid.UUID, req CreateShotRequest) (*CreateSh
 	}
 
 	s.invalidateUser(userID)
-	s.emitKenUpdate(userID, newKen)
+	s.wsServer.EmitKenUpdate(userID, newKen)
 
 	return &CreateShotResponse{
 		Shot:       toShotView(shot, true),
@@ -129,8 +119,8 @@ func (s *Service) CatchShot(userID, shotID uuid.UUID, req CatchRequest) (*CatchR
 
 	s.invalidateUser(shot.ShooterID)
 	s.invalidateUser(userID)
-	s.emitKenUpdate(shot.ShooterID, shooterKen)
-	s.emitKenUpdate(userID, keeperKen)
+	s.wsServer.EmitKenUpdate(shot.ShooterID, shooterKen)
+	s.wsServer.EmitKenUpdate(userID, keeperKen)
 
 	settled := map[string]interface{}{
 		"shotId":      shot.ID.String(),
@@ -173,7 +163,7 @@ func (s *Service) CancelShot(userID, shotID uuid.UUID) (*CancelResponse, error) 
 	}
 
 	s.invalidateUser(userID)
-	s.emitKenUpdate(userID, newKen)
+	s.wsServer.EmitKenUpdate(userID, newKen)
 
 	return &CancelResponse{
 		ShotID:     shot.ID.String(),

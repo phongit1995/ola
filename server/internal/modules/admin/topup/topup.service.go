@@ -5,12 +5,10 @@ import (
 	"time"
 
 	"ola-chat-server/internal/apperr"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/topup"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -187,12 +185,7 @@ func (s *Service) ManualCredit(rowID, adminID uuid.UUID, req ManualCreditRequest
 	if err := s.userCache.InvalidateUser(target.ID); err != nil {
 		s.logger.Warnw("Failed to invalidate user cache after manual topup credit", "user_id", target.ID, "error", err.Error())
 	}
-	if s.wsServer != nil {
-		payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-			"ken": updatedUser.Ken,
-		})
-		s.wsServer.EmitToUser(target.ID.String(), constants.WebSocketMessageEvent, payload)
-	}
+	s.wsServer.EmitKenUpdate(target.ID, updatedUser.Ken)
 	s.notifier.NotifyCredited(topup.CreditedNotice{
 		ProviderTxID:  row.ProviderTxID,
 		Description:   row.Description,

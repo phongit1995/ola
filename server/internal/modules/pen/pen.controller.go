@@ -1,8 +1,6 @@
 package pen
 
 import (
-	"strconv"
-
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -16,18 +14,6 @@ type Controller struct {
 
 func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[pen_controller]")}
-}
-
-func parseIntQuery(c *gin.Context, key string) *int {
-	s := c.Query(key)
-	if s == "" {
-		return nil
-	}
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return nil
-	}
-	return &n
 }
 
 // CreateShot godoc
@@ -75,9 +61,9 @@ func (ctrl *Controller) ListOpenShots(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 	filter := OpenFilter{
-		Bet:    parseIntQuery(c, "bet"),
-		MinBet: parseIntQuery(c, "minBet"),
-		MaxBet: parseIntQuery(c, "maxBet"),
+		Bet:    utils.ParseIntQuery(c, "bet"),
+		MinBet: utils.ParseIntQuery(c, "minBet"),
+		MaxBet: utils.ParseIntQuery(c, "maxBet"),
 		Sort:   c.Query("sort"),
 	}
 	limit := utils.ParseLimit(c, 20, 100)

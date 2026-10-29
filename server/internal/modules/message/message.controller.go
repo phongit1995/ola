@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	maxAudioWaveformSamples = constants.MaxAudioWaveformSamples
+	maxAudioWaveformSamples = media.MaxAudioWaveformSamples
 	maxClientMessageIDBytes = 64
 )
 

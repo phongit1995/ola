@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	admincommon "ola-chat-server/internal/modules/admin/common"
 	"ola-chat-server/internal/modules/wheel"
 	"ola-chat-server/internal/utils"
 
@@ -265,18 +266,6 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 	return f, nil
 }
 
-func userBriefFromRow(row userStatsRow) UserBrief {
-	if row.Username == "" {
-		return UserBrief{ID: row.UserID.String(), Username: row.UserID.String()[:8]}
-	}
-	return UserBrief{
-		ID:       row.UserID.String(),
-		Username: row.Username,
-		FullName: row.FullName,
-		Avatar:   row.Avatar,
-	}
-}
-
 // GetUserStats godoc
 // @Summary      Thống kê vòng quay theo từng user (admin)
 // @Tags         admin-wheel
@@ -307,7 +296,7 @@ func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
 	items := make([]UserStatsItem, len(rows))
 	for i, row := range rows {
 		item := UserStatsItem{
-			User:       userBriefFromRow(row),
+			User:       admincommon.UserBriefOf(row.UserID, row.Username, row.FullName, row.Avatar),
 			Spins:      row.Spins,
 			WinSpins:   row.WinSpins,
 			FreeSpins:  row.FreeSpins,

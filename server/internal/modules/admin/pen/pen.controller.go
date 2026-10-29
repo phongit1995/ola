@@ -2,9 +2,9 @@ package adminpen
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
+	admincommon "ola-chat-server/internal/modules/admin/common"
 	"ola-chat-server/internal/modules/pen"
 	"ola-chat-server/internal/utils"
 
@@ -21,30 +21,6 @@ type Controller struct {
 
 func NewController(service *pen.Service, repo *Repository, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, repo: repo, logger: logger.Named("[admin_pen_controller]")}
-}
-
-func parseIntQuery(c *gin.Context, key string) *int {
-	s := c.Query(key)
-	if s == "" {
-		return nil
-	}
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return nil
-	}
-	return &n
-}
-
-func parseTimeQuery(c *gin.Context, key string) (*time.Time, error) {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil, nil
-	}
-	t, err := time.Parse(time.RFC3339, raw)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key+" time")
-	}
-	return &t, nil
 }
 
 // ListShots godoc
@@ -86,15 +62,15 @@ func (ctrl *Controller) ListShots(c *gin.Context) (interface{}, error) {
 	if raw := c.Query("result"); raw == "saved" || raw == "goal" {
 		f.Result = raw
 	}
-	f.MinBet = parseIntQuery(c, "minBet")
-	f.MaxBet = parseIntQuery(c, "maxBet")
+	f.MinBet = utils.ParseIntQuery(c, "minBet")
+	f.MaxBet = utils.ParseIntQuery(c, "maxBet")
 
-	from, err := parseTimeQuery(c, "from")
+	from, err := utils.ParseTimeQuery(c, "from")
 	if err != nil {
 		return nil, err
 	}
 	f.From = from
-	to, err := parseTimeQuery(c, "to")
+	to, err := utils.ParseTimeQuery(c, "to")
 	if err != nil {
 		return nil, err
 	}
@@ -120,12 +96,12 @@ func (ctrl *Controller) ListShots(c *gin.Context) (interface{}, error) {
 // @Router       /admin/pen/stats [get]
 func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 	var f pen.AdminShotFilter
-	from, err := parseTimeQuery(c, "from")
+	from, err := utils.ParseTimeQuery(c, "from")
 	if err != nil {
 		return nil, err
 	}
 	f.From = from
-	to, err := parseTimeQuery(c, "to")
+	to, err := utils.ParseTimeQuery(c, "to")
 	if err != nil {
 		return nil, err
 	}
@@ -147,29 +123,17 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 		}
 		f.UserID = &parsed
 	}
-	from, err := parseTimeQuery(c, "from")
+	from, err := utils.ParseTimeQuery(c, "from")
 	if err != nil {
 		return f, err
 	}
 	f.From = from
-	to, err := parseTimeQuery(c, "to")
+	to, err := utils.ParseTimeQuery(c, "to")
 	if err != nil {
 		return f, err
 	}
 	f.To = to
 	return f, nil
-}
-
-func userBriefFromRow(row userStatsRow) UserBrief {
-	if row.Username == "" {
-		return UserBrief{ID: row.UserID.String(), Username: row.UserID.String()[:8]}
-	}
-	return UserBrief{
-		ID:       row.UserID.String(),
-		Username: row.Username,
-		FullName: row.FullName,
-		Avatar:   row.Avatar,
-	}
 }
 
 // GetUserStats godoc
@@ -201,7 +165,7 @@ func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
 	items := make([]UserStatsItem, len(rows))
 	for i, row := range rows {
 		item := UserStatsItem{
-			User:           userBriefFromRow(row),
+			User:           admincommon.UserBriefOf(row.UserID, row.Username, row.FullName, row.Avatar),
 			Shots:          row.Shots,
 			ShooterSettled: row.ShooterSettled,
 			ShooterWins:    row.ShooterWins,

@@ -3,7 +3,6 @@ package me
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -325,7 +324,7 @@ func (s *Service) GetByID(viewerID, postID uuid.UUID) (*MeResponse, error) {
 }
 
 func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*MeFeedResponse, error) {
-	cursorTime, cursorID, err := decodeFeedCursor(cursor)
+	cursorTime, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -340,13 +339,13 @@ func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*M
 	var nextCursor string
 	if hasMore && len(posts) > 0 {
 		last := posts[len(posts)-1]
-		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
+		nextCursor = utils.EncodeTimeCursor(last.CreatedAt, last.ID)
 	}
 	return &MeFeedResponse{Items: items, NextCursor: nextCursor}, nil
 }
 
 func (s *Service) ClanFeed(viewerID, clanID uuid.UUID, excludeID *uuid.UUID, cursor string, limit int) (*MeFeedResponse, error) {
-	cursorTime, cursorID, err := decodeFeedCursor(cursor)
+	cursorTime, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +360,7 @@ func (s *Service) ClanFeed(viewerID, clanID uuid.UUID, excludeID *uuid.UUID, cur
 	var nextCursor string
 	if hasMore && len(posts) > 0 {
 		last := posts[len(posts)-1]
-		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
+		nextCursor = utils.EncodeTimeCursor(last.CreatedAt, last.ID)
 	}
 	return &MeFeedResponse{Items: items, NextCursor: nextCursor}, nil
 }
@@ -587,7 +586,7 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 }
 
 func (s *Service) ListNotifications(recipientID uuid.UUID, cursor string, limit int) (*MeNotificationListResponse, error) {
-	cursorTime, cursorID, err := decodeFeedCursor(cursor)
+	cursorTime, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -609,7 +608,7 @@ func (s *Service) ListNotifications(recipientID uuid.UUID, cursor string, limit 
 	var nextCursor string
 	if hasMore && len(items) > 0 {
 		last := items[len(items)-1]
-		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
+		nextCursor = utils.EncodeTimeCursor(last.CreatedAt, last.ID)
 	}
 
 	return &MeNotificationListResponse{
@@ -930,7 +929,7 @@ func (s *Service) UploadImages(ctx context.Context, userID uuid.UUID, files []*m
 		return nil, errors.New("max 5 images")
 	}
 
-	folder := postUploadPrefix(userID) + time.Now().Format(constants.UploadDateLayout)
+	folder := postUploadPrefix(userID) + time.Now().Format(media.UploadDateLayout)
 	images := make([]UploadedImage, 0, len(files))
 	for _, fileHeader := range files {
 		img, err := s.uploadImage(ctx, folder, fileHeader)
@@ -963,10 +962,10 @@ func (s *Service) UploadAudio(
 	if duration > MaxPostAudioDurationSeconds {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too long")
 	}
-	if err := media.ValidateWaveform(waveform, constants.MaxAudioWaveformSamples); err != nil {
+	if err := media.ValidateWaveform(waveform, media.MaxAudioWaveformSamples); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 	}
-	if fileHeader.Size > constants.MaxAudioUploadSize {
+	if fileHeader.Size > media.MaxAudioUploadSize {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too large")
 	}
 
@@ -976,11 +975,11 @@ func (s *Service) UploadAudio(
 	}
 	defer file.Close()
 
-	data, err := io.ReadAll(io.LimitReader(file, constants.MaxAudioUploadSize+1))
+	data, err := io.ReadAll(io.LimitReader(file, media.MaxAudioUploadSize+1))
 	if err != nil {
 		return nil, errors.New("failed to read audio")
 	}
-	if int64(len(data)) > constants.MaxAudioUploadSize {
+	if int64(len(data)) > media.MaxAudioUploadSize {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too large")
 	}
 
@@ -995,7 +994,7 @@ func (s *Service) UploadAudio(
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	folder := postUploadPrefix(userID) + time.Now().Format(constants.UploadDateLayout)
+	folder := postUploadPrefix(userID) + time.Now().Format(media.UploadDateLayout)
 	safeName := "audio" + media.PickAudioExtension(mimeType, fileHeader.Filename)
 	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, safeName, folder)
 	if err != nil {
@@ -1019,7 +1018,7 @@ func (s *Service) UploadAudio(
 }
 
 func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *multipart.FileHeader) (*UploadedImage, error) {
-	if fileHeader.Size > constants.MaxImageUploadSize {
+	if fileHeader.Size > media.MaxImageUploadSize {
 		return nil, errors.New("image too large")
 	}
 
@@ -1042,7 +1041,7 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 		return nil, errors.New("failed to read image")
 	}
 	data := append(head, rest...)
-	if int64(len(data)) > constants.MaxImageUploadSize {
+	if int64(len(data)) > media.MaxImageUploadSize {
 		return nil, errors.New("image too large")
 	}
 
@@ -1051,7 +1050,7 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 		return nil, errors.New("failed to decode image")
 	}
 
-	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, "image"+extensionForMime(mimeType), folder)
+	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, "image"+media.ImageExtension(mimeType), folder)
 	if err != nil {
 		s.logger.Errorw("Failed to upload post image", "error", err)
 		return nil, errors.New("failed to upload image")
@@ -1188,34 +1187,6 @@ func parseVisibility(value string) models.MeVisibility {
 func (s *Service) isFriend(a, b uuid.UUID) bool {
 	friends, _ := s.relRepo.AreFriends(a, b)
 	return friends
-}
-
-func encodeFeedCursor(t time.Time, id uuid.UUID) string {
-	raw := t.UTC().Format(time.RFC3339Nano) + "|" + id.String()
-	return base64.RawURLEncoding.EncodeToString([]byte(raw))
-}
-
-func decodeFeedCursor(cursor string) (*time.Time, *uuid.UUID, error) {
-	if cursor == "" {
-		return nil, nil, nil
-	}
-	data, err := base64.RawURLEncoding.DecodeString(cursor)
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	parts := strings.SplitN(string(data), "|", 2)
-	if len(parts) != 2 {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	t, err := time.Parse(time.RFC3339Nano, parts[0])
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	id, err := uuid.Parse(parts[1])
-	if err != nil {
-		return nil, nil, errors.New("invalid cursor")
-	}
-	return &t, &id, nil
 }
 
 func (s *Service) myReaction(userID, postID uuid.UUID) *models.MeReactionType {
@@ -1357,7 +1328,7 @@ func toModelAudios(inputs []MeAudioInput, existing models.MeAudios) (models.MeAu
 		if input.Duration > MaxPostAudioDurationSeconds {
 			return nil, errInvalidAudio
 		}
-		if err := media.ValidateWaveform(input.Waveform, constants.MaxAudioWaveformSamples); err != nil {
+		if err := media.ValidateWaveform(input.Waveform, media.MaxAudioWaveformSamples); err != nil {
 			return nil, errInvalidAudio
 		}
 		audios = append(audios, models.MeAudio{
@@ -1692,25 +1663,12 @@ func replySnapshotFrom(parent *models.MeComment) *CommentReplySnapshot {
 }
 
 func isAllowedImageMime(mime string) bool {
-	for _, m := range constants.AllowedImageMimes {
+	for _, m := range media.AllowedImageMimes {
 		if strings.EqualFold(m, mime) {
 			return true
 		}
 	}
 	return false
-}
-
-func extensionForMime(mime string) string {
-	switch mime {
-	case "image/png":
-		return ".png"
-	case "image/gif":
-		return ".gif"
-	case "image/webp":
-		return ".webp"
-	default:
-		return ".jpg"
-	}
 }
 
 type postFileReader struct {

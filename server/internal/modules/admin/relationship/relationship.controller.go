@@ -2,13 +2,11 @@ package adminrelationship
 
 import (
 	"net/http"
-	"time"
 
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type Controller struct {
@@ -26,37 +24,6 @@ var relationshipStatuses = map[string]bool{
 	string(models.RelationshipStatusBlocked):  true,
 }
 
-func parseUUIDQuery(c *gin.Context, key string) (*uuid.UUID, error) {
-	raw := c.Query(key)
-	if raw == "" {
-		return nil, nil
-	}
-	id, err := uuid.Parse(raw)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid "+key)
-	}
-	return &id, nil
-}
-
-func parseTimeRange(c *gin.Context) (*time.Time, *time.Time, error) {
-	var from, to *time.Time
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		from = &t
-	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		to = &t
-	}
-	return from, to, nil
-}
-
 // GetStats godoc
 // @Summary      Thống kê quan hệ bạn bè & theo dõi (admin)
 // @Tags         admin-relationship
@@ -68,7 +35,7 @@ func parseTimeRange(c *gin.Context) (*time.Time, *time.Time, error) {
 // @Failure      400  {object}  utils.APIError
 // @Router       /admin/relationships/stats [get]
 func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
-	from, to, err := parseTimeRange(c)
+	from, to, err := utils.ParseTimeRange(c)
 	if err != nil {
 		return nil, err
 	}
@@ -103,13 +70,13 @@ func (ctrl *Controller) ListRelationships(c *gin.Context) (interface{}, error) {
 		f.Status = status
 	}
 
-	userID, err := parseUUIDQuery(c, "userId")
+	userID, err := utils.ParseUUIDQuery(c, "userId")
 	if err != nil {
 		return nil, err
 	}
 	f.UserID = userID
 
-	f.From, f.To, err = parseTimeRange(c)
+	f.From, f.To, err = utils.ParseTimeRange(c)
 	if err != nil {
 		return nil, err
 	}
@@ -142,25 +109,25 @@ func (ctrl *Controller) ListRelationships(c *gin.Context) (interface{}, error) {
 func (ctrl *Controller) ListFollows(c *gin.Context) (interface{}, error) {
 	var f FollowFilter
 
-	followerID, err := parseUUIDQuery(c, "followerId")
+	followerID, err := utils.ParseUUIDQuery(c, "followerId")
 	if err != nil {
 		return nil, err
 	}
 	f.FollowerID = followerID
 
-	followeeID, err := parseUUIDQuery(c, "followeeId")
+	followeeID, err := utils.ParseUUIDQuery(c, "followeeId")
 	if err != nil {
 		return nil, err
 	}
 	f.FolloweeID = followeeID
 
-	userID, err := parseUUIDQuery(c, "userId")
+	userID, err := utils.ParseUUIDQuery(c, "userId")
 	if err != nil {
 		return nil, err
 	}
 	f.UserID = userID
 
-	f.From, f.To, err = parseTimeRange(c)
+	f.From, f.To, err = utils.ParseTimeRange(c)
 	if err != nil {
 		return nil, err
 	}
@@ -192,13 +159,13 @@ func (ctrl *Controller) ListFollows(c *gin.Context) (interface{}, error) {
 func (ctrl *Controller) UserStats(c *gin.Context) (interface{}, error) {
 	var f UserStatsFilter
 
-	userID, err := parseUUIDQuery(c, "userId")
+	userID, err := utils.ParseUUIDQuery(c, "userId")
 	if err != nil {
 		return nil, err
 	}
 	f.UserID = userID
 
-	f.From, f.To, err = parseTimeRange(c)
+	f.From, f.To, err = utils.ParseTimeRange(c)
 	if err != nil {
 		return nil, err
 	}

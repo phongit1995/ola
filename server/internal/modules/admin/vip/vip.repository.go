@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	admincommon "ola-chat-server/internal/modules/admin/common"
 	"ola-chat-server/internal/modules/vip"
 
 	"github.com/google/uuid"
@@ -167,19 +168,5 @@ func (r *Repository) CountActiveVipUsers(now time.Time) (int64, error) {
 }
 
 func (r *Repository) FindUsersByIDs(ids []uuid.UUID) (map[uuid.UUID]models.User, error) {
-	result := make(map[uuid.UUID]models.User, len(ids))
-	if len(ids) == 0 {
-		return result, nil
-	}
-	var users []models.User
-	if err := r.db.Unscoped().
-		Select("id", "username", "full_name", "avatar").
-		Where("id IN ?", ids).
-		Find(&users).Error; err != nil {
-		return nil, err
-	}
-	for i := range users {
-		result[users[i].ID] = users[i]
-	}
-	return result, nil
+	return admincommon.FindUsersByIDs(r.db, ids)
 }
