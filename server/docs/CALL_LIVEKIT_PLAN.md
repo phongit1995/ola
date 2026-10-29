@@ -110,7 +110,7 @@ CREATE INDEX idx_calls_status ON calls(status) WHERE status IN ('ringing','activ
 ### 3.3 Constants mới
 
 ```go
-// internal/constants/constant.go
+// internal/constants/kafka.go + internal/constants/websocket.go
 
 // Kafka topics
 KafkaTopicCallInvited  = "CHAT.CALL.INVITED"

@@ -2,7 +2,6 @@ package wordchain
 
 import (
 	"context"
-	"ola-chat-server/internal/constants"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"time"
 )
@@ -193,7 +192,7 @@ func toStateView(state GameState) *StateResponse {
 	view := &StateResponse{
 		Revision:     state.Revision,
 		Turn:         state.Turn,
-		GuessLimit:   constants.WordChainMaxWrongGuesses,
+		GuessLimit:   WordChainMaxWrongGuesses,
 		Word:         state.Word,
 		HistoryCount: len(state.History),
 		WordOwnerID:  state.WordOwnerID,

@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
@@ -60,7 +59,7 @@ func (s *Service) CleanupImages(ctx context.Context, userID uuid.UUID, objectNam
 }
 
 func postUploadCacheKey(userID uuid.UUID, objectName string) string {
-	return fmt.Sprintf(constants.CacheKeyMePostUpload, userID.String(), objectName)
+	return fmt.Sprintf(CacheKeyMePostUpload, userID.String(), objectName)
 }
 
 type postUploadRecord struct {
@@ -123,7 +122,7 @@ func newPostUploadRecord(userID uuid.UUID, ref postUploadRef) postUploadRecord {
 }
 
 func (s *Service) rememberPostUploads(userID uuid.UUID, refs []postUploadRef) error {
-	ttl := time.Duration(constants.MePostUploadTTLSeconds) * time.Second
+	ttl := time.Duration(MePostUploadTTLSeconds) * time.Second
 	remembered := make([]postUploadRecord, 0, len(refs))
 	for _, ref := range refs {
 		if ref.ObjectName == "" {
@@ -302,7 +301,7 @@ func (s *Service) restorePostUpload(record postUploadRecord) {
 	if err != nil {
 		return
 	}
-	ttl := time.Duration(constants.MePostUploadTTLSeconds) * time.Second
+	ttl := time.Duration(MePostUploadTTLSeconds) * time.Second
 	if err := s.cache.Set(postUploadCacheKey(userID, record.ObjectName), record, ttl); err != nil {
 		s.logger.Warnw("Failed to restore post image cleanup state", "object", record.ObjectName, "error", err)
 	}
@@ -319,11 +318,11 @@ func (s *Service) forgetPostUpload(record postUploadRecord) {
 }
 
 func postUploadPrefix(userID uuid.UUID) string {
-	return fmt.Sprintf("%s/%s/", constants.UploadFolderPosts, userID.String())
+	return fmt.Sprintf("%s/%s/", UploadFolderPosts, userID.String())
 }
 
 func validPostUploadObjectNames(userID uuid.UUID, objectNames []string) ([]string, error) {
-	if len(objectNames) == 0 || len(objectNames) > constants.MaxPostUploadCleanup {
+	if len(objectNames) == 0 || len(objectNames) > MaxPostUploadCleanup {
 		return nil, errInvalidImageCleanup
 	}
 	prefix := postUploadPrefix(userID)

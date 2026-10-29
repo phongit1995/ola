@@ -3,7 +3,6 @@ package wordchain
 import (
 	"context"
 	"errors"
-	"ola-chat-server/internal/constants"
 )
 
 var errNoPlayableStartWord = errors.New("word chain could not find a playable start word")
@@ -68,7 +67,7 @@ func (s *Service) hasContinuation(ctx context.Context, syllable string, used map
 }
 
 func (s *Service) pickStartWord(ctx context.Context) (string, error) {
-	for attempt := 0; attempt < constants.WordChainStartWordMaxAttempts; attempt++ {
+	for attempt := 0; attempt < WordChainStartWordMaxAttempts; attempt++ {
 		word := s.dict.NewWord()
 		if word == "" {
 			break

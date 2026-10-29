@@ -2,7 +2,6 @@ package wordchain
 
 import (
 	"errors"
-	"ola-chat-server/internal/constants"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,7 +41,7 @@ func (r wordRef) matches(state GameState) bool {
 }
 
 func (s GameState) RemainingGuesses(userID string) int {
-	return max(constants.WordChainMaxWrongGuesses+s.BoughtGuesses[userID]-s.WrongCounts[userID], 0)
+	return max(WordChainMaxWrongGuesses+s.BoughtGuesses[userID]-s.WrongCounts[userID], 0)
 }
 
 func addCount(counts map[string]int, userID string, delta int) map[string]int {
@@ -91,7 +90,7 @@ func (s GameState) CanExpire() bool {
 }
 
 func (s GameState) ExpiresAt() time.Time {
-	return s.LastProgressAt.Add(constants.WordChainBotWordTimeout)
+	return s.LastProgressAt.Add(WordChainBotWordTimeout)
 }
 
 func (s GameState) Expired(now time.Time) bool {
@@ -163,19 +162,19 @@ func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveRe
 		return res, nil
 	}
 
-	if len(splitSyllables(normalized)) != constants.WordChainWordLength {
-		return wrong(constants.WordChainCodeInvalidFormat)
+	if len(splitSyllables(normalized)) != WordChainWordLength {
+		return wrong(WordChainCodeInvalidFormat)
 	}
 	if syllableKey(firstWord(normalized)) != syllableKey(res.RequiredSyllable) {
-		return wrong(constants.WordChainCodeMismatch)
+		return wrong(WordChainCodeMismatch)
 	}
 	history := state.historySet()
 	key := wordKey(normalized)
 	if _, used := history[key]; used {
-		return wrong(constants.WordChainCodeRepeated)
+		return wrong(WordChainCodeRepeated)
 	}
 	if misspelledY(normalized) {
-		return wrong(constants.WordChainCodeNotInDict)
+		return wrong(WordChainCodeNotInDict)
 	}
 
 	exists, err := oracle.Exists(normalized)
@@ -183,11 +182,11 @@ func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveRe
 		return MoveResult{}, err
 	}
 	if !exists {
-		return wrong(constants.WordChainCodeNotInDict)
+		return wrong(WordChainCodeNotInDict)
 	}
 
 	res.Scored = true
-	res.RemainingGuesses = constants.WordChainMaxWrongGuesses
+	res.RemainingGuesses = WordChainMaxWrongGuesses
 	history[key] = struct{}{}
 	hasNext, err := oracle.HasContinuation(lastWord(normalized), history)
 	if err != nil {
@@ -201,18 +200,18 @@ func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveRe
 		if err != nil {
 			return MoveResult{}, err
 		}
-		res.Code = constants.WordChainCodeWin
+		res.Code = WordChainCodeWin
 		next.Word = word
 		next.History = []string{word}
 		next.WordOwnerID = ""
 	} else {
-		res.Code = constants.WordChainCodeOK
+		res.Code = WordChainCodeOK
 		next.Word = normalized
 		next.History = append(append([]string{}, state.History...), normalized)
 		next.WordOwnerID = userID
 	}
-	if len(next.History) > constants.WordChainMaxHistory {
-		next.History = next.History[len(next.History)-constants.WordChainMaxHistory:]
+	if len(next.History) > WordChainMaxHistory {
+		next.History = next.History[len(next.History)-WordChainMaxHistory:]
 	}
 	res.State = next
 	return res, nil
@@ -220,12 +219,12 @@ func processMove(state GameState, userID, raw string, oracle WordOracle) (MoveRe
 
 func reactionFor(code string) string {
 	switch code {
-	case constants.WordChainCodeOK:
-		return constants.WordChainReactionOK
-	case constants.WordChainCodeWin:
-		return constants.WordChainReactionWin
-	case constants.WordChainCodeInvalidFormat:
-		return constants.WordChainReactionInvalidFormat
+	case WordChainCodeOK:
+		return WordChainReactionOK
+	case WordChainCodeWin:
+		return WordChainReactionWin
+	case WordChainCodeInvalidFormat:
+		return WordChainReactionInvalidFormat
 	}
-	return constants.WordChainReactionError
+	return WordChainReactionError
 }

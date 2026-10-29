@@ -15,6 +15,7 @@ import (
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/transport/websocket"
 )
 
 type fakeConns struct{ count int }
@@ -193,7 +194,7 @@ func TestProcessSkipsWhenOnlineForeground(t *testing.T) {
 func TestProcessSendsWhenOnlineButBackground(t *testing.T) {
 	fcm := &fakeFCM{}
 	cache := newFakeCache()
-	cache.values[fmt.Sprintf(constants.CacheKeyPresenceBackground, "u1")] = "1"
+	cache.values[fmt.Sprintf(websocket.CacheKeyPresenceBackground, "u1")] = "1"
 	s := newTestSender(fcm, cache, &fakeConns{count: 1}, &fakeStore{tokens: oneToken(), notifMessage: true})
 	s.process("u1", "dm:c1", "m1", true, buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct"}))
 	if len(fcm.sent) != 1 {
@@ -262,7 +263,7 @@ func TestProcessTrailingSendsLatestPendingAfterWindow(t *testing.T) {
 		t.Fatalf("expected one send and one scheduled flush, got %d sends %d scheduled", len(fcm.sent), len(testScheduled))
 	}
 
-	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	delete(cache.values, fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1"))
 	runScheduled(s)
 	if len(fcm.sent) != 2 {
 		t.Fatalf("expected trailing send, got %d", len(fcm.sent))
@@ -275,7 +276,7 @@ func TestProcessTrailingSendsLatestPendingAfterWindow(t *testing.T) {
 		t.Fatal("expected pending key cleared")
 	}
 
-	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	delete(cache.values, fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1"))
 	runScheduled(s)
 	if len(fcm.sent) != 2 {
 		t.Fatalf("expected no send without pending, got %d", len(fcm.sent))
@@ -291,7 +292,7 @@ func TestProcessFreshSendSupersedesOlderPending(t *testing.T) {
 	}
 	s.process("u1", "dm:c1", "m1", true, mk("1", 1))
 	s.process("u1", "dm:c1", "m2", true, mk("2", 2))
-	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	delete(cache.values, fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1"))
 	s.process("u1", "dm:c1", "m3", true, mk("3", 3))
 	if len(fcm.sent) != 2 {
 		t.Fatalf("expected m1 and m3 sent, got %d", len(fcm.sent))
@@ -299,7 +300,7 @@ func TestProcessFreshSendSupersedesOlderPending(t *testing.T) {
 	if _, ok := cache.values[fmt.Sprintf(constants.CacheKeyPushPending, "u1", "dm:c1")]; ok {
 		t.Fatal("expected older pending cleared by the fresh send")
 	}
-	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	delete(cache.values, fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1"))
 	runScheduled(s)
 	if len(fcm.sent) != 2 {
 		t.Fatalf("expected no stale trailing send, got %d", len(fcm.sent))
@@ -317,7 +318,7 @@ func TestProcessPendingStoredDuringInFlightSendSurvives(t *testing.T) {
 	if len(fcm.sent) != 1 {
 		t.Fatalf("expected only m1 sent, got %d", len(fcm.sent))
 	}
-	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	delete(cache.values, fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1"))
 	runScheduled(s)
 	if len(fcm.sent) != 2 || fcm.sent[1][0].Data["body"] != "2" {
 		t.Fatalf("expected trailing send of m2, got %d sends", len(fcm.sent))
@@ -336,7 +337,7 @@ func TestStorePendingKeepsNewerSeq(t *testing.T) {
 	s.process("u1", "dm:c1", "m1", true, mk("1", 1))
 	s.process("u1", "dm:c1", "m3", true, mk("3", 3))
 	s.process("u1", "dm:c1", "m2", true, mk("2", 2))
-	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	delete(cache.values, fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1"))
 	runScheduled(s)
 	if len(fcm.sent) != 2 || fcm.sent[1][0].Data["body"] != "3" {
 		t.Fatalf("expected newer pending m3 to win, got %v", fcm.sent)
@@ -375,7 +376,7 @@ func TestProcessEventDedupe(t *testing.T) {
 	s := newTestSender(fcm, cache, &fakeConns{}, &fakeStore{tokens: oneToken(), notifMessage: true})
 	content := buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct"})
 	s.process("u1", "dm:c1", "m1", true, content)
-	delete(cache.values, fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1"))
+	delete(cache.values, fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1"))
 	s.process("u1", "dm:c1", "m1", true, content)
 	if len(fcm.sent) != 1 {
 		t.Fatalf("expected duplicate event suppressed, got %d", len(fcm.sent))
@@ -387,7 +388,7 @@ func TestProcessTotalFailureRollsBackThrottle(t *testing.T) {
 	cache := newFakeCache()
 	s := newTestSender(fcm, cache, &fakeConns{}, &fakeStore{tokens: oneToken(), notifMessage: true})
 	s.process("u1", "dm:c1", "m1", true, buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct"}))
-	if _, ok := cache.values[fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1")]; ok {
+	if _, ok := cache.values[fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1")]; ok {
 		t.Fatal("expected throttle rolled back after total failure")
 	}
 }
@@ -401,7 +402,7 @@ func TestProcessAllResponsesFailedRollsBackThrottle(t *testing.T) {
 	cache := newFakeCache()
 	s := newTestSender(fcm, cache, &fakeConns{}, &fakeStore{tokens: oneToken(), notifMessage: true})
 	s.process("u1", "dm:c1", "m1", true, buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct"}))
-	if _, ok := cache.values[fmt.Sprintf(constants.CacheKeyPushThrottle, "u1", "dm:c1")]; ok {
+	if _, ok := cache.values[fmt.Sprintf(CacheKeyPushThrottle, "u1", "dm:c1")]; ok {
 		t.Fatal("expected throttle rolled back when no delivery succeeded")
 	}
 }
@@ -562,11 +563,11 @@ func TestSendDMPayload(t *testing.T) {
 	if msg.Notification != nil {
 		t.Fatal("expected data-only message without notification payload")
 	}
-	if msg.Android == nil || msg.Android.Priority != "high" || msg.Android.CollapseKey != constants.PushCollapseDM {
+	if msg.Android == nil || msg.Android.Priority != "high" || msg.Android.CollapseKey != PushCollapseDM {
 		t.Fatal("expected android high priority with stable dm collapse key")
 	}
 	data := msg.Data
-	if data["type"] != constants.PushDataTypeDM || data["conversationId"] != "c1" || data["notifId"] != "dm:c1" {
+	if data["type"] != PushDataTypeDM || data["conversationId"] != "c1" || data["notifId"] != "dm:c1" {
 		t.Fatalf("unexpected data payload: %v", data)
 	}
 	if data["title"] != "Hoa" || data["body"] != "xin chào" {
@@ -609,18 +610,18 @@ func TestSendDMPayloadIOS(t *testing.T) {
 	if aps.Alert == nil || aps.Alert.Title != "Hoa" || aps.Alert.Body != "xin chào" {
 		t.Fatalf("unexpected apns alert: %+v", aps.Alert)
 	}
-	if aps.ThreadID != "dm:c1" || aps.Sound != constants.APNSSoundDefault {
+	if aps.ThreadID != "dm:c1" || aps.Sound != APNSSoundDefault {
 		t.Fatalf("unexpected aps fields: %+v", aps)
 	}
 	headers := ios.APNS.Headers
-	if headers[constants.APNSHeaderCollapseID] != "dm:c1" ||
-		headers[constants.APNSHeaderPushType] != constants.APNSPushTypeAlert ||
-		headers[constants.APNSHeaderPriority] != constants.APNSPriorityHigh {
+	if headers[APNSHeaderCollapseID] != "dm:c1" ||
+		headers[APNSHeaderPushType] != APNSPushTypeAlert ||
+		headers[APNSHeaderPriority] != APNSPriorityHigh {
 		t.Fatalf("unexpected apns headers: %v", headers)
 	}
-	expiration, err := strconv.ParseInt(headers[constants.APNSHeaderExpiration], 10, 64)
+	expiration, err := strconv.ParseInt(headers[APNSHeaderExpiration], 10, 64)
 	if err != nil || expiration <= time.Now().Unix() {
-		t.Fatalf("expected future apns expiration, got %q", headers[constants.APNSHeaderExpiration])
+		t.Fatalf("expected future apns expiration, got %q", headers[APNSHeaderExpiration])
 	}
 	if ios.Data["ownerId"] != "receiver" || ios.Data["conversationId"] != "c1" || ios.Data["notifId"] != "dm:c1" {
 		t.Fatalf("unexpected ios data: %v", ios.Data)
@@ -639,9 +640,9 @@ func TestBuildDMContentFallbacks(t *testing.T) {
 		t.Fatal("expected no sentAt when empty")
 	}
 
-	long := strings.Repeat("а", constants.PushExcerptMaxRunes+40)
+	long := strings.Repeat("а", PushExcerptMaxRunes+40)
 	c = buildDMContent(DMPush{ConversationID: "c1", ConversationType: "direct", SenderName: "An", Preview: long})
-	if len([]rune(c.Body)) != constants.PushExcerptMaxRunes+1 {
+	if len([]rune(c.Body)) != PushExcerptMaxRunes+1 {
 		t.Fatalf("expected truncated body, got %d runes", len([]rune(c.Body)))
 	}
 }
@@ -657,7 +658,7 @@ func TestBuildMeNotifContentAllTypes(t *testing.T) {
 		models.MeNotificationMomentReaction,
 	} {
 		c := buildMeNotifContent("n1", "Hoa", ntype, "nội dung", 1, 0)
-		if c.Title != "Hoa" || c.Body == "" || c.Channel != constants.PushChannelSocial {
+		if c.Title != "Hoa" || c.Body == "" || c.Channel != PushChannelSocial {
 			t.Fatalf("bad content for %s: %+v", ntype, c)
 		}
 	}
@@ -695,7 +696,7 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 		models.AppNotificationClanBanned,
 	} {
 		c := buildAppNotifContent("n1", "Hoa", ntype, "", 0)
-		if c.Body == "" || c.Channel != constants.PushChannelSystem {
+		if c.Body == "" || c.Channel != PushChannelSystem {
 			t.Fatalf("bad content for %s: %+v", ntype, c)
 		}
 	}

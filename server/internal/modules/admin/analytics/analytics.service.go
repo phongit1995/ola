@@ -15,7 +15,6 @@ import (
 	analyticsdata "google.golang.org/api/analyticsdata/v1beta"
 
 	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/services"
 )
@@ -210,7 +209,7 @@ func (s *Service) Overview(ctx context.Context, q OverviewQuery) (*OverviewRespo
 		return resp, nil
 	}
 
-	key := conn.cacheKey(constants.CacheKeyAdminAnalyticsOverview, q.From, q.To, q.Platform)
+	key := conn.cacheKey(CacheKeyAdminAnalyticsOverview, q.From, q.To, q.Platform)
 	if !q.Refresh {
 		var cached OverviewResponse
 		if err := s.cache.Get(key, &cached); err == nil {
@@ -238,7 +237,7 @@ func (s *Service) Overview(ctx context.Context, q OverviewQuery) (*OverviewRespo
 	now := time.Now()
 	resp.FetchedAt = &now
 	if allSucceeded(succeeded) {
-		if err := s.cache.Set(key, resp, constants.AdminAnalyticsOverviewTTL); err != nil {
+		if err := s.cache.Set(key, resp, AdminAnalyticsOverviewTTL); err != nil {
 			s.logger.Warnw("Failed to cache analytics overview", "error", err.Error())
 		}
 	}
@@ -255,7 +254,7 @@ func (s *Service) Realtime(ctx context.Context, q RealtimeQuery) (*RealtimeRespo
 		return resp, nil
 	}
 
-	key := conn.cacheKey(constants.CacheKeyAdminAnalyticsRealtime, q.Platform)
+	key := conn.cacheKey(CacheKeyAdminAnalyticsRealtime, q.Platform)
 	if !q.Refresh {
 		var cached RealtimeResponse
 		if err := s.cache.Get(key, &cached); err == nil {
@@ -288,7 +287,7 @@ func (s *Service) Realtime(ctx context.Context, q RealtimeQuery) (*RealtimeRespo
 	now := time.Now()
 	resp.FetchedAt = &now
 	if allSucceeded(succeeded) {
-		if err := s.cache.Set(key, resp, constants.AdminAnalyticsRealtimeTTL); err != nil {
+		if err := s.cache.Set(key, resp, AdminAnalyticsRealtimeTTL); err != nil {
 			s.logger.Warnw("Failed to cache analytics realtime", "error", err.Error())
 		}
 	}

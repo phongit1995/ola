@@ -221,7 +221,7 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 
 	ext := pickExtension(detectedMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("image%s", ext)
-	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
+	folder := fmt.Sprintf("%s/%s/%s", UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
 
 	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
 	if err != nil {
@@ -251,8 +251,8 @@ func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID u
 	if err := media.ValidateDuration(duration); err != nil {
 		return nil, err
 	}
-	if duration > constants.MaxAudioDurationSeconds {
-		return nil, fmt.Errorf("%w: max %d seconds", ErrInvalidMetadata, constants.MaxAudioDurationSeconds)
+	if duration > MaxAudioDurationSeconds {
+		return nil, fmt.Errorf("%w: max %d seconds", ErrInvalidMetadata, MaxAudioDurationSeconds)
 	}
 	if err := media.ValidateWaveform(waveform, maxAudioWaveformSamples); err != nil {
 		return nil, err
@@ -321,13 +321,13 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
 		return nil, "", err
 	}
-	if err := media.ValidateMeasuredDuration(data, finalMime, duration, constants.MaxAudioDurationSeconds); err != nil {
+	if err := media.ValidateMeasuredDuration(data, finalMime, duration, MaxAudioDurationSeconds); err != nil {
 		return nil, "", err
 	}
 
 	ext := media.PickAudioExtension(finalMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("audio%s", ext)
-	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
+	folder := fmt.Sprintf("%s/%s/%s", UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
 
 	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
 	if err != nil {
@@ -363,7 +363,7 @@ func validateAudioMetadata(metadata string, isManagedURL func(string) bool) erro
 	if err := media.ValidateDuration(meta.Duration); err != nil {
 		return err
 	}
-	if meta.Duration > constants.MaxAudioDurationSeconds {
+	if meta.Duration > MaxAudioDurationSeconds {
 		return fmt.Errorf("%w: invalid duration", ErrInvalidMetadata)
 	}
 	if err := media.ValidateWaveform(meta.Waveform, maxAudioWaveformSamples); err != nil {
@@ -460,8 +460,8 @@ func applyReactionToggle(reactions map[string][]string, reactionType, userIDStr 
 			}
 		}
 	}
-	if typesByUser >= constants.MaxReactionTypesPerUserPerMessage {
-		return "", fmt.Errorf("%w: max %d", ErrMaxReactions, constants.MaxReactionTypesPerUserPerMessage)
+	if typesByUser >= MaxReactionTypesPerUserPerMessage {
+		return "", fmt.Errorf("%w: max %d", ErrMaxReactions, MaxReactionTypesPerUserPerMessage)
 	}
 
 	newUsers := make([]string, len(users)+1)
@@ -872,7 +872,7 @@ func (s *Service) resolveReplySnapshot(conversationID, replyToID uuid.UUID) (*Re
 		MessageID:  orig.MessageID.String(),
 		SenderID:   orig.SenderID.String(),
 		SenderName: orig.SenderName,
-		Excerpt:    utils.TruncateRunes(orig.Content, constants.MessageReplyExcerptMaxRunes),
+		Excerpt:    utils.TruncateRunes(orig.Content, MessageReplyExcerptMaxRunes),
 		Type:       orig.MessageType,
 	}
 	if u, userErr := s.userCache.GetUserCache(orig.SenderID, true); userErr == nil && u != nil {
@@ -1575,7 +1575,7 @@ func (s *Service) updateInboxPreviewAfterDelete(conversationID uuid.UUID, delete
 		}
 
 		if *inboxEntry.LastMessageID == deletedMessageID {
-			if err := s.repo.UpdateConversationPreview(m.UserID, conversationID, constants.MessageDeletedPreview); err != nil {
+			if err := s.repo.UpdateConversationPreview(m.UserID, conversationID, MessageDeletedPreview); err != nil {
 				s.logger.Errorw("Failed to update inbox preview after delete",
 					"user_id", m.UserID,
 					"conversation_id", conversationID,

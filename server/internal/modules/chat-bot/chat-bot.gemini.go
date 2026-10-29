@@ -14,8 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
-
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -41,9 +39,9 @@ type GeminiClient struct {
 func NewGeminiClient(logger *zap.SugaredLogger) *GeminiClient {
 	return &GeminiClient{
 		logger: logger.Named("[chat_bot_gemini]"),
-		origin: constants.ChatBotGeminiOrigin,
+		origin: ChatBotGeminiOrigin,
 		client: &http.Client{
-			Timeout: constants.ChatBotTimeout,
+			Timeout: ChatBotTimeout,
 		},
 	}
 }
@@ -61,9 +59,9 @@ func marshalNoEscape(v interface{}) (string, error) {
 func (g *GeminiClient) applyHeaders(req *http.Request) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Origin", g.origin)
-	req.Header.Set("Referer", g.origin+constants.ChatBotGeminiAppPath)
+	req.Header.Set("Referer", g.origin+ChatBotGeminiAppPath)
 	req.Header.Set("X-Same-Domain", "1")
-	req.Header.Set("User-Agent", constants.ChatBotUserAgent)
+	req.Header.Set("User-Agent", ChatBotUserAgent)
 }
 
 func buildPayload(prompt string) (string, error) {
@@ -76,7 +74,7 @@ func buildPayload(prompt string) (string, error) {
 	inner[7] = 1
 	inner[10] = 1
 	inner[11] = 0
-	inner[17] = []interface{}{[]interface{}{constants.ChatBotModelThink}}
+	inner[17] = []interface{}{[]interface{}{ChatBotModelThink}}
 	inner[18] = 0
 	inner[27] = 1
 	inner[30] = []interface{}{4}
@@ -85,7 +83,7 @@ func buildPayload(prompt string) (string, error) {
 	inner[59] = uuid.NewString()
 	inner[61] = []interface{}{}
 	inner[68] = 1
-	inner[79] = constants.ChatBotModelMode
+	inner[79] = ChatBotModelMode
 
 	innerJSON, err := marshalNoEscape(inner)
 	if err != nil {
@@ -107,8 +105,8 @@ func (g *GeminiClient) streamURL() string {
 	return fmt.Sprintf(
 		"%s%s?bl=%s&hl=en&_reqid=%d&rt=c",
 		g.origin,
-		constants.ChatBotGeminiStreamPath,
-		url.QueryEscape(constants.ChatBotGeminiBL),
+		ChatBotGeminiStreamPath,
+		url.QueryEscape(ChatBotGeminiBL),
 		reqID,
 	)
 }
@@ -212,7 +210,7 @@ func (g *GeminiClient) Generate(ctx context.Context, prompt string) (string, err
 	}
 
 	var lastErr error
-	for attempt := 0; attempt < constants.ChatBotRetryAttempts; attempt++ {
+	for attempt := 0; attempt < ChatBotRetryAttempts; attempt++ {
 		text, err := g.generateOnce(ctx, body)
 		if err == nil {
 			return text, nil
@@ -225,8 +223,8 @@ func (g *GeminiClient) Generate(ctx context.Context, prompt string) (string, err
 		if errors.Is(err, ErrUpstreamRejected) {
 			return "", err
 		}
-		if attempt < constants.ChatBotRetryAttempts-1 {
-			g.logger.Warnw("generate retry", "attempt", attempt+1, "max", constants.ChatBotRetryAttempts, "error", err)
+		if attempt < ChatBotRetryAttempts-1 {
+			g.logger.Warnw("generate retry", "attempt", attempt+1, "max", ChatBotRetryAttempts, "error", err)
 			if err := waitForRetry(ctx); err != nil {
 				return "", err
 			}
@@ -267,7 +265,7 @@ func (g *GeminiClient) GenerateStream(ctx context.Context, prompt string, emit f
 
 	emitted := ""
 	var lastErr error
-	for attempt := 0; attempt < constants.ChatBotRetryAttempts; attempt++ {
+	for attempt := 0; attempt < ChatBotRetryAttempts; attempt++ {
 		err := g.streamOnce(ctx, body, &emitted, emit)
 		if err == nil {
 			return nil
@@ -283,8 +281,8 @@ func (g *GeminiClient) GenerateStream(ctx context.Context, prompt string, emit f
 		if errors.Is(err, ErrUpstreamRejected) || errors.Is(err, ErrStreamChanged) {
 			return err
 		}
-		if attempt < constants.ChatBotRetryAttempts-1 {
-			g.logger.Warnw("stream retry", "attempt", attempt+1, "max", constants.ChatBotRetryAttempts, "error", err)
+		if attempt < ChatBotRetryAttempts-1 {
+			g.logger.Warnw("stream retry", "attempt", attempt+1, "max", ChatBotRetryAttempts, "error", err)
 			if err := waitForRetry(ctx); err != nil {
 				return err
 			}
@@ -296,7 +294,7 @@ func (g *GeminiClient) GenerateStream(ctx context.Context, prompt string, emit f
 var errEmitAborted = errors.New("chat bot stream consumer aborted")
 
 func waitForRetry(ctx context.Context) error {
-	timer := time.NewTimer(constants.ChatBotRetryDelay)
+	timer := time.NewTimer(ChatBotRetryDelay)
 	defer timer.Stop()
 
 	select {

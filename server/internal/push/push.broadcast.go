@@ -35,9 +35,9 @@ func BroadcastTokens(db *gorm.DB, audience string, targetUserID *uuid.UUID) *gor
 		Joins("JOIN users ON users.id = device_tokens.user_id AND users.deleted_at IS NULL AND users.is_active").
 		Where("device_tokens.platform IN ?", []string{constants.PushPlatformAndroid, constants.PushPlatformIOS})
 	switch audience {
-	case constants.PushAudienceVIP:
+	case PushAudienceVIP:
 		return query.Where("users.vip_end_time > ?", time.Now())
-	case constants.PushAudienceUser:
+	case PushAudienceUser:
 		if targetUserID == nil {
 			return query.Where("1 = 0")
 		}
@@ -56,11 +56,11 @@ func (s *Sender) Broadcast(ctx context.Context, req BroadcastRequest, onBatch fu
 	content := Content{
 		Title:    req.Title,
 		Body:     req.Body,
-		NotifID:  constants.PushBroadcastNotifID(req.CampaignID),
-		Channel:  constants.PushChannelSystem,
-		Collapse: constants.PushCollapseBroadcast,
+		NotifID:  PushBroadcastNotifID(req.CampaignID),
+		Channel:  PushChannelSystem,
+		Collapse: PushCollapseBroadcast,
 	}
-	ttl := constants.PushTTLHours * time.Hour
+	ttl := PushTTLHours * time.Hour
 	afterID := uuid.Nil
 
 	for {
@@ -73,7 +73,7 @@ func (s *Sender) Broadcast(ctx context.Context, req BroadcastRequest, onBatch fu
 			Select("device_tokens.*").
 			Where("device_tokens.id > ?", afterID).
 			Order("device_tokens.id").
-			Limit(constants.PushSendBatchSize).
+			Limit(PushSendBatchSize).
 			Find(&tokens).Error
 		if err != nil {
 			return progress, err
@@ -87,7 +87,7 @@ func (s *Sender) Broadcast(ctx context.Context, req BroadcastRequest, onBatch fu
 		for _, token := range tokens {
 			msgs = append(msgs, buildMessage(token, content, broadcastData(content, token.UserID.String()), ttl))
 		}
-		success, failure, _ := s.sendInChunks(content.NotifID, constants.PushSourceBroadcast, tokens, msgs)
+		success, failure, _ := s.sendInChunks(content.NotifID, PushSourceBroadcast, tokens, msgs)
 		progress.Devices += len(tokens)
 		progress.Success += success
 		progress.Failure += failure
@@ -95,7 +95,7 @@ func (s *Sender) Broadcast(ctx context.Context, req BroadcastRequest, onBatch fu
 			onBatch(progress)
 		}
 
-		if len(tokens) < constants.PushSendBatchSize {
+		if len(tokens) < PushSendBatchSize {
 			return progress, nil
 		}
 	}
@@ -108,6 +108,6 @@ func broadcastData(content Content, ownerID string) map[string]string {
 		"title":   content.Title,
 		"body":    content.Body,
 		"ownerId": ownerID,
-		"type":    constants.PushDataTypeBroadcast,
+		"type":    PushDataTypeBroadcast,
 	}
 }

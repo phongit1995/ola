@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
@@ -65,7 +64,7 @@ func (s *Service) UpdateStatus(adminID, id uuid.UUID, req *UpdateStatusRequest) 
 		return nil, err
 	}
 
-	note := utils.TruncateRunes(strings.TrimSpace(req.Note), constants.ReportHandlerNoteMax)
+	note := utils.TruncateRunes(strings.TrimSpace(req.Note), ReportHandlerNoteMax)
 	affected, err := s.repo.HandleTarget(report, req.Status, note, adminID)
 	if err != nil {
 		return nil, err

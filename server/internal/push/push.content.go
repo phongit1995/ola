@@ -35,7 +35,7 @@ type DMPush struct {
 const fallbackTitle = "Okela"
 
 func excerpt(s string) string {
-	trimmed := utils.TruncateRunes(s, constants.PushExcerptMaxRunes)
+	trimmed := utils.TruncateRunes(s, PushExcerptMaxRunes)
 	if trimmed != s {
 		return trimmed + "…"
 	}
@@ -60,7 +60,7 @@ func firstNonEmpty(values ...string) string {
 func buildDMContent(in DMPush) Content {
 	notifID := constants.PushDMSource(in.ConversationID)
 	data := map[string]string{
-		"type":           constants.PushDataTypeDM,
+		"type":           PushDataTypeDM,
 		"conversationId": in.ConversationID,
 		"senderId":       in.SenderID,
 	}
@@ -75,8 +75,8 @@ func buildDMContent(in DMPush) Content {
 		Title:    firstNonEmpty(in.SenderName, in.ConversationName, fallbackTitle),
 		Body:     excerpt(firstNonEmpty(in.Preview, "Bạn có tin nhắn mới")),
 		NotifID:  notifID,
-		Channel:  constants.PushChannelMessages,
-		Collapse: constants.PushCollapseDM,
+		Channel:  PushChannelMessages,
+		Collapse: PushCollapseDM,
 		Data:     data,
 	}
 }
@@ -122,7 +122,7 @@ func buildMeNotifContent(id, actorName, ntype, preview string, actorCount, unrea
 		body += ": " + excerpt(preview)
 	}
 	data := map[string]string{
-		"type": constants.PushDataTypeMeNotif,
+		"type": PushDataTypeMeNotif,
 	}
 	withItemID(data, id)
 	withUnread(data, unread)
@@ -130,7 +130,7 @@ func buildMeNotifContent(id, actorName, ntype, preview string, actorCount, unrea
 		Title:    firstNonEmpty(withOthers(actorName, actorCount), fallbackTitle),
 		Body:     body,
 		NotifID:  constants.PushSourceMeNotif,
-		Channel:  constants.PushChannelSocial,
+		Channel:  PushChannelSocial,
 		Collapse: constants.PushSourceMeNotif,
 		Data:     data,
 	}
@@ -167,7 +167,7 @@ func buildAppNotifContent(id, actorName, ntype, preview string, unread int) Cont
 		body += ": " + excerpt(preview)
 	}
 	data := map[string]string{
-		"type": constants.PushDataTypeAppNotif,
+		"type": PushDataTypeAppNotif,
 	}
 	withItemID(data, id)
 	withUnread(data, unread)
@@ -175,7 +175,7 @@ func buildAppNotifContent(id, actorName, ntype, preview string, unread int) Cont
 		Title:    title,
 		Body:     body,
 		NotifID:  constants.PushSourceAppNotif,
-		Channel:  constants.PushChannelSystem,
+		Channel:  PushChannelSystem,
 		Collapse: constants.PushSourceAppNotif,
 		Data:     data,
 	}

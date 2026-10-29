@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/services"
 
@@ -38,8 +37,8 @@ func (f *fakeCrawlerSettings) GetStoryCrawlerVersion() (setting.StoryCrawlerConf
 func (f *fakeCrawlerSettings) MarkStoryCookieDead(cookie string, at time.Time) (bool, error) {
 	f.dead = append(f.dead, cookie)
 	for i := range f.cfg.Cookies {
-		if f.cfg.Cookies[i].Cookie == cookie && f.cfg.Cookies[i].Status == constants.StoryCookieStatusActive {
-			f.cfg.Cookies[i].Status = constants.StoryCookieStatusDead
+		if f.cfg.Cookies[i].Cookie == cookie && f.cfg.Cookies[i].Status == setting.StoryCookieStatusActive {
+			f.cfg.Cookies[i].Status = setting.StoryCookieStatusDead
 			f.cfg.Cookies[i].DeadAt = &at
 			return true, nil
 		}
@@ -665,9 +664,9 @@ func TestCrawlerMarksLoggedOutCookiesAndFallsBackToGuest(t *testing.T) {
 		links: map[int64][]ChapterLink{10: chapterLinks(2)},
 	}
 	settings := &fakeCrawlerSettings{cfg: setting.StoryCrawlerConfig{IntervalHours: 1, UseCookies: true, Cookies: []setting.StoryCookie{
-		storyCookie("acc1", "a=1", constants.StoryCookieStatusActive),
-		storyCookie("", "b=2", constants.StoryCookieStatusActive),
-		storyCookie("old", "c=3", constants.StoryCookieStatusDead),
+		storyCookie("acc1", "a=1", setting.StoryCookieStatusActive),
+		storyCookie("", "b=2", setting.StoryCookieStatusActive),
+		storyCookie("old", "c=3", setting.StoryCookieStatusDead),
 	}}}
 	cache, _ := newTestCache(t)
 	crawler := withTestClock(newCrawler(store, catalog, settings, cache, zap.NewNop().Sugar()))
@@ -690,7 +689,7 @@ func TestCrawlerMarksLoggedOutCookiesAndFallsBackToGuest(t *testing.T) {
 		t.Fatal("cookies already dead must not be tried")
 	}
 	for _, item := range settings.cfg.Cookies[:2] {
-		if item.Status != constants.StoryCookieStatusDead || item.DeadAt == nil {
+		if item.Status != setting.StoryCookieStatusDead || item.DeadAt == nil {
 			t.Fatalf("cookie %q must be marked dead, got %+v", item.Name, item)
 		}
 	}
@@ -705,8 +704,8 @@ func TestCrawlerSwitchesCookieWhenItDiesMidRun(t *testing.T) {
 		pageLogout:  map[string]bool{"a=1": true},
 	}
 	settings := &fakeCrawlerSettings{cfg: setting.StoryCrawlerConfig{Cookies: []setting.StoryCookie{
-		storyCookie("acc1", "a=1", constants.StoryCookieStatusActive),
-		storyCookie("acc2", "b=2", constants.StoryCookieStatusActive),
+		storyCookie("acc1", "a=1", setting.StoryCookieStatusActive),
+		storyCookie("acc2", "b=2", setting.StoryCookieStatusActive),
 	}}}
 	cache, _ := newTestCache(t)
 	crawler := withTestClock(newCrawler(newFakeCrawlStore(), catalog, settings, cache, zap.NewNop().Sugar()))
@@ -737,7 +736,7 @@ func TestCrawlerUsesLiveCookieAndResetsWhenDisabled(t *testing.T) {
 		liveCookies: map[string]bool{"a=1": true},
 	}
 	settings := &fakeCrawlerSettings{cfg: setting.StoryCrawlerConfig{IntervalHours: 1, UseCookies: true, Cookies: []setting.StoryCookie{
-		storyCookie("acc1", "a=1", constants.StoryCookieStatusActive),
+		storyCookie("acc1", "a=1", setting.StoryCookieStatusActive),
 	}}}
 	cache, _ := newTestCache(t)
 	crawler := withTestClock(newCrawler(store, catalog, settings, cache, zap.NewNop().Sugar()))

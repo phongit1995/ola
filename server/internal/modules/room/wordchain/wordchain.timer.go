@@ -3,7 +3,6 @@ package wordchain
 import (
 	"context"
 	"errors"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 	"time"
 )
@@ -44,17 +43,17 @@ func (s *Service) retryExpiry(delay time.Duration) {
 func (s *Service) expireBotWord() {
 	if _, err := s.enabledConfig(); err != nil {
 		if !errors.Is(err, ErrDisabled) {
-			s.retryExpiry(constants.WordChainBotWordRetryDelay)
+			s.retryExpiry(WordChainBotWordRetryDelay)
 		}
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), constants.WordChainBackgroundTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), WordChainBackgroundTimeout)
 	defer cancel()
 
 	state, err := s.store.LoadState(ctx)
 	if err != nil {
 		s.logger.Warnw("Failed to load word chain state, retrying", "error", err)
-		s.retryExpiry(constants.WordChainBotWordRetryDelay)
+		s.retryExpiry(WordChainBotWordRetryDelay)
 		return
 	}
 	if !state.CanExpire() {
@@ -68,18 +67,18 @@ func (s *Service) expireBotWord() {
 	switch {
 	case err == nil:
 	case errors.Is(err, ErrBusy):
-		s.retryExpiry(constants.WordChainLockRetryWait)
+		s.retryExpiry(WordChainLockRetryWait)
 	case errors.Is(err, errStartWordUnavailable):
 		s.logger.Warnw("Word chain replacement word unavailable, retrying", "error", err)
-		s.retryExpiry(constants.WordChainBotWordRetryDelay)
+		s.retryExpiry(WordChainBotWordRetryDelay)
 	default:
 		s.logger.Errorw("Failed to replace word chain bot word, retrying", "error", err)
-		s.retryExpiry(constants.WordChainBotWordRetryDelay)
+		s.retryExpiry(WordChainBotWordRetryDelay)
 	}
 }
 
 func (s *Service) resumeExpiryTimer() {
-	ctx, cancel := context.WithTimeout(context.Background(), constants.WordChainBackgroundTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), WordChainBackgroundTimeout)
 	defer cancel()
 	state, err := s.store.LoadState(ctx)
 	if err != nil {

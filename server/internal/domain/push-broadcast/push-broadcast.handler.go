@@ -6,7 +6,6 @@ import (
 	"errors"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/utils"
@@ -41,8 +40,8 @@ func (h *EventHandler) OnRequested(ctx context.Context, message []byte) error {
 
 	now := time.Now()
 	claim := h.db.WithContext(ctx).Model(&models.PushCampaign{}).
-		Where("id = ? AND status = ?", campaignID, constants.PushCampaignStatusQueued).
-		Updates(map[string]interface{}{"status": constants.PushCampaignStatusSending, "started_at": now})
+		Where("id = ? AND status = ?", campaignID, PushCampaignStatusQueued).
+		Updates(map[string]interface{}{"status": PushCampaignStatusSending, "started_at": now})
 	if claim.Error != nil {
 		return claim.Error
 	}
@@ -75,15 +74,15 @@ func (h *EventHandler) run(campaign models.PushCampaign) {
 	})
 
 	final := map[string]interface{}{
-		"status":      constants.PushCampaignStatusDone,
+		"status":      PushCampaignStatusDone,
 		"finished_at": time.Now(),
 	}
 	switch {
 	case err != nil:
-		final["status"] = constants.PushCampaignStatusFailed
+		final["status"] = PushCampaignStatusFailed
 		final["error"] = err.Error()
 	case progress.Devices > 0 && progress.Success == 0:
-		final["status"] = constants.PushCampaignStatusFailed
+		final["status"] = PushCampaignStatusFailed
 		final["error"] = "no device accepted the push"
 	}
 	h.updateCounts(campaign.ID, progress, final)

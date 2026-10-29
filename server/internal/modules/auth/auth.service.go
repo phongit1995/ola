@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/user"
@@ -67,7 +67,7 @@ func (s *Service) Logout(token string) error {
 	if claims.ID != "" {
 		ttl := time.Until(claims.ExpiresAt.Time)
 		if ttl > 0 {
-			key := fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID)
+			key := fmt.Sprintf(middleware.CacheKeyTokenBlacklist, claims.ID)
 			if err := s.cache.Set(key, "1", ttl); err != nil {
 				s.logger.Errorw("Failed to blacklist token", "jti", claims.ID, "error", err)
 				return err
@@ -142,11 +142,11 @@ func normalizeRegisterUsername(username string) (string, error) {
 }
 
 func (s *Service) guardRegister(clientIP string) error {
-	doneKey := fmt.Sprintf(constants.CacheKeyRegisterDone, clientIP)
+	doneKey := fmt.Sprintf(CacheKeyRegisterDone, clientIP)
 	if done, err := s.cache.Exists(doneKey); err == nil && done {
 		return errors.New(errRateLimited)
 	}
-	throttleKey := fmt.Sprintf(constants.CacheKeyRegisterThrottle, clientIP)
+	throttleKey := fmt.Sprintf(CacheKeyRegisterThrottle, clientIP)
 	if ok, err := s.cache.SetNX(throttleKey, "1", registerThrottleWindow); err == nil && !ok {
 		return errors.New(errRateLimited)
 	}
@@ -220,7 +220,7 @@ func (s *Service) Register(req *RegisterRequest, clientIP string) (*RegisterResp
 		)
 	}
 
-	if err := s.cache.Set(fmt.Sprintf(constants.CacheKeyRegisterDone, clientIP), "1", registerSuccessCooldown); err != nil {
+	if err := s.cache.Set(fmt.Sprintf(CacheKeyRegisterDone, clientIP), "1", registerSuccessCooldown); err != nil {
 		s.logger.Warnw("Failed to set register cooldown", "ip", clientIP, "error", err.Error())
 	}
 
@@ -399,17 +399,17 @@ func (s *Service) SendPasswordReset(username, clientIP string) error {
 		return errEmailUnavailable
 	}
 
-	cooldownKey := fmt.Sprintf(constants.CacheKeyPasswordResetCooldown, username)
-	if ok, err := s.cache.SetNX(cooldownKey, "1", constants.PasswordResetCooldownSeconds*time.Second); err == nil && !ok {
+	cooldownKey := fmt.Sprintf(CacheKeyPasswordResetCooldown, username)
+	if ok, err := s.cache.SetNX(cooldownKey, "1", PasswordResetCooldownSeconds*time.Second); err == nil && !ok {
 		return errors.New("please wait before requesting a new code")
 	}
 
-	dailyKey := fmt.Sprintf(constants.CacheKeyPasswordResetDaily, username)
+	dailyKey := fmt.Sprintf(CacheKeyPasswordResetDaily, username)
 	if count, err := s.cache.Increment(dailyKey); err == nil {
 		if count == 1 {
-			_ = s.cache.SetExpire(dailyKey, constants.PasswordResetDailyWindow*time.Second)
+			_ = s.cache.SetExpire(dailyKey, PasswordResetDailyWindow*time.Second)
 		}
-		if count > constants.PasswordResetMaxPerDay {
+		if count > PasswordResetMaxPerDay {
 			return errors.New("daily password reset limit reached")
 		}
 	}
@@ -427,15 +427,15 @@ func (s *Service) SendPasswordReset(username, clientIP string) error {
 		return nil
 	}
 
-	code, err := generateNumericCode(constants.PasswordResetCodeLength)
+	code, err := generateNumericCode(PasswordResetCodeLength)
 	if err != nil {
 		return err
 	}
 
-	codeKey := fmt.Sprintf(constants.CacheKeyPasswordResetCode, username)
-	attemptsKey := fmt.Sprintf(constants.CacheKeyPasswordResetAttempts, username)
+	codeKey := fmt.Sprintf(CacheKeyPasswordResetCode, username)
+	attemptsKey := fmt.Sprintf(CacheKeyPasswordResetAttempts, username)
 	entry := passwordResetEntry{UserID: user.ID, Code: code}
-	if err := s.cache.Set(codeKey, entry, constants.CacheTTLOTP*time.Second); err != nil {
+	if err := s.cache.Set(codeKey, entry, CacheTTLOTP*time.Second); err != nil {
 		return err
 	}
 	_ = s.cache.Delete(attemptsKey)
@@ -460,11 +460,11 @@ func (s *Service) SendPasswordReset(username, clientIP string) error {
 
 func (s *Service) ConfirmPasswordReset(req *ForgotPasswordConfirmRequest, clientIP string) error {
 	username := strings.ToLower(strings.TrimSpace(req.Username))
-	codeKey := fmt.Sprintf(constants.CacheKeyPasswordResetCode, username)
-	attemptsKey := fmt.Sprintf(constants.CacheKeyPasswordResetAttempts, username)
+	codeKey := fmt.Sprintf(CacheKeyPasswordResetCode, username)
+	attemptsKey := fmt.Sprintf(CacheKeyPasswordResetAttempts, username)
 
 	var entry passwordResetEntry
-	status, err := s.cache.ConsumeCode(codeKey, attemptsKey, req.Code, constants.PasswordResetMaxAttempts, &entry)
+	status, err := s.cache.ConsumeCode(codeKey, attemptsKey, req.Code, PasswordResetMaxAttempts, &entry)
 	if err != nil {
 		s.logger.Errorw("Failed to verify password reset code", "error", err.Error(), "ip", clientIP)
 		return errors.New(errPasswordResetFailed)
@@ -510,7 +510,7 @@ func isAllowedEmailDomain(email string) bool {
 	if at < 0 {
 		return false
 	}
-	_, ok := constants.EmailVerifyAllowedDomains[email[at+1:]]
+	_, ok := EmailVerifyAllowedDomains[email[at+1:]]
 	return ok
 }
 
@@ -552,30 +552,30 @@ func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string,
 		return "", errors.New("email already exists")
 	}
 
-	cooldownKey := fmt.Sprintf(constants.CacheKeyEmailVerifyCooldown, userID)
-	if ok, err := s.cache.SetNX(cooldownKey, "1", constants.EmailVerifyCooldownSeconds*time.Second); err == nil && !ok {
+	cooldownKey := fmt.Sprintf(CacheKeyEmailVerifyCooldown, userID)
+	if ok, err := s.cache.SetNX(cooldownKey, "1", EmailVerifyCooldownSeconds*time.Second); err == nil && !ok {
 		return "", errors.New("please wait before requesting a new code")
 	}
 
-	dailyKey := fmt.Sprintf(constants.CacheKeyEmailVerifyDaily, userID)
+	dailyKey := fmt.Sprintf(CacheKeyEmailVerifyDaily, userID)
 	if count, err := s.cache.Increment(dailyKey); err == nil {
 		if count == 1 {
-			_ = s.cache.SetExpire(dailyKey, constants.EmailVerifyDailyWindow*time.Second)
+			_ = s.cache.SetExpire(dailyKey, EmailVerifyDailyWindow*time.Second)
 		}
-		if count > constants.EmailVerifyMaxPerDay {
+		if count > EmailVerifyMaxPerDay {
 			return "", errors.New("daily email verification limit reached")
 		}
 	}
 
-	code, err := generateNumericCode(constants.EmailVerifyCodeLength)
+	code, err := generateNumericCode(EmailVerifyCodeLength)
 	if err != nil {
 		return "", err
 	}
 
 	verifyID := uuid.NewString()
-	codeKey := fmt.Sprintf(constants.CacheKeyEmailVerifyCode, userID)
+	codeKey := fmt.Sprintf(CacheKeyEmailVerifyCode, userID)
 	entry := emailVerifyEntry{VerifyID: verifyID, Email: email, Code: code}
-	if err := s.cache.Set(codeKey, entry, constants.CacheTTLOTP*time.Second); err != nil {
+	if err := s.cache.Set(codeKey, entry, CacheTTLOTP*time.Second); err != nil {
 		return "", err
 	}
 
@@ -595,7 +595,7 @@ func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string,
 }
 
 func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code string) (int, error) {
-	key := fmt.Sprintf(constants.CacheKeyEmailVerifyCode, userID)
+	key := fmt.Sprintf(CacheKeyEmailVerifyCode, userID)
 
 	var entry emailVerifyEntry
 	if err := s.cache.Get(key, &entry); err != nil {
@@ -610,13 +610,13 @@ func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code stri
 
 	if entry.Code != code {
 		entry.Attempts++
-		if entry.Attempts >= constants.EmailVerifyMaxAttempts {
+		if entry.Attempts >= EmailVerifyMaxAttempts {
 			_ = s.cache.Delete(key)
 			return 0, errors.New("too many invalid attempts, please request a new code")
 		}
 		ttl, err := s.cache.GetTTL(key)
 		if err != nil || ttl <= 0 {
-			ttl = constants.CacheTTLOTP * time.Second
+			ttl = CacheTTLOTP * time.Second
 		}
 		_ = s.cache.Set(key, entry, ttl)
 		return 0, errors.New("invalid verification code")

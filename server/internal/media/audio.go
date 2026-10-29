@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"ola-chat-server/internal/constants"
 	"path/filepath"
 	"strings"
 
@@ -49,7 +48,7 @@ func BaseMime(value string) string {
 
 func IsAllowedAudioMime(mime string) bool {
 	base := BaseMime(mime)
-	for _, m := range constants.AllowedAudioMimes {
+	for _, m := range AllowedAudioMimes {
 		if strings.EqualFold(m, base) {
 			return true
 		}

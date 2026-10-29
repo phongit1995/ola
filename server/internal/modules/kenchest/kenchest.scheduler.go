@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"go.uber.org/zap"
@@ -24,7 +23,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 }
 
 func (s *Scheduler) loop(ctx context.Context) {
-	maxSleep := time.Duration(constants.KenChestAutoMaxSleepSeconds) * time.Second
+	maxSleep := time.Duration(KenChestAutoMaxSleepSeconds) * time.Second
 	for {
 		sleep := s.computeSleep(maxSleep)
 		if sleep < time.Second {

@@ -3,6 +3,7 @@ package conversation
 import (
 	"fmt"
 	"ola-chat-server/internal/constants"
+	conversationEvents "ola-chat-server/internal/domain/conversation"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 	"time"
@@ -27,7 +28,7 @@ func NewCacheService(cache *services.CacheService, repo *Repository, logger *zap
 }
 
 func (c *CacheService) GetConversation(conversationID uuid.UUID) (*Conversation, error) {
-	key := fmt.Sprintf(constants.CacheKeyConversation, conversationID.String())
+	key := fmt.Sprintf(CacheKeyConversation, conversationID.String())
 	var conversation Conversation
 	if err := c.cache.Get(key, &conversation); err != nil {
 		return nil, err
@@ -36,17 +37,17 @@ func (c *CacheService) GetConversation(conversationID uuid.UUID) (*Conversation,
 }
 
 func (c *CacheService) SetConversation(conversation *Conversation) error {
-	key := fmt.Sprintf(constants.CacheKeyConversation, conversation.ConversationID.String())
-	return c.cache.Set(key, conversation, constants.CacheTTLConversation*time.Second)
+	key := fmt.Sprintf(CacheKeyConversation, conversation.ConversationID.String())
+	return c.cache.Set(key, conversation, conversationEvents.CacheTTLConversation*time.Second)
 }
 
 func (c *CacheService) DeleteConversation(conversationID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyConversation, conversationID.String())
+	key := fmt.Sprintf(CacheKeyConversation, conversationID.String())
 	return c.cache.Delete(key)
 }
 
 func (c *CacheService) GetConversationMembers(conversationID uuid.UUID) ([]ConversationMember, error) {
-	key := fmt.Sprintf(constants.CacheKeyConversationMembers, conversationID.String())
+	key := fmt.Sprintf(conversationEvents.CacheKeyConversationMembers, conversationID.String())
 	var members []ConversationMember
 	if err := c.cache.Get(key, &members); err != nil {
 		return nil, err
@@ -55,17 +56,17 @@ func (c *CacheService) GetConversationMembers(conversationID uuid.UUID) ([]Conve
 }
 
 func (c *CacheService) SetConversationMembers(conversationID uuid.UUID, members []ConversationMember) error {
-	key := fmt.Sprintf(constants.CacheKeyConversationMembers, conversationID.String())
-	return c.cache.Set(key, members, constants.CacheTTLConversation*time.Second)
+	key := fmt.Sprintf(conversationEvents.CacheKeyConversationMembers, conversationID.String())
+	return c.cache.Set(key, members, conversationEvents.CacheTTLConversation*time.Second)
 }
 
 func (c *CacheService) DeleteConversationMembers(conversationID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyConversationMembers, conversationID.String())
+	key := fmt.Sprintf(conversationEvents.CacheKeyConversationMembers, conversationID.String())
 	return c.cache.Delete(key)
 }
 
 func (c *CacheService) GetUserConversations(userID uuid.UUID) ([]ConversationByUser, error) {
-	key := fmt.Sprintf(constants.CacheKeyConversationList, userID.String())
+	key := fmt.Sprintf(CacheKeyConversationList, userID.String())
 	var conversations []ConversationByUser
 	if err := c.cache.Get(key, &conversations); err != nil {
 		return nil, err
@@ -74,12 +75,12 @@ func (c *CacheService) GetUserConversations(userID uuid.UUID) ([]ConversationByU
 }
 
 func (c *CacheService) SetUserConversations(userID uuid.UUID, conversations []ConversationByUser) error {
-	key := fmt.Sprintf(constants.CacheKeyConversationList, userID.String())
-	return c.cache.Set(key, conversations, constants.CacheTTLConversationList*time.Second)
+	key := fmt.Sprintf(CacheKeyConversationList, userID.String())
+	return c.cache.Set(key, conversations, CacheTTLConversationList*time.Second)
 }
 
 func (c *CacheService) DeleteUserConversations(userID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyConversationList, userID.String())
+	key := fmt.Sprintf(CacheKeyConversationList, userID.String())
 	return c.cache.Delete(key)
 }
 
@@ -89,7 +90,7 @@ func (c *CacheService) GetDirectConversation(user1ID, user2ID uuid.UUID) (*uuid.
 		userA, userB = user2ID, user1ID
 	}
 
-	key := fmt.Sprintf(constants.CacheKeyConversation, fmt.Sprintf("direct:%s:%s", userA.String(), userB.String()))
+	key := fmt.Sprintf(CacheKeyConversation, fmt.Sprintf("direct:%s:%s", userA.String(), userB.String()))
 	var conversationID string
 	if err := c.cache.Get(key, &conversationID); err != nil {
 		return nil, err
@@ -107,12 +108,12 @@ func (c *CacheService) SetDirectConversation(user1ID, user2ID, conversationID uu
 		userA, userB = user2ID, user1ID
 	}
 
-	key := fmt.Sprintf(constants.CacheKeyConversation, fmt.Sprintf("direct:%s:%s", userA.String(), userB.String()))
-	return c.cache.Set(key, conversationID.String(), constants.CacheTTLConversation*time.Second)
+	key := fmt.Sprintf(CacheKeyConversation, fmt.Sprintf("direct:%s:%s", userA.String(), userB.String()))
+	return c.cache.Set(key, conversationID.String(), conversationEvents.CacheTTLConversation*time.Second)
 }
 
 func (c *CacheService) GetUnreadCount(conversationID, userID uuid.UUID) (int, error) {
-	key := fmt.Sprintf(constants.CacheKeyUnreadCount, conversationID.String(), userID.String())
+	key := fmt.Sprintf(CacheKeyUnreadCount, conversationID.String(), userID.String())
 	var count int
 	if err := c.cache.Get(key, &count); err != nil {
 		return 0, err
@@ -121,12 +122,12 @@ func (c *CacheService) GetUnreadCount(conversationID, userID uuid.UUID) (int, er
 }
 
 func (c *CacheService) SetUnreadCount(conversationID, userID uuid.UUID, count int) error {
-	key := fmt.Sprintf(constants.CacheKeyUnreadCount, conversationID.String(), userID.String())
-	return c.cache.Set(key, count, constants.CacheTTLUnreadCount*time.Second)
+	key := fmt.Sprintf(CacheKeyUnreadCount, conversationID.String(), userID.String())
+	return c.cache.Set(key, count, CacheTTLUnreadCount*time.Second)
 }
 
 func (c *CacheService) IncrementUnreadSeeded(conversationID, userID uuid.UUID, seed int) (int, error) {
-	key := fmt.Sprintf(constants.CacheKeyUnreadCount, conversationID.String(), userID.String())
+	key := fmt.Sprintf(CacheKeyUnreadCount, conversationID.String(), userID.String())
 	count, err := c.cache.Increment(key)
 	if err != nil {
 		return 0, err
@@ -137,14 +138,14 @@ func (c *CacheService) IncrementUnreadSeeded(conversationID, userID uuid.UUID, s
 			return 0, err
 		}
 	}
-	if err := c.cache.SetExpire(key, constants.CacheTTLUnreadCount*time.Second); err != nil {
+	if err := c.cache.SetExpire(key, CacheTTLUnreadCount*time.Second); err != nil {
 		c.logger.Warnw("Failed to set unread counter TTL", "conversation_id", conversationID, "user_id", userID, "error", err)
 	}
 	return int(count), nil
 }
 
 func (c *CacheService) ResetUnreadCount(conversationID, userID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyUnreadCount, conversationID.String(), userID.String())
+	key := fmt.Sprintf(CacheKeyUnreadCount, conversationID.String(), userID.String())
 	return c.cache.Delete(key)
 }
 
@@ -175,7 +176,7 @@ func (c *CacheService) InvalidateUserConversations(userIDs []uuid.UUID) error {
 
 // GetHiddenConversations gets the set of hidden conversation IDs for a user from Redis
 func (c *CacheService) GetHiddenConversations(userID uuid.UUID) (map[string]bool, error) {
-	key := fmt.Sprintf(constants.CacheKeyHiddenConversations, userID.String())
+	key := fmt.Sprintf(CacheKeyHiddenConversations, userID.String())
 	var hiddenMap map[string]bool
 	if err := c.cache.Get(key, &hiddenMap); err != nil {
 		return nil, err
@@ -185,8 +186,8 @@ func (c *CacheService) GetHiddenConversations(userID uuid.UUID) (map[string]bool
 
 // SetHiddenConversations sets the set of hidden conversation IDs for a user in Redis
 func (c *CacheService) SetHiddenConversations(userID uuid.UUID, hiddenMap map[string]bool) error {
-	key := fmt.Sprintf(constants.CacheKeyHiddenConversations, userID.String())
-	return c.cache.Set(key, hiddenMap, constants.CacheTTLHiddenConversations*time.Second)
+	key := fmt.Sprintf(CacheKeyHiddenConversations, userID.String())
+	return c.cache.Set(key, hiddenMap, CacheTTLHiddenConversations*time.Second)
 }
 
 // AddHiddenConversation adds a conversation to the hidden set in Redis
@@ -222,12 +223,12 @@ func (c *CacheService) IsConversationHidden(userID, conversationID uuid.UUID) (b
 
 // DeleteHiddenConversationsCache invalidates the hidden conversations cache for a user
 func (c *CacheService) DeleteHiddenConversationsCache(userID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyHiddenConversations, userID.String())
+	key := fmt.Sprintf(CacheKeyHiddenConversations, userID.String())
 	return c.cache.Delete(key)
 }
 
 func (c *CacheService) GetLastRead(conversationID, userID uuid.UUID) (string, error) {
-	key := fmt.Sprintf(constants.CacheKeyLastRead, conversationID.String(), userID.String())
+	key := fmt.Sprintf(CacheKeyLastRead, conversationID.String(), userID.String())
 	var msgID string
 	if err := c.cache.Get(key, &msgID); err != nil {
 		return "", err
@@ -236,17 +237,17 @@ func (c *CacheService) GetLastRead(conversationID, userID uuid.UUID) (string, er
 }
 
 func (c *CacheService) SetLastRead(conversationID, userID uuid.UUID, messageID string) error {
-	key := fmt.Sprintf(constants.CacheKeyLastRead, conversationID.String(), userID.String())
-	return c.cache.Set(key, messageID, constants.CacheTTLLastRead*time.Second)
+	key := fmt.Sprintf(CacheKeyLastRead, conversationID.String(), userID.String())
+	return c.cache.Set(key, messageID, CacheTTLLastRead*time.Second)
 }
 
 func (c *CacheService) DeleteLastRead(conversationID, userID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyLastRead, conversationID.String(), userID.String())
+	key := fmt.Sprintf(CacheKeyLastRead, conversationID.String(), userID.String())
 	return c.cache.Delete(key)
 }
 
 func (c *CacheService) GetClearedMarkerCached(userID, conversationID uuid.UUID) (*gocql.UUID, error) {
-	key := fmt.Sprintf(constants.CacheKeyClearedMarker, userID.String(), conversationID.String())
+	key := fmt.Sprintf(CacheKeyClearedMarker, userID.String(), conversationID.String())
 	var cached string
 	if err := c.cache.Get(key, &cached); err == nil {
 		if cached == "" {
@@ -267,7 +268,7 @@ func (c *CacheService) GetClearedMarkerCached(userID, conversationID uuid.UUID) 
 		value = marker.String()
 	}
 	utils.SafeGo(c.logger, func() {
-		if err := c.cache.Set(key, value, constants.CacheTTLClearedMarker*time.Second); err != nil {
+		if err := c.cache.Set(key, value, CacheTTLClearedMarker*time.Second); err != nil {
 			c.logger.Warnw("Failed to cache cleared marker", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
 	})
@@ -276,8 +277,8 @@ func (c *CacheService) GetClearedMarkerCached(userID, conversationID uuid.UUID) 
 }
 
 func (c *CacheService) SetClearedMarkerCache(userID, conversationID uuid.UUID, marker string) error {
-	key := fmt.Sprintf(constants.CacheKeyClearedMarker, userID.String(), conversationID.String())
-	return c.cache.Set(key, marker, constants.CacheTTLClearedMarker*time.Second)
+	key := fmt.Sprintf(CacheKeyClearedMarker, userID.String(), conversationID.String())
+	return c.cache.Set(key, marker, CacheTTLClearedMarker*time.Second)
 }
 
 func (c *CacheService) GetMembersCached(conversationID uuid.UUID) ([]ConversationMember, error) {
@@ -323,7 +324,7 @@ func (c *CacheService) GetUserConversationsCached(userID uuid.UUID, limit int) (
 		return truncateConversations(cached, limit), nil
 	}
 
-	conversations, err := c.repo.GetUserConversations(userID, constants.MaxConversationListLimit)
+	conversations, err := c.repo.GetUserConversations(userID, MaxConversationListLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -367,13 +368,13 @@ func (c *CacheService) CheckIfHiddenCached(userID, conversationID uuid.UUID) (bo
 }
 
 func (c *CacheService) IsTypingRateLimited(userID, conversationID uuid.UUID) bool {
-	key := fmt.Sprintf(constants.CacheKeyTypingRateLimit, userID.String(), conversationID.String())
+	key := fmt.Sprintf(CacheKeyTypingRateLimit, userID.String(), conversationID.String())
 	var dummy string
 	return c.cache.Get(key, &dummy) == nil
 }
 
 func (c *CacheService) SetTypingRateLimit(userID, conversationID uuid.UUID) {
-	key := fmt.Sprintf(constants.CacheKeyTypingRateLimit, userID.String(), conversationID.String())
+	key := fmt.Sprintf(CacheKeyTypingRateLimit, userID.String(), conversationID.String())
 	if err := c.cache.Set(key, "1", 5*time.Second); err != nil {
 		c.logger.Warnw("Failed to set typing rate limit", "error", err)
 	}

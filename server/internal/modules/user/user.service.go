@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"ola-chat-server/internal/apperr"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/session"
@@ -835,7 +834,7 @@ func (s *Service) UploadImage(ctx context.Context, userID uuid.UUID, file multip
 		"filename", filename,
 	)
 
-	result, err := s.s3Service.UploadFile(ctx, file, filename, constants.UploadFolderAvatar)
+	result, err := s.s3Service.UploadFile(ctx, file, filename, UploadFolderAvatar)
 	if err != nil {
 		s.logger.Errorw("Failed to upload image to S3",
 			"user_id", userID,

@@ -3,8 +3,8 @@ package adminpushcampaign
 import (
 	"net/http"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/middleware"
+	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -21,9 +21,9 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 }
 
 var audiences = map[string]bool{
-	constants.PushAudienceAll:  true,
-	constants.PushAudienceVIP:  true,
-	constants.PushAudienceUser: true,
+	push.PushAudienceAll:  true,
+	push.PushAudienceVIP:  true,
+	push.PushAudienceUser: true,
 }
 
 // ListCampaigns godoc

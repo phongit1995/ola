@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"context"
 	"encoding/json"
@@ -50,17 +49,17 @@ func NewRoomPresenceService(cache *services.CacheService, logger *zap.SugaredLog
 }
 
 func (s *RoomPresenceService) setKey(roomID string) string {
-	return fmt.Sprintf(constants.CacheKeyRoomMembers, roomID)
+	return fmt.Sprintf(CacheKeyRoomMembers, roomID)
 }
 
 func (s *RoomPresenceService) connKey(roomID, userID string) string {
-	return fmt.Sprintf(constants.CacheKeyRoomUserConn, roomID, userID)
+	return fmt.Sprintf(CacheKeyRoomUserConn, roomID, userID)
 }
 
 func (s *RoomPresenceService) Join(ctx context.Context, roomID, userID string, maxMembers int) (added bool, full bool, err error) {
 	res, err := roomJoinScript.Run(ctx, s.cache.GetClient(),
 		[]string{s.setKey(roomID), s.connKey(roomID, userID)},
-		userID, constants.RoomPresenceTTLSeconds, maxMembers, time.Now().UnixMilli(),
+		userID, RoomPresenceTTLSeconds, maxMembers, time.Now().UnixMilli(),
 	).Int()
 	if err != nil {
 		return false, false, err
@@ -72,7 +71,7 @@ func (s *RoomPresenceService) Join(ctx context.Context, roomID, userID string, m
 }
 
 func (s *RoomPresenceService) ticketKey(ticket string) string {
-	return fmt.Sprintf(constants.CacheKeyRoomJoinTicket, ticket)
+	return fmt.Sprintf(CacheKeyRoomJoinTicket, ticket)
 }
 
 func (s *RoomPresenceService) IssueJoinTicket(ctx context.Context, roomID, userID string, maxMembers int) (string, error) {
@@ -81,7 +80,7 @@ func (s *RoomPresenceService) IssueJoinTicket(ctx context.Context, roomID, userI
 	if err != nil {
 		return "", err
 	}
-	ttl := time.Duration(constants.RoomJoinTicketTTLSeconds) * time.Second
+	ttl := time.Duration(RoomJoinTicketTTLSeconds) * time.Second
 	if err := s.cache.GetClient().Set(ctx, s.ticketKey(ticket), payload, ttl).Err(); err != nil {
 		return "", err
 	}
@@ -122,7 +121,7 @@ func (s *RoomPresenceService) Leave(ctx context.Context, roomID, userID string) 
 
 func (s *RoomPresenceService) Refresh(ctx context.Context, roomID, userID string) {
 	client := s.cache.GetClient()
-	ttl := time.Duration(constants.RoomPresenceTTLSeconds) * time.Second
+	ttl := time.Duration(RoomPresenceTTLSeconds) * time.Second
 	client.Expire(ctx, s.connKey(roomID, userID), ttl)
 	client.Expire(ctx, s.setKey(roomID), ttl)
 }

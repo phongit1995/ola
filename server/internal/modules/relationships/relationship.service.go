@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/services"
@@ -95,7 +94,7 @@ func checkFriendCap(repo *Repository, userID uuid.UUID, self bool) error {
 	if err != nil {
 		return err
 	}
-	if count >= constants.MaxFriendsPerUser {
+	if count >= MaxFriendsPerUser {
 		if self {
 			return errors.New("you have reached the maximum number of friends")
 		}
@@ -128,14 +127,14 @@ func relationshipBlockCacheKey(userID1, userID2 uuid.UUID) string {
 	if bytes.Compare(userID1[:], userID2[:]) > 0 {
 		userID1, userID2 = userID2, userID1
 	}
-	return fmt.Sprintf(constants.CacheKeyRelationshipBlock, userID1.String(), userID2.String())
+	return fmt.Sprintf(CacheKeyRelationshipBlock, userID1.String(), userID2.String())
 }
 
 func relationshipBlockCacheTTL(blocked bool) time.Duration {
 	if blocked {
-		return constants.CacheTTLRelationship * time.Second
+		return CacheTTLRelationship * time.Second
 	}
-	return constants.CacheTTLRelationshipAllowed * time.Second
+	return CacheTTLRelationshipAllowed * time.Second
 }
 
 func (s *Service) IsBlockedEither(userID1, userID2 uuid.UUID) (bool, error) {
@@ -252,7 +251,7 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 		if err != nil {
 			return err
 		}
-		if pendingSent >= constants.MaxPendingSentRequests {
+		if pendingSent >= MaxPendingSentRequests {
 			return errors.New("you have reached the maximum number of pending friend requests")
 		}
 
@@ -658,7 +657,7 @@ func (s *Service) GetFriends(userID uuid.UUID) (*FriendListResponse, error) {
 }
 
 func (s *Service) getFriendBase(userID uuid.UUID) ([]FriendResponse, error) {
-	key := fmt.Sprintf(constants.CacheKeyFriendList, userID.String())
+	key := fmt.Sprintf(CacheKeyFriendList, userID.String())
 
 	if s.cache != nil {
 		var cached []FriendResponse
@@ -687,7 +686,7 @@ func (s *Service) getFriendBase(userID uuid.UUID) ([]FriendResponse, error) {
 	}
 
 	if s.cache != nil {
-		if err := s.cache.Set(key, friends, constants.CacheTTLFriendList*time.Second); err != nil {
+		if err := s.cache.Set(key, friends, CacheTTLFriendList*time.Second); err != nil {
 			s.logger.Warnw("Failed to cache friend list", "user_id", userID, "error", err.Error())
 		}
 	}
@@ -724,7 +723,7 @@ func (s *Service) invalidateFriendList(userIDs ...uuid.UUID) {
 		return
 	}
 	for _, id := range userIDs {
-		key := fmt.Sprintf(constants.CacheKeyFriendList, id.String())
+		key := fmt.Sprintf(CacheKeyFriendList, id.String())
 		if err := s.cache.Delete(key); err != nil {
 			s.logger.Warnw("Failed to invalidate friend list cache", "user_id", id, "error", err.Error())
 		}

@@ -3,8 +3,6 @@ package chatbot
 import (
 	"fmt"
 	"strings"
-
-	"ola-chat-server/internal/constants"
 )
 
 const (
@@ -22,9 +20,9 @@ func buildPrompt(req *CompletionRequest, bot persona) (string, error) {
 		}
 
 		switch msg.Role {
-		case constants.ChatBotRoleSystem:
+		case ChatBotRoleSystem:
 			sections = append(sections, fmt.Sprintf(promptSystemLabel, text))
-		case constants.ChatBotRoleAssistant:
+		case ChatBotRoleAssistant:
 			sections = append(sections, fmt.Sprintf(promptAssistantLabel, text))
 		default:
 			// Có nhãn người nói thì model mới phân biệt được "tớ" của người dùng với "tớ" của bot.

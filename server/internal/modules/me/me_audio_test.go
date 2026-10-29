@@ -50,7 +50,7 @@ func TestToModelAudiosRejectsInvalidInput(t *testing.T) {
 		"non-audio mime": func(a *MeAudioInput) { a.MimeType = "video/mp4" },
 		"empty mime":     func(a *MeAudioInput) { a.MimeType = "" },
 		"zero duration":  func(a *MeAudioInput) { a.Duration = 0 },
-		"too long":       func(a *MeAudioInput) { a.Duration = constants.MaxPostAudioDurationSeconds + 1 },
+		"too long":       func(a *MeAudioInput) { a.Duration = MaxPostAudioDurationSeconds + 1 },
 		"waveform > 1":   func(a *MeAudioInput) { a.Waveform = []float64{1.5} },
 		"waveform < 0":   func(a *MeAudioInput) { a.Waveform = []float64{-0.1} },
 		"too many samples": func(a *MeAudioInput) {
@@ -88,8 +88,8 @@ func TestToModelAudiosKeepsExistingRecordByURL(t *testing.T) {
 
 func TestValidPostUploadObjectNamesAllowsImagesPlusAudio(t *testing.T) {
 	userID := uuid.New()
-	names := make([]string, 0, constants.MaxPostUploadCleanup)
-	for i := 0; i < constants.MaxPostUploadCleanup; i++ {
+	names := make([]string, 0, MaxPostUploadCleanup)
+	for i := 0; i < MaxPostUploadCleanup; i++ {
 		names = append(names, fmt.Sprintf("%s01012026/file%d.bin", postUploadPrefix(userID), i))
 	}
 	cleaned, err := validPostUploadObjectNames(userID, names)

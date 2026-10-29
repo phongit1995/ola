@@ -239,8 +239,8 @@ func (s *Service) trackVisit(viewerID, clanID uuid.UUID) {
 	if s.cache == nil {
 		return
 	}
-	key := fmt.Sprintf(constants.CacheKeyClanVisitGuard, clanID.String(), viewerID.String())
-	acquired, err := s.cache.SetNX(key, "1", time.Duration(constants.ClanVisitGuardTTLSeconds)*time.Second)
+	key := fmt.Sprintf(CacheKeyClanVisitGuard, clanID.String(), viewerID.String())
+	acquired, err := s.cache.SetNX(key, "1", time.Duration(ClanVisitGuardTTLSeconds)*time.Second)
 	if err != nil || !acquired {
 		return
 	}
@@ -632,7 +632,7 @@ func (s *Service) uploadClanImage(ctx context.Context, userID, clanID uuid.UUID,
 		return nil, errors.New("failed to decode image")
 	}
 
-	folder := fmt.Sprintf("%s/%s", constants.UploadFolderClans, time.Now().Format(constants.UploadDateLayout))
+	folder := fmt.Sprintf("%s/%s", UploadFolderClans, time.Now().Format(constants.UploadDateLayout))
 	upload, err := s.s3.UploadFile(ctx, &clanFileReader{Reader: bytes.NewReader(data)}, field+extensionForMime(mimeType), folder)
 	if err != nil {
 		s.logger.Errorw("Failed to upload clan image", "clan_id", clan.ID, "field", field, "error", err)

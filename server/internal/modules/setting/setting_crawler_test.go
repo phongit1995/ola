@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 )
 
@@ -42,8 +41,8 @@ func TestValidateStoryCrawlerValue(t *testing.T) {
 			t.Fatalf("valid case %d: %v", i, err)
 		}
 	}
-	tooMany := make([]interface{}, 0, constants.StoryCookieMaxCount+1)
-	for i := 0; i <= constants.StoryCookieMaxCount; i++ {
+	tooMany := make([]interface{}, 0, StoryCookieMaxCount+1)
+	for i := 0; i <= StoryCookieMaxCount; i++ {
 		tooMany = append(tooMany, cookieValue("", fmt.Sprintf("c=%d", i), "active"))
 	}
 	invalid := []struct {
@@ -62,8 +61,8 @@ func TestValidateStoryCrawlerValue(t *testing.T) {
 		{"missing status", crawlerValue(models.JSONB{"cookies": []interface{}{map[string]interface{}{"cookie": "x=1"}}}), "trạng thái cookie 1"},
 		{"duplicate", crawlerValue(models.JSONB{"cookies": []interface{}{cookieValue("a", "x=1", "active"), cookieValue("b", " x=1", "dead")}}), "cookie 2 bị trùng"},
 		{"newline", crawlerValue(models.JSONB{"cookies": []interface{}{cookieValue("a", "x=1\r\nHost: evil", "active")}}), "xuống dòng"},
-		{"too long", crawlerValue(models.JSONB{"cookies": []interface{}{cookieValue("a", strings.Repeat("x", constants.StoryCookieMaxLength+1), "active")}}), "dài quá"},
-		{"long name", crawlerValue(models.JSONB{"cookies": []interface{}{cookieValue(strings.Repeat("a", constants.StoryCookieNameMaxRunes+1), "x=1", "active")}}), "tên cookie 1"},
+		{"too long", crawlerValue(models.JSONB{"cookies": []interface{}{cookieValue("a", strings.Repeat("x", StoryCookieMaxLength+1), "active")}}), "dài quá"},
+		{"long name", crawlerValue(models.JSONB{"cookies": []interface{}{cookieValue(strings.Repeat("a", StoryCookieNameMaxRunes+1), "x=1", "active")}}), "tên cookie 1"},
 		{"cookie unknown field", crawlerValue(models.JSONB{"cookies": []interface{}{map[string]interface{}{"cookie": "x=1", "status": "active", "password": "p"}}}), "unknown field"},
 		{"too many", crawlerValue(models.JSONB{"cookies": tooMany}), "tối đa"},
 	}

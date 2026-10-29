@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
@@ -60,8 +59,8 @@ func (s *Service) allowMomentReactionPush(ownerID, momentID uuid.UUID) bool {
 	if s.cache == nil {
 		return true
 	}
-	key := fmt.Sprintf(constants.CacheKeyMeNotifPushGuard, models.MeNotificationMomentReaction, ownerID.String(), momentID.String())
-	acquired, err := s.cache.SetNX(key, "1", time.Duration(constants.MeNotifPushGuardTTLSeconds)*time.Second)
+	key := fmt.Sprintf(CacheKeyMeNotifPushGuard, models.MeNotificationMomentReaction, ownerID.String(), momentID.String())
+	acquired, err := s.cache.SetNX(key, "1", time.Duration(MeNotifPushGuardTTLSeconds)*time.Second)
 	if err != nil {
 		return true
 	}

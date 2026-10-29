@@ -3,7 +3,6 @@ package wordchain
 import (
 	"context"
 	"errors"
-	"ola-chat-server/internal/constants"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +19,7 @@ func guessPurchaseAllowed(state GameState, userID string) error {
 
 func (s *Service) loadBoughtGuesses(ctx context.Context, state GameState, userID uuid.UUID) (GameState, error) {
 	uid := userID.String()
-	if state.WrongCounts[uid] < constants.WordChainMaxWrongGuesses {
+	if state.WrongCounts[uid] < WordChainMaxWrongGuesses {
 		return state, nil
 	}
 	bought, err := s.wallet.GuessesBought(ctx, userID, state.SessionID, state.Turn)
@@ -66,7 +65,7 @@ func (s *Service) BuyGuesses(ctx context.Context, userID uuid.UUID, req *GuessPu
 			Price:     cfg.GuessPrice,
 			Word:      current.Word,
 			Bought:    current.BoughtGuesses[uid],
-			Guesses:   constants.WordChainGuessPackSize,
+			Guesses:   WordChainGuessPackSize,
 		})
 		if errors.Is(err, errKenShort) {
 			return guessKenShortError(cfg.GuessPrice)
@@ -78,12 +77,12 @@ func (s *Service) BuyGuesses(ctx context.Context, userID uuid.UUID, req *GuessPu
 			return err
 		}
 
-		next := current.withBoughtGuesses(uid, constants.WordChainGuessPackSize)
+		next := current.withBoughtGuesses(uid, WordChainGuessPackSize)
 		batch.guesses(uid, next)
 		resp = &GuessPurchaseResponse{
 			SessionID:        current.SessionID.String(),
 			Turn:             current.Turn,
-			Guesses:          constants.WordChainGuessPackSize,
+			Guesses:          WordChainGuessPackSize,
 			RemainingGuesses: next.RemainingGuesses(uid),
 			Price:            cfg.GuessPrice,
 			KenBalance:       balance,

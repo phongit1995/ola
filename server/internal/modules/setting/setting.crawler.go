@@ -9,7 +9,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 )
 
@@ -25,7 +24,7 @@ type StoryCookie struct {
 }
 
 func (c StoryCookie) Active() bool {
-	return c.Status == constants.StoryCookieStatusActive && strings.TrimSpace(c.Cookie) != ""
+	return c.Status == StoryCookieStatusActive && strings.TrimSpace(c.Cookie) != ""
 }
 
 type StoryCrawlerConfig struct {
@@ -122,8 +121,8 @@ func ValidateStoryCrawlerValue(value models.JSONB) error {
 }
 
 func validateStoryCookies(cookies []storyCookieInput) error {
-	if len(cookies) > constants.StoryCookieMaxCount {
-		return fmt.Errorf("tối đa %d cookie", constants.StoryCookieMaxCount)
+	if len(cookies) > StoryCookieMaxCount {
+		return fmt.Errorf("tối đa %d cookie", StoryCookieMaxCount)
 	}
 	seen := make(map[string]bool, len(cookies))
 	for i, item := range cookies {
@@ -132,8 +131,8 @@ func validateStoryCookies(cookies []storyCookieInput) error {
 			return fmt.Errorf("cookie %d đang trống", position)
 		}
 		cookie := strings.TrimSpace(*item.Cookie)
-		if len(cookie) > constants.StoryCookieMaxLength {
-			return fmt.Errorf("cookie %d dài quá %d ký tự", position, constants.StoryCookieMaxLength)
+		if len(cookie) > StoryCookieMaxLength {
+			return fmt.Errorf("cookie %d dài quá %d ký tự", position, StoryCookieMaxLength)
 		}
 		if strings.IndexFunc(cookie, func(r rune) bool { return r < 0x20 || r == 0x7f }) >= 0 {
 			return fmt.Errorf("cookie %d chứa ký tự xuống dòng hoặc ký tự điều khiển", position)
@@ -142,11 +141,11 @@ func validateStoryCookies(cookies []storyCookieInput) error {
 			return fmt.Errorf("cookie %d bị trùng với một cookie khác", position)
 		}
 		seen[cookie] = true
-		if item.Status == nil || (*item.Status != constants.StoryCookieStatusActive && *item.Status != constants.StoryCookieStatusDead) {
-			return fmt.Errorf("trạng thái cookie %d phải là %s hoặc %s", position, constants.StoryCookieStatusActive, constants.StoryCookieStatusDead)
+		if item.Status == nil || (*item.Status != StoryCookieStatusActive && *item.Status != StoryCookieStatusDead) {
+			return fmt.Errorf("trạng thái cookie %d phải là %s hoặc %s", position, StoryCookieStatusActive, StoryCookieStatusDead)
 		}
-		if item.Name != nil && utf8.RuneCountInString(*item.Name) > constants.StoryCookieNameMaxRunes {
-			return fmt.Errorf("tên cookie %d dài quá %d ký tự", position, constants.StoryCookieNameMaxRunes)
+		if item.Name != nil && utf8.RuneCountInString(*item.Name) > StoryCookieNameMaxRunes {
+			return fmt.Errorf("tên cookie %d dài quá %d ký tự", position, StoryCookieNameMaxRunes)
 		}
 	}
 	return nil

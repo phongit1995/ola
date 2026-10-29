@@ -29,7 +29,7 @@ var (
 	ErrTargetNotFound    = utils.NewHTTPError(http.StatusNotFound, "report target not found")
 	ErrReportSelf        = utils.NewHTTPError(http.StatusBadRequest, "cannot report yourself")
 	ErrNotMember         = utils.NewHTTPError(http.StatusForbidden, "not a conversation member")
-	ErrReportExists      = utils.NewHTTPErrorWithCode(http.StatusConflict, "report already submitted", constants.ErrorCodeReportExists)
+	ErrReportExists      = utils.NewHTTPErrorWithCode(http.StatusConflict, "report already submitted", ErrorCodeReportExists)
 )
 
 var validTargetTypes = map[string]bool{
@@ -52,11 +52,11 @@ var uuidTargetTypes = map[string]bool{
 }
 
 var validReasons = map[string]bool{
-	constants.ReportReasonSpam:       true,
-	constants.ReportReasonSensitive:  true,
-	constants.ReportReasonScam:       true,
-	constants.ReportReasonHarassment: true,
-	constants.ReportReasonOther:      true,
+	ReportReasonSpam:       true,
+	ReportReasonSensitive:  true,
+	ReportReasonScam:       true,
+	ReportReasonHarassment: true,
+	ReportReasonOther:      true,
 }
 
 type resolvedTarget struct {
@@ -85,7 +85,7 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 		return nil, ErrInvalidReason
 	}
 	targetID := canonicalTargetID(targetType, strings.TrimSpace(req.TargetID))
-	if targetID == "" || len(targetID) > constants.ReportTargetIDMaxLen {
+	if targetID == "" || len(targetID) > ReportTargetIDMaxLen {
 		return nil, ErrInvalidTarget
 	}
 
@@ -112,7 +112,7 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 		ContextID:      target.contextID,
 		ReportedUserID: target.reportedUserID,
 		Reason:         req.Reason,
-		Note:           utils.TruncateRunes(strings.TrimSpace(req.Note), constants.ReportNoteMaxRunes),
+		Note:           utils.TruncateRunes(strings.TrimSpace(req.Note), ReportNoteMaxRunes),
 		Snapshot:       target.snapshot,
 		Status:         constants.ReportStatusPending,
 	}

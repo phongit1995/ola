@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
-	"ola-chat-server/internal/constants"
 	"sort"
 	"sync"
 )
@@ -113,7 +112,7 @@ func (d *Dictionary) NewWord() string {
 		return ""
 	}
 	word := d.list[d.intN(len(d.list))]
-	for attempt := 0; attempt < constants.WordChainNewWordMaxAttempts && d.uniqueWord(lastWord(word)); attempt++ {
+	for attempt := 0; attempt < WordChainNewWordMaxAttempts && d.uniqueWord(lastWord(word)); attempt++ {
 		word = d.list[d.intN(len(d.list))]
 	}
 	return word

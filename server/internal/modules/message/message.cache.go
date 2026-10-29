@@ -2,7 +2,6 @@ package message
 
 import (
 	"fmt"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"time"
 
@@ -24,12 +23,12 @@ func NewCacheService(cache *services.CacheService, logger *zap.SugaredLogger) *C
 }
 
 func (c *CacheService) SetMessage(message *Message) error {
-	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:%s", message.ConversationID.String(), message.MessageID.String()))
-	return c.cache.Set(key, message, constants.CacheTTLMessage*time.Second)
+	key := fmt.Sprintf(CacheKeyMessage, fmt.Sprintf("%s:%s", message.ConversationID.String(), message.MessageID.String()))
+	return c.cache.Set(key, message, CacheTTLMessage*time.Second)
 }
 
 func (c *CacheService) GetMessage(conversationID uuid.UUID, messageID gocql.UUID) (*Message, error) {
-	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:%s", conversationID.String(), messageID.String()))
+	key := fmt.Sprintf(CacheKeyMessage, fmt.Sprintf("%s:%s", conversationID.String(), messageID.String()))
 	var msg Message
 	if err := c.cache.Get(key, &msg); err != nil {
 		return nil, err
@@ -38,7 +37,7 @@ func (c *CacheService) GetMessage(conversationID uuid.UUID, messageID gocql.UUID
 }
 
 func (c *CacheService) DeleteMessage(conversationID uuid.UUID, messageID gocql.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:%s", conversationID.String(), messageID.String()))
+	key := fmt.Sprintf(CacheKeyMessage, fmt.Sprintf("%s:%s", conversationID.String(), messageID.String()))
 	return c.cache.Delete(key)
 }
 
@@ -48,7 +47,7 @@ type cachedMessagePage struct {
 }
 
 func (c *CacheService) GetConversationMessages(conversationID uuid.UUID) ([]Message, bool, error) {
-	key := fmt.Sprintf(constants.CacheKeyMessageList, conversationID.String())
+	key := fmt.Sprintf(CacheKeyMessageList, conversationID.String())
 	var page cachedMessagePage
 	if err := c.cache.Get(key, &page); err != nil {
 		return nil, false, err
@@ -57,12 +56,12 @@ func (c *CacheService) GetConversationMessages(conversationID uuid.UUID) ([]Mess
 }
 
 func (c *CacheService) SetConversationMessages(conversationID uuid.UUID, messages []Message, exhausted bool) error {
-	key := fmt.Sprintf(constants.CacheKeyMessageList, conversationID.String())
-	return c.cache.Set(key, cachedMessagePage{Messages: messages, Exhausted: exhausted}, constants.CacheTTLMessageList*time.Second)
+	key := fmt.Sprintf(CacheKeyMessageList, conversationID.String())
+	return c.cache.Set(key, cachedMessagePage{Messages: messages, Exhausted: exhausted}, CacheTTLMessageList*time.Second)
 }
 
 func (c *CacheService) DeleteConversationMessages(conversationID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyMessageList, conversationID.String())
+	key := fmt.Sprintf(CacheKeyMessageList, conversationID.String())
 	return c.cache.Delete(key)
 }
 
@@ -87,5 +86,5 @@ func (c *CacheService) GetMessageByClientMsgID(senderID uuid.UUID, clientMsgID s
 }
 
 func (c *CacheService) SetMessageByClientMsgID(senderID uuid.UUID, clientMsgID string, resp *MessageResponse) error {
-	return c.cache.Set(clientMsgIDKey(senderID, clientMsgID), resp, constants.CacheTTLClientMsgIDDedup*time.Second)
+	return c.cache.Set(clientMsgIDKey(senderID, clientMsgID), resp, CacheTTLClientMsgIDDedup*time.Second)
 }

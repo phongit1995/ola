@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
@@ -255,7 +254,7 @@ func (s *Service) PutMany(items []models.AppSetting) ([]models.AppSetting, error
 	return saved, nil
 }
 
-var ErrSettingChanged = utils.NewHTTPErrorWithCode(http.StatusConflict, "Cấu hình vừa được thay đổi ở nơi khác, tải lại trang rồi lưu lại", constants.ErrorCodeSettingChanged)
+var ErrSettingChanged = utils.NewHTTPErrorWithCode(http.StatusConflict, "Cấu hình vừa được thay đổi ở nơi khác, tải lại trang rồi lưu lại", ErrorCodeSettingChanged)
 
 func (s *Service) PutIfUnchanged(key string, value models.JSONB, expected time.Time) (*models.AppSetting, error) {
 	key = strings.TrimSpace(key)

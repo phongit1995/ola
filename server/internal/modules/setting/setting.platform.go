@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -34,8 +33,8 @@ func (r PlatformRules) EnabledForClient(client Client) bool {
 
 func ClientFrom(c *gin.Context) Client {
 	return Client{
-		Platform:   c.GetHeader(constants.HeaderPlatform),
-		AppVersion: c.GetHeader(constants.HeaderAppVersion),
+		Platform:   c.GetHeader(HeaderPlatform),
+		AppVersion: c.GetHeader(HeaderAppVersion),
 		UserAgent:  c.GetHeader("User-Agent"),
 	}
 }
@@ -117,9 +116,9 @@ func appVersionName(appVersion string) string {
 
 func (r PlatformRules) ruleFor(platform string) (PlatformRule, bool) {
 	switch strings.ToLower(strings.TrimSpace(platform)) {
-	case constants.PlatformAndroid:
+	case PlatformAndroid:
 		return r.Android, true
-	case constants.PlatformIOS:
+	case PlatformIOS:
 		return r.IOS, true
 	default:
 		return r.Web, false

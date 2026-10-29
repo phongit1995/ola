@@ -544,14 +544,14 @@ func toHistoryItem(p *models.VipPurchase) PurchaseHistoryItem {
 }
 
 func (s *Service) invalidatePackages() {
-	if err := s.cache.Delete(constants.CacheKeyVipPackages); err != nil {
+	if err := s.cache.Delete(CacheKeyVipPackages); err != nil {
 		s.logger.Warnw("Failed to invalidate vip packages cache", "error", err.Error())
 	}
 }
 
 func (s *Service) ListActivePackages() ([]PackageItem, error) {
 	var cached []PackageItem
-	if err := s.cache.Get(constants.CacheKeyVipPackages, &cached); err == nil {
+	if err := s.cache.Get(CacheKeyVipPackages, &cached); err == nil {
 		return cached, nil
 	}
 
@@ -564,7 +564,7 @@ func (s *Service) ListActivePackages() ([]PackageItem, error) {
 		items = append(items, toPackageItem(&pkgs[i]))
 	}
 
-	if err := s.cache.Set(constants.CacheKeyVipPackages, items, constants.CacheTTLVipPackages*time.Second); err != nil {
+	if err := s.cache.Set(CacheKeyVipPackages, items, CacheTTLVipPackages*time.Second); err != nil {
 		s.logger.Warnw("Failed to cache vip packages", "error", err.Error())
 	}
 	return items, nil

@@ -2,7 +2,6 @@ package conversation
 
 import (
 	"fmt"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 	"time"
@@ -34,7 +33,7 @@ func NewConversationCache(cache *services.CacheService, logger *zap.SugaredLogge
 }
 
 func (c *ConversationCache) GetConversationMembers(conversationID uuid.UUID) ([]ConversationMember, error) {
-	key := fmt.Sprintf(constants.CacheKeyConversationMembers, conversationID.String())
+	key := fmt.Sprintf(CacheKeyConversationMembers, conversationID.String())
 
 	var members []ConversationMember
 	if err := c.cache.Get(key, &members); err != nil {
@@ -47,8 +46,8 @@ func (c *ConversationCache) GetConversationMembers(conversationID uuid.UUID) ([]
 }
 
 func (c *ConversationCache) SetConversationMembers(conversationID uuid.UUID, members []ConversationMember) error {
-	key := fmt.Sprintf(constants.CacheKeyConversationMembers, conversationID.String())
-	return c.cache.Set(key, members, constants.CacheTTLConversation*time.Second)
+	key := fmt.Sprintf(CacheKeyConversationMembers, conversationID.String())
+	return c.cache.Set(key, members, CacheTTLConversation*time.Second)
 }
 
 type ConversationCacheAdapter struct {

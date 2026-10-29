@@ -43,7 +43,7 @@ var (
 	ErrRoomBlockSelf         = errors.New("cannot block yourself")
 	ErrRoomBlockUserNotFound = errors.New("user not found")
 	ErrRoomBlockLimit        = errors.New("room block limit reached")
-	ErrRoomVipRequired       = utils.NewHTTPErrorWithCode(http.StatusForbidden, "Phòng này chỉ dành cho thành viên VIP.", constants.ErrorCodeRoomVipRequired)
+	ErrRoomVipRequired       = utils.NewHTTPErrorWithCode(http.StatusForbidden, "Phòng này chỉ dành cho thành viên VIP.", ErrorCodeRoomVipRequired)
 )
 
 type Service struct {
@@ -98,7 +98,7 @@ func (s *Service) acquireRoomMediaUpload(ctx context.Context, userID, roomID uui
 		return existing, noRelease, err
 	}
 
-	lockKey := fmt.Sprintf(constants.CacheKeyRoomMediaUploadLock, roomID.String(), userID.String(), clientMsgID)
+	lockKey := fmt.Sprintf(CacheKeyRoomMediaUploadLock, roomID.String(), userID.String(), clientMsgID)
 	lockToken := uuid.NewString()
 	acquired, err := s.cache.SetNX(lockKey, lockToken, constants.CacheTTLMediaUploadLock*time.Second)
 	if err != nil {
@@ -294,7 +294,7 @@ func (s *Service) RequestJoin(ctx context.Context, userID, roomID uuid.UUID) (*J
 	if err != nil {
 		return nil, err
 	}
-	return &JoinRoomResponse{Ticket: ticket, ExpiresIn: constants.RoomJoinTicketTTLSeconds}, nil
+	return &JoinRoomResponse{Ticket: ticket, ExpiresIn: websocket.RoomJoinTicketTTLSeconds}, nil
 }
 
 func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req *SendRoomMessageRequest) (*RoomMessageResponse, error) {
@@ -492,8 +492,8 @@ func (s *Service) SendAudioMessage(ctx context.Context, userID, roomID uuid.UUID
 	if err := media.ValidateDuration(duration); err != nil {
 		return nil, err
 	}
-	if duration > constants.MaxRoomAudioDurationSeconds {
-		return nil, fmt.Errorf("%w: max %d seconds", media.ErrInvalidAudio, constants.MaxRoomAudioDurationSeconds)
+	if duration > MaxRoomAudioDurationSeconds {
+		return nil, fmt.Errorf("%w: max %d seconds", media.ErrInvalidAudio, MaxRoomAudioDurationSeconds)
 	}
 	if err := media.ValidateWaveform(waveform, constants.MaxAudioWaveformSamples); err != nil {
 		return nil, err
@@ -630,12 +630,12 @@ func (s *Service) uploadRoomAudio(ctx context.Context, userID, roomID uuid.UUID,
 	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
 		return nil, err
 	}
-	if err := media.ValidateMeasuredDuration(data, mimeType, duration, constants.MaxRoomAudioDurationSeconds); err != nil {
+	if err := media.ValidateMeasuredDuration(data, mimeType, duration, MaxRoomAudioDurationSeconds); err != nil {
 		return nil, err
 	}
 
 	safeName := fmt.Sprintf("audio%s", media.PickAudioExtension(mimeType, fileHeader.Filename))
-	folder := fmt.Sprintf("%s/%s", constants.UploadFolderRooms, time.Now().Format(constants.UploadDateLayoutDay))
+	folder := fmt.Sprintf("%s/%s", UploadFolderRooms, time.Now().Format(constants.UploadDateLayoutDay))
 
 	upload, err := s.s3.UploadFile(ctx, &roomFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
 	if err != nil {
@@ -699,7 +699,7 @@ func (s *Service) uploadRoomImage(ctx context.Context, userID, roomID uuid.UUID,
 
 	ext := pickRoomImageExtension(detectedMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("image%s", ext)
-	folder := fmt.Sprintf("%s/%s", constants.UploadFolderRooms, time.Now().Format(constants.UploadDateLayoutDay))
+	folder := fmt.Sprintf("%s/%s", UploadFolderRooms, time.Now().Format(constants.UploadDateLayoutDay))
 
 	upload, err := s.s3.UploadFile(ctx, &roomFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
 	if err != nil {
@@ -984,7 +984,7 @@ func (s *Service) resolveReplySnapshot(ctx context.Context, roomID, replyToID st
 	snapshot := &RoomReplySnapshot{
 		MessageID: orig.ID,
 		SenderID:  orig.SenderID,
-		Excerpt:   utils.TruncateRunes(orig.Content, constants.RoomReplyExcerptMaxRunes),
+		Excerpt:   utils.TruncateRunes(orig.Content, RoomReplyExcerptMaxRunes),
 		Type:      orig.Type,
 		ImageURL:  orig.ImageURL,
 	}
@@ -1193,7 +1193,7 @@ func (s *Service) BlockUser(userID, blockedUserID uuid.UUID, migration bool) (*R
 	if exists {
 		return s.ListBlockedUsers(userID)
 	}
-	unblockedKey := fmt.Sprintf(constants.CacheKeyRoomUnblocked, userID.String(), blockedUserID.String())
+	unblockedKey := fmt.Sprintf(CacheKeyRoomUnblocked, userID.String(), blockedUserID.String())
 	if migration {
 		if unblocked, err := s.cache.Exists(unblockedKey); err == nil && unblocked {
 			return s.ListBlockedUsers(userID)
@@ -1206,7 +1206,7 @@ func (s *Service) BlockUser(userID, blockedUserID uuid.UUID, migration bool) (*R
 	if err != nil {
 		return nil, err
 	}
-	if count >= constants.RoomMaxBlockedUsers {
+	if count >= RoomMaxBlockedUsers {
 		return nil, ErrRoomBlockLimit
 	}
 	if err := s.blockRepo.Create(userID, blockedUserID); err != nil {
@@ -1225,8 +1225,8 @@ func (s *Service) UnblockUser(userID, blockedUserID uuid.UUID) (*RoomBlockedUser
 		return nil, err
 	}
 	if changed {
-		unblockedKey := fmt.Sprintf(constants.CacheKeyRoomUnblocked, userID.String(), blockedUserID.String())
-		if err := s.cache.Set(unblockedKey, "1", constants.CacheTTLRoomUnblocked*time.Second); err != nil {
+		unblockedKey := fmt.Sprintf(CacheKeyRoomUnblocked, userID.String(), blockedUserID.String())
+		if err := s.cache.Set(unblockedKey, "1", CacheTTLRoomUnblocked*time.Second); err != nil {
 			s.logger.Warnw("Failed to set room unblock marker", "user_id", userID, "blocked_user_id", blockedUserID, "error", err.Error())
 		}
 		s.emitBlockListChanged(userID, blockedUserID, false)
