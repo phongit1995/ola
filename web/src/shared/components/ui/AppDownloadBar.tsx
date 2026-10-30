@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { APP_DOWNLOAD, ROUTES } from '@constants';
+import { ANALYTICS_EVENT, APP_DOWNLOAD, ROUTES } from '@constants';
+import { trackEvent } from '@config';
 import { useDevicePlatform } from '@hooks';
 import { AppleIcon, GooglePlayIcon } from './StoreIcons';
 
@@ -37,6 +38,12 @@ export function AppDownloadBar({ className = '' }: AppDownloadBarProps) {
             href={store.href}
             target="_blank"
             rel="noreferrer"
+            onClick={() =>
+              trackEvent(ANALYTICS_EVENT.storeClick, {
+                store: store.platform,
+                source: 'download_bar',
+              })
+            }
             className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-ola-primary-dark shadow-[0_2px_10px_rgba(0,0,0,0.18)] transition active:scale-95"
           >
             {store.icon}

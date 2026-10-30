@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { APP_DOWNLOAD } from '@constants';
+import { ANALYTICS_EVENT, APP_DOWNLOAD } from '@constants';
+import { trackEvent } from '@config';
 import { ActionLink, DownloadGuideBody } from './DownloadGuideBody';
 import { CopyableValue } from './CopyableValue';
 import { AppleIcon } from './platformIcons';
@@ -29,6 +30,12 @@ export function IosGuide({ isCurrentDevice }: { isCurrentDevice: boolean }) {
     >
       <ActionLink
         href={APP_DOWNLOAD.appStoreUrl}
+        onClick={() =>
+          trackEvent(ANALYTICS_EVENT.storeClick, {
+            store: 'ios',
+            source: 'download_page',
+          })
+        }
         label={t('download.ios.action')}
         icon={<AppleIcon />}
       />

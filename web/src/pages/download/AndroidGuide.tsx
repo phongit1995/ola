@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { APP_DOWNLOAD } from '@constants';
+import { ANALYTICS_EVENT, APP_DOWNLOAD } from '@constants';
+import { trackEvent } from '@config';
 import { ActionLink, DownloadGuideBody } from './DownloadGuideBody';
 import { CopyableValue } from './CopyableValue';
 import { GooglePlayIcon } from './platformIcons';
@@ -30,6 +31,12 @@ export function AndroidGuide({
     >
       <ActionLink
         href={APP_DOWNLOAD.playStoreUrl}
+        onClick={() =>
+          trackEvent(ANALYTICS_EVENT.storeClick, {
+            store: 'android',
+            source: 'download_page',
+          })
+        }
         label={t('download.android.action')}
         icon={<GooglePlayIcon />}
       />

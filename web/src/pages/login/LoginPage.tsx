@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { PASSWORD_MAX, PASSWORD_MIN, ROUTES } from '@constants';
+import {
+  ANALYTICS_AUTH_METHOD,
+  ANALYTICS_EVENT,
+  PASSWORD_MAX,
+  PASSWORD_MIN,
+  ROUTES,
+} from '@constants';
+import { trackEvent } from '@config';
 import olaLogo from '@/assets/images/ola-logo.png';
 import { ClearableInput } from '@components/form/ClearableInput';
 import { SubmitButton } from '@components/form/SubmitButton';
@@ -92,6 +99,7 @@ export function LoginPage() {
       });
       saveAccount(username, data.password, user.avatar);
       setUser(user);
+      trackEvent(ANALYTICS_EVENT.login, { method: ANALYTICS_AUTH_METHOD });
       navigate(ROUTES.home);
     } catch (err) {
       const message =

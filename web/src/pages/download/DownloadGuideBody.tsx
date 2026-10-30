@@ -6,6 +6,7 @@ interface ActionLinkProps {
   label: string;
   icon?: ReactNode;
   tone?: 'primary' | 'outline';
+  onClick?: () => void;
 }
 
 export function ActionLink({
@@ -13,6 +14,7 @@ export function ActionLink({
   label,
   icon,
   tone = 'primary',
+  onClick,
 }: ActionLinkProps) {
   const toneClass =
     tone === 'primary'
@@ -24,6 +26,7 @@ export function ActionLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={onClick}
       className={`flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors ${toneClass}`}
     >
       {icon}
