@@ -8,6 +8,215 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
+  internal_modules_admin_analytics.NamedRow:
+    properties:
+      count:
+        type: integer
+      name:
+        type: string
+      users:
+        type: integer
+    type: object
+  internal_modules_admin_analytics.OverviewResponse:
+    properties:
+      appVersions:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.VersionRow'
+        type: array
+      approximateRankings:
+        items:
+          type: string
+        type: array
+      countries:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.NamedRow'
+        type: array
+      events:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.NamedRow'
+        type: array
+      fetchedAt:
+        type: string
+      from:
+        type: string
+      platforms:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.PlatformRow'
+        type: array
+      screens:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.NamedRow'
+        type: array
+      setup:
+        $ref: '#/definitions/internal_modules_admin_analytics.Setup'
+      sources:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.SourceStatus'
+        type: array
+      timeseries:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.TimePoint'
+        type: array
+      to:
+        type: string
+      totals:
+        $ref: '#/definitions/internal_modules_admin_analytics.Totals'
+    type: object
+  internal_modules_admin_analytics.OverviewSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_analytics.OverviewResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_analytics.PlatformRow:
+    properties:
+      activeUsers:
+        type: integer
+      newUsers:
+        type: integer
+      platform:
+        type: string
+      sessions:
+        type: integer
+      views:
+        type: integer
+    type: object
+  internal_modules_admin_analytics.RealtimeMinute:
+    properties:
+      activeUsers:
+        type: integer
+      eventCount:
+        type: integer
+      minutesAgo:
+        type: integer
+    type: object
+  internal_modules_admin_analytics.RealtimePlatform:
+    properties:
+      activeUsers:
+        type: integer
+      platform:
+        type: string
+    type: object
+  internal_modules_admin_analytics.RealtimeResponse:
+    properties:
+      activeUsers:
+        type: integer
+      countries:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.NamedRow'
+        type: array
+      eventCount:
+        type: integer
+      events:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.NamedRow'
+        type: array
+      eventsTruncated:
+        type: boolean
+      fetchedAt:
+        type: string
+      minutes:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.RealtimeMinute'
+        type: array
+      platforms:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.RealtimePlatform'
+        type: array
+      sources:
+        items:
+          $ref: '#/definitions/internal_modules_admin_analytics.SourceStatus'
+        type: array
+      usersSummed:
+        type: boolean
+    type: object
+  internal_modules_admin_analytics.RealtimeSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_analytics.RealtimeResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_analytics.Setup:
+    properties:
+      clientEmail:
+        type: string
+      credentialConfigured:
+        type: boolean
+      mobilePropertyId:
+        type: string
+      webPropertyId:
+        type: string
+    type: object
+  internal_modules_admin_analytics.SourceStatus:
+    properties:
+      error:
+        type: string
+      propertyId:
+        type: string
+      source:
+        type: string
+    type: object
+  internal_modules_admin_analytics.TimePoint:
+    properties:
+      android:
+        type: integer
+      date:
+        type: string
+      ios:
+        type: integer
+      newUsers:
+        type: integer
+      sessions:
+        type: integer
+      web:
+        type: integer
+    type: object
+  internal_modules_admin_analytics.Totals:
+    properties:
+      activeUsers:
+        type: integer
+      avgEngagementSeconds:
+        type: number
+      newUsers:
+        type: integer
+      sessions:
+        type: integer
+      usersSummed:
+        type: boolean
+      views:
+        type: integer
+    type: object
+  internal_modules_admin_analytics.VersionRow:
+    properties:
+      platform:
+        type: string
+      users:
+        type: integer
+      version:
+        type: string
+    type: object
   internal_modules_admin_audit.AuditLogItem:
     properties:
       adminFullName:
@@ -192,6 +401,180 @@ definitions:
         $ref: '#/definitions/internal_modules_admin_clan.ClanUserResponse'
       verified:
         type: boolean
+    type: object
+  internal_modules_admin_conversation.ConversationDetailResponse:
+    properties:
+      avatar:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      members:
+        items:
+          $ref: '#/definitions/internal_modules_admin_conversation.ConversationMember'
+        type: array
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  internal_modules_admin_conversation.ConversationDetailSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_conversation.ConversationDetailResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_conversation.ConversationItem:
+    properties:
+      avatar:
+        type: string
+      hidden:
+        type: boolean
+      hiddenAt:
+        type: string
+      id:
+        type: string
+      lastMessageAt:
+        example: "2026-10-20T10:30:00Z"
+        type: string
+      lastMessagePreview:
+        type: string
+      missing:
+        type: boolean
+      name:
+        type: string
+      otherUser:
+        $ref: '#/definitions/internal_modules_admin_conversation.UserBrief'
+      type:
+        example: direct
+        type: string
+    type: object
+  internal_modules_admin_conversation.ConversationListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_conversation.ConversationItem'
+        type: array
+      snapshot:
+        type: string
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_conversation.ConversationListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_conversation.ConversationListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_conversation.ConversationMember:
+    properties:
+      isActive:
+        type: boolean
+      joinedAt:
+        type: string
+      leftAt:
+        type: string
+      role:
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_conversation.UserBrief'
+    type: object
+  internal_modules_admin_conversation.Message:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      editedAt:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      reactions:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        type: object
+      replyTo:
+        $ref: '#/definitions/ola-chat-server_internal_modules_message.ReplySnapshot'
+      sender:
+        $ref: '#/definitions/internal_modules_admin_conversation.UserBrief'
+      type:
+        example: text
+        type: string
+    type: object
+  internal_modules_admin_conversation.MessagesResponse:
+    properties:
+      hasMore:
+        type: boolean
+      hasNewer:
+        type: boolean
+      messages:
+        items:
+          $ref: '#/definitions/internal_modules_admin_conversation.Message'
+        type: array
+      nextBefore:
+        type: string
+    type: object
+  internal_modules_admin_conversation.MessagesSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_conversation.MessagesResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_conversation.UserBrief:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        example: Minh Anh
+        type: string
+      id:
+        example: ca4c6d54-870c-4735-b9a6-cce05a04aedb
+        type: string
+      username:
+        example: minhanh
+        type: string
     type: object
   internal_modules_admin_dashboard.EngagementSection:
     properties:
@@ -1501,6 +1884,200 @@ definitions:
     required:
     - enabled
     type: object
+  internal_modules_admin_moment.AuthorResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_admin_moment.MediaPurgeLogsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_moment.MediaPurgeLog'
+        type: array
+      last:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moment.MediaPurgeLog'
+      running:
+        type: boolean
+      total:
+        type: integer
+      totals:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moment.MediaPurgeTotals'
+    type: object
+  internal_modules_admin_moment.MediaPurgeRunResponse:
+    properties:
+      started:
+        type: boolean
+    type: object
+  internal_modules_admin_moment.MomentDetail:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_admin_moment.AuthorResponse'
+      background:
+        type: string
+      commentCount:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      duration:
+        type: number
+      enabled:
+        type: boolean
+      expiresAt:
+        type: string
+      height:
+        type: integer
+      hiddenAt:
+        type: string
+      hiddenBy:
+        type: string
+      id:
+        type: string
+      mediaPurged:
+        type: boolean
+      mediaUrl:
+        type: string
+      mimeType:
+        type: string
+      overlays:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.MomentOverlay'
+        type: array
+      pageCount:
+        type: integer
+      pages:
+        items:
+          $ref: '#/definitions/internal_modules_admin_moment.MomentItem'
+        type: array
+      pendingReportCount:
+        type: integer
+      position:
+        type: integer
+      purgedAt:
+        type: string
+      reactionCount:
+        type: integer
+      reactions:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentReactionCount'
+        type: array
+      reportCount:
+        type: integer
+      size:
+        type: integer
+      state:
+        type: string
+      status:
+        type: string
+      thumbUrl:
+        type: string
+      type:
+        type: string
+      viewerCount:
+        type: integer
+      visibility:
+        type: string
+      width:
+        type: integer
+    type: object
+  internal_modules_admin_moment.MomentItem:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_admin_moment.AuthorResponse'
+      background:
+        type: string
+      commentCount:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      duration:
+        type: number
+      enabled:
+        type: boolean
+      expiresAt:
+        type: string
+      height:
+        type: integer
+      hiddenAt:
+        type: string
+      hiddenBy:
+        type: string
+      id:
+        type: string
+      mediaPurged:
+        type: boolean
+      mediaUrl:
+        type: string
+      mimeType:
+        type: string
+      overlays:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.MomentOverlay'
+        type: array
+      pageCount:
+        type: integer
+      pendingReportCount:
+        type: integer
+      position:
+        type: integer
+      purgedAt:
+        type: string
+      reactionCount:
+        type: integer
+      reactions:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentReactionCount'
+        type: array
+      reportCount:
+        type: integer
+      size:
+        type: integer
+      state:
+        type: string
+      status:
+        type: string
+      thumbUrl:
+        type: string
+      type:
+        type: string
+      viewerCount:
+        type: integer
+      visibility:
+        type: string
+      width:
+        type: integer
+    type: object
+  internal_modules_admin_moment.MomentListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_moment.MomentItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_moment.UpdateStatusRequest:
+    properties:
+      enabled:
+        example: false
+        type: boolean
+    required:
+    - enabled
+    type: object
   internal_modules_admin_pen.SideStatsResponse:
     properties:
       keeperLeft:
@@ -1620,6 +2197,103 @@ definitions:
       timestamp:
         type: string
       traceId:
+        type: string
+    type: object
+  internal_modules_admin_push-campaign.AdminBrief:
+    properties:
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_admin_push-campaign.AudienceResponse:
+    properties:
+      devices:
+        type: integer
+      users:
+        type: integer
+    type: object
+  internal_modules_admin_push-campaign.CampaignItem:
+    properties:
+      audience:
+        type: string
+      body:
+        type: string
+      createdAt:
+        type: string
+      createdBy:
+        $ref: '#/definitions/internal_modules_admin_push-campaign.AdminBrief'
+      error:
+        type: string
+      failureCount:
+        type: integer
+      finishedAt:
+        type: string
+      id:
+        type: string
+      startedAt:
+        type: string
+      status:
+        type: string
+      successCount:
+        type: integer
+      targetUser:
+        $ref: '#/definitions/internal_modules_admin_push-campaign.UserBrief'
+      title:
+        type: string
+      totalDevices:
+        type: integer
+    type: object
+  internal_modules_admin_push-campaign.CampaignListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_push-campaign.CampaignItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_push-campaign.CreateCampaignRequest:
+    properties:
+      audience:
+        enum:
+        - all
+        - vip
+        - user
+        example: all
+        type: string
+      body:
+        example: Nhân đôi KEN khi nạp từ tối nay đến hết Chủ nhật!
+        maxLength: 500
+        type: string
+      title:
+        example: Sự kiện cuối tuần
+        maxLength: 100
+        type: string
+      username:
+        example: okela
+        maxLength: 50
+        type: string
+    required:
+    - audience
+    - body
+    - title
+    type: object
+  internal_modules_admin_push-campaign.UserBrief:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
         type: string
     type: object
   internal_modules_admin_relationship.FollowItem:
@@ -1833,6 +2507,104 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_report.AdminBrief:
+    properties:
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_admin_report.ReportItem:
+    properties:
+      contextId:
+        type: string
+      createdAt:
+        type: string
+      handledAt:
+        type: string
+      handledBy:
+        $ref: '#/definitions/internal_modules_admin_report.AdminBrief'
+      handlerNote:
+        type: string
+      id:
+        type: string
+      note:
+        type: string
+      reason:
+        type: string
+      reportedUser:
+        $ref: '#/definitions/internal_modules_admin_report.UserBrief'
+      reporter:
+        $ref: '#/definitions/internal_modules_admin_report.UserBrief'
+      sameTargetPending:
+        type: integer
+      snapshot:
+        additionalProperties: true
+        type: object
+      status:
+        type: string
+      targetId:
+        type: string
+      targetType:
+        type: string
+    type: object
+  internal_modules_admin_report.ReportListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_report.ReportItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_report.ReportSummaryResponse:
+    properties:
+      pending:
+        type: integer
+    type: object
+  internal_modules_admin_report.UpdateStatusRequest:
+    properties:
+      note:
+        example: Đã xoá tin nhắn và khoá tài khoản
+        maxLength: 1000
+        type: string
+      status:
+        enum:
+        - resolved
+        - dismissed
+        example: resolved
+        type: string
+    required:
+    - status
+    type: object
+  internal_modules_admin_report.UpdateStatusResponse:
+    properties:
+      affected:
+        type: integer
+      report:
+        $ref: '#/definitions/internal_modules_admin_report.ReportItem'
+    type: object
+  internal_modules_admin_report.UserBrief:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      username:
+        type: string
+    type: object
+  internal_modules_admin_setting.ChatBotDefaultsSuccessResponse:
+    type: object
   internal_modules_admin_setting.PutManySettingsRequest:
     properties:
       items:
@@ -1846,6 +2618,8 @@ definitions:
     type: object
   internal_modules_admin_setting.PutSettingRequest:
     properties:
+      expectedUpdatedAt:
+        type: string
       value:
         $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
     required:
@@ -1889,6 +2663,36 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_setting.SettingListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_setting.TestMailRequest:
+    properties:
+      to:
+        maxLength: 254
+        type: string
+    required:
+    - to
+    type: object
+  internal_modules_admin_setting.TestMailResponse:
+    properties:
+      to:
+        type: string
+    type: object
+  internal_modules_admin_setting.TestMailSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_setting.TestMailResponse'
       error:
         type: string
       path:
@@ -2305,6 +3109,147 @@ definitions:
       total:
         type: integer
     type: object
+  internal_modules_admin_vip.PurchaseBreakdownItem:
+    properties:
+      count:
+        type: integer
+      giftCount:
+        type: integer
+      ken:
+        type: integer
+      kind:
+        type: string
+      name:
+        type: string
+      vipIconId:
+        type: integer
+    type: object
+  internal_modules_admin_vip.PurchaseItem:
+    properties:
+      createdAt:
+        example: "2026-10-19T10:00:00Z"
+        type: string
+      days:
+        example: 30
+        type: integer
+      giver:
+        $ref: '#/definitions/internal_modules_admin_vip.UserInfo'
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      kenPaid:
+        example: 250
+        type: integer
+      kind:
+        example: package
+        type: string
+      name:
+        example: Gói 30 ngày
+        type: string
+      source:
+        example: gift
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_vip.UserInfo'
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+      vipIconId:
+        example: 4
+        type: integer
+    type: object
+  internal_modules_admin_vip.PurchaseListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_vip.PurchaseItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_vip.PurchaseListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_vip.PurchaseListResponse'
+      success:
+        type: boolean
+    type: object
+  internal_modules_admin_vip.PurchaseSeriesItem:
+    properties:
+      count:
+        type: integer
+      date:
+        type: string
+      iconKen:
+        type: integer
+      packageKen:
+        type: integer
+    type: object
+  internal_modules_admin_vip.PurchaseStatsResponse:
+    properties:
+      activeVipUsers:
+        type: integer
+      breakdown:
+        items:
+          $ref: '#/definitions/internal_modules_admin_vip.PurchaseBreakdownItem'
+        type: array
+      bucket:
+        type: string
+      range:
+        $ref: '#/definitions/internal_modules_admin_vip.PurchaseTotals'
+      series:
+        items:
+          $ref: '#/definitions/internal_modules_admin_vip.PurchaseSeriesItem'
+        type: array
+      thisMonth:
+        $ref: '#/definitions/internal_modules_admin_vip.PurchaseTotals'
+      today:
+        $ref: '#/definitions/internal_modules_admin_vip.PurchaseTotals'
+    type: object
+  internal_modules_admin_vip.PurchaseStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_vip.PurchaseStatsResponse'
+      success:
+        type: boolean
+    type: object
+  internal_modules_admin_vip.PurchaseTotals:
+    properties:
+      buyers:
+        type: integer
+      count:
+        type: integer
+      giftCount:
+        type: integer
+      iconCount:
+        type: integer
+      iconKen:
+        type: integer
+      ken:
+        type: integer
+      packageCount:
+        type: integer
+      packageKen:
+        type: integer
+    type: object
+  internal_modules_admin_vip.UserInfo:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
   internal_modules_admin_wheel.UserBrief:
     properties:
       avatar:
@@ -2425,6 +3370,61 @@ definitions:
       timestamp:
         type: string
       traceId:
+        type: string
+    type: object
+  internal_modules_admin_wordchain.PurchaseItem:
+    properties:
+      amount:
+        type: integer
+      createdAt:
+        type: string
+      guesses:
+        type: integer
+      hints:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      type:
+        example: hint
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_wordchain.PurchaseUser'
+      word:
+        type: string
+    type: object
+  internal_modules_admin_wordchain.PurchaseListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_wordchain.PurchaseItem'
+        type: array
+      summary:
+        $ref: '#/definitions/internal_modules_admin_wordchain.PurchaseSummary'
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_wordchain.PurchaseSummary:
+    properties:
+      guessCount:
+        type: integer
+      guessKen:
+        type: integer
+      hintCount:
+        type: integer
+      hintKen:
+        type: integer
+    type: object
+  internal_modules_admin_wordchain.PurchaseUser:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
         type: string
     type: object
   internal_modules_announcement.LatestAnnouncementResponse:
@@ -2927,6 +3927,21 @@ definitions:
       owner:
         $ref: '#/definitions/internal_modules_clan.ClanUserResponse'
       policy:
+        type: integer
+      visitCount:
+        type: integer
+    type: object
+  internal_modules_clan.ClanSummaryResponse:
+    properties:
+      avatar:
+        type: string
+      description:
+        type: string
+      handle:
+        type: string
+      id:
+        type: string
+      memberCount:
         type: integer
       visitCount:
         type: integer
@@ -4095,6 +5110,8 @@ definitions:
     properties:
       actor:
         $ref: '#/definitions/internal_modules_me.AuthorResponse'
+      actorCount:
+        type: integer
       commentId:
         type: string
       createdAt:
@@ -4504,6 +5521,273 @@ definitions:
         type: integer
       updatedAt:
         type: string
+    type: object
+  internal_modules_moment.CommentMomentRequest:
+    properties:
+      content:
+        example: Đẹp quá!
+        type: string
+    required:
+    - content
+    type: object
+  internal_modules_moment.CreateMomentsResponse:
+    properties:
+      moments:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentResponse'
+        type: array
+    type: object
+  internal_modules_moment.MarkSeenRequest:
+    properties:
+      ids:
+        items:
+          type: string
+        maxItems: 50
+        minItems: 1
+        type: array
+    required:
+    - ids
+    type: object
+  internal_modules_moment.MarkSeenResponse:
+    properties:
+      ids:
+        items:
+          type: string
+        type: array
+    type: object
+  internal_modules_moment.MomentAuthorResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_moment.MomentCommentResponse:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_moment.MomentAuthorResponse'
+    type: object
+  internal_modules_moment.MomentCommentsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentCommentResponse'
+        type: array
+      limit:
+        type: integer
+      nextOffset:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_moment.MomentGroupResponse:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_moment.MomentAuthorResponse'
+      moments:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentResponse'
+        type: array
+    type: object
+  internal_modules_moment.MomentHistoryResponse:
+    properties:
+      moments:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentResponse'
+        type: array
+      nextOffset:
+        type: integer
+    type: object
+  internal_modules_moment.MomentMyCommentResponse:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+    type: object
+  internal_modules_moment.MomentReactionCount:
+    properties:
+      count:
+        example: 3
+        type: integer
+      type:
+        example: LOVE
+        type: string
+    type: object
+  internal_modules_moment.MomentReactorResponse:
+    properties:
+      reactedAt:
+        type: string
+      reactions:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentReactionCount'
+        type: array
+      user:
+        $ref: '#/definitions/internal_modules_moment.MomentAuthorResponse'
+    type: object
+  internal_modules_moment.MomentReactorsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentReactorResponse'
+        type: array
+      limit:
+        type: integer
+      nextOffset:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_moment.MomentResponse:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_moment.MomentAuthorResponse'
+      background:
+        type: string
+      commentCount:
+        type: integer
+      createdAt:
+        type: string
+      duration:
+        type: number
+      expiresAt:
+        type: string
+      height:
+        type: integer
+      hidden:
+        type: boolean
+      hiddenBy:
+        type: string
+      id:
+        type: string
+      mediaPurged:
+        type: boolean
+      mediaUrl:
+        type: string
+      myComment:
+        $ref: '#/definitions/internal_modules_moment.MomentMyCommentResponse'
+      overlays:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.MomentOverlay'
+        type: array
+      position:
+        type: integer
+      reactionCount:
+        type: integer
+      reactions:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentReactionCount'
+        type: array
+      reactorsAvailable:
+        type: boolean
+      seen:
+        type: boolean
+      status:
+        type: string
+      thumbUrl:
+        type: string
+      type:
+        type: string
+      viewerCount:
+        type: integer
+      viewersAvailable:
+        type: boolean
+      visibility:
+        type: string
+      width:
+        type: integer
+    type: object
+  internal_modules_moment.MomentTrayResponse:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentGroupResponse'
+        type: array
+      mine:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentResponse'
+        type: array
+      nextCursor:
+        type: string
+    type: object
+  internal_modules_moment.MomentViewerResponse:
+    properties:
+      reactions:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentReactionCount'
+        type: array
+      user:
+        $ref: '#/definitions/internal_modules_moment.MomentAuthorResponse'
+      viewedAt:
+        type: string
+    type: object
+  internal_modules_moment.MomentViewersResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentViewerResponse'
+        type: array
+      limit:
+        type: integer
+      nextOffset:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_moment.MyMomentsResponse:
+    properties:
+      moments:
+        items:
+          $ref: '#/definitions/internal_modules_moment.MomentResponse'
+        type: array
+    type: object
+  internal_modules_moment.ReactMomentRequest:
+    properties:
+      count:
+        example: 1
+        maximum: 20
+        minimum: 1
+        type: integer
+      type:
+        example: LOVE
+        type: string
+    required:
+    - type
+    type: object
+  internal_modules_moment.ReactMomentResponse:
+    properties:
+      count:
+        example: 4
+        type: integer
+      type:
+        example: LOVE
+        type: string
+    type: object
+  internal_modules_moment.SetHiddenRequest:
+    properties:
+      hidden:
+        example: true
+        type: boolean
+    required:
+    - hidden
     type: object
   internal_modules_notification.ActorResponse:
     properties:
@@ -5020,6 +6304,40 @@ definitions:
         example: gold
         type: string
     type: object
+  internal_modules_report.CreateReportRequest:
+    properties:
+      contextId:
+        example: 0b6f4c1e-3c55-4f0a-9a43-2f8b8c1d2e10
+        maxLength: 64
+        type: string
+      note:
+        example: Spam link lừa đảo
+        maxLength: 2000
+        type: string
+      reason:
+        example: spam
+        type: string
+      targetId:
+        example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        maxLength: 64
+        type: string
+      targetType:
+        example: room_message
+        type: string
+    required:
+    - reason
+    - targetId
+    - targetType
+    type: object
+  internal_modules_report.ReportResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+    type: object
   internal_modules_room.JoinRoomResponse:
     properties:
       expiresIn:
@@ -5029,16 +6347,33 @@ definitions:
     type: object
   internal_modules_room.RoomBlockUserRequest:
     properties:
+      migration:
+        type: boolean
       userId:
         type: string
     required:
     - userId
+    type: object
+  internal_modules_room.RoomBlockedUser:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      userId:
+        type: string
+      username:
+        type: string
     type: object
   internal_modules_room.RoomBlockedUsersResponse:
     properties:
       userIds:
         items:
           type: string
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/internal_modules_room.RoomBlockedUser'
         type: array
     type: object
   internal_modules_room.RoomListResponse:
@@ -5190,6 +6525,10 @@ definitions:
         type: integer
       name:
         type: string
+      vipMinMembers:
+        type: integer
+      vipRequired:
+        type: boolean
     type: object
   internal_modules_room.SendRoomMessageRequest:
     properties:
@@ -5209,6 +6548,305 @@ definitions:
         type: string
     required:
     - type
+    type: object
+  internal_modules_room_wordchain.GuessPurchaseRequest:
+    properties:
+      price:
+        example: 500
+        minimum: 1
+        type: integer
+      sessionId:
+        example: 7b0c8f3e-2a51-4c1e-9d2f-5a6b7c8d9e0f
+        type: string
+      turn:
+        example: 3
+        minimum: 0
+        type: integer
+    required:
+    - price
+    - sessionId
+    - turn
+    type: object
+  internal_modules_room_wordchain.GuessPurchaseResponse:
+    properties:
+      guesses:
+        type: integer
+      kenBalance:
+        type: integer
+      price:
+        type: integer
+      remainingGuesses:
+        type: integer
+      sessionId:
+        type: string
+      state:
+        $ref: '#/definitions/internal_modules_room_wordchain.StateResponse'
+      turn:
+        type: integer
+    type: object
+  internal_modules_room_wordchain.HintResponse:
+    properties:
+      charged:
+        type: boolean
+      hints:
+        items:
+          type: string
+        type: array
+      kenBalance:
+        type: integer
+      price:
+        type: integer
+      sessionId:
+        type: string
+      turn:
+        type: integer
+      word:
+        type: string
+    type: object
+  internal_modules_room_wordchain.LeaderboardEntry:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      points:
+        type: integer
+      rank:
+        type: integer
+      userId:
+        type: string
+      username:
+        type: string
+      wins:
+        type: integer
+    type: object
+  internal_modules_room_wordchain.LeaderboardResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_room_wordchain.LeaderboardEntry'
+        type: array
+      me:
+        $ref: '#/definitions/internal_modules_room_wordchain.LeaderboardEntry'
+      period:
+        type: string
+      sort:
+        type: string
+      total:
+        type: integer
+    type: object
+  internal_modules_room_wordchain.LookupMeaning:
+    properties:
+      definition:
+        type: string
+      example:
+        type: string
+      pos:
+        type: string
+      subPos:
+        type: string
+    type: object
+  internal_modules_room_wordchain.LookupRelation:
+    properties:
+      type:
+        type: string
+      word:
+        type: string
+    type: object
+  internal_modules_room_wordchain.LookupResponse:
+    properties:
+      found:
+        type: boolean
+      message:
+        type: string
+      results:
+        items:
+          $ref: '#/definitions/internal_modules_room_wordchain.LookupResult'
+        type: array
+      source:
+        type: string
+      word:
+        type: string
+    type: object
+  internal_modules_room_wordchain.LookupResult:
+    properties:
+      langCode:
+        type: string
+      langName:
+        type: string
+      meanings:
+        items:
+          $ref: '#/definitions/internal_modules_room_wordchain.LookupMeaning'
+        type: array
+      relations:
+        items:
+          $ref: '#/definitions/internal_modules_room_wordchain.LookupRelation'
+        type: array
+      translations:
+        items:
+          $ref: '#/definitions/internal_modules_room_wordchain.LookupTranslation'
+        type: array
+    type: object
+  internal_modules_room_wordchain.LookupTranslation:
+    properties:
+      langName:
+        type: string
+      translation:
+        type: string
+    type: object
+  internal_modules_room_wordchain.Message:
+    properties:
+      code:
+        type: string
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      reaction:
+        type: string
+      remainingGuesses:
+        type: integer
+      requiredSyllable:
+        type: string
+      senderAvatar:
+        type: string
+      senderGender:
+        type: string
+      senderId:
+        type: string
+      senderName:
+        type: string
+      senderType:
+        type: string
+      senderVip:
+        type: string
+      senderVipEnd:
+        type: string
+      seq:
+        type: integer
+      sessionId:
+        type: string
+      type:
+        type: string
+      word:
+        type: string
+    type: object
+  internal_modules_room_wordchain.MessageListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_room_wordchain.Message'
+        type: array
+      nextBefore:
+        type: string
+    type: object
+  internal_modules_room_wordchain.MoveRequest:
+    properties:
+      content:
+        example: chân trời
+        maxLength: 200
+        minLength: 1
+        type: string
+      sessionId:
+        example: 7b0c8f3e-2a51-4c1e-9d2f-5a6b7c8d9e0f
+        type: string
+      turn:
+        example: 3
+        minimum: 0
+        type: integer
+    required:
+    - content
+    type: object
+  internal_modules_room_wordchain.MoveResponse:
+    properties:
+      botMessages:
+        items:
+          $ref: '#/definitions/internal_modules_room_wordchain.Message'
+        type: array
+      message:
+        $ref: '#/definitions/internal_modules_room_wordchain.Message'
+      points:
+        type: integer
+      remainingGuesses:
+        type: integer
+      state:
+        $ref: '#/definitions/internal_modules_room_wordchain.StateResponse'
+    type: object
+  internal_modules_room_wordchain.OverviewResponse:
+    properties:
+      guessPackSize:
+        type: integer
+      guessPrice:
+        type: integer
+      hintPrice:
+        type: integer
+      needsVipToPlay:
+        type: boolean
+      points:
+        type: integer
+      remainingGuesses:
+        type: integer
+      state:
+        $ref: '#/definitions/internal_modules_room_wordchain.StateResponse'
+    type: object
+  internal_modules_room_wordchain.StateResponse:
+    properties:
+      guessLimit:
+        type: integer
+      historyCount:
+        type: integer
+      lastProgressAt:
+        type: string
+      requiredSyllable:
+        type: string
+      revision:
+        type: integer
+      sessionId:
+        type: string
+      sessionStartedAt:
+        type: string
+      turn:
+        type: integer
+      word:
+        type: string
+      wordExpiresAt:
+        type: string
+      wordOwnerId:
+        type: string
+    type: object
+  internal_modules_room_wordchain.WinEntry:
+    properties:
+      avatar:
+        type: string
+      createdAt:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      previousWord:
+        type: string
+      userId:
+        type: string
+      username:
+        type: string
+      word:
+        type: string
+    type: object
+  internal_modules_room_wordchain.WinListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_room_wordchain.WinEntry'
+        type: array
+      nextBefore:
+        type: string
     type: object
   internal_modules_session.ListSessionsResponse:
     properties:
@@ -5316,6 +6954,92 @@ definitions:
         example: web
         type: string
     type: object
+  internal_modules_setting.AppConfigResponse:
+    properties:
+      configs:
+        type: object
+      notModified:
+        type: boolean
+      version:
+        example: 9f86d081884c7d65
+        type: string
+    type: object
+  internal_modules_setting.AppConfigSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_setting.AppConfigResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_setting.ChatBotAvailability:
+    properties:
+      enabled:
+        example: true
+        type: boolean
+      type:
+        example: OLALA
+        type: string
+    type: object
+  internal_modules_setting.ChatBotPublicConfig:
+    properties:
+      bots:
+        items:
+          $ref: '#/definitions/internal_modules_setting.ChatBotAvailability'
+        type: array
+      dailyLimit:
+        example: 50
+        type: integer
+    type: object
+  internal_modules_setting.ChatBotPublicConfigSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_setting.ChatBotPublicConfig'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_setting.FeatureEnabledResponse:
+    properties:
+      enabled:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_setting.FeatureEnabledSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_setting.FeatureEnabledResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_setting.TopupBankInfo:
     properties:
       accountName:
@@ -5383,11 +7107,13 @@ definitions:
       traceId:
         type: string
     type: object
-  internal_modules_setting.UsernameChangeConfig:
+  internal_modules_setting.UsernameChangeConfigResponse:
     properties:
       enabled:
+        example: true
         type: boolean
       enabledMobile:
+        example: true
         type: boolean
       tiers:
         items:
@@ -5397,7 +7123,7 @@ definitions:
   internal_modules_setting.UsernameChangeConfigSuccessResponse:
     properties:
       data:
-        $ref: '#/definitions/internal_modules_setting.UsernameChangeConfig'
+        $ref: '#/definitions/internal_modules_setting.UsernameChangeConfigResponse'
       error:
         type: string
       path:
@@ -5416,6 +7142,269 @@ definitions:
       cost:
         type: integer
       minLength:
+        type: integer
+    type: object
+  internal_modules_setting.WordChainConfig:
+    properties:
+      enabled:
+        type: boolean
+      guessPrice:
+        type: integer
+      hintPrice:
+        type: integer
+      vipRequiredToPlay:
+        type: boolean
+      vipRequiredToView:
+        type: boolean
+    type: object
+  internal_modules_setting.WordChainConfigSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_setting.WordChainConfig'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_story.ChapterListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_story.ChapterSummaryResponse'
+        type: array
+    type: object
+  internal_modules_story.ChapterResponse:
+    properties:
+      access:
+        $ref: '#/definitions/internal_modules_story.StoryAccessResponse'
+      content:
+        type: string
+      id:
+        type: string
+      locked:
+        type: boolean
+      nextPosition:
+        type: integer
+      position:
+        type: integer
+      prevPosition:
+        type: integer
+      publishedAt:
+        type: string
+      storyId:
+        type: string
+      title:
+        type: string
+      wordCount:
+        type: integer
+    type: object
+  internal_modules_story.ChapterSummaryResponse:
+    properties:
+      id:
+        type: string
+      position:
+        type: integer
+      publishedAt:
+        type: string
+      storyId:
+        type: string
+      title:
+        type: string
+      wordCount:
+        type: integer
+    type: object
+  internal_modules_story.CreateStoryCommentRequest:
+    properties:
+      content:
+        type: string
+      parentId:
+        type: string
+    required:
+    - content
+    type: object
+  internal_modules_story.CreateStoryCommentResponse:
+    properties:
+      comment:
+        $ref: '#/definitions/internal_modules_story.StoryCommentResponse'
+      commentCount:
+        type: integer
+      unlocked:
+        type: boolean
+    type: object
+  internal_modules_story.DeleteStoryCommentResponse:
+    properties:
+      commentCount:
+        type: integer
+    type: object
+  internal_modules_story.GenreItem:
+    properties:
+      count:
+        type: integer
+      name:
+        type: string
+    type: object
+  internal_modules_story.GenreListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_story.GenreItem'
+        type: array
+    type: object
+  internal_modules_story.StoryAccessResponse:
+    properties:
+      commentMinChars:
+        type: integer
+      enabled:
+        type: boolean
+      freeLimit:
+        type: integer
+      freeUsed:
+        type: integer
+      unlocked:
+        type: boolean
+      vip:
+        type: boolean
+    type: object
+  internal_modules_story.StoryCommentAuthor:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+      vipEndTime:
+        type: string
+      vipUsed:
+        type: string
+    type: object
+  internal_modules_story.StoryCommentLikeResponse:
+    properties:
+      likeCount:
+        type: integer
+      liked:
+        type: boolean
+    type: object
+  internal_modules_story.StoryCommentListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_story.StoryCommentResponse'
+        type: array
+      nextCursor:
+        type: string
+    type: object
+  internal_modules_story.StoryCommentReply:
+    properties:
+      authorName:
+        type: string
+      commentId:
+        type: string
+      excerpt:
+        type: string
+    type: object
+  internal_modules_story.StoryCommentResponse:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_story.StoryCommentAuthor'
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      likeCount:
+        type: integer
+      liked:
+        type: boolean
+      mine:
+        type: boolean
+      parentId:
+        type: string
+      replyTo:
+        $ref: '#/definitions/internal_modules_story.StoryCommentReply'
+      story:
+        $ref: '#/definitions/internal_modules_story.StoryCommentStory'
+      storyId:
+        type: string
+    type: object
+  internal_modules_story.StoryCommentStory:
+    properties:
+      coverUrl:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+  internal_modules_story.StoryListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_story.StoryResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  internal_modules_story.StoryResponse:
+    properties:
+      access:
+        $ref: '#/definitions/internal_modules_story.StoryAccessResponse'
+      ageRating:
+        type: string
+      authorName:
+        type: string
+      chapterCount:
+        type: integer
+      commentCount:
+        type: integer
+      coverUrl:
+        type: string
+      genres:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      intro:
+        type: string
+      kind:
+        type: string
+      lastChapterAt:
+        type: string
+      likeCount:
+        type: integer
+      publishedAt:
+        type: string
+      slug:
+        type: string
+      sourceUrl:
+        type: string
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updatedAt:
+        type: string
+      viewCount:
+        type: integer
+      wordCount:
         type: integer
     type: object
   internal_modules_topup.WebhookResponse:
@@ -6731,6 +8720,35 @@ definitions:
       updatedAt:
         type: string
     type: object
+  ola-chat-server_internal_models.MomentOverlay:
+    properties:
+      align:
+        type: string
+      bold:
+        type: boolean
+      color:
+        type: string
+      font:
+        type: string
+      id:
+        type: string
+      italic:
+        type: boolean
+      rotation:
+        type: number
+      scale:
+        type: number
+      style:
+        type: string
+      text:
+        type: string
+      w:
+        type: number
+      x:
+        type: number
+      "y":
+        type: number
+    type: object
   ola-chat-server_internal_models.WheelSegmentKind:
     enum:
     - miss
@@ -7555,6 +9573,21 @@ definitions:
       visibility:
         type: string
     type: object
+  ola-chat-server_internal_modules_message.ReplySnapshot:
+    properties:
+      excerpt:
+        type: string
+      imageUrl:
+        type: string
+      messageId:
+        type: string
+      senderId:
+        type: string
+      senderName:
+        type: string
+      type:
+        type: string
+    type: object
   ola-chat-server_internal_modules_mini-game.CreateMiniGameRequest:
     properties:
       description:
@@ -7635,6 +9668,118 @@ definitions:
         minLength: 1
         type: string
       sortOrder:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_moment.MediaPurgeLog:
+    properties:
+      afterHours:
+        type: integer
+      bytes:
+        type: integer
+      cutoff:
+        type: string
+      durationMs:
+        type: integer
+      failed:
+        type: integer
+      files:
+        type: integer
+      finishedAt:
+        type: string
+      hasMore:
+        type: boolean
+      id:
+        type: string
+      message:
+        type: string
+      purged:
+        type: integer
+      startedAt:
+        type: string
+      status:
+        type: string
+      trigger:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_moment.MediaPurgeTotals:
+    properties:
+      bytes:
+        type: integer
+      files:
+        type: integer
+      moments:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_moment.MomentAuthorResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_moment.MomentCommentResponse:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentAuthorResponse'
+    type: object
+  ola-chat-server_internal_modules_moment.MomentCommentsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentCommentResponse'
+        type: array
+      limit:
+        type: integer
+      nextOffset:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_moment.MomentReactionCount:
+    properties:
+      count:
+        example: 3
+        type: integer
+      type:
+        example: LOVE
+        type: string
+    type: object
+  ola-chat-server_internal_modules_moment.MomentViewerResponse:
+    properties:
+      reactions:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentReactionCount'
+        type: array
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentAuthorResponse'
+      viewedAt:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_moment.MomentViewersResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentViewerResponse'
+        type: array
+      limit:
+        type: integer
+      nextOffset:
+        type: integer
+      offset:
+        type: integer
+      total:
         type: integer
     type: object
   ola-chat-server_internal_modules_pen.AdminShotListSuccessResponse:
@@ -7862,8 +10007,56 @@ definitions:
         maxLength: 150
         minLength: 1
         type: string
+      vipMinMembers:
+        example: 50
+        minimum: 0
+        type: integer
+      vipRequired:
+        example: false
+        type: boolean
     required:
     - name
+    type: object
+  ola-chat-server_internal_modules_room.RoomImagePurgePreview:
+    properties:
+      before:
+        type: string
+      bytes:
+        example: 52428800
+        type: integer
+      files:
+        example: 120
+        type: integer
+      kept:
+        example: 2
+        type: integer
+      olderThanDays:
+        example: 30
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_room.RoomImagePurgeRequest:
+    properties:
+      before:
+        type: string
+    required:
+    - before
+    type: object
+  ola-chat-server_internal_modules_room.RoomImagePurgeResult:
+    properties:
+      before:
+        type: string
+      bytes:
+        example: 52428800
+        type: integer
+      failed:
+        example: 0
+        type: integer
+      files:
+        example: 120
+        type: integer
+      kept:
+        example: 2
+        type: integer
     type: object
   ola-chat-server_internal_modules_room.RoomListResponse:
     properties:
@@ -7982,6 +10175,10 @@ definitions:
         type: integer
       name:
         type: string
+      vipMinMembers:
+        type: integer
+      vipRequired:
+        type: boolean
     type: object
   ola-chat-server_internal_modules_room.UpdateRoomRequest:
     properties:
@@ -8002,6 +10199,592 @@ definitions:
         maxLength: 150
         minLength: 1
         type: string
+      vipMinMembers:
+        minimum: 0
+        type: integer
+      vipRequired:
+        type: boolean
+    type: object
+  ola-chat-server_internal_modules_room_wordchain.AdminOverviewResponse:
+    properties:
+      history:
+        items:
+          type: string
+        type: array
+      players:
+        type: integer
+      state:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room_wordchain.StateResponse'
+      winners:
+        type: integer
+      wordOwner:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room_wordchain.AdminPlayer'
+    type: object
+  ola-chat-server_internal_modules_room_wordchain.AdminPlayer:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room_wordchain.Message:
+    properties:
+      code:
+        type: string
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      reaction:
+        type: string
+      remainingGuesses:
+        type: integer
+      requiredSyllable:
+        type: string
+      senderAvatar:
+        type: string
+      senderGender:
+        type: string
+      senderId:
+        type: string
+      senderName:
+        type: string
+      senderType:
+        type: string
+      senderVip:
+        type: string
+      senderVipEnd:
+        type: string
+      seq:
+        type: integer
+      sessionId:
+        type: string
+      type:
+        type: string
+      word:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room_wordchain.MessageListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_room_wordchain.Message'
+        type: array
+      nextBefore:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room_wordchain.StateResponse:
+    properties:
+      guessLimit:
+        type: integer
+      historyCount:
+        type: integer
+      lastProgressAt:
+        type: string
+      requiredSyllable:
+        type: string
+      revision:
+        type: integer
+      sessionId:
+        type: string
+      sessionStartedAt:
+        type: string
+      turn:
+        type: integer
+      word:
+        type: string
+      wordExpiresAt:
+        type: string
+      wordOwnerId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room_wordchain.WinEntry:
+    properties:
+      avatar:
+        type: string
+      createdAt:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      previousWord:
+        type: string
+      userId:
+        type: string
+      username:
+        type: string
+      word:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room_wordchain.WinListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_room_wordchain.WinEntry'
+        type: array
+      nextBefore:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_setting.StoryCookie:
+    properties:
+      cookie:
+        type: string
+      deadAt:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.AdminChapterDetailResponse:
+    properties:
+      content:
+        type: string
+      crawledAt:
+        type: string
+      hasContent:
+        type: boolean
+      id:
+        type: string
+      position:
+        type: integer
+      publishedAt:
+        type: string
+      sourceUrl:
+        type: string
+      storyId:
+        type: string
+      title:
+        type: string
+      wordCount:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.AdminChapterListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminChapterResponse'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_story.AdminChapterResponse:
+    properties:
+      crawledAt:
+        type: string
+      hasContent:
+        type: boolean
+      id:
+        type: string
+      position:
+        type: integer
+      publishedAt:
+        type: string
+      sourceUrl:
+        type: string
+      storyId:
+        type: string
+      title:
+        type: string
+      wordCount:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.AdminStoryCommentListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminStoryCommentResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.AdminStoryCommentResponse:
+    properties:
+      author:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.StoryCommentAuthor'
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      likeCount:
+        type: integer
+      liked:
+        type: boolean
+      mine:
+        type: boolean
+      parentId:
+        type: string
+      replyTo:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.StoryCommentReply'
+      story:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.StoryCommentStory'
+      storyId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.AdminStoryListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminStoryResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.AdminStoryResponse:
+    properties:
+      access:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.StoryAccessResponse'
+      ageRating:
+        type: string
+      authorName:
+        type: string
+      chapterCount:
+        type: integer
+      commentCount:
+        type: integer
+      contentChapters:
+        type: integer
+      coverUrl:
+        type: string
+      crawledAt:
+        type: string
+      createdAt:
+        type: string
+      genres:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      intro:
+        type: string
+      isHidden:
+        type: boolean
+      kind:
+        type: string
+      lastChapterAt:
+        type: string
+      likeCount:
+        type: integer
+      publishedAt:
+        type: string
+      slug:
+        type: string
+      source:
+        type: string
+      sourceStoryId:
+        type: string
+      sourceUrl:
+        type: string
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updatedAt:
+        type: string
+      viewCount:
+        type: integer
+      wordCount:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.AdminSummaryResponse:
+    properties:
+      chapters:
+        type: integer
+      contentChapters:
+        type: integer
+      hiddenStories:
+        type: integer
+      lastCrawledAt:
+        type: string
+      longStories:
+        type: integer
+      shortStories:
+        type: integer
+      stories:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.BulkVisibilityRequest:
+    properties:
+      filter:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.StoryFilter'
+      ids:
+        items:
+          type: string
+        type: array
+      isHidden:
+        type: boolean
+    required:
+    - isHidden
+    type: object
+  ola-chat-server_internal_modules_story.BulkVisibilityResponse:
+    properties:
+      updated:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.CrawlError:
+    properties:
+      attempts:
+        type: integer
+      message:
+        type: string
+      sourceStoryId:
+        type: string
+      title:
+        type: string
+      willRetry:
+        type: boolean
+    type: object
+  ola-chat-server_internal_modules_story.CrawlLog:
+    properties:
+      chaptersAdded:
+        type: integer
+      chaptersRemoved:
+        type: integer
+      chaptersUpdated:
+        type: integer
+      cookie:
+        type: string
+      cookiesDied:
+        items:
+          type: string
+        type: array
+      durationMs:
+        type: integer
+      errors:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.CrawlError'
+        type: array
+      finishedAt:
+        type: string
+      id:
+        type: string
+      importNewStories:
+        type: boolean
+      message:
+        type: string
+      postsFound:
+        type: integer
+      postsProcessed:
+        type: integer
+      requests:
+        type: integer
+      retried:
+        type: integer
+      retryPending:
+        type: integer
+      since:
+        type: string
+      startedAt:
+        type: string
+      status:
+        type: string
+      storiesChecked:
+        type: integer
+      storiesCreated:
+        type: integer
+      storiesEmpty:
+        type: integer
+      storiesFailed:
+        type: integer
+      storiesSkippedNew:
+        type: integer
+      storiesUnchanged:
+        type: integer
+      storiesUpdated:
+        type: integer
+      trigger:
+        type: string
+      truncated:
+        type: boolean
+      useCookies:
+        type: boolean
+      userAgent:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.CrawlRunResponse:
+    properties:
+      started:
+        type: boolean
+    type: object
+  ola-chat-server_internal_modules_story.CrawlerConfigResponse:
+    properties:
+      cookies:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_setting.StoryCookie'
+        type: array
+      enabled:
+        type: boolean
+      importNewStories:
+        type: boolean
+      intervalHours:
+        type: integer
+      randomUserAgent:
+        type: boolean
+      useCookies:
+        type: boolean
+    type: object
+  ola-chat-server_internal_modules_story.CrawlerStatusResponse:
+    properties:
+      config:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.CrawlerConfigResponse'
+      configUpdatedAt:
+        type: string
+      lastRunAt:
+        type: string
+      logs:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.CrawlLog'
+        type: array
+      nextRunAt:
+        type: string
+      progress:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.CrawlLog'
+      retryPending:
+        type: integer
+      running:
+        type: boolean
+      scanDays:
+        type: integer
+      scanLimit:
+        type: integer
+      scanPages:
+        type: integer
+      userAgents:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.DeleteStoryCommentResponse:
+    properties:
+      commentCount:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.FetchMissingResponse:
+    properties:
+      queued:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_story.GenreItem:
+    properties:
+      count:
+        type: integer
+      name:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.GenreListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.GenreItem'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_story.SourceItem:
+    properties:
+      count:
+        type: integer
+      name:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.SourceListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.SourceItem'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_story.StoryAccessResponse:
+    properties:
+      commentMinChars:
+        type: integer
+      enabled:
+        type: boolean
+      freeLimit:
+        type: integer
+      freeUsed:
+        type: integer
+      unlocked:
+        type: boolean
+      vip:
+        type: boolean
+    type: object
+  ola-chat-server_internal_modules_story.StoryCommentAuthor:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+      vipEndTime:
+        type: string
+      vipUsed:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.StoryCommentReply:
+    properties:
+      authorName:
+        type: string
+      commentId:
+        type: string
+      excerpt:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.StoryCommentStory:
+    properties:
+      coverUrl:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.StoryFilter:
+    properties:
+      genre:
+        type: string
+      kind:
+        type: string
+      q:
+        type: string
+      source:
+        type: string
+      status:
+        type: string
+      visibility:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_story.UpdateStoryRequest:
+    properties:
+      isHidden:
+        type: boolean
+    required:
+    - isHidden
     type: object
   ola-chat-server_internal_modules_vip.CreatePackageRequest:
     properties:
@@ -8718,6 +11501,25 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanSummaryResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_modules_clan.ClanSummaryResponse'
+        type: array
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_audit_AuditLogListResponse:
     properties:
       data:
@@ -8871,6 +11673,176 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeLogsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_moment.MediaPurgeLogsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeRunResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_moment.MediaPurgeRunResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_moment.MomentDetail'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_moment.MomentListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_AudienceResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_push-campaign.AudienceResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_CampaignItem:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_push-campaign.CampaignItem'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_CampaignListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_push-campaign.CampaignListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_ReportListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_report.ReportListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_ReportSummaryResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_report.ReportSummaryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_UpdateStatusResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_report.UpdateStatusResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_upload_UploadResponse:
     properties:
       data:
@@ -8994,6 +11966,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_user.VipIconListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_wordchain_PurchaseListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_wordchain.PurchaseListResponse'
       error:
         type: string
       path:
@@ -9330,10 +12319,214 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_CreateMomentsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.CreateMomentsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MarkSeenResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MarkSeenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentCommentsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MomentCommentsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentHistoryResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MomentHistoryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentMyCommentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MomentMyCommentResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentReactorsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MomentReactorsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MomentResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentTrayResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MomentTrayResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentViewersResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MomentViewersResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MyMomentsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.MyMomentsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_ReactMomentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_moment.ReactMomentResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_notification_AppNotificationListResponse:
     properties:
       data:
         $ref: '#/definitions/internal_modules_notification.AppNotificationListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_report_ReportResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_report.ReportResponse'
       error:
         type: string
       path:
@@ -9466,6 +12659,295 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_GuessPurchaseResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room_wordchain.GuessPurchaseResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_HintResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room_wordchain.HintResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LeaderboardResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room_wordchain.LeaderboardResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LookupResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room_wordchain.LookupResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_MessageListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room_wordchain.MessageListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_MoveResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room_wordchain.MoveResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_OverviewResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room_wordchain.OverviewResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_WinListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room_wordchain.WinListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.ChapterListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.ChapterResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_CreateStoryCommentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.CreateStoryCommentResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_DeleteStoryCommentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.DeleteStoryCommentResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_GenreListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.GenreListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentLikeResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.StoryCommentLikeResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.StoryCommentListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.StoryListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_story.StoryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-map_string_int64:
     properties:
       data:
@@ -9504,6 +12986,74 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/ola-chat-server_internal_modules_me.MeResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_moment_MomentCommentsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentCommentsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_moment_MomentViewersResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moment.MomentViewersResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomImagePurgePreview:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room.RoomImagePurgePreview'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomImagePurgeResult:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room.RoomImagePurgeResult'
       error:
         type: string
       path:
@@ -9568,6 +13118,278 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_AdminOverviewResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room_wordchain.AdminOverviewResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_MessageListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room_wordchain.MessageListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_WinListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room_wordchain.WinListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterDetailResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminChapterDetailResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminChapterListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryCommentListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminStoryCommentListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminStoryListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminStoryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminSummaryResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.AdminSummaryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_BulkVisibilityResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.BulkVisibilityResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlRunResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.CrawlRunResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlerStatusResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.CrawlerStatusResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_DeleteStoryCommentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.DeleteStoryCommentResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_FetchMissingResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.FetchMissingResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_GenreListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.GenreListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_SourceListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_story.SourceListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
 info:
   contact:
     email: support@chatserver.com
@@ -9580,6 +13402,68 @@ info:
   title: Chat Server API
   version: "1.0"
 paths:
+  /admin/analytics/overview:
+    get:
+      parameters:
+      - description: Từ ngày (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: Đến ngày (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      - description: all | android | ios | web
+        in: query
+        name: platform
+        type: string
+      - description: Bỏ qua bộ nhớ đệm
+        in: query
+        name: refresh
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_analytics.OverviewSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thống kê Google Analytics gộp Android, iOS và web (admin)
+      tags:
+      - admin-analytics
+  /admin/analytics/realtime:
+    get:
+      parameters:
+      - description: all | android | ios | web
+        in: query
+        name: platform
+        type: string
+      - description: Bỏ qua bộ nhớ đệm
+        in: query
+        name: refresh
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_analytics.RealtimeSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Số người đang dùng trong 30 phút gần nhất (admin)
+      tags:
+      - admin-analytics
   /admin/announcements:
     get:
       produces:
@@ -9892,6 +13776,115 @@ paths:
       summary: List clan members (admin)
       tags:
       - admin-clan
+  /admin/conversations:
+    get:
+      description: 'hidden=false: hội thoại đang hiển thị, sắp theo tin mới nhất.
+        hidden=true: hội thoại user đã ẩn, sắp theo lúc ẩn. missing=true là hội thoại
+        không còn dữ liệu'
+      parameters:
+      - description: User ID
+        in: query
+        name: userId
+        required: true
+        type: string
+      - description: Lấy hội thoại đã ẩn
+        in: query
+        name: hidden
+        type: boolean
+      - description: Số hội thoại (mặc định 30, tối đa 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset trong snapshot
+        in: query
+        name: offset
+        type: integer
+      - description: Snapshot trả về ở trang đầu; bỏ trống để tạo danh sách mới
+        in: query
+        name: snapshot
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_conversation.ConversationListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "410":
+          description: snapshot hết hạn (15 phút), tải lại từ đầu
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Hội thoại của một user (admin, chỉ xem)
+      tags:
+      - admin-conversation
+  /admin/conversations/{id}:
+    get:
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_conversation.ConversationDetailSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thông tin và thành viên của hội thoại (admin)
+      tags:
+      - admin-conversation
+  /admin/conversations/{id}/messages:
+    get:
+      description: Trả mới nhất trước, gồm cả tin đã bị xoá (deletedAt). Truyền around
+        để lấy các tin quanh một tin (mở từ báo cáo vi phạm)
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Số tin (mặc định 50, tối đa 100)
+        in: query
+        name: limit
+        type: integer
+      - description: 'Cursor: message id, lấy các tin cũ hơn'
+        in: query
+        name: before
+        type: string
+      - description: Message id cần xem ngữ cảnh
+        in: query
+        name: around
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_conversation.MessagesSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tin nhắn của hội thoại (admin, chỉ xem)
+      tags:
+      - admin-conversation
   /admin/dashboard/overview:
     get:
       description: 'Số liệu tổng quan cho dashboard: người dùng, doanh thu KEN/VIP,
@@ -11297,6 +15290,231 @@ paths:
       summary: Cập nhật mini game (admin)
       tags:
       - admin-mini-game
+  /admin/moment-media-purge/logs:
+    get:
+      parameters:
+      - description: Page size (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeLogsResponse'
+      security:
+      - BearerAuth: []
+      summary: Moment media auto-purge run logs of the last 30 days (admin)
+      tags:
+      - admin-moment
+  /admin/moment-media-purge/run:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeRunResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Start a moment media purge run now, in the background (admin)
+      tags:
+      - admin-moment
+  /admin/moments:
+    get:
+      parameters:
+      - description: Search overlay text
+        in: query
+        name: q
+        type: string
+      - description: Filter by author id
+        in: query
+        name: authorId
+        type: string
+      - description: text, image, video
+        in: query
+        name: type
+        type: string
+      - description: public, friend
+        in: query
+        name: visibility
+        type: string
+      - description: live, processing, failed, expired, deleted
+        in: query
+        name: state
+        type: string
+      - description: Filter by status (true=shown, false=hidden by admin or author)
+        in: query
+        name: enabled
+        type: boolean
+      - description: Filter moments with/without pending reports
+        in: query
+        name: hasPendingReports
+        type: boolean
+      - description: createdAt, reportCount
+        in: query
+        name: sortBy
+        type: string
+      - description: asc, desc
+        in: query
+        name: sortDir
+        type: string
+      - description: Page size (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentListResponse'
+      security:
+      - BearerAuth: []
+      summary: List moments (admin, includes expired and deleted)
+      tags:
+      - admin-moment
+  /admin/moments/{id}:
+    get:
+      parameters:
+      - description: Moment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail'
+      security:
+      - BearerAuth: []
+      summary: Get moment detail (admin)
+      tags:
+      - admin-moment
+  /admin/moments/{id}/comments:
+    get:
+      parameters:
+      - description: Moment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (default 30, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_moment_MomentCommentsResponse'
+      security:
+      - BearerAuth: []
+      summary: List comments on a moment, newest first (admin)
+      tags:
+      - admin-moment
+  /admin/moments/{id}/purge-media:
+    post:
+      parameters:
+      - description: Moment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail'
+      security:
+      - BearerAuth: []
+      summary: Delete image/video files of a moment from storage, keep the record
+        (admin)
+      tags:
+      - admin-moment
+  /admin/moments/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Moment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_moment.UpdateStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail'
+      security:
+      - BearerAuth: []
+      summary: Show/hide a moment (admin)
+      tags:
+      - admin-moment
+  /admin/moments/{id}/viewers:
+    get:
+      parameters:
+      - description: Moment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_moment_MomentViewersResponse'
+      security:
+      - BearerAuth: []
+      summary: List viewers of a moment (admin)
+      tags:
+      - admin-moment
   /admin/pen/shots:
     get:
       parameters:
@@ -11441,6 +15659,75 @@ paths:
       summary: Thống kê PEN theo từng user, gộp cả vai sút và chụp (admin)
       tags:
       - admin-pen
+  /admin/push-campaigns:
+    get:
+      parameters:
+      - description: Page size (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_CampaignListResponse'
+      security:
+      - BearerAuth: []
+      summary: List push campaigns (admin)
+      tags:
+      - admin-push-campaign
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Campaign request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_push-campaign.CreateCampaignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_CampaignItem'
+      security:
+      - BearerAuth: []
+      summary: Queue a push campaign (admin)
+      tags:
+      - admin-push-campaign
+  /admin/push-campaigns/audience:
+    get:
+      parameters:
+      - description: all, vip, user
+        in: query
+        name: audience
+        required: true
+        type: string
+      - description: Username when audience=user
+        in: query
+        name: username
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_AudienceResponse'
+      security:
+      - BearerAuth: []
+      summary: Count users and devices a push campaign would reach (admin)
+      tags:
+      - admin-push-campaign
   /admin/relationships:
     get:
       parameters:
@@ -11601,6 +15888,90 @@ paths:
       summary: Thống kê bạn bè/chặn/theo dõi theo từng user (admin)
       tags:
       - admin-relationship
+  /admin/reports:
+    get:
+      parameters:
+      - description: pending, resolved, dismissed
+        in: query
+        name: status
+        type: string
+      - description: account, post, comment, story_comment, message, room_message,
+          moment
+        in: query
+        name: targetType
+        type: string
+      - description: Filter by reported user id
+        in: query
+        name: reportedUserId
+        type: string
+      - description: Search reporter/reported username
+        in: query
+        name: q
+        type: string
+      - description: Page size (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_ReportListResponse'
+      security:
+      - BearerAuth: []
+      summary: List user reports (admin)
+      tags:
+      - admin-report
+  /admin/reports/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Áp dụng cho mọi báo cáo đang chờ xử lý của cùng nội dung bị báo
+        cáo.
+      parameters:
+      - description: Report ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_report.UpdateStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_UpdateStatusResponse'
+      security:
+      - BearerAuth: []
+      summary: Resolve or dismiss a report (admin)
+      tags:
+      - admin-report
+  /admin/reports/summary:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_ReportSummaryResponse'
+      security:
+      - BearerAuth: []
+      summary: Count pending reports (admin)
+      tags:
+      - admin-report
   /admin/rooms:
     get:
       parameters:
@@ -11754,6 +16125,65 @@ paths:
       summary: Delete a room message (admin)
       tags:
       - admin-room
+  /admin/rooms/images/purge:
+    post:
+      consumes:
+      - application/json
+      description: Chỉ xoá file ảnh tin nhắn phòng chat tải lên trước mốc before (lấy
+        từ purge-preview), tin nhắn vẫn giữ nguyên
+      parameters:
+      - description: Mốc thời gian
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_room.RoomImagePurgeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomImagePurgeResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá ảnh phòng chat cũ (admin)
+      tags:
+      - admin-room
+  /admin/rooms/images/purge-preview:
+    get:
+      description: Đếm ảnh tin nhắn phòng chat cũ hơn olderThanDays ngày và tổng dung
+        lượng, chưa xoá gì
+      parameters:
+      - description: Số ngày (30-3650)
+        in: query
+        name: olderThanDays
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomImagePurgePreview'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tính số ảnh phòng chat sẽ xoá (admin)
+      tags:
+      - admin-room
   /admin/settings:
     get:
       produces:
@@ -11827,6 +16257,449 @@ paths:
       summary: Tạo/cập nhật một cấu hình hệ thống theo key (admin)
       tags:
       - admin-settings
+  /admin/settings/chat-bot/defaults:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_setting.ChatBotDefaultsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Câu lệnh hướng dẫn mặc định (trong code) của từng chat-bot (admin)
+      tags:
+      - admin-settings
+  /admin/settings/mail/test:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Địa chỉ nhận
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_setting.TestMailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_setting.TestMailSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Gửi email thử bằng cấu hình email đang dùng (admin)
+      tags:
+      - admin-settings
+  /admin/stories:
+    get:
+      parameters:
+      - description: Tìm theo tên truyện hoặc tác giả
+        in: query
+        name: q
+        type: string
+      - description: Tên thể loại
+        in: query
+        name: genre
+        type: string
+      - description: ongoing | completed
+        in: query
+        name: status
+        type: string
+      - description: short | long
+        in: query
+        name: kind
+        type: string
+      - description: all | visible | hidden
+        in: query
+        name: visibility
+        type: string
+      - description: Nguồn truyện, ví dụ vnkings
+        in: query
+        name: source
+        type: string
+      - description: updated | views | new
+        in: query
+        name: sort
+        type: string
+      - description: Vị trí bắt đầu
+        in: query
+        name: offset
+        type: integer
+      - description: Số truyện mỗi trang
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách truyện (admin), gồm cả truyện ẩn
+      tags:
+      - admin-story
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Trạng thái ẩn và truyện cần đổi
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.BulkVisibilityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_BulkVisibilityResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Ẩn hoặc hiện nhiều truyện theo danh sách ID hoặc theo bộ lọc (admin)
+      tags:
+      - admin-story
+  /admin/stories/{id}:
+    delete:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Xoá truyện và toàn bộ chương (admin)
+      tags:
+      - admin-story
+    get:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryResponse'
+      security:
+      - BearerAuth: []
+      summary: Thông tin một truyện (admin)
+      tags:
+      - admin-story
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Trạng thái ẩn
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_story.UpdateStoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryResponse'
+      security:
+      - BearerAuth: []
+      summary: Ẩn hoặc hiện truyện (admin)
+      tags:
+      - admin-story
+  /admin/stories/{id}/chapters:
+    get:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách chương kèm trạng thái nội dung (admin)
+      tags:
+      - admin-story
+  /admin/stories/{id}/chapters/{position}:
+    get:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Thứ tự chương
+        in: path
+        name: position
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterDetailResponse'
+      security:
+      - BearerAuth: []
+      summary: Xem nội dung chương đang lưu, không tự lấy từ nguồn (admin)
+      tags:
+      - admin-story
+  /admin/stories/{id}/chapters/{position}/refetch:
+    post:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Thứ tự chương
+        in: path
+        name: position
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterDetailResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Lấy lại nội dung chương từ nguồn, ghi đè nội dung cũ (admin)
+      tags:
+      - admin-story
+  /admin/stories/{id}/comments:
+    get:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Vị trí bắt đầu
+        in: query
+        name: offset
+        type: integer
+      - description: Số bình luận mỗi trang
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryCommentListResponse'
+      security:
+      - BearerAuth: []
+      summary: Bình luận của truyện, gồm cả bình luận đã xoá (admin)
+      tags:
+      - admin-story
+  /admin/stories/{id}/comments/{commentId}:
+    delete:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: ID bình luận
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_DeleteStoryCommentResponse'
+      security:
+      - BearerAuth: []
+      summary: Xoá bình luận của truyện (admin)
+      tags:
+      - admin-story
+  /admin/stories/{id}/fetch-content:
+    post:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_FetchMissingResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Lấy nội dung mọi chương còn thiếu của truyện, chạy nền (admin)
+      tags:
+      - admin-story
+  /admin/stories/crawler:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlerStatusResponse'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình, trạng thái và log của tự động cập nhật truyện (admin)
+      tags:
+      - admin-story
+  /admin/stories/crawler/rookies:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlerStatusResponse'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình, trạng thái và log của tự động cập nhật truyện rookies (admin)
+      tags:
+      - admin-story
+  /admin/stories/crawler/rookies/run:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlRunResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Chạy ngay một lượt cập nhật truyện rookies ở nền (admin)
+      tags:
+      - admin-story
+  /admin/stories/crawler/run:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlRunResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Chạy ngay một lượt cập nhật truyện ở nền (admin)
+      tags:
+      - admin-story
+  /admin/stories/genres:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_GenreListResponse'
+      security:
+      - BearerAuth: []
+      summary: Thể loại truyện, gồm cả truyện ẩn (admin)
+      tags:
+      - admin-story
+  /admin/stories/sources:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_SourceListResponse'
+      security:
+      - BearerAuth: []
+      summary: Các nguồn truyện và số truyện mỗi nguồn (admin)
+      tags:
+      - admin-story
+  /admin/stories/summary:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminSummaryResponse'
+      security:
+      - BearerAuth: []
+      summary: Số truyện, số chương và số chương đã có nội dung (admin)
+      tags:
+      - admin-story
   /admin/topup/stats:
     get:
       parameters:
@@ -12606,6 +17479,73 @@ paths:
       summary: Cập nhật gói VIP (admin)
       tags:
       - admin-vip
+  /admin/vip/purchases:
+    get:
+      parameters:
+      - description: package|icon
+        in: query
+        name: kind
+        type: string
+      - description: self|gift
+        in: query
+        name: mode
+        type: string
+      - description: Tìm theo username / tên người nhận, username người tặng
+        in: query
+        name: search
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_vip.PurchaseListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử mua gói ngày VIP + icon VIP toàn hệ thống, gồm cả quà tặng
+        (admin)
+      tags:
+      - admin-vip
+  /admin/vip/purchases/stats:
+    get:
+      parameters:
+      - description: Từ thời gian (RFC3339, mặc định 30 ngày trước)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339, mặc định hiện tại)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_vip.PurchaseStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê doanh thu mua VIP (gói ngày + icon) theo ngày/tháng (admin)
+      tags:
+      - admin-vip
   /admin/vip/shop:
     get:
       produces:
@@ -13007,6 +17947,116 @@ paths:
       summary: Lưu cấu hình ô + lựa chọn của vòng quay (admin)
       tags:
       - admin-wheel
+  /admin/word-chain:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_AdminOverviewResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Word chain room overview (admin): current word, words of the current
+        game, player counts'
+      tags:
+      - admin-word-chain
+  /admin/word-chain/messages:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Message ID to paginate before (nextBefore of the previous page)
+        in: query
+        name: before
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_MessageListResponse'
+      security:
+      - BearerAuth: []
+      summary: Word chain message history (admin, newest first)
+      tags:
+      - admin-word-chain
+  /admin/word-chain/purchases:
+    get:
+      description: summary là tổng số giao dịch và KEN theo từng loại, tính trên cùng
+        bộ lọc
+      parameters:
+      - description: hint | guess, bỏ trống là cả hai
+        in: query
+        name: type
+        type: string
+      - description: Tìm theo username hoặc tên
+        in: query
+        name: search
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size (mặc định 20, tối đa 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_wordchain_PurchaseListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử mua gợi ý và mua lượt nối từ (admin, mới nhất trước)
+      tags:
+      - admin-word-chain
+  /admin/word-chain/wins:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Win id to paginate before (nextBefore of the previous page)
+        in: query
+        name: before
+        type: string
+      - description: Only wins of this user
+        in: query
+        name: userId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_WinListResponse'
+      security:
+      - BearerAuth: []
+      summary: Word chain win history (admin, newest first)
+      tags:
+      - admin-word-chain
   /announcements/latest:
     get:
       produces:
@@ -13458,6 +18508,14 @@ paths:
             $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: 'code CHAT_BOT_DISABLED: bot đang tắt'
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: 'code CHAT_BOT_DAILY_LIMIT: hết lượt chat hôm nay'
           schema:
             $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "502":
@@ -14058,6 +19116,29 @@ paths:
       security:
       - BearerAuth: []
       summary: List clans the current user has joined
+      tags:
+      - clan
+  /clans/top:
+    get:
+      parameters:
+      - description: 'Handle substring (lowercase letters and digits, optional # prefix)'
+        in: query
+        name: q
+        type: string
+      - description: Max items (default 20, max 50)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanSummaryResponse'
+      security:
+      - BearerAuth: []
+      summary: Top clans by member count, optionally filtered by handle substring
       tags:
       - clan
   /conversations:
@@ -14899,7 +19980,7 @@ paths:
       - description: Set to 'tagged' (posts with any @mention), 'mentions' (posts
           mentioning viewer), 'media' (posts with images), 'following' (own posts
           + posts from users the viewer follows) or 'clan' (public posts from all
-          clans)
+          clans plus every post of the clans the viewer belongs to)
         in: query
         name: filter
         type: string
@@ -15887,6 +20968,348 @@ paths:
       summary: Danh sách mini game đang bật
       tags:
       - mini-game
+  /moments:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 'multipart: type (text|image|video), visibility (friend|public),
+        items = JSON [{type?, background?, overlays}] where type (text|image) defaults
+        to the post type, images[] + thumbs[] in the order of image items, video +
+        thumb (video)'
+      parameters:
+      - description: text, image or video
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: friend (default) or public
+        in: formData
+        name: visibility
+        type: string
+      - description: JSON array of {type, background, overlays}
+        in: formData
+        name: items
+        required: true
+        type: string
+      - description: Image files (≤3MB each, max 3)
+        in: formData
+        name: images
+        type: file
+      - description: Small JPEG previews, same order as images
+        in: formData
+        name: thumbs
+        type: file
+      - description: Video ≤20s, ≤45MB. Without FFMPEG_PATH only MP4 H.264 is accepted;
+          with it MOV/WebM/MKV/AVI/WMV/FLV/3GP/TS/MPG/OGV are converted to MP4 in
+          the background (status=processing)
+        in: formData
+        name: video
+        type: file
+      - description: Video cover JPEG (≤300KB)
+        in: formData
+        name: thumb
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_CreateMomentsResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Post moments (24h): up to 3 slides (color or image background), or
+        1 video ≤20s'
+      tags:
+      - moment
+  /moments/{id}:
+    delete:
+      parameters:
+      - description: Moment id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_string'
+      security:
+      - BearerAuth: []
+      summary: Delete my moment (hidden now, files removed by the cleanup job)
+      tags:
+      - moment
+    get:
+      parameters:
+      - description: Moment id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentResponse'
+      security:
+      - BearerAuth: []
+      summary: Get one of my moments with its stats (also after it expired)
+      tags:
+      - moment
+  /moments/{id}/comments:
+    get:
+      parameters:
+      - description: Moment id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (default 30, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentCommentsResponse'
+      security:
+      - BearerAuth: []
+      summary: Comments on my moment, newest first (author only, also after the moment
+        expired)
+      tags:
+      - moment
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Moment id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment text, 1-500 characters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_moment.CommentMomentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentMyCommentResponse'
+      security:
+      - BearerAuth: []
+      summary: Comment on a moment of a friend or followee, once per moment (cannot
+        be edited or deleted, 409 MOMENT_COMMENT_EXISTS on a second try)
+      tags:
+      - moment
+  /moments/{id}/hidden:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Moment id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Hidden flag
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_moment.SetHiddenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentResponse'
+      security:
+      - BearerAuth: []
+      summary: Hide or show my active moment (hidden moments leave friends' trays)
+      tags:
+      - moment
+  /moments/{id}/reactions:
+    get:
+      parameters:
+      - description: Moment id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (default 50, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentReactorsResponse'
+      security:
+      - BearerAuth: []
+      summary: Who reacted to my moment and how many times per reaction (author only)
+      tags:
+      - moment
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Moment id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Reaction type and how many taps
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_moment.ReactMomentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_ReactMomentResponse'
+      security:
+      - BearerAuth: []
+      summary: React to a moment of a friend or followee, taps add up per reaction
+        type (max 99 each)
+      tags:
+      - moment
+  /moments/{id}/viewers:
+    get:
+      parameters:
+      - description: Moment id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (default 50, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentViewersResponse'
+      security:
+      - BearerAuth: []
+      summary: Who viewed my moment (author only)
+      tags:
+      - moment
+  /moments/history:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentHistoryResponse'
+      security:
+      - BearerAuth: []
+      summary: All my moments including expired ones, newest first
+      tags:
+      - moment
+  /moments/mine:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MyMomentsResponse'
+      security:
+      - BearerAuth: []
+      summary: My active moments with viewer counts (poll while a video is processing)
+      tags:
+      - moment
+  /moments/seen:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Moment ids (max 50)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_moment.MarkSeenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MarkSeenResponse'
+      security:
+      - BearerAuth: []
+      summary: Mark moments as seen (hidden from tray afterwards)
+      tags:
+      - moment
+  /moments/tray:
+    get:
+      parameters:
+      - description: nextCursor from the previous page
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentTrayResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Moment tray: my active moments (first page only) + unseen moments
+        grouped by author, newest author first'
+      tags:
+      - moment
   /notifications:
     get:
       parameters:
@@ -16501,6 +21924,31 @@ paths:
       summary: Get sent friend requests
       tags:
       - relationships
+  /reports:
+    post:
+      consumes:
+      - application/json
+      description: 'targetType: account, post, comment, story_comment, message, room_message,
+        moment. contextId là conversationId (message) hoặc roomId (room_message).'
+      parameters:
+      - description: Report request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_report.CreateReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_report_ReportResponse'
+      security:
+      - BearerAuth: []
+      summary: Report a user, post, comment or message
+      tags:
+      - report
   /rooms:
     get:
       parameters:
@@ -16881,6 +22329,203 @@ paths:
       summary: Stop hiding a user's room messages for the current user
       tags:
       - room
+  /rooms/word-chain:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_OverviewResponse'
+      security:
+      - BearerAuth: []
+      summary: Get the word chain room, current session state and my points
+      tags:
+      - word-chain
+  /rooms/word-chain/guesses:
+    post:
+      consumes:
+      - application/json
+      description: Only allowed with no guesses left; the bought guesses are valid
+        for this word only and reset when the word changes. price must equal the configured
+        price the user confirmed. 409 WORD_CHAIN_WORD_CHANGED when sessionId/turn
+        no longer match, 409 WORD_CHAIN_GUESSES_LEFT while guesses remain, 409 WORD_CHAIN_PRICE_CHANGED
+        when the price differs, 400 WORD_CHAIN_INSUFFICIENT_KEN when the balance is
+        too low
+      parameters:
+      - description: Word being answered
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_room_wordchain.GuessPurchaseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_GuessPurchaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Buy more guesses for the current word after running out (costs KEN
+        each time)
+      tags:
+      - word-chain
+  /rooms/word-chain/hints:
+    post:
+      description: Buying again for the same word returns the same hints with charged=false;
+        409 WORD_CHAIN_WORD_CHANGED when the word changed before payment
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_HintResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Buy hints for the current word (costs KEN once per word, nothing is
+        charged when no hint is found)
+      tags:
+      - word-chain
+  /rooms/word-chain/leaderboard:
+    get:
+      parameters:
+      - description: points (default) or wins
+        in: query
+        name: sort
+        type: string
+      - description: all (default), day, week or month
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LeaderboardResponse'
+      security:
+      - BearerAuth: []
+      summary: Word chain leaderboard (top 10 by points or wins, all time or current
+        day/week/month in GMT+7)
+      tags:
+      - word-chain
+  /rooms/word-chain/lookup:
+    get:
+      parameters:
+      - description: Word
+        in: query
+        name: word
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LookupResponse'
+      security:
+      - BearerAuth: []
+      summary: Look up a Vietnamese word (dict.minhqnd.com)
+      tags:
+      - word-chain
+  /rooms/word-chain/messages:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Message ID to paginate before
+        in: query
+        name: before
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_MessageListResponse'
+      security:
+      - BearerAuth: []
+      summary: List messages of the current session (newest first)
+      tags:
+      - word-chain
+  /rooms/word-chain/moves:
+    post:
+      consumes:
+      - application/json
+      description: Send sessionId and turn of the word being answered; if the word
+        changed meanwhile the move is rejected with 409 WORD_CHAIN_WORD_CHANGED and
+        no guess is used
+      parameters:
+      - description: Word
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_room_wordchain.MoveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_MoveResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Play a word in the word chain room
+      tags:
+      - word-chain
+  /rooms/word-chain/wins:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Win id to paginate before (nextBefore of the previous page)
+        in: query
+        name: before
+        type: string
+      - description: Only the current user's wins
+        in: query
+        name: mine
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_WinListResponse'
+      security:
+      - BearerAuth: []
+      summary: Word chain win history (newest first)
+      tags:
+      - word-chain
   /sessions:
     get:
       description: Trả về các phiên đăng nhập đang hoạt động của người dùng hiện tại
@@ -16937,8 +22582,118 @@ paths:
       summary: Revoke all other sessions
       tags:
       - sessions
+  /settings/app:
+    get:
+      description: |-
+        configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
+        Gửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.
+      parameters:
+      - description: web | android | ios
+        in: header
+        name: X-Platform
+        type: string
+      - description: Phiên bản app, ví dụ 1.0.0 (45)
+        in: header
+        name: X-App-Version
+        type: string
+      - description: Chỉ lấy các key này, cách nhau bởi dấu phẩy; bỏ trống là tất
+          cả
+        in: query
+        name: keys
+        type: string
+      - description: version của lần lấy trước
+        in: query
+        name: version
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_setting.AppConfigSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Gộp config hệ thống cho app trong một request
+      tags:
+      - settings
+  /settings/chat-bot:
+    get:
+      description: enabled của từng bot đã tính theo nền tảng và phiên bản app đang
+        gọi (X-Platform, X-App-Version)
+      parameters:
+      - description: web | android | ios
+        in: header
+        name: X-Platform
+        type: string
+      - description: Phiên bản app, ví dụ 1.0.0 (45)
+        in: header
+        name: X-App-Version
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_setting.ChatBotPublicConfigSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Bot nào đang bật và giới hạn lượt chat mỗi ngày (0 = không giới hạn)
+      tags:
+      - settings
+  /settings/story:
+    get:
+      description: Server đọc nền tảng (web | android | ios) và phiên bản app từ header,
+        so với cấu hình bật/tắt và danh sách bản bị tắt của nền tảng đó. Thiếu X-Platform
+        thì tính là web
+      parameters:
+      - description: web | android | ios
+        in: header
+        name: X-Platform
+        type: string
+      - description: Phiên bản app, ví dụ 1.0.0 (45)
+        in: header
+        name: X-App-Version
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_setting.FeatureEnabledSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Truyện có đang bật cho app đang gọi không
+      tags:
+      - settings
   /settings/topup:
     get:
+      description: enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng
+        và phiên bản app đang gọi, bị ẩn thì không trả bank. Thiếu X-Platform thì
+        tính là web
+      parameters:
+      - description: web | android | ios
+        in: header
+        name: X-Platform
+        type: string
+      - description: Phiên bản app, ví dụ 1.0.0 (45)
+        in: header
+        name: X-App-Version
+        type: string
       produces:
       - application/json
       responses:
@@ -16957,6 +22712,17 @@ paths:
       - settings
   /settings/username-change:
     get:
+      description: enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng
+        và phiên bản app đang gọi. Thiếu X-Platform thì tính là web
+      parameters:
+      - description: web | android | ios
+        in: header
+        name: X-Platform
+        type: string
+      - description: Phiên bản app, ví dụ 1.0.0 (45)
+        in: header
+        name: X-App-Version
+        type: string
       produces:
       - application/json
       responses:
@@ -16973,6 +22739,277 @@ paths:
       summary: Cấu hình phí đổi username theo độ dài (tính bằng KEN)
       tags:
       - settings
+  /settings/word-chain:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_setting.WordChainConfigSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình phòng nối từ (bật/tắt, giá gợi ý và giá mua thêm lượt tính
+        bằng KEN)
+      tags:
+      - settings
+  /stories:
+    get:
+      parameters:
+      - description: updated | views | new
+        in: query
+        name: sort
+        type: string
+      - description: Tên thể loại
+        in: query
+        name: genre
+        type: string
+      - description: all | ongoing | completed
+        in: query
+        name: status
+        type: string
+      - description: Tìm theo tên truyện hoặc tác giả, không phân biệt dấu
+        in: query
+        name: q
+        type: string
+      - description: Vị trí bắt đầu
+        in: query
+        name: offset
+        type: integer
+      - description: Số truyện mỗi trang
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách truyện
+      tags:
+      - story
+  /stories/{id}:
+    get:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryResponse'
+      security:
+      - BearerAuth: []
+      summary: Thông tin một truyện
+      tags:
+      - story
+  /stories/{id}/chapters:
+    get:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách chương của truyện, theo thứ tự
+      tags:
+      - story
+  /stories/{id}/chapters/{position}:
+    get:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Thứ tự chương, bắt đầu từ 1
+        in: path
+        name: position
+        required: true
+        type: integer
+      - description: '1 = tải trước: không trừ lượt đọc miễn phí, chưa có quyền thì
+          trả locked'
+        in: query
+        name: prefetch
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterResponse'
+      security:
+      - BearerAuth: []
+      summary: Nội dung một chương
+      tags:
+      - story
+  /stories/{id}/comments:
+    get:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: nextCursor của trang trước
+        in: query
+        name: cursor
+        type: string
+      - description: Số bình luận mỗi trang
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentListResponse'
+      security:
+      - BearerAuth: []
+      summary: Bình luận của truyện, mới nhất trước
+      tags:
+      - story
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Nội dung bình luận
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_story.CreateStoryCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_CreateStoryCommentResponse'
+      security:
+      - BearerAuth: []
+      summary: Bình luận vào truyện; đủ số ký tự tối thiểu thì mở khoá đọc miễn phí
+        truyện đó
+      tags:
+      - story
+  /stories/{id}/comments/{commentId}:
+    delete:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: ID bình luận
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_DeleteStoryCommentResponse'
+      security:
+      - BearerAuth: []
+      summary: Xoá bình luận của mình
+      tags:
+      - story
+  /stories/{id}/comments/{commentId}/like:
+    post:
+      parameters:
+      - description: ID truyện
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: ID bình luận
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentLikeResponse'
+      security:
+      - BearerAuth: []
+      summary: Thích hoặc bỏ thích bình luận
+      tags:
+      - story
+  /stories/comments:
+    get:
+      parameters:
+      - description: nextCursor của trang trước
+        in: query
+        name: cursor
+        type: string
+      - description: Số bình luận mỗi trang
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentListResponse'
+      security:
+      - BearerAuth: []
+      summary: Bình luận mới nhất của mọi truyện đang hiển thị, kèm tên và bìa truyện
+      tags:
+      - story
+  /stories/genres:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_GenreListResponse'
+      security:
+      - BearerAuth: []
+      summary: Thể loại truyện và số truyện mỗi thể loại
+      tags:
+      - story
   /topup/webhook/sieuthicode:
     post:
       consumes:

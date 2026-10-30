@@ -219,9 +219,14 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 		" AND m.clan_id IS NOT NULL AND m.visibility = 'public'" +
 		" AND EXISTS (SELECT 1 FROM clans c WHERE c.id = m.clan_id AND c.policy != 4 AND c.deleted_at IS NULL)" +
 		cursorFrag + " ORDER BY m.created_at DESC, m.id DESC LIMIT @lim)"
+	clanMemberBranch := "(SELECT m.id, m.created_at FROM me m WHERE m.deleted_at IS NULL AND m.enabled = true" +
+		" AND m.clan_id IN (SELECT cm.clan_id FROM clan_members cm JOIN clans c ON c.id = cm.clan_id" +
+		" WHERE cm.user_id = @viewer AND cm.deleted_at IS NULL AND c.deleted_at IS NULL" +
+		" AND (c.policy != 4 OR cm.role != 'member' OR cm.verified))" +
+		cursorFrag + " ORDER BY m.created_at DESC, m.id DESC LIMIT @lim)"
 	var query string
 	if filter == "clan" {
-		query = "SELECT id, created_at FROM (" + clanPublicBranch +
+		query = "SELECT id, created_at FROM (" + clanPublicBranch + " UNION " + clanMemberBranch +
 			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
 	} else if filter == "following" {
 		query = "SELECT id, created_at FROM (" +
