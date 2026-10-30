@@ -5,7 +5,8 @@ import crownIcon from '../../assets/icons/ic-crown.svg';
 import plusIcon from '../../assets/icons/ic-plus.svg';
 import sendIcon from '../../assets/icons/ic-send.svg';
 import userMinusIcon from '../../assets/icons/ic-user-minus.svg';
-import { avatarTone } from '../../helpers/avatar';
+import { PlayerAvatar } from '../../components/PlayerAvatar';
+import { PlayerName } from '../../components/PlayerName';
 import { formatKen } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
 
@@ -80,10 +81,10 @@ export function RoomScreen() {
                   <img src={userMinusIcon} alt="" />
                 </button>
               )}
-              <span className={`tl-avatar tl-avatar-lg tl-avatar-${avatarTone(member.id)}`}>
-                {member.name.charAt(0).toUpperCase()}
+              <PlayerAvatar name={member.name} vipType={member.vipType} size="lg" />
+              <span className="tl-seat-name">
+                <PlayerName name={member.name} self={member.id === user.id} />
               </span>
-              <span className="tl-seat-name">{member.id === user.id ? 'Bạn' : member.name}</span>
               {member.owner ? (
                 <span className="tl-badge tl-badge-gold">Chủ bàn</span>
               ) : member.ready ? (
@@ -103,7 +104,10 @@ export function RoomScreen() {
           {roomChat.length === 0 && <span className="tl-chat-hint">Trò chuyện với người trong bàn...</span>}
           {roomChat.map((msg) => (
             <div key={`${msg.userId}-${msg.sentAt}`} className="tl-chat-line">
-              <b>{msg.userId === user.id ? 'Bạn' : msg.name}:</b> {msg.text}
+              <b>
+                <PlayerName name={msg.name} self={msg.userId === user.id} owner={msg.userId === room.ownerId} />:
+              </b>{' '}
+              {msg.text}
             </div>
           ))}
         </div>

@@ -43,6 +43,7 @@ interface ThirteenStore {
   room: RoomStateData | null;
   roomChat: ChatMessageData[];
   matchId: string;
+  roomOwnerId: string;
   you: number;
   players: PlayerInfo[];
   hand: number[];
@@ -232,6 +233,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     set({
       phase: 'table',
       matchId: data.matchId,
+      roomOwnerId: data.roomOwnerId ?? '',
       players: data.players,
       you: data.you,
       selected: [],
@@ -399,6 +401,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     room: null,
     roomChat: [],
     matchId: '',
+    roomOwnerId: '',
     you: 0,
     players: [],
     hand: [],

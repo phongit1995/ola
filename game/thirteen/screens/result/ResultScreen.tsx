@@ -1,5 +1,6 @@
 import { placeLabel } from '../../helpers/seats';
-import { avatarTone } from '../../helpers/avatar';
+import { PlayerAvatar } from '../../components/PlayerAvatar';
+import { PlayerName } from '../../components/PlayerName';
 import { useThirteen } from '../../store/useThirteen';
 
 const INSTANT_WIN_LABEL: Record<string, string> = {
@@ -24,10 +25,9 @@ export function ResultScreen() {
       : result.winnerId
         ? [{ userId: result.winnerId, place: 1 }]
         : [];
-  const nameOf = (userId: string): string => {
-    if (userId === user?.id) return 'Bạn';
-    return players.find((p) => p.id === userId)?.name ?? 'Người chơi';
-  };
+  const nameOf = (userId: string): string => players.find((p) => p.id === userId)?.name ?? 'Người chơi';
+  const vipTypeOf = (userId: string) =>
+    players.find((p) => p.id === userId)?.vipType ?? (userId === user?.id ? user.vipType : null);
 
   return (
     <div className="tl-modal-backdrop tl-result-backdrop">
@@ -48,11 +48,9 @@ export function ResultScreen() {
               }
             >
               <span className="tl-result-place">{entry.place}</span>
-              <span className={`tl-avatar tl-avatar-${avatarTone(entry.userId)}`}>
-                {nameOf(entry.userId).charAt(0).toUpperCase()}
-              </span>
+              <PlayerAvatar name={nameOf(entry.userId)} vipType={vipTypeOf(entry.userId)} />
               <span className="tl-result-name">
-                {nameOf(entry.userId)}
+                <PlayerName name={nameOf(entry.userId)} self={entry.userId === user?.id} />
                 {entry.userId === user?.id && entry.place === 1 && <i aria-label="Bạn" />}
               </span>
               <span

@@ -14,17 +14,17 @@ import { useThirteen } from './store/useThirteen';
 const ME = { id: 'u-me', username: 'test1', ken: 9_957_000, vipDays: 30, vipType: '3' };
 
 const PLAYERS_4: PlayerInfo[] = [
-  { id: ME.id, name: 'test1' },
-  { id: 'u-2', name: 'hoangminh' },
+  { id: ME.id, name: 'test1', vipType: ME.vipType },
+  { id: 'u-2', name: 'hoangminh', vipType: '12' },
   { id: 'u-3', name: 'lananh' },
-  { id: 'u-4', name: 'quocbao' },
+  { id: 'u-4', name: 'quocbao', vipType: '27' },
 ];
 
 const ROOMS: RoomInfo[] = [
-  { id: 'r1', owner: 'hoangminh', bet: 0, locked: false, players: 2, maxPlayers: 4, status: 'waiting' },
+  { id: 'r1', owner: 'hoangminh', ownerVipType: '12', bet: 0, locked: false, players: 2, maxPlayers: 4, status: 'waiting' },
   { id: 'r2', owner: 'lananh', bet: 0, locked: true, players: 1, maxPlayers: 3, status: 'waiting' },
-  { id: 'r3', owner: 'quocbao', bet: 0, locked: false, players: 4, maxPlayers: 4, status: 'playing' },
-  { id: 'r4', owner: 'thuha', bet: 0, locked: false, players: 2, maxPlayers: 2, status: 'waiting' },
+  { id: 'r3', owner: 'quocbao', ownerVipType: '27', bet: 0, locked: false, players: 4, maxPlayers: 4, status: 'playing' },
+  { id: 'r4', owner: 'thuha', ownerVipType: '5', bet: 0, locked: false, players: 2, maxPlayers: 2, status: 'waiting' },
 ];
 
 const ROOM_CHAT: ChatMessageData[] = [
@@ -42,6 +42,7 @@ function room(ownerIdx: number, maxPlayers: number, memberCount: number): RoomSt
   const members = PLAYERS_4.slice(0, memberCount).map((player, i) => ({
     id: player.id,
     name: player.name,
+    vipType: player.vipType,
     owner: i === ownerIdx,
     ready: i !== ownerIdx && i !== memberCount - 1,
   }));
@@ -85,14 +86,14 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   'create-room': () => ({ phase: 'lobby', rooms: ROOMS }),
   'password-room': () => ({ phase: 'lobby', rooms: ROOMS }),
   'room-host': () => ({ phase: 'room', room: room(0, 4, 3), roomChat: ROOM_CHAT }),
-  'room-guest': () => ({ phase: 'room', room: room(1, 4, 4), roomChat: [] }),
+  'room-guest': () => ({ phase: 'room', room: room(1, 4, 4), roomChat: ROOM_CHAT }),
   'room-2p': () => ({ phase: 'room', room: room(0, 2, 2), roomChat: [] }),
   table: () => table(PLAYERS_4),
   'table-2p': () => table(PLAYERS_4.slice(0, 2)),
   'table-3p': () => table(PLAYERS_4.slice(0, 3)),
   'table-selected': () => ({ ...table(PLAYERS_4), hand: MY_HAND.map((card) => (card === 27 ? 23 : card)), selected: [22, 23] }),
   'table-dealing': () => ({ ...table(PLAYERS_4), dealing: true, table: null }),
-  'table-chat': () => ({ ...table(PLAYERS_4), chatOpen: true, matchChat: MATCH_CHAT }),
+  'table-chat': () => ({ ...table(PLAYERS_4), chatOpen: true, matchChat: MATCH_CHAT, roomOwnerId: 'u-2' }),
   'table-fx': () => ({
     ...table(PLAYERS_4),
     finishFx: { seat: 2, place: 1 },

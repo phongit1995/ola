@@ -6,7 +6,9 @@ import closeIcon from '../../assets/icons/ic-close.svg';
 import sendIcon from '../../assets/icons/ic-send.svg';
 import wifiOffIcon from '../../assets/icons/ic-wifi-off.svg';
 import chopRays from '../../assets/fx/fx-chop-rays.svg';
-import { avatarTone } from '../../helpers/avatar';
+import { PlayerAvatar } from '../../components/PlayerAvatar';
+import { PlayerName } from '../../components/PlayerName';
+import { atName } from '../../helpers/name';
 import { TURN_SECONDS } from '../../logic/constants.gen';
 import { cardLabel } from '../../logic/cards';
 import { comboLabel } from '../../logic/beats';
@@ -87,11 +89,11 @@ function OpponentSeat({ seat }: { seat: number }) {
   return (
     <div className={'tl-opponent' + (quit[seat] ? ' quit' : '')}>
       <TurnRing seat={seat}>
-      <span className={`tl-avatar tl-avatar-md tl-avatar-${avatarTone(player.id)}`}>
-        {player.name.charAt(0).toUpperCase()}
-      </span>
+      <PlayerAvatar name={player.name} vipType={player.vipType} size="md" />
       </TurnRing>
-      <span className="tl-opponent-name">{player.name}</span>
+      <span className="tl-opponent-name">
+        <PlayerName name={player.name} />
+      </span>
       {quit[seat] ? (
         <span className="tl-badge">Đã rời</span>
       ) : finishPlace >= 0 ? (
@@ -118,6 +120,7 @@ function OpponentSeat({ seat }: { seat: number }) {
 function TableCenter() {
   const table = useThirteen((s) => s.table);
   const players = useThirteen((s) => s.players);
+  const user = useThirteen((s) => s.user);
   const chopFx = useThirteen((s) => s.chopFx);
   const selectedComboFn = useThirteen((s) => s.selectedCombo);
   const selected = useThirteen((s) => s.selected);
@@ -148,7 +151,11 @@ function TableCenter() {
               />
             ))}
           </div>
-          {owner && <span className="tl-trick-owner">{owner.name} vừa đánh</span>}
+          {owner && (
+            <span className="tl-trick-owner">
+              <PlayerName name={owner.name} self={owner.id === user?.id} /> vừa đánh
+            </span>
+          )}
         </>
       ) : (
         <span className="tl-table-hint">{combo ? `Đang chọn: ${comboLabel(combo)}` : 'Mời bạn ra bài'}</span>
@@ -254,6 +261,7 @@ function ChatOverlay() {
   const sendChat = useThirteen((s) => s.sendChat);
   const sendReaction = useThirteen((s) => s.sendReaction);
   const user = useThirteen((s) => s.user);
+  const roomOwnerId = useThirteen((s) => s.roomOwnerId || s.room?.ownerId || '');
   const [draft, setDraft] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -296,7 +304,10 @@ function ChatOverlay() {
           {matchChat.length === 0 && <span className="tl-chat-hint">Chưa có tin nhắn nào</span>}
           {matchChat.map((msg) => (
             <div key={`${msg.userId}-${msg.sentAt}`} className="tl-chat-line">
-              <b>{msg.userId === user?.id ? 'Bạn' : msg.name}:</b> {msg.text}
+              <b>
+                <PlayerName name={msg.name} self={msg.userId === user?.id} owner={msg.userId === roomOwnerId} />:
+              </b>{' '}
+              {msg.text}
             </div>
           ))}
         </div>
@@ -372,16 +383,14 @@ export function TableScreen() {
 
       {finishFx && (
         <div className="tl-finish-banner">
-          {players[finishFx.seat]?.id === user?.id ? 'Bạn' : players[finishFx.seat]?.name} về{' '}
+          {players[finishFx.seat]?.id === user?.id ? 'Bạn' : atName(players[finishFx.seat]?.name ?? '')} về{' '}
           {placeLabel(finishFx.place, players.length)}!
         </div>
       )}
 
       <div className="tl-my-row">
         <TurnRing seat={you}>
-          <span className={`tl-avatar tl-avatar-md tl-avatar-${avatarTone(user?.id ?? 'you')}`}>
-            {user?.username.charAt(0).toUpperCase() ?? 'B'}
-          </span>
+          <PlayerAvatar name="Bạn" vipType={user?.vipType ?? players[you]?.vipType} size="md" />
         </TurnRing>
         <div className="tl-my-info">
           <span className="tl-my-name">Bạn</span>

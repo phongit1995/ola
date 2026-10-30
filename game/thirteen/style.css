@@ -175,14 +175,6 @@ button {
   border-width: 3px;
 }
 
-.tl-vip-icon {
-  position: absolute;
-  right: -6px;
-  bottom: -6px;
-  width: 20px;
-  height: 20px;
-}
-
 .tl-ken-pill {
   display: flex;
   align-items: center;
@@ -1596,41 +1588,6 @@ button {
   box-shadow: inset 0 0 0 2px var(--s2-cream-50);
 }
 
-.tl-lobby .tl-user-avatar {
-  overflow: hidden;
-  background: var(--s2-cream-100);
-}
-
-.tl-lobby .tl-user-avatar img {
-  display: block;
-  width: 84%;
-  height: 84%;
-  object-fit: contain;
-}
-
-.tl-lobby .tl-avatar-coral {
-  background: linear-gradient(145deg, #ff8a78, #f45149);
-}
-
-.tl-lobby .tl-avatar-violet {
-  background: linear-gradient(145deg, #ad7cf4, #7848df);
-}
-
-.tl-lobby .tl-avatar-sun {
-  background: linear-gradient(145deg, #ffd867, #f7b725);
-}
-
-.tl-lobby .tl-avatar-blue {
-  background: linear-gradient(145deg, #8ba3ff, #5f74e7);
-}
-
-.tl-lobby .tl-vip-icon {
-  right: -3px;
-  bottom: -3px;
-  width: 16px;
-  height: 16px;
-}
-
 .tl-lobby .tl-room-info {
   gap: 4px;
 }
@@ -2153,22 +2110,6 @@ button {
   background: linear-gradient(145deg, #ad7cf4, #7848df);
   color: var(--s2-cream-50);
   box-shadow: inset 0 0 0 3px var(--s2-cream-50), 0 3px 0 rgba(8, 46, 74, 0.18);
-}
-
-:is(.tl-room, .tl-table-screen, .tl-result-card) .tl-avatar-coral {
-  background: linear-gradient(145deg, #ff8a78, #f45149);
-}
-
-:is(.tl-room, .tl-table-screen, .tl-result-card) .tl-avatar-violet {
-  background: linear-gradient(145deg, #ad7cf4, #7848df);
-}
-
-:is(.tl-room, .tl-table-screen, .tl-result-card) .tl-avatar-sun {
-  background: linear-gradient(145deg, #ffd867, #f7b725);
-}
-
-:is(.tl-room, .tl-table-screen, .tl-result-card) .tl-avatar-blue {
-  background: linear-gradient(145deg, #8ba3ff, #5f74e7);
 }
 
 :is(.tl-room, .tl-table-screen, .tl-result-card) .tl-badge {
@@ -3137,4 +3078,36 @@ button {
     animation: none;
     transition: none;
   }
+}
+
+.tl-avatar.tl-avatar-img {
+  overflow: hidden;
+  background: var(--s2-cream-100);
+}
+
+.tl-avatar.tl-avatar-img img {
+  display: block;
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.tl-player-name {
+  font-weight: 800;
+}
+
+.tl-name-crown {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 3px;
+  vertical-align: -2px;
+}
+
+.tl-result-name .tl-player-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

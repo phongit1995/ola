@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import type { RoomInfo } from '../../../src/sdk';
 import backIcon from '../../assets/icons/ic-back.svg';
 import cardsEmptyIcon from '../../assets/icons/ic-cards-empty.svg';
@@ -9,7 +8,8 @@ import refreshIcon from '../../assets/icons/ic-refresh.svg';
 import kenIcon from '../../assets/icons/ken.png';
 import { BrandMark } from '../../components/BrandMark';
 import { handleModalKeyDown } from '../../components/modalKeyboard';
-import { avatarTone, userAvatarIconUrl } from '../../helpers/avatar';
+import { PlayerAvatar } from '../../components/PlayerAvatar';
+import { PlayerName } from '../../components/PlayerName';
 import {
   formatBetInput,
   formatKen,
@@ -24,9 +24,7 @@ function KenPill() {
   if (!user) return null;
   return (
     <div className="tl-ken-pill">
-      <span className="tl-avatar tl-avatar-sm tl-user-avatar">
-        <img src={userAvatarIconUrl(user.vipType)} alt={`VIP của ${user.username}`} />
-      </span>
+      <PlayerAvatar name={user.username} vipType={user.vipType} size="sm" />
       <span className="tl-ken-amount">{formatKen(user.ken)}</span>
       <img className="tl-ken-coin" src={kenIcon} alt="Ken" />
     </div>
@@ -171,7 +169,7 @@ function PasswordModal({ room, onClose }: { room: RoomInfo; onClose: () => void 
       >
         <span className="tl-modal-accent" aria-hidden="true" />
         <div id="tl-password-room-title" className="tl-modal-title">
-          Bàn của {room.owner}
+          Bàn của <PlayerName name={room.owner} />
         </div>
         <div className="tl-field-label">Nhập mật khẩu bàn</div>
         <input
@@ -267,16 +265,10 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
                 (insufficientKen ? ' is-insufficient' : '')
               }
             >
-              <span className={`tl-avatar tl-avatar-${avatarTone(room.owner)}`}>
-                {(() => {
-                  const vipId = parseVipTypeId(room.ownerVipType);
-                  return vipId != null ? <img src={vipIconUrl(vipId)} alt="" className="tl-vip-icon" /> : null;
-                })()}
-                {room.owner.charAt(0).toUpperCase()}
-              </span>
+              <PlayerAvatar name={room.owner} vipType={room.ownerVipType} />
               <div className="tl-room-info">
                 <span className="tl-room-name">
-                  <span className="tl-room-name-text">Bàn của {room.owner}</span>
+                  <span className="tl-room-name-text">Bàn của <PlayerName name={room.owner} /></span>
                   {room.locked && <img className="tl-lock" src={lockIcon} alt="Có mật khẩu" />}
                   {playing && <span className="tl-playing-badge">Đang chơi</span>}
                 </span>
