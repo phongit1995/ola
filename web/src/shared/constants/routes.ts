@@ -20,3 +20,12 @@ export const ROUTES = {
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
+
+export const STATIC_PAGES = {
+  about: '/gioi-thieu/',
+  socialNetwork: '/mang-xa-hoi-ket-ban/',
+  findFriends: '/tim-ban-bon-phuong/',
+  shareMoments: '/chia-se-khoanh-khac/',
+  chatRooms: '/phong-chat/',
+  blog: '/blog/',
+} as const;

@@ -345,13 +345,16 @@ func (s *Service) withOwnerStats(ctx context.Context, viewerID uuid.UUID, mine [
 		s.logger.Warnw("Failed to count moment viewers", "viewer_id", viewerID, "error", err)
 		counts = map[uuid.UUID]int64{}
 	}
-	reactions := s.ReactionSummaries(ctx, mine)
+	liveReactions := s.liveReactionTotals(ctx, mine)
 	items := make([]MomentResponse, 0, len(mine))
 	for _, moment := range mine {
 		item := toMomentResponse(moment, authorOf(moment))
 		count := max(counts[moment.ID], moment.ViewerCount)
 		item.ViewerCount = &count
-		item.Reactions = reactions[moment.ID]
+		viewersAvailable, reactorsAvailable := audienceAvailability(moment, counts[moment.ID], liveReactions[moment.ID])
+		item.ViewersAvailable = &viewersAvailable
+		item.ReactorsAvailable = &reactorsAvailable
+		item.Reactions = reactionList(mergeReactionCounts(moment.ReactionCounts, liveReactions[moment.ID]))
 		reactionCount := ReactionTotal(item.Reactions)
 		item.ReactionCount = &reactionCount
 		commentCount := moment.CommentCount
@@ -535,17 +538,17 @@ func uniqueIDs(raw []string) []uuid.UUID {
 }
 
 func (s *Service) Viewers(ctx context.Context, userID, momentID uuid.UUID, limit, offset int) (*MomentViewersResponse, error) {
-	if _, err := s.ownedMoment(userID, momentID); err != nil {
+	moment, err := s.ownedMoment(userID, momentID)
+	if err != nil {
 		return nil, err
 	}
-	return s.ViewersOf(ctx, momentID, limit, offset)
+	return s.ViewersOf(ctx, moment, limit, offset)
 }
 
-func (s *Service) ViewersOf(ctx context.Context, momentID uuid.UUID, limit, offset int) (*MomentViewersResponse, error) {
-	page, total, err := s.store.ViewerPage(ctx, momentID, offset, limit)
+func (s *Service) ViewersOf(ctx context.Context, moment *models.Moment, limit, offset int) (*MomentViewersResponse, error) {
+	page, total, err := s.viewerPage(ctx, moment, offset, limit)
 	if err != nil {
-		s.logger.Warnw("Failed to read moment viewers", "moment_id", momentID, "error", err)
-		return nil, errStateUnavailable
+		return nil, err
 	}
 	ranked, err := s.rankedUsers(page)
 	if err != nil {
@@ -599,6 +602,41 @@ func (s *Service) rankedUsers(page []redis.Z) ([]rankedUser, error) {
 		}
 	}
 	return ranked, nil
+}
+
+func audienceAvailability(moment *models.Moment, liveViewers int64, liveReactions map[string]int64) (bool, bool) {
+	if moment.AudienceArchivedAt != nil {
+		return !moment.ArchivedViewersLost, !moment.ArchivedReactorsLost
+	}
+	viewers := liveViewers > 0 || moment.ViewerCount == 0
+	reactors := sumCounts(liveReactions) > 0 || sumCounts(moment.ReactionCounts) == 0
+	return viewers, reactors
+}
+
+func (s *Service) viewerPage(ctx context.Context, moment *models.Moment, offset, limit int) ([]redis.Z, int64, error) {
+	if moment.AudienceArchivedAt != nil {
+		page, total := archivedPage(moment.ArchivedViewers, offset, limit)
+		return page, total, nil
+	}
+	page, total, err := s.store.ViewerPage(ctx, moment.ID, offset, limit)
+	if err != nil {
+		s.logger.Warnw("Failed to read moment viewers", "moment_id", moment.ID, "error", err)
+		return nil, 0, errStateUnavailable
+	}
+	return page, total, nil
+}
+
+func archivedPage(audience models.MomentAudience, offset, limit int) ([]redis.Z, int64) {
+	total := int64(len(audience))
+	if offset >= len(audience) {
+		return []redis.Z{}, total
+	}
+	entries := audience[offset:min(offset+limit, len(audience))]
+	page := make([]redis.Z, 0, len(entries))
+	for _, entry := range entries {
+		page = append(page, redis.Z{Score: float64(entry.At), Member: entry.UserID.String()})
+	}
+	return page, total
 }
 
 func nextViewerOffset(offset, fetched int, total int64) *int {

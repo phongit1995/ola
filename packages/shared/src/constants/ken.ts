@@ -3,7 +3,6 @@ import type { KenHistoryTab } from '../types/client/kenHistory.type';
 
 export const KEN_HISTORY_PAGE_SIZE = 20;
 export const KEN_TREASURE_OPEN_ANIMATION_MS = 1_000;
-export const TOPUP_PAID_REDIRECT_MS = 3_000;
 
 export const KEN_TX_META = {
   VIP_PACKAGE: { icon: '👑', labelKey: 'ken.historyScreen.types.VIP_PACKAGE' },

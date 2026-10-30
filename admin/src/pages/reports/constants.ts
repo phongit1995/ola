@@ -1,4 +1,4 @@
-import type { ReportReason, ReportStatus, ReportTargetType } from '@/types'
+import type { ReportAlertChannel, ReportReason, ReportStatus, ReportTargetType } from '@/types'
 
 export const REPORT_STATUS_TAG: Record<ReportStatus, { label: string; color: string }> = {
   pending: { label: 'Chờ xử lý', color: 'orange' },
@@ -49,3 +49,18 @@ export const REPORT_TARGETS_WITHOUT_CONTEXT: readonly ReportTargetType[] = ['pos
 export const REPORT_EXCERPT_MAX = 80
 
 export const REPORT_HANDLER_NOTE_MAX = 1000
+
+export const REPORT_ALERT_KEY = 'report_alert'
+
+export const REPORT_ALERT_CHANNEL_LABEL: Record<ReportAlertChannel, string> = {
+  discord: 'Discord',
+  telegram: 'Telegram',
+}
+
+export const DISCORD_WEBHOOK_PLACEHOLDER = 'https://discord.com/api/webhooks/...'
+
+export const TELEGRAM_TOKEN_PLACEHOLDER = '123456789:AAH...'
+
+export const TELEGRAM_CHAT_ID_PLACEHOLDER = '-1001234567890'
+
+export const TELEGRAM_GET_UPDATES_URL = 'https://api.telegram.org/bot<token>/getUpdates'

@@ -14,6 +14,7 @@ export type AppItemAction =
   | 'settings'
   | 'app-lock'
   | 'remove-account'
+  | 'support'
   | 'logout';
 
 export interface AppItem {
@@ -91,6 +92,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     icon: require('@assets/icons/apps/delete-account.png'),
     titleKey: 'home.apps.removeAccount',
     action: 'remove-account',
+  },
+  {
+    icon: require('@assets/icons/apps/support.png'),
+    titleKey: 'home.apps.support',
+    action: 'support',
   },
   {
     icon: require('@assets/icons/apps/logout.png'),

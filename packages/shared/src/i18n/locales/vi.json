@@ -101,6 +101,43 @@
     "removeAccountTitle": "Thông báo",
     "removeAccountConfirm": "Bạn có muốn xoá toàn bộ thông tin lưu trữ của tài khoản {{username}} trên thiết bị không?"
   },
+  "guestHome": {
+    "title": "Ola Chat — Mạng xã hội kết bạn, trò chuyện & chia sẻ khoảnh khắc",
+    "lead": "Làm quen bạn mới, chia sẻ khoảnh khắc, đăng bảng tin và trò chuyện với bạn bè mỗi ngày. Ola Chat là mạng xã hội kết bạn miễn phí cho người Việt, dùng trên web và app Ola Me cho Android, iPhone.",
+    "featuresTitle": "Mạng xã hội để kết bạn và kết nối",
+    "features": {
+      "friends": {
+        "title": "Kết bạn bốn phương",
+        "description": "Gặp gỡ người mới qua Me cộng đồng, phòng chat và khoảnh khắc, rồi kết bạn chỉ với một chạm."
+      },
+      "moments": {
+        "title": "Chia sẻ khoảnh khắc",
+        "description": "Đăng khoảnh khắc ảnh & chữ trong 24 giờ, xem ai đã xem và nhận cảm xúc, bình luận từ bạn bè."
+      },
+      "feed": {
+        "title": "Bảng tin Me",
+        "description": "Đăng bài kèm ảnh, chọn ai được xem, gắn tag bạn bè và xem khách ghé thăm trang cá nhân."
+      },
+      "messages": {
+        "title": "Nhắn tin & gọi video",
+        "description": "Nhắn tin tức thì kèm ảnh, sticker, tin nhắn thoại, gọi thoại và gọi video."
+      },
+      "rooms": {
+        "title": "Phòng chat cộng đồng",
+        "description": "Vào phòng công cộng để trò chuyện nhóm, thả cảm xúc và chơi nối từ cùng mọi người."
+      }
+    },
+    "explore": "Khám phá Ola Chat",
+    "blog": "Blog Ola Chat",
+    "about": "Giới thiệu Ola Chat",
+    "socialNetwork": "Mạng xã hội kết bạn",
+    "findFriends": "Tìm bạn bốn phương",
+    "shareMoments": "Chia sẻ khoảnh khắc",
+    "chatRooms": "Phòng chat online",
+    "download": "Tải app Ola Me",
+    "terms": "Điều khoản sử dụng",
+    "privacy": "Chính sách bảo mật"
+  },
   "register": {
     "title": "Tạo tài khoản Ola",
     "usernameLabel": "TÊN ĐĂNG NHẬP",
@@ -192,7 +229,8 @@
       "settings": "Cài đặt",
       "changeNickname": "Đổi nickname",
       "removeAccount": "Xóa tài khoản",
-      "appLock": "Khoá ứng dụng"
+      "appLock": "Khoá ứng dụng",
+      "support": "Hỗ trợ khách hàng"
     },
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
     "appMallSubtitle": "Kho Video vô cùng phong phú và đa dạng"
@@ -202,6 +240,12 @@
     "fanpageTitle": "Fanpage Ola",
     "groupTitle": "Nhóm cộng đồng Ola",
     "tiktokTitle": "TikTok Ola"
+  },
+  "support": {
+    "title": "Hỗ trợ khách hàng",
+    "contactAccount": "Liên hệ tài khoản",
+    "emailLabel": "Email:",
+    "emailUnavailable": "Không mở được ứng dụng email. Bạn gửi thư tới {{email}} nhé."
   },
   "settings": {
     "title": "Cài đặt",
@@ -1776,7 +1820,6 @@
     "transfer": "Chuyển KEN",
     "history": "Lịch sử giao dịch",
     "support": "Hỗ trợ khách hàng",
-    "comingSoon": "Tính năng đang được phát triển",
     "historyScreen": {
       "tabAll": "Tất cả",
       "tabCredit": "Nhận",
@@ -1824,9 +1867,10 @@
       "invalid": "Số tiền tối thiểu {{min}}đ và là bội số của {{step}}đ",
       "qrTitle": "Quét mã để thanh toán",
       "qrHint": "Mở app ngân hàng/ví và quét mã QR để nạp {{ken}} KEN.",
+      "saveQr": "Lưu mã QR",
+      "qrSaved": "Đã lưu mã QR vào thư viện ảnh",
+      "qrSaveFailed": "Không lưu được mã QR, bạn thử lại nhé",
       "amountLabel": "Số tiền cần chuyển",
-      "paid": "Tôi đã thanh toán",
-      "paidPending": "Đang chờ xác nhận thanh toán. KEN sẽ được cộng trong giây lát.",
       "bankLabel": "Ngân hàng",
       "accountNumberLabel": "Số tài khoản",
       "accountNameLabel": "Chủ tài khoản",
@@ -2375,6 +2419,9 @@
     "hide": "Ẩn",
     "unhide": "Hiện",
     "hiddenBadge": "Đã ẩn",
+    "mediaPurgedBadge": "Đã xoá ảnh/video",
+    "mediaPurged": "Ảnh/video của khoảnh khắc này đã bị xoá nên không xem lại được",
+    "audienceUnavailable": "Danh sách này không còn được lưu",
     "hiddenToast": "Đã ẩn khoảnh khắc, bạn bè sẽ không thấy nữa",
     "shownToast": "Đã hiện lại khoảnh khắc",
     "toggleFailed": "Không đổi được trạng thái, hãy thử lại",

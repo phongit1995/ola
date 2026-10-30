@@ -23,6 +23,106 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/analytics/overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-analytics"
+                ],
+                "summary": "Thống kê Google Analytics gộp Android, iOS và web (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ ngày (YYYY-MM-DD)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến ngày (YYYY-MM-DD)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "all | android | ios | web",
+                        "name": "platform",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Bỏ qua bộ nhớ đệm",
+                        "name": "refresh",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_analytics.OverviewSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/analytics/realtime": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-analytics"
+                ],
+                "summary": "Số người đang dùng trong 30 phút gần nhất (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "all | android | ios | web",
+                        "name": "platform",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Bỏ qua bộ nhớ đệm",
+                        "name": "refresh",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_analytics.RealtimeSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/announcements": {
             "get": {
                 "security": [
@@ -517,6 +617,173 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_MemberListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/conversations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "hidden=false: hội thoại đang hiển thị, sắp theo tin mới nhất. hidden=true: hội thoại user đã ẩn, sắp theo lúc ẩn. missing=true là hội thoại không còn dữ liệu",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-conversation"
+                ],
+                "summary": "Hội thoại của một user (admin, chỉ xem)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Lấy hội thoại đã ẩn",
+                        "name": "hidden",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số hội thoại (mặc định 30, tối đa 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset trong snapshot",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Snapshot trả về ở trang đầu; bỏ trống để tạo danh sách mới",
+                        "name": "snapshot",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_conversation.ConversationListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "410": {
+                        "description": "snapshot hết hạn (15 phút), tải lại từ đầu",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/conversations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-conversation"
+                ],
+                "summary": "Thông tin và thành viên của hội thoại (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_conversation.ConversationDetailSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/conversations/{id}/messages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Trả mới nhất trước, gồm cả tin đã bị xoá (deletedAt). Truyền around để lấy các tin quanh một tin (mở từ báo cáo vi phạm)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-conversation"
+                ],
+                "summary": "Tin nhắn của hội thoại (admin, chỉ xem)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số tin (mặc định 50, tối đa 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cursor: message id, lấy các tin cũ hơn",
+                        "name": "before",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message id cần xem ngữ cảnh",
+                        "name": "around",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_conversation.MessagesSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2766,6 +3033,367 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/moment-media-purge/logs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "Moment media auto-purge run logs of the last 30 days (admin)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeLogsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/moment-media-purge/run": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "Start a moment media purge run now, in the background (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeRunResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/moments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "List moments (admin, includes expired and deleted)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search overlay text",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by author id",
+                        "name": "authorId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "text, image, video",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "public, friend",
+                        "name": "visibility",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "live, processing, failed, expired, deleted",
+                        "name": "state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by status (true=shown, false=hidden by admin or author)",
+                        "name": "enabled",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter moments with/without pending reports",
+                        "name": "hasPendingReports",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "createdAt, reportCount",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "asc, desc",
+                        "name": "sortDir",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/moments/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "Get moment detail (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/moments/{id}/comments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "List comments on a moment, newest first (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 30, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_moment_MomentCommentsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/moments/{id}/purge-media": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "Delete image/video files of a moment from storage, keep the record (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/moments/{id}/status": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "Show/hide a moment (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_moment.UpdateStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/moments/{id}/viewers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "List viewers of a moment (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_moment_MomentViewersResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/pen/shots": {
             "get": {
                 "security": [
@@ -2991,6 +3619,119 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_admin_pen.UserStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/push-campaigns": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-push-campaign"
+                ],
+                "summary": "List push campaigns (admin)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_CampaignListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-push-campaign"
+                ],
+                "summary": "Queue a push campaign (admin)",
+                "parameters": [
+                    {
+                        "description": "Campaign request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_push-campaign.CreateCampaignRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_CampaignItem"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/push-campaigns/audience": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-push-campaign"
+                ],
+                "summary": "Count users and devices a push campaign would reach (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "all, vip, user",
+                        "name": "audience",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username when audience=user",
+                        "name": "username",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_AudienceResponse"
                         }
                     }
                 }
@@ -3250,6 +3991,182 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/reports": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-report"
+                ],
+                "summary": "List user reports (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "pending, resolved, dismissed",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "account, post, comment, story_comment, message, room_message, moment",
+                        "name": "targetType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by reported user id",
+                        "name": "reportedUserId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search reporter/reported username",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_ReportListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/reports/alert/test": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-reports"
+                ],
+                "summary": "Gửi tin thử tới kênh nhận báo cáo vi phạm (Discord / Telegram) bằng cấu hình đã lưu (admin)",
+                "parameters": [
+                    {
+                        "description": "Kênh cần gửi thử",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_report.TestAlertRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_report.TestAlertSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/reports/summary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-report"
+                ],
+                "summary": "Count pending reports (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_ReportSummaryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/reports/{id}/status": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Áp dụng cho mọi báo cáo đang chờ xử lý của cùng nội dung bị báo cáo.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-report"
+                ],
+                "summary": "Resolve or dismiss a report (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_report.UpdateStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_UpdateStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/rooms": {
             "get": {
                 "security": [
@@ -3325,6 +4242,97 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/rooms/images/purge": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Chỉ xoá file ảnh tin nhắn phòng chat tải lên trước mốc before (lấy từ purge-preview), tin nhắn vẫn giữ nguyên",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-room"
+                ],
+                "summary": "Xoá ảnh phòng chat cũ (admin)",
+                "parameters": [
+                    {
+                        "description": "Mốc thời gian",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomImagePurgeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomImagePurgeResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/rooms/images/purge-preview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Đếm ảnh tin nhắn phòng chat cũ hơn olderThanDays ngày và tổng dung lượng, chưa xoá gì",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-room"
+                ],
+                "summary": "Tính số ảnh phòng chat sẽ xoá (admin)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Số ngày (30-3650)",
+                        "name": "olderThanDays",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomImagePurgePreview"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -3564,6 +4572,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/settings/chat-bot/defaults": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-settings"
+                ],
+                "summary": "Câu lệnh hướng dẫn mặc định (trong code) của từng chat-bot (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_setting.ChatBotDefaultsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/settings/mail/test": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-settings"
+                ],
+                "summary": "Gửi email thử bằng cấu hình email đang dùng (admin)",
+                "parameters": [
+                    {
+                        "description": "Địa chỉ nhận",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_setting.TestMailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_setting.TestMailSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/settings/{key}": {
             "put": {
                 "security": [
@@ -3608,6 +4684,661 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Danh sách truyện (admin), gồm cả truyện ẩn",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tìm theo tên truyện hoặc tác giả",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tên thể loại",
+                        "name": "genre",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ongoing | completed",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "short | long",
+                        "name": "kind",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "all | visible | hidden",
+                        "name": "visibility",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Nguồn truyện, ví dụ vnkings",
+                        "name": "source",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "updated | views | new",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Vị trí bắt đầu",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số truyện mỗi trang",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryListResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Ẩn hoặc hiện nhiều truyện theo danh sách ID hoặc theo bộ lọc (admin)",
+                "parameters": [
+                    {
+                        "description": "Trạng thái ẩn và truyện cần đổi",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_story.BulkVisibilityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_BulkVisibilityResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/crawler": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Cấu hình, trạng thái và log của tự động cập nhật truyện (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlerStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/crawler/rookies": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Cấu hình, trạng thái và log của tự động cập nhật truyện rookies (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlerStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/crawler/rookies/run": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Chạy ngay một lượt cập nhật truyện rookies ở nền (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlRunResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/crawler/run": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Chạy ngay một lượt cập nhật truyện ở nền (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlRunResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/genres": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Thể loại truyện, gồm cả truyện ẩn (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_GenreListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/sources": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Các nguồn truyện và số truyện mỗi nguồn (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_SourceListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/summary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Số truyện, số chương và số chương đã có nội dung (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminSummaryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Thông tin một truyện (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Xoá truyện và toàn bộ chương (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Ẩn hoặc hiện truyện (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Trạng thái ẩn",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_story.UpdateStoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/{id}/chapters": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Danh sách chương kèm trạng thái nội dung (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/{id}/chapters/{position}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Xem nội dung chương đang lưu, không tự lấy từ nguồn (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Thứ tự chương",
+                        "name": "position",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterDetailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/{id}/chapters/{position}/refetch": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Lấy lại nội dung chương từ nguồn, ghi đè nội dung cũ (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Thứ tự chương",
+                        "name": "position",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterDetailResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/{id}/comments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Bình luận của truyện, gồm cả bình luận đã xoá (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Vị trí bắt đầu",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số bình luận mỗi trang",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryCommentListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/{id}/comments/{commentId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Xoá bình luận của truyện (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID bình luận",
+                        "name": "commentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_DeleteStoryCommentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/stories/{id}/fetch-content": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-story"
+                ],
+                "summary": "Lấy nội dung mọi chương còn thiếu của truyện, chạy nền (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_FetchMissingResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -4834,6 +6565,112 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/vip/purchases": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Lịch sử mua gói ngày VIP + icon VIP toàn hệ thống, gồm cả quà tặng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "package|icon",
+                        "name": "kind",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "self|gift",
+                        "name": "mode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tìm theo username / tên người nhận, username người tặng",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_vip.PurchaseListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/vip/purchases/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Thống kê doanh thu mua VIP (gói ngày + icon) theo ngày/tháng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339, mặc định 30 ngày trước)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339, mặc định hiện tại)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_vip.PurchaseStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/vip/shop": {
             "get": {
                 "security": [
@@ -5474,6 +7311,181 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/word-chain": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-word-chain"
+                ],
+                "summary": "Word chain room overview (admin): current word, words of the current game, player counts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_AdminOverviewResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/word-chain/messages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-word-chain"
+                ],
+                "summary": "Word chain message history (admin, newest first)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message ID to paginate before (nextBefore of the previous page)",
+                        "name": "before",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_MessageListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/word-chain/purchases": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "summary là tổng số giao dịch và KEN theo từng loại, tính trên cùng bộ lọc",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-word-chain"
+                ],
+                "summary": "Lịch sử mua gợi ý và mua lượt nối từ (admin, mới nhất trước)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "hint | guess, bỏ trống là cả hai",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tìm theo username hoặc tên",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (mặc định 20, tối đa 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_wordchain_PurchaseListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/word-chain/wins": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-word-chain"
+                ],
+                "summary": "Word chain win history (admin, newest first)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Win id to paginate before (nextBefore of the previous page)",
+                        "name": "before",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Only wins of this user",
+                        "name": "userId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_WinListResponse"
                         }
                     }
                 }
@@ -6174,6 +8186,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
+                    "403": {
+                        "description": "code CHAT_BOT_DISABLED: bot đang tắt",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "code CHAT_BOT_DAILY_LIMIT: hết lượt chat hôm nay",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
@@ -6306,6 +8330,44 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/top": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Top clans by member count, optionally filtered by handle substring",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Handle substring (lowercase letters and digits, optional # prefix)",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max items (default 20, max 50)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanSummaryResponse"
                         }
                     }
                 }
@@ -8472,7 +10534,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images), 'following' (own posts + posts from users the viewer follows) or 'clan' (public posts from all clans)",
+                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images), 'following' (own posts + posts from users the viewer follows) or 'clan' (public posts from all clans plus every post of the clans the viewer belongs to)",
                         "name": "filter",
                         "in": "query"
                     }
@@ -10026,6 +12088,542 @@ const docTemplate = `{
                 }
             }
         },
+        "/moments": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "multipart: type (text|image|video), visibility (friend|public), items = JSON [{type?, background?, overlays}] where type (text|image) defaults to the post type, images[] + thumbs[] in the order of image items, video + thumb (video)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Post moments (24h): up to 3 slides (color or image background), or 1 video ≤20s",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "text, image or video",
+                        "name": "type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "friend (default) or public",
+                        "name": "visibility",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "JSON array of {type, background, overlays}",
+                        "name": "items",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image files (≤3MB each, max 3)",
+                        "name": "images",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Small JPEG previews, same order as images",
+                        "name": "thumbs",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Video ≤20s, ≤45MB. Without FFMPEG_PATH only MP4 H.264 is accepted; with it MOV/WebM/MKV/AVI/WMV/FLV/3GP/TS/MPG/OGV are converted to MP4 in the background (status=processing)",
+                        "name": "video",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Video cover JPEG (≤300KB)",
+                        "name": "thumb",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_CreateMomentsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "All my moments including expired ones, newest first",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/mine": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "My active moments with viewer counts (poll while a video is processing)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MyMomentsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/seen": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Mark moments as seen (hidden from tray afterwards)",
+                "parameters": [
+                    {
+                        "description": "Moment ids (max 50)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_moment.MarkSeenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MarkSeenResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/tray": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Moment tray: my active moments (first page only) + unseen moments grouped by author, newest author first",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "nextCursor from the previous page",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentTrayResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Get one of my moments with its stats (also after it expired)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Delete my moment (hidden now, files removed by the cleanup job)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_string"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/{id}/comments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Comments on my moment, newest first (author only, also after the moment expired)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 30, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentCommentsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Comment on a moment of a friend or followee, once per moment (cannot be edited or deleted, 409 MOMENT_COMMENT_EXISTS on a second try)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Comment text, 1-500 characters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_moment.CommentMomentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentMyCommentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/{id}/hidden": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Hide or show my active moment (hidden moments leave friends' trays)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Hidden flag",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_moment.SetHiddenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/{id}/reactions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Who reacted to my moment and how many times per reaction (author only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 50, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentReactorsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "React to a moment of a friend or followee, taps add up per reaction type (max 99 each)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Reaction type and how many taps",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_moment.ReactMomentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_ReactMomentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/{id}/viewers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moment"
+                ],
+                "summary": "Who viewed my moment (author only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 50, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentViewersResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/notifications": {
             "get": {
                 "security": [
@@ -11011,6 +13609,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/reports": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "targetType: account, post, comment, story_comment, message, room_message, moment. contextId là conversationId (message) hoặc roomId (room_message).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "report"
+                ],
+                "summary": "Report a user, post, comment or message",
+                "parameters": [
+                    {
+                        "description": "Report request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_report.CreateReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_report_ReportResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/rooms": {
             "get": {
                 "security": [
@@ -11143,6 +13780,310 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomBlockedUsersResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/word-chain": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word-chain"
+                ],
+                "summary": "Get the word chain room, current session state and my points",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_OverviewResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/word-chain/guesses": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Only allowed with no guesses left; the bought guesses are valid for this word only and reset when the word changes. price must equal the configured price the user confirmed. 409 WORD_CHAIN_WORD_CHANGED when sessionId/turn no longer match, 409 WORD_CHAIN_GUESSES_LEFT while guesses remain, 409 WORD_CHAIN_PRICE_CHANGED when the price differs, 400 WORD_CHAIN_INSUFFICIENT_KEN when the balance is too low",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word-chain"
+                ],
+                "summary": "Buy more guesses for the current word after running out (costs KEN each time)",
+                "parameters": [
+                    {
+                        "description": "Word being answered",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_room_wordchain.GuessPurchaseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_GuessPurchaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/word-chain/hints": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Buying again for the same word returns the same hints with charged=false; 409 WORD_CHAIN_WORD_CHANGED when the word changed before payment",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word-chain"
+                ],
+                "summary": "Buy hints for the current word (costs KEN once per word, nothing is charged when no hint is found)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_HintResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/word-chain/leaderboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word-chain"
+                ],
+                "summary": "Word chain leaderboard (top 10 by points or wins, all time or current day/week/month in GMT+7)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "points (default) or wins",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "all (default), day, week or month",
+                        "name": "period",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LeaderboardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/word-chain/lookup": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word-chain"
+                ],
+                "summary": "Look up a Vietnamese word (dict.minhqnd.com)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Word",
+                        "name": "word",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LookupResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/word-chain/messages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word-chain"
+                ],
+                "summary": "List messages of the current session (newest first)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message ID to paginate before",
+                        "name": "before",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_MessageListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/word-chain/moves": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Send sessionId and turn of the word being answered; if the word changed meanwhile the move is rejected with 409 WORD_CHAIN_WORD_CHANGED and no guess is used",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word-chain"
+                ],
+                "summary": "Play a word in the word chain room",
+                "parameters": [
+                    {
+                        "description": "Word",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_room_wordchain.MoveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_MoveResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/word-chain/wins": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "word-chain"
+                ],
+                "summary": "Word chain win history (newest first)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Win id to paginate before (nextBefore of the previous page)",
+                        "name": "before",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only the current user's wins",
+                        "name": "mine",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_WinListResponse"
                         }
                     }
                 }
@@ -11700,6 +14641,153 @@ const docTemplate = `{
                 }
             }
         },
+        "/settings/app": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment; nội dung mỗi key giống API riêng /settings/\u003ctên\u003e và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.\nGửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Gộp config hệ thống cho app trong một request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phiên bản app, ví dụ 1.0.0 (45)",
+                        "name": "X-App-Version",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Chỉ lấy các key này, cách nhau bởi dấu phẩy; bỏ trống là tất cả",
+                        "name": "keys",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "version của lần lấy trước",
+                        "name": "version",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_setting.AppConfigSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/settings/chat-bot": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "enabled của từng bot đã tính theo nền tảng và phiên bản app đang gọi (X-Platform, X-App-Version)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Bot nào đang bật và giới hạn lượt chat mỗi ngày (0 = không giới hạn)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phiên bản app, ví dụ 1.0.0 (45)",
+                        "name": "X-App-Version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_setting.ChatBotPublicConfigSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/settings/story": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Server đọc nền tảng (web | android | ios) và phiên bản app từ header, so với cấu hình bật/tắt và danh sách bản bị tắt của nền tảng đó. Thiếu X-Platform thì tính là web",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Truyện có đang bật cho app đang gọi không",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phiên bản app, ví dụ 1.0.0 (45)",
+                        "name": "X-App-Version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_setting.FeatureEnabledSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/settings/topup": {
             "get": {
                 "security": [
@@ -11707,6 +14795,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi, bị ẩn thì không trả bank. Thiếu X-Platform thì tính là web",
                 "produces": [
                     "application/json"
                 ],
@@ -11714,6 +14803,20 @@ const docTemplate = `{
                     "settings"
                 ],
                 "summary": "Cấu hình nạp KEN (bank nhận tiền VietQR + mệnh giá) cho app",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phiên bản app, ví dụ 1.0.0 (45)",
+                        "name": "X-App-Version",
+                        "in": "header"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -11737,6 +14840,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi. Thiếu X-Platform thì tính là web",
                 "produces": [
                     "application/json"
                 ],
@@ -11744,6 +14848,20 @@ const docTemplate = `{
                     "settings"
                 ],
                 "summary": "Cấu hình phí đổi username theo độ dài (tính bằng KEN)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phiên bản app, ví dụ 1.0.0 (45)",
+                        "name": "X-App-Version",
+                        "in": "header"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -11755,6 +14873,440 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/settings/word-chain": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Cấu hình phòng nối từ (bật/tắt, giá gợi ý và giá mua thêm lượt tính bằng KEN)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_setting.WordChainConfigSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Danh sách truyện",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "updated | views | new",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tên thể loại",
+                        "name": "genre",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "all | ongoing | completed",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tìm theo tên truyện hoặc tác giả, không phân biệt dấu",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Vị trí bắt đầu",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số truyện mỗi trang",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories/comments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Bình luận mới nhất của mọi truyện đang hiển thị, kèm tên và bìa truyện",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "nextCursor của trang trước",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số bình luận mỗi trang",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories/genres": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Thể loại truyện và số truyện mỗi thể loại",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_GenreListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Thông tin một truyện",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories/{id}/chapters": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Danh sách chương của truyện, theo thứ tự",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories/{id}/chapters/{position}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Nội dung một chương",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Thứ tự chương, bắt đầu từ 1",
+                        "name": "position",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1 = tải trước: không trừ lượt đọc miễn phí, chưa có quyền thì trả locked",
+                        "name": "prefetch",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories/{id}/comments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Bình luận của truyện, mới nhất trước",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "nextCursor của trang trước",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số bình luận mỗi trang",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Bình luận vào truyện; đủ số ký tự tối thiểu thì mở khoá đọc miễn phí truyện đó",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Nội dung bình luận",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_story.CreateStoryCommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_CreateStoryCommentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories/{id}/comments/{commentId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Xoá bình luận của mình",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID bình luận",
+                        "name": "commentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_DeleteStoryCommentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stories/{id}/comments/{commentId}/like": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "story"
+                ],
+                "summary": "Thích hoặc bỏ thích bình luận",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID truyện",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID bình luận",
+                        "name": "commentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentLikeResponse"
                         }
                     }
                 }
@@ -13331,6 +16883,326 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_analytics.NamedRow": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.OverviewResponse": {
+            "type": "object",
+            "properties": {
+                "appVersions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.VersionRow"
+                    }
+                },
+                "approximateRankings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.NamedRow"
+                    }
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.NamedRow"
+                    }
+                },
+                "fetchedAt": {
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "platforms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.PlatformRow"
+                    }
+                },
+                "screens": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.NamedRow"
+                    }
+                },
+                "setup": {
+                    "$ref": "#/definitions/internal_modules_admin_analytics.Setup"
+                },
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.SourceStatus"
+                    }
+                },
+                "timeseries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.TimePoint"
+                    }
+                },
+                "to": {
+                    "type": "string"
+                },
+                "totals": {
+                    "$ref": "#/definitions/internal_modules_admin_analytics.Totals"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.OverviewSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_analytics.OverviewResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.PlatformRow": {
+            "type": "object",
+            "properties": {
+                "activeUsers": {
+                    "type": "integer"
+                },
+                "newUsers": {
+                    "type": "integer"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "sessions": {
+                    "type": "integer"
+                },
+                "views": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.RealtimeMinute": {
+            "type": "object",
+            "properties": {
+                "activeUsers": {
+                    "type": "integer"
+                },
+                "eventCount": {
+                    "type": "integer"
+                },
+                "minutesAgo": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.RealtimePlatform": {
+            "type": "object",
+            "properties": {
+                "activeUsers": {
+                    "type": "integer"
+                },
+                "platform": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.RealtimeResponse": {
+            "type": "object",
+            "properties": {
+                "activeUsers": {
+                    "type": "integer"
+                },
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.NamedRow"
+                    }
+                },
+                "eventCount": {
+                    "type": "integer"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.NamedRow"
+                    }
+                },
+                "eventsTruncated": {
+                    "type": "boolean"
+                },
+                "fetchedAt": {
+                    "type": "string"
+                },
+                "minutes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.RealtimeMinute"
+                    }
+                },
+                "platforms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.RealtimePlatform"
+                    }
+                },
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_analytics.SourceStatus"
+                    }
+                },
+                "usersSummed": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.RealtimeSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_analytics.RealtimeResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.Setup": {
+            "type": "object",
+            "properties": {
+                "clientEmail": {
+                    "type": "string"
+                },
+                "credentialConfigured": {
+                    "type": "boolean"
+                },
+                "mobilePropertyId": {
+                    "type": "string"
+                },
+                "webPropertyId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.SourceStatus": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "propertyId": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.TimePoint": {
+            "type": "object",
+            "properties": {
+                "android": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "ios": {
+                    "type": "integer"
+                },
+                "newUsers": {
+                    "type": "integer"
+                },
+                "sessions": {
+                    "type": "integer"
+                },
+                "web": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.Totals": {
+            "type": "object",
+            "properties": {
+                "activeUsers": {
+                    "type": "integer"
+                },
+                "avgEngagementSeconds": {
+                    "type": "number"
+                },
+                "newUsers": {
+                    "type": "integer"
+                },
+                "sessions": {
+                    "type": "integer"
+                },
+                "usersSummed": {
+                    "type": "boolean"
+                },
+                "views": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_analytics.VersionRow": {
+            "type": "object",
+            "properties": {
+                "platform": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_admin_audit.AuditLogItem": {
             "type": "object",
             "properties": {
@@ -13605,6 +17477,269 @@ const docTemplate = `{
                 },
                 "verified": {
                     "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.ConversationDetailResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_conversation.ConversationMember"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.ConversationDetailSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_conversation.ConversationDetailResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.ConversationItem": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "hidden": {
+                    "type": "boolean"
+                },
+                "hiddenAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastMessageAt": {
+                    "type": "string",
+                    "example": "2026-10-20T10:30:00Z"
+                },
+                "lastMessagePreview": {
+                    "type": "string"
+                },
+                "missing": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "otherUser": {
+                    "$ref": "#/definitions/internal_modules_admin_conversation.UserBrief"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "direct"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.ConversationListResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_conversation.ConversationItem"
+                    }
+                },
+                "snapshot": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.ConversationListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_conversation.ConversationListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.ConversationMember": {
+            "type": "object",
+            "properties": {
+                "isActive": {
+                    "type": "boolean"
+                },
+                "joinedAt": {
+                    "type": "string"
+                },
+                "leftAt": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_conversation.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.Message": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "editedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "reactions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "replyTo": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_message.ReplySnapshot"
+                },
+                "sender": {
+                    "$ref": "#/definitions/internal_modules_admin_conversation.UserBrief"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "text"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.MessagesResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "hasNewer": {
+                    "type": "boolean"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_conversation.Message"
+                    }
+                },
+                "nextBefore": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.MessagesSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_conversation.MessagesResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_conversation.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "Minh Anh"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "ca4c6d54-870c-4735-b9a6-cce05a04aedb"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "minhanh"
                 }
             }
         },
@@ -15541,6 +19676,300 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_moment.AuthorResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_moment.MediaPurgeLogsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MediaPurgeLog"
+                    }
+                },
+                "last": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MediaPurgeLog"
+                },
+                "running": {
+                    "type": "boolean"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totals": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MediaPurgeTotals"
+                }
+            }
+        },
+        "internal_modules_admin_moment.MediaPurgeRunResponse": {
+            "type": "object",
+            "properties": {
+                "started": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_moment.MomentDetail": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_admin_moment.AuthorResponse"
+                },
+                "background": {
+                    "type": "string"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "number"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "hiddenAt": {
+                    "type": "string"
+                },
+                "hiddenBy": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "mediaPurged": {
+                    "type": "boolean"
+                },
+                "mediaUrl": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "overlays": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.MomentOverlay"
+                    }
+                },
+                "pageCount": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_moment.MomentItem"
+                    }
+                },
+                "pendingReportCount": {
+                    "type": "integer"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "purgedAt": {
+                    "type": "string"
+                },
+                "reactionCount": {
+                    "type": "integer"
+                },
+                "reactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentReactionCount"
+                    }
+                },
+                "reportCount": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "thumbUrl": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "viewerCount": {
+                    "type": "integer"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_moment.MomentItem": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_admin_moment.AuthorResponse"
+                },
+                "background": {
+                    "type": "string"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "number"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "hiddenAt": {
+                    "type": "string"
+                },
+                "hiddenBy": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "mediaPurged": {
+                    "type": "boolean"
+                },
+                "mediaUrl": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "overlays": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.MomentOverlay"
+                    }
+                },
+                "pageCount": {
+                    "type": "integer"
+                },
+                "pendingReportCount": {
+                    "type": "integer"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "purgedAt": {
+                    "type": "string"
+                },
+                "reactionCount": {
+                    "type": "integer"
+                },
+                "reactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentReactionCount"
+                    }
+                },
+                "reportCount": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "thumbUrl": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "viewerCount": {
+                    "type": "integer"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_moment.MomentListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_moment.MomentItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_moment.UpdateStatusRequest": {
+            "type": "object",
+            "required": [
+                "enabled"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
         "internal_modules_admin_pen.SideStatsResponse": {
             "type": "object",
             "properties": {
@@ -15710,6 +20139,149 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_push-campaign.AdminBrief": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_push-campaign.AudienceResponse": {
+            "type": "object",
+            "properties": {
+                "devices": {
+                    "type": "integer"
+                },
+                "users": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_push-campaign.CampaignItem": {
+            "type": "object",
+            "properties": {
+                "audience": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "$ref": "#/definitions/internal_modules_admin_push-campaign.AdminBrief"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "failureCount": {
+                    "type": "integer"
+                },
+                "finishedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "startedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "successCount": {
+                    "type": "integer"
+                },
+                "targetUser": {
+                    "$ref": "#/definitions/internal_modules_admin_push-campaign.UserBrief"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "totalDevices": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_push-campaign.CampaignListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_push-campaign.CampaignItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_push-campaign.CreateCampaignRequest": {
+            "type": "object",
+            "required": [
+                "audience",
+                "body",
+                "title"
+            ],
+            "properties": {
+                "audience": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "vip",
+                        "user"
+                    ],
+                    "example": "all"
+                },
+                "body": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "Nhân đôi KEN khi nạp từ tối nay đến hết Chủ nhật!"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Sự kiện cuối tuần"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "okela"
+                }
+            }
+        },
+        "internal_modules_admin_push-campaign.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -16023,6 +20595,204 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_report.AdminBrief": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_report.ReportItem": {
+            "type": "object",
+            "properties": {
+                "contextId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "handledAt": {
+                    "type": "string"
+                },
+                "handledBy": {
+                    "$ref": "#/definitions/internal_modules_admin_report.AdminBrief"
+                },
+                "handlerNote": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "reportedUser": {
+                    "$ref": "#/definitions/internal_modules_admin_report.UserBrief"
+                },
+                "reporter": {
+                    "$ref": "#/definitions/internal_modules_admin_report.UserBrief"
+                },
+                "sameTargetPending": {
+                    "type": "integer"
+                },
+                "snapshot": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "status": {
+                    "type": "string"
+                },
+                "targetId": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_report.ReportListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_report.ReportItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_report.ReportSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "pending": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_report.TestAlertRequest": {
+            "type": "object",
+            "required": [
+                "channel"
+            ],
+            "properties": {
+                "channel": {
+                    "type": "string",
+                    "enum": [
+                        "discord",
+                        "telegram"
+                    ],
+                    "example": "discord"
+                }
+            }
+        },
+        "internal_modules_admin_report.TestAlertResponse": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_report.TestAlertSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_report.TestAlertResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_report.UpdateStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "note": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Đã xoá tin nhắn và khoá tài khoản"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "resolved",
+                        "dismissed"
+                    ],
+                    "example": "resolved"
+                }
+            }
+        },
+        "internal_modules_admin_report.UpdateStatusResponse": {
+            "type": "object",
+            "properties": {
+                "affected": {
+                    "type": "integer"
+                },
+                "report": {
+                    "$ref": "#/definitions/internal_modules_admin_report.ReportItem"
+                }
+            }
+        },
+        "internal_modules_admin_report.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_setting.ChatBotDefaultsSuccessResponse": {
+            "type": "object"
+        },
         "internal_modules_admin_setting.PutManySettingsRequest": {
             "type": "object",
             "required": [
@@ -16045,6 +20815,9 @@ const docTemplate = `{
                 "value"
             ],
             "properties": {
+                "expectedUpdatedAt": {
+                    "type": "string"
+                },
                 "value": {
                     "$ref": "#/definitions/ola-chat-server_internal_models.JSONB"
                 }
@@ -16107,6 +20880,52 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_setting.SettingListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_setting.TestMailRequest": {
+            "type": "object",
+            "required": [
+                "to"
+            ],
+            "properties": {
+                "to": {
+                    "type": "string",
+                    "maxLength": 254
+                }
+            }
+        },
+        "internal_modules_admin_setting.TestMailResponse": {
+            "type": "object",
+            "properties": {
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_setting.TestMailSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_setting.TestMailResponse"
                 },
                 "error": {
                     "type": "string"
@@ -16741,6 +21560,216 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_vip.PurchaseBreakdownItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "giftCount": {
+                    "type": "integer"
+                },
+                "ken": {
+                    "type": "integer"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "vipIconId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_vip.PurchaseItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-10-19T10:00:00Z"
+                },
+                "days": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "giver": {
+                    "$ref": "#/definitions/internal_modules_admin_vip.UserInfo"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "kenPaid": {
+                    "type": "integer",
+                    "example": 250
+                },
+                "kind": {
+                    "type": "string",
+                    "example": "package"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Gói 30 ngày"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_vip.UserInfo"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                },
+                "vipIconId": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
+        "internal_modules_admin_vip.PurchaseListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_vip.PurchaseItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_vip.PurchaseListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_vip.PurchaseListResponse"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_vip.PurchaseSeriesItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "iconKen": {
+                    "type": "integer"
+                },
+                "packageKen": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_vip.PurchaseStatsResponse": {
+            "type": "object",
+            "properties": {
+                "activeVipUsers": {
+                    "type": "integer"
+                },
+                "breakdown": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_vip.PurchaseBreakdownItem"
+                    }
+                },
+                "bucket": {
+                    "type": "string"
+                },
+                "range": {
+                    "$ref": "#/definitions/internal_modules_admin_vip.PurchaseTotals"
+                },
+                "series": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_vip.PurchaseSeriesItem"
+                    }
+                },
+                "thisMonth": {
+                    "$ref": "#/definitions/internal_modules_admin_vip.PurchaseTotals"
+                },
+                "today": {
+                    "$ref": "#/definitions/internal_modules_admin_vip.PurchaseTotals"
+                }
+            }
+        },
+        "internal_modules_admin_vip.PurchaseStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_vip.PurchaseStatsResponse"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_vip.PurchaseTotals": {
+            "type": "object",
+            "properties": {
+                "buyers": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "giftCount": {
+                    "type": "integer"
+                },
+                "iconCount": {
+                    "type": "integer"
+                },
+                "iconKen": {
+                    "type": "integer"
+                },
+                "ken": {
+                    "type": "integer"
+                },
+                "packageCount": {
+                    "type": "integer"
+                },
+                "packageKen": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_vip.UserInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_admin_wheel.UserBrief": {
             "type": "object",
             "properties": {
@@ -16913,6 +21942,90 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_wordchain.PurchaseItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "guesses": {
+                    "type": "integer"
+                },
+                "hints": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "hint"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_wordchain.PurchaseUser"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_wordchain.PurchaseListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_wordchain.PurchaseItem"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/internal_modules_admin_wordchain.PurchaseSummary"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_wordchain.PurchaseSummary": {
+            "type": "object",
+            "properties": {
+                "guessCount": {
+                    "type": "integer"
+                },
+                "guessKen": {
+                    "type": "integer"
+                },
+                "hintCount": {
+                    "type": "integer"
+                },
+                "hintKen": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_wordchain.PurchaseUser": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -17652,6 +22765,29 @@ const docTemplate = `{
                     "$ref": "#/definitions/internal_modules_clan.ClanUserResponse"
                 },
                 "policy": {
+                    "type": "integer"
+                },
+                "visitCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_clan.ClanSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "memberCount": {
                     "type": "integer"
                 },
                 "visitCount": {
@@ -19373,6 +24509,9 @@ const docTemplate = `{
                 "actor": {
                     "$ref": "#/definitions/internal_modules_me.AuthorResponse"
                 },
+                "actorCount": {
+                    "type": "integer"
+                },
                 "commentId": {
                     "type": "string"
                 },
@@ -19966,6 +25105,411 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_moment.CommentMomentRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Đẹp quá!"
+                }
+            }
+        },
+        "internal_modules_moment.CreateMomentsResponse": {
+            "type": "object",
+            "properties": {
+                "moments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentResponse"
+                    }
+                }
+            }
+        },
+        "internal_modules_moment.MarkSeenRequest": {
+            "type": "object",
+            "required": [
+                "ids"
+            ],
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "internal_modules_moment.MarkSeenResponse": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "internal_modules_moment.MomentAuthorResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_moment.MomentCommentResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentAuthorResponse"
+                }
+            }
+        },
+        "internal_modules_moment.MomentCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentCommentResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "nextOffset": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_moment.MomentGroupResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentAuthorResponse"
+                },
+                "moments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentResponse"
+                    }
+                }
+            }
+        },
+        "internal_modules_moment.MomentHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "moments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentResponse"
+                    }
+                },
+                "nextOffset": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_moment.MomentMyCommentResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_moment.MomentReactionCount": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "type": {
+                    "type": "string",
+                    "example": "LOVE"
+                }
+            }
+        },
+        "internal_modules_moment.MomentReactorResponse": {
+            "type": "object",
+            "properties": {
+                "reactedAt": {
+                    "type": "string"
+                },
+                "reactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentReactionCount"
+                    }
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentAuthorResponse"
+                }
+            }
+        },
+        "internal_modules_moment.MomentReactorsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentReactorResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "nextOffset": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_moment.MomentResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentAuthorResponse"
+                },
+                "background": {
+                    "type": "string"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "number"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "hidden": {
+                    "type": "boolean"
+                },
+                "hiddenBy": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "mediaPurged": {
+                    "type": "boolean"
+                },
+                "mediaUrl": {
+                    "type": "string"
+                },
+                "myComment": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentMyCommentResponse"
+                },
+                "overlays": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.MomentOverlay"
+                    }
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "reactionCount": {
+                    "type": "integer"
+                },
+                "reactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentReactionCount"
+                    }
+                },
+                "reactorsAvailable": {
+                    "type": "boolean"
+                },
+                "seen": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "thumbUrl": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "viewerCount": {
+                    "type": "integer"
+                },
+                "viewersAvailable": {
+                    "type": "boolean"
+                },
+                "visibility": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_moment.MomentTrayResponse": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentGroupResponse"
+                    }
+                },
+                "mine": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentResponse"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_moment.MomentViewerResponse": {
+            "type": "object",
+            "properties": {
+                "reactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentReactionCount"
+                    }
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentAuthorResponse"
+                },
+                "viewedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_moment.MomentViewersResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentViewerResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "nextOffset": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_moment.MyMomentsResponse": {
+            "type": "object",
+            "properties": {
+                "moments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_moment.MomentResponse"
+                    }
+                }
+            }
+        },
+        "internal_modules_moment.ReactMomentRequest": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "maximum": 20,
+                    "minimum": 1,
+                    "example": 1
+                },
+                "type": {
+                    "type": "string",
+                    "example": "LOVE"
+                }
+            }
+        },
+        "internal_modules_moment.ReactMomentResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "type": {
+                    "type": "string",
+                    "example": "LOVE"
+                }
+            }
+        },
+        "internal_modules_moment.SetHiddenRequest": {
+            "type": "object",
+            "required": [
+                "hidden"
+            ],
+            "properties": {
+                "hidden": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -20719,6 +26263,53 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_report.CreateReportRequest": {
+            "type": "object",
+            "required": [
+                "reason",
+                "targetId",
+                "targetType"
+            ],
+            "properties": {
+                "contextId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "0b6f4c1e-3c55-4f0a-9a43-2f8b8c1d2e10"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "example": "Spam link lừa đảo"
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "spam"
+                },
+                "targetId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                },
+                "targetType": {
+                    "type": "string",
+                    "example": "room_message"
+                }
+            }
+        },
+        "internal_modules_report.ReportResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_room.JoinRoomResponse": {
             "type": "object",
             "properties": {
@@ -20736,7 +26327,27 @@ const docTemplate = `{
                 "userId"
             ],
             "properties": {
+                "migration": {
+                    "type": "boolean"
+                },
                 "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room.RoomBlockedUser": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -20748,6 +26359,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "type": "string"
+                    }
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room.RoomBlockedUser"
                     }
                 }
             }
@@ -20978,6 +26595,12 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "vipMinMembers": {
+                    "type": "integer"
+                },
+                "vipRequired": {
+                    "type": "boolean"
                 }
             }
         },
@@ -21005,6 +26628,457 @@ const docTemplate = `{
             ],
             "properties": {
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.GuessPurchaseRequest": {
+            "type": "object",
+            "required": [
+                "price",
+                "sessionId",
+                "turn"
+            ],
+            "properties": {
+                "price": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 500
+                },
+                "sessionId": {
+                    "type": "string",
+                    "example": "7b0c8f3e-2a51-4c1e-9d2f-5a6b7c8d9e0f"
+                },
+                "turn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 3
+                }
+            }
+        },
+        "internal_modules_room_wordchain.GuessPurchaseResponse": {
+            "type": "object",
+            "properties": {
+                "guesses": {
+                    "type": "integer"
+                },
+                "kenBalance": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "remainingGuesses": {
+                    "type": "integer"
+                },
+                "sessionId": {
+                    "type": "string"
+                },
+                "state": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.StateResponse"
+                },
+                "turn": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.HintResponse": {
+            "type": "object",
+            "properties": {
+                "charged": {
+                    "type": "boolean"
+                },
+                "hints": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "kenBalance": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "sessionId": {
+                    "type": "string"
+                },
+                "turn": {
+                    "type": "integer"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.LeaderboardEntry": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "wins": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.LeaderboardResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room_wordchain.LeaderboardEntry"
+                    }
+                },
+                "me": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.LeaderboardEntry"
+                },
+                "period": {
+                    "type": "string"
+                },
+                "sort": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.LookupMeaning": {
+            "type": "object",
+            "properties": {
+                "definition": {
+                    "type": "string"
+                },
+                "example": {
+                    "type": "string"
+                },
+                "pos": {
+                    "type": "string"
+                },
+                "subPos": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.LookupRelation": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.LookupResponse": {
+            "type": "object",
+            "properties": {
+                "found": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room_wordchain.LookupResult"
+                    }
+                },
+                "source": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.LookupResult": {
+            "type": "object",
+            "properties": {
+                "langCode": {
+                    "type": "string"
+                },
+                "langName": {
+                    "type": "string"
+                },
+                "meanings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room_wordchain.LookupMeaning"
+                    }
+                },
+                "relations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room_wordchain.LookupRelation"
+                    }
+                },
+                "translations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room_wordchain.LookupTranslation"
+                    }
+                }
+            }
+        },
+        "internal_modules_room_wordchain.LookupTranslation": {
+            "type": "object",
+            "properties": {
+                "langName": {
+                    "type": "string"
+                },
+                "translation": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.Message": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reaction": {
+                    "type": "string"
+                },
+                "remainingGuesses": {
+                    "type": "integer"
+                },
+                "requiredSyllable": {
+                    "type": "string"
+                },
+                "senderAvatar": {
+                    "type": "string"
+                },
+                "senderGender": {
+                    "type": "string"
+                },
+                "senderId": {
+                    "type": "string"
+                },
+                "senderName": {
+                    "type": "string"
+                },
+                "senderType": {
+                    "type": "string"
+                },
+                "senderVip": {
+                    "type": "string"
+                },
+                "senderVipEnd": {
+                    "type": "string"
+                },
+                "seq": {
+                    "type": "integer"
+                },
+                "sessionId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.MessageListResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room_wordchain.Message"
+                    }
+                },
+                "nextBefore": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.MoveRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "example": "chân trời"
+                },
+                "sessionId": {
+                    "type": "string",
+                    "example": "7b0c8f3e-2a51-4c1e-9d2f-5a6b7c8d9e0f"
+                },
+                "turn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 3
+                }
+            }
+        },
+        "internal_modules_room_wordchain.MoveResponse": {
+            "type": "object",
+            "properties": {
+                "botMessages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room_wordchain.Message"
+                    }
+                },
+                "message": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.Message"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "remainingGuesses": {
+                    "type": "integer"
+                },
+                "state": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.StateResponse"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.OverviewResponse": {
+            "type": "object",
+            "properties": {
+                "guessPackSize": {
+                    "type": "integer"
+                },
+                "guessPrice": {
+                    "type": "integer"
+                },
+                "hintPrice": {
+                    "type": "integer"
+                },
+                "needsVipToPlay": {
+                    "type": "boolean"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "remainingGuesses": {
+                    "type": "integer"
+                },
+                "state": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.StateResponse"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.StateResponse": {
+            "type": "object",
+            "properties": {
+                "guessLimit": {
+                    "type": "integer"
+                },
+                "historyCount": {
+                    "type": "integer"
+                },
+                "lastProgressAt": {
+                    "type": "string"
+                },
+                "requiredSyllable": {
+                    "type": "string"
+                },
+                "revision": {
+                    "type": "integer"
+                },
+                "sessionId": {
+                    "type": "string"
+                },
+                "sessionStartedAt": {
+                    "type": "string"
+                },
+                "turn": {
+                    "type": "integer"
+                },
+                "word": {
+                    "type": "string"
+                },
+                "wordExpiresAt": {
+                    "type": "string"
+                },
+                "wordOwnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.WinEntry": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "previousWord": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room_wordchain.WinListResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_room_wordchain.WinEntry"
+                    }
+                },
+                "nextBefore": {
                     "type": "string"
                 }
             }
@@ -21165,6 +27239,136 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_setting.AppConfigResponse": {
+            "type": "object",
+            "properties": {
+                "configs": {
+                    "type": "object"
+                },
+                "notModified": {
+                    "type": "boolean"
+                },
+                "version": {
+                    "type": "string",
+                    "example": "9f86d081884c7d65"
+                }
+            }
+        },
+        "internal_modules_setting.AppConfigSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_setting.AppConfigResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_setting.ChatBotAvailability": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "type": {
+                    "type": "string",
+                    "example": "OLALA"
+                }
+            }
+        },
+        "internal_modules_setting.ChatBotPublicConfig": {
+            "type": "object",
+            "properties": {
+                "bots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_setting.ChatBotAvailability"
+                    }
+                },
+                "dailyLimit": {
+                    "type": "integer",
+                    "example": 50
+                }
+            }
+        },
+        "internal_modules_setting.ChatBotPublicConfigSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_setting.ChatBotPublicConfig"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_setting.FeatureEnabledResponse": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_modules_setting.FeatureEnabledSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_setting.FeatureEnabledResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_setting.TopupBankInfo": {
             "type": "object",
             "properties": {
@@ -21263,14 +27467,16 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_setting.UsernameChangeConfig": {
+        "internal_modules_setting.UsernameChangeConfigResponse": {
             "type": "object",
             "properties": {
                 "enabled": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": true
                 },
                 "enabledMobile": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": true
                 },
                 "tiers": {
                     "type": "array",
@@ -21284,7 +27490,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/internal_modules_setting.UsernameChangeConfig"
+                    "$ref": "#/definitions/internal_modules_setting.UsernameChangeConfigResponse"
                 },
                 "error": {
                     "type": "string"
@@ -21313,6 +27519,410 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "minLength": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_setting.WordChainConfig": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "guessPrice": {
+                    "type": "integer"
+                },
+                "hintPrice": {
+                    "type": "integer"
+                },
+                "vipRequiredToPlay": {
+                    "type": "boolean"
+                },
+                "vipRequiredToView": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_setting.WordChainConfigSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_setting.WordChainConfig"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_story.ChapterListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_story.ChapterSummaryResponse"
+                    }
+                }
+            }
+        },
+        "internal_modules_story.ChapterResponse": {
+            "type": "object",
+            "properties": {
+                "access": {
+                    "$ref": "#/definitions/internal_modules_story.StoryAccessResponse"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "locked": {
+                    "type": "boolean"
+                },
+                "nextPosition": {
+                    "type": "integer"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "prevPosition": {
+                    "type": "integer"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "storyId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "wordCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_story.ChapterSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "storyId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "wordCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_story.CreateStoryCommentRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "parentId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_story.CreateStoryCommentResponse": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "$ref": "#/definitions/internal_modules_story.StoryCommentResponse"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "unlocked": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_story.DeleteStoryCommentResponse": {
+            "type": "object",
+            "properties": {
+                "commentCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_story.GenreItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_story.GenreListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_story.GenreItem"
+                    }
+                }
+            }
+        },
+        "internal_modules_story.StoryAccessResponse": {
+            "type": "object",
+            "properties": {
+                "commentMinChars": {
+                    "type": "integer"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "freeLimit": {
+                    "type": "integer"
+                },
+                "freeUsed": {
+                    "type": "integer"
+                },
+                "unlocked": {
+                    "type": "boolean"
+                },
+                "vip": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_story.StoryCommentAuthor": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "vipEndTime": {
+                    "type": "string"
+                },
+                "vipUsed": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_story.StoryCommentLikeResponse": {
+            "type": "object",
+            "properties": {
+                "likeCount": {
+                    "type": "integer"
+                },
+                "liked": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_story.StoryCommentListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_story.StoryCommentResponse"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_story.StoryCommentReply": {
+            "type": "object",
+            "properties": {
+                "authorName": {
+                    "type": "string"
+                },
+                "commentId": {
+                    "type": "string"
+                },
+                "excerpt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_story.StoryCommentResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_story.StoryCommentAuthor"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "likeCount": {
+                    "type": "integer"
+                },
+                "liked": {
+                    "type": "boolean"
+                },
+                "mine": {
+                    "type": "boolean"
+                },
+                "parentId": {
+                    "type": "string"
+                },
+                "replyTo": {
+                    "$ref": "#/definitions/internal_modules_story.StoryCommentReply"
+                },
+                "story": {
+                    "$ref": "#/definitions/internal_modules_story.StoryCommentStory"
+                },
+                "storyId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_story.StoryCommentStory": {
+            "type": "object",
+            "properties": {
+                "coverUrl": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_story.StoryListResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_story.StoryResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_story.StoryResponse": {
+            "type": "object",
+            "properties": {
+                "access": {
+                    "$ref": "#/definitions/internal_modules_story.StoryAccessResponse"
+                },
+                "ageRating": {
+                    "type": "string"
+                },
+                "authorName": {
+                    "type": "string"
+                },
+                "chapterCount": {
+                    "type": "integer"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "coverUrl": {
+                    "type": "string"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "intro": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "lastChapterAt": {
+                    "type": "string"
+                },
+                "likeCount": {
+                    "type": "integer"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "sourceUrl": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "viewCount": {
+                    "type": "integer"
+                },
+                "wordCount": {
                     "type": "integer"
                 }
             }
@@ -23219,6 +29829,50 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_models.MomentOverlay": {
+            "type": "object",
+            "properties": {
+                "align": {
+                    "type": "string"
+                },
+                "bold": {
+                    "type": "boolean"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "font": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "italic": {
+                    "type": "boolean"
+                },
+                "rotation": {
+                    "type": "number"
+                },
+                "scale": {
+                    "type": "number"
+                },
+                "style": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "w": {
+                    "type": "number"
+                },
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
+                }
+            }
+        },
         "ola-chat-server_internal_models.WheelSegmentKind": {
             "type": "string",
             "enum": [
@@ -24450,6 +31104,29 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_modules_message.ReplySnapshot": {
+            "type": "object",
+            "properties": {
+                "excerpt": {
+                    "type": "string"
+                },
+                "imageUrl": {
+                    "type": "string"
+                },
+                "messageId": {
+                    "type": "string"
+                },
+                "senderId": {
+                    "type": "string"
+                },
+                "senderName": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_modules_mini-game.CreateMiniGameRequest": {
             "type": "object",
             "required": [
@@ -24564,6 +31241,177 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "sortOrder": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moment.MediaPurgeLog": {
+            "type": "object",
+            "properties": {
+                "afterHours": {
+                    "type": "integer"
+                },
+                "bytes": {
+                    "type": "integer"
+                },
+                "cutoff": {
+                    "type": "string"
+                },
+                "durationMs": {
+                    "type": "integer"
+                },
+                "failed": {
+                    "type": "integer"
+                },
+                "files": {
+                    "type": "integer"
+                },
+                "finishedAt": {
+                    "type": "string"
+                },
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "purged": {
+                    "type": "integer"
+                },
+                "startedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "trigger": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moment.MediaPurgeTotals": {
+            "type": "object",
+            "properties": {
+                "bytes": {
+                    "type": "integer"
+                },
+                "files": {
+                    "type": "integer"
+                },
+                "moments": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moment.MomentAuthorResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moment.MomentCommentResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentAuthorResponse"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moment.MomentCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentCommentResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "nextOffset": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moment.MomentReactionCount": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "type": {
+                    "type": "string",
+                    "example": "LOVE"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moment.MomentViewerResponse": {
+            "type": "object",
+            "properties": {
+                "reactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentReactionCount"
+                    }
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentAuthorResponse"
+                },
+                "viewedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moment.MomentViewersResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentViewerResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "nextOffset": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
                     "type": "integer"
                 }
             }
@@ -24900,6 +31748,74 @@ const docTemplate = `{
                     "maxLength": 150,
                     "minLength": 1,
                     "example": "Phòng Tán Gẫu"
+                },
+                "vipMinMembers": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 50
+                },
+                "vipRequired": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomImagePurgePreview": {
+            "type": "object",
+            "properties": {
+                "before": {
+                    "type": "string"
+                },
+                "bytes": {
+                    "type": "integer",
+                    "example": 52428800
+                },
+                "files": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "kept": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "olderThanDays": {
+                    "type": "integer",
+                    "example": 30
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomImagePurgeRequest": {
+            "type": "object",
+            "required": [
+                "before"
+            ],
+            "properties": {
+                "before": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomImagePurgeResult": {
+            "type": "object",
+            "properties": {
+                "before": {
+                    "type": "string"
+                },
+                "bytes": {
+                    "type": "integer",
+                    "example": 52428800
+                },
+                "failed": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "files": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "kept": {
+                    "type": "integer",
+                    "example": 2
                 }
             }
         },
@@ -25080,6 +31996,12 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "vipMinMembers": {
+                    "type": "integer"
+                },
+                "vipRequired": {
+                    "type": "boolean"
                 }
             }
         },
@@ -25108,6 +32030,902 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 150,
                     "minLength": 1
+                },
+                "vipMinMembers": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "vipRequired": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room_wordchain.AdminOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "players": {
+                    "type": "integer"
+                },
+                "state": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room_wordchain.StateResponse"
+                },
+                "winners": {
+                    "type": "integer"
+                },
+                "wordOwner": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room_wordchain.AdminPlayer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room_wordchain.AdminPlayer": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room_wordchain.Message": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reaction": {
+                    "type": "string"
+                },
+                "remainingGuesses": {
+                    "type": "integer"
+                },
+                "requiredSyllable": {
+                    "type": "string"
+                },
+                "senderAvatar": {
+                    "type": "string"
+                },
+                "senderGender": {
+                    "type": "string"
+                },
+                "senderId": {
+                    "type": "string"
+                },
+                "senderName": {
+                    "type": "string"
+                },
+                "senderType": {
+                    "type": "string"
+                },
+                "senderVip": {
+                    "type": "string"
+                },
+                "senderVipEnd": {
+                    "type": "string"
+                },
+                "seq": {
+                    "type": "integer"
+                },
+                "sessionId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room_wordchain.MessageListResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_room_wordchain.Message"
+                    }
+                },
+                "nextBefore": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room_wordchain.StateResponse": {
+            "type": "object",
+            "properties": {
+                "guessLimit": {
+                    "type": "integer"
+                },
+                "historyCount": {
+                    "type": "integer"
+                },
+                "lastProgressAt": {
+                    "type": "string"
+                },
+                "requiredSyllable": {
+                    "type": "string"
+                },
+                "revision": {
+                    "type": "integer"
+                },
+                "sessionId": {
+                    "type": "string"
+                },
+                "sessionStartedAt": {
+                    "type": "string"
+                },
+                "turn": {
+                    "type": "integer"
+                },
+                "word": {
+                    "type": "string"
+                },
+                "wordExpiresAt": {
+                    "type": "string"
+                },
+                "wordOwnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room_wordchain.WinEntry": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "previousWord": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room_wordchain.WinListResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_room_wordchain.WinEntry"
+                    }
+                },
+                "nextBefore": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_setting.StoryCookie": {
+            "type": "object",
+            "properties": {
+                "cookie": {
+                    "type": "string"
+                },
+                "deadAt": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.AdminChapterDetailResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "crawledAt": {
+                    "type": "string"
+                },
+                "hasContent": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "sourceUrl": {
+                    "type": "string"
+                },
+                "storyId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "wordCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.AdminChapterListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminChapterResponse"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.AdminChapterResponse": {
+            "type": "object",
+            "properties": {
+                "crawledAt": {
+                    "type": "string"
+                },
+                "hasContent": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "sourceUrl": {
+                    "type": "string"
+                },
+                "storyId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "wordCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.AdminStoryCommentListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminStoryCommentResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.AdminStoryCommentResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.StoryCommentAuthor"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "likeCount": {
+                    "type": "integer"
+                },
+                "liked": {
+                    "type": "boolean"
+                },
+                "mine": {
+                    "type": "boolean"
+                },
+                "parentId": {
+                    "type": "string"
+                },
+                "replyTo": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.StoryCommentReply"
+                },
+                "story": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.StoryCommentStory"
+                },
+                "storyId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.AdminStoryListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminStoryResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.AdminStoryResponse": {
+            "type": "object",
+            "properties": {
+                "access": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.StoryAccessResponse"
+                },
+                "ageRating": {
+                    "type": "string"
+                },
+                "authorName": {
+                    "type": "string"
+                },
+                "chapterCount": {
+                    "type": "integer"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "contentChapters": {
+                    "type": "integer"
+                },
+                "coverUrl": {
+                    "type": "string"
+                },
+                "crawledAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "intro": {
+                    "type": "string"
+                },
+                "isHidden": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "lastChapterAt": {
+                    "type": "string"
+                },
+                "likeCount": {
+                    "type": "integer"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "sourceStoryId": {
+                    "type": "string"
+                },
+                "sourceUrl": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "viewCount": {
+                    "type": "integer"
+                },
+                "wordCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.AdminSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "chapters": {
+                    "type": "integer"
+                },
+                "contentChapters": {
+                    "type": "integer"
+                },
+                "hiddenStories": {
+                    "type": "integer"
+                },
+                "lastCrawledAt": {
+                    "type": "string"
+                },
+                "longStories": {
+                    "type": "integer"
+                },
+                "shortStories": {
+                    "type": "integer"
+                },
+                "stories": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.BulkVisibilityRequest": {
+            "type": "object",
+            "required": [
+                "isHidden"
+            ],
+            "properties": {
+                "filter": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.StoryFilter"
+                },
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "isHidden": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.BulkVisibilityResponse": {
+            "type": "object",
+            "properties": {
+                "updated": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.CrawlError": {
+            "type": "object",
+            "properties": {
+                "attempts": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "sourceStoryId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "willRetry": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.CrawlLog": {
+            "type": "object",
+            "properties": {
+                "chaptersAdded": {
+                    "type": "integer"
+                },
+                "chaptersRemoved": {
+                    "type": "integer"
+                },
+                "chaptersUpdated": {
+                    "type": "integer"
+                },
+                "cookie": {
+                    "type": "string"
+                },
+                "cookiesDied": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "durationMs": {
+                    "type": "integer"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_story.CrawlError"
+                    }
+                },
+                "finishedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "importNewStories": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "postsFound": {
+                    "type": "integer"
+                },
+                "postsProcessed": {
+                    "type": "integer"
+                },
+                "requests": {
+                    "type": "integer"
+                },
+                "retried": {
+                    "type": "integer"
+                },
+                "retryPending": {
+                    "type": "integer"
+                },
+                "since": {
+                    "type": "string"
+                },
+                "startedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "storiesChecked": {
+                    "type": "integer"
+                },
+                "storiesCreated": {
+                    "type": "integer"
+                },
+                "storiesEmpty": {
+                    "type": "integer"
+                },
+                "storiesFailed": {
+                    "type": "integer"
+                },
+                "storiesSkippedNew": {
+                    "type": "integer"
+                },
+                "storiesUnchanged": {
+                    "type": "integer"
+                },
+                "storiesUpdated": {
+                    "type": "integer"
+                },
+                "trigger": {
+                    "type": "string"
+                },
+                "truncated": {
+                    "type": "boolean"
+                },
+                "useCookies": {
+                    "type": "boolean"
+                },
+                "userAgent": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.CrawlRunResponse": {
+            "type": "object",
+            "properties": {
+                "started": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.CrawlerConfigResponse": {
+            "type": "object",
+            "properties": {
+                "cookies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_setting.StoryCookie"
+                    }
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "importNewStories": {
+                    "type": "boolean"
+                },
+                "intervalHours": {
+                    "type": "integer"
+                },
+                "randomUserAgent": {
+                    "type": "boolean"
+                },
+                "useCookies": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.CrawlerStatusResponse": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.CrawlerConfigResponse"
+                },
+                "configUpdatedAt": {
+                    "type": "string"
+                },
+                "lastRunAt": {
+                    "type": "string"
+                },
+                "logs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_story.CrawlLog"
+                    }
+                },
+                "nextRunAt": {
+                    "type": "string"
+                },
+                "progress": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.CrawlLog"
+                },
+                "retryPending": {
+                    "type": "integer"
+                },
+                "running": {
+                    "type": "boolean"
+                },
+                "scanDays": {
+                    "type": "integer"
+                },
+                "scanLimit": {
+                    "type": "integer"
+                },
+                "scanPages": {
+                    "type": "integer"
+                },
+                "userAgents": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.DeleteStoryCommentResponse": {
+            "type": "object",
+            "properties": {
+                "commentCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.FetchMissingResponse": {
+            "type": "object",
+            "properties": {
+                "queued": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.GenreItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.GenreListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_story.GenreItem"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.SourceItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.SourceListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_story.SourceItem"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.StoryAccessResponse": {
+            "type": "object",
+            "properties": {
+                "commentMinChars": {
+                    "type": "integer"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "freeLimit": {
+                    "type": "integer"
+                },
+                "freeUsed": {
+                    "type": "integer"
+                },
+                "unlocked": {
+                    "type": "boolean"
+                },
+                "vip": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.StoryCommentAuthor": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "vipEndTime": {
+                    "type": "string"
+                },
+                "vipUsed": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.StoryCommentReply": {
+            "type": "object",
+            "properties": {
+                "authorName": {
+                    "type": "string"
+                },
+                "commentId": {
+                    "type": "string"
+                },
+                "excerpt": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.StoryCommentStory": {
+            "type": "object",
+            "properties": {
+                "coverUrl": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.StoryFilter": {
+            "type": "object",
+            "properties": {
+                "genre": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "q": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_story.UpdateStoryRequest": {
+            "type": "object",
+            "required": [
+                "isHidden"
+            ],
+            "properties": {
+                "isHidden": {
+                    "type": "boolean"
                 }
             }
         },
@@ -26162,6 +33980,35 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_clan.ClanSummaryResponse"
+                    }
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_audit_AuditLogListResponse": {
             "type": "object",
             "properties": {
@@ -26396,6 +34243,266 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeLogsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_moment.MediaPurgeLogsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeRunResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_moment.MediaPurgeRunResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_moment.MomentDetail"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_moment.MomentListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_AudienceResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_push-campaign.AudienceResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_CampaignItem": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_push-campaign.CampaignItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_push-campaign_CampaignListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_push-campaign.CampaignListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_ReportListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_report.ReportListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_ReportSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_report.ReportSummaryResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_report_UpdateStatusResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_report.UpdateStatusResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_upload_UploadResponse": {
             "type": "object",
             "properties": {
@@ -26583,6 +34690,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_user.VipIconListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_wordchain_PurchaseListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_wordchain.PurchaseListResponse"
                 },
                 "error": {
                     "type": "string"
@@ -27098,11 +35231,323 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_CreateMomentsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.CreateMomentsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MarkSeenResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MarkSeenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentCommentsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentHistoryResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentMyCommentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentMyCommentResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentReactorsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentReactorsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentTrayResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentTrayResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MomentViewersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentViewersResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_MyMomentsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.MyMomentsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_moment_ReactMomentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_moment.ReactMomentResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_notification_AppNotificationListResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_notification.AppNotificationListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_report_ReportResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_report.ReportResponse"
                 },
                 "error": {
                     "type": "string"
@@ -27306,6 +35751,448 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_GuessPurchaseResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.GuessPurchaseResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_HintResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.HintResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LeaderboardResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.LeaderboardResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LookupResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.LookupResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_MessageListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.MessageListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_MoveResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.MoveResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_OverviewResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.OverviewResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_WinListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room_wordchain.WinListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.ChapterListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.ChapterResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_CreateStoryCommentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.CreateStoryCommentResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_DeleteStoryCommentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.DeleteStoryCommentResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_GenreListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.GenreListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentLikeResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.StoryCommentLikeResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryCommentListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.StoryCommentListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.StoryListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_StoryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_story.StoryResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-map_string_int64": {
             "type": "object",
             "properties": {
@@ -27384,6 +36271,110 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_moment_MomentCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentCommentsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_moment_MomentViewersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moment.MomentViewersResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomImagePurgePreview": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomImagePurgePreview"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomImagePurgeResult": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomImagePurgeResult"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomListResponse": {
             "type": "object",
             "properties": {
@@ -27441,6 +36432,422 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_AdminOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room_wordchain.AdminOverviewResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_MessageListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room_wordchain.MessageListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_wordchain_WinListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room_wordchain.WinListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminChapterDetailResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminChapterListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminChapterListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryCommentListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminStoryCommentListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminStoryListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminStoryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminStoryResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_AdminSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.AdminSummaryResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_BulkVisibilityResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.BulkVisibilityResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlRunResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.CrawlRunResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_CrawlerStatusResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.CrawlerStatusResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_DeleteStoryCommentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.DeleteStoryCommentResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_FetchMissingResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.FetchMissingResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_GenreListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.GenreListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_story_SourceListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_story.SourceListResponse"
                 },
                 "error": {
                     "type": "string"

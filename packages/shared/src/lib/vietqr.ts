@@ -29,6 +29,6 @@ export function buildVietQrImageUrl({
   const cleanMemo = memo ? normalizeTransferMemo(memo) : '';
   if (cleanMemo !== '') query.push(`addInfo=${encodeURIComponent(cleanMemo)}`);
   if (accountName) query.push(`accountName=${encodeURIComponent(accountName)}`);
-  const base = `https://img.vietqr.io/image/${bankBin}-${accountNumber}-compact.png`;
+  const base = `https://img.vietqr.io/image/${bankBin}-${accountNumber}-compact.svg`;
   return query.length > 0 ? `${base}?${query.join('&')}` : base;
 }

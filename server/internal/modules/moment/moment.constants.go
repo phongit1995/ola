@@ -92,6 +92,10 @@ const (
 	MomentCleanupLockTTL         = 9 * time.Minute
 	MomentViewerSyncGrace        = time.Hour
 	MomentViewerSyncLimit        = 5000
+	MomentAudienceKeepAfter      = 24 * time.Hour
+	MomentAudienceArchiveDelay   = 5 * time.Minute
+	MomentAudienceArchiveWindow  = 23 * time.Hour
+	MomentAudienceArchiveLimit   = 500
 	MomentObjectDeleteTimeout    = 5 * time.Second
 	MomentObjectStatTimeout      = 5 * time.Second
 	MomentPurgeBatchSize         = 100
@@ -153,6 +157,8 @@ var MomentRemuxContainers = []string{"mov", "mp4"}
 var MomentHDRTransfers = []string{"smpte2084", "arib-std-b67"}
 
 var MomentMediaGoneStatuses = []string{MomentStatusPurging, MomentStatusPurged}
+
+var ArchivedAudienceColumns = []string{"archived_viewers", "archived_reactors"}
 
 const (
 	AdminMomentStateLive       = "live"

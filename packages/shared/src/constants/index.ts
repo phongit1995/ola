@@ -18,6 +18,7 @@ export * from './room';
 export * from './settings';
 export * from './socket';
 export * from './storage';
+export * from './support';
 export * from './theme';
 export * from './toast';
 export * from './upload';

@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
-import { PASSWORD_MAX, PASSWORD_MIN, ROUTES } from '@constants';
+import {
+  ANALYTICS_AUTH_METHOD,
+  ANALYTICS_EVENT,
+  PASSWORD_MAX,
+  PASSWORD_MIN,
+  ROUTES,
+} from '@constants';
+import { trackEvent } from '@config';
 import olaLogo from '@/assets/images/ola-logo.png';
 import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
@@ -56,6 +63,7 @@ export function RegisterPage() {
         username: data.username,
         password: data.password,
       });
+      trackEvent(ANALYTICS_EVENT.signUp, { method: ANALYTICS_AUTH_METHOD });
       toast.success(t('register.success'));
       navigate(ROUTES.login);
     } catch (err) {

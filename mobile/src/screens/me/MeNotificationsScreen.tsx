@@ -14,6 +14,7 @@ import { MeService } from '@ola/shared/services';
 import { ME_NOTIFICATION_LABEL_KEY } from '@ola/shared/constants';
 import {
   createTimeFormatter,
+  isMomentMediaPurged,
   isMomentNotification,
   momentNotificationOthers,
   momentNotificationReaction,
@@ -76,7 +77,12 @@ export function MeNotificationsScreen() {
   async function openMoment(item: MeNotification) {
     setOpeningId(item.id);
     try {
-      momentOverlays.openDetail(await fetchMoment(item.postId));
+      const moment = await fetchMoment(item.postId);
+      if (isMomentMediaPurged(moment)) {
+        push('error', t('moment.mediaPurged'));
+        return;
+      }
+      momentOverlays.openDetail(moment);
     } catch (error) {
       push('error', t(momentOpenErrorKey(error)));
     } finally {

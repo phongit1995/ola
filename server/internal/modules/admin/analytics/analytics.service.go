@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 	analyticsdata "google.golang.org/api/analyticsdata/v1beta"
 
 	"ola-chat-server/internal/config"
@@ -30,6 +31,9 @@ const (
 	dailyRowLimit    = 5000
 	mergeRowLimit    = 10000
 	mergeRowCap      = 50000
+	realtimeWindow   = 30
+	realtimeRowLimit = 250
+	realtimeRowMax   = 250000
 	notSetDimension  = "(not set)"
 	engagementMetric = "userEngagementDuration"
 )
@@ -42,6 +46,14 @@ const (
 	reportCountries
 	reportEvents
 	reportVersions
+)
+
+const (
+	realtimeTotals = iota
+	realtimePlatforms
+	realtimeByMinute
+	realtimeEvents
+	realtimeCountries
 )
 
 var gaPlatformNames = map[string]string{
@@ -249,8 +261,9 @@ func (s *Service) Realtime(ctx context.Context, q RealtimeQuery) (*RealtimeRespo
 	if err != nil {
 		return nil, err
 	}
-	resp := &RealtimeResponse{Sources: []SourceStatus{}, Platforms: []RealtimePlatform{}}
+	resp := &RealtimeResponse{Sources: []SourceStatus{}}
 	if !conn.ready() {
+		newRealtimeAggregate().fill(resp)
 		return resp, nil
 	}
 
@@ -262,27 +275,21 @@ func (s *Service) Realtime(ctx context.Context, q RealtimeQuery) (*RealtimeRespo
 		}
 	}
 
-	var mu sync.Mutex
-	byPlatform := map[string]int64{}
-	statuses, succeeded := conn.each(func(_ int, src source) error {
-		breakdown, total, err := fetchRealtime(ctx, conn.svc, src)
-		if err != nil {
-			return err
-		}
-		mu.Lock()
-		defer mu.Unlock()
-		for platform, users := range breakdown {
-			byPlatform[platform] += users
-		}
-		resp.ActiveUsers += total
-		return nil
+	reports := make([][]*analyticsdata.RunRealtimeReportResponse, len(conn.sources))
+	statuses, succeeded := conn.each(func(i int, src source) error {
+		result, err := fetchRealtime(ctx, conn.svc, src)
+		reports[i] = result
+		return err
 	})
 
-	for platform, users := range byPlatform {
-		resp.Platforms = append(resp.Platforms, RealtimePlatform{Platform: platform, ActiveUsers: users})
+	agg := newRealtimeAggregate()
+	for i := range conn.sources {
+		if succeeded[i] {
+			agg.add(reports[i])
+		}
 	}
+	agg.fill(resp)
 	resp.UsersSummed = countSucceeded(succeeded) > 1
-	sort.Slice(resp.Platforms, func(i, j int) bool { return resp.Platforms[i].ActiveUsers > resp.Platforms[j].ActiveUsers })
 	resp.Sources = statuses
 	now := time.Now()
 	resp.FetchedAt = &now
@@ -294,38 +301,142 @@ func (s *Service) Realtime(ctx context.Context, q RealtimeQuery) (*RealtimeRespo
 	return resp, nil
 }
 
-func fetchRealtime(ctx context.Context, svc *analyticsdata.Service, src source) (map[string]int64, int64, error) {
+func fetchRealtime(ctx context.Context, svc *analyticsdata.Service, src source) ([]*analyticsdata.RunRealtimeReportResponse, error) {
+	requests := realtimeRequests(src)
+	out := make([]*analyticsdata.RunRealtimeReportResponse, len(requests))
+	group, ctx := errgroup.WithContext(ctx)
+	for i, req := range requests {
+		group.Go(func() error {
+			report, err := svc.Properties.RunRealtimeReport(propertyName(src.propertyID), req).Context(ctx).Do()
+			out[i] = report
+			return err
+		})
+	}
+	if err := group.Wait(); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func realtimeRequests(src source) []*analyticsdata.RunRealtimeReportRequest {
 	filter := platformFilter(src.platforms)
-	report, err := svc.Properties.RunRealtimeReport(propertyName(src.propertyID), &analyticsdata.RunRealtimeReportRequest{
-		Dimensions:      []*analyticsdata.Dimension{{Name: "platform"}},
-		Metrics:         []*analyticsdata.Metric{{Name: "activeUsers"}},
-		DimensionFilter: filter,
-	}).Context(ctx).Do()
-	if err != nil {
-		return nil, 0, err
+	build := func(dims []string, metrics []string, limit int64) *analyticsdata.RunRealtimeReportRequest {
+		req := &analyticsdata.RunRealtimeReportRequest{DimensionFilter: filter, Limit: limit}
+		for _, name := range dims {
+			req.Dimensions = append(req.Dimensions, &analyticsdata.Dimension{Name: name})
+		}
+		for _, name := range metrics {
+			req.Metrics = append(req.Metrics, &analyticsdata.Metric{Name: name})
+		}
+		if limit > 0 {
+			req.OrderBys = []*analyticsdata.OrderBy{{Desc: true, Metric: &analyticsdata.MetricOrderBy{MetricName: metrics[0]}}}
+		}
+		return req
 	}
-	byPlatform := map[string]int64{}
-	var total int64
-	for _, row := range report.Rows {
+	requests := []*analyticsdata.RunRealtimeReportRequest{
+		realtimeTotals:    build(nil, []string{"activeUsers"}, 0),
+		realtimePlatforms: build([]string{"platform"}, []string{"activeUsers"}, 0),
+		realtimeByMinute:  build([]string{"minutesAgo"}, []string{"activeUsers"}, 0),
+		realtimeEvents:    build([]string{"eventName", "minutesAgo"}, []string{"eventCount"}, realtimeRowMax),
+		realtimeCountries: build([]string{"country"}, []string{"activeUsers"}, realtimeRowLimit),
+	}
+	requests[realtimeEvents].MetricAggregations = []string{"TOTAL"}
+	return requests
+}
+
+type realtimeAggregate struct {
+	users           int64
+	events          int64
+	eventsTruncated bool
+	platforms       map[string]int64
+	minutes         []RealtimeMinute
+	eventRows       map[string]*NamedRow
+	countries       map[string]*NamedRow
+}
+
+func newRealtimeAggregate() *realtimeAggregate {
+	agg := &realtimeAggregate{
+		platforms: map[string]int64{},
+		minutes:   make([]RealtimeMinute, realtimeWindow),
+		eventRows: map[string]*NamedRow{},
+		countries: map[string]*NamedRow{},
+	}
+	for i := range agg.minutes {
+		agg.minutes[i].MinutesAgo = realtimeWindow - 1 - i
+	}
+	return agg
+}
+
+func realtimeReport(reports []*analyticsdata.RunRealtimeReportResponse, i int) *analyticsdata.RunRealtimeReportResponse {
+	if i < len(reports) {
+		return reports[i]
+	}
+	return nil
+}
+
+func realtimeRows(reports []*analyticsdata.RunRealtimeReportResponse, i int) []*analyticsdata.Row {
+	if report := realtimeReport(reports, i); report != nil {
+		return report.Rows
+	}
+	return nil
+}
+
+func (a *realtimeAggregate) add(reports []*analyticsdata.RunRealtimeReportResponse) {
+	for _, row := range realtimeRows(reports, realtimeTotals) {
+		a.users += metric(row, 0)
+	}
+	for _, row := range realtimeRows(reports, realtimePlatforms) {
+		a.platforms[normalizePlatform(dimension(row, 0))] += metric(row, 0)
+	}
+	for _, row := range realtimeRows(reports, realtimeByMinute) {
+		if point := a.minute(dimension(row, 0)); point != nil {
+			point.ActiveUsers += metric(row, 0)
+		}
+	}
+	if report := realtimeReport(reports, realtimeEvents); report != nil {
+		var counted int64
+		for _, row := range report.Rows {
+			count := metric(row, 0)
+			counted += count
+			mergeNamed(a.eventRows, dimension(row, 0), count, 0)
+			if point := a.minute(dimension(row, 1)); point != nil {
+				point.EventCount += count
+			}
+		}
+		if len(report.Totals) > 0 {
+			counted = max(counted, metric(report.Totals[0], 0))
+		}
+		a.events += counted
+		if int64(len(report.Rows)) < report.RowCount {
+			a.eventsTruncated = true
+		}
+	}
+	for _, row := range realtimeRows(reports, realtimeCountries) {
 		users := metric(row, 0)
-		byPlatform[normalizePlatform(dimension(row, 0))] += users
-		total += users
+		mergeNamed(a.countries, dimension(row, 0), users, users)
 	}
-	if len(byPlatform) <= 1 {
-		return byPlatform, total, nil
+}
+
+func (a *realtimeAggregate) minute(value string) *RealtimeMinute {
+	ago, err := strconv.Atoi(value)
+	if err != nil || ago < 0 || ago >= realtimeWindow {
+		return nil
 	}
-	totals, err := svc.Properties.RunRealtimeReport(propertyName(src.propertyID), &analyticsdata.RunRealtimeReportRequest{
-		Metrics:         []*analyticsdata.Metric{{Name: "activeUsers"}},
-		DimensionFilter: filter,
-	}).Context(ctx).Do()
-	if err != nil {
-		return nil, 0, err
+	return &a.minutes[realtimeWindow-1-ago]
+}
+
+func (a *realtimeAggregate) fill(resp *RealtimeResponse) {
+	resp.ActiveUsers = a.users
+	resp.EventCount = a.events
+	resp.EventsTruncated = a.eventsTruncated
+	resp.Platforms = make([]RealtimePlatform, 0, len(a.platforms))
+	for platform, users := range a.platforms {
+		resp.Platforms = append(resp.Platforms, RealtimePlatform{Platform: platform, ActiveUsers: users})
 	}
-	total = 0
-	for _, row := range totals.Rows {
-		total += metric(row, 0)
-	}
-	return byPlatform, total, nil
+	sort.Slice(resp.Platforms, func(i, j int) bool { return resp.Platforms[i].ActiveUsers > resp.Platforms[j].ActiveUsers })
+	resp.Minutes = append([]RealtimeMinute{}, a.minutes...)
+	resp.Events = topNamed(a.eventRows, realtimeRowLimit)
+	resp.Countries = topNamed(a.countries, countryLimit)
 }
 
 func fetchOverviewReports(ctx context.Context, svc *analyticsdata.Service, src source, q OverviewQuery, merging bool) ([]*analyticsdata.RunReportResponse, error) {

@@ -9,10 +9,14 @@ import {
   isMomentActive,
   isMomentHidden,
   isMomentHiddenByAdmin,
+  isMomentMediaPurged,
+  isMomentReactorsAvailable,
+  isMomentViewersAvailable,
   momentLifeLabel,
   momentPreviewMedia,
 } from '@ola/shared/lib';
 import { useMomentManage } from '@ola/shared/stores/moment/useMomentManage';
+import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { Moment } from '@ola/shared/types';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
@@ -100,6 +104,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   toggleText: { fontSize: 12, fontWeight: '600' },
+  purgedCover: { alignItems: 'center', justifyContent: 'center' },
+  purgedIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
 });
 
 function MomentStatus({ moment, nowMs }: { moment: Moment; nowMs: number }) {
@@ -110,7 +123,12 @@ function MomentStatus({ moment, nowMs }: { moment: Moment; nowMs: number }) {
   let background = active ? colors.primaryLight : NEUTRAL_FILL;
   let label = momentLifeLabel(t, moment, nowMs);
   let icon: ReactNode = <MomentClockIcon size={STATUS_ICON} color={color} />;
-  if (isMomentHidden(moment)) {
+  if (isMomentMediaPurged(moment)) {
+    color = SOFT_INK;
+    background = NEUTRAL_FILL;
+    label = t('moment.mediaPurgedBadge');
+    icon = <MomentImageIcon size={STATUS_ICON} color={color} />;
+  } else if (isMomentHidden(moment)) {
     color = SOFT_INK;
     background = NEUTRAL_FILL;
     label = t('moment.hiddenBadge');
@@ -182,15 +200,20 @@ function MomentManageRow({
 }: MomentManageRowProps) {
   const { t, i18n } = useTranslation();
   const colors = useThemeColors();
+  const push = useToastStore((s) => s.push);
   const hidden = isMomentHidden(moment);
   const active = isMomentActive(moment, nowMs);
+  const purged = isMomentMediaPurged(moment);
+  const viewersAvailable = isMomentViewersAvailable(moment);
+  const reactorsAvailable = isMomentReactorsAvailable(moment);
   const viewerLabel = t('moment.viewerCount', { count: moment.viewerCount ?? 0 });
   const viewerCount = formatCompactCount(moment.viewerCount ?? 0, i18n.language);
+  const showAudienceUnavailable = () => push('info', t('moment.audienceUnavailable'));
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t('moment.open')}
-      onPress={onOpen}
+      accessibilityLabel={purged ? t('moment.mediaPurged') : t('moment.open')}
+      onPress={purged ? () => push('info', t('moment.mediaPurged')) : onOpen}
       className="active:opacity-90"
       style={styles.card}
     >
@@ -206,6 +229,13 @@ function MomentManageRow({
         {moment.type === MOMENT_TYPE.video && (
           <View pointerEvents="none" style={styles.videoBadge}>
             <MomentVideoIcon size={12} />
+          </View>
+        )}
+        {purged && (
+          <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.purgedCover]}>
+            <View style={styles.purgedIcon}>
+              <MomentImageIcon size={16} color="#ffffff" />
+            </View>
           </View>
         )}
       </View>
@@ -233,7 +263,7 @@ function MomentManageRow({
           <MomentStatus moment={moment} nowMs={nowMs} />
         </View>
         <View className="mt-auto flex-row flex-wrap items-center gap-2 pt-2">
-          {active ? (
+          {viewersAvailable ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={viewerLabel}
@@ -247,19 +277,30 @@ function MomentManageRow({
               </Text>
             </Pressable>
           ) : (
-            <View accessible accessibilityLabel={viewerLabel} className="flex-row items-center gap-1 px-1">
+            <Pressable
+              accessibilityLabel={viewerLabel}
+              accessibilityHint={t('moment.audienceUnavailable')}
+              onPress={showAudienceUnavailable}
+              className="flex-row items-center gap-1 px-1"
+            >
               <MomentEyeIcon size={14} color={MUTED_INK} />
               <Text className="text-sm" style={{ color: MUTED_INK }}>
                 {viewerCount}
               </Text>
-            </View>
+            </Pressable>
           )}
           {moment.reactions != null && (moment.reactionCount ?? 0) > 0 ? (
-            <MomentReactionSummary
-              reactions={moment.reactions}
-              total={moment.reactionCount ?? 0}
-              onPress={active ? onReactions : undefined}
-            />
+            reactorsAvailable ? (
+              <MomentReactionSummary
+                reactions={moment.reactions}
+                total={moment.reactionCount ?? 0}
+                onPress={onReactions}
+              />
+            ) : (
+              <Pressable accessibilityHint={t('moment.audienceUnavailable')} onPress={showAudienceUnavailable}>
+                <MomentReactionSummary reactions={moment.reactions} total={moment.reactionCount ?? 0} />
+              </Pressable>
+            )
           ) : null}
           {(moment.commentCount ?? 0) > 0 ? (
             <Pressable

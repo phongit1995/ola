@@ -101,6 +101,43 @@
     "removeAccountTitle": "Inform",
     "removeAccountConfirm": "Do you want to delete all saved data of account {{username}} on this device?"
   },
+  "guestHome": {
+    "title": "Ola Chat — Social network to make friends, chat and share moments",
+    "lead": "Meet new people, share moments, post to your feed and chat with friends every day. Ola Chat is a free social network for Vietnamese users, on the web and in the Ola Me app for Android and iPhone.",
+    "featuresTitle": "A social network to make friends and stay connected",
+    "features": {
+      "friends": {
+        "title": "Friends everywhere",
+        "description": "Meet new people through the Me community, chat rooms and moments, then add them as friends in one tap."
+      },
+      "moments": {
+        "title": "Share moments",
+        "description": "Post photo and text moments for 24 hours, see who viewed them and get reactions and comments from friends."
+      },
+      "feed": {
+        "title": "Me feed",
+        "description": "Post with photos, choose who can see it, tag friends and see who visited your profile."
+      },
+      "messages": {
+        "title": "Messaging & video calls",
+        "description": "Instant messages with photos, stickers and voice notes, plus voice and video calls."
+      },
+      "rooms": {
+        "title": "Community chat rooms",
+        "description": "Join public rooms for group chats, reactions and word-chain games with everyone."
+      }
+    },
+    "explore": "Explore Ola Chat",
+    "blog": "Ola Chat blog",
+    "about": "About Ola Chat",
+    "socialNetwork": "Social network for friends",
+    "findFriends": "Find friends everywhere",
+    "shareMoments": "Share moments",
+    "chatRooms": "Online chat rooms",
+    "download": "Get the Ola Me app",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy"
+  },
   "register": {
     "title": "Create an Ola account",
     "usernameLabel": "USERNAME",
@@ -192,7 +229,8 @@
       "settings": "Settings",
       "changeNickname": "Change nickname",
       "removeAccount": "Delete account",
-      "appLock": "App lock"
+      "appLock": "App lock",
+      "support": "Customer support"
     },
     "appGameSubtitle": "The BEST games for you",
     "appMallSubtitle": "Diverse video clips collected by editors"
@@ -202,6 +240,12 @@
     "fanpageTitle": "Ola Fanpage",
     "groupTitle": "Ola community group",
     "tiktokTitle": "Ola TikTok"
+  },
+  "support": {
+    "title": "Customer support",
+    "contactAccount": "Contact account",
+    "emailLabel": "Email:",
+    "emailUnavailable": "Couldn't open an email app. Please write to {{email}}."
   },
   "settings": {
     "title": "Settings",
@@ -1776,7 +1820,6 @@
     "transfer": "Transfer KEN",
     "history": "Transaction history",
     "support": "Customer support",
-    "comingSoon": "Feature coming soon",
     "historyScreen": {
       "tabAll": "All",
       "tabCredit": "Received",
@@ -1824,9 +1867,10 @@
       "invalid": "Amount must be at least {{min}}đ and a multiple of {{step}}đ",
       "qrTitle": "Scan to pay",
       "qrHint": "Open your bank/e-wallet app and scan the QR to top up {{ken}} KEN.",
+      "saveQr": "Save QR code",
+      "qrSaved": "QR code saved to your photos",
+      "qrSaveFailed": "Couldn't save the QR code, please try again",
       "amountLabel": "Amount to transfer",
-      "paid": "I have paid",
-      "paidPending": "Waiting for payment confirmation. Your KEN will be credited shortly.",
       "bankLabel": "Bank",
       "accountNumberLabel": "Account number",
       "accountNameLabel": "Account holder",
@@ -2375,6 +2419,9 @@
     "hide": "Hide",
     "unhide": "Show",
     "hiddenBadge": "Hidden",
+    "mediaPurgedBadge": "Photo/video removed",
+    "mediaPurged": "This moment's photo/video was removed, so it can't be opened again",
+    "audienceUnavailable": "This list is no longer available",
     "hiddenToast": "Moment hidden, friends won't see it anymore",
     "shownToast": "Moment is visible again",
     "toggleFailed": "Couldn't change the moment, please try again",

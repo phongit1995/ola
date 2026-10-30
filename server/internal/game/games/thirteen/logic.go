@@ -143,6 +143,9 @@ func (Logic) OnPlayerQuit(state any, playerIdx int) {
 	s.Steps = nil
 	s.Quit[playerIdx] = true
 	s.Passed[playerIdx] = false
+	if s.RequireThreeSpades && containsCard(s.Hands[playerIdx], ThreeOfSpades) {
+		s.RequireThreeSpades = false
+	}
 	alreadyRanked := false
 	for _, idx := range s.FinishOrder {
 		if idx == playerIdx {

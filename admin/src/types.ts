@@ -1629,6 +1629,21 @@ export interface MailResendSettingStatus {
   from?: string
 }
 
+export type ReportAlertChannel = 'discord' | 'telegram'
+
+export interface ReportAlertChannelStatus {
+  enabled?: boolean
+  configured?: boolean
+  hint?: string
+  chatId?: string
+}
+
+export interface ReportAlertSettingStatus {
+  adminUrl?: string
+  discord?: ReportAlertChannelStatus
+  telegram?: ReportAlertChannelStatus
+}
+
 export interface TopupBankSetting {
   bankName: string
   bankBin: string
@@ -1898,11 +1913,22 @@ export interface AnalyticsOverview {
   approximateRankings: AnalyticsRanking[]
 }
 
+export interface AnalyticsRealtimeMinute {
+  minutesAgo: number
+  activeUsers: number
+  eventCount: number
+}
+
 export interface AnalyticsRealtime {
   sources: AnalyticsSourceStatus[]
   activeUsers: number
+  eventCount: number
+  eventsTruncated: boolean
   usersSummed: boolean
   platforms: { platform: string; activeUsers: number }[]
+  minutes: AnalyticsRealtimeMinute[]
+  events: AnalyticsNamedRow[]
+  countries: AnalyticsNamedRow[]
   fetchedAt?: string
 }
 

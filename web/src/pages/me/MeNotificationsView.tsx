@@ -5,6 +5,7 @@ import { ME_NOTIFICATION_LABEL_KEY } from '@constants';
 import {
   colorForName,
   createTimeFormatter,
+  isMomentMediaPurged,
   isMomentNotification,
   momentNotificationOthers,
   momentNotificationReaction,
@@ -81,6 +82,10 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
     setOpeningId(item.id);
     try {
       const moment = await fetchMoment(item.postId);
+      if (isMomentMediaPurged(moment)) {
+        toast.error(t('moment.mediaPurged'));
+        return;
+      }
       setMomentSession({
         groups: [{ author: moment.author, moments: [] }],
         startIndex: 0,

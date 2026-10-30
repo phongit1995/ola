@@ -1,10 +1,13 @@
 package adminreport
 
 import (
+	"context"
+	"errors"
 	"net/http"
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/middleware"
+	"ola-chat-server/internal/modules/report"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -14,11 +17,12 @@ import (
 
 type Controller struct {
 	service *Service
+	alerter *report.Alerter
 	logger  *zap.SugaredLogger
 }
 
-func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
-	return &Controller{service: service, logger: logger.Named("[admin_report_controller]")}
+func NewController(service *Service, alerter *report.Alerter, logger *zap.SugaredLogger) *Controller {
+	return &Controller{service: service, alerter: alerter, logger: logger.Named("[admin_report_controller]")}
 }
 
 var reportStatuses = map[string]bool{
@@ -121,4 +125,30 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
+}
+
+// TestAlert godoc
+// @Summary      Gửi tin thử tới kênh nhận báo cáo vi phạm (Discord / Telegram) bằng cấu hình đã lưu (admin)
+// @Tags         admin-reports
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body TestAlertRequest true "Kênh cần gửi thử"
+// @Success      200  {object}  TestAlertSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Router       /admin/reports/alert/test [post]
+func (ctrl *Controller) TestAlert(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[TestAlertRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), testAlertTimeout)
+	defer cancel()
+	if err := ctrl.alerter.SendTest(ctx, req.Channel); err != nil {
+		if errors.Is(err, report.ErrAlertChannelNotConfigured) {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "Kênh này chưa được cấu hình, lưu cấu hình trước rồi gửi thử")
+		}
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "Gửi thử thất bại: "+err.Error())
+	}
+	return TestAlertResponse{Channel: req.Channel}, nil
 }

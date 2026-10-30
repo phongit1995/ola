@@ -1526,13 +1526,7 @@ func (e *Engine) onGraceExpire(matchID string, gen int) {
 			e.eliminatePlayer(m, i, handler, "disconnect")
 			continue
 		}
-		winnerID := ""
-		for _, j := range m.activeIdxs() {
-			if j != i && !m.disconnected[j] {
-				winnerID = m.players[j].ID
-				break
-			}
-		}
+		winnerID := e.winnerAfterSeatLeaves(m, i, func(j int) bool { return !m.disconnected[j] })
 		e.finishMatch(m, winnerID, "disconnect")
 		return
 	}
@@ -1559,6 +1553,30 @@ func (e *Engine) onGraceExpire(matchID string, gen int) {
 			e.logger.Errorw("Failed to persist match after grace eliminations", "match_id", m.ID, "error", err)
 		}
 	}
+}
+
+func anySeatCanWin(int) bool { return true }
+
+// winnerAfterSeatLeaves picks the winner when a leaving seat ends the match.
+// Games with a QuitHandler record the quit first and decide through their own
+// Result, so a player who already finished first keeps the win after leaving
+// and the payout always matches the final ranking.
+func (e *Engine) winnerAfterSeatLeaves(m *Match, leavingIdx int, canWin func(int) bool) string {
+	if handler, ok := m.logic.(logic.QuitHandler); ok {
+		handler.OnPlayerQuit(m.state, leavingIdx)
+		if over, winnerIdx := m.logic.Result(m.state); over && winnerIdx >= 0 && winnerIdx < len(m.players) && winnerIdx != leavingIdx {
+			if m.quit[winnerIdx] || canWin(winnerIdx) {
+				return m.players[winnerIdx].ID
+			}
+			return ""
+		}
+	}
+	for _, j := range m.activeIdxs() {
+		if j != leavingIdx && canWin(j) {
+			return m.players[j].ID
+		}
+	}
+	return ""
 }
 
 // eliminatePlayer marks one seat as quit and lets the match continue. It must
@@ -1920,14 +1938,7 @@ func (e *Engine) forfeit(gameID, userID, matchID string, leaveAfter bool) {
 		e.eliminatePlayer(m, idx, handler, "forfeit")
 		return
 	}
-	winnerID := ""
-	for _, j := range m.activeIdxs() {
-		if j != idx {
-			winnerID = m.players[j].ID
-			break
-		}
-	}
-	e.finishMatch(m, winnerID, "forfeit")
+	e.finishMatch(m, e.winnerAfterSeatLeaves(m, idx, anySeatCanWin), "forfeit")
 }
 
 func (e *Engine) startMatch(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int) error {
@@ -2245,12 +2256,7 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 	}
 	m.ensureSeats()
 	timeoutWinner := func() string {
-		for _, j := range m.activeIdxs() {
-			if j != m.turnIdx {
-				return m.players[j].ID
-			}
-		}
-		return ""
+		return e.winnerAfterSeatLeaves(m, m.turnIdx, anySeatCanWin)
 	}
 	if mover, ok := m.logic.(logic.TimeoutMover); ok {
 		timedOut := m.turnIdx

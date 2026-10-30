@@ -114,3 +114,11 @@ func (r *Repository) FindStoryComment(id uuid.UUID) (*models.StoryComment, error
 	}
 	return &comment, nil
 }
+
+func (r *Repository) CountPendingForTarget(targetType, targetID string) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.Report{}).
+		Where("target_type = ? AND target_id = ? AND status = ?", targetType, targetID, constants.ReportStatusPending).
+		Count(&count).Error
+	return count, err
+}

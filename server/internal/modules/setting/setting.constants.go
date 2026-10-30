@@ -16,6 +16,14 @@ const (
 	ChatBotTypeOlala = "OLALA"
 	ChatBotTypeOlavi = "OLAVI"
 
+	KeyReportAlert             = "report_alert"
+	ReportAlertChannelDiscord  = "discord"
+	ReportAlertChannelTelegram = "telegram"
+	discordWebhookPathPrefix   = "/api/webhooks/"
+	discordWebhookMaxLength    = 300
+	reportAlertAdminURLMaxLen  = 200
+	reportAlertSecretHintLen   = 4
+
 	ChatBotSystemPrompt = `Bạn là Olala, chat bot của Ola — ứng dụng chat của người Việt.
 Bạn ở đây để tâm sự và chém gió cùng người dùng, kể cả lúc đêm khuya.
 

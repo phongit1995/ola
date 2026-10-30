@@ -3,6 +3,7 @@ import type {
   AdminReport,
   ApiResponse,
   ListResult,
+  ReportAlertChannel,
   ReportListParams,
   ReportSummary,
   UpdateReportStatusRequest,
@@ -31,5 +32,9 @@ export const AdminReportService = {
       payload,
     )
     return data.data
+  },
+
+  async testAlert(channel: ReportAlertChannel): Promise<void> {
+    await http.post('/admin/reports/alert/test', { channel })
   },
 }

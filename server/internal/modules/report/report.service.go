@@ -69,11 +69,12 @@ type Service struct {
 	repo     *Repository
 	rooms    *room.Service
 	messages *message.Service
+	alerter  *Alerter
 	logger   *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, rooms *room.Service, messages *message.Service, logger *zap.SugaredLogger) *Service {
-	return &Service{repo: repo, rooms: rooms, messages: messages, logger: logger.Named("[report_service]")}
+func NewService(repo *Repository, rooms *room.Service, messages *message.Service, alerter *Alerter, logger *zap.SugaredLogger) *Service {
+	return &Service{repo: repo, rooms: rooms, messages: messages, alerter: alerter, logger: logger.Named("[report_service]")}
 }
 
 func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateReportRequest) (*ReportResponse, error) {
@@ -127,6 +128,7 @@ func (s *Service) Create(ctx context.Context, reporterID uuid.UUID, req *CreateR
 	}
 
 	s.logger.Infow("Report created", "report_id", report.ID, "reporter_id", reporterID, "target_type", targetType, "target_id", targetID)
+	utils.SafeGo(s.logger, func() { s.alerter.ReportCreated(report) })
 	return &ReportResponse{
 		ID:        report.ID.String(),
 		Status:    report.Status,

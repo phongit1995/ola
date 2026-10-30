@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"ola-chat-server/internal/constants"
@@ -69,7 +71,7 @@ func (s *RedisStore) MarkSeen(ctx context.Context, viewerID uuid.UUID, moments [
 	for _, moment := range moments {
 		pipe.ZAdd(ctx, key, redis.Z{Score: float64(moment.ExpiresAt.Unix()), Member: moment.ID.String()})
 		pipe.ZAddNX(ctx, viewersKey(moment.ID), redis.Z{Score: float64(now.UnixMilli()), Member: viewer})
-		pipe.ExpireAt(ctx, viewersKey(moment.ID), moment.ExpiresAt.Add(MomentViewerSyncGrace))
+		pipe.ExpireAt(ctx, viewersKey(moment.ID), moment.ExpiresAt.Add(MomentAudienceKeepAfter))
 		totals[moment.ID] = pipe.ZCard(ctx, viewersKey(moment.ID))
 	}
 	pipe.ZRemRangeByScore(ctx, key, "-inf", strconv.FormatInt(now.Unix(), 10))
@@ -280,7 +282,7 @@ func (s *RedisStore) AddReaction(ctx context.Context, moment *models.Moment, vie
 		reactionTotalField(reaction),
 		count,
 		MomentReactionMaxPerType,
-		moment.ExpiresAt.Add(MomentViewerSyncGrace).Unix(),
+		moment.ExpiresAt.Add(MomentAudienceKeepAfter).Unix(),
 		now.UnixMilli(),
 		viewerID.String(),
 	).Int64Slice()
@@ -338,6 +340,76 @@ func (s *RedisStore) ViewerReactions(ctx context.Context, momentID uuid.UUID, vi
 		}
 	}
 	return byViewer, nil
+}
+
+type audienceSnapshot struct {
+	viewers  models.MomentAudience
+	reactors models.MomentAudience
+	totals   map[string]int64
+}
+
+func (s *RedisStore) AudienceSnapshot(ctx context.Context, momentID uuid.UUID) (audienceSnapshot, error) {
+	pipe := s.cache.GetClient().Pipeline()
+	viewersCmd := pipe.ZRevRangeWithScores(ctx, viewersKey(momentID), 0, -1)
+	reactorsCmd := pipe.ZRevRangeWithScores(ctx, reactorsKey(momentID), 0, -1)
+	reactionsCmd := pipe.HGetAll(ctx, reactionsKey(momentID))
+	if _, err := pipe.Exec(ctx); err != nil && !errors.Is(err, redis.Nil) {
+		return audienceSnapshot{}, err
+	}
+	fields := reactionsCmd.Val()
+	reactions := reactionsByViewer(fields)
+	reactors := audienceOf(reactorsCmd.Val())
+	for i := range reactors {
+		reactors[i].Reactions = reactions[reactors[i].UserID]
+	}
+	return audienceSnapshot{viewers: audienceOf(viewersCmd.Val()), reactors: reactors, totals: reactionTotalsOf(fields)}, nil
+}
+
+func reactionTotalsOf(fields map[string]string) map[string]int64 {
+	totals := make(map[string]int64)
+	for _, reaction := range constants.AllowedReactionTypes {
+		count, err := strconv.ParseInt(fields[reactionTotalField(reaction)], 10, 64)
+		if err == nil && count > 0 {
+			totals[reaction] = count
+		}
+	}
+	return totals
+}
+
+func audienceOf(members []redis.Z) models.MomentAudience {
+	audience := make(models.MomentAudience, 0, len(members))
+	for _, member := range members {
+		raw, _ := member.Member.(string)
+		id, err := uuid.Parse(raw)
+		if err != nil {
+			continue
+		}
+		audience = append(audience, models.MomentAudienceEntry{UserID: id, At: int64(member.Score)})
+	}
+	return audience
+}
+
+func reactionsByViewer(fields map[string]string) map[uuid.UUID]map[string]int64 {
+	byViewer := map[uuid.UUID]map[string]int64{}
+	for field, raw := range fields {
+		parts := strings.SplitN(field, ":", 3)
+		if len(parts) != 3 || fmt.Sprintf(MomentReactionViewerField, parts[1], parts[2]) != field {
+			continue
+		}
+		viewerID, err := uuid.Parse(parts[1])
+		if err != nil || !slices.Contains(constants.AllowedReactionTypes, parts[2]) {
+			continue
+		}
+		count, err := strconv.ParseInt(raw, 10, 64)
+		if err != nil || count <= 0 {
+			continue
+		}
+		if byViewer[viewerID] == nil {
+			byViewer[viewerID] = map[string]int64{}
+		}
+		byViewer[viewerID][parts[2]] = count
+	}
+	return byViewer
 }
 
 func countsByReaction(values []interface{}) map[string]int64 {

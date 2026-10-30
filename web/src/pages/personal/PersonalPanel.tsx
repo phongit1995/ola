@@ -15,6 +15,7 @@ import { useLobbyWallpaperStyle } from '@hooks';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
+import { SupportDialog } from '../apps/SupportDialog';
 import { ChangeNicknameDialog } from './ChangeNicknameDialog';
 
 export function PersonalPanel() {
@@ -27,6 +28,7 @@ export function PersonalPanel() {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const [nicknameOpen, setNicknameOpen] = useState(false);
   const [nicknameEnabled, setNicknameEnabled] = useState(true);
 
@@ -52,6 +54,7 @@ export function PersonalPanel() {
       return () => setRemoveAccountOpen(true);
     }
     if (item.action === 'social') return () => setSocialOpen(true);
+    if (item.action === 'support') return () => setSupportOpen(true);
     if (item.action === 'nickname') return () => setNicknameOpen(true);
     if (item.app) return () => openApp(item.app!);
     return undefined;
@@ -171,6 +174,10 @@ export function PersonalPanel() {
       <SocialConnectionsDialog
         open={socialOpen}
         onClose={() => setSocialOpen(false)}
+      />
+      <SupportDialog
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
       />
       <ChangeNicknameDialog
         open={nicknameOpen}

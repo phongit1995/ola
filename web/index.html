@@ -7,17 +7,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#7cb342" />
     <meta name="google-site-verification" content="tGXfwGL3JLrR0lPy8vvzEg2XvMMbr9OcOJ5gx6QSUu4" />
+    <script>
+      try {
+        if (location.pathname !== '/' || localStorage.getItem('ola.accessToken')) {
+          document.documentElement.classList.add('app-boot');
+        }
+      } catch (error) {
+        document.documentElement.classList.add('app-boot');
+      }
+    </script>
+    <style>
+      #home-static {
+        box-sizing: border-box;
+        max-width: 520px;
+        min-height: 100%;
+        margin: 0 auto;
+        padding: 32px 24px;
+        background: #7cb342;
+        color: #fff;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      #home-static h1 {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      #home-static h2 {
+        margin-top: 20px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      #home-static ul {
+        padding-left: 18px;
+      }
+      #home-static li,
+      #home-static nav {
+        margin-top: 8px;
+      }
+      #home-static a {
+        color: #fff;
+        text-decoration: underline;
+      }
+      .app-boot #home-static {
+        display: none;
+      }
+    </style>
 
-    <title>Ola Chat — Mạng xã hội chat, kết bạn, trò chuyện online miễn phí</title>
+    <title>Ola Chat — Mạng xã hội kết bạn, trò chuyện & chia sẻ khoảnh khắc</title>
     <meta
       name="description"
-      content="Ola Chat — mạng xã hội trò chuyện miễn phí: nhắn tin, phòng chat, kết bạn và chia sẻ khoảnh khắc. Tham gia cộng đồng chat sôi động, an toàn, nhanh chóng."
+      content="Ola Chat — mạng xã hội kết bạn miễn phí cho người Việt: làm quen bạn mới, chia sẻ khoảnh khắc, nhắn tin, gọi video và phòng chat. Dùng trên web, Android, iPhone."
     />
     <meta
       name="keywords"
-      content="ola chat, chat online, mạng xã hội, kết bạn, trò chuyện, phòng chat, nhắn tin, cộng đồng"
+      content="ola chat, ola me, mạng xã hội, mạng xã hội kết bạn, kết bạn bốn phương, làm quen bạn mới, chia sẻ khoảnh khắc, phòng chat, chat online"
     />
     <meta name="author" content="Ola Chat" />
+    <meta name="application-name" content="Ola Chat" />
+    <meta name="apple-mobile-web-app-title" content="Ola Chat" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://olachat.net/" />
     <link rel="manifest" href="/manifest.json" />
@@ -25,10 +74,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Ola Chat" />
     <meta property="og:url" content="https://olachat.net/" />
-    <meta property="og:title" content="Ola Chat — Mạng xã hội chat, kết bạn, trò chuyện online" />
+    <meta property="og:title" content="Ola Chat — Mạng xã hội kết bạn, trò chuyện & chia sẻ khoảnh khắc" />
     <meta
       property="og:description"
-      content="Ola Chat — mạng xã hội trò chuyện miễn phí: nhắn tin, phòng chat, kết bạn và chia sẻ khoảnh khắc."
+      content="Mạng xã hội kết bạn miễn phí cho người Việt: làm quen bạn mới, chia sẻ khoảnh khắc, nhắn tin, gọi video và phòng chat."
     />
     <meta property="og:image" content="https://olachat.net/og-image.png" />
     <meta property="og:image:width" content="1200" />
@@ -36,10 +85,10 @@
     <meta property="og:locale" content="vi_VN" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ola Chat — Mạng xã hội chat, kết bạn, trò chuyện online" />
+    <meta name="twitter:title" content="Ola Chat — Mạng xã hội kết bạn, trò chuyện & chia sẻ khoảnh khắc" />
     <meta
       name="twitter:description"
-      content="Ola Chat — mạng xã hội trò chuyện miễn phí: nhắn tin, phòng chat, kết bạn và chia sẻ khoảnh khắc."
+      content="Mạng xã hội kết bạn miễn phí cho người Việt: làm quen bạn mới, chia sẻ khoảnh khắc, nhắn tin, gọi video và phòng chat."
     />
     <meta name="twitter:image" content="https://olachat.net/og-image.png" />
 
@@ -51,31 +100,61 @@
             "@type": "Organization",
             "@id": "https://olachat.net/#organization",
             "name": "Ola Chat",
+            "alternateName": ["Ola Me", "Ola"],
             "url": "https://olachat.net/",
             "logo": "https://olachat.net/apple-touch-icon.png",
-            "description": "Mạng xã hội trò chuyện miễn phí: nhắn tin, phòng chat, kết bạn và chia sẻ khoảnh khắc."
+            "description": "Mạng xã hội kết bạn miễn phí cho người Việt: làm quen bạn mới, chia sẻ khoảnh khắc, nhắn tin, gọi video và phòng chat.",
+            "sameAs": [
+              "https://www.facebook.com/ola2vn",
+              "https://www.tiktok.com/@olachat.net",
+              "https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn",
+              "https://apps.apple.com/vn/app/ola-me/id6812642941"
+            ]
           },
           {
             "@type": "WebSite",
             "@id": "https://olachat.net/#website",
             "name": "Ola Chat",
+            "alternateName": "Ola Me",
             "url": "https://olachat.net/",
-            "description": "Ola Chat — mạng xã hội chat, kết bạn, trò chuyện online miễn phí.",
+            "description": "Ola Chat — mạng xã hội kết bạn, trò chuyện và chia sẻ khoảnh khắc miễn phí.",
             "inLanguage": "vi-VN",
             "publisher": { "@id": "https://olachat.net/#organization" }
           },
           {
             "@type": "WebApplication",
+            "@id": "https://olachat.net/#webapp",
             "name": "Ola Chat",
             "url": "https://olachat.net/",
             "applicationCategory": "SocialNetworkingApplication",
-            "operatingSystem": "Web, Android, iOS",
+            "operatingSystem": "Web",
             "inLanguage": "vi-VN",
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "VND"
-            }
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "VND" },
+            "publisher": { "@id": "https://olachat.net/#organization" }
+          },
+          {
+            "@type": "MobileApplication",
+            "@id": "https://olachat.net/#android",
+            "name": "Ola Me",
+            "operatingSystem": "Android",
+            "applicationCategory": "SocialNetworkingApplication",
+            "downloadUrl": "https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn",
+            "installUrl": "https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn",
+            "inLanguage": "vi-VN",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "VND" },
+            "publisher": { "@id": "https://olachat.net/#organization" }
+          },
+          {
+            "@type": "MobileApplication",
+            "@id": "https://olachat.net/#ios",
+            "name": "Ola Me",
+            "operatingSystem": "iOS 15.1+",
+            "applicationCategory": "SocialNetworkingApplication",
+            "downloadUrl": "https://apps.apple.com/vn/app/ola-me/id6812642941",
+            "installUrl": "https://apps.apple.com/vn/app/ola-me/id6812642941",
+            "inLanguage": "vi-VN",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "VND" },
+            "publisher": { "@id": "https://olachat.net/#organization" }
           }
         ]
       }

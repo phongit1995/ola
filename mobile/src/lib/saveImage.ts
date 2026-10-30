@@ -24,6 +24,17 @@ async function ensureAndroidPermission(): Promise<boolean> {
   return granted === PermissionsAndroid.RESULTS.GRANTED;
 }
 
+async function saveFileToGallery(path: string): Promise<void> {
+  if (Platform.OS === 'ios') {
+    if (OlaPhotoSaver == null) {
+      throw new Error('OlaPhotoSaver native module is unavailable');
+    }
+    await OlaPhotoSaver.saveImageAtPath(path);
+  } else {
+    await CameraRoll.saveAsset(`file://${path}`, { type: 'photo' });
+  }
+}
+
 export async function saveImageToGallery(url: string): Promise<boolean> {
   if (!(await ensureAndroidPermission())) return false;
 
@@ -38,17 +49,22 @@ export async function saveImageToGallery(url: string): Promise<boolean> {
       throw new Error(`Image download failed with HTTP ${status}`);
     }
 
-    const path = res.path();
-    if (Platform.OS === 'ios') {
-      if (OlaPhotoSaver == null) {
-        throw new Error('OlaPhotoSaver native module is unavailable');
-      }
-      await OlaPhotoSaver.saveImageAtPath(path);
-    } else {
-      await CameraRoll.saveAsset(`file://${path}`, { type: 'photo' });
-    }
+    await saveFileToGallery(res.path());
     return true;
   } finally {
     res.flush();
+  }
+}
+
+export async function savePngBase64ToGallery(base64: string): Promise<boolean> {
+  if (!(await ensureAndroidPermission())) return false;
+
+  const path = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/ola-${Date.now()}.png`;
+  await ReactNativeBlobUtil.fs.writeFile(path, base64, 'base64');
+  try {
+    await saveFileToGallery(path);
+    return true;
+  } finally {
+    await ReactNativeBlobUtil.fs.unlink(path).catch(() => undefined);
   }
 }

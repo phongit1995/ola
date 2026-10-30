@@ -11,7 +11,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "typecheck": "tsc -b --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seo:pages": "node seo/generate.mjs"
   },
   "dependencies": {
     "@livekit/components-react": "^2.9.23",

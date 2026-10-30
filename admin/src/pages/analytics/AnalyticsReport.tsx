@@ -1,5 +1,4 @@
 import { Card, Col, Empty, Row, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
 import {
   CartesianGrid,
   Cell,
@@ -22,74 +21,9 @@ import type {
   AnalyticsRanking,
   AnalyticsVersionRow,
 } from '@/types'
+import { countryColumns, eventColumns, platformColumns, screenColumns, versionColumns } from './columns'
 import { APPROXIMATE_RANKING_HINT, PLATFORM_META } from './constants'
-import {
-  eventLabel,
-  formatChartDate,
-  formatEngagement,
-  platformColor,
-  platformLabel,
-  visiblePlatforms,
-} from './utils'
-
-const countColumn = (title: string, dataIndex: string, width = 110) => ({
-  title,
-  dataIndex,
-  width,
-  align: 'right' as const,
-  render: (value: number) => formatCount(value),
-})
-
-const platformTag = (platform: string) => <Tag color={platformColor(platform)}>{platformLabel(platform)}</Tag>
-
-const platformColumns: ColumnsType<AnalyticsPlatformRow> = [
-  { title: 'Nền tảng', dataIndex: 'platform', render: platformTag },
-  countColumn('Người dùng', 'activeUsers'),
-  countColumn('Mới', 'newUsers', 90),
-  countColumn('Phiên', 'sessions', 90),
-  countColumn('Lượt xem', 'views'),
-]
-
-const screenColumns: ColumnsType<AnalyticsNamedRow> = [
-  {
-    title: 'Màn hình / trang',
-    dataIndex: 'name',
-    ellipsis: true,
-    render: (name: string) => <Typography.Text code>{name}</Typography.Text>,
-  },
-  countColumn('Lượt xem', 'count'),
-  countColumn('Người dùng', 'users'),
-]
-
-const countryColumns: ColumnsType<AnalyticsNamedRow> = [
-  { title: 'Quốc gia', dataIndex: 'name' },
-  countColumn('Người dùng', 'count'),
-]
-
-const versionColumns: ColumnsType<AnalyticsVersionRow> = [
-  { title: 'Nền tảng', dataIndex: 'platform', width: 110, render: platformTag },
-  { title: 'Phiên bản', dataIndex: 'version' },
-  countColumn('Người dùng', 'users'),
-]
-
-const eventColumns: ColumnsType<AnalyticsNamedRow> = [
-  {
-    title: 'Sự kiện',
-    dataIndex: 'name',
-    render: (name: string) => {
-      const label = eventLabel(name)
-      return label ? (
-        <span>
-          {label} <Typography.Text type="secondary">({name})</Typography.Text>
-        </span>
-      ) : (
-        <Typography.Text code>{name}</Typography.Text>
-      )
-    },
-  },
-  countColumn('Số lần', 'count'),
-  countColumn('Người dùng', 'users'),
-]
+import { formatChartDate, formatEngagement, platformColor, platformLabel, visiblePlatforms } from './utils'
 
 function KpiCard({ title, value }: { title: string; value: string | number }) {
   return (

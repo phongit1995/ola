@@ -5,7 +5,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { formatKen } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { selectTopupVisibleOnMobile, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -44,7 +43,6 @@ export function KenStoreScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
-  const push = useToastStore((s) => s.push);
   const topupEnabled = useTopupConfigStore(selectTopupVisibleOnMobile);
   const loadTopupConfig = useTopupConfigStore((s) => s.load);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -52,10 +50,6 @@ export function KenStoreScreen({ navigation }: Props) {
   useEffect(() => {
     void loadTopupConfig();
   }, [loadTopupConfig]);
-
-  function comingSoon() {
-    push('info', t('ken.comingSoon'));
-  }
 
   const ken = user?.ken ?? 0;
   const showLowKenWarning = ken > 0 && ken < KEN_LOW_THRESHOLD;
@@ -68,7 +62,8 @@ export function KenStoreScreen({ navigation }: Props) {
       <ScrollView
         className="flex-1"
         style={{ backgroundColor: '#ececec' }}
-        contentContainerClassName="pb-4 pt-2"
+        contentContainerClassName="pt-2"
+        contentContainerStyle={{ paddingBottom: 16 + insets.bottom }}
       >
         {showLowKenWarning && (
           <View
@@ -103,18 +98,6 @@ export function KenStoreScreen({ navigation }: Props) {
 
         <KenHistorySection />
       </ScrollView>
-
-      <View
-        className="bg-white p-2"
-        style={{ borderTopWidth: 1, borderTopColor: DIVIDER, paddingBottom: Math.max(insets.bottom, 8) }}
-      >
-        <Pressable
-          onPress={comingSoon}
-          className="h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark bg-ola-button active:opacity-90"
-        >
-          <Text className="text-sm text-white">{t('ken.support')}</Text>
-        </Pressable>
-      </View>
 
       {transferOpen && <TransferKenDialog visible onClose={() => setTransferOpen(false)} />}
     </View>

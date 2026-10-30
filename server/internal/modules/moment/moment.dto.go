@@ -31,30 +31,32 @@ type MomentAuthorResponse struct {
 }
 
 type MomentResponse struct {
-	ID            string                   `json:"id"`
-	Author        MomentAuthorResponse     `json:"author"`
-	Type          string                   `json:"type"`
-	Status        string                   `json:"status"`
-	Position      int                      `json:"position"`
-	Background    string                   `json:"background,omitempty"`
-	Overlays      []models.MomentOverlay   `json:"overlays"`
-	MediaURL      string                   `json:"mediaUrl,omitempty"`
-	ThumbURL      string                   `json:"thumbUrl,omitempty"`
-	Width         int                      `json:"width,omitempty"`
-	Height        int                      `json:"height,omitempty"`
-	Duration      float64                  `json:"duration,omitempty"`
-	Visibility    string                   `json:"visibility"`
-	ViewerCount   *int64                   `json:"viewerCount,omitempty"`
-	ReactionCount *int64                   `json:"reactionCount,omitempty"`
-	Reactions     []MomentReactionCount    `json:"reactions,omitempty"`
-	CommentCount  *int64                   `json:"commentCount,omitempty"`
-	MyComment     *MomentMyCommentResponse `json:"myComment,omitempty"`
-	Hidden        bool                     `json:"hidden,omitempty"`
-	HiddenBy      string                   `json:"hiddenBy,omitempty"`
-	MediaPurged   bool                     `json:"mediaPurged,omitempty"`
-	Seen          bool                     `json:"seen,omitempty"`
-	CreatedAt     string                   `json:"createdAt"`
-	ExpiresAt     string                   `json:"expiresAt"`
+	ID                string                   `json:"id"`
+	Author            MomentAuthorResponse     `json:"author"`
+	Type              string                   `json:"type"`
+	Status            string                   `json:"status"`
+	Position          int                      `json:"position"`
+	Background        string                   `json:"background,omitempty"`
+	Overlays          []models.MomentOverlay   `json:"overlays"`
+	MediaURL          string                   `json:"mediaUrl,omitempty"`
+	ThumbURL          string                   `json:"thumbUrl,omitempty"`
+	Width             int                      `json:"width,omitempty"`
+	Height            int                      `json:"height,omitempty"`
+	Duration          float64                  `json:"duration,omitempty"`
+	Visibility        string                   `json:"visibility"`
+	ViewerCount       *int64                   `json:"viewerCount,omitempty"`
+	ReactionCount     *int64                   `json:"reactionCount,omitempty"`
+	Reactions         []MomentReactionCount    `json:"reactions,omitempty"`
+	CommentCount      *int64                   `json:"commentCount,omitempty"`
+	ViewersAvailable  *bool                    `json:"viewersAvailable,omitempty"`
+	ReactorsAvailable *bool                    `json:"reactorsAvailable,omitempty"`
+	MyComment         *MomentMyCommentResponse `json:"myComment,omitempty"`
+	Hidden            bool                     `json:"hidden,omitempty"`
+	HiddenBy          string                   `json:"hiddenBy,omitempty"`
+	MediaPurged       bool                     `json:"mediaPurged,omitempty"`
+	Seen              bool                     `json:"seen,omitempty"`
+	CreatedAt         string                   `json:"createdAt"`
+	ExpiresAt         string                   `json:"expiresAt"`
 }
 
 type CreateMomentsResponse struct {
