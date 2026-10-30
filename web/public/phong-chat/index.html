@@ -27,6 +27,7 @@
     <meta name="twitter:image" content="https://olachat.net/og-image.png" />
 
     <link rel="stylesheet" href="/landing.css" />
+    <script defer src="/landing.js"></script>
 
     <script type="application/ld+json">
       {
@@ -147,15 +148,15 @@
           <h1>Phòng chat online: trò chuyện nhóm cùng cộng đồng</h1>
           <p class="lead">Vào phòng chat công cộng để trò chuyện cùng nhiều người một lúc, chơi nối từ, thả cảm xúc và tìm thêm bạn mới. Miễn phí trên web và app Ola Me.</p>
           <div class="cta">
-            <a class="btn btn-primary" href="/register">Đăng ký miễn phí</a>
-            <a class="btn btn-outline" href="/">Dùng Ola Chat trên web</a>
+            <a class="btn btn-primary" href="/register" data-track="cta_click" data-cta="register">Đăng ký miễn phí</a>
+            <a class="btn btn-outline" href="/" data-track="cta_click" data-cta="open_web">Dùng Ola Chat trên web</a>
           </div>
           <div class="stores">
-            <a class="store" href="https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn" rel="noopener" target="_blank">
+            <a class="store" href="https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn" rel="noopener" target="_blank" data-track="store_click" data-store="android">
               <small>Tải Ola Me trên</small>
               <strong>Google Play</strong>
             </a>
-            <a class="store" href="https://apps.apple.com/vn/app/ola-me/id6812642941" rel="noopener" target="_blank">
+            <a class="store" href="https://apps.apple.com/vn/app/ola-me/id6812642941" rel="noopener" target="_blank" data-track="store_click" data-store="ios">
               <small>Tải Ola Me trên</small>
               <strong>App Store</strong>
             </a>
@@ -291,6 +292,7 @@
             <a href="/mang-xa-hoi-ket-ban/">Mạng xã hội kết bạn<span>Làm quen, kết nối và giữ liên lạc với bạn bè</span></a>
             <a href="/tim-ban-bon-phuong/">Tìm bạn bốn phương<span>Gặp người mới mỗi ngày, kết bạn online an toàn</span></a>
             <a href="/chia-se-khoanh-khac/">Chia sẻ khoảnh khắc<span>Khoảnh khắc 24 giờ, bảng tin và ảnh cùng bạn bè</span></a>
+            <a href="/blog/">Blog Ola Chat<span>Mẹo kết bạn, bắt chuyện và dùng mạng xã hội</span></a>
             <a href="/gioi-thieu/">Giới thiệu Ola Chat<span>Tất cả tính năng của mạng xã hội Ola Chat</span></a>
             <a href="/tai-app">Tải app Ola Me<span>Hướng dẫn cài app cho Android và iPhone</span></a>
           </div>
@@ -299,7 +301,7 @@
         <section class="final">
           <h2>Vào phòng chat ngay</h2>
           <p>Đăng ký Ola Chat miễn phí để trò chuyện cùng cộng đồng và làm quen bạn mới.</p>
-          <a class="btn btn-primary" href="/register">Tạo tài khoản miễn phí</a>
+          <a class="btn btn-primary" href="/register" data-track="cta_click" data-cta="register">Tạo tài khoản miễn phí</a>
         </section>
       </main>
 
@@ -309,6 +311,7 @@
           <a href="/tim-ban-bon-phuong/">Tìm bạn bốn phương</a>
           <a href="/chia-se-khoanh-khac/">Chia sẻ khoảnh khắc</a>
           <a href="/phong-chat/">Phòng chat online</a>
+          <a href="/blog/">Blog Ola Chat</a>
           <a href="/gioi-thieu/">Giới thiệu Ola Chat</a>
           <a href="/tai-app">Tải app Ola Me</a>
           <a href="/dieu-khoan">Điều khoản sử dụng</a>

@@ -27,4 +27,5 @@ export const STATIC_PAGES = {
   findFriends: '/tim-ban-bon-phuong/',
   shareMoments: '/chia-se-khoanh-khac/',
   chatRooms: '/phong-chat/',
+  blog: '/blog/',
 } as const;

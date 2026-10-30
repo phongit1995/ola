@@ -27,6 +27,7 @@
     <meta name="twitter:image" content="https://olachat.net/og-image.png" />
 
     <link rel="stylesheet" href="/landing.css" />
+    <script defer src="/landing.js"></script>
 
     <script type="application/ld+json">
       {
@@ -93,7 +94,7 @@
                 "name": "Làm sao để không bị người lạ làm phiền?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Bạn chặn người đó ngay trong tin nhắn hoặc phòng chat, và báo cáo nếu họ vi phạm. Bài đăng và khoảnh khắc cũng chọn được chỉ cho bạn bè xem."
+                  "text": "Bạn chặn người đó ngay trong tin nhắn hoặc phòng chat, và báo cáo nếu họ vi phạm. Trong Cài đặt, bạn có thể chọn chỉ nhận tin nhắn từ bạn bè; bài đăng và khoảnh khắc cũng chọn được chỉ cho bạn bè xem."
                 }
               },
               {
@@ -147,15 +148,15 @@
           <h1>Tìm bạn bốn phương, làm quen bạn mới mỗi ngày</h1>
           <p class="lead">Muốn có thêm bạn để trò chuyện sau giờ làm, tìm người cùng sở thích hay đơn giản là mở rộng mối quan hệ? Ola Chat giúp bạn gặp người mới khắp Việt Nam, miễn phí và an toàn.</p>
           <div class="cta">
-            <a class="btn btn-primary" href="/register">Đăng ký miễn phí</a>
-            <a class="btn btn-outline" href="/">Dùng Ola Chat trên web</a>
+            <a class="btn btn-primary" href="/register" data-track="cta_click" data-cta="register">Đăng ký miễn phí</a>
+            <a class="btn btn-outline" href="/" data-track="cta_click" data-cta="open_web">Dùng Ola Chat trên web</a>
           </div>
           <div class="stores">
-            <a class="store" href="https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn" rel="noopener" target="_blank">
+            <a class="store" href="https://play.google.com/store/apps/details?id=com.ola.me.net.org.vn" rel="noopener" target="_blank" data-track="store_click" data-store="android">
               <small>Tải Ola Me trên</small>
               <strong>Google Play</strong>
             </a>
-            <a class="store" href="https://apps.apple.com/vn/app/ola-me/id6812642941" rel="noopener" target="_blank">
+            <a class="store" href="https://apps.apple.com/vn/app/ola-me/id6812642941" rel="noopener" target="_blank" data-track="store_click" data-store="ios">
               <small>Tải Ola Me trên</small>
               <strong>App Store</strong>
             </a>
@@ -269,7 +270,7 @@
           </details>
           <details>
             <summary>Làm sao để không bị người lạ làm phiền?</summary>
-            <p>Bạn chặn người đó ngay trong tin nhắn hoặc phòng chat, và báo cáo nếu họ vi phạm. Bài đăng và khoảnh khắc cũng chọn được chỉ cho bạn bè xem.</p>
+            <p>Bạn chặn người đó ngay trong tin nhắn hoặc phòng chat, và báo cáo nếu họ vi phạm. Trong Cài đặt, bạn có thể chọn chỉ nhận tin nhắn từ bạn bè; bài đăng và khoảnh khắc cũng chọn được chỉ cho bạn bè xem.</p>
           </details>
           <details>
             <summary>Ola Chat và Ola Me khác nhau thế nào?</summary>
@@ -292,6 +293,7 @@
             <a href="/mang-xa-hoi-ket-ban/">Mạng xã hội kết bạn<span>Làm quen, kết nối và giữ liên lạc với bạn bè</span></a>
             <a href="/chia-se-khoanh-khac/">Chia sẻ khoảnh khắc<span>Khoảnh khắc 24 giờ, bảng tin và ảnh cùng bạn bè</span></a>
             <a href="/phong-chat/">Phòng chat online<span>Trò chuyện nhóm cùng cộng đồng, chơi nối từ</span></a>
+            <a href="/blog/">Blog Ola Chat<span>Mẹo kết bạn, bắt chuyện và dùng mạng xã hội</span></a>
             <a href="/gioi-thieu/">Giới thiệu Ola Chat<span>Tất cả tính năng của mạng xã hội Ola Chat</span></a>
             <a href="/tai-app">Tải app Ola Me<span>Hướng dẫn cài app cho Android và iPhone</span></a>
           </div>
@@ -300,7 +302,7 @@
         <section class="final">
           <h2>Bạn mới đang chờ bạn</h2>
           <p>Tham gia Ola Chat miễn phí để tìm bạn bốn phương, trò chuyện và kết nối mỗi ngày.</p>
-          <a class="btn btn-primary" href="/register">Tạo tài khoản miễn phí</a>
+          <a class="btn btn-primary" href="/register" data-track="cta_click" data-cta="register">Tạo tài khoản miễn phí</a>
         </section>
       </main>
 
@@ -310,6 +312,7 @@
           <a href="/tim-ban-bon-phuong/">Tìm bạn bốn phương</a>
           <a href="/chia-se-khoanh-khac/">Chia sẻ khoảnh khắc</a>
           <a href="/phong-chat/">Phòng chat online</a>
+          <a href="/blog/">Blog Ola Chat</a>
           <a href="/gioi-thieu/">Giới thiệu Ola Chat</a>
           <a href="/tai-app">Tải app Ola Me</a>
           <a href="/dieu-khoan">Điều khoản sử dụng</a>

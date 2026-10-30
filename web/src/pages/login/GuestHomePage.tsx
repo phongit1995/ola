@@ -16,6 +16,7 @@ const TOPIC_PAGES = [
   { href: STATIC_PAGES.findFriends, labelKey: 'guestHome.findFriends' },
   { href: STATIC_PAGES.shareMoments, labelKey: 'guestHome.shareMoments' },
   { href: STATIC_PAGES.chatRooms, labelKey: 'guestHome.chatRooms' },
+  { href: STATIC_PAGES.blog, labelKey: 'guestHome.blog' },
   { href: STATIC_PAGES.about, labelKey: 'guestHome.about' },
 ] as const;
 
