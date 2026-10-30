@@ -2568,6 +2568,39 @@ definitions:
       pending:
         type: integer
     type: object
+  internal_modules_admin_report.TestAlertRequest:
+    properties:
+      channel:
+        enum:
+        - discord
+        - telegram
+        example: discord
+        type: string
+    required:
+    - channel
+    type: object
+  internal_modules_admin_report.TestAlertResponse:
+    properties:
+      channel:
+        type: string
+    type: object
+  internal_modules_admin_report.TestAlertSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_report.TestAlertResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_admin_report.UpdateStatusRequest:
     properties:
       note:
@@ -15958,6 +15991,34 @@ paths:
       summary: Resolve or dismiss a report (admin)
       tags:
       - admin-report
+  /admin/reports/alert/test:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Kênh cần gửi thử
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_report.TestAlertRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_report.TestAlertSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Gửi tin thử tới kênh nhận báo cáo vi phạm (Discord / Telegram) bằng
+        cấu hình đã lưu (admin)
+      tags:
+      - admin-reports
   /admin/reports/summary:
     get:
       produces:

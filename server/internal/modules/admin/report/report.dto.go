@@ -1,6 +1,10 @@
 package adminreport
 
-import "github.com/google/uuid"
+import (
+	"ola-chat-server/internal/utils"
+
+	"github.com/google/uuid"
+)
 
 type ListFilter struct {
 	Status         string
@@ -63,3 +67,13 @@ type UpdateStatusResponse struct {
 	Report   ReportItem `json:"report"`
 	Affected int64      `json:"affected"`
 }
+
+type TestAlertRequest struct {
+	Channel string `json:"channel" binding:"required,oneof=discord telegram" example:"discord"`
+}
+
+type TestAlertResponse struct {
+	Channel string `json:"channel"`
+}
+
+type TestAlertSuccessResponse = utils.BaseResponse[TestAlertResponse]

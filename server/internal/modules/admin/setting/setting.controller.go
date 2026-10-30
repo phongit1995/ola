@@ -58,7 +58,7 @@ const (
 )
 
 func isSecretSetting(key string) bool {
-	return key == setting.KeyPushFirebase || key == setting.KeyMailResend
+	return key == setting.KeyPushFirebase || key == setting.KeyMailResend || key == setting.KeyReportAlert
 }
 
 func validSettingKey(key string) bool {
@@ -109,6 +109,8 @@ func maskSensitiveSetting(item models.AppSetting) models.AppSetting {
 		item.Value = setting.MaskPushFirebaseValue(item.Value)
 	case setting.KeyMailResend:
 		item.Value = setting.MaskMailResendValue(item.Value)
+	case setting.KeyReportAlert:
+		item.Value = setting.MaskReportAlertValue(item.Value)
 	}
 	return item
 }
@@ -271,6 +273,16 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
 		stored, err := ctrl.service.BuildMailResendValue(ctrl.cfg, input)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		return stored, nil
+	case setting.KeyReportAlert:
+		input, err := setting.ValidateReportAlertValue(value)
+		if err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+		stored, err := ctrl.service.BuildReportAlertValue(ctrl.cfg, input)
 		if err != nil {
 			return nil, utils.ServiceError(err)
 		}

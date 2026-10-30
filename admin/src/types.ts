@@ -1629,6 +1629,21 @@ export interface MailResendSettingStatus {
   from?: string
 }
 
+export type ReportAlertChannel = 'discord' | 'telegram'
+
+export interface ReportAlertChannelStatus {
+  enabled?: boolean
+  configured?: boolean
+  hint?: string
+  chatId?: string
+}
+
+export interface ReportAlertSettingStatus {
+  adminUrl?: string
+  discord?: ReportAlertChannelStatus
+  telegram?: ReportAlertChannelStatus
+}
+
 export interface TopupBankSetting {
   bankName: string
   bankBin: string

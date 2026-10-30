@@ -20,5 +20,6 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		reports.GET("", r.controller.ListReports)
 		reports.GET("/summary", r.controller.Summary)
 		reports.PATCH("/:id/status", r.controller.UpdateStatus)
+		reports.POST("/alert/test", r.controller.TestAlert)
 	}
 }

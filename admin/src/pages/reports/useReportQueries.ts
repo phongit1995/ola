@@ -8,7 +8,7 @@ import { AdminUserService } from '@/services/adminUser.service'
 import { REPORT_SUMMARY_KEY } from '@/hooks/useReportSummary'
 import { MOMENTS_QUERY_KEY } from '@/pages/moments/useMomentQueries'
 import { toApiError } from '@/lib/apiError'
-import type { AdminReport, ReportListParams, UpdateReportStatusRequest } from '@/types'
+import type { AdminReport, ReportAlertChannel, ReportListParams, UpdateReportStatusRequest } from '@/types'
 
 const REPORTS_KEY = 'admin-reports'
 const HTTP_NOT_FOUND = 404
@@ -64,5 +64,11 @@ export function useHandleReport() {
       void queryClient.invalidateQueries({ queryKey: ['admin-users'] })
       void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY] })
     },
+  })
+}
+
+export function useTestReportAlert() {
+  return useMutation({
+    mutationFn: (channel: ReportAlertChannel) => AdminReportService.testAlert(channel),
   })
 }

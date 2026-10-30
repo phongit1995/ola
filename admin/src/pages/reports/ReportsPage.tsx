@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Badge, Button, Card, Input, Select, Space, Table, Tag, type TableColumnsType } from 'antd'
-import { EyeOutlined } from '@ant-design/icons'
+import { EyeOutlined, SettingOutlined } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
 import { UserBriefCell } from '@/components/UserBriefCell'
 import { formatDateTime } from '@/lib/format'
@@ -8,6 +8,7 @@ import { PAGE_SIZE } from '@/lib/constants'
 import type { AdminReport, ReportStatus, ReportTargetType } from '@/types'
 import { useReports } from './useReportQueries'
 import { ReportDetailModal } from './ReportDetailModal'
+import { ReportAlertSettingsModal } from './ReportAlertSettingsModal'
 import { reportExcerpt } from './utils'
 import {
   REPORT_REASON_LABEL,
@@ -26,6 +27,7 @@ export function ReportsPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<AdminReport | null>(null)
+  const [alertSettingsOpen, setAlertSettingsOpen] = useState(false)
   const q = useDebounce(search.trim())
 
   const { data, isFetching } = useReports({
@@ -138,6 +140,9 @@ export function ReportsPage() {
           onChange={(event) => resetPage(setSearch)(event.target.value)}
           style={{ maxWidth: 360 }}
         />
+        <Button icon={<SettingOutlined />} style={{ marginLeft: 'auto' }} onClick={() => setAlertSettingsOpen(true)}>
+          Cài đặt thông báo
+        </Button>
       </div>
       <Table<AdminReport>
         rowKey="id"
@@ -157,6 +162,7 @@ export function ReportsPage() {
       {selected != null && (
         <ReportDetailModal key={selected.id} report={selected} onClose={() => setSelected(null)} />
       )}
+      {alertSettingsOpen && <ReportAlertSettingsModal onClose={() => setAlertSettingsOpen(false)} />}
     </Card>
   )
 }

@@ -4053,6 +4053,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/reports/alert/test": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-reports"
+                ],
+                "summary": "Gửi tin thử tới kênh nhận báo cáo vi phạm (Discord / Telegram) bằng cấu hình đã lưu (admin)",
+                "parameters": [
+                    {
+                        "description": "Kênh cần gửi thử",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_report.TestAlertRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_report.TestAlertSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/reports/summary": {
             "get": {
                 "security": [
@@ -20641,6 +20685,56 @@ const docTemplate = `{
             "properties": {
                 "pending": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_report.TestAlertRequest": {
+            "type": "object",
+            "required": [
+                "channel"
+            ],
+            "properties": {
+                "channel": {
+                    "type": "string",
+                    "enum": [
+                        "discord",
+                        "telegram"
+                    ],
+                    "example": "discord"
+                }
+            }
+        },
+        "internal_modules_admin_report.TestAlertResponse": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_report.TestAlertSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_report.TestAlertResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },

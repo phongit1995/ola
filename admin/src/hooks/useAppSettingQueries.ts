@@ -34,8 +34,15 @@ export function useTestMail() {
 export function usePutAppSetting() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ key, value }: { key: string; value: Record<string, unknown> }) =>
-      AdminSettingsService.put(key, value),
+    mutationFn: ({
+      key,
+      value,
+      expectedUpdatedAt,
+    }: {
+      key: string
+      value: Record<string, unknown>
+      expectedUpdatedAt?: string | null
+    }) => AdminSettingsService.put(key, value, expectedUpdatedAt),
     onSuccess: () => invalidateSettingQueries(queryClient),
   })
 }
