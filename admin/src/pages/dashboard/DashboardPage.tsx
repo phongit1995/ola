@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Button,
@@ -31,8 +31,9 @@ import {
 import { useDashboardOverview } from './useDashboardQueries'
 import type { DashboardSpendByType } from '@/types'
 import { formatCount } from '@/lib/format'
-import { DateRangeFilter } from '@/components/DateRangeFilter'
-import { isoDaysAgo, toIsoRange } from '@/lib/dateRange'
+import { DateRangePresetFilter } from '@/components/DateRangePresetFilter'
+import { useDateRangePreset } from '@/hooks/useDateRangePreset'
+import { toIsoRange } from '@/lib/dateRange'
 import { kenTypeLabel } from './utils'
 
 const spendColumns: ColumnsType<DashboardSpendByType> = [
@@ -59,9 +60,9 @@ const spendColumns: ColumnsType<DashboardSpendByType> = [
 
 export function DashboardPage() {
   const navigate = useNavigate()
-  const [from, setFrom] = useState(() => isoDaysAgo(29))
-  const [to, setTo] = useState(() => isoDaysAgo(0))
+  const range = useDateRangePreset()
 
+  const { from, to } = range
   const params = useMemo(() => toIsoRange(from, to), [from, to])
   const { data, isFetching } = useDashboardOverview(params)
 
@@ -82,12 +83,7 @@ export function DashboardPage() {
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Card>
         <Space wrap>
-          <DateRangeFilter
-            from={from}
-            to={to}
-            onFromChange={setFrom}
-            onToChange={setTo}
-          />
+          <DateRangePresetFilter range={range} />
           {isFetching && <Spin size="small" />}
         </Space>
       </Card>

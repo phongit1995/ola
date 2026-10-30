@@ -1,24 +1,24 @@
 import { useMemo, useState } from 'react'
 import { Alert, Button, Card, Modal, Segmented, Space, Spin, Typography } from 'antd'
 import { ReloadOutlined, SettingOutlined } from '@ant-design/icons'
-import { DateRangeFilter } from '@/components/DateRangeFilter'
-import { isoDaysAgo } from '@/lib/dateRange'
+import { DateRangePresetFilter } from '@/components/DateRangePresetFilter'
+import { useDateRangePreset } from '@/hooks/useDateRangePreset'
 import { errorMessage } from '@/lib/apiError'
-import { formatDateTime } from '@/lib/format'
+import { formatDate, formatDateTime } from '@/lib/format'
 import type { AnalyticsPlatform } from '@/types'
 import { AnalyticsRealtimeCard } from './AnalyticsRealtimeCard'
 import { AnalyticsReport } from './AnalyticsReport'
 import { AnalyticsSetupCard } from './AnalyticsSetupCard'
-import { ANALYTICS_DEFAULT_DAYS, PLATFORM_OPTIONS, SOURCE_LABEL } from './constants'
+import { PLATFORM_OPTIONS, SOURCE_LABEL } from './constants'
 import { useAnalyticsOverview, useAnalyticsRealtime, useRefreshAnalytics } from './useAnalyticsQueries'
 import { isAnalyticsReady } from './utils'
 
 export function AnalyticsPage() {
-  const [from, setFrom] = useState(() => isoDaysAgo(ANALYTICS_DEFAULT_DAYS))
-  const [to, setTo] = useState(() => isoDaysAgo(0))
+  const range = useDateRangePreset()
   const [platform, setPlatform] = useState<AnalyticsPlatform>('all')
   const [setupOpen, setSetupOpen] = useState(false)
 
+  const { from, to } = range
   const params = useMemo(() => ({ from, to, platform }), [from, to, platform])
   const overview = useAnalyticsOverview(params)
   const data = overview.data
@@ -31,7 +31,7 @@ export function AnalyticsPage() {
     <Space orientation="vertical" size={16} style={{ width: '100%' }}>
       <Card>
         <Space wrap>
-          <DateRangeFilter from={from} to={to} onFromChange={setFrom} onToChange={setTo} />
+          <DateRangePresetFilter range={range} />
           <Segmented<AnalyticsPlatform> options={PLATFORM_OPTIONS} value={platform} onChange={setPlatform} />
           <Button
             icon={<ReloadOutlined />}
@@ -48,7 +48,8 @@ export function AnalyticsPage() {
         </Space>
         {ready && data?.fetchedAt && (
           <Typography.Paragraph type="secondary" style={{ margin: '12px 0 0' }}>
-            Số liệu lấy từ Google Analytics lúc {formatDateTime(data.fetchedAt)}. Google thường cập nhật
+            Số liệu từ {formatDate(data.from)} đến {formatDate(data.to)}, lấy từ Google Analytics lúc{' '}
+            {formatDateTime(data.fetchedAt)}. Google thường cập nhật
             chậm vài giờ nên số của hôm nay chưa đầy đủ.
           </Typography.Paragraph>
         )}
