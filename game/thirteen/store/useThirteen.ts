@@ -119,6 +119,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     replayEpoch: 0,
     handledMatchOvers: new RecentMatchIds(),
     handledMatchStarts: new RecentMatchIds(),
+    leftMatchId: '',
     toastTimer: 0,
     disposed: false,
   };
@@ -227,6 +228,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     refs.replayEpoch += 1;
     const epoch = refs.replayEpoch;
     const fresh = refs.handledMatchStarts.mark(data.matchId);
+    if (data.matchId === refs.leftMatchId) refs.leftMatchId = '';
     set({
       phase: 'table',
       matchId: data.matchId,
@@ -261,11 +263,14 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
   };
 
   const handleMatchOver = (data: MatchOverData<unknown>): void => {
+    if (data.matchId === refs.leftMatchId) return;
     if (!refs.handledMatchOvers.mark(data.matchId)) return;
     if (get().matchId && get().matchId !== data.matchId) return;
     const final = data.state as { instantWin?: string } | undefined;
+    const epoch = refs.replayEpoch;
     queueReplay(async () => {
       await sleep(600);
+      if (refs.replayEpoch !== epoch) return;
       const me = get().user?.id;
       const myEntry = data.rankings?.find((entry) => entry.userId === me);
       set({
@@ -362,6 +367,14 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
           if (seat >= 0) delete awaySeats[seat];
           else Object.keys(awaySeats).forEach((k) => delete awaySeats[Number(k)]);
           return { awaySeats };
+        });
+        const turn = data?.turn;
+        const deadline = data?.deadline;
+        if (turn == null || deadline == null) return;
+        const epoch = refs.replayEpoch;
+        queueReplay(async () => {
+          if (refs.replayEpoch !== epoch || get().phase !== 'table' || turn !== get().turn) return;
+          set({ deadlineAt: toPerfDeadline(deadline) });
         });
       }),
       session.onError((data) => {
@@ -536,6 +549,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       const s = get();
       set({ confirmExit: false });
       if (s.phase === 'table' && s.matchId && !s.result) {
+        refs.leftMatchId = s.matchId;
         refs.session?.forfeit(s.matchId, true);
         refs.replayEpoch += 1;
         set({ phase: 'lobby', matchId: '', result: null, room: null });
