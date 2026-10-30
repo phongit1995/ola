@@ -261,6 +261,29 @@ func TestOnPlayerQuit(t *testing.T) {
 	}
 }
 
+func TestThreeSpadesHolderQuitFreesTheOpeningLead(t *testing.T) {
+	s := fixedState([][]int{{ThreeOfSpades, 40}, {5, 15}, {6, 16}, {7, 17}}, 0)
+	s.RequireThreeSpades = true
+	Logic{}.OnPlayerQuit(s, 0)
+	if s.RequireThreeSpades || s.Turn != 1 {
+		t.Fatalf("state after holder quit: require3s=%v turn=%d", s.RequireThreeSpades, s.Turn)
+	}
+	mustPlay(t, s, 1, 15)
+	if s.Table == nil || s.Turn != 2 {
+		t.Fatalf("next seat could not open: table=%v turn=%d", s.Table, s.Turn)
+	}
+}
+
+func TestThreeSpadesHolderQuitAfterTimeoutsStillOpens(t *testing.T) {
+	s := fixedState([][]int{{ThreeOfSpades, 40}, {5, 15}, {6, 16}, {7, 17}}, 0)
+	s.RequireThreeSpades = true
+	Logic{}.OnPlayerQuit(s, 0)
+	Logic{}.OnTurnSkipped(s, s.Turn)
+	if s.Table == nil || len(s.Hands[1]) != 1 {
+		t.Fatalf("timeout did not auto-open the round: table=%v hands=%v", s.Table, s.Hands)
+	}
+}
+
 func TestViewForHidesOtherHands(t *testing.T) {
 	s := newDeal(42, 4)
 	view := Logic{}.ViewFor(s, 1).(PlayerView)

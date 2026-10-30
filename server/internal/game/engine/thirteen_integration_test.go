@@ -234,4 +234,60 @@ func TestThirteenTwoPlayerForfeitEndsMatch(t *testing.T) {
 	if result.WinnerID != players[1].ID || result.Reason != "forfeit" {
 		t.Fatalf("result = %+v", result)
 	}
+	if len(result.Rankings) != 2 || result.Rankings[0].UserID != players[1].ID {
+		t.Fatalf("forfeiting player is not ranked last: %+v", result.Rankings)
+	}
+}
+
+func TestThirteenFirstFinisherKeepsWinWhenOthersLeave(t *testing.T) {
+	gameEngine, emitter, match := startThirteenMatch(t, 3)
+	defer stopEngineTimers(gameEngine)
+	if match == nil {
+		t.Skip("instant win at deal")
+	}
+	forcedThirteenState(t, gameEngine, match, [][]int{{4}, {5, 20}, {6, 21}}, 0)
+	players := match.players
+
+	gameEngine.Move(match.GameID, players[0].ID, match.ID, tienLenMoveRaw(t, "play", 4))
+	gameEngine.ForfeitAndLeave(match.GameID, players[0].ID, match.ID)
+	gameEngine.Forfeit(match.GameID, players[1].ID, match.ID)
+
+	overEnv, ok := emitter.last(players[2].ID, protocol.S2CMatchOver)
+	if !ok {
+		t.Fatal("match did not finish")
+	}
+	result := overEnv.Data.(protocol.MatchOverData)
+	if result.WinnerID != players[0].ID {
+		t.Fatalf("winner = %s, want first finisher %s", result.WinnerID, players[0].ID)
+	}
+	if len(result.Rankings) != 3 || result.Rankings[0].UserID != result.WinnerID || result.Rankings[2].UserID != players[1].ID {
+		t.Fatalf("rankings = %+v", result.Rankings)
+	}
+}
+
+func TestThirteenThreeSpadesHolderForfeitLetsNextSeatLead(t *testing.T) {
+	gameEngine, emitter, match := startThirteenMatch(t, 4)
+	defer stopEngineTimers(gameEngine)
+	if match == nil {
+		t.Skip("instant win at deal")
+	}
+	state := forcedThirteenState(t, gameEngine, match, [][]int{{0, 40}, {5, 9}, {6, 10}, {7, 11}}, 0)
+	match.mu.Lock()
+	state.RequireThreeSpades = true
+	match.mu.Unlock()
+	players := match.players
+
+	gameEngine.Forfeit(match.GameID, players[0].ID, match.ID)
+	gameEngine.Move(match.GameID, players[1].ID, match.ID, tienLenMoveRaw(t, "play", 9))
+
+	if _, failed := emitter.last(players[1].ID, protocol.S2CError); failed {
+		t.Fatal("next seat could not open the round after the three of spades holder left")
+	}
+	match.mu.Lock()
+	current := match.state.(*thirteen.State)
+	opened := current.Table != nil && len(current.Hands[1]) == 1
+	match.mu.Unlock()
+	if !opened {
+		t.Fatal("round was not opened by the next seat")
+	}
 }
