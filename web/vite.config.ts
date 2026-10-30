@@ -5,6 +5,7 @@ import obfuscator from 'vite-plugin-javascript-obfuscator'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import fs from 'node:fs'
 import path from 'node:path'
+import { ROUTES, STATIC_PAGES } from './src/shared/constants/routes'
 
 // Nguồn gốc duy nhất cho VIP icons, dùng chung cho web/admin/game (xem packages/shared/assets).
 const sharedVipIcons = normalizePath(path.resolve(__dirname, '../packages/shared/assets/vip-icons/*'))
@@ -57,6 +58,74 @@ function withPageMeta(html: string, page: (typeof seoPages)[number]) {
   }, html)
 }
 
+const HOME_STATIC_PATTERN = /<main id="home-static">[\s\S]*?<\/main>/
+const VI_LOCALE_PATH = path.resolve(__dirname, '../packages/shared/src/i18n/locales/vi.json')
+
+interface GuestHomeCopy {
+  title: string
+  lead: string
+  featuresTitle: string
+  features: Record<string, { title: string; description: string }>
+  explore: string
+  about: string
+  blog: string
+  socialNetwork: string
+  findFriends: string
+  shareMoments: string
+  chatRooms: string
+  download: string
+  terms: string
+  privacy: string
+}
+
+function homeStaticHtml() {
+  const locale = JSON.parse(fs.readFileSync(VI_LOCALE_PATH, 'utf-8'))
+  const copy: GuestHomeCopy = locale.guestHome
+  const link = ([href, label]: [string, string]) => `<a href="${href}">${escapeAttribute(label)}</a>`
+  const topics: [string, string][] = [
+    [STATIC_PAGES.socialNetwork, copy.socialNetwork],
+    [STATIC_PAGES.findFriends, copy.findFriends],
+    [STATIC_PAGES.shareMoments, copy.shareMoments],
+    [STATIC_PAGES.chatRooms, copy.chatRooms],
+    [STATIC_PAGES.blog, copy.blog],
+    [STATIC_PAGES.about, copy.about],
+  ]
+  const legal: [string, string][] = [
+    [ROUTES.downloadApp, copy.download],
+    [ROUTES.terms, copy.terms],
+    [ROUTES.privacy, copy.privacy],
+  ]
+  const features = Object.values(copy.features)
+    .map((feature) => `<li><strong>${escapeAttribute(feature.title)}</strong> — ${escapeAttribute(feature.description)}</li>`)
+    .join('')
+  return [
+    '<main id="home-static">',
+    `<h1>${escapeAttribute(copy.title)}</h1>`,
+    `<p>${escapeAttribute(copy.lead)}</p>`,
+    `<p>${link([ROUTES.login, locale.login.submit])} · ${link([ROUTES.register, locale.login.createAccount])}</p>`,
+    `<h2>${escapeAttribute(copy.featuresTitle)}</h2>`,
+    `<ul>${features}</ul>`,
+    `<h2>${escapeAttribute(copy.explore)}</h2>`,
+    `<nav>${topics.map(link).join(' · ')}</nav>`,
+    `<nav>${legal.map(link).join(' · ')}</nav>`,
+    '</main>',
+  ].join('')
+}
+
+const homeStaticPlugin: Plugin = {
+  name: 'ola-home-static',
+  transformIndexHtml(html) {
+    const root = '<div id="root"></div>'
+    if (!html.includes(root)) throw new Error('home-static: index.html thiếu <div id="root"></div>')
+    return html.replace(root, `<div id="root">${homeStaticHtml()}</div>`)
+  },
+}
+
+function withoutHomeStatic(html: string) {
+  if (!HOME_STATIC_PATTERN.test(html)) throw new Error('seo-pages: index.html thiếu khối home-static')
+  return html.replace(HOME_STATIC_PATTERN, '')
+}
+
 const seoPagesPlugin: Plugin = {
   name: 'ola-seo-pages',
   apply: 'build',
@@ -64,7 +133,7 @@ const seoPagesPlugin: Plugin = {
     const dir = options.dir ?? path.resolve(__dirname, 'dist')
     const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf-8')
     for (const page of seoPages) {
-      fs.writeFileSync(path.join(dir, `${page.path.slice(1)}.html`), withPageMeta(html, page))
+      fs.writeFileSync(path.join(dir, `${page.path.slice(1)}.html`), withPageMeta(withoutHomeStatic(html), page))
     }
   },
 }
@@ -97,6 +166,7 @@ export default defineConfig({
     tailwindcss(),
     obfuscatorPlugin,
     viteStaticCopy({ targets: [{ src: sharedVipIcons, dest: 'vip-icons', rename: { stripBase: true } }] }),
+    homeStaticPlugin,
     seoPagesPlugin,
   ],
   resolve: {

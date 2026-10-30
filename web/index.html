@@ -7,6 +7,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#7cb342" />
     <meta name="google-site-verification" content="tGXfwGL3JLrR0lPy8vvzEg2XvMMbr9OcOJ5gx6QSUu4" />
+    <script>
+      try {
+        if (location.pathname !== '/' || localStorage.getItem('ola.accessToken')) {
+          document.documentElement.classList.add('app-boot');
+        }
+      } catch (error) {
+        document.documentElement.classList.add('app-boot');
+      }
+    </script>
+    <style>
+      #home-static {
+        box-sizing: border-box;
+        max-width: 520px;
+        min-height: 100%;
+        margin: 0 auto;
+        padding: 32px 24px;
+        background: #7cb342;
+        color: #fff;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      #home-static h1 {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      #home-static h2 {
+        margin-top: 20px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      #home-static ul {
+        padding-left: 18px;
+      }
+      #home-static li,
+      #home-static nav {
+        margin-top: 8px;
+      }
+      #home-static a {
+        color: #fff;
+        text-decoration: underline;
+      }
+      .app-boot #home-static {
+        display: none;
+      }
+    </style>
 
     <title>Ola Chat — Mạng xã hội kết bạn, trò chuyện & chia sẻ khoảnh khắc</title>
     <meta
