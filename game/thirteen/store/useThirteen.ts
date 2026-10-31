@@ -19,6 +19,7 @@ import { canBeat } from '../logic/beats';
 import { RecentMatchIds } from '../logic/recent-match-ids';
 import { decodeServerState, type ServerMove, type ServerPlay, type ServerState, type ServerStep } from '../logic/server-types';
 import { errorText, roomClosedText } from '../helpers/errorText';
+import { CHAT_BUBBLE_MS, receiveMatchChat, type SeatChatBubble } from './matchChat';
 
 export type Phase = 'connecting' | 'lobby' | 'room' | 'table';
 
@@ -26,6 +27,12 @@ export interface SeatReaction {
   seat: number;
   type: string;
   key: number;
+}
+
+export interface TableEvent {
+  kind: 'play' | 'pass';
+  seat: number;
+  at: number;
 }
 
 export interface MatchResult {
@@ -60,11 +67,14 @@ interface ThirteenStore {
   movePending: boolean;
   require3s: boolean;
   chopFx: number;
+  tableEvent: TableEvent | null;
   passFxSeat: number;
   finishFx: { seat: number; place: number } | null;
   dealing: boolean;
   matchChat: ChatMessageData[];
   chatOpen: boolean;
+  chatUnread: number;
+  chatBubbles: SeatChatBubble[];
   reactions: SeatReaction[];
   awaySeats: Record<number, number>;
   selfDisconnected: boolean;
@@ -164,6 +174,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         set({
           table: { cards: step.cards ?? [], by: step.by },
           lastPlaySeat: step.by,
+          tableEvent: { kind: 'play', seat: step.by, at: Date.now() },
           ...(step.chop ? { chopFx: Date.now() } : {}),
         });
         if (step.by !== you) {
@@ -174,7 +185,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         await sleep(step.chop ? STEP_MS.play + 400 : STEP_MS.play);
         return;
       case 'pass':
-        set({ passFxSeat: step.by });
+        set({ passFxSeat: step.by, tableEvent: { kind: 'pass', seat: step.by, at: Date.now() } });
         set((s) => ({ passed: s.passed.map((p, i) => (i === step.by ? true : p)) }));
         await sleep(STEP_MS.pass);
         set({ passFxSeat: -1 });
@@ -210,7 +221,11 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     for (const step of state.steps ?? []) {
       if (refs.replayEpoch !== epoch || get().matchId !== data.matchId) return;
       if (fast && step.kind === 'play') {
-        set({ table: { cards: step.cards ?? [], by: step.by }, lastPlaySeat: step.by });
+        set({
+          table: { cards: step.cards ?? [], by: step.by },
+          lastPlaySeat: step.by,
+          tableEvent: { kind: 'play', seat: step.by, at: Date.now() },
+        });
         continue;
       }
       await replayStep(step, state.you);
@@ -238,11 +253,14 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       you: data.you,
       selected: [],
       matchChat: [],
+      chatUnread: 0,
+      chatBubbles: [],
       reactions: [],
       awaySeats: {},
       result: null,
       queueing: false,
       selfDisconnected: false,
+      tableEvent: null,
     });
     if (data.resumed || !fresh) {
       queueReplay(async () => {
@@ -343,7 +361,11 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         if (data.roomId) {
           set((s) => ({ roomChat: [...s.roomChat.slice(-49), data] }));
         } else {
-          set((s) => ({ matchChat: [...s.matchChat.slice(-49), data] }));
+          const key = Date.now() + Math.random();
+          set((s) => receiveMatchChat(s, data, key));
+          window.setTimeout(() => {
+            set((s) => ({ chatBubbles: s.chatBubbles.filter((bubble) => bubble.key !== key) }));
+          }, CHAT_BUBBLE_MS);
           if (data.userId !== get().user?.id) bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
         }
       }),
@@ -418,11 +440,14 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     movePending: false,
     require3s: false,
     chopFx: 0,
+    tableEvent: null,
     passFxSeat: -1,
     finishFx: null,
     dealing: false,
     matchChat: [],
     chatOpen: false,
+    chatUnread: 0,
+    chatBubbles: [],
     reactions: [],
     awaySeats: {},
     selfDisconnected: false,
@@ -539,7 +564,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       if (get().matchId) refs.session?.sendReaction(get().matchId, type as never);
     },
     setChatOpen(open) {
-      set({ chatOpen: open });
+      set(open ? { chatOpen: true, chatUnread: 0 } : { chatOpen: false });
     },
 
     requestExit() {
@@ -572,6 +597,8 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         selected: [],
         matchChat: [],
         chatOpen: false,
+        chatUnread: 0,
+        chatBubbles: [],
         ...(stayInRoom && roomId ? {} : { room: null, roomChat: [] }),
       });
       if (!stayInRoom && roomId) {

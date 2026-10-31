@@ -150,16 +150,17 @@ Owner/ready classes dùng các semantic variant của `tl-badge`, không tạo s
 |---|---|---|
 | `tl-table-screen` | layout + CSS | aqua mat, cream top/bottom, festival curves |
 | `tl-table-title` | live text | 17–20 px navy 800 |
-| `tl-seat-slot` | layout | absolute top/left/right anchors |
+| `tl-felt` | layout | grid `'left top right' / 'left center right'`; `.full` (4 người) đẩy 2 ghế bên sát mép, `.trio` (3 người) đưa 2 ghế bên lên trên |
+| `tl-seat-slot` | layout | ô lưới top/left/right của `tl-felt` |
 | `tl-opponent` | layout | pod stack without container panel |
 | `tl-opponent-name` | CSS + live text | cream nameplate, navy outline |
 | `tl-turn-ring` | CSS | conic sun/coral ring around avatar |
-| `tl-card-count` | live/layout | body.md navy + mini stack |
-| `tl-mini-stack` | existing + CSS | three existing card backs, small rotations |
+| `tl-seat-avatar` | layout | khung avatar + vòng lượt; `data-seat` là điểm xuất phát của bài bay |
+| `tl-count-badge` | existing + CSS | viên navy (card back + số lá) bên phải avatar, ghế phải đặt phía trong |
 | `tl-pass-chip` | CSS/live | neutral cream status pill |
 | `tl-away-badge` | CSS/live | coral danger pill with countdown |
-| `tl-seat-reactions` | layout | absolute reaction anchor |
-| `tl-reaction-balloon` | existing + motion | existing reaction asset, bounded animation |
+| `tl-seat-reactions` | layout | neo ở góc trên avatar (ghế phải: góc trên trái), đè ~1/4 icon |
+| `tl-reaction-balloon` | existing + motion | `tl-reaction-pop` bật ra (0 → 1,3 → 1), lắc nhẹ, vòng sáng vàng toả ra, rồi bay lên mờ dần trong 2,6 s; nhiều biểu cảm lệch trái/phải |
 
 Position modifiers `.top`, `.left`, `.right`, `.active`, `.urgent`, `.quit` remain CSS states/layout; no asset.
 
@@ -168,16 +169,17 @@ Position modifiers `.top`, `.left`, `.right`, `.active`, `.urgent`, `.quit` rema
 | Class | Loại | Style 02 implementation |
 |---|---|---|
 | `tl-table-center` | layout/CSS | transparent trick zone, optional dashed cream outline |
-| `tl-trick` | layout | center card overlap/fan |
-| `tl-trick-card` | existing | existing card face + short card-in motion |
-| `tl-trick-owner` | CSS/live | cream owner name chip |
-| `tl-table-hint` | CSS/live | cream/transparent hint chip, navy text |
+| `tl-trick` | layout | hàng bài giữa bàn (`trickLayout`), luôn giữ chỗ kể cả khi bàn trống |
+| `tl-trick-card` | existing + motion | card face; lượt mới bay từ ghế người đánh (bài của mình bay từ vị trí trên tay), mỗi lá trễ 45 ms |
+| `tl-ticker` | CSS/live | thông báo 1 dòng: `.play` "@x vừa đánh" / `.pass` "@x bỏ lượt" giữ 1,1 s rồi `.turn` "Tới lượt @y" (navy, chấm vàng), `.turn.mine` "Tới lượt bạn" vàng phát sáng; bàn trống thêm "ra bài" |
+| `tl-turn-timer` | CSS/live | đồng hồ cuối dòng "Tới lượt": vòng SVG rút dần theo hạn lượt (30 s) + số giây nảy mỗi giây; ≤5 s đổi đỏ cam, viên thông báo phát sáng nhấp nháy; lượt mình là đĩa kem vòng navy |
+| `tl-table-hint` | CSS/live | "Đang chọn: …" trong vùng bài khi bàn trống |
 | `tl-finish-banner` | CSS/live | cream/sun flat banner, navy border |
 | `tl-my-row` | layout | local identity anchored above hand |
 | `tl-my-info` | layout | name/place/pass stack |
 | `tl-my-name` | CSS/live | local cream nameplate “Bạn” |
-| `tl-hand` | layout | responsive fan, transform anchors |
-| `tl-hand-card` | existing + CSS | card face, selected/focus/animation states |
+| `tl-hand` | layout | hàng bài cong nhẹ (`handArc`: nghiêng tối đa 4°, hai đầu hạ 6% chiều cao lá), cỡ lá theo bề ngang (`handLayout`), chừa chỗ cho lá nhô lên |
+| `tl-hand-card` | existing + CSS | card face + bóng mảnh đổ sang lá bên dưới; lá chọn nhô lên 24% chiều cao, bóng đậm hơn, không viền |
 | `tl-action-bar` | layout | transparent sticky button row |
 | `tl-disconnect-overlay` | CSS/live | localized coral pill, not full-screen dark overlay |
 
@@ -187,10 +189,13 @@ State `.selected`, `.dealing`, `.chop` are CSS/animation states. Chop uses FX-01
 
 | Class | Loại | Style 02 implementation |
 |---|---|---|
-| `tl-chat-overlay` | CSS | navy 30% backdrop |
-| `tl-chat-panel` | CSS component | cream bottom sheet, navy outline, radius top 24 |
-| `tl-reaction-row` | layout | horizontal scroll, 8 px gap |
-| `tl-reaction-btn` | CSS component | 44 px cream tile, navy border, aqua pressed |
+| `tl-chat-overlay` | CSS | trong suốt để vẫn thấy bàn và đồng hồ; chỉ tối 45% khi màn thấp hơn 420 px (đang mở bàn phím) |
+| `tl-chat-panel` | CSS component | sheet kem gọn (tiêu đề → tin → biểu cảm → câu nhanh → ô nhập), radius top 20; đang gõ thì ẩn hàng biểu cảm và câu nhanh |
+| `tl-reaction-row` | layout | lưới 6 ô chia đều, vừa máy 320 px |
+| `tl-reaction-btn` | CSS component | ô kem cao 40 px (32 px khi màn thấp), navy border, aqua pressed |
+| `tl-quick-row` / `tl-quick-chip` | layout + CSS | hàng câu nhắn nhanh cuộn ngang (`QUICK_CHATS`), bấm là gửi và đóng khung |
+| `tl-chat-btn` / `tl-unread-badge` | CSS/live | nút chat trên thanh tiêu đề + chấm đỏ số tin chưa đọc (quá 9 hiện 9+), nảy khi có tin mới |
+| `tl-chat-bubble` | CSS/live | bong bóng tin mới cạnh avatar người nhắn trong 3 s (ghế trái/mình: phía trên, ghế phải: phía trên lệch trái, ghế trên: bên trái), tối đa 2 dòng |
 
 `tl-room-chat-log`, `tl-chat-line`, `tl-chat-hint`, `tl-chat-input-row` và `tl-input` tái dùng quy tắc phòng chờ.
 
@@ -279,23 +284,23 @@ Danh sách class/tên `tl-*` cần được coverage khi source thay đổi:
 tl-action-bar tl-app tl-avatar tl-avatar-lg tl-avatar-md tl-avatar-sm
 tl-away-badge tl-badge tl-badge-gold tl-badge-green tl-badge-red
 tl-btn tl-btn-disabled tl-btn-ghost tl-btn-gold tl-btn-sm tl-btn-wide
-tl-capacity-btn tl-capacity-row tl-card-count tl-chat-hint tl-chat-input-row
-tl-chat-line tl-chat-overlay tl-chat-panel tl-crown tl-disconnect-overlay
-tl-field-label tl-finish-banner tl-hand tl-hand-card tl-icon-btn tl-input
+tl-capacity-btn tl-capacity-row tl-chat-hint tl-chat-input-row tl-count-badge
+tl-chat-btn tl-chat-bubble tl-chat-line tl-chat-overlay tl-chat-panel tl-crown tl-disconnect-overlay
+tl-felt tl-field-label tl-finish-banner tl-hand tl-hand-card tl-icon-btn tl-input
 tl-ken-amount tl-ken-coin tl-ken-pill tl-kick-btn tl-loading tl-loading-sub
 tl-loading-title tl-lobby tl-lobby-actions tl-lock tl-logo tl-logo-main
-tl-logo-sub tl-mini-stack tl-modal tl-modal-actions tl-modal-backdrop
+tl-logo-sub tl-modal tl-modal-actions tl-modal-backdrop
 tl-modal-text tl-modal-title tl-my-info tl-my-name tl-my-row tl-opponent
 tl-opponent-name tl-pass-chip tl-playing-badge tl-play-now tl-play-now-label
-tl-play-now-sub tl-reaction-balloon tl-reaction-btn tl-reaction-row
+tl-play-now-sub tl-quick-chip tl-quick-row tl-reaction-balloon tl-reaction-btn tl-reaction-pop tl-reaction-row tl-unread-badge
 tl-result-backdrop tl-result-banner tl-result-card tl-result-instant
 tl-result-name tl-result-note tl-result-place tl-result-row tl-result-rows
 tl-room tl-room-actions tl-room-chat tl-room-chat-log tl-room-empty
 tl-room-info tl-room-list tl-room-list-header tl-room-meta tl-room-name
 tl-room-row tl-room-title tl-screen tl-seat tl-seat-dots tl-seat-empty
-tl-seat-grid tl-seat-name tl-seat-plus tl-seat-reactions tl-seat-slot
+tl-seat-avatar tl-seat-grid tl-seat-name tl-seat-plus tl-seat-reactions tl-seat-slot
 tl-secondary-btn tl-table-center tl-table-hint tl-table-screen tl-table-title
-tl-toast tl-topbar tl-topbar-spacer tl-trick tl-trick-card tl-trick-owner
+tl-ticker tl-toast tl-topbar tl-topbar-spacer tl-trick tl-trick-card tl-turn-timer
 tl-turn-ring tl-vip-icon
 ```
 

@@ -10,6 +10,7 @@ import { RoomScreen } from './screens/room/RoomScreen';
 import { TableScreen } from './screens/table/TableScreen';
 import { ResultScreen } from './screens/result/ResultScreen';
 import { useThirteen } from './store/useThirteen';
+import { usePortraitLock } from './usePortraitLock';
 
 export function App() {
   const [assetsReady, setAssetsReady] = useState(false);
@@ -23,6 +24,7 @@ export function App() {
   const confirmExitNow = useThirteen((s) => s.confirmExitNow);
   const init = useThirteen((s) => s.init);
   const dispose = useThirteen((s) => s.dispose);
+  const rotation = usePortraitLock();
 
   useEffect(() => {
     const stopKenSync = bridge.onHost(ARCADE_BRIDGE_EVENT.KenUpdated, (data) => {
@@ -44,7 +46,7 @@ export function App() {
   }, [dispose, init]);
 
   return (
-    <div id="tl-app">
+    <div id="tl-app" data-rotate={rotation || undefined}>
       {phase === 'connecting' && (
         <div className="tl-loading" role="status" aria-live="polite" aria-label="Đang kết nối">
           <div className="tl-loading-mat" aria-hidden="true" />

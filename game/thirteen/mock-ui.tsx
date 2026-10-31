@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { ChatMessageData, PlayerInfo, RoomInfo, RoomStateData } from '../src/sdk';
 import { App } from './App';
+import { CHAT_BUBBLE_MS, receiveMatchChat } from './store/matchChat';
 import { useThirteen } from './store/useThirteen';
 
 const ME = { id: 'u-me', username: 'test1', ken: 9_957_000, vipDays: 30, vipType: '3' };
@@ -92,6 +93,11 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   'table-2p': () => table(PLAYERS_4.slice(0, 2)),
   'table-3p': () => table(PLAYERS_4.slice(0, 3)),
   'table-selected': () => ({ ...table(PLAYERS_4), hand: MY_HAND.map((card) => (card === 27 ? 23 : card)), selected: [22, 23] }),
+  'table-turn': () => ({ ...table(PLAYERS_4), turn: 1 }),
+  'table-urgent': () => ({ ...table(PLAYERS_4), turn: 1, deadlineAt: performance.now() + 4_500 }),
+  'table-urgent-me': () => ({ ...table(PLAYERS_4), deadlineAt: performance.now() + 4_500 }),
+  'table-lead': () => ({ ...table(PLAYERS_4), table: null, lastPlaySeat: -1, passed: PLAYERS_4.map(() => false), turn: 3 }),
+  'table-lead-me': () => ({ ...table(PLAYERS_4), table: null, lastPlaySeat: -1, passed: PLAYERS_4.map(() => false) }),
   'table-dealing': () => ({ ...table(PLAYERS_4), dealing: true, table: null }),
   'table-chat': () => ({ ...table(PLAYERS_4), chatOpen: true, matchChat: MATCH_CHAT, roomOwnerId: 'u-2' }),
   'table-fx': () => ({
@@ -150,6 +156,81 @@ const screen = new URLSearchParams(location.search).get('screen') ?? 'lobby';
 const scene = SCENES[screen] ?? SCENES.lobby;
 
 useThirteen.setState({ init: () => {}, dispose: () => {}, user: ME, ...scene() });
+
+// Giả lập một lượt đánh như store thật (bài của mình đi đường nhanh, của đối
+// thủ phát lại rồi mới chuyển lượt) để xem hiệu ứng bài bay và dòng thông báo:
+// mockPlay(1, [40, 42, 43]), mockPlay(2, [48, 49], true) (chặt), mockPass(2),
+// mockDeadline(7) (đặt lại đồng hồ lượt), mockReact(1, 'HAHA'), mockChat(1, 'chặt đó nha').
+function mockPlay(by: number, cards: number[], chop = false): void {
+  const s = useThirteen.getState();
+  const next = (by + 1) % s.players.length;
+  const play = {
+    table: { cards, by },
+    lastPlaySeat: by,
+    tableEvent: { kind: 'play' as const, seat: by, at: Date.now() },
+    ...(chop ? { chopFx: Date.now() } : {}),
+  };
+  if (by === s.you) {
+    useThirteen.setState({
+      ...play,
+      hand: s.hand.filter((card) => !cards.includes(card)),
+      selected: [],
+      turn: next,
+      deadlineAt: performance.now() + 25_000,
+    });
+    return;
+  }
+  useThirteen.setState({
+    ...play,
+    animating: true,
+    handCounts: s.handCounts.map((count, i) => (i === by ? count - cards.length : count)),
+  });
+  window.setTimeout(() => useThirteen.setState({ animating: false, turn: next, deadlineAt: performance.now() + 25_000 }), 450);
+}
+
+function mockPass(by: number): void {
+  const s = useThirteen.getState();
+  useThirteen.setState({
+    animating: true,
+    passFxSeat: by,
+    passed: s.passed.map((passed, i) => passed || i === by),
+    tableEvent: { kind: 'pass', seat: by, at: Date.now() },
+  });
+  window.setTimeout(
+    () =>
+      useThirteen.setState({
+        animating: false,
+        passFxSeat: -1,
+        turn: (by + 1) % s.players.length,
+        deadlineAt: performance.now() + 25_000,
+      }),
+    350,
+  );
+}
+
+function mockDeadline(seconds: number): void {
+  useThirteen.setState({ deadlineAt: performance.now() + seconds * 1000 });
+}
+
+function mockReact(seat: number, type: string): void {
+  const key = Date.now() + Math.random();
+  useThirteen.setState((s) => ({ reactions: [...s.reactions, { seat, type, key }] }));
+  window.setTimeout(() => useThirteen.setState((s) => ({ reactions: s.reactions.filter((r) => r.key !== key) })), 2600);
+}
+
+function mockChat(seat: number, text: string): void {
+  const s = useThirteen.getState();
+  const player = s.players[seat];
+  if (!player) return;
+  const key = Date.now() + Math.random();
+  useThirteen.setState(receiveMatchChat(s, { matchId: s.matchId, userId: player.id, name: player.name, text, sentAt: Date.now() }, key));
+  window.setTimeout(
+    () => useThirteen.setState((state) => ({ chatBubbles: state.chatBubbles.filter((bubble) => bubble.key !== key) })),
+    CHAT_BUBBLE_MS,
+  );
+}
+
+Object.assign(window, { mockPlay, mockPass, mockDeadline, mockReact, mockChat });
 
 function MockApp() {
   useEffect(() => {
