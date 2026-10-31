@@ -26,13 +26,15 @@ func (Logic) StateVersion() int { return 1 }
 func (Logic) Init(seed int64) any { return newDeal(seed, 4) }
 
 func (Logic) InitPlayers(seed int64, playerCount int) any {
-	if playerCount < 2 {
-		playerCount = 2
-	}
-	if playerCount > 4 {
-		playerCount = 4
-	}
-	return newDeal(seed, playerCount)
+	return newDeal(seed, clampPlayerCount(playerCount))
+}
+
+func (Logic) InitPlayersLed(seed int64, playerCount, leader int) any {
+	return newLedDeal(seed, clampPlayerCount(playerCount), leader)
+}
+
+func clampPlayerCount(playerCount int) int {
+	return min(max(playerCount, 2), 4)
 }
 
 func (Logic) MinPlayers() int { return 2 }

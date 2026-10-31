@@ -213,6 +213,7 @@ function TableTicker() {
   const animating = useThirteen((s) => s.animating);
   const deadlineAt = useThirteen((s) => s.deadlineAt);
   const leading = useThirteen((s) => s.table == null);
+  const openingLead = useThirteen((s) => s.openingLead);
   const players = useThirteen((s) => s.players);
   const over = useThirteen((s) => s.result != null);
   const holding = useEventHold(event);
@@ -232,6 +233,7 @@ function TableTicker() {
       <span className="tl-ticker-text">
         {mine ? 'Tới lượt bạn' : <>Tới lượt <PlayerName name={player.name} /></>}
         {leading && ' ra bài'}
+        {leading && openingLead && ' · thắng ván trước'}
       </span>
       <TurnTimer deadlineAt={deadlineAt} />
     </span>

@@ -103,6 +103,26 @@ describe('practice session', () => {
     expect(t.overs).toHaveLength(0);
   });
 
+  it('lets the previous winner lead the replay freely and forgets it after a forfeit', () => {
+    for (const seed of [3, 6, 9]) {
+      const t = setup(seed);
+      t.session.joinQueue();
+      expect(t.found[0].state.ledByWinner).toBeUndefined();
+      for (let i = 0; i < 2000 && t.overs.length === 0; i += 1) vi.advanceTimersByTime(1000);
+      const winner = t.found[0].players.findIndex((player) => player.id === t.overs[0].winnerId);
+      expect(winner).toBeGreaterThanOrEqual(0);
+
+      t.session.joinQueue();
+      const replay = t.found[1];
+      expect(replay.state).toMatchObject({ starter: winner, require3s: false, ledByWinner: true });
+      if (!replay.state.instantWin) expect(replay.turn).toBe(winner);
+
+      t.session.forfeit(replay.matchId);
+      t.session.joinQueue();
+      expect(t.found[2].state.ledByWinner).toBeUndefined();
+    }
+  });
+
   it('echoes the user chat and lets a bot answer', () => {
     const t = setup(9);
     const chats: string[] = [];

@@ -62,6 +62,10 @@ type PlayerInit interface {
 	InitPlayers(seed int64, playerCount int) any
 }
 
+type LeaderInit interface {
+	InitPlayersLed(seed int64, playerCount, leader int) any
+}
+
 // TurnOrder lets a game control which seat plays next; the engine default is
 // round-robin, which equals 1-idx for two players.
 type TurnOrder interface {

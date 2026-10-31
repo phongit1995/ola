@@ -18,6 +18,7 @@ export interface EngineState {
   turn: number;
   starter: number;
   require3s: boolean;
+  ledByWinner?: boolean;
   instantWin?: InstantWinKind;
   moveCount: number;
   steps: ServerStep[];
@@ -34,13 +35,14 @@ export function shuffledDeck(random: () => number): number[] {
   return deck;
 }
 
-export function dealFromDeck(deck: readonly number[], playerCount: number): EngineState {
+export function dealFromDeck(deck: readonly number[], playerCount: number, leader?: number): EngineState {
   const hands = Array.from({ length: playerCount }, (_, p) =>
     deck.slice(p * HAND_SIZE, (p + 1) * HAND_SIZE).sort((a, b) => a - b),
   );
-  let starter = hands.findIndex((hand) => hand.includes(THREE_OF_SPADES));
-  const require3s = starter >= 0;
-  if (!require3s) {
+  const led = leader !== undefined && Number.isInteger(leader) && leader >= 0 && leader < playerCount;
+  let starter = led ? leader : hands.findIndex((hand) => hand.includes(THREE_OF_SPADES));
+  const require3s = !led && starter >= 0;
+  if (!led && !require3s) {
     starter = 0;
     hands.forEach((hand, p) => {
       if (hand[0] < hands[starter][0]) starter = p;
@@ -55,6 +57,7 @@ export function dealFromDeck(deck: readonly number[], playerCount: number): Engi
     turn: starter,
     starter,
     require3s,
+    ...(led ? { ledByWinner: true } : {}),
     moveCount: 0,
     steps: [{ kind: 'deal', by: -1 }],
   };
@@ -62,8 +65,8 @@ export function dealFromDeck(deck: readonly number[], playerCount: number): Engi
   return state;
 }
 
-export function newDeal(playerCount: number, random: () => number): EngineState {
-  return dealFromDeck(shuffledDeck(random), playerCount);
+export function newDeal(playerCount: number, random: () => number, leader?: number): EngineState {
+  return dealFromDeck(shuffledDeck(random), playerCount, leader);
 }
 
 export function instantWinKind(hand: readonly number[]): InstantWinKind | undefined {
@@ -283,6 +286,7 @@ export function viewFor(state: EngineState, seat: number): ServerState {
     turn: state.turn,
     starter: state.starter,
     require3s: state.require3s,
+    ...(state.ledByWinner ? { ledByWinner: true } : {}),
     instantWin: state.instantWin,
     moveCount: state.moveCount,
     steps: state.steps.map((step) => ({ ...step, ...(step.cards ? { cards: [...step.cards] } : {}) })),

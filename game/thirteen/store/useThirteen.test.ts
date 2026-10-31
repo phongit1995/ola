@@ -242,6 +242,119 @@ describe('Thirteen opponent reconnect', () => {
   });
 });
 
+describe('Thirteen opening lead', () => {
+  it('marks the previous winner opening the deal until the first card lands', async () => {
+    await connect();
+    vi.useFakeTimers();
+    emit('onMatchFound', {
+      matchId: 'match-led',
+      gameId: 'thirteen',
+      players,
+      you: 0,
+      state: { ...serverState(0), ledByWinner: true },
+      turn: 0,
+      deadline: Date.now() + 30_000,
+      resumed: true,
+    } satisfies MatchFoundData);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(useThirteen.getState().openingLead).toBe(true);
+
+    emit('onState', {
+      matchId: 'match-led',
+      state: { ...serverState(1, [{ kind: 'play', by: 0, cards: [8] }]), ledByWinner: true },
+      turn: 1,
+      deadline: Date.now() + 30_000,
+      lastBy: 0,
+    } satisfies StateData);
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(useThirteen.getState()).toMatchObject({ turn: 1, openingLead: false });
+  });
+
+  it('drops the mark when the previous winner leaves before opening', async () => {
+    await connect();
+    vi.useFakeTimers();
+    useThirteen.setState({ phase: 'table', matchId: 'match-quit', players, you: 0, turn: 1, openingLead: true });
+    emit('onState', {
+      matchId: 'match-quit',
+      state: { ...serverState(0), starter: 1, quit: [false, true], ledByWinner: true },
+      turn: 0,
+      deadline: Date.now() + 30_000,
+      lastBy: 1,
+      autoMoved: true,
+    } satisfies StateData);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(useThirteen.getState()).toMatchObject({ turn: 0, openingLead: false });
+  });
+
+  it('leaves the opening unmarked on a three of spades deal', async () => {
+    await connect();
+    vi.useFakeTimers();
+    emit('onMatchFound', {
+      matchId: 'match-3s',
+      gameId: 'thirteen',
+      players,
+      you: 0,
+      state: { ...serverState(0), require3s: true },
+      turn: 0,
+      deadline: Date.now() + 30_000,
+      resumed: true,
+    } satisfies MatchFoundData);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(useThirteen.getState()).toMatchObject({ require3s: true, openingLead: false });
+  });
+});
+
+describe('Thirteen online events during practice', () => {
+  const practiceBots = [{ id: 'bot-1', vipType: '1', level: 'easy' as const }];
+
+  it('stays at the practice table when kicked from the online room', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'table', practice: practiceBots, room: waitingRoom, matchId: 'practice-1' });
+
+    emit('onRoomKicked', { roomId: waitingRoom.roomId, byUserId: 'owner' });
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'table', practice: practiceBots, room: null, notice: null });
+  });
+
+  it('stays at the practice table when the online room closes', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'table', practice: practiceBots, room: waitingRoom, matchId: 'practice-1' });
+
+    emit('onRoomClosed', { roomId: waitingRoom.roomId, reason: 'owner_left' });
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'table', practice: practiceBots, room: null, notice: null });
+  });
+
+  it('keeps the connection error out of the practice table', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'table', practice: practiceBots, matchId: 'practice-1' });
+
+    emit('onConnectionError', new Error('offline'));
+
+    expect(useThirteen.getState().notice).toBeNull();
+  });
+
+  it('still reports the connection error outside practice', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby' });
+
+    emit('onConnectionError', new Error('offline'));
+
+    expect(useThirteen.getState().notice).toBe('Không thể kết nối máy chủ trò chơi. Hãy thử lại sau.');
+  });
+
+  it('only leaves the waiting room for a kick from that room', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'room', room: waitingRoom });
+
+    emit('onRoomKicked', { roomId: 'another-room', byUserId: 'owner' });
+    expect(useThirteen.getState()).toMatchObject({ phase: 'room', room: waitingRoom, notice: null });
+
+    emit('onRoomKicked', { roomId: waitingRoom.roomId, byUserId: 'owner' });
+    expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', room: null, notice: 'Bạn đã bị mời khỏi bàn' });
+  });
+});
+
 describe('Thirteen history and leaderboard', () => {
   const callsOf = (method: string) => sessionCalls.filter(([key]) => key === method).map(([, args]) => args);
   const historyEntry = { id: 'm1', playedAt: 1, opponentId: 'opp', opponentName: 'opp', bet: 0, outcome: 'win', kenDelta: 0 } as const;

@@ -39,7 +39,7 @@ Port 1:1 từ `server/internal/game/games/thirteen/{state,move,logic}.go`:
 
 | Hàm | Tương đương Go |
 |---|---|
-| `newDeal(playerCount, random)` / `dealFromDeck` | `newDeal`, chia 13 lá, người có 3♠ đi trước, không có thì người có lá nhỏ nhất |
+| `newDeal(playerCount, random, leader?)` / `dealFromDeck` | `newDeal`: chia 13 lá, người có 3♠ đi trước, không có thì người có lá nhỏ nhất. Có `leader` thì giống `newLedDeal`: ghế đó đi trước, ra tự do, `ledByWinner = true` |
 | `instantWinKind` | `instantWinKind`: tứ quý heo, sảnh rồng, 6 đôi, 4 đôi thông |
 | `checkMove` / `applyMove` | `checkMove` / `applyMove`: cờ `chop`, xếp hạng người hết bài, tự xếp người cuối |
 | `skipTurn` | `OnTurnSkipped`: hết giờ khi ra bài thì đánh lá nhỏ nhất (hoặc 3♠), khi chặn thì bỏ lượt |
@@ -49,7 +49,8 @@ Port 1:1 từ `server/internal/game/games/thirteen/{state,move,logic}.go`:
 
 `logic/engine.test.ts` kiểm parity với fixture `server/.../thirteen/testdata/parity.json`:
 - tới trắng;
-- chia bài và người đi trước.
+- chia bài và người đi trước;
+- ván do người thắng ván trước mở bài (`ledDeals`).
 
 Ngoài ra test port các ca chính của `logic_test.go`, và chạy 180 ván ngẫu nhiên để chắc ván luôn kết thúc với đủ hạng.
 
@@ -102,7 +103,7 @@ Mỗi nước của máy mất dưới 40 ms.
   - ván tập không xử thua khi treo máy.
 - **Nước sai:** phát `ERROR` với `INVALID_MOVE` / `NOT_YOUR_TURN`, store hiện toast như ván thật.
 - **Hết ván:** phát `MATCH_OVER` gồm `rankings` theo `userId`, không có `expGains`.
-  - “Chơi lại” gọi `joinQueue()` để chia ván mới với cùng dàn máy;
+  - “Chơi lại” gọi `joinQueue()` để chia ván mới với cùng dàn máy. Giống ván online, người về Nhất ván trước (mình hoặc máy) đi trước và ra tự do; ván đầu của session vẫn theo luật 3♠;
   - “Về sảnh” huỷ session.
 - **Chat và biểu cảm** (`helpers/practiceChat.ts`):
   - máy tự nói hoặc thả biểu cảm khi vào ván, chặt, bị chặt, bỏ lượt, về Nhất, khi mình về Nhất, khi mình ra heo;
@@ -115,7 +116,11 @@ Mỗi nước của máy mất dưới 40 ms.
 - **Màn kết quả:** dòng nhỏ “VÁN TẬP”, hai nút “Về sảnh” / “Chơi lại”, không có pill EXP.
 - **Rời ván:** hộp xác nhận ghi “Rời ván tập? Ván tập không tính điểm. Bạn muốn về sảnh?”. Rời thì huỷ session, không gọi server.
 - **Không đụng tới server:** không gọi `bridge.refreshUser()` khi hết ván tập (Ken không đổi). Vẫn gọi `bridge.gameOver` để host hiện chấm báo.
-- **Mất kết nối server:** không hiện lớp phủ mất kết nối trong lúc tập.
+- **Sự kiện từ server online trong lúc tập:**
+  - mất kết nối: không hiện lớp phủ mất kết nối;
+  - lỗi kết nối (`onConnectionError`): không hiện hộp thông báo;
+  - bị mời khỏi bàn (`ROOM_KICKED`) hoặc bàn bị đóng (`ROOM_CLOSED`): chỉ xoá phòng online đang nhớ, không về sảnh, không hiện thông báo; ván tập chạy tiếp.
+- **Bị mời khỏi bàn ngoài lúc tập:** chỉ về sảnh khi `roomId` của sự kiện đúng là bàn đang ngồi.
 - **Có ván thật cùng lúc:** nếu server gửi `MATCH_FOUND` (ván thật đang chơi dở) trong lúc tập, store dừng ván tập, chuyển sang ván thật, và toast “Bạn đang có ván thật, đã chuyển về bàn”.
 
 ## 7. Kiểm tra

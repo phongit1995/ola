@@ -71,6 +71,7 @@ export function createPracticeSession({ user, bots, random = Math.random }: Prac
   let played: number[] = [];
   let matchId = '';
   let matchCount = 0;
+  let lastWinnerSeat: number | undefined;
   let lastChatAt = 0;
   let lastReactionAt = 0;
   const lastTalkAt = new Map<number, number>();
@@ -161,6 +162,7 @@ export function createPracticeSession({ user, bots, random = Math.random }: Prac
     clearTimers();
     const order = rankings(state);
     const winner = winnerSeat(state);
+    lastWinnerSeat = winner >= 0 ? winner : undefined;
     emit(S2C.MatchOver, {
       matchId,
       winnerId: winner >= 0 ? players[winner].id : undefined,
@@ -239,7 +241,7 @@ export function createPracticeSession({ user, bots, random = Math.random }: Prac
     matchId = `practice-${sessionId}-${matchCount}`;
     played = [];
     lastTalkAt.clear();
-    state = newDeal(players.length, random);
+    state = newDeal(players.length, random, lastWinnerSeat);
     const over = isOver(state);
     const deadline = over ? Date.now() : armTurn(-1);
     emit(S2C.MatchFound, {
@@ -332,6 +334,7 @@ export function createPracticeSession({ user, bots, random = Math.random }: Prac
       clearTimers();
       state = null;
       matchId = '';
+      lastWinnerSeat = undefined;
     },
 
     createRoom() {},

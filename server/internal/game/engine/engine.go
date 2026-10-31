@@ -1996,6 +1996,11 @@ func (e *Engine) startMatchWithRoom(
 	if pi, ok := gameLogic.(logic.PlayerInit); ok {
 		initialState = pi.InitPlayers(seed, len(players))
 	}
+	if li, ok := gameLogic.(logic.LeaderInit); ok && room != nil && room.LastWinnerID != "" {
+		if leader := seatOf(players, room.LastWinnerID); leader >= 0 {
+			initialState = li.InitPlayersLed(seed, len(players), leader)
+		}
+	}
 	m := &Match{
 		ID:           uuid.NewString(),
 		GameID:       gameID,
@@ -2544,7 +2549,7 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	}
 	var waitingRoom *Room
 	if m.room != nil {
-		room := prepareNextRound(*m.room)
+		room := prepareNextRound(*m.room, winnerID)
 		if err := e.store.Save(room); err != nil {
 			e.logger.Errorw("Failed to restore waiting room after match", "match_id", m.ID, "room_id", room.ID, "error", err)
 		} else {
@@ -2986,7 +2991,7 @@ func (e *Engine) restoreSnapshotRoom(snapshot ActiveMatchSnapshot) bool {
 	if snapshot.Room == nil {
 		return true
 	}
-	room := prepareNextRound(*snapshot.Room)
+	room := prepareNextRound(*snapshot.Room, snapshot.WinnerID)
 	memberIDs := room.memberIDs()
 
 	e.roomMu.Lock()
@@ -3119,8 +3124,12 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 	}
 }
 
-func prepareNextRound(room Room) Room {
+func prepareNextRound(room Room, winnerID string) Room {
 	room.normalize()
+	room.LastWinnerID = ""
+	if room.hasMember(winnerID) {
+		room.LastWinnerID = winnerID
+	}
 	room.Guests = append([]RoomGuest(nil), room.Guests...)
 	for i := range room.Guests {
 		room.Guests[i].Ready = false
@@ -3136,6 +3145,9 @@ func removeRoomGuest(room *Room, userID string) string {
 		return ""
 	}
 	removedID := room.Guests[idx].ID
+	if room.LastWinnerID == removedID {
+		room.LastWinnerID = ""
+	}
 	room.Guests = append(append([]RoomGuest(nil), room.Guests[:idx]...), room.Guests[idx+1:]...)
 	room.syncLegacyGuest()
 	return removedID
@@ -3159,7 +3171,11 @@ func (e *Engine) sendError(gameID, userID string, code string, message string) {
 }
 
 func (m *Match) playerIndex(userID string) int {
-	for i, p := range m.players {
+	return seatOf(m.players, userID)
+}
+
+func seatOf(players []protocol.PlayerInfo, userID string) int {
+	for i, p := range players {
 		if p.ID == userID {
 			return i
 		}

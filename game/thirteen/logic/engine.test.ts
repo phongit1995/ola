@@ -63,9 +63,49 @@ describe('engine parity with the server', () => {
       expect(state.turn).toBe(deal.starter);
     });
   }
+
+  for (const deal of parity.ledDeals) {
+    it(`led deal seed=${deal.seed} players=${deal.players} leader=${deal.leader} opens with the leader`, () => {
+      const state = dealFromDeck(deal.hands.flat(), deal.players, deal.leader);
+      expect(state.starter).toBe(deal.starter);
+      expect(state.turn).toBe(deal.starter);
+      expect(state.require3s).toBe(deal.require3s);
+      expect(state.ledByWinner).toBe(true);
+      expect(state.finishOrder).toEqual(deal.finishOrder);
+    });
+  }
 });
 
 describe('engine rules', () => {
+  it('lets the previous winner open with any card while someone else holds the three of spades', () => {
+    const deal = parity.deals.find((entry) => entry.players === 4)!;
+    const leader = (deal.hands.findIndex((hand) => hand.includes(card(0, 0))) + 1) % 4;
+    const state = dealFromDeck(deal.hands.flat(), 4, leader);
+    expect(state).toMatchObject({ starter: leader, turn: leader, require3s: false, ledByWinner: true });
+    expect(() => play(state, leader, state.hands[leader].at(-1)!)).not.toThrow();
+    expect(viewFor(state, 0).ledByWinner).toBe(true);
+  });
+
+  it('falls back to the three of spades when the previous winner is not seated', () => {
+    const deal = parity.deals.find((entry) => entry.players === 4)!;
+    for (const leader of [-1, 4, 1.5]) {
+      const state = dealFromDeck(deal.hands.flat(), 4, leader);
+      expect(state).toMatchObject({ starter: deal.starter, require3s: true });
+      expect(state.ledByWinner).toBeUndefined();
+    }
+  });
+
+  it('checks instant wins starting from the previous winner', () => {
+    const hands = [
+      [0, 8, 10, 16, 18, 23, 24, 26, 31, 32, 34, 39, 40],
+      [3, 6, 7, 14, 15, 22, 30, 38, 46, 48, 49, 50, 51],
+      [1, 9, 11, 17, 19, 25, 27, 33, 35, 41, 42, 43, 47],
+      [2, 4, 5, 12, 13, 20, 21, 28, 29, 36, 37, 44, 45],
+    ];
+    expect(dealFromDeck(hands.flat(), 4)).toMatchObject({ instantWin: 'fourTwos', finishOrder: [1, 2, 3, 0] });
+    expect(dealFromDeck(hands.flat(), 4, 2)).toMatchObject({ instantWin: 'sixPairs', finishOrder: [3, 0, 1, 2] });
+  });
+
   it('requires the three of spades on the first play and forbids the leader to pass', () => {
     const state = fixedState([[0, 10, 20], [5, 15, 25], [6, 16, 26]], 0, true);
     expect(() => play(state, 0, 10)).toThrow(MoveError);

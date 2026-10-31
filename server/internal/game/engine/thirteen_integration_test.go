@@ -291,3 +291,161 @@ func TestThirteenThreeSpadesHolderForfeitLetsNextSeatLead(t *testing.T) {
 		t.Fatal("round was not opened by the next seat")
 	}
 }
+
+func thirteenRoom(id string, guestIDs ...string) Room {
+	room := Room{ID: id, GameID: thirteen.GameID, OwnerID: "tl-a", OwnerName: "tl-a", MaxPlayers: 4}
+	for _, guestID := range guestIDs {
+		room.Guests = append(room.Guests, RoomGuest{ID: guestID, Name: guestID, Ready: true})
+	}
+	room.syncLegacyGuest()
+	return room
+}
+
+func onlyMatch(t *testing.T, gameEngine *Engine) *Match {
+	t.Helper()
+	gameEngine.mu.RLock()
+	defer gameEngine.mu.RUnlock()
+	for _, match := range gameEngine.matches {
+		return match
+	}
+	return nil
+}
+
+func roomPlayers(room Room) []protocol.PlayerInfo {
+	players := []protocol.PlayerInfo{{ID: room.OwnerID, Name: room.OwnerName}}
+	for _, g := range room.Guests {
+		players = append(players, protocol.PlayerInfo{ID: g.ID, Name: g.Name})
+	}
+	return players
+}
+
+func TestPrepareNextRoundRemembersWinnerStillSeated(t *testing.T) {
+	room := thirteenRoom("tl-room", "tl-b", "tl-c")
+	if got := prepareNextRound(room, "tl-b").LastWinnerID; got != "tl-b" {
+		t.Fatalf("seated guest winner = %q", got)
+	}
+	if got := prepareNextRound(room, "tl-a").LastWinnerID; got != "tl-a" {
+		t.Fatalf("owner winner = %q", got)
+	}
+	room.LastWinnerID = "tl-b"
+	if got := prepareNextRound(room, "").LastWinnerID; got != "" {
+		t.Fatalf("draw kept previous winner %q", got)
+	}
+	if got := prepareNextRound(room, "tl-z").LastWinnerID; got != "" {
+		t.Fatalf("winner who left the table = %q", got)
+	}
+}
+
+func TestRemoveRoomGuestForgetsLeavingWinner(t *testing.T) {
+	room := thirteenRoom("tl-room", "tl-b", "tl-c")
+	room.LastWinnerID = "tl-c"
+	removeRoomGuest(&room, "tl-b")
+	if room.LastWinnerID != "tl-c" {
+		t.Fatalf("another guest leaving cleared the winner: %q", room.LastWinnerID)
+	}
+	removeRoomGuest(&room, "tl-c")
+	if room.LastWinnerID != "" {
+		t.Fatalf("winner left but is still remembered: %q", room.LastWinnerID)
+	}
+}
+
+func TestThirteenRoomStartLetsLastWinnerLeadFreely(t *testing.T) {
+	for attempt := 0; attempt < 20; attempt++ {
+		gameEngine, _, _ := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := thirteenRoom("tl-room", "tl-b", "tl-c", "tl-d")
+		room.LastWinnerID = "tl-c"
+		if err := gameEngine.startRoomMatch(thirteen.GameID, thirteen.Logic{}, roomPlayers(room), 0, room); err != nil {
+			t.Fatalf("start room match: %v", err)
+		}
+		match := onlyMatch(t, gameEngine)
+		stopEngineTimers(gameEngine)
+		if match == nil {
+			continue
+		}
+		state := match.state.(*thirteen.State)
+		leader := match.playerIndex("tl-c")
+		if state.Starter != leader || state.Turn != leader || match.turnIdx != leader {
+			t.Fatalf("starter=%d turn=%d engineTurn=%d, want winner seat %d", state.Starter, state.Turn, match.turnIdx, leader)
+		}
+		if state.RequireThreeSpades || !state.LedByWinner {
+			t.Fatalf("require3s=%v ledByWinner=%v", state.RequireThreeSpades, state.LedByWinner)
+		}
+		return
+	}
+	t.Fatal("every deal was an instant win")
+}
+
+func TestThirteenRoomStartWithoutSeatedWinnerUsesThreeSpades(t *testing.T) {
+	for attempt := 0; attempt < 20; attempt++ {
+		gameEngine, _, _ := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := thirteenRoom("tl-room", "tl-b", "tl-c")
+		room.LastWinnerID = "tl-z"
+		if err := gameEngine.startRoomMatch(thirteen.GameID, thirteen.Logic{}, roomPlayers(room), 0, room); err != nil {
+			t.Fatalf("start room match: %v", err)
+		}
+		match := onlyMatch(t, gameEngine)
+		stopEngineTimers(gameEngine)
+		if match == nil {
+			continue
+		}
+		state := match.state.(*thirteen.State)
+		if state.LedByWinner {
+			t.Fatal("deal was led by a winner who is not at the table")
+		}
+		for seat, hand := range state.Hands {
+			for _, c := range hand {
+				if c == thirteen.ThreeOfSpades && (seat != state.Starter || !state.RequireThreeSpades) {
+					t.Fatalf("three of spades holder %d does not open: starter=%d require3s=%v", seat, state.Starter, state.RequireThreeSpades)
+				}
+			}
+		}
+		return
+	}
+	t.Fatal("every deal was an instant win")
+}
+
+func TestThirteenRoomWinnerLeadsTheNextRound(t *testing.T) {
+	for attempt := 0; attempt < 20; attempt++ {
+		gameEngine, rooms, _ := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := thirteenRoom("tl-room", "tl-b")
+		if err := rooms.Save(room); err != nil {
+			t.Fatal(err)
+		}
+		gameEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+		match := onlyMatch(t, gameEngine)
+		if match == nil {
+			stopEngineTimers(gameEngine)
+			continue
+		}
+		winner := match.playerIndex("tl-b")
+		loser := 1 - winner
+		hands := make([][]int, 2)
+		hands[winner] = []int{4}
+		hands[loser] = []int{5, 9}
+		forcedThirteenState(t, gameEngine, match, hands, winner)
+		gameEngine.Move(match.GameID, "tl-b", match.ID, tienLenMoveRaw(t, "play", 4))
+
+		returned, ok := rooms.Get(room.GameID, room.ID)
+		if !ok {
+			t.Fatal("waiting room was not restored after the match")
+		}
+		if returned.LastWinnerID != "tl-b" {
+			t.Fatalf("room remembered winner %q, want tl-b", returned.LastWinnerID)
+		}
+
+		gameEngine.SetRoomReady(room.GameID, "tl-b", room.ID, true)
+		gameEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+		next := onlyMatch(t, gameEngine)
+		stopEngineTimers(gameEngine)
+		if next == nil || next.ID == match.ID {
+			continue
+		}
+		state := next.state.(*thirteen.State)
+		leader := next.playerIndex("tl-b")
+		if state.Starter != leader || next.turnIdx != leader || state.RequireThreeSpades || !state.LedByWinner {
+			t.Fatalf("second round starter=%d engineTurn=%d require3s=%v led=%v, want winner seat %d", state.Starter, next.turnIdx, state.RequireThreeSpades, state.LedByWinner, leader)
+		}
+		return
+	}
+	t.Fatal("every attempt hit an instant win")
+}

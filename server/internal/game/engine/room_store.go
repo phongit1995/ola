@@ -42,6 +42,7 @@ type Room struct {
 	Guests       []RoomGuest `json:"guests,omitempty"`
 	Bet          int         `json:"bet"`
 	Password     string      `json:"password"`
+	LastWinnerID string      `json:"lastWinnerId,omitempty"`
 	CreatedAt    int64       `json:"createdAt"`
 	UpdatedAt    int64       `json:"updatedAt"`
 }

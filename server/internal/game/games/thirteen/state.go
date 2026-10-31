@@ -47,6 +47,7 @@ type State struct {
 	Turn               int     `json:"turn"`
 	Starter            int     `json:"starter"`
 	RequireThreeSpades bool    `json:"require3s"`
+	LedByWinner        bool    `json:"ledByWinner,omitempty"`
 	InstantWin         string  `json:"instantWin,omitempty"`
 	Rng                string  `json:"rng"`
 	MoveCount          int     `json:"moveCount"`
@@ -152,7 +153,7 @@ func (r *rng) shuffle(deck []int) {
 	}
 }
 
-func newDeal(seed int64, playerCount int) *State {
+func dealCards(seed int64, playerCount int) *State {
 	r := &rng{z: uint64(seed)}
 	deck := make([]int, DeckSize)
 	for i := range deck {
@@ -161,20 +162,24 @@ func newDeal(seed int64, playerCount int) *State {
 	r.shuffle(deck)
 
 	s := &State{
-		Hands:              make([][]int, playerCount),
-		Passed:             make([]bool, playerCount),
-		Quit:               make([]bool, playerCount),
-		FinishOrder:        []int{},
-		RequireThreeSpades: true,
-		Rng:                strconv.FormatUint(r.z, 10),
-		Steps:              []Step{{Kind: StepDeal, By: -1}},
+		Hands:       make([][]int, playerCount),
+		Passed:      make([]bool, playerCount),
+		Quit:        make([]bool, playerCount),
+		FinishOrder: []int{},
+		Rng:         strconv.FormatUint(r.z, 10),
+		Steps:       []Step{{Kind: StepDeal, By: -1}},
 	}
 	for p := 0; p < playerCount; p++ {
 		hand := append([]int(nil), deck[p*HandSize:(p+1)*HandSize]...)
 		sort.Ints(hand)
 		s.Hands[p] = hand
 	}
+	return s
+}
 
+func newDeal(seed int64, playerCount int) *State {
+	s := dealCards(seed, playerCount)
+	s.RequireThreeSpades = true
 	s.Starter = 0
 	starterFound := false
 	for p := 0; p < playerCount; p++ {
@@ -195,6 +200,19 @@ func newDeal(seed int64, playerCount int) *State {
 		s.RequireThreeSpades = false
 	}
 	s.Turn = s.Starter
+
+	applyInstantWins(s)
+	return s
+}
+
+func newLedDeal(seed int64, playerCount, leader int) *State {
+	if leader < 0 || leader >= playerCount {
+		return newDeal(seed, playerCount)
+	}
+	s := dealCards(seed, playerCount)
+	s.Starter = leader
+	s.Turn = leader
+	s.LedByWinner = true
 
 	applyInstantWins(s)
 	return s

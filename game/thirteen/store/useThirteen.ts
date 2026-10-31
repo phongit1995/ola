@@ -87,6 +87,7 @@ interface ThirteenStore {
   animating: boolean;
   movePending: boolean;
   require3s: boolean;
+  openingLead: boolean;
   chopFx: number;
   tableEvent: TableEvent | null;
   passFxSeat: number;
@@ -249,6 +250,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       quit: state.quit,
       finishOrder: state.finishOrder,
       require3s: state.require3s,
+      openingLead: Boolean(state.ledByWinner) && state.moveCount === 0 && turn === state.starter,
       turn,
       deadlineAt: toPerfDeadline(deadline),
       movePending: false,
@@ -535,13 +537,22 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         }
       }),
       session.onRoomClosed((data) => {
+        if (get().practice) {
+          if (get().room?.roomId === data.roomId) set({ room: null, roomChat: [] });
+          return;
+        }
         if (get().room?.roomId === data.roomId || get().phase === 'room') {
           const wasSelf = data.reason === 'guest_left';
           set({ phase: 'lobby', room: null, roomChat: [], ...(wasSelf ? {} : { notice: roomClosedText(data.reason) }) });
           session.listRooms();
         }
       }),
-      session.onRoomKicked(() => {
+      session.onRoomKicked((data) => {
+        if (get().room?.roomId !== data.roomId) return;
+        if (get().practice) {
+          set({ room: null, roomChat: [] });
+          return;
+        }
         set({ phase: 'lobby', room: null, roomChat: [], notice: 'Bạn đã bị mời khỏi bàn' });
         bridge.attention({ reason: ARCADE_ATTENTION_REASON.RoomKicked });
         session.listRooms();
@@ -552,6 +563,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         if (connected && get().phase === 'connecting') session.listRooms();
       }),
       session.onConnectionError(() => {
+        if (get().practice) return;
         set({ notice: 'Không thể kết nối máy chủ trò chơi. Hãy thử lại sau.' });
       }),
     );
@@ -581,6 +593,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     animating: false,
     movePending: false,
     require3s: false,
+    openingLead: false,
     chopFx: 0,
     tableEvent: null,
     passFxSeat: -1,
