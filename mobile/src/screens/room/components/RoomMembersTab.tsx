@@ -4,6 +4,7 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
+import { useTabSwipeGesture } from '@hooks/useTabSwipeGesture';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DEVICE_ICONS, normalizeDevice } from '@lib/deviceIcons';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
@@ -15,6 +16,7 @@ const femaleIcon = require('@assets/icons/chat/ic_indicate_female.png');
 interface RoomMembersTabProps {
   members: RoomMember[];
   onOpenUser?: (userId: string) => void;
+  onSwipeLeft?: () => void;
 }
 
 function GenderIcon({ gender }: { gender: RoomMember['gender'] }) {
@@ -111,37 +113,34 @@ function MemberRow({
   );
 }
 
-export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
+export function RoomMembersTab({ members, onOpenUser, onSwipeLeft }: RoomMembersTabProps) {
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore((state) => state.openViewer);
+  const swipeHandlers = useTabSwipeGesture({ onSwipeLeft });
 
-  if (members.length === 0) {
-    return (
-      <View className="flex-1 bg-white">
-        <LobbyWallpaper />
+  return (
+    <View className="flex-1 bg-white" {...swipeHandlers}>
+      <LobbyWallpaper />
+      {members.length === 0 ? (
         <Text
           className="px-4 py-6 text-center text-sm text-ola-ink-soft"
           style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
         >
           {t('room.noMembers')}
         </Text>
-      </View>
-    );
-  }
-  return (
-    <View className="flex-1 bg-white">
-      <LobbyWallpaper />
-      <FlashList
-        data={members}
-        keyExtractor={(item) => item.userId}
-        renderItem={({ item }) => (
-          <MemberRow
-            member={item}
-            onOpenUser={onOpenUser}
-            onViewImage={(uri) => openViewer([uri])}
-          />
-        )}
-      />
+      ) : (
+        <FlashList
+          data={members}
+          keyExtractor={(item) => item.userId}
+          renderItem={({ item }) => (
+            <MemberRow
+              member={item}
+              onOpenUser={onOpenUser}
+              onViewImage={(uri) => openViewer([uri])}
+            />
+          )}
+        />
+      )}
     </View>
   );
 }

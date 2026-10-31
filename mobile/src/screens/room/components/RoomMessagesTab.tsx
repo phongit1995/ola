@@ -12,6 +12,7 @@ import {
 import Clipboard from '@react-native-clipboard/clipboard';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
+import { useTabSwipeGesture } from '@hooks/useTabSwipeGesture';
 import type {
   GroupedMessage,
   NativeUploadFile,
@@ -77,6 +78,7 @@ interface RoomMessagesTabProps {
   onClearReplyTarget: () => void;
   onReact: (messageId: string, type: ReactionType) => void;
   onDeleteMessage: (messageId: string) => Promise<void>;
+  onSwipeRight?: () => void;
 }
 
 export function RoomMessagesTab({
@@ -100,8 +102,10 @@ export function RoomMessagesTab({
   onClearReplyTarget,
   onReact,
   onDeleteMessage,
+  onSwipeRight,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
+  const swipeHandlers = useTabSwipeGesture({ onSwipeRight });
   const { width: windowWidth } = useWindowDimensions();
   const pushToast = useToastStore(s => s.push);
   const setPinnedToBottom = useRoomChatStore(s => s.setPinnedToBottom);
@@ -398,46 +402,48 @@ export function RoomMessagesTab({
         </View>
       )}
 
-      <View
-        className="flex-1"
-        onStartShouldSetResponderCapture={() => {
-          composerRef.current?.closePanel();
-          return false;
-        }}
-      >
-        {rendered && (
-          <FlashList
-            ref={listRef}
-            data={feed}
-            extraData={foregroundEpoch}
-            keyExtractor={item => item.key}
-            getItemType={item => item.kind}
-            drawDistance={1500}
-            maintainVisibleContentPosition={{
-              startRenderingFromBottom: true,
-            }}
-            onScroll={handleScroll}
-            onScrollBeginDrag={onScrollBeginDrag}
-            onScrollEndDrag={onScrollEndDrag}
-            onMomentumScrollBegin={onMomentumScrollBegin}
-            onMomentumScrollEnd={onMomentumScrollEnd}
-            scrollEventThrottle={16}
-            contentContainerClassName="p-3"
-            onContentSizeChange={onContentSizeChange}
-            onLayout={onListLayout}
-            ListHeaderComponent={
-              loadingMore ? (
-                <Text
-                  className="py-1 text-center text-xs"
-                  style={{ color: 'rgba(0,0,0,0.4)' }}
-                >
-                  {t('common.loading')}
-                </Text>
-              ) : null
-            }
-            renderItem={renderItem}
-          />
-        )}
+      <View className="flex-1" {...swipeHandlers}>
+        <View
+          className="flex-1"
+          onStartShouldSetResponderCapture={() => {
+            composerRef.current?.closePanel();
+            return false;
+          }}
+        >
+          {rendered && (
+            <FlashList
+              ref={listRef}
+              data={feed}
+              extraData={foregroundEpoch}
+              keyExtractor={item => item.key}
+              getItemType={item => item.kind}
+              drawDistance={1500}
+              maintainVisibleContentPosition={{
+                startRenderingFromBottom: true,
+              }}
+              onScroll={handleScroll}
+              onScrollBeginDrag={onScrollBeginDrag}
+              onScrollEndDrag={onScrollEndDrag}
+              onMomentumScrollBegin={onMomentumScrollBegin}
+              onMomentumScrollEnd={onMomentumScrollEnd}
+              scrollEventThrottle={16}
+              contentContainerClassName="p-3"
+              onContentSizeChange={onContentSizeChange}
+              onLayout={onListLayout}
+              ListHeaderComponent={
+                loadingMore ? (
+                  <Text
+                    className="py-1 text-center text-xs"
+                    style={{ color: 'rgba(0,0,0,0.4)' }}
+                  >
+                    {t('common.loading')}
+                  </Text>
+                ) : null
+              }
+              renderItem={renderItem}
+            />
+          )}
+        </View>
       </View>
 
       {replyTarget != null && (
