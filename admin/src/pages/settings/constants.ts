@@ -1,4 +1,5 @@
 import type { ChatBotType, PushAudience, PushCampaignStatus } from '@/types'
+import type { AppUpdatePlatform, AppUpdateSetting } from './types'
 
 export const CREDENTIAL_KEY = 'push_firebase'
 
@@ -45,3 +46,12 @@ export const CHAT_BOT_LABEL: Record<ChatBotType, string> = {
   OLALA: 'Olala (trợ lý trò chuyện)',
   OLAVI: 'Olavi (thầy tử vi)',
 }
+
+export const APP_UPDATE_SETTING_KEY = 'app_update'
+
+export const APP_UPDATE_PLATFORMS: { key: AppUpdatePlatform; label: string }[] = [
+  { key: 'android', label: 'Android' },
+  { key: 'ios', label: 'iOS' },
+]
+
+export const DEFAULT_APP_UPDATE_SETTING: AppUpdateSetting = { android: [], ios: [] }

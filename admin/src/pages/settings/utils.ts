@@ -1,6 +1,13 @@
-import { APP_PLATFORMS, cleanPlatformRules, normalizePlatformRules } from '@/lib/platformRules'
+import { APP_PLATFORMS, cleanPlatformRules, cleanVersions, normalizePlatformRules } from '@/lib/platformRules'
 import type { AppSetting, ChatBotBotSetting, ChatBotPrompt, ChatBotSetting, ChatBotType } from '@/types'
-import { CHAT_BOT_SETTING_KEY, CHAT_BOT_TYPES } from './constants'
+import {
+  APP_UPDATE_PLATFORMS,
+  APP_UPDATE_SETTING_KEY,
+  CHAT_BOT_SETTING_KEY,
+  CHAT_BOT_TYPES,
+  DEFAULT_APP_UPDATE_SETTING,
+} from './constants'
+import type { AppUpdateSetting } from './types'
 
 export function parseServiceAccount(text: string): Record<string, unknown> {
   let parsed: unknown
@@ -76,4 +83,24 @@ export function disabledChatBots(before: ChatBotSetting, after: ChatBotSetting):
     if (!now.enabled) return true
     return APP_PLATFORMS.some(({ key }) => was.platforms?.[key]?.enabled !== false && now.platforms?.[key]?.enabled === false)
   })
+}
+
+function storedVersions(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+}
+
+export function appUpdateSetting(settings: AppSetting[] | undefined): AppUpdateSetting {
+  const found = settings?.find((item) => item.key === APP_UPDATE_SETTING_KEY)
+  const stored = (found?.value ?? DEFAULT_APP_UPDATE_SETTING) as Partial<Record<string, unknown>>
+  return { android: storedVersions(stored.android), ios: storedVersions(stored.ios) }
+}
+
+export function cleanAppUpdateSetting(values: AppUpdateSetting): AppUpdateSetting {
+  return { android: cleanVersions(values.android), ios: cleanVersions(values.ios) }
+}
+
+export function addedAppUpdateVersions(current: AppUpdateSetting, next: AppUpdateSetting): string[] {
+  return APP_UPDATE_PLATFORMS.flatMap(({ key, label }) =>
+    next[key].filter((version) => !current[key].includes(version)).map((version) => `${label} ${version}`),
+  )
 }

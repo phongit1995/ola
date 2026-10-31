@@ -2266,6 +2266,11 @@
     "you": "Bạn",
     "newCount": "{{count}} thông báo mới"
   },
+  "appUpdate": {
+    "title": "Cập nhật ứng dụng",
+    "requiredBody": "Bạn cần cập nhật bản mới nhất để có thể tiếp tục sử dụng.",
+    "updateNow": "Cập nhật ngay"
+  },
   "appLock": {
     "title": "Khoá ứng dụng",
     "enable": "Bật khoá ứng dụng",

@@ -2,6 +2,7 @@ import { http } from '../api/http';
 import { API_PATH } from '../config/api';
 import type {
   AppConfigResult,
+  AppUpdateResult,
   UpdateSettingsRequest,
   UserSettings,
 } from '../types/api/settings.type';
@@ -19,5 +20,9 @@ export class SettingsService {
     return http.get<AppConfigResult>(API_PATH.appSettings, {
       params: version ? { version } : undefined,
     });
+  }
+
+  static appUpdate(): Promise<AppUpdateResult> {
+    return http.get<AppUpdateResult>(API_PATH.appUpdate);
   }
 }

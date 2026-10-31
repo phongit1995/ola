@@ -163,8 +163,12 @@ func validDisableVersions(versions []string) []string {
 }
 
 func validateDisableVersions(label string, versions []string) error {
+	return validateVersionList(label, versions, "bản bị tắt")
+}
+
+func validateVersionList(label string, versions []string, noun string) error {
 	if len(versions) > disableVersionsMax {
-		return fmt.Errorf("%s: tối đa %d bản bị tắt", label, disableVersionsMax)
+		return fmt.Errorf("%s: tối đa %d %s", label, disableVersionsMax, noun)
 	}
 	seen := make([][]int, 0, len(versions))
 	for _, raw := range versions {

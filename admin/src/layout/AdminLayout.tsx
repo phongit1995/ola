@@ -5,6 +5,7 @@ import {
   AimOutlined,
   RobotOutlined,
   BellOutlined,
+  CloudDownloadOutlined,
   AppstoreOutlined,
   CommentOutlined,
   FlagOutlined,
@@ -117,6 +118,7 @@ const MENU_ITEMS = [
       { key: '/settings/notification', icon: <BellOutlined />, label: 'Thông báo' },
       { key: '/settings/push-campaigns', icon: <SendOutlined />, label: 'Gửi push' },
       { key: '/settings/chat-bot', icon: <RobotOutlined />, label: 'Chat-bot' },
+      { key: '/settings/app-update', icon: <CloudDownloadOutlined />, label: 'Cập nhật ứng dụng' },
     ],
   },
   { key: REPORTS_PATH, icon: <WarningOutlined />, label: REPORTS_LABEL },
@@ -168,6 +170,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/settings/notification': 'Cài đặt thông báo',
   '/settings/push-campaigns': 'Gửi push thông báo',
   '/settings/chat-bot': 'Cài đặt chat-bot',
+  '/settings/app-update': 'Cập nhật ứng dụng',
   [REPORTS_PATH]: REPORTS_LABEL,
 }
 

@@ -59,6 +59,12 @@ type MomentConfigResponse struct {
 	VideoVipRequired bool `json:"videoVipRequired" example:"false"`
 }
 
+type AppUpdateResponse struct {
+	Required bool `json:"required" example:"true"`
+}
+
+type AppUpdateSuccessResponse = utils.BaseResponse[AppUpdateResponse]
+
 type AppConfigResponse struct {
 	Version     string                     `json:"version" example:"9f86d081884c7d65"`
 	NotModified bool                       `json:"notModified,omitempty"`

@@ -23,6 +23,7 @@ import { StatusBarBackground } from './components/ui/StatusBarBackground';
 import { ReconnectingBanner } from './components/ui/ReconnectingBanner';
 import { ToastHost } from './components/ui/ToastHost';
 import { MediaViewer } from './components/ui/MediaViewer';
+import { AppUpdateGate } from './components/AppUpdateGate';
 import { AppLockGate } from './components/applock/AppLockGate';
 import { useMeNotificationRealtime } from './hooks/useMeNotificationRealtime';
 import { useAppNotificationRealtime } from './hooks/useAppNotificationRealtime';
@@ -178,6 +179,7 @@ export default function App() {
             <CallOverlay />
             <ToastHost />
             <MediaViewer />
+            <AppUpdateGate />
             <AppLockGate />
           </SafeAreaProvider>
         </KeyboardProvider>

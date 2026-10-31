@@ -35,7 +35,7 @@ export function normalizePlatformRules(value: StoredPlatformRules | undefined): 
   }
 }
 
-function cleanVersions(versions: string[] | undefined): string[] {
+export function cleanVersions(versions: string[] | undefined): string[] {
   const seen = new Set<string>()
   return (versions ?? [])
     .map((version) => version.trim())

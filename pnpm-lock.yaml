@@ -6,6 +6,7 @@ settings:
 
 overrides:
   firebase: 12.16.0
+  sp-react-native-in-app-updates>react-native-device-info: ^15.0.2
 
 importers:
 
@@ -345,6 +346,9 @@ importers:
       socket.io-client:
         specifier: ^4.8.3
         version: 4.8.3
+      sp-react-native-in-app-updates:
+        specifier: 2.0.0
+        version: 2.0.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.2.0(typescript@6.0.3))(@react-native/metro-config@0.87.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7))(react@19.2.7)
       zustand:
         specifier: ^5.0.14
         version: 5.0.14(@types/react@19.2.17)(immer@11.1.9)(react@19.2.7)(use-sync-external-store@1.6.0(react@19.2.7))
@@ -6964,6 +6968,16 @@ packages:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
 
+  sp-react-native-in-app-updates@2.0.0:
+    resolution: {integrity: sha512-67v2xqmJPBozAbgbefoFvoE22bxmXTUq64MZEraeLc0W00EQOFwfRb/pWnZKz+tRTNJUwjQ5USUqtRH/LeMsUA==}
+    peerDependencies:
+      react: '*'
+      react-native: '>=0.71.0'
+      react-native-siren: ^0.0.7
+    peerDependenciesMeta:
+      react-native-siren:
+        optional: true
+
   split-on-first@1.1.0:
     resolution: {integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==}
     engines: {node: '>=6'}
@@ -7322,6 +7336,9 @@ packages:
   unbox-primitive@1.1.0:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
     engines: {node: '>= 0.4'}
+
+  underscore@1.12.1:
+    resolution: {integrity: sha512-hEQt0+ZLDVUMhebKxL4x1BTtDY7bavVofhZ9KZ4aI26X9SRaE+Y3m83XUL1UP2jn8ynjndwCCpEHdUG+9pP1Tw==}
 
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
@@ -15588,6 +15605,14 @@ snapshots:
 
   source-map@0.6.1: {}
 
+  sp-react-native-in-app-updates@2.0.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.2.0(typescript@6.0.3))(@react-native/metro-config@0.87.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7))(react@19.2.7):
+    dependencies:
+      react: 19.2.7
+      react-native: 0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.2.0(typescript@6.0.3))(@react-native/metro-config@0.87.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7)
+      react-native-device-info: 15.0.2(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.2.0(typescript@6.0.3))(@react-native/metro-config@0.87.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7))
+      semver: 7.8.3
+      underscore: 1.12.1
+
   split-on-first@1.1.0: {}
 
   sprintf-js@1.0.3: {}
@@ -15989,6 +16014,8 @@ snapshots:
       has-bigints: 1.1.0
       has-symbols: 1.1.0
       which-boxed-primitive: 1.1.1
+
+  underscore@1.12.1: {}
 
   undici-types@7.18.2: {}
 
