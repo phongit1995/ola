@@ -4,8 +4,16 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/constants"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+)
+
+const (
+	seatsJoin         = "CROSS JOIN LATERAL " + constants.GameMatchSeatsSubquery + " AS seats"
+	sqlMatchVolume    = "bet::bigint * GREATEST(player_count, 2)"
+	sqlMatchHouseTake = "bet::bigint * (GREATEST(player_count, 2) - 1) - ken_delta"
 )
 
 type Repository struct {
@@ -23,7 +31,7 @@ func matchScope(f AdminMatchFilter) func(*gorm.DB) *gorm.DB {
 			db = db.Where("game_matches.game_id = ?", f.GameID)
 		}
 		if f.UserID != nil {
-			db = db.Where("(game_matches.player0_id = ? OR game_matches.player1_id = ?)", *f.UserID, *f.UserID)
+			db = db.Where(constants.GameMatchHasUserCondition, *f.UserID, *f.UserID, *f.UserID)
 		}
 		if f.WinnerID != nil {
 			db = db.Where("game_matches.winner_id = ?", *f.WinnerID)
@@ -65,6 +73,7 @@ type matchRow struct {
 	Mode            string     `gorm:"column:mode"`
 	Bet             int        `gorm:"column:bet"`
 	KenDelta        int        `gorm:"column:ken_delta"`
+	PlayerCount     int        `gorm:"column:player_count"`
 	MoveCount       int        `gorm:"column:move_count"`
 	StartedAt       time.Time  `gorm:"column:started_at"`
 	FinishedAt      *time.Time `gorm:"column:finished_at"`
@@ -87,7 +96,8 @@ func (r *Repository) ListMatches(f AdminMatchFilter, limit, offset int) ([]match
 		Select(`game_matches.id, game_matches.match_id, game_matches.game_id,
 			game_matches.player0_id, game_matches.player1_id, game_matches.winner_id,
 			game_matches.status, game_matches.reason, game_matches.mode, game_matches.bet,
-			game_matches.ken_delta, game_matches.move_count, game_matches.started_at, game_matches.finished_at,
+			game_matches.ken_delta, game_matches.player_count, game_matches.move_count,
+			game_matches.started_at, game_matches.finished_at,
 			player0.username AS player0_username, player0.full_name AS player0_full_name, player0.avatar AS player0_avatar,
 			player1.username AS player1_username, player1.full_name AS player1_full_name, player1.avatar AS player1_avatar`).
 		Joins("LEFT JOIN users AS player0 ON player0.id = game_matches.player0_id").
@@ -100,6 +110,38 @@ func (r *Repository) ListMatches(f AdminMatchFilter, limit, offset int) ([]match
 	return rows, total, err
 }
 
+type matchSeatRow struct {
+	GameMatchID uuid.UUID `gorm:"column:game_match_id"`
+	UserID      uuid.UUID `gorm:"column:user_id"`
+	Seat        int       `gorm:"column:seat"`
+	Place       *int      `gorm:"column:place"`
+	Username    string    `gorm:"column:username"`
+	FullName    string    `gorm:"column:full_name"`
+	Avatar      string    `gorm:"column:avatar"`
+}
+
+func (r *Repository) MatchSeats(matchIDs []uuid.UUID) (map[uuid.UUID][]matchSeatRow, error) {
+	byMatch := make(map[uuid.UUID][]matchSeatRow, len(matchIDs))
+	if len(matchIDs) == 0 {
+		return byMatch, nil
+	}
+	var rows []matchSeatRow
+	err := r.db.Table("game_match_players AS seats").
+		Select(`seats.game_match_id, seats.user_id, seats.seat, seats.place,
+			users.username, users.full_name, users.avatar`).
+		Joins("LEFT JOIN users ON users.id = seats.user_id").
+		Where("seats.game_match_id IN ?", matchIDs).
+		Order("seats.game_match_id ASC, seats.seat ASC").
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		byMatch[row.GameMatchID] = append(byMatch[row.GameMatchID], row)
+	}
+	return byMatch, nil
+}
+
 func (r *Repository) StatsOverview(f AdminMatchFilter) (StatsOverview, error) {
 	var o StatsOverview
 	err := r.db.Table("game_matches").Scopes(matchScope(f)).
@@ -109,18 +151,19 @@ func (r *Repository) StatsOverview(f AdminMatchFilter) (StatsOverview, error) {
 			count(*) filter (where winner_id is not null) as decided_matches,
 			count(*) filter (where status = 'finished' and winner_id is null and reason <> 'void') as draw_matches,
 			count(*) filter (where reason = 'void') as void_matches,
-			coalesce(sum(bet * 2) filter (where status = 'finished'), 0) as total_volume,
-			coalesce(sum(bet - ken_delta) filter (where status = 'finished' and winner_id is not null), 0) as house_take`).
+			coalesce(sum(` + sqlMatchVolume + `) filter (where status = 'finished'), 0) as total_volume,
+			coalesce(sum(` + sqlMatchHouseTake + `) filter (where status = 'finished' and winner_id is not null), 0) as house_take`).
 		Scan(&o).Error
 	return o, err
 }
 
 func (r *Repository) UniquePlayers(f AdminMatchFilter) (int64, error) {
-	sub0 := r.db.Table("game_matches").Select("game_matches.player0_id AS uid").Scopes(matchScope(f))
-	sub1 := r.db.Table("game_matches").Select("game_matches.player1_id AS uid").Scopes(matchScope(f))
-
 	var count int64
-	err := r.db.Table("(? UNION ?) AS t", sub0, sub1).Count(&count).Error
+	err := r.db.Table("game_matches").
+		Select("count(DISTINCT seats.user_id)").
+		Joins(seatsJoin).
+		Scopes(matchScope(f)).
+		Scan(&count).Error
 	return count, err
 }
 
@@ -129,8 +172,8 @@ func (r *Repository) StatsByGame(f AdminMatchFilter) ([]StatsGameRow, error) {
 	err := r.db.Table("game_matches").Scopes(matchScope(f)).
 		Select(`game_id, count(*) as matches,
 			count(*) filter (where status = 'finished') as finished,
-			coalesce(sum(bet * 2) filter (where status = 'finished'), 0) as volume,
-			coalesce(sum(bet - ken_delta) filter (where status = 'finished' and winner_id is not null), 0) as house_take`).
+			coalesce(sum(` + sqlMatchVolume + `) filter (where status = 'finished'), 0) as volume,
+			coalesce(sum(` + sqlMatchHouseTake + `) filter (where status = 'finished' and winner_id is not null), 0) as house_take`).
 		Group("game_id").
 		Order("matches DESC").
 		Scan(&rows).Error
@@ -158,8 +201,9 @@ func (r *Repository) StatsTimeseries(f AdminMatchFilter, bucket string) ([]Stats
 		Select(fmt.Sprintf(`to_char(date_trunc('%s', started_at), '%s') as date,
 			count(*) as matches,
 			count(*) filter (where status = 'finished') as finished,
-			coalesce(sum(bet * 2) filter (where status = 'finished'), 0) as volume,
-			coalesce(sum(bet - ken_delta) filter (where status = 'finished' and winner_id is not null), 0) as house_take`, trunc, format)).
+			coalesce(sum(%s) filter (where status = 'finished'), 0) as volume,
+			coalesce(sum(%s) filter (where status = 'finished' and winner_id is not null), 0) as house_take`,
+			trunc, format, sqlMatchVolume, sqlMatchHouseTake)).
 		Group(fmt.Sprintf("date_trunc('%s', started_at)", trunc)).
 		Order(fmt.Sprintf("date_trunc('%s', started_at) ASC", trunc)).
 		Scan(&rows).Error
@@ -178,30 +222,22 @@ type playerAggRow struct {
 	NetKen   int64     `gorm:"column:net_ken"`
 }
 
-func (r *Repository) playerSideQuery(f AdminMatchFilter, side string) *gorm.DB {
-	return r.db.Table("game_matches").
-		Select(fmt.Sprintf(`game_matches.%[1]s AS uid,
-			CASE WHEN game_matches.winner_id = game_matches.%[1]s THEN 1 ELSE 0 END AS won,
-			CASE WHEN game_matches.loser_id = game_matches.%[1]s THEN 1 ELSE 0 END AS lost,
-			CASE WHEN game_matches.winner_id = game_matches.%[1]s THEN game_matches.ken_delta
-				WHEN game_matches.loser_id = game_matches.%[1]s THEN -game_matches.bet
-				ELSE 0 END AS net,
-			game_matches.bet AS staked`, side)).
-		Scopes(matchScope(f)).
-		Where("game_matches.status = 'finished' AND game_matches.bet > 0")
-}
-
 func (r *Repository) PlayerAggregates(f AdminMatchFilter, minMatches, limit int) ([]playerAggRow, error) {
-	sub0 := r.playerSideQuery(f, "player0_id")
-	sub1 := r.playerSideQuery(f, "player1_id")
-
 	var rows []playerAggRow
-	err := r.db.Table("(? UNION ALL ?) AS t", sub0, sub1).
-		Select(`t.uid AS user_id, users.username, users.full_name, users.avatar,
-			count(*) as matches, sum(t.won) as wins, sum(t.lost) as losses,
-			coalesce(sum(t.staked), 0) as staked, coalesce(sum(t.net), 0) as net_ken`).
-		Joins("JOIN users ON users.id = t.uid").
-		Group("t.uid, users.username, users.full_name, users.avatar").
+	err := r.db.Table("game_matches").
+		Select(`seats.user_id AS user_id, users.username, users.full_name, users.avatar,
+			count(*) AS matches,
+			count(*) filter (where game_matches.winner_id = seats.user_id) AS wins,
+			count(*) filter (where game_matches.winner_id <> seats.user_id) AS losses,
+			coalesce(sum(game_matches.bet), 0) AS staked,
+			coalesce(sum(CASE WHEN game_matches.winner_id = seats.user_id THEN game_matches.ken_delta
+				WHEN game_matches.winner_id IS NOT NULL THEN -game_matches.bet
+				ELSE 0 END), 0) AS net_ken`).
+		Joins(seatsJoin).
+		Joins("JOIN users ON users.id = seats.user_id").
+		Scopes(matchScope(f)).
+		Where("game_matches.status = 'finished' AND game_matches.bet > 0").
+		Group("seats.user_id, users.username, users.full_name, users.avatar").
 		Having("count(*) >= ?", minMatches).
 		Order("net_ken DESC").
 		Limit(limit).
@@ -221,23 +257,22 @@ type pairAggRow struct {
 }
 
 func (r *Repository) PairAggregates(f AdminMatchFilter, minPairMatches, limit int) ([]pairAggRow, error) {
-	pairA := "least(game_matches.player0_id, game_matches.player1_id)"
-	pairB := "greatest(game_matches.player0_id, game_matches.player1_id)"
-
 	var rows []pairAggRow
 	err := r.db.Table("game_matches").
-		Select(fmt.Sprintf(`%[1]s AS a_id, %[2]s AS b_id,
+		Select(`seat_a.user_id AS a_id, seat_b.user_id AS b_id,
 			count(*) AS matches,
-			count(*) filter (where game_matches.winner_id is not null) AS decided,
-			count(*) filter (where game_matches.winner_id = %[1]s) AS a_wins,
-			count(*) filter (where game_matches.winner_id = %[2]s) AS b_wins,
+			count(*) filter (where game_matches.winner_id IN (seat_a.user_id, seat_b.user_id)) AS decided,
+			count(*) filter (where game_matches.winner_id = seat_a.user_id) AS a_wins,
+			count(*) filter (where game_matches.winner_id = seat_b.user_id) AS b_wins,
 			coalesce(sum(game_matches.bet), 0) AS total_bet,
-			coalesce(sum(CASE WHEN game_matches.winner_id = %[1]s THEN game_matches.ken_delta
-				WHEN game_matches.loser_id = %[1]s THEN -game_matches.bet
-				ELSE 0 END), 0) AS a_net`, pairA, pairB)).
+			coalesce(sum(CASE WHEN game_matches.winner_id = seat_a.user_id THEN game_matches.ken_delta
+				WHEN game_matches.winner_id IS NOT NULL THEN -game_matches.bet
+				ELSE 0 END), 0) AS a_net`).
+		Joins("CROSS JOIN LATERAL "+constants.GameMatchSeatsSubquery+" AS seat_a").
+		Joins("CROSS JOIN LATERAL "+constants.GameMatchSeatsSubquery+" AS seat_b").
 		Scopes(matchScope(f)).
-		Where("game_matches.status = 'finished' AND game_matches.bet > 0").
-		Group(fmt.Sprintf("%s, %s", pairA, pairB)).
+		Where("seat_a.user_id < seat_b.user_id AND game_matches.status = 'finished' AND game_matches.bet > 0").
+		Group("seat_a.user_id, seat_b.user_id").
 		Having("count(*) >= ?", minPairMatches).
 		Order("matches DESC").
 		Limit(limit).

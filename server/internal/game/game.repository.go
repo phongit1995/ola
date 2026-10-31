@@ -6,6 +6,7 @@ import (
 	"sort"
 	"time"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/game/engine"
 	"ola-chat-server/internal/game/games/thirteen"
 	"ola-chat-server/internal/game/progression"
@@ -178,13 +179,7 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 				COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) AS wins,
 				COUNT(*) FILTER (WHERE seats.user_id <> game_matches.winner_id) AS losses,
 				COALESCE(levels.exp, 0) AS game_exp`).
-			Joins(`CROSS JOIN LATERAL (
-				SELECT gmp.user_id FROM game_match_players AS gmp
-				WHERE gmp.game_match_id = game_matches.id AND game_matches.player_count > 2
-				UNION ALL
-				SELECT pair.user_id FROM (VALUES (game_matches.player0_id), (game_matches.player1_id)) AS pair(user_id)
-				WHERE game_matches.player_count <= 2
-			) AS seats`).
+			Joins("CROSS JOIN LATERAL "+constants.GameMatchSeatsSubquery+" AS seats").
 			Joins("JOIN users ON users.id = seats.user_id").
 			Joins("LEFT JOIN user_game_levels AS levels ON levels.user_id = seats.user_id AND levels.game_id = game_matches.game_id").
 			Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
@@ -283,14 +278,9 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 			player1.vip_used AS player1_vip, player1.vip_end_time AS player1_vip_end`).
 		Joins("LEFT JOIN users AS player0 ON player0.id = game_matches.player0_id").
 		Joins("LEFT JOIN users AS player1 ON player1.id = game_matches.player1_id").
-		Where(`game_matches.game_id = ? AND game_matches.status = ?
-			AND (game_matches.player0_id = ? OR game_matches.player1_id = ?
-				OR (game_matches.player_count > 2 AND EXISTS (
-					SELECT 1 FROM game_match_players AS gmp
-					WHERE gmp.game_match_id = game_matches.id AND gmp.user_id = ?)))
-			AND game_matches.finished_at IS NOT NULL AND game_matches.reason <> ?
-			AND game_matches.deleted_at IS NULL`,
-			gameID, matchStatusFinished, uid, uid, uid, reasonVoid).
+		Where("game_matches.game_id = ? AND game_matches.status = ?", gameID, matchStatusFinished).
+		Where(constants.GameMatchHasUserCondition, uid, uid, uid).
+		Where("game_matches.finished_at IS NOT NULL AND game_matches.reason <> ? AND game_matches.deleted_at IS NULL", reasonVoid).
 		Order("game_matches.finished_at DESC, game_matches.id DESC").
 		Limit(matchHistoryLimit).
 		Scan(&rows).Error

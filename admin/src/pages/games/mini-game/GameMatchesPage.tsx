@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  Avatar,
   Button,
   Card,
   Input,
@@ -16,6 +17,7 @@ import { BarChartOutlined, ReloadOutlined, TrophyFilled } from '@ant-design/icon
 import { useGameMatches } from './useGameMatchQueries'
 import type {
   AdminGameMatch,
+  AdminGameMatchPlayer,
   GameMatchMode,
   GameMatchReason,
   GameMatchStatus,
@@ -28,15 +30,52 @@ import {
   REASON_OPTIONS,
   STATUS_OPTIONS,
 } from './constants'
-import { gameLabel } from './utils'
+import { gameLabel, matchPlayers, placeLabel } from './utils'
 import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
-import { UserBriefCell } from '@/components/UserBriefCell'
 import { useGameOptions } from './useGameOptions'
 import { PAGE_SIZE } from '@/lib/constants'
 
 const WINNER_BADGE = <TrophyFilled style={{ color: '#faad14' }} />
+const PLAYER_LIST_STYLE = { display: 'flex', flexDirection: 'column', gap: 6 } as const
+const PLAYER_LINE_STYLE = { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } as const
+const PLACE_TAG_STYLE = { margin: 0, minWidth: 40, textAlign: 'center' } as const
+
+function MatchPlayerLine({ match, player }: { match: AdminGameMatch; player: AdminGameMatchPlayer }) {
+  const { user } = player
+  const name = user.fullName || user.username
+  const winner = !!match.winnerId && match.winnerId === user.id
+  return (
+    <div style={PLAYER_LINE_STYLE}>
+      {match.playerCount > 2 && (
+        <Tag color={winner ? 'gold' : undefined} style={PLACE_TAG_STYLE}>
+          {player.place ? placeLabel(player.place, match.playerCount) : '—'}
+        </Tag>
+      )}
+      <Avatar size="small" src={user.avatar || undefined} style={{ flex: 'none' }}>
+        {name[0] ?? '?'}
+      </Avatar>
+      <Typography.Text strong ellipsis={{ tooltip: name }} style={{ minWidth: 0 }}>
+        {name}
+      </Typography.Text>
+      <Typography.Text type="secondary" ellipsis style={{ minWidth: 0, flex: 'none', maxWidth: 120, fontSize: 12 }}>
+        @{user.username}
+      </Typography.Text>
+      {winner && WINNER_BADGE}
+    </div>
+  )
+}
+
+function MatchPlayersCell({ match }: { match: AdminGameMatch }) {
+  return (
+    <div style={PLAYER_LIST_STYLE}>
+      {matchPlayers(match).map((player) => (
+        <MatchPlayerLine key={player.user.id} match={match} player={player} />
+      ))}
+    </div>
+  )
+}
 
 export function GameMatchesPage() {
   const navigate = useNavigate()
@@ -88,28 +127,25 @@ export function GameMatchesPage() {
     {
       title: 'Game',
       dataIndex: 'gameId',
-      width: 110,
-      render: (value: string) => <Tag color="purple">{gameLabel(value, gameNames)}</Tag>,
-    },
-    {
-      title: 'Người chơi 1',
-      key: 'player0',
-      render: (_, row) => (
-        <UserBriefCell
-          user={row.player0}
-          badge={!!row.winnerId && row.winnerId === row.player0?.id && WINNER_BADGE}
-        />
+      width: 130,
+      render: (value: string, row) => (
+        <Space direction="vertical" size={2}>
+          <Tag color="purple" style={{ margin: 0 }}>
+            {gameLabel(value, gameNames)}
+          </Tag>
+          {row.playerCount > 2 && (
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Bàn {row.playerCount} người
+            </Typography.Text>
+          )}
+        </Space>
       ),
     },
     {
-      title: 'Người chơi 2',
-      key: 'player1',
-      render: (_, row) => (
-        <UserBriefCell
-          user={row.player1}
-          badge={!!row.winnerId && row.winnerId === row.player1?.id && WINNER_BADGE}
-        />
-      ),
+      title: 'Người chơi',
+      key: 'players',
+      width: 300,
+      render: (_, row) => <MatchPlayersCell match={row} />,
     },
     {
       title: 'Chế độ',

@@ -28,22 +28,30 @@ type UserBrief struct {
 	Avatar   string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
 }
 
+type MatchPlayer struct {
+	User  UserBrief `json:"user"`
+	Seat  int       `json:"seat" example:"0"`
+	Place int       `json:"place,omitempty" example:"1"`
+}
+
 type MatchView struct {
-	ID         string     `json:"id"`
-	MatchID    string     `json:"matchId"`
-	GameID     string     `json:"gameId" example:"caro"`
-	Player0    *UserBrief `json:"player0,omitempty"`
-	Player1    *UserBrief `json:"player1,omitempty"`
-	WinnerID   string     `json:"winnerId,omitempty"`
-	Status     string     `json:"status" example:"finished"`
-	Reason     string     `json:"reason,omitempty" example:"win"`
-	Mode       string     `json:"mode" example:"queue"`
-	Bet        int        `json:"bet" example:"1000"`
-	KenDelta   int        `json:"kenDelta" example:"900"`
-	HouseTake  int        `json:"houseTake" example:"100"`
-	MoveCount  int        `json:"moveCount" example:"24"`
-	StartedAt  string     `json:"startedAt" example:"2026-07-24T10:00:00Z"`
-	FinishedAt string     `json:"finishedAt,omitempty"`
+	ID          string        `json:"id"`
+	MatchID     string        `json:"matchId"`
+	GameID      string        `json:"gameId" example:"caro"`
+	Player0     *UserBrief    `json:"player0,omitempty"`
+	Player1     *UserBrief    `json:"player1,omitempty"`
+	PlayerCount int           `json:"playerCount" example:"2"`
+	Players     []MatchPlayer `json:"players"`
+	WinnerID    string        `json:"winnerId,omitempty"`
+	Status      string        `json:"status" example:"finished"`
+	Reason      string        `json:"reason,omitempty" example:"win"`
+	Mode        string        `json:"mode" example:"queue"`
+	Bet         int           `json:"bet" example:"1000"`
+	KenDelta    int           `json:"kenDelta" example:"900"`
+	HouseTake   int           `json:"houseTake" example:"100"`
+	MoveCount   int           `json:"moveCount" example:"24"`
+	StartedAt   string        `json:"startedAt" example:"2026-07-24T10:00:00Z"`
+	FinishedAt  string        `json:"finishedAt,omitempty"`
 }
 
 type MatchListResponse struct {

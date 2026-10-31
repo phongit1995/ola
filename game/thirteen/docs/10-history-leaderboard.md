@@ -98,10 +98,26 @@ Kỳ `month` thêm ở `normalizeLeaderboardPeriod` / `leaderboardRangeAt`. Serv
   - `leaderboardGames`, `periodCaption`.
 - **Màn** (`screens/records/`): `RecordScreen` (khung, header, trạng thái tải / lỗi / trống), `HistoryScreen`, `LeaderboardScreen`. Render ở `App.tsx`, trên sảnh và dưới toast / modal / màn kết quả.
 
-## 6. Kiểm tra
+## 6. Admin
+
+Admin > Trò chơi > Mini game có 3 tab: Danh sách game, Lịch sử trận PvP, Level người chơi; trang Thống kê ở `/games/matches/stats`. API ở `server/internal/modules/admin/game-match/`. Đoạn SQL "mọi ghế của ván" (`constants.GameMatchSeatsSubquery`) và điều kiện "ván có người này" (`constants.GameMatchHasUserCondition`) nằm ở `server/internal/constants/game.go`, dùng chung với server game.
+
+- **Lịch sử trận:**
+  - mỗi trận trả thêm `playerCount` và `players` (`user`, `seat`, `place`);
+  - cột "Người chơi" hiện cả bàn, mỗi người một dòng; bàn 3–4 người có nhãn Nhất / Nhì / Ba / Bét, người thắng có cúp;
+  - cột Game ghi thêm "Bàn N người";
+  - lọc theo User ID tìm được cả người ngồi ghế 3–4.
+- **Tiền** (bàn N người, cược `bet`):
+  - Ken qua kèo = `bet × N`;
+  - hoa hồng = `bet × (N − 1) − ken_delta` (bàn 2 người vẫn ra `bet − ken_delta` như cũ);
+  - trả về người chơi = qua kèo − hoa hồng.
+- **Người chơi duy nhất, top người chơi:** đếm mọi ghế. Người không về Nhất ở ván có người thắng tính 1 ván thua và `−bet`.
+- **Cặp nghi vấn:** ghép mọi cặp trong cùng bàn (bàn 4 người ra 6 cặp). "Độ một chiều" chỉ tính trên các ván mà một trong hai người thắng.
+
+## 7. Kiểm tra
 
 ```bash
-cd server && go test ./internal/game/...
+cd server && go test ./internal/game/... ./internal/modules/admin/game-match/
 pnpm -C game exec tsc --noEmit -p .
 pnpm -C game exec vitest run thirteen
 ```

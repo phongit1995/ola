@@ -1470,12 +1470,20 @@ export interface GameMatchUserBrief {
   avatar?: string
 }
 
+export interface AdminGameMatchPlayer {
+  user: GameMatchUserBrief
+  seat: number
+  place?: number
+}
+
 export interface AdminGameMatch {
   id: string
   matchId: string
   gameId: string
   player0?: GameMatchUserBrief
   player1?: GameMatchUserBrief
+  playerCount: number
+  players?: AdminGameMatchPlayer[]
   winnerId?: string
   status: GameMatchStatus
   reason?: GameMatchReason
