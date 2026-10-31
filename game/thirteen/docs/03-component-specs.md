@@ -541,7 +541,8 @@ Focus chuẩn:
 | `tl-action-bar` | Transparent Action Layout |
 | `tl-chat-panel` | Cream Bottom Sheet |
 | `tl-result-card` | Cream Result Modal |
-| `tl-result-row` | Flat Ranking Row |
+| `tl-result-emblem` | Place Emblem |
+| `tl-result-row` | Medal Ranking Row |
 | `tl-toast` | Cream Semantic Toast |
 
 Mapping đầy đủ từng class nằm trong `06-screen-to-asset-map.md`.

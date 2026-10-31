@@ -205,15 +205,18 @@ State `.selected`, `.dealing`, `.chop` are CSS/animation states. Chop uses FX-01
 
 | Class | Loại | Style 02 implementation |
 |---|---|---|
-| `tl-result-backdrop` | CSS state | modal backdrop, z-index result |
-| `tl-result-card` | CSS component | cream result modal, radius 24 |
-| `tl-result-banner` | live text/CSS | display title + coral underline, no raster ribbon |
-| `tl-result-instant` | CSS/live | sun/coral pill |
-| `tl-result-note` | live text | body.sm teal/navy, center |
-| `tl-result-rows` | layout | vertical stack/scroll |
-| `tl-result-row` | CSS component | flat ranking row; `.first`/`.me` semantic tint |
-| `tl-result-place` | live text | place column, tabular nums |
-| `tl-result-name` | live text | navy 800, ellipsis |
+| `tl-result-backdrop` | CSS state | modal backdrop navy radial + blur, z-index result, fade-in |
+| `tl-result-confetti` | CSS/live | 22 mảnh giấy màu rơi 2 lượt, chỉ khi mình về Nhất; tắt khi reduced-motion |
+| `tl-result-card` | CSS component | cream modal radius 26, pop-in; `.tone-win/.tone-mid/.tone-lose/.tone-neutral` đổi màu dải nền đầu thẻ và huy hiệu |
+| `tl-result-emblem` | CSS/live + icon `ic-crown.svg` | huy hiệu tròn 76px đè mép trên thẻ: vương miện khi Nhất (kèm `tl-result-rays` tia sáng xoay), số hạng khi Nhì/Ba/Bét; màu vàng/bạc/đồng/coral theo hạng |
+| `tl-result-head` | layout | cột giữa: `tl-result-kicker` (KẾT QUẢ VÁN), `tl-result-title` ("Bạn về Nhất!", Bét màu coral), `tl-result-subtitle` (câu động viên hoặc lý do kết thúc) |
+| `tl-result-instant` | CSS/live | sun pill thay câu phụ khi tới trắng |
+| `tl-result-rows` | layout | danh sách `ol`, scroll khi thiếu chỗ |
+| `tl-result-row` | CSS component | hàng hạng trượt lên lần lượt; `.first` nền vàng viền navy, `.me` nền aqua viền teal |
+| `tl-result-medal` | CSS/live | huy chương số hạng 30px: `.gold/.silver/.bronze/.last/.plain` |
+| `tl-result-who` | layout | tên (`tl-result-name`, ellipsis) + nhãn hạng (`tl-result-label`) |
+| `tl-result-exp` | CSS/live | pill teal "+N EXP" từ `expGains` của MATCH_OVER, ẩn khi 0 |
+| `tl-result-empty` | live text | "Ván đấu không có kết quả" |
 
 Badges và action buttons tái dùng shared component.
 
@@ -229,6 +232,11 @@ Các token sau là tên animation/keyframe đang có trong CSS, không phải as
 | `tl-card-in` | 220–250 ms translate/rotate về vị trí |
 | `tl-banner` | 180–240 ms scale .96→1 + fade |
 | `tl-toast-in` | 160 ms y -8→0 + fade |
+| `tl-result-fade` / `tl-result-pop` | backdrop fade 240 ms; thẻ kết quả y +24 → 0, scale .92 → 1, 380 ms nảy nhẹ |
+| `tl-result-emblem` | huy hiệu scale .3 → 1, xoay -25° → 0, trễ 120 ms |
+| `tl-result-spin` | tia sáng sau huy hiệu Nhất xoay 1 vòng / 9 s |
+| `tl-result-row` | hàng hạng y +10 → 0 + fade, trễ 220 ms + 80 ms mỗi hàng |
+| `tl-result-confetti` | mảnh giấy rơi hết màn 2.2–3.4 s, lệch ngang ±30 px, chạy 2 lượt |
 
 Mọi animation có reduced-motion fallback.
 
@@ -295,8 +303,10 @@ tl-logo-sub tl-modal tl-modal-actions tl-modal-backdrop
 tl-modal-text tl-modal-title tl-my-info tl-my-name tl-my-row tl-opponent
 tl-opponent-name tl-pass-chip tl-playing-badge tl-play-now tl-play-now-label
 tl-play-now-sub tl-quick-chip tl-quick-row tl-reaction-balloon tl-reaction-btn tl-reaction-pop tl-reaction-row tl-unread-badge
-tl-result-backdrop tl-result-banner tl-result-card tl-result-instant
-tl-result-name tl-result-note tl-result-place tl-result-row tl-result-rows
+tl-result-backdrop tl-result-card tl-result-confetti tl-result-emblem tl-result-emblem-disc
+tl-result-empty tl-result-exp tl-result-head tl-result-instant tl-result-kicker tl-result-label
+tl-result-medal tl-result-name tl-result-rays tl-result-row tl-result-rows tl-result-subtitle
+tl-result-title tl-result-who
 tl-room tl-room-actions tl-room-chat tl-room-chat-log tl-room-empty
 tl-room-info tl-room-list tl-room-list-header tl-room-meta tl-room-name
 tl-room-row tl-room-title tl-screen tl-seat tl-seat-dots tl-seat-empty

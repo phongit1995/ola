@@ -3,6 +3,7 @@ import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import { bridge, joinGame, type GameSession } from '../../src/sdk';
 import type {
   ChatMessageData,
+  ExpGainEntry,
   MatchFoundData,
   MatchOverData,
   PlayerInfo,
@@ -38,6 +39,7 @@ export interface TableEvent {
 
 export interface MatchResult {
   rankings: RankingEntry[];
+  expGains?: ExpGainEntry[];
   winnerId?: string;
   reason: string;
   instantWin?: string;
@@ -298,6 +300,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       set({
         result: {
           rankings: data.rankings ?? [],
+          expGains: data.expGains ?? [],
           winnerId: data.winnerId,
           reason: data.reason,
           instantWin: final?.instantWin,

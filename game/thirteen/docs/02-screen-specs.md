@@ -584,34 +584,34 @@ Concept tham chiếu đã duyệt: [concept-result-style-02-ngay-vui.png](./scre
 
 ### 9.1 Backdrop/card
 
-- backdrop navy 38%;
-- result card cream, width `min(354px, calc(100% - 28px))`;
-- border navy 2;
-- radius 24;
-- shadow overlay;
-- padding 18–20 px;
-- max-height `calc(100vh - safe areas - 32px)`;
+- backdrop navy radial 38–66% + blur 3 px, fade-in;
+- result card cream, width `min(354px, 100%)`, lề màn 16 px (12 px khi rộng < 380);
+- border navy 2, radius 26, bóng đáy 6 px + overlay, pop-in;
+- padding trên 46 px để chừa huy hiệu, hai bên 16 px;
+- max-height `calc(100dvh - safe areas - 72px)`;
+- dải màu nhạt 120 px đầu thẻ theo tông: vàng (Nhất), aqua (giữa), coral (Bét);
 - nội dung ranking scroll nếu cần.
 
-### 9.2 Banner
+### 9.2 Huy hiệu và tiêu đề
 
-- “KẾT QUẢ” `display.md` navy;
-- underline coral 56 × 4 px;
-- không ribbon 3D;
-- instant win là sun/coral pill dưới title.
+- huy hiệu tròn 76 px đè mép trên thẻ, viền navy 2.5;
+- Nhất: vương miện trên nền vàng, tia sáng xoay chậm phía sau, pháo giấy rơi khắp màn;
+- Nhì/Ba: số hạng trên nền bạc/đồng; Bét: số hạng trên nền coral;
+- người xem hoặc không rõ hạng: vương miện, tiêu đề "Kết quả ván";
+- dòng nhỏ "KẾT QUẢ VÁN" teal, giãn chữ;
+- tiêu đề "Bạn về Nhất!" / "Bạn về Nhì" / "Bạn về Bét" 30 px (Bét màu coral);
+- câu phụ: động viên theo hạng, hoặc lý do kết thúc (mất kết nối / có người rời bàn);
+- tới trắng: sun pill thay câu phụ.
 
 ### 9.3 Ranking row
 
-- min-height 58 px;
-- border navy 1.5 px;
-- radius 14;
-- cream.50 fill;
-- grid `32px 40px minmax(0,1fr) auto`;
-- gap 8 px;
-- place số 18 px weight 800;
-- avatar 36 px;
-- name ellipsis;
-- badge kết quả live.
+- min-height 56 px, radius 16, nền cream.100, viền navy 16%;
+- grid `30px 40px minmax(0,1fr) auto`, gap 10 (rộng < 380: `26px 36px`, gap 8);
+- huy chương số hạng 30 px: vàng, bạc, đồng; hạng Bét viền coral;
+- tên ellipsis + nhãn hạng nhỏ (Nhất/Nhì/Ba/Bét) bên dưới;
+- pill "+N EXP" bên phải khi server gửi `expGains`;
+- hàng Nhất nền vàng viền navy; hàng của mình nền aqua viền teal;
+- các hàng trượt lên lần lượt cách nhau 80 ms.
 
 Variants:
 

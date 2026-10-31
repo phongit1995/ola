@@ -79,6 +79,19 @@ function table(players: PlayerInfo[]) {
   };
 }
 
+function resultScene(order: string[], extra: { instantWin?: string; reason?: string } = {}) {
+  return {
+    ...table(PLAYERS_4),
+    result: {
+      rankings: order.map((userId, i) => ({ userId, place: i + 1 })),
+      expGains: order.map((userId, i) => ({ userId, exp: [65, 40, 30, 25][i] ?? 25 })),
+      winnerId: order[0],
+      reason: extra.reason ?? 'win',
+      instantWin: extra.instantWin,
+    },
+  };
+}
+
 const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getState>>> = {
   connecting: () => ({ phase: 'connecting' }),
   lobby: () => ({ phase: 'lobby', rooms: ROOMS }),
@@ -113,44 +126,13 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   'confirm-exit': () => ({ ...table(PLAYERS_4), confirmExit: true }),
   notice: () => ({ phase: 'lobby', rooms: ROOMS, notice: 'Bàn đã bị chủ bàn đóng' }),
   toast: () => ({ phase: 'lobby', rooms: ROOMS, toast: 'Bộ bài không hợp lệ' }),
-  result: () => ({
-    ...table(PLAYERS_4),
-    finishOrder: [2, 0, 1, 3],
-    result: {
-      rankings: [
-        { userId: 'u-3', place: 1 },
-        { userId: ME.id, place: 2 },
-        { userId: 'u-2', place: 3 },
-        { userId: 'u-4', place: 4 },
-      ],
-      winnerId: 'u-3',
-      reason: 'win',
-    },
-  }),
-  'result-room': () => ({
-    ...table(PLAYERS_4),
-    room: room(0, 4, 4),
-    finishOrder: [2, 0, 1, 3],
-    result: {
-      rankings: [
-        { userId: 'u-3', place: 1 },
-        { userId: ME.id, place: 2 },
-        { userId: 'u-2', place: 3 },
-        { userId: 'u-4', place: 4 },
-      ],
-      winnerId: 'u-3',
-      reason: 'win',
-    },
-  }),
-  'result-instant': () => ({
-    ...table(PLAYERS_4),
-    result: {
-      rankings: [{ userId: ME.id, place: 1 }],
-      winnerId: ME.id,
-      reason: 'win',
-      instantWin: 'fourTwos',
-    },
-  }),
+  result: () => resultScene(['u-3', ME.id, 'u-2', 'u-4']),
+  'result-win': () => resultScene([ME.id, 'u-3', 'u-2', 'u-4']),
+  'result-lose': () => resultScene(['u-2', 'u-3', 'u-4', ME.id]),
+  'result-2p': () => ({ ...resultScene(['u-2', ME.id]), players: PLAYERS_4.slice(0, 2) }),
+  'result-room': () => ({ ...resultScene(['u-3', ME.id, 'u-2', 'u-4']), room: room(0, 4, 4) }),
+  'result-instant': () => resultScene([ME.id, 'u-2', 'u-3', 'u-4'], { instantWin: 'fourTwos' }),
+  'result-forfeit': () => resultScene(['u-3', 'u-2', ME.id, 'u-4'], { reason: 'forfeit' }),
 };
 
 const screen = new URLSearchParams(location.search).get('screen') ?? 'lobby';
