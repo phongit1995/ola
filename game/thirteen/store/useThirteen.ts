@@ -16,6 +16,7 @@ import { GAME_ID } from '../logic/constants.gen';
 import { sortHand } from '../logic/cards';
 import { detectCombo, type Combo } from '../logic/combos';
 import { canBeat } from '../logic/beats';
+import { hintPlays } from '../logic/hints';
 import { RecentMatchIds } from '../logic/recent-match-ids';
 import { decodeServerState, type ServerMove, type ServerPlay, type ServerState, type ServerStep } from '../logic/server-types';
 import { errorText, roomClosedText } from '../helpers/errorText';
@@ -95,6 +96,7 @@ interface ThirteenStore {
   kickMember(userId: string): void;
   toggleCard(card: number): void;
   clearSelection(): void;
+  suggestPlay(): void;
   playSelected(): void;
   passTurn(): void;
   sendChat(text: string): void;
@@ -523,6 +525,15 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     },
     clearSelection() {
       set({ selected: [] });
+    },
+    suggestPlay() {
+      const s = get();
+      if (s.animating || s.movePending || s.turn !== s.you || s.result) return;
+      const hints = hintPlays(s.hand, s.table ? detectCombo(s.table.cards) : null, s.require3s);
+      if (hints.length === 0) return;
+      const selected = [...s.selected].sort((a, b) => a - b).join(',');
+      const current = hints.findIndex((play) => play.join(',') === selected);
+      set({ selected: hints[(current + 1) % hints.length] });
     },
     selectedCombo() {
       const selected = get().selected;

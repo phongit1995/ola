@@ -3,6 +3,7 @@ import { cardAsset, CARD_BACK, REACTION_ASSETS, type ReactionKey } from '../../a
 import backIcon from '../../assets/icons/ic-back.svg';
 import chatIcon from '../../assets/icons/ic-chat.svg';
 import closeIcon from '../../assets/icons/ic-close.svg';
+import hintIcon from '../../assets/icons/ic-hint.svg';
 import sendIcon from '../../assets/icons/ic-send.svg';
 import wifiOffIcon from '../../assets/icons/ic-wifi-off.svg';
 import chopRays from '../../assets/fx/fx-chop-rays.svg';
@@ -14,6 +15,8 @@ import { atName } from '../../helpers/name';
 import { TURN_SECONDS } from '../../logic/constants.gen';
 import { cardLabel } from '../../logic/cards';
 import { comboLabel } from '../../logic/beats';
+import { detectCombo } from '../../logic/combos';
+import { hintPlays } from '../../logic/hints';
 import { seatSlots, placeLabel } from '../../helpers/seats';
 import { useThirteen, type TableEvent } from '../../store/useThirteen';
 import { QUICK_CHATS } from './constants';
@@ -344,6 +347,44 @@ function HandFan({ handRects }: { handRects: RefObject<HandRects> }) {
   );
 }
 
+function HintButton() {
+  const hand = useThirteen((s) => s.hand);
+  const table = useThirteen((s) => s.table);
+  const require3s = useThirteen((s) => s.require3s);
+  const turn = useThirteen((s) => s.turn);
+  const you = useThirteen((s) => s.you);
+  const animating = useThirteen((s) => s.animating);
+  const movePending = useThirteen((s) => s.movePending);
+  const over = useThirteen((s) => s.result != null);
+  const selected = useThirteen((s) => s.selected);
+  const suggestPlay = useThirteen((s) => s.suggestPlay);
+  const myTurn = turn === you && !animating && !movePending && !over;
+  const hints = useMemo(
+    () => (myTurn ? hintPlays(hand, table ? detectCombo(table.cards) : null, require3s) : []),
+    [myTurn, hand, table, require3s],
+  );
+  const available = hints.length > 0;
+  const picked = [...selected].sort((a, b) => a - b).join(',');
+  const step = hints.findIndex((play) => play.join(',') === picked);
+  return (
+    <button
+      type="button"
+      className={'tl-hint-btn' + (available ? ' lit' : '')}
+      disabled={!available}
+      onClick={suggestPlay}
+      aria-label="Gợi ý nước đi"
+    >
+      <img src={hintIcon} alt="" />
+      <span>Gợi ý</span>
+      {hints.length > 1 && step >= 0 && (
+        <span key={step} className="tl-hint-step">
+          {step + 1}/{hints.length}
+        </span>
+      )}
+    </button>
+  );
+}
+
 function ActionBar() {
   const you = useThirteen((s) => s.you);
   const turn = useThirteen((s) => s.turn);
@@ -541,6 +582,7 @@ export function TableScreen() {
             {myPlace >= 0 && <span className="tl-badge tl-badge-gold">{placeLabel(myPlace + 1, players.length)}</span>}
             {(passed[you] || passFxSeat === you) && <span className="tl-pass-chip">Bỏ lượt</span>}
           </div>
+          <HintButton />
         </div>
         <HandFan handRects={handRects} />
         <ActionBar />

@@ -178,6 +178,8 @@ Position modifiers `.top`, `.left`, `.right`, `.active`, `.urgent`, `.quit` rema
 | `tl-my-row` | layout | local identity anchored above hand |
 | `tl-my-info` | layout | name/place/pass stack |
 | `tl-my-name` | CSS/live | local cream nameplate “Bạn” |
+| `tl-hint-btn` | CSS/live + icon `ic-hint.svg` | nút "Gợi ý" ở góc phải hàng của mình: sáng vàng nhấp nháy khi tới lượt mình và có nước đi (`hintPlays`), mờ khi không; bấm chọn sẵn bộ bài gợi ý, bấm tiếp đổi sang gợi ý kế |
+| `tl-hint-step` | CSS/live | chấm xanh navy góc trên nút "Gợi ý" ghi thứ tự gợi ý đang chọn (`2/8`), chỉ hiện khi có từ 2 gợi ý trở lên |
 | `tl-hand` | layout | hàng bài cong nhẹ (`handArc`: nghiêng tối đa 4°, hai đầu hạ 6% chiều cao lá), cỡ lá theo bề ngang (`handLayout`), chừa chỗ cho lá nhô lên |
 | `tl-hand-card` | existing + CSS | card face + bóng mảnh đổ sang lá bên dưới; lá chọn nhô lên 24% chiều cao, bóng đậm hơn, không viền |
 | `tl-action-bar` | layout | transparent sticky button row |
@@ -286,7 +288,7 @@ tl-away-badge tl-badge tl-badge-gold tl-badge-green tl-badge-red
 tl-btn tl-btn-disabled tl-btn-ghost tl-btn-gold tl-btn-sm tl-btn-wide
 tl-capacity-btn tl-capacity-row tl-chat-hint tl-chat-input-row tl-count-badge
 tl-chat-btn tl-chat-bubble tl-chat-line tl-chat-overlay tl-chat-panel tl-crown tl-disconnect-overlay
-tl-felt tl-field-label tl-finish-banner tl-hand tl-hand-card tl-icon-btn tl-input
+tl-felt tl-field-label tl-finish-banner tl-hand tl-hand-card tl-hint-btn tl-hint-step tl-icon-btn tl-input
 tl-ken-amount tl-ken-coin tl-ken-pill tl-kick-btn tl-loading tl-loading-sub
 tl-loading-title tl-lobby tl-lobby-actions tl-lock tl-logo tl-logo-main
 tl-logo-sub tl-modal tl-modal-actions tl-modal-backdrop

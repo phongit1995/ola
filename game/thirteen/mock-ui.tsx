@@ -93,6 +93,7 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   'table-2p': () => table(PLAYERS_4.slice(0, 2)),
   'table-3p': () => table(PLAYERS_4.slice(0, 3)),
   'table-selected': () => ({ ...table(PLAYERS_4), hand: MY_HAND.map((card) => (card === 27 ? 23 : card)), selected: [22, 23] }),
+  'table-beat-single': () => ({ ...table(PLAYERS_4), table: { cards: [14], by: 2 } }),
   'table-turn': () => ({ ...table(PLAYERS_4), turn: 1 }),
   'table-urgent': () => ({ ...table(PLAYERS_4), turn: 1, deadlineAt: performance.now() + 4_500 }),
   'table-urgent-me': () => ({ ...table(PLAYERS_4), deadlineAt: performance.now() + 4_500 }),

@@ -2841,6 +2841,84 @@ button {
   z-index: 12;
 }
 
+.tl-hint-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+  margin-left: auto;
+  padding: 4px 10px 4px 7px;
+  border: 1.5px solid rgba(13, 59, 92, 0.32);
+  border-radius: 999px;
+  background: var(--s2-cream-100);
+  color: rgba(8, 46, 74, 0.45);
+  font: 800 12px/1 var(--body);
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, transform 100ms ease;
+}
+
+.tl-hint-btn img {
+  width: 15px;
+  height: 15px;
+  opacity: 0.4;
+  transition: opacity 200ms ease;
+}
+
+.tl-hint-btn:disabled {
+  cursor: default;
+}
+
+.tl-hint-btn.lit {
+  border: 2px solid var(--s2-navy-800);
+  background: linear-gradient(180deg, var(--s2-sun-300), var(--s2-sun-400));
+  color: var(--s2-navy-900);
+  box-shadow: var(--s2-shadow-control);
+  animation: tl-hint-glow 1600ms ease-in-out infinite;
+}
+
+.tl-hint-btn.lit img {
+  opacity: 1;
+  animation: tl-hint-bulb 1600ms ease-in-out infinite;
+}
+
+.tl-hint-btn.lit:active {
+  transform: translateY(2px);
+}
+
+.tl-hint-step {
+  position: absolute;
+  top: -9px;
+  right: -6px;
+  min-width: 26px;
+  padding: 2px 5px;
+  border: 1.5px solid var(--s2-cream-100);
+  border-radius: 999px;
+  background: var(--s2-navy-800);
+  color: var(--s2-cream-100);
+  font: 800 10px/1.1 var(--body);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  animation: tl-hint-step 220ms ease-out;
+}
+
+@keyframes tl-hint-step {
+  from {
+    transform: scale(0.6);
+  }
+}
+
+@keyframes tl-hint-glow {
+  50% {
+    box-shadow: var(--s2-shadow-control), 0 0 0 4px rgba(255, 200, 61, 0.4), 0 0 12px rgba(255, 200, 61, 0.55);
+  }
+}
+
+@keyframes tl-hint-bulb {
+  50% {
+    transform: scale(1.12) rotate(-6deg);
+  }
+}
+
 .tl-table-screen .tl-my-info {
   gap: 3px;
 }
@@ -3408,6 +3486,9 @@ button {
   .tl-chop-rays,
   .tl-reaction-balloon,
   .tl-chat-bubble,
+  .tl-hint-btn.lit,
+  .tl-hint-btn.lit img,
+  .tl-hint-step,
   .tl-unread-badge,
   .tl-chat-panel,
   .tl-reaction-pop,
