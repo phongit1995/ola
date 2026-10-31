@@ -126,14 +126,13 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
         if (!ok) push('error', t('chat.loadFriendsError'));
       });
     }
-    store.loadRequests();
+    void store.loadRequests();
   }, [push, t]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     const store = useFriendsStore.getState();
-    store.loadRequests(true);
-    void store.loadFriends().then((ok) => {
+    void Promise.all([store.loadFriends(), store.loadRequests(true)]).then(([ok]) => {
       if (!ok) push('error', t('chat.loadFriendsError'));
       setRefreshing(false);
     });

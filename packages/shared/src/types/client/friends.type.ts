@@ -9,7 +9,7 @@ export interface FriendsState {
   requestsLoading: boolean;
   loadFriends: () => Promise<boolean>;
   ensureFriends: () => void;
-  loadRequests: (force?: boolean) => void;
+  loadRequests: (force?: boolean) => Promise<void>;
   removeRequest: (id: string) => void;
   reset: () => void;
 }
