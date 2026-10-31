@@ -9,6 +9,8 @@ import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { ChatMessageData, PlayerInfo, RoomInfo, RoomStateData } from '../src/sdk';
 import { App } from './App';
+import type { BotLevel } from './logic/bot';
+import { BOT_VIP_TYPES } from './helpers/practice';
 import { CHAT_BUBBLE_MS, receiveMatchChat } from './store/matchChat';
 import { useThirteen } from './store/useThirteen';
 
@@ -96,8 +98,9 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   connecting: () => ({ phase: 'connecting' }),
   lobby: () => ({ phase: 'lobby', rooms: ROOMS }),
   'lobby-empty': () => ({ phase: 'lobby', rooms: [] }),
-  'lobby-queueing': () => ({ phase: 'lobby', rooms: ROOMS, queueing: true }),
   'create-room': () => ({ phase: 'lobby', rooms: ROOMS }),
+  'practice-setup': () => ({ phase: 'lobby', rooms: ROOMS }),
+  practice: () => ({ phase: 'lobby', rooms: ROOMS }),
   'password-room': () => ({ phase: 'lobby', rooms: ROOMS }),
   'room-host': () => ({ phase: 'room', room: room(0, 4, 3), roomChat: ROOM_CHAT }),
   'room-guest': () => ({ phase: 'room', room: room(1, 4, 4), roomChat: ROOM_CHAT }),
@@ -213,20 +216,33 @@ function mockChat(seat: number, text: string): void {
   );
 }
 
-Object.assign(window, { mockPlay, mockPass, mockDeadline, mockReact, mockChat });
+Object.assign(window, { mockPlay, mockPass, mockDeadline, mockReact, mockChat, useThirteen });
+
+// ?screen=practice chơi thật với máy (không cần server); ?bots=easy,hard chọn số máy và mức.
+function practiceBots() {
+  const levels = (new URLSearchParams(location.search).get('bots') ?? 'normal,normal,normal').split(',') as BotLevel[];
+  return levels.slice(0, 3).map((level, i) => ({ id: `bot-${i + 1}`, vipType: BOT_VIP_TYPES[i], level }));
+}
 
 function MockApp() {
   useEffect(() => {
-    if (screen !== 'create-room' && screen !== 'password-room') return;
-    const timer = window.setTimeout(() => {
-      if (screen === 'create-room') {
-        document.querySelector<HTMLButtonElement>('.tl-secondary-btn')?.click();
-        return;
-      }
-      const roomButtons = document.querySelectorAll<HTMLButtonElement>('.tl-room-row > .tl-btn');
-      roomButtons[1]?.click();
-    });
-    return () => window.clearTimeout(timer);
+    if (screen === 'practice') {
+      useThirteen.getState().startPractice(practiceBots());
+      return;
+    }
+    if (screen !== 'create-room' && screen !== 'password-room' && screen !== 'practice-setup') return;
+    const timer = window.setInterval(() => {
+      const target =
+        screen === 'create-room'
+          ? document.querySelector<HTMLButtonElement>('.tl-play-now')
+          : screen === 'practice-setup'
+            ? document.querySelector<HTMLButtonElement>('.tl-practice-btn')
+            : document.querySelectorAll<HTMLButtonElement>('.tl-room-row > .tl-btn')[1];
+      if (!target || target.disabled) return;
+      target.click();
+      window.clearInterval(timer);
+    }, 100);
+    return () => window.clearInterval(timer);
   }, []);
 
   return <App />;

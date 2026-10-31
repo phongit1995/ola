@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { RoomInfo } from '../../../src/sdk';
 import backIcon from '../../assets/icons/ic-back.svg';
+import botIcon from '../../assets/icons/ic-bot.svg';
 import cardsEmptyIcon from '../../assets/icons/ic-cards-empty.svg';
 import checkIcon from '../../assets/icons/ic-check.svg';
 import lockIcon from '../../assets/icons/ic-lock.svg';
@@ -18,6 +19,7 @@ import {
   roomCreationError,
 } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
+import { PracticeSetupModal } from './PracticeSetupModal';
 
 function KenPill() {
   const user = useThirteen((s) => s.user);
@@ -196,13 +198,11 @@ function PasswordModal({ room, onClose }: { room: RoomInfo; onClose: () => void 
 export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
   const user = useThirteen((s) => s.user);
   const rooms = useThirteen((s) => s.rooms);
-  const queueing = useThirteen((s) => s.queueing);
-  const joinQueue = useThirteen((s) => s.joinQueue);
-  const leaveQueue = useThirteen((s) => s.leaveQueue);
   const refreshRooms = useThirteen((s) => s.refreshRooms);
   const joinRoom = useThirteen((s) => s.joinRoom);
   const requestExit = useThirteen((s) => s.requestExit);
   const [createOpen, setCreateOpen] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
   const [passwordRoom, setPasswordRoom] = useState<RoomInfo | null>(null);
 
   return (
@@ -217,17 +217,14 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
       <BrandMark />
 
       <div className="tl-lobby-actions">
-        <button
-          type="button"
-          className={'tl-play-now' + (queueing ? ' waiting' : '')}
-          disabled={!assetsReady}
-          onClick={() => (queueing ? leaveQueue() : joinQueue())}
-        >
-          <span className="tl-play-now-label">{queueing ? 'ĐANG TÌM BÀN...' : 'CHƠI NGAY'}</span>
-          <span className="tl-play-now-sub">{queueing ? 'Chạm để hủy tìm' : 'Tự động ghép bàn 4 người'}</span>
+        <button type="button" className="tl-play-now" onClick={() => setCreateOpen(true)}>
+          <span className="tl-play-now-label">TẠO BÀN</span>
+          <span className="tl-play-now-sub">Mời bạn bè, tự đặt cược</span>
         </button>
-        <button type="button" className="tl-secondary-btn" onClick={() => setCreateOpen(true)}>
-          + Tạo bàn riêng
+        <button type="button" className="tl-secondary-btn tl-practice-btn" disabled={!assetsReady} onClick={() => setPracticeOpen(true)}>
+          <img src={botIcon} alt="" />
+          <span>Tập luyện</span>
+          <small>Chơi với máy</small>
         </button>
       </div>
 
@@ -302,6 +299,7 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
       </div>
 
       {createOpen && <CreateRoomModal onClose={() => setCreateOpen(false)} />}
+      {practiceOpen && <PracticeSetupModal onClose={() => setPracticeOpen(false)} />}
       {passwordRoom && <PasswordModal room={passwordRoom} onClose={() => setPasswordRoom(null)} />}
     </div>
   );

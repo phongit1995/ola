@@ -7,7 +7,7 @@ Hai state production đã được chuyển sang Style 02 — Chiếu Bài Ngày
 - `connecting`: nền kem, ellipse chiếu aqua, ba lớp viền coral/cream/navy, brand live text và progress dot;
 - `lobby`: topbar kem, curve chuyển nền, CTA vàng, nút phụ kem, room list, empty state, modal tạo bàn, modal mật khẩu và confirm/notice khi đang ở lobby.
 
-Luật game, store, bridge, socket, ghép bàn và preload bộ bài không đổi. React vẫn render toàn bộ tên, số Ken, trạng thái, số ghế và label; không có text nào nằm trong ảnh.
+Luật game, store, bridge, socket và preload bộ bài không đổi. Ghép bàn tự động (“Chơi ngay”) đã bỏ khỏi client; sảnh có “Tạo bàn” và “Tập luyện” (xem [09-practice-mode.md](./09-practice-mode.md)). React vẫn render toàn bộ tên, số Ken, trạng thái, số ghế và label; không có text nào nằm trong ảnh.
 
 ## 2. Quyết định cắt asset
 
@@ -213,7 +213,7 @@ Visual QA dùng Vite game ở port 5174 và chụp đúng viewport 360 × 800, 3
 
 - loading;
 - lobby 0 phòng và 4+ phòng;
-- queueing;
+- modal Chơi với máy;
 - create room;
 - password room;
 - confirm/notice;

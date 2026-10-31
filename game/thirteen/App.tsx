@@ -19,6 +19,7 @@ export function App() {
   const notice = useThirteen((s) => s.notice);
   const toast = useThirteen((s) => s.toast);
   const confirmExit = useThirteen((s) => s.confirmExit);
+  const practice = useThirteen((s) => s.practice != null);
   const dismissNotice = useThirteen((s) => s.dismissNotice);
   const cancelExit = useThirteen((s) => s.cancelExit);
   const confirmExitNow = useThirteen((s) => s.confirmExitNow);
@@ -68,11 +69,13 @@ export function App() {
       {toast && <div className="tl-toast">{toast}</div>}
       {confirmExit && (
         <ConfirmModal
-          title="Rời ván đấu?"
+          title={phase === 'table' && practice ? 'Rời ván tập?' : 'Rời ván đấu?'}
           text={
-            phase === 'table' && !result
-              ? 'Rời ngay bây giờ bạn sẽ bị xử thua ván này. Vẫn muốn rời?'
-              : 'Bạn muốn thoát trò chơi?'
+            phase === 'table' && practice
+              ? 'Ván tập không tính điểm. Bạn muốn về sảnh?'
+              : phase === 'table' && !result
+                ? 'Rời ngay bây giờ bạn sẽ bị xử thua ván này. Vẫn muốn rời?'
+                : 'Bạn muốn thoát trò chơi?'
           }
           confirmLabel="Rời ván"
           cancelLabel="Ở lại"

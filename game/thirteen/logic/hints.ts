@@ -3,7 +3,7 @@ import { RANK_TWO, THREE_OF_SPADES } from './constants.gen';
 import { canBeat, isChop } from './beats';
 import { detectCombo, type Combo } from './combos';
 
-interface CandidatePlay {
+export interface CandidatePlay {
   cards: number[];
   combo: Combo;
 }
@@ -53,7 +53,7 @@ function candidateCards(hand: readonly number[]): number[][] {
   return out;
 }
 
-function validPlays(hand: readonly number[], prev: Combo | null, require3s: boolean): CandidatePlay[] {
+export function legalPlays(hand: readonly number[], prev: Combo | null, require3s: boolean): CandidatePlay[] {
   const plays: CandidatePlay[] = [];
   for (const cards of candidateCards(hand)) {
     if (require3s && !cards.includes(THREE_OF_SPADES)) continue;
@@ -64,11 +64,11 @@ function validPlays(hand: readonly number[], prev: Combo | null, require3s: bool
 }
 
 export function enumeratePlays(hand: readonly number[], prev: Combo | null, require3s = false): number[][] {
-  return validPlays(hand, prev, require3s).map((play) => play.cards);
+  return legalPlays(hand, prev, require3s).map((play) => play.cards);
 }
 
 export function hasAnyBeat(hand: readonly number[], prev: Combo | null, require3s = false): boolean {
-  return validPlays(hand, prev, require3s).length > 0;
+  return legalPlays(hand, prev, require3s).length > 0;
 }
 
 function lowestRank(cards: readonly number[]): number {
@@ -83,7 +83,7 @@ function hintShape(play: CandidatePlay, leading: boolean): string {
 }
 
 export function hintPlays(hand: readonly number[], prev: Combo | null, require3s = false): number[][] {
-  const plays = validPlays(hand, prev, require3s).sort((a, b) =>
+  const plays = legalPlays(hand, prev, require3s).sort((a, b) =>
     prev
       ? Number(isChop(a.combo, prev)) - Number(isChop(b.combo, prev)) ||
         a.combo.key - b.combo.key ||

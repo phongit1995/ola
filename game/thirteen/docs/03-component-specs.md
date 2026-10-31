@@ -523,6 +523,8 @@ Focus chuẩn:
 | `tl-ken-pill` | Balance Pill |
 | `tl-play-now` | Primary Sun Hero |
 | `tl-secondary-btn` | Secondary Cream Large |
+| `tl-practice-row` | Bot Setup Row |
+| `tl-practice-levels` | Level Segmented Control |
 | `tl-room-row` | Room Row |
 | `tl-btn-gold` | Primary Sun |
 | `tl-btn-ghost` | Secondary Cream |

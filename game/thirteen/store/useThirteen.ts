@@ -21,6 +21,8 @@ import { hintPlays } from '../logic/hints';
 import { RecentMatchIds } from '../logic/recent-match-ids';
 import { decodeServerState, type ServerMove, type ServerPlay, type ServerState, type ServerStep } from '../logic/server-types';
 import { errorText, roomClosedText } from '../helpers/errorText';
+import type { BotSetupItem } from '../helpers/practice';
+import { createPracticeSession } from '../practice';
 import { CHAT_BUBBLE_MS, receiveMatchChat, type SeatChatBubble } from './matchChat';
 
 export type Phase = 'connecting' | 'lobby' | 'room' | 'table';
@@ -48,7 +50,7 @@ export interface MatchResult {
 interface ThirteenStore {
   phase: Phase;
   user: UserInfoData | null;
-  queueing: boolean;
+  practice: BotSetupItem[] | null;
   rooms: RoomInfo[];
   room: RoomStateData | null;
   roomChat: ChatMessageData[];
@@ -87,8 +89,7 @@ interface ThirteenStore {
   confirmExit: boolean;
   init(): void;
   dispose(): void;
-  joinQueue(): void;
-  leaveQueue(): void;
+  startPractice(bots: BotSetupItem[]): void;
   refreshRooms(): void;
   createRoom(maxPlayers: number, password: string, bet: number): void;
   joinRoom(room: RoomInfo, password?: string): void;
@@ -129,6 +130,7 @@ const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout
 export const useThirteen = create<ThirteenStore>()((set, get) => {
   const refs = {
     session: null as GameSession<ServerState, ServerMove> | null,
+    practice: null as GameSession<ServerState, ServerMove> | null,
     unsubs: [] as Array<() => void>,
     replayChain: Promise.resolve(),
     replayEpoch: 0,
@@ -137,6 +139,14 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     leftMatchId: '',
     toastTimer: 0,
     disposed: false,
+  };
+
+  const matchSession = (): GameSession<ServerState, ServerMove> | null => refs.practice ?? refs.session;
+
+  const stopPractice = (): void => {
+    refs.practice?.disconnect();
+    refs.practice = null;
+    set({ practice: null });
   };
 
   const queueReplay = (fn: () => Promise<void>): void => {
@@ -262,7 +272,6 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       reactions: [],
       awaySeats: {},
       result: null,
-      queueing: false,
       selfDisconnected: false,
       tableEvent: null,
     });
@@ -315,20 +324,92 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         won: data.winnerId != null && data.winnerId === me,
       });
       bridge.attention({ reason: ARCADE_ATTENTION_REASON.GameOver });
-      if (myEntry) bridge.refreshUser();
+      if (myEntry && !get().practice) bridge.refreshUser();
     });
   };
 
-  const bindSession = (session: GameSession<ServerState, ServerMove>): void => {
+  const bindMatch = (source: GameSession<ServerState, ServerMove>): Array<() => void> => {
+    const active = (): boolean => source === matchSession();
+    return [
+      source.onMatchFound((data) => {
+        if (!active()) {
+          if (source !== refs.session) return;
+          stopPractice();
+          get().showToast('Bạn đang có ván thật, đã chuyển về bàn');
+        }
+        startMatch(data);
+      }),
+      source.onState((data) => {
+        if (active()) queueReplay(() => handleState(data));
+      }),
+      source.onMatchOver((data) => {
+        if (active()) handleMatchOver(data);
+      }),
+      source.onChat((data) => {
+        if (data.roomId) {
+          if (source === refs.session) set((s) => ({ roomChat: [...s.roomChat.slice(-49), data] }));
+          return;
+        }
+        if (!active() || (data.matchId && data.matchId !== get().matchId)) return;
+        const key = Date.now() + Math.random();
+        set((s) => receiveMatchChat(s, data, key));
+        window.setTimeout(() => {
+          set((s) => ({ chatBubbles: s.chatBubbles.filter((bubble) => bubble.key !== key) }));
+        }, CHAT_BUBBLE_MS);
+        if (data.userId !== get().user?.id) bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
+      }),
+      source.onReaction((data) => {
+        if (!active()) return;
+        const seat = get().players.findIndex((p) => p.id === data.userId);
+        if (seat < 0) return;
+        const key = Date.now() + Math.random();
+        set((s) => ({ reactions: [...s.reactions.slice(-5), { seat, type: data.type, key }] }));
+        window.setTimeout(() => {
+          set((s) => ({ reactions: s.reactions.filter((r) => r.key !== key) }));
+        }, 2600);
+      }),
+      source.onOpponentDisconnected((data) => {
+        if (!active()) return;
+        const seat = data.userId ? get().players.findIndex((p) => p.id === data.userId) : -1;
+        if (seat < 0) return;
+        set((s) => ({ awaySeats: { ...s.awaySeats, [seat]: toPerfDeadline(data.graceDeadline) } }));
+        bridge.attention({ reason: ARCADE_ATTENTION_REASON.OpponentDisconnected });
+      }),
+      source.onOpponentReconnected((data) => {
+        if (!active()) return;
+        const seat = data?.userId ? get().players.findIndex((p) => p.id === data.userId) : -1;
+        set((s) => {
+          const awaySeats = { ...s.awaySeats };
+          if (seat >= 0) delete awaySeats[seat];
+          else Object.keys(awaySeats).forEach((k) => delete awaySeats[Number(k)]);
+          return { awaySeats };
+        });
+        const turn = data?.turn;
+        const deadline = data?.deadline;
+        if (turn == null || deadline == null) return;
+        const epoch = refs.replayEpoch;
+        queueReplay(async () => {
+          if (refs.replayEpoch !== epoch || get().phase !== 'table' || turn !== get().turn) return;
+          set({ deadlineAt: toPerfDeadline(deadline) });
+        });
+      }),
+      source.onError((data) => {
+        if (!active()) return;
+        set({ movePending: false });
+        get().showToast(errorText(data.code));
+      }),
+    ];
+  };
+
+  const bindLobby = (session: GameSession<ServerState, ServerMove>): void => {
     refs.unsubs.push(
       session.onUserInfo((data) => {
         set({ user: data });
         if (get().phase === 'connecting') {
-          set({ phase: 'table' === get().phase ? 'table' : 'lobby' });
+          set({ phase: 'lobby' });
           session.listRooms();
         }
       }),
-      session.onQueueWaiting(() => set({ queueing: true })),
       session.onRoomList((data) => set({ rooms: data.rooms })),
       session.onRoomUpsert((data) => {
         set((s) => {
@@ -337,7 +418,6 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         });
       }),
       session.onRoomRemoved((data) => set((s) => ({ rooms: s.rooms.filter((room) => room.id !== data.roomId) }))),
-      session.onRoomWaiting(() => set({ queueing: false })),
       session.onRoomState((data) => {
         set({ room: data, phase: get().phase === 'table' ? 'table' : 'room' });
       }),
@@ -359,59 +439,9 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         bridge.attention({ reason: ARCADE_ATTENTION_REASON.RoomKicked });
         session.listRooms();
       }),
-      session.onMatchFound((data) => startMatch(data)),
-      session.onState((data) => queueReplay(() => handleState(data))),
-      session.onMatchOver((data) => handleMatchOver(data)),
-      session.onChat((data) => {
-        if (data.roomId) {
-          set((s) => ({ roomChat: [...s.roomChat.slice(-49), data] }));
-        } else {
-          const key = Date.now() + Math.random();
-          set((s) => receiveMatchChat(s, data, key));
-          window.setTimeout(() => {
-            set((s) => ({ chatBubbles: s.chatBubbles.filter((bubble) => bubble.key !== key) }));
-          }, CHAT_BUBBLE_MS);
-          if (data.userId !== get().user?.id) bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
-        }
-      }),
-      session.onReaction((data) => {
-        const seat = get().players.findIndex((p) => p.id === data.userId);
-        if (seat < 0) return;
-        const key = Date.now() + Math.random();
-        set((s) => ({ reactions: [...s.reactions.slice(-5), { seat, type: data.type, key }] }));
-        window.setTimeout(() => {
-          set((s) => ({ reactions: s.reactions.filter((r) => r.key !== key) }));
-        }, 2600);
-      }),
-      session.onOpponentDisconnected((data) => {
-        const seat = data.userId ? get().players.findIndex((p) => p.id === data.userId) : -1;
-        if (seat < 0) return;
-        set((s) => ({ awaySeats: { ...s.awaySeats, [seat]: toPerfDeadline(data.graceDeadline) } }));
-        bridge.attention({ reason: ARCADE_ATTENTION_REASON.OpponentDisconnected });
-      }),
-      session.onOpponentReconnected((data) => {
-        const seat = data?.userId ? get().players.findIndex((p) => p.id === data.userId) : -1;
-        set((s) => {
-          const awaySeats = { ...s.awaySeats };
-          if (seat >= 0) delete awaySeats[seat];
-          else Object.keys(awaySeats).forEach((k) => delete awaySeats[Number(k)]);
-          return { awaySeats };
-        });
-        const turn = data?.turn;
-        const deadline = data?.deadline;
-        if (turn == null || deadline == null) return;
-        const epoch = refs.replayEpoch;
-        queueReplay(async () => {
-          if (refs.replayEpoch !== epoch || get().phase !== 'table' || turn !== get().turn) return;
-          set({ deadlineAt: toPerfDeadline(deadline) });
-        });
-      }),
-      session.onError((data) => {
-        set({ movePending: false });
-        get().showToast(errorText(data.code));
-      }),
+      ...bindMatch(session),
       session.onConnectionChange((connected) => {
-        set({ selfDisconnected: !connected && get().phase === 'table' });
+        set({ selfDisconnected: !connected && get().phase === 'table' && !get().practice });
         if (connected && get().phase === 'connecting') session.listRooms();
       }),
       session.onConnectionError(() => {
@@ -423,7 +453,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
   return {
     phase: 'connecting',
     user: null,
-    queueing: false,
+    practice: null,
     rooms: [],
     room: null,
     roomChat: [],
@@ -470,7 +500,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
             return;
           }
           refs.session = session;
-          bindSession(session);
+          bindLobby(session);
         })
         .catch(() => {
           set({ notice: 'Không thể đăng nhập vào trò chơi. Hãy mở lại từ ứng dụng Ola.' });
@@ -481,17 +511,21 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       refs.disposed = true;
       refs.unsubs.forEach((off) => off());
       refs.unsubs = [];
+      refs.practice?.disconnect();
+      refs.practice = null;
       refs.session?.disconnect();
       refs.session = null;
     },
 
-    joinQueue() {
-      set({ queueing: true });
-      refs.session?.joinQueue();
-    },
-    leaveQueue() {
-      set({ queueing: false });
-      refs.session?.leaveQueue();
+    startPractice(bots) {
+      const user = get().user;
+      if (!user || bots.length === 0) return;
+      refs.practice?.disconnect();
+      const practice = createPracticeSession({ user: { id: user.id, username: user.username, vipType: user.vipType }, bots });
+      refs.practice = practice;
+      bindMatch(practice);
+      set({ practice: bots, roomOwnerId: '', room: null, roomChat: [] });
+      practice.joinQueue();
     },
     refreshRooms() {
       refs.session?.listRooms();
@@ -554,20 +588,22 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     },
     playSelected() {
       const s = get();
-      if (!get().canPlaySelected() || !refs.session) return;
+      const session = matchSession();
+      if (!get().canPlaySelected() || !session) return;
       set({ movePending: true, selected: [] });
-      refs.session.sendMove(s.matchId, { type: 'play', cards: [...s.selected] });
+      session.sendMove(s.matchId, { type: 'play', cards: [...s.selected] });
     },
     passTurn() {
       const s = get();
-      if (s.animating || s.movePending || s.turn !== s.you || !s.table || !refs.session) return;
+      const session = matchSession();
+      if (s.animating || s.movePending || s.turn !== s.you || !s.table || !session) return;
       set({ movePending: true, selected: [] });
-      refs.session.sendMove(s.matchId, { type: 'pass' });
+      session.sendMove(s.matchId, { type: 'pass' });
     },
 
     sendChat(text) {
       const trimmed = text.trim();
-      if (trimmed && get().matchId) refs.session?.sendChat(get().matchId, trimmed);
+      if (trimmed && get().matchId) matchSession()?.sendChat(get().matchId, trimmed);
     },
     sendRoomChatText(text) {
       const trimmed = text.trim();
@@ -575,7 +611,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       if (trimmed && roomId) refs.session?.sendRoomChat(roomId, trimmed);
     },
     sendReaction(type) {
-      if (get().matchId) refs.session?.sendReaction(get().matchId, type as never);
+      if (get().matchId) matchSession()?.sendReaction(get().matchId, type as never);
     },
     setChatOpen(open) {
       set(open ? { chatOpen: true, chatUnread: 0 } : { chatOpen: false });
@@ -590,6 +626,14 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     confirmExitNow() {
       const s = get();
       set({ confirmExit: false });
+      if (s.phase === 'table' && s.practice) {
+        refs.practice?.forfeit(s.matchId);
+        stopPractice();
+        refs.replayEpoch += 1;
+        set({ phase: 'lobby', matchId: '', result: null, room: null, selected: [], matchChat: [], chatOpen: false, chatUnread: 0, chatBubbles: [] });
+        refs.session?.listRooms();
+        return;
+      }
       if (s.phase === 'table' && s.matchId && !s.result) {
         refs.leftMatchId = s.matchId;
         refs.session?.forfeit(s.matchId, true);
@@ -602,6 +646,18 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     },
 
     closeResult(stayInRoom) {
+      if (get().practice) {
+        refs.replayEpoch += 1;
+        set({ result: null, matchId: '', selected: [], chatOpen: false, chatUnread: 0, chatBubbles: [] });
+        if (stayInRoom && refs.practice) {
+          refs.practice.joinQueue();
+          return;
+        }
+        stopPractice();
+        set({ phase: 'lobby', matchChat: [] });
+        refs.session?.listRooms();
+        return;
+      }
       const roomId = get().room?.roomId;
       refs.replayEpoch += 1;
       set({

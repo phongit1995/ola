@@ -424,7 +424,7 @@ Fallback:
 - [ ] logo/curve không overlap;
 - [ ] CTA 72/52 px;
 - [ ] room 0/1/n;
-- [ ] queueing;
+- [ ] Tạo bàn / Tập luyện + modal Chơi với máy;
 - [ ] locked/playing/full;
 - [ ] refresh focus/loading;
 - [ ] scroll bottom safe.

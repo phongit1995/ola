@@ -73,6 +73,7 @@ export function ResultScreen() {
   const players = useThirteen((s) => s.players);
   const user = useThirteen((s) => s.user);
   const room = useThirteen((s) => s.room);
+  const practice = useThirteen((s) => s.practice != null);
   const closeResult = useThirteen((s) => s.closeResult);
 
   if (!result) return null;
@@ -110,7 +111,7 @@ export function ResultScreen() {
           </span>
         </div>
         <div className="tl-result-head">
-          <span className="tl-result-kicker">Kết quả ván</span>
+          <span className="tl-result-kicker">{practice ? 'Ván tập' : 'Kết quả ván'}</span>
           <h2 id="tl-result-title" className="tl-result-title">
             {title}
           </h2>
@@ -147,10 +148,10 @@ export function ResultScreen() {
         </ol>
         <div className="tl-modal-actions">
           <button type="button" className="tl-btn tl-btn-ghost" onClick={() => closeResult(false)}>
-            Rời bàn
+            {practice ? 'Về sảnh' : 'Rời bàn'}
           </button>
           <button type="button" className="tl-btn tl-btn-gold" onClick={() => closeResult(true)}>
-            {room ? 'Chơi tiếp' : 'Về sảnh'}
+            {practice ? 'Chơi lại' : room ? 'Chơi tiếp' : 'Về sảnh'}
           </button>
         </div>
       </div>

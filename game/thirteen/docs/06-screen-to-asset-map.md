@@ -59,8 +59,8 @@ tl-lobby
     tl-ken-pill
   tl-logo
   tl-lobby-actions
-    tl-play-now
-    tl-secondary-btn
+    tl-play-now            (TẠO BÀN)
+    tl-secondary-btn tl-practice-btn   (Tập luyện)
   tl-room-list-header
   tl-room-list
     tl-room-empty | tl-room-row...
@@ -77,10 +77,20 @@ tl-lobby
 | `tl-logo-main` | live text | display.xl navy |
 | `tl-logo-sub` | live text + SVG decor | coral spaced text; optional SU-01..04 |
 | `tl-lobby-actions` | layout | vertical stack, 14 px gap |
-| `tl-play-now` | CSS component | Primary Sun Hero |
+| `tl-play-now` | CSS component | Primary Sun Hero, nút “TẠO BÀN” |
 | `tl-play-now-label` | live text | title.lg navy |
 | `tl-play-now-sub` | live text | body.sm navy 86% |
 | `tl-secondary-btn` | CSS component | Secondary Cream Large |
+| `tl-practice-btn` | CSS + icon `ic-bot.svg` | nút “Tập luyện”: icon máy 26 px, chữ, chip aqua “Chơi với máy”; disabled tới khi preload bộ bài |
+| `tl-practice-modal` | CSS component | modal “Chơi với máy” trên khung `tl-lobby-modal`, gap 8, không có vạch accent |
+| `tl-practice-head` / `tl-practice-emblem` / `tl-practice-sub` | CSS + icon `ic-bot.svg` | huy hiệu tròn 56 px aqua→teal nảy vào, tiêu đề, dòng phụ 13 px |
+| `tl-practice-list-head` / `tl-practice-count` | layout + live | “Đối thủ N/3” trái, nút “+ Thêm máy” phải |
+| `tl-practice-add` | CSS + icon `ic-plus.svg` | nút viên thuốc cao 28 px viền navy; mờ khi đủ 3 máy |
+| `tl-practice-list` / `tl-practice-row` | layout + CSS | hàng máy `34px 1fr 28px`, cream.100, radius 14, vạch 4 px trái và viền avatar theo màu mức (`data-level` easy aqua / normal sun / hard coral), trượt vào khi thêm |
+| `tl-practice-who` / `tl-practice-label` / `tl-practice-name` / `tl-practice-hint` | layout + live | tên “Máy N” và mô tả mức (Đánh bừa / Giữ bài / Nhớ bài) trái, bộ chọn mức phải; dưới 360 px xếp dọc, ẩn mô tả |
+| `tl-practice-levels` / `tl-practice-level` | CSS component | radiogroup viên thuốc cao 26 px, chữ 11 px; ô `.active` tô màu nhạt của mức, viền màu mức |
+| `tl-practice-remove` | CSS + icon `ic-user-minus.svg` | nút xoá tròn 28 px viền coral, xám khi còn 1 máy |
+| `tl-practice-rules` | CSS + live | chip luật canh giữa: số người (aqua), 30 giây/lượt, không cược, không cộng EXP |
 | `tl-room-list-header` | layout/text | title left, count teal, refresh right |
 | `tl-room-list` | layout | scroll column, 10–12 px gap, no outer frame |
 | `tl-room-empty` | live + SVG | IC-14 and centered empty copy |
@@ -302,7 +312,10 @@ tl-loading-title tl-lobby tl-lobby-actions tl-lock tl-logo tl-logo-main
 tl-logo-sub tl-modal tl-modal-actions tl-modal-backdrop
 tl-modal-text tl-modal-title tl-my-info tl-my-name tl-my-row tl-opponent
 tl-opponent-name tl-pass-chip tl-playing-badge tl-play-now tl-play-now-label
-tl-play-now-sub tl-quick-chip tl-quick-row tl-reaction-balloon tl-reaction-btn tl-reaction-pop tl-reaction-row tl-unread-badge
+tl-play-now-sub tl-practice-add tl-practice-btn tl-practice-count tl-practice-emblem tl-practice-head
+tl-practice-hint tl-practice-label tl-practice-level tl-practice-levels tl-practice-list tl-practice-list-head
+tl-practice-modal tl-practice-name tl-practice-remove tl-practice-row tl-practice-rules tl-practice-sub
+tl-practice-who tl-quick-chip tl-quick-row tl-reaction-balloon tl-reaction-btn tl-reaction-pop tl-reaction-row tl-unread-badge
 tl-result-backdrop tl-result-card tl-result-confetti tl-result-emblem tl-result-emblem-disc
 tl-result-empty tl-result-exp tl-result-head tl-result-instant tl-result-kicker tl-result-label
 tl-result-medal tl-result-name tl-result-rays tl-result-row tl-result-rows tl-result-subtitle

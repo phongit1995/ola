@@ -130,7 +130,9 @@ Container:
 - margin auto;
 - gap 14 px;
 
-“CHƠI NGAY”:
+Sảnh không còn ghép bàn tự động. Nút lớn là tạo bàn, nút phụ là tập luyện với máy.
+
+“TẠO BÀN”:
 
 - width 100%, min-height 72 px;
 - fill `action.primary` gradient cho phép;
@@ -138,27 +140,21 @@ Container:
 - radius 20 px;
 - shadow control;
 - label `title.lg`, navy;
-- subtitle `body.sm`, navy 86%;
+- subtitle “Mời bạn bè, tự đặt cược” `body.sm`, navy 86%;
 - label và subtitle cách 2–4 px;
-- không icon, không glow.
+- không icon, không glow;
+- bấm mở modal tạo bàn (mục 4).
 
-Queueing:
-
-- label: “ĐANG TÌM BÀN...”;
-- subtitle thay bằng trạng thái tìm;
-- giữ vàng nhưng giảm saturation 8%;
-- thêm ba dot hoặc spinner navy 16 px;
-- button vẫn có nút hủy theo logic hiện tại; không pulse scale.
-
-“+ Tạo bàn riêng”:
+“Tập luyện”:
 
 - min-height 52 px;
 - cream fill;
 - border navy 2;
 - radius 16;
-- chữ 17 px weight 800;
-- dấu plus là text/icon navy, không màu khác;
-- shadow control.
+- một hàng giữa: icon máy `ic-bot.svg` 26 px, chữ 17 px weight 800, chip “Chơi với máy” aqua.100 chữ teal.700 11 px;
+- shadow control;
+- disabled (cream.200) cho tới khi preload xong bộ bài;
+- bấm mở modal “Chơi với máy” (mục 4.4).
 
 ### 3.6 Room list header
 
@@ -301,6 +297,30 @@ Actions:
 - label vẫn còn hoặc dùng “Đang tạo...”;
 - disable capacity/input để tránh submit kép;
 - không giảm opacity modal.
+
+### 4.4 Modal “Chơi với máy”
+
+Cùng khung `tl-lobby-modal` với modal tạo bàn (cream, viền navy 2, radius 20), nhưng thay vạch accent coral bằng huy hiệu.
+
+- **Đầu hộp:** huy hiệu tròn 56 px (gradient aqua → teal, viền navy, icon `ic-bot.svg` 32 px, nảy vào khi mở), tiêu đề “Chơi với máy”, dòng phụ “Chọn đối thủ và độ khó cho ván tập” 13 px navy 62%.
+- **Hàng tiêu đề danh sách:** “Đối thủ N/3” trái (số màu teal); nút viên thuốc “+ Thêm máy” cao 28 px phải, mờ khi đủ 3 máy.
+- Mặc định 3 máy mức Thường (bàn 4 người); tối thiểu 1 máy, tối đa 3.
+- **Mỗi máy một hàng** `34px | 1fr | 28px`, nền cream.100, radius 14, có vạch màu 4 px bên trái theo mức:
+
+  | Mức | Màu | Mô tả dưới tên |
+  |---|---|---|
+  | Dễ | aqua.400 / teal.700 | “Đánh bừa” |
+  | Thường | sun.400 / nâu vàng | “Giữ bài” |
+  | Khó | coral.400 / coral.500 | “Nhớ bài” |
+
+  - Viền avatar 34 px cùng màu mức.
+  - Tên “Máy 1/2/3” 13 px weight 800, mô tả mức 11 px bên dưới.
+  - Bên phải cùng hàng là bộ chọn mức dạng viên thuốc (cao 26 px, chữ 11 px). Ô đang chọn tô màu nhạt của mức và viền màu mức. Là radiogroup, phím mũi tên đổi mức.
+  - Màn hẹp dưới 360 px: bộ chọn xuống dòng dưới tên, ẩn mô tả mức.
+  - Nút xoá tròn 28 px viền coral, xám khi còn 1 máy.
+- **Chip luật** canh giữa: “Bàn N người: bạn + M máy” (aqua) · “30 giây/lượt” · “Không cược” · “Không cộng EXP”.
+- **Actions:** Hủy (ghost) / Bắt đầu (gold, focus mặc định).
+- Vừa khung 320 × 568 khi có 3 máy, không phải cuộn.
 
 ## 5. Phòng chờ
 
@@ -677,7 +697,9 @@ Mỗi release chụp các state:
 
 - loading, reconnect error;
 - lobby 0/1/4+ phòng;
-- lobby queueing;
+- lobby nút Tạo bàn + Tập luyện;
+- modal Chơi với máy 1/2/3 máy;
+- ván tập 2 và 4 người, kết quả ván tập;
 - create room default/error/loading;
 - password room default/error;
 - room 2/3/4 người, host và guest;

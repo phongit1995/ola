@@ -522,6 +522,7 @@ export function TableScreen() {
   const passFxSeat = useThirteen((s) => s.passFxSeat);
   const passed = useThirteen((s) => s.passed);
   const finishOrder = useThirteen((s) => s.finishOrder);
+  const practice = useThirteen((s) => s.practice != null);
 
   const slots = seatSlots(players.length, you);
   const seatsBySlot = new Map<string, number>();
@@ -538,7 +539,7 @@ export function TableScreen() {
         <button type="button" className="tl-icon-btn" onClick={requestExit} aria-label="Rời ván">
           <img src={backIcon} alt="" />
         </button>
-        <span className="tl-table-title">Tiến Lên Miền Nam</span>
+        <span className="tl-table-title">{practice ? 'Tập luyện' : 'Tiến Lên Miền Nam'}</span>
         <ChatButton />
       </div>
 

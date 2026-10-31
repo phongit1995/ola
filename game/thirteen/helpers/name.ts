@@ -1,3 +1,5 @@
+import { isBotName } from './practice';
+
 export const NAME_COLORS = [
   '#c62828',
   '#ad1457',
@@ -19,5 +21,5 @@ export function nameColor(name: string): string {
 }
 
 export function atName(name: string): string {
-  return name.startsWith('@') ? name : `@${name}`;
+  return name.startsWith('@') || isBotName(name) ? name : `@${name}`;
 }
