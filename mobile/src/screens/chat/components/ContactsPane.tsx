@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -110,6 +111,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
   const [menuContact, setMenuContact] = useState<Contact | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -125,6 +127,16 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
       });
     }
     store.loadRequests();
+  }, [push, t]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    const store = useFriendsStore.getState();
+    store.loadRequests(true);
+    void store.loadFriends().then((ok) => {
+      if (!ok) push('error', t('chat.loadFriendsError'));
+      setRefreshing(false);
+    });
   }, [push, t]);
 
   const contacts = useMemo(
@@ -194,7 +206,10 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
         </View>
       </View>
 
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         {me != null && (
           <View style={{ backgroundColor: 'rgba(255,255,255,0.8)', borderBottomWidth: 1, borderBottomColor: DIVIDER }}>
             {!hasVip && (

@@ -21,8 +21,8 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
     if (get().loaded || get().loading) return;
     void get().loadFriends();
   },
-  loadRequests: () => {
-    if (get().requestsLoaded || get().requestsLoading) return;
+  loadRequests: (force = false) => {
+    if (get().requestsLoading || (get().requestsLoaded && !force)) return;
     set({ requestsLoading: true });
     RelationshipService.pending()
       .then((res) => set({ requests: res.relationships, requestsLoaded: true }))
