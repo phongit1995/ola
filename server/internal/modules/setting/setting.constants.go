@@ -16,6 +16,9 @@ const (
 	ChatBotTypeOlala = "OLALA"
 	ChatBotTypeOlavi = "OLAVI"
 
+	KeyAppUpdate          = "app_update"
+	appUpdateVersionsNoun = "bản phải cập nhật"
+
 	KeyReportAlert             = "report_alert"
 	ReportAlertChannelDiscord  = "discord"
 	ReportAlertChannelTelegram = "telegram"

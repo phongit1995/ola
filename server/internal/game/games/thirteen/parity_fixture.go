@@ -36,6 +36,7 @@ type ParityFixture struct {
 	Beats       []ParityBeats      `json:"beats"`
 	InstantWins []ParityInstantWin `json:"instantWins"`
 	Deals       []ParityDeal       `json:"deals"`
+	LedDeals    []ParityLedDeal    `json:"ledDeals"`
 }
 
 type ParityClassify struct {
@@ -63,6 +64,17 @@ type ParityDeal struct {
 	Hands   [][]int `json:"hands"`
 	Starter int     `json:"starter"`
 	Rng     string  `json:"rng"`
+}
+
+type ParityLedDeal struct {
+	Seed       int64   `json:"seed"`
+	Players    int     `json:"players"`
+	Leader     int     `json:"leader"`
+	Hands      [][]int `json:"hands"`
+	Starter    int     `json:"starter"`
+	Require3s  bool    `json:"require3s"`
+	InstantWin string  `json:"instantWin,omitempty"`
+	Finish     []int   `json:"finishOrder"`
 }
 
 func mkCard(rank, suit int) int { return rank*4 + suit }
@@ -150,11 +162,31 @@ func ExportParityFixture() ParityFixture {
 		}
 	}
 
+	ledDeals := make([]ParityLedDeal, 0, 4)
+	for _, c := range []struct {
+		seed    int64
+		players int
+		leader  int
+	}{{1, 2, 1}, {42, 4, 3}, {20260819, 3, 0}, {20260819, 4, 2}} {
+		state := newLedDeal(c.seed, c.players, c.leader)
+		ledDeals = append(ledDeals, ParityLedDeal{
+			Seed:       c.seed,
+			Players:    c.players,
+			Leader:     c.leader,
+			Hands:      state.Hands,
+			Starter:    state.Starter,
+			Require3s:  state.RequireThreeSpades,
+			InstantWin: state.InstantWin,
+			Finish:     state.FinishOrder,
+		})
+	}
+
 	return ParityFixture{
 		Version:     1,
 		Classify:    classifyFixtures,
 		Beats:       beatsFixtures,
 		InstantWins: instants,
 		Deals:       deals,
+		LedDeals:    ledDeals,
 	}
 }

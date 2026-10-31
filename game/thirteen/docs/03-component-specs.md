@@ -523,6 +523,8 @@ Focus chuẩn:
 | `tl-ken-pill` | Balance Pill |
 | `tl-play-now` | Primary Sun Hero |
 | `tl-secondary-btn` | Secondary Cream Large |
+| `tl-practice-row` | Bot Setup Row |
+| `tl-practice-levels` | Level Segmented Control |
 | `tl-room-row` | Room Row |
 | `tl-btn-gold` | Primary Sun |
 | `tl-btn-ghost` | Secondary Cream |
@@ -541,7 +543,8 @@ Focus chuẩn:
 | `tl-action-bar` | Transparent Action Layout |
 | `tl-chat-panel` | Cream Bottom Sheet |
 | `tl-result-card` | Cream Result Modal |
-| `tl-result-row` | Flat Ranking Row |
+| `tl-result-emblem` | Place Emblem |
+| `tl-result-row` | Medal Ranking Row |
 | `tl-toast` | Cream Semantic Toast |
 
 Mapping đầy đủ từng class nằm trong `06-screen-to-asset-map.md`.

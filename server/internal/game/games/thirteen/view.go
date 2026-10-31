@@ -11,6 +11,7 @@ type PlayerView struct {
 	Turn               int    `json:"turn"`
 	Starter            int    `json:"starter"`
 	RequireThreeSpades bool   `json:"require3s"`
+	LedByWinner        bool   `json:"ledByWinner,omitempty"`
 	InstantWin         string `json:"instantWin,omitempty"`
 	MoveCount          int    `json:"moveCount"`
 	Steps              []Step `json:"steps,omitempty"`
@@ -34,6 +35,7 @@ func (Logic) ViewFor(state any, playerIdx int) any {
 		Turn:               s.Turn,
 		Starter:            s.Starter,
 		RequireThreeSpades: s.RequireThreeSpades,
+		LedByWinner:        s.LedByWinner,
 		InstantWin:         s.InstantWin,
 		MoveCount:          s.MoveCount,
 		Steps:              append([]Step(nil), s.Steps...),

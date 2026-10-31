@@ -1,4 +1,6 @@
 import { View } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Track } from 'livekit-client';
 import { isTrackReference, useTracks } from '@livekit/components-react';
 import { VideoTrack } from '@livekit/react-native';
@@ -8,6 +10,9 @@ import type { CallerBrief } from '@ola/shared/types';
 
 const PIP_WIDTH = 108;
 const PIP_HEIGHT = 156;
+const TOP_SHADE_HEIGHT = 180;
+const SHADE_COLORS = ['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0)'];
+const SHADE_LOCATIONS = [0, 0.7, 1];
 
 interface CallVideoAreaProps {
   peer: CallerBrief;
@@ -26,6 +31,7 @@ export function CallVideoArea({
   pipBottom,
   visible,
 }: CallVideoAreaProps) {
+  const insets = useSafeAreaInsets();
   const tracks = useTracks([Track.Source.Camera], { onlySubscribed: false });
   const localTrack = tracks.find((item) => item.participant.isLocal);
   const remoteTrack = tracks.find((item) => !item.participant.isLocal);
@@ -52,6 +58,25 @@ export function CallVideoArea({
           size={112}
           color={colorForName(peerName)}
         />
+      )}
+
+      {showRemoteVideo && (
+        <>
+          <LinearGradient
+            pointerEvents="none"
+            colors={SHADE_COLORS}
+            locations={SHADE_LOCATIONS}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top + TOP_SHADE_HEIGHT }}
+          />
+          <LinearGradient
+            pointerEvents="none"
+            colors={SHADE_COLORS}
+            locations={SHADE_LOCATIONS}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 0, y: 0 }}
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: pipBottom }}
+          />
+        </>
       )}
 
       {showLocalVideo && (

@@ -25,6 +25,7 @@ export interface ServerState {
   turn: number;
   starter: number;
   require3s: boolean;
+  ledByWinner?: boolean;
   instantWin?: InstantWinKind | string;
   moveCount: number;
   steps?: ServerStep[];
@@ -40,6 +41,7 @@ export interface FinalState {
   turn: number;
   starter: number;
   require3s: boolean;
+  ledByWinner?: boolean;
   instantWin?: string;
   moveCount: number;
 }
@@ -62,6 +64,7 @@ export function decodeServerState(raw: unknown): ServerState {
     turn: numberOr(state.turn, 0),
     starter: numberOr(state.starter, 0),
     require3s: Boolean(state.require3s),
+    ...(state.ledByWinner ? { ledByWinner: true } : {}),
     instantWin: state.instantWin,
     moveCount: numberOr(state.moveCount, 0),
     steps: Array.isArray(state.steps) ? (state.steps as ServerStep[]) : [],

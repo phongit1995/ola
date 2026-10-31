@@ -26,6 +26,7 @@ import { PostsPage } from '@/pages/posts/PostsPage'
 import { ReportsPage } from '@/pages/reports/ReportsPage'
 import { PushCampaignPage } from '@/pages/settings/PushCampaignPage'
 import { ChatBotSettingsPage } from '@/pages/settings/ChatBotSettingsPage'
+import { AppUpdateSettingsPage } from '@/pages/settings/AppUpdateSettingsPage'
 import { TopupSettingsPage } from '@/pages/topup/TopupSettingsPage'
 import { TopupTransactionsPage } from '@/pages/topup/TopupTransactionsPage'
 import { UsernameChangeSettingsPage } from '@/pages/username-change/UsernameChangeSettingsPage'
@@ -92,6 +93,7 @@ export const router = createBrowserRouter([
       { path: 'settings/notification', element: <NotificationSettingsPage /> },
       { path: 'settings/push-campaigns', element: <PushCampaignPage /> },
       { path: 'settings/chat-bot', element: <ChatBotSettingsPage /> },
+      { path: 'settings/app-update', element: <AppUpdateSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },
     ],
   },

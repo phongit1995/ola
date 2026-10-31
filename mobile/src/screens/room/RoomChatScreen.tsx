@@ -26,7 +26,7 @@ import {
   useRoomFilterStore,
 } from '@ola/shared/stores/room/roomFilterStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import type { ReactionType, RoomTab } from '@ola/shared/types';
+import type { ReactionType } from '@ola/shared/types';
 import type {
   MainTabParamList,
   RoomStackParamList,
@@ -240,10 +240,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
     return unsubscribe;
   }, [navigation]);
 
-  const onSelectTab = useCallback(
-    (tab: RoomTab) => setActiveTab(tab),
-    [setActiveTab],
-  );
+  const showMembersTab = useCallback(() => setActiveTab('members'), [setActiveTab]);
+  const showMessagesTab = useCallback(() => setActiveTab('messages'), [setActiveTab]);
   const handleReact = useCallback(
     (messageId: string, type: ReactionType) =>
       void reactToRoomMessage(messageId, type),
@@ -349,14 +347,14 @@ export function RoomChatScreen({ navigation, route }: Props) {
           count={memberCount}
           icon={membersIcon}
           active={activeTab === 'members'}
-          onPress={() => onSelectTab('members')}
+          onPress={showMembersTab}
         />
         <TabButton
           label={t('room.tabMessages')}
           icon={messagesIcon}
           active={activeTab === 'messages'}
           indicator={messagesUnread && activeTab !== 'messages'}
-          onPress={() => onSelectTab('messages')}
+          onPress={showMessagesTab}
         />
       </View>
 
@@ -403,7 +401,11 @@ export function RoomChatScreen({ navigation, route }: Props) {
                 display: activeTab === 'members' ? 'flex' : 'none',
               }}
             >
-              <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
+              <RoomMembersTab
+                members={visibleMembers}
+                onOpenUser={openUser}
+                onSwipeLeft={showMessagesTab}
+              />
             </View>
             <View
               style={{
@@ -432,6 +434,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
                 onClearReplyTarget={clearReplyTarget}
                 onReact={handleReact}
                 onDeleteMessage={deleteRoomMessage}
+                onSwipeRight={showMembersTab}
               />
             </View>
           </>

@@ -2266,6 +2266,11 @@
     "you": "You",
     "newCount": "{{count}} new notifications"
   },
+  "appUpdate": {
+    "title": "Update required",
+    "requiredBody": "You need to update to the latest version to keep using the app.",
+    "updateNow": "Update now"
+  },
   "appLock": {
     "title": "App lock",
     "enable": "Enable app lock",

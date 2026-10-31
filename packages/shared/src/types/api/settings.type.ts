@@ -86,6 +86,10 @@ export interface AppConfigs {
   moment: MomentConfigResult;
 }
 
+export interface AppUpdateResult {
+  required: boolean;
+}
+
 export interface AppConfigResult {
   version: string;
   notModified?: boolean;

@@ -147,6 +147,7 @@ func cloneState(s *State) *State {
 		Turn:               s.Turn,
 		Starter:            s.Starter,
 		RequireThreeSpades: s.RequireThreeSpades,
+		LedByWinner:        s.LedByWinner,
 		InstantWin:         s.InstantWin,
 		Rng:                s.Rng,
 		MoveCount:          s.MoveCount,

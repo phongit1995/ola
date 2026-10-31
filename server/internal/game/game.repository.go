@@ -3,9 +3,12 @@ package game
 import (
 	"errors"
 	"math"
+	"sort"
 	"time"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/game/engine"
+	"ola-chat-server/internal/game/games/thirteen"
 	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/models"
@@ -90,6 +93,12 @@ func applyGameLevel(db *gorm.DB, info *protocol.UserInfoData, gameID string, use
 const leaderboardLimit = 100
 const matchHistoryLimit = 100
 
+const (
+	leaderboardPeriodDay   = "day"
+	leaderboardPeriodWeek  = "week"
+	leaderboardPeriodMonth = "month"
+)
+
 var gameGMT7 = time.FixedZone("GMT+7", 7*60*60)
 
 type leaderboardRow struct {
@@ -104,8 +113,10 @@ type leaderboardRow struct {
 }
 
 type matchHistoryRow struct {
+	GameMatchID   uuid.UUID  `gorm:"column:game_match_id"`
 	MatchID       string     `gorm:"column:match_id"`
 	PlayedAt      time.Time  `gorm:"column:played_at"`
+	PlayerCount   int        `gorm:"column:player_count"`
 	Player0ID     uuid.UUID  `gorm:"column:player0_id"`
 	Player1ID     uuid.UUID  `gorm:"column:player1_id"`
 	WinnerID      *uuid.UUID `gorm:"column:winner_id"`
@@ -119,19 +130,32 @@ type matchHistoryRow struct {
 	KenDelta      int        `gorm:"column:ken_delta"`
 }
 
+type matchSeatRow struct {
+	GameMatchID uuid.UUID  `gorm:"column:game_match_id"`
+	UserID      uuid.UUID  `gorm:"column:user_id"`
+	Place       *int       `gorm:"column:place"`
+	Username    string     `gorm:"column:username"`
+	VipType     *string    `gorm:"column:vip_type"`
+	VipEndTime  *time.Time `gorm:"column:vip_end_time"`
+}
+
 func normalizeLeaderboardPeriod(period string) string {
-	if period == "week" {
-		return "week"
+	switch period {
+	case leaderboardPeriodWeek, leaderboardPeriodMonth:
+		return period
 	}
-	return "day"
+	return leaderboardPeriodDay
 }
 
 func leaderboardRangeAt(now time.Time, period string) (time.Time, time.Time) {
 	localNow := now.In(gameGMT7)
 	day := localNow
-	if normalizeLeaderboardPeriod(period) == "week" {
+	switch normalizeLeaderboardPeriod(period) {
+	case leaderboardPeriodWeek:
 		daysFromMonday := (int(localNow.Weekday()) + 6) % 7
 		day = localNow.AddDate(0, 0, -daysFromMonday)
+	case leaderboardPeriodMonth:
+		day = time.Date(localNow.Year(), localNow.Month(), 1, 0, 0, 0, 0, gameGMT7)
 	}
 	start := time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, gameGMT7)
 	return start.UTC(), localNow.UTC()
@@ -148,7 +172,24 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 	}
 
 	var query *gorm.DB
-	if gameID == "caro" || gameID == "war-god" || gameID == "thirteen" || gameID == "xiangqi" {
+	if gameID == thirteen.GameID {
+		query = r.db.Table("game_matches").
+			Select(`seats.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
+				COALESCE(SUM(CASE WHEN seats.user_id = game_matches.winner_id THEN game_matches.ken_delta ELSE 0 END), 0) AS ken,
+				COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) AS wins,
+				COUNT(*) FILTER (WHERE seats.user_id <> game_matches.winner_id) AS losses,
+				COALESCE(levels.exp, 0) AS game_exp`).
+			Joins("CROSS JOIN LATERAL "+constants.GameMatchSeatsSubquery+" AS seats").
+			Joins("JOIN users ON users.id = seats.user_id").
+			Joins("LEFT JOIN user_game_levels AS levels ON levels.user_id = seats.user_id AND levels.game_id = game_matches.game_id").
+			Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
+				AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
+				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
+				gameID, matchStatusFinished, from, to).
+			Group("seats.user_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
+			Having("COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) > 0").
+			Order("wins DESC, losses ASC, ken DESC, users.username ASC, seats.user_id ASC")
+	} else if gameID == "caro" || gameID == "war-god" || gameID == "xiangqi" {
 		query = r.db.Table("game_matches").
 			Select(`results.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
 				COALESCE(SUM(results.ken), 0) AS ken,
@@ -229,19 +270,17 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 
 	var rows []matchHistoryRow
 	err = r.db.Table("game_matches").
-		Select(`game_matches.match_id, game_matches.finished_at AS played_at,
-			game_matches.player0_id, game_matches.player1_id, game_matches.winner_id,
+		Select(`game_matches.id AS game_match_id, game_matches.match_id, game_matches.finished_at AS played_at,
+			game_matches.player_count, game_matches.player0_id, game_matches.player1_id, game_matches.winner_id,
 			game_matches.bet, game_matches.ken_delta,
 			player0.username AS player0_name, player1.username AS player1_name,
 			player0.vip_used AS player0_vip, player0.vip_end_time AS player0_vip_end,
 			player1.vip_used AS player1_vip, player1.vip_end_time AS player1_vip_end`).
 		Joins("LEFT JOIN users AS player0 ON player0.id = game_matches.player0_id").
 		Joins("LEFT JOIN users AS player1 ON player1.id = game_matches.player1_id").
-		Where(`game_matches.game_id = ? AND game_matches.status = ?
-			AND (game_matches.player0_id = ? OR game_matches.player1_id = ?)
-			AND game_matches.finished_at IS NOT NULL AND game_matches.reason <> ?
-			AND game_matches.deleted_at IS NULL`,
-			gameID, matchStatusFinished, uid, uid, reasonVoid).
+		Where("game_matches.game_id = ? AND game_matches.status = ?", gameID, matchStatusFinished).
+		Where(constants.GameMatchHasUserCondition, uid, uid, uid).
+		Where("game_matches.finished_at IS NOT NULL AND game_matches.reason <> ? AND game_matches.deleted_at IS NULL", reasonVoid).
 		Order("game_matches.finished_at DESC, game_matches.id DESC").
 		Limit(matchHistoryLimit).
 		Scan(&rows).Error
@@ -249,41 +288,119 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 		return data, err
 	}
 
+	seats, err := r.matchSeats(rows)
+	if err != nil {
+		return data, err
+	}
+
 	data.Items = make([]protocol.MatchHistoryEntry, len(rows))
 	for i, row := range rows {
-		opponentID := row.Player1ID
-		opponentName := row.Player1Name
-		opponentVip := activeVipType(row.Player1Vip, row.Player1VipEnd)
-		if row.Player1ID == uid {
-			opponentID = row.Player0ID
-			opponentName = row.Player0Name
-			opponentVip = activeVipType(row.Player0Vip, row.Player0VipEnd)
+		players := historyPlayers(row, seats[row.GameMatchID])
+		entry := protocol.MatchHistoryEntry{
+			ID:          row.MatchID,
+			PlayedAt:    row.PlayedAt.UnixMilli(),
+			Bet:         row.Bet,
+			Outcome:     "draw",
+			PlayerCount: max(row.PlayerCount, 2),
+			Players:     players,
 		}
-		if opponentName == "" {
-			opponentName = opponentID.String()[:8]
-		}
-
-		outcome := "draw"
-		kenDelta := 0
-		if row.WinnerID != nil {
-			if *row.WinnerID == uid {
-				outcome = "win"
-				kenDelta = row.KenDelta
-			} else {
-				outcome = "lose"
-				kenDelta = -row.Bet
+		for _, p := range players {
+			if p.UserID == userID {
+				entry.Place = p.Place
+				continue
+			}
+			if entry.OpponentID == "" {
+				entry.OpponentID = p.UserID
+				entry.OpponentName = p.Username
+				entry.OpponentVipType = p.VipType
 			}
 		}
-		data.Items[i] = protocol.MatchHistoryEntry{
-			ID:              row.MatchID,
-			PlayedAt:        row.PlayedAt.UnixMilli(),
-			OpponentID:      opponentID.String(),
-			OpponentName:    opponentName,
-			OpponentVipType: opponentVip,
-			Bet:             row.Bet,
-			Outcome:         outcome,
-			KenDelta:        kenDelta,
+		if row.WinnerID != nil {
+			if *row.WinnerID == uid {
+				entry.Outcome = "win"
+				entry.KenDelta = row.KenDelta
+			} else {
+				entry.Outcome = "lose"
+				entry.KenDelta = -row.Bet
+			}
 		}
+		data.Items[i] = entry
 	}
 	return data, nil
+}
+
+func (r *Repository) matchSeats(rows []matchHistoryRow) (map[uuid.UUID][]matchSeatRow, error) {
+	ids := make([]uuid.UUID, 0, len(rows))
+	for _, row := range rows {
+		if row.PlayerCount > 2 {
+			ids = append(ids, row.GameMatchID)
+		}
+	}
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	var seats []matchSeatRow
+	err := r.db.Table("game_match_players AS seats").
+		Select(`seats.game_match_id, seats.user_id, seats.place,
+			users.username, users.vip_used AS vip_type, users.vip_end_time`).
+		Joins("LEFT JOIN users ON users.id = seats.user_id").
+		Where("seats.game_match_id IN ?", ids).
+		Order("seats.game_match_id ASC, seats.seat ASC").
+		Scan(&seats).Error
+	if err != nil {
+		return nil, err
+	}
+	byMatch := make(map[uuid.UUID][]matchSeatRow, len(ids))
+	for _, seat := range seats {
+		byMatch[seat.GameMatchID] = append(byMatch[seat.GameMatchID], seat)
+	}
+	return byMatch, nil
+}
+
+func historyPlayers(row matchHistoryRow, seats []matchSeatRow) []protocol.MatchHistoryPlayer {
+	if row.PlayerCount <= 2 || len(seats) == 0 {
+		seats = []matchSeatRow{
+			{UserID: row.Player0ID, Username: row.Player0Name, VipType: row.Player0Vip, VipEndTime: row.Player0VipEnd},
+			{UserID: row.Player1ID, Username: row.Player1Name, VipType: row.Player1Vip, VipEndTime: row.Player1VipEnd},
+		}
+		if row.WinnerID != nil {
+			for i := range seats {
+				place := 2
+				if seats[i].UserID == *row.WinnerID {
+					place = 1
+				}
+				seats[i].Place = &place
+			}
+		}
+	}
+	players := make([]protocol.MatchHistoryPlayer, len(seats))
+	for i, seat := range seats {
+		place := 0
+		if seat.Place != nil {
+			place = *seat.Place
+		} else if row.WinnerID != nil && *row.WinnerID == seat.UserID {
+			place = 1
+		}
+		name := seat.Username
+		if name == "" {
+			name = seat.UserID.String()[:8]
+		}
+		players[i] = protocol.MatchHistoryPlayer{
+			UserID:   seat.UserID.String(),
+			Username: name,
+			VipType:  activeVipType(seat.VipType, seat.VipEndTime),
+			Place:    place,
+		}
+	}
+	sort.SliceStable(players, func(i, j int) bool {
+		return placeOrder(players[i].Place) < placeOrder(players[j].Place)
+	})
+	return players
+}
+
+func placeOrder(place int) int {
+	if place <= 0 {
+		return math.MaxInt
+	}
+	return place
 }

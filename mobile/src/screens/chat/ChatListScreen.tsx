@@ -18,6 +18,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatOlaTime, withAlpha } from '@ola/shared/lib';
 import { AuthService, SocketService } from '@ola/shared/services';
@@ -26,7 +27,7 @@ import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { Conversation } from '@ola/shared/types';
-import type { RootStackParamList } from '@navigation/types';
+import type { MainTabParamList, RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
@@ -393,6 +394,15 @@ export function ChatListScreen() {
     openSwipeableRef.current?.close();
     openSwipeableRef.current = null;
   }, []);
+
+  useEffect(() => {
+    const tabNavigation = navigation.getParent<BottomTabNavigationProp<MainTabParamList> | undefined>();
+    return tabNavigation?.addListener('tabPress', () => {
+      if (!navigation.isFocused()) return;
+      closeOpenSwipeable();
+      setSub('messages');
+    });
+  }, [navigation, closeOpenSwipeable]);
 
   const handleSwipeableWillOpen = useCallback((swipeable: SwipeableMethods) => {
     if (openSwipeableRef.current !== swipeable) openSwipeableRef.current?.close();

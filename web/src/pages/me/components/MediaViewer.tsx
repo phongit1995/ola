@@ -99,7 +99,11 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
 
       <div className="absolute top-0 right-0 left-0 z-10 flex items-center gap-2 p-4 text-white">
         <span className="flex-1 text-sm">
-          {hasMany ? `${current + 1} / ${photos.length}` : ''}
+          {hasMany && (
+            <span className="rounded-full bg-black/50 px-3 py-1">
+              {current + 1} / {photos.length}
+            </span>
+          )}
         </span>
         <button
           type="button"
@@ -108,7 +112,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
             e.stopPropagation();
             void downloadImage(url);
           }}
-          className="rounded-full p-2 hover:bg-white/15"
+          className="rounded-full bg-black/50 p-2 hover:bg-black/70"
         >
           <svg
             width="22"
@@ -130,7 +134,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
           type="button"
           aria-label={t('dialog.close')}
           onClick={onClose}
-          className="rounded-full p-2 hover:bg-white/15"
+          className="rounded-full bg-black/50 p-2 hover:bg-black/70"
         >
           <svg
             width="22"
@@ -154,7 +158,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
               e.stopPropagation();
               prev();
             }}
-            className="absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+            className="absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
           >
             <svg
               width="26"
@@ -178,7 +182,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
               e.stopPropagation();
               next();
             }}
-            className="absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+            className="absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
           >
             <svg
               width="26"

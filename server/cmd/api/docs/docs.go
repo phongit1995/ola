@@ -14698,6 +14698,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/settings/app-update": {
+            "get": {
+                "description": "required=true khi X-App-Version (so theo tên bản, bỏ build) nằm trong danh sách bản phải cập nhật admin đặt cho nền tảng X-Platform. Web, thiếu header hoặc phiên bản không đọc được luôn trả false.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Bản app đang gọi có bắt buộc phải cập nhật không (không cần đăng nhập)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phiên bản app, ví dụ 1.0.0 (45)",
+                        "name": "X-App-Version",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_setting.AppUpdateSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/settings/chat-bot": {
             "get": {
                 "security": [
@@ -27259,6 +27293,41 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_setting.AppConfigResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_setting.AppUpdateResponse": {
+            "type": "object",
+            "properties": {
+                "required": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_modules_setting.AppUpdateSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_setting.AppUpdateResponse"
                 },
                 "error": {
                     "type": "string"

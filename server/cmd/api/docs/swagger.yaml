@@ -7014,6 +7014,29 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_setting.AppUpdateResponse:
+    properties:
+      required:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_setting.AppUpdateSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_setting.AppUpdateResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_setting.ChatBotAvailability:
     properties:
       enabled:
@@ -22680,6 +22703,30 @@ paths:
       security:
       - BearerAuth: []
       summary: Gộp config hệ thống cho app trong một request
+      tags:
+      - settings
+  /settings/app-update:
+    get:
+      description: required=true khi X-App-Version (so theo tên bản, bỏ build) nằm
+        trong danh sách bản phải cập nhật admin đặt cho nền tảng X-Platform. Web,
+        thiếu header hoặc phiên bản không đọc được luôn trả false.
+      parameters:
+      - description: android | ios
+        in: header
+        name: X-Platform
+        type: string
+      - description: Phiên bản app, ví dụ 1.0.0 (45)
+        in: header
+        name: X-App-Version
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_setting.AppUpdateSuccessResponse'
+      summary: Bản app đang gọi có bắt buộc phải cập nhật không (không cần đăng nhập)
       tags:
       - settings
   /settings/chat-bot:

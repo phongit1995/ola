@@ -223,3 +223,20 @@ func (ctrl *Controller) AppConfig(c *gin.Context) (interface{}, error) {
 	}
 	return collectAppConfig(ctrl.appConfigSources(), ClientFrom(c), parseAppConfigKeys(c.Query("keys")), c.Query("version"), ctrl.logger), nil
 }
+
+// AppUpdate godoc
+// @Summary      Bản app đang gọi có bắt buộc phải cập nhật không (không cần đăng nhập)
+// @Description  required=true khi X-App-Version (so theo tên bản, bỏ build) nằm trong danh sách bản phải cập nhật admin đặt cho nền tảng X-Platform. Web, thiếu header hoặc phiên bản không đọc được luôn trả false.
+// @Tags         settings
+// @Produce      json
+// @Param        X-Platform header string false "android | ios"
+// @Param        X-App-Version header string false "Phiên bản app, ví dụ 1.0.0 (45)"
+// @Success      200  {object}  AppUpdateSuccessResponse
+// @Router       /settings/app-update [get]
+func (ctrl *Controller) AppUpdate(c *gin.Context) (interface{}, error) {
+	cfg, err := ctrl.service.GetAppUpdate()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return AppUpdateResponse{Required: cfg.RequiredFor(ClientFrom(c))}, nil
+}

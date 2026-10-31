@@ -101,7 +101,7 @@ export function ChatPanel() {
         if (!ok) toast.error(t('chat.loadFriendsError'));
       });
     }
-    store.loadRequests();
+    void store.loadRequests();
   }, [sub, t]);
 
   async function acceptRequest(relationship: Relationship) {

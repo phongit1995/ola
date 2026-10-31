@@ -52,6 +52,26 @@ Không có raster UI mới và không có text nằm trong asset.
 - disconnect là pill cục bộ, không phủ tối toàn bàn;
 - reduced motion tắt animation deal/chop/reaction/banner.
 
+**Ai đi trước:**
+- Ván đầu tiên của bàn theo luật 3♠: ai giữ 3♠ đi trước và nước đầu phải có 3♠; không ai giữ 3♠ (bàn 2–3 người) thì người có lá nhỏ nhất đi trước, ra tự do.
+- Từ ván thứ hai, người về Nhất ván trước đi trước và **ra bài tự do**, không cần 3♠. Có người khác vào hoặc rời bàn cũng vậy, miễn người thắng còn ngồi ở bàn.
+- Quay về luật 3♠ khi:
+  - người thắng đã rời bàn;
+  - ván trước hòa hoặc bị hủy (không có người thắng).
+- Thông báo lượt ghi thêm “· thắng ván trước” cho tới khi lá đầu tiên được đánh, ví dụ “Tới lượt bạn ra bài · thắng ván trước”.
+  - Store chỉ bật nhãn (`openingLead`) khi `ledByWinner`, `moveCount = 0` và lượt hiện tại đúng là ghế `starter`.
+  - Người thắng rời ván trước khi đánh thì lượt chuyển sang người kế, nhưng server vẫn giữ `ledByWinner`. Nhờ điều kiện trên, người kế không bị gắn nhãn.
+- Tới trắng vẫn xét theo thứ tự bắt đầu từ người đi trước.
+
+Phía server:
+- phòng chờ lưu `lastWinnerId` (trong JSON phòng ở Redis, không cần migration):
+  - gán khi hết ván (`prepareNextRound`);
+  - xóa khi ván không có người thắng, hoặc khi người đó rời bàn (`removeRoomGuest`);
+- lúc bắt đầu ván, nếu người đó có trong danh sách ghế và game cài `logic.LeaderInit`, engine gọi `InitPlayersLed(seed, n, ghế)` thay cho `InitPlayers`;
+- Tiến Lên dùng `newLedDeal`: chia bài y như `newDeal`, rồi đặt người đi trước, `require3s = false`, `ledByWinner = true`;
+- view gửi client có thêm `ledByWinner`;
+- Caro / War God / Cờ tướng không cài `LeaderInit` nên không đổi.
+
 ## 5. Chat và kết quả
 
 Chat dùng bottom sheet cream, backdrop navy 30%, drag handle, close button, reaction row scroll ngang, log live và input/send state rõ ràng.

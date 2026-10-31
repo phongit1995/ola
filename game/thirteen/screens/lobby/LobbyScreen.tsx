@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import type { RoomInfo } from '../../../src/sdk';
 import backIcon from '../../assets/icons/ic-back.svg';
+import botIcon from '../../assets/icons/ic-bot.svg';
 import cardsEmptyIcon from '../../assets/icons/ic-cards-empty.svg';
 import checkIcon from '../../assets/icons/ic-check.svg';
+import historyIcon from '../../assets/icons/ic-history.svg';
 import lockIcon from '../../assets/icons/ic-lock.svg';
 import refreshIcon from '../../assets/icons/ic-refresh.svg';
+import trophyIcon from '../../assets/icons/ic-trophy.svg';
 import kenIcon from '../../assets/icons/ken.png';
 import { BrandMark } from '../../components/BrandMark';
 import { handleModalKeyDown } from '../../components/modalKeyboard';
-import { avatarTone, userAvatarIconUrl } from '../../helpers/avatar';
+import { PlayerAvatar } from '../../components/PlayerAvatar';
+import { PlayerName } from '../../components/PlayerName';
 import {
   formatBetInput,
   formatKen,
@@ -18,15 +21,14 @@ import {
   roomCreationError,
 } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
+import { PracticeSetupModal } from './PracticeSetupModal';
 
 function KenPill() {
   const user = useThirteen((s) => s.user);
   if (!user) return null;
   return (
     <div className="tl-ken-pill">
-      <span className="tl-avatar tl-avatar-sm tl-user-avatar">
-        <img src={userAvatarIconUrl(user.vipType)} alt={`VIP của ${user.username}`} />
-      </span>
+      <PlayerAvatar name={user.username} vipType={user.vipType} size="sm" />
       <span className="tl-ken-amount">{formatKen(user.ken)}</span>
       <img className="tl-ken-coin" src={kenIcon} alt="Ken" />
     </div>
@@ -171,7 +173,7 @@ function PasswordModal({ room, onClose }: { room: RoomInfo; onClose: () => void 
       >
         <span className="tl-modal-accent" aria-hidden="true" />
         <div id="tl-password-room-title" className="tl-modal-title">
-          Bàn của {room.owner}
+          Bàn của <PlayerName name={room.owner} />
         </div>
         <div className="tl-field-label">Nhập mật khẩu bàn</div>
         <input
@@ -198,17 +200,18 @@ function PasswordModal({ room, onClose }: { room: RoomInfo; onClose: () => void 
 export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
   const user = useThirteen((s) => s.user);
   const rooms = useThirteen((s) => s.rooms);
-  const queueing = useThirteen((s) => s.queueing);
-  const joinQueue = useThirteen((s) => s.joinQueue);
-  const leaveQueue = useThirteen((s) => s.leaveQueue);
   const refreshRooms = useThirteen((s) => s.refreshRooms);
   const joinRoom = useThirteen((s) => s.joinRoom);
   const requestExit = useThirteen((s) => s.requestExit);
+  const openHistory = useThirteen((s) => s.openHistory);
+  const openLeaderboard = useThirteen((s) => s.openLeaderboard);
+  const covered = useThirteen((s) => s.overlay != null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
   const [passwordRoom, setPasswordRoom] = useState<RoomInfo | null>(null);
 
   return (
-    <div className="tl-screen tl-lobby">
+    <div className="tl-screen tl-lobby" inert={covered}>
       <div className="tl-topbar">
         <button type="button" className="tl-icon-btn" onClick={requestExit} aria-label="Thoát">
           <img src={backIcon} alt="" />
@@ -219,18 +222,25 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
       <BrandMark />
 
       <div className="tl-lobby-actions">
-        <button
-          type="button"
-          className={'tl-play-now' + (queueing ? ' waiting' : '')}
-          disabled={!assetsReady}
-          onClick={() => (queueing ? leaveQueue() : joinQueue())}
-        >
-          <span className="tl-play-now-label">{queueing ? 'ĐANG TÌM BÀN...' : 'CHƠI NGAY'}</span>
-          <span className="tl-play-now-sub">{queueing ? 'Chạm để hủy tìm' : 'Tự động ghép bàn 4 người'}</span>
+        <button type="button" className="tl-play-now" onClick={() => setCreateOpen(true)}>
+          <span className="tl-play-now-label">TẠO BÀN</span>
+          <span className="tl-play-now-sub">Mời bạn bè, tự đặt cược</span>
         </button>
-        <button type="button" className="tl-secondary-btn" onClick={() => setCreateOpen(true)}>
-          + Tạo bàn riêng
+        <button type="button" className="tl-secondary-btn tl-practice-btn" disabled={!assetsReady} onClick={() => setPracticeOpen(true)}>
+          <img src={botIcon} alt="" />
+          <span>Tập luyện</span>
+          <small>Chơi với máy</small>
         </button>
+        <div className="tl-lobby-links">
+          <button type="button" className="tl-lobby-link" onClick={openHistory}>
+            <img src={historyIcon} alt="" />
+            <span>Lịch sử</span>
+          </button>
+          <button type="button" className="tl-lobby-link" onClick={openLeaderboard}>
+            <img src={trophyIcon} alt="" />
+            <span>Xếp hạng</span>
+          </button>
+        </div>
       </div>
 
       <div className="tl-room-list-header">
@@ -267,16 +277,10 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
                 (insufficientKen ? ' is-insufficient' : '')
               }
             >
-              <span className={`tl-avatar tl-avatar-${avatarTone(room.owner)}`}>
-                {(() => {
-                  const vipId = parseVipTypeId(room.ownerVipType);
-                  return vipId != null ? <img src={vipIconUrl(vipId)} alt="" className="tl-vip-icon" /> : null;
-                })()}
-                {room.owner.charAt(0).toUpperCase()}
-              </span>
+              <PlayerAvatar name={room.owner} vipType={room.ownerVipType} />
               <div className="tl-room-info">
                 <span className="tl-room-name">
-                  <span className="tl-room-name-text">Bàn của {room.owner}</span>
+                  <span className="tl-room-name-text">Bàn của <PlayerName name={room.owner} /></span>
                   {room.locked && <img className="tl-lock" src={lockIcon} alt="Có mật khẩu" />}
                   {playing && <span className="tl-playing-badge">Đang chơi</span>}
                 </span>
@@ -310,6 +314,7 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
       </div>
 
       {createOpen && <CreateRoomModal onClose={() => setCreateOpen(false)} />}
+      {practiceOpen && <PracticeSetupModal onClose={() => setPracticeOpen(false)} />}
       {passwordRoom && <PasswordModal room={passwordRoom} onClose={() => setPasswordRoom(null)} />}
     </div>
   );

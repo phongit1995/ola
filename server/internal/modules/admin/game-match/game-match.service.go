@@ -1,6 +1,8 @@
 package admingamematch
 
 import (
+	"math"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,25 +27,74 @@ func briefFromRow(id uuid.UUID, username, fullName, avatar string) *UserBrief {
 	return &UserBrief{ID: id.String(), Username: username, FullName: fullName, Avatar: avatar}
 }
 
-func matchView(row matchRow) MatchView {
+func matchPlayerCount(row matchRow) int {
+	return max(row.PlayerCount, 2)
+}
+
+func matchPlayers(row matchRow, seats []matchSeatRow) []MatchPlayer {
+	if matchPlayerCount(row) <= 2 || len(seats) == 0 {
+		seats = []matchSeatRow{
+			{UserID: row.Player0ID, Seat: 0, Username: row.Player0Username, FullName: row.Player0FullName, Avatar: row.Player0Avatar},
+			{UserID: row.Player1ID, Seat: 1, Username: row.Player1Username, FullName: row.Player1FullName, Avatar: row.Player1Avatar},
+		}
+		if row.Status == "finished" && row.WinnerID != nil {
+			for i := range seats {
+				place := 2
+				if seats[i].UserID == *row.WinnerID {
+					place = 1
+				}
+				seats[i].Place = &place
+			}
+		}
+	}
+	players := make([]MatchPlayer, len(seats))
+	for i, seat := range seats {
+		place := 0
+		if seat.Place != nil {
+			place = *seat.Place
+		} else if row.WinnerID != nil && *row.WinnerID == seat.UserID {
+			place = 1
+		}
+		players[i] = MatchPlayer{
+			User:  *briefFromRow(seat.UserID, seat.Username, seat.FullName, seat.Avatar),
+			Seat:  seat.Seat,
+			Place: place,
+		}
+	}
+	sort.SliceStable(players, func(i, j int) bool {
+		return placeOrder(players[i].Place) < placeOrder(players[j].Place)
+	})
+	return players
+}
+
+func placeOrder(place int) int {
+	if place <= 0 {
+		return math.MaxInt
+	}
+	return place
+}
+
+func matchView(row matchRow, seats []matchSeatRow) MatchView {
 	view := MatchView{
-		ID:        row.ID.String(),
-		MatchID:   row.MatchID,
-		GameID:    row.GameID,
-		Player0:   briefFromRow(row.Player0ID, row.Player0Username, row.Player0FullName, row.Player0Avatar),
-		Player1:   briefFromRow(row.Player1ID, row.Player1Username, row.Player1FullName, row.Player1Avatar),
-		Status:    row.Status,
-		Reason:    row.Reason,
-		Mode:      row.Mode,
-		Bet:       row.Bet,
-		KenDelta:  row.KenDelta,
-		MoveCount: row.MoveCount,
-		StartedAt: formatTime(row.StartedAt),
+		ID:          row.ID.String(),
+		MatchID:     row.MatchID,
+		GameID:      row.GameID,
+		Player0:     briefFromRow(row.Player0ID, row.Player0Username, row.Player0FullName, row.Player0Avatar),
+		Player1:     briefFromRow(row.Player1ID, row.Player1Username, row.Player1FullName, row.Player1Avatar),
+		PlayerCount: matchPlayerCount(row),
+		Players:     matchPlayers(row, seats),
+		Status:      row.Status,
+		Reason:      row.Reason,
+		Mode:        row.Mode,
+		Bet:         row.Bet,
+		KenDelta:    row.KenDelta,
+		MoveCount:   row.MoveCount,
+		StartedAt:   formatTime(row.StartedAt),
 	}
 	if row.WinnerID != nil {
 		view.WinnerID = row.WinnerID.String()
 		if row.Status == "finished" {
-			view.HouseTake = row.Bet - row.KenDelta
+			view.HouseTake = row.Bet*(view.PlayerCount-1) - row.KenDelta
 		}
 	}
 	if row.FinishedAt != nil {
@@ -57,9 +108,19 @@ func (s *Service) ListMatches(f AdminMatchFilter, limit, offset int) (*MatchList
 	if err != nil {
 		return nil, err
 	}
+	multiSeat := make([]uuid.UUID, 0, len(rows))
+	for _, row := range rows {
+		if matchPlayerCount(row) > 2 {
+			multiSeat = append(multiSeat, row.ID)
+		}
+	}
+	seats, err := s.repo.MatchSeats(multiSeat)
+	if err != nil {
+		return nil, err
+	}
 	items := make([]MatchView, len(rows))
 	for i, row := range rows {
-		items[i] = matchView(row)
+		items[i] = matchView(row, seats[row.ID])
 	}
 	return &MatchListResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
 }

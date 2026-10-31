@@ -3,6 +3,7 @@ package thirteen
 import (
 	"encoding/json"
 	"math/rand"
+	"slices"
 	"testing"
 )
 
@@ -475,5 +476,89 @@ func checkCardConservation(t *testing.T, s *State, playerCount int) {
 	}
 	if total > playerCount*HandSize {
 		t.Fatalf("too many cards in hands: %d", total)
+	}
+}
+
+func TestLedDealLetsTheWinnerOpenFreely(t *testing.T) {
+	for seed := int64(1); seed <= 200; seed++ {
+		for players := 2; players <= 4; players++ {
+			plain := newDeal(seed, players)
+			for leader := 0; leader < players; leader++ {
+				s := newLedDeal(seed, players, leader)
+				for p := range s.Hands {
+					if !slices.Equal(s.Hands[p], plain.Hands[p]) {
+						t.Fatalf("seed %d: led deal changed hand %d", seed, p)
+					}
+				}
+				if s.Starter != leader || s.Turn != leader || s.RequireThreeSpades || !s.LedByWinner {
+					t.Fatalf("seed %d leader %d: starter=%d turn=%d require3s=%v led=%v", seed, leader, s.Starter, s.Turn, s.RequireThreeSpades, s.LedByWinner)
+				}
+				if s.InstantWin != "" {
+					first := -1
+					for i := 0; i < players && first < 0; i++ {
+						if p := (leader + i) % players; instantWinKind(s.Hands[p]) != "" {
+							first = p
+						}
+					}
+					if s.FinishOrder[0] != first {
+						t.Fatalf("seed %d leader %d: instant winner %d, want %d", seed, leader, s.FinishOrder[0], first)
+					}
+					continue
+				}
+				top := s.Hands[leader][len(s.Hands[leader])-1]
+				next := cloneState(s)
+				if err := applyMove(next, leader, Move{Type: MoveTypePlay, Cards: []int{top}}); err != nil {
+					t.Fatalf("seed %d leader %d: free opening rejected: %v", seed, leader, err)
+				}
+			}
+		}
+	}
+}
+
+func TestLedDealOutsideTheTableFallsBackToThreeSpades(t *testing.T) {
+	for _, leader := range []int{-1, 4} {
+		s := Logic{}.InitPlayersLed(7, 4, leader).(*State)
+		want := newDeal(7, 4)
+		if s.LedByWinner || s.Starter != want.Starter || s.RequireThreeSpades != want.RequireThreeSpades {
+			t.Fatalf("leader %d: starter=%d require3s=%v led=%v", leader, s.Starter, s.RequireThreeSpades, s.LedByWinner)
+		}
+	}
+}
+
+func TestLedByWinnerSurvivesSnapshotAndView(t *testing.T) {
+	s := newLedDeal(3, 3, 2)
+	raw, err := json.Marshal(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := decodeState(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !decoded.LedByWinner || !cloneState(decoded).LedByWinner {
+		t.Fatal("led-by-winner flag was lost")
+	}
+	if view := (Logic{}).ViewFor(decoded, 0).(PlayerView); !view.LedByWinner {
+		t.Fatal("player view does not expose the led-by-winner flag")
+	}
+}
+
+func TestInstantWinsAreCheckedFromTheLeader(t *testing.T) {
+	hands := [][]int{
+		{0, 8, 10, 16, 18, 23, 24, 26, 31, 32, 34, 39, 40},
+		{3, 6, 7, 14, 15, 22, 30, 38, 46, 48, 49, 50, 51},
+		{1, 9, 11, 17, 19, 25, 27, 33, 35, 41, 42, 43, 47},
+		{2, 4, 5, 12, 13, 20, 21, 28, 29, 36, 37, 44, 45},
+	}
+	for _, test := range []struct {
+		leader int
+		win    string
+		order  []int
+	}{{0, InstantFourTwos, []int{1, 2, 3, 0}}, {2, InstantSixPairs, []int{3, 0, 1, 2}}} {
+		s := fixedState(hands, test.leader)
+		applyInstantWins(s)
+		if s.InstantWin != test.win || !slices.Equal(s.FinishOrder, test.order) {
+			t.Fatalf("leader %d: win=%q order=%v, want %q %v", test.leader, s.InstantWin, s.FinishOrder, test.win, test.order)
+		}
 	}
 }

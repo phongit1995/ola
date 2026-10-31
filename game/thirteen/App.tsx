@@ -6,10 +6,13 @@ import { preloadCardAssets } from './assets';
 import { BrandMark } from './components/BrandMark';
 import { ConfirmModal } from './components/ConfirmModal';
 import { LobbyScreen } from './screens/lobby/LobbyScreen';
+import { HistoryScreen } from './screens/records/HistoryScreen';
+import { LeaderboardScreen } from './screens/records/LeaderboardScreen';
 import { RoomScreen } from './screens/room/RoomScreen';
 import { TableScreen } from './screens/table/TableScreen';
 import { ResultScreen } from './screens/result/ResultScreen';
 import { useThirteen } from './store/useThirteen';
+import { usePortraitLock } from './usePortraitLock';
 
 export function App() {
   const [assetsReady, setAssetsReady] = useState(false);
@@ -18,11 +21,14 @@ export function App() {
   const notice = useThirteen((s) => s.notice);
   const toast = useThirteen((s) => s.toast);
   const confirmExit = useThirteen((s) => s.confirmExit);
+  const overlay = useThirteen((s) => (s.phase === 'lobby' ? s.overlay : null));
+  const practice = useThirteen((s) => s.practice != null);
   const dismissNotice = useThirteen((s) => s.dismissNotice);
   const cancelExit = useThirteen((s) => s.cancelExit);
   const confirmExitNow = useThirteen((s) => s.confirmExitNow);
   const init = useThirteen((s) => s.init);
   const dispose = useThirteen((s) => s.dispose);
+  const rotation = usePortraitLock();
 
   useEffect(() => {
     const stopKenSync = bridge.onHost(ARCADE_BRIDGE_EVENT.KenUpdated, (data) => {
@@ -44,7 +50,7 @@ export function App() {
   }, [dispose, init]);
 
   return (
-    <div id="tl-app">
+    <div id="tl-app" data-rotate={rotation || undefined}>
       {phase === 'connecting' && (
         <div className="tl-loading" role="status" aria-live="polite" aria-label="Đang kết nối">
           <div className="tl-loading-mat" aria-hidden="true" />
@@ -60,17 +66,21 @@ export function App() {
         </div>
       )}
       {phase === 'lobby' && <LobbyScreen assetsReady={assetsReady} />}
+      {overlay === 'history' && <HistoryScreen />}
+      {overlay === 'leaderboard' && <LeaderboardScreen />}
       {phase === 'room' && <RoomScreen />}
       {phase === 'table' && <TableScreen />}
       {result && <ResultScreen />}
       {toast && <div className="tl-toast">{toast}</div>}
       {confirmExit && (
         <ConfirmModal
-          title="Rời ván đấu?"
+          title={phase === 'table' && practice ? 'Rời ván tập?' : 'Rời ván đấu?'}
           text={
-            phase === 'table' && !result
-              ? 'Rời ngay bây giờ bạn sẽ bị xử thua ván này. Vẫn muốn rời?'
-              : 'Bạn muốn thoát trò chơi?'
+            phase === 'table' && practice
+              ? 'Ván tập không tính điểm. Bạn muốn về sảnh?'
+              : phase === 'table' && !result
+                ? 'Rời ngay bây giờ bạn sẽ bị xử thua ván này. Vẫn muốn rời?'
+                : 'Bạn muốn thoát trò chơi?'
           }
           confirmLabel="Rời ván"
           cancelLabel="Ở lại"

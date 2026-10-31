@@ -52,6 +52,7 @@ export const API_PATH = {
   },
   userSettings: '/user-settings',
   appSettings: '/settings/app',
+  appUpdate: '/settings/app-update',
   announcements: {
     latest: '/announcements/latest',
   },

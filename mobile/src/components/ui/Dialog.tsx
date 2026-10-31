@@ -17,6 +17,7 @@ interface DialogProps {
   visible: boolean;
   onClose: () => void;
   onDismiss?: () => void;
+  onShow?: () => void;
   title?: string;
   icon?: ImageSourcePropType;
   showClose?: boolean;
@@ -32,6 +33,7 @@ export function Dialog({
   visible,
   onClose,
   onDismiss,
+  onShow,
   title,
   icon,
   showClose = false,
@@ -51,6 +53,7 @@ export function Dialog({
       animationType="fade"
       onRequestClose={blockedByAppLock ? noop : onClose}
       onDismiss={onDismiss}
+      onShow={onShow}
     >
       <Pressable
         className="absolute inset-0"

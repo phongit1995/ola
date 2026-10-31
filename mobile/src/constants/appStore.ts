@@ -15,3 +15,11 @@ export function appStoreReviewUrl(appId: string): string {
 export function appStoreWebReviewUrl(appId: string): string {
   return `https://apps.apple.com/app/id${appId}?action=write-review`;
 }
+
+export function appStoreAppUrl(appId: string): string {
+  return `itms-apps://apps.apple.com/app/id${appId}`;
+}
+
+export function appStoreWebUrl(appId: string): string {
+  return `https://apps.apple.com/app/id${appId}`;
+}

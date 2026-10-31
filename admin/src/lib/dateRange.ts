@@ -1,7 +1,13 @@
 import dayjs from 'dayjs'
+import { DATE_RANGE_PRESET_DAYS, type FixedDateRange } from './constants'
 
 export function isoDaysAgo(days: number): string {
   return dayjs().subtract(days, 'day').format('YYYY-MM-DD')
+}
+
+export function presetRange(preset: FixedDateRange): { from: string; to: string } {
+  const { days, endDaysAgo } = DATE_RANGE_PRESET_DAYS[preset]
+  return { from: isoDaysAgo(endDaysAgo + days - 1), to: isoDaysAgo(endDaysAgo) }
 }
 
 export function toIsoRange(from: string, to: string): { from?: string; to?: string } {

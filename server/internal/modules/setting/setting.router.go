@@ -15,6 +15,8 @@ func NewRouter(controller *Controller, authMiddleware *middleware.AuthMiddleware
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
+	api.GET("/settings/app-update", r.controller.AppUpdate)
+
 	settings := api.Group("/settings", r.authMiddleware.RequireAuth())
 	{
 		settings.GET("/topup", r.controller.TopupConfig)

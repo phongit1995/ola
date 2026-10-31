@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminRoomService } from '@/services/adminRoom.service'
 import type { CreateRoomRequest, ListParams, UpdateRoomRequest } from '@/types'
+import { ROOM_MESSAGES_PAGE_SIZE } from './constants'
 
 const ROOMS_KEY = 'admin-rooms'
 
@@ -13,9 +14,12 @@ export function useRooms(params: ListParams) {
 }
 
 export function useRoomMessages(id: string | null) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [ROOMS_KEY, 'messages', id],
-    queryFn: () => AdminRoomService.messages(id as string, { limit: 100 }),
+    queryFn: ({ pageParam }) =>
+      AdminRoomService.messages(id as string, { limit: ROOM_MESSAGES_PAGE_SIZE, before: pageParam || undefined }),
+    initialPageParam: '',
+    getNextPageParam: (last) => (last.hasMore && last.nextBefore ? last.nextBefore : undefined),
     enabled: id != null,
   })
 }

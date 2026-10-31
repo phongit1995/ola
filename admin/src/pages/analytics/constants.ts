@@ -2,8 +2,6 @@ import type { AnalyticsPlatform, AnalyticsSource } from '@/types'
 
 export const ANALYTICS_SETTING_KEY = 'analytics'
 
-export const ANALYTICS_DEFAULT_DAYS = 29
-
 export const ANALYTICS_REALTIME_POLL_MS = 60_000
 
 export const ANALYTICS_STALE_MS = 5 * 60_000

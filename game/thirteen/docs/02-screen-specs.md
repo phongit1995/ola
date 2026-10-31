@@ -66,9 +66,9 @@ Concept tham chiếu đã duyệt: [concept-loading-style-02-ngay-vui.png](./scr
 | topbar | 12–64 | 52 |
 | logo | 70–166 | 96 |
 | đường cong chuyển nền | 160–194 | 34 |
-| CTA stack | 194–338 | 144 |
-| room header | 348–392 | 44 |
-| room list | 400–832 | flexible |
+| CTA stack | 194–394 | 200 |
+| room header | 404–448 | 44 |
+| room list | 456–832 | flexible |
 
 Ở màn thấp 740–799:
 
@@ -130,7 +130,9 @@ Container:
 - margin auto;
 - gap 14 px;
 
-“CHƠI NGAY”:
+Sảnh không còn ghép bàn tự động. Nút lớn là tạo bàn, nút phụ là tập luyện với máy.
+
+“TẠO BÀN”:
 
 - width 100%, min-height 72 px;
 - fill `action.primary` gradient cho phép;
@@ -138,27 +140,28 @@ Container:
 - radius 20 px;
 - shadow control;
 - label `title.lg`, navy;
-- subtitle `body.sm`, navy 86%;
+- subtitle “Mời bạn bè, tự đặt cược” `body.sm`, navy 86%;
 - label và subtitle cách 2–4 px;
-- không icon, không glow.
+- không icon, không glow;
+- bấm mở modal tạo bàn (mục 4).
 
-Queueing:
-
-- label: “ĐANG TÌM BÀN...”;
-- subtitle thay bằng trạng thái tìm;
-- giữ vàng nhưng giảm saturation 8%;
-- thêm ba dot hoặc spinner navy 16 px;
-- button vẫn có nút hủy theo logic hiện tại; không pulse scale.
-
-“+ Tạo bàn riêng”:
+“Tập luyện”:
 
 - min-height 52 px;
 - cream fill;
 - border navy 2;
 - radius 16;
-- chữ 17 px weight 800;
-- dấu plus là text/icon navy, không màu khác;
-- shadow control.
+- một hàng giữa: icon máy `ic-bot.svg` 26 px, chữ 17 px weight 800, chip “Chơi với máy” aqua.100 chữ teal.700 11 px;
+- shadow control;
+- disabled (cream.200) cho tới khi preload xong bộ bài;
+- bấm mở modal “Chơi với máy” (mục 4.4).
+
+Hàng “Lịch sử” / “Xếp hạng” (`tl-lobby-links`) ngay dưới Tập luyện:
+
+- 2 nút chia đôi, gap 10 px, cao 44 px (không giảm ở màn thấp để giữ vùng chạm 44 px);
+- cream.100, viền navy 2, radius 14, shadow control;
+- icon 22 px (`ic-history.svg`, `ic-trophy.svg`) + chữ 15 px weight 800 (14 px dưới 360 px);
+- bấm mở màn Lịch sử chơi (mục 3.8) hoặc Bảng xếp hạng (mục 3.9).
 
 ### 3.6 Room list header
 
@@ -219,6 +222,32 @@ Empty state:
 - icon bốn lá bài outline navy/aqua, 56 px;
 - text “Chưa có bàn nào — hãy tạo bàn đầu tiên!” `body.md`;
 - không dùng ảnh minh họa AI.
+
+### 3.8 Màn Lịch sử chơi
+
+Phủ toàn màn trên sảnh (`tl-records`, role dialog, Esc hoặc nút back để đóng). Dữ liệu lấy từ server, chỉ ván online; ván tập không lưu. Chi tiết luật dữ liệu ở `10-history-leaderboard.md`.
+
+- **Nền:** aqua.400 + pattern như sảnh.
+- **Header:** dải cream.100, viền dưới coral 4 px + bóng navy 3 px; nút back 44 px trái, tiêu đề “Lịch sử chơi” 22 px giữa.
+- **Danh sách** (max-width 504, padding 16, gap 10), mỗi ván một thẻ cream.50 viền navy 2, radius 16:
+  - lưới `30px | 1fr | auto | 10px`: huy chương hạng (vàng / bạc / đồng / bét coral, giống màn kết quả) · “Về Nhất/Nhì/Ba/Bét” 16 px + dòng phụ “Bàn N người” 12 px kèm chồng tối đa 3 avatar 24 px của người cùng bàn (thêm “+N”) · bên phải Ken `+29.500` teal / `−5.000` coral (hoặc chip “Không cược”, “Hoàn cược” khi hòa) trên, giờ “14:05 · Hôm nay / Hôm qua / dd/MM” 11 px dưới · mũi tên mở rộng.
+  - Ván về Nhất có dải vàng nhạt bên trái; ván về Bét chữ tiêu đề coral.
+  - Bấm thẻ mở bảng hạng đủ của ván (nền aqua nhạt, viền trên nét đứt): huy chương 26 px, avatar 30 px, tên (mình hiện “Bạn” màu teal), nhãn hạng. Một thẻ mở tại một thời điểm, có `aria-expanded`.
+  - Dưới 360 px: ẩn chữ “Bàn ”, avatar 22 px.
+- Cuối danh sách: “Hiện tối đa 100 ván gần nhất.”
+- **Trạng thái:** đang tải (3 chấm + “Đang tải...”), lỗi (icon cảnh báo, tiêu đề, nút gold “Thử lại” 44 px), trống (“Chưa có ván online nào. Ván tập với máy không lưu ở đây.”).
+
+### 3.9 Màn Bảng xếp hạng
+
+Cùng khung với 3.8, tiêu đề “Bảng xếp hạng”.
+
+- **Tab kỳ:** khung cream.50 viền navy 2, radius 15, 3 tab cao 44 px “Hôm nay / Tuần này / Tháng này”; tab chọn nền navy.800 chữ cream. Là tablist, phím ← → Home End đổi kỳ.
+- **Dòng chú thích** 12 px dưới tab: trái “Tính từ 0h hôm nay / Tính từ thứ Hai 26/10 / Tính từ 01/10”, phải “Xếp theo số ván về Nhất”.
+- **Mỗi hàng** lưới `30px | 40px | 1fr | auto`: hạng (top 3 huy chương vàng/bạc/đồng, còn lại đĩa cream) · avatar 40 · tên (cắt “…”) + chip “Lv N” navy, dòng phụ “N ván” và “+Ken” teal khi có Ken thắng · bên phải số lần Nhất 22 px + chữ “NHẤT”.
+- **Hàng của mình:** nền aqua.100, viền teal.700, tên hiện “Bạn”.
+- Dưới 360 px: lưới `26px | 34px | 1fr | auto`, số Nhất 20 px.
+- Cuối danh sách: “Bằng số ván Nhất thì ai ít ván thua hơn đứng trên. Hiện top 100.”
+- **Trạng thái:** như 3.8, trống ghi “Chưa ai về Nhất trong kỳ này. Vào bàn và giành hạng đầu tiên!”.
 
 ## 4. Modal tạo bàn và nhập mật khẩu
 
@@ -301,6 +330,30 @@ Actions:
 - label vẫn còn hoặc dùng “Đang tạo...”;
 - disable capacity/input để tránh submit kép;
 - không giảm opacity modal.
+
+### 4.4 Modal “Chơi với máy”
+
+Cùng khung `tl-lobby-modal` với modal tạo bàn (cream, viền navy 2, radius 20), nhưng thay vạch accent coral bằng huy hiệu.
+
+- **Đầu hộp:** huy hiệu tròn 56 px (gradient aqua → teal, viền navy, icon `ic-bot.svg` 32 px, nảy vào khi mở), tiêu đề “Chơi với máy”, dòng phụ “Chọn đối thủ và độ khó cho ván tập” 13 px navy 62%.
+- **Hàng tiêu đề danh sách:** “Đối thủ N/3” trái (số màu teal); nút viên thuốc “+ Thêm máy” cao 28 px phải, mờ khi đủ 3 máy.
+- Mặc định 3 máy mức Thường (bàn 4 người); tối thiểu 1 máy, tối đa 3.
+- **Mỗi máy một hàng** `34px | 1fr | 28px`, nền cream.100, radius 14, có vạch màu 4 px bên trái theo mức:
+
+  | Mức | Màu | Mô tả dưới tên |
+  |---|---|---|
+  | Dễ | aqua.400 / teal.700 | “Đánh bừa” |
+  | Thường | sun.400 / nâu vàng | “Giữ bài” |
+  | Khó | coral.400 / coral.500 | “Nhớ bài” |
+
+  - Viền avatar 34 px cùng màu mức.
+  - Tên “Máy 1/2/3” 13 px weight 800, mô tả mức 11 px bên dưới.
+  - Bên phải cùng hàng là bộ chọn mức dạng viên thuốc (cao 26 px, chữ 11 px). Ô đang chọn tô màu nhạt của mức và viền màu mức. Là radiogroup, phím mũi tên đổi mức.
+  - Màn hẹp dưới 360 px: bộ chọn xuống dòng dưới tên, ẩn mô tả mức.
+  - Nút xoá tròn 28 px viền coral, xám khi còn 1 máy.
+- **Chip luật** canh giữa: “Bàn N người: bạn + M máy” (aqua) · “30 giây/lượt” · “Không cược” · “Không cộng EXP”.
+- **Actions:** Hủy (ghost) / Bắt đầu (gold, focus mặc định).
+- Vừa khung 320 × 568 khi có 3 máy, không phải cuộn.
 
 ## 5. Phòng chờ
 
@@ -584,34 +637,34 @@ Concept tham chiếu đã duyệt: [concept-result-style-02-ngay-vui.png](./scre
 
 ### 9.1 Backdrop/card
 
-- backdrop navy 38%;
-- result card cream, width `min(354px, calc(100% - 28px))`;
-- border navy 2;
-- radius 24;
-- shadow overlay;
-- padding 18–20 px;
-- max-height `calc(100vh - safe areas - 32px)`;
+- backdrop navy radial 38–66% + blur 3 px, fade-in;
+- result card cream, width `min(354px, 100%)`, lề màn 16 px (12 px khi rộng < 380);
+- border navy 2, radius 26, bóng đáy 6 px + overlay, pop-in;
+- padding trên 46 px để chừa huy hiệu, hai bên 16 px;
+- max-height `calc(100dvh - safe areas - 72px)`;
+- dải màu nhạt 120 px đầu thẻ theo tông: vàng (Nhất), aqua (giữa), coral (Bét);
 - nội dung ranking scroll nếu cần.
 
-### 9.2 Banner
+### 9.2 Huy hiệu và tiêu đề
 
-- “KẾT QUẢ” `display.md` navy;
-- underline coral 56 × 4 px;
-- không ribbon 3D;
-- instant win là sun/coral pill dưới title.
+- huy hiệu tròn 76 px đè mép trên thẻ, viền navy 2.5;
+- Nhất: vương miện trên nền vàng, tia sáng xoay chậm phía sau, pháo giấy rơi khắp màn;
+- Nhì/Ba: số hạng trên nền bạc/đồng; Bét: số hạng trên nền coral;
+- người xem hoặc không rõ hạng: vương miện, tiêu đề "Kết quả ván";
+- dòng nhỏ "KẾT QUẢ VÁN" teal, giãn chữ;
+- tiêu đề "Bạn về Nhất!" / "Bạn về Nhì" / "Bạn về Bét" 30 px (Bét màu coral);
+- câu phụ: động viên theo hạng, hoặc lý do kết thúc (mất kết nối / có người rời bàn);
+- tới trắng: sun pill thay câu phụ.
 
 ### 9.3 Ranking row
 
-- min-height 58 px;
-- border navy 1.5 px;
-- radius 14;
-- cream.50 fill;
-- grid `32px 40px minmax(0,1fr) auto`;
-- gap 8 px;
-- place số 18 px weight 800;
-- avatar 36 px;
-- name ellipsis;
-- badge kết quả live.
+- min-height 56 px, radius 16, nền cream.100, viền navy 16%;
+- grid `30px 40px minmax(0,1fr) auto`, gap 10 (rộng < 380: `26px 36px`, gap 8);
+- huy chương số hạng 30 px: vàng, bạc, đồng; hạng Bét viền coral;
+- tên ellipsis + nhãn hạng nhỏ (Nhất/Nhì/Ba/Bét) bên dưới;
+- pill "+N EXP" bên phải khi server gửi `expGains`;
+- hàng Nhất nền vàng viền navy; hàng của mình nền aqua viền teal;
+- các hàng trượt lên lần lượt cách nhau 80 ms.
 
 Variants:
 
@@ -677,7 +730,11 @@ Mỗi release chụp các state:
 
 - loading, reconnect error;
 - lobby 0/1/4+ phòng;
-- lobby queueing;
+- lobby nút Tạo bàn + Tập luyện + hàng Lịch sử / Xếp hạng;
+- lịch sử: có ván 2/3/4 người (thắng, thua, có/không cược), mở rộng một ván, trống, lỗi;
+- bảng xếp hạng: 3 kỳ, có hàng của mình, trống, lỗi;
+- modal Chơi với máy 1/2/3 máy;
+- ván tập 2 và 4 người, kết quả ván tập;
 - create room default/error/loading;
 - password room default/error;
 - room 2/3/4 người, host và guest;

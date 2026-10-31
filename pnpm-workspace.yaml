@@ -15,5 +15,6 @@ allowBuilds:
 
 overrides:
   firebase: 12.16.0
+  sp-react-native-in-app-updates>react-native-device-info: ^15.0.2
 
 nodeLinker: hoisted
