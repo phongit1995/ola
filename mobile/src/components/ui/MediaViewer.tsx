@@ -223,14 +223,14 @@ function MediaViewerBody({ images, index, onClose }: MediaViewerModalProps) {
           onPress={onSave}
           disabled={saving}
           accessibilityLabel={t('media.save')}
-          className="absolute left-3 h-10 w-10 items-center justify-center rounded-full bg-white/15"
+          className="absolute left-3 h-10 w-10 items-center justify-center rounded-full bg-black/50"
           style={{ top: insets.top + 8 }}
         >
           {saving ? <ActivityIndicator size="small" color="#ffffff" /> : <DownloadIcon />}
         </Pressable>
         <Pressable
           onPress={onClose}
-          className="absolute right-3 h-10 w-10 items-center justify-center rounded-full bg-white/15"
+          className="absolute right-3 h-10 w-10 items-center justify-center rounded-full bg-black/50"
           style={{ top: insets.top + 8 }}
         >
           <CloseIcon />
