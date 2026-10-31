@@ -6,6 +6,8 @@ import { preloadCardAssets } from './assets';
 import { BrandMark } from './components/BrandMark';
 import { ConfirmModal } from './components/ConfirmModal';
 import { LobbyScreen } from './screens/lobby/LobbyScreen';
+import { HistoryScreen } from './screens/records/HistoryScreen';
+import { LeaderboardScreen } from './screens/records/LeaderboardScreen';
 import { RoomScreen } from './screens/room/RoomScreen';
 import { TableScreen } from './screens/table/TableScreen';
 import { ResultScreen } from './screens/result/ResultScreen';
@@ -19,6 +21,7 @@ export function App() {
   const notice = useThirteen((s) => s.notice);
   const toast = useThirteen((s) => s.toast);
   const confirmExit = useThirteen((s) => s.confirmExit);
+  const overlay = useThirteen((s) => (s.phase === 'lobby' ? s.overlay : null));
   const practice = useThirteen((s) => s.practice != null);
   const dismissNotice = useThirteen((s) => s.dismissNotice);
   const cancelExit = useThirteen((s) => s.cancelExit);
@@ -63,6 +66,8 @@ export function App() {
         </div>
       )}
       {phase === 'lobby' && <LobbyScreen assetsReady={assetsReady} />}
+      {overlay === 'history' && <HistoryScreen />}
+      {overlay === 'leaderboard' && <LeaderboardScreen />}
       {phase === 'room' && <RoomScreen />}
       {phase === 'table' && <TableScreen />}
       {result && <ResultScreen />}

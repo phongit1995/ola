@@ -26,3 +26,11 @@ export function placeLabel(place: number, playerCount: number): string {
   if (place === 3) return 'Ba';
   return `Hạng ${place}`;
 }
+
+export function medalTone(place: number, playerCount: number): string {
+  if (place === 1) return 'gold';
+  if (place === playerCount) return 'last';
+  if (place === 2) return 'silver';
+  if (place === 3) return 'bronze';
+  return 'plain';
+}

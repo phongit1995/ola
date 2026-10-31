@@ -205,6 +205,7 @@ function makeMockSession(): GameSession {
   const boards: Record<LeaderboardPeriod, LeaderboardEntry[]> = {
     day: makeLeaderboard(state === 'short' ? 4 : 20, 1_284_500),
     week: makeLeaderboard(state === 'short' ? 3 : 20, 8_640_000),
+    month: [],
   };
   let onBoard: ((payload: LeaderboardData) => void) | null = null;
   let onHist: ((payload: MatchHistoryData) => void) | null = null;

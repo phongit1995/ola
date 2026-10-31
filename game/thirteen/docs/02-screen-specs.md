@@ -66,9 +66,9 @@ Concept tham chiếu đã duyệt: [concept-loading-style-02-ngay-vui.png](./scr
 | topbar | 12–64 | 52 |
 | logo | 70–166 | 96 |
 | đường cong chuyển nền | 160–194 | 34 |
-| CTA stack | 194–338 | 144 |
-| room header | 348–392 | 44 |
-| room list | 400–832 | flexible |
+| CTA stack | 194–394 | 200 |
+| room header | 404–448 | 44 |
+| room list | 456–832 | flexible |
 
 Ở màn thấp 740–799:
 
@@ -156,6 +156,13 @@ Sảnh không còn ghép bàn tự động. Nút lớn là tạo bàn, nút ph�
 - disabled (cream.200) cho tới khi preload xong bộ bài;
 - bấm mở modal “Chơi với máy” (mục 4.4).
 
+Hàng “Lịch sử” / “Xếp hạng” (`tl-lobby-links`) ngay dưới Tập luyện:
+
+- 2 nút chia đôi, gap 10 px, cao 44 px (không giảm ở màn thấp để giữ vùng chạm 44 px);
+- cream.100, viền navy 2, radius 14, shadow control;
+- icon 22 px (`ic-history.svg`, `ic-trophy.svg`) + chữ 15 px weight 800 (14 px dưới 360 px);
+- bấm mở màn Lịch sử chơi (mục 3.8) hoặc Bảng xếp hạng (mục 3.9).
+
 ### 3.6 Room list header
 
 - layout: title trái, refresh button phải;
@@ -215,6 +222,32 @@ Empty state:
 - icon bốn lá bài outline navy/aqua, 56 px;
 - text “Chưa có bàn nào — hãy tạo bàn đầu tiên!” `body.md`;
 - không dùng ảnh minh họa AI.
+
+### 3.8 Màn Lịch sử chơi
+
+Phủ toàn màn trên sảnh (`tl-records`, role dialog, Esc hoặc nút back để đóng). Dữ liệu lấy từ server, chỉ ván online; ván tập không lưu. Chi tiết luật dữ liệu ở `10-history-leaderboard.md`.
+
+- **Nền:** aqua.400 + pattern như sảnh.
+- **Header:** dải cream.100, viền dưới coral 4 px + bóng navy 3 px; nút back 44 px trái, tiêu đề “Lịch sử chơi” 22 px giữa.
+- **Danh sách** (max-width 504, padding 16, gap 10), mỗi ván một thẻ cream.50 viền navy 2, radius 16:
+  - lưới `30px | 1fr | auto | 10px`: huy chương hạng (vàng / bạc / đồng / bét coral, giống màn kết quả) · “Về Nhất/Nhì/Ba/Bét” 16 px + dòng phụ “Bàn N người” 12 px kèm chồng tối đa 3 avatar 24 px của người cùng bàn (thêm “+N”) · bên phải Ken `+29.500` teal / `−5.000` coral (hoặc chip “Không cược”, “Hoàn cược” khi hòa) trên, giờ “14:05 · Hôm nay / Hôm qua / dd/MM” 11 px dưới · mũi tên mở rộng.
+  - Ván về Nhất có dải vàng nhạt bên trái; ván về Bét chữ tiêu đề coral.
+  - Bấm thẻ mở bảng hạng đủ của ván (nền aqua nhạt, viền trên nét đứt): huy chương 26 px, avatar 30 px, tên (mình hiện “Bạn” màu teal), nhãn hạng. Một thẻ mở tại một thời điểm, có `aria-expanded`.
+  - Dưới 360 px: ẩn chữ “Bàn ”, avatar 22 px.
+- Cuối danh sách: “Hiện tối đa 100 ván gần nhất.”
+- **Trạng thái:** đang tải (3 chấm + “Đang tải...”), lỗi (icon cảnh báo, tiêu đề, nút gold “Thử lại” 44 px), trống (“Chưa có ván online nào. Ván tập với máy không lưu ở đây.”).
+
+### 3.9 Màn Bảng xếp hạng
+
+Cùng khung với 3.8, tiêu đề “Bảng xếp hạng”.
+
+- **Tab kỳ:** khung cream.50 viền navy 2, radius 15, 3 tab cao 44 px “Hôm nay / Tuần này / Tháng này”; tab chọn nền navy.800 chữ cream. Là tablist, phím ← → Home End đổi kỳ.
+- **Dòng chú thích** 12 px dưới tab: trái “Tính từ 0h hôm nay / Tính từ thứ Hai 26/10 / Tính từ 01/10”, phải “Xếp theo số ván về Nhất”.
+- **Mỗi hàng** lưới `30px | 40px | 1fr | auto`: hạng (top 3 huy chương vàng/bạc/đồng, còn lại đĩa cream) · avatar 40 · tên (cắt “…”) + chip “Lv N” navy, dòng phụ “N ván” và “+Ken” teal khi có Ken thắng · bên phải số lần Nhất 22 px + chữ “NHẤT”.
+- **Hàng của mình:** nền aqua.100, viền teal.700, tên hiện “Bạn”.
+- Dưới 360 px: lưới `26px | 34px | 1fr | auto`, số Nhất 20 px.
+- Cuối danh sách: “Bằng số ván Nhất thì ai ít ván thua hơn đứng trên. Hiện top 100.”
+- **Trạng thái:** như 3.8, trống ghi “Chưa ai về Nhất trong kỳ này. Vào bàn và giành hạng đầu tiên!”.
 
 ## 4. Modal tạo bàn và nhập mật khẩu
 
@@ -697,7 +730,9 @@ Mỗi release chụp các state:
 
 - loading, reconnect error;
 - lobby 0/1/4+ phòng;
-- lobby nút Tạo bàn + Tập luyện;
+- lobby nút Tạo bàn + Tập luyện + hàng Lịch sử / Xếp hạng;
+- lịch sử: có ván 2/3/4 người (thắng, thua, có/không cược), mở rộng một ván, trống, lỗi;
+- bảng xếp hạng: 3 kỳ, có hàng của mình, trống, lỗi;
 - modal Chơi với máy 1/2/3 máy;
 - ván tập 2 và 4 người, kết quả ván tập;
 - create room default/error/loading;

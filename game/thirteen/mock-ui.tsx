@@ -7,7 +7,16 @@
 // Xem SCENES bên dưới để biết đủ tên màn.
 import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { ChatMessageData, PlayerInfo, RoomInfo, RoomStateData } from '../src/sdk';
+import type {
+  ChatMessageData,
+  LeaderboardEntry,
+  LeaderboardPeriod,
+  MatchHistoryEntry,
+  MatchHistoryPlayer,
+  PlayerInfo,
+  RoomInfo,
+  RoomStateData,
+} from '../src/sdk';
 import { App } from './App';
 import type { BotLevel } from './logic/bot';
 import { BOT_VIP_TYPES } from './helpers/practice';
@@ -40,6 +49,124 @@ const MATCH_CHAT: ChatMessageData[] = [
   { matchId: 'm1', userId: 'u-2', name: 'hoangminh', text: 'chặt đó nha', sentAt: Date.now() - 20_000 },
   { matchId: 'm1', userId: ME.id, name: 'test1', text: 'tới luôn', sentAt: Date.now() - 8_000 },
 ];
+
+const MINUTE = 60_000;
+const DAY = 24 * 60 * MINUTE;
+
+function historyEntry(
+  id: string,
+  agoMs: number,
+  bet: number,
+  kenDelta: number,
+  ranking: Array<[string, string, string?]>,
+): MatchHistoryEntry {
+  const players: MatchHistoryPlayer[] = ranking.map(([userId, username, vipType], i) => ({ userId, username, vipType, place: i + 1 }));
+  const place = players.findIndex((player) => player.userId === ME.id) + 1;
+  const opponent = players.find((player) => player.userId !== ME.id)!;
+  return {
+    id,
+    playedAt: Date.now() - agoMs,
+    opponentId: opponent.userId,
+    opponentName: opponent.username,
+    opponentVipType: opponent.vipType,
+    bet,
+    outcome: place === 1 ? 'win' : 'lose',
+    kenDelta,
+    playerCount: players.length,
+    place,
+    players,
+  };
+}
+
+const MOCK_HISTORY: MatchHistoryEntry[] = [
+  historyEntry('h1', 25 * MINUTE, 10_000, 29_500, [[ME.id, 'test1', ME.vipType], ['u-2', 'hoangminh', '12'], ['u-3', 'lananh'], ['u-4', 'quocbao', '27']]),
+  historyEntry('h2', 2 * 60 * MINUTE, 0, 0, [['u-3', 'lananh'], [ME.id, 'test1', ME.vipType], ['u-4', 'quocbao', '27'], ['u-2', 'hoangminh', '12']]),
+  historyEntry('h3', DAY, 5_000, -5_000, [['u-4', 'quocbao', '27'], ['u-9', 'nguyenvanthanhlongdai_99', '5'], [ME.id, 'test1', ME.vipType]]),
+  historyEntry('h4', 3 * DAY, 0, 0, [[ME.id, 'test1', ME.vipType], ['u-5', 'thuha', '5']]),
+  historyEntry('h5', 5 * DAY, 20_000, -20_000, [['u-6', 'tranquanghuy_chuyen_bai', '45'], [ME.id, 'test1', ME.vipType]]),
+  historyEntry('h6', 9 * DAY, 0, 0, [['u-2', 'hoangminh', '12'], ['u-3', 'lananh'], [ME.id, 'test1', ME.vipType], ['u-4', 'quocbao', '27']]),
+];
+
+const BOARD_NAMES = ['vuabai_tienlen', 'hoangminh', 'lananh', 'quocbao', 'thuha', 'tranquanghuy_chuyen_bai', 'minhthu', 'baolong', 'ngocanh', 'ducthinh'];
+const BOARD_VIPS = ['45', '12', undefined, '27', '5', '3', undefined, '12', undefined, '27'];
+
+function mockBoard(count: number, myRank: number): LeaderboardEntry[] {
+  return Array.from({ length: count }, (_, i) => {
+    const rank = i + 1;
+    const self = rank === myRank;
+    const wins = Math.max(1, count * 2 - i * 2 + (i % 3));
+    return {
+      rank,
+      userId: self ? ME.id : `lb-${rank}`,
+      username: self ? ME.username : `${BOARD_NAMES[i % BOARD_NAMES.length]}${i >= BOARD_NAMES.length ? i : ''}`,
+      vipType: self ? ME.vipType : BOARD_VIPS[i % BOARD_VIPS.length],
+      ken: i % 4 === 0 ? (count - i) * 12_500 : 0,
+      wins,
+      losses: wins + (i % 5) * 2,
+      level: Math.max(1, 14 - Math.floor(i / 2)),
+    };
+  });
+}
+
+const MOCK_BOARDS: Record<LeaderboardPeriod, LeaderboardEntry[]> = {
+  day: mockBoard(5, 3),
+  week: mockBoard(12, 7),
+  month: mockBoard(30, 17),
+};
+
+function periodStart(period: LeaderboardPeriod): number {
+  const local = new Date(Date.now() + 7 * 60 * MINUTE);
+  let date = local.getUTCDate();
+  if (period === 'week') date -= (local.getUTCDay() + 6) % 7;
+  if (period === 'month') date = 1;
+  return Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), date) - 7 * 60 * MINUTE;
+}
+
+const recordMode = /-(empty|error|loading)$/.exec(new URLSearchParams(location.search).get('screen') ?? '')?.[1] ?? 'data';
+const later = (fn: () => void): void => {
+  if (recordMode !== 'loading') window.setTimeout(fn, 350);
+};
+
+function mockLoadHistory(): void {
+  useThirteen.setState({ history: { items: [], loading: true, error: null } });
+  later(() =>
+    useThirteen.setState({
+      history: {
+        items: recordMode === 'data' ? MOCK_HISTORY : [],
+        loading: false,
+        error: recordMode === 'error' ? 'Máy chủ chưa trả lời, hãy thử lại.' : null,
+      },
+    }),
+  );
+}
+
+function mockLoadBoard(period: LeaderboardPeriod): void {
+  useThirteen.setState({ leaderboard: { period, from: 0, items: [], loading: true, error: null } });
+  later(() =>
+    useThirteen.setState({
+      leaderboard: {
+        period,
+        from: periodStart(period),
+        items: recordMode === 'data' ? MOCK_BOARDS[period] : [],
+        loading: false,
+        error: recordMode === 'error' ? 'Máy chủ chưa trả lời, hãy thử lại.' : null,
+      },
+    }),
+  );
+}
+
+const MOCK_RECORD_ACTIONS = {
+  openHistory: () => {
+    useThirteen.setState({ overlay: 'history' });
+    mockLoadHistory();
+  },
+  retryHistory: mockLoadHistory,
+  openLeaderboard: () => {
+    useThirteen.setState({ overlay: 'leaderboard' });
+    mockLoadBoard(useThirteen.getState().leaderboard.period);
+  },
+  setLeaderboardPeriod: mockLoadBoard,
+};
 
 function room(ownerIdx: number, maxPlayers: number, memberCount: number): RoomStateData {
   const members = PLAYERS_4.slice(0, memberCount).map((player, i) => ({
@@ -102,6 +229,13 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   'practice-setup': () => ({ phase: 'lobby', rooms: ROOMS }),
   practice: () => ({ phase: 'lobby', rooms: ROOMS }),
   'password-room': () => ({ phase: 'lobby', rooms: ROOMS }),
+  history: () => ({ phase: 'lobby', rooms: ROOMS }),
+  'history-empty': () => ({ phase: 'lobby', rooms: ROOMS }),
+  'history-error': () => ({ phase: 'lobby', rooms: ROOMS }),
+  'history-loading': () => ({ phase: 'lobby', rooms: ROOMS }),
+  leaderboard: () => ({ phase: 'lobby', rooms: ROOMS }),
+  'leaderboard-empty': () => ({ phase: 'lobby', rooms: ROOMS }),
+  'leaderboard-error': () => ({ phase: 'lobby', rooms: ROOMS }),
   'room-host': () => ({ phase: 'room', room: room(0, 4, 3), roomChat: ROOM_CHAT }),
   'room-guest': () => ({ phase: 'room', room: room(1, 4, 4), roomChat: ROOM_CHAT }),
   'room-2p': () => ({ phase: 'room', room: room(0, 2, 2), roomChat: [] }),
@@ -141,7 +275,7 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
 const screen = new URLSearchParams(location.search).get('screen') ?? 'lobby';
 const scene = SCENES[screen] ?? SCENES.lobby;
 
-useThirteen.setState({ init: () => {}, dispose: () => {}, user: ME, ...scene() });
+useThirteen.setState({ init: () => {}, dispose: () => {}, user: ME, ...MOCK_RECORD_ACTIONS, ...scene() });
 
 // Giả lập một lượt đánh như store thật (bài của mình đi đường nhanh, của đối
 // thủ phát lại rồi mới chuyển lượt) để xem hiệu ứng bài bay và dòng thông báo:
@@ -228,6 +362,14 @@ function MockApp() {
   useEffect(() => {
     if (screen === 'practice') {
       useThirteen.getState().startPractice(practiceBots());
+      return;
+    }
+    if (screen.startsWith('history')) {
+      useThirteen.getState().openHistory();
+      return;
+    }
+    if (screen.startsWith('leaderboard')) {
+      useThirteen.getState().openLeaderboard();
       return;
     }
     if (screen !== 'create-room' && screen !== 'password-room' && screen !== 'practice-setup') return;

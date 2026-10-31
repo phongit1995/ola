@@ -33,6 +33,7 @@ Source React hiện tại quyết định chức năng, dữ liệu và state. C
 7. [07-loading-lobby-implementation.md](./07-loading-lobby-implementation.md) — implementation loading/lobby, asset đã cắt, responsive và cách QA.
 8. [08-room-table-result-implementation.md](./08-room-table-result-implementation.md) — implementation phòng chờ, bàn chơi, chat, feedback và kết quả.
 9. [09-practice-mode.md](./09-practice-mode.md) — chế độ tập luyện chơi với máy: engine local, não máy 3 mức, session giả lập.
+10. [10-history-leaderboard.md](./10-history-leaderboard.md) — lịch sử chơi và bảng xếp hạng: giao thức, cách server tính cho bàn 2–4 người, luật xếp hạng theo số ván Nhất.
 10. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset hoặc lần sinh hình.
 
 ## Nguyên tắc bắt buộc

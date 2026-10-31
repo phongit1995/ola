@@ -4,7 +4,10 @@ import { bridge, joinGame, type GameSession } from '../../src/sdk';
 import type {
   ChatMessageData,
   ExpGainEntry,
+  LeaderboardEntry,
+  LeaderboardPeriod,
   MatchFoundData,
+  MatchHistoryEntry,
   MatchOverData,
   PlayerInfo,
   RankingEntry,
@@ -37,6 +40,19 @@ export interface TableEvent {
   kind: 'play' | 'pass';
   seat: number;
   at: number;
+}
+
+export type LobbyOverlay = 'history' | 'leaderboard';
+
+export interface RecordList<T> {
+  items: T[];
+  loading: boolean;
+  error: string | null;
+}
+
+export interface LeaderboardView extends RecordList<LeaderboardEntry> {
+  period: LeaderboardPeriod;
+  from: number;
 }
 
 export interface MatchResult {
@@ -87,6 +103,9 @@ interface ThirteenStore {
   notice: string | null;
   toast: string | null;
   confirmExit: boolean;
+  overlay: LobbyOverlay | null;
+  history: RecordList<MatchHistoryEntry>;
+  leaderboard: LeaderboardView;
   init(): void;
   dispose(): void;
   startPractice(bots: BotSetupItem[]): void;
@@ -112,6 +131,11 @@ interface ThirteenStore {
   closeResult(stayInRoom: boolean): void;
   dismissNotice(): void;
   showToast(text: string): void;
+  openHistory(): void;
+  retryHistory(): void;
+  openLeaderboard(): void;
+  setLeaderboardPeriod(period: LeaderboardPeriod): void;
+  closeOverlay(): void;
   selectedCombo(): Combo | null;
   canPlaySelected(): boolean;
 }
@@ -127,6 +151,11 @@ const STEP_MS: Record<string, number> = {
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+export const RECORD_REQUEST_TIMEOUT_MS = 8000;
+const RECORD_OFFLINE_TEXT = 'Chưa kết nối được máy chủ trò chơi.';
+const RECORD_TIMEOUT_TEXT = 'Máy chủ chưa trả lời, hãy thử lại.';
+const RECORD_SERVER_ERROR_TEXT = 'Máy chủ đang bận, hãy thử lại sau ít phút.';
+
 export const useThirteen = create<ThirteenStore>()((set, get) => {
   const refs = {
     session: null as GameSession<ServerState, ServerMove> | null,
@@ -138,7 +167,61 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     handledMatchStarts: new RecentMatchIds(),
     leftMatchId: '',
     toastTimer: 0,
+    historyTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    leaderboardTimer: 0 as ReturnType<typeof setTimeout> | 0,
     disposed: false,
+  };
+
+  const clearRecordTimers = (): void => {
+    if (refs.historyTimer) clearTimeout(refs.historyTimer);
+    if (refs.leaderboardTimer) clearTimeout(refs.leaderboardTimer);
+    refs.historyTimer = 0;
+    refs.leaderboardTimer = 0;
+  };
+
+  const requestHistory = (): void => {
+    if (refs.historyTimer) clearTimeout(refs.historyTimer);
+    refs.historyTimer = 0;
+    const session = refs.session;
+    if (!session) {
+      set((s) => ({ history: { ...s.history, loading: false, error: RECORD_OFFLINE_TEXT } }));
+      return;
+    }
+    set((s) => ({ history: { ...s.history, loading: true, error: null } }));
+    session.getHistory();
+    refs.historyTimer = setTimeout(() => {
+      refs.historyTimer = 0;
+      if (!get().history.loading) return;
+      set((s) => ({ history: { ...s.history, loading: false, error: RECORD_TIMEOUT_TEXT } }));
+    }, RECORD_REQUEST_TIMEOUT_MS);
+  };
+
+  const requestLeaderboard = (period: LeaderboardPeriod): void => {
+    if (refs.leaderboardTimer) clearTimeout(refs.leaderboardTimer);
+    refs.leaderboardTimer = 0;
+    const session = refs.session;
+    if (!session) {
+      set((s) => ({ leaderboard: { ...s.leaderboard, period, items: [], loading: false, error: RECORD_OFFLINE_TEXT } }));
+      return;
+    }
+    set((s) => ({ leaderboard: { ...s.leaderboard, period, from: 0, items: [], loading: true, error: null } }));
+    session.getLeaderboard(period);
+    refs.leaderboardTimer = setTimeout(() => {
+      refs.leaderboardTimer = 0;
+      const board = get().leaderboard;
+      if (!board.loading || board.period !== period) return;
+      set({ leaderboard: { ...board, loading: false, error: RECORD_TIMEOUT_TEXT } });
+    }, RECORD_REQUEST_TIMEOUT_MS);
+  };
+
+  const closeOverlay = (): void => {
+    if (!get().overlay) return;
+    clearRecordTimers();
+    set((s) => ({
+      overlay: null,
+      history: { ...s.history, loading: false },
+      leaderboard: { ...s.leaderboard, loading: false },
+    }));
   };
 
   const matchSession = (): GameSession<ServerState, ServerMove> | null => refs.practice ?? refs.session;
@@ -258,6 +341,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     refs.replayEpoch += 1;
     const epoch = refs.replayEpoch;
     const fresh = refs.handledMatchStarts.mark(data.matchId);
+    closeOverlay();
     if (data.matchId === refs.leftMatchId) refs.leftMatchId = '';
     set({
       phase: 'table',
@@ -419,7 +503,30 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       }),
       session.onRoomRemoved((data) => set((s) => ({ rooms: s.rooms.filter((room) => room.id !== data.roomId) }))),
       session.onRoomState((data) => {
+        if (get().phase !== 'table') closeOverlay();
         set({ room: data, phase: get().phase === 'table' ? 'table' : 'room' });
+      }),
+      session.onHistory((data) => {
+        if (refs.historyTimer) clearTimeout(refs.historyTimer);
+        refs.historyTimer = 0;
+        const failed = Boolean(data.error?.trim());
+        set({ history: { items: failed ? [] : (data.items ?? []), loading: false, error: failed ? RECORD_SERVER_ERROR_TEXT : null } });
+      }),
+      session.onLeaderboard((data) => {
+        const board = get().leaderboard;
+        if (data.period !== board.period) return;
+        if (refs.leaderboardTimer) clearTimeout(refs.leaderboardTimer);
+        refs.leaderboardTimer = 0;
+        const failed = Boolean(data.error?.trim());
+        set({
+          leaderboard: {
+            period: board.period,
+            from: data.from,
+            items: failed ? [] : (data.items ?? []),
+            loading: false,
+            error: failed ? RECORD_SERVER_ERROR_TEXT : null,
+          },
+        });
       }),
       session.onRoomSync((data) => {
         if (!data.roomId && get().phase === 'room') {
@@ -490,6 +597,9 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     notice: null,
     toast: null,
     confirmExit: false,
+    overlay: null,
+    history: { items: [], loading: false, error: null },
+    leaderboard: { period: 'day', from: 0, items: [], loading: false, error: null },
 
     init() {
       refs.disposed = false;
@@ -509,6 +619,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
 
     dispose() {
       refs.disposed = true;
+      clearRecordTimers();
       refs.unsubs.forEach((off) => off());
       refs.unsubs = [];
       refs.practice?.disconnect();
@@ -685,5 +796,23 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       set({ toast: text });
       refs.toastTimer = window.setTimeout(() => set({ toast: null }), 2600);
     },
+    openHistory() {
+      if (get().phase !== 'lobby') return;
+      set({ overlay: 'history', history: { items: [], loading: false, error: null } });
+      requestHistory();
+    },
+    retryHistory() {
+      if (get().overlay === 'history') requestHistory();
+    },
+    openLeaderboard() {
+      if (get().phase !== 'lobby') return;
+      set({ overlay: 'leaderboard' });
+      requestLeaderboard(get().leaderboard.period);
+    },
+    setLeaderboardPeriod(period) {
+      if (get().overlay !== 'leaderboard') return;
+      requestLeaderboard(period);
+    },
+    closeOverlay,
   };
 });

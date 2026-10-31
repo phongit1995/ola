@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import crownIcon from '../../assets/icons/ic-crown.svg';
-import { placeLabel } from '../../helpers/seats';
+import { medalTone, placeLabel } from '../../helpers/seats';
 import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { PlayerName } from '../../components/PlayerName';
 import { useThirteen } from '../../store/useThirteen';
@@ -36,14 +36,6 @@ const CONFETTI = Array.from({ length: 22 }, (_, i) => ({
   color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
   wide: i % 3 === 0,
 }));
-
-function medalTone(place: number, total: number): string {
-  if (place === 1) return 'gold';
-  if (place === total) return 'last';
-  if (place === 2) return 'silver';
-  if (place === 3) return 'bronze';
-  return 'plain';
-}
 
 function Confetti() {
   return (

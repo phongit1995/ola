@@ -132,7 +132,7 @@ export interface UserInfoData {
   exp?: number;
 }
 
-export type LeaderboardPeriod = 'day' | 'week';
+export type LeaderboardPeriod = 'day' | 'week' | 'month';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -164,6 +164,16 @@ export interface MatchHistoryEntry {
   bet: number;
   outcome: MatchHistoryOutcome;
   kenDelta: number;
+  playerCount?: number;
+  place?: number;
+  players?: MatchHistoryPlayer[];
+}
+
+export interface MatchHistoryPlayer {
+  userId: string;
+  username: string;
+  vipType?: string | null;
+  place?: number;
 }
 
 export interface MatchHistoryData {

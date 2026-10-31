@@ -1,7 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { MatchFoundData, MatchOverData, OpponentReconnectedData, PlayerInfo, RoomStateData, StateData, UserInfoData } from '../../src/sdk';
+import type {
+  LeaderboardData,
+  MatchFoundData,
+  MatchHistoryData,
+  MatchOverData,
+  OpponentReconnectedData,
+  PlayerInfo,
+  RoomStateData,
+  StateData,
+  UserInfoData,
+} from '../../src/sdk';
 
 const sessionHandlers = vi.hoisted(() => new Map<string, Set<(data: unknown) => void>>());
+const sessionCalls = vi.hoisted(() => [] as Array<[string, unknown[]]>);
 
 vi.mock('../../src/sdk', () => {
   const session = new Proxy(
@@ -17,7 +28,9 @@ vi.mock('../../src/sdk', () => {
             return () => handlers.delete(handler);
           };
         }
-        return () => undefined;
+        return (...args: unknown[]) => {
+          sessionCalls.push([key, args]);
+        };
       },
     },
   );
@@ -25,7 +38,7 @@ vi.mock('../../src/sdk', () => {
   return { bridge, joinGame: vi.fn(() => Promise.resolve(session)) };
 });
 
-import { useThirteen } from './useThirteen';
+import { RECORD_REQUEST_TIMEOUT_MS, useThirteen } from './useThirteen';
 
 const emit = (event: string, data: unknown): void => {
   sessionHandlers.get(event)?.forEach((handler) => handler(data));
@@ -71,6 +84,7 @@ const waitingRoom: RoomStateData = {
 afterEach(() => {
   useThirteen.getState().dispose();
   sessionHandlers.clear();
+  sessionCalls.length = 0;
   vi.useRealTimers();
   useThirteen.setState(originalState, true);
 });
@@ -225,5 +239,106 @@ describe('Thirteen opponent reconnect', () => {
 
     expect(useThirteen.getState().turn).toBe(1);
     expect(useThirteen.getState().deadlineAt - performance.now()).toBeGreaterThan(45_000);
+  });
+});
+
+describe('Thirteen history and leaderboard', () => {
+  const callsOf = (method: string) => sessionCalls.filter(([key]) => key === method).map(([, args]) => args);
+  const historyEntry = { id: 'm1', playedAt: 1, opponentId: 'opp', opponentName: 'opp', bet: 0, outcome: 'win', kenDelta: 0 } as const;
+  const board = (period: LeaderboardData['period'], username: string): LeaderboardData => ({
+    period,
+    from: 1_000,
+    to: 2_000,
+    items: [{ rank: 1, userId: username, username, ken: 0, wins: 3, losses: 1 }],
+  });
+
+  it('loads the history when opened from the lobby', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby' });
+
+    useThirteen.getState().openHistory();
+    expect(callsOf('getHistory')).toHaveLength(1);
+    expect(useThirteen.getState()).toMatchObject({ overlay: 'history', history: { loading: true, error: null } });
+
+    emit('onHistory', { items: [historyEntry] } satisfies MatchHistoryData);
+    expect(useThirteen.getState().history).toEqual({ items: [historyEntry], loading: false, error: null });
+  });
+
+  it('turns a silent server into a retryable error', async () => {
+    await connect();
+    vi.useFakeTimers();
+    useThirteen.setState({ phase: 'lobby' });
+
+    useThirteen.getState().openHistory();
+    await vi.advanceTimersByTimeAsync(RECORD_REQUEST_TIMEOUT_MS);
+    expect(useThirteen.getState().history).toMatchObject({ loading: false, error: 'Máy chủ chưa trả lời, hãy thử lại.' });
+
+    useThirteen.getState().retryHistory();
+    expect(callsOf('getHistory')).toHaveLength(2);
+    expect(useThirteen.getState().history).toMatchObject({ loading: true, error: null });
+  });
+
+  it('shows the server error instead of an empty list', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby' });
+
+    useThirteen.getState().openHistory();
+    emit('onHistory', { items: [], error: 'Không thể tải lịch sử đấu' } satisfies MatchHistoryData);
+
+    expect(useThirteen.getState().history).toEqual({ items: [], loading: false, error: 'Máy chủ đang bận, hãy thử lại sau ít phút.' });
+  });
+
+  it('keeps only the answer for the period on screen', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby' });
+
+    useThirteen.getState().openLeaderboard();
+    useThirteen.getState().setLeaderboardPeriod('month');
+    expect(callsOf('getLeaderboard')).toEqual([['day'], ['month']]);
+
+    emit('onLeaderboard', board('day', 'late-day'));
+    expect(useThirteen.getState().leaderboard).toMatchObject({ period: 'month', loading: true, items: [] });
+
+    emit('onLeaderboard', board('month', 'month-top'));
+    expect(useThirteen.getState().leaderboard).toMatchObject({ period: 'month', from: 1_000, loading: false, error: null });
+    expect(useThirteen.getState().leaderboard.items[0]?.username).toBe('month-top');
+  });
+
+  it('only opens from the lobby', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'table' });
+
+    useThirteen.getState().openHistory();
+    useThirteen.getState().openLeaderboard();
+
+    expect(useThirteen.getState().overlay).toBeNull();
+    expect(sessionCalls).toHaveLength(0);
+  });
+
+  it('closes when the player is pulled into a room or a match', async () => {
+    await connect();
+    vi.useFakeTimers();
+    useThirteen.setState({ phase: 'lobby' });
+    useThirteen.getState().openHistory();
+
+    emit('onRoomState', waitingRoom);
+    expect(useThirteen.getState()).toMatchObject({ phase: 'room', overlay: null, history: { loading: false } });
+
+    useThirteen.setState({ phase: 'lobby', room: null });
+    useThirteen.getState().openLeaderboard();
+    emit('onMatchFound', {
+      matchId: 'match-r',
+      gameId: 'thirteen',
+      players,
+      you: 0,
+      state: serverState(0),
+      turn: 0,
+      deadline: Date.now() + 30_000,
+      resumed: true,
+    } satisfies MatchFoundData);
+    expect(useThirteen.getState()).toMatchObject({ phase: 'table', overlay: null });
+
+    await vi.advanceTimersByTimeAsync(RECORD_REQUEST_TIMEOUT_MS);
+    expect(useThirteen.getState().leaderboard.error).toBeNull();
   });
 });

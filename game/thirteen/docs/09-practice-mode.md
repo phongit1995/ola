@@ -8,7 +8,7 @@ Nút “Tập luyện” ở sảnh mở modal “Chơi với máy”:
 
 Ván tập chạy hoàn toàn trong trình duyệt của người chơi:
 - không gửi gì lên server game;
-- không cược, không cộng EXP, không lưu lịch sử;
+- không cược, không cộng EXP, không lưu lịch sử, không tính vào bảng xếp hạng (xem `10-history-leaderboard.md`);
 - server không có code riêng cho chế độ này.
 
 Màn bàn chơi, hoạt cảnh bài bay, thông báo lượt, đồng hồ 30 giây, nút gợi ý, chat, biểu cảm và màn kết quả đều dùng lại nguyên của ván online.

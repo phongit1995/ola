@@ -168,7 +168,17 @@ type MatchHistoryEntry struct {
 	Outcome         string  `json:"outcome"`
 	// KenDelta is signed from the requesting player's point of view: the
 	// commission-adjusted net gain when they won, -bet when they lost, 0 on a draw.
-	KenDelta int `json:"kenDelta"`
+	KenDelta    int                  `json:"kenDelta"`
+	PlayerCount int                  `json:"playerCount,omitempty"`
+	Place       int                  `json:"place,omitempty"`
+	Players     []MatchHistoryPlayer `json:"players,omitempty"`
+}
+
+type MatchHistoryPlayer struct {
+	UserID   string  `json:"userId"`
+	Username string  `json:"username"`
+	VipType  *string `json:"vipType,omitempty"`
+	Place    int     `json:"place,omitempty"`
 }
 
 type MatchHistoryData struct {

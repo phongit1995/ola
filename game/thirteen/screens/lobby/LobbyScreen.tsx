@@ -4,8 +4,10 @@ import backIcon from '../../assets/icons/ic-back.svg';
 import botIcon from '../../assets/icons/ic-bot.svg';
 import cardsEmptyIcon from '../../assets/icons/ic-cards-empty.svg';
 import checkIcon from '../../assets/icons/ic-check.svg';
+import historyIcon from '../../assets/icons/ic-history.svg';
 import lockIcon from '../../assets/icons/ic-lock.svg';
 import refreshIcon from '../../assets/icons/ic-refresh.svg';
+import trophyIcon from '../../assets/icons/ic-trophy.svg';
 import kenIcon from '../../assets/icons/ken.png';
 import { BrandMark } from '../../components/BrandMark';
 import { handleModalKeyDown } from '../../components/modalKeyboard';
@@ -201,12 +203,15 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
   const refreshRooms = useThirteen((s) => s.refreshRooms);
   const joinRoom = useThirteen((s) => s.joinRoom);
   const requestExit = useThirteen((s) => s.requestExit);
+  const openHistory = useThirteen((s) => s.openHistory);
+  const openLeaderboard = useThirteen((s) => s.openLeaderboard);
+  const covered = useThirteen((s) => s.overlay != null);
   const [createOpen, setCreateOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [passwordRoom, setPasswordRoom] = useState<RoomInfo | null>(null);
 
   return (
-    <div className="tl-screen tl-lobby">
+    <div className="tl-screen tl-lobby" inert={covered}>
       <div className="tl-topbar">
         <button type="button" className="tl-icon-btn" onClick={requestExit} aria-label="Thoát">
           <img src={backIcon} alt="" />
@@ -226,6 +231,16 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
           <span>Tập luyện</span>
           <small>Chơi với máy</small>
         </button>
+        <div className="tl-lobby-links">
+          <button type="button" className="tl-lobby-link" onClick={openHistory}>
+            <img src={historyIcon} alt="" />
+            <span>Lịch sử</span>
+          </button>
+          <button type="button" className="tl-lobby-link" onClick={openLeaderboard}>
+            <img src={trophyIcon} alt="" />
+            <span>Xếp hạng</span>
+          </button>
+        </div>
       </div>
 
       <div className="tl-room-list-header">
