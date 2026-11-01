@@ -73,3 +73,26 @@ func (ctrl *Controller) ReadAll(c *gin.Context) (interface{}, error) {
 	}
 	return map[string]string{"message": "all notifications marked read"}, nil
 }
+
+// Hide godoc
+// @Summary      Hide one of my app notifications
+// @Tags         notifications
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path string true "Notification ID"
+// @Success      200  {object}  map[string]string
+// @Router       /notifications/{id} [delete]
+func (ctrl *Controller) Hide(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	id, err := utils.ParseUUIDParam(c, "id", "invalid notification id")
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.Hide(userID, id); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "notification hidden"}, nil
+}

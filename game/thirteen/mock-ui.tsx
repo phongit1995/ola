@@ -35,8 +35,28 @@ const PLAYERS_4: PlayerInfo[] = [
 const ROOMS: RoomInfo[] = [
   { id: 'r1', owner: 'hoangminh', ownerVipType: '12', bet: 0, locked: false, players: 2, maxPlayers: 4, status: 'waiting' },
   { id: 'r2', owner: 'lananh', bet: 0, locked: true, players: 1, maxPlayers: 3, status: 'waiting' },
-  { id: 'r3', owner: 'quocbao', ownerVipType: '27', bet: 0, locked: false, players: 4, maxPlayers: 4, status: 'playing' },
+  { id: 'r3', owner: 'quocbao', ownerVipType: '27', bet: 0, locked: false, players: 4, maxPlayers: 4, status: 'playing', matchId: 'm-watch' },
   { id: 'r4', owner: 'thuha', ownerVipType: '5', bet: 0, locked: false, players: 2, maxPlayers: 2, status: 'waiting' },
+  { id: 'r5', owner: 'minhthu', bet: 5_000, locked: true, players: 3, maxPlayers: 3, status: 'playing', matchId: 'm-private' },
+];
+
+const WATCH_PLAYERS: PlayerInfo[] = [
+  { id: 'u-4', name: 'quocbao', vipType: '27' },
+  { id: 'u-2', name: 'hoangminh', vipType: '12' },
+  { id: 'u-3', name: 'lananh' },
+  { id: 'u-5', name: 'thuha', vipType: '5' },
+];
+
+const WATCH_CHAT: ChatMessageData[] = [
+  { matchId: 'm-watch', userId: 'u-2', name: 'hoangminh', text: 'đôi 2 đây, ai chặt nổi', sentAt: Date.now() - 25_000 },
+  { matchId: 'm-watch', userId: 'u-4', name: 'quocbao', text: 'để tui', sentAt: Date.now() - 12_000 },
+  { matchId: 'm-watch', userId: 'u-5', name: 'thuha', text: 'bỏ lượt thôi', sentAt: Date.now() - 4_000 },
+];
+
+const VIEWERS: PlayerInfo[] = [
+  { id: 'u-6', name: 'ngoclinh', vipType: '8' },
+  { id: 'u-7', name: 'tuananh' },
+  { id: 'u-8', name: 'baotran', vipType: '21' },
 ];
 
 const ROOM_CHAT: ChatMessageData[] = [
@@ -208,6 +228,53 @@ function table(players: PlayerInfo[]) {
   };
 }
 
+function watchTable(players: PlayerInfo[]) {
+  return {
+    phase: 'table' as const,
+    spectating: true,
+    matchId: 'm-watch',
+    roomOwnerId: players[0].id,
+    players,
+    you: -1,
+    hand: [],
+    handCounts: players.map((_, i) => [9, 11, 6, 8][i] ?? 9),
+    table: { cards: [44, 45], by: 1 },
+    lastPlaySeat: 1,
+    passed: players.map((_, i) => i === players.length - 1 && players.length > 2),
+    quit: players.map(() => false),
+    finishOrder: [],
+    turn: players.length > 2 ? 2 : 0,
+    deadlineAt: performance.now() + 18_000,
+    require3s: false,
+    spectators: { matchId: 'm-watch', spectators: [VIEWERS[0], { id: ME.id, name: ME.username, vipType: ME.vipType }, VIEWERS[2]] },
+  };
+}
+
+function watchedRoom(memberCount: number): RoomStateData {
+  return {
+    roomId: 'r3',
+    ownerId: WATCH_PLAYERS[0].id,
+    youId: '',
+    bet: 0,
+    locked: false,
+    maxPlayers: 4,
+    watcher: true,
+    afterMatchId: 'm-watch',
+    members: WATCH_PLAYERS.slice(0, memberCount).map((player, i) => ({
+      id: player.id,
+      name: player.name,
+      vipType: player.vipType,
+      owner: i === 0,
+      ready: i === 1,
+    })),
+  };
+}
+
+const WATCH_ROOM_CHAT: ChatMessageData[] = [
+  { roomId: 'r3', userId: 'u-2', name: 'hoangminh', text: 'ván nữa không ae', sentAt: Date.now() - 20_000 },
+  { roomId: 'r3', userId: 'u-4', name: 'quocbao', text: 'chơi tiếp, sẵn sàng đi', sentAt: Date.now() - 8_000 },
+];
+
 function resultScene(order: string[], extra: { instantWin?: string; reason?: string } = {}) {
   return {
     ...table(PLAYERS_4),
@@ -259,6 +326,9 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
     awaySeats: { 3: performance.now() + 25_000 },
   }),
   'table-chop': () => ({ ...table(PLAYERS_4), chopFx: Date.now() }),
+  'table-viewers': () => ({ ...table(PLAYERS_4), spectators: { matchId: 'm1', spectators: VIEWERS } }),
+  'table-viewers-open': () => ({ ...table(PLAYERS_4), spectators: { matchId: 'm1', spectators: VIEWERS } }),
+  'table-viewers-2p': () => ({ ...table(PLAYERS_4.slice(0, 2)), spectators: { matchId: 'm1', spectators: VIEWERS.slice(0, 1) } }),
   'table-disconnected': () => ({ ...table(PLAYERS_4), selfDisconnected: true }),
   'confirm-exit': () => ({ ...table(PLAYERS_4), confirmExit: true }),
   notice: () => ({ phase: 'lobby', rooms: ROOMS, notice: 'Bàn đã bị chủ bàn đóng' }),
@@ -270,6 +340,27 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   'result-room': () => ({ ...resultScene(['u-3', ME.id, 'u-2', 'u-4']), room: room(0, 4, 4) }),
   'result-instant': () => resultScene([ME.id, 'u-2', 'u-3', 'u-4'], { instantWin: 'fourTwos' }),
   'result-forfeit': () => resultScene(['u-3', 'u-2', ME.id, 'u-4'], { reason: 'forfeit' }),
+  watch: () => watchTable(WATCH_PLAYERS),
+  'watch-3p': () => watchTable(WATCH_PLAYERS.slice(0, 3)),
+  'watch-2p': () => watchTable(WATCH_PLAYERS.slice(0, 2)),
+  'watch-finished': () => ({ ...watchTable(WATCH_PLAYERS), finishOrder: [0], handCounts: [0, 11, 6, 8], turn: 1 }),
+  'watch-chat': () => ({ ...watchTable(WATCH_PLAYERS), chatOpen: true, matchChat: WATCH_CHAT }),
+  'watch-viewers-open': () => watchTable(WATCH_PLAYERS),
+  'watch-room': () => ({
+    phase: 'room',
+    rooms: ROOMS,
+    watchingRoomId: 'r3',
+    watchedRoom: watchedRoom(3),
+    roomChat: WATCH_ROOM_CHAT,
+  }),
+  'watch-room-full': () => ({
+    phase: 'room',
+    rooms: ROOMS,
+    watchingRoomId: 'r3',
+    watchedRoom: { ...watchedRoom(4), members: watchedRoom(4).members.map((m) => ({ ...m, ready: true })) },
+    roomChat: WATCH_ROOM_CHAT,
+  }),
+  'watch-ended': () => ({ phase: 'lobby', rooms: ROOMS, toast: 'Ván đấu bạn đang xem đã kết thúc.' }),
 };
 
 const screen = new URLSearchParams(location.search).get('screen') ?? 'lobby';
@@ -371,6 +462,10 @@ function MockApp() {
     if (screen.startsWith('leaderboard')) {
       useThirteen.getState().openLeaderboard();
       return;
+    }
+    if (screen.endsWith('viewers-open')) {
+      const timer = window.setTimeout(() => document.querySelector<HTMLButtonElement>('.tl-viewers-tab')?.click(), 300);
+      return () => window.clearTimeout(timer);
     }
     if (screen !== 'create-room' && screen !== 'password-room' && screen !== 'practice-setup') return;
     const timer = window.setInterval(() => {

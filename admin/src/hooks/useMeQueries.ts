@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminMeService } from '@/services/adminMe.service'
-import type { MeListParams } from '@/types'
+import type { MeListParams, MePenaltyRequest } from '@/types'
+import { USERS_KEY } from './useUserQueries'
 
 const ME_KEY = 'admin-me'
 
@@ -43,11 +44,12 @@ export function useMeComments(id: string | null) {
 export function useUpdateMeStatus() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
-      AdminMeService.setStatus(id, enabled),
-    onSuccess: (_data, variables) => {
+    mutationFn: ({ id, enabled, penalty }: { id: string; enabled: boolean; penalty?: MePenaltyRequest }) =>
+      AdminMeService.setStatus(id, enabled, penalty),
+    onSettled: (_data, _err, variables) => {
       void queryClient.invalidateQueries({ queryKey: [ME_KEY, 'detail', variables.id] })
       void queryClient.invalidateQueries({ queryKey: [ME_KEY] })
+      if (variables.penalty) void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
     },
   })
 }

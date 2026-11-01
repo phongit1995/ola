@@ -72,19 +72,57 @@ Phía server:
 - view gửi client có thêm `ledByWinner`;
 - Caro / War God / Cờ tướng không cài `LeaderInit` nên không đổi.
 
-## 5. Chat và kết quả
+## 5. Xem bàn đang chơi
+
+Ở sảnh, bàn công khai đang chơi có nút “Xem” (xem 07 § 6.4). Người xem thấy đúng những gì người chơi thấy trên bàn, trừ bài trên tay.
+
+Giao diện người xem:
+- topbar ghi “Đang xem” kèm icon mắt; nút back rời xem ngay, không hỏi xác nhận vì người xem không bị xử thua;
+- ghế 0 ngồi ở giữa phía dưới bàn (`.tl-seat-slot.bottom`, lưới `.tl-felt.watching` thêm hàng `bottom`), vẽ y như ghế đối diện: avatar, badge số lá, tên, hạng/bỏ lượt/mất kết nối. Không vẽ bài úp;
+- thanh dưới thay cho “Bỏ lượt / Đánh”: ghi chú “Bạn đang xem ván này” và nút “Rời xem”;
+- chat chỉ đọc: vẫn thấy tin nhắn và cảm xúc của người chơi, không có hàng cảm xúc, câu nhanh và ô nhập;
+- hết ván: không mở modal kết quả. Chờ bước đánh cuối phát xong (600 ms) rồi chuyển sang bàn chờ của chính bàn đó (xem dưới). Nếu bàn đã giải tán thì về sảnh kèm toast “Ván đấu bạn đang xem đã kết thúc.”;
+- mất kết nối rồi có lại thì tự gửi lại yêu cầu xem; ván đã xong thì về sảnh kèm thông báo.
+
+Bàn chờ của người xem (giữa hai ván):
+- cùng lưới ghế với bàn chờ của người chơi (chủ bàn, đã/chưa sẵn sàng, ghế trống) nhưng không có nút mời ra; tiêu đề “Đang xem bàn chờ” kèm icon mắt;
+- thẻ trạng thái: “Đang chờ N người sẵn sàng” hoặc “Chờ chủ bàn bắt đầu ván mới”, dòng phụ “Ván mới bắt đầu bạn sẽ được xem tiếp”;
+- chat của bàn chỉ đọc (không có ô nhập);
+- nút “Rời xem” về sảnh; còn ghế trống thì có “Vào chơi” (gửi `ROOM_JOIN`, vào được thì thành người chơi của bàn), đủ người thì nút xám “Bàn đã đủ người”;
+- chủ bàn bắt đầu ván mới: sảnh nhận `ROOM_UPSERT` bàn `playing` kèm `matchId` mới, client tự gửi `SPECTATE_JOIN` và quay lại màn bàn đang xem;
+- bàn giải tán (`ROOM_CLOSED` hoặc `ROOM_REMOVED`) khi đang ở bàn chờ: về sảnh kèm toast “Bàn bạn đang xem đã giải tán.”. Nếu giải tán khi đang xem ván thì xem nốt ván rồi về sảnh.
+
+Danh sách người xem (cả người chơi lẫn người xem đều thấy):
+- khi bàn có ít nhất 1 người xem, góc phải trên của bàn có tab `.tl-viewers-tab` dính mép phải: icon mắt + số người xem;
+- bấm tab thì cả khối trượt sang trái 180 px, lộ panel “Người đang xem” (avatar nhỏ + tên, chính mình ghi “Bạn”; dài quá thì cuộn). Bấm tab lần nữa thì trượt về;
+- panel đóng được ẩn hẳn (`visibility: hidden` sau 260 ms, `inert`) để không lộ bóng ở mép màn và không nhận focus;
+- số người xem tính theo tài khoản: một người mở 2 tab chỉ hiện 1 lần.
+
+Phía server:
+- game giấu thông tin chỉ được xem khi cài `logic.SpectatorViewer`. Tiến Lên trả `PlayerView` với `you = -1` (`SpectatorSeat`, sinh sang client thành `SPECTATOR_SEAT`) và `yourHand` rỗng;
+- mọi thứ gửi cho người xem đều đi qua view này: `SPECTATE_JOINED`, kể cả khi đọc lại snapshot từ Redis, và từng `STATE`;
+- bàn có mật khẩu bị từ chối với `SPECTATE_NOT_ALLOWED` và không có trong `SPECTATE_LIST`;
+- người xem không gửi được nước đi hay chat. Tối đa 20 chỗ xem mỗi trận (`MaxSpectators`), mỗi socket một chỗ;
+- người xem lưu trong hash Redis `GAME:<g>:MATCH:<id>:VIEWERS` (socket → tên, VIP, cấp, lúc vào). Mỗi lần có người vào/ra, server gửi `SPECTATORS { matchId, spectators }` cho từng người chơi và cho phòng xem của trận; người chơi kết nối lại nhận danh sách ngay sau `MATCH_FOUND`. Trận đã xong thì không gửi nữa;
+- Cờ Tỷ Phú vẫn giấu thông tin mà chưa có view cho người xem nên vẫn không xem được;
+- bàn Tiến Lên đang chơi nằm trong danh sách bàn ở sảnh (`listsPlayingRooms`, giống War God) với `status: playing` và `matchId`; trước đây bàn bị gỡ khỏi sảnh lúc bắt đầu nên nút “Xem” không bao giờ hiện;
+- theo dõi bàn: `ROOM_WATCH { roomId }` / `ROOM_UNWATCH`. Socket vào kênh `game:<g>:roomwatch:<roomId>`, nhận `ROOM_STATE` có `watcher: true` và `youId` rỗng mỗi khi bàn chờ đổi (kể cả ngay sau ván, có `afterMatchId`), chat của bàn và `ROOM_CLOSED`. Bàn có mật khẩu, bàn mình là thành viên hoặc bàn không còn thì server trả `ROOM_CLOSED { reason: "unavailable" }` cho riêng socket đó. Client gửi `ROOM_WATCH` cùng lúc với `SPECTATE_JOIN` khi bấm “Xem”, và gửi lại khi kết nối lại.
+
+## 6. Chat và kết quả
 
 Chat dùng bottom sheet cream, backdrop navy 30%, drag handle, close button, reaction row scroll ngang, log live và input/send state rõ ràng.
 
 Result dùng modal cream radius 24, title live với coral underline, row semantic cho hạng nhất/người hiện tại/hạng cuối và action sticky. “Rời bàn” rời room thật phía server và xóa room local; “Chơi tiếp” quay lại waiting room đã reset cho ván mới.
 
-## 6. QA
+## 7. QA
 
 Đã kiểm tra mock state ở 360 × 800, 390 × 844 và 520 × 932 qua Chrome device metrics. Các state chính:
 
 - room host/guest/2-player;
 - table 2/3/4-player, selected, chat, FX và disconnect;
-- result normal và instant win.
+- result normal và instant win;
+- chế độ xem: `watch`, `watch-3p`, `watch-2p`, `watch-finished`, `watch-chat`, `watch-viewers-open`, `watch-room` (bàn chờ còn ghế), `watch-room-full`, `watch-ended` (về sảnh kèm toast); sảnh mock có một bàn đang chơi xem được và một bàn có mật khẩu;
+- danh sách người xem ở bàn người chơi: `table-viewers`, `table-viewers-open`, `table-viewers-2p`.
 
 Lệnh kiểm tra:
 

@@ -110,6 +110,18 @@ function BlurredBackdrop({ url }: { url: string }) {
   );
 }
 
+export function MomentBackdrop({
+  background,
+  media,
+}: {
+  background?: string;
+  media?: MomentMediaDraft | null;
+}) {
+  if (media == null) return <MomentBackgroundFill background={background} />;
+  const url = media.type === MOMENT_TYPE.image ? media.url : media.posterUrl;
+  return url ? <BlurredBackdrop url={url} /> : null;
+}
+
 interface MomentVideoEvents {
   playId?: number;
   paused?: boolean;
@@ -214,8 +226,6 @@ export function MomentCanvas({
   const [canvas, setCanvas] = useState<MomentCanvasSize | null>(null);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const [shownUrl, setShownUrl] = useState(media?.url);
-  const backdropUrl =
-    fit === 'cover' ? undefined : media?.type === MOMENT_TYPE.image ? media.url : media?.posterUrl;
 
   if (shownUrl !== media?.url) {
     setShownUrl(media?.url);
@@ -234,8 +244,7 @@ export function MomentCanvas({
       onLayout={handleLayout}
       style={[{ overflow: 'hidden', backgroundColor: '#000000' }, style]}
     >
-      {media == null && <MomentBackgroundFill background={background} />}
-      {backdropUrl ? <BlurredBackdrop url={backdropUrl} /> : null}
+      {media == null || fit !== 'cover' ? <MomentBackdrop background={background} media={media} /> : null}
       {media?.type === MOMENT_TYPE.image && failedUrl !== media.url && (
         <FastImage
           key={media.url}

@@ -14,6 +14,7 @@ import type {
   UserListParams,
   UsernameChangeItem,
   UsernameChangeListParams,
+  UserViolationSummary,
 } from '@/types'
 
 export const AdminUserService = {
@@ -52,6 +53,25 @@ export const AdminUserService = {
     const { data } = await http.get<ApiResponse<ListResult<AdminUserSession>>>(
       `/admin/users/${id}/sessions`,
       { params },
+    )
+    return data.data
+  },
+
+  async listViolations(id: string): Promise<UserViolationSummary> {
+    const { data } = await http.get<ApiResponse<UserViolationSummary>>(
+      `/admin/users/${id}/violations`,
+    )
+    return data.data
+  },
+
+  async clearViolations(id: string): Promise<UserViolationSummary> {
+    const { data } = await http.delete<ApiResponse<UserViolationSummary>>(`/admin/users/${id}/violations`)
+    return data.data
+  },
+
+  async revokeViolation(id: string, violationId: string): Promise<UserViolationSummary> {
+    const { data } = await http.delete<ApiResponse<UserViolationSummary>>(
+      `/admin/users/${id}/violations/${violationId}`,
     )
     return data.data
   },

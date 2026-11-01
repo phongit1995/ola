@@ -237,6 +237,29 @@ func TestProcessNoTokensDoesNotConsumeThrottle(t *testing.T) {
 	}
 }
 
+func TestAppNotificationReachesDevicesSignedOutByALock(t *testing.T) {
+	fcm := &fakeFCM{}
+	cache := newFakeCache()
+	s := newTestSender(fcm, cache, &fakeConns{count: 1}, &fakeStore{notifMessage: true})
+	notification := map[string]interface{}{"id": "n1", "type": models.AppNotificationContentViolation, "preview": "Tài khoản bị khoá"}
+	cache.values[fmt.Sprintf(CacheKeyPushThrottle, "u1", constants.PushSourceAppNotif)] = "busy"
+
+	s.SendAppNotification("u1", notification, 1, []models.DeviceToken{{Token: "tok-locked", Platform: "android"}})
+	drainJobs(s)
+
+	if len(fcm.sent) != 1 || fcm.sent[0][0].Token != "tok-locked" {
+		t.Fatalf("expected one push to the signed-out device, got %+v", fcm.sent)
+	}
+
+	s.conns = &fakeConns{}
+	delete(cache.values, fmt.Sprintf(CacheKeyPushThrottle, "u1", constants.PushSourceAppNotif))
+	s.SendAppNotification("u1", map[string]interface{}{"id": "n2", "type": models.AppNotificationContentViolation}, 1, nil)
+	drainJobs(s)
+	if len(fcm.sent) != 1 {
+		t.Fatalf("expected no push without devices once sessions are revoked, got %d", len(fcm.sent))
+	}
+}
+
 func TestProcessThrottleSuppressesSecondSend(t *testing.T) {
 	fcm := &fakeFCM{}
 	cache := newFakeCache()
@@ -694,6 +717,8 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 		models.AppNotificationClanVerified,
 		models.AppNotificationClanUnverified,
 		models.AppNotificationClanBanned,
+		models.AppNotificationContentViolation,
+		models.AppNotificationReportResolved,
 	} {
 		c := buildAppNotifContent("n1", "Hoa", ntype, "", 0)
 		if c.Body == "" || c.Channel != PushChannelSystem {
@@ -706,6 +731,9 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 	}
 	if c := buildAppNotifContent("n1", "Admin", models.AppNotificationClanBanned, "", 0); c.Title != fallbackTitle {
 		t.Fatalf("expected system title for clan type, got %q", c.Title)
+	}
+	if c := buildAppNotifContent("n1", "", models.AppNotificationContentViolation, "Bài viết của bạn đã bị ẩn", 0); c.Title != fallbackTitle || c.Body != "Vi phạm tiêu chuẩn cộng đồng: Bài viết của bạn đã bị ẩn" {
+		t.Fatalf("unexpected violation push: %+v", c)
 	}
 	if c := buildAppNotifContent("n1", "", "unknown", "", 0); c.Body != "Bạn có thông báo mới" {
 		t.Fatalf("unexpected unknown-type body: %q", c.Body)

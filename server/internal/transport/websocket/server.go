@@ -203,7 +203,7 @@ func (s *Server) EmitKenUpdate(userID uuid.UUID, ken int) {
 
 func (s *Server) DisconnectUser(userID string) {
 	room := socket.Room("user:" + userID)
-	s.io.To(room).Emit(constants.WebSocketEventForceLogout, map[string]any{"reason": "banned"})
+	s.io.To(room).Emit(constants.WebSocketEventForceLogout, map[string]any{"reason": constants.ForceLogoutReasonBanned})
 	s.io.To(room).DisconnectSockets(true)
 	s.logger.Infow("🔌 Force-disconnected user sockets", "user_id", userID)
 }

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/session"
@@ -301,12 +302,41 @@ func (s *Service) authenticate(req *LoginRequest) (*models.User, error) {
 		return nil, errors.New("invalid username or password")
 	}
 
-	if !user.IsActive {
+	if !user.IsActive && !s.releaseExpiredLock(user) {
 		s.logger.Warnw("Login blocked: account disabled", "user_id", user.ID)
-		return nil, errors.New("account is disabled")
+		return nil, lockedAccountError(user)
 	}
 
 	return user, nil
+}
+
+func (s *Service) releaseExpiredLock(user *models.User) bool {
+	if user.LockedUntil == nil {
+		return false
+	}
+	released, err := s.repo.ReleaseExpiredLock(user.ID, time.Now())
+	if err != nil {
+		s.logger.Errorw("Failed to release expired account lock", "user_id", user.ID, "error", err.Error())
+		return false
+	}
+	if released {
+		user.IsActive = true
+		user.LockedUntil = nil
+		user.LockReason = ""
+		s.logger.Infow("Account lock expired, user unlocked", "user_id", user.ID)
+	}
+	return released
+}
+
+func lockedAccountError(user *models.User) error {
+	if user.LockReason != constants.LockReasonViolations {
+		return errors.New("account is disabled")
+	}
+	message := "Tài khoản đã bị khoá vĩnh viễn do vi phạm tiêu chuẩn cộng đồng."
+	if user.LockedUntil != nil {
+		message = fmt.Sprintf("Tài khoản đã bị khoá do vi phạm tiêu chuẩn cộng đồng, mở lại lúc %s.", user.LockedUntil.In(vietnamTime).Format(lockTimeLayout))
+	}
+	return utils.NewHTTPErrorWithCode(http.StatusForbidden, message, constants.ErrorCodeAccountLocked)
 }
 
 func (s *Service) issueTokens(userID, sessionID uuid.UUID) (string, string, error) {
@@ -422,7 +452,11 @@ func (s *Service) SendPasswordReset(username, clientIP string) error {
 		}
 		return err
 	}
-	if !user.IsActive || !user.EmailVerified || user.Email == "" {
+	if !user.IsActive && !s.releaseExpiredLock(user) {
+		s.logger.Infow("Password reset requested for a locked account", "user_id", user.ID, "ip", clientIP)
+		return nil
+	}
+	if !user.EmailVerified || user.Email == "" {
 		s.logger.Infow("Password reset requested without verified email", "user_id", user.ID, "ip", clientIP)
 		return nil
 	}

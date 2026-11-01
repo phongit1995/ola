@@ -6,6 +6,12 @@ import { NotificationService } from '../../services/notification.service';
 import type { AppNotification } from '../../types/api/notification.type';
 import type { AppNotificationState } from '../../types/client/notification.type';
 
+const hiddenIds = new Set<string>();
+
+function withoutHidden(items: AppNotification[]): AppNotification[] {
+  return items.filter((item) => !hiddenIds.has(item.id));
+}
+
 function dedupe(items: AppNotification[]): AppNotification[] {
   const seen = new Set<string>();
   return items.filter((item) => {
@@ -27,7 +33,7 @@ export const useAppNotificationStore = create<AppNotificationState>((set, get) =
     try {
       const result = await NotificationService.list({ limit: NOTIFICATION_PAGE_SIZE });
       set({
-        items: result.items,
+        items: withoutHidden(result.items),
         unreadCount: result.unreadCount,
         nextCursor: result.nextCursor ?? null,
         hasMore: result.nextCursor != null && result.nextCursor !== '',
@@ -39,7 +45,7 @@ export const useAppNotificationStore = create<AppNotificationState>((set, get) =
     }
   },
   loadMore: async () => {
-    const { loadingMore, hasMore, nextCursor, items } = get();
+    const { loadingMore, hasMore, nextCursor } = get();
     if (loadingMore || !hasMore || nextCursor == null) return;
     set({ loadingMore: true });
     try {
@@ -47,13 +53,13 @@ export const useAppNotificationStore = create<AppNotificationState>((set, get) =
         limit: NOTIFICATION_PAGE_SIZE,
         cursor: nextCursor,
       });
-      set({
-        items: dedupe([...items, ...result.items]),
+      set((state) => ({
+        items: dedupe(withoutHidden([...state.items, ...result.items])),
         unreadCount: result.unreadCount,
         nextCursor: result.nextCursor ?? null,
         hasMore: result.nextCursor != null && result.nextCursor !== '',
         loadingMore: false,
-      });
+      }));
     } catch {
       set({ loadingMore: false });
       toast.error(i18n.t('notify.loadError'));
@@ -102,5 +108,16 @@ export const useAppNotificationStore = create<AppNotificationState>((set, get) =
         unreadCount: Math.max(0, state.unreadCount - unreadDelta),
       };
     });
+  },
+  hide: async (id) => {
+    hiddenIds.add(id);
+    get().removeLocal(id);
+    try {
+      await NotificationService.hide(id);
+    } catch {
+      hiddenIds.delete(id);
+      toast.error(i18n.t('notify.actionError'));
+      void get().load();
+    }
   },
 }));

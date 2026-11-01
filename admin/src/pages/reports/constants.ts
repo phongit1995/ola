@@ -1,27 +1,10 @@
-import type { ReportAlertChannel, ReportReason, ReportStatus, ReportTargetType } from '@/types'
+import { REPORT_TARGET_LABEL } from '@/lib/moderation'
+import type { ReportAlertChannel, ReportStatus, ReportTargetType } from '@/types'
 
 export const REPORT_STATUS_TAG: Record<ReportStatus, { label: string; color: string }> = {
   pending: { label: 'Chờ xử lý', color: 'orange' },
   resolved: { label: 'Đã xử lý', color: 'green' },
   dismissed: { label: 'Bỏ qua', color: 'default' },
-}
-
-export const REPORT_TARGET_LABEL: Record<ReportTargetType, string> = {
-  account: 'Tài khoản',
-  post: 'Bài đăng Me',
-  comment: 'Bình luận Me',
-  story_comment: 'Bình luận truyện',
-  message: 'Tin nhắn 1-1',
-  room_message: 'Tin nhắn phòng',
-  moment: 'Khoảnh khắc',
-}
-
-export const REPORT_REASON_LABEL: Record<ReportReason, string> = {
-  spam: 'Spam / quảng cáo',
-  sensitive: 'Nội dung nhạy cảm',
-  scam: 'Lừa đảo',
-  harassment: 'Quấy rối / xúc phạm',
-  other: 'Khác',
 }
 
 export const REPORT_STATUS_OPTIONS = [
@@ -64,3 +47,11 @@ export const TELEGRAM_TOKEN_PLACEHOLDER = '123456789:AAH...'
 export const TELEGRAM_CHAT_ID_PLACEHOLDER = '-1001234567890'
 
 export const TELEGRAM_GET_UPDATES_URL = 'https://api.telegram.org/bot<token>/getUpdates'
+
+export const MODERATION_POINTS_MIN = 1
+
+export const MODERATION_POINTS_MAX = 20
+
+export const MODERATION_HOURS_MAX = 24 * 365 * 10
+
+export const MODERATION_LOCK_STEPS_MAX = 5

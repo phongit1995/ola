@@ -43,6 +43,25 @@ function BlurredBackdrop({ url }: { url: string }) {
   );
 }
 
+export function MomentBackdrop({
+  background,
+  media,
+}: {
+  background?: string;
+  media?: MomentMediaDraft | null;
+}) {
+  if (media == null) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ background: momentBackgroundCss(resolveMomentBackground(background)) }}
+      />
+    );
+  }
+  const url = media.type === MOMENT_TYPE.image ? media.url : media.posterUrl;
+  return url ? <BlurredBackdrop url={url} /> : null;
+}
+
 interface MomentMediaEvents {
   onMediaReady?: () => void;
   onMediaError?: () => void;
@@ -122,8 +141,6 @@ export function MomentCanvas({
   className,
   children,
 }: MomentCanvasProps) {
-  const backdropUrl =
-    media?.type === MOMENT_TYPE.image ? media.url : media?.posterUrl;
   return (
     <div
       className={cn(
@@ -133,15 +150,7 @@ export function MomentCanvas({
       )}
       style={fit ? MOMENT_FIT_STYLE : undefined}
     >
-      {media == null && (
-        <div
-          className="absolute inset-0"
-          style={{
-            background: momentBackgroundCss(resolveMomentBackground(background)),
-          }}
-        />
-      )}
-      {backdropUrl && <BlurredBackdrop url={backdropUrl} />}
+      <MomentBackdrop background={background} media={media} />
       {media?.type === MOMENT_TYPE.image && (
         <img
           key={media.url}

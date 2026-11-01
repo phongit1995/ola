@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	GameID      = "thirteen"
-	TurnSeconds = 30
+	GameID        = "thirteen"
+	TurnSeconds   = 30
+	SpectatorSeat = -1
 )
 
 type Logic struct{}

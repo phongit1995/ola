@@ -4,6 +4,7 @@ package thirteen
 type ClientConfig struct {
 	GameID        string
 	TurnSeconds   int
+	SpectatorSeat int
 	HandSize      int
 	DeckSize      int
 	RankTwo       int
@@ -17,6 +18,7 @@ func ExportClientConfig() ClientConfig {
 	return ClientConfig{
 		GameID:        GameID,
 		TurnSeconds:   TurnSeconds,
+		SpectatorSeat: SpectatorSeat,
 		HandSize:      HandSize,
 		DeckSize:      DeckSize,
 		RankTwo:       RankTwo,

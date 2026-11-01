@@ -562,3 +562,19 @@ func TestInstantWinsAreCheckedFromTheLeader(t *testing.T) {
 		}
 	}
 }
+
+func TestViewForFinishedPlayerSendsAnEmptyHand(t *testing.T) {
+	s := fixedState([][]int{{20, 25, 31}, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, {10, 11, 12, 13, 14, 15}}, 0)
+	mustPlay(t, s, 0, 20, 25, 31)
+	raw, err := json.Marshal(Logic{}.ViewFor(s, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var view map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &view); err != nil {
+		t.Fatal(err)
+	}
+	if got := string(view["yourHand"]); got != "[]" {
+		t.Fatalf("finished player's yourHand = %s, want []", got)
+	}
+}

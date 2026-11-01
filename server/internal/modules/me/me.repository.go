@@ -69,8 +69,15 @@ func (r *Repository) ReferencedImageURLs(urls []string) (map[string]struct{}, er
 	return referenced, nil
 }
 
-func (r *Repository) Disable(id uuid.UUID) error {
-	return r.db.Model(&models.Me{}).Where("id = ?", id).Update("enabled", false).Error
+func (r *Repository) Disable(id uuid.UUID, by string) error {
+	return r.db.Model(&models.Me{}).Where("id = ? AND enabled", id).Updates(HiddenFields(true, by, time.Now())).Error
+}
+
+func HiddenFields(hidden bool, by string, at time.Time) map[string]interface{} {
+	if !hidden {
+		return map[string]interface{}{"enabled": true, "hidden_by": nil, "hidden_at": nil}
+	}
+	return map[string]interface{}{"enabled": false, "hidden_by": by, "hidden_at": at}
 }
 
 func (r *Repository) paginate(db *gorm.DB, limit, offset int) ([]*models.Me, int64, error) {
@@ -319,7 +326,7 @@ func (r *Repository) ListByClanPage(clanID, viewerID uuid.UUID, excludeID *uuid.
 func (r *Repository) DisableAllByClanAuthor(clanID, authorID uuid.UUID) error {
 	return r.db.Model(&models.Me{}).
 		Where("clan_id = ? AND author_id = ? AND enabled = ?", clanID, authorID, true).
-		Update("enabled", false).Error
+		Updates(HiddenFields(true, MeHiddenByClan, time.Now())).Error
 }
 
 type LikerRow struct {

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -1229,5 +1230,56 @@ func TestRoomChatValidationAndBroadcast(t *testing.T) {
 				t.Fatal("invalid room chat was broadcast")
 			}
 		})
+	}
+}
+
+func TestSettlementDoesNotReopenARoomClosedAfterTheMatch(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, rooms, _ := newPersistenceTestEngine(activeStore)
+	settleNotify := make(chan struct{}, 4)
+	gameEngine.SetSettlement(&fakeSettlement{
+		settleNotify: settleNotify,
+		settleErrors: []error{errors.New("temporary settlement failure"), nil},
+	})
+	defer stopEngineTimers(gameEngine)
+	room := lifecycleRoom("room-closed-after-match")
+	room.GuestID = "guest"
+	room.GuestName = "GUEST"
+	room.GuestReady = true
+	if err := rooms.Save(room); err != nil {
+		t.Fatal(err)
+	}
+	gameEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+	var match *Match
+	for _, current := range gameEngine.matches {
+		match = current
+	}
+	if match == nil {
+		t.Fatal("room match did not start")
+	}
+	gameEngine.Forfeit(room.GameID, room.GuestID, match.ID)
+	select {
+	case <-settleNotify:
+	case <-time.After(time.Second):
+		t.Fatal("settlement did not start")
+	}
+
+	gameEngine.LeaveRoom(room.GameID, room.OwnerID, room.ID)
+	if _, exists := rooms.Get(room.GameID, room.ID); exists {
+		t.Fatal("setup expected the owner to close the waiting room")
+	}
+	select {
+	case <-settleNotify:
+	case <-time.After(3 * time.Second):
+	}
+	waitForCondition(t, 2*time.Second, "settlement did not finish", func() bool {
+		_, exists := activeStore.get(room.GameID, match.ID)
+		return !exists
+	})
+	if _, exists := rooms.Get(room.GameID, room.ID); exists {
+		t.Fatal("settlement reopened the room the owner had closed")
+	}
+	if ref, ok := rooms.RoomByUser(room.GameID, room.GuestID); ok {
+		t.Fatalf("settlement put the guest back into closed room %s", ref.RoomID)
 	}
 }

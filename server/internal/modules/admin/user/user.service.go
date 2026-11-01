@@ -1,18 +1,14 @@
 package adminuser
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"ola-chat-server/internal/apperr"
-	userBanEvents "ola-chat-server/internal/domain/user-ban"
 	"ola-chat-server/internal/models"
-	"ola-chat-server/internal/modules/session"
+	"ola-chat-server/internal/modules/moderation"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
-	"ola-chat-server/internal/transport/kafka"
-	"ola-chat-server/internal/utils"
 	"strconv"
 	"strings"
 	"time"
@@ -31,25 +27,55 @@ const (
 )
 
 type Service struct {
-	repo           *Repository
-	cache          *services.CacheService
-	sessionService *session.Service
-	producer       *kafka.Producer
-	vipService     *vip.Service
-	vipRepo        *vip.Repository
-	logger         *zap.SugaredLogger
+	repo       *Repository
+	cache      *services.CacheService
+	vipService *vip.Service
+	vipRepo    *vip.Repository
+	moderation *moderation.Service
+	logger     *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *services.CacheService, sessionService *session.Service, producer *kafka.Producer, vipService *vip.Service, vipRepo *vip.Repository, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *services.CacheService, vipService *vip.Service, vipRepo *vip.Repository, moderationService *moderation.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
-		repo:           repo,
-		cache:          cache,
-		sessionService: sessionService,
-		producer:       producer,
-		vipService:     vipService,
-		vipRepo:        vipRepo,
-		logger:         logger.Named("[admin_user_service]"),
+		repo:       repo,
+		cache:      cache,
+		vipService: vipService,
+		vipRepo:    vipRepo,
+		moderation: moderationService,
+		logger:     logger.Named("[admin_user_service]"),
 	}
+}
+
+func (s *Service) Violations(id uuid.UUID) (*ViolationSummary, error) {
+	if _, err := s.repo.FindByID(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return s.moderation.Summary(id)
+}
+
+func (s *Service) RevokeViolation(adminID, id, violationID uuid.UUID) (*ViolationSummary, error) {
+	if err := s.moderation.Revoke(adminID, id, violationID); err != nil {
+		return nil, err
+	}
+	return s.moderation.Summary(id)
+}
+
+func (s *Service) ClearViolations(adminID, id uuid.UUID) (*ViolationSummary, error) {
+	if _, err := s.repo.FindByID(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
+		}
+		return nil, err
+	}
+	revoked, err := s.moderation.RevokeActive(adminID, id)
+	if err != nil {
+		return nil, err
+	}
+	s.logger.Infow("Admin cleared user violations", "user_id", id, "admin_id", adminID, "count", revoked)
+	return s.moderation.Summary(id)
 }
 
 func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
@@ -70,6 +96,8 @@ func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
 			Ken:           u.Ken,
 			IsVip:         isVip(u),
 			IsActive:      u.IsActive,
+			LockedUntil:   formatTime(u.LockedUntil),
+			LockReason:    u.LockReason,
 			EmailVerified: u.EmailVerified,
 			CreatedAt:     u.CreatedAt.UTC().Format(time.RFC3339),
 			LastLoginAt:   formatTime(u.LastLoginAt),
@@ -109,15 +137,7 @@ func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
 	}
 
 	if !active {
-		if n, err := s.sessionService.RevokeAllForUser(id); err != nil {
-			s.logger.Warnw("Failed to revoke sessions on ban", "user_id", id, "error", err.Error())
-		} else {
-			s.logger.Infow("Revoked sessions on ban", "user_id", id, "count", n)
-		}
-		event := &userBanEvents.Event{UserID: id.String()}
-		utils.PublishAsync(s.logger, "user banned", func(ctx context.Context) error {
-			return s.producer.PublishUserBanned(ctx, event)
-		})
+		s.moderation.EndSessions(id)
 	}
 
 	s.logger.Infow("Admin updated user status", "user_id", id, "is_active", active)
@@ -375,6 +395,8 @@ func toDetail(u *models.User) *UserDetail {
 		FollowerCount:   u.FollowerCount,
 		FollowingCount:  u.FollowingCount,
 		IsActive:        u.IsActive,
+		LockedUntil:     formatTime(u.LockedUntil),
+		LockReason:      u.LockReason,
 		EmailVerified:   u.EmailVerified,
 		EmailVerifiedAt: formatTime(u.EmailVerifiedAt),
 		LastLoginIP:     u.LastLoginIP,

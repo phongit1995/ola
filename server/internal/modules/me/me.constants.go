@@ -1,6 +1,12 @@
 package me
 
 const (
+	MeHiddenByOwner = "owner"
+	MeHiddenByAdmin = "admin"
+	MeHiddenByClan  = "clan"
+)
+
+const (
 	UploadFolderPosts           = "posts"
 	MaxPostImages               = 5
 	MaxPostAudios               = 1

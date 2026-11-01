@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
@@ -64,7 +65,15 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 	h.logger.Infow("✅ APP_NOTIFICATION emitted", "recipient_id", event.RecipientID, "unread_count", event.UnreadCount)
 
 	if h.pushSender != nil {
-		h.pushSender.SendAppNotification(event.RecipientID, notification, int(event.UnreadCount))
+		h.pushSender.SendAppNotification(event.RecipientID, notification, int(event.UnreadCount), pushDevices(event.PushDevices))
 	}
 	return nil
+}
+
+func pushDevices(devices []PushDevice) []models.DeviceToken {
+	tokens := make([]models.DeviceToken, 0, len(devices))
+	for _, d := range devices {
+		tokens = append(tokens, models.DeviceToken{Token: d.Token, Platform: d.Platform})
+	}
+	return tokens
 }

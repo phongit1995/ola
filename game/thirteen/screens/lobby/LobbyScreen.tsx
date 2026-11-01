@@ -4,6 +4,7 @@ import backIcon from '../../assets/icons/ic-back.svg';
 import botIcon from '../../assets/icons/ic-bot.svg';
 import cardsEmptyIcon from '../../assets/icons/ic-cards-empty.svg';
 import checkIcon from '../../assets/icons/ic-check.svg';
+import eyeIcon from '../../assets/icons/ic-eye.svg';
 import historyIcon from '../../assets/icons/ic-history.svg';
 import lockIcon from '../../assets/icons/ic-lock.svg';
 import refreshIcon from '../../assets/icons/ic-refresh.svg';
@@ -202,6 +203,8 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
   const rooms = useThirteen((s) => s.rooms);
   const refreshRooms = useThirteen((s) => s.refreshRooms);
   const joinRoom = useThirteen((s) => s.joinRoom);
+  const watchRoom = useThirteen((s) => s.watchRoom);
+  const watchPendingId = useThirteen((s) => s.watchPendingId);
   const requestExit = useThirteen((s) => s.requestExit);
   const openHistory = useThirteen((s) => s.openHistory);
   const openLeaderboard = useThirteen((s) => s.openLeaderboard);
@@ -266,12 +269,14 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
           const bet = Number.isFinite(room.bet) ? Math.max(0, Math.trunc(room.bet)) : 0;
           const insufficientKen = !playing && !full && bet > (user?.ken ?? 0);
           const unavailable = full || playing || insufficientKen;
+          const watchable = playing && !room.locked && Boolean(room.matchId);
+          const opening = watchable && watchPendingId === room.matchId;
           return (
             <div
               key={room.id}
               className={
                 'tl-room-row' +
-                (full || playing ? ' muted' : '') +
+                ((full || playing) && !watchable ? ' muted' : '') +
                 (playing ? ' is-playing' : '') +
                 (full ? ' is-full' : '') +
                 (insufficientKen ? ' is-insufficient' : '')
@@ -297,17 +302,30 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
                   </span>
                 </span>
               </div>
-              <button
-                type="button"
-                className={
-                  'tl-btn ' +
-                  (insufficientKen ? 'tl-btn-insufficient' : unavailable ? 'tl-btn-disabled' : 'tl-btn-gold')
-                }
-                disabled={unavailable}
-                onClick={() => (room.locked ? setPasswordRoom(room) : joinRoom(room))}
-              >
-                {playing ? 'Đang chơi' : full ? 'Đầy' : insufficientKen ? 'Thiếu Ken' : 'Vào bàn'}
-              </button>
+              {watchable ? (
+                <button
+                  type="button"
+                  className="tl-btn tl-btn-watch"
+                  disabled={watchPendingId !== ''}
+                  aria-label={`Xem bàn của ${room.owner}`}
+                  onClick={() => watchRoom(room)}
+                >
+                  <img src={eyeIcon} alt="" />
+                  <span>{opening ? 'Đang mở' : 'Xem'}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={
+                    'tl-btn ' +
+                    (insufficientKen ? 'tl-btn-insufficient' : unavailable ? 'tl-btn-disabled' : 'tl-btn-gold')
+                  }
+                  disabled={unavailable}
+                  onClick={() => (room.locked ? setPasswordRoom(room) : joinRoom(room))}
+                >
+                  {playing ? 'Đang chơi' : full ? 'Đầy' : insufficientKen ? 'Thiếu Ken' : 'Vào bàn'}
+                </button>
+              )}
             </div>
           );
         })}

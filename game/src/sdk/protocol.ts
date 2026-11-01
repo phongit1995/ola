@@ -17,6 +17,8 @@ export const C2S = {
   SpectateList: 'SPECTATE_LIST',
   SpectateJoin: 'SPECTATE_JOIN',
   SpectateLeave: 'SPECTATE_LEAVE',
+  RoomWatch: 'ROOM_WATCH',
+  RoomUnwatch: 'ROOM_UNWATCH',
 } as const;
 
 export const S2C = {
@@ -43,6 +45,7 @@ export const S2C = {
   SpectateList: 'SPECTATE_LIST',
   SpectateJoined: 'SPECTATE_JOINED',
   SpectateLeft: 'SPECTATE_LEFT',
+  Spectators: 'SPECTATORS',
 } as const;
 
 export const SPECTATE_LEFT_REASON = {
@@ -90,6 +93,7 @@ export const GAME_ERROR_CODE = {
   SpectateFull: 'SPECTATE_FULL',
   SpectateNotSupported: 'SPECTATE_NOT_SUPPORTED',
   SpectateOwnMatch: 'SPECTATE_OWN_MATCH',
+  SpectateNotAllowed: 'SPECTATE_NOT_ALLOWED',
   MatchNotFound: 'MATCH_NOT_FOUND',
   StateSaveFailed: 'STATE_SAVE_FAILED',
   UnknownGame: 'UNKNOWN_GAME',
@@ -224,6 +228,11 @@ export interface SpectateLeftData {
   reason: SpectateLeftReason;
 }
 
+export interface SpectatorsData {
+  matchId: string;
+  spectators: PlayerInfo[];
+}
+
 export interface StateData<TState = unknown, TMove = unknown> {
   matchId: string;
   state: TState;
@@ -328,6 +337,8 @@ export interface RoomStateData {
   members: RoomMember[];
   /** Match whose completed board this waiting-room snapshot follows. */
   afterMatchId?: string;
+  /** Sent to people watching the room from outside; youId is empty. */
+  watcher?: boolean;
 }
 
 export interface RoomSyncData {

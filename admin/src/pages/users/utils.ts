@@ -1,5 +1,7 @@
-import type { AdminUserVipIcon } from '@/types'
-import { KEN_TX_TYPE, VIP_ICON_SOURCE_LABEL } from './constants'
+import { formatDateTime } from '@/lib/format'
+import type { AdminUserVipIcon, ModerationLockStep, ReportAdminBrief, UserViolation } from '@/types'
+import { KEN_TX_TYPE, LOCK_REASON_VIOLATIONS, VIP_ICON_SOURCE_LABEL } from './constants'
+import type { UserLockFields, ViolationState } from './types'
 
 export function kenTypeLabel(type: string): string {
   return KEN_TX_TYPE[type] ?? type
@@ -27,4 +29,41 @@ export function deleteWarning(item: AdminUserVipIcon): string {
   }
   if (notes.length === 0) return 'Thao tác này không thể hoàn tác từ trang quản trị.'
   return `Lưu ý: ${notes.join('; ')}.`
+}
+
+export function isViolationLock(user: UserLockFields): boolean {
+  return !user.isActive && user.lockReason === LOCK_REASON_VIOLATIONS
+}
+
+export function violationLockPeriod(lockedUntil?: string): string {
+  if (!lockedUntil) return 'vĩnh viễn'
+  const expired = new Date(lockedUntil).getTime() <= Date.now()
+  const until = `đến ${formatDateTime(lockedUntil)}`
+  return expired ? `${until} (đã hết hạn, mở khi đăng nhập lại)` : until
+}
+
+export function violationState(item: UserViolation, expireHours: number): ViolationState {
+  if (item.revokedAt) return 'revoked'
+  if (expireHours <= 0) return 'active'
+  const expiresAt = new Date(item.createdAt).getTime() + expireHours * 3_600_000
+  return expiresAt <= Date.now() ? 'expired' : 'active'
+}
+
+export function adminName(admin?: ReportAdminBrief): string {
+  if (!admin) return '—'
+  return admin.fullName || admin.username
+}
+
+export function unlockWarning(points: number, lockSteps: readonly ModerationLockStep[]): string {
+  if (points === 0) return 'Tài khoản đăng nhập lại được ngay.'
+  const reached = lockSteps.length > 0 && points >= lockSteps[0].points
+  const next = reached
+    ? 'lần bị cộng điểm tiếp theo sẽ khoá lại ngay'
+    : 'bị cộng thêm điểm tới mốc khoá thì sẽ khoá lại'
+  return `Tài khoản đăng nhập lại được ngay nhưng vẫn giữ ${points} điểm vi phạm, ${next}. Muốn bắt đầu lại từ 0 thì bấm thêm Xoá sạch điểm.`
+}
+
+export function clearViolationsWarning(points: number, locked: boolean): string {
+  const base = `Gỡ toàn bộ vi phạm đang tính điểm (${points} điểm), điểm về 0. Lịch sử vẫn giữ, các dòng chuyển sang "Đã gỡ".`
+  return locked ? `${base} Tài khoản vẫn bị khoá, bấm Mở khoá tài khoản nếu muốn mở.` : base
 }

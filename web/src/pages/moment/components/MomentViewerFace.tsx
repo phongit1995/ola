@@ -9,9 +9,10 @@ import {
 } from '@constants';
 import { cn, colorForName, momentMedia, momentNoticeKey } from '@lib';
 import type { Moment, MomentAuthor, MomentMyComment, ReactionType } from '@app-types';
+import { MOMENT_VIEWER_CONTENT_CLASS } from '../constants';
 import type { MomentMediaStatus } from '../types';
 import { momentTurnStyle } from '../utils';
-import { MomentCanvas } from './MomentCanvas';
+import { MomentBackdrop, MomentCanvas } from './MomentCanvas';
 import { MomentCommentBar } from './MomentCommentBar';
 import {
   MomentCloseIcon,
@@ -37,6 +38,7 @@ interface MomentViewerFaceProps {
   muted: boolean;
   paused: boolean;
   videoRef?: Ref<HTMLVideoElement>;
+  contentRef?: Ref<HTMLDivElement>;
   onVideoEnded?: () => void;
   onMediaStatus: (momentId: string, status: MomentMediaStatus) => void;
   onToggleMute: () => void;
@@ -62,6 +64,7 @@ export function MomentViewerFace({
   muted,
   paused,
   videoRef,
+  contentRef,
   onVideoEnded,
   onMediaStatus,
   onToggleMute,
@@ -91,12 +94,13 @@ export function MomentViewerFace({
   return (
     <div
       inert={!active}
-      className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl max-sm:rounded-none"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
       style={momentTurnStyle(offset)}
     >
       {[previous, moment].map((page) => {
         if (page == null) return null;
         const current = page.id === momentId;
+        const pageMedia = current ? media : momentMedia(page);
         return (
           <div
             key={page.id}
@@ -108,24 +112,35 @@ export function MomentViewerFace({
               }
             }}
           >
-            {current ? (
-              <MomentCanvas
-                background={moment.background}
-                media={media}
-                overlays={moment.overlays}
-                videoMode={active ? 'controlled' : 'still'}
-                videoRef={active ? videoRef : undefined}
-                onVideoEnded={onVideoEnded}
-                onMediaReady={() => onMediaStatus(momentId, 'ready')}
-                onMediaError={() => onMediaStatus(momentId, 'error')}
-              />
-            ) : (
-              <MomentCanvas
-                background={page.background}
-                media={momentMedia(page)}
-                overlays={page.overlays}
-              />
-            )}
+            <div className="absolute inset-0 overflow-hidden [@container(9/16<=aspect-ratio<=225/352)]:hidden">
+              <MomentBackdrop background={page.background} media={pageMedia} />
+              <div className="absolute inset-0 bg-black/30" />
+            </div>
+            <div
+              ref={active && current ? contentRef : undefined}
+              className={MOMENT_VIEWER_CONTENT_CLASS}
+            >
+              <div className="absolute inset-x-0 top-1/2 aspect-[9/16] -translate-y-1/2">
+                {current ? (
+                  <MomentCanvas
+                    background={moment.background}
+                    media={media}
+                    overlays={moment.overlays}
+                    videoMode={active ? 'controlled' : 'still'}
+                    videoRef={active ? videoRef : undefined}
+                    onVideoEnded={onVideoEnded}
+                    onMediaReady={() => onMediaStatus(momentId, 'ready')}
+                    onMediaError={() => onMediaStatus(momentId, 'error')}
+                  />
+                ) : (
+                  <MomentCanvas
+                    background={page.background}
+                    media={pageMedia}
+                    overlays={page.overlays}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         );
       })}

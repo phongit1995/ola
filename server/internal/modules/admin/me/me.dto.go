@@ -1,5 +1,7 @@
 package adminme
 
+import "ola-chat-server/internal/modules/moderation"
+
 type AuthorResponse struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
@@ -31,6 +33,8 @@ type MeListItem struct {
 	Sticker      string            `json:"sticker,omitempty"`
 	Visibility   string            `json:"visibility"`
 	Enabled      bool              `json:"enabled"`
+	HiddenBy     string            `json:"hiddenBy,omitempty"`
+	HiddenAt     string            `json:"hiddenAt,omitempty"`
 	LikeCount    int               `json:"likeCount"`
 	DislikeCount int               `json:"dislikeCount"`
 	CommentCount int               `json:"commentCount"`
@@ -54,6 +58,8 @@ type MeDetail struct {
 	Sticker      string            `json:"sticker,omitempty"`
 	Visibility   string            `json:"visibility"`
 	Enabled      bool              `json:"enabled"`
+	HiddenBy     string            `json:"hiddenBy,omitempty"`
+	HiddenAt     string            `json:"hiddenAt,omitempty"`
 	LikeCount    int               `json:"likeCount"`
 	DislikeCount int               `json:"dislikeCount"`
 	CommentCount int               `json:"commentCount"`
@@ -62,8 +68,20 @@ type MeDetail struct {
 	UpdatedAt    string            `json:"updatedAt"`
 }
 
+type PenaltyRequest struct {
+	Reason   string `json:"reason" binding:"required,oneof=spam sensitive scam harassment other" example:"sensitive"`
+	Severity string `json:"severity" binding:"required,oneof=none violation deliberate" example:"violation"`
+	Note     string `json:"note" binding:"omitempty,max=1000" example:"Ảnh khoả thân"`
+}
+
 type UpdateStatusRequest struct {
-	Enabled *bool `json:"enabled" binding:"required" example:"false"`
+	Enabled *bool           `json:"enabled" binding:"required" example:"false"`
+	Penalty *PenaltyRequest `json:"penalty"`
+}
+
+type UpdateStatusResponse struct {
+	*MeDetail
+	Penalty *moderation.PenaltyOutcome `json:"penalty,omitempty"`
 }
 
 type CommentResponse struct {

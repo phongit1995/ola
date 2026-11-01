@@ -18,6 +18,10 @@ export class RecentMatchIds {
     return true;
   }
 
+  has(id: string): boolean {
+    return this.ids.has(id);
+  }
+
   get size(): number {
     return this.ids.size;
   }

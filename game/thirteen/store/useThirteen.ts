@@ -13,10 +13,13 @@ import type {
   RankingEntry,
   RoomInfo,
   RoomStateData,
+  SpectateJoinedData,
+  SpectatorsData,
   StateData,
   UserInfoData,
 } from '../../src/sdk';
-import { GAME_ID } from '../logic/constants.gen';
+import { GAME_ERROR_CODE, SPECTATE_LEFT_REASON } from '../../src/sdk/protocol';
+import { GAME_ID, SPECTATOR_SEAT } from '../logic/constants.gen';
 import { sortHand } from '../logic/cards';
 import { detectCombo, type Combo } from '../logic/combos';
 import { canBeat } from '../logic/beats';
@@ -67,6 +70,11 @@ interface ThirteenStore {
   phase: Phase;
   user: UserInfoData | null;
   practice: BotSetupItem[] | null;
+  spectating: boolean;
+  watchPendingId: string;
+  watchingRoomId: string;
+  watchedRoom: RoomStateData | null;
+  spectators: SpectatorsData | null;
   rooms: RoomInfo[];
   room: RoomStateData | null;
   roomChat: ChatMessageData[];
@@ -117,6 +125,9 @@ interface ThirteenStore {
   setReady(ready: boolean): void;
   startRoom(): void;
   kickMember(userId: string): void;
+  watchRoom(room: RoomInfo): void;
+  stopWatching(): void;
+  joinWatchedRoom(): void;
   toggleCard(card: number): void;
   clearSelection(): void;
   suggestPlay(): void;
@@ -156,6 +167,15 @@ export const RECORD_REQUEST_TIMEOUT_MS = 8000;
 const RECORD_OFFLINE_TEXT = 'Chưa kết nối được máy chủ trò chơi.';
 const RECORD_TIMEOUT_TEXT = 'Máy chủ chưa trả lời, hãy thử lại.';
 const RECORD_SERVER_ERROR_TEXT = 'Máy chủ đang bận, hãy thử lại sau ít phút.';
+const WATCH_ENDED_TEXT = 'Ván đấu bạn đang xem đã kết thúc.';
+const WATCHED_ROOM_GONE_TEXT = 'Bàn bạn đang xem đã giải tán.';
+const WATCH_FAILURE_CODES: ReadonlySet<string> = new Set([
+  GAME_ERROR_CODE.MatchNotFound,
+  GAME_ERROR_CODE.SpectateFailed,
+  GAME_ERROR_CODE.SpectateFull,
+  GAME_ERROR_CODE.SpectateNotAllowed,
+  GAME_ERROR_CODE.SpectateNotSupported,
+]);
 
 export const useThirteen = create<ThirteenStore>()((set, get) => {
   const refs = {
@@ -167,6 +187,8 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     handledMatchOvers: new RecentMatchIds(),
     handledMatchStarts: new RecentMatchIds(),
     leftMatchId: '',
+    matchRoomId: '',
+    watchRequest: '',
     toastTimer: 0,
     historyTimer: 0 as ReturnType<typeof setTimeout> | 0,
     leaderboardTimer: 0 as ReturnType<typeof setTimeout> | 0,
@@ -240,9 +262,10 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
   const toPerfDeadline = (deadline: number): number => performance.now() + (deadline - Date.now());
 
   const snapState = (state: ServerState, turn: number, deadline: number): void => {
-    set({
+    set((s) => ({
       you: state.you,
       hand: sortHand(state.yourHand),
+      selected: s.selected.filter((card) => state.yourHand.includes(card)),
       handCounts: state.handCounts,
       table: state.table ?? null,
       lastPlaySeat: state.table?.by ?? -1,
@@ -256,7 +279,8 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       movePending: false,
       animating: false,
       dealing: false,
-    });
+    }));
+    if (get().spectating) return;
     const mine = turn === state.you;
     bridge.turnChanged({ yourTurn: mine, deadline });
     if (mine) bridge.attention({ reason: ARCADE_ATTENTION_REASON.YourTurn });
@@ -316,7 +340,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       return;
     }
     set({ animating: true });
-    const fast = data.lastBy === state.you;
+    const fast = state.you >= 0 && data.lastBy === state.you;
     for (const step of state.steps ?? []) {
       if (refs.replayEpoch !== epoch || get().matchId !== data.matchId) return;
       if (fast && step.kind === 'play') {
@@ -345,9 +369,13 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     const fresh = refs.handledMatchStarts.mark(data.matchId);
     closeOverlay();
     if (data.matchId === refs.leftMatchId) refs.leftMatchId = '';
+    const room = get().room;
+    if (room) refs.matchRoomId = room.roomId;
+    else if (fresh) refs.matchRoomId = '';
     set({
       phase: 'table',
       matchId: data.matchId,
+      room: null,
       roomOwnerId: data.roomOwnerId ?? '',
       players: data.players,
       you: data.you,
@@ -381,6 +409,112 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     });
   };
 
+  const startSpectate = (data: SpectateJoinedData<ServerState>): void => {
+    let state: ServerState;
+    try {
+      state = decodeServerState(data.state);
+    } catch {
+      return;
+    }
+    const rejoined = get().spectating && get().matchId === data.matchId;
+    refs.watchRequest = '';
+    refs.replayEpoch += 1;
+    const epoch = refs.replayEpoch;
+    refs.matchRoomId = '';
+    closeOverlay();
+    set({
+      phase: 'table',
+      spectating: true,
+      watchPendingId: '',
+      matchId: data.matchId,
+      room: null,
+      ...(get().watchingRoomId ? {} : { roomChat: [] }),
+      roomOwnerId: data.roomOwnerId ?? '',
+      players: data.players,
+      you: SPECTATOR_SEAT,
+      hand: [],
+      selected: [],
+      awaySeats: {},
+      result: null,
+      selfDisconnected: false,
+      tableEvent: null,
+      ...(rejoined ? {} : { matchChat: [], chatOpen: false, chatUnread: 0, chatBubbles: [], reactions: [] }),
+    });
+    queueReplay(async () => {
+      if (refs.replayEpoch !== epoch) return;
+      snapState(state, data.turn, data.deadline);
+    });
+  };
+
+  const watchedTableReset = {
+    spectating: false,
+    watchPendingId: '',
+    spectators: null,
+    matchId: '',
+    result: null,
+    players: [],
+    you: 0,
+    hand: [],
+    selected: [],
+    table: null,
+    matchChat: [],
+    chatOpen: false,
+    chatUnread: 0,
+    chatBubbles: [],
+    reactions: [],
+    awaySeats: {},
+    animating: false,
+    selfDisconnected: false,
+  } satisfies Partial<ThirteenStore>;
+
+  const leaveWatchedMatch = (): void => {
+    const s = get();
+    refs.watchRequest = '';
+    refs.replayEpoch += 1;
+    if (s.spectating && s.matchId) refs.session?.spectateLeave(s.matchId);
+  };
+
+  const dropRoomWatch = (): void => {
+    if (get().watchingRoomId) refs.session?.roomUnwatch();
+    set({ watchingRoomId: '', watchedRoom: null });
+  };
+
+  const leaveSpectating = (message?: { notice?: string; toast?: string }): void => {
+    leaveWatchedMatch();
+    dropRoomWatch();
+    set({ ...watchedTableReset, phase: 'lobby', roomChat: [], ...(message?.notice ? { notice: message.notice } : {}) });
+    if (message?.toast) get().showToast(message.toast);
+    refs.session?.listRooms();
+  };
+
+  const followWatchedRoom = (): void => {
+    const s = get();
+    if (s.phase !== 'room' || !s.watchingRoomId || s.watchPendingId || !refs.session) return;
+    const info = s.rooms.find((room) => room.id === s.watchingRoomId);
+    if (info?.status !== 'playing' || !info.matchId || refs.handledMatchOvers.has(info.matchId)) return;
+    refs.watchRequest = info.matchId;
+    set({ watchPendingId: info.matchId });
+    refs.session.spectateJoin(info.matchId);
+  };
+
+  const enterWatchedRoom = (): void => {
+    if (!get().watchedRoom) {
+      leaveSpectating({ toast: WATCH_ENDED_TEXT });
+      return;
+    }
+    leaveWatchedMatch();
+    set({ ...watchedTableReset, phase: 'room' });
+    followWatchedRoom();
+  };
+
+  const watchedRoomGone = (): void => {
+    if (get().phase === 'room') {
+      leaveSpectating({ toast: WATCHED_ROOM_GONE_TEXT });
+      return;
+    }
+    dropRoomWatch();
+  };
+
   const handleMatchOver = (data: MatchOverData<unknown>): void => {
     if (data.matchId === refs.leftMatchId) return;
     if (!refs.handledMatchOvers.mark(data.matchId)) return;
@@ -390,6 +524,11 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     queueReplay(async () => {
       await sleep(600);
       if (refs.replayEpoch !== epoch) return;
+      if (get().spectating) {
+        if (get().watchingRoomId) enterWatchedRoom();
+        else leaveSpectating({ toast: WATCH_ENDED_TEXT });
+        return;
+      }
       const me = get().user?.id;
       const myEntry = data.rankings?.find((entry) => entry.userId === me);
       set({
@@ -442,7 +581,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         window.setTimeout(() => {
           set((s) => ({ chatBubbles: s.chatBubbles.filter((bubble) => bubble.key !== key) }));
         }, CHAT_BUBBLE_MS);
-        if (data.userId !== get().user?.id) bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
+        if (data.userId !== get().user?.id && !get().spectating) bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
       }),
       source.onReaction((data) => {
         if (!active()) return;
@@ -459,7 +598,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         const seat = data.userId ? get().players.findIndex((p) => p.id === data.userId) : -1;
         if (seat < 0) return;
         set((s) => ({ awaySeats: { ...s.awaySeats, [seat]: toPerfDeadline(data.graceDeadline) } }));
-        bridge.attention({ reason: ARCADE_ATTENTION_REASON.OpponentDisconnected });
+        if (!get().spectating) bridge.attention({ reason: ARCADE_ATTENTION_REASON.OpponentDisconnected });
       }),
       source.onOpponentReconnected((data) => {
         if (!active()) return;
@@ -481,6 +620,19 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       }),
       source.onError((data) => {
         if (!active()) return;
+        if (data.code === GAME_ERROR_CODE.UserInfoFailed && get().phase === 'connecting') {
+          set({ notice: 'Không tải được thông tin người chơi. Hãy thoát ra rồi mở lại trò chơi.' });
+          return;
+        }
+        const pendingWatch = get().watchPendingId !== '';
+        if (pendingWatch) set({ watchPendingId: '' });
+        if (WATCH_FAILURE_CODES.has(data.code) && (get().spectating || (pendingWatch && get().phase === 'room'))) {
+          leaveSpectating({ notice: data.code === GAME_ERROR_CODE.MatchNotFound ? WATCH_ENDED_TEXT : errorText(data.code) });
+          return;
+        }
+        if (pendingWatch && get().phase === 'lobby' && (WATCH_FAILURE_CODES.has(data.code) || data.code === GAME_ERROR_CODE.SpectateOwnMatch)) {
+          dropRoomWatch();
+        }
         set({ movePending: false });
         get().showToast(errorText(data.code));
       }),
@@ -496,15 +648,27 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
           session.listRooms();
         }
       }),
-      session.onRoomList((data) => set({ rooms: data.rooms })),
+      session.onRoomList((data) => {
+        set({ rooms: data.rooms });
+        followWatchedRoom();
+      }),
       session.onRoomUpsert((data) => {
         set((s) => {
           const rooms = s.rooms.filter((room) => room.id !== data.room.id);
           return { rooms: [data.room, ...rooms] };
         });
+        followWatchedRoom();
       }),
-      session.onRoomRemoved((data) => set((s) => ({ rooms: s.rooms.filter((room) => room.id !== data.roomId) }))),
+      session.onRoomRemoved((data) => {
+        set((s) => ({ rooms: s.rooms.filter((room) => room.id !== data.roomId) }));
+        if (data.roomId === get().watchingRoomId) watchedRoomGone();
+      }),
       session.onRoomState((data) => {
+        if (data.watcher) {
+          if (data.roomId === get().watchingRoomId) set({ watchedRoom: data });
+          return;
+        }
+        if (data.roomId === get().watchingRoomId) dropRoomWatch();
         if (get().phase !== 'table') closeOverlay();
         set({ room: data, phase: get().phase === 'table' ? 'table' : 'room' });
       }),
@@ -531,14 +695,38 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         });
       }),
       session.onRoomSync((data) => {
+        const s = get();
+        if (s.phase === 'table' && !s.practice && !s.spectating && !s.result && s.matchId && !refs.handledMatchOvers.has(s.matchId)) {
+          const backToRoom = Boolean(data.roomId) && s.room?.roomId === data.roomId;
+          refs.replayEpoch += 1;
+          set({
+            phase: backToRoom ? 'room' : 'lobby',
+            matchId: '',
+            selected: [],
+            movePending: false,
+            animating: false,
+            notice: 'Bạn mất kết nối quá lâu nên đã rời ván đấu.',
+            ...(backToRoom ? {} : { room: null, roomChat: [] }),
+          });
+          session.listRooms();
+          return;
+        }
         if (!data.roomId && get().phase === 'room') {
           set({ phase: 'lobby', room: null, roomChat: [] });
           session.listRooms();
         }
       }),
       session.onRoomClosed((data) => {
+        if (get().watchingRoomId && data.roomId === get().watchingRoomId) {
+          watchedRoomGone();
+          return;
+        }
         if (get().practice) {
           if (get().room?.roomId === data.roomId) set({ room: null, roomChat: [] });
+          return;
+        }
+        if (get().phase === 'table' && data.roomId === refs.matchRoomId) {
+          if (data.reason !== 'guest_left') set({ notice: roomClosedText(data.reason) });
           return;
         }
         if (get().room?.roomId === data.roomId || get().phase === 'room') {
@@ -557,10 +745,40 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         bridge.attention({ reason: ARCADE_ATTENTION_REASON.RoomKicked });
         session.listRooms();
       }),
+      session.onSpectateJoined((data) => {
+        const s = get();
+        const expected = refs.watchRequest === data.matchId || (s.spectating && s.matchId === data.matchId);
+        if (expected && !s.practice && (s.phase !== 'room' || s.watchingRoomId)) {
+          startSpectate(data);
+          return;
+        }
+        if (refs.watchRequest === data.matchId) refs.watchRequest = '';
+        if (s.watchPendingId === data.matchId) set({ watchPendingId: '' });
+        session.spectateLeave(data.matchId);
+      }),
+      session.onSpectators((data) => {
+        const s = get();
+        if (data.matchId === s.matchId || data.matchId === s.watchPendingId) set({ spectators: data });
+      }),
+      session.onSpectateLeft((data) => {
+        const s = get();
+        if (!s.spectating || s.matchId !== data.matchId || data.reason === SPECTATE_LEFT_REASON.MatchOver) return;
+        leaveSpectating();
+      }),
       ...bindMatch(session),
       session.onConnectionChange((connected) => {
         set({ selfDisconnected: !connected && get().phase === 'table' && !get().practice });
+        if (!connected && get().watchPendingId) set({ watchPendingId: '' });
         if (connected && get().phase === 'connecting') session.listRooms();
+        const s = get();
+        if (connected && s.watchingRoomId) {
+          session.roomWatch(s.watchingRoomId);
+          if (s.phase === 'room') session.listRooms();
+        }
+        if (connected && s.spectating && s.matchId) {
+          refs.watchRequest = s.matchId;
+          session.spectateJoin(s.matchId);
+        }
       }),
       session.onConnectionError(() => {
         if (get().practice) return;
@@ -573,6 +791,11 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     phase: 'connecting',
     user: null,
     practice: null,
+    spectating: false,
+    watchPendingId: '',
+    watchingRoomId: '',
+    watchedRoom: null,
+    spectators: null,
     rooms: [],
     room: null,
     roomChat: [],
@@ -678,6 +901,22 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       const roomId = get().room?.roomId;
       if (roomId) refs.session?.kickRoomMember(roomId, userId);
     },
+    watchRoom(room) {
+      const s = get();
+      if (!room.matchId || room.locked || s.phase !== 'lobby' || s.watchPendingId || !refs.session) return;
+      refs.watchRequest = room.matchId;
+      set({ watchPendingId: room.matchId, watchingRoomId: room.id, watchedRoom: null, roomChat: [] });
+      refs.session.roomWatch(room.id);
+      refs.session.spectateJoin(room.matchId);
+    },
+    stopWatching() {
+      if (get().spectating || get().watchingRoomId) leaveSpectating();
+    },
+    joinWatchedRoom() {
+      const s = get();
+      if (s.phase !== 'room' || !s.watchingRoomId || !s.watchedRoom) return;
+      refs.session?.joinRoom(s.watchingRoomId);
+    },
 
     toggleCard(card) {
       set((s) => ({
@@ -726,6 +965,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     },
 
     sendChat(text) {
+      if (get().spectating) return;
       const trimmed = text.trim();
       if (trimmed && get().matchId) matchSession()?.sendChat(get().matchId, trimmed);
     },
@@ -735,13 +975,17 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       if (trimmed && roomId) refs.session?.sendRoomChat(roomId, trimmed);
     },
     sendReaction(type) {
-      if (get().matchId) matchSession()?.sendReaction(get().matchId, type as never);
+      if (get().matchId && !get().spectating) matchSession()?.sendReaction(get().matchId, type as never);
     },
     setChatOpen(open) {
       set(open ? { chatOpen: true, chatUnread: 0 } : { chatOpen: false });
     },
 
     requestExit() {
+      if (get().spectating) {
+        leaveSpectating();
+        return;
+      }
       set({ confirmExit: true });
     },
     cancelExit() {

@@ -6,21 +6,28 @@ import (
 	"strings"
 	"time"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/moderation"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-var ErrReportNotFound = utils.NewHTTPError(http.StatusNotFound, "report not found")
+var (
+	ErrReportNotFound       = utils.NewHTTPError(http.StatusNotFound, "report not found")
+	ErrPenaltyWithoutTarget = utils.NewHTTPError(http.StatusBadRequest, "Báo cáo này không có người bị báo cáo để tính vi phạm")
+	ErrReportAlreadyHandled = utils.NewHTTPError(http.StatusConflict, "Báo cáo này đã được xử lý trước đó nên không tính điểm lại, tải lại trang để xem kết quả")
+)
 
 type Service struct {
-	repo *Repository
+	repo       *Repository
+	moderation *moderation.Service
 }
 
-func NewService(repo *Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo *Repository, moderationService *moderation.Service) *Service {
+	return &Service{repo: repo, moderation: moderationService}
 }
 
 func (s *Service) List(f ListFilter) (*ReportListResponse, error) {
@@ -64,17 +71,85 @@ func (s *Service) UpdateStatus(adminID, id uuid.UUID, req *UpdateStatusRequest) 
 		return nil, err
 	}
 
+	resolved := req.Status == constants.ReportStatusResolved
 	note := utils.TruncateRunes(strings.TrimSpace(req.Note), ReportHandlerNoteMax)
-	affected, err := s.repo.HandleTarget(report, req.Status, note, adminID)
+	var (
+		penalty  *moderation.Penalty
+		pending  []*models.Report
+		affected int64
+	)
+	err = s.repo.Transaction(func(tx *gorm.DB, repo *Repository) error {
+		locked, err := repo.LockTarget(report)
+		if err != nil {
+			return err
+		}
+		pending = pendingReports(locked)
+		if resolved && req.Penalty != nil {
+			if !stillUnresolved(locked, report.ID) {
+				return ErrReportAlreadyHandled
+			}
+			if penalty, err = s.penalize(tx, adminID, report, req.Penalty, note); err != nil {
+				return err
+			}
+		}
+		affected, err = repo.HandleTarget(report, req.Status, note, adminID)
+		return err
+	})
 	if err != nil {
 		return nil, err
+	}
+	var outcome *moderation.PenaltyOutcome
+	if penalty != nil {
+		s.moderation.ApplyPenalty(penalty)
+		outcome = penalty.Outcome
+	}
+	if resolved {
+		s.moderation.NotifyReporters(pending)
 	}
 
 	updated, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
-	return &UpdateStatusResponse{Report: toReportItem(updated), Affected: affected}, nil
+	return &UpdateStatusResponse{Report: toReportItem(updated), Affected: affected, Penalty: outcome}, nil
+}
+
+func pendingReports(reports []*models.Report) []*models.Report {
+	pending := make([]*models.Report, 0, len(reports))
+	for _, r := range reports {
+		if r.Status == constants.ReportStatusPending {
+			pending = append(pending, r)
+		}
+	}
+	return pending
+}
+
+func stillUnresolved(reports []*models.Report, id uuid.UUID) bool {
+	for _, r := range reports {
+		if r.ID == id {
+			return r.Status != constants.ReportStatusResolved
+		}
+	}
+	return false
+}
+
+func (s *Service) penalize(tx *gorm.DB, adminID uuid.UUID, report *models.Report, req *PenaltyRequest, note string) (*moderation.Penalty, error) {
+	if report.ReportedUserID == nil {
+		return nil, ErrPenaltyWithoutTarget
+	}
+	reportID := report.ID
+	return s.moderation.RecordPenalty(tx, moderation.PenaltyInput{
+		UserID:         *report.ReportedUserID,
+		AdminID:        adminID,
+		Source:         moderation.SourceReport,
+		TargetType:     report.TargetType,
+		TargetID:       report.TargetID,
+		ReportID:       &reportID,
+		Reason:         report.Reason,
+		Severity:       req.Severity,
+		Note:           note,
+		ContentRemoved: req.ContentRemoved,
+	})
 }
 
 func toReportItem(report *models.Report) ReportItem {

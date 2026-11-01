@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repository struct {
@@ -16,6 +17,12 @@ type Repository struct {
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
+}
+
+func (r *Repository) Transaction(fn func(tx *gorm.DB, repo *Repository) error) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		return fn(tx, &Repository{db: tx})
+	})
 }
 
 func (r *Repository) List(f ListFilter) ([]*models.Report, int64, error) {
@@ -91,6 +98,15 @@ func (r *Repository) CountPending() (int64, error) {
 	var count int64
 	err := r.db.Model(&models.Report{}).Where("status = ?", constants.ReportStatusPending).Count(&count).Error
 	return count, err
+}
+
+func (r *Repository) LockTarget(report *models.Report) ([]*models.Report, error) {
+	var reports []*models.Report
+	err := r.db.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("target_type = ? AND target_id = ? AND (status = ? OR id = ?)", report.TargetType, report.TargetID, constants.ReportStatusPending, report.ID).
+		Order("id").
+		Find(&reports).Error
+	return reports, err
 }
 
 func (r *Repository) HandleTarget(report *models.Report, status, note string, adminID uuid.UUID) (int64, error) {

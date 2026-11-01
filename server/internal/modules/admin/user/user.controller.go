@@ -151,6 +151,88 @@ func (ctrl *Controller) ListUserSessions(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// ListUserViolations godoc
+// @Summary      List user violations
+// @Description  Violation history and active points of a user (admin only)
+// @Tags         admin-user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path string true "User ID"
+// @Success      200  {object}  utils.BaseResponse[ViolationSummary]
+// @Failure      401  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/violations [get]
+func (ctrl *Controller) ListUserViolations(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid user id")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Violations(id)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// RevokeUserViolation godoc
+// @Summary      Revoke a user violation
+// @Description  Stop counting a violation; does not unlock the account (admin only)
+// @Tags         admin-user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id          path string true "User ID"
+// @Param        violationId path string true "Violation ID"
+// @Success      200  {object}  utils.BaseResponse[ViolationSummary]
+// @Failure      401  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/violations/{violationId} [delete]
+func (ctrl *Controller) RevokeUserViolation(c *gin.Context) (interface{}, error) {
+	adminID, ok := middleware.GetAdminID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	id, err := utils.ParseUUIDParam(c, "id", "invalid user id")
+	if err != nil {
+		return nil, err
+	}
+	violationID, err := utils.ParseUUIDParam(c, "violationId", "invalid violation id")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.RevokeViolation(adminID, id, violationID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// ClearUserViolations godoc
+// @Summary      Clear user violation points
+// @Description  Revoke every violation still counting points; does not unlock the account (admin only)
+// @Tags         admin-user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path string true "User ID"
+// @Success      200  {object}  utils.BaseResponse[ViolationSummary]
+// @Failure      401  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/violations [delete]
+func (ctrl *Controller) ClearUserViolations(c *gin.Context) (interface{}, error) {
+	adminID, ok := middleware.GetAdminID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	id, err := utils.ParseUUIDParam(c, "id", "invalid user id")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.ClearViolations(adminID, id)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // GrantVip godoc
 // @Summary      Grant VIP icon
 // @Description  Grant a VIP icon to a user's collection (admin only)

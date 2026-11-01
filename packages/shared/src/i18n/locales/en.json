@@ -1810,7 +1810,9 @@
     "msg_divorce": "declined your proposal",
     "empty": "No notification",
     "loadError": "Failed to load notifications",
-    "actionError": "Action failed, please try again"
+    "actionError": "Action failed, please try again",
+    "systemSender": "System",
+    "hide": "Hide notification"
   },
   "ken": {
     "title": "KEN",

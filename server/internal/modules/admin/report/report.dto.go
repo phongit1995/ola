@@ -1,6 +1,7 @@
 package adminreport
 
 import (
+	"ola-chat-server/internal/modules/moderation"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
@@ -58,14 +59,21 @@ type ReportSummaryResponse struct {
 	Pending int64 `json:"pending"`
 }
 
+type PenaltyRequest struct {
+	Severity       string `json:"severity" binding:"required,oneof=none violation deliberate" example:"violation"`
+	ContentRemoved bool   `json:"contentRemoved" example:"true"`
+}
+
 type UpdateStatusRequest struct {
-	Status string `json:"status" binding:"required,oneof=resolved dismissed" example:"resolved"`
-	Note   string `json:"note" binding:"omitempty,max=1000" example:"Đã xoá tin nhắn và khoá tài khoản"`
+	Status  string          `json:"status" binding:"required,oneof=resolved dismissed" example:"resolved"`
+	Note    string          `json:"note" binding:"omitempty,max=1000" example:"Đã xoá tin nhắn và khoá tài khoản"`
+	Penalty *PenaltyRequest `json:"penalty"`
 }
 
 type UpdateStatusResponse struct {
-	Report   ReportItem `json:"report"`
-	Affected int64      `json:"affected"`
+	Report   ReportItem                 `json:"report"`
+	Affected int64                      `json:"affected"`
+	Penalty  *moderation.PenaltyOutcome `json:"penalty,omitempty"`
 }
 
 type TestAlertRequest struct {

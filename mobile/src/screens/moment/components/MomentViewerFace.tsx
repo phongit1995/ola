@@ -7,8 +7,8 @@ import { MOMENT_FADE_MS, MOMENT_STATUS, MOMENT_TURN_SHADE, MOMENT_TYPE } from '@
 import { colorForName, momentMedia, momentNoticeKey } from '@ola/shared/lib';
 import type { Moment, MomentAuthor, MomentMyComment, ReactionType } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
-import { MOMENT_TURN_PERSPECTIVE } from '../constants';
-import { MomentCanvas } from './MomentCanvas';
+import { MOMENT_ASPECT_RATIO, MOMENT_TURN_PERSPECTIVE } from '../constants';
+import { MomentBackdrop, MomentCanvas, type MomentCanvasSize } from './MomentCanvas';
 import { MomentCommentBar } from './MomentCommentBar';
 import {
   MomentCloseIcon,
@@ -40,6 +40,10 @@ const styles = StyleSheet.create({
   noticeAboveBar: { bottom: 96 },
   noticeText: { color: '#ffffff', textAlign: 'center', fontSize: 14 },
   centered: { alignItems: 'center', justifyContent: 'center' },
+  backdrop: { overflow: 'hidden', backgroundColor: '#000000' },
+  backdropShade: { backgroundColor: 'rgba(0,0,0,0.3)' },
+  content: { position: 'absolute', top: 0, overflow: 'hidden' },
+  canvas: { position: 'absolute', left: 0, right: 0 },
 });
 
 function ProgressSegment({
@@ -65,6 +69,8 @@ interface MomentViewerFaceProps {
   index: number;
   position: SharedValue<number>;
   width: number;
+  height: number;
+  content: MomentCanvasSize;
   author: MomentAuthor;
   moments: Moment[];
   moment: Moment;
@@ -94,6 +100,8 @@ export function MomentViewerFace({
   index,
   position,
   width,
+  height,
+  content,
   author,
   moments,
   moment,
@@ -132,6 +140,9 @@ export function MomentViewerFace({
   const processing = moment.status === MOMENT_STATUS.processing;
   const noticeKey = momentNoticeKey(moment, mediaStatus === 'error');
   const momentId = moment.id;
+  const canvasHeight = content.width / MOMENT_ASPECT_RATIO;
+  const canvasStyle = [styles.canvas, { top: (content.height - canvasHeight) / 2, height: canvasHeight }];
+  const showBackdrop = content.width < width || content.height < height;
 
   useEffect(() => {
     if (previous == null) return;
@@ -166,35 +177,46 @@ export function MomentViewerFace({
         {[previous, moment].map((page) => {
           if (page == null) return null;
           const current = page.id === momentId;
+          const pageMedia = current ? media : momentMedia(page);
           return (
             <Animated.View
               key={page.id}
               entering={current && previous ? FadeIn.duration(MOMENT_FADE_MS) : undefined}
               style={StyleSheet.absoluteFill}
             >
-              {current ? (
-                <MomentCanvas
-                  background={moment.background}
-                  media={media}
-                  overlays={moment.overlays}
-                  videoMode={active ? 'controlled' : 'still'}
-                  playId={playId}
-                  paused={paused}
-                  muted={muted}
-                  onVideoProgress={active ? onVideoProgress : undefined}
-                  onVideoEnd={active ? onVideoEnd : undefined}
-                  onMediaReady={() => onMediaStatus(momentId, 'ready')}
-                  onMediaError={() => onMediaStatus(momentId, 'error')}
-                  style={StyleSheet.absoluteFill}
-                />
-              ) : (
-                <MomentCanvas
-                  background={page.background}
-                  media={momentMedia(page)}
-                  overlays={page.overlays}
-                  style={StyleSheet.absoluteFill}
-                />
+              {showBackdrop && (
+                <View style={[StyleSheet.absoluteFill, styles.backdrop]}>
+                  <MomentBackdrop background={page.background} media={pageMedia} />
+                  <View style={[StyleSheet.absoluteFill, styles.backdropShade]} />
+                </View>
               )}
+              <View
+                style={[styles.content, { left: (width - content.width) / 2, width: content.width, height: content.height }]}
+              >
+                {current ? (
+                  <MomentCanvas
+                    background={moment.background}
+                    media={media}
+                    overlays={moment.overlays}
+                    videoMode={active ? 'controlled' : 'still'}
+                    playId={playId}
+                    paused={paused}
+                    muted={muted}
+                    onVideoProgress={active ? onVideoProgress : undefined}
+                    onVideoEnd={active ? onVideoEnd : undefined}
+                    onMediaReady={() => onMediaStatus(momentId, 'ready')}
+                    onMediaError={() => onMediaStatus(momentId, 'error')}
+                    style={canvasStyle}
+                  />
+                ) : (
+                  <MomentCanvas
+                    background={page.background}
+                    media={pageMedia}
+                    overlays={page.overlays}
+                    style={canvasStyle}
+                  />
+                )}
+              </View>
             </Animated.View>
           );
         })}

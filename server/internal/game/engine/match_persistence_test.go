@@ -174,9 +174,10 @@ func (s *memoryRoomStore) Claim(gameID, roomID string) (func(), bool) {
 type memoryActiveMatchStore struct {
 	mu         sync.Mutex
 	matches    map[string]ActiveMatchSnapshot
-	spectators map[string]map[string]struct{}
+	spectators map[string]map[string]spectatorEntry
 	failSave   bool
 	failDelete bool
+	joinSeq    int64
 }
 
 type blockingActiveMatchStore struct {
@@ -232,8 +233,8 @@ func (s *blockingActiveMatchStore) List(gameID string) ([]ActiveMatchSnapshot, e
 	return s.base.List(gameID)
 }
 
-func (s *blockingActiveMatchStore) AddSpectator(gameID, matchID, spectatorID string, limit int) (int, SpectatorAddStatus, error) {
-	return s.base.AddSpectator(gameID, matchID, spectatorID, limit)
+func (s *blockingActiveMatchStore) AddSpectator(gameID, matchID, spectatorID string, viewer protocol.PlayerInfo, limit int) (int, SpectatorAddStatus, error) {
+	return s.base.AddSpectator(gameID, matchID, spectatorID, viewer, limit)
 }
 
 func (s *blockingActiveMatchStore) RemoveSpectator(gameID, matchID, userID string) error {
@@ -244,6 +245,10 @@ func (s *blockingActiveMatchStore) SpectatorCount(gameID, matchID string) (int, 
 	return s.base.SpectatorCount(gameID, matchID)
 }
 
+func (s *blockingActiveMatchStore) Spectators(gameID, matchID string) ([]protocol.PlayerInfo, error) {
+	return s.base.Spectators(gameID, matchID)
+}
+
 func (s *blockingActiveMatchStore) ClearSpectators(gameID, matchID string) error {
 	return s.base.ClearSpectators(gameID, matchID)
 }
@@ -251,11 +256,11 @@ func (s *blockingActiveMatchStore) ClearSpectators(gameID, matchID string) error
 func newMemoryActiveMatchStore() *memoryActiveMatchStore {
 	return &memoryActiveMatchStore{
 		matches:    make(map[string]ActiveMatchSnapshot),
-		spectators: make(map[string]map[string]struct{}),
+		spectators: make(map[string]map[string]spectatorEntry),
 	}
 }
 
-func (s *memoryActiveMatchStore) AddSpectator(gameID, matchID, spectatorID string, limit int) (int, SpectatorAddStatus, error) {
+func (s *memoryActiveMatchStore) AddSpectator(gameID, matchID, spectatorID string, viewer protocol.PlayerInfo, limit int) (int, SpectatorAddStatus, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	key := activeSnapshotKey(gameID, matchID)
@@ -264,7 +269,7 @@ func (s *memoryActiveMatchStore) AddSpectator(gameID, matchID, spectatorID strin
 	}
 	set := s.spectators[key]
 	if set == nil {
-		set = make(map[string]struct{})
+		set = make(map[string]spectatorEntry)
 		s.spectators[key] = set
 	}
 	if _, exists := set[spectatorID]; exists {
@@ -273,7 +278,8 @@ func (s *memoryActiveMatchStore) AddSpectator(gameID, matchID, spectatorID strin
 	if len(set) >= limit {
 		return limit, SpectatorFull, nil
 	}
-	set[spectatorID] = struct{}{}
+	s.joinSeq++
+	set[spectatorID] = spectatorEntry{PlayerInfo: viewer, JoinedAt: s.joinSeq}
 	return len(set), SpectatorAdded, nil
 }
 
@@ -285,9 +291,18 @@ func (s *memoryActiveMatchStore) RemoveSpectator(gameID, matchID, userID string)
 }
 
 func (s *memoryActiveMatchStore) SpectatorCount(gameID, matchID string) (int, error) {
+	viewers, err := s.Spectators(gameID, matchID)
+	return len(viewers), err
+}
+
+func (s *memoryActiveMatchStore) Spectators(gameID, matchID string) ([]protocol.PlayerInfo, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return len(s.spectators[activeSnapshotKey(gameID, matchID)]), nil
+	entries := make([]spectatorEntry, 0, len(s.spectators[activeSnapshotKey(gameID, matchID)]))
+	for _, entry := range s.spectators[activeSnapshotKey(gameID, matchID)] {
+		entries = append(entries, entry)
+	}
+	return uniqueSpectators(entries), nil
 }
 
 func (s *memoryActiveMatchStore) ClearSpectators(gameID, matchID string) error {
@@ -372,6 +387,7 @@ type capturedMessage struct {
 	gameID  string
 	userID  string
 	matchID string
+	roomID  string
 	env     protocol.OutEnvelope
 }
 
@@ -396,6 +412,24 @@ func (e *captureEmitter) ToMatch(gameID, matchID string, env protocol.OutEnvelop
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	e.messages = append(e.messages, capturedMessage{gameID: gameID, matchID: matchID, env: env})
+}
+
+func (e *captureEmitter) ToRoomWatchers(gameID, roomID string, env protocol.OutEnvelope) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.messages = append(e.messages, capturedMessage{gameID: gameID, roomID: roomID, env: env})
+}
+
+func (e *captureEmitter) roomWatcherMessages(roomID, messageType string) []protocol.OutEnvelope {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	var out []protocol.OutEnvelope
+	for _, message := range e.messages {
+		if message.roomID == roomID && message.env.Type == messageType {
+			out = append(out, message.env)
+		}
+	}
+	return out
 }
 
 func (e *captureEmitter) matchMessages(matchID, messageType string) []protocol.OutEnvelope {

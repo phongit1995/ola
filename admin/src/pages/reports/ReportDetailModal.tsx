@@ -2,19 +2,21 @@ import { useState } from 'react'
 import { App, Button, Descriptions, Image, Input, Modal, Space, Tag, Typography } from 'antd'
 import { CommentOutlined, PlayCircleOutlined } from '@ant-design/icons'
 import { UserBriefCell } from '@/components/UserBriefCell'
+import { PenaltySeverityRadio } from '@/components/PenaltySeverityRadio'
 import { ConversationMessagesModal } from '@/pages/conversations/ConversationMessagesModal'
 import { MomentDetailModal } from '@/pages/moments/MomentDetailModal'
 import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
-import type { AdminReport } from '@/types'
+import {
+  DEFAULT_PENALTY_SEVERITY,
+  REPORT_REASON_LABEL,
+  REPORT_TARGET_LABEL,
+  withPenaltyOutcome,
+} from '@/lib/moderation'
+import type { AdminReport, PenaltySeverity, ReportPenaltyRequest } from '@/types'
 import { useHandleReport, type ReportHandling } from './useReportQueries'
 import { contentActionLabel } from './utils'
-import {
-  REPORT_HANDLER_NOTE_MAX,
-  REPORT_REASON_LABEL,
-  REPORT_STATUS_TAG,
-  REPORT_TARGET_LABEL,
-} from './constants'
+import { REPORT_HANDLER_NOTE_MAX, REPORT_STATUS_TAG } from './constants'
 
 interface ReportDetailModalProps {
   report: AdminReport
@@ -25,6 +27,7 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
   const { message, modal } = App.useApp()
   const handleReport = useHandleReport()
   const [note, setNote] = useState(report.handlerNote ?? '')
+  const [severity, setSeverity] = useState<PenaltySeverity>(DEFAULT_PENALTY_SEVERITY)
   const [conversationOpen, setConversationOpen] = useState(false)
   const [momentOpen, setMomentOpen] = useState(false)
   const conversationId = report.targetType === 'message' ? report.contextId : undefined
@@ -35,13 +38,19 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
   const actionLabel = contentActionLabel(report)
   const canLock = report.reportedUser != null && report.reportedUser.isActive
   const reportedName = report.reportedUser ? `@${report.reportedUser.username}` : 'người dùng này'
+  const alreadyResolved = report.status === 'resolved'
+  const canPenalize = report.reportedUser != null && !alreadyResolved
+
+  function penaltyFor(contentRemoved: boolean): ReportPenaltyRequest | undefined {
+    return canPenalize ? { severity, contentRemoved } : undefined
+  }
 
   async function run(handling: Omit<ReportHandling, 'report' | 'note'>, successText: string) {
     try {
       const result = await handleReport.mutateAsync({ ...handling, report, note })
-      message.success(
-        result.affected > 1 ? `${successText} (${result.affected} báo cáo cùng nội dung)` : successText,
-      )
+      const text =
+        result.affected > 1 ? `${successText} (${result.affected} báo cáo cùng nội dung)` : successText
+      message.success(withPenaltyOutcome(text, result.penalty))
       onClose()
     } catch (err) {
       message.error(errorMessage(err, 'Thao tác thất bại'))
@@ -75,7 +84,7 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
       </Button>
       <Button
         loading={handleReport.isPending}
-        onClick={() => run({ status: 'resolved' }, 'Đã đánh dấu đã xử lý')}
+        onClick={() => run({ status: 'resolved', penalty: penaltyFor(false) }, 'Đã đánh dấu đã xử lý')}
       >
         Đánh dấu đã xử lý
       </Button>
@@ -87,7 +96,7 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
             confirmRun(
               `${actionLabel}?`,
               'Nội dung sẽ bị gỡ khỏi app và báo cáo được đánh dấu đã xử lý.',
-              { status: 'resolved', removeContent: true },
+              { status: 'resolved', removeContent: true, penalty: penaltyFor(true) },
               `Đã ${actionLabel.toLowerCase()}`,
             )
           }
@@ -203,6 +212,24 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
           </Descriptions.Item>
         )}
       </Descriptions>
+      {canPenalize && (
+        <>
+          <Typography.Text strong style={{ display: 'block', marginTop: 16, marginBottom: 8 }}>
+            Mức xử lý
+          </Typography.Text>
+          <PenaltySeverityRadio value={severity} onChange={setSeverity} disabled={handleReport.isPending} />
+          <Typography.Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 0, fontSize: 12 }}>
+            Tính điểm cho {reportedName} khi bấm &quot;Đánh dấu đã xử lý&quot;
+            {actionLabel != null ? ` hoặc "${actionLabel}"` : ''}. Đủ điểm thì tài khoản tự bị khoá.
+            &quot;Bỏ qua&quot; không tính điểm.
+          </Typography.Paragraph>
+        </>
+      )}
+      {alreadyResolved && report.reportedUser != null && (
+        <Typography.Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0, fontSize: 12 }}>
+          Báo cáo đã được xử lý nên không tính điểm vi phạm lại.
+        </Typography.Paragraph>
+      )}
       <Typography.Text strong style={{ display: 'block', marginTop: 16, marginBottom: 8 }}>
         Ghi chú xử lý
       </Typography.Text>

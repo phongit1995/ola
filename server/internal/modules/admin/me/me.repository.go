@@ -1,7 +1,10 @@
 package adminme
 
 import (
+	"time"
+
 	"ola-chat-server/internal/models"
+	meModule "ola-chat-server/internal/modules/me"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -13,6 +16,12 @@ type Repository struct {
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
+}
+
+func (r *Repository) Transaction(fn func(tx *gorm.DB, repo *Repository) error) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		return fn(tx, &Repository{db: tx})
+	})
 }
 
 func (r *Repository) List(f ListFilter) ([]*models.Me, int64, error) {
@@ -84,7 +93,7 @@ func (r *Repository) GetByID(id uuid.UUID) (*models.Me, error) {
 }
 
 func (r *Repository) SetEnabled(id uuid.UUID, enabled bool) error {
-	return r.db.Model(&models.Me{}).Where("id = ?", id).Update("enabled", enabled).Error
+	return r.db.Model(&models.Me{}).Where("id = ?", id).Updates(meModule.HiddenFields(!enabled, meModule.MeHiddenByAdmin, time.Now())).Error
 }
 
 func (r *Repository) GetCommentByID(id uuid.UUID) (*models.MeComment, error) {

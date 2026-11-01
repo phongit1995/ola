@@ -334,20 +334,46 @@ func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 }
 
 func TestWinnerAmountsApplyPerGameCommission(t *testing.T) {
-	repo := &SettlementRepository{commissionPercents: map[string]int{"caro": 5, "war-god": 5}}
-	payout, net := repo.WinnerAmounts("caro", 10_000)
+	repo := &SettlementRepository{commissionPercents: map[string]int{"caro": 5, "war-god": 5, "tycoon": 5}}
+	payout, net := repo.WinnerAmounts("caro", 10_000, 2)
 	if payout != 19_500 || net != 9_500 {
 		t.Fatalf("caro amounts = payout %d, net %d; want 19500 and 9500", payout, net)
 	}
 
-	payout, net = repo.WinnerAmounts("war-god", 10_000)
+	payout, net = repo.WinnerAmounts("war-god", 10_000, 2)
 	if payout != 19_500 || net != 9_500 {
 		t.Fatalf("war-god amounts = payout %d, net %d; want 19500 and 9500", payout, net)
 	}
 
-	payout, net = repo.WinnerAmounts("other-game", 10_000)
+	payout, net = repo.WinnerAmounts("other-game", 10_000, 2)
 	if payout != 20_000 || net != 10_000 {
 		t.Fatalf("uncommissioned amounts = payout %d, net %d; want 20000 and 10000", payout, net)
+	}
+
+	payout, net = repo.WinnerAmounts("tycoon", 10_000, 4)
+	if payout != 39_500 || net != 29_500 {
+		t.Fatalf("four-seat amounts = payout %d, net %d; want 39500 and 29500", payout, net)
+	}
+}
+
+func TestMaxBetKeepsEveryPotWithinPostgresInteger(t *testing.T) {
+	for players := 2; players <= 8; players++ {
+		limit := engine.MaxBetFor(players)
+		if int64(limit)*int64(players) > math.MaxInt32 {
+			t.Fatalf("%d seats: pot %d overflows", players, int64(limit)*int64(players))
+		}
+		if err := validateBet(limit, players); err != nil {
+			t.Fatalf("%d seats: max bet rejected: %v", players, err)
+		}
+		if err := validateBet(limit+1, players); err == nil {
+			t.Fatalf("%d seats: bet above the limit accepted", players)
+		}
+	}
+	if engine.MaxBetFor(2) != engine.MaxBet {
+		t.Fatal("two-seat limit changed")
+	}
+	if maxBetForGame("tycoon") != engine.MaxBetFor(4) || maxBetForGame("caro") != engine.MaxBet {
+		t.Fatalf("per-game max bet = %d / %d", maxBetForGame("tycoon"), maxBetForGame("caro"))
 	}
 }
 

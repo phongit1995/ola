@@ -34,6 +34,14 @@ func NewService(repo *Repository, kafkaProducer *kafka.Producer, cache *services
 }
 
 func (s *Service) Create(recipientID uuid.UUID, actorID *uuid.UUID, ntype string, refID *uuid.UUID, preview string) {
+	s.create(recipientID, actorID, ntype, refID, preview, nil)
+}
+
+func (s *Service) CreateForDevices(recipientID uuid.UUID, ntype string, refID *uuid.UUID, preview string, devices []appNotificationEvents.PushDevice) {
+	s.create(recipientID, nil, ntype, refID, preview, devices)
+}
+
+func (s *Service) create(recipientID uuid.UUID, actorID *uuid.UUID, ntype string, refID *uuid.UUID, preview string, devices []appNotificationEvents.PushDevice) {
 	if actorID != nil && recipientID == *actorID {
 		return
 	}
@@ -50,7 +58,7 @@ func (s *Service) Create(recipientID uuid.UUID, actorID *uuid.UUID, ntype string
 			s.logger.Warnw("Failed to create app notification", "recipient_id", recipientID, "type", ntype, "error", err.Error())
 			return
 		}
-		s.publishCreated(recipientID, created)
+		s.publishCreated(recipientID, created, devices)
 	})
 }
 
@@ -68,7 +76,18 @@ func (s *Service) Remove(recipientID uuid.UUID, ntype string, refID uuid.UUID) {
 	})
 }
 
-func (s *Service) publishCreated(recipientID uuid.UUID, notif *models.AppNotification) {
+func (s *Service) Hide(recipientID, id uuid.UUID) error {
+	removed, err := s.repo.DeleteByID(recipientID, id)
+	if err != nil {
+		return err
+	}
+	if removed != nil {
+		s.publishRemoved(recipientID, removed.ID)
+	}
+	return nil
+}
+
+func (s *Service) publishCreated(recipientID uuid.UUID, notif *models.AppNotification, devices []appNotificationEvents.PushDevice) {
 	if s.kafkaProducer == nil {
 		return
 	}
@@ -86,6 +105,7 @@ func (s *Service) publishCreated(recipientID uuid.UUID, notif *models.AppNotific
 		RecipientID:  recipientID.String(),
 		Notification: notifBytes,
 		UnreadCount:  unread,
+		PushDevices:  devices,
 	}
 	utils.PublishAsync(s.logger, "app notification", func(ctx context.Context) error {
 		return s.kafkaProducer.PublishAppNotification(ctx, event)

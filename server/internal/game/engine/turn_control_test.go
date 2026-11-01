@@ -251,13 +251,13 @@ func TestDualDisconnectReconnectPublishesRearmedDeadline(t *testing.T) {
 
 	emitter.clear()
 	gameEngine.OnConnect(match.GameID, currentID)
-	staleEnvelope, ok := emitter.last(currentID, protocol.S2CMatchFound)
+	resumedEnvelope, ok := emitter.last(currentID, protocol.S2CMatchFound)
 	if !ok {
 		t.Fatal("first reconnecting player did not receive resumed MATCH_FOUND")
 	}
-	stale := staleEnvelope.Data.(protocol.MatchFoundData)
-	if stale.Deadline >= time.Now().UnixMilli() {
-		t.Fatalf("test setup expected an expired paused deadline, got %d", stale.Deadline)
+	resumed := resumedEnvelope.Data.(protocol.MatchFoundData)
+	if resumed.Deadline <= time.Now().UnixMilli() {
+		t.Fatalf("returning turn player got an expired deadline %d while the opponent is still away", resumed.Deadline)
 	}
 
 	emitter.clear()

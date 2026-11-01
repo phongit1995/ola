@@ -9,6 +9,8 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/game/engine"
 	"ola-chat-server/internal/game/games/thirteen"
+	"ola-chat-server/internal/game/games/tycoon"
+	"ola-chat-server/internal/game/logic"
 	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/models"
@@ -27,6 +29,14 @@ func NewRepository(db *gorm.DB, users *user.CacheService) *Repository {
 	return &Repository{db: db, users: users}
 }
 
+func maxBetForGame(gameID string) int {
+	gameLogic, err := logic.Get(gameID)
+	if err != nil {
+		return engine.MaxBet
+	}
+	return engine.MaxBetFor(logic.MaxPlayers(gameLogic))
+}
+
 func (r *Repository) GetUserInfo(gameID, userID string) (*protocol.UserInfoData, error) {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
@@ -42,7 +52,7 @@ func (r *Repository) GetUserInfo(gameID, userID string) (*protocol.UserInfoData,
 		ID:       userID,
 		Username: u.Username,
 		Ken:      u.Ken,
-		MaxBet:   engine.MaxBet,
+		MaxBet:   maxBetForGame(gameID),
 	}
 	applyGameLevel(r.db, info, gameID, uid)
 
@@ -172,7 +182,7 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 	}
 
 	var query *gorm.DB
-	if gameID == thirteen.GameID {
+	if gameID == thirteen.GameID || gameID == tycoon.GameID {
 		query = r.db.Table("game_matches").
 			Select(`seats.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
 				COALESCE(SUM(CASE WHEN seats.user_id = game_matches.winner_id THEN game_matches.ken_delta ELSE 0 END), 0) AS ken,

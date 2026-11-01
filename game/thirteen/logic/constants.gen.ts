@@ -2,6 +2,7 @@
 
 export const GAME_ID = "thirteen";
 export const TURN_SECONDS = 30;
+export const SPECTATOR_SEAT = -1;
 export const HAND_SIZE = 13;
 export const DECK_SIZE = 52;
 export const RANK_TWO = 12;

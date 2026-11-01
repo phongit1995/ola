@@ -24,6 +24,7 @@ import (
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/moderation"
 	"ola-chat-server/internal/modules/relationships"
 	userModule "ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
@@ -52,6 +53,7 @@ type Service struct {
 	cache          *services.CacheService
 	userCache      *userModule.CacheService
 	clanGate       ClanGate
+	moderation     *moderation.Service
 	logger         *zap.SugaredLogger
 }
 
@@ -65,7 +67,8 @@ type ServiceParams struct {
 	KafkaProducer  *kafka.Producer
 	Cache          *services.CacheService
 	UserCache      *userModule.CacheService
-	ClanGate       ClanGate `optional:"true"`
+	ClanGate       ClanGate            `optional:"true"`
+	Moderation     *moderation.Service `optional:"true"`
 	Logger         *zap.SugaredLogger
 }
 
@@ -79,6 +82,7 @@ func NewService(p ServiceParams) *Service {
 		cache:          p.Cache,
 		userCache:      p.UserCache,
 		clanGate:       p.ClanGate,
+		moderation:     p.Moderation,
 		logger:         p.Logger.Named("[post_service]"),
 	}
 }
@@ -286,7 +290,7 @@ func (s *Service) Delete(userID, postID uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	if err := s.repo.Disable(postID); err != nil {
+	if err := s.repo.Disable(postID, MeHiddenByOwner); err != nil {
 		return err
 	}
 	if post.ClanID != nil && s.clanGate != nil {
@@ -1127,10 +1131,17 @@ func (s *Service) viewablePost(viewerID, postID uuid.UUID) (*models.Me, error) {
 	if err != nil {
 		return nil, err
 	}
+	if post.AuthorID == viewerID && hiddenByAdmin(post) && s.moderation != nil {
+		return nil, s.moderation.HiddenPostError(postID)
+	}
 	if !s.canView(viewerID, post) {
 		return nil, errPostNotFound
 	}
 	return post, nil
+}
+
+func hiddenByAdmin(post *models.Me) bool {
+	return !post.Enabled && post.HiddenBy != nil && *post.HiddenBy == MeHiddenByAdmin
 }
 
 func (s *Service) ownedPost(userID, postID uuid.UUID) (*models.Me, error) {

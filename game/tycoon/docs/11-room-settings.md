@@ -95,17 +95,22 @@ Vào xem từ chính hàng bàn trong danh sách, không có màn danh sách xem
 
 Hạ tầng hiện có đã kiểm `bet` (`INVALID_BET`, `INSUFFICIENT_KEN`, `BET_NOT_ALLOWED`, `MaxBet`) và có luồng xem trận. Cần thêm:
 
-1. **Settlement nhiều người:** hiện escrow và chia tiền theo `Player0ID`/`Player1ID`, `MaxBet` tính cho pot `2 × bet`. Cần escrow 2–4 người, trả pot theo `Rankings`, giới hạn `MaxBet` theo pot `4 × bet`.
-2. **Cờ phòng `allowSpectators`:** lưu trong room và match snapshot; lọc `SPECTATE_LIST`; chặn `SPECTATE_JOIN` bằng `SPECTATE_NOT_ALLOWED`.
-3. **Xem trận cho game có `StateViewer`:** hiện `spectatable()` chặn mọi game có `StateViewer`. Cho `ViewFor` nhận `playerIdx = -1` là người xem rồi bỏ guard (05 §9).
-4. Config `TYCOON_COMMISSION_PERCENT` (mặc định 5) cạnh các game khác.
+1. **Settlement nhiều người (sửa 01/11/2026):**
+   - Escrow mọi ghế qua `game_match_players`, hạng từ `Rankings` — có từ khi làm Tiến Lên.
+   - `Settlement.WinnerAmounts(gameID, bet, playerCount)`: payout = `bet × số người − phí`, phí = `bet × %` (một phần cược, giữ như Tiến Lên). Engine dùng cùng hàm này cho `MATCH_OVER.payout/kenDelta` (trước đó engine báo theo pot 2 người).
+   - Migration `20261101000002_game_ken_delta_per_seat`: ràng buộc `game_matches_ken_delta_check` thành `ken_delta <= bet × max(player_count − 1, 1)` (tính bằng `bigint`). Trước đó `ken_delta <= bet` làm settle bàn 3–4 người có cược lỗi và job thử lại mãi. **Phải chạy migration trước khi deploy server.**
+   - `MaxBetFor(số người) = MaxInt32 / số người` để pot không tràn integer: kiểm ở `ROOM_CREATE` (theo `maxPlayers` của bàn), lúc bắt đầu ván và lúc settle; `USER_INFO.maxBet` trả theo số người tối đa của game (Tycoon, Tiến Lên: 536.870.911; game 2 người giữ 1.073.741.823).
+2. **Cờ phòng `allowSpectators`:** chưa có ở server (không game nào có); lưu trong room và match snapshot; lọc `SPECTATE_LIST`; chặn `SPECTATE_JOIN` bằng `SPECTATE_NOT_ALLOWED`.
+3. **Xem trận cho game có `StateViewer`:** hiện `spectatable()` chặn mọi game có `StateViewer`, nên Tycoon đang trả `SPECTATE_NOT_SUPPORTED`. `ViewFor` của Tycoon đã nhận seat ngoài khoảng là người xem (`you = -1`); còn phải bỏ guard trong engine sau khi có mục 2.
+4. ~~Config `TYCOON_COMMISSION_PERCENT` (mặc định 5) cạnh các game khác.~~ Đã thêm 01/11/2026.
 
 ## 5. Checklist
 
 - [x] S4: ô cược mặc định 0 + kiểm tra; công tắc cho xem mặc định tắt (UI trên dữ liệu giả, [S3 §10](./screens/s3-room-list/README.md#10-bản-dựng-dữ-liệu-giả)).
 - [ ] S3, S5, S6, S9, S10 hiển thị cược theo §1.3.
 - [x] O5 `Chưa đủ KEN` khi vào bàn thiếu tiền (kiểm phía client trên dữ liệu giả).
-- [ ] Server: settlement 2–4 người, `allowSpectators`, xem trận cho `StateViewer`, config phí.
+- [x] Server: settlement 2–4 người, payout `MATCH_OVER` theo số ghế, ràng buộc `ken_delta` + `MaxBet` theo số ghế (migration chưa chạy trên dev/prod), config phí `TYCOON_COMMISSION_PERCENT`.
+- [ ] Server: `allowSpectators`, xem trận cho `StateViewer`.
 - [x] Nút `Xem` ở hàng bàn S3 theo §2.4 (UI trên dữ liệu giả).
 - [ ] Chế độ chỉ xem ở S6 theo §2.3.
 - [ ] Test: bàn 0 không trừ KEN; bàn có cược 2/3/4 người, hạng 1 nhận đúng pot trừ phí; bỏ cuộc vẫn mất cược; bàn tắt xem không vào được.

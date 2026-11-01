@@ -38,3 +38,8 @@ const (
 
 	WebSocketMessageEvent = "message"
 )
+
+const (
+	ForceLogoutReasonSessionRevoked = "session_revoked"
+	ForceLogoutReasonBanned         = "banned"
+)

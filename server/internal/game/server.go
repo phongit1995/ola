@@ -41,7 +41,8 @@ type Server struct {
 	connMu sync.Mutex
 	conns  map[string]int
 	// spectating tracks the match each socket is watching so disconnects release the seat.
-	spectating map[socket.SocketId]string
+	spectating   map[socket.SocketId]string
+	roomWatching map[socket.SocketId]string
 }
 
 func userRoom(gameID, userID string) string {
@@ -54,6 +55,10 @@ func lobbyRoom(gameID string) string {
 
 func matchRoom(gameID, matchID string) string {
 	return "game:" + gameID + ":match:" + matchID
+}
+
+func roomWatchRoom(gameID, roomID string) string {
+	return "game:" + gameID + ":roomwatch:" + roomID
 }
 
 func NewServer(
@@ -80,12 +85,13 @@ func NewServer(
 	io := socket.NewServer(nil, opts)
 
 	server := &Server{
-		io:         io,
-		engine:     gameEngine,
-		repo:       repo,
-		logger:     logger.Named("[game-ws]"),
-		conns:      make(map[string]int),
-		spectating: make(map[socket.SocketId]string),
+		io:           io,
+		engine:       gameEngine,
+		repo:         repo,
+		logger:       logger.Named("[game-ws]"),
+		conns:        make(map[string]int),
+		spectating:   make(map[socket.SocketId]string),
+		roomWatching: make(map[socket.SocketId]string),
 	}
 	gameEngine.SetEmitter(server)
 
@@ -165,6 +171,7 @@ func (s *Server) handleConnection(client *socket.Socket) {
 		}
 		watching := s.spectating[client.Id()]
 		delete(s.spectating, client.Id())
+		delete(s.roomWatching, client.Id())
 		s.connMu.Unlock()
 		if watching != "" {
 			s.engine.SpectateLeave(data.GameID, watching, string(client.Id()), nil)
@@ -225,7 +232,7 @@ func (s *Server) spectateJoin(client *socket.Socket, data *SocketData, matchID s
 	s.connMu.Unlock()
 
 	client.Join(socket.Room(matchRoom(data.GameID, matchID)))
-	if !s.engine.SpectateJoin(data.GameID, data.UserID, matchID, string(client.Id()), socketDeliver(client)) {
+	if !s.engine.SpectateJoin(data.GameID, s.socketPlayer(data), matchID, string(client.Id()), socketDeliver(client)) {
 		if previous != matchID {
 			client.Leave(socket.Room(matchRoom(data.GameID, matchID)))
 		}
@@ -255,6 +262,37 @@ func (s *Server) spectateLeave(client *socket.Socket, data *SocketData, matchID 
 		deliver = socketDeliver(client)
 	}
 	s.engine.SpectateLeave(data.GameID, watching, string(client.Id()), deliver)
+}
+
+func (s *Server) roomWatch(client *socket.Socket, data *SocketData, roomID string) {
+	s.connMu.Lock()
+	previous := s.roomWatching[client.Id()]
+	s.connMu.Unlock()
+	if previous != "" && previous != roomID {
+		client.Leave(socket.Room(roomWatchRoom(data.GameID, previous)))
+	}
+	client.Join(socket.Room(roomWatchRoom(data.GameID, roomID)))
+	watching := s.engine.WatchRoom(data.GameID, data.UserID, roomID, socketDeliver(client))
+	if !watching {
+		client.Leave(socket.Room(roomWatchRoom(data.GameID, roomID)))
+	}
+	s.connMu.Lock()
+	if watching {
+		s.roomWatching[client.Id()] = roomID
+	} else {
+		delete(s.roomWatching, client.Id())
+	}
+	s.connMu.Unlock()
+}
+
+func (s *Server) roomUnwatch(client *socket.Socket, data *SocketData) {
+	s.connMu.Lock()
+	watching := s.roomWatching[client.Id()]
+	delete(s.roomWatching, client.Id())
+	s.connMu.Unlock()
+	if watching != "" {
+		client.Leave(socket.Room(roomWatchRoom(data.GameID, watching)))
+	}
 }
 
 func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any) {
@@ -370,6 +408,14 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 			}
 		}
 		s.spectateLeave(client, data, d.MatchID, true)
+	case protocol.C2SRoomWatch:
+		var d protocol.RoomActionData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.roomWatch(client, data, d.RoomID)
+	case protocol.C2SRoomUnwatch:
+		s.roomUnwatch(client, data)
 	default:
 		s.logger.Debugw("Unknown game message type", "type", env.Type, "user_id", data.UserID)
 	}
@@ -403,6 +449,10 @@ func (s *Server) ToGame(gameID string, envelope protocol.OutEnvelope) {
 
 func (s *Server) ToMatch(gameID string, matchID string, envelope protocol.OutEnvelope) {
 	s.io.To(socket.Room(matchRoom(gameID, matchID))).Emit(messageEvent, envelope)
+}
+
+func (s *Server) ToRoomWatchers(gameID string, roomID string, envelope protocol.OutEnvelope) {
+	s.io.To(socket.Room(roomWatchRoom(gameID, roomID))).Emit(messageEvent, envelope)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

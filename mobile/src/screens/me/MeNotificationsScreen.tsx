@@ -11,7 +11,7 @@ import { applyPostReaction, reconcileTopLikers } from '@ola/shared/stores/feed/p
 import { selfLiker } from '@ola/shared/stores/feed/selfLiker';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { MeService } from '@ola/shared/services';
-import { ME_NOTIFICATION_LABEL_KEY } from '@ola/shared/constants';
+import { ME_ERROR_CODE, ME_NOTIFICATION_LABEL_KEY } from '@ola/shared/constants';
 import {
   createTimeFormatter,
   isMomentMediaPurged,
@@ -19,6 +19,7 @@ import {
   momentNotificationOthers,
   momentNotificationReaction,
   momentOpenErrorKey,
+  toApiError,
 } from '@ola/shared/lib';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
@@ -100,8 +101,9 @@ export function MeNotificationsScreen() {
     try {
       const post = await MeService.getById(item.postId);
       setOpenPost(post);
-    } catch {
-      push('error', t('me.commentLoadError'));
+    } catch (error) {
+      const apiError = toApiError(error);
+      push('error', apiError.code === ME_ERROR_CODE.postHiddenByAdmin ? apiError.message : t('me.commentLoadError'));
     } finally {
       setOpeningId(null);
     }

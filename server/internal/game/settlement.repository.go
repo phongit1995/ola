@@ -68,34 +68,23 @@ func NewSettlementRepository(
 			"caro":     cfg.CaroCommissionPercent,
 			"war-god":  cfg.WarGodCommissionPercent,
 			"thirteen": cfg.ThirteenCommissionPercent,
+			"tycoon":   cfg.TycoonCommissionPercent,
 			"xiangqi":  cfg.XiangqiCommissionPercent,
 		},
 	}
 }
 
-func winnerAmounts(bet, commissionPercent int) (payout, net int) {
+func winnerAmounts(bet, playerCount, commissionPercent int) (payout, net int) {
 	if bet <= 0 {
 		return 0, 0
 	}
 	commission := bet * commissionPercent / 100
-	payout = bet*2 - commission
+	payout = bet*max(playerCount, 2) - commission
 	return payout, payout - bet
 }
 
-func (s *SettlementRepository) WinnerAmounts(gameID string, bet int) (payout, net int) {
-	return winnerAmounts(bet, s.commissionPercents[gameID])
-}
-
-func (s *SettlementRepository) winnerAmountsFor(gameID string, bet, playerCount int) (payout, net int) {
-	if bet <= 0 {
-		return 0, 0
-	}
-	if playerCount <= 2 {
-		return s.WinnerAmounts(gameID, bet)
-	}
-	commission := bet * s.commissionPercents[gameID] / 100
-	payout = bet*playerCount - commission
-	return payout, payout - bet
+func (s *SettlementRepository) WinnerAmounts(gameID string, bet, playerCount int) (payout, net int) {
+	return winnerAmounts(bet, playerCount, s.commissionPercents[gameID])
 }
 
 func parsePlayers(a, b string) (uuid.UUID, uuid.UUID, error) {
@@ -141,15 +130,15 @@ func parseMatchID(matchID string) (uuid.UUID, error) {
 	return id, nil
 }
 
-func validateBet(bet int) error {
-	if bet < 0 || bet > engine.MaxBet {
-		return invalidMatchError("bet must be between 0 and %d", engine.MaxBet)
+func validateBet(bet, playerCount int) error {
+	if limit := engine.MaxBetFor(playerCount); bet < 0 || bet > limit {
+		return invalidMatchError("bet must be between 0 and %d", limit)
 	}
 	return nil
 }
 
 func validateRecord(rec engine.MatchRecord) (p0, p1 uuid.UUID, err error) {
-	if err = validateBet(rec.Bet); err != nil {
+	if err = validateBet(rec.Bet, len(rec.AllPlayerIDs())); err != nil {
 		return uuid.Nil, uuid.Nil, err
 	}
 	p0, p1, err = parsePlayers(rec.Player0ID, rec.Player1ID)
@@ -172,7 +161,7 @@ func validateRecord(rec engine.MatchRecord) (p0, p1 uuid.UUID, err error) {
 }
 
 func validateOutcome(out engine.MatchOutcome) (p0, p1 uuid.UUID, err error) {
-	if err = validateBet(out.Bet); err != nil {
+	if err = validateBet(out.Bet, len(out.AllPlayerIDs())); err != nil {
 		return uuid.Nil, uuid.Nil, err
 	}
 	p0, p1, err = parsePlayers(out.Player0ID, out.Player1ID)
@@ -435,7 +424,7 @@ func (s *SettlementRepository) settleFinish(
 				return err
 			}
 			if winner != nil {
-				amount, winnerNet := s.winnerAmountsFor(row.GameID, row.Bet, len(allPlayers))
+				amount, winnerNet := s.WinnerAmounts(row.GameID, row.Bet, len(allPlayers))
 				u := users[*winner]
 				after, err := checkedCredit(u.Ken, amount)
 				if err != nil {
@@ -844,7 +833,7 @@ func (s *SettlementRepository) freshUserInfo(gameID string, userID uuid.UUID) (*
 		ID:       userID.String(),
 		Username: u.Username,
 		Ken:      u.Ken,
-		MaxBet:   engine.MaxBet,
+		MaxBet:   maxBetForGame(gameID),
 	}
 	applyGameLevel(s.db, info, gameID, userID)
 	if u.VipUsed != nil && u.VipEndTime != nil {

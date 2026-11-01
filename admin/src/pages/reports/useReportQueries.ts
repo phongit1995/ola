@@ -6,9 +6,16 @@ import { AdminStoryService } from '@/services/adminStory.service'
 import { AdminRoomService } from '@/services/adminRoom.service'
 import { AdminUserService } from '@/services/adminUser.service'
 import { REPORT_SUMMARY_KEY } from '@/hooks/useReportSummary'
+import { USERS_KEY } from '@/hooks/useUserQueries'
 import { MOMENTS_QUERY_KEY } from '@/pages/moments/useMomentQueries'
 import { toApiError } from '@/lib/apiError'
-import type { AdminReport, ReportAlertChannel, ReportListParams, UpdateReportStatusRequest } from '@/types'
+import type {
+  AdminReport,
+  ReportAlertChannel,
+  ReportListParams,
+  ReportPenaltyRequest,
+  UpdateReportStatusRequest,
+} from '@/types'
 
 const REPORTS_KEY = 'admin-reports'
 const HTTP_NOT_FOUND = 404
@@ -19,6 +26,7 @@ export interface ReportHandling {
   note: string
   removeContent?: boolean
   lockUser?: boolean
+  penalty?: ReportPenaltyRequest
 }
 
 export function useReports(params: ReportListParams) {
@@ -51,17 +59,21 @@ async function removeReportedContent(report: AdminReport): Promise<void> {
 export function useHandleReport() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ report, status, note, removeContent, lockUser }: ReportHandling) => {
+    mutationFn: async ({ report, status, note, removeContent, lockUser, penalty }: ReportHandling) => {
       if (removeContent) await removeReportedContent(report)
       if (lockUser && report.reportedUser) {
         await AdminUserService.updateStatus(report.reportedUser.id, false)
       }
-      return AdminReportService.updateStatus(report.id, { status, note: note.trim() || undefined })
+      return AdminReportService.updateStatus(report.id, {
+        status,
+        note: note.trim() || undefined,
+        penalty,
+      })
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: [REPORTS_KEY] })
       void queryClient.invalidateQueries({ queryKey: [REPORT_SUMMARY_KEY] })
-      void queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
       void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY] })
     },
   })

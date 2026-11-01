@@ -192,7 +192,7 @@ func (s *Sender) SendMeNotification(recipientID string, notification map[string]
 	})
 }
 
-func (s *Sender) SendAppNotification(recipientID string, notification map[string]interface{}, unread int) {
+func (s *Sender) SendAppNotification(recipientID string, notification map[string]interface{}, unread int, devices []models.DeviceToken) {
 	if recipientID == "" || notification == nil {
 		return
 	}
@@ -200,6 +200,10 @@ func (s *Sender) SendAppNotification(recipientID string, notification map[string
 	content := buildAppNotifContent(id, actorName, ntype, preview, unread)
 	content.Seq = time.Now().UnixNano()
 	s.enqueue(func() {
+		if len(devices) > 0 {
+			s.deliver(recipientID, constants.PushSourceAppNotif, id, content, devices, false)
+			return
+		}
 		s.process(recipientID, constants.PushSourceAppNotif, id, false, content)
 	})
 }
@@ -237,7 +241,10 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 	if len(tokens) == 0 {
 		return
 	}
+	s.deliver(recipientID, source, eventID, content, tokens, true)
+}
 
+func (s *Sender) deliver(recipientID, source, eventID string, content Content, tokens []models.DeviceToken, throttle bool) {
 	owner := uuid.NewString()
 	var eventKey string
 	if eventID != "" {
@@ -249,16 +256,19 @@ func (s *Sender) process(recipientID, source, eventID string, dmGate bool, conte
 		}
 	}
 
-	throttleKey := fmt.Sprintf(CacheKeyPushThrottle, recipientID, source)
-	acquired, err := s.cache.SetNX(throttleKey, owner, time.Duration(PushThrottleTTLSeconds)*time.Second)
-	if err == nil && !acquired {
-		s.storePending(recipientID, source, pendingPush{Content: content})
-		return
-	}
-	if err != nil {
-		throttleKey = ""
-	} else {
-		s.clearPending(recipientID, source)
+	var throttleKey string
+	if throttle {
+		throttleKey = fmt.Sprintf(CacheKeyPushThrottle, recipientID, source)
+		acquired, err := s.cache.SetNX(throttleKey, owner, time.Duration(PushThrottleTTLSeconds)*time.Second)
+		if err == nil && !acquired {
+			s.storePending(recipientID, source, pendingPush{Content: content})
+			return
+		}
+		if err != nil {
+			throttleKey = ""
+		} else {
+			s.clearPending(recipientID, source)
+		}
 	}
 
 	if !s.store.PushEnabled() {

@@ -17,4 +17,7 @@ export const MOMENT_FIT_STYLE: CSSProperties = {
   aspectRatio: '9 / 16',
 };
 
+export const MOMENT_VIEWER_CONTENT_CLASS =
+  'absolute inset-x-0 top-0 mx-auto aspect-[9/16] w-[min(100cqw,calc(100cqh*9/16))] overflow-hidden [@container(aspect-ratio<=225/352)]:aspect-auto [@container(aspect-ratio<=225/352)]:h-[min(100cqh,calc(100cqw*16/9))] [@container(aspect-ratio<=225/352)]:w-full';
+
 export const MOMENT_TURN_PERSPECTIVE_PX = 1200;

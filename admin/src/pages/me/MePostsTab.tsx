@@ -26,11 +26,12 @@ import { useMeList, useUpdateMeStatus } from '@/hooks/useMeQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { MeDetailModal } from './MeDetailModal'
+import { MeHideModal } from './MeHideModal'
 import { SORT_OPTIONS, VISIBILITY } from './constants'
 import type { MeListItem } from '@/types'
 import { PAGE_SIZE } from '@/lib/constants'
 import type { TriState } from './types'
-import { triToBool } from './utils'
+import { meHiddenByLabel, triToBool } from './utils'
 
 export function MePostsTab() {
   const { message, modal } = App.useApp()
@@ -46,6 +47,7 @@ export function MePostsTab() {
 
   const [detailId, setDetailId] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [hidingId, setHidingId] = useState<string | null>(null)
 
   function resetPage<T>(setter: (v: T) => void) {
     return (v: T) => {
@@ -92,18 +94,19 @@ export function MePostsTab() {
   }
 
   function toggleEnabled(post: MeListItem, enabled: boolean) {
+    if (!enabled) {
+      setHidingId(post.id)
+      return
+    }
     modal.confirm({
-      title: enabled ? 'Hiện bài đăng này?' : 'Ẩn bài đăng này?',
-      content: enabled
-        ? 'Bài sẽ hiển thị lại với người dùng.'
-        : 'Bài sẽ bị ẩn khỏi người dùng.',
-      okText: enabled ? 'Hiện' : 'Ẩn',
-      okButtonProps: { danger: !enabled },
+      title: 'Hiện bài đăng này?',
+      content: 'Bài sẽ hiển thị lại với người dùng.',
+      okText: 'Hiện',
       cancelText: 'Huỷ',
       onOk: async () => {
         try {
           await updateStatus.mutateAsync({ id: post.id, enabled })
-          message.success(enabled ? 'Đã hiện bài' : 'Đã ẩn bài')
+          message.success('Đã hiện bài')
         } catch (err) {
           message.error(errorMessage(err, 'Thao tác thất bại'))
         }
@@ -222,15 +225,21 @@ export function MePostsTab() {
       title: 'Trạng thái',
       dataIndex: 'enabled',
       width: 110,
-      render: (enabled: boolean, post) => (
-        <Switch
-          checked={enabled}
-          checkedChildren="Hiện"
-          unCheckedChildren="Ẩn"
-          loading={updateStatus.isPending}
-          onChange={(value) => toggleEnabled(post, value)}
-        />
-      ),
+      render: (enabled: boolean, post) => {
+        const hiddenBy = meHiddenByLabel(post)
+        return (
+          <div style={{ lineHeight: 1.3 }}>
+            <Switch
+              checked={enabled}
+              checkedChildren="Hiện"
+              unCheckedChildren="Ẩn"
+              loading={updateStatus.isPending}
+              onChange={(value) => toggleEnabled(post, value)}
+            />
+            {hiddenBy && <div style={{ fontSize: 12, color: '#6b7785', marginTop: 2 }}>{hiddenBy}</div>}
+          </div>
+        )
+      },
     },
     {
       title: 'Ngày tạo',
@@ -340,6 +349,7 @@ export function MePostsTab() {
         }}
       />
       <MeDetailModal postId={detailId} open={modalOpen} onClose={() => setModalOpen(false)} />
+      {hidingId != null && <MeHideModal postId={hidingId} onClose={() => setHidingId(null)} />}
     </>
   )
 }
