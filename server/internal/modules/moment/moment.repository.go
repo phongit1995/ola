@@ -56,10 +56,14 @@ ORDER BY p.all_seen ASC, p.latest DESC, p.author_id DESC, v.created_at ASC, v."p
 const trayPageAfterCursor = `WHERE (all_seen AND NOT @cursorSeen)
 	OR (all_seen = @cursorSeen AND (latest, author_id) < (@cursorAt, @cursorAuthor))`
 
+const purgeableFilter = `(status IN @purgeable OR (status = @processing
+	AND (deleted_at IS NOT NULL OR expires_at <= @now)
+	AND (processing_started_at IS NULL OR processing_started_at < @stale)))`
+
 const claimMediaPurgeQuery = `
 WITH target AS (
 	SELECT id, status FROM moments
-	WHERE id = @id AND type <> @text AND status IN @purgeable
+	WHERE id = @id AND type <> @text AND ` + purgeableFilter + `
 	FOR UPDATE
 )
 UPDATE moments m SET status = @purging
@@ -71,7 +75,7 @@ const claimAgedPurgeQuery = `
 WITH target AS (
 	SELECT r.id, r.status FROM moments r
 	WHERE r.type <> @text
-		AND r.status IN @purgeable
+		AND ` + purgeableFilter + `
 		AND r.created_at <= @cutoff
 		AND (r.created_at, r.id) > (@afterAt, @afterID)
 		AND NOT EXISTS (
@@ -404,14 +408,22 @@ func (r *Repository) FindUsers(ids []uuid.UUID) ([]models.User, error) {
 	return users, err
 }
 
-func (r *Repository) ClaimMediaPurge(ctx context.Context, id uuid.UUID) (*cleanupCandidate, error) {
+func purgeArgs(now time.Time) map[string]interface{} {
+	return map[string]interface{}{
+		"text":       MomentTypeText,
+		"purging":    MomentStatusPurging,
+		"purgeable":  MomentPurgeableStatuses,
+		"processing": MomentStatusProcessing,
+		"now":        now,
+		"stale":      now.Add(-MomentTranscodeStaleAfter),
+	}
+}
+
+func (r *Repository) ClaimMediaPurge(ctx context.Context, id uuid.UUID, now time.Time) (*cleanupCandidate, error) {
 	var rows []cleanupCandidate
-	err := r.db.WithContext(ctx).Raw(claimMediaPurgeQuery, map[string]interface{}{
-		"id":        id,
-		"text":      MomentTypeText,
-		"purging":   MomentStatusPurging,
-		"purgeable": MomentPurgeableStatuses,
-	}).Scan(&rows).Error
+	args := purgeArgs(now)
+	args["id"] = id
+	err := r.db.WithContext(ctx).Raw(claimMediaPurgeQuery, args).Scan(&rows).Error
 	if err != nil || len(rows) == 0 {
 		return nil, err
 	}
@@ -430,19 +442,16 @@ func (c purgeCursor) after(row cleanupCandidate) bool {
 	return row.CreatedAt.After(c.CreatedAt)
 }
 
-func (r *Repository) ClaimAgedPurge(ctx context.Context, cutoff time.Time, after purgeCursor, limit int) ([]cleanupCandidate, error) {
+func (r *Repository) ClaimAgedPurge(ctx context.Context, cutoff time.Time, after purgeCursor, limit int, now time.Time) ([]cleanupCandidate, error) {
 	var rows []cleanupCandidate
-	err := r.db.WithContext(ctx).Raw(claimAgedPurgeQuery, map[string]interface{}{
-		"text":      MomentTypeText,
-		"purgeable": MomentPurgeableStatuses,
-		"cutoff":    cutoff,
-		"afterAt":   after.CreatedAt,
-		"afterID":   after.ID,
-		"target":    constants.ReportTargetMoment,
-		"pending":   constants.ReportStatusPending,
-		"lim":       limit,
-		"purging":   MomentStatusPurging,
-	}).Scan(&rows).Error
+	args := purgeArgs(now)
+	args["cutoff"] = cutoff
+	args["afterAt"] = after.CreatedAt
+	args["afterID"] = after.ID
+	args["target"] = constants.ReportTargetMoment
+	args["pending"] = constants.ReportStatusPending
+	args["lim"] = limit
+	err := r.db.WithContext(ctx).Raw(claimAgedPurgeQuery, args).Scan(&rows).Error
 	return rows, err
 }
 

@@ -276,7 +276,7 @@ export const useMomentStore = create<MomentState>((set, get) => {
         history: patchMoments(state.history, moments).filter((moment) => !failed.has(moment.id)),
         clockMs: nowMs,
       }));
-      return processingBefore.map((moment) => moment.id).filter((id) => !after.has(id));
+      return [...failed];
     },
     loadHistory: async () => {
       const isCurrent = sessionGuard();
@@ -336,6 +336,7 @@ export const useMomentStore = create<MomentState>((set, get) => {
           batch.forEach((id) => seenQueue.pending.delete(id));
           try {
             await MomentService.markSeen(batch);
+            if (session !== storeSession) return;
             seenQueue.failures = 0;
           } catch (error) {
             if (session !== storeSession) return;
@@ -364,6 +365,7 @@ export const useMomentStore = create<MomentState>((set, get) => {
         while (next != null && session === storeSession) {
           try {
             const result = await MomentService.react(next.momentId, next.type, next.count);
+            if (session !== storeSession) return;
             reactionQueue.failures = 0;
             if (result.count >= MOMENT_REACT_MAX_PER_TYPE) {
               markReactionMaxed(next.momentId, next.type);

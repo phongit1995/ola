@@ -171,7 +171,7 @@ func (c *Cleaner) purgeAged(ctx context.Context, entry *MediaPurgeLog) error {
 		if ctx.Err() != nil {
 			return stopPurge(ctx, entry)
 		}
-		rows, err := c.repo.ClaimAgedPurge(ctx, entry.Cutoff, cursor, MomentPurgeBatchSize)
+		rows, err := c.repo.ClaimAgedPurge(ctx, entry.Cutoff, cursor, MomentPurgeBatchSize, time.Now().UTC())
 		if err != nil {
 			if ctx.Err() != nil {
 				return stopPurge(ctx, entry)
@@ -355,7 +355,7 @@ func staleViewerCounts(moments []*models.Moment, live map[uuid.UUID]int64) map[u
 }
 
 func (c *Cleaner) PurgeMedia(ctx context.Context, id uuid.UUID) (bool, error) {
-	row, err := c.repo.ClaimMediaPurge(ctx, id)
+	row, err := c.repo.ClaimMediaPurge(ctx, id, time.Now().UTC())
 	if err != nil || row == nil {
 		return false, err
 	}
